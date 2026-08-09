@@ -78,15 +78,15 @@ def build() -> Path:
             "Vehicle Currencies in AMMs: Model and Empirical Review Packet",
             """Purpose: internal review before manuscript drafting.
 
-Current status: no additional broad experiments are needed before writing if the paper is written around bounded claims. The remaining task is table hierarchy and claim discipline.
+Current status: findings remain unfrozen. This packet is a C/E diagnostic and cannot authorize manuscript drafting.
 
 Bounded empirical spine:
 1. Measurement: vehicle use is conditional on indirect routing and must be paired with all-route vehicle share.
 2. P1/setup: direct-market incompleteness is descriptive scope for the central propositions.
-3. P2: vehicle intermediation and vehicle-linked LP liquidity are mutually persistent.
+3. P2: vehicle intermediation and vehicle-linked deposited capital may be mutually persistent; executable route depth is a separate cost primitive.
 4. P3: credibility or risk shocks to a vehicle reduce its route advantage and rotate order flow toward substitutes.
 5. P4a: market-architecture changes that deepen direct pairwise markets reduce reliance on vehicle routes.
-6. P4b: settlement netting raises LP willingness to supply vehicle-linked liquidity where routed demand is present.
+6. P4b: settlement netting raises LP willingness to commit vehicle-linked capital where routed demand is present.
 
 Implementation discipline: WETH, stablecoins, concentrated-liquidity launch, and flash-accounting launch are empirical test beds.
 They should appear in table labels and identification text, not as the propositions themselves.
@@ -97,21 +97,21 @@ They should appear in table labels and identification text, not as the propositi
             "Model Structure",
             """Trader chooses between direct route i -> j and vehicle route i -> k -> j.
 
-DirectCost(q) = fD + sD + theta*q/LD
-VehicleCost(q) = fIK + fKJ + sK + rhoK + theta*q*(1/LIK + 1/LKJ)
+DirectCost(q) = fD + sD + theta*q/DD
+VehicleCost(q) = fIK + fKJ + sK + rhoK + theta*q*(1/DIK + 1/DKJ)
 RouteAdvantage = DirectCost - VehicleCost
 BridgeShare(delta) = 1 / (1 + exp(-lambda*delta))
 
 P1 is treated as setup: direct-market weakness explains why vehicle routes are relevant; direct-unavailable cases are partly mechanical.
 
-P2 is reduced-form liquidity-route feedback:
-E[BridgeShare_{k,t+h}] = alpha_k + betaL * LPConcentration_{k,t} + rho * BridgeShare_{k,t}.
-E[LPConcentration_{k,t+h}] = alpha_l + betaB * BridgeShare_{k,t} + psi * LPConcentration_{k,t}.
+P2 is reduced-form capital-route feedback:
+E[BridgeShare_{k,t+h}] = alpha_k + betaC * LPCapitalShare_{k,t} + rho * BridgeShare_{k,t}.
+E[LPCapitalShare_{k,t+h}] = alpha_l + betaB * BridgeShare_{k,t} + psi * LPCapitalShare_{k,t}.
 
 P3 is interval-neutral in theory: vehicle risk or credibility cost lowers route advantage on impact. Same-day stress episodes are the empirical implementation.
 
-P4a: higher direct-route liquidity reduces relative vehicle-route reliance.
-P4b: netting lowers the operational inventory cost of supporting routed demand, increasing optimal vehicle-linked LP supply.
+P4a: higher direct-route executable depth reduces relative vehicle-route reliance.
+P4b: netting lowers the operational inventory cost of supporting routed demand, increasing optimal vehicle-linked deposited capital.
 """,
         )
         deriv = (MODEL / "model_derivations.txt").read_text(encoding="utf-8") if (MODEL / "model_derivations.txt").exists() else ""
@@ -124,24 +124,24 @@ P1AvailabilityProtection:
 - dBridgeShare/dAdvantage = lambda * Sech[...]^2 / 4 > 0.
 - VehicleUsefulCondition includes direct-unavailable, thin-direct, and positive-advantage cases.
 
-P2LiquidityRouteFeedback:
-- dAdvantage/dLIK > 0 and dAdvantage/dLKJ > 0.
-- dExpectedBridgeShareNext/dVehicleLiquidity = betaL >= 0.
+P2CapitalRouteFeedback:
+- dAdvantage/dDIK > 0 and dAdvantage/dDKJ > 0.
+- dExpectedBridgeShareNext/dVehicleCapital = betaC >= 0.
 - dExpectedBridgeShareNext/dCurrentBridgeShare = rho >= 0.
-- dExpectedVehicleLiquidityNext/dCurrentBridgeShare = betaB >= 0.
+- dExpectedVehicleCapitalNext/dCurrentBridgeShare = betaB >= 0.
 
 P3StressRotation:
 - dAdvantage/dVehicleRisk = -1.
 - dBridgeShare/dVehicleRisk < 0.
 
 P4aDirectMarketDeepening:
-- dAdvantage/dDirectLiquidityMultiplier < 0.
+- dAdvantage/dDirectCapitalEfficiencyMultiplier < 0 at fixed deposited capital.
 
-P4bSettlementNettingLiquidity:
-- PhysicalVehicleMovement = (1 - n) * GrossVehicleExposure.
-- LPPayoff = fee value from routed demand - netting-sensitive operating cost - convex liquidity cost.
-- dOptimalVehicleLiquidity/dNetting = kappa1 / chi >= 0.
-- dOptimalVehicleLiquidity/dRoutedDemand = phi / chi > 0.
+P4bSettlementNettingCapital:
+- PhysicalVehicleSettlement = (1 - n) * GrossVehicleSettlement.
+- LPPayoff = fee value from routed demand - netting-sensitive operating cost - convex capital cost.
+- dOptimalVehicleCapital/dNetting = kappa1 / chi >= 0.
+- dOptimalVehicleCapital/dRoutedDemand = phi / chi > 0.
 
 Full derivation object:
 """
@@ -152,17 +152,17 @@ Full derivation object:
             pdf,
             "Numerical Simulations",
             [
-                "model_bridge_share_liquidity.png",
+                "model_bridge_share_depth.png",
                 "model_bridge_share_risk.png",
-                "model_bridge_share_direct_liquidity.png",
+                "model_bridge_share_direct_depth.png",
                 "model_v4_netting_compression.png",
-                "model_liquidity_route_feedback.png",
-                "model_netting_lp_supply.png",
+                "model_capital_route_feedback.png",
+                "model_netting_lp_capital.png",
             ],
         )
         _table_page(pdf, "Measurement and Scope", "measurement_scope")
         _table_page(pdf, "P1 Route Availability and Thin-Direct Protection", "p1_availability_thin_direct")
-        _table_page(pdf, "P2 Liquidity-Route Feedback", "p2_dynamic_predictability")
+        _table_page(pdf, "P2 Capital-Route Feedback", "p2_dynamic_predictability")
         _table_page(pdf, "P3 Vehicle Risk and Stress Rotation", "p3_stress_rotation")
         _table_page(pdf, "P4a Direct-Market Deepening and Vehicle-Route Opportunity", "p4a_v3_opportunity")
         _table_page(pdf, "P4b Settlement Netting and LP Response", "p4b_v4_settlement")

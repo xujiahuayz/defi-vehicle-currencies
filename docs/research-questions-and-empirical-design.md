@@ -251,13 +251,13 @@ The incumbent \(k^\star\) uses only the 30 days ending at \(t-1\); the challenge
 
 - **Universe:** \(\mathcal P^{\mathrm{V3}}_q\) is selected only from the fixed 180-day pre-period and quoted throughout event months \(-12\) to \(+12\), independent of post-V3 activity.
 - **Treatments fixed before launch:** \(\mathrm{DirectConstraint}^{\mathrm{pre}}_{i,o,q}\) measures missing pre-V3 direct execution; \(\sigma^{\mathrm{pre}}_{i,o}\) measures pair volatility and therefore suitability for narrow concentrated-liquidity ranges.
-- **Outcomes:** estimate separately for \(D_{i,o,q,t}\), \(\mathrm{DirectDepth}_{i,o,q,t}\), \(\mathrm{AnyIndirectAvailable}_{i,o,q,t}\), \(\mathrm{IndirectRouteShare}_{i,o,t}\), and \(\mathrm{VehicleHHI}_{i,o,t}\); at pool level, estimate \(\mathrm{LiquidityConcentration}_{p,t,b}\).
+- **Outcomes:** estimate separately for \(D_{i,o,q,t}\), \(\mathrm{DirectDepth}_{i,o,q,t}\), \(\mathrm{AnyIndirectAvailable}_{i,o,q,t}\), \(\mathrm{IndirectRouteShare}_{i,o,t}\), and \(\mathrm{VehicleHHI}_{i,o,t}\); at pool level, estimate directional band-depth capital efficiency \(\eta^{\mathrm{Band}}_{p,t,b,d}\) only where both typed quantities pass.
 
 \[Y_{i,o,t}=\alpha_{i,o}+\delta_t+\sum_{\mu\ne-1}\beta_\mu\mathrm{DirectConstraint}^{\mathrm{pre}}_{i,o,q}\mathbf{1}_{\{t\in\mu\}}+\sum_{\mu\ne-1}\gamma_\mu\sigma^{\mathrm{pre}}_{i,o}\mathbf{1}_{\{t\in\mu\}}+\sum_{\mu\ne-1}\theta_\mu\mathrm{DirectConstraint}^{\mathrm{pre}}_{i,o,q}\sigma^{\mathrm{pre}}_{i,o}\mathbf{1}_{\{t\in\mu\}}+\varepsilon_{i,o,t}.\]
 
 - **Inference:** pair and date fixed effects; two-way clustering by ordered pair and calendar week; event month \(-1\) omitted.
 - **Diagnostics:** joint pretrend tests; placebo launch dates; fixed 12- and 24-month windows; balanced quote-coverage audit; V2-only, V3-only, and best-across-versions route construction shown separately; no failed fetch is coded as route unavailability.
-- **Capital-efficiency mechanism:** V3 should raise \(\mathrm{LiquidityConcentration}_{p,t,b}\) and executable depth most for lower-\(\sigma^{\mathrm{pre}}\) pairs if narrow ranges are the operative channel.
+- **Capital-efficiency mechanism:** V3 should raise \(\eta^{\mathrm{Band}}_{p,t,b,d}\) and executable depth most for lower-\(\sigma^{\mathrm{pre}}\) pairs if narrow ranges are the operative channel.
 
 ### Experiment B: where the execution gain goes
 

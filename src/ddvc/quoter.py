@@ -46,6 +46,8 @@ from typing import Any, Iterable
 from eth_abi import decode as abi_decode
 from eth_utils import keccak
 
+from ddvc.config import dotenv_value
+
 # The original Quoter, deployed 2021-05, covering the whole V3 sample.
 UNISWAP_V3_QUOTER = "0xb27308f9F90D607463bb33eA1BeBb41C27CE5AB6"
 QUOTE_SELECTOR = "0x" + keccak(text="quoteExactInput(bytes,uint256)")[:4].hex()
@@ -57,21 +59,32 @@ _UA = "ddvc-quoter/1.0"
 _DEFAULT_RPCS = (
     "https://ethereum-rpc.publicnode.com",
     "https://eth.llamarpc.com",
-    "https://rpc.ankr.com/eth",
     "https://eth.drpc.org",
     "https://1rpc.io/eth",
 )
 _rpc_idx = 0
 _rpc_idx_lock = threading.Lock()
+_disabled_rpc_urls: set[str] = set()
 
 
 def rpc_urls() -> list[str]:
-    raw = os.getenv("ETH_RPC_URLS") or os.getenv("ETH_RPC_URL")
+    raw = (
+        os.getenv("ETH_RPC_URLS")
+        or os.getenv("ETH_RPC_URL")
+        or dotenv_value("ETH_RPC_URLS", "ETH_RPC_URL")
+    )
     if raw:
         urls = [u.strip() for u in raw.replace("\n", ",").split(",") if u.strip()]
         if urls:
             return urls
     return list(_DEFAULT_RPCS)
+
+
+def _authentication_error(error: object) -> bool:
+    if not isinstance(error, dict):
+        return False
+    message = str(error.get("message") or "").lower()
+    return any(marker in message for marker in ("unauthorized", "authenticat", "api key"))
 
 
 class Throttled(RuntimeError):
@@ -90,6 +103,9 @@ def rpc_post(payload: dict | list[dict], *, timeout: int = 60,
     data = json.dumps(payload).encode()
     urls = rpc_urls()
     with _rpc_idx_lock:
+        urls = [url for url in urls if url not in _disabled_rpc_urls]
+        if not urls:
+            raise RuntimeError("no enabled Ethereum RPC endpoint remains")
         start = _rpc_idx % len(urls)
     ordered = urls[start:] + urls[:start]
     throttled = False
@@ -109,21 +125,31 @@ def rpc_post(payload: dict | list[dict], *, timeout: int = 60,
                         and response.get("error")
                     ):
                         error = response["error"]
+                        if _authentication_error(error):
+                            with _rpc_idx_lock:
+                                _disabled_rpc_urls.add(url)
+                            last = RuntimeError(
+                                f"JSON-RPC endpoint authentication failed with code {error.get('code')}"
+                            )
+                            break
                         last = RuntimeError(
                             f"JSON-RPC error {error.get('code')}: {error.get('message')}"
                         )
                         break
                     with _rpc_idx_lock:
-                        _rpc_idx = (urls.index(url) + 1) % len(urls)
+                        _rpc_idx = urls.index(url)
                     if sleep:
                         time.sleep(sleep)
                     return response
             except urllib.error.HTTPError as exc:
                 last = exc
-                if exc.code in (429, 503, 403):
+                if exc.code in (429, 503):
                     throttled = True
                     time.sleep(max(sleep, 1.0))
                     continue
+                if exc.code == 403:
+                    throttled = True
+                    break
                 break
             except Exception as exc:  # transport failures are retryable
                 last = exc

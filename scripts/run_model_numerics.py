@@ -21,28 +21,28 @@ def bridge_share(delta: np.ndarray | float, lam: float = 4.0) -> np.ndarray | fl
     return 1.0 / (1.0 + np.exp(-lam * delta))
 
 
-def direct_cost(q: float, liquidity: np.ndarray | float, fee: float, settlement: float, theta: float) -> np.ndarray | float:
-    return fee + settlement + theta * q / liquidity
+def direct_cost(q: float, depth: np.ndarray | float, fee: float, settlement: float, theta: float) -> np.ndarray | float:
+    return fee + settlement + theta * q / depth
 
 
 def vehicle_cost(
     q: float,
-    lik: np.ndarray | float,
-    lkj: np.ndarray | float,
+    depth_ik: np.ndarray | float,
+    depth_kj: np.ndarray | float,
     fee_ik: float,
     fee_kj: float,
     settlement: float,
     risk: np.ndarray | float,
     theta: float,
 ) -> np.ndarray | float:
-    return fee_ik + fee_kj + settlement + risk + theta * q * (1.0 / lik + 1.0 / lkj)
+    return fee_ik + fee_kj + settlement + risk + theta * q * (1.0 / depth_ik + 1.0 / depth_kj)
 
 
 def route_advantage(
     q: float = 1.0,
-    direct_liquidity: np.ndarray | float = 1.4,
-    vehicle_liquidity_ik: np.ndarray | float = 1.0,
-    vehicle_liquidity_kj: np.ndarray | float = 1.0,
+    direct_depth: np.ndarray | float = 1.4,
+    vehicle_depth_ik: np.ndarray | float = 1.0,
+    vehicle_depth_kj: np.ndarray | float = 1.0,
     direct_fee: float = 0.003,
     vehicle_fee_ik: float = 0.003,
     vehicle_fee_kj: float = 0.003,
@@ -51,10 +51,10 @@ def route_advantage(
     vehicle_risk: np.ndarray | float = 0.01,
     theta: float = 0.08,
 ) -> np.ndarray | float:
-    return direct_cost(q, direct_liquidity, direct_fee, direct_settlement, theta) - vehicle_cost(
+    return direct_cost(q, direct_depth, direct_fee, direct_settlement, theta) - vehicle_cost(
         q,
-        vehicle_liquidity_ik,
-        vehicle_liquidity_kj,
+        vehicle_depth_ik,
+        vehicle_depth_kj,
         vehicle_fee_ik,
         vehicle_fee_kj,
         vehicle_settlement,
@@ -64,35 +64,35 @@ def route_advantage(
 
 
 def feedback_paths(
-    liquidity0: float = 0.35,
+    capital0: float = 0.35,
     bridge0: float = 0.15,
     alpha_bridge: float = 0.02,
-    beta_liquidity_to_bridge: float = 0.18,
+    beta_capital_to_bridge: float = 0.18,
     bridge_persistence: float = 0.62,
-    alpha_liquidity: float = 0.04,
-    beta_bridge_to_liquidity: float = 0.22,
-    liquidity_persistence: float = 0.70,
+    alpha_capital: float = 0.04,
+    beta_bridge_to_capital: float = 0.22,
+    capital_persistence: float = 0.70,
     periods: int = 24,
 ) -> tuple[np.ndarray, np.ndarray]:
-    liquidity = np.empty(periods + 1)
+    capital = np.empty(periods + 1)
     bridge = np.empty(periods + 1)
-    liquidity[0] = liquidity0
+    capital[0] = capital0
     bridge[0] = bridge0
     for t in range(periods):
         bridge[t + 1] = np.clip(
-            alpha_bridge + beta_liquidity_to_bridge * liquidity[t] + bridge_persistence * bridge[t],
+            alpha_bridge + beta_capital_to_bridge * capital[t] + bridge_persistence * bridge[t],
             0,
             1,
         )
-        liquidity[t + 1] = np.clip(
-            alpha_liquidity + beta_bridge_to_liquidity * bridge[t] + liquidity_persistence * liquidity[t],
+        capital[t + 1] = np.clip(
+            alpha_capital + beta_bridge_to_capital * bridge[t] + capital_persistence * capital[t],
             0,
             1,
         )
-    return liquidity, bridge
+    return capital, bridge
 
 
-def optimal_vehicle_liquidity(
+def optimal_vehicle_capital(
     netting: np.ndarray | float,
     routed_demand: float = 1.0,
     fee_value: float = 0.08,
@@ -112,18 +112,18 @@ def save_plot(path: Path) -> None:
 def main() -> None:
     OUT.mkdir(parents=True, exist_ok=True)
 
-    vehicle_liquidity = np.linspace(0.25, 5.0, 300)
-    share_liquidity = bridge_share(
-        route_advantage(vehicle_liquidity_ik=vehicle_liquidity, vehicle_liquidity_kj=vehicle_liquidity)
+    vehicle_depth = np.linspace(0.25, 5.0, 300)
+    share_depth = bridge_share(
+        route_advantage(vehicle_depth_ik=vehicle_depth, vehicle_depth_kj=vehicle_depth)
     )
     plt.figure(figsize=(7, 4.5))
-    plt.plot(vehicle_liquidity, share_liquidity, color="#1f6f8b", linewidth=2.4)
+    plt.plot(vehicle_depth, share_depth, color="#1f6f8b", linewidth=2.4)
     plt.ylim(0, 1)
-    plt.xlabel("Vehicle-linked executable liquidity")
+    plt.xlabel("Vehicle-route executable depth")
     plt.ylabel("Bridge share")
-    plt.title("Vehicle liquidity raises bridge use")
+    plt.title("Vehicle-route depth raises bridge use")
     plt.grid(alpha=0.25)
-    save_plot(OUT / "model_bridge_share_liquidity.png")
+    save_plot(OUT / "model_bridge_share_depth.png")
 
     risk = np.linspace(0.0, 0.12, 300)
     share_risk = bridge_share(route_advantage(vehicle_risk=risk))
@@ -137,23 +137,23 @@ def main() -> None:
     save_plot(OUT / "model_bridge_share_risk.png")
 
     direct_multiplier = np.linspace(0.5, 5.0, 300)
-    direct_liquidity = 1.4 * direct_multiplier
-    share_direct = bridge_share(route_advantage(direct_liquidity=direct_liquidity))
+    direct_depth = 1.4 * direct_multiplier
+    share_direct = bridge_share(route_advantage(direct_depth=direct_depth))
     plt.figure(figsize=(7, 4.5))
     plt.plot(direct_multiplier, share_direct, color="#4d7c2f", linewidth=2.4)
     plt.ylim(0, 1)
-    plt.xlabel("Direct-route liquidity multiplier")
+    plt.xlabel("Direct-route capital-efficiency multiplier")
     plt.ylabel("Bridge share")
-    plt.title("Direct liquidity lowers vehicle-route reliance")
+    plt.title("Direct depth lowers vehicle-route reliance")
     plt.grid(alpha=0.25)
-    save_plot(OUT / "model_bridge_share_direct_liquidity.png")
+    save_plot(OUT / "model_bridge_share_direct_depth.png")
 
     netting = np.linspace(0.0, 1.0, 300)
     compression = netting
     physical_over_gross = 1.0 - netting
     plt.figure(figsize=(7, 4.5))
     plt.plot(netting, compression, label="Compression ratio", color="#5f4b8b", linewidth=2.4)
-    plt.plot(netting, physical_over_gross, label="Physical movement / gross exposure", color="#c17c2f", linewidth=2.4)
+    plt.plot(netting, physical_over_gross, label="Physical settlement / gross settlement", color="#c17c2f", linewidth=2.4)
     plt.ylim(0, 1)
     plt.xlabel("Netting intensity")
     plt.ylabel("Share")
@@ -162,49 +162,49 @@ def main() -> None:
     plt.grid(alpha=0.25)
     save_plot(OUT / "model_v4_netting_compression.png")
 
-    liquidity, bridge = feedback_paths()
-    t = np.arange(len(liquidity))
+    capital, bridge = feedback_paths()
+    t = np.arange(len(capital))
     plt.figure(figsize=(7, 4.5))
     plt.plot(t, bridge, label="Bridge share", color="#1f6f8b", linewidth=2.4)
-    plt.plot(t, liquidity, label="Vehicle-linked LP liquidity", color="#7b5e2e", linewidth=2.4)
+    plt.plot(t, capital, label="Vehicle-linked deposited capital", color="#7b5e2e", linewidth=2.4)
     plt.ylim(0, 1)
     plt.xlabel("Period")
     plt.ylabel("State")
-    plt.title("Liquidity-route feedback creates persistent vehicle status")
+    plt.title("Capital-route feedback creates persistent vehicle status")
     plt.legend(frameon=False)
     plt.grid(alpha=0.25)
-    save_plot(OUT / "model_liquidity_route_feedback.png")
+    save_plot(OUT / "model_capital_route_feedback.png")
 
-    lp_supply = optimal_vehicle_liquidity(netting)
+    lp_capital = optimal_vehicle_capital(netting)
     plt.figure(figsize=(7, 4.5))
-    plt.plot(netting, lp_supply, color="#2f6f4e", linewidth=2.4)
+    plt.plot(netting, lp_capital, color="#2f6f4e", linewidth=2.4)
     plt.xlabel("Settlement netting intensity")
-    plt.ylabel("Optimal vehicle-linked LP supply")
+    plt.ylabel("Optimal vehicle-linked deposited capital")
     plt.title("Netting raises LP willingness to support vehicle routes")
     plt.grid(alpha=0.25)
-    save_plot(OUT / "model_netting_lp_supply.png")
+    save_plot(OUT / "model_netting_lp_capital.png")
 
     derivation = """Model derivation highlights
 
-P2 liquidity-route feedback:
-ExpectedBridgeShareNext = alphaK + betaL * VehicleLiquidity + rho * CurrentBridgeShare.
-dExpectedBridgeShareNext/dVehicleLiquidity = betaL >= 0.
+P2 capital-route feedback:
+ExpectedBridgeShareNext = alphaK + betaC * VehicleCapital + rho * CurrentBridgeShare.
+dExpectedBridgeShareNext/dVehicleCapital = betaC >= 0.
 dExpectedBridgeShareNext/dCurrentBridgeShare = rho >= 0.
 
-ExpectedVehicleLiquidityNext = alphaL + betaB * CurrentBridgeShare + psi * VehicleLiquidity.
-dExpectedVehicleLiquidityNext/dCurrentBridgeShare = betaB >= 0.
-dExpectedVehicleLiquidityNext/dVehicleLiquidity = psi >= 0.
+ExpectedVehicleCapitalNext = alphaC + betaB * CurrentBridgeShare + psi * VehicleCapital.
+dExpectedVehicleCapitalNext/dCurrentBridgeShare = betaB >= 0.
+dExpectedVehicleCapitalNext/dVehicleCapital = psi >= 0.
 
-This is the model object for a Matthew-effect interpretation: liquidity predicts future route use, and route use predicts future liquidity.
+This is the model object for a Matthew-effect interpretation: deposited capital predicts future route use, and route use predicts future capital. Executable depth enters route costs separately.
 
 P4b settlement netting and LP supply:
-PhysicalVehicleMovement = (1 - n) * GrossVehicleExposure.
-LPPayoff = phi * RoutedDemand * VehicleLiquidity - (kappa0 + kappa1 * (1 - n)) * VehicleLiquidity - chi * VehicleLiquidity^2 / 2.
-OptimalVehicleLiquidity = (phi * RoutedDemand - kappa0 - kappa1 * (1 - n)) / chi, truncated at zero.
-dOptimalVehicleLiquidity/dNetting = kappa1 / chi >= 0.
-dOptimalVehicleLiquidity/dRoutedDemand = phi / chi > 0.
+PhysicalVehicleSettlement = (1 - n) * GrossVehicleSettlement.
+LPPayoff = phi * RoutedDemand * VehicleCapital - (kappa0 + kappa1 * (1 - n)) * VehicleCapital - chi * VehicleCapital^2 / 2.
+OptimalVehicleCapital = (phi * RoutedDemand - kappa0 - kappa1 * (1 - n)) / chi, truncated at zero.
+dOptimalVehicleCapital/dNetting = kappa1 / chi >= 0.
+dOptimalVehicleCapital/dRoutedDemand = phi / chi > 0.
 
-The behavioral prediction goes beyond the accounting identity that netting lowers transfers: netting raises LP willingness to supply vehicle-linked liquidity where routed demand is present.
+The behavioral prediction goes beyond the accounting identity that netting lowers transfers: netting raises LP willingness to commit vehicle-linked capital where routed demand is present.
 """
     (OUT / "model_derivations.txt").write_text(derivation, encoding="utf-8")
 

@@ -1,6 +1,6 @@
 {
   "schema_version": 1,
-  "updated": "2026-08-07",
+  "updated": "2026-08-09",
   "counting_unit": "A reported specification is counted once within one empirical family. Coefficients from the same multivariate fit are not separate specifications. Pretrend and pseudo-break fits are diagnostics. Permutation, randomisation and power-simulation fits are resampling refits and never inflate the reported-specification count.",
   "families": [
     {
@@ -59,14 +59,44 @@
       "estimator": "pool-month OLS and linear probability models",
       "fixed_effects": "calendar month",
       "inference": "pool clustered with joint role Wald tests",
-      "substantive_specifications": 24,
+      "substantive_specifications": 12,
       "diagnostic_specifications": 0,
       "resampling_refits": 0,
-      "status": "admissible",
+      "status": "withheld",
       "artifacts": [
         "output/empirical/rent_incidence/centrality_curse_regressions.jsonl"
       ],
-      "note": "Twenty-four fitted models are distinct from eight derived Wald-test rows. This is an entered companion finding, not the identified mechanism for vehicle rotation."
+      "note": "Twelve V2 models remain after removing every v3 outcome that treated local virtual depth as deposited capital. Their shared artifact is provenance-stale until the exact-lag capital and reserve-reconciliation rerun, so the family is withheld. Five joint Wald rows are derived tests, not additional fitted specifications."
+    },
+    {
+      "id": "withheld_v3_approximate_lvr",
+      "claim_id": "liquidity_rent_incidence",
+      "estimator": "pool-month OLS and linear probability models",
+      "fixed_effects": "calendar month",
+      "inference": "pool clustered with joint role Wald tests",
+      "substantive_specifications": 3,
+      "diagnostic_specifications": 0,
+      "resampling_refits": 0,
+      "status": "retired",
+      "artifacts": [
+        "output/empirical/rent_incidence/centrality_curse_regressions.jsonl"
+      ],
+      "note": "The V3 role-sign, net-flow-sign and fee-to-LVR fits are retired. Their dollar LVR numerator collapses a tick-crossing day to one volume-weighted tick, and the provider TVL denominator failed the historical-balance audit. Any future V3 family starts from event-replayed capital and path-integrated LVR as new specifications."
+    },
+    {
+      "id": "retired_v3_virtual_capital_returns",
+      "claim_id": "liquidity_rent_incidence",
+      "estimator": "pool-month OLS and linear probability models",
+      "fixed_effects": "calendar month",
+      "inference": "pool clustered with joint role Wald tests",
+      "substantive_specifications": 9,
+      "diagnostic_specifications": 0,
+      "resampling_refits": 0,
+      "status": "retired",
+      "artifacts": [
+        "output/empirical/rent_incidence/centrality_curse_regressions.jsonl"
+      ],
+      "note": "Nine v3 fits are retired because constant-product-equivalent virtual reserves measure local depth, not invested capital: role differences in risk-adjusted return and APR; unconditional and conditional risk-adjusted returns; net APR; fee yield; degree; native-quoted centrality; and the centrality-by-role interaction."
     },
     {
       "id": "v1_forced_vehicle_token_level",

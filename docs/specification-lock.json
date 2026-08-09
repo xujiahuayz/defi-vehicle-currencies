@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "locked_at": "2026-08-07",
-  "lock_hash": "f325e4f0c49bc891c7b4b5e68e94fbcea69e62cf0c75614570ba6f661a680617",
+  "lock_hash": "8179dc877597e79a2cb85ca65c3e9dc5fa85600ca11c593744ee20093cc38da1",
   "paper_scope": "The making and displacement of vehicle-currency roles in Ethereum decentralised exchange",
   "global_rules": {
     "asset_identity": "canonical contract address; symbols are labels only",
@@ -10,7 +10,7 @@
     "primary_vehicle_choice_unit": "one exact two-leg intermediary route, which has one vehicle and one vote",
     "vehicle_status": "binary: an asset has vehicle status on a route if it is used as a non-endpoint intermediary",
     "vehicle_dominance": "continuous: the degree of vehicle use, measured by intermediary share and normalized by endpoint-demand share as the excess-use ratio",
-    "cost_domination": "a route-level comparison in which an available alternative returns more at the same reconstructed state; never call this dominance without the cost qualifier",
+    "cost_domination": "a route-level comparison in which an available alternative returns more at the same reconstructed pre-trade state and exact input size after fees and gas; never call this dominance without the cost qualifier",
     "abstract_question": "what makes a vehicle currency dominant, not what makes an asset a vehicle currency",
     "round_trips": "canonical endpoint round trips are excluded from economic-route numerators and denominators",
     "primary_weighting": "episode count",
@@ -180,12 +180,12 @@
       "status": "enter_fgh_companion",
       "role": "companion distributional finding",
       "estimand": "fee revenue minus LVR minus LP gas by pool asset role",
-      "sample": "screened Uniswap V2 pool-days with at least 10000 dollars of capital; top-400 Uniswap V3 pools as directional replication",
+      "sample": "screened Uniswap V2 pool-days with at least 10000 dollars of exact-lag reserve capital reconciled to independently priced reserves; Uniswap V3 is excluded until event-replayed capital and path-integrated LVR both pass",
       "unit": "pool-day descriptives and pool-month inference",
-      "dependent_variable": "risk-adjusted net return and indicator that fees exceed LVR plus gas",
-      "transformation": "annualised rates and fee-to-LVR ratio",
-      "outlier_treatment": "anchored-leg price within four times its centered 91-day median; stable price between 0.5 and 2 dollars; no hourly pool-price move above 100 times; capital at least 10000 dollars",
-      "inference": "month fixed effects with standard errors clustered by pool; joint role tests",
+      "dependent_variable": "V2 risk-adjusted net return and indicator that fees exceed LVR plus gas",
+      "transformation": "V2 annualised capital returns and fee-to-LVR ratio, with contemporaneous pool value as the LVR scale and exact prior-calendar capital as the return denominator",
+      "outlier_treatment": "anchored-leg price within four times its centered 91-day median; stable price between 0.5 and 2 dollars; no hourly pool-price move above 100 times; V2 reported reserve capital reconciled within three times independently priced reserves and exact-lag capital at least 10000 dollars",
+      "inference": "V2 month fixed effects with standard errors clustered by pool and joint role tests; no V3 output or inference",
       "mandatory_alternatives": {
         "lvr_sampling": [
           "hourly realised variance",
@@ -199,27 +199,27 @@
         ],
         "weighting": [
           "equal pool-day",
-          "capital weighted"
+          "V2 capital weighted"
         ],
         "venue": [
-          "Uniswap V2 full screened cross-section",
-          "Uniswap V3 top-400 directional replication"
+          "Uniswap V2 full screened cross-section with reserve-capital returns"
         ],
         "temporal_bridge": [
           "mean daily screened V2 capital and capital share by annual pool role",
           "annual V2 net return and paying share by pool role",
-          "V3 virtual capital excluded from deposited-capital migration claims"
+          "V3 provider TVL failed the independent historical-balance audit and is excluded",
+          "V3 dollar supply flows remain unnormalized until event-replayed capital passes"
         ]
       },
       "falsifier": "native-other net return becomes nonnegative under open-to-close LVR or role differences disappear in clustered pool-month tests; rotation-mechanism status additionally requires stable-linked capital or returns to move before stable vehicle share",
       "admissible_interpretation": "trading revenue does not compensate native-long-tail LPs for measured adverse selection and gas; the direction survives the conservative LVR bound; the current temporal bridge rejects this result as the explanation for vehicle rotation",
-      "forbidden_interpretation": "all LP compensation is negative, token incentives are absent, V2 and selected V3 levels are comparable, v3 virtual reserves measure deposited-capital migration, or rent incidence explains the stable vehicle transition",
+      "forbidden_interpretation": "all LP compensation is negative, token incentives are absent, V2 and V3 return levels are comparable, provider TVL or local virtual depth is V3 deposited capital, one-tick V3 LVR identifies dollar net flow, or rent incidence explains the stable vehicle transition",
       "inputs": [
+        "data/processed/pool_capital_daily.parquet",
         "data/processed/daily_gas_price_graph.parquet",
         "data/processed/v2_token_price_daily.parquet",
         "data/processed/vehicle_centrality_dense.parquet",
-        "data/processed/rent_incidence_v2_pool_day.parquet",
-        "data/processed/rent_incidence_v3_pool_day.parquet"
+        "data/processed/rent_incidence_v2_pool_day.parquet"
       ],
       "outputs": [
         "output/empirical/rent_incidence"
@@ -238,7 +238,7 @@
         30,
         120
       ],
-      "blocking_measurement": "repair chosen-route reproduction, construct multi-venue strict transaction-state candidate costs on the full daily calendar, and build symmetric incumbent-challenger events",
+      "blocking_measurement": "lock the full daily multi-venue transaction-state candidate-cost frontier, build symmetric incumbent-challenger events, and estimate exact 1-, 7-, 30-, and 120-calendar-day responses",
       "forbidden_interpretation": "the V2-family level incidence identifies persistence or hysteresis"
     },
     {

@@ -266,9 +266,8 @@ NOTATION_DEFINITIONS: tuple[NotationDefinition, ...] = (
         notation=r"$\mathcal L_t,\ \mathcal L_{k,t},\ m_p$",
         unit="Set of pools / token count",
         definition=(
-            r"$\mathcal L_t$ contains valid Uniswap V3 daily-snapshot pools with exact token "
-            r"contracts identified in the persisted V3 swap archive and "
-            r"$0<\mathrm{TVL}_{p,t}\le 10$ billion USD. "
+            r"$\mathcal L_t$ contains pools from protocols whose deposited-capital contract "
+            r"is admitted, with exact token contracts and $0<\mathrm{Capital}_{p,t}\le 10$ billion USD. "
             r"$\mathcal L_{k,t}\subseteq\mathcal L_t$ restricts that set to pools with "
             r"candidate $k$ on one side. $m_p$ is the number of pool tokens in $\mathcal K$, "
             r"so $m_p\in\{1,2\}$."
@@ -276,12 +275,12 @@ NOTATION_DEFINITIONS: tuple[NotationDefinition, ...] = (
     ),
     NotationDefinition(
         group="Route and liquidity aggregates",
-        notation=r"$\mathrm{TVL}_{p,t},\ L_{k,t}$",
+        notation=r"$\mathrm{Capital}_{p,t},\ C_{k,t}$",
         unit="USD",
         definition=(
-            r"$\mathrm{TVL}_{p,t}$ is pool $p$'s day-$t$ USD TVL from the V3 daily snapshot. "
-            r"$L_{k,t}=\sum_{p\in\mathcal L_{k,t}}\mathrm{TVL}_{p,t}/m_p$; a one-candidate "
-            r"pool contributes all TVL to that candidate and a two-candidate pool contributes "
+            r"$\mathrm{Capital}_{p,t}$ is pool $p$'s validated day-$t$ accounting capital under "
+            r"its protocol contract. $C_{k,t}=\sum_{p\in\mathcal L_{k,t}}\mathrm{Capital}_{p,t}/m_p$; "
+            r"a one-candidate pool contributes all capital to that candidate and a two-candidate pool contributes "
             r"one half to each."
         ),
     ),
@@ -1008,85 +1007,86 @@ VARIABLE_SPECS: tuple[VariableSpec, ...] = (
         summary_level="day",
     ),
     VariableSpec(
-        group="Liquidity measures",
-        name="Vehicle-linked liquidity",
-        column="vehicle_linked_liquidity_usd",
-        notation=r"$L_{k,t}$",
-        formula=r"$\displaystyle\sum_{p\in\mathcal L_{k,t}}\frac{\mathrm{TVL}_{p,t}}{m_p}$",
+        group="LP capital measures",
+        name="Vehicle-linked deposited capital",
+        column="vehicle_linked_capital_usd",
+        notation=r"$C_{k,t}$",
+        formula=r"$\displaystyle\sum_{p\in\mathcal L_{k,t}}\frac{\mathrm{Capital}_{p,t}}{m_p}$",
         unit="USD",
         construction=(
-            r"Candidate $k$'s allocated share of valid Uniswap V3 pool TVL: full TVL when $k$ "
-            r"is the pool's only candidate token and one half when both pool tokens are candidates."
+            r"Candidate $k$'s allocated share of validated accounting capital across every admitted "
+            r"protocol: full capital when $k$ is the pool's only candidate token and one half when "
+            r"both pool tokens are candidates. This is deposited capital, not marginal depth."
         ),
-        source="data/exhibits/lp_concentration.parquet",
-        used_for="Liquidity concentration, persistence, and stickiness tests.",
+        source="data/exhibits/lp_capital_concentration.parquet",
+        used_for="LP-capital allocation, persistence, and stickiness tests.",
         include_in_summary=True,
         summary_panel="Liquidity and route-cost opportunity",
         summary_unit="USD billions",
         summary_scale=1.0 / 1_000_000_000.0,
     ),
     VariableSpec(
-        group="Liquidity measures",
-        name="LP concentration",
-        column="lp_concentration",
-        notation=r"$\mathrm{LPConc}_{k,t}$",
-        formula=r"$\displaystyle\frac{L_{k,t}}{\sum_{\ell\in\mathcal K}L_{\ell,t}}$",
+        group="LP capital measures",
+        name="LP capital share",
+        column="lp_capital_share",
+        notation=r"$\mathrm{LPCapitalShare}_{k,t}$",
+        formula=r"$\displaystyle\frac{C_{k,t}}{\sum_{\ell\in\mathcal K}C_{\ell,t}}$",
         unit="Fraction (0--1)",
-        construction=r"Candidate $k$'s share of total vehicle-linked liquidity on day $t$.",
-        source="data/exhibits/lp_concentration.parquet",
-        used_for="Liquidity persistence and predictability regressions.",
+        construction=r"Candidate $k$'s share of total candidate-linked deposited capital on day $t$.",
+        source="data/exhibits/lp_capital_concentration.parquet",
+        used_for="LP-capital persistence and predictability regressions.",
         include_in_summary=True,
         summary_panel="Liquidity and route-cost opportunity",
         summary_unit="Percent",
         summary_scale=100.0,
     ),
     VariableSpec(
-        group="Liquidity measures",
-        name="Log vehicle-linked liquidity",
-        column="log_vehicle_linked_liquidity",
-        notation=r"$\mathrm{LogVehicleLiquidity}_{k,t}$",
-        formula=r"$\ln(1+L_{k,t})$",
+        group="LP capital measures",
+        name="Log vehicle-linked deposited capital",
+        column="log_vehicle_linked_capital",
+        notation=r"$\mathrm{LogVehicleCapital}_{k,t}$",
+        formula=r"$\ln(1+C_{k,t})$",
         unit="Natural-log points",
-        construction=r"Natural log of one plus $L_{k,t}$ measured in USD.",
-        source="data/exhibits/lp_concentration.parquet",
-        used_for="Liquidity-level regressions.",
+        construction=r"Natural log of one plus $C_{k,t}$ measured in USD.",
+        source="data/exhibits/lp_capital_concentration.parquet",
+        used_for="LP-capital-level regressions.",
     ),
     VariableSpec(
-        group="Liquidity commonality measures",
-        name="Leave-one-out vehicle liquidity factor",
-        column="vehicle_factor_loo",
-        notation=r"$\mathrm{VehicleLiquidityFactor}_{p,k,t}$",
+        group="LP capital commonality measures",
+        name="Leave-one-out vehicle capital factor",
+        column="vehicle_capital_factor_loo",
+        notation=r"$\mathrm{VehicleCapitalFactor}_{p,k,t}$",
         formula=(
             r"$\displaystyle\frac{\sum_{p'\in\mathcal L_{k,t}\setminus\{p\}}"
-            r"\Delta_1\ln(\mathrm{TVL}_{p',t})}"
+            r"\Delta_1\ln(\mathrm{Capital}_{p',t})}"
             r"{|\mathcal L_{k,t}\setminus\{p\}|}$"
         ),
         unit="Daily log-change points",
         construction=(
-            r"Leave-one-out mean daily log TVL change among other valid pools linked to "
+            r"Leave-one-out mean daily log deposited-capital change among other valid pools linked to "
             r"candidate $k$; requires at least three other pools."
         ),
-        source="data/empirical/common_liquidity_pool_panel.parquet",
-        used_for="RQ2 common-liquidity mechanism test.",
+        source="data/empirical/common_pool_capital_panel.parquet",
+        used_for="RQ2 common-capital mechanism test.",
         in_observations_table=False,
     ),
     VariableSpec(
-        group="Liquidity commonality measures",
-        name="Leave-one-out market liquidity factor",
-        column="market_factor_loo",
-        notation=r"$\mathrm{MarketLiquidityFactor}_{p,t}$",
+        group="LP capital commonality measures",
+        name="Leave-one-out market capital factor",
+        column="market_capital_factor_loo",
+        notation=r"$\mathrm{MarketCapitalFactor}_{p,t}$",
         formula=(
             r"$\displaystyle\frac{\sum_{p'\in\mathcal L_t\setminus\{p\}}"
-            r"\Delta_1\ln(\mathrm{TVL}_{p',t})}"
+            r"\Delta_1\ln(\mathrm{Capital}_{p',t})}"
             r"{|\mathcal L_t\setminus\{p\}|}$"
         ),
         unit="Daily log-change points",
         construction=(
-            r"Leave-one-out mean daily log TVL change across all other valid pools in "
+            r"Leave-one-out mean daily log deposited-capital change across all other valid pools in "
             r"$\mathcal L_t$; market-wide control for the vehicle factor."
         ),
-        source="data/empirical/common_liquidity_pool_panel.parquet",
-        used_for="RQ2 common-liquidity mechanism test.",
+        source="data/empirical/common_pool_capital_panel.parquet",
+        used_for="RQ2 common-capital mechanism test.",
         in_observations_table=False,
     ),
     VariableSpec(
@@ -1281,9 +1281,9 @@ VARIABLE_SPECS: tuple[VariableSpec, ...] = (
     ),
     VariableSpec(
         group="Route-cost opportunity measures",
-        name="Pair-level direct depth",
-        column="pair_direct_depth",
-        notation=r"$\mathrm{DirectDepth}_{i,o,q,t}$",
+        name="Pair-level direct quote quality",
+        column="pair_direct_quote_quality",
+        notation=r"$\mathrm{DirectQuoteQuality}_{i,o,q,t}$",
         formula=r"$\displaystyle\frac{O^D_{i,o,q,t}}{q}$",
         unit="Output USD per input USD",
         construction=(
@@ -1296,9 +1296,9 @@ VARIABLE_SPECS: tuple[VariableSpec, ...] = (
     ),
     VariableSpec(
         group="Route-cost opportunity measures",
-        name="Pair-candidate indirect depth",
-        column="pair_indirect_depth",
-        notation=r"$\mathrm{IndirectDepth}_{i,o,k,q,t}$",
+        name="Pair-candidate indirect quote quality",
+        column="pair_indirect_quote_quality",
+        notation=r"$\mathrm{IndirectQuoteQuality}_{i,o,k,q,t}$",
         formula=r"$\displaystyle\frac{O^I_{i,o,k,q,t}}{q}$",
         unit="Output USD per input USD",
         construction=(
@@ -1503,9 +1503,9 @@ VARIABLE_SPECS: tuple[VariableSpec, ...] = (
     ),
     VariableSpec(
         group="Route-cost opportunity measures",
-        name="Direct depth",
-        column="direct_depth_median",
-        notation=r"$\mathrm{DirectDepth}_{k,t,q}$",
+        name="Direct quote quality",
+        column="direct_quote_quality_median",
+        notation=r"$\mathrm{DirectQuoteQuality}_{k,t,q}$",
         formula=r"$\displaystyle\mathrm{median}_{\mathcal D_{k,t,q}}\left(O^D_{i,o,q,t}/q\right)$",
         unit="Output USD per input USD",
         construction=(
@@ -1735,16 +1735,18 @@ VARIABLE_SPECS: tuple[VariableSpec, ...] = (
     ),
     VariableSpec(
         group="Execution-architecture measures",
-        name="Pool liquidity concentration",
-        column="pool_liquidity_concentration",
-        notation=r"$\mathrm{LiquidityConcentration}_{p,t,b}$",
-        formula=r"$\displaystyle\frac{\mathrm{BandDepth}_{p,t,b}}{\mathrm{TVL}_{p,t}}$",
-        unit="USD band depth per USD TVL",
+        name="Pool band-depth capital efficiency",
+        column="pool_band_depth_capital_efficiency",
+        notation=r"$\eta^{\mathrm{Band}}_{p,t,b,d}$",
+        formula=r"$\displaystyle\frac{\mathrm{BandDepth}_{p,t,b,d}}{C_{p,t}}$",
+        unit="USD directional band depth per USD validated deposited capital",
         construction=(
-            r"Executable depth inside the symmetric $b$ price band divided by pool TVL. The "
-            r"primary band is $b=0.02$; $b\in\{0.01,0.10\}$ is retained for robustness."
+            r"Fee-inclusive executable dollar depth in direction $d$ inside the symmetric "
+            r"$b$ price band divided by contemporaneous validated deposited capital. The "
+            r"primary band is $b=0.02$; $b\in\{0.01,0.10\}$ is retained for robustness. "
+            r"The row retains direction, band, invariant family and state generation."
         ),
-        source="to be constructed from historical V3 pool states and daily TVL",
+        source="withheld until a protocol-family band-depth adapter and validated capital stock both pass",
         used_for="RQ4 capital-efficiency and network-concentration mechanism tests.",
         in_observations_table=False,
     ),
@@ -1866,16 +1868,16 @@ VARIABLE_SPECS: tuple[VariableSpec, ...] = (
     ),
     VariableSpec(
         group="V4 settlement implementation measures",
-        name="Vehicle liquidity turnover",
-        column="vehicle_liquidity_turnover",
+        name="Vehicle capital turnover",
+        column="vehicle_capital_turnover",
         notation=r"$\mathrm{VehicleTurnover}_{k,t}$",
-        formula=r"$\displaystyle\frac{\mathrm{IVol}_{k,t}}{L_{k,t}}$",
-        unit="USD vehicle volume per USD liquidity per day",
+        formula=r"$\displaystyle\frac{\mathrm{IVol}_{k,t}}{C_{k,t}}$",
+        unit="USD vehicle volume per USD deposited capital per day",
         construction=(
             r"Realized indirect-route volume through candidate $k$ divided by its allocated "
-            r"vehicle-linked liquidity, defined for positive $L_{k,t}$."
+            r"vehicle-linked deposited capital, defined for positive $C_{k,t}$."
         ),
-        source="to be constructed from route volume and vehicle-linked liquidity",
+        source="to be constructed from route volume and vehicle-linked deposited capital",
         used_for="RQ5 test of whether net settlement changes required capital per unit of vehicle use.",
         in_observations_table=False,
     ),

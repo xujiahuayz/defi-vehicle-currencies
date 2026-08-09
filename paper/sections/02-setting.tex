@@ -195,7 +195,7 @@ q^{\mathrm{cp}}_{p}(a \to b,\, x) \;=\; \frac{(1-\phi_{p}) \, x \, R_{b,p,t}}{R_
 \end{equation}
 with the swap fee $\phi_{p}$ fixed at 30 basis points on both constant-product venues. One pricing routine serves both of them, since they run the same invariant and the same event schema. \citet{LeharParlour2024Uniswap} study liquidity provision on exactly this invariant.
 
-Concentrated-liquidity pools distribute reserves over a grid of ticks, so the quote walks the tick map with the exact swap step the contract implements \citep{AdamsZinsmeisterRobinson2021UniswapV3}. Index the pool's two tokens as $0$ and $1$, let $P$ be the price of token $0$ in units of token $1$, and let $L$ be the liquidity in range. The token amounts spanned between two prices, and the tick grid the ranges are cut on, are
+Concentrated-liquidity pools distribute reserves over a grid of ticks, so a quote walks the tick map using the protocol's continuous swap identities \citep{AdamsZinsmeisterRobinson2021UniswapV3}. The implementation applies those identities in Q64.96 integer arithmetic with direction-specific rounding; Appendix~\ref{app:quoters} records the port and its realised-swap validation. Index the pool's two tokens as $0$ and $1$, let $P$ be the price of token $0$ in units of token $1$, and let $L$ be the liquidity in range. The token amounts spanned between two prices, and the tick grid the ranges are cut on, are
 \begin{equation}
 \label{eq:clamounts}
 \Delta_{0} \;=\; L \left( \frac{1}{\sqrt{P_{\alpha}}} - \frac{1}{\sqrt{P_{\beta}}} \right),
@@ -204,7 +204,7 @@ Concentrated-liquidity pools distribute reserves over a grid of ticks, so the qu
 \qquad
 \sqrt{P(i)} \;=\; 1.0001^{\,i/2},
 \end{equation}
-and one swap step of net input $x$ moves the price within the current range by
+and one swap step of gross input $x$ moves the price within the current range by
 \begin{align}
 \label{eq:clstep}
 \sqrt{P}' &\;=\; \sqrt{P} + \frac{(1-\phi_{p}) \, x}{L}

@@ -4,6 +4,8 @@
 from __future__ import annotations
 
 import argparse
+import json
+import os
 from concurrent.futures import as_completed
 from dataclasses import asdict
 from pathlib import Path
@@ -19,12 +21,35 @@ from ddvc.data_release import (
 from ddvc.fetch.sources import get_source
 from ddvc.paths import DATA_DIR, OUTPUT_DIR, RAW_MARKET_DATA_LOCK
 from ddvc.provenance import stamp
-from ddvc.runtime import bounded_workers, exclusive_job, interruptible_process_pool
+from ddvc.runtime import (
+    atomic_output,
+    bounded_workers,
+    exclusive_job,
+    interruptible_process_pool,
+    interruptible_thread_pool,
+)
 from ddvc.state_data import (
+    CP_COLUMNS,
+    CP_STATE_GENERATION,
     CODE_SOURCES,
     FAMILY_STREAMS,
+    MULTI_ASSET_COLUMNS,
+    MULTI_ASSET_STATE_GENERATIONS,
     QUALITY_COLUMNS,
+    SCHEMA_VERSION,
     STATE_ROOT,
+    StatePartitionQuality,
+    balancer_pool_family,
+    cp_partition_path,
+    cp_quality_path,
+    multi_asset_partition_path,
+    multi_asset_quality_path,
+    normalise_cp_partition,
+    normalise_multi_asset_partition,
+    normalise_tick_partition,
+    partition_input_fingerprint,
+    pool_semantics,
+    raw_stream_path,
     read_cp_quality,
     read_multi_asset_quality,
     read_tick_quality,
@@ -32,6 +57,7 @@ from ddvc.state_data import (
     write_multi_asset_partition,
     write_tick_partition,
     tick_partition_path,
+    tick_quality_path,
 )
 from ddvc.tables import write_exhibit, write_panel
 
@@ -40,6 +66,237 @@ RAW = DATA_DIR / "raw" / "thegraph"
 QUALITY_PANEL = DATA_DIR / "processed" / "market_state_quality.parquet"
 QUALITY_EXHIBIT = OUTPUT_DIR / "exhibits" / "market_state_quality.jsonl"
 LOCK = DATA_DIR / "processed" / ".market_state.lock"
+
+
+def _current_partition_fingerprint(family: str, venue: str, day: str) -> str:
+    inputs = [
+        raw_stream_path(RAW, venue, stream, day)
+        for stream, _kind, _sign in FAMILY_STREAMS[family][venue]
+        if raw_stream_path(RAW, venue, stream, day).exists()
+    ]
+    return partition_input_fingerprint(inputs)
+
+
+def migrate_v1_partition(
+    source_root: Path,
+    family: str,
+    venue: str,
+    day: str,
+    target_root: Path = STATE_ROOT,
+) -> StatePartitionQuality:
+    """Migrate an additive v1 state schema without reinterpreting economic payloads."""
+
+    if family not in {"constant_product", "multi_asset"}:
+        raise ValueError(f"no v1 migration for state family {family}")
+    source_panel = source_root / family / venue / f"{day}.parquet"
+    source_marker = source_panel.with_suffix(".quality.json")
+    if not source_panel.exists() or not source_marker.exists():
+        raise FileNotFoundError(f"v1 source partition missing for {family}/{venue}/{day}")
+    payload = json.loads(source_marker.read_text(encoding="utf-8"))
+    if payload.get("schema_version") != 1:
+        raise ValueError(f"migration source is not schema v1: {family}/{venue}/{day}")
+    current_fingerprint = _current_partition_fingerprint(family, venue, day)
+    if payload.get("input_fingerprint") != current_fingerprint:
+        raise ValueError(f"v1 source is stale against raw input: {family}/{venue}/{day}")
+    frame = pd.read_parquet(source_panel)
+    if not frame.empty and set(frame["schema_version"]) != {1}:
+        raise ValueError(f"v1 source rows have mixed schema versions: {family}/{venue}/{day}")
+    frame["schema_version"] = SCHEMA_VERSION
+    if family == "constant_product":
+        pool_family = "full_range_constant_product"
+        invariant_family, quote_ready = pool_semantics(
+            venue, pool_family, CP_STATE_GENERATION
+        )
+        if not quote_ready:
+            raise ValueError(f"constant-product quote contract is not ready: {venue}")
+        frame["pool_family"] = pool_family
+        frame["invariant_family"] = invariant_family
+        frame["state_generation"] = CP_STATE_GENERATION
+        quote_record = frame["record_type"].isin(["snapshot", "swap"])
+        frame["quote_unsupported_reason"] = None
+        frame.loc[quote_record & ~frame["quote_supported"], "quote_unsupported_reason"] = (
+            "row_state_not_quotable"
+        )
+        columns = CP_COLUMNS
+        panel_path = cp_partition_path(venue, day, root=target_root)
+        marker_path = cp_quality_path(venue, day, root=target_root)
+    else:
+        frame = frame.rename(columns={"pool_type": "provider_pool_type"})
+        frame["pool_family"] = frame["provider_pool_type"].map(
+            lambda value: (
+                "ng_or_unclassified"
+                if venue == "curve"
+                else balancer_pool_family(value)
+            )
+        )
+        generation = MULTI_ASSET_STATE_GENERATIONS[venue]
+        frame["invariant_family"] = frame["pool_family"].map(
+            lambda pool_family: pool_semantics(venue, str(pool_family), generation)[0]
+        )
+        frame["state_generation"] = generation
+        capability = frame["pool_family"].map(
+            lambda pool_family: pool_semantics(venue, str(pool_family), generation)[1]
+        )
+        old_quote = frame["quote_supported"].fillna(False).astype(bool)
+        frame["quote_supported"] = old_quote & capability
+        quote_record = frame["record_type"].isin(["snapshot_token", "swap"])
+        frame["quote_unsupported_reason"] = None
+        frame.loc[quote_record & ~capability, "quote_unsupported_reason"] = (
+            "pool_family_or_state_generation_not_admitted"
+        )
+        frame.loc[quote_record & capability & ~old_quote, "quote_unsupported_reason"] = (
+            "row_state_not_quotable"
+        )
+        columns = MULTI_ASSET_COLUMNS
+        panel_path = multi_asset_partition_path(venue, day, root=target_root)
+        marker_path = multi_asset_quality_path(venue, day, root=target_root)
+    frame = frame.reindex(columns=columns)
+    payload["schema_version"] = SCHEMA_VERSION
+    payload["quote_supported_swaps"] = int(
+        (frame["record_type"].eq("swap") & frame["quote_supported"]).sum()
+    )
+    quality = StatePartitionQuality(**payload)
+    with atomic_output(panel_path) as temporary:
+        frame.to_parquet(temporary, index=False)
+    with atomic_output(marker_path) as temporary:
+        temporary.write_text(
+            json.dumps(asdict(quality), allow_nan=False, sort_keys=True) + "\n",
+            encoding="utf-8",
+        )
+    return quality
+
+
+def validate_migration_sample(
+    family: str,
+    venue: str,
+    day: str,
+    target_root: Path = STATE_ROOT,
+) -> None:
+    """Require migrated fields and quality to equal a fresh raw normalization exactly."""
+
+    if family == "constant_product":
+        expected, expected_quality = normalise_cp_partition(RAW, venue, day)
+        migrated = pd.read_parquet(cp_partition_path(venue, day, root=target_root))
+    else:
+        expected, expected_quality = normalise_multi_asset_partition(RAW, venue, day)
+        migrated = pd.read_parquet(multi_asset_partition_path(venue, day, root=target_root))
+    pd.testing.assert_frame_equal(
+        migrated.reset_index(drop=True),
+        expected.reset_index(drop=True),
+        check_dtype=False,
+        check_exact=True,
+    )
+    marker = json.loads(
+        (
+            cp_quality_path(venue, day, root=target_root)
+            if family == "constant_product"
+            else multi_asset_quality_path(venue, day, root=target_root)
+        ).read_text(encoding="utf-8")
+    )
+    if marker != asdict(expected_quality):
+        raise ValueError(f"migrated quality differs from raw normalization: {family}/{venue}/{day}")
+
+
+def _state_paths(
+    root: Path,
+    family: str,
+    venue: str,
+    day: str,
+) -> tuple[Path, Path]:
+    if family == "tick":
+        return tick_partition_path(venue, day, root=root), tick_quality_path(venue, day, root=root)
+    if family == "constant_product":
+        return cp_partition_path(venue, day, root=root), cp_quality_path(venue, day, root=root)
+    return multi_asset_partition_path(venue, day, root=root), multi_asset_quality_path(venue, day, root=root)
+
+
+def _atomic_hardlink(source: Path, target: Path) -> None:
+    """Publish one immutable generated file without duplicating its data blocks."""
+
+    target.parent.mkdir(parents=True, exist_ok=True)
+    temporary = target.with_name(f".{target.name}.{os.getpid()}.tmp")
+    temporary.unlink(missing_ok=True)
+    try:
+        os.link(source, temporary)
+        os.replace(temporary, target)
+    finally:
+        temporary.unlink(missing_ok=True)
+
+
+def rekey_current_partition(
+    source_root: Path,
+    family: str,
+    venue: str,
+    day: str,
+    target_root: Path = STATE_ROOT,
+) -> StatePartitionQuality:
+    """Hardlink one schema-current partition after proving its raw input is current."""
+
+    source_panel, source_marker = _state_paths(source_root, family, venue, day)
+    target_panel, target_marker = _state_paths(target_root, family, venue, day)
+    if not source_panel.is_file() or not source_marker.is_file():
+        raise FileNotFoundError(f"rekey source missing for {family}/{venue}/{day}")
+    payload = json.loads(source_marker.read_text(encoding="utf-8"))
+    if payload.get("schema_version") != SCHEMA_VERSION:
+        raise ValueError(f"rekey source is not schema v{SCHEMA_VERSION}: {family}/{venue}/{day}")
+    if not payload.get("passed"):
+        raise ValueError(f"rekey source did not pass its partition gate: {family}/{venue}/{day}")
+    current_fingerprint = _current_partition_fingerprint(family, venue, day)
+    if payload.get("input_fingerprint") != current_fingerprint:
+        raise ValueError(f"rekey source is stale against raw input: {family}/{venue}/{day}")
+    quality = StatePartitionQuality(**payload)
+    _atomic_hardlink(source_panel, target_panel)
+    _atomic_hardlink(source_marker, target_marker)
+    return quality
+
+
+def rekey_source_current(
+    source_root: Path,
+    family: str,
+    venue: str,
+    day: str,
+) -> bool:
+    """Return whether a same-schema source partition still matches its raw inputs."""
+
+    panel, marker = _state_paths(source_root, family, venue, day)
+    if not panel.is_file() or not marker.is_file():
+        return False
+    try:
+        payload = json.loads(marker.read_text(encoding="utf-8"))
+    except (OSError, json.JSONDecodeError):
+        return False
+    return bool(
+        payload.get("schema_version") == SCHEMA_VERSION
+        and payload.get("passed")
+        and payload.get("input_fingerprint")
+        == _current_partition_fingerprint(family, venue, day)
+    )
+
+
+def validate_rekey_sample(
+    family: str,
+    venue: str,
+    day: str,
+    target_root: Path = STATE_ROOT,
+) -> None:
+    """Require a rekeyed partition to equal a fresh normalization byte-for-value."""
+
+    normalizers = {
+        "tick": normalise_tick_partition,
+        "constant_product": normalise_cp_partition,
+        "multi_asset": normalise_multi_asset_partition,
+    }
+    expected, expected_quality = normalizers[family](RAW, venue, day)
+    panel, marker = _state_paths(target_root, family, venue, day)
+    actual = pd.read_parquet(panel)
+    pd.testing.assert_frame_equal(
+        actual.reset_index(drop=True),
+        expected.reset_index(drop=True),
+        check_dtype=False,
+        check_exact=True,
+    )
+    if json.loads(marker.read_text(encoding="utf-8")) != asdict(expected_quality):
+        raise ValueError(f"rekeyed quality differs from raw normalization: {family}/{venue}/{day}")
 
 
 def selected_days(
@@ -61,6 +318,8 @@ def build_family(
     end: str | None,
     workers: int,
     force: bool,
+    migrate_from: Path | None,
+    rekey_from: Path | None = None,
 ) -> list[dict[str, object]]:
     readers = {
         "tick": read_tick_quality,
@@ -74,13 +333,114 @@ def build_family(
     }
     jobs: list[tuple[str, str]] = []
     qualities: list[dict[str, object]] = []
+    selected: list[tuple[str, str]] = []
     for venue in venues:
         for day in selected_days(venue, start, end):
+            selected.append((venue, day))
             cached = None if force else readers[family](RAW, venue, day)
             if cached is None:
                 jobs.append((venue, day))
             else:
                 qualities.append(asdict(cached))
+    migration_perimeter: list[tuple[str, str]] = []
+    if rekey_from is not None:
+        rekey_perimeter = [
+            (venue, day)
+            for venue, day in selected
+            if rekey_source_current(rekey_from, family, venue, day)
+        ]
+        rekey_keys = set(rekey_perimeter)
+        rekey_jobs = [job for job in jobs if job in rekey_keys]
+        if rekey_jobs:
+            print(
+                f"rekeying {len(rekey_jobs):,} schema-current {family} partitions "
+                f"with {workers} workers",
+                flush=True,
+            )
+            with interruptible_thread_pool(max_workers=workers) as pool:
+                futures = {
+                    pool.submit(
+                        rekey_current_partition,
+                        rekey_from,
+                        family,
+                        venue,
+                        day,
+                    ): (venue, day)
+                    for venue, day in rekey_jobs
+                }
+                for index, future in enumerate(as_completed(futures), 1):
+                    qualities.append(asdict(future.result()))
+                    if index % 250 == 0 or index == len(futures):
+                        print(f"  {family} rekey [{index:,}/{len(futures):,}]", flush=True)
+            jobs = [job for job in jobs if job not in set(rekey_jobs)]
+        for venue in sorted({venue for venue, _day in rekey_perimeter}):
+            venue_days = sorted(day for item_venue, day in rekey_perimeter if item_venue == venue)
+            sample = sorted({venue_days[0], venue_days[len(venue_days) // 2], venue_days[-1]})
+            for day in sample:
+                validate_rekey_sample(family, venue, day)
+            print(
+                f"  {family}/{venue} rekey validation: {len(sample)} raw-normalized days exact",
+                flush=True,
+            )
+    if migrate_from is not None and family in {"constant_product", "multi_asset"}:
+        migration_perimeter = [
+            (venue, day)
+            for venue, day in selected
+            if (migrate_from / family / venue / f"{day}.parquet").exists()
+            and (migrate_from / family / venue / f"{day}.quality.json").exists()
+        ]
+        migration_keys = set(migration_perimeter)
+        migration_jobs = [
+            (venue, day)
+            for venue, day in jobs
+            if (venue, day) in migration_keys
+        ]
+        if migration_jobs:
+            print(
+                f"migrating {len(migration_jobs):,} canonical {family} v1 partitions "
+                f"with {workers} workers",
+                flush=True,
+            )
+            with interruptible_process_pool(workers) as pool:
+                futures = {
+                    pool.submit(
+                        migrate_v1_partition,
+                        migrate_from,
+                        family,
+                        venue,
+                        day,
+                    ): (venue, day)
+                    for venue, day in migration_jobs
+                }
+                for index, future in enumerate(as_completed(futures), 1):
+                    venue, day = futures[future]
+                    qualities.append(asdict(future.result()))
+                    if index % 250 == 0 or index == len(futures):
+                        print(
+                            f"  {family} migration [{index:,}/{len(futures):,}]",
+                            flush=True,
+                        )
+            migration_set = set(migration_jobs)
+            jobs = [job for job in jobs if job not in migration_set]
+        for venue in sorted({venue for venue, _day in migration_perimeter}):
+            venue_days = sorted(
+                day
+                for migration_venue, day in migration_perimeter
+                if migration_venue == venue
+            )
+            sample = sorted(
+                {
+                    venue_days[0],
+                    venue_days[len(venue_days) // 2],
+                    venue_days[-1],
+                }
+            )
+            for day in sample:
+                validate_migration_sample(family, venue, day)
+            print(
+                f"  {family}/{venue} migration validation: {len(sample)} raw-normalized days exact",
+                flush=True,
+            )
     if jobs:
         print(f"building {len(jobs):,} canonical {family} partitions with {workers} workers", flush=True)
         with interruptible_process_pool(workers) as pool:
@@ -103,7 +463,19 @@ def main() -> int:
     parser.add_argument("--end", default=RESEARCH_SAMPLE_END)
     parser.add_argument("--workers", type=int, default=8)
     parser.add_argument("--force", action="store_true")
+    parser.add_argument(
+        "--migrate-from",
+        type=Path,
+        help="schema-v1 state root for exact additive CP/multi-asset migration",
+    )
+    parser.add_argument(
+        "--rekey-from",
+        type=Path,
+        help="schema-current state root whose exact partitions may be hardlinked under the new engine key",
+    )
     args = parser.parse_args()
+    if args.migrate_from and args.rekey_from:
+        parser.error("--migrate-from and --rekey-from are mutually exclusive")
     if args.family == "all" and args.venue:
         parser.error("--venue requires one explicit --family")
     families = list(FAMILY_STREAMS) if args.family == "all" else [args.family]
@@ -133,6 +505,8 @@ def main() -> int:
                         end=args.end,
                         workers=bounded_workers(args.workers, maximum=10),
                         force=args.force,
+                        migrate_from=args.migrate_from,
+                        rekey_from=args.rekey_from,
                     )
                 )
             quality = pd.DataFrame(rows, columns=QUALITY_COLUMNS).sort_values(

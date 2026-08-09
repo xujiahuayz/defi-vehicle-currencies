@@ -5,7 +5,7 @@ from __future__ import annotations
 
 import pandas as pd
 
-from ddvc.paths import DATA_DIR
+from ddvc.paths import DATA_DIR, LP_CAPITAL_CONCENTRATION_PANEL
 from ddvc.paper_tables import write_table_artifacts
 
 
@@ -26,7 +26,7 @@ route = pd.read_parquet(
     DATA_DIR / "empirical" / "route_cost_panel_v2.parquet",
     columns=["date", "direct_available", "vehicle_available", "direct_cost_advantage"],
 )
-lp = pd.read_parquet(DATA_DIR / "exhibits" / "lp_concentration.parquet")
+lp = pd.read_parquet(LP_CAPITAL_CONCENTRATION_PANEL)
 units = pd.read_parquet(
     DATA_DIR / "empirical" / "v4_settlement_route_units.parquet",
     columns=["date"],
@@ -57,7 +57,7 @@ rows = [
         str(lp["date"].max()),
         count(lp["date"].nunique()),
         count(len(lp)),
-        f"\\${number(lp['total_lp_liquidity_usd'].mean() / 1e9)}bn mean linked liquidity",
+        f"\\${number(lp['total_lp_capital_usd'].mean() / 1e9)}bn mean linked liquidity",
     ),
     (
         "Route-cost counterfactual panel",

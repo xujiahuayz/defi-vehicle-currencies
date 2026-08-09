@@ -2,6 +2,7 @@
 
 Independent specialist reviews, newest first.
 
+- 2026-08-09T13:32:01+08:00 — **full-text-reader** · jfe (independent source reader) on `1979-Krugman1979VehicleCurrenciesWorkingPaper-working-paper-vehicle-currencies-and-the-structure-of-international-exchange.pdf` → `1979-Krugman1979VehicleCurrenciesWorkingPaper-working-paper-vehicle-currencies-and-the-structure-of-international-exchange--full-text-reader--jfe--20260809133201.md`
 - 2026-08-09T01:10:47+08:00 — **full-text-reader** · jfe (codex) on `2021-ChenDuffie2021FragmentationAppendix-supplement-online-appendix-to-market-fragmentation.pdf` → `2021-ChenDuffie2021FragmentationAppendix-supplement-online-appendix-to-market-fragmentation--full-text-reader--jfe--20260809011047.md`
 - 2026-08-09T00:57:43+08:00 — **full-text-reader** · jfe (codex) on `2024-LeharParlour2024Uniswap-decentralized-exchange-the-uniswap-automated-market-maker.pdf` → `2024-LeharParlour2024Uniswap-decentralized-exchange-the-uniswap-automated-market-maker--full-text-reader--jfe--20260809005743.md`
 - 2026-08-09T00:57:05+08:00 — **full-text-reader** · jfe (codex) on `2021-ChenDuffie2021Fragmentation-market-fragmentation.pdf` → `2021-ChenDuffie2021Fragmentation-market-fragmentation--full-text-reader--jfe--20260809005705.md`

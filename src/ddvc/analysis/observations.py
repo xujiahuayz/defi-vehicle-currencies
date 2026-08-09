@@ -162,26 +162,25 @@ def _read_metrics(data: Path, vehicles: tuple[str, ...]) -> pd.DataFrame:
     return out[keep].sort_values(["token", "date"])
 
 
-def _read_lp_concentration(data: Path, vehicles: tuple[str, ...]) -> pd.DataFrame:
-    lp = pd.read_parquet(_require(data / "exhibits" / "lp_concentration.parquet")).copy()
+def _read_lp_capital(data: Path, vehicles: tuple[str, ...]) -> pd.DataFrame:
+    lp = pd.read_parquet(_require(data / "exhibits" / "lp_capital_concentration.parquet")).copy()
     lp = lp.rename(
         columns={
             "token_symbol": "token",
-            "total_lp_liquidity_usd": "vehicle_linked_liquidity_usd",
-            "lp_concentration_share": "lp_concentration",
+            "total_lp_capital_usd": "vehicle_linked_capital_usd",
         }
     )
     lp = lp[lp["token"].isin(vehicles)].copy()
     lp["date"] = _as_date(lp["date"])
-    lp["log_vehicle_linked_liquidity"] = np.log1p(lp["vehicle_linked_liquidity_usd"].clip(lower=0))
+    lp["log_vehicle_linked_capital"] = np.log1p(lp["vehicle_linked_capital_usd"].clip(lower=0))
     keep = [
         "date",
         "token",
         "token_address",
         "is_vehicle_candidate",
-        "vehicle_linked_liquidity_usd",
-        "lp_concentration",
-        "log_vehicle_linked_liquidity",
+        "vehicle_linked_capital_usd",
+        "lp_capital_share",
+        "log_vehicle_linked_capital",
     ]
     return lp[keep].sort_values(["token", "date"])
 
@@ -218,12 +217,12 @@ def _route_cost_by_size(data: Path, trade_size: float) -> pd.DataFrame:
         & route["direct_cost_advantage"].notna()
     )
     route["no_direct_vehicle_available"] = (~route["direct_available"]) & route["vehicle_available"]
-    route["direct_depth_proxy"] = np.where(
+    route["direct_quote_quality"] = np.where(
         route["direct_available"],
         pd.to_numeric(route["direct_output_usd"], errors="coerce") / float(trade_size),
         np.nan,
     )
-    route["thin_direct"] = route["direct_available"] & route["direct_depth_proxy"].lt(0.90)
+    route["thin_direct"] = route["direct_available"] & route["direct_quote_quality"].lt(0.90)
     route["direct_cost_advantage_winsor"] = pd.to_numeric(
         route["direct_cost_advantage"], errors="coerce"
     ).clip(lower=-1, upper=1)
@@ -239,7 +238,7 @@ def _route_cost_by_size(data: Path, trade_size: float) -> pd.DataFrame:
         direct_cost_advantage_median=("direct_cost_advantage", "median"),
         direct_cost_advantage_winsor_mean=("direct_cost_advantage_winsor", "mean"),
         vehicle_beats_direct_share=("direct_cost_advantage", _indirect_beats_direct),
-        direct_depth_median=("direct_depth_proxy", "median"),
+        direct_quote_quality_median=("direct_quote_quality", "median"),
         thin_direct_share=("thin_direct", "mean"),
     )
     return out
@@ -275,7 +274,7 @@ def _read_route_cost(data: Path, trade_sizes: tuple[float, ...], main_trade_size
         "direct_cost_advantage_median",
         "direct_cost_advantage_winsor_mean",
         "vehicle_beats_direct_share",
-        "direct_depth_median",
+        "direct_quote_quality_median",
         "thin_direct_share",
     ]:
         source = f"{col}_{main_suffix}"
@@ -325,8 +324,8 @@ def _add_dynamics(panel: pd.DataFrame) -> pd.DataFrame:
     panel = panel.sort_values(["token", "date"]).copy()
     dynamic_cols = [
         ("bridge_share", "bridge_share"),
-        ("lp_concentration", "lp_concentration"),
-        ("log_vehicle_linked_liquidity", "log_vehicle_linked_liquidity"),
+        ("lp_capital_share", "lp_capital_share"),
+        ("log_vehicle_linked_capital", "log_vehicle_linked_capital"),
         ("direct_cost_advantage_median", "direct_cost_advantage_median"),
     ]
     for h in (1, 7, 14, 30):
@@ -337,9 +336,9 @@ def _add_dynamics(panel: pd.DataFrame) -> pd.DataFrame:
             panel[f"future_{stem}_t{h}"] = value_at_day_offset(panel, base_col, h)
         if "bridge_share" in panel.columns:
             panel[f"delta_bridge_share_t{h}"] = panel["bridge_share"] - panel[f"lag_bridge_share_t{h}"]
-        if "lp_concentration" in panel.columns:
-            panel[f"delta_lp_concentration_t{h}"] = (
-                panel["lp_concentration"] - panel[f"lag_lp_concentration_t{h}"]
+        if "lp_capital_share" in panel.columns:
+            panel[f"delta_lp_capital_share_t{h}"] = (
+                panel["lp_capital_share"] - panel[f"lag_lp_capital_share_t{h}"]
             )
     return panel
 
@@ -355,7 +354,7 @@ def build_observations_table(
     bridge = _read_bridge_daily(data, vehicles)
     route = _read_route_denominators(data)
     metrics = _read_metrics(data, vehicles)
-    lp = _read_lp_concentration(data, vehicles)
+    lp = _read_lp_capital(data, vehicles)
     route_cost = _read_route_cost(data, trade_sizes, main_trade_size)
     settlement = _read_settlement(data)
 
@@ -372,7 +371,7 @@ def build_observations_table(
     panel["year"] = panel["date"].dt.year
     panel["month"] = panel["date"].dt.to_period("M").astype(str)
     panel["has_indirect_routes"] = panel["daily_indirect_route_count"].fillna(0).gt(0).astype(float)
-    panel["has_lp_observation"] = panel["lp_concentration"].notna().astype(float)
+    panel["has_lp_observation"] = panel["lp_capital_share"].notna().astype(float)
     panel["has_route_cost_observation"] = panel["quote_rows"].fillna(0).gt(0).astype(float)
     panel["has_settlement_observation"] = panel["settlement_receipt_count"].fillna(0).gt(0).astype(float)
     panel = _add_stress(panel)

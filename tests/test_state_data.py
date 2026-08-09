@@ -10,6 +10,7 @@ from ddvc.state_data import (
     CODE_SOURCES,
     FAMILY_STREAMS,
     available_state_days,
+    balancer_pool_family,
     normalise_cp_partition,
     normalise_multi_asset_partition,
     normalise_tick_partition,
@@ -100,6 +101,8 @@ def cp_snapshot(*, reserve0: str = "100", reserve1: str = "200") -> dict:
 class StateDataTests(unittest.TestCase):
     def test_state_engine_depends_on_record_semantics_not_fetch_orchestration(self) -> None:
         self.assertIn("src/ddvc/source_records.py", CODE_SOURCES)
+        self.assertIn("src/ddvc/execution_contracts.py", CODE_SOURCES)
+        self.assertNotIn("src/ddvc/liquidity.py", CODE_SOURCES)
         self.assertNotIn("src/ddvc/fetch/raw.py", CODE_SOURCES)
 
     def test_builder_clamps_to_venue_genesis_and_locked_sample_end(self) -> None:
@@ -164,7 +167,14 @@ class StateDataTests(unittest.TestCase):
         self.assertEqual(len(frame[frame["record_type"] == "snapshot_token"]), 2)
         trade = frame[frame["record_type"] == "swap"].iloc[0]
         self.assertEqual(trade["amount_in_raw"], "10")
-        self.assertTrue(trade["quote_supported"])
+        self.assertEqual(trade["provider_pool_type"], "stable")
+        self.assertEqual(trade["pool_family"], "ng_or_unclassified")
+        self.assertEqual(trade["invariant_family"], "ng_or_unclassified")
+        self.assertFalse(trade["quote_supported"])
+        self.assertEqual(
+            trade["quote_unsupported_reason"],
+            "pool_family_or_state_generation_not_admitted",
+        )
 
     def test_balancer_partition_converts_human_units_and_liquidity_deltas(self) -> None:
         with tempfile.TemporaryDirectory() as directory:
@@ -223,9 +233,25 @@ class StateDataTests(unittest.TestCase):
         trade = frame[frame["record_type"] == "swap"].iloc[0]
         self.assertEqual(trade["amount_in_raw"], "134659708639360367020044220053")
         self.assertEqual(trade["amount_out_raw"], "200000")
+        self.assertEqual(trade["provider_pool_type"], "Weighted")
+        self.assertEqual(trade["pool_family"], "weighted")
+        self.assertEqual(trade["invariant_family"], "weighted_geometric_mean")
+        self.assertFalse(trade["quote_supported"])
         liquidity = frame[frame["record_type"] == "liquidity_token"].set_index("token_raw")
         self.assertEqual(liquidity.loc["0xa", "balance_delta_raw"], "-10000000000000000")
         self.assertEqual(liquidity.loc["0xb", "balance_delta_raw"], "-20000")
+
+    def test_balancer_pool_type_mapping_is_exact_and_unknown_types_fail_closed(self) -> None:
+        self.assertEqual(balancer_pool_family("Weighted"), "weighted")
+        self.assertEqual(
+            balancer_pool_family("ComposableStable"),
+            "stable_or_composable_stable",
+        )
+        self.assertEqual(
+            balancer_pool_family("LiquidityBootstrapping"),
+            "dynamic_weight_or_managed",
+        )
+        self.assertEqual(balancer_pool_family("Weighted-ish"), "unclassified")
 
     def test_multi_asset_cache_invalidates_with_raw_input(self) -> None:
         with tempfile.TemporaryDirectory() as directory:
@@ -303,6 +329,9 @@ class StateDataTests(unittest.TestCase):
         self.assertEqual(frame.loc[frame["record_type"] == "swap", "amount0_delta"].iloc[0], "1")
         self.assertEqual(frame.loc[frame["record_type"] == "swap", "amount1_delta"].iloc[0], "-2")
         self.assertEqual(frame.loc[frame["record_type"] == "liquidity", "amount0_delta"].iloc[0], "3")
+        self.assertTrue(frame.loc[frame["record_type"] == "swap", "quote_supported"].iloc[0])
+        self.assertEqual(set(frame["pool_family"]), {"full_range_constant_product"})
+        self.assertEqual(set(frame["state_generation"]), {"constant_product_state_v2"})
 
     def test_constant_product_partition_rejects_conflicting_chain_order(self) -> None:
         with tempfile.TemporaryDirectory() as directory:
@@ -382,6 +411,7 @@ class StateDataTests(unittest.TestCase):
                 "amount": "-7",
                 "tickLower": "-10",
                 "tickUpper": "10",
+                "pool": {"id": "pool"},
             }
             write_rows(raw, "uniswap_v4", "modify_liquidities", "20250101", [change])
             frame, quality = normalise_tick_partition(raw, "uniswap_v4", "20250101")
@@ -389,6 +419,21 @@ class StateDataTests(unittest.TestCase):
         self.assertEqual(frame["record_type"].tolist(), ["liquidity", "swap"])
         self.assertEqual(frame.iloc[0]["liquidity_delta"], "-7")
         self.assertEqual(frame.iloc[1]["block_number"], 10)
+        self.assertEqual(set(frame["pool_family"]), {"vanilla_concentrated"})
+        self.assertEqual(set(frame["state_generation"]), {"uniswap_v4_tick_state_v2"})
+        self.assertTrue(frame.iloc[1]["quote_supported"])
+
+    def test_v4_hooked_pool_is_usable_evidence_but_not_quote_supported(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            raw = Path(directory) / "raw"
+            hooked = swap()
+            hooked["pool"]["hooks"] = "0x0000000000000000000000000000000000000001"
+            write_rows(raw, "uniswap_v4", "swaps", "20250101", [hooked])
+            frame, quality = normalise_tick_partition(raw, "uniswap_v4", "20250101")
+        self.assertTrue(quality.passed)
+        self.assertTrue(frame.iloc[0]["usable"])
+        self.assertEqual(frame.iloc[0]["pool_family"], "hooked_or_dynamic_fee")
+        self.assertFalse(frame.iloc[0]["quote_supported"])
 
     def test_tick_partition_quarantines_missing_order_and_same_sign_swap(self) -> None:
         with tempfile.TemporaryDirectory() as directory:

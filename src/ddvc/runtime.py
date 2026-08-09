@@ -7,7 +7,7 @@ import json
 import os
 import sys
 import tempfile
-from concurrent.futures import ProcessPoolExecutor
+from concurrent.futures import ProcessPoolExecutor, ThreadPoolExecutor
 from contextlib import contextmanager
 from datetime import datetime, timezone
 from pathlib import Path
@@ -88,6 +88,20 @@ def interruptible_process_pool(max_workers: int) -> Iterator[ProcessPoolExecutor
                     process.terminate()
             for process in processes:
                 process.join(timeout=1)
+        raise
+    else:
+        executor.shutdown(wait=True)
+
+
+@contextmanager
+def interruptible_thread_pool(max_workers: int) -> Iterator[ThreadPoolExecutor]:
+    """Cancel queued thread work on interruption and let only active calls unwind."""
+
+    executor = ThreadPoolExecutor(max_workers=max_workers)
+    try:
+        yield executor
+    except BaseException:
+        executor.shutdown(wait=False, cancel_futures=True)
         raise
     else:
         executor.shutdown(wait=True)

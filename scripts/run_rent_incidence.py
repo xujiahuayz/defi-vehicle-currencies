@@ -9,23 +9,19 @@ risk-adjusted net return.
 Accounting, stated once.
 
   fee revenue      fee rate times USD volume. 30 basis points on v2; the exact
-                   CREATE2-recovered tier on v3.
-  LVR              realised variance over eight, times pool value. This is the
-                   constant-product closed form; on v3 it is applied to the
-                   CPMM-equivalent value of the active liquidity, which is an
-                   IN-RANGE APPROXIMATION.
+                   canonical-state tier on v3.
+  LVR              realised variance over eight, times contemporaneous pool
+                   value. This is admitted only for constant-product pools.
   gas              observed mints plus burns, times per-operation gas units,
                    times the day's median gas price, times the ETH price.
   net              fee revenue less LVR less gas.
 
-Yields divide each by pool value, so they are daily rates on capital.
-
-A note that matters for reading the v3 numbers. Concentrated liquidity scales
-fee revenue and LVR by the SAME concentration factor, because both are linear in
-the active liquidity, so the sign of gross net return and the fee-to-LVR ratio
-are invariant to whether capital is measured as the CPMM-equivalent value or as
-the smaller sum actually deposited. Only gas fails to scale, so the concentration
-factor moves the gas term alone, and it moves it toward profitability.
+Return denominators are exact prior-calendar-day deposited capital. For v2 this
+is lagged reported reserve value, cross-checked against anchored reserve
+valuation. The contemporaneous pool-value LVR scale is kept separately, so an
+LVR return is (current pool value / lagged capital) times realised variance over
+eight. V3 capital, LVR, signs, ratios and return inference are absent until the
+inventory replay and path-integrated concentrated-liquidity LVR both pass.
 """
 
 from __future__ import annotations
@@ -43,6 +39,20 @@ from ddvc.asset_types import asset_type
 from ddvc.analysis.regression import ols_clustered
 from ddvc.data_release import require_node_d_release
 from ddvc.gas import load_daily_gas_prices
+from ddvc.liquidity import (
+    CAPITAL_COLUMN,
+    LVR_SCALE_COLUMN,
+    LOCAL_DEPTH_COLUMN,
+    MAX_POOL_CAPITAL_USD,
+    capital_reconciliation_mask,
+    capital_interpretable,
+    capital_scale_label,
+    constant_product_lvr_usd,
+    exact_calendar_lag,
+    lvr_inference_ready,
+    require_capital_denominator,
+    return_inference_ready,
+)
 from ddvc.provenance import require_current_artifacts, stamp
 from ddvc.runtime import exclusive_job
 from ddvc.tables import write_exhibit, write_panel
@@ -55,12 +65,12 @@ REQUIRED_PANELS = [
     PROC / "v2_token_price_daily.parquet",
     PROC / "vehicle_centrality_dense.parquet",
     PROC / "rent_incidence_v2_pool_day.parquet",
-    PROC / "rent_incidence_v3_pool_day.parquet",
 ]
 SRC = [
     "scripts/run_rent_incidence.py",
     "scripts/build_rent_incidence_panel.py",
     "src/ddvc/gas.py",
+    "src/ddvc/liquidity.py",
     "src/ddvc/asset_types.py",
     "src/ddvc/analysis/regression.py",
     "src/ddvc/tables.py",
@@ -69,6 +79,7 @@ OUTPUT_PROVENANCE = {"code_sources": SRC, "inputs": REQUIRED_PANELS}
 
 MIN_TVL = 10_000.0
 BALANCE_TOL = 3.0          # CPMM holds equal value on both legs; 3x is generous
+CAPITAL_RECONCILIATION_TOL = 3.0
 MIN_MONTH_DAYS = 15
 GAS_UNITS = {"uniswap_v2": 155_000.0, "uniswap_v3": 225_000.0}
 WETH = "0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2"
@@ -236,7 +247,30 @@ def price_and_screen(df: pd.DataFrame, venue: str, prices: pd.DataFrame,
         df = df[keep]
         a0, a1, v0, v1, both = a0[df.index], a1[df.index], v0[df.index], v1[df.index], both[df.index]
         note(f"7 anchored legs agree within {BALANCE_TOL:.0f}x where both are anchored", df)
-        df["tvl_usd"] = np.where(both, v0 + v1, np.where(a0, 2 * v0, 2 * v1))
+        df["reconstructed_capital_usd"] = np.where(
+            both, v0 + v1, np.where(a0, 2 * v0, 2 * v1)
+        )
+        df[LOCAL_DEPTH_COLUMN] = df.reconstructed_capital_usd
+        df[LVR_SCALE_COLUMN] = df.reconstructed_capital_usd
+        keep = capital_reconciliation_mask(
+            df.reported_capital_usd,
+            df.reconstructed_capital_usd,
+            tolerance=CAPITAL_RECONCILIATION_TOL,
+        )
+        df = df[keep]
+        note(
+            f"8 reported reserve capital agrees with independently priced reserves "
+            f"within {CAPITAL_RECONCILIATION_TOL:.0f}x",
+            df,
+        )
+        df["_current_capital_reconciled"] = 1.0
+        prior_reconciled = exact_calendar_lag(
+            df,
+            value="_current_capital_reconciled",
+        )
+        df = df[prior_reconciled.eq(1.0)]
+        df["capital_validation_status"] = "reconciled_exact_lag"
+        note("9 exact-lag capital also passed reserve reconciliation", df)
     else:
         df = df[df.fee_rate.notna()]
         a0, a1 = a0[df.index], a1[df.index]
@@ -250,7 +284,8 @@ def price_and_screen(df: pd.DataFrame, venue: str, prices: pd.DataFrame,
         dmap.update(ANCHOR_DECIMALS)
         d0, d1 = df.token0.map(dmap), df.token1.map(dmap)
         sp = df.sqrt_price_x96 / (2.0 ** 96)
-        # virtual reserves of the active liquidity, in human units
+        # Local virtual reserves of active liquidity, in human units. Their value
+        # is a curvature/depth scale and is not deposited capital.
         y1 = df.liquidity * sp / (10.0 ** d1)
         x0 = df.liquidity / sp / (10.0 ** d0)
         use1 = a1 & d1.notna()
@@ -258,33 +293,50 @@ def price_and_screen(df: pd.DataFrame, venue: str, prices: pd.DataFrame,
         df = df[use0 | use1]
         u0, u1 = use0[df.index], use1[df.index]
         note("8 anchored leg with known decimals", df)
-        df["tvl_usd"] = np.where(u1, 2 * y1[df.index] * df.p1, 2 * x0[df.index] * df.p0)
+        df[LOCAL_DEPTH_COLUMN] = np.where(
+            u1, 2 * y1[df.index] * df.p1, 2 * x0[df.index] * df.p0
+        )
+        df["reconstructed_capital_usd"] = np.nan
+        df[LVR_SCALE_COLUMN] = np.nan
         df["balance_log_ratio"] = np.nan
 
-    df = df[np.isfinite(df.tvl_usd) & (df.tvl_usd >= min_tvl)]
-    note(f"9 capital base at least ${min_tvl:,.0f}", df)
+    df = df[
+        np.isfinite(df[CAPITAL_COLUMN])
+        & df[CAPITAL_COLUMN].between(min_tvl, MAX_POOL_CAPITAL_USD)
+        & np.isfinite(df[LOCAL_DEPTH_COLUMN])
+        & df[LOCAL_DEPTH_COLUMN].gt(0)
+    ]
+    note(f"10 lagged deposited capital at least ${min_tvl:,.0f} and positive local depth", df)
+    require_capital_denominator(
+        df,
+        venue=venue,
+        purpose="return" if return_inference_ready(venue) else "descriptive",
+    )
 
     df = df.merge(gas, on="day", how="left")
     df["gas_usd"] = ((df.n_mint + df.n_burn) * GAS_UNITS[venue]
                      * df.gas_gwei_median * 1e-9 * df.eth_usd)
     df["fees_usd"] = df.fee_rate * df.volume_usd
-    df["lvr_usd"] = df.rv / 8.0 * df.tvl_usd
-    df["lvr_usd_4h"] = df.rv_4h / 8.0 * df.tvl_usd
-    df["lvr_usd_oc"] = df.rv_oc / 8.0 * df.tvl_usd
+    if lvr_inference_ready(venue):
+        df["lvr_usd"] = constant_product_lvr_usd(df.rv, df[LVR_SCALE_COLUMN])
+        df["lvr_usd_4h"] = constant_product_lvr_usd(df.rv_4h, df[LVR_SCALE_COLUMN])
+        df["lvr_usd_oc"] = constant_product_lvr_usd(df.rv_oc, df[LVR_SCALE_COLUMN])
+    else:
+        df[["lvr_usd", "lvr_usd_4h", "lvr_usd_oc"]] = np.nan
     df["net_gross_of_gas_usd"] = df.fees_usd - df.lvr_usd
     df["net_usd"] = df.net_gross_of_gas_usd - df.gas_usd
 
     for a, b in (("fee_yield", "fees_usd"), ("lvr_rate", "lvr_usd"),
                  ("gas_rate", "gas_usd"), ("net_yield", "net_usd"),
                  ("net_pre_gas_yield", "net_gross_of_gas_usd")):
-        df[a] = df[b] / df.tvl_usd
+        df[a] = df[b] / df[CAPITAL_COLUMN]
 
     df["pool_role"] = [" / ".join(sorted(x)) for x in zip(df.type0, df.type1)]
     df["other_role"] = np.where(df.token0 == WETH, df.type1,
                                 np.where(df.token1 == WETH, df.type0, None))
     df["date"] = pd.to_datetime(df.day, format="%Y%m%d")
     df["month"] = df.date.dt.strftime("%Y-%m")
-    df["turnover"] = df.volume_usd / df.tvl_usd
+    df["turnover"] = df.volume_usd / df[CAPITAL_COLUMN]
     return df, steps
 
 
@@ -304,47 +356,59 @@ def by_role(df: pd.DataFrame, venue: str, gas_only: bool = True) -> pd.DataFrame
             "token_pairs": int(pd.Series(g.token0 + "_" + g.token1).nunique()),
             "pool_days": int(len(g)),
             "days": int(g.day.nunique()),
-            "median_tvl_usd": float(g.tvl_usd.median()),
-            "capital_days_usd_bn": float(g.tvl_usd.sum() / 1e9),
-            "mean_daily_capital_usd_bn": float(
-                g.tvl_usd.sum() / g.day.nunique() / 1e9
-            ),
-            "capital_share": float(g.tvl_usd.sum() / d.tvl_usd.sum()),
+            "median_scale_usd": float(g[CAPITAL_COLUMN].median()),
+            "scale_days_usd_bn": float(g[CAPITAL_COLUMN].sum() / 1e9),
+            "mean_daily_scale_usd_bn": float(g[CAPITAL_COLUMN].sum() / g.day.nunique() / 1e9),
+            "scale_share": float(g[CAPITAL_COLUMN].sum() / d[CAPITAL_COLUMN].sum()),
             "pool_day_share": float(len(g) / len(d)),
             # equal-weighted pool-day medians, annualised
-            "med_fee_yield_apr": float(g.fee_yield.median() * 365),
-            "med_lvr_rate_apr": float(g.lvr_rate.median() * 365),
-            "mean_gas_rate_apr": float(g.gas_rate.mean() * 365),
+            "med_fee_yield_apr": float(g.fee_yield.median() * 365)
+            if return_inference_ready(venue) else np.nan,
+            "med_lvr_rate_apr": float(g.lvr_rate.median() * 365)
+            if return_inference_ready(venue) else np.nan,
+            "mean_gas_rate_apr": float(g.gas_rate.mean() * 365)
+            if return_inference_ready(venue) else np.nan,
             "share_days_with_lp_event": float(((g.n_mint + g.n_burn) > 0).mean()),
-            "med_net_yield_apr": float(g.net_yield.median() * 365),
-            "share_net_positive": float((g.net_yield > 0).mean()),
-            "share_net_positive_pre_gas": float((g.net_pre_gas_yield > 0).mean()),
+            "med_net_yield_apr": float(g.net_yield.median() * 365)
+            if return_inference_ready(venue) else np.nan,
+            "share_net_positive": float((g.net_yield > 0).mean())
+            if lvr_inference_ready(venue) else np.nan,
+            "share_net_positive_pre_gas": float((g.net_pre_gas_yield > 0).mean())
+            if lvr_inference_ready(venue) else np.nan,
             # capital-weighted aggregate: total dollars over total capital-days
-            "cw_fee_yield_apr": float(g.fees_usd.sum() / g.tvl_usd.sum() * 365),
-            "cw_lvr_rate_apr": float(g.lvr_usd.sum() / g.tvl_usd.sum() * 365),
-            "cw_gas_rate_apr": float(g.gas_usd.sum() / g.tvl_usd.sum() * 365),
-            "cw_net_yield_apr": float(g.net_usd.sum() / g.tvl_usd.sum() * 365),
-            # Scale-free. Fee revenue, LVR and gas are all dollars, so these
-            # survive the fact that v3 capital is measured as CPMM-equivalent
-            # virtual reserves and is therefore many times the sum deposited.
-            "net_musd": float(g.net_usd.sum() / 1e6),
-            "fee_over_lvr": float(g.fees_usd.sum() / g.lvr_usd.sum()) if g.lvr_usd.sum() > 0 else np.nan,
+            "cw_fee_yield_apr": float(g.fees_usd.sum() / g[CAPITAL_COLUMN].sum() * 365)
+            if return_inference_ready(venue) else np.nan,
+            "cw_lvr_rate_apr": float(g.lvr_usd.sum() / g[CAPITAL_COLUMN].sum() * 365)
+            if return_inference_ready(venue) else np.nan,
+            "cw_gas_rate_apr": float(g.gas_usd.sum() / g[CAPITAL_COLUMN].sum() * 365)
+            if return_inference_ready(venue) else np.nan,
+            "cw_net_yield_apr": float(g.net_usd.sum() / g[CAPITAL_COLUMN].sum() * 365)
+            if return_inference_ready(venue) else np.nan,
+            # Dollar net flow and fee-to-loss ratios also require a valid LVR
+            # numerator. They remain missing when a venue lacks that adapter.
+            "net_musd": float(g.net_usd.sum() / 1e6)
+            if lvr_inference_ready(venue) else np.nan,
+            "fee_over_lvr": float(g.fees_usd.sum() / g.lvr_usd.sum())
+            if lvr_inference_ready(venue) and g.lvr_usd.sum() > 0 else np.nan,
             "fee_over_lvr_plus_gas": float(
                 g.fees_usd.sum() / (g.lvr_usd.sum() + g.gas_usd.sum()))
-            if (g.lvr_usd.sum() + g.gas_usd.sum()) > 0 else np.nan,
+            if lvr_inference_ready(venue) and (g.lvr_usd.sum() + g.gas_usd.sum()) > 0
+            else np.nan,
             "med_pool_day_fee_over_lvr": float(
-                (g.fees_usd / g.lvr_usd.replace(0, np.nan)).median()),
-            "capital_basis": "reserves" if venue == "uniswap_v2"
-                             else "CPMM-equivalent virtual reserves",
+                (g.fees_usd / g.lvr_usd.replace(0, np.nan)).median())
+            if lvr_inference_ready(venue) else np.nan,
+            "scale_basis": capital_scale_label(venue),
+            "capital_interpretable": capital_interpretable(venue),
+            "return_inference_ready": return_inference_ready(venue),
         })
     result = pd.DataFrame(rows)
     if result.empty:
         return result
-    return result.sort_values("capital_days_usd_bn", ascending=False)
+    return result.sort_values("scale_days_usd_bn", ascending=False)
 
 
 def by_role_over_time(df: pd.DataFrame, venue: str) -> pd.DataFrame:
-    """Keep pooled role incidence and the annual capital/return bridge together."""
+    """Keep pooled and annual role incidence under the venue's valid scale."""
     pooled = by_role(df, venue)
     pooled.insert(0, "year", pd.NA)
     pooled.insert(0, "scope", "pooled")
@@ -362,14 +426,14 @@ def by_role_over_time(df: pd.DataFrame, venue: str) -> pd.DataFrame:
 
 def by_size(df: pd.DataFrame, venue: str) -> pd.DataFrame:
     d = df[df.gas_usd.notna()].copy()
-    d["size_bin"] = pd.qcut(np.log10(d.tvl_usd), 10, labels=False, duplicates="drop")
+    d["size_bin"] = pd.qcut(np.log10(d[CAPITAL_COLUMN]), 10, labels=False, duplicates="drop")
     rows = []
     for b, g in d.groupby("size_bin"):
         rows.append({"venue": venue, "tvl_decile": int(b) + 1,
                      "pools": int(g.pool.nunique()),
             "token_pairs": int(pd.Series(g.token0 + "_" + g.token1).nunique()),
             "pool_days": int(len(g)),
-                     "median_tvl_usd": float(g.tvl_usd.median()),
+                     "median_tvl_usd": float(g[CAPITAL_COLUMN].median()),
                      "med_fee_yield_apr": float(g.fee_yield.median() * 365),
                      "med_lvr_rate_apr": float(g.lvr_rate.median() * 365),
                      "mean_gas_rate_apr": float(g.gas_rate.mean() * 365),
@@ -381,7 +445,7 @@ def by_size(df: pd.DataFrame, venue: str) -> pd.DataFrame:
     return pd.DataFrame(rows)
 
 
-def pool_months(df: pd.DataFrame, cent: pd.DataFrame) -> pd.DataFrame:
+def pool_months(df: pd.DataFrame, cent: pd.DataFrame, venue: str) -> pd.DataFrame:
     """Pool-month risk-adjusted net return, with centrality, depth and volatility."""
     d = df[df.gas_usd.notna()].copy()
     c0 = cent.rename(columns={"token": "token0", "betweenness_volume": "c0",
@@ -403,31 +467,90 @@ def pool_months(df: pd.DataFrame, cent: pd.DataFrame) -> pd.DataFrame:
                mean_gas=("gas_rate", "mean"),
                fees=("fees_usd", "sum"), lvr=("lvr_usd", "sum"),
                lvr4=("lvr_usd_4h", "sum"), gas=("gas_usd", "sum"),
-               cap=("tvl_usd", "sum"),
-               tvl=("tvl_usd", "median"), rv=("rv", "mean"),
+               scale_days=(CAPITAL_COLUMN, "sum"),
+               scale=(CAPITAL_COLUMN, "median"),
+               local_depth=(LOCAL_DEPTH_COLUMN, "median"), rv=("rv", "mean"),
                turnover=("turnover", "median"),
                c_max=("c_max", "mean"), c_other=("c_other", "mean"),
                deg_max=("deg_max", "mean"),
                pool_role=("pool_role", "first"),
                other_role=("other_role", "first")).reset_index()
     pm = pm[pm.n_days >= MIN_MONTH_DAYS]
-    pm["sharpe"] = pm.mean_net / pm.sd_net.replace(0, np.nan)
-    pm["net_yield_apr"] = (pm.fees - pm.lvr - pm.gas) / pm.cap * 365
+    pm["sharpe"] = (
+        pm.mean_net / pm.sd_net.replace(0, np.nan)
+        if return_inference_ready(venue)
+        else np.nan
+    )
+    pm["net_yield_apr"] = (
+        (pm.fees - pm.lvr - pm.gas) / pm.scale_days * 365
+        if return_inference_ready(venue)
+        else np.nan
+    )
     pm["net_yield_apr_w"] = pm.net_yield_apr.clip(*pm.net_yield_apr.quantile([.01, .99]))
     # A bounded outcome, because the APR's own tails are extreme enough that its
     # mean is not a summary of anything: thin pools carry realised variances that
     # put the mean two orders of magnitude from the median.
-    pm["net_positive"] = (pm.net_yield_apr > 0).astype(float)
-    pm["net_yield_apr_4h"] = (pm.fees - pm.lvr4 - pm.gas) / pm.cap * 365
-    pm["fee_yield_apr"] = pm.fees / pm.cap * 365
-    pm["log_fee_over_lvr"] = np.log((pm.fees / pm.lvr).replace([np.inf, -np.inf], np.nan)
-                                    .clip(lower=1e-6))
-    pm["log_tvl"] = np.log(pm.tvl)
+    pm["net_positive"] = (
+        ((pm.fees - pm.lvr - pm.gas) > 0).astype(float)
+        if lvr_inference_ready(venue)
+        else np.nan
+    )
+    pm["net_yield_apr_4h"] = (
+        (pm.fees - pm.lvr4 - pm.gas) / pm.scale_days * 365
+        if return_inference_ready(venue)
+        else np.nan
+    )
+    pm["fee_yield_apr"] = (
+        pm.fees / pm.scale_days * 365
+        if return_inference_ready(venue)
+        else np.nan
+    )
+    pm["log_fee_over_lvr"] = (
+        np.log((pm.fees / pm.lvr).replace([np.inf, -np.inf], np.nan).clip(lower=1e-6))
+        if lvr_inference_ready(venue)
+        else np.nan
+    )
+    pm["log_scale"] = np.log(pm.scale)
+    pm["log_local_depth"] = np.log(pm.local_depth)
     pm["log_rv"] = np.log(pm.rv.clip(lower=1e-12))
     pm["log_c"] = np.log1p(pm.c_max * 1e4)
     pm["log_c_other"] = np.log1p(pm.c_other * 1e4)
     pm["log_deg"] = np.log1p(pm.deg_max)
+    pm["return_inference_ready"] = return_inference_ready(venue)
+    if not return_inference_ready(venue):
+        pm[[
+            "mean_net",
+            "sd_net",
+            "mean_fee",
+            "mean_lvr",
+            "mean_gas",
+            "sharpe",
+            "net_yield_apr",
+            "net_yield_apr_w",
+            "net_yield_apr_4h",
+            "fee_yield_apr",
+        ]] = np.nan
     return pm
+
+
+def robustness_row(
+    venue: str,
+    label: str,
+    frame: pd.DataFrame,
+    net_usd: pd.Series,
+) -> dict:
+    """Report capital returns only where the denominator is deposited reserves."""
+    return {
+        "venue": venue,
+        "arm": label,
+        "pool_days": int(len(frame)),
+        "pools": int(frame.pool.nunique()),
+        "med_net_yield_apr": float((net_usd / frame[CAPITAL_COLUMN]).median() * 365)
+        if return_inference_ready(venue) else np.nan,
+        "share_net_positive": float((net_usd > 0).mean())
+        if lvr_inference_ready(venue) else np.nan,
+        "scale_basis": capital_scale_label(venue),
+    }
 
 
 def main() -> int:
@@ -441,8 +564,7 @@ def main() -> int:
           f"{cent.token.nunique():,} tokens")
 
     frames, all_steps, role_tabs, size_tabs = {}, [], [], []
-    for venue, path in (("uniswap_v2", "rent_incidence_v2_pool_day.parquet"),
-                        ("uniswap_v3", "rent_incidence_v3_pool_day.parquet")):
+    for venue, path in (("uniswap_v2", "rent_incidence_v2_pool_day.parquet"),):
         p = PROC / path
         if not p.exists():
             print(f"skip {venue}: {p} absent")
@@ -456,7 +578,8 @@ def main() -> int:
         for s in steps:
             print(f"   {s['screen']:<52} {s['pool_days']:>12,} pool-days  {s['pools']:>8,} pools")
         role_tabs.append(by_role_over_time(df, venue))
-        size_tabs.append(by_size(df, venue))
+        if return_inference_ready(venue):
+            size_tabs.append(by_size(df, venue))
 
     screens = pd.DataFrame(all_steps)
     write_exhibit(screens, OUT / "screens.jsonl", **OUTPUT_PROVENANCE)
@@ -465,13 +588,12 @@ def main() -> int:
     print("\n=== Rent incidence by pool asset role (annualised) ===")
     fmt = lambda v: f"{v:,.4f}"
     print(roles[(roles.venue == "uniswap_v2") & roles.scope.eq("pooled")][
-        ["pool_role", "pools", "pool_days", "capital_days_usd_bn",
+        ["pool_role", "pools", "pool_days", "scale_days_usd_bn",
          "med_fee_yield_apr", "med_lvr_rate_apr", "mean_gas_rate_apr",
          "share_days_with_lp_event", "med_net_yield_apr", "share_net_positive",
          "cw_net_yield_apr"]].to_string(index=False, float_format=fmt))
-    print("\n=== Scale-free rent incidence, both venues ===")
-    print("(v3 capital is CPMM-equivalent virtual reserves, so only these columns "
-          "and the SIGN of a v3 yield are comparable across venues)")
+    print("\n=== Invariant-validated rent incidence ===")
+    print("(v3 is excluded until event-replayed capital and path-integrated LVR pass)")
     print(roles[roles.scope.eq("pooled")][["venue", "pool_role", "pools", "token_pairs", "pool_days",
                  "net_musd", "fee_over_lvr", "fee_over_lvr_plus_gas",
                  "med_pool_day_fee_over_lvr", "share_net_positive",
@@ -480,19 +602,19 @@ def main() -> int:
 
     sizes = pd.concat(size_tabs, ignore_index=True)
     sizes = sizes[sizes.venue == "uniswap_v2"]
-    print("\n=== Net yield by capital decile, v2 only because a v3 decile would sort "
-          "on virtual and not deposited capital (the gas threshold) ===")
+    print("\n=== Net yield by capital decile, v2 only while v3 path-integrated LVR is open ===")
     print(sizes.to_string(index=False, float_format=lambda v: f"{v:,.4f}"))
     write_exhibit(sizes, OUT / "rent_by_capital_decile.jsonl", **OUTPUT_PROVENANCE)
 
     # ---------------- centrality curse ----------------
     pms = []
     for venue, df in frames.items():
-        pm = pool_months(df, cent)
+        pm = pool_months(df, cent, venue)
         pm["venue"] = venue
         pms.append(pm)
     pm = pd.concat(pms, ignore_index=True)
-    pm = pm[np.isfinite(pm.sharpe) & np.isfinite(pm.log_tvl) & np.isfinite(pm.log_rv)]
+    pm = pm[np.isfinite(pm.log_scale) & np.isfinite(pm.log_rv)]
+    pm = pm[~pm.venue.map(return_inference_ready) | np.isfinite(pm.sharpe)]
     write_panel(pm, PROC / "rent_incidence_pool_month.parquet", **OUTPUT_PROVENANCE)
 
     regs = []
@@ -508,9 +630,14 @@ def main() -> int:
             continue
         D = np.column_stack([(sr.pool_role == r_).astype(float) for r_ in others])
         mo = pd.get_dummies(sr.month, prefix="m", drop_first=True).astype(float).to_numpy()
-        for label, yv in ((f"{venue} role differences in risk-adjusted net return", sr.sharpe),
-                          (f"{venue} role differences in net return APR", sr.net_yield_apr_w),
-                          (f"{venue} role differences in the chance a pool-month pays", sr.net_positive)):
+        outcomes = [(f"{venue} role differences in the chance a pool-month pays", sr.net_positive)]
+        if return_inference_ready(venue):
+            outcomes = [
+                (f"{venue} role differences in risk-adjusted net return", sr.sharpe),
+                (f"{venue} role differences in net return APR", sr.net_yield_apr_w),
+                *outcomes,
+            ]
+        for label, yv in outcomes:
             m = np.isfinite(yv.to_numpy())
             X = np.column_stack([np.ones(len(sr)), D, mo])[m]
             cols = ["const"] + [f"role[{r_}]" for r_ in others] + \
@@ -534,43 +661,70 @@ def main() -> int:
         cl = s.pool.to_numpy()
         print(f"\n### centrality curse, {venue}: {len(s):,} pool-months, "
               f"{s.pool.nunique():,} pools, {s.month.nunique()} months")
-        X = np.column_stack([np.ones(len(s)), s.log_c, mo])
-        cols = ["const", "log_c"] + [f"m{i}" for i in range(mo.shape[1])]
-        _, _, _, r = report(f"{venue} (1) risk-adjusted net return, centrality + month FE",
-                            s.sharpe.to_numpy(), X, cols, cl, focus={"log_c"})
-        regs += r
-
-        X = np.column_stack([np.ones(len(s)), s.log_c, s.log_tvl, s.log_rv, mo])
-        cols = ["const", "log_c", "log_tvl", "log_rv"] + [f"m{i}" for i in range(mo.shape[1])]
-        for label, yv in (("(2) risk-adjusted net return, + depth + volatility", s.sharpe),
-                          ("(3) net return APR, winsorised at 1 and 99", s.net_yield_apr_w),
-                          ("(4) fee yield APR", s.fee_yield_apr),
-                          ("(5) log fee revenue over LVR", s.log_fee_over_lvr),
-                          ("(6) chance a pool-month pays", s.net_positive)):
-            m = np.isfinite(yv.to_numpy())
-            _, _, _, r = report(f"{venue} {label}", yv.to_numpy()[m], X[m], cols, cl[m],
-                                focus={"log_c", "log_tvl", "log_rv"})
+        if return_inference_ready(venue):
+            X = np.column_stack([np.ones(len(s)), s.log_c, mo])
+            cols = ["const", "log_c"] + [f"m{i}" for i in range(mo.shape[1])]
+            _, _, _, r = report(f"{venue} (1) risk-adjusted net return, centrality + month FE",
+                                s.sharpe.to_numpy(), X, cols, cl, focus={"log_c"})
             regs += r
 
-        X = np.column_stack([np.ones(len(s)), s.log_deg, s.log_tvl, s.log_rv, mo])
-        cols = ["const", "log_deg", "log_tvl", "log_rv"] + [f"m{i}" for i in range(mo.shape[1])]
-        _, _, _, r = report(f"{venue} (7) degree instead of betweenness",
-                            s.sharpe.to_numpy(), X, cols, cl, focus={"log_deg"})
-        regs += r
+        if venue == "uniswap_v3":
+            X = np.column_stack(
+                [np.ones(len(s)), s.log_c, s.log_scale, s.log_local_depth, s.log_rv, mo]
+            )
+            cols = ["const", "log_c", "log_capital", "log_local_depth", "log_rv"] + [
+                f"m{i}" for i in range(mo.shape[1])
+            ]
+        else:
+            X = np.column_stack([np.ones(len(s)), s.log_c, s.log_scale, s.log_rv, mo])
+            cols = ["const", "log_c", "log_capital", "log_rv"] + [
+                f"m{i}" for i in range(mo.shape[1])
+            ]
+        outcomes = (
+            [
+                ("(5) log fee revenue over LVR", s.log_fee_over_lvr),
+                ("(6) chance a pool-month pays", s.net_positive),
+            ]
+            if lvr_inference_ready(venue)
+            else []
+        )
+        if return_inference_ready(venue):
+            outcomes = [
+                ("(2) risk-adjusted net return, + depth + volatility", s.sharpe),
+                ("(3) net return APR, winsorised at 1 and 99", s.net_yield_apr_w),
+                ("(4) fee yield APR", s.fee_yield_apr),
+                *outcomes,
+            ]
+        for label, yv in outcomes:
+            m = np.isfinite(yv.to_numpy())
+            _, _, _, r = report(f"{venue} {label}", yv.to_numpy()[m], X[m], cols, cl[m],
+                                focus={"log_c", "log_capital", "log_local_depth", "log_rv"})
+            regs += r
+
+        if return_inference_ready(venue):
+            X = np.column_stack([np.ones(len(s)), s.log_deg, s.log_scale, s.log_rv, mo])
+            cols = ["const", "log_deg", "log_scale", "log_rv"] + [f"m{i}" for i in range(mo.shape[1])]
+            _, _, _, r = report(f"{venue} (7) degree instead of betweenness",
+                                s.sharpe.to_numpy(), X, cols, cl, focus={"log_deg"})
+            regs += r
 
         # Within pools quoted against the native asset the quote leg is held
         # fixed, so the surviving cross-sectional variation is the hub status of
         # the OTHER leg. This is where the curse is identified, and the role
         # interaction is tested formally on the same subsample rather than by
         # comparing point estimates across subsamples.
-        sw = s[s.log_c_other.notna() & s.other_role.notna()].copy()
+        sw = (
+            s[s.log_c_other.notna() & s.other_role.notna()].copy()
+            if return_inference_ready(venue)
+            else s.iloc[0:0]
+        )
         if len(sw) >= 200:
             mow = pd.get_dummies(sw.month, prefix="m", drop_first=True).astype(float).to_numpy()
-            Xw = np.column_stack([np.ones(len(sw)), sw.log_c_other, sw.log_tvl, sw.log_rv, mow])
-            cw = ["const", "log_c_other", "log_tvl", "log_rv"] + [f"m{i}" for i in range(mow.shape[1])]
+            Xw = np.column_stack([np.ones(len(sw)), sw.log_c_other, sw.log_scale, sw.log_rv, mow])
+            cw = ["const", "log_c_other", "log_scale", "log_rv"] + [f"m{i}" for i in range(mow.shape[1])]
             _, _, _, r = report(f"{venue} (7) native-quoted pools, other leg's centrality",
                                 sw.sharpe.to_numpy(), Xw, cw, sw.pool.to_numpy(),
-                                focus={"log_c_other", "log_tvl", "log_rv"})
+                                focus={"log_c_other", "log_scale", "log_rv"})
             regs += r
 
             cnt = sw.other_role.value_counts()
@@ -581,10 +735,10 @@ def main() -> int:
             if others:
                 D = np.column_stack([(si.other_role == r_).astype(float) for r_ in others])
                 moi = pd.get_dummies(si.month, prefix="m", drop_first=True).astype(float).to_numpy()
-                Xi = np.column_stack([np.ones(len(si)), si.log_c_other, si.log_tvl,
+                Xi = np.column_stack([np.ones(len(si)), si.log_c_other, si.log_scale,
                                       si.log_rv, D,
                                       D * si.log_c_other.to_numpy()[:, None], moi])
-                icols = (["const", "log_c_other", "log_tvl", "log_rv"]
+                icols = (["const", "log_c_other", "log_scale", "log_rv"]
                          + [f"role[{r_}]" for r_ in others]
                          + [f"log_c_other x role[{r_}]" for r_ in others])
                 nfoc = len(icols)
@@ -616,35 +770,31 @@ def main() -> int:
         d = df[df.gas_usd.notna()]
         for mult, label in ((0.5, "gas units x0.5"), (1.0, "gas units x1"),
                             (2.0, "gas units x2"), (4.0, "gas units x4")):
-            net = (d.fees_usd - d.lvr_usd - mult * d.gas_usd) / d.tvl_usd
-            rob.append({"venue": venue, "arm": label,
-                        "pool_days": int(len(d)), "pools": int(d.pool.nunique()),
-                        "med_net_yield_apr": float(net.median() * 365),
-                        "share_net_positive": float((net > 0).mean())})
-        for thr, label in ((1e5, "capital >= $100k"), (1e6, "capital >= $1m")):
-            g = d[d.tvl_usd >= thr]
-            rob.append({"venue": venue, "arm": label,
-                        "pool_days": int(len(g)), "pools": int(g.pool.nunique()),
-                        "med_net_yield_apr": float(g.net_yield.median() * 365),
-                        "share_net_positive": float((g.net_yield > 0).mean())})
+            net_usd = d.fees_usd - d.lvr_usd - mult * d.gas_usd
+            rob.append(robustness_row(venue, label, d, net_usd))
+        scale_name = "lagged capital"
+        for thr, label in ((1e5, f"{scale_name} >= $100k"),
+                           (1e6, f"{scale_name} >= $1m")):
+            g = d[d[CAPITAL_COLUMN] >= thr]
+            rob.append(robustness_row(venue, label, g, g.net_usd))
         for col, label in (("lvr_usd_4h", "LVR from 4-hour sampled variance"),
                            ("lvr_usd_oc", "LVR from the open-to-close move only")):
-            netx = (d.fees_usd - d[col] - d.gas_usd) / d.tvl_usd
-            rob.append({"venue": venue, "arm": label,
-                        "pool_days": int(len(d)), "pools": int(d.pool.nunique()),
-                        "med_net_yield_apr": float(netx.median() * 365),
-                        "share_net_positive": float((netx > 0).mean())})
+            net_usd = d.fees_usd - d[col] - d.gas_usd
+            rob.append(robustness_row(venue, label, d, net_usd))
         g = d[d.turnover <= 10]
-        rob.append({"venue": venue, "arm": "daily turnover <= 10x capital",
-                    "pool_days": int(len(g)), "pools": int(g.pool.nunique()),
-                    "med_net_yield_apr": float(g.net_yield.median() * 365),
-                    "share_net_positive": float((g.net_yield > 0).mean())})
+        rob.append(robustness_row(
+            venue,
+            f"daily turnover <= 10x {scale_name}",
+            g,
+            g.net_usd,
+        ))
     robf = pd.DataFrame(rob)
     print("\n=== Robustness ===")
     print(robf.to_string(index=False, float_format=lambda v: f"{v:,.4f}"))
     write_exhibit(robf, OUT / "robustness.jsonl", **OUTPUT_PROVENANCE)
 
-    summary = {"min_tvl_usd": MIN_TVL, "balance_tol": BALANCE_TOL,
+    summary = {"min_lagged_capital_usd": MIN_TVL, "balance_tol": BALANCE_TOL,
+               "capital_reconciliation_tol": CAPITAL_RECONCILIATION_TOL,
                "min_month_days": MIN_MONTH_DAYS, "gas_units": GAS_UNITS,
                "venues": {v: {"pool_days": int(len(f)), "pools": int(f.pool.nunique()),
                               "days": int(f.day.nunique())} for v, f in frames.items()}}

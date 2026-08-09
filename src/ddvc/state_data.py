@@ -18,17 +18,25 @@ import pandas as pd
 
 from ddvc.amounts import human_to_raw
 from ddvc.asset_types import canonical_token
+from ddvc.execution_contracts import (
+    CP_STATE_GENERATION,
+    MULTI_ASSET_STATE_GENERATIONS,
+    STATE_GENERATIONS,
+    TICK_STATE_GENERATIONS,
+    execution_semantics,
+)
 from ddvc.paths import DATA_DIR
 from ddvc.provenance import cache_key
 from ddvc.runtime import atomic_output
-from ddvc.source_records import block_value, timestamp_value, transaction_id, v4_pool_quote_supported
+from ddvc.source_records import block_value, timestamp_value, transaction_id, v4_quote_status
 
 
-SCHEMA_VERSION = 1
+SCHEMA_VERSION = 2
 CODE_SOURCES = [
     "src/ddvc/state_data.py",
     "src/ddvc/amounts.py",
     "src/ddvc/asset_types.py",
+    "src/ddvc/execution_contracts.py",
     "src/ddvc/source_records.py",
 ]
 STATE_ENGINE = cache_key(CODE_SOURCES)
@@ -71,6 +79,9 @@ TICK_COLUMNS = [
     "log_index",
     "timestamp",
     "pool",
+    "pool_family",
+    "invariant_family",
+    "state_generation",
     "token0_raw",
     "token1_raw",
     "token0",
@@ -91,6 +102,7 @@ TICK_COLUMNS = [
     "tick_lower",
     "tick_upper",
     "quote_supported",
+    "quote_unsupported_reason",
     "usable",
     "unsupported_reason",
 ]
@@ -119,6 +131,9 @@ CP_COLUMNS = [
     "period_start",
     "period_end",
     "pool",
+    "pool_family",
+    "invariant_family",
+    "state_generation",
     "token0_raw",
     "token1_raw",
     "token0",
@@ -133,6 +148,7 @@ CP_COLUMNS = [
     "reserve1",
     "value_usd",
     "quote_supported",
+    "quote_unsupported_reason",
     "usable",
     "unsupported_reason",
 ]
@@ -160,7 +176,10 @@ MULTI_ASSET_COLUMNS = [
     "log_index",
     "timestamp",
     "pool",
-    "pool_type",
+    "provider_pool_type",
+    "pool_family",
+    "invariant_family",
+    "state_generation",
     "snapshot_position",
     "token_raw",
     "token",
@@ -179,6 +198,7 @@ MULTI_ASSET_COLUMNS = [
     "balance_delta_raw",
     "value_usd",
     "quote_supported",
+    "quote_unsupported_reason",
     "usable",
     "unsupported_reason",
 ]
@@ -197,6 +217,26 @@ FAMILY_STREAMS = {
     "tick": TICK_STREAMS,
     "constant_product": CP_STREAMS,
     "multi_asset": MULTI_ASSET_STREAMS,
+}
+
+BALANCER_POOL_TYPE_FAMILIES = {
+    "weighted": "weighted",
+    "stable": "stable_or_composable_stable",
+    "composablestable": "stable_or_composable_stable",
+    "metastable": "stable_or_composable_stable",
+    "stablephantom": "stable_or_composable_stable",
+    "aavelinear": "linear_or_boosted",
+    "erc4626linear": "linear_or_boosted",
+    "linear": "linear_or_boosted",
+    "boosted": "linear_or_boosted",
+    "liquiditybootstrapping": "dynamic_weight_or_managed",
+    "managed": "dynamic_weight_or_managed",
+    "investment": "dynamic_weight_or_managed",
+    "gyro2": "gyro_or_custom",
+    "gyro3": "gyro_or_custom",
+    "gyroe": "gyro_or_custom",
+    "fx": "gyro_or_custom",
+    "element": "gyro_or_custom",
 }
 
 
@@ -350,6 +390,47 @@ def _text(value: object) -> str | None:
     return str(value) if value is not None and value != "" else None
 
 
+def balancer_pool_family(provider_pool_type: object) -> str:
+    """Map an exact provider type to a registered family; unknown types fail closed."""
+
+    key = str(provider_pool_type or "").strip().lower()
+    return BALANCER_POOL_TYPE_FAMILIES.get(key, "unclassified")
+
+
+def pool_semantics(
+    venue: str,
+    pool_family: str,
+    state_generation: str,
+) -> tuple[str, bool]:
+    """Return invariant identity and quote capability for one exact state generation."""
+
+    return execution_semantics(venue, pool_family, state_generation)
+
+
+def _tick_pool_family(
+    venue: str,
+    row: dict,
+    known_pool_family: str | None = None,
+) -> str:
+    if venue == "uniswap_v3":
+        return "concentrated_liquidity"
+    if known_pool_family:
+        return known_pool_family
+    status = v4_quote_status(row)
+    if status == "vanilla_static_fee":
+        return "vanilla_concentrated"
+    if status in {"dynamic_fee", "hooks", "dynamic_fee_and_hooks"}:
+        return "hooked_or_dynamic_fee"
+    return "unclassified"
+
+
+def _multi_pool_family(venue: str, provider_pool_type: object) -> str:
+    if venue == "curve":
+        # This source exposes a symbol, not the deployed Curve invariant family.
+        return "ng_or_unclassified"
+    return balancer_pool_family(provider_pool_type)
+
+
 def _stream_inputs(raw_root: Path, family: str, venue: str, day: str) -> list[Path]:
     return [
         raw_stream_path(raw_root, venue, stream, day)
@@ -394,6 +475,7 @@ def _normalise_tick_row(
     stream: str,
     record_type: str,
     liquidity_sign: int,
+    known_pool_family: str | None = None,
 ) -> tuple[dict[str, object], dict[str, bool]]:
     pool = row.get("pool") or {}
     token0 = pool.get("token0") or {}
@@ -407,6 +489,11 @@ def _normalise_tick_row(
     timestamp = timestamp_value(row)
     tx_hash = transaction_id(row)
     pool_id = str(pool.get("id") or "").lower()
+    pool_family = _tick_pool_family(venue, row, known_pool_family)
+    state_generation = TICK_STATE_GENERATIONS[venue]
+    invariant_family, quote_capability_ready = pool_semantics(
+        venue, pool_family, state_generation
+    )
     missing_order = block is None or block <= 0 or log_index is None or log_index < 0
     missing_identity = (
         not tx_hash
@@ -426,7 +513,7 @@ def _normalise_tick_row(
         and sign_state == "valid"
         and not missing_order
         and not missing_identity
-        and (venue != "uniswap_v4" or v4_pool_quote_supported(row))
+        and quote_capability_ready
     )
     reasons: list[str] = []
     if missing_order:
@@ -459,6 +546,9 @@ def _normalise_tick_row(
         "log_index": log_index,
         "timestamp": timestamp,
         "pool": pool_id or None,
+        "pool_family": pool_family,
+        "invariant_family": invariant_family,
+        "state_generation": state_generation,
         "token0_raw": raw0 or None,
         "token1_raw": raw1 or None,
         "token0": canonical0,
@@ -479,6 +569,13 @@ def _normalise_tick_row(
         "tick_lower": _optional_int(row.get("tickLower")),
         "tick_upper": _optional_int(row.get("tickUpper")),
         "quote_supported": quote_supported,
+        "quote_unsupported_reason": (
+            None
+            if quote_supported or record_type != "swap"
+            else "pool_family_or_state_generation_not_admitted"
+            if not quote_capability_ready
+            else "row_state_not_quotable"
+        ),
         "usable": usable,
         "unsupported_reason": "|".join(reasons) if reasons else None,
     }
@@ -509,6 +606,7 @@ def normalise_tick_partition(
         raw_root, "tick", venue, day
     )
     by_order: dict[tuple[int, int], dict[str, object]] = {}
+    pool_families: dict[str, str] = {}
     for stream, record_type, sign in TICK_STREAMS[venue]:
         path = raw_stream_path(raw_root, venue, stream, day)
         if not path.exists():
@@ -526,7 +624,18 @@ def normalise_tick_partition(
                     stream=stream,
                     record_type=record_type,
                     liquidity_sign=sign,
+                    known_pool_family=(
+                        pool_families.get(str((source.get("pool") or {}).get("id") or "").lower())
+                        if record_type != "swap"
+                        else None
+                    ),
                 )
+                if record_type == "swap" and record["pool"]:
+                    prior_family = pool_families.get(str(record["pool"]))
+                    if prior_family is not None and prior_family != record["pool_family"]:
+                        counters["conflicting_events"] += 1
+                        continue
+                    pool_families[str(record["pool"])] = str(record["pool_family"])
                 counters[f"{record_type}_rows"] += 1
                 for name, flagged in flags.items():
                     counters[name] += int(flagged)
@@ -619,6 +728,10 @@ def _normalise_cp_row(
     canonical0 = canonical_token(raw0) if raw0 else None
     canonical1 = canonical_token(raw1) if raw1 else None
     pool = str(pair.get("id") or "").lower()
+    pool_family = "full_range_constant_product"
+    invariant_family, quote_capability_ready = pool_semantics(
+        venue, pool_family, CP_STATE_GENERATION
+    )
     period_start = _optional_int(row.get("hourStartUnix")) if record_type == "snapshot" else None
     period_end = period_start + 3600 if period_start is not None else None
     timestamp = period_end if record_type == "snapshot" else timestamp_value(row)
@@ -679,6 +792,7 @@ def _normalise_cp_row(
         and not missing_identity
         and not invalid_state
         and not unsupported_state
+        and quote_capability_ready
     )
     reasons: list[str] = []
     if missing_order:
@@ -712,6 +826,9 @@ def _normalise_cp_row(
         "period_start": period_start,
         "period_end": period_end,
         "pool": pool or None,
+        "pool_family": pool_family,
+        "invariant_family": invariant_family,
+        "state_generation": CP_STATE_GENERATION,
         "token0_raw": raw0 or None,
         "token1_raw": raw1 or None,
         "token0": canonical0,
@@ -726,6 +843,13 @@ def _normalise_cp_row(
         "reserve1": reserve1,
         "value_usd": _text(row.get("amountUSD") or row.get("hourlyVolumeUSD")),
         "quote_supported": quote_supported,
+        "quote_unsupported_reason": (
+            None
+            if quote_supported or record_type == "liquidity"
+            else "pool_family_or_state_generation_not_admitted"
+            if not quote_capability_ready
+            else "row_state_not_quotable"
+        ),
         "usable": usable,
         "unsupported_reason": "|".join(reasons) if reasons else None,
     }
@@ -849,12 +973,17 @@ def _multi_base(
     stream: str,
     row: dict,
     pool: str,
-    pool_type: str | None,
+    provider_pool_type: str | None,
+    pool_family: str,
     timestamp: int | None,
     tx_hash: str | None = None,
     block: int | None = None,
     log_index: int | None = None,
 ) -> dict[str, object]:
+    state_generation = MULTI_ASSET_STATE_GENERATIONS[venue]
+    invariant_family, _quote_capability_ready = pool_semantics(
+        venue, pool_family, state_generation
+    )
     return {
         "schema_version": SCHEMA_VERSION,
         "venue": venue,
@@ -867,7 +996,10 @@ def _multi_base(
         "log_index": log_index,
         "timestamp": timestamp,
         "pool": pool or None,
-        "pool_type": pool_type,
+        "provider_pool_type": provider_pool_type,
+        "pool_family": pool_family,
+        "invariant_family": invariant_family,
+        "state_generation": state_generation,
         "snapshot_position": "closing_identified" if record_type == "snapshot_token" else None,
         "token_raw": None,
         "token": None,
@@ -886,6 +1018,7 @@ def _multi_base(
         "balance_delta_raw": None,
         "value_usd": None,
         "quote_supported": False,
+        "quote_unsupported_reason": None,
         "usable": False,
         "unsupported_reason": None,
     }
@@ -900,7 +1033,12 @@ def _multi_snapshot_records(
     pool_data = row.get("pool") or {}
     pool = str(pool_data.get("id") or "").lower()
     timestamp = timestamp_value(row)
-    pool_type = _text(pool_data.get("poolType") or pool_data.get("symbol"))
+    provider_pool_type = _text(pool_data.get("poolType") or pool_data.get("symbol"))
+    pool_family = _multi_pool_family(venue, provider_pool_type)
+    state_generation = MULTI_ASSET_STATE_GENERATIONS[venue]
+    _invariant_family, quote_capability_ready = pool_semantics(
+        venue, pool_family, state_generation
+    )
     if venue == "curve":
         tokens = pool_data.get("inputTokens") or []
         raw_balances = row.get("inputTokenBalances") or []
@@ -964,7 +1102,8 @@ def _multi_snapshot_records(
             stream="daily",
             row=row,
             pool=pool,
-            pool_type=pool_type,
+            provider_pool_type=provider_pool_type,
+            pool_family=pool_family,
             timestamp=timestamp,
         )
         record.update(
@@ -982,6 +1121,12 @@ def _multi_snapshot_records(
                     not state_absent
                     and not token_invalid
                     and Decimal(str(balance)) > 0
+                    and quote_capability_ready
+                ),
+                "quote_unsupported_reason": (
+                    None
+                    if quote_capability_ready
+                    else "pool_family_or_state_generation_not_admitted"
                 ),
                 "usable": bool(
                     not state_absent
@@ -1012,7 +1157,8 @@ def _multi_snapshot_records(
     meta = None
     if pool and not state_absent and not invalid_state and not missing_statics:
         meta = {
-            "pool_type": pool_type,
+            "provider_pool_type": provider_pool_type,
+            "pool_family": pool_family,
             "tokens": meta_tokens,
             "fee_1e18": fee,
             "amp_reported": amp,
@@ -1093,7 +1239,8 @@ def _multi_swap_record(
         stream="swaps",
         row=row,
         pool=pool,
-        pool_type=_text((meta or {}).get("pool_type")),
+        provider_pool_type=_text((meta or {}).get("provider_pool_type")),
+        pool_family=str((meta or {}).get("pool_family") or _multi_pool_family(venue, None)),
         timestamp=timestamp,
         tx_hash=tx_hash or None,
         block=block,
@@ -1110,7 +1257,24 @@ def _multi_swap_record(
             "amount_in_raw": amount_in,
             "amount_out_raw": amount_out,
             "value_usd": _text(row.get("valueUSD") or row.get("amountInUSD") or row.get("amountOutUSD")),
-            "quote_supported": usable and not zero_amounts,
+            "quote_supported": bool(
+                usable
+                and not zero_amounts
+                and pool_semantics(
+                    venue,
+                    str((meta or {}).get("pool_family") or _multi_pool_family(venue, None)),
+                    MULTI_ASSET_STATE_GENERATIONS[venue],
+                )[1]
+            ),
+            "quote_unsupported_reason": (
+                "pool_family_or_state_generation_not_admitted"
+                if not pool_semantics(
+                    venue,
+                    str((meta or {}).get("pool_family") or _multi_pool_family(venue, None)),
+                    MULTI_ASSET_STATE_GENERATIONS[venue],
+                )[1]
+                else None if usable and not zero_amounts else "row_state_not_quotable"
+            ),
             "usable": usable,
             "unsupported_reason": "|".join(reasons) if reasons else None,
         }
@@ -1162,7 +1326,8 @@ def _balancer_liquidity_records(
             stream="joins_exits",
             row=row,
             pool=pool,
-            pool_type=_text((meta or {}).get("pool_type")),
+            provider_pool_type=_text((meta or {}).get("provider_pool_type")),
+            pool_family=str((meta or {}).get("pool_family") or "unclassified"),
             timestamp=timestamp,
             tx_hash=tx_hash or None,
             block=block,

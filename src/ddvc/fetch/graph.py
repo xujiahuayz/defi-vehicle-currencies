@@ -6,7 +6,7 @@ import json
 import os
 import re
 import time
-from collections.abc import Iterable
+from collections.abc import Callable, Iterable
 import datetime as dt
 import threading
 from dataclasses import dataclass
@@ -253,11 +253,19 @@ def _where_literal(where: dict[str, Any]) -> str:
     return "{ " + ", ".join(parts) + " }"
 
 
-def build_query(entity: str, fields: str, where: dict[str, Any], *, page_size: int = PAGE_SIZE) -> str:
+def build_query(
+    entity: str,
+    fields: str,
+    where: dict[str, Any],
+    *,
+    page_size: int = PAGE_SIZE,
+    block_number: int | None = None,
+) -> str:
+    block_clause = f", block: {{ number: {block_number} }}" if block_number is not None else ""
     return (
         "query FetchPage { "
         f"{entity}(first: {page_size}, orderBy: id, orderDirection: asc, "
-        f"where: {_where_literal(where)}) {{ {fields} }} "
+        f"where: {_where_literal(where)}{block_clause}) {{ {fields} }} "
         "}"
     )
 
@@ -298,6 +306,8 @@ def paginate(
     fields: str,
     base_where: dict[str, Any],
     page_size: int = PAGE_SIZE,
+    block_number: int | None = None,
+    progress: Callable[[int, str], None] | None = None,
 ) -> list[dict[str, Any]]:
     rows: list[dict[str, Any]] = []
     last_id = ""
@@ -305,12 +315,23 @@ def paginate(
         where = dict(base_where)
         if last_id:
             where["id_gt"] = last_id
-        data = client.query(build_query(entity, fields, where, page_size=page_size), {})
+        data = client.query(
+            build_query(
+                entity,
+                fields,
+                where,
+                page_size=page_size,
+                block_number=block_number,
+            ),
+            {},
+        )
         page = data[entity]
         if not page:
             break
         rows.extend(page)
         last_id = page[-1]["id"]
+        if progress is not None:
+            progress(len(rows), last_id)
         if len(page) < page_size:
             break
         if client.sleep_seconds:

@@ -146,14 +146,14 @@ def clean_regressor(name: str) -> str:
         "direct_cost_advantage_median": "Median direct cost advantage",
         "vehicle_available": "Indirect route available",
         "vehicle_available_share": "Indirect-route availability",
-        "vehicle_depth": "Indirect-route depth",
-        "lp_concentration_share": "LP concentration",
+        "vehicle_quote_quality": "Indirect-route quote quality",
+        "lp_capital_share": "LP capital share",
         "no_direct_vehicle_available_share": "Indirect-only availability",
         "direct_available_share": "Direct-route availability",
-        "market_factor_loo": "Market liquidity factor",
-        "vehicle_factor_loo": "Vehicle liquidity factor",
-        "vehicle_factor_x_stress": "Vehicle factor x stress",
-        "vehicle_factor_x_post_v3": "Vehicle factor x post-V3",
+        "market_capital_factor_loo": "Market capital factor",
+        "vehicle_capital_factor_loo": "Vehicle capital factor",
+        "vehicle_capital_factor_x_stress": "Vehicle capital factor x stress",
+        "vehicle_capital_factor_x_post_v3": "Vehicle capital factor x post-V3",
         "log V3 route count": "Log V3 route count",
         "log V3 route volume": "Log V3 route volume",
     }
@@ -163,10 +163,10 @@ def clean_regressor(name: str) -> str:
 def clean_outcome(name: str) -> str:
     mapping = {
         "VehicleShare": "Vehicle share",
-        "LPConcentration": "LP concentration",
-        "log VehicleLinkedLiquidity": "Log vehicle-linked liquidity",
-        "Change in LPConcentration": "Change in LP concentration",
-        "Change in log VehicleLinkedLiquidity": "Change in log vehicle-linked liquidity",
+        "LPCapitalShare": "LP capital share",
+        "log VehicleLinkedCapital": "Log vehicle-linked capital",
+        "Change in LPCapitalShare": "Change in LP capital share",
+        "Change in log VehicleLinkedCapital": "Change in log vehicle-linked capital",
         "Actual vehicle share": "Actual vehicle share",
         "Log actual vehicle volume": "Log actual vehicle volume",
         "No-direct WETH availability": "No-direct, WETH-available",
@@ -278,7 +278,7 @@ def evidence_map() -> TableSpec:
             "RQ1",
             "When does one asset become the vehicle?",
             "Endpoint pair x candidate vehicle x day.",
-            "Direct cost advantage, indirect-route availability, indirect-route depth.",
+            "Direct cost advantage, indirect-route availability, indirect-route quote quality.",
             "Table 4",
             "Actual vehicle share and future vehicle share rise with executable indirect-route economics.",
         ],
@@ -286,9 +286,9 @@ def evidence_map() -> TableSpec:
             "RQ2",
             "How does liquidity provision make a vehicle?",
             "Token x day dynamic panel.",
-            "LP concentration, vehicle-linked liquidity, lagged vehicle share.",
+            "LP capital share, vehicle-linked deposited capital, lagged vehicle share.",
             "Table 5",
-            "Relative LP concentration and vehicle use are mutually persistent; absolute linked TVL moves differently.",
+            "Relative LP capital allocation and vehicle use are mutually persistent; absolute deposited capital moves differently.",
         ],
         [
             "RQ3",
@@ -324,11 +324,11 @@ def evidence_map() -> TableSpec:
         ],
         [
             "RQ7",
-            "Does a vehicle create common liquidity?",
-            "Pool x vehicle x day liquidity panel.",
-            "Leave-one-out vehicle liquidity factor.",
+            "Does a vehicle create common LP capital movements?",
+            "Pool x vehicle x day deposited-capital panel.",
+            "Leave-one-out vehicle capital factor.",
             "Table 9",
-            "Vehicle-linked pools share a same-vehicle liquidity component beyond market liquidity.",
+            "Vehicle-linked pools share a same-vehicle deposited-capital component beyond market capital movements.",
         ],
     ]
     return TableSpec(
@@ -378,20 +378,20 @@ def variable_table() -> TableSpec:
         "DirectCostAdvantage",
         "DirectAvailable",
         "IndirectAvailable",
-        "VehicleLinkedLiquidity",
-        "LPConcentration",
+        "VehicleLinkedCapital",
+        "LPCapitalShare",
         "SettlementTransferIncidence",
-        "VehicleLiquidityFactor",
+        "VehicleCapitalFactor",
     ]
     display_name = {
         "VehicleShare": "Vehicle share",
         "DirectCostAdvantage": "Direct cost advantage",
         "DirectAvailable": "Direct available",
         "IndirectAvailable": "Indirect route available",
-        "VehicleLinkedLiquidity": "Vehicle-linked liquidity",
-        "LPConcentration": "LP concentration",
+        "VehicleLinkedCapital": "Vehicle-linked capital",
+        "LPCapitalShare": "LP capital share",
         "SettlementTransferIncidence": "Transfer incidence",
-        "VehicleLiquidityFactor": "Vehicle liquidity factor",
+        "VehicleCapitalFactor": "Vehicle capital factor",
     }
     rows = []
     for _, r in df[df["Variable / proxy"].isin(keep)].iterrows():
@@ -425,15 +425,15 @@ def rq1_table() -> TableSpec:
             reg_cell(core, Outcome="VehicleShare", Regressor="vehicle_available_share", **{"Horizon (days)": "30"}),
         ],
         [
-            "Indirect-route depth",
-            reg_cell(actual, Outcome="Actual vehicle share", Regressor="vehicle_depth"),
+            "Indirect-route quote quality",
+            reg_cell(actual, Outcome="Actual vehicle share", Regressor="vehicle_quote_quality"),
             "",
             "",
         ],
         [
-            "LP concentration",
+            "LP capital share",
             "",
-            reg_cell(core, Outcome="VehicleShare", Regressor="lp_concentration_share", **{"Horizon (days)": "7"}),
+            reg_cell(core, Outcome="VehicleShare", Regressor="lp_capital_share", **{"Horizon (days)": "7"}),
             "",
         ],
         [
@@ -484,8 +484,8 @@ def rq2_rq3_table() -> TableSpec:
     rows: list[list[object]] = [
         ["Panel A. Liquidity-route dynamics", "", "", "", "", ""],
         [
-            "LP concentration",
-            reg_cell(lp, Panel="A. Stock feedback", Outcome="VehicleShare", Regressor="lp_concentration_share", **{"Horizon (days)": "7"}),
+            "LP capital share",
+            reg_cell(lp, Panel="A. Stock feedback", Outcome="VehicleShare", Regressor="lp_capital_share", **{"Horizon (days)": "7"}),
             "",
             "",
             "",
@@ -494,36 +494,36 @@ def rq2_rq3_table() -> TableSpec:
         [
             "Lagged vehicle share",
             "",
-            reg_cell(lp, Panel="A. Stock feedback", Outcome="LPConcentration", Regressor="BridgeShare", **{"Horizon (days)": "7"}),
-            reg_cell(lp, Panel="A. Stock feedback", Outcome="log VehicleLinkedLiquidity", Regressor="BridgeShare", **{"Horizon (days)": "7"}),
-            reg_cell(lp, Panel="B. LP stock change", Outcome="Change in LPConcentration", Regressor="BridgeShare", **{"Horizon (days)": "30"}),
-            reg_cell(lp, Panel="B. LP stock change", Outcome="Change in log VehicleLinkedLiquidity", Regressor="BridgeShare", **{"Horizon (days)": "30"}),
+            reg_cell(lp, Panel="A. Stock feedback", Outcome="LPCapitalShare", Regressor="BridgeShare", **{"Horizon (days)": "7"}),
+            reg_cell(lp, Panel="A. Stock feedback", Outcome="log VehicleLinkedCapital", Regressor="BridgeShare", **{"Horizon (days)": "7"}),
+            reg_cell(lp, Panel="B. LP stock change", Outcome="Change in LPCapitalShare", Regressor="BridgeShare", **{"Horizon (days)": "30"}),
+            reg_cell(lp, Panel="B. LP stock change", Outcome="Change in log VehicleLinkedCapital", Regressor="BridgeShare", **{"Horizon (days)": "30"}),
         ],
         [
             "Indirect-route avail.",
             "",
             "",
             "",
-            reg_cell(lp, Panel="B. LP stock change", Outcome="Change in LPConcentration", Regressor="vehicle_available_share", **{"Horizon (days)": "30"}),
-            reg_cell(lp, Panel="B. LP stock change", Outcome="Change in log VehicleLinkedLiquidity", Regressor="vehicle_available_share", **{"Horizon (days)": "30"}),
+            reg_cell(lp, Panel="B. LP stock change", Outcome="Change in LPCapitalShare", Regressor="vehicle_available_share", **{"Horizon (days)": "30"}),
+            reg_cell(lp, Panel="B. LP stock change", Outcome="Change in log VehicleLinkedCapital", Regressor="vehicle_available_share", **{"Horizon (days)": "30"}),
         ],
         [
             "Indirect-only avail.",
             "",
             "",
             "",
-            reg_cell(lp, Panel="B. LP stock change", Outcome="Change in LPConcentration", Regressor="no_direct_vehicle_available_share", **{"Horizon (days)": "30"}),
-            reg_cell(lp, Panel="B. LP stock change", Outcome="Change in log VehicleLinkedLiquidity", Regressor="no_direct_vehicle_available_share", **{"Horizon (days)": "30"}),
+            reg_cell(lp, Panel="B. LP stock change", Outcome="Change in LPCapitalShare", Regressor="no_direct_vehicle_available_share", **{"Horizon (days)": "30"}),
+            reg_cell(lp, Panel="B. LP stock change", Outcome="Change in log VehicleLinkedCapital", Regressor="no_direct_vehicle_available_share", **{"Horizon (days)": "30"}),
         ],
         ["FE", "Token and date", "Token and date", "Token and date", "Token and date", "Token and date"],
         ["SE cluster", "Date", "Date", "Date", "Date", "Date"],
         [
             "Obs.",
-            value_cell(lp, "N", Panel="A. Stock feedback", Outcome="VehicleShare", Regressor="lp_concentration_share", **{"Horizon (days)": "7"}),
-            value_cell(lp, "N", Panel="A. Stock feedback", Outcome="LPConcentration", Regressor="BridgeShare", **{"Horizon (days)": "7"}),
-            value_cell(lp, "N", Panel="A. Stock feedback", Outcome="log VehicleLinkedLiquidity", Regressor="BridgeShare", **{"Horizon (days)": "7"}),
-            value_cell(lp, "N", Panel="B. LP stock change", Outcome="Change in LPConcentration", Regressor="BridgeShare", **{"Horizon (days)": "30"}),
-            value_cell(lp, "N", Panel="B. LP stock change", Outcome="Change in log VehicleLinkedLiquidity", Regressor="BridgeShare", **{"Horizon (days)": "30"}),
+            value_cell(lp, "N", Panel="A. Stock feedback", Outcome="VehicleShare", Regressor="lp_capital_share", **{"Horizon (days)": "7"}),
+            value_cell(lp, "N", Panel="A. Stock feedback", Outcome="LPCapitalShare", Regressor="BridgeShare", **{"Horizon (days)": "7"}),
+            value_cell(lp, "N", Panel="A. Stock feedback", Outcome="log VehicleLinkedCapital", Regressor="BridgeShare", **{"Horizon (days)": "7"}),
+            value_cell(lp, "N", Panel="B. LP stock change", Outcome="Change in LPCapitalShare", Regressor="BridgeShare", **{"Horizon (days)": "30"}),
+            value_cell(lp, "N", Panel="B. LP stock change", Outcome="Change in log VehicleLinkedCapital", Regressor="BridgeShare", **{"Horizon (days)": "30"}),
         ],
         ["Panel B. Challenger displacement thresholds", "", "", "", "", ""],
     ]
@@ -763,30 +763,30 @@ def settlement_table() -> TableSpec:
     )
 
 
-def common_liquidity_table() -> TableSpec:
-    common = read_table("common_liquidity")
-    het = read_table("common_liquidity_heterogeneity")
+def common_pool_capital_table() -> TableSpec:
+    common = read_table("common_pool_capital")
+    het = read_table("common_pool_capital_heterogeneity")
     rows: list[list[object]] = [
         [
-            "Market liquidity factor",
-            reg_cell(common, **{"Sample / specification": "Full sample", "Regressor": "market_factor_loo"}),
-            reg_cell(common, **{"Sample / specification": "Stress interaction", "Regressor": "market_factor_loo"}),
-            reg_cell(het, Sample="High average VehicleShare vehicles", Regressor="market_factor_loo"),
-            reg_cell(het, Sample="Low average VehicleShare vehicles", Regressor="market_factor_loo"),
-            reg_cell(het, Sample="Excluding top 1% mean-liquidity pools", Regressor="market_factor_loo"),
+            "Market capital factor",
+            reg_cell(common, **{"Sample / specification": "Full sample", "Regressor": "market_capital_factor_loo"}),
+            reg_cell(common, **{"Sample / specification": "Stress interaction", "Regressor": "market_capital_factor_loo"}),
+            reg_cell(het, Sample="High average VehicleShare vehicles", Regressor="market_capital_factor_loo"),
+            reg_cell(het, Sample="Low average VehicleShare vehicles", Regressor="market_capital_factor_loo"),
+            reg_cell(het, Sample="Excluding top 1% mean-capital pools", Regressor="market_capital_factor_loo"),
         ],
         [
-            "Vehicle liquidity factor",
-            reg_cell(common, **{"Sample / specification": "Full sample", "Regressor": "vehicle_factor_loo"}),
-            reg_cell(common, **{"Sample / specification": "Stress interaction", "Regressor": "vehicle_factor_loo"}),
-            reg_cell(het, Sample="High average VehicleShare vehicles", Regressor="vehicle_factor_loo"),
-            reg_cell(het, Sample="Low average VehicleShare vehicles", Regressor="vehicle_factor_loo"),
-            reg_cell(het, Sample="Excluding top 1% mean-liquidity pools", Regressor="vehicle_factor_loo"),
+            "Vehicle capital factor",
+            reg_cell(common, **{"Sample / specification": "Full sample", "Regressor": "vehicle_capital_factor_loo"}),
+            reg_cell(common, **{"Sample / specification": "Stress interaction", "Regressor": "vehicle_capital_factor_loo"}),
+            reg_cell(het, Sample="High average VehicleShare vehicles", Regressor="vehicle_capital_factor_loo"),
+            reg_cell(het, Sample="Low average VehicleShare vehicles", Regressor="vehicle_capital_factor_loo"),
+            reg_cell(het, Sample="Excluding top 1% mean-capital pools", Regressor="vehicle_capital_factor_loo"),
         ],
         [
             "Vehicle factor x stress",
             "",
-            reg_cell(common, **{"Sample / specification": "Stress interaction", "Regressor": "vehicle_factor_x_stress"}),
+            reg_cell(common, **{"Sample / specification": "Stress interaction", "Regressor": "vehicle_capital_factor_x_stress"}),
             "",
             "",
             "",
@@ -795,17 +795,17 @@ def common_liquidity_table() -> TableSpec:
         ["SE cluster", "Date", "Date", "Date", "Date", "Date"],
         [
             "Obs.",
-            value_cell(common, "N", **{"Sample / specification": "Full sample", "Regressor": "vehicle_factor_loo"}),
-            value_cell(common, "N", **{"Sample / specification": "Stress interaction", "Regressor": "vehicle_factor_loo"}),
-            value_cell(het, "N", Sample="High average VehicleShare vehicles", Regressor="vehicle_factor_loo"),
-            value_cell(het, "N", Sample="Low average VehicleShare vehicles", Regressor="vehicle_factor_loo"),
-            value_cell(het, "N", Sample="Excluding top 1% mean-liquidity pools", Regressor="vehicle_factor_loo"),
+            value_cell(common, "N", **{"Sample / specification": "Full sample", "Regressor": "vehicle_capital_factor_loo"}),
+            value_cell(common, "N", **{"Sample / specification": "Stress interaction", "Regressor": "vehicle_capital_factor_loo"}),
+            value_cell(het, "N", Sample="High average VehicleShare vehicles", Regressor="vehicle_capital_factor_loo"),
+            value_cell(het, "N", Sample="Low average VehicleShare vehicles", Regressor="vehicle_capital_factor_loo"),
+            value_cell(het, "N", Sample="Excluding top 1% mean-capital pools", Regressor="vehicle_capital_factor_loo"),
         ],
     ]
     return TableSpec(
         "9",
-        "Common liquidity across pools linked to the same vehicle.",
-        "tab:rq7-common-liquidity",
+        "Common deposited capital across pools linked to the same vehicle.",
+        "tab:rq7-common-pool-capital",
         [
             "",
             header_cell("(1)", "Full", "sample"),
@@ -816,7 +816,7 @@ def common_liquidity_table() -> TableSpec:
         ],
         ["0.22\\textwidth", "0.13\\textwidth", "0.14\\textwidth", "0.13\\textwidth", "0.13\\textwidth", "0.13\\textwidth"],
         rows,
-        "Dependent variable is daily pool-level log liquidity change. Cells report coefficients with p-values beneath them. Regressions include pool-vehicle fixed effects and date-clustered standard errors. The vehicle factor is leave-one-out across other pools linked to the same vehicle.",
+        "Dependent variable is the daily pool-level log change in deposited capital. Cells report coefficients with p-values beneath them. Regressions include pool-vehicle fixed effects and date-clustered standard errors. The vehicle factor is leave-one-out across other pools linked to the same vehicle.",
         landscape=True,
     )
 
@@ -838,11 +838,11 @@ def specification_table() -> TableSpec:
         "balanced V3 launch-window pairs": "V3 launch pairs",
         "matched V3/V4 cells; LP panel around launch": "matched V3/V4 cells",
         "route availability and DirectCostAdvantage": "availability; direct cost adv.",
-        "VehicleShare; LP concentration/log TVL": "share; LP",
+        "VehicleShare; LP capital share/log capital": "share; LP capital",
         "WETH-minus-stable BridgeShare": "WETH-stable share",
         "no-direct/WETH-available indicator": "no-direct WETH",
         "transfer incidence; LP liquidity response": "transfer inc.; LP response",
-        "LP concentration; current BridgeShare": "LP conc.; lagged share",
+        "LP capital share; current BridgeShare": "LP capital; lagged share",
         "event-day WETH downside stress": "WETH stress day",
         "V4 route unit; post x netting exposure": "V4; post x netting",
         "endpoint-pair-day aggregation": "pair-day aggregation",
@@ -853,7 +853,7 @@ def specification_table() -> TableSpec:
         "pre/post balanced pair panel": "balanced pair panel",
         "V3 transfer incidence 100%": "V3 transfer 100%",
         "availability and thin-direct execution protection": "availability/thin-direct protection",
-        "relative persistence; absolute TVL is specification-sensitive": "relative persistence; level sensitivity",
+        "relative persistence; absolute capital is specification-sensitive": "relative persistence; level sensitivity",
         "same-day rotation away from WETH toward stable vehicles": "same-day WETH-to-stable rotation",
         "settlement netting lowers movement and predicts LP supply response": "netting lowers movement; LP response",
     }
@@ -943,7 +943,7 @@ def build_specs() -> list[TableSpec]:
         stress_table(),
         architecture_table(),
         settlement_table(),
-        common_liquidity_table(),
+        common_pool_capital_table(),
         specification_table(),
     ]
 

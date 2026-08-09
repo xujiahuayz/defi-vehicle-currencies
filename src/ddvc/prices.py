@@ -17,10 +17,23 @@ PRICE_COLUMNS = [
 MIN_PRICE_OBSERVATIONS = 3
 PRICE_CONSENSUS_FACTOR = 5.0
 PRICE_CONSENSUS_SHARE = 0.75
+PRICE_PANEL_COLUMNS = [
+    "token",
+    "symbol",
+    "price_usd",
+    "n_observations",
+    "n_consensus",
+    "consensus_share",
+    "gross_weight_usd",
+    "consensus_weight_usd",
+    "price_source",
+    "validation_status",
+]
 
 
-def day_prices(legs: pd.DataFrame) -> dict[str, tuple[str, float]]:
-    """Return consensus-screened, volume-weighted day prices by token address."""
+def day_price_frame(legs: pd.DataFrame) -> pd.DataFrame:
+    """Return auditable consensus-screened day prices by token address."""
+
     missing = sorted(set(PRICE_COLUMNS) - set(legs.columns))
     if missing:
         raise ValueError(f"day prices are missing columns: {', '.join(missing)}")
@@ -46,7 +59,7 @@ def day_prices(legs: pd.DataFrame) -> dict[str, tuple[str, float]]:
         & np.isfinite(data["weight"])
         & data["weight"].gt(0)
     ]
-    prices: dict[str, tuple[str, float]] = {}
+    prices: list[dict[str, object]] = []
     for token, group in data.groupby("token"):
         if len(group) < MIN_PRICE_OBSERVATIONS:
             continue
@@ -67,5 +80,28 @@ def day_prices(legs: pd.DataFrame) -> dict[str, tuple[str, float]]:
         price = float(ordered["price"].to_numpy()[np.searchsorted(cumulative, 0.5)])
         mode = ordered["symbol"].mode()
         symbol = str(mode.iloc[0]) if not mode.empty else str(token)[:8]
-        prices[str(token)] = (symbol, price)
-    return prices
+        prices.append(
+            {
+                "token": str(token),
+                "symbol": symbol,
+                "price_usd": price,
+                "n_observations": int(len(group)),
+                "n_consensus": int(consensus.sum()),
+                "consensus_share": float(consensus.mean()),
+                "gross_weight_usd": float(group["weight"].sum()),
+                "consensus_weight_usd": float(ordered["weight"].sum()),
+                "price_source": "canonical_repriced_route_legs",
+                "validation_status": "minimum_observations_and_price_consensus_passed",
+            }
+        )
+    return pd.DataFrame(prices, columns=PRICE_PANEL_COLUMNS)
+
+
+def day_prices(legs: pd.DataFrame) -> dict[str, tuple[str, float]]:
+    """Return consensus-screened, volume-weighted day prices by token address."""
+
+    frame = day_price_frame(legs)
+    return {
+        str(row.token): (str(row.symbol), float(row.price_usd))
+        for row in frame.itertuples(index=False)
+    }

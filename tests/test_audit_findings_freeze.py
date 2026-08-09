@@ -27,7 +27,10 @@ from scripts.audit_findings_freeze import (
     source_set_record_closed,
     transaction_frontier_artifact_checks,
     transaction_frontier_support_checks,
+    validate_capital_contract_rows,
     validate_literature_audit,
+    validate_liquidity_contracts,
+    validate_quote_state_contract_rows,
     validate_canonical_consumer_boundary,
     validate_claim_input_layer,
     validate_model_ledger,
@@ -35,6 +38,7 @@ from scripts.audit_findings_freeze import (
     validate_unified_route_layer,
 )
 from ddvc.literature_admission import validate_source_admission
+from ddvc.liquidity import LIQUIDITY_CONTRACTS
 from scripts.refresh_panel_dependents import (
     CLAIM_INPUT_STAGES,
     DAILY_FRONTIER_PREREQUISITES,
@@ -42,6 +46,61 @@ from scripts.refresh_panel_dependents import (
 
 
 class FindingsFreezeAuditTest(unittest.TestCase):
+    def test_every_canonical_venue_has_a_coherent_liquidity_contract(self) -> None:
+        passed, detail = validate_liquidity_contracts()
+        self.assertTrue(passed, detail)
+
+    def test_capital_rows_are_bound_to_family_generation_quantity_and_source(self) -> None:
+        rows = pd.DataFrame(
+            [
+                {
+                    "venue": contract.venue,
+                    "pool_family": contract.pool_family,
+                    "invariant_family": contract.invariant_family,
+                    "state_generation": contract.capability(
+                        "deposited_capital"
+                    ).state_generation,
+                    "quantity_kind": "deposited_capital",
+                    "capital_source": source,
+                }
+                for contract in LIQUIDITY_CONTRACTS.values()
+                if contract.capital_ready
+                for source in contract.capital_sources
+            ]
+        )
+        passed, detail = validate_capital_contract_rows(rows)
+        self.assertTrue(passed, detail)
+        rows.loc[0, "state_generation"] = "wrong_generation"
+        passed, detail = validate_capital_contract_rows(rows)
+        self.assertFalse(passed)
+        self.assertIn("unsupported", detail)
+
+    def test_quote_state_rows_are_bound_to_family_invariant_and_generation(self) -> None:
+        rows = pd.DataFrame(
+            [
+                {
+                    "venue": "uniswap_v3",
+                    "pool_family": "concentrated_liquidity",
+                    "invariant_family": "concentrated_liquidity",
+                    "state_generation": "uniswap_v3_tick_state_v2",
+                    "quote_supported": True,
+                },
+                {
+                    "venue": "curve",
+                    "pool_family": "ng_or_unclassified",
+                    "invariant_family": "ng_or_unclassified",
+                    "state_generation": "curve_multi_asset_state_v2",
+                    "quote_supported": False,
+                },
+            ]
+        )
+        passed, detail = validate_quote_state_contract_rows(rows)
+        self.assertTrue(passed, detail)
+        rows.loc[1, "quote_supported"] = True
+        passed, detail = validate_quote_state_contract_rows(rows)
+        self.assertFalse(passed)
+        self.assertIn("unsupported quote admitted", detail)
+
     def test_primary_technical_card_may_resolve_to_a_source_note(self) -> None:
         import tempfile
         from pathlib import Path
@@ -183,9 +242,16 @@ class FindingsFreezeAuditTest(unittest.TestCase):
                 "data/processed/cross_venue_routing_daily.parquet",
                 "data/processed/daily_gas_price_graph.parquet",
                 "data/processed/intermediation_by_type_daily.parquet",
+                "data/processed/lp_liquidity_flow_candidates_v3.parquet",
+                "data/processed/lp_liquidity_flow_events_v3.parquet",
+                "data/processed/lp_liquidity_flow_daily_v3.parquet",
+                "data/processed/lp_liquidity_flow_rejections_v3.parquet",
+                "data/processed/pool_candidate_capital_daily.parquet",
+                "data/processed/pool_capital_daily.parquet",
+                "data/processed/pool_capital_rejections.parquet",
                 "data/processed/rent_incidence_v2_pool_day.parquet",
-                "data/processed/rent_incidence_v3_pool_day.parquet",
                 "data/processed/route_gas_units.parquet",
+                "data/processed/token_price_daily.parquet",
                 "data/processed/vehicle_centrality_dense.parquet",
                 "data/processed/vehicle_excess_use_daily.parquet",
             },

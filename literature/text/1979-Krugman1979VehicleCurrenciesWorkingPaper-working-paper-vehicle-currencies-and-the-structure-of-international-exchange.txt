@@ -1,0 +1,986 @@
+
+
+===== PAGE 1 =====
+
+NBER WORKING PAPER SERIES
+VEHICLE CURRENCIES AND THE STRUCTURE
+OF INTERNATIONAL EXCHANGE
+Paul Krugman
+Working Paper No. 333
+NATIONAL BUREAU OF ECONOMIC RESEARCH
+1050 Massachusetts Avenue
+Cambridge MA 02138
+April 1979
+The research reported here is part of the NBER's research
+program in International Studies. Any opinions expressed
+are those of the author and, not those of the National
+Bureau of Economic Research.
+
+
+===== PAGE 2 =====
+
+NBER Working Paper 333
+April 1979
+SUMMARY
+Vehicle Currencies and the Structure of International Exchange
+This paper is concerned with the reasons why some currencies, such as
+the pound sterling and the U.S. dollar, have come to serve as "vehicles" for
+exchanges of other currencies. It develops a three—country model of payments
+equilibrium with transaction costs, and shows how one currency can emerge as
+an international medium of exchange. Transaction costs are then made
+endogenous, and it is shown how the underlying structure of payments limits,
+without necessarily completely determining, the choice and role of a vehicle
+currency. Finally, a dynamic model is developed, and the way in which one
+currency can displace another as the international medium of exchange is
+explored.
+Paul Krugman
+Department of Economics
+Yale University
+28 Hillhouse Avenue
+New Haven, CT 06520
+(203) 436—3246
+
+
+===== PAGE 3 =====
+
+Revised March 1979
+Introduction
+Most work in international monetary theory assumes a world in which there
+are only two countries and two currencies. While this is a useful simplifica-
+tion for many purposes, it does make it impossible to consider two interesting
+aspects of the international monetary system. One aspect is what we might call
+the structure of payments. In a world of more than two countries, each country
+will run balance of payments surpluses with some countries, deficits with others,
+even when its overall payments are in equilibrium. This multilateral struc-
+ture of payments will often be of considerable economic interest. The other
+neglected aspect of the international system is what we might call the
+ture of exchange. People who want to exchange one currency for another will
+not necessarily make the exchange directly. They may make the exchange by way
+of some third currency, which becomes a "vehicle" for the transaction. His-
+torically, certain currencies —thepound sterling before 1914, the U.S. dol-
+lar in recent years —havecome to be widely used as vehicle currencies. To
+put it another way, these currencies have served as international media of
+exchange. The purpose of this paper is to examine why some currencies take
+on this special role.
+There is an obvious parallel between the role of a vehicle currency in
+international exchange and the role of money in domestic exchange. In each
+case people choose to engage in indirect rather than direct exchange. When
+we ask why currencies are not exchanged directly; why one currency pre-
+dominates in indirect exchange; and what determines which currency takes on
+that o1e, we are raising issues very similar to those we raise when we ask
+why households engage in monetary exchange instead of barter; why some one
+commodity tends to emerge as a medium of exchange; and why certain commodities
+(gold, silver, furs, cigarettes) are more suited for this role than others.
+
+
+===== PAGE 4 =====
+
+2
+By bringing up familiar issues in a different context, the study of inter-
+national exchange can cast a new light on old insights. For example, I will
+show that there must be indirect exchange if countries' payments are not bi-
+laterally balanced. This, if one thinks about it, is just the counterpart in
+international exchange of Jevons' lack of "double coincidence of wants."
+Other parallels will appear in the course of the pp•i
+It is obvious that the international structure of exchange must depend
+crucially on transaction costs. Since it is notoriously difficult to integrate
+such costs into economic models, one might expect thatany analysis of the
+structure of exchange will have to b extremely complex. This need not be the
+case, however, if one is willing to look at illuminating special cases instead
+of trying for a general model. In this paper I will try to set outas simple
+a model as possible of the structure of exchange. At each point assumptions
+will be chosen to make the next step in the analysis aseasy as possible. This
+process of buying clarity at the expense of realism means that this paper must
+be regarded as a preliminary study. Nonetheless, the results seem intuitively
+plausible, and look as though they ought to generalize.
+The basic model of this paper is one in which there are three countries,
+the minimum necessary for indirect exchange. Section I analyzes the model for
+the case in which there are no transaction costs. In this case the structure
+of payments can be determined, but the structure of exchange is indeterminate.
+Transaction costs are introduced in Section II, and it is shown how the struc-
+ture of these costs determines the structure of exchange. Section III then
+allows transaction costs to depend in turn on the structure of exchange. This
+section shows how, under plausible assumptions about the nature of this depen-
+dence, the underlying structured payments limits the choice of vehiclecurrency.
+
+
+===== PAGE 5 =====
+
+3
+Finally, Section IV develops a dynamic model of the development of the exchange
+structure.
+I. The Hodel Without Transaction Costs
+Consider a world consting of three countries: A, B, and C. Each coun-
+try has its own currency, the Alpha in A, the Beta in B, and the Gamma in C.
+There are three exchange markets on which Alphas and Betas, Betas and Gammas,
+and Gammas and Aiphas can be exchanged. We will call these the ciB, By, ind yct
+markets respectively. For the purposes of this section we will assume that ex-
+changing currencies is costless.
+Let us define E8 as the price of Aiphas in terms of Betas,EFY as the
+price of Betas in terms of Gammas, and so on. Then because transactions are
+costless, arbitrage will ensure that the costs of acquiring a currency directly
+are the same as the costs of acquiring it indirectly, via the third currency.
+This condition can be written as
+E E E =1(1)ciB By ycx
+These exchange rates will be determined by the supply and demand forcur-
+rencies. I will assume that the relevant variables are flow demands andsup-
+plies. This goes against much recent literature on exchange rates, which views
+exchange rates as determined by the requirements of stock equilibrium. The
+only justification for the treatment here is simplicity. Asset market equilibrium
+in the presence of transaction costs is very difficult to model, while ifwe
+are willing to adopt a flow model the analysis is quite easy. The analysis here
+should therefore be regarded as preliminary, with the integration of this
+theory with the "asset" view of exchange rates a piece of pending business.
+The demand for and supply of currencies, then, will be assumed to arise
+
+
+===== PAGE 6 =====
+
+4
+from the desire of residents of the three countries tomake payments to other
+countries. Residents of A wanting to make payments to B,for example, will
+have to acquire Betas. The currency markets will clear if thedemand for each
+currency by foreign residents equalsthe supply from domestic residents want-
+ing to make payments in foreign currency. Let usdefineas the desired
+payment by residents of A to B, measured in Betas,similarly BC is the desired
+payment by residents of B to C, and so on.In each case we viii assume that
+'desired payments depend both on the exchange ratesand on a vector Z of other
+varaibles, which will be taken as exogenous. We canwrite the conditions of
+equilibrium in the currency markets as
+E; Z) ÷P(E,E; Z)(2)
+Earp(EEa; Z) +.PAC(EaEa; Z) for Aiphas;
+p(E, Eya; A)+ PCB(EcxBp E; Z)
+(3)
+E13. PBA(E, Eya;Z) + E81. PHC(Ea8 E1; Z)forBetas; and
+PAC(EP Ea; z)+PBC(E, E; Z)(4)
+E. PcA(E, Eya;Z) ÷EYB
+•PcB(Ea,E; Z)for Gammas. In each case
+we have written a condition of aggregatebalance of payments equilibrium. Be-
+cause of budget constraints, if any twocountries are in balance of payments
+equilibrium, the third must alsobe in balance. Notice, however, thatthere is
+no reason why countries mustbe in bilateral balance. If, for example,
+P>EP,i.e.,C runs a balance of payment surpluswith A, we can still
+ACyctCA
+have an equilibrium if A runs an offsettingsurplus, and C an offsetting
+deficit, with B.
+
+
+===== PAGE 7 =====
+
+E
+a
+Figure 1
+B
+N
+Y
+a
+5
+
+
+===== PAGE 8 =====
+
+ure 2
+6
+T A R
+T— I
+R- I
+C
+—i
+- -----
+>S
+B
+
+
+===== PAGE 9 =====
+
+sI
+7
+N
+/
+/
+Figure 3
+/
+/
+-r
+a
+S -4-T —IR+S-I
+Figure 4
+
+
+===== PAGE 10 =====
+
+8
+Figure 1 illustrates the determinationof the system of exchange rates
+under the assumption that the currencies are grosssubstitutes. The horizontal
+axis measures the price of Aiphas in termsof Betas, the vertical axis the
+price of Aiphas in terms of Gammas.The lines ctcz, 88 and yy lines represent
+positions of balance of payments equilibriumfor A, B, and C respectively.
+Wairas' Law assures that they intersect at a single point.
+Now let us consider the structure of paymentsand the range of possible
+structures of exchange. It will be helpfulif we choose units so that the
+equilibrium exchange rates are all equalto one. We can then express payments
+arbitrarily in any of the currencies. Giventhis normalization, the structure
+of payments will look like thatillustrated in Figure 2.
+In the figure, payments by residentsof one country to residents of another
+are indicated by arrows. A isshown as running a surplus of I in its exchange
+with B; we can relabel B and C if necessary tomake this true. The figure
+then shows that, to maintain balance of paymentsequilibrium, B must run a sur-
+plus of I with C, and C a surplusof I with A. Jhile payments need not be
+bilaterally balanced, then, there is a sortof conservation of imbalancC. Once
+we specify A's surplus with B, wehave also determined the imbalances be-
+tween B and C and between C and A. (Thisis a special feature of three—country
+models).
+Our next task is to consider what structuresof exchange are possible
+given this structure of payments. Obviouslythe structure of exchange is not
+determinate In the absence of transaction costs.But there are limits on the
+range of possibilities. In particular,it will not be possible to carry out
+the payments in Figure 2 solely throughdirect exchange. If everyone tried to
+acquire the desired foreign currencyin a single transaction, there would be
+
+
+===== PAGE 11 =====
+
+9
+an excess demand for Alphas on the cxB market, an excessdemand for Betas on
+the y market, and an excess demand for Gammas on the -market.So some
+indirect exchange must take place because, as already pointed out,countries
+will not usually have a "double coincidence of wants.'t
+What kinds of structure of exchange are possible? There are obviously
+infinite possibilities —forinstance, one might exchange Gammas for Aiphas
+and back again seventeen times, etc. —butonce we introduce transaction
+costs, there will turn out to be only two typesof exchange which can actually
+arise. An example of the first type is given in Figure 3, wherethe two—
+headed arrows represent the volume of transactions on the cz, y,and ya
+markets. In this example the residents of C make paymentsof I to B indirectly,
+first purchasing Alphas and then exchanging these for Betas. They continue to
+purchase S —IBetas directly, however. At the same time residents of B and
+A engage only in direct exchange. As is apparent from Figures 2 and 3, this
+clears all three currency markets, by increasing the supply of Gammas on the
+yct market and the supply of Aiphas on the c&$ market. Since this structure
+of exchange involves indirect exchange only for the imbalance in payments, let
+us call this a case of partial indirect exchange using Alphas as the vehicle
+currency, with the understanding that it is the payments imbalance I which is
+indirectly exchanged. Clearly, we can have partial indirect exchange with
+any one of the three currencies as vehicle.
+Figure 4 gives an example of the other possible kind of exchange structure.
+In this case all payments between B and C are made indirectly, through the
+medium of Aiphas. The y market disappears, while the ciB and yci markets have
+he indicated volume. Since all three countries are in balance of payments
+equilibrium, it is obvious that both existing currency markets clear. Let
+
+
+===== PAGE 12 =====
+
+10
+us call this a case of total indirect exchange, with Alphas as the vehicle
+currency. Again, we can also have total indirect exchange with Betas or
+Gammas as the vehicle.
+To summarize: I have defined two kinds of structure of exchange, partial
+indirect exchange and total indirect exchange. Each type of structure in-
+volves the use of one currency as a "vehicle" for indirect transactions. So
+we have to determine which currency is the vehicle and which kind of exchange
+structure occurs. To do this we must now introduce transaction costs.
+
+
+===== PAGE 13 =====
+
+11
+II. Transaction Costs and flxchange
+In this section I show how transaction costs can determine the structure
+of exchange. This analysis relies on the assumption that transaction costs
+are "small," so that we can use a concept of approximate equilibriumwhich
+will be defined in a moment. In essence what this concept allows us to do is
+determine the structure of exchange while ignoring any feedback from the
+structure of exchange to the structure ofpayTnents.'
+Let us begin by describing transaction costs. I will assume that in each
+of the three markets transactors must pay a brokerage fee proportional to the
+size of the transaction. This proportion will be t,t,andtin the
+ciBy
+cz, y, andmarkets respectively. It will be assumed (countrieswill be label-
+led such that) tand tare both less than t•Thiswill, as we will see,
+ya
+insure that the Alpha is the vehicle currency.
+The way these transaction costs will work is to worsen the effective ex-
+change rate one gets. Thus ifis the exchange rate on the ciB market, a
+transactor purchasing Betas will actually get only E8(l —tB)Betas per
+Alpha; a transactor purchasing Aiphas will get only E(l —taB)Aiphas per Beta.
+Because of the transaction costs, the arbit'ige condition (1) will no
+longer hold exactly. Instead there will be a deviation from triangular arbit-
+rage,
+DE E E,Ll
+ci8Byyci (5)
+I will call D, which may be either greater or less than one, tha clockwisdom
+of exchange rates. The reason for the name is that an increase in the value of
+D makes indirect exchange more attractive compared with direct exchange if the
+indirect exchange proceeds clockwise in Figures 3 and 4, less attractive if
+the indirect exchange proceeds counterclockwise. Consicer, for example, an
+exchange of Aiphas for Gammas. In direct exchange, the exchange rate is
+
+
+===== PAGE 14 =====
+
+12
+1/E1. In indirect exchange,clockwise via Betas, the rate is EEBy. There
+will thus be a bias in favor of Indirect exchange if E E>lIE,thatis,aBy
+if E E E=D>1.On the other hand, an exchange of Betas for Gammas
+ciB By yci
+takes place at a ratedirectly, whil2 the counterclockwise indirect ex-
+change takes place at a rate 1/EBEY; thusthere is a bias against indirect
+exchange if>
+1/EEthat is, EciBEBIEYa =D>1.Clearly, individuals
+deciding between direct and indirect exchange willtake into account both
+transaction costs and the clockwisdóm of exchange rates.
+Using the concept of clockwisdom we can now proceed to analyzeequilibrium.
+'Yhat I will derive here is an approximate equilibrium, which willbe close to
+the actual provided transaction costs are small. The approxiTnateflesS comes
+from considering only the effect of transaction costs on the way payments are
+made, ignoring the effect of these costs on the paymentsthemselves. Another
+way of saying this is to say that transactioncosts are taken to affect the
+structure of exchange, but that the structure of payments istaken as given.
+Specifically, let us define the equilibrium concept as follows.We will
+consider an approximate equilibrium to be (I) a set of choices of Indirect vs.
+direct exchange which would clear the three currency markets if there were no
+transaction costs, together with (ii) a clockwisdotn D in the exchange rates
+which leads people to make those choices.
+Given this concept of equilibrium, we can now state the relationship
+between transaction costs and the structure of exchange. Recallthat t and
+tare both assumed to he less than t•Thenwe can state that:
+By
+(i) The Alpha will be the vehicle currency
+(ii) If (1 —t)(1 —t)< 1—t—i.e.,if indirect exchanpe is more
+IaBy
+costly than direct —theequilibrium structure will be one of partial indirect
+
+
+===== PAGE 15 =====
+
+13
+exchange, as defined in Section 1.
+(iii) If (1 —t)(l
+—t)>1—
+t
+—indirectexchange is less costly
+than direct —theequilibrium structure will be one of total indirct exchange.
+The results (i) —(iii)make intuitive sense, since what they amount to
+is saying that the system acts in such a way as to minimize total trans-
+action costs.
+In demonstrating t1-sresalts I will m±eseof th already—mentioned "conserva-
+tion of imbalance" in a three—currency model, which Insures that if exchange
+is balanced in one currency market it is balanced in all three markets. Thus
+we can focus on the 3y market, and look for a value of D which would match the
+demand for and supply of Gammas on that market. At the same time, we can make
+use of a simple relationship between the structure of exchange and the excess
+demand for Gammas in the 3y market. This is that any shift from direct to
+indirect exchange in a clockwise direction raises the excess demand for Gammas,
+while any shift from direct to indirect exchange in a counter—clockis
+direction lowers it. For example, a shift from direct to irid&rect payments
+from A to C will add to the demand for Gammas on the 8y market, while sub-
+stituting indirect for direct payments from A to B will increase the supply
+of Gammas on that market.
+Bearing these points in mind, it is fairly easy to see how we can find
+an approximate equilibrium. For each value of D, there will be a desired
+pattern of direct and indirect exhange, that Is, a structure of exchange, with
+an implied excess demand X, on the y market. As D is Increased, the desired
+pattern will shift so as to increase that excess demand. The value of D
+which sets XB0, together with the implied structure of exchange, define
+an approximate equilibrium.2' The derivation of the equilibrium 1) is a rather
+tedious matter, and carried out in the Appendix; here I sketch out the results.
+
+
+===== PAGE 16 =====
+
+14
+Consider first the case where(1 —t)(1 —t)< (1—t),thatis,yaBywhere indirect exchange ismore costly than direct. Theexcess demand schedule
+for Gammas is illustratedin Figure 5. Flatsegments of the schedule are at
+levels of D for whichtransactors between some pair ofcurrencies are indifferent
+between direct and indirect exchange.As D is increased there ismore clock-
+wise and less counter—clockwise indirectexchange. As the Appendix shows,
+the y market Is cleared ona "flat" where transactors exchanging Gammasfor
+Betas are indifferent between directand indirect exchange, while allother
+transactors prefer direct exchange. Theresult, then, must be one of partial
+indirect exchange, as defined in SectionI and illustrated in Figure 3. In
+equilibrium, as the figure indicates, the clockwisdomD is
+(1 —
+tB)/(].
+—
+t8)(l—t)>1.We can thiitk of this as a situation in
+which holders of Gammas wishing toacquire Betas are offered a slightly better
+exchange rate on indirect transactions, which isjust enpwpi to offset the
+higher transaction cost.
+If (1 —t8)(l
+—t)>(1—
+t8),that is, indirect exchange is less
+costly than direct, the situation is somewhatdifferent, as showninFigure 6.
+!Iere D is indeterminate within the indicatedrange. The reason for the in-
+determinacy becomes clear when we examine thestructure of exchange implied
+by some D in that range, say D =1.For such a clockwisdom, transactorsex-
+changing Betas for Gammas and Gammas for Betas will bothprefer indirect ex-
+change, while all other trnsactors prefer directexchange. The implied struc-
+ture must therefore be one of total indirectexchange, as illustrated in Figure
+4. Since the By market clears with a volume ofzero, the exchange rate EB
+and hence D are of course Indeterminate.The structure of exchange is, how-
+ever, fully determined.
+In each of these cases the Alpha playsa special role as a vehicle
+
+
+===== PAGE 17 =====
+
+15
+Qrency. It enters into more transactions than A's role in world payments would
+by itself justify. The special role of A's currency arises, of course, from
+the assumption that transaction costs in the exchange markets differ. We have
+labelled the currencies so that tandtareboth less than t,andthis'r By
+insures the Aiphas will be used as a vehicle.
+But why should transaction costs be different? e would like some theory
+to explain this; in particular, we would like to relate the structureof trans—
+tlon coststo the structure of payments in some way, to make sense of the
+observedfactthat vehicle currencies have historically been the currencies of
+dominant trading nations. The next section tries to sketch out such a theory.
+III. Endogenous Transaction Costs
+Inthis section I attempt to provide an explanation of why differences
+in transaction costs might arise. The analycis is based on a somewhat ad hoc
+but simple and surprisingly powerful assumPtia1: that transaction costs as a
+proportion of the transaction are decreasing in the volume of transactions.This
+turns out to be enough to give us considerable insight bcth into the way the
+structure of payments liiits the structure of exchange, and into the exchange
+structure's dynamics.
+Since the assumption that transaction costs decrease with the size of the
+currency market is crucial to this section, we should consider (without,how-
+ever, developing a fully—worked—out model) why this night be so.It is fairly
+simple to tell stories which would have this result. Suppose, for instance,
+that on any given day the supply and demand for a currency from transactors do
+not e xactly match at the price set by cixrur tre a. Uat tle tremeet the
+difference from their own holdings. Then the average stocks of currency held
+
+
+===== PAGE 18 =====
+
+16
+D
+xBy
+Figure 5
+D(1 —1(1 — t )(1—t
+
+
+===== PAGE 19 =====
+
+D =(1-t)/(1-- t)
+Figure 6
+_____x3y
+17
+D
+D —(1—t )(1—t )/(1—t)c&By
+j
+'4
+
+
+===== PAGE 20 =====
+
+18
+by traders will reflect, not the overall volume of transactions, but the variab11
+ofexcess demand. A growth in the volume of transactions would then in-
+crease traders' costs less than proportionately if, thanks to the law of large
+numbers, theiraverage stocks did not have to increase in proportion. Similar
+hut more elaborate stories could also be told. Alternatively, we might simply
+argue that the actual physical resources needed to ru' an exchange, whether
+it is a bourse or a computer, may be largely independent of the volume of
+transactions. I leave to one side the problem of modelling the industrial
+organization of the exchange markets in this case, except to note that it
+could hardly be perfectly competitive.
+In any case, let us now consider the implications of letting transaction
+costs depend on volume. If we let V ,V,Vbe the volumes of trans-aBByia
+actions on the three markets, then we have
+t F(V8)(6)
+t F(V)(7)
+t =F(V )(8)ya
+where the function F( .) isassumed the same for all markets and we assume
+F' <0.
+If the structure of transaction costs depends in this way on the volume
+of transactions, then It depends on the structure of exchange. But the struc-
+ture of exchange, as we saw in Section II, is determined by the structure of
+transaction costs. What we must look for, then, is an exchange structure which
+Is an equilibrium in the sense that the pattern of transaction costs produced
+bychoicesof direct vs. indirect exchange sustains these choices.
+There Is no reason why there must he only one such equilibrium; there may be
+as many as six. Exchange might be partially or totally Indirect, and any one
+
+
+===== PAGE 21 =====
+
+19
+ofthe three currencies might serve as the vehicle.
+The simultaneous choice of type of exchange structure and ofvehicle
+currency makes for a very complex problem. Iwill simplify this problem by
+concentrating on two more limited choices. First, we will takethe type of cx—
+change structure as given and consider the choice of vehicle currency.Then
+we will take the vehicle currency as given and considerthe choice of exchange
+structure. These limited analyses will serve to illustrate the main principles,
+while the general case can be analyzed only through numerical examples.
+Let us begin, then, with the case in which we assume that the exchange
+structure is one of partial indirect exchange, and we are concerned solely
+with which currency is the vehicle. We start with a structureof payments like
+that in Figure 2. When a particular currency is chosen as vehicle, we geta
+structure of exchange which is an equilibrium if the impliedstructure of trans-
+action costs confirms that currency's vehicle position. From(6) —(8),
+this means that choice of a currency as vehicle must makethe volume of the two
+marketsin which that currency participates larger than the volumeof the third
+market.
+The relationship between choice of vehicle and the volume of transactions,
+for the structure of payments in Figure 2, is as follows:
+VehicleVVV
+Byya
+Currency
+a RS—IT
+B RST-I
+y R—IST
+Each currency market has a "secure1' volume arising fromcounterclockwise pay-
+ments; the volume is then increased above thislevel if one of the currencies
+traded serves as a vehicle. This suggests two things. First,because choosing
+
+
+===== PAGE 22 =====
+
+20
+a currency as vehicle swells the markets on which itis traded, we have a possibility
+of multiple equilibria. Second, because of the "securet1 partof transaction
+volume, there are some limits on this; the currencyof a country which plays
+only a minor role in world payments will not beable to overcome the advantages
+of other countries' "secure" volumes.
+These points are illustrated by the examples in Figures7 and 8. In Figure
+7, payments are synnnetrical, and any currency canserve as vehicle. If, for
+example, the Beta were to be the vehicle, wewould have V =V81
+=10,V =5;
+this would make tand tless than tand confirm the Beta as the vehicle.
+aBBy
+On the other hand, in Figure 8, A's dominance in world payments assuresthat
+the Alpha will be the vehicle currency. If one were to try to make theBeta the
+vehicle, we would have V10, V=2,V =9:the structure of trans-
+ya
+action costs would still lead people to carry out indirect exchange throughthe
+Alpha. Similarly, using the Gamma as vehicle would produce V=9,V,
+2,
+V =10;the Alpha would still be preferred for indirect exchange. So the
+unique equilibrium here is a structure of exchange using the Alpha asvehicle,
+withVVl0,V =1.aByaBy
+In partial indirect exchange, then, only the currencies of countries impor-
+tant in world payments can become vehicles; but there may be more than onesuch
+currency. (Notice, by the way, that the relationshipbetween a couny1s role
+in payments and the choice of vehicle currency is parallel to the requirement
+that a domestic medium of exchange be a good widely desired). This leaves open
+the question of which currency becomes the vehicle if more than one is capable
+of taking on that role. To answer this question we need the dynamic analysis
+of Section IV.
+Before proceeding to this analysis, however, let us consider the other
+
+
+===== PAGE 23 =====
+
+A
+Figure 7
+c_______-B
+2
+Figure 8
+2].
+.0
+5
+5
+C
+10
+A
+99'
+J
+
+
+===== PAGE 24 =====
+
+22
+special case mentioned of choice of exchangestructure: the choice between
+partial and total indirect exchange given the choiceof vehicle currency,
+Suppose that wetakeit as knownthatthe Alpha will be the vehiclecurrency,
+and the structure of payments isagain that of Figure 2. Then the possible
+structures of exchange are (i)Partia]. indirectexchan-,e: V8 =R,V8
+=S—I,V =T;(ii)Total Indirect exchange: V=R÷ S, V =0,V=S+ T.ya By
+We know from Section II that partial indirectexchange can be an equilibrium
+if (1 —t8)(l—t)<(1—
+t8),or, substituting,
+[1— F(R)J[l —F(T)J<[1—F(S —I)](9)
+This can be the case if F does not decrease toorapidly as volume increases.
+On the other hand, total indirect exchangerequires that (1 —ta8)(l_t)>
+(1—
+t1),which means that we must have
+[1 —F(R+ S)][l —F(S÷ T)] >[1—F(0))(10)
+This is more likely to be the case if F does decreaserapidly with volume.
+however, the left—hand side of (10) is larger than that of(9), while the right—
+hand side is smaller; therefore (9) and (10)are not mutually exclusive.
+One might expect that total indirectexchange would be more likely if
+some one country were very dominant in worldpayments. This is true in the
+limited sense that predominance of onecountry may make partial indirect ex-
+change impossible. In (9), increasing R and T whilereducing S —Imay reverse
+the inequality. Even this is notcertain, however. If
+[1 —F(co)J21—F(0), which is fully consistent with F' <0,the exchange
+structure will always be only partially indirectno matter how predominant
+one country is.
+To summarize, then, If transaction costsare a decreasing function of
+the volume of transactions we can relate thestructure of exchange to the
+
+
+===== PAGE 25 =====
+
+23
+structure of payments in economically sensible ways. Onlythe currency of
+a country which is important in world payments can serve as aninternational
+medium of exchange; the predominance of one country makes it more likelythat
+all transactions between the othcrs will take place indirectly.While the
+structure of exchange is thus limited by the structure of payments, however,
+there may still be several possible exchange structures. To determinewhich
+structure emerges, we need a dynamic analysis, to which we now turn.
+iv.Dynamicsof the Exchange Structure
+Since there may be several possible equilibrium structures of exchange,
+we must have some way of determining which structure actually prevails. The
+most plausible way of doing this is to specify a process of disequilibrium
+adjustment which lets us determine the eventual equilibrium given the initial
+conditions. This leaves open the question of where initial conditions come
+from; but if we can show how the structure of exchange changes over time this
+will usually be enough.
+Let us suppose, then, a dynamic process of the following kind. Decisions
+on direct versus indirect exchange will be based, not on actual transaction
+costs, but on perceived costs e e e •Theseperceived costs will be
+aB
+adjusted over time in response to the gap between them and the actual trans-
+action costs:
+thenX(tB —t:B)
+(11)
+A(t— t)(12)
+. et =X(t —t )(13)
+rur 'a
+Since the peeived transactions costs determine the structure of exchange,
+and the structure of exchange in turn determines actual transaction costs, the
+differential equations (11) —(13) capturethe complete dynamic behavior of
+exchange.
+
+
+===== PAGE 26 =====
+
+24
+A general analysis of a system of threenonlinear differentialequations
+would, of course, be very complex. Wecan, however, learn something by con-
+sidering special cases in which the problemcollapses to manageable size. What
+I will do in this section is considertwo such cases.
+Consider first a situation in which the functionF and the structure of
+payments rule out total indirect exchange, and also ruleout the Gamma as a
+vehicle currency. (Sufficient conditions forthis are
+[1 —F(°o)]2<1—F(O),and that in Figure 2 we have R —Igreater than
+S and/or T). Then we need only be concernedwith the choice between the
+Alpha and the Beta as a vehicle of partial indirectexchange. This choice
+depends on a comparison of transaction costs in the marketsin which both
+currencies do not participate, i.e., on t—t8yycz
+Figure 9 shows the dynamic system. On the vertical axis is shownthe
+perceived difference in transaction costs, on the horizontal theactual dif-
+ference. The relationship between perceived and actualcosts is shown by
+UVWX, which can be explained as follows. If transactioncosts are perceived
+to be lower in the 8y market than in theya market, the Beta will be chosen as
+the vehicle currency and the actual differencein costs will be —OV. If, on
+the other hand, transactions are believed to becheaper in the ya market, the
+Alpha will be chosen as a vehicle and the actual difference intransaction
+costs will be OW.
+The dynamics of the system are obvious, andare indicated by arrowheads.
+If the perceived difference in transactioncosts is less than the actual
+(below the 450 line), t —twill rise; if more, t—twill fall. ThereByya
+are, as drawn, two stable equilibria, one at a,corresponding to theuse of
+the Alpha as vehicle currency, the other atb, corresponding to the use of the
+
+
+===== PAGE 27 =====
+
+/
+U
+25
+t —ty ya
+te —
+Byycz
+x
+a
+/
+V
+w
+/
+b
+/
+/
+Figure 9
+
+
+===== PAGE 28 =====
+
+26
+e_eya
+I
+7/
+/
+________
+/
+b
+//
+U,
+Figure 10
+
+
+===== PAGE 29 =====
+
+27
+Beta. There need not, however, be two equilibria. If V were to shift to
+the right of the origin, the equilibrium with the Beta as vehicle currencywould
+disappear; similarly, a leftward shift of W could eliminate the possiblerole
+of the Alpha. This provides a clue to how the structure of exchange night
+evolve over time, to which I will return in a moment.
+First, however, let us consider another special case. Suppose that we can
+be certain that the Alpha will be the vehicle currency, so that the only
+question is whether indirect exchange will be partial or total.(A sufficient
+condition is R —I,T —Iboth greater than S in Figure 2, together with the
+assumption that we do not start from a position of total indirect exchange
+using the Beta or Gamma). Then we can focus on the difference between trans-
+action costs in direct and indirect exchange,
+(1 —t8)(l
+—
+tya)
+—(1—
+tBy).
+We need not draw the dynamic system in this case, since it will look just
+like that in Figure 9 except for a relabelling of the axes. Again there will
+be at most two stable equilibria, one corresponding to partial and the other
+to total indirect exchange. If country A is sufficiently predominant only
+total indirect exchange will be a stable equilibrium; if transaction costs do
+not fall enough with volume, only partial indirect exchange will be possible.
+Let us consider, finally, how the structure of exchange might evolve over
+time. If the exchange structure is in stable equilibrium, the only things that
+can change that are changes in the technology of transactions or, more interesting-
+ly, in the structure of payments..Jro see how changes in the structure of. pay-
+ments alter the exchange structure, let us return to the case illustrated in
+Figure 9, where the question is whetheror B's currency will be the vehicle.
+In Figure 10 we suppose that the system is initially in equilibrium at. b,
+i.e., the Beta is the international medium of exchange. Over time, we suppose,
+
+
+===== PAGE 30 =====
+
+28
+A's role in world payments grows and B's shrinks. The effect is to shift both
+V and W right, say to V', W'. At the point at which V passes the origin (which
+is when T —Iin Figure 2 becomes larger than S) the role of the Beta col-
+lapses, and the Alpha becomes the vehicle currency. Eventually the system
+reaches a new equilibrium at c, with the Alpha serving as the international
+medium of exchange. Interestingly, if the structure ofpayments were then to
+shift hack to its original position, so that the lines U' V• W'X' shift
+back to UV, WX, there would nonetheless have been a permanent change in the
+structure of exchange from that implied by b tothat Implied by a.
+This sequence of events suggests two important featuresof the dynamics
+of the exchange structure. The first is that the international monetary system
+is subject to "tipping"; gradual change in the underlyingstructure of pay-
+ments can, when it reaches a critical point, lead to abrupt changesIn the struc-
+ture of exchange. The second feature is the way permanent changescan result
+from temporary events. If a country temporarily holds a dominant positionin
+world payments which establishes its currency as an internationalmedium of
+exchange, its currency may continue to play thatrole even after the commer-
+cial preeminence of the country has passed.
+In this paper I have attempted to answer in a systematic waythe rather
+subtle question of why some currencies have functioned asinternational media
+of exchange. The model set forth in this paper is, of course, highlysim-
+plified. Nonetheless, it gives results which look asif they have something todo
+with the actualexperienceof international monetary history. And the model
+shows that it is possible to deal in at least a rudimentary waywith the role
+of transaction costs in international financial markets.
+
+
+===== PAGE 31 =====
+
+29
+Notes
+-"Authors who have discussed the role of vehicle currencies, and stressed the
+parallel with the use of money in domestic exchange, include Kindleberger
+(1976), Swoboda (1968), McKinnon (1969), and Chrystal (1977). DiscussIons
+of transaction costs and the structure of exchange in closed economies include
+papers by Niehans (1969) and Jones (1976), as well as a distinguished tradition
+going back to Jevons (1875) and Menger (1892).
+similar approximation is made by Jones (1976), who assumes in his model of
+domestic exchange that costs of trading have no effect on Wairasian market—
+clearing prices.
+-'Note that we are finding a value of D which would setX, —0if the implied
+choices of direct vs. indirect exchange took place without transaction costs.
+'To the extent that the costs of transactions arise from the necessity of
+holding working balances in currencies, transaction costs will also depend on
+the holding costs. I.e., if the Beta is expected to depreciate, this would
+raise tand trelative to t•Thismay be important in explaining how
+Ta
+a vehicle currency, once established, can lose its special role, see foot-
+note 5, below.
+1Strictly speaking, an exchange structure could also be disrupted by changes
+in the perceived costs of holding working balances in different currencies, as
+already mentioned in footnote 4. Thus one way of intcrpreting Figure 10 is
+that a "loss of confidence" In the Beta raises trelative to t•This
+By
+could lead to an unraveling of the Beta's role as vehicle. Notice that even
+if the loss in confidence is only temporary, it can still have a permanent
+effect on the structure of exchange.
+
+
+===== PAGE 32 =====
+
+30
+Appendix: Clockwisdom and the Equilibrium Structure of Exchange
+In Section II a concept of approximate equilibrium in the presence of
+transaction costs was developed and it was stated that:
+(i)If (1 —tB)(l
+—t)<(1—
+t8),the approximate equilibrium will
+be one with D(1 —tB)/(l
+—
+t8)(l—t),and where the only indirect ex-
+change is of Gammas for Betas;
+(ii)If (1 —taB)(l
+—
+t)
+(1 —tB),D will be indeterminate in the range
+(1 —
+t8)/(l
+—
+ta8)(l
+—
+tya)to (1 —ta8)(l—
+t)/(l
+—
+t8),and all Beta—
+Gamma exchanges will take place indirectly. The purpose of this appendix isto
+demonstrate these propositions.
+In making this demonstration, we can use two helpful aspects of the model
+already mentioned in the text. First, because of the budget constraints of
+the countries, it is sufficient to consider only one market,e.g. the By
+market. Second, the excess demand for Gammas on the By market is non—
+decreasing in D, since increases in D can never encourage a shift away from
+clockwise or towards counterclockwise indirect exchange. This means that if
+for D slightly less than D0 we find<0,while for D slfghtly more than
+we find X8 >0,all equilibrium values of D must lie in the rangeD0 to D1.
+Let us begin by analyzing the choice between direct and indirect exchange.
+Consider the example of an exchange of Aiphas for Gammas. In direct exchange,
+after transaction costs one could get E _l(l —t)Gammasper Alpha. Inyctycx
+indirect exchange one could getEaBEBY(l —tuB)(l—
+tBy)Gammas per Alpha. Clear-
+ly the breakpoint is E E E=D=(1—t)/(l —t)(l —t).Asimilara88yyayct- By
+exercise can be carried out for all such exchanges, yielding critical values of
+as shown in Table A—i. For entries below the diagonal in the table the
+value is that of the minimum D which will lead to indirect exchange; for entries
+above the diagonal it is the maximum.
+
+
+===== PAGE 33 =====
+
+Table A—i: Critical values of D for indirect exchange
+Initial currency\ Final Currency
+a Y
+(1 —
+(1 —
+tBY) (1 —
+t)
+(1 — t )(l — t )
+j3y ya
+(1 —
+(l—t ) (l—t )
+(l—t )(l—t ) (—t )(l—t )
+czr3
+a
+8
+(1 —
+t8) (1 —
+t,)
+(1 — t ) ya
+(1 —
+t8)(l
+—
+tya)
+(1 —
+t8)
+
+
+===== PAGE 34 =====
+
+32
+Given a value of D, together with information onthe structure of trans-
+action costs, we can determine for each typeof exchange whether direct or
+indirect exchange is preferred. I will use a"-F" to indicate a preference
+for indirect exchange, a ti_n to indicate a preferencefor direct exchange, and
+a "0" to indicate indifference.
+Wecannow proceed to cases. Recall that we havelabelled countries so
+that t6, tboth less than t8 .Also,the underlying structure of payments
+is assumed to be that shown in Figure 2.
+Case 1:(1 —tB)(l
+—t)<(1—
+tB).
+In this case it is immediately clear
+that D =(1—
+tB)/(l
+—
+tB)(i
+—t)corresponds to an equilibrium. Ref er-
+ring to Table A—i, wehavea matrix of preferred exchanges
+aBy
+a
+B
+10
+Thus exchanges of Gammas for Betas may take placeeither directly or indirectly,
+which is consistent with an equilibrium of partialindirect exchange as illus-
+trated in Figure 3. This equilibrium is unique. To seethis, note that for a
+slightly higher D the matrix becomes
+aBy
+a
+B
+which leads to=S—I(1; whIle for a 9lightly 1o-ier ) we have the ntrix
+aBy
+cx
+B
+
+
+===== PAGE 35 =====
+
+33
+which leads to X =—I<0.The unique equilibrium exchange structure, then,By
+is partial indirect exchange with the Alpha as vehicle.
+Case 2:(1 —t)(l—t)> (1—t).Inthis case, any value of D in thea3yeBy
+range from D0 —(1—t)(l—t)(l—t)to=(1—t)(l—t)/(l—t)ByctBye yeBy
+will lead to a matrix of preferred exchanges
+aB
++
+y+
+Thispattern, which means that all payments between B and C take place indirectly,
+corresponds to an equilibrium of total indirect exchange, as shown in Figure 4.
+This is the unique equilibrium structure although D is indeterminate. If 1)were
+slightly above D1, the matrix of preferred exchanges would be
+aBy
+a
+B—
++
+which would produce an excess demand for Gammas of S —Ion the By market. If
+D were slightly below D0, the matrix would be
+aBy
++
+y
+which would produce an excess supply of S Gammas on the By market. So the
+equilibrium structure of exchange must be total indirect exchange with the
+Alpha as vehicle.
+
+
+===== PAGE 36 =====
+
+References
+Chrystal, K.A. (1977): "Demand for International Mediaof Exchange,"
+American Economic Review, 67 (Dec.).
+Jevons, S. (1875): Money and the Mechanism of Exchange.London: Appleton.
+Jones, R.A. (1976): "The Origin and Development of Media ofExchange,"
+Journal of Political Economy, 84: (August).
+Kindleberger, C. (1967): The Politics of International Money andWorld Language."
+Princeton Essays in International Finance, no. 61
+McKinnon, R.I. (1969): "Private and Official International Money:The Case
+for the Dollar," Princeton Essays in International Finance, no. 74.
+Menger, K. (1892): "On the Origins of Money," Economic Journal,2 (June).
+Niehans, J. (1969): "Money In a Static Theory of Optimal Payment Arrange-
+ments," Journal of )oney, Credit, and Banking (November).
+Swoboda, A. (1968): "The Eurodollar Market: An Interpretation." Princeton
+Essays in International Finance, no. 64.

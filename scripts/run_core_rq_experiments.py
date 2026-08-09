@@ -3,13 +3,13 @@
 
 Outputs:
   data/empirical/core_token_day_panel.parquet
-  data/empirical/pool_vehicle_liquidity_daily.parquet
+  data/processed/pool_candidate_capital_daily.parquet (canonical input)
   data/empirical/pair_vehicle_actual_daily.parquet
   output/empirical/variable_construction.pkl
   output/empirical/core_panel_regressions.pkl
   output/empirical/persistence_thresholds.pkl
   output/empirical/stress_event_time.pkl
-  output/empirical/common_liquidity.pkl
+  output/empirical/common_pool_capital.pkl
   output/empirical/core_rq_evidence_registry.md
   output/core_empirical_rq_results.md
   output/tables/<descriptive_table_name>.{tex,pdf}
@@ -17,10 +17,7 @@ Outputs:
 from __future__ import annotations
 
 from collections import defaultdict
-import gzip
-import json
 import math
-import re
 from pathlib import Path
 
 import numpy as np
@@ -28,7 +25,10 @@ import pandas as pd
 from scipy import stats
 
 from ddvc.analysis.dynamics import value_at_day_offset
+from ddvc.analysis.lp_concentration import candidate_capital_changes
 from ddvc.analysis.regression import absorb_fixed_effects, ols_clustered_named
+from ddvc.asset_types import VEHICLE_CANDIDATE_SYMBOLS
+from ddvc.paths import LP_CAPITAL_CONCENTRATION_PANEL, POOL_CANDIDATE_CAPITAL_PANEL
 
 ROOT = Path(__file__).resolve().parents[1]
 SCRIPTS = ROOT / "scripts"
@@ -39,21 +39,8 @@ EMP = OUT / "empirical"
 from ddvc.paper_tables import _int, _num, _p, _write_table
 
 
-VEHICLES = ["WETH", "USDC", "USDT", "DAI", "WBTC"]
+VEHICLES = list(VEHICLE_CANDIDATE_SYMBOLS)
 STABLES = {"USDC", "USDT", "DAI"}
-VEHICLE_ADDRESSES = {
-    "0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2": "WETH",
-    "0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48": "USDC",
-    "0xdac17f958d2ee523a2206206994597c13d831ec7": "USDT",
-    "0x6b175474e89094c44da98b954eedeac495271d0f": "DAI",
-    "0x2260fac5e5542a773aa44fbcfedf7c193bc2c599": "WBTC",
-}
-RAW_DAILY_SOURCES = {
-    "uniswap_v3": DATA / "raw" / "thegraph" / "uniswap_v3",
-    "uniswap_v2": DATA / "raw" / "thegraph" / "uniswap_v2",
-    "sushiswap_v2": DATA / "raw" / "thegraph" / "sushiswap_v2",
-}
-MAX_POOL_LIQUIDITY_USD = 10_000_000_000
 
 
 def _ensure_dirs() -> None:
@@ -93,24 +80,24 @@ def variable_construction_table() -> pd.DataFrame:
             "Used for": "RQ1, RQ5",
         },
         {
-            "Variable / proxy": "DirectDepth",
+            "Variable / proxy": "DirectQuoteQuality",
             "Level": "endpoint pair x day x trade size",
             "Construction": "Executable direct-route quote-quality proxy: direct output USD divided by trade size. Thin-direct cells are direct-available cells with output below 90% of notional; this is not a direct pool-liquidity measure.",
             "Source": "data/empirical/route_cost_panel_v2.parquet",
             "Used for": "RQ1, RQ5",
         },
         {
-            "Variable / proxy": "VehicleLinkedLiquidity",
+            "Variable / proxy": "VehicleLinkedCapital",
             "Level": "vehicle token x day",
-            "Construction": "Allocated USD TVL in valid Uniswap V3 daily-snapshot pools containing candidate v: full pool TVL when v is the only candidate side and half when both sides are candidates.",
-            "Source": "data/exhibits/lp_concentration.parquet",
+            "Construction": "Allocated deposited capital in every admitted protocol pool containing candidate v: full pool capital when v is the only candidate side and half when both sides are candidates. This is not pool depth.",
+            "Source": "data/processed/pool_candidate_capital_daily.parquet; data/exhibits/lp_capital_concentration.parquet",
             "Used for": "RQ2, RQ3, RQ6",
         },
         {
-            "Variable / proxy": "LPConcentration",
+            "Variable / proxy": "LPCapitalShare",
             "Level": "vehicle token x day",
-            "Construction": "VehicleLinkedLiquidity divided by total vehicle-candidate linked liquidity across the vehicle set that day.",
-            "Source": "data/exhibits/lp_concentration.parquet",
+            "Construction": "VehicleLinkedCapital divided by total candidate-linked deposited capital across the vehicle set that day.",
+            "Source": "data/exhibits/lp_capital_concentration.parquet",
             "Used for": "RQ2, RQ3",
         },
         {
@@ -142,10 +129,10 @@ def variable_construction_table() -> pd.DataFrame:
             "Used for": "RQ6",
         },
         {
-            "Variable / proxy": "VehicleLiquidityFactor",
+            "Variable / proxy": "VehicleCapitalFactor",
             "Level": "vehicle token x day",
-            "Construction": "Leave-one-out average daily log-liquidity change among other pools linked to the same vehicle; paired with a leave-one-out market liquidity factor.",
-            "Source": "constructed from raw daily pool snapshots",
+            "Construction": "Leave-one-out average daily log deposited-capital change among other pools linked to the same vehicle; paired with a leave-one-out market capital factor.",
+            "Source": "data/processed/pool_candidate_capital_daily.parquet",
             "Used for": "RQ7",
         },
     ]
@@ -195,8 +182,8 @@ def route_cost_daily(trade_size: float = 10_000.0) -> pd.DataFrame:
         & r["direct_cost_advantage"].notna()
     )
     r["no_direct_vehicle_available"] = (~r["direct_available"]) & r["vehicle_available"]
-    r["direct_depth_proxy"] = np.where(r["direct_available"], r["direct_output_usd"].astype(float) / float(trade_size), np.nan)
-    r["thin_direct"] = r["direct_available"] & (r["direct_depth_proxy"] < 0.90)
+    r["direct_quote_quality"] = np.where(r["direct_available"], r["direct_output_usd"].astype(float) / float(trade_size), np.nan)
+    r["thin_direct"] = r["direct_available"] & (r["direct_quote_quality"] < 0.90)
     r["direct_cost_advantage_winsor"] = r["direct_cost_advantage"].astype(float).clip(-1, 1)
     grouped = r.groupby(["date", "token"], as_index=False)
     out = grouped.agg(
@@ -212,7 +199,7 @@ def route_cost_daily(trade_size: float = 10_000.0) -> pd.DataFrame:
             "direct_cost_advantage",
             lambda x: float((x < 0).mean()) if x.notna().any() else math.nan,
         ),
-        direct_depth_median=("direct_depth_proxy", "median"),
+        direct_quote_quality_median=("direct_quote_quality", "median"),
         thin_direct_share=("thin_direct", "mean"),
     )
     return out
@@ -222,25 +209,25 @@ def core_token_day_panel() -> pd.DataFrame:
     bridge = pd.read_parquet(DATA / "empirical" / "bridge_daily.parquet")
     bridge["date"] = pd.to_datetime(bridge["date"])
     bridge = bridge[bridge["token"].isin(VEHICLES)].copy()
-    lp = pd.read_parquet(DATA / "exhibits" / "lp_concentration.parquet").rename(columns={"token_symbol": "token"})
+    lp = pd.read_parquet(LP_CAPITAL_CONCENTRATION_PANEL).rename(columns={"token_symbol": "token"})
     lp["date"] = pd.to_datetime(lp["date"])
     lp = lp[lp["token"].isin(VEHICLES)].copy()
     rc = route_cost_daily(10_000.0)
     d = bridge.merge(
-        lp[["date", "token", "total_lp_liquidity_usd", "lp_concentration_share"]],
+        lp[["date", "token", "total_lp_capital_usd", "lp_capital_share"]],
         on=["date", "token"],
         how="left",
     ).merge(rc, on=["date", "token"], how="left")
     d = d.sort_values(["token", "date"])
-    d["log_vehicle_linked_liquidity"] = np.log1p(d["total_lp_liquidity_usd"])
+    d["log_vehicle_linked_capital"] = np.log1p(d["total_lp_capital_usd"])
     for h in [1, 7, 14, 30]:
         d[f"lag_BridgeShare_t{h}"] = value_at_day_offset(d, "BridgeShare", -h)
         d[f"future_BridgeShare_t{h}"] = value_at_day_offset(d, "BridgeShare", h)
-        d[f"future_LPConcentration_t{h}"] = value_at_day_offset(
-            d, "lp_concentration_share", h
+        d[f"future_LPCapitalShare_t{h}"] = value_at_day_offset(
+            d, "lp_capital_share", h
         )
-        d[f"future_log_liquidity_t{h}"] = value_at_day_offset(
-            d, "log_vehicle_linked_liquidity", h
+        d[f"future_log_capital_t{h}"] = value_at_day_offset(
+            d, "log_vehicle_linked_capital", h
         )
         d[f"delta_BridgeShare_t{h}"] = d["BridgeShare"] - d[f"lag_BridgeShare_t{h}"]
     out_path = DATA / "empirical" / "core_token_day_panel.parquet"
@@ -253,8 +240,8 @@ def core_panel_regressions(panel: pd.DataFrame) -> pd.DataFrame:
     specs = [
         ("RQ1/RQ2/RQ3", "future_BridgeShare_t7", "VehicleShare", 7),
         ("RQ1/RQ2/RQ3", "future_BridgeShare_t30", "VehicleShare", 30),
-        ("RQ2", "future_LPConcentration_t7", "LPConcentration", 7),
-        ("RQ2", "future_log_liquidity_t7", "log VehicleLinkedLiquidity", 7),
+        ("RQ2", "future_LPCapitalShare_t7", "LPCapitalShare", 7),
+        ("RQ2", "future_log_capital_t7", "log VehicleLinkedCapital", 7),
     ]
     x_names = [
         "BridgeShare",
@@ -262,7 +249,7 @@ def core_panel_regressions(panel: pd.DataFrame) -> pd.DataFrame:
         "no_direct_vehicle_available_share",
         "direct_available_share",
         "vehicle_available_share",
-        "lp_concentration_share",
+        "lp_capital_share",
     ]
     for rq, y_name, label, horizon in specs:
         dd = panel.copy()
@@ -422,110 +409,77 @@ def stress_event_time() -> pd.DataFrame:
     return out
 
 
-def _daily_files(source: str) -> list[Path]:
-    return sorted(RAW_DAILY_SOURCES[source].glob(f"{source}_daily_[0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9].jsonl.gz"))
+def load_pool_candidate_capital() -> pd.DataFrame:
+    """Load the canonical pool-candidate deposited-capital panel, never provider raw."""
 
-
-def _stamp(path: Path) -> str:
-    m = re.search(r"_(\d{8})\.jsonl\.gz$", path.name)
-    if not m:
-        raise ValueError(f"Cannot parse date stamp: {path}")
-    return m.group(1)
-
-
-def _safe_float(value: object) -> float:
-    try:
-        return float(value or 0)
-    except (TypeError, ValueError):
-        return math.nan
-
-
-def _parse_pool_daily_record(source: str, rec: dict, stamp: str) -> list[dict[str, object]]:
-    if source == "uniswap_v3":
-        pool = rec.get("pool") or {}
-        pool_id = str(pool.get("id", "")).lower()
-        token0 = pool.get("token0") or {}
-        token1 = pool.get("token1") or {}
-        liquidity = _safe_float(rec.get("tvlUSD"))
-        volume = _safe_float(rec.get("volumeUSD"))
-    else:
-        pool_id = str(rec.get("pairAddress") or rec.get("id") or "").lower()
-        token0 = rec.get("token0") or {}
-        token1 = rec.get("token1") or {}
-        liquidity = _safe_float(rec.get("reserveUSD"))
-        volume = _safe_float(rec.get("dailyVolumeUSD"))
-    if not pool_id or not np.isfinite(liquidity) or liquidity <= 0 or liquidity > MAX_POOL_LIQUIDITY_USD:
-        return []
-    date_iso = f"{stamp[:4]}-{stamp[4:6]}-{stamp[6:]}"
-    sides = []
-    for tok in [token0, token1]:
-        addr = str(tok.get("id", "")).lower()
-        symbol = str(tok.get("symbol", ""))
-        if addr in VEHICLE_ADDRESSES:
-            sides.append((VEHICLE_ADDRESSES[addr], addr, symbol))
-    rows = []
-    for vehicle, addr, symbol in sides:
-        rows.append(
-            {
-                "date": date_iso,
-                "dex": source,
-                "pool_id": pool_id,
-                "pool_vehicle_id": f"{source}|{pool_id}|{vehicle}",
-                "vehicle": vehicle,
-                "vehicle_address": addr,
-                "vehicle_symbol_raw": symbol,
-                "liquidity_usd": liquidity,
-                "volume_usd": volume,
-            }
+    if not POOL_CANDIDATE_CAPITAL_PANEL.exists():
+        raise FileNotFoundError(
+            "canonical candidate-capital panel is missing; run the pool-capital materializer"
         )
-    return rows
+    columns = [
+        "venue",
+        "day",
+        "pool",
+        "pool_candidate_id",
+        "candidate",
+        "candidate_address",
+        "candidate_symbol_raw",
+        "candidate_capital_usd",
+        "candidate_capital_usd_lagged",
+        "quantity_kind",
+        "capital_validation_status",
+        "exact_lag_valid",
+    ]
+    out = pd.read_parquet(POOL_CANDIDATE_CAPITAL_PANEL, columns=columns)
+    invalid_kind = set(out["quantity_kind"].dropna().astype(str)) - {"deposited_capital"}
+    invalid_status = set(out["capital_validation_status"].dropna().astype(str)) - {
+        "reported_plausible"
+    }
+    capital = pd.to_numeric(out["candidate_capital_usd"], errors="coerce")
+    lagged = pd.to_numeric(out["candidate_capital_usd_lagged"], errors="coerce")
+    invalid_lag = out["exact_lag_valid"].fillna(False) & ~(
+        np.isfinite(lagged) & lagged.gt(0)
+    )
+    if (
+        invalid_kind
+        or invalid_status
+        or invalid_lag.any()
+        or not (np.isfinite(capital) & capital.gt(0)).all()
+    ):
+        raise ValueError(
+            "candidate-capital panel contains an invalid quantity kind, validation status, or value"
+        )
+    out["date"] = pd.to_datetime(out.pop("day"), format="%Y%m%d", errors="raise")
+    out = out.rename(
+        columns={
+            "venue": "dex",
+            "pool": "pool_id",
+            "pool_candidate_id": "pool_vehicle_id",
+            "candidate": "vehicle",
+            "candidate_address": "vehicle_address",
+            "candidate_symbol_raw": "vehicle_symbol_raw",
+        }
+    )
+    if out.duplicated(["pool_vehicle_id", "date"]).any():
+        raise ValueError("duplicate pool-candidate-day capital rows")
+    return out.sort_values(["pool_vehicle_id", "date"]).reset_index(drop=True)
 
 
-def build_pool_vehicle_liquidity(force: bool = False) -> pd.DataFrame:
-    out_path = DATA / "empirical" / "pool_vehicle_liquidity_daily.parquet"
-    if out_path.exists() and not force:
-        return pd.read_parquet(out_path)
-    rows: list[dict[str, object]] = []
-    for source in RAW_DAILY_SOURCES:
-        files = _daily_files(source)
-        for i, path in enumerate(files, 1):
-            stamp = _stamp(path)
-            with gzip.open(path, "rt") as fh:
-                for line in fh:
-                    if not line.strip():
-                        continue
-                    try:
-                        rec = json.loads(line)
-                    except json.JSONDecodeError:
-                        continue
-                    rows.extend(_parse_pool_daily_record(source, rec, stamp))
-            if i % 250 == 0 or i == len(files):
-                print(f"  pool liquidity [{source}] {i}/{len(files)}", flush=True)
-    out = pd.DataFrame(rows)
-    if out.empty:
-        raise RuntimeError("No vehicle-linked pool daily rows constructed from raw daily files.")
-    out["date"] = pd.to_datetime(out["date"])
-    out = out.sort_values(["pool_vehicle_id", "date"])
-    out.to_parquet(out_path, index=False)
-    return out
-
-
-def common_liquidity_tests(pool: pd.DataFrame) -> pd.DataFrame:
+def common_pool_capital_tests(pool: pd.DataFrame) -> pd.DataFrame:
     d = pool.copy()
     d = d[d["vehicle"].isin(VEHICLES)].copy()
     d = d.sort_values(["pool_vehicle_id", "date"])
-    d["log_liquidity"] = np.log(d["liquidity_usd"].clip(lower=1.0))
-    d["dlog_liquidity"] = d.groupby("pool_vehicle_id")["log_liquidity"].diff()
-    counts = d.groupby("pool_vehicle_id")["dlog_liquidity"].transform("count")
-    d = d[(counts >= 60) & d["dlog_liquidity"].notna()].copy()
-    grp_date = d.groupby("date")["dlog_liquidity"]
+    d = candidate_capital_changes(d)
+    counts = d.groupby("pool_vehicle_id")["dlog_capital"].transform("count")
+    d = d[(counts >= 60) & d["dlog_capital"].notna()].copy()
+    grp_date = d.groupby("date")["dlog_capital"]
     d["market_sum"] = grp_date.transform("sum")
     d["market_n"] = grp_date.transform("count")
-    grp_vehicle = d.groupby(["date", "vehicle"])["dlog_liquidity"]
+    grp_vehicle = d.groupby(["date", "vehicle"])["dlog_capital"]
     d["vehicle_sum"] = grp_vehicle.transform("sum")
     d["vehicle_n"] = grp_vehicle.transform("count")
-    d["market_factor_loo"] = (d["market_sum"] - d["dlog_liquidity"]) / (d["market_n"] - 1)
-    d["vehicle_factor_loo"] = (d["vehicle_sum"] - d["dlog_liquidity"]) / (d["vehicle_n"] - 1)
+    d["market_capital_factor_loo"] = (d["market_sum"] - d["dlog_capital"]) / (d["market_n"] - 1)
+    d["vehicle_capital_factor_loo"] = (d["vehicle_sum"] - d["dlog_capital"]) / (d["vehicle_n"] - 1)
     d = d[(d["market_n"] >= 25) & (d["vehicle_n"] >= 10)].copy()
     bridge = pd.read_parquet(DATA / "empirical" / "bridge_daily.parquet", columns=["date", "token", "weth_price"])
     weth = bridge[bridge["token"].eq("WETH")][["date", "weth_price"]].copy()
@@ -535,19 +489,19 @@ def common_liquidity_tests(pool: pd.DataFrame) -> pd.DataFrame:
     weth["stress_dummy"] = (weth["downside_stress"] >= 0.08).astype(float)
     d = d.merge(weth[["date", "stress_dummy"]], on="date", how="left")
     d["stress_dummy"] = d["stress_dummy"].fillna(0.0)
-    d["vehicle_factor_x_stress"] = d["vehicle_factor_loo"] * d["stress_dummy"]
+    d["vehicle_capital_factor_x_stress"] = d["vehicle_capital_factor_loo"] * d["stress_dummy"]
     d["post_v3"] = (d["date"] >= pd.Timestamp("2021-05-05")).astype(float)
-    d["vehicle_factor_x_post_v3"] = d["vehicle_factor_loo"] * d["post_v3"]
-    d.to_parquet(DATA / "empirical" / "common_liquidity_pool_panel.parquet", index=False)
+    d["vehicle_capital_factor_x_post_v3"] = d["vehicle_capital_factor_loo"] * d["post_v3"]
+    d.to_parquet(DATA / "empirical" / "common_pool_capital_panel.parquet", index=False)
     rows = []
     specs = [
-        ("Full sample", ["market_factor_loo", "vehicle_factor_loo"]),
-        ("Stress interaction", ["market_factor_loo", "vehicle_factor_loo", "stress_dummy", "vehicle_factor_x_stress"]),
-        ("Post-V3 interaction", ["market_factor_loo", "vehicle_factor_loo", "post_v3", "vehicle_factor_x_post_v3"]),
+        ("Full sample", ["market_capital_factor_loo", "vehicle_capital_factor_loo"]),
+        ("Stress interaction", ["market_capital_factor_loo", "vehicle_capital_factor_loo", "stress_dummy", "vehicle_capital_factor_x_stress"]),
+        ("Post-V3 interaction", ["market_capital_factor_loo", "vehicle_capital_factor_loo", "post_v3", "vehicle_capital_factor_x_post_v3"]),
     ]
     for sample, names in specs:
         dd = d.copy()
-        y = absorb_fixed_effects(dd["dlog_liquidity"], dd["pool_vehicle_id"])
+        y = absorb_fixed_effects(dd["dlog_capital"], dd["pool_vehicle_id"])
         x = pd.DataFrame({name: absorb_fixed_effects(dd[name], dd["pool_vehicle_id"]) for name in names})
         n, clusters, res = ols_clustered_named(y, x, dd["date"], absorbed_groups=(dd["pool_vehicle_id"],), min_observations=30)
         for name in names:
@@ -566,13 +520,13 @@ def common_liquidity_tests(pool: pd.DataFrame) -> pd.DataFrame:
                 }
             )
     out = pd.DataFrame(rows)
-    out.to_pickle(EMP / "common_liquidity.pkl")
+    out.to_pickle(EMP / "common_pool_capital.pkl")
     _write_table(
         out,
-        "table_m12_common_liquidity",
-        "Vehicle-linked commonality in pool liquidity.",
-        "tab:common-liquidity",
-        note="Dependent variable is daily log liquidity change in vehicle-linked pools. Market and vehicle factors are leave-one-out averages, so the pool's own liquidity change is excluded from its factors.",
+        "table_m12_common_pool_capital",
+        "Vehicle-linked commonality in deposited pool capital.",
+        "tab:common-pool-capital",
+        note="Dependent variable is the daily log change in deposited capital allocated once across candidate sides. Market and vehicle factors are leave-one-out averages, so the pool's own capital change is excluded from its factors.",
     )
     return out
 
@@ -693,10 +647,10 @@ def _route_cost_10k() -> pd.DataFrame:
     r["direct_cost_advantage"] = r["direct_cost_advantage"].astype(float).clip(-2, 2)
     r["vehicle_available"] = r["vehicle_available"].astype(float)
     r["direct_available"] = r["direct_available"].astype(float)
-    r["vehicle_depth"] = (r["vehicle_output_usd"].astype(float) / r["trade_size_usd"].astype(float)).replace(
+    r["vehicle_quote_quality"] = (r["vehicle_output_usd"].astype(float) / r["trade_size_usd"].astype(float)).replace(
         [np.inf, -np.inf], np.nan
     ).clip(0, 2)
-    r["direct_depth"] = (r["direct_output_usd"].astype(float) / r["trade_size_usd"].astype(float)).replace(
+    r["direct_quote_quality"] = (r["direct_output_usd"].astype(float) / r["trade_size_usd"].astype(float)).replace(
         [np.inf, -np.inf], np.nan
     ).clip(0, 2)
     return r
@@ -718,7 +672,7 @@ def actual_route_choice_tests(actual: pd.DataFrame) -> pd.DataFrame:
         ("Actual vehicle share", 100.0 * d["actual_vehicle_share"], "pp"),
         ("Log actual vehicle volume", d["log_vehicle_volume"], "log points"),
     ]
-    x_names = ["direct_cost_advantage", "vehicle_available", "vehicle_depth"]
+    x_names = ["direct_cost_advantage", "vehicle_available", "vehicle_quote_quality"]
     for outcome, y_raw, units in specs:
         y = absorb_fixed_effects(y_raw, d["pair_date"])
         x = pd.DataFrame({name: absorb_fixed_effects(d[name], d["pair_date"]) for name in x_names})
@@ -779,10 +733,10 @@ def lp_allocation_feedback_tests(panel: pd.DataFrame, core: pd.DataFrame) -> pd.
         }
 
     rows: list[dict[str, object]] = [
-        _core_row("VehicleShare", 7, "lp_concentration_share", "A. Stock feedback", "share"),
-        _core_row("LPConcentration", 7, "BridgeShare", "A. Stock feedback", "share"),
+        _core_row("VehicleShare", 7, "lp_capital_share", "A. Stock feedback", "share"),
+        _core_row("LPCapitalShare", 7, "BridgeShare", "A. Stock feedback", "share"),
         _core_row(
-            "log VehicleLinkedLiquidity",
+            "log VehicleLinkedCapital",
             7,
             "BridgeShare",
             "A. Stock feedback",
@@ -791,12 +745,12 @@ def lp_allocation_feedback_tests(panel: pd.DataFrame, core: pd.DataFrame) -> pd.
     ]
 
     d = panel.sort_values(["token", "date"]).copy()
-    d["delta_lp_concentration_t30_pp"] = 100.0 * (
-        value_at_day_offset(d, "lp_concentration_share", 30) - d["lp_concentration_share"]
+    d["delta_lp_capital_share_t30_pp"] = 100.0 * (
+        value_at_day_offset(d, "lp_capital_share", 30) - d["lp_capital_share"]
     )
-    d["delta_log_liquidity_t30"] = (
-        value_at_day_offset(d, "log_vehicle_linked_liquidity", 30)
-        - d["log_vehicle_linked_liquidity"]
+    d["delta_log_capital_t30"] = (
+        value_at_day_offset(d, "log_vehicle_linked_capital", 30)
+        - d["log_vehicle_linked_capital"]
     )
     x_names = [
         "BridgeShare",
@@ -805,8 +759,8 @@ def lp_allocation_feedback_tests(panel: pd.DataFrame, core: pd.DataFrame) -> pd.
         "no_direct_vehicle_available_share",
     ]
     specs = [
-        ("Change in LPConcentration", "delta_lp_concentration_t30_pp", "pp"),
-        ("Change in log VehicleLinkedLiquidity", "delta_log_liquidity_t30", "log points"),
+        ("Change in LPCapitalShare", "delta_lp_capital_share_t30_pp", "pp"),
+        ("Change in log VehicleLinkedCapital", "delta_log_capital_t30", "log points"),
     ]
     for outcome, y_name, units in specs:
         y = absorb_fixed_effects(d[y_name], d["token"], d["date"])
@@ -1008,7 +962,7 @@ def v3_dose_response_tests() -> pd.DataFrame:
     outcomes = [
         ("Direct-route availability", "direct_available", 100.0, "pp"),
         ("No-direct WETH availability", "no_direct_weth", 100.0, "pp"),
-        ("DirectDepth", "direct_depth", 1.0, "ratio"),
+        ("DirectQuoteQuality", "direct_quote_quality", 1.0, "ratio"),
     ]
     for quartile, g in d.groupby("Pre-V3 direct availability quartile", observed=False):
         for outcome, y_col, scale, units in outcomes:
@@ -1110,30 +1064,30 @@ def v4_route_use_persistence_tests() -> pd.DataFrame:
     return out
 
 
-def common_liquidity_heterogeneity_tests() -> pd.DataFrame:
-    d = pd.read_parquet(DATA / "empirical" / "common_liquidity_pool_panel.parquet")
+def common_pool_capital_heterogeneity_tests() -> pd.DataFrame:
+    d = pd.read_parquet(DATA / "empirical" / "common_pool_capital_panel.parquet")
     bridge = pd.read_parquet(DATA / "empirical" / "bridge_daily.parquet", columns=["token", "BridgeShare"])
     vehicle_avg = bridge.groupby("token")["BridgeShare"].mean()
     cutoff = vehicle_avg.median()
     d["high_vehicle_dependence"] = d["vehicle"].map(lambda v: vehicle_avg.get(v, 0.0) >= cutoff)
-    mean_pool_liq = d.groupby("pool_vehicle_id")["liquidity_usd"].transform("mean")
-    top1_cutoff = mean_pool_liq.quantile(0.99)
+    mean_pool_capital = d.groupby("pool_vehicle_id")["candidate_capital_usd"].transform("mean")
+    top1_cutoff = mean_pool_capital.quantile(0.99)
     samples = [
         ("High average VehicleShare vehicles", d[d["high_vehicle_dependence"]].copy()),
         ("Low average VehicleShare vehicles", d[~d["high_vehicle_dependence"]].copy()),
-        ("Excluding top 1% mean-liquidity pools", d[mean_pool_liq <= top1_cutoff].copy()),
+        ("Excluding top 1% mean-capital pools", d[mean_pool_capital <= top1_cutoff].copy()),
     ]
     rows = []
     for sample, g in samples:
-        y = absorb_fixed_effects(g["dlog_liquidity"], g["pool_vehicle_id"])
+        y = absorb_fixed_effects(g["dlog_capital"], g["pool_vehicle_id"])
         x = pd.DataFrame(
             {
-                "market_factor_loo": absorb_fixed_effects(g["market_factor_loo"], g["pool_vehicle_id"]),
-                "vehicle_factor_loo": absorb_fixed_effects(g["vehicle_factor_loo"], g["pool_vehicle_id"]),
+                "market_capital_factor_loo": absorb_fixed_effects(g["market_capital_factor_loo"], g["pool_vehicle_id"]),
+                "vehicle_capital_factor_loo": absorb_fixed_effects(g["vehicle_capital_factor_loo"], g["pool_vehicle_id"]),
             }
         )
         n, clusters, res = ols_clustered_named(y, x, g["date"], absorbed_groups=(g["pool_vehicle_id"],), min_observations=30)
-        for name in ["market_factor_loo", "vehicle_factor_loo"]:
+        for name in ["market_capital_factor_loo", "vehicle_capital_factor_loo"]:
             rows.append(
                 {
                     "Sample": sample,
@@ -1149,13 +1103,13 @@ def common_liquidity_heterogeneity_tests() -> pd.DataFrame:
                 }
             )
     out = pd.DataFrame(rows)
-    out.to_pickle(EMP / "common_liquidity_heterogeneity.pkl")
+    out.to_pickle(EMP / "common_pool_capital_heterogeneity.pkl")
     _write_table(
         out,
-        "table_m18_common_liquidity_heterogeneity",
-        "Common liquidity heterogeneity by vehicle dependence.",
-        "tab:common-liquidity-heterogeneity",
-        note="High/low vehicle dependence is based on whether the vehicle token's average BridgeShare is above the vehicle-set median. The top-pool robustness excludes the top 1% of pools by mean liquidity.",
+        "table_m18_common_pool_capital_heterogeneity",
+        "Common deposited-capital heterogeneity by vehicle dependence.",
+        "tab:common-pool-capital-heterogeneity",
+        note="High/low vehicle dependence is based on whether the vehicle token's average BridgeShare is above the vehicle-set median. The top-pool robustness excludes the top 1% of pools by mean deposited capital.",
     )
     return out
 
@@ -1211,17 +1165,17 @@ def build_rq_registry(
             "Empirical answer": "Vehicle use is higher when the candidate expands executable indirect-route opportunity, improves route quality within common-support cells, and has a larger share of candidate-linked liquidity.",
             "Exact evidence": (
                 f"actual_route_choice: DirectCostAdvantage is negative for actual vehicle share, so stronger indirect-route cost performance is associated with greater vehicle use ({_lookup(actual_choice, Outcome='Actual vehicle share', Regressor='direct_cost_advantage')}); "
-                f"indirect-route availability is positive ({_lookup(actual_choice, Outcome='Actual vehicle share', Regressor='vehicle_available')}); indirect-route depth is positive ({_lookup(actual_choice, Outcome='Actual vehicle share', Regressor='vehicle_depth')}). "
-                f"core_panel_regressions: lagged DirectCostAdvantage predicts VehicleShare at the 7-day horizon ({_lookup(core, Outcome='VehicleShare', Regressor='direct_cost_advantage_median', **{'Horizon (days)': '7'})}); lagged indirect-route availability predicts VehicleShare ({_lookup(core, Outcome='VehicleShare', Regressor='vehicle_available_share', **{'Horizon (days)': '7'})}); lagged LPConcentration predicts VehicleShare ({_lookup(core, Outcome='VehicleShare', Regressor='lp_concentration_share', **{'Horizon (days)': '7'})})."
+                f"indirect-route availability is positive ({_lookup(actual_choice, Outcome='Actual vehicle share', Regressor='vehicle_available')}); indirect-route quote quality is positive ({_lookup(actual_choice, Outcome='Actual vehicle share', Regressor='vehicle_quote_quality')}). "
+                f"core_panel_regressions: lagged DirectCostAdvantage predicts VehicleShare at the 7-day horizon ({_lookup(core, Outcome='VehicleShare', Regressor='direct_cost_advantage_median', **{'Horizon (days)': '7'})}); lagged indirect-route availability predicts VehicleShare ({_lookup(core, Outcome='VehicleShare', Regressor='vehicle_available_share', **{'Horizon (days)': '7'})}); lagged LPCapitalShare predicts VehicleShare ({_lookup(core, Outcome='VehicleShare', Regressor='lp_capital_share', **{'Horizon (days)': '7'})})."
             ),
         },
         {
             "RQ": "RQ2. Liquidity provision",
-            "Empirical answer": "Relative LP concentration and vehicle use reinforce each other, but absolute candidate-linked TVL does not: higher current vehicle use predicts lower absolute TVL at seven days, while stronger indirect-route economics predict 30-day TVL growth.",
+            "Empirical answer": "Relative LP capital allocation and vehicle use reinforce each other, but absolute candidate-linked deposited capital does not: higher current vehicle use predicts lower absolute capital at seven days, while stronger indirect-route economics predict 30-day capital growth.",
             "Exact evidence": (
-                f"core_panel_regressions/lp_allocation_feedback: lagged LPConcentration predicts VehicleShare at the 7-day horizon ({_lookup(core, Outcome='VehicleShare', Regressor='lp_concentration_share', **{'Horizon (days)': '7'})}); "
-                f"lagged VehicleShare predicts higher LPConcentration ({_lookup(core, Outcome='LPConcentration', Regressor='BridgeShare', **{'Horizon (days)': '7'})}) but lower log VehicleLinkedLiquidity ({_lookup(core, Outcome='log VehicleLinkedLiquidity', Regressor='BridgeShare', **{'Horizon (days)': '7'})}). "
-                f"lp_allocation_feedback: indirect-route availability predicts the change in log VehicleLinkedLiquidity at the 30-day horizon ({_lookup(lp_feedback, Panel='B. LP stock change', Outcome='Change in log VehicleLinkedLiquidity', Regressor='vehicle_available_share', **{'Horizon (days)': '30'})}); DirectCostAdvantage also predicts that change ({_lookup(lp_feedback, Panel='B. LP stock change', Outcome='Change in log VehicleLinkedLiquidity', Regressor='direct_cost_advantage_median', **{'Horizon (days)': '30'})})."
+                f"core_panel_regressions/lp_allocation_feedback: lagged LPCapitalShare predicts VehicleShare at the 7-day horizon ({_lookup(core, Outcome='VehicleShare', Regressor='lp_capital_share', **{'Horizon (days)': '7'})}); "
+                f"lagged VehicleShare predicts higher LPCapitalShare ({_lookup(core, Outcome='LPCapitalShare', Regressor='BridgeShare', **{'Horizon (days)': '7'})}) but lower log VehicleLinkedCapital ({_lookup(core, Outcome='log VehicleLinkedCapital', Regressor='BridgeShare', **{'Horizon (days)': '7'})}). "
+                f"lp_allocation_feedback: indirect-route availability predicts the change in log VehicleLinkedCapital at the 30-day horizon ({_lookup(lp_feedback, Panel='B. LP stock change', Outcome='Change in log VehicleLinkedCapital', Regressor='vehicle_available_share', **{'Horizon (days)': '30'})}); DirectCostAdvantage also predicts that change ({_lookup(lp_feedback, Panel='B. LP stock change', Outcome='Change in log VehicleLinkedCapital', Regressor='direct_cost_advantage_median', **{'Horizon (days)': '30'})})."
             ),
         },
         {
@@ -1258,11 +1212,11 @@ def build_rq_registry(
             ),
         },
         {
-            "RQ": "RQ7. Common liquidity",
-            "Empirical answer": "Vehicle-linked pools share a vehicle-specific liquidity component beyond market-wide liquidity; the component is stronger in high-vehicle-dependence samples and survives top-pool exclusion.",
+            "RQ": "RQ7. Common LP capital",
+            "Empirical answer": "Vehicle-linked pools share a vehicle-specific deposited-capital component beyond market-wide capital movements; the component is stronger in high-vehicle-dependence samples and survives top-pool exclusion.",
             "Exact evidence": (
-                f"common_liquidity: vehicle factor is positive in the full sample ({_lookup(common, **{'Sample / specification': 'Full sample', 'Regressor': 'vehicle_factor_loo'})}); stress interaction is positive ({_lookup(common, **{'Sample / specification': 'Stress interaction', 'Regressor': 'vehicle_factor_x_stress'})}). "
-                f"common_liquidity_heterogeneity: high-dependence vehicle factor is positive ({_lookup(common_hetero, Sample='High average VehicleShare vehicles', Regressor='vehicle_factor_loo')}); low-dependence vehicle factor is not significant ({_lookup(common_hetero, Sample='Low average VehicleShare vehicles', Regressor='vehicle_factor_loo')}); excluding top 1% mean-liquidity pools remains positive ({_lookup(common_hetero, Sample='Excluding top 1% mean-liquidity pools', Regressor='vehicle_factor_loo')})."
+                f"common_pool_capital: vehicle factor is positive in the full sample ({_lookup(common, **{'Sample / specification': 'Full sample', 'Regressor': 'vehicle_capital_factor_loo'})}); stress interaction is positive ({_lookup(common, **{'Sample / specification': 'Stress interaction', 'Regressor': 'vehicle_capital_factor_x_stress'})}). "
+                f"common_pool_capital_heterogeneity: high-dependence vehicle factor is positive ({_lookup(common_hetero, Sample='High average VehicleShare vehicles', Regressor='vehicle_capital_factor_loo')}); low-dependence vehicle factor is not significant ({_lookup(common_hetero, Sample='Low average VehicleShare vehicles', Regressor='vehicle_capital_factor_loo')}); excluding top 1% mean-capital pools remains positive ({_lookup(common_hetero, Sample='Excluding top 1% mean-capital pools', Regressor='vehicle_capital_factor_loo')})."
             ),
         },
     ]
@@ -1284,13 +1238,13 @@ def build_rq_registry(
         ("core_panel_regressions", EMP / "core_panel_regressions.pkl"),
         ("persistence_thresholds", EMP / "persistence_thresholds.pkl"),
         ("stress_event_time", EMP / "stress_event_time.pkl"),
-        ("common_liquidity", EMP / "common_liquidity.pkl"),
+        ("common_pool_capital", EMP / "common_pool_capital.pkl"),
         ("actual_route_choice", EMP / "actual_route_choice.pkl"),
         ("lp_allocation_feedback", EMP / "lp_allocation_feedback.pkl"),
         ("pair_challenger_displacement", EMP / "pair_challenger_displacement.pkl"),
         ("v3_dose_response", EMP / "v3_dose_response.pkl"),
         ("v4_route_use_persistence", EMP / "v4_route_use_persistence.pkl"),
-        ("common_liquidity_heterogeneity", EMP / "common_liquidity_heterogeneity.pkl"),
+        ("common_pool_capital_heterogeneity", EMP / "common_pool_capital_heterogeneity.pkl"),
     ]
     detail_lines = [
         "# Core Empirical RQ Results",
@@ -1316,15 +1270,15 @@ def main() -> int:
     core = core_panel_regressions(panel)
     threshold = persistence_displacement_thresholds(panel)
     stress = stress_event_time()
-    pool = build_pool_vehicle_liquidity()
-    common = common_liquidity_tests(pool)
+    pool = load_pool_candidate_capital()
+    common = common_pool_capital_tests(pool)
     actual = build_pair_vehicle_actual_daily()
     actual_choice = actual_route_choice_tests(actual)
     lp_feedback = lp_allocation_feedback_tests(panel, core)
     challenger = pair_challenger_displacement_tests(actual)
     v3_dose = v3_dose_response_tests()
     v4_persistence = v4_route_use_persistence_tests()
-    common_hetero = common_liquidity_heterogeneity_tests()
+    common_hetero = common_pool_capital_heterogeneity_tests()
     build_rq_registry(
         core,
         threshold,

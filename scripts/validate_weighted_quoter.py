@@ -91,7 +91,7 @@ def load_pools(day: str) -> dict[str, dict]:
             closing = tuple(int(value) for value in group["balance_raw"])
             fees = group["fee_1e18"].dropna()
             fee = int(fees.iloc[0]) if not fees.empty else 0
-            pool_types = group["pool_type"].dropna()
+            pool_types = group["provider_pool_type"].dropna()
             pool_type = str(pool_types.iloc[0]) if not pool_types.empty else "unknown"
         except (TypeError, ValueError, ArithmeticError):
             continue

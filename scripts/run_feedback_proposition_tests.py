@@ -9,6 +9,7 @@ import pandas as pd
 
 from ddvc.analysis.dynamics import value_at_day_offset
 from ddvc.analysis.regression import absorb_fixed_effects, ols_clustered
+from ddvc.paths import LP_CAPITAL_CONCENTRATION_PANEL
 
 ROOT = Path(__file__).resolve().parents[1]
 SCRIPTS = ROOT / "scripts"
@@ -21,9 +22,9 @@ from ddvc.paper_tables import _int, _num, _p, _write_table
 
 def p2_feedback_loop() -> pd.DataFrame:
     bridge = pd.read_parquet(DATA / "empirical" / "bridge_daily.parquet", columns=["date", "token", "BridgeShare"])
-    lp = pd.read_parquet(DATA / "exhibits" / "lp_concentration.parquet").rename(columns={"token_symbol": "token"})
+    lp = pd.read_parquet(LP_CAPITAL_CONCENTRATION_PANEL).rename(columns={"token_symbol": "token"})
     d = bridge.merge(
-        lp[["date", "token", "lp_concentration_share", "total_lp_liquidity_usd"]],
+        lp[["date", "token", "lp_capital_share", "total_lp_capital_usd"]],
         on=["date", "token"],
         how="inner",
     )
@@ -33,15 +34,15 @@ def p2_feedback_loop() -> pd.DataFrame:
     for h in [1, 7, 14, 30]:
         dd = d.copy()
         dd["future_bridge_share"] = value_at_day_offset(dd, "BridgeShare", h)
-        dd["future_lp_concentration"] = value_at_day_offset(
-            dd, "lp_concentration_share", h
+        dd["future_lp_capital_share"] = value_at_day_offset(
+            dd, "lp_capital_share", h
         )
-        dd["future_log_lp_liquidity"] = np.log1p(
-            value_at_day_offset(dd, "total_lp_liquidity_usd", h)
+        dd["future_log_lp_capital"] = np.log1p(
+            value_at_day_offset(dd, "total_lp_capital_usd", h)
         )
         x = pd.DataFrame(
             {
-                "lp_concentration": absorb_fixed_effects(dd["lp_concentration_share"], dd["token"], dd["date"]),
+                "lp_capital_share": absorb_fixed_effects(dd["lp_capital_share"], dd["token"], dd["date"]),
                 "current_bridge_share": absorb_fixed_effects(dd["BridgeShare"], dd["token"], dd["date"]),
             }
         )
@@ -56,28 +57,28 @@ def p2_feedback_loop() -> pd.DataFrame:
         res = fit.named_statistics(list(x.columns), offset=1)
         rows.append(
             {
-                "Panel": "A. Lagged liquidity -> VehicleShare",
+                "Panel": "A. Lagged LP capital -> VehicleShare",
                 "Horizon (days)": h,
                 "Outcome": "VehicleShare",
                 "N": _int(n),
                 "Date clusters": _int(clusters),
-                "Main regressor": "Lagged LP concentration",
-                "Beta": _num(res["lp_concentration_beta"], 3),
-                "SE": _num(res["lp_concentration_se"], 3),
-                "t": _num(res["lp_concentration_t"], 2),
-                "p": _p(res["lp_concentration_p"]),
+                "Main regressor": "Lagged LP capital share",
+                "Beta": _num(res["lp_capital_share_beta"], 3),
+                "SE": _num(res["lp_capital_share_se"], 3),
+                "t": _num(res["lp_capital_share_t"], 2),
+                "p": _p(res["lp_capital_share_p"]),
                 "Control": f"Lagged VehicleShare beta { _num(res['current_bridge_share_beta'], 3) }",
             }
         )
         x_rev = pd.DataFrame(
             {
                 "current_bridge_share": absorb_fixed_effects(dd["BridgeShare"], dd["token"], dd["date"]),
-                "lp_concentration": absorb_fixed_effects(dd["lp_concentration_share"], dd["token"], dd["date"]),
+                "lp_capital_share": absorb_fixed_effects(dd["lp_capital_share"], dd["token"], dd["date"]),
             }
         )
         for outcome, label in [
-            ("future_lp_concentration", "LP concentration"),
-            ("future_log_lp_liquidity", "log LP liquidity"),
+            ("future_lp_capital_share", "LP capital share"),
+            ("future_log_lp_capital", "log LP capital"),
         ]:
             fit = ols_clustered(
                 absorb_fixed_effects(dd[outcome], dd["token"], dd["date"]),
@@ -90,7 +91,7 @@ def p2_feedback_loop() -> pd.DataFrame:
             res = fit.named_statistics(list(x_rev.columns), offset=1)
             rows.append(
                 {
-                    "Panel": "B. Lagged VehicleShare -> liquidity",
+                    "Panel": "B. Lagged VehicleShare -> LP capital",
                     "Horizon (days)": h,
                     "Outcome": label,
                     "N": _int(n),
@@ -100,7 +101,7 @@ def p2_feedback_loop() -> pd.DataFrame:
                     "SE": _num(res["current_bridge_share_se"], 3),
                     "t": _num(res["current_bridge_share_t"], 2),
                     "p": _p(res["current_bridge_share_p"]),
-                    "Control": f"Lagged LP concentration beta { _num(res['lp_concentration_beta'], 3) }",
+                    "Control": f"Lagged LP capital-share beta { _num(res['lp_capital_share_beta'], 3) }",
                 }
             )
     out = pd.DataFrame(rows)
@@ -109,12 +110,12 @@ def p2_feedback_loop() -> pd.DataFrame:
     _write_table(
         out,
         "table_r32_p2_liquidity_route_feedback",
-        "Bidirectional liquidity-route feedback.",
+        "Bidirectional LP-capital and route-use feedback.",
         "tab:p2-liquidity-route-feedback",
         note=(
             "All regressions residualize by token and date fixed effects and cluster by date. "
-            "Panel A asks whether lagged vehicle-linked LP concentration predicts VehicleShare. "
-            "Panel B asks whether lagged VehicleShare predicts LP concentration or log LP liquidity."
+            "Panel A asks whether lagged vehicle-linked LP capital share predicts VehicleShare. "
+            "Panel B asks whether lagged VehicleShare predicts LP capital share or log LP capital."
         ),
     )
     return out
@@ -137,7 +138,7 @@ def p4b_netting_lp_response() -> pd.DataFrame:
             median_route_usd=("route_usd", "median"),
         )
     )
-    lp = pd.read_parquet(DATA / "exhibits" / "lp_concentration.parquet").rename(columns={"token_symbol": "token"})
+    lp = pd.read_parquet(LP_CAPITAL_CONCENTRATION_PANEL).rename(columns={"token_symbol": "token"})
     lp["date"] = pd.to_datetime(lp["date"])
     lp["week"] = lp["date"].dt.to_period("W-MON").dt.start_time
     event_week = pd.Timestamp("2025-01-20")
@@ -147,18 +148,18 @@ def p4b_netting_lp_response() -> pd.DataFrame:
         lp[(lp["week"] >= lo) & (lp["week"] <= hi)]
         .groupby(["week", "token"], as_index=False)
         .agg(
-            lp_concentration_share=("lp_concentration_share", "mean"),
-            total_lp_liquidity_usd=("total_lp_liquidity_usd", "mean"),
+            lp_capital_share=("lp_capital_share", "mean"),
+            total_lp_capital_usd=("total_lp_capital_usd", "mean"),
         )
     )
     d = weekly.merge(exposure, on="token", how="inner")
     d["post"] = (d["week"] >= event_week).astype(float)
     d["post_x_netting_exposure"] = d["post"] * d["netting_exposure"]
-    d["log_lp_liquidity"] = np.log1p(d["total_lp_liquidity_usd"])
+    d["log_lp_capital"] = np.log1p(d["total_lp_capital_usd"])
     rows = []
     for outcome, label in [
-        ("lp_concentration_share", "LP concentration"),
-        ("log_lp_liquidity", "log LP liquidity"),
+        ("lp_capital_share", "LP capital share"),
+        ("log_lp_capital", "log LP capital"),
     ]:
         x = pd.DataFrame(
             {

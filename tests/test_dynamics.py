@@ -5,10 +5,13 @@ import unittest
 import numpy as np
 import pandas as pd
 
-from ddvc.analysis.dynamics import value_at_day_offset
+from ddvc.analysis.dynamics import CANONICAL_RESPONSE_HORIZONS, value_at_day_offset
 
 
 class CalendarDynamicsTests(unittest.TestCase):
+    def test_response_horizon_ladder_has_one_calendar_day_owner(self) -> None:
+        self.assertEqual(CANONICAL_RESPONSE_HORIZONS, (1, 7, 30, 120))
+
     def test_offsets_match_exact_dates_in_an_unbalanced_calendar(self) -> None:
         panel = pd.DataFrame(
             {

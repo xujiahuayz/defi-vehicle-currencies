@@ -7,8 +7,10 @@ import unittest
 from pathlib import Path
 from unittest.mock import patch
 
+from ddvc.fetch.graph import build_query
 from ddvc.fetch.raw import (
     merge_stream_metadata,
+    require_mergeable_partial_metadata,
     write_json,
     write_jsonl_gz,
 )
@@ -26,6 +28,53 @@ from scripts.fetch_raw_market_data import enrich_v4_statics_day
 
 
 class RawMetaMergeTests(unittest.TestCase):
+    def test_partial_refresh_refuses_legacy_metadata_without_stream_ledger(self) -> None:
+        with self.assertRaisesRegex(RuntimeError, "legacy metadata"):
+            require_mergeable_partial_metadata(
+                {"swaps": 100},
+                requested_streams={"daily"},
+                canonical_streams={"daily", "swaps"},
+            )
+        require_mergeable_partial_metadata(
+            {"streams": {"daily": {"status": "fetched"}}},
+            requested_streams={"daily"},
+            canonical_streams={"daily", "swaps"},
+        )
+
+    def test_graph_query_can_lock_an_immutable_historical_block(self) -> None:
+        query = build_query(
+            "pools",
+            "id",
+            {},
+            block_number=123,
+        )
+        self.assertIn("block: { number: 123 }", query)
+
+    def test_graph_pagination_progress_receives_cumulative_rows(self) -> None:
+        from ddvc.fetch.graph import paginate
+
+        class Client:
+            sleep_seconds = 0
+
+            def __init__(self) -> None:
+                self.calls = 0
+
+            def query(self, _query, _variables):
+                self.calls += 1
+                return {"pools": [{"id": "a"}]} if self.calls == 1 else {"pools": []}
+
+        updates = []
+        rows = paginate(
+            Client(),
+            entity="pools",
+            fields="id",
+            base_where={},
+            page_size=1,
+            progress=lambda count, last_id: updates.append((count, last_id)),
+        )
+        self.assertEqual(rows, [{"id": "a"}])
+        self.assertEqual(updates, [(1, "a")])
+
     def test_raw_gzip_is_byte_reproducible(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:
             target = Path(tmp) / "rows.jsonl.gz"

@@ -3,7 +3,10 @@
 
 This ports the counterfactual idea from DDC into the DVC raw layout. It combines
 V2-style constant-product pools from Uniswap V2/SushiSwap V2 hourly reserves
-with Uniswap V3 quotes reconstructed from raw swaps plus mint/burn liquidity.
+with admitted V3/V4 concentrated-liquidity quotes reconstructed from ordered
+swaps plus liquidity changes. Realised routes retain the full venue perimeter;
+counterfactual quotes fail closed to protocol families whose exact historical
+state, invariant, and independent validation are separately registered.
 For each day, endpoint pair, vehicle candidate, and trade-size bucket, it
 compares the best direct route against the best two-hop vehicle route available
 in the same daily state.
@@ -23,13 +26,13 @@ import sys
 from collections import defaultdict
 from concurrent.futures import ProcessPoolExecutor, as_completed
 from dataclasses import dataclass
-from decimal import Decimal
 from pathlib import Path
 
 import numpy as np
 import pandas as pd
 
 from ddvc.asset_types import WETH, canonical_token
+from ddvc.liquidity import require_quantity_support
 from ddvc.source_records import timestamp_value, v4_statics_complete
 from ddvc.paths import DATA_DIR, OUTPUT_DIR, REPO_ROOT, ROUTE_COST_JOB_LOCK
 from ddvc.panel_assembly import assemble_parquet_shards
@@ -38,27 +41,6 @@ from ddvc.provenance import cache_key
 from ddvc.provenance import stamp as record_provenance
 from ddvc.route_cost import MAX_INPUT_TO_RESERVE, MAX_PRICE_IMPACT, QUOTE_CELL_KEYS
 from ddvc.pricing.v2quote import quote_exact_input_float
-from ddvc.pricing.stableswap import StablePool
-from ddvc.pricing.stableswap import calibrate_amp as _calibrate_amp
-from ddvc.pricing.stableswap import quote_exact_input as _stable_quote
-from ddvc.pricing.weighted import (
-    FIT_QUANTILE as _WEIGHTED_QUANTILE,
-)
-from ddvc.pricing.weighted import (
-    MAX_CALIBRATION_ERROR as _WEIGHTED_GATE,
-)
-from ddvc.pricing.weighted import (
-    MIN_QUOTED_SHARE as _WEIGHTED_MIN_SHARE,
-)
-from ddvc.pricing.weighted import ONE as _WEIGHTED_ONE
-from ddvc.pricing.weighted import BalanceEvent, WeightedPool
-from ddvc.pricing.weighted import calibrate_fee as _calibrate_fee
-from ddvc.pricing.weighted import (
-    calibrate_weight_ratio as _calibrate_weight_ratio,
-)
-from ddvc.pricing.weighted import quote_error_at as _weighted_error
-from ddvc.pricing.weighted import quote_exact_input as _weighted_quote
-from ddvc.pricing.weighted import rebuild_pre_trade_balances
 from ddvc.pricing.tick_quote import quote_tick_state
 from ddvc.pricing.v3quote import get_sqrt_ratio_at_tick
 from ddvc.pricing.tick_state import (
@@ -92,9 +74,12 @@ VEHICLE_BY_ADDRESS = {
 VEHICLE_ADDRESSES = tuple(VEHICLE_BY_ADDRESS)
 V2_SOURCES = ("uniswap_v2", "sushiswap_v2")
 V3_START = "20210504"
-CURVE_START = "20200211"
-BALANCER_START = "20210422"          # Balancer v2's first indexed swap day
-WETH_ADDR = "0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2"
+QUOTE_FAMILY_PERIMETER = (
+    ("uniswap_v2", "full_range_constant_product"),
+    ("sushiswap_v2", "full_range_constant_product"),
+    ("uniswap_v3", "concentrated_liquidity"),
+    ("uniswap_v4", "vanilla_concentrated"),
+)
 
 # The support rule and quote-cell identity are owned by ``ddvc.route_cost`` so the
 # builder, diagnostics, assembler, and cache fingerprint cannot drift independently.
@@ -105,20 +90,24 @@ DAY_WORK_STREAMS = {
     "sushiswap_v2": ("hourly_reserves",),
     "uniswap_v3": ("swaps", "mints", "burns"),
     "uniswap_v4": ("swaps", "modify_liquidities"),
-    "curve": ("daily", "swaps"),
-    "balancer": ("daily", "swaps", "joins_exits"),
 }
-
-
-def _impact_ok(marginal_out: float, actual_out: float) -> bool:
-    """Is this leg inside the support, judged by its own slippage?"""
-    if marginal_out <= 0 or actual_out <= 0:
-        return False
-    return (marginal_out - actual_out) / marginal_out <= MAX_PRICE_IMPACT
-
 
 def bounded_route_workers(requested: int) -> int:
     return min(MAX_ROUTE_WORKERS, max(1, requested))
+
+
+def require_quote_family_perimeter(*, include_tick: bool = True) -> None:
+    """Bind this generation to independently admitted family/quantity contracts."""
+
+    perimeter = QUOTE_FAMILY_PERIMETER if include_tick else QUOTE_FAMILY_PERIMETER[:2]
+    for venue, family in perimeter:
+        for quantity in ("quote_quality", "executable_band_depth"):
+            require_quantity_support(
+                venue,
+                quantity,
+                family,
+                use="quote_quality",
+            )
 
 
 def estimated_day_input_bytes(stamp: str) -> int:
@@ -146,12 +135,7 @@ QUOTE_SOURCES = [
     "src/ddvc/pricing/tick_quote.py",
     "src/ddvc/pricing/tick_state.py",
     "src/ddvc/pricing/v2quote.py",
-    # Curve and Balancer price legs too, so a change to either changes quotes. Omitting
-    # them left the fingerprint dishonest: tightening the Curve calibration gate would
-    # not have invalidated a single cached day, which is the same defect as the original
-    # date-keyed cache that served quotes from a broken quoter through two fixes.
-    "src/ddvc/pricing/stableswap.py",
-    "src/ddvc/pricing/weighted.py",
+    "src/ddvc/liquidity.py",
     "scripts/run_route_cost_panel.py",
 ]
 QUOTE_INPUTS = [
@@ -162,8 +146,6 @@ QUOTE_INPUTS = [
         "sushiswap_v2",
         "uniswap_v3",
         "uniswap_v4",
-        "curve",
-        "balancer",
     )),
 ]
 QUOTE_ENGINE = cache_key(QUOTE_SOURCES, inputs=QUOTE_INPUTS)
@@ -241,11 +223,6 @@ class Pool:
     tick_net: dict[int, int] | None = None
     sorted_ticks: tuple[int, ...] | None = None
     sqrt_ticks: tuple[int, ...] | None = None
-    stable: object | None = None      # StablePool for Curve-style n-token pools
-    weighted: object | None = None    # WeightedPool for Balancer n-token weighted pools
-    # W(token0) / W(token1) when the pool's reported weights failed their fit and the ratio
-    # was identified from trades instead. None means the WeightedPool's own weights are used.
-    weight_ratio: object | None = None
 
 
 V3PoolState = TickPoolState
@@ -355,6 +332,18 @@ def _load_v2_pools_by_hour(stamp: str,
     by_hour: dict[int, dict[frozenset[str], list[Pool]]] = {
         h: defaultdict(list) for h in hours}
     for source in V2_SOURCES:
+        require_quantity_support(
+            source,
+            "quote_quality",
+            "full_range_constant_product",
+            use="quote_quality",
+        )
+        require_quantity_support(
+            source,
+            "executable_band_depth",
+            "full_range_constant_product",
+            use="quote_quality",
+        )
         path = _raw_path(source, "hourly_reserves", stamp)
         if not path.exists():
             continue
@@ -615,6 +604,18 @@ def _load_tick_pools_from_state(
     tick_net_by_pool: dict[str, dict[int, int]],
     required_pairs: set[frozenset[str]] | None = None,
 ) -> dict[frozenset[str], list[Pool]]:
+    family = (
+        "vanilla_concentrated"
+        if venue == "uniswap_v4"
+        else "concentrated_liquidity"
+    )
+    require_quantity_support(venue, "quote_quality", family, use="quote_quality")
+    require_quantity_support(
+        venue,
+        "executable_band_depth",
+        family,
+        use="quote_quality",
+    )
     pools: dict[frozenset[str], list[Pool]] = defaultdict(list)
     for pool_id, st in state_by_pool.items():
         if pool_id in _QUARANTINED_TICK_POOLS.get(venue, set()):
@@ -655,443 +656,6 @@ def _load_tick_pools_from_state(
 
 
 
-# Curve pools, keyed on the day. The amplification coefficient is not published by the
-# Messari subgraph, so it is calibrated per pool-day from that day's own realised trades
-# and the pool is admitted only if the calibration reproduced them: median 0.022% error
-# with 98.8% of quotes inside 1% across seven validated days. A pool whose best fit is
-# poor is running a different invariant, almost always one of Curve's crypto-pools, and
-# is excluded rather than quoted with an error that would enter the panel as depth.
-_CURVE_DAY: dict[str, object] = {"stamp": None, "pools": None}
-
-
-def _load_curve_pools(stamp: str) -> dict[frozenset[str], list[Pool]]:
-    """Quotable Curve pools for one day, calibrated and screened.
-
-    An n-token pool serves every pair among its tokens, so one pool registers under
-    each unordered pair it can bridge. Balances are daily snapshots, which the
-    validation showed is adequate here: intra-day drift would have surfaced in that
-    0.022% error and did not.
-    """
-    if _CURVE_DAY["stamp"] == stamp:
-        return _CURVE_DAY["pools"]
-
-    meta: dict[str, dict] = {}
-    path = _raw_path("curve", "daily", stamp)
-    if path.exists():
-        with gzip.open(path, "rt") as fh:
-            for line in fh:
-                if not line.strip():
-                    continue
-                r = json.loads(line)
-                pool = r.get("pool") or {}
-                pid = str(pool.get("id", "")).lower()
-                bals = r.get("inputTokenBalances")
-                toks = pool.get("inputTokens") or []
-                if not pid or not bals or len(bals) != len(toks) or len(toks) < 2:
-                    continue
-                try:
-                    meta[pid] = {
-                        "tokens": tuple(
-                            canonical_token(tk.get("id"), unify_wrapped=UNIFY_WRAPPED) or ""
-                            for tk in toks),
-                        "raw_tokens": tuple(str(tk.get("id", "")).lower() for tk in toks),
-                        "decimals": tuple(int(tk.get("decimals")) for tk in toks),
-                        "balances": tuple(int(b) for b in bals),
-                        "syms": tuple(str(tk.get("symbol", "")) for tk in toks),
-                    }
-                except (TypeError, ValueError):
-                    continue
-
-    trades: dict[str, list] = defaultdict(list)
-    spath = _raw_path("curve", "swaps", stamp)
-    if spath.exists() and meta:
-        with gzip.open(spath, "rt") as fh:
-            for line in fh:
-                if not line.strip():
-                    continue
-                s = json.loads(line)
-                pid = ((s.get("pool") or {}).get("id") or "").lower()
-                if pid not in meta:
-                    continue
-                try:
-                    ti = str(s["tokenIn"]["id"]).lower()
-                    to = str(s["tokenOut"]["id"]).lower()
-                    ai, ao = int(s["amountIn"]), int(s["amountOut"])
-                except (KeyError, TypeError, ValueError):
-                    continue
-                if ai > 0 and ao > 0:
-                    trades[pid].append((ti, to, ai, ao))
-
-    pools: dict[frozenset[str], list[Pool]] = defaultdict(list)
-    for pid, m in meta.items():
-        obs = trades.get(pid) or []
-        if len(obs) < 4:
-            continue
-        fit = _calibrate_amp(m["balances"], m["decimals"], m["raw_tokens"], obs)
-        if fit is None:
-            continue
-        amp, _err = fit
-        sp = StablePool(pool_id=pid, tokens=m["raw_tokens"], balances=m["balances"],
-                        decimals=m["decimals"], amp=amp)
-        n = len(m["tokens"])
-        for i in range(n):
-            for j in range(i + 1, n):
-                a, b = m["tokens"][i], m["tokens"][j]
-                if not a or not b or a == b:
-                    continue
-                pools[frozenset((a, b))].append(Pool(
-                    source="curve", pool=pid, kind="stable",
-                    token0=a, token1=b, sym0=m["syms"][i], sym1=m["syms"][j],
-                    dec0=m["decimals"][i], dec1=m["decimals"][j],
-                    reserve0=0.0, reserve1=0.0, stable=sp))
-    _CURVE_DAY.update(stamp=stamp, pools=pools)
-    return pools
-
-
-# Balancer weighted pools, keyed on the day AND resolved to each hour of it.
-#
-# Why this is not a daily loader like Curve's. Balancer publishes one `poolSnapshots.amounts`
-# record per pool-day, and pricing every hour of the day against that one vector is the
-# mixed-instant defect this panel already paid for once, when the concentrated-liquidity venues
-# sat at end of day while the constant-product family sat at end of hour and the two disagreed by
-# a median 0.345% against a signal of tens of basis points. Curve could take the daily reading
-# because StableSwap near par is almost flat, and the validation confirmed intra-day drift was
-# invisible in its 0.022% error. Balancer weighted pools hold volatile assets on purpose, so the
-# same shortcut is not available: holding the snapshot flat across the day costs a median 1.7% of
-# quote error, which is five times the misalignment the panel already treated as a defect.
-#
-# What makes hourly state cheap anyway. The snapshot is the balance after the day's LAST event, so
-# netting the day's whole flow off it recovers the opening state and replaying that flow forward
-# reaches every intermediate state, including the state at the end of each hour. The flow is the
-# day's swaps plus its joins and exits, both already on disk, so the whole day's hourly path costs
-# two file reads and no extra fetch. That is why Balancer gets end-of-hour balances on the same
-# convention as the v2 family instead of a daily approximation.
-_BAL_DAY: dict[str, object] = {"stamp": None, "hours": None, "pools": None}
-
-# A pool-day with fewer trades than this cannot be screened at all, so it is excluded. Pricing it
-# unscreened would put a pool whose maths was never checked into the panel, which is the thing the
-# achieved-fit-error rule exists to prevent.
-_BAL_MIN_SCREEN_TRADES = 2
-
-# Fitting a parameter needs more evidence than reading one. Below this, only the reported weights
-# and fee are allowed, because one free scalar against two or three trades fits them by
-# construction and the clean fit that produces means nothing.
-_BAL_MIN_FIT_TRADES = 4
-
-
-def _bal_pool_meta(stamp: str) -> dict[str, dict]:
-    """Per-pool statics and the day's CLOSING balances, in RAW integer units."""
-    meta: dict[str, dict] = {}
-    path = _raw_path("balancer", "daily", stamp)
-    if not path.exists():
-        return meta
-    with gzip.open(path, "rt") as fh:
-        for line in fh:
-            if not line.strip():
-                continue
-            r = json.loads(line)
-            pool = r.get("pool") or {}
-            pid = str(pool.get("id", "")).lower()
-            toks = pool.get("tokens") or []
-            order = [str(a).lower() for a in (pool.get("tokensList") or [])]
-            amounts = r.get("amounts") or []
-            if not pid or len(toks) < 2 or len(order) != len(amounts):
-                continue
-            try:
-                raw_tokens = tuple(str(t.get("address", "")).lower() for t in toks)
-                decimals = tuple(int(t["decimals"]) for t in toks)
-                weights = tuple(
-                    int(Decimal(str(t["weight"])) * _WEIGHTED_ONE)
-                    if t.get("weight") is not None else 0
-                    for t in toks)
-                human = dict(zip(order, amounts))
-                closing = tuple(
-                    int((Decimal(str(human.get(a, "0"))) * (10 ** d)).to_integral_value())
-                    for a, d in zip(raw_tokens, decimals))
-                fee = int(Decimal(str(pool.get("swapFee") or "0")) * _WEIGHTED_ONE)
-            except (KeyError, TypeError, ValueError, ArithmeticError):
-                continue
-            canon = tuple(canonical_token(a, unify_wrapped=UNIFY_WRAPPED) or ""
-                          for a in raw_tokens)
-            # Canonicalising native ETH onto WETH could in principle collapse two of one pool's
-            # tokens into one address, and the quote looks its tokens up by address, so the pool
-            # would silently price the wrong leg. Balancer holds WETH and not native ETH so this
-            # should never fire, and it is checked instead of assumed.
-            present = [c for c in canon if c]
-            if len(set(present)) != len(present):
-                continue
-            meta[pid] = {
-                "raw_tokens": raw_tokens, "tokens": canon, "decimals": decimals,
-                "weights": weights, "closing": closing, "fee": fee,
-                "syms": tuple(str(t.get("symbol", "")) for t in toks),
-                "pool_type": str(pool.get("poolType") or "unknown"),
-            }
-    return meta
-
-
-def _bal_day_events(stamp: str, meta: dict[str, dict]) -> dict[str, list]:
-    """The day's swaps, joins and exits per pool, in execution order with their hour.
-
-    `block` orders across blocks and the decimal log index suffixed to an entity id orders within
-    one block, which is the only intra-block ordering the raw layer carries. Joins and exits are
-    merged into the same sequence because they move balances too, and a swap-only walk leaves an
-    unobservable jump wherever liquidity entered or left the pool.
-    """
-    day_start = int(pd.Timestamp(f"{stamp[:4]}-{stamp[4:6]}-{stamp[6:]}", tz="UTC").timestamp())
-
-    def hour_of(ts: int) -> int:
-        return min(23, max(0, (int(ts) - day_start) // 3600))
-
-    def log_index(entity_id: str) -> int:
-        return int(entity_id[66:]) if len(entity_id) > 66 else 0
-
-    staged: dict[str, list] = defaultdict(list)
-    spath = _raw_path("balancer", "swaps", stamp)
-    if spath.exists():
-        with gzip.open(spath, "rt") as fh:
-            for line in fh:
-                if not line.strip():
-                    continue
-                s = json.loads(line)
-                pid = ((s.get("poolId") or {}).get("id") or "").lower()
-                if pid not in meta:
-                    continue
-                try:
-                    staged[pid].append((
-                        int(s["block"]), log_index(str(s["id"])), hour_of(s["timestamp"]),
-                        "swap", str(s["tokenIn"]).lower(), str(s["tokenOut"]).lower(),
-                        Decimal(str(s["tokenAmountIn"])), Decimal(str(s["tokenAmountOut"])),
-                        None))
-                except (KeyError, TypeError, ValueError, ArithmeticError):
-                    continue
-    jpath = _raw_path("balancer", "joins_exits", stamp)
-    if jpath.exists():
-        with gzip.open(jpath, "rt") as fh:
-            for line in fh:
-                if not line.strip():
-                    continue
-                e = json.loads(line)
-                pool = e.get("pool") or {}
-                pid = (pool.get("id") or "").lower()
-                if pid not in meta:
-                    continue
-                order = [str(a).lower() for a in (pool.get("tokensList") or [])]
-                amounts = e.get("amounts") or []
-                if len(order) != len(amounts):
-                    continue
-                sign = -1 if str(e.get("type") or "").lower() == "exit" else 1
-                try:
-                    signed = {a: sign * Decimal(str(v)) for a, v in zip(order, amounts)}
-                    staged[pid].append((
-                        int(e["block"]), log_index(str(e["id"])), hour_of(e["timestamp"]),
-                        "liquidity", None, None, None, None, signed))
-                except (KeyError, TypeError, ValueError, ArithmeticError):
-                    continue
-    for v in staged.values():
-        v.sort(key=lambda x: (x[0], x[1]))
-    return staged
-
-
-def _bal_walk_day(m: dict, staged: list) -> tuple[list, dict[int, tuple[int, ...]]] | None:
-    """Replay one pool's day, returning its scorable trades and its end-of-hour balances.
-
-    Two things come out of one walk. The trades, each paired as an observation with the pool state
-    it actually faced, which is what the screen is scored on. And the balances at the END of every
-    hour, which is the state the panel prices that hour against, on the same convention the v2
-    family's hourly reserves already use.
-    """
-    dec = dict(zip(m["raw_tokens"], m["decimals"]))
-    idx = {t: i for i, t in enumerate(m["raw_tokens"])}
-    n = len(m["raw_tokens"])
-    events: list[BalanceEvent] = []
-    swap_rows: list[tuple[str, str, int, int, int]] = []
-    for _, _, hour, kind, t_in, t_out, amt_in, amt_out, signed in staged:
-        deltas = [0] * n
-        if kind == "swap":
-            if t_in not in dec or t_out not in dec or t_in == t_out:
-                return None
-            try:
-                raw_in = int((amt_in * (10 ** dec[t_in])).to_integral_value())
-                raw_out = int((amt_out * (10 ** dec[t_out])).to_integral_value())
-            except ArithmeticError:
-                return None
-            if raw_in <= 0 or raw_out <= 0:
-                return None
-            deltas[idx[t_in]] = raw_in
-            deltas[idx[t_out]] = -raw_out
-            swap_rows.append((t_in, t_out, raw_in, raw_out, hour))
-            events.append(BalanceEvent(deltas=tuple(deltas), is_swap=True))
-            continue
-        for token, amount in signed.items():
-            if token not in idx:
-                continue                       # a token the snapshot does not carry
-            try:
-                deltas[idx[token]] = int((amount * (10 ** dec[token])).to_integral_value())
-            except ArithmeticError:
-                return None
-        events.append(BalanceEvent(deltas=tuple(deltas), is_swap=False))
-
-    path = rebuild_pre_trade_balances(m["closing"], events)
-    if path is None or len(path) != len(swap_rows):
-        return None
-
-    # The opening state is the pre-trade state of the first swap when the day opens on a swap, and
-    # otherwise it has to be recomputed, because a day opening on a join has no swap to read it
-    # from. Netting the whole flow off the closing snapshot gives it either way.
-    opening = list(m["closing"])
-    for event in events:
-        opening = [b - d for b, d in zip(opening, event.deltas)]
-
-    # End-of-hour balances. Every event stamps the hour it landed in, so the last event of an hour
-    # leaves that hour's closing state behind. Hours with no events carry the previous hour
-    # forward, and hours before the day's first event carry the opening state.
-    at_hour: dict[int, tuple[int, ...]] = {}
-    running = list(opening)
-    for event, (_, _, hour, *_rest) in zip(events, staged):
-        running = [b + d for b, d in zip(running, event.deltas)]
-        at_hour[hour] = tuple(running)
-    hourly: dict[int, tuple[int, ...]] = {}
-    carried = tuple(opening)
-    for h in range(24):
-        carried = at_hour.get(h, carried)
-        hourly[h] = carried
-
-    # Observations carry the pool's RAW token addresses, because trades reference those, and the
-    # pool's reported fee, because the screen's first tier is exactly the reported parameters.
-    observations = [
-        (WeightedPool(pool_id="screen", tokens=m["raw_tokens"], balances=balances,
-                      decimals=m["decimals"], weights=m["weights"], fee=m["fee"],
-                      pool_type=m["pool_type"]),
-         t_in, t_out, raw_in, raw_out)
-        for balances, (t_in, t_out, raw_in, raw_out, _) in zip(path, swap_rows)
-    ]
-    return observations, hourly
-
-
-def _bal_screen(m: dict, obs: list) -> tuple[int, dict] | None:
-    """Accept a pool-day on achieved fit error, returning (fee, weight-ratio map) or None.
-
-    Three tiers, each adding at most one free scalar, in order of how much they assume. Read
-    parameters first, since for a plain weighted pool that never repriced itself the reported
-    weights and fee are exact. Then the fee alone, which is the parameter most likely to be stale
-    because the subgraph serves it at the head block and a pool's owner can change it. Then the
-    weight ratio per token pair, which is what a liquidity-bootstrapping or managed pool needs.
-
-    Nothing is excluded on `poolType`. Balancer's vault hosts stable, composable-stable,
-    Gyroscope, linear and boosted pools and none of those is a weighted geometric mean, but the
-    label is not the test: an amplification range that merely looked plausible let Curve
-    crypto-pools into a StableSwap fit at 36% median error, and the fix there and here is to
-    decide on the error a pool actually achieves.
-    """
-    if len(obs) < _BAL_MIN_SCREEN_TRADES:
-        return None
-    reported = _weighted_error(obs)
-    if reported is not None and reported <= _WEIGHTED_GATE:
-        return m["fee"], {}
-    if len(obs) < _BAL_MIN_FIT_TRADES:
-        return None
-
-    fee_fit = _calibrate_fee(obs, max_error=_WEIGHTED_GATE)
-    if fee_fit is not None:
-        return fee_fit[0], {}
-
-    by_pair: dict[tuple[str, str], list] = defaultdict(list)
-    for o in obs:
-        key = (o[1], o[2]) if o[1] < o[2] else (o[2], o[1])
-        by_pair[key].append(o)
-    ratios: dict[tuple[str, str], object] = {}
-    for (a, b), sub in by_pair.items():
-        fit = _calibrate_weight_ratio(a, b, sub, max_error=_WEIGHTED_GATE)
-        if fit is not None:
-            ratios[(a, b)] = fit[0]
-            ratios[(b, a)] = 1 / fit[0]
-    if not ratios:
-        return None
-    covered = [o for o in obs if (o[1], o[2]) in ratios]
-    if len(covered) < max(1, int(_WEIGHTED_MIN_SHARE * len(obs))):
-        return None                             # a subset fit would leave the rest unpriced
-    errs: list[float] = []
-    for o in covered:
-        q = _weighted_quote(o[0], o[1], o[2], o[3], weight_ratio=ratios[(o[1], o[2])])
-        if q is None or o[4] <= 0:
-            continue
-        errs.append(abs(q - o[4]) / o[4])
-    if len(errs) < max(1, int(_WEIGHTED_MIN_SHARE * len(obs))):
-        return None
-    errs.sort()
-    achieved = errs[min(len(errs) - 1, int(_WEIGHTED_QUANTILE * len(errs)))]
-    if achieved > _WEIGHTED_GATE:
-        return None
-    return m["fee"], ratios
-
-
-def _load_balancer_pools_by_hour(
-        stamp: str, hours: tuple[int, ...]) -> dict[int, dict[frozenset[str], list[Pool]]]:
-    """Screened Balancer weighted pools for one day, resolved to each requested hour.
-
-    An n-token weighted pool serves every pair among its tokens, so one pool registers under each
-    unordered pair it can bridge, the way `_load_curve_pools` does for Curve.
-    """
-    by_hour: dict[int, dict[frozenset[str], list[Pool]]] = {
-        h: defaultdict(list) for h in hours}
-    meta = _bal_pool_meta(stamp)
-    if not meta:
-        return by_hour
-    staged = _bal_day_events(stamp, meta)
-
-    for pid, m in meta.items():
-        rec = staged.get(pid) or []
-        if not rec:
-            continue
-        walked = _bal_walk_day(m, rec)
-        if walked is None:
-            continue
-        obs, hourly = walked
-        if not obs:
-            continue
-        # The screen is scored against the state each trade faced, which is the same object the
-        # validation used. Every hour of the day reuses the one verdict, so the calibration is paid
-        # once per pool-day and not once per pool-hour.
-        verdict = _bal_screen(m, obs)
-        if verdict is None:
-            continue
-        fee, ratios = verdict
-
-        n = len(m["tokens"])
-        for h in hours:
-            balances = hourly[h]
-            if any(b <= 0 for b in balances):
-                continue
-            wp = WeightedPool(pool_id=pid, tokens=m["tokens"], balances=balances,
-                              decimals=m["decimals"], weights=m["weights"], fee=fee,
-                              pool_type=m["pool_type"])
-            for i in range(n):
-                for j in range(i + 1, n):
-                    a, b = m["tokens"][i], m["tokens"][j]
-                    if not a or not b or a == b:
-                        continue
-                    ra, rb = m["raw_tokens"][i], m["raw_tokens"][j]
-                    ratio = ratios.get((ra, rb)) if ratios else None
-                    if ratios and ratio is None:
-                        continue          # this pair's exponent was never identified
-                    by_hour[h][frozenset((a, b))].append(Pool(
-                        source="balancer", pool=pid, kind="weighted",
-                        token0=a, token1=b, sym0=m["syms"][i], sym1=m["syms"][j],
-                        dec0=m["decimals"][i], dec1=m["decimals"][j],
-                        reserve0=0.0, reserve1=0.0, weighted=wp, weight_ratio=ratio))
-    return by_hour
-
-
-def _load_balancer_pools(stamp: str, hour: int,
-                         hours: tuple[int, ...] | None = None
-                         ) -> dict[frozenset[str], list[Pool]]:
-    want = hours or (hour,)
-    if _BAL_DAY["stamp"] != stamp or _BAL_DAY["hours"] != want:
-        _BAL_DAY.update(stamp=stamp, hours=want,
-                        pools=_load_balancer_pools_by_hour(stamp, want))
-    return _BAL_DAY["pools"].get(hour, {})
-
-
 def _best_quote(
     pools: dict[frozenset[str], list[Pool]],
     token_in: str,
@@ -1117,45 +681,6 @@ def _best_quote(
             out = quote_exact_input_float(amount_in, p.reserve0, p.reserve1)
         elif p.kind == "v2" and token_in == p.token1 and token_out == p.token0:
             out = quote_exact_input_float(amount_in, p.reserve1, p.reserve0)
-        elif p.stable is not None:
-            # Curve-style n-token pool. The StableSwap quote needs RAW integer units,
-            # and the pool's own token order is preserved on the StablePool, so the
-            # canonicalised endpoints are mapped back through it.
-            si = p.stable.index_of(token_in if token_in != WETH_ADDR else token_in)
-            if si is None:
-                continue
-            dec_in = p.dec0 if token_in == p.token0 else p.dec1
-            dec_out = p.dec1 if token_in == p.token0 else p.dec0
-            amt_atomic = int(amount_in * 10 ** dec_in)
-            raw_out = _stable_quote(p.stable, token_in, token_out, amt_atomic)
-            probe_atomic = max(1, amt_atomic // 10_000)
-            probe_raw = _stable_quote(p.stable, token_in, token_out, probe_atomic)
-            if raw_out and probe_raw:
-                out = raw_out / 10 ** dec_out
-                marginal = (probe_raw / 10 ** dec_out) * (amt_atomic / probe_atomic)
-                if not _impact_ok(marginal, out):
-                    continue
-                if out > best:
-                    best, best_source, best_pool = out, p.source, p.pool
-            continue
-        elif p.weighted is not None:
-            # Balancer n-token weighted pool. The quote needs RAW integer units and the pool's own
-            # token order is preserved on the WeightedPool, so the canonical endpoints index into
-            # it directly. `weight_ratio` is set only when the pool's reported weights failed
-            # their fit and the exponent was identified from trades, and it is stored for
-            # token0 to token1, so the reverse direction takes its reciprocal.
-            dec_in = p.dec0 if token_in == p.token0 else p.dec1
-            dec_out = p.dec1 if token_in == p.token0 else p.dec0
-            ratio = p.weight_ratio
-            if ratio is not None and token_in != p.token0:
-                ratio = 1 / ratio
-            raw_out = _weighted_quote(p.weighted, token_in, token_out,
-                                      int(amount_in * 10 ** dec_in), weight_ratio=ratio)
-            if raw_out:
-                out = raw_out / 10 ** dec_out
-                if out > best:
-                    best, best_source, best_pool = out, p.source, p.pool
-            continue
         # Dispatch on whether the pool HAS a tick map rather than on a kind string.
         # Renaming the kind from "v3_exact" to "tick_exact" while this branch still
         # tested the old value made every concentrated-liquidity pool load, enter the
@@ -1215,15 +740,6 @@ def _build_day(
     pools = defaultdict(list)
     for key, vals in _load_v2_pools(stamp, hour=hour, hours=all_hours or (hour,)).items():
         pools[key].extend(vals)
-    if stamp >= CURVE_START:
-        for key, vals in _load_curve_pools(stamp).items():
-            pools[key].extend(vals)
-    if stamp >= BALANCER_START:
-        # Hour-resolved, unlike Curve, because the balance path is reconstructed and an hourly
-        # reading therefore costs nothing beyond the walk that the screen already needs.
-        for key, vals in _load_balancer_pools(stamp, hour=hour,
-                                             hours=all_hours or (hour,)).items():
-            pools[key].extend(vals)
     if tick_state and tick_ticks:
         required_pairs: set[frozenset[str]] = set()
         for r in pairs.itertuples(index=False):
@@ -1440,6 +956,15 @@ def main() -> int:
     ap.add_argument("--no-v3", action="store_true", help="only use V2-style constant-product pools")
     args = ap.parse_args()
     args.workers = bounded_route_workers(args.workers)
+    require_quote_family_perimeter(include_tick=not args.no_v3)
+    active_quote_perimeter = (
+        QUOTE_FAMILY_PERIMETER
+        if not args.no_v3
+        else QUOTE_FAMILY_PERIMETER[:2]
+    )
+    quote_perimeter_label = ",".join(
+        f"{venue}/{family}" for venue, family in active_quote_perimeter
+    )
 
     global UNIFY_WRAPPED
     UNIFY_WRAPPED = not args.split_wrapped
@@ -1566,7 +1091,8 @@ def main() -> int:
             record_provenance(out_path, code_sources=PANEL_SOURCES, inputs=QUOTE_INPUTS,
                               rows=n_rows,
                               notes=f"quote engine {QUOTE_ENGINE}; "
-                                    f"day cache {DAY_CACHE.name}; {len(hours)} hour(s)/day")
+                                    f"day cache {DAY_CACHE.name}; {len(hours)} hour(s)/day; "
+                                    f"counterfactual quote families {quote_perimeter_label}")
             record_provenance(summary_path, code_sources=SUMMARY_SOURCES, inputs=[out_path],
                               rows=len(summary))
             print(f"wrote {n_rows:,} rows -> {out_path}")
@@ -1614,7 +1140,8 @@ def main() -> int:
     summary = write_route_cost_summary(out_path, summary_path)
     record_provenance(out_path, code_sources=PANEL_SOURCES, inputs=QUOTE_INPUTS,
                       rows=len(panel),
-                      notes=f"quote engine {QUOTE_ENGINE}; day cache {DAY_CACHE.name}")
+                      notes=f"quote engine {QUOTE_ENGINE}; day cache {DAY_CACHE.name}; "
+                            f"counterfactual quote families {quote_perimeter_label}")
     record_provenance(summary_path, code_sources=SUMMARY_SOURCES, inputs=[out_path],
                       rows=len(summary))
     print(f"wrote {len(panel):,} rows -> {out_path}")

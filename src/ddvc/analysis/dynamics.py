@@ -7,6 +7,9 @@ from collections.abc import Sequence
 import pandas as pd
 
 
+CANONICAL_RESPONSE_HORIZONS = (1, 7, 30, 120)
+
+
 def value_at_day_offset(
     panel: pd.DataFrame,
     value_column: str,

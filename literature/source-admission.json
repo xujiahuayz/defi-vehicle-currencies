@@ -1,6 +1,6 @@
 {
   "schema_version": "1.0.0",
-  "scope": "All 42 unique bibliography keys currently cited by the manuscript, plus Li-Wang-Ye and Lagos-Wright as admitted comparators with no current paper claim. Meister and Fritsch remain in the rejected or retired register so they cannot silently re-enter.",
+  "scope": "All unique bibliography keys currently cited by the manuscript, admitted comparators with no current paper claim, and any same-paper version retained because a material version boundary affects a live claim. Meister and Fritsch remain in the rejected or retired register so they cannot silently re-enter.",
   "decision_lanes": [
     "include_scholarly",
     "include_exception",
@@ -547,6 +547,24 @@
       "supporting_source_version": "JMCB 1980, DOI 10.2307/1991725",
       "publication_class": "peer_reviewed_finance_economics",
       "live_citation": true,
+      "finance_native": true
+    },
+    {
+      "key": "Krugman1979VehicleCurrenciesWorkingPaper",
+      "title": "Vehicle Currencies and the Structure of International Exchange",
+      "decision": "include_exception",
+      "publication_status": "Official NBER Working Paper 333; superseded by the peer-reviewed 1980 Journal of Money, Credit and Banking article",
+      "author_field_credibility": "Canonical international-economics scholar; same-paper predecessor to the admitted final article",
+      "scholarly_uptake": "The final article is foundational and heavily cited; this predecessor is retained only to adjudicate a material dynamics-version boundary",
+      "finance_relevance": "Establishes which vehicle-currency dynamics were formalized in the working paper and removed from the published article",
+      "evidence_role": "Version reconciliation for the central vehicle-currency theory source",
+      "boundary": "Not an independent live-claim source and not evidence that an unpublished result survived peer review; cite the final article except when explicitly discussing the superseded adaptive-cost dynamics",
+      "technical_integrity": "Pass as an authenticated official predecessor read in full against the version of record",
+      "rationale": "Admit as a source-family evidence exception because the deleted dynamics section materially changes claim attribution",
+      "reviewed_at": "2026-08-09",
+      "supporting_source_version": "NBER Working Paper 333, April 1979, DOI 10.3386/w0333",
+      "publication_class": "institutional_working_paper",
+      "live_citation": false,
       "finance_native": true
     },
     {

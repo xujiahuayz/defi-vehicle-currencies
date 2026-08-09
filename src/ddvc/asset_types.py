@@ -155,6 +155,19 @@ IMPORTED = {
     "0x68749665ff8d2d112fa859aa293f07a622782f38": "XAUt",
 }
 
+# Prespecified five-token candidate set used by the paper's token-level panels.
+# Derive addresses from the canonical taxonomy above so pool, route, and LP modules
+# cannot silently carry different copies of the same address map.
+VEHICLE_CANDIDATE_SYMBOLS = ("WETH", "USDC", "USDT", "DAI", "WBTC")
+VEHICLE_CANDIDATES = {
+    address: symbol
+    for taxonomy in (NATIVE, STABLE, IMPORTED)
+    for address, symbol in taxonomy.items()
+    if symbol in VEHICLE_CANDIDATE_SYMBOLS
+}
+if set(VEHICLE_CANDIDATES.values()) != set(VEHICLE_CANDIDATE_SYMBOLS):
+    raise RuntimeError("canonical vehicle-candidate addresses are incomplete")
+
 TYPES = ("native", "staked_native", "stable", "imported", "other")
 # Primary currency-role results exclude the residual `other` bucket. It contains every
 # unclassified contract and therefore is not a prespecified economic candidate set.

@@ -24,6 +24,7 @@ class Response:
 class RpcPostTests(unittest.TestCase):
     def setUp(self) -> None:
         quoter._rpc_idx = 0
+        quoter._disabled_rpc_urls.clear()
 
     def test_receipt_mode_rotates_past_http_200_json_rpc_errors(self) -> None:
         rejected = Response(
@@ -41,6 +42,19 @@ class RpcPostTests(unittest.TestCase):
             )
         self.assertEqual(response["result"]["gasUsed"], "0x1")
         self.assertEqual(request.call_count, 2)
+        self.assertEqual(quoter._disabled_rpc_urls, {"https://first"})
+
+        with (
+            patch.object(quoter, "rpc_urls", return_value=["https://first", "https://second"]),
+            patch.object(quoter.urllib.request, "urlopen", return_value=accepted) as next_request,
+        ):
+            quoter.rpc_post(
+                {"jsonrpc": "2.0", "id": 2, "method": "eth_getTransactionReceipt", "params": ["0x2"]},
+                retries=1,
+                retry_json_errors=True,
+            )
+        self.assertEqual(next_request.call_count, 1)
+        self.assertEqual(next_request.call_args.args[0].full_url, "https://second")
 
     def test_default_mode_preserves_execution_error_responses(self) -> None:
         rejected = Response(

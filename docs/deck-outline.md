@@ -31,12 +31,12 @@ Figure assets live under `output/figures/deck/` as one file per slide. Diagrams 
 
 - An incumbent's cost advantage is a consequence of its incumbency
 - Sterling to dollar: the road not taken has no price
-- Needed: a currency holding the role while strictly beaten
+- Our test: a currency holding the role while strictly beaten
 - On-chain the beaten route is quotable at the same state
 
 **Visual.** `deck/identification_gap.svg`, drawio tab `identification_gap`. Two side-by-side panels in identical geometry. Left panel, labelled with the FX setting, shows an ordered pair of endpoint currencies joined by a solid arrow through a vehicle vertex, and a direct edge drawn as a dashed grey line ending in a question mark, with a hatched box over the price label. Right panel, same graph, same vertex positions, with the direct edge solid and carrying a price, and a bracket between the two paths labelled with the gap in basis points. The reader should see that the two panels differ in exactly one element, the price on the road not taken, and that the whole design turns on recovering it. No legend strip; the hatched box is annotated in place.
 
-**Citations.** Krugman (1980) for the vehicle role resting on the lowest-cost route through the exchange structure; Flandreau and Jobst (2009) for persistence measured without strong lock-in; Eichengreen and Flandreau on inertia in the sterling-to-dollar turnover; Somogyi (2026) for dollar dominance measured as a share of FX trading.
+**Citations.** Krugman (1980) for current bilateral-market volume lowering proportional brokerage costs and supporting conditional multiplicity; Flandreau and Jobst (2009) for persistence measured without strong lock-in; Eichengreen and Flandreau on inertia in the sterling-to-dollar turnover; Somogyi (2026) for dollar dominance measured as a share of FX trading. The exact-state strict-domination counterfactual is this paper's extension, not a Krugman result.
 
 **Grounding.** `docs/review-node-i-round1.md` section 4 states the capability and names the estimand it is for.
 
@@ -84,7 +84,7 @@ Figure assets live under `output/figures/deck/` as one file per slide. Diagrams 
 
 **Visual.** `deck/architecture_progression.svg`, drawio tab `architecture_arc`. Four panels left to right on one horizontal timeline with launch dates beneath. Panel one is the V1 star. Panel two is a dense graph with WETH as the highest-degree vertex and a small wrapping badge on it. Panel three is the same graph with pool edges drawn as narrow bands instead of lines, showing range concentration. Panel four is the same graph with the WETH vertex relabelled to native ETH and the wrapping badge gone. Vertex shape and fill stay identical across panels so only the labelled change moves, and the wrapping badge is the one shape that appears and then disappears.
 
-**Citations.** Adams, Zinsmeister and Robinson (2021) for concentrated liquidity; Uniswap v4 documentation for native-asset pools; Lehar and Parlour (2024) for AMM liquidity provision.
+**Citations.** Adams et al. (2021, technical whitepaper) for concentrated-liquidity mechanics; Uniswap v4 documentation for native-asset pools; Lehar and Parlour (2024) for AMM liquidity provision.
 
 ---
 
@@ -187,7 +187,7 @@ Left panel, a Marimekko. X axis is the share of realised multi-leg routing, 0 to
 
 Right panel, the magnitude. X axis is the direct pool's advantage over the route the trader actually took, in basis points, on a symmetric log scale from -10,000 through 0 to +10,000, with the sign convention printed under each half as "vehicle route was cheaper" on the left and "direct pool was cheaper" on the right. Y axis is count of matched realised routes, 1,762 in total, as a filled histogram with one vertical rule at zero. Mass to the right of zero filled in the accent colour and mass to the left in a light neutral, the shaded share annotated in place at 41.3% as the raw matched mean, and the median of the shaded region printed in basis points. The reader should see that the state has a size and not only a frequency, and should see the raw matched mean standing well above the population-weighted headline in the left panel, which is the selection made visible.
 
-**Citations.** Krugman (1980) and Flandreau and Jobst (2009) for the identification limit this addresses; Makarov and Schoar (2020) for reporting the magnitude alongside the frequency.
+**Citations.** Krugman (1980) for volume-cost feedback and Flandreau and Jobst (2009) for quote-network persistence without exact route alternatives; neither supplies the strict-domination counterfactual, which is this paper's construct. Makarov and Schoar (2020) motivate reporting the magnitude alongside the frequency.
 
 **Caveats the speaker states aloud.** 1,762 of 90,705 realised multi-leg routes on those days matched a priced counterfactual, because the panel prices 200 pairs at three fixed notionals, so the matched set is 64.5% stable-intermediated where the population is 66.9% native-intermediated, and it covers 71 pairs against 17,851. The raw matched mean of 41.3% inverts on candidate type against the population, and it is shown for that reason. Enumerating every candidate a router could have chosen answers a different question and returns 70.1% gross and 80.3% all-in. Round trips are excluded, since a route whose first input equals its last output moved no value. Remaining venue gaps would make the direct alternative better, so the incidence is a floor.
 

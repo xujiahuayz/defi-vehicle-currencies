@@ -32,6 +32,17 @@ def sections_dir() -> Path:
     return prose_root() / "sections"
 DATA_DIR = REPO_ROOT / "data"
 OUTPUT_DIR = REPO_ROOT / "output"
+POOL_CAPITAL_PANEL = DATA_DIR / "processed" / "pool_capital_daily.parquet"
+POOL_CANDIDATE_CAPITAL_PANEL = DATA_DIR / "processed" / "pool_candidate_capital_daily.parquet"
+POOL_CAPITAL_REJECTIONS = DATA_DIR / "processed" / "pool_capital_rejections.parquet"
+TOKEN_PRICE_DAILY_PANEL = DATA_DIR / "processed" / "token_price_daily.parquet"
+LP_CAPITAL_CONCENTRATION_PANEL = DATA_DIR / "exhibits" / "lp_capital_concentration.parquet"
+LP_LIQUIDITY_FLOW_EVENTS = DATA_DIR / "processed" / "lp_liquidity_flow_events_v3.parquet"
+LP_LIQUIDITY_FLOW_CANDIDATES = DATA_DIR / "processed" / "lp_liquidity_flow_candidates_v3.parquet"
+LP_LIQUIDITY_FLOW_REJECTIONS = DATA_DIR / "processed" / "lp_liquidity_flow_rejections_v3.parquet"
+LP_LIQUIDITY_FLOW_DAILY = DATA_DIR / "processed" / "lp_liquidity_flow_daily_v3.parquet"
+MARKET_STATE_LOCK = DATA_DIR / "processed" / ".market_state.lock"
+TOKEN_PRICE_LOCK = DATA_DIR / "processed" / ".token_price.lock"
 ROUTE_COST_JOB_LOCK = DATA_DIR / "empirical" / ".route_cost_panel.lock"
 
 

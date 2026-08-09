@@ -6,7 +6,7 @@ notebook state:
 
   * data/unified/YYYYMMDD.parquet for route-level bridge use
   * data/metrics/daily_token_metrics.parquet for betweenness / network measures
-  * data/exhibits/lp_concentration.parquet for vehicle-linked LP concentration
+  * data/exhibits/lp_capital_concentration.parquet for vehicle-linked LP concentration
 
 It writes compact, paper-facing diagnostics under:
 
@@ -36,7 +36,7 @@ ROOT = Path(__file__).resolve().parents[1]
 from ddvc.analysis.dynamics import value_at_day_offset
 from ddvc.analysis.regression import absorb_fixed_effects
 from ddvc.metrics import CLEAN_ROUTE_CLASSES, _routes
-from ddvc.paths import DATA_DIR, OUTPUT_DIR
+from ddvc.paths import DATA_DIR, LP_CAPITAL_CONCENTRATION_PANEL, OUTPUT_DIR
 
 
 VEHICLES = ("WETH", "USDC", "USDT", "DAI", "WBTC")
@@ -242,7 +242,7 @@ def load_network_metrics() -> pd.DataFrame:
 
 
 def load_lp() -> pd.DataFrame:
-    path = DATA_DIR / "exhibits" / "lp_concentration.parquet"
+    path = LP_CAPITAL_CONCENTRATION_PANEL
     df = pd.read_parquet(path)
     return df.rename(columns={"token_symbol": "token"})
 
@@ -271,21 +271,21 @@ def liquidity_formation_tests(bridge: pd.DataFrame, lp: pd.DataFrame) -> pd.Data
     d = d.sort_values(["token", "date"])
     d["BridgeShare_fwd7"] = value_at_day_offset(d, "BridgeShare", 7)
 
-    l = lp[["date", "token", "lp_concentration_share", "total_lp_liquidity_usd"]].copy()
+    l = lp[["date", "token", "lp_capital_share", "total_lp_capital_usd"]].copy()
     l["date"] = pd.to_datetime(l["date"])
     x = d.merge(l, on=["date", "token"], how="inner").dropna()
 
     rows = []
     rows.append(_ols_y_on_x(
         x["BridgeShare_fwd7"].to_numpy(),
-        x["lp_concentration_share"].to_numpy(),
+        x["lp_capital_share"].to_numpy(),
         "P2 raw: VehicleShare on lagged LP concentration (7 days)",
     ).__dict__)
 
     # Within-token version: asks whether a token's own liquidity concentration
     # being above its normal level predicts its later bridge use.
     y = absorb_fixed_effects(x["BridgeShare_fwd7"], x["token"])
-    z = absorb_fixed_effects(x["lp_concentration_share"], x["token"])
+    z = absorb_fixed_effects(x["lp_capital_share"], x["token"])
     rows.append(_ols_y_on_x(
         y.to_numpy(),
         z.to_numpy(),
@@ -505,7 +505,7 @@ def make_figures(bridge: pd.DataFrame, lp: pd.DataFrame) -> None:
     fig, ax = plt.subplots(figsize=(10, 5))
     for tok in VEHICLES:
         g = l[l["token"] == tok].sort_values("date")
-        ax.plot(g["date"], g["lp_concentration_share"], label=tok, linewidth=1.2)
+        ax.plot(g["date"], g["lp_capital_share"], label=tok, linewidth=1.2)
     ax.set_title("LP concentration by vehicle-linked base asset")
     ax.set_ylabel("Share of V3 LP liquidity")
     ax.set_xlabel("Date")

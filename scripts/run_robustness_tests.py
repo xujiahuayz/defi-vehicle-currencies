@@ -13,6 +13,7 @@ from scipy import stats
 
 from ddvc.analysis.dynamics import value_at_day_offset
 from ddvc.analysis.regression import absorb_fixed_effects, ols_clustered
+from ddvc.paths import LP_CAPITAL_CONCENTRATION_PANEL
 
 ROOT = Path(__file__).resolve().parents[1]
 SCRIPTS = ROOT / "scripts"
@@ -91,24 +92,24 @@ def measurement_robustness(bridge: pd.DataFrame) -> pd.DataFrame:
 
 
 def liquidity_robustness(bridge: pd.DataFrame) -> pd.DataFrame:
-    lp = pd.read_parquet(DATA / "exhibits" / "lp_concentration.parquet")
+    lp = pd.read_parquet(LP_CAPITAL_CONCENTRATION_PANEL)
     lp = lp.rename(columns={"token_symbol": "token"})
     b = bridge[["date", "token", "BridgeShare"]].copy()
     b["date"] = pd.to_datetime(b["date"])
     b = b.sort_values(["token", "date"])
     lp["date"] = pd.to_datetime(lp["date"])
-    base = b.merge(lp[["date", "token", "lp_concentration_share"]], on=["date", "token"], how="inner")
+    base = b.merge(lp[["date", "token", "lp_capital_share"]], on=["date", "token"], how="inner")
     rows = []
     for horizon in [1, 7, 14, 30]:
         d = base.sort_values(["token", "date"]).copy()
         d["y"] = value_at_day_offset(d, "BridgeShare", horizon)
-        d = d.dropna(subset=["y", "lp_concentration_share"])
+        d = d.dropna(subset=["y", "lp_capital_share"])
         specs = {
-            "No FE": (d["y"], d["lp_concentration_share"], ()),
-            "Token FE": (absorb_fixed_effects(d["y"], d["token"]), absorb_fixed_effects(d["lp_concentration_share"], d["token"]), (d["token"],)),
+            "No FE": (d["y"], d["lp_capital_share"], ()),
+            "Token FE": (absorb_fixed_effects(d["y"], d["token"]), absorb_fixed_effects(d["lp_capital_share"], d["token"]), (d["token"],)),
             "Token + date FE": (
                 absorb_fixed_effects(d["y"], d["token"], d["date"]),
-                absorb_fixed_effects(d["lp_concentration_share"], d["token"], d["date"]),
+                absorb_fixed_effects(d["lp_capital_share"], d["token"], d["date"]),
                 (d["token"], d["date"]),
             ),
         }

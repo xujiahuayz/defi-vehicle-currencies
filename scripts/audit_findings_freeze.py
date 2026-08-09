@@ -15,20 +15,36 @@ import pandas as pd
 import pyarrow.parquet as pq
 
 ROOT = Path(__file__).resolve().parents[1]
-from ddvc.asset_types import TYPES
+from ddvc.asset_types import TYPES, VEHICLE_CANDIDATES
 from ddvc.analysis.transaction_frontier import (
     MIN_CHOSEN_REPRODUCTION,
     chosen_reproduction_share,
 )
 from ddvc.calendar import RESEARCH_SAMPLE_END, RESEARCH_SAMPLE_START, calendar_days
-from ddvc.fetch.sources import get_source
+from ddvc.fetch.sources import DEX_SOURCES, get_source
+from ddvc.liquidity import (
+    CAPITAL_COLUMN,
+    LIQUIDITY_CONTRACTS,
+    require_contract_coverage,
+    resolve_materializer,
+)
 from ddvc.literature_admission import load_source_admission, validate_source_admission
 from ddvc.provenance import sidecar_path, verify
 from ddvc.reconstruct import DEX_FAMILY, UNIFIED_QUALITY_PANEL
 from ddvc.route_roles import VALUE_SUPPORT_COLUMNS
-from ddvc.state_data import FAMILY_STREAMS
+from ddvc.state_data import FAMILY_STREAMS, STATE_GENERATIONS, STATE_ROOT, pool_semantics
 from ddvc.venue_corpus import JFE_VENUE_CARDS, JFE_VENUE_SOURCE_KEYS
-from ddvc.paths import LITERATURE_SOURCE_ADMISSION
+from ddvc.paths import (
+    LITERATURE_SOURCE_ADMISSION,
+    LP_LIQUIDITY_FLOW_CANDIDATES,
+    LP_LIQUIDITY_FLOW_DAILY,
+    LP_LIQUIDITY_FLOW_EVENTS,
+    LP_LIQUIDITY_FLOW_REJECTIONS,
+    POOL_CANDIDATE_CAPITAL_PANEL,
+    POOL_CAPITAL_PANEL,
+    POOL_CAPITAL_REJECTIONS,
+    TOKEN_PRICE_DAILY_PANEL,
+)
 
 PANEL = ROOT / "data" / "empirical" / "route_cost_panel_v2.parquet"
 EXTENT = ROOT / "data" / "processed" / "vehicle_excess_use_daily.parquet"
@@ -55,11 +71,16 @@ CANONICAL_EMPIRICAL_CONSUMERS = (
     "scripts/build_transaction_state_frontier.py",
     "scripts/build_counterfactual_dominance.py",
     "scripts/build_rent_incidence_panel.py",
+    "scripts/build_lp_liquidity_flow_panel.py",
+    "scripts/build_token_price_panel.py",
+    "scripts/run_core_rq_experiments.py",
     "scripts/validate_curve_quoter.py",
     "scripts/validate_weighted_quoter.py",
     "scripts/run_balancer_weighted_quote_extension.py",
     "src/ddvc/pricing/tick_replay.py",
     "src/ddvc/pricing/v2_replay.py",
+    "src/ddvc/analysis/lp_concentration.py",
+    "src/ddvc/analysis/lp_liquidity_flow.py",
 )
 RAW_PROVIDER_PATTERNS = (
     "data/raw/thegraph",
@@ -116,6 +137,14 @@ LOCKED_CLAIM_STATUSES = {
     "enter_fgh_companion",
 }
 MODEL_LEDGER_STATUSES = {"admissible", "diagnostic", "withheld", "retired"}
+CAPITAL_CONTRACT_COLUMNS = (
+    "venue",
+    "pool_family",
+    "invariant_family",
+    "state_generation",
+    "quantity_kind",
+    "capital_source",
+)
 
 
 def _manifest(path: Path) -> dict:
@@ -540,6 +569,662 @@ def validate_canonical_consumer_boundary(
         f"consumers={len(paths)}; violations={violations or 'none'}; "
         f"missing={missing or 'none'}"
     )
+
+
+def validate_liquidity_contracts() -> tuple[bool, str]:
+    """Require one coherent capital/depth/LVR contract for every canonical venue."""
+
+    try:
+        require_contract_coverage(set(DEX_SOURCES))
+    except ValueError as exc:
+        return False, str(exc)
+    invalid: list[str] = []
+    for (venue, family), contract in LIQUIDITY_CONTRACTS.items():
+        label = f"{venue}/{family}"
+        if not contract.invariant_family or not contract.capital_measure:
+            invalid.append(f"{label}:missing meaning")
+        if contract.venue != venue or contract.pool_family != family:
+            invalid.append(f"{label}:registry key differs from contract identity")
+        if contract.capital_ready and not contract.capital_sources:
+            invalid.append(f"{label}:ready capital lacks permitted provenance")
+        if any(
+            marker in source.lower()
+            for source in contract.capital_sources
+            for marker in ("virtual", "local_depth", "band_depth")
+        ):
+            invalid.append(f"{label}:capital provenance names a depth quantity")
+        for capability in contract.capabilities:
+            if capability.ready and not (
+                capability.state_generation
+                and capability.materializer
+                and capability.validation
+                and capability.admissible_uses
+            ):
+                invalid.append(
+                    f"{label}:{capability.quantity_kind} lacks state, materializer, validation, or admitted use"
+                )
+            if capability.ready and capability.materializer:
+                try:
+                    resolve_materializer(capability.materializer)
+                except (ImportError, ValueError) as exc:
+                    invalid.append(
+                        f"{label}:{capability.quantity_kind} has no callable materializer ({exc})"
+                    )
+        if contract.band_depth_adapter is not None and contract.quote_adapter is None:
+            invalid.append(f"{label}:band depth lacks an exact-quote adapter")
+        if contract.lvr_adapter is not None and contract.local_depth_adapter is None:
+            invalid.append(f"{label}:LVR lacks an invariant-local depth adapter")
+        if contract.return_inference_ready and (
+            not contract.capital_ready or contract.lvr_adapter is None
+        ):
+            invalid.append(f"{label}:return model lacks capital or LVR")
+    venues = {venue for venue, _family in LIQUIDITY_CONTRACTS}
+    return not invalid, (
+        f"venues={len(venues)}/{len(DEX_SOURCES)}; families={len(LIQUIDITY_CONTRACTS)}; "
+        f"capital-ready={sum(c.capital_ready for c in LIQUIDITY_CONTRACTS.values())}; "
+        f"quote-ready={sum(c.quote_adapter is not None for c in LIQUIDITY_CONTRACTS.values())}; "
+        f"band-depth-ready={sum(c.band_depth_adapter is not None for c in LIQUIDITY_CONTRACTS.values())}; "
+        f"return-ready={sum(c.return_inference_ready for c in LIQUIDITY_CONTRACTS.values())}; "
+        f"invalid={invalid or 'none'}"
+    )
+
+
+def validate_quote_state_contract_rows(rows: pd.DataFrame) -> tuple[bool, str]:
+    """Bind canonical state family, invariant, generation, and quote admission."""
+
+    required = {
+        "venue",
+        "pool_family",
+        "invariant_family",
+        "state_generation",
+        "quote_supported",
+    }
+    missing = sorted(required - set(rows.columns))
+    if missing:
+        return False, f"missing_columns={missing}"
+    invalid: list[str] = []
+    observed = rows[list(required)].drop_duplicates()
+    for row in observed.itertuples(index=False):
+        venue = str(row.venue)
+        family = str(row.pool_family)
+        invariant = str(row.invariant_family)
+        generation = str(row.state_generation)
+        label = f"{venue}/{family}/{generation}"
+        contract = LIQUIDITY_CONTRACTS.get((venue, family))
+        if contract is None:
+            invalid.append(f"{label}:unregistered family")
+            continue
+        if invariant != contract.invariant_family:
+            invalid.append(f"{label}:invariant mismatch")
+        if generation != STATE_GENERATIONS.get(venue):
+            invalid.append(f"{label}:state generation mismatch")
+        if bool(row.quote_supported) and not pool_semantics(
+            venue, family, generation
+        )[1]:
+            invalid.append(f"{label}:unsupported quote admitted")
+    return not invalid, (
+        f"state-contracts={len(observed)}; invalid={invalid or 'none'}"
+    )
+
+
+def quote_state_artifact_check(
+    state_root: Path = STATE_ROOT,
+) -> tuple[bool, str]:
+    """Read distinct state contracts across every materialized family partition."""
+
+    missing: list[str] = []
+    contracts: list[pd.DataFrame] = []
+    con = duckdb.connect()
+    try:
+        for family, venues in FAMILY_STREAMS.items():
+            for venue in venues:
+                directory = state_root / family / venue
+                if not any(directory.glob("[0-9]" * 8 + ".parquet")):
+                    missing.append(f"{family}/{venue}")
+                    continue
+                glob = (directory / "*.parquet").as_posix().replace("'", "''")
+                try:
+                    contracts.append(
+                        con.execute(
+                            f"""
+                            SELECT DISTINCT venue, pool_family, invariant_family,
+                                state_generation, quote_supported
+                            FROM read_parquet('{glob}')
+                            """
+                        ).df()
+                    )
+                except (duckdb.Error, OSError) as exc:
+                    missing.append(f"{family}/{venue}:{type(exc).__name__}")
+    finally:
+        con.close()
+    if missing:
+        return False, f"missing_or_invalid={missing}"
+    rows = pd.concat(contracts, ignore_index=True) if contracts else pd.DataFrame()
+    return validate_quote_state_contract_rows(rows)
+
+
+def validate_capital_contract_rows(rows: pd.DataFrame) -> tuple[bool, str]:
+    """Bind every materialized capital row family/generation/source to the registry."""
+
+    missing = sorted(set(CAPITAL_CONTRACT_COLUMNS) - set(rows.columns))
+    if missing:
+        return False, f"missing_columns={missing}"
+    actual = {
+        tuple(str(value) for value in row)
+        for row in rows[list(CAPITAL_CONTRACT_COLUMNS)].drop_duplicates().itertuples(
+            index=False,
+            name=None,
+        )
+    }
+    expected = {
+        (
+            contract.venue,
+            contract.pool_family,
+            contract.invariant_family,
+            str(contract.capability("deposited_capital").state_generation),
+            "deposited_capital",
+            source,
+        )
+        for contract in LIQUIDITY_CONTRACTS.values()
+        if contract.capital_ready
+        for source in contract.capital_sources
+    }
+    missing_contracts = sorted(expected - actual)
+    unsupported = sorted(actual - expected)
+    return not missing_contracts and not unsupported, (
+        f"observed={len(actual)}; expected={len(expected)}; "
+        f"missing={missing_contracts or 'none'}; unsupported={unsupported or 'none'}"
+    )
+
+
+def capital_artifact_checks(
+    pool_path: Path = POOL_CAPITAL_PANEL,
+    candidate_path: Path = POOL_CANDIDATE_CAPITAL_PANEL,
+    rejection_path: Path = POOL_CAPITAL_REJECTIONS,
+) -> list[tuple[str, bool, str]]:
+    """Audit capital identities, exact lags, allocation conservation, and quarantine."""
+
+    artifacts = (pool_path, candidate_path, rejection_path)
+    missing = [path.name for path in artifacts if not path.is_file()]
+    if missing:
+        return [("node D capital artifacts current", False, f"missing={missing}")]
+    provenance = {path.name: verify(path).get("status") for path in artifacts}
+    results: list[tuple[str, bool, str]] = [
+        (
+            "node D capital artifacts current",
+            all(status == "ok" for status in provenance.values()),
+            f"provenance={provenance}",
+        )
+    ]
+    required = {
+        pool_path: {
+            *CAPITAL_CONTRACT_COLUMNS,
+            "day",
+            "pool",
+            "reported_capital_usd",
+            CAPITAL_COLUMN,
+            "capital_validation_status",
+            "capital_valid",
+            "exact_lag_valid",
+            "token0_address",
+            "token1_address",
+        },
+        candidate_path: {
+            *CAPITAL_CONTRACT_COLUMNS,
+            "day",
+            "pool",
+            "candidate",
+            "allocation_weight",
+            "candidate_capital_usd",
+            "candidate_capital_usd_lagged",
+            "capital_validation_status",
+            "exact_lag_valid",
+        },
+        rejection_path: {
+            "venue",
+            "day",
+            "pool",
+            "reported_capital_usd",
+            "quantity_kind",
+            "pool_family",
+            "invariant_family",
+            "state_generation",
+            "capital_validation_status",
+            "failure_reason",
+        },
+    }
+    missing_columns = {
+        path.name: sorted(columns - set(pq.ParquetFile(path).schema_arrow.names))
+        for path, columns in required.items()
+        if columns - set(pq.ParquetFile(path).schema_arrow.names)
+    }
+    results.append(
+        (
+            "node D capital schemas",
+            not missing_columns,
+            f"missing_columns={missing_columns or 'none'}",
+        )
+    )
+    if missing_columns:
+        return results
+
+    con = duckdb.connect()
+    con.execute("SET memory_limit='1500MB'")
+    con.execute("SET threads=2")
+    con.execute(f"SET temp_directory='{(ROOT / 'data' / 'processed' / '_duckdb_tmp').as_posix()}'")
+    pool = f"read_parquet('{pool_path.as_posix()}')"
+    candidate = f"read_parquet('{candidate_path.as_posix()}')"
+    rejection = f"read_parquet('{rejection_path.as_posix()}')"
+    try:
+        contract_rows = con.execute(
+            f"SELECT DISTINCT {','.join(CAPITAL_CONTRACT_COLUMNS)} FROM {pool}"
+        ).df()
+        contract_passed, contract_detail = validate_capital_contract_rows(contract_rows)
+        results.append(("node D capital family contracts", contract_passed, contract_detail))
+
+        pool_core = con.execute(
+            f"""
+            SELECT
+                count(*) AS rows,
+                count(DISTINCT (venue, day, pool)) AS unique_rows,
+                count(*) FILTER (
+                    WHERE capital_valid != coalesce(
+                        isfinite(reported_capital_usd)
+                        AND reported_capital_usd > 0
+                        AND reported_capital_usd <= 10000000000,
+                        false
+                    )
+                ) AS validity_mismatch,
+                count(*) FILTER (
+                    WHERE (capital_validation_status='reported_plausible') != capital_valid
+                ) AS status_mismatch,
+                count(*) FILTER (
+                    WHERE exact_lag_valid AND (
+                        capital_usd_lagged IS NULL OR NOT isfinite(capital_usd_lagged)
+                    )
+                ) AS valid_lag_missing,
+                count(*) FILTER (
+                    WHERE NOT exact_lag_valid AND capital_usd_lagged IS NOT NULL
+                ) AS invalid_lag_payload
+            FROM {pool}
+            """
+        ).fetchone()
+        pool_passed = bool(
+            pool_core[0] == pool_core[1]
+            and not any(pool_core[index] for index in range(2, 6))
+        )
+        results.append(
+            (
+                "node D capital row contract",
+                pool_passed,
+                f"rows={pool_core[0]:,}; unique={pool_core[1]:,}; "
+                f"validity_mismatch={pool_core[2]:,}; status_mismatch={pool_core[3]:,}; "
+                f"valid_lag_missing={pool_core[4]:,}; invalid_lag_payload={pool_core[5]:,}",
+            )
+        )
+
+        lag_core = con.execute(
+            f"""
+            WITH ordered AS (
+                SELECT *,
+                    lag(day) OVER (PARTITION BY venue, pool ORDER BY day) AS prior_day,
+                    lag(reported_capital_usd) OVER (
+                        PARTITION BY venue, pool ORDER BY day
+                    ) AS prior_capital,
+                    lag(capital_valid) OVER (
+                        PARTITION BY venue, pool ORDER BY day
+                    ) AS prior_valid
+                FROM {pool}
+            )
+            SELECT
+                count(*) FILTER (
+                    WHERE exact_lag_valid != coalesce(
+                        prior_valid
+                        AND strptime(day, '%Y%m%d') =
+                            strptime(prior_day, '%Y%m%d') + INTERVAL 1 DAY,
+                        false
+                    )
+                ) AS flag_mismatch,
+                count(*) FILTER (
+                    WHERE exact_lag_valid AND abs(capital_usd_lagged-prior_capital) >
+                        greatest(1e-8, abs(prior_capital)*1e-12)
+                ) AS value_mismatch
+            FROM ordered
+            """
+        ).fetchone()
+        results.append(
+            (
+                "node D capital exact-lag identity",
+                not lag_core[0] and not lag_core[1],
+                f"flag_mismatch={lag_core[0]:,}; value_mismatch={lag_core[1]:,}",
+            )
+        )
+
+        allocation = con.execute(
+            f"""
+            WITH allocated AS (
+                SELECT venue, day, pool,
+                    sum(allocation_weight) AS weight,
+                    sum(candidate_capital_usd) AS capital,
+                    sum(candidate_capital_usd_lagged) AS lagged,
+                    count(*) AS candidate_rows
+                FROM {candidate}
+                GROUP BY venue, day, pool
+            ), joined AS (
+                SELECT a.*, p.reported_capital_usd, p.capital_usd_lagged,
+                    p.exact_lag_valid
+                FROM allocated a
+                JOIN {pool} p USING (venue, day, pool)
+            )
+            SELECT
+                count(*) AS pools,
+                count(*) FILTER (WHERE abs(weight-1)>1e-12) AS weight_fail,
+                count(*) FILTER (
+                    WHERE abs(capital-reported_capital_usd) >
+                        greatest(1e-8, abs(reported_capital_usd)*1e-12)
+                ) AS capital_fail,
+                count(*) FILTER (
+                    WHERE exact_lag_valid AND abs(lagged-capital_usd_lagged) >
+                        greatest(1e-8, abs(capital_usd_lagged)*1e-12)
+                ) AS lagged_fail,
+                count(*) FILTER (
+                    WHERE NOT exact_lag_valid AND lagged IS NOT NULL
+                ) AS invalid_lag_payload
+            FROM joined
+            """
+        ).fetchone()
+        results.append(
+            (
+                "node D candidate-capital conservation",
+                not any(allocation[index] for index in range(1, 5)),
+                f"pool_days={allocation[0]:,}; weight_fail={allocation[1]:,}; "
+                f"capital_fail={allocation[2]:,}; lagged_fail={allocation[3]:,}; "
+                f"invalid_lag_payload={allocation[4]:,}",
+            )
+        )
+
+        rejected = con.execute(
+            f"""
+            WITH expected AS (
+                SELECT venue, day, pool, reported_capital_usd
+                FROM {pool}
+                WHERE capital_valid
+                  AND (token0_address IS NULL OR token1_address IS NULL)
+            )
+            SELECT
+                (SELECT count(*) FROM expected) AS expected,
+                (SELECT count(*) FROM {rejection}) AS actual,
+                (SELECT count(*) FROM expected e LEFT JOIN {rejection} r
+                    USING (venue, day, pool) WHERE r.pool IS NULL) AS missing,
+                (SELECT count(*) FROM {rejection} r LEFT JOIN expected e
+                    USING (venue, day, pool) WHERE e.pool IS NULL) AS extra,
+                (SELECT coalesce(sum(reported_capital_usd), 0) FROM {rejection}) AS capital
+            """
+        ).fetchone()
+        results.append(
+            (
+                "node D capital rejection ledger",
+                rejected[0] == rejected[1] and not rejected[2] and not rejected[3],
+                f"rows={rejected[1]:,}/{rejected[0]:,}; missing={rejected[2]:,}; "
+                f"extra={rejected[3]:,}; capital_usd={rejected[4]:,.2f}",
+            )
+        )
+    except (duckdb.Error, OSError, ValueError) as exc:
+        results.append(("node D capital artifact audit", False, f"{type(exc).__name__}: {exc}"))
+    finally:
+        con.close()
+    return results
+
+
+def token_price_artifact_checks() -> list[tuple[str, bool, str]]:
+    """Audit the canonical address-day price owner before downstream valuation."""
+
+    if not TOKEN_PRICE_DAILY_PANEL.exists():
+        return [("node D token-price artifact", False, "missing canonical panel")]
+    provenance = verify(TOKEN_PRICE_DAILY_PANEL).get("status")
+    required = {
+        "day", "token", "symbol", "price_usd", "n_observations", "n_consensus",
+        "consensus_share", "gross_weight_usd", "consensus_weight_usd",
+        "price_source", "validation_status",
+    }
+    columns = set(pq.ParquetFile(TOKEN_PRICE_DAILY_PANEL).schema_arrow.names)
+    missing = sorted(required - columns)
+    results = [
+        (
+            "node D token-price provenance and schema",
+            provenance == "ok" and not missing,
+            f"provenance={provenance}; missing_columns={missing or 'none'}",
+        )
+    ]
+    if missing:
+        return results
+    con = duckdb.connect()
+    try:
+        core = con.execute(
+            """
+            SELECT count(*) AS rows,
+                count(DISTINCT (day, token)) AS unique_rows,
+                count(*) FILTER (WHERE price_usd <= 0 OR NOT isfinite(price_usd)) AS bad_price,
+                count(*) FILTER (WHERE n_observations < 3 OR n_consensus < 3
+                    OR consensus_share < 0.75 OR consensus_share > 1) AS bad_consensus,
+                count(*) FILTER (WHERE consensus_weight_usd <= 0
+                    OR consensus_weight_usd - gross_weight_usd
+                        > greatest(1e-6, gross_weight_usd * 1e-12)) AS bad_weight,
+                count(*) FILTER (WHERE price_source!='canonical_repriced_route_legs'
+                    OR validation_status!='minimum_observations_and_price_consensus_passed')
+                    AS bad_lineage
+            FROM read_parquet(?)
+            """,
+            [str(TOKEN_PRICE_DAILY_PANEL)],
+        ).fetchone()
+        candidate_rows = con.execute(
+            "SELECT count(*), count(DISTINCT day) FROM read_parquet(?) WHERE token IN (SELECT unnest(?))",
+            [str(TOKEN_PRICE_DAILY_PANEL), sorted(VEHICLE_CANDIDATES)],
+        ).fetchone()
+    finally:
+        con.close()
+    results.append(
+        (
+            "node D token-price value and consensus contract",
+            core[0] == core[1] and not any(core[index] for index in range(2, 6)),
+            f"rows={core[0]:,}; unique={core[1]:,}; price={core[2]:,}; "
+            f"consensus={core[3]:,}; weight={core[4]:,}; lineage={core[5]:,}; "
+            f"candidate_rows={candidate_rows[0]:,}; candidate_days={candidate_rows[1]:,}",
+        )
+    )
+    return results
+
+
+def lp_liquidity_flow_artifact_checks() -> list[tuple[str, bool, str]]:
+    """Audit causal tick use, allocation conservation, and proxy-free flow scaling."""
+
+    artifacts = (
+        LP_LIQUIDITY_FLOW_EVENTS,
+        LP_LIQUIDITY_FLOW_CANDIDATES,
+        LP_LIQUIDITY_FLOW_DAILY,
+        LP_LIQUIDITY_FLOW_REJECTIONS,
+    )
+    missing = [path.name for path in artifacts if not path.exists()]
+    if missing:
+        return [("node D LP liquidity-flow artifacts", False, f"missing={missing}")]
+    provenance = {path.name: verify(path).get("status") for path in artifacts}
+    results = [
+        (
+            "node D LP liquidity-flow provenance",
+            all(status == "ok" for status in provenance.values()),
+            f"provenance={provenance}",
+        )
+    ]
+    required = {
+        LP_LIQUIDITY_FLOW_EVENTS: {
+            "venue", "day", "tx_hash", "log_index", "pool", "pool_family",
+            "invariant_family", "state_generation", "event_sign", "event_value_usd",
+            "signed_event_value_usd", "tick_before", "tick_state_age_seconds",
+            "amount0", "amount1", "price0_usd", "price1_usd",
+            "price_anchor_token", "price_anchor_usd", "sqrt_price_x96_before",
+            "tick_lower", "tick_upper", "tick_spacing", "range_width_spacings",
+            "range_active_before", "range_near_active_before",
+        },
+        LP_LIQUIDITY_FLOW_CANDIDATES: {
+            "venue", "day", "tx_hash", "log_index", "pool", "candidate",
+            "event_sign", "allocation_weight", "allocated_event_value_usd",
+            "signed_allocated_event_value_usd", "flow_normalization_status",
+        },
+        LP_LIQUIDITY_FLOW_DAILY: {
+            "day", "candidate", "gross_liquidity_flow_usd", "net_liquidity_flow_usd",
+            "active_net_liquidity_flow_usd", "near_net_liquidity_flow_usd",
+            "near_gross_liquidity_flow_usd", "event_count", "has_liquidity_flow",
+            "gross_candidate_flow_share", "net_flow_pressure",
+            "active_net_flow_pressure", "near_net_flow_pressure",
+            "near_gross_flow_share", "flow_normalization_status",
+        },
+        LP_LIQUIDITY_FLOW_REJECTIONS: {
+            "venue", "day", "tx_hash", "log_index", "pool", "failure_reason",
+        },
+    }
+    missing_columns = {
+        path.name: sorted(columns - set(pq.ParquetFile(path).schema_arrow.names))
+        for path, columns in required.items()
+        if columns - set(pq.ParquetFile(path).schema_arrow.names)
+    }
+    results.append(
+        (
+            "node D LP liquidity-flow schemas",
+            not missing_columns,
+            f"missing_columns={missing_columns or 'none'}",
+        )
+    )
+    if missing_columns:
+        return results
+    con = duckdb.connect()
+    event = f"read_parquet('{LP_LIQUIDITY_FLOW_EVENTS.as_posix()}')"
+    candidate = f"read_parquet('{LP_LIQUIDITY_FLOW_CANDIDATES.as_posix()}')"
+    daily = f"read_parquet('{LP_LIQUIDITY_FLOW_DAILY.as_posix()}')"
+    rejection = f"read_parquet('{LP_LIQUIDITY_FLOW_REJECTIONS.as_posix()}')"
+    try:
+        core = con.execute(
+            f"""
+            SELECT count(*) AS rows,
+                count(DISTINCT (venue, day, tx_hash, log_index)) AS unique_rows,
+                count(*) FILTER (WHERE venue!='uniswap_v3'
+                    OR pool_family!='concentrated_liquidity'
+                    OR invariant_family!='concentrated_liquidity'
+                    OR state_generation!='uniswap_v3_tick_state_v2') AS family_mismatch,
+                count(*) FILTER (WHERE tick_state_age_seconds < 0) AS noncausal,
+                count(*) FILTER (WHERE range_active_before !=
+                    (tick_lower <= tick_before AND tick_before < tick_upper)) AS active_mismatch,
+                count(*) FILTER (WHERE range_near_active_before !=
+                    (range_active_before AND range_width_spacings <= 20)) AS near_mismatch,
+                count(*) FILTER (WHERE abs(signed_event_value_usd
+                    - event_sign * event_value_usd) > 1e-8) AS sign_mismatch,
+                count(*) FILTER (WHERE abs(event_value_usd
+                    - amount0 * price0_usd - amount1 * price1_usd)
+                    > greatest(1e-6, event_value_usd * 1e-10)) AS value_mismatch,
+                count(*) FILTER (WHERE price_anchor_token NOT IN (token0, token1)
+                    OR price_anchor_usd <= 0
+                    OR event_value_source!='candidate_day_price_anchor_plus_exact_prior_v3_sqrt_price')
+                    AS valuation_lineage_mismatch
+            FROM {event}
+            """
+        ).fetchone()
+        results.append(
+            (
+                "node D LP event causal contract",
+                bool(core[0] == core[1] and not any(core[index] for index in range(2, 9))),
+                f"rows={core[0]:,}; unique={core[1]:,}; family={core[2]:,}; "
+                f"noncausal={core[3]:,}; active={core[4]:,}; near={core[5]:,}; "
+                f"sign={core[6]:,}; value={core[7]:,}; lineage={core[8]:,}",
+            )
+        )
+        allocation = con.execute(
+            f"""
+            SELECT count(*) AS rows,
+                count(DISTINCT (venue, day, tx_hash, log_index, candidate)) AS unique_rows,
+                count(*) FILTER (WHERE allocation_weight <= 0 OR allocation_weight > 1
+                    OR allocated_event_value_usd <= 0
+                    OR flow_normalization_status!='dollar_flow_no_capital_stock_denominator')
+                    AS invalid_allocation,
+                count(*) FILTER (WHERE abs(signed_allocated_event_value_usd
+                    - event_sign * allocated_event_value_usd) > 1e-8) AS sign_mismatch
+            FROM {candidate}
+            """
+        ).fetchone()
+        conservation = con.execute(
+            f"""
+            WITH allocated AS (
+                SELECT venue, day, tx_hash, log_index,
+                    sum(allocated_event_value_usd) AS allocated
+                FROM {candidate}
+                GROUP BY venue, day, tx_hash, log_index
+            )
+            SELECT count(*) AS events,
+                count(*) FILTER (WHERE abs(a.allocated - e.event_value_usd)
+                    > greatest(1e-6, e.event_value_usd * 1e-10)) AS mismatch
+            FROM allocated a
+            JOIN {event} e USING (venue, day, tx_hash, log_index)
+            """
+        ).fetchone()
+        unresolved = con.execute(
+            f"""
+            SELECT count(*)
+            FROM {event} e
+            LEFT JOIN (SELECT DISTINCT venue, day, tx_hash, log_index FROM {candidate}) c
+                USING (venue, day, tx_hash, log_index)
+            LEFT JOIN (SELECT DISTINCT venue, day, tx_hash, log_index FROM {rejection}) r
+                USING (venue, day, tx_hash, log_index)
+            WHERE c.tx_hash IS NULL AND r.tx_hash IS NULL
+            """
+        ).fetchone()[0]
+        daily_core = con.execute(
+            f"""
+            WITH active_days AS (
+                SELECT day, sum(gross_candidate_flow_share) AS share
+                FROM {daily}
+                WHERE gross_candidate_flow_share IS NOT NULL
+                GROUP BY day
+            )
+            SELECT
+                (SELECT count(*) FROM {daily}) AS rows,
+                (SELECT count(DISTINCT (day, candidate)) FROM {daily}) AS unique_rows,
+                (SELECT count(*) FROM {daily} WHERE gross_liquidity_flow_usd < 0
+                    OR abs(net_liquidity_flow_usd) > gross_liquidity_flow_usd + 1e-8
+                    OR flow_normalization_status!='dollar_flow_and_within_flow_shares_no_capital_stock')
+                    AS invalid_flow,
+                (SELECT count(*) FROM {daily} WHERE has_liquidity_flow AND (
+                    abs(net_flow_pressure - net_liquidity_flow_usd / gross_liquidity_flow_usd) > 1e-10
+                    OR abs(near_gross_flow_share - near_gross_liquidity_flow_usd / gross_liquidity_flow_usd) > 1e-10))
+                    AS pressure_mismatch,
+                (SELECT count(*) FROM {daily} WHERE NOT has_liquidity_flow AND (
+                    net_flow_pressure IS NOT NULL OR near_gross_flow_share IS NOT NULL))
+                    AS zero_flow_payload,
+                (SELECT count(*) FROM active_days WHERE abs(share - 1) > 1e-10)
+                    AS day_share_mismatch
+            """
+        ).fetchone()
+        results.append(
+            (
+                "node D LP candidate allocation contract",
+                bool(
+                    allocation[0] == allocation[1]
+                    and allocation[2] == 0
+                    and allocation[3] == 0
+                    and conservation[1] == 0
+                    and unresolved == 0
+                    and daily_core[0] == daily_core[1]
+                    and not any(daily_core[index] for index in range(2, 6))
+                ),
+                f"rows={allocation[0]:,}; unique={allocation[1]:,}; "
+                f"invalid_allocation={allocation[2]:,}; sign={allocation[3]:,}; "
+                f"conserved_events={conservation[0]:,}; conservation_mismatch={conservation[1]:,}; "
+                f"unresolved_events={unresolved:,}; candidate_days={daily_core[0]:,}; "
+                f"daily_unique={daily_core[1]:,}; daily_invalid={daily_core[2]:,}; "
+                f"pressure={daily_core[3]:,}; zero_flow={daily_core[4]:,}; "
+                f"day_share={daily_core[5]:,}",
+            )
+        )
+    finally:
+        con.close()
+    return results
 
 
 def _artifact_producer(relative: str) -> str | None:
@@ -1145,6 +1830,16 @@ def main() -> int:
     )
     boundary_passed, boundary_detail = validate_canonical_consumer_boundary()
     record("node D raw-provider boundary", boundary_passed, boundary_detail)
+    liquidity_passed, liquidity_detail = validate_liquidity_contracts()
+    record("cross-protocol liquidity semantics", liquidity_passed, liquidity_detail)
+    quote_state_passed, quote_state_detail = quote_state_artifact_check()
+    record("node D quote-state family contracts", quote_state_passed, quote_state_detail)
+    for name, passed, detail in capital_artifact_checks():
+        record(name, passed, detail)
+    for name, passed, detail in token_price_artifact_checks():
+        record(name, passed, detail)
+    for name, passed, detail in lp_liquidity_flow_artifact_checks():
+        record(name, passed, detail)
 
     if MARKET_STATE_QUALITY.exists():
         quality = pd.read_parquet(MARKET_STATE_QUALITY)

@@ -6,7 +6,13 @@ from pathlib import Path
 from unittest.mock import MagicMock, patch
 
 from ddvc.paths import REPO_ROOT, _shared_git_runtime_dir, repo_path
-from ddvc.runtime import atomic_output, bounded_workers, exclusive_job, interruptible_process_pool
+from ddvc.runtime import (
+    atomic_output,
+    bounded_workers,
+    exclusive_job,
+    interruptible_process_pool,
+    interruptible_thread_pool,
+)
 
 
 class RuntimeGuardTests(unittest.TestCase):
@@ -65,6 +71,14 @@ class RuntimeGuardTests(unittest.TestCase):
                     raise RuntimeError("stop")
         executor.terminate_workers.assert_called_once_with()
         executor.shutdown.assert_not_called()
+
+    def test_interrupted_thread_pool_cancels_queued_work_without_waiting(self) -> None:
+        executor = MagicMock()
+        with patch("ddvc.runtime.ThreadPoolExecutor", return_value=executor):
+            with self.assertRaisesRegex(RuntimeError, "stop"):
+                with interruptible_thread_pool(2):
+                    raise RuntimeError("stop")
+        executor.shutdown.assert_called_once_with(wait=False, cancel_futures=True)
 
 
 if __name__ == "__main__":

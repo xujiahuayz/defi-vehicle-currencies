@@ -18,6 +18,7 @@ import pandas as pd
 
 from ddvc.analysis.dynamics import value_at_day_offset
 from ddvc.analysis.regression import absorb_fixed_effects, ols_clustered
+from ddvc.paths import LP_CAPITAL_CONCENTRATION_PANEL
 
 ROOT = Path(__file__).resolve().parents[1]
 SCRIPTS = ROOT / "scripts"
@@ -30,8 +31,8 @@ from ddvc.paper_tables import _int, _num, _p, _write_table
 
 def run() -> pd.DataFrame:
     bridge = pd.read_parquet(DATA / "empirical" / "bridge_daily.parquet", columns=["date", "token", "BridgeShare"])
-    lp = pd.read_parquet(DATA / "exhibits" / "lp_concentration.parquet").rename(columns={"token_symbol": "token"})
-    d = bridge.merge(lp[["date", "token", "lp_concentration_share"]], on=["date", "token"], how="inner")
+    lp = pd.read_parquet(LP_CAPITAL_CONCENTRATION_PANEL).rename(columns={"token_symbol": "token"})
+    d = bridge.merge(lp[["date", "token", "lp_capital_share"]], on=["date", "token"], how="inner")
     d["date"] = pd.to_datetime(d["date"])
     d = d.sort_values(["token", "date"])
     rows = []
@@ -41,7 +42,7 @@ def run() -> pd.DataFrame:
         y = absorb_fixed_effects(dd["future_bridge_share"], dd["token"], dd["date"])
         x = pd.DataFrame(
             {
-                "lp_concentration": absorb_fixed_effects(dd["lp_concentration_share"], dd["token"], dd["date"]),
+                "lp_concentration": absorb_fixed_effects(dd["lp_capital_share"], dd["token"], dd["date"]),
                 "current_bridge_share": absorb_fixed_effects(dd["BridgeShare"], dd["token"], dd["date"]),
             }
         )

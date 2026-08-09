@@ -130,6 +130,24 @@ def merge_stream_metadata(existing: dict[str, Any], fresh: dict[str, Any]) -> di
     return merged
 
 
+def require_mergeable_partial_metadata(
+    existing: dict[str, Any],
+    *,
+    requested_streams: set[str],
+    canonical_streams: set[str],
+) -> None:
+    """Refuse a partial refresh when legacy metadata cannot preserve omitted streams."""
+
+    if requested_streams == canonical_streams:
+        return
+    recorded = existing.get("streams")
+    if not isinstance(recorded, dict) or not recorded:
+        raise RuntimeError(
+            "partial raw refresh cannot merge into legacy metadata without a stream ledger; "
+            "refresh the canonical stream set together once"
+        )
+
+
 def fetch_source_day(
     source: DexSource,
     day: dt.date,
@@ -141,6 +159,15 @@ def fetch_source_day(
     selected = [entity for entity in schema.entities if streams is None or entity.stream in streams]
     if not selected:
         return {"source": source.name, "day": day.isoformat(), "streams": {}}
+
+    meta_out = meta_path(source.name, day)
+    if streams is not None and meta_out.exists():
+        existing_meta = json.loads(meta_out.read_text())
+        require_mergeable_partial_metadata(
+            existing_meta,
+            requested_streams={entity.stream for entity in selected},
+            canonical_streams={entity.stream for entity in schema.entities},
+        )
 
     client = GraphClient(source.subgraph_id, graph_keys(), graph_path=source.graph_path)
     head = head_block(client)
@@ -188,7 +215,6 @@ def fetch_source_day(
         "streams": stream_meta,
         "fetched_at_utc": dt.datetime.now(dt.timezone.utc).isoformat(),
     }
-    meta_out = meta_path(source.name, day)
     meta_out.parent.mkdir(parents=True, exist_ok=True)
     if meta_out.exists():
         try:

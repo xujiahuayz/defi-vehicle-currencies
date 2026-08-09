@@ -22,7 +22,7 @@ class VariableRegistryTests(unittest.TestCase):
         for spec in SUMMARY_SPECS:
             self.assertIn(spec.column, observation_columns)
             self.assertIsNotNone(spec.summary_unit, spec.column)
-        self.assertIn("direct_depth_median", {spec.column for spec in SUMMARY_SPECS})
+        self.assertIn("direct_quote_quality_median", {spec.column for spec in SUMMARY_SPECS})
 
     def test_summary_statistics_use_canonical_registry_notation(self) -> None:
         root = Path(__file__).resolve().parents[1]
@@ -44,9 +44,9 @@ class VariableRegistryTests(unittest.TestCase):
                 "bridge_share",
                 "all_route_bridge_share",
                 "vol_share",
-                "lp_concentration",
+                "lp_capital_share",
                 "direct_available_share",
-                "direct_depth_median",
+                "direct_quote_quality_median",
                 "no_direct_vehicle_available_share",
                 "direct_cost_advantage_median",
                 "settlement_transfer_incidence",
@@ -179,7 +179,7 @@ class VariableRegistryTests(unittest.TestCase):
             "bridge_volume_usd": r"$\mathrm{IVol}_{k,t}$",
             "daily_all_route_volume_usd": r"$\mathrm{Vol}_t$",
             "daily_indirect_route_volume_usd": r"$\mathrm{IVol}_t$",
-            "vehicle_linked_liquidity_usd": r"$L_{k,t}$",
+            "vehicle_linked_capital_usd": r"$C_{k,t}$",
             "delta_bridge_share_t7": r"$\Delta_{\tau}\mathrm{VehicleShare}_{k,t}$",
         }
         for column, symbol in expected.items():
@@ -208,8 +208,8 @@ class VariableRegistryTests(unittest.TestCase):
             ),
             "pair_vehicle_hhi": r"$\mathrm{VehicleHHI}_{i,o,t}$",
             "any_indirect_available": r"$\mathrm{AnyIndirectAvailable}_{i,o,q,t}$",
-            "pair_direct_depth": r"$\mathrm{DirectDepth}_{i,o,q,t}$",
-            "pair_indirect_depth": r"$\mathrm{IndirectDepth}_{i,o,k,q,t}$",
+            "pair_direct_quote_quality": r"$\mathrm{DirectQuoteQuality}_{i,o,q,t}$",
+            "pair_indirect_quote_quality": r"$\mathrm{IndirectQuoteQuality}_{i,o,k,q,t}$",
             "pair_direct_fee_cost": r"$C^{D,\mathrm{fee}}_{i,o,q,t}$",
             "pair_direct_price_impact_cost": r"$C^{D,\mathrm{impact}}_{i,o,q,t}$",
             "pair_direct_gas_cost": r"$C^{D,\mathrm{gas}}_{i,o,q,t}$",
@@ -222,8 +222,8 @@ class VariableRegistryTests(unittest.TestCase):
             "vehicle_switch": r"$\mathrm{VehicleSwitch}_{i,o,q,t,\tau}$",
             "pre_v3_direct_constraint": r"$\mathrm{DirectConstraint}^{\mathrm{pre}}_{i,o,q}$",
             "post_v3": r"$\mathrm{PostV3}_{t}$",
-            "vehicle_factor_loo": r"$\mathrm{VehicleLiquidityFactor}_{p,k,t}$",
-            "market_factor_loo": r"$\mathrm{MarketLiquidityFactor}_{p,t}$",
+            "vehicle_capital_factor_loo": r"$\mathrm{VehicleCapitalFactor}_{p,k,t}$",
+            "market_capital_factor_loo": r"$\mathrm{MarketCapitalFactor}_{p,t}$",
             "pool_vehicle_route_share": r"$\mathrm{VehicleRouteShare}_{p,k,t}$",
             "lp_active_capital_usd": r"$L_{a,p,t}$",
             "lp_pool_capital_share": r"$w_{a,p,t}$",
@@ -247,10 +247,10 @@ class VariableRegistryTests(unittest.TestCase):
             "pre_v4_pair_indirect_route_share": r"$\mathrm{PreV4IndirectShare}_{i,o}$",
             "post_v4": r"$\mathrm{PostV4}_{t}$",
             "pre_v3_pair_volatility": r"$\sigma^{\mathrm{pre}}_{i,o}$",
-            "pool_liquidity_concentration": r"$\mathrm{LiquidityConcentration}_{p,t,b}$",
+            "pool_band_depth_capital_efficiency": r"$\eta^{\mathrm{Band}}_{p,t,b,d}$",
             "physical_vehicle_movement_usd": r"$M_{r,k}$",
             "physical_settlement_intensity": r"$\mathrm{SettlementIntensity}_{r,k}$",
-            "vehicle_liquidity_turnover": r"$\mathrm{VehicleTurnover}_{k,t}$",
+            "vehicle_capital_turnover": r"$\mathrm{VehicleTurnover}_{k,t}$",
             "pre_v4_pool_vehicle_route_exposure": (
                 r"$\mathrm{VehicleRouteExposure}^{\mathrm{pre}}_{p,k}$"
             ),
@@ -282,7 +282,7 @@ class VariableRegistryTests(unittest.TestCase):
             "lp_predicted_other_pool_shock": "Daily return fraction",
             "physical_vehicle_movement_usd": "USD",
             "physical_settlement_intensity": "USD transferred per gross vehicle-leg USD",
-            "vehicle_liquidity_turnover": "USD vehicle volume per USD liquidity per day",
+            "vehicle_capital_turnover": "USD vehicle volume per USD deposited capital per day",
         }
         for column, unit in expected_units.items():
             with self.subTest(column=column):
@@ -492,25 +492,25 @@ class VariableRegistryTests(unittest.TestCase):
         self.assertEqual(total.formula, r"$\mathrm{DVol}_t+\mathrm{IVol}_t$")
         self.assertNotIn(r"$A_t$", [spec.notation for spec in VARIABLE_SPECS])
 
-    def test_candidate_linked_liquidity_has_an_explicit_allocation_rule(self) -> None:
+    def test_candidate_linked_capital_has_an_explicit_allocation_rule(self) -> None:
         by_notation = {item.notation: item.definition for item in NOTATION_DEFINITIONS}
         candidate_definition = by_notation[r"$\mathcal K$"]
         pool_definition = by_notation[r"$\mathcal L_t,\ \mathcal L_{k,t},\ m_p$"]
-        liquidity_definition = by_notation[r"$\mathrm{TVL}_{p,t},\ L_{k,t}$"]
+        capital_definition = by_notation[r"$\mathrm{Capital}_{p,t},\ C_{k,t}$"]
         for token in ["WETH", "USDC", "USDT", "DAI", "WBTC"]:
             self.assertIn(token, candidate_definition)
         self.assertNotIn("FRAX", candidate_definition)
         self.assertIn(r"$m_p\in\{1,2\}$", pool_definition)
         self.assertIn(r"$\mathcal L_{k,t}\subseteq\mathcal L_t$", pool_definition)
         self.assertIn("exact token contracts", pool_definition)
-        self.assertIn("persisted V3 swap archive", pool_definition)
-        self.assertIn("one half to each", liquidity_definition)
+        self.assertIn("protocols whose deposited-capital contract", pool_definition)
+        self.assertIn("one half to each", capital_definition)
 
         by_column = {spec.column: spec for spec in VARIABLE_SPECS}
-        formula = by_column["vehicle_linked_liquidity_usd"].formula
+        formula = by_column["vehicle_linked_capital_usd"].formula
         self.assertEqual(
             formula,
-            r"$\displaystyle\sum_{p\in\mathcal L_{k,t}}\frac{\mathrm{TVL}_{p,t}}{m_p}$",
+            r"$\displaystyle\sum_{p\in\mathcal L_{k,t}}\frac{\mathrm{Capital}_{p,t}}{m_p}$",
         )
 
     def test_thin_direct_is_a_quote_quality_subset(self) -> None:
@@ -556,9 +556,9 @@ class VariableRegistryTests(unittest.TestCase):
             r"\mathrm{DVol}_t": r"\mathrm{DVol}_t",
             r"\ell": r"$\ell,\ p,\ p'$",
             r"p\in": r"$\ell,\ p,\ p'$",
-            r"L_{k,t}": r"L_{k,t}",
+            r"C_{k,t}": r"C_{k,t}",
             r"\mathcal L_{k,t}": r"\mathcal L_{k,t}",
-            r"\mathrm{TVL}_{p,t}": r"\mathrm{TVL}_{p,t}",
+            r"\mathrm{Capital}_{p,t}": r"\mathrm{Capital}_{p,t}",
             r"m_p": r"m_p",
             r"\mathcal K": r"\mathcal K",
             r"\mathcal P_{k,t,q}": r"\mathcal{P}_{k,t,q}",

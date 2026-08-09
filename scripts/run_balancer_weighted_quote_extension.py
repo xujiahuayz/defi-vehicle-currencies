@@ -84,8 +84,8 @@ def _load_pools(stamp: str) -> dict[frozenset[str], list[WeightedPool]]:
     state = read_multi_asset_partition("balancer", stamp, root=MARKET_STATE)
     snapshots = state[state["record_type"].eq("snapshot_token")]
     for pid, group in snapshots.groupby("pool", sort=False):
-        pool_types = group["pool_type"].dropna()
-        if pool_types.empty or str(pool_types.iloc[0]).lower() != "weighted" or len(group) != 2:
+        pool_families = group["pool_family"].dropna()
+        if pool_families.empty or str(pool_families.iloc[0]) != "weighted" or len(group) != 2:
             continue
         try:
             rows = list(group.itertuples(index=False))

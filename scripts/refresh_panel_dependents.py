@@ -33,7 +33,7 @@ import sys
 import time
 from pathlib import Path
 
-from ddvc.paths import DATA_DIR, SHARED_RUNTIME_DIR
+from ddvc.paths import DATA_DIR, MARKET_STATE_LOCK, SHARED_RUNTIME_DIR
 from ddvc.provenance import ensure_released_directory_alias, verify
 from ddvc.runtime import exclusive_job
 
@@ -41,7 +41,6 @@ ROOT = Path(__file__).resolve().parents[1]
 PANEL = ROOT / "data" / "empirical" / "route_cost_panel_v2.parquet"
 LOGS = ROOT / "logs" / "refresh"
 REFRESH_LOCK = SHARED_RUNTIME_DIR / "panel-dependent-refresh.lock"
-MARKET_STATE_LOCK = DATA_DIR / "processed" / ".market_state.lock"
 
 # (script, args, why it sits here in the order). Withheld scripts are deliberately absent;
 # `audit_findings_freeze.py` tests that they do not silently return.
@@ -99,12 +98,38 @@ CLAIM_INPUT_STAGES: list[tuple[str, list[str], str, tuple[str, ...]]] = [
         ("data/processed/vehicle_centrality_dense.parquet",),
     ),
     (
+        "build_token_price_panel.py",
+        ["--workers", "2"],
+        "canonical address-day USD prices used by liquidity and route valuation",
+        ("data/processed/token_price_daily.parquet",),
+    ),
+    (
+        "build_pool_capital_panel.py",
+        [],
+        "only protocol-admitted deposited capital and exact candidate allocation; V3 provider TVL is excluded",
+        (
+            "data/processed/pool_capital_daily.parquet",
+            "data/processed/pool_candidate_capital_daily.parquet",
+            "data/processed/pool_capital_rejections.parquet",
+        ),
+    ),
+    (
         "build_rent_incidence_panel.py",
-        ["both"],
-        "v2 and v3 liquidity-provider rent inputs",
+        ["v2"],
+        "constant-product liquidity-provider rent inputs; V3 is withheld pending inventory replay",
         (
             "data/processed/rent_incidence_v2_pool_day.parquet",
-            "data/processed/rent_incidence_v3_pool_day.parquet",
+        ),
+    ),
+    (
+        "build_lp_liquidity_flow_panel.py",
+        [],
+        "causal V3 LP dollar-flow inputs without an unvalidated capital-stock proxy",
+        (
+            "data/processed/lp_liquidity_flow_events_v3.parquet",
+            "data/processed/lp_liquidity_flow_candidates_v3.parquet",
+            "data/processed/lp_liquidity_flow_rejections_v3.parquet",
+            "data/processed/lp_liquidity_flow_daily_v3.parquet",
         ),
     ),
     (
