@@ -13,6 +13,7 @@ from ddvc.analysis.transaction_frontier import (
     MAX_CHOSEN_REPRODUCTION_ERROR_BPS,
     MIN_CHOSEN_REPRODUCTION,
     RealisedPath,
+    chosen_quote_coverage_share,
     chosen_reproduction_share,
     chosen_output_error,
     positive_finite_amount,
@@ -125,18 +126,21 @@ class TransactionStateFrontierScriptTests(unittest.TestCase):
         self.assertEqual(MAX_CHOSEN_REPRODUCTION_ERROR, 0.0001)
         self.assertAlmostEqual(chosen_reproduction_share(101, 1), 100 / 101)
         self.assertEqual(chosen_reproduction_share(0, 0), 0.0)
+        self.assertEqual(chosen_quote_coverage_share(200, 150), 0.75)
+        self.assertEqual(chosen_quote_coverage_share(0, 0), 0.0)
 
     def test_daily_gate_requires_exact_audit_calendar_and_reproduction(self) -> None:
         support = pd.DataFrame(
             {
                 "day": ["20250115", "20250215"],
+                "within_20pct_chosen_quote_eligible_routes": [100, 100],
                 "within_20pct_chosen_quote_available": [100, 100],
                 "within_20pct_chosen_output_mismatch": [0, 1],
             }
         )
         self.assertEqual(
             validate_audit_support(support, ["20250115", "20250215"]),
-            0.995,
+            (0.995, 1.0),
         )
         with self.assertRaisesRegex(ValueError, "calendar does not match"):
             validate_audit_support(support, ["20250115", "20250315"])
@@ -149,6 +153,7 @@ class TransactionStateFrontierScriptTests(unittest.TestCase):
         support = pd.DataFrame(
             {
                 "day": ["20250115", "20250115"],
+                "within_20pct_chosen_quote_eligible_routes": [100, 100],
                 "within_20pct_chosen_quote_available": [100, 100],
                 "within_20pct_chosen_output_mismatch": [0, 0],
             }
@@ -160,6 +165,7 @@ class TransactionStateFrontierScriptTests(unittest.TestCase):
         support = pd.DataFrame(
             {
                 "day": ["20250101", "20250102"],
+                "within_20pct_chosen_quote_eligible_routes": [100, 100],
                 "within_20pct_chosen_quote_available": [100, 100],
                 "within_20pct_chosen_output_mismatch": [0, 3],
             }

@@ -40,6 +40,15 @@ ChosenPathQuoter = Callable[[RealisedPath], PathQuote | None]
 MIN_CHOSEN_REPRODUCTION = 0.99
 MAX_CHOSEN_REPRODUCTION_ERROR_BPS = 1.0
 MAX_CHOSEN_REPRODUCTION_ERROR = MAX_CHOSEN_REPRODUCTION_ERROR_BPS / 10_000.0
+QUOTE_OUTCOME_REASONS = frozenset(
+    {
+        "invalid_realised_input",
+        "invalid_realised_output",
+        "invalid_chosen_output",
+        "chosen_state_unavailable",
+        "chosen_output_mismatch",
+    }
+)
 
 
 def chosen_reproduction_share(available: int, mismatches: int) -> float:
@@ -47,6 +56,13 @@ def chosen_reproduction_share(available: int, mismatches: int) -> float:
     if available <= 0 or mismatches < 0 or mismatches > available:
         return 0.0
     return 1.0 - mismatches / available
+
+
+def chosen_quote_coverage_share(eligible: int, available: int) -> float:
+    """Share of eligible realised routes whose chosen state can be quoted."""
+    if eligible <= 0 or available < 0 or available > eligible:
+        return 0.0
+    return available / eligible
 
 
 def positive_finite_amount(value: float) -> bool:

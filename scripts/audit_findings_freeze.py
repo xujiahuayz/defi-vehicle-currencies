@@ -19,6 +19,7 @@ from ddvc.asset_types import TYPES, VEHICLE_CANDIDATES
 from ddvc.analysis.transaction_frontier import (
     MAX_CHOSEN_REPRODUCTION_ERROR_BPS,
     MIN_CHOSEN_REPRODUCTION,
+    chosen_quote_coverage_share,
     chosen_reproduction_share,
 )
 from ddvc.analysis.dynamics import CANONICAL_RESPONSE_HORIZONS
@@ -2282,6 +2283,7 @@ def transaction_frontier_support_checks(
         "invalid_realised_input",
         "invalid_realised_output",
         "invalid_chosen_output",
+        "within_20pct_chosen_quote_eligible_routes",
         "within_20pct_chosen_quote_available",
         "within_20pct_chosen_output_mismatch",
         "chosen_validation_tolerance_bps",
@@ -2295,6 +2297,11 @@ def transaction_frontier_support_checks(
     exact = int(
         pd.to_numeric(support["exact_venue_two_leg_routes"], errors="coerce").sum()
     )
+    eligible = int(
+        pd.to_numeric(
+            support["within_20pct_chosen_quote_eligible_routes"], errors="coerce"
+        ).sum()
+    )
     available = int(
         pd.to_numeric(
             support["within_20pct_chosen_quote_available"], errors="coerce"
@@ -2305,6 +2312,7 @@ def transaction_frontier_support_checks(
             support["within_20pct_chosen_output_mismatch"], errors="coerce"
         ).sum()
     )
+    quote_coverage = chosen_quote_coverage_share(eligible, available)
     reproduction = chosen_reproduction_share(available, mismatches)
     tolerance = pd.to_numeric(
         support["chosen_validation_tolerance_bps"], errors="coerce"
@@ -2315,6 +2323,11 @@ def transaction_frontier_support_checks(
             scored == panel_rows and rejected == rejection_rows and scored + rejected == exact,
             f"scored panel={panel_rows:,}; support={scored:,}; "
             f"rejections={rejection_rows:,}; support={rejected:,}; exact={exact:,}",
+        ),
+        (
+            f"{prefix} chosen-state support",
+            eligible >= available >= mismatches,
+            f"eligible={eligible:,}; quoted={available:,}; coverage={quote_coverage:.2%}",
         ),
         (
             f"{prefix} chosen-output validation",

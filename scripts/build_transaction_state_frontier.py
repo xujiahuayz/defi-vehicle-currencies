@@ -29,7 +29,9 @@ from ddvc.analysis.transaction_frontier import (
     MAX_CHOSEN_REPRODUCTION_ERROR,
     MAX_CHOSEN_REPRODUCTION_ERROR_BPS,
     MIN_CHOSEN_REPRODUCTION,
+    QUOTE_OUTCOME_REASONS,
     RealisedPath,
+    chosen_quote_coverage_share,
     chosen_reproduction_share,
     chosen_output_error,
     positive_finite_amount,
@@ -305,10 +307,11 @@ def validate_reproduction_support(
     expected_days: list[str],
     *,
     label: str,
-) -> float:
+) -> tuple[float, float]:
     """Validate one frontier calendar and its chosen-route reproduction gate."""
     required = {
         "day",
+        "within_20pct_chosen_quote_eligible_routes",
         "within_20pct_chosen_quote_available",
         "within_20pct_chosen_output_mismatch",
     }
@@ -346,6 +349,7 @@ def validate_reproduction_support(
     counts = normalised[
         [
             "within_20pct_chosen_quote_available",
+            "within_20pct_chosen_quote_eligible_routes",
             "within_20pct_chosen_output_mismatch",
         ]
     ].apply(pd.to_numeric, errors="coerce")
@@ -353,23 +357,27 @@ def validate_reproduction_support(
         raise ValueError(f"{label} support contains invalid reproduction counts")
     if not np.equal(counts, np.floor(counts)).all().all():
         raise ValueError(f"{label} support contains non-integer reproduction counts")
+    eligible = int(counts["within_20pct_chosen_quote_eligible_routes"].sum())
     available = int(counts["within_20pct_chosen_quote_available"].sum())
     mismatches = int(counts["within_20pct_chosen_output_mismatch"].sum())
+    if available > eligible:
+        raise ValueError(f"{label} available chosen quotes exceed eligible routes")
     if mismatches > available:
         raise ValueError(f"{label} mismatches exceed available chosen quotes")
+    coverage = chosen_quote_coverage_share(eligible, available)
     reproduction = chosen_reproduction_share(available, mismatches)
     if reproduction < MIN_CHOSEN_REPRODUCTION:
         raise ValueError(
             f"{label} chosen-route reproduction {reproduction:.2%} is below "
             f"the {MIN_CHOSEN_REPRODUCTION:.0%} gate"
         )
-    return reproduction
+    return reproduction, coverage
 
 
 def validate_audit_support(
     support: pd.DataFrame,
     expected_days: list[str],
-) -> float:
+) -> tuple[float, float]:
     """Validate the current construction-audit certificate."""
     return validate_reproduction_support(
         support,
@@ -381,7 +389,7 @@ def validate_audit_support(
 def validate_daily_support(
     support: pd.DataFrame,
     expected_days: list[str],
-) -> float:
+) -> tuple[float, float]:
     """Validate the full-daily ledger before publishing any canonical artifact."""
     return validate_reproduction_support(
         support,
@@ -390,7 +398,7 @@ def validate_daily_support(
     )
 
 
-def require_frontier_audit_gate(expected_days: list[str]) -> float:
+def require_frontier_audit_gate(expected_days: list[str]) -> tuple[float, float]:
     """Require a current, complete audit certificate before a full-daily build."""
     require_current_artifacts(
         [AUDIT_PANEL, AUDIT_REJECTIONS, AUDIT_SUPPORT],
@@ -727,6 +735,10 @@ def load_target_routes(
         ),
         "intermediate_flow_tolerance_bps": INTERMEDIATE_FLOW_TOLERANCE_BPS,
         "routes_at_least_100usd": above_minimum,
+        "chosen_quote_eligible_routes": len(targets),
+        "within_20pct_chosen_quote_eligible_routes": sum(
+            bool(target["within_20pct"]) for target in targets
+        ),
         "scored_routes": 0,
         "rejected_routes": len(rejections),
         "invalid_realised_input": 0,
@@ -957,6 +969,38 @@ def score_day(
             for key, value in coherent_diagnostics.items()
         }
     )
+    quote_outcome_rejections = [
+        rejection
+        for rejection in rejection_rows
+        if rejection["reason"] in QUOTE_OUTCOME_REASONS
+    ]
+    if len(rows) + len(quote_outcome_rejections) != int(
+        support["chosen_quote_eligible_routes"]
+    ):
+        raise AssertionError("frontier chosen-quote outcome funnel does not reconcile")
+    within_20pct_outcomes = sum(bool(row["within_20pct"]) for row in rows) + sum(
+        bool(rejection["within_20pct"]) for rejection in quote_outcome_rejections
+    )
+    if within_20pct_outcomes != int(
+        support["within_20pct_chosen_quote_eligible_routes"]
+    ):
+        raise AssertionError(
+            "frontier coherent chosen-quote outcome funnel does not reconcile"
+        )
+    if int(support["chosen_quote_available"]) != len(rows) + int(
+        support["chosen_output_mismatch"]
+    ):
+        raise AssertionError("frontier chosen-quote availability does not reconcile")
+    support["chosen_quote_coverage_share"] = chosen_quote_coverage_share(
+        int(support["chosen_quote_eligible_routes"]),
+        int(support["chosen_quote_available"]),
+    )
+    support["within_20pct_chosen_quote_coverage_share"] = (
+        chosen_quote_coverage_share(
+            int(support["within_20pct_chosen_quote_eligible_routes"]),
+            int(support["within_20pct_chosen_quote_available"]),
+        )
+    )
     return pd.DataFrame(rows), pd.DataFrame(rejection_rows), support
 
 
@@ -1123,13 +1167,16 @@ def main() -> int:
     if daily_mode:
         expected_audit_days = nearest_day_per_month(available_days(nonempty=True))
         try:
-            audit_reproduction = require_frontier_audit_gate(expected_audit_days)
+            audit_reproduction, audit_coverage = require_frontier_audit_gate(
+                expected_audit_days
+            )
         except (FileNotFoundError, RuntimeError, ValueError) as error:
             print(f"error: full-daily frontier audit gate failed: {error}")
             return 1
         print(
             f"current frontier audit gate passed on {len(expected_audit_days):,} dates "
-            f"with {audit_reproduction:.2%} chosen-route reproduction",
+            f"with {audit_reproduction:.2%} chosen-route reproduction and "
+            f"{audit_coverage:.2%} chosen-state coverage",
             flush=True,
         )
     frames: list[pd.DataFrame] = []
@@ -1263,7 +1310,9 @@ def main() -> int:
     support = pd.DataFrame(support_rows)
     if daily_mode:
         try:
-            daily_reproduction = validate_daily_support(support, selected)
+            daily_reproduction, daily_coverage = validate_daily_support(
+                support, selected
+            )
         except ValueError as error:
             print(f"error: full-daily frontier release gate failed: {error}")
             return 1
@@ -1295,7 +1344,8 @@ def main() -> int:
         print(
             f"wrote full-daily frontier on {len(selected):,} calendar days: "
             f"{panel_rows:,} scored and {rejection_rows:,} rejected routes; "
-            f"chosen-route reproduction {daily_reproduction:.2%}"
+            f"chosen-route reproduction {daily_reproduction:.2%}; "
+            f"chosen-state coverage {daily_coverage:.2%}"
         )
         return 0
 

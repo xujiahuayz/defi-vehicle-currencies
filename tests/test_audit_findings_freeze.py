@@ -574,6 +574,7 @@ class FindingsFreezeAuditTest(unittest.TestCase):
                 "invalid_realised_input": [0],
                 "invalid_realised_output": [0],
                 "invalid_chosen_output": [0],
+                "within_20pct_chosen_quote_eligible_routes": [101],
                 "within_20pct_chosen_quote_available": [101],
                 "within_20pct_chosen_output_mismatch": [1],
                 "chosen_validation_tolerance_bps": [1.0],
@@ -588,6 +589,7 @@ class FindingsFreezeAuditTest(unittest.TestCase):
             )
         }
         self.assertTrue(checks["transaction frontier row contract"][0])
+        self.assertTrue(checks["transaction frontier chosen-state support"][0])
         self.assertTrue(checks["transaction frontier chosen-output validation"][0])
         self.assertFalse(checks["transaction frontier audit-day coverage"][0])
         support["chosen_validation_tolerance_bps"] = 100.0
@@ -626,6 +628,7 @@ class FindingsFreezeAuditTest(unittest.TestCase):
                     "invalid_realised_input": [0],
                     "invalid_realised_output": [0],
                     "invalid_chosen_output": [0],
+                    "within_20pct_chosen_quote_eligible_routes": [1],
                     "within_20pct_chosen_quote_available": [1],
                     "within_20pct_chosen_output_mismatch": [0],
                     "chosen_validation_tolerance_bps": [1.0],
@@ -650,6 +653,7 @@ class FindingsFreezeAuditTest(unittest.TestCase):
                 }
             self.assertTrue(checks["transaction frontier daily provenance current"][0])
             self.assertTrue(checks["transaction frontier daily row contract"][0])
+            self.assertTrue(checks["transaction frontier daily chosen-state support"][0])
             self.assertTrue(checks["transaction frontier daily calendar coverage"][0])
             support.unlink()
             missing = transaction_frontier_artifact_checks(
