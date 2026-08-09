@@ -9,6 +9,7 @@ from concurrent.futures import FIRST_COMPLETED, wait
 from datetime import datetime, timezone
 import json
 from pathlib import Path
+import re
 import time
 
 from ddvc.fetch.raw import write_json, write_jsonl_gz
@@ -34,6 +35,14 @@ STATIC_PATH = V3_GRAPH_ROOT / "uniswap_v3_pool_statics_20260630.jsonl.gz"
 END_META_PATH = V3_GRAPH_ROOT / "uniswap_v3_meta_20260630.json"
 DEFAULT_CHUNK_SIZE = 1_000
 MAX_JOB_ATTEMPTS = 12
+_URL = re.compile(r"https?://[^\s,)]+", flags=re.IGNORECASE)
+
+
+def safe_retry_reason(error: BaseException, *, limit: int = 200) -> str:
+    """Summarize a retry cause without printing an RPC endpoint or credential."""
+
+    reason = " ".join(str(error).split()) or type(error).__name__
+    return _URL.sub("<endpoint>", reason)[:limit]
 
 
 def v3_pool_addresses(path: Path = STATIC_PATH) -> set[str]:
@@ -150,15 +159,16 @@ def run_fetch_jobs(
                 try:
                     result = future.result()
                 except Throttled as error:
+                    reason = safe_retry_reason(error)
                     if attempt < max_attempts:
                         queue.append((lower, upper, attempt + 1))
                         print(
                             f"  retrying throttled inventory chunk {lower}-{upper} "
-                            f"at queue tail ({attempt + 1}/{max_attempts})",
+                            f"at queue tail ({attempt + 1}/{max_attempts}); cause={reason}",
                             flush=True,
                         )
                     else:
-                        failures.append((lower, upper, str(error)))
+                        failures.append((lower, upper, reason))
                     continue
                 totals["raw"] += int(result["raw_logs"])
                 totals["recognized"] += int(result["recognized_v3_logs"])

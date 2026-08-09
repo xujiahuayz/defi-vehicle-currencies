@@ -36,7 +36,7 @@ from ddvc.v3_inventory_calendar import (
 from ddvc.quoter import Throttled
 from scripts.build_v3_inventory_panel import CODE_SOURCES as PANEL_CODE_SOURCES
 from scripts.audit_v3_inventory_balances import audit_sample_table
-from scripts.fetch_v3_inventory_events import run_fetch_jobs
+from scripts.fetch_v3_inventory_events import run_fetch_jobs, safe_retry_reason
 
 
 def log(event: str, values: list[int], types: list[str]) -> dict:
@@ -275,6 +275,20 @@ def test_fetch_queue_retries_throttled_chunk_without_abandoning_other_work() -> 
     assert totals == {"raw": 2, "recognized": 2}
     assert failures == []
     assert calls == {(1, 1): 2, (2, 2): 1}
+
+
+def test_inventory_retry_reason_redacts_endpoints_and_bounds_output() -> None:
+    reason = safe_retry_reason(
+        Throttled(
+            "gateway https://provider.example/v1?api_key=secret failed\n"
+            + "x" * 300
+        )
+    )
+    assert "provider.example" not in reason
+    assert "secret" not in reason
+    assert "<endpoint>" in reason
+    assert "\n" not in reason
+    assert len(reason) == 200
 
 
 def test_raw_inventory_chunk_audit_reconciles_content_and_metadata() -> None:
