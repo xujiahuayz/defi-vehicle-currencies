@@ -62,6 +62,16 @@ DAILY_FRONTIER_PREREQUISITES = (
 # This is the executable owner of D3-refresh. These are canonical panels, not finding estimators. The order keeps raw- and receipt-dependent measurement ahead of consumers and deliberately runs one memory-heavy transform at a time.
 CLAIM_INPUT_STAGES: list[tuple[str, list[str], str, tuple[str, ...]]] = [
     (
+        "build_routing_maturation_panel.py",
+        ["--threads", "1", "--memory-limit", "1GB"],
+        "estimator-ready recurrent cell-days, conditioned transition cells, and exact-calendar routing links",
+        (
+            "data/processed/routing_maturation_cell_day.parquet",
+            "data/processed/routing_transition_cells.parquet",
+            "data/processed/routing_maturation_exact_horizons.parquet",
+        ),
+    ),
+    (
         "process/build_cex_reference_support.py",
         [],
         "published exact-address positive CEX-reference support for the rent bound",

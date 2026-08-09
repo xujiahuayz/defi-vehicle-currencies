@@ -122,6 +122,7 @@ class DataReleaseTests(unittest.TestCase):
             "scripts/process/fetch_daily_gas_price_graph.py": "require_node_d_release(routes=True)",
             "scripts/process/build_route_gas_units.py": "require_node_d_release(routes=True)",
             "scripts/build_transaction_state_frontier.py": "require_node_d_release(routes=True, market_state=True)",
+            "scripts/build_routing_maturation_panel.py": "require_node_d_release(routes=True, market_state=True)",
             "scripts/build_counterfactual_dominance.py": "require_node_d_release(routes=True, market_state=True)",
             "scripts/build_rent_incidence_panel.py": "require_node_d_release(market_state=True)",
             "scripts/build_v2_token_panel.py": "require_node_d_release(market_state=True)",
@@ -139,6 +140,7 @@ class DataReleaseTests(unittest.TestCase):
             "scripts/build_vehicle_centrality.py",
             "scripts/build_counterfactual_dominance.py",
             "scripts/build_transaction_state_frontier.py",
+            "scripts/build_routing_maturation_panel.py",
             "scripts/build_v2_token_panel.py",
             "scripts/build_rent_incidence_panel.py",
             "scripts/run_rent_incidence.py",
@@ -182,6 +184,7 @@ class DataReleaseTests(unittest.TestCase):
     def test_dependent_consumers_require_current_analysis_inputs(self) -> None:
         filenames = [
             "scripts/build_transaction_state_frontier.py",
+            "scripts/build_routing_maturation_panel.py",
             "scripts/build_counterfactual_dominance.py",
             "scripts/run_rent_incidence.py",
         ]
