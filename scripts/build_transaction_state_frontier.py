@@ -266,13 +266,9 @@ def latest_replay_checkpoint(directory: Path, target_day: str) -> Path | None:
     return max(candidates, key=checkpoint_day) if candidates else None
 
 
-def replay_checkpoint_due(
-    *, day: str, index: int, selected_days: set[str], daily_mode: bool
-) -> bool:
-    """Keep audit selections resumable without checkpointing every daily target."""
-    return (not daily_mode and day in selected_days) or (
-        (index - 1) % CHECKPOINT_INTERVAL_DAYS == 0
-    )
+def replay_checkpoint_due(*, index: int) -> bool:
+    """Bound resumed replay to fewer than ``CHECKPOINT_INTERVAL_DAYS`` days."""
+    return (index - 1) % CHECKPOINT_INTERVAL_DAYS == 0
 
 
 def available_days(*, nonempty: bool = False) -> list[str]:
@@ -1379,12 +1375,7 @@ def main() -> int:
         assert replay is not None
         day = observed.strftime("%Y%m%d")
         checkpoint = checkpoint_dir / f"pre_{day}.pkl"
-        if replay_checkpoint_due(
-            day=day,
-            index=index,
-            selected_days=selected_set,
-            daily_mode=daily_mode,
-        ):
+        if replay_checkpoint_due(index=index):
             if not checkpoint.exists():
                 save_replay_checkpoint(checkpoint, replay)
                 print(f"wrote replay checkpoint before {day}", flush=True)
