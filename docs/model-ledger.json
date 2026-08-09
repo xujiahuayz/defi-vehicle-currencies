@@ -81,7 +81,7 @@
       "artifacts": [
         "output/empirical/rent_incidence/centrality_curse_regressions.jsonl"
       ],
-      "note": "The V3 role-sign, net-flow-sign and fee-to-LVR fits are retired. Their dollar LVR numerator collapses a tick-crossing day to one volume-weighted tick, and the provider TVL denominator failed the historical-balance audit. Any future V3 family starts from event-replayed capital and path-integrated LVR as new specifications."
+      "note": "The V3 role-sign, net-flow-sign and fee-to-LVR fits are retired. Their dollar LVR numerator collapses a tick-crossing day to one volume-weighted tick, and the provider TVL denominator failed the historical-balance audit. Any future V3 family starts from an event-replayed inventory that separately passes custody and LP-ownership reconciliation plus path-integrated LVR as new specifications."
     },
     {
       "id": "retired_v3_virtual_capital_returns",

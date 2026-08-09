@@ -1,4 +1,4 @@
-"""Exact UTC day-end block calendar for physical Uniswap V3 inventory replay."""
+"""Exact UTC day-end block calendar for Uniswap V3 event-accounted inventory replay."""
 
 from __future__ import annotations
 
@@ -234,7 +234,7 @@ def build_day_calendar(*, workers: int = 2) -> tuple[int, int, int]:
 
 
 def load_day_calendar() -> tuple[list[str], list[int]]:
-    require_current_artifacts([CALENDAR], consumer="V3 physical-inventory replay")
+    require_current_artifacts([CALENDAR], consumer="V3 event-accounted inventory replay")
     frame = pd.read_parquet(CALENDAR)
     days = frame["day"].astype(str).tolist()
     end_blocks = frame["day_end_block"].astype("int64").tolist()

@@ -21,7 +21,8 @@ is lagged reported reserve value, cross-checked against anchored reserve
 valuation. The contemporaneous pool-value LVR scale is kept separately, so an
 LVR return is (current pool value / lagged capital) times realised variance over
 eight. V3 capital, LVR, signs, ratios and return inference are absent until the
-inventory replay and path-integrated concentrated-liquidity LVR both pass.
+inventory replay passes custody and LP-ownership reconciliation and a
+path-integrated concentrated-liquidity LVR adapter passes independently.
 """
 
 from __future__ import annotations
@@ -593,7 +594,10 @@ def main() -> int:
          "share_days_with_lp_event", "med_net_yield_apr", "share_net_positive",
          "cw_net_yield_apr"]].to_string(index=False, float_format=fmt))
     print("\n=== Invariant-validated rent incidence ===")
-    print("(v3 is excluded until event-replayed capital and path-integrated LVR pass)")
+    print(
+        "(v3 is excluded until event-replayed inventory passes custody and LP-ownership "
+        "reconciliation and path-integrated LVR passes)"
+    )
     print(roles[roles.scope.eq("pooled")][["venue", "pool_role", "pools", "token_pairs", "pool_days",
                  "net_musd", "fee_over_lvr", "fee_over_lvr_plus_gas",
                  "med_pool_day_fee_over_lvr", "share_net_positive",

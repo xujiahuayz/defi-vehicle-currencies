@@ -122,7 +122,7 @@ CLAIM_INPUT_STAGES: list[tuple[str, list[str], str, tuple[str, ...]]] = [
     (
         "build_rent_incidence_panel.py",
         ["v2"],
-        "constant-product liquidity-provider rent inputs; V3 is withheld pending inventory replay",
+        "constant-product liquidity-provider rent inputs; V3 is withheld pending custody, ownership, and path-LVR reconciliation",
         (
             "data/processed/rent_incidence_v2_pool_day.parquet",
         ),

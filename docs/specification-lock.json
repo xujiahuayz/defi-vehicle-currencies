@@ -185,7 +185,7 @@
       "status": "enter_fgh_companion",
       "role": "companion distributional finding",
       "estimand": "fee revenue minus LVR minus LP gas by pool asset role",
-      "sample": "screened Uniswap V2 pool-days with at least 10000 dollars of exact-lag reserve capital reconciled to independently priced reserves; Uniswap V3 is excluded until event-replayed capital and path-integrated LVR both pass",
+      "sample": "screened Uniswap V2 pool-days with at least 10000 dollars of exact-lag reserve capital reconciled to independently priced reserves; Uniswap V3 is excluded until event-replayed inventory passes custody and LP-ownership reconciliation and path-integrated LVR passes independently",
       "unit": "pool-day descriptives and pool-month inference",
       "dependent_variable": "V2 risk-adjusted net return and indicator that fees exceed LVR plus gas",
       "transformation": "V2 annualised capital returns and fee-to-LVR ratio, with contemporaneous pool value as the LVR scale and exact prior-calendar capital as the return denominator",
@@ -217,7 +217,7 @@
           "mean daily screened V2 capital and capital share by annual pool role",
           "annual V2 net return and paying share by pool role",
           "V3 provider TVL failed the independent historical-balance audit and is excluded",
-          "V3 dollar supply flows remain unnormalized until event-replayed capital passes"
+          "V3 dollar supply flows remain unnormalized until an ownership-reconciled exact-lag capital generation passes"
         ]
       },
       "falsifier": "native-other net return becomes nonnegative under open-to-close LVR or role differences disappear in clustered pool-month tests; rotation-mechanism status additionally requires stable-linked capital or returns to move before stable vehicle share",
