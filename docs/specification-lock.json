@@ -146,11 +146,11 @@
       "status": "enter_fgh_foundation",
       "role": "necessary state for persistence, not a persistence estimate",
       "estimand": "share of realised V2-family two-leg routes for which an available direct pool returns more or costs less all-in at strict pre-transaction state",
-      "sample": "realised Uniswap V2 and SushiSwap V2 two-leg routes with input notional at least 100 dollars and an exact-state direct alternative on a fixed 74-month calendar",
+      "sample": "realised Uniswap V2 and SushiSwap V2 two-leg routes with input notional at least 100 dollars and an exact-state direct alternative on the full daily calendar spanning 74 calendar months",
       "unit": "unique realised route",
       "dependent_variable": "direct output improvement above zero and all-in direct advantage above zero",
       "transformation": "binary incidence and basis-point advantage",
-      "outlier_treatment": "no upper notional trim; within-2x and within-20-percent valuation-coherence screens are mandatory",
+      "outlier_treatment": "no upper notional trim; within-2x and within-20-percent screens jointly require coherent reconstructed input-output values and agreement between the common output-token mark and reconstructed component output value",
       "inference": "route-weighted incidence with date-clustered 95 percent interval; equal-date weighting is mandatory sensitivity",
       "mandatory_alternatives": {
         "economic_object": [

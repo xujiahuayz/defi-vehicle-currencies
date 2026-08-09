@@ -8,6 +8,7 @@ import pandas as pd
 
 from scripts.build_counterfactual_dominance import (
     add_topology_gas_adjustment,
+    add_valuation_support,
     classify_state_support,
     counterfactual_days,
     dominance_level_summary,
@@ -33,6 +34,7 @@ class CounterfactualDominanceTests(unittest.TestCase):
                 "all_in_direct_advantage_bps_iqr_lower": [25.0, -25.0, 25.0, -25.0],
                 "all_in_direct_advantage_bps": [50.0, -50.0, 50.0, -50.0],
                 "all_in_direct_advantage_bps_iqr_upper": [75.0, -75.0, 75.0, -75.0],
+                "valuation_coherent_2x": [True, True, True, True],
                 "valuation_coherent_20pct": [True, True, True, True],
                 "usd": [1_000.0, 1_000.0, 1_000.0, 1_000.0],
             }
@@ -53,6 +55,25 @@ class CounterfactualDominanceTests(unittest.TestCase):
             gross["pct_dominated_routes_below_1000_usd_notional"], 0.0
         )
         self.assertIn("confidence_interval_95_lower_pct", summary.columns)
+        self.assertEqual(
+            set(summary["value_support"]),
+            {"all_routes", "within_2x", "within_20pct"},
+        )
+
+    def test_valuation_support_requires_route_and_common_mark_coherence(self) -> None:
+        frame = pd.DataFrame(
+            {
+                "component_output_to_input_value_ratio": [1.0, 1.0, 3.0],
+                "common_to_component_output_mark_ratio": [1.0, 1.5, 1.0],
+            }
+        )
+
+        result = add_valuation_support(frame)
+
+        self.assertEqual(result["route_value_coherent_20pct"].tolist(), [True, True, False])
+        self.assertEqual(result["common_mark_coherent_20pct"].tolist(), [True, False, True])
+        self.assertEqual(result["valuation_coherent_20pct"].tolist(), [True, False, False])
+        self.assertEqual(result["valuation_coherent_2x"].tolist(), [True, True, False])
 
     def test_gas_adjustment_uses_route_cells_and_reports_iqr_sensitivity(self) -> None:
         frame = pd.DataFrame(

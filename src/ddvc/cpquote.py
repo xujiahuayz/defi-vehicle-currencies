@@ -168,6 +168,32 @@ def cost_gap_bps(direct: Decimal | None, via: Decimal | None) -> float | None:
     return float(10_000 * (direct - via) / via)
 
 
+def common_mark_direct_advantage_bps(
+    direct_output: Decimal | float,
+    realised_output: Decimal | float,
+    *,
+    output_price_usd: Decimal | float,
+    input_notional_usd: Decimal | float,
+) -> float | None:
+    """Value a same-token output difference at one common external mark.
+
+    Direct and realised routes end in the same token, so using different USD
+    marks for their outputs can reverse which route is cheaper. The common mark
+    affects the dollar magnitude needed for gas adjustment, never the price-free
+    ordering of output units.
+    """
+    direct = Decimal(str(direct_output))
+    realised = Decimal(str(realised_output))
+    price = Decimal(str(output_price_usd))
+    notional = Decimal(str(input_notional_usd))
+    values = (direct, realised, price, notional)
+    if not all(value.is_finite() for value in values) or any(
+        value <= 0 for value in values
+    ):
+        return None
+    return float(Decimal(10_000) * (direct - realised) * price / notional)
+
+
 def unwind_hour(stored: tuple[Decimal, Decimal],
                 swaps: list[tuple[Decimal, Decimal]]) -> list[tuple[Decimal, Decimal]]:
     """Recover pre-trade reserves for each swap in an hour.

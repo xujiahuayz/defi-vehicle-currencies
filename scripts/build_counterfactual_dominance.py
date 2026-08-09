@@ -56,6 +56,7 @@ from ddvc.data_release import require_node_d_release
 from ddvc.cpquote import (
     Pool,
     all_in_direct_advantage_bps_from_units,
+    common_mark_direct_advantage_bps,
     cost_gap_bps,
     quote_one_hop,
 )
@@ -229,10 +230,16 @@ def one_day(day: str) -> pd.DataFrame | None:
         if target_price is None:
             continue
         direct_output_usd = float(best_direct) * target_price
-        realised_output_usd = float(route["output_usd"])
-        gross_direct_advantage_bps = (
-            10_000 * (direct_output_usd - realised_output_usd) / usd
+        realised_output_common_mark_usd = float(out_amt) * target_price
+        realised_component_output_usd = float(route["output_usd"])
+        gross_direct_advantage_bps = common_mark_direct_advantage_bps(
+            best_direct,
+            out_amt,
+            output_price_usd=target_price,
+            input_notional_usd=usd,
         )
+        if gross_direct_advantage_bps is None:
+            continue
         direct_output_improvement_bps = cost_gap_bps(best_direct, out_amt)
         eth_price = prices.get(WETH)
         hop1_support = replay.state_support[(l1.venue, l1.pool, l1.hour)]
@@ -246,9 +253,15 @@ def one_day(day: str) -> pd.DataFrame | None:
             "token_in": a_in, "token_out": b_out, "mid": mid1,
             "mid_symbol": sym, "mid_type": typ, "usd": usd,
             "realised_out": float(out_amt), "direct_quote": float(best_direct),
-            "realised_output_usd": realised_output_usd,
+            "realised_component_output_usd": realised_component_output_usd,
+            "realised_output_common_mark_usd": realised_output_common_mark_usd,
             "direct_output_usd": direct_output_usd,
-            "realised_to_input_value_ratio": realised_output_usd / usd,
+            "component_output_to_input_value_ratio": realised_component_output_usd / usd,
+            "common_to_component_output_mark_ratio": (
+                realised_output_common_mark_usd / realised_component_output_usd
+                if realised_component_output_usd > 0
+                else None
+            ),
             "eth_usd": eth_price[1] if eth_price else None,
             "hop1_pool": l1.pool, "hop2_pool": l2.pool,
             "hop1_source": hop1_source, "hop2_source": hop2_source,
@@ -384,6 +397,21 @@ def classify_state_support(frame: pd.DataFrame) -> pd.Series:
     return labels
 
 
+def add_valuation_support(frame: pd.DataFrame) -> pd.DataFrame:
+    """Require coherent route flows and a coherent common output-token mark."""
+    out = frame.copy()
+    route_ratio = out["component_output_to_input_value_ratio"]
+    mark_ratio = out["common_to_component_output_mark_ratio"]
+    for suffix, lower, upper in (("2x", 0.5, 2.0), ("20pct", 0.8, 1.2)):
+        out[f"route_value_coherent_{suffix}"] = route_ratio.between(lower, upper)
+        out[f"common_mark_coherent_{suffix}"] = mark_ratio.between(lower, upper)
+        out[f"valuation_coherent_{suffix}"] = (
+            out[f"route_value_coherent_{suffix}"]
+            & out[f"common_mark_coherent_{suffix}"]
+        )
+    return out
+
+
 def state_support_summary(frame: pd.DataFrame) -> pd.DataFrame:
     """Annual and pooled dominance diagnostics by reserve-state support class."""
     data = frame.copy()
@@ -473,6 +501,7 @@ def dominance_level_summary(frame: pd.DataFrame) -> pd.DataFrame:
     }
     support_masks = {
         "all_routes": pd.Series(True, index=frame.index),
+        "within_2x": frame["valuation_coherent_2x"].fillna(False),
         "within_20pct": frame["valuation_coherent_20pct"].fillna(False),
     }
     rows: list[dict[str, object]] = []
@@ -605,12 +634,7 @@ def main() -> int:
     df = df[df.direct_output_improvement_bps.notna()]
     df = add_topology_gas_adjustment(df)
     df["dominated_gross"] = df["direct_output_improvement_bps"].gt(0)
-    df["valuation_coherent_2x"] = df[
-        "realised_to_input_value_ratio"
-    ].between(0.5, 2.0)
-    df["valuation_coherent_20pct"] = df[
-        "realised_to_input_value_ratio"
-    ].between(0.8, 1.2)
+    df = add_valuation_support(df)
     df["dominated_valuation_coherent_2x"] = df["dominated_gross"].where(
         df["valuation_coherent_2x"]
     )

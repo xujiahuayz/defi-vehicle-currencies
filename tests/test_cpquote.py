@@ -4,9 +4,10 @@ import unittest
 from decimal import Decimal
 
 from ddvc.cpquote import (
+    apply_reserve_deltas,
     all_in_direct_advantage_bps,
     all_in_direct_advantage_bps_from_units,
-    apply_reserve_deltas,
+    common_mark_direct_advantage_bps,
     cost_gap_bps,
     hour_is_clean,
     ordered_reserve_events,
@@ -21,6 +22,31 @@ class ConstantProductStateTests(unittest.TestCase):
         self.assertAlmostEqual(cost_gap_bps(Decimal("110"), Decimal("100")), 1_000.0)
         self.assertAlmostEqual(cost_gap_bps(Decimal("90"), Decimal("100")), -1_000.0)
         self.assertIsNone(cost_gap_bps(Decimal("110"), Decimal("0")))
+
+    def test_dollar_advantage_uses_one_mark_for_both_same_token_outputs(self) -> None:
+        advantage = common_mark_direct_advantage_bps(
+            Decimal("101"),
+            Decimal("100"),
+            output_price_usd=2.0,
+            input_notional_usd=200.0,
+        )
+        self.assertEqual(advantage, 100.0)
+        self.assertIsNone(
+            common_mark_direct_advantage_bps(
+                Decimal("101"),
+                Decimal("100"),
+                output_price_usd=0.0,
+                input_notional_usd=200.0,
+            )
+        )
+        self.assertIsNone(
+            common_mark_direct_advantage_bps(
+                Decimal("101"),
+                Decimal("100"),
+                output_price_usd=2.0,
+                input_notional_usd=float("nan"),
+            )
+        )
 
     def test_two_hop_gas_increases_the_direct_route_advantage(self) -> None:
         adjusted = all_in_direct_advantage_bps(
