@@ -1,6 +1,10 @@
 from __future__ import annotations
 
 from eth_abi import encode as abi_encode
+from pathlib import Path
+import tempfile
+
+import pandas as pd
 import pytest
 
 from ddvc.v3_inventory import (
@@ -21,6 +25,7 @@ from ddvc.v3_inventory import (
 )
 from ddvc.v3_inventory_calendar import last_block_before_timestamp
 from ddvc.quoter import Throttled
+from scripts.audit_v3_inventory_balances import audit_sample_table
 from scripts.fetch_v3_inventory_events import run_fetch_jobs
 
 
@@ -217,6 +222,52 @@ def test_balance_of_call_and_result_are_exact_uint256() -> None:
     assert calldata.endswith("12" * 20)
     assert len(calldata) == 74
     assert decode_balance_of_result("0x" + "ff" * 32) == 2**256 - 1
+
+
+def test_balance_audit_sample_keeps_pool_edges_and_month_end_value_mass() -> None:
+    token0 = "0x" + "01" * 20
+    token1 = "0x" + "02" * 20
+    pool = "0x" + "03" * 20
+    rows = []
+    for day, block in (("20250101", 100), ("20250115", 200), ("20250131", 300)):
+        rows.append(
+            {
+                "venue": "uniswap_v3",
+                "day": day,
+                "day_end_block": block,
+                "pool": pool,
+                "token0_address": token0,
+                "token0_symbol": "A",
+                "token0_decimals": 6,
+                "token1_address": token1,
+                "token1_symbol": "B",
+                "token1_decimals": 18,
+                "balance0_raw": "1000000",
+                "balance1_raw": "1000000000000000000",
+                "balance0_units": 1.0,
+                "balance1_units": 1.0,
+                "negative_inventory": False,
+                "inventory_valid": True,
+                "state_generation": "test",
+            }
+        )
+    prices = [
+        {"day": day, "token": token, "price_usd": price}
+        for day in ("20250101", "20250115", "20250131")
+        for token, price in ((token0, 1.0), (token1, 2.0))
+    ]
+    with tempfile.TemporaryDirectory() as directory:
+        root = Path(directory)
+        inventory_path = root / "inventory.parquet"
+        price_path = root / "prices.parquet"
+        pd.DataFrame(rows).to_parquet(inventory_path, index=False)
+        pd.DataFrame(prices).to_parquet(price_path, index=False)
+        sample = audit_sample_table(inventory_path, price_path).to_pandas()
+    assert sample["day"].tolist() == ["20250101", "20250131"]
+    final_reason = sample.loc[sample["day"].eq("20250131"), "sample_reason"].iloc[0]
+    assert "audit_date_value_mass" in final_reason
+    assert "final_observed_pool_cut" in final_reason
+    assert bool(sample.loc[sample["day"].eq("20250131"), "full_valuation_support"].iloc[0])
 
 
 def test_removed_inventory_log_is_rejected() -> None:
