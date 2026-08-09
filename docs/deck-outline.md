@@ -132,7 +132,7 @@ Figure assets live under `output/figures/deck/` as one file per slide. Diagrams 
 
 **Visual.** `deck/data_overview.svg`, two elements side by side. Left, four stat tiles reading 364.3M route units, 2,277 days, 19,343 endpoint tokens, 6 venues priced, each with a small-caps label beneath. Right, a stacked area chart, x axis calendar time 2020 to 2026 at yearly resolution, y axis each venue's share of panel volume summing to 100%, seven bands with the six priced venues in the deck's venue colours and the one unpriced venue hatched. Measured shares: uniswap v3 rising 0.0 to 66.8 to 49.4, uniswap v2 falling 77.5 to 2.4, curve holding 11.4 to 13.5 throughout, uniswap v4 entering at 22.1 in 2025 and 34.2 in 2026, balancer peaking at 8.8 in 2023, sushiswap v2 falling 11.1 to 0.1, sushiswap v3 never above 0.2. The read is that the venue carrying the market turns over twice inside the sample and the hatched band stays negligible, so a single-venue study drifts progressively away from the market and this one does not.
 
-**Citations.** Makarov and Schoar (2022) and Schär (2021) for the venue landscape.
+**Citations.** Makarov and Schoar (2022) for institutional architecture and Schär (2021) for a dated 2020 exchange-design taxonomy. The current venue landscape comes from the project's inventory.
 
 **Caveats the speaker states aloud.** The quoted pair universe is the 200 most heavily bridged ordered pairs per day, which is a hub-and-long-tail panel and not a census, and pairs enter on the intensity of the behaviour under study. Concentrated-liquidity pricing begins 2021-05-04 with V3.
 

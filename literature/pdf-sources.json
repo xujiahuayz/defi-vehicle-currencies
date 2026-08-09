@@ -677,6 +677,18 @@
       "non_text_dispositions": [],
       "status": "complete"
     },
+    "Schar2021DeFi": {
+      "checks": {
+        "article": "literature/text/2021-Schar2021DeFi-decentralized-finance-on-blockchain-and-smart-contract-based-financial-markets.txt",
+        "author_or_repository": "https://edoc.unibas.ch/entities/publication/e515b6dd-94a3-4295-a9e5-8034914eaae6",
+        "publisher_or_doi": "https://www.stlouisfed.org/publications/review/2021/02/05/decentralized-finance-on-blockchain-and-smart-contract-based-financial-markets"
+      },
+      "companions": [],
+      "main": "Schar2021DeFi",
+      "non_text_companions": [],
+      "non_text_dispositions": [],
+      "status": "complete"
+    },
     "Mukhin2022InternationalPriceSystem": {
       "checks": {
         "article": "literature/text/2022-Mukhin2022InternationalPriceSystem-an-equilibrium-model-of-the-international-price-system.txt",

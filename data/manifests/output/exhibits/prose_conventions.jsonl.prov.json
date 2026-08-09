@@ -6,31 +6,28 @@
   "scripts/measure_prose_conventions.py",
   "src/ddvc/tables.py"
  ],
- "created_at": "2026-08-09T04:13:53+00:00",
+ "created_at": "2026-08-09T04:19:20+00:00",
  "git": {
   "branch": "glotl/fgh-evidence",
-  "commit": "b5a26102ac2b06b0cffd1a61f0b333e8efdfc88d",
+  "commit": "4599f834e9b3f31035eb2a2404ad34cf18e5cb43",
   "dirty": true,
   "dirty_generated_files": [
    "data/manifests/output/exhibits/venue_optics.jsonl.prov.json",
    "output/exhibits/venue_optics.jsonl"
   ],
   "dirty_tracked_files": [
-   "deck/sections/05-close.tex",
+   "docs/deck-outline.md",
    "docs/findings-freeze.md",
    "docs/literature-audit.md",
-   "docs/research-workflow.md",
    "literature/pdf-sources.json",
-   "literature/source-admission.json",
-   "literature/text/2023-MilionisMoallemiRoughgarden2023Myersonian-preprint-a-myersonian-framework-for-optimal-liquidity-provision-in-automated-market-maker.txt",
    "literature/text/_index.jsonl",
    "literature/vehicle-currencies.bib",
    "paper/sections/01-introduction.tex",
-   "paper/sections/02-setting.tex"
+   "paper/sections/02-setting.tex",
+   "paper/sections/05-rivals.tex",
+   "paper/sections/08-appendix.tex"
   ],
-  "dirty_untracked_files": [
-   "literature/text/2024-MilionisMoallemiRoughgarden2023Myersonian-published-a-myersonian-framework-for-optimal-liquidity-provision-in-automated-market-makers.txt"
-  ]
+  "dirty_untracked_files": []
  },
  "inputs": [],
  "libraries": {
