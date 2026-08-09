@@ -167,9 +167,12 @@ def _assemble(files: list[Path], output: Path, keys: tuple[str, ...], generation
     stamp(
         output,
         code_sources=CODE_SOURCES,
-        inputs=[*INPUTS, files[0].parent],
+        inputs=INPUTS,
         rows=result.rows,
-        notes=f"causal V3 LP liquidity-flow generation {generation}",
+        notes=(
+            f"causal V3 LP liquidity-flow generation {generation}; "
+            f"resumable cache {files[0].parent.name}"
+        ),
     )
     return result.rows
 

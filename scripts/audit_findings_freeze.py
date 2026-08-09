@@ -1175,6 +1175,33 @@ def lp_liquidity_flow_artifact_checks() -> list[tuple[str, bool, str]]:
             WHERE c.tx_hash IS NULL AND r.tx_hash IS NULL
             """
         ).fetchone()[0]
+        rejection_contract = con.execute(
+            f"""
+            SELECT count(*) AS rows,
+                count(*) FILTER (WHERE failure_reason IS NULL OR failure_reason NOT IN (
+                    'no_prior_swap_tick',
+                    'invalid_tick_range',
+                    'missing_liquidity_delta',
+                    'zero_liquidity_delta',
+                    'zero_liquidity_burn_no_capital_flow',
+                    'invalid_token_amounts',
+                    'noncausal_tick_timestamp',
+                    'missing_exact_tick_valuation_state',
+                    'missing_candidate_day_price_anchor',
+                    'invalid_tick_implied_event_value',
+                    'missing_or_implausible_event_value_usd',
+                    'no_candidate_pool_side'
+                )) AS unknown_reason,
+                count(*) FILTER (WHERE failure_reason='zero_liquidity_burn_no_capital_flow'
+                    AND source_stream!='burns') AS mislabeled_zero_burn,
+                count(*) FILTER (WHERE failure_reason='zero_liquidity_burn_no_capital_flow')
+                    AS zero_burn_rows,
+                count(*) FILTER (WHERE failure_reason IN (
+                    'invalid_tick_range', 'missing_liquidity_delta', 'zero_liquidity_delta'
+                )) AS malformed_rows
+            FROM {rejection}
+            """
+        ).fetchone()
         daily_core = con.execute(
             f"""
             WITH active_days AS (
@@ -1210,6 +1237,8 @@ def lp_liquidity_flow_artifact_checks() -> list[tuple[str, bool, str]]:
                     and allocation[3] == 0
                     and conservation[1] == 0
                     and unresolved == 0
+                    and rejection_contract[1] == 0
+                    and rejection_contract[2] == 0
                     and daily_core[0] == daily_core[1]
                     and not any(daily_core[index] for index in range(2, 6))
                 ),
@@ -1219,7 +1248,11 @@ def lp_liquidity_flow_artifact_checks() -> list[tuple[str, bool, str]]:
                 f"unresolved_events={unresolved:,}; candidate_days={daily_core[0]:,}; "
                 f"daily_unique={daily_core[1]:,}; daily_invalid={daily_core[2]:,}; "
                 f"pressure={daily_core[3]:,}; zero_flow={daily_core[4]:,}; "
-                f"day_share={daily_core[5]:,}",
+                f"day_share={daily_core[5]:,}; rejection_rows={rejection_contract[0]:,}; "
+                f"unknown_rejections={rejection_contract[1]:,}; "
+                f"mislabeled_zero_burn={rejection_contract[2]:,}; "
+                f"zero_burn_bookkeeping={rejection_contract[3]:,}; "
+                f"malformed_rejections={rejection_contract[4]:,}",
             )
         )
     finally:

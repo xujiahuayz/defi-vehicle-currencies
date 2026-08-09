@@ -14,10 +14,9 @@ return, so the dollar figure does not depend on that choice; what the choice
 fixes is the interpretation, which is stated in the finding.
 
 UNISWAP V3 is withheld. Provider TVL failed the historical-balance audit, and
-local virtual depth is neither deposited capital nor a valid LVR scale. The
-dormant V3 materializer remains available for future redevelopment but is not
-reachable from this release CLI until event-replayed inventories and
-path-integrated LVR both pass.
+local virtual depth is neither deposited capital nor a valid LVR scale. This
+materializer has no V3 path; a future implementation must start from validated
+event-replayed inventories and path-integrated LVR.
 
 GAS. Every mint and every burn is a transaction someone paid for, so the counts
 observed in the canonical event layer times a per-operation gas figure times the day's
@@ -32,7 +31,6 @@ the rows a screen removes and the screen can be reported and varied.
 from __future__ import annotations
 
 import argparse
-import math
 from collections import defaultdict
 from pathlib import Path
 
@@ -50,14 +48,12 @@ from ddvc.paths import (
     POOL_CAPITAL_PANEL,
     RAW_MARKET_DATA_LOCK,
 )
-from ddvc.pricing.v3pools import derive_fee_tier
 from ddvc.provenance import cache_key, require_current_artifacts, sidecar_path, stamp
 from ddvc.runtime import atomic_output, bounded_workers, exclusive_job, interruptible_process_pool
 from ddvc.state_data import (
     STATE_ROOT,
     available_state_days,
     read_cp_partition,
-    read_tick_partition,
     state_partition_path,
 )
 from ddvc.work_partition import weighted_contiguous_chunks
@@ -84,9 +80,7 @@ COMMON_OUTPUT_CODE_SOURCES = [
     "src/ddvc/runtime.py",
 ]
 V2_SHARD_CODE_SOURCES = COMMON_SHARD_CODE_SOURCES
-V3_SHARD_CODE_SOURCES = [*COMMON_SHARD_CODE_SOURCES, "src/ddvc/pricing/v3pools.py"]
 V2_OUTPUT_CODE_SOURCES = COMMON_OUTPUT_CODE_SOURCES
-V3_OUTPUT_CODE_SOURCES = [*COMMON_OUTPUT_CODE_SOURCES, "src/ddvc/pricing/v3pools.py"]
 
 CAPITAL_COLUMNS = (
     "reported_capital_usd",
@@ -105,14 +99,7 @@ V2_BASE_COLUMNS = (
     "rv_4h", "rv_oc", "max_abs_ret", "n_mint", "n_burn", "fee_rate",
     "liquidity",
 )
-V3_BASE_COLUMNS = (
-    "day", "venue", "pool", "token0", "token1", "sym0", "sym1",
-    "n_hours", "n_ret", "volume_usd", "n_swap", "reserve0", "reserve1",
-    "rv", "rv_4h", "rv_oc", "max_abs_ret", "n_mint", "n_burn",
-    "fee_rate", "tick", "liquidity", "sqrt_price_x96",
-)
 V2_COLUMNS = (*V2_BASE_COLUMNS, *CAPITAL_COLUMNS)
-V3_COLUMNS = (*V3_BASE_COLUMNS, *CAPITAL_COLUMNS)
 
 
 def _panel_schema(columns: tuple[str, ...]) -> pa.Schema:
@@ -151,14 +138,11 @@ def _panel_schema(columns: tuple[str, ...]) -> pa.Schema:
 
 
 V2_SCHEMA = _panel_schema(V2_COLUMNS)
-V3_SCHEMA = _panel_schema(V3_COLUMNS)
 
 
 def _expected_schema(columns: tuple[str, ...]) -> pa.Schema:
     if columns == V2_COLUMNS:
         return V2_SCHEMA
-    if columns == V3_COLUMNS:
-        return V3_SCHEMA
     raise ValueError("unknown rent-panel schema contract")
 
 V2_FEE = 0.003
@@ -168,13 +152,11 @@ V2_FEE = 0.003
 # measured on 2024-01-15 receipts). A liquidity event moves two token balances
 # plus position state instead of one balance pair, so these are set as multiples
 # of that measured baseline rather than invented: a v2 mint or burn at roughly
-# the cost of a one-leg swap, a v3 mint at roughly 1.6x it because the position
-# manager writes an NFT and tick state, a v3 burn plus collect at roughly 1.3x.
+# the cost of a one-leg swap.
 # The analysis script re-runs every net-return conclusion across a wide band
 # around these, because the level is an assumption and the sign of a net return
 # must not rest on one.
-GAS_UNITS = {"v2_mint": 155_000, "v2_burn": 155_000,
-             "v3_mint": 250_000, "v3_burn": 200_000}
+GAS_UNITS = {"v2_mint": 155_000, "v2_burn": 155_000}
 
 
 def _f(x) -> float:
@@ -413,200 +395,6 @@ def _v2_day(day: str) -> list[dict]:
     return out
 
 
-# ---------------------------------------------------------------------------
-# Uniswap v3
-# ---------------------------------------------------------------------------
-
-def _v3_day_state(
-    day: str,
-    keep: set[str] | None,
-    *,
-    summarize: bool,
-) -> tuple[dict[str, dict], dict[str, tuple[int, int]], list[tuple[str, int, int, int]]]:
-    """Read one partition into replay events and, when needed, a day summary."""
-    acc: dict[str, dict] = {}
-    state = read_tick_partition("uniswap_v3", day)
-    if summarize:
-        for rec in state[state["record_type"].eq("swap")].itertuples(index=False):
-            pid = rec.pool
-            if keep is not None and pid not in keep:
-                continue
-            a = acc.get(pid)
-            if a is None:
-                a = acc[pid] = {
-                    "token0": rec.token0,
-                    "token1": rec.token1,
-                    "sym0": rec.symbol0,
-                    "sym1": rec.symbol1,
-                    "fee_pips": rec.fee_pips,
-                    "vol": 0.0,
-                    "n": 0,
-                    "hp": {},
-                    "ticks": [],
-                    "w": [],
-                }
-            usd = _f(rec.value_usd)
-            if math.isfinite(usd):
-                a["vol"] += usd
-            a["n"] += 1
-            ts = int(rec.timestamp)
-            sp = _f(rec.sqrt_price_x96)
-            if math.isfinite(sp) and sp > 0:
-                a["hp"][ts // 3600] = sp
-            try:
-                tick = int(rec.tick)
-            except (TypeError, ValueError):
-                tick = None
-            if tick is not None:
-                a["ticks"].append(tick)
-                a["w"].append(abs(usd) if math.isfinite(usd) else 0.0)
-    mints: dict[str, int] = defaultdict(int)
-    burns: dict[str, int] = defaultdict(int)
-    events: list[tuple[str, int, int, int]] = []
-    for rec in state[state["record_type"].eq("liquidity")].itertuples(index=False):
-        if keep is not None and rec.pool not in keep:
-            continue
-        if summarize:
-            if rec.source_stream == "mints":
-                mints[rec.pool] += 1
-            elif rec.source_stream == "burns":
-                burns[rec.pool] += 1
-        try:
-            amount = int(getattr(rec, "liquidity_delta"))
-            lower = int(getattr(rec, "tick_lower"))
-            upper = int(getattr(rec, "tick_upper"))
-        except (AttributeError, TypeError, ValueError):
-            continue
-        if amount:
-            events.append((rec.pool, lower, upper, amount))
-    pools = set(mints) | set(burns)
-    counts = {pool: (mints.get(pool, 0), burns.get(pool, 0)) for pool in pools}
-    return acc, counts, events
-
-
-def _v3_day_summary(
-    day: str, keep: set[str] | None
-) -> tuple[dict[str, dict], dict[str, tuple[int, int]]]:
-    """Per-pool swaps and liquidity counts from one canonical partition read."""
-    swaps, counts, _events = _v3_day_state(day, keep, summarize=True)
-    return swaps, counts
-
-
-def _v3_pool_universe(days: list[str], top_n: int, workers: int) -> set[str]:
-    """Pools ranked by exact swap count over every canonical day."""
-    counts: dict[str, int] = defaultdict(int)
-    chunks = weighted_contiguous_chunks(
-        days,
-        [_day_input_bytes("tick", "uniswap_v3", day) for day in days],
-        workers,
-    )
-    with interruptible_process_pool(workers) as ex:
-        for chunk_counts in ex.map(_v3_count_chunk, chunks):
-            for pool, count in chunk_counts.items():
-                counts[pool] += count
-    ranked = sorted(counts.items(), key=lambda item: (-item[1], item[0]))
-    return {k for k, _ in ranked[:top_n]}
-
-
-def _v3_count_day(day: str) -> dict[str, int]:
-    state = read_tick_partition("uniswap_v3", day)
-    swaps = state[state["record_type"].eq("swap")]
-    return swaps.groupby("pool").size().astype(int).to_dict()
-
-
-def _v3_count_chunk(days: list[str]) -> dict[str, int]:
-    """Reduce full-calendar swap counts inside one bounded worker result."""
-    counts: dict[str, int] = defaultdict(int)
-    for day in days:
-        for pool, count in _v3_count_day(day).items():
-            counts[pool] += count
-    return dict(counts)
-
-
-def _v3_tick_points_day(payload: tuple[str, set[str]]) -> dict[str, set[int]]:
-    """Return only unique initialized ticks, never a day's full event payload."""
-    day, keep = payload
-    points: dict[str, set[int]] = defaultdict(set)
-    state = read_tick_partition("uniswap_v3", day)
-    for rec in state[state["record_type"].eq("liquidity")].itertuples(index=False):
-        if rec.pool not in keep:
-            continue
-        try:
-            lower = int(rec.tick_lower)
-            upper = int(rec.tick_upper)
-        except (TypeError, ValueError):
-            continue
-        points[rec.pool].update((lower, upper))
-    return dict(points)
-
-
-def _v3_tick_points_chunk(payload: tuple[list[str], set[str]]) -> dict[str, set[int]]:
-    """Reduce a bounded day chunk before returning initialized ticks to the parent."""
-    days, keep = payload
-    points: dict[str, set[int]] = defaultdict(set)
-    for day in days:
-        for pool, ticks in _v3_tick_points_day((day, keep)).items():
-            points[pool].update(ticks)
-    return dict(points)
-
-
-def _v3_tick_index(
-    days: list[str], keep: set[str], workers: int
-) -> dict[str, list[int]]:
-    """Build the fixed compressed tick coordinates with bounded worker results."""
-    pool_ticks: dict[str, set[int]] = defaultdict(set)
-    chunks = weighted_contiguous_chunks(
-        days,
-        [_day_input_bytes("tick", "uniswap_v3", day) for day in days],
-        workers,
-    )
-    payloads = [(chunk, keep) for chunk in chunks]
-    with interruptible_process_pool(workers) as ex:
-        scanned = 0
-        for i, points in enumerate(ex.map(_v3_tick_points_chunk, payloads), 1):
-            for pool, ticks in points.items():
-                pool_ticks[pool].update(ticks)
-            scanned += len(chunks[i - 1])
-            print(
-                f"  v3 tick scan [{i}/{len(chunks)}] days={scanned:,}/{len(days):,} "
-                f"pools={len(pool_ticks):,}",
-                flush=True,
-            )
-    return {pool: sorted(ticks) for pool, ticks in pool_ticks.items()}
-
-
-class Fenwick:
-    """Prefix sums over a fixed compressed tick index, with point updates.
-
-    Active liquidity at a tick is the sum of every net liquidity delta at or
-    below it, and both the deltas and the query tick change every day, so the
-    naive rebuild is a full pass over a pool's tick set per pool-day. A binary
-    indexed tree makes each of those logarithmic instead. Python integers hold
-    the values because `liquidity` is uint128 and overflows int64.
-    """
-
-    __slots__ = ("n", "t")
-
-    def __init__(self, n: int) -> None:
-        self.n = n
-        self.t = [0] * (n + 1)
-
-    def add(self, i: int, v: int) -> None:
-        i += 1
-        while i <= self.n:
-            self.t[i] += v
-            i += i & (-i)
-
-    def prefix(self, i: int) -> int:
-        """Sum over compressed positions 0..i inclusive."""
-        i += 1
-        s = 0
-        while i > 0:
-            s += self.t[i]
-            i -= i & (-i)
-        return s
-
-
 def _build_v2_chunk(payload: dict[str, object]) -> tuple[int, int]:
     """Build independent V2 day shards inside one bounded worker."""
     cache_dir = Path(str(payload["cache_dir"]))
@@ -669,190 +457,13 @@ def _build_v2_shards(
             )
 
 
-def _v3_replay_structures(
-    tick_lists: dict[str, list[int]],
-) -> tuple[dict[str, tuple[list[int], dict[int, int]]], dict[str, Fenwick]]:
-    index = {
-        pool: (ticks, {tick: position for position, tick in enumerate(ticks)})
-        for pool, ticks in tick_lists.items()
-    }
-    trees = {pool: Fenwick(len(ticks)) for pool, ticks in tick_lists.items()}
-    return index, trees
-
-
-def _v3_day_frame(
-    day: str,
-    swaps: dict[str, dict],
-    counts: dict[str, tuple[int, int]],
-    index: dict[str, tuple[list[int], dict[int, int]]],
-    trees: dict[str, Fenwick],
-) -> pd.DataFrame:
-    rows: list[dict] = []
-    for pid, acc in swaps.items():
-        if not acc["ticks"]:
-            continue
-        weights = np.array(acc["w"], dtype=float)
-        observed_ticks = np.array(acc["ticks"], dtype=float)
-        tick = int(
-            np.average(observed_ticks, weights=weights)
-            if weights.sum() > 0
-            else np.mean(observed_ticks)
-        )
-        hourly_prices = sorted(acc["hp"].items())
-        hours = np.array([hour for hour, _ in hourly_prices], dtype=np.int64)
-        sqrt_prices = np.array([price for _, price in hourly_prices], dtype=float)
-        rv1, rv4, rvoc, maximum = _rv_multiscale(hours, sqrt_prices, scale=2.0)
-        try:
-            fee = int(acc["fee_pips"])
-        except (TypeError, ValueError):
-            fee = derive_fee_tier(pid, acc["token0"], acc["token1"])
-        liquidity = float("nan")
-        if pid in index:
-            initialized, _positions = index[pid]
-            position = int(np.searchsorted(initialized, tick, side="right")) - 1
-            liquidity = float(trees[pid].prefix(position)) if position >= 0 else 0.0
-        n_mint, n_burn = counts.get(pid, (0, 0))
-        rows.append(
-            {
-                "day": day,
-                "venue": "uniswap_v3",
-                "pool": pid,
-                "token0": acc["token0"],
-                "token1": acc["token1"],
-                "sym0": acc["sym0"],
-                "sym1": acc["sym1"],
-                "n_hours": len(hourly_prices),
-                "n_ret": max(0, len(hourly_prices) - 1),
-                "volume_usd": acc["vol"],
-                "n_swap": acc["n"],
-                "reserve0": float("nan"),
-                "reserve1": float("nan"),
-                "rv": rv1,
-                "rv_4h": rv4,
-                "rv_oc": rvoc,
-                "max_abs_ret": maximum,
-                "n_mint": n_mint,
-                "n_burn": n_burn,
-                "fee_rate": (fee / 1e6) if fee else float("nan"),
-                "tick": tick,
-                "liquidity": liquidity,
-                "sqrt_price_x96": (
-                    float(np.median(sqrt_prices)) if sqrt_prices.size else float("nan")
-                ),
-            }
-        )
-    base = pd.DataFrame.from_records(rows).reindex(columns=V3_BASE_COLUMNS)
-    return _merge_capital_day(
-        base,
-        venue="uniswap_v3",
-        day=day,
-        columns=V3_COLUMNS,
-    )
-
-
-def _replay_v3_chunk(payload: dict[str, object]) -> tuple[int, int]:
-    """Replay a prefix plus one disjoint chunk; persist only requested days."""
-    keep = set(payload["keep"])
-    cache_dir = Path(str(payload["cache_dir"]))
-    build_days = set(payload["build_days"])
-    index, trees = _v3_replay_structures(payload["tick_lists"])
-    built = rows = 0
-    timeline = [*payload["warm_days"], *payload["chunk_days"]]
-    for day_value in timeline:
-        day = str(day_value)
-        summarize = day in build_days
-        swaps, counts, events = _v3_day_state(day, keep, summarize=summarize)
-        for pool, lower, upper, delta in events:
-            if pool not in index:
-                continue
-            _ticks, positions = index[pool]
-            trees[pool].add(positions[lower], delta)
-            trees[pool].add(positions[upper], -delta)
-        if not summarize:
-            continue
-        frame = _v3_day_frame(day, swaps, counts, index, trees)
-        rows += _write_day_shard(
-            frame,
-            _cache_path(cache_dir, day),
-            venue="uniswap_v3",
-            day=day,
-            columns=V3_COLUMNS,
-        )
-        built += 1
-    return built, rows
-
-
-def _build_v3_shards(
-    days: list[str],
-    cache_dir: Path,
-    *,
-    top_n: int,
-    workers: int,
-    force: bool,
-) -> None:
-    pending = _missing_day_shards(
-        days,
-        cache_dir,
-        venue="uniswap_v3",
-        columns=V3_COLUMNS,
-        force=force,
-    )
-    if not pending:
-        print(f"  v3 resume: all {len(days):,} day shards are valid", flush=True)
-        return
-    cache_dir.mkdir(parents=True, exist_ok=True)
-    print(f"  v3 ranking {top_n} pools over {len(days):,} days", flush=True)
-    keep = _v3_pool_universe(days, top_n, workers)
-    print(f"  v3 universe contains {len(keep):,} pools", flush=True)
-    tick_lists = _v3_tick_index(days, keep, workers)
-    print(f"  v3 fixed tick index contains {len(tick_lists):,} pools", flush=True)
-
-    chunks = weighted_contiguous_chunks(
-        days,
-        [_day_input_bytes("tick", "uniswap_v3", day) for day in days],
-        workers,
-    )
-    pending_set = set(pending)
-    day_position = {day: position for position, day in enumerate(days)}
-    payloads = []
-    for chunk in chunks:
-        build_days = [day for day in chunk if day in pending_set]
-        if not build_days:
-            continue
-        payloads.append(
-            {
-                "warm_days": days[: day_position[chunk[0]]],
-                "chunk_days": chunk,
-                "build_days": build_days,
-                "keep": keep,
-                "tick_lists": tick_lists,
-                "cache_dir": str(cache_dir),
-            }
-        )
-    print(
-        f"  v3 rebuilding {len(pending):,}/{len(days):,} days in {len(payloads)} stateful chunks",
-        flush=True,
-    )
-    built = rows = 0
-    with interruptible_process_pool(min(workers, len(payloads))) as ex:
-        for i, (chunk_days, chunk_rows) in enumerate(ex.map(_replay_v3_chunk, payloads), 1):
-            built += chunk_days
-            rows += chunk_rows
-            print(
-                f"  v3 chunk [{i}/{len(payloads)}] built={built:,} new_rows={rows:,}",
-                flush=True,
-            )
-
-
 def _generation_cache_dir(
     family: str,
     generation: str,
     *,
-    top_n: int | None = None,
     root: Path = DAY_CACHE_ROOT,
 ) -> Path:
-    suffix = f"top_{top_n}" if top_n is not None else "all_pools"
-    return root / family / f"engine_{generation}" / suffix
+    return root / family / f"engine_{generation}"
 
 
 def _clean_interrupted_shard_temps(cache_dir: Path) -> int:
@@ -922,11 +533,11 @@ def _assemble_family(
     stamp(
         output,
         code_sources=code_sources,
-        inputs=release_inputs,
+        inputs=canonical_inputs,
         rows=result.rows,
         notes=(
             f"generation {generation}; assembled {len(days)} validated day shards; "
-            f"{result.shards} nonempty"
+            f"{result.shards} nonempty; resumable cache {cache_dir.name}"
         ),
     )
     print(f"{venue} pool-days: {result.rows:,}", flush=True)
@@ -958,38 +569,6 @@ def build_v2(*, workers: int, force: bool) -> None:
     )
 
 
-def build_v3(*, top_n: int, workers: int, force: bool) -> None:
-    days = _days("tick", "uniswap_v3")
-    if not days:
-        raise RuntimeError("no canonical Uniswap V3 state days")
-    inputs = [STATE_ROOT / "tick" / "uniswap_v3", POOL_CAPITAL_PANEL]
-    generation = cache_key(V3_SHARD_CODE_SOURCES, inputs=inputs)
-    cache_dir = _generation_cache_dir("v3", generation, top_n=top_n)
-    _clean_interrupted_shard_temps(cache_dir)
-    _build_v3_shards(
-        days,
-        cache_dir,
-        top_n=top_n,
-        workers=workers,
-        force=force,
-    )
-    _require_generation_current(
-        generation,
-        code_sources=V3_SHARD_CODE_SOURCES,
-        inputs=inputs,
-    )
-    _assemble_family(
-        days=days,
-        cache_dir=cache_dir,
-        venue="uniswap_v3",
-        columns=V3_COLUMNS,
-        output=PROC / "rent_incidence_v3_pool_day.parquet",
-        code_sources=V3_OUTPUT_CODE_SOURCES,
-        canonical_inputs=inputs,
-        generation=generation,
-    )
-
-
 def main() -> None:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("which", choices=("v2",), nargs="?", default="v2")
@@ -997,16 +576,19 @@ def main() -> None:
     parser.add_argument("--force", action="store_true")
     args = parser.parse_args()
     workers = bounded_workers(args.workers, maximum=MAX_RENT_WORKERS)
-    require_node_d_release(market_state=True)
-    require_current_artifacts([POOL_CAPITAL_PANEL], consumer="rent-incidence panel builder")
-    build_v2(workers=workers, force=args.force)
-
-
-if __name__ == "__main__":
     with exclusive_job(LOCK, job="rent-incidence analysis panels"):
         with exclusive_job(
             RAW_MARKET_DATA_LOCK,
             job="raw market-data fetch, enrichment, or canonical materialisation",
         ):
             with exclusive_job(MARKET_STATE_LOCK, job="canonical market-state build"):
-                main()
+                require_node_d_release(market_state=True)
+                require_current_artifacts(
+                    [POOL_CAPITAL_PANEL],
+                    consumer="rent-incidence panel builder",
+                )
+                build_v2(workers=workers, force=args.force)
+
+
+if __name__ == "__main__":
+    main()

@@ -977,9 +977,9 @@ def assemble_cached_output(
     stamp(
         output,
         code_sources=OUTPUT_CODE_SOURCES,
-        inputs=[*inputs, day_cache],
+        inputs=inputs,
         rows=result.rows,
-        notes=notes,
+        notes=f"{notes}; resumable day cache {day_cache.name}",
     )
     return result.rows
 

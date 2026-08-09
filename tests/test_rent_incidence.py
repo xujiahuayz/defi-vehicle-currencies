@@ -601,42 +601,6 @@ def test_v3_pool_month_panel_cannot_leak_return_like_fields():
         assert np.isnan(result.iloc[0][column])
 
 
-def test_fenwick_matches_brute_force_prefix_sums():
-    rng = np.random.default_rng(0)
-    n = 64
-    # Python integers, because the values these hold are uint128 in the source.
-    deltas = [int(v) * 10 ** 20 for v in rng.integers(-10 ** 9, 10 ** 9, size=n)]
-    tree = brp.Fenwick(n)
-    for i, d in enumerate(deltas):
-        tree.add(i, int(d))
-    running = 0
-    for i, d in enumerate(deltas):
-        running += int(d)
-        assert tree.prefix(i) == running
-
-
-def test_fenwick_handles_uint128_scale_without_overflow():
-    big = 2 ** 127 - 1
-    tree = brp.Fenwick(3)
-    tree.add(0, big)
-    tree.add(2, big)
-    assert tree.prefix(2) == 2 * big
-
-
-def test_active_liquidity_is_zero_outside_every_position_range():
-    """A mint at [lo, hi) adds liquidity at lo and removes it at hi."""
-    ticks = [-120, 60]
-    tree = brp.Fenwick(len(ticks))
-    tree.add(0, 5_000)          # tickLower
-    tree.add(1, -5_000)         # tickUpper
-    below = np.searchsorted(ticks, -200, side="right") - 1
-    inside = np.searchsorted(ticks, 0, side="right") - 1
-    above = np.searchsorted(ticks, 500, side="right") - 1
-    assert below < 0
-    assert tree.prefix(inside) == 5_000
-    assert tree.prefix(above) == 0
-
-
 def test_open_to_close_variance_is_the_total_move_squared():
     hours = np.arange(6, dtype=np.int64)
     prices = np.array([100.0, 101.0, 99.0, 103.0, 98.0, 102.0])
@@ -663,44 +627,6 @@ def test_square_root_price_input_is_doubled_into_log_returns():
     rv_price, _, _, _ = brp._rv_multiscale(hours, price)
     rv_sqrt, _, _, _ = brp._rv_multiscale(hours, np.sqrt(price), scale=2.0)
     assert rv_sqrt == pytest.approx(rv_price)
-
-
-def test_v3_daily_swaps_and_liquidity_counts_share_one_partition_read(monkeypatch):
-    state = pd.DataFrame(
-        [
-            {
-                "record_type": "swap",
-                "pool": "pool",
-                "token0": "token0",
-                "token1": "token1",
-                "symbol0": "T0",
-                "symbol1": "T1",
-                "fee_pips": 3_000,
-                "value_usd": 100.0,
-                "timestamp": 3_600,
-                "sqrt_price_x96": 2.0,
-                "tick": 10,
-                "source_stream": "swaps",
-            },
-            {
-                "record_type": "liquidity",
-                "pool": "pool",
-                "source_stream": "mints",
-            },
-        ]
-    )
-    calls = []
-
-    def read_partition(venue, day):
-        calls.append((venue, day))
-        return state
-
-    monkeypatch.setattr(brp, "read_tick_partition", read_partition)
-    swaps, counts = brp._v3_day_summary("20250101", {"pool"})
-
-    assert calls == [("uniswap_v3", "20250101")]
-    assert swaps["pool"]["n"] == 1
-    assert counts["pool"] == (1, 0)
 
 
 def test_lvr_closed_form_equals_the_numeric_delta_hedging_loss():

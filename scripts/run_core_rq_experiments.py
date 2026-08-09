@@ -101,10 +101,10 @@ def variable_construction_table() -> pd.DataFrame:
             "Used for": "RQ2, RQ3",
         },
         {
-            "Variable / proxy": "LPRepositioning",
+            "Variable / proxy": "LPSupplyFlow",
             "Level": "vehicle token x day",
-            "Construction": "Daily gross/net V3 mint-burn liquidity movement assigned to candidate vehicle pools; near-price variants use the active/near tick state where available.",
-            "Source": "data/empirical/_lp_repositioning_day_cache/",
+            "Construction": "Daily gross/net V3 mint-burn dollar flow allocated once across exact candidate-token pool sides; near-price variants use the latest strictly prior tick state and no capital-stock proxy.",
+            "Source": "data/processed/lp_liquidity_flow_daily_v3.parquet",
             "Used for": "RQ2, RQ5",
         },
         {

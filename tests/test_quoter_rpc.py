@@ -3,6 +3,7 @@ from __future__ import annotations
 import json
 import unittest
 from unittest.mock import patch
+import urllib.error
 
 from ddvc import quoter
 
@@ -70,6 +71,22 @@ class RpcPostTests(unittest.TestCase):
             )
         self.assertEqual(response["error"]["code"], 3)
         self.assertEqual(request.call_count, 1)
+
+    def test_gateway_5xx_is_retryable_instead_of_a_terminal_fetch_error(self) -> None:
+        gateway_failure = urllib.error.HTTPError(
+            "https://first", 521, "gateway unavailable", {}, None
+        )
+        with (
+            patch.object(quoter, "rpc_urls", return_value=["https://first"]),
+            patch.object(quoter.urllib.request, "urlopen", side_effect=gateway_failure),
+            patch.object(quoter.time, "sleep"),
+            self.assertRaises(quoter.Throttled),
+        ):
+            quoter.rpc_post(
+                {"jsonrpc": "2.0", "id": 1, "method": "eth_getLogs", "params": []},
+                retries=1,
+                retry_json_errors=True,
+            )
 
 
 if __name__ == "__main__":

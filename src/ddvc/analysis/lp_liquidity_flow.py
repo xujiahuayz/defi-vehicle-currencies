@@ -241,8 +241,17 @@ class CausalRangeClassifier:
         amount = _integer(_field(record, "liquidity_delta"))
         amount0 = _nonnegative_value(_field(record, "amount0"))
         amount1 = _nonnegative_value(_field(record, "amount1"))
-        if lower is None or upper is None or lower >= upper or amount in (None, 0):
-            return None, {**identity, "failure_reason": "invalid_range_or_liquidity_delta"}
+        if lower is None or upper is None or lower >= upper:
+            return None, {**identity, "failure_reason": "invalid_tick_range"}
+        if amount is None:
+            return None, {**identity, "failure_reason": "missing_liquidity_delta"}
+        if amount == 0:
+            reason = (
+                "zero_liquidity_burn_no_capital_flow"
+                if identity["source_stream"] == "burns"
+                else "zero_liquidity_delta"
+            )
+            return None, {**identity, "failure_reason": reason}
         if amount0 is None or amount1 is None or amount0 + amount1 <= 0:
             return None, {**identity, "failure_reason": "invalid_token_amounts"}
         timestamp = identity["timestamp"]

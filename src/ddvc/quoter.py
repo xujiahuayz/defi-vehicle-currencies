@@ -65,6 +65,7 @@ _DEFAULT_RPCS = (
 _rpc_idx = 0
 _rpc_idx_lock = threading.Lock()
 _disabled_rpc_urls: set[str] = set()
+_RETRYABLE_HTTP_CODES = {429, 500, 502, 503, 504, 520, 521, 522, 523, 524}
 
 
 def rpc_urls() -> list[str]:
@@ -143,7 +144,7 @@ def rpc_post(payload: dict | list[dict], *, timeout: int = 60,
                     return response
             except urllib.error.HTTPError as exc:
                 last = exc
-                if exc.code in (429, 503):
+                if exc.code in _RETRYABLE_HTTP_CODES:
                     throttled = True
                     time.sleep(max(sleep, 1.0))
                     continue

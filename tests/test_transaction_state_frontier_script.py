@@ -273,6 +273,7 @@ class TransactionStateFrontierScriptTests(unittest.TestCase):
                     root / f"{day}.parquet", index=False
                 )
             output = root / "daily.parquet"
+            canonical_input = root / "source.parquet"
             with patch("scripts.build_transaction_state_frontier.stamp") as stamp_mock:
                 rows = assemble_cached_output(
                     root,
@@ -283,13 +284,15 @@ class TransactionStateFrontierScriptTests(unittest.TestCase):
                     suffix=".parquet",
                     count_column="scored_routes",
                     output=output,
-                    inputs=[],
+                    inputs=[canonical_input],
                     notes="test",
                 )
                 assembled = pd.read_parquet(output)
         self.assertEqual(rows, 2)
         self.assertEqual(len(assembled), 2)
         stamp_mock.assert_called_once()
+        self.assertEqual(stamp_mock.call_args.kwargs["inputs"], [canonical_input])
+        self.assertIn("resumable day cache", stamp_mock.call_args.kwargs["notes"])
 
     def test_empty_day_preserves_calendar_support(self) -> None:
         empty_replay = V2ReplayDay({}, {}, {}, {}, {}, {})

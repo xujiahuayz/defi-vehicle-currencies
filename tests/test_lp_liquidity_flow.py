@@ -1,5 +1,8 @@
 from __future__ import annotations
 
+from pathlib import Path
+from types import SimpleNamespace
+
 import pandas as pd
 
 from ddvc.asset_types import VEHICLE_CANDIDATES
@@ -9,6 +12,7 @@ from ddvc.analysis.lp_liquidity_flow import (
     aggregate_daily_liquidity_flow,
     allocate_candidate_event_values,
 )
+from scripts import build_lp_liquidity_flow_panel as builder
 
 
 TOKEN_BY_SYMBOL = {symbol: token for token, symbol in VEHICLE_CANDIDATES.items()}
@@ -78,6 +82,54 @@ def test_event_before_first_observed_swap_is_rejected_without_lookahead() -> Non
     )
     assert events.empty
     assert rejected["failure_reason"].tolist() == ["no_prior_swap_tick"]
+
+
+def test_zero_liquidity_burn_is_named_as_noncapital_fee_bookkeeping() -> None:
+    classifier = CausalRangeClassifier()
+    state = pd.DataFrame(
+        [
+            row("swap", block=10, log_index=1),
+            row(
+                "liquidity",
+                block=10,
+                log_index=2,
+                source_stream="burns",
+                liquidity_delta=0,
+                amount0="0",
+                amount1="0",
+            ),
+        ]
+    )
+
+    events, rejected = classifier.classify_day(
+        "20250101", state, {TOKEN_BY_SYMBOL["USDC"]: 1.0}
+    )
+
+    assert events.empty
+    assert rejected["failure_reason"].tolist() == [
+        "zero_liquidity_burn_no_capital_flow"
+    ]
+
+
+def test_bad_range_and_missing_delta_remain_hard_failures() -> None:
+    classifier = CausalRangeClassifier()
+    state = pd.DataFrame(
+        [
+            row("swap", block=10, log_index=1),
+            row("liquidity", block=10, log_index=2, tick_lower=10, tick_upper=10),
+            row("liquidity", block=10, log_index=3, liquidity_delta=None),
+        ]
+    )
+
+    events, rejected = classifier.classify_day(
+        "20250101", state, {TOKEN_BY_SYMBOL["USDC"]: 1.0}
+    )
+
+    assert events.empty
+    assert rejected["failure_reason"].tolist() == [
+        "invalid_tick_range",
+        "missing_liquidity_delta",
+    ]
 
 
 def test_classifier_refuses_a_partition_outside_causal_order() -> None:
@@ -236,3 +288,30 @@ def test_daily_flow_perimeter_keeps_zero_event_candidate_days() -> None:
     assert panel["net_flow_pressure"].iloc[0] == 1.0
     assert pd.isna(panel["net_flow_pressure"].iloc[1])
     assert panel["event_count"].tolist() == [1.0, 0.0]
+
+
+def test_assembled_release_provenance_excludes_resumability_cache(
+    monkeypatch, tmp_path: Path
+) -> None:
+    cache = tmp_path / "engine_test" / "events"
+    cache.mkdir(parents=True)
+    shard = cache / "20250101.parquet"
+    shard.touch()
+    output = tmp_path / "events.parquet"
+    canonical = tmp_path / "canonical-input"
+    stamps = []
+    monkeypatch.setattr(builder, "INPUTS", [canonical])
+    monkeypatch.setattr(
+        builder,
+        "assemble_parquet_shards",
+        lambda *args, **kwargs: SimpleNamespace(rows=1),
+    )
+    monkeypatch.setattr(
+        builder,
+        "stamp",
+        lambda artefact, **kwargs: stamps.append((artefact, kwargs)),
+    )
+
+    assert builder._assemble([shard], output, ("day",), "test") == 1
+    assert stamps[0][1]["inputs"] == [canonical]
+    assert "resumable cache events" in stamps[0][1]["notes"]
