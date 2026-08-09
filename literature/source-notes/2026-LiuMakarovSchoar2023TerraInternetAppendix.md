@@ -1,0 +1,3 @@
+# Liu, Makarov and Schoar Internet Appendix disposition
+
+No separate public Internet Appendix prose PDF was located after checks of the LSE accepted-manuscript record, author page, NBER and SSRN records, JFE and ScienceDirect surfaces, and exact-title searches. The accepted manuscript is request-copy restricted. Mendeley Data version 4 supplies the data, code and generated outputs for Internet Appendix Figures IA.1 to IA.5 and Tables IA.1 to IA.2. Those materials were inspected with the main replication package. This note records the access gap; it does not imply that accepted-version appendix prose was read.

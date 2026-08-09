@@ -1,0 +1,191 @@
+
+
+===== PAGE 1 =====
+
+Discussion of “Anatomy of a Run:
+The Terra Luna Crash”*
+by Liu, Makarov and Schoar
+7TH ANNUAL MACROPRUDENTIAL CONFERENCE,
+STOCKHOLM, 30-31 AUGUST 2023
+CAROLYN WILKINS, SENIOR RESEARCH SCHOLAR
+GRISWOLD CENTER FOR ECONOMIC POLICY STUDIES
+PRINCETON UNIVERSITY
+*REMARKS REFLECT MY VIEWS AND NOT NECESSARILY THOSE OF MY FPC OR OTHER BANK OF ENGLAND COLLEAGUES
+
+
+===== PAGE 2 =====
+
+Outline of remarks
+1. Contribution of the paper
+2. Data selection and exclusions
+3. Limitations of transparency
+4. Further questions for research and policy
+
+===== PAGE 3 =====
+
+Two main objectives of Liu, Makorav and Schoar (1)
+Source:  https://www.linkedin.com/posts/kiffmeister_jurisdictions-where-retail-
+cbdc-is-being-activity-6954458319067484160-uYSx
+1. Enhance understanding of runs in the absence of regulatory oversight and safety nets (such as
+deposit insurance)
+• Found that run precipitated by a small number of large sellers on 7 May 2022 (consistent
+with Nansen 2022)
+• Conclude run on Terra was not due to concentrated market manipulation, but was
+precipitated by growing concerns about the sustainability of the system – the increase in
+UST issuances combined with highly subsidised deposit rates on Anchor.
+• Authors don’t elaborate on the absence of deposit insurance, so it's unclear what role
+they would have envisaged except possibly to weaken market discipline.
+
+===== PAGE 4 =====
+
+Two main objectives of Liu, Makorav and Schoar (2)
+Source:  https://www.linkedin.com/posts/kiffmeister_jurisdictions-where-retail-
+cbdc-is-being-activity-6954458319067484160-uYSx
+2. Extract broader insights of the ecosystem beyond Terra and apply to the entire Crypto
+landscape.
+• Case study does excellent job making the point that transparency creates a coordinating
+mechanism and benefits actors sophisticated enough to analyse the data in real time
+(even though the hype touts transparency as a benefit relative to TradFi).
+• Carry over conclusions to other DeFi protocols, although analysis doesn’t delve deeply
+into this.
+
+===== PAGE 5 =====
+
+Data selection and exclusions
+Is there enough evidence to refute this:
+“Terra Luna experienced a series of technical
+vulnerabilities and exploits that further eroded
+investor trust. Malicious actors exploited
+weaknesses in the platform’s smart contracts,
+leading to significant losses and undermining
+the overall integrity of the system. These
+incidents exposed the inherent risks
+associated with decentralized finance and
+raised doubts about Terra Luna’s ability to
+provide a secure ecosystem for users.”
+Cryptoticker
+“The Man behind Terra Luna Do Kwon is
+Finally Jailed: Why did Terra Crash?”
+* Fed Consultation Paper 2022
+ Authors exclude at different stages of the
+analysis smart contracts, exchanges and other
+intermediaries.
+ How might these exclusions affect the
+conclusions?
+ For example, a smart contract could be written to
+pull liquidity out of UST if it ever de-pegged.
+Would this type of contract be excluded from the
+sample?
+ How do we know some of the excluded accounts
+didn’t have incentives to make UST fail?
+ Do we know what information/incentives
+triggered the small number of large investors to
+act on 7 May?
+
+===== PAGE 6 =====
+
+Limitations of transparency
+ Impact of Blockchain Technology: In contrast to traditional institutions, blockchain technology and
+price data allowed investors to monitor each other's actions and may have amplified the speed
+of the run.
+ Despite this, wealthier and more sophisticated investors were the first to run and experienced
+much smaller losses
+• Consistent with Cornelli, Doerr, Frost and Gambacorta, “Crypto Shocks and retail losses,” 2023.
+ How different is the dynamic from TradFi in the face of large, sophisticated investors with “private”
+information (either literally or because they can better interpret information available)?
+• Potentially relevant study -- Corsetti, Dasgupta, Morris and Shin, “Does one Soros Make a Difference? A
+Theory of Currency Crisis with Large and Small Traders,”  2004.
+ Role of “misinformation”: did some Terra Luna insiders and investors contribute to the problem by
+aggressively underplaying the risks building up in the system on social media and other outlets.
+• This not only argues for consumer protection and market integrity safeguards, it also suggests lessons about
+lowering the barriers to entry to sophisticated markets.
+
+===== PAGE 7 =====
+
+Outstanding Questions for Research and Policy (1)
+Could algorithmic stablecoins ever be
+stable?
+ Are there better algorithms?
+ If UST had been used for more real
+transactions (e.g. buying your groceries)
+would that have reduced the run risk?
+ Some have concluded no:
+• E.g., HMT proposed in February 2023 that
+“activities relating to so-called algorithmic
+stablecoins should be subject to the same
+requirements as for unbacked cryptoassets”.
+BoE Financial Policy Committee
+Expectations (December 2019)
+For systemic or likely to be systemic stablecoins:
+ Stablecoins used as money for payments
+should meet equivalent standards to those
+provided by commercial bank money.
+• Implications for mechanisms to support
+stability (e.g., high quality liquid assets)
+ Payment systems that use stablecoins should
+be regulated to standards equivalent to
+those applied for traditional payments.
+
+===== PAGE 8 =====
+
+Outstanding Questions for Research and Policy (2)
+Tokenization:
+ What might be the implications from this
+paper for tokenized money and assets?
+(BIS annual report 2023 discusses
+potential of tokenization)
+
+===== PAGE 9 =====
+
+Outstanding Questions for Research and Policy (2)
+Tokenization:
+ What might be the implications from this
+paper for tokenized money and assets?
+(BIS annual report 2023 discusses
+potential of tokenization)
+Assessing network stability:
+ Aside from the contribution of
+transparency to a run, how do bridges
+between programable blockchain
+networks affect the risk of spillovers to
+the rest of the system in the face of a
+shock like the Terra collapse? (Badev
+and Watksy 2023)
+
+===== PAGE 10 =====
+
+Outstanding Questions for Research and Policy (2)
+Tokenization:
+ What might be the implications from this
+paper for tokenized money and assets?
+(BIS annual report 2023 discusses
+potential of tokenization)
+Risk management and governance
+ What kind of expectations should investors and
+risk managers have with respect to monitoring
+and reacting to activity on chain, what kind of
+tools are needed to do so? (Nansen 2022)
+ How to improve incentives in DeFi governance?
+Assessing network stability:
+ Aside from the contribution of
+transparency to a run, how do
+“bridges” between programmable
+blockchain networks affect the risk of
+spillovers to the rest of the system in the
+face of a shock like the Terra collapse?
+(Badev and Watksy 2023)
+
+===== PAGE 11 =====
+
+Conclusions
+ Liu, Makarov and Schoar’s work makes important contribution to our understanding of Terra
+Luna’s workings and incentive structure, with implications for  protocol design in DeFi.
+ Run on Terra was likely due to its inherent fragility and transparency allowing actions to
+become a coordinating mechanism.
+ Asymmetric outcomes similar to TradFi when mingling of sophisticated and unsophisticated investors; is
+this somewhat more pronounced with crypto?
+ Would be interesting to see the analysis, if possible, with a data set that has fewer exclusions
+(e.g., include smart contracts, intermediaries).
+ Study raises interesting questions for further research and policy including whether algorithmic
+approaches to stablecoins could ever stand the test of time,  implications for tokenization of
+assets, the stability of blockchain-based networks, and risk management.

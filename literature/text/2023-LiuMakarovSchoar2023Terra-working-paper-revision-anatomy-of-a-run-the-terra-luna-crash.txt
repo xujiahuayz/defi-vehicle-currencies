@@ -2,74 +2,40 @@
 
 ===== PAGE 1 =====
 
-NBER WORKING PAPER SERIES
-ANATOMY OF A RUN:
-THE TERRA LUNA CRASH
-Jiageng Liu
-Igor Makarov
-Antoinette Schoar
-Working Paper 31160
-http://www.nber.org/papers/w31160
-NATIONAL BUREAU OF ECONOMIC RESEARCH
-1050 Massachusetts Avenue
-Cambridge, MA 02138
-April 2023
-We thank seminar participants at LSE, MIT Sloan, Northwestern Kellogg, the 2nd Annual DeFi 
-conference, and the ICI–SNPI Conference. We also thank Aurelie Barthere and Christopher 
-Rogers for helpful  comments and support with the Nansen data, and Jim Myers and Ramsha 
-Ahmad for helpful comments and support with Flipside data. We also thank Kaiko for access to 
-their data. The views expressed herein are those of the authors and do not necessarily reflect the 
-views of the National Bureau of Economic Research.
-NBER working papers are circulated for discussion and comment purposes. They have not been 
-peer-reviewed or been subject to the review by the NBER Board of Directors that accompanies 
-official NBER publications.
-© 2023 by Jiageng Liu, Igor Makarov, and Antoinette Schoar. All rights reserved. Short sections of 
-text, not to exceed two paragraphs, may be quoted without explicit permission provided that full 
-credit, including © notice, is given to the source.
+Anatomy of a Run: The Terra Luna Crash
+Jiageng Liu1, Igor Makarov2, and Antoinette Schoar ∗3
+1MIT Sloan
+2London School of Economics
+3MIT Sloan, NBER and CEPR
+Abstract
+In this paper, we provide a comprehensive analysis of the Terra network lead-
+ing up to and during the crash. The Terra case highlights the limitations of
+private money creation. We show that the system’s complexity made it diﬃcult
+even for insiders to accurately assess the buildup of risk and adjust system param-
+eters accordingly. Decentralized governance mechanisms added ineﬃciencies to
+the system and further exacerbated the instability. We document that although
+all investors had access to the Terra blockchain, it did not create a level playing
+ﬁeld for all investors. Wealthier and more sophisticated investors processed in-
+formation more eﬃciently, ran more decisively, and realized much smaller losses.
+Our results show that in the presence of complexity, the blockchain transparency
+may not only fail to create an equal footing for all investors, but can also ex-
+acerbate the asymmetry between sophisticated and unsophisticated investors.
+JEL classiﬁcation: D82, D84, E80, G23
+∗Jiageng Liu: E62-680, 100 Main Street, Cambridge MA 02138, USA. Email: jiageng@mit.edu.
+Igor Makarov: Houghton Street, London WC2A 2AE, UK. Email: i.makarov@lse.ac.uk. Antoinette
+Schoar: E62-638, 100 Main Street, Cambridge MA 02138, USA. Email: aschoar@mit.edu. We thank
+Ulf Alxelson, Matthieu Bouvard (discussant), Markus Brunnermeier, Daniel Ferreira, Gary Gorton
+(discussant), Cam Harvey, Peter Kondor, Guillermo Ordo˜ nez, Richard Portes, Carolyn Wilkins (dis-
+cussant), Yao Zeng, and Anil Kashyap and Nobuhiro Kiyotaki for inviting our paper to the 7 th
+Macroprudential conference, as well as seminar participants at LSE, MIT Sloan, Northwestern Kel-
+logg, the 2nd Annual DeFi conference, 7th Macroprudential conference, EFA 2023, Kellogg ICI confer-
+ence, NBER SI 2023 Macro, Money and Financial Frictions Workshop, and the ICI–SNPI Conference.
+We also thank Aurelie Barthere and Christopher Rogers for helpful comments and support with the
+Nansen data, and Jim Myers and Ramsha Ahmad for helpful comments and support with Flipside
+data. We also thank Kaiko for access to their data.
+1
 
 ===== PAGE 2 =====
-
-Anatomy of a Run: The Terra Luna Crash
-Jiageng Liu, Igor Makarov, and Antoinette Schoar
-NBER Working Paper No. 31160
-April 2023
-JEL No. E42,E44,G21
-ABSTRACT
-Terra, the third largest cryptocurrency ecosystem after Bitcoin and Ethereum, collapsed in three 
-days
- in May 2022 and wiped out $50 billion in valuation. At the center of the collapse was a run on a 
-blockchain-based borrowing and lending protocol (Anchor) that promised high yields to its 
-stablecoin (UST) depositors. Using detailed data from the Terra blockchain and trading data from 
-exchanges, we show that the run on Terra was a complex phenomenon that happened across 
-multiple chains and assets. It was unlikely due to concentrated market manipulation by a third party 
-but instead was precipitated by growing concerns about the sustainability of the system. Once a 
-few large holders of UST adjusted their positions on May 7th, 2022, other large traders followed. 
-Blockchain technology allowed investors to monitor each other's actions and amplified the speed of 
-the run. Wealthier and more sophisticated investors were the first to run and experienced much 
-smaller losses. Poorer and less sophisticated investors ran later  and had larger losses. The 
-complexity of the system made it difficult even for insiders to understand the buildup of risk. 
-Finally, we draw broader lessons about financial fragility in an environment where a regulatory 
-safety net does not exist, pseudonymous transactions are publicly observable, and market  
-participants are incentivized to monitor the financial health of the system.
-Jiageng Liu
-MIT Sloan School of Management
-100 Main Street, E62-685
-Cambridge, MA 02142
-jiageng@mit.edu
-Igor Makarov
-London School of Economics
-Houghton Street
-London WC2A 2AE
-UK
-i.makarov@lse.ac.uk
-Antoinette Schoar
-MIT Sloan School of Management
-100 Main Street, E62-638
-Cambridge, MA  02142
-and NBER
-aschoar@mit.edu
-
-===== PAGE 3 =====
 
 The collapse of Terra in May 2022 was one of the most highly publicized events in
 the crypto industry. Prior to the crash, Terra’s combined market capitalization was$50
@@ -78,57 +44,44 @@ ecosystem after Bitcoin and Ethereum. However, within three days of the crash, i
 value plummeted to zero. This event marked the ﬁrst signiﬁcant run in crypto and
 triggered a chain reaction that led to the collapse of several other prominent players,
 including Celsius and Three Arrows, and ultimately contributed to the fall of FTX.
-Our study of the Terra crash has two primary objectives. First, the crash provides a
-unique opportunity to enhance our understanding of runs in the absence of regulatory
-oversight or safety nets such as the Federal Reserve or FDIC deposit insurance. The
-previous literature that has examined runs on traditional ﬁnancial institutions demon-
-strates, among other things, that regulatory interventions alter the incentives of market
-participants and can create coordinating events for a run, Iyer and Puri(2012) and Iyer
-et al. (2016). Since Terra operated outside of the conventional regulatory framework,
-such reliance on regulatory intervention was impossible. As a result, participants on
-Terra should have had heightened incentives to monitor the health of the ecosystem
-and exit if necessary. Blockchain data enables us to investigate in detail how and when
-various market participants ran.
-Our second objective is to extract broader insights on the economics of the ecosys-
-tem that extend beyond Terra and apply to the entire crypto space. Cryptocurrencies
-and decentralized ﬁnance (DeFi) aspire to build a new ﬁnancial architecture. Open
-access for all users and observability of pseudonymous transactions on the blockchain
-are among the central building blocks of this ecosystem. These features are frequently
-regarded as ways to enable all participants to monitor the health of the network, en-
-sure its stability, and promote greater ﬁnancial inclusion. However, we ﬁnd that the
-Terra case revealed several signiﬁcant fault lines in the typical DeFi architecture that
-exacerbate the inherent risks in the system and undermine the advertised beneﬁts.
-Using detailed data from the Terra blockchain and trading data from oﬀ-chain cen-
-tralized exchanges (CEX), we show that the run on Terra was a complex phenomenon
-that happened across multiple chains and assets. At the center of the collapse was
-Terra’s algorithmic stablecoin, UST, and a blockchain-based borrowing and lending
-protocol, Anchor. UST was designed to serve as a stable medium of transactions on
-the Terra blockchain. In economic terms, it was similar to dollar-denominated con-
-vertible debt issued against Terra’s native cryptocurrency, LUNA. To incentivize users
-to adopt UST, the Anchor protocol oﬀered highly subsidized yields to UST depositors,
-which generated signiﬁcant inﬂows of deposits and led to a large increase in UST is-
-suance. The newly issued UST were used to pay the interest on Anchor deposits and
+Using detailed data from the Terra blockchain and trading data from oﬀ-chain
+centralized exchanges (CEX), we provide a comprehensive analysis of the dynamics
+of the run and the economic mechanisms leading up to it. Our study of the Terra
+crash has two primary objectives. First, the crash provides a unique opportunity to
+enhance our understanding of runs in a fully digital environment and in the absence
+of regulatory oversight or safety nets such as the Federal Reserve or FDIC deposit
+insurance. The previous literature that has examined runs on traditional ﬁnancial
+institutions demonstrates, among other things, that regulatory interventions alter the
+incentives of market participants and can create coordinating events for a run, Iyer and
+Puri (2012) and Iyer et al. (2016). Since Terra operated outside of the conventional
+regulatory framework, such reliance on regulatory intervention was impossible. As a
+result, participants on Terra should have had heightened incentives to monitor the
+health of the ecosystem and exit if negative of its viability became evident. Blockchain
+data enables us to investigate in detail how and when various market participants ran.
+Our second objective is to extract broader insights about the economics of the
+ecosystem that extend beyond Terra and apply to the entire crypto space. Cryp-
+tocurrencies and decentralized ﬁnance (DeFi) aspire to build a new ﬁnancial architec-
+ture. Open access for all users and observability of pseudonymous transactions on the
+blockchain are among the central building blocks of this ecosystem. These features
+are frequently regarded as ways to enable all participants to monitor the health of
+the network, ensure its stability, and promote greater ﬁnancial inclusion by creating
+equal footing for all investors. However, we show that the Terra case reveals several
+important fault lines in the typical DeFi architecture that exacerbate the inherent risks
+in the ﬁnancial architecture and generate very uneven outcomes across participants.
+First, the Terra case highlights the limitations of private money creation. We show
+that the system’s complexity and interconnectedness made it diﬃcult even for insiders
+to accurately assess the buildup of risk and eﬀectively adjust the parameters of the
+system. Decentralized governance mechanisms added ineﬃciencies to the system and
+further exacerbated the instability. Second, we document that although all investors
+had access to the Terra blockchain, it did not create a level playing ﬁeld. Wealthier and
 1
 
-===== PAGE 4 =====
+===== PAGE 3 =====
 
-fund other activities. However, as the amount of deposits skyrocketed, the level of sub-
-sidies required became increasingly unsustainable. The Anchor protocol was therefore
-exposed to signiﬁcant risks of insolvency, and its collapse had a domino eﬀect on the
-entire Terra ecosystem.
-Our analysis suggests that the run on Terra was not the result of targeted market
-manipulation by a single entity, but rather stemmed from growing concerns about the
-sustainability of the system. Once a few large holders of UST adjusted their positions
-on May 7 th, 2022, other large traders followed suit. Blockchain technology enabled
-investors to closely monitor each other’s actions and ampliﬁed the speed of the run.
-However, the complexity of the system put less sophisticated and poorer individuals
-at greater informational disadvantage. We show that wealthier and more sophisticated
-investors were the ﬁrst to run and experienced much smaller losses. Poorer and less
-sophisticated investors not only ran later and had larger losses, but a signiﬁcant frac-
-tion of them attempted to buy into the run, hoping to “buy the dip.” The system’s
-complexity also made it diﬃcult even for insiders to accurately assess the buildup of
-risk and adjust system parameters accordingly. Decentralized governance mechanisms
-added ineﬃciencies to the system and further exacerbated the instability.
+more sophisticated investors processed information more eﬃciently, ran more decisively,
+and realized much smaller losses. Our results show that in the presence of complexity,
+blockchain transparency may not only fail to create equal footing for all investors, but
+can even increase the asymmetry between sophisticated and unsophisticated investors.
 To understand the context of the crash, we brieﬂy need to lay out the design of the
 Terra network. Terra was developed by TerraForm Labs (TFL), a company founded
 in 2018 by Do Kwon and Daniel Shin. Like other smart contract blockchains such
@@ -145,6 +98,19 @@ the dollar.1 UST was marketed as the ﬁrst genuine crypto-native stablecoin and
 a distinguishing feature of the Terra network. 2 Unlike other major stablecoins such as
 Tether or Circle, which are backed by oﬀ-chain liquid assets, e.g., treasuries, UST was
 not supported by oﬀ-chain collateral but by a smart contract that allowed an exchange
+of one unit of UST to $1 worth of LUNA and vice versa. The pegging mechanism relied
+on traders taking advantage of an arbitrage opportunity that would present itself every
+time UST lost its peg in either direction. For example, if the price of UST falls below
+$1, arbitrageurs could buy UST at a price below $1 and convert it into $1 worth of
+LUNA, and in the process, reduce the supply of UST and drive up its price. And vice
+versa if the UST price is above $1.
+When do we expect this pegging mechanism to work? In economic terms, UST acts
+like perpetual convertible debt with a face value of $1 backed by LUNA. Therefore, to
+successfully back UST, the Terra system must have enough value capitalized in LUNA.
+In addition, converting UST to LUNA should have limited impact on the LUNA price.
+Otherwise, a run on LUNA could occur, since any LUNA holder would be better oﬀ
+selling LUNA ahead of the conversion resulting in a so-called “death spiral,” in which
+the prices of both UST and LUNA fall in tandem.
 1Terra also oﬀered a suite of other stablecoins pegged against other ﬁat currencies, like Korean
 Won or Euro, but UST was by far the most prominent one.
 2Dai could be considered another contender for a crypto-native stablecoin. However, its price
@@ -152,35 +118,24 @@ frequently de-pegged until it started using a basket of stablecoins backed by tr
 support the peg.
 2
 
-===== PAGE 5 =====
+===== PAGE 4 =====
 
-of one unit of UST to $1 worth of LUNA and vice versa. The pegging mechanism relied
-on traders taking advantage of an arbitrage opportunity that would present itself every
-time UST lost its peg in either direction. For example, if the price of UST falls below
-$1, arbitrageurs could buy UST at a price below $1 and convert it into $1 worth of
-LUNA, and in the process, reduce the supply of UST and drive up its price. And vice
-versa if the UST price is above $1.
-In economic terms, UST was like inﬁnite maturity convertible debt with a face value
-of $1 backed by LUNA. The main danger to the stability of the system was if users
-suddenly stopped holding UST and converted them to LUNA. While conversion of
-UST to LUNA reduces the UST supply, it also increases the LUNA supply and dilutes
-existing holders of LUNA. If this increase in the LUNA supply is expected to lead to
-a signiﬁcant decline in the LUNA price, then any LUNA holder would be better oﬀ
-selling LUNA ahead of the conversion resulting in a so-called “death spiral” of both
-UST and LUNA falling in tandem.
-It would be tempting to conclude that any conversion of a signiﬁcant amount of
-UST to LUNA must lead to a decrease in the LUNA price. But as in the case of
-convertible debt, if investors are fully rational and understand that the outstanding
-supply of UST is a claim on LUNA’s value, the conversion of UST to LUNA does
-not have to have an impact on the LUNA price since the conversion would be already
-priced in, see e.g., Glasserman and Nouri (2016), Pennacchi and Tchistyi (2019). Of
-course, for LUNA to successfully back UST, there must be enough value in the Terra
-system. Hence, one might expect that the instability of the system increases with the
-amount of the outstanding UST supply.
+It might be tempting to conclude that any conversion of a signiﬁcant amount of UST
+into LUNA must lead to a decrease in the LUNA price because converting UST into
+LUNA increases the supply of LUNA and dilutes existing holders of LUNA. But as in
+the case of convertible debt, if the pricing is done by rational agents who can anticipate
+and price in the dilution from a potential conversion, the actual conversion event may
+not have a negative impact on the LUNA price, see e.g., Glasserman and Nouri (2016),
+Pennacchi and Tchistyi (2019). However, if investors price LUNA without considering
+the dilutive eﬀect of UST conversion, or if speculative demand is a large component of
+LUNA’s value, the pegging mechanism can become fragile and prone to runs, especially
+in states where the market cap of Terra approaches that of LUNA.
+The founders of Terra were apparently unaware or reckless about the inherent
+fragility of the pegging mechanism, and aggressively marketed the new stablecoin.
 To increase the adoption of UST, Terra developed a borrowing and savings protocol,
 Anchor. Unlike other DeFi protocols where the lending yield is generated through
-interest paid on borrowings, we show that both borrowing and lending rates on Anchor
-were heavily subsidized. In particular, holders of UST could deposit their UST at
+interest paid on borrowings, we show that both borrowing and lending rates on An-
+chor were heavily subsidized. In particular, holders of UST could deposit their UST at
 Anchor at a stable 19.5% yield which was substantially higher than the yield on other
 major stablecoins, and the net borrowing rate was consistently below the lending rate.
 The high deposit rate attracted signiﬁcant deposit inﬂows, which were accompanied
@@ -191,10 +146,6 @@ the expectation that new users would continue to utilize the platform and genera
 future revenues. But it became increasingly apparent that the level of subsidy could
 not be sustained in the long run. By April 2022, the daily subsidy level had reached
 $6 million, prompting the Terra community to pass a proposal to gradually decrease
-3
-
-===== PAGE 6 =====
-
 the 19.5% interest rate to a more sustainable and market-driven level, starting on May
 1, 2022.
 Contemporary with these developments, there were additional indications of declin-
@@ -206,6 +157,10 @@ decrease in the entry rate and an increase in the exit rate from Anchor.
 Although it is not possible to assert with absolute certainty that the run on Terra
 was inevitable, our analysis shows that by following unsustainable policies, the Terra
 network was becoming increasingly fragile. In this situation, models such as Morris
+3
+
+===== PAGE 5 =====
+
 and Shin (1998), Goldstein and Pauzner (2005), or Abreu and Brunnermeier (2003)
 predict that even a small shift in fundamentals or common public signals can act as a
 coordination mechanism and trigger a run by investors. In the context of cryptocurren-
@@ -218,7 +173,7 @@ to decrease, and other withdrawals from Anchor intensiﬁed. Despite TFL’s att
 stabilize the peg by purchasing UST, investors continued to withdraw their funds from
 Anchor. The rate of withdrawals from Anchor intensiﬁed during the late hours of May
 9, 2022, coinciding with the point at which the market capitalization of LUNA became
-equal to the outstanding supply of UST. As a result, the value of UST plummeted to
+equal to the outstanding supply of UST. 3 As a result, the value of UST plummeted to
 $0.75. By the end of May 13, Anchor had fewer than 2 billion UST remaining, and the
 value of UST had declined to below $0.2.
 We document how diﬀerent types of investors behaved during the run and exited
@@ -232,33 +187,39 @@ We show that large and more sophisticated investors were the ﬁrst to run, and 
 much more decisively, i.e., withdrew most of their coins conditional on running. We
 also document that large and sophisticated traders eﬀectively used multiple avenues to
 exit UST and LUNA. In contrast, less sophisticated and smaller wallets were late to
+the run and sustained much larger losses. In fact, many small addresses even bought
+UST on May 8 and 9, when for a short time, it looked like the price was stabilizing
+at a level below $1, potentially in an attempt to “buy the dip.” These addresses fared
+particularly badly at the end of the run.
+Our results underscore the limitations of blockchain transparency and pose a chal-
+lenge to the prevailing notion in the crypto space that open-access itself levels the play-
+ing ﬁeld for all investors. Although the prices of UST and LUNA, as well as Terra’s
+3Terra’s investors seemed to have a simple valuation model. In their view, this point indicated
+that Luna lacked suﬃcient value to back the outstanding supply of UST. The point at which the two
+market capitalizations are equal would not be special if investors were rational and priced Luna with
+the understanding that UST represents a claim on Luna. Like there is nothing special about the point
+where the market value of debt is equal to the market value of ﬁrm’s equity.
 4
 
-===== PAGE 7 =====
+===== PAGE 6 =====
 
-the run and sustained much larger losses. In fact, several especially smaller addresses
-even bought UST on May 9 or 10, when for a short time, it looked like the price
-was stabilizing at a level below $1, potentially in an attempt to “buy the dip.” These
-addresses fared particularly badly at the end of the run.
-Thus, although the prices of UST and LUNA, as well as trades of large wallets,
-were publicly observable on the blockchain, it did not create a level playing ﬁeld for all
-depositors. Our analysis indicates that similar to the ﬁndings of studies investigating
-runs on traditional banks, e.g., Iyer and Puri (2012) and Iyer et al. (2016), wealthier
-and sophisticated investors were able to leverage this information more eﬀectively and
-run earlier.
-The UST peg design adds an additional dimension how investors could exit UST,
-by either selling UST at the market price or swapping UST for LUNA and then selling
-LUNA at the market price. In the absence of frictions, the second option would deliver
-strictly higher proﬁts that increase with the size of the UST discount. In practice,
-investors faced several frictions, in particular swap fees, price impact when selling
-LUNA, and the risk of a delay between the time investors send their funds to an
-exchange and when they are cleared for trading. We show that during the run, the
-UST discount and the swap volume closely followed each other. As the UST discount
-widened investors found it increasingly more proﬁtable to swap UST for LUNA and
-engage in the UST-LUNA arbitrage. In the period from May 7 to May 13, users
-swapped UST worth $4.65 billion. As users swapped UST for LUNA, the price of
-LUNA precipitously fell leading to increasing dilution which further depressed the
-price of LUNA, and led to a dramatic “death spiral.”
+trades, were publicly observable on the blockchain, we show that large and sophisti-
+cated investors maintained an advantage in monitoring the health of the blockchain
+and seem to have processed this information eﬃciently which allowed them to front-run
+other investors.
+The UST peg design allowed investors to exit UST by either selling UST at the
+market price or swapping UST for LUNA and then selling LUNA at the market price.
+In the absence of frictions, the second option would deliver strictly higher proﬁts that
+increase with the size of the UST discount. In practice, investors faced several frictions,
+in particular swap fees, price impact when selling LUNA, and the risk of a delay between
+the time investors send their funds to an exchange and when they are cleared for
+trading. We show that during the run, the UST discount and the swap volume closely
+followed each other. As the UST discount widened investors found it increasingly
+more proﬁtable to swap UST for LUNA and engage in the UST-LUNA arbitrage. In
+the period from May 7 to May 13, users swapped UST worth $4.65 billion. As users
+swapped UST for LUNA, the price of LUNA precipitously fell leading to increasing
+dilution which further depressed the price of LUNA, and led to a dramatic “death
+spiral.”
 Interestingly, we ﬁnd that Alameda Research, a cryptocurrency trading ﬁrm closely
 aﬃliated with the FTX exchange, conducted the largest amount of UST-LUNA swaps
 among Anchor depositors. It seems that the swap fees and uncertainty about the
@@ -273,16 +234,16 @@ market capitalization declining to a level close to the aggregate market value o
 and investor withdrawals from Anchor. As in May 2022, withdrawals were concentrated
 among wealthier investors, while low-wealth investors continued pouring their funds
 into Anchor.
-5
-
-===== PAGE 8 =====
-
 One might ask why the run was avoided in May 2021, but not in May 2022. A
 critical factor appears to have been that the outstanding supply of UST was much
 smaller in May 2021, which enabled TFL to function as a lender of last resort. We
 show that nearly all UST-LUNA swaps were initiated by TFL, which presumably held
 onto the newly swapped LUNA instead of selling it. Furthermore, as the recent SEC
 lawsuit against TFL alleges, the peg was restored due to stabilization purchases of UST
+5
+
+===== PAGE 7 =====
+
 by a third party, which has been identiﬁed as Jump Trading. But market participants
 were unaware that TFL and Jump Trading were engaging in the stabilization of UST.
 As a result, when participants saw the price re-pegging, they appear to have interpreted
@@ -294,13 +255,13 @@ might not have believed that the stabilization would succeed.
 Our paper contributes to several diﬀerent strands of the literature. First, there is a
 growing literature that examines the design and operation of stablecoins. For overviews
 of diﬀerent design features and stabilization mechanisms, see for example, Eichengreen
-(2019); Arner et al. (2020); Makarov and Schoar(2022); Gorton and Zhang (2021); and
+(2019); Arner et al. (2020); Makarov and Schoar (2022); Gorton and Zhang (2021); and
 Gorton et al. (2022) provide a comparative analysis of stablecoins and private money
 creation during the wildcat banking period of 19 th century United States.
 d’Avernas et al. (2022) and Li and Mayer (2022) develop equilibrium models of the
 underlying pegging mechanisms for stablecoin protocols and underscore that mech-
 anisms lacking external collateral are vulnerable to run risks if signiﬁcant negative
-demand shocks arise, even if they remain stable for small shocks.Lyons and Viswanath-
+demand shocks arise, even if they remain stable for small shocks. Lyons and Viswanath-
 Natraj (2023) analyze the stability mechanisms of Tether and Dai. Uhlig (2022) pro-
 poses a model of the Terra-Luna crash.
 The pegging mechanism behind UST and LUNA is also related to the literature
@@ -314,20 +275,20 @@ mismatch and coordination problems among depositors. Another part emphasizes the
 role of information asymmetry about bank fundamentals, see for example, Chari and
 Jagannathan (1988) and Jacklin and Bhattacharya (1988). Following Morris and Shin
 (1998), a growing body of literature explores the interaction between fundamentals
-6
-
-===== PAGE 9 =====
-
 and strategic behavior by market participants as for example in Goldstein and Pauzner
 (2005), Goldstein (2013), and Abreu and Brunnermeier (2003). In these models, agents
 receive private and public signals about the strength of fundamentals. A common
 public signal acts as an additional coordination event for agents’ actions.
 A few recent empirical papers have analyzed the behavior of depositors during bank
 runs using individual account information. Iyer and Puri (2012) and Iyer et al. (2016)
+6
+
+===== PAGE 8 =====
+
 highlight the role that deposit insurance plays in mitigating a run as well as relation-
 ships between depositors and the bank. These papers also highlight the importance of
 depositor composition in accelerating a run. Looking at the run in the money market
-mutual fund market following the Lehman crash,Schmidt et al.(2016) similarly analyze
+mutual fund market following the Lehman crash, Schmidt et al. (2016) similarly analyze
 coordination as a function of incomplete information and strategic complementarities
 between investors.
 Third, the pegging mechanism behind UST and LUNA has some resemblance to
@@ -344,7 +305,7 @@ extensive literature on currency crises, see Lorenzoni (2014).
 Finally, we also relate more broadly to the literature that has tried to model the
 risk and value of cryptocurrencies such as Abadi and Brunnermeier (2018), Cong et al.
 (2021); Kogan et al. (2021); Hu et al. (2019); Liu and Tsyvinski (2021), and the beneﬁt
-to a platform of having a native token such as inSockin and Xiong (2023); Li and Mann
+to a platform of having a native token such as in Sockin and Xiong (2023); Li and Mann
 (2018); Gryglewicz et al. (2021).
 The rest of the paper is organized as follows. Section 1 describes the data used
 in this study. Section 2 provides description of the Terra network and the design of
@@ -352,10 +313,6 @@ Terra’s algorithmic stablecoin. In Section 3, we provide an analysis of the ec
 of Terra leading up to the run. Section 4 documents the run on UST and the collapse
 of LUNA. In Section 5, we compare the interventions of TFL in the May 2022 crash
 to the earlier de-pegging event in May 2021. Section 6 concludes.
-7
-
-===== PAGE 10 =====
-
 1. Data
 Our primary data source is the Terra blockchain. Like other permissionless cryp-
 tocurrencies, the Terra blockchain is publicly available. However, the Terra data are
@@ -363,41 +320,32 @@ substantially more complex than say the Bitcoin data, which only record bitcoin 
 fers from one account to another. The structure of Terra data is comparable to
 Ethereum, since many transactions on Terra are not simply token transfers but the
 inputs and outputs of smart contracts. One must parse the smart contract data to un-
+7
+
+===== PAGE 9 =====
+
 derstand the Terra data successfully. The work is challenging because (1) each smart
 contract has its own data structure, (2) smart contracts often rely on each other, and
 (3) some transactions are not settled immediately but require a delay or resolution of
 other conditions.
 We are unaware of any data source that provides fully processed Terra data. In our
 research, we work closely with two leading blockchain data analytics companies, Nansen
-and Flipside.3 We learned from them how to process the blockchain transactions and
+and Flipside.4 We learned from them how to process the blockchain transactions and
 use their data to help with validating our data processing.
 We use several data in our analysis. First, we use Terra token transfers from October
 2021 to August 2022 that come from transaction logs. When a transaction is settled,
 the blockchain records logs that contain the transfer, minting (creating), and burn-
 ing (destroying) of tokens. The tokens include LUNA, Terra stablecoins, and CW20
-standard tokens. 4 To collect the logs, we run a Terra Classic node using data from
-ChainLayer Quicksync that stores copies of blockchains to speed up synchronization. 5
+standard tokens. 5 To collect the logs, we run a Terra Classic node using data from
+ChainLayer Quicksync that stores copies of blockchains to speed up synchronization. 6
 We use Terra Classic’s API to query the data in each block. We ﬁrst use the LCD
 (Light Client Daemon) API to query transactions, fees, and the log of transactions.
 Next, we parse the logs into structured data. We record the time of transfer, the source
 account, the destination account, the token, and the transfer amount. For transactions
 that require a delay or condition to settle, we use the RPC (Remote Procedure Call)
-API to query the list of settlement events in each block. 6
-Second, we use genesis ﬁles from Terra’s online code repository. 7 Genesis ﬁles are
+API to query the list of settlement events in each block. 7
+Second, we use genesis ﬁles from Terra’s online code repository. 8 Genesis ﬁles are
 snapshots of the blockchain state at each upgrade, i.e., each fork. When the Terra
-3See https://flipsidecrypto.xyz/ and https://www.nansen.ai/.
-4CW20 is the standard for fungible tokens on Terra such as aUST, bLUNA, and ANC. The data
-do not cover transfers of NFTs that follow the CW721 standard. Both CW20 and CW721 standards
-closely resemble the equivalent ERC20 and ERC721 standards on Ethereum. See https://github.c
-om/CosmWasm/cw-plus/blob/main/packages/cw20/README.md for more detail.
-5See https://www.chainlayer.io/quicksync/
-6For example, LUNA un-delegation requires a 21-day delay. Spending from the community pool
-requires approval of the on-chain governance.
-7See https://github.com/terra-money/classic-mainnet.
-8
-
-===== PAGE 11 =====
-
 developers release a major software upgrade, validators take a snapshot of the state of
 the blockchain and resume from there. Therefore, a snapshot fully characterizes the
 blockchain state before an upgrade. We collect ﬁve snapshots that date back to April
@@ -407,6 +355,19 @@ the daily balances of UST, LUNA, and CW20 tokens since Columbus-5 by ﬁnding th
 cumulative sum of token transfers and adding the initial balance.
 Third, we use Flipside pre-processed data of speciﬁc transactions. These data
 include (1) Terraswap, Astroport, and the Terra native swaps, (2) LUNA delegation
+4See https://flipsidecrypto.xyz/ and https://www.nansen.ai/.
+5CW20 is the standard for fungible tokens on Terra such as aUST, bLUNA, and ANC. The data
+do not cover transfers of NFTs that follow the CW721 standard. Both CW20 and CW721 standards
+closely resemble the equivalent ERC20 and ERC721 standards on Ethereum. See https://github.c
+om/CosmWasm/cw-plus/blob/main/packages/cw20/README.md for more detail.
+6See https://www.chainlayer.io/quicksync/
+7For example, LUNA un-delegation requires a 21-day delay. Spending from the community pool
+requires approval of the on-chain governance.
+8See https://github.com/terra-money/classic-mainnet.
+8
+
+===== PAGE 10 =====
+
 and un-delegation, (3) airdrops of ANC, MIR, and MINE, and (4) governance proposals
 and voting records on both Terra and Anchor.
 To link pseudonymous addresses with real-world entities we use Flipside and Nansen
@@ -435,17 +396,17 @@ transactions, 1.8 million native swap records, and 97 thousand bridge transfers 
 Terra to Ethereum.
 Our data cover 3.7 million addresses. Among them are 25 centralized exchanges
 (CEXs), 864 trading pairs on 4 decentralized exchanges (DEXs), 10 inter-chain bridges,
-9
-
-===== PAGE 12 =====
-
 58 DeFi protocols, 319 blockchain validators, 69 other entities including hedge funds
 and venture capitals, 4,498 CW20 tokens, and 58,941 unnamed smart contracts.
 2. Terra Network
-In this section we lay out the evolution of the Terra blockchain and its main building
+In this section, we lay out the evolution of the Terra blockchain and its main building
 blocks. The architecture of Terra shared many features with other cryptocurrency
 platforms such as Ethereum, which makes it an interesting object of study. Although
 smaller than the Ethereum network, Terra’s smart contract platform enabled developers
+9
+
+===== PAGE 11 =====
+
 to build a similar array of applications. The Terra blockchain was created with the
 intention of supporting a decentralized ﬁnancial architecture with several key use cases,
 ranging from borrowing and lending protocols to savings and trading applications. The
@@ -474,10 +435,6 @@ on governance proposals. One of the notable characteristics of the Terra blockch
 that it provided a range of algorithmic stablecoins that were pegged to diﬀerent ﬁat
 currencies. Among these stablecoins, TerraUSD (UST), pegged to the US Dollar, was
 the most prominent. Unlike other major stablecoins such as Tether or Circle, which
-10
-
-===== PAGE 13 =====
-
 were backed by oﬀ-chain liquid assets such as treasuries, UST was not supported by
 oﬀ-chain collateral but by a smart contract that facilitated the exchange of one unit
 of UST to $1 worth of LUNA and vice versa. Terra’s stablecoins became a distinctive
@@ -487,6 +444,10 @@ medium of change and store of value, but they also drive the demand for the stab
 Some of the more notable protocols built on the Terra network included (1) borrowing
 and lending protocols like Anchor or Mars, (2) decentralized exchanges (DEX) such
 as Astroport and Terraswap, (3) payment applications like Chai and Memepay, or (4)
+10
+
+===== PAGE 12 =====
+
 the creation of synthetic assets that could track prices of stocks and other securities,
 as in the Mirror protocol. One of the most widely used application on the Terra
 platform was the Anchor protocol which provided lenders with a stable interest of
@@ -494,32 +455,23 @@ platform was the Anchor protocol which provided lenders with a stable interest o
 application on the Terra network was Chai, which was marketed as a mobile payment
 app supported by the Terra blockchain. However, a recent SEC case against Terra
 alleges that these payments were never processed on the blockchain and that Terra
-fabricated fake transactions.8
+fabricated fake transactions.9
 The Terra blockchain also allowed for easy cross-chain transfers of assets, tokens
 and data to other highly used blockchains. As a blockchain built on the Cosmos SDK,
 it was interoperable with other blockchains built on the IBC (Inter-Blockchain Com-
 munication) protocol. In addition, Terra also facilitated interoperability with other
 blockchain applications through the so-called bridges (a form of message passing pro-
-tocol).9 Terra Shuttle bridge was the ﬁrst Ethereum bridge followed by the Wormhole
+tocol).10 Terra Shuttle bridge was the ﬁrst Ethereum bridge followed by the Wormhole
 bridges that connected Terra with Solana, Ethereum, Binance Smart Chain, and oth-
 ers. This interoperability became very important for Terra, since it allowed traders on
 the Terra blockchain to access liquidity on DeFi apps on other blockchains, in partic-
 ular the Curve protocol on Ethereum, which emerged as the DEX with the deepest
 liquidity to trade an array of stablecoins including UST (in the UST/3CRV Curve meta
-pool).10
+pool).11
 In January 2022, Do Kwon announced the launch of the Luna Foundation Guard
 (LFG) a non-proﬁt organization “to build reserves supporting the $/UST peg amid
 volatile market condition”. This was prompted by concerns arising about price dislo-
 cations of UST stemming from large trades or coordinated attacks on Curve and other
-8See https://www.sec.gov/news/press-release/2023-32.
-9These bridges operate as a decentralized, intermediary oracle network that observes and veriﬁes
-messages on one chain (i.e., Terra) and relays them to the other chain (i.e., Ethereum). This solution
-allows tokens to move between blockchains without relying on centralized exchanges.
-10See https://resources.curve.fi/ for more detail.
-11
-
-===== PAGE 14 =====
-
 DEX or centralized exchanges like Binance. LFG was overseen by a governing council
 including several TFL co-founders and the lead investors. LFG originally raised $1 bil-
 lion through the sale of LUNA tokens, with Jump Trading and Three Arrows Capital
@@ -528,7 +480,17 @@ in BTC) to support the stability mechanism for the UST stablecoin, UST. Through 
 series of further LUNA sales and transfers from Terraform Labs LFG built a signiﬁcant
 reserve pool. The audit report by JS Held conducted after the crash conﬁrms that as of
 May 6th 2022, LFG held about 80,300 BTC, USDT 26 million, and USDC 24 million,
-as well as minor allotments in a few other coins. 11
+as well as minor allotments in a few other coins. 12
+9See https://www.sec.gov/news/press-release/2023-32.
+10These bridges operate as a decentralized, intermediary oracle network that observes and veriﬁes
+messages on one chain (i.e., Terra) and relays them to the other chain (i.e., Ethereum). This solution
+allows tokens to move between blockchains without relying on centralized exchanges.
+11See https://resources.curve.fi/ for more detail.
+12See https://lfg.sg/audit/LFG-Audit-2022-11-14.pdf for the audit report.
+11
+
+===== PAGE 13 =====
+
 Figure 1 shows the timeline of the main Terra events. Terra went through several
 protocol upgrades, the so-called forks in the crypto parlance. Early upgrades were
 mostly concerned with tweaking protocol parameters. Columbus-4 launched on Oct 3,
@@ -543,30 +505,31 @@ for UST have been burnt.
 2.1. Terra stablecoins
 Starting in March 2020 Terra introduced a suite of algorithmic stablecoins pegged
 against diﬀerent ﬁat currencies, the most prominent being UST which was pegged
-against the US Dollar. 12 Unlike custodial stablecoins such as Tether and Circle, which
-are backed by non-crypto assets, UST was backed by LUNA via a peg mechanism that
-is meant to incentivize traders to engage in arbitrage whenever the stablecoin deviates
-from the peg.
-At the core of the peg mechanism is anative swap smart contract that allows users to
-exchange, say $1 worth of a stablecoin, UST, for the dollar-equivalent amount of LUNA,
-and vice versa. Thus, when UST is traded above $1, users could buy LUNA, swap
-LUNA for UST, which amounts to burning (destroying) LUNA and mint (creating)
-new UST, and sell UST at a premium above $1, pocketing the diﬀerence as proﬁt. In
-11See https://lfg.sg/audit/LFG-Audit-2022-11-14.pdf for the audit report.
-12Others included TerraCNY (Chinese yuan), TerraEUR (euro), TerraBGP (British pound), Ter-
-raJPY (Japanese yen), or TerraKWR (South Korean won).
-12
-
-===== PAGE 15 =====
-
-contrast, when UST trades below $1, users could buy UST, burn UST to mint new
+against the US Dollar. 13 Unlike custodial stablecoins such as Tether and Circle, which
+are backed by non-crypto assets, UST was backed by LUNA via a pegging mechanism
+that is meant to incentivize traders to engage in arbitrage whenever the stablecoin
+deviates from the peg.
+At the core of the pegging mechanism is a native swap smart contract that allows
+users to exchange, say $1 worth of a stablecoin, UST, for the dollar-equivalent amount
+of LUNA, and vice versa. Thus, when UST is traded above $1, users could buy LUNA,
+swap LUNA for UST, which amounts to burning (destroying) LUNA and mint (creat-
+ing) new UST, and sell UST at a premium above $1, pocketing the diﬀerence as proﬁt.
+In contrast, when UST trades below $1, users could buy UST, burn UST to mint new
 LUNA, and then sell LUNA with a proﬁt.
 The LUNA price, necessary for the native swap to work, is supplied by an oracle of
-oﬀ-chain centralized exchanges every 30 seconds. 13 To prevent oracle price manipula-
+oﬀ-chain centralized exchanges every 30 seconds. 14 To prevent oracle price manipula-
 tion, the fees associated with the native swap are designed to increase with the volume.
 Without swap fees, a user could have done the following. Sell LUNA on oﬀ-chain ex-
 changes to temporarily depress the price of LUNA. Then use the native swap contract
 to swap a large quantity of UST for LUNA at a lower LUNA price, buy LUNA on
+13Others included TerraCNY (Chinese yuan), TerraEUR (euro), TerraBGP (British pound), Ter-
+raJPY (Japanese yen), or TerraKWR (South Korean won).
+14Blockchain oracles are services that provide smart contracts with external information. They
+serve as bridges between blockchains and outside data.
+12
+
+===== PAGE 14 =====
+
 oﬀ-chain exchanges to bid up the LUNA price, and ﬁnally use the native swap contract
 to swap back a large quantity of LUNA for more UST.
 The swap fees have been set so that the on-chain liquidity provided by the native
@@ -578,66 +541,57 @@ increased to $20 million in Feb 2021 (Terra proposal 36). Following the May 2021
 de-pegging event, proposal 90 was passed to increase the daily limit to $135 million
 and decrease the spread to 0.5%, and then to increase the daily limit to $293 million
 in Feb 2022 (Terra proposal 185).
-2.2. Viability of Peg Mechanism
-For the peg mechanism to work it has to be that (1) the price of LUNA supplied
-by oracles is accurate, (2) arbitrageurs have incentives to defend the peg, and (3) any
-negative feedback from converting UST to LUNA on the price of LUNA is limited. To
-understand the last condition, notice that if a swap of UST for LUNA, which decreases
-the supply of UST and increases the supply of LUNA is expected to lead to a signiﬁcant
-decline in the LUNA price then any LUNA holder would be better oﬀ selling LUNA
-ahead of the swap resulting in a run on LUNA.
-When do we expect condition (3) to hold? First imagine a situation where the
-supply of UST is negligible relative to the market cap of LUNA. Here converting UST
-into LUNA will only lead to small changes in the aggregate LUNA supply and thus the
-expected dilution should be minimal and it would be reasonable to expect condition
-(3) to hold. Now lets imagine the case where the supply of UST is more signiﬁcant
-relative to the market cap of LUNA. Here the situation is more complicated and it can
-be useful to draw an analogy with warrants that give their owners the right to buy
-13Blockchain oracles are services that provide smart contracts with external information. They
-serve as bridges between blockchains and outside data.
+2.2. Viability of the Pegging Mechanism
+In economic terms, UST functioned like perpetual convertible debt with a face
+value of $1, backed by LUNA. Therefore, the Terra system must have enough value
+capitalized in LUNA to successfully back UST. As the native cryptocurrency of Terra,
+LUNA derives its value from three primary factors. First, by staking LUNA, holders
+could get a share of Terra’s transaction fees as well as the rights to inﬂuence the
+network’s future development, see, for example, Kogan et al. (2021). Second, users
+could access Terra applications using LUNA, thereby generating transaction demand.
+Finally, demand for LUNA could realize from investors speculating on its future value.
+Since the pegging mechanism depends on arbitrageurs to convert UST to LUNA,
+whenever UST is traded below its peg, it is important that the conversion of UST
+to LUNA has limited impact on the LUNA price. Otherwise, a run on LUNA could
+occur, as any LUNA holder would be better oﬀ selling LUNA ahead of the conversion
+resulting in a so-called “death spiral,” in which the prices of both UST and LUNA fall
+in tandem.
+It might be tempting to conclude that any conversion of a signiﬁcant amount of
+UST to LUNA would inevitably lead to a decrease in the LUNA price, given that such a
+conversion would increase the LUNA supply and dilute the holdings of existing LUNA
+investors. But much like the case of convertible debt, if pricing is done by rational
+agents who can anticipate and ex ante price in this conversion, the conversion may not
+have a negative impact on the LUNA price, see e.g., Glasserman and Nouri (2016),
+Pennacchi and Tchistyi (2019).
+However, the inherent complexity of the system made its valuation a daunting task
+for any investor. A rational investor would need to understand how changes in the
 13
 
-===== PAGE 16 =====
+===== PAGE 15 =====
 
-company stock at a prespeciﬁed price. Similar to UST, which increases the supply of
-LUNA if converted, warrants are dilutive — when investors exercise their warrant, they
-receive newly issued stock. To the extent that exercising warrants does not change the
-total value of the ﬁrm, it would be tempting to conclude the stock price should decline
-following warrant exercise. However, if investors are rational and understand that
-outstanding warrants are a claim on the ﬁrm’s value then the exercising of warrants
-would not have any impact on the stock price. But the price would decline at the time
-that the warrants are issued.
-Similarly, if Terra investors are rational and understand that UST is a claim on
-LUNA, swapping even large quantities UST for LUNA could have no eﬀect on the
-LUNA price. However, if Terra investors price LUNA without fully taking into account
-the dilutive nature of UST, swapping large quantities of UST for LUNA is likely to
-have a large impact on the price of LUNA. In the latter scenario, the states of the
-world where the market cap of UST is close to that of LUNA are expected to be fragile
-and prone to a run on LUNA.
-The above discussion raises an important question of the determinants of the value
-of LUNA. First, by staking LUNA, one gets a claim to the transaction fees on Terra
-and the rights to decide on the future development of the network. This makes it
-possible to express the value of LUNA as the sum of the discounted future transaction
-fees, see Kogan et al. (2021) for details. Second, LUNA also gives access to the services
-oﬀered on the Terra network, which creates transaction demand and with it validation
-fees. Finally, demand for LUNA can be the result of investors speculating on its value.
-The demand for UST can be broken down to the interest rate it oﬀers and transac-
-tion demand. With their value pegged, stablecoins serve as a natural choice of collateral
-and benchmark asset in the crypto space. Being native to the Terra network, UST faced
-no direct competition from other stablecoins on Terra. However, on other chains like
-Ethereum, UST had to compete with stablecoins like Tether, USDC, or Dai.
-In what follows, we present evidence that shows that the main factor behind the
-demand for LUNA was speculative demand and for UST was the artiﬁcially inﬂated
-interest rate on Anchor.
+supply of LUNA and UST aﬀect the value of the Terra network. This is a diﬃcult
+task due to the presence of multiple potential feedback mechanisms. For example, a
+substantial increase in the sale of UST could put downward pressure on its peg. The
+loss of the peg can decrease the transaction demand for UST, leading to additional
+UST sales. Alternatively, an increase in the LUNA supply can reduce the amount of
+fees earned per unit of LUNA held, thereby reducing LUNA’s value. This, in turn, can
+decrease speculative demand for LUNA, resulting in additional reductions in its value.
+A rational investor would also need to anticipate other investors’ conversion between
+UST and LUNA. This too, presents a formidable challenge, because the feedback mech-
+anisms described above make these decisions strategic complements. Furthermore, as
+we demonstrate later, Terra investors were highly heterogeneous, ranging from small
+retail investors to large institutional players. This heterogeneity also contributed to
+increased strategic uncertainty in investor behavior.
+This discussion suggests that states where UST and LUNA have comparable market
+caps are to be expected to be fragile and prone to runs, especially if a signiﬁcant fraction
+of investors were not fully rational and did not price in the potential impact of UST
+conversion. Of course, the possibility of a run was aggressively downplayed by Do
+Kwon in his numerous infamous tweets and the TFL research White Paper. 15
 3. Terra Prior to the Run
 We now analyze the transaction ﬂow on Terra and their underlying economics
-prior to the run. Like other (payment) platform businesses Terra aimed to provide a
+prior to the run. Like other (payment) platform businesses, Terra aimed to provide a
 suite of services that draw in users and generate fees for the token holders. If more
 users participate on the blockchain, it becomes more attractive for users to be on the
-14
-
-===== PAGE 17 =====
-
 network and for developers to create additional applications on the platform, which
 in turn attract more users and so on. If these network externalities are expected to
 be strong, start ups in the tech or social media industry often subsidize customer
@@ -648,6 +602,12 @@ protocol, Anchor, which provided heavily subsidized deposit rates and drew many 
 to the platform. While it might have originally been intended as a way to generate
 network externalities, our analysis shows that users on the platform did not start
 utilizing other services extensively, and instead the subsidies on Anchor remained the
+15https://assets.website-files.com/611153e7af981472d8da199c/618b02d13e938ae1f8ad1e
+45 Terra White paper.pdf
+14
+
+===== PAGE 16 =====
+
 main attractor to Terra. While the level of subsidy was unsustainable, the complex
 structure of the subsidies, might have made it diﬃcult for many network participants
 to understand their origin.
@@ -668,15 +628,9 @@ network usually controls one or only a few addresses.
 Some smart contracts like Nexus often adjust a position by rebalancing the whole
 position. For example, in the following sample transaction, Nexus smart contract
 adjust the amount borrowed from Anchor from 16,226,512 UST to 16,227,559 UST by
-ﬁrst repaying the outstanding balance and then borrowing the new amount. 14 The
+ﬁrst repaying the outstanding balance and then borrowing the new amount. 16 The
 net eﬀect is an increase in the borrowed position by 1,047 UST. Computing volume
 simply as the sum of the two transfers would grossly overstate the real volume on the
-14See https://finder.terra.money/classic/tx/e874a1d3824854bbdb4f8743f18484fdc07361
-bc62538b10369c8dc9fe7a3faf.
-15
-
-===== PAGE 18 =====
-
 network. Therefore, in our volume calculation, we ﬁrst net token transfers between
 any two addresses that happened at the same time.
 The aggregate UST and LUNA volumes during the pre-crash period are $360 and
@@ -688,6 +642,12 @@ volume of transactions for each token in detail.
 Figure 2 we now show the decomposition of the trading volumes for UST (left
 panel) and LUNA (right) between diﬀerent addresses on the Terra blockchain. We
 classify addresses into broad groups that are associated with the main participants on
+16See https://finder.terra.money/classic/tx/e874a1d3824854bbdb4f8743f18484fdc07361
+bc62538b10369c8dc9fe7a3faf.
+15
+
+===== PAGE 17 =====
+
 the blockchain. In particular, “Admin” addresses denote those of network administra-
 tion accounts and Terra insiders, including the community pool, Terra’s native swap,
 addresses for transaction fees and LFG wallets. “TFL” addresses are those used to
@@ -714,10 +674,6 @@ is between Anchor and Other, again highlighting the importance of Anchor on the
 network.
 Similarly, in the right panel we map transactions on the LUNA network. In this
 case, we observe that CEX, DEX, and addresses aﬃliated with TFL and Admin ac-
-16
-
-===== PAGE 19 =====
-
 counts account for 84% of aggregate volume. This ﬁnding indicates that the majority of
 transactions utilizing LUNA are associated with trading on exchanges, which reinforces
 the notion that a signiﬁcant portion of the demand for LUNA stems from speculative
@@ -727,6 +683,10 @@ activities.
 The previous section shows that Anchor was the main attraction in the Terra net-
 work. Its design shares many characteristics with other decentralized lending platforms
 such lending and borrowing are automated by smart contracts, similar to Aave or Com-
+16
+
+===== PAGE 18 =====
+
 pound on Ethereum. However, as we show in this section, while Aave or Compound
 lending rates are ﬁnanced by borrowing rates, both lending and borrowing on Anchor
 were heavily subsidized by TFL.
@@ -751,10 +711,6 @@ was 1 when Anchor was launched in March 2021 and was 1.213 one year later in Mar
 3.2.2. Borrowing
 Borrowing on Anchor is over-collateralized. For the period we consider, Anchor
 allowed two types of collateral, bLUNA and bETH. These types of bAssets are liquid,
-17
-
-===== PAGE 20 =====
-
 tokenized representations of staked (bonded) assets in a PoS blockchain. Since the
 native token in a PoS blockchain can be staked to earn a reward, it is more eﬃcient to
 hold staked LUNA or ETH as collateral rather than their unstaked counterparts. The
@@ -765,15 +721,19 @@ The built-in delay serves an important function in a PoS protocol of providing v
 idators and delegators with proper incentives to verify transactions on the blockchain.
 But by restricting the timely access to the token, the built-in delay reduces its collateral
 value. One solution that emerged to the above problem, is to introduce a derivative
+17
+
+===== PAGE 19 =====
+
 contract, which is a claim on the staked tokens and which can be freely traded in the
 market. This was implemented by the Lido Liquid Staking Protocol in the form of
-bAssets.15
+bAssets.17
 When an address borrows UST from the Anchor UST market, it ﬁrst sends bLUNA
 (bETH) as collateral to the Anchor bLUNA (bETH) Custody Contract, which then
 records the address and the amount of collateral provided. The borrowing limit depends
 on the value of the collateral and cannot exceed the maximum allowed loan-to-value
 (LTV) ratio. The maximum LTV for bLUNA was initially set to 50%, then raised to
-60% in July 2021, and to 80% in Feb 2022. Smilarly the LTV for bETH was raised
+60% in July 2021, and to 80% in Feb 2022. Similarly, the LTV for bETH was raised
 to 75% at the peak. Naturally, the borrowing limit ﬂuctuates with the oracle-reported
 bAsset price. When the borrowing limit exceeds the maximum LTV the loan gets
 liquidated. Liquidation is implemented via what is called a Liquidation Queue, where
@@ -781,21 +741,12 @@ liquidators bid in a ﬁrst-price auction for the right to liquidate the collate
 the loan.
 3.2.3. Anchor Rates
 The Anchor lending rate was primarily a function of two main rates, target deposit
-rate and threshold deposit rate.16 The target deposit rate, known as the Anchor rate,
+rate and threshold deposit rate.18 The target deposit rate, known as the Anchor rate,
 was the rate, which the protocol attempts to achieve from the interest gained from the
 borrowers. The threshold deposit rate served as a ﬂoor to the deposit rate triggering
 a direct deposit rate subsidy from the yield reserve pool of Terra if the current deposit
 rate is below this value.
 When Anchor was originally launched, the Target Deposit Rate and the Threshold
-15The Lido Protocol also allowed a second set of derivative contracts called stAssets. The diﬀerences
-are not important for our purpose, but details can be found in Lido Terra Docs at https://docs.t
-erra.lido.fi/introduction/tokens.
-16https://docs.anchorprotocol.com/anchor-2/protocol/anchor-governance/modify-marke
-t-parameters.
-18
-
-===== PAGE 21 =====
-
 Deposit Rate were set at 20% and 18%, respectively, and later changed to 20.5% and
 19.5%. Following widespread discussions that the 20% Anchor rate is unsustainable,
 there was a series of proposal starting in March 2022 to lower the Anchor deposit rate.
@@ -803,8 +754,18 @@ Eventually, Anchor Proposition 20 was passed on March 23 and implemented on May
 1st, 2022, which tied the deposit rate to the change in the yield reserve over a one
 month period. If the yield reserve is growing, the deposit rate would increase and
 vice versa if the yield reserve is falling. The maximum amount the deposit rate could
-change per month was set to 1.5%. 17
+change per month was set to 1.5%. 19
 On the other side of the Anchor platform, the annualized borrowing rate was an
+17The Lido Protocol also allowed a second set of derivative contracts called stAssets. The diﬀerences
+are not important for our purpose, but details can be found in Lido Terra Docs at https://docs.t
+erra.lido.fi/introduction/tokens.
+18https://docs.anchorprotocol.com/anchor-2/protocol/anchor-governance/modify-marke
+t-parameters.
+19https://twitter.com/anchor protocol/status/1507052921745256449?lang=en-GB.
+18
+
+===== PAGE 20 =====
+
 increasing function of the proportion of outstanding loans to outstanding deposits and
 given by the following formula:
 2% + 42% × outstanding loans
@@ -830,11 +791,6 @@ tokens every week and sell them over that week for LUNA. Figure 4 left panel sho
 the LUNA staking yield by source. Through most of 2021 LUNA block rewards were
 stable but constituted less than 50% of the rewards from staking. The other half of
 the rewards to staking came from the airdrops. The burning of LUNA for UST in
-17https://twitter.com/anchor protocol/status/1507052921745256449?lang=en-GB.
-19
-
-===== PAGE 22 =====
-
 the community pool in November 2021, which we describe in Section 3.2.4, lead to a
 signiﬁcant increase in LUNA staking yield.
 [Fig. 4 About Here]
@@ -845,6 +801,10 @@ balance. But following the May 2021 LUNA crash (see Section 5 for more detail) t
 lead to a large number of liquidations over a span of four days and sharp decline in bor-
 rowing activity, the rate was dynamically adjusted at 50% per week until it reached the
 upper limit of 260,000 ANC per day on June 8 2021, and stayed at this level thereafter.
+19
+
+===== PAGE 21 =====
+
 The right panel of Figure 4 shows the annualized ANC subsidy rate, where we
 assume that borrows sell the daily ANC incentive at the market price. The subsidy
 rate was as high as 300% when it was ﬁrst introduced. It led to a sharp rise in lending.
@@ -870,10 +830,6 @@ funds from Anchor and immediately posting them back. We call these exploiting
 loans. Figure 5 shows the share of exploiting loans among all loans. We can see that
 the share of exploiting loans varies inversely with the diﬀerence between the lending
 and the net borrowing rates, with the lowest value being 20% and often being as high
-20
-
-===== PAGE 23 =====
-
 as 60%. In other words, participants engaged in exploiting loans more heavily when
 the gains from this activity were greater.
 3.2.4. Anchor Balance
@@ -883,19 +839,23 @@ DAI on Aave and Compound platforms, which are the main borrowing and lending
 market places in the Ethereum network. We can see that the Aave and Compound
 rates were around 2-3% in Jan-May 2022, which stand in stark contrast to the 20%
 Anchor rate.
+20
+
+===== PAGE 22 =====
+
 [Fig. 6 About Here]
 Not surprisingly, the high Anchor rates were one of the main drivers for the demand
 for UST and the Terra network in general. The left panel of Figure 7 plots the number
-of new addresses on Terra each day from April 2021 until the crash in May 2022.
-The lowest (blue) line of the graph indicates the number of addresses that start using
-Anchor from the ﬁrst day that they are on the Terra blockchain. We interpret this as
-a sign that the main attraction for these users was the opportunity to gain access to
-the subsidized borrowing and lending rates on Anchor. The next lines plot users who
-started using Anchor within a week, within a month, and more than a month to use
-Anchor, and those that never used Anchor. These users are increasingly less likely to be
-participating on Terra only for the yield on Anchor but might have a broader interest
-in the ecosystem. The right panel shows the share of each group that eventually used
-Anchor.
+of new non-intermediary addresses on Terra each day from April 2021 until the crash
+in May 2022. The lowest (blue) line of the graph indicates the number of addresses
+that start using Anchor from the ﬁrst day that they are on the Terra blockchain. We
+interpret this as a sign that the main attraction for these users was the opportunity to
+gain access to the subsidized borrowing and lending rates on Anchor. The next lines
+plot users who started using Anchor within a week, within a month, and more than a
+month to use Anchor, and those that never used Anchor. These users are increasingly
+less likely to be participating on Terra only for the yield on Anchor but might have a
+broader interest in the ecosystem. The right panel shows the share of each group that
+eventually used Anchor.
 [Fig. 7 About Here]
 Figure 7 shows that the number of new addresses on Terra and those that use
 Anchor have been growing over time and that the majority of addresses that ever use
@@ -907,10 +867,6 @@ supply. Figure 8 shows the aggregate supply of UST broken down by entities that
 swapped LUNA for UST. The entities include TFL and Admin addresses, Anchor,
 Bridges, CEX, DEX, and UST and LUNA locked in other DeFi protocols. The category
 ‘Other’ includes user accounts that are not part of the above categories.
-21
-
-===== PAGE 24 =====
-
 [Fig. 8 About Here]
 Recall that swapping LUNA for UST is the only way to create new UST. The top
 panel of Figure 9 shows the daily amounts of UST and LUNA swapped along with the
@@ -921,6 +877,10 @@ bottom panel shows the UST dollar price. We can see that except for May 19-25 an
 January 27 when UST lost its peg, the volume of LUNA being swapped into UST
 signiﬁcantly exceeds that of UST for LUNA swaps.
 [Fig. 9 About Here]
+21
+
+===== PAGE 23 =====
+
 The ﬁrst large increase in the supply of UST occurred in February–March 2021 when
 the launch of Mirror protocol created a large increase in the demand for UST that led
 to the UST price to be signiﬁcantly above $1. Because of the peg mechanism, these
@@ -946,25 +906,27 @@ up in the Anchor protocol. Right before the crash, Anchor held around 12 billion
 and the community account held another 3 billion.
 The LUNA for UST swap fees after the burning of the community pool stayed
 around 1%. Figure 9 bottom panel shows that while the UST price was consistently
-22
-
-===== PAGE 25 =====
-
 above $1 during that period, the deviations were modest, typically within 25-50bp,
 which precluded any trading gains from swapping LUNA to UST.
-This raises a questions of who was swapping LUNA for UST. Table4 documents the
+This raises a questions of who was swapping LUNA for UST. Table 4 documents the
 top 26 addresses that swapped the highest amount of LUNA to UST. These addresses
 swapped 90% of the aggregate volume of swaps of LUNA into UST. Table 4 shows that
 except for the addresses of Terraswap route and Jump trading, the top 26 addresses
 are all controlled by TFL.
 3.2.5. Concentration of the Anchor Holdings
-Considering the substantial amount of UST that was locked in the Anchor proto-
-col, it is important to understand the concentration of Anchor deposits. The more
-concentrated the funds on Anchor, the greater could be the potential impact could be
-from a single large participant moving funds from Anchor and exiting Terra.
+Considering the substantial amount of UST that was locked in the Anchor protocol,
+it is important to understand the concentration of Anchor deposits. The more con-
+centrated the funds on Anchor are, the greater the potential impact could be from a
+22
+
+===== PAGE 24 =====
+
+single large participant withdrawing funds from Anchor and exiting the Terra ecosys-
+tem. Consequently, the concentration increases strategic uncertainty and therefore, the
+fragility of the network.
 The left panel of Figure 10 plots the percentage of deposits that the top 10, 100 and
-1000 users constitute on Anchor on a given day, we ﬁlter out intermediary addresses
-fomr this analysis. We can see that the holdings were highly concentrated. Starting
+1000 users constitute on Anchor on a given day. We ﬁlter out intermediary addresses
+from this analysis. We can see that the holdings were highly concentrated. Starting
 from January 2022, the top 10 addresses controlled between 15% and 20%, the top
 100 addresses between 30% and 40%, and the top 1000 addresses around 60%. These
 numbers are similar to the concentration of bitcoin holdings and substantially higher
@@ -984,10 +946,6 @@ thousand UST and the aggregate balance of 236 million UST.
 We now show what subsidy rates mean for the daily cashﬂows of the Anchor proto-
 col. Figure 11 shows the cumulative Anchor inﬂows and outﬂows. The inﬂows include
 the interests on the outstanding loans (blue line), the staking rewards produced by the
-23
-
-===== PAGE 26 =====
-
 staked collateral LUNA (red line) or ETH (yellow line), and proportional fees charged
 on the liquidated loans (green line). The outﬂows include the interests paid to de-
 positors (gray line), and the buyback of ANC tokens from the Astroport DEX (teal
@@ -998,6 +956,10 @@ the Anchor’s yield reserve. The yield reserve makes up the diﬀerence when th
 The right panel of Figure 11 shows the balance of Anchor’s yield reserve. Since the
 Anchor protocol was not self-sustaining, i.e. borrowing rates were not above lending
 rates, the yield reserve was depleting most of the time. As a result, TFL had to top
+23
+
+===== PAGE 25 =====
+
 up the balance of the yield reserve several times. the TFL ﬁrst injected $71 million in
 July 2021 and LFG injected $510 million UST in Feb 2022 to the yield reserve. Both
 injections were funded by swapping LUNA for UST.
@@ -1021,10 +983,6 @@ rowing. This example illustrates one of the potential ineﬃciencies arising in 
 tralized governance system, where it becomes more challenging to reconcile competing
 objectives between diﬀerent parts of the ecosystem. For a more detailed discussion of
 DAOs and DeFi applications, see for example Makarov and Schoar (2022).
-24
-
-===== PAGE 27 =====
-
 3.2.8. Anchor Entry and Exit Rates
 Finally, we analyze how the participation of depositors and borrowers on Anchor
 evolved over time. Our goal is to understand what factors aﬀected the growth of
@@ -1036,6 +994,10 @@ on Anchor. We also observe the sharp spike in entry rates in November 2021, whic
 is due to TFL minting lots of UST as discussed above. Similarly we see that the exit
 rate spiked around the two prior de-pegging events in May 19-25 2021 and January 27,
 2022. But exit rates dropped again after each of these events, and entry resumed, once
+24
+
+===== PAGE 26 =====
+
 the peg was reestablished and market participants became more comfortable again.
 Finally, we see that starting in April 2022, exit rates started accelerating and entry
 dropped sharply. We interpret this dynamic as an indication that some traders started
@@ -1059,21 +1021,21 @@ general drop in cryptocurrency prices which reduced the relative market valuatio
 LUNA versus UST outstanding. We show that already in April 2022, some investors
 seem to have become concerned about the health of the network as evidenced by a
 sharp decline in the entry rate an increase in the exit rate from Anchor.
-25
-
-===== PAGE 28 =====
-
 Following a general decline in cryptocurrency prices the gap between the market
 cap of LUNA and UST had been shrinking since mid-April. On May 7, the gap was
 around $4 billion, as shown in Figure 13. It closed completely in the evening of May 9
 and coincided with the time when the UST price plummeted to $0.75. As we discussed
-in Section 4, if investors were fully rational and took into account the dilutive eﬀect of
-UST on LUNA the crossing point would not necessarily play a signiﬁcant role for the
+in Introduction, if investors were fully rational and took into account the dilutive eﬀect
+of UST on LUNA the crossing point would not necessarily play a signiﬁcant role for the
 valuation of LUNA. However, if investors priced LUNA independently from UST and
 the conversion of UST to LUNA has a negative eﬀect on the LUNA price, the crossing
 point could serve as a salient synchronization event. The synchronization between the
 market cap of LUNA and UST equalizing and the drop in the price of UST suggests that
 it might have been another coordinating event for holders of UST. The discussions on
+25
+
+===== PAGE 27 =====
+
 many social media sites indicate that many market participants viewed LUNA pricing
 largely independent from the outstanding supply of UST. In their mind, the moment
 the market capitalization of LUNA and UST crossed, is a signal that there was not
@@ -1087,21 +1049,13 @@ a coordinating event for the run. All these were warning signs that should have 
 market participants start paying attention to mounting risks on Terra.
 4.1. The Timing of the Run
 The ﬁrst signs of the run appeared on May 7, 2022, as has been reported in several
-industry reports and on social media. 18 On that day, two addresses dubbed wallet A
-and B withdrew 400M UST from Anchor. 19 The withdrawals were made in batches
+industry reports and on social media. 20 On that day, two addresses dubbed wallet A
+and B withdrew 400M UST from Anchor. 21 The withdrawals were made in batches
 and sent to Curve and Binance, which were the most liquid UST DEX and CEX
 exchanges, respectively. The top two panels of Figure 14 show the exact timing of
 these withdrawals. Wallet A was the ﬁrst to withdraw 45M UST around 5am UTC
 and it sent the funds to Binance. Following this event, wallet B withdrew 175M UST
 around noon and sent the funds to Ethereum using the Wormhole bridge, but did not
-18See for example, an insightful report by Nansen at https://www.nansen.ai/research/on-chai
-n-forensics-demystifying-terrausd-de-peg.
-19The wallets A and B allegedly belong to Jane Street and Celsius, see https://twitter.com/Fr
-ankResearcher/status/1630545591397670916.
-26
-
-===== PAGE 29 =====
-
 make any trades at that time. Next, wallet A withdrew another 35M around 5pm,
 and then another 20M around 8:30pm and 9:30pm, again sending all the funds to
 Binance. Finally, at 21:48pm wallet A withdrew the last 85M and send them to Curve.
@@ -1112,6 +1066,14 @@ can see that starting from 12pm other large wallets started moving out of Anchor
 Concurrent with an increase in Anchor withdrawals, the UST price on both Curve
 and Binance began falling. The top panel of Figure 15 shows the swap transactions
 price of UST against three major stablecoins, USDT, USDC, and DAI on May 7, 2022.
+20See for example, an insightful report by Nansen at https://www.nansen.ai/research/on-chai
+n-forensics-demystifying-terrausd-de-peg .
+21The wallets A and B allegedly belong to Jane Street and Celsius, see https://twitter.com/Fr
+ankResearcher/status/1630545591397670916.
+26
+
+===== PAGE 28 =====
+
 Swap transactions of UST into the other three stablecoins are colored in red, and swaps
 into UST in green. The y-scale is logarithmic. The bottom panel of Figure 15 shows
 the net signed volume and the deviation of the UST price from $1 in basis points.
@@ -1138,10 +1100,6 @@ by wallet B, which sold 150M UST transferred to Ethereum earlier that day. It is
 interesting that while wallet B seemingly prepared for a possible sale earlier that day,
 it only started actively selling its UST once other large traders started exiting and the
 price dropped. As a result, the UST discount on Curve reached 250bp. In response,
-27
-
-===== PAGE 30 =====
-
 TFL Curve bots started actively trading in an attempt to restore the peg. We see that
 they partially succeeded by reducing the UST discount to 50bp for the rest of the day
 on May 7.
@@ -1151,6 +1109,10 @@ Figure 16 shows the UST/USDT trades. Sell-initiated trades are marked in red and
 buy-initiated ones in green. The y-scale is logarithmic. Similar to the Curve graph, the
 bottom panel shows the net signed volume and the deviation of the UST price from $1
 in basis points.
+27
+
+===== PAGE 29 =====
+
 Comparing trades on Curve and Binance we can see that there were many more
 trades on Binance, but they were smaller in size. Because of Curve’s pricing mechanism
 large orders have smaller price impact on Curve than on Binance and therefore Curve
@@ -1161,7 +1123,7 @@ signed volume moved in the opposite direction. The cumulative net selling volume
 on Curve was around 200M UST. This in in contrast to the net buying volume of
 200M UST on Binance. Thus, the UST price and signed volume moved in the opposite
 direction on Binance on May 7, which is contrary to what is normally observed in
-many markets.20 This negative relation could realize, if sellers on Binance placed large
+many markets.22 This negative relation could realize, if sellers on Binance placed large
 limit orders at the current price, which has been ﬁlled by buy market orders. The buy
 market orders could have come either from “noise traders” who tried to “buy the dip”,
 or from parties like TFL that tried to defend the peg.
@@ -1173,15 +1135,7 @@ til the evening of May 9th. During that time, TFL and LFG tried to defend the pe
 by a series of actions aimed at buying UST and support the price. The LFG audit
 report documents that during this period TFL and LFG spent a total of about $2.5
 billion (80,071BTC, 26,281,671USDT, and 23,555,590 USDC) on purchases of UST and
-LUNA.21 Late on May 9, the withdrawals from Anchor accelerated and the UST price
-20See for example, Evans and Lyons (2002), Chordia et al. (2002), Hasbrouck (1995) or Hendershott
-and Menkveld (2014) or for crypto markets see Makarov and Schoar (2020)
-21See the Audit Report by JS Heldt, Analysis – Terraform Labs’ and Luna Foundation Guard’s
-Defense of the UST Price Peg, November 2022.
-28
-
-===== PAGE 31 =====
-
+LUNA.23 Late on May 9, the withdrawals from Anchor accelerated and the UST price
 dropped precipitously to $0.75. It hovered between $0.2 and $0.9 for a few days before
 completely imploding. By the end of May 13, less than 2B UST remained on Anchor
 and the UST price fell below $0.2.
@@ -1189,6 +1143,14 @@ and the UST price fell below $0.2.
 4.2. Swapping of UST and LUNA
 The UST peg design added an additional dimension to the investors’ strategy space.
 Whenever the price of UST falls below $1, investors who no longer wish to hold it could
+22See for example, Evans and Lyons (2002), Chordia et al. (2002), Hasbrouck (1995) or Hendershott
+and Menkveld (2014) or for crypto markets see Makarov and Schoar (2020).
+23See the Audit Report by JS Heldt, Analysis – Terraform Labs’ and Luna Foundation Guard’s
+Defense of the UST Price Peg, November 2022.
+28
+
+===== PAGE 30 =====
+
 follow two main strategies. They could either (1) sell UST at the market price or (2)
 could swap UST for LUNA for its nominal value and then sell LUNA at the market
 price. In the absence of frictions, the second option would deliver them strictly higher
@@ -1216,10 +1178,6 @@ proﬁtable to swap UST for LUNA and engage in the UST-LUNA arbitrage. In the
 May 7–13 period, users swapped 7.42 billion UST worth $4.65 billion.
 Table 5 shows the top 20 addresses that swapped the largest amount of UST over
 the run period. The largest amounts were swapped by two unknown smart contracts
-29
-
-===== PAGE 32 =====
-
 that arbitraged the relative price of UST and LUNA between Terra’s main DEX,
 Astroport and the native swap contract. Alameda Research, a cryptocurrency trading
 ﬁrm co-founded by Sam Bankman-Fried and closely linked to FTX exchange, swapped
@@ -1229,6 +1187,10 @@ UST-LUNA arbitrage. We estimate that out of 12 UST billion Anchor balances at
 most 700 million UST were routed to the native swap with the majority of funds sent
 to CEXs and DEXs. Out of the top 20 addresses in Table 5, only Alameda Research
 and terra1 . . .4c2t held a balance on Anchor (311M and 73M UST, respectively). It
+29
+
+===== PAGE 31 =====
+
 seems that the swap fees and uncertainty about the execution price of LUNA on CEXs
 prevented most market participants from using the native swap contract as an escape
 rout. But Alameda Research with its favorable access to the FTX exchange had an
@@ -1255,10 +1217,6 @@ important advantage of the observability of transactions on the blockchain is th
 can observe the transactions of individual investors over time. This information allows
 us to infer investors characteristics such as wealth and sophistication. We can build
 a proxy for investor wealth, since we observe the balance of each address prior to the
-30
-
-===== PAGE 33 =====
-
 run. To sort investors according to their sophistication, we assume that the usage of
 complex protocols (such as bridges) or complex strategies (such as using multiple CEX
 and DEX) are signs of investor sophistication.
@@ -1268,6 +1226,10 @@ addresses held by intermediaries or large institutions and focus on individual a
 We also remove addresses with less than 100 UST in Anchor. Figure 20 shows a
 stark gradation by size, with the largest addresses running ﬁrst and the smaller groups
 lagging. The largest group, addresses with more than 10 million UST, withdrew their
+30
+
+===== PAGE 32 =====
+
 funds on average much earlier and more decisively, so by the end of May 12 that group
 had withdrawn almost 100% of their balance. In contrast, addresses with 1,000 to
 10,000 UST started running almost two days later and by the end of May 12 still had
@@ -1297,10 +1259,6 @@ pre-run USD balance + adjustment
 )
 ×100%
 (1)
-31
-
-===== PAGE 34 =====
-
 Since we do not have reliable price data for some of the minor tokens, there are a
 small number of addresses that have outliers in the losses. We winsorize the losses at
 the 0.5th and the 99.5th percentiles.
@@ -1310,7 +1268,11 @@ experiencing a 26% loss and the addresses above 1 million experiencing a 32% los
 contrast the smallest addresses with below 10,000 UST or even below 1,000 UST lost
 an average of 60% and 76%, respectively.
 Since size might be correlated with other characteristics, especially ﬁnancial sophis-
-tication, we now analyze the percentage loss of an address as a function of size, ﬁnancial
+tication, we also analyze the percentage loss of an address as a function of size, ﬁnancial
+31
+
+===== PAGE 33 =====
+
 sophistication, and the age of the address. Age is measured as the months since the
 address was established. As discussed before, participants can set up new addresses if
 they choose to. Therefore, the measure of age is probably a lower bound on the true
@@ -1324,13 +1286,12 @@ the trading activity as the volume of token inﬂows in US dollars divided by th
 balance in US dollars before the run.
 Table 3 Column (1) shows the results from a multivariate regression of the percent-
 age loss of an address over the period from May 6 to the end of May 13 on log size,
-log age in months plus one on Terra, and our measures of sophistication. Column (2)
-repeats the same regression but uses dummies for diﬀerent size bins instead of continu-
-ous variable of log size. As in the descriptive statistics, there is a strongly negative and
-signiﬁcant relationship between the balance at the beginning of the run and the loss
-an address experienced. Columns (2) shows that the largest addresses with balances
-above $10M had a 45% smaller loss compared to the smallest addresses with balances
-below $1K.
+log age in days on Terra, and our measures of sophistication. Column (2) repeats the
+same regression but uses dummies for diﬀerent size bins instead of continuous variable
+of log size. As in the descriptive statistics, there is a strongly negative and signiﬁcant
+relationship between the balance at the beginning of the run and the loss an address
+experienced. Columns (2) shows that the largest addresses with balances above $10M
+had a 45% smaller loss compared to the smallest addresses with balances below $1K.
 Column (2) also shows the variation in losses that is explained by our measures
 of ﬁnancial sophistication controlling for size. The ratio of trading volume divided by
 the balance, the number of CEX used by an address and whether it ever used bridges
@@ -1338,10 +1299,6 @@ have a large and signiﬁcant relation with the loss during the run. In contrast
 age has a positive and signiﬁcant relationship with losses. While age of an address
 is only a noisy proxy for whether the owner of the address is new to Terra Luna, it
 suggests that older addresses might have been more willing to believe in the stability
-32
-
-===== PAGE 35 =====
-
 of the system. This might be a reﬂection that their owners are more committed to the
 ecosystem overall and thus did not want to destabilize it or they experienced the ﬁrst
 crash in May 2021 and thus felt that they had seen stability in the system. But the
@@ -1353,6 +1310,10 @@ In Columns (3) to (8), we now analyze if the importance of sophistication measur
 varies across the size distribution. For this purpose, we repeat the same speciﬁcation
 but we break out addresses by the size of the balance before the run started. We use the
 following size bins in UST: below 1,000, 1,000 – 10 thousand, 10 – 100 thousand, 100
+32
+
+===== PAGE 34 =====
+
 thousand – 1 million, 1 – 10 million, and above 10 million UST. We see that across the
 size distribution, addresses which score higher on sophistication as measure by the use of
 bridges, a larger number of centralized exchanges or a higher fraction of trading volume
@@ -1379,10 +1340,6 @@ has been highlighted for traditional banks, an issue that has been highlighted f
 ditional banks. For example, Iyer et al. (2016) shows that bank staﬀ or depositors
 connected to bank insiders experienced smaller losses in a run. Instead, our results
 suggest that many participants lacked the ability or founded too costly to process in-
-33
-
-===== PAGE 36 =====
-
 formation in real time. As we have shown, many small depositors re-entered Anchor
 to “buy the dip” while large wallets were withdrawing. Thus, open access and the
 transparency of the blockchain do not compensate for diﬀerences in ﬁnancial literacy
@@ -1390,21 +1347,21 @@ and wealth and may even exacerbate them.
 5. De-pegging Event in May 2021
 As mentioned in Section 3.2.4, May 2022 was not the ﬁrst time UST de-pegged from
 parity with the US dollar. Terra experienced a prior de-pegging event between May
-19 and May 25, 2021. 22 The comparison with the May 2022 crash is interesting since
+33
+
+===== PAGE 35 =====
+
+19 and May 25, 2021. 24 The comparison with the May 2022 crash is interesting since
 it foreshadowed some of the risks and economic mechanisms that were important later
 on. It also allows us to analyze why some of the interventions that TFL undertook to
 stabilize the price of UST might have worked during the ﬁrst de-pegging event but not
 during the crash in May 2022.
 The de-pegging started on May 19 2021, when China announced a crackdown on
 the use of cryptocurrencies, and the price of LUNA fell from $16 to $4. Many other
-cryptocurrencies also experienced a drop in price at this time. The signiﬁcant drop
-in the price of LUNA resulted in its market capitalization declining to a level close to
-the aggregate market value of UST, as illustrated in Figure 21. As discussed before,
-the market capitalization of the two coins approaching each other may not hold any
-particular signiﬁcance for fully rational investors who up front factor in the potential
-dilution from swapping UST into LUNA. But many investors appeared to have bought
-into the narrative that this point signaled insuﬃcient value in LUNA to support the
-value of UST, thereby serving as a strong indication to sell.
+cryptocurrencies also experienced a drop in price at this time. Similar to the May
+2022 crash, the signiﬁcant drop in the price of LUNA resulted in its market capitaliza-
+tion declining to a level close to the aggregate market value of UST, as illustrated in
+Figure 21.
 [Fig. 21 About Here]
 The upper panel of Figure 22 documents swap transactions of UST against three
 major stablecoins, USDT, USDC, and DAI, occurring between May 17th and May 29th,
@@ -1415,22 +1372,26 @@ from $1 in basis points (black).
 [Fig. 22 About Here]
 Similar to the later de-pegging event in May 2022, we initially see intensiﬁed selling
 in particular by larger addresses. Between 19th and May 24th, investors sold a net value
-22There was also a second smaller de-pegging on January 27, 2022. But this episode was short lived
-and relatively minor.
-34
-
-===== PAGE 37 =====
-
 of 25 million UST, resulting in a 10% discount on UST. In addition, we show that there
 were four addresses, which purchased a combined 135 million UST during this period.
 Had it not been for the aggressive support of UST by these addresses, the discount
-on UST would have been signiﬁcantly greater. 23 The swaps into UST initiated by the
+on UST would have been signiﬁcantly greater. 25 The swaps into UST initiated by the
 four addresses are represented by blue triangles, while the swaps into UST initiated by
 other addresses are represented by green circles. Swaps of UST into the other three
 stablecoins are depicted by red circles.
 In addition, we see that similar to the May 2022 crash, the decline in the UST price
 coincided with investor withdrawals from Anchor. Figure 24 shows the outstanding
 deposit balance in Anchor.
+24There was also a second smaller de-pegging on January 27, 2022. But this episode was short lived
+and relatively minor.
+25These four addresses are 0x5dd09afc9ca51b46d6cda2189478b505ace7f37b,
+0xe3bdda6413313ed58585e47441815e9662bdd818, 0x2747363d886c7fdcc5187217f1ca493922aa4940,
+and 0xaf7bbcfb1c1f987e0ae409c684289b332a425254. They bought 66M, 33M, 19M, and 17M,
+respectively.
+34
+
+===== PAGE 36 =====
+
 [Fig. 24 About Here]
 When we decompose how diﬀerent participants ran, we see that as in the May
 2022 crash, withdrawals were concentrated among wealthier investors, while low-wealth
@@ -1444,23 +1405,13 @@ the swap spread closely tracked the UST discount restricting the ability of arbi
 to participate in the mechanism, see Figure 23. In fact, many participants in the
 Terra ecosystem were worried at the time about the potential disincentive eﬀects of
 the protocol design, and several articles on social media even blamed the de-pegging
-event itself on the design of the on-chain redemption cap. 24
+event itself on the design of the on-chain redemption cap. 26
 But as discussed in Section 4.2, while the mechanism can support the price of UST,
 it can also contribute to a death spiral if investors who swap UST for LUNA decide to
 sell their LUNA holdings. Thus, it is important to understand as to why the run was
 avoided in May 2021, but not in May 2022.
 A critical factor appears to be that the outstanding supply of UST was much
 smaller in May 2021, which enabled TFL to function as a lender of last resort. Table 6
-23These four addresses are 0x5dd09afc9ca51b46d6cda2189478b505ace7f37b,
-0xe3bdda6413313ed58585e47441815e9662bdd818, 0x2747363d886c7fdcc5187217f1ca493922aa4940,
-and 0xaf7bbcfb1c1f987e0ae409c684289b332a425254. They bought 66M, 33M, 19M, and 17M,
-respectively.
-24See, for example, https://medium.com/coinmonks/should-depositors-in-anchor-protoco
-l-pay-attention-to-ust-de-peg-risk-8b59849d75bf.
-35
-
-===== PAGE 38 =====
-
 displays the top 20 addresses that swapped the largest quantity of UST during the
 de-pegging period. In contrast to May 2022, nearly all swaps were initiated by TFL,
 which presumably held onto the newly swapped LUNA instead of selling it.
@@ -1474,6 +1425,12 @@ stabilization trades.
 If the SEC allegation is correct, the fact that market participants in May 2021 were
 unaware that TFL and Jump Trading were engaging in the stabilization of UST could
 be an additional important factor why the run was avoided in May 2021. When market
+26See, for example, https://medium.com/coinmonks/should-depositors-in-anchor-protoco
+l-pay-attention-to-ust-de-peg-risk-8b59849d75bf .
+35
+
+===== PAGE 37 =====
+
 participants saw the price re-pegging, they interpreted it as a sign of the system’s
 stability. In contrast, in May 2022, traders were aware of the fact that TFL was using
 funds held in LFG addresses to support the peg. They also knew that the supply of
@@ -1496,35 +1453,33 @@ in the run behavior across sophisticated and less sophisticated investors, with 
 latter group being much slower to run and often did not fully exit even conditional on
 withdrawing some funds. Some of these participants even reinvested during the run in
 an apparent attempt to “buy the dip.”
-36
-
-===== PAGE 39 =====
-
 In contrast to traditional ﬁnancial institutions, blockchain and price data were
 in principle observable to all investors. However, we ﬁnd that larger and more so-
 phisticated investors withdrew their funds more quickly and decisively. These results
-underscore the fact that observability and free access do not, by themselves, level the
-playing ﬁeld for investors if there are signiﬁcant diﬀerences in their ability to process
-and interpret information.
+highlights the limitation of blockchain transparency and underscore the fact that ob-
+servability and free access do not, by themselves, level the playing ﬁeld for investors if
+there are signiﬁcant diﬀerences in their ability to process and interpret information.
 The highly subsidized deposit rate on Anchor made some observers compare the
 economics of Terra-Luna to a Ponzi scheme. Our analysis does show that the Anchor
 protocol was a major factor driving the strong demand for UST. It likely also con-
 tributed to the high price of LUNA since UST was issued by converting LUNA into
-UST. But it is important to note that unlike in a classical Ponzi scheme, the amount
-of subsidies provided by TFL was recorded on the Terra blockchain and, in principle,
-observable by all investors. However, it is unclear to what extent investors understood
-the precarious nature of UST claims and the possible impact of UST conversion on
-the LUNA price. By aggressively underplaying the risks building up in the system
-on social media and other outlets, Terra insiders likely contributed to the hype about
-the network.25 This highlights the limitation of transparency, especially for complex
-systems like Terra-Luna. Ultimately, the sustainability of the DeFi ecosystem depends
-on the ability of investors to make informed decisions and hold projects accountable
-for their actions.
-25https://markets.businessinsider.com/news/currencies/terra-usd-ust-luna-do-kwon-p
+UST. But unlike in a classical Ponzi scheme, the amount of subsidies provided by TFL
+was public knowledge and recorded on the Terra blockchain. Nevertheless, it remains
+unclear to what extent investors understood the precarious nature of UST claims and
+36
+
+===== PAGE 38 =====
+
+the possible impact of UST conversion on the LUNA price. By aggressively underplay-
+ing the risks building up in the system on social media and other outlets, Terra insiders
+likely contributed to the hype about the network. 27 Ultimately, the sustainability of
+the DeFi ecosystem depends on the ability of investors to make informed decisions and
+hold projects accountable for their actions.
+27https://markets.businessinsider.com/news/currencies/terra-usd-ust-luna-do-kwon-p
 oor-critics-crypto-crash-2022-5
 37
 
-===== PAGE 40 =====
+===== PAGE 39 =====
 
 References
 Abadi, J. and Brunnermeier, M. (2018). Blockchain economics. Technical report,
@@ -1539,25 +1494,25 @@ Bryant, J. (1980). A model of reserves, bank runs, and deposit insurance. Journa
 banking & ﬁnance, 4(4):335–344.
 Calomiris, C. W. and Kahn, C. M. (1991). The role of demandable debt in structuring
 optimal banking arrangements. The American Economic Review, pages 497–513.
-Chamley, C. (2003). Dynamic speculative attacks. American Economic Review,
+Chamley, C. (2003). Dynamic speculative attacks. American Economic Review ,
 93(3):603–621.
 Chari, V. V. and Jagannathan, R. (1988). Banking panics, information, and rational
-expectations equilibrium. The Journal of Finance, 43(3):749–761.
+expectations equilibrium. The Journal of Finance , 43(3):749–761.
 Chordia, T., Roll, R., and Subrahmanyam, A. (2002). Order imbalance, liquidity, and
-market returns. Journal of Financial economics, 65(1):111–130.
+market returns. Journal of Financial economics , 65(1):111–130.
 Cong, L. W., Li, Y., and Wang, N. (2021). Tokenomics: Dynamic adoption and
 valuation. The Review of Financial Studies , 34(3):1105–1155.
 Cukierman, A., Goldstein, I., and Spiegel, Y. (2004). The choice of exchange-rate
 regime and speculative attacks. Journal of the European Economic Association ,
 2(6):1206–1241.
 d’Avernas, A., Maurin, V., and Vandeweyer, Q. (2022). Can stablecoins be stable?
-University of Chicago, Becker Friedman Institute for Economics Working Paper,
+University of Chicago, Becker Friedman Institute for Economics Working Paper ,
 (2022-131).
 Diamond, D. W. and Dybvig, P. H. (1983). Bank runs, deposit insurance, and liquidity.
 Journal of political economy, 91(3):401–419.
 38
 
-===== PAGE 41 =====
+===== PAGE 40 =====
 
 Eichengreen, B. (2019). From commodity to ﬁat and now to crypto: what does history
 tell us? Technical report, National Bureau of Economic Research.
@@ -1567,13 +1522,13 @@ monetary system.
 Evans, M. D. and Lyons, R. K. (2002). Order ﬂow and exchange rate dynamics.Journal
 of political economy, 110(1):170–180.
 Flood, R. P. and Garber, P. M. (1984). Collapsing exchange-rate regimes: some linear
-examples. Journal of international Economics, 17(1-2):1–13.
+examples. Journal of international Economics , 17(1-2):1–13.
 Glasserman, P. and Nouri, B. (2016). Market-triggered changes in capital structure:
 Equilibrium price dynamics. Econometrica, 84(6):2113–2153.
 Goldstein, I. (2013). Empirical literature on ﬁnancial crises: Fundamentals vs. panic.
-The evidence and impact of ﬁnancial globalization, pages 523–34.
+The evidence and impact of ﬁnancial globalization , pages 523–34.
 Goldstein, I. and Pauzner, A. (2005). Demand–deposit contracts and the probability
-of bank runs. the Journal of Finance, 60(3):1293–1327.
+of bank runs. the Journal of Finance , 60(3):1293–1327.
 Gorton, G. B., Ross, C. P., and Ross, S. Y. (2022). Making money. Technical report,
 National Bureau of Economic Research.
 Gorton, G. B. and Zhang, J. (2021). Taming wildcat stablecoins. University of Chicago
@@ -1581,7 +1536,7 @@ Law Review, 90.
 Gryglewicz, S., Mayer, S., and Morellec, E. (2021). Optimal ﬁnancing with tokens.
 Journal of Financial Economics , 142(3):1038–1067.
 Hasbrouck, J. (1995). One security, many markets: Determining the contributions to
-price discovery. The journal of Finance, 50(4):1175–1199.
+price discovery. The journal of Finance , 50(4):1175–1199.
 Hendershott, T. and Menkveld, A. J. (2014). Price pressures. Journal of Financial
 economics, 114(3):405–423.
 Hillion, P. and Vermaelen, T. (2004). Death spiral convertibles. Journal of Financial
@@ -1590,19 +1545,19 @@ Hu, A. S., Parlour, C. A., and Rajan, U. (2019). Cryptocurrencies: Stylized fact
 new investible instrument. Financial Management, 48(4):1049–1068.
 39
 
-===== PAGE 42 =====
+===== PAGE 41 =====
 
 Iyer, R. and Puri, M. (2012). Understanding bank runs: The importance of depositor-
 bank relationships and networks. American Economic Review, 102(4):1414–1445.
 Iyer, R., Puri, M., and Ryan, N. (2016). A tale of two runs: Depositor responses to
-bank solvency risk. The Journal of Finance, 71(6):2687–2726.
+bank solvency risk. The Journal of Finance , 71(6):2687–2726.
 Jacklin, C. J. and Bhattacharya, S. (1988). Distinguishing panics and information-
-based bank runs: Welfare and policy implications. Journal of political economy,
+based bank runs: Welfare and policy implications. Journal of political economy ,
 96(3):568–592.
 Kogan, L., Fanti, G., and Viswanath, P. (2021). Economics of proof-of-stake payment
 systems.
 Krugman, P. R. (1979). Increasing returns, monopolistic competition, and international
-trade. Journal of international Economics, 9(4):469–479.
+trade. Journal of international Economics , 9(4):469–479.
 Li, J. and Mann, W. (2018). Digital tokens and platform building.
 Li, Y. and Mayer, S. (2022). Money creation in decentralized ﬁnance: A dynamic model
 of stablecoin and crypto shadow banking. Fisher College of Business Working Paper,
@@ -1613,21 +1568,23 @@ Lorenzoni, G. (2014). International ﬁnancial crises. Handbook of international
 nomics, 4:689–740.
 Lyons, R. K. and Viswanath-Natraj, G. (2023). What keeps stablecoins stable?Journal
 of International Money and Finance , 131:102777.
+Makarov, I. and Schoar, A. (2020). Trading and arbitrage in cryptocurrency markets.
+Journal of Financial Economics , 135(2):293–319.
 Makarov, I. and Schoar, A. (2021). Blockchain analysis of the bitcoin market. Technical
 report, National Bureau of Economic Research.
 Makarov, I. and Schoar, A. (2022). Cryptocurrencies and decentralized ﬁnance (deﬁ).
 Technical report, Brookings Papers on Economic Activity.
 Morris, S. and Shin, H. S. (1998). Unique equilibrium in a model of self-fulﬁlling
 currency attacks. American Economic Review, pages 587–597.
-Obstfeld, M. (1996). Models of currency crises with self-fulﬁlling features. European
-economic review, 40(3-5):1037–1047.
 40
 
-===== PAGE 43 =====
+===== PAGE 42 =====
 
+Obstfeld, M. (1996). Models of currency crises with self-fulﬁlling features. European
+economic review, 40(3-5):1037–1047.
 Pennacchi, G. and Tchistyi, A. (2019). On equilibrium when contingent capital has a
 market trigger: A correction to sundaresan and wang journal of ﬁnance (2015). The
-Journal of Finance, 74(3):1559–1576.
+Journal of Finance , 74(3):1559–1576.
 Schmidt, L., Timmermann, A., and Wermers, R. (2016). Runs on money market
 mutual funds. American Economic Review, 106(9):2625–2657.
 Sockin, M. and Xiong, W. (2023). Decentralization through tokenization. The Journal
@@ -1636,7 +1593,7 @@ Uhlig, H. (2022). A luna-tic stablecoin crash. Technical report, National Bureau
 Economic Research.
 41
 
-===== PAGE 44 =====
+===== PAGE 43 =====
 
 Figures
 Figure 1: Terra timeline. This ﬁgure shows the timeline of major events in the development of the
@@ -1651,14 +1608,13 @@ at least $10 billion of total volume in the UST network and $5 billion in the LU
 edges with at least $1 billion of volume.
 42
 
-===== PAGE 45 =====
+===== PAGE 44 =====
 
 Figure 3: Anchor gross rates. This ﬁgure shows the daily APR of lending and borrowing on
 Anchor before subsidies by TFL and collateral yield. The annual deposit rate was set at 19.5%. The
 annualized borrowing rate was set as an increasing function of the proportion of outstanding loans to
 outstanding deposits. The series are smoothed with 7-day rolling averages.
-Figure
-4: Anchor borrowing costs and incentives. The left ﬁgure shows the opportunity cost
+Figure 4: Anchor borrowing costs and incentives. The left ﬁgure shows the opportunity cost
 of LUNA collateral broken out by the source of the yield on LUNA tokens. The two main sources are
 block rewards and airdrops, which are token allocations to reward participants. To value the airdrops
 we assume a borrower sells weekly token airdrops during the week after receiving them. The right
@@ -1666,7 +1622,7 @@ panel shows the annualized subsidy rate on Anchor, which was distributed to borr
 Anchor native token. The series are smoothed with 7-day rolling averages.
 43
 
-===== PAGE 46 =====
+===== PAGE 45 =====
 
 Figure 5: Anchor net rates and exploiting loans. This ﬁgures shows the daily APR of lending
 (blue line) and borrowing (red line) on Anchor after considering the opportunity cost of the collateral
@@ -1680,35 +1636,31 @@ Aave are the average rates of Tether (USDT), USD Coin (USDC), and Dai. The serie
 with 7-day rolling averages.
 44
 
-===== PAGE 47 =====
+===== PAGE 46 =====
 
-Figure
-7: New Terra addresses and time to joining Anchor. This ﬁgure shows the number of
+Figure 7: New Terra addresses and time to joining Anchor. This ﬁgure shows the number of
 new addresses on TerraUSD each day, broken out by how soon they start using Anchor. The lowest
 blue line are users who start using Anchor immediately on their their ﬁrst day, then next group are
 those who start using it within a week, etc. The gray ribbon shows the addresses who joined the
 network but never used Anchor. The series are smoothed with 7-day rolling averages. The right panel
 shows the share of each group that eventually used Anchor.
-Figure
-8: UST supply by entity. This Figure breaks out the aggregate supply of UST by the
+Figure 8: UST supply by entity. This Figure breaks out the aggregate supply of UST by the
 types of entities that held them. Deﬁnitions of the entity groups are in the text.
 45
 
-===== PAGE 48 =====
+===== PAGE 47 =====
 
-Figure
-9: UST-LUNA swap volume and UST price. The top panel shows the daily amount
+Figure 9: UST-LUNA swap volume and UST price. The top panel shows the daily amount
 of UST and LUNA swapped (left axis) along with the cumulative net UST supply (right axis). The
 net volume is computed as: swap amount + fee amount - oﬀer amount. The bottom panel shows the
 UST dollar price.
-Figure
-10: Concentration of Anchor deposits. The left panel plots the percentage of deposits
+Figure 10: Concentration of Anchor deposits. The left panel plots the percentage of deposits
 held by the top 10, 100 and 1000 users on Anchor on a given day between May 2021 and May 2022. The
 right panel plots the histogram of the number of wallets by size of deposits on Anchor before the run
 on May 6, 2022. We exclude addresses that are exchanges, smart contracts, or other intermediaries.
 46
 
-===== PAGE 49 =====
+===== PAGE 48 =====
 
 Figure 11: Cash ﬂow decomposition on Anchor. The left panel shows the daily inﬂows (positive)
 and outﬂows (negative) on Anchor in billion UST broken out by their sources. Inﬂows include the
@@ -1723,7 +1675,7 @@ that enter or exit Anchor as a fraction of the existing depositors on the previo
 smoothed with 7-day rolling averages.
 47
 
-===== PAGE 50 =====
+===== PAGE 49 =====
 
 Figure 13: LUNA and UST market capitalization during the run. This ﬁgure shows the
 circulating market capitalization of UST (blue) and LUNA (orange) in billions of US dollars from
@@ -1734,7 +1686,7 @@ bottom panel shows the timing of all other Anchor deposits (green) and withdrawa
 The y-axis denotes the size of each trade in millions of US dollars.
 48
 
-===== PAGE 51 =====
+===== PAGE 50 =====
 
 Figure 15: UST-3Crv swap transactions. The top panel shows the UST swap transac-
 tions price against three major stablecoins, USDT, USDC, and DAI on May 7, 2022. Swap
@@ -1747,7 +1699,7 @@ is logarithmic. The bottom panel shows the net signed volume (blue) and the devi
 UST price from $1 in basis points (black).
 49
 
-===== PAGE 52 =====
+===== PAGE 51 =====
 
 Figure 17: Anchor outﬂows. This ﬁgure shows the outstanding deposit balance in Anchor (black
 line, left axis) and the price of UST (red line, right axis) during the run in May 2022.
@@ -1758,7 +1710,7 @@ UST for LUNA over selling UST at the market price. The bottom panel shows the do
 UST that were swapped in a given minute.
 50
 
-===== PAGE 53 =====
+===== PAGE 52 =====
 
 Figure 19: LUNA death spiral. This ﬁgure shows and the circulating supply (black line, left axis)
 and the price (orange line, right axis) of LUNA during the run, both in log scales. The convertibility
@@ -1770,7 +1722,7 @@ individual addresses. We also remove addresses with less than 100 UST in Anchor.
 shows the same analysis over the period from May 6 to May 14, 2022.
 51
 
-===== PAGE 54 =====
+===== PAGE 53 =====
 
 Figure 21: LUNA and UST Market Capitalization. This ﬁgure shows the circulating market
 capitalization of UST (blue) and LUNA (orange) in billions of US dollars from October 2020 to May
@@ -1785,7 +1737,7 @@ is logarithmic. The bottom panel shows the net signed volume (blue) and the devi
 UST price from $1 in basis points (black).
 52
 
-===== PAGE 55 =====
+===== PAGE 54 =====
 
 Figure 23: Swap arbitrage, May 2021. This ﬁgure shows the trading activity on the native swap
 market. The top panel plots the UST discount and the swap fees over time. The middle panel shows
@@ -1794,7 +1746,7 @@ of swapping UST for LUNA over selling UST at the market price. The bottom panel 
 amount of UST that were swapped in a given minute.
 53
 
-===== PAGE 56 =====
+===== PAGE 55 =====
 
 Figure 24: May 2021 De-pegging event. This ﬁgure shows the outstanding deposit balance in
 Anchor (black line, left axis) and the price of UST (red line, right axis) during the run in May 2021.
@@ -1805,7 +1757,7 @@ or large institutions and focuses on individual addresses. We also remove addres
 UST in Anchor.
 54
 
-===== PAGE 57 =====
+===== PAGE 56 =====
 
 Tables
 Token Volume ( $ billion) Transaction count
@@ -1832,7 +1784,7 @@ the same time. The USD price is the closing price of the token on the day of tra
 transaction count is the number of transactions that contain that token.
 55
 
-===== PAGE 58 =====
+===== PAGE 57 =====
 
 Full sample Pre-run balance Exited
 <1K 10K 100K 1M 10M >10M
@@ -1852,7 +1804,7 @@ Wormhole Bridges. In Column (1) we show the full sample and in the remaining col
 we break out the sample by the balance in the address on the day before the run.
 56
 
-===== PAGE 59 =====
+===== PAGE 58 =====
 
 Percent loss
 Full sample Balance subgroup
@@ -1889,9 +1841,9 @@ the ﬁnancial sophistication of traders. Columns 1 and 2 report use the full sa
 3 to 8 report subsamples by the size of the address.
 57
 
-===== PAGE 60 =====
+===== PAGE 59 =====
 
-Address Volume ($B) Transaction count Address label
+Address Volume ( $B) Transaction count Address label
 terra10kjnhhsgm4jfakr85673and3aw2y4a03598e0m 2.71 171 prop 44 swap/burn address
 terra1cymh5ywgn4azak74h4gsrnakqgel4y9ssersvx 2.06 23749 LFG/TFL Burning Wallet
 terra1dtzfwgzt8xa70zkm8gqzwz0n4zrqtngdpqejx5 1.76 36083 Jump
@@ -1922,7 +1874,7 @@ terra189rgutrsul7dm47u5h4y7hsraxnr9q4dk2fhjs 0.18 20140 Jump/TFL swap addr
 terra1q9cs4d4x67u6yvsaswecf0usp2rygdnmrﬂzfj 0.11 3527 bLUNA Core - Rewards Dispatcher
 Table 4: Top LUNA for UST swap addresses. This table reports the list of top
 addresses that swapped the largest amount of LUNA for UST.
-Address Vol (UST M) Vol ($M) Transaction count Address label
+Address Vol (UST M) Vol ( $M) Transaction count Address label
 terra1cjjwzcer7qpx4uj9s70fcdwpz9lecrqsxmmtun 687 449 19122 unknown smart contract 12
 terra139y02s9urkkyesukndrqdjmqj7gkk5dltd05v8 446 276 6513 unknown smart contract 5
 terra1hz0q2qgsgetaqwxds95angslxfyvkpzcfr4j9z 314 154 157 Alameda Research
@@ -1949,7 +1901,7 @@ This table reports the list of top addresses that swapped the largest amount of 
 over the period of the run, from May 7 to May 13.
 58
 
-===== PAGE 61 =====
+===== PAGE 60 =====
 
 Address Vol (UST M) Transaction count Address label
 terra189rgutrsul7dm47u5h4y7hsraxnr9q4dk2fhjs 63 11536 Jump/TFL swap addr
@@ -1977,9 +1929,9 @@ event. This table reports the list of top addresses that swapped the largest amo
 for UST over the period of the May 2021 de-pegging event, from May 19 to May 27.
 59
 
-===== PAGE 62 =====
+===== PAGE 61 =====
 
-Appendix I
+Appendix
 Name Description
 Admin Addresses of network administration accounts and Terra insiders.
 This category includes addresses of the community pool, Terra’s na-

@@ -6,28 +6,32 @@
   "scripts/measure_prose_conventions.py",
   "src/ddvc/tables.py"
  ],
- "created_at": "2026-08-09T04:26:41+00:00",
+ "created_at": "2026-08-09T04:32:59+00:00",
  "git": {
   "branch": "glotl/fgh-evidence",
-  "commit": "203a45e577a2da7d2eacca1f1edc935f94a66ad5",
+  "commit": "6c976c48f45db8a566f7b49b397d2530fbe40106",
   "dirty": true,
   "dirty_generated_files": [
-   "data/manifests/output/exhibits/venue_optics.jsonl.prov.json",
-   "output/exhibits/venue_optics.jsonl"
+   "data/manifests/output/exhibits/venue_optics.jsonl.prov.json"
   ],
   "dirty_tracked_files": [
    "docs/findings-freeze.md",
    "docs/literature-audit.md",
-   "docs/node-c-definitions-round2.md",
    "literature/pdf-sources.json",
    "literature/source-admission.json",
-   "literature/text/2023-AnaduEtAl2023StablecoinRuns-working-paper-runs-and-flights-to-safety-are-stablecoins-the-new-money-market-funds.txt",
+   "literature/text/2023-LiuMakarovSchoar2023Terra-working-paper-anatomy-of-a-run-the-terra-luna-crash.txt",
    "literature/text/_index.jsonl",
-   "literature/vehicle-currencies.bib",
-   "paper/sections/05-rivals.tex"
+   "literature/vehicle-currencies.bib"
   ],
   "dirty_untracked_files": [
-   "literature/text/2025-AnaduEtAl2023StablecoinRuns-working-paper-runs-and-flights-to-safety-june-2025-revision.txt"
+   "literature/source-notes/2026-LiuMakarovSchoar2023TerraDiscussions.md",
+   "literature/source-notes/2026-LiuMakarovSchoar2023TerraInternetAppendix.md",
+   "literature/source-notes/2026-LiuMakarovSchoar2023TerraReplication.md",
+   "literature/text/2023-LiuMakarovSchoar2023Terra-working-paper-revision-anatomy-of-a-run-the-terra-luna-crash.txt",
+   "literature/text/2023-LiuMakarovSchoar2023TerraBouvardDiscussion-supplement-riksbank-discussion.txt",
+   "literature/text/2023-LiuMakarovSchoar2023TerraPresentation-supplement-riksbank-presentation.txt",
+   "literature/text/2023-LiuMakarovSchoar2023TerraWilkinsDiscussion-supplement-riksbank-discussion.txt",
+   "literature/text/2024-LiuMakarovSchoar2023TerraLiaoDiscussion-supplement-wfa-discussion.txt"
   ]
  },
  "inputs": [],

@@ -1,0 +1,231 @@
+
+
+===== PAGE 1 =====
+
+Anatomy of a Run: The Terra Luna Crash
+Jiageng Liu Igor Makarov Antoinette Schoar
+MIT Sloan LSE MIT Sloan, NBER
+7th Annual Macroprudential Conference
+August 30-31, 2023
+
+===== PAGE 2 =====
+
+Motivation: Terra
+• One of the most hyped crypto projects
+• Market cap: $50B
+• Daily volume: $1B
+• Algorithmic stablecoin: UST
+• First large run in crypto
+• Started a chain reaction that led to the collapse of many prominent
+players: Celsius, Three Arrows Capital, and beyond
+Liu, Makarov and Schoar, Anatomy of a Run: The T erra Luna Crash 2
+
+
+===== PAGE 3 =====
+
+Motivation: Implications
+• Not just about T erra
+• Lessons apply to the entire crypto space
+• Highlights limitations of private money creation
+• Unique environment to advance our knowledge of runs
+• All transactions are online and instantaneous
+• No regulatory safety nets
+• Public blockchain provides detailed information about the network and
+participants’ actions
+Liu, Makarov and Schoar, Anatomy of a Run: The T erra Luna Crash 3
+
+===== PAGE 4 =====
+
+Main Results
+• T erra’s economics was dominated by two main factors
+• Subsidized UST deposit and borrowing rates
+• Speculation about the price of LUNA
+• Subsidized UST rate led to an excessive issuance of UST, which made
+the network prone to runs
+• Blockchain allowed investors to monitor each other’s exits and
+ampliﬁed the speed of the run
+• Wealthier and more sophisticated investors processed information
+more efﬁciently and experienced signiﬁcantly smaller losses
+Liu, Makarov and Schoar, Anatomy of a Run: The T erra Luna Crash 4
+
+===== PAGE 5 =====
+
+Literature
+• Design and operation of stablecoins: d’Avernas et al. (2022), Li
+and Mayer (2022), Lyons and Viswanath-Natraj (2023), Uhlig (2022),
+Eichengreen (2019), Arner et al. (2020), Makarov and Schoar (2022),
+Gorton and Zhang (2021), Gorton et al. (2022)
+• Runs on ﬁnancial institutions: Bryant (1980), Diamond and
+Dybvig (1983), Chari and Jagannathan (1988), Jacklin and
+Bhattacharya (1988), Morris and Shin (1998), Goldstein and Pauzner
+(2005), Goldstein (2013), Abreu and Brunnermeier (2003), Iyer and
+Puri (2012), Iyer et al. (2016), Schmidt et al. (2016)
+• International ﬁnance: Krugman (1979), Flood and Garber (1984),
+Eichengreen et al. (1994), Obstfeld (1996), Chamley (2003),
+Cukierman et al. (2004)
+Liu, Makarov and Schoar, Anatomy of a Run: The T erra Luna Crash 5
+
+===== PAGE 6 =====
+
+Terra
+Liu, Makarov and Schoar, Anatomy of a Run: The T erra Luna Crash 6
+
+===== PAGE 7 =====
+
+Terra Network
+• Smart-contract blockchain developed by T erraForm Labs (TFL)
+• LUNA is the native token
+• ICO (2019): 1B LUNA
+(812M – TFL, 188M – investors)
+• Sources of LUNA value
+• Transaction demand
+• Claim on T erra’s fees
+• Speculative demand
+Liu, Makarov and Schoar, Anatomy of a Run: The T erra Luna Crash 7
+
+
+===== PAGE 8 =====
+
+UST
+• UST: algorithmic stablecoin pegged against dollar, backed by LUNA
+• Uses the native swap smart contract (a piece of code) to facilitate
+arbitrage if UST deviates from the peg
+• Allows swapping UST for $1 worth of LUNA and vice versa
+• Swapping UST for $1 worth of LUNA entails:
+• Obtaining the current LUNA price P
+• Reducing UST supply by 1 unit (burning)
+• Increasing LUNA supply by 1/P units (minting)
+• UST > $1 ⇒ buy LUNA, swap LUNA for UST, and sell UST
+• UST < $1 ⇒ buy UST, swap UST for LUNA, and sell LUNA
+Liu, Makarov and Schoar, Anatomy of a Run: The T erra Luna Crash 8
+
+===== PAGE 9 =====
+
+Viability of the Pegging Mechanism
+• UST∼ convertible debt with a face value of $1 backed by LUNA
+• For LUNA to back UST
+• the T erra network must have enough real value
+• converting UST to LUNA should have a limited impact on the LUNA price
+(or there can be a run on LUNA)
+• Swapping UST for LUNA dilutes existing holders of LUNA
+• If investors price LUNA without considering UST’s dilutive effect or if
+speculative demand is a large component of LUNA’s value, states
+where UST and LUNA have similar market caps become fragile and
+prone to runs
+Liu, Makarov and Schoar, Anatomy of a Run: The T erra Luna Crash 9
+
+===== PAGE 10 =====
+
+Results
+Liu, Makarov and Schoar, Anatomy of a Run: The T erra Luna Crash 10
+
+===== PAGE 11 =====
+
+UST Fundamentals
+• T o promote UST, UST rate was set≫ other stablecoin rates
+• Anchor, T erra’s main deposit and borrowing platform, was main
+destination for newly issued UST
+Liu, Makarov and Schoar, Anatomy of a Run: The T erra Luna Crash 11
+
+
+===== PAGE 12 =====
+
+Anchor
+• Borrowing rate: 2% + 42%× outstanding loans/outstanding deposits
+• Net borrowing rate: borrowing rate - staking yield + subsidy rate
+• Outcome: Net borrowing rate < deposit rate
+• Subsidized APR was unsustainable in the long-run
+• Starting from May 1, Anchor’s APR was tied to amount of reserves
+Liu, Makarov and Schoar, Anatomy of a Run: The T erra Luna Crash 12
+
+
+===== PAGE 13 =====
+
+The Run
+Liu, Makarov and Schoar, Anatomy of a Run: The T erra Luna Crash 13
+
+===== PAGE 14 =====
+
+The Run Dynamics
+• The run was closely linked to behavior of Anchor depositors
+• May 7: First sign of run and increasing withdrawals
+• May 7–11: TFL tries to defend the peg
+• Run accelerates when LUNA and UST market caps become equal
+Liu, Makarov and Schoar, Anatomy of a Run: The T erra Luna Crash 14
+
+
+===== PAGE 15 =====
+
+The Timing of the Run
+• Prior to the run, there is an increase in exit rates and decrease in
+entry rates to Anchor
+Liu, Makarov and Schoar, Anatomy of a Run: The T erra Luna Crash 15
+
+
+===== PAGE 16 =====
+
+The Beginning of the Run
+• The run started with two large wallets withdrawing their balances
+from Anchor followed by other several large wallets
+Liu, Makarov and Schoar, Anatomy of a Run: The T erra Luna Crash 16
+
+
+===== PAGE 17 =====
+
+How Investors Run? (Size)
+• Wealthier investors run earlier, more decisively
+• Smaller investors run late, more likely to buy into initial price drop
+Liu, Makarov and Schoar, Anatomy of a Run: The T erra Luna Crash 17
+
+
+===== PAGE 18 =====
+
+How Investors Run? (Sophistication)
+• Sophisticated investors even conditional on wealth had smaller losses
+Liu, Makarov and Schoar, Anatomy of a Run: The T erra Luna Crash 18
+
+
+===== PAGE 19 =====
+
+How Investors Run? (Sophistication)
+• Sophisticated investors even conditional on wealth had smaller losses
+Liu, Makarov and Schoar, Anatomy of a Run: The T erra Luna Crash 19
+
+
+===== PAGE 20 =====
+
+LUNA vs. UST Run
+• UST < $1⇒ investors can either
+1. sell UST at market price
+2. swap UST for Luna for its nominal value and sell Luna at market price
+• In the absence of frictions, option (2) delivers strictly higher proﬁts
+• In practice, to prevent oracle price manipulation the native swap
+contract had built-in fees that increased with the volume
+• Investors kept swapping UST for LUNA until the point where the swap
+fees got equal to the UST discount
+Liu, Makarov and Schoar, Anatomy of a Run: The T erra Luna Crash 20
+
+
+===== PAGE 21 =====
+
+Death Spiral
+• Large swap volume led to a sharp increase in the supply of LUNA and
+decline in the LUNA price
+Liu, Makarov and Schoar, Anatomy of a Run: The T erra Luna Crash 21
+
+
+===== PAGE 22 =====
+
+Conclusions
+• Ascend of T erra was largely fueled by unsustainable deposit rates
+• Led to sharp expansion of UST supply; made the network prone to runs
+• The network’s complexity made it difﬁcult even for insiders to understand
+the buildup of risk
+• The run was precipitated by growing concerns about the network’s
+sustainability
+• Blockchain allowed investors to monitor each other’s exits; ampliﬁed the
+speed of the run
+• Wealthier, more sophisticated investors processed information more
+efﬁciently and had much smaller losses
+• Open-access does not create an equal footing for all investors
+Liu, Makarov and Schoar, Anatomy of a Run: The T erra Luna Crash 22

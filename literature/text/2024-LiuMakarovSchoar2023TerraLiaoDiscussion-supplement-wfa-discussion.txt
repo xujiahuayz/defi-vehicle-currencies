@@ -1,0 +1,173 @@
+
+
+===== PAGE 1 =====
+
+Anatomy of a Run: The Terra Luna Crash
+Jiageng Liu, Igor Makarov, and Antoinette Schoar
+Discussion by Gordon Liao
+June 29, 2024
+The views expressed in this presentation are those of the discussant and not those of Circle
+Internet Financial.
+
+===== PAGE 2 =====
+
+Overview
+▶ Key findings:
+▶ Fragile system due to subsidized deposit and lending rates.
+▶ Blockchain transparency led to cascade effects in investor behavior.
+▶ Larger investors ran more decisively, incurring smaller losses. Larger players
+like Alameda Research had significant market impact.
+▶ Main comments:
+1. Risk spillovers from within and outside of crypto markets
+2. Capital design for stablecoins
+3. Stable value token designs
+Liao Discussion: Terra Luna Crash June 2024 1 / 15
+
+===== PAGE 3 =====
+
+Impressive data collection and descriptions
+Liao Discussion: Terra Luna Crash June 2024 2 / 15
+
+===== PAGE 4 =====
+
+Key takeaway 1: Fragile system due to subsidized deposit
+and lending rates
+Liao Discussion: Terra Luna Crash June 2024 3 / 15
+
+===== PAGE 5 =====
+
+Key takeaway 2: Blockchain transparency adds to the run
+risks of stable value claims
+Transparency with different degrees of salience (in ascending order):
+1. Individual large wallet transactions and withdrawals
+2. Imbalance in on-chain liquidity pools, e.g. Curve, Uniswap
+3. Secondary market price from exchanges
+4. Twitter/X posts on 1-3
+Transparency increases the likelihood of forming run equilibrium a la Morris and
+Shin (1998)
+Liao Discussion: Terra Luna Crash June 2024 4 / 15
+
+===== PAGE 6 =====
+
+Key takeaway 3: Larger investors (possible insiders?) ran
+faster
+Better disclosures of insider wallets might be helpful
+Liao Discussion: Terra Luna Crash June 2024 5 / 15
+
+===== PAGE 7 =====
+
+Commet 1: Risk spillovers within crypto market
+Shah and Latif (2022)
+Liao Discussion: Terra Luna Crash June 2024 6 / 15
+
+===== PAGE 8 =====
+
+Comment 1: Risk spillovers across markets
+Shah and Latif (2022)
+Liao Discussion: Terra Luna Crash June 2024 7 / 15
+
+===== PAGE 9 =====
+
+Comment 1: Risk spillovers across market
+Adams, Ibert, Liao (2024)
+Liao Discussion: Terra Luna Crash June 2024 8 / 15
+
+===== PAGE 10 =====
+
+Comment 2: Capital framework for stablecoins
+Table 1: Fiat-backed Stablecoin (Consolidated) Balance Sheet Structure
+Assets Liabilities + Equity
+Token reserve assets Tokenized Liabilities
+Corporate assets Corporate Liabilities
+Equity capital
+Table 2: Terra algo stablecoin balance sheet on May 7, 20221
+Assets Liabilities + Equity
+Luna held as reserve asset: $26.6 UST $18.8 B
+Equity held in Luna: $7.8B
+Liao Discussion: Terra Luna Crash June 2024 9 / 15
+
+===== PAGE 11 =====
+
+Comment 2: Capital framework for stablecoins
+Table 1: Fiat-backed Stablecoin (Consolidated) Balance Sheet Structure
+Assets Liabilities + Equity
+Token reserve assets Tokenized Liabilities
+Corporate assets Corporate Liabilities
+Equity capital
+Table 2: Terra algo stablecoin balance sheet on May 7, 20221
+Assets Liabilities + Equity
+Luna held as reserve asset: $26.6 UST $18.8 B
+Equity held in Luna: $7.8B
+Liao Discussion: Terra Luna Crash June 2024 9 / 15
+
+===== PAGE 12 =====
+
+Comment 2: Capital framework for stablecoins
+Risk-based capital= Market risk + credit risk + operational risks
+Market risk: 75% sell off in May 2021 in 5 days, assume 100% liquidation cost;
+capital needed is at least 175%
+Ratio of Luna to UST market cap
+Liao, Fishman, Fox-Geen (2024)
+Liao Discussion: Terra Luna Crash June 2024 10 / 15
+
+===== PAGE 13 =====
+
+Comment 3: Implications for digital token money design
+Macroprudential considerations
+Demand shifts in stablecoins can be large
+0.00
+0.25
+0.50
+0.75
+1.00
+2020 2021 2022
+30−day ahead cash flows
+ (as a ratio to market cap)
+Gross inflows Gross outflows
+Liao (2022)
+Liao Discussion: Terra Luna Crash June 2024 11 / 15
+
+===== PAGE 14 =====
+
+Comment 3: Implications for digital token money design
+Typical bank LCR requirements are insufficient to accommodate large demand
+shifts for tokenised liabilities
+Liao (2022)
+Liao Discussion: Terra Luna Crash June 2024 12 / 15
+
+===== PAGE 15 =====
+
+Comment 3: Implications for digital token money design
+Macroprudential considerations
+▶ Optimal asset backing for digital token money needs to be
+▶ Liquid
+▶ With elastic supply curve
+▶ With little consequences to the real economy as demand shifts along supply
+curve
+▶ Potential candidates for stablecoin backing:
+▶ Loans (Tokenisedbank deposits): Inelastic supply, illiquid
+▶ T-bills: Deep liquidity, possibly need supply adjustments from the Treasury
+▶ Reverse repo: Deep liquidity, collateralized, supply curve locally elastic
+▶ Central bank reserves: Ultimate safe asset with elastic supply curve
+Liao Discussion: Terra Luna Crash June 2024 13 / 15
+
+===== PAGE 16 =====
+
+New entrants in algo stables
+Ethena: Crypto-collateralized, future hedged stable value token, 30%+ yield,
+($3.6B market cap as of today)
+Liao Discussion: Terra Luna Crash June 2024 14 / 15
+
+===== PAGE 17 =====
+
+Summary
+▶ Great paper detailing an important episode in the development of digital
+currencies
+▶ Learnings can be applied to designs of deposit tokens and different variants of
+stablecoins
+▶ Implications for future research:
+▶ Transparency can worsen run-risks
+▶ Programmable money = programmable runs (?)
+▶ Tokenized finance necessitates narrow forms of banking with different
+regulatory frameworks
+Liao Discussion: Terra Luna Crash June 2024 15 / 15

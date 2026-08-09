@@ -1,0 +1,160 @@
+
+
+===== PAGE 1 =====
+
+Anatomy of a Run: The Terra Luna Crash
+by Liu, Makarov and Schoar
+7th Annual Macroprudential Conference
+Discussion by M. Bouvard (TSM & TSE)
+
+===== PAGE 2 =====
+
+The Terra-Luna design
+(Loosely) adapted from d’Avernas-Morin-Vandeweyer (2023)
+Equity Tokens(Luna)Future platform revenue (block rewards, fees, convenience)
+Start from a token-backed platform
+business:
+▶ Oﬀers platform for smart contracts
+e.g., loans, automated exchanges
+▶ Operating smart contracts and
+blockchain validation generates
+revenues ultimately captured by token
+holders
++ tokens are required to use platform
+services (convenience yield).
+(no bubble)
+
+===== PAGE 3 =====
+
+The Terra-Luna design
+Equity Tokens(Luna)Future platform revenue
+Stablecoin yield (option)
+▶ Assume some investors derive extra
+value from holding/using a stable
+instrument (Gorton et al., 2023)
+∼“convenience yield”
+▶ Make the equity token convertible into
+a stablecoin (+ stabilization
+mechanism)
+⇒Create additional value.
++ Stablecoin investors need to buy
+equity token to access the stablecoin
+
+===== PAGE 4 =====
+
+The Terra-Luna design
+Equity Tokens(Luna)
+Future platform revenue
+Stablecoins (UST)
+▶ Stablecoin investors buy equity tokens
+to exert the conversion option and
+capture the convenience yield.
+⇒monetize convenience yield for equity
+token holders (additional revenue).
+▶ Remark: in the UST case convenience
+yield augmented by extra subsidy by
+TFL through Anchor deposit rate.
+
+===== PAGE 5 =====
+
+The Terra-Luna design
+Equity Tokens(Luna)
+Future platform revenueStablecoins (UST)
+Future Stablecoin Issuance
+▶ Suppose demand for stablecoin is
+expected to grow
+⇒Key insight in d’Avernas et al (2023),
+stablecoin and equity token value
+backed (in part) by proceeds from
+future issuance.
+▶ Rationalize the subsidy from Luna
+holders (TFL) to UST holders
+(through Anchor)?
+
+===== PAGE 6 =====
+
+Fragility
+Equity Tokens(Luna)
+Future platform revenueStablecoins (UST)
+Future Stablecoin Issuance
+▶ Assets are risky:
+▶ Fundamental risk: e.g., technical
+failure, demand shock
+▶ Coordination problems (platform)
++ Asset values are highly correlated
+
+===== PAGE 7 =====
+
+Fragility
+Equity Tokens(Luna)
+Future platform revenueStablecoins (UST)
+Future Stablecoin Issuance
+▶ Assets are risky:
+▶ Fundamental risk: e.g., technical
+failure, demand shock
+▶ Coordination problems
++ Asset values are highly correlated
+⇒Conversion option (of UST into Luna)
+▶ short-term mechanism to keep the
+price stable around $1 through
+arbitrage in normal times
+▶ but does not provide long-term
+safety in crises.
+
+===== PAGE 8 =====
+
+So is this a run?
+Figure 13: LUNA and UST market capitalization during the run. This ﬁgure shows the
+circulating market capitalization of UST (blue) and LUNA (orange) in billions of US dollars from
+May 1 to May 15, 2022.
+Figure 14: Anchor ﬂows on May 7, 2022. The top two panels show the exact timing of the
+withdrawals by Wallet A and Wallet B from Anchor which constitute the beginning of the run. The
+bottom panel shows the timing of all other Anchor deposits (green) and withdrawals (red) on May 7.
+The y-axis denotes the size of each trade in millions of US dollars.
+48
+Diﬀerent from a bank run (`a la Diamond-Dybvig):
+▶ No convertibility into a safe asset or even an asset with
+independent value
+▶ Most of the exit happens through direct sale of UST
+▶ Investors convert into Luna (Alameda Research) to sell.
+∼Investors losing faith in the business (the value of the assets)?
+
+===== PAGE 9 =====
+
+So is this a run?
+Peg creates a pecuniary externality ⇒strategic complementarities:
+▶ Sale of UST puts pressure on the peg
+▶ Loss of peg destroys value (stablecoin no longer stable)
+▶ justiﬁes sale (self-fulﬁlling)
+∼Currency attack (Morris-Shin 1998), ampliﬁcation of
+fundamental shocks
+Remark: unlike a Central Bank, shareholder (TFL) does not have
+(or has little) currency reserves to defend the peg.
+
+===== PAGE 10 =====
+
+Transparency vs Complexity
+Collateral-backed stablecoins (Tether):
++ Simple(r) design
+– Opacity of collateral holdings
+▶ Fixable through regulation? (∼banking)
+Algorithmic stablecoins (UST):
+▶ More transparent
+▶ (Incredibly) complex
+▶ hard to understand for (retail) investors
+▶ ampliﬁes risk (Caballero and Simsek 2013)
+▶ creates asymmetries between sophisticated and
+unsophisticated investors⇒may harm wider adoption in the
+long run (Dang et al., 2014).
+▶ Hard to regulate (except bans)
+
+===== PAGE 11 =====
+
+Conclusion
+▶ Amazing data collection and analysis eﬀort.
+▶ Implications for stability/viability of DeFi and retail investors
+protection.
+▶ Small request: more information on governance (holdings of
+Luna tokens, of Anchor’s governance tokens).
+▶ Wild extrapolation: a case for blockchain-based programable
+CBDC?

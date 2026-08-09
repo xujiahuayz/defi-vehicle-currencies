@@ -638,6 +638,35 @@
       "main": "LiWangYe2021WhoProvides",
       "status": "incomplete"
     },
+    "LiuMakarovSchoar2023Terra": {
+      "checks": {
+        "article": "literature/text/2023-LiuMakarovSchoar2023Terra-working-paper-revision-anatomy-of-a-run-the-terra-luna-crash.txt",
+        "author_or_repository": "https://www.jiagengliu.com/",
+        "publisher_or_doi": "https://researchonline.lse.ac.uk/id/eprint/137575/"
+      },
+      "companions": [
+        "LiuMakarovSchoar2023TerraReplication",
+        "LiuMakarovSchoar2023TerraDiscussions",
+        "LiuMakarovSchoar2023TerraInternetAppendix"
+      ],
+      "main": "LiuMakarovSchoar2023Terra",
+      "non_text_companions": [
+        "https://data.mendeley.com/datasets/j5d8n7hzdy/4"
+      ],
+      "non_text_dispositions": [
+        {
+          "artifact": "literature/papers/2026-LiuMakarovSchoar2023TerraReplication-supplement-mendeley-v4.zip",
+          "bytes": 97835184,
+          "note": "literature/source-notes/2026-LiuMakarovSchoar2023TerraReplication.md",
+          "sha256": "4bae715784bcbff7d5a38ca9c9d00fc86cc55dcf279bdf1e0cf3d039754a6d18",
+          "sources": [
+            "https://data.mendeley.com/datasets/j5d8n7hzdy/4"
+          ],
+          "status": "materialized"
+        }
+      ],
+      "status": "complete"
+    },
     "LyonsViswanathNatraj2023Stablecoins": {
       "checks": {
         "article": "literature/text/2023-LyonsViswanathNatraj2023Stablecoins-what-keeps-stablecoins-stable.txt",
@@ -1731,10 +1760,64 @@
     ],
     "LiuMakarovSchoar2023Terra": [
       {
+        "access": "metadata-public; manuscript-request-copy",
+        "label": "LSE accepted-manuscript record, JFE in press",
+        "url": "https://researchonline.lse.ac.uk/id/eprint/137575/",
+        "version": "accepted-manuscript"
+      },
+      {
+        "access": "public",
+        "label": "UNC-hosted November 2023 public revision",
+        "url": "https://jhfinance.web.unc.edu/wp-content/uploads/sites/12369/2023/11/Anatomy-of-a-Run.pdf",
+        "version": "working-paper-revision"
+      },
+      {
         "access": "public",
         "label": "NBER Working Paper 31160",
         "url": "https://www.nber.org/system/files/working_papers/w31160/w31160.pdf",
         "version": "working-paper"
+      }
+    ],
+    "LiuMakarovSchoar2023TerraReplication": [
+      {
+        "access": "public",
+        "label": "Official Mendeley Data replication package version 4",
+        "url": "https://data.mendeley.com/datasets/j5d8n7hzdy/4",
+        "version": "data-and-code"
+      }
+    ],
+    "LiuMakarovSchoar2023TerraInternetAppendix": [
+      {
+        "access": "public-exhibits; prose-not-located",
+        "label": "Internet Appendix exhibit data, code and outputs in Mendeley version 4",
+        "url": "https://data.mendeley.com/datasets/j5d8n7hzdy/4",
+        "version": "supplement-exhibits"
+      }
+    ],
+    "LiuMakarovSchoar2023TerraDiscussions": [
+      {
+        "access": "public",
+        "label": "Authors' Riksbank conference presentation",
+        "url": "https://www.riksbank.se/globalassets/media/konferenser/2023/annual-macroprudential-conference-30-31-aug-2023/session-1-schoar---slides-for-presentation.pdf",
+        "version": "presentation"
+      },
+      {
+        "access": "public",
+        "label": "Matthieu Bouvard Riksbank discussion",
+        "url": "https://www.riksbank.se/globalassets/media/konferenser/2023/annual-macroprudential-conference-30-31-aug-2023/session-1-bouvard---slides-for-discussion.pdf",
+        "version": "discussion"
+      },
+      {
+        "access": "public",
+        "label": "Carolyn Wilkins Riksbank discussion",
+        "url": "https://www.riksbank.se/globalassets/media/konferenser/2023/annual-macroprudential-conference-30-31-aug-2023/session-1-wilkins---slides-for-discussion.pdf",
+        "version": "discussion"
+      },
+      {
+        "access": "public",
+        "label": "Gordon Liao WFA discussion",
+        "url": "https://gliao.xyz/discussion/Discussion_Terra_Luna_Crash.pdf",
+        "version": "discussion"
       }
     ],
     "LyonsViswanathNatraj2023Stablecoins": [
