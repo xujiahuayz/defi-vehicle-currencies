@@ -132,6 +132,52 @@ class RegressionPrimitiveTests(unittest.TestCase):
         for group in [frame["a"], frame["b"]]:
             np.testing.assert_allclose(absorbed.groupby(group).mean(), 0.0, atol=1e-9)
 
+    def test_weighted_absorption_zeroes_weighted_group_means(self) -> None:
+        frame = pd.DataFrame(
+            {
+                "group": ["a", "a", "b", "b"],
+                "value": [1.0, 4.0, 2.0, 8.0],
+                "weight": [1.0, 3.0, 2.0, 1.0],
+            }
+        )
+        absorbed = absorb_fixed_effects(
+            frame["value"],
+            frame["group"],
+            weights=frame["weight"],
+        )
+        weighted_sums = (absorbed * frame["weight"]).groupby(frame["group"]).sum()
+        np.testing.assert_allclose(weighted_sums, 0.0, atol=1e-12)
+
+    def test_weighted_absorption_rejects_nonpositive_weights(self) -> None:
+        values = pd.Series([1.0, 2.0])
+        groups = pd.Series(["a", "a"])
+        with self.assertRaisesRegex(ValueError, "finite and positive"):
+            absorb_fixed_effects(values, groups, weights=np.array([1.0, 0.0]))
+
+    def test_weighted_multiway_absorption_matches_dummy_wls(self) -> None:
+        frame = pd.DataFrame(
+            {
+                "a": ["a", "a", "a", "b", "b", "c", "c"],
+                "b": [1, 2, 3, 1, 3, 2, 3],
+                "value": [3.0, 5.0, 8.0, 2.0, 7.0, 4.0, 9.0],
+                "weight": [1.0, 2.0, 1.0, 3.0, 2.0, 4.0, 1.0],
+            }
+        )
+        absorbed = absorb_fixed_effects(
+            frame["value"],
+            frame["a"],
+            frame["b"],
+            weights=frame["weight"],
+        )
+        dummies = pd.get_dummies(frame[["a", "b"]].astype(str), drop_first=True, dtype=float)
+        design = np.column_stack([np.ones(len(frame)), dummies.to_numpy()])
+        square_root_weights = np.sqrt(frame["weight"].to_numpy())
+        weighted_design = design * square_root_weights[:, None]
+        weighted_outcome = frame["value"].to_numpy() * square_root_weights
+        coefficient = np.linalg.lstsq(weighted_design, weighted_outcome, rcond=None)[0]
+        expected = frame["value"].to_numpy() - design @ coefficient
+        np.testing.assert_allclose(absorbed, expected, atol=1e-9)
+
     def test_clustered_ols_matches_manual_cr1_covariance(self) -> None:
         x_value = np.arange(12, dtype=float)
         design = x_value[:, None]
@@ -171,6 +217,32 @@ class RegressionPrimitiveTests(unittest.TestCase):
         )
         self.assertEqual((n, clusters), (12, 4))
         self.assertAlmostEqual(named["slope_beta"], beta[1])
+
+    def test_weighted_clustered_ols_matches_direct_wls_point_estimate(self) -> None:
+        x_value = np.arange(8, dtype=float)
+        design = np.column_stack([np.ones(len(x_value)), x_value])
+        outcome = 1.0 + 0.75 * x_value + np.array([0.0, 1.0, -0.5, 0.25] * 2)
+        weights = np.array([1.0, 2.0, 1.0, 4.0, 1.0, 3.0, 2.0, 1.0])
+        result = ols_clustered(
+            outcome,
+            x_value,
+            np.repeat(["a", "b", "c", "d"], 2),
+            weights=weights,
+        )
+        expected = np.linalg.solve(
+            design.T @ (weights[:, None] * design),
+            design.T @ (weights * outcome),
+        )
+        np.testing.assert_allclose(result.beta, expected)
+
+    def test_weighted_clustered_ols_rejects_nonpositive_weights(self) -> None:
+        with self.assertRaisesRegex(ValueError, "finite and positive"):
+            ols_clustered(
+                np.arange(4.0),
+                np.arange(4.0),
+                np.array(["a", "a", "b", "b"]),
+                weights=np.array([1.0, 1.0, 0.0, 1.0]),
+            )
 
     def test_two_way_clustered_ols_matches_cr1_inclusion_exclusion(self) -> None:
         x_value = np.arange(12, dtype=float)

@@ -174,6 +174,7 @@ def common_calendar_day_mask(
 def absorb_fixed_effects(
     values: pd.Series | pd.DataFrame,
     *groups: pd.Series,
+    weights: pd.Series | np.ndarray | None = None,
     tolerance: float = 1e-10,
     max_iterations: int = 10_000,
 ) -> pd.Series | pd.DataFrame:
@@ -191,10 +192,31 @@ def absorb_fixed_effects(
     for group in groups:
         if len(group) != len(result) or not group.index.equals(result.index):
             raise ValueError("fixed-effect groups must align with the values")
+    weight_series: pd.Series | None = None
+    if weights is not None:
+        if isinstance(weights, pd.Series):
+            if len(weights) != len(result) or not weights.index.equals(result.index):
+                raise ValueError("fixed-effect weights must align with the values")
+            weight_series = weights.astype(float)
+        else:
+            weight_array = np.asarray(weights, dtype=float).reshape(-1)
+            if len(weight_array) != len(result):
+                raise ValueError("fixed-effect weights must align with the values")
+            weight_series = pd.Series(weight_array, index=result.index)
+        if not np.isfinite(weight_series).all() or (weight_series <= 0).any():
+            raise ValueError("fixed-effect weights must be finite and positive")
     for _ in range(max_iterations):
         previous = result.copy()
         for group in groups:
-            result -= result.groupby(group, observed=True).transform("mean")
+            if weight_series is None:
+                group_mean = result.groupby(group, observed=True).transform("mean")
+            else:
+                numerator = result.mul(weight_series, axis=0).groupby(
+                    group, observed=True
+                ).transform("sum")
+                denominator = weight_series.groupby(group, observed=True).transform("sum")
+                group_mean = numerator.div(denominator, axis=0)
+            result -= group_mean
         delta = (result - previous).abs().to_numpy(dtype=float)
         if delta.size == 0 or np.nanmax(delta) <= tolerance:
             return result
@@ -240,8 +262,9 @@ def ols_clustered(
     min_clusters: int = 2,
     cluster_hac_lag: int | None = None,
     additional_clusters: tuple[pd.Series | np.ndarray, ...] = (),
+    weights: pd.Series | np.ndarray | None = None,
 ) -> ClusteredOLSResult:
-    """Fit OLS with one- or two-way CR1 inference, or HAC across one ordered cluster."""
+    """Fit OLS/WLS with one- or two-way CR1 inference, or HAC across one ordered cluster."""
     if cluster_hac_lag is not None and cluster_hac_lag < 0:
         raise ValueError("cluster HAC lag must be nonnegative")
     if len(additional_clusters) > 1:
@@ -265,6 +288,13 @@ def ols_clustered(
         raise ValueError("absorbed fixed-effect groups must align with the regression inputs")
     if len(group_arrays) > 2:
         raise ValueError("absorbed degree-of-freedom correction supports at most two fixed effects")
+    weight_array: np.ndarray | None = None
+    if weights is not None:
+        weight_array = np.asarray(weights, dtype=float).reshape(-1)
+        if len(weight_array) != len(y_array):
+            raise ValueError("weights must align with the regression inputs")
+        if not np.isfinite(weight_array).all() or np.any(weight_array <= 0):
+            raise ValueError("weights must be finite and positive")
     finite = np.isfinite(y_array) & np.isfinite(x_array).all(axis=1) & pd.notna(cluster_array)
     for value in additional_cluster_arrays:
         finite &= pd.notna(value)
@@ -275,8 +305,14 @@ def ols_clustered(
     cluster_array = cluster_array[finite]
     additional_cluster_arrays = [value[finite] for value in additional_cluster_arrays]
     group_arrays = [group[finite] for group in group_arrays]
+    if weight_array is not None:
+        weight_array = weight_array[finite]
     if add_constant:
         x_array = np.column_stack([np.ones(len(x_array)), x_array])
+    if weight_array is not None:
+        square_root_weights = np.sqrt(weight_array)
+        y_array = y_array * square_root_weights
+        x_array = x_array * square_root_weights[:, None]
     n, k = x_array.shape
     cluster_arrays = [cluster_array, *additional_cluster_arrays]
     cluster_counts = tuple(len(pd.unique(value)) for value in cluster_arrays)
@@ -354,6 +390,7 @@ def ols_clustered_named(
     min_clusters: int = 2,
     cluster_hac_lag: int | None = None,
     additional_clusters: tuple[pd.Series | np.ndarray, ...] = (),
+    weights: pd.Series | np.ndarray | None = None,
 ) -> tuple[int, int, dict[str, float]]:
     """Fit clustered OLS and expose named statistics for a DataFrame design."""
     result = ols_clustered(
@@ -367,6 +404,7 @@ def ols_clustered_named(
         min_clusters=min_clusters,
         cluster_hac_lag=cluster_hac_lag,
         additional_clusters=additional_clusters,
+        weights=weights,
     )
     return (
         result.n_observations,
