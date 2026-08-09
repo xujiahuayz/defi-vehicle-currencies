@@ -39,6 +39,10 @@ from ddvc.v3_inventory_calendar import (
 from ddvc.quoter import Throttled
 from scripts.build_v3_inventory_panel import CODE_SOURCES as PANEL_CODE_SOURCES
 from scripts.audit_v3_inventory_balances import audit_sample_table
+from scripts.audit_v3_graph_event_completeness import (
+    compare_event_maps,
+    graph_core_events,
+)
 from scripts.fetch_v3_inventory_events import fetch_chunk, run_fetch_jobs, safe_retry_reason
 
 
@@ -103,6 +107,53 @@ def test_raw_swap_uses_exact_signed_integer_transfer_amounts() -> None:
 
 def test_burn_is_not_a_physical_inventory_transfer() -> None:
     assert "burn" not in EVENT_TOPICS
+
+
+def test_graph_source_audit_converts_large_decimal_amounts_exactly() -> None:
+    item = static()
+    frame = pd.DataFrame(
+        [
+            {
+                "pool": item.pool,
+                "record_type": "liquidity",
+                "source_stream": "mints",
+                "block_number": 100,
+                "log_index": 7,
+                "tx_hash": "0xtx",
+                "amount0": "775343764933267394725819.694029",
+                "amount1": "1",
+            }
+        ]
+    )
+    events, duplicates = graph_core_events(frame, {item.pool: item})
+    assert duplicates == set()
+    assert next(iter(events.values())) == (
+        775_343_764_933_267_394_725_819_694_029,
+        10**18,
+    )
+
+
+def test_source_audit_separates_omissions_extras_and_amount_mismatches() -> None:
+    mint = ("mint", 100, "0xa", 1, "0xpool")
+    swap = ("swap", 101, "0xb", 2, "0xpool")
+    graph_only = ("mint", 102, "0xc", 3, "0xpool")
+    summaries, exceptions = compare_event_maps(
+        "20250115",
+        {mint: (1, 2), swap: (3, 4)},
+        {mint: (1, 9), graph_only: (5, 6)},
+        {graph_only},
+    )
+    by_type = {row["event_type"]: row for row in summaries}
+    assert by_type["swap"]["missing_from_graph"] == 1
+    assert by_type["mint"]["graph_only"] == 1
+    assert by_type["mint"]["amount_mismatches"] == 1
+    assert by_type["mint"]["graph_duplicate_identities"] == 1
+    assert {row["status"] for row in exceptions} == {
+        "missing_from_graph",
+        "graph_only",
+        "amount_mismatch",
+        "graph_duplicate_identity",
+    }
 
 
 def test_block_chunks_cover_the_perimeter_once() -> None:

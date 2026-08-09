@@ -8,7 +8,7 @@ from decimal import Decimal
 import gzip
 import json
 from pathlib import Path
-from typing import Iterable
+from typing import Iterable, Iterator
 
 from eth_abi import decode as abi_decode
 from eth_utils import keccak
@@ -141,6 +141,29 @@ def canonical_raw_log(log: dict[str, object]) -> dict[str, object]:
     return record
 
 
+def iter_decoded_inventory_logs(
+    path: Path,
+    *,
+    lower: int | None = None,
+    upper: int | None = None,
+    pools: set[str] | None = None,
+) -> Iterator[dict[str, object]]:
+    """Stream decoded exact logs under optional block and pool perimeters."""
+
+    parquet = pq.ParquetFile(path)
+    for batch in parquet.iter_batches(batch_size=50_000):
+        for raw in batch.to_pylist():
+            block = int(raw["block_number"])
+            pool = str(raw["address"]).lower()
+            if lower is not None and block < lower:
+                continue
+            if upper is not None and block > upper:
+                continue
+            if pools is not None and pool not in pools:
+                continue
+            yield decode_inventory_log(raw)
+
+
 def inventory_chunk_completed(
     lower: int,
     upper: int,
@@ -204,27 +227,24 @@ def audit_inventory_chunks(
         raw_logs = 0
         recognized = 0
         by_event = {name: 0 for name in EVENT_TOPICS}
-        parquet = pq.ParquetFile(raw_path)
-        for batch in parquet.iter_batches(batch_size=50_000):
-            for raw in batch.to_pylist():
-                decoded = decode_inventory_log(raw)
-                block = int(decoded["block_number"])
-                if not lower <= block <= upper:
-                    raise ValueError(
-                        f"V3 inventory log block {block} lies outside {lower}-{upper}"
-                    )
-                identity = (
-                    block,
-                    str(decoded["tx_hash"]),
-                    int(decoded["log_index"]),
+        for decoded in iter_decoded_inventory_logs(raw_path):
+            block = int(decoded["block_number"])
+            if not lower <= block <= upper:
+                raise ValueError(
+                    f"V3 inventory log block {block} lies outside {lower}-{upper}"
                 )
-                if identity in keys:
-                    raise ValueError(f"duplicate V3 inventory log within chunk: {identity}")
-                keys.add(identity)
-                raw_logs += 1
-                if str(decoded["pool"]) in known_pools:
-                    recognized += 1
-                    by_event[str(decoded["event_type"])] += 1
+            identity = (
+                block,
+                str(decoded["tx_hash"]),
+                int(decoded["log_index"]),
+            )
+            if identity in keys:
+                raise ValueError(f"duplicate V3 inventory log within chunk: {identity}")
+            keys.add(identity)
+            raw_logs += 1
+            if str(decoded["pool"]) in known_pools:
+                recognized += 1
+                by_event[str(decoded["event_type"])] += 1
         if set(metadata.get("event_topics") or []) != expected_topics:
             raise ValueError(f"V3 inventory chunk {lower}-{upper} has a topic perimeter drift")
         if int(metadata.get("raw_logs", -1)) != raw_logs:

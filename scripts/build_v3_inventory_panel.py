@@ -36,6 +36,7 @@ from ddvc.v3_inventory import (
     inventory_chunk_completed,
     inventory_chunk_paths,
     inventory_snapshot_rows,
+    iter_decoded_inventory_logs,
     pool_addresses_from_graph,
     pool_static_from_graph,
 )
@@ -232,22 +233,22 @@ def _raw_inventory_events_for_day(
     statics: dict[str, PoolStatic],
 ) -> list[dict[str, object]]:
     rows: list[dict[str, object]] = []
+    pools = set(statics)
     for block_lower, block_upper in ranges:
         raw_path, _ = inventory_chunk_paths(block_lower, block_upper, RAW_INVENTORY_ROOT)
-        parquet = pq.ParquetFile(raw_path)
-        for batch in parquet.iter_batches(batch_size=50_000):
-            for raw in batch.to_pylist():
-                block = int(raw["block_number"])
-                pool = str(raw["address"]).lower()
-                if lower <= block <= upper and pool in statics:
-                    decoded = decode_inventory_log(raw)
-                    rows.append(
-                        {
-                            **decoded,
-                            "amount0_delta_raw": str(decoded["amount0_delta_raw"]),
-                            "amount1_delta_raw": str(decoded["amount1_delta_raw"]),
-                        }
-                    )
+        for decoded in iter_decoded_inventory_logs(
+            raw_path,
+            lower=lower,
+            upper=upper,
+            pools=pools,
+        ):
+            rows.append(
+                {
+                    **decoded,
+                    "amount0_delta_raw": str(decoded["amount0_delta_raw"]),
+                    "amount1_delta_raw": str(decoded["amount1_delta_raw"]),
+                }
+            )
     rows.sort(key=lambda row: (int(row["block_number"]), int(row["log_index"])))
     identities = {
         (int(row["block_number"]), str(row["tx_hash"]), int(row["log_index"]))
