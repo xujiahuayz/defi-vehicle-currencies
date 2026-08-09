@@ -9,6 +9,16 @@ import pandas as pd
 from scipy import stats
 
 
+def _covariance_standard_errors(covariance: np.ndarray) -> np.ndarray:
+    """Return NaN for invalid negative variances instead of false zero precision."""
+
+    variances = np.diag(np.asarray(covariance, dtype=float))
+    standard_errors = np.full(variances.shape, np.nan, dtype=float)
+    valid = np.isfinite(variances) & (variances >= 0)
+    standard_errors[valid] = np.sqrt(variances[valid])
+    return standard_errors
+
+
 def holm_adjusted_pvalues(values: pd.Series | np.ndarray) -> np.ndarray:
     """Holm family-wise adjusted p-values, preserving missing positions."""
     pvalues = np.asarray(values, dtype=float).reshape(-1)
@@ -43,7 +53,7 @@ class ClusteredOLSResult:
 
     @property
     def standard_errors(self) -> np.ndarray:
-        return np.sqrt(np.maximum(np.diag(self.covariance), 0.0))
+        return _covariance_standard_errors(self.covariance)
 
     @property
     def t_statistics(self) -> np.ndarray:
@@ -519,7 +529,12 @@ def year_endpoint_change(
     )
     comparison_column = 1 + comparison_years.index(comparison_year)
     standard_error = float(
-        np.sqrt(max(covariance[comparison_column, comparison_column], 0.0))
+        _covariance_standard_errors(
+            covariance[
+                comparison_column : comparison_column + 1,
+                comparison_column : comparison_column + 1,
+            ]
+        )[0]
     )
     change = float(beta[comparison_column])
     t_statistic = change / standard_error if standard_error > 0 else np.nan

@@ -137,6 +137,12 @@ def _fit_within(
     )
     if not np.isfinite(fit.beta).all():
         raise ValueError("routing estimator is unidentified after fixed-effect absorption")
+    if not np.isfinite(fit.covariance).all():
+        raise ValueError("routing estimator covariance is not finite")
+    required_positions = [kept.index(column) for column in required]
+    required_variances = np.diag(fit.covariance)[required_positions]
+    if np.any(required_variances <= 0):
+        raise ValueError("routing estimator required-regressor variance is not positive")
     return fit, kept, dropped, model
 
 
@@ -146,6 +152,13 @@ def _joint_wald(
     positions = [names.index(name) for name in tested]
     restriction_beta = fit.beta[positions]
     restriction_covariance = fit.covariance[np.ix_(positions, positions)]
+    restriction_covariance = (
+        restriction_covariance + restriction_covariance.T
+    ) / 2
+    if not np.isfinite(restriction_covariance).all():
+        raise ValueError("joint year test has a non-finite covariance matrix")
+    if np.linalg.eigvalsh(restriction_covariance).min() <= 0:
+        raise ValueError("joint year test covariance matrix is not positive definite")
     rank = int(np.linalg.matrix_rank(restriction_covariance))
     if rank != len(positions):
         raise ValueError("joint year test has a rank-deficient covariance matrix")

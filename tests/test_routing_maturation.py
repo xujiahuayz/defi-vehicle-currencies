@@ -6,6 +6,7 @@ from unittest.mock import patch
 import numpy as np
 import pandas as pd
 
+from ddvc.analysis.regression import ClusteredOLSResult
 from ddvc.analysis.routing_maturation import (
     MARGINS,
     estimate_dynamics,
@@ -137,6 +138,25 @@ class RoutingMaturationEstimatorTests(unittest.TestCase):
         frame.loc[0, "within_reach_regret_bin"] = "unknown"
         with self.assertRaisesRegex(ValueError, "invalid regret bin"):
             estimate_transition(frame)
+
+    def test_transition_rejects_nonpositive_required_variance(self) -> None:
+        def invalid_covariance(outcome, design, clusters, **kwargs):
+            coefficients = design.shape[1]
+            return ClusteredOLSResult(
+                beta=np.zeros(coefficients),
+                covariance=-np.eye(coefficients),
+                n_observations=len(outcome),
+                n_clusters=4,
+                absorbed_degrees_of_freedom=4,
+                cluster_counts=(4, 4),
+            )
+
+        with patch(
+            "ddvc.analysis.routing_maturation.ols_clustered",
+            side_effect=invalid_covariance,
+        ):
+            with self.assertRaisesRegex(ValueError, "variance is not positive"):
+                estimate_transition(self._transition())
 
     def test_exact_horizon_models_preserve_all_four_calendar_links(self) -> None:
         result = estimate_dynamics(self._dynamics())

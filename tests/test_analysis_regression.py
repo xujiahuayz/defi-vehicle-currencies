@@ -7,6 +7,7 @@ import pandas as pd
 from scipy import stats
 
 from ddvc.analysis.regression import (
+    ClusteredOLSResult,
     absorb_fixed_effects,
     common_calendar_day_mask,
     holm_adjusted_pvalues,
@@ -19,6 +20,18 @@ from ddvc.analysis.regression import (
 
 
 class RegressionPrimitiveTests(unittest.TestCase):
+    def test_negative_covariance_variance_is_missing_not_zero(self) -> None:
+        result = ClusteredOLSResult(
+            beta=np.array([1.0]),
+            covariance=np.array([[-1.0]]),
+            n_observations=10,
+            n_clusters=5,
+            absorbed_degrees_of_freedom=0,
+        )
+        self.assertTrue(np.isnan(result.standard_errors[0]))
+        self.assertTrue(np.isnan(result.t_statistics[0]))
+        self.assertTrue(np.isnan(result.p_values[0]))
+
     def test_clustered_mean_uses_cluster_scores_not_bernoulli_iid_variance(self) -> None:
         result = mean_clustered(
             np.array([1.0, 1.0, 0.0, 0.0]),
