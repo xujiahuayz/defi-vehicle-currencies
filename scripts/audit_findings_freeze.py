@@ -1002,13 +1002,53 @@ def route_measurement_invariants(
             )
         )
 
+    def zero(series: pd.Series, *, atol: float = 0.0) -> pd.Series:
+        numeric = pd.to_numeric(series, errors="coerce").fillna(0)
+        return numeric.abs().le(atol) if atol else numeric.eq(0)
+
+    type_episode_total = sum(
+        (merged[f"cnt_{asset_type}"] for asset_type in TYPES),
+        start=pd.Series(0, index=merged.index, dtype="int64"),
+    )
+    type_value_totals = {
+        prefix: sum(
+            (merged[f"{prefix}_{asset_type}"] for asset_type in TYPES),
+            start=pd.Series(0.0, index=merged.index),
+        )
+        for prefix in ("usd", *(f"usd_{support}" for support in VALUE_SUPPORT_COLUMNS))
+    }
+    vehicle_columns = [
+        "vehicle_intermediate_routes",
+        "vehicle_intermediate_usd",
+        *(f"vehicle_intermediate_usd_{support}" for support in VALUE_SUPPORT_COLUMNS),
+    ]
+    missing_vehicle = merged["_vehicle_merge"].eq("left_only")
+    structurally_empty = (
+        zero(merged["routes_intermediated"])
+        & zero(merged["intermediated_routes"])
+        & zero(merged["episodes"])
+        & zero(type_episode_total)
+        & zero(merged["intermediated_usd"], atol=1e-6)
+        & zero(merged["intermediated_usd_within_2x"], atol=1e-6)
+        & zero(merged["intermediated_usd_within_20pct"], atol=1e-6)
+        & zero(type_value_totals["usd"], atol=1e-6)
+        & zero(type_value_totals["usd_within_2x"], atol=1e-6)
+        & zero(type_value_totals["usd_within_20pct"], atol=1e-6)
+    )
+    permitted_empty_vehicle = missing_vehicle & structurally_empty
+    merged.loc[permitted_empty_vehicle, vehicle_columns] = 0
+
     results: list[tuple[str, bool, str]] = []
     calendar_ok = bool(
         merged["_merge"].eq("both").all()
-        and merged["_vehicle_merge"].eq("both").all()
+        and (merged["_vehicle_merge"].eq("both") | permitted_empty_vehicle).all()
     )
     results.append(
-        ("route measurement calendars reconcile", calendar_ok, f"days={len(merged):,}")
+        (
+            "route measurement calendars reconcile",
+            calendar_ok,
+            f"days={len(merged):,}; structurally_empty_vehicle_days={int(permitted_empty_vehicle.sum()):,}",
+        )
     )
     route_identity = exact(
         merged["routes_intermediated"], merged["intermediated_routes"]
@@ -1035,10 +1075,6 @@ def route_measurement_invariants(
             "multileg=intermediated+direct_split; intermediated=sequential+mixed",
         )
     )
-    type_episode_total = sum(
-        (merged[f"cnt_{asset_type}"] for asset_type in TYPES),
-        start=pd.Series(0, index=merged.index, dtype="int64"),
-    )
     episode_identity = exact(merged["episodes"], type_episode_total) and exact(
         merged["episodes"], merged["vehicle_intermediate_routes"]
     )
@@ -1056,10 +1092,7 @@ def route_measurement_invariants(
     values_ok = True
     details = []
     for support, prefix in value_columns.items():
-        type_total = sum(
-            (merged[f"{prefix}_{asset_type}"] for asset_type in TYPES),
-            start=pd.Series(0.0, index=merged.index),
-        )
+        type_total = type_value_totals[prefix]
         vehicle_column = (
             "vehicle_intermediate_usd"
             if support == "all_routes"

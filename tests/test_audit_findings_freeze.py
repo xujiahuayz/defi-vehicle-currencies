@@ -697,34 +697,38 @@ status: complete
 
     def test_route_measurement_invariants_reconcile_all_families(self) -> None:
         intermediation = {
-            "date": [pd.Timestamp("2026-01-01")],
-            "routes_intermediated": [2],
-            "episodes": [3],
+            "date": [pd.Timestamp("2026-01-01"), pd.Timestamp("2026-01-02")],
+            "routes_intermediated": [2, 0],
+            "episodes": [3, 0],
         }
         for asset_type in TYPES:
             intermediation[f"cnt_{asset_type}"] = [
-                3 if asset_type == "stable" else 0
+                3 if asset_type == "stable" else 0,
+                0,
             ]
             intermediation[f"usd_{asset_type}"] = [
-                30.0 if asset_type == "stable" else 0.0
+                30.0 if asset_type == "stable" else 0.0,
+                0.0,
             ]
             intermediation[f"usd_within_2x_{asset_type}"] = [
-                24.0 if asset_type == "stable" else 0.0
+                24.0 if asset_type == "stable" else 0.0,
+                0.0,
             ]
             intermediation[f"usd_within_20pct_{asset_type}"] = [
-                20.0 if asset_type == "stable" else 0.0
+                20.0 if asset_type == "stable" else 0.0,
+                0.0,
             ]
         cross_venue = pd.DataFrame(
             {
-                "date": [pd.Timestamp("2026-01-01")],
-                "economic_multileg_routes": [3],
-                "intermediated_routes": [2],
-                "direct_split_routes": [1],
-                "pure_sequential_routes": [1],
-                "mixed_indirect_routes": [1],
-                "intermediated_usd": [40.0],
-                "intermediated_usd_within_2x": [32.0],
-                "intermediated_usd_within_20pct": [28.0],
+                "date": [pd.Timestamp("2026-01-01"), pd.Timestamp("2026-01-02")],
+                "economic_multileg_routes": [3, 1],
+                "intermediated_routes": [2, 0],
+                "direct_split_routes": [1, 1],
+                "pure_sequential_routes": [1, 0],
+                "mixed_indirect_routes": [1, 0],
+                "intermediated_usd": [40.0, 0.0],
+                "intermediated_usd_within_2x": [32.0, 0.0],
+                "intermediated_usd_within_20pct": [28.0, 0.0],
             }
         )
         vehicle = pd.DataFrame(
@@ -740,6 +744,16 @@ status: complete
             pd.DataFrame(intermediation), cross_venue, vehicle
         )
         self.assertTrue(all(passed for _name, passed, _detail in checks))
+        missing_nonempty = route_measurement_invariants(
+            pd.DataFrame(intermediation).iloc[:1],
+            cross_venue.iloc[:1],
+            vehicle.iloc[:0],
+        )
+        self.assertFalse(
+            {
+                name: passed for name, passed, _detail in missing_nonempty
+            }["route measurement calendars reconcile"]
+        )
         vehicle.loc[0, "vehicle_intermediate_routes"] = 2
         checks = route_measurement_invariants(
             pd.DataFrame(intermediation), cross_venue, vehicle
