@@ -21,6 +21,7 @@ import numpy as np
 import pandas as pd
 
 from ddvc.asset_types import VEHICLE_CANDIDATES
+from ddvc.capital_contracts import VALID_CAPITAL_STATUSES
 from ddvc.paths import (
     LP_CAPITAL_CONCENTRATION_PANEL,
     OUTPUT_DIR,
@@ -71,7 +72,7 @@ def compute_lp_capital_day(candidate_rows: pd.DataFrame) -> pd.DataFrame:
         raise ValueError("duplicate pool-candidate rows would double count deposited capital")
     valid = candidate_rows[
         candidate_rows["quantity_kind"].eq("deposited_capital")
-        & candidate_rows["capital_validation_status"].eq("reported_plausible")
+        & candidate_rows["capital_validation_status"].isin(VALID_CAPITAL_STATUSES)
         & candidate_rows["candidate_address"].isin(VEHICLE_CANDIDATES)
     ].copy()
     valid["candidate_capital_usd"] = pd.to_numeric(
@@ -160,6 +161,7 @@ def run(
         clauses.append(f"day <= '{end.replace('-', '')}'")
     perimeter = " AND ".join(clauses) if clauses else "true"
     addresses = ",".join(f"'{address}'" for address in VEHICLE_CANDIDATES)
+    statuses = ",".join(f"'{status}'" for status in sorted(VALID_CAPITAL_STATUSES))
     source = POOL_CANDIDATE_CAPITAL_PANEL.as_posix()
     con = duckdb.connect()
     con.execute("SET memory_limit='1GB'")
@@ -171,7 +173,7 @@ def run(
         f"""
         SELECT
             count(*) FILTER (WHERE quantity_kind!='deposited_capital'),
-            count(*) FILTER (WHERE capital_validation_status!='reported_plausible'),
+            count(*) FILTER (WHERE capital_validation_status NOT IN ({statuses})),
             count(*) FILTER (WHERE candidate_address NOT IN ({addresses})),
             count(*) FILTER (
                 WHERE NOT isfinite(candidate_capital_usd) OR candidate_capital_usd<=0

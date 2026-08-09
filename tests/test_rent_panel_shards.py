@@ -10,6 +10,7 @@ import pyarrow.parquet as pq
 import pytest
 
 from ddvc import provenance
+from ddvc.capital_contracts import CAPITAL_SOURCE, CP_CAPITAL_STATE_GENERATION
 
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -28,12 +29,21 @@ def v2_frame(day: str, pool: str, *, symbol: str | None = None) -> pd.DataFrame:
             "day": [day],
             "pool": [pool],
             "sym0": [symbol],
-            "capital_source": ["uniswap_v2.reserveUSD"],
+            "reported_capital_usd": [100.0],
+            "reported_capital_source": ["uniswap_v2.reserveUSD"],
+            "reconstructed_capital_usd": [100.0],
+            "capital_usd": [100.0],
+            "reserve_source": ["provider_pool_day_closing_reserves"],
+            "reserve_state_timestamp": [1_735_775_999],
+            "reserve_validation_status": ["positive_provider_pool_day_reserves"],
+            "capital_source": [CAPITAL_SOURCE],
+            "price_source": ["canonical_repriced_route_legs_with_address_time_sanity"],
             "quantity_kind": ["deposited_capital"],
             "pool_family": ["full_range_constant_product"],
             "invariant_family": ["full_range_constant_product"],
-            "state_generation": ["provider_pool_day_v1"],
-            "capital_validation_status": ["reported_plausible"],
+            "state_generation": [CP_CAPITAL_STATE_GENERATION],
+            "capital_validation_status": ["reconciled_current"],
+            "capital_valid": [True],
             "exact_lag_valid": [False],
         }
     ).reindex(columns=rent.V2_COLUMNS)
@@ -128,10 +138,15 @@ def test_missing_provider_capital_is_explicitly_typed_and_not_coerced(monkeypatc
         columns=rent.V2_COLUMNS,
     ).iloc[0]
 
-    assert merged["capital_source"] == "unavailable_missing_provider_pool_day"
+    assert merged["reported_capital_source"] == "unavailable_missing_provider_pool_day"
+    assert merged["reserve_source"] == "unavailable_missing_provider_pool_day"
+    assert merged["reserve_validation_status"] == "unavailable_missing_provider_pool_day"
+    assert merged["capital_source"] == CAPITAL_SOURCE
+    assert merged["price_source"] == "unavailable_missing_provider_pool_day"
     assert merged["capital_validation_status"] == "missing_pool_day_capital"
     assert merged["quantity_kind"] == "deposited_capital"
     assert not merged["exact_lag_valid"]
+    assert not merged["capital_valid"]
     assert pd.isna(merged[rent.CAPITAL_COLUMN])
 
 

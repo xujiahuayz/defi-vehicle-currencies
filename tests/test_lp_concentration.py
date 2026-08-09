@@ -30,7 +30,7 @@ def candidate_row(
         "quantity_kind": "deposited_capital",
         "pool_family": contract.pool_family,
         "state_generation": contract.capability("deposited_capital").state_generation,
-        "capital_validation_status": "reported_plausible",
+        "capital_validation_status": "reconciled_current",
     }
 
 
@@ -47,7 +47,7 @@ def test_shared_allocator_counts_one_pool_once() -> None:
     ) == {weth: 0.5, usdc: 0.5}
 
 
-def test_cross_protocol_capital_share_preserves_allocated_pool_total() -> None:
+def test_cross_venue_capital_share_preserves_allocated_pool_total() -> None:
     frame = pd.DataFrame(
         [
             candidate_row(pool="shared", candidate="WETH", capital=500.0),
@@ -56,7 +56,7 @@ def test_cross_protocol_capital_share_preserves_allocated_pool_total() -> None:
                 pool="weth-only",
                 candidate="WETH",
                 capital=800.0,
-                venue="uniswap_v3",
+                venue="sushiswap_v2",
             ),
         ]
     )
@@ -68,8 +68,8 @@ def test_cross_protocol_capital_share_preserves_allocated_pool_total() -> None:
     assert result.loc["USDC", "total_lp_capital_usd"] == 500.0
     assert result["lp_capital_share"].sum() == pytest.approx(1.0)
     assert result.loc["WETH", "venue_count"] == 2
-    assert result.loc["WETH", "pool_family_count"] == 2
-    assert result.loc["WETH", "state_generation_count"] == 2
+    assert result.loc["WETH", "pool_family_count"] == 1
+    assert result.loc["WETH", "state_generation_count"] == 1
     assert set(result["quantity_kind"]) == {"deposited_capital"}
 
 

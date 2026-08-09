@@ -215,11 +215,11 @@
       "status": "enter_fgh_companion",
       "role": "companion distributional finding",
       "estimand": "fee revenue minus LVR minus LP gas by pool asset role",
-      "sample": "screened Uniswap V2 pool-days with at least 10000 dollars of exact-lag reserve capital reconciled to independently priced reserves; Uniswap V3 is excluded until its core event identities pass independent source-completeness reconciliation, event-replayed inventory passes custody and LP-ownership reconciliation, and path-integrated LVR passes independently",
+      "sample": "screened Uniswap V2 pool-days with at least 10000 dollars of exact prior-calendar-day reconstructed reserve capital valued from a separately validated anchored address-day price; Uniswap V3 is excluded until its core event identities pass independent source-completeness reconciliation, event-replayed inventory passes custody and LP-ownership reconciliation, and path-integrated LVR passes independently",
       "unit": "pool-day descriptives and pool-month inference",
       "dependent_variable": "V2 risk-adjusted net return and indicator that fees exceed LVR plus gas",
       "transformation": "V2 annualised capital returns and fee-to-LVR ratio, with contemporaneous pool value as the LVR scale and exact prior-calendar capital as the return denominator",
-      "outlier_treatment": "anchored-leg price within four times its centered 91-day median; stable price between 0.5 and 2 dollars; no hourly pool-price move above 100 times; V2 reported reserve capital reconciled within three times independently priced reserves and exact-lag capital at least 10000 dollars",
+      "outlier_treatment": "anchored-leg price within four times its trailing 91-day median with no future prices; stable price between 0.5 and 2 dollars; no hourly pool-price move above 100 times; reconstructed V2 reserve capital must place the provider field within a 25-percent multiplicative band around either total-pool value or one priced reserve side, the two source semantics observed in the validation audit; exact-lag capital at least 10000 dollars",
       "inference": "V2 calendar-month fixed effects with two-way standard errors clustered by pool and calendar month and joint role tests from the same covariance; pool-only and month-only clustering are mandatory sensitivities; no V3 output or inference",
       "mandatory_alternatives": {
         "external_reference_support": [
@@ -262,7 +262,7 @@
         "data/processed/cex_reference_support.parquet",
         "data/processed/pool_capital_daily.parquet",
         "data/processed/daily_gas_price_graph.parquet",
-        "data/processed/v2_token_price_daily.parquet",
+        "data/processed/token_price_daily.parquet",
         "data/processed/vehicle_centrality_dense.parquet",
         "data/processed/rent_incidence_v2_pool_day.parquet"
       ],

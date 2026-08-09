@@ -17,11 +17,11 @@ Accounting, stated once.
   net              fee revenue less LVR less gas.
 
 Return denominators are exact prior-calendar-day deposited capital. For v2 this
-is lagged reported reserve value, cross-checked against anchored reserve
-valuation. The contemporaneous pool-value LVR scale is kept separately, so an
-LVR return is (current pool value / lagged capital) times realised variance over
-eight. V3 capital, LVR, signs, ratios and return inference are absent until the
-inventory replay passes custody and LP-ownership reconciliation and a
+is lagged reconstructed reserve capital, valued from a separately validated
+anchored-leg price. The contemporaneous pool-value LVR scale is kept separately,
+so an LVR return is (current pool value / lagged capital) times realised variance
+over eight. V3 capital, LVR, signs, ratios and return inference are absent until
+the inventory replay passes custody and LP-ownership reconciliation and a
 path-integrated concentrated-liquidity LVR adapter passes independently.
 """
 
@@ -39,22 +39,23 @@ ROOT = Path(__file__).resolve().parents[1]
 from ddvc.asset_types import asset_type
 from ddvc.analysis.regression import ClusteredOLSResult, ols_clustered
 from ddvc.data_release import require_node_d_release
+from ddvc.capital_contracts import RETURN_CAPITAL_VALIDATION_STATUS
+from ddvc.capital_validation import CAPITAL_PRICE_SOURCE, validated_capital_prices
 from ddvc.gas import load_daily_gas_prices
 from ddvc.liquidity import (
     CAPITAL_COLUMN,
     LVR_SCALE_COLUMN,
     LOCAL_DEPTH_COLUMN,
     MAX_POOL_CAPITAL_USD,
-    capital_reconciliation_mask,
     capital_interpretable,
     capital_scale_label,
     constant_product_lvr_usd,
-    exact_calendar_lag,
     lvr_inference_ready,
     require_capital_denominator,
     return_inference_ready,
 )
 from ddvc.provenance import require_current_artifacts, stamp
+from ddvc.paths import TOKEN_PRICE_DAILY_PANEL
 from ddvc.runtime import exclusive_job
 from ddvc.tables import write_exhibit, write_panel
 
@@ -63,7 +64,7 @@ OUT = ROOT / "output" / "empirical" / "rent_incidence"
 LOCK = OUT / ".run.lock"
 REQUIRED_PANELS = [
     PROC / "daily_gas_price_graph.parquet",
-    PROC / "v2_token_price_daily.parquet",
+    TOKEN_PRICE_DAILY_PANEL,
     PROC / "vehicle_centrality_dense.parquet",
     PROC / "rent_incidence_v2_pool_day.parquet",
 ]
@@ -71,6 +72,8 @@ SRC = [
     "scripts/run_rent_incidence.py",
     "scripts/build_rent_incidence_panel.py",
     "src/ddvc/gas.py",
+    "src/ddvc/capital_contracts.py",
+    "src/ddvc/capital_validation.py",
     "src/ddvc/liquidity.py",
     "src/ddvc/asset_types.py",
     "src/ddvc/analysis/regression.py",
@@ -79,8 +82,6 @@ SRC = [
 OUTPUT_PROVENANCE = {"code_sources": SRC, "inputs": REQUIRED_PANELS}
 
 MIN_TVL = 10_000.0
-BALANCE_TOL = 3.0          # CPMM holds equal value on both legs; 3x is generous
-CAPITAL_RECONCILIATION_TOL = 3.0
 MIN_MONTH_DAYS = 15
 GAS_UNITS = {"uniswap_v2": 155_000.0, "uniswap_v3": 225_000.0}
 WETH = "0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2"
@@ -199,42 +200,13 @@ def report(
 # pricing and screening
 # ---------------------------------------------------------------------------
 
-def _prices() -> pd.DataFrame:
-    """Daily token prices, with a sanity flag on each one.
-
-    The price panel is derived from pool prices, so a thin token inherits
-    whatever its own pool implies and occasional values are nonsense: wstETH
-    carries a maximum of 346 million dollars in this panel against a median of
-    1,891, and that single artefact put 959 billion dollars of phantom capital
-    into the staked-native bucket. A price is accepted when it sits within a
-    factor of four of the token's own centred 91-day rolling median, and a
-    US-dollar stablecoin additionally has to be between half a dollar and two
-    dollars. Both are integrity tests on an input, applied before anything is
-    computed from it.
-    """
-    from ddvc.asset_types import NON_USD_STABLE, STABLE
-
-    p = pd.read_parquet(PROC / "v2_token_price_daily.parquet",
-                        columns=["date", "token", "symbol", "price_usd"])
-    p["day"] = p.date.dt.strftime("%Y%m%d")
-    p = p.sort_values(["token", "date"])
-    med = (p.groupby("token", sort=False).price_usd
-           .transform(lambda x: x.rolling(91, center=True, min_periods=5).median()))
-    ok = (p.price_usd > 0) & med.gt(0) & (p.price_usd <= 4 * med) & (p.price_usd >= med / 4)
-    usd_stable = {k for k, v in STABLE.items() if v not in NON_USD_STABLE}
-    is_us = p.token.isin(usd_stable)
-    ok &= ~is_us | (p.price_usd.between(0.5, 2.0))
-    p["price_ok"] = ok
-    return p[["day", "token", "price_usd", "price_ok"]]
-
-
 def _gas() -> pd.DataFrame:
-    p = _prices()
+    p = validated_capital_prices()
     g = load_daily_gas_prices(
         PROC / "daily_gas_price_graph.parquet",
         required_dates=p["day"],
     )[["day", "gas_gwei_median"]]
-    eth = p[(p.token == WETH) & p.price_ok][["day", "price_usd"]].rename(
+    eth = p[p.token == WETH][["day", "price_usd"]].rename(
         columns={"price_usd": "eth_usd"})
     return g.merge(eth, on="day", how="left")
 
@@ -242,18 +214,22 @@ def _gas() -> pd.DataFrame:
 ANCHORED = ("native", "stable", "imported", "staked_native")
 
 
-def price_and_screen(df: pd.DataFrame, venue: str, prices: pd.DataFrame,
-                     gas: pd.DataFrame, min_tvl: float = MIN_TVL) -> tuple[pd.DataFrame, list[dict]]:
+def price_and_screen(
+    df: pd.DataFrame,
+    venue: str,
+    gas: pd.DataFrame,
+    min_tvl: float = MIN_TVL,
+) -> tuple[pd.DataFrame, list[dict]]:
     """Value, screen and account for one venue's pool-days.
 
-    Valuation runs off an ANCHORED leg. The repository's token price panel is
+    Validation has already run off an ANCHORED leg. The repository's token price panel is
     itself derived from pool prices, so a token whose only market is one thin
     pool gets whatever price that pool implies, and multiplying it by that same
     pool's reserves manufactures capital out of nothing: an early cut of this
     table showed the unclassified-pair bucket holding 145 trillion dollars of
     capital-days and a net return of minus 30,000 percent. A constant-product
     pool holds equal value on both legs by construction, so the pool can be
-    valued from the leg whose price is externally anchored (a native, staked
+    valued from the leg whose price is separately anchored (a native, staked
     native, stable or imported asset) at twice that leg's value, with the other
     leg's implied price never entering. Pools with no anchored leg are dropped
     and counted, which is the aggressive screen the earlier cut needed.
@@ -284,81 +260,21 @@ def price_and_screen(df: pd.DataFrame, venue: str, prices: pd.DataFrame,
     df = df[df.max_abs_ret <= np.log(MAX_HOURLY_MOVE)]
     note(f"4 no single hour moving the pool price by more than {MAX_HOURLY_MOVE:.0f}x", df)
 
-    df = df.merge(prices.rename(columns={"token": "token0", "price_usd": "p0",
-                                         "price_ok": "ok0"}),
-                  on=["day", "token0"], how="left")
-    df = df.merge(prices.rename(columns={"token": "token1", "price_usd": "p1",
-                                         "price_ok": "ok1"}),
-                  on=["day", "token1"], how="left")
-    a0 = df.type0.isin(ANCHORED) & df.p0.gt(0) & np.isfinite(df.p0) & df.ok0.fillna(False)
-    a1 = df.type1.isin(ANCHORED) & df.p1.gt(0) & np.isfinite(df.p1) & df.ok1.fillna(False)
-    df = df[a0 | a1]
-    a0, a1 = a0[df.index], a1[df.index]
-    note("5 the anchored leg's price passes the sanity test", df)
-
     if venue == "uniswap_v2":
-        df = df[(df.reserve0 > 0) & (df.reserve1 > 0)]
-        a0, a1 = a0[df.index], a1[df.index]
-        note("6 positive reserves on both legs", df)
-        v0, v1 = df.reserve0 * df.p0, df.reserve1 * df.p1
-        both = a0 & a1
-        df["balance_log_ratio"] = np.where(both, np.log(v0 / v1), np.nan)
-        keep = (~both) | (np.abs(df.balance_log_ratio) <= np.log(BALANCE_TOL))
-        df = df[keep]
-        a0, a1, v0, v1, both = a0[df.index], a1[df.index], v0[df.index], v1[df.index], both[df.index]
-        note(f"7 anchored legs agree within {BALANCE_TOL:.0f}x where both are anchored", df)
-        df["reconstructed_capital_usd"] = np.where(
-            both, v0 + v1, np.where(a0, 2 * v0, 2 * v1)
-        )
-        df[LOCAL_DEPTH_COLUMN] = df.reconstructed_capital_usd
+        df = df[
+            df["capital_valid"].fillna(False)
+            & df["price_source"].eq(CAPITAL_PRICE_SOURCE)
+        ]
+        note("5 current deposited capital passes canonical reserve reconciliation", df)
+        df = df[
+            df["exact_lag_valid"].fillna(False)
+            & df["capital_validation_status"].eq(RETURN_CAPITAL_VALIDATION_STATUS)
+        ]
+        note("6 exact prior-calendar capital also passed canonical reconciliation", df)
+        df[LOCAL_DEPTH_COLUMN] = df.reconstructed_capital_usd / 2.0
         df[LVR_SCALE_COLUMN] = df.reconstructed_capital_usd
-        keep = capital_reconciliation_mask(
-            df.reported_capital_usd,
-            df.reconstructed_capital_usd,
-            tolerance=CAPITAL_RECONCILIATION_TOL,
-        )
-        df = df[keep]
-        note(
-            f"8 reported reserve capital agrees with independently priced reserves "
-            f"within {CAPITAL_RECONCILIATION_TOL:.0f}x",
-            df,
-        )
-        df["_current_capital_reconciled"] = 1.0
-        prior_reconciled = exact_calendar_lag(
-            df,
-            value="_current_capital_reconciled",
-        )
-        df = df[prior_reconciled.eq(1.0)]
-        df["capital_validation_status"] = "reconciled_exact_lag"
-        note("9 exact-lag capital also passed reserve reconciliation", df)
     else:
-        df = df[df.fee_rate.notna()]
-        a0, a1 = a0[df.index], a1[df.index]
-        note("6 canonical factory pool with a recovered fee tier", df)
-        df = df[(df.liquidity > 0) & df.sqrt_price_x96.gt(0)]
-        a0, a1 = a0[df.index], a1[df.index]
-        note("7 positive reconstructed active liquidity", df)
-        dec = pd.read_parquet(PROC / "v2_token_decimals.parquet")
-        dmap = dict(zip(dec.token, dec.decimals))
-        from ddvc.pricing.v3pools import ANCHOR_DECIMALS
-        dmap.update(ANCHOR_DECIMALS)
-        d0, d1 = df.token0.map(dmap), df.token1.map(dmap)
-        sp = df.sqrt_price_x96 / (2.0 ** 96)
-        # Local virtual reserves of active liquidity, in human units. Their value
-        # is a curvature/depth scale and is not deposited capital.
-        y1 = df.liquidity * sp / (10.0 ** d1)
-        x0 = df.liquidity / sp / (10.0 ** d0)
-        use1 = a1 & d1.notna()
-        use0 = a0 & d0.notna() & ~use1
-        df = df[use0 | use1]
-        u0, u1 = use0[df.index], use1[df.index]
-        note("8 anchored leg with known decimals", df)
-        df[LOCAL_DEPTH_COLUMN] = np.where(
-            u1, 2 * y1[df.index] * df.p1, 2 * x0[df.index] * df.p0
-        )
-        df["reconstructed_capital_usd"] = np.nan
-        df[LVR_SCALE_COLUMN] = np.nan
-        df["balance_log_ratio"] = np.nan
+        raise ValueError(f"rent incidence has no admitted capital-return path for {venue}")
 
     df = df[
         np.isfinite(df[CAPITAL_COLUMN])
@@ -366,7 +282,7 @@ def price_and_screen(df: pd.DataFrame, venue: str, prices: pd.DataFrame,
         & np.isfinite(df[LOCAL_DEPTH_COLUMN])
         & df[LOCAL_DEPTH_COLUMN].gt(0)
     ]
-    note(f"10 lagged deposited capital at least ${min_tvl:,.0f} and positive local depth", df)
+    note(f"7 lagged deposited capital at least ${min_tvl:,.0f} and positive local depth", df)
     require_capital_denominator(
         df,
         venue=venue,
@@ -617,7 +533,7 @@ def main() -> int:
     require_node_d_release(routes=True, market_state=True)
     require_current_artifacts(REQUIRED_PANELS, consumer="rent-incidence estimator")
     OUT.mkdir(parents=True, exist_ok=True)
-    prices, gas = _prices(), _gas()
+    gas = _gas()
     cpath = PROC / "vehicle_centrality_dense.parquet"
     cent = pd.read_parquet(cpath, columns=["day", "token", "betweenness_volume", "degree"])
     print(f"centrality from {cpath.name}: {cent.day.nunique()} sampled days, "
@@ -630,7 +546,7 @@ def main() -> int:
             print(f"skip {venue}: {p} absent")
             continue
         raw = pd.read_parquet(p)
-        df, steps = price_and_screen(raw, venue, prices, gas)
+        df, steps = price_and_screen(raw, venue, gas)
         all_steps += steps
         frames[venue] = df
         print(f"\n=== {venue}: {len(df):,} screened pool-days, "
@@ -899,8 +815,8 @@ def main() -> int:
     print(robf.to_string(index=False, float_format=lambda v: f"{v:,.4f}"))
     write_exhibit(robf, OUT / "robustness.jsonl", **OUTPUT_PROVENANCE)
 
-    summary = {"min_lagged_capital_usd": MIN_TVL, "balance_tol": BALANCE_TOL,
-               "capital_reconciliation_tol": CAPITAL_RECONCILIATION_TOL,
+    summary = {"min_lagged_capital_usd": MIN_TVL,
+               "capital_validation_owner": "canonical pool-capital materializer",
                "min_month_days": MIN_MONTH_DAYS, "gas_units": GAS_UNITS,
                "venues": {v: {"pool_days": int(len(f)), "pools": int(f.pool.nunique()),
                               "days": int(f.day.nunique())} for v, f in frames.items()}}

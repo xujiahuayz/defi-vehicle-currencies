@@ -6,8 +6,15 @@ from dataclasses import dataclass
 
 
 MAX_POOL_CAPITAL_USD = 10_000_000_000.0
+CAPITAL_CURRENT_COLUMN = "capital_usd"
 CAPITAL_COLUMN = "capital_usd_lagged"
-CP_CAPITAL_STATE_GENERATION = "provider_pool_day_v1"
+CAPITAL_SOURCE = "reconciled_constant_product_reserves"
+CP_CAPITAL_STATE_GENERATION = "reconciled_constant_product_reserves_v2"
+CURRENT_CAPITAL_VALIDATION_STATUS = "reconciled_current"
+RETURN_CAPITAL_VALIDATION_STATUS = "reconciled_exact_lag"
+VALID_CAPITAL_STATUSES = frozenset(
+    {CURRENT_CAPITAL_VALIDATION_STATUS, RETURN_CAPITAL_VALIDATION_STATUS}
+)
 
 
 @dataclass(frozen=True)
@@ -30,12 +37,12 @@ READY_CAPITAL_CONTRACTS = {
         invariant_family="full_range_constant_product",
         state_generation=CP_CAPITAL_STATE_GENERATION,
         capital_measure=(
-            "reported reserve value with exact-lag and independently priced reserve validation"
+            "exact reserves valued from a separately validated address-day price anchor"
         ),
-        capital_sources=(f"{venue}.reserveUSD",),
+        capital_sources=(CAPITAL_SOURCE,),
         materializer="scripts.build_pool_capital_panel:main",
-        validation="exact_lag_and_independent_reserve_reconciliation",
-        admissible_uses=("descriptive", "return_after_row_reconciliation"),
+        validation="exact_lag_and_separately_validated_reserve_reconstruction",
+        admissible_uses=("descriptive", "return"),
     )
     for venue in ("uniswap_v2", "sushiswap_v2")
 }

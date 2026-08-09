@@ -250,6 +250,8 @@ def pool_day_values(venue: str, record: Mapping[str, object]) -> dict[str, objec
         "token1_address": token1_address,
         "token1_symbol": token1_symbol,
         "reported_capital_usd": finite_float(record.get(spec.capital_field)),
+        "reserve0": finite_float(record.get("reserve0")),
+        "reserve1": finite_float(record.get("reserve1")),
         "reported_volume_usd": finite_float(record.get(spec.volume_field)),
         "reported_fees_usd": finite_float(record.get("feesUSD")),
         "capital_source": f"{venue}.{spec.capital_field}",

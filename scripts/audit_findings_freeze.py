@@ -24,6 +24,12 @@ from ddvc.analysis.transaction_frontier import (
 )
 from ddvc.analysis.dynamics import CANONICAL_RESPONSE_HORIZONS
 from ddvc.calendar import RESEARCH_SAMPLE_END, RESEARCH_SAMPLE_START, calendar_days
+from ddvc.capital_contracts import (
+    CAPITAL_CURRENT_COLUMN,
+    CAPITAL_SOURCE,
+    CP_CAPITAL_STATE_GENERATION,
+    VALID_CAPITAL_STATUSES,
+)
 from ddvc.fetch.sources import DEX_SOURCES, get_source
 from ddvc.liquidity import (
     CAPITAL_COLUMN,
@@ -992,8 +998,18 @@ def capital_artifact_checks(
             "day",
             "pool",
             "reported_capital_usd",
+            "reported_capital_source",
+            "reconstructed_capital_usd",
+            CAPITAL_CURRENT_COLUMN,
             CAPITAL_COLUMN,
+            "capital_reconciliation_ratio",
+            "balance_value_ratio",
+            "reserve_source",
+            "reserve_state_timestamp",
+            "reserve_validation_status",
+            "price_source",
             "capital_validation_status",
+            "failure_reason",
             "capital_valid",
             "exact_lag_valid",
             "token0_address",
@@ -1007,6 +1023,7 @@ def capital_artifact_checks(
             "allocation_weight",
             "candidate_capital_usd",
             "candidate_capital_usd_lagged",
+            "price_source",
             "capital_validation_status",
             "exact_lag_valid",
         },
@@ -1017,7 +1034,15 @@ def capital_artifact_checks(
             "token0_address",
             "token1_address",
             "reported_capital_usd",
+            "reported_capital_source",
+            "reconstructed_capital_usd",
+            "capital_reconciliation_ratio",
+            "balance_value_ratio",
+            "reserve_source",
+            "reserve_state_timestamp",
+            "reserve_validation_status",
             "capital_source",
+            "price_source",
             "quantity_kind",
             "pool_family",
             "invariant_family",
@@ -1048,6 +1073,7 @@ def capital_artifact_checks(
     pool = f"read_parquet('{pool_path.as_posix()}')"
     candidate = f"read_parquet('{candidate_path.as_posix()}')"
     rejection = f"read_parquet('{rejection_path.as_posix()}')"
+    valid_statuses = ",".join(f"'{status}'" for status in sorted(VALID_CAPITAL_STATUSES))
     try:
         contract_rows = con.execute(
             f"SELECT DISTINCT {','.join(CAPITAL_CONTRACT_COLUMNS)} FROM {pool}"
@@ -1062,14 +1088,14 @@ def capital_artifact_checks(
                 count(DISTINCT (venue, day, pool)) AS unique_rows,
                 count(*) FILTER (
                     WHERE capital_valid != coalesce(
-                        isfinite(reported_capital_usd)
-                        AND reported_capital_usd > 0
-                        AND reported_capital_usd <= 10000000000,
+                        isfinite(capital_usd)
+                        AND capital_usd > 0
+                        AND capital_validation_status IN ({valid_statuses}),
                         false
                     )
                 ) AS validity_mismatch,
                 count(*) FILTER (
-                    WHERE (capital_validation_status='reported_plausible') != capital_valid
+                    WHERE (capital_validation_status IN ({valid_statuses})) != capital_valid
                 ) AS status_mismatch,
                 count(*) FILTER (
                     WHERE exact_lag_valid AND (
@@ -1101,7 +1127,7 @@ def capital_artifact_checks(
             WITH ordered AS (
                 SELECT *,
                     lag(day) OVER (PARTITION BY venue, pool ORDER BY day) AS prior_day,
-                    lag(reported_capital_usd) OVER (
+                    lag(capital_usd) OVER (
                         PARTITION BY venue, pool ORDER BY day
                     ) AS prior_capital,
                     lag(capital_valid) OVER (
@@ -1112,7 +1138,7 @@ def capital_artifact_checks(
             SELECT
                 count(*) FILTER (
                     WHERE exact_lag_valid != coalesce(
-                        prior_valid
+                        capital_valid AND prior_valid
                         AND strptime(day, '%Y%m%d') =
                             strptime(prior_day, '%Y%m%d') + INTERVAL 1 DAY,
                         false
@@ -1144,7 +1170,7 @@ def capital_artifact_checks(
                 FROM {candidate}
                 GROUP BY venue, day, pool
             ), joined AS (
-                SELECT a.*, p.reported_capital_usd, p.capital_usd_lagged,
+                SELECT a.*, p.capital_usd, p.capital_usd_lagged,
                     p.exact_lag_valid
                 FROM allocated a
                 JOIN {pool} p USING (venue, day, pool)
@@ -1153,8 +1179,8 @@ def capital_artifact_checks(
                 count(*) AS pools,
                 count(*) FILTER (WHERE abs(weight-1)>1e-12) AS weight_fail,
                 count(*) FILTER (
-                    WHERE abs(capital-reported_capital_usd) >
-                        greatest(1e-8, abs(reported_capital_usd)*1e-12)
+                    WHERE abs(capital-capital_usd) >
+                        greatest(1e-8, abs(capital_usd)*1e-12)
                 ) AS capital_fail,
                 count(*) FILTER (
                     WHERE exact_lag_valid AND abs(lagged-capital_usd_lagged) >
@@ -1181,11 +1207,10 @@ def capital_artifact_checks(
             WITH expected AS (
                 SELECT venue, day, pool, reported_capital_usd
                 FROM {pool}
-                WHERE capital_valid
-                  AND (token0_address IS NULL OR token1_address IS NULL)
+                WHERE NOT capital_valid
             ), actual AS (
                 SELECT * FROM {rejection}
-                WHERE capital_validation_status='quarantined_missing_exact_identity'
+                WHERE capital_validation_status!='missing_pool_day_capital'
             )
             SELECT
                 (SELECT count(*) FROM expected) AS expected,
@@ -1233,7 +1258,9 @@ def capital_artifact_checks(
                 (SELECT count(*) FROM actual a LEFT JOIN expected e
                     USING (venue, day, pool) WHERE e.pool IS NULL),
                 (SELECT count(*) FROM actual WHERE reported_capital_usd IS NOT NULL
-                    OR capital_source!='unavailable_missing_provider_pool_day'
+                    OR reported_capital_source!='unavailable_missing_provider_pool_day'
+                    OR capital_source!='{CAPITAL_SOURCE}'
+                    OR price_source!='unavailable_missing_provider_pool_day'
                     OR failure_reason!='canonical state pool-day lacks provider capital')
             """
         ).fetchone()
@@ -1596,13 +1623,24 @@ def rent_incidence_artifact_checks(
         "rv_oc",
         "max_abs_ret",
         "reported_capital_usd",
+        "reported_capital_source",
+        "reconstructed_capital_usd",
+        CAPITAL_CURRENT_COLUMN,
         CAPITAL_COLUMN,
+        "capital_reconciliation_ratio",
+        "balance_value_ratio",
+        "reserve_source",
+        "reserve_state_timestamp",
+        "reserve_validation_status",
         "capital_source",
+        "price_source",
         "quantity_kind",
         "pool_family",
         "invariant_family",
         "state_generation",
         "capital_validation_status",
+        "failure_reason",
+        "capital_valid",
         "exact_lag_valid",
     }
     missing_columns = sorted(required - set(pq.ParquetFile(rent_path).schema_arrow.names))
@@ -1620,13 +1658,13 @@ def rent_incidence_artifact_checks(
     con.execute("SET threads=2")
     try:
         core = con.execute(
-            """
+            f"""
             SELECT count(*) AS row_count,
                 count(DISTINCT (venue, day, pool)) AS unique_count,
                 count(*) FILTER (WHERE venue!='uniswap_v2'
                     OR pool_family!='full_range_constant_product'
                     OR invariant_family!='full_range_constant_product'
-                    OR state_generation!='provider_pool_day_v1'
+                    OR state_generation!='{CP_CAPITAL_STATE_GENERATION}'
                     OR quantity_kind!='deposited_capital') AS contract_mismatch,
                 count(*) FILTER (WHERE n_hours<1 OR n_ret!=greatest(n_hours-1,0)
                     OR volume_usd<0 OR reserve0<=0 OR reserve1<=0 OR rv<0
@@ -1637,10 +1675,17 @@ def rent_incidence_artifact_checks(
                     'missing_pool_day_capital') AS missing_capital,
                 count(*) FILTER (WHERE capital_validation_status=
                     'missing_pool_day_capital' AND (
-                        capital_source!='unavailable_missing_provider_pool_day'
+                        reported_capital_source!='unavailable_missing_provider_pool_day'
+                        OR reserve_source!='unavailable_missing_provider_pool_day'
+                        OR reserve_validation_status!='unavailable_missing_provider_pool_day'
+                        OR capital_source!='{CAPITAL_SOURCE}'
+                        OR price_source!='unavailable_missing_provider_pool_day'
+                        OR capital_valid
                         OR exact_lag_valid OR capital_usd_lagged IS NOT NULL
-                        OR reported_capital_usd IS NOT NULL)) AS bad_missing,
-                count(*) FILTER (WHERE capital_source IS NULL OR quantity_kind IS NULL
+                        OR reported_capital_usd IS NOT NULL
+                        OR capital_usd IS NOT NULL)) AS bad_missing,
+                count(*) FILTER (WHERE capital_source IS NULL OR reserve_source IS NULL
+                    OR reserve_validation_status IS NULL OR quantity_kind IS NULL
                     OR pool_family IS NULL OR invariant_family IS NULL
                     OR state_generation IS NULL OR capital_validation_status IS NULL
                     OR exact_lag_valid IS NULL) AS null_semantics
@@ -1661,7 +1706,23 @@ def rent_incidence_artifact_checks(
             """
             SELECT count(*) FILTER (WHERE c.pool IS NOT NULL AND (
                     r.reported_capital_usd IS DISTINCT FROM c.reported_capital_usd
+                    OR r.reported_capital_source IS DISTINCT FROM
+                        c.reported_capital_source
+                    OR r.reconstructed_capital_usd IS DISTINCT FROM
+                        c.reconstructed_capital_usd
+                    OR r.capital_usd IS DISTINCT FROM c.capital_usd
                     OR r.capital_usd_lagged IS DISTINCT FROM c.capital_usd_lagged
+                    OR r.capital_reconciliation_ratio IS DISTINCT FROM
+                        c.capital_reconciliation_ratio
+                    OR r.balance_value_ratio IS DISTINCT FROM c.balance_value_ratio
+                    OR r.reserve_source IS DISTINCT FROM c.reserve_source
+                    OR r.reserve_state_timestamp IS DISTINCT FROM c.reserve_state_timestamp
+                    OR r.reserve_validation_status IS DISTINCT FROM
+                        c.reserve_validation_status
+                    OR r.capital_source IS DISTINCT FROM c.capital_source
+                    OR r.price_source IS DISTINCT FROM c.price_source
+                    OR r.failure_reason IS DISTINCT FROM c.failure_reason
+                    OR r.capital_valid IS DISTINCT FROM c.capital_valid
                     OR r.exact_lag_valid IS DISTINCT FROM c.exact_lag_valid
                     OR r.capital_validation_status IS DISTINCT FROM
                         c.capital_validation_status)) AS matched_mismatch,

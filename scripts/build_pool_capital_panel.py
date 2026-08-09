@@ -5,24 +5,32 @@ from __future__ import annotations
 
 from collections import defaultdict
 from contextlib import ExitStack
-from datetime import datetime
+from datetime import datetime, timedelta, timezone
 import gzip
 import json
 from pathlib import Path
 
 import duckdb
-import numpy as np
 import pyarrow as pa
 import pyarrow.compute as pc
 import pyarrow.parquet as pq
 
 from ddvc.asset_types import VEHICLE_CANDIDATES
 from ddvc.capital_contracts import (
+    CAPITAL_CURRENT_COLUMN,
     CAPITAL_COLUMN,
-    MAX_POOL_CAPITAL_USD,
+    RETURN_CAPITAL_VALIDATION_STATUS,
     capital_contract,
     capital_supported,
     equal_candidate_capital_weights,
+)
+from ddvc.capital_validation import (
+    CapitalPrice,
+    canonical_constant_product_closing_reserves,
+    capital_price_lookup,
+    pool_day_reserve_state,
+    validate_constant_product_capital,
+    validated_capital_prices,
 )
 from ddvc.fetch.pool_daily import (
     POOL_DAILY_SCHEMAS,
@@ -39,10 +47,11 @@ from ddvc.paths import (
     POOL_CAPITAL_PANEL,
     POOL_CAPITAL_REJECTIONS,
     RAW_MARKET_DATA_LOCK,
+    TOKEN_PRICE_DAILY_PANEL,
 )
-from ddvc.provenance import stamp
+from ddvc.provenance import require_current_artifacts, stamp
 from ddvc.runtime import atomic_output, exclusive_job
-from ddvc.state_data import STATE_ROOT
+from ddvc.state_data import STATE_ROOT, read_cp_partition
 from ddvc.tables import write_exhibit
 
 
@@ -67,15 +76,27 @@ SCHEMA = pa.schema(
         pa.field("token1_address", pa.string()),
         pa.field("token1_symbol", pa.string()),
         pa.field("reported_capital_usd", pa.float64()),
+        pa.field("reported_capital_source", pa.string(), nullable=False),
+        pa.field("reserve0", pa.float64()),
+        pa.field("reserve1", pa.float64()),
+        pa.field("reserve_source", pa.string(), nullable=False),
+        pa.field("reserve_state_timestamp", pa.int64()),
+        pa.field("reserve_validation_status", pa.string(), nullable=False),
+        pa.field("reconstructed_capital_usd", pa.float64()),
+        pa.field(CAPITAL_CURRENT_COLUMN, pa.float64()),
         pa.field(CAPITAL_COLUMN, pa.float64()),
+        pa.field("capital_reconciliation_ratio", pa.float64()),
+        pa.field("balance_value_ratio", pa.float64()),
         pa.field("reported_volume_usd", pa.float64()),
         pa.field("reported_fees_usd", pa.float64()),
         pa.field("capital_source", pa.string(), nullable=False),
+        pa.field("price_source", pa.string(), nullable=False),
         pa.field("quantity_kind", pa.string(), nullable=False),
         pa.field("pool_family", pa.string(), nullable=False),
         pa.field("invariant_family", pa.string(), nullable=False),
         pa.field("state_generation", pa.string(), nullable=False),
         pa.field("capital_validation_status", pa.string(), nullable=False),
+        pa.field("failure_reason", pa.string()),
         pa.field("capital_valid", pa.bool_(), nullable=False),
         pa.field("exact_lag_valid", pa.bool_(), nullable=False),
     ]
@@ -94,6 +115,7 @@ CANDIDATE_SCHEMA = pa.schema(
         pa.field("candidate_capital_usd", pa.float64(), nullable=False),
         pa.field("candidate_capital_usd_lagged", pa.float64()),
         pa.field("capital_source", pa.string(), nullable=False),
+        pa.field("price_source", pa.string(), nullable=False),
         pa.field("quantity_kind", pa.string(), nullable=False),
         pa.field("pool_family", pa.string(), nullable=False),
         pa.field("invariant_family", pa.string(), nullable=False),
@@ -113,7 +135,15 @@ REJECTION_SCHEMA = pa.schema(
         pa.field("token1_address", pa.string()),
         pa.field("token1_symbol", pa.string()),
         pa.field("reported_capital_usd", pa.float64()),
+        pa.field("reported_capital_source", pa.string(), nullable=False),
+        pa.field("reconstructed_capital_usd", pa.float64()),
+        pa.field("capital_reconciliation_ratio", pa.float64()),
+        pa.field("balance_value_ratio", pa.float64()),
+        pa.field("reserve_source", pa.string(), nullable=False),
+        pa.field("reserve_state_timestamp", pa.int64()),
+        pa.field("reserve_validation_status", pa.string(), nullable=False),
         pa.field("capital_source", pa.string(), nullable=False),
+        pa.field("price_source", pa.string(), nullable=False),
         pa.field("quantity_kind", pa.string(), nullable=False),
         pa.field("pool_family", pa.string(), nullable=False),
         pa.field("invariant_family", pa.string(), nullable=False),
@@ -135,40 +165,44 @@ def stamp_from_path(path: Path) -> str:
     return stamp
 
 
-def valid_capital(value: object) -> bool:
-    try:
-        capital = float(value)
-    except (TypeError, ValueError):
-        return False
-    return bool(np.isfinite(capital) and 0 < capital <= MAX_POOL_CAPITAL_USD)
-
-
 def with_exact_capital_lag(
     row: dict[str, object],
     *,
     venue: str,
     day: str,
     ordinal: int,
+    prices: dict[str, CapitalPrice],
     prior: tuple[int, float, bool] | None,
 ) -> tuple[dict[str, object], tuple[int, float, bool]]:
-    """Attach capital semantics while preserving a gap as a missing exact lag."""
+    """Validate current capital and attach only an exact validated prior-day lag."""
 
-    current = float(row["reported_capital_usd"])
-    current_valid = valid_capital(current)
-    lag_valid = bool(prior and prior[0] == ordinal - 1 and prior[2])
+    validation = validate_constant_product_capital(row, prices)
+    current_valid = validation.valid
+    current = float(validation.capital_usd) if current_valid else float("nan")
+    lag_valid = bool(current_valid and prior and prior[0] == ordinal - 1 and prior[2])
     contract = capital_contract(venue)
     materialized = {
         **row,
         "venue": venue,
         "day": day,
+        "reported_capital_source": row["capital_source"],
+        "reconstructed_capital_usd": validation.reconstructed_capital_usd,
+        CAPITAL_CURRENT_COLUMN: current if current_valid else None,
         CAPITAL_COLUMN: prior[1] if lag_valid else None,
+        "capital_reconciliation_ratio": validation.reconciliation_ratio,
+        "balance_value_ratio": validation.balance_value_ratio,
+        "capital_source": contract.capital_sources[0],
+        "price_source": validation.price_source,
         "quantity_kind": "deposited_capital",
         "pool_family": contract.pool_family,
         "invariant_family": contract.invariant_family,
         "state_generation": contract.state_generation,
         "capital_validation_status": (
-            "reported_plausible" if current_valid else "quarantined"
+            RETURN_CAPITAL_VALIDATION_STATUS
+            if lag_valid
+            else validation.validation_status
         ),
+        "failure_reason": validation.failure_reason,
         "capital_valid": current_valid,
         "exact_lag_valid": lag_valid,
     }
@@ -194,7 +228,7 @@ def candidate_capital_rows(row: dict[str, object]) -> list[dict[str, object]]:
         token_addresses[0]: row.get("token0_symbol"),
         token_addresses[1]: row.get("token1_symbol"),
     }
-    current = float(row["reported_capital_usd"])
+    current = float(row[CAPITAL_CURRENT_COLUMN])
     lagged = float(row[CAPITAL_COLUMN]) if row["exact_lag_valid"] else None
     return [
         {
@@ -209,6 +243,7 @@ def candidate_capital_rows(row: dict[str, object]) -> list[dict[str, object]]:
             "candidate_capital_usd": weight * current,
             "candidate_capital_usd_lagged": weight * lagged if lagged is not None else None,
             "capital_source": row["capital_source"],
+            "price_source": row["price_source"],
             "quantity_kind": "deposited_capital",
             "pool_family": row["pool_family"],
             "invariant_family": row["invariant_family"],
@@ -221,10 +256,10 @@ def candidate_capital_rows(row: dict[str, object]) -> list[dict[str, object]]:
     ]
 
 
-def capital_identity_rejection(row: dict[str, object]) -> dict[str, object] | None:
-    """Quarantine candidate allocation when capital exists but identity does not."""
+def capital_validation_rejection(row: dict[str, object]) -> dict[str, object] | None:
+    """Write every failed current-capital validation to the rejection ledger."""
 
-    if not row["capital_valid"] or (row["token0_address"] and row["token1_address"]):
+    if row["capital_valid"]:
         return None
     return {
         "venue": row["venue"],
@@ -235,13 +270,21 @@ def capital_identity_rejection(row: dict[str, object]) -> dict[str, object] | No
         "token1_address": row["token1_address"],
         "token1_symbol": row["token1_symbol"],
         "reported_capital_usd": row["reported_capital_usd"],
+        "reported_capital_source": row["reported_capital_source"],
+        "reconstructed_capital_usd": row["reconstructed_capital_usd"],
+        "capital_reconciliation_ratio": row["capital_reconciliation_ratio"],
+        "balance_value_ratio": row["balance_value_ratio"],
+        "reserve_source": row["reserve_source"],
+        "reserve_state_timestamp": row["reserve_state_timestamp"],
+        "reserve_validation_status": row["reserve_validation_status"],
         "capital_source": row["capital_source"],
+        "price_source": row["price_source"],
         "quantity_kind": "deposited_capital",
         "pool_family": row["pool_family"],
         "invariant_family": row["invariant_family"],
         "state_generation": row["state_generation"],
-        "capital_validation_status": "quarantined_missing_exact_identity",
-        "failure_reason": "candidate allocation requires exact token addresses",
+        "capital_validation_status": row["capital_validation_status"],
+        "failure_reason": row["failure_reason"],
     }
 
 
@@ -342,7 +385,15 @@ def state_coverage_rejections(
                     "token1_address": token1,
                     "token1_symbol": symbol1,
                     "reported_capital_usd": None,
-                    "capital_source": "unavailable_missing_provider_pool_day",
+                    "reported_capital_source": "unavailable_missing_provider_pool_day",
+                    "reconstructed_capital_usd": None,
+                    "capital_reconciliation_ratio": None,
+                    "balance_value_ratio": None,
+                    "reserve_source": "unavailable_missing_provider_pool_day",
+                    "reserve_state_timestamp": None,
+                    "reserve_validation_status": "unavailable_missing_provider_pool_day",
+                    "capital_source": contract.capital_sources[0],
+                    "price_source": "unavailable_missing_provider_pool_day",
                     "quantity_kind": "deposited_capital",
                     "pool_family": contract.pool_family,
                     "invariant_family": contract.invariant_family,
@@ -357,9 +408,8 @@ def state_coverage_rejections(
 def append_state_coverage_rejections(
     venues: tuple[str, ...] = VENUES,
 ) -> tuple[int, dict[str, int], list[Path]]:
-    """Extend the small rejection ledger with the full state/capital anti-join."""
+    """Stream the state/capital anti-join onto the existing rejection ledger."""
 
-    existing = pq.read_table(REJECTIONS_OUT).to_pylist()
     counts: dict[str, int] = {}
     state_inputs: list[Path] = []
     added: list[dict[str, object]] = []
@@ -369,18 +419,25 @@ def append_state_coverage_rejections(
         rejected = state_coverage_rejections(venue)
         counts[venue] = len(rejected)
         added.extend(rejected)
-    combined = [*existing, *added]
-    identities = {(row["venue"], row["day"], row["pool"]) for row in combined}
-    if len(identities) != len(combined):
-        raise ValueError("capital rejection ledgers overlap on venue-day-pool")
-    table = pa.Table.from_pylist(combined, schema=REJECTION_SCHEMA)
+    existing = pq.ParquetFile(REJECTIONS_OUT)
+    existing_rows = existing.metadata.num_rows
     with atomic_output(REJECTIONS_OUT) as temporary:
-        pq.write_table(table, temporary, compression="snappy")
-    return len(combined), counts, state_inputs
+        writer = pq.ParquetWriter(temporary, REJECTION_SCHEMA, compression="snappy")
+        try:
+            for batch in existing.iter_batches(batch_size=100_000):
+                writer.write_table(pa.Table.from_batches([batch], schema=REJECTION_SCHEMA))
+            if added:
+                writer.write_table(pa.Table.from_pylist(added, schema=REJECTION_SCHEMA))
+        finally:
+            writer.close()
+        assert_unique_parquet_keys(temporary, ("venue", "day", "pool"))
+    return existing_rows + len(added), counts, state_inputs
 
 
-def materialize() -> tuple[int, int, int, list[dict[str, object]], list[Path]]:
-    sources: list[Path] = []
+def materialize(
+    prices_by_day: dict[str, dict[str, CapitalPrice]],
+) -> tuple[int, int, int, list[dict[str, object]], list[Path]]:
+    sources: list[Path] = [TOKEN_PRICE_DAILY_PANEL]
     summaries: list[dict[str, object]] = []
     total_rows = 0
     total_candidate_rows = 0
@@ -402,6 +459,8 @@ def materialize() -> tuple[int, int, int, list[dict[str, object]], list[Path]]:
         )
         try:
             for venue in VENUES:
+                state_directory = STATE_ROOT / "constant_product" / venue
+                sources.append(state_directory)
                 files = daily_files(venue)
                 if not files:
                     raise RuntimeError(f"no canonical pool-day source files for {venue}")
@@ -416,6 +475,15 @@ def materialize() -> tuple[int, int, int, list[dict[str, object]], list[Path]]:
                 for index, path in enumerate(files, 1):
                     day = stamp_from_path(path)
                     ordinal = datetime.strptime(day, "%Y%m%d").date().toordinal()
+                    day_end_timestamp = int(
+                        (
+                            datetime.strptime(day, "%Y%m%d").replace(tzinfo=timezone.utc)
+                            + timedelta(days=1, seconds=-1)
+                        ).timestamp()
+                    )
+                    reserve_states = canonical_constant_product_closing_reserves(
+                        read_cp_partition(venue, day)
+                    )
                     rows: list[dict[str, object]] = []
                     candidate_rows: list[dict[str, object]] = []
                     rejection_rows: list[dict[str, object]] = []
@@ -438,11 +506,24 @@ def materialize() -> tuple[int, int, int, list[dict[str, object]], list[Path]]:
                             if pool in seen:
                                 raise ValueError(f"duplicate {venue} pool-day row: {day} {pool}")
                             seen.add(pool)
+                            reserve_state = pool_day_reserve_state(
+                                row,
+                                reserve_states.get(pool),
+                                day_end_timestamp=day_end_timestamp,
+                            )
+                            row.update(
+                                reserve0=reserve_state.reserve0,
+                                reserve1=reserve_state.reserve1,
+                                reserve_source=reserve_state.source,
+                                reserve_state_timestamp=reserve_state.state_timestamp,
+                                reserve_validation_status=reserve_state.validation_status,
+                            )
                             row, current_state = with_exact_capital_lag(
                                 row,
                                 venue=venue,
                                 day=day,
                                 ordinal=ordinal,
+                                prices=prices_by_day.get(day, {}),
                                 prior=last.get(pool),
                             )
                             rows.append(row)
@@ -454,11 +535,9 @@ def materialize() -> tuple[int, int, int, list[dict[str, object]], list[Path]]:
                             counts["rows"] += 1
                             counts["capital_valid"] += int(row["capital_valid"])
                             counts["exact_lag_valid"] += int(row["exact_lag_valid"])
-                            counts["capital_valid_missing_token_identity"] += int(
-                                row["capital_valid"]
-                                and not (row["token0_address"] and row["token1_address"])
-                            )
-                            rejection = capital_identity_rejection(row)
+                            if row["failure_reason"]:
+                                counts[f"rejected_{row['failure_reason']}"] += 1
+                            rejection = capital_validation_rejection(row)
                             if rejection is not None:
                                 rejection_rows.append(rejection)
                     if rows:
@@ -478,8 +557,8 @@ def materialize() -> tuple[int, int, int, list[dict[str, object]], list[Path]]:
                         )
                         total_rejection_rows += len(rejection_rows)
                         counts["rejection_rows"] += len(rejection_rows)
-                        counts["rejected_capital_usd"] += sum(
-                            float(item["reported_capital_usd"])
+                        counts["rejected_reported_capital_usd"] += sum(
+                            float(item["reported_capital_usd"] or 0.0)
                             for item in rejection_rows
                         )
                     if index % 250 == 0 or index == len(files):
@@ -514,7 +593,15 @@ def materialize() -> tuple[int, int, int, list[dict[str, object]], list[Path]]:
 def main() -> int:
     for venue in VENUES:
         require_pool_daily_coverage(venue, daily_files(venue))
-    rows, candidate_rows, rejection_rows, summaries, sources = materialize()
+    require_current_artifacts(
+        [TOKEN_PRICE_DAILY_PANEL],
+        consumer="canonical pool-capital materializer",
+    )
+    price_rows = validated_capital_prices()
+    prices_by_day = capital_price_lookup(price_rows)
+    rows, candidate_rows, rejection_rows, summaries, sources = materialize(
+        prices_by_day
+    )
     rejection_rows, missing_state_counts, state_inputs = append_state_coverage_rejections()
     for summary in summaries:
         summary["missing_provider_state_rows"] = missing_state_counts.get(
@@ -526,6 +613,7 @@ def main() -> int:
         "src/ddvc/fetch/sources.py",
         "src/ddvc/calendar.py",
         "src/ddvc/capital_contracts.py",
+        "src/ddvc/capital_validation.py",
         "src/ddvc/asset_types.py",
         "src/ddvc/paths.py",
         "src/ddvc/state_data.py",
@@ -534,7 +622,10 @@ def main() -> int:
         OUT,
         code_sources=code_sources,
         inputs=sources,
-        notes=f"rows={rows}; venues={VENUES}; quantity=deposited_capital",
+        notes=(
+            f"rows={rows}; venues={VENUES}; quantity=deposited_capital; "
+            "current capital reconstructed from validated anchored reserve value"
+        ),
     )
     stamp(
         CANDIDATE_OUT,

@@ -30,6 +30,7 @@ from ddvc.analysis.dynamics import (
     value_at_day_offset,
 )
 from ddvc.analysis.lp_concentration import candidate_capital_changes
+from ddvc.capital_contracts import VALID_CAPITAL_STATUSES
 from ddvc.analysis.regression import absorb_fixed_effects, ols_clustered_named
 from ddvc.asset_types import VEHICLE_CANDIDATE_SYMBOLS
 from ddvc.paths import LP_CAPITAL_CONCENTRATION_PANEL, POOL_CANDIDATE_CAPITAL_PANEL
@@ -436,9 +437,10 @@ def load_pool_candidate_capital() -> pd.DataFrame:
     ]
     out = pd.read_parquet(POOL_CANDIDATE_CAPITAL_PANEL, columns=columns)
     invalid_kind = set(out["quantity_kind"].dropna().astype(str)) - {"deposited_capital"}
-    invalid_status = set(out["capital_validation_status"].dropna().astype(str)) - {
-        "reported_plausible"
-    }
+    invalid_status = (
+        set(out["capital_validation_status"].dropna().astype(str))
+        - VALID_CAPITAL_STATUSES
+    )
     capital = pd.to_numeric(out["candidate_capital_usd"], errors="coerce")
     lagged = pd.to_numeric(out["candidate_capital_usd_lagged"], errors="coerce")
     invalid_lag = out["exact_lag_valid"].fillna(False) & ~(

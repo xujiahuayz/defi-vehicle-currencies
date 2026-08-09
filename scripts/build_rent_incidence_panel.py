@@ -39,7 +39,7 @@ import pandas as pd
 import pyarrow as pa
 import pyarrow.parquet as pq
 
-from ddvc.capital_contracts import capital_contract
+from ddvc.capital_contracts import CAPITAL_CURRENT_COLUMN, capital_contract
 from ddvc.data_release import require_node_d_release
 from ddvc.liquidity import CAPITAL_COLUMN
 from ddvc.panel_assembly import assemble_parquet_shards
@@ -69,6 +69,7 @@ UNIQUE_KEYS = ("venue", "day", "pool")
 
 COMMON_SHARD_CODE_SOURCES = [
     "scripts/build_rent_incidence_panel.py",
+    "src/ddvc/capital_contracts.py",
     "src/ddvc/liquidity.py",
     "src/ddvc/paths.py",
     "src/ddvc/state_data.py",
@@ -85,13 +86,24 @@ V2_OUTPUT_CODE_SOURCES = COMMON_OUTPUT_CODE_SOURCES
 
 CAPITAL_COLUMNS = (
     "reported_capital_usd",
+    "reported_capital_source",
+    "reconstructed_capital_usd",
+    CAPITAL_CURRENT_COLUMN,
     CAPITAL_COLUMN,
+    "capital_reconciliation_ratio",
+    "balance_value_ratio",
+    "reserve_source",
+    "reserve_state_timestamp",
+    "reserve_validation_status",
     "capital_source",
+    "price_source",
     "quantity_kind",
     "pool_family",
     "invariant_family",
     "state_generation",
     "capital_validation_status",
+    "failure_reason",
+    "capital_valid",
     "exact_lag_valid",
 )
 V2_BASE_COLUMNS = (
@@ -106,18 +118,26 @@ V2_COLUMNS = (*V2_BASE_COLUMNS, *CAPITAL_COLUMNS)
 def _panel_schema(columns: tuple[str, ...]) -> pa.Schema:
     string_columns = {
         "day", "venue", "pool", "token0", "token1", "sym0", "sym1",
-        "capital_source", "quantity_kind", "pool_family", "invariant_family",
-        "state_generation", "capital_validation_status",
+        "reported_capital_source", "reserve_source", "reserve_validation_status",
+        "capital_source", "price_source", "quantity_kind",
+        "pool_family", "invariant_family", "state_generation",
+        "capital_validation_status", "failure_reason",
     }
-    integer_columns = {"n_hours", "n_ret", "n_mint", "n_burn", "n_swap", "tick"}
+    integer_columns = {
+        "n_hours", "n_ret", "n_mint", "n_burn", "n_swap", "tick",
+        "reserve_state_timestamp",
+    }
     required_columns = {
         *UNIQUE_KEYS,
         "capital_source",
+        "reserve_source",
+        "reserve_validation_status",
         "quantity_kind",
         "pool_family",
         "invariant_family",
         "state_generation",
         "capital_validation_status",
+        "capital_valid",
         "exact_lag_valid",
     }
     return pa.schema(
@@ -129,7 +149,7 @@ def _panel_schema(columns: tuple[str, ...]) -> pa.Schema:
                 else pa.int64()
                 if column in integer_columns
                 else pa.bool_()
-                if column == "exact_lag_valid"
+                if column in {"capital_valid", "exact_lag_valid"}
                 else pa.float64(),
                 nullable=column not in required_columns,
             )
@@ -239,12 +259,18 @@ def _merge_capital_day(
     missing = merged["capital_source"].isna()
     if missing.any():
         contract = capital_contract(venue)
-        merged.loc[missing, "capital_source"] = "unavailable_missing_provider_pool_day"
+        merged.loc[missing, "reported_capital_source"] = "unavailable_missing_provider_pool_day"
+        merged.loc[missing, "reserve_source"] = "unavailable_missing_provider_pool_day"
+        merged.loc[missing, "reserve_validation_status"] = "unavailable_missing_provider_pool_day"
+        merged.loc[missing, "capital_source"] = contract.capital_sources[0]
+        merged.loc[missing, "price_source"] = "unavailable_missing_provider_pool_day"
         merged.loc[missing, "quantity_kind"] = "deposited_capital"
         merged.loc[missing, "pool_family"] = contract.pool_family
         merged.loc[missing, "invariant_family"] = contract.invariant_family
         merged.loc[missing, "state_generation"] = contract.state_generation
         merged.loc[missing, "capital_validation_status"] = "missing_pool_day_capital"
+        merged.loc[missing, "failure_reason"] = "canonical state pool-day lacks provider capital"
+        merged.loc[missing, "capital_valid"] = False
         merged.loc[missing, "exact_lag_valid"] = False
     return merged.reindex(columns=columns)
 
