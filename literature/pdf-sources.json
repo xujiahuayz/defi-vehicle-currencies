@@ -436,8 +436,8 @@
     },
     "HendershottMenkveld2014PricePressures": {
       "checks": {
-        "article": "literature/text/2014-HendershottMenkveld2014PricePressures-accepted-price-pressures.txt",
-        "author_or_repository": "https://albertjmenkveld.com/text/hendershottmenkveld1_ia.pdf",
+        "article": "literature/text/2014-HendershottMenkveld2014PricePressures-published-price-pressures.txt",
+        "author_or_repository": "https://albertjmenkveld.com/published-papers/",
         "publisher_or_doi": "https://doi.org/10.1016/j.jfineco.2014.08.001"
       },
       "companions": [
@@ -1319,9 +1319,9 @@
     "HendershottMenkveld2014PricePressures": [
       {
         "access": "public",
-        "label": "Berkeley Haas PDF",
+        "label": "Berkeley-hosted Journal of Financial Economics version of record",
         "url": "https://faculty.haas.berkeley.edu/hender/price_pressures.pdf",
-        "version": "accepted"
+        "version": "published"
       },
       {
         "access": "authenticated",
@@ -1339,7 +1339,7 @@
       },
       {
         "access": "public",
-        "label": "Author-hosted Internet Appendix PDF",
+        "label": "Author-hosted mirror, normalized text exact to the official supplement",
         "url": "https://albertjmenkveld.com/text/hendershottmenkveld1_ia.pdf",
         "version": "supplement"
       }
