@@ -6,28 +6,25 @@
   "scripts/measure_venue_shape.py",
   "src/ddvc/tables.py"
  ],
- "created_at": "2026-08-09T03:00:21+00:00",
+ "created_at": "2026-08-09T03:11:52+00:00",
  "git": {
   "branch": "glotl/fgh-evidence",
-  "commit": "002e5a3c3370f0a42bfac5e6baacb6fd0918ee21",
+  "commit": "1ca991777acfe1ff79694506494bc8b2e9e84bbd",
   "dirty": true,
   "dirty_generated_files": [
    "data/manifests/output/exhibits/prose_conventions.jsonl.prov.json",
    "data/manifests/output/exhibits/prose_outliers.jsonl.prov.json",
    "data/manifests/output/exhibits/venue_optics.jsonl.prov.json",
-   "output/empirical_rq_design_memo.md",
    "output/exhibits/prose_conventions.jsonl",
    "output/exhibits/prose_outliers.jsonl",
-   "output/exhibits/venue_optics.jsonl",
-   "output/rq_memo.md"
+   "output/exhibits/venue_optics.jsonl"
   ],
   "dirty_tracked_files": [
    "docs/literature-audit.md",
-   "docs/research-questions-and-empirical-design.md",
    "literature/pdf-sources.json",
-   "literature/source-admission.json",
    "paper/sections/01-introduction.tex",
-   "paper/sections/05-liquidity.tex"
+   "src/ddvc/literature_sources.py",
+   "tests/test_literature_browser_helpers.py"
   ],
   "dirty_untracked_files": []
  },

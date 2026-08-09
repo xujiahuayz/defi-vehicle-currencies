@@ -21,6 +21,16 @@
       "main": "AnandVenkataraman2016MarketMaking",
       "status": "complete"
     },
+    "DuffieGarleanuPedersen2005OTC": {
+      "checks": {
+        "article": "literature/text/2005-DuffieGarleanuPedersen2005OTC-over-the-counter-markets.txt",
+        "author_or_repository": "https://www.darrellduffie.com/over-the-counter-markets.html",
+        "publisher_or_doi": "https://doi.org/10.1111/j.1468-0262.2005.00639.x"
+      },
+      "companions": [],
+      "main": "DuffieGarleanuPedersen2005OTC",
+      "status": "complete"
+    },
     "BoltonKacperczyk2021CarbonRisk": {
       "checks": {
         "article": "literature/text/2021-BoltonKacperczyk2021CarbonRisk-do-investors-care-about-carbon-risk.txt",
@@ -1020,15 +1030,15 @@
     "DuffieGarleanuPedersen2005OTC": [
       {
         "access": "authenticated",
-        "label": "Crossref similarity-checking",
+        "label": "Wiley version-of-record PDF",
         "url": "https://onlinelibrary.wiley.com/doi/pdf/10.1111/j.1468-0262.2005.00639.x",
         "version": "published"
       },
       {
         "access": "public",
-        "label": "NBER Working Paper 10816",
-        "url": "https://www.nber.org/system/files/working_papers/w10816/w10816.pdf",
-        "version": "working-paper"
+        "label": "Lasse Heje Pedersen author-hosted version-of-record mirror",
+        "url": "https://docs.lhpedersen.com/DGP_OTC.pdf",
+        "version": "published"
       }
     ],
     "ErenMalamud2022DominantDebt": [

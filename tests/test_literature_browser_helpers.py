@@ -105,6 +105,22 @@ class LiteratureBrowserHelperTests(unittest.TestCase):
             )[0]
         )
 
+    def test_source_identity_normalizes_diacritics_in_byline(self) -> None:
+        entry = Entry(
+            key="Paper",
+            kind="article",
+            fields={
+                "title": "Over-the-Counter Markets",
+                "author": "Duffie, Darrell and Garleanu, Nicolae and Pedersen, Lasse",
+            },
+        )
+        passed, detail = source_identity_verdict(
+            entry,
+            "Over-the-Counter Markets",
+            byline_text="Darrell Duffie, Nicolae Gârleanu, and Lasse Pedersen",
+        )
+        self.assertTrue(passed, detail)
+
     def test_partition_existing_quarantines_identity_mismatch(self) -> None:
         entry = Entry("Paper", "article", {"title": "Market Liquidity", "author": "Ada Smith"})
         with tempfile.TemporaryDirectory() as directory:

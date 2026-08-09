@@ -7,6 +7,7 @@ import hashlib
 import io
 import json
 import re
+import unicodedata
 import urllib.parse
 from collections.abc import Iterable, Iterator
 from contextlib import contextmanager
@@ -211,7 +212,8 @@ def is_pdf(data: bytes) -> bool:
 
 
 def _identity_words(value: str) -> list[str]:
-    return re.findall(r"[a-z0-9]+", re.sub(r"[{}\\]", " ", value.lower()))
+    normalized = unicodedata.normalize("NFKD", value).encode("ascii", "ignore").decode("ascii")
+    return re.findall(r"[a-z0-9]+", re.sub(r"[{}\\]", " ", normalized.lower()))
 
 
 def _author_surnames(author_field: str) -> set[str]:
