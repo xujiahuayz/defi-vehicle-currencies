@@ -785,7 +785,10 @@ def capital_artifact_checks(
             "venue",
             "day",
             "pool",
+            "token0_address",
+            "token1_address",
             "reported_capital_usd",
+            "capital_source",
             "quantity_kind",
             "pool_family",
             "invariant_family",
@@ -951,15 +954,18 @@ def capital_artifact_checks(
                 FROM {pool}
                 WHERE capital_valid
                   AND (token0_address IS NULL OR token1_address IS NULL)
+            ), actual AS (
+                SELECT * FROM {rejection}
+                WHERE capital_validation_status='quarantined_missing_exact_identity'
             )
             SELECT
                 (SELECT count(*) FROM expected) AS expected,
-                (SELECT count(*) FROM {rejection}) AS actual,
-                (SELECT count(*) FROM expected e LEFT JOIN {rejection} r
+                (SELECT count(*) FROM actual) AS actual,
+                (SELECT count(*) FROM expected e LEFT JOIN actual r
                     USING (venue, day, pool) WHERE r.pool IS NULL) AS missing,
-                (SELECT count(*) FROM {rejection} r LEFT JOIN expected e
+                (SELECT count(*) FROM actual r LEFT JOIN expected e
                     USING (venue, day, pool) WHERE e.pool IS NULL) AS extra,
-                (SELECT coalesce(sum(reported_capital_usd), 0) FROM {rejection}) AS capital
+                (SELECT coalesce(sum(reported_capital_usd), 0) FROM actual) AS capital
             """
         ).fetchone()
         results.append(
@@ -968,6 +974,49 @@ def capital_artifact_checks(
                 rejected[0] == rejected[1] and not rejected[2] and not rejected[3],
                 f"rows={rejected[1]:,}/{rejected[0]:,}; missing={rejected[2]:,}; "
                 f"extra={rejected[3]:,}; capital_usd={rejected[4]:,.2f}",
+            )
+        )
+
+        state_parts = []
+        for venue in ("uniswap_v2", "sushiswap_v2"):
+            glob = (STATE_ROOT / "constant_product" / venue / "*.parquet").as_posix()
+            state_parts.append(
+                f"SELECT '{venue}' AS venue, day, pool FROM read_parquet('{glob}') "
+                "GROUP BY day, pool"
+            )
+        state_sql = " UNION ALL ".join(state_parts)
+        coverage = con.execute(
+            f"""
+            WITH state AS ({state_sql}), capital AS (
+                SELECT venue, day, pool FROM {pool}
+            ), expected AS (
+                SELECT s.* FROM state s LEFT JOIN capital c USING (venue, day, pool)
+                WHERE c.pool IS NULL
+            ), actual AS (
+                SELECT * FROM {rejection}
+                WHERE capital_validation_status='missing_pool_day_capital'
+            )
+            SELECT
+                (SELECT count(*) FROM expected),
+                (SELECT count(*) FROM actual),
+                (SELECT count(*) FROM expected e LEFT JOIN actual a
+                    USING (venue, day, pool) WHERE a.pool IS NULL),
+                (SELECT count(*) FROM actual a LEFT JOIN expected e
+                    USING (venue, day, pool) WHERE e.pool IS NULL),
+                (SELECT count(*) FROM actual WHERE reported_capital_usd IS NOT NULL
+                    OR capital_source!='unavailable_missing_provider_pool_day'
+                    OR failure_reason!='canonical state pool-day lacks provider capital')
+            """
+        ).fetchone()
+        results.append(
+            (
+                "node D capital state-coverage rejection ledger",
+                coverage[0] == coverage[1]
+                and not coverage[2]
+                and not coverage[3]
+                and not coverage[4],
+                f"rows={coverage[1]:,}/{coverage[0]:,}; missing={coverage[2]:,}; "
+                f"extra={coverage[3]:,}; bad_semantics={coverage[4]:,}",
             )
         )
     except (duckdb.Error, OSError, ValueError) as exc:

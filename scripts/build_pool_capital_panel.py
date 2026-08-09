@@ -10,8 +10,10 @@ import gzip
 import json
 from pathlib import Path
 
+import duckdb
 import numpy as np
 import pyarrow as pa
+import pyarrow.compute as pc
 import pyarrow.parquet as pq
 
 from ddvc.asset_types import VEHICLE_CANDIDATES
@@ -40,6 +42,7 @@ from ddvc.paths import (
 )
 from ddvc.provenance import stamp
 from ddvc.runtime import atomic_output, exclusive_job
+from ddvc.state_data import STATE_ROOT
 from ddvc.tables import write_exhibit
 
 
@@ -105,9 +108,12 @@ REJECTION_SCHEMA = pa.schema(
         pa.field("venue", pa.string(), nullable=False),
         pa.field("day", pa.string(), nullable=False),
         pa.field("pool", pa.string(), nullable=False),
+        pa.field("token0_address", pa.string()),
         pa.field("token0_symbol", pa.string()),
+        pa.field("token1_address", pa.string()),
         pa.field("token1_symbol", pa.string()),
-        pa.field("reported_capital_usd", pa.float64(), nullable=False),
+        pa.field("reported_capital_usd", pa.float64()),
+        pa.field("capital_source", pa.string(), nullable=False),
         pa.field("quantity_kind", pa.string(), nullable=False),
         pa.field("pool_family", pa.string(), nullable=False),
         pa.field("invariant_family", pa.string(), nullable=False),
@@ -224,9 +230,12 @@ def capital_identity_rejection(row: dict[str, object]) -> dict[str, object] | No
         "venue": row["venue"],
         "day": row["day"],
         "pool": row["pool"],
+        "token0_address": row["token0_address"],
         "token0_symbol": row["token0_symbol"],
+        "token1_address": row["token1_address"],
         "token1_symbol": row["token1_symbol"],
         "reported_capital_usd": row["reported_capital_usd"],
+        "capital_source": row["capital_source"],
         "quantity_kind": "deposited_capital",
         "pool_family": row["pool_family"],
         "invariant_family": row["invariant_family"],
@@ -234,6 +243,140 @@ def capital_identity_rejection(row: dict[str, object]) -> dict[str, object] | No
         "capital_validation_status": "quarantined_missing_exact_identity",
         "failure_reason": "candidate allocation requires exact token addresses",
     }
+
+
+def missing_state_pool_keys(
+    venue: str,
+    capital_path: Path = OUT,
+    state_root: Path = STATE_ROOT,
+) -> list[tuple[str, str]]:
+    """Return canonical constant-product pool-days absent from provider capital."""
+
+    directory = state_root / "constant_product" / venue
+    if not directory.is_dir():
+        raise RuntimeError(f"canonical constant-product state is missing for {venue}")
+    con = duckdb.connect()
+    con.execute("SET threads=1")
+    con.execute("SET memory_limit='1200MB'")
+    con.execute("SET preserve_insertion_order=false")
+    try:
+        rows = con.execute(
+            """
+            WITH state AS (
+                SELECT day, pool FROM read_parquet(?) GROUP BY day, pool
+            ), capital AS (
+                SELECT day, pool FROM read_parquet(?) WHERE venue=?
+            )
+            SELECT s.day, s.pool
+            FROM state s LEFT JOIN capital c USING (day, pool)
+            WHERE c.pool IS NULL
+            ORDER BY s.day, s.pool
+            """,
+            [str(directory / "*.parquet"), str(capital_path), venue],
+        ).fetchall()
+    finally:
+        con.close()
+    return [(str(day), str(pool)) for day, pool in rows]
+
+
+def state_coverage_rejections(
+    venue: str,
+    capital_path: Path = OUT,
+    state_root: Path = STATE_ROOT,
+) -> list[dict[str, object]]:
+    """Represent every missing state/capital join as an explicit failed quantity."""
+
+    keys = missing_state_pool_keys(venue, capital_path, state_root)
+    if not keys:
+        return []
+    by_day: defaultdict[str, set[str]] = defaultdict(set)
+    for day, pool in keys:
+        by_day[day].add(pool)
+    contract = capital_contract(venue)
+    rows: list[dict[str, object]] = []
+    columns = ["pool", "token0", "token1", "symbol0", "symbol1"]
+    for day, pools in sorted(by_day.items()):
+        path = state_root / "constant_product" / venue / f"{day}.parquet"
+        table = pq.read_table(path, columns=columns)
+        table = table.filter(
+            pc.is_in(table["pool"], value_set=pa.array(sorted(pools)))
+        )
+        identities: dict[str, tuple[str, str, str | None, str | None]] = {}
+        values = table.to_pydict()
+        for pool, token0, token1, symbol0, symbol1 in zip(
+            values["pool"],
+            values["token0"],
+            values["token1"],
+            values["symbol0"],
+            values["symbol1"],
+            strict=True,
+        ):
+            if token0 is None or token1 is None:
+                raise RuntimeError(
+                    f"canonical state token identity missing for {venue} {day} {pool}"
+                )
+            identity = (
+                str(token0).lower(),
+                str(token1).lower(),
+                str(symbol0) if symbol0 is not None else None,
+                str(symbol1) if symbol1 is not None else None,
+            )
+            prior = identities.get(str(pool))
+            if prior is not None and prior[:2] != identity[:2]:
+                raise ValueError(f"state token identity changes within {venue} {day} {pool}")
+            identities[str(pool)] = identity
+        unresolved = pools.difference(identities)
+        if unresolved:
+            raise RuntimeError(
+                f"canonical state identities missing for {venue} {day}: {len(unresolved):,}"
+            )
+        for pool in sorted(pools):
+            token0, token1, symbol0, symbol1 = identities[pool]
+            rows.append(
+                {
+                    "venue": venue,
+                    "day": day,
+                    "pool": pool,
+                    "token0_address": token0,
+                    "token0_symbol": symbol0,
+                    "token1_address": token1,
+                    "token1_symbol": symbol1,
+                    "reported_capital_usd": None,
+                    "capital_source": "unavailable_missing_provider_pool_day",
+                    "quantity_kind": "deposited_capital",
+                    "pool_family": contract.pool_family,
+                    "invariant_family": contract.invariant_family,
+                    "state_generation": contract.state_generation,
+                    "capital_validation_status": "missing_pool_day_capital",
+                    "failure_reason": "canonical state pool-day lacks provider capital",
+                }
+            )
+    return rows
+
+
+def append_state_coverage_rejections(
+    venues: tuple[str, ...] = VENUES,
+) -> tuple[int, dict[str, int], list[Path]]:
+    """Extend the small rejection ledger with the full state/capital anti-join."""
+
+    existing = pq.read_table(REJECTIONS_OUT).to_pylist()
+    counts: dict[str, int] = {}
+    state_inputs: list[Path] = []
+    added: list[dict[str, object]] = []
+    for venue in venues:
+        state_directory = STATE_ROOT / "constant_product" / venue
+        state_inputs.append(state_directory)
+        rejected = state_coverage_rejections(venue)
+        counts[venue] = len(rejected)
+        added.extend(rejected)
+    combined = [*existing, *added]
+    identities = {(row["venue"], row["day"], row["pool"]) for row in combined}
+    if len(identities) != len(combined):
+        raise ValueError("capital rejection ledgers overlap on venue-day-pool")
+    table = pa.Table.from_pylist(combined, schema=REJECTION_SCHEMA)
+    with atomic_output(REJECTIONS_OUT) as temporary:
+        pq.write_table(table, temporary, compression="snappy")
+    return len(combined), counts, state_inputs
 
 
 def materialize() -> tuple[int, int, int, list[dict[str, object]], list[Path]]:
@@ -372,6 +515,11 @@ def main() -> int:
     for venue in VENUES:
         require_pool_daily_coverage(venue, daily_files(venue))
     rows, candidate_rows, rejection_rows, summaries, sources = materialize()
+    rejection_rows, missing_state_counts, state_inputs = append_state_coverage_rejections()
+    for summary in summaries:
+        summary["missing_provider_state_rows"] = missing_state_counts.get(
+            str(summary["venue"]), 0
+        )
     code_sources = [
         "scripts/build_pool_capital_panel.py",
         "src/ddvc/fetch/pool_daily.py",
@@ -380,6 +528,7 @@ def main() -> int:
         "src/ddvc/capital_contracts.py",
         "src/ddvc/asset_types.py",
         "src/ddvc/paths.py",
+        "src/ddvc/state_data.py",
     ]
     stamp(
         OUT,
@@ -399,10 +548,11 @@ def main() -> int:
     stamp(
         REJECTIONS_OUT,
         code_sources=code_sources,
-        inputs=sources,
+        inputs=[*sources, *state_inputs],
         notes=(
             f"rows={rejection_rows}; quantity=deposited_capital; "
-            "candidate allocation quarantined without exact token identity"
+            "candidate allocation quarantined without exact token identity; "
+            f"missing provider state rows={missing_state_counts}"
         ),
     )
     import pandas as pd
