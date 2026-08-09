@@ -153,7 +153,9 @@
       "inputs": [
         "data/processed/cross_venue_routing_daily.parquet",
         "data/empirical/route_cost_panel_v2.parquet",
-        "data/processed/transaction_state_frontier_daily.parquet"
+        "data/processed/routing_maturation_cell_day.parquet",
+        "data/processed/routing_transition_cells.parquet",
+        "data/processed/routing_maturation_exact_horizons.parquet"
       ],
       "outputs": [
         "output/exhibits/cross_venue_routing_series.jsonl",

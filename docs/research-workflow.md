@@ -344,9 +344,8 @@ Nodes, with the paper/deck cycle explicit. Every node writes a committed file; e
 
 ```
 A. Venue study .................... COMPLETE (section 1)
-B. Domain literature .............. partially complete
-     01_source_fidelity.md holds 14 papers, two independent reads each.
-     Extend for: Eichengreen/Krugman inertia; LVR and rent incidence.
+B. Domain literature .............. COMPLETE (`docs/literature-audit.md`)
+     The executable gate covers 41 cited sources, 53 complete main-plus-companion source sets, 55 five-axis cards, 14 published JFE venue exemplars and 11 independently re-read central papers. A new citation or mechanism reopens B.
 C. Definitions and measurement .... section 3. BLOCKING on everything below.
      RECURRING, not phase 0. Reopened by K, by I, and by any F result that
      the current definition cannot express. See the note below.
