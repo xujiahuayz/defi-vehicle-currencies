@@ -22,11 +22,13 @@ from ddvc.analysis.transaction_frontier import (
 )
 from ddvc.calendar import RESEARCH_SAMPLE_END, RESEARCH_SAMPLE_START, calendar_days
 from ddvc.fetch.sources import get_source
+from ddvc.literature_admission import load_source_admission, validate_source_admission
 from ddvc.provenance import sidecar_path, verify
 from ddvc.reconstruct import DEX_FAMILY, UNIFIED_QUALITY_PANEL
 from ddvc.route_roles import VALUE_SUPPORT_COLUMNS
 from ddvc.state_data import FAMILY_STREAMS
 from ddvc.venue_corpus import JFE_VENUE_CARDS, JFE_VENUE_SOURCE_KEYS
+from ddvc.paths import LITERATURE_SOURCE_ADMISSION
 
 PANEL = ROOT / "data" / "empirical" / "route_cost_panel_v2.parquet"
 EXTENT = ROOT / "data" / "processed" / "vehicle_excess_use_daily.parquet"
@@ -1255,11 +1257,15 @@ def main() -> int:
 
     if LITERATURE_AUDIT.exists():
         cited = cited_bibliography_keys(sorted(PAPER_SECTIONS.glob("*.tex")))
+        admission = load_source_admission(LITERATURE_SOURCE_ADMISSION)
+        admission_passed, admission_detail = validate_source_admission(cited, admission)
+        record("node B source-admission gate", admission_passed, admission_detail)
         literature_passed, literature_detail = validate_literature_audit(
             LITERATURE_AUDIT.read_text(), cited, JFE_VENUE_CARDS, verify_source_sets=True
         )
         record("node B full-text literature ledger", literature_passed, literature_detail)
     else:
+        record("node B source-admission gate", False, "literature audit missing")
         record(
             "node B full-text literature ledger",
             False,

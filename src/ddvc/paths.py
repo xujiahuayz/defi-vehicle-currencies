@@ -81,6 +81,7 @@ def repo_path(value: str | Path) -> Path:
 
 LITERATURE_BIB = LITERATURE_DIR / "vehicle-currencies.bib"
 LITERATURE_PDF_SOURCES = LITERATURE_DIR / "pdf-sources.json"
+LITERATURE_SOURCE_ADMISSION = LITERATURE_DIR / "source-admission.json"
 LITERATURE_LOCAL_SOURCES = LITERATURE_DIR / "sources.local.json"
 LITERATURE_AUTH_HEADERS = LITERATURE_DIR / "auth" / "headers.local.json"
 LITERATURE_PAPERS_DIR = LITERATURE_DIR / "papers"

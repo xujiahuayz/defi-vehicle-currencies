@@ -39,7 +39,7 @@ Validation is direct: quote each executed swap's own input against the state sta
 \subsection{Concentrated liquidity}
 \label{app:quoters:cl}
 
-Uniswap v3 and v4 distribute reserves across price ranges \citep{AdamsZinsmeisterRobinson2021UniswapV3}, so a pool has no single reserve pair and a quote has to walk the price axis \citep{Fritsch2021ConcentratedLiquidity}. Inside one range the pool behaves as a constant-product pool with virtual reserves, and liquidity $L$ with price $P$ satisfies
+Uniswap v3 and v4 distribute reserves across price ranges, so a pool has no single reserve pair and a quote has to walk the price axis \citep{AdamsZinsmeisterRobinson2021UniswapV3}. Inside one range the pool behaves as a constant-product pool with virtual reserves, and liquidity $L$ with price $P$ satisfies
 \[
 L = \sqrt{x\,y}, \qquad \sqrt{P} = \sqrt{y/x},
 \]

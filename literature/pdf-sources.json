@@ -1037,14 +1037,6 @@
         "version": "supplement"
       }
     ],
-    "Fritsch2021ConcentratedLiquidity": [
-      {
-        "access": "public",
-        "label": "arXiv",
-        "url": "https://arxiv.org/pdf/2110.01368.pdf",
-        "version": "preprint"
-      }
-    ],
     "GarleanuPedersenPoteshman2009DemandBased": [
       {
         "access": "public",
@@ -1617,14 +1609,6 @@
         "label": "Official Elsevier supplementary PDF",
         "url": "https://ars.els-cdn.com/content/image/1-s2.0-S0304405X22000587-mmc1.pdf",
         "version": "supplement"
-      }
-    ],
-    "Meister2026AutomatedLiquidity": [
-      {
-        "access": "public",
-        "label": "arXiv",
-        "url": "https://arxiv.org/pdf/2601.11375.pdf",
-        "version": "preprint"
       }
     ],
     "MilionisMoallemiRoughgardenZhang2022LVR": [

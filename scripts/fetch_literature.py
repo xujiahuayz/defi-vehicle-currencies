@@ -32,6 +32,7 @@ from pathlib import Path
 from typing import Any
 
 from ddvc.http import DEFAULT_USER_AGENT  # noqa: E402
+from ddvc.literature_admission import load_source_admission, require_source_admission  # noqa: E402
 from ddvc.literature_sources import (  # noqa: E402
     Entry,
     Source,
@@ -61,6 +62,7 @@ from ddvc.paths import (  # noqa: E402
     LITERATURE_LOCAL_SOURCES,
     LITERATURE_PAPERS_DIR,
     LITERATURE_PDF_SOURCES,
+    LITERATURE_SOURCE_ADMISSION,
     REPO_ROOT,
 )
 
@@ -312,6 +314,7 @@ def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--bib", type=Path, default=LITERATURE_BIB)
     parser.add_argument("--sources", type=Path, default=LITERATURE_PDF_SOURCES)
+    parser.add_argument("--admission", type=Path, default=LITERATURE_SOURCE_ADMISSION)
     parser.add_argument("--local-sources", type=Path, default=LITERATURE_LOCAL_SOURCES)
     parser.add_argument("--auth", type=Path, default=LITERATURE_AUTH_HEADERS)
     parser.add_argument("--out", type=Path, default=LITERATURE_PAPERS_DIR)
@@ -326,6 +329,7 @@ def main() -> int:
     if args.key:
         wanted = set(args.key)
         entries = {key: entry for key, entry in entries.items() if key in wanted}
+    require_source_admission(entries, load_source_admission(args.admission))
     openathens_domain, committed_sources = load_source_registry(args.sources)
     local_sources = load_local_source_overlay(args.local_sources)
     global_headers, domain_headers = load_auth_headers(args.auth)

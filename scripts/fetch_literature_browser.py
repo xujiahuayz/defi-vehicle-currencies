@@ -47,12 +47,14 @@ from ddvc.literature_sources import (  # noqa: E402
     write_manifest_records,
     with_openathens,
 )
+from ddvc.literature_admission import load_source_admission, require_source_admission  # noqa: E402
 from ddvc.paths import (  # noqa: E402
     LITERATURE_BIB,
     LITERATURE_DIR,
     LITERATURE_DOWNLOAD_MANIFEST,
     LITERATURE_PAPERS_DIR,
     LITERATURE_PDF_SOURCES,
+    LITERATURE_SOURCE_ADMISSION,
     REPO_ROOT,
 )
 from ddvc.runtime import atomic_output
@@ -716,6 +718,7 @@ def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--bib", type=Path, default=LITERATURE_BIB)
     parser.add_argument("--sources", type=Path, default=LITERATURE_PDF_SOURCES)
+    parser.add_argument("--admission", type=Path, default=LITERATURE_SOURCE_ADMISSION)
     parser.add_argument("--out", type=Path, default=LITERATURE_PAPERS_DIR)
     parser.add_argument("--manifest", type=Path, default=LITERATURE_DOWNLOAD_MANIFEST.with_name("browser-download-manifest.json"))
     parser.add_argument("--profile", type=Path, default=PROFILE_DIR)
@@ -735,7 +738,6 @@ def main() -> int:
     username = os.environ.get(args.username_env)
     password = os.environ.get(args.password_env)
 
-    import_playwright()
     entries = parse_bibtex(args.bib)
     openathens_domain, source_map = load_source_registry(args.sources)
     keys = list(entries)
@@ -744,6 +746,8 @@ def main() -> int:
         keys = [key for key in keys if key in wanted]
     if args.limit:
         keys = keys[: args.limit]
+    require_source_admission(keys, load_source_admission(args.admission))
+    import_playwright()
 
     args.out.mkdir(parents=True, exist_ok=True)
     args.profile.mkdir(parents=True, exist_ok=True)

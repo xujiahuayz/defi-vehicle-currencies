@@ -33,6 +33,7 @@ from scripts.audit_findings_freeze import (
     validate_specification_lock,
     validate_unified_route_layer,
 )
+from ddvc.literature_admission import validate_source_admission
 from scripts.refresh_panel_dependents import (
     CLAIM_INPUT_STAGES,
     DAILY_FRONTIER_PREREQUISITES,
@@ -40,6 +41,88 @@ from scripts.refresh_panel_dependents import (
 
 
 class FindingsFreezeAuditTest(unittest.TestCase):
+    def test_source_admission_requires_complete_decision_for_every_source(self) -> None:
+        record = {
+            "key": "Technical",
+            "title": "Protocol mechanics",
+            "decision": "include_primary_technical",
+            "publication_class": "primary_technical",
+            "publication_status": "official protocol whitepaper",
+            "author_field_credibility": "protocol authors",
+            "scholarly_uptake": "widely used technical reference",
+            "finance_relevance": "contract mechanics only",
+            "evidence_role": "primary technical source",
+            "boundary": "cannot support behaviour or economic mechanisms",
+            "technical_integrity": "mechanics checked against deployed contract documentation",
+            "rationale": "the contract specification is the primary source for its arithmetic",
+            "supporting_source_version": "version 1.0 whitepaper",
+            "finance_native": False,
+            "reviewed_at": "2026-08-09",
+        }
+        passed, detail = validate_source_admission(
+            {"Published", "Technical"},
+            {
+                "schema_version": "1.0.0",
+                "admitted_records": [
+                    {
+                        **record,
+                        "key": "Published",
+                        "decision": "include_scholarly",
+                        "publication_class": "peer_reviewed_finance_economics",
+                    },
+                    record,
+                ],
+                "rejected_or_retired_candidates": [],
+            },
+        )
+        self.assertTrue(passed, detail)
+        passed, detail = validate_source_admission(
+            {"Published", "Technical", "Working"},
+            {
+                "schema_version": "1.0.0",
+                "admitted_records": [
+                    {
+                        **record,
+                        "key": "Published",
+                        "decision": "include_scholarly",
+                        "publication_class": "peer_reviewed_finance_economics",
+                    },
+                    record,
+                ],
+                "rejected_or_retired_candidates": [],
+            },
+        )
+        self.assertFalse(passed)
+        self.assertIn("Working", detail)
+        rejected = {**record, "decision": "exclude"}
+        passed, detail = validate_source_admission(
+            {"Technical"},
+            {
+                "schema_version": "1.0.0",
+                "admitted_records": [],
+                "rejected_or_retired_candidates": [
+                    {
+                        **rejected,
+                        "red_flags": ["claim mismatch"],
+                        "reentry_condition": "a verified role emerges",
+                    }
+                ],
+            },
+        )
+        self.assertFalse(passed)
+        self.assertIn("rejected=['Technical']", detail)
+        incompatible = {**record, "publication_class": "working_paper"}
+        passed, detail = validate_source_admission(
+            {"Technical"},
+            {
+                "schema_version": "1.0.0",
+                "admitted_records": [incompatible],
+                "rejected_or_retired_candidates": [],
+            },
+        )
+        self.assertFalse(passed)
+        self.assertIn("incompatible=['Technical']", detail)
+
     def test_refresh_log_path_flattens_script_subdirectories(self) -> None:
         self.assertEqual(
             refresher.stage_log_path("process/fetch_daily_gas_price_graph.py").name,

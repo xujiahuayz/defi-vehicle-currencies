@@ -216,6 +216,47 @@ class LiteratureBrowserHelperTests(unittest.TestCase):
         self.assertIs(direct.partition_existing_by_identity, browser.partition_existing_by_identity)
         self.assertIs(direct.remove_local_and_mirrored, browser.remove_local_and_mirrored)
 
+    def test_fetchers_reject_unadmitted_source_before_transport_setup(self) -> None:
+        bibliography = """@article{Candidate,
+  author = {Ada Smith},
+  title = {A Candidate Paper},
+  year = {2026}
+}
+"""
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            bib = root / "sources.bib"
+            source_map = root / "sources.json"
+            admission = root / "admission.json"
+            bib.write_text(bibliography, encoding="utf-8")
+            source_map.write_text('{"sources": {}}', encoding="utf-8")
+            admission.write_text('{"schema_version": 1, "decisions": {}}', encoding="utf-8")
+            for script_name in ("fetch_literature", "fetch_literature_browser"):
+                with self.subTest(script=script_name):
+                    fetcher = load_script(script_name)
+                    arguments = [
+                        script_name,
+                        "--bib",
+                        str(bib),
+                        "--sources",
+                        str(source_map),
+                        "--admission",
+                        str(admission),
+                        "--key",
+                        "Candidate",
+                    ]
+                    with patch.object(sys, "argv", arguments):
+                        if script_name == "fetch_literature_browser":
+                            with patch.object(fetcher, "import_playwright") as transport:
+                                with self.assertRaisesRegex(ValueError, "source admission failed"):
+                                    fetcher.main()
+                                transport.assert_not_called()
+                        else:
+                            with patch.object(fetcher, "fetch_all") as transport:
+                                with self.assertRaisesRegex(ValueError, "source admission failed"):
+                                    fetcher.main()
+                                transport.assert_not_called()
+
     def test_install_rejects_identity_mismatch_before_writing(self) -> None:
         entry = Entry("Paper", "article", {"title": "Market Liquidity", "author": "Ada Smith"})
         with tempfile.TemporaryDirectory() as directory:

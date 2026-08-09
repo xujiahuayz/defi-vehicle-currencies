@@ -2,7 +2,7 @@
 
 This folder is intentionally flat. Keep the durable literature record in BibTeX so the paper can compile from a small curated bibliography rather than a large omnibus file.
 
-Use `vehicle-currencies.bib` as the source of truth for what belongs in the curated literature set. Use `pdf-sources.json` only as the fetch manifest for those BibTeX keys: publisher PDF endpoints, public manuscript PDFs, authentication labels, and fallback routes for `scripts/fetch_literature.py`.
+Use `source-admission.json` as the source of truth for what may enter the curated corpus. Every source needs an explicit decision before acquisition, including peer-reviewed articles; a BibTeX entry type is metadata, not evidence of publication quality. Use `vehicle-currencies.bib` as the source of truth for citation metadata after admission, and `pdf-sources.json` only as the fetch manifest for admitted BibTeX keys: publisher PDF endpoints, public manuscript PDFs, authentication labels, and fallback routes for `scripts/fetch_literature.py`.
 
 Do not commit copyrighted PDFs or other files that cannot be redistributed. Keep private PDFs local and ignored; cite papers through DOI, URL, journal metadata, or BibTeX notes instead.
 
@@ -17,7 +17,7 @@ PDF fetching:
 python3 scripts/fetch_literature.py
 ```
 
-The script downloads PDFs to gitignored `literature/papers/` and writes a gitignored `literature/papers/download-manifest.json`. It tries committed sources in `pdf-sources.json` first, then generated DOI resolver fallbacks. For public servers that fail with Python's default HTTP stack, it falls back to `curl --http1.1`.
+The script validates every requested key against `source-admission.json` before it opens the network or writes a PDF. It then downloads PDFs to gitignored `literature/papers/` and writes a gitignored `literature/papers/download-manifest.json`. It tries committed sources in `pdf-sources.json` first, then generated DOI resolver fallbacks. For public servers that fail with Python's default HTTP stack, it falls back to `curl --http1.1`.
 
 Discover publisher-registered PDF endpoints from DOI metadata:
 
