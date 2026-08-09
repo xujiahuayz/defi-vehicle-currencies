@@ -57,9 +57,14 @@ OUT = DATA_DIR / "processed" / "v3_pool_inventory_daily.parquet"
 CHUNK_SIZE = 1_000
 CODE_SOURCES = [
     "scripts/build_v3_inventory_panel.py",
+    "src/ddvc/asset_types.py",
+    "src/ddvc/fetch/raw.py",
     "src/ddvc/v3_inventory.py",
     "src/ddvc/panel_assembly.py",
+    "src/ddvc/paths.py",
+    "src/ddvc/runtime.py",
     "src/ddvc/state_data.py",
+    "src/ddvc/v3_inventory_calendar.py",
 ]
 INPUTS = [
     STATE_ROOT / "tick" / "uniswap_v3",

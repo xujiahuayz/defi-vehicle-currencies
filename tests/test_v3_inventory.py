@@ -29,11 +29,12 @@ from ddvc.v3_inventory import (
     pool_static_from_graph,
 )
 from ddvc.v3_inventory_calendar import (
-    CODE_SOURCES,
+    CODE_SOURCES as CALENDAR_CODE_SOURCES,
     _fetch_block_timestamp,
     last_block_before_timestamp,
 )
 from ddvc.quoter import Throttled
+from scripts.build_v3_inventory_panel import CODE_SOURCES as PANEL_CODE_SOURCES
 from scripts.audit_v3_inventory_balances import audit_sample_table
 from scripts.fetch_v3_inventory_events import run_fetch_jobs
 
@@ -205,13 +206,27 @@ def test_exact_day_cut_is_last_block_strictly_before_midnight() -> None:
 
 
 def test_calendar_provenance_covers_every_semantic_dependency() -> None:
-    assert set(CODE_SOURCES) == {
+    assert set(CALENDAR_CODE_SOURCES) == {
         "src/ddvc/v3_inventory_calendar.py",
         "src/ddvc/fetch/raw.py",
         "src/ddvc/paths.py",
         "src/ddvc/quoter.py",
         "src/ddvc/runtime.py",
         "src/ddvc/state_data.py",
+    }
+
+
+def test_physical_inventory_cache_covers_every_semantic_dependency() -> None:
+    assert set(PANEL_CODE_SOURCES) == {
+        "scripts/build_v3_inventory_panel.py",
+        "src/ddvc/asset_types.py",
+        "src/ddvc/fetch/raw.py",
+        "src/ddvc/panel_assembly.py",
+        "src/ddvc/paths.py",
+        "src/ddvc/runtime.py",
+        "src/ddvc/state_data.py",
+        "src/ddvc/v3_inventory.py",
+        "src/ddvc/v3_inventory_calendar.py",
     }
 
 
