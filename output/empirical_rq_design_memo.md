@@ -37,8 +37,8 @@ Use these papers for style, identification architecture, and table design:
    - DOI: https://doi.org/10.1016/j.jfineco.2011.02.006
 
 5. **Anand and Venkataraman (2016), JFE, "Market Conditions, Fragility, and the Economics of Market Making"**
-   - Template role: market-maker liquidity provision under changing market conditions.
-   - Design feature to copy: condition liquidity-supply tests on stress/fragility states rather than only average effects.
+   - Template role: market-maker participation under separately measured volume, order-flow and volatility states.
+   - Design feature to copy: condition liquidity-supply tests on low activity and one-sided order flow while preserving the opposite positive association with volatility; use this as a heterogeneity template, not identification.
    - DOI: https://doi.org/10.1016/j.jfineco.2016.03.006
 
 6. **Comerton-Forde, Hendershott, Jones, Moulton, and Seasholes (2010), JF, "Time Variation in Liquidity"**
@@ -167,7 +167,7 @@ VehicleShare_{i,v,t} =
 
 Interpretation: vehicle status switches when a shock to the incumbent's risk or credibility causes route share to move toward safer substitutes within the same opportunity set.
 
-Template: Anand-Venkataraman for stress-conditioned liquidity provision; Clark-Joseph-Ye-Zi for natural-experiment/event logic.
+Template: Anand-Venkataraman for state-decomposed liquidity-provider participation; Clark-Joseph-Ye-Zi for natural-experiment/event logic.
 
 ### RQ5. How does market architecture change vehicle formation?
 

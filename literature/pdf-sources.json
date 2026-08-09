@@ -11,6 +11,16 @@
       "main": "AmihudMendelson1980Dealership",
       "status": "complete"
     },
+    "AnandVenkataraman2016MarketMaking": {
+      "checks": {
+        "article": "literature/text/2016-AnandVenkataraman2016MarketMaking-market-conditions-fragility-and-the-economics-of-market-making.txt",
+        "author_or_repository": "https://cpb-us-w2.wpmucdn.com/people.smu.edu/dist/6/414/files/2020/07/Market-conditions-fragility-and-the-economics-of-market-making-2016.pdf",
+        "publisher_or_doi": "https://doi.org/10.1016/j.jfineco.2016.03.006"
+      },
+      "companions": [],
+      "main": "AnandVenkataraman2016MarketMaking",
+      "status": "complete"
+    },
     "BoltonKacperczyk2021CarbonRisk": {
       "checks": {
         "article": "literature/text/2021-BoltonKacperczyk2021CarbonRisk-do-investors-care-about-carbon-risk.txt",
@@ -718,6 +728,12 @@
       }
     ],
     "AnandVenkataraman2016MarketMaking": [
+      {
+        "access": "public",
+        "label": "Author-hosted exact Journal of Financial Economics PDF",
+        "url": "https://cpb-us-w2.wpmucdn.com/people.smu.edu/dist/6/414/files/2020/07/Market-conditions-fragility-and-the-economics-of-market-making-2016.pdf",
+        "version": "published"
+      },
       {
         "access": "authenticated",
         "label": "ScienceDirect PDF",

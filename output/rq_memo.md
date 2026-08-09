@@ -237,7 +237,7 @@ PDF: `literature/papers/2016-AnandVenkataraman2016MarketMaking-market-conditions
 
 Snippet: "endogenous liquidity provision" (text line 67).
 
-Use: RQ2 and RQ4. It frames liquidity supply as endogenous and possibly fragile.
+Use: RQ2 and RQ4. It documents endogenous provider participation that falls with low volume and one-sided order flow but rises with volatility; this is a heterogeneity boundary, not a generic stress or identification result.
 
 ### Uniswap v3 whitepaper, concentrated liquidity
 
