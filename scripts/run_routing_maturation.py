@@ -43,13 +43,44 @@ CODE_SOURCES = [
 ]
 
 
+def maturation_results_after_support_gate(
+    cell_day: pd.DataFrame,
+) -> tuple[list[pd.DataFrame], bool]:
+    """Return support only when the pre-fit E-to-D review gate is red."""
+
+    support = support_geometry(cell_day)
+    review_required = bool(
+        support["support_exit_review_required"].astype(bool).any()
+    )
+    if review_required:
+        return [support], True
+    return [estimate_maturation(cell_day), support], False
+
+
 def main() -> int:
     inputs = [CELL_DAY, TRANSITION, EXACT_HORIZONS]
     require_current_artifacts(inputs, consumer="routing-maturation estimator")
     cell_day = pd.read_parquet(CELL_DAY, columns=list(MATURATION_COLUMNS))
-    results = [estimate_maturation(cell_day), support_geometry(cell_day)]
+    results, review_required = maturation_results_after_support_gate(cell_day)
     del cell_day
     gc.collect()
+    if review_required:
+        combined = pd.concat(results, ignore_index=True, sort=False)
+        write_exhibit(
+            combined,
+            OUTPUT,
+            code_sources=CODE_SOURCES,
+            inputs=inputs,
+            notes=(
+                "routing maturation support geometry only; E-to-D review required; "
+                "no fitted specifications"
+            ),
+        )
+        print(
+            "BLOCKED: routing-maturation support exit requires E-to-D review; "
+            "wrote 0 fitted specifications"
+        )
+        return 2
     transition = pd.read_parquet(TRANSITION, columns=list(TRANSITION_COLUMNS))
     results.append(estimate_transition(transition))
     del transition

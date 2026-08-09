@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import unittest
+from unittest.mock import patch
 
 import numpy as np
 import pandas as pd
@@ -12,6 +13,7 @@ from ddvc.analysis.routing_maturation import (
     estimate_transition,
     support_geometry,
 )
+from scripts.run_routing_maturation import maturation_results_after_support_gate
 
 
 class RoutingMaturationEstimatorTests(unittest.TestCase):
@@ -116,6 +118,19 @@ class RoutingMaturationEstimatorTests(unittest.TestCase):
         result = support_geometry(self._maturation())
         self.assertEqual(len(result), 30)
         self.assertFalse(result["support_exit_review_required"].any())
+
+    def test_support_exit_blocks_every_maturation_fit(self) -> None:
+        frame = self._maturation()
+        years = pd.to_datetime(frame["date"]).dt.year
+        frame.loc[years.eq(2021), "route_count"] = 1
+        frame.loc[years.eq(2025), "route_count"] = 100
+        with patch("scripts.run_routing_maturation.estimate_maturation") as estimator:
+            results, review_required = maturation_results_after_support_gate(frame)
+        self.assertTrue(review_required)
+        estimator.assert_not_called()
+        self.assertEqual(len(results), 1)
+        self.assertTrue(results[0]["record_type"].eq("support").all())
+        self.assertTrue(results[0]["support_exit_review_required"].any())
 
     def test_missing_contract_column_fails_before_fit(self) -> None:
         with self.assertRaisesRegex(ValueError, "lacks columns"):
