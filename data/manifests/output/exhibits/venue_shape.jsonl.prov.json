@@ -6,10 +6,10 @@
   "scripts/measure_venue_shape.py",
   "src/ddvc/tables.py"
  ],
- "created_at": "2026-08-09T01:46:57+00:00",
+ "created_at": "2026-08-09T02:06:22+00:00",
  "git": {
   "branch": "glotl/fgh-evidence",
-  "commit": "048229b366c9c510681d5fba045df84cb51f18f3",
+  "commit": "0350c1707728dd8c080bdfe9853d895ff95ddb07",
   "dirty": true,
   "dirty_generated_files": [
    "data/manifests/output/exhibits/prose_conventions.jsonl.prov.json",
@@ -20,28 +20,12 @@
    "output/exhibits/venue_optics.jsonl"
   ],
   "dirty_tracked_files": [
-   "docs/research-workflow.md",
-   "literature/README.md",
-   "literature/pdf-sources.json",
-   "literature/text/2021-Fritsch2021ConcentratedLiquidity-preprint-concentrated-liquidity-in-automated-market-makers.txt",
-   "literature/text/2026-Meister2026AutomatedLiquidity-preprint-automated-liquidity-market-impact-cycles-and-de-pegging-risk.txt",
-   "literature/text/_index.jsonl",
-   "literature/vehicle-currencies.bib",
+   "paper/sections/01-introduction.tex",
    "paper/sections/02-setting.tex",
-   "paper/sections/05-liquidity.tex",
-   "paper/sections/05-rivals.tex",
-   "paper/sections/08-appendix.tex",
-   "scripts/audit_findings_freeze.py",
-   "scripts/fetch_literature.py",
-   "scripts/fetch_literature_browser.py",
-   "src/ddvc/paths.py",
-   "tests/test_audit_findings_freeze.py",
-   "tests/test_literature_browser_helpers.py"
+   "paper/sections/03-dominance.tex",
+   "paper/sections/04-survival.tex"
   ],
-  "dirty_untracked_files": [
-   "literature/source-admission.json",
-   "src/ddvc/literature_admission.py"
-  ]
+  "dirty_untracked_files": []
  },
  "inputs": [],
  "libraries": {
