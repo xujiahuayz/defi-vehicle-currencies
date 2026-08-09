@@ -1,23 +1,11 @@
 #!/usr/bin/env python3
 """Extract the literature corpus to plain text so it can be grepped instead of loaded.
 
-Why this exists. The corpus is 53 PDFs totalling 67 MB, with individual files up to
-5.4 MB, and no text extractor was installed: no pdftotext, no pypdf, no pdfplumber, no
-fitz. Any reviewer asked to read the exemplars first-hand therefore had to load whole
-PDFs through a file-reading tool, and two review agents stalled for ten minutes each
-doing exactly that before producing anything. The corpus was effectively unusable for
-the one purpose it was assembled for.
+Why this exists. The corpus contains dozens of PDFs, including image-only scans and large appendices. Before this cache existed, any reviewer asked to read the exemplars first-hand had to load whole PDFs through a file-reading tool, and two review agents stalled for ten minutes each doing exactly that before producing anything. The corpus was effectively unusable for the one purpose it was assembled for.
 
-Extracting once turns every later question into a grep. Counting how many exemplars put
-identification before results, or how many carry a standalone robustness section, or
-what a typical abstract length is, becomes a search over text rather than 53 document
-loads. That matters beyond speed: a claim about venue norms should be checkable by
-anyone in one command, and this project has already had to retract two such claims that
-were asserted from memory of a summary.
+Extracting once turns every later question into a grep. Counting how many exemplars put identification before results, or how many carry a standalone robustness section, or what a typical abstract length is, becomes a search over text instead of repeated document loads. That matters beyond speed: a claim about venue norms should be checkable by anyone in one command, and this project has already had to retract two such claims that were asserted from memory of a summary.
 
-Per-page text is kept, because section structure is a page-level property and a
-question like "where does the identification discussion sit" needs position, not just
-presence.
+Per-page text is kept, because section structure is a page-level property and a question like "where does the identification discussion sit" needs position, not just presence.
 
 Reads   literature/papers/*.pdf
 Writes  literature/text/<stem>.txt          one file per paper, pages delimited
@@ -31,6 +19,8 @@ import json
 import sys
 from pathlib import Path
 
+from ddvc.literature_sources import Entry, parse_bibtex
+from ddvc.paths import LITERATURE_BIB
 from ddvc.runtime import atomic_output
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -95,6 +85,28 @@ def needs_ocr(record: dict) -> bool:
     return int(record.get("chars", 0)) < max(200, 200 * int(record.get("pages", 0)))
 
 
+def title_for_extract(stem: str, text: str, entries: dict[str, Entry]) -> tuple[str, str]:
+    """Prefer a bibliography-validated title after the filename identifies one source."""
+    matches = [entry for key, entry in entries.items() if f"-{key}-" in f"-{stem}-"]
+    if len(matches) == 1 and matches[0].fields.get("title"):
+        return matches[0].fields["title"].replace("{", "").replace("}", "")[:140], "bibliography"
+    head = text.split("===== PAGE 1 =====", 1)[-1].strip().splitlines()
+    return next((line.strip() for line in head if len(line.strip()) > 20), "")[:140], "extract"
+
+
+def index_record(path: Path, text: str, pages: int, entries: dict[str, Entry]) -> dict:
+    """Build one index row through the shared title-resolution contract."""
+    title, title_source = title_for_extract(path.stem, text, entries)
+    return {
+        "stem": path.stem,
+        "pages": pages,
+        "chars": len(text),
+        "title_guess": title,
+        "title_source": title_source,
+        "pdf_mb": round(path.stat().st_size / 1e6, 2),
+    }
+
+
 def main() -> int:
     ap = argparse.ArgumentParser(description=__doc__,
                                  formatter_class=argparse.RawDescriptionHelpFormatter)
@@ -109,6 +121,7 @@ def main() -> int:
     OUT.mkdir(parents=True, exist_ok=True)
     print(f"extracting {len(pdfs)} PDFs to {OUT.relative_to(ROOT)}", flush=True)
 
+    entries = parse_bibtex(LITERATURE_BIB)
     previous_index = load_index(INDEX)
     index = []
     failed = 0
@@ -137,21 +150,11 @@ def main() -> int:
                           f"produced only {len(text):,} (probably a scan carrying OCR)",
                           flush=True)
                     text, pages = have, have.count("===== PAGE ")
-                    index.append({"stem": p.stem, "pages": pages, "chars": len(text),
-                                  "title_guess": next((ln.strip() for ln in
-                                                       text.split("===== PAGE 1 =====", 1)[-1]
-                                                       .strip().splitlines()
-                                                       if len(ln.strip()) > 20), "")[:140],
-                                  "pdf_mb": round(p.stat().st_size / 1e6, 2)})
+                    index.append(index_record(p, text, pages, entries))
                     continue
             with atomic_output(dest) as temporary:
                 temporary.write_text(text)
-        # First non-trivial line of page 1 is a serviceable title guess, and a bad
-        # guess is visible rather than silent because the raw text sits beside it.
-        head = text.split("===== PAGE 1 =====", 1)[-1].strip().splitlines()
-        title = next((ln.strip() for ln in head if len(ln.strip()) > 20), "")[:140]
-        index.append({"stem": p.stem, "pages": pages, "chars": len(text),
-                      "title_guess": title, "pdf_mb": round(p.stat().st_size / 1e6, 2)})
+        index.append(index_record(p, text, pages, entries))
         if i % 10 == 0 or i == len(pdfs):
             print(f"  {i}/{len(pdfs)}", flush=True)
 

@@ -6,37 +6,24 @@
   "scripts/measure_prose_conventions.py",
   "src/ddvc/tables.py"
  ],
- "created_at": "2026-08-09T03:56:42+00:00",
+ "created_at": "2026-08-09T04:07:19+00:00",
  "git": {
   "branch": "glotl/fgh-evidence",
-  "commit": "1b7ed12e0db6ea85e12ae34a2dd8ef43afcd3bab",
+  "commit": "abba5d2ce098fd2cc3d1645f3d9a7b88aadbae73",
   "dirty": true,
   "dirty_generated_files": [
    "data/manifests/output/exhibits/venue_optics.jsonl.prov.json",
    "output/exhibits/venue_optics.jsonl"
   ],
   "dirty_tracked_files": [
-   "deck/sections/02-objects.tex",
-   "deck/sections/90-appendix.tex",
-   "docs/deck-outline.md",
    "docs/findings-freeze.md",
    "docs/literature-audit.md",
-   "docs/node-c-definitions-round2.md",
-   "docs/paper-spine.md",
-   "docs/research-workflow.md",
-   "docs/venue-coverage-bounds.md",
+   "docs/node-k-proposals-round1.md",
    "literature/pdf-sources.json",
-   "literature/source-admission.json",
-   "literature/text/2023-GortonZhang2023Wildcat-taming-wildcat-stablecoins.txt",
    "literature/text/_index.jsonl",
-   "literature/vehicle-currencies.bib",
    "paper/sections/01-introduction.tex",
-   "paper/sections/02-setting.tex",
-   "paper/sections/03-dominance.tex",
-   "paper/sections/05-rivals.tex",
-   "paper/sections/06-executability.tex",
-   "paper/sections/07-conclusion.tex",
-   "paper/sections/08-appendix.tex"
+   "scripts/build_literature_text_cache.py",
+   "tests/test_literature_text_cache.py"
   ],
   "dirty_untracked_files": []
  },

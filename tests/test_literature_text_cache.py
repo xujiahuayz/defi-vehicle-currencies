@@ -58,6 +58,31 @@ class LiteratureTextCacheTests(unittest.TestCase):
             )
             self.assertEqual(set(builder.load_index(path)), {"paper-a"})
 
+    def test_bibliography_title_displaces_publisher_accessibility_cover(self) -> None:
+        builder = load_builder()
+        entry = builder.Entry(
+            key="Kyle1985ContinuousAuctions",
+            kind="article",
+            fields={"title": "Continuous Auctions and Insider Trading"},
+        )
+        title, source = builder.title_for_extract(
+            "1985-Kyle1985ContinuousAuctions-continuous-auctions-and-insider-trading",
+            "===== PAGE 1 =====\nAccessibility support:\nContinuous Auctions and Insider Trading",
+            {entry.key: entry},
+        )
+        self.assertEqual(title, "Continuous Auctions and Insider Trading")
+        self.assertEqual(source, "bibliography")
+
+    def test_unmatched_companion_keeps_extracted_title(self) -> None:
+        builder = load_builder()
+        title, source = builder.title_for_extract(
+            "unregistered-companion",
+            "===== PAGE 1 =====\nOnline appendix with identifying title",
+            {},
+        )
+        self.assertEqual(title, "Online appendix with identifying title")
+        self.assertEqual(source, "extract")
+
 
 if __name__ == "__main__":
     unittest.main()

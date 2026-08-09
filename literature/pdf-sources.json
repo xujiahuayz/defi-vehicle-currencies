@@ -581,6 +581,16 @@
       "main": "Krugman1980VehicleCurrencies",
       "status": "complete"
     },
+    "Kyle1985ContinuousAuctions": {
+      "checks": {
+        "article": "literature/text/1985-Kyle1985ContinuousAuctions-continuous-auctions-and-insider-trading.txt",
+        "author_or_repository": "https://www.rhsmith.umd.edu/directory/albert-pete-kyle",
+        "publisher_or_doi": "https://doi.org/10.2307/1913210"
+      },
+      "companions": [],
+      "main": "Kyle1985ContinuousAuctions",
+      "status": "complete"
+    },
     "LeharParlour2024Uniswap": {
       "checks": {
         "article": "literature/text/2024-LeharParlour2024Uniswap-decentralized-exchange-the-uniswap-automated-market-maker.txt",

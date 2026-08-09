@@ -164,7 +164,7 @@ Krugman's structure distinguishes partial- and total-indirect regimes through co
 
 These were generated and killed. The list is here because the screen is the useful part.
 
-**Kyle's lambda estimated per pool.** In a constant-product pool the price change caused by a swap is an exact deterministic function of reserves and trade size, so regressing price change on signed order flow recovers the invariant with a standard error attached. The sign is guaranteed by construction, which is the definition of exposition under section 4. The one non-mechanical residue, the split of impact into a permanent and a transitory part, is retained inside K6 as the risk channel and is not worth a candidate of its own.
+**Mechanical AMM price-impact slope, not a Kyle lambda.** In Kyle, lambda is the equilibrium slope of conditional liquidation value with respect to aggregate informed-plus-noise order flow. In a constant-product pool, local price impact is mechanically determined by reserves, fee and trade size; an OLS coefficient is only a local linear approximation to a nonlinear invariant. It therefore adds no independent identifying variation and is rejected. Kyle supplies no permanent-versus-transitory decomposition for K6, which concerns vehicle dependence on hub-liquidity shocks.
 
 **The Amihud illiquidity ratio by token.** Same defect in a different notation. Absolute return over volume in an automated market maker is the reciprocal of depth up to a design-specific constant, so the measure is a re-expression of pool size and carries no information that `strength_usd` does not already carry.
 
