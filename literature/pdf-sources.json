@@ -11,6 +11,16 @@
       "main": "AmihudMendelson1980Dealership",
       "status": "complete"
     },
+    "AnaduEtAl2023StablecoinRuns": {
+      "checks": {
+        "article": "literature/text/2025-AnaduEtAl2023StablecoinRuns-working-paper-runs-and-flights-to-safety-june-2025-revision.txt",
+        "author_or_repository": "https://pabloazar.github.io/publications/",
+        "publisher_or_doi": "https://doi.org/10.59576/sr.1073"
+      },
+      "companions": [],
+      "main": "AnaduEtAl2023StablecoinRuns",
+      "status": "complete"
+    },
     "AnandVenkataraman2016MarketMaking": {
       "checks": {
         "article": "literature/text/2016-AnandVenkataraman2016MarketMaking-market-conditions-fragility-and-the-economics-of-market-making.txt",
@@ -823,7 +833,13 @@
     "AnaduEtAl2023StablecoinRuns": [
       {
         "access": "public",
-        "label": "NY Fed Staff Report 1073",
+        "label": "Boston Fed SRA 23-02 June 2025 revision",
+        "url": "https://www.bostonfed.org/-/media/Documents/Workingpapers/PDF/2023/sra2302.pdf",
+        "version": "working-paper"
+      },
+      {
+        "access": "public",
+        "label": "NY Fed Staff Report 1073 revised April 2024, superseded scientific version",
         "url": "https://www.newyorkfed.org/medialibrary/media/research/staff_reports/sr1073.pdf",
         "version": "working-paper"
       }

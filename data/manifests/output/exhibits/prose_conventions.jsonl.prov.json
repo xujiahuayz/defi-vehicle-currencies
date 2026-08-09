@@ -6,28 +6,29 @@
   "scripts/measure_prose_conventions.py",
   "src/ddvc/tables.py"
  ],
- "created_at": "2026-08-09T04:19:20+00:00",
+ "created_at": "2026-08-09T04:26:41+00:00",
  "git": {
   "branch": "glotl/fgh-evidence",
-  "commit": "4599f834e9b3f31035eb2a2404ad34cf18e5cb43",
+  "commit": "203a45e577a2da7d2eacca1f1edc935f94a66ad5",
   "dirty": true,
   "dirty_generated_files": [
    "data/manifests/output/exhibits/venue_optics.jsonl.prov.json",
    "output/exhibits/venue_optics.jsonl"
   ],
   "dirty_tracked_files": [
-   "docs/deck-outline.md",
    "docs/findings-freeze.md",
    "docs/literature-audit.md",
+   "docs/node-c-definitions-round2.md",
    "literature/pdf-sources.json",
+   "literature/source-admission.json",
+   "literature/text/2023-AnaduEtAl2023StablecoinRuns-working-paper-runs-and-flights-to-safety-are-stablecoins-the-new-money-market-funds.txt",
    "literature/text/_index.jsonl",
    "literature/vehicle-currencies.bib",
-   "paper/sections/01-introduction.tex",
-   "paper/sections/02-setting.tex",
-   "paper/sections/05-rivals.tex",
-   "paper/sections/08-appendix.tex"
+   "paper/sections/05-rivals.tex"
   ],
-  "dirty_untracked_files": []
+  "dirty_untracked_files": [
+   "literature/text/2025-AnaduEtAl2023StablecoinRuns-working-paper-runs-and-flights-to-safety-june-2025-revision.txt"
+  ]
  },
  "inputs": [],
  "libraries": {
