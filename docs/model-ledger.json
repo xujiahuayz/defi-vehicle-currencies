@@ -148,7 +148,8 @@
       "resampling_refits": 0,
       "status": "withheld",
       "artifacts": [
-        "output/exhibits/transaction_state_frontier_audit_support.jsonl"
+        "output/exhibits/transaction_state_frontier_audit_support.jsonl",
+        "output/exhibits/routing_maturation_results.jsonl"
       ],
       "note": "The 77 audit dates validate construction only. The prior full daily panel is stale against the active canonical generation and cannot supply findings. D3 must rebuild it, enforce at least 99 percent chosen-route reproduction within one basis point, retain nested 0.1- and 0.01-basis-point support, and materialise the locked recurrent cell-day panel before the first fit."
     }
