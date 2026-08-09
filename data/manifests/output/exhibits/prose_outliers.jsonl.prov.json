@@ -6,10 +6,10 @@
   "scripts/find_prose_outliers.py",
   "src/ddvc/tables.py"
  ],
- "created_at": "2026-08-09T02:46:16+00:00",
+ "created_at": "2026-08-09T02:54:37+00:00",
  "git": {
   "branch": "glotl/fgh-evidence",
-  "commit": "6b59c46e65201cddc7a86363437ea252d178d31c",
+  "commit": "58508ff3cca3c47b6c6a725273d5229400b32692",
   "dirty": true,
   "dirty_generated_files": [
    "data/manifests/output/exhibits/prose_conventions.jsonl.prov.json",
@@ -19,9 +19,10 @@
   ],
   "dirty_tracked_files": [
    "docs/literature-audit.md",
-   "docs/research-questions-and-empirical-design.md",
    "literature/pdf-sources.json",
-   "paper/sections/01-introduction.tex"
+   "paper/sections/01-introduction.tex",
+   "paper/sections/05-liquidity.tex",
+   "paper/sections/05-rivals.tex"
   ],
   "dirty_untracked_files": []
  },

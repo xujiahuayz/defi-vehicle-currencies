@@ -1,6 +1,16 @@
 {
   "openathens": "ucl.ac.uk",
   "source_sets": {
+    "AmihudMendelson1980Dealership": {
+      "checks": {
+        "article": "literature/text/1980-AmihudMendelson1980Dealership-dealership-market-market-making-with-inventory.txt",
+        "author_or_repository": "https://pages.stern.nyu.edu/~yamihud/pdfs/vita.pdf",
+        "publisher_or_doi": "https://doi.org/10.1016/0304-405X(80)90020-3"
+      },
+      "companions": [],
+      "main": "AmihudMendelson1980Dealership",
+      "status": "complete"
+    },
     "BoltonKacperczyk2021CarbonRisk": {
       "checks": {
         "article": "literature/text/2021-BoltonKacperczyk2021CarbonRisk-do-investors-care-about-carbon-risk.txt",
