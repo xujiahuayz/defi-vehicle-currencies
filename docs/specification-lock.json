@@ -84,7 +84,7 @@
       "status": "descriptive_only_pending_transaction_state_frontier",
       "role": "first rival mechanism",
       "estimand": "changes in opportunity-set integration, direct splitting, true intermediation, path complexity, and realised routing regret",
-      "sample": "economic routes on full and balanced venue perimeters; topology uses the full daily calendar; the fixed-notional cost landscape uses the 200 most heavily intermediated directed endpoint pairs per day at all 24 UTC hours as a selected descriptive panel and requires a baseline-fixed pair cohort before any market-wide trend claim; exact-state regret uses the full daily realised-route frontier after a separate 77-day estimator-validation audit passes",
+      "sample": "economic routes on full and balanced venue perimeters; topology uses the full daily calendar; the fixed-notional cost landscape uses the 200 most heavily intermediated directed endpoint pairs per day at all 24 UTC hours as a selected descriptive panel, a cohort fixed from the first 365 released days for within-established-market changes, and a persistent common-support cohort; exact-state regret uses the full daily realised-route frontier after a separate 77-day estimator-validation audit passes",
       "unit": "route for topology; endpoint-pair-candidate-hour-notional cell for the fixed grid; realised route at its exact pre-transaction state for regret",
       "dependent_variable": "separate topology margins, direct and indirect availability, fixed-notional quote gaps, and realised same-state routing shortfalls",
       "transformation": "incidence levels, percentage-point changes, and basis-point cost gaps",
@@ -110,8 +110,8 @@
         ],
         "pair_universe": [
           "daily top-200 intermediated directed pairs as a selected descriptive panel",
-          "baseline-fixed directed-pair cohort",
-          "persistent common-support directed-pair cohort"
+          "top-200 directed pairs by aggregate intermediary volume over the first 365 released days, then held fixed and priced on every released day",
+          "directed pairs present in at least 80 percent of released days in every full calendar year from 2021 through 2025, reported as unsupported if fewer than 20 pairs qualify"
         ],
         "response_horizon_days": [
           1,
@@ -127,8 +127,8 @@
       },
       "falsifier": "stable transition vanishes inside fixed opportunity and search-efficiency cells",
       "admissible_interpretation": "integration expands while true intermediation contracts; conditional routing shortfalls and direct-market opportunity can be compared over time within their declared support",
-      "forbidden_interpretation": "aggregators caused efficiency convergence or stable-vehicle adoption, or the daily top-200 intermediated-pair grid identifies a market-wide efficiency trend",
-      "blocking_measurement": "the route-cost grid must pass its full 24-hour, three-notional semantic release audit and add a baseline-fixed pair cohort before supporting a market-wide opportunity-set trend; the prior 77-date transaction-state construction audit passed a 99 percent reproduction gate under a tolerance of 100 basis points, which is too loose for basis-point effects, so the replacement must reproduce at least 99 percent of coherent chosen quotes within 1 basis point, preserve 0.1- and 0.01-basis-point nested samples, build the separate full daily exact-state frontier, and link outcomes by exact 1, 7, 30, and 120 calendar days before estimation",
+      "forbidden_interpretation": "aggregators caused efficiency convergence or stable-vehicle adoption, or either selected pair cohort identifies a market-wide efficiency trend",
+      "blocking_measurement": "the route-cost grid must pass its full 24-hour, three-notional semantic release audit and add the predeclared baseline-fixed cohort before interpreting time change beyond the daily selected mix; neither cohort is a market census. The prior 77-date transaction-state construction audit passed a 99 percent reproduction gate under a tolerance of 100 basis points, which is too loose for basis-point effects, so the replacement must reproduce at least 99 percent of coherent chosen quotes within 1 basis point, preserve 0.1- and 0.01-basis-point nested samples, build the separate full daily exact-state frontier, and link outcomes by exact 1, 7, 30, and 120 calendar days before estimation",
       "inputs": [
         "data/processed/cross_venue_routing_daily.parquet",
         "data/empirical/route_cost_panel_v2.parquet",
