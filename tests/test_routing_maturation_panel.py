@@ -109,6 +109,9 @@ class RoutingMaturationPanelTests(unittest.TestCase):
             transition_panel = pd.read_parquet(transition)
             self.assertEqual(set(transition_panel["stable_indicator"]), {0, 1})
             self.assertIn("b4_above_10", set(transition_panel["path_choice_increment_bin"]))
+            self.assertEqual(transition_panel["endpoint_pair_id"].nunique(), 1)
+            self.assertEqual(transition_panel["opportunity_cell_id"].nunique(), 1)
+            self.assertGreater(transition_panel["transition_cell_id"].nunique(), 1)
 
     def test_rejects_noncanonical_horizons(self) -> None:
         with TemporaryDirectory() as directory:

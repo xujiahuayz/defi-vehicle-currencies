@@ -328,6 +328,9 @@ def _write_transition(
                     within_reach_regret_bin, reach_increment_bin,
                     path_choice_increment_bin, reproduction_tolerance_bps,
                     vehicle_type, (vehicle_type='stable')::INTEGER AS stable_indicator,
+                    md5(concat_ws('|',src,tgt)) AS endpoint_pair_id,
+                    md5(concat_ws('|',src,tgt,observed_reach,notional_bin))
+                        AS opportunity_cell_id,
                     md5(concat_ws('|',src,tgt,observed_reach,notional_bin,
                         within_reach_regret_bin,reach_increment_bin,
                         path_choice_increment_bin)) AS transition_cell_id,
@@ -489,7 +492,7 @@ def main() -> int:
         code_sources=CODE_SOURCES,
         inputs=inputs,
         rows=int(results["transition_rows"]),
-        notes="native-versus-stable route counts in fixed opportunity and saturated regret cells; no fitted models",
+        notes="native-versus-stable route counts with separate endpoint-reach-notional opportunity keys and saturated regret strata; no fitted models",
     )
     stamp(
         EXACT_HORIZONS,
