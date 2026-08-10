@@ -168,17 +168,6 @@ def _expected_schema(columns: tuple[str, ...]) -> pa.Schema:
 
 V2_FEE = 0.003
 
-# Per-operation gas for a liquidity event. The repository's only receipt-measured
-# figure is for swaps (`ddvc.cpquote.GAS_BY_LEGS`: 154,604 units for one leg,
-# measured on 2024-01-15 receipts). A liquidity event moves two token balances
-# plus position state instead of one balance pair, so these are set as multiples
-# of that measured baseline rather than invented: a v2 mint or burn at roughly
-# the cost of a one-leg swap.
-# The analysis script re-runs every net-return conclusion across a wide band
-# around these, because the level is an assumption and the sign of a net return
-# must not rest on one.
-GAS_UNITS = {"v2_mint": 155_000, "v2_burn": 155_000}
-
 
 def _f(x) -> float:
     try:

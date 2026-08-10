@@ -40,7 +40,11 @@ from ddvc.asset_types import asset_type
 from ddvc.analysis.regression import ClusteredOLSResult, ols_clustered
 from ddvc.data_release import require_node_d_release
 from ddvc.capital_contracts import RETURN_CAPITAL_VALIDATION_STATUS, capital_contract
-from ddvc.capital_validation import CAPITAL_PRICE_SOURCE, validated_capital_prices
+from ddvc.capital_validation import (
+    ANCHORED_CAPITAL_ROLES,
+    CAPITAL_PRICE_SOURCE,
+    validated_capital_prices,
+)
 from ddvc.gas import load_daily_gas_prices
 from ddvc.liquidity import (
     CAPITAL_COLUMN,
@@ -83,7 +87,7 @@ OUTPUT_PROVENANCE = {"code_sources": SRC, "inputs": REQUIRED_PANELS}
 
 MIN_TVL = 10_000.0
 MIN_MONTH_DAYS = 15
-GAS_UNITS = {"uniswap_v2": 155_000.0, "uniswap_v3": 225_000.0}
+GAS_UNITS = {"uniswap_v2": 155_000.0}
 WETH = "0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2"
 # A pool price that moves by more than this inside one hour is a rug, a
 # rebase or a decimals artefact, not a price. Screening these out REMOVES
@@ -217,9 +221,6 @@ def _gas() -> pd.DataFrame:
     return g.merge(eth, on="day", how="left")
 
 
-ANCHORED = ("native", "stable", "imported", "staked_native")
-
-
 def price_and_screen(
     df: pd.DataFrame,
     venue: str,
@@ -228,7 +229,7 @@ def price_and_screen(
 ) -> tuple[pd.DataFrame, list[dict]]:
     """Value, screen and account for one venue's pool-days.
 
-    Validation has already run off an ANCHORED leg. The repository's token price panel is
+    Validation has already run off a predeclared anchored leg. The repository's token price panel is
     itself derived from pool prices, so a token whose only market is one thin
     pool gets whatever price that pool implies, and multiplying it by that same
     pool's reserves manufactures capital out of nothing: an early cut of this
@@ -260,7 +261,10 @@ def price_and_screen(
     df = df.copy()
     df["type0"] = df.token0.map(asset_type)
     df["type1"] = df.token1.map(asset_type)
-    df = df[df.type0.isin(ANCHORED) | df.type1.isin(ANCHORED)]
+    df = df[
+        df.type0.isin(ANCHORED_CAPITAL_ROLES)
+        | df.type1.isin(ANCHORED_CAPITAL_ROLES)
+    ]
     note("3 at least one externally anchored leg", df)
 
     df = df[df.max_abs_ret <= np.log(MAX_HOURLY_MOVE)]
