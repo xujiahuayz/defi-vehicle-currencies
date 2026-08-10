@@ -140,12 +140,12 @@ Figure assets live under `output/figures/deck/` as one file per slide. Diagrams 
 
 ---
 
-### 9. Pricing the road not taken [BUILDABLE]
+### 9. Pricing the road not taken [GROSS BUILDABLE; ALL-IN BLOCKED]
 
 - Both routes quoted at one reconstructed pool state
 - Price movement cannot enter the comparison
 - Constant product, tick traversal, StableSwap, weighted geometric mean
-- Gas units calibrated from receipts by venue and candidate; primary price joined from the realised transaction's exact receipt, with same-block base fee as the urgency-free sensitivity
+- Gross quote-output comparison is available; candidate-specific route units and the realised transaction's exact receipt price enter only after the exact-clock join passes
 
 **Visual.** `deck/counterfactual_design.svg`, drawio tab `counterfactual`. Two horizontal lanes issue from a single state box labelled with the reconstructed pre-transaction reserves, ticks and balances. The upper lane quotes direct $i$ to $o$; the lower lane quotes $i$ to $k$ to $o$. One receipt-price box sends the same dashed arrow to both lanes, while separate route-unit boxes encode venue- and candidate-specific gas use. A bracket between the output boxes carries the gap in basis points. The reader should see one state and one observed transaction gas price feeding both alternatives, with route units varying by execution path.
 
@@ -155,21 +155,20 @@ Figure assets live under `output/figures/deck/` as one file per slide. Diagrams 
 
 ---
 
-### 10. Quoting only where the quoter was validated [BUILDABLE]
+### 10. Quoting only where the quoter was validated [BLOCKED ON CURRENT-GENERATION COVERAGE]
 
 - Every quoter validated on swaps that executed
 - Realised trade size at 0.34% of the input reserve at the median, 3.3% at the 90th percentile
 - Screen refuses any leg whose own price impact exceeds 5%
-- Median gap at $100k falls from 4,655 to 20.8 basis points
-- 70% to 86% of quotable routes removed
+- Current-generation removal shares and gap distributions wait for the exact-clock rebuild
 
-**Visual.** `deck/support_screen.svg`. Two panels sharing a log x axis of the gap in basis points from 1 to 100,000. Upper panel, the distribution of the same-state gap before the screen, plotted as a filled density with the median marked at 4,655 basis points at the $100k notional and a shaded region beyond the atomic-arbitrage threshold. Lower panel, the same distribution after the screen, median at 20.8 basis points, same axes and same shading. A small inset in the lower panel plots the empirical distribution of realised trade size as a fraction of the input reserve, x axis on a log scale, with a vertical rule at the 5% cap sitting near the 95th percentile at 0.0541. The read is that the unscreened panel was quoting trades no pool could absorb, and that the surviving gaps are the order of magnitude of the effects being measured.
+**Visual.** `deck/support_screen.svg` is withheld. Its replacement may show the realised trade-size support distribution now; before-and-after route-gap distributions enter only after the current route generation passes the exact-clock release.
 
 **Citations.** Makarov and Schoar (2020) for what a defensible measured deviation looks like and for the frictions that have to sustain one; Daian et al. (2020) for why an unconstrained same-block cycle is exposed to atomic competitive capture; Milionis, Moallemi, Roughgarden and Zhang (2023) for the loss-versus-rebalancing benchmark. The project's measured gas, state-latency and execution bounds carry the economic verdict.
 
-**Caveats the speaker states aloud.** The screen is ex ante on each leg's own impact and never on the gap, so it does not condition on the outcome. A material minority of surviving gaps at $10k still imply a cycle that pays, 38.5% at that notional, and the surviving sample is characterised on the next slide before any frequency is read off it.
+**Caveats the speaker states aloud.** The screen is ex ante on each leg's own impact and never on the gap, so it does not condition on the outcome. The former arbitrage threshold used a pooled fixed clock and is not evidence.
 
-**Grounding.** `output/exhibits/quoter_support_bounds.jsonl`; `output/exhibits/gap_arbitrage_bound.jsonl`.
+**Grounding.** `output/exhibits/quoter_support_bounds.jsonl`.
 
 ---
 
@@ -189,9 +188,9 @@ Right panel, the magnitude. X axis is the direct pool's advantage over the route
 
 **Citations.** Krugman (1980) for volume-cost feedback and Flandreau and Jobst (2009) for quote-network persistence without exact route alternatives; neither supplies the strict-domination counterfactual, which is this paper's construct. Makarov and Schoar (2020) motivate reporting the magnitude alongside the frequency.
 
-**Caveats the speaker states aloud.** 1,762 of 90,705 realised multi-leg routes on those days matched a priced counterfactual, because the panel prices 200 pairs at three fixed notionals, so the matched set is 64.5% stable-intermediated where the population is 66.9% native-intermediated, and it covers 71 pairs against 17,851. The raw matched mean of 41.3% inverts on candidate type against the population, and it is shown for that reason. Enumerating every candidate a router could have chosen answers a different question and returns 70.1% gross and 80.3% all-in. Round trips are excluded, since a route whose first input equals its last output moved no value. Remaining venue gaps would make the direct alternative better, so the incidence is a floor.
+**Caveats the speaker states aloud.** 1,762 of 90,705 realised multi-leg routes on those days matched a priced counterfactual, because the panel prices 200 pairs at three fixed notionals, so the matched set is 64.5% stable-intermediated where the population is 66.9% native-intermediated, and it covers 71 pairs against 17,851. The raw matched mean of 41.3% inverts on candidate type against the population, and it is shown for that reason. The former enumerated all-in comparison is withdrawn because it used a pooled fixed clock. Round trips are excluded, since a route whose first input equals its last output moved no value. Remaining venue gaps would make the direct alternative better, so the incidence is a floor.
 
-**Grounding.** `docs/finding-dominance-and-persistence.md`; `output/exhibits/realised_dominance.jsonl`; `output/exhibits/dominance_windows_screened.jsonl`.
+**Grounding.** `docs/finding-dominance-and-persistence.md`; `output/exhibits/realised_dominance.jsonl`.
 
 ---
 
@@ -368,13 +367,13 @@ Not presented. Reached by number when a question lands. Every slide keeps the ph
 
 ### A10. Gas measured from receipts [BLOCKED ON ROUTE-GAS SAMPLE]
 
-- The pooled one-, two- and three-leg constants are fallbacks, not final evidence
+- The pooled one-, two- and three-leg constants are retired and cannot act as fallbacks
 - The live instrument samples exact single-component transactions by year, topology, exact venue sequence and intermediary identity
 - Report medians and interquartile ranges only after the full support distribution fixes the fallback hierarchy
 - Executor addresses are heterogeneity diagnostics and do not identify the route author
 - Direction-asymmetric: one direction deducts from output, the other shrinks the input budget
 
-**Visual.** `deck/appendix_gas_hops.svg`. Two horizontal bars, y axis the route topology at one leg and two legs, x axis median gas units from 0 to 250,000, with the difference bracketed and labelled. The read is the size of the handicap the vehicle route carries before any price effect.
+**Visual.** `deck/appendix_gas_hops.svg` remains withheld. Its replacement shows the exact-clock contract and adds route-unit distributions only after the full support hierarchy passes.
 
 ### A11. The cost regime moves by three orders of magnitude [DAILY PRICE REBUILD REQUIRED; ALL-IN BPS BLOCKED]
 
@@ -598,4 +597,4 @@ The spine rebuild answered the two structural questions the previous version of 
 
 **7. Balancer's excluded pool families, with the exclusion's direction signed.** The weighted quoter is wired in and validated, and the families it declines are large on the days they trade: AaveLinear and ERC4626Linear reach 58.8% and 63.7% of a day's excluded Balancer volume, and ComposableStable reaches 83.3% on another. Those are stable-side families, so their exclusion runs opposite to the Curve gate's native-side exclusion, and the two have never been netted. Slide A20 signs the Curve gate year by year and states the panel's bound as one-directional, and slide 11's floor caveat rests on that statement. It is not currently safe, and it needs the Balancer exclusion measured on the same leg split before either ships.
 
-**8. Per-leg gas by venue and by candidate, which slide 9's diagram now advertises.** The diagram shows a gas draw attaching to every leg and differing across candidates, because a per-hop constant common to all candidates is absorbed by any within-cell design and moves nothing. A Curve StableSwap leg, a tick-crossing concentrated-liquidity leg and a constant-product leg do not cost the same gas, and the receipt-measured 154,604 and 228,701 unit medians are pooled over all of them. Slide 9 draws the term the deck claims to price, and A10 currently reports the pooled version, so either the per-venue medians land or the diagram reverts to one lane and A10 says so.
+**8. Route gas by venue and by candidate, which slide 9's diagram now advertises.** The diagram shows one whole-route gas draw for each alternative and permits it to differ across candidates, because a pooled topology constant common to all candidates is absorbed by any within-cell design and moves nothing. Curve StableSwap, tick-crossing concentrated-liquidity and constant-product routes need not cost the same gas. Slide 9 draws the term the deck claims to price, so the receipt-calibrated support hierarchy must land before it ships.

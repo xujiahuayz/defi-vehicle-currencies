@@ -1,6 +1,5 @@
 % Slides 9 and 10. How the counterfactual is priced, and where the quoters are allowed to
-% quote. Sources: paper sections 2.4 and 2.5; output/exhibits/quoter_support_bounds.jsonl;
-% output/exhibits/gap_arbitrage_bound.jsonl; output/exhibits/dominance_windows_screened.jsonl.
+% quote. Sources: paper sections 2.4 and 2.5; output/exhibits/quoter_support_bounds.jsonl.
 
 \begin{frame}{Pricing the road not taken}
 \centering
@@ -16,12 +15,8 @@
 \draw[flow] (st.east) to[out=-20,in=180] (v1.west);
 \draw[flow] (v1.east) -- (v2.west);
 \draw[flow] (v2.east) -- (o2.west);
-\node[card,fill=cimported!12,draw=cimported,minimum width=2.0cm,align=center] (g) at (0.4,-1.5) {gas per leg\\from receipts};
-\draw[ghost,draw=cimported] (g.north east) to[out=40,in=250] (d1.south);
-\draw[ghost,draw=cimported] (g.east) to[out=10,in=210] (v1.south west);
-\draw[ghost,draw=cimported] (g.east) to[out=0,in=250] (v2.south);
 \draw[decorate,decoration={brace,amplitude=4pt},draw=caccent] (9.9,2.5) -- (9.9,0.0);
-\node[font=\scriptsize,text=caccent,anchor=west,align=left] (gp) at (10.05,1.25) {gap in\\basis points};
+\node[font=\scriptsize,text=caccent,anchor=west,align=left] (gp) at (10.05,1.25) {gross gap in\\basis points};
 \end{tikzpicture}
 \vspace{0.5em}
 \begin{columns}[T]
@@ -48,8 +43,8 @@
 \begin{itemize}
 \item Realised trade at \keyfig{0.34\%} of the input reserve at the median, 3.3\% at the 90th percentile
 \item Screen refuses any leg whose own price impact exceeds \keyfig{5\%}
-\item Median gap at \$100k falls from 4,655 to 20.8 basis points
-\item 70\% to 86\% of quotable routes removed
+\item Current-generation removal rates wait for the exact-clock rebuild
+\item No route-gap distribution enters from the retired panel
 \end{itemize}
 \vspace{0.2em}
 \srcnote{Stated in pool state, known before the quote}
@@ -58,16 +53,10 @@
 \centering
 % output/exhibits/quoter_support_bounds.jsonl POOLED row, 932,270 validated swaps on eight days
 \begin{tikzpicture}
-\begin{axis}[deckaxis,name=sz,nearlabels,width=5.0cm,height=4.8cm,ybar,bar width=10pt,ymode=log,ymin=0.1,ymax=600,symbolic x coords={median,p90,p99,p999},xtick=data,xticklabels={median,90th,99th,99.9th},title={realised size over input reserve, \%}]
+\begin{axis}[deckaxis,nearlabels,width=8.2cm,height=4.8cm,ybar,bar width=15pt,ymode=log,ymin=0.1,ymax=600,symbolic x coords={median,p90,p99,p999},xtick=data,xticklabels={median,90th,99th,99.9th},title={realised size over input reserve, \%}]
 \addplot[fill=cnative!35,draw=cnative] coordinates {(median,0.34) [0.34] (p90,3.29) [3.29] (p99,14.86) [14.9] (p999,78.33) [78.3]};
 \draw[draw=caccent,line width=1pt,dashed] (axis cs:median,5) -- (axis cs:p999,5);
 \node[font=\tiny,text=caccent,anchor=south west,fill=white,inner sep=0.5pt] at (axis cs:median,5.4) {5\% screen};
-\end{axis}
-% output/exhibits/gap_arbitrage_bound.jsonl post-screen medians; paper section 2.5 for the 4,655
-\begin{axis}[deckaxis,at={(sz.east)},xshift=1.3cm,anchor=west,nearlabels,width=5.4cm,height=4.8cm,ybar,bar width=13pt,ymode=log,ymin=5,ymax=30000,symbolic x coords={a,b,c},xtick=data,xticklabels={\$1k,\$10k,\$100k},title={median cost gap, basis points}]
-\addplot[fill=cstable!45,draw=cstable] coordinates {(a,31.1) [31.1] (b,33.9) [33.9] (c,20.8) [20.8]};
-\draw[draw=cother,line width=1pt,dashed] (axis cs:a,4655) -- (axis cs:c,4655);
-\node[font=\tiny,text=cother,anchor=south] at (axis cs:b,5400) {before the screen at \$100k, 4,655};
 \end{axis}
 \end{tikzpicture}
 \end{column}

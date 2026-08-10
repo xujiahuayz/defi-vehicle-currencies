@@ -8,13 +8,11 @@ pool was deep enough to serve them. The panel then applies those quoters to 123.
 hypothetical routes, including routes through pools no router would touch, and in that
 region a quote is an extrapolation with no measured error.
 
-The consequence is not speculative. Between 44.5% and 82.0% of the panel's route-cost
-gaps imply an arbitrage cycle that pays after three pool fees and three-hop gas, and at a
-100,000 dollar trade the MEDIAN gap is 4,655 basis points. A gap of that size is
-economically implausible without measured financing, gas, competition, state-latency,
-reversion and builder frictions; atomic execution removes unmatched-leg risk but does not
-remove those costs. The gaps therefore cannot be treated as economic facts without the
-quantitative bound.
+The former fixed-clock arbitrage calculation cannot supply that error bound. It pooled gas
+units by topology, applied a sample-wide gas price and fixed native-asset conversion, and
+evaluated an obsolete route panel. Those quantities are not evidence about a candidate gap
+at a particular transaction and block. This script therefore measures realised quote
+support only; it neither consumes nor produces an all-in arbitrage classification.
 
 The fix has to be an EX-ANTE screen on the pool, not a filter on the gap. Filtering on the
 gap conditions on the magnitude of a monotone function of the outcome, which is selection

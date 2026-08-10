@@ -79,7 +79,7 @@ Node I rejected the eight-table target as a design constraint, on the ground tha
 6. Are the measured gaps real?                       DEFENCE OF THE OBJECT
    6.1 Where the quoters are validated, and where they are not
    6.2 Whether the router faced the state the panel prices
-   6.3 What an unexploited gap implies, and the arbitrage bound
+   6.3 What an unexploited gap implies, and the same-block capture test
    6.4 Venue coverage, signed
 7. Conclusion
 ```
@@ -88,7 +88,7 @@ Node I rejected the eight-table target as a design constraint, on the ground tha
 
 Why section 4 gets the estimand and section 5 keeps the horse race. Section 4 measures the duration and its price. Section 5 asks what produces a duration of that length, and the four accounts are the ones that would each be economically interesting if true. Measurement rivals do not appear in section 5; they are dispatched at 2.4, 3.4, 4.4 and in section 6 alongside the numbers they threaten, per the invariant that survived the correction above.
 
-Why section 6 is top level and not a subsection. Per 1.1, because the object is contested and because Makarov and Schoar establish the position for exactly this case. Its content is the support screen's derivation, the block-against-hour timing question of whether the router faced the state the panel prices, the arbitrage bound on the gaps that survive the screen, and the signed venue-coverage bound. None of that defends a coefficient. All of it defends whether the gap is a thing that existed.
+Why section 6 is top level and not a subsection. Per 1.1, because the object is contested and because Makarov and Schoar establish the position for exactly this case. Its content is the support screen's derivation, the block-against-hour timing question of whether the router faced the state the panel prices, the exact-clock same-block capture test, and the signed venue-coverage bound. None of that defends a coefficient. All of it defends whether the gap is a thing that existed.
 
 ---
 
@@ -126,7 +126,7 @@ The introduction may not lead with the native asset's level cost advantage. Nati
 | Six venues are priced and each quoter was accepted against realised swaps | `docs/venue-coverage-bounds.md`, v2 and sushiswap_v2 on constant product, v3 and v4 on exact tick state, Curve on a per-pool-day calibrated amplification coefficient at 0.022% median error, Balancer on the weighted geometric mean at 0.0000% median error on backward-rolled balances | EXISTS for the quoters; PENDING for Balancer's integration into the route panel | n/a |
 | sushiswap_v3 is excluded and the exclusion is a decision with a number behind it | Same, 0.016% of priced-venue volume pooled and 4.1% of its volume on pairs no priced venue hosts | EXISTS | n/a |
 | The panel refuses to quote a leg whose own price impact exceeds 5% of the trade, and the threshold is derived from where the quoters were validated | `output/exhibits/quoter_support_bounds.jsonl`, 932,270 validated swaps across eight sampled days, pooled median size-to-depth 0.34%, p90 3.3%, p99 14.9% | EXISTS | n/a |
-| The screen removes 70% to 86% of quotable routes and cuts median gaps from thousands of basis points to tens | `scripts/measure_dominance_windows.py` and `output/exhibits/gap_arbitrage_bound.jsonl`, post-screen median gap 31 bps at $1,000, 34 bps at $10,000 and 21 bps at $100,000, against a pre-screen median of 4,655 bps at $100,000 | EXISTS | n/a |
+| The support screen's current-generation coverage and gap distribution | Former fixed-clock diagnostic | WITHDRAWN pending exact-clock rebuild | n/a |
 | The executor is identifiable from the calling contract and the routing author is only partly recoverable | `docs/router-identification-feasibility.md`, 241 distinct senders on 74,323 swaps, executor population fragmenting to 397 senders by late 2025 with a hand registry covering 11.8% | EXISTS | No |
 | The reconstruction advantage is engineering difficulty and not private data | `docs/research-workflow.md` section 2, corrected from the retracted data-moat reading | EXISTS | n/a |
 
@@ -139,11 +139,11 @@ The introduction may not lead with the native asset's level cost advantage. Nati
 | On routing that actually executed, 27.2% was strictly dominated by an available direct pool at the same reconstructed state, population-weighted and covering 79.0% of realised routing | `output/exhibits/realised_dominance.jsonl` REWEIGHTED row, from 1,762 matched routes over four days | EXISTS at four days; PENDING (rebuild) | No |
 | The raw matched mean is 41.3% and it is not the population figure, because matching is inverted on candidate type | Same, daily matched rates 49.5%, 38.0%, 39.2%, 37.9%, against a matched composition of 64.1% stable where the population is 67.7% native | EXISTS | n/a |
 | Weighted by value the matched incidence runs 33.5% to 46.7% across the four days | Same, `value_weighted` field, and no population reweighting of the value figure exists | EXISTS at four days; PENDING for the reweighted value figure | No |
-| 27.2% lands close to the 30.0% all-in figure the retired v2-only analysis reported, by a path that reuses none of that computation | `docs/finding-dominance-and-persistence.md` | EXISTS, and it is reported as a convergence and not as a confirmation, since both could share an error in the underlying quoting | n/a |
-| Enumerating every candidate a router could have chosen returns 70.1% gross and 80.3% all-in, and it answers a different question | `output/exhibits/dominance_windows_screened.jsonl`, 1,839 enumerated routes post-screen | EXISTS | Partly, and it is reported as the enumeration bound and never as the incidence |
+| The 27.2% realised-route incidence is gross of gas and has no admitted all-in comparator | `output/exhibits/realised_dominance.jsonl` | EXISTS at four days; exact-clock all-in incidence is PENDING | n/a |
+| Enumerated candidate cost comparison | Former pooled fixed-clock diagnostic | WITHDRAWN pending a separately registered gross or exact-clock all-in rebuild | Partly |
 | The realised figure and the enumerated figure differ because most enumerated two-hop routes are ones nobody took, and holding the role means being used | `scripts/measure_realised_dominance.py` header | EXISTS as a design statement | n/a |
 | The retired 17.9% was a v2-only, unscreened, enumerated figure and is superseded in all three respects | `docs/finding-cost-dominance-measured.md`, now superseded | EXISTS as a correction | n/a |
-| Post-screen enumerated cost domination by type runs native 62.0%, stable 69.1%, imported 85.0% gross | `output/exhibits/dominance_windows_screened.jsonl`, 347, 1,212 and 280 routes | EXISTS | Partly |
+| Post-screen enumerated cost domination by type | Former pooled fixed-clock diagnostic | WITHDRAWN | Partly |
 | Cost-domination incidence on realised routes by intermediary type, at native 23.7%, stable 45.4% and imported 61.4% | `scripts/characterise_matched_sample.py` and `scripts/measure_realised_dominance.py`, the same rates that carry the reweighting | EXISTS at four days; PENDING (rebuild) for the year dimension | Partly |
 | The vehicle role migrated from native to stable across the sample, and the migration is the time axis against which cost domination is read | `docs/finding-intermediation-transition.md`, 2,240 days | EXISTS | No |
 | The value-weighted crossover arrives 2022-Q1 and is sustained from 2022-Q4; the count-weighted crossover appears only in 2026-H1 | Same | EXISTS | No |
@@ -198,9 +198,8 @@ Claims here are the horse race and are set out in full in section 5 of this file
 | The timing error declines across the three validation dates | Same. Median absolute movement is 140.3 basis points in 2022, 52.1 in 2024 and 31.7 in 2025 | EXISTS as a diagnostic; three dates do not identify a trend or an aggregator effect |
 | Repricing the direct and alternative-vehicle counterfactuals at transaction state closes the threat | The actual-route validator establishes strict causal order and amount orientation with zero negative own-state shortfalls; the counterfactual frontier still needs the same treatment | PENDING, and it is F1 |
 | The timing threat bears on persistence and not on the cost-domination frequency, because a frequency is a statement about a state and does not require the router to have had a choice | Same | EXISTS as a design argument |
-| The router optimises something other than quoted output, weighing MEV exposure, failure probability and private orderflow alongside gas | Same, threat 3. Gas is handled by the all-in comparison; the rest are not observable here | PENDING for a bound on what fraction of persisting volume each could explain, and it is the strongest referee objection to the persistence claim |
-| Post-screen, the median gap is 31 bps at $1,000, 34 bps at $10,000 and 21 bps at $100,000 | `output/exhibits/gap_arbitrage_bound.jsonl` | EXISTS |
-| A residual share of post-screen gaps still exceeds three pool fees plus three-hop gas, at 13.6% at $1,000, 38.5% at $10,000 and 22.0% at $100,000 | Same, `share_above_threshold` against thresholds of 169, 71 and 61 bps | EXISTS, and it is reported as an unresolved upper bound on measurement error |
+| The router optimises something other than quoted output, weighing MEV exposure, failure probability and private orderflow alongside gas | Same, threat 3. The registered exact-clock route comparison handles gas; the rest are not observable here | PENDING for a bound on what fraction of persisting volume each could explain, and it is the strongest referee objection to the persistence claim |
+| Post-screen gap distribution and arbitrage-cycle threshold | Former pooled fixed-clock diagnostic | WITHDRAWN pending exact transaction/block gas, receipt-calibrated cycle units and the same-block closing-cycle test |
 | Whether an atomic cycle appears in the same block for the gaps above threshold | Specification: join the flagged cells to same-block swap sequences and report the share with a closing cycle | PENDING, and it is what would split arbitrage that was taken from quoter error |
 | Venue coverage gaps push the native-versus-stable comparison against the native asset in every year, so the comparison is a floor | `docs/venue-coverage-bounds.md`, Curve's gate removing 65.2% of native-leg volume against 21.1% of stable-leg volume, the gap at least 33 percentage points in every year | EXISTS |
 | Balancer is the largest venue with a built quoter and no route-cost integration, at 3.9% of panel volume pooled and 8.8% at its 2023 peak | Same | EXISTS |
@@ -282,19 +281,7 @@ The headline row is the reweighted one and the table note says why in one senten
 | Other and staked native | no matched rate | 21.5 |
 | Covered, weighted | 27.2 | 79.0 |
 
-The note on panel B carries the constraint from 2.5. Native routing is dominated least, a measured ordering that the taxonomy does not fix. The row remains descriptive until transaction-state repricing and full-calendar support close; the panel's current work is the reweighting and coverage figure. Panel C is the enumeration bound, from `output/exhibits/dominance_windows_screened.jsonl`, reported so a reader can see the two questions apart.
-
-| Enumerated scope | Routes | Dominated, gross | Dominated, all-in |
-|---|---|---|---|
-| Native | 347 | 62.0 | 67.1 |
-| Stable | 1,212 | 69.1 | 81.4 |
-| Imported | 280 | 85.0 | 92.1 |
-| All | 1,839 | 70.1 | 80.3 |
-| At $1,000 | 804 | 67.4 | 85.2 |
-| At $10,000 | 631 | 74.6 | 80.8 |
-| At $100,000 | 404 | 68.6 | 69.8 |
-
-The note distinguishes the panels in one sentence. Panel A asks how often a vehicle carrying realised routing was worse than the direct alternative, which is the state the FX literature cannot observe. Panel C asks how often any enumerated two-hop route through a candidate would have been worse, which is a property of the route universe and includes routes nobody would take. Neither figure may be quoted as the other and the retired 17.9% was neither, being a v2-only unscreened enumeration.
+The note on panel B carries the constraint from 2.5. Native routing is dominated least, a measured ordering that the taxonomy does not fix. The row remains descriptive until transaction-state repricing and full-calendar support close; the panel's current work is the reweighting and coverage figure. The former panel C enumeration is withdrawn because its all-in arm used pooled units, a sample-wide gas price and fixed native-asset conversion. A replacement must be registered as either gross output or exact-clock all-in cost before it enters this spine.
 
 ### Table 4. Survival of the role under cost domination
 
@@ -453,7 +440,7 @@ Ordered by how much narrative weight is blocked, with the specification that wou
 
 **F4. Balancer integrated into the route-cost panel.** The quoter is built and validated at 0.0000% median error on backward-rolled balances, and Balancer is 3.9% of panel volume pooled and 8.8% at its 2023 peak, which makes it the largest coverage gain available. `docs/venue-coverage-bounds.md` records the integration as pending and the venue as absent from both sides of the comparison.
 
-**F5. The same-block cycle check on gaps above the arbitrage threshold.** Post-screen, 13.6% of gaps at $1,000, 38.5% at $10,000 and 22.0% at $100,000 still exceed three pool fees plus three-hop gas. Join those cells to the same-block swap sequence and report the share where a closing cycle appears. A cycle means arbitrage that was taken and the gap was real; no cycle means the gap is quoter error or an unmodelled constraint. This is the one test that splits the two, and section 6.3 cannot be written without it.
+**F5. The exact-clock same-block cycle check.** Construct candidate-specific capture costs only after joining each gap to its transaction and block, receipt gas price and calibrated route units. Then report the share with a closing swap sequence in the same block. A cycle is evidence that the gap existed and was captured; no cycle leaves quoter error or an unmodelled constraint unresolved. The former pooled fixed-clock threshold and its tail shares are not inputs to this test.
 
 **F6. Exact transaction gas price and candidate-specific route gas units.** Join every realised route to its receipt by exact transaction hash and block number, use `effectiveGasPrice` as the primary observed price, and exclude exact-zero prices because private or bundle payment may be unobserved. Apply that one observed price to both route alternatives, whose gas units remain conditioned on year, topology, exact venue sequence and intermediary identity. Report same-block base fee as the urgency-free sensitivity. A daily gas series may describe the regime or enter a pool-day object, but it cannot price a transaction-level route.
 
@@ -481,7 +468,7 @@ Ordered by how much narrative weight is blocked, with the specification that wou
 
 **H3. The deck's centre is reopened with node G.** The old instruction made the survival curve the spine and used realised cost-domination incidence as a temporary centre. Neither can now displace the paper's continuous vehicle-dominance question. The four-day retention ratios remain withdrawn because 62.8% of validated actual routes move by more than 30 basis points between strict pre-transaction state and hour end. If the 27.2% population-weighted cost-domination incidence survives F, the deck must show the matched-sample ratios and 1.9% coverage beside it; it cannot become the paper headline.
 
-**H4. Slide 11's gas arrow is wrong in a way the rewrite makes worse.** The slide specifies a dashed arrow labelled "add 74,096 units" attaching to the vehicle lane only. A per-hop constant common to every candidate is absorbed by the group fixed effect in any within-cell design and moves nothing, per Node I objection 6 and definition 7 above. The arrow should carry a candidate-specific and venue-specific gas term or it should be removed, and F5 is what supplies it.
+**H4. Slide 11's gas arrow is wrong in a way the rewrite makes worse.** The slide attaches one pooled extra-hop constant to the vehicle lane. A per-hop constant common to every candidate is absorbed by the group fixed effect in any within-cell design and moves nothing, per Node I objection 6 and definition 7 above. The arrow should carry a candidate-specific and venue-specific gas term or it should be removed, and F5 is what supplies it.
 
 **H5. Slide 14's cut rule is adopted and generalised.** Slide 14 will be cut unless cost-domination windows are dated on an all-in basis, on the stated ground that a window dated on gross quotes is not a window a trader faced. G adopts it and extends it: no cost-domination incidence enters the deck or the paper without the support screen applied, because the pre-screen figures carried median gaps of thousands of basis points and the retired 17.9% is the example of what that produces.
 

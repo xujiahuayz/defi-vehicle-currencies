@@ -190,6 +190,18 @@ class DataReleaseTests(unittest.TestCase):
         with self.assertRaisesRegex(RuntimeError, "exact transaction/block gas"):
             test_gap_arbitrage_bound.main()
 
+    def test_withdrawn_fixed_clock_dominance_windows_fail_closed(self) -> None:
+        from scripts import measure_dominance_windows
+
+        with self.assertRaisesRegex(RuntimeError, "exact-clock all-in replacement"):
+            measure_dominance_windows.main()
+
+    def test_withdrawn_fixed_gas_rent_incidence_fails_closed(self) -> None:
+        from scripts import run_rent_incidence
+
+        with self.assertRaisesRegex(RuntimeError, "receipt-measured LP-operation gas"):
+            run_rent_incidence.main()
+
     def test_release_orchestration_does_not_invalidate_analysis_results(self) -> None:
         filenames = [
             "scripts/build_intermediation_by_type.py",

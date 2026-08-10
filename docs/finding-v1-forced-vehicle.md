@@ -189,7 +189,7 @@ Within a cohort there is genuine decay in horizon, clearest for 2021 (0.48 down 
 
 *V2's router defaulted to WETH paths.* Both section 3's pairing shares and section 5's routing shares are partly a statement about one team's routing software and pool-creation defaults rather than about traders. A single implementation choice inside the Uniswap frontend can produce both patterns with no economics at all.
 
-*Gas sits on the causal path, so controlling for it is wrong.* A two-hop vehicle route burns roughly 74,096 more gas units than one hop (`docs/finding-cost-dominance-measured.md`, from receipt medians of 154,604 against 228,701). Gas rose sharply through 2020 and collapsed after EIP-4844. That directly drives whether ETH routing is optimal, and it drives V1 abandonment, so it sits on the causal path of both tests and cannot be netted out by including it as a regressor.
+*Gas sits on the causal path, so controlling for it is wrong.* The former pooled extra-hop calibration cannot measure this channel. Route comparisons require candidate-specific units and the realised transaction's exact receipt price; until that join passes, gas remains an unmeasured part of the outcome and cannot be netted out by including a daily proxy as a regressor.
 
 *V1 survivor bias.* By late 2020 V1 was executing under 1,500 swaps a day across roughly 130 exchanges. The tokens still trading there were selected on not having migrated, which selects on the outcome. All of section 2's post-launch windows live inside this.
 

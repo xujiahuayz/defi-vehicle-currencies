@@ -153,59 +153,61 @@
 \end{columns}
 \end{frame}
 
-\begin{frame}{A6. Gas measured from receipts}
+\begin{frame}{A6. Route gas uses the candidate's clock}
 \begin{columns}[T]
 \begin{column}{0.42\textwidth}
 \begin{itemize}
-\item Median gasUsed 154,604 for one leg
-\item 228,701 for two legs, 319,906 for three
-\item Extra hop 74,096 units
-\item Charged per route topology, alongside the gross comparison throughout
+\item Price gas at the realised transaction's effective gas price
+\item Calibrate units by year, topology, venue sequence and intermediary identity
+\item Missing or zero receipt prices fail closed
+\item Keep gross route comparisons separate until this join passes
 \end{itemize}
 \end{column}
 \begin{column}{0.56\textwidth}
 \centering
-% docs/finding-cost-dominance-measured.md for the one-leg and two-leg medians; paper section 6.3
-\begin{tikzpicture}
-\begin{axis}[deckaxis,width=7.0cm,height=4.4cm,xbar,bar width=15pt,xmin=0,xmax=420000,symbolic y coords={one leg,two legs,three legs},ytick=data,xlabel={median gas units},scaled x ticks=false,xticklabel style={/pgf/number format/1000 sep={,},font=\tiny},nodes near coords={\pgfmathprintnumber[fixed,precision=0,1000 sep={,}]{\pgfplotspointmeta}},every node near coord/.append style={font=\tiny,color=cink}]
-\addplot[fill=cimported!40,draw=cimported] coordinates {(154604,one leg) (228701,two legs) (319906,three legs)};
-\end{axis}
-\end{tikzpicture}
+\small
+\[
+\begin{aligned}
+\mathrm{GasCost}_{r}
+&= \mathrm{Units}_{r,y,v,k} \\
+&\quad\times \mathrm{EffectiveGasPrice}_{\mathrm{tx}(r)} \\
+&\quad\times P^{\mathrm{ETH}}_{\mathrm{block}(r)}
+\end{aligned}
+\]
 \end{column}
 \end{columns}
 \end{frame}
 
-\begin{frame}{A7. The cost regime moves by three orders of magnitude}
+\begin{frame}{A7. Gas price has two distinct clocks}
 \begin{columns}[T]
 \begin{column}{0.40\textwidth}
 \begin{itemize}
-\item Per-transaction gas price, 1,883 measured days, 2021-05-05 to 2026-06-30
-\item Annual medians 70.51 gwei in 2021, 0.12 gwei in 2026
-\item 28.37 gwei before 2024-03-13, 1.11 gwei after
-\item Panel median 13.67 gwei
+\item Exact receipt price for an individual route comparison
+\item A separately rebuilt daily distribution for regime description
+\item Daily observations use fixed interior block quantiles inside exact UTC-day bounds
+\item A daily statistic never prices an individual route
 \end{itemize}
-\vspace{0.2em}
-\srcnote{Caparros, Chaudhary and Klein (2024)}
 \end{column}
 \begin{column}{0.58\textwidth}
 \centering
-% output/exhibits/daily_gas_price_graph.jsonl, annual medians of gas_gwei_median
-\begin{tikzpicture}
-\begin{axis}[deckaxis,width=7.2cm,height=4.4cm,ymode=log,ymin=0.05,ymax=200,xmin=2020.7,xmax=2026.3,xtick={2021,2022,2023,2024,2025,2026},xticklabel style={/pgf/number format/1000 sep=},ylabel={median gas price, gwei}]
-\addplot[color=cnative,mark=*,mark size=1.7pt] coordinates {(2021,70.51) (2022,26.28) (2023,22.60) (2024,9.26) (2025,0.78) (2026,0.12)};
-\draw[draw=caccent,line width=1pt,dashed] (axis cs:2024.2,0.05) -- (axis cs:2024.2,200);
-\node[font=\tiny,text=caccent,anchor=west] at (axis cs:2024.3,60) {2024-03-13};
-\end{axis}
+\begin{tikzpicture}[scale=0.92,transform shape]
+\node[card,draw=cnative,fill=cnative!12,minimum width=2.2cm,align=center] (receipt) at (0,2.2) {transaction receipt\\effective gas price};
+\node[card,draw=cstable,fill=cstable!12,minimum width=2.2cm,align=center] (day) at (0,-0.2) {exact UTC day\\fixed block quantiles};
+\node[card,draw=crule,minimum width=2.2cm,align=center] (route) at (5.2,2.2) {all-in route\\comparison};
+\node[card,draw=crule,minimum width=2.2cm,align=center] (regime) at (5.2,-0.2) {descriptive\\gas regime};
+\draw[flow,draw=cnative] (receipt.east) -- (route.west);
+\draw[flow,draw=cstable] (day.east) -- (regime.west);
+\draw[ghost,draw=cother] (day.north east) to[out=35,in=225] node[above,font=\tiny,text=cother]{prohibited substitution} (route.south west);
 \end{tikzpicture}
 \end{column}
 \end{columns}
 \end{frame}
 
-\begin{frame}{A8. Gas in the outcome}
+\begin{frame}{A8. Where gas enters the eventual outcome}
 \begin{columns}[T]
 \begin{column}{0.42\textwidth}
 \begin{itemize}
-\item Gas enters the quoted cost of each route topology directly
+\item Exact-clock gas enters each route alternative directly
 \item Gas also drives liquidity-provider repositioning, which drives depth
 \item A variable on the causal path cannot be netted out by including it
 \item Measured in the outcome, absent from the right-hand side
@@ -359,31 +361,13 @@
 \end{columns}
 \end{frame}
 
-\begin{frame}{A15. What an unexploited gap implies}
-\begin{columns}[T]
-\begin{column}{0.38\textwidth}
+\begin{frame}{A15. The same-block capture test}
 \begin{itemize}
-\item A cycle pays three pool fees where the one-way comparison pays one
-\item Three-hop gas at 319,906 units, priced at the panel's median gas and an ETH price of \$2,500
-\item Thresholds 169.4, 70.9 and 61.1 basis points at the three notionals
-\item Tail above threshold 13.6\%, 38.5\% and 22.0\%, carried as an upper bound on measurement error
+\item The former fixed-clock threshold is excluded from the evidence set
+\item Each candidate gap must carry its exact transaction, block, receipt gas price and calibrated closing-route units
+\item A closing swap sequence in the same block is evidence that the gap existed and was captured
+\item Until that test passes, the deck reports no all-in threshold or tail share
 \end{itemize}
-\end{column}
-\begin{column}{0.60\textwidth}
-\centering
-% output/exhibits/gap_arbitrage_bound.jsonl
-\begin{tikzpicture}
-\begin{axis}[deckaxis,nearlabels,width=7.2cm,height=4.8cm,ybar,bar width=11pt,ymode=log,ymin=5,ymax=3000,symbolic x coords={a,b,c},xtick=data,xticklabels={\$1k,\$10k,\$100k},ylabel={basis points},legend style={at={(0.5,-0.20)},anchor=north,legend columns=3,draw=none,font=\tiny}]
-\addplot[fill=cstable!45,draw=cstable] coordinates {(a,31.1) [31.1] (b,33.9) [33.9] (c,20.8) [20.8]};
-\addlegendentry{median gap}
-\addplot[fill=cother!35,draw=cother] coordinates {(a,218.4) [218] (b,343.0) [343] (c,110.2) [110]};
-\addlegendentry{90th percentile}
-\addplot[fill=caccent!35,draw=caccent] coordinates {(a,169.4) [169] (b,70.9) [71] (c,61.1) [61]};
-\addlegendentry{arbitrage threshold}
-\end{axis}
-\end{tikzpicture}
-\end{column}
-\end{columns}
 \end{frame}
 
 \begin{frame}{A16. Block state against hour state, in full}
@@ -638,14 +622,14 @@ three or more & 13,736 & 0.54\% \\
 \item[] {\scriptsize Route-cost panel, six venues, 2,238 quoted days at 24 hourly states}
 \item[] {\scriptsize Quoter validation, one exhibit per venue family}
 \item[] {\scriptsize Support bounds pooled over 932,270 validated swaps}
-\item[] {\scriptsize Gas medians from transaction receipts, 1,883 measured days}
+\item[] {\scriptsize Candidate-clock gas contract and receipt joins}
 \end{itemize}
 \end{column}
 \begin{column}{0.49\textwidth}
 \begin{itemize}
 \item[] {\scriptsize\textbf{Estimands and defences}}
-\item[] {\scriptsize Realised dominance, matched sample characterisation, screened windows}
-\item[] {\scriptsize Arbitrage bound at three notionals}
+\item[] {\scriptsize Realised dominance and matched-sample characterisation}
+\item[] {\scriptsize Exact-clock same-block capture design}
 \item[] {\scriptsize Block against hour verdict, 371 triangles on seven days}
 \item[] {\scriptsize Curve and Balancer signed exclusion by year and by leg}
 \item[] {\scriptsize V1 forced-vehicle classification and its token-level tests}

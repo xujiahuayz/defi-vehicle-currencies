@@ -17,9 +17,8 @@
 
 An asset occupies the vehicle role for the trades between other assets that route through it. The classical account of that role turns on proportional brokerage costs falling with transaction volume in the bilateral markets using the asset \citep{Krugman1980VehicleCurrencies}. A separate monetary-search mechanism makes willingness to accept an intermediary object depend on beliefs that others will accept it later \citep{KiyotakiWright1989MoneyMedium}. Krugman's equilibrium compares bilateral-market brokerage costs and lets exchange rates restore indifference; it neither defines nor tests a realised route chosen while strictly dominated. This paper adds that configuration. The available foreign-exchange evidence does not pair a realised trade with every exact executable alternative at the same state and size: indicative direct and indirect quote comparisons exist, but not the matched counterfactual network needed here \citep{GopinathStein2021Making,Somogyi2026DollarDominanceFX}. On an automated market maker the counterfactual is a pool that existed at the block of the realised trade, priceable at the state it executed in \citep{AdamsZinsmeisterRobinson2021UniswapV3,LeharParlour2024Uniswap}, and the configuration is common.
 
-Of realised multi-leg routing, 27.2\% was strictly dominated by a direct pool available at the same reconstructed state and size. The figure is population-weighted, it covers 79.0\% of realised routing, and it rests on 1,762 routes matched to a counterfactual, out of 90,705 realised multi-leg routes over four consecutively priced days, 2023-06-01 to 2023-06-04, a sample that binds the estimate and leaves its construction intact. An earlier single-venue measurement of this market put that quantity at 30.0\%. The agreement is not corroboration. The 30.0\% is the retired 17.9\% figure, recomputed on the identical 103,857 routes over the identical 186 days, with a flat gas charge added for the extra hop, which makes it one computation reported twice. The figures are also not on the same cost basis. The current 27.2\% estimate is gross of gas, while the retired 30.0\% estimate charges the extra hop using receipt-measured gas units and contemporaneous gas prices. The measured all-in comparison, not an external citation, establishes whether this wedge is first order in the present sample, so both differences point one way and neither supports the newer number.
+Of realised multi-leg routing, 27.2\% was strictly dominated by a direct pool available at the same reconstructed state and size. The figure is population-weighted, it covers 79.0\% of realised routing, and it rests on 1,762 routes matched to a counterfactual, out of 90,705 realised multi-leg routes over four consecutively priced days, 2023-06-01 to 2023-06-04, a sample that binds the estimate and leaves its construction intact. This is a gross quote-output comparison. The paper reports no all-in incidence until each matched route carries its exact receipt gas price and candidate-specific direct and indirect route units.
 % output/exhibits/realised_dominance.jsonl, REWEIGHTED row; sample 1,762 matched of 90,705 realised multi-leg routes on the four priced days 20230601 to 20230604
-% docs/finding-cost-dominance-measured.md, superseded: 17.9% gross to 30.0% all-in on one panel of 103,857 routes over 186 days
 
 \subsection{Selection and reweighting}
 \label{sec:dominance:matching}
@@ -101,8 +100,8 @@ Nothing conditional on trade size generalises from the matched sample. The panel
 \subsection{Dominance by type}
 \label{sec:dominance:types}
 
-Dominance incidence on realised routes runs from 23.7\% for the native asset to 61.4\% for imported assets, with stablecoins at 45.4\%. Figure~\ref{fig:incidence} adds the rate computed over all candidates a router could have chosen, and Table~\ref{tab:incidence} adds the weights and the route counts each rests on.
-% docs/finding-dominance-and-persistence.md per-type panel and output/exhibits/dominance_windows_screened.jsonl; 1,762 matched realised routes and 1,839 post-screen enumerated routes, four priced days 20230601 to 20230604
+Dominance incidence on realised routes runs from 23.7\% for the native asset to 61.4\% for imported assets, with stablecoins at 45.4\%. Figure~\ref{fig:incidence} and Table~\ref{tab:incidence} report the realised-route comparison and the weights it rests on. The former enumerated all-in comparison is withdrawn because it used a pooled fixed gas clock.
+% docs/finding-dominance-and-persistence.md per-type realised-route panel, 1,762 matched routes over four priced days 20230601 to 20230604
 
 \begin{figure}[tbp]
 \centering
@@ -124,75 +123,52 @@ Dominance incidence on realised routes runs from 23.7\% for the native asset to 
 \put(46.0,134.0){\makebox(0,0)[r]{\scriptsize 100}}
 \put(52.0,26.0){\rule{0.6bp}{108.0bp}}
 \put(76.3,26.0){\rule{30.0bp}{25.6bp}}
-\put(114.3,26.0){\rule{30.0bp}{0.7bp}}
-\put(114.3,92.3){\rule{30.0bp}{0.7bp}}
-\put(114.3,26.0){\rule{0.7bp}{67.0bp}}
-\put(143.6,26.0){\rule{0.7bp}{67.0bp}}
 \put(91.3,58.6){\makebox(0,0){\scriptsize 23.7}}
-\put(129.3,100.0){\makebox(0,0){\scriptsize 62.0}}
 \put(110.3,14.0){\makebox(0,0){\footnotesize native}}
 \put(193.0,26.0){\rule{30.0bp}{49.0bp}}
-\put(231.0,26.0){\rule{30.0bp}{0.7bp}}
-\put(231.0,99.9){\rule{30.0bp}{0.7bp}}
-\put(231.0,26.0){\rule{0.7bp}{74.6bp}}
-\put(260.3,26.0){\rule{0.7bp}{74.6bp}}
 \put(208.0,82.0){\makebox(0,0){\scriptsize 45.4}}
-\put(246.0,107.6){\makebox(0,0){\scriptsize 69.1}}
 \put(227.0,14.0){\makebox(0,0){\footnotesize stablecoin}}
 \put(309.7,26.0){\rule{30.0bp}{66.3bp}}
-\put(347.7,26.0){\rule{30.0bp}{0.7bp}}
-\put(347.7,117.1){\rule{30.0bp}{0.7bp}}
-\put(347.7,26.0){\rule{0.7bp}{91.8bp}}
-\put(377.0,26.0){\rule{0.7bp}{91.8bp}}
 \put(324.7,99.3){\makebox(0,0){\scriptsize 61.4}}
-\put(362.7,124.8){\makebox(0,0){\scriptsize 85.0}}
 \put(343.7,14.0){\makebox(0,0){\footnotesize imported}}
 \put(46.0,146.0){\makebox(0,0)[l]{\footnotesize percent of routes dominated}}
 \put(252.0,143.0){\rule{12.0bp}{7.0bp}}
 \put(268.0,146.0){\makebox(0,0)[l]{\scriptsize realised routing}}
-\put(338.0,143.0){\rule{12.0bp}{0.7bp}}
-\put(338.0,149.3){\rule{12.0bp}{0.7bp}}
-\put(338.0,143.0){\rule{0.7bp}{7.0bp}}
-\put(349.3,143.0){\rule{0.7bp}{7.0bp}}
-\put(354.0,146.0){\makebox(0,0)[l]{\scriptsize enumerated}}
 \end{picture}
 \par\vspace{6pt}
 \begin{minipage}{0.92\textwidth}
-\footnotesize\raggedright \emph{Notes.} Realised routing: the share of matched realised multi-leg routes through a candidate of each type that a direct pool would have beaten at that state and size, on 1,762 matched routes over the four consecutively priced days 2023-06-01 to 2023-06-04. Enumerated: that share computed over all candidate vehicles priced for each route clearing the support restriction, gross of gas, on 1,839 routes over those days.
+\footnotesize\raggedright \emph{Notes.} The bars report the share of matched realised multi-leg routes through a candidate of each type that a direct pool would have beaten at that state and size, on 1,762 matched routes over the four consecutively priced days 2023-06-01 to 2023-06-04.
 \end{minipage}
 \end{figure}
-% docs/finding-dominance-and-persistence.md per-type panel, 23.7 / 45.4 / 61.4 on 1,762 matched routes; output/exhibits/dominance_windows_screened.jsonl dominated_gross by scope, 62.0 / 69.1 / 85.0 on 347 / 1,212 / 280 post-screen routes
+% docs/finding-dominance-and-persistence.md per-type panel, 23.7 / 45.4 / 61.4 on 1,762 matched routes
 
 \begin{table}[tbp]
 \centering
 \caption{Dominance incidence by intermediary type}
 \label{tab:incidence}
 \small
-\begin{tabular}{lrrrrr}
+\begin{tabular}{lrr}
 \toprule
-& \multicolumn{2}{c}{Realised routing} & \multicolumn{3}{c}{Enumerated candidates} \\
-\cmidrule(lr){2-3} \cmidrule(lr){4-6}
-Intermediary type & Dominated (\%) & Weight (\%) & Gross (\%) & All-in (\%) & Routes \\
+Intermediary type & Dominated (\%) & Weight (\%) \\
 \midrule
-Native & 23.7 & 66.9 & 62.0 & 67.1 & 347 \\
-% docs/finding-dominance-and-persistence.md per-type panel; output/exhibits/dominance_windows_screened.jsonl scope type:native, 347 post-screen routes on the four priced days
-Stablecoin & 45.4 & 11.4 & 69.1 & 81.4 & 1,212 \\
-% docs/finding-dominance-and-persistence.md per-type panel; output/exhibits/dominance_windows_screened.jsonl scope type:stable, 1,212 post-screen routes
-Imported & 61.4 & 0.7 & 85.0 & 92.1 & 280 \\
-% docs/finding-dominance-and-persistence.md per-type panel; output/exhibits/dominance_windows_screened.jsonl scope type:imported, 280 post-screen routes
+Native & 23.7 & 66.9 \\
+% docs/finding-dominance-and-persistence.md per-type panel
+Stablecoin & 45.4 & 11.4 \\
+% docs/finding-dominance-and-persistence.md per-type panel
+Imported & 61.4 & 0.7 \\
+% docs/finding-dominance-and-persistence.md per-type panel
 \midrule
-All covered types & 27.2 & 79.0 & 70.1 & 80.3 & 1,839 \\
-% output/exhibits/realised_dominance.jsonl REWEIGHTED row; output/exhibits/dominance_windows_screened.jsonl scope ALL, 1,839 post-screen routes
+All covered types & 27.2 & 79.0 \\
+% output/exhibits/realised_dominance.jsonl REWEIGHTED row
 \bottomrule
 \end{tabular}
 \par\vspace{6pt}
 \begin{minipage}{0.92\textwidth}
-\footnotesize\raggedright \emph{Notes.} Realised routing: the share of matched realised multi-leg routes through a candidate of each type that a direct pool would have beaten at the same state and size, with the type's weight in the 90,705 realised routes of the four priced days 2023-06-01 to 2023-06-04. The all-covered-types row is the reweighted incidence of Table~\ref{tab:reweighting}. Enumerated candidates: all candidate vehicles priced for each route clearing the support criterion, gross of gas and all-in of a flat gas charge for the extra hop, on 1,839 routes over the same days.
+\footnotesize\raggedright \emph{Notes.} Dominated is the share of matched realised multi-leg routes through a candidate of each type that a direct pool would have beaten at the same state and size, with the type's weight in the 90,705 realised routes of the four priced days 2023-06-01 to 2023-06-04. The all-covered-types row is the reweighted incidence of Table~\ref{tab:reweighting}.
 \end{minipage}
 \end{table}
 
-That level ordering is a measured property, not an implication of the native label. It remains validation evidence because it does not establish how routing responds when the cost ranking changes. Enumerating all candidates a router could have chosen, instead of only the one it took, returns 70.1\% gross and 80.3\% all-in on the 1,839 routes clearing the impact bound. That quantity bounds what a router could have avoided. It does not describe what routers used, since most enumerated two-hop routes are ones nobody took. Occupying the vehicle role means being used, and the realised figure is the one that speaks to the role.
-% output/exhibits/dominance_windows_screened.jsonl, scope ALL; 1,839 post-screen routes over the four priced days 20230601 to 20230604
+That level ordering is a measured property, not an implication of the native label. It remains validation evidence because it does not establish how routing responds when the cost ranking changes. The retired enumeration mixed gross quotes with a pooled fixed-clock all-in adjustment and supplies no current paper result. Occupying the vehicle role means being used, and the realised figure is the one that speaks to the role.
 
 \subsection{Migration of the role}
 \label{sec:dominance:transition}
@@ -624,6 +600,5 @@ Two worlds the international currency literature separates in principle are sepa
 
 The incidence figure is a frequency, a count over states. A frequency is a statement about a state, and it does not require the router to have had a choice. An error in the state at which a route is priced changes the magnitude of the frequency and leaves its kind intact. That property separates this measurement from the retention estimand of Section~\ref{sec:survival}. Section~\ref{sec:executability} measures the error and reports its effect on the classification.
 
-Two restrictions applied throughout move the number. Round trips are excluded before anything is measured because a route whose first input equals its last output is outside endpoint-to-endpoint conversion. The excluded population can contain cyclic arbitrage and other self-returning activity, but the endpoint rule does not classify each route. The support bound of Section~\ref{sec:setting:support} declines to quote any leg whose price impact would exceed 5\%, which removes between 70\% and 86\% of quotable routes and moves the median gap from thousands of basis points to tens. The retired single-venue figure of 17.9\% was constant-product only and unrestricted, and both changes move it upward, which accounts for the whole distance between it and the figures above.
-% output/exhibits/gap_arbitrage_bound.jsonl and scripts/measure_dominance_windows.py; four priced days 20230601 to 20230604, support screen at 5% own price impact
+Two restrictions apply throughout. Round trips are excluded before anything is measured because a route whose first input equals its last output is outside endpoint-to-endpoint conversion. The excluded population can contain cyclic arbitrage and other self-returning activity, but the endpoint rule does not classify each route. The support bound of Section~\ref{sec:setting:support} declines to quote any leg whose price impact would exceed 5\%. The former fixed-clock diagnostic does not supply a current removal share or gap distribution.
 % docs/finding-cost-dominance-measured.md, superseded: 17.9% gross on one venue over 186 days

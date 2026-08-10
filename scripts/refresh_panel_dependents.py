@@ -45,8 +45,6 @@ REFRESH_LOCK = SHARED_RUNTIME_DIR / "panel-dependent-refresh.lock"
 STAGES: list[tuple[str, list[str], str]] = [
     ("measure_quoter_support.py", [],
      "the support bound every later screen depends on"),
-    ("measure_dominance_windows.py", [],
-     "the screened cost-surface diagnostic, which defines the quotable population"),
 ]
 
 DAILY_FRONTIER_PREREQUISITES = (

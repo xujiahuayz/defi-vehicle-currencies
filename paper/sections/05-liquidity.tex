@@ -146,17 +146,17 @@ with the depth and volatility controls entered only where Table~\ref{tab:rent:ce
 Outcome & $\hat{\psi}$ & $(p)$ & MDE & $\hat{\psi}$ & $(p)$ & MDE \\
 \midrule
 Risk-adjusted net return, month effects only & 0.0082 & (0.309) & 0.0226 & -- & -- & -- \\
-% output/empirical/rent_incidence/centrality_curse_regressions.jsonl, spec "uniswap_v2 (1)", term log_c; v3 prohibited because local virtual depth is not capital
+% output/empirical/rent_incidence/centrality_curse_regressions.jsonl, spec "uniswap_v2 (1)", term log_c; v3 unsupported for capital-return inference because local virtual depth is not capital
 Risk-adjusted net return, plus depth and volatility & 0.0355 & (0.000) & 0.0173 & -- & -- & -- \\
-% output/empirical/rent_incidence/centrality_curse_regressions.jsonl, spec "uniswap_v2 (2)", term log_c; v3 prohibited because local virtual depth is not capital
+% output/empirical/rent_incidence/centrality_curse_regressions.jsonl, spec "uniswap_v2 (2)", term log_c; v3 unsupported for capital-return inference because local virtual depth is not capital
 Probability the pool-month pays & 0.0151 & (0.000) & 0.0114 & 0.0708 & (0.000) & 0.0503 \\
 % output/empirical/rent_incidence/centrality_curse_regressions.jsonl, specs "uniswap_v2 (6)" and "uniswap_v3 (6)", term log_c
 Log fee revenue over LVR & 0.2019 & (0.034) & 0.2667 & 0.2850 & (0.001) & 0.2346 \\
 % output/empirical/rent_incidence/centrality_curse_regressions.jsonl, specs "uniswap_v2 (5)" and "uniswap_v3 (5)", term log_c
 Fee yield, annualised & 0.0564 & (0.161) & 0.1128 & -- & -- & -- \\
-% output/empirical/rent_incidence/centrality_curse_regressions.jsonl, spec "uniswap_v2 (4)", term log_c; v3 prohibited because local virtual depth is not capital
+% output/empirical/rent_incidence/centrality_curse_regressions.jsonl, spec "uniswap_v2 (4)", term log_c; v3 unsupported for capital-return inference because local virtual depth is not capital
 Degree in place of betweenness & 0.0346 & (0.000) & 0.0182 & -- & -- & -- \\
-% output/empirical/rent_incidence/centrality_curse_regressions.jsonl, spec "uniswap_v2 (7) degree instead of betweenness", term log_deg; v3 prohibited because outcome is a capital return
+% output/empirical/rent_incidence/centrality_curse_regressions.jsonl, spec "uniswap_v2 (7) degree instead of betweenness", term log_deg; v3 unsupported because the current denominator is not a validated capital measure
 \bottomrule
 \end{tabular}
 \par\vspace{6pt}
@@ -202,12 +202,6 @@ Arm & Median net (\%) & Pays (\%) & Pays (\%) \\
 \midrule
 Reported specification & $-5.29$ & 22.3 & 61.0 \\
 % output/empirical/rent_incidence/robustness.jsonl, arm "gas units x1", both venues
-Gas per operation, halved & $-5.11$ & 22.5 & 61.7 \\
-% output/empirical/rent_incidence/robustness.jsonl, arm "gas units x0.5", both venues
-Gas per operation, doubled & $-5.53$ & 22.1 & 59.8 \\
-% output/empirical/rent_incidence/robustness.jsonl, arm "gas units x2", both venues
-Gas per operation, quadrupled & $-5.81$ & 21.9 & 57.6 \\
-% output/empirical/rent_incidence/robustness.jsonl, arm "gas units x4", both venues
 LVR from four-hour sampled variance & $-2.63$ & 28.3 & 70.2 \\
 % output/empirical/rent_incidence/robustness.jsonl, arm "LVR from 4-hour sampled variance", both venues
 LVR from the open-to-close move only & $-1.80$ & 32.1 & 72.9 \\
@@ -226,8 +220,8 @@ Daily turnover at most ten times the venue scale & $-5.30$ & 22.2 & 60.9 \\
 \end{minipage}
 \end{table}
 
-Four further threats are named and none is closed. Liquidity mining sits outside \eqref{eq:rent}, and a pool that loses money on trading revenue may have paid its providers in tokens, which means the finding is that the business does not pay out of trading revenue, and an unmeasured token subsidy would produce the same picture as provider stickiness \citep{GriffinShams2020Untethered}. The profitable role buckets rest on a thin cross-section, with native-stable at 12 token pairs on v2 and 5 on v3, imported-native at 4 and 2, and native-staked-native at 3 and 4. The joint tests clear because the pool-month panel is long, and the cross-sectional cover is what a referee will press on. Hub status is close to collinear with carrying a deep centralised reference market, and the reference-price filter that would address the confound deletes exactly the long-tail tokens identifying the effect. Per-operation gas is set from the repository's receipt-measured one-leg swap figure of 154,604 units with no receipt measurement of its own, and every net-return conclusion is reported across a band from half to four times that figure in Table~\ref{tab:rent:bounds} with none of them turning on it.
-% docs/finding-rent-incidence.md, threats 2 to 5; output/empirical/rent_incidence/rent_by_asset_role.jsonl for the token_pairs counts on both venues; output/empirical/rent_incidence/summary.json, gas_units
+Four further threats are named and none is closed. Liquidity mining sits outside \eqref{eq:rent}, and a pool that loses money on trading revenue may have paid its providers in tokens, which means the finding is that the business does not pay out of trading revenue, and an unmeasured token subsidy would produce the same picture as provider stickiness \citep{GriffinShams2020Untethered}. The profitable role buckets rest on a thin cross-section, with native-stable at 12 token pairs on v2 and 5 on v3, imported-native at 4 and 2, and native-staked-native at 3 and 4. The joint tests clear because the pool-month panel is long, and the cross-sectional cover is what a referee will press on. Hub status is close to collinear with carrying a deep centralised reference market, and the reference-price filter that would address the confound deletes exactly the long-tail tokens identifying the effect. The former pooled swap-gas proxy is not a measurement of mint or burn gas and is retired. Net-of-gas provider returns remain unavailable until liquidity events are joined to their own transaction receipts under a predeclared allocation rule.
+% docs/finding-rent-incidence.md, threats 2 to 5; output/empirical/rent_incidence/rent_by_asset_role.jsonl for the token_pairs counts on both venues
 
 One further caveat belongs with the v3 arm and travels with every v3 number above. Active liquidity is reconstructed by replaying every mint and burn into a per-pool indexed tree over initialised ticks, and the reconstruction validates against pools whose local depth is independently known, returning virtual reserves of 1.24 billion USDC against 664,500 WETH for the five basis point USDC-WETH pool on 2023-06-01, two sides agreeing on value to three figures at a concentration factor near ten, and 583 billion dollars on each side of the one basis point USDC-USDT pool at a concentration factor near ten thousand. Within a fully reconstructed tick path, v3 is piecewise constant product and range crossing is part of the exact mechanics \citep{AdamsZinsmeisterRobinson2021UniswapV3}. The approximation here comes from collapsing the day's state path to a volume-weighted tick before applying the local LVR formula. Large-move pool-days are where that aggregation is least credible, so v3 dollar totals do not lead.
 % docs/finding-rent-incidence.md, the v3 reconstruction validation; scripts/build_rent_incidence_panel.py, the tick-tree replay and its stated approximation

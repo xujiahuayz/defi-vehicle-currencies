@@ -111,6 +111,6 @@ Third, the profitable role buckets rest on a thin cross-section. Native-stable i
 
 Fourth, the CEX-listing confound named in workflow 4.0 is untouched here. Hub status is close to collinear with having a deep centralised reference market, and the reference-price filter that would address it deletes exactly the long-tail tokens that identify the effect.
 
-Fifth, per-operation LP gas is set from the repository's receipt-measured one-leg swap figure of 154,604 units, with no receipt measurement of its own, since receipts for those were not fetchable offline. Every net-return conclusion is reported across a band from half to four times that figure and none of them turns on it.
+Fifth, the previous per-operation LP gas proxy borrowed a pooled one-leg swap calibration instead of measuring mint and burn receipts. That proxy is retired. Net-of-gas provider returns remain unavailable until liquidity events are joined to their own receipts under a predeclared transaction-allocation rule.
 
 Sixth, gas is a mediator and not only a cost, as workflow 4.0 notes, because gas prices drive repositioning and repositioning is highest in hub pools. Nothing here separates the two.

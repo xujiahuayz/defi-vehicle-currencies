@@ -296,54 +296,6 @@ def hour_is_clean(stored_prev: tuple[Decimal, Decimal] | None,
             and abs(float((r1 - p1) / p1)) < tol)
 
 
-# ---------------------------------------------------------------------------
-# Gas by route topology, measured from receipts rather than assumed.
-#
-# Measured 2026-08-05 on 2024-01-15 Uniswap v2 transactions via
-# eth_getTransactionReceipt, which pruned nodes still serve because receipts are
-# stored data and not historical state. Median gasUsed:
-#
-#     1 leg   154,604      2 legs  228,701      3 legs  319,906
-#
-# so roughly 74k-91k additional gas per extra hop. The absolute figure moves with
-# token transfer costs and router implementation, so treat these as defaults and
-# re-measure per sample period before publishing.
-#
-# The economically important property is that gas is a FIXED cost per route,
-# so its share of notional falls as 1/size. At 25.8 gwei and ETH near $2,500 the
-# second hop costs about 48 bp of a $1,000 trade, 4.8 bp of a $10,000 trade and
-# 480 bp of a $100 trade. Any comparison of a one-hop against a two-hop route
-# that ignores gas is therefore biased toward the two-hop route, and the bias is
-# severe precisely for small trades.
-# ---------------------------------------------------------------------------
-
-GAS_BY_LEGS: dict[int, int] = {1: 154_604, 2: 228_701, 3: 319_906}
-GAS_PER_EXTRA_HOP = 74_096
-
-
-def gas_units(n_legs: int) -> int:
-    """Median gas for a route of this many legs, extrapolating beyond measurement."""
-    if n_legs in GAS_BY_LEGS:
-        return GAS_BY_LEGS[n_legs]
-    if n_legs < 1:
-        return 0
-    top = max(GAS_BY_LEGS)
-    return GAS_BY_LEGS[top] + GAS_PER_EXTRA_HOP * (n_legs - top)
-
-
-def gas_cost_bps(n_legs: int, notional_usd: float,
-                 gas_price_gwei: float, eth_usd: float) -> float | None:
-    """Gas cost of a route as basis points of notional.
-
-    Returns None on a non-positive notional. Because gas is fixed per route, this
-    is the term that makes route choice size-dependent: the same hop is negligible
-    on a large trade and decisive on a small one.
-    """
-    return gas_cost_bps_from_units(
-        gas_units(n_legs), notional_usd, gas_price_gwei, eth_usd
-    )
-
-
 def gas_cost_bps_from_units(
     route_gas_units: float,
     notional_usd: float,
@@ -355,31 +307,6 @@ def gas_cost_bps_from_units(
         return None
     eth = route_gas_units * gas_price_gwei * 1e-9
     return 10_000 * (eth * eth_usd) / notional_usd
-
-
-def all_in_direct_advantage_bps(
-    gross_direct_advantage_bps: float,
-    *,
-    direct_legs: int,
-    vehicle_legs: int,
-    notional_usd: float,
-    gas_price_gwei: float,
-    eth_usd: float,
-) -> float | None:
-    """Direct-route advantage after charging each route its topology gas.
-
-    A positive value means the direct route costs less. The sign is intentionally
-    owned here: when the vehicle route has more legs, adding gas increases the
-    direct advantage relative to the gross-of-gas comparison.
-    """
-    return all_in_direct_advantage_bps_from_units(
-        gross_direct_advantage_bps,
-        direct_gas_units=gas_units(direct_legs),
-        vehicle_gas_units=gas_units(vehicle_legs),
-        notional_usd=notional_usd,
-        gas_price_gwei=gas_price_gwei,
-        eth_usd=eth_usd,
-    )
 
 
 def all_in_direct_advantage_bps_from_units(

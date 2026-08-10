@@ -108,6 +108,43 @@ MARKET_STATE_QUALITY = ROOT / "data" / "processed" / "market_state_quality.parqu
 V3_INVENTORY_CALENDAR = ROOT / "data" / "processed" / "v3_inventory_day_calendar.parquet"
 V3_INVENTORY_DAY_CUTS = ROOT / "data" / "raw" / "ethereum" / "uniswap_v3_inventory_day_cuts"
 CEX_REFERENCE_SUPPORT = ROOT / "data" / "processed" / "cex_reference_support.parquet"
+WITHDRAWN_ROUTE_GAS_SCRIPTS = (
+    "scripts/test_gap_arbitrage_bound.py",
+    "scripts/measure_dominance_windows.py",
+    "scripts/run_rent_incidence.py",
+)
+WITHDRAWN_ROUTE_GAS_ARTIFACTS = (
+    "output/exhibits/gap_arbitrage_bound.jsonl",
+    "output/exhibits/dominance_windows_screened.jsonl",
+)
+ROUTE_GAS_AUDIT_ONLY_DOCS = (
+    # The round-one review is an immutable criticism ledger: it quotes the retired
+    # constants in order to document why they were rejected, never as live evidence.
+    "docs/review-node-i-round1.md",
+)
+WITHDRAWN_ROUTE_GAS_REFERENCES = (
+    "output/exhibits/gap_arbitrage_bound.jsonl",
+    "output/exhibits/dominance_windows_screened.jsonl",
+)
+RETIRED_ROUTE_GAS_CODE_MARKERS = (
+    "GAS_BY_LEGS",
+    "GAS_PER_EXTRA_HOP",
+    "def gas_units(",
+    "def gas_cost_bps(",
+    "def all_in_direct_advantage_bps(",
+)
+RETIRED_ROUTE_GAS_CODE_PATTERNS = (
+    re.compile(r"\beth_usd\s*=\s*2_?500(?:\.0)?\b", re.IGNORECASE),
+    re.compile(r"\bgas_(?:price_)?gwei\s*=\s*13\.67\b", re.IGNORECASE),
+    re.compile(r"\b(?:gas|hop)[^\n]{0,100}\b(?:74_096|154_604|228_701|319_906)\b", re.IGNORECASE),
+    re.compile(r"\b13\.67e-9\b", re.IGNORECASE),
+)
+RETIRED_ROUTE_GAS_PUBLICATION_PATTERNS = (
+    re.compile(r"\b(?:13\.67|13\.7)\s+gwei\b", re.IGNORECASE),
+    re.compile(r"\b(?:gas|hop|receipt)[^\n]{0,160}\b(?:74,096|154,604|228,701|319,906)\b", re.IGNORECASE),
+    re.compile(r"\b(?:74,096|154,604|228,701|319,906)\b[^\n]{0,160}\b(?:gas|hop|receipt)\b", re.IGNORECASE),
+    re.compile(r"\b(?:gas|ETH price|converted at)[^\n]{0,120}(?:\\?\$2,500)\b", re.IGNORECASE),
+)
 CANONICAL_EMPIRICAL_CONSUMERS = (
     "scripts/build_transaction_state_frontier.py",
     "scripts/build_counterfactual_dominance.py",
@@ -123,6 +160,97 @@ CANONICAL_EMPIRICAL_CONSUMERS = (
     "src/ddvc/analysis/lp_concentration.py",
     "src/ddvc/analysis/lp_liquidity_flow.py",
 )
+
+
+def retired_route_gas_release_checks(
+    root: Path = ROOT,
+) -> list[tuple[str, bool, str]]:
+    """Reject retired route-gas clocks at executable and publication boundaries."""
+
+    executable_violations: list[str] = []
+    refresh_path = root / "scripts" / "refresh_panel_dependents.py"
+    refresh_source = refresh_path.read_text(encoding="utf-8") if refresh_path.exists() else ""
+    for relative in WITHDRAWN_ROUTE_GAS_SCRIPTS:
+        path = root / relative
+        source = path.read_text(encoding="utf-8") if path.exists() else ""
+        if relative.rsplit("/", 1)[-1] in refresh_source:
+            executable_violations.append(f"refresh:{relative}")
+        if "raise RuntimeError" not in source or "withdraw" not in source.lower():
+            executable_violations.append(f"not-fail-closed:{relative}")
+
+    code_violations: list[str] = []
+    for directory in (root / "scripts", root / "src"):
+        if not directory.exists():
+            continue
+        for path in sorted(directory.rglob("*.py")):
+            if path == root / "scripts" / "audit_findings_freeze.py":
+                continue
+            source = path.read_text(encoding="utf-8")
+            if path == root / "src" / "ddvc" / "cpquote.py":
+                for marker in RETIRED_ROUTE_GAS_CODE_MARKERS:
+                    if marker in source:
+                        code_violations.append(f"{path.relative_to(root)}:{marker}")
+            for pattern in RETIRED_ROUTE_GAS_CODE_PATTERNS:
+                if pattern.search(source):
+                    code_violations.append(
+                        f"{path.relative_to(root)}:{pattern.pattern}"
+                    )
+            for marker in WITHDRAWN_ROUTE_GAS_REFERENCES:
+                if marker in source:
+                    code_violations.append(f"{path.relative_to(root)}:{marker}")
+
+    excluded_docs = {root / relative for relative in ROUTE_GAS_AUDIT_ONLY_DOCS}
+    publication_paths = [
+        *(sorted((root / "paper" / "sections").glob("*.tex")) if (root / "paper" / "sections").exists() else []),
+        *(sorted((root / "deck" / "sections").glob("*.tex")) if (root / "deck" / "sections").exists() else []),
+        *(
+            sorted(
+                path
+                for pattern in ("*.md", "*.json")
+                for path in (root / "docs").rglob(pattern)
+                if path not in excluded_docs
+            )
+            if (root / "docs").exists()
+            else []
+        ),
+    ]
+    publication_violations: list[str] = []
+    for path in publication_paths:
+        if not path.exists():
+            continue
+        source = path.read_text(encoding="utf-8")
+        for marker in WITHDRAWN_ROUTE_GAS_REFERENCES:
+            if marker in source:
+                publication_violations.append(f"{path.relative_to(root)}:{marker}")
+        for pattern in RETIRED_ROUTE_GAS_PUBLICATION_PATTERNS:
+            if pattern.search(source):
+                publication_violations.append(f"{path.relative_to(root)}:{pattern.pattern}")
+
+    existing_artifacts = [
+        relative for relative in WITHDRAWN_ROUTE_GAS_ARTIFACTS if (root / relative).exists()
+    ]
+    return [
+        (
+            "retired route-gas executables fail closed",
+            not executable_violations,
+            f"violations={executable_violations or 'none'}",
+        ),
+        (
+            "retired route-gas constants absent from code",
+            not code_violations,
+            f"violations={code_violations or 'none'}",
+        ),
+        (
+            "withdrawn route-gas evidence absent from publication surfaces",
+            not publication_violations,
+            f"violations={publication_violations or 'none'}",
+        ),
+        (
+            "withdrawn route-gas artifacts absent",
+            not existing_artifacts,
+            f"artifacts={existing_artifacts or 'none'}",
+        ),
+    ]
 RAW_PROVIDER_PATTERNS = (
     "data/raw/thegraph",
     '"raw" / "thegraph"',
@@ -3418,6 +3546,8 @@ def main() -> int:
         record(name, passed, detail)
     for name, passed, detail in v2_event_source_certificate_checks():
         record(name, passed, detail)
+    for name, passed, detail in retired_route_gas_release_checks():
+        record(name, passed, detail)
 
     if MARKET_STATE_QUALITY.exists():
         quality = pd.read_parquet(MARKET_STATE_QUALITY)
@@ -3716,6 +3846,7 @@ def main() -> int:
         name
         for name in (
             "measure_realised_dominance.py",
+            *WITHDRAWN_ROUTE_GAS_SCRIPTS,
             "run_dominance_specification_curve.py",
             "run_vehicle_dominance_hdfe.py",
             "run_survival_after_dominance.py",

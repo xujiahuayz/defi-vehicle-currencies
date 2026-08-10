@@ -26,6 +26,7 @@ from scripts.audit_findings_freeze import (
     parse_state_frontmatter,
     published_venue_version,
     registered_empirical_consumers,
+    retired_route_gas_release_checks,
     route_measurement_invariants,
     route_cost_panel_checks,
     source_materialized,
@@ -58,6 +59,93 @@ from scripts.refresh_panel_dependents import (
 
 
 class FindingsFreezeAuditTest(unittest.TestCase):
+    def test_retired_route_gas_gate_covers_code_refresh_publications_and_artifacts(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            for relative in (
+                "scripts/refresh_panel_dependents.py",
+                "scripts/test_gap_arbitrage_bound.py",
+                "scripts/measure_dominance_windows.py",
+                "scripts/run_rent_incidence.py",
+                "src/ddvc/cpquote.py",
+                "paper/sections/01-introduction.tex",
+                "deck/sections/01-introduction.tex",
+                "docs/research-workflow.md",
+                "docs/findings-freeze.md",
+                "docs/specification-lock.json",
+                "docs/paper-spine.md",
+                "docs/deck-outline.md",
+            ):
+                path = root / relative
+                path.parent.mkdir(parents=True, exist_ok=True)
+                path.write_text(
+                    "raise RuntimeError('withdrawn')\n"
+                    if path.name
+                    in {
+                        "test_gap_arbitrage_bound.py",
+                        "measure_dominance_windows.py",
+                        "run_rent_incidence.py",
+                    }
+                    else "registered exact-clock owner\n",
+                    encoding="utf-8",
+                )
+
+            checks = {name: passed for name, passed, _detail in retired_route_gas_release_checks(root)}
+            self.assertTrue(all(checks.values()), checks)
+
+            (root / "scripts" / "refresh_panel_dependents.py").write_text(
+                "measure_dominance_windows.py\n", encoding="utf-8"
+            )
+            checks = {name: passed for name, passed, _detail in retired_route_gas_release_checks(root)}
+            self.assertFalse(checks["retired route-gas executables fail closed"])
+
+            (root / "scripts" / "refresh_panel_dependents.py").write_text("safe\n", encoding="utf-8")
+            (root / "src" / "ddvc" / "cpquote.py").write_text(
+                "GAS_BY_LEGS = {}\neth_usd = 2500\n", encoding="utf-8"
+            )
+            checks = {name: passed for name, passed, _detail in retired_route_gas_release_checks(root)}
+            self.assertFalse(checks["retired route-gas constants absent from code"])
+
+            (root / "src" / "ddvc" / "cpquote.py").write_text("safe\n", encoding="utf-8")
+            (root / "docs" / "new-current-note.md").write_text(
+                "A separate sample contains 319,906 rows and a $2,500 notional.\n",
+                encoding="utf-8",
+            )
+            checks = {name: passed for name, passed, _detail in retired_route_gas_release_checks(root)}
+            self.assertTrue(all(checks.values()), checks)
+
+            (root / "paper" / "sections" / "01-introduction.tex").write_text(
+                "output/exhibits/gap_arbitrage_bound.jsonl\n", encoding="utf-8"
+            )
+            checks = {name: passed for name, passed, _detail in retired_route_gas_release_checks(root)}
+            self.assertFalse(
+                checks["withdrawn route-gas evidence absent from publication surfaces"]
+            )
+
+            (root / "paper" / "sections" / "01-introduction.tex").write_text("safe\n", encoding="utf-8")
+            (root / "deck" / "sections" / "01-introduction.tex").write_text(
+                "Three-hop gas at 319,906 units\n", encoding="utf-8"
+            )
+            checks = {name: passed for name, passed, _detail in retired_route_gas_release_checks(root)}
+            self.assertFalse(
+                checks["withdrawn route-gas evidence absent from publication surfaces"]
+            )
+
+            (root / "deck" / "sections" / "01-introduction.tex").write_text("safe\n", encoding="utf-8")
+            unregistered_doc = root / "docs" / "new-current-note.md"
+            unregistered_doc.write_text("Gas per hop: 74,096\n", encoding="utf-8")
+            checks = {name: passed for name, passed, _detail in retired_route_gas_release_checks(root)}
+            self.assertFalse(
+                checks["withdrawn route-gas evidence absent from publication surfaces"]
+            )
+
+            unregistered_doc.write_text("safe\n", encoding="utf-8")
+            artifact = root / "output" / "exhibits" / "dominance_windows_screened.jsonl"
+            artifact.parent.mkdir(parents=True, exist_ok=True)
+            artifact.write_text("{}\n", encoding="utf-8")
+            checks = {name: passed for name, passed, _detail in retired_route_gas_release_checks(root)}
+            self.assertFalse(checks["withdrawn route-gas artifacts absent"])
+
     def test_findings_gate_requires_current_exact_v2_event_certificate(self) -> None:
         import json
 

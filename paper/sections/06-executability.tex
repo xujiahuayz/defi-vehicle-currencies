@@ -9,7 +9,7 @@
 \section{Executability of the measured gaps}
 \label{sec:executability}
 
-Every cost comparison in this paper has one observed side and one constructed side. What a trader received is in the record. What a direct pool between the same endpoints would have returned at the same reconstructed state, at the same size, is a quote for a route nobody took, produced by an engine that reproduces the venue's own invariant. A referee is entitled to ask whether that constructed side is a price a trader faced, and the question has more force here than in the exchange-rate settings this design is modelled on. \citet{MakarovSchoar2020Arbitrage} give a top-level section to defending a cross-exchange bitcoin premium that ran above 15\% between the United States and Korea from December 2017 to February 2018 and reached 40\% on several days, against roughly 10\% for Japan and 3\% for Europe over the same window, and they defend it by naming the frictions that keep it open: roughly an hour for a transaction to register and several hours to several days for a fiat transfer, alongside the absence of short selling on the exchanges trading at the largest premium. A direct pool and a two-leg route through a vehicle sit on the same chain, and their legs can be joined inside one atomic transaction that reverts together \citep{DaianEtAl2020FlashBoys}. This removes unmatched-leg risk. It does not remove financing, gas, competition, reversion, state latency or builder costs, so the arbitrage bound below measures those frictions instead of assuming them away. The defence has to be quantitative.
+Every cost comparison in this paper has one observed side and one constructed side. What a trader received is in the record. What a direct pool between the same endpoints would have returned at the same reconstructed state, at the same size, is a quote for a route nobody took, produced by an engine that reproduces the venue's own invariant. A referee is entitled to ask whether that constructed side is a price a trader faced, and the question has more force here than in the exchange-rate settings this design is modelled on. \citet{MakarovSchoar2020Arbitrage} give a top-level section to defending a cross-exchange bitcoin premium that ran above 15\% between the United States and Korea from December 2017 to February 2018 and reached 40\% on several days, against roughly 10\% for Japan and 3\% for Europe over the same window, and they defend it by naming the frictions that keep it open: roughly an hour for a transaction to register and several hours to several days for a fiat transfer, alongside the absence of short selling on the exchanges trading at the largest premium. A direct pool and a two-leg route through a vehicle sit on the same chain, and their legs can be joined inside one atomic transaction that reverts together \citep{DaianEtAl2020FlashBoys}. This removes unmatched-leg risk. It does not remove financing, gas, competition, reversion, state latency or builder costs. The defence therefore requires an exact-clock quantitative test, and no all-in classification enters the paper before that test passes.
 % literature/text/2020-MakarovSchoar2020Arbitrage-*.txt, section 8
 
 Four questions decide whether the constructed side is admissible. Whether the pricing engine is being asked to quote inside the region where its error was measured. Whether the state the panel prices is the state the router faced. Whether a gap that nobody removed is economically possible, given what removing it would cost. And whether the venues the panel cannot see push the comparison in a known direction. Each is answered below in that order, with the construction of the pricing engine, the per-venue validation errors and the full conditional tables carried in Appendices~\ref{app:quoters} to~\ref{app:roundtrip}.
@@ -23,7 +23,7 @@ The screen's defensive property is its timing. It is stated in the trade's own p
 % output/exhibits/quoter_support_bounds.jsonl, pooled over 932,270 validated swaps on eight sampled days
 A screen stated in the size of the measured gap would condition on a monotone function of the outcome, which is selection on the dependent variable and defends nothing. This one conditions on pool state and on nothing downstream of it, and Appendix~\ref{app:support} reports the distribution it is read off, day by day.
 
-What the screen does is bound the region in which the engine is asked to quote. What it does not do is measure the engine's error inside that region, and no direct measurement of that error is available, because the routes in question were not executed and have no realised output to compare against. The bound on it is indirect and is the subject of Section~\ref{sec:executability:arbitrage}: a gap large enough to be removed at a profit should have been removed, so the share of surviving gaps that exceed the cost of removing them is an upper bound on how much of the measured distribution is error.
+What the screen does is bound the region in which the engine is asked to quote. What it does not do is measure the engine's error inside that region, and no direct measurement of that error is available, because the routes in question were not executed and have no realised output to compare against. Section~\ref{sec:executability:arbitrage} states the exact-clock capture test required to construct an indirect bound. Until it is estimated, the paper has no empirical upper bound on this error.
 
 \subsection{Whether the router faced the state the panel prices}
 \label{sec:executability:timing}
@@ -92,72 +92,17 @@ The correction is a separation, and its specification is settled. The counterfac
 % output/exhibits/realised_route_timing_validation.jsonl; scripts/validate_realised_route_timing.py
 Appendix~\ref{app:state} states that reconstruction and the continuity test that audits it, together with the independent replication on a second venue family. The quantity that reports the size of the correction is the verdict-flip rate between hour pricing and block pricing on the matched realised routes themselves, and the wedge sweep above is the target it has to beat.
 
-One further gap between what the panel prices and what the router optimised is stated as a limit and is not controlled. Quoted output is not the router's whole objective: it also weighs gas, exposure to sandwiching, the probability that a path reverts and, for aggregators, access to private orderflow. Gas is handled, since the all-in cost comparison charges the extra hop at receipt-measured units and is reported alongside the gross comparison throughout. The others are not recoverable from the swap record, which retains executed swaps and their receipts and carries nothing about the arrangements between searchers and block builders under which a route was submitted. The estimand is the share of routing classified as dominated for which the measured gap is smaller than a plausible charge for one of those considerations, which would make the routing choice optimal on an objective the panel cannot see, and it is the strongest objection a referee can raise against any behavioural reading of the classification.
+One further gap between what the panel prices and what the router optimised is stated as a limit and is not controlled. Quoted output is not the router's whole objective: it also weighs gas, exposure to sandwiching, the probability that a path reverts and, for aggregators, access to private orderflow. Gas remains unresolved until every candidate comparison is joined to the realised transaction's effective gas price and to route units calibrated for its year, topology, venue sequence and intermediary identity. The other components are not recoverable from the swap record, which retains executed swaps and their receipts and carries nothing about the arrangements between searchers and block builders under which a route was submitted. The estimand is the share of routing classified as dominated for which the measured gap is smaller than a plausible charge for one of those considerations, which would make the routing choice optimal on an objective the panel cannot see, and it is the strongest objection a referee can raise against any behavioural reading of the classification.
 
-\subsection{What an unexploited gap implies, and the arbitrage bound}
+\subsection{What an unexploited gap implies, and the same-block capture test}
 \label{sec:executability:arbitrage}
 
-The sharpest form of the objection to the constructed side is that an executable gap invites capture. If a direct pool and a two-leg route disagree by hundreds of basis points at the same state, a cycle out through the expensive route and back through the cheap one can convert the disagreement into profit inside one block after its own costs. Round-trip routes run 12.7\% of multi-leg routes by count and 21.7\% by value at the median of 79 sampled days, and the floor across those days is 4.5\% by count and 7.4\% by value. No sampled day is without self-returning activity, and Appendix~\ref{app:roundtrip} reports the whole daily distribution. Those counts do not identify every route as arbitrage or prove continuous capture capacity; the economic bound comes from the measured costs below.
+The sharpest form of the objection to the constructed side is that an executable gap invites capture. If a direct pool and a two-leg route disagree by hundreds of basis points at the same state, a cycle out through the expensive route and back through the cheap one can convert the disagreement into profit inside one block after its own costs. Round-trip routes run 12.7\% of multi-leg routes by count and 21.7\% by value at the median of 79 sampled days, and the floor across those days is 4.5\% by count and 7.4\% by value. No sampled day is without self-returning activity, and Appendix~\ref{app:roundtrip} reports the whole daily distribution. Those counts do not identify every route as arbitrage or prove continuous capture capacity.
 % output/exhibits/round_trip_share_by_day.jsonl, 79 sampled days
 
-A gap is not by itself an arbitrage, and the distinction is what makes the objection answerable. The cycle pays three pool fees where the one-way comparison pays one, since the two-leg side charges two, and it pays gas for three hops at the receipt-measured 319,906 units against 154,604 for a single hop, both measured medians of gasUsed over Uniswap v2 transactions on 2024-01-15.
-% src/ddvc/cpquote.py GAS_BY_LEGS, median gasUsed over Uniswap v2 transactions on 2024-01-15
-Both costs are known, and together they compute the threshold at which the gap distribution splits,
-\[
-\gamma(V) \;=\; 2 f_{\mathrm{leg}} \;+\; \frac{10^{4}\, g_{3}\, p_{\mathrm{gas}}\, p_{\mathrm{ETH}}}{V},
-\]
-with $f_{\mathrm{leg}}$ the per-leg pool fee in basis points, $g_{3}$ the gas units of a three-hop cycle, $p_{\mathrm{gas}}$ and $p_{\mathrm{ETH}}$ the gas price and the ETH price, and $V$ the notional. A measured gap exceeding $\gamma(V)$ implies a cycle that pays at that size. The extra fee burden is charged at 60 basis points, two additional legs at the 30-basis-point constant-product tier, which is the conservative direction because concentrated-liquidity and stableswap venues charge less and a lower fee makes the threshold smaller and the excludable tail larger. Three-hop gas at the panel's median of 13.7 gwei over 1,883 measured days, converted at an ETH price of \$2,500, costs \$10.94, which is 109.4 basis points of a \$1,000 trade, 10.9 of a \$10,000 trade and 1.1 of a \$100,000 trade. The thresholds are therefore 169.4, 70.9 and 61.1 basis points at the three notionals.
-% output/exhibits/gap_arbitrage_bound.jsonl; scripts/test_gap_arbitrage_bound.py; data/processed/daily_gas_price_graph.parquet, 1,883 days
+The former quantitative arbitrage threshold is withdrawn. It combined a pooled route-topology calibration with a sample-wide gas price, fixed native-asset conversion and an obsolete route panel. That clock cannot classify a same-block opportunity, so the paper reports no threshold, tail share, table or figure from it.
 
-Below its threshold a gap is economically possible. Nobody can profit from removing it, so it can stand for as long as the state that produced it stands, and it is admissible evidence about what routing cost. Above its threshold a gap implies a cycle that pays, which should be competed away inside a block, so observing one is evidence about the pricing engine. On the screened panel the median sits below the threshold at every notional: 31.1 basis points at \$1,000 on 804 comparable routes, 33.9 at \$10,000 on 631, and 20.8 at \$100,000 on 404. The 90th percentiles are 218.4, 343.0 and 110.2 basis points. Figure~\ref{fig:exec:arb} sets both against the threshold across the three notionals.
-% output/exhibits/gap_arbitrage_bound.jsonl, post-screen, 1,839 comparable routes across three notionals
-
-\begin{table}[t]
-\centering
-\caption{The arbitrage-cycle threshold, and the screened gap distribution against it}
-\label{tab:exec:arb}
-\begin{tabular}{lrrrrrrr}
-\toprule
-Trade size & Routes & Gas & Fee burden & Threshold & Median gap & 90th pct. & Above \\
-\midrule
-\$1{,}000 & 804 & 109.4 & 60.0 & 169.4 & 31.1 & 218.4 & 13.6\% \\
-% output/exhibits/gap_arbitrage_bound.jsonl, 804 post-screen comparable routes priced at $1,000
-\$10{,}000 & 631 & 10.9 & 60.0 & 70.9 & 33.9 & 343.0 & 38.5\% \\
-% output/exhibits/gap_arbitrage_bound.jsonl, 631 post-screen comparable routes priced at $10,000
-\$100{,}000 & 404 & 1.1 & 60.0 & 61.1 & 20.8 & 110.2 & 22.0\% \\
-% output/exhibits/gap_arbitrage_bound.jsonl, 404 post-screen comparable routes priced at $100,000
-\bottomrule
-\end{tabular}
-\\[4pt]
-\footnotesize All cost columns in basis points of notional. \emph{Gas} is three-hop gas at the panel's median gas price converted at an ETH price of \$2,500, \emph{Fee burden} is the two extra pool fees a cycle pays at the 30-basis-point constant-product tier, and \emph{Threshold} is their sum, the value of $\gamma(V)$ above which a cycle pays. \emph{Above} is the share of screened routes whose measured gap exceeds it. 1,839 comparable routes across the three notionals.
-\end{table}
-
-\begin{figure}[tbp]
-\centering
-\caption{The screened gap distribution against the arbitrage-cycle threshold}
-\label{fig:exec:arb}
-\begin{tikzpicture}
-\begin{axis}[xmode=log, log basis x=10, width=0.85\textwidth, height=6.4cm, xlabel={Trade size, US dollars}, ylabel={Basis points of notional}, xmin=600, xmax=170000, ymin=0, ymax=370, xtick={1000,10000,100000}, xticklabels={1{,}000, 10{,}000, 100{,}000}, ytick={0,50,100,150,200,250,300,350}, tick align=outside, tick label style={font=\footnotesize}, label style={font=\footnotesize}, legend style={font=\footnotesize, draw=none, fill=none, at={(0.5,1.02)}, anchor=south, legend columns=3, column sep=1.1em}, legend cell align=left, grid=major, grid style={black!10}, axis line style={black!70}]
-\addplot[black, thick, mark=*, mark size=1.9pt] coordinates {(1000,169.36) (10000,70.94) (100000,61.09)};
-\addlegendentry{threshold $\gamma(V)$}
-\addplot[black!55, thick, dashed, mark=triangle*, mark size=2.4pt, mark options={solid, fill=white, draw=black!55}] coordinates {(1000,218.45) (10000,342.96) (100000,110.16)};
-\addlegendentry{gap, 90th percentile}
-\addplot[black!55, thick, dotted, mark=square*, mark size=1.9pt, mark options={solid, fill=black!55, draw=black!55}] coordinates {(1000,31.08) (10000,33.91) (100000,20.83)};
-\addlegendentry{gap, median}
-\end{axis}
-\end{tikzpicture}
-\par\vspace{6pt}
-\begin{minipage}{0.92\textwidth}
-\footnotesize\raggedright \emph{Notes.} The threshold is $\gamma(V) = 2 f_{\mathrm{leg}} + 10^{4} g_{3} p_{\mathrm{gas}} p_{\mathrm{ETH}} / V$, charging two extra legs at the 30-basis-point constant-product tier and three-hop gas at the panel's median gas price of 13.7 gwei converted at an ETH price of \$2,500. A gap above the threshold implies a cycle that pays at that size and is read as evidence about the pricing engine, and a gap below it is one nobody could remove at a profit. The median of the screened distribution sits below the threshold at all three notionals and the 90th percentile sits above it at all three., 804, 631 and 404 post-screen comparable routes priced at \$1,000, \$10,000 and \$100,000.
-\end{minipage}
-\end{figure}
-% output/exhibits/gap_arbitrage_bound.jsonl, 1,839 post-screen comparable routes across the three notionals
-
-The tail above the threshold is the part of the measurement this paper cannot yet defend, and it is reported as an upper bound on measurement error and never netted out. It runs 13.6\% of routes at \$1,000, 38.5\% at \$10,000 and 22.0\% at \$100,000, which is 109, 243 and 89 routes of the 804, 631 and 404 priced at each notional.
-% output/exhibits/gap_arbitrage_bound.jsonl, share_above_threshold against thresholds of 169.4, 70.9 and 61.1 bps
-These are not a random subset of the panel. They concentrate wherever the engine extrapolates furthest, which is the same place the support screen was built to keep it out of. The residual tail is what that screen let through.
-
-What would split the tail into arbitrage that was taken and quoter error is a single test, and its specification is fixed. Join each flagged cell to the sequence of swaps in the same block and report the share of flagged cells in which a closing cycle appears, meaning a swap sequence returning to the input token across the pools the flagged comparison names. A closing cycle means the gap was real and was captured, which makes it evidence about the market. Its absence means the gap was never available at the size the panel quoted, which makes it quoter error or an unmodelled constraint on the route. The population that has to be checked is bounded by the counts above, and the test is what would convert the current upper bound into a split.
+The replacement is fixed before estimation. Each candidate gap must be joined to the realised transaction and block, priced with that receipt's effective gas price and receipt-calibrated three-leg route units, and checked for a closing swap sequence in the same block. A closing cycle would show that the gap was real and captured; its absence would leave quoter error or an unmodelled execution constraint unresolved. Until that test passes the release gate, this section supplies an objection and a design, not an empirical bound.
 
 \subsection{Signed venue coverage}
 \label{sec:executability:coverage}

@@ -89,7 +89,6 @@ OUTPUT_PROVENANCE = {"code_sources": SRC, "inputs": REQUIRED_PANELS}
 
 MIN_TVL = 10_000.0
 MIN_MONTH_DAYS = 15
-GAS_UNITS = {"uniswap_v2": 155_000.0}
 WETH = "0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2"
 # A pool price that moves by more than this inside one hour is a rug, a
 # rebase or a decimals artefact, not a price. Screening these out REMOVES
@@ -302,8 +301,10 @@ def price_and_screen(
     )
 
     df = df.merge(gas, on="day", how="left")
-    df["gas_usd"] = ((df.n_mint + df.n_burn) * GAS_UNITS[venue]
-                     * df.gas_gwei_median * 1e-9 * df.eth_usd)
+    # The old implementation borrowed pooled one-leg swap gas for mint and burn
+    # operations. That is not an LP-operation measurement. Keep helper frames gross-only
+    # until liquidity events carry their own receipt evidence and allocation contract.
+    df["gas_usd"] = np.nan
     df["fees_usd"] = df.fee_rate * df.volume_usd
     if lvr_inference_ready(venue):
         df["lvr_usd"] = constant_product_lvr_usd(df.rv, df[LVR_SCALE_COLUMN])
@@ -542,6 +543,9 @@ def robustness_row(
 
 
 def main() -> int:
+    raise RuntimeError(
+        "rent-incidence estimator withdrawn pending receipt-measured LP-operation gas"
+    )
     require_node_d_release(routes=True, market_state=True)
     require_current_artifacts(REQUIRED_PANELS, consumer="rent-incidence estimator")
     OUT.mkdir(parents=True, exist_ok=True)

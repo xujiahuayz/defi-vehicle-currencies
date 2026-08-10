@@ -4,9 +4,9 @@
 This exists because a number measured here drifted. A single day, 2025-12-06, was measured
 at 25.6% of multi-leg routes by count and 90.5% by value, and that pair then propagated
 into eleven places across `docs/` and `scripts/`, including the justification for excluding
-round trips, the argument for count-weighting over value-weighting, and the docstring of
-`test_gap_arbitrage_bound.py`, where it carried the claim that arbitrage capacity is
-present. Two of those copies kept the qualifier "on the day inspected" and the rest dropped
+round trips, the argument for count-weighting over value-weighting, and a retired
+fixed-clock diagnostic where it carried the claim that arbitrage capacity is present. Two
+of those copies kept the qualifier "on the day inspected" and the rest dropped
 it, so a single-day extreme read as a corpus constant. Java caught it from her own memory
 of an early check.
 
