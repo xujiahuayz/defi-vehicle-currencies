@@ -113,6 +113,8 @@ def provider_order_input_paths(raw_root: Path, venue: str, day: str) -> list[Pat
     paths = provider_event_paths(raw_root, venue, day)
     if venue == "uniswap_v3" and (static_path := v3_pool_static_path(raw_root)) is not None:
         paths.append(static_path)
+    if venue in {"uniswap_v2", "sushiswap_v2"}:
+        paths.append(raw_root / venue / f"{venue}_hourly_reserves_{day}.jsonl.gz")
     return paths
 
 
@@ -149,6 +151,10 @@ def graph_fingerprint(
     event_type = STREAM_EVENT_TYPE[stream]
     if venue in {"uniswap_v2", "sushiswap_v2"}:
         decimals0, decimals1 = token0.get("decimals"), token1.get("decimals")
+        if decimals0 is None or decimals1 is None:
+            decimals = (pool_decimals or {}).get(str(pool.get("id") or "").lower())
+            if decimals is not None:
+                decimals0, decimals1 = decimals
         if decimals0 is None or decimals1 is None:
             raise ValueError("V2 Graph event lacks token decimals")
         if event_type == "swap":
@@ -239,12 +245,43 @@ def load_v3_pool_decimals(raw_root: Path) -> dict[str, tuple[int, int]]:
     return decimals
 
 
+def load_v2_pool_decimals(
+    raw_root: Path,
+    venue: str,
+    day: str,
+) -> dict[str, tuple[int, int]]:
+    path = raw_root / venue / f"{venue}_hourly_reserves_{day}.jsonl.gz"
+    if not path.is_file():
+        raise FileNotFoundError(path)
+    decimals: dict[str, tuple[int, int]] = {}
+    with gzip.open(path, "rt") as handle:
+        for line in handle:
+            if not line.strip():
+                continue
+            row = json.loads(line)
+            pair = row.get("pair") or {}
+            pool = str(pair.get("id") or "").lower()
+            token0, token1 = pair.get("token0") or {}, pair.get("token1") or {}
+            if token0.get("decimals") is None or token1.get("decimals") is None:
+                continue
+            value = int(token0["decimals"]), int(token1["decimals"])
+            prior = decimals.get(pool)
+            if prior is not None and prior != value:
+                raise ValueError(f"conflicting V2 pool-snapshot decimals: {venue}/{pool}")
+            decimals[pool] = value
+    return decimals
+
+
 def load_graph_events(raw_root: Path, venue: str, day: str) -> list[GraphEvent]:
     if venue not in SUPPORTED_VENUES:
         raise ValueError(f"unsupported Graph event-order venue: {venue}")
     events: list[GraphEvent] = []
     ids: set[tuple[str, str]] = set()
-    pool_decimals = load_v3_pool_decimals(raw_root) if venue == "uniswap_v3" else {}
+    pool_decimals = (
+        load_v3_pool_decimals(raw_root)
+        if venue == "uniswap_v3"
+        else load_v2_pool_decimals(raw_root, venue, day)
+    )
     for stream, path in zip(CORE_STREAMS, provider_event_paths(raw_root, venue, day), strict=True):
         if not path.is_file():
             raise FileNotFoundError(path)

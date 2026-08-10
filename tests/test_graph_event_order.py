@@ -15,6 +15,7 @@ from ddvc.graph_event_order import (
     write_correction_generation,
 )
 from ddvc.state_data import normalise_tick_partition
+from ddvc.v2_event_completeness import V2_EVENT_TOPICS
 
 
 def graph_swap(event_id: str, tx_hash: str, amount0: str, amount1: str) -> dict:
@@ -158,5 +159,62 @@ def test_v3_swap_uses_hashed_pool_statics_when_event_decimals_are_absent(tmp_pat
         [exact_swap("0xtx1", 99, 10**18, -2 * 10**6)],
         "uniswap_v3",
     )
+    assert audit["matched_events"] == 1
+    assert corrections[0]["chain_log_index"] == 99
+
+
+def test_v2_events_use_hashed_same_day_snapshot_decimals(tmp_path: Path) -> None:
+    raw_root = tmp_path / "raw" / "thegraph"
+    venue_root = raw_root / "uniswap_v2"
+    venue_root.mkdir(parents=True)
+    pair = {
+        "id": "0xpool",
+        "token0": {"id": "0xa", "symbol": "A"},
+        "token1": {"id": "0xb", "symbol": "B"},
+    }
+    swap = {
+        "id": "event-one",
+        "transaction": {"id": "0xtx1", "blockNumber": "10", "timestamp": "100"},
+        "timestamp": "100",
+        "logIndex": "7",
+        "amount0In": "1",
+        "amount1In": "0",
+        "amount0Out": "0",
+        "amount1Out": "2",
+        "pair": pair,
+    }
+    snapshot_pair = {
+        **pair,
+        "token0": {**pair["token0"], "decimals": "18"},
+        "token1": {**pair["token1"], "decimals": "6"},
+    }
+    rows = {
+        "swaps": [swap],
+        "mints": [],
+        "burns": [],
+        "hourly_reserves": [
+            {"id": "state", "hourStartUnix": "0", "pair": snapshot_pair}
+        ],
+    }
+    for stream, stream_rows in rows.items():
+        with gzip.open(venue_root / f"uniswap_v2_{stream}_20250101.jsonl.gz", "wt") as handle:
+            for row in stream_rows:
+                handle.write(json.dumps(row) + "\n")
+    exact = [{
+        "address": "0xpool",
+        "block_number": 10,
+        "block_hash": "0xblock",
+        "transaction_hash": "0xtx1",
+        "transaction_index": 1,
+        "log_index": 99,
+        "topics": [V2_EVENT_TOPICS["swap"]],
+        "data": "0x" + abi_encode(
+            ["uint256", "uint256", "uint256", "uint256"],
+            [10**18, 0, 0, 2 * 10**6],
+        ).hex(),
+        "removed": False,
+    }]
+    graph = load_graph_events(raw_root, "uniswap_v2", "20250101")
+    corrections, audit = match_event_orders(graph, exact, "uniswap_v2")
     assert audit["matched_events"] == 1
     assert corrections[0]["chain_log_index"] == 99
