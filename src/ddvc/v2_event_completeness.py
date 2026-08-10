@@ -196,7 +196,13 @@ def v2_exact_log_chunk_complete(
             topics=[V2_EVENT_TOPICS[name] for name in V2_CORE_EVENTS],
             address=None,
         )
-        validate_anchored_log_evidence(marker, table.to_pylist(), frozen_upper)
+        validation_upper = _persisted_chunk_frozen_upper(
+            marker,
+            current_frozen_upper=frozen_upper,
+            end_block=end_block,
+            root=root,
+        )
+        validate_anchored_log_evidence(marker, table.to_pylist(), validation_upper)
     except (ExactLogRpcError, IndexError, KeyError, OSError, TypeError, ValueError, json.JSONDecodeError):
         return False
     return bool(
@@ -212,6 +218,42 @@ def v2_exact_log_chunk_complete(
         and int(marker.get("raw_logs", -1)) == table.num_rows
         and table.schema == RAW_LOG_SCHEMA
         and marker.get("raw_sha256") == _file_sha256(raw_path)
+    )
+
+
+def _persisted_chunk_frozen_upper(
+    marker: dict[str, object],
+    *,
+    current_frozen_upper: dict[str, object],
+    end_block: int,
+    root: Path | None,
+) -> dict[str, object]:
+    """Resolve the immutable chain anchor recorded when a raw chunk was fetched."""
+
+    validate_frozen_upper_block(
+        current_frozen_upper,
+        int(current_frozen_upper["block_number"]),
+    )
+    request = marker.get("frozen_upper_request")
+    if (
+        not isinstance(request, dict)
+        or request.get("method") != "eth_getBlockByNumber"
+        or request.get("id") != 2
+    ):
+        raise ValueError("exact-log evidence lacks its frozen-upper request")
+    params = request.get("params")
+    if not isinstance(params, list) or len(params) != 2 or params[1] is not False:
+        raise ValueError("exact-log evidence has a malformed frozen-upper request")
+    anchored_block = int(str(params[0]), 16)
+    current_block = int(current_frozen_upper["block_number"])
+    if anchored_block < end_block or anchored_block > current_block:
+        raise ValueError("exact-log evidence has a frozen anchor outside the admissible perimeter")
+    if anchored_block == current_block:
+        return current_frozen_upper
+    return load_or_resolve_frozen_upper_block(
+        anchored_block,
+        fetch=False,
+        root=root,
     )
 
 
@@ -514,7 +556,13 @@ def factory_leaf_complete(
         )
         for record in records:
             decode_pair_created_log(venue, record)
-        validate_anchored_log_evidence(marker, records, frozen_upper)
+        validation_upper = _persisted_chunk_frozen_upper(
+            marker,
+            current_frozen_upper=frozen_upper,
+            end_block=end_block,
+            root=root,
+        )
+        validate_anchored_log_evidence(marker, records, validation_upper)
     except (ExactLogRpcError, IndexError, KeyError, OSError, TypeError, ValueError, json.JSONDecodeError):
         return False
     return bool(

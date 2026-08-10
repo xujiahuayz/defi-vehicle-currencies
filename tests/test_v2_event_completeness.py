@@ -53,6 +53,7 @@ from ddvc.v2_event_completeness import (
     factory_root_ranges,
     fetch_factory_root_adaptive,
     fetch_v2_exact_log_chunk,
+    frozen_upper_block_path,
     graph_core_events,
     load_or_resolve_frozen_upper_block,
     missing_v2_exact_log_ranges,
@@ -1182,6 +1183,69 @@ def test_exact_rpc_chunk_is_reusable_only_after_its_complete_marker(
     assert not v2_exact_log_chunk_complete(100, 149, frozen_upper=frozen, root=tmp_path)
     with pytest.raises(RuntimeError, match="must be quarantined"):
         fetch_v2_exact_log_chunk(100, 149, frozen_upper=frozen, root=tmp_path, rpc_request=rpc_response)
+
+
+def test_exact_rpc_chunk_remains_reusable_when_the_sample_upper_block_advances(
+    tmp_path,
+) -> None:
+    anchored = frozen_upper(149)
+    current = frozen_upper(199)
+
+    def rpc_response(payload, **_kwargs):
+        return anchored_rpc_batch(payload, [], anchored)
+
+    fetch_v2_exact_log_chunk(
+        100,
+        149,
+        frozen_upper=anchored,
+        root=tmp_path,
+        rpc_request=rpc_response,
+    )
+    old_anchor_path = frozen_upper_block_path(149, root=tmp_path)
+    old_anchor_path.parent.mkdir(parents=True, exist_ok=True)
+    old_anchor_path.write_text(json.dumps(anchored), encoding="utf-8")
+
+    assert v2_exact_log_chunk_complete(
+        100,
+        149,
+        frozen_upper=current,
+        root=tmp_path,
+    )
+    assert missing_v2_exact_log_ranges(
+        [(100, 149)],
+        frozen_upper=current,
+        root=tmp_path,
+    ) == []
+
+
+def test_factory_leaf_remains_reusable_when_the_sample_upper_block_advances(
+    tmp_path,
+) -> None:
+    anchored = frozen_upper(109)
+    current = frozen_upper(159)
+
+    def rpc_response(payload, **_kwargs):
+        return anchored_rpc_batch(payload, [], anchored)
+
+    fetch_factory_root_adaptive(
+        "uniswap_v2",
+        100,
+        109,
+        frozen_upper=anchored,
+        root=tmp_path,
+        rpc_request=rpc_response,
+    )
+    old_anchor_path = frozen_upper_block_path(109, root=tmp_path)
+    old_anchor_path.parent.mkdir(parents=True, exist_ok=True)
+    old_anchor_path.write_text(json.dumps(anchored), encoding="utf-8")
+
+    assert factory_leaf_complete(
+        "uniswap_v2",
+        100,
+        109,
+        frozen_upper=current,
+        root=tmp_path,
+    )
 
 
 @pytest.mark.parametrize("mutation", ["response", "attempts", "jsonrpc"])
