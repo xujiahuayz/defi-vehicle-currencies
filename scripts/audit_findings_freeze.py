@@ -50,6 +50,14 @@ from ddvc.state_data import (
     pool_semantics,
 )
 from ddvc.venue_corpus import JFE_VENUE_CARDS, JFE_VENUE_SOURCE_KEYS
+from ddvc.release_calendar import transaction_frontier_audit_days
+from ddvc.v2_event_completeness import (
+    V2_EVENT_SOURCE_CERTIFICATE,
+    V2_EVENT_SOURCE_EXCEPTIONS,
+    V2_EVENT_SOURCE_SUMMARY,
+    read_v2_event_source_certificate,
+    validate_v2_event_source_certificate,
+)
 from ddvc.paths import (
     LITERATURE_SOURCE_ADMISSION,
     LP_LIQUIDITY_FLOW_CANDIDATES,
@@ -60,6 +68,7 @@ from ddvc.paths import (
     POOL_CAPITAL_PANEL,
     POOL_CAPITAL_REJECTIONS,
     TOKEN_PRICE_DAILY_PANEL,
+    literature_papers_dir,
 )
 
 PANEL = ROOT / "data" / "empirical" / "route_cost_panel_v2.parquet"
@@ -80,6 +89,7 @@ MODEL_LEDGER = ROOT / "docs" / "model-ledger.json"
 LITERATURE_AUDIT = ROOT / "docs" / "literature-audit.md"
 LITERATURE_BIB = ROOT / "literature" / "vehicle-currencies.bib"
 LITERATURE_SOURCES = ROOT / "literature" / "pdf-sources.json"
+LITERATURE_USE_CONTRACTS = ROOT / "literature" / "use-contracts.json"
 LITERATURE_TEXT = ROOT / "literature" / "text"
 LITERATURE_SOURCE_NOTES = ROOT / "literature" / "source-notes"
 MARKET_STATE_QUALITY = ROOT / "data" / "processed" / "market_state_quality.parquet"
@@ -470,20 +480,71 @@ def literature_source_key(fields: dict[str, str]) -> str:
     return fields.get("source key", "").strip()
 
 
-def materialized_companion_sources() -> dict[str, bool]:
-    """Report whether each registered source key has durable extracted text or a source note."""
-    bib_keys = set(re.findall(r"@\w+\s*\{\s*([^,\s]+)", LITERATURE_BIB.read_text()))
+def literature_corpus_index(root: Path = ROOT) -> dict[str, dict]:
+    """Load the tracked checksum contract for the ignored local PDF corpus."""
+    path = root / "literature" / "text" / "_index.jsonl"
+    records: dict[str, dict] = {}
+    if not path.is_file():
+        return records
+    for line in path.read_text(errors="replace").splitlines():
+        try:
+            record = json.loads(line)
+        except json.JSONDecodeError:
+            continue
+        stem = str(record.get("stem") or "") if isinstance(record, dict) else ""
+        if stem:
+            records[stem] = record
+    return records
+
+
+def indexed_pdf_materialized(stem: str, *, paper_root: Path, index: dict[str, dict]) -> bool:
+    """Verify one ignored PDF against the tracked index record for its exact stem."""
+    record = index.get(stem, {})
+    pdf = paper_root / f"{stem}.pdf"
+    expected_hash = record.get("pdf_sha256") if isinstance(record, dict) else None
+    return bool(
+        pdf.is_file()
+        and isinstance(expected_hash, str)
+        and re.fullmatch(r"[0-9a-f]{64}", expected_hash)
+        and file_sha256(pdf) == expected_hash
+    )
+
+
+def source_note_type(key: str, *, note_root: Path) -> str | None:
+    """Read the explicit materialization type from one exact-key source note."""
+    notes = list(note_root.glob(f"*-{key}.md"))
+    if len(notes) != 1:
+        return None
+    match = re.search(
+        r"^source_type:\s*(.+?)\s*$",
+        notes[0].read_text(errors="replace"),
+        flags=re.MULTILINE | re.IGNORECASE,
+    )
+    return match.group(1).strip().lower() if match else None
+
+
+def materialized_companion_sources(root: Path = ROOT) -> dict[str, bool]:
+    """Report exact-key artifacts backed by the local checksum-verified PDF corpus."""
+    bib_path = root / "literature" / "vehicle-currencies.bib"
+    sources_path = root / "literature" / "pdf-sources.json"
+    text_root = root / "literature" / "text"
+    note_root = root / "literature" / "source-notes"
+    paper_root = literature_papers_dir(root)
+    bib_keys = set(re.findall(r"@\w+\s*\{\s*([^,\s]+)", bib_path.read_text()))
     try:
-        source_keys = set(json.loads(LITERATURE_SOURCES.read_text()).get("sources", {}))
+        source_keys = set(json.loads(sources_path.read_text()).get("sources", {}))
     except (json.JSONDecodeError, OSError):
         source_keys = set()
+    index = literature_corpus_index(root)
     return {
         key: source_materialized(
             key,
             bib_keys=bib_keys,
             source_keys=source_keys,
-            text_root=LITERATURE_TEXT,
-            note_root=LITERATURE_SOURCE_NOTES,
+            text_root=text_root,
+            note_root=note_root,
+            paper_root=paper_root,
+            index=index,
         )
         for key in bib_keys | source_keys
     }
@@ -496,16 +557,21 @@ def source_materialized(
     source_keys: set[str],
     text_root: Path,
     note_root: Path,
+    paper_root: Path | None = None,
+    index: dict[str, dict] | None = None,
 ) -> bool:
-    """Require an exact-key durable artifact; a prefix-sharing companion is insufficient."""
-    return bool(
-        key in bib_keys
-        and key in source_keys
-        and (
-            any(text_root.glob(f"*-{key}-*.txt"))
-            or any(note_root.glob(f"*-{key}.md"))
-        )
-    )
+    """Require an exact-key durable source, never an extract standing in for its PDF."""
+    if key not in bib_keys or key not in source_keys:
+        return False
+    extracts = list(text_root.glob(f"*-{key}-*.txt"))
+    if extracts:
+        if paper_root is None or index is None:
+            return False
+        for extract in extracts:
+            if indexed_pdf_materialized(extract.stem, paper_root=paper_root, index=index):
+                return True
+        return False
+    return source_note_type(key, note_root=note_root) == "publisher-native-html"
 
 
 def literature_source_sets() -> dict[str, dict]:
@@ -559,7 +625,20 @@ def companion_sources_closed(
         if materialized is None:
             return True
         keys = companion_source_keys(fields)
-        return bool(keys) and all(materialized.get(key, False) for key in keys)
+        main_closed = (
+            source_set_main_artifact_closed(source_set, materialized)
+            if source_set is not None
+            else materialized.get(literature_source_key(fields), False)
+        )
+        return bool(keys) and all(
+            source_set_companion_closed(
+                key,
+                main_key=literature_source_key(fields),
+                materialized=materialized,
+                main_artifact_closed=main_closed,
+            )
+            for key in keys
+        )
     if disposition.startswith("none:"):
         if source_text is None:
             return True
@@ -575,6 +654,60 @@ def companion_sources_closed(
     return False
 
 
+def source_set_companion_closed(
+    key: str,
+    *,
+    main_key: str,
+    materialized: dict[str, bool],
+    main_artifact_closed: bool | None = None,
+    root: Path = ROOT,
+) -> bool:
+    """Allow only a verified artifact or an explicitly embedded appendix in the verified main PDF."""
+    if materialized.get(key, False):
+        return True
+    main_closed = materialized.get(main_key, False) if main_artifact_closed is None else main_artifact_closed
+    return (
+        source_note_type(key, note_root=root / "literature" / "source-notes") == "embedded-in-main"
+        and main_closed
+    )
+
+
+def source_set_main_artifact_closed(
+    source_set: dict,
+    materialized: dict[str, bool],
+    *,
+    root: Path = ROOT,
+) -> bool:
+    """Verify the exact article extract against its indexed local PDF and checksum."""
+    checks = source_set.get("checks", {})
+    article = checks.get("article") if isinstance(checks, dict) else None
+    article_path = (root / article).resolve() if isinstance(article, str) else None
+    text_root = (root / "literature" / "text").resolve()
+    if article_path and article_path.is_relative_to(text_root) and article_path.is_file():
+        return indexed_pdf_materialized(
+            article_path.stem,
+            paper_root=literature_papers_dir(root),
+            index=literature_corpus_index(root),
+        )
+    main_key = source_set.get("main")
+    return isinstance(main_key, str) and materialized.get(main_key, False)
+
+
+def source_set_companion_disposition_resolved(
+    key: str,
+    materialized: dict[str, bool],
+    *,
+    root: Path = ROOT,
+) -> bool:
+    """Distinguish a missing appendix from one explicitly embedded in the main PDF."""
+    if materialized.get(key, False):
+        return True
+    return source_note_type(
+        key,
+        note_root=root / "literature" / "source-notes",
+    ) in {"embedded-in-main", "publisher-native-html"}
+
+
 def source_set_record_closed(
     source_set: dict,
     materialized: dict[str, bool],
@@ -585,14 +718,7 @@ def source_set_record_closed(
     checks = source_set.get("checks", {})
     companions = source_set.get("companions")
     main_key = source_set.get("main")
-    article = checks.get("article") if isinstance(checks, dict) else None
-    article_path = (root / article).resolve() if isinstance(article, str) else None
-    text_root = (root / "literature" / "text").resolve()
-    tracked_article = bool(
-        article_path
-        and article_path.is_relative_to(text_root)
-        and article_path.is_file()
-    )
+    main_closed = source_set_main_artifact_closed(source_set, materialized, root=root)
     return bool(
         source_set.get("status") == "complete"
         and isinstance(main_key, str)
@@ -600,8 +726,17 @@ def source_set_record_closed(
         and all(checks.get(kind) for kind in ("article", "publisher_or_doi", "author_or_repository"))
         and isinstance(companions, list)
         and all(isinstance(key, str) for key in companions)
-        and (tracked_article or materialized.get(main_key, False))
-        and all(materialized.get(key, False) for key in companions)
+        and main_closed
+        and all(
+            source_set_companion_closed(
+                key,
+                main_key=main_key,
+                materialized=materialized,
+                main_artifact_closed=main_closed,
+                root=root,
+            )
+            for key in companions
+        )
         and non_text_dispositions_closed(source_set, root=root)
     )
 
@@ -626,7 +761,7 @@ def non_text_dispositions_closed(
         return False
 
     source_note_root = (root / "literature" / "source-notes").resolve()
-    paper_root = (root / "literature" / "papers").resolve()
+    paper_root = literature_papers_dir(root).resolve()
     covered: list[str] = []
     for disposition in dispositions:
         if not isinstance(disposition, dict):
@@ -653,7 +788,13 @@ def non_text_dispositions_closed(
         status = disposition.get("status")
         if status == "materialized":
             artifact = disposition.get("artifact")
-            artifact_path = (root / artifact).resolve() if isinstance(artifact, str) else None
+            artifact_path = (
+                paper_root / Path(artifact).name
+                if isinstance(artifact, str) and artifact.startswith("literature/papers/")
+                else (root / artifact).resolve()
+                if isinstance(artifact, str)
+                else None
+            )
             expected_bytes = disposition.get("bytes")
             if not (
                 artifact_path
@@ -687,12 +828,172 @@ def file_sha256(path: Path) -> str:
     return digest.hexdigest()
 
 
+def load_literature_use_contracts(path: Path = LITERATURE_USE_CONTRACTS) -> dict:
+    """Load the one canonical policy for citation-use and vocabulary boundaries."""
+    try:
+        payload = json.loads(path.read_text())
+    except (json.JSONDecodeError, OSError):
+        return {}
+    return payload if isinstance(payload, dict) else {}
+
+
+def validate_literature_use_contracts(policy: dict) -> tuple[bool, str]:
+    """Fail closed when the policy weakens the method/vocabulary asymmetry or is malformed."""
+    claim_rules = policy.get("claim_use_contracts")
+    vocabulary_rules = policy.get("vocabulary_contracts")
+    if not isinstance(claim_rules, list) or not isinstance(vocabulary_rules, list):
+        return False, "claim_use_contracts and vocabulary_contracts must be lists"
+    ids: list[str] = []
+    invalid: list[str] = []
+    for rule in claim_rules:
+        required = {
+            "id",
+            "source_key",
+            "evidence_field",
+            "evidence_pattern",
+            "prohibited_pattern",
+            "reason",
+        }
+        rule_id = str(rule.get("id") or "missing-id") if isinstance(rule, dict) else "missing-id"
+        ids.append(rule_id)
+        if not isinstance(rule, dict) or any(not str(rule.get(field) or "").strip() for field in required):
+            invalid.append(rule_id)
+            continue
+        try:
+            re.compile(str(rule["evidence_pattern"]), flags=re.IGNORECASE | re.DOTALL)
+            re.compile(str(rule["prohibited_pattern"]), flags=re.IGNORECASE | re.DOTALL)
+        except re.error:
+            invalid.append(rule_id)
+    for rule in vocabulary_rules:
+        required = {"id", "term", "publication_classes", "minimum_documents", "reason"}
+        rule_id = str(rule.get("id") or "missing-id") if isinstance(rule, dict) else "missing-id"
+        ids.append(rule_id)
+        if (
+            not isinstance(rule, dict)
+            or any(field not in rule for field in required)
+            or not str(rule.get("term") or "").strip()
+            or not isinstance(rule.get("publication_classes"), list)
+            or not rule["publication_classes"]
+            or any(not isinstance(value, str) or not value for value in rule["publication_classes"])
+            or not isinstance(rule.get("minimum_documents"), int)
+            or rule["minimum_documents"] < 1
+            or not str(rule.get("reason") or "").strip()
+        ):
+            invalid.append(rule_id)
+    duplicates = sorted({rule_id for rule_id in ids if ids.count(rule_id) > 1})
+    passed = bool(
+        policy.get("schema_version") == 1
+        and policy.get("method_absence_rule")
+        == "absence_never_prohibits_without_explicit_source_prohibition"
+        and policy.get("vocabulary_absence_rule") == "configured_absence_prohibits"
+        and not invalid
+        and not duplicates
+    )
+    return passed, f"invalid={sorted(set(invalid)) or 'none'}; duplicates={duplicates or 'none'}"
+
+
+def manuscript_citation_contexts(paths: list[Path], source_key: str) -> list[tuple[Path, str]]:
+    """Return paragraph-level TeX contexts that actually cite one source key."""
+    contexts: list[tuple[Path, str]] = []
+    for path in paths:
+        for block in re.split(r"\n\s*\n", path.read_text(errors="replace")):
+            groups = re.findall(r"\\cite\w*\{([^}]+)\}", block)
+            keys = {
+                key.strip()
+                for group in groups
+                for key in group.split(",")
+                if key.strip()
+            }
+            if source_key in keys:
+                contexts.append((path, block))
+    return contexts
+
+
+def literature_use_contract_violations(
+    policy: dict,
+    *,
+    cards: dict[str, dict[str, str]],
+    manuscript_paths: list[Path],
+    admission_ledger: dict,
+    text_root: Path = LITERATURE_TEXT,
+) -> tuple[list[str], list[str]]:
+    """Apply explicit claim boundaries and configured vocabulary-absence rules."""
+    claim_violations: list[str] = []
+    vocabulary_violations: list[str] = []
+    for rule in policy.get("claim_use_contracts", []):
+        rule_id = str(rule["id"])
+        source_key = str(rule["source_key"])
+        evidence = cards.get(source_key, {}).get(str(rule["evidence_field"]), "")
+        if not re.search(str(rule["evidence_pattern"]), evidence, flags=re.IGNORECASE | re.DOTALL):
+            claim_violations.append(f"{rule_id}:evidence-card-drift")
+        for path, context in manuscript_citation_contexts(manuscript_paths, source_key):
+            if re.search(str(rule["prohibited_pattern"]), context, flags=re.IGNORECASE | re.DOTALL):
+                claim_violations.append(f"{rule_id}:{path.name}")
+                break
+
+    manuscript = "\n".join(path.read_text(errors="replace") for path in manuscript_paths)
+    admitted = admission_ledger.get("admitted_records", []) if isinstance(admission_ledger, dict) else []
+    for rule in policy.get("vocabulary_contracts", []):
+        term = str(rule["term"])
+        pattern = re.compile(rf"(?<!\w){re.escape(term)}(?!\w)", flags=re.IGNORECASE)
+        paper_uses = len(pattern.findall(manuscript))
+        if not paper_uses:
+            continue
+        classes = set(rule["publication_classes"])
+        corpus_keys = {
+            str(record.get("key"))
+            for record in admitted
+            if isinstance(record, dict)
+            and record.get("publication_class") in classes
+            and str(record.get("key") or "")
+        }
+        documents: dict[str, str] = {}
+        for key in corpus_keys:
+            extracts = list(text_root.glob(f"*-{key}-*.txt"))
+            if extracts:
+                documents[key] = "\n".join(path.read_text(errors="replace") for path in extracts)
+        if len(documents) < int(rule["minimum_documents"]):
+            vocabulary_violations.append(
+                f"{rule['id']}:corpus-coverage={len(documents)}/{rule['minimum_documents']}"
+            )
+            continue
+        corpus_hits = sum(bool(pattern.search(text)) for text in documents.values())
+        if corpus_hits == 0:
+            vocabulary_violations.append(
+                f"{rule['id']}:paper={paper_uses},corpus=0/{len(documents)}"
+            )
+    return claim_violations, vocabulary_violations
+
+
+def unresolved_source_set_artifacts(
+    source_set: dict,
+    materialized: dict[str, bool],
+    *,
+    root: Path = ROOT,
+) -> list[str]:
+    """Name missing main/companion artifacts so a failed literature gate is actionable."""
+    main_key = str(source_set.get("main") or "")
+    missing = [] if source_set_main_artifact_closed(source_set, materialized, root=root) else [main_key]
+    companions = source_set.get("companions", [])
+    if isinstance(companions, list):
+        missing.extend(
+            key
+            for key in companions
+            if isinstance(key, str)
+            and not source_set_companion_disposition_resolved(key, materialized, root=root)
+        )
+    return missing
+
+
 def validate_literature_audit(
     text: str,
     cited_keys: set[str],
     venue_cards: set[str],
     *,
     verify_source_sets: bool = False,
+    manuscript_paths: list[Path] | None = None,
+    use_contracts: dict | None = None,
+    admission_ledger: dict | None = None,
 ) -> tuple[bool, str]:
     """Require individual full-text cards before findings may freeze."""
     frontmatter = parse_state_frontmatter(text)
@@ -755,6 +1056,42 @@ def validate_literature_audit(
     independent = {
         key for key in central if cards[key].get("independent") == "complete"
     }
+    claim_violations: list[str] = []
+    vocabulary_violations: list[str] = []
+    policy_valid = True
+    policy_detail = "not-configured"
+    if use_contracts is not None:
+        policy_valid, policy_detail = validate_literature_use_contracts(use_contracts)
+        if policy_valid and manuscript_paths is not None and admission_ledger is not None:
+            claim_violations, vocabulary_violations = literature_use_contract_violations(
+                use_contracts,
+                cards=cards,
+                manuscript_paths=manuscript_paths,
+                admission_ledger=admission_ledger,
+            )
+        elif policy_valid:
+            policy_valid = False
+            policy_detail = "manuscript_paths and admission_ledger are required"
+    missing_artifacts: list[str] = []
+    overclosed_cards: list[str] = []
+    if verify_source_sets and materialized is not None:
+        for key in sorted(required_source_keys):
+            source_set = source_sets.get(key)
+            if source_set:
+                missing_artifacts.extend(unresolved_source_set_artifacts(source_set, materialized))
+        for card_key in sorted(required_cards):
+            fields = cards.get(card_key, {})
+            source_set = source_sets.get(literature_source_key(fields))
+            if (
+                fields.get("companions", "").strip().lower().startswith("complete:")
+                and source_set
+                and any(
+                    companion in missing_artifacts
+                    for companion in source_set.get("companions", [])
+                    if isinstance(companion, str)
+                )
+            ):
+                overclosed_cards.append(card_key)
     passed = bool(
         frontmatter.get("status") == "complete"
         and (not verify_source_sets or closed_source_sets == required_source_keys)
@@ -762,6 +1099,9 @@ def validate_literature_audit(
         and verified_citations == cited_keys
         and read_venues == venue_cards
         and independent == central
+        and policy_valid
+        and not claim_violations
+        and not vocabulary_violations
     )
     return passed, (
         f"status={frontmatter.get('status') or 'missing'}; "
@@ -769,7 +1109,12 @@ def validate_literature_audit(
         f"five-axis-cards={len(complete_cards)}/{len(required_cards)}; "
         f"cited={len(verified_citations)}/{len(cited_keys)}; "
         f"venue={len(read_venues)}/{len(venue_cards)}; "
-        f"independent={len(independent)}/{len(central)}"
+        f"independent={len(independent)}/{len(central)}; "
+        f"policy={policy_detail if not policy_valid else 'valid'}; "
+        f"claim-use={claim_violations or 'none'}; "
+        f"vocabulary={vocabulary_violations or 'none'}; "
+        f"missing-artifacts={sorted(set(missing_artifacts)) or 'none'}; "
+        f"overclosed={overclosed_cards or 'none'}"
     )
 
 
@@ -2324,6 +2669,46 @@ def validate_model_ledger(
     return passed, detail
 
 
+def v2_event_source_certificate_checks(
+    summary_path: Path = V2_EVENT_SOURCE_SUMMARY,
+    exceptions_path: Path = V2_EVENT_SOURCE_EXCEPTIONS,
+    certificate_path: Path = V2_EVENT_SOURCE_CERTIFICATE,
+    quality_path: Path = UNIFIED_QUALITY_PANEL,
+) -> list[tuple[str, bool, str]]:
+    """Require current, exact, zero-exception V2 event-source evidence."""
+
+    artifacts = (summary_path, exceptions_path, certificate_path)
+    missing = [path.name for path in artifacts if not path.is_file()]
+    if missing:
+        return [("node D V2 event-source certificate exists", False, f"missing={missing}")]
+    provenance = {path.name: verify(path).get("status") for path in artifacts}
+    checks = [
+        (
+            "node D V2 event-source provenance current",
+            all(status == "ok" for status in provenance.values()),
+            f"provenance={provenance}",
+        )
+    ]
+    try:
+        expected_days = transaction_frontier_audit_days(quality_path)
+        summary, exceptions, certificate = read_v2_event_source_certificate(
+            summary_path,
+            exceptions_path,
+            certificate_path,
+        )
+        days, raw_events = validate_v2_event_source_certificate(
+            summary,
+            exceptions,
+            certificate,
+            expected_days,
+        )
+        passed, detail = True, f"audit_dates={days}; raw_events={raw_events:,}; exceptions=0"
+    except (FileNotFoundError, KeyError, OSError, TypeError, ValueError) as error:
+        passed, detail = False, str(error)
+    checks.append(("node D V2 event-source exact comparisons", passed, detail))
+    return checks
+
+
 def transaction_frontier_support_checks(
     support: pd.DataFrame,
     *,
@@ -2650,6 +3035,8 @@ def main() -> int:
         record(name, passed, detail)
     for name, passed, detail in v3_inventory_calendar_checks():
         record(name, passed, detail)
+    for name, passed, detail in v2_event_source_certificate_checks():
+        record(name, passed, detail)
 
     if MARKET_STATE_QUALITY.exists():
         quality = pd.read_parquet(MARKET_STATE_QUALITY)
@@ -2769,7 +3156,13 @@ def main() -> int:
         admission_passed, admission_detail = validate_source_admission(cited, admission)
         record("node B source-admission gate", admission_passed, admission_detail)
         literature_passed, literature_detail = validate_literature_audit(
-            LITERATURE_AUDIT.read_text(), cited, JFE_VENUE_CARDS, verify_source_sets=True
+            LITERATURE_AUDIT.read_text(),
+            cited,
+            JFE_VENUE_CARDS,
+            verify_source_sets=True,
+            manuscript_paths=sorted(PAPER_SECTIONS.glob("*.tex")),
+            use_contracts=load_literature_use_contracts(),
+            admission_ledger=admission,
         )
         record("node B full-text literature ledger", literature_passed, literature_detail)
     else:

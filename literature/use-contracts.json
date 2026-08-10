@@ -1,0 +1,50 @@
+{
+  "schema_version": 1,
+  "method_absence_rule": "absence_never_prohibits_without_explicit_source_prohibition",
+  "vocabulary_absence_rule": "configured_absence_prohibits",
+  "claim_use_contracts": [
+    {
+      "id": "eren-debt-mechanism-is-distinct",
+      "source_key": "ErenMalamud2022DominantDebt",
+      "evidence_field": "uses",
+      "evidence_pattern": "does not support the statement that debt denomination is derived from the same network or invoicing forces",
+      "prohibited_pattern": "derive(?:s|d)?\\s+the currency denomination of debt from the same forces",
+      "reason": "Eren and Malamud derive debt denomination from borrower-risk and yield-curve forces, not the network or invoicing mechanism attributed in the manuscript."
+    },
+    {
+      "id": "caparros-does-not-license-project-measures",
+      "source_key": "CaparrosChaudharyKlein2024BlockchainScaling",
+      "evidence_field": "uses",
+      "evidence_pattern": "does not[^.]+validate this project's quoter or unknown quantities[^.]+establish a standard for on-chain liquidity measurement",
+      "prohibited_pattern": "the standard\\s+[^.]{0,240}?applies to on-chain liquidity measurement[^.]{0,240}?licenses the unknown quantities",
+      "reason": "The source measures pool-level concentration and hypothetical slippage; it does not validate this project's quoter or license unmeasured quantities."
+    },
+    {
+      "id": "griffin-shams-does-not-support-liquidity-mining",
+      "source_key": "GriffinShams2020Untethered",
+      "evidence_field": "uses",
+      "evidence_pattern": "does not[^.]+supply evidence on liquidity-mining rewards or LP token subsidies",
+      "prohibited_pattern": "liquidity mining[^.]{0,500}?\\\\cite",
+      "reason": "Griffin and Shams study Tether flows and Bitcoin prices, not liquidity-mining rewards or LP token subsidies."
+    },
+    {
+      "id": "lvr-requires-external-price-variance",
+      "source_key": "MilionisMoallemiRoughgardenZhang2022LVR",
+      "evidence_field": "implication",
+      "evidence_pattern": "do not imply that the citation validates variance measured from each pool's own marginal price",
+      "prohibited_pattern": "pool(?:'s)? own marginal price",
+      "reason": "The LVR estimand and empirical implementation use an external-market price; own-pool marginal-price variance is not licensed by the source."
+    }
+  ],
+  "vocabulary_contracts": [
+    {
+      "id": "succession-finance-economics-usage",
+      "term": "succession",
+      "publication_classes": [
+        "peer_reviewed_finance_economics"
+      ],
+      "minimum_documents": 30,
+      "reason": "The configured peer-reviewed finance/economics corpus contains no use of succession for a change in dominant vehicle currency; use rotation, transition, displacement, or overtaking unless the literature record changes."
+    }
+  ]
+}

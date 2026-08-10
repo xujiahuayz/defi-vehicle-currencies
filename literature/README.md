@@ -4,6 +4,8 @@ This folder is intentionally flat. Keep the durable literature record in BibTeX 
 
 Use `source-admission.json` as the source of truth for what may enter the curated corpus. Every source needs an explicit decision before acquisition, including peer-reviewed articles; a BibTeX entry type is metadata, not evidence of publication quality. Use `vehicle-currencies.bib` as the source of truth for citation metadata after admission, and `pdf-sources.json` only as the fetch manifest for admitted BibTeX keys: publisher PDF endpoints, public manuscript PDFs, authentication labels, and fallback routes for `scripts/fetch_literature.py`.
 
+Use `use-contracts.json` as the executable bridge from completed evidence cards to live manuscript language. A claim-use contract records one adjudicated source boundary and the prohibited manuscript pattern that would violate it. A vocabulary contract applies only to a named term and a configured finance/economics publication class. Methodological silence never becomes a prohibition: a method is barred only by an explicit source prohibition recorded in a claim-use contract. Vocabulary silence may bar a configured term once the declared corpus-coverage floor is met.
+
 Do not commit copyrighted PDFs or other files that cannot be redistributed. Keep private PDFs local and ignored; cite papers through DOI, URL, journal metadata, or BibTeX notes instead.
 
 Suggested filename pattern:
@@ -24,7 +26,7 @@ The tracked text index is also the portable checksum contract for the gitignored
 ./scripts/run scripts/build_literature_text_cache.py --check-corpus
 ```
 
-The check requires an exact one-to-one match among PDFs, text extracts and index records and validates every PDF by SHA-256. Replication data and code archives remain outside this readable-corpus contract.
+The check requires an exact one-to-one match among PDFs, text extracts and index records and validates every PDF by SHA-256. The node-B findings gate applies the same rule to every required source set: a tracked extract cannot stand in for a missing main or companion PDF. An appendix may share the main PDF only when its source note declares `source_type: embedded-in-main`; a publisher-native HTML correction may close through `source_type: publisher-native-html`. An access-gap or unavailable note records discovery but cannot close a card marked `Companions: Complete`. Replication data and code archives remain outside this readable-corpus contract and retain their separate inspected-disposition checks.
 
 The script validates every requested key against `source-admission.json` before it opens the network or writes a PDF. It then downloads PDFs to gitignored `literature/papers/` and writes a gitignored `literature/papers/download-manifest.json`. It tries committed sources in `pdf-sources.json` first, then generated DOI resolver fallbacks. For public servers that fail with Python's default HTTP stack, it falls back to `curl --http1.1`.
 

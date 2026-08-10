@@ -20,6 +20,7 @@ from scripts.audit_findings_freeze import (
     expected_market_state_keys,
     expected_unified_route_venue_days,
     graph_status,
+    literature_use_contract_violations,
     non_text_dispositions_closed,
     parse_literature_cards,
     parse_state_frontmatter,
@@ -28,11 +29,15 @@ from scripts.audit_findings_freeze import (
     route_measurement_invariants,
     route_cost_panel_checks,
     source_materialized,
+    source_set_companion_disposition_resolved,
+    source_set_main_artifact_closed,
     source_set_record_closed,
     transaction_frontier_artifact_checks,
     transaction_frontier_support_checks,
+    v2_event_source_certificate_checks,
     validate_capital_contract_rows,
     validate_literature_audit,
+    validate_literature_use_contracts,
     validate_liquidity_contracts,
     validate_quote_state_contract_rows,
     validate_canonical_consumer_boundary,
@@ -51,6 +56,75 @@ from scripts.refresh_panel_dependents import (
 
 
 class FindingsFreezeAuditTest(unittest.TestCase):
+    def test_findings_gate_requires_current_exact_v2_event_certificate(self) -> None:
+        import json
+
+        from ddvc.fetch.sources import get_source
+        from ddvc.v2_event_completeness import (
+            V2_CORE_EVENTS,
+            V2_EVENT_SOURCE_SCHEMA_VERSION,
+            V2_EVENT_VENUES,
+            V2_POOL_PERIMETER,
+            audit_calendar_sha256,
+            compare_event_maps,
+        )
+
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            quality = root / "quality.parquet"
+            summary_path = root / "summary.parquet"
+            exceptions_path = root / "exceptions.parquet"
+            certificate_path = root / "certificate.json"
+            day = "20201015"
+            pd.DataFrame({"day": [day], "output_rows": [1], "passed": [True]}).to_parquet(
+                quality,
+                index=False,
+            )
+            rows = []
+            for venue in V2_EVENT_VENUES:
+                genesis = get_source(venue).genesis.strftime("%Y%m%d")
+                venue_rows, _ = compare_event_maps(
+                    day,
+                    venue,
+                    {},
+                    {},
+                    set(),
+                    launch_status="pre_genesis" if day < genesis else "audited",
+                )
+                rows.extend(venue_rows)
+            pd.DataFrame(rows).to_parquet(summary_path, index=False)
+            pd.DataFrame(columns=["status"]).to_parquet(exceptions_path, index=False)
+            certificate_path.write_text(
+                json.dumps(
+                    {
+                        "schema_version": V2_EVENT_SOURCE_SCHEMA_VERSION,
+                        "status": "pass",
+                        "audit_calendar_sha256": audit_calendar_sha256([day]),
+                        "audit_dates": 1,
+                        "summary_rows": len(rows),
+                        "exception_rows": 0,
+                        "venues": list(V2_EVENT_VENUES),
+                        "event_types": list(V2_CORE_EVENTS),
+                        "pool_perimeter": V2_POOL_PERIMETER,
+                        "registry_source": "complete_factory_PairCreated_histories",
+                        "global_event_query": "topic_only_without_address_filter",
+                        "factory_pairs": 2,
+                        "factory_pairs_by_venue": {
+                            venue: 1 for venue in V2_EVENT_VENUES
+                        },
+                        "factory_registry_sha256": "a" * 64,
+                    }
+                )
+            )
+            with patch("scripts.audit_findings_freeze.verify", return_value={"status": "ok"}):
+                checks = v2_event_source_certificate_checks(
+                    summary_path,
+                    exceptions_path,
+                    certificate_path,
+                    quality,
+                )
+        self.assertTrue(all(passed for _name, passed, _detail in checks), checks)
+
     def test_live_json_contracts_have_unique_keys_and_a_current_lock_hash(self) -> None:
         import json
 
@@ -831,6 +905,70 @@ status: complete
             )
         )
 
+    def test_literature_use_policy_catches_claim_conflicts_and_vocabulary_absence(self) -> None:
+        import tempfile
+
+        policy = {
+            "schema_version": 1,
+            "method_absence_rule": "absence_never_prohibits_without_explicit_source_prohibition",
+            "vocabulary_absence_rule": "configured_absence_prohibits",
+            "claim_use_contracts": [
+                {
+                    "id": "paper-a-boundary",
+                    "source_key": "PaperA",
+                    "evidence_field": "uses",
+                    "evidence_pattern": "does not license the estimator",
+                    "prohibited_pattern": "licenses the estimator",
+                    "reason": "The card expressly withholds that use.",
+                }
+            ],
+            "vocabulary_contracts": [
+                {
+                    "id": "succession-usage",
+                    "term": "succession",
+                    "publication_classes": ["peer_reviewed_finance_economics"],
+                    "minimum_documents": 2,
+                    "reason": "The configured corpus does not use the term.",
+                }
+            ],
+        }
+        passed, detail = validate_literature_use_contracts(policy)
+        self.assertTrue(passed, detail)
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            manuscript = root / "paper.tex"
+            manuscript.write_text(
+                "This source licenses the estimator \\citep{PaperA}. "
+                "The method is novel, and the episode is a succession."
+            )
+            text_root = root / "text"
+            text_root.mkdir()
+            (text_root / "2020-PaperA-main.txt").write_text("transition and estimator")
+            (text_root / "2021-PaperB-main.txt").write_text("currency displacement")
+            admission = {
+                "admitted_records": [
+                    {"key": "PaperA", "publication_class": "peer_reviewed_finance_economics"},
+                    {"key": "PaperB", "publication_class": "peer_reviewed_finance_economics"},
+                ]
+            }
+            claim, vocabulary = literature_use_contract_violations(
+                policy,
+                cards={"PaperA": {"uses": "This source does not license the estimator."}},
+                manuscript_paths=[manuscript],
+                admission_ledger=admission,
+                text_root=text_root,
+            )
+            self.assertEqual(claim, ["paper-a-boundary:paper.tex"])
+            self.assertEqual(vocabulary, ["succession-usage:paper=1,corpus=0/2"])
+            self.assertNotIn("method", " ".join(claim + vocabulary))
+
+        weakened = {
+            **policy,
+            "method_absence_rule": "absence_prohibits",
+        }
+        passed, _detail = validate_literature_use_contracts(weakened)
+        self.assertFalse(passed)
+
     def test_live_companion_gate_requires_auditable_discovery_record(self) -> None:
         fields = {
             "source key": "PaperA",
@@ -943,6 +1081,7 @@ status: complete
             }
             self.assertTrue(non_text_dispositions_closed(unavailable, root=root))
     def test_materialization_does_not_confuse_main_and_companion_prefixes(self) -> None:
+        import hashlib
         import tempfile
         from pathlib import Path
 
@@ -950,9 +1089,12 @@ status: complete
             root = Path(directory)
             text_root = root / "text"
             note_root = root / "notes"
+            paper_root = root / "papers"
             text_root.mkdir()
             note_root.mkdir()
-            (text_root / "2021-PaperAAppendix-supplement.txt").write_text("appendix")
+            paper_root.mkdir()
+            stem = "2021-PaperAAppendix-supplement"
+            (text_root / f"{stem}.txt").write_text("appendix")
             keys = {"PaperA", "PaperAAppendix"}
             self.assertFalse(
                 source_materialized(
@@ -961,8 +1103,23 @@ status: complete
                     source_keys=keys,
                     text_root=text_root,
                     note_root=note_root,
+                    paper_root=paper_root,
+                    index={},
                 )
             )
+            self.assertFalse(
+                source_materialized(
+                    "PaperAAppendix",
+                    bib_keys=keys,
+                    source_keys=keys,
+                    text_root=text_root,
+                    note_root=note_root,
+                    paper_root=paper_root,
+                    index={},
+                )
+            )
+            pdf = paper_root / f"{stem}.pdf"
+            pdf.write_bytes(b"%PDF synthetic")
             self.assertTrue(
                 source_materialized(
                     "PaperAAppendix",
@@ -970,6 +1127,95 @@ status: complete
                     source_keys=keys,
                     text_root=text_root,
                     note_root=note_root,
+                    paper_root=paper_root,
+                    index={
+                        stem: {
+                            "pdf_sha256": hashlib.sha256(pdf.read_bytes()).hexdigest(),
+                        }
+                    },
+                )
+            )
+
+    def test_source_set_main_requires_the_indexed_pdf_not_only_its_extract(self) -> None:
+        import hashlib
+        import json
+        import tempfile
+
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            text_root = root / "literature" / "text"
+            paper_root = root / "literature" / "papers"
+            text_root.mkdir(parents=True)
+            paper_root.mkdir(parents=True)
+            stem = "2020-PaperA-published"
+            article = text_root / f"{stem}.txt"
+            article.write_text("full article")
+            pdf = paper_root / f"{stem}.pdf"
+            pdf_bytes = b"%PDF synthetic"
+            index_record = {
+                "stem": stem,
+                "pdf_sha256": hashlib.sha256(pdf_bytes).hexdigest(),
+            }
+            (text_root / "_index.jsonl").write_text(json.dumps(index_record) + "\n")
+            source_set = {
+                "main": "PaperA",
+                "checks": {"article": f"literature/text/{stem}.txt"},
+            }
+            self.assertFalse(source_set_main_artifact_closed(source_set, {"PaperA": True}, root=root))
+            pdf.write_bytes(pdf_bytes)
+            self.assertTrue(source_set_main_artifact_closed(source_set, {"PaperA": False}, root=root))
+            pdf.write_bytes(b"%PDF changed")
+            self.assertFalse(source_set_main_artifact_closed(source_set, {"PaperA": True}, root=root))
+
+    def test_inaccessible_companion_note_cannot_close_a_complete_card(self) -> None:
+        import tempfile
+
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            notes = root / "literature" / "source-notes"
+            notes.mkdir(parents=True)
+            (notes / "2026-PaperAAppendix.md").write_text(
+                "# Appendix disposition\n\nThe accepted appendix remains access-restricted."
+            )
+            source_set = {
+                "status": "complete",
+                "main": "PaperA",
+                "checks": {
+                    "article": "synthetic full text",
+                    "publisher_or_doi": "publisher checked",
+                    "author_or_repository": "author checked",
+                },
+                "companions": ["PaperAAppendix"],
+            }
+            self.assertFalse(
+                source_set_companion_disposition_resolved(
+                    "PaperAAppendix",
+                    {"PaperAAppendix": False},
+                    root=root,
+                )
+            )
+            self.assertFalse(
+                source_set_record_closed(
+                    source_set,
+                    {"PaperA": True, "PaperAAppendix": False},
+                    root=root,
+                )
+            )
+            (notes / "2026-PaperAAppendix.md").write_text(
+                "---\nsource_type: embedded-in-main\n---\n\nThe appendix occupies pages 30 to 40."
+            )
+            self.assertTrue(
+                source_set_companion_disposition_resolved(
+                    "PaperAAppendix",
+                    {"PaperAAppendix": False},
+                    root=root,
+                )
+            )
+            self.assertTrue(
+                source_set_record_closed(
+                    source_set,
+                    {"PaperA": True, "PaperAAppendix": False},
+                    root=root,
                 )
             )
     def test_citation_inventory_reads_every_key_in_a_group(self) -> None:

@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "locked_at": "2026-08-10",
-  "lock_hash": "7c4ba316e413df89d5d86932705aa97f9de6fe6d7f8276b5115472b90abbce31",
+  "lock_hash": "d032d7b671c2be126b985fe7749db7687bd3facf892242e6a880c5e477e878a6",
   "paper_scope": "The making and displacement of vehicle-currency roles in Ethereum decentralised exchange",
   "global_rules": {
     "asset_identity": "canonical contract address; symbols are labels only",
@@ -212,7 +212,8 @@
     },
     {
       "id": "liquidity_rent_incidence",
-      "status": "blocked_external_reference_variance",
+      "status": "enter_fgh_companion",
+      "execution_gate": "blocked_external_reference_variance",
       "role": "companion distributional finding",
       "estimand": "fee revenue minus LVR minus LP gas by pool asset role",
       "sample": "screened Uniswap V2 pool-days with at least 10000 dollars of exact prior-calendar-day reconstructed reserve capital valued from a separately validated anchored address-day price and an independently identified external reference-price path for the exact token pair and date; Uniswap V3 is excluded until its core event identities pass independent source-completeness reconciliation, event-replayed inventory passes custody and LP-ownership reconciliation, and path-integrated LVR passes independently",
