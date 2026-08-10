@@ -32,6 +32,7 @@ from __future__ import annotations
 
 import ast
 import functools
+import gzip
 import hashlib
 import json
 import os
@@ -51,6 +52,67 @@ MANIFESTS = ROOT / "data" / "manifests"
 # make stamping expensive enough that people would switch it off.
 CONTENT_HASH_MAX_BYTES = 64 * 1024 * 1024
 GENERATED_PREFIXES = ("output/", "data/manifests/")
+
+
+def portable_content_sha256(path: str | Path) -> str:
+    """Hash a file's logical payload across hosts and compression implementations.
+
+    Gzip container bytes can differ across Python, zlib, or operating-system builds
+    even when the ordered decompressed payload is identical. Cross-host transfer
+    audits therefore hash the decompressed byte stream for ``*.gz`` and exact bytes
+    for every other format. This is intentionally separate from ``describe_input``:
+    it validates transfer identity without changing established analytical cache
+    keys or pretending that arbitrary binary formats have a semantic canonical form.
+    """
+
+    source = Path(path)
+    digest = hashlib.sha256()
+    handle_context = gzip.open(source, "rb") if source.suffix == ".gz" else source.open("rb")
+    with handle_context as handle:
+        while chunk := handle.read(1024 * 1024):
+            digest.update(chunk)
+    return digest.hexdigest()
+
+
+def portable_content_manifest(
+    root: str | Path,
+    *,
+    patterns: list[str],
+) -> list[dict[str, object]]:
+    """Describe an exact, sorted file perimeter using portable content hashes."""
+
+    base = Path(root)
+    if not base.is_dir():
+        raise NotADirectoryError(f"portable-manifest root is not a directory: {base}")
+    files = sorted({path for pattern in patterns for path in base.glob(pattern) if path.is_file()})
+    if not files:
+        raise FileNotFoundError(
+            f"portable-manifest perimeter is empty under {base}: {patterns}"
+        )
+    return [
+        {
+            "path": str(path.relative_to(base)),
+            "container_bytes": path.stat().st_size,
+            "content_sha256": portable_content_sha256(path),
+            "content_encoding": "gzip" if path.suffix == ".gz" else "identity",
+        }
+        for path in files
+    ]
+
+
+def portable_manifest_sha256(entries: list[dict[str, object]]) -> str:
+    """Hash portable file identities while excluding container-size diagnostics."""
+
+    identities = [
+        {
+            "path": entry["path"],
+            "content_sha256": entry["content_sha256"],
+            "content_encoding": entry["content_encoding"],
+        }
+        for entry in entries
+    ]
+    payload = json.dumps(identities, sort_keys=True, separators=(",", ":")).encode()
+    return hashlib.sha256(payload).hexdigest()
 
 
 def _run(cmd: list[str]) -> str | None:

@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import gzip
 import tempfile
 import unittest
 from pathlib import Path
@@ -13,12 +14,68 @@ from ddvc.provenance import (
     ensure_released_directory_alias,
     git_state,
     input_matches,
+    portable_content_manifest,
+    portable_content_sha256,
+    portable_manifest_sha256,
     require_current_artifacts,
     semantic_code_fingerprint,
 )
 
 
 class ProvenanceInputTests(unittest.TestCase):
+    def test_portable_hash_ignores_gzip_container_bytes(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            first = root / "first.jsonl.gz"
+            second = root / "second.jsonl.gz"
+            payload = b'{"id":"a"}\n{"id":"b"}\n'
+            with first.open("wb") as raw_handle:
+                with gzip.GzipFile(filename="first-source", mode="wb", fileobj=raw_handle, mtime=1) as handle:
+                    handle.write(payload)
+            with second.open("wb") as raw_handle:
+                with gzip.GzipFile(filename="second-source", mode="wb", fileobj=raw_handle, mtime=2) as handle:
+                    handle.write(payload)
+
+            self.assertNotEqual(first.read_bytes(), second.read_bytes())
+            self.assertEqual(portable_content_sha256(first), portable_content_sha256(second))
+
+    def test_portable_manifest_has_sorted_exact_perimeter(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            (root / "b.json").write_text("b", encoding="utf-8")
+            (root / "a.json").write_text("a", encoding="utf-8")
+            (root / "ignored.txt").write_text("ignored", encoding="utf-8")
+
+            manifest = portable_content_manifest(root, patterns=["*.json"])
+
+            self.assertEqual([entry["path"] for entry in manifest], ["a.json", "b.json"])
+            self.assertEqual({entry["content_encoding"] for entry in manifest}, {"identity"})
+
+    def test_portable_manifest_root_excludes_gzip_container_diagnostics(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            first_root = root / "first"
+            second_root = root / "second"
+            first_root.mkdir()
+            second_root.mkdir()
+            payload = b'{"id":"same"}\n'
+            for directory, embedded_name in ((first_root, "a"), (second_root, "longer-name")):
+                path = directory / "day.jsonl.gz"
+                with path.open("wb") as raw_handle:
+                    with gzip.GzipFile(filename=embedded_name, mode="wb", fileobj=raw_handle, mtime=0) as handle:
+                        handle.write(payload)
+
+            first = portable_content_manifest(first_root, patterns=["*.jsonl.gz"])
+            second = portable_content_manifest(second_root, patterns=["*.jsonl.gz"])
+
+            self.assertNotEqual(first[0]["container_bytes"], second[0]["container_bytes"])
+            self.assertEqual(portable_manifest_sha256(first), portable_manifest_sha256(second))
+
+    def test_portable_manifest_rejects_an_empty_perimeter(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            with self.assertRaises(FileNotFoundError):
+                portable_content_manifest(tmp, patterns=["*.jsonl.gz"])
+
     @patch("ddvc.provenance.verify", return_value={"status": "ok"})
     @patch("ddvc.provenance.sidecar_path")
     def test_documentation_only_release_aliases_recorded_engine_without_copying(
