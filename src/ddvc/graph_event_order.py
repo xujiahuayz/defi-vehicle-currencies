@@ -100,6 +100,22 @@ def provider_event_paths(raw_root: Path, venue: str, day: str) -> list[Path]:
     return [raw_root / venue / f"{venue}_{stream}_{day}.jsonl.gz" for stream in CORE_STREAMS]
 
 
+def v3_pool_static_path(raw_root: Path) -> Path | None:
+    candidates = sorted(
+        (raw_root / "uniswap_v3").glob("uniswap_v3_pool_statics_*.jsonl.gz")
+    )
+    if len(candidates) > 1:
+        raise RuntimeError("multiple V3 pool-static generations are present")
+    return candidates[0] if candidates else None
+
+
+def provider_order_input_paths(raw_root: Path, venue: str, day: str) -> list[Path]:
+    paths = provider_event_paths(raw_root, venue, day)
+    if venue == "uniswap_v3" and (static_path := v3_pool_static_path(raw_root)) is not None:
+        paths.append(static_path)
+    return paths
+
+
 def correction_paths(root: Path, venue: str, day: str) -> tuple[Path, Path]:
     directory = root / venue
     return directory / f"{day}.jsonl.gz", directory / f"{day}.meta.json"
@@ -121,7 +137,12 @@ def _pool_and_tokens(row: dict, venue: str) -> tuple[dict, dict, dict]:
     return pool, token0, token1
 
 
-def graph_fingerprint(row: dict, venue: str, stream: str) -> Fingerprint:
+def graph_fingerprint(
+    row: dict,
+    venue: str,
+    stream: str,
+    pool_decimals: dict[str, tuple[int, int]] | None = None,
+) -> Fingerprint:
     """Return an exact economic event fingerprint independent of provider order."""
 
     pool, token0, token1 = _pool_and_tokens(row, venue)
@@ -148,6 +169,10 @@ def graph_fingerprint(row: dict, venue: str, stream: str) -> Fingerprint:
     if event_type == "swap":
         decimals0, decimals1 = token0.get("decimals"), token1.get("decimals")
         if decimals0 is None or decimals1 is None:
+            decimals = (pool_decimals or {}).get(str(pool.get("id") or "").lower())
+            if decimals is not None:
+                decimals0, decimals1 = decimals
+        if decimals0 is None or decimals1 is None:
             raise ValueError("V3 Graph swap lacks token decimals")
         return (
             event_type,
@@ -164,7 +189,12 @@ def graph_fingerprint(row: dict, venue: str, stream: str) -> Fingerprint:
     )
 
 
-def graph_event(row: dict, venue: str, stream: str) -> GraphEvent:
+def graph_event(
+    row: dict,
+    venue: str,
+    stream: str,
+    pool_decimals: dict[str, tuple[int, int]] | None = None,
+) -> GraphEvent:
     pool, _token0, _token1 = _pool_and_tokens(row, venue)
     block = block_value(row)
     tx_hash = transaction_id(row)
@@ -185,8 +215,28 @@ def graph_event(row: dict, venue: str, stream: str) -> GraphEvent:
         pool=pool_id,
         block_number=int(block),
         provider_log_index=provider_log_index,
-        fingerprint=graph_fingerprint(row, venue, stream),
+        fingerprint=graph_fingerprint(row, venue, stream, pool_decimals),
     )
+
+
+def load_v3_pool_decimals(raw_root: Path) -> dict[str, tuple[int, int]]:
+    path = v3_pool_static_path(raw_root)
+    if path is None:
+        return {}
+    decimals: dict[str, tuple[int, int]] = {}
+    with gzip.open(path, "rt") as handle:
+        for line in handle:
+            if not line.strip():
+                continue
+            row = json.loads(line)
+            pool = str(row.get("id") or "").lower()
+            token0, token1 = row.get("token0") or {}, row.get("token1") or {}
+            value = int(token0.get("decimals")), int(token1.get("decimals"))
+            prior = decimals.get(pool)
+            if prior is not None and prior != value:
+                raise ValueError(f"conflicting V3 pool-static decimals: {pool}")
+            decimals[pool] = value
+    return decimals
 
 
 def load_graph_events(raw_root: Path, venue: str, day: str) -> list[GraphEvent]:
@@ -194,6 +244,7 @@ def load_graph_events(raw_root: Path, venue: str, day: str) -> list[GraphEvent]:
         raise ValueError(f"unsupported Graph event-order venue: {venue}")
     events: list[GraphEvent] = []
     ids: set[tuple[str, str]] = set()
+    pool_decimals = load_v3_pool_decimals(raw_root) if venue == "uniswap_v3" else {}
     for stream, path in zip(CORE_STREAMS, provider_event_paths(raw_root, venue, day), strict=True):
         if not path.is_file():
             raise FileNotFoundError(path)
@@ -201,7 +252,7 @@ def load_graph_events(raw_root: Path, venue: str, day: str) -> list[GraphEvent]:
             for line in handle:
                 if not line.strip():
                     continue
-                event = graph_event(json.loads(line), venue, stream)
+                event = graph_event(json.loads(line), venue, stream, pool_decimals)
                 identity = stream, event.event_id
                 if identity in ids:
                     raise ValueError(f"duplicate Graph event entity: {identity}")
@@ -432,7 +483,7 @@ def write_correction_generation(
         ),
     )
     write_jsonl_gz(data_path, ordered)
-    provider_paths = provider_event_paths(raw_root, venue, day)
+    provider_paths = provider_order_input_paths(raw_root, venue, day)
     metadata = {
         "status": "complete",
         "schema_version": SCHEMA_VERSION,
@@ -477,7 +528,7 @@ def load_event_order_corrections(
     ):
         raise ValueError(f"invalid event-order generation metadata for {venue}/{day}")
     current_provider = {
-        path.name: file_sha256(path) for path in provider_event_paths(raw_root, venue, day)
+        path.name: file_sha256(path) for path in provider_order_input_paths(raw_root, venue, day)
     }
     if metadata.get("provider_inputs_sha256") != current_provider:
         raise ValueError(f"stale event-order generation against Graph inputs: {venue}/{day}")

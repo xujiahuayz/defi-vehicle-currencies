@@ -64,6 +64,21 @@ def write_graph_day(raw_root: Path, rows: list[dict]) -> None:
                 handle.write(json.dumps(row) + "\n")
 
 
+def write_v3_statics(raw_root: Path) -> None:
+    path = raw_root / "uniswap_v3" / "uniswap_v3_pool_statics_20250101.jsonl.gz"
+    with gzip.open(path, "wt") as handle:
+        handle.write(
+            json.dumps(
+                {
+                    "id": "0xpool",
+                    "token0": {"id": "0xa", "decimals": "18"},
+                    "token1": {"id": "0xb", "decimals": "6"},
+                }
+            )
+            + "\n"
+        )
+
+
 def test_v3_receipt_order_generation_repairs_causal_collisions(tmp_path: Path) -> None:
     raw_root = tmp_path / "raw" / "thegraph"
     graph_rows = [
@@ -128,3 +143,20 @@ def test_reconciliation_fails_when_exact_source_has_an_unmatched_event(tmp_path:
         assert "unmatched economic groups" in str(error)
     else:
         raise AssertionError("unmatched exact event did not fail closed")
+
+
+def test_v3_swap_uses_hashed_pool_statics_when_event_decimals_are_absent(tmp_path: Path) -> None:
+    raw_root = tmp_path / "raw" / "thegraph"
+    row = graph_swap("event-one", "0xtx1", "1", "-2")
+    row["pool"]["token0"].pop("decimals")
+    row["pool"]["token1"].pop("decimals")
+    write_graph_day(raw_root, [row])
+    write_v3_statics(raw_root)
+    graph = load_graph_events(raw_root, "uniswap_v3", "20250101")
+    corrections, audit = match_event_orders(
+        graph,
+        [exact_swap("0xtx1", 99, 10**18, -2 * 10**6)],
+        "uniswap_v3",
+    )
+    assert audit["matched_events"] == 1
+    assert corrections[0]["chain_log_index"] == 99
