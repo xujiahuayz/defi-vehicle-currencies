@@ -59,6 +59,7 @@ FEE_TIERS = (100, 500, 3000, 10000)
 
 _UA = "ddvc-quoter/1.0"
 _DEFAULT_RPCS = (
+    "https://mainnet.gateway.tenderly.co",
     "https://ethereum-rpc.publicnode.com",
     "https://eth.llamarpc.com",
     "https://eth.drpc.org",
@@ -78,6 +79,8 @@ _CAPACITY_MARKERS = (
     "query timeout",
     "request timeout",
 )
+_AUTHENTICATION_MARKERS = ("unauthorized", "authenticat", "api key", "personal token")
+_TRANSIENT_RPC_MARKERS = ("rate limit", "usage limit", "temporarily unavailable", "can't route")
 
 
 def rpc_urls() -> list[str]:
@@ -97,7 +100,7 @@ def _authentication_error(error: object) -> bool:
     if not isinstance(error, dict):
         return False
     message = str(error.get("message") or "").lower()
-    return any(marker in message for marker in ("unauthorized", "authenticat", "api key"))
+    return any(marker in message for marker in _AUTHENTICATION_MARKERS)
 
 
 def _authentication_failure(payload: object) -> bool:
@@ -190,11 +193,8 @@ def _attempt_record(
     normalized = message.lower()
     evidence_markers = (
         *_CAPACITY_MARKERS,
-        "rate limit",
-        "usage limit",
-        "unauthorized",
-        "authentication",
-        "api key",
+        *_TRANSIENT_RPC_MARKERS,
+        *_AUTHENTICATION_MARKERS,
         "invalid params",
         "execution reverted",
         "unknown block hash",
@@ -260,10 +260,8 @@ def rpc_post(payload: dict | list[dict], *, timeout: int = 60,
                             classification = "transient"
                         elif classify_capacity and _capacity_failure(http_status, rpc_code, message):
                             classification = "capacity"
-                        elif (
-                            rpc_code in {-32001, -32005}
-                            or "rate limit" in message.lower()
-                            or "usage limit" in message.lower()
+                        elif rpc_code in {-32001, -32005} or any(
+                            marker in message.lower() for marker in _TRANSIENT_RPC_MARKERS
                         ):
                             classification = "transient"
                         else:

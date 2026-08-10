@@ -146,6 +146,51 @@ class RpcPostTests(unittest.TestCase):
         self.assertNotIn("secret-token", json.dumps(envelope.attempts))
         self.assertEqual(envelope.attempts[0]["message"], "api key")
 
+    def test_archive_token_requirement_disables_endpoint_and_rotates(self) -> None:
+        rejected = Response(
+            {
+                "jsonrpc": "2.0",
+                "id": 1,
+                "error": {"code": -32602, "message": "Archive requests require a personal token"},
+            }
+        )
+        accepted = Response({"jsonrpc": "2.0", "id": 1, "result": []})
+        with (
+            patch.object(quoter, "rpc_urls", return_value=["https://first", "https://second"]),
+            patch.object(quoter.urllib.request, "urlopen", side_effect=[rejected, accepted]),
+        ):
+            envelope = quoter.rpc_post(
+                {"jsonrpc": "2.0", "id": 1, "method": "eth_getLogs", "params": []},
+                retries=1,
+                retry_json_errors=True,
+                return_evidence=True,
+                classify_capacity=True,
+            )
+        self.assertEqual(envelope.attempts[0]["classification"], "transient")
+        self.assertEqual(envelope.attempts[0]["message"], "personal token")
+        self.assertEqual(quoter._disabled_rpc_urls, {"https://first"})
+
+    def test_unroutable_gateway_is_retryable(self) -> None:
+        rejected = Response(
+            {
+                "jsonrpc": "2.0",
+                "id": 1,
+                "error": {"code": 12, "message": "Can't route your request to suitable provider"},
+            }
+        )
+        with (
+            patch.object(quoter, "rpc_urls", return_value=["https://first"]),
+            patch.object(quoter.urllib.request, "urlopen", return_value=rejected),
+            patch.object(quoter.time, "sleep"),
+            self.assertRaises(quoter.Throttled),
+        ):
+            quoter.rpc_post(
+                {"jsonrpc": "2.0", "id": 1, "method": "eth_getLogs", "params": []},
+                retries=1,
+                retry_json_errors=True,
+                classify_capacity=True,
+            )
+
     def test_explicit_result_cap_licenses_bisection(self) -> None:
         rejected = Response(
             {"jsonrpc": "2.0", "id": 1, "error": {"code": -32005, "message": "too many results"}}
