@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+from collections import Counter
 from dataclasses import asdict, dataclass
 import gzip
 import hashlib
@@ -12,9 +13,18 @@ from typing import Iterable, Iterator
 from eth_abi import decode as abi_decode
 from eth_utils import keccak
 import pandas as pd
+import pyarrow.parquet as pq
 
 from ddvc.amounts import human_to_raw
-from ddvc.ethereum_logs import rpc_integer
+from ddvc.ethereum_logs import (
+    EXACT_LOG_BLOCK_CAP,
+    RAW_LOG_SCHEMA,
+    RAW_LOG_STORAGE_FORMAT,
+    fetch_exact_logs,
+    exact_log_block_ranges,
+    rpc_integer,
+    write_exact_log_chunk,
+)
 from ddvc.fetch.sources import get_source
 from ddvc.paths import DATA_DIR, OUTPUT_DIR
 
@@ -43,6 +53,8 @@ PAIR_CREATED_TOPIC = "0x" + keccak(
 ).hex()
 V2_POOL_PERIMETER = "all_paircreated_pools_from_registered_mainnet_factories"
 RAW_V2_EVENT_ROOT = DATA_DIR / "raw" / "ethereum" / "v2_core_event_source"
+V2_EXACT_LOG_CACHE_ROOT = RAW_V2_EVENT_ROOT / "global_50_block_chunks"
+V2_EXACT_LOG_CHUNK_SIZE = EXACT_LOG_BLOCK_CAP
 RAW_V2_FACTORY_ROOT = DATA_DIR / "raw" / "ethereum" / "v2_factory_pair_registry"
 RAW_DAY_BOUND_ROOT = DATA_DIR / "raw" / "ethereum" / "utc_day_block_bounds"
 V2_EVENT_SOURCE_SUMMARY = DATA_DIR / "processed" / "v2_core_event_source_audit.parquet"
@@ -82,6 +94,163 @@ class EventAmounts:
     amount1_in_raw: int
     amount0_out_raw: int
     amount1_out_raw: int
+
+
+def v2_exact_log_ranges(start_block: int, end_block: int) -> list[tuple[int, int]]:
+    """Cover an inclusive perimeter with globally aligned provider-safe chunks."""
+
+    if start_block < 0 or end_block < start_block:
+        raise ValueError("invalid V2 exact-log block perimeter")
+    return exact_log_block_ranges(start_block, end_block, aligned=True)
+
+
+def missing_v2_exact_log_ranges(
+    perimeters: Iterable[tuple[int, int]],
+    *,
+    root: Path | None = None,
+) -> list[tuple[int, int]]:
+    """Return each missing global chunk once across overlapping consumers."""
+
+    return sorted(
+        {
+            block_range
+            for start_block, end_block in perimeters
+            for block_range in v2_exact_log_ranges(start_block, end_block)
+            if not v2_exact_log_chunk_complete(*block_range, root=root)
+        }
+    )
+
+
+def _require_canonical_v2_exact_range(start_block: int, end_block: int) -> None:
+    if (
+        start_block < 0
+        or start_block % V2_EXACT_LOG_CHUNK_SIZE != 0
+        or end_block != start_block + V2_EXACT_LOG_CHUNK_SIZE - 1
+    ):
+        raise ValueError("V2 exact-log cache keys must be aligned 50-block ranges")
+
+
+def v2_exact_log_chunk_paths(
+    start_block: int,
+    end_block: int,
+    *,
+    root: Path | None = None,
+) -> tuple[Path, Path]:
+    """Resolve the one canonical raw location for a global V2 topic query."""
+
+    _require_canonical_v2_exact_range(start_block, end_block)
+    directory = root or V2_EXACT_LOG_CACHE_ROOT
+    stem = f"blocks_{start_block:08d}_{end_block:08d}"
+    return directory / f"{stem}.parquet", directory / f"{stem}.meta.json"
+
+
+def v2_exact_log_chunk_complete(
+    start_block: int,
+    end_block: int,
+    *,
+    root: Path | None = None,
+) -> bool:
+    """Accept a shared chunk only after its exact marker and Parquet agree."""
+
+    raw_path, marker_path = v2_exact_log_chunk_paths(
+        start_block,
+        end_block,
+        root=root,
+    )
+    if not raw_path.is_file() or not marker_path.is_file():
+        return False
+    try:
+        marker = json.loads(marker_path.read_text(encoding="utf-8"))
+        table = pq.ParquetFile(raw_path)
+    except (OSError, ValueError, json.JSONDecodeError):
+        return False
+    return bool(
+        marker.get("status") == "complete"
+        and marker.get("kind") == "global_v2_core_events"
+        and int(marker.get("start_block", -1)) == start_block
+        and int(marker.get("end_block", -1)) == end_block
+        and int(marker.get("chunk_size", -1)) == V2_EXACT_LOG_CHUNK_SIZE
+        and marker.get("address_filter") is None
+        and set(marker.get("event_topics") or []) == set(V2_EVENT_TOPICS.values())
+        and marker.get("storage_format") == RAW_LOG_STORAGE_FORMAT
+        and int(marker.get("raw_logs", -1)) == table.metadata.num_rows
+        and table.schema_arrow == RAW_LOG_SCHEMA
+    )
+
+
+def fetch_v2_exact_log_chunk(
+    start_block: int,
+    end_block: int,
+    *,
+    root: Path | None = None,
+    rpc_request=None,
+) -> dict[str, object]:
+    """Fetch one missing immutable chunk; complete shared raw is always reused."""
+
+    raw_path, marker_path = v2_exact_log_chunk_paths(
+        start_block,
+        end_block,
+        root=root,
+    )
+    if v2_exact_log_chunk_complete(start_block, end_block, root=root):
+        return json.loads(marker_path.read_text(encoding="utf-8"))
+    if raw_path.exists() or marker_path.exists():
+        raise RuntimeError(
+            "partial or invalid shared V2 exact-log chunk must be quarantined, not overwritten: "
+            f"{raw_path.name}"
+        )
+    kwargs = {"rpc_request": rpc_request} if rpc_request is not None else {}
+    topics = [V2_EVENT_TOPICS[name] for name in V2_CORE_EVENTS]
+    records = fetch_exact_logs(
+        start_block=start_block,
+        end_block=end_block,
+        topics=topics,
+        address=None,
+        **kwargs,
+    )
+    return write_exact_log_chunk(
+        raw_path,
+        marker_path,
+        records,
+        {
+            "kind": "global_v2_core_events",
+            "start_block": start_block,
+            "end_block": end_block,
+            "chunk_size": V2_EXACT_LOG_CHUNK_SIZE,
+            "address_filter": None,
+            "query_scope": "global_aligned_50_block_topic_only_no_address_filter",
+            "event_topics": topics,
+            "raw_by_event": dict(
+                Counter(V2_EVENT_BY_TOPIC[str(record["topics"][0])] for record in records)
+            ),
+        },
+    )
+
+
+def read_v2_exact_logs(
+    start_block: int,
+    end_block: int,
+    *,
+    root: Path | None = None,
+) -> tuple[list[dict[str, object]], list[Path]]:
+    """Read shared chunks and return only records inside the consumer's perimeter."""
+
+    records: list[dict[str, object]] = []
+    inputs: list[Path] = []
+    for lower, upper in v2_exact_log_ranges(start_block, end_block):
+        if not v2_exact_log_chunk_complete(lower, upper, root=root):
+            raise RuntimeError(f"shared V2 exact-log chunk is incomplete: {lower}:{upper}")
+        raw_path, marker_path = v2_exact_log_chunk_paths(lower, upper, root=root)
+        chunk = pq.read_table(raw_path).to_pylist()
+        if any(not lower <= int(record["block_number"]) <= upper for record in chunk):
+            raise ValueError(f"shared V2 exact-log chunk contains an out-of-range row: {lower}:{upper}")
+        records.extend(
+            record
+            for record in chunk
+            if start_block <= int(record["block_number"]) <= end_block
+        )
+        inputs.extend((raw_path, marker_path))
+    return records, inputs
 
 
 def audit_calendar_sha256(days: Iterable[str]) -> str:

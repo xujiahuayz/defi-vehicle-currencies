@@ -11,6 +11,7 @@ from ddvc.ethereum_day_cuts import (
     utc_day_timestamps,
     validate_utc_day_block_bounds,
 )
+from ddvc.ethereum_logs import EXACT_LOG_BLOCK_CAP, exact_log_block_ranges
 from ddvc.fetch.raw import write_jsonl_gz
 from ddvc.fetch.sources import get_source
 from ddvc.v2_event_completeness import (
@@ -26,11 +27,18 @@ from ddvc.v2_event_completeness import (
     compare_event_maps,
     decode_v2_log,
     factory_pair_registry,
+    fetch_v2_exact_log_chunk,
     graph_core_events,
+    missing_v2_exact_log_ranges,
     raw_core_events,
+    read_v2_exact_logs,
     validate_v2_event_source_certificate,
+    v2_exact_log_chunk_complete,
+    v2_exact_log_chunk_paths,
+    v2_exact_log_ranges,
 )
 from scripts import audit_v2_event_completeness as auditor
+from scripts import reconcile_graph_event_order as reconciler
 
 
 POOL = "0x" + "a" * 40
@@ -279,27 +287,54 @@ def test_exact_rpc_chunk_is_reusable_only_after_its_complete_marker(
         "data": canonical["data"],
         "removed": False,
     }
-    monkeypatch.setattr(auditor, "RAW_V2_EVENT_ROOT", tmp_path)
     payloads = []
 
     def rpc_response(payload, **_kwargs):
         payloads.append(payload)
         return {"result": [rpc_log]}
 
-    monkeypatch.setattr(auditor, "rpc_post", rpc_response)
-    auditor.fetch_event_chunk("20250115", 90, 110)
+    fetch_v2_exact_log_chunk(100, 149, root=tmp_path, rpc_request=rpc_response)
     assert "address" not in payloads[0]["params"][0]
     assert set(payloads[0]["params"][0]["topics"][0]) == set(V2_EVENT_TOPICS.values())
-    assert auditor.event_chunk_completed(
-        "20250115",
-        90,
-        110,
-    )
-    _raw, marker = auditor.event_chunk_paths("20250115", 90, 110)
+    assert v2_exact_log_chunk_complete(100, 149, root=tmp_path)
+    fetch_v2_exact_log_chunk(100, 149, root=tmp_path, rpc_request=rpc_response)
+    assert len(payloads) == 1
+    records, inputs = read_v2_exact_logs(100, 110, root=tmp_path)
+    assert len(records) == 1
+    assert len(inputs) == 2
+    _raw, marker = v2_exact_log_chunk_paths(100, 149, root=tmp_path)
     payload = json.loads(marker.read_text())
     payload["status"] = "incomplete"
     marker.write_text(json.dumps(payload))
-    assert not auditor.event_chunk_completed("20250115", 90, 110)
+    assert not v2_exact_log_chunk_complete(100, 149, root=tmp_path)
+    with pytest.raises(RuntimeError, match="must be quarantined"):
+        fetch_v2_exact_log_chunk(100, 149, root=tmp_path, rpc_request=rpc_response)
+
+
+def test_v2_exact_log_ranges_are_global_not_consumer_edge_aligned() -> None:
+    assert EXACT_LOG_BLOCK_CAP == 50
+    assert exact_log_block_ranges(151, 250) == [
+        (151, 199),
+        (200, 249),
+        (250, 250),
+    ]
+    assert v2_exact_log_ranges(151, 250) == [
+        (150, 199),
+        (200, 249),
+        (250, 299),
+    ]
+
+
+def test_missing_exact_log_ranges_are_deduplicated_across_consumers(tmp_path) -> None:
+    assert missing_v2_exact_log_ranges(
+        [(25, 75), (50, 100)],
+        root=tmp_path,
+    ) == [(0, 49), (50, 99), (100, 149)]
+
+
+def test_both_v2_consumers_import_the_same_exact_log_owner() -> None:
+    assert auditor.fetch_v2_exact_log_chunk is reconciler.fetch_v2_exact_log_chunk
+    assert auditor.read_v2_exact_logs is reconciler.read_v2_exact_logs
 
 
 def test_no_fetch_refuses_to_resolve_a_missing_day_cut(tmp_path, monkeypatch) -> None:

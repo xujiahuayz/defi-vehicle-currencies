@@ -31,21 +31,34 @@ from ddvc.graph_event_order import (
 from ddvc.paths import DATA_DIR, RAW_MARKET_DATA_LOCK
 from ddvc.quoter import Throttled, rpc_post
 from ddvc.runtime import bounded_workers, exclusive_job, interruptible_thread_pool
+from ddvc.v2_event_completeness import (
+    V2_EVENT_VENUES,
+    V2_EXACT_LOG_CHUNK_SIZE,
+    fetch_v2_exact_log_chunk,
+    read_v2_exact_logs,
+    v2_exact_log_chunk_complete,
+    v2_exact_log_chunk_paths,
+    v2_exact_log_ranges,
+)
 
 
 GRAPH_ROOT = DATA_DIR / "raw" / "thegraph"
 CORRECTION_ROOT = correction_root_for_graph(GRAPH_ROOT)
-DEFAULT_CHUNK_SIZE = 1_000
+DEFAULT_CHUNK_SIZE = V2_EXACT_LOG_CHUNK_SIZE
 MAX_ATTEMPTS = 12
 
 
 def exact_chunk_paths(venue: str, day: str, lower: int, upper: int) -> tuple[Path, Path]:
+    if venue in V2_EVENT_VENUES:
+        return v2_exact_log_chunk_paths(lower, upper)
     directory = CORRECTION_ROOT / venue / day
     stem = f"blocks_{lower:08d}_{upper:08d}"
     return directory / f"{stem}.parquet", directory / f"{stem}.meta.json"
 
 
 def exact_chunk_complete(venue: str, day: str, lower: int, upper: int) -> bool:
+    if venue in V2_EVENT_VENUES:
+        return v2_exact_log_chunk_complete(lower, upper)
     raw, marker = exact_chunk_paths(venue, day, lower, upper)
     if not raw.is_file() or not marker.is_file():
         return False
@@ -70,6 +83,12 @@ def exact_chunk_complete(venue: str, day: str, lower: int, upper: int) -> bool:
 
 
 def fetch_chunk(venue: str, day: str, lower: int, upper: int) -> dict[str, object]:
+    if venue in V2_EVENT_VENUES:
+        return fetch_v2_exact_log_chunk(
+            lower,
+            upper,
+            rpc_request=rpc_post,
+        )
     topics = event_topics(venue)
     records = fetch_exact_logs(
         start_block=lower,
@@ -106,7 +125,8 @@ def fetch_missing_chunks(
     pending = [
         item
         for item in ranges
-        if force or not exact_chunk_complete(venue, day, *item)
+        if (force and venue not in V2_EVENT_VENUES)
+        or not exact_chunk_complete(venue, day, *item)
     ]
     for attempt in range(1, MAX_ATTEMPTS + 1):
         if not pending:
@@ -147,7 +167,12 @@ def reconcile_day(
     graph_events = load_graph_events(GRAPH_ROOT, venue, day)
     lower = min(event.block_number for event in graph_events)
     upper = max(event.block_number for event in graph_events)
-    ranges = block_ranges(lower, upper, chunk_size)
+    if venue in V2_EVENT_VENUES:
+        if chunk_size != V2_EXACT_LOG_CHUNK_SIZE:
+            raise ValueError("V2 event reconciliation requires shared 50-block chunks")
+        ranges = v2_exact_log_ranges(lower, upper)
+    else:
+        ranges = block_ranges(lower, upper, chunk_size)
     fetch_missing_chunks(
         venue,
         day,
@@ -155,14 +180,17 @@ def reconcile_day(
         workers=workers,
         force=force,
     )
-    exact_paths: list[Path] = []
-    exact_records: list[dict[str, object]] = []
-    for start, end in ranges:
-        if not exact_chunk_complete(venue, day, start, end):
-            raise RuntimeError(f"exact event-order chunk incomplete: {venue}/{day}/{start}:{end}")
-        raw, marker = exact_chunk_paths(venue, day, start, end)
-        exact_paths.extend((raw, marker))
-        exact_records.extend(pq.read_table(raw).to_pylist())
+    if venue in V2_EVENT_VENUES:
+        exact_records, exact_paths = read_v2_exact_logs(lower, upper)
+    else:
+        exact_paths = []
+        exact_records = []
+        for start, end in ranges:
+            if not exact_chunk_complete(venue, day, start, end):
+                raise RuntimeError(f"exact event-order chunk incomplete: {venue}/{day}/{start}:{end}")
+            raw, marker = exact_chunk_paths(venue, day, start, end)
+            exact_paths.extend((raw, marker))
+            exact_records.extend(pq.read_table(raw).to_pylist())
     corrections, missing_events, audit = match_event_orders(
         graph_events, exact_records, venue
     )
@@ -222,6 +250,8 @@ def main() -> int:
     args = parser.parse_args()
     if args.chunk_size < 1:
         parser.error("--chunk-size must be positive")
+    if args.venue in V2_EVENT_VENUES and args.chunk_size != V2_EXACT_LOG_CHUNK_SIZE:
+        parser.error("--chunk-size must be 50 for shared V2 exact-log reuse")
     days = sorted({str(day).replace("-", "") for day in args.day})
     if any(len(day) != 8 or not day.isdigit() for day in days):
         parser.error("--day must be YYYYMMDD or YYYY-MM-DD")

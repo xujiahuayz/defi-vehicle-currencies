@@ -4,6 +4,7 @@ import gzip
 import json
 from pathlib import Path
 
+import pytest
 from eth_abi import encode as abi_encode
 
 from ddvc.ethereum_logs import write_exact_log_chunk
@@ -12,6 +13,8 @@ from ddvc.graph_event_order import (
     correction_root_for_graph,
     load_graph_events,
     match_event_orders,
+    portable_evidence_path,
+    resolve_portable_evidence_path,
     supplement_action,
     supplement_source_row,
     write_correction_generation,
@@ -24,7 +27,31 @@ from ddvc.state_data import (
     write_cp_partition,
     write_tick_partition,
 )
+from ddvc.pricing.tick_replay import load_tick_day_events
+from ddvc.route_state import OrderedTickStateCursor, TickStateCut
 from ddvc.v2_event_completeness import V2_EVENT_TOPICS
+from scripts import reconcile_graph_event_order as reconcile
+
+
+def test_v2_reconcilers_share_one_global_exact_log_path(tmp_path: Path, monkeypatch) -> None:
+    import ddvc.v2_event_completeness as v2
+
+    shared = tmp_path / "raw" / "ethereum" / "v2_exact"
+    monkeypatch.setattr(v2, "V2_EXACT_LOG_CACHE_ROOT", shared)
+    uniswap = reconcile.exact_chunk_paths("uniswap_v2", "20250101", 100, 149)
+    sushi = reconcile.exact_chunk_paths("sushiswap_v2", "20260101", 100, 149)
+    assert uniswap == sushi
+    assert uniswap[0].parent == shared
+
+
+def test_external_exact_log_provenance_stays_portable(tmp_path: Path) -> None:
+    root = tmp_path / "raw" / "ethereum" / "graph_event_order"
+    exact = tmp_path / "raw" / "ethereum" / "v2_exact" / "blocks.parquet"
+    relative = portable_evidence_path(exact, root)
+    assert not Path(relative).is_absolute()
+    assert resolve_portable_evidence_path(relative, root).resolve() == exact.resolve()
+    with pytest.raises(ValueError, match="escapes"):
+        resolve_portable_evidence_path("../../../../outside.parquet", root)
 
 
 def graph_swap(event_id: str, tx_hash: str, amount0: str, amount1: str) -> dict:
@@ -272,6 +299,29 @@ def test_reconciliation_repairs_duplicates_rounding_and_omissions(tmp_path: Path
     assert set(frame["log_index"].astype(int)) == {7, 8, 9}
     corrected = frame.loc[frame["tx_hash"] == "0xtx1"].iloc[0]
     assert corrected["amount0"] == "1"
+    state_root = tmp_path / "state"
+    write_tick_partition(raw_root, "uniswap_v3", "20250101", root=state_root)
+    quote_events = load_tick_day_events(
+        state_root,
+        "20250101",
+        venues=("uniswap_v3",),
+        raw_root=raw_root,
+    )
+    released_transactions = {
+        str((event.row.get("transaction") or {}).get("id"))
+        for event in quote_events
+    }
+    assert "0xtx2" in released_transactions
+    applied: list[str] = []
+
+    class QuoteReplay:
+        @staticmethod
+        def apply(event) -> None:
+            applied.append(str((event.row.get("transaction") or {}).get("id")))
+
+    cursor = OrderedTickStateCursor(tuple(quote_events))
+    cursor.apply_until(QuoteReplay(), TickStateCut.strict_before_event((11, 0)))
+    assert "0xtx2" in applied
 
 
 def test_reconciliation_rejects_ambiguous_structural_payload_matches(tmp_path: Path) -> None:
@@ -403,7 +453,12 @@ def test_v2_events_use_hashed_same_day_snapshot_decimals(tmp_path: Path) -> None
     assert burn_correction["needs_complete_override"] is False
 
     correction_root = correction_root_for_graph(raw_root)
-    exact_path = correction_root / "uniswap_v2" / "20250101" / "blocks_10_10.parquet"
+    exact_path = (
+        correction_root.parent
+        / "v2_core_event_source"
+        / "global_50_block_chunks"
+        / "blocks_00000000_00000049.parquet"
+    )
     exact_marker = exact_path.with_suffix(".meta.json")
     write_exact_log_chunk(
         exact_path,

@@ -45,31 +45,34 @@ from ddvc.runtime import atomic_output, exclusive_job, interruptible_thread_pool
 from ddvc.v2_event_completeness import (
     PAIR_CREATED_TOPIC,
     RAW_DAY_BOUND_ROOT,
-    RAW_V2_EVENT_ROOT,
     RAW_V2_FACTORY_ROOT,
     V2_CORE_EVENTS,
-    V2_EVENT_BY_TOPIC,
+    V2_EXACT_LOG_CHUNK_SIZE,
     V2_EVENT_SOURCE_CERTIFICATE,
     V2_EVENT_SOURCE_EXCEPTIONS,
     V2_EVENT_SOURCE_SCHEMA_VERSION,
     V2_EVENT_SOURCE_SUMMARY,
-    V2_EVENT_TOPICS,
     V2_EVENT_VENUES,
     V2_FACTORIES,
     V2_POOL_PERIMETER,
     audit_calendar_sha256,
     compare_event_maps,
     factory_pair_registry,
+    fetch_v2_exact_log_chunk,
     graph_core_events,
+    missing_v2_exact_log_ranges,
     raw_core_events,
+    read_v2_exact_logs,
     validate_v2_event_source_certificate,
+    v2_exact_log_chunk_complete,
+    v2_exact_log_ranges,
 )
 
 
 GRAPH_ROOT = DATA_DIR / "raw" / "thegraph"
 TOKEN_DECIMALS = DATA_DIR / "processed" / "v2_token_decimals.parquet"
 DEFAULT_FACTORY_CHUNK_SIZE = 50_000
-DEFAULT_EVENT_BLOCK_CHUNK_SIZE = 2_000
+DEFAULT_EVENT_BLOCK_CHUNK_SIZE = V2_EXACT_LOG_CHUNK_SIZE
 MAX_JOB_ATTEMPTS = 12
 CODE_SOURCES = [
     "scripts/audit_v2_event_completeness.py",
@@ -290,12 +293,6 @@ def factory_chunk_paths(venue: str, start_block: int, end_block: int) -> tuple[P
     return directory / f"{stem}.parquet", directory / f"{stem}.meta.json"
 
 
-def event_chunk_paths(day: str, start_block: int, end_block: int) -> tuple[Path, Path]:
-    directory = RAW_V2_EVENT_ROOT / day
-    stem = f"blocks_{start_block:08d}_{end_block:08d}"
-    return directory / f"{stem}.parquet", directory / f"{stem}.meta.json"
-
-
 def _chunk_completed(
     raw_path: Path,
     marker_path: Path,
@@ -336,19 +333,6 @@ def factory_chunk_completed(venue: str, start_block: int, end_block: int) -> boo
         end_block=end_block,
         address=V2_FACTORIES[venue],
         topics={PAIR_CREATED_TOPIC},
-    )
-
-
-def event_chunk_completed(day: str, start_block: int, end_block: int) -> bool:
-    raw, marker = event_chunk_paths(day, start_block, end_block)
-    return _chunk_completed(
-        raw,
-        marker,
-        kind="global_v2_core_events",
-        start_block=start_block,
-        end_block=end_block,
-        address=None,
-        topics=set(V2_EVENT_TOPICS.values()),
     )
 
 
@@ -400,33 +384,6 @@ def fetch_factory_chunk(venue: str, start_block: int, end_block: int) -> dict[st
     )
 
 
-def fetch_event_chunk(day: str, start_block: int, end_block: int) -> dict[str, object]:
-    records = _fetch_logs(
-        start_block=start_block,
-        end_block=end_block,
-        topics=[V2_EVENT_TOPICS[name] for name in V2_CORE_EVENTS],
-        address=None,
-    )
-    raw, marker = event_chunk_paths(day, start_block, end_block)
-    return _write_chunk(
-        raw,
-        marker,
-        records,
-        {
-            "kind": "global_v2_core_events",
-            "day": day,
-            "start_block": start_block,
-            "end_block": end_block,
-            "address_filter": None,
-            "query_scope": "global_topic_only_no_address_filter",
-            "event_topics": [V2_EVENT_TOPICS[name] for name in V2_CORE_EVENTS],
-            "raw_by_event": dict(
-                Counter(V2_EVENT_BY_TOPIC[str(record["topics"][0])] for record in records)
-            ),
-        },
-    )
-
-
 FetchJob = tuple[str, str, int, int]
 
 
@@ -439,8 +396,15 @@ def run_fetch_jobs(jobs: list[FetchJob], *, workers: int, max_attempts: int) -> 
         while queue or futures:
             while queue and len(futures) < workers:
                 kind, label, start, end, attempt = queue.popleft()
-                function = fetch_factory_chunk if kind == "factory" else fetch_event_chunk
-                future = executor.submit(function, label, start, end)
+                if kind == "factory":
+                    future = executor.submit(fetch_factory_chunk, label, start, end)
+                else:
+                    future = executor.submit(
+                        fetch_v2_exact_log_chunk,
+                        start,
+                        end,
+                        rpc_request=rpc_post,
+                    )
                 futures[future] = (kind, label, start, end, attempt)
             done, _ = wait(futures, return_when=FIRST_COMPLETED)
             for future in done:
@@ -518,6 +482,10 @@ def build(
     factory_chunk_size: int,
     event_block_chunk_size: int,
 ) -> tuple[int, int]:
+    if event_block_chunk_size != V2_EXACT_LOG_CHUNK_SIZE:
+        raise ValueError(
+            "V2 exact-log cache uses one canonical 50-block chunk size"
+        )
     require_current_artifacts(
         [UNIFIED_QUALITY_PANEL, TOKEN_DECIMALS],
         consumer="V2 exact event-source audit",
@@ -551,22 +519,25 @@ def build(
         jobs.extend(
             ("factory", venue, start, end)
             for start, end in ranges
-            if force or not factory_chunk_completed(venue, start, end)
+            if not factory_chunk_completed(venue, start, end)
         )
+    if force:
+        print("  force rebuild requested; complete raw chunks remain immutable", flush=True)
     for day, bounds in day_bounds.items():
-        ranges = list(
-            block_ranges(
-                int(bounds["start_block"]),
-                int(bounds["end_block"]),
-                event_block_chunk_size,
-            )
+        ranges = v2_exact_log_ranges(
+            int(bounds["start_block"]),
+            int(bounds["end_block"]),
         )
         event_ranges[day] = ranges
-        jobs.extend(
-            ("event", day, start, end)
-            for start, end in ranges
-            if force or not event_chunk_completed(day, start, end)
+    jobs.extend(
+        ("event", "shared", start, end)
+        for start, end in missing_v2_exact_log_ranges(
+            (
+                (int(bounds["start_block"]), int(bounds["end_block"]))
+                for bounds in day_bounds.values()
+            )
         )
+    )
     if jobs and not fetch:
         counts = Counter(job[0] for job in jobs)
         raise RuntimeError(
@@ -605,13 +576,15 @@ def build(
     summaries: list[dict[str, object]] = []
     exceptions: list[dict[str, object]] = []
     raw_global_logs = 0
+    event_inputs: dict[str, list[Path]] = {}
     for count, day in enumerate(audit_days, 1):
-        records: list[dict[str, object]] = []
-        for start, end in event_ranges.get(day, []):
-            if not event_chunk_completed(day, start, end):
-                raise RuntimeError(f"global event chunk lost completeness: {day}/{start}:{end}")
-            raw, _marker = event_chunk_paths(day, start, end)
-            records.extend(_read_chunk_records(raw))
+        if day in day_bounds:
+            records, event_inputs[day] = read_v2_exact_logs(
+                int(day_bounds[day]["start_block"]),
+                int(day_bounds[day]["end_block"]),
+            )
+        else:
+            records, event_inputs[day] = [], []
         raw_global_logs += len(records)
         for venue in V2_EVENT_VENUES:
             if venue not in _launched_venues(day):
@@ -720,8 +693,7 @@ def build(
         for venue in _launched_venues(day):
             inputs.append(_meta_path(venue, day))
             inputs.extend(_graph_event_paths(venue, day))
-        for start, end in event_ranges.get(day, []):
-            inputs.extend(event_chunk_paths(day, start, end))
+        inputs.extend(event_inputs[day])
     notes = "exact 77-date V2-family Mint/Burn/Swap global-chain source certificate"
     for path, rows in (
         (V2_EVENT_SOURCE_SUMMARY, len(summary)),
@@ -737,13 +709,19 @@ def build(
 def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--no-fetch", action="store_true", help="audit complete cached RPC chunks only")
-    parser.add_argument("--force", action="store_true", help="refetch every exact RPC chunk")
+    parser.add_argument(
+        "--force",
+        action="store_true",
+        help="rebuild derived audit artifacts without overwriting complete raw chunks",
+    )
     parser.add_argument("--workers", type=int, default=4)
     parser.add_argument("--factory-chunk-size", type=int, default=DEFAULT_FACTORY_CHUNK_SIZE)
     parser.add_argument("--event-block-chunk-size", type=int, default=DEFAULT_EVENT_BLOCK_CHUNK_SIZE)
     args = parser.parse_args()
     if args.factory_chunk_size < 1 or args.event_block_chunk_size < 1:
         raise ValueError("block chunk sizes must be positive")
+    if args.event_block_chunk_size != V2_EXACT_LOG_CHUNK_SIZE:
+        raise ValueError("--event-block-chunk-size must be 50 for shared V2 exact-log reuse")
     _preflight_graph_streams(transaction_frontier_audit_days(UNIFIED_QUALITY_PANEL))
     with ExitStack() as stack:
         stack.enter_context(exclusive_job(RAW_MARKET_DATA_LOCK, job="V2 exact event-source audit"))

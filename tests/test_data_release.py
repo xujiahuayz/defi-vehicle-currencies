@@ -161,6 +161,7 @@ class DataReleaseTests(unittest.TestCase):
             "scripts/build_vehicle_centrality.py": "require_node_d_release(routes=True)",
             "scripts/process/fetch_daily_gas_price_graph.py": "require_node_d_release(routes=True)",
             "scripts/process/build_route_gas_units.py": "require_node_d_release(routes=True)",
+            "scripts/run_route_cost_panel.py": "require_node_d_release(routes=True, market_state=True)",
             "scripts/build_transaction_state_frontier.py": "require_node_d_release(routes=True, market_state=True)",
             "scripts/build_routing_maturation_panel.py": "require_node_d_release(routes=True, market_state=True)",
             "scripts/build_counterfactual_dominance.py": "require_node_d_release(routes=True, market_state=True)",

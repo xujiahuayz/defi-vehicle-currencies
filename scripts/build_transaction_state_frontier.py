@@ -72,6 +72,7 @@ from ddvc.release_calendar import (
     transaction_frontier_audit_days,
 )
 from ddvc.route_cost import MAX_PRICE_IMPACT
+from ddvc.route_state import OrderedTickStateCursor, TickStateCut
 from ddvc.runtime import atomic_output, exclusive_job
 from ddvc.state_data import STATE_ROOT
 from ddvc.source_records import block_value, transaction_id, timestamp_value
@@ -133,6 +134,7 @@ FRONTIER_DEPENDENCY_REGISTRY = {
         "src/ddvc/reconstruct/__init__.py",
         "src/ddvc/release_calendar.py",
         "src/ddvc/route_cost.py",
+        "src/ddvc/route_state.py",
         "src/ddvc/route_roles.py",
         "src/ddvc/source_records.py",
         "src/ddvc/state_data.py",
@@ -1047,11 +1049,9 @@ def score_day(
     rows: list[dict[str, object]] = []
     validation_errors_bps: list[float] = []
     coherent_validation_errors_bps: list[float] = []
-    cursor = 0
+    event_cursor = OrderedTickStateCursor(tuple(events))
     for order in sorted(by_order):
-        while cursor < len(events) and events[cursor].order < order:
-            replay.apply(events[cursor])
-            cursor += 1
+        event_cursor.apply_until(replay, TickStateCut.strict_before_event(order))
         for target in by_order[order]:
             route = RealisedPath(
                 token_in=str(target["src"]),
@@ -1258,10 +1258,11 @@ def score_day(
                     **score,
                 }
             )
-        while cursor < len(events) and events[cursor].order == order:
-            replay.apply(events[cursor])
-            cursor += 1
-    replay.apply_all(events[cursor:])
+        event_cursor.apply_until(
+            replay,
+            TickStateCut.strict_before_event((order[0], order[1] + 1)),
+        )
+    event_cursor.apply_remaining(replay)
     support["scored_routes"] = len(rows)
     support["rejected_routes"] = len(rejection_rows)
     if len(rows) + len(rejection_rows) != int(support["exact_venue_two_leg_routes"]):

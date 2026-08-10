@@ -12,7 +12,12 @@ import re
 import time
 
 from ddvc.fetch.sources import get_source
-from ddvc.ethereum_logs import fetch_exact_logs, write_exact_log_chunk
+from ddvc.ethereum_logs import (
+    EXACT_LOG_BLOCK_CAP,
+    exact_log_block_ranges,
+    fetch_exact_logs,
+    write_exact_log_chunk,
+)
 from ddvc.paths import DATA_DIR, RAW_MARKET_DATA_LOCK
 from ddvc.quoter import Throttled, rpc_post
 from ddvc.runtime import exclusive_job, interruptible_thread_pool
@@ -79,11 +84,25 @@ def fetch_chunk(
     pools: set[str],
     root: Path = RAW_ROOT,
 ) -> dict[str, object]:
-    raw_records = fetch_exact_logs(
-        start_block=lower,
-        end_block=upper,
-        topics=[EVENT_TOPICS[name] for name in sorted(EVENT_TOPICS)],
-        rpc_request=rpc_post,
+    topics = [EVENT_TOPICS[name] for name in sorted(EVENT_TOPICS)]
+    rpc_ranges = exact_log_block_ranges(lower, upper)
+    raw_records: list[dict[str, object]] = []
+    for rpc_lower, rpc_upper in rpc_ranges:
+        raw_records.extend(
+            fetch_exact_logs(
+                start_block=rpc_lower,
+                end_block=rpc_upper,
+                topics=topics,
+                rpc_request=rpc_post,
+            )
+        )
+    raw_records.sort(
+        key=lambda record: (
+            int(record["block_number"]),
+            int(record["transaction_index"]),
+            int(record["log_index"]),
+            str(record["address"]),
+        )
     )
     keys: set[tuple[int, str, int]] = set()
     recognized = 0
@@ -104,7 +123,9 @@ def fetch_chunk(
     metadata = {
         "from_block": lower,
         "to_block": upper,
-        "event_topics": [EVENT_TOPICS[name] for name in sorted(EVENT_TOPICS)],
+        "event_topics": topics,
+        "rpc_block_cap": EXACT_LOG_BLOCK_CAP,
+        "rpc_subranges": len(rpc_ranges),
         "recognized_v3_logs": recognized,
         "unrecognized_logs": len(raw_records) - recognized,
         "recognized_by_event": by_event,
@@ -172,14 +193,23 @@ def main() -> int:
     parser.add_argument("--workers", type=int, default=4)
     parser.add_argument("--max-job-attempts", type=int, default=MAX_JOB_ATTEMPTS)
     parser.add_argument("--force", action="store_true")
+    parser.add_argument(
+        "--shard",
+        action="store_true",
+        help="permit one explicit disjoint subrange for distributed raw fetching",
+    )
     args = parser.parse_args()
+    if args.shard and (args.start_block is None or args.end_block is None):
+        raise ValueError("--shard requires explicit --start-block and --end-block")
     end = args.end_block if args.end_block is not None else default_end_block()
     start = args.start_block if args.start_block is not None else default_start_block()
     indexed_start = get_source("uniswap_v3").genesis_block
-    if start > indexed_start:
+    if start > indexed_start and not args.shard:
         raise RuntimeError(
             f"inventory start block {start} is after indexed V3 genesis {indexed_start}"
         )
+    if args.shard and end > default_end_block():
+        raise RuntimeError("inventory shard ends after the canonical research perimeter")
     ranges = block_ranges(int(start), end, args.chunk_size)
     pools = v3_pool_addresses()
     jobs = [item for item in ranges if args.force or not completed(*item)]

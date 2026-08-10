@@ -12,6 +12,7 @@ from dataclasses import dataclass
 import gzip
 import hashlib
 import json
+import os
 from pathlib import Path
 from typing import Iterable
 
@@ -195,6 +196,25 @@ def correction_paths(root: Path, venue: str, day: str) -> tuple[Path, Path]:
 
 def timestamp_evidence_path(root: Path, venue: str, day: str) -> Path:
     return root / venue / f"{day}.block_timestamps.jsonl.gz"
+
+
+def portable_evidence_path(path: Path, root: Path) -> str:
+    """Record raw evidence by repository-relative topology, never host absolute path."""
+
+    boundary = root.resolve().parent
+    if not path.resolve().is_relative_to(boundary):
+        raise ValueError("exact-log evidence must remain inside the shared raw-data root")
+    return Path(os.path.relpath(path, root)).as_posix()
+
+
+def resolve_portable_evidence_path(relative: str, root: Path) -> Path:
+    path = Path(relative)
+    if path.is_absolute():
+        raise ValueError("exact-log provenance path must be portable and relative")
+    resolved = (root / path).resolve()
+    if not resolved.is_relative_to(root.resolve().parent):
+        raise ValueError("exact-log provenance path escapes the shared raw-data root")
+    return resolved
 
 
 def _raw_integer(value: object, decimals: object) -> int:
@@ -908,7 +928,8 @@ def write_correction_generation(
             path.name: file_sha256(path) for path in provider_paths
         },
         "exact_log_inputs_sha256": {
-            str(path.relative_to(root)): file_sha256(path) for path in exact_log_paths
+            portable_evidence_path(path, root): file_sha256(path)
+            for path in exact_log_paths
         },
         "reconciliation_sha256": file_sha256(data_path),
         "block_timestamp_evidence_sha256": file_sha256(timestamp_path),
@@ -952,10 +973,13 @@ def load_event_order_corrections(
         or metadata.get("block_timestamp_evidence_sha256") != file_sha256(timestamp_path)
     ):
         raise ValueError(f"missing or stale block-timestamp evidence: {venue}/{day}")
-    exact_paths = [root / relative for relative in metadata.get("exact_log_inputs_sha256", {})]
+    exact_paths = [
+        resolve_portable_evidence_path(relative, root)
+        for relative in metadata.get("exact_log_inputs_sha256", {})
+    ]
     expected_exact = metadata.get("exact_log_inputs_sha256") or {}
     observed_exact = {
-        str(path.relative_to(root)): file_sha256(path)
+        portable_evidence_path(path, root): file_sha256(path)
         for path in exact_paths
         if path.is_file()
     }

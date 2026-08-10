@@ -94,14 +94,17 @@ class RouteCostPairSelectionTests(unittest.TestCase):
                 context="test panel",
             )
 
-    def test_missing_day_cache_returns_only_absent_shards(self) -> None:
+    def test_missing_day_cache_refuses_a_bare_legacy_shard(self) -> None:
         original_cache = run_route_cost_panel.DAY_CACHE
         try:
             with tempfile.TemporaryDirectory() as tmp:
                 run_route_cost_panel.DAY_CACHE = Path(tmp)
                 (Path(tmp) / "20250101.parquet").touch()
                 missing = run_route_cost_panel._missing_day_cache(["20250101", "20250102"])
-                self.assertEqual(missing, [Path(tmp) / "20250102.parquet"])
+                self.assertEqual(
+                    missing,
+                    [Path(tmp) / "20250101.parquet", Path(tmp) / "20250102.parquet"],
+                )
         finally:
             run_route_cost_panel.DAY_CACHE = original_cache
 

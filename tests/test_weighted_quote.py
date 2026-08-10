@@ -192,85 +192,22 @@ class RoutePanelWiringTests(unittest.TestCase):
         """Changing full-input or prepared-index logic must invalidate every tick quote."""
         self.assertIn("src/ddvc/pricing/tick_quote.py", _panel().QUOTE_SOURCES)
 
-    def test_raw_and_unified_inputs_are_in_the_cache_fingerprint(self) -> None:
-        """Changing routes or pool state must make the old day cache unreachable."""
+    def test_released_state_and_unified_inputs_are_in_the_cache_fingerprint(self) -> None:
+        """Provider state is behind node D; released state and lineage own the cache."""
         paths = {path.relative_to(_panel().ROOT).as_posix() for path in _panel().QUOTE_INPUTS}
         self.assertIn("data/unified", paths)
-        self.assertIn("data/raw/thegraph/uniswap_v4", paths)
-        self.assertNotIn("data/raw/thegraph/curve", paths)
-        self.assertNotIn("data/raw/thegraph/balancer", paths)
+        self.assertTrue(any(path.startswith("data/processed/market_state/engine_") for path in paths))
+        self.assertIn("data/raw/ethereum/graph_event_order", paths)
+        self.assertIn("data/processed/market_state_quality.parquet", paths)
+        self.assertNotIn("data/raw/thegraph/uniswap_v4", paths)
 
-    def test_v4_schema_contract_requires_all_quote_statics(self) -> None:
-        complete = {
-            "pool": {
-                "feeTier": "500",
-                "tickSpacing": "10",
-                "hooks": "0x0000000000000000000000000000000000000000",
-                "token0": {"decimals": "18"},
-                "token1": {"decimals": "6"},
-            }
-        }
-        self.assertTrue(_panel().v4_statics_complete(complete))
-        del complete["pool"]["token1"]["decimals"]
-        self.assertFalse(_panel().v4_statics_complete(complete))
+    def test_route_builder_uses_the_shared_ordered_tick_replay(self) -> None:
+        self.assertIn("src/ddvc/pricing/tick_replay.py", _panel().QUOTE_SOURCES)
+        self.assertFalse(hasattr(_panel(), "_absorb_swap_state"))
 
-    def test_v4_state_uses_declared_tick_spacing_and_excludes_dynamic_fees(self) -> None:
-        record = {
-            "id": "swap-1",
-            "transaction": {"id": "tx", "blockNumber": "1", "timestamp": "2"},
-            "logIndex": "3",
-            "sqrtPriceX96": str(1 << 96),
-            "tick": "0",
-            "pool": {
-                "id": "pool",
-                "feeTier": "9000",
-                "tickSpacing": "180",
-                "hooks": "0x0000000000000000000000000000000000000000",
-                "token0": {
-                    "id": "0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48",
-                    "symbol": "USDC",
-                    "decimals": "6",
-                },
-                "token1": {
-                    "id": "0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2",
-                    "symbol": "WETH",
-                    "decimals": "18",
-                },
-            },
-        }
-        state = {}
-        panel = _panel()
-        prior_decimals = dict(panel._TOKEN_DECIMALS)
-        try:
-            panel._TOKEN_DECIMALS.update(
-                {
-                    record["pool"]["token0"]["id"]: 6,
-                    record["pool"]["token1"]["id"]: 18,
-                }
-            )
-            panel._absorb_swap_state("uniswap_v4", record, state)
-            self.assertEqual(state["pool"].tick_spacing, 180)
-
-            record["pool"]["id"] = "dynamic-pool"
-            record["pool"]["feeTier"] = str(1 << 23)
-            panel._absorb_swap_state("uniswap_v4", record, state)
-            self.assertNotIn("dynamic-pool", state)
-        finally:
-            panel._TOKEN_DECIMALS.clear()
-            panel._TOKEN_DECIMALS.update(prior_decimals)
-
-    def test_v4_schema_preflight_refuses_an_old_nonempty_file(self) -> None:
-        with tempfile.TemporaryDirectory() as tmp:
-            path = Path(tmp) / "old.jsonl.gz"
-            with gzip.open(path, "wt") as fh:
-                fh.write(json.dumps({"pool": {"token0": {}, "token1": {}}}) + "\n")
-            original = _panel()._raw_path
-            try:
-                _panel()._raw_path = lambda *_: path
-                with self.assertRaisesRegex(RuntimeError, "lack fee/tick-spacing/hook"):
-                    _panel()._validate_v4_swap_schema(["20250124"])
-            finally:
-                _panel()._raw_path = original
+    def test_route_builder_has_no_provider_state_reader(self) -> None:
+        self.assertFalse(hasattr(_panel(), "_raw_path"))
+        self.assertFalse(hasattr(_panel(), "_validate_v4_swap_schema"))
 
     def test_route_worker_count_is_bounded(self) -> None:
         self.assertEqual(_panel().DEFAULT_ROUTE_WORKERS, 4)

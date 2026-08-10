@@ -14,6 +14,7 @@ from ddvc.runtime import atomic_output
 
 
 RAW_LOG_STORAGE_FORMAT = "exact_rpc_log_parquet_v1"
+EXACT_LOG_BLOCK_CAP = 50
 RAW_LOG_SCHEMA = pa.schema(
     [
         pa.field("address", pa.string(), nullable=False),
@@ -41,6 +42,26 @@ def block_ranges(start: int, end: int, chunk_size: int) -> list[tuple[int, int]]
         ranges.append((lower, upper))
         lower = upper + 1
     return ranges
+
+
+def exact_log_block_ranges(
+    start: int,
+    end: int,
+    *,
+    aligned: bool = False,
+) -> list[tuple[int, int]]:
+    """Partition exact-log work under the live provider's deterministic block cap."""
+
+    if start < 0 or end < start:
+        raise ValueError("invalid exact-log block perimeter")
+    if not aligned:
+        return block_ranges(start, end, EXACT_LOG_BLOCK_CAP)
+    first = (start // EXACT_LOG_BLOCK_CAP) * EXACT_LOG_BLOCK_CAP
+    last = (end // EXACT_LOG_BLOCK_CAP) * EXACT_LOG_BLOCK_CAP
+    return [
+        (lower, lower + EXACT_LOG_BLOCK_CAP - 1)
+        for lower in range(first, last + 1, EXACT_LOG_BLOCK_CAP)
+    ]
 
 
 def rpc_integer(value: object) -> int:

@@ -19,8 +19,6 @@ initialized ticks offline without an RPC call.
 from __future__ import annotations
 
 import argparse
-import gzip
-import json
 import math
 import sys
 from collections import defaultdict
@@ -32,13 +30,30 @@ import numpy as np
 import pandas as pd
 
 from ddvc.asset_types import WETH, canonical_token
+from ddvc.data_release import require_node_d_release
 from ddvc.liquidity import require_quantity_support
-from ddvc.source_records import timestamp_value, v4_statics_complete
 from ddvc.paths import DATA_DIR, OUTPUT_DIR, REPO_ROOT, ROUTE_COST_JOB_LOCK
 from ddvc.panel_assembly import assemble_parquet_shards
 from ddvc.prices import day_prices
 from ddvc.provenance import cache_key
+from ddvc.provenance import dependency_fingerprint
 from ddvc.provenance import stamp as record_provenance
+from ddvc.provenance import verify as verify_provenance
+from ddvc.route_cache import (
+    day_cache_is_current,
+    manifest_path,
+    write_day_cache,
+    write_ordered_shard_manifest,
+)
+from ddvc.route_state import (
+    OrderedTickStateCursor,
+    TickStateCut,
+    day_state_quality_fingerprints,
+    load_cp_quote_states_by_hour,
+    load_tick_quote_events,
+    released_state_lineage_inputs,
+)
+from ddvc.state_data import STATE_ROOT
 from ddvc.route_cost import (
     MAIN_ROUTE_COST_SPEC,
     MAX_INPUT_TO_RESERVE,
@@ -50,10 +65,9 @@ from ddvc.pricing.tick_quote import quote_tick_state
 from ddvc.pricing.v3quote import get_sqrt_ratio_at_tick
 from ddvc.pricing.tick_state import (
     TickPoolState,
-    absorb_swap_state,
     active_liquidity,
-    apply_tick_change,
 )
+from ddvc.pricing.tick_replay import TickReplayState
 from ddvc.pricing.v3pools import load_token_decimals
 from ddvc.runtime import atomic_output, exclusive_job
 from ddvc.route_cost_summary import write_route_cost_summary
@@ -61,11 +75,6 @@ from ddvc.work_partition import weighted_contiguous_chunks
 
 ROOT = REPO_ROOT
 
-# Swap samples per pool, used only to pin token decimals by the sqrtPriceX96
-# identity. Capped per pool, so this stays small next to the swap stream itself.
-_SWAP_SAMPLE: dict[str, list[dict]] = {}
-_TOKEN_DECIMALS: dict[str, int] = {}
-_QUARANTINED_TICK_POOLS: dict[str, set[str]] = {}
 TOKEN_DECIMALS = DATA_DIR / "processed" / "v2_token_decimals.parquet"
 
 
@@ -90,13 +99,6 @@ QUOTE_FAMILY_PERIMETER = (
 # builder, diagnostics, assembler, and cache fingerprint cannot drift independently.
 DEFAULT_ROUTE_WORKERS = 4
 MAX_ROUTE_WORKERS = 6
-DAY_WORK_STREAMS = {
-    "uniswap_v2": ("hourly_reserves",),
-    "sushiswap_v2": ("hourly_reserves",),
-    "uniswap_v3": ("swaps", "mints", "burns"),
-    "uniswap_v4": ("swaps", "modify_liquidities"),
-}
-
 def bounded_route_workers(requested: int) -> int:
     return min(MAX_ROUTE_WORKERS, max(1, requested))
 
@@ -154,9 +156,13 @@ def estimated_day_input_bytes(stamp: str) -> int:
     """Compressed input bytes used to balance expensive contiguous day chunks."""
     paths = [DATA_DIR / "unified" / f"{stamp}.parquet"]
     paths.extend(
-        _raw_path(venue, stream, stamp)
-        for venue, streams in DAY_WORK_STREAMS.items()
-        for stream in streams
+        STATE_ROOT / family / venue / f"{stamp}.parquet"
+        for family, venue in (
+            ("constant_product", "uniswap_v2"),
+            ("constant_product", "sushiswap_v2"),
+            ("tick", "uniswap_v3"),
+            ("tick", "uniswap_v4"),
+        )
     )
     return max(1, sum(path.stat().st_size for path in paths if path.exists()))
 OUT_DATA = DATA_DIR / "empirical"
@@ -176,19 +182,47 @@ QUOTE_SOURCES = [
     "src/ddvc/pricing/tick_state.py",
     "src/ddvc/pricing/v2quote.py",
     "src/ddvc/liquidity.py",
+    "src/ddvc/state_data.py",
+    "src/ddvc/graph_event_order.py",
+    "src/ddvc/route_state.py",
+    "src/ddvc/route_cache.py",
+    "src/ddvc/pricing/tick_replay.py",
     "scripts/run_route_cost_panel.py",
 ]
 QUOTE_INPUTS = [
     DATA_DIR / "unified",
     TOKEN_DECIMALS,
-    *(DATA_DIR / "raw" / "thegraph" / venue for venue in (
-        "uniswap_v2",
-        "sushiswap_v2",
-        "uniswap_v3",
-        "uniswap_v4",
-    )),
+    *released_state_lineage_inputs(),
 ]
-QUOTE_ENGINE = cache_key(QUOTE_SOURCES, inputs=QUOTE_INPUTS)
+
+
+def quote_cache_generation(*, inputs: list[Path] | None = None) -> str:
+    """Fingerprint quote code, released state, corrections, and certificates."""
+
+    return cache_key(QUOTE_SOURCES, inputs=QUOTE_INPUTS if inputs is None else inputs)
+
+
+def quote_dependency_identity(*, inputs: list[Path] | None = None) -> str:
+    """Full lineage identity stored in every marker-last day-cache bundle."""
+
+    return dependency_fingerprint(
+        QUOTE_SOURCES,
+        QUOTE_INPUTS if inputs is None else inputs,
+    )
+
+
+def require_quote_lineage(expected: str) -> None:
+    """Fail closed if a released-state ancestor changed during a long build."""
+
+    observed = quote_dependency_identity()
+    if observed != expected:
+        raise RuntimeError(
+            f"released quote-state lineage changed during build: {expected} -> {observed}"
+        )
+
+
+QUOTE_DEPENDENCY_IDENTITY = quote_dependency_identity()
+QUOTE_ENGINE = QUOTE_DEPENDENCY_IDENTITY[:12]
 PANEL_SOURCES = [*QUOTE_SOURCES, "src/ddvc/panel_assembly.py"]
 SUMMARY_SOURCES = [*QUOTE_SOURCES, "src/ddvc/route_cost_summary.py"]
 
@@ -198,6 +232,7 @@ SUMMARY_SOURCES = [*QUOTE_SOURCES, "src/ddvc/route_cost_summary.py"]
 # reused the narrower pair set. Both belong in the key for the same reason the
 # code fingerprint does.
 DAY_CACHE = OUT_DATA / "_route_cost_day_cache" / f"engine_{QUOTE_ENGINE}"
+DAY_CACHE_SCOPE = "unconfigured"
 
 
 def assert_unique_quote_cells(frame: pd.DataFrame, *, context: str) -> None:
@@ -233,13 +268,31 @@ def parse_hours(spec: str) -> tuple[int, ...]:
 
 def _configure_cache(hours: tuple[int, ...], top_pairs: int, sizes: list[float],
                      no_v3: bool) -> Path:
-    global DAY_CACHE
+    global DAY_CACHE, DAY_CACHE_SCOPE, QUOTE_DEPENDENCY_IDENTITY, QUOTE_ENGINE, QUOTE_INPUTS
+    QUOTE_INPUTS = [
+        DATA_DIR / "unified",
+        TOKEN_DECIMALS,
+        *released_state_lineage_inputs(),
+    ]
+    QUOTE_DEPENDENCY_IDENTITY = quote_dependency_identity()
+    QUOTE_ENGINE = QUOTE_DEPENDENCY_IDENTITY[:12]
     hspec = "all" if len(hours) == 24 else "-".join(str(h) for h in hours)
     spec = (f"h{hspec}_p{top_pairs}_s{'-'.join(str(int(x)) for x in sizes)}"
             f"{'_nov3' if no_v3 else ''}{'_splitwrapped' if not UNIFY_WRAPPED else ''}")
+    DAY_CACHE_SCOPE = spec
     DAY_CACHE = OUT_DATA / "_route_cost_day_cache" / f"engine_{QUOTE_ENGINE}" / spec
     DAY_CACHE.mkdir(parents=True, exist_ok=True)
     return DAY_CACHE
+
+
+def _day_cache_identity(stamp: str) -> dict[str, object]:
+    return {
+        "day": stamp,
+        "quote_engine": QUOTE_ENGINE,
+        "quote_dependency_fingerprint": QUOTE_DEPENDENCY_IDENTITY,
+        "scope": DAY_CACHE_SCOPE,
+        "state_quality_fingerprints": day_state_quality_fingerprints(stamp),
+    }
 
 
 @dataclass(frozen=True)
@@ -266,10 +319,6 @@ class Pool:
 
 
 V3PoolState = TickPoolState
-
-
-def _raw_path(source: str, stream: str, stamp: str) -> Path:
-    return DATA_DIR / "raw" / "thegraph" / source / f"{source}_{stream}_{stamp}.jsonl.gz"
 
 
 def _available_stamps(start: str | None, end: str | None) -> list[str]:
@@ -358,67 +407,32 @@ def _routes_by_pair(legs: pd.DataFrame, top_pairs: int) -> pd.DataFrame:
 
 def _load_v2_pools_by_hour(stamp: str,
                            hours: tuple[int, ...]) -> dict[int, dict[frozenset[str], list[Pool]]]:
-    """Pools for several hours of one day, in a single pass over each file.
-
-    Reading the file once per hour would multiply IO by the number of hours for no
-    gain, since every hour's rows sit in the same file. This keys rows by their
-    `hourStartUnix` instead, so asking for all 24 hours costs one read.
-    """
-    ts_to_hour = {
-        int(pd.Timestamp(f"{stamp[:4]}-{stamp[4:6]}-{stamp[6:]} {h:02d}:00:00",
-                         tz="UTC").timestamp()): h
-        for h in hours
-    }
+    """Load released canonical end-of-hour reserves in one bounded day pass."""
     by_hour: dict[int, dict[frozenset[str], list[Pool]]] = {
         h: defaultdict(list) for h in hours}
     for source in V2_SOURCES:
-        require_quantity_support(
-            source,
-            "quote_quality",
-            "full_range_constant_product",
-            use="quote_quality",
-        )
-        require_quantity_support(
-            source,
-            "executable_band_depth",
-            "full_range_constant_product",
-            use="quote_quality",
-        )
-        path = _raw_path(source, "hourly_reserves", stamp)
-        if not path.exists():
-            continue
-        with gzip.open(path, "rt") as fh:
-            for line in fh:
-                rec = json.loads(line)
-                hour = ts_to_hour.get(int(rec.get("hourStartUnix", -1)))
-                if hour is None:
-                    continue
-                pools = by_hour[hour]
-                pair = rec.get("pair") or {}
-                t0 = pair.get("token0") or {}
-                t1 = pair.get("token1") or {}
-                try:
-                    r0 = float(rec.get("reserve0") or 0)
-                    r1 = float(rec.get("reserve1") or 0)
-                except (TypeError, ValueError):
-                    continue
-                a0 = canonical_token(t0.get("id"), unify_wrapped=UNIFY_WRAPPED)
-                a1 = canonical_token(t1.get("id"), unify_wrapped=UNIFY_WRAPPED)
-                if not a0 or not a1 or r0 <= 0 or r1 <= 0:
-                    continue
-                pools[frozenset((a0, a1))].append(Pool(
-                    source=source,
-                    pool=str(pair.get("id", "")).lower(),
-                    kind="v2",
-                    token0=a0,
-                    token1=a1,
-                    sym0=str(t0.get("symbol", "")),
-                    sym1=str(t1.get("symbol", "")),
-                    dec0=int(t0.get("decimals", 18) or 18),
-                    dec1=int(t1.get("decimals", 18) or 18),
-                    reserve0=r0,
-                    reserve1=r1,
-                ))
+        require_quantity_support(source, "quote_quality", "full_range_constant_product", use="quote_quality")
+        require_quantity_support(source, "executable_band_depth", "full_range_constant_product", use="quote_quality")
+    for hour, states in load_cp_quote_states_by_hour(stamp, hours).items():
+        pools = by_hour[hour]
+        for state in states:
+            a0 = canonical_token(state.token0, unify_wrapped=UNIFY_WRAPPED)
+            a1 = canonical_token(state.token1, unify_wrapped=UNIFY_WRAPPED)
+            if not a0 or not a1 or state.reserve0 <= 0 or state.reserve1 <= 0:
+                continue
+            pools[frozenset((a0, a1))].append(Pool(
+                source=state.venue,
+                pool=state.pool,
+                kind="v2",
+                token0=a0,
+                token1=a1,
+                sym0=state.symbol0,
+                sym1=state.symbol1,
+                dec0=state.decimals0,
+                dec1=state.decimals1,
+                reserve0=state.reserve0,
+                reserve1=state.reserve1,
+            ))
     return by_hour
 
 
@@ -437,30 +451,6 @@ def _load_v2_pools(stamp: str, hour: int,
     return _V2_DAY["pools"].get(hour, {})
 
 
-def _infer_tick_spacing(ticks: dict[int, int]) -> int:
-    vals = [abs(t) for t in ticks if t != 0]
-    if not vals:
-        return 60
-    g = 0
-    for val in vals:
-        g = math.gcd(g, val)
-    if g <= 1:
-        return 1
-    if g <= 10:
-        return 10
-    if g <= 60:
-        return 60
-    return 200
-
-
-# Concentrated-liquidity venues, and how each reports a liquidity change. Uniswap
-# v3 splits additions and removals into `mints` and `burns`, so the sign is carried
-# by the stream. Uniswap v4 emits one `modify_liquidities` stream whose `amount` is
-# already signed, a removal being negative, so its sign multiplier is +1.
-TICK_VENUES: dict[str, tuple[tuple[str, int], ...]] = {
-    "uniswap_v3": (("mints", 1), ("burns", -1)),
-    "uniswap_v4": (("modify_liquidities", 1),),
-}
 V4_START = "20250101"
 
 # Whether native ETH (Uniswap v4's zero address) and WETH are ONE currency or two.
@@ -470,157 +460,45 @@ V4_START = "20250101"
 UNIFY_WRAPPED = True
 
 
-def _apply_tick_liquidity_events(
-    venue: str,
-    stamp: str,
-    tick_net_by_pool: dict[str, dict[int, int]],
-) -> None:
-    """Accumulate net liquidity per initialized tick for one venue-day.
+def new_tick_replay() -> TickReplayState:
+    """Create one bounded canonical replay with the released decimal registry."""
 
-    Tick spacing is deliberately NOT tracked here. It was recomputed by taking a
-    greatest common divisor over every tick in the pool on every single liquidity
-    event, which is quadratic in events per pool per day and was a large share of
-    the index warm-up, and the quoter never reads it: traversal is driven by the
-    initialized ticks themselves.
-    """
-    for stream, sign in TICK_VENUES[venue]:
-        path = _raw_path(venue, stream, stamp)
-        if not path.exists():
-            continue
-        with gzip.open(path, "rt") as fh:
-            for line in fh:
-                rec = json.loads(line)
-                pool = str((rec.get("pool") or {}).get("id", "")).lower()
-                if not pool or pool in _QUARANTINED_TICK_POOLS.get(venue, set()):
-                    continue
-                ticks = tick_net_by_pool.setdefault(pool, {})
-                apply_tick_change(ticks, rec, sign=sign)
-
-
-def _absorb_swap_state(venue: str, rec: dict,
-                       state_by_pool: dict[str, V3PoolState]) -> None:
-    """Compatibility adapter to the canonical concentrated-liquidity replay owner."""
-    if not _TOKEN_DECIMALS:
-        _TOKEN_DECIMALS.update(load_token_decimals(TOKEN_DECIMALS))
-    absorb_swap_state(
-        venue,
-        rec,
-        state_by_pool,
-        swap_samples=_SWAP_SAMPLE,
-        token_decimals=_TOKEN_DECIMALS,
-        quarantined_pools=_QUARANTINED_TICK_POOLS,
+    return TickReplayState(
         unify_wrapped=UNIFY_WRAPPED,
+        token_decimals=load_token_decimals(TOKEN_DECIMALS),
     )
 
 
-def _validate_v4_swap_schema(stamps: list[str]) -> None:
-    """Refuse a build when any nonempty v4 day predates the required raw schema."""
-    invalid: list[str] = []
-    missing: list[str] = []
-    for stamp in stamps:
-        if stamp < V4_START:
-            continue
-        path = _raw_path("uniswap_v4", "swaps", stamp)
-        if not path.exists():
-            missing.append(stamp)
-            continue
-        with gzip.open(path, "rt") as fh:
-            if any(
-                not v4_statics_complete(json.loads(line))
-                for line in fh
-                if line.strip()
-            ):
-                invalid.append(stamp)
-    if invalid or missing:
-        problems = [*(f"{stamp} (missing)" for stamp in missing), *invalid]
-        preview = ", ".join(problems[:5])
-        more = f" and {len(problems) - 5:,} more" if len(problems) > 5 else ""
-        raise RuntimeError(
-            "Uniswap v4 raw swaps are missing or lack fee/tick-spacing/hook/token-decimal "
-            f"statics on {len(problems):,} day(s): {preview}{more}. "
-            "Refetch the swaps stream before pricing."
-        )
+def advance_tick_day_hours(
+    stamp: str,
+    replay: TickReplayState,
+    requested_hours: tuple[int, ...],
+):
+    """Preserve block-log order while yielding exact end-of-UTC-hour cuts."""
 
-
-def _update_tick_swap_state(venue: str, stamp: str,
-                            state_by_pool: dict[str, V3PoolState]) -> None:
-    """Whole-day price state, used only when warming the index past unpriced days."""
-    path = _raw_path(venue, "swaps", stamp)
-    if not path.exists():
-        return
-    with gzip.open(path, "rt") as fh:
-        for line in fh:
-            _absorb_swap_state(venue, json.loads(line), state_by_pool)
-
-
-def load_day_tick_events(venue: str, stamp: str) -> dict[int, dict[str, list]]:
-    """One day of a tick venue's events, bucketed by UTC hour, in one pass per file.
-
-    Why this exists. State was advanced a whole DAY at a time and then all 24 priced
-    hours shared that single end-of-day snapshot, while the v2 family was priced at
-    each hour's own end-of-hour reserves. So an "hour" compared a constant-product pool
-    at hour 3 against a concentrated-liquidity pool at hour 23. Measured on the deepest
-    USDC/WETH pool on a calm day, that misalignment moved the price a median 0.345% and
-    up to 1.04%, which is as large as the route-cost differences the panel exists to
-    measure. The hourly dimension was fictitious for v3 and v4, and the error was
-    present even in the original single-hour panel, where v2 sat at hour 12 and the
-    tick venues sat at end of day.
-
-    Reading per hour would multiply IO by 24, so each file is read once and its rows
-    are bucketed by the hour they occurred in. The caller then advances state hour by
-    hour and prices each hour against the state as of that hour.
-    """
-    out: dict[int, dict[str, list]] = {h: {"liq": [], "swaps": []} for h in range(24)}
-    for stream, sign in TICK_VENUES[venue]:
-        path = _raw_path(venue, stream, stamp)
-        if not path.exists():
-            continue
-        with gzip.open(path, "rt") as fh:
-            for line in fh:
-                rec = json.loads(line)
-                try:
-                    ts = int(rec.get("timestamp") or 0)
-                except (TypeError, ValueError):
-                    continue
-                if ts <= 0:
-                    continue
-                out[(ts % 86400) // 3600]["liq"].append((sign, rec))
-    path = _raw_path(venue, "swaps", stamp)
-    if path.exists():
-        with gzip.open(path, "rt") as fh:
-            for line in fh:
-                rec = json.loads(line)
-                try:
-                    ts = int(timestamp_value(rec) or 0)
-                except (TypeError, ValueError):
-                    continue
-                if ts <= 0:
-                    continue
-                out[(ts % 86400) // 3600]["swaps"].append(rec)
-    return out
-
-
-def apply_hour_events(venue: str, bucket: dict[str, list],
-                      tick_net_by_pool: dict[str, dict[int, int]],
-                      state_by_pool: dict[str, V3PoolState]) -> None:
-    """Advance one tick venue's liquidity index and price state by a single hour."""
-    for sign, rec in bucket["liq"]:
-        pool = str((rec.get("pool") or {}).get("id", "")).lower()
-        if not pool or pool in _QUARANTINED_TICK_POOLS.get(venue, set()):
-            continue
-        ticks = tick_net_by_pool.setdefault(pool, {})
-        apply_tick_change(ticks, rec, sign=sign)
-    for rec in bucket["swaps"]:
-        _absorb_swap_state(venue, rec, state_by_pool)
-    for pool in _QUARANTINED_TICK_POOLS.get(venue, set()):
-        tick_net_by_pool.pop(pool, None)
-        state_by_pool.pop(pool, None)
+    venues = tuple(
+        venue
+        for venue, start in (("uniswap_v3", V3_START), ("uniswap_v4", V4_START))
+        if stamp >= start
+    )
+    events = load_tick_quote_events(stamp, venues=venues)
+    cursor = OrderedTickStateCursor(events)
+    day_start = int(
+        pd.Timestamp(
+            f"{stamp[:4]}-{stamp[4:6]}-{stamp[6:]} 00:00:00", tz="UTC"
+        ).timestamp()
+    )
+    requested = set(requested_hours)
+    for hour in range(24):
+        cursor.apply_until(replay, TickStateCut.hour_end(day_start + (hour + 1) * 3600))
+        if hour in requested:
+            yield hour
+    cursor.require_consumed()
 
 
 def advance_tick_venues(
     stamp: str,
-    ticks_by_venue: dict[str, dict[str, dict[int, int]]],
-    state_by_venue: dict[str, dict[str, V3PoolState]],
+    replay: TickReplayState,
 ) -> None:
     """Apply one day of liquidity events and price updates for every tick venue.
 
@@ -628,14 +506,8 @@ def advance_tick_venues(
     a running sum from inception, and a venue silently left un-advanced would quote
     against stale liquidity without failing.
     """
-    for venue, start in (("uniswap_v3", V3_START), ("uniswap_v4", V4_START)):
-        if stamp < start:
-            continue
-        _apply_tick_liquidity_events(venue, stamp, ticks_by_venue.setdefault(venue, {}))
-        _update_tick_swap_state(venue, stamp, state_by_venue.setdefault(venue, {}))
-        for pool in _QUARANTINED_TICK_POOLS.get(venue, set()):
-            ticks_by_venue[venue].pop(pool, None)
-            state_by_venue[venue].pop(pool, None)
+    for _hour in advance_tick_day_hours(stamp, replay, ()):
+        pass
 
 
 def _load_tick_pools_from_state(
@@ -658,8 +530,6 @@ def _load_tick_pools_from_state(
     )
     pools: dict[frozenset[str], list[Pool]] = defaultdict(list)
     for pool_id, st in state_by_pool.items():
-        if pool_id in _QUARANTINED_TICK_POOLS.get(venue, set()):
-            continue
         key = frozenset((st.token0, st.token1))
         if required_pairs is not None and key not in required_pairs:
             continue
@@ -866,8 +736,16 @@ def _day_cache_path(stamp: str) -> Path:
 
 
 def _missing_day_cache(stamps: list[str]) -> list[Path]:
-    """Return the requested day shards that still need pricing."""
-    return [path for stamp in stamps if not (path := _day_cache_path(stamp)).exists()]
+    """Return shards without a current marker-last lineage bundle."""
+
+    return [
+        path
+        for stamp in stamps
+        if not day_cache_is_current(
+            path := _day_cache_path(stamp),
+            identity=_day_cache_identity(stamp),
+        )
+    ]
 
 
 def _canonicalize_cost_measure(panel: pd.DataFrame) -> pd.DataFrame:
@@ -885,20 +763,6 @@ def _canonicalize_cost_measure(panel: pd.DataFrame) -> pd.DataFrame:
         np.nan,
     )
     return out.drop(columns=["vehicle_route_advantage"], errors="ignore")
-
-
-def _migrate_day_cache() -> int:
-    paths = sorted(DAY_CACHE.glob("*.parquet"))
-    migrated = 0
-    for i, path in enumerate(paths, 1):
-        day = pd.read_parquet(path)
-        if "vehicle_route_advantage" in day.columns:
-            _write(_canonicalize_cost_measure(day), path)
-            migrated += 1
-        if i % 250 == 0 or i == len(paths):
-            print(f"route-cost cache migration [{i}/{len(paths)}] {path.stem}", flush=True)
-    print(f"migrated {migrated:,} route-cost day-cache files")
-    return 0
 
 
 def _price_chunk(payload: dict) -> int:
@@ -919,52 +783,41 @@ def _price_chunk(payload: dict) -> int:
     hours = tuple(payload["hours"])
     sizes = list(payload["sizes"])
     _configure_cache(hours, payload["top_pairs"], sizes, payload["no_v3"])
-    ticks: dict[str, dict[str, dict[int, int]]] = {}
-    state: dict[str, dict[str, V3PoolState]] = {}
+    replay = new_tick_replay() if not payload["no_v3"] else None
     if not payload["no_v3"]:
         for s in payload["warm"]:
-            advance_tick_venues(s, ticks, state)
+            advance_tick_venues(s, replay)
     built = 0
     for s in payload["stamps"]:
         cache_path = _day_cache_path(s)
-        cached = cache_path.exists()
+        cached = day_cache_is_current(
+            cache_path,
+            identity=_day_cache_identity(s),
+        )
         # The index is a running sum from inception, so a cached day still has to be
         # walked or every later day quotes against stale liquidity.
-        buckets: dict[str, dict[int, dict[str, list]]] = {}
-        if not payload["no_v3"]:
-            for venue, start in (("uniswap_v3", V3_START), ("uniswap_v4", V4_START)):
-                if s >= start:
-                    buckets[venue] = load_day_tick_events(venue, s)
         if cached:
-            for venue, per_hour in buckets.items():
-                for h in range(24):
-                    apply_hour_events(venue, per_hour[h],
-                                      ticks.setdefault(venue, {}),
-                                      state.setdefault(venue, {}))
+            if replay is not None:
+                advance_tick_venues(s, replay)
             continue
         parts = []
-        for h in hours:
-            # Advance every tick venue THROUGH this hour before pricing it, so the
-            # concentrated-liquidity venues sit at the same instant as the v2 family's
-            # end-of-hour reserves.
-            for venue, per_hour in buckets.items():
-                apply_hour_events(venue, per_hour[h],
-                                  ticks.setdefault(venue, {}),
-                                  state.setdefault(venue, {}))
+        cuts = (
+            advance_tick_day_hours(s, replay, hours)
+            if replay is not None
+            else iter(hours)
+        )
+        for h in cuts:
             parts.append(_build_day(s, sizes, top_pairs=payload["top_pairs"], hour=h,
-                                    tick_state=(state if buckets or state else None),
-                                    tick_ticks=(ticks if buckets or ticks else None),
+                                    tick_state=(replay.states_by_venue if replay is not None else None),
+                                    tick_ticks=(replay.ticks_by_venue if replay is not None else None),
                                     all_hours=hours))
-        # Hours not priced still have to be applied, or the next day starts stale.
-        for venue, per_hour in buckets.items():
-            for h in range(24):
-                if h not in hours:
-                    apply_hour_events(venue, per_hour[h],
-                                      ticks.setdefault(venue, {}),
-                                      state.setdefault(venue, {}))
         parts = [x for x in parts if not x.empty]
         day = pd.concat(parts, ignore_index=True) if parts else pd.DataFrame()
-        _write(_canonicalize_cost_measure(day), cache_path)
+        write_day_cache(
+            _canonicalize_cost_measure(day),
+            cache_path,
+            identity=_day_cache_identity(s),
+        )
         built += 1
     return built
 
@@ -993,11 +846,6 @@ def main() -> int:
     ap.add_argument("--workers", type=int, default=DEFAULT_ROUTE_WORKERS,
                     help="parallel byte-weighted contiguous day chunks; each worker "
                          "replays the cheap V3 liquidity prefix (default 4, maximum 6)")
-    ap.add_argument(
-        "--migrate-day-cache",
-        action="store_true",
-        help="rewrite legacy day-cache files to the canonical direct-cost schema and exit",
-    )
     ap.add_argument("--no-v3", action="store_true", help="only use V2-style constant-product pools")
     args = ap.parse_args()
     try:
@@ -1014,17 +862,22 @@ def main() -> int:
     quote_perimeter_label = ",".join(
         f"{venue}/{family}" for venue, family in active_quote_perimeter
     )
+    require_node_d_release(routes=True, market_state=True)
 
     global UNIFY_WRAPPED
     UNIFY_WRAPPED = not args.split_wrapped
     print(f"resolved route-cost build scope: {build_scope}", flush=True)
 
-    if args.migrate_day_cache:
-        return _migrate_day_cache()
-
     out_path = OUT_DATA / "route_cost_panel_v2.parquet"
     summary_path = OUT / "route_cost_panel_v2_summary.pkl"
-    if out_path.exists() and not args.force:
+    released_panel = (
+        out_path.exists()
+        and not args.force
+        and verify_provenance(out_path).get("status") == "ok"
+    )
+    if out_path.exists() and not args.force and not released_panel:
+        print("existing route-cost panel is stale against released state; rebuilding", flush=True)
+    if released_panel:
         panel = pd.read_parquet(out_path)
         needs_migration = "vehicle_route_advantage" in panel.columns
         panel = _canonicalize_cost_measure(panel)
@@ -1040,13 +893,7 @@ def main() -> int:
         print(f"day cache: {cache_dir.relative_to(ROOT)}", flush=True)
         frames = []
         stamps = _available_stamps(args.start, args.end)
-        history_stamps = [
-            stamp for stamp in _available_stamps(None, None)
-            if not stamps or stamp <= max(stamps)
-        ]
-        _validate_v4_swap_schema(history_stamps)
-        v3_ticks: dict[str, dict[str, dict[int, int]]] = {}
-        v3_state: dict[str, dict[str, V3PoolState]] = {}
+        tick_replay = new_tick_replay() if not args.no_v3 else None
 
         # WARM THE LIQUIDITY INDEX FROM V3 LAUNCH, whatever --start says.
         #
@@ -1069,10 +916,10 @@ def main() -> int:
                       f"{warm[0]}..{warm[-1]} before the first output day",
                       flush=True)
                 for j, stamp in enumerate(warm, 1):
-                    advance_tick_venues(stamp, v3_ticks, v3_state)
+                    advance_tick_venues(stamp, tick_replay)
                     if j % 200 == 0 or j == len(warm):
                         print(f"  warm [{j}/{len(warm)}] {stamp} "
-                              f"({sum(len(x) for x in v3_ticks.values()):,} pools indexed)", flush=True)
+                              f"({sum(len(x) for x in tick_replay.ticks_by_venue.values()):,} pools indexed)", flush=True)
 
         if parallel:
             if _missing_day_cache(stamps):
@@ -1114,20 +961,18 @@ def main() -> int:
             # Assemble through the same strict, atomic owner as the recovery command.
             # This scans every shard schema before writing, refuses missing shards,
             # and never exposes a partial panel at the final path.
-            import pyarrow.parquet as pq
-
             cache_paths = [_day_cache_path(stamp) for stamp in stamps]
-            missing = [path.stem for path in _missing_day_cache(stamps)]
-            if missing:
-                preview = ", ".join(missing[:5])
-                raise RuntimeError(
-                    f"cannot assemble: {len(missing):,} expected day shard(s) missing: {preview}"
-                )
+            write_ordered_shard_manifest(
+                cache_paths,
+                identities=[_day_cache_identity(stamp) for stamp in stamps],
+                output=manifest_path(DAY_CACHE),
+            )
 
             def assembly_progress(index: int, total: int, rows: int) -> None:
                 if index % 250 == 0 or index == total:
                     print(f"  assembling [{index}/{total}] {rows:,} rows", flush=True)
 
+            require_quote_lineage(QUOTE_DEPENDENCY_IDENTITY)
             assembled = assemble_parquet_shards(
                 cache_paths,
                 out_path,
@@ -1150,42 +995,48 @@ def main() -> int:
             return 0
 
         for i, stamp in enumerate(stamps, 1):
-            day_v3_state = None
-            day_v3_ticks = None
-            if not args.no_v3 and stamp >= V3_START:
-                advance_tick_venues(stamp, v3_ticks, v3_state)
-                day_v3_state = v3_state
-                day_v3_ticks = v3_ticks
             cache_path = _day_cache_path(stamp)
-            if cache_path.exists():
+            identity = _day_cache_identity(stamp)
+            if day_cache_is_current(cache_path, identity=identity):
+                if tick_replay is not None:
+                    advance_tick_venues(stamp, tick_replay)
                 day = pd.read_parquet(cache_path)
-                needs_migration = "vehicle_route_advantage" in day.columns
                 day = _canonicalize_cost_measure(day)
-                if needs_migration:
-                    _write(day, cache_path)
             else:
-                parts = [
-                    _build_day(
-                        stamp,
-                        sizes,
-                        top_pairs=args.top_pairs,
-                        hour=h,
-                        all_hours=hours,
-                        tick_state=day_v3_state,
-                        tick_ticks=day_v3_ticks,
+                parts = []
+                cuts = (
+                    advance_tick_day_hours(stamp, tick_replay, hours)
+                    if tick_replay is not None
+                    else iter(hours)
+                )
+                for hour in cuts:
+                    parts.append(
+                        _build_day(
+                            stamp,
+                            sizes,
+                            top_pairs=args.top_pairs,
+                            hour=hour,
+                            all_hours=hours,
+                            tick_state=(tick_replay.states_by_venue if tick_replay is not None else None),
+                            tick_ticks=(tick_replay.ticks_by_venue if tick_replay is not None else None),
+                        )
                     )
-                    for h in hours
-                ]
                 parts = [x for x in parts if not x.empty]
                 day = pd.concat(parts, ignore_index=True) if parts else pd.DataFrame()
                 day = _canonicalize_cost_measure(day)
-                _write(day, cache_path)
+                write_day_cache(day, cache_path, identity=identity)
             if not day.empty:
                 frames.append(day)
             if i % 25 == 0 or i == len(stamps):
                 print(f"route-cost panel [{i}/{len(stamps)}] {stamp}", flush=True)
         panel = pd.concat(frames, ignore_index=True) if frames else pd.DataFrame()
         assert_unique_quote_cells(panel, context="serial route-cost panel")
+        write_ordered_shard_manifest(
+            [_day_cache_path(stamp) for stamp in stamps],
+            identities=[_day_cache_identity(stamp) for stamp in stamps],
+            output=manifest_path(DAY_CACHE),
+        )
+        require_quote_lineage(QUOTE_DEPENDENCY_IDENTITY)
         _write(panel, out_path)
     summary = write_route_cost_summary(out_path, summary_path)
     record_provenance(out_path, code_sources=PANEL_SOURCES, inputs=QUOTE_INPUTS,

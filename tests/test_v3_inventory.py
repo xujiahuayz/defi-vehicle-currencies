@@ -359,6 +359,29 @@ def test_inventory_fetch_persists_exact_raw_log_parquet() -> None:
         assert inventory_chunk_completed(100, 100, root)
 
 
+def test_inventory_fetch_splits_storage_chunk_under_rpc_block_cap() -> None:
+    calls: list[tuple[int, int]] = []
+
+    def request(payload: dict[str, object], **_kwargs: object) -> dict[str, object]:
+        params = payload["params"]
+        assert isinstance(params, list)
+        log_filter = params[0]
+        assert isinstance(log_filter, dict)
+        lower = int(str(log_filter["fromBlock"]), 16)
+        upper = int(str(log_filter["toBlock"]), 16)
+        calls.append((lower, upper))
+        return {"result": []}
+
+    with tempfile.TemporaryDirectory() as directory:
+        root = Path(directory)
+        with patch("scripts.fetch_v3_inventory_events.rpc_post", side_effect=request):
+            metadata = fetch_chunk(100, 220, set(), root)
+        assert calls == [(100, 149), (150, 199), (200, 220)]
+        assert metadata["rpc_block_cap"] == 50
+        assert metadata["rpc_subranges"] == 3
+        assert inventory_chunk_completed(100, 220, root)
+
+
 def test_raw_inventory_chunk_audit_reconciles_content_and_metadata() -> None:
     raw = log("collect_protocol", [1, 2], ["uint128", "uint128"])
     raw["address"] = "0xpool"
