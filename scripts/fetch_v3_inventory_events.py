@@ -6,26 +6,19 @@ from __future__ import annotations
 import argparse
 from collections import deque
 from concurrent.futures import FIRST_COMPLETED, wait
-from datetime import datetime, timezone
 import json
 from pathlib import Path
 import re
 import time
 
-import pyarrow as pa
-import pyarrow.parquet as pq
-
-from ddvc.fetch.raw import write_json
 from ddvc.fetch.sources import get_source
+from ddvc.ethereum_logs import fetch_exact_logs, write_exact_log_chunk
 from ddvc.paths import DATA_DIR, RAW_MARKET_DATA_LOCK
 from ddvc.quoter import Throttled, rpc_post
-from ddvc.runtime import atomic_output, exclusive_job, interruptible_thread_pool
+from ddvc.runtime import exclusive_job, interruptible_thread_pool
 from ddvc.v3_inventory import (
     EVENT_TOPICS,
-    RAW_LOG_SCHEMA,
-    RAW_LOG_STORAGE_FORMAT,
     block_ranges,
-    canonical_raw_log,
     canonical_inventory_start_block,
     decode_inventory_log,
     inventory_chunk_completed,
@@ -86,31 +79,16 @@ def fetch_chunk(
     pools: set[str],
     root: Path = RAW_ROOT,
 ) -> dict[str, object]:
-    payload = {
-        "jsonrpc": "2.0",
-        "id": 1,
-        "method": "eth_getLogs",
-        "params": [{
-            "fromBlock": hex(lower),
-            "toBlock": hex(upper),
-            "topics": [[EVENT_TOPICS[name] for name in sorted(EVENT_TOPICS)]],
-        }],
-    }
-    response = rpc_post(
-        payload,
-        timeout=30,
-        retries=1,
-        retry_json_errors=True,
+    raw_records = fetch_exact_logs(
+        start_block=lower,
+        end_block=upper,
+        topics=[EVENT_TOPICS[name] for name in sorted(EVENT_TOPICS)],
+        rpc_request=rpc_post,
     )
-    logs = response.get("result") if isinstance(response, dict) else None
-    if not isinstance(logs, list):
-        raise RuntimeError(f"V3 inventory log response lacks a result list: {lower}-{upper}")
     keys: set[tuple[int, str, int]] = set()
     recognized = 0
     by_event = {name: 0 for name in EVENT_TOPICS}
-    raw_records: list[dict[str, object]] = []
-    for log in logs:
-        raw_record = canonical_raw_log(log)
+    for raw_record in raw_records:
         decoded = decode_inventory_log(raw_record)
         block = int(decoded["block_number"])
         if not lower <= block <= upper:
@@ -119,34 +97,19 @@ def fetch_chunk(
         if key in keys:
             raise ValueError(f"duplicate V3 inventory log in block chunk: {key}")
         keys.add(key)
-        raw_records.append(raw_record)
         if decoded["pool"] in pools:
             recognized += 1
             by_event[str(decoded["event_type"])] += 1
     raw_path, meta_path = paths(lower, upper, root)
-    raw_path.parent.mkdir(parents=True, exist_ok=True)
-    table = pa.Table.from_pylist(raw_records, schema=RAW_LOG_SCHEMA)
-    with atomic_output(raw_path) as temporary:
-        pq.write_table(
-            table,
-            temporary,
-            compression="zstd",
-            use_dictionary=True,
-        )
     metadata = {
-        "status": "complete",
         "from_block": lower,
         "to_block": upper,
         "event_topics": [EVENT_TOPICS[name] for name in sorted(EVENT_TOPICS)],
-        "storage_format": RAW_LOG_STORAGE_FORMAT,
-        "raw_logs": len(logs),
         "recognized_v3_logs": recognized,
-        "unrecognized_logs": len(logs) - recognized,
+        "unrecognized_logs": len(raw_records) - recognized,
         "recognized_by_event": by_event,
-        "fetched_at_utc": datetime.now(timezone.utc).isoformat(),
     }
-    write_json(meta_path, metadata)
-    return metadata
+    return write_exact_log_chunk(raw_path, meta_path, raw_records, metadata)
 
 
 def run_fetch_jobs(

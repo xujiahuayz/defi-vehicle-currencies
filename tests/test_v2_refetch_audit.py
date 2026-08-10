@@ -1,19 +1,13 @@
 from __future__ import annotations
 
 import unittest
-import tempfile
-from pathlib import Path
-
 from eth_utils import keccak
 
-from ddvc.fetch.raw import write_jsonl_gz
 from scripts.audit_v2_refetch_receipts import (
     colliding_rows,
     economic_identity,
-    load_rows,
     receipt_match,
     receipt_swap_log_index,
-    repair_collision_rows,
 )
 
 
@@ -63,31 +57,15 @@ class V2RefetchAuditTests(unittest.TestCase):
         self.assertIsNone(receipt_match(row(), None, {"0xa": 18, "0xb": 18}))
         self.assertIsNone(receipt_match(row(), receipt(), {"0xa": 18}))
 
-    def test_collision_scan_and_repair_preserve_displaced_capture(self) -> None:
+    def test_collision_scan_reports_every_conflicting_provider_row(self) -> None:
         first = {**row(), "id": "first", "transaction": {"id": "0xone", "blockNumber": "10"}}
         second = {
             **row("1"),
             "id": "second",
             "transaction": {"id": "0xtwo", "blockNumber": "10"},
         }
-        replacement = {**first, "logIndex": "9"}
-        with tempfile.TemporaryDirectory() as directory:
-            root = Path(directory)
-            path = root / "uniswap_v2_swaps_20250101.jsonl.gz"
-            write_jsonl_gz(path, [first, second])
-            collisions = colliding_rows(load_rows(root, "20250101"))
-            repairs = repair_collision_rows(
-                root,
-                "20250101",
-                collisions,
-                {"first": replacement, "second": second},
-            )
-            installed = load_rows(root, "20250101")
-            history = list((root / ".superseded" / "20250101").glob("*.jsonl.gz"))
+        collisions = colliding_rows([first, second])
         self.assertEqual({item["id"] for item in collisions}, {"first", "second"})
-        self.assertEqual(repairs[0]["provider_log_index_after"], 9)
-        self.assertEqual([item["logIndex"] for item in installed], ["9", "7"])
-        self.assertEqual(len(history), 1)
 
 
 if __name__ == "__main__":

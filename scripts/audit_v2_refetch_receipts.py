@@ -7,17 +7,11 @@ import argparse
 from collections import Counter
 from decimal import Decimal
 import gzip
-import hashlib
 import json
 from pathlib import Path
-import shutil
 import time
 
 from ddvc.amounts import human_to_raw
-from ddvc.fetch.graph import GraphClient, graph_keys
-from ddvc.fetch.raw import write_json, write_jsonl_gz
-from ddvc.fetch.schemas import get_schema
-from ddvc.fetch.sources import get_source
 from ddvc.paths import DATA_DIR, RAW_MARKET_DATA_LOCK
 from ddvc.quoter import rpc_post, rpc_urls
 from ddvc.runtime import atomic_output, exclusive_job
@@ -266,123 +260,6 @@ def receipt_match(row: dict, receipt: dict | None, decimals: dict[str, int]) -> 
         return False
 
 
-def exact_provider_rows(rows: list[dict]) -> dict[str, dict]:
-    """Fetch entities by id and require agreement across live provider routes."""
-    ids = sorted({str(row.get("id") or "") for row in rows if row.get("id")})
-    if not ids:
-        return {}
-    source = get_source("uniswap_v2")
-    entity = next(
-        item for item in get_schema(source.schema).entities if item.stream == "swaps"
-    )
-    query = (
-        "query ExactProviderRows($ids: [ID!]!) { "
-        f"{entity.entity}(where: {{ id_in: $ids }}) {{ {entity.fields} }} "
-        "}"
-    )
-    answers: list[dict[str, dict]] = []
-    for key in graph_keys():
-        try:
-            data = GraphClient(
-                source.subgraph_id,
-                [key],
-                graph_path=source.graph_path,
-                max_transient_retries=1,
-                response_deadline_seconds=30,
-            ).query(query, {"ids": ids})
-        except Exception:
-            continue
-        fetched = {
-            str(row.get("id") or ""): row
-            for row in data.get(entity.entity) or []
-            if row.get("id")
-        }
-        if set(fetched) == set(ids):
-            answers.append(fetched)
-    if len(answers) < 2:
-        raise RuntimeError("fewer than two provider routes returned every collision row")
-    consensus: dict[str, dict] = {}
-    for event_id in ids:
-        variants = {
-            json.dumps(answer[event_id], sort_keys=True, separators=(",", ":"))
-            for answer in answers
-        }
-        if len(variants) != 1:
-            raise RuntimeError(
-                f"live provider routes disagree on collision row {event_id}"
-            )
-        consensus[event_id] = json.loads(variants.pop())
-    print(
-        f"provider consensus: {len(answers)} live routes, {len(consensus)} collision rows",
-        flush=True,
-    )
-    return consensus
-
-
-def repair_collision_rows(
-    root: Path,
-    day: str,
-    collisions: list[dict],
-    replacements: dict[str, dict],
-) -> list[dict[str, object]]:
-    """Install exact provider rows while retaining the displaced raw capture."""
-    path = root / f"uniswap_v2_swaps_{day}.jsonl.gz"
-    rows = load_rows(root, day)
-    collision_ids = {str(row.get("id") or "") for row in collisions}
-    if not collision_ids or collision_ids != set(replacements):
-        raise ValueError("collision replacement ids do not match the detected collision set")
-    original_by_id = {
-        str(row.get("id") or ""): row
-        for row in rows
-        if str(row.get("id") or "") in collision_ids
-    }
-    if set(original_by_id) != collision_ids:
-        raise ValueError("a collision entity is not unique in the raw day")
-    repairs: list[dict[str, object]] = []
-    for event_id in sorted(collision_ids):
-        original = original_by_id[event_id]
-        replacement = replacements[event_id]
-        if economic_identity(original) != economic_identity(replacement):
-            raise ValueError(f"provider replacement changes economic payload: {event_id}")
-        if chain_order(original) == chain_order(replacement):
-            continue
-        repairs.append(
-            {
-                "event_id": event_id,
-                "transaction": transaction_id(original),
-                "block_number": block_value(original),
-                "provider_log_index_before": int(original.get("logIndex")),
-                "provider_log_index_after": int(replacement.get("logIndex")),
-            }
-        )
-    if not repairs:
-        return []
-    digest = hashlib.sha256(path.read_bytes()).hexdigest()
-    history = root / ".superseded" / day / f"uniswap_v2_swaps_{day}.{digest[:16]}.jsonl.gz"
-    if not history.exists():
-        with atomic_output(history) as temporary:
-            shutil.copyfile(path, temporary)
-    installed = [replacements.get(str(row.get("id") or ""), row) for row in rows]
-    write_jsonl_gz(path, installed)
-    metadata_path = root / f"uniswap_v2_meta_{day}.json"
-    try:
-        metadata = json.loads(metadata_path.read_text(encoding="utf-8"))
-    except (OSError, json.JSONDecodeError):
-        metadata = {"source": "uniswap_v2", "day": f"{day[:4]}-{day[4:6]}-{day[6:]}"}
-    ledger = list(metadata.get("receipt_order_repairs") or [])
-    known = {(str(item.get("event_id")), item.get("provider_log_index_after")) for item in ledger}
-    ledger.extend(
-        repair
-        for repair in repairs
-        if (str(repair["event_id"]), repair["provider_log_index_after"]) not in known
-    )
-    metadata["receipt_order_repairs"] = ledger
-    metadata["streams"] = dict(metadata.get("streams") or {})
-    metadata["streams"].setdefault("swaps", {})["status"] = "fetched+receipt-order-reconciled"
-    write_json(metadata_path, metadata)
-    return repairs
-
-
 def parse_days(path: Path) -> list[str]:
     return sorted(
         {
@@ -400,15 +277,10 @@ def main() -> int:
     parser.add_argument("--current-dir", type=Path, default=RAW_ROOT)
     parser.add_argument("--receipt-cache", type=Path, default=DEFAULT_CACHE)
     parser.add_argument("--batch-size", type=int, default=25)
-    parser.add_argument(
-        "--repair-order-collisions",
-        action="store_true",
-        help="replace only receipt-verified colliding entities with exact current-provider rows",
-    )
     args = parser.parse_args()
     if args.batch_size < 1 or args.batch_size > 100:
         parser.error("--batch-size must be between 1 and 100")
-    with exclusive_job(RAW_MARKET_DATA_LOCK, job="raw repair receipt audit"):
+    with exclusive_job(RAW_MARKET_DATA_LOCK, job="provider receipt audit"):
         return run_audit(args)
 
 
@@ -433,49 +305,6 @@ def run_audit(args: argparse.Namespace) -> int:
         batch_size=args.batch_size,
     )
     write_receipt_cache(args.receipt_cache, receipts)
-    collision_receipt_logs = {
-        str(row.get("id") or ""): receipt_swap_log_index(
-            row,
-            receipts.get(transaction_id(row)),
-            decimals,
-        )
-        for row in collision_rows
-    }
-    repaired: list[dict[str, object]] = []
-    if args.repair_order_collisions and collision_rows:
-        if any(value is None for value in collision_receipt_logs.values()):
-            raise RuntimeError("a colliding provider row has no unique receipt event")
-        replacements = exact_provider_rows(collision_rows)
-        for row in collision_rows:
-            event_id = str(row.get("id") or "")
-            replacement = replacements[event_id]
-            if receipt_match(
-                replacement,
-                receipts.get(transaction_id(row)),
-                decimals,
-            ) is not True:
-                raise RuntimeError(f"exact provider replacement does not match receipt: {event_id}")
-        for day, day_collisions in collisions_by_day.items():
-            day_ids = {str(row.get("id") or "") for row in day_collisions}
-            repaired.extend(
-                repair_collision_rows(
-                    args.current_dir,
-                    day,
-                    day_collisions,
-                    {event_id: replacements[event_id] for event_id in day_ids},
-                )
-            )
-        current, baseline, decimals = changed_rows(
-            args.current_dir,
-            args.baseline_dir,
-            days,
-        )
-        collisions_by_day = {
-            day: found
-            for day in days
-            if (found := colliding_rows(load_rows(args.current_dir, day)))
-        }
-        collision_rows = [row for rows in collisions_by_day.values() for row in rows]
     current_results = [receipt_match(row, receipts.get(transaction_id(row)), decimals) for row in current]
     baseline_results = [receipt_match(row, receipts.get(transaction_id(row)), decimals) for row in baseline]
     summary = {
@@ -488,7 +317,6 @@ def run_audit(args: argparse.Namespace) -> int:
         "unique_current_transactions": len(tx_hashes),
         "unresolved_receipts": len(unresolved),
         "current_chain_order_collision_rows": len(collision_rows),
-        "repaired_chain_order_rows": len(repaired),
         "current_mismatch_transactions": sorted(
             {
                 transaction_id(row)

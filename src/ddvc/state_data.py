@@ -25,6 +25,7 @@ from ddvc.execution_contracts import (
     TICK_STATE_GENERATIONS,
     execution_semantics,
 )
+from ddvc.graph_event_order import load_event_order_corrections
 from ddvc.paths import DATA_DIR
 from ddvc.provenance import cache_key
 from ddvc.runtime import atomic_output
@@ -37,6 +38,7 @@ CODE_SOURCES = [
     "src/ddvc/amounts.py",
     "src/ddvc/asset_types.py",
     "src/ddvc/execution_contracts.py",
+    "src/ddvc/graph_event_order.py",
     "src/ddvc/source_records.py",
 ]
 STATE_ENGINE = cache_key(CODE_SOURCES)
@@ -478,6 +480,7 @@ def _normalise_tick_row(
     record_type: str,
     liquidity_sign: int,
     known_pool_family: str | None = None,
+    log_index_override: int | None = None,
 ) -> tuple[dict[str, object], dict[str, bool]]:
     pool = row.get("pool") or {}
     token0 = pool.get("token0") or {}
@@ -487,7 +490,11 @@ def _normalise_tick_row(
     canonical0 = canonical_token(raw0) if raw0 else None
     canonical1 = canonical_token(raw1) if raw1 else None
     block = block_value(row)
-    log_index = _optional_int(row.get("logIndex"))
+    log_index = (
+        int(log_index_override)
+        if log_index_override is not None
+        else _optional_int(row.get("logIndex"))
+    )
     timestamp = timestamp_value(row)
     tx_hash = transaction_id(row)
     pool_id = str(pool.get("id") or "").lower()
@@ -601,7 +608,8 @@ def normalise_tick_partition(
     """Normalise and audit one concentrated-liquidity venue-day."""
     if venue not in TICK_STREAMS:
         raise ValueError(f"unsupported tick venue: {venue}")
-    inputs = _stream_inputs(raw_root, "tick", venue, day)
+    corrections, correction_inputs = load_event_order_corrections(raw_root, venue, day)
+    inputs = [*_stream_inputs(raw_root, "tick", venue, day), *correction_inputs]
     rows: list[dict[str, object]] = []
     counters = quality_counters()
     counters["missing_required_streams"] = _missing_stream_count(
@@ -619,6 +627,11 @@ def normalise_tick_partition(
                     continue
                 counters["raw_rows"] += 1
                 source = json.loads(line)
+                corrected_log_index = (
+                    corrections.resolve(venue, stream, source)
+                    if corrections is not None
+                    else None
+                )
                 record, flags = _normalise_tick_row(
                     source,
                     venue=venue,
@@ -631,6 +644,7 @@ def normalise_tick_partition(
                         if record_type != "swap"
                         else None
                     ),
+                    log_index_override=corrected_log_index,
                 )
                 if record_type == "swap" and record["pool"]:
                     prior_family = pool_families.get(str(record["pool"]))
@@ -655,6 +669,8 @@ def normalise_tick_partition(
                         continue
                     by_order[key] = record
                 rows.append(record)
+    if corrections is not None:
+        corrections.require_fully_applied()
     frame = pd.DataFrame(rows, columns=TICK_COLUMNS)
     if not frame.empty:
         frame = frame.sort_values(
@@ -721,6 +737,7 @@ def _normalise_cp_row(
     stream: str,
     record_type: str,
     liquidity_sign: int,
+    log_index_override: int | None = None,
 ) -> tuple[dict[str, object], dict[str, bool]]:
     pair = row.get("pair") or {}
     token0 = pair.get("token0") or {}
@@ -738,7 +755,13 @@ def _normalise_cp_row(
     period_end = period_start + 3600 if period_start is not None else None
     timestamp = period_end if record_type == "snapshot" else timestamp_value(row)
     block = None if record_type == "snapshot" else block_value(row)
-    log_index = None if record_type == "snapshot" else _optional_int(row.get("logIndex"))
+    log_index = (
+        None
+        if record_type == "snapshot"
+        else int(log_index_override)
+        if log_index_override is not None
+        else _optional_int(row.get("logIndex"))
+    )
     tx_hash = None if record_type == "snapshot" else transaction_id(row)
     known_incomplete = bool(record_type == "liquidity" and row.get("needsComplete"))
     missing_order = bool(
@@ -875,7 +898,8 @@ def normalise_cp_partition(
     """Normalise and audit one constant-product venue-day."""
     if venue not in CP_STREAMS:
         raise ValueError(f"unsupported constant-product venue: {venue}")
-    inputs = _stream_inputs(raw_root, "constant_product", venue, day)
+    corrections, correction_inputs = load_event_order_corrections(raw_root, venue, day)
+    inputs = [*_stream_inputs(raw_root, "constant_product", venue, day), *correction_inputs]
     rows: list[dict[str, object]] = []
     counters = quality_counters()
     counters["missing_required_streams"] = _missing_stream_count(
@@ -892,13 +916,20 @@ def normalise_cp_partition(
                 if not line.strip():
                     continue
                 counters["raw_rows"] += 1
+                source = json.loads(line)
+                corrected_log_index = (
+                    corrections.resolve(venue, stream, source)
+                    if corrections is not None and record_type != "snapshot"
+                    else None
+                )
                 record, flags = _normalise_cp_row(
-                    json.loads(line),
+                    source,
                     venue=venue,
                     day=day,
                     stream=stream,
                     record_type=record_type,
                     liquidity_sign=sign,
+                    log_index_override=corrected_log_index,
                 )
                 counters[f"{record_type}_rows"] += 1
                 for name, flagged in flags.items():
@@ -925,6 +956,8 @@ def normalise_cp_partition(
                         counters["conflicting_events"] += 1
                     continue
                 rows.append(record)
+    if corrections is not None:
+        corrections.require_fully_applied()
     frame = pd.DataFrame(rows, columns=CP_COLUMNS)
     if not frame.empty:
         frame = frame.sort_values(

@@ -13,7 +13,6 @@ import argparse
 from collections import Counter, deque
 from concurrent.futures import FIRST_COMPLETED, wait
 from contextlib import ExitStack
-from datetime import datetime, timezone
 import hashlib
 import json
 from pathlib import Path
@@ -31,7 +30,8 @@ from ddvc.ethereum_logs import (
     RAW_LOG_SCHEMA,
     RAW_LOG_STORAGE_FORMAT,
     block_ranges,
-    canonical_raw_log,
+    fetch_exact_logs,
+    write_exact_log_chunk,
 )
 from ddvc.fetch.raw import write_json
 from ddvc.fetch.sources import get_source
@@ -359,43 +359,13 @@ def _fetch_logs(
     topics: list[str],
     address: str | None,
 ) -> list[dict[str, object]]:
-    log_filter: dict[str, object] = {
-        "fromBlock": hex(start_block),
-        "toBlock": hex(end_block),
-        "topics": [topics if len(topics) > 1 else topics[0]],
-    }
-    if address is not None:
-        log_filter["address"] = address
-    payload = {
-        "jsonrpc": "2.0",
-        "id": 1,
-        "method": "eth_getLogs",
-        "params": [log_filter],
-    }
-    response = rpc_post(payload, timeout=30, retries=1, retry_json_errors=True)
-    logs = response.get("result") if isinstance(response, dict) else None
-    if not isinstance(logs, list):
-        raise RuntimeError(f"Ethereum log response lacks a result list for {start_block}:{end_block}")
-    allowed_topics = set(topics)
-    keys: set[tuple[int, str, int, str]] = set()
-    records: list[dict[str, object]] = []
-    for log in logs:
-        record = canonical_raw_log(log)
-        block = int(record["block_number"])
-        pool = str(record["address"])
-        topic = str(record["topics"][0])
-        if not start_block <= block <= end_block:
-            raise ValueError("Ethereum log lies outside its requested block range")
-        if address is not None and pool != address:
-            raise ValueError("Ethereum log lies outside its requested address filter")
-        if topic not in allowed_topics:
-            raise ValueError("Ethereum log lies outside its requested topic filter")
-        key = (block, str(record["transaction_hash"]), int(record["log_index"]), pool)
-        if key in keys:
-            raise ValueError(f"duplicate exact Ethereum log in one chunk: {key}")
-        keys.add(key)
-        records.append(record)
-    return records
+    return fetch_exact_logs(
+        start_block=start_block,
+        end_block=end_block,
+        topics=topics,
+        address=address,
+        rpc_request=rpc_post,
+    )
 
 
 def _write_chunk(
@@ -404,23 +374,7 @@ def _write_chunk(
     records: list[dict[str, object]],
     marker: dict[str, object],
 ) -> dict[str, object]:
-    raw_path.parent.mkdir(parents=True, exist_ok=True)
-    with atomic_output(raw_path) as temporary:
-        pq.write_table(
-            pa.Table.from_pylist(records, schema=RAW_LOG_SCHEMA),
-            temporary,
-            compression="zstd",
-            use_dictionary=True,
-        )
-    payload = {
-        "status": "complete",
-        **marker,
-        "storage_format": RAW_LOG_STORAGE_FORMAT,
-        "raw_logs": len(records),
-        "fetched_at_utc": datetime.now(timezone.utc).isoformat(),
-    }
-    write_json(marker_path, payload)
-    return payload
+    return write_exact_log_chunk(raw_path, marker_path, records, marker)
 
 
 def fetch_factory_chunk(venue: str, start_block: int, end_block: int) -> dict[str, object]:
