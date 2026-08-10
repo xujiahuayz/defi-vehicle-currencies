@@ -91,7 +91,7 @@ The indirect reassurance is that restricting to routes where the direct advantag
 
 **The outcome is a binary on quoted output.** `dominated` is one when the best available direct pool returns more than the best two-leg route through the candidate. That is a statement about the quote at reconstructed state, not about what a router chose, so this measures the cost surface a router faced and not its revealed preference.
 
-**Gas is not in this specification.** The gas term is what makes route choice size-dependent, and per-day gas is now exact from `Transaction.gasPrice` for 1,883 days, but the estimates above are gross of it. The size profile therefore mixes the pure depth channel with a fixed-cost channel that has not yet been separated. Adding all-in cost is the next refinement and it should sharpen the size profile rather than reverse it, since gas hits small trades hardest and the advantage is already largest there.
+**Gas is not in this specification.** The gas term is what makes route choice size-dependent, and the estimates above are gross of it. The retired daily clock cannot price transaction-level swaps. The replacement joins each admitted transaction to its exact receipt and same-block header, uses the receipt's `effectiveGasPrice` for the two route alternatives, and converts the resulting wei costs with a strictly prior independent intraday WETH/USD mark. Until that release closes, the size profile mixes the pure depth channel with a fixed-cost channel that has not yet been separated.
 
 **Two legs only.** Longer routes are not in this panel.
 
