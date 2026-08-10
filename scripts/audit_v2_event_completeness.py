@@ -20,6 +20,8 @@ from pathlib import Path
 import pandas as pd
 
 from ddvc.ethereum_day_cuts import (
+    RAW_DAY_BOUND_ROOT,
+    day_bound_path,
     fetch_block_timestamp,
     utc_day_block_bounds,
     validate_utc_day_block_bounds,
@@ -35,7 +37,6 @@ from ddvc.reconstruct import UNIFIED_QUALITY_PANEL
 from ddvc.release_calendar import transaction_frontier_audit_days
 from ddvc.runtime import atomic_output, exclusive_job, interruptible_thread_pool
 from ddvc.v2_event_completeness import (
-    RAW_DAY_BOUND_ROOT,
     RAW_V2_FACTORY_ROOT,
     V2_CORE_EVENTS,
     V2_EXACT_LOG_CHUNK_SIZE,
@@ -138,7 +139,7 @@ def _graph_event_paths(venue: str, day: str) -> list[Path]:
 
 
 def _day_bound_path(day: str) -> Path:
-    return RAW_DAY_BOUND_ROOT / f"{day}.json"
+    return day_bound_path(day)
 
 
 def _launched_venues(day: str) -> tuple[str, ...]:

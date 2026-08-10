@@ -78,6 +78,12 @@ CLAIM_INPUT_STAGES: list[tuple[str, list[str], str, tuple[str, ...]]] = [
         ("data/processed/cex_reference_support.parquet",),
     ),
     (
+        "build_ethereum_day_calendar.py",
+        ["--workers", "4"],
+        "exact chain-wide UTC-day block bounds for DEX-independent sampling",
+        ("data/processed/ethereum_utc_day_calendar.parquet",),
+    ),
+    (
         "process/fetch_daily_gas_price_graph.py",
         ["--workers", "8", "--panel-only"],
         "daily gas prices used by all-in route comparisons",

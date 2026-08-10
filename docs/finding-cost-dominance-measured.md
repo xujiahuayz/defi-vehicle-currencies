@@ -1,5 +1,7 @@
 # Direct-route cost domination exists, but the V2-family survivor panel cannot identify market maturation
 
+Status 2026-08-10: gross-output comparisons remain construction evidence, but every all-in incidence and magnitude below is withdrawn pending the DEX-independent daily gas-price rebuild. The retired gas-price panel chose sampled blocks from one active DEX stream. No historical all-in number in this document supports a current claim until the exact UTC-day sampler and downstream construction rerun.
+
 Built by `scripts/build_counterfactual_dominance.py` from strict pre-transaction pool state and calibrated by `scripts/process/build_route_gas_units.py`. The canonical outputs are `data/processed/counterfactual_dominance.parquet`, `output/exhibits/counterfactual_dominance_summary.jsonl`, `output/exhibits/counterfactual_dominance_support.jsonl`, and `output/exhibits/route_gas_units_summary.jsonl`.
 
 The mixed-venue construction audit is built by `scripts/build_transaction_state_frontier.py --audit-calendar`; its tracked summaries are `output/exhibits/transaction_state_frontier_audit_summary.jsonl` and `output/exhibits/transaction_state_frontier_audit_support.jsonl`, with the audit row panel at `data/processed/transaction_state_frontier_audit.parquet`. Only after that audit passes does `--daily-calendar` publish the distinct analysis input at `data/processed/transaction_state_frontier_daily.parquet`.

@@ -376,9 +376,9 @@ Not presented. Reached by number when a question lands. Every slide keeps the ph
 
 **Visual.** `deck/appendix_gas_hops.svg`. Two horizontal bars, y axis the route topology at one leg and two legs, x axis median gas units from 0 to 250,000, with the difference bracketed and labelled. The read is the size of the handicap the vehicle route carries before any price effect.
 
-### A11. The cost regime moves by three orders of magnitude [PRICE SERIES BUILDABLE; ALL-IN BPS BLOCKED]
+### A11. The cost regime moves by three orders of magnitude [DAILY PRICE REBUILD REQUIRED; ALL-IN BPS BLOCKED]
 
-- Daily median from every transaction in three spanning full blocks, all 2,277 project days
+- Rebuild the daily median from every transaction in three fixed interior block quantiles selected from exact chain-wide UTC-day boundaries; the DEX-clock series is retired
 - Annual medians 84.00 gwei in 2021 and 0.13 gwei in 2026
 - 32.84 gwei before 2024-03-13 and 1.35 gwei after
 - Notional-scaled all-in basis points wait for the completed route-gas and gas-token-price join

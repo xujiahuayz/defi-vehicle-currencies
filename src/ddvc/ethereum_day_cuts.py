@@ -3,13 +3,76 @@
 from __future__ import annotations
 
 from datetime import datetime, timedelta, timezone
+import json
+from pathlib import Path
 import time
 from typing import Callable
 
+from ddvc.fetch.raw import write_json
+from ddvc.paths import DATA_DIR
 from ddvc.quoter import Throttled, rpc_post
 
 
 RPC_CALL_MAX_ATTEMPTS = 12
+RAW_DAY_BOUND_ROOT = DATA_DIR / "raw" / "ethereum" / "utc_day_block_bounds"
+UTC_DAY_BLOCK_CALENDAR = DATA_DIR / "processed" / "ethereum_utc_day_calendar.parquet"
+
+
+def day_bound_path(day: str, *, root: Path | None = None) -> Path:
+    return (root or RAW_DAY_BOUND_ROOT) / f"{day}.json"
+
+
+def load_utc_day_block_bounds(day: str, *, root: Path | None = None) -> dict[str, object]:
+    path = day_bound_path(day, root=root)
+    try:
+        record = json.loads(path.read_text(encoding="utf-8"))
+        if record.get("status") != "complete":
+            raise ValueError("incomplete UTC block-bound record")
+        validate_utc_day_block_bounds(record, day)
+        return record
+    except (KeyError, OSError, TypeError, ValueError, json.JSONDecodeError) as exc:
+        raise RuntimeError(f"missing or invalid exact UTC block bounds for {day}") from exc
+
+
+def load_or_resolve_utc_day_block_bounds(
+    day: str,
+    upper_block: int,
+    *,
+    fetch: bool,
+    root: Path | None = None,
+    rpc_request=rpc_post,
+    sleeper=time.sleep,
+) -> dict[str, object]:
+    """Load one exact UTC perimeter or resolve it against a known-later block."""
+
+    try:
+        return load_utc_day_block_bounds(day, root=root)
+    except RuntimeError:
+        if not fetch:
+            raise
+    evidence: list[dict[str, object]] = []
+    timestamps: dict[int, int] = {}
+
+    def timestamp_for_block(block: int) -> int:
+        if block not in timestamps:
+            timestamps[block] = fetch_block_timestamp(
+                block,
+                evidence,
+                rpc_request=rpc_request,
+                sleeper=sleeper,
+            )
+        return timestamps[block]
+
+    record = {
+        "status": "complete",
+        **utc_day_block_bounds(day, 0, upper_block, timestamp_for_block),
+        "rpc_evidence": evidence,
+    }
+    validate_utc_day_block_bounds(record, day)
+    path = day_bound_path(day, root=root)
+    path.parent.mkdir(parents=True, exist_ok=True)
+    write_json(path, record)
+    return record
 
 
 def utc_day_timestamps(day: str) -> tuple[int, int]:

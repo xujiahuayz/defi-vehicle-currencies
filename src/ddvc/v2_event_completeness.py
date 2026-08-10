@@ -74,7 +74,6 @@ V2_FACTORY_INITIAL_BLOCK_SPAN = 10_000
 V2_FACTORY_STATE_SAMPLE_SIZE = 1_024
 V2_FACTORY_EVIDENCE_SCHEMA_VERSION = 3
 RAW_V2_FACTORY_ROOT = DATA_DIR / "raw" / "ethereum" / "v2_factory_pair_registry"
-RAW_DAY_BOUND_ROOT = DATA_DIR / "raw" / "ethereum" / "utc_day_block_bounds"
 V2_EVENT_SOURCE_SUMMARY = DATA_DIR / "processed" / "v2_core_event_source_audit.parquet"
 V2_EVENT_SOURCE_EXCEPTIONS = DATA_DIR / "processed" / "v2_core_event_source_exceptions.parquet"
 V2_EVENT_SOURCE_CERTIFICATE = OUTPUT_DIR / "exhibits" / "v2_core_event_source_certificate.json"
