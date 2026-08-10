@@ -612,6 +612,32 @@ def event_topics(venue: str) -> list[str]:
     raise ValueError(f"unsupported Graph event-order venue: {venue}")
 
 
+def _v2_swap_anchor_matches(
+    provider: GraphEvent,
+    candidates: Iterable[ChainEvent],
+) -> list[ChainEvent]:
+    """Return V2 swaps uniquely anchored by direction and one exact nonzero amount."""
+
+    if provider.stream != "swaps" or len(provider.fingerprint) != 5:
+        return []
+    provider_amounts = tuple(int(value) for value in provider.fingerprint[1:])
+    provider_direction = tuple(value > 0 for value in provider_amounts)
+    return [
+        candidate
+        for candidate in candidates
+        if len(candidate.fingerprint) == 5
+        and tuple(int(value) > 0 for value in candidate.fingerprint[1:]) == provider_direction
+        and any(
+            provider_value > 0 and provider_value == int(chain_value)
+            for provider_value, chain_value in zip(
+                provider_amounts,
+                candidate.fingerprint[1:],
+                strict=True,
+            )
+        )
+    ]
+
+
 def match_event_orders(
     graph_events: Iterable[GraphEvent],
     exact_records: Iterable[dict[str, object]],
@@ -679,11 +705,15 @@ def match_event_orders(
                 )
                 if len(same_log) == 1:
                     chain = same_log[0]
+                elif venue in {"uniswap_v2", "sushiswap_v2"} and len(
+                    v2_anchor_matches := _v2_swap_anchor_matches(provider, chain_remaining)
+                ) == 1:
+                    chain = v2_anchor_matches[0]
                 elif len(chain_remaining) == 1:
                     chain = chain_remaining[0]
                 elif chain_remaining:
                     raise RuntimeError(
-                        "ambiguous structural V3 payload reconciliation: "
+                        "ambiguous structural payload reconciliation: "
                         f"{venue}/{provider.stream}/{provider.tx_hash}/{provider.pool}"
                     )
                 else:

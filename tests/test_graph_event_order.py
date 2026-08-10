@@ -9,6 +9,7 @@ from eth_abi import encode as abi_encode
 
 from ddvc.ethereum_logs import write_exact_log_chunk
 from ddvc.graph_event_order import (
+    GraphEvent,
     V3_STATE_EVENT_TOPICS,
     correction_root_for_graph,
     load_graph_events,
@@ -389,9 +390,60 @@ def test_reconciliation_rejects_ambiguous_structural_payload_matches(tmp_path: P
     try:
         match_event_orders(graph, exact, "uniswap_v3")
     except RuntimeError as error:
-        assert "ambiguous structural V3 payload" in str(error)
+        assert "ambiguous structural payload" in str(error)
     else:
         raise AssertionError("ambiguous structural payloads did not fail closed")
+
+
+def test_v2_repeated_pool_swaps_use_unique_directional_amount_anchor() -> None:
+    graph = [
+        GraphEvent(
+            venue="uniswap_v2",
+            stream="swaps",
+            event_id=f"provider-{index}",
+            tx_hash="0xtx1",
+            pool="0xpool",
+            block_number=10,
+            provider_log_index=provider_log,
+            fingerprint=("swap", amount_in, 0, 0, provider_amount_out),
+            decimals0=18,
+            decimals1=18,
+            needs_complete=False,
+        )
+        for index, provider_log, amount_in, provider_amount_out in (
+            (1, 7, 10, 101),
+            (2, 8, 20, 202),
+        )
+    ]
+    exact = [
+        {
+            "address": "0xpool",
+            "block_number": 10,
+            "block_hash": "0xblock",
+            "transaction_hash": "0xtx1",
+            "transaction_index": 1,
+            "log_index": chain_log,
+            "topics": [V2_EVENT_TOPICS["swap"]],
+            "data": "0x"
+            + abi_encode(
+                ["uint256", "uint256", "uint256", "uint256"],
+                [amount_in, 0, 0, chain_amount_out],
+            ).hex(),
+            "removed": False,
+        }
+        for chain_log, amount_in, chain_amount_out in (
+            (17, 10, 100),
+            (18, 20, 200),
+        )
+    ]
+    corrections, supplements, audit = match_event_orders(graph, exact, "uniswap_v2")
+    assert supplements == []
+    assert audit["matched_events"] == 2
+    assert audit["payload_mismatches"] == 2
+    assert {
+        (row["event_id"], row["chain_log_index"], row["amount1_out_override"])
+        for row in corrections
+    } == {("provider-1", 17, "0.0000000000000001"), ("provider-2", 18, "0.0000000000000002")}
 
 
 def test_v3_swap_uses_hashed_pool_statics_when_event_decimals_are_absent(tmp_path: Path) -> None:
