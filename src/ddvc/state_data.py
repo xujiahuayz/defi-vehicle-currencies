@@ -771,6 +771,10 @@ def _normalise_cp_row(
     liquidity_sign: int,
     log_index_override: int | None = None,
     needs_complete_override: bool | None = None,
+    amount0_in_override: str | None = None,
+    amount1_in_override: str | None = None,
+    amount0_out_override: str | None = None,
+    amount1_out_override: str | None = None,
 ) -> tuple[dict[str, object], dict[str, bool]]:
     pair = row.get("pair") or {}
     token0 = pair.get("token0") or {}
@@ -819,7 +823,18 @@ def _normalise_cp_row(
     sign_state = "valid"
     invalid_state = False
     if record_type == "swap":
-        amount0_delta, amount1_delta, sign_state = _cp_swap_delta(row)
+        swap_row = row
+        overrides = {
+            "amount0In": amount0_in_override,
+            "amount1In": amount1_in_override,
+            "amount0Out": amount0_out_override,
+            "amount1Out": amount1_out_override,
+        }
+        if any(value is not None for value in overrides.values()):
+            if any(value is None for value in overrides.values()):
+                raise ValueError("partial exact-chain V2 swap override")
+            swap_row = {**row, **overrides}
+        amount0_delta, amount1_delta, sign_state = _cp_swap_delta(swap_row)
     elif record_type == "liquidity":
         amount0 = None if known_incomplete else _decimal_text(row.get("amount0"))
         amount1 = None if known_incomplete else _decimal_text(row.get("amount1"))
@@ -968,6 +983,18 @@ def normalise_cp_partition(
                 log_index_override=override.log_index if override is not None else None,
                 needs_complete_override=(
                     override.needs_complete if override is not None else None
+                ),
+                amount0_in_override=(
+                    override.amount0_in if override is not None else None
+                ),
+                amount1_in_override=(
+                    override.amount1_in if override is not None else None
+                ),
+                amount0_out_override=(
+                    override.amount0_out if override is not None else None
+                ),
+                amount1_out_override=(
+                    override.amount1_out if override is not None else None
                 ),
             )
             counters[f"{record_type}_rows"] += 1

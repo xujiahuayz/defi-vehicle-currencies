@@ -427,7 +427,7 @@ def test_v2_events_use_hashed_same_day_snapshot_decimals(tmp_path: Path) -> None
             "data": "0x"
             + abi_encode(
                 ["uint256", "uint256", "uint256", "uint256"],
-                [10**18, 0, 0, 2 * 10**6],
+                [10**18, 0, 0, 3 * 10**6],
             ).hex(),
             "removed": False,
         },
@@ -448,7 +448,11 @@ def test_v2_events_use_hashed_same_day_snapshot_decimals(tmp_path: Path) -> None
     corrections, supplements, audit = match_event_orders(graph, exact, "uniswap_v2")
     assert supplements == []
     assert audit["matched_events"] == 2
+    assert audit["payload_mismatches"] == 1
     assert audit["incomplete_liquidity_status_repairs"] == 1
+    swap_correction = next(row for row in corrections if row["event_id"] == "event-one")
+    assert swap_correction["amount0_in_override"] == "1"
+    assert swap_correction["amount1_out_override"] == "3"
     burn_correction = next(row for row in corrections if row["event_id"] == "event-burn")
     assert burn_correction["needs_complete_override"] is False
 
@@ -487,8 +491,11 @@ def test_v2_events_use_hashed_same_day_snapshot_decimals(tmp_path: Path) -> None
         end_block=10,
     )
     frame, quality = normalise_cp_partition(raw_root, "uniswap_v2", "20250101")
+    corrected_swap = frame.loc[frame["event_id"] == "event-one"].iloc[0]
     completed = frame.loc[frame["event_id"] == "event-burn"].iloc[0]
     assert quality.passed
+    assert corrected_swap["amount0_delta"] == "1"
+    assert corrected_swap["amount1_delta"] == "-3"
     assert completed["usable"]
     assert completed["unsupported_reason"] is None
     state_root = tmp_path / "state"

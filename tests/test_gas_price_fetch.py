@@ -15,6 +15,10 @@ import scripts.process.fetch_daily_gas_price_graph as gas_fetch
 
 
 class DailyGasPriceFetchTests(unittest.TestCase):
+    def test_resumability_cache_stays_outside_the_data_tree(self) -> None:
+        self.assertTrue(gas_fetch.CACHE.is_relative_to(gas_fetch.SHARED_RUNTIME_DIR))
+        self.assertFalse(gas_fetch.CACHE.is_relative_to(gas_fetch.DATA_DIR))
+
     def test_gas_calendar_excludes_typed_empty_route_days(self) -> None:
         quality = pd.DataFrame(
             {

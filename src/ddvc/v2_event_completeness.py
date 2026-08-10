@@ -24,13 +24,18 @@ from ddvc.ethereum_logs import (
     RAW_LOG_STORAGE_FORMAT,
     RpcEnvelope,
     block_ranges,
+    canonical_json_sha256 as _canonical_json_sha256,
     coerce_rpc_envelope,
     fetch_exact_logs,
     fetch_exact_logs_with_evidence,
+    is_sha256 as _is_sha256,
+    load_or_resolve_frozen_block,
     exact_log_block_ranges,
     rpc_post_with_evidence,
     rpc_integer,
     validate_canonical_log_records,
+    validate_anchored_log_evidence,
+    validate_frozen_block,
     write_exact_log_chunk,
 )
 from ddvc.fetch.raw import write_json
@@ -187,7 +192,7 @@ def v2_exact_log_chunk_complete(
             topics=[V2_EVENT_TOPICS[name] for name in V2_CORE_EVENTS],
             address=None,
         )
-        _validate_anchored_log_evidence(marker, table.to_pylist(), frozen_upper)
+        validate_anchored_log_evidence(marker, table.to_pylist(), frozen_upper)
     except (IndexError, KeyError, OSError, TypeError, ValueError, json.JSONDecodeError):
         return False
     return bool(
@@ -300,98 +305,6 @@ def _file_sha256(path: Path) -> str:
     return digest.hexdigest()
 
 
-def _canonical_json_sha256(value: object) -> str:
-    return hashlib.sha256(
-        json.dumps(value, sort_keys=True, separators=(",", ":")).encode()
-    ).hexdigest()
-
-
-def _is_sha256(value: object) -> bool:
-    text = str(value or "")
-    return len(text) == 64 and all(character in "0123456789abcdef" for character in text.lower())
-
-
-def _frozen_upper_rpc_request(
-    frozen_upper: dict[str, object],
-    *,
-    rpc_id: int = 2,
-) -> dict[str, object]:
-    return {
-        "jsonrpc": "2.0",
-        "id": rpc_id,
-        "method": "eth_getBlockByNumber",
-        "params": [hex(int(frozen_upper["block_number"])), False],
-    }
-
-
-def _validate_anchored_log_evidence(
-    marker: dict[str, object],
-    records: list[dict[str, object]],
-    frozen_upper: dict[str, object],
-) -> None:
-    validate_frozen_upper_block(frozen_upper, int(frozen_upper["block_number"]))
-    endpoint = marker.get("rpc_endpoint")
-    attempts = marker.get("rpc_attempts")
-    if not isinstance(endpoint, dict) or not _is_sha256(endpoint.get("endpoint_sha256")):
-        raise ValueError("exact-log evidence lacks a sanitized endpoint identity")
-    if not isinstance(attempts, list) or not attempts:
-        raise ValueError("exact-log evidence lacks RPC attempt history")
-    frozen_request = _frozen_upper_rpc_request(frozen_upper)
-    if marker.get("frozen_upper_request") != frozen_request:
-        raise ValueError("exact-log evidence names a different frozen-upper request")
-    batch_request = marker.get("rpc_request")
-    topics = [str(topic).lower() for topic in marker.get("event_topics") or []]
-    log_filter: dict[str, object] = {
-        "fromBlock": hex(int(marker["start_block"])),
-        "toBlock": hex(int(marker["end_block"])),
-        "topics": [topics if len(topics) > 1 else topics[0]],
-    }
-    address = marker.get("address_filter")
-    if address is not None:
-        log_filter["address"] = str(address).lower()
-    expected_log_request = {
-        "jsonrpc": "2.0",
-        "id": 1,
-        "method": "eth_getLogs",
-        "params": [log_filter],
-    }
-    if (
-        not isinstance(batch_request, list)
-        or len(batch_request) != 2
-        or batch_request[0] != expected_log_request
-        or batch_request[1] != frozen_request
-    ):
-        raise ValueError("exact-log evidence lacks its exact two-item request")
-    frozen_response = marker.get("frozen_upper_response")
-    if not isinstance(frozen_response, dict) or frozen_response.get("id") != 2:
-        raise ValueError("exact-log evidence lacks its frozen-upper response")
-    header = frozen_response.get("result")
-    if not isinstance(header, dict):
-        raise ValueError("exact-log evidence lacks a frozen-upper header")
-    expected_header = {
-        "number": int(frozen_upper["block_number"]),
-        "hash": str(frozen_upper["block_hash"]).lower(),
-        "parentHash": str(frozen_upper["parent_hash"]).lower(),
-        "timestamp": int(frozen_upper["timestamp"]),
-    }
-    observed_header = {
-        "number": rpc_integer(header.get("number")),
-        "hash": str(header.get("hash") or "").lower(),
-        "parentHash": str(header.get("parentHash") or "").lower(),
-        "timestamp": rpc_integer(header.get("timestamp")),
-    }
-    if observed_header != expected_header:
-        raise ValueError("exact-log endpoint disagrees with the frozen upper header")
-    if marker.get("frozen_upper_response_sha256") != _canonical_json_sha256(frozen_response):
-        raise ValueError("exact-log frozen-upper response digest disagrees")
-    canonical_response_evidence = {
-        "logs": records,
-        "frozen_upper_response": frozen_response,
-    }
-    if marker.get("response_sha256") != _canonical_json_sha256(canonical_response_evidence):
-        raise ValueError("exact-log canonical response digest disagrees")
-
-
 def _rpc_envelope(payload: object, rpc_request=None) -> RpcEnvelope:
     if rpc_request is None:
         return rpc_post_with_evidence(payload)
@@ -483,54 +396,11 @@ def validate_factory_deployment_proof(
 
 
 def validate_frozen_upper_block(record: dict[str, object], block: int) -> None:
-    if (
-        record.get("status") != "complete"
-        or int(record.get("schema_version", -1)) != V2_FACTORY_EVIDENCE_SCHEMA_VERSION
-        or int(record.get("block_number", -1)) != block
-    ):
-        raise ValueError("frozen V2 upper-block evidence is stale")
-    for field, length in (("block_hash", 66), ("parent_hash", 66)):
-        value = str(record.get(field) or "")
-        if not value.startswith("0x") or len(value) != length:
-            raise ValueError(f"frozen V2 upper-block evidence lacks {field}")
-    if int(record.get("timestamp", -1)) < 1:
-        raise ValueError("frozen V2 upper-block evidence lacks a timestamp")
-    endpoint = record.get("rpc_endpoint")
-    attempts = record.get("rpc_attempts")
-    if not isinstance(endpoint, dict) or not _is_sha256(endpoint.get("endpoint_sha256")):
-        raise ValueError("frozen V2 upper-block evidence lacks a sanitized endpoint identity")
-    if not isinstance(attempts, list) or not attempts:
-        raise ValueError("frozen V2 upper-block evidence lacks RPC attempt history")
-    expected_request = _frozen_upper_rpc_request(record, rpc_id=1)
-    if record.get("rpc_request") != expected_request:
-        raise ValueError("frozen V2 upper-block evidence lacks its exact RPC request")
-    response = record.get("rpc_response")
-    if not isinstance(response, dict) or response.get("id") != 1:
-        raise ValueError("frozen V2 upper-block evidence lacks its exact RPC response")
-    if record.get("response_sha256") != _canonical_json_sha256(response):
-        raise ValueError("frozen V2 upper-block response digest disagrees")
-    header = response.get("result")
-    if not isinstance(header, dict):
-        raise ValueError("frozen V2 upper-block RPC response lacks a header")
-    header_identity = {
-        "block_number": rpc_integer(header.get("number")),
-        "block_hash": str(header.get("hash") or "").lower(),
-        "parent_hash": str(header.get("parentHash") or "").lower(),
-        "timestamp": rpc_integer(header.get("timestamp")),
-    }
-    copied_identity = {
-        "block_number": int(record["block_number"]),
-        "block_hash": str(record["block_hash"]),
-        "parent_hash": str(record["parent_hash"]),
-        "timestamp": int(record["timestamp"]),
-    }
-    if header_identity != copied_identity:
-        raise ValueError("frozen V2 upper-block copied fields disagree with the RPC response")
-    identity_digest = record.get("header_identity_sha256")
-    if not _is_sha256(identity_digest):
-        raise ValueError("frozen V2 upper-block evidence lacks a header identity digest")
-    if identity_digest is not None and identity_digest != _canonical_json_sha256(header_identity):
-        raise ValueError("frozen V2 upper-block hash identity disagrees with its response evidence")
+    validate_frozen_block(
+        record,
+        block,
+        schema_version=V2_FACTORY_EVIDENCE_SCHEMA_VERSION,
+    )
 
 
 def load_or_resolve_frozen_upper_block(
@@ -542,43 +412,13 @@ def load_or_resolve_frozen_upper_block(
 ) -> dict[str, object]:
     """Freeze the exact upper block header once; invalid evidence is never overwritten."""
 
-    path = frozen_upper_block_path(block, root=root)
-    if path.is_file():
-        record = json.loads(path.read_text(encoding="utf-8"))
-        validate_frozen_upper_block(record, block)
-        return record
-    if not fetch:
-        raise RuntimeError(f"V2 factory registry lacks frozen upper-block evidence for {block}")
-    payload = _frozen_upper_rpc_request({"block_number": block}, rpc_id=1)
-    envelope = _rpc_envelope(payload, rpc_request)
-    header = envelope.response.get("result") if isinstance(envelope.response, dict) else None
-    if not isinstance(header, dict):
-        raise RuntimeError(f"eth_getBlockByNumber lacks an exact result for frozen block {block}")
-    record = {
-        "status": "complete",
-        "schema_version": V2_FACTORY_EVIDENCE_SCHEMA_VERSION,
-        "block_number": rpc_integer(header.get("number")),
-        "block_hash": str(header.get("hash") or "").lower(),
-        "parent_hash": str(header.get("parentHash") or "").lower(),
-        "timestamp": rpc_integer(header.get("timestamp")),
-        "rpc_request": payload,
-        "rpc_response": envelope.response,
-        "rpc_endpoint": envelope.endpoint,
-        "rpc_attempts": list(envelope.attempts),
-        "response_sha256": _canonical_json_sha256(envelope.response),
-    }
-    record["header_identity_sha256"] = _canonical_json_sha256(
-        {
-            "block_number": record["block_number"],
-            "block_hash": record["block_hash"],
-            "parent_hash": record["parent_hash"],
-            "timestamp": record["timestamp"],
-        }
+    return load_or_resolve_frozen_block(
+        block,
+        path=frozen_upper_block_path(block, root=root),
+        schema_version=V2_FACTORY_EVIDENCE_SCHEMA_VERSION,
+        fetch=fetch,
+        rpc_request=rpc_request,
     )
-    validate_frozen_upper_block(record, block)
-    path.parent.mkdir(parents=True, exist_ok=True)
-    write_json(path, record)
-    return record
 
 
 def factory_root_ranges(
@@ -662,7 +502,7 @@ def factory_leaf_complete(
         )
         for record in records:
             decode_pair_created_log(venue, record)
-        _validate_anchored_log_evidence(marker, records, frozen_upper)
+        validate_anchored_log_evidence(marker, records, frozen_upper)
     except (IndexError, KeyError, OSError, TypeError, ValueError, json.JSONDecodeError):
         return False
     return bool(

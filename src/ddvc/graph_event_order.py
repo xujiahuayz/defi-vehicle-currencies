@@ -58,14 +58,8 @@ class GraphEvent:
     needs_complete: bool
 
     @property
-    def match_key(self) -> tuple[str, str, str, Fingerprint]:
-        return self.tx_hash, self.pool, STREAM_EVENT_TYPE[self.stream], self.match_fingerprint
-
-    @property
-    def match_fingerprint(self) -> Fingerprint:
-        if self.venue == "uniswap_v3" and self.fingerprint[0] == "swap":
-            return self.fingerprint[0], self.fingerprint[3], self.fingerprint[4]
-        return self.fingerprint
+    def structural_key(self) -> tuple[str, str, str]:
+        return self.tx_hash, self.pool, STREAM_EVENT_TYPE[self.stream]
 
     @property
     def duplicate_key(self) -> tuple[object, ...]:
@@ -103,14 +97,8 @@ class ChainEvent:
     payload: dict[str, int]
 
     @property
-    def match_key(self) -> tuple[str, str, str, Fingerprint]:
-        return self.tx_hash, self.pool, self.event_type, self.match_fingerprint
-
-    @property
-    def match_fingerprint(self) -> Fingerprint:
-        if self.venue == "uniswap_v3" and self.event_type == "swap":
-            return self.event_type, self.fingerprint[3], self.fingerprint[4]
-        return self.fingerprint
+    def structural_key(self) -> tuple[str, str, str]:
+        return self.tx_hash, self.pool, self.event_type
 
     @property
     def stream(self) -> str:
@@ -122,6 +110,10 @@ class EventOverride:
     log_index: int | None = None
     amount0: str | None = None
     amount1: str | None = None
+    amount0_in: str | None = None
+    amount1_in: str | None = None
+    amount0_out: str | None = None
+    amount1_out: str | None = None
     needs_complete: bool | None = None
 
 
@@ -627,12 +619,12 @@ def match_event_orders(
         for record in exact_records
         if str(record.get("address") or "").lower() in pools
     ]
-    graph_groups: dict[tuple[str, str, str, Fingerprint], list[GraphEvent]] = defaultdict(list)
-    exact_groups: dict[tuple[str, str, str, Fingerprint], list[ChainEvent]] = defaultdict(list)
+    graph_groups: dict[tuple[str, str, str], list[GraphEvent]] = defaultdict(list)
+    exact_groups: dict[tuple[str, str, str], list[ChainEvent]] = defaultdict(list)
     for event in graph:
-        graph_groups[event.match_key].append(event)
+        graph_groups[event.structural_key].append(event)
     for event in exact:
-        exact_groups[event.match_key].append(event)
+        exact_groups[event.structural_key].append(event)
     corrections: list[dict[str, object]] = []
     supplements: list[ChainEvent] = []
     provider_duplicate_rows = 0
@@ -690,9 +682,7 @@ def match_event_orders(
                 )
             matched_events += 1
             payload_mismatch = provider.fingerprint != chain.fingerprint
-            if payload_mismatch and not (
-                venue == "uniswap_v3" and chain.event_type == "swap"
-            ):
+            if payload_mismatch and chain.event_type != "swap":
                 raise RuntimeError(
                     "exact event-order reconciliation found an unsupported payload mismatch: "
                     f"{venue}/{provider.stream}/{provider.event_id}"
@@ -702,14 +692,30 @@ def match_event_orders(
                 if provider.decimals0 is None or provider.decimals1 is None:
                     raise ValueError("V3 payload correction lacks canonical token decimals")
                 payload_mismatches += 1
-                amount_overrides = {
-                    "amount0_override": raw_to_human(
-                        chain.payload["amount0"], provider.decimals0
-                    ),
-                    "amount1_override": raw_to_human(
-                        chain.payload["amount1"], provider.decimals1
-                    ),
-                }
+                if venue == "uniswap_v3":
+                    amount_overrides = {
+                        "amount0_override": raw_to_human(
+                            chain.payload["amount0"], provider.decimals0
+                        ),
+                        "amount1_override": raw_to_human(
+                            chain.payload["amount1"], provider.decimals1
+                        ),
+                    }
+                else:
+                    amount_overrides = {
+                        "amount0_in_override": raw_to_human(
+                            chain.payload["amount0_in"], provider.decimals0
+                        ),
+                        "amount1_in_override": raw_to_human(
+                            chain.payload["amount1_in"], provider.decimals1
+                        ),
+                        "amount0_out_override": raw_to_human(
+                            chain.payload["amount0_out"], provider.decimals0
+                        ),
+                        "amount1_out_override": raw_to_human(
+                            chain.payload["amount1_out"], provider.decimals1
+                        ),
+                    }
             completion_repair = bool(
                 venue in {"uniswap_v2", "sushiswap_v2"}
                 and chain.event_type in {"mint", "burn"}
@@ -829,14 +835,26 @@ class EventOrderCorrections:
             chain_log_index = int(row["chain_log_index"])
             amount0 = row.get("amount0_override")
             amount1 = row.get("amount1_override")
+            amount0_in = row.get("amount0_in_override")
+            amount1_in = row.get("amount1_in_override")
+            amount0_out = row.get("amount0_out_override")
+            amount1_out = row.get("amount1_out_override")
             needs_complete = row.get("needs_complete_override")
             if (amount0 is None) != (amount1 is None):
                 raise ValueError(f"partial payload correction: {key}")
+            v2_amounts = (amount0_in, amount1_in, amount0_out, amount1_out)
+            if any(value is not None for value in v2_amounts) and any(
+                value is None for value in v2_amounts
+            ):
+                raise ValueError(f"partial V2 payload correction: {key}")
+            if amount0 is not None and amount0_in is not None:
+                raise ValueError(f"mixed V2/V3 payload correction: {key}")
             if needs_complete not in (None, False):
                 raise ValueError(f"invalid liquidity-completion correction: {key}")
             if chain_log_index < 0 or (
                 chain_log_index == key[-1]
                 and amount0 is None
+                and amount0_in is None
                 and needs_complete is None
             ):
                 raise ValueError(f"invalid event-order correction: {key}")
@@ -844,6 +862,10 @@ class EventOrderCorrections:
                 log_index=chain_log_index,
                 amount0=str(amount0) if amount0 is not None else None,
                 amount1=str(amount1) if amount1 is not None else None,
+                amount0_in=str(amount0_in) if amount0_in is not None else None,
+                amount1_in=str(amount1_in) if amount1_in is not None else None,
+                amount0_out=str(amount0_out) if amount0_out is not None else None,
+                amount1_out=str(amount1_out) if amount1_out is not None else None,
                 needs_complete=False if needs_complete is False else None,
             )
 

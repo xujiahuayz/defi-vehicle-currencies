@@ -59,6 +59,206 @@ def coerce_rpc_envelope(response: object) -> RpcEnvelope:
     return RpcEnvelope(payload, endpoint, (attempt,))
 
 
+def canonical_json_sha256(value: object) -> str:
+    return hashlib.sha256(
+        json.dumps(value, sort_keys=True, separators=(",", ":")).encode()
+    ).hexdigest()
+
+
+def is_sha256(value: object) -> bool:
+    text = str(value or "")
+    return len(text) == 64 and all(character in "0123456789abcdef" for character in text.lower())
+
+
+def frozen_block_rpc_request(block: int, *, rpc_id: int = 1) -> dict[str, object]:
+    return {
+        "jsonrpc": "2.0",
+        "id": rpc_id,
+        "method": "eth_getBlockByNumber",
+        "params": [hex(block), False],
+    }
+
+
+def validate_frozen_block(
+    record: dict[str, object],
+    block: int,
+    *,
+    schema_version: int,
+) -> None:
+    """Revalidate one persisted exact block-header response and copied identity."""
+
+    if (
+        record.get("status") != "complete"
+        or int(record.get("schema_version", -1)) != schema_version
+        or int(record.get("block_number", -1)) != block
+    ):
+        raise ValueError("frozen upper-block evidence is stale")
+    endpoint = record.get("rpc_endpoint")
+    attempts = record.get("rpc_attempts")
+    if not isinstance(endpoint, dict) or not is_sha256(endpoint.get("endpoint_sha256")):
+        raise ValueError("frozen upper-block evidence lacks a sanitized endpoint identity")
+    if not isinstance(attempts, list) or not attempts:
+        raise ValueError("frozen upper-block evidence lacks RPC attempt history")
+    expected_request = frozen_block_rpc_request(block)
+    if record.get("rpc_request") != expected_request:
+        raise ValueError("frozen upper-block evidence lacks its exact RPC request")
+    response = record.get("rpc_response")
+    if not isinstance(response, dict) or response.get("id") != 1:
+        raise ValueError("frozen upper-block evidence lacks its exact RPC response")
+    if record.get("response_sha256") != canonical_json_sha256(response):
+        raise ValueError("frozen upper-block response digest disagrees")
+    header = response.get("result")
+    if not isinstance(header, dict):
+        raise ValueError("frozen upper-block RPC response lacks a header")
+    observed = {
+        "block_number": rpc_integer(header.get("number")),
+        "block_hash": str(header.get("hash") or "").lower(),
+        "parent_hash": str(header.get("parentHash") or "").lower(),
+        "timestamp": rpc_integer(header.get("timestamp")),
+    }
+    copied = {
+        "block_number": int(record["block_number"]),
+        "block_hash": str(record["block_hash"]),
+        "parent_hash": str(record["parent_hash"]),
+        "timestamp": int(record["timestamp"]),
+    }
+    if observed != copied:
+        raise ValueError("frozen upper-block copied fields disagree with the RPC response")
+    if not all(
+        str(copied[field]).startswith("0x") and len(str(copied[field])) == 66
+        for field in ("block_hash", "parent_hash")
+    ) or copied["timestamp"] < 1:
+        raise ValueError("frozen upper-block evidence lacks an exact header identity")
+    if record.get("header_identity_sha256") != canonical_json_sha256(copied):
+        raise ValueError("frozen upper-block identity digest disagrees")
+
+
+def load_or_resolve_frozen_block(
+    block: int,
+    *,
+    path: Path,
+    schema_version: int,
+    fetch: bool,
+    rpc_request=None,
+) -> dict[str, object]:
+    """Load or atomically persist one exact frozen header with transport evidence."""
+
+    if path.is_file():
+        record = json.loads(path.read_text(encoding="utf-8"))
+        validate_frozen_block(record, block, schema_version=schema_version)
+        return record
+    if not fetch:
+        raise RuntimeError(f"frozen upper-block evidence is absent for {block}")
+    request = frozen_block_rpc_request(block)
+    envelope = (
+        rpc_post_with_evidence(request)
+        if rpc_request is None
+        else coerce_rpc_envelope(rpc_request(request, timeout=30, retries=2))
+    )
+    header = envelope.response.get("result") if isinstance(envelope.response, dict) else None
+    if not isinstance(header, dict):
+        raise RuntimeError(f"eth_getBlockByNumber lacks an exact result for frozen block {block}")
+    record = {
+        "status": "complete",
+        "schema_version": schema_version,
+        "block_number": rpc_integer(header.get("number")),
+        "block_hash": str(header.get("hash") or "").lower(),
+        "parent_hash": str(header.get("parentHash") or "").lower(),
+        "timestamp": rpc_integer(header.get("timestamp")),
+        "rpc_request": request,
+        "rpc_response": envelope.response,
+        "rpc_endpoint": envelope.endpoint,
+        "rpc_attempts": list(envelope.attempts),
+        "response_sha256": canonical_json_sha256(envelope.response),
+    }
+    record["header_identity_sha256"] = canonical_json_sha256(
+        {
+            "block_number": record["block_number"],
+            "block_hash": record["block_hash"],
+            "parent_hash": record["parent_hash"],
+            "timestamp": record["timestamp"],
+        }
+    )
+    validate_frozen_block(record, block, schema_version=schema_version)
+    path.parent.mkdir(parents=True, exist_ok=True)
+    write_json(path, record)
+    return record
+
+
+def validate_anchored_log_evidence(
+    marker: dict[str, object],
+    records: list[dict[str, object]],
+    frozen_upper: dict[str, object],
+) -> None:
+    """Revalidate one canonical log response and its same-endpoint frozen header."""
+
+    validate_frozen_block(
+        frozen_upper,
+        int(frozen_upper["block_number"]),
+        schema_version=int(frozen_upper["schema_version"]),
+    )
+    endpoint = marker.get("rpc_endpoint")
+    attempts = marker.get("rpc_attempts")
+    if not isinstance(endpoint, dict) or not is_sha256(endpoint.get("endpoint_sha256")):
+        raise ValueError("exact-log evidence lacks a sanitized endpoint identity")
+    if not isinstance(attempts, list) or not attempts:
+        raise ValueError("exact-log evidence lacks RPC attempt history")
+    frozen_request = frozen_block_rpc_request(int(frozen_upper["block_number"]), rpc_id=2)
+    if marker.get("frozen_upper_request") != frozen_request:
+        raise ValueError("exact-log evidence names a different frozen-upper request")
+    topics = [str(topic).lower() for topic in marker.get("event_topics") or []]
+    log_filter: dict[str, object] = {
+        "fromBlock": hex(int(marker["start_block"])),
+        "toBlock": hex(int(marker["end_block"])),
+        "topics": [topics if len(topics) > 1 else topics[0]],
+    }
+    address = marker.get("address_filter")
+    if address is not None:
+        log_filter["address"] = str(address).lower()
+    expected_log_request = {
+        "jsonrpc": "2.0",
+        "id": 1,
+        "method": "eth_getLogs",
+        "params": [log_filter],
+    }
+    batch_request = marker.get("rpc_request")
+    if (
+        not isinstance(batch_request, list)
+        or len(batch_request) != 2
+        or batch_request[0] != expected_log_request
+        or batch_request[1] != frozen_request
+    ):
+        raise ValueError("exact-log evidence lacks its exact two-item request")
+    frozen_response = marker.get("frozen_upper_response")
+    if not isinstance(frozen_response, dict) or frozen_response.get("id") != 2:
+        raise ValueError("exact-log evidence lacks its frozen-upper response")
+    header = frozen_response.get("result")
+    if not isinstance(header, dict):
+        raise ValueError("exact-log evidence lacks a frozen-upper header")
+    expected_header = {
+        "number": int(frozen_upper["block_number"]),
+        "hash": str(frozen_upper["block_hash"]).lower(),
+        "parentHash": str(frozen_upper["parent_hash"]).lower(),
+        "timestamp": int(frozen_upper["timestamp"]),
+    }
+    observed_header = {
+        "number": rpc_integer(header.get("number")),
+        "hash": str(header.get("hash") or "").lower(),
+        "parentHash": str(header.get("parentHash") or "").lower(),
+        "timestamp": rpc_integer(header.get("timestamp")),
+    }
+    if observed_header != expected_header:
+        raise ValueError("exact-log endpoint disagrees with the frozen upper header")
+    if marker.get("frozen_upper_response_sha256") != canonical_json_sha256(frozen_response):
+        raise ValueError("exact-log frozen-upper response digest disagrees")
+    canonical_response_evidence = {
+        "logs": records,
+        "frozen_upper_response": frozen_response,
+    }
+    if marker.get("response_sha256") != canonical_json_sha256(canonical_response_evidence):
+        raise ValueError("exact-log canonical response digest disagrees")
+
+
 def rpc_post_with_evidence(
     payload: dict[str, object] | list[dict[str, object]],
     *,
