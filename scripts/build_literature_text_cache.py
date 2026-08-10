@@ -21,11 +21,11 @@ import sys
 from pathlib import Path
 
 from ddvc.literature_sources import Entry, parse_bibtex
-from ddvc.paths import LITERATURE_BIB
+from ddvc.paths import LITERATURE_BIB, LITERATURE_PAPERS_DIR
 from ddvc.runtime import atomic_output
 
 ROOT = Path(__file__).resolve().parents[1]
-PAPERS = ROOT / "literature" / "papers"
+PAPERS = LITERATURE_PAPERS_DIR
 OUT = ROOT / "literature" / "text"
 INDEX = OUT / "_index.jsonl"
 PAGE_MARK = "\n\n===== PAGE {n} =====\n\n"
@@ -166,10 +166,10 @@ def main() -> int:
 
     pdfs = sorted(PAPERS.glob("*.pdf"))
     if not pdfs:
-        print(f"no PDFs under {PAPERS.relative_to(ROOT)}")
+        print(f"no PDFs under {PAPERS}")
         return 1
     OUT.mkdir(parents=True, exist_ok=True)
-    print(f"extracting {len(pdfs)} PDFs to {OUT.relative_to(ROOT)}", flush=True)
+    print(f"extracting {len(pdfs)} PDFs from {PAPERS} to {OUT.relative_to(ROOT)}", flush=True)
 
     entries = parse_bibtex(LITERATURE_BIB)
     previous_index = load_index(INDEX)

@@ -5,7 +5,7 @@ import unittest
 from pathlib import Path
 from unittest.mock import MagicMock, patch
 
-from ddvc.paths import REPO_ROOT, _shared_git_runtime_dir, repo_path
+from ddvc.paths import REPO_ROOT, _shared_git_runtime_dir, literature_papers_dir, repo_path
 from ddvc.runtime import (
     atomic_output,
     bounded_workers,
@@ -34,6 +34,20 @@ class RuntimeGuardTests(unittest.TestCase):
             expected = primary.resolve() / ".git" / "ddvc-runtime"
             self.assertEqual(_shared_git_runtime_dir(primary), expected)
             self.assertEqual(_shared_git_runtime_dir(worktree), expected)
+
+    def test_ignored_literature_corpus_is_shared_across_linked_worktrees(self) -> None:
+        with tempfile.TemporaryDirectory() as temporary_directory:
+            root = Path(temporary_directory)
+            primary = root / "primary"
+            worktree = root / "worktree"
+            git_dir = primary / ".git" / "worktrees" / "research"
+            git_dir.mkdir(parents=True)
+            worktree.mkdir()
+            (worktree / ".git").write_text(f"gitdir: {git_dir}\n")
+            (git_dir / "commondir").write_text("../..\n")
+            expected = primary.resolve() / "literature" / "papers"
+            self.assertEqual(literature_papers_dir(primary), expected)
+            self.assertEqual(literature_papers_dir(worktree), expected)
 
     def test_worker_bound_is_positive_and_capped(self) -> None:
         self.assertEqual(bounded_workers(0), 1)

@@ -74,6 +74,11 @@ def primary_checkout_root(repo_root: Path) -> Path:
     return common.parent if common and common.name == ".git" else repo_root
 
 
+def literature_papers_dir(repo_root: Path) -> Path:
+    """Return the one ignored PDF corpus shared by every linked worktree."""
+    return primary_checkout_root(repo_root) / "literature" / "papers"
+
+
 def _shared_git_runtime_dir(repo_root: Path) -> Path:
     """One untracked runtime directory shared by every linked worktree."""
     common = git_common_dir(repo_root) or DATA_DIR / ".locks"
@@ -95,5 +100,5 @@ LITERATURE_PDF_SOURCES = LITERATURE_DIR / "pdf-sources.json"
 LITERATURE_SOURCE_ADMISSION = LITERATURE_DIR / "source-admission.json"
 LITERATURE_LOCAL_SOURCES = LITERATURE_DIR / "sources.local.json"
 LITERATURE_AUTH_HEADERS = LITERATURE_DIR / "auth" / "headers.local.json"
-LITERATURE_PAPERS_DIR = LITERATURE_DIR / "papers"
+LITERATURE_PAPERS_DIR = literature_papers_dir(REPO_ROOT)
 LITERATURE_DOWNLOAD_MANIFEST = LITERATURE_PAPERS_DIR / "download-manifest.json"
