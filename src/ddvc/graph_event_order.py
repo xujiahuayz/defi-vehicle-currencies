@@ -264,11 +264,12 @@ def graph_fingerprint(
                 _raw_integer(row.get("amount0Out") or "0", decimals0),
                 _raw_integer(row.get("amount1Out") or "0", decimals1),
             )
-        return (
-            event_type,
-            _raw_integer(row.get("amount0"), decimals0),
-            _raw_integer(row.get("amount1"), decimals1),
-        )
+        amount0, amount1 = row.get("amount0"), row.get("amount1")
+        if amount0 is None or amount1 is None:
+            if bool(row.get("needsComplete")):
+                return event_type, None, None
+            raise ValueError("V2 Graph liquidity event lacks exact amounts")
+        return event_type, _raw_integer(amount0, decimals0), _raw_integer(amount1, decimals1)
     if venue != "uniswap_v3":
         raise ValueError(f"unsupported Graph event-order venue: {venue}")
     if event_type == "swap":
@@ -695,7 +696,12 @@ def match_event_orders(
                 )
             matched_events += 1
             payload_mismatch = provider.fingerprint != chain.fingerprint
-            if payload_mismatch and chain.event_type != "swap":
+            incomplete_v2_liquidity = bool(
+                venue in {"uniswap_v2", "sushiswap_v2"}
+                and chain.event_type in {"mint", "burn"}
+                and provider.needs_complete
+            )
+            if payload_mismatch and chain.event_type != "swap" and not incomplete_v2_liquidity:
                 raise RuntimeError(
                     "exact event-order reconciliation found an unsupported payload mismatch: "
                     f"{venue}/{provider.stream}/{provider.event_id}"
@@ -714,7 +720,7 @@ def match_event_orders(
                             chain.payload["amount1"], provider.decimals1
                         ),
                     }
-                else:
+                elif chain.event_type == "swap":
                     amount_overrides = {
                         "amount0_in_override": raw_to_human(
                             chain.payload["amount0_in"], provider.decimals0
@@ -727,6 +733,15 @@ def match_event_orders(
                         ),
                         "amount1_out_override": raw_to_human(
                             chain.payload["amount1_out"], provider.decimals1
+                        ),
+                    }
+                else:
+                    amount_overrides = {
+                        "amount0_override": raw_to_human(
+                            chain.payload["amount0"], provider.decimals0
+                        ),
+                        "amount1_override": raw_to_human(
+                            chain.payload["amount1"], provider.decimals1
                         ),
                     }
             completion_repair = bool(

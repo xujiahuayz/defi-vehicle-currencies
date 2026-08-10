@@ -437,8 +437,8 @@ def test_v2_events_use_hashed_same_day_snapshot_decimals(tmp_path: Path) -> None
         "transaction": {"id": "0xtx2", "blockNumber": "10", "timestamp": "100"},
         "timestamp": "100",
         "logIndex": "8",
-        "amount0": "3",
-        "amount1": "4",
+        "amount0": None,
+        "amount1": None,
         "needsComplete": True,
         "pair": pair,
     }
@@ -498,13 +498,15 @@ def test_v2_events_use_hashed_same_day_snapshot_decimals(tmp_path: Path) -> None
     corrections, supplements, audit = match_event_orders(graph, exact, "uniswap_v2")
     assert supplements == []
     assert audit["matched_events"] == 2
-    assert audit["payload_mismatches"] == 1
+    assert audit["payload_mismatches"] == 2
     assert audit["incomplete_liquidity_status_repairs"] == 1
     swap_correction = next(row for row in corrections if row["event_id"] == "event-one")
     assert swap_correction["amount0_in_override"] == "1"
     assert swap_correction["amount1_out_override"] == "3"
     burn_correction = next(row for row in corrections if row["event_id"] == "event-burn")
     assert burn_correction["needs_complete_override"] is False
+    assert burn_correction["amount0_override"] == "3"
+    assert burn_correction["amount1_override"] == "4"
 
     correction_root = correction_root_for_graph(raw_root)
     exact_path = (
@@ -548,6 +550,8 @@ def test_v2_events_use_hashed_same_day_snapshot_decimals(tmp_path: Path) -> None
     assert corrected_swap["amount1_delta"] == "-3"
     assert completed["usable"]
     assert completed["unsupported_reason"] is None
+    assert completed["amount0_delta"] == "-3"
+    assert completed["amount1_delta"] == "-4"
     state_root = tmp_path / "state"
     write_cp_partition(raw_root, "uniswap_v2", "20250101", root=state_root)
     released = read_cp_partition(

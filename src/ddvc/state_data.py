@@ -771,6 +771,8 @@ def _normalise_cp_row(
     liquidity_sign: int,
     log_index_override: int | None = None,
     needs_complete_override: bool | None = None,
+    amount0_override: str | None = None,
+    amount1_override: str | None = None,
     amount0_in_override: str | None = None,
     amount1_in_override: str | None = None,
     amount0_out_override: str | None = None,
@@ -836,8 +838,14 @@ def _normalise_cp_row(
             swap_row = {**row, **overrides}
         amount0_delta, amount1_delta, sign_state = _cp_swap_delta(swap_row)
     elif record_type == "liquidity":
-        amount0 = None if known_incomplete else _decimal_text(row.get("amount0"))
-        amount1 = None if known_incomplete else _decimal_text(row.get("amount1"))
+        if (amount0_override is None) != (amount1_override is None):
+            raise ValueError("partial exact-chain V2 liquidity override")
+        amount0 = None if known_incomplete else _decimal_text(
+            amount0_override if amount0_override is not None else row.get("amount0")
+        )
+        amount1 = None if known_incomplete else _decimal_text(
+            amount1_override if amount1_override is not None else row.get("amount1")
+        )
         if known_incomplete:
             pass
         elif amount0 is None or amount1 is None:
@@ -983,6 +991,12 @@ def normalise_cp_partition(
                 log_index_override=override.log_index if override is not None else None,
                 needs_complete_override=(
                     override.needs_complete if override is not None else None
+                ),
+                amount0_override=(
+                    override.amount0 if override is not None else None
+                ),
+                amount1_override=(
+                    override.amount1 if override is not None else None
                 ),
                 amount0_in_override=(
                     override.amount0_in if override is not None else None
