@@ -12,6 +12,7 @@ from ddvc.fetch.raw import (
     index_existing_stream,
     merge_stream_metadata,
     repair_source_day_metadata,
+    raw_stream_identity,
     require_mergeable_partial_metadata,
     write_json,
     write_jsonl_gz,
@@ -79,6 +80,7 @@ class RawMetaMergeTests(unittest.TestCase):
                 got = repair_source_day_metadata(source, day, streams={"mints"})
             self.assertEqual(set(got["streams"]), {"hourly_reserves", "mints"})
             self.assertEqual(got["streams"]["mints"]["status"], "indexed_existing")
+            self.assertEqual(got["streams"]["mints"]["path"], raw_stream_identity(raw))
             self.assertEqual(got["streams"]["mints"]["rows"], 2)
             self.assertEqual(got["streams"]["mints"]["min_block"], 10)
             self.assertEqual(got["streams"]["mints"]["max_block"], 20)
@@ -142,6 +144,11 @@ class RawMetaMergeTests(unittest.TestCase):
             first = target.read_bytes()
             write_jsonl_gz(target, rows)
             self.assertEqual(target.read_bytes(), first)
+
+    def test_raw_stream_identity_is_portable_across_checkout_prefixes(self) -> None:
+        first = Path("/first/checkout/data/raw/thegraph/uniswap_v2/day.jsonl.gz")
+        second = Path("/other/checkout/data/raw/thegraph/uniswap_v2/day.jsonl.gz")
+        self.assertEqual(raw_stream_identity(first), raw_stream_identity(second))
 
     def test_transaction_accessors_support_nested_and_scalar_graph_schemas(self) -> None:
         nested = {

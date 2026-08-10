@@ -31,6 +31,7 @@ from ddvc.fetch.raw import (
     meta_path,
     midnight_ts,
     raw_path,
+    raw_stream_identity,
     repair_source_day_metadata,
     stream_names_for_source,
     write_json,
@@ -353,7 +354,9 @@ def indexed_metadata_streams(
         ):
             continue
         expected = (expected_paths or {}).get(stream)
-        if expected is not None and Path(str(item["path"])) != expected:
+        recorded = Path(str(item["path"]))
+        recorded_identity = f"{recorded.parent.name}/{recorded.name}"
+        if expected is not None and recorded_identity != raw_stream_identity(expected):
             continue
         indexed.add(stream)
     return indexed

@@ -76,6 +76,42 @@ class FetchPlanningTests(unittest.TestCase):
                 {"mints"},
             )
 
+    def test_metadata_coverage_ignores_host_prefix_but_not_source_or_filename(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            metadata = Path(directory) / "meta.json"
+            metadata.write_text(
+                '{"streams":{"mints":{"rows":2,"path":'
+                '"/source-host/project/data/raw/thegraph/uniswap_v2/'
+                'uniswap_v2_mints_20250101.jsonl.gz"}}}'
+            )
+            expected = Path(
+                "/worker-host/checkout/data/raw/thegraph/uniswap_v2/"
+                "uniswap_v2_mints_20250101.jsonl.gz"
+            )
+            self.assertEqual(
+                indexed_metadata_streams(
+                    metadata,
+                    expected_paths={"mints": expected},
+                ),
+                {"mints"},
+            )
+            wrong_source = expected.parent.parent / "sushiswap_v2" / expected.name
+            self.assertEqual(
+                indexed_metadata_streams(
+                    metadata,
+                    expected_paths={"mints": wrong_source},
+                ),
+                set(),
+            )
+            wrong_filename = expected.with_name("uniswap_v2_mints_20250102.jsonl.gz")
+            self.assertEqual(
+                indexed_metadata_streams(
+                    metadata,
+                    expected_paths={"mints": wrong_filename},
+                ),
+                set(),
+            )
+
     def test_strict_coverage_fails_any_missing_or_unindexed_perimeter(self) -> None:
         complete = {
             "venue": {

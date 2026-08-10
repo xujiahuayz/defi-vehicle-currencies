@@ -48,6 +48,12 @@ def meta_path(source: str, day: dt.date) -> Path:
     )
 
 
+def raw_stream_identity(path: Path) -> str:
+    """Portable source/filename identity for one installed raw stream."""
+
+    return f"{path.parent.name}/{path.name}"
+
+
 def write_jsonl_gz(path: Path, rows: list[dict[str, Any]]) -> None:
     with atomic_output(path) as temporary:
         with temporary.open("wb") as raw_handle:
@@ -173,7 +179,7 @@ def index_existing_stream(path: Path, entity: EntitySpec) -> dict[str, Any]:
             f"installed raw stream is not valid gzip JSONL at {path}:{line_number}: {exc}"
         ) from exc
     return {
-        "path": str(path),
+        "path": raw_stream_identity(path),
         "status": "indexed_existing",
         "entity": entity.entity,
         "rows": rows,
@@ -277,7 +283,7 @@ def fetch_source_day(
         blocks = _block_values(rows)
         all_blocks.extend(blocks)
         stream_meta[entity.stream] = {
-            "path": str(out),
+            "path": raw_stream_identity(out),
             "status": "fetched",
             "entity": entity.entity,
             "rows": len(rows),
