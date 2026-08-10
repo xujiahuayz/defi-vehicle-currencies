@@ -343,7 +343,7 @@ class StateDataTests(unittest.TestCase):
         self.assertFalse(quality.passed)
         self.assertEqual(quality.conflicting_events, 1)
 
-    def test_constant_product_known_unsupported_rows_bound_coverage_without_failing_integrity(self) -> None:
+    def test_constant_product_nontrade_delta_updates_state_without_supporting_a_quote(self) -> None:
         with tempfile.TemporaryDirectory() as directory:
             raw = Path(directory) / "raw"
             write_rows(raw, "uniswap_v2", "hourly_reserves", "20250101", [cp_snapshot()])
@@ -363,7 +363,10 @@ class StateDataTests(unittest.TestCase):
         self.assertEqual(quality.invalid_swap_sign, 1)
         self.assertEqual(quality.unsupported_state, 2)
         self.assertEqual(quality.missing_order, 0)
-        self.assertEqual(frame["usable"].tolist().count(False), 2)
+        same_sign_row = frame[frame["record_type"].eq("swap")].iloc[0]
+        self.assertTrue(same_sign_row["usable"])
+        self.assertFalse(same_sign_row["quote_supported"])
+        self.assertEqual(frame["usable"].tolist().count(False), 1)
 
     def test_constant_product_cache_invalidates_with_raw_input(self) -> None:
         with tempfile.TemporaryDirectory() as directory:

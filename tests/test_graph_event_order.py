@@ -16,7 +16,14 @@ from ddvc.graph_event_order import (
     supplement_source_row,
     write_correction_generation,
 )
-from ddvc.state_data import normalise_cp_partition, normalise_tick_partition
+from ddvc.state_data import (
+    normalise_cp_partition,
+    normalise_tick_partition,
+    read_cp_partition,
+    read_tick_partition,
+    write_cp_partition,
+    write_tick_partition,
+)
 from ddvc.v2_event_completeness import V2_EVENT_TOPICS
 
 
@@ -169,6 +176,15 @@ def test_v3_receipt_order_generation_repairs_causal_collisions(tmp_path: Path) -
     assert quality.conflicting_events == 0
     assert set(frame["log_index"].astype(int)) == {99, 122}
     assert len(quality.input_fingerprint) == 64
+    state_root = tmp_path / "state"
+    write_tick_partition(raw_root, "uniswap_v3", "20250101", root=state_root)
+    released = read_tick_partition(
+        "uniswap_v3",
+        "20250101",
+        root=state_root,
+        raw_root=raw_root,
+    )
+    assert set(released["log_index"].astype(int)) == {99, 122}
 
 
 def test_reconciliation_surfaces_an_exact_event_omitted_by_provider(tmp_path: Path) -> None:
@@ -420,3 +436,12 @@ def test_v2_events_use_hashed_same_day_snapshot_decimals(tmp_path: Path) -> None
     assert quality.passed
     assert completed["usable"]
     assert completed["unsupported_reason"] is None
+    state_root = tmp_path / "state"
+    write_cp_partition(raw_root, "uniswap_v2", "20250101", root=state_root)
+    released = read_cp_partition(
+        "uniswap_v2",
+        "20250101",
+        root=state_root,
+        raw_root=raw_root,
+    )
+    assert set(released["event_id"]) == {"state", "event-one", "event-burn"}

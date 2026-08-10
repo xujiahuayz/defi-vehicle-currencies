@@ -450,6 +450,20 @@ def _missing_stream_count(raw_root: Path, family: str, venue: str, day: str) -> 
     )
 
 
+def _state_partition_inputs(
+    raw_root: Path,
+    family: str,
+    venue: str,
+    day: str,
+    correction_inputs: list[Path] | None = None,
+) -> list[Path]:
+    if correction_inputs is None:
+        _corrections, correction_inputs = load_event_order_corrections(
+            raw_root, venue, day
+        )
+    return [*_stream_inputs(raw_root, family, venue, day), *correction_inputs]
+
+
 def _reconciled_stream_rows(
     path: Path,
     stream: str,
@@ -627,7 +641,9 @@ def normalise_tick_partition(
     if venue not in TICK_STREAMS:
         raise ValueError(f"unsupported tick venue: {venue}")
     corrections, correction_inputs = load_event_order_corrections(raw_root, venue, day)
-    inputs = [*_stream_inputs(raw_root, "tick", venue, day), *correction_inputs]
+    inputs = _state_partition_inputs(
+        raw_root, "tick", venue, day, correction_inputs
+    )
     rows: list[dict[str, object]] = []
     counters = quality_counters()
     counters["missing_required_streams"] = _missing_stream_count(
@@ -825,7 +841,9 @@ def _normalise_cp_row(
         else:
             invalid_state = Decimal(reserve0) < 0 or Decimal(reserve1) < 0
     zero_amounts = bool(record_type == "swap" and sign_state == "zero")
-    unsupported_state = bool(known_incomplete or (record_type == "swap" and sign_state != "valid"))
+    unsupported_state = bool(
+        known_incomplete or (record_type == "swap" and sign_state != "valid")
+    )
     snapshot_supported = bool(
         record_type == "snapshot"
         and reserve0 is not None
@@ -858,7 +876,7 @@ def _normalise_cp_row(
         reasons.append("incomplete_liquidity_event")
     if record_type == "snapshot" and not invalid_state and not snapshot_supported:
         reasons.append("empty_reserve_state")
-    usable = not any((missing_order, missing_identity, invalid_state, unsupported_state))
+    usable = not any((missing_order, missing_identity, invalid_state, known_incomplete))
     record = {
         "schema_version": SCHEMA_VERSION,
         "venue": venue,
@@ -921,7 +939,9 @@ def normalise_cp_partition(
     if venue not in CP_STREAMS:
         raise ValueError(f"unsupported constant-product venue: {venue}")
     corrections, correction_inputs = load_event_order_corrections(raw_root, venue, day)
-    inputs = [*_stream_inputs(raw_root, "constant_product", venue, day), *correction_inputs]
+    inputs = _state_partition_inputs(
+        raw_root, "constant_product", venue, day, correction_inputs
+    )
     rows: list[dict[str, object]] = []
     counters = quality_counters()
     counters["missing_required_streams"] = _missing_stream_count(
@@ -1601,7 +1621,7 @@ def read_tick_quality(
     return _read_state_quality(
         marker=tick_quality_path(venue, day, root=root),
         panel=tick_partition_path(venue, day, root=root),
-        inputs=_stream_inputs(raw_root, "tick", venue, day),
+        inputs=_state_partition_inputs(raw_root, "tick", venue, day),
     )
 
 
@@ -1620,7 +1640,7 @@ def read_tick_partition(
         TICK_COLUMNS,
         family="tick",
         current_input_fingerprint=partition_input_fingerprint(
-            _stream_inputs(raw_root, "tick", venue, day)
+            _state_partition_inputs(raw_root, "tick", venue, day)
         ),
         include_quarantined=include_quarantined,
         allow_failed_partition=allow_failed_partition,
@@ -1653,7 +1673,7 @@ def read_cp_quality(
     return _read_state_quality(
         marker=cp_quality_path(venue, day, root=root),
         panel=cp_partition_path(venue, day, root=root),
-        inputs=_stream_inputs(raw_root, "constant_product", venue, day),
+        inputs=_state_partition_inputs(raw_root, "constant_product", venue, day),
     )
 
 
@@ -1672,7 +1692,7 @@ def read_cp_partition(
         CP_COLUMNS,
         family="constant-product",
         current_input_fingerprint=partition_input_fingerprint(
-            _stream_inputs(raw_root, "constant_product", venue, day)
+            _state_partition_inputs(raw_root, "constant_product", venue, day)
         ),
         include_quarantined=include_quarantined,
         allow_failed_partition=allow_failed_partition,
