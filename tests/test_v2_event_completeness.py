@@ -1374,6 +1374,28 @@ def test_v2_exact_log_ranges_are_global_not_consumer_edge_aligned() -> None:
     ]
 
 
+def test_exact_log_fetch_rejects_an_anchor_before_the_aligned_chunk_end(
+    tmp_path,
+) -> None:
+    called = False
+
+    def rpc_response(_payload, **_kwargs):
+        nonlocal called
+        called = True
+        raise AssertionError("an under-anchored exact-log request must not reach RPC")
+
+    with pytest.raises(ValueError, match="complete exact-log query perimeter"):
+        fetch_v2_exact_log_chunk(
+            100,
+            149,
+            frozen_upper=frozen_upper(100),
+            root=tmp_path,
+            rpc_request=rpc_response,
+        )
+    assert not called
+    assert not any(tmp_path.iterdir())
+
+
 def test_missing_exact_log_ranges_are_deduplicated_across_consumers(tmp_path) -> None:
     assert missing_v2_exact_log_ranges(
         [(25, 75), (50, 100)],

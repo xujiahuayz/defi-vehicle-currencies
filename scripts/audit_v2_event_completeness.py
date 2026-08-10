@@ -615,7 +615,18 @@ def build(
         for day in audit_days
         if _launched_venues(day)
     }
-    maximum_block = max(int(record["end_block"]) for record in day_bounds.values())
+    event_ranges = {
+        day: v2_exact_log_ranges(
+            int(bounds["start_block"]),
+            int(bounds["end_block"]),
+        )
+        for day, bounds in day_bounds.items()
+    }
+    maximum_block = max(
+        end_block
+        for ranges in event_ranges.values()
+        for _start_block, end_block in ranges
+    )
     frozen_upper = load_or_resolve_frozen_upper_block(
         maximum_block,
         fetch=fetch,
@@ -630,16 +641,9 @@ def build(
         for venue in V2_EVENT_VENUES
     }
 
-    event_ranges: dict[str, list[tuple[int, int]]] = {}
     jobs: list[FetchJob] = []
     if force:
         print("  force rebuild requested; complete raw chunks remain immutable", flush=True)
-    for day, bounds in day_bounds.items():
-        ranges = v2_exact_log_ranges(
-            int(bounds["start_block"]),
-            int(bounds["end_block"]),
-        )
-        event_ranges[day] = ranges
     jobs.extend(
         ("event", "shared", start, end)
         for start, end in missing_v2_exact_log_ranges(

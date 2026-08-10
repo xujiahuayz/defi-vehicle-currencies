@@ -514,6 +514,10 @@ def fetch_exact_logs_with_evidence(
     )
     upper_block = int(frozen_upper["block_number"])
     upper_hash = str(frozen_upper["block_hash"]).lower()
+    if upper_block < end_block:
+        raise ValueError(
+            "frozen upper block must cover the complete exact-log query perimeter"
+        )
     header_payload = {
         "jsonrpc": "2.0",
         "id": 2,
