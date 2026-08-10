@@ -1,14 +1,9 @@
 #!/usr/bin/env python3
 """Receipt-measured gas units by route topology, venue sequence and executor.
 
-The paper currently carries three pooled constants for one-, two- and three-leg routes, but the script that produced them did not survive. That is not reproducible and it cannot support venue-specific all-in route costs. This instrument selects transactions containing exactly one linear reconstructed route component, keeps its ordered venue sequence and intermediary type, fetches one block-bound receipt with reopenable RPC evidence per transaction, and reports total-gas distributions.
+This instrument scans every released nonempty route day, selects transactions containing exactly one linear reconstructed route component, keeps its ordered venue sequence and intermediary type, fetches one block-bound receipt with reopenable RPC evidence per transaction, and reports total-gas distributions.
 
-Receipt gas is transaction-level. Restricting to one reconstructed component
-removes visible route mixtures, but a router transaction may still perform token
-approvals, transfers or bookkeeping outside the AMM logs. Medians and interquartile
-ranges are therefore primary. The receipt's `to` field is retained as the top-level
-transaction callee. It is an executor address, not evidence about who authored the
-route, and it enters support diagnostics before any like-for-like comparison.
+Receipt gas is transaction-level. Restricting to one reconstructed component removes visible route mixtures, but a router transaction may still perform token approvals, transfers or bookkeeping outside the AMM logs. Medians and interquartile ranges are therefore primary. The receipt's `to` field is retained as the top-level transaction callee. It is an executor address, not evidence about who authored the route, and it enters support diagnostics before any like-for-like comparison.
 
 Reads   data/unified/YYYYMMDD.parquet
 Writes  data/processed/route_gas_units.parquet
@@ -24,7 +19,6 @@ from pathlib import Path
 
 import pandas as pd
 
-from ddvc.calendar import nearest_day_per_month
 from ddvc.data_release import require_node_d_release
 from ddvc.ethereum_receipts import (
     RECEIPT_CACHE,
@@ -67,7 +61,6 @@ CODE_SOURCES = [
     "src/ddvc/route_gas.py",
     "src/ddvc/route_roles.py",
     "src/ddvc/runtime.py",
-    "src/ddvc/calendar.py",
     "src/ddvc/asset_types.py",
     "src/ddvc/fetch/sources.py",
     "src/ddvc/quoter.py",
@@ -193,9 +186,7 @@ def _main_unlocked() -> int:
     days = list(
         dict.fromkeys(
             args.days
-            or nearest_day_per_month(
-                released_route_days(UNIFIED_QUALITY_PANEL, nonempty=True)
-            )
+            or released_route_days(UNIFIED_QUALITY_PANEL, nonempty=True)
         )
     )
     generation = cache_key(CANDIDATE_CODE_SOURCES, inputs=[UNIFIED])

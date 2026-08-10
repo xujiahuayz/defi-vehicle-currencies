@@ -181,8 +181,9 @@ class RouteGasUnitTests(unittest.TestCase):
         self.assertEqual(bounded_workers(4), 4)
         self.assertEqual(bounded_workers(100), 8)
 
-    def test_monthly_calendar_affects_output_but_not_per_day_candidate_cache(self) -> None:
-        self.assertIn("src/ddvc/calendar.py", route_gas.CODE_SOURCES)
+    def test_gas_calibration_uses_the_full_released_calendar(self) -> None:
+        self.assertNotIn("src/ddvc/calendar.py", route_gas.CODE_SOURCES)
+        self.assertIn("src/ddvc/release_calendar.py", route_gas.CODE_SOURCES)
         self.assertNotIn("src/ddvc/calendar.py", route_gas.CANDIDATE_CODE_SOURCES)
 
     def test_worker_recycling_uses_explicit_bounded_batches(self) -> None:
