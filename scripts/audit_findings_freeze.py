@@ -38,7 +38,18 @@ from ddvc.liquidity import (
     resolve_materializer,
 )
 from ddvc.literature_admission import load_source_admission, validate_source_admission
-from ddvc.provenance import sidecar_path, verify
+from ddvc.provenance import portable_content_sha256, sidecar_path, verify
+from ddvc.model_registry import (
+    LEGACY_MODEL_STATUSES,
+    MODEL_RUN_ARTIFACT_ROLES,
+    MODEL_RUN_DISPOSITIONS,
+    MODEL_RUN_LANES,
+    MODEL_RUN_LIFECYCLES,
+    REGISTERED_CLAIM_STATUSES,
+    generation_id,
+    model_run_id,
+    validate_registered_plan,
+)
 from ddvc.reconstruct import DEX_FAMILY, UNIFIED_QUALITY_PANEL
 from ddvc.route_cost import MAIN_ROUTE_COST_SPEC, QUOTE_CELL_KEYS
 from ddvc.route_roles import VALUE_SUPPORT_COLUMNS
@@ -160,18 +171,11 @@ LITERATURE_CARD_EVIDENCE_FIELDS = frozenset(
 )
 RENT_V2_PANEL = ROOT / "data" / "processed" / "rent_incidence_v2_pool_day.parquet"
 GRAPH_FIELDS = ("active_node", "parent_loop", "next_edge", "prose_node")
-LOCKED_CLAIM_STATUSES = {
-    "enter_fgh_primary",
-    "enter_fgh_foundation",
-    "enter_fgh_mechanism",
-    "enter_fgh_companion",
-}
-MODEL_LEDGER_STATUSES = {
-    "exploratory",
-    "admissible",
-    "diagnostic",
-    "withheld",
-    "retired",
+DESIGN_SEED_CLAIM_STATUSES = {
+    "candidate_primary",
+    "candidate_foundation",
+    "candidate_mechanism",
+    "candidate_companion",
 }
 CAPITAL_CONTRACT_COLUMNS = (
     "venue",
@@ -2353,11 +2357,20 @@ def registered_empirical_consumers() -> tuple[str, ...]:
         ledger = json.loads(MODEL_LEDGER.read_text(encoding="utf-8"))
     except (json.JSONDecodeError, OSError):
         ledger = {}
-    for family in ledger.get("families", []):
+    for family in ledger.get("legacy_families", []):
         if not isinstance(family, dict) or family.get("status") == "retired":
             continue
         for artifact in family.get("artifacts", []):
             producer = _artifact_producer(str(artifact))
+            if producer:
+                consumers.add(producer)
+    for run in ledger.get("runs", []):
+        if not isinstance(run, dict) or run.get("lifecycle") == "retired":
+            continue
+        for artifact in run.get("artifacts", []):
+            if not isinstance(artifact, dict):
+                continue
+            producer = _artifact_producer(str(artifact.get("path") or ""))
             if producer:
                 consumers.add(producer)
     return tuple(sorted(consumers))
@@ -2445,8 +2458,12 @@ def validate_unified_route_layer(
     )
 
 
-def validate_specification_lock(payload: dict) -> tuple[bool, str]:
-    """Validate the canonical hash and minimum decision contract for node E."""
+def validate_specification_lock(
+    payload: dict,
+    *,
+    require_confirmatory: bool = False,
+) -> tuple[bool, str]:
+    """Validate a design seed or the post-exploration node-E1 lock."""
     declared_hash = str(payload.get("lock_hash") or "")
     hash_payload = {key: value for key, value in payload.items() if key != "lock_hash"}
     actual_hash = hashlib.sha256(
@@ -2454,10 +2471,16 @@ def validate_specification_lock(payload: dict) -> tuple[bool, str]:
     ).hexdigest()
     claims = payload.get("claims") or []
     ids = [str(claim.get("id") or "") for claim in claims if isinstance(claim, dict)]
-    locked_claims = [
+    stage = str(payload.get("stage") or "")
+    stage_claim_statuses = (
+        REGISTERED_CLAIM_STATUSES
+        if stage == "confirmatory"
+        else DESIGN_SEED_CLAIM_STATUSES
+    )
+    stage_claims = [
         claim
         for claim in claims
-        if isinstance(claim, dict) and claim.get("status") in LOCKED_CLAIM_STATUSES
+        if isinstance(claim, dict) and claim.get("status") in stage_claim_statuses
     ]
     required = {
         "id",
@@ -2479,7 +2502,7 @@ def validate_specification_lock(payload: dict) -> tuple[bool, str]:
     }
     incomplete = [
         str(claim.get("id") or "missing")
-        for claim in locked_claims
+        for claim in stage_claims
         if required - set(claim)
     ]
     global_rules = payload.get("global_rules") or {}
@@ -2523,26 +2546,86 @@ def validate_specification_lock(payload: dict) -> tuple[bool, str]:
         ):
             invalid_horizon_claims.append(claim_id)
     invalid_horizon_claims = sorted(set(invalid_horizon_claims))
+    stage_valid = stage in {"design_seed", "confirmatory"}
+    analytical_choices_status = str(payload.get("analytical_choices_status") or "")
+    expected_choices_status = (
+        "registered_after_exploration"
+        if stage == "confirmatory"
+        else "provisional_design_seed"
+    )
+    choices_status_valid = analytical_choices_status == expected_choices_status
+    invalid_stage_statuses = sorted(
+        str(claim.get("id") or "missing")
+        for claim in claims
+        if isinstance(claim, dict)
+        and claim.get("status") in DESIGN_SEED_CLAIM_STATUSES | REGISTERED_CLAIM_STATUSES
+        and claim.get("status") not in stage_claim_statuses
+    )
+    primary_status = (
+        "registered_primary" if stage == "confirmatory" else "candidate_primary"
+    )
+    has_primary = any(
+        isinstance(claim, dict) and claim.get("status") == primary_status
+        for claim in claims
+    )
+    d3_generation = str(payload.get("d3_generation") or "")
+    d3_certificate = str(payload.get("d3_certificate") or "")
+    exploration_generation = str(payload.get("exploration_generation") or "")
+    exploration_certificate = str(payload.get("exploration_certificate") or "")
+    locked_at = str(payload.get("locked_at") or "")
+    confirmatory_ready = bool(
+        stage == "confirmatory"
+        and locked_at.strip()
+        and d3_generation.strip()
+        and d3_certificate.strip()
+        and exploration_generation.strip()
+        and exploration_certificate.strip()
+        and choices_status_valid
+        and not invalid_stage_statuses
+    )
+    registered_plan_errors: dict[str, str] = {}
+    if stage == "confirmatory":
+        for claim in stage_claims:
+            claim_id = str(claim.get("id") or "missing")
+            plan_passed, plan_detail = validate_registered_plan(claim)
+            if not plan_passed:
+                registered_plan_errors[claim_id] = plan_detail
     passed = bool(
         payload.get("schema_version") == 1
         and declared_hash == actual_hash
         and len(ids) == len(claims)
         and len(ids) == len(set(ids))
-        and len(locked_claims) >= 3
+        and bool(stage_claims)
+        and has_primary
         and not incomplete
+        and not invalid_stage_statuses
         and not missing_semantic_rules
         and dynamic_rule_valid
         and sampling_rule_valid
         and not invalid_horizon_claims
+        and stage_valid
+        and choices_status_valid
+        and not registered_plan_errors
+        and (not require_confirmatory or confirmatory_ready)
     )
     detail = (
         f"hash={'ok' if declared_hash == actual_hash else 'mismatch'}; "
-        f"claims={len(claims)}; locked={len(locked_claims)}; "
+        f"claims={len(claims)}; stage_claims={len(stage_claims)}; "
         f"incomplete={incomplete or 'none'}; "
+        f"invalid_stage_statuses={invalid_stage_statuses or 'none'}; "
+        f"primary={'ok' if has_primary else 'missing'}; "
         f"missing_semantic_rules={missing_semantic_rules or 'none'}; "
         f"dynamic_rule={'ok' if dynamic_rule_valid else 'invalid'}; "
         f"audit_sampling={'ok' if sampling_rule_valid else 'invalid'}; "
-        f"invalid_horizons={invalid_horizon_claims or 'none'}"
+        f"invalid_horizons={invalid_horizon_claims or 'none'}; "
+        f"stage={stage or 'missing'}; "
+        f"choices_status={analytical_choices_status or 'missing'}; "
+        f"locked_at={locked_at or 'missing'}; "
+        f"d3_generation={d3_generation or 'missing'}; "
+        f"d3_certificate={d3_certificate or 'missing'}; "
+        f"exploration_generation={exploration_generation or 'missing'}; "
+        f"exploration_certificate={exploration_certificate or 'missing'}; "
+        f"registered_plan_errors={registered_plan_errors or 'none'}"
     )
     return passed, detail
 
@@ -2580,10 +2663,21 @@ def validate_model_ledger(
     payload: dict,
     *,
     claim_ids: set[str],
+    lock_payload: dict | None = None,
+    require_confirmatory: bool = False,
+    root: Path = ROOT,
+    verifier=verify,
+    verify_artifacts: bool = True,
+    verify_certificates: bool = True,
 ) -> tuple[bool, str]:
-    """Validate the one family-level count of executed empirical models."""
-    families = payload.get("families") or []
-    required = {
+    """Validate immutable run records, promotion history, and attack coverage."""
+    lock_payload = lock_payload or {}
+    legacy_families = payload.get("legacy_families") or []
+    runs = payload.get("runs") or []
+    exploration = payload.get("exploration") or {}
+    current_generation = str(payload.get("current_analysis_generation") or "")
+
+    legacy_required = {
         "id",
         "claim_id",
         "estimator",
@@ -2596,83 +2690,353 @@ def validate_model_ledger(
         "artifacts",
         "note",
     }
-    ids = [str(family.get("id") or "") for family in families if isinstance(family, dict)]
-    incomplete = [
-        str(family.get("id") or "missing")
-        for family in families
-        if not isinstance(family, dict) or required - set(family)
-    ]
-    invalid_status = [
-        str(family.get("id") or "missing")
-        for family in families
+    legacy_ids = [
+        str(family.get("id") or "")
+        for family in legacy_families
         if isinstance(family, dict)
-        and family.get("status") not in MODEL_LEDGER_STATUSES
     ]
-    invalid_counts = [
+    legacy_incomplete = [
         str(family.get("id") or "missing")
-        for family in families
+        for family in legacy_families
+        if not isinstance(family, dict) or legacy_required - set(family)
+    ]
+    legacy_invalid = [
+        str(family.get("id") or "missing")
+        for family in legacy_families
         if isinstance(family, dict)
-        and any(
-            not isinstance(family.get(field), int) or family.get(field, -1) < 0
-            for field in (
-                "substantive_specifications",
-                "diagnostic_specifications",
-                "resampling_refits",
+        and (
+            family.get("status") not in LEGACY_MODEL_STATUSES
+            or any(
+                not isinstance(family.get(field), int) or family.get(field, -1) < 0
+                for field in (
+                    "substantive_specifications",
+                    "diagnostic_specifications",
+                    "resampling_refits",
+                )
             )
         )
     ]
-    unknown_live_claims = [
-        str(family.get("id") or "missing")
-        for family in families
-        if isinstance(family, dict)
-        and family.get("status") not in {"exploratory", "retired"}
-        and family.get("claim_id") not in claim_ids
-    ]
-    missing_artifacts = [
-        artifact
-        for family in families
-        if isinstance(family, dict)
-        for artifact in family.get("artifacts", [])
-        if not (ROOT / str(artifact)).exists()
-    ]
-    reported = sum(
-        int(family.get("substantive_specifications", 0))
-        + int(family.get("diagnostic_specifications", 0))
-        for family in families
-        if isinstance(family, dict)
-    )
-    refits = sum(
-        int(family.get("resampling_refits", 0))
-        for family in families
-        if isinstance(family, dict)
-    )
-    statuses = {
-        status: sum(
-            int(family.get("substantive_specifications", 0))
-            + int(family.get("diagnostic_specifications", 0))
-            for family in families
-            if isinstance(family, dict) and family.get("status") == status
+
+    exploration_status = str(exploration.get("status") or "")
+    exploration_valid = exploration_status in {"not_started", "in_progress", "complete"}
+    exploration_d3 = str(exploration.get("d3_generation") or "")
+    exploration_d3_certificate = str(exploration.get("d3_certificate") or "")
+    exploration_generation = str(exploration.get("generation") or "")
+    exploration_certificate = str(exploration.get("certificate") or "")
+    if exploration_status == "not_started":
+        exploration_valid = bool(
+            exploration_valid
+            and not current_generation
+            and not exploration_d3
+            and not exploration_d3_certificate
+            and not exploration_generation
+            and not exploration_certificate
+            and not runs
         )
-        for status in sorted(MODEL_LEDGER_STATUSES)
+    elif exploration_status == "in_progress":
+        exploration_valid = bool(
+            exploration_valid
+            and current_generation
+            and exploration_d3 == current_generation
+            and exploration_d3_certificate
+            and not exploration_generation
+            and not exploration_certificate
+        )
+    elif exploration_status == "complete":
+        exploration_valid = bool(
+            exploration_valid
+            and current_generation
+            and exploration_d3 == current_generation
+            and exploration_d3_certificate
+            and exploration_generation
+            and exploration_certificate
+        )
+
+    run_required = {
+        "family_id",
+        "run_id",
+        "claim_id",
+        "lane",
+        "lifecycle",
+        "disposition",
+        "selection_origin",
+        "promoted_from_run_id",
+        "decision_id",
+        "d3_generation",
+        "exploration_generation",
+        "lock_hash",
+        "plan_hash",
+        "engine_hash",
+        "estimator",
+        "fixed_effects",
+        "inference",
+        "artifacts",
+        "note",
     }
+    run_ids = [
+        str(run.get("run_id") or "") for run in runs if isinstance(run, dict)
+    ]
+    incomplete_runs = [
+        str(run.get("run_id") or run.get("family_id") or "missing")
+        for run in runs
+        if not isinstance(run, dict) or run_required - set(run)
+    ]
+    invalid_runs: dict[str, list[str]] = {}
+    artifact_owners: dict[str, str] = {}
+    reused_artifacts: list[str] = []
+    exploratory_run_ids = {
+        str(run.get("run_id") or "")
+        for run in runs
+        if isinstance(run, dict)
+        and run.get("lane") == "exploratory"
+        and run.get("lifecycle") == "executed"
+    }
+    registered_claims = {
+        str(claim.get("id")): claim
+        for claim in lock_payload.get("claims", [])
+        if isinstance(claim, dict)
+        and claim.get("status") in REGISTERED_CLAIM_STATUSES
+    }
+    admissible_claims: set[str] = set()
+
+    for run in runs:
+        if not isinstance(run, dict):
+            continue
+        run_id = str(run.get("run_id") or run.get("family_id") or "missing")
+        errors: list[str] = []
+        lane = str(run.get("lane") or "")
+        lifecycle = str(run.get("lifecycle") or "")
+        disposition = str(run.get("disposition") or "")
+        if lane not in MODEL_RUN_LANES:
+            errors.append("lane")
+        if lifecycle not in MODEL_RUN_LIFECYCLES:
+            errors.append("lifecycle")
+        if disposition not in MODEL_RUN_DISPOSITIONS:
+            errors.append("disposition")
+        if run.get("run_id") != model_run_id(run):
+            errors.append("run_id")
+        if str(run.get("d3_generation") or "") != current_generation:
+            errors.append("d3_generation")
+        artifacts = run.get("artifacts")
+        if not isinstance(artifacts, list):
+            errors.append("artifacts")
+            artifacts = []
+        executed_specification_ids: set[str] = set()
+        for artifact in artifacts:
+            if not isinstance(artifact, dict) or not {
+                "path",
+                "role",
+                "sha256",
+                "provenance_path",
+                "spec_ids",
+            }.issubset(artifact):
+                errors.append("artifact_contract")
+                continue
+            artifact_path = str(artifact.get("path") or "")
+            artifact_relative = Path(artifact_path)
+            provenance_relative = Path(str(artifact.get("provenance_path") or ""))
+            artifact_hash = str(artifact.get("sha256") or "")
+            artifact_spec_ids = artifact.get("spec_ids")
+            if (
+                not artifact_path
+                or artifact_relative.is_absolute()
+                or ".." in artifact_relative.parts
+                or not provenance_relative.parts
+                or provenance_relative.is_absolute()
+                or ".." in provenance_relative.parts
+                or not re.fullmatch(r"[0-9a-f]{64}", artifact_hash)
+                or not isinstance(artifact_spec_ids, list)
+                or not all(
+                    isinstance(specification_id, str) and specification_id
+                    for specification_id in artifact_spec_ids or []
+                )
+            ):
+                errors.append("artifact_contract")
+            if artifact.get("role") not in MODEL_RUN_ARTIFACT_ROLES:
+                errors.append("artifact_role")
+            if artifact_path in artifact_owners and artifact_owners[artifact_path] != run_id:
+                reused_artifacts.append(artifact_path)
+            artifact_owners[artifact_path] = run_id
+            if verify_artifacts:
+                resolved_artifact = root / artifact_path
+                resolved_provenance = root / str(artifact.get("provenance_path") or "")
+                expected_provenance = sidecar_path(resolved_artifact)
+                if not resolved_artifact.is_file():
+                    errors.append("artifact_missing")
+                elif artifact.get("sha256") != portable_content_sha256(resolved_artifact):
+                    errors.append("artifact_hash")
+                if resolved_provenance != expected_provenance:
+                    errors.append("provenance_path")
+                if not resolved_provenance.is_file():
+                    errors.append("provenance_missing")
+                elif verifier(resolved_artifact).get("status") != "ok":
+                    errors.append("provenance_stale")
+            if artifact.get("role") in {"result", "falsifier", "diagnostic"}:
+                executed_specification_ids.update(
+                    str(specification_id)
+                    for specification_id in artifact_spec_ids or []
+                )
+        if lifecycle == "executed" and not artifacts:
+            errors.append("executed_without_artifacts")
+        if lane == "exploratory":
+            if run.get("lock_hash") is not None or run.get("exploration_generation") is not None:
+                errors.append("exploratory_generation_binding")
+            if disposition == "admissible":
+                errors.append("exploratory_admissible")
+            if any(
+                run.get(field) is not None
+                for field in (
+                    "selection_origin",
+                    "promoted_from_run_id",
+                    "decision_id",
+                )
+            ):
+                errors.append("exploratory_selection_history")
+        elif lane == "confirmatory":
+            claim_id = str(run.get("claim_id") or "")
+            claim = registered_claims.get(claim_id)
+            if claim is None:
+                errors.append("unregistered_claim")
+            else:
+                if run.get("plan_hash") != claim.get("plan_hash"):
+                    errors.append("plan_hash")
+                registered_ids = {
+                    str(specification.get("spec_id") or "")
+                    for specification in claim.get("registered_specifications", [])
+                    if isinstance(specification, dict)
+                }
+                if lifecycle == "executed" and executed_specification_ids != registered_ids:
+                    errors.append("specification_coverage")
+            if lock_payload.get("stage") != "confirmatory":
+                errors.append("confirmatory_without_lock")
+            if run.get("lock_hash") != lock_payload.get("lock_hash"):
+                errors.append("lock_hash")
+            if run.get("d3_generation") != lock_payload.get("d3_generation"):
+                errors.append("lock_d3_generation")
+            if run.get("exploration_generation") != lock_payload.get("exploration_generation"):
+                errors.append("lock_exploration_generation")
+            if not run.get("decision_id"):
+                errors.append("decision_id")
+            selection_origin = run.get("selection_origin")
+            if selection_origin == "exploratory_discovery":
+                source_run_id = str(run.get("promoted_from_run_id") or "")
+                if source_run_id not in exploratory_run_ids or source_run_id == run_id:
+                    errors.append("promotion_source")
+            elif selection_origin == "design_seed":
+                if run.get("promoted_from_run_id") is not None:
+                    errors.append("design_seed_promotion_source")
+            else:
+                errors.append("selection_origin")
+            if disposition == "admissible":
+                if lifecycle != "executed" or errors:
+                    errors.append("inadmissible_execution_state")
+                else:
+                    admissible_claims.add(claim_id)
+        if errors:
+            invalid_runs[run_id] = sorted(set(errors))
+
+    certificate_errors: list[str] = []
+
+    def load_certificate(relative: str, kind: str) -> dict:
+        relative_path = Path(relative)
+        if (
+            not relative
+            or relative_path.is_absolute()
+            or ".." in relative_path.parts
+        ):
+            certificate_errors.append(f"{kind}_path")
+            return {}
+        path = root / relative_path
+        if not path.is_file():
+            certificate_errors.append(f"{kind}_missing")
+            return {}
+        try:
+            certificate = json.loads(path.read_text(encoding="utf-8"))
+        except (json.JSONDecodeError, OSError):
+            certificate_errors.append(f"{kind}_invalid_json")
+            return {}
+        if verifier(path).get("status") != "ok":
+            certificate_errors.append(f"{kind}_provenance")
+        if certificate.get("kind") != kind:
+            certificate_errors.append(f"{kind}_kind")
+        if certificate.get("generation") != generation_id(certificate):
+            certificate_errors.append(f"{kind}_generation")
+        return certificate
+
+    if exploration_status in {"in_progress", "complete"} and verify_certificates:
+        d3_certificate = load_certificate(
+            exploration_d3_certificate,
+            "d3_analysis_release",
+        )
+        if d3_certificate.get("generation") != current_generation:
+            certificate_errors.append("d3_analysis_release_binding")
+    if exploration_status == "complete" and verify_certificates:
+        e0_certificate = load_certificate(
+            exploration_certificate,
+            "e0_exploration",
+        )
+        if e0_certificate.get("generation") != exploration_generation:
+            certificate_errors.append("e0_exploration_binding")
+        if e0_certificate.get("d3_generation") != current_generation:
+            certificate_errors.append("e0_exploration_d3")
+        recorded_exploratory_runs = {
+            str(run_id) for run_id in e0_certificate.get("exploratory_run_ids", [])
+        }
+        if recorded_exploratory_runs != exploratory_run_ids:
+            certificate_errors.append("e0_exploratory_run_perimeter")
+        triage_run_ids = {
+            str(decision.get("run_id") or "")
+            for decision in e0_certificate.get("triage_decisions", [])
+            if isinstance(decision, dict)
+        }
+        if triage_run_ids != exploratory_run_ids:
+            certificate_errors.append("e0_triage_perimeter")
+
+    missing_claim_evidence = sorted(claim_ids - admissible_claims)
+    confirmatory_context_valid = bool(
+        lock_payload.get("stage") == "confirmatory"
+        and exploration_status == "complete"
+        and current_generation == str(lock_payload.get("d3_generation") or "")
+        and exploration_d3_certificate
+        == str(lock_payload.get("d3_certificate") or "")
+        and exploration_generation
+        == str(lock_payload.get("exploration_generation") or "")
+        and exploration_certificate
+        == str(lock_payload.get("exploration_certificate") or "")
+        and not certificate_errors
+    )
     passed = bool(
-        payload.get("schema_version") == 1
-        and ids
-        and len(ids) == len(families)
-        and len(ids) == len(set(ids))
-        and not incomplete
-        and not invalid_status
-        and not invalid_counts
-        and not unknown_live_claims
-        and not missing_artifacts
+        payload.get("schema_version") == 2
+        and legacy_ids
+        and len(legacy_ids) == len(legacy_families)
+        and len(legacy_ids) == len(set(legacy_ids))
+        and not legacy_incomplete
+        and not legacy_invalid
+        and len(run_ids) == len(runs)
+        and len(run_ids) == len(set(run_ids))
+        and not incomplete_runs
+        and not invalid_runs
+        and not reused_artifacts
+        and not certificate_errors
+        and exploration_valid
+        and (
+            not require_confirmatory
+            or (confirmatory_context_valid and not missing_claim_evidence)
+        )
     )
-    detail = (
-        f"families={len(families)}; reported={reported:,}; refits={refits:,}; "
-        f"status={statuses}; incomplete={incomplete or 'none'}; "
-        f"unknown_live_claims={unknown_live_claims or 'none'}; "
-        f"missing_artifacts={missing_artifacts or 'none'}"
+    return passed, (
+        f"legacy_families={len(legacy_families)}; current_runs={len(runs)}; "
+        f"exploration={exploration_status or 'missing'}; "
+        f"current_generation={current_generation or 'missing'}; "
+        f"legacy_incomplete={legacy_incomplete or 'none'}; "
+        f"legacy_invalid={legacy_invalid or 'none'}; "
+        f"incomplete_runs={incomplete_runs or 'none'}; "
+        f"invalid_runs={invalid_runs or 'none'}; "
+        f"reused_artifacts={sorted(set(reused_artifacts)) or 'none'}; "
+        f"certificate_errors={sorted(set(certificate_errors)) or 'none'}; "
+        f"confirmatory_context={'ok' if confirmatory_context_valid else 'invalid'}; "
+        f"missing_claim_evidence={missing_claim_evidence or 'none'}"
     )
-    return passed, detail
 
 
 def v2_event_source_certificate_checks(
@@ -3116,20 +3480,26 @@ def main() -> int:
             str(UNIFIED_QUALITY_PANEL.relative_to(ROOT)),
         )
     lock_claim_ids: set[str] = set()
+    lock_payload: dict = {}
     if SPECIFICATION_LOCK.exists():
         try:
             lock_payload = json.loads(SPECIFICATION_LOCK.read_text())
-            lock_passed, lock_detail = validate_specification_lock(lock_payload)
+            lock_passed, lock_detail = validate_specification_lock(
+                lock_payload,
+                require_confirmatory=True,
+            )
             lock_claim_ids = {
                 str(claim.get("id"))
                 for claim in lock_payload.get("claims", [])
-                if isinstance(claim, dict) and claim.get("id")
+                if isinstance(claim, dict)
+                and claim.get("id")
+                and claim.get("status") in REGISTERED_CLAIM_STATUSES
             }
             input_passed, input_detail = validate_claim_input_layer(lock_payload)
         except (json.JSONDecodeError, OSError) as exc:
             lock_passed, lock_detail = False, type(exc).__name__
             input_passed, input_detail = False, type(exc).__name__
-        record("node E specification lock", lock_passed, lock_detail)
+        record("node E1 specification lock", lock_passed, lock_detail)
         record("node D claim-input provenance gate", input_passed, input_detail)
     else:
         record(
@@ -3149,6 +3519,8 @@ def main() -> int:
             model_passed, model_detail = validate_model_ledger(
                 model_payload,
                 claim_ids=lock_claim_ids,
+                lock_payload=lock_payload,
+                require_confirmatory=True,
             )
         except (json.JSONDecodeError, OSError) as exc:
             model_passed, model_detail = False, type(exc).__name__

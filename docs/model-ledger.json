@@ -1,8 +1,18 @@
 {
-  "schema_version": 1,
-  "updated": "2026-08-09",
+  "schema_version": 2,
+  "updated": "2026-08-10",
+  "current_analysis_generation": null,
+  "exploration": {
+    "status": "not_started",
+    "d3_generation": null,
+    "d3_certificate": null,
+    "generation": null,
+    "certificate": null,
+    "started_at": null,
+    "completed_at": null
+  },
   "counting_unit": "A reported specification is counted once within one empirical family. Coefficients from the same multivariate fit are not separate specifications. Pretrend and pseudo-break fits are diagnostics. Permutation, randomisation and power-simulation fits are resampling refits and never inflate the reported-specification count.",
-  "families": [
+  "legacy_families": [
     {
       "id": "cross_venue_spillover_event_battery",
       "claim_id": "retired_cross_venue_spillover",
@@ -136,22 +146,7 @@
         "output/tables/v4_route_use_persistence.tex"
       ],
       "note": "Conservative lower bound for the superseded broad RQ battery after deduplicating coefficients from the same multivariate fit and tables that merely reprint another runner's estimates. These models are not authority for the hashed claim family."
-    },
-    {
-      "id": "transaction_state_routing_efficiency",
-      "claim_id": "routing_maturation_rival",
-      "estimator": "locked target: cell-fixed-effects OLS with flexible calendar-year indicators; linear elapsed-year slope is a summary sensitivity; not yet run",
-      "fixed_effects": "locked target: endpoint-vehicle-observed-reach-notional-bin cell effects for maturation with no date effects; endpoint-reach-notional effects for the conditioned vehicle transition, restricted to opportunity cells present in both 2024 and 2026; date effects only for within-date candidate comparisons",
-      "inference": "locked target: two-way CR1 by cell and calendar date for maturation; ordered endpoint pair and calendar date for the conditioned transition; exact-calendar 1/7/30/120-day links for persistence diagnostics",
-      "substantive_specifications": 0,
-      "diagnostic_specifications": 0,
-      "resampling_refits": 0,
-      "status": "withheld",
-      "artifacts": [
-        "output/exhibits/transaction_state_frontier_audit_support.jsonl",
-        "output/exhibits/routing_maturation_results.jsonl"
-      ],
-      "note": "The 77 audit dates validate construction only. The prior full daily panel is stale against the active canonical generation and cannot supply findings. D3 must rebuild it, enforce at least 99 percent chosen-route reproduction using the maximum absolute error across both realised legs and their composition within one basis point, retain nested 0.1- and 0.01-basis-point support on the same maximum, and materialise the locked recurrent cell-day panel before the first fit. In each 2021-2025 primary year, available quotes minus leg-level mismatches must also cover at least 80 percent of eligible routes, with no more than a 10-percentage-point annual spread. All verified-coverage, maturation, transition, and exact-horizon support ledgers execute before any model; a red ledger writes zero fitted specifications and returns the graph to E-to-D review."
     }
-  ]
+  ],
+  "runs": []
 }

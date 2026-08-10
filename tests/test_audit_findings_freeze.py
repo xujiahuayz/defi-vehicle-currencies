@@ -49,6 +49,8 @@ from scripts.audit_findings_freeze import (
 )
 from ddvc.literature_admission import validate_source_admission
 from ddvc.liquidity import LIQUIDITY_CONTRACTS
+from ddvc.model_registry import canonical_hash, model_run_id
+from ddvc.provenance import portable_content_sha256, sidecar_path
 from scripts.refresh_panel_dependents import (
     CLAIM_INPUT_STAGES,
     DAILY_FRONTIER_PREREQUISITES,
@@ -126,6 +128,8 @@ class FindingsFreezeAuditTest(unittest.TestCase):
         self.assertTrue(all(passed for _name, passed, _detail in checks), checks)
 
     def test_live_json_contracts_have_unique_keys_and_a_current_lock_hash(self) -> None:
+        import copy
+        import hashlib
         import json
 
         def unique_object(pairs):
@@ -143,6 +147,38 @@ class FindingsFreezeAuditTest(unittest.TestCase):
         }
         passed, detail = validate_specification_lock(payloads["specification-lock.json"])
         self.assertTrue(passed, detail)
+        passed, detail = validate_specification_lock(
+            payloads["specification-lock.json"],
+            require_confirmatory=True,
+        )
+        self.assertFalse(passed, detail)
+        self.assertIn("stage=design_seed", detail)
+        premature = copy.deepcopy(payloads["specification-lock.json"])
+        premature["claims"][0]["status"] = "registered_primary"
+        premature["lock_hash"] = hashlib.sha256(
+            json.dumps(
+                {key: value for key, value in premature.items() if key != "lock_hash"},
+                sort_keys=True,
+                separators=(",", ":"),
+            ).encode()
+        ).hexdigest()
+        passed, detail = validate_specification_lock(premature)
+        self.assertFalse(passed, detail)
+        self.assertIn("invalid_stage_statuses=['vehicle_transition']", detail)
+        passed, detail = validate_model_ledger(
+            payloads["model-ledger.json"],
+            claim_ids=set(),
+            lock_payload=payloads["specification-lock.json"],
+        )
+        self.assertTrue(passed, detail)
+        passed, detail = validate_model_ledger(
+            payloads["model-ledger.json"],
+            claim_ids=set(),
+            lock_payload=payloads["specification-lock.json"],
+            require_confirmatory=True,
+        )
+        self.assertFalse(passed, detail)
+        self.assertIn("confirmatory_context=invalid", detail)
 
     def test_route_cost_gate_checks_cell_semantics_and_formula(self) -> None:
         with tempfile.TemporaryDirectory() as directory:
@@ -538,7 +574,7 @@ class FindingsFreezeAuditTest(unittest.TestCase):
             "claims": [
                 {
                     "id": "live",
-                    "status": "enter_fgh_primary",
+                    "status": "registered_primary",
                     "inputs": ["data/processed/clean.parquet"],
                 }
             ]
@@ -622,45 +658,349 @@ class FindingsFreezeAuditTest(unittest.TestCase):
             passed, detail = validate_canonical_consumer_boundary((imported_raw_relative,))
             self.assertFalse(passed, detail)
 
-    def test_model_ledger_counts_families_once_and_binds_live_claims(self) -> None:
-        import tempfile
-        from pathlib import Path
+    def test_model_ledger_keeps_exploration_open_but_not_admissible(self) -> None:
+        exploratory = {
+            "family_id": "discovery",
+            "run_id": "pending",
+            "claim_id": "unregistered_discovery_question",
+            "lane": "exploratory",
+            "lifecycle": "executed",
+            "disposition": "diagnostic",
+            "selection_origin": None,
+            "promoted_from_run_id": None,
+            "decision_id": None,
+            "d3_generation": "d3-generation",
+            "exploration_generation": None,
+            "lock_hash": None,
+            "plan_hash": "exploratory-plan",
+            "engine_hash": "engine",
+            "estimator": "OLS",
+            "fixed_effects": "open",
+            "inference": "open",
+            "artifacts": [
+                {
+                    "path": "output/discovery.jsonl",
+                    "role": "result",
+                    "sha256": "0" * 64,
+                    "provenance_path": "output/discovery.jsonl.prov.json",
+                    "spec_ids": ["explore-1"],
+                }
+            ],
+            "note": "open-ended discovery",
+        }
+        exploratory["run_id"] = model_run_id(exploratory)
+        payload = {
+            "schema_version": 2,
+            "current_analysis_generation": "d3-generation",
+            "exploration": {
+                "status": "in_progress",
+                "d3_generation": "d3-generation",
+                "d3_certificate": "docs/d3-analysis-release.json",
+                "generation": None,
+                "certificate": None,
+                "started_at": "2026-08-10T10:00:00Z",
+                "completed_at": None,
+            },
+            "legacy_families": [
+                {
+                    "id": "legacy",
+                    "claim_id": "legacy",
+                    "estimator": "OLS",
+                    "fixed_effects": "none",
+                    "inference": "robust",
+                    "substantive_specifications": 1,
+                    "diagnostic_specifications": 0,
+                    "resampling_refits": 0,
+                    "status": "retired",
+                    "artifacts": [],
+                    "note": "historical",
+                }
+            ],
+            "runs": [exploratory],
+        }
+        passed, detail = validate_model_ledger(
+            payload,
+            claim_ids=set(),
+            verify_artifacts=False,
+            verify_certificates=False,
+        )
+        self.assertTrue(passed, detail)
+        payload["runs"][0]["disposition"] = "admissible"
+        passed, detail = validate_model_ledger(
+            payload,
+            claim_ids=set(),
+            verify_artifacts=False,
+            verify_certificates=False,
+        )
+        self.assertFalse(passed, detail)
+        self.assertIn("exploratory_admissible", detail)
+        payload["runs"][0]["disposition"] = "diagnostic"
+        payload["runs"][0]["lane"] = "confirmatory"
+        passed, detail = validate_model_ledger(
+            payload,
+            claim_ids=set(),
+            verify_artifacts=False,
+            verify_certificates=False,
+        )
+        self.assertFalse(passed, detail)
+        self.assertIn("run_id", detail)
 
+    def test_model_ledger_requires_distinct_complete_confirmatory_rerun(self) -> None:
+        registered_specifications = [
+            {
+                "spec_id": "primary-null",
+                "kind": "primary",
+                "parameters": {"outcome": "share"},
+                "covers": ["mandatory_alternatives/weighting/0", "falsifier"],
+            },
+            {
+                "spec_id": "weighting-alternative",
+                "kind": "alternative",
+                "parameters": {"weighting": "value"},
+                "covers": ["mandatory_alternatives/weighting/1"],
+            },
+        ]
+        plan_hash = canonical_hash(registered_specifications)
+        lock = {
+            "stage": "confirmatory",
+            "lock_hash": "lock-hash",
+            "d3_generation": "d3-generation",
+            "d3_certificate": "data/manifests/analysis-release.json",
+            "exploration_generation": "e0-generation",
+            "exploration_certificate": "docs/e0-exploration-certificate.json",
+            "claims": [
+                {
+                    "id": "lead",
+                    "status": "registered_primary",
+                    "plan_hash": plan_hash,
+                    "registered_specifications": registered_specifications,
+                }
+            ],
+        }
+        exploratory = {
+            "family_id": "lead-discovery",
+            "run_id": "pending",
+            "claim_id": "lead-discovery",
+            "lane": "exploratory",
+            "lifecycle": "executed",
+            "disposition": "diagnostic",
+            "selection_origin": None,
+            "promoted_from_run_id": None,
+            "decision_id": None,
+            "d3_generation": "d3-generation",
+            "exploration_generation": None,
+            "lock_hash": None,
+            "plan_hash": "exploration-plan",
+            "engine_hash": "engine",
+            "estimator": "OLS",
+            "fixed_effects": "candidate",
+            "inference": "candidate",
+            "artifacts": [
+                {
+                    "path": "output/exploratory.jsonl",
+                    "role": "result",
+                    "sha256": "1" * 64,
+                    "provenance_path": "output/exploratory.jsonl.prov.json",
+                    "spec_ids": ["discovery-fit"],
+                }
+            ],
+            "note": "publication-worthy discovery",
+        }
+        exploratory["run_id"] = model_run_id(exploratory)
+        confirmatory = {
+            "family_id": "lead",
+            "run_id": "pending",
+            "claim_id": "lead",
+            "lane": "confirmatory",
+            "lifecycle": "executed",
+            "disposition": "admissible",
+            "selection_origin": "exploratory_discovery",
+            "promoted_from_run_id": exploratory["run_id"],
+            "decision_id": "e1-decision-lead",
+            "d3_generation": "d3-generation",
+            "exploration_generation": "e0-generation",
+            "lock_hash": "lock-hash",
+            "plan_hash": plan_hash,
+            "engine_hash": "engine",
+            "estimator": "OLS",
+            "fixed_effects": "pair and date",
+            "inference": "pair clustered",
+            "artifacts": [
+                {
+                    "path": "output/confirmatory.jsonl",
+                    "role": "result",
+                    "sha256": "2" * 64,
+                    "provenance_path": "output/confirmatory.jsonl.prov.json",
+                    "spec_ids": ["primary-null", "weighting-alternative"],
+                }
+            ],
+            "note": "the registered result is null and remains admissible",
+        }
+        confirmatory["run_id"] = model_run_id(confirmatory)
+        payload = {
+            "schema_version": 2,
+            "current_analysis_generation": "d3-generation",
+            "exploration": {
+                "status": "complete",
+                "d3_generation": "d3-generation",
+                "d3_certificate": "data/manifests/analysis-release.json",
+                "generation": "e0-generation",
+                "certificate": "docs/e0-exploration-certificate.json",
+                "started_at": "2026-08-10T10:00:00Z",
+                "completed_at": "2026-08-10T12:00:00Z",
+            },
+            "legacy_families": [
+                {
+                    "id": "legacy",
+                    "claim_id": "legacy",
+                    "estimator": "OLS",
+                    "fixed_effects": "none",
+                    "inference": "robust",
+                    "substantive_specifications": 1,
+                    "diagnostic_specifications": 0,
+                    "resampling_refits": 0,
+                    "status": "retired",
+                    "artifacts": [],
+                    "note": "historical",
+                }
+            ],
+            "runs": [exploratory, confirmatory],
+        }
+        passed, detail = validate_model_ledger(
+            payload,
+            claim_ids={"lead"},
+            lock_payload=lock,
+            require_confirmatory=True,
+            verify_artifacts=False,
+            verify_certificates=False,
+        )
+        self.assertTrue(passed, detail)
+        passed, detail = validate_model_ledger(
+            payload,
+            claim_ids={"lead"},
+            lock_payload=lock,
+            require_confirmatory=True,
+            verify_artifacts=False,
+        )
+        self.assertFalse(passed, detail)
+        self.assertIn("d3_analysis_release_missing", detail)
+
+        confirmatory["artifacts"][0]["spec_ids"] = ["primary-null"]
+        passed, detail = validate_model_ledger(
+            payload,
+            claim_ids={"lead"},
+            lock_payload=lock,
+            require_confirmatory=True,
+            verify_artifacts=False,
+            verify_certificates=False,
+        )
+        self.assertFalse(passed, detail)
+        self.assertIn("specification_coverage", detail)
+        confirmatory["artifacts"][0]["spec_ids"] = [
+            "primary-null",
+            "weighting-alternative",
+        ]
+
+        confirmatory["promoted_from_run_id"] = None
+        passed, detail = validate_model_ledger(
+            payload,
+            claim_ids={"lead"},
+            lock_payload=lock,
+            require_confirmatory=True,
+            verify_artifacts=False,
+            verify_certificates=False,
+        )
+        self.assertFalse(passed, detail)
+        self.assertIn("promotion_source", detail)
+
+    def test_model_ledger_verifies_current_artifact_content_and_provenance(self) -> None:
         with tempfile.NamedTemporaryFile(dir=Path.cwd(), delete=False) as handle:
-            artifact = Path(handle.name)
+            handle.write(b'{"spec_id":"explore-1","estimate":0.0}\n')
+            artifact_path = Path(handle.name)
+        provenance_path = sidecar_path(artifact_path)
+        provenance_path.parent.mkdir(parents=True, exist_ok=True)
+        provenance_path.write_text("{}\n")
         try:
-            relative = str(artifact.relative_to(Path.cwd()))
-            payload = {
-                "schema_version": 1,
-                "families": [
+            relative_artifact = str(artifact_path.relative_to(Path.cwd()))
+            relative_provenance = str(provenance_path.relative_to(Path.cwd()))
+            run = {
+                "family_id": "discovery",
+                "run_id": "pending",
+                "claim_id": "discovery",
+                "lane": "exploratory",
+                "lifecycle": "executed",
+                "disposition": "diagnostic",
+                "selection_origin": None,
+                "promoted_from_run_id": None,
+                "decision_id": None,
+                "d3_generation": "d3-generation",
+                "exploration_generation": None,
+                "lock_hash": None,
+                "plan_hash": "exploratory-plan",
+                "engine_hash": "engine",
+                "estimator": "OLS",
+                "fixed_effects": "open",
+                "inference": "open",
+                "artifacts": [
                     {
-                        "id": "live",
-                        "claim_id": "lead",
-                        "estimator": "OLS",
-                        "fixed_effects": "pair and date",
-                        "inference": "pair clustered",
-                        "substantive_specifications": 2,
-                        "diagnostic_specifications": 3,
-                        "resampling_refits": 100,
-                        "status": "admissible",
-                        "artifacts": [relative],
-                        "note": "one family",
+                        "path": relative_artifact,
+                        "role": "result",
+                        "sha256": portable_content_sha256(artifact_path),
+                        "provenance_path": relative_provenance,
+                        "spec_ids": ["explore-1"],
                     }
                 ],
+                "note": "artifact verification",
             }
-            passed, detail = validate_model_ledger(payload, claim_ids={"lead"})
+            run["run_id"] = model_run_id(run)
+            payload = {
+                "schema_version": 2,
+                "current_analysis_generation": "d3-generation",
+                "exploration": {
+                    "status": "in_progress",
+                    "d3_generation": "d3-generation",
+                    "d3_certificate": "docs/d3-analysis-release.json",
+                    "generation": None,
+                    "certificate": None,
+                    "started_at": "2026-08-10T10:00:00Z",
+                    "completed_at": None,
+                },
+                "legacy_families": [
+                    {
+                        "id": "legacy",
+                        "claim_id": "legacy",
+                        "estimator": "OLS",
+                        "fixed_effects": "none",
+                        "inference": "robust",
+                        "substantive_specifications": 1,
+                        "diagnostic_specifications": 0,
+                        "resampling_refits": 0,
+                        "status": "retired",
+                        "artifacts": [],
+                        "note": "historical",
+                    }
+                ],
+                "runs": [run],
+            }
+            passed, detail = validate_model_ledger(
+                payload,
+                claim_ids=set(),
+                verifier=lambda _path: {"status": "ok"},
+                verify_certificates=False,
+            )
             self.assertTrue(passed, detail)
-            self.assertIn("reported=5", detail)
-            payload["families"][0]["status"] = "exploratory"
-            payload["families"][0]["claim_id"] = "unregistered_discovery_question"
-            passed, detail = validate_model_ledger(payload, claim_ids={"lead"})
-            self.assertTrue(passed, detail)
-            payload["families"][0]["status"] = "admissible"
-            payload["families"][0]["claim_id"] = "unknown"
-            passed, detail = validate_model_ledger(payload, claim_ids={"lead"})
+            run["artifacts"][0]["sha256"] = "f" * 64
+            passed, detail = validate_model_ledger(
+                payload,
+                claim_ids=set(),
+                verifier=lambda _path: {"status": "ok"},
+                verify_certificates=False,
+            )
             self.assertFalse(passed, detail)
+            self.assertIn("artifact_hash", detail)
         finally:
-            artifact.unlink(missing_ok=True)
+            artifact_path.unlink(missing_ok=True)
+            provenance_path.unlink(missing_ok=True)
 
     def test_transaction_frontier_gate_separates_validation_from_calendar(self) -> None:
         support = pd.DataFrame(
@@ -1235,13 +1575,14 @@ status: complete
                 {"PaperA", "PaperB", "PaperC"},
             )
 
-    def test_specification_lock_requires_hash_and_complete_entered_claims(self) -> None:
+    def test_specification_lock_requires_hash_and_complete_registered_claims(self) -> None:
+        import copy
         import hashlib
         import json
 
         claim = {
             "id": "lead",
-            "status": "enter_fgh_primary",
+            "status": "registered_primary",
             "role": "lead",
             "estimand": "change",
             "sample": "sample",
@@ -1257,9 +1598,35 @@ status: complete
             "inputs": ["input"],
             "outputs": ["output"],
         }
+        registered_specifications = [
+            {
+                "spec_id": "primary",
+                "kind": "primary",
+                "parameters": {"weighting": "count"},
+                "covers": [
+                    "mandatory_alternatives/weighting/0",
+                    "mandatory_alternatives/weighting/1",
+                    "falsifier",
+                ],
+            }
+        ]
+        claim["registered_specifications"] = registered_specifications
+        claim["plan_hash"] = hashlib.sha256(
+            json.dumps(
+                registered_specifications,
+                sort_keys=True,
+                separators=(",", ":"),
+            ).encode()
+        ).hexdigest()
         payload = {
             "schema_version": 1,
             "locked_at": "2026-08-07",
+            "stage": "confirmatory",
+            "analytical_choices_status": "registered_after_exploration",
+            "d3_generation": "test-d3-generation",
+            "d3_certificate": "data/manifests/analysis-release.json",
+            "exploration_generation": "test-d3-e0-generation",
+            "exploration_certificate": "docs/e0-exploration-certificate.json",
             "global_rules": {
                 "audit_sampling": "monthly snapshots are validation only and do not define a monthly estimand",
                 "vehicle_status": "binary intermediary-use indicator",
@@ -1270,9 +1637,9 @@ status: complete
             },
             "claims": [
                 claim,
-                {**claim, "id": "foundation", "status": "enter_fgh_foundation"},
-                {**claim, "id": "mechanism", "status": "enter_fgh_mechanism"},
-                {**claim, "id": "companion", "status": "enter_fgh_companion"},
+                {**claim, "id": "foundation", "status": "registered_foundation"},
+                {**claim, "id": "mechanism", "status": "registered_mechanism"},
+                {**claim, "id": "companion", "status": "registered_companion"},
             ],
         }
         payload["lock_hash"] = hashlib.sha256(
@@ -1280,6 +1647,28 @@ status: complete
         ).hexdigest()
         passed, detail = validate_specification_lock(payload)
         self.assertTrue(passed, detail)
+        incomplete_attack = copy.deepcopy(payload)
+        registered_claim = incomplete_attack["claims"][0]
+        registered_claim["registered_specifications"][0]["covers"].remove(
+            "mandatory_alternatives/weighting/1"
+        )
+        registered_claim["plan_hash"] = canonical_hash(
+            registered_claim["registered_specifications"]
+        )
+        incomplete_attack["lock_hash"] = hashlib.sha256(
+            json.dumps(
+                {
+                    key: value
+                    for key, value in incomplete_attack.items()
+                    if key != "lock_hash"
+                },
+                sort_keys=True,
+                separators=(",", ":"),
+            ).encode()
+        ).hexdigest()
+        passed, detail = validate_specification_lock(incomplete_attack)
+        self.assertFalse(passed, detail)
+        self.assertIn("mandatory_alternatives/weighting/1", detail)
         payload["claims"][0].pop("falsifier")
         passed, detail = validate_specification_lock(payload)
         self.assertFalse(passed, detail)
@@ -1290,7 +1679,7 @@ status: complete
 
         claim = {
             "id": "lead",
-            "status": "enter_fgh_primary",
+            "status": "registered_primary",
             "role": "lead",
             "estimand": "change",
             "sample": "sample",
@@ -1315,8 +1704,8 @@ status: complete
             },
             "claims": [
                 claim,
-                {**claim, "id": "foundation", "status": "enter_fgh_foundation"},
-                {**claim, "id": "mechanism", "status": "enter_fgh_mechanism"},
+                {**claim, "id": "foundation", "status": "registered_foundation"},
+                {**claim, "id": "mechanism", "status": "registered_mechanism"},
             ],
         }
         payload["lock_hash"] = hashlib.sha256(
@@ -1332,7 +1721,7 @@ status: complete
 
         claim = {
             "id": "lead",
-            "status": "enter_fgh_primary",
+            "status": "registered_primary",
             "role": "lead",
             "estimand": "change",
             "sample": "sample",
@@ -1352,6 +1741,12 @@ status: complete
         payload = {
             "schema_version": 1,
             "locked_at": "2026-08-10",
+            "stage": "confirmatory",
+            "analytical_choices_status": "registered_after_exploration",
+            "d3_generation": "test-d3-generation",
+            "d3_certificate": "data/manifests/analysis-release.json",
+            "exploration_generation": "test-d3-e0-generation",
+            "exploration_certificate": "docs/e0-exploration-certificate.json",
             "global_rules": {
                 "audit_sampling": "monthly snapshots are validation only and do not define a monthly estimand",
                 "vehicle_status": "binary intermediary-use indicator",
@@ -1362,8 +1757,8 @@ status: complete
             },
             "claims": [
                 claim,
-                {**claim, "id": "foundation", "status": "enter_fgh_foundation", "response_horizon_days": [1, 7, 30, 120]},
-                {**claim, "id": "mechanism", "status": "enter_fgh_mechanism", "response_horizon_days": [1, 7, 30, 120]},
+                {**claim, "id": "foundation", "status": "registered_foundation", "response_horizon_days": [1, 7, 30, 120]},
+                {**claim, "id": "mechanism", "status": "registered_mechanism", "response_horizon_days": [1, 7, 30, 120]},
             ],
         }
         payload["lock_hash"] = hashlib.sha256(

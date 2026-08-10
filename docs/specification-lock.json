@@ -1,7 +1,14 @@
 {
   "schema_version": 1,
-  "locked_at": "2026-08-10",
-  "lock_hash": "d032d7b671c2be126b985fe7749db7687bd3facf892242e6a880c5e477e878a6",
+  "seeded_at": "2026-08-10",
+  "locked_at": null,
+  "stage": "design_seed",
+  "analytical_choices_status": "provisional_design_seed",
+  "d3_generation": null,
+  "d3_certificate": null,
+  "exploration_generation": null,
+  "exploration_certificate": null,
+  "lock_hash": "84392b99416def68e29c5b1e84c8ac71d6f454d58b508eee6f51aa6e9350850f",
   "paper_scope": "The making and displacement of vehicle-currency roles in Ethereum decentralised exchange",
   "global_rules": {
     "asset_identity": "canonical contract address; symbols are labels only",
@@ -22,12 +29,12 @@
     "missing_data": "retain topology-valid counts; unsupported values contribute zero and remain visible in coverage",
     "audit_sampling": "one transaction-state day near the middle of each calendar month is an estimator-validation snapshot only; it does not define a monthly estimand, a persistence sample, or a structural-break sample",
     "dynamic_horizons": "final dynamic estimation uses daily exact-state observations linked by exact calendar dates at 1, 7, 30, and 120 days; calendar months and row shifts are not substitutes",
-    "prose_gate": "no claim enters prose until its status is enter_fgh or supporting and two stable F-G-H passes add no claim and retire none"
+    "prose_gate": "no current-generation model claim enters prose until E1 registers it, a distinct confirmatory F run is admissible, and two stable F-G-H passes add no claim and retire none"
   },
   "claims": [
     {
       "id": "vehicle_transition",
-      "status": "enter_fgh_primary",
+      "status": "candidate_primary",
       "role": "lead finding",
       "estimand": "change in stable share of native-plus-stable exact two-leg intermediary routes between 2024 and 2026 on common calendar support",
       "sample": "topology-valid clean-leg routes with exactly two pool legs and one intermediary; daily observations whose calendar month-and-day position is observed in both endpoint years; full venue perimeter",
@@ -81,7 +88,7 @@
     },
     {
       "id": "routing_maturation_rival",
-      "status": "descriptive_only_pending_transaction_state_frontier",
+      "status": "candidate_mechanism",
       "role": "first rival mechanism",
       "estimand": "changes in opportunity-set integration, direct splitting, true intermediation, path complexity, and realised routing regret",
       "sample": "economic routes on full and balanced venue perimeters; topology uses the full daily calendar; the fixed-notional cost landscape uses the 200 most heavily intermediated directed endpoint pairs per day at all 24 UTC hours as a selected descriptive panel, a cohort fixed from the first 365 released days for within-established-market changes, and a persistent common-support cohort; exact-state regret uses the full daily realised-route frontier after a separate 77-day estimator-validation audit passes",
@@ -166,7 +173,7 @@
     },
     {
       "id": "direct_cost_dominance",
-      "status": "enter_fgh_foundation",
+      "status": "candidate_foundation",
       "role": "necessary state for persistence, not a persistence estimate",
       "estimand": "share of realised V2-family two-leg routes for which an available direct pool returns more or costs less all-in at strict pre-transaction state",
       "sample": "realised Uniswap V2 and SushiSwap V2 two-leg routes with input notional at least 100 dollars and an exact-state direct alternative on the full daily calendar spanning 74 calendar months",
@@ -212,7 +219,7 @@
     },
     {
       "id": "liquidity_rent_incidence",
-      "status": "enter_fgh_companion",
+      "status": "candidate_companion",
       "execution_gate": "blocked_external_reference_variance",
       "role": "companion distributional finding",
       "estimand": "fee revenue minus LVR minus LP gas by pool asset role",
