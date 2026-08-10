@@ -9,15 +9,18 @@ from unittest.mock import patch
 
 from ddvc.fetch.graph import build_query
 from ddvc.fetch.raw import (
+    fetch_source_day,
+    graph_query_contract_sha256,
     index_existing_stream,
     merge_stream_metadata,
+    raw_stream_metadata_is_current,
     repair_source_day_metadata,
     raw_stream_identity,
     require_mergeable_partial_metadata,
     write_json,
     write_jsonl_gz,
 )
-from ddvc.fetch.schemas import EntitySpec
+from ddvc.fetch.schemas import EntitySpec, SchemaSpec, get_schema
 from ddvc.fetch.sources import get_source
 from ddvc.source_records import (
     block_value,
@@ -79,7 +82,10 @@ class RawMetaMergeTests(unittest.TestCase):
             ):
                 got = repair_source_day_metadata(source, day, streams={"mints"})
             self.assertEqual(set(got["streams"]), {"hourly_reserves", "mints"})
-            self.assertEqual(got["streams"]["mints"]["status"], "indexed_existing")
+            self.assertEqual(
+                got["streams"]["mints"]["status"],
+                "indexed_existing_unverified_query_contract",
+            )
             self.assertEqual(got["streams"]["mints"]["path"], raw_stream_identity(raw))
             self.assertEqual(got["streams"]["mints"]["rows"], 2)
             self.assertEqual(got["streams"]["mints"]["min_block"], 10)
@@ -88,6 +94,81 @@ class RawMetaMergeTests(unittest.TestCase):
             self.assertEqual(got["max_block"], 30)
             self.assertEqual(got["fetched_at_utc"], "2022-01-02T00:00:00+00:00")
             self.assertIn("metadata_indexed_at_utc", got)
+
+    def test_field_expansion_invalidates_old_raw_query_metadata_and_refetches(self) -> None:
+        day = dt.date(2022, 1, 1)
+        source = get_source("uniswap_v3")
+        source_entity = next(
+            entity for entity in get_schema(source.schema).entities if entity.stream == "swaps"
+        )
+        current = EntitySpec(
+            stream=source_entity.stream,
+            entity=source_entity.entity,
+            fields=source_entity.fields + " liquidity",
+            time_field=source_entity.time_field,
+            date_field=source_entity.date_field,
+        )
+        old = EntitySpec(
+            stream=current.stream,
+            entity=current.entity,
+            fields=current.fields.replace(" liquidity", ""),
+            time_field=current.time_field,
+            date_field=current.date_field,
+        )
+        self.assertNotEqual(
+            graph_query_contract_sha256(old),
+            graph_query_contract_sha256(current),
+        )
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            raw = root / "uniswap_v3_swaps_20220101.jsonl.gz"
+            metadata = root / "uniswap_v3_meta_20220101.json"
+            write_jsonl_gz(raw, [{"id": "old-swap"}])
+            old_stream = {
+                "status": "fetched",
+                "path": raw_stream_identity(raw),
+                "rows": 1,
+                "query_contract_sha256": graph_query_contract_sha256(old),
+            }
+            write_json(
+                metadata,
+                {
+                    "source": source.name,
+                    "day": day.isoformat(),
+                    "streams": {"swaps": old_stream},
+                },
+            )
+            self.assertFalse(
+                raw_stream_metadata_is_current(
+                    old_stream,
+                    current,
+                    expected_path=raw,
+                )
+            )
+            with (
+                patch("ddvc.fetch.raw.raw_path", return_value=raw),
+                patch("ddvc.fetch.raw.meta_path", return_value=metadata),
+                patch("ddvc.fetch.raw.GraphClient"),
+                patch("ddvc.fetch.raw.graph_keys", return_value=["key"]),
+                patch(
+                    "ddvc.fetch.raw.get_schema",
+                    return_value=SchemaSpec(name=source.schema, entities=(current,)),
+                ),
+                patch("ddvc.fetch.raw.head_block", return_value=123),
+                patch("ddvc.fetch.raw.paginate", return_value=[]) as paginate,
+            ):
+                refreshed = fetch_source_day(
+                    source,
+                    day,
+                    streams={"swaps"},
+                    skip_existing=True,
+                )
+            paginate.assert_called()
+            self.assertEqual(refreshed["streams"]["swaps"]["status"], "fetched")
+            self.assertEqual(
+                refreshed["streams"]["swaps"]["query_contract_sha256"],
+                graph_query_contract_sha256(current),
+            )
 
     def test_partial_refresh_refuses_legacy_metadata_without_stream_ledger(self) -> None:
         with self.assertRaisesRegex(RuntimeError, "legacy metadata"):

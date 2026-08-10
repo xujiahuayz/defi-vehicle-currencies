@@ -28,10 +28,11 @@ from ddvc.fetch.dune import dune_meta_path, dune_path, fetch_dune_month, month_r
 from ddvc.fetch.graph import GraphClient, first_record, graph_keys, paginate
 from ddvc.fetch.raw import (
     fetch_source_day,
+    graph_query_contracts_for_source,
+    indexed_metadata_streams,
     meta_path,
     midnight_ts,
     raw_path,
-    raw_stream_identity,
     repair_source_day_metadata,
     stream_names_for_source,
     write_json,
@@ -326,40 +327,23 @@ def metadata_target(source_name: str, day: dt.date) -> Path:
 
 
 def missing_streams(source_name: str, day: dt.date, streams: list[str]) -> list[str]:
-    return [stream for stream in streams if not stream_target(source_name, stream, day).exists()]
-
-
-def indexed_metadata_streams(
-    path: Path,
-    *,
-    expected_paths: dict[str, Path] | None = None,
-) -> set[str]:
-    """Return streams whose sidecar entry carries a checked row ledger."""
-
-    try:
-        payload = json.loads(path.read_text())
-    except (OSError, json.JSONDecodeError):
-        return set()
-    streams = payload.get("streams")
-    if not isinstance(streams, dict):
-        return set()
-    indexed: set[str] = set()
-    for name, item in streams.items():
-        stream = str(name)
-        if (
-            not isinstance(item, dict)
-            or not isinstance(item.get("rows"), int)
-            or item["rows"] < 0
-            or not item.get("path")
-        ):
-            continue
-        expected = (expected_paths or {}).get(stream)
-        recorded = Path(str(item["path"]))
-        recorded_identity = f"{recorded.parent.name}/{recorded.name}"
-        if expected is not None and recorded_identity != raw_stream_identity(expected):
-            continue
-        indexed.add(stream)
-    return indexed
+    source = get_source(source_name)
+    expected_paths = {
+        stream: stream_target(source_name, stream, day) for stream in streams
+    }
+    if source.backend == "dune":
+        return [stream for stream, path in expected_paths.items() if not path.exists()]
+    metadata = metadata_target(source_name, day)
+    current = indexed_metadata_streams(
+        metadata,
+        expected_paths=expected_paths,
+        expected_query_contracts=graph_query_contracts_for_source(source_name),
+    )
+    return [
+        stream
+        for stream, path in expected_paths.items()
+        if not path.exists() or stream not in current
+    ]
 
 
 def coverage_report(names: list[str], end_by_source: dict[str, dt.date]) -> dict[str, dict[str, object]]:
@@ -372,6 +356,11 @@ def coverage_report(names: list[str], end_by_source: dict[str, dt.date]) -> dict
         by_stream: dict[str, list[str]] = {stream: [] for stream in streams}
         unindexed_by_stream: dict[str, list[str]] = {stream: [] for stream in streams}
         meta_missing: list[str] = []
+        expected_contracts = (
+            graph_query_contracts_for_source(name)
+            if source.backend == "thegraph"
+            else None
+        )
         for day in days:
             metadata = metadata_target(name, day)
             expected_paths = {
@@ -379,7 +368,11 @@ def coverage_report(names: list[str], end_by_source: dict[str, dt.date]) -> dict
                 for stream in streams
             }
             indexed = (
-                indexed_metadata_streams(metadata, expected_paths=expected_paths)
+                indexed_metadata_streams(
+                    metadata,
+                    expected_paths=expected_paths,
+                    expected_query_contracts=expected_contracts,
+                )
                 if metadata.exists()
                 else set()
             )

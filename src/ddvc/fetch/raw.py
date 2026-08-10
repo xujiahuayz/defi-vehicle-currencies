@@ -11,9 +11,12 @@ from __future__ import annotations
 import calendar
 import datetime as dt
 import gzip
+import hashlib
 import io
 import json
+import os
 from pathlib import Path
+from collections.abc import Iterable, Mapping
 from typing import Any
 
 from ddvc.fetch.graph import GraphClient, graph_keys, head_block, paginate
@@ -22,6 +25,10 @@ from ddvc.fetch.sources import DexSource, get_source
 from ddvc.paths import DATA_DIR
 from ddvc.runtime import atomic_output
 from ddvc.source_records import block_value, block_values as _block_values
+
+
+RAW_GRAPH_QUERY_CONTRACT_VERSION = 1
+RAW_GRAPH_PAGE_SIZE = 1000
 
 
 def midnight_ts(day: dt.date) -> int:
@@ -54,7 +61,22 @@ def raw_stream_identity(path: Path) -> str:
     return f"{path.parent.name}/{path.name}"
 
 
-def write_jsonl_gz(path: Path, rows: list[dict[str, Any]]) -> None:
+def _jsonl_line(row: Mapping[str, Any]) -> str:
+    return json.dumps(row, separators=(",", ":"), sort_keys=True) + "\n"
+
+
+def write_jsonl(path: Path, rows: Iterable[Mapping[str, Any]]) -> None:
+    """Atomically stream deterministic JSON Lines without retaining the iterable."""
+
+    with atomic_output(path) as temporary:
+        with temporary.open("w", encoding="utf-8", newline="\n") as handle:
+            for row in rows:
+                handle.write(_jsonl_line(row))
+
+
+def write_jsonl_gz(path: Path, rows: Iterable[Mapping[str, Any]]) -> None:
+    """Atomically stream byte-deterministic gzip JSON Lines from any iterable."""
+
     with atomic_output(path) as temporary:
         with temporary.open("wb") as raw_handle:
             with gzip.GzipFile(
@@ -65,8 +87,46 @@ def write_jsonl_gz(path: Path, rows: list[dict[str, Any]]) -> None:
             ) as compressed:
                 with io.TextIOWrapper(compressed, encoding="utf-8", newline="\n") as fh:
                     for row in rows:
-                        fh.write(json.dumps(row, separators=(",", ":"), sort_keys=True))
-                        fh.write("\n")
+                        fh.write(_jsonl_line(row))
+
+
+def repair_torn_jsonl_journal(path: Path) -> bool:
+    """Drop an interrupted final fragment or terminate a complete final JSON value."""
+
+    if not path.exists() or path.stat().st_size == 0:
+        return False
+    with path.open("r+b") as handle:
+        handle.seek(0, io.SEEK_END)
+        end = handle.tell()
+        handle.seek(end - 1)
+        if handle.read(1) == b"\n":
+            return False
+        cursor = end
+        reverse_chunks: list[bytes] = []
+        line_start = 0
+        while cursor > 0:
+            chunk_start = max(0, cursor - 64 * 1024)
+            handle.seek(chunk_start)
+            chunk = handle.read(cursor - chunk_start)
+            newline = chunk.rfind(b"\n")
+            if newline >= 0:
+                line_start = chunk_start + newline + 1
+                reverse_chunks.append(chunk[newline + 1 :])
+                break
+            reverse_chunks.append(chunk)
+            cursor = chunk_start
+        final = b"".join(reversed(reverse_chunks))
+        try:
+            json.loads(final.decode("utf-8"))
+        except (UnicodeDecodeError, json.JSONDecodeError):
+            handle.seek(line_start)
+            handle.truncate()
+        else:
+            handle.seek(0, io.SEEK_END)
+            handle.write(b"\n")
+        handle.flush()
+        os.fsync(handle.fileno())
+    return True
 
 
 def write_json(path: Path, value: dict[str, Any]) -> None:
@@ -84,7 +144,8 @@ def where_for_entity(entity: EntitySpec, day: dt.date) -> dict[str, str]:
 
 
 def where_chunks_for_entity(entity: EntitySpec, day: dt.date) -> list[dict[str, str]]:
-    if entity.date_field:
+    policy = query_chunk_policy(entity)
+    if policy == "date_exact_hex_id_prefix_v1":
         prefixes = "0123456789abcdef"
         chunks: list[dict[str, str]] = []
         for index, prefix in enumerate(prefixes):
@@ -93,10 +154,10 @@ def where_chunks_for_entity(entity: EntitySpec, day: dt.date) -> list[dict[str, 
                 where["id_lt"] = f"0x{prefixes[index + 1]}"
             chunks.append(where)
         return chunks
-    if entity.stream == "hourly_reserves" and entity.time_field == "hourStartUnix":
+    if policy == "hour_exact_v1":
         start = midnight_ts(day)
         return [{entity.time_field: str(start + 3600 * hour)} for hour in range(24)]
-    if entity.stream == "swaps":
+    if policy == "hour_range_v1":
         start = midnight_ts(day)
         return [
             {
@@ -109,7 +170,115 @@ def where_chunks_for_entity(entity: EntitySpec, day: dt.date) -> list[dict[str, 
 
 
 def page_size_for_entity(entity: EntitySpec) -> int:
-    return 1000
+    return RAW_GRAPH_PAGE_SIZE
+
+
+def query_chunk_policy(entity: EntitySpec) -> str:
+    """Return the canonical day-query partition policy for one Graph entity."""
+
+    if entity.date_field:
+        return "date_exact_hex_id_prefix_v1"
+    if entity.stream == "hourly_reserves" and entity.time_field == "hourStartUnix":
+        return "hour_exact_v1"
+    if entity.stream == "swaps":
+        return "hour_range_v1"
+    return "day_range_v1"
+
+
+def graph_query_contract_sha256(entity: EntitySpec) -> str:
+    """Hash the complete canonical query shape that produced one raw stream."""
+
+    payload = {
+        "version": RAW_GRAPH_QUERY_CONTRACT_VERSION,
+        "stream": entity.stream,
+        "entity": entity.entity,
+        "fields": " ".join(entity.fields.split()),
+        "time_field": entity.time_field,
+        "date_field": entity.date_field,
+        "chunk_policy": query_chunk_policy(entity),
+        "page_size": page_size_for_entity(entity),
+    }
+    return hashlib.sha256(
+        json.dumps(payload, sort_keys=True, separators=(",", ":")).encode()
+    ).hexdigest()
+
+
+def graph_query_contracts_for_source(source_name: str) -> dict[str, str]:
+    """Return the canonical per-stream Graph query identities for one source."""
+
+    source = get_source(source_name)
+    return {
+        entity.stream: graph_query_contract_sha256(entity)
+        for entity in get_schema(source.schema).entities
+    }
+
+
+def _raw_stream_metadata_item_is_current(
+    item: object,
+    *,
+    expected_path: Path | None = None,
+    expected_query_contract: str | None = None,
+) -> bool:
+    if (
+        not isinstance(item, dict)
+        or not isinstance(item.get("rows"), int)
+        or item["rows"] < 0
+        or not item.get("path")
+        or (
+            expected_query_contract is not None
+            and item.get("query_contract_sha256") != expected_query_contract
+        )
+    ):
+        return False
+    if expected_path is None:
+        return True
+    recorded = Path(str(item["path"]))
+    return raw_stream_identity(recorded) == raw_stream_identity(expected_path)
+
+
+def raw_stream_metadata_is_current(
+    item: object,
+    entity: EntitySpec,
+    *,
+    expected_path: Path | None = None,
+) -> bool:
+    """Require a checked ledger, portable path and exact query-shape identity."""
+
+    return _raw_stream_metadata_item_is_current(
+        item,
+        expected_path=expected_path,
+        expected_query_contract=graph_query_contract_sha256(entity),
+    )
+
+
+def indexed_metadata_streams(
+    path: Path,
+    *,
+    expected_paths: dict[str, Path] | None = None,
+    expected_query_contracts: dict[str, str] | None = None,
+) -> set[str]:
+    """Return streams whose sidecar ledger and optional query identity are current."""
+
+    try:
+        payload = json.loads(path.read_text())
+    except (OSError, json.JSONDecodeError):
+        return set()
+    streams = payload.get("streams")
+    if not isinstance(streams, dict):
+        return set()
+    indexed: set[str] = set()
+    for name, item in streams.items():
+        stream = str(name)
+        expected = (expected_paths or {}).get(stream)
+        expected_contract = (expected_query_contracts or {}).get(stream)
+        if not _raw_stream_metadata_item_is_current(
+            item,
+            expected_path=expected,
+            expected_query_contract=expected_contract,
+        ):
+            continue
+        indexed.add(stream)
+    return indexed
 
 
 def merge_stream_metadata(existing: dict[str, Any], fresh: dict[str, Any]) -> dict[str, Any]:
@@ -200,12 +369,6 @@ def repair_source_day_metadata(
     selected = [entity for entity in schema.entities if streams is None or entity.stream in streams]
     if not selected:
         return {"source": source.name, "day": day.isoformat(), "streams": {}}
-    stream_meta: dict[str, dict[str, Any]] = {}
-    for entity in selected:
-        path = raw_path(source.name, entity.stream, day)
-        if not path.is_file():
-            raise FileNotFoundError(f"installed raw stream is missing: {path}")
-        stream_meta[entity.stream] = index_existing_stream(path, entity)
     meta_out = meta_path(source.name, day)
     existing: dict[str, Any] = {}
     if meta_out.exists():
@@ -221,6 +384,23 @@ def repair_source_day_metadata(
         }
         if conflicts:
             raise RuntimeError(f"raw metadata identity conflicts at {meta_out}: {conflicts}")
+    stream_meta: dict[str, dict[str, Any]] = {}
+    existing_streams = existing.get("streams")
+    for entity in selected:
+        path = raw_path(source.name, entity.stream, day)
+        if not path.is_file():
+            raise FileNotFoundError(f"installed raw stream is missing: {path}")
+        indexed = index_existing_stream(path, entity)
+        prior = (
+            existing_streams.get(entity.stream)
+            if isinstance(existing_streams, dict)
+            else None
+        )
+        if raw_stream_metadata_is_current(prior, entity, expected_path=path):
+            indexed["query_contract_sha256"] = graph_query_contract_sha256(entity)
+        else:
+            indexed["status"] = "indexed_existing_unverified_query_contract"
+        stream_meta[entity.stream] = indexed
     fresh = {
         "source": source.name,
         "schema": source.schema,
@@ -251,8 +431,13 @@ def fetch_source_day(
         return {"source": source.name, "day": day.isoformat(), "streams": {}}
 
     meta_out = meta_path(source.name, day)
+    existing_meta: dict[str, Any] = {}
+    if meta_out.exists():
+        try:
+            existing_meta = json.loads(meta_out.read_text())
+        except (OSError, json.JSONDecodeError) as exc:
+            raise RuntimeError(f"raw metadata is unreadable: {meta_out}: {exc}") from exc
     if streams is not None and meta_out.exists():
-        existing_meta = json.loads(meta_out.read_text())
         require_mergeable_partial_metadata(
             existing_meta,
             requested_streams={entity.stream for entity in selected},
@@ -265,7 +450,21 @@ def fetch_source_day(
     all_blocks: list[int] = []
     for entity in selected:
         out = raw_path(source.name, entity.stream, day)
-        if skip_existing and out.exists():
+        existing_streams = existing_meta.get("streams")
+        existing_stream = (
+            existing_streams.get(entity.stream)
+            if isinstance(existing_streams, dict)
+            else None
+        )
+        if (
+            skip_existing
+            and out.exists()
+            and raw_stream_metadata_is_current(
+                existing_stream,
+                entity,
+                expected_path=out,
+            )
+        ):
             stream_meta[entity.stream] = {"path": str(out), "status": "skipped"}
             continue
         rows: list[dict[str, Any]] = []
@@ -289,6 +488,7 @@ def fetch_source_day(
             "rows": len(rows),
             "min_block": min(blocks) if blocks else None,
             "max_block": max(blocks) if blocks else None,
+            "query_contract_sha256": graph_query_contract_sha256(entity),
         }
 
     meta = {
@@ -306,11 +506,8 @@ def fetch_source_day(
         "fetched_at_utc": dt.datetime.now(dt.timezone.utc).isoformat(),
     }
     meta_out.parent.mkdir(parents=True, exist_ok=True)
-    if meta_out.exists():
-        try:
-            meta = merge_stream_metadata(json.loads(meta_out.read_text()), meta)
-        except (OSError, json.JSONDecodeError):
-            pass
+    if existing_meta:
+        meta = merge_stream_metadata(existing_meta, meta)
     write_json(meta_out, meta)
     return meta
 

@@ -63,6 +63,25 @@ class FetchPlanningTests(unittest.TestCase):
                 ),
                 set(),
             )
+
+    def test_metadata_coverage_rejects_a_stale_query_contract(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            metadata = root / "meta.json"
+            installed = root / "mints.jsonl.gz"
+            metadata.write_text(
+                '{"streams":{"mints":{"rows":2,"path":"'
+                + str(installed)
+                + '","query_contract_sha256":"old"}}}'
+            )
+            self.assertEqual(
+                indexed_metadata_streams(
+                    metadata,
+                    expected_paths={"mints": installed},
+                    expected_query_contracts={"mints": "current"},
+                ),
+                set(),
+            )
             metadata.write_text(
                 '{"streams":{"mints":{"rows":2,"path":"'
                 + str(installed)
