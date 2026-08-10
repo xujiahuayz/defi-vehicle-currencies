@@ -21,7 +21,7 @@ from ddvc.fetch.schemas import EntitySpec, get_schema
 from ddvc.fetch.sources import DexSource, get_source
 from ddvc.paths import DATA_DIR
 from ddvc.runtime import atomic_output
-from ddvc.source_records import block_values as _block_values
+from ddvc.source_records import block_value, block_values as _block_values
 
 
 def midnight_ts(day: dt.date) -> int:
@@ -146,6 +146,90 @@ def require_mergeable_partial_metadata(
             "partial raw refresh cannot merge into legacy metadata without a stream ledger; "
             "refresh the canonical stream set together once"
         )
+
+
+def index_existing_stream(path: Path, entity: EntitySpec) -> dict[str, Any]:
+    """Rebuild one stream's sidecar facts from its installed gzip payload."""
+
+    rows = 0
+    min_block: int | None = None
+    max_block: int | None = None
+    line_number = 0
+    try:
+        with gzip.open(path, "rt") as handle:
+            for line_number, line in enumerate(handle, 1):
+                if not line.strip():
+                    continue
+                record = json.loads(line)
+                if not isinstance(record, dict):
+                    raise ValueError("raw JSONL row is not an object")
+                rows += 1
+                block = block_value(record)
+                if block is not None:
+                    min_block = block if min_block is None else min(min_block, block)
+                    max_block = block if max_block is None else max(max_block, block)
+    except (OSError, ValueError) as exc:
+        raise RuntimeError(
+            f"installed raw stream is not valid gzip JSONL at {path}:{line_number}: {exc}"
+        ) from exc
+    return {
+        "path": str(path),
+        "status": "indexed_existing",
+        "entity": entity.entity,
+        "rows": rows,
+        "min_block": min_block,
+        "max_block": max_block,
+    }
+
+
+def repair_source_day_metadata(
+    source: DexSource,
+    day: dt.date,
+    *,
+    streams: set[str] | None = None,
+) -> dict[str, Any]:
+    """Index installed streams and merge them into one source-day sidecar."""
+
+    schema = get_schema(source.schema)
+    selected = [entity for entity in schema.entities if streams is None or entity.stream in streams]
+    if not selected:
+        return {"source": source.name, "day": day.isoformat(), "streams": {}}
+    stream_meta: dict[str, dict[str, Any]] = {}
+    for entity in selected:
+        path = raw_path(source.name, entity.stream, day)
+        if not path.is_file():
+            raise FileNotFoundError(f"installed raw stream is missing: {path}")
+        stream_meta[entity.stream] = index_existing_stream(path, entity)
+    meta_out = meta_path(source.name, day)
+    existing: dict[str, Any] = {}
+    if meta_out.exists():
+        try:
+            existing = json.loads(meta_out.read_text())
+        except (OSError, json.JSONDecodeError) as exc:
+            raise RuntimeError(f"raw metadata is unreadable: {meta_out}: {exc}") from exc
+        expected = {"source": source.name, "day": day.isoformat()}
+        conflicts = {
+            key: (existing.get(key), value)
+            for key, value in expected.items()
+            if existing.get(key) not in (None, value)
+        }
+        if conflicts:
+            raise RuntimeError(f"raw metadata identity conflicts at {meta_out}: {conflicts}")
+    fresh = {
+        "source": source.name,
+        "schema": source.schema,
+        "subgraph_id": source.subgraph_id,
+        "graph_path": source.graph_path,
+        "source_genesis_block": source.genesis_block,
+        "source_genesis_date_utc": source.genesis_date_utc.isoformat(),
+        "day": day.isoformat(),
+        "streams": stream_meta,
+        "metadata_indexed_at_utc": dt.datetime.now(dt.timezone.utc).isoformat(),
+    }
+    merged = merge_stream_metadata(existing, fresh)
+    meta_out.parent.mkdir(parents=True, exist_ok=True)
+    write_json(meta_out, merged)
+    return merged
 
 
 def fetch_source_day(

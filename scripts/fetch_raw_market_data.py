@@ -31,6 +31,7 @@ from ddvc.fetch.raw import (
     meta_path,
     midnight_ts,
     raw_path,
+    repair_source_day_metadata,
     stream_names_for_source,
     write_json,
     write_jsonl_gz,
@@ -327,6 +328,26 @@ def missing_streams(source_name: str, day: dt.date, streams: list[str]) -> list[
     return [stream for stream in streams if not stream_target(source_name, stream, day).exists()]
 
 
+def indexed_metadata_streams(path: Path) -> set[str]:
+    """Return streams whose sidecar entry carries a checked row ledger."""
+
+    try:
+        payload = json.loads(path.read_text())
+    except (OSError, json.JSONDecodeError):
+        return set()
+    streams = payload.get("streams")
+    if not isinstance(streams, dict):
+        return set()
+    return {
+        str(name)
+        for name, item in streams.items()
+        if isinstance(item, dict)
+        and isinstance(item.get("rows"), int)
+        and item["rows"] >= 0
+        and item.get("path")
+    }
+
+
 def coverage_report(names: list[str], end_by_source: dict[str, dt.date]) -> dict[str, dict[str, object]]:
     report: dict[str, dict[str, object]] = {}
     for name in names:
@@ -335,12 +356,18 @@ def coverage_report(names: list[str], end_by_source: dict[str, dt.date]) -> dict
         streams = available_streams(name)
         days = iter_days(source.genesis, end)
         by_stream: dict[str, list[str]] = {stream: [] for stream in streams}
+        unindexed_by_stream: dict[str, list[str]] = {stream: [] for stream in streams}
         meta_missing: list[str] = []
         for day in days:
+            metadata = metadata_target(name, day)
+            indexed = indexed_metadata_streams(metadata) if metadata.exists() else set()
             for stream in streams:
-                if not stream_target(name, stream, day).exists():
+                installed = stream_target(name, stream, day).exists()
+                if not installed:
                     by_stream[stream].append(day.isoformat())
-            if not metadata_target(name, day).exists():
+                elif stream not in indexed:
+                    unindexed_by_stream[stream].append(day.isoformat())
+            if not metadata.exists():
                 meta_missing.append(day.isoformat())
         report[name] = {
             "backend": source.backend,
@@ -351,6 +378,13 @@ def coverage_report(names: list[str], end_by_source: dict[str, dt.date]) -> dict
             "missing_ranges": {
                 stream: ([items[0], items[-1]] if items else [])
                 for stream, items in by_stream.items()
+            },
+            "unindexed_meta": {
+                stream: len(items) for stream, items in unindexed_by_stream.items()
+            },
+            "unindexed_meta_ranges": {
+                stream: ([items[0], items[-1]] if items else [])
+                for stream, items in unindexed_by_stream.items()
             },
             "missing_meta": len(meta_missing),
             "missing_meta_range": [meta_missing[0], meta_missing[-1]] if meta_missing else [],
@@ -578,17 +612,77 @@ def _enrich_v4_statics(args: argparse.Namespace) -> int:
     return 0
 
 
+def cmd_repair_meta(args: argparse.Namespace) -> int:
+    with exclusive_job(RAW_MUTATION_LOCK, job="raw market-data metadata repair"):
+        return _repair_meta(args)
+
+
+def _repair_meta(args: argparse.Namespace) -> int:
+    failures: list[tuple[str, str, str]] = []
+    for name in source_names(args.dex):
+        source = get_source(name)
+        if source.backend != "thegraph":
+            raise ValueError(f"metadata repair currently supports The Graph sources only: {name}")
+        start, end = effective_range(name, args.start, args.end)
+        days = iter_days(start, end)
+        if args.max_days:
+            days = days[: args.max_days]
+        streams = selected_streams(name, args.streams)
+        if args.dry_run:
+            selected = stream_names_for_source(name) if streams is None else sorted(streams)
+            for day in days:
+                print(
+                    json.dumps(
+                        {
+                            "source": name,
+                            "day": day.isoformat(),
+                            "streams_to_index": selected,
+                        },
+                        sort_keys=True,
+                    )
+                )
+            continue
+        done = 0
+        with ThreadPoolExecutor(max_workers=bounded_workers(args.workers, maximum=8)) as pool:
+            futures = {
+                pool.submit(repair_source_day_metadata, source, day, streams=streams): day
+                for day in days
+            }
+            for future in as_completed(futures):
+                day = futures[future]
+                try:
+                    future.result()
+                except Exception as exc:
+                    failures.append((name, day.isoformat(), f"{type(exc).__name__}: {exc}"))
+                done += 1
+                if done % 100 == 0 or done == len(days):
+                    print(f"# {name} metadata: {done}/{len(days)} days", flush=True)
+    if failures:
+        print(
+            f"error: {len(failures):,} metadata repair(s) failed; first was "
+            f"{failures[0][0]} {failures[0][1]}: {failures[0][2][:200]}",
+            file=sys.stderr,
+        )
+        return 2
+    return 0
+
+
 def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(description=__doc__)
     sub = parser.add_subparsers(dest="command", required=True)
-    for name, fn in [("plan", cmd_plan), ("fetch", cmd_fetch), ("coverage", cmd_coverage), ("audit-genesis", cmd_audit_genesis)]:
+    for name, fn in [
+        ("plan", cmd_plan),
+        ("fetch", cmd_fetch),
+        ("repair-meta", cmd_repair_meta),
+        ("coverage", cmd_coverage),
+        ("audit-genesis", cmd_audit_genesis),
+    ]:
         p = sub.add_parser(name)
         p.add_argument("--dex", nargs="+", default=["all"], help="Source names or 'all'.")
-        if name == "fetch":
+        if name in {"fetch", "repair-meta"}:
             p.add_argument("--workers", type=int, default=5,
-                           help="days fetched concurrently. Default matches the "
-                                "number of live Graph keys; the work is gateway "
-                                "latency, not CPU.")
+                           help="days processed concurrently; fetch defaults to the "
+                                "number of live Graph keys and metadata repair caps at eight.")
         if name != "audit-genesis":
             p.add_argument("--start", default="genesis", help="'genesis' or YYYY-MM-DD.")
             p.add_argument("--end", default=None, help="Exclusive YYYY-MM-DD; defaults to current month start.")
@@ -613,6 +707,8 @@ def build_parser() -> argparse.ArgumentParser:
     )
     sub.choices["fetch"].add_argument("--dune-sleep", type=float, default=2.0, help="Seconds to sleep between day-sized Dune gap fetches.")
     sub.choices["fetch"].add_argument("--max-retries", type=int, default=50, help="Per-day retries for transient provider/indexer errors in --gaps-only mode.")
+    sub.choices["repair-meta"].add_argument("--dry-run", action="store_true")
+    sub.choices["repair-meta"].add_argument("--max-days", type=int, default=0)
     enrich = sub.add_parser(
         "enrich-v4-statics",
         help="merge quote statics into canonical signed v4 swaps by exact record ID",

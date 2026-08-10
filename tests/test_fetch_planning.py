@@ -8,7 +8,13 @@ from pathlib import Path
 from unittest.mock import patch
 
 from scripts import audit_v2_refetch_receipts, build_market_state, fetch_raw_market_data
-from scripts.fetch_raw_market_data import cmd_fetch, sparse_days
+from scripts.fetch_raw_market_data import (
+    build_parser,
+    cmd_fetch,
+    cmd_repair_meta,
+    indexed_metadata_streams,
+    sparse_days,
+)
 
 from ddvc.fetch.raw import raw_path, where_for_entity
 from ddvc.fetch.graph import GraphClient
@@ -18,6 +24,29 @@ from ddvc.reconstruct import RAW_MARKET_DATA_LOCK as RECONSTRUCT_RAW_MARKET_DATA
 
 
 class FetchPlanningTests(unittest.TestCase):
+    def test_repair_meta_is_routed_through_the_existing_fetch_owner(self) -> None:
+        args = build_parser().parse_args(
+            [
+                "repair-meta",
+                "--dex",
+                "uniswap_v2",
+                "--streams",
+                "mints",
+                "burns",
+                "--dry-run",
+            ]
+        )
+        self.assertIs(args.func, cmd_repair_meta)
+
+    def test_metadata_coverage_requires_a_row_ledger_and_path(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            path = Path(directory) / "meta.json"
+            path.write_text(
+                '{"streams":{"mints":{"rows":0,"path":"mints.gz"},'
+                '"burns":{"rows":2},"swaps":{"path":"swaps.gz"}}}'
+            )
+            self.assertEqual(indexed_metadata_streams(path), {"mints"})
+
     def test_fetch_and_materialisation_share_one_raw_data_lock(self) -> None:
         self.assertEqual(
             fetch_raw_market_data.RAW_MUTATION_LOCK,

@@ -9,11 +9,15 @@ from unittest.mock import patch
 
 from ddvc.fetch.graph import build_query
 from ddvc.fetch.raw import (
+    index_existing_stream,
     merge_stream_metadata,
+    repair_source_day_metadata,
     require_mergeable_partial_metadata,
     write_json,
     write_jsonl_gz,
 )
+from ddvc.fetch.schemas import EntitySpec
+from ddvc.fetch.sources import get_source
 from ddvc.source_records import (
     block_value,
     merge_v4_statics,
@@ -28,6 +32,61 @@ from scripts.fetch_raw_market_data import enrich_v4_statics_day
 
 
 class RawMetaMergeTests(unittest.TestCase):
+    def test_existing_stream_index_rejects_invalid_gzip_jsonl(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            path = Path(tmp) / "bad.jsonl.gz"
+            path.write_bytes(b"not gzip")
+            with self.assertRaisesRegex(RuntimeError, "valid gzip JSONL"):
+                index_existing_stream(
+                    path,
+                    EntitySpec(stream="mints", entity="mints", fields="id"),
+                )
+
+    def test_metadata_repair_indexes_installed_stream_and_preserves_other_streams(self) -> None:
+        day = dt.date(2022, 1, 1)
+        source = get_source("uniswap_v2")
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            raw = root / "mints.jsonl.gz"
+            metadata = root / "meta.json"
+            write_jsonl_gz(
+                raw,
+                [
+                    {"id": "mint-1", "transaction": {"blockNumber": "20"}},
+                    {"id": "mint-2", "transaction": {"blockNumber": "10"}},
+                ],
+            )
+            write_json(
+                metadata,
+                {
+                    "source": "uniswap_v2",
+                    "day": day.isoformat(),
+                    "fetched_at_utc": "2022-01-02T00:00:00+00:00",
+                    "streams": {
+                        "hourly_reserves": {
+                            "status": "fetched",
+                            "rows": 24,
+                            "min_block": 5,
+                            "max_block": 30,
+                        }
+                    },
+                },
+            )
+            with (
+                patch("ddvc.fetch.raw.raw_path", return_value=raw),
+                patch("ddvc.fetch.raw.meta_path", return_value=metadata),
+            ):
+                got = repair_source_day_metadata(source, day, streams={"mints"})
+            self.assertEqual(set(got["streams"]), {"hourly_reserves", "mints"})
+            self.assertEqual(got["streams"]["mints"]["status"], "indexed_existing")
+            self.assertEqual(got["streams"]["mints"]["rows"], 2)
+            self.assertEqual(got["streams"]["mints"]["min_block"], 10)
+            self.assertEqual(got["streams"]["mints"]["max_block"], 20)
+            self.assertEqual(got["min_block"], 5)
+            self.assertEqual(got["max_block"], 30)
+            self.assertEqual(got["fetched_at_utc"], "2022-01-02T00:00:00+00:00")
+            self.assertIn("metadata_indexed_at_utc", got)
+
     def test_partial_refresh_refuses_legacy_metadata_without_stream_ledger(self) -> None:
         with self.assertRaisesRegex(RuntimeError, "legacy metadata"):
             require_mergeable_partial_metadata(
