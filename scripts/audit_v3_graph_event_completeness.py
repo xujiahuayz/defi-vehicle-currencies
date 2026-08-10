@@ -19,14 +19,20 @@ from ddvc.provenance import stamp
 from ddvc.runtime import atomic_output, exclusive_job
 from ddvc.state_data import STATE_ROOT, available_state_days, read_tick_partition
 from ddvc.v3_inventory import (
+    EVENT_TOPICS,
     PoolStatic,
     iter_decoded_inventory_logs,
     inventory_chunk_paths,
 )
 from ddvc.v3_inventory_calendar import CALENDAR, load_day_calendar
+from ddvc.v3_pool_registry import (
+    V3_POOL_REGISTRY,
+    V3_POOL_REGISTRY_CERTIFICATE,
+    reopen_registry_evidence,
+)
 from scripts.build_v3_inventory_panel import (
+    GRAPH_STATIC_PATH,
     RAW_INVENTORY_ROOT,
-    STATIC_PATH,
     inventory_perimeter,
     load_candidate_statics,
     ranges_by_day,
@@ -36,11 +42,13 @@ from scripts.build_v3_inventory_panel import (
 
 SUMMARY = DATA_DIR / "processed" / "v3_graph_core_event_audit.parquet"
 EXCEPTIONS = DATA_DIR / "processed" / "v3_graph_core_event_exceptions.parquet"
+PERIMETER_QUARANTINE = DATA_DIR / "processed" / "v3_inventory_perimeter_quarantine.parquet"
 EXHIBIT = OUTPUT_DIR / "exhibits" / "v3_graph_core_event_audit.json"
 CORE_EVENTS = {"mint", "swap"}
 CODE_SOURCES = [
     "scripts/audit_v3_graph_event_completeness.py",
     "scripts/build_v3_inventory_panel.py",
+    "scripts/fetch_v3_inventory_events.py",
     "src/ddvc/amounts.py",
     "src/ddvc/calendar.py",
     "src/ddvc/ethereum_day_cuts.py",
@@ -51,6 +59,8 @@ CODE_SOURCES = [
     "src/ddvc/state_data.py",
     "src/ddvc/v3_inventory.py",
     "src/ddvc/v3_inventory_calendar.py",
+    "src/ddvc/v3_pool_registry.py",
+    "src/ddvc/pricing/v3pools.py",
 ]
 EventKey = tuple[str, int, str, int, str]
 Amounts = tuple[int, int]
@@ -83,6 +93,20 @@ EXCEPTION_SCHEMA = pa.schema(
         pa.field("raw_amount1", pa.string()),
         pa.field("graph_amount0", pa.string()),
         pa.field("graph_amount1", pa.string()),
+    ]
+)
+
+PERIMETER_QUARANTINE_SCHEMA = pa.schema(
+    [
+        pa.field("pool", pa.string(), nullable=False),
+        pa.field("reason", pa.string(), nullable=False),
+        pa.field("first_block", pa.int64(), nullable=False),
+        pa.field("last_block", pa.int64(), nullable=False),
+        pa.field("logs", pa.int64(), nullable=False),
+        *[
+            pa.field(f"{event_type}_logs", pa.int64(), nullable=False)
+            for event_type in sorted(EVENT_TOPICS)
+        ],
     ]
 )
 
@@ -268,12 +292,17 @@ def write_table(rows: list[dict[str, object]], schema: pa.Schema, path: Path) ->
 
 
 def build() -> tuple[int, int]:
+    factory_pools, factory_certificate = reopen_registry_evidence()
     days, end_blocks = load_day_calendar()
     start, end = inventory_perimeter(days, end_blocks)
-    ranges = require_complete_raw_chunks(start, end)
+    ranges, perimeter_audit = require_complete_raw_chunks(start, end)
+    quarantine_rows = perimeter_audit["quarantine_pool_ledger"]
+    if not isinstance(quarantine_rows, list):
+        raise TypeError("V3 perimeter audit returned a malformed quarantine ledger")
+    write_table(quarantine_rows, PERIMETER_QUARANTINE_SCHEMA, PERIMETER_QUARANTINE)
     day_ranges = ranges_by_day(ranges, days, end_blocks)
     audit_days = nearest_day_per_month(available_state_days("tick", "uniswap_v3"))
-    statics = load_candidate_statics(STATIC_PATH)
+    statics = load_candidate_statics()
     pools = set(statics)
     position = {day: index for index, day in enumerate(days)}
     summaries: list[dict[str, object]] = []
@@ -327,6 +356,16 @@ def build() -> tuple[int, int]:
             aggregate[key] += int(row[key])
     payload = {
         "status": "diagnostic_only",
+        "factory_registry_status": "pass",
+        "factory_registry_pools": len(factory_pools),
+        "factory_registry_sha256": factory_certificate["registry_sha256"],
+        "raw_inventory_logs": perimeter_audit["raw_logs"],
+        "canonical_pool_logs": perimeter_audit["canonical_pool_logs"],
+        "quarantined_logs": perimeter_audit["quarantined_logs"],
+        "quarantined_pools": perimeter_audit["quarantined_pools"],
+        "quarantine_reasons": perimeter_audit["quarantine_reasons"],
+        "canonical_by_event": perimeter_audit["canonical_by_event"],
+        "quarantined_by_event": perimeter_audit["quarantined_by_event"],
         "audit_dates": len(audit_days),
         "first_day": audit_days[0],
         "last_day": audit_days[-1],
@@ -342,13 +381,27 @@ def build() -> tuple[int, int]:
     }
     with atomic_output(EXHIBIT) as temporary:
         temporary.write_text(json.dumps(payload, indent=2, sort_keys=True) + "\n")
-    inputs = [RAW_INVENTORY_ROOT, STATIC_PATH, CALENDAR, STATE_ROOT / "tick" / "uniswap_v3"]
+    inputs = [
+        RAW_INVENTORY_ROOT,
+        GRAPH_STATIC_PATH,
+        V3_POOL_REGISTRY,
+        V3_POOL_REGISTRY_CERTIFICATE,
+        CALENDAR,
+        STATE_ROOT / "tick" / "uniswap_v3",
+    ]
     notes = (
         "62 calendar-stratified V3-period audit dates; exact identities and signed token "
         "quantities"
     )
     stamp(SUMMARY, code_sources=CODE_SOURCES, inputs=inputs, rows=len(summaries), notes=notes)
     stamp(EXCEPTIONS, code_sources=CODE_SOURCES, inputs=inputs, rows=exception_count, notes=notes)
+    stamp(
+        PERIMETER_QUARANTINE,
+        code_sources=CODE_SOURCES,
+        inputs=inputs,
+        rows=len(quarantine_rows),
+        notes="complete global-topic address quarantine against the certified PoolCreated census",
+    )
     stamp(EXHIBIT, code_sources=CODE_SOURCES, inputs=inputs, rows=1, notes=notes)
     return len(summaries), exception_count
 

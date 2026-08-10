@@ -1,18 +1,23 @@
 from __future__ import annotations
 
 from eth_abi import encode as abi_encode
+import gzip
+import hashlib
 import json
 from pathlib import Path
 import tempfile
 from unittest.mock import patch
 
 import pandas as pd
-import pyarrow as pa
 import pyarrow.parquet as pq
 import pytest
 
+from ddvc.ethereum_logs import file_sha256
 from ddvc.v3_inventory import (
     EVENT_TOPICS,
+    INVENTORY_RAW_GENERATION,
+    INVENTORY_RAW_MARKER_SCHEMA_VERSION,
+    INVENTORY_STATE_GENERATION,
     RAW_LOG_SCHEMA,
     RAW_LOG_STORAGE_FORMAT,
     PoolStatic,
@@ -27,10 +32,12 @@ from ddvc.v3_inventory import (
     decode_balance_of_result,
     decode_inventory_log,
     inventory_chunk_completed,
+    inventory_chunk_evidence_path,
     inventory_snapshot_rows,
     inventory_chunk_paths,
     pool_static_from_graph,
 )
+from ddvc.v3_pool_registry import V3_POOL_REGISTRY_SCHEMA_VERSION
 from ddvc.v3_inventory_calendar import (
     CODE_SOURCES as CALENDAR_CODE_SOURCES,
     _fetch_block_timestamp,
@@ -43,7 +50,12 @@ from scripts.audit_v3_graph_event_completeness import (
     compare_event_maps,
     graph_core_events,
 )
-from scripts.fetch_v3_inventory_events import fetch_chunk, run_fetch_jobs, safe_retry_reason
+from scripts.fetch_v3_inventory_events import (
+    fetch_chunk,
+    quarantine_invalid_chunk,
+    run_fetch_jobs,
+    safe_retry_reason,
+)
 
 
 def log(event: str, values: list[int], types: list[str]) -> dict:
@@ -57,6 +69,86 @@ def log(event: str, values: list[int], types: list[str]) -> dict:
         "topics": [EVENT_TOPICS[event]],
         "data": "0x" + abi_encode(types, values).hex(),
     }
+
+
+def frozen_upper(block: int = 220) -> dict[str, object]:
+    response = {
+        "jsonrpc": "2.0",
+        "id": 1,
+        "result": {
+            "number": hex(block),
+            "hash": "0x" + "9" * 64,
+            "parentHash": "0x" + "8" * 64,
+            "timestamp": hex(1_700_000_000),
+        },
+    }
+    endpoint = {"host": "injected", "endpoint_sha256": "0" * 64}
+    record = {
+        "status": "complete",
+        "schema_version": V3_POOL_REGISTRY_SCHEMA_VERSION,
+        "block_number": block,
+        "block_hash": "0x" + "9" * 64,
+        "parent_hash": "0x" + "8" * 64,
+        "timestamp": 1_700_000_000,
+        "rpc_request": {
+            "jsonrpc": "2.0",
+            "id": 1,
+            "method": "eth_getBlockByNumber",
+            "params": [hex(block), False],
+        },
+        "rpc_response": response,
+        "rpc_endpoint": endpoint,
+        "rpc_attempts": [
+            {
+                "endpoint": endpoint,
+                "attempt": 1,
+                "classification": "success",
+                "http_status": None,
+                "rpc_code": None,
+                "message": "success",
+            }
+        ],
+        "response_sha256": hashlib.sha256(
+            json.dumps(response, sort_keys=True, separators=(",", ":")).encode()
+        ).hexdigest(),
+    }
+    identity = {
+        "block_number": block,
+        "block_hash": record["block_hash"],
+        "parent_hash": record["parent_hash"],
+        "timestamp": record["timestamp"],
+    }
+    record["header_identity_sha256"] = hashlib.sha256(
+        json.dumps(identity, sort_keys=True, separators=(",", ":")).encode()
+    ).hexdigest()
+    return record
+
+
+def anchored_rpc(
+    logs: list[dict[str, object]],
+    frozen: dict[str, object],
+    calls: list[tuple[int, int]] | None = None,
+):
+    def request(payload, **_kwargs):
+        assert isinstance(payload, list) and len(payload) == 2
+        log_filter = payload[0]["params"][0]
+        lower = int(str(log_filter["fromBlock"]), 16)
+        upper = int(str(log_filter["toBlock"]), 16)
+        if calls is not None:
+            calls.append((lower, upper))
+        selected = [
+            row
+            for row in logs
+            if lower <= int(str(row["blockNumber"]), 16) <= upper
+        ]
+        header = dict(frozen["rpc_response"])
+        header["id"] = 2
+        return [
+            {"jsonrpc": "2.0", "id": 1, "result": selected},
+            header,
+        ]
+
+    return request
 
 
 def test_collect_and_protocol_collection_reduce_physical_inventory() -> None:
@@ -228,6 +320,7 @@ def test_inventory_checkpoint_preserves_negative_raw_balances_without_flooring()
     assert rows[0]["negative_inventory"] is True
     assert rows[0]["replay_arithmetic_valid"] is False
     assert rows[0]["quantity_kind"] == "event_replayed_pool_inventory"
+    assert rows[0]["state_generation"] == INVENTORY_STATE_GENERATION
     assert rows[0]["custody_validation_status"] == "pending_historical_balance_validation"
     assert rows[0]["ownership_validation_status"] == (
         "pending_protocol_fee_ownership_reconciliation"
@@ -269,6 +362,7 @@ def test_calendar_provenance_covers_every_semantic_dependency() -> None:
 def test_physical_inventory_cache_covers_every_semantic_dependency() -> None:
     assert set(PANEL_CODE_SOURCES) == {
         "scripts/build_v3_inventory_panel.py",
+        "scripts/fetch_v3_inventory_events.py",
         "src/ddvc/asset_types.py",
         "src/ddvc/ethereum_blocks.py",
         "src/ddvc/ethereum_day_cuts.py",
@@ -280,6 +374,8 @@ def test_physical_inventory_cache_covers_every_semantic_dependency() -> None:
         "src/ddvc/state_data.py",
         "src/ddvc/v3_inventory.py",
         "src/ddvc/v3_inventory_calendar.py",
+        "src/ddvc/v3_pool_registry.py",
+        "src/ddvc/pricing/v3pools.py",
     }
 
 
@@ -305,22 +401,27 @@ def test_calendar_rpc_retry_budget_is_not_nested_inside_rpc_post() -> None:
 
 def test_fetch_queue_retries_throttled_chunk_without_abandoning_other_work() -> None:
     calls: dict[tuple[int, int], int] = {}
+    frozen = frozen_upper(2)
 
-    def fetch(lower: int, upper: int, _pools: set[str]) -> dict[str, int]:
+    def fetch(
+        lower: int,
+        upper: int,
+        _frozen_upper: dict[str, object],
+    ) -> dict[str, int]:
         key = (lower, upper)
         calls[key] = calls.get(key, 0) + 1
         if key == (1, 1) and calls[key] == 1:
             raise Throttled("temporary")
-        return {"raw_logs": 1, "recognized_v3_logs": 1}
+        return {"raw_logs": 1}
 
     totals, failures = run_fetch_jobs(
         [(1, 1), (2, 2)],
-        set(),
+        frozen,
         workers=1,
         max_attempts=2,
         fetch=fetch,
     )
-    assert totals == {"raw": 2, "recognized": 2}
+    assert totals == {"raw": 2}
     assert failures == []
     assert calls == {(1, 1): 2, (2, 2): 1}
 
@@ -354,76 +455,238 @@ def test_inventory_fetch_persists_exact_raw_log_parquet() -> None:
     )
     with tempfile.TemporaryDirectory() as directory:
         root = Path(directory)
-        with patch(
-            "scripts.fetch_v3_inventory_events.rpc_post",
-            return_value={"result": [raw]},
-        ):
-            metadata = fetch_chunk(100, 100, {raw["address"]}, root)
+        frozen = frozen_upper()
+        metadata = fetch_chunk(
+            100,
+            100,
+            frozen,
+            root,
+            rpc_request=anchored_rpc([raw], frozen),
+        )
         raw_path, _meta_path = inventory_chunk_paths(100, 100, root)
         table = pq.read_table(raw_path)
         assert table.schema == RAW_LOG_SCHEMA
         assert table.to_pylist()[0] == canonical_raw_log(raw)
         assert metadata["storage_format"] == RAW_LOG_STORAGE_FORMAT
-        assert metadata["recognized_by_event"]["swap"] == 1
-        assert inventory_chunk_completed(100, 100, root)
+        assert metadata["schema_version"] == INVENTORY_RAW_MARKER_SCHEMA_VERSION
+        assert metadata["inventory_raw_generation"] == INVENTORY_RAW_GENERATION
+        assert metadata["raw_by_event"]["swap"] == 1
+        assert inventory_chunk_completed(
+            100,
+            100,
+            root,
+            frozen_upper=frozen,
+        )
 
 
 def test_inventory_fetch_splits_storage_chunk_under_rpc_block_cap() -> None:
     calls: list[tuple[int, int]] = []
 
-    def request(payload: dict[str, object], **_kwargs: object) -> dict[str, object]:
-        params = payload["params"]
-        assert isinstance(params, list)
-        log_filter = params[0]
-        assert isinstance(log_filter, dict)
-        lower = int(str(log_filter["fromBlock"]), 16)
-        upper = int(str(log_filter["toBlock"]), 16)
-        calls.append((lower, upper))
-        return {"result": []}
-
     with tempfile.TemporaryDirectory() as directory:
         root = Path(directory)
-        with patch("scripts.fetch_v3_inventory_events.rpc_post", side_effect=request):
-            metadata = fetch_chunk(100, 220, set(), root)
+        frozen = frozen_upper()
+        metadata = fetch_chunk(
+            100,
+            220,
+            frozen,
+            root,
+            rpc_request=anchored_rpc([], frozen, calls),
+        )
         assert calls == [(100, 149), (150, 199), (200, 220)]
         assert metadata["rpc_block_cap"] == 50
         assert metadata["rpc_subranges"] == 3
-        assert inventory_chunk_completed(100, 220, root)
+        assert inventory_chunk_completed(
+            100,
+            220,
+            root,
+            frozen_upper=frozen,
+        )
+
+
+@pytest.mark.parametrize("tamper", ["rpc_response", "rpc_attempts", "upper_header"])
+def test_inventory_chunk_reopens_every_rpc_evidence_field(tamper: str) -> None:
+    raw = log(
+        "swap",
+        [-1, 2, 2**96, 99, 0],
+        ["int256", "int256", "uint160", "uint128", "int24"],
+    )
+    raw.update(
+        {
+            "address": "0x" + "a" * 40,
+            "blockHash": "0x" + "b" * 64,
+            "transactionHash": "0x" + "c" * 64,
+        }
+    )
+    with tempfile.TemporaryDirectory() as directory:
+        root = Path(directory)
+        frozen = frozen_upper()
+        fetch_chunk(
+            100,
+            100,
+            frozen,
+            root,
+            rpc_request=anchored_rpc([raw], frozen),
+        )
+        evidence_path = inventory_chunk_evidence_path(100, 100, root)
+        with gzip.open(evidence_path, "rt", encoding="utf-8") as handle:
+            evidence = json.load(handle)
+        subrange = evidence["rpc_subrange_evidence"][0]
+        if tamper == "rpc_response":
+            subrange["rpc_response"][0]["result"][0]["data"] = "0x00"
+        elif tamper == "rpc_attempts":
+            subrange["rpc_attempts"] = []
+        else:
+            subrange["frozen_upper_response"]["result"]["hash"] = "0x" + "7" * 64
+        with gzip.open(evidence_path, "wt", encoding="utf-8") as handle:
+            json.dump(evidence, handle, sort_keys=True, separators=(",", ":"))
+        _raw_path, marker_path = inventory_chunk_paths(100, 100, root)
+        marker = json.loads(marker_path.read_text(encoding="utf-8"))
+        marker["rpc_evidence_sha256"] = file_sha256(evidence_path)
+        marker_path.write_text(json.dumps(marker), encoding="utf-8")
+        assert not inventory_chunk_completed(
+            100,
+            100,
+            root,
+            frozen_upper=frozen,
+        )
+
+
+def test_legacy_inventory_chunk_is_recoverably_quarantined() -> None:
+    raw = log("collect_protocol", [1, 2], ["uint128", "uint128"])
+    raw.update(
+        {
+            "address": "0x" + "a" * 40,
+            "blockHash": "0x" + "b" * 64,
+            "transactionHash": "0x" + "c" * 64,
+        }
+    )
+    with tempfile.TemporaryDirectory() as directory:
+        base = Path(directory)
+        root = base / "raw"
+        frozen = frozen_upper()
+        fetch_chunk(
+            100,
+            100,
+            frozen,
+            root,
+            rpc_request=anchored_rpc([raw], frozen),
+        )
+        evidence_path = inventory_chunk_evidence_path(100, 100, root)
+        evidence_path.unlink()
+        _raw_path, marker_path = inventory_chunk_paths(100, 100, root)
+        marker = json.loads(marker_path.read_text(encoding="utf-8"))
+        marker.pop("inventory_raw_generation")
+        marker.pop("schema_version")
+        marker_path.write_text(json.dumps(marker), encoding="utf-8")
+        assert not inventory_chunk_completed(
+            100,
+            100,
+            root,
+            frozen_upper=frozen,
+        )
+        destination = quarantine_invalid_chunk(
+            100,
+            100,
+            frozen_upper=frozen,
+            root=root,
+        )
+        assert destination is not None
+        assert not any(root.glob("blocks_00000100_00000100.*"))
+        quarantine = json.loads((destination / "quarantine.json").read_text())
+        assert quarantine["reason"] == "missing_or_invalid_anchored_rpc_evidence"
+        assert sorted(quarantine["files"]) == [
+            "blocks_00000100_00000100.meta.json",
+            "blocks_00000100_00000100.parquet",
+        ]
 
 
 def test_raw_inventory_chunk_audit_reconciles_content_and_metadata() -> None:
     raw = log("collect_protocol", [1, 2], ["uint128", "uint128"])
-    raw["address"] = "0xpool"
+    raw.update(
+        {
+            "address": "0x" + "1" * 40,
+            "blockHash": "0x" + "a" * 64,
+            "transactionHash": "0x" + "b" * 64,
+        }
+    )
     with tempfile.TemporaryDirectory() as directory:
         root = Path(directory)
-        raw_path, meta_path = inventory_chunk_paths(100, 100, root)
-        pq.write_table(
-            pa.Table.from_pylist([canonical_raw_log(raw)], schema=RAW_LOG_SCHEMA),
-            raw_path,
+        frozen = frozen_upper()
+        fetch_chunk(
+            100,
+            100,
+            frozen,
+            root,
+            rpc_request=anchored_rpc([raw], frozen),
         )
-        meta_path.write_text(
-            json.dumps(
-                {
-                    "status": "complete",
-                    "from_block": 100,
-                    "to_block": 100,
-                    "event_topics": sorted(EVENT_TOPICS.values()),
-                    "storage_format": RAW_LOG_STORAGE_FORMAT,
-                    "raw_logs": 1,
-                    "recognized_v3_logs": 1,
-                    "unrecognized_logs": 0,
-                    "recognized_by_event": {
-                        "mint": 0,
-                        "swap": 0,
-                        "collect": 0,
-                        "flash": 0,
-                        "collect_protocol": 1,
-                    },
-                }
-            )
+        totals = audit_inventory_chunks(
+            [(100, 100)],
+            root,
+            pool_creation_blocks={raw["address"]: 99},
+            frozen_upper=frozen,
         )
-        totals = audit_inventory_chunks([(100, 100)], root, known_pools={"0xpool"})
-    assert totals == {"chunks": 1, "raw_logs": 1, "recognized_v3_logs": 1}
+    assert totals["chunks"] == 1
+    assert totals["raw_logs"] == 1
+    assert totals["canonical_pool_logs"] == 1
+    assert totals["quarantined_logs"] == 0
+    assert totals["canonical_by_event"]["collect_protocol"] == 1
+
+
+def test_raw_inventory_audit_quarantines_nonfactory_and_precreation_logs() -> None:
+    canonical = log(
+        "swap",
+        [-1, 2, 2**96, 99, 0],
+        ["int256", "int256", "uint160", "uint128", "int24"],
+    )
+    canonical.update(
+        {
+            "address": "0x" + "1" * 40,
+            "blockHash": "0x" + "a" * 64,
+            "transactionHash": "0x" + "b" * 64,
+            "logIndex": "0x1",
+        }
+    )
+    absent = {
+        **canonical,
+        "address": "0x" + "2" * 40,
+        "transactionHash": "0x" + "c" * 64,
+        "logIndex": "0x2",
+    }
+    precreation = {
+        **canonical,
+        "transactionHash": "0x" + "d" * 64,
+        "logIndex": "0x3",
+    }
+    with tempfile.TemporaryDirectory() as directory:
+        root = Path(directory)
+        frozen = frozen_upper()
+        fetch_chunk(
+            100,
+            100,
+            frozen,
+            root,
+            rpc_request=anchored_rpc([canonical, absent, precreation], frozen),
+        )
+        totals = audit_inventory_chunks(
+            [(100, 100)],
+            root,
+            pool_creation_blocks={canonical["address"]: 101},
+            frozen_upper=frozen,
+        )
+    assert totals["canonical_pool_logs"] == 0
+    assert totals["quarantined_logs"] == 3
+    assert totals["quarantined_pools"] == 2
+    assert totals["quarantine_reasons"] == {
+        "absent_from_canonical_poolcreated_registry": 1,
+        "predates_canonical_pool_creation": 2,
+    }
+    ledger = totals["quarantine_pool_ledger"]
+    assert [row["reason"] for row in ledger] == [
+        "predates_canonical_pool_creation",
+        "absent_from_canonical_poolcreated_registry",
+    ]
+    assert [row["logs"] for row in ledger] == [2, 1]
+    assert sum(row["swap_logs"] for row in ledger) == 3
 
 
 def test_balance_of_call_and_result_are_exact_uint256() -> None:
