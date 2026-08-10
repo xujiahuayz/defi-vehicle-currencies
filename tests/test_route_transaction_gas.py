@@ -8,7 +8,11 @@ import pytest
 from ddvc.ethereum_receipts import parse_receipt
 from ddvc.gas import load_route_transaction_gas
 from scripts.process import build_route_gas_units, build_route_transaction_gas
-from scripts.process.build_route_transaction_gas import receipt_panel, route_receipt_requests
+from scripts.process.build_route_transaction_gas import (
+    receipt_panel,
+    route_receipt_requests,
+    shard_requests,
+)
 
 
 def receipt(tx_hash: str, block_number: int, gas_price: int) -> dict[str, object]:
@@ -37,6 +41,17 @@ def test_route_requests_deduplicate_exact_transaction_identity(tmp_path: Path) -
 
 def test_receipt_builders_share_one_canonical_cache() -> None:
     assert build_route_gas_units.CACHE == build_route_transaction_gas.CACHE
+
+
+def test_cache_shards_are_deterministic_disjoint_and_complete() -> None:
+    requests = pd.DataFrame(
+        {"tx_hash": [f"0x{index}" for index in range(7)], "block_number": range(7)}
+    )
+    shards = [shard_requests(requests, shard_index=index, shards=2) for index in range(2)]
+    assert set(shards[0]["tx_hash"]).isdisjoint(shards[1]["tx_hash"])
+    assert sorted(pd.concat(shards)["tx_hash"]) == sorted(requests["tx_hash"])
+    with pytest.raises(ValueError, match="0 <= shard-index"):
+        shard_requests(requests, shard_index=2, shards=2)
 
 
 def test_route_requests_reject_conflicting_transaction_blocks(tmp_path: Path) -> None:

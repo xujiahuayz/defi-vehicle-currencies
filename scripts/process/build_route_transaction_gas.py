@@ -12,6 +12,7 @@ import pandas as pd
 from ddvc.data_release import require_node_d_release
 from ddvc.ethereum_receipts import RECEIPT_CACHE, fetch_receipt, write_receipt_snapshot
 from ddvc.paths import DATA_DIR, REPO_ROOT, SHARED_RUNTIME_DIR
+from ddvc.provenance import require_current_artifacts
 from ddvc.quoter import rpc_post
 from ddvc.runtime import bounded_workers, exclusive_job, interruptible_thread_pool
 from ddvc.tables import write_panel
@@ -49,6 +50,16 @@ def route_receipt_requests(path: Path = GROSS_PANEL) -> pd.DataFrame:
             raise ValueError("one route transaction is assigned to multiple Ethereum blocks")
         requests = requests.drop_duplicates("tx_hash", keep="first")
     return requests.sort_values(["block_number", "tx_hash"]).reset_index(drop=True)
+
+
+def shard_requests(
+    requests: pd.DataFrame, *, shard_index: int, shards: int
+) -> pd.DataFrame:
+    """Select one deterministic disjoint cache-filling shard."""
+
+    if shards < 1 or shard_index < 0 or shard_index >= shards:
+        raise ValueError("receipt shard must satisfy 0 <= shard-index < shards")
+    return requests.iloc[shard_index::shards].reset_index(drop=True)
 
 
 def fetch_one(tx_hash: str, block_number: int) -> dict[str, object]:
@@ -122,19 +133,35 @@ def main() -> int:
     parser.add_argument("--workers", type=int, default=8)
     parser.add_argument("--batch-size", type=int, default=5_000)
     parser.add_argument("--limit", type=int)
+    parser.add_argument("--shards", type=int, default=1)
+    parser.add_argument("--shard-index", type=int, default=0)
+    parser.add_argument("--cache-only", action="store_true")
     args = parser.parse_args()
     require_node_d_release(routes=True, market_state=True)
+    require_current_artifacts([GROSS_PANEL], consumer="exact route transaction gas")
     if args.batch_size < 1 or (args.limit is not None and args.limit < 1):
         parser.error("--batch-size and --limit must be positive")
+    if args.shards != 1 and not args.cache_only:
+        parser.error("multi-shard runs must use --cache-only before one full assembly run")
     requests = route_receipt_requests()
     if args.limit is not None:
         requests = requests.head(args.limit)
+    try:
+        requests = shard_requests(
+            requests, shard_index=args.shard_index, shards=args.shards
+        )
+    except ValueError as error:
+        parser.error(str(error))
     workers = bounded_workers(args.workers, maximum=8)
     with exclusive_job(LOCK, job="exact route transaction gas prices"):
         receipts = fetch_receipts(requests, workers=workers, batch_size=args.batch_size)
         panel = receipt_panel(receipts, requests)
-        if args.limit is not None:
-            print(f"PASS: bounded exact route-gas diagnostic receipts={len(panel):,}")
+        if args.cache_only or args.limit is not None:
+            mode = "cache shard" if args.cache_only else "bounded diagnostic"
+            print(
+                f"PASS: exact route-gas {mode} {args.shard_index + 1}/{args.shards}; "
+                f"receipts={len(panel):,}"
+            )
             return 0
         evidence = write_receipt_snapshot(receipts, RECEIPT_EVIDENCE)
         write_panel(
