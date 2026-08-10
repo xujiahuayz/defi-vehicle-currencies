@@ -447,6 +447,90 @@ def test_v2_repeated_pool_swaps_use_unique_directional_amount_anchor() -> None:
     } == {("provider-1", 17, "0.0000000000000001"), ("provider-2", 18, "0.0000000000000002")}
 
 
+def test_v2_repeated_pool_swaps_use_unique_constant_log_offset() -> None:
+    graph = [
+        GraphEvent(
+            venue="uniswap_v2",
+            stream="swaps",
+            event_id=f"provider-{index}",
+            tx_hash="0xtx1",
+            pool="0xpool",
+            block_number=10,
+            provider_log_index=provider_log,
+            fingerprint=("swap", 10, 0, 0, provider_amount_out),
+            decimals0=18,
+            decimals1=18,
+            needs_complete=False,
+        )
+        for index, provider_log, provider_amount_out in ((1, 235, 103), (2, 241, 203))
+    ]
+    exact = [
+        {
+            "address": "0xpool",
+            "block_number": 10,
+            "block_hash": "0xblock",
+            "transaction_hash": "0xtx1",
+            "transaction_index": 1,
+            "log_index": chain_log,
+            "topics": [V2_EVENT_TOPICS["swap"]],
+            "data": "0x"
+            + abi_encode(
+                ["uint256", "uint256", "uint256", "uint256"],
+                [10, 0, 0, chain_amount_out],
+            ).hex(),
+            "removed": False,
+        }
+        for chain_log, chain_amount_out in ((283, 100), (289, 200))
+    ]
+    corrections, supplements, audit = match_event_orders(graph, exact, "uniswap_v2")
+    assert supplements == []
+    assert audit["matched_events"] == 2
+    assert audit["payload_mismatches"] == 2
+    assert {
+        (row["event_id"], row["provider_log_index"], row["chain_log_index"])
+        for row in corrections
+    } == {("provider-1", 235, 283), ("provider-2", 241, 289)}
+
+
+def test_v2_repeated_pool_swaps_reject_nonconstant_log_offsets() -> None:
+    graph = [
+        GraphEvent(
+            venue="uniswap_v2",
+            stream="swaps",
+            event_id=f"provider-{index}",
+            tx_hash="0xtx1",
+            pool="0xpool",
+            block_number=10,
+            provider_log_index=provider_log,
+            fingerprint=("swap", 10, 0, 0, provider_amount_out),
+            decimals0=18,
+            decimals1=18,
+            needs_complete=False,
+        )
+        for index, provider_log, provider_amount_out in ((1, 235, 103), (2, 241, 203))
+    ]
+    exact = [
+        {
+            "address": "0xpool",
+            "block_number": 10,
+            "block_hash": "0xblock",
+            "transaction_hash": "0xtx1",
+            "transaction_index": 1,
+            "log_index": chain_log,
+            "topics": [V2_EVENT_TOPICS["swap"]],
+            "data": "0x"
+            + abi_encode(
+                ["uint256", "uint256", "uint256", "uint256"],
+                [10, 0, 0, chain_amount_out],
+            ).hex(),
+            "removed": False,
+        }
+        for chain_log, chain_amount_out in ((283, 100), (290, 200))
+    ]
+    with pytest.raises(RuntimeError, match="ambiguous structural payload"):
+        match_event_orders(graph, exact, "uniswap_v2")
+
+
 def test_v3_swap_uses_hashed_pool_statics_when_event_decimals_are_absent(tmp_path: Path) -> None:
     raw_root = tmp_path / "raw" / "thegraph"
     row = graph_swap("event-one", "0xtx1", "1", "-2")

@@ -698,6 +698,45 @@ def _v2_swap_anchor_matches(
     ]
 
 
+def _v2_constant_log_offset_matches(
+    provider_groups: Iterable[list[GraphEvent]],
+    candidates: Iterable[ChainEvent],
+) -> dict[CorrectionKey, ChainEvent]:
+    """Match repeated V2 swaps only when their exact order has one constant shift."""
+
+    providers = [min(group, key=lambda event: event.event_id) for group in provider_groups]
+    chain = list(candidates)
+    if (
+        len(providers) < 2
+        or len(providers) != len(chain)
+        or any(event.stream != "swaps" or event.provider_log_index is None for event in providers)
+    ):
+        return {}
+    ordered_providers = sorted(
+        providers,
+        key=lambda event: (int(event.provider_log_index), event.event_id),
+    )
+    ordered_chain = sorted(chain, key=lambda event: event.log_index)
+    provider_indices = [int(event.provider_log_index) for event in ordered_providers]
+    if len(set(provider_indices)) != len(provider_indices):
+        return {}
+    offsets = {
+        exact.log_index - provider_index
+        for provider_index, exact in zip(provider_indices, ordered_chain, strict=True)
+    }
+    if len(offsets) != 1:
+        return {}
+    if any(
+        exact not in _v2_swap_anchor_matches(provider, ordered_chain)
+        for provider, exact in zip(ordered_providers, ordered_chain, strict=True)
+    ):
+        return {}
+    return {
+        provider.correction_key: exact
+        for provider, exact in zip(ordered_providers, ordered_chain, strict=True)
+    }
+
+
 def match_event_orders(
     graph_events: Iterable[GraphEvent],
     exact_records: Iterable[dict[str, object]],
@@ -752,6 +791,11 @@ def match_event_orders(
             ),
         )
         chain_remaining = sorted(exact_groups.get(key, []), key=lambda event: event.log_index)
+        constant_offset_matches = (
+            _v2_constant_log_offset_matches(provider_groups, chain_remaining)
+            if venue in {"uniswap_v2", "sushiswap_v2"}
+            else {}
+        )
         unique_graph_events += len(provider_groups)
         provider_duplicate_rows += sum(len(group) - 1 for group in provider_groups)
         for duplicate_group in provider_groups:
@@ -779,6 +823,10 @@ def match_event_orders(
                     v2_anchor_matches := _v2_swap_anchor_matches(provider, chain_remaining)
                 ) == 1:
                     chain = v2_anchor_matches[0]
+                elif (
+                    offset_match := constant_offset_matches.get(provider.correction_key)
+                ) in chain_remaining:
+                    chain = offset_match
                 elif len(chain_remaining) == 1:
                     chain = chain_remaining[0]
                 elif chain_remaining:
