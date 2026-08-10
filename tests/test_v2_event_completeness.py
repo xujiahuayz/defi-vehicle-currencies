@@ -1,9 +1,11 @@
 from __future__ import annotations
 
 import io
+import gzip
 import hashlib
 import json
 import urllib.error
+from types import SimpleNamespace
 
 from eth_abi import encode as abi_encode
 import pandas as pd
@@ -121,6 +123,25 @@ def graph_event(event_type: str) -> dict[str, object]:
     else:
         row.update({"amount0": "1.25", "amount1": "2"})
     return row
+
+
+def test_graph_preflight_rejects_a_truncated_gzip_before_rpc_fetch(
+    tmp_path, monkeypatch
+) -> None:
+    venue = "uniswap_v2"
+    day = "20250101"
+    root = tmp_path / "thegraph"
+    paths = []
+    for stream in ("swaps", "mints", "burns"):
+        path = root / venue / f"{venue}_{stream}_{day}.jsonl.gz"
+        write_jsonl_gz(path, [graph_event("swap" if stream == "swaps" else stream[:-1])])
+        paths.append(path)
+    payload = paths[1].read_bytes()
+    paths[1].write_bytes(payload[:-8])
+    monkeypatch.setattr(auditor, "GRAPH_ROOT", root)
+    monkeypatch.setattr(auditor, "_launched_venues", lambda _day: (venue,))
+    with pytest.raises(RuntimeError, match="unreadable Graph event file before RPC fetch"):
+        auditor._preflight_graph_streams([day])
 
 
 def raw_event(event_type: str) -> dict[str, object]:
@@ -1514,7 +1535,14 @@ def test_release_evidence_bundle_reopens_cited_artifacts(tmp_path, monkeypatch, 
     monkeypatch.setattr(
         completeness,
         "factory_pair_registry",
-        lambda venue, *_args, **_kwargs: ({}, [venue]),
+        lambda venue, *_args, **_kwargs: (
+            {},
+            [
+                SimpleNamespace(
+                    pool="0x" + f"{V2_EVENT_VENUES.index(venue) + 1:040x}"
+                )
+            ],
+        ),
     )
     monkeypatch.setattr(completeness, "validate_factory_state_proof", lambda *_args, **_kwargs: None)
     monkeypatch.setattr(completeness, "factory_registry_sha256", lambda pairs: "a" * 64)

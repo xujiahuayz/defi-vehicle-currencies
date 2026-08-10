@@ -60,6 +60,7 @@ from ddvc.v2_event_completeness import (
     fetch_factory_root_adaptive,
     frozen_upper_block_path,
     graph_core_events,
+    iter_graph_rows,
     load_or_build_factory_state_proof,
     load_or_resolve_frozen_upper_block,
     missing_v2_exact_log_ranges,
@@ -422,16 +423,29 @@ def _write_parquet(frame: pd.DataFrame, path: Path) -> None:
 
 
 def _preflight_graph_streams(audit_days: list[str]) -> None:
-    missing: list[Path] = []
+    paths: list[Path] = []
     for day in audit_days:
         for venue in _launched_venues(day):
-            missing.extend(path for path in _graph_event_paths(venue, day) if not path.is_file())
+            paths.extend(_graph_event_paths(venue, day))
+    missing = [path for path in paths if not path.is_file()]
     if missing:
         by_stream = Counter(path.name.split("_")[-2] for path in missing)
         raise RuntimeError(
             f"V2 event-source audit lacks {len(missing):,} Graph event files before RPC fetch; "
             f"by_stream={dict(by_stream)}; first={missing[0].name}"
         )
+    rows = 0
+    try:
+        for path in paths:
+            rows += sum(1 for _row in iter_graph_rows(path))
+    except (EOFError, OSError, UnicodeError, json.JSONDecodeError, ValueError) as error:
+        raise RuntimeError(
+            f"V2 event-source audit has an unreadable Graph event file before RPC fetch: {path.name}"
+        ) from error
+    print(
+        f"  Graph event preflight: files={len(paths):,}; rows={rows:,}; gzip/json=valid",
+        flush=True,
+    )
 
 
 def build(
