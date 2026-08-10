@@ -1,6 +1,6 @@
 # Research workflow: paper and talk on dominant vehicle currencies
 
-Version 3, 2026-08-08. Replaces `docs/nbc-2026-deck-pipeline.md` (version 1), whose single-venue empirics and deck were both binned. This is a graph. The paper and the deck inform each other, and evidence can send work back to design.
+Version 4, 2026-08-10. Replaces `docs/nbc-2026-deck-pipeline.md` (version 1), whose single-venue empirics and deck were both binned. This is a graph. The paper and the deck inform each other, and evidence can send work back to design.
 
 Every claim in the "grounding" column below was measured or read in this project. Where something is an assumption, it says so.
 
@@ -130,7 +130,9 @@ This was violated on 2026-08-06 and the cost was legible in advance. Node P was 
 
 **Research-state reconciliation is executable.** After every F to G pass, update `docs/findings-freeze.md` and run `./scripts/run scripts/audit_findings_freeze.py`. The audit checks the live artefacts, their input-aware provenance, panel coverage, retired estimands in the refresh graph, and the unchanged-pass counter. Commit order, document recency, and a green paper build are not evidence that findings are frozen. This gate was added after prose work began while the full panel manifest still described 18,120 rows, v4 was priced on 30 of its historical days, and the downstream refresher still ran estimands the definition audit had retired.
 
-**One model ledger separates execution volume from admissible evidence.** `docs/model-ledger.json` is the canonical family-level inventory for fitted statistical models. Every family records its claim, estimator, fixed effects, inference, substantive and diagnostic specification counts, resampling refits, artefacts, and one of four statuses: `admissible`, `diagnostic`, `withheld`, or `retired`. A multivariate fit counts once, not once per coefficient; pretrend and pseudo-break fits are diagnostics; permutation, randomisation, and power-simulation fits are refits, not additional empirical specifications. The findings-freeze audit owns the ledger gate. Paper tables, old specification registries, and prose may consume the ledger but may not maintain a competing count.
+**One model ledger separates execution volume from admissible evidence.** `docs/model-ledger.json` is the canonical family-level inventory for fitted statistical models. Every family records its claim or discovery question, estimator, fixed effects, inference, substantive and diagnostic specification counts, resampling refits, artefacts, and one of five statuses: `exploratory`, `admissible`, `diagnostic`, `withheld`, or `retired`. A multivariate fit counts once, not once per coefficient; pretrend and pseudo-break fits are diagnostics; permutation, randomisation, and power-simulation fits are refits, not additional empirical specifications. An exploratory family may name a discovery question that is not yet a registered claim, but its complete output and model count still enter the ledger and it cannot enter prose. The findings-freeze audit owns the ledger gate. Paper tables, old specification registries, and prose may consume the ledger but may not maintain a competing count.
+
+**Exploration is a first-class node, not leakage around the lock.** After D3 releases one harmonised analysis generation, E0 examines distributions, support geometry, anomalies, functional forms, heterogeneity, mechanism candidates and rival explanations with no obligation to preserve the current narrative. Every fitted family is logged as `exploratory`, including nulls and failures. E0 may reopen C when the object is poorly defined, D when the needed field or support is missing, or B when a mechanism needs source adjudication. E1 begins only after that discovery-and-critique loop has stopped changing the estimand; it selects a minimum defensible primary family, mandatory alternatives and falsifiers and hashes that generation in `docs/specification-lock.json`. F then runs the registered generation and its attack set while retaining a separate exploratory lane for surprises. A discovery becomes confirmatory evidence only after E1 is reopened, the new decision is recorded before the promoted specification is rerun, and the paper labels the archival-data limitation instead of claiming external preregistration. This separation protects open-minded search and makes result selection visible.
 
 **Audit calendars do not define economic horizons.** A transaction-state day sampled near the middle of each calendar month is an estimator-validation snapshot only. It can test causal ordering, quote reproduction, arithmetic, support, and failure concentration across the project span; it cannot establish persistence, a structural break, or a market-maturation trend. Final dynamic estimation uses daily exact-state observations and exact calendar-day links at 1, 7, 30, and 120 days. Calendar months and row shifts are prohibited substitutes because they change elapsed time when month length or observation density changes.
 
@@ -375,10 +377,18 @@ D. Canonical cross-venue data layer BLOCKING before E and F. D1 freezes the
      then builds analysis-ready panels. Raw provider rows are inaccessible to
      empirical runners. Full-panel cross-venue routing series and validation
      subsets are outputs of D, not substitutes for completing it.
-E. Design + specification lock .... section 4 hypotheses, decision registry,
-     enumerated alternatives, locked and hashed before F runs.
-F. Empirics ....................... per E. Specification curves. Multi-agent
-     NSE with the critique round before estimates fix.
+E0. Exploration ................... open-minded distribution, anomaly, support,
+     functional-form, heterogeneity and mechanism search on released D3 data.
+     Every fitted family enters the model ledger as exploratory. E0 can return
+     to B, C or D and cannot write a paper claim.
+E1. Design + specification lock ... after E0 stabilises: section 4 estimands,
+     minimum primary families, decision registry, enumerated alternatives and
+     falsifiers, locked and hashed before confirmatory F runs.
+F. Empirics ....................... two explicit lanes. Confirmatory F runs E1,
+     specification curves and the attack set. Exploratory F investigates new
+     patterns but remains labelled and can only promote a result by reopening
+     E1 and rerunning the newly recorded generation. Multi-agent NSE remains a
+     bug detector, with the critique round before estimates fix.
 G. Paper .......................... six sections, JFE invariants of section 1,
      pure-empirics lane, named rival mechanisms as the horse race.
      Output: docs/paper-spine.md (architecture, claim inventory with
@@ -485,7 +495,7 @@ K. Ideation ....................... proposes what nobody asked for. ADDED
 J. Gates .......................... run on every G/H artefact (section 7).
 ```
 
-Graph contract: A and B feed C; C and K reopen each other; C sends data-changing definitions through D and then E; D must pass its full-calendar canonical-input gate before E or F may execute; F, G and H iterate in both directions; I can return a defect to C, D, E, F, G or H; J runs continuously; P remains closed until the findings freeze. The active edge, parent loop and next edge live in the machine-readable frontmatter of `docs/findings-freeze.md`, so a long-running D build never makes the project look as though it has left C <-> K or entered prose.
+Graph contract: A and B feed C; C and K reopen each other; C sends data-changing definitions through D and then E0; D must pass its full-calendar canonical-input gate before E0, E1 or F may execute; E0 may return to B, C or D, E1 locks only after E0 stabilises, and F may reopen E0 or E1; F, G and H iterate in both directions; I can return a defect to C, D, E0, E1, F, G or H; J runs continuously; P remains closed until the findings freeze. The active edge, parent loop and next edge live in the machine-readable frontmatter of `docs/findings-freeze.md`, so a long-running D build never makes the project look as though it has left C <-> K or entered prose.
 
 ---
 

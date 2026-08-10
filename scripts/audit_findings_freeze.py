@@ -166,7 +166,13 @@ LOCKED_CLAIM_STATUSES = {
     "enter_fgh_mechanism",
     "enter_fgh_companion",
 }
-MODEL_LEDGER_STATUSES = {"admissible", "diagnostic", "withheld", "retired"}
+MODEL_LEDGER_STATUSES = {
+    "exploratory",
+    "admissible",
+    "diagnostic",
+    "withheld",
+    "retired",
+}
 CAPITAL_CONTRACT_COLUMNS = (
     "venue",
     "pool_family",
@@ -2619,7 +2625,7 @@ def validate_model_ledger(
         str(family.get("id") or "missing")
         for family in families
         if isinstance(family, dict)
-        and family.get("status") != "retired"
+        and family.get("status") not in {"exploratory", "retired"}
         and family.get("claim_id") not in claim_ids
     ]
     missing_artifacts = [

@@ -651,6 +651,11 @@ class FindingsFreezeAuditTest(unittest.TestCase):
             passed, detail = validate_model_ledger(payload, claim_ids={"lead"})
             self.assertTrue(passed, detail)
             self.assertIn("reported=5", detail)
+            payload["families"][0]["status"] = "exploratory"
+            payload["families"][0]["claim_id"] = "unregistered_discovery_question"
+            passed, detail = validate_model_ledger(payload, claim_ids={"lead"})
+            self.assertTrue(passed, detail)
+            payload["families"][0]["status"] = "admissible"
             payload["families"][0]["claim_id"] = "unknown"
             passed, detail = validate_model_ledger(payload, claim_ids={"lead"})
             self.assertFalse(passed, detail)

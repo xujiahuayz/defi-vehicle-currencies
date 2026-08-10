@@ -2,8 +2,8 @@
 freeze_status: red
 stable_passes: 0
 active_node: D2-strict-raw + D2-state-candidate + D2-independent-event-certificate
-parent_loop: C -> D1/D2/D3 -> E-validation -> repair loop -> E-lock -> F <-> G <-> H -> I
-next_edge: D2-release -> D3-construction-audit -> D3-full-daily-frontier -> E-lock -> F <-> G <-> H -> I
+parent_loop: C -> D1/D2/D3 -> E0-exploration -> repair loop -> E1-lock -> F <-> G <-> H -> I
+next_edge: D2-release -> D3-construction-audit -> D3-full-daily-frontier -> E0-exploration -> E1-lock -> F <-> G <-> H -> I
 prose_node: closed
 updated: 2026-08-10
 ---
