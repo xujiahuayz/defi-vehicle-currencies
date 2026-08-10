@@ -29,7 +29,8 @@ from ddvc.state_data import (
     write_cp_partition,
     write_tick_partition,
 )
-from ddvc.pricing.tick_replay import load_tick_day_events
+from ddvc.pricing.tick_replay import TickReplayState, load_tick_day_events
+from ddvc.pricing.tick_state import TickPoolState
 from ddvc.route_state import OrderedTickStateCursor, TickStateCut
 from ddvc.v2_event_completeness import V2_EVENT_TOPICS
 from scripts import reconcile_graph_event_order as reconcile
@@ -286,7 +287,23 @@ def test_reconciliation_repairs_duplicates_rounding_and_omissions(tmp_path: Path
         graph_swap("provider-one", "0xtx1", "1.000000000000000003", "-2"),
         graph_swap("provider-duplicate", "0xtx1", "1.000000000000000003", "-2"),
     ]
-    write_graph_day(raw_root, graph_rows)
+    for row in graph_rows:
+        row["sqrtPriceX96"] = str((1 << 96) + 123)
+        row["tick"] = "7"
+        row["pool"]["tickSpacing"] = "10"
+    provider_burn = {
+        "id": "provider-burn",
+        "transaction": {"id": "0xtx3", "blockNumber": "10", "timestamp": "100"},
+        "timestamp": "100",
+        "logIndex": "9",
+        "amount": "12",
+        "amount0": "2",
+        "amount1": "3",
+        "tickLower": "-20",
+        "tickUpper": "20",
+        "pool": graph_rows[0]["pool"],
+    }
+    write_graph_day(raw_root, graph_rows, burns=[provider_burn])
     write_v3_statics(raw_root)
     exact = [
         exact_swap("0xtx1", 7, 10**18, -2 * 10**6),
@@ -297,10 +314,23 @@ def test_reconciliation_repairs_duplicates_rounding_and_omissions(tmp_path: Path
     graph = load_graph_events(raw_root, "uniswap_v3", "20250101")
     corrections, missing, audit = match_event_orders(graph, exact, "uniswap_v3")
     assert audit["provider_duplicate_rows"] == 1
-    assert audit["payload_mismatches"] == 1
-    assert audit["supplement_rows"] == 2
+    assert audit["payload_mismatches"] == 2
+    assert audit["supplement_rows"] == 1
     assert audit["ignored_zero_liquidity_events"] == 1
-    assert len(corrections) == 2
+    assert len(corrections) == 3
+    burn_correction = next(
+        row for row in corrections if row["event_id"] == "provider-burn"
+    )
+    assert burn_correction["amount0_override"] == "1"
+    assert burn_correction["amount1_override"] == "2"
+    assert burn_correction["liquidity_amount_override"] == 10
+    assert burn_correction["tick_lower_override"] == -10
+    assert burn_correction["tick_upper_override"] == 10
+    swap_correction = next(
+        row for row in corrections if row["event_id"] == "provider-one"
+    )
+    assert swap_correction["sqrt_price_x96_override"] == 1 << 96
+    assert swap_correction["tick_override"] == 0
 
     template = graph_rows[0]["pool"]
     supplements = [
@@ -323,7 +353,7 @@ def test_reconciliation_repairs_duplicates_rounding_and_omissions(tmp_path: Path
             "event_topics": list(V3_STATE_EVENT_TOPICS.values()),
         },
     )
-    write_correction_generation(
+    _, correction_meta = write_correction_generation(
         root=correction_root,
         raw_root=raw_root,
         venue="uniswap_v3",
@@ -351,6 +381,14 @@ def test_reconciliation_repairs_duplicates_rounding_and_omissions(tmp_path: Path
     assert set(frame["log_index"].astype(int)) == {7, 8, 9}
     corrected = frame.loc[frame["tx_hash"] == "0xtx1"].iloc[0]
     assert corrected["amount0"] == "1"
+    assert corrected["sqrt_price_x96"] == str(1 << 96)
+    assert corrected["tick"] == 0
+    corrected_burn = frame.loc[frame["tx_hash"] == "0xtx3"].iloc[0]
+    assert corrected_burn["amount0"] == "1"
+    assert corrected_burn["amount1"] == "2"
+    assert corrected_burn["liquidity_delta"] == "-10"
+    assert corrected_burn["tick_lower"] == -10
+    assert corrected_burn["tick_upper"] == 10
     state_root = tmp_path / "state"
     write_tick_partition(raw_root, "uniswap_v3", "20250101", root=state_root)
     quote_events = load_tick_day_events(
@@ -364,6 +402,40 @@ def test_reconciliation_repairs_duplicates_rounding_and_omissions(tmp_path: Path
         for event in quote_events
     }
     assert "0xtx2" in released_transactions
+    burn_event = next(
+        event
+        for event in quote_events
+        if str((event.row.get("transaction") or {}).get("id")) == "0xtx3"
+    )
+    replay = TickReplayState()
+    replay.apply(burn_event)
+    assert replay.ticks_by_venue["uniswap_v3"]["0xpool"] == {-10: -10, 10: 10}
+    swap_event = next(
+        event
+        for event in quote_events
+        if str((event.row.get("transaction") or {}).get("id")) == "0xtx1"
+    )
+    replay.states_by_venue["uniswap_v3"] = {
+        "0xpool": TickPoolState(
+            pool="0xpool",
+            token0="0xa",
+            token1="0xb",
+            sym0="A",
+            sym1="B",
+            dec0=18,
+            dec1=6,
+            sqrt_price_x96=(1 << 96) + 123,
+            tick=7,
+            fee_pips=500,
+            tick_spacing=10,
+            block=9,
+            log_index=1,
+        )
+    }
+    replay.apply(swap_event)
+    exact_state = replay.states_by_venue["uniswap_v3"]["0xpool"]
+    assert exact_state.sqrt_price_x96 == 1 << 96
+    assert exact_state.tick == 0
     applied: list[str] = []
 
     class QuoteReplay:
@@ -374,6 +446,12 @@ def test_reconciliation_repairs_duplicates_rounding_and_omissions(tmp_path: Path
     cursor = OrderedTickStateCursor(tuple(quote_events))
     cursor.apply_until(QuoteReplay(), TickStateCut.strict_before_event((11, 0)))
     assert "0xtx2" in applied
+    metadata = json.loads(correction_meta.read_text(encoding="utf-8"))
+    assert metadata["schema_version"] == 5
+    metadata["schema_version"] = 4
+    correction_meta.write_text(json.dumps(metadata) + "\n", encoding="utf-8")
+    with pytest.raises(ValueError, match="invalid event-order generation metadata"):
+        normalise_tick_partition(raw_root, "uniswap_v3", "20250101")
 
 
 def test_reconciliation_rejects_ambiguous_structural_payload_matches(tmp_path: Path) -> None:

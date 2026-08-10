@@ -25,7 +25,7 @@ from ddvc.v2_event_completeness import V2_EVENT_BY_TOPIC, V2_EVENT_TOPICS
 from ddvc.v3_inventory import EVENT_TOPICS as V3_INVENTORY_TOPICS
 
 
-SCHEMA_VERSION = 4
+SCHEMA_VERSION = 5
 SUPPORTED_VENUES = frozenset({"uniswap_v2", "sushiswap_v2", "uniswap_v3"})
 CORE_STREAMS = ("swaps", "mints", "burns")
 V3_STATE_EVENT_TOPICS = {
@@ -118,6 +118,11 @@ class EventOverride:
     log_index: int | None = None
     amount0: str | None = None
     amount1: str | None = None
+    sqrt_price_x96: int | None = None
+    tick: int | None = None
+    liquidity_amount: int | None = None
+    tick_lower: int | None = None
+    tick_upper: int | None = None
     amount0_in: str | None = None
     amount1_in: str | None = None
     amount0_out: str | None = None
@@ -295,9 +300,14 @@ def graph_fingerprint(
             int(row.get("sqrtPriceX96")),
             int(row.get("tick")),
         )
+    decimals0, decimals1 = _event_decimals(pool, token0, token1, pool_decimals)
+    if decimals0 is None or decimals1 is None:
+        raise ValueError("V3 Graph liquidity event lacks token decimals")
     return (
         event_type,
         int(row.get("amount")),
+        _raw_integer(row.get("amount0"), decimals0),
+        _raw_integer(row.get("amount1"), decimals1),
         int(row.get("tickLower")),
         int(row.get("tickUpper")),
     )
@@ -571,6 +581,8 @@ def chain_event(record: dict[str, object], venue: str) -> ChainEvent:
             fingerprint = (
                 event_type,
                 int(amount),
+                int(amount0),
+                int(amount1),
                 tick_lower,
                 tick_upper,
             )
@@ -589,6 +601,8 @@ def chain_event(record: dict[str, object], venue: str) -> ChainEvent:
             fingerprint = (
                 event_type,
                 int(amount),
+                int(amount0),
+                int(amount1),
                 tick_lower,
                 tick_upper,
             )
@@ -886,7 +900,12 @@ def match_event_orders(
                 and chain.event_type in {"mint", "burn"}
                 and provider.needs_complete
             )
-            if payload_mismatch and chain.event_type != "swap" and not incomplete_v2_liquidity:
+            if (
+                payload_mismatch
+                and chain.event_type != "swap"
+                and not incomplete_v2_liquidity
+                and venue != "uniswap_v3"
+            ):
                 raise RuntimeError(
                     "exact event-order reconciliation found an unsupported payload mismatch: "
                     f"{venue}/{provider.stream}/{provider.event_id}"
@@ -903,6 +922,20 @@ def match_event_orders(
                         ),
                         "amount1_override": raw_to_human(
                             chain.payload["amount1"], provider.decimals1
+                        ),
+                        **(
+                            {
+                                "liquidity_amount_override": chain.payload["amount"],
+                                "tick_lower_override": chain.payload["tick_lower"],
+                                "tick_upper_override": chain.payload["tick_upper"],
+                            }
+                            if chain.event_type in {"mint", "burn"}
+                            else {
+                                "sqrt_price_x96_override": chain.payload[
+                                    "sqrt_price_x96"
+                                ],
+                                "tick_override": chain.payload["tick"],
+                            }
                         ),
                     }
                 elif chain.event_type == "swap":
@@ -1065,6 +1098,11 @@ class EventOrderCorrections:
             chain_log_index = int(row["chain_log_index"])
             amount0 = row.get("amount0_override")
             amount1 = row.get("amount1_override")
+            sqrt_price_x96 = row.get("sqrt_price_x96_override")
+            tick = row.get("tick_override")
+            liquidity_amount = row.get("liquidity_amount_override")
+            tick_lower = row.get("tick_lower_override")
+            tick_upper = row.get("tick_upper_override")
             amount0_in = row.get("amount0_in_override")
             amount1_in = row.get("amount1_in_override")
             amount0_out = row.get("amount0_out_override")
@@ -1079,6 +1117,63 @@ class EventOrderCorrections:
                 raise ValueError(f"partial V2 payload correction: {key}")
             if amount0 is not None and amount0_in is not None:
                 raise ValueError(f"mixed V2/V3 payload correction: {key}")
+            v3_swap_state = (sqrt_price_x96, tick)
+            if any(value is not None for value in v3_swap_state) and any(
+                value is None for value in v3_swap_state
+            ):
+                raise ValueError(f"partial V3 swap-state correction: {key}")
+            if any(value is not None for value in v3_swap_state):
+                if (
+                    str(row.get("venue") or "") != "uniswap_v3"
+                    or key[0] != "swaps"
+                    or amount0 is None
+                    or amount1 is None
+                    or amount0_in is not None
+                ):
+                    raise ValueError(f"invalid V3 swap-state correction: {key}")
+                try:
+                    sqrt_price_x96 = int(sqrt_price_x96)
+                    tick = int(tick)
+                except (TypeError, ValueError) as error:
+                    raise ValueError(f"malformed V3 swap-state correction: {key}") from error
+                if sqrt_price_x96 <= 0:
+                    raise ValueError(f"invalid V3 swap-state correction: {key}")
+            elif (
+                str(row.get("venue") or "") == "uniswap_v3"
+                and key[0] == "swaps"
+                and amount0 is not None
+            ):
+                raise ValueError(f"partial V3 swap-state correction: {key}")
+            v3_liquidity_state = (liquidity_amount, tick_lower, tick_upper)
+            if any(value is not None for value in v3_liquidity_state) and any(
+                value is None for value in v3_liquidity_state
+            ):
+                raise ValueError(f"partial V3 liquidity-state correction: {key}")
+            if any(value is not None for value in v3_liquidity_state):
+                if (
+                    str(row.get("venue") or "") != "uniswap_v3"
+                    or key[0] not in {"mints", "burns"}
+                    or amount0 is None
+                    or amount1 is None
+                    or amount0_in is not None
+                ):
+                    raise ValueError(f"invalid V3 liquidity-state correction: {key}")
+                try:
+                    liquidity_amount = int(liquidity_amount)
+                    tick_lower = int(tick_lower)
+                    tick_upper = int(tick_upper)
+                except (TypeError, ValueError) as error:
+                    raise ValueError(
+                        f"malformed V3 liquidity-state correction: {key}"
+                    ) from error
+                if liquidity_amount < 0 or tick_lower >= tick_upper:
+                    raise ValueError(f"invalid V3 liquidity-state correction: {key}")
+            elif (
+                str(row.get("venue") or "") == "uniswap_v3"
+                and key[0] in {"mints", "burns"}
+                and amount0 is not None
+            ):
+                raise ValueError(f"partial V3 liquidity-state correction: {key}")
             if needs_complete not in (None, False):
                 raise ValueError(f"invalid liquidity-completion correction: {key}")
             if chain_log_index < 0 or (
@@ -1092,6 +1187,15 @@ class EventOrderCorrections:
                 log_index=chain_log_index,
                 amount0=str(amount0) if amount0 is not None else None,
                 amount1=str(amount1) if amount1 is not None else None,
+                sqrt_price_x96=(
+                    int(sqrt_price_x96) if sqrt_price_x96 is not None else None
+                ),
+                tick=int(tick) if tick is not None else None,
+                liquidity_amount=(
+                    int(liquidity_amount) if liquidity_amount is not None else None
+                ),
+                tick_lower=int(tick_lower) if tick_lower is not None else None,
+                tick_upper=int(tick_upper) if tick_upper is not None else None,
                 amount0_in=str(amount0_in) if amount0_in is not None else None,
                 amount1_in=str(amount1_in) if amount1_in is not None else None,
                 amount0_out=str(amount0_out) if amount0_out is not None else None,

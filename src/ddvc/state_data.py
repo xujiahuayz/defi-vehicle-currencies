@@ -512,6 +512,11 @@ def _normalise_tick_row(
     log_index_override: int | None = None,
     amount0_override: str | None = None,
     amount1_override: str | None = None,
+    sqrt_price_x96_override: int | None = None,
+    tick_override: int | None = None,
+    liquidity_amount_override: int | None = None,
+    tick_lower_override: int | None = None,
+    tick_upper_override: int | None = None,
 ) -> tuple[dict[str, object], dict[str, bool]]:
     pool = row.get("pool") or {}
     token0 = pool.get("token0") or {}
@@ -572,7 +577,12 @@ def _normalise_tick_row(
     liquidity_delta = None
     if record_type == "liquidity":
         try:
-            liquidity_delta = str(liquidity_sign * int(row.get("amount") or 0))
+            liquidity_amount = (
+                liquidity_amount_override
+                if liquidity_amount_override is not None
+                else row.get("amount") or 0
+            )
+            liquidity_delta = str(liquidity_sign * int(liquidity_amount))
         except (TypeError, ValueError):
             reasons.append("invalid_liquidity_delta")
             usable = False
@@ -605,11 +615,27 @@ def _normalise_tick_row(
         "amount0": _text(amount0),
         "amount1": _text(amount1),
         "value_usd": _text(row.get("amountUSD")),
-        "sqrt_price_x96": _text(row.get("sqrtPriceX96") or row.get("sqrtPrice")),
-        "tick": _optional_int(row.get("tick")),
+        "sqrt_price_x96": (
+            str(sqrt_price_x96_override)
+            if sqrt_price_x96_override is not None
+            else _text(row.get("sqrtPriceX96") or row.get("sqrtPrice"))
+        ),
+        "tick": (
+            int(tick_override)
+            if tick_override is not None
+            else _optional_int(row.get("tick"))
+        ),
         "liquidity_delta": liquidity_delta,
-        "tick_lower": _optional_int(row.get("tickLower")),
-        "tick_upper": _optional_int(row.get("tickUpper")),
+        "tick_lower": (
+            int(tick_lower_override)
+            if tick_lower_override is not None
+            else _optional_int(row.get("tickLower"))
+        ),
+        "tick_upper": (
+            int(tick_upper_override)
+            if tick_upper_override is not None
+            else _optional_int(row.get("tickUpper"))
+        ),
         "quote_supported": quote_supported,
         "quote_unsupported_reason": (
             None
@@ -680,6 +706,19 @@ def normalise_tick_partition(
                 log_index_override=override.log_index if override is not None else None,
                 amount0_override=override.amount0 if override is not None else None,
                 amount1_override=override.amount1 if override is not None else None,
+                sqrt_price_x96_override=(
+                    override.sqrt_price_x96 if override is not None else None
+                ),
+                tick_override=override.tick if override is not None else None,
+                liquidity_amount_override=(
+                    override.liquidity_amount if override is not None else None
+                ),
+                tick_lower_override=(
+                    override.tick_lower if override is not None else None
+                ),
+                tick_upper_override=(
+                    override.tick_upper if override is not None else None
+                ),
             )
             if record_type == "swap" and record["pool"]:
                 prior_family = pool_families.get(str(record["pool"]))

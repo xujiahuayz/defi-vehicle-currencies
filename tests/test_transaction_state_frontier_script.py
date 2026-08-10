@@ -36,8 +36,10 @@ from scripts.build_transaction_state_frontier import (
     load_cached_day,
     load_target_routes,
     load_replay_checkpoint,
+    main,
     frontier_cache_identity,
     rejection_record,
+    require_full_daily_target_release,
     replay_checkpoint_due,
     save_replay_checkpoint,
     select_days,
@@ -55,6 +57,34 @@ from ddvc.realised import LINEAR_ROUTE_COLUMNS
 
 
 class TransactionStateFrontierScriptTests(unittest.TestCase):
+    def test_full_daily_target_release_is_explicitly_fail_closed(self) -> None:
+        with self.assertRaisesRegex(
+            RuntimeError,
+            "streamed, immutable receipt-anchored target-route ledger",
+        ):
+            require_full_daily_target_release()
+
+    def test_full_daily_mode_stops_before_every_downstream_gate(self) -> None:
+        with (
+            patch(
+                "sys.argv",
+                ["build_transaction_state_frontier.py", "--daily-calendar"],
+            ),
+            patch(
+                "scripts.build_transaction_state_frontier.require_node_d_release"
+            ) as node_gate,
+            patch(
+                "scripts.build_transaction_state_frontier.require_current_artifacts"
+            ) as artifact_gate,
+            patch(
+                "scripts.build_transaction_state_frontier.available_days"
+            ) as calendar_load,
+        ):
+            self.assertEqual(main(), 1)
+        node_gate.assert_not_called()
+        artifact_gate.assert_not_called()
+        calendar_load.assert_not_called()
+
     def test_strict_route_order_requires_one_block(self) -> None:
         events = [
             {"block": 12, "log_index": 8},

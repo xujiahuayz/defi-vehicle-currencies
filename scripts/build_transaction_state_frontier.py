@@ -518,6 +518,18 @@ def select_days(
     return sorted(selected)
 
 
+def require_full_daily_target_release() -> None:
+    """Keep the canonical daily frontier closed until its target ledger is certified."""
+
+    raise RuntimeError(
+        "full-daily transaction-state frontier is fail-closed pending a streamed, "
+        "immutable receipt-anchored target-route ledger, a factory-certified V2 "
+        "candidate perimeter with exact pre-transaction state, exact-to-scored V3 "
+        "state lineage, bounded full-history V4 state, and a scorer that consumes "
+        "the certified target ledger"
+    )
+
+
 def validate_reproduction_support(
     support: pd.DataFrame,
     expected_days: list[str],
@@ -1546,6 +1558,12 @@ def main() -> int:
         help="materialise the distinct full-daily estimation frontier after the audit passes",
     )
     args = parser.parse_args()
+    if args.daily_calendar:
+        try:
+            require_full_daily_target_release()
+        except RuntimeError as error:
+            print(f"error: {error}")
+            return 1
     require_node_d_release(routes=True, market_state=True)
     require_current_artifacts(
         [TOKEN_DECIMALS], consumer="transaction-state frontier"
