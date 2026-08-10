@@ -34,6 +34,7 @@ def parse_receipt(
             if result.get("blockNumber") is not None
             else None
         )
+        block_hash = str(result.get("blockHash") or "").lower() or None
         effective_gas_price = (
             int(str(result["effectiveGasPrice"]), 16)
             if result.get("effectiveGasPrice") is not None
@@ -50,6 +51,7 @@ def parse_receipt(
     return {
         "tx_hash": normalized_hash,
         "block_number": block_number,
+        "block_hash": block_hash,
         "gas_used": gas_used,
         "status": status,
         "tx_to": str(result.get("to") or "").lower() or None,
@@ -63,6 +65,7 @@ def receipt_is_current(
     tx_hash: str,
     *,
     expected_block: int | None,
+    require_block_hash: bool = False,
 ) -> bool:
     if not isinstance(row, dict):
         return False
@@ -72,6 +75,14 @@ def receipt_is_current(
         and int(row["gas_used"]) > 0
         and row.get("status") in (0, 1)
         and "tx_to" in row
+        and (
+            not require_block_hash
+            or (
+                isinstance(row.get("block_hash"), str)
+                and str(row["block_hash"]).startswith("0x")
+                and len(str(row["block_hash"])) == 66
+            )
+        )
         and (
             expected_block is None
             or row.get("block_number") == int(expected_block)
@@ -84,6 +95,7 @@ def fetch_receipt(
     *,
     cache: Path,
     expected_block: int | None = None,
+    require_block_hash: bool = False,
     rpc_request=rpc_post,
 ) -> dict[str, object]:
     """Fetch one receipt into a transaction-keyed atomic cache."""
@@ -95,7 +107,12 @@ def fetch_receipt(
             row = json.loads(cached.read_text(encoding="utf-8"))
         except (OSError, json.JSONDecodeError):
             row = None
-        if receipt_is_current(row, normalized_hash, expected_block=expected_block):
+        if receipt_is_current(
+            row,
+            normalized_hash,
+            expected_block=expected_block,
+            require_block_hash=require_block_hash,
+        ):
             return row
     response = rpc_request(
         {
@@ -110,7 +127,12 @@ def fetch_receipt(
         retry_json_errors=True,
     )
     row = parse_receipt(normalized_hash, response, expected_block=expected_block)
-    if row is None or not receipt_is_current(row, normalized_hash, expected_block=expected_block):
+    if row is None or not receipt_is_current(
+        row,
+        normalized_hash,
+        expected_block=expected_block,
+        require_block_hash=require_block_hash,
+    ):
         raise RuntimeError("receipt response is incomplete or violates its requested identity")
     cache.mkdir(parents=True, exist_ok=True)
     with atomic_output(cached) as temporary:

@@ -11,6 +11,7 @@ from pathlib import Path
 import pyarrow.parquet as pq
 
 from ddvc.ethereum_day_cuts import fetch_block_timestamp
+from ddvc.ethereum_receipts import RECEIPT_CACHE, fetch_receipt
 from ddvc.ethereum_logs import (
     RAW_LOG_SCHEMA,
     RAW_LOG_STORAGE_FORMAT,
@@ -19,6 +20,7 @@ from ddvc.ethereum_logs import (
     write_exact_log_chunk,
 )
 from ddvc.graph_event_order import (
+    ProviderEventsAbsentError,
     correction_root_for_graph,
     event_topics,
     load_graph_events,
@@ -215,9 +217,32 @@ def reconcile_day(
             raw, marker = exact_chunk_paths(venue, day, start, end)
             exact_paths.extend((raw, marker))
             exact_records.extend(pq.read_table(raw).to_pylist())
-    corrections, missing_events, audit = match_event_orders(
-        graph_events, exact_records, venue
-    )
+    transaction_receipt_evidence: list[dict[str, object]] = []
+    try:
+        corrections, missing_events, audit = match_event_orders(
+            graph_events, exact_records, venue
+        )
+    except ProviderEventsAbsentError as error:
+        absent_transactions = {
+            event.tx_hash: event.block_number for event in error.events
+        }
+        transaction_receipt_evidence = [
+            fetch_receipt(
+                tx_hash,
+                cache=RECEIPT_CACHE,
+                expected_block=block_number,
+                require_block_hash=True,
+            )
+            for tx_hash, block_number in sorted(absent_transactions.items())
+        ]
+        if any(int(receipt["status"]) != 0 for receipt in transaction_receipt_evidence):
+            raise error
+        corrections, missing_events, audit = match_event_orders(
+            graph_events,
+            exact_records,
+            venue,
+            reverted_transactions=absent_transactions,
+        )
     templates = load_pool_templates(GRAPH_ROOT, venue, day)
     timestamp_evidence: list[dict[str, object]] = []
     timestamps: dict[int, int] = {}
@@ -250,6 +275,7 @@ def reconcile_day(
         audit=audit,
         start_block=lower,
         end_block=upper,
+        transaction_receipt_evidence=transaction_receipt_evidence,
     )
     print(
         f"COMPLETE: {venue}/{day} graph={audit['graph_events']:,}; "

@@ -10,6 +10,7 @@ from eth_abi import encode as abi_encode
 from ddvc.ethereum_logs import write_exact_log_chunk
 from ddvc.graph_event_order import (
     GraphEvent,
+    ProviderEventsAbsentError,
     V3_STATE_EVENT_TOPICS,
     correction_root_for_graph,
     load_graph_events,
@@ -484,6 +485,12 @@ def test_v2_events_use_hashed_same_day_snapshot_decimals(tmp_path: Path) -> None
         "amount1Out": "2",
         "pair": pair,
     }
+    reverted_swap = {
+        **swap,
+        "id": "event-reverted",
+        "transaction": {"id": "0xtx4", "blockNumber": "10", "timestamp": "100"},
+        "logIndex": "9",
+    }
     burn = {
         "id": "event-burn",
         "transaction": {"id": "0xtx2", "blockNumber": "10", "timestamp": "100"},
@@ -510,7 +517,7 @@ def test_v2_events_use_hashed_same_day_snapshot_decimals(tmp_path: Path) -> None
         "token1": {**pair["token1"], "decimals": "6"},
     }
     rows = {
-        "swaps": [swap],
+        "swaps": [swap, reverted_swap],
         "mints": [],
         "burns": [burn, phantom],
         "hourly_reserves": [
@@ -557,12 +564,22 @@ def test_v2_events_use_hashed_same_day_snapshot_decimals(tmp_path: Path) -> None
         },
     ]
     graph = load_graph_events(raw_root, "uniswap_v2", "20250101")
-    corrections, supplements, audit = match_event_orders(graph, exact, "uniswap_v2")
+    with pytest.raises(ProviderEventsAbsentError) as absent:
+        match_event_orders(graph, exact, "uniswap_v2")
+    assert [event.event_id for event in absent.value.events] == ["event-reverted"]
+    corrections, supplements, audit = match_event_orders(
+        graph,
+        exact,
+        "uniswap_v2",
+        reverted_transactions={"0xtx4"},
+    )
     assert supplements == []
     assert audit["matched_events"] == 2
     assert audit["payload_mismatches"] == 2
     assert audit["incomplete_liquidity_status_repairs"] == 1
-    assert audit["exclusion_rows"] == 1
+    assert audit["exclusion_rows"] == 2
+    assert audit["reverted_transaction_exclusions"] == 1
+    assert audit["incomplete_liquidity_absence_exclusions"] == 1
     swap_correction = next(row for row in corrections if row["event_id"] == "event-one")
     assert swap_correction["amount0_in_override"] == "1"
     assert swap_correction["amount1_out_override"] == "3"
@@ -575,6 +592,10 @@ def test_v2_events_use_hashed_same_day_snapshot_decimals(tmp_path: Path) -> None
     )
     assert phantom_exclusion["action"] == "exclusion"
     assert phantom_exclusion["chain_log_index"] is None
+    reverted_exclusion = next(
+        row for row in corrections if row["event_id"] == "event-reverted"
+    )
+    assert reverted_exclusion["reason"] == "reverted_transaction_event_absent_from_exact_chain_logs"
 
     correction_root = correction_root_for_graph(raw_root)
     exact_path = (
@@ -609,6 +630,18 @@ def test_v2_events_use_hashed_same_day_snapshot_decimals(tmp_path: Path) -> None
         audit=audit,
         start_block=10,
         end_block=10,
+        transaction_receipt_evidence=[
+            {
+                "tx_hash": "0xtx4",
+                "block_number": 10,
+                "block_hash": "0x" + "c" * 64,
+                "gas_used": 100_000,
+                "status": 0,
+                "tx_to": "0xrouter",
+                "tx_from": "0xsender",
+                "effective_gas_price_wei": 1,
+            }
+        ],
     )
     frame, quality = normalise_cp_partition(raw_root, "uniswap_v2", "20250101")
     corrected_swap = frame.loc[frame["event_id"] == "event-one"].iloc[0]

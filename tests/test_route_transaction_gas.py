@@ -5,7 +5,7 @@ from pathlib import Path
 import pandas as pd
 import pytest
 
-from ddvc.ethereum_receipts import parse_receipt
+from ddvc.ethereum_receipts import parse_receipt, receipt_is_current
 from ddvc.gas import load_route_transaction_gas
 from scripts.process import build_route_gas_units, build_route_transaction_gas
 from scripts.process.build_route_transaction_gas import (
@@ -92,11 +92,26 @@ def test_receipt_parser_enforces_requested_block() -> None:
         "result": {
             "transactionHash": "0xabc",
             "blockNumber": "0xa",
+            "blockHash": "0x" + "a" * 64,
             "gasUsed": "0x1d4c0",
             "status": "0x1",
             "effectiveGasPrice": "0x2540be400",
         }
     }
-    assert parse_receipt("0xabc", response, expected_block=10)["block_number"] == 10
+    parsed = parse_receipt("0xabc", response, expected_block=10)
+    assert parsed["block_number"] == 10
+    assert parsed["block_hash"] == "0x" + "a" * 64
+    assert receipt_is_current(
+        parsed,
+        "0xabc",
+        expected_block=10,
+        require_block_hash=True,
+    )
+    assert not receipt_is_current(
+        {**parsed, "block_hash": None},
+        "0xabc",
+        expected_block=10,
+        require_block_hash=True,
+    )
     with pytest.raises(ValueError, match="block differs"):
         parse_receipt("0xabc", response, expected_block=11)
