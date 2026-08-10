@@ -239,13 +239,25 @@ class RoutePanelWiringTests(unittest.TestCase):
             },
         }
         state = {}
-        _panel()._absorb_swap_state("uniswap_v4", record, state)
-        self.assertEqual(state["pool"].tick_spacing, 180)
+        panel = _panel()
+        prior_decimals = dict(panel._TOKEN_DECIMALS)
+        try:
+            panel._TOKEN_DECIMALS.update(
+                {
+                    record["pool"]["token0"]["id"]: 6,
+                    record["pool"]["token1"]["id"]: 18,
+                }
+            )
+            panel._absorb_swap_state("uniswap_v4", record, state)
+            self.assertEqual(state["pool"].tick_spacing, 180)
 
-        record["pool"]["id"] = "dynamic-pool"
-        record["pool"]["feeTier"] = str(1 << 23)
-        _panel()._absorb_swap_state("uniswap_v4", record, state)
-        self.assertNotIn("dynamic-pool", state)
+            record["pool"]["id"] = "dynamic-pool"
+            record["pool"]["feeTier"] = str(1 << 23)
+            panel._absorb_swap_state("uniswap_v4", record, state)
+            self.assertNotIn("dynamic-pool", state)
+        finally:
+            panel._TOKEN_DECIMALS.clear()
+            panel._TOKEN_DECIMALS.update(prior_decimals)
 
     def test_v4_schema_preflight_refuses_an_old_nonempty_file(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:
