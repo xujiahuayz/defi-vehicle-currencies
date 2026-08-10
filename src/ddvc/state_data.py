@@ -162,6 +162,8 @@ CP_STREAMS: dict[str, tuple[tuple[str, str, int], ...]] = {
     "sushiswap_v2": (
         ("hourly_reserves", "snapshot", 0),
         ("swaps", "swap", 0),
+        ("mints", "liquidity", 1),
+        ("burns", "liquidity", -1),
     ),
 }
 MULTI_ASSET_COLUMNS = [

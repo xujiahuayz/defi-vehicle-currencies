@@ -377,7 +377,13 @@ class StateDataTests(unittest.TestCase):
                 len(read_cp_partition("sushiswap_v2", "20250101", root=out, raw_root=raw)),
                 2,
             )
-            write_rows(raw, "sushiswap_v2", "swaps", "20250101", [cp_swap(), cp_swap(log_index=5)])
+            mint = {
+                **cp_swap(block=9, log_index=3),
+                "id": "mint",
+                "amount0": "3",
+                "amount1": "4",
+            }
+            write_rows(raw, "sushiswap_v2", "mints", "20250101", [mint])
             self.assertIsNone(read_cp_quality(raw, "sushiswap_v2", "20250101", root=out))
             with self.assertRaisesRegex(ValueError, "stale"):
                 read_cp_partition(
@@ -386,6 +392,33 @@ class StateDataTests(unittest.TestCase):
                     root=out,
                     raw_root=raw,
                 )
+
+    def test_sushiswap_constant_product_partition_replays_mints_and_burns(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            raw = Path(directory) / "raw"
+            write_rows(raw, "sushiswap_v2", "hourly_reserves", "20250101", [cp_snapshot()])
+            write_rows(raw, "sushiswap_v2", "swaps", "20250101", [cp_swap()])
+            mint = {
+                **cp_swap(block=9, log_index=3),
+                "id": "mint",
+                "amount0": "3",
+                "amount1": "4",
+            }
+            burn = {
+                **cp_swap(block=11, log_index=5),
+                "id": "burn",
+                "amount0": "1",
+                "amount1": "2",
+                "needsComplete": False,
+            }
+            write_rows(raw, "sushiswap_v2", "mints", "20250101", [mint])
+            write_rows(raw, "sushiswap_v2", "burns", "20250101", [burn])
+            frame, quality = normalise_cp_partition(raw, "sushiswap_v2", "20250101")
+        liquidity = frame[frame["record_type"].eq("liquidity")]
+        self.assertTrue(quality.passed)
+        self.assertEqual(quality.liquidity_rows, 2)
+        self.assertEqual(liquidity["amount0_delta"].tolist(), ["3", "-1"])
+        self.assertEqual(liquidity["amount1_delta"].tolist(), ["4", "-2"])
 
     def test_available_state_days_requires_panel_and_quality_marker(self) -> None:
         with tempfile.TemporaryDirectory() as directory:
