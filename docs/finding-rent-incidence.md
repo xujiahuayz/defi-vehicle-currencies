@@ -1,6 +1,6 @@
 # Rent incidence, with gas netted
 
-Built 2026-08-07 by `scripts/build_rent_incidence_panel.py` and `scripts/run_rent_incidence.py`. Uniswap v2 covers 2,235 days from 2020-05-05 to 2026-06-30, with 3,358,539 screened pool-days across 113,895 pools. Uniswap v3 covers 1,884 days from 2021-05-04 to 2026-06-30, with 366,876 screened pool-days across the 392 pools that survive screening from the 400 most traded. Asset roles come from `src/ddvc/asset_types.py`. Gas prices come from `data/processed/daily_gas_price_graph.parquet`, and centrality comes from `data/processed/vehicle_centrality_dense.parquet` (94 sampled days, rebuilt at stride 24 for this node). Artefacts live in `output/empirical/rent_incidence/`.
+Built 2026-08-07 by `scripts/build_rent_incidence_panel.py` and `scripts/run_rent_incidence.py`. Uniswap v2 covers 2,235 days from 2020-05-05 to 2026-06-30, with 3,358,539 screened pool-days across 113,895 pools. Uniswap v3 covers 1,884 days from 2021-05-04 to 2026-06-30, with 366,876 screened pool-days across the 392 pools that survive screening from the 400 most traded. This entire generation is retired. It used a coarse daily gas clock whose builder, loader and artefacts have since been deleted; no value below may re-enter the findings freeze. Asset roles come from `src/ddvc/asset_types.py`, and centrality came from a 94-date sampled panel.
 
 ## Current admission status
 

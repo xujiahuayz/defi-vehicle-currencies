@@ -140,6 +140,10 @@ class CounterfactualDominanceTests(unittest.TestCase):
                 {
                     "tx_hash": ["0xabc"],
                     "block_number": [21_000_000],
+                    "block_hash": ["0x" + "ab" * 32],
+                    "status": [1],
+                    "gas_used": [150_000],
+                    "realised_gas_cost_wei": ["1500000000000000"],
                     "effective_gas_price_wei": [10_000_000_000],
                     "gas_gwei": [10.0],
                     "gas_price_supported": [True],
@@ -158,6 +162,8 @@ class CounterfactualDominanceTests(unittest.TestCase):
         self.assertEqual(out.loc[0, "direct_gas_support_level"], "year_venue_vehicle")
         self.assertEqual(out.loc[0, "vehicle_gas_support_level"], "year_venue_vehicle")
         self.assertEqual(out.loc[0, "effective_gas_price_wei"], 10_000_000_000)
+        self.assertEqual(out.loc[0, "gas_used"], 150_000)
+        self.assertEqual(out.loc[0, "realised_gas_cost_wei"], "1500000000000000")
         self.assertGreater(
             out.loc[0, "all_in_direct_advantage_bps"],
             out.loc[0, "same_block_base_fee_direct_advantage_bps"],

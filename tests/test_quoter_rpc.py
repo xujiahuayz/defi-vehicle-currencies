@@ -101,6 +101,34 @@ class RpcPostTests(unittest.TestCase):
                 retry_json_errors=True,
             )
 
+    def test_response_validator_rotates_past_malformed_success(self) -> None:
+        malformed = Response({"jsonrpc": "2.0", "id": 1, "result": {"number": "0x1"}})
+        accepted = Response(
+            {"jsonrpc": "2.0", "id": 1, "result": {"number": "0x1", "hash": "0xabc"}}
+        )
+
+        def require_hash(response: dict) -> None:
+            if not response.get("result", {}).get("hash"):
+                raise ValueError("missing hash")
+
+        with (
+            patch.object(quoter, "rpc_urls", return_value=["https://first", "https://second"]),
+            patch.object(quoter.urllib.request, "urlopen", side_effect=[malformed, accepted]) as request,
+        ):
+            envelope = quoter.rpc_post(
+                {"jsonrpc": "2.0", "id": 1, "method": "eth_getBlockByNumber", "params": []},
+                retries=1,
+                retry_json_errors=True,
+                return_evidence=True,
+                response_validator=require_hash,
+            )
+        self.assertEqual(request.call_count, 2)
+        self.assertEqual(envelope.response["result"]["hash"], "0xabc")
+        self.assertEqual(
+            [attempt["classification"] for attempt in envelope.attempts],
+            ["transient", "success"],
+        )
+
     def test_evidence_mode_returns_sanitized_attempts(self) -> None:
         accepted = Response({"jsonrpc": "2.0", "id": 1, "result": []})
         with (

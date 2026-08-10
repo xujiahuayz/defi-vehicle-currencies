@@ -244,6 +244,15 @@ def receipt_panel(
         ~panel["gas_price_supported"], "gas_price_support_reason"
     ] = "zero_effective_price_private_payment_possible"
     panel["gas_gwei"] = (prices / 1e9).where(panel["gas_price_supported"])
+    panel["realised_gas_cost_wei"] = [
+        str(int(gas_used) * int(price)) if supported else None
+        for gas_used, price, supported in zip(
+            panel["gas_used"],
+            prices,
+            panel["gas_price_supported"],
+            strict=True,
+        )
+    ]
     base_fee = pd.to_numeric(panel["base_fee_per_gas_wei"], errors="coerce")
     if base_fee.dropna().lt(0).any():
         raise RuntimeError("exact route block headers contain a negative base fee")

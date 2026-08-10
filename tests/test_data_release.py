@@ -162,7 +162,6 @@ class DataReleaseTests(unittest.TestCase):
             "scripts/build_vehicle_excess_use.py": "require_node_d_release(routes=True)",
             "scripts/build_vehicle_centrality.py": "require_node_d_release(routes=True)",
             "scripts/build_ethereum_day_calendar.py": "require_node_d_release(routes=True)",
-            "scripts/process/fetch_daily_gas_price_graph.py": "require_node_d_release(routes=True)",
             "scripts/process/build_route_gas_units.py": "require_node_d_release(routes=True)",
             "scripts/process/build_route_transaction_gas.py": "require_node_d_release(routes=True, market_state=True)",
             "scripts/run_route_cost_panel.py": "require_node_d_release(routes=True, market_state=True)",
@@ -177,12 +176,21 @@ class DataReleaseTests(unittest.TestCase):
             with self.subTest(filename=filename):
                 self.assertIn(call, Path(filename).read_text(encoding="utf-8"))
 
-    def test_daily_gas_loader_has_no_scientific_consumers(self) -> None:
-        consumers = []
-        for path in Path("scripts").rglob("*.py"):
-            if "load_daily_gas_prices" in path.read_text(encoding="utf-8"):
-                consumers.append(path.as_posix())
-        self.assertEqual(consumers, [])
+    def test_retired_daily_gas_pipeline_is_absent(self) -> None:
+        self.assertFalse(Path("scripts/process/fetch_daily_gas_price_graph.py").exists())
+        self.assertFalse(Path("tests/test_gas_price_fetch.py").exists())
+        self.assertNotIn(
+            "load_daily_gas_prices",
+            Path("src/ddvc/gas.py").read_text(encoding="utf-8"),
+        )
+        for contract in (
+            Path("docs/specification-lock.json"),
+            Path("scripts/refresh_panel_dependents.py"),
+        ):
+            self.assertNotIn(
+                "daily_gas_price_graph.parquet",
+                contract.read_text(encoding="utf-8"),
+            )
 
     def test_withdrawn_daily_gas_arbitrage_bound_fails_closed(self) -> None:
         from scripts import test_gap_arbitrage_bound
@@ -215,7 +223,6 @@ class DataReleaseTests(unittest.TestCase):
             "scripts/build_v2_token_panel.py",
             "scripts/build_rent_incidence_panel.py",
             "scripts/run_rent_incidence.py",
-            "scripts/process/fetch_daily_gas_price_graph.py",
             "scripts/process/build_route_gas_units.py",
             "scripts/process/build_route_transaction_gas.py",
         ]
@@ -231,7 +238,6 @@ class DataReleaseTests(unittest.TestCase):
             "scripts/build_vehicle_excess_use.py",
             "scripts/build_vehicle_centrality.py",
             "scripts/build_counterfactual_dominance.py",
-            "scripts/process/fetch_daily_gas_price_graph.py",
             "scripts/process/build_route_gas_units.py",
         ]
         for filename in filenames:

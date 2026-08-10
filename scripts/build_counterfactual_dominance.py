@@ -319,6 +319,10 @@ def add_topology_gas_adjustment(
     out = out.drop(
         columns=[
             "effective_gas_price_wei",
+            "gas_used",
+            "realised_gas_cost_wei",
+            "receipt_block_hash",
+            "receipt_status",
             "gas_gwei",
             "gas_price_supported",
             "gas_price_support_reason",
@@ -339,6 +343,10 @@ def add_topology_gas_adjustment(
         [
             "tx_hash",
             "block_number",
+            "block_hash",
+            "status",
+            "gas_used",
+            "realised_gas_cost_wei",
             "effective_gas_price_wei",
             "gas_gwei",
             "gas_price_supported",
@@ -349,7 +357,12 @@ def add_topology_gas_adjustment(
             "base_fee_support_reason",
         ]
     ].rename(
-        columns={"tx_hash": "tx", "block_number": "block"}
+        columns={
+            "tx_hash": "tx",
+            "block_number": "block",
+            "block_hash": "receipt_block_hash",
+            "status": "receipt_status",
+        }
     )
     out = out.merge(gas, on=["tx", "block"], how="left", validate="one_to_one")
     if out["gas_price_supported"].isna().any():

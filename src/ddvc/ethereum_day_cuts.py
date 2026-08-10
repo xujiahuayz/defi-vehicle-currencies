@@ -126,10 +126,8 @@ def fetch_block_timestamp(
         try:
             header = request_block_header(
                 block,
-                rpc_request=lambda request, **kwargs: rpc_request(
-                    request,
-                    **{**kwargs, "retries": 1},
-                ),
+                rpc_request=rpc_request,
+                retries=1,
             )
             break
         except Throttled:

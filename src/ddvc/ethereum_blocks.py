@@ -73,13 +73,18 @@ def request_block_header(
     block_number: int,
     *,
     rpc_request=rpc_post,
+    retries: int = 2,
 ) -> dict[str, object]:
-    response = rpc_request(
-        block_header_payload(block_number),
-        timeout=30,
-        retries=2,
-        retry_json_errors=True,
-    )
+    request_kwargs = {
+        "timeout": 30,
+        "retries": retries,
+        "retry_json_errors": True,
+    }
+    if rpc_request is rpc_post:
+        request_kwargs["response_validator"] = lambda response: parse_block_header(
+            block_number, response
+        )
+    response = rpc_request(block_header_payload(block_number), **request_kwargs)
     return parse_block_header(block_number, response)
 
 
@@ -156,13 +161,21 @@ def fetch_block_header(
             return row
     if require_evidence:
         request = block_header_payload(block)
-        response = rpc_request(
-            request,
-            timeout=30,
-            retries=2,
-            retry_json_errors=True,
-            **({"return_evidence": True} if rpc_request is rpc_post else {}),
-        )
+        request_kwargs = {
+            "timeout": 30,
+            "retries": 2,
+            "retry_json_errors": True,
+        }
+        if rpc_request is rpc_post:
+            request_kwargs.update(
+                {
+                    "return_evidence": True,
+                    "response_validator": lambda response: parse_block_header(
+                        block, response
+                    ),
+                }
+            )
+        response = rpc_request(request, **request_kwargs)
         envelope = coerce_rpc_envelope(response)
         row = parse_block_header(block, envelope.response)
         row.update(

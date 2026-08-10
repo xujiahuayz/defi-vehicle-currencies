@@ -38,7 +38,13 @@ def evidence(request: dict[str, object], response: dict[str, object]) -> dict[st
     }
 
 
-def receipt(tx_hash: str, block_number: int, gas_price: int) -> dict[str, object]:
+def receipt(
+    tx_hash: str,
+    block_number: int,
+    gas_price: int,
+    *,
+    gas_used: int = 120_000,
+) -> dict[str, object]:
     block_hash = "0x" + f"{block_number:064x}"
     response = {
         "jsonrpc": "2.0",
@@ -47,7 +53,7 @@ def receipt(tx_hash: str, block_number: int, gas_price: int) -> dict[str, object
             "transactionHash": tx_hash,
             "blockNumber": hex(block_number),
             "blockHash": block_hash,
-            "gasUsed": hex(120_000),
+            "gasUsed": hex(gas_used),
             "status": "0x1",
             "to": "0xrouter",
             "from": "0xsender",
@@ -59,7 +65,7 @@ def receipt(tx_hash: str, block_number: int, gas_price: int) -> dict[str, object
         "tx_hash": tx_hash,
         "block_number": block_number,
         "block_hash": block_hash,
-        "gas_used": 120_000,
+        "gas_used": gas_used,
         "status": 1,
         "tx_to": "0xrouter",
         "tx_from": "0xsender",
@@ -170,6 +176,8 @@ def test_receipt_panel_marks_zero_effective_price_unsupported(tmp_path: Path) ->
         [header(10, 8_000_000_000), header(11, None)],
     )
     assert panel["gas_price_supported"].tolist() == [True, False]
+    assert panel.loc[0, "realised_gas_cost_wei"] == "1200000000000000"
+    assert pd.isna(panel.loc[1, "realised_gas_cost_wei"])
     assert panel["gas_gwei"].iloc[0] == 10.0
     assert pd.isna(panel["gas_gwei"].iloc[1])
     assert panel["gas_price_support_reason"].iloc[1] == "zero_effective_price_private_payment_possible"
@@ -187,6 +195,34 @@ def test_receipt_panel_marks_zero_effective_price_unsupported(tmp_path: Path) ->
         ),
     )
     assert len(loaded) == 2
+
+
+def test_route_gas_loader_rejects_inconsistent_realised_cost(tmp_path: Path) -> None:
+    requests = pd.DataFrame({"tx_hash": ["0xabc"], "block_number": [10]})
+    panel = receipt_panel(
+        [receipt("0xabc", 10, 10_000_000_000)],
+        requests,
+        [header(10, 8_000_000_000)],
+    )
+    panel.loc[0, "realised_gas_cost_wei"] = "1"
+    path = tmp_path / "route-gas.parquet"
+    panel.to_parquet(path, index=False)
+    with pytest.raises(ValueError, match="inconsistent realised gas cost"):
+        load_route_transaction_gas(path)
+
+
+def test_realised_gas_cost_uses_arbitrary_precision_decimal_text(tmp_path: Path) -> None:
+    requests = pd.DataFrame({"tx_hash": ["0xabc"], "block_number": [10]})
+    panel = receipt_panel(
+        [receipt("0xabc", 10, 10**12, gas_used=30_000_000)],
+        requests,
+        [header(10, 8_000_000_000)],
+    )
+    assert panel.loc[0, "realised_gas_cost_wei"] == "30000000000000000000"
+    path = tmp_path / "route-gas.parquet"
+    panel.to_parquet(path, index=False)
+    loaded = load_route_transaction_gas(path)
+    assert loaded.loc[0, "realised_gas_cost_wei"] == "30000000000000000000"
 
 
 def test_receipt_panel_rejects_receipt_header_hash_disagreement() -> None:

@@ -42,7 +42,7 @@ import urllib.error
 import urllib.request
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Any, Iterable
+from typing import Any, Callable, Iterable
 from urllib.parse import urlsplit
 
 from eth_abi import decode as abi_decode
@@ -295,7 +295,8 @@ def rpc_post(payload: dict | list[dict], *, timeout: int = 60,
              retry_json_errors: bool = False,
              return_evidence: bool = False,
              classify_capacity: bool = False,
-             retry_delay: float | None = None) -> Any:
+             retry_delay: float | None = None,
+             response_validator: Callable[[Any], object] | None = None) -> Any:
     """POST a JSON-RPC payload, rotating endpoints on failure.
 
     Raises Throttled when every endpoint refuses for rate-limit reasons, so the
@@ -366,6 +367,22 @@ def rpc_post(payload: dict | list[dict], *, timeout: int = 60,
                             break
                         terminal_failures.append(record)
                         break
+                    if response_validator is not None:
+                        try:
+                            response_validator(response)
+                        except (RuntimeError, TypeError, ValueError) as exc:
+                            last = exc
+                            record = _attempt_record(
+                                endpoint,
+                                attempt=attempt,
+                                classification="transient",
+                                http_status=http_status,
+                                rpc_code=None,
+                                message=f"invalid successful response: {type(exc).__name__}",
+                            )
+                            attempts.append(record)
+                            transient_failures.append(record)
+                            break
                     with _rpc_idx_lock:
                         _rpc_idx = urls.index(url)
                     attempts.append(_attempt_record(

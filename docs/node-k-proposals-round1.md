@@ -10,7 +10,7 @@ Two sources were worked. The first is data affordances, meaning what the raw and
 
 ## A correction to the brief, stated first because it changes what several candidates can promise
 
-The brief describes the raw layer as holding per-transaction gas price. It does not. No swap, mint, burn or join stream under `data/raw/thegraph/` carries `gasPrice`, `effectiveGasPrice` or `gasUsed`; the fields present are `blockNumber`, `timestamp`, `logIndex` and the amount columns. Gas in this repository comes from two places, and both are coarse. `data/processed/daily_gas_eth.parquet` holds twelve rows, built by `scripts/build_daily_gas_and_eth.py` from three JSON-RPC receipts per sampled day with a base-fee fallback, and `data/processed/daily_gas_price_graph.parquet` holds 1,883 daily medians. Node I's section 7 requirement, that the gas term be candidate-specific and venue-specific because a constant common to candidates is absorbed by the group fixed effect, is therefore unmet by every artefact in the repository and cannot be met without a receipt fetch that nothing has budgeted. Every candidate below is designed so that gas enters as a level and never as the identifying variation, and the two that would need a candidate-specific gas term say so.
+At the time of this proposal, the raw DEX layer lacked `gasPrice`, `effectiveGasPrice` and `gasUsed`, and the repository held two coarse daily approximations. That architecture is retired. The active D2 contract fetches each admitted transaction receipt and same-block header, preserves exact RPC evidence, and deletes the daily builders, loaders and artefacts. Any proposal that needs gas must consume the exact transaction/block release or remain closed.
 
 ---
 
@@ -66,7 +66,7 @@ The lead result reports annual shares. `docs/finding-intermediation-transition.m
 
 **Biggest threat.** Every one of those windows is also a gas-price shock and a volume shock, so route composition moves for reasons the design does not want. Holding the pair set fixed at pre-window membership handles entry and exit, and the gas path has to be plotted alongside every window so a reader can see whether the ratchet coincides with a gas regime change. The March 2023 window is the one where this threat is weakest, which is a further reason to lead with it.
 
-**Files and streams.** `data/processed/intermediation_by_type_daily.parquet`; `data/unified/*.parquet` for the pair-level version; `data/processed/daily_gas_eth.parquet` and `data/processed/daily_gas_price_graph.parquet` for the gas path; `data/processed/cross_venue_routing_daily.parquet` for the composition check. Cost is the lowest of any candidate here. The aggregate version runs against a parquet that already exists.
+**Files and streams.** `data/processed/intermediation_by_type_daily.parquet`; `data/unified/*.parquet` for the pair-level version; the released exact transaction/block gas panel for the gas path; `data/processed/cross_venue_routing_daily.parquet` for the composition check. Cost is the lowest of any candidate here. The aggregate version runs against a parquet that already exists.
 
 ---
 
