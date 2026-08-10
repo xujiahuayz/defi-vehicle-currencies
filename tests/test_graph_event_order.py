@@ -491,6 +491,12 @@ def test_v2_events_use_hashed_same_day_snapshot_decimals(tmp_path: Path) -> None
         "transaction": {"id": "0xtx4", "blockNumber": "10", "timestamp": "100"},
         "logIndex": "9",
     }
+    successful_orphan = {
+        **swap,
+        "id": "event-successful-orphan",
+        "transaction": {"id": "0xtx5", "blockNumber": "10", "timestamp": "100"},
+        "logIndex": "10",
+    }
     burn = {
         "id": "event-burn",
         "transaction": {"id": "0xtx2", "blockNumber": "10", "timestamp": "100"},
@@ -517,7 +523,7 @@ def test_v2_events_use_hashed_same_day_snapshot_decimals(tmp_path: Path) -> None
         "token1": {**pair["token1"], "decimals": "6"},
     }
     rows = {
-        "swaps": [swap, reverted_swap],
+        "swaps": [swap, reverted_swap, successful_orphan],
         "mints": [],
         "burns": [burn, phantom],
         "hourly_reserves": [
@@ -566,19 +572,23 @@ def test_v2_events_use_hashed_same_day_snapshot_decimals(tmp_path: Path) -> None
     graph = load_graph_events(raw_root, "uniswap_v2", "20250101")
     with pytest.raises(ProviderEventsAbsentError) as absent:
         match_event_orders(graph, exact, "uniswap_v2")
-    assert [event.event_id for event in absent.value.events] == ["event-reverted"]
+    assert {event.event_id for event in absent.value.events} == {
+        "event-reverted",
+        "event-successful-orphan",
+    }
     corrections, supplements, audit = match_event_orders(
         graph,
         exact,
         "uniswap_v2",
-        reverted_transactions={"0xtx4"},
+        receipt_statuses={"0xtx4": 0, "0xtx5": 1},
     )
     assert supplements == []
     assert audit["matched_events"] == 2
     assert audit["payload_mismatches"] == 2
     assert audit["incomplete_liquidity_status_repairs"] == 1
-    assert audit["exclusion_rows"] == 2
+    assert audit["exclusion_rows"] == 3
     assert audit["reverted_transaction_exclusions"] == 1
+    assert audit["successful_transaction_absence_exclusions"] == 1
     assert audit["incomplete_liquidity_absence_exclusions"] == 1
     swap_correction = next(row for row in corrections if row["event_id"] == "event-one")
     assert swap_correction["amount0_in_override"] == "1"
@@ -596,6 +606,10 @@ def test_v2_events_use_hashed_same_day_snapshot_decimals(tmp_path: Path) -> None
         row for row in corrections if row["event_id"] == "event-reverted"
     )
     assert reverted_exclusion["reason"] == "reverted_transaction_event_absent_from_exact_chain_logs"
+    successful_exclusion = next(
+        row for row in corrections if row["event_id"] == "event-successful-orphan"
+    )
+    assert successful_exclusion["reason"] == "provider_event_absent_from_successful_transaction_receipt"
 
     correction_root = correction_root_for_graph(raw_root)
     exact_path = (
@@ -640,6 +654,25 @@ def test_v2_events_use_hashed_same_day_snapshot_decimals(tmp_path: Path) -> None
                 "tx_to": "0xrouter",
                 "tx_from": "0xsender",
                 "effective_gas_price_wei": 1,
+                "logs": [],
+            },
+            {
+                "tx_hash": "0xtx5",
+                "block_number": 10,
+                "block_hash": "0x" + "c" * 64,
+                "gas_used": 100_000,
+                "status": 1,
+                "tx_to": "0xrouter",
+                "tx_from": "0xsender",
+                "effective_gas_price_wei": 1,
+                "logs": [
+                    {
+                        "address": "0x" + "d" * 40,
+                        "log_index": 11,
+                        "topics": [V2_EVENT_TOPICS["swap"]],
+                        "data": "0x",
+                    }
+                ],
             }
         ],
     )

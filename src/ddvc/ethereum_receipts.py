@@ -18,6 +18,7 @@ def parse_receipt(
     response: object,
     *,
     expected_block: int | None = None,
+    include_logs: bool = False,
 ) -> dict[str, object] | None:
     """Normalize one successful receipt and enforce supplied transaction identity."""
 
@@ -48,7 +49,7 @@ def parse_receipt(
         raise ValueError("Ethereum receipt transaction hash differs from the request")
     if expected_block is not None and block_number != int(expected_block):
         raise ValueError("Ethereum receipt block differs from the route identity")
-    return {
+    row: dict[str, object] = {
         "tx_hash": normalized_hash,
         "block_number": block_number,
         "block_hash": block_hash,
@@ -58,6 +59,43 @@ def parse_receipt(
         "tx_from": str(result.get("from") or "").lower() or None,
         "effective_gas_price_wei": effective_gas_price,
     }
+    if include_logs:
+        raw_logs = result.get("logs")
+        if not isinstance(raw_logs, list):
+            return None
+        logs: list[dict[str, object]] = []
+        for raw_log in raw_logs:
+            if not isinstance(raw_log, dict):
+                return None
+            try:
+                log_index = int(str(raw_log["logIndex"]), 16)
+            except (KeyError, TypeError, ValueError):
+                return None
+            address = str(raw_log.get("address") or "").lower()
+            topics = [str(topic).lower() for topic in raw_log.get("topics") or []]
+            data = str(raw_log.get("data") or "").lower()
+            if (
+                len(address) != 42
+                or not address.startswith("0x")
+                or log_index < 0
+                or not topics
+                or any(len(topic) != 66 or not topic.startswith("0x") for topic in topics)
+                or not data.startswith("0x")
+            ):
+                return None
+            logs.append(
+                {
+                    "address": address,
+                    "log_index": log_index,
+                    "topics": topics,
+                    "data": data,
+                }
+            )
+        logs.sort(key=lambda log: int(log["log_index"]))
+        if len({int(log["log_index"]) for log in logs}) != len(logs):
+            return None
+        row["logs"] = logs
+    return row
 
 
 def receipt_is_current(
@@ -66,6 +104,7 @@ def receipt_is_current(
     *,
     expected_block: int | None,
     require_block_hash: bool = False,
+    require_logs: bool = False,
 ) -> bool:
     if not isinstance(row, dict):
         return False
@@ -84,10 +123,44 @@ def receipt_is_current(
             )
         )
         and (
+            not require_logs
+            or receipt_logs_are_current(row.get("logs"))
+        )
+        and (
             expected_block is None
             or row.get("block_number") == int(expected_block)
         )
     )
+
+
+def receipt_logs_are_current(logs: object) -> bool:
+    """Validate one normalized complete receipt-log perimeter."""
+
+    if not isinstance(logs, list):
+        return False
+    indices: list[int] = []
+    for log in logs:
+        if not isinstance(log, dict):
+            return False
+        try:
+            log_index = int(log["log_index"])
+        except (KeyError, TypeError, ValueError):
+            return False
+        address = str(log.get("address") or "")
+        topics = log.get("topics")
+        data = str(log.get("data") or "")
+        if (
+            log_index < 0
+            or len(address) != 42
+            or not address.startswith("0x")
+            or not isinstance(topics, list)
+            or not topics
+            or any(len(str(topic)) != 66 or not str(topic).startswith("0x") for topic in topics)
+            or not data.startswith("0x")
+        ):
+            return False
+        indices.append(log_index)
+    return len(indices) == len(set(indices))
 
 
 def fetch_receipt(
@@ -96,6 +169,7 @@ def fetch_receipt(
     cache: Path,
     expected_block: int | None = None,
     require_block_hash: bool = False,
+    include_logs: bool = False,
     rpc_request=rpc_post,
 ) -> dict[str, object]:
     """Fetch one receipt into a transaction-keyed atomic cache."""
@@ -112,6 +186,7 @@ def fetch_receipt(
             normalized_hash,
             expected_block=expected_block,
             require_block_hash=require_block_hash,
+            require_logs=include_logs,
         ):
             return row
     response = rpc_request(
@@ -126,12 +201,18 @@ def fetch_receipt(
         sleep=0.02,
         retry_json_errors=True,
     )
-    row = parse_receipt(normalized_hash, response, expected_block=expected_block)
+    row = parse_receipt(
+        normalized_hash,
+        response,
+        expected_block=expected_block,
+        include_logs=include_logs,
+    )
     if row is None or not receipt_is_current(
         row,
         normalized_hash,
         expected_block=expected_block,
         require_block_hash=require_block_hash,
+        require_logs=include_logs,
     ):
         raise RuntimeError("receipt response is incomplete or violates its requested identity")
     cache.mkdir(parents=True, exist_ok=True)

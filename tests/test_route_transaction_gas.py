@@ -138,6 +138,7 @@ def test_receipt_parser_enforces_requested_block() -> None:
             "gasUsed": "0x1d4c0",
             "status": "0x1",
             "effectiveGasPrice": "0x2540be400",
+            "logs": [],
         }
     }
     parsed = parse_receipt("0xabc", response, expected_block=10)
@@ -154,6 +155,15 @@ def test_receipt_parser_enforces_requested_block() -> None:
         "0xabc",
         expected_block=10,
         require_block_hash=True,
+    )
+    with_logs = parse_receipt("0xabc", response, expected_block=10, include_logs=True)
+    assert with_logs["logs"] == []
+    assert receipt_is_current(
+        with_logs,
+        "0xabc",
+        expected_block=10,
+        require_block_hash=True,
+        require_logs=True,
     )
     with pytest.raises(ValueError, match="block differs"):
         parse_receipt("0xabc", response, expected_block=11)

@@ -26,6 +26,7 @@ from ddvc.graph_event_order import (
     load_graph_events,
     load_pool_templates,
     match_event_orders,
+    receipt_proves_event_absence,
     supplement_action,
     supplement_source_row,
     write_correction_generation,
@@ -232,16 +233,33 @@ def reconcile_day(
                 cache=RECEIPT_CACHE,
                 expected_block=block_number,
                 require_block_hash=True,
+                include_logs=True,
             )
             for tx_hash, block_number in sorted(absent_transactions.items())
         ]
-        if any(int(receipt["status"]) != 0 for receipt in transaction_receipt_evidence):
+        receipts_by_tx = {
+            str(receipt["tx_hash"]): receipt for receipt in transaction_receipt_evidence
+        }
+        if any(
+            not receipt_proves_event_absence(
+                receipts_by_tx[event.tx_hash],
+                venue=venue,
+                stream=event.stream,
+                tx_hash=event.tx_hash,
+                pool=event.pool,
+                block_number=event.block_number,
+            )
+            for event in error.events
+        ):
             raise error
         corrections, missing_events, audit = match_event_orders(
             graph_events,
             exact_records,
             venue,
-            reverted_transactions=absent_transactions,
+            receipt_statuses={
+                tx_hash: int(receipt["status"])
+                for tx_hash, receipt in receipts_by_tx.items()
+            },
         )
     templates = load_pool_templates(GRAPH_ROOT, venue, day)
     timestamp_evidence: list[dict[str, object]] = []

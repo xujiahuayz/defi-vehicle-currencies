@@ -39,6 +39,7 @@ CODE_SOURCES = [
     "src/ddvc/asset_types.py",
     "src/ddvc/execution_contracts.py",
     "src/ddvc/graph_event_order.py",
+    "src/ddvc/ethereum_receipts.py",
     "src/ddvc/source_records.py",
 ]
 STATE_ENGINE = cache_key(CODE_SOURCES)

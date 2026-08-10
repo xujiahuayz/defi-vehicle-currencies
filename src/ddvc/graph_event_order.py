@@ -14,19 +14,20 @@ import hashlib
 import json
 import os
 from pathlib import Path
-from typing import Iterable
+from typing import Iterable, Mapping
 
 from eth_abi import decode as abi_decode
 from eth_utils import keccak
 
 from ddvc.amounts import human_to_raw, raw_to_human
+from ddvc.ethereum_receipts import receipt_logs_are_current
 from ddvc.fetch.raw import write_json, write_jsonl_gz
 from ddvc.source_records import block_value, timestamp_value, transaction_id
 from ddvc.v2_event_completeness import V2_EVENT_BY_TOPIC, V2_EVENT_TOPICS
 from ddvc.v3_inventory import EVENT_TOPICS as V3_INVENTORY_TOPICS
 
 
-SCHEMA_VERSION = 3
+SCHEMA_VERSION = 4
 SUPPORTED_VENUES = frozenset({"uniswap_v2", "sushiswap_v2", "uniswap_v3"})
 CORE_STREAMS = ("swaps", "mints", "burns")
 V3_BURN_TOPIC = "0x" + keccak(
@@ -627,6 +628,50 @@ def event_topics(venue: str) -> list[str]:
     raise ValueError(f"unsupported Graph event-order venue: {venue}")
 
 
+def receipt_proves_event_absence(
+    receipt: Mapping[str, object],
+    *,
+    venue: str,
+    stream: str,
+    tx_hash: str,
+    pool: str,
+    block_number: int,
+) -> bool:
+    """Prove one claimed provider event is absent from its complete exact receipt."""
+
+    logs = receipt.get("logs")
+    status = receipt.get("status")
+    if (
+        str(receipt.get("tx_hash") or "").lower() != tx_hash.lower()
+        or receipt.get("block_number") != int(block_number)
+        or len(str(receipt.get("block_hash") or "")) != 66
+        or status not in {0, 1}
+        or not isinstance(logs, list)
+    ):
+        return False
+    if status == 0:
+        return not logs
+    event_type = STREAM_EVENT_TYPE.get(stream)
+    if venue in {"uniswap_v2", "sushiswap_v2"}:
+        expected_topic = V2_EVENT_TOPICS.get(str(event_type))
+    elif venue == "uniswap_v3":
+        expected_topic = V3_STATE_EVENT_TOPICS.get(str(event_type))
+    else:
+        expected_topic = None
+    if expected_topic is None:
+        return False
+    return all(
+        not (
+            isinstance(log, dict)
+            and str(log.get("address") or "").lower() == pool.lower()
+            and isinstance(log.get("topics"), list)
+            and bool(log["topics"])
+            and str(log["topics"][0]).lower() == expected_topic
+        )
+        for log in logs
+    )
+
+
 def _v2_swap_anchor_matches(
     provider: GraphEvent,
     candidates: Iterable[ChainEvent],
@@ -658,12 +703,16 @@ def match_event_orders(
     exact_records: Iterable[dict[str, object]],
     venue: str,
     *,
-    reverted_transactions: Iterable[str] = (),
+    receipt_statuses: Mapping[str, int] | None = None,
 ) -> tuple[list[dict[str, object]], list[ChainEvent], dict[str, int]]:
     """Reconcile provider rows to exact logs without treating omissions as order fixes."""
 
     graph = list(graph_events)
-    reverted = {str(tx_hash).lower() for tx_hash in reverted_transactions}
+    proved_receipts = {
+        str(tx_hash).lower(): int(status)
+        for tx_hash, status in (receipt_statuses or {}).items()
+        if int(status) in {0, 1}
+    }
     pools = {event.pool for event in graph}
     exact = [
         chain_event(record, venue)
@@ -687,6 +736,7 @@ def match_event_orders(
     unmatched_graph_events: list[GraphEvent] = []
     excluded_provider_events = 0
     reverted_transaction_exclusions = 0
+    successful_transaction_absence_exclusions = 0
     incomplete_liquidity_absence_exclusions = 0
     correction_keys: set[CorrectionKey] = set()
     for key in sorted(set(graph_groups) | set(exact_groups), key=str):
@@ -744,8 +794,9 @@ def match_event_orders(
                     and provider.stream in {"mints", "burns"}
                     and provider.needs_complete
                 )
-                reverted_transaction_absence = provider.tx_hash in reverted
-                if not (incomplete_liquidity_absence or reverted_transaction_absence):
+                receipt_status = proved_receipts.get(provider.tx_hash)
+                receipt_proven_absence = receipt_status in {0, 1}
+                if not (incomplete_liquidity_absence or receipt_proven_absence):
                     unmatched_graph_events.append(provider)
                     continue
                 for duplicate in duplicate_group:
@@ -766,15 +817,18 @@ def match_event_orders(
                             "chain_log_index": None,
                             "reason": (
                                 "reverted_transaction_event_absent_from_exact_chain_logs"
-                                if reverted_transaction_absence
+                                if receipt_status == 0
+                                else "provider_event_absent_from_successful_transaction_receipt"
+                                if receipt_status == 1
                                 else "incomplete_provider_liquidity_event_absent_from_exact_chain_logs"
                             ),
                         }
                     )
                     excluded_provider_events += 1
-                    reverted_transaction_exclusions += int(reverted_transaction_absence)
+                    reverted_transaction_exclusions += int(receipt_status == 0)
+                    successful_transaction_absence_exclusions += int(receipt_status == 1)
                     incomplete_liquidity_absence_exclusions += int(
-                        incomplete_liquidity_absence and not reverted_transaction_absence
+                        incomplete_liquidity_absence and not receipt_proven_absence
                     )
                 continue
             chain_remaining.remove(chain)
@@ -897,6 +951,7 @@ def match_event_orders(
         "correction_rows": sum(row["action"] == "correction" for row in corrections),
         "exclusion_rows": excluded_provider_events,
         "reverted_transaction_exclusions": reverted_transaction_exclusions,
+        "successful_transaction_absence_exclusions": successful_transaction_absence_exclusions,
         "incomplete_liquidity_absence_exclusions": incomplete_liquidity_absence_exclusions,
         "payload_mismatches": payload_mismatches,
         "incomplete_liquidity_status_repairs": incomplete_liquidity_status_repairs,
@@ -958,6 +1013,7 @@ class EventOrderCorrections:
                     or row.get("reason") not in {
                         "incomplete_provider_liquidity_event_absent_from_exact_chain_logs",
                         "reverted_transaction_event_absent_from_exact_chain_logs",
+                        "provider_event_absent_from_successful_transaction_receipt",
                     }
                 ):
                     raise ValueError(f"invalid exact-chain exclusion: {key}")
@@ -1180,28 +1236,45 @@ def load_event_order_corrections(
             if (
                 not tx_hash
                 or tx_hash in receipt_rows
-                or int(receipt.get("status", -1)) != 0
+                or int(receipt.get("status", -1)) not in {0, 1}
                 or int(receipt.get("block_number", -1)) < 1
                 or not str(receipt.get("block_hash") or "").startswith("0x")
                 or len(str(receipt.get("block_hash") or "")) != 66
+                or not receipt_logs_are_current(receipt.get("logs"))
             ):
-                raise ValueError(f"invalid reverted-transaction evidence for {venue}/{day}")
+                raise ValueError(f"invalid transaction-receipt evidence for {venue}/{day}")
+            if int(receipt["status"]) == 0 and receipt["logs"]:
+                raise ValueError(f"reverted receipt retains impossible logs for {venue}/{day}")
             receipt_rows[tx_hash] = receipt
     if len(receipt_rows) != int(metadata.get("transaction_receipt_evidence_rows", -1)):
         raise ValueError(f"transaction-receipt evidence count differs for {venue}/{day}")
-    reverted_exclusion_txs = {
+    receipt_exclusion_reasons = {
+        "reverted_transaction_event_absent_from_exact_chain_logs",
+        "provider_event_absent_from_successful_transaction_receipt",
+    }
+    receipt_exclusion_txs = {
         str(row.get("tx_hash") or "").lower()
         for row in rows
-        if row.get("reason") == "reverted_transaction_event_absent_from_exact_chain_logs"
+        if row.get("reason") in receipt_exclusion_reasons
     }
-    if set(receipt_rows) != reverted_exclusion_txs:
+    if set(receipt_rows) != receipt_exclusion_txs:
         raise ValueError(f"transaction-receipt evidence perimeter differs for {venue}/{day}")
     for row in rows:
-        if row.get("reason") != "reverted_transaction_event_absent_from_exact_chain_logs":
+        if row.get("reason") not in receipt_exclusion_reasons:
             continue
         receipt = receipt_rows.get(str(row.get("tx_hash") or "").lower())
-        if receipt is None or int(receipt["block_number"]) != int(row["block_number"]):
-            raise ValueError(f"unproved reverted-transaction exclusion for {venue}/{day}")
+        if receipt is None or not receipt_proves_event_absence(
+            receipt,
+            venue=venue,
+            stream=str(row["stream"]),
+            tx_hash=str(row["tx_hash"]),
+            pool=str(row["pool"]),
+            block_number=int(row["block_number"]),
+        ):
+            raise ValueError(f"unproved transaction-receipt exclusion for {venue}/{day}")
+        expected_status = 0 if str(row["reason"]).startswith("reverted_") else 1
+        if int(receipt["status"]) != expected_status:
+            raise ValueError(f"transaction-receipt exclusion reason disagrees for {venue}/{day}")
     timestamps = _load_block_timestamp_evidence(timestamp_path)
     for row in rows:
         if row.get("action") != "supplement":

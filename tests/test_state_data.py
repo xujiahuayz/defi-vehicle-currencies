@@ -102,6 +102,7 @@ class StateDataTests(unittest.TestCase):
     def test_state_engine_depends_on_record_semantics_not_fetch_orchestration(self) -> None:
         self.assertIn("src/ddvc/source_records.py", CODE_SOURCES)
         self.assertIn("src/ddvc/execution_contracts.py", CODE_SOURCES)
+        self.assertIn("src/ddvc/ethereum_receipts.py", CODE_SOURCES)
         self.assertNotIn("src/ddvc/liquidity.py", CODE_SOURCES)
         self.assertNotIn("src/ddvc/fetch/raw.py", CODE_SOURCES)
 
