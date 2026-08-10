@@ -19,6 +19,7 @@ from ddvc.ethereum_logs import (
     RAW_LOG_SCHEMA,
     RAW_LOG_STORAGE_FORMAT,
     block_ranges,
+    file_sha256,
     fetch_exact_logs_with_evidence,
     load_or_resolve_frozen_block,
     validate_anchored_log_evidence,
@@ -77,19 +78,111 @@ class V3FactoryPool:
     creation_log_index: int
 
 
-def _file_sha256(path: Path) -> str:
-    digest = hashlib.sha256()
-    with path.open("rb") as handle:
-        for chunk in iter(lambda: handle.read(1024 * 1024), b""):
-            digest.update(chunk)
-    return digest.hexdigest()
-
-
 def registry_sha256(pools: list[V3FactoryPool]) -> str:
     payload = [asdict(pool) for pool in sorted(pools, key=lambda item: item.pool)]
     return hashlib.sha256(
         json.dumps(payload, sort_keys=True, separators=(",", ":")).encode()
     ).hexdigest()
+
+
+def _pool_from_row(row: dict[str, object]) -> V3FactoryPool:
+    pool = V3FactoryPool(
+        pool=str(row["pool"]).lower(),
+        token0=str(row["token0"]).lower(),
+        token1=str(row["token1"]).lower(),
+        fee=int(row["fee"]),
+        tick_spacing=int(row["tick_spacing"]),
+        creation_block=int(row["creation_block"]),
+        creation_block_hash=str(row["creation_block_hash"]).lower(),
+        creation_tx_hash=str(row["creation_tx_hash"]).lower(),
+        creation_log_index=int(row["creation_log_index"]),
+    )
+    if pool.token0 >= pool.token1:
+        raise ValueError("V3 factory registry token order is noncanonical")
+    if compute_pool_address(pool.token0, pool.token1, pool.fee) != pool.pool:
+        raise ValueError("V3 factory registry pool fails canonical CREATE2 identity")
+    if pool.creation_block < get_source("uniswap_v3").genesis_block:
+        raise ValueError("V3 factory registry pool predates the canonical factory")
+    if not 0 < pool.tick_spacing < 16_384 or pool.creation_log_index < 0:
+        raise ValueError("V3 factory registry contains invalid creation statics")
+    return pool
+
+
+def load_registry(
+    registry_path: Path = V3_POOL_REGISTRY,
+    certificate_path: Path = V3_POOL_REGISTRY_CERTIFICATE,
+    *,
+    analysis_only: bool = True,
+) -> list[V3FactoryPool]:
+    """Load the certified factory census and revalidate every immutable identity."""
+
+    if not registry_path.is_file() or not certificate_path.is_file():
+        raise RuntimeError("certified V3 factory pool registry is absent")
+    certificate = json.loads(certificate_path.read_text(encoding="utf-8"))
+    if (
+        certificate.get("status") != "pass"
+        or int(certificate.get("schema_version", -1)) != V3_POOL_REGISTRY_SCHEMA_VERSION
+        or certificate.get("factory") != V3_FACTORY
+        or certificate.get("event_topics") != FACTORY_EVENT_TOPICS
+    ):
+        raise ValueError("V3 factory pool certificate is stale or malformed")
+    table = pq.read_table(registry_path)
+    if table.schema != V3_POOL_REGISTRY_SCHEMA:
+        raise ValueError("V3 factory pool registry schema drifted")
+    pools = [_pool_from_row(row) for row in table.to_pylist()]
+    pool_ids = [pool.pool for pool in pools]
+    if not pools or len(pool_ids) != len(set(pool_ids)):
+        raise ValueError("V3 factory pool registry is empty or duplicated")
+    if int(certificate.get("pool_count", -1)) != len(pools):
+        raise ValueError("V3 factory pool certificate row count disagrees")
+    if certificate.get("registry_sha256") != registry_sha256(pools):
+        raise ValueError("V3 factory pool certificate semantic digest disagrees")
+    if certificate.get("registry_file_sha256") != file_sha256(registry_path):
+        raise ValueError("V3 factory pool certificate file digest disagrees")
+    snapshot_upper = int(certificate.get("registry_snapshot_upper_block", -1))
+    cutoff = int(certificate.get("analysis_cutoff_block", -1))
+    if not get_source("uniswap_v3").genesis_block <= cutoff <= snapshot_upper:
+        raise ValueError("V3 factory pool certificate has an invalid analysis perimeter")
+    if any(pool.creation_block > snapshot_upper for pool in pools):
+        raise ValueError("V3 factory pool registry exceeds its frozen snapshot")
+    analysis_count = sum(pool.creation_block <= cutoff for pool in pools)
+    if int(certificate.get("analysis_pool_count", -1)) != analysis_count:
+        raise ValueError("V3 factory pool certificate analysis count disagrees")
+    if int(certificate.get("post_cutoff_pool_count", -1)) != len(pools) - analysis_count:
+        raise ValueError("V3 factory pool certificate post-cutoff count disagrees")
+    return [pool for pool in pools if pool.creation_block <= cutoff] if analysis_only else pools
+
+
+def load_certified_frozen_upper(
+    *,
+    root: Path | None = None,
+) -> tuple[dict[str, object], dict[str, object]]:
+    """Load the terminal header only after revalidating its published factory certificate."""
+
+    evidence_root = root or RAW_V3_POOL_REGISTRY_ROOT
+    certificate_path = evidence_root / V3_POOL_REGISTRY_CERTIFICATE.name
+    registry_path = evidence_root / V3_POOL_REGISTRY.name
+    load_registry(registry_path, certificate_path, analysis_only=False)
+    certificate = json.loads(certificate_path.read_text(encoding="utf-8"))
+    upper = int(certificate["registry_snapshot_upper_block"])
+    frozen_path = frozen_upper_path(upper, root=evidence_root)
+    if not frozen_path.is_file():
+        raise RuntimeError("V3 factory pool certificate lacks frozen-header evidence")
+    frozen_upper = json.loads(frozen_path.read_text(encoding="utf-8"))
+    validate_frozen_block(
+        frozen_upper,
+        upper,
+        schema_version=V3_POOL_REGISTRY_SCHEMA_VERSION,
+    )
+    if (
+        certificate.get("registry_snapshot_upper_block_hash")
+        != frozen_upper["block_hash"]
+        or int(certificate.get("registry_snapshot_upper_block_timestamp", -1))
+        != int(frozen_upper["timestamp"])
+        or certificate.get("frozen_upper_sha256") != file_sha256(frozen_path)
+    ):
+        raise ValueError("V3 factory certificate disagrees with its terminal header")
+    return frozen_upper, certificate
 
 
 def frozen_upper_path(upper_block: int, *, root: Path | None = None) -> Path:
@@ -230,7 +323,7 @@ def leaf_complete(
         and marker.get("storage_format") == RAW_LOG_STORAGE_FORMAT
         and int(marker.get("raw_logs", -1)) == table.num_rows
         and table.schema == RAW_LOG_SCHEMA
-        and marker.get("raw_sha256") == _file_sha256(raw_path)
+        and marker.get("raw_sha256") == file_sha256(raw_path)
     )
 
 
@@ -384,6 +477,48 @@ def read_registry(
     return pools, fee_tick_spacings, inputs
 
 
+def reopen_registry_evidence(
+    *,
+    root: Path | None = None,
+) -> tuple[list[V3FactoryPool], dict[str, object]]:
+    """Reopen the frozen header and every factory leaf behind a published census."""
+
+    evidence_root = root or RAW_V3_POOL_REGISTRY_ROOT
+    frozen_upper, certificate = load_certified_frozen_upper(root=evidence_root)
+    certificate_path = evidence_root / V3_POOL_REGISTRY_CERTIFICATE.name
+    upper = int(frozen_upper["block_number"])
+    frozen_path = frozen_upper_path(upper, root=evidence_root)
+    ranges = root_ranges(get_source("uniswap_v3").genesis_block, upper)
+    pools, fee_tick_spacings, inputs = read_registry(
+        ranges,
+        frozen_upper=frozen_upper,
+        root=evidence_root,
+    )
+    loaded = load_registry(
+        evidence_root / V3_POOL_REGISTRY.name,
+        certificate_path,
+        analysis_only=False,
+    )
+    if pools != loaded:
+        raise ValueError("published V3 pool registry disagrees with reopened factory logs")
+    if certificate.get("fee_tick_spacings") != {
+        str(fee): spacing for fee, spacing in sorted(fee_tick_spacings.items())
+    }:
+        raise ValueError("V3 factory fee history disagrees with the certificate")
+    leaf_logs = sum(
+        int(json.loads(path.read_text(encoding="utf-8"))["raw_logs"])
+        for path in inputs
+        if path.name.endswith(".meta.json")
+    )
+    if int(certificate.get("root_count", -1)) != len(ranges) or int(
+        certificate.get("leaf_raw_logs", -1)
+    ) != leaf_logs:
+        raise ValueError("V3 factory certificate coverage counts disagree")
+    if certificate.get("frozen_upper_sha256") != file_sha256(frozen_path):
+        raise ValueError("V3 factory certificate frozen-header digest disagrees")
+    return pools, certificate
+
+
 def graph_pool_addresses(path: Path) -> set[str]:
     addresses: set[str] = set()
     with gzip.open(path, "rt", encoding="utf-8") as handle:
@@ -446,8 +581,6 @@ def build_registry(
     graph_pools = graph_pool_addresses(graph_static_path)
     factory_pools = {pool.pool for pool in pools}
     graph_only = graph_pools - factory_pools
-    if graph_only:
-        raise ValueError(f"Graph V3 registry contains {len(graph_only):,} pools absent from the factory sequence")
     missing_from_graph = factory_pools - graph_pools
     registry_path = evidence_root / V3_POOL_REGISTRY.name
     with atomic_output(registry_path) as temporary:
@@ -477,12 +610,13 @@ def build_registry(
         },
         "graph_pool_count": len(graph_pools),
         "missing_from_graph": len(missing_from_graph),
-        "graph_only": 0,
+        "graph_only": len(graph_only),
+        "graph_static_sha256": file_sha256(graph_static_path),
         "first_creation_block": pools[0].creation_block,
         "last_creation_block": pools[-1].creation_block,
         "registry_sha256": registry_sha256(pools),
-        "registry_file_sha256": _file_sha256(registry_path),
-        "frozen_upper_sha256": _file_sha256(frozen_upper_path(upper_block, root=evidence_root)),
+        "registry_file_sha256": file_sha256(registry_path),
+        "frozen_upper_sha256": file_sha256(frozen_upper_path(upper_block, root=evidence_root)),
         "leaf_raw_logs": sum(int(json.loads(path.read_text())["raw_logs"]) for path in inputs if path.name.endswith(".meta.json")),
     }
     write_json(evidence_root / V3_POOL_REGISTRY_CERTIFICATE.name, certificate)

@@ -6,7 +6,6 @@ from __future__ import annotations
 import argparse
 from bisect import bisect_left
 from contextlib import ExitStack
-import gzip
 import json
 from pathlib import Path
 
@@ -37,8 +36,7 @@ from ddvc.v3_inventory import (
     inventory_chunk_paths,
     inventory_snapshot_rows,
     iter_decoded_inventory_logs,
-    pool_addresses_from_graph,
-    pool_static_from_graph,
+    pool_statics_from_factory,
 )
 from ddvc.v3_inventory_calendar import (
     CALENDAR,
@@ -48,15 +46,22 @@ from ddvc.v3_inventory_calendar import (
     load_day_calendar,
     raw_day_metadata,
 )
+from ddvc.v3_pool_registry import (
+    V3_POOL_REGISTRY,
+    V3_POOL_REGISTRY_CERTIFICATE,
+    load_certified_frozen_upper,
+    load_registry,
+)
 
 
 RAW_INVENTORY_ROOT = DATA_DIR / "raw" / "ethereum" / "uniswap_v3_inventory_events"
-STATIC_PATH = V3_GRAPH_ROOT / "uniswap_v3_pool_statics_20260630.jsonl.gz"
+GRAPH_STATIC_PATH = V3_GRAPH_ROOT / "uniswap_v3_pool_statics_20260630.jsonl.gz"
 CACHE_ROOT = STATE_ROOT.parent / "_v3_pool_inventory_day_cache"
 OUT = DATA_DIR / "processed" / "v3_pool_inventory_daily.parquet"
 CHUNK_SIZE = 1_000
 CODE_SOURCES = [
     "scripts/build_v3_inventory_panel.py",
+    "scripts/fetch_v3_inventory_events.py",
     "src/ddvc/asset_types.py",
     "src/ddvc/ethereum_day_cuts.py",
     "src/ddvc/ethereum_blocks.py",
@@ -68,11 +73,15 @@ CODE_SOURCES = [
     "src/ddvc/runtime.py",
     "src/ddvc/state_data.py",
     "src/ddvc/v3_inventory_calendar.py",
+    "src/ddvc/v3_pool_registry.py",
+    "src/ddvc/pricing/v3pools.py",
 ]
 INPUTS = [
     STATE_ROOT / "tick" / "uniswap_v3",
     RAW_INVENTORY_ROOT,
-    V3_GRAPH_ROOT,
+    GRAPH_STATIC_PATH,
+    V3_POOL_REGISTRY,
+    V3_POOL_REGISTRY_CERTIFICATE,
     CALENDAR,
 ]
 
@@ -161,20 +170,17 @@ def _write_checkpoint_metadata(
     )
 
 
-def load_candidate_statics(path: Path = STATIC_PATH) -> dict[str, PoolStatic]:
-    statics: dict[str, PoolStatic] = {}
-    with gzip.open(path, "rt") as handle:
-        for line in handle:
-            if not line.strip():
-                continue
-            static = pool_static_from_graph(json.loads(line))
-            if static.token0 in VEHICLE_CANDIDATES or static.token1 in VEHICLE_CANDIDATES:
-                if static.pool in statics:
-                    raise ValueError(f"duplicate immutable V3 pool identity: {static.pool}")
-                statics[static.pool] = static
-    if not statics:
-        raise RuntimeError("candidate-linked V3 immutable pool registry is empty")
-    return statics
+def load_candidate_statics(
+    graph_static_path: Path = GRAPH_STATIC_PATH,
+    registry_path: Path = V3_POOL_REGISTRY,
+    certificate_path: Path = V3_POOL_REGISTRY_CERTIFICATE,
+) -> dict[str, PoolStatic]:
+    return pool_statics_from_factory(
+        registry_path,
+        certificate_path,
+        graph_static_path,
+        candidate_tokens=set(VEHICLE_CANDIDATES),
+    )
 
 
 def inventory_perimeter(days: list[str], end_blocks: list[int]) -> tuple[int, int]:
@@ -186,9 +192,15 @@ def inventory_perimeter(days: list[str], end_blocks: list[int]) -> tuple[int, in
     return start, end
 
 
-def require_complete_raw_chunks(start: int, end: int) -> list[tuple[int, int]]:
+def require_complete_raw_chunks(
+    start: int,
+    end: int,
+) -> tuple[list[tuple[int, int]], dict[str, object]]:
     last_day = available_state_days("tick", "uniswap_v3")[-1]
     terminal = int(raw_day_metadata(last_day)["head_block_at_fetch"])
+    frozen_upper, _factory_certificate = load_certified_frozen_upper()
+    if int(frozen_upper["block_number"]) != terminal:
+        raise RuntimeError("V3 inventory terminal differs from the certified factory header")
     if terminal < end:
         raise RuntimeError("V3 raw-event fetch terminal lies before the exact research cut")
     ranges = [
@@ -196,24 +208,37 @@ def require_complete_raw_chunks(start: int, end: int) -> list[tuple[int, int]]:
         for item in block_ranges(start, terminal, CHUNK_SIZE)
         if item[0] <= end
     ]
-    missing = [item for item in ranges if not inventory_chunk_completed(*item, RAW_INVENTORY_ROOT)]
+    missing = [
+        item
+        for item in ranges
+        if not inventory_chunk_completed(
+            *item,
+            RAW_INVENTORY_ROOT,
+            frozen_upper=frozen_upper,
+        )
+    ]
     if missing:
         sample = ", ".join(f"{lower}-{upper}" for lower, upper in missing[:3])
         raise RuntimeError(
             f"V3 event-accounted inventory replay requires all raw event chunks; "
             f"missing={len(missing):,}/{len(ranges):,}; first={sample}"
         )
+    pool_creation_blocks = {
+        pool.pool: pool.creation_block for pool in load_registry(analysis_only=False)
+    }
     totals = audit_inventory_chunks(
         ranges,
         RAW_INVENTORY_ROOT,
-        known_pools=pool_addresses_from_graph(STATIC_PATH),
+        pool_creation_blocks=pool_creation_blocks,
+        frozen_upper=frozen_upper,
     )
     print(
         f"PASS: V3 raw inventory chunks={totals['chunks']:,}; "
-        f"logs={totals['raw_logs']:,}; registered={totals['recognized_v3_logs']:,}",
+        f"logs={totals['raw_logs']:,}; canonical={totals['canonical_pool_logs']:,}; "
+        f"quarantined={totals['quarantined_logs']:,}",
         flush=True,
     )
-    return ranges
+    return ranges, totals
 
 
 def ranges_by_day(
@@ -294,7 +319,7 @@ def _load_resume_state(
 def build(*, force: bool = False) -> tuple[int, int, int]:
     days, end_blocks = load_day_calendar()
     start, end = inventory_perimeter(days, end_blocks)
-    ranges = require_complete_raw_chunks(start, end)
+    ranges, _audit = require_complete_raw_chunks(start, end)
     statics = load_candidate_statics()
     generation = cache_key(CODE_SOURCES, inputs=INPUTS)
     root = CACHE_ROOT / f"engine_{generation}"

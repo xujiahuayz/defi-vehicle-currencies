@@ -38,6 +38,16 @@ RAW_LOG_SCHEMA = pa.schema(
 )
 
 
+def file_sha256(path: Path) -> str:
+    """Hash one file without loading a potentially large evidence artifact into memory."""
+
+    digest = hashlib.sha256()
+    with path.open("rb") as handle:
+        for chunk in iter(lambda: handle.read(1024 * 1024), b""):
+            digest.update(chunk)
+    return digest.hexdigest()
+
+
 def coerce_rpc_envelope(response: object) -> RpcEnvelope:
     """Wrap injected test transports in the same evidence shape as live RPC."""
 
@@ -583,7 +593,7 @@ def write_exact_log_chunk(
         "storage_format": RAW_LOG_STORAGE_FORMAT,
         "raw_logs": len(records),
         "fetched_at_utc": datetime.now(timezone.utc).isoformat(),
-        "raw_sha256": hashlib.sha256(raw_path.read_bytes()).hexdigest(),
+        "raw_sha256": file_sha256(raw_path),
     }
     write_json(marker_path, payload)
     return payload
