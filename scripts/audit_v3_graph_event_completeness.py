@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Compare Graph V3 Mint/Swap entities with exact on-chain event identities."""
+"""Compare Graph V3 Mint/Burn/Swap entities with exact on-chain event identities."""
 
 from __future__ import annotations
 
@@ -44,7 +44,7 @@ SUMMARY = DATA_DIR / "processed" / "v3_graph_core_event_audit.parquet"
 EXCEPTIONS = DATA_DIR / "processed" / "v3_graph_core_event_exceptions.parquet"
 PERIMETER_QUARANTINE = DATA_DIR / "processed" / "v3_inventory_perimeter_quarantine.parquet"
 EXHIBIT = OUTPUT_DIR / "exhibits" / "v3_graph_core_event_audit.json"
-CORE_EVENTS = {"mint", "swap"}
+CORE_EVENTS = {"burn", "mint", "swap"}
 CODE_SOURCES = [
     "scripts/audit_v3_graph_event_completeness.py",
     "scripts/build_v3_inventory_panel.py",
@@ -152,6 +152,8 @@ def graph_core_events(
             event_type = "swap"
         elif record_type == "liquidity" and source_stream == "mints":
             event_type = "mint"
+        elif record_type == "liquidity" and source_stream == "burns":
+            event_type = "burn"
         else:
             continue
         static = statics[pool]

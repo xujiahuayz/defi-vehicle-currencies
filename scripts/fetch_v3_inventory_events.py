@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Fetch raw V3 Collect, Flash, and CollectProtocol logs in resumable block chunks."""
+"""Fetch exact V3 state and physical-inventory logs in resumable block chunks."""
 
 from __future__ import annotations
 
@@ -30,14 +30,12 @@ from ddvc.v3_inventory import (
     INVENTORY_RAW_GENERATION,
     INVENTORY_RAW_MARKER_SCHEMA_VERSION,
     block_ranges,
-    canonical_inventory_start_block,
     decode_inventory_log,
     inventory_chunk_completed,
     inventory_chunk_evidence_path,
     inventory_chunk_paths,
 )
-from ddvc.v3_pool_registry import load_certified_frozen_upper
-from ddvc.state_data import available_state_days, read_tick_partition
+from ddvc.v3_pool_registry import V3_FACTORY_DEPLOYMENT_BLOCK, load_certified_frozen_upper
 
 
 RAW_ROOT = DATA_DIR / "raw" / "ethereum" / "uniswap_v3_inventory_events"
@@ -64,12 +62,7 @@ def default_end_block(path: Path = END_META_PATH) -> int:
 
 
 def default_start_block() -> int:
-    days = available_state_days("tick", "uniswap_v3")
-    if not days:
-        raise RuntimeError("canonical V3 state has no day from which to set the fetch perimeter")
-    return canonical_inventory_start_block(
-        read_tick_partition("uniswap_v3", days[0]).to_dict("records")
-    )
+    return V3_FACTORY_DEPLOYMENT_BLOCK
 
 
 def paths(lower: int, upper: int, root: Path = RAW_ROOT) -> tuple[Path, Path]:

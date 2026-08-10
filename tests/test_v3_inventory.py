@@ -13,6 +13,7 @@ import pyarrow.parquet as pq
 import pytest
 
 from ddvc.ethereum_logs import file_sha256
+from ddvc.fetch.sources import get_source
 from ddvc.v3_inventory import (
     EVENT_TOPICS,
     INVENTORY_RAW_GENERATION,
@@ -35,6 +36,7 @@ from ddvc.v3_inventory import (
     inventory_chunk_evidence_path,
     inventory_snapshot_rows,
     inventory_chunk_paths,
+    is_physical_inventory_transfer,
     pool_static_from_graph,
 )
 from ddvc.v3_pool_registry import V3_POOL_REGISTRY_SCHEMA_VERSION
@@ -51,6 +53,7 @@ from scripts.audit_v3_graph_event_completeness import (
     graph_core_events,
 )
 from scripts.fetch_v3_inventory_events import (
+    default_start_block,
     fetch_chunk,
     quarantine_invalid_chunk,
     run_fetch_jobs,
@@ -198,7 +201,32 @@ def test_raw_swap_uses_exact_signed_integer_transfer_amounts() -> None:
 
 
 def test_burn_is_not_a_physical_inventory_transfer() -> None:
-    assert "burn" not in EVENT_TOPICS
+    burn = log(
+        "burn",
+        [123, 456, 789],
+        ["uint128", "uint256", "uint256"],
+    )
+    decoded = decode_inventory_log(burn)
+    assert decoded["event_type"] == "burn"
+    assert decoded["amount0_delta_raw"] == 456
+    assert decoded["amount1_delta_raw"] == 789
+    assert decoded["physical_inventory_transfer"] is False
+    balances = {"0xpool": (10, 20)}
+    assert apply_inventory_event(balances, decoded) == (10, 20)
+    assert balances == {"0xpool": (10, 20)}
+    last_events: dict[str, tuple[int, int]] = {}
+    event_counts: dict[str, int] = {}
+    apply_inventory_events(
+        balances,
+        [decoded],
+        last_events=last_events,
+        event_counts=event_counts,
+    )
+    assert balances == {"0xpool": (10, 20)}
+    assert last_events == {}
+    assert event_counts == {}
+    with pytest.raises(ValueError, match="contradictory V3 transfer semantics"):
+        is_physical_inventory_transfer({**decoded, "physical_inventory_transfer": True})
 
 
 def test_graph_source_audit_converts_large_decimal_amounts_exactly() -> None:
@@ -214,14 +242,28 @@ def test_graph_source_audit_converts_large_decimal_amounts_exactly() -> None:
                 "tx_hash": "0xtx",
                 "amount0": "775343764933267394725819.694029",
                 "amount1": "1",
-            }
+            },
+            {
+                "pool": item.pool,
+                "record_type": "liquidity",
+                "source_stream": "burns",
+                "block_number": 101,
+                "log_index": 8,
+                "tx_hash": "0xburn",
+                "amount0": "2.5",
+                "amount1": "3",
+            },
         ]
     )
     events, duplicates = graph_core_events(frame, {item.pool: item})
     assert duplicates == set()
-    assert next(iter(events.values())) == (
+    assert events[("mint", 100, "0xtx", 7, item.pool)] == (
         775_343_764_933_267_394_725_819_694_029,
         10**18,
+    )
+    assert events[("burn", 101, "0xburn", 8, item.pool)] == (
+        2_500_000,
+        3 * 10**18,
     )
 
 
@@ -250,6 +292,10 @@ def test_source_audit_separates_omissions_extras_and_amount_mismatches() -> None
 
 def test_block_chunks_cover_the_perimeter_once() -> None:
     assert block_ranges(10, 25, 6) == [(10, 11), (12, 17), (18, 23), (24, 25)]
+
+
+def test_raw_event_perimeter_starts_at_factory_deployment() -> None:
+    assert default_start_block() == get_source("uniswap_v3").factory_deployment_block
 
 
 def test_inventory_perimeter_starts_at_first_mint_or_swap_not_first_swap() -> None:

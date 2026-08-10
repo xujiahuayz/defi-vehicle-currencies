@@ -31,6 +31,7 @@ from ddvc.v3_pool_registry import load_registry
 
 EVENT_SIGNATURES = {
     "mint": "Mint(address,address,int24,int24,uint128,uint256,uint256)",
+    "burn": "Burn(address,int24,int24,uint128,uint256,uint256)",
     "swap": "Swap(address,address,int256,int256,uint160,uint128,int24)",
     "collect": "Collect(address,address,int24,int24,uint128,uint128)",
     "flash": "Flash(address,address,uint256,uint256,uint256,uint256)",
@@ -42,10 +43,10 @@ EVENT_TOPICS = {
 }
 EVENT_BY_TOPIC = {topic: name for name, topic in EVENT_TOPICS.items()}
 BALANCE_OF_SELECTOR = "0x" + keccak(text="balanceOf(address)")[:4].hex()
-INVENTORY_RAW_MARKER_SCHEMA_VERSION = 4
-INVENTORY_RAW_GENERATION = "uniswap_v3_anchored_global_inventory_topics_v4"
-INVENTORY_RAW_EVIDENCE_KIND = "uniswap_v3_inventory_rpc_evidence_v1"
-INVENTORY_STATE_GENERATION = "uniswap_v3_factory_perimeter_inventory_v4"
+INVENTORY_RAW_MARKER_SCHEMA_VERSION = 5
+INVENTORY_RAW_GENERATION = "uniswap_v3_anchored_global_state_and_inventory_topics_v5"
+INVENTORY_RAW_EVIDENCE_KIND = "uniswap_v3_state_and_inventory_rpc_evidence_v2"
+INVENTORY_STATE_GENERATION = "uniswap_v3_factory_perimeter_inventory_v5"
 INVENTORY_QUANTITY_KIND = "event_replayed_pool_inventory"
 PENDING_CUSTODY_STATUS = "pending_historical_balance_validation"
 PENDING_OWNERSHIP_STATUS = "pending_protocol_fee_ownership_reconciliation"
@@ -416,6 +417,17 @@ def canonical_inventory_start_block(records: Iterable[object]) -> int:
     return min(blocks)
 
 
+def is_physical_inventory_transfer(event: dict[str, object]) -> bool:
+    """Return physical-transfer status and reject a contradictory Burn marker."""
+
+    event_type = str(event.get("event_type") or "")
+    declared = event.get("physical_inventory_transfer")
+    expected = event_type != "burn" if event_type else bool(declared if declared is not None else True)
+    if declared is not None and bool(declared) != expected:
+        raise ValueError(f"contradictory V3 transfer semantics for {event_type or 'untyped event'}")
+    return expected
+
+
 def apply_inventory_event(
     balances: dict[str, tuple[int, int]], event: dict[str, object]
 ) -> tuple[int, int]:
@@ -423,6 +435,8 @@ def apply_inventory_event(
 
     pool = str(event["pool"]).lower()
     before0, before1 = balances.get(pool, (0, 0))
+    if not is_physical_inventory_transfer(event):
+        return before0, before1
     after = (
         before0 + int(event["amount0_delta_raw"]),
         before1 + int(event["amount1_delta_raw"]),
@@ -450,12 +464,13 @@ def apply_inventory_events(
         if identity in identities:
             raise ValueError(f"duplicate V3 inventory event: {identity}")
         identities.add(identity)
-        apply_inventory_event(balances, event)
-        pool = str(event["pool"]).lower()
-        if last_events is not None:
-            last_events[pool] = key
-        if event_counts is not None:
-            event_counts[pool] = event_counts.get(pool, 0) + 1
+        if is_physical_inventory_transfer(event):
+            apply_inventory_event(balances, event)
+            pool = str(event["pool"]).lower()
+            if last_events is not None:
+                last_events[pool] = key
+            if event_counts is not None:
+                event_counts[pool] = event_counts.get(pool, 0) + 1
         prior_key = key
 
 
@@ -536,7 +551,7 @@ def decode_balance_of_result(value: object) -> int:
 
 
 def decode_inventory_log(log: dict) -> dict[str, object]:
-    """Decode one inventory-changing V3 log into signed raw token deltas."""
+    """Decode one V3 state or inventory log with explicit transfer semantics."""
 
     if bool(log.get("removed")):
         raise ValueError("removed log cannot enter canonical V3 inventory")
@@ -548,6 +563,11 @@ def decode_inventory_log(log: dict) -> dict[str, object]:
     if event_type == "mint":
         _sender, _amount, amount0, amount1 = abi_decode(
             ["address", "uint128", "uint256", "uint256"], data
+        )
+        delta0, delta1 = int(amount0), int(amount1)
+    elif event_type == "burn":
+        _amount, amount0, amount1 = abi_decode(
+            ["uint128", "uint256", "uint256"], data
         )
         delta0, delta1 = int(amount0), int(amount1)
     elif event_type == "swap":
@@ -584,4 +604,5 @@ def decode_inventory_log(log: dict) -> dict[str, object]:
         "timestamp": timestamp,
         "amount0_delta_raw": delta0,
         "amount1_delta_raw": delta1,
+        "physical_inventory_transfer": event_type != "burn",
     }

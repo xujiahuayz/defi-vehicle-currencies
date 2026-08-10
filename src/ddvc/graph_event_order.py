@@ -17,8 +17,6 @@ from pathlib import Path
 from typing import Iterable, Mapping
 
 from eth_abi import decode as abi_decode
-from eth_utils import keccak
-
 from ddvc.amounts import human_to_raw, raw_to_human
 from ddvc.ethereum_receipts import receipt_logs_are_current
 from ddvc.fetch.raw import write_json, write_jsonl_gz
@@ -30,13 +28,10 @@ from ddvc.v3_inventory import EVENT_TOPICS as V3_INVENTORY_TOPICS
 SCHEMA_VERSION = 4
 SUPPORTED_VENUES = frozenset({"uniswap_v2", "sushiswap_v2", "uniswap_v3"})
 CORE_STREAMS = ("swaps", "mints", "burns")
-V3_BURN_TOPIC = "0x" + keccak(
-    text="Burn(address,int24,int24,uint128,uint256,uint256)"
-).hex()
 V3_STATE_EVENT_TOPICS = {
     "swap": V3_INVENTORY_TOPICS["swap"],
     "mint": V3_INVENTORY_TOPICS["mint"],
-    "burn": V3_BURN_TOPIC,
+    "burn": V3_INVENTORY_TOPICS["burn"],
 }
 V3_STATE_EVENT_BY_TOPIC = {topic: name for name, topic in V3_STATE_EVENT_TOPICS.items()}
 STREAM_EVENT_TYPE = {"swaps": "swap", "mints": "mint", "burns": "burn"}
