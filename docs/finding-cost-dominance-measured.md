@@ -1,6 +1,6 @@
 # Direct-route cost domination exists, but the V2-family survivor panel cannot identify market maturation
 
-Status 2026-08-10: gross-output comparisons remain construction evidence, but every all-in incidence and magnitude below is withdrawn pending the DEX-independent daily gas-price rebuild. The retired gas-price panel chose sampled blocks from one active DEX stream. No historical all-in number in this document supports a current claim until the exact UTC-day sampler and downstream construction rerun.
+Status 2026-08-10: gross-output comparisons remain construction evidence, but every all-in incidence and magnitude below is withdrawn pending the exact transaction-receipt rebuild. The analytical route panel no longer accepts a daily gas-price join. It requires the realised transaction's `effectiveGasPrice` joined by exact transaction and block, applies that price to both alternatives, and registers same-block base fee as the urgency-free sensitivity.
 
 Built by `scripts/build_counterfactual_dominance.py` from strict pre-transaction pool state and calibrated by `scripts/process/build_route_gas_units.py`. The canonical outputs are `data/processed/counterfactual_dominance.parquet`, `output/exhibits/counterfactual_dominance_summary.jsonl`, `output/exhibits/counterfactual_dominance_support.jsonl`, and `output/exhibits/route_gas_units_summary.jsonl`.
 
@@ -10,7 +10,7 @@ This document supersedes every earlier figure based on the retired 103,857-route
 
 ## Estimand
 
-For each realised two-leg route in the Uniswap V2 and SushiSwap V2 families, the estimator asks whether an available one-leg pool would have returned more output for the exact realised input. The two alternatives share the same endpoints, transaction order, reconstructed pre-transaction state, token prices, and historical gas price. Reserve state is advanced through intervening swaps, mints, and burns. The comparison therefore measures a direct path omitted by a realised legacy two-hop route. It does not enumerate every path a contemporary multi-venue router could have chosen.
+For each realised two-leg route in the Uniswap V2 and SushiSwap V2 families, the estimator asks whether an available one-leg pool would have returned more output for the exact realised input. The two alternatives share the same endpoints, transaction order, reconstructed pre-transaction state, token prices, and exact realised-transaction gas price. Reserve state is advanced through intervening swaps, mints, and burns. The comparison therefore measures a direct path omitted by a realised legacy two-hop route. It does not enumerate every path a contemporary multi-venue router could have chosen.
 
 The fixed calendar contains 74 one-day snapshots stratified by calendar month; 73 are nonempty, yielding 45,720 unique comparable routes from June 2020 through June 2026. There are no duplicate route identifiers and no missing all-in estimates.
 

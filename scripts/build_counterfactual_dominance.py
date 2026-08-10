@@ -21,8 +21,10 @@ Method, per executed indirect (two-leg) route:
   3. read the realised output of the canonical two-leg route component
   4. quote the best available DIRECT pool for the same endpoints and input size at
      the same reserves
-  5. the gap in basis points is the cost of the road taken against the road not
-     taken, gross of gas
+  5. write the gross same-state route panel before any gas-price dependency
+  6. join the realised transaction's exact receipt gas price by transaction and
+     block, then apply that common price to receipt-calibrated direct and indirect
+     route-unit estimates
 
 A cell is a cost-dominance window when the direct quote strictly exceeds the
 intermediated quote, meaning the trade would have been better off going direct at
@@ -31,13 +33,14 @@ the moment it was made.
 Bias directions:
   - venue coverage is v2-family only, so the best alternative is understated and
     dominance incidence is a LOWER bound
-  - quotes are gross of gas, and a two-hop route burns more gas, so omitting gas
-    favours the realised vehicle route. Gross-of-gas dominance is also a LOWER
-    bound on all-in dominance. The gas-inclusive version requires historical gas
-    prices and receipt-measured gas per route topology.
+  - gross quotes omit gas and therefore favour the two-hop realised route; the
+    gross dominance incidence is a LOWER bound on all-in dominance
+  - the realised transaction's effective gas price includes its urgency bid; the
+    same-block base-fee sensitivity is a separate registered estimate
 
 Reads   the canonical constant-product market-state layer
-Writes  data/processed/counterfactual_dominance.parquet
+Writes  data/processed/counterfactual_dominance_gross.parquet
+        data/processed/counterfactual_dominance.parquet
         output/exhibits/counterfactual_dominance_summary.jsonl
         output/exhibits/counterfactual_dominance_support.jsonl
 """
@@ -59,7 +62,7 @@ from ddvc.cpquote import (
     cost_gap_bps,
     quote_one_hop,
 )
-from ddvc.gas import load_daily_gas_prices
+from ddvc.gas import load_route_transaction_gas
 from ddvc.paths import DATA_DIR, OUTPUT_DIR, REPO_ROOT
 from ddvc.prices import PRICE_COLUMNS, day_prices
 from ddvc.realised import LINEAR_ROUTE_COLUMNS, extract_linear_realised_routes
@@ -73,10 +76,11 @@ from ddvc.tables import write_exhibit, write_panel
 MARKET_STATE = STATE_ROOT
 UNIFIED = DATA_DIR / "unified"
 OUT_PARQUET = DATA_DIR / "processed" / "counterfactual_dominance.parquet"
+GROSS_PARQUET = DATA_DIR / "processed" / "counterfactual_dominance_gross.parquet"
 OUT_EXHIBIT = OUTPUT_DIR / "exhibits" / "counterfactual_dominance_summary.jsonl"
 OUT_SUPPORT = OUTPUT_DIR / "exhibits" / "counterfactual_dominance_support.jsonl"
 LOCK = OUT_PARQUET.with_suffix(".lock")
-GAS_PANEL = DATA_DIR / "processed" / "daily_gas_price_graph.parquet"
+TRANSACTION_GAS_PANEL = DATA_DIR / "processed" / "route_transaction_gas.parquet"
 ROUTE_GAS_PANEL = DATA_DIR / "processed" / "route_gas_units.parquet"
 CODE_SOURCES = [
     "scripts/build_counterfactual_dominance.py",
@@ -307,21 +311,41 @@ def one_day(day: str) -> pd.DataFrame | None:
 
 def add_topology_gas_adjustment(
     frame: pd.DataFrame,
-    gas_panel=GAS_PANEL,
+    gas_panel=TRANSACTION_GAS_PANEL,
     route_gas_panel=ROUTE_GAS_PANEL,
 ) -> pd.DataFrame:
-    """Join historical prices and receipt-calibrated gas by exact route support."""
+    """Join exact transaction prices and receipt-calibrated gas-unit support."""
     out = frame.copy()
-    out = out.drop(columns=["gas_gwei"], errors="ignore")
+    out = out.drop(
+        columns=[
+            "effective_gas_price_wei",
+            "gas_gwei",
+            "gas_price_supported",
+            "gas_price_support_reason",
+        ],
+        errors="ignore",
+    )
     out["date"] = pd.to_datetime(out["date"]).dt.normalize()
     out["year"] = out["date"].dt.year
-    gas = load_daily_gas_prices(
-        gas_panel,
-        required_dates=out["date"],
-    )[["date", "gas_gwei_median"]].rename(
-        columns={"gas_gwei_median": "gas_gwei"}
+    out["tx"] = out["tx"].astype(str).str.lower()
+    out["block"] = pd.to_numeric(out["block"], errors="raise").astype("int64")
+    gas = load_route_transaction_gas(
+        gas_panel, required_routes=out
+    )[
+        [
+            "tx_hash",
+            "block_number",
+            "effective_gas_price_wei",
+            "gas_gwei",
+            "gas_price_supported",
+            "gas_price_support_reason",
+        ]
+    ].rename(
+        columns={"tx_hash": "tx", "block_number": "block"}
     )
-    out = out.merge(gas, on="date", how="left", validate="many_to_one")
+    out = out.merge(gas, on=["tx", "block"], how="left", validate="one_to_one")
+    if out["gas_price_supported"].isna().any():
+        raise RuntimeError("exact transaction gas join changed the route perimeter")
     receipt_panel = (
         route_gas_panel.copy()
         if isinstance(route_gas_panel, pd.DataFrame)
@@ -617,75 +641,92 @@ def dominance_level_summary(frame: pd.DataFrame) -> pd.DataFrame:
 def main() -> int:
     ap = argparse.ArgumentParser(description=__doc__,
                                  formatter_class=argparse.RawDescriptionHelpFormatter)
+    ap.add_argument(
+        "--stage",
+        choices=("gross", "final"),
+        default="gross",
+        help="build the gross route panel or attach exact transaction gas and exhibits",
+    )
     ap.add_argument("--days", nargs="+", help="explicit YYYYMMDD days")
     ap.add_argument("--limit", type=int, default=None)
     ap.add_argument("--workers", type=int, default=4)
     ap.add_argument("--panel-only", action="store_true")
     args = ap.parse_args()
     require_node_d_release(routes=True, market_state=True)
-    require_current_artifacts(
-        [GAS_PANEL, ROUTE_GAS_PANEL], consumer="counterfactual-dominance panel"
-    )
     if args.limit is not None and args.limit < 1:
         ap.error("--limit must be positive")
-
-    available = sorted(
-        p.stem
-        for p in (MARKET_STATE / "constant_product" / "uniswap_v2").glob("[0-9]" * 8 + ".parquet")
-    )
-    days = counterfactual_days(available, explicit=args.days, limit=args.limit)
-    print(f"quoting counterfactuals on {len(days)} day(s)", flush=True)
-
-    parts = []
-    comparable = 0
-    with interruptible_process_pool(bounded_workers(args.workers, maximum=8)) as pool:
-        results = pool.map(one_day, days, chunksize=1)
-        for index, (day, result) in enumerate(zip(days, results, strict=True), 1):
-            if result is not None and len(result):
-                parts.append(result)
-                comparable += len(result)
-            if index % 25 == 0 or index == len(days):
-                print(
-                    f"  [{index:,}/{len(days):,}] through {day}: "
-                    f"{comparable:,} comparable two-leg routes",
-                    flush=True,
-                )
-    if not parts:
-        print("no comparable routes")
-        return 1
-
-    df = pd.concat(parts, ignore_index=True)
-    df = df[df.direct_output_improvement_bps.notna()]
-    df = add_topology_gas_adjustment(df)
-    df["dominated_gross"] = df["direct_output_improvement_bps"].gt(0)
-    df = add_valuation_support(df)
-    df["dominated_valuation_coherent_2x"] = df["dominated_gross"].where(
-        df["valuation_coherent_2x"]
-    )
-    df["dominated_valuation_coherent_20pct"] = df["dominated_gross"].where(
-        df["valuation_coherent_20pct"]
-    )
-    df["state_support"] = classify_state_support(df)
-    if args.days is not None or args.limit is not None:
-        print(
-            f"bounded counterfactual diagnostic complete on {len(days):,} day(s); "
-            "canonical outputs unchanged"
+    if args.stage == "final":
+        if args.days is not None or args.limit is not None:
+            ap.error("--days and --limit apply only to the gross diagnostic stage")
+        require_current_artifacts(
+            [GROSS_PARQUET, TRANSACTION_GAS_PANEL, ROUTE_GAS_PANEL],
+            consumer="gas-adjusted counterfactual-dominance panel",
         )
-        return 0
-    write_panel(
-        df,
-        OUT_PARQUET,
-        code_sources=CODE_SOURCES,
-        inputs=[
-            *(MARKET_STATE / "constant_product" / venue for venue in VENUES),
-            UNIFIED,
-            GAS_PANEL,
-            ROUTE_GAS_PANEL,
-        ],
-        notes="V2-family exact-size direct counterfactual at strict pre-transaction block-log state; historical gas prices and receipt-calibrated route gas with explicit fallback support",
-    )
-    if args.panel_only:
-        print(f"wrote analysis-ready panel {OUT_PARQUET.relative_to(REPO_ROOT)}")
+        df = add_topology_gas_adjustment(pd.read_parquet(GROSS_PARQUET))
+        write_panel(
+            df,
+            OUT_PARQUET,
+            code_sources=CODE_SOURCES,
+            inputs=[GROSS_PARQUET, TRANSACTION_GAS_PANEL, ROUTE_GAS_PANEL],
+            notes="V2-family exact-size direct counterfactual with realised-transaction effective gas price joined by transaction and block and receipt-calibrated route gas units",
+        )
+        if args.panel_only:
+            print(f"wrote analysis-ready panel {OUT_PARQUET.relative_to(REPO_ROOT)}")
+            return 0
+    else:
+        available = sorted(
+            p.stem
+            for p in (MARKET_STATE / "constant_product" / "uniswap_v2").glob("[0-9]" * 8 + ".parquet")
+        )
+        days = counterfactual_days(available, explicit=args.days, limit=args.limit)
+        print(f"quoting counterfactuals on {len(days)} day(s)", flush=True)
+
+        parts = []
+        comparable = 0
+        with interruptible_process_pool(bounded_workers(args.workers, maximum=8)) as pool:
+            results = pool.map(one_day, days, chunksize=1)
+            for index, (day, result) in enumerate(zip(days, results, strict=True), 1):
+                if result is not None and len(result):
+                    parts.append(result)
+                    comparable += len(result)
+                if index % 25 == 0 or index == len(days):
+                    print(
+                        f"  [{index:,}/{len(days):,}] through {day}: "
+                        f"{comparable:,} comparable two-leg routes",
+                        flush=True,
+                    )
+        if not parts:
+            print("no comparable routes")
+            return 1
+
+        df = pd.concat(parts, ignore_index=True)
+        df = df[df.direct_output_improvement_bps.notna()]
+        df["dominated_gross"] = df["direct_output_improvement_bps"].gt(0)
+        df = add_valuation_support(df)
+        df["dominated_valuation_coherent_2x"] = df["dominated_gross"].where(
+            df["valuation_coherent_2x"]
+        )
+        df["dominated_valuation_coherent_20pct"] = df["dominated_gross"].where(
+            df["valuation_coherent_20pct"]
+        )
+        df["state_support"] = classify_state_support(df)
+        if args.days is not None or args.limit is not None:
+            print(
+                f"bounded counterfactual diagnostic complete on {len(days):,} day(s); "
+                "canonical outputs unchanged"
+            )
+            return 0
+        write_panel(
+            df,
+            GROSS_PARQUET,
+            code_sources=CODE_SOURCES,
+            inputs=[
+                *(MARKET_STATE / "constant_product" / venue for venue in VENUES),
+                UNIFIED,
+            ],
+            notes="gross V2-family exact-size direct counterfactual at strict pre-transaction block-log state, released before any gas-price dependency",
+        )
+        print(f"wrote gross route panel {GROSS_PARQUET.relative_to(REPO_ROOT)}")
         return 0
 
     print(f"\ncomparable intermediated routes with a direct alternative: {len(df):,}")

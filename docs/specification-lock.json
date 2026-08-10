@@ -8,7 +8,7 @@
   "d3_certificate": null,
   "exploration_generation": null,
   "exploration_certificate": null,
-  "lock_hash": "84392b99416def68e29c5b1e84c8ac71d6f454d58b508eee6f51aa6e9350850f",
+  "lock_hash": "5f2e4c5ce4b867a83475d1a49e8532d05580d6fcff921a6ad9ee942f478882cc",
   "paper_scope": "The making and displacement of vehicle-currency roles in Ethereum decentralised exchange",
   "global_rules": {
     "asset_identity": "canonical contract address; symbols are labels only",
@@ -208,8 +208,9 @@
       "forbidden_interpretation": "market-wide incidence, efficiency trend, inertia, or aggregator effect",
       "inputs": [
         "data/processed/counterfactual_dominance.parquet",
+        "data/processed/counterfactual_dominance_gross.parquet",
         "data/processed/route_gas_units.parquet",
-        "data/processed/daily_gas_price_graph.parquet"
+        "data/processed/route_transaction_gas.parquet"
       ],
       "outputs": [
         "output/exhibits/counterfactual_dominance_summary.jsonl",

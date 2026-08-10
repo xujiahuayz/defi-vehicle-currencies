@@ -24,13 +24,20 @@ from __future__ import annotations
 
 import argparse
 import json
-from concurrent.futures import ThreadPoolExecutor, as_completed
+from concurrent.futures import as_completed
 from pathlib import Path
 
 import pandas as pd
 
 from ddvc.calendar import nearest_day_per_month
 from ddvc.data_release import require_node_d_release
+from ddvc.ethereum_receipts import (
+    RECEIPT_CACHE,
+    fetch_receipt as fetch_ethereum_receipt,
+    load_receipt_snapshot as load_ethereum_receipt_snapshot,
+    parse_receipt,
+    write_receipt_snapshot as write_ethereum_receipt_snapshot,
+)
 from ddvc.paths import DATA_DIR, OUTPUT_DIR, REPO_ROOT, SHARED_RUNTIME_DIR
 from ddvc.provenance import cache_key
 from ddvc.quoter import rpc_post
@@ -48,11 +55,12 @@ from ddvc.runtime import (
     bounded_workers,
     exclusive_job,
     interruptible_process_pool,
+    interruptible_thread_pool,
 )
 from ddvc.tables import write_exhibit, write_panel
 
 UNIFIED = DATA_DIR / "unified"
-CACHE = SHARED_RUNTIME_DIR / "cache" / "route_gas_receipts"
+CACHE = RECEIPT_CACHE
 CANDIDATE_CACHE_ROOT = SHARED_RUNTIME_DIR / "cache" / "route_gas_candidates"
 RECEIPT_SNAPSHOT = DATA_DIR / "empirical" / "route_gas_receipt_selection.jsonl"
 LOCK = SHARED_RUNTIME_DIR / "route-gas-units.lock"
@@ -60,6 +68,7 @@ OUT_PANEL = DATA_DIR / "processed" / "route_gas_units.parquet"
 OUT_EXHIBIT = OUTPUT_DIR / "exhibits" / "route_gas_units_summary.jsonl"
 CODE_SOURCES = [
     "scripts/process/build_route_gas_units.py",
+    "src/ddvc/ethereum_receipts.py",
     "src/ddvc/route_gas.py",
     "src/ddvc/route_roles.py",
     "src/ddvc/runtime.py",
@@ -142,91 +151,19 @@ def sample_day(
     return len(candidates), sample, False
 
 
-def parse_receipt(tx_hash: str, response: object) -> dict | None:
-    """Normalised successful JSON-RPC receipt, or None when unusable."""
-    if not isinstance(response, dict) or response.get("error"):
-        return None
-    result = response.get("result") or {}
-    try:
-        gas_used = int(result["gasUsed"], 16)
-        status = int(result.get("status", "0x1"), 16)
-    except (KeyError, TypeError, ValueError):
-        return None
-    return {
-        "tx_hash": tx_hash.lower(),
-        "gas_used": gas_used,
-        "status": status,
-        "tx_to": str(result.get("to") or "").lower() or None,
-        "tx_from": str(result.get("from") or "").lower() or None,
-        "effective_gas_price_wei": (
-            int(result["effectiveGasPrice"], 16)
-            if result.get("effectiveGasPrice")
-            else None
-        ),
-    }
-
-
 def fetch_receipt(tx_hash: str) -> dict:
     """Fetch and atomically cache one transaction receipt."""
-    cached = CACHE / f"{tx_hash.lower()}.json"
-    if cached.exists():
-        row = json.loads(cached.read_text())
-        if (
-            row.get("tx_hash") == tx_hash.lower()
-            and isinstance(row.get("gas_used"), int)
-            and row["gas_used"] > 0
-            and "tx_to" in row
-        ):
-            return row
-    response = rpc_post(
-        {
-            "jsonrpc": "2.0",
-            "id": 1,
-            "method": "eth_getTransactionReceipt",
-            "params": [tx_hash],
-        },
-        timeout=20,
-        retries=2,
-        sleep=0.02,
-        retry_json_errors=True,
-    )
-    row = parse_receipt(tx_hash, response)
-    if row is None:
-        raise RuntimeError("receipt response is missing gasUsed")
-    CACHE.mkdir(parents=True, exist_ok=True)
-    with atomic_output(cached) as temporary:
-        temporary.write_text(json.dumps(row, sort_keys=True))
-    return row
+    return fetch_ethereum_receipt(tx_hash, cache=CACHE, rpc_request=rpc_post)
 
 
 def write_receipt_snapshot(receipts: list[dict], path: Path = RECEIPT_SNAPSHOT) -> Path:
     """Install the exact selected receipt inputs in deterministic transaction order."""
-    ordered = sorted(receipts, key=lambda row: str(row["tx_hash"]))
-    hashes = [str(row["tx_hash"]) for row in ordered]
-    if len(hashes) != len(set(hashes)):
-        raise ValueError("selected receipt snapshot contains duplicate transactions")
-    with atomic_output(path) as temporary:
-        with temporary.open("w", encoding="utf-8") as handle:
-            for row in ordered:
-                handle.write(json.dumps(row, sort_keys=True, separators=(",", ":")) + "\n")
-    return path
+    return write_ethereum_receipt_snapshot(receipts, path)
 
 
 def load_receipt_snapshot(path: Path = RECEIPT_SNAPSHOT) -> dict[str, dict]:
     """Reusable immutable-chain receipts from the previous selected sample."""
-    if not path.exists():
-        return {}
-    rows: dict[str, dict] = {}
-    with path.open(encoding="utf-8") as handle:
-        for line in handle:
-            try:
-                row = json.loads(line)
-            except json.JSONDecodeError:
-                continue
-            tx_hash = str(row.get("tx_hash") or "").lower()
-            if tx_hash and isinstance(row.get("gas_used"), int) and row["gas_used"] > 0:
-                rows[tx_hash] = row
-    return rows
+    return load_ethereum_receipt_snapshot(path)
 
 
 def _main_unlocked() -> int:
@@ -305,8 +242,7 @@ def _main_unlocked() -> int:
         flush=True,
     )
     failed = []
-    pool = ThreadPoolExecutor(max_workers=args.workers)
-    try:
+    with interruptible_thread_pool(max_workers=args.workers) as pool:
         futures = {
             pool.submit(fetch_receipt, tx_hash): tx_hash
             for tx_hash in missing_hashes
@@ -322,8 +258,6 @@ def _main_unlocked() -> int:
                     f"  receipts {index}/{len(futures)} | failed {len(failed)}",
                     flush=True,
                 )
-    finally:
-        pool.shutdown(wait=True, cancel_futures=True)
     if not receipts:
         print("no receipts resolved")
         return 1

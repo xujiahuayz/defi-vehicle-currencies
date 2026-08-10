@@ -584,6 +584,7 @@ class FindingsFreezeAuditTest(unittest.TestCase):
             {
                 "data/processed/cex_reference_support.parquet",
                 "data/processed/counterfactual_dominance.parquet",
+                "data/processed/counterfactual_dominance_gross.parquet",
                 "data/processed/cross_venue_routing_daily.parquet",
                 "data/processed/daily_gas_price_graph.parquet",
                 "data/processed/ethereum_utc_day_calendar.parquet",
@@ -600,6 +601,7 @@ class FindingsFreezeAuditTest(unittest.TestCase):
                 "data/processed/routing_maturation_exact_horizons.parquet",
                 "data/processed/routing_transition_cells.parquet",
                 "data/processed/route_gas_units.parquet",
+                "data/processed/route_transaction_gas.parquet",
                 "data/processed/token_price_daily.parquet",
                 "data/processed/vehicle_centrality_dense.parquet",
                 "data/processed/vehicle_excess_use_daily.parquet",

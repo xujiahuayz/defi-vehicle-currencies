@@ -145,9 +145,9 @@ Figure assets live under `output/figures/deck/` as one file per slide. Diagrams 
 - Both routes quoted at one reconstructed pool state
 - Price movement cannot enter the comparison
 - Constant product, tick traversal, StableSwap, weighted geometric mean
-- Gas priced per leg from receipts, by venue and by candidate
+- Gas units calibrated from receipts by venue and candidate; price joined from the realised transaction's exact receipt
 
-**Visual.** `deck/counterfactual_design.svg`, drawio tab `counterfactual`. Two horizontal lanes issuing from a single state box labelled with the hour's reconstructed reserves, ticks and balances. Upper lane, one solid arrow labelled "quote direct i to o" into an output box. Lower lane, two solid arrows labelled "quote i to k" and "quote k to o" into a second output box. One gas box sits below and sends a dashed arrow to every leg arrow in both lanes, each dashed arrow labelled with that leg's own venue-specific gas draw, so the diagram shows a per-leg cost that differs across candidates and not one constant attached to the vehicle lane. A single bracket between the two output boxes labelled with the gap in basis points. The reader should see one state feeding both lanes, which is what removes price movement, and should see the gas term varying with which pools the route touches.
+**Visual.** `deck/counterfactual_design.svg`, drawio tab `counterfactual`. Two horizontal lanes issue from a single state box labelled with the reconstructed pre-transaction reserves, ticks and balances. The upper lane quotes direct $i$ to $o$; the lower lane quotes $i$ to $k$ to $o$. One receipt-price box sends the same dashed arrow to both lanes, while separate route-unit boxes encode venue- and candidate-specific gas use. A bracket between the output boxes carries the gap in basis points. The reader should see one state and one observed transaction gas price feeding both alternatives, with route units varying by execution path.
 
 **Citations.** Angeris, Chitra, Evans and Boyd for gas-aware optimal routing being mixed-integer convex, so a shortfall against an optimum is measurable; Barbon and Ranaldo for total cost as slippage plus fee plus gas over notional; Xu, Paruch, Cousaert and Feng for design-specific slippage.
 

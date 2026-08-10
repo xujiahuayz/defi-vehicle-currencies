@@ -86,7 +86,7 @@ CLAIM_INPUT_STAGES: list[tuple[str, list[str], str, tuple[str, ...]]] = [
     (
         "process/fetch_daily_gas_price_graph.py",
         ["--workers", "8", "--panel-only"],
-        "daily gas prices used by all-in route comparisons",
+        "descriptive daily gas series and pool-day LP inputs; never a route-level join",
         ("data/processed/daily_gas_price_graph.parquet",),
     ),
     (
@@ -156,8 +156,20 @@ CLAIM_INPUT_STAGES: list[tuple[str, list[str], str, tuple[str, ...]]] = [
     ),
     (
         "build_counterfactual_dominance.py",
-        ["--workers", "4", "--panel-only"],
-        "full-daily legacy-support comparison retained as a bounded diagnostic",
+        ["--stage", "gross", "--workers", "4"],
+        "gross exact-state route counterfactual released before any gas-price dependency",
+        ("data/processed/counterfactual_dominance_gross.parquet",),
+    ),
+    (
+        "process/build_route_transaction_gas.py",
+        ["--workers", "8"],
+        "exact realised-transaction effective gas price joined by transaction and block",
+        ("data/processed/route_transaction_gas.parquet",),
+    ),
+    (
+        "build_counterfactual_dominance.py",
+        ["--stage", "final", "--panel-only"],
+        "gas-adjusted exact-state route counterfactual with common transaction gas price across alternatives",
         ("data/processed/counterfactual_dominance.parquet",),
     ),
 ]
