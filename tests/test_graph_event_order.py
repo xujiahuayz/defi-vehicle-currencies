@@ -16,7 +16,7 @@ from ddvc.graph_event_order import (
     supplement_source_row,
     write_correction_generation,
 )
-from ddvc.state_data import normalise_tick_partition
+from ddvc.state_data import normalise_cp_partition, normalise_tick_partition
 from ddvc.v2_event_completeness import V2_EVENT_TOPICS
 
 
@@ -316,6 +316,16 @@ def test_v2_events_use_hashed_same_day_snapshot_decimals(tmp_path: Path) -> None
         "amount1Out": "2",
         "pair": pair,
     }
+    burn = {
+        "id": "event-burn",
+        "transaction": {"id": "0xtx2", "blockNumber": "10", "timestamp": "100"},
+        "timestamp": "100",
+        "logIndex": "8",
+        "amount0": "3",
+        "amount1": "4",
+        "needsComplete": True,
+        "pair": pair,
+    }
     snapshot_pair = {
         **pair,
         "token0": {**pair["token0"], "decimals": "18"},
@@ -324,31 +334,89 @@ def test_v2_events_use_hashed_same_day_snapshot_decimals(tmp_path: Path) -> None
     rows = {
         "swaps": [swap],
         "mints": [],
-        "burns": [],
+        "burns": [burn],
         "hourly_reserves": [
-            {"id": "state", "hourStartUnix": "0", "pair": snapshot_pair}
+            {
+                "id": "state",
+                "hourStartUnix": "0",
+                "reserve0": "10",
+                "reserve1": "20",
+                "pair": snapshot_pair,
+            }
         ],
     }
     for stream, stream_rows in rows.items():
         with gzip.open(venue_root / f"uniswap_v2_{stream}_20250101.jsonl.gz", "wt") as handle:
             for row in stream_rows:
                 handle.write(json.dumps(row) + "\n")
-    exact = [{
-        "address": "0xpool",
-        "block_number": 10,
-        "block_hash": "0xblock",
-        "transaction_hash": "0xtx1",
-        "transaction_index": 1,
-        "log_index": 99,
-        "topics": [V2_EVENT_TOPICS["swap"]],
-        "data": "0x" + abi_encode(
-            ["uint256", "uint256", "uint256", "uint256"],
-            [10**18, 0, 0, 2 * 10**6],
-        ).hex(),
-        "removed": False,
-    }]
+    exact = [
+        {
+            "address": "0xpool",
+            "block_number": 10,
+            "block_hash": "0xblock",
+            "transaction_hash": "0xtx1",
+            "transaction_index": 1,
+            "log_index": 99,
+            "topics": [V2_EVENT_TOPICS["swap"]],
+            "data": "0x"
+            + abi_encode(
+                ["uint256", "uint256", "uint256", "uint256"],
+                [10**18, 0, 0, 2 * 10**6],
+            ).hex(),
+            "removed": False,
+        },
+        {
+            "address": "0xpool",
+            "block_number": 10,
+            "block_hash": "0xblock",
+            "transaction_hash": "0xtx2",
+            "transaction_index": 2,
+            "log_index": 100,
+            "topics": [V2_EVENT_TOPICS["burn"]],
+            "data": "0x"
+            + abi_encode(["uint256", "uint256"], [3 * 10**18, 4 * 10**6]).hex(),
+            "removed": False,
+        },
+    ]
     graph = load_graph_events(raw_root, "uniswap_v2", "20250101")
     corrections, supplements, audit = match_event_orders(graph, exact, "uniswap_v2")
     assert supplements == []
-    assert audit["matched_events"] == 1
-    assert corrections[0]["chain_log_index"] == 99
+    assert audit["matched_events"] == 2
+    assert audit["incomplete_liquidity_status_repairs"] == 1
+    burn_correction = next(row for row in corrections if row["event_id"] == "event-burn")
+    assert burn_correction["needs_complete_override"] is False
+
+    correction_root = correction_root_for_graph(raw_root)
+    exact_path = correction_root / "uniswap_v2" / "20250101" / "blocks_10_10.parquet"
+    exact_marker = exact_path.with_suffix(".meta.json")
+    write_exact_log_chunk(
+        exact_path,
+        exact_marker,
+        exact,
+        {
+            "kind": "test",
+            "venue": "uniswap_v2",
+            "day": "20250101",
+            "start_block": 10,
+            "end_block": 10,
+            "event_topics": list(V2_EVENT_TOPICS.values()),
+        },
+    )
+    write_correction_generation(
+        root=correction_root,
+        raw_root=raw_root,
+        venue="uniswap_v2",
+        day="20250101",
+        corrections=corrections,
+        supplements=[],
+        block_timestamp_evidence=[],
+        exact_log_paths=[exact_path, exact_marker],
+        audit=audit,
+        start_block=10,
+        end_block=10,
+    )
+    frame, quality = normalise_cp_partition(raw_root, "uniswap_v2", "20250101")
+    completed = frame.loc[frame["event_id"] == "event-burn"].iloc[0]
+    assert quality.passed
+    assert completed["usable"]
+    assert completed["unsupported_reason"] is None

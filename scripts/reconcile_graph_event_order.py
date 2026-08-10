@@ -205,6 +205,7 @@ def reconcile_day(
         f"order_corrections={audit['correction_rows']:,}; "
         f"duplicates={audit['provider_duplicate_rows']:,}; "
         f"payload_corrections={audit['payload_mismatches']:,}; "
+        f"completed_liquidity={audit['incomplete_liquidity_status_repairs']:,}; "
         f"supplements={audit['supplement_rows']:,}",
         flush=True,
     )

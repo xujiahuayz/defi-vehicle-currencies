@@ -754,6 +754,7 @@ def _normalise_cp_row(
     record_type: str,
     liquidity_sign: int,
     log_index_override: int | None = None,
+    needs_complete_override: bool | None = None,
 ) -> tuple[dict[str, object], dict[str, bool]]:
     pair = row.get("pair") or {}
     token0 = pair.get("token0") or {}
@@ -779,7 +780,12 @@ def _normalise_cp_row(
         else _optional_int(row.get("logIndex"))
     )
     tx_hash = None if record_type == "snapshot" else transaction_id(row)
-    known_incomplete = bool(record_type == "liquidity" and row.get("needsComplete"))
+    needs_complete = (
+        needs_complete_override
+        if needs_complete_override is not None
+        else bool(row.get("needsComplete"))
+    )
+    known_incomplete = bool(record_type == "liquidity" and needs_complete)
     missing_order = bool(
         record_type != "snapshot"
         and not known_incomplete
@@ -940,6 +946,9 @@ def normalise_cp_partition(
                 record_type=record_type,
                 liquidity_sign=sign,
                 log_index_override=override.log_index if override is not None else None,
+                needs_complete_override=(
+                    override.needs_complete if override is not None else None
+                ),
             )
             counters[f"{record_type}_rows"] += 1
             for name, flagged in flags.items():

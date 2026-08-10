@@ -54,6 +54,7 @@ class GraphEvent:
     fingerprint: Fingerprint
     decimals0: int | None
     decimals1: int | None
+    needs_complete: bool
 
     @property
     def match_key(self) -> tuple[str, str, str, Fingerprint]:
@@ -74,6 +75,7 @@ class GraphEvent:
             self.block_number,
             self.provider_log_index,
             self.fingerprint,
+            self.needs_complete,
         )
 
     @property
@@ -119,6 +121,7 @@ class EventOverride:
     log_index: int | None = None
     amount0: str | None = None
     amount1: str | None = None
+    needs_complete: bool | None = None
 
 
 def file_sha256(path: Path) -> str:
@@ -306,6 +309,7 @@ def graph_event(
         fingerprint=graph_fingerprint(row, venue, stream, pool_decimals),
         decimals0=decimals0,
         decimals1=decimals1,
+        needs_complete=bool(row.get("needsComplete")),
     )
 
 
@@ -615,6 +619,7 @@ def match_event_orders(
     unique_graph_events = 0
     matched_events = 0
     payload_mismatches = 0
+    incomplete_liquidity_status_repairs = 0
     ignored_zero_liquidity_events = 0
     unmatched_graph_events = 0
     correction_keys: set[CorrectionKey] = set()
@@ -685,6 +690,12 @@ def match_event_orders(
                         chain.payload["amount1"], provider.decimals1
                     ),
                 }
+            completion_repair = bool(
+                venue in {"uniswap_v2", "sushiswap_v2"}
+                and chain.event_type in {"mint", "burn"}
+                and provider.needs_complete
+            )
+            incomplete_liquidity_status_repairs += int(completion_repair)
             fingerprint_hash = hashlib.sha256(
                 json.dumps(provider.fingerprint, separators=(",", ":")).encode()
             ).hexdigest()
@@ -695,6 +706,7 @@ def match_event_orders(
                 if (
                     duplicate.provider_log_index == chain.log_index
                     and not payload_mismatch
+                    and not completion_repair
                 ):
                     continue
                 if duplicate.correction_key in correction_keys:
@@ -713,6 +725,11 @@ def match_event_orders(
                     "chain_log_index": chain.log_index,
                     "event_fingerprint_sha256": fingerprint_hash,
                     "exact_event_fingerprint_sha256": exact_fingerprint_hash,
+                    **(
+                        {"needs_complete_override": False}
+                        if completion_repair
+                        else {}
+                    ),
                     **amount_overrides,
                 })
         for chain in chain_remaining:
@@ -740,6 +757,7 @@ def match_event_orders(
         "matched_events": matched_events,
         "correction_rows": len(corrections),
         "payload_mismatches": payload_mismatches,
+        "incomplete_liquidity_status_repairs": incomplete_liquidity_status_repairs,
         "supplement_rows": len(supplements),
         "ignored_zero_liquidity_events": ignored_zero_liquidity_events,
         "unmatched_graph_events": 0,
@@ -791,16 +809,22 @@ class EventOrderCorrections:
             chain_log_index = int(row["chain_log_index"])
             amount0 = row.get("amount0_override")
             amount1 = row.get("amount1_override")
+            needs_complete = row.get("needs_complete_override")
             if (amount0 is None) != (amount1 is None):
                 raise ValueError(f"partial payload correction: {key}")
+            if needs_complete not in (None, False):
+                raise ValueError(f"invalid liquidity-completion correction: {key}")
             if chain_log_index < 0 or (
-                chain_log_index == key[-1] and amount0 is None
+                chain_log_index == key[-1]
+                and amount0 is None
+                and needs_complete is None
             ):
                 raise ValueError(f"invalid event-order correction: {key}")
             self._rows[key] = EventOverride(
                 log_index=chain_log_index,
                 amount0=str(amount0) if amount0 is not None else None,
                 amount1=str(amount1) if amount1 is not None else None,
+                needs_complete=False if needs_complete is False else None,
             )
 
     def resolve(self, venue: str, stream: str, row: dict) -> EventOverride | None:
