@@ -204,6 +204,7 @@ class FetchPlanningTests(unittest.TestCase):
         self.assertEqual(get_source("uniswap_v2").genesis_block, 10_008_566)
         self.assertEqual(get_source("uniswap_v3").genesis, dt.date(2021, 5, 4))
         self.assertEqual(get_source("uniswap_v3").genesis_block, 12_369_879)
+        self.assertEqual(get_source("uniswap_v3").factory_deployment_block, 12_369_621)
         self.assertEqual(get_source("uniswap_v4").genesis, dt.date(2025, 1, 24))
         self.assertEqual(get_source("uniswap_v4").genesis_block, 21_696_375)
         self.assertEqual(get_source("sushiswap_v2").backend, "thegraph")

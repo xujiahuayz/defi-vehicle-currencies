@@ -7,7 +7,6 @@ import json
 from eth_abi import encode as abi_encode
 import pytest
 
-from ddvc.fetch.sources import get_source
 from ddvc.pricing.v3pools import compute_pool_address
 from ddvc.v3_inventory import pool_statics_from_factory
 from ddvc.v3_pool_registry import (
@@ -15,6 +14,7 @@ from ddvc.v3_pool_registry import (
     FEE_AMOUNT_ENABLED_TOPIC,
     POOL_CREATED_TOPIC,
     V3_FACTORY,
+    V3_FACTORY_DEPLOYMENT_BLOCK,
     V3_POOL_REGISTRY_SCHEMA_VERSION,
     build_registry,
     decode_fee_amount_enabled,
@@ -204,7 +204,7 @@ def test_factory_leaf_is_reused_only_with_exact_frozen_evidence(tmp_path) -> Non
 
 
 def test_full_builder_fetches_missing_root_and_proves_fee_history(tmp_path) -> None:
-    deployment = get_source("uniswap_v3").genesis_block
+    deployment = V3_FACTORY_DEPLOYMENT_BLOCK
     upper = deployment + 10
     frozen = frozen_upper(upper)
     graph_static = tmp_path / "graph.jsonl.gz"
@@ -276,7 +276,7 @@ def test_full_builder_fetches_missing_root_and_proves_fee_history(tmp_path) -> N
 
 
 def test_certified_terminal_rejects_certificate_header_drift(tmp_path) -> None:
-    deployment = get_source("uniswap_v3").genesis_block
+    deployment = V3_FACTORY_DEPLOYMENT_BLOCK
     upper = deployment + 1
     frozen = frozen_upper(upper)
     graph_static = tmp_path / "graph.jsonl.gz"

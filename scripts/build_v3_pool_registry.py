@@ -7,13 +7,13 @@ import argparse
 import json
 
 from ddvc.ethereum_logs import fetch_exact_logs_with_evidence
-from ddvc.fetch.sources import get_source
 from ddvc.paths import DATA_DIR, RAW_MARKET_DATA_LOCK
 from ddvc.runtime import exclusive_job
 from ddvc.v3_pool_registry import (
     FACTORY_EVENT_TOPICS,
     RAW_V3_POOL_REGISTRY_ROOT,
     V3_FACTORY,
+    V3_FACTORY_DEPLOYMENT_BLOCK,
     build_registry,
     load_or_resolve_frozen_upper,
     root_ranges,
@@ -40,7 +40,7 @@ def preflight(upper_block: int) -> None:
         fetch=True,
         root=RAW_V3_POOL_REGISTRY_ROOT,
     )
-    ranges = root_ranges(get_source("uniswap_v3").genesis_block, upper_block)
+    ranges = root_ranges(V3_FACTORY_DEPLOYMENT_BLOCK, upper_block)
     probes = [ranges[0], ranges[len(ranges) // 2], ranges[-1]]
     for start, end in probes:
         rows, evidence = fetch_exact_logs_with_evidence(

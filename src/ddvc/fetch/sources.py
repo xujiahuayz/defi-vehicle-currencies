@@ -28,6 +28,7 @@ class DexSource:
     backend: str = "thegraph"
     genesis_block: int | None = None
     factory_address: str | None = None
+    factory_deployment_block: int | None = None
     dune_project: str | None = None
     dune_version: str | None = None
     notes: str = ""
@@ -77,7 +78,8 @@ DEX_SOURCES: dict[str, DexSource] = {
         genesis_date_utc=dt.date(2021, 5, 4),
         subgraph_id="5zvR82QoaXYFyDEKLZ9t6v9adgnptxYpKpSbxtgVENFV",
         genesis_block=12_369_879,
-        notes="V3 swaps plus mint/burn liquidity-position events. Genesis is first indexed swap block from live Graph audit.",
+        factory_deployment_block=12_369_621,
+        notes="V3 swaps plus mint/burn liquidity-position events. Genesis is the first indexed swap block from the live Graph audit; factory deployment is a separate on-chain perimeter.",
     ),
     "sushiswap_v2": DexSource(
         name="sushiswap_v2",

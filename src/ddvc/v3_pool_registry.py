@@ -41,6 +41,9 @@ from ddvc.runtime import atomic_output, interruptible_thread_pool
 V3_POOL_REGISTRY_SCHEMA_VERSION = 3
 V3_FACTORY_EVENT_LEAF_KIND = "uniswap_v3_factory_events"
 V3_FACTORY = "0x" + FACTORY.hex()
+V3_FACTORY_DEPLOYMENT_BLOCK = get_source("uniswap_v3").factory_deployment_block
+if V3_FACTORY_DEPLOYMENT_BLOCK is None:
+    raise RuntimeError("Uniswap V3 source lacks its factory deployment block")
 POOL_CREATED_SIGNATURE = "PoolCreated(address,address,uint24,int24,address)"
 POOL_CREATED_TOPIC = "0x" + keccak(text=POOL_CREATED_SIGNATURE).hex()
 FEE_AMOUNT_ENABLED_SIGNATURE = "FeeAmountEnabled(uint24,int24)"
@@ -101,7 +104,7 @@ def _pool_from_row(row: dict[str, object]) -> V3FactoryPool:
         raise ValueError("V3 factory registry token order is noncanonical")
     if compute_pool_address(pool.token0, pool.token1, pool.fee) != pool.pool:
         raise ValueError("V3 factory registry pool fails canonical CREATE2 identity")
-    if pool.creation_block < get_source("uniswap_v3").genesis_block:
+    if pool.creation_block < V3_FACTORY_DEPLOYMENT_BLOCK:
         raise ValueError("V3 factory registry pool predates the canonical factory")
     if not 0 < pool.tick_spacing < 16_384 or pool.creation_log_index < 0:
         raise ValueError("V3 factory registry contains invalid creation statics")
@@ -141,7 +144,7 @@ def load_registry(
         raise ValueError("V3 factory pool certificate file digest disagrees")
     snapshot_upper = int(certificate.get("registry_snapshot_upper_block", -1))
     cutoff = int(certificate.get("analysis_cutoff_block", -1))
-    if not get_source("uniswap_v3").genesis_block <= cutoff <= snapshot_upper:
+    if not V3_FACTORY_DEPLOYMENT_BLOCK <= cutoff <= snapshot_upper:
         raise ValueError("V3 factory pool certificate has an invalid analysis perimeter")
     if any(pool.creation_block > snapshot_upper for pool in pools):
         raise ValueError("V3 factory pool registry exceeds its frozen snapshot")
@@ -422,7 +425,7 @@ def read_registry(
     frozen_upper: dict[str, object],
     root: Path | None = None,
 ) -> tuple[list[V3FactoryPool], dict[int, int], list[Path]]:
-    expected_start = get_source("uniswap_v3").genesis_block
+    expected_start = V3_FACTORY_DEPLOYMENT_BLOCK
     expected_end = int(frozen_upper["block_number"])
     if ranges != root_ranges(expected_start, expected_end):
         raise ValueError("V3 factory ranges do not cover the exact frozen perimeter")
@@ -488,7 +491,7 @@ def reopen_registry_evidence(
     certificate_path = evidence_root / V3_POOL_REGISTRY_CERTIFICATE.name
     upper = int(frozen_upper["block_number"])
     frozen_path = frozen_upper_path(upper, root=evidence_root)
-    ranges = root_ranges(get_source("uniswap_v3").genesis_block, upper)
+    ranges = root_ranges(V3_FACTORY_DEPLOYMENT_BLOCK, upper)
     pools, fee_tick_spacings, inputs = read_registry(
         ranges,
         frozen_upper=frozen_upper,
@@ -547,7 +550,7 @@ def build_registry(
 ) -> tuple[int, int]:
     evidence_root = root or RAW_V3_POOL_REGISTRY_ROOT
     analysis_cutoff = upper_block if analysis_cutoff_block is None else analysis_cutoff_block
-    if not get_source("uniswap_v3").genesis_block <= analysis_cutoff <= upper_block:
+    if not V3_FACTORY_DEPLOYMENT_BLOCK <= analysis_cutoff <= upper_block:
         raise ValueError("V3 analysis cutoff must lie inside the registry snapshot perimeter")
     frozen_upper = load_or_resolve_frozen_upper(
         upper_block,
@@ -560,7 +563,7 @@ def build_registry(
         upper_block,
         schema_version=V3_POOL_REGISTRY_SCHEMA_VERSION,
     )
-    ranges = root_ranges(get_source("uniswap_v3").genesis_block, upper_block)
+    ranges = root_ranges(V3_FACTORY_DEPLOYMENT_BLOCK, upper_block)
     missing = [item for item in ranges if not leaf_complete(*item, frozen_upper=frozen_upper, root=evidence_root)]
     if missing and not fetch:
         raise RuntimeError(f"V3 pool registry lacks {len(missing):,}/{len(ranges):,} factory roots")
@@ -594,7 +597,7 @@ def build_registry(
         "schema_version": V3_POOL_REGISTRY_SCHEMA_VERSION,
         "factory": V3_FACTORY,
         "event_topics": FACTORY_EVENT_TOPICS,
-        "deployment_block": get_source("uniswap_v3").genesis_block,
+        "deployment_block": V3_FACTORY_DEPLOYMENT_BLOCK,
         "registry_snapshot_upper_block": upper_block,
         "registry_snapshot_upper_block_hash": frozen_upper["block_hash"],
         "registry_snapshot_upper_block_timestamp": frozen_upper["timestamp"],
