@@ -25,6 +25,10 @@ def load_route_transaction_gas(
         "gas_gwei",
         "gas_price_supported",
         "gas_price_support_reason",
+        "base_fee_per_gas_wei",
+        "base_fee_gwei",
+        "base_fee_supported",
+        "base_fee_support_reason",
     }
     missing_columns = sorted(required_columns - set(panel.columns))
     if missing_columns:
@@ -49,6 +53,15 @@ def load_route_transaction_gas(
         raise ValueError("supported route transaction gas prices are not positive")
     if gas_gwei[~supported].notna().any():
         raise ValueError("unsupported route transaction gas prices must remain missing")
+    base_fee = pd.to_numeric(panel["base_fee_per_gas_wei"], errors="coerce")
+    base_supported = panel["base_fee_supported"].astype(bool)
+    base_gwei = pd.to_numeric(panel["base_fee_gwei"], errors="coerce")
+    if base_fee[base_supported].isna().any() or base_fee[base_supported].lt(0).any():
+        raise ValueError("supported same-block base fees are missing or negative")
+    if base_fee[~base_supported].notna().any() or base_gwei[~base_supported].notna().any():
+        raise ValueError("unsupported same-block base fees must remain missing")
+    if base_gwei[base_supported].isna().any() or base_gwei[base_supported].lt(0).any():
+        raise ValueError("supported same-block base fees are not nonnegative")
     if required_routes is not None:
         expected = required_routes[["tx", "block"]].rename(
             columns={"tx": "tx_hash", "block": "block_number"}

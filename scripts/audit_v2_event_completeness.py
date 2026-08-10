@@ -82,6 +82,7 @@ CODE_SOURCES = [
     "scripts/audit_v2_event_completeness.py",
     "src/ddvc/amounts.py",
     "src/ddvc/ethereum_day_cuts.py",
+    "src/ddvc/ethereum_blocks.py",
     "src/ddvc/ethereum_logs.py",
     "src/ddvc/fetch/raw.py",
     "src/ddvc/fetch/sources.py",

@@ -322,6 +322,10 @@ def add_topology_gas_adjustment(
             "gas_gwei",
             "gas_price_supported",
             "gas_price_support_reason",
+            "base_fee_per_gas_wei",
+            "base_fee_gwei",
+            "base_fee_supported",
+            "base_fee_support_reason",
         ],
         errors="ignore",
     )
@@ -339,6 +343,10 @@ def add_topology_gas_adjustment(
             "gas_gwei",
             "gas_price_supported",
             "gas_price_support_reason",
+            "base_fee_per_gas_wei",
+            "base_fee_gwei",
+            "base_fee_supported",
+            "base_fee_support_reason",
         ]
     ].rename(
         columns={"tx_hash": "tx", "block_number": "block"}
@@ -379,7 +387,11 @@ def add_topology_gas_adjustment(
             estimates[GAS_ESTIMATE_COLUMNS]
         )
 
-    def apply_units(direct_column: str, vehicle_column: str) -> list[float | None]:
+    def apply_units(
+        direct_column: str,
+        vehicle_column: str,
+        price_column: str,
+    ) -> list[float | None]:
         return [
             all_in_direct_advantage_bps_from_units(
                 gross,
@@ -404,20 +416,29 @@ def add_topology_gas_adjustment(
                 out[direct_column],
                 out[vehicle_column],
                 out["usd"],
-                out["gas_gwei"],
+                out[price_column],
                 out["eth_usd"],
                 strict=True,
             )
         ]
 
     out["all_in_direct_advantage_bps"] = apply_units(
-        "direct_gas_units_median", "vehicle_gas_units_median"
+        "direct_gas_units_median", "vehicle_gas_units_median", "gas_gwei"
     )
     out["all_in_direct_advantage_bps_iqr_lower"] = apply_units(
-        "direct_gas_units_p75", "vehicle_gas_units_p25"
+        "direct_gas_units_p75", "vehicle_gas_units_p25", "gas_gwei"
     )
     out["all_in_direct_advantage_bps_iqr_upper"] = apply_units(
-        "direct_gas_units_p25", "vehicle_gas_units_p75"
+        "direct_gas_units_p25", "vehicle_gas_units_p75", "gas_gwei"
+    )
+    out["same_block_base_fee_direct_advantage_bps"] = apply_units(
+        "direct_gas_units_median", "vehicle_gas_units_median", "base_fee_gwei"
+    )
+    out["same_block_base_fee_direct_advantage_bps_iqr_lower"] = apply_units(
+        "direct_gas_units_p75", "vehicle_gas_units_p25", "base_fee_gwei"
+    )
+    out["same_block_base_fee_direct_advantage_bps_iqr_upper"] = apply_units(
+        "direct_gas_units_p25", "vehicle_gas_units_p75", "base_fee_gwei"
     )
     return out
 

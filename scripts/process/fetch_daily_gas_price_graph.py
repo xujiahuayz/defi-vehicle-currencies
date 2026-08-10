@@ -42,6 +42,7 @@ LOCK = SHARED_RUNTIME_DIR / "daily-gas-price-panel.lock"
 CODE_SOURCES = [
     "scripts/process/fetch_daily_gas_price_graph.py",
     "src/ddvc/ethereum_day_cuts.py",
+    "src/ddvc/ethereum_blocks.py",
     "src/ddvc/fetch/raw.py",
     "src/ddvc/quoter.py",
     "src/ddvc/reconstruct/__init__.py",

@@ -44,6 +44,7 @@ CODE_SOURCES = [
     "src/ddvc/amounts.py",
     "src/ddvc/calendar.py",
     "src/ddvc/ethereum_day_cuts.py",
+    "src/ddvc/ethereum_blocks.py",
     "src/ddvc/ethereum_logs.py",
     "src/ddvc/provenance.py",
     "src/ddvc/runtime.py",

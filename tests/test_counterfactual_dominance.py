@@ -144,6 +144,10 @@ class CounterfactualDominanceTests(unittest.TestCase):
                     "gas_gwei": [10.0],
                     "gas_price_supported": [True],
                     "gas_price_support_reason": ["receipt_effective_gas_price"],
+                    "base_fee_per_gas_wei": [8_000_000_000],
+                    "base_fee_gwei": [8.0],
+                    "base_fee_supported": [True],
+                    "base_fee_support_reason": ["same_block_base_fee_per_gas"],
                 }
             ).to_parquet(gas_path, index=False)
             out = add_topology_gas_adjustment(
@@ -154,6 +158,10 @@ class CounterfactualDominanceTests(unittest.TestCase):
         self.assertEqual(out.loc[0, "direct_gas_support_level"], "year_venue_vehicle")
         self.assertEqual(out.loc[0, "vehicle_gas_support_level"], "year_venue_vehicle")
         self.assertEqual(out.loc[0, "effective_gas_price_wei"], 10_000_000_000)
+        self.assertGreater(
+            out.loc[0, "all_in_direct_advantage_bps"],
+            out.loc[0, "same_block_base_fee_direct_advantage_bps"],
+        )
         self.assertGreater(
             out.loc[0, "all_in_direct_advantage_bps_iqr_upper"],
             out.loc[0, "all_in_direct_advantage_bps"],

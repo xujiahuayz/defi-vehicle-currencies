@@ -34,6 +34,7 @@ GRAPH_VENUES = ("uniswap_v1", "uniswap_v2", "uniswap_v3")
 CODE_SOURCES = [
     "scripts/build_ethereum_day_calendar.py",
     "src/ddvc/ethereum_day_cuts.py",
+    "src/ddvc/ethereum_blocks.py",
     "src/ddvc/fetch/raw.py",
     "src/ddvc/release_calendar.py",
 ]

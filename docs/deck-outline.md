@@ -145,7 +145,7 @@ Figure assets live under `output/figures/deck/` as one file per slide. Diagrams 
 - Both routes quoted at one reconstructed pool state
 - Price movement cannot enter the comparison
 - Constant product, tick traversal, StableSwap, weighted geometric mean
-- Gas units calibrated from receipts by venue and candidate; price joined from the realised transaction's exact receipt
+- Gas units calibrated from receipts by venue and candidate; primary price joined from the realised transaction's exact receipt, with same-block base fee as the urgency-free sensitivity
 
 **Visual.** `deck/counterfactual_design.svg`, drawio tab `counterfactual`. Two horizontal lanes issue from a single state box labelled with the reconstructed pre-transaction reserves, ticks and balances. The upper lane quotes direct $i$ to $o$; the lower lane quotes $i$ to $k$ to $o$. One receipt-price box sends the same dashed arrow to both lanes, while separate route-unit boxes encode venue- and candidate-specific gas use. A bracket between the output boxes carries the gap in basis points. The reader should see one state and one observed transaction gas price feeding both alternatives, with route units varying by execution path.
 

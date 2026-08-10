@@ -8,6 +8,7 @@ from pathlib import Path
 import time
 from typing import Callable
 
+from ddvc.ethereum_blocks import block_header_payload, request_block_header
 from ddvc.fetch.raw import write_json
 from ddvc.paths import DATA_DIR
 from ddvc.quoter import Throttled, rpc_post
@@ -119,41 +120,33 @@ def fetch_block_timestamp(
 ) -> int:
     """Fetch one exact block timestamp and retain its auditable RPC response."""
 
-    payload = {
-        "jsonrpc": "2.0",
-        "id": 1,
-        "method": "eth_getBlockByNumber",
-        "params": [hex(block), False],
-    }
-    response: object | None = None
+    payload = block_header_payload(block)
+    header: dict[str, object] | None = None
     for attempt in range(max_attempts):
         try:
-            response = rpc_request(
-                payload,
-                timeout=30,
-                retries=1,
-                retry_json_errors=True,
+            header = request_block_header(
+                block,
+                rpc_request=lambda request, **kwargs: rpc_request(
+                    request,
+                    **{**kwargs, "retries": 1},
+                ),
             )
             break
         except Throttled:
             if attempt == max_attempts - 1:
                 raise
             sleeper(min(2**attempt, 30))
-    result = response.get("result") if isinstance(response, dict) else None
-    if not isinstance(result, dict) or result.get("timestamp") is None:
+    if header is None:
         raise RuntimeError(f"historical Ethereum block {block} lacks a timestamp")
-    returned_block = int(str(result.get("number")), 16)
-    if returned_block != block:
-        raise ValueError(f"Ethereum RPC returned block {returned_block} for requested {block}")
-    timestamp = int(str(result["timestamp"]), 16)
+    timestamp = int(header["timestamp"])
     evidence.append(
         {
             "request": payload,
             "response": {
-                "number": result.get("number"),
-                "hash": result.get("hash"),
-                "parentHash": result.get("parentHash"),
-                "timestamp": result.get("timestamp"),
+                "number": hex(int(header["block_number"])),
+                "hash": header["block_hash"],
+                "parentHash": header["parent_hash"],
+                "timestamp": hex(timestamp),
             },
         }
     )

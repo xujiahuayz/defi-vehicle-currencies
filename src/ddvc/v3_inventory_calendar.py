@@ -29,6 +29,7 @@ CALENDAR_LOCK = SHARED_RUNTIME_DIR / "v3-inventory-day-calendar.lock"
 CODE_SOURCES = [
     "src/ddvc/v3_inventory_calendar.py",
     "src/ddvc/ethereum_day_cuts.py",
+    "src/ddvc/ethereum_blocks.py",
     "src/ddvc/fetch/raw.py",
     "src/ddvc/paths.py",
     "src/ddvc/quoter.py",
