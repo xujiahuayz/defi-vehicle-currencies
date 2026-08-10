@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "locked_at": "2026-08-10",
-  "lock_hash": "1e3be6ea02a2fd2defcc806aabb78143202441ea1f51f2dafb18b81b8c957767",
+  "lock_hash": "7c4ba316e413df89d5d86932705aa97f9de6fe6d7f8276b5115472b90abbce31",
   "paper_scope": "The making and displacement of vehicle-currency roles in Ethereum decentralised exchange",
   "global_rules": {
     "asset_identity": "canonical contract address; symbols are labels only",
@@ -219,7 +219,7 @@
       "unit": "pool-day descriptives and pool-month inference",
       "dependent_variable": "V2 risk-adjusted net return and indicator that fees exceed LVR plus gas",
       "transformation": "V2 annualised capital returns and fee-to-LVR ratio, with contemporaneous pool value as the LVR scale and exact prior-calendar capital as the return denominator",
-      "outlier_treatment": "anchored-leg price within four times its trailing 91-day median with no future prices; stable price between 0.5 and 2 dollars; no hourly pool-price move above 100 times; reconstructed V2 reserve capital must place the provider field within a 25-percent multiplicative band around either total-pool value or one priced reserve side, the two source semantics observed in the validation audit; exact-lag capital at least 10000 dollars",
+      "outlier_treatment": "anchored-leg price within four times its trailing 91-day median with no future prices; stable price between 0.5 and 2 dollars; when both reserve legs have validated prices their values must agree within a 25-percent multiplicative band; no hourly pool-price move above 100 times; reconstructed V2 reserve capital must place the provider field within a 25-percent multiplicative band around either total-pool value or one priced reserve side, the two source semantics observed in the validation audit; exact-lag capital at least 10000 dollars",
       "inference": "V2 calendar-month fixed effects with two-way standard errors clustered by pool and calendar month and joint role tests from the same covariance; pool-only and month-only clustering are mandatory sensitivities; no V3 output or inference",
       "mandatory_alternatives": {
         "external_reference_support": [

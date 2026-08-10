@@ -43,7 +43,7 @@ from ddvc.liquidity import (
     require_quantity_support,
     return_inference_ready,
 )
-from ddvc.capital_contracts import CAPITAL_CURRENT_COLUMN
+from ddvc.capital_contracts import CAPITAL_CURRENT_COLUMN, capital_contract
 from ddvc.capital_validation import CAPITAL_PRICE_SOURCE, CapitalPrice
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -146,7 +146,7 @@ def test_role_exhibit_keeps_pooled_and_annual_bridge_rows():
     assert pooled["mean_daily_scale_usd_bn"] == pytest.approx(0.05)
     assert pooled["scale_share"] == pytest.approx(1.0)
     assert pooled["pool_day_share"] == pytest.approx(1.0)
-    assert pooled["scale_basis"] == "lagged reported reserve capital"
+    assert pooled["scale_basis"] == capital_contract("uniswap_v2").capital_measure
     assert pooled["capital_interpretable"]
 
 

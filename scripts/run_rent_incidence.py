@@ -39,7 +39,7 @@ ROOT = Path(__file__).resolve().parents[1]
 from ddvc.asset_types import asset_type
 from ddvc.analysis.regression import ClusteredOLSResult, ols_clustered
 from ddvc.data_release import require_node_d_release
-from ddvc.capital_contracts import RETURN_CAPITAL_VALIDATION_STATUS
+from ddvc.capital_contracts import RETURN_CAPITAL_VALIDATION_STATUS, capital_contract
 from ddvc.capital_validation import CAPITAL_PRICE_SOURCE, validated_capital_prices
 from ddvc.gas import load_daily_gas_prices
 from ddvc.liquidity import (
@@ -90,6 +90,12 @@ WETH = "0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2"
 # the largest LVR observations, so it works against the finding below
 # rather than for it, and the unscreened figure is reported alongside.
 MAX_HOURLY_MOVE = 100.0
+
+
+def _capital_scale_basis(venue: str) -> str:
+    if capital_interpretable(venue):
+        return capital_contract(venue).capital_measure
+    return capital_scale_label(venue)
 
 
 # ---------------------------------------------------------------------------
@@ -373,7 +379,7 @@ def by_role(df: pd.DataFrame, venue: str, gas_only: bool = True) -> pd.DataFrame
             "med_pool_day_fee_over_lvr": float(
                 (g.fees_usd / g.lvr_usd.replace(0, np.nan)).median())
             if lvr_inference_ready(venue) else np.nan,
-            "scale_basis": capital_scale_label(venue),
+            "scale_basis": _capital_scale_basis(venue),
             "capital_interpretable": capital_interpretable(venue),
             "return_inference_ready": return_inference_ready(venue),
         })
@@ -525,7 +531,7 @@ def robustness_row(
         if return_inference_ready(venue) else np.nan,
         "share_net_positive": float((net_usd > 0).mean())
         if lvr_inference_ready(venue) else np.nan,
-        "scale_basis": capital_scale_label(venue),
+        "scale_basis": _capital_scale_basis(venue),
     }
 
 
