@@ -8,9 +8,7 @@ compare asymmetric events, and the old HDFE result uses a retired vehicle defini
 Automatically running those scripts would convert a fresh panel into fresh-looking invalid
 findings. This refresher therefore owns only the diagnostics whose definitions survive.
 
-The order below is a dependency order and not an alphabetical one. Support is measured
-before screened windows, and the arbitrage bound reads those windows. Finding estimators
-return here only after their specification is locked in `docs/findings-freeze.md`.
+The order below is a dependency order and not an alphabetical one. Support is measured before screened windows. The old daily-gas arbitrage bound is withdrawn; its replacement returns only after the exact transaction/block gas panel and three-leg cycle design pass node D and enter the specification lock.
 
 Two things this refuses to do. It will not run while a rebuild is in flight or against a panel that predates one, for the reason in `rebuild_in_flight`. Independent legacy diagnostics continue after one fails so the pass reports every arm. The ordered D3 claim-input chain fails fast, because running a child against a stale parent wastes work and can publish a misleading partial generation. Every failure exits non-zero.
 
@@ -49,8 +47,6 @@ STAGES: list[tuple[str, list[str], str]] = [
      "the support bound every later screen depends on"),
     ("measure_dominance_windows.py", [],
      "the screened cost-surface diagnostic, which defines the quotable population"),
-    ("test_gap_arbitrage_bound.py", [],
-     "whether gaps surviving the support screen could have been taken"),
 ]
 
 DAILY_FRONTIER_PREREQUISITES = (
