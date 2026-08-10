@@ -32,6 +32,7 @@ def sections_dir() -> Path:
     return prose_root() / "sections"
 DATA_DIR = REPO_ROOT / "data"
 OUTPUT_DIR = REPO_ROOT / "output"
+V3_INVENTORY_RAW_ROOT = DATA_DIR / "raw" / "ethereum" / "uniswap_v3_inventory_events"
 POOL_CAPITAL_PANEL = DATA_DIR / "processed" / "pool_capital_daily.parquet"
 POOL_CANDIDATE_CAPITAL_PANEL = DATA_DIR / "processed" / "pool_candidate_capital_daily.parquet"
 POOL_CAPITAL_REJECTIONS = DATA_DIR / "processed" / "pool_capital_rejections.parquet"

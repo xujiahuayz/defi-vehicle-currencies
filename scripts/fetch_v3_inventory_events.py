@@ -21,11 +21,12 @@ from ddvc.ethereum_logs import (
     write_exact_log_chunk,
 )
 from ddvc.fetch.raw import write_json
-from ddvc.paths import DATA_DIR, RAW_MARKET_DATA_LOCK
+from ddvc.paths import DATA_DIR, RAW_MARKET_DATA_LOCK, V3_INVENTORY_RAW_ROOT
 from ddvc.quoter import Throttled
 from ddvc.runtime import atomic_output, exclusive_job, interruptible_thread_pool
 from ddvc.v3_inventory import (
     EVENT_TOPICS,
+    INVENTORY_CHUNK_SIZE,
     INVENTORY_RAW_EVIDENCE_KIND,
     INVENTORY_RAW_GENERATION,
     INVENTORY_RAW_MARKER_SCHEMA_VERSION,
@@ -34,14 +35,14 @@ from ddvc.v3_inventory import (
     inventory_chunk_completed,
     inventory_chunk_evidence_path,
     inventory_chunk_paths,
+    validate_inventory_shard_bounds,
 )
 from ddvc.v3_pool_registry import V3_FACTORY_DEPLOYMENT_BLOCK, load_certified_frozen_upper
 
 
-RAW_ROOT = DATA_DIR / "raw" / "ethereum" / "uniswap_v3_inventory_events"
+RAW_ROOT = V3_INVENTORY_RAW_ROOT
 V3_GRAPH_ROOT = DATA_DIR / "raw" / "thegraph" / "uniswap_v3"
 END_META_PATH = V3_GRAPH_ROOT / "uniswap_v3_meta_20260630.json"
-DEFAULT_CHUNK_SIZE = 1_000
 MAX_JOB_ATTEMPTS = 12
 _URL = re.compile(r"https?://[^\s,)]+", flags=re.IGNORECASE)
 
@@ -63,6 +64,16 @@ def default_end_block(path: Path = END_META_PATH) -> int:
 
 def default_start_block() -> int:
     return V3_FACTORY_DEPLOYMENT_BLOCK
+
+
+def validate_shard_bounds(start: int, end: int, terminal: int, chunk_size: int) -> None:
+    validate_inventory_shard_bounds(
+        start,
+        end,
+        perimeter_start=default_start_block(),
+        perimeter_end=terminal,
+        chunk_size=chunk_size,
+    )
 
 
 def paths(lower: int, upper: int, root: Path = RAW_ROOT) -> tuple[Path, Path]:
@@ -291,7 +302,7 @@ def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--start-block", type=int, default=None)
     parser.add_argument("--end-block", type=int, default=None)
-    parser.add_argument("--chunk-size", type=int, default=DEFAULT_CHUNK_SIZE)
+    parser.add_argument("--chunk-size", type=int, default=INVENTORY_CHUNK_SIZE)
     parser.add_argument("--workers", type=int, default=4)
     parser.add_argument("--max-job-attempts", type=int, default=MAX_JOB_ATTEMPTS)
     parser.add_argument(
@@ -302,6 +313,10 @@ def main() -> int:
     args = parser.parse_args()
     if args.shard and (args.start_block is None or args.end_block is None):
         raise ValueError("--shard requires explicit --start-block and --end-block")
+    if args.chunk_size != INVENTORY_CHUNK_SIZE:
+        raise ValueError(
+            f"V3 inventory raw generation requires canonical {INVENTORY_CHUNK_SIZE}-block chunks"
+        )
     terminal = default_end_block()
     frozen_upper, _factory_certificate = load_certified_frozen_upper()
     if int(frozen_upper["block_number"]) != terminal:
@@ -315,6 +330,8 @@ def main() -> int:
         )
     if end > terminal:
         raise RuntimeError("inventory shard ends after the canonical research perimeter")
+    if args.shard:
+        validate_shard_bounds(start, end, terminal, args.chunk_size)
     ranges = block_ranges(int(start), end, args.chunk_size)
     jobs = [item for item in ranges if not completed(*item, frozen_upper)]
     print(

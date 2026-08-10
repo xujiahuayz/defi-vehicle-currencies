@@ -8,7 +8,7 @@
   "d3_certificate": null,
   "exploration_generation": null,
   "exploration_certificate": null,
-  "lock_hash": "5f2e4c5ce4b867a83475d1a49e8532d05580d6fcff921a6ad9ee942f478882cc",
+  "lock_hash": "185a490fb208a1e4d010075059e213141d2bbde812cb70c1ab6c06468d5a3d47",
   "paper_scope": "The making and displacement of vehicle-currency roles in Ethereum decentralised exchange",
   "global_rules": {
     "asset_identity": "canonical contract address; symbols are labels only",
@@ -271,7 +271,7 @@
         "data/processed/cex_reference_support.parquet",
         "data/processed/external_reference_price_intraday.parquet",
         "data/processed/pool_capital_daily.parquet",
-        "data/processed/daily_gas_price_graph.parquet",
+        "data/processed/lp_transaction_gas.parquet",
         "data/processed/token_price_daily.parquet",
         "data/processed/vehicle_centrality_dense.parquet",
         "data/processed/rent_incidence_v2_pool_day.parquet"

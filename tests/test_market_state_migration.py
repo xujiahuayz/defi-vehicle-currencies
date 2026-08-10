@@ -17,11 +17,34 @@ from ddvc.state_data import (
 from scripts.build_market_state import (
     build_family,
     migrate_v1_partition,
+    preflight_event_order_generations,
     rekey_current_partition,
     rekey_source_current,
     validate_migration_sample,
     validate_rekey_sample,
 )
+
+
+def test_event_order_preflight_reports_every_stale_generation() -> None:
+    def inspect(_raw: Path, venue: str, day: str):
+        if day in {"20250101", "20250103"}:
+            raise ValueError(f"stale {venue}/{day}")
+        return None
+
+    with patch(
+        "scripts.build_market_state.load_event_order_generation_metadata",
+        side_effect=inspect,
+    ), pytest.raises(RuntimeError, match="2 invalid generation") as error:
+        preflight_event_order_generations(
+            [
+                ("uniswap_v3", "20250101"),
+                ("uniswap_v3", "20250102"),
+                ("uniswap_v2", "20250103"),
+                ("curve", "20250104"),
+            ]
+        )
+    assert "uniswap_v3/20250101" in str(error.value)
+    assert "uniswap_v2/20250103" in str(error.value)
 
 
 def write_streams(

@@ -13,8 +13,8 @@ Accounting, stated once.
   LVR              external-reference-price realised variance over eight, times
                    contemporaneous pool value. The closed form is admitted only
                    for constant-product pools after the external price path passes.
-  gas              observed mints plus burns, times per-operation gas units,
-                   times the day's median gas price, times the ETH price.
+  gas              exact receipt cost allocated to the pool's mint, burn,
+                   collect, and linked rebalance transactions, then summed by day.
   net              fee revenue less LVR less gas.
 
 Pool-price variance remains diagnostic and cannot enter LVR inference. Return
@@ -45,9 +45,7 @@ from ddvc.capital_contracts import RETURN_CAPITAL_VALIDATION_STATUS, capital_con
 from ddvc.capital_validation import (
     ANCHORED_CAPITAL_ROLES,
     CAPITAL_PRICE_SOURCE,
-    validated_capital_prices,
 )
-from ddvc.gas import load_daily_gas_prices
 from ddvc.liquidity import (
     CAPITAL_COLUMN,
     LVR_SCALE_COLUMN,
@@ -69,7 +67,6 @@ PROC = ROOT / "data" / "processed"
 OUT = ROOT / "output" / "empirical" / "rent_incidence"
 LOCK = OUT / ".run.lock"
 REQUIRED_PANELS = [
-    PROC / "daily_gas_price_graph.parquet",
     TOKEN_PRICE_DAILY_PANEL,
     PROC / "vehicle_centrality_dense.parquet",
     PROC / "rent_incidence_v2_pool_day.parquet",
@@ -77,7 +74,6 @@ REQUIRED_PANELS = [
 SRC = [
     "scripts/run_rent_incidence.py",
     "scripts/build_rent_incidence_panel.py",
-    "src/ddvc/gas.py",
     "src/ddvc/capital_contracts.py",
     "src/ddvc/capital_validation.py",
     "src/ddvc/liquidity.py",
@@ -211,21 +207,9 @@ def report(
 # pricing and screening
 # ---------------------------------------------------------------------------
 
-def _gas() -> pd.DataFrame:
-    p = validated_capital_prices()
-    g = load_daily_gas_prices(
-        PROC / "daily_gas_price_graph.parquet",
-        required_dates=p["day"],
-    )[["day", "gas_gwei_median"]]
-    eth = p[p.token == WETH][["day", "price_usd"]].rename(
-        columns={"price_usd": "eth_usd"})
-    return g.merge(eth, on="day", how="left")
-
-
 def price_and_screen(
     df: pd.DataFrame,
     venue: str,
-    gas: pd.DataFrame,
     min_tvl: float = MIN_TVL,
 ) -> tuple[pd.DataFrame, list[dict]]:
     """Value, screen and account for one venue's pool-days.
@@ -300,7 +284,6 @@ def price_and_screen(
         purpose="return" if return_inference_ready(venue) else "descriptive",
     )
 
-    df = df.merge(gas, on="day", how="left")
     # The old implementation borrowed pooled one-leg swap gas for mint and burn
     # operations. That is not an LP-operation measurement. Keep helper frames gross-only
     # until liquidity events carry their own receipt evidence and allocation contract.
@@ -549,7 +532,6 @@ def main() -> int:
     require_node_d_release(routes=True, market_state=True)
     require_current_artifacts(REQUIRED_PANELS, consumer="rent-incidence estimator")
     OUT.mkdir(parents=True, exist_ok=True)
-    gas = _gas()
     cpath = PROC / "vehicle_centrality_dense.parquet"
     cent = pd.read_parquet(cpath, columns=["day", "token", "betweenness_volume", "degree"])
     print(f"centrality from {cpath.name}: {cent.day.nunique()} sampled days, "
@@ -562,7 +544,7 @@ def main() -> int:
             print(f"skip {venue}: {p} absent")
             continue
         raw = pd.read_parquet(p)
-        df, steps = price_and_screen(raw, venue, gas)
+        df, steps = price_and_screen(raw, venue)
         all_steps += steps
         frames[venue] = df
         print(f"\n=== {venue}: {len(df):,} screened pool-days, "
@@ -833,7 +815,8 @@ def main() -> int:
 
     summary = {"min_lagged_capital_usd": MIN_TVL,
                "capital_validation_owner": "canonical pool-capital materializer",
-               "min_month_days": MIN_MONTH_DAYS, "gas_units": GAS_UNITS,
+               "min_month_days": MIN_MONTH_DAYS,
+               "gas_status": "withheld pending exact LP transaction receipts",
                "venues": {v: {"pool_days": int(len(f)), "pools": int(f.pool.nunique()),
                               "days": int(f.day.nunique())} for v, f in frames.items()}}
     (OUT / "summary.json").write_text(json.dumps(summary, indent=1, sort_keys=True) + "\n")

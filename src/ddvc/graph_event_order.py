@@ -1205,15 +1205,17 @@ def write_correction_generation(
     return data_path, meta_path
 
 
-def load_event_order_corrections(
+def load_event_order_generation_metadata(
     raw_root: Path,
     venue: str,
     day: str,
-) -> tuple[EventOrderCorrections | None, list[Path]]:
+) -> tuple[Path, Path, dict[str, object]] | None:
+    """Validate one correction generation's release metadata without hashing its payloads."""
+
     root = correction_root_for_graph(raw_root)
     data_path, meta_path = correction_paths(root, venue, day)
     if not data_path.exists() and not meta_path.exists():
-        return None, []
+        return None
     if not data_path.is_file() or not meta_path.is_file():
         raise RuntimeError(f"partial event-order generation for {venue}/{day}")
     metadata = json.loads(meta_path.read_text(encoding="utf-8"))
@@ -1226,6 +1228,19 @@ def load_event_order_corrections(
         or int(metadata.get("unmatched_exact_events", -1)) != 0
     ):
         raise ValueError(f"invalid event-order generation metadata for {venue}/{day}")
+    return data_path, meta_path, metadata
+
+
+def load_event_order_corrections(
+    raw_root: Path,
+    venue: str,
+    day: str,
+) -> tuple[EventOrderCorrections | None, list[Path]]:
+    root = correction_root_for_graph(raw_root)
+    generation = load_event_order_generation_metadata(raw_root, venue, day)
+    if generation is None:
+        return None, []
+    data_path, meta_path, metadata = generation
     current_provider = {
         path.name: file_sha256(path) for path in provider_order_input_paths(raw_root, venue, day)
     }

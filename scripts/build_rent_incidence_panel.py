@@ -18,11 +18,10 @@ local virtual depth is neither deposited capital nor a valid LVR scale. This
 materializer has no V3 path; a future implementation must start from validated
 event-replayed inventories and path-integrated LVR.
 
-GAS. Every mint and every burn is a transaction someone paid for, so the counts
-observed in the canonical event layer times a per-operation gas figure times the day's
-median gas price times the ETH price is the pool's realised repositioning bill.
-It is netted at pool level against pool-level fee revenue, which is the correct
-incidence: the pool's providers as a group paid it.
+GAS. Mint and burn counts remain descriptive event counts. They are not a cost
+measure. Provider gas enters only after each relevant transaction is joined to its
+exact receipt and block header, assigned under a declared controller-level rule, and
+then aggregated to the pool-day level.
 
 Screens are applied in the analysis script, not here, so that the panel keeps
 the rows a screen removes and the screen can be reported and varied.

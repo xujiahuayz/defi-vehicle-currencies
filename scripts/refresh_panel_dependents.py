@@ -78,12 +78,6 @@ CLAIM_INPUT_STAGES: list[tuple[str, list[str], str, tuple[str, ...]]] = [
         ("data/processed/ethereum_utc_day_calendar.parquet",),
     ),
     (
-        "process/fetch_daily_gas_price_graph.py",
-        ["--workers", "8", "--panel-only"],
-        "descriptive daily gas series and pool-day LP inputs; never a route-level join",
-        ("data/processed/daily_gas_price_graph.parquet",),
-    ),
-    (
         "process/build_route_gas_units.py",
         ["--workers", "8", "--panel-only"],
         "receipt-measured route gas by topology, venue and vehicle",

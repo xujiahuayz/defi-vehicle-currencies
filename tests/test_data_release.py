@@ -177,12 +177,12 @@ class DataReleaseTests(unittest.TestCase):
             with self.subTest(filename=filename):
                 self.assertIn(call, Path(filename).read_text(encoding="utf-8"))
 
-    def test_daily_gas_loader_has_only_registered_day_level_consumers(self) -> None:
+    def test_daily_gas_loader_has_no_scientific_consumers(self) -> None:
         consumers = []
         for path in Path("scripts").rglob("*.py"):
             if "load_daily_gas_prices" in path.read_text(encoding="utf-8"):
                 consumers.append(path.as_posix())
-        self.assertEqual(consumers, ["scripts/run_rent_incidence.py"])
+        self.assertEqual(consumers, [])
 
     def test_withdrawn_daily_gas_arbitrage_bound_fails_closed(self) -> None:
         from scripts import test_gap_arbitrage_bound

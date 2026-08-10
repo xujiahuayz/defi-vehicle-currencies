@@ -19,6 +19,7 @@ from ddvc.data_release import (
     audit_v4_pool_static_conflicts,
 )
 from ddvc.fetch.sources import get_source
+from ddvc.graph_event_order import SUPPORTED_VENUES, load_event_order_generation_metadata
 from ddvc.paths import DATA_DIR, OUTPUT_DIR, RAW_MARKET_DATA_LOCK
 from ddvc.provenance import stamp
 from ddvc.runtime import (
@@ -318,6 +319,27 @@ def selected_days(
     return calendar_days(lower, upper) if lower <= upper else []
 
 
+def preflight_event_order_generations(
+    venue_days: list[tuple[str, str]],
+) -> None:
+    """Report every stale correction schema before the expensive state build starts."""
+
+    failures: list[str] = []
+    for venue, day in venue_days:
+        if venue not in SUPPORTED_VENUES:
+            continue
+        try:
+            load_event_order_generation_metadata(RAW, venue, day)
+        except (OSError, TypeError, ValueError, json.JSONDecodeError) as error:
+            failures.append(f"{venue}/{day}: {error}")
+    if failures:
+        sample = "; ".join(failures[:10])
+        raise RuntimeError(
+            f"market-state correction preflight found {len(failures):,} invalid generation(s); "
+            f"first={sample}"
+        )
+
+
 def build_family(
     family: str,
     venues: list[str],
@@ -497,6 +519,15 @@ def main() -> int:
         and args.start.replace("-", "") == RESEARCH_SAMPLE_START
         and args.end.replace("-", "") == RESEARCH_SAMPLE_END
     )
+    venue_days = sorted(
+        {
+            (venue, day)
+            for family in families
+            for venue in (args.venue or list(FAMILY_STREAMS[family]))
+            for day in selected_days(venue, args.start, args.end)
+        }
+    )
+    preflight_event_order_generations(venue_days)
     with exclusive_job(
         RAW_MARKET_DATA_LOCK,
         job="raw market-data fetch, enrichment, or canonical materialisation",

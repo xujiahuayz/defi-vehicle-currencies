@@ -38,6 +38,7 @@ import json
 import os
 import subprocess
 import sys
+from collections.abc import Iterable
 from dataclasses import asdict, dataclass, field
 from datetime import datetime, timezone
 from pathlib import Path
@@ -74,21 +75,24 @@ def portable_content_sha256(path: str | Path) -> str:
     return digest.hexdigest()
 
 
-def portable_content_manifest(
+def portable_content_manifest_for_paths(
     root: str | Path,
-    *,
-    patterns: list[str],
+    paths: Iterable[str | Path],
 ) -> list[dict[str, object]]:
-    """Describe an exact, sorted file perimeter using portable content hashes."""
+    """Describe exact paths under one root using portable content hashes."""
 
-    base = Path(root)
+    base = Path(root).resolve()
     if not base.is_dir():
         raise NotADirectoryError(f"portable-manifest root is not a directory: {base}")
-    files = sorted({path for pattern in patterns for path in base.glob(pattern) if path.is_file()})
+    files = sorted({Path(path).resolve() for path in paths})
     if not files:
-        raise FileNotFoundError(
-            f"portable-manifest perimeter is empty under {base}: {patterns}"
-        )
+        raise FileNotFoundError(f"portable-manifest perimeter is empty under {base}")
+    escaped = [path for path in files if not path.is_relative_to(base)]
+    if escaped:
+        raise ValueError(f"portable-manifest path escapes its root: {escaped[0]}")
+    missing = [path for path in files if not path.is_file()]
+    if missing:
+        raise FileNotFoundError(f"portable-manifest path is absent: {missing[0]}")
     return [
         {
             "path": str(path.relative_to(base)),
@@ -98,6 +102,24 @@ def portable_content_manifest(
         }
         for path in files
     ]
+
+
+def portable_content_manifest(
+    root: str | Path,
+    *,
+    patterns: list[str],
+) -> list[dict[str, object]]:
+    """Describe an exact, sorted glob perimeter using portable content hashes."""
+
+    base = Path(root)
+    if not base.is_dir():
+        raise NotADirectoryError(f"portable-manifest root is not a directory: {base}")
+    files = sorted({path for pattern in patterns for path in base.glob(pattern) if path.is_file()})
+    if not files:
+        raise FileNotFoundError(
+            f"portable-manifest perimeter is empty under {base}: {patterns}"
+        )
+    return portable_content_manifest_for_paths(base, files)
 
 
 def portable_manifest_sha256(entries: list[dict[str, object]]) -> str:

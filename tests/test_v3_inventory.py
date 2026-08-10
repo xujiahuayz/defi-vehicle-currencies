@@ -18,12 +18,14 @@ from ddvc.v3_inventory import (
     EVENT_TOPICS,
     INVENTORY_RAW_GENERATION,
     INVENTORY_RAW_MARKER_SCHEMA_VERSION,
+    INVENTORY_ORDERED_MANIFEST_NAME,
     INVENTORY_STATE_GENERATION,
     RAW_LOG_SCHEMA,
     RAW_LOG_STORAGE_FORMAT,
     PoolStatic,
     apply_inventory_event,
     apply_inventory_events,
+    assemble_inventory_shards,
     audit_inventory_chunks,
     balance_of_calldata,
     block_ranges,
@@ -36,17 +38,23 @@ from ddvc.v3_inventory import (
     inventory_chunk_evidence_path,
     inventory_snapshot_rows,
     inventory_chunk_paths,
+    inventory_ordered_manifest_path,
     is_physical_inventory_transfer,
     pool_static_from_graph,
+    validate_inventory_ordered_manifest,
+    validate_inventory_shard_partition,
 )
-from ddvc.v3_pool_registry import V3_POOL_REGISTRY_SCHEMA_VERSION
+from ddvc.v3_pool_registry import V3_FACTORY_DEPLOYMENT_BLOCK, V3_POOL_REGISTRY_SCHEMA_VERSION
 from ddvc.v3_inventory_calendar import (
     CODE_SOURCES as CALENDAR_CODE_SOURCES,
     _fetch_block_timestamp,
     last_block_before_timestamp,
 )
 from ddvc.quoter import Throttled
-from scripts.build_v3_inventory_panel import CODE_SOURCES as PANEL_CODE_SOURCES
+from scripts.build_v3_inventory_panel import (
+    CODE_SOURCES as PANEL_CODE_SOURCES,
+    inventory_perimeter,
+)
 from scripts.audit_v3_inventory_balances import audit_sample_table
 from scripts.audit_v3_graph_event_completeness import (
     compare_event_maps,
@@ -58,6 +66,7 @@ from scripts.fetch_v3_inventory_events import (
     quarantine_invalid_chunk,
     run_fetch_jobs,
     safe_retry_reason,
+    validate_shard_bounds,
 )
 
 
@@ -125,6 +134,14 @@ def frozen_upper(block: int = 220) -> dict[str, object]:
         json.dumps(identity, sort_keys=True, separators=(",", ":")).encode()
     ).hexdigest()
     return record
+
+
+def factory_certificate(frozen: dict[str, object]) -> dict[str, object]:
+    return {
+        "registry_sha256": "1" * 64,
+        "registry_snapshot_upper_block": frozen["block_number"],
+        "registry_snapshot_upper_block_hash": frozen["block_hash"],
+    }
 
 
 def anchored_rpc(
@@ -298,6 +315,15 @@ def test_raw_event_perimeter_starts_at_factory_deployment() -> None:
     assert default_start_block() == get_source("uniswap_v3").factory_deployment_block
 
 
+def test_raw_event_shard_bounds_must_align_to_canonical_chunks() -> None:
+    start = default_start_block()
+    terminal = start + 2_499
+    ranges = block_ranges(start, terminal, 1_000)
+    validate_shard_bounds(ranges[0][0], ranges[1][1], terminal, 1_000)
+    with pytest.raises(ValueError, match="align"):
+        validate_shard_bounds(ranges[0][0] + 1, ranges[1][1], terminal, 1_000)
+
+
 def test_inventory_perimeter_starts_at_first_mint_or_swap_not_first_swap() -> None:
     records = [
         {"record_type": "liquidity", "source_stream": "burns", "block_number": 8},
@@ -305,6 +331,12 @@ def test_inventory_perimeter_starts_at_first_mint_or_swap_not_first_swap() -> No
         {"record_type": "liquidity", "source_stream": "mints", "block_number": 10},
     ]
     assert canonical_inventory_start_block(records) == 10
+
+
+def test_panel_inventory_perimeter_starts_at_factory_deployment() -> None:
+    start, end = inventory_perimeter(["20210504"], [V3_FACTORY_DEPLOYMENT_BLOCK + 100])
+    assert start == V3_FACTORY_DEPLOYMENT_BLOCK
+    assert end == V3_FACTORY_DEPLOYMENT_BLOCK + 100
 
 
 def static() -> PoolStatic:
@@ -407,6 +439,7 @@ def test_calendar_provenance_covers_every_semantic_dependency() -> None:
 
 def test_physical_inventory_cache_covers_every_semantic_dependency() -> None:
     assert set(PANEL_CODE_SOURCES) == {
+        "scripts/assemble_v3_inventory_event_shards.py",
         "scripts/build_v3_inventory_panel.py",
         "scripts/fetch_v3_inventory_events.py",
         "src/ddvc/asset_types.py",
@@ -416,6 +449,7 @@ def test_physical_inventory_cache_covers_every_semantic_dependency() -> None:
         "src/ddvc/fetch/raw.py",
         "src/ddvc/panel_assembly.py",
         "src/ddvc/paths.py",
+        "src/ddvc/provenance.py",
         "src/ddvc/runtime.py",
         "src/ddvc/state_data.py",
         "src/ddvc/v3_inventory.py",
@@ -547,6 +581,210 @@ def test_inventory_fetch_splits_storage_chunk_under_rpc_block_cap() -> None:
             root,
             frozen_upper=frozen,
         )
+
+
+def _two_inventory_shards(base: Path) -> tuple[Path, Path, dict[str, object]]:
+    frozen = frozen_upper()
+    left, right = base / "left", base / "right"
+    fetch_chunk(100, 199, frozen, left, rpc_request=anchored_rpc([], frozen))
+    fetch_chunk(200, 220, frozen, right, rpc_request=anchored_rpc([], frozen))
+    return left, right, frozen
+
+
+def test_inventory_shard_assembly_publishes_manifest_last() -> None:
+    with tempfile.TemporaryDirectory() as directory:
+        base = Path(directory)
+        left, right, frozen = _two_inventory_shards(base)
+        destination = base / "assembled"
+        copied: list[str] = []
+        from ddvc import v3_inventory
+
+        real_copyfile = v3_inventory.shutil.copyfile
+
+        def record_copy(source: Path, target: Path) -> Path:
+            copied.append(source.name)
+            return real_copyfile(source, target)
+
+        with patch("ddvc.v3_inventory.shutil.copyfile", side_effect=record_copy):
+            record = assemble_inventory_shards(
+                [(left, (100, 199)), (right, (200, 220))],
+                destination,
+                start=100,
+                end=220,
+                chunk_size=100,
+                frozen_upper=frozen,
+                factory_certificate=factory_certificate(frozen),
+            )
+        assert [Path(name).suffixes for name in copied[:3]] == [
+            [".parquet"],
+            [".rpc", ".json", ".gz"],
+            [".meta", ".json"],
+        ]
+        assert [Path(name).suffixes for name in copied[3:]] == [
+            [".parquet"],
+            [".rpc", ".json", ".gz"],
+            [".meta", ".json"],
+        ]
+        assert record["chunk_count"] == 2
+        assert record["raw_logs"] == 0
+        assert inventory_ordered_manifest_path(destination).name == INVENTORY_ORDERED_MANIFEST_NAME
+        assert validate_inventory_ordered_manifest(
+            destination,
+            [(100, 199), (200, 220)],
+            chunk_size=100,
+            frozen_upper=frozen,
+            factory_certificate=factory_certificate(frozen),
+        ) == record
+
+
+def test_inventory_ordered_manifest_recomputes_portable_digest_on_builder_gate() -> None:
+    with tempfile.TemporaryDirectory() as directory:
+        base = Path(directory)
+        left, right, frozen = _two_inventory_shards(base)
+        destination = base / "assembled"
+        assemble_inventory_shards(
+            [(left, (100, 199)), (right, (200, 220))],
+            destination,
+            start=100,
+            end=220,
+            chunk_size=100,
+            frozen_upper=frozen,
+            factory_certificate=factory_certificate(frozen),
+        )
+        manifest_path = inventory_ordered_manifest_path(destination)
+        manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
+        manifest["portable_manifest_sha256"] = "f" * 64
+        manifest_path.write_text(json.dumps(manifest) + "\n", encoding="utf-8")
+        with pytest.raises(ValueError, match="aggregate identity"):
+            validate_inventory_ordered_manifest(
+                destination,
+                [(100, 199), (200, 220)],
+                chunk_size=100,
+                frozen_upper=frozen,
+                factory_certificate=factory_certificate(frozen),
+                reopen_chunks=False,
+            )
+
+
+def test_inventory_chunk_rejects_tampered_event_counts() -> None:
+    with tempfile.TemporaryDirectory() as directory:
+        root = Path(directory)
+        frozen = frozen_upper()
+        fetch_chunk(100, 199, frozen, root, rpc_request=anchored_rpc([], frozen))
+        _raw, marker_path = inventory_chunk_paths(100, 199, root)
+        marker = json.loads(marker_path.read_text(encoding="utf-8"))
+        marker["raw_by_event"]["burn"] = 999
+        marker_path.write_text(json.dumps(marker) + "\n", encoding="utf-8")
+        assert not inventory_chunk_completed(100, 199, root, frozen_upper=frozen)
+
+
+def test_inventory_shard_assembly_rejects_any_unexpected_root_entry() -> None:
+    with tempfile.TemporaryDirectory() as directory:
+        base = Path(directory)
+        left, right, frozen = _two_inventory_shards(base)
+        (left / "unexpected.txt").write_text("stale\n", encoding="utf-8")
+        with pytest.raises(ValueError, match="interrupted or malformed"):
+            assemble_inventory_shards(
+                [(left, (100, 199)), (right, (200, 220))],
+                base / "assembled",
+                start=100,
+                end=220,
+                chunk_size=100,
+                frozen_upper=frozen,
+                factory_certificate=factory_certificate(frozen),
+            )
+
+
+@pytest.mark.parametrize(
+    "shards",
+    [
+        [(100, 149), (151, 220)],
+        [(100, 199), (150, 220)],
+        [(100, 150), (151, 220)],
+    ],
+)
+def test_inventory_shard_partition_rejects_gap_overlap_and_unaligned_bounds(
+    shards: list[tuple[int, int]],
+) -> None:
+    with pytest.raises(ValueError, match="gap, overlap, or unaligned"):
+        validate_inventory_shard_partition(shards, start=100, end=220, chunk_size=100)
+
+
+def test_inventory_shard_assembly_rejects_stale_alternate_range() -> None:
+    with tempfile.TemporaryDirectory() as directory:
+        base = Path(directory)
+        left, right, frozen = _two_inventory_shards(base)
+        (left / "blocks_00000150_00000199.parquet").write_bytes(b"stale")
+        with pytest.raises(ValueError, match="alternate overlapping"):
+            assemble_inventory_shards(
+                [(left, (100, 199)), (right, (200, 220))],
+                base / "assembled",
+                start=100,
+                end=220,
+                chunk_size=100,
+                frozen_upper=frozen,
+                factory_certificate=factory_certificate(frozen),
+            )
+
+
+def test_inventory_shard_assembly_rejects_collision_without_overwrite() -> None:
+    with tempfile.TemporaryDirectory() as directory:
+        base = Path(directory)
+        left, right, frozen = _two_inventory_shards(base)
+        destination = base / "assembled"
+        destination.mkdir()
+        target = inventory_chunk_paths(100, 199, destination)[0]
+        target.write_bytes(b"collision")
+        with pytest.raises(FileExistsError, match="merge collision"):
+            assemble_inventory_shards(
+                [(left, (100, 199)), (right, (200, 220))],
+                destination,
+                start=100,
+                end=220,
+                chunk_size=100,
+                frozen_upper=frozen,
+                factory_certificate=factory_certificate(frozen),
+            )
+        assert target.read_bytes() == b"collision"
+        assert not inventory_ordered_manifest_path(destination).exists()
+
+
+def test_inventory_shard_assembly_rejects_interrupted_copy_sentinel() -> None:
+    with tempfile.TemporaryDirectory() as directory:
+        base = Path(directory)
+        left, right, frozen = _two_inventory_shards(base)
+        destination = base / "assembled"
+        destination.mkdir()
+        (destination / ".blocks_00000100_00000199.parquet.dead.tmp").write_bytes(b"partial")
+        with pytest.raises(ValueError, match="interrupted or malformed"):
+            assemble_inventory_shards(
+                [(left, (100, 199)), (right, (200, 220))],
+                destination,
+                start=100,
+                end=220,
+                chunk_size=100,
+                frozen_upper=frozen,
+                factory_certificate=factory_certificate(frozen),
+            )
+        assert not inventory_ordered_manifest_path(destination).exists()
+
+
+def test_inventory_shard_assembly_rejects_factory_frozen_header_mismatch() -> None:
+    with tempfile.TemporaryDirectory() as directory:
+        base = Path(directory)
+        left, right, frozen = _two_inventory_shards(base)
+        certificate = factory_certificate(frozen)
+        certificate["registry_snapshot_upper_block_hash"] = "0x" + "7" * 64
+        with pytest.raises(ValueError, match="factory and frozen-header"):
+            assemble_inventory_shards(
+                [(left, (100, 199)), (right, (200, 220))],
+                base / "assembled",
+                start=100,
+                end=220,
+                chunk_size=100,
+                frozen_upper=frozen,
+                factory_certificate=certificate,
+            )
 
 
 @pytest.mark.parametrize("tamper", ["rpc_response", "rpc_attempts", "upper_header"])

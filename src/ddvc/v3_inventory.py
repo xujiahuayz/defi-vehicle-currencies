@@ -6,12 +6,16 @@ from bisect import bisect_left
 from dataclasses import dataclass
 from decimal import Decimal
 import gzip
+import hashlib
 import json
 from pathlib import Path
+import re
+import shutil
 from typing import Iterable, Iterator
 
 from eth_abi import decode as abi_decode
 from eth_utils import keccak
+import pyarrow as pa
 import pyarrow.parquet as pq
 
 from ddvc.ethereum_logs import (
@@ -26,6 +30,11 @@ from ddvc.ethereum_logs import (
     validate_anchored_log_evidence,
     validate_canonical_log_records,
 )
+from ddvc.provenance import (
+    portable_content_manifest_for_paths,
+    portable_manifest_sha256,
+)
+from ddvc.runtime import atomic_output
 from ddvc.v3_pool_registry import load_registry
 
 
@@ -46,10 +55,17 @@ BALANCE_OF_SELECTOR = "0x" + keccak(text="balanceOf(address)")[:4].hex()
 INVENTORY_RAW_MARKER_SCHEMA_VERSION = 5
 INVENTORY_RAW_GENERATION = "uniswap_v3_anchored_global_state_and_inventory_topics_v5"
 INVENTORY_RAW_EVIDENCE_KIND = "uniswap_v3_state_and_inventory_rpc_evidence_v2"
+INVENTORY_ORDERED_MANIFEST_SCHEMA_VERSION = 1
+INVENTORY_ORDERED_MANIFEST_NAME = "ordered_chunks.complete.json"
+INVENTORY_CHUNK_SIZE = 1_000
 INVENTORY_STATE_GENERATION = "uniswap_v3_factory_perimeter_inventory_v5"
 INVENTORY_QUANTITY_KIND = "event_replayed_pool_inventory"
 PENDING_CUSTODY_STATUS = "pending_historical_balance_validation"
 PENDING_OWNERSHIP_STATUS = "pending_protocol_fee_ownership_reconciliation"
+_CHUNK_FILE = re.compile(
+    r"^blocks_(?P<lower>\d{8})_(?P<upper>\d{8})"
+    r"(?P<suffix>\.parquet|\.meta\.json|\.rpc\.json\.gz)$"
+)
 
 
 @dataclass(frozen=True)
@@ -163,6 +179,415 @@ def inventory_chunk_evidence_path(lower: int, upper: int, root: Path) -> Path:
     return root / f"{stem}.rpc.json.gz"
 
 
+def inventory_ordered_manifest_path(root: Path) -> Path:
+    return root / INVENTORY_ORDERED_MANIFEST_NAME
+
+
+def inventory_chunk_triplet(lower: int, upper: int, root: Path) -> tuple[Path, Path, Path]:
+    raw, marker = inventory_chunk_paths(lower, upper, root)
+    return raw, inventory_chunk_evidence_path(lower, upper, root), marker
+
+
+def validate_inventory_shard_partition(
+    shards: Iterable[tuple[int, int]],
+    *,
+    start: int,
+    end: int,
+    chunk_size: int,
+) -> list[tuple[int, int]]:
+    """Require shard bounds to partition one canonical aligned chunk perimeter."""
+
+    declared = sorted((int(lower), int(upper)) for lower, upper in shards)
+    if not declared or start < 0 or end < start or chunk_size < 1:
+        raise ValueError("invalid V3 inventory shard perimeter")
+    if any(lower > upper for lower, upper in declared):
+        raise ValueError("V3 inventory shard has reversed bounds")
+    expected = block_ranges(start, end, chunk_size)
+    observed = [
+        chunk
+        for lower, upper in declared
+        for chunk in block_ranges(lower, upper, chunk_size)
+    ]
+    if observed != expected:
+        raise ValueError("V3 inventory shards have a gap, overlap, or unaligned boundary")
+    return expected
+
+
+def validate_inventory_shard_bounds(
+    start: int,
+    end: int,
+    *,
+    perimeter_start: int,
+    perimeter_end: int,
+    chunk_size: int = INVENTORY_CHUNK_SIZE,
+) -> None:
+    """Require one shard to be a contiguous slice of the canonical partition."""
+
+    canonical = block_ranges(perimeter_start, perimeter_end, chunk_size)
+    lower_positions = {lower: position for position, (lower, _upper) in enumerate(canonical)}
+    upper_positions = {upper: position for position, (_lower, upper) in enumerate(canonical)}
+    if (
+        start not in lower_positions
+        or end not in upper_positions
+        or lower_positions[start] > upper_positions[end]
+    ):
+        raise ValueError("inventory shard bounds must align to the canonical root perimeter")
+
+
+def _inventory_chunk_files(root: Path) -> dict[tuple[int, int], set[str]]:
+    if not root.is_dir():
+        raise NotADirectoryError(f"V3 inventory root is absent: {root}")
+    discovered: dict[tuple[int, int], set[str]] = {}
+    malformed: list[str] = []
+    for path in root.iterdir():
+        if path.name == INVENTORY_ORDERED_MANIFEST_NAME:
+            continue
+        if path.name.startswith(".") and path.name.endswith(".tmp"):
+            malformed.append(path.name)
+            continue
+        match = _CHUNK_FILE.fullmatch(path.name)
+        if not path.is_file() or match is None:
+            malformed.append(path.name)
+            continue
+        bounds = (int(match.group("lower")), int(match.group("upper")))
+        discovered.setdefault(bounds, set()).add(path.name)
+    if malformed:
+        raise ValueError(f"V3 inventory root contains interrupted or malformed files: {malformed[:3]}")
+    return discovered
+
+
+def validate_inventory_source_perimeter(
+    root: Path,
+    ranges: Iterable[tuple[int, int]],
+    *,
+    frozen_upper: dict[str, object],
+) -> None:
+    """Reopen every declared source triplet and reject alternate overlapping chunks."""
+
+    expected = list(ranges)
+    if not expected:
+        raise ValueError("V3 inventory source perimeter is empty")
+    expected_set = set(expected)
+    lower_bound, upper_bound = expected[0][0], expected[-1][1]
+    discovered = _inventory_chunk_files(root)
+    alternates = [
+        bounds
+        for bounds in discovered
+        if bounds not in expected_set
+        and bounds[0] <= upper_bound
+        and bounds[1] >= lower_bound
+    ]
+    if alternates:
+        raise ValueError(f"V3 inventory source contains alternate overlapping chunks: {alternates[:3]}")
+    for lower, upper in expected:
+        names = {path.name for path in inventory_chunk_triplet(lower, upper, root)}
+        if discovered.get((lower, upper), set()) != names:
+            raise FileNotFoundError(f"V3 inventory source triplet is incomplete: {lower}-{upper}")
+        if not inventory_chunk_completed(lower, upper, root, frozen_upper=frozen_upper):
+            raise ValueError(f"V3 inventory source chunk is stale or invalid: {lower}-{upper}")
+
+
+def _validate_inventory_destination_names(
+    root: Path,
+    ranges: Iterable[tuple[int, int]],
+    *,
+    complete: bool,
+) -> None:
+    expected = {
+        path.name
+        for lower, upper in ranges
+        for path in inventory_chunk_triplet(lower, upper, root)
+    }
+    observed = {
+        name
+        for names in _inventory_chunk_files(root).values()
+        for name in names
+    }
+    unexpected = sorted(observed - expected)
+    missing = sorted(expected - observed)
+    if unexpected or (complete and missing):
+        raise ValueError(
+            f"V3 inventory destination perimeter mismatch: "
+            f"missing={missing[:3]}, unexpected={unexpected[:3]}"
+        )
+
+
+def _factory_manifest_identity(
+    factory_certificate: dict[str, object],
+    frozen_upper: dict[str, object],
+) -> dict[str, object]:
+    identity = {
+        "registry_sha256": factory_certificate.get("registry_sha256"),
+        "registry_snapshot_upper_block": int(
+            factory_certificate.get("registry_snapshot_upper_block", -1)
+        ),
+        "registry_snapshot_upper_block_hash": factory_certificate.get(
+            "registry_snapshot_upper_block_hash"
+        ),
+        "frozen_upper_identity_sha256": frozen_upper.get("header_identity_sha256"),
+    }
+    if (
+        not isinstance(identity["registry_sha256"], str)
+        or len(str(identity["registry_sha256"])) != 64
+        or identity["registry_snapshot_upper_block"] != int(frozen_upper["block_number"])
+        or identity["registry_snapshot_upper_block_hash"] != frozen_upper["block_hash"]
+        or not isinstance(identity["frozen_upper_identity_sha256"], str)
+    ):
+        raise ValueError("V3 factory and frozen-header identities disagree")
+    return identity
+
+
+def build_inventory_ordered_manifest(
+    root: Path,
+    ranges: list[tuple[int, int]],
+    *,
+    chunk_size: int,
+    frozen_upper: dict[str, object],
+    factory_certificate: dict[str, object],
+) -> dict[str, object]:
+    """Fully reopen one exact root and describe its ordered semantic identity."""
+
+    if not ranges:
+        raise ValueError("V3 inventory manifest perimeter is empty")
+    _validate_inventory_destination_names(root, ranges, complete=True)
+    chunks: list[dict[str, object]] = []
+    all_paths: list[Path] = []
+    totals = {name: 0 for name in EVENT_TOPICS}
+    for lower, upper in ranges:
+        try:
+            records, marker, schema = load_inventory_chunk_records(
+                lower,
+                upper,
+                root,
+                frozen_upper=frozen_upper,
+            )
+        except (OSError, TypeError, ValueError, json.JSONDecodeError) as error:
+            raise ValueError(
+                f"V3 inventory manifest cannot admit chunk {lower}-{upper}"
+            ) from error
+        raw, evidence_path, marker_path = inventory_chunk_triplet(lower, upper, root)
+        raw_by_event = {name: int(marker["raw_by_event"][name]) for name in EVENT_TOPICS}
+        for name, count in raw_by_event.items():
+            totals[name] += count
+        all_paths.extend((raw, marker_path, evidence_path))
+        chunks.append(
+            {
+                "lower": lower,
+                "upper": upper,
+                "rows": len(records),
+                "raw_by_event": raw_by_event,
+                "parquet_schema_sha256": hashlib.sha256(
+                    schema.serialize().to_pybytes()
+                ).hexdigest(),
+                "raw_file": raw.name,
+                "raw_sha256": file_sha256(raw),
+                "marker_file": marker_path.name,
+                "marker_sha256": file_sha256(marker_path),
+                "evidence_file": evidence_path.name,
+                "evidence_sha256": file_sha256(evidence_path),
+            }
+        )
+    portable = portable_content_manifest_for_paths(root, all_paths)
+    chunk_manifest_sha256 = hashlib.sha256(
+        json.dumps(chunks, sort_keys=True, separators=(",", ":")).encode()
+    ).hexdigest()
+    return {
+        "schema_version": INVENTORY_ORDERED_MANIFEST_SCHEMA_VERSION,
+        "status": "complete",
+        "inventory_raw_generation": INVENTORY_RAW_GENERATION,
+        "inventory_marker_schema_version": INVENTORY_RAW_MARKER_SCHEMA_VERSION,
+        "start_block": ranges[0][0],
+        "end_block": ranges[-1][1],
+        "chunk_size": chunk_size,
+        "chunk_count": len(ranges),
+        "raw_logs": sum(item["rows"] for item in chunks),
+        "raw_by_event": totals,
+        "chunk_manifest_sha256": chunk_manifest_sha256,
+        "portable_manifest_sha256": portable_manifest_sha256(portable),
+        "factory_identity": _factory_manifest_identity(factory_certificate, frozen_upper),
+        "chunks": chunks,
+    }
+
+
+def write_inventory_ordered_manifest(
+    root: Path,
+    ranges: list[tuple[int, int]],
+    *,
+    chunk_size: int,
+    frozen_upper: dict[str, object],
+    factory_certificate: dict[str, object],
+) -> dict[str, object]:
+    record = build_inventory_ordered_manifest(
+        root,
+        ranges,
+        chunk_size=chunk_size,
+        frozen_upper=frozen_upper,
+        factory_certificate=factory_certificate,
+    )
+    with atomic_output(inventory_ordered_manifest_path(root)) as temporary:
+        temporary.write_text(
+            json.dumps(record, allow_nan=False, sort_keys=True) + "\n",
+            encoding="utf-8",
+        )
+    return record
+
+
+def validate_inventory_ordered_manifest(
+    root: Path,
+    ranges: list[tuple[int, int]],
+    *,
+    chunk_size: int,
+    frozen_upper: dict[str, object],
+    factory_certificate: dict[str, object],
+    reopen_chunks: bool = True,
+) -> dict[str, object]:
+    path = inventory_ordered_manifest_path(root)
+    if not path.is_file():
+        raise FileNotFoundError("V3 inventory root lacks its ordered completion manifest")
+    observed = json.loads(path.read_text(encoding="utf-8"))
+    _validate_inventory_destination_names(root, ranges, complete=True)
+    chunks = observed.get("chunks")
+    if not isinstance(chunks, list) or len(chunks) != len(ranges):
+        raise ValueError("V3 inventory ordered manifest has the wrong chunk count")
+    if (
+        observed.get("schema_version") != INVENTORY_ORDERED_MANIFEST_SCHEMA_VERSION
+        or observed.get("status") != "complete"
+        or observed.get("inventory_raw_generation") != INVENTORY_RAW_GENERATION
+        or observed.get("inventory_marker_schema_version")
+        != INVENTORY_RAW_MARKER_SCHEMA_VERSION
+        or int(observed.get("start_block", -1)) != ranges[0][0]
+        or int(observed.get("end_block", -1)) != ranges[-1][1]
+        or int(observed.get("chunk_size", -1)) != chunk_size
+        or int(observed.get("chunk_count", -1)) != len(ranges)
+        or observed.get("factory_identity")
+        != _factory_manifest_identity(factory_certificate, frozen_upper)
+    ):
+        raise ValueError("V3 inventory ordered manifest has stale perimeter metadata")
+    totals = {name: 0 for name in EVENT_TOPICS}
+    rows = 0
+    all_paths: list[Path] = []
+    for (lower, upper), chunk in zip(ranges, chunks, strict=True):
+        if not isinstance(chunk, dict) or (
+            int(chunk.get("lower", -1)), int(chunk.get("upper", -1))
+        ) != (lower, upper):
+            raise ValueError("V3 inventory ordered manifest is not strictly ordered")
+        raw, evidence_path, marker_path = inventory_chunk_triplet(lower, upper, root)
+        all_paths.extend((raw, evidence_path, marker_path))
+        marker = json.loads(marker_path.read_text(encoding="utf-8"))
+        parquet = pq.ParquetFile(raw)
+        schema = parquet.schema_arrow
+        raw_by_event = {name: int(marker["raw_by_event"][name]) for name in EVENT_TOPICS}
+        expected_chunk = {
+            "lower": lower,
+            "upper": upper,
+            "rows": int(marker["raw_logs"]),
+            "raw_by_event": raw_by_event,
+            "parquet_schema_sha256": hashlib.sha256(
+                schema.serialize().to_pybytes()
+            ).hexdigest(),
+            "raw_file": raw.name,
+            "raw_sha256": marker["raw_sha256"],
+            "marker_file": marker_path.name,
+            "marker_sha256": file_sha256(marker_path),
+            "evidence_file": evidence_path.name,
+            "evidence_sha256": marker["rpc_evidence_sha256"],
+        }
+        if chunk != expected_chunk:
+            raise ValueError(f"V3 inventory ordered manifest chunk drifted: {lower}-{upper}")
+        if parquet.metadata.num_rows != expected_chunk["rows"]:
+            raise ValueError(f"V3 inventory ordered manifest row count drifted: {lower}-{upper}")
+        rows += expected_chunk["rows"]
+        for name, count in raw_by_event.items():
+            totals[name] += count
+    chunk_manifest_sha256 = hashlib.sha256(
+        json.dumps(chunks, sort_keys=True, separators=(",", ":")).encode()
+    ).hexdigest()
+    portable = portable_content_manifest_for_paths(root, all_paths)
+    if (
+        int(observed.get("raw_logs", -1)) != rows
+        or observed.get("raw_by_event") != totals
+        or observed.get("chunk_manifest_sha256") != chunk_manifest_sha256
+        or observed.get("portable_manifest_sha256")
+        != portable_manifest_sha256(portable)
+    ):
+        raise ValueError("V3 inventory ordered manifest aggregate identity drifted")
+    if reopen_chunks:
+        expected = build_inventory_ordered_manifest(
+            root,
+            ranges,
+            chunk_size=chunk_size,
+            frozen_upper=frozen_upper,
+            factory_certificate=factory_certificate,
+        )
+    else:
+        expected = observed
+    if observed != expected:
+        raise ValueError("V3 inventory ordered manifest is stale or mutated")
+    return observed
+
+
+def assemble_inventory_shards(
+    sources: list[tuple[Path, tuple[int, int]]],
+    destination: Path,
+    *,
+    start: int,
+    end: int,
+    chunk_size: int,
+    frozen_upper: dict[str, object],
+    factory_certificate: dict[str, object],
+) -> dict[str, object]:
+    """Copy verified shards without overwrite and publish the root manifest last."""
+
+    ranges = validate_inventory_shard_partition(
+        [bounds for _root, bounds in sources],
+        start=start,
+        end=end,
+        chunk_size=chunk_size,
+    )
+    owners: dict[tuple[int, int], Path] = {}
+    for root, (lower, upper) in sources:
+        source_ranges = block_ranges(lower, upper, chunk_size)
+        validate_inventory_source_perimeter(root, source_ranges, frozen_upper=frozen_upper)
+        for item in source_ranges:
+            if item in owners:
+                raise ValueError(f"V3 inventory chunk has multiple shard owners: {item}")
+            owners[item] = root
+    destination.mkdir(parents=True, exist_ok=True)
+    _validate_inventory_destination_names(destination, ranges, complete=False)
+    if inventory_ordered_manifest_path(destination).exists():
+        return validate_inventory_ordered_manifest(
+            destination,
+            ranges,
+            chunk_size=chunk_size,
+            frozen_upper=frozen_upper,
+            factory_certificate=factory_certificate,
+        )
+    for lower, upper in ranges:
+        source_root = owners[(lower, upper)]
+        for source, target in zip(
+            inventory_chunk_triplet(lower, upper, source_root),
+            inventory_chunk_triplet(lower, upper, destination),
+            strict=True,
+        ):
+            if source.resolve() == target.resolve():
+                continue
+            if target.exists():
+                if file_sha256(target) != file_sha256(source):
+                    raise FileExistsError(f"V3 inventory merge collision: {target.name}")
+                continue
+            with atomic_output(target) as temporary:
+                shutil.copyfile(source, temporary)
+            if file_sha256(target) != file_sha256(source):
+                raise OSError(f"V3 inventory copy verification failed: {target.name}")
+    return write_inventory_ordered_manifest(
+        destination,
+        ranges,
+        chunk_size=chunk_size,
+        frozen_upper=frozen_upper,
+        factory_certificate=factory_certificate,
+    )
+
+
 def iter_decoded_inventory_logs(
     path: Path,
     *,
@@ -194,40 +619,14 @@ def inventory_chunk_completed(
     frozen_upper: dict[str, object],
     event_topics: set[str] | frozenset[str] = frozenset(EVENT_TOPICS.values()),
 ) -> bool:
-    raw, meta = inventory_chunk_paths(lower, upper, root)
-    evidence_path = inventory_chunk_evidence_path(lower, upper, root)
-    if not raw.is_file() or not meta.is_file() or not evidence_path.is_file():
-        return False
     try:
-        marker = json.loads(meta.read_text(encoding="utf-8"))
-        with gzip.open(evidence_path, "rt", encoding="utf-8") as handle:
-            evidence = json.load(handle)
-        table = pq.read_table(raw)
-        records = validate_canonical_log_records(
-            table.to_pylist(),
-            start_block=lower,
-            end_block=upper,
-            topics=sorted(event_topics),
-            address=None,
+        load_inventory_chunk_records(
+            lower,
+            upper,
+            root,
+            frozen_upper=frozen_upper,
+            event_topics=event_topics,
         )
-        expected_ranges = exact_log_block_ranges(lower, upper)
-        subranges = evidence.get("rpc_subrange_evidence")
-        if not isinstance(subranges, list) or len(subranges) != len(expected_ranges):
-            return False
-        for (rpc_lower, rpc_upper), subrange in zip(
-            expected_ranges, subranges, strict=True
-        ):
-            if not isinstance(subrange, dict) or (
-                int(subrange.get("start_block", -1)),
-                int(subrange.get("end_block", -1)),
-            ) != (rpc_lower, rpc_upper):
-                return False
-            subrange_records = [
-                record
-                for record in records
-                if rpc_lower <= int(record["block_number"]) <= rpc_upper
-            ]
-            validate_anchored_log_evidence(subrange, subrange_records, frozen_upper)
     except (
         IndexError,
         KeyError,
@@ -237,7 +636,54 @@ def inventory_chunk_completed(
         json.JSONDecodeError,
     ):
         return False
-    return bool(
+    return True
+
+
+def load_inventory_chunk_records(
+    lower: int,
+    upper: int,
+    root: Path,
+    *,
+    frozen_upper: dict[str, object],
+    event_topics: set[str] | frozenset[str] = frozenset(EVENT_TOPICS.values()),
+) -> tuple[list[dict[str, object]], dict[str, object], pa.Schema]:
+    """Reopen one complete triplet once and return its validated raw records."""
+
+    raw, meta = inventory_chunk_paths(lower, upper, root)
+    evidence_path = inventory_chunk_evidence_path(lower, upper, root)
+    if not raw.is_file() or not meta.is_file() or not evidence_path.is_file():
+        raise FileNotFoundError(f"incomplete V3 inventory triplet {lower}-{upper}")
+    marker = json.loads(meta.read_text(encoding="utf-8"))
+    with gzip.open(evidence_path, "rt", encoding="utf-8") as handle:
+        evidence = json.load(handle)
+    table = pq.read_table(raw)
+    records = validate_canonical_log_records(
+        table.to_pylist(),
+        start_block=lower,
+        end_block=upper,
+        topics=sorted(event_topics),
+        address=None,
+    )
+    raw_by_event = {name: 0 for name in EVENT_TOPICS}
+    for record in records:
+        raw_by_event[str(decode_inventory_log(record)["event_type"])] += 1
+    expected_ranges = exact_log_block_ranges(lower, upper)
+    subranges = evidence.get("rpc_subrange_evidence")
+    if not isinstance(subranges, list) or len(subranges) != len(expected_ranges):
+        raise ValueError("V3 inventory RPC evidence has the wrong subrange perimeter")
+    for (rpc_lower, rpc_upper), subrange in zip(expected_ranges, subranges, strict=True):
+        if not isinstance(subrange, dict) or (
+            int(subrange.get("start_block", -1)),
+            int(subrange.get("end_block", -1)),
+        ) != (rpc_lower, rpc_upper):
+            raise ValueError("V3 inventory RPC evidence has an unaligned subrange")
+        subrange_records = [
+            record
+            for record in records
+            if rpc_lower <= int(record["block_number"]) <= rpc_upper
+        ]
+        validate_anchored_log_evidence(subrange, subrange_records, frozen_upper)
+    valid = bool(
         marker.get("status") == "complete"
         and int(marker.get("from_block", -1)) == lower
         and int(marker.get("to_block", -1)) == upper
@@ -249,6 +695,11 @@ def inventory_chunk_completed(
         == INVENTORY_RAW_MARKER_SCHEMA_VERSION
         and marker.get("inventory_raw_generation") == INVENTORY_RAW_GENERATION
         and set((marker.get("raw_by_event") or {}).keys()) == set(EVENT_TOPICS)
+        and {
+            str(name): int(count)
+            for name, count in (marker.get("raw_by_event") or {}).items()
+        }
+        == raw_by_event
         and int(marker.get("rpc_block_cap", -1)) == EXACT_LOG_BLOCK_CAP
         and int(marker.get("rpc_subranges", -1)) == len(expected_ranges)
         and marker.get("rpc_evidence_file") == evidence_path.name
@@ -269,6 +720,9 @@ def inventory_chunk_completed(
         and evidence.get("frozen_upper_identity_sha256")
         == frozen_upper["header_identity_sha256"]
     )
+    if not valid:
+        raise ValueError(f"stale V3 inventory metadata {lower}-{upper}")
+    return records, marker, table.schema
 
 
 def audit_inventory_chunks(
@@ -296,19 +750,20 @@ def audit_inventory_chunks(
         "quarantined_logs": 0,
     }
     for lower, upper in ranges:
-        raw_path, meta_path = inventory_chunk_paths(lower, upper, root)
-        if not inventory_chunk_completed(
-            lower,
-            upper,
-            root,
-            frozen_upper=frozen_upper,
-        ):
-            raise RuntimeError(f"incomplete V3 inventory chunk {lower}-{upper}")
-        metadata = json.loads(meta_path.read_text())
+        try:
+            records, metadata, _schema = load_inventory_chunk_records(
+                lower,
+                upper,
+                root,
+                frozen_upper=frozen_upper,
+            )
+        except (OSError, TypeError, ValueError, json.JSONDecodeError) as error:
+            raise RuntimeError(f"incomplete V3 inventory chunk {lower}-{upper}") from error
         keys: set[tuple[int, str, int]] = set()
         raw_logs = 0
         raw_by_event = {name: 0 for name in EVENT_TOPICS}
-        for decoded in iter_decoded_inventory_logs(raw_path):
+        for record in records:
+            decoded = decode_inventory_log(record)
             block = int(decoded["block_number"])
             if not lower <= block <= upper:
                 raise ValueError(

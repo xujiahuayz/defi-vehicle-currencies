@@ -674,7 +674,6 @@ class FindingsFreezeAuditTest(unittest.TestCase):
                 "data/processed/counterfactual_dominance.parquet",
                 "data/processed/counterfactual_dominance_gross.parquet",
                 "data/processed/cross_venue_routing_daily.parquet",
-                "data/processed/daily_gas_price_graph.parquet",
                 "data/processed/ethereum_utc_day_calendar.parquet",
                 "data/processed/intermediation_by_type_daily.parquet",
                 "data/processed/lp_liquidity_flow_candidates_v3.parquet",

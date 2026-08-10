@@ -20,23 +20,24 @@ from ddvc.paths import (
     DATA_DIR,
     MARKET_STATE_LOCK,
     RAW_MARKET_DATA_LOCK,
+    V3_INVENTORY_RAW_ROOT,
 )
 from ddvc.provenance import cache_key, sidecar_path, stamp
 from ddvc.runtime import atomic_output, exclusive_job
 from ddvc.state_data import STATE_ROOT, available_state_days, read_tick_partition
 from ddvc.v3_inventory import (
     INVENTORY_STATE_GENERATION,
+    INVENTORY_CHUNK_SIZE,
     PoolStatic,
     apply_inventory_events,
     audit_inventory_chunks,
     block_ranges,
-    canonical_inventory_start_block,
     decode_inventory_log,
-    inventory_chunk_completed,
     inventory_chunk_paths,
     inventory_snapshot_rows,
     iter_decoded_inventory_logs,
     pool_statics_from_factory,
+    validate_inventory_ordered_manifest,
 )
 from ddvc.v3_inventory_calendar import (
     CALENDAR,
@@ -47,6 +48,7 @@ from ddvc.v3_inventory_calendar import (
     raw_day_metadata,
 )
 from ddvc.v3_pool_registry import (
+    V3_FACTORY_DEPLOYMENT_BLOCK,
     V3_POOL_REGISTRY,
     V3_POOL_REGISTRY_CERTIFICATE,
     load_certified_frozen_upper,
@@ -54,12 +56,12 @@ from ddvc.v3_pool_registry import (
 )
 
 
-RAW_INVENTORY_ROOT = DATA_DIR / "raw" / "ethereum" / "uniswap_v3_inventory_events"
+RAW_INVENTORY_ROOT = V3_INVENTORY_RAW_ROOT
 GRAPH_STATIC_PATH = V3_GRAPH_ROOT / "uniswap_v3_pool_statics_20260630.jsonl.gz"
 CACHE_ROOT = STATE_ROOT.parent / "_v3_pool_inventory_day_cache"
 OUT = DATA_DIR / "processed" / "v3_pool_inventory_daily.parquet"
-CHUNK_SIZE = 1_000
 CODE_SOURCES = [
+    "scripts/assemble_v3_inventory_event_shards.py",
     "scripts/build_v3_inventory_panel.py",
     "scripts/fetch_v3_inventory_events.py",
     "src/ddvc/asset_types.py",
@@ -70,6 +72,7 @@ CODE_SOURCES = [
     "src/ddvc/v3_inventory.py",
     "src/ddvc/panel_assembly.py",
     "src/ddvc/paths.py",
+    "src/ddvc/provenance.py",
     "src/ddvc/runtime.py",
     "src/ddvc/state_data.py",
     "src/ddvc/v3_inventory_calendar.py",
@@ -183,12 +186,11 @@ def load_candidate_statics(
     )
 
 
-def inventory_perimeter(days: list[str], end_blocks: list[int]) -> tuple[int, int]:
-    first_state = read_tick_partition("uniswap_v3", days[0])
-    start = canonical_inventory_start_block(first_state.to_dict("records"))
+def inventory_perimeter(_days: list[str], end_blocks: list[int]) -> tuple[int, int]:
+    start = V3_FACTORY_DEPLOYMENT_BLOCK
     end = end_blocks[-1]
     if start > end_blocks[0]:
-        raise RuntimeError("first V3 inventory event lies after the first daily block cut")
+        raise RuntimeError("V3 factory deployment lies after the first daily block cut")
     return start, end
 
 
@@ -198,31 +200,22 @@ def require_complete_raw_chunks(
 ) -> tuple[list[tuple[int, int]], dict[str, object]]:
     last_day = available_state_days("tick", "uniswap_v3")[-1]
     terminal = int(raw_day_metadata(last_day)["head_block_at_fetch"])
-    frozen_upper, _factory_certificate = load_certified_frozen_upper()
+    frozen_upper, factory_certificate = load_certified_frozen_upper()
     if int(frozen_upper["block_number"]) != terminal:
         raise RuntimeError("V3 inventory terminal differs from the certified factory header")
     if terminal < end:
         raise RuntimeError("V3 raw-event fetch terminal lies before the exact research cut")
-    ranges = [
-        item
-        for item in block_ranges(start, terminal, CHUNK_SIZE)
-        if item[0] <= end
-    ]
-    missing = [
-        item
-        for item in ranges
-        if not inventory_chunk_completed(
-            *item,
-            RAW_INVENTORY_ROOT,
-            frozen_upper=frozen_upper,
-        )
-    ]
-    if missing:
-        sample = ", ".join(f"{lower}-{upper}" for lower, upper in missing[:3])
-        raise RuntimeError(
-            f"V3 event-accounted inventory replay requires all raw event chunks; "
-            f"missing={len(missing):,}/{len(ranges):,}; first={sample}"
-        )
+    if start != V3_FACTORY_DEPLOYMENT_BLOCK:
+        raise RuntimeError("V3 inventory replay must begin at factory deployment")
+    ranges = block_ranges(start, terminal, INVENTORY_CHUNK_SIZE)
+    validate_inventory_ordered_manifest(
+        RAW_INVENTORY_ROOT,
+        ranges,
+        chunk_size=INVENTORY_CHUNK_SIZE,
+        frozen_upper=frozen_upper,
+        factory_certificate=factory_certificate,
+        reopen_chunks=False,
+    )
     pool_creation_blocks = {
         pool.pool: pool.creation_block for pool in load_registry(analysis_only=False)
     }
