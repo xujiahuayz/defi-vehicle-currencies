@@ -247,10 +247,40 @@ def _event_decimals(
     token0: dict,
     token1: dict,
     pool_decimals: dict[str, tuple[int, int]] | None,
+    audited_token_decimals: Mapping[str, int] | None = None,
 ) -> tuple[int | None, int | None]:
     decimals0, decimals1 = token0.get("decimals"), token1.get("decimals")
+    registered = (pool_decimals or {}).get(str(pool.get("id") or "").lower())
+    if audited_token_decimals is not None:
+        token_addresses = (
+            str(token0.get("id") or "").lower(),
+            str(token1.get("id") or "").lower(),
+        )
+        if any(not token for token in token_addresses):
+            raise ValueError("V2 Graph event lacks token identity for audited decimals")
+        missing = [
+            token for token in token_addresses if token not in audited_token_decimals
+        ]
+        if missing:
+            raise ValueError(
+                "V2 Graph event token is absent from the audited decimals registry: "
+                + ", ".join(sorted(set(missing)))
+            )
+        audited = tuple(int(audited_token_decimals[token]) for token in token_addresses)
+        observed = (decimals0, decimals1)
+        for index, expected in enumerate(audited):
+            provider_values = [observed[index]]
+            if registered is not None:
+                provider_values.append(registered[index])
+            if any(
+                value is not None and int(value) != expected
+                for value in provider_values
+            ):
+                raise ValueError(
+                    "audited token decimals disagree with Graph provider/template decimals"
+                )
+        return audited
     if decimals0 is None or decimals1 is None:
-        registered = (pool_decimals or {}).get(str(pool.get("id") or "").lower())
         if registered is not None:
             decimals0, decimals1 = registered
     return (
@@ -264,13 +294,20 @@ def graph_fingerprint(
     venue: str,
     stream: str,
     pool_decimals: dict[str, tuple[int, int]] | None = None,
+    audited_token_decimals: Mapping[str, int] | None = None,
 ) -> Fingerprint:
     """Return an exact economic event fingerprint independent of provider order."""
 
     pool, token0, token1 = _pool_and_tokens(row, venue)
     event_type = STREAM_EVENT_TYPE[stream]
     if venue in {"uniswap_v2", "sushiswap_v2"}:
-        decimals0, decimals1 = _event_decimals(pool, token0, token1, pool_decimals)
+        decimals0, decimals1 = _event_decimals(
+            pool,
+            token0,
+            token1,
+            pool_decimals,
+            audited_token_decimals,
+        )
         if decimals0 is None or decimals1 is None:
             raise ValueError("V2 Graph event lacks token decimals")
         if event_type == "swap":
@@ -318,6 +355,7 @@ def graph_event(
     venue: str,
     stream: str,
     pool_decimals: dict[str, tuple[int, int]] | None = None,
+    audited_token_decimals: Mapping[str, int] | None = None,
 ) -> GraphEvent:
     pool, token0, token1 = _pool_and_tokens(row, venue)
     block = block_value(row)
@@ -337,7 +375,13 @@ def graph_event(
         raise ValueError("Graph event lacks a valid block-log order")
     if not event_id or not tx_hash or not pool_id:
         raise ValueError("Graph event lacks exact event, transaction, or pool identity")
-    decimals0, decimals1 = _event_decimals(pool, token0, token1, pool_decimals)
+    decimals0, decimals1 = _event_decimals(
+        pool,
+        token0,
+        token1,
+        pool_decimals,
+        audited_token_decimals,
+    )
     return GraphEvent(
         venue=venue,
         stream=stream,
@@ -346,7 +390,13 @@ def graph_event(
         pool=pool_id,
         block_number=int(block),
         provider_log_index=provider_log_index,
-        fingerprint=graph_fingerprint(row, venue, stream, pool_decimals),
+        fingerprint=graph_fingerprint(
+            row,
+            venue,
+            stream,
+            pool_decimals,
+            audited_token_decimals,
+        ),
         decimals0=decimals0,
         decimals1=decimals1,
         needs_complete=bool(row.get("needsComplete")),
@@ -498,14 +548,39 @@ def supplement_action(event: ChainEvent, source_row: dict[str, object]) -> dict[
     }
 
 
-def load_graph_events(raw_root: Path, venue: str, day: str) -> list[GraphEvent]:
+def load_graph_events(
+    raw_root: Path,
+    venue: str,
+    day: str,
+    *,
+    audited_token_decimals: Mapping[str, int] | None = None,
+) -> list[GraphEvent]:
     if venue not in SUPPORTED_VENUES:
         raise ValueError(f"unsupported Graph event-order venue: {venue}")
+    if audited_token_decimals is not None and venue not in {
+        "uniswap_v2",
+        "sushiswap_v2",
+    }:
+        raise ValueError("audited token decimals are only supported for V2 venues")
+    audited_decimals: dict[str, int] | None = None
+    if audited_token_decimals is not None:
+        audited_decimals = {}
+        for raw_token, raw_decimals in audited_token_decimals.items():
+            token = str(raw_token or "").lower()
+            decimals = int(raw_decimals)
+            if not token or decimals < 0 or decimals > 255:
+                raise ValueError("invalid audited token-decimals registry entry")
+            prior = audited_decimals.get(token)
+            if prior is not None and prior != decimals:
+                raise ValueError("conflicting audited token-decimals registry entry")
+            audited_decimals[token] = decimals
     events: list[GraphEvent] = []
     identities: dict[tuple[str, str], GraphEvent] = {}
     pool_decimals = (
         load_v3_pool_decimals(raw_root)
         if venue == "uniswap_v3"
+        else {}
+        if audited_decimals is not None
         else load_v2_pool_decimals(raw_root, venue, day)
     )
     for stream, path in zip(CORE_STREAMS, provider_event_paths(raw_root, venue, day), strict=True):
@@ -515,7 +590,13 @@ def load_graph_events(raw_root: Path, venue: str, day: str) -> list[GraphEvent]:
             for line in handle:
                 if not line.strip():
                     continue
-                event = graph_event(json.loads(line), venue, stream, pool_decimals)
+                event = graph_event(
+                    json.loads(line),
+                    venue,
+                    stream,
+                    pool_decimals,
+                    audited_decimals,
+                )
                 identity = stream, event.event_id
                 prior = identities.get(identity)
                 if prior is not None and prior != event:
@@ -752,6 +833,7 @@ def match_event_orders(
     venue: str,
     *,
     receipt_statuses: Mapping[str, int] | None = None,
+    expected_pools: Iterable[str] | None = None,
 ) -> tuple[list[dict[str, object]], list[ChainEvent], dict[str, int]]:
     """Reconcile provider rows to exact logs without treating omissions as order fixes."""
 
@@ -761,11 +843,26 @@ def match_event_orders(
         for tx_hash, status in (receipt_statuses or {}).items()
         if int(status) in {0, 1}
     }
-    pools = {event.pool for event in graph}
+    graph_pools = {event.pool for event in graph}
+    if expected_pools is None:
+        perimeter = graph_pools
+    else:
+        perimeter = set()
+        for raw_pool in expected_pools:
+            pool = str(raw_pool or "").lower()
+            if not pool:
+                raise ValueError("expected reconciliation pool identity is empty")
+            perimeter.add(pool)
+    outside = graph_pools - perimeter
+    if outside:
+        raise ValueError(
+            "Graph event pool falls outside the expected reconciliation perimeter: "
+            + ", ".join(sorted(outside))
+        )
     exact = [
         chain_event(record, venue)
         for record in exact_records
-        if str(record.get("address") or "").lower() in pools
+        if str(record.get("address") or "").lower() in perimeter
     ]
     graph_groups: dict[tuple[str, str, str], list[GraphEvent]] = defaultdict(list)
     exact_groups: dict[tuple[str, str, str], list[ChainEvent]] = defaultdict(list)
@@ -1022,7 +1119,11 @@ def match_event_orders(
         "graph_events": len(graph),
         "unique_graph_events": unique_graph_events,
         "provider_duplicate_rows": provider_duplicate_rows,
-        "exact_events_in_graph_pool_perimeter": len(exact),
+        "exact_events_in_graph_pool_perimeter": sum(
+            event.pool in graph_pools for event in exact
+        ),
+        "exact_events_in_reconciliation_pool_perimeter": len(exact),
+        "reconciliation_pool_perimeter_pools": len(perimeter),
         "matched_events": matched_events,
         "correction_rows": sum(row["action"] == "correction" for row in corrections),
         "exclusion_rows": excluded_provider_events,

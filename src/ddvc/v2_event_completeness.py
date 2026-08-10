@@ -1095,6 +1095,59 @@ def _pool_static_from_row(
     return PoolStatic(pool, token0_address, token1_address, decimals0, decimals1)
 
 
+def graph_token_observations(
+    graph_root: Path,
+    venue: str,
+    day: str,
+    statics: dict[str, PoolStatic],
+) -> tuple[set[str], dict[str, list[object]]]:
+    """Read provider token reports without asserting an exact event identity."""
+
+    observed_pools: set[str] = set()
+    observations: dict[str, list[object]] = {}
+    for stream in ("mints", "burns", "swaps"):
+        for row in iter_graph_rows(graph_stream_path(graph_root, venue, stream, day)):
+            observed = _pool_static_from_row(row, {})
+            static = statics.get(observed.pool)
+            if static is None:
+                raise ValueError(
+                    f"V2 event pool {observed.pool} is absent from the factory registry"
+                )
+            if (observed.token0, observed.token1) != (static.token0, static.token1):
+                raise ValueError(
+                    f"Graph event disagrees with factory pair identity for {observed.pool}"
+                )
+            pair = row["pair"]
+            for token_name, token_address in (
+                ("token0", observed.token0),
+                ("token1", observed.token1),
+            ):
+                token = pair[token_name]
+                value = token.get("decimals")
+                distinct = observations.setdefault(token_address, [])
+                if value not in distinct:
+                    distinct.append(value)
+            observed_pools.add(observed.pool)
+    return observed_pools, observations
+
+
+def canonical_v2_pool_templates(
+    statics: dict[str, PoolStatic],
+) -> dict[str, dict[str, object]]:
+    """Build supplement templates only from factory identity and audited decimals."""
+
+    templates: dict[str, dict[str, object]] = {}
+    for pool, static in statics.items():
+        if pool != static.pool or static.decimals0 is None or static.decimals1 is None:
+            raise ValueError(f"V2 canonical pool template lacks audited identity: {pool}")
+        templates[pool] = {
+            "id": pool,
+            "token0": {"id": static.token0, "decimals": str(static.decimals0)},
+            "token1": {"id": static.token1, "decimals": str(static.decimals1)},
+        }
+    return templates
+
+
 def decode_pair_created_log(venue: str, log: dict[str, object]) -> FactoryPair:
     """Decode one canonical factory log into an independently registered V2 pair."""
 

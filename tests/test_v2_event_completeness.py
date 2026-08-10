@@ -47,6 +47,7 @@ from ddvc.v2_event_completeness import (
     V2_TOKEN_DECIMALS_SCOPE,
     audit_calendar_sha256,
     build_factory_state_proof,
+    canonical_v2_pool_templates,
     compare_event_maps,
     decode_v2_log,
     deterministic_factory_state_sample,
@@ -60,6 +61,7 @@ from ddvc.v2_event_completeness import (
     frozen_upper_block_path,
     graph_core_events,
     graph_core_events_for_amount_keys,
+    graph_token_observations,
     load_or_resolve_frozen_upper_block,
     missing_v2_exact_log_ranges,
     raw_core_events,
@@ -556,11 +558,58 @@ def test_graph_pool_statics_reject_decimal_registry_disagreement(tmp_path) -> No
         graph_core_events(tmp_path, venue, day, statics)
 
 
+def test_graph_token_observations_accept_incomplete_identity_without_claiming_order(
+    tmp_path,
+) -> None:
+    venue = "uniswap_v2"
+    day = "20250115"
+    directory = tmp_path / venue
+    directory.mkdir()
+    incomplete = {
+        **graph_event("burn"),
+        "logIndex": None,
+        "amount0": None,
+        "amount1": None,
+        "needsComplete": True,
+    }
+    write_jsonl_gz(directory / f"{venue}_burns_{day}.jsonl.gz", [incomplete])
+    for stream in ("mints", "swaps"):
+        write_jsonl_gz(directory / f"{venue}_{stream}_{day}.jsonl.gz", [])
+    statics, _pairs = factory_pair_registry(venue, [pair_created_raw()], {})
+
+    pools, observations = graph_token_observations(
+        tmp_path,
+        venue,
+        day,
+        statics,
+    )
+
+    assert pools == {POOL}
+    assert observations == {TOKEN0: ["6"], TOKEN1: ["18"]}
+
+
 def test_factory_registry_keeps_pairs_outside_decimal_registry() -> None:
     statics, pairs = factory_pair_registry("uniswap_v2", [pair_created_raw()], {})
     assert set(statics) == {POOL}
     assert len(pairs) == 1
     assert statics[POOL].decimals0 is None
+
+
+def test_canonical_v2_pool_templates_require_factory_identity_and_audited_decimals() -> None:
+    statics, _pairs = factory_pair_registry(
+        "uniswap_v2",
+        [pair_created_raw()],
+        {TOKEN0: 6, TOKEN1: 18},
+    )
+    templates = canonical_v2_pool_templates(statics)
+    assert templates[POOL] == {
+        "id": POOL,
+        "token0": {"id": TOKEN0, "decimals": "6"},
+        "token1": {"id": TOKEN1, "decimals": "18"},
+    }
+    incomplete, _pairs = factory_pair_registry("uniswap_v2", [pair_created_raw()], {})
+    with pytest.raises(ValueError, match="lacks audited identity"):
+        canonical_v2_pool_templates(incomplete)
 
 
 def test_audit_token_perimeter_comes_from_events_not_the_priced_token_panel(

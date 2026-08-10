@@ -76,9 +76,16 @@ def graph_swap(event_id: str, tx_hash: str, amount0: str, amount1: str) -> dict:
     }
 
 
-def exact_swap(tx_hash: str, log_index: int, amount0: int, amount1: int) -> dict[str, object]:
+def exact_swap(
+    tx_hash: str,
+    log_index: int,
+    amount0: int,
+    amount1: int,
+    *,
+    pool: str = "0xpool",
+) -> dict[str, object]:
     return {
-        "address": "0xpool",
+        "address": pool,
         "block_number": 10,
         "block_hash": "0xblock",
         "transaction_hash": tx_hash,
@@ -279,6 +286,66 @@ def test_reconciliation_surfaces_an_exact_event_omitted_by_provider(tmp_path: Pa
     assert corrections[0]["chain_log_index"] == 99
     assert [event.tx_hash for event in supplements] == ["0xtx2"]
     assert audit["supplement_rows"] == 1
+
+
+def test_explicit_pool_perimeter_supplements_pool_absent_from_graph(tmp_path: Path) -> None:
+    raw_root = tmp_path / "raw" / "thegraph"
+    write_graph_day(raw_root, [graph_swap("event-one", "0xtx1", "1", "-2")])
+    graph = load_graph_events(raw_root, "uniswap_v3", "20250101")
+    exact = [
+        exact_swap("0xtx1", 99, 10**18, -2 * 10**6),
+        exact_swap(
+            "0xtx2",
+            122,
+            3 * 10**18,
+            -4 * 10**6,
+            pool="0xabsent",
+        ),
+    ]
+    _default_corrections, default_supplements, default_audit = match_event_orders(
+        graph,
+        exact,
+        "uniswap_v3",
+    )
+    assert default_supplements == []
+    assert default_audit["exact_events_in_reconciliation_pool_perimeter"] == 1
+    _corrections, supplements, audit = match_event_orders(
+        graph,
+        exact,
+        "uniswap_v3",
+        expected_pools={"0xpool", "0xabsent"},
+    )
+    assert [(event.pool, event.tx_hash) for event in supplements] == [
+        ("0xabsent", "0xtx2")
+    ]
+    assert audit["exact_events_in_graph_pool_perimeter"] == 1
+    assert audit["exact_events_in_reconciliation_pool_perimeter"] == 2
+    assert audit["supplement_rows"] == 1
+
+
+def test_explicit_pool_perimeter_rejects_graph_pool_outside_scope() -> None:
+    graph = [
+        GraphEvent(
+            venue="uniswap_v3",
+            stream="swaps",
+            event_id="provider-one",
+            tx_hash="0xtx1",
+            pool="0xoutside",
+            block_number=10,
+            provider_log_index=7,
+            fingerprint=("swap", 1, -2, 1 << 96, 0),
+            decimals0=18,
+            decimals1=6,
+            needs_complete=False,
+        )
+    ]
+    with pytest.raises(ValueError, match="outside the expected reconciliation perimeter"):
+        match_event_orders(
+            graph,
+            [],
+            "uniswap_v3",
+            expected_pools={"0xexpected"},
+        )
 
 
 def test_reconciliation_repairs_duplicates_rounding_and_omissions(tmp_path: Path) -> None:
@@ -858,3 +925,76 @@ def test_v2_events_use_hashed_same_day_snapshot_decimals(tmp_path: Path) -> None
         raw_root=raw_root,
     )
     assert set(released["event_id"]) == {"state", "event-one", "event-burn"}
+
+
+def _write_v2_decimal_fixture(
+    raw_root: Path,
+    *,
+    event_decimals0: str | None,
+) -> None:
+    venue_root = raw_root / "uniswap_v2"
+    venue_root.mkdir(parents=True)
+    event_pair = {
+        "id": "0xpool",
+        "token0": {"id": "0xa", "symbol": "A", "decimals": event_decimals0},
+        "token1": {"id": "0xb", "symbol": "B"},
+    }
+    event_pair["token0"] = {
+        key: value for key, value in event_pair["token0"].items() if value is not None
+    }
+    swap = {
+        "id": "event-one",
+        "transaction": {"id": "0xtx1", "blockNumber": "10", "timestamp": "100"},
+        "timestamp": "100",
+        "logIndex": "7",
+        "amount0In": "1",
+        "amount1In": "0",
+        "amount0Out": "0",
+        "amount1Out": "2",
+        "pair": event_pair,
+    }
+    rows = {
+        "swaps": [swap],
+        "mints": [],
+        "burns": [],
+    }
+    for stream, stream_rows in rows.items():
+        with gzip.open(venue_root / f"uniswap_v2_{stream}_20250101.jsonl.gz", "wt") as handle:
+            for row in stream_rows:
+                handle.write(json.dumps(row) + "\n")
+
+
+def test_v2_missing_provider_decimals_are_filled_from_audited_registry(
+    tmp_path: Path,
+) -> None:
+    raw_root = tmp_path / "raw" / "thegraph"
+    _write_v2_decimal_fixture(
+        raw_root,
+        event_decimals0=None,
+    )
+    graph = load_graph_events(
+        raw_root,
+        "uniswap_v2",
+        "20250101",
+        audited_token_decimals={"0xA": 18, "0xB": 6},
+    )
+    assert len(graph) == 1
+    assert (graph[0].decimals0, graph[0].decimals1) == (18, 6)
+    assert graph[0].fingerprint == ("swap", 10**18, 0, 0, 2 * 10**6)
+
+
+def test_v2_audited_decimals_reject_provider_disagreement(
+    tmp_path: Path,
+) -> None:
+    raw_root = tmp_path / "raw" / "thegraph"
+    _write_v2_decimal_fixture(
+        raw_root,
+        event_decimals0="17",
+    )
+    with pytest.raises(ValueError, match="audited token decimals disagree"):
+        load_graph_events(
+            raw_root,
+            "uniswap_v2",
+            "20250101",
+            audited_token_decimals={"0xa": 18, "0xb": 6},
+        )

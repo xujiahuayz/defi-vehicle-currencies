@@ -71,8 +71,8 @@ from ddvc.v2_event_completeness import (
     fetch_v2_exact_log_chunk,
     fetch_factory_root_adaptive,
     frozen_upper_block_path,
-    graph_core_event_rows,
     graph_core_events_for_amount_keys,
+    graph_token_observations,
     iter_graph_rows,
     load_or_build_factory_state_proof,
     load_or_resolve_frozen_upper_block,
@@ -542,31 +542,32 @@ def collect_v2_token_decimals_perimeter(
                 expected_creation_blocks=expected_creation_blocks,
                 ignore_unregistered=True,
             )
-            graph_rows, _duplicates = graph_core_event_rows(
+            observed_pools, observed = graph_token_observations(
                 GRAPH_ROOT,
                 venue,
                 day,
                 statics[venue],
-                provider_observations=provider_observations,
             )
+            for token, values in observed.items():
+                distinct = provider_observations.setdefault(token, [])
+                distinct.extend(value for value in values if value not in distinct)
             for key, record in raw_rows.items():
                 pool = key[-1]
                 static = statics[venue][pool]
-                matched = key in graph_rows
                 for token in (static.token0, static.token1):
                     candidates.append(
                         _token_anchor(
                             token,
                             record,
-                            priority=0 if matched else 1,
-                            proof_kind="matched_core_event" if matched else "exact_core_event",
+                            priority=0,
+                            proof_kind="exact_core_event",
                             venue=venue,
                             pool=pool,
                             event_type=key[1],
                         )
                     )
-            for key in set(graph_rows) - set(raw_rows):
-                pool = key[-1]
+            raw_pools = {key[-1] for key in raw_rows}
+            for pool in observed_pools - raw_pools:
                 static = statics[venue][pool]
                 record = pair_records[venue][pool]
                 for token in (static.token0, static.token1):
