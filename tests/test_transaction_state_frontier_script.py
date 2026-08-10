@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+import json
+import pickle
 import unittest
 from pathlib import Path
 from tempfile import TemporaryDirectory
@@ -20,6 +22,8 @@ from ddvc.analysis.transaction_frontier import (
 )
 from ddvc.pricing.path_frontier import PathQuote
 from scripts.build_transaction_state_frontier import (
+    FRONTIER_DEPENDENCY_MANIFEST,
+    REPLAY_CAUSAL_FIELDS,
     assemble_cached_output,
     candidate_vehicles,
     checkpoint_day,
@@ -29,6 +33,7 @@ from scripts.build_transaction_state_frontier import (
     load_cached_day,
     load_target_routes,
     load_replay_checkpoint,
+    frontier_cache_identity,
     rejection_record,
     replay_checkpoint_due,
     save_replay_checkpoint,
@@ -41,6 +46,7 @@ from scripts.build_transaction_state_frontier import (
     write_cached_day,
 )
 from ddvc.pricing.tick_replay import TickReplayState
+from ddvc.pricing.tick_state import TickPoolState
 from ddvc.pricing.v2_replay import V2ReplayDay
 from ddvc.realised import LINEAR_ROUTE_COLUMNS
 
@@ -210,11 +216,81 @@ class TransactionStateFrontierScriptTests(unittest.TestCase):
     def test_replay_checkpoint_round_trips_exact_state(self) -> None:
         replay = TickReplayState()
         replay.ticks_by_venue = {"uniswap_v3": {"pool": {-10: 5, 10: -5}}}
+        replay.states_by_venue = {
+            "uniswap_v3": {
+                "pool": TickPoolState(
+                    "pool", "token-a", "token-b", "A", "B", 18, 6,
+                    2**96, 0, 3_000, 60, 1, 2,
+                )
+            }
+        }
+        replay.pool_index = {frozenset(("stale-a", "stale-b")): [("bad", "pool")]}
+        replay.quote_indexes_by_venue = {"uniswap_v3": {"pool": object()}}
         with TemporaryDirectory() as directory:
-            path = Path(directory) / "checkpoint.pkl"
-            save_replay_checkpoint(path, replay)
-            restored = load_replay_checkpoint(path)
+            path = Path(directory) / "pre_20230415.pkl"
+            save_replay_checkpoint(
+                path, replay, engine_key="engine", pre_day="20230415"
+            )
+            with path.open("rb") as handle:
+                payload = pickle.load(handle)
+            restored = load_replay_checkpoint(
+                path, engine_key="engine", pre_day="20230415"
+            )
+        self.assertEqual(set(payload["causal_state"]), set(REPLAY_CAUSAL_FIELDS))
+        self.assertNotIn("pool_index", payload["causal_state"])
+        self.assertNotIn("quote_indexes_by_venue", payload["causal_state"])
         self.assertEqual(restored.ticks_by_venue, replay.ticks_by_venue)
+        self.assertEqual(
+            restored.pool_index,
+            {frozenset(("token-a", "token-b")): [("uniswap_v3", "pool")]},
+        )
+        self.assertEqual(restored.quote_indexes_by_venue, {})
+
+    def test_replay_checkpoint_rejects_legacy_engine_and_pre_day(self) -> None:
+        replay = TickReplayState()
+        with TemporaryDirectory() as directory:
+            root = Path(directory)
+            path = root / "pre_20230415.pkl"
+            save_replay_checkpoint(
+                path, replay, engine_key="engine", pre_day="20230415"
+            )
+            with self.assertRaisesRegex(ValueError, "engine mismatch"):
+                load_replay_checkpoint(
+                    path, engine_key="other", pre_day="20230415"
+                )
+            with self.assertRaisesRegex(ValueError, "pre-day mismatch"):
+                load_replay_checkpoint(
+                    path, engine_key="engine", pre_day="20230416"
+                )
+            legacy = root / "pre_20230416.pkl"
+            with legacy.open("wb") as handle:
+                pickle.dump(replay, handle)
+            with self.assertRaisesRegex(ValueError, "legacy or invalid"):
+                load_replay_checkpoint(
+                    legacy, engine_key="engine", pre_day="20230416"
+                )
+
+    def test_frontier_engine_tracks_each_direct_load_bearing_dependency(self) -> None:
+        required = {
+            "src/ddvc/route_cost.py",
+            "src/ddvc/data_release.py",
+            "src/ddvc/calendar.py",
+        }
+        self.assertTrue(required <= set(FRONTIER_DEPENDENCY_MANIFEST))
+        with TemporaryDirectory() as directory:
+            root = Path(directory)
+            for relative in FRONTIER_DEPENDENCY_MANIFEST:
+                path = root / relative
+                path.parent.mkdir(parents=True, exist_ok=True)
+                path.write_text(f"SOURCE = {relative!r}\n", encoding="utf-8")
+            with patch("ddvc.provenance.ROOT", root):
+                baseline = frontier_cache_identity([])[0]
+                for relative in sorted(required):
+                    path = root / relative
+                    original = path.read_text(encoding="utf-8")
+                    path.write_text(original + "CHANGED = True\n", encoding="utf-8")
+                    self.assertNotEqual(frontier_cache_identity([])[0], baseline)
+                    path.write_text(original, encoding="utf-8")
 
     def test_validation_diagnostics_keep_rejected_tail_visible(self) -> None:
         diagnostics = validation_error_diagnostics([0.0, -10.0, 200.0, -500.0])
@@ -255,31 +331,150 @@ class TransactionStateFrontierScriptTests(unittest.TestCase):
         self.assertTrue(replay_checkpoint_due(index=181))
 
     def test_day_cache_installs_support_marker_after_panel(self) -> None:
-        panel = pd.DataFrame({"route_id": ["one"], "public_path_regret_bps": [1.0]})
+        panel = pd.DataFrame(
+            {
+                "day": ["20230415"],
+                "route_id": ["one"],
+                "public_path_regret_bps": [1.0],
+            }
+        )
         rejections = pd.DataFrame(
-            {"route_id": ["two"], "reason": ["chosen_output_mismatch"]}
+            {
+                "day": ["20230415"],
+                "route_id": ["two"],
+                "reason": ["chosen_output_mismatch"],
+            }
         )
         support = {"day": "20230415", "scored_routes": 1, "rejected_routes": 1}
         with TemporaryDirectory() as directory:
             root = Path(directory)
-            write_cached_day(root, "20230415", panel, rejections, support)
-            cached = load_cached_day(root, "20230415")
+            write_cached_day(
+                root,
+                "20230415",
+                panel,
+                rejections,
+                support,
+                engine_key="engine",
+                input_key="input",
+            )
+            marker = json.loads((root / "20230415.support.json").read_text())
+            cached = load_cached_day(
+                root,
+                "20230415",
+                engine_key="engine",
+                input_key="input",
+            )
         assert cached is not None
         cached_panel, cached_rejections, cached_support = cached
         pd.testing.assert_frame_equal(cached_panel, panel)
         pd.testing.assert_frame_equal(cached_rejections, rejections)
         self.assertEqual(cached_support, support)
+        self.assertEqual(marker["engine_key"], "engine")
+        self.assertEqual(marker["input_key"], "input")
+        self.assertEqual(marker["day_start"], "20230415")
+        self.assertEqual(marker["day_end"], "20230415")
+        self.assertEqual(marker["shards"]["panel"]["route_key_count"], 1)
+        self.assertEqual(len(marker["shards"]["panel"]["content_sha256"]), 64)
+        self.assertEqual(len(marker["shards"]["panel"]["schema_sha256"]), 64)
+
+    def test_day_cache_rejects_wrong_identity_and_changed_content(self) -> None:
+        panel = pd.DataFrame(
+            {"day": ["20230415"], "route_id": ["one"], "value": [1.0]}
+        )
+        support = {"day": "20230415", "scored_routes": 1, "rejected_routes": 0}
+        with TemporaryDirectory() as directory:
+            root = Path(directory)
+            write_cached_day(
+                root,
+                "20230415",
+                panel,
+                pd.DataFrame(),
+                support,
+                engine_key="engine",
+                input_key="input",
+            )
+            with self.assertRaisesRegex(ValueError, "engine mismatch"):
+                load_cached_day(
+                    root,
+                    "20230415",
+                    engine_key="other",
+                    input_key="input",
+                )
+            with self.assertRaisesRegex(ValueError, "input mismatch"):
+                load_cached_day(
+                    root,
+                    "20230415",
+                    engine_key="engine",
+                    input_key="other",
+                )
+            panel.assign(value=2.0).to_parquet(
+                root / "20230415.parquet", index=False
+            )
+            with self.assertRaisesRegex(ValueError, "content contract mismatch"):
+                load_cached_day(
+                    root,
+                    "20230415",
+                    engine_key="engine",
+                    input_key="input",
+                )
+
+    def test_day_cache_rejects_wrong_bounds_and_duplicate_route_keys(self) -> None:
+        support = {"day": "20230415", "scored_routes": 2, "rejected_routes": 0}
+        for frame, message in (
+            (
+                pd.DataFrame(
+                    {
+                        "day": ["20230415", "20230416"],
+                        "route_id": ["one", "two"],
+                    }
+                ),
+                "day bounds disagree",
+            ),
+            (
+                pd.DataFrame(
+                    {
+                        "day": ["20230415", "20230415"],
+                        "route_id": ["one", "one"],
+                    }
+                ),
+                "duplicate route keys",
+            ),
+        ):
+            with self.subTest(message=message), TemporaryDirectory() as directory:
+                root = Path(directory)
+                with self.assertRaisesRegex(ValueError, message):
+                    write_cached_day(
+                        root,
+                        "20230415",
+                        frame,
+                        pd.DataFrame(),
+                        support,
+                        engine_key="engine",
+                        input_key="input",
+                    )
+                self.assertFalse((root / "20230415.support.json").exists())
 
     def test_empty_day_cache_needs_no_zero_column_parquet(self) -> None:
         support = {"day": "20200214", "scored_routes": 0, "rejected_routes": 0}
         with TemporaryDirectory() as directory:
             root = Path(directory)
             write_cached_day(
-                root, "20200214", pd.DataFrame(), pd.DataFrame(), support
+                root,
+                "20200214",
+                pd.DataFrame(),
+                pd.DataFrame(),
+                support,
+                engine_key="engine",
+                input_key="input",
             )
             self.assertFalse((root / "20200214.parquet").exists())
             self.assertFalse((root / "20200214.rejections.parquet").exists())
-            cached = load_cached_day(root, "20200214")
+            cached = load_cached_day(
+                root,
+                "20200214",
+                engine_key="engine",
+                input_key="input",
+            )
         assert cached is not None
         cached_panel, cached_rejections, cached_support = cached
         self.assertTrue(cached_panel.empty)
@@ -320,8 +515,16 @@ class TransactionStateFrontierScriptTests(unittest.TestCase):
         with TemporaryDirectory() as directory:
             root = Path(directory)
             for day in ("20250101", "20250102"):
-                pd.DataFrame({"day": [day], "route_id": [f"route-{day}"]}).to_parquet(
-                    root / f"{day}.parquet", index=False
+                write_cached_day(
+                    root,
+                    day,
+                    pd.DataFrame(
+                        {"day": [day], "route_id": [f"route-{day}"]}
+                    ),
+                    pd.DataFrame(),
+                    {"day": day, "scored_routes": 1, "rejected_routes": 0},
+                    engine_key="engine",
+                    input_key="input",
                 )
             output = root / "daily.parquet"
             canonical_input = root / "source.parquet"
@@ -337,6 +540,8 @@ class TransactionStateFrontierScriptTests(unittest.TestCase):
                     output=output,
                     inputs=[canonical_input],
                     notes="test",
+                    engine_key="engine",
+                    input_key="input",
                 )
                 assembled = pd.read_parquet(output)
         self.assertEqual(rows, 2)
@@ -344,6 +549,11 @@ class TransactionStateFrontierScriptTests(unittest.TestCase):
         stamp_mock.assert_called_once()
         self.assertEqual(stamp_mock.call_args.kwargs["inputs"], [canonical_input])
         self.assertIn("resumable day cache", stamp_mock.call_args.kwargs["notes"])
+        metadata = stamp_mock.call_args.kwargs["metadata"]
+        self.assertEqual(len(metadata["ordered_shard_manifest_root"]), 64)
+        self.assertEqual(metadata["ordered_shard_manifest_count"], 2)
+        self.assertEqual(metadata["ordered_shard_manifest_first_day"], "20250101")
+        self.assertEqual(metadata["ordered_shard_manifest_last_day"], "20250102")
 
     def test_empty_day_preserves_calendar_support(self) -> None:
         empty_replay = V2ReplayDay({}, {}, {}, {}, {}, {})

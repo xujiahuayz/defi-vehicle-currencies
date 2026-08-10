@@ -15,6 +15,7 @@ It is never an estimation sample. Only after that gate passes does
 from __future__ import annotations
 
 import argparse
+import hashlib
 import json
 import pickle
 from collections import defaultdict
@@ -96,9 +97,25 @@ MIN_INPUT_USD = 100.0
 INTERMEDIATE_FLOW_TOLERANCE_BPS = 0.01
 CHECKPOINT_INTERVAL_DAYS = 180
 CHECKPOINT_GLOB = "pre_" + "[0-9]" * 8 + ".pkl"
-CODE_SOURCES = [
+REPLAY_CHECKPOINT_SCHEMA_VERSION = 2
+DAY_CACHE_SCHEMA_VERSION = 2
+REPLAY_CAUSAL_FIELDS = (
+    "unify_wrapped",
+    "ticks_by_venue",
+    "states_by_venue",
+    "swap_samples",
+    "token_decimals",
+    "quarantined_pools",
+)
+FRONTIER_DEPENDENCY_MANIFEST = [
     "scripts/build_transaction_state_frontier.py",
     "src/ddvc/analysis/transaction_frontier.py",
+    "src/ddvc/asset_types.py",
+    "src/ddvc/calendar.py",
+    "src/ddvc/cpquote.py",
+    "src/ddvc/data_release.py",
+    "src/ddvc/panel_assembly.py",
+    "src/ddvc/paths.py",
     "src/ddvc/pricing/path_frontier.py",
     "src/ddvc/pricing/mixed_frontier.py",
     "src/ddvc/pricing/tick_frontier.py",
@@ -109,22 +126,29 @@ CODE_SOURCES = [
     "src/ddvc/pricing/v3quote.py",
     "src/ddvc/pricing/v2_frontier.py",
     "src/ddvc/pricing/v2_replay.py",
-    "src/ddvc/state_data.py",
-    "src/ddvc/cpquote.py",
-    "src/ddvc/asset_types.py",
-    "src/ddvc/source_records.py",
+    "src/ddvc/prices.py",
+    "src/ddvc/provenance.py",
     "src/ddvc/realised.py",
     "src/ddvc/reconstruct/__init__.py",
     "src/ddvc/release_calendar.py",
-    "src/ddvc/prices.py",
+    "src/ddvc/route_cost.py",
     "src/ddvc/route_roles.py",
+    "src/ddvc/runtime.py",
+    "src/ddvc/source_records.py",
+    "src/ddvc/state_data.py",
+    "src/ddvc/tables.py",
 ]
-OUTPUT_CODE_SOURCES = [*CODE_SOURCES, "src/ddvc/panel_assembly.py"]
-REPLAY_SOURCES = [
+REPLAY_CHECKPOINT_DEPENDENCY_MANIFEST = [
+    "scripts/build_transaction_state_frontier.py",
+    "src/ddvc/asset_types.py",
+    "src/ddvc/data_release.py",
     "src/ddvc/pricing/tick_replay.py",
+    "src/ddvc/pricing/tick_frontier.py",
+    "src/ddvc/pricing/tick_quote.py",
     "src/ddvc/pricing/tick_state.py",
     "src/ddvc/pricing/v3pools.py",
-    "src/ddvc/asset_types.py",
+    "src/ddvc/provenance.py",
+    "src/ddvc/runtime.py",
     "src/ddvc/source_records.py",
     "src/ddvc/state_data.py",
 ]
@@ -143,17 +167,67 @@ def candidate_vehicles() -> tuple[str, ...]:
     )
 
 
-def save_replay_checkpoint(path: Path, replay: TickReplayState) -> None:
+def frontier_cache_identity(inputs: list[Path]) -> tuple[str, str, str]:
+    """Return separate code/input identities plus their short cache generation."""
+    engine_key = cache_key(FRONTIER_DEPENDENCY_MANIFEST, length=64)
+    input_key = cache_key([], inputs=inputs, length=64)
+    generation = cache_key(FRONTIER_DEPENDENCY_MANIFEST, inputs=inputs)
+    return engine_key, input_key, generation
+
+
+def replay_checkpoint_engine_key(inputs: list[Path]) -> str:
+    """Identify the checkpoint schema, replay code, and immutable replay inputs."""
+    return cache_key(
+        REPLAY_CHECKPOINT_DEPENDENCY_MANIFEST,
+        inputs=inputs,
+        length=64,
+    )
+
+
+def save_replay_checkpoint(
+    path: Path,
+    replay: TickReplayState,
+    *,
+    engine_key: str,
+    pre_day: str,
+) -> None:
+    if checkpoint_day(path) != pre_day:
+        raise ValueError("replay checkpoint pre-day disagrees with filename")
+    payload = {
+        "schema_version": REPLAY_CHECKPOINT_SCHEMA_VERSION,
+        "engine_key": engine_key,
+        "pre_day": pre_day,
+        "causal_state": {
+            field: getattr(replay, field)
+            for field in REPLAY_CAUSAL_FIELDS
+        },
+    }
     with atomic_output(path) as temporary:
         with temporary.open("wb") as handle:
-            pickle.dump(replay, handle, protocol=pickle.HIGHEST_PROTOCOL)
+            pickle.dump(payload, handle, protocol=pickle.HIGHEST_PROTOCOL)
 
 
-def load_replay_checkpoint(path: Path) -> TickReplayState:
+def load_replay_checkpoint(
+    path: Path,
+    *,
+    engine_key: str,
+    pre_day: str,
+) -> TickReplayState:
     with path.open("rb") as handle:
-        replay = pickle.load(handle)
-    if not isinstance(replay, TickReplayState):
-        raise TypeError(f"invalid tick replay checkpoint: {path}")
+        payload = pickle.load(handle)
+    if not isinstance(payload, dict):
+        raise ValueError(f"legacy or invalid tick replay checkpoint: {path}")
+    if payload.get("schema_version") != REPLAY_CHECKPOINT_SCHEMA_VERSION:
+        raise ValueError(f"tick replay checkpoint schema mismatch: {path}")
+    if payload.get("engine_key") != engine_key:
+        raise ValueError(f"tick replay checkpoint engine mismatch: {path}")
+    if payload.get("pre_day") != pre_day or checkpoint_day(path) != pre_day:
+        raise ValueError(f"tick replay checkpoint pre-day mismatch: {path}")
+    causal_state = payload.get("causal_state")
+    if not isinstance(causal_state, dict) or set(causal_state) != set(REPLAY_CAUSAL_FIELDS):
+        raise ValueError(f"tick replay checkpoint causal-state mismatch: {path}")
+    replay = TickReplayState(**causal_state)
+    replay.rebuild_derived_indexes()
     return replay
 
 
@@ -164,46 +238,142 @@ def checkpoint_day(path: Path) -> str:
     return name[4:]
 
 
+def _file_sha256(path: Path) -> str:
+    digest = hashlib.sha256()
+    with path.open("rb") as handle:
+        for chunk in iter(lambda: handle.read(1024 * 1024), b""):
+            digest.update(chunk)
+    return digest.hexdigest()
+
+
+def _route_key_sha256(keys: set[tuple[str, str]]) -> str:
+    digest = hashlib.sha256()
+    for key in sorted(keys):
+        digest.update(json.dumps(key, separators=(",", ":")).encode())
+        digest.update(b"\n")
+    return digest.hexdigest()
+
+
+def _shard_contract(
+    path: Path,
+    *,
+    day: str,
+    rows: int,
+    label: str,
+) -> tuple[dict[str, object], set[tuple[str, str]]]:
+    if rows == 0:
+        if path.exists():
+            raise ValueError(f"zero-row {label} cache should not exist: {path}")
+        return {
+            "rows": 0,
+            "content_sha256": None,
+            "schema_sha256": None,
+            "day_start": None,
+            "day_end": None,
+            "route_key_count": 0,
+            "route_key_sha256": _route_key_sha256(set()),
+        }, set()
+    if not path.exists():
+        raise ValueError(f"frontier day-cache marker lacks {label}: {path}")
+    parquet = pq.ParquetFile(path)
+    observed_rows = parquet.metadata.num_rows
+    if observed_rows != rows:
+        raise ValueError(
+            f"frontier {label} row mismatch for {day}: {observed_rows:,} != {rows:,}"
+        )
+    required = {"day", "route_id"}
+    missing = sorted(required - set(parquet.schema.names))
+    if missing:
+        raise ValueError(
+            f"frontier {label} route-key columns are missing: {', '.join(missing)}"
+        )
+    columns = pq.read_table(path, columns=["day", "route_id"]).to_pydict()
+    days = [str(value) for value in columns["day"]]
+    route_ids = columns["route_id"]
+    if any(value is None or not str(value) for value in route_ids):
+        raise ValueError(f"frontier {label} contains an empty route_id for {day}")
+    keys = set(zip(days, (str(value) for value in route_ids), strict=True))
+    if len(keys) != rows:
+        raise ValueError(f"frontier {label} contains duplicate route keys for {day}")
+    day_start = min(days)
+    day_end = max(days)
+    if day_start != day or day_end != day:
+        raise ValueError(
+            f"frontier {label} day bounds disagree for {day}: {day_start}..{day_end}"
+        )
+    schema_sha256 = hashlib.sha256(
+        parquet.schema_arrow.serialize().to_pybytes()
+    ).hexdigest()
+    return {
+        "rows": rows,
+        "content_sha256": _file_sha256(path),
+        "schema_sha256": schema_sha256,
+        "day_start": day_start,
+        "day_end": day_end,
+        "route_key_count": len(keys),
+        "route_key_sha256": _route_key_sha256(keys),
+    }, keys
+
+
 def _cached_day_contract(
-    directory: Path, day: str
+    directory: Path,
+    day: str,
+    *,
+    engine_key: str,
+    input_key: str,
 ) -> tuple[Path, Path, dict[str, object]] | None:
-    """Validate the marker and shard row counts installed by one cached day."""
+    """Validate one marker-last cache bundle against its complete identity."""
     panel_path = directory / f"{day}.parquet"
     rejection_path = directory / f"{day}.rejections.parquet"
     support_path = directory / f"{day}.support.json"
     if not support_path.exists():
         return None
-    support = json.loads(support_path.read_text(encoding="utf-8"))
+    marker = json.loads(support_path.read_text(encoding="utf-8"))
+    if marker.get("schema_version") != DAY_CACHE_SCHEMA_VERSION:
+        raise ValueError(f"frontier day-cache schema mismatch: {support_path}")
+    if marker.get("engine_key") != engine_key:
+        raise ValueError(f"frontier day-cache engine mismatch: {support_path}")
+    if marker.get("input_key") != input_key:
+        raise ValueError(f"frontier day-cache input mismatch: {support_path}")
+    if marker.get("day_start") != day or marker.get("day_end") != day:
+        raise ValueError(f"frontier day-cache bounds disagree with filename: {support_path}")
+    support = marker.get("support")
+    if not isinstance(support, dict):
+        raise ValueError(f"frontier day-cache marker lacks support: {support_path}")
     if support.get("day") != day:
         raise ValueError(f"frontier day-cache marker disagrees with filename: {support_path}")
     expected = int(support.get("scored_routes", -1))
     rejected = int(support.get("rejected_routes", -1))
     if expected < 0 or rejected < 0:
         raise ValueError(f"frontier day-cache marker lacks row contracts: {support_path}")
-
-    def require_shard(path: Path, rows: int, label: str) -> None:
-        if rows == 0:
-            if path.exists():
-                raise ValueError(f"zero-row {label} cache should not exist: {path}")
-            return
-        if not path.exists():
-            raise ValueError(f"frontier day-cache marker lacks {label}: {path}")
-        observed = pq.ParquetFile(path).metadata.num_rows
-        if observed != rows:
-            raise ValueError(
-                f"frontier {label} row mismatch for {day}: {observed:,} != {rows:,}"
-            )
-    require_shard(panel_path, expected, "panel")
-    require_shard(rejection_path, rejected, "rejection panel")
+    shards = marker.get("shards")
+    if not isinstance(shards, dict) or set(shards) != {"panel", "rejections"}:
+        raise ValueError(f"frontier day-cache marker lacks shard contracts: {support_path}")
+    observed_panel, panel_keys = _shard_contract(
+        panel_path, day=day, rows=expected, label="panel"
+    )
+    observed_rejections, rejection_keys = _shard_contract(
+        rejection_path, day=day, rows=rejected, label="rejection panel"
+    )
+    if observed_panel != shards["panel"] or observed_rejections != shards["rejections"]:
+        raise ValueError(f"frontier day-cache content contract mismatch: {support_path}")
+    overlap = panel_keys & rejection_keys
+    if overlap:
+        raise ValueError(f"frontier day-cache route key appears in both shards: {min(overlap)}")
     return panel_path, rejection_path, support
 
 
 def load_cached_day(
     directory: Path,
     day: str,
+    *,
+    engine_key: str,
+    input_key: str,
 ) -> tuple[pd.DataFrame, pd.DataFrame, dict[str, object]] | None:
     """Load a complete day result; the support marker is installed last."""
-    contract = _cached_day_contract(directory, day)
+    contract = _cached_day_contract(
+        directory, day, engine_key=engine_key, input_key=input_key
+    )
     if contract is None:
         return None
     panel_path, rejection_path, support = contract
@@ -214,9 +384,17 @@ def load_cached_day(
     return panel, rejections, support
 
 
-def load_cached_day_support(directory: Path, day: str) -> dict[str, object] | None:
+def load_cached_day_support(
+    directory: Path,
+    day: str,
+    *,
+    engine_key: str,
+    input_key: str,
+) -> dict[str, object] | None:
     """Validate a complete cached day without loading either route-level shard."""
-    contract = _cached_day_contract(directory, day)
+    contract = _cached_day_contract(
+        directory, day, engine_key=engine_key, input_key=input_key
+    )
     if contract is None:
         return None
     return contract[2]
@@ -228,6 +406,9 @@ def write_cached_day(
     panel: pd.DataFrame,
     rejections: pd.DataFrame,
     support: dict[str, object],
+    *,
+    engine_key: str,
+    input_key: str,
 ) -> None:
     """Atomically cache one scored audit day, installing its marker last."""
     if str(support.get("day")) != day:
@@ -237,6 +418,8 @@ def write_cached_day(
     if int(support.get("rejected_routes", -1)) != len(rejections):
         raise ValueError("frontier support count disagrees with cached rejections")
     directory.mkdir(parents=True, exist_ok=True)
+    marker_path = directory / f"{day}.support.json"
+    marker_path.unlink(missing_ok=True)
     for frame, path in (
         (panel, directory / f"{day}.parquet"),
         (rejections, directory / f"{day}.rejections.parquet"),
@@ -250,9 +433,36 @@ def write_cached_day(
         key: value.item() if isinstance(value, np.generic) else value
         for key, value in support.items()
     }
-    with atomic_output(directory / f"{day}.support.json") as temporary:
+    panel_contract, panel_keys = _shard_contract(
+        directory / f"{day}.parquet",
+        day=day,
+        rows=len(panel),
+        label="panel",
+    )
+    rejection_contract, rejection_keys = _shard_contract(
+        directory / f"{day}.rejections.parquet",
+        day=day,
+        rows=len(rejections),
+        label="rejection panel",
+    )
+    overlap = panel_keys & rejection_keys
+    if overlap:
+        raise ValueError(f"frontier day-cache route key appears in both shards: {min(overlap)}")
+    marker = {
+        "schema_version": DAY_CACHE_SCHEMA_VERSION,
+        "engine_key": engine_key,
+        "input_key": input_key,
+        "day_start": day,
+        "day_end": day,
+        "support": serialisable,
+        "shards": {
+            "panel": panel_contract,
+            "rejections": rejection_contract,
+        },
+    }
+    with atomic_output(marker_path) as temporary:
         temporary.write_text(
-            json.dumps(serialisable, sort_keys=True, allow_nan=False) + "\n",
+            json.dumps(marker, sort_keys=True, allow_nan=False) + "\n",
             encoding="utf-8",
         )
 
@@ -1199,8 +1409,46 @@ def assemble_cached_output(
     output: Path,
     inputs: list[Path],
     notes: str,
+    engine_key: str,
+    input_key: str,
 ) -> int:
     """Assemble a full-daily route ledger from validated day shards out of core."""
+    ordered_days = [str(row["day"]) for row in support_rows]
+    if ordered_days != sorted(set(ordered_days)):
+        raise ValueError("frontier shard manifest days must be unique and ordered")
+    manifest_digest = hashlib.sha256()
+    manifest_digest.update(
+        json.dumps(
+            {
+                "schema_version": DAY_CACHE_SCHEMA_VERSION,
+                "engine_key": engine_key,
+                "input_key": input_key,
+                "days": len(ordered_days),
+            },
+            sort_keys=True,
+            separators=(",", ":"),
+        ).encode()
+    )
+    manifest_digest.update(b"\n")
+    for day in ordered_days:
+        contract = _cached_day_contract(
+            day_cache,
+            day,
+            engine_key=engine_key,
+            input_key=input_key,
+        )
+        if contract is None:
+            raise ValueError(f"frontier shard manifest lacks cached day: {day}")
+        marker_sha256 = _file_sha256(day_cache / f"{day}.support.json")
+        manifest_digest.update(
+            json.dumps(
+                {"day": day, "marker_sha256": marker_sha256},
+                sort_keys=True,
+                separators=(",", ":"),
+            ).encode()
+        )
+        manifest_digest.update(b"\n")
+    ordered_shard_manifest_root = manifest_digest.hexdigest()
     expected = sum(int(row[count_column]) for row in support_rows)
     files = [
         day_cache / f"{row['day']}{suffix}"
@@ -1229,10 +1477,16 @@ def assemble_cached_output(
         )
     stamp(
         output,
-        code_sources=OUTPUT_CODE_SOURCES,
+        code_sources=FRONTIER_DEPENDENCY_MANIFEST,
         inputs=inputs,
         rows=result.rows,
         notes=f"{notes}; resumable day cache {day_cache.name}",
+        metadata={
+            "ordered_shard_manifest_root": ordered_shard_manifest_root,
+            "ordered_shard_manifest_count": len(ordered_days),
+            "ordered_shard_manifest_first_day": ordered_days[0],
+            "ordered_shard_manifest_last_day": ordered_days[-1],
+        },
     )
     return result.rows
 
@@ -1302,7 +1556,9 @@ def main() -> int:
         TOKEN_DECIMALS,
         V4_STATIC_QUARANTINE_PANEL,
     ]
-    frontier_generation = cache_key(CODE_SOURCES, inputs=inputs)
+    frontier_engine_key, frontier_input_key, frontier_generation = (
+        frontier_cache_identity(inputs)
+    )
     day_cache = (
         DATA_DIR
         / "empirical"
@@ -1311,35 +1567,47 @@ def main() -> int:
     )
     cached_days = {
         day: (
-            load_cached_day_support(day_cache, day)
+            load_cached_day_support(
+                day_cache,
+                day,
+                engine_key=frontier_engine_key,
+                input_key=frontier_input_key,
+            )
             if daily_mode
-            else load_cached_day(day_cache, day)
+            else load_cached_day(
+                day_cache,
+                day,
+                engine_key=frontier_engine_key,
+                input_key=frontier_input_key,
+            )
         )
         for day in selected
     }
     uncached_days = [day for day in selected if cached_days[day] is None]
-    replay_generation = cache_key(
-        REPLAY_SOURCES,
-        inputs=[
-            MARKET_STATE / "tick" / "uniswap_v3",
-            MARKET_STATE / "tick" / "uniswap_v4",
-            TOKEN_DECIMALS,
-            V4_STATIC_QUARANTINE_PANEL,
-        ],
-    )
+    replay_inputs = [
+        MARKET_STATE / "tick" / "uniswap_v3",
+        MARKET_STATE / "tick" / "uniswap_v4",
+        TOKEN_DECIMALS,
+        V4_STATIC_QUARANTINE_PANEL,
+    ]
+    checkpoint_engine_key = replay_checkpoint_engine_key(replay_inputs)
     checkpoint_dir = (
         DATA_DIR
         / "empirical"
         / "_tick_replay_checkpoints"
-        / f"engine_{replay_generation}"
+        / f"engine_v{REPLAY_CHECKPOINT_SCHEMA_VERSION}_{checkpoint_engine_key[:12]}"
     )
     replay_start: str | None = None
     replay: TickReplayState | None = None
     if uncached_days:
         resume_checkpoint = latest_replay_checkpoint(checkpoint_dir, uncached_days[0])
         if resume_checkpoint is not None:
-            replay = load_replay_checkpoint(resume_checkpoint)
             replay_start = checkpoint_day(resume_checkpoint)
+            replay = load_replay_checkpoint(
+                resume_checkpoint,
+                engine_key=checkpoint_engine_key,
+                pre_day=replay_start,
+            )
             print(f"loaded replay checkpoint before {replay_start}", flush=True)
         else:
             replay = TickReplayState(
@@ -1377,7 +1645,12 @@ def main() -> int:
         checkpoint = checkpoint_dir / f"pre_{day}.pkl"
         if replay_checkpoint_due(index=index):
             if not checkpoint.exists():
-                save_replay_checkpoint(checkpoint, replay)
+                save_replay_checkpoint(
+                    checkpoint,
+                    replay,
+                    engine_key=checkpoint_engine_key,
+                    pre_day=day,
+                )
                 print(f"wrote replay checkpoint before {day}", flush=True)
         if day in selected_set:
             cached = cached_days[day]
@@ -1394,7 +1667,15 @@ def main() -> int:
                 frame, rejections, support = score_day(
                     day, events, replay, v2_replay, vehicles
                 )
-                write_cached_day(day_cache, day, frame, rejections, support)
+                write_cached_day(
+                    day_cache,
+                    day,
+                    frame,
+                    rejections,
+                    support,
+                    engine_key=frontier_engine_key,
+                    input_key=frontier_input_key,
+                )
                 cache_note = ""
             if not daily_mode:
                 frames.append(frame)
@@ -1427,6 +1708,8 @@ def main() -> int:
             output=DAILY_PANEL,
             inputs=inputs,
             notes="full-daily strict pre-transaction V2/V3/V4 realised and public-path frontier; distinct from the construction audit",
+            engine_key=frontier_engine_key,
+            input_key=frontier_input_key,
         )
         rejection_rows = assemble_cached_output(
             day_cache,
@@ -1436,11 +1719,13 @@ def main() -> int:
             output=DAILY_REJECTIONS,
             inputs=inputs,
             notes="full-daily route-level exclusion and chosen-route reproduction ledger",
+            engine_key=frontier_engine_key,
+            input_key=frontier_input_key,
         )
         write_panel(
             support,
             DAILY_SUPPORT,
-            code_sources=CODE_SOURCES,
+            code_sources=FRONTIER_DEPENDENCY_MANIFEST,
             inputs=inputs,
             notes="daily V2/V3/V4 exact-state support funnel for the full estimation frontier",
         )
@@ -1474,28 +1759,28 @@ def main() -> int:
     write_panel(
         panel,
         AUDIT_PANEL,
-        code_sources=CODE_SOURCES,
+        code_sources=FRONTIER_DEPENDENCY_MANIFEST,
         inputs=inputs,
         notes="77-date construction audit of the strict pre-transaction V2/V3/V4 frontier",
     )
     write_panel(
         rejections,
         AUDIT_REJECTIONS,
-        code_sources=CODE_SOURCES,
+        code_sources=FRONTIER_DEPENDENCY_MANIFEST,
         inputs=inputs,
         notes="77-date route-level exclusion and chosen-route reproduction ledger",
     )
     write_exhibit(
         summary,
         AUDIT_SUMMARY,
-        code_sources=CODE_SOURCES,
+        code_sources=FRONTIER_DEPENDENCY_MANIFEST,
         inputs=[AUDIT_PANEL],
         notes="construction-audit route and dollar magnitudes; not an estimation sample",
     )
     write_exhibit(
         support,
         AUDIT_SUPPORT,
-        code_sources=CODE_SOURCES,
+        code_sources=FRONTIER_DEPENDENCY_MANIFEST,
         inputs=inputs,
         notes="77-date V2/V3/V4 exact-state support and chosen-route reproduction gate",
     )

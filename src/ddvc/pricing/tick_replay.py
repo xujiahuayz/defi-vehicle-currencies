@@ -7,7 +7,7 @@ from pathlib import Path
 
 import pandas as pd
 
-from ddvc.pricing.tick_frontier import PoolIndex, TickQuoteIndexes
+from ddvc.pricing.tick_frontier import PoolIndex, TickQuoteIndexes, build_pool_index
 from ddvc.pricing.tick_state import TickPoolState, absorb_swap_state, apply_tick_change
 from ddvc.source_records import block_value, source_event_payload, transaction_id
 from ddvc.state_data import RAW_ROOT, read_tick_partition, tick_partition_path
@@ -154,6 +154,13 @@ class TickReplayState:
     swap_samples: dict[str, list[dict]] = field(default_factory=dict)
     token_decimals: dict[str, int] = field(default_factory=dict)
     quarantined_pools: dict[str, set[str]] = field(default_factory=dict)
+
+    def rebuild_derived_indexes(self) -> None:
+        """Rebuild quote-discovery state from the causal replay state."""
+        self.pool_index = build_pool_index(self.states_by_venue)
+        for candidates in self.pool_index.values():
+            candidates.sort()
+        self.quote_indexes_by_venue = {}
 
     def apply_liquidity(self, venue: str, row: dict, *, sign: int) -> None:
         ticks = self.ticks_by_venue.setdefault(venue, {})

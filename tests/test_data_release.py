@@ -139,7 +139,6 @@ class DataReleaseTests(unittest.TestCase):
             "scripts/build_vehicle_excess_use.py",
             "scripts/build_vehicle_centrality.py",
             "scripts/build_counterfactual_dominance.py",
-            "scripts/build_transaction_state_frontier.py",
             "scripts/build_routing_maturation_panel.py",
             "scripts/build_v2_token_panel.py",
             "scripts/build_rent_incidence_panel.py",

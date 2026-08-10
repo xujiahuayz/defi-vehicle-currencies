@@ -288,6 +288,7 @@ class Provenance:
     inputs: list[dict[str, object]] = field(default_factory=list)
     rows: int | None = None
     notes: str | None = None
+    metadata: dict[str, object] = field(default_factory=dict)
     python: str = field(default_factory=lambda: sys.version.split()[0])
     libraries: dict[str, str] = field(default_factory=dict)
 
@@ -371,7 +372,8 @@ def ensure_released_directory_alias(
 
 def stamp(artefact: str | Path, *, code_sources: list[str],
           inputs: list[str | Path] | None = None, rows: int | None = None,
-          notes: str | None = None, script: str | None = None) -> Path:
+          notes: str | None = None, script: str | None = None,
+          metadata: dict[str, object] | None = None) -> Path:
     """Record how `artefact` was produced. Returns the sidecar path."""
     out = sidecar_path(artefact)
     prov = Provenance(
@@ -388,6 +390,7 @@ def stamp(artefact: str | Path, *, code_sources: list[str],
         inputs=[describe_input(i) for i in (inputs or [])],
         rows=rows,
         notes=notes,
+        metadata=metadata or {},
         libraries=_libraries(),
     )
     out.parent.mkdir(parents=True, exist_ok=True)
