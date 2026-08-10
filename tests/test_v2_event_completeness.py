@@ -1249,6 +1249,13 @@ def test_no_fetch_refuses_to_resolve_a_missing_day_cut(tmp_path, monkeypatch) ->
         auditor.load_or_resolve_day_bounds("20250115", fetch=False)
 
 
+def test_day_bound_search_starts_at_a_strictly_prior_protocol_block() -> None:
+    assert auditor._day_lower("20200515") == get_source("uniswap_v2").genesis_block
+    assert auditor._day_lower("20201015") == get_source("uniswap_v2").genesis_block
+    with pytest.raises(RuntimeError, match="strictly prior"):
+        auditor._day_lower("20200505")
+
+
 def test_release_certificate_requires_exact_calendar_and_zero_exceptions() -> None:
     days = ["20200214", "20201015"]
     rows = []

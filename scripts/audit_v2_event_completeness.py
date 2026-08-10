@@ -168,6 +168,24 @@ def _day_upper(day: str) -> int:
     return max(values)
 
 
+def _day_lower(day: str) -> int:
+    """Use the earliest already-launched swap block as a bounded UTC-search bracket."""
+
+    candidates: list[int] = []
+    for venue in _launched_venues(day):
+        source = get_source(venue)
+        if (
+            source.genesis_block is not None
+            and source.genesis.strftime("%Y%m%d") < day
+        ):
+            candidates.append(int(source.genesis_block))
+    if not candidates:
+        raise RuntimeError(
+            f"V2 event-source audit day {day} lacks a strictly prior registered launch block"
+        )
+    return min(candidates)
+
+
 def load_or_resolve_day_bounds(day: str, *, fetch: bool = True) -> dict[str, object]:
     """Persist exact adjacent UTC-boundary block evidence and validate every reuse."""
 
@@ -192,7 +210,12 @@ def load_or_resolve_day_bounds(day: str, *, fetch: bool = True) -> dict[str, obj
 
     record = {
         "status": "complete",
-        **utc_day_block_bounds(day, 0, _day_upper(day), timestamp_for_block),
+        **utc_day_block_bounds(
+            day,
+            _day_lower(day),
+            _day_upper(day),
+            timestamp_for_block,
+        ),
         "rpc_evidence": evidence,
     }
     validate_utc_day_block_bounds(record, day)
