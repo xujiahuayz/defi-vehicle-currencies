@@ -58,6 +58,49 @@ class LiteratureTextCacheTests(unittest.TestCase):
             )
             self.assertEqual(set(builder.load_index(path)), {"paper-a"})
 
+    def test_corpus_check_requires_exact_pdf_text_and_checksum_sets(self) -> None:
+        builder = load_builder()
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            papers = root / "papers"
+            text = root / "text"
+            papers.mkdir()
+            text.mkdir()
+            paper = papers / "paper-a.pdf"
+            paper.write_bytes(b"published article")
+            (text / "paper-a.txt").write_text("full text")
+            records = {
+                "paper-a": {
+                    "stem": "paper-a",
+                    "pdf_sha256": builder.file_sha256(paper),
+                }
+            }
+            self.assertEqual(builder.validate_corpus(records, papers, text), [])
+            (papers / "retired.pdf").write_bytes(b"retired")
+            paper.write_bytes(b"changed article")
+            errors = builder.validate_corpus(records, papers, text)
+            self.assertIn("extra PDF: retired", errors)
+            self.assertIn("changed PDF: paper-a", errors)
+
+    def test_corpus_check_rejects_missing_hash_and_extract(self) -> None:
+        builder = load_builder()
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            papers = root / "papers"
+            text = root / "text"
+            papers.mkdir()
+            text.mkdir()
+            (papers / "paper-a.pdf").write_bytes(b"article")
+            errors = builder.validate_corpus(
+                {"paper-a": {"stem": "paper-a"}}, papers, text
+            )
+            self.assertIn("missing text: paper-a", errors)
+            self.assertIn("missing PDF checksum: paper-a", errors)
+            self.assertEqual(
+                builder.validate_corpus({}, papers, text),
+                ["empty tracked corpus index", "extra PDF: paper-a"],
+            )
+
     def test_bibliography_title_displaces_publisher_accessibility_cover(self) -> None:
         builder = load_builder()
         entry = builder.Entry(

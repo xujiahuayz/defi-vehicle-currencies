@@ -17,6 +17,15 @@ PDF fetching:
 python3 scripts/fetch_literature.py
 ```
 
+The tracked text index is also the portable checksum contract for the gitignored readable corpus. After adding or replacing PDFs, rebuild the index and verify it before another host enters a literature or review node:
+
+```bash
+./scripts/run scripts/build_literature_text_cache.py
+./scripts/run scripts/build_literature_text_cache.py --check-corpus
+```
+
+The check requires an exact one-to-one match among PDFs, text extracts and index records and validates every PDF by SHA-256. Replication data and code archives remain outside this readable-corpus contract.
+
 The script validates every requested key against `source-admission.json` before it opens the network or writes a PDF. It then downloads PDFs to gitignored `literature/papers/` and writes a gitignored `literature/papers/download-manifest.json`. It tries committed sources in `pdf-sources.json` first, then generated DOI resolver fallbacks. For public servers that fail with Python's default HTTP stack, it falls back to `curl --http1.1`.
 
 Discover publisher-registered PDF endpoints from DOI metadata:

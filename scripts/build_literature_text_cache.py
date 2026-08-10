@@ -9,12 +9,13 @@ Per-page text is kept, because section structure is a page-level property and a 
 
 Reads   literature/papers/*.pdf
 Writes  literature/text/<stem>.txt          one file per paper, pages delimited
-        literature/text/_index.jsonl        stem, title guess, pages, characters
+        literature/text/_index.jsonl        stem, title, pages, characters, PDF hash
 """
 
 from __future__ import annotations
 
 import argparse
+import hashlib
 import json
 import sys
 from pathlib import Path
@@ -64,6 +65,40 @@ def load_index(path: Path) -> dict[str, dict]:
     return records
 
 
+def file_sha256(path: Path) -> str:
+    digest = hashlib.sha256()
+    with path.open("rb") as handle:
+        for chunk in iter(lambda: handle.read(1024 * 1024), b""):
+            digest.update(chunk)
+    return digest.hexdigest()
+
+
+def validate_corpus(
+    records: dict[str, dict],
+    papers: Path,
+    text: Path,
+) -> list[str]:
+    """Require the local ignored PDF corpus to match its tracked text index exactly."""
+    expected = set(records)
+    pdfs = {path.stem: path for path in papers.glob("*.pdf")}
+    extracts = {path.stem for path in text.glob("*.txt")}
+    errors = [] if expected else ["empty tracked corpus index"]
+    for label, stems in (
+        ("missing PDF", expected - set(pdfs)),
+        ("extra PDF", set(pdfs) - expected),
+        ("missing text", expected - extracts),
+        ("extra text", extracts - expected),
+    ):
+        errors.extend(f"{label}: {stem}" for stem in sorted(stems))
+    for stem in sorted(expected & set(pdfs)):
+        recorded = records[stem].get("pdf_sha256")
+        if not isinstance(recorded, str) or len(recorded) != 64:
+            errors.append(f"missing PDF checksum: {stem}")
+        elif file_sha256(pdfs[stem]) != recorded:
+            errors.append(f"changed PDF: {stem}")
+    return errors
+
+
 def merge_index_records(
     current: list[dict],
     previous: dict[str, dict],
@@ -104,6 +139,7 @@ def index_record(path: Path, text: str, pages: int, entries: dict[str, Entry]) -
         "title_guess": title,
         "title_source": title_source,
         "pdf_mb": round(path.stat().st_size / 1e6, 2),
+        "pdf_sha256": file_sha256(path),
     }
 
 
@@ -112,7 +148,21 @@ def main() -> int:
                                  formatter_class=argparse.RawDescriptionHelpFormatter)
     ap.add_argument("--force", action="store_true",
                     help="re-extract even where a text file already exists")
+    ap.add_argument("--check-corpus", action="store_true",
+                    help="verify local PDFs and text against the tracked checksummed index")
     args = ap.parse_args()
+
+    if args.check_corpus:
+        records = load_index(INDEX)
+        errors = validate_corpus(records, PAPERS, OUT)
+        if errors:
+            print("literature corpus check failed:")
+            for error in errors:
+                print(f"  {error}")
+            return 1
+        total_bytes = sum(path.stat().st_size for path in PAPERS.glob("*.pdf"))
+        print(f"literature corpus ok: {len(records)} PDFs, {total_bytes:,} bytes")
+        return 0
 
     pdfs = sorted(PAPERS.glob("*.pdf"))
     if not pdfs:
