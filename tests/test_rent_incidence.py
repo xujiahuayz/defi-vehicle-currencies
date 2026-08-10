@@ -551,6 +551,10 @@ def test_capital_materializer_streams_pool_and_candidate_panels_atomically(
     raw = tmp_path / "raw"
     venue_dir = raw / "uniswap_v2"
     venue_dir.mkdir(parents=True)
+    reserves_by_day = {
+        "20250101": (0.25, 500.0),
+        "20250102": (0.30, 600.0),
+    }
     for day, capital, reserve in (
         ("20250101", "1000", "0.25"),
         ("20250102", "1200", "0.30"),
@@ -576,6 +580,32 @@ def test_capital_materializer_streams_pool_and_candidate_panels_atomically(
     monkeypatch.setattr(capital_builder, "REJECTIONS_OUT", rejection_output)
     monkeypatch.setattr(capital_builder, "VENUES", ("uniswap_v2",))
     monkeypatch.setattr(capital_builder, "pool_identity_files", lambda _venue, _raw: [])
+    monkeypatch.setattr(
+        capital_builder,
+        "read_cp_partition",
+        lambda _venue, day: pd.DataFrame(
+            {
+                "record_type": ["snapshot"],
+                "pool": ["0xpool"],
+                "period_end": [
+                    int(
+                        (
+                            pd.Timestamp(day, tz="UTC")
+                            + pd.Timedelta(days=1, seconds=-1)
+                        ).timestamp()
+                    )
+                ],
+                "timestamp": [None],
+                "block_number": [None],
+                "log_index": [None],
+                "reserve0": [str(reserves_by_day[day][0])],
+                "reserve1": [str(reserves_by_day[day][1])],
+                "amount0_delta": [None],
+                "amount1_delta": [None],
+                "usable": [True],
+            }
+        ),
+    )
 
     prices = {
         day: {
