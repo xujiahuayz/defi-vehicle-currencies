@@ -12,6 +12,7 @@ from scripts.fetch_raw_market_data import (
     build_parser,
     cmd_fetch,
     cmd_repair_meta,
+    coverage_has_gaps,
     indexed_metadata_streams,
     sparse_days,
 )
@@ -46,6 +47,50 @@ class FetchPlanningTests(unittest.TestCase):
                 '"burns":{"rows":2},"swaps":{"path":"swaps.gz"}}}'
             )
             self.assertEqual(indexed_metadata_streams(path), {"mints"})
+
+    def test_metadata_coverage_requires_the_exact_installed_stream_path(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            metadata = root / "meta.json"
+            installed = root / "mints.jsonl.gz"
+            metadata.write_text(
+                '{"streams":{"mints":{"rows":2,"path":"wrong.jsonl.gz"}}}'
+            )
+            self.assertEqual(
+                indexed_metadata_streams(
+                    metadata,
+                    expected_paths={"mints": installed},
+                ),
+                set(),
+            )
+            metadata.write_text(
+                '{"streams":{"mints":{"rows":2,"path":"'
+                + str(installed)
+                + '"}}}'
+            )
+            self.assertEqual(
+                indexed_metadata_streams(
+                    metadata,
+                    expected_paths={"mints": installed},
+                ),
+                {"mints"},
+            )
+
+    def test_strict_coverage_fails_any_missing_or_unindexed_perimeter(self) -> None:
+        complete = {
+            "venue": {
+                "missing_meta": 0,
+                "missing": {"swaps": 0},
+                "unindexed_meta": {"swaps": 0},
+            }
+        }
+        self.assertFalse(coverage_has_gaps(complete))
+        for field in ("missing", "unindexed_meta"):
+            broken = {"venue": {**complete["venue"], field: {"swaps": 1}}}
+            self.assertTrue(coverage_has_gaps(broken))
+        self.assertTrue(
+            coverage_has_gaps({"venue": {**complete["venue"], "missing_meta": 1}})
+        )
 
     def test_fetch_and_materialisation_share_one_raw_data_lock(self) -> None:
         self.assertEqual(

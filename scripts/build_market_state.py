@@ -69,12 +69,17 @@ LOCK = DATA_DIR / "processed" / ".market_state.lock"
 
 
 def _current_partition_fingerprint(family: str, venue: str, day: str) -> str:
-    inputs = [
+    required = [
         raw_stream_path(RAW, venue, stream, day)
         for stream, _kind, _sign in FAMILY_STREAMS[family][venue]
-        if raw_stream_path(RAW, venue, stream, day).exists()
     ]
-    return partition_input_fingerprint(inputs)
+    missing = [path.name for path in required if not path.exists()]
+    if missing:
+        raise FileNotFoundError(
+            f"required raw stream(s) missing for {family}/{venue}/{day}: "
+            f"{', '.join(missing)}"
+        )
+    return partition_input_fingerprint(required)
 
 
 def migrate_v1_partition(
@@ -265,11 +270,14 @@ def rekey_source_current(
         payload = json.loads(marker.read_text(encoding="utf-8"))
     except (OSError, json.JSONDecodeError):
         return False
+    try:
+        current_fingerprint = _current_partition_fingerprint(family, venue, day)
+    except FileNotFoundError:
+        return False
     return bool(
         payload.get("schema_version") == SCHEMA_VERSION
         and payload.get("passed")
-        and payload.get("input_fingerprint")
-        == _current_partition_fingerprint(family, venue, day)
+        and payload.get("input_fingerprint") == current_fingerprint
     )
 
 

@@ -6,6 +6,8 @@ from dataclasses import asdict
 from pathlib import Path
 from unittest.mock import patch
 
+import pytest
+
 from ddvc.state_data import (
     FAMILY_STREAMS,
     StatePartitionQuality,
@@ -16,6 +18,7 @@ from scripts.build_market_state import (
     build_family,
     migrate_v1_partition,
     rekey_current_partition,
+    rekey_source_current,
     validate_migration_sample,
     validate_rekey_sample,
 )
@@ -98,6 +101,38 @@ def test_schema_current_rekey_hardlinks_only_after_raw_exact_validation(tmp_path
         )
     target_path = target / "constant_product" / "sushiswap_v2" / f"{day}.parquet"
     assert source_path.stat().st_ino == target_path.stat().st_ino
+
+
+def test_rekey_refuses_a_marker_when_any_current_required_stream_is_missing(tmp_path) -> None:
+    raw, source = tmp_path / "raw", tmp_path / "source"
+    day = "20250101"
+    panel = source / "constant_product" / "sushiswap_v2" / f"{day}.parquet"
+    panel.parent.mkdir(parents=True)
+    panel.touch()
+    panel.with_suffix(".quality.json").write_text(
+        json.dumps(
+            {
+                "schema_version": 2,
+                "passed": True,
+                "input_fingerprint": "old",
+            }
+        )
+    )
+    with patch("scripts.build_market_state.RAW", raw):
+        assert not rekey_source_current(
+            source,
+            "constant_product",
+            "sushiswap_v2",
+            day,
+        )
+        with pytest.raises(FileNotFoundError, match="required raw stream"):
+            rekey_current_partition(
+                source,
+                "constant_product",
+                "sushiswap_v2",
+                day,
+                tmp_path / "target",
+            )
 
 
 def test_v1_migration_matches_fresh_raw_normalization_for_cp_and_multi_asset(tmp_path) -> None:

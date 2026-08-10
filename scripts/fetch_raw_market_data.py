@@ -328,7 +328,11 @@ def missing_streams(source_name: str, day: dt.date, streams: list[str]) -> list[
     return [stream for stream in streams if not stream_target(source_name, stream, day).exists()]
 
 
-def indexed_metadata_streams(path: Path) -> set[str]:
+def indexed_metadata_streams(
+    path: Path,
+    *,
+    expected_paths: dict[str, Path] | None = None,
+) -> set[str]:
     """Return streams whose sidecar entry carries a checked row ledger."""
 
     try:
@@ -338,14 +342,21 @@ def indexed_metadata_streams(path: Path) -> set[str]:
     streams = payload.get("streams")
     if not isinstance(streams, dict):
         return set()
-    return {
-        str(name)
-        for name, item in streams.items()
-        if isinstance(item, dict)
-        and isinstance(item.get("rows"), int)
-        and item["rows"] >= 0
-        and item.get("path")
-    }
+    indexed: set[str] = set()
+    for name, item in streams.items():
+        stream = str(name)
+        if (
+            not isinstance(item, dict)
+            or not isinstance(item.get("rows"), int)
+            or item["rows"] < 0
+            or not item.get("path")
+        ):
+            continue
+        expected = (expected_paths or {}).get(stream)
+        if expected is not None and Path(str(item["path"])) != expected:
+            continue
+        indexed.add(stream)
+    return indexed
 
 
 def coverage_report(names: list[str], end_by_source: dict[str, dt.date]) -> dict[str, dict[str, object]]:
@@ -360,7 +371,15 @@ def coverage_report(names: list[str], end_by_source: dict[str, dt.date]) -> dict
         meta_missing: list[str] = []
         for day in days:
             metadata = metadata_target(name, day)
-            indexed = indexed_metadata_streams(metadata) if metadata.exists() else set()
+            expected_paths = {
+                stream: stream_target(name, stream, day)
+                for stream in streams
+            }
+            indexed = (
+                indexed_metadata_streams(metadata, expected_paths=expected_paths)
+                if metadata.exists()
+                else set()
+            )
             for stream in streams:
                 installed = stream_target(name, stream, day).exists()
                 if not installed:
@@ -392,11 +411,25 @@ def coverage_report(names: list[str], end_by_source: dict[str, dt.date]) -> dict
     return report
 
 
+def coverage_has_gaps(report: dict[str, dict[str, object]]) -> bool:
+    """Whether any source lacks a file, sidecar, or exact stream ledger."""
+
+    for source in report.values():
+        if int(source.get("missing_meta") or 0) > 0:
+            return True
+        for field in ("missing", "unindexed_meta"):
+            counts = source.get(field) or {}
+            if isinstance(counts, dict) and any(int(value) > 0 for value in counts.values()):
+                return True
+    return False
+
+
 def cmd_coverage(args: argparse.Namespace) -> int:
     names = source_names(args.dex)
     end_by_source = {name: effective_range(name, "genesis", args.end)[1] for name in names}
-    print(json.dumps(coverage_report(names, end_by_source), indent=2, sort_keys=True))
-    return 0
+    report = coverage_report(names, end_by_source)
+    print(json.dumps(report, indent=2, sort_keys=True))
+    return int(bool(args.strict) and coverage_has_gaps(report))
 
 
 def fetch_gap_days(
@@ -709,6 +742,11 @@ def build_parser() -> argparse.ArgumentParser:
     sub.choices["fetch"].add_argument("--max-retries", type=int, default=50, help="Per-day retries for transient provider/indexer errors in --gaps-only mode.")
     sub.choices["repair-meta"].add_argument("--dry-run", action="store_true")
     sub.choices["repair-meta"].add_argument("--max-days", type=int, default=0)
+    sub.choices["coverage"].add_argument(
+        "--strict",
+        action="store_true",
+        help="exit nonzero if any file, metadata sidecar, or exact stream ledger is missing",
+    )
     enrich = sub.add_parser(
         "enrich-v4-statics",
         help="merge quote statics into canonical signed v4 swaps by exact record ID",
