@@ -76,6 +76,18 @@ POOL = "0x" + "a" * 40
 TOKEN0 = "0x" + "1" * 40
 TOKEN1 = "0x" + "2" * 40
 TX = "0x" + "b" * 64
+INJECTED_ENDPOINT = {"host": "injected", "endpoint_sha256": "0" * 64}
+
+
+def successful_rpc_attempt(endpoint: dict[str, str]) -> dict[str, object]:
+    return {
+        "endpoint": endpoint,
+        "attempt": 1,
+        "classification": "success",
+        "http_status": None,
+        "rpc_code": None,
+        "message": "success",
+    }
 
 
 def pair() -> dict[str, object]:
@@ -201,8 +213,8 @@ def frozen_upper(block: int, *, block_hash: str = "0x" + "9" * 64) -> dict[str, 
         "timestamp": 1_700_000_000,
         "rpc_request": request,
         "rpc_response": response,
-        "rpc_endpoint": {"host": "injected", "endpoint_sha256": "0" * 64},
-        "rpc_attempts": [{"classification": "success"}],
+        "rpc_endpoint": INJECTED_ENDPOINT,
+        "rpc_attempts": [successful_rpc_attempt(INJECTED_ENDPOINT)],
         "response_sha256": hashlib.sha256(
             json.dumps(response, sort_keys=True, separators=(",", ":")).encode()
         ).hexdigest(),
@@ -264,16 +276,37 @@ def anchored_marker_evidence(
     }
     frozen_response = dict(frozen["rpc_response"])
     frozen_response["id"] = 2
-    canonical_response = {"logs": records, "frozen_upper_response": frozen_response}
+    rpc_response = [
+        {
+            "jsonrpc": "2.0",
+            "id": 1,
+            "result": [
+                {
+                    "address": record["address"],
+                    "blockNumber": hex(int(record["block_number"])),
+                    "blockHash": record["block_hash"],
+                    "transactionHash": record["transaction_hash"],
+                    "transactionIndex": hex(int(record["transaction_index"])),
+                    "logIndex": hex(int(record["log_index"])),
+                    "topics": record["topics"],
+                    "data": record["data"],
+                    "removed": record["removed"],
+                }
+                for record in records
+            ],
+        },
+        frozen_response,
+    ]
     return {
         "rpc_request": [
             {"jsonrpc": "2.0", "id": 1, "method": "eth_getLogs", "params": [log_filter]},
             frozen_request,
         ],
-        "rpc_endpoint": {"host": "injected", "endpoint_sha256": "0" * 64},
-        "rpc_attempts": [{"classification": "success"}],
+        "rpc_response": rpc_response,
+        "rpc_endpoint": INJECTED_ENDPOINT,
+        "rpc_attempts": [successful_rpc_attempt(INJECTED_ENDPOINT)],
         "response_sha256": hashlib.sha256(
-            json.dumps(canonical_response, sort_keys=True, separators=(",", ":")).encode()
+            json.dumps(rpc_response, sort_keys=True, separators=(",", ":")).encode()
         ).hexdigest(),
         "frozen_upper_request": frozen_request,
         "frozen_upper_response": frozen_response,
@@ -538,10 +571,11 @@ def test_factory_root_fetch_succeeds_without_split_and_writes_marker_last(
 
     def rpc(payload, **_kwargs):
         payloads.append(payload)
+        endpoint = {"host": "rpc.example", "endpoint_sha256": "4" * 64}
         return RpcEnvelope(
             anchored_rpc_batch(payload, [rpc_pair_created_log(block_number=105)], frozen),
-            {"host": "rpc.example", "endpoint_sha256": "4" * 64},
-            ({"classification": "success"},),
+            endpoint,
+            (successful_rpc_attempt(endpoint),),
         )
 
     import ddvc.ethereum_logs as ethereum_logs
@@ -885,6 +919,17 @@ def test_frozen_upper_block_rejects_header_mutation_against_response_identity(tm
         )
 
 
+def test_frozen_upper_block_rejects_unbound_attempt_evidence(tmp_path) -> None:
+    block = 109
+    path = tmp_path / "frozen_upper_blocks" / f"block_{block:08d}.json"
+    path.parent.mkdir(parents=True)
+    record = frozen_upper(block)
+    record["rpc_attempts"] = [{"classification": "success"}]
+    path.write_text(json.dumps(record))
+    with pytest.raises(ValueError, match="attempt|endpoint"):
+        load_or_resolve_frozen_upper_block(block, fetch=False, root=tmp_path)
+
+
 def test_factory_state_calls_are_bound_to_the_frozen_upper_hash() -> None:
     pairs = factory_pairs(1)
     frozen = frozen_upper(109, block_hash="0x" + "9" * 64)
@@ -916,7 +961,7 @@ def test_factory_deployment_proof_binds_upper_code_to_frozen_hash(monkeypatch) -
         else:
             result = "0x" if int(block_reference, 16) == 9 else runtime_code
         response = {"jsonrpc": "2.0", "id": 1, "result": result}
-        return RpcEnvelope(response, endpoint, ({"classification": "success"},))
+        return RpcEnvelope(response, endpoint, (successful_rpc_attempt(endpoint),))
 
     monkeypatch.setattr(auditor, "rpc_post_with_evidence", rpc)
     evidence = []
@@ -1114,6 +1159,36 @@ def test_exact_rpc_chunk_is_reusable_only_after_its_complete_marker(
         fetch_v2_exact_log_chunk(100, 149, frozen_upper=frozen, root=tmp_path, rpc_request=rpc_response)
 
 
+@pytest.mark.parametrize("mutation", ["response", "attempts"])
+def test_exact_rpc_chunk_rejects_mutated_response_or_attempt_contract(tmp_path, mutation) -> None:
+    frozen = frozen_upper(149)
+    canonical = raw_event("swap")
+    rpc_log = {
+        "address": canonical["address"],
+        "blockNumber": hex(int(canonical["block_number"])),
+        "blockHash": canonical["block_hash"],
+        "transactionHash": canonical["transaction_hash"],
+        "transactionIndex": hex(int(canonical["transaction_index"])),
+        "logIndex": hex(int(canonical["log_index"])),
+        "topics": canonical["topics"],
+        "data": canonical["data"],
+        "removed": False,
+    }
+
+    def rpc_response(payload, **_kwargs):
+        return anchored_rpc_batch(payload, [rpc_log], frozen)
+
+    fetch_v2_exact_log_chunk(100, 149, frozen_upper=frozen, root=tmp_path, rpc_request=rpc_response)
+    _raw, marker_path = v2_exact_log_chunk_paths(100, 149, root=tmp_path)
+    marker = json.loads(marker_path.read_text())
+    if mutation == "response":
+        marker["rpc_response"][0]["result"] = []
+    else:
+        marker["rpc_attempts"] = [{"classification": "success"}]
+    marker_path.write_text(json.dumps(marker))
+    assert not v2_exact_log_chunk_complete(100, 149, frozen_upper=frozen, root=tmp_path)
+
+
 def test_v2_exact_log_ranges_are_global_not_consumer_edge_aligned() -> None:
     assert EXACT_LOG_BLOCK_CAP == 50
     assert exact_log_block_ranges(151, 250) == [
@@ -1264,7 +1339,7 @@ def test_release_certificate_requires_exact_calendar_and_zero_exceptions() -> No
             venue: "not-a-digest" for venue in V2_EVENT_VENUES
         },
         "factory_state_sample_size_by_venue": {
-            venue: 0 for venue in V2_EVENT_VENUES
+            venue: 2 for venue in V2_EVENT_VENUES
         },
     }
     accepted_mutations = []

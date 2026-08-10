@@ -16,6 +16,7 @@ from ddvc.quoter import (
     RpcEnvelope,
     RpcSemanticError as ExactLogRpcError,
     rpc_post,
+    validate_rpc_attempts,
 )
 from ddvc.runtime import atomic_output
 
@@ -95,10 +96,7 @@ def validate_frozen_block(
         raise ValueError("frozen upper-block evidence is stale")
     endpoint = record.get("rpc_endpoint")
     attempts = record.get("rpc_attempts")
-    if not isinstance(endpoint, dict) or not is_sha256(endpoint.get("endpoint_sha256")):
-        raise ValueError("frozen upper-block evidence lacks a sanitized endpoint identity")
-    if not isinstance(attempts, list) or not attempts:
-        raise ValueError("frozen upper-block evidence lacks RPC attempt history")
+    validate_rpc_attempts(attempts, endpoint)
     expected_request = frozen_block_rpc_request(block)
     if record.get("rpc_request") != expected_request:
         raise ValueError("frozen upper-block evidence lacks its exact RPC request")
@@ -199,10 +197,7 @@ def validate_anchored_log_evidence(
     )
     endpoint = marker.get("rpc_endpoint")
     attempts = marker.get("rpc_attempts")
-    if not isinstance(endpoint, dict) or not is_sha256(endpoint.get("endpoint_sha256")):
-        raise ValueError("exact-log evidence lacks a sanitized endpoint identity")
-    if not isinstance(attempts, list) or not attempts:
-        raise ValueError("exact-log evidence lacks RPC attempt history")
+    validate_rpc_attempts(attempts, endpoint)
     frozen_request = frozen_block_rpc_request(int(frozen_upper["block_number"]), rpc_id=2)
     if marker.get("frozen_upper_request") != frozen_request:
         raise ValueError("exact-log evidence names a different frozen-upper request")
@@ -229,9 +224,30 @@ def validate_anchored_log_evidence(
         or batch_request[1] != frozen_request
     ):
         raise ValueError("exact-log evidence lacks its exact two-item request")
+    rpc_response = marker.get("rpc_response")
+    if not isinstance(rpc_response, list) or len(rpc_response) != 2:
+        raise ValueError("exact-log evidence lacks its exact two-item response")
+    responses_by_id = {
+        item.get("id"): item
+        for item in rpc_response
+        if isinstance(item, dict) and item.get("id") in {1, 2}
+    }
+    if set(responses_by_id) != {1, 2}:
+        raise ValueError("exact-log response lacks exact request identities")
+    exact_records = _validated_log_records(
+        responses_by_id[1],
+        start_block=int(marker["start_block"]),
+        end_block=int(marker["end_block"]),
+        normalized_topics=topics,
+        normalized_address=str(address).lower() if address is not None else None,
+    )
+    if exact_records != records:
+        raise ValueError("exact-log persisted rows disagree with the exact RPC response")
     frozen_response = marker.get("frozen_upper_response")
     if not isinstance(frozen_response, dict) or frozen_response.get("id") != 2:
         raise ValueError("exact-log evidence lacks its frozen-upper response")
+    if frozen_response != responses_by_id[2]:
+        raise ValueError("exact-log frozen-upper response disagrees with the exact RPC response")
     header = frozen_response.get("result")
     if not isinstance(header, dict):
         raise ValueError("exact-log evidence lacks a frozen-upper header")
@@ -251,12 +267,8 @@ def validate_anchored_log_evidence(
         raise ValueError("exact-log endpoint disagrees with the frozen upper header")
     if marker.get("frozen_upper_response_sha256") != canonical_json_sha256(frozen_response):
         raise ValueError("exact-log frozen-upper response digest disagrees")
-    canonical_response_evidence = {
-        "logs": records,
-        "frozen_upper_response": frozen_response,
-    }
-    if marker.get("response_sha256") != canonical_json_sha256(canonical_response_evidence):
-        raise ValueError("exact-log canonical response digest disagrees")
+    if marker.get("response_sha256") != canonical_json_sha256(rpc_response):
+        raise ValueError("exact-log response digest disagrees")
 
 
 def rpc_post_with_evidence(
@@ -535,17 +547,12 @@ def fetch_exact_logs_with_evidence(
         normalized_topics=normalized_topics,
         normalized_address=normalized_address,
     )
-    canonical_response_evidence = {
-        "logs": records,
-        "frozen_upper_response": by_id[2],
-    }
     return records, {
         "request": payload,
+        "response": envelope.response,
         "endpoint": envelope.endpoint,
         "attempts": list(envelope.attempts),
-        "response_sha256": hashlib.sha256(
-            json.dumps(canonical_response_evidence, sort_keys=True, separators=(",", ":")).encode()
-        ).hexdigest(),
+        "response_sha256": canonical_json_sha256(envelope.response),
         "frozen_upper_request": header_payload,
         "frozen_upper_response": by_id[2],
         "frozen_upper_response_sha256": hashlib.sha256(

@@ -32,6 +32,7 @@ from ddvc.v2_event_completeness import (
     V2_EVENT_SOURCE_SUMMARY,
     read_v2_event_source_certificate,
     validate_v2_event_source_certificate,
+    validate_v2_event_source_evidence_bundle,
 )
 from ddvc.v4_quarantine import (
     V4_STATIC_QUARANTINE_PANEL,
@@ -264,7 +265,8 @@ def require_v2_event_source_release() -> None:
             certificate,
             expected_days,
         )
-    except ValueError as error:
+        validate_v2_event_source_evidence_bundle(certificate)
+    except (FileNotFoundError, KeyError, OSError, TypeError, ValueError) as error:
         raise RuntimeError(
             f"node D V2-family event-source certificate failed: {error}"
         ) from error

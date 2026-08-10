@@ -41,6 +41,7 @@ from ddvc.ethereum_logs import (
 from ddvc.fetch.raw import write_json
 from ddvc.fetch.sources import get_source
 from ddvc.paths import DATA_DIR, OUTPUT_DIR
+from ddvc.quoter import validate_rpc_attempts
 from ddvc.runtime import interruptible_thread_pool
 
 
@@ -56,7 +57,7 @@ V2_EVENT_TOPICS = {
     for name, signature in V2_EVENT_SIGNATURES.items()
 }
 V2_EVENT_BY_TOPIC = {topic: name for name, topic in V2_EVENT_TOPICS.items()}
-V2_EVENT_SOURCE_SCHEMA_VERSION = 3
+V2_EVENT_SOURCE_SCHEMA_VERSION = 4
 V2_FACTORIES = {
     venue: str(get_source(venue).factory_address).lower()
     for venue in V2_EVENT_VENUES
@@ -72,7 +73,7 @@ V2_EXACT_LOG_CACHE_ROOT = RAW_V2_EVENT_ROOT / "global_50_block_chunks"
 V2_EXACT_LOG_CHUNK_SIZE = EXACT_LOG_BLOCK_CAP
 V2_FACTORY_INITIAL_BLOCK_SPAN = 10_000
 V2_FACTORY_STATE_SAMPLE_SIZE = 1_024
-V2_FACTORY_EVIDENCE_SCHEMA_VERSION = 3
+V2_FACTORY_EVIDENCE_SCHEMA_VERSION = 4
 RAW_V2_FACTORY_ROOT = DATA_DIR / "raw" / "ethereum" / "v2_factory_pair_registry"
 V2_EVENT_SOURCE_SUMMARY = DATA_DIR / "processed" / "v2_core_event_source_audit.parquet"
 V2_EVENT_SOURCE_EXCEPTIONS = DATA_DIR / "processed" / "v2_core_event_source_exceptions.parquet"
@@ -256,6 +257,7 @@ def fetch_v2_exact_log_chunk(
             "query_scope": "global_aligned_50_block_topic_only_no_address_filter",
             "event_topics": topics,
             "rpc_request": rpc_evidence["request"],
+            "rpc_response": rpc_evidence["response"],
             "rpc_endpoint": rpc_evidence["endpoint"],
             "rpc_attempts": rpc_evidence["attempts"],
             "response_sha256": rpc_evidence["response_sha256"],
@@ -365,11 +367,11 @@ def validate_factory_deployment_proof(
             continue
         if item.get("response_sha256") != _canonical_json_sha256(response):
             raise ValueError(f"{venue} factory code response digest disagrees")
-        if not isinstance(item.get("rpc_attempts"), list) or not item["rpc_attempts"]:
-            raise ValueError(f"{venue} factory code proof lacks RPC attempt evidence")
         endpoint = item.get("rpc_endpoint")
-        if not isinstance(endpoint, dict) or not _is_sha256(endpoint.get("endpoint_sha256")):
-            raise ValueError(f"{venue} factory code proof lacks sanitized endpoint identity")
+        try:
+            validate_rpc_attempts(item.get("rpc_attempts"), endpoint)
+        except ValueError as error:
+            raise ValueError(f"{venue} factory code proof has invalid RPC attempt evidence") from error
         block_reference = params[1]
         if isinstance(block_reference, dict):
             if block_reference != {"blockHash": upper_hash, "requireCanonical": True}:
@@ -739,6 +741,7 @@ def fetch_factory_root_adaptive(
             "query_scope": "factory_address_and_paircreated_topic",
             "event_topics": [PAIR_CREATED_TOPIC],
             "rpc_request": rpc_evidence["request"],
+            "rpc_response": rpc_evidence["response"],
             "rpc_endpoint": rpc_evidence["endpoint"],
             "rpc_attempts": rpc_evidence["attempts"],
             "response_sha256": rpc_evidence["response_sha256"],
@@ -1283,10 +1286,10 @@ def validate_factory_state_proof(
     if int(length_result, 16) != len(pairs):
         raise ValueError("V2 factory state proof length response disagrees with the registry")
     length_endpoint = proof.get("length_rpc_endpoint")
-    if not isinstance(length_endpoint, dict) or not _is_sha256(length_endpoint.get("endpoint_sha256")):
-        raise ValueError("V2 factory state proof lacks sanitized length endpoint evidence")
-    if not isinstance(proof.get("length_rpc_attempts"), list):
-        raise ValueError("V2 factory state proof lacks length RPC attempt evidence")
+    try:
+        validate_rpc_attempts(proof.get("length_rpc_attempts"), length_endpoint)
+    except ValueError as error:
+        raise ValueError("V2 factory state proof has invalid length RPC attempt evidence") from error
     results = proof.get("sample_results")
     if not isinstance(results, list):
         raise ValueError("V2 factory state proof lacks sample results")
@@ -1338,10 +1341,10 @@ def validate_factory_state_proof(
         if result.get("expected") != spec["expected"] or result.get("observed") != observed or observed != spec["expected"]:
             raise ValueError("V2 factory state proof sample result disagrees with exact RPC evidence")
         endpoint = result.get("rpc_endpoint")
-        if not isinstance(endpoint, dict) or not _is_sha256(endpoint.get("endpoint_sha256")):
-            raise ValueError("V2 factory state proof sample lacks sanitized endpoint evidence")
-        if not isinstance(result.get("rpc_attempts"), list):
-            raise ValueError("V2 factory state proof sample lacks RPC attempt evidence")
+        try:
+            validate_rpc_attempts(result.get("rpc_attempts"), endpoint)
+        except ValueError as error:
+            raise ValueError("V2 factory state proof sample has invalid RPC attempt evidence") from error
     if observed_keys != set(expected_specs) or len(results) != len(expected_specs):
         raise ValueError("V2 factory state proof sample is incomplete or mismatched")
 
@@ -1913,8 +1916,12 @@ def validate_v2_event_source_certificate(
     sample_sizes = certificate.get("factory_state_sample_size_by_venue")
     if not isinstance(sample_sizes, dict) or set(sample_sizes) != set(V2_EVENT_VENUES):
         raise ValueError("V2 event-source certificate lacks exact factory state sample sizes")
-    if any(not isinstance(sample_sizes[venue], int) or sample_sizes[venue] < 1 for venue in V2_EVENT_VENUES):
-        raise ValueError("V2 event-source certificate contains an invalid factory state sample size")
+    expected_sample_sizes = {
+        venue: min(int(pair_counts[venue]), V2_FACTORY_STATE_SAMPLE_SIZE)
+        for venue in V2_EVENT_VENUES
+    }
+    if sample_sizes != expected_sample_sizes:
+        raise ValueError("V2 event-source certificate contains a noncanonical factory state sample size")
     return len(expected_days), int(counts["raw_events"].sum())
 
 

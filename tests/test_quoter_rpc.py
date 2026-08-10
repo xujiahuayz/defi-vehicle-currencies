@@ -122,6 +122,21 @@ class RpcPostTests(unittest.TestCase):
             envelope.endpoint,
             quoter.sanitized_endpoint_identity("https://different:credential@example.test/other"),
         )
+        quoter.validate_rpc_attempts(envelope.attempts, envelope.endpoint)
+
+    def test_attempt_validator_rejects_success_unbound_from_winning_endpoint(self) -> None:
+        endpoint = quoter.sanitized_endpoint_identity("https://winner.test")
+        other = quoter.sanitized_endpoint_identity("https://other.test")
+        attempts = ({
+            "endpoint": other,
+            "attempt": 1,
+            "classification": "success",
+            "http_status": 200,
+            "rpc_code": None,
+            "message": "success",
+        },)
+        with self.assertRaisesRegex(ValueError, "successful endpoint"):
+            quoter.validate_rpc_attempts(attempts, endpoint)
 
     def test_evidence_redacts_credentials_echoed_by_provider_errors(self) -> None:
         rejected = Response(

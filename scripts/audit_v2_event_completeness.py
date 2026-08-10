@@ -67,6 +67,7 @@ from ddvc.v2_event_completeness import (
     read_factory_coverage_records,
     read_v2_exact_logs,
     validate_v2_event_source_certificate,
+    validate_v2_event_source_evidence_bundle,
     validate_factory_deployment_proof,
     validate_factory_coverage_manifest,
     v2_exact_log_ranges,
@@ -684,6 +685,7 @@ def build(
     }
     if certificate["status"] == "pass":
         validate_v2_event_source_certificate(summary, exception_frame, certificate, audit_days)
+        validate_v2_event_source_evidence_bundle(certificate)
     V2_EVENT_SOURCE_CERTIFICATE.parent.mkdir(parents=True, exist_ok=True)
     write_json(V2_EVENT_SOURCE_CERTIFICATE, certificate)
     inputs: list[Path] = [UNIFIED_QUALITY_PANEL, TOKEN_DECIMALS]

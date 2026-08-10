@@ -156,6 +156,46 @@ def sanitized_endpoint_identity(url: str) -> dict[str, str]:
     }
 
 
+def validate_rpc_attempts(
+    attempts: object,
+    endpoint: object,
+) -> None:
+    """Validate one successful transport history against its winning endpoint."""
+
+    def valid_endpoint(value: object) -> bool:
+        if not isinstance(value, dict) or not isinstance(value.get("host"), str):
+            return False
+        digest = str(value.get("endpoint_sha256") or "")
+        return bool(value["host"] and len(digest) == 64 and all(c in "0123456789abcdef" for c in digest))
+
+    if not valid_endpoint(endpoint):
+        raise ValueError("RPC evidence lacks a sanitized endpoint identity")
+    if not isinstance(attempts, (list, tuple)) or not attempts:
+        raise ValueError("RPC evidence lacks attempt history")
+    allowed = {"capacity", "success", "terminal", "transient"}
+    for index, attempt in enumerate(attempts):
+        if not isinstance(attempt, dict) or not valid_endpoint(attempt.get("endpoint")):
+            raise ValueError("RPC attempt evidence contains a malformed endpoint")
+        if not isinstance(attempt.get("attempt"), int) or int(attempt["attempt"]) < 1:
+            raise ValueError("RPC attempt evidence contains an invalid attempt number")
+        classification = attempt.get("classification")
+        if classification not in allowed:
+            raise ValueError("RPC attempt evidence contains an invalid classification")
+        if attempt.get("http_status") is not None and not isinstance(attempt["http_status"], int):
+            raise ValueError("RPC attempt evidence contains an invalid HTTP status")
+        if attempt.get("rpc_code") is not None and not isinstance(attempt["rpc_code"], int):
+            raise ValueError("RPC attempt evidence contains an invalid RPC code")
+        if not isinstance(attempt.get("message"), str) or not attempt["message"]:
+            raise ValueError("RPC attempt evidence contains an invalid message category")
+        if classification == "success" and index != len(attempts) - 1:
+            raise ValueError("RPC attempt evidence contains a non-terminal success")
+    final = attempts[-1]
+    if final.get("classification") != "success" or final.get("endpoint") != endpoint:
+        raise ValueError("RPC attempt evidence is not bound to the successful endpoint")
+    if final.get("rpc_code") is not None:
+        raise ValueError("successful RPC attempt evidence contains an RPC error code")
+
+
 def _rpc_error_details(payload: object) -> tuple[int | None, str]:
     if isinstance(payload, list):
         errors = [item for item in payload if isinstance(item, dict) and isinstance(item.get("error"), dict)]

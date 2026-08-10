@@ -44,6 +44,7 @@ class DataReleaseTests(unittest.TestCase):
                 return_value=["20250115"],
             ),
             patch("ddvc.data_release.validate_v2_event_source_certificate") as validate,
+            patch("ddvc.data_release.validate_v2_event_source_evidence_bundle") as validate_evidence,
         ):
             require_v2_event_source_release()
         current.assert_called_once()
@@ -53,6 +54,7 @@ class DataReleaseTests(unittest.TestCase):
             certificate,
             ["20250115"],
         )
+        validate_evidence.assert_called_once_with(certificate)
 
     def test_v4_static_audit_returns_complete_pool_level_quarantine(self) -> None:
         with tempfile.TemporaryDirectory() as directory:
