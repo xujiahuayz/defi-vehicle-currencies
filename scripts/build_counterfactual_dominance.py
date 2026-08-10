@@ -63,8 +63,13 @@ from ddvc.cpquote import (
     quote_one_hop,
 )
 from ddvc.gas import load_route_transaction_gas
-from ddvc.paths import DATA_DIR, OUTPUT_DIR, REPO_ROOT
-from ddvc.prices import PRICE_COLUMNS, day_prices
+from ddvc.paths import (
+    DATA_DIR,
+    EXTERNAL_WETH_USD_INTRADAY_PANEL,
+    OUTPUT_DIR,
+    REPO_ROOT,
+)
+from ddvc.prices import PRICE_COLUMNS, attach_strictly_prior_weth_usd, day_prices
 from ddvc.realised import LINEAR_ROUTE_COLUMNS, extract_linear_realised_routes
 from ddvc.pricing.v2_replay import V2_VENUES, load_v2_replay_day
 from ddvc.provenance import require_current_artifacts
@@ -91,6 +96,7 @@ CODE_SOURCES = [
     "src/ddvc/gas.py",
     "src/ddvc/asset_types.py",
     "src/ddvc/prices.py",
+    "src/ddvc/paths.py",
     "src/ddvc/realised.py",
     "src/ddvc/route_gas.py",
     "src/ddvc/route_roles.py",
@@ -290,7 +296,8 @@ def one_day(day: str) -> pd.DataFrame | None:
                 if realised_component_output_usd > 0
                 else None
             ),
-            "eth_usd": eth_price[1] if eth_price else None,
+            "timestamp_utc": t_route,
+            "eth_usd_daily_sensitivity": eth_price[1] if eth_price else None,
             "hop1_pool": l1.pool, "hop2_pool": l2.pool,
             "hop1_source": hop1_source, "hop2_source": hop2_source,
             "direct_pool": direct_pool, "direct_source": direct_source,
@@ -313,8 +320,9 @@ def add_topology_gas_adjustment(
     frame: pd.DataFrame,
     gas_panel=TRANSACTION_GAS_PANEL,
     route_gas_panel=ROUTE_GAS_PANEL,
+    intraday_price_panel=EXTERNAL_WETH_USD_INTRADAY_PANEL,
 ) -> pd.DataFrame:
-    """Join exact transaction prices and receipt-calibrated gas-unit support."""
+    """Join exact transaction gas, route units and strictly prior WETH/USD marks."""
     out = frame.copy()
     out = out.drop(
         columns=[
@@ -330,6 +338,11 @@ def add_topology_gas_adjustment(
             "base_fee_gwei",
             "base_fee_supported",
             "base_fee_support_reason",
+            "eth_usd",
+            "eth_usd_mark_available_at_utc",
+            "eth_usd_mark_lag_seconds",
+            "eth_usd_price_source",
+            "eth_usd_validation_status",
         ],
         errors="ignore",
     )
@@ -337,6 +350,12 @@ def add_topology_gas_adjustment(
     out["year"] = out["date"].dt.year
     out["tx"] = out["tx"].astype(str).str.lower()
     out["block"] = pd.to_numeric(out["block"], errors="raise").astype("int64")
+    marks = (
+        intraday_price_panel.copy()
+        if isinstance(intraday_price_panel, pd.DataFrame)
+        else pd.read_parquet(intraday_price_panel)
+    )
+    out = attach_strictly_prior_weth_usd(out, marks)
     gas = load_route_transaction_gas(
         gas_panel, required_routes=out
     )[
@@ -693,7 +712,12 @@ def main() -> int:
         if args.days is not None or args.limit is not None:
             ap.error("--days and --limit apply only to the gross diagnostic stage")
         require_current_artifacts(
-            [GROSS_PARQUET, TRANSACTION_GAS_PANEL, ROUTE_GAS_PANEL],
+            [
+                GROSS_PARQUET,
+                TRANSACTION_GAS_PANEL,
+                ROUTE_GAS_PANEL,
+                EXTERNAL_WETH_USD_INTRADAY_PANEL,
+            ],
             consumer="gas-adjusted counterfactual-dominance panel",
         )
         df = add_topology_gas_adjustment(pd.read_parquet(GROSS_PARQUET))
@@ -701,8 +725,13 @@ def main() -> int:
             df,
             OUT_PARQUET,
             code_sources=CODE_SOURCES,
-            inputs=[GROSS_PARQUET, TRANSACTION_GAS_PANEL, ROUTE_GAS_PANEL],
-            notes="V2-family exact-size direct counterfactual with realised-transaction effective gas price joined by transaction and block and receipt-calibrated route gas units",
+            inputs=[
+                GROSS_PARQUET,
+                TRANSACTION_GAS_PANEL,
+                ROUTE_GAS_PANEL,
+                EXTERNAL_WETH_USD_INTRADAY_PANEL,
+            ],
+            notes="V2-family exact-size direct counterfactual with realised-transaction effective gas price joined by transaction and block, receipt-calibrated route gas units and an independent strictly prior intraday WETH/USD mark",
         )
         if args.panel_only:
             print(f"wrote analysis-ready panel {OUT_PARQUET.relative_to(REPO_ROOT)}")

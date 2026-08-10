@@ -37,6 +37,9 @@ POOL_CAPITAL_PANEL = DATA_DIR / "processed" / "pool_capital_daily.parquet"
 POOL_CANDIDATE_CAPITAL_PANEL = DATA_DIR / "processed" / "pool_candidate_capital_daily.parquet"
 POOL_CAPITAL_REJECTIONS = DATA_DIR / "processed" / "pool_capital_rejections.parquet"
 TOKEN_PRICE_DAILY_PANEL = DATA_DIR / "processed" / "token_price_daily.parquet"
+EXTERNAL_WETH_USD_INTRADAY_PANEL = (
+    DATA_DIR / "processed" / "external_weth_usd_intraday.parquet"
+)
 LP_CAPITAL_CONCENTRATION_PANEL = DATA_DIR / "exhibits" / "lp_capital_concentration.parquet"
 LP_LIQUIDITY_FLOW_EVENTS = DATA_DIR / "processed" / "lp_liquidity_flow_events_v3.parquet"
 LP_LIQUIDITY_FLOW_CANDIDATES = DATA_DIR / "processed" / "lp_liquidity_flow_candidates_v3.parquet"

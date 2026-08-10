@@ -16,9 +16,29 @@ from scripts.build_counterfactual_dominance import (
     dominance_level_summary,
     target_price_usd,
 )
+from ddvc.prices import attach_strictly_prior_weth_usd
 
 
 class CounterfactualDominanceTests(unittest.TestCase):
+    def test_intraday_weth_mark_is_strictly_prior_and_fresh(self) -> None:
+        targets = pd.DataFrame({"timestamp_utc": [1_000, 1_060]})
+        marks = pd.DataFrame(
+            {
+                "available_at_utc": [940, 1_000],
+                "weth_usd": [2_000.0, 2_010.0],
+                "price_source": ["independent_cex_minute"] * 2,
+                "validation_status": ["valid"] * 2,
+            }
+        )
+
+        result = attach_strictly_prior_weth_usd(targets, marks)
+
+        self.assertEqual(result["eth_usd"].tolist(), [2_000.0, 2_010.0])
+        self.assertEqual(result["eth_usd_mark_lag_seconds"].tolist(), [60, 60])
+        stale = targets.iloc[[1]].assign(timestamp_utc=1_400)
+        with self.assertRaisesRegex(RuntimeError, "strictly prior mark"):
+            attach_strictly_prior_weth_usd(stale, marks)
+
     def test_missing_or_invalid_target_price_is_unsupported_not_a_crash(self) -> None:
         prices = {"good": ("GOOD", 2.0), "zero": ("ZERO", 0.0)}
         self.assertEqual(target_price_usd(prices, "good"), 2.0)
@@ -115,7 +135,16 @@ class CounterfactualDominanceTests(unittest.TestCase):
                 "mid_type": ["stable"],
                 "gross_direct_advantage_bps": [10.0],
                 "usd": [1_000.0],
-                "eth_usd": [2_000.0],
+                "timestamp_utc": [1_700_000_100],
+                "eth_usd_daily_sensitivity": [2_000.0],
+            }
+        )
+        intraday_prices = pd.DataFrame(
+            {
+                "available_at_utc": [1_700_000_040],
+                "weth_usd": [2_010.0],
+                "price_source": ["independent_cex_minute"],
+                "validation_status": ["valid"],
             }
         )
         receipt_panel = pd.DataFrame(
@@ -158,12 +187,15 @@ class CounterfactualDominanceTests(unittest.TestCase):
                 frame,
                 gas_panel=gas_path,
                 route_gas_panel=receipt_panel,
+                intraday_price_panel=intraday_prices,
             )
         self.assertEqual(out.loc[0, "direct_gas_support_level"], "year_venue_vehicle")
         self.assertEqual(out.loc[0, "vehicle_gas_support_level"], "year_venue_vehicle")
         self.assertEqual(out.loc[0, "effective_gas_price_wei"], 10_000_000_000)
         self.assertEqual(out.loc[0, "gas_used"], 150_000)
         self.assertEqual(out.loc[0, "realised_gas_cost_wei"], "1500000000000000")
+        self.assertEqual(out.loc[0, "eth_usd"], 2_010.0)
+        self.assertEqual(out.loc[0, "eth_usd_mark_lag_seconds"], 60)
         self.assertGreater(
             out.loc[0, "all_in_direct_advantage_bps"],
             out.loc[0, "same_block_base_fee_direct_advantage_bps"],

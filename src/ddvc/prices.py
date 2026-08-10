@@ -29,6 +29,86 @@ PRICE_PANEL_COLUMNS = [
     "price_source",
     "validation_status",
 ]
+MAX_INTRADAY_MARK_LAG_SECONDS = 300
+
+
+def attach_strictly_prior_weth_usd(
+    targets: pd.DataFrame,
+    marks: pd.DataFrame,
+    *,
+    max_lag_seconds: int = MAX_INTRADAY_MARK_LAG_SECONDS,
+) -> pd.DataFrame:
+    """Attach one independently observed WETH/USD mark strictly before each target."""
+    target_required = {"timestamp_utc"}
+    mark_required = (
+        "available_at_utc",
+        "weth_usd",
+        "price_source",
+        "validation_status",
+    )
+    target_missing = sorted(target_required - set(targets.columns))
+    mark_missing = sorted(set(mark_required) - set(marks.columns))
+    if target_missing:
+        raise ValueError(f"price-mark targets lack columns: {target_missing}")
+    if mark_missing:
+        raise ValueError(f"intraday WETH/USD marks lack columns: {mark_missing}")
+    if max_lag_seconds < 1:
+        raise ValueError("maximum intraday price-mark lag must be positive")
+
+    right = marks[list(mark_required)].copy()
+    right["available_at_utc"] = pd.to_numeric(
+        right["available_at_utc"], errors="raise"
+    ).astype("int64")
+    right["weth_usd"] = pd.to_numeric(right["weth_usd"], errors="coerce")
+    if right["available_at_utc"].duplicated().any():
+        raise ValueError("intraday WETH/USD marks contain duplicate availability times")
+    if not right["validation_status"].eq("valid").all():
+        raise ValueError("intraday WETH/USD marks contain unreleased observations")
+    if right["price_source"].astype(str).str.strip().eq("").any():
+        raise ValueError("intraday WETH/USD marks contain an empty price source")
+    if (~np.isfinite(right["weth_usd"]) | right["weth_usd"].le(0)).any():
+        raise ValueError("intraday WETH/USD marks contain invalid prices")
+    right = right.rename(
+        columns={
+            "available_at_utc": "eth_usd_mark_available_at_utc",
+            "weth_usd": "eth_usd",
+            "price_source": "eth_usd_price_source",
+            "validation_status": "eth_usd_validation_status",
+        }
+    ).sort_values("eth_usd_mark_available_at_utc")
+
+    left = targets.copy()
+    left["timestamp_utc"] = pd.to_numeric(
+        left["timestamp_utc"], errors="raise"
+    ).astype("int64")
+    left["_price_mark_row_order"] = np.arange(len(left))
+    joined = pd.merge_asof(
+        left.sort_values("timestamp_utc"),
+        right,
+        left_on="timestamp_utc",
+        right_on="eth_usd_mark_available_at_utc",
+        direction="backward",
+        allow_exact_matches=False,
+    )
+    joined["eth_usd_mark_lag_seconds"] = (
+        joined["timestamp_utc"] - joined["eth_usd_mark_available_at_utc"]
+    )
+    supported = (
+        joined["eth_usd"].notna()
+        & joined["eth_usd_mark_lag_seconds"].gt(0)
+        & joined["eth_usd_mark_lag_seconds"].le(max_lag_seconds)
+    )
+    if not supported.all():
+        raise RuntimeError(
+            "intraday WETH/USD support changed the target perimeter: "
+            f"{int((~supported).sum()):,} of {len(joined):,} targets lack a valid "
+            f"strictly prior mark within {max_lag_seconds} seconds"
+        )
+    return (
+        joined.sort_values("_price_mark_row_order")
+        .drop(columns="_price_mark_row_order")
+        .reset_index(drop=True)
+    )
 
 
 def day_price_frame(legs: pd.DataFrame) -> pd.DataFrame:
