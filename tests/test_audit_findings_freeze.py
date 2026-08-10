@@ -155,6 +155,8 @@ class FindingsFreezeAuditTest(unittest.TestCase):
             V2_EVENT_SOURCE_SCHEMA_VERSION,
             V2_EVENT_VENUES,
             V2_POOL_PERIMETER,
+            V2_TOKEN_DECIMALS_CONTRACT,
+            V2_TOKEN_DECIMALS_SCOPE,
             audit_calendar_sha256,
             compare_event_maps,
         )
@@ -209,6 +211,8 @@ class FindingsFreezeAuditTest(unittest.TestCase):
                             "pool",
                         ],
                         "quantity_contract": "exact_raw_token_deltas_and_swap_in_out_fields",
+                        "token_decimals_contract": V2_TOKEN_DECIMALS_CONTRACT,
+                        "token_decimals_scope": V2_TOKEN_DECIMALS_SCOPE,
                         "raw_factory_chunks": 2,
                         "raw_event_chunks": 2,
                         "raw_global_event_logs": 0,
@@ -224,6 +228,10 @@ class FindingsFreezeAuditTest(unittest.TestCase):
                             venue: 1 for venue in V2_EVENT_VENUES
                         },
                         "factory_registry_sha256": "a" * 64,
+                        "token_decimals_registry_rows": 2,
+                        "token_decimals_registry_sha256": "f" * 64,
+                        "token_decimals_registry_file_sha256": "1" * 64,
+                        "token_decimals_evidence_files": 2,
                         "factory_registry_upper_block": 109,
                         "factory_registry_upper_block_hash": "0x" + "9" * 64,
                         "factory_registry_upper_block_timestamp": 1_700_000_000,

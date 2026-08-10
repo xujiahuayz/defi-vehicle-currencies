@@ -43,6 +43,8 @@ from ddvc.v2_event_completeness import (
     V2_FACTORY_EVIDENCE_SCHEMA_VERSION,
     V2_FACTORY_INITIAL_BLOCK_SPAN,
     V2_POOL_PERIMETER,
+    V2_TOKEN_DECIMALS_CONTRACT,
+    V2_TOKEN_DECIMALS_SCOPE,
     audit_calendar_sha256,
     build_factory_state_proof,
     compare_event_maps,
@@ -57,6 +59,7 @@ from ddvc.v2_event_completeness import (
     fetch_v2_exact_log_chunk,
     frozen_upper_block_path,
     graph_core_events,
+    graph_core_events_for_amount_keys,
     load_or_resolve_frozen_upper_block,
     missing_v2_exact_log_ranges,
     raw_core_events,
@@ -558,6 +561,39 @@ def test_factory_registry_keeps_pairs_outside_decimal_registry() -> None:
     assert set(statics) == {POOL}
     assert len(pairs) == 1
     assert statics[POOL].decimals0 is None
+
+
+def test_audit_token_perimeter_comes_from_events_not_the_priced_token_panel(
+    tmp_path,
+    monkeypatch,
+) -> None:
+    venue = "uniswap_v2"
+    day = "20250115"
+    directory = tmp_path / "thegraph" / venue
+    directory.mkdir(parents=True)
+    write_jsonl_gz(directory / f"{venue}_swaps_{day}.jsonl.gz", [graph_event("swap")])
+    for stream in ("mints", "burns"):
+        write_jsonl_gz(directory / f"{venue}_{stream}_{day}.jsonl.gz", [])
+    statics, pairs = factory_pair_registry(venue, [pair_created_raw()], {})
+    monkeypatch.setattr(auditor, "GRAPH_ROOT", tmp_path / "thegraph")
+    monkeypatch.setattr(auditor, "_launched_venues", lambda _day: (venue,))
+    monkeypatch.setattr(
+        auditor,
+        "read_v2_exact_logs",
+        lambda *_args, **_kwargs: ([raw_event("swap")], [tmp_path / "exact.parquet"]),
+    )
+    anchors, provider, _inputs, raw_logs = auditor.collect_v2_token_decimals_perimeter(
+        [day],
+        {day: {"start_block": 100, "end_block": 100}},
+        frozen_upper(100),
+        {venue: statics},
+        {venue: pairs},
+        {venue: [pair_created_raw()], "sushiswap_v2": []},
+    )
+    assert set(anchors) == {TOKEN0, TOKEN1}
+    assert {anchor.priority for anchor in anchors.values()} == {0}
+    assert provider == {TOKEN0: ["6"], TOKEN1: ["18"]}
+    assert raw_logs == 1
 
 
 def test_factory_registry_rejects_a_missing_paircreated_ordinal() -> None:
@@ -1129,6 +1165,29 @@ def test_graph_event_fails_when_amount_token_lacks_audited_decimals(tmp_path) ->
         graph_core_events(tmp_path, venue, day, statics)
 
 
+def test_graph_only_identity_remains_explicit_without_token_decimals(tmp_path) -> None:
+    venue = "uniswap_v2"
+    day = "20250115"
+    directory = tmp_path / venue
+    directory.mkdir()
+    write_jsonl_gz(directory / f"{venue}_mints_{day}.jsonl.gz", [graph_event("mint")])
+    for stream in ("burns", "swaps"):
+        write_jsonl_gz(directory / f"{venue}_{stream}_{day}.jsonl.gz", [])
+    statics, _pairs = factory_pair_registry(venue, [pair_created_raw()], {})
+    graph, duplicates = graph_core_events_for_amount_keys(
+        tmp_path,
+        venue,
+        day,
+        statics,
+        amount_keys=set(),
+    )
+    summaries, exceptions = compare_event_maps(day, venue, {}, graph, duplicates)
+    mint = next(row for row in summaries if row["event_type"] == "mint")
+    assert mint["graph_only"] == 1
+    assert exceptions[0]["status"] == "graph_only"
+    assert exceptions[0]["graph_amount0_delta_raw"] is None
+
+
 def test_utc_day_bounds_prove_both_adjacent_boundary_blocks() -> None:
     day = "20250115"
     start, _end = utc_day_timestamps(day)
@@ -1381,6 +1440,8 @@ def test_release_certificate_requires_exact_calendar_and_zero_exceptions() -> No
             "pool",
         ],
         "quantity_contract": "exact_raw_token_deltas_and_swap_in_out_fields",
+        "token_decimals_contract": V2_TOKEN_DECIMALS_CONTRACT,
+        "token_decimals_scope": V2_TOKEN_DECIMALS_SCOPE,
         "raw_factory_chunks": 2,
         "raw_event_chunks": 2,
         "raw_global_event_logs": 0,
@@ -1394,6 +1455,10 @@ def test_release_certificate_requires_exact_calendar_and_zero_exceptions() -> No
         "factory_pairs": 2,
         "factory_pairs_by_venue": {venue: 1 for venue in V2_EVENT_VENUES},
         "factory_registry_sha256": "a" * 64,
+        "token_decimals_registry_rows": 2,
+        "token_decimals_registry_sha256": "f" * 64,
+        "token_decimals_registry_file_sha256": "1" * 64,
+        "token_decimals_evidence_files": 2,
         "factory_registry_upper_block": 109,
         "factory_registry_upper_block_hash": "0x" + "9" * 64,
         "factory_registry_upper_block_timestamp": 1_700_000_000,
@@ -1436,6 +1501,10 @@ def test_release_certificate_requires_exact_calendar_and_zero_exceptions() -> No
         "factory_coverage_manifest_sha256_by_venue",
         "factory_state_proof_sha256_by_venue",
         "factory_state_sample_size_by_venue",
+        "token_decimals_registry_rows",
+        "token_decimals_registry_sha256",
+        "token_decimals_registry_file_sha256",
+        "token_decimals_evidence_files",
     }
     accepted_missing = []
     for field in sorted(proof_fields):
@@ -1464,6 +1533,10 @@ def test_release_certificate_requires_exact_calendar_and_zero_exceptions() -> No
         "factory_state_sample_size_by_venue": {
             venue: 2 for venue in V2_EVENT_VENUES
         },
+        "token_decimals_registry_rows": 0,
+        "token_decimals_registry_sha256": "f" * 63,
+        "token_decimals_registry_file_sha256": "bad",
+        "token_decimals_evidence_files": 1,
     }
     accepted_mutations = []
     for field, value in mutations.items():

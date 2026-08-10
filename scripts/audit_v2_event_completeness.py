@@ -26,16 +26,24 @@ from ddvc.ethereum_day_cuts import (
     utc_day_block_bounds,
     validate_utc_day_block_bounds,
 )
-from ddvc.ethereum_logs import rpc_post_with_evidence
+from ddvc.ethereum_logs import file_sha256, rpc_post_with_evidence
 from ddvc.fetch.raw import write_json
 from ddvc.fetch.sources import get_source
 from ddvc.paths import DATA_DIR, MARKET_STATE_LOCK, RAW_MARKET_DATA_LOCK
-from ddvc.pricing.v3pools import load_token_decimals
 from ddvc.provenance import require_current_artifacts, stamp
 from ddvc.quoter import Throttled, rpc_post
 from ddvc.reconstruct import UNIFIED_QUALITY_PANEL
 from ddvc.release_calendar import transaction_frontier_audit_days
 from ddvc.runtime import atomic_output, exclusive_job, interruptible_thread_pool
+from ddvc.token_decimals import (
+    TokenDecimalsAnchor,
+    build_token_decimals_registry,
+    resolve_token_decimals_evidence,
+    select_token_decimals_anchors,
+    token_decimals_registry_sha256,
+    validate_token_decimals_registry,
+    write_token_decimals_registry,
+)
 from ddvc.v2_event_completeness import (
     RAW_V2_FACTORY_ROOT,
     V2_CORE_EVENTS,
@@ -48,8 +56,12 @@ from ddvc.v2_event_completeness import (
     V2_FACTORIES,
     V2_FACTORY_EVIDENCE_SCHEMA_VERSION,
     V2_POOL_PERIMETER,
+    V2_TOKEN_DECIMALS_REGISTRY,
+    V2_TOKEN_DECIMALS_CONTRACT,
+    V2_TOKEN_DECIMALS_SCOPE,
     audit_calendar_sha256,
     compare_event_maps,
+    decode_pair_created_log,
     factory_deployment_path,
     factory_pair_registry,
     factory_coverage_manifest_path,
@@ -59,11 +71,13 @@ from ddvc.v2_event_completeness import (
     fetch_v2_exact_log_chunk,
     fetch_factory_root_adaptive,
     frozen_upper_block_path,
-    graph_core_events,
+    graph_core_event_rows,
+    graph_core_events_for_amount_keys,
     iter_graph_rows,
     load_or_build_factory_state_proof,
     load_or_resolve_frozen_upper_block,
     missing_v2_exact_log_ranges,
+    raw_core_event_records,
     raw_core_events,
     read_factory_coverage_records,
     read_v2_exact_logs,
@@ -77,7 +91,6 @@ from ddvc.v2_event_completeness import (
 
 
 GRAPH_ROOT = DATA_DIR / "raw" / "thegraph"
-TOKEN_DECIMALS = DATA_DIR / "processed" / "v2_token_decimals.parquet"
 DEFAULT_EVENT_BLOCK_CHUNK_SIZE = V2_EXACT_LOG_CHUNK_SIZE
 MAX_JOB_ATTEMPTS = 12
 CODE_SOURCES = [
@@ -88,11 +101,21 @@ CODE_SOURCES = [
     "src/ddvc/ethereum_logs.py",
     "src/ddvc/fetch/raw.py",
     "src/ddvc/fetch/sources.py",
-    "src/ddvc/pricing/v3pools.py",
     "src/ddvc/provenance.py",
     "src/ddvc/quoter.py",
     "src/ddvc/release_calendar.py",
     "src/ddvc/runtime.py",
+    "src/ddvc/token_decimals.py",
+    "src/ddvc/v2_event_completeness.py",
+]
+TOKEN_REGISTRY_CODE_SOURCES = [
+    "scripts/audit_v2_event_completeness.py",
+    "src/ddvc/amounts.py",
+    "src/ddvc/fetch/raw.py",
+    "src/ddvc/provenance.py",
+    "src/ddvc/quoter.py",
+    "src/ddvc/runtime.py",
+    "src/ddvc/token_decimals.py",
     "src/ddvc/v2_event_completeness.py",
 ]
 SUMMARY_COLUMNS = [
@@ -448,6 +471,128 @@ def _preflight_graph_streams(audit_days: list[str]) -> None:
     )
 
 
+def _token_anchor(
+    token: str,
+    record: dict[str, object],
+    *,
+    priority: int,
+    proof_kind: str,
+    venue: str,
+    pool: str,
+    event_type: str,
+) -> TokenDecimalsAnchor:
+    return TokenDecimalsAnchor(
+        token=token,
+        block_number=int(record["block_number"]),
+        block_hash=str(record["block_hash"]).lower(),
+        priority=priority,
+        proof_kind=proof_kind,
+        venue=venue,
+        pool=pool,
+        event_type=event_type,
+        transaction_hash=str(record["transaction_hash"]).lower(),
+        transaction_index=int(record["transaction_index"]),
+        log_index=int(record["log_index"]),
+    )
+
+
+def collect_v2_token_decimals_perimeter(
+    audit_days: list[str],
+    day_bounds: dict[str, dict[str, object]],
+    frozen_upper: dict[str, object],
+    statics: dict[str, dict],
+    pairs_by_venue: dict[str, list],
+    factory_records_by_venue: dict[str, list[dict[str, object]]],
+) -> tuple[
+    dict[str, TokenDecimalsAnchor],
+    dict[str, list[object]],
+    dict[str, list[Path]],
+    int,
+]:
+    """Bind every audit token to matched exact logs, then exact fallbacks."""
+
+    pair_records: dict[str, dict[str, dict[str, object]]] = {}
+    for venue in V2_EVENT_VENUES:
+        pair_records[venue] = {
+            decode_pair_created_log(venue, record).pool: record
+            for record in factory_records_by_venue[venue]
+        }
+    candidates: list[TokenDecimalsAnchor] = []
+    provider_observations: dict[str, list[object]] = {}
+    event_inputs: dict[str, list[Path]] = {}
+    raw_global_logs = 0
+    for count, day in enumerate(audit_days, 1):
+        if day in day_bounds:
+            records, event_inputs[day] = read_v2_exact_logs(
+                int(day_bounds[day]["start_block"]),
+                int(day_bounds[day]["end_block"]),
+                frozen_upper=frozen_upper,
+            )
+        else:
+            records, event_inputs[day] = [], []
+        raw_global_logs += len(records)
+        for venue in _launched_venues(day):
+            expected_creation_blocks = {
+                pair.pool: pair.creation_block for pair in pairs_by_venue[venue]
+            }
+            raw_rows = raw_core_event_records(
+                venue,
+                records,
+                expected_pools=set(statics[venue]),
+                expected_creation_blocks=expected_creation_blocks,
+                ignore_unregistered=True,
+            )
+            graph_rows, _duplicates = graph_core_event_rows(
+                GRAPH_ROOT,
+                venue,
+                day,
+                statics[venue],
+                provider_observations=provider_observations,
+            )
+            for key, record in raw_rows.items():
+                pool = key[-1]
+                static = statics[venue][pool]
+                matched = key in graph_rows
+                for token in (static.token0, static.token1):
+                    candidates.append(
+                        _token_anchor(
+                            token,
+                            record,
+                            priority=0 if matched else 1,
+                            proof_kind="matched_core_event" if matched else "exact_core_event",
+                            venue=venue,
+                            pool=pool,
+                            event_type=key[1],
+                        )
+                    )
+            for key in set(graph_rows) - set(raw_rows):
+                pool = key[-1]
+                static = statics[venue][pool]
+                record = pair_records[venue][pool]
+                for token in (static.token0, static.token1):
+                    candidates.append(
+                        _token_anchor(
+                            token,
+                            record,
+                            priority=2,
+                            proof_kind="factory_pair_created",
+                            venue=venue,
+                            pool=pool,
+                            event_type="pair_created",
+                        )
+                    )
+        if count % 10 == 0 or count == len(audit_days):
+            print(
+                f"  V2 token-state perimeter [{count:,}/{len(audit_days):,}]; "
+                f"candidate_anchors={len(candidates):,}",
+                flush=True,
+            )
+    anchors = select_token_decimals_anchors(candidates)
+    if not anchors:
+        raise RuntimeError("V2 event-source audit produced an empty token-state perimeter")
+    return anchors, provider_observations, event_inputs, raw_global_logs
+
+
 def build(
     *,
     fetch: bool,
@@ -460,12 +605,11 @@ def build(
             "V2 exact-log cache uses one canonical 50-block chunk size"
         )
     require_current_artifacts(
-        [UNIFIED_QUALITY_PANEL, TOKEN_DECIMALS],
+        [UNIFIED_QUALITY_PANEL],
         consumer="V2 exact event-source audit",
     )
     audit_days = transaction_frontier_audit_days(UNIFIED_QUALITY_PANEL)
     _preflight_graph_streams(audit_days)
-    token_decimals = load_token_decimals(TOKEN_DECIMALS)
     day_bounds = {
         day: load_or_resolve_day_bounds(day, fetch=fetch)
         for day in audit_days
@@ -524,6 +668,7 @@ def build(
     factory_manifests: dict[str, dict[str, object]] = {}
     factory_state_proofs: dict[str, dict[str, object]] = {}
     factory_inputs: list[Path] = []
+    factory_records_by_venue: dict[str, list[dict[str, object]]] = {}
     all_pairs = []
     pool_owner: dict[str, str] = {}
     for venue, deployment in deployments.items():
@@ -560,7 +705,7 @@ def build(
             deployment_block=deployment_block,
             frozen_upper=frozen_upper,
         )
-        venue_statics, venue_pairs = factory_pair_registry(venue, records, token_decimals)
+        venue_statics, venue_pairs = factory_pair_registry(venue, records, {})
         if not venue_pairs:
             raise RuntimeError(f"independent factory registry is empty for {venue}")
         state_proof = load_or_build_factory_state_proof(
@@ -579,24 +724,87 @@ def build(
         pairs_by_venue[venue] = venue_pairs
         factory_manifests[venue] = manifest
         factory_state_proofs[venue] = state_proof
+        factory_records_by_venue[venue] = records
         factory_inputs.extend(raw_inputs)
         factory_inputs.extend((manifest_path, factory_state_proof_path(venue, maximum_block)))
         all_pairs.extend(venue_pairs)
 
+    anchors, provider_observations, event_inputs, raw_global_logs = collect_v2_token_decimals_perimeter(
+        audit_days,
+        day_bounds,
+        frozen_upper,
+        statics,
+        pairs_by_venue,
+        factory_records_by_venue,
+    )
+    token_evidence, token_evidence_paths = resolve_token_decimals_evidence(
+        anchors,
+        fetch=fetch,
+        workers=workers,
+    )
+    token_registry = build_token_decimals_registry(
+        anchors,
+        token_evidence,
+        token_evidence_paths,
+        provider_observations,
+    )
+    write_token_decimals_registry(token_registry, V2_TOKEN_DECIMALS_REGISTRY)
+    token_registry_inputs = sorted(
+        {
+            *token_evidence_paths.values(),
+            *factory_inputs,
+            *(path for paths in event_inputs.values() for path in paths),
+            *(
+                path
+                for day in audit_days
+                for venue in _launched_venues(day)
+                for path in _graph_event_paths(venue, day)
+            ),
+        },
+        key=str,
+    )
+    stamp(
+        V2_TOKEN_DECIMALS_REGISTRY,
+        code_sources=TOKEN_REGISTRY_CODE_SOURCES,
+        inputs=token_registry_inputs,
+        rows=len(token_registry),
+        notes="exact historical ERC-20 decimals for the V2 event-audit token perimeter",
+    )
+    require_current_artifacts(
+        [V2_TOKEN_DECIMALS_REGISTRY],
+        consumer="V2 exact event-source audit token state",
+    )
+    token_decimals, token_registry = validate_token_decimals_registry(
+        V2_TOKEN_DECIMALS_REGISTRY,
+        expected_anchors=anchors,
+        provider_observations=provider_observations,
+    )
+    statics = {
+        venue: factory_pair_registry(
+            venue,
+            factory_records_by_venue[venue],
+            token_decimals,
+        )[0]
+        for venue in V2_EVENT_VENUES
+    }
+    print(
+        f"  exact token decimals: tokens={len(token_registry):,}; "
+        f"matched-event anchors={sum(anchor.priority == 0 for anchor in anchors.values()):,}; "
+        f"provider distinct reports={sum(len(values) for values in provider_observations.values()):,}",
+        flush=True,
+    )
+
     summaries: list[dict[str, object]] = []
     exceptions: list[dict[str, object]] = []
-    raw_global_logs = 0
-    event_inputs: dict[str, list[Path]] = {}
     for count, day in enumerate(audit_days, 1):
         if day in day_bounds:
-            records, event_inputs[day] = read_v2_exact_logs(
+            records, _inputs = read_v2_exact_logs(
                 int(day_bounds[day]["start_block"]),
                 int(day_bounds[day]["end_block"]),
                 frozen_upper=frozen_upper,
             )
         else:
-            records, event_inputs[day] = [], []
-        raw_global_logs += len(records)
+            records = []
         for venue in V2_EVENT_VENUES:
             if venue not in _launched_venues(day):
                 day_summary, day_exceptions = compare_event_maps(
@@ -617,11 +825,12 @@ def build(
                     },
                     ignore_unregistered=True,
                 )
-                graph, duplicates = graph_core_events(
+                graph, duplicates = graph_core_events_for_amount_keys(
                     GRAPH_ROOT,
                     venue,
                     day,
                     statics[venue],
+                    amount_keys=set(raw),
                 )
                 day_summary, day_exceptions = compare_event_maps(
                     day,
@@ -710,6 +919,12 @@ def build(
             "pool",
         ],
         "quantity_contract": "exact_raw_token_deltas_and_swap_in_out_fields",
+        "token_decimals_contract": V2_TOKEN_DECIMALS_CONTRACT,
+        "token_decimals_scope": V2_TOKEN_DECIMALS_SCOPE,
+        "token_decimals_registry_rows": len(token_registry),
+        "token_decimals_registry_sha256": token_decimals_registry_sha256(token_registry),
+        "token_decimals_registry_file_sha256": file_sha256(V2_TOKEN_DECIMALS_REGISTRY),
+        "token_decimals_evidence_files": len(token_evidence_paths),
         "raw_factory_chunks": sum(int(manifest["leaf_count"]) for manifest in factory_manifests.values()),
         "raw_event_chunks": sum(len(ranges) for ranges in event_ranges.values()),
         "raw_global_event_logs": raw_global_logs,
@@ -725,7 +940,7 @@ def build(
         validate_v2_event_source_evidence_bundle(certificate)
     V2_EVENT_SOURCE_CERTIFICATE.parent.mkdir(parents=True, exist_ok=True)
     write_json(V2_EVENT_SOURCE_CERTIFICATE, certificate)
-    inputs: list[Path] = [UNIFIED_QUALITY_PANEL, TOKEN_DECIMALS]
+    inputs: list[Path] = [UNIFIED_QUALITY_PANEL, V2_TOKEN_DECIMALS_REGISTRY]
     inputs.extend(_day_bound_path(day) for day in day_bounds)
     inputs.append(frozen_upper_block_path(maximum_block))
     inputs.extend(factory_deployment_path(venue, maximum_block) for venue in V2_EVENT_VENUES)

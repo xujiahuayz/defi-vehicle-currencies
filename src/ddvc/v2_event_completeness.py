@@ -39,7 +39,7 @@ from ddvc.ethereum_logs import (
 )
 from ddvc.fetch.raw import write_json
 from ddvc.fetch.sources import get_source
-from ddvc.paths import DATA_DIR, OUTPUT_DIR
+from ddvc.paths import DATA_DIR, OUTPUT_DIR, REPO_ROOT
 from ddvc.quoter import (
     RpcEnvelope,
     canonical_json_sha256 as _canonical_json_sha256,
@@ -47,6 +47,10 @@ from ddvc.quoter import (
     validate_rpc_attempts,
 )
 from ddvc.runtime import interruptible_thread_pool
+from ddvc.token_decimals import (
+    token_decimals_registry_sha256,
+    validate_token_decimals_registry,
+)
 
 
 V2_EVENT_VENUES = ("uniswap_v2", "sushiswap_v2")
@@ -61,7 +65,7 @@ V2_EVENT_TOPICS = {
     for name, signature in V2_EVENT_SIGNATURES.items()
 }
 V2_EVENT_BY_TOPIC = {topic: name for name, topic in V2_EVENT_TOPICS.items()}
-V2_EVENT_SOURCE_SCHEMA_VERSION = 4
+V2_EVENT_SOURCE_SCHEMA_VERSION = 5
 V2_FACTORIES = {
     venue: str(get_source(venue).factory_address).lower()
     for venue in V2_EVENT_VENUES
@@ -82,6 +86,9 @@ RAW_V2_FACTORY_ROOT = DATA_DIR / "raw" / "ethereum" / "v2_factory_pair_registry"
 V2_EVENT_SOURCE_SUMMARY = DATA_DIR / "processed" / "v2_core_event_source_audit.parquet"
 V2_EVENT_SOURCE_EXCEPTIONS = DATA_DIR / "processed" / "v2_core_event_source_exceptions.parquet"
 V2_EVENT_SOURCE_CERTIFICATE = OUTPUT_DIR / "exhibits" / "v2_core_event_source_certificate.json"
+V2_TOKEN_DECIMALS_REGISTRY = DATA_DIR / "processed" / "v2_audit_token_decimals.parquet"
+V2_TOKEN_DECIMALS_CONTRACT = "one_exact_erc20_decimals_call_per_token_at_deterministic_canonical_event_anchor"
+V2_TOKEN_DECIMALS_SCOPE = "provider_decimals_observed_on_every_graph_event_must_be_constant_and_match_exact_anchor; exact_proxy_history_between_anchor_and_other_event_blocks_is_not_proven"
 
 EventKey = tuple[str, str, int, str, int, str]
 ALL_PAIRS_LENGTH_SELECTOR = "0x" + keccak(text="allPairsLength()")[:4].hex()
@@ -196,7 +203,7 @@ def v2_exact_log_chunk_complete(
             topics=[V2_EVENT_TOPICS[name] for name in V2_CORE_EVENTS],
             address=None,
         )
-        validation_upper = _persisted_chunk_frozen_upper(
+        validation_upper = persisted_chunk_frozen_upper(
             marker,
             current_frozen_upper=frozen_upper,
             end_block=end_block,
@@ -221,7 +228,7 @@ def v2_exact_log_chunk_complete(
     )
 
 
-def _persisted_chunk_frozen_upper(
+def persisted_chunk_frozen_upper(
     marker: dict[str, object],
     *,
     current_frozen_upper: dict[str, object],
@@ -556,7 +563,7 @@ def factory_leaf_complete(
         )
         for record in records:
             decode_pair_created_log(venue, record)
-        validation_upper = _persisted_chunk_frozen_upper(
+        validation_upper = persisted_chunk_frozen_upper(
             marker,
             current_frozen_upper=frozen_upper,
             end_block=end_block,
@@ -1606,24 +1613,28 @@ def _graph_event_amounts(
 
 
 def _add_event(
-    events: dict[EventKey, EventAmounts],
+    events: dict[EventKey, object],
     duplicates: set[EventKey],
     key: EventKey,
-    amounts: EventAmounts,
+    value: object,
 ) -> None:
     if key in events:
         duplicates.add(key)
         return
-    events[key] = amounts
+    events[key] = value
 
 
-def graph_core_events(
+def graph_core_event_rows(
     graph_root: Path,
     venue: str,
     day: str,
     statics: dict[str, PoolStatic],
-) -> tuple[dict[EventKey, EventAmounts], set[EventKey]]:
-    events: dict[EventKey, EventAmounts] = {}
+    *,
+    provider_observations: dict[str, list[object]] | None = None,
+) -> tuple[dict[EventKey, tuple[dict[str, object], str, PoolStatic]], set[EventKey]]:
+    """Read Graph identities and token metadata before any decimal conversion."""
+
+    events: dict[EventKey, tuple[dict[str, object], str, PoolStatic]] = {}
     duplicates: set[EventKey] = set()
     for event_type, stream in (("mint", "mints"), ("burn", "burns"), ("swap", "swaps")):
         for row in iter_graph_rows(graph_stream_path(graph_root, venue, stream, day)):
@@ -1632,20 +1643,34 @@ def graph_core_events(
             static = statics.get(pool)
             if static is None:
                 raise ValueError(f"V2 event pool {pool} is absent from the factory registry")
-            observed = _pool_static_from_row(row, {
-                token: decimals
-                for token, decimals in (
-                    (static.token0, static.decimals0),
-                    (static.token1, static.decimals1),
-                )
-                if decimals is not None
-            })
+            observed = _pool_static_from_row(
+                row,
+                {
+                    token: decimals
+                    for token, decimals in (
+                        (static.token0, static.decimals0),
+                        (static.token1, static.decimals1),
+                    )
+                    if decimals is not None
+                },
+            )
             if (observed.pool, observed.token0, observed.token1) != (
                 static.pool,
                 static.token0,
                 static.token1,
             ):
                 raise ValueError(f"Graph event disagrees with factory pair identity for {pool}")
+            if provider_observations is not None and isinstance(pair, dict):
+                for token_name, token_address in (
+                    ("token0", observed.token0),
+                    ("token1", observed.token1),
+                ):
+                    token = pair.get(token_name)
+                    if isinstance(token, dict):
+                        value = token.get("decimals")
+                        distinct = provider_observations.setdefault(token_address, [])
+                        if value not in distinct:
+                            distinct.append(value)
             transaction = row.get("transaction")
             tx_hash = transaction.get("id") if isinstance(transaction, dict) else transaction
             block = transaction.get("blockNumber") if isinstance(transaction, dict) else None
@@ -1657,7 +1682,43 @@ def graph_core_events(
                 row.get("logIndex"),
                 pool,
             )
-            _add_event(events, duplicates, key, _graph_event_amounts(row, event_type, static))
+            _add_event(events, duplicates, key, (row, event_type, static))
+    return events, duplicates
+
+
+def graph_core_events(
+    graph_root: Path,
+    venue: str,
+    day: str,
+    statics: dict[str, PoolStatic],
+) -> tuple[dict[EventKey, EventAmounts | None], set[EventKey]]:
+    return graph_core_events_for_amount_keys(
+        graph_root,
+        venue,
+        day,
+        statics,
+        amount_keys=None,
+    )
+
+
+def graph_core_events_for_amount_keys(
+    graph_root: Path,
+    venue: str,
+    day: str,
+    statics: dict[str, PoolStatic],
+    *,
+    amount_keys: set[EventKey] | None,
+) -> tuple[dict[EventKey, EventAmounts | None], set[EventKey]]:
+    """Decode amounts only where identity comparison says an amount is needed."""
+
+    rows, duplicates = graph_core_event_rows(graph_root, venue, day, statics)
+    events: dict[EventKey, EventAmounts | None] = {}
+    for key, (row, event_type, static) in rows.items():
+        events[key] = (
+            _graph_event_amounts(row, event_type, static)
+            if amount_keys is None or key in amount_keys
+            else None
+        )
     return events, duplicates
 
 
@@ -1707,13 +1768,33 @@ def raw_core_events(
     expected_creation_blocks: dict[str, int] | None = None,
     ignore_unregistered: bool = False,
 ) -> dict[EventKey, EventAmounts]:
-    events: dict[EventKey, EventAmounts] = {}
+    rows = raw_core_event_records(
+        venue,
+        records,
+        expected_pools=expected_pools,
+        expected_creation_blocks=expected_creation_blocks,
+        ignore_unregistered=ignore_unregistered,
+    )
+    return {key: decode_v2_log(venue, record)[1] for key, record in rows.items()}
+
+
+def raw_core_event_records(
+    venue: str,
+    records: Iterable[dict[str, object]],
+    *,
+    expected_pools: set[str],
+    expected_creation_blocks: dict[str, int] | None = None,
+    ignore_unregistered: bool = False,
+) -> dict[EventKey, dict[str, object]]:
+    """Retain exact raw records so their block hashes can anchor contract state."""
+
+    events: dict[EventKey, dict[str, object]] = {}
     duplicates: set[EventKey] = set()
     for record in records:
         pool = _address(record.get("address"), label="raw V2 event pool")
         if pool not in expected_pools and ignore_unregistered:
             continue
-        key, amounts = decode_v2_log(venue, record)
+        key, _amounts = decode_v2_log(venue, record)
         if key[-1] not in expected_pools:
             raise ValueError(f"raw V2 log pool outside the declared batch perimeter: {key[-1]}")
         if (
@@ -1721,7 +1802,7 @@ def raw_core_events(
             and key[2] < expected_creation_blocks[key[-1]]
         ):
             raise ValueError(f"raw V2 event predates its PairCreated identity: {key}")
-        _add_event(events, duplicates, key, amounts)
+        _add_event(events, duplicates, key, record)
     if duplicates:
         raise ValueError(f"exact raw V2 audit has {len(duplicates):,} duplicate identities")
     return events
@@ -1761,7 +1842,7 @@ def compare_event_maps(
     day: str,
     venue: str,
     raw: dict[EventKey, EventAmounts],
-    graph: dict[EventKey, EventAmounts],
+    graph: dict[EventKey, EventAmounts | None],
     graph_duplicates: set[EventKey],
     *,
     launch_status: str = "audited",
@@ -1775,6 +1856,11 @@ def compare_event_maps(
         missing = raw_keys - graph_keys
         graph_only = graph_keys - raw_keys
         duplicates = {key for key in graph_duplicates if key[1] == event_type}
+        unavailable = {key for key in matched if graph[key] is None}
+        if unavailable:
+            raise ValueError(
+                f"matched V2 identities lack decoded Graph amounts: {sorted(unavailable)[:3]}"
+            )
         mismatches = {key for key in matched if raw[key] != graph[key]}
         summaries.append(
             {
@@ -1925,6 +2011,8 @@ def validate_v2_event_source_certificate(
             "pool",
         ],
         "quantity_contract": "exact_raw_token_deltas_and_swap_in_out_fields",
+        "token_decimals_contract": V2_TOKEN_DECIMALS_CONTRACT,
+        "token_decimals_scope": V2_TOKEN_DECIMALS_SCOPE,
     }
     mismatched = {
         key: (certificate.get(key), value)
@@ -1953,6 +2041,12 @@ def validate_v2_event_source_certificate(
     registry_hash = str(certificate.get("factory_registry_sha256") or "")
     if not _is_sha256(registry_hash):
         raise ValueError("V2 event-source certificate lacks a factory-registry digest")
+    if not isinstance(certificate.get("token_decimals_registry_rows"), int) or int(certificate["token_decimals_registry_rows"]) < 1:
+        raise ValueError("V2 event-source certificate lacks a positive token-decimals perimeter")
+    if not _is_sha256(certificate.get("token_decimals_registry_sha256")) or not _is_sha256(certificate.get("token_decimals_registry_file_sha256")):
+        raise ValueError("V2 event-source certificate lacks token-decimals registry digests")
+    if not isinstance(certificate.get("token_decimals_evidence_files"), int) or int(certificate["token_decimals_evidence_files"]) != int(certificate["token_decimals_registry_rows"]):
+        raise ValueError("V2 event-source certificate token-decimals evidence count disagrees")
     upper_block = certificate.get("factory_registry_upper_block")
     upper_hash = str(certificate.get("factory_registry_upper_block_hash") or "")
     upper_timestamp = certificate.get("factory_registry_upper_block_timestamp")
@@ -1986,12 +2080,12 @@ def validate_v2_event_source_certificate(
     return len(expected_days), int(counts["raw_events"].sum())
 
 
-def validate_v2_event_source_evidence_bundle(
+def reopen_v2_factory_pool_registry(
     certificate: dict[str, object],
     *,
     root: Path | None = None,
-) -> tuple[int, int]:
-    """Reopen every cited factory artifact and rederive the registry contract."""
+) -> tuple[dict[str, set[str]], list[Path], int]:
+    """Reopen every cited factory artifact and return exact venue ownership."""
 
     evidence_root = root or RAW_V2_FACTORY_ROOT
     upper_block = int(certificate["factory_registry_upper_block"])
@@ -2011,11 +2105,14 @@ def validate_v2_event_source_evidence_bundle(
     state_digests = certificate["factory_state_proof_sha256_by_venue"]
     sample_sizes = certificate["factory_state_sample_size_by_venue"]
     all_pairs: list[FactoryPair] = []
+    pools_by_venue: dict[str, set[str]] = {}
+    inputs = [frozen_path]
     leaf_count = 0
     for venue in V2_EVENT_VENUES:
         deployment_path = factory_deployment_path(venue, upper_block, root=evidence_root)
         if _file_sha256(deployment_path) != deployment_digests[venue]:
             raise ValueError(f"{venue} deployment proof digest disagrees with the cited artifact")
+        inputs.append(deployment_path)
         deployment = json.loads(deployment_path.read_text(encoding="utf-8"))
         deployment_block = validate_factory_deployment_proof(
             deployment,
@@ -2026,6 +2123,7 @@ def validate_v2_event_source_evidence_bundle(
         coverage_path = factory_coverage_manifest_path(venue, upper_block, root=evidence_root)
         if _file_sha256(coverage_path) != coverage_digests[venue]:
             raise ValueError(f"{venue} coverage manifest digest disagrees with the cited artifact")
+        inputs.append(coverage_path)
         manifest = json.loads(coverage_path.read_text(encoding="utf-8"))
         ranges = validate_factory_coverage_manifest(
             manifest,
@@ -2034,7 +2132,7 @@ def validate_v2_event_source_evidence_bundle(
             frozen_upper=frozen_upper,
             root=evidence_root,
         )
-        records, _inputs = read_factory_coverage_records(
+        records, leaf_inputs = read_factory_coverage_records(
             manifest,
             venue=venue,
             deployment_block=deployment_block,
@@ -2045,6 +2143,7 @@ def validate_v2_event_source_evidence_bundle(
         state_path = factory_state_proof_path(venue, upper_block, root=evidence_root)
         if _file_sha256(state_path) != state_digests[venue]:
             raise ValueError(f"{venue} state proof digest disagrees with the cited artifact")
+        inputs.extend((state_path, *leaf_inputs))
         state_proof = json.loads(state_path.read_text(encoding="utf-8"))
         validate_factory_state_proof(
             state_proof,
@@ -2055,6 +2154,7 @@ def validate_v2_event_source_evidence_bundle(
         )
         if int(certificate["factory_pairs_by_venue"][venue]) != len(pairs):
             raise ValueError(f"{venue} factory pair count disagrees with reopened evidence")
+        pools_by_venue[venue] = {pair.pool for pair in pairs}
         all_pairs.extend(pairs)
         leaf_count += len(ranges)
     if int(certificate["factory_pairs"]) != len(all_pairs):
@@ -2063,7 +2163,37 @@ def validate_v2_event_source_evidence_bundle(
         raise ValueError("V2 factory registry digest disagrees with reopened evidence")
     if int(certificate["raw_factory_chunks"]) != leaf_count:
         raise ValueError("V2 factory chunk total disagrees with reopened evidence")
-    return len(all_pairs), leaf_count
+    if set.intersection(*pools_by_venue.values()):
+        raise ValueError("V2 factory registries assign one pool to multiple venues")
+    return pools_by_venue, inputs, leaf_count
+
+
+def validate_v2_event_source_evidence_bundle(
+    certificate: dict[str, object],
+    *,
+    root: Path | None = None,
+    token_registry_path: Path | None = None,
+    repo_root: Path = REPO_ROOT,
+) -> tuple[int, int]:
+    """Reopen every cited factory artifact and rederive the registry contract."""
+
+    pools_by_venue, _inputs, leaf_count = reopen_v2_factory_pool_registry(
+        certificate,
+        root=root,
+    )
+    if int(certificate.get("schema_version", -1)) == V2_EVENT_SOURCE_SCHEMA_VERSION or "token_decimals_registry_sha256" in certificate:
+        registry_path = token_registry_path or V2_TOKEN_DECIMALS_REGISTRY
+        if _file_sha256(registry_path) != certificate.get("token_decimals_registry_file_sha256"):
+            raise ValueError("V2 token-decimals registry file digest disagrees")
+        decimals, registry = validate_token_decimals_registry(
+            registry_path,
+            repo_root=repo_root,
+        )
+        if len(registry) != int(certificate.get("token_decimals_registry_rows", -1)) or len(decimals) != len(registry):
+            raise ValueError("V2 token-decimals registry perimeter disagrees with the certificate")
+        if token_decimals_registry_sha256(registry) != certificate.get("token_decimals_registry_sha256"):
+            raise ValueError("V2 token-decimals registry semantic digest disagrees")
+    return sum(len(pools) for pools in pools_by_venue.values()), leaf_count
 
 
 def read_v2_event_source_certificate(
