@@ -10,6 +10,7 @@ from pathlib import Path
 
 import pyarrow.parquet as pq
 
+from ddvc.ethereum_day_cuts import fetch_block_timestamp
 from ddvc.ethereum_logs import (
     RAW_LOG_SCHEMA,
     RAW_LOG_STORAGE_FORMAT,
@@ -21,7 +22,10 @@ from ddvc.graph_event_order import (
     correction_root_for_graph,
     event_topics,
     load_graph_events,
+    load_pool_templates,
     match_event_orders,
+    supplement_action,
+    supplement_source_row,
     write_correction_generation,
 )
 from ddvc.paths import DATA_DIR, RAW_MARKET_DATA_LOCK
@@ -159,13 +163,37 @@ def reconcile_day(
         raw, marker = exact_chunk_paths(venue, day, start, end)
         exact_paths.extend((raw, marker))
         exact_records.extend(pq.read_table(raw).to_pylist())
-    corrections, audit = match_event_orders(graph_events, exact_records, venue)
+    corrections, missing_events, audit = match_event_orders(
+        graph_events, exact_records, venue
+    )
+    templates = load_pool_templates(GRAPH_ROOT, venue, day)
+    timestamp_evidence: list[dict[str, object]] = []
+    timestamps: dict[int, int] = {}
+    supplements: list[dict[str, object]] = []
+    for event in missing_events:
+        template = templates.get(event.pool)
+        if template is None:
+            raise RuntimeError(
+                f"exact event supplement lacks canonical pool statics: {venue}/{event.pool}"
+            )
+        timestamp = timestamps.get(event.block_number)
+        if timestamp is None:
+            timestamp = fetch_block_timestamp(event.block_number, timestamp_evidence)
+            timestamps[event.block_number] = timestamp
+        supplements.append(
+            supplement_action(
+                event,
+                supplement_source_row(event, template, timestamp),
+            )
+        )
     write_correction_generation(
         root=CORRECTION_ROOT,
         raw_root=GRAPH_ROOT,
         venue=venue,
         day=day,
         corrections=corrections,
+        supplements=supplements,
+        block_timestamp_evidence=timestamp_evidence,
         exact_log_paths=exact_paths,
         audit=audit,
         start_block=lower,
@@ -174,7 +202,10 @@ def reconcile_day(
     print(
         f"COMPLETE: {venue}/{day} graph={audit['graph_events']:,}; "
         f"exact={audit['exact_events_in_graph_pool_perimeter']:,}; "
-        f"order_corrections={audit['correction_rows']:,}",
+        f"order_corrections={audit['correction_rows']:,}; "
+        f"duplicates={audit['provider_duplicate_rows']:,}; "
+        f"payload_corrections={audit['payload_mismatches']:,}; "
+        f"supplements={audit['supplement_rows']:,}",
         flush=True,
     )
     return audit

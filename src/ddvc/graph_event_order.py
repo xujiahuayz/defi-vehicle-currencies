@@ -18,14 +18,14 @@ from typing import Iterable
 from eth_abi import decode as abi_decode
 from eth_utils import keccak
 
-from ddvc.amounts import human_to_raw
+from ddvc.amounts import human_to_raw, raw_to_human
 from ddvc.fetch.raw import write_json, write_jsonl_gz
-from ddvc.source_records import block_value, transaction_id
+from ddvc.source_records import block_value, timestamp_value, transaction_id
 from ddvc.v2_event_completeness import V2_EVENT_BY_TOPIC, V2_EVENT_TOPICS
 from ddvc.v3_inventory import EVENT_TOPICS as V3_INVENTORY_TOPICS
 
 
-SCHEMA_VERSION = 1
+SCHEMA_VERSION = 2
 SUPPORTED_VENUES = frozenset({"uniswap_v2", "sushiswap_v2", "uniswap_v3"})
 CORE_STREAMS = ("swaps", "mints", "burns")
 V3_BURN_TOPIC = "0x" + keccak(
@@ -44,6 +44,7 @@ CorrectionKey = tuple[str, str, str, str, int, int]
 
 @dataclass(frozen=True)
 class GraphEvent:
+    venue: str
     stream: str
     event_id: str
     tx_hash: str
@@ -51,10 +52,29 @@ class GraphEvent:
     block_number: int
     provider_log_index: int
     fingerprint: Fingerprint
+    decimals0: int | None
+    decimals1: int | None
 
     @property
     def match_key(self) -> tuple[str, str, str, Fingerprint]:
-        return self.tx_hash, self.pool, STREAM_EVENT_TYPE[self.stream], self.fingerprint
+        return self.tx_hash, self.pool, STREAM_EVENT_TYPE[self.stream], self.match_fingerprint
+
+    @property
+    def match_fingerprint(self) -> Fingerprint:
+        if self.venue == "uniswap_v3" and self.fingerprint[0] == "swap":
+            return self.fingerprint[0], self.fingerprint[3], self.fingerprint[4]
+        return self.fingerprint
+
+    @property
+    def duplicate_key(self) -> tuple[object, ...]:
+        return (
+            self.stream,
+            self.tx_hash,
+            self.pool,
+            self.block_number,
+            self.provider_log_index,
+            self.fingerprint,
+        )
 
     @property
     def correction_key(self) -> CorrectionKey:
@@ -70,16 +90,35 @@ class GraphEvent:
 
 @dataclass(frozen=True)
 class ChainEvent:
+    venue: str
     event_type: str
     tx_hash: str
     pool: str
     block_number: int
     log_index: int
     fingerprint: Fingerprint
+    payload: dict[str, int]
 
     @property
     def match_key(self) -> tuple[str, str, str, Fingerprint]:
-        return self.tx_hash, self.pool, self.event_type, self.fingerprint
+        return self.tx_hash, self.pool, self.event_type, self.match_fingerprint
+
+    @property
+    def match_fingerprint(self) -> Fingerprint:
+        if self.venue == "uniswap_v3" and self.event_type == "swap":
+            return self.event_type, self.fingerprint[3], self.fingerprint[4]
+        return self.fingerprint
+
+    @property
+    def stream(self) -> str:
+        return f"{self.event_type}s"
+
+
+@dataclass(frozen=True)
+class EventOverride:
+    log_index: int | None = None
+    amount0: str | None = None
+    amount1: str | None = None
 
 
 def file_sha256(path: Path) -> str:
@@ -88,6 +127,34 @@ def file_sha256(path: Path) -> str:
         for block in iter(lambda: handle.read(1024 * 1024), b""):
             digest.update(block)
     return digest.hexdigest()
+
+
+def _rpc_integer(value: object) -> int:
+    text = str(value)
+    return int(text, 16) if text.startswith("0x") else int(text)
+
+
+def _load_block_timestamp_evidence(path: Path) -> dict[int, int]:
+    observed: dict[int, int] = {}
+    with gzip.open(path, "rt") as handle:
+        for line in handle:
+            if not line.strip():
+                continue
+            row = json.loads(line)
+            request, response = row.get("request") or {}, row.get("response") or {}
+            params = request.get("params") or []
+            if request.get("method") != "eth_getBlockByNumber" or not params:
+                raise ValueError("invalid block-timestamp RPC evidence")
+            requested = _rpc_integer(params[0])
+            returned = _rpc_integer(response.get("number"))
+            timestamp = _rpc_integer(response.get("timestamp"))
+            if requested != returned:
+                raise ValueError("block-timestamp RPC response has the wrong block")
+            prior = observed.get(requested)
+            if prior is not None and prior != timestamp:
+                raise ValueError("conflicting block-timestamp RPC evidence")
+            observed[requested] = timestamp
+    return observed
 
 
 def correction_root_for_graph(raw_root: Path) -> Path:
@@ -123,6 +190,10 @@ def correction_paths(root: Path, venue: str, day: str) -> tuple[Path, Path]:
     return directory / f"{day}.jsonl.gz", directory / f"{day}.meta.json"
 
 
+def timestamp_evidence_path(root: Path, venue: str, day: str) -> Path:
+    return root / venue / f"{day}.block_timestamps.jsonl.gz"
+
+
 def _raw_integer(value: object, decimals: object) -> int:
     converted = human_to_raw(value, int(decimals))
     if converted is None:
@@ -139,6 +210,23 @@ def _pool_and_tokens(row: dict, venue: str) -> tuple[dict, dict, dict]:
     return pool, token0, token1
 
 
+def _event_decimals(
+    pool: dict,
+    token0: dict,
+    token1: dict,
+    pool_decimals: dict[str, tuple[int, int]] | None,
+) -> tuple[int | None, int | None]:
+    decimals0, decimals1 = token0.get("decimals"), token1.get("decimals")
+    if decimals0 is None or decimals1 is None:
+        registered = (pool_decimals or {}).get(str(pool.get("id") or "").lower())
+        if registered is not None:
+            decimals0, decimals1 = registered
+    return (
+        int(decimals0) if decimals0 is not None else None,
+        int(decimals1) if decimals1 is not None else None,
+    )
+
+
 def graph_fingerprint(
     row: dict,
     venue: str,
@@ -150,11 +238,7 @@ def graph_fingerprint(
     pool, token0, token1 = _pool_and_tokens(row, venue)
     event_type = STREAM_EVENT_TYPE[stream]
     if venue in {"uniswap_v2", "sushiswap_v2"}:
-        decimals0, decimals1 = token0.get("decimals"), token1.get("decimals")
-        if decimals0 is None or decimals1 is None:
-            decimals = (pool_decimals or {}).get(str(pool.get("id") or "").lower())
-            if decimals is not None:
-                decimals0, decimals1 = decimals
+        decimals0, decimals1 = _event_decimals(pool, token0, token1, pool_decimals)
         if decimals0 is None or decimals1 is None:
             raise ValueError("V2 Graph event lacks token decimals")
         if event_type == "swap":
@@ -173,11 +257,7 @@ def graph_fingerprint(
     if venue != "uniswap_v3":
         raise ValueError(f"unsupported Graph event-order venue: {venue}")
     if event_type == "swap":
-        decimals0, decimals1 = token0.get("decimals"), token1.get("decimals")
-        if decimals0 is None or decimals1 is None:
-            decimals = (pool_decimals or {}).get(str(pool.get("id") or "").lower())
-            if decimals is not None:
-                decimals0, decimals1 = decimals
+        decimals0, decimals1 = _event_decimals(pool, token0, token1, pool_decimals)
         if decimals0 is None or decimals1 is None:
             raise ValueError("V3 Graph swap lacks token decimals")
         return (
@@ -201,7 +281,7 @@ def graph_event(
     stream: str,
     pool_decimals: dict[str, tuple[int, int]] | None = None,
 ) -> GraphEvent:
-    pool, _token0, _token1 = _pool_and_tokens(row, venue)
+    pool, token0, token1 = _pool_and_tokens(row, venue)
     block = block_value(row)
     tx_hash = transaction_id(row)
     event_id = str(row.get("id") or "")
@@ -214,7 +294,9 @@ def graph_event(
         raise ValueError("Graph event lacks a valid block-log order")
     if not event_id or not tx_hash or not pool_id:
         raise ValueError("Graph event lacks exact event, transaction, or pool identity")
+    decimals0, decimals1 = _event_decimals(pool, token0, token1, pool_decimals)
     return GraphEvent(
+        venue=venue,
         stream=stream,
         event_id=event_id,
         tx_hash=str(tx_hash).lower(),
@@ -222,27 +304,15 @@ def graph_event(
         block_number=int(block),
         provider_log_index=provider_log_index,
         fingerprint=graph_fingerprint(row, venue, stream, pool_decimals),
+        decimals0=decimals0,
+        decimals1=decimals1,
     )
 
 
 def load_v3_pool_decimals(raw_root: Path) -> dict[str, tuple[int, int]]:
-    path = v3_pool_static_path(raw_root)
-    if path is None:
+    if v3_pool_static_path(raw_root) is None:
         return {}
-    decimals: dict[str, tuple[int, int]] = {}
-    with gzip.open(path, "rt") as handle:
-        for line in handle:
-            if not line.strip():
-                continue
-            row = json.loads(line)
-            pool = str(row.get("id") or "").lower()
-            token0, token1 = row.get("token0") or {}, row.get("token1") or {}
-            value = int(token0.get("decimals")), int(token1.get("decimals"))
-            prior = decimals.get(pool)
-            if prior is not None and prior != value:
-                raise ValueError(f"conflicting V3 pool-static decimals: {pool}")
-            decimals[pool] = value
-    return decimals
+    return _pool_template_decimals(load_pool_templates(raw_root, "uniswap_v3", ""))
 
 
 def load_v2_pool_decimals(
@@ -250,33 +320,145 @@ def load_v2_pool_decimals(
     venue: str,
     day: str,
 ) -> dict[str, tuple[int, int]]:
-    path = raw_root / venue / f"{venue}_hourly_reserves_{day}.jsonl.gz"
-    if not path.is_file():
-        raise FileNotFoundError(path)
-    decimals: dict[str, tuple[int, int]] = {}
+    return _pool_template_decimals(load_pool_templates(raw_root, venue, day))
+
+
+def load_pool_templates(raw_root: Path, venue: str, day: str) -> dict[str, dict]:
+    """Load the canonical pool statics needed to materialise omitted exact events."""
+
+    if venue == "uniswap_v3":
+        path = v3_pool_static_path(raw_root)
+        if path is None:
+            raise FileNotFoundError("V3 pool-static registry is absent")
+        container = "pool"
+    elif venue in {"uniswap_v2", "sushiswap_v2"}:
+        path = raw_root / venue / f"{venue}_hourly_reserves_{day}.jsonl.gz"
+        if not path.is_file():
+            raise FileNotFoundError(path)
+        container = "pair"
+    else:
+        raise ValueError(f"unsupported pool-template venue: {venue}")
+    templates: dict[str, dict] = {}
+    identities: dict[str, tuple[object, ...]] = {}
     with gzip.open(path, "rt") as handle:
         for line in handle:
             if not line.strip():
                 continue
             row = json.loads(line)
-            pair = row.get("pair") or {}
-            pool = str(pair.get("id") or "").lower()
-            token0, token1 = pair.get("token0") or {}, pair.get("token1") or {}
-            if token0.get("decimals") is None or token1.get("decimals") is None:
+            template = row if venue == "uniswap_v3" else row.get(container) or {}
+            pool = str(template.get("id") or "").lower()
+            token0, token1 = template.get("token0") or {}, template.get("token1") or {}
+            identity = (
+                str(token0.get("id") or "").lower(),
+                str(token1.get("id") or "").lower(),
+                token0.get("decimals"),
+                token1.get("decimals"),
+                template.get("feeTier"),
+            )
+            if not pool or any(value in (None, "") for value in identity[:4]):
                 continue
-            value = int(token0["decimals"]), int(token1["decimals"])
-            prior = decimals.get(pool)
-            if prior is not None and prior != value:
-                raise ValueError(f"conflicting V2 pool-snapshot decimals: {venue}/{pool}")
-            decimals[pool] = value
-    return decimals
+            prior = identities.get(pool)
+            if prior is not None and prior != identity:
+                raise ValueError(f"conflicting canonical pool template: {venue}/{pool}")
+            identities[pool] = identity
+            templates[pool] = template
+    return templates
+
+
+def _pool_template_decimals(
+    templates: dict[str, dict],
+) -> dict[str, tuple[int, int]]:
+    return {
+        pool: (int(template["token0"]["decimals"]), int(template["token1"]["decimals"]))
+        for pool, template in templates.items()
+    }
+
+
+def supplement_source_row(
+    event: ChainEvent,
+    pool_template: dict,
+    timestamp: int,
+) -> dict[str, object]:
+    """Materialise one exact-chain omission in the provider-shaped canonical boundary."""
+
+    token0, token1 = pool_template.get("token0") or {}, pool_template.get("token1") or {}
+    if token0.get("decimals") is None or token1.get("decimals") is None:
+        raise ValueError(f"supplement lacks pool decimals: {event.venue}/{event.pool}")
+    decimals0, decimals1 = int(token0["decimals"]), int(token1["decimals"])
+    row: dict[str, object] = {
+        "id": f"chain:{event.tx_hash}:{event.log_index}",
+        "transaction": {
+            "id": event.tx_hash,
+            "blockNumber": str(event.block_number),
+            "timestamp": str(timestamp),
+        },
+        "timestamp": str(timestamp),
+        "logIndex": str(event.log_index),
+        "amountUSD": None,
+    }
+    if event.venue == "uniswap_v3":
+        row["pool"] = pool_template
+        if event.event_type == "swap":
+            row.update(
+                {
+                    "amount0": raw_to_human(event.payload["amount0"], decimals0),
+                    "amount1": raw_to_human(event.payload["amount1"], decimals1),
+                    "sqrtPriceX96": str(event.payload["sqrt_price_x96"]),
+                    "tick": str(event.payload["tick"]),
+                }
+            )
+        else:
+            row.update(
+                {
+                    "amount": str(event.payload["amount"]),
+                    "amount0": raw_to_human(event.payload["amount0"], decimals0),
+                    "amount1": raw_to_human(event.payload["amount1"], decimals1),
+                    "tickLower": str(event.payload["tick_lower"]),
+                    "tickUpper": str(event.payload["tick_upper"]),
+                }
+            )
+        return row
+    row["pair"] = pool_template
+    if event.event_type == "swap":
+        row.update(
+            {
+                "amount0In": raw_to_human(event.payload["amount0_in"], decimals0),
+                "amount1In": raw_to_human(event.payload["amount1_in"], decimals1),
+                "amount0Out": raw_to_human(event.payload["amount0_out"], decimals0),
+                "amount1Out": raw_to_human(event.payload["amount1_out"], decimals1),
+            }
+        )
+    else:
+        row.update(
+            {
+                "amount0": raw_to_human(event.payload["amount0"], decimals0),
+                "amount1": raw_to_human(event.payload["amount1"], decimals1),
+            }
+        )
+    return row
+
+
+def supplement_action(event: ChainEvent, source_row: dict[str, object]) -> dict[str, object]:
+    return {
+        "action": "supplement",
+        "schema_version": SCHEMA_VERSION,
+        "venue": event.venue,
+        "stream": event.stream,
+        "event_id": source_row["id"],
+        "tx_hash": event.tx_hash,
+        "pool": event.pool,
+        "block_number": event.block_number,
+        "provider_log_index": None,
+        "chain_log_index": event.log_index,
+        "source_row": source_row,
+    }
 
 
 def load_graph_events(raw_root: Path, venue: str, day: str) -> list[GraphEvent]:
     if venue not in SUPPORTED_VENUES:
         raise ValueError(f"unsupported Graph event-order venue: {venue}")
     events: list[GraphEvent] = []
-    ids: set[tuple[str, str]] = set()
+    identities: dict[tuple[str, str], GraphEvent] = {}
     pool_decimals = (
         load_v3_pool_decimals(raw_root)
         if venue == "uniswap_v3"
@@ -291,9 +473,10 @@ def load_graph_events(raw_root: Path, venue: str, day: str) -> list[GraphEvent]:
                     continue
                 event = graph_event(json.loads(line), venue, stream, pool_decimals)
                 identity = stream, event.event_id
-                if identity in ids:
-                    raise ValueError(f"duplicate Graph event entity: {identity}")
-                ids.add(identity)
+                prior = identities.get(identity)
+                if prior is not None and prior != event:
+                    raise ValueError(f"conflicting duplicate Graph event entity: {identity}")
+                identities[identity] = event
                 events.append(event)
     if not events:
         raise RuntimeError(f"Graph event-order audit has no events for {venue}/{day}")
@@ -314,9 +497,16 @@ def chain_event(record: dict[str, object], venue: str) -> ChainEvent:
         if event_type == "swap":
             values = tuple(int(value) for value in abi_decode(["uint256"] * 4, data))
             fingerprint = (event_type, *values)
+            payload = {
+                "amount0_in": values[0],
+                "amount1_in": values[1],
+                "amount0_out": values[2],
+                "amount1_out": values[3],
+            }
         elif event_type in {"mint", "burn"}:
             values = tuple(int(value) for value in abi_decode(["uint256"] * 2, data))
             fingerprint = (event_type, *values)
+            payload = {"amount0": values[0], "amount1": values[1]}
         else:
             raise ValueError("exact Ethereum event has an unregistered V2 topic")
     elif venue == "uniswap_v3":
@@ -332,37 +522,62 @@ def chain_event(record: dict[str, object], venue: str) -> ChainEvent:
                 int(sqrt_price),
                 int(tick),
             )
+            payload = {
+                "amount0": int(amount0),
+                "amount1": int(amount1),
+                "sqrt_price_x96": int(sqrt_price),
+                "liquidity": int(_liquidity),
+                "tick": int(tick),
+            }
         elif event_type == "mint":
-            _sender, amount, _amount0, _amount1 = abi_decode(
+            _sender, amount, amount0, amount1 = abi_decode(
                 ["address", "uint128", "uint256", "uint256"], data
             )
+            tick_lower, tick_upper = _topic_int24(topics[2]), _topic_int24(topics[3])
             fingerprint = (
                 event_type,
                 int(amount),
-                _topic_int24(topics[2]),
-                _topic_int24(topics[3]),
+                tick_lower,
+                tick_upper,
             )
+            payload = {
+                "amount": int(amount),
+                "amount0": int(amount0),
+                "amount1": int(amount1),
+                "tick_lower": tick_lower,
+                "tick_upper": tick_upper,
+            }
         elif event_type == "burn":
-            amount, _amount0, _amount1 = abi_decode(
+            amount, amount0, amount1 = abi_decode(
                 ["uint128", "uint256", "uint256"], data
             )
+            tick_lower, tick_upper = _topic_int24(topics[2]), _topic_int24(topics[3])
             fingerprint = (
                 event_type,
                 int(amount),
-                _topic_int24(topics[2]),
-                _topic_int24(topics[3]),
+                tick_lower,
+                tick_upper,
             )
+            payload = {
+                "amount": int(amount),
+                "amount0": int(amount0),
+                "amount1": int(amount1),
+                "tick_lower": tick_lower,
+                "tick_upper": tick_upper,
+            }
         else:
             raise ValueError("exact Ethereum event has an unregistered V3 topic")
     else:
         raise ValueError(f"unsupported exact event-order venue: {venue}")
     return ChainEvent(
+        venue=venue,
         event_type=event_type,
         tx_hash=str(record["transaction_hash"]).lower(),
         pool=str(record["address"]).lower(),
         block_number=int(record["block_number"]),
         log_index=int(record["log_index"]),
         fingerprint=fingerprint,
+        payload=payload,
     )
 
 
@@ -378,8 +593,8 @@ def match_event_orders(
     graph_events: Iterable[GraphEvent],
     exact_records: Iterable[dict[str, object]],
     venue: str,
-) -> tuple[list[dict[str, object]], dict[str, int]]:
-    """Match a complete Graph-observed block span and emit only changed orders."""
+) -> tuple[list[dict[str, object]], list[ChainEvent], dict[str, int]]:
+    """Reconcile provider rows to exact logs without treating omissions as order fixes."""
 
     graph = list(graph_events)
     pools = {event.pool for event in graph}
@@ -394,64 +609,175 @@ def match_event_orders(
         graph_groups[event.match_key].append(event)
     for event in exact:
         exact_groups[event.match_key].append(event)
-    mismatched_groups = {
-        key
-        for key in set(graph_groups) | set(exact_groups)
-        if len(graph_groups.get(key, [])) != len(exact_groups.get(key, []))
-    }
-    if mismatched_groups:
-        graph_only = sum(len(graph_groups.get(key, [])) for key in mismatched_groups)
-        exact_only = sum(len(exact_groups.get(key, [])) for key in mismatched_groups)
-        raise RuntimeError(
-            "exact event-order reconciliation has unmatched economic groups: "
-            f"groups={len(mismatched_groups):,}; graph_rows={graph_only:,}; "
-            f"exact_rows={exact_only:,}"
-        )
     corrections: list[dict[str, object]] = []
-    for key in sorted(graph_groups, key=str):
-        provider_group = sorted(graph_groups[key], key=lambda event: event.event_id)
-        chain_group = sorted(exact_groups[key], key=lambda event: event.log_index)
-        for provider, chain in zip(provider_group, chain_group, strict=True):
+    supplements: list[ChainEvent] = []
+    provider_duplicate_rows = 0
+    unique_graph_events = 0
+    matched_events = 0
+    payload_mismatches = 0
+    ignored_zero_liquidity_events = 0
+    unmatched_graph_events = 0
+    correction_keys: set[CorrectionKey] = set()
+    for key in sorted(set(graph_groups) | set(exact_groups), key=str):
+        duplicate_groups: dict[tuple[object, ...], list[GraphEvent]] = defaultdict(list)
+        for event in graph_groups.get(key, []):
+            duplicate_groups[event.duplicate_key].append(event)
+        provider_groups = sorted(
+            duplicate_groups.values(),
+            key=lambda group: (group[0].provider_log_index, group[0].event_id),
+        )
+        chain_remaining = sorted(exact_groups.get(key, []), key=lambda event: event.log_index)
+        unique_graph_events += len(provider_groups)
+        provider_duplicate_rows += sum(len(group) - 1 for group in provider_groups)
+        for duplicate_group in provider_groups:
+            provider = min(duplicate_group, key=lambda event: event.event_id)
+            exact_payload_matches = [
+                event
+                for event in chain_remaining
+                if event.fingerprint == provider.fingerprint
+            ]
+            if exact_payload_matches:
+                chain = min(exact_payload_matches, key=lambda event: event.log_index)
+            else:
+                same_log = [
+                    event
+                    for event in chain_remaining
+                    if event.log_index == provider.provider_log_index
+                ]
+                if len(same_log) == 1:
+                    chain = same_log[0]
+                elif len(chain_remaining) == 1:
+                    chain = chain_remaining[0]
+                elif chain_remaining:
+                    raise RuntimeError(
+                        "ambiguous structural V3 payload reconciliation: "
+                        f"{venue}/{provider.stream}/{provider.tx_hash}/{provider.pool}"
+                    )
+                else:
+                    chain = None
+            if chain is None:
+                unmatched_graph_events += 1
+                continue
+            chain_remaining.remove(chain)
             if provider.block_number != chain.block_number:
                 raise ValueError(
                     f"Graph and chain blocks disagree for {provider.stream}/{provider.event_id}"
                 )
-            if provider.provider_log_index == chain.log_index:
-                continue
+            matched_events += 1
+            payload_mismatch = provider.fingerprint != chain.fingerprint
+            if payload_mismatch and not (
+                venue == "uniswap_v3" and chain.event_type == "swap"
+            ):
+                raise RuntimeError(
+                    "exact event-order reconciliation found an unsupported payload mismatch: "
+                    f"{venue}/{provider.stream}/{provider.event_id}"
+                )
+            amount_overrides: dict[str, str] = {}
+            if payload_mismatch:
+                if provider.decimals0 is None or provider.decimals1 is None:
+                    raise ValueError("V3 payload correction lacks canonical token decimals")
+                payload_mismatches += 1
+                amount_overrides = {
+                    "amount0_override": raw_to_human(
+                        chain.payload["amount0"], provider.decimals0
+                    ),
+                    "amount1_override": raw_to_human(
+                        chain.payload["amount1"], provider.decimals1
+                    ),
+                }
             fingerprint_hash = hashlib.sha256(
                 json.dumps(provider.fingerprint, separators=(",", ":")).encode()
             ).hexdigest()
-            corrections.append(
-                {
+            exact_fingerprint_hash = hashlib.sha256(
+                json.dumps(chain.fingerprint, separators=(",", ":")).encode()
+            ).hexdigest()
+            for duplicate in duplicate_group:
+                if (
+                    duplicate.provider_log_index == chain.log_index
+                    and not payload_mismatch
+                ):
+                    continue
+                if duplicate.correction_key in correction_keys:
+                    continue
+                correction_keys.add(duplicate.correction_key)
+                corrections.append({
+                    "action": "correction",
                     "schema_version": SCHEMA_VERSION,
                     "venue": venue,
-                    "stream": provider.stream,
-                    "event_id": provider.event_id,
-                    "tx_hash": provider.tx_hash,
-                    "pool": provider.pool,
-                    "block_number": provider.block_number,
-                    "provider_log_index": provider.provider_log_index,
+                    "stream": duplicate.stream,
+                    "event_id": duplicate.event_id,
+                    "tx_hash": duplicate.tx_hash,
+                    "pool": duplicate.pool,
+                    "block_number": duplicate.block_number,
+                    "provider_log_index": duplicate.provider_log_index,
                     "chain_log_index": chain.log_index,
                     "event_fingerprint_sha256": fingerprint_hash,
-                }
+                    "exact_event_fingerprint_sha256": exact_fingerprint_hash,
+                    **amount_overrides,
+                })
+        for chain in chain_remaining:
+            is_zero_liquidity = bool(
+                venue == "uniswap_v3"
+                and chain.event_type in {"mint", "burn"}
+                and chain.payload["amount"] == 0
             )
-    return corrections, {
+            if is_zero_liquidity:
+                ignored_zero_liquidity_events += 1
+            else:
+                supplements.append(chain)
+    if unmatched_graph_events:
+        raise RuntimeError(
+            "exact event-order reconciliation has provider events absent from exact logs: "
+            f"{unmatched_graph_events:,} unique rows"
+        )
+    if matched_events + len(supplements) + ignored_zero_liquidity_events != len(exact):
+        raise AssertionError("exact event reconciliation accounting does not balance")
+    return corrections, supplements, {
         "graph_events": len(graph),
+        "unique_graph_events": unique_graph_events,
+        "provider_duplicate_rows": provider_duplicate_rows,
         "exact_events_in_graph_pool_perimeter": len(exact),
-        "matched_events": len(graph),
+        "matched_events": matched_events,
         "correction_rows": len(corrections),
+        "payload_mismatches": payload_mismatches,
+        "supplement_rows": len(supplements),
+        "ignored_zero_liquidity_events": ignored_zero_liquidity_events,
         "unmatched_graph_events": 0,
         "unmatched_exact_events": 0,
     }
 
 
 class EventOrderCorrections:
-    """Validated one-use correction registry for one venue-day partition."""
+    """Validated one-use exact-event reconciliation for one venue-day partition."""
 
     def __init__(self, rows: Iterable[dict[str, object]]) -> None:
-        self._rows: dict[CorrectionKey, int] = {}
+        self._rows: dict[CorrectionKey, EventOverride] = {}
         self._used: set[CorrectionKey] = set()
+        self._supplements: dict[str, list[dict]] = defaultdict(list)
+        self._supplement_streams_used: set[str] = set()
         for row in rows:
+            action = str(row.get("action") or "")
+            if action == "supplement":
+                stream = str(row.get("stream") or "")
+                source_row = row.get("source_row")
+                if stream not in CORE_STREAMS or not isinstance(source_row, dict):
+                    raise ValueError("invalid exact-event supplement")
+                venue = str(row.get("venue") or "")
+                pool, _token0, _token1 = _pool_and_tokens(source_row, venue)
+                if (
+                    str(source_row.get("id") or "") != str(row.get("event_id") or "")
+                    or str(transaction_id(source_row) or "").lower()
+                    != str(row.get("tx_hash") or "").lower()
+                    or str(pool.get("id") or "").lower()
+                    != str(row.get("pool") or "").lower()
+                    or int(block_value(source_row)) != int(row["block_number"])
+                    or int(source_row["logIndex"]) != int(row["chain_log_index"])
+                ):
+                    raise ValueError("exact-event supplement identity does not reconcile")
+                self._supplements[stream].append(source_row)
+                continue
+            if action != "correction":
+                raise ValueError(f"unknown event reconciliation action: {action}")
             key = (
                 str(row["stream"]),
                 str(row["event_id"]),
@@ -463,11 +789,21 @@ class EventOrderCorrections:
             if key in self._rows:
                 raise ValueError(f"duplicate event-order correction: {key}")
             chain_log_index = int(row["chain_log_index"])
-            if chain_log_index < 0 or chain_log_index == key[-1]:
+            amount0 = row.get("amount0_override")
+            amount1 = row.get("amount1_override")
+            if (amount0 is None) != (amount1 is None):
+                raise ValueError(f"partial payload correction: {key}")
+            if chain_log_index < 0 or (
+                chain_log_index == key[-1] and amount0 is None
+            ):
                 raise ValueError(f"invalid event-order correction: {key}")
-            self._rows[key] = chain_log_index
+            self._rows[key] = EventOverride(
+                log_index=chain_log_index,
+                amount0=str(amount0) if amount0 is not None else None,
+                amount1=str(amount1) if amount1 is not None else None,
+            )
 
-    def resolve(self, venue: str, stream: str, row: dict) -> int | None:
+    def resolve(self, venue: str, stream: str, row: dict) -> EventOverride | None:
         if not self._rows:
             return None
         pool, _token0, _token1 = _pool_and_tokens(row, venue)
@@ -489,11 +825,21 @@ class EventOrderCorrections:
             self._used.add(key)
         return corrected
 
+    def supplements(self, stream: str) -> list[dict]:
+        self._supplement_streams_used.add(stream)
+        return list(self._supplements.get(stream, []))
+
     def require_fully_applied(self) -> None:
         unused = set(self._rows) - self._used
         if unused:
             raise ValueError(
                 f"event-order generation contains {len(unused):,} stale or unapplied corrections"
+            )
+        unused_streams = set(self._supplements) - self._supplement_streams_used
+        if unused_streams:
+            raise ValueError(
+                "event-order generation contains unapplied supplement streams: "
+                + ", ".join(sorted(unused_streams))
             )
 
 
@@ -504,14 +850,17 @@ def write_correction_generation(
     venue: str,
     day: str,
     corrections: list[dict[str, object]],
+    supplements: list[dict[str, object]],
+    block_timestamp_evidence: list[dict[str, object]],
     exact_log_paths: list[Path],
     audit: dict[str, int],
     start_block: int,
     end_block: int,
 ) -> tuple[Path, Path]:
     data_path, meta_path = correction_paths(root, venue, day)
+    timestamp_path = timestamp_evidence_path(root, venue, day)
     ordered = sorted(
-        ({**row, "day": day} for row in corrections),
+        ({**row, "day": day} for row in [*corrections, *supplements]),
         key=lambda row: (
             int(row["block_number"]),
             int(row["chain_log_index"]),
@@ -520,6 +869,7 @@ def write_correction_generation(
         ),
     )
     write_jsonl_gz(data_path, ordered)
+    write_jsonl_gz(timestamp_path, block_timestamp_evidence)
     provider_paths = provider_order_input_paths(raw_root, venue, day)
     metadata = {
         "status": "complete",
@@ -536,7 +886,8 @@ def write_correction_generation(
         "exact_log_inputs_sha256": {
             str(path.relative_to(root)): file_sha256(path) for path in exact_log_paths
         },
-        "corrections_sha256": file_sha256(data_path),
+        "reconciliation_sha256": file_sha256(data_path),
+        "block_timestamp_evidence_sha256": file_sha256(timestamp_path),
         **audit,
     }
     write_json(meta_path, metadata)
@@ -569,8 +920,14 @@ def load_event_order_corrections(
     }
     if metadata.get("provider_inputs_sha256") != current_provider:
         raise ValueError(f"stale event-order generation against Graph inputs: {venue}/{day}")
-    if metadata.get("corrections_sha256") != file_sha256(data_path):
-        raise ValueError(f"corrupted event-order correction data: {venue}/{day}")
+    if metadata.get("reconciliation_sha256") != file_sha256(data_path):
+        raise ValueError(f"corrupted event-order reconciliation data: {venue}/{day}")
+    timestamp_path = timestamp_evidence_path(root, venue, day)
+    if (
+        not timestamp_path.is_file()
+        or metadata.get("block_timestamp_evidence_sha256") != file_sha256(timestamp_path)
+    ):
+        raise ValueError(f"missing or stale block-timestamp evidence: {venue}/{day}")
     exact_paths = [root / relative for relative in metadata.get("exact_log_inputs_sha256", {})]
     expected_exact = metadata.get("exact_log_inputs_sha256") or {}
     observed_exact = {
@@ -592,6 +949,18 @@ def load_event_order_corrections(
                 ):
                     raise ValueError(f"wrong event-order correction schema for {venue}/{day}")
                 rows.append(row)
-    if len(rows) != int(metadata.get("correction_rows", -1)):
-        raise ValueError(f"event-order correction row count differs for {venue}/{day}")
-    return EventOrderCorrections(rows), [data_path, meta_path, *exact_paths]
+    timestamps = _load_block_timestamp_evidence(timestamp_path)
+    for row in rows:
+        if row.get("action") != "supplement":
+            continue
+        source_row = row.get("source_row") or {}
+        block = int(row["block_number"])
+        timestamp = timestamp_value(source_row)
+        if timestamp is None or timestamps.get(block) != timestamp:
+            raise ValueError(f"unproved supplement timestamp for {venue}/{day}/{block}")
+    expected_rows = int(metadata.get("correction_rows", -1)) + int(
+        metadata.get("supplement_rows", -1)
+    )
+    if len(rows) != expected_rows:
+        raise ValueError(f"event-order reconciliation row count differs for {venue}/{day}")
+    return EventOrderCorrections(rows), [data_path, meta_path, timestamp_path, *exact_paths]

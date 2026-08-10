@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import unittest
 
-from ddvc.amounts import human_to_raw
+from ddvc.amounts import human_to_raw, raw_to_human
 
 
 class AmountTests(unittest.TestCase):
@@ -23,6 +23,18 @@ class AmountTests(unittest.TestCase):
         self.assertIsNone(human_to_raw("NaN", 18))
         self.assertIsNone(human_to_raw("Infinity", 18))
         self.assertIsNone(human_to_raw("1", -1))
+
+    def test_raw_to_human_is_exact_for_large_signed_amounts(self) -> None:
+        self.assertEqual(
+            raw_to_human(-134659708639360367020044220053, 18),
+            "-134659708639.360367020044220053",
+        )
+        self.assertEqual(raw_to_human(2_000_000, 6), "2")
+        self.assertEqual(raw_to_human(0, 0), "0")
+
+    def test_raw_to_human_rejects_invalid_decimals(self) -> None:
+        with self.assertRaises(ValueError):
+            raw_to_human(1, -1)
 
 
 if __name__ == "__main__":

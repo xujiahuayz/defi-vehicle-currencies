@@ -25,7 +25,7 @@ from ddvc.execution_contracts import (
     TICK_STATE_GENERATIONS,
     execution_semantics,
 )
-from ddvc.graph_event_order import load_event_order_corrections
+from ddvc.graph_event_order import EventOrderCorrections, load_event_order_corrections
 from ddvc.paths import DATA_DIR
 from ddvc.provenance import cache_key
 from ddvc.runtime import atomic_output
@@ -450,6 +450,20 @@ def _missing_stream_count(raw_root: Path, family: str, venue: str, day: str) -> 
     )
 
 
+def _reconciled_stream_rows(
+    path: Path,
+    stream: str,
+    reconciliation: EventOrderCorrections | None,
+):
+    if path.exists():
+        with gzip.open(path, "rt") as handle:
+            for line in handle:
+                if line.strip():
+                    yield json.loads(line)
+    if reconciliation is not None:
+        yield from reconciliation.supplements(stream)
+
+
 def partition_input_fingerprint(paths: list[Path]) -> str:
     """Cheap partition identity; raw files are immutable and atomically replaced."""
     digest = hashlib.sha256()
@@ -481,6 +495,8 @@ def _normalise_tick_row(
     liquidity_sign: int,
     known_pool_family: str | None = None,
     log_index_override: int | None = None,
+    amount0_override: str | None = None,
+    amount1_override: str | None = None,
 ) -> tuple[dict[str, object], dict[str, bool]]:
     pool = row.get("pool") or {}
     token0 = pool.get("token0") or {}
@@ -510,7 +526,9 @@ def _normalise_tick_row(
         or timestamp is None
         or (record_type == "swap" and (not raw0 or not raw1))
     )
-    sign_state = _swap_sign(row.get("amount0"), row.get("amount1")) if record_type == "swap" else "valid"
+    amount0 = amount0_override if amount0_override is not None else row.get("amount0")
+    amount1 = amount1_override if amount1_override is not None else row.get("amount1")
+    sign_state = _swap_sign(amount0, amount1) if record_type == "swap" else "valid"
     missing_statics = False
     if record_type == "swap" and venue == "uniswap_v4":
         missing_statics = any(
@@ -569,8 +587,8 @@ def _normalise_tick_row(
         "fee_pips": _optional_int(pool.get("feeTier")),
         "tick_spacing": _optional_int(pool.get("tickSpacing")),
         "hooks": _text(pool.get("hooks")),
-        "amount0": _text(row.get("amount0")),
-        "amount1": _text(row.get("amount1")),
+        "amount0": _text(amount0),
+        "amount1": _text(amount1),
         "value_usd": _text(row.get("amountUSD")),
         "sqrt_price_x96": _text(row.get("sqrtPriceX96") or row.get("sqrtPrice")),
         "tick": _optional_int(row.get("tick")),
@@ -619,56 +637,54 @@ def normalise_tick_partition(
     pool_families: dict[str, str] = {}
     for stream, record_type, sign in TICK_STREAMS[venue]:
         path = raw_stream_path(raw_root, venue, stream, day)
-        if not path.exists():
-            continue
-        with gzip.open(path, "rt") as handle:
-            for line in handle:
-                if not line.strip():
-                    continue
-                counters["raw_rows"] += 1
-                source = json.loads(line)
-                corrected_log_index = (
-                    corrections.resolve(venue, stream, source)
-                    if corrections is not None
+        for source in _reconciled_stream_rows(path, stream, corrections):
+            counters["raw_rows"] += 1
+            override = (
+                corrections.resolve(venue, stream, source)
+                if corrections is not None
+                else None
+            )
+            record, flags = _normalise_tick_row(
+                source,
+                venue=venue,
+                day=day,
+                stream=stream,
+                record_type=record_type,
+                liquidity_sign=sign,
+                known_pool_family=(
+                    pool_families.get(
+                        str((source.get("pool") or {}).get("id") or "").lower()
+                    )
+                    if record_type != "swap"
                     else None
-                )
-                record, flags = _normalise_tick_row(
-                    source,
-                    venue=venue,
-                    day=day,
-                    stream=stream,
-                    record_type=record_type,
-                    liquidity_sign=sign,
-                    known_pool_family=(
-                        pool_families.get(str((source.get("pool") or {}).get("id") or "").lower())
-                        if record_type != "swap"
-                        else None
-                    ),
-                    log_index_override=corrected_log_index,
-                )
-                if record_type == "swap" and record["pool"]:
-                    prior_family = pool_families.get(str(record["pool"]))
-                    if prior_family is not None and prior_family != record["pool_family"]:
+                ),
+                log_index_override=override.log_index if override is not None else None,
+                amount0_override=override.amount0 if override is not None else None,
+                amount1_override=override.amount1 if override is not None else None,
+            )
+            if record_type == "swap" and record["pool"]:
+                prior_family = pool_families.get(str(record["pool"]))
+                if prior_family is not None and prior_family != record["pool_family"]:
+                    counters["conflicting_events"] += 1
+                    continue
+                pool_families[str(record["pool"])] = str(record["pool_family"])
+            counters[f"{record_type}_rows"] += 1
+            for name, flagged in flags.items():
+                counters[name] += int(flagged)
+            counters["quote_supported_swaps"] += int(record["quote_supported"])
+            if record["block_number"] is not None and record["log_index"] is not None:
+                key = (int(record["block_number"]), int(record["log_index"]))
+                prior = by_order.get(key)
+                if prior is not None:
+                    comparable = {k: v for k, v in record.items() if k != "event_id"}
+                    prior_comparable = {k: v for k, v in prior.items() if k != "event_id"}
+                    if comparable == prior_comparable:
+                        counters["duplicate_events"] += 1
+                    else:
                         counters["conflicting_events"] += 1
-                        continue
-                    pool_families[str(record["pool"])] = str(record["pool_family"])
-                counters[f"{record_type}_rows"] += 1
-                for name, flagged in flags.items():
-                    counters[name] += int(flagged)
-                counters["quote_supported_swaps"] += int(record["quote_supported"])
-                if record["block_number"] is not None and record["log_index"] is not None:
-                    key = (int(record["block_number"]), int(record["log_index"]))
-                    prior = by_order.get(key)
-                    if prior is not None:
-                        comparable = {k: v for k, v in record.items() if k != "event_id"}
-                        prior_comparable = {k: v for k, v in prior.items() if k != "event_id"}
-                        if comparable == prior_comparable:
-                            counters["duplicate_events"] += 1
-                        else:
-                            counters["conflicting_events"] += 1
-                        continue
-                    by_order[key] = record
-                rows.append(record)
+                    continue
+                by_order[key] = record
+            rows.append(record)
     if corrections is not None:
         corrections.require_fully_applied()
     frame = pd.DataFrame(rows, columns=TICK_COLUMNS)
@@ -909,53 +925,51 @@ def normalise_cp_partition(
     snapshot_keys: dict[tuple[str, int], dict[str, object]] = {}
     for stream, record_type, sign in CP_STREAMS[venue]:
         path = raw_stream_path(raw_root, venue, stream, day)
-        if not path.exists():
-            continue
-        with gzip.open(path, "rt") as handle:
-            for line in handle:
-                if not line.strip():
-                    continue
-                counters["raw_rows"] += 1
-                source = json.loads(line)
-                corrected_log_index = (
-                    corrections.resolve(venue, stream, source)
-                    if corrections is not None and record_type != "snapshot"
-                    else None
-                )
-                record, flags = _normalise_cp_row(
-                    source,
-                    venue=venue,
-                    day=day,
-                    stream=stream,
-                    record_type=record_type,
-                    liquidity_sign=sign,
-                    log_index_override=corrected_log_index,
-                )
-                counters[f"{record_type}_rows"] += 1
-                for name, flagged in flags.items():
-                    counters[name] += int(flagged)
-                counters["quote_supported_swaps"] += int(
-                    record_type == "swap" and record["quote_supported"]
-                )
-                if record_type == "snapshot" and record["pool"] and record["period_start"] is not None:
-                    key = (str(record["pool"]), int(record["period_start"]))
-                    prior = snapshot_keys.get(key)
-                    snapshot_keys[key] = record
-                elif record["block_number"] is not None and record["log_index"] is not None:
-                    key = (int(record["block_number"]), int(record["log_index"]))
-                    prior = event_orders.get(key)
-                    event_orders[key] = record
+        for source in _reconciled_stream_rows(path, stream, corrections):
+            counters["raw_rows"] += 1
+            override = (
+                corrections.resolve(venue, stream, source)
+                if corrections is not None and record_type != "snapshot"
+                else None
+            )
+            record, flags = _normalise_cp_row(
+                source,
+                venue=venue,
+                day=day,
+                stream=stream,
+                record_type=record_type,
+                liquidity_sign=sign,
+                log_index_override=override.log_index if override is not None else None,
+            )
+            counters[f"{record_type}_rows"] += 1
+            for name, flagged in flags.items():
+                counters[name] += int(flagged)
+            counters["quote_supported_swaps"] += int(
+                record_type == "swap" and record["quote_supported"]
+            )
+            if record_type == "snapshot" and record["pool"] and record["period_start"] is not None:
+                key = (str(record["pool"]), int(record["period_start"]))
+                prior = snapshot_keys.get(key)
+                snapshot_keys[key] = record
+            elif record["block_number"] is not None and record["log_index"] is not None:
+                key = (int(record["block_number"]), int(record["log_index"]))
+                prior = event_orders.get(key)
+                event_orders[key] = record
+            else:
+                prior = None
+            if prior is not None:
+                comparable = {
+                    name: value for name, value in record.items() if name != "event_id"
+                }
+                prior_comparable = {
+                    name: value for name, value in prior.items() if name != "event_id"
+                }
+                if comparable == prior_comparable:
+                    counters["duplicate_events"] += 1
                 else:
-                    prior = None
-                if prior is not None:
-                    comparable = {name: value for name, value in record.items() if name != "event_id"}
-                    prior_comparable = {name: value for name, value in prior.items() if name != "event_id"}
-                    if comparable == prior_comparable:
-                        counters["duplicate_events"] += 1
-                    else:
-                        counters["conflicting_events"] += 1
-                    continue
-                rows.append(record)
+                    counters["conflicting_events"] += 1
+                continue
+            rows.append(record)
     if corrections is not None:
         corrections.require_fully_applied()
     frame = pd.DataFrame(rows, columns=CP_COLUMNS)

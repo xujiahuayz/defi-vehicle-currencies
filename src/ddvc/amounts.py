@@ -23,3 +23,17 @@ def human_to_raw(value: object, decimals: int) -> str | None:
         if remainder:
             return None
     return str(-integer if sign else integer)
+
+
+def raw_to_human(value: int, decimals: int) -> str:
+    """Render an integer base-unit amount as an exact human-unit decimal."""
+
+    if decimals < 0:
+        raise ValueError("token decimals cannot be negative")
+    parsed = int(value)
+    sign = "-" if parsed < 0 else ""
+    digits = str(abs(parsed)).rjust(decimals + 1, "0")
+    if decimals == 0:
+        return sign + digits
+    whole, fraction = digits[:-decimals], digits[-decimals:]
+    return sign + whole + "." + fraction.rstrip("0") if fraction.rstrip("0") else sign + whole
