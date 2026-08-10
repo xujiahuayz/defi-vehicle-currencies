@@ -95,13 +95,13 @@ def interruptible_process_pool(max_workers: int) -> Iterator[ProcessPoolExecutor
 
 @contextmanager
 def interruptible_thread_pool(max_workers: int) -> Iterator[ThreadPoolExecutor]:
-    """Cancel queued thread work on interruption and let only active calls unwind."""
+    """Cancel queued work and wait for active calls before failure escapes."""
 
     executor = ThreadPoolExecutor(max_workers=max_workers)
     try:
         yield executor
     except BaseException:
-        executor.shutdown(wait=False, cancel_futures=True)
+        executor.shutdown(wait=True, cancel_futures=True)
         raise
     else:
         executor.shutdown(wait=True)

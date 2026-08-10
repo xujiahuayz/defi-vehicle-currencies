@@ -101,6 +101,164 @@ class RpcPostTests(unittest.TestCase):
                 retry_json_errors=True,
             )
 
+    def test_evidence_mode_returns_sanitized_attempts(self) -> None:
+        accepted = Response({"jsonrpc": "2.0", "id": 1, "result": []})
+        with (
+            patch.object(quoter, "rpc_urls", return_value=["https://user:secret@example.test/key?a=secret"]),
+            patch.object(quoter.urllib.request, "urlopen", return_value=accepted),
+        ):
+            envelope = quoter.rpc_post(
+                {"jsonrpc": "2.0", "id": 1, "method": "eth_getLogs", "params": []},
+                retries=1,
+                retry_json_errors=True,
+                return_evidence=True,
+                classify_capacity=True,
+            )
+        self.assertIsInstance(envelope, quoter.RpcEnvelope)
+        self.assertEqual(envelope.endpoint["host"], "example.test")
+        self.assertNotIn("secret", json.dumps(envelope.attempts))
+        self.assertEqual(envelope.attempts[-1]["classification"], "success")
+        self.assertEqual(
+            envelope.endpoint,
+            quoter.sanitized_endpoint_identity("https://different:credential@example.test/other"),
+        )
+
+    def test_evidence_redacts_credentials_echoed_by_provider_errors(self) -> None:
+        rejected = Response(
+            {"jsonrpc": "2.0", "id": 1, "error": {"code": -32000, "message": "api key secret-token is invalid"}}
+        )
+        accepted = Response({"jsonrpc": "2.0", "id": 1, "result": []})
+        with (
+            patch.object(
+                quoter,
+                "rpc_urls",
+                return_value=["https://user:secret-token@first.test/private", "https://second.test"],
+            ),
+            patch.object(quoter.urllib.request, "urlopen", side_effect=[rejected, accepted]),
+        ):
+            envelope = quoter.rpc_post(
+                {"jsonrpc": "2.0", "id": 1, "method": "eth_getLogs", "params": []},
+                retries=1,
+                retry_json_errors=True,
+                return_evidence=True,
+                classify_capacity=True,
+            )
+        self.assertNotIn("secret-token", json.dumps(envelope.attempts))
+        self.assertEqual(envelope.attempts[0]["message"], "api key")
+
+    def test_explicit_result_cap_licenses_bisection(self) -> None:
+        rejected = Response(
+            {"jsonrpc": "2.0", "id": 1, "error": {"code": -32005, "message": "too many results"}}
+        )
+        with (
+            patch.object(quoter, "rpc_urls", return_value=["https://first"]),
+            patch.object(quoter.urllib.request, "urlopen", return_value=rejected),
+            self.assertRaises(quoter.RpcCapacityError) as raised,
+        ):
+            quoter.rpc_post(
+                {"jsonrpc": "2.0", "id": 1, "method": "eth_getLogs", "params": []},
+                retries=1,
+                retry_json_errors=True,
+                classify_capacity=True,
+            )
+        self.assertEqual(raised.exception.attempts[-1]["classification"], "capacity")
+
+    def test_ambiguous_minus_32005_is_transient_not_capacity(self) -> None:
+        rejected = Response(
+            {"jsonrpc": "2.0", "id": 1, "error": {"code": -32005, "message": "temporarily unavailable"}}
+        )
+        with (
+            patch.object(quoter, "rpc_urls", return_value=["https://first"]),
+            patch.object(quoter.urllib.request, "urlopen", return_value=rejected),
+            self.assertRaises(quoter.Throttled),
+        ):
+            quoter.rpc_post(
+                {"jsonrpc": "2.0", "id": 1, "method": "eth_getLogs", "params": []},
+                retries=1,
+                retry_json_errors=True,
+                classify_capacity=True,
+            )
+
+    def test_timeout_is_transient_not_capacity(self) -> None:
+        with (
+            patch.object(quoter, "rpc_urls", return_value=["https://first"]),
+            patch.object(quoter.urllib.request, "urlopen", side_effect=TimeoutError("slow")),
+            self.assertRaises(quoter.Throttled),
+        ):
+            quoter.rpc_post(
+                {"jsonrpc": "2.0", "id": 1, "method": "eth_getLogs", "params": []},
+                retries=1,
+                retry_json_errors=True,
+                classify_capacity=True,
+            )
+
+    def test_terminal_semantic_error_takes_precedence_over_capacity(self) -> None:
+        terminal = Response(
+            {"jsonrpc": "2.0", "id": 1, "error": {"code": -32602, "message": "invalid params"}}
+        )
+        capacity = Response(
+            {"jsonrpc": "2.0", "id": 1, "error": {"code": -32005, "message": "too many results"}}
+        )
+        with (
+            patch.object(quoter, "rpc_urls", return_value=["https://first", "https://second"]),
+            patch.object(quoter.urllib.request, "urlopen", side_effect=[terminal, capacity]),
+            self.assertRaises(quoter.RpcSemanticError),
+        ):
+            quoter.rpc_post(
+                {"jsonrpc": "2.0", "id": 1, "method": "eth_getLogs", "params": []},
+                retries=1,
+                retry_json_errors=True,
+                classify_capacity=True,
+            )
+
+    def test_unavailable_authenticated_endpoint_does_not_block_capacity_classification(self) -> None:
+        unavailable = Response(
+            {"jsonrpc": "2.0", "id": 1, "error": {"code": -32000, "message": "authentication required"}}
+        )
+        capacity = Response(
+            {"jsonrpc": "2.0", "id": 1, "error": {"code": -32005, "message": "too many results"}}
+        )
+        with (
+            patch.object(quoter, "rpc_urls", return_value=["https://first", "https://second"]),
+            patch.object(quoter.urllib.request, "urlopen", side_effect=[unavailable, capacity]),
+            self.assertRaises(quoter.RpcCapacityError),
+        ):
+            quoter.rpc_post(
+                {"jsonrpc": "2.0", "id": 1, "method": "eth_getLogs", "params": []},
+                retries=1,
+                retry_json_errors=True,
+                classify_capacity=True,
+            )
+
+    def test_batch_error_rotates_before_accepting_two_item_evidence(self) -> None:
+        rejected = Response(
+            [
+                {"jsonrpc": "2.0", "id": 1, "error": {"code": -32001, "message": "usage limit"}},
+                {"jsonrpc": "2.0", "id": 2, "result": {"number": "0x1"}},
+            ]
+        )
+        accepted_body = [
+            {"jsonrpc": "2.0", "id": 1, "result": []},
+            {"jsonrpc": "2.0", "id": 2, "result": {"number": "0x1"}},
+        ]
+        accepted = Response(accepted_body)
+        with (
+            patch.object(quoter, "rpc_urls", return_value=["https://first", "https://second"]),
+            patch.object(quoter.urllib.request, "urlopen", side_effect=[rejected, accepted]),
+        ):
+            envelope = quoter.rpc_post(
+                [
+                    {"jsonrpc": "2.0", "id": 1, "method": "eth_getLogs", "params": []},
+                    {"jsonrpc": "2.0", "id": 2, "method": "eth_getBlockByNumber", "params": ["0x1", False]},
+                ],
+                retries=1,
+                retry_json_errors=True,
+                return_evidence=True,
+                classify_capacity=True,
+            )
+        self.assertEqual(envelope.response, accepted_body)
+        self.assertEqual([attempt["classification"] for attempt in envelope.attempts], ["transient", "success"])
+
 
 if __name__ == "__main__":
     unittest.main()

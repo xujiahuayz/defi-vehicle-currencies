@@ -18,21 +18,13 @@ import json
 from pathlib import Path
 
 import pandas as pd
-import pyarrow as pa
-import pyarrow.parquet as pq
 
 from ddvc.ethereum_day_cuts import (
     fetch_block_timestamp,
     utc_day_block_bounds,
     validate_utc_day_block_bounds,
 )
-from ddvc.ethereum_logs import (
-    RAW_LOG_SCHEMA,
-    RAW_LOG_STORAGE_FORMAT,
-    block_ranges,
-    fetch_exact_logs,
-    write_exact_log_chunk,
-)
+from ddvc.ethereum_logs import rpc_post_with_evidence
 from ddvc.fetch.raw import write_json
 from ddvc.fetch.sources import get_source
 from ddvc.paths import DATA_DIR, MARKET_STATE_LOCK, RAW_MARKET_DATA_LOCK
@@ -43,7 +35,6 @@ from ddvc.reconstruct import UNIFIED_QUALITY_PANEL
 from ddvc.release_calendar import transaction_frontier_audit_days
 from ddvc.runtime import atomic_output, exclusive_job, interruptible_thread_pool
 from ddvc.v2_event_completeness import (
-    PAIR_CREATED_TOPIC,
     RAW_DAY_BOUND_ROOT,
     RAW_V2_FACTORY_ROOT,
     V2_CORE_EVENTS,
@@ -54,24 +45,36 @@ from ddvc.v2_event_completeness import (
     V2_EVENT_SOURCE_SUMMARY,
     V2_EVENT_VENUES,
     V2_FACTORIES,
+    V2_FACTORY_EVIDENCE_SCHEMA_VERSION,
     V2_POOL_PERIMETER,
     audit_calendar_sha256,
     compare_event_maps,
+    factory_deployment_path,
     factory_pair_registry,
+    factory_coverage_manifest_path,
+    factory_registry_sha256,
+    factory_root_ranges,
+    factory_state_proof_path,
     fetch_v2_exact_log_chunk,
+    fetch_factory_root_adaptive,
+    frozen_upper_block_path,
     graph_core_events,
+    load_or_build_factory_state_proof,
+    load_or_resolve_frozen_upper_block,
     missing_v2_exact_log_ranges,
     raw_core_events,
+    read_factory_coverage_records,
     read_v2_exact_logs,
     validate_v2_event_source_certificate,
-    v2_exact_log_chunk_complete,
+    validate_factory_deployment_proof,
+    validate_factory_coverage_manifest,
     v2_exact_log_ranges,
+    write_factory_coverage_manifest,
 )
 
 
 GRAPH_ROOT = DATA_DIR / "raw" / "thegraph"
 TOKEN_DECIMALS = DATA_DIR / "processed" / "v2_token_decimals.parquet"
-DEFAULT_FACTORY_CHUNK_SIZE = 50_000
 DEFAULT_EVENT_BLOCK_CHUNK_SIZE = V2_EXACT_LOG_CHUNK_SIZE
 MAX_JOB_ATTEMPTS = 12
 CODE_SOURCES = [
@@ -138,10 +141,6 @@ def _day_bound_path(day: str) -> Path:
     return RAW_DAY_BOUND_ROOT / f"{day}.json"
 
 
-def _factory_deployment_path(venue: str) -> Path:
-    return RAW_V2_FACTORY_ROOT / venue / "deployment.json"
-
-
 def _launched_venues(day: str) -> tuple[str, ...]:
     return tuple(
         venue
@@ -199,72 +198,67 @@ def load_or_resolve_day_bounds(day: str, *, fetch: bool = True) -> dict[str, obj
     return record
 
 
-def _code_at_block(factory: str, block: int, evidence: list[dict[str, object]]) -> str:
+def _code_at_block(
+    factory: str,
+    block: int,
+    evidence: list[dict[str, object]],
+    *,
+    block_hash: str | None = None,
+) -> str:
+    block_reference: object = (
+        {"blockHash": block_hash, "requireCanonical": True}
+        if block_hash is not None
+        else hex(block)
+    )
     payload = {
         "jsonrpc": "2.0",
         "id": 1,
         "method": "eth_getCode",
-        "params": [factory, hex(block)],
+        "params": [factory, block_reference],
     }
-    response = rpc_post(payload, timeout=30, retries=3, retry_json_errors=True)
+    envelope = rpc_post_with_evidence(payload, timeout=30, retries=3)
+    response = envelope.response
+    if isinstance(response, dict) and response.get("error") is not None:
+        raise RuntimeError(f"eth_getCode failed at the frozen canonical block hash: {response['error']}")
     code = response.get("result") if isinstance(response, dict) else None
     if not isinstance(code, str) or not code.startswith("0x"):
         raise RuntimeError(f"eth_getCode lacks an exact result for {factory}/{block}")
-    evidence.append({"request": payload, "response": {"result": code}})
+    evidence.append(
+        {
+            "request": payload,
+            "response": response,
+            "response_sha256": hashlib.sha256(
+                json.dumps(response, sort_keys=True, separators=(",", ":")).encode()
+            ).hexdigest(),
+            "rpc_endpoint": envelope.endpoint,
+            "rpc_attempts": list(envelope.attempts),
+        }
+    )
     return code
-
-
-def _validate_factory_deployment(record: dict[str, object], venue: str) -> int:
-    factory = V2_FACTORIES[venue]
-    block = int(record.get("deployment_block", -1))
-    if record.get("status") != "complete" or record.get("factory") != factory or block < 1:
-        raise ValueError(f"stale {venue} factory deployment evidence")
-    evidence = record.get("rpc_evidence")
-    if not isinstance(evidence, list):
-        raise ValueError(f"{venue} factory deployment evidence is absent")
-    observed: dict[int, str] = {}
-    for item in evidence:
-        if not isinstance(item, dict):
-            continue
-        request = item.get("request")
-        response = item.get("response")
-        if not isinstance(request, dict) or not isinstance(response, dict):
-            continue
-        if request.get("method") != "eth_getCode":
-            continue
-        params = request.get("params")
-        if not isinstance(params, list) or len(params) != 2 or params[0] != factory:
-            continue
-        observed[int(str(params[1]), 16)] = str(response.get("result") or "")
-    if observed.get(block - 1) not in {"0x", "0x0"}:
-        raise ValueError(f"{venue} pre-deployment factory code is not empty")
-    if observed.get(block) in {None, "", "0x", "0x0"}:
-        raise ValueError(f"{venue} deployment-block factory code is empty")
-    return block
 
 
 def load_or_resolve_factory_deployment(
     venue: str,
     upper: int,
+    upper_hash: str,
     *,
     fetch: bool = True,
 ) -> dict[str, object]:
     """Find the exact first block containing factory bytecode, with RPC evidence."""
 
-    path = _factory_deployment_path(venue)
+    path = factory_deployment_path(venue, upper)
     if path.is_file():
-        try:
-            cached = json.loads(path.read_text(encoding="utf-8"))
-            _validate_factory_deployment(cached, venue)
-            return cached
-        except (KeyError, OSError, TypeError, ValueError, json.JSONDecodeError):
-            pass
+        cached = json.loads(path.read_text(encoding="utf-8"))
+        validate_factory_deployment_proof(cached, venue, upper, upper_hash)
+        return cached
     if not fetch:
         raise RuntimeError(f"V2 event-source audit lacks factory deployment evidence for {venue}")
     factory = V2_FACTORIES[venue]
     evidence: list[dict[str, object]] = []
-    if _code_at_block(factory, upper, evidence) in {"0x", "0x0"}:
+    upper_code = _code_at_block(factory, upper, evidence, block_hash=upper_hash)
+    if upper_code in {"0x", "0x0"}:
         raise RuntimeError(f"registered {venue} factory has no code by block {upper}")
+    frozen_upper = upper
     lower = 0
     while lower + 1 < upper:
         middle = (lower + upper) // 2
@@ -276,118 +270,31 @@ def load_or_resolve_factory_deployment(
     _code_at_block(factory, upper, evidence)
     record = {
         "status": "complete",
+        "schema_version": V2_FACTORY_EVIDENCE_SCHEMA_VERSION,
         "venue": venue,
         "factory": factory,
         "deployment_block": upper,
+        "upper_block": frozen_upper,
+        "upper_block_hash": upper_hash,
+        "runtime_code_sha256": hashlib.sha256(bytes.fromhex(upper_code.removeprefix("0x"))).hexdigest(),
         "rpc_evidence": evidence,
     }
-    _validate_factory_deployment(record, venue)
+    validate_factory_deployment_proof(record, venue, frozen_upper, upper_hash)
     path.parent.mkdir(parents=True, exist_ok=True)
     write_json(path, record)
     return record
 
 
-def factory_chunk_paths(venue: str, start_block: int, end_block: int) -> tuple[Path, Path]:
-    directory = RAW_V2_FACTORY_ROOT / venue
-    stem = f"blocks_{start_block:08d}_{end_block:08d}"
-    return directory / f"{stem}.parquet", directory / f"{stem}.meta.json"
-
-
-def _chunk_completed(
-    raw_path: Path,
-    marker_path: Path,
-    *,
-    kind: str,
-    start_block: int,
-    end_block: int,
-    address: str | None,
-    topics: set[str],
-) -> bool:
-    if not raw_path.is_file() or not marker_path.is_file():
-        return False
-    try:
-        marker = json.loads(marker_path.read_text(encoding="utf-8"))
-        table = pq.ParquetFile(raw_path)
-    except (OSError, ValueError, json.JSONDecodeError):
-        return False
-    return bool(
-        marker.get("status") == "complete"
-        and marker.get("kind") == kind
-        and int(marker.get("start_block", -1)) == start_block
-        and int(marker.get("end_block", -1)) == end_block
-        and marker.get("address_filter") == address
-        and set(marker.get("event_topics") or []) == topics
-        and marker.get("storage_format") == RAW_LOG_STORAGE_FORMAT
-        and int(marker.get("raw_logs", -1)) == table.metadata.num_rows
-        and table.schema_arrow == RAW_LOG_SCHEMA
-    )
-
-
-def factory_chunk_completed(venue: str, start_block: int, end_block: int) -> bool:
-    raw, marker = factory_chunk_paths(venue, start_block, end_block)
-    return _chunk_completed(
-        raw,
-        marker,
-        kind="factory_pair_created",
-        start_block=start_block,
-        end_block=end_block,
-        address=V2_FACTORIES[venue],
-        topics={PAIR_CREATED_TOPIC},
-    )
-
-
-def _fetch_logs(
-    *,
-    start_block: int,
-    end_block: int,
-    topics: list[str],
-    address: str | None,
-) -> list[dict[str, object]]:
-    return fetch_exact_logs(
-        start_block=start_block,
-        end_block=end_block,
-        topics=topics,
-        address=address,
-        rpc_request=rpc_post,
-    )
-
-
-def _write_chunk(
-    raw_path: Path,
-    marker_path: Path,
-    records: list[dict[str, object]],
-    marker: dict[str, object],
-) -> dict[str, object]:
-    return write_exact_log_chunk(raw_path, marker_path, records, marker)
-
-
-def fetch_factory_chunk(venue: str, start_block: int, end_block: int) -> dict[str, object]:
-    records = _fetch_logs(
-        start_block=start_block,
-        end_block=end_block,
-        topics=[PAIR_CREATED_TOPIC],
-        address=V2_FACTORIES[venue],
-    )
-    raw, marker = factory_chunk_paths(venue, start_block, end_block)
-    return _write_chunk(
-        raw,
-        marker,
-        records,
-        {
-            "kind": "factory_pair_created",
-            "venue": venue,
-            "start_block": start_block,
-            "end_block": end_block,
-            "address_filter": V2_FACTORIES[venue],
-            "event_topics": [PAIR_CREATED_TOPIC],
-        },
-    )
-
-
 FetchJob = tuple[str, str, int, int]
 
 
-def run_fetch_jobs(jobs: list[FetchJob], *, workers: int, max_attempts: int) -> None:
+def run_fetch_jobs(
+    jobs: list[FetchJob],
+    *,
+    frozen_upper: dict[str, object],
+    workers: int,
+    max_attempts: int,
+) -> None:
     queue = deque((*job, 1) for job in jobs)
     complete = 0
     failures: list[tuple[str, str, int, int, str]] = []
@@ -396,15 +303,12 @@ def run_fetch_jobs(jobs: list[FetchJob], *, workers: int, max_attempts: int) -> 
         while queue or futures:
             while queue and len(futures) < workers:
                 kind, label, start, end, attempt = queue.popleft()
-                if kind == "factory":
-                    future = executor.submit(fetch_factory_chunk, label, start, end)
-                else:
-                    future = executor.submit(
-                        fetch_v2_exact_log_chunk,
-                        start,
-                        end,
-                        rpc_request=rpc_post,
-                    )
+                future = executor.submit(
+                    fetch_v2_exact_log_chunk,
+                    start,
+                    end,
+                    frozen_upper=frozen_upper,
+                )
                 futures[future] = (kind, label, start, end, attempt)
             done, _ = wait(futures, return_when=FIRST_COMPLETED)
             for future in done:
@@ -431,34 +335,64 @@ def run_fetch_jobs(jobs: list[FetchJob], *, workers: int, max_attempts: int) -> 
         )
 
 
-def _read_chunk_records(path: Path) -> list[dict[str, object]]:
-    return pq.read_table(path).to_pylist()
+def fetch_factory_roots(
+    venue: str,
+    roots: list[tuple[int, int]],
+    *,
+    frozen_upper: dict[str, object],
+    workers: int,
+    max_attempts: int,
+) -> list[tuple[int, int]]:
+    """Run independent adaptive roots concurrently while keeping each split tree serial."""
+
+    queue = deque((start, end, 1) for start, end in roots)
+    leaves: list[tuple[int, int]] = []
+    failures: list[tuple[int, int, str]] = []
+    complete = 0
+    with interruptible_thread_pool(max_workers=max(1, min(workers, 4))) as executor:
+        futures = {}
+        while queue or futures:
+            while queue and len(futures) < max(1, min(workers, 4)):
+                start, end, attempt = queue.popleft()
+                future = executor.submit(
+                    fetch_factory_root_adaptive,
+                    venue,
+                    start,
+                    end,
+                    frozen_upper=frozen_upper,
+                )
+                futures[future] = (start, end, attempt)
+            done, _ = wait(futures, return_when=FIRST_COMPLETED)
+            for future in done:
+                start, end, attempt = futures.pop(future)
+                try:
+                    leaves.extend(future.result())
+                except Throttled as error:
+                    if attempt < max_attempts:
+                        queue.append((start, end, attempt + 1))
+                    else:
+                        failures.append((start, end, type(error).__name__))
+                    continue
+                complete += 1
+                if complete % 100 == 0 or complete + len(failures) == len(roots):
+                    print(
+                        f"  {venue} factory roots [{complete:,}/{len(roots):,}]; "
+                        f"leaves={len(leaves):,}; queued={len(queue):,}; "
+                        f"terminal_failures={len(failures):,}",
+                        flush=True,
+                    )
+    if failures:
+        raise RuntimeError(
+            f"{venue} factory fetch exhausted retries for {len(failures):,} roots; "
+            f"first={failures[:3]}"
+        )
+    return sorted(leaves)
 
 
 def _write_parquet(frame: pd.DataFrame, path: Path) -> None:
     path.parent.mkdir(parents=True, exist_ok=True)
     with atomic_output(path) as temporary:
         frame.to_parquet(temporary, index=False)
-
-
-def _registry_sha256(pairs: list[object]) -> str:
-    rows = [
-        {
-            "venue": pair.venue,
-            "factory": pair.factory,
-            "pool": pair.pool,
-            "token0": pair.token0,
-            "token1": pair.token1,
-            "creation_block": pair.creation_block,
-            "creation_tx_hash": pair.creation_tx_hash,
-            "creation_log_index": pair.creation_log_index,
-            "ordinal": pair.ordinal,
-        }
-        for pair in pairs
-    ]
-    return hashlib.sha256(
-        json.dumps(rows, sort_keys=True, separators=(",", ":")).encode()
-    ).hexdigest()
 
 
 def _preflight_graph_streams(audit_days: list[str]) -> None:
@@ -479,7 +413,6 @@ def build(
     fetch: bool,
     force: bool,
     workers: int,
-    factory_chunk_size: int,
     event_block_chunk_size: int,
 ) -> tuple[int, int]:
     if event_block_chunk_size != V2_EXACT_LOG_CHUNK_SIZE:
@@ -499,28 +432,22 @@ def build(
         if _launched_venues(day)
     }
     maximum_block = max(int(record["end_block"]) for record in day_bounds.values())
+    frozen_upper = load_or_resolve_frozen_upper_block(
+        maximum_block,
+        fetch=fetch,
+    )
     deployments = {
-        venue: load_or_resolve_factory_deployment(venue, maximum_block, fetch=fetch)
+        venue: load_or_resolve_factory_deployment(
+            venue,
+            maximum_block,
+            str(frozen_upper["block_hash"]),
+            fetch=fetch,
+        )
         for venue in V2_EVENT_VENUES
     }
 
-    factory_ranges: dict[str, list[tuple[int, int]]] = {}
     event_ranges: dict[str, list[tuple[int, int]]] = {}
     jobs: list[FetchJob] = []
-    for venue, deployment in deployments.items():
-        ranges = list(
-            block_ranges(
-                int(deployment["deployment_block"]),
-                maximum_block,
-                factory_chunk_size,
-            )
-        )
-        factory_ranges[venue] = ranges
-        jobs.extend(
-            ("factory", venue, start, end)
-            for start, end in ranges
-            if not factory_chunk_completed(venue, start, end)
-        )
     if force:
         print("  force rebuild requested; complete raw chunks remain immutable", flush=True)
     for day, bounds in day_bounds.items():
@@ -535,7 +462,8 @@ def build(
             (
                 (int(bounds["start_block"]), int(bounds["end_block"]))
                 for bounds in day_bounds.values()
-            )
+            ),
+            frozen_upper=frozen_upper,
         )
     )
     if jobs and not fetch:
@@ -546,24 +474,62 @@ def build(
     if jobs:
         run_fetch_jobs(
             jobs,
+            frozen_upper=frozen_upper,
             workers=max(1, min(workers, 4)),
             max_attempts=MAX_JOB_ATTEMPTS,
         )
 
     statics: dict[str, dict] = {}
     pairs_by_venue: dict[str, list] = {}
+    factory_manifests: dict[str, dict[str, object]] = {}
+    factory_state_proofs: dict[str, dict[str, object]] = {}
+    factory_inputs: list[Path] = []
     all_pairs = []
     pool_owner: dict[str, str] = {}
-    for venue, ranges in factory_ranges.items():
-        records: list[dict[str, object]] = []
-        for start, end in ranges:
-            if not factory_chunk_completed(venue, start, end):
-                raise RuntimeError(f"factory registry chunk lost completeness: {venue}/{start}:{end}")
-            raw, _marker = factory_chunk_paths(venue, start, end)
-            records.extend(_read_chunk_records(raw))
+    for venue, deployment in deployments.items():
+        deployment_block = int(deployment["deployment_block"])
+        manifest_path = factory_coverage_manifest_path(venue, maximum_block)
+        if manifest_path.is_file():
+            manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
+            validate_factory_coverage_manifest(
+                manifest,
+                venue=venue,
+                deployment_block=deployment_block,
+                frozen_upper=frozen_upper,
+            )
+        else:
+            if not fetch:
+                raise RuntimeError(f"V2 factory registry lacks exact coverage for {venue}")
+            roots = factory_root_ranges(deployment_block, maximum_block)
+            leaves = fetch_factory_roots(
+                venue,
+                roots,
+                frozen_upper=frozen_upper,
+                workers=workers,
+                max_attempts=MAX_JOB_ATTEMPTS,
+            )
+            manifest = write_factory_coverage_manifest(
+                venue,
+                deployment_block,
+                frozen_upper,
+                leaves,
+            )
+        records, raw_inputs = read_factory_coverage_records(
+            manifest,
+            venue=venue,
+            deployment_block=deployment_block,
+            frozen_upper=frozen_upper,
+        )
         venue_statics, venue_pairs = factory_pair_registry(venue, records, token_decimals)
         if not venue_pairs:
             raise RuntimeError(f"independent factory registry is empty for {venue}")
+        state_proof = load_or_build_factory_state_proof(
+            venue,
+            venue_pairs,
+            frozen_upper,
+            fetch=fetch,
+            workers=workers,
+        )
         for pool in venue_statics:
             prior = pool_owner.get(pool)
             if prior is not None and prior != venue:
@@ -571,6 +537,10 @@ def build(
             pool_owner[pool] = venue
         statics[venue] = venue_statics
         pairs_by_venue[venue] = venue_pairs
+        factory_manifests[venue] = manifest
+        factory_state_proofs[venue] = state_proof
+        factory_inputs.extend(raw_inputs)
+        factory_inputs.extend((manifest_path, factory_state_proof_path(venue, maximum_block)))
         all_pairs.extend(venue_pairs)
 
     summaries: list[dict[str, object]] = []
@@ -582,6 +552,7 @@ def build(
             records, event_inputs[day] = read_v2_exact_logs(
                 int(day_bounds[day]["start_block"]),
                 int(day_bounds[day]["end_block"]),
+                frozen_upper=frozen_upper,
             )
         else:
             records, event_inputs[day] = [], []
@@ -661,7 +632,35 @@ def build(
         "factory_pairs_by_venue": {
             venue: len(pairs_by_venue[venue]) for venue in V2_EVENT_VENUES
         },
-        "factory_registry_sha256": _registry_sha256(all_pairs),
+        "factory_registry_sha256": factory_registry_sha256(all_pairs),
+        "factory_registry_upper_block": maximum_block,
+        "factory_registry_upper_block_hash": frozen_upper["block_hash"],
+        "factory_registry_upper_block_timestamp": frozen_upper["timestamp"],
+        "frozen_upper_block_sha256": hashlib.sha256(
+            frozen_upper_block_path(maximum_block).read_bytes()
+        ).hexdigest(),
+        "factory_deployment_proof_sha256_by_venue": {
+            venue: hashlib.sha256(
+                factory_deployment_path(venue, maximum_block).read_bytes()
+            ).hexdigest()
+            for venue in V2_EVENT_VENUES
+        },
+        "factory_coverage_manifest_sha256_by_venue": {
+            venue: hashlib.sha256(
+                factory_coverage_manifest_path(venue, maximum_block).read_bytes()
+            ).hexdigest()
+            for venue in V2_EVENT_VENUES
+        },
+        "factory_state_proof_sha256_by_venue": {
+            venue: hashlib.sha256(
+                factory_state_proof_path(venue, maximum_block).read_bytes()
+            ).hexdigest()
+            for venue in V2_EVENT_VENUES
+        },
+        "factory_state_sample_size_by_venue": {
+            venue: int(factory_state_proofs[venue]["sample_size"])
+            for venue in V2_EVENT_VENUES
+        },
         "identity_fields": [
             "venue",
             "event_type",
@@ -671,7 +670,7 @@ def build(
             "pool",
         ],
         "quantity_contract": "exact_raw_token_deltas_and_swap_in_out_fields",
-        "raw_factory_chunks": sum(len(ranges) for ranges in factory_ranges.values()),
+        "raw_factory_chunks": sum(int(manifest["leaf_count"]) for manifest in factory_manifests.values()),
         "raw_event_chunks": sum(len(ranges) for ranges in event_ranges.values()),
         "raw_global_event_logs": raw_global_logs,
         **totals,
@@ -681,14 +680,15 @@ def build(
             "by the two registered factories; these dates are not an estimation sample."
         ),
     }
+    if certificate["status"] == "pass":
+        validate_v2_event_source_certificate(summary, exception_frame, certificate, audit_days)
     V2_EVENT_SOURCE_CERTIFICATE.parent.mkdir(parents=True, exist_ok=True)
     write_json(V2_EVENT_SOURCE_CERTIFICATE, certificate)
     inputs: list[Path] = [UNIFIED_QUALITY_PANEL, TOKEN_DECIMALS]
     inputs.extend(_day_bound_path(day) for day in day_bounds)
-    inputs.extend(_factory_deployment_path(venue) for venue in V2_EVENT_VENUES)
-    for venue, ranges in factory_ranges.items():
-        for start, end in ranges:
-            inputs.extend(factory_chunk_paths(venue, start, end))
+    inputs.append(frozen_upper_block_path(maximum_block))
+    inputs.extend(factory_deployment_path(venue, maximum_block) for venue in V2_EVENT_VENUES)
+    inputs.extend(factory_inputs)
     for day in audit_days:
         for venue in _launched_venues(day):
             inputs.append(_meta_path(venue, day))
@@ -701,8 +701,6 @@ def build(
         (V2_EVENT_SOURCE_CERTIFICATE, 1),
     ):
         stamp(path, code_sources=CODE_SOURCES, inputs=inputs, rows=rows, notes=notes)
-    if certificate["status"] == "pass":
-        validate_v2_event_source_certificate(summary, exception_frame, certificate, audit_days)
     return len(summary), len(exception_frame)
 
 
@@ -715,11 +713,10 @@ def main() -> int:
         help="rebuild derived audit artifacts without overwriting complete raw chunks",
     )
     parser.add_argument("--workers", type=int, default=4)
-    parser.add_argument("--factory-chunk-size", type=int, default=DEFAULT_FACTORY_CHUNK_SIZE)
     parser.add_argument("--event-block-chunk-size", type=int, default=DEFAULT_EVENT_BLOCK_CHUNK_SIZE)
     args = parser.parse_args()
-    if args.factory_chunk_size < 1 or args.event_block_chunk_size < 1:
-        raise ValueError("block chunk sizes must be positive")
+    if args.event_block_chunk_size < 1:
+        raise ValueError("event block chunk size must be positive")
     if args.event_block_chunk_size != V2_EXACT_LOG_CHUNK_SIZE:
         raise ValueError("--event-block-chunk-size must be 50 for shared V2 exact-log reuse")
     _preflight_graph_streams(transaction_frontier_audit_days(UNIFIED_QUALITY_PANEL))
@@ -730,7 +727,6 @@ def main() -> int:
             fetch=not args.no_fetch,
             force=args.force,
             workers=args.workers,
-            factory_chunk_size=args.factory_chunk_size,
             event_block_chunk_size=args.event_block_chunk_size,
         )
     print(f"COMPLETE: V2 event-source rows={rows:,}; exceptions={exceptions:,}")

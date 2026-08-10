@@ -28,7 +28,7 @@ Every claim in the "grounding" column below was measured or read in this project
 
 **Scale feasibility is a D1 certificate, not something learned halfway through D2.** Before a multi-hour fetch or materialisation starts, its executable preflight probes the exact live query shape on quiet and busy early, middle and late ranges; preserves structured HTTP and RPC failures; records provider range and result caps; inspects the actual schema, event-topic set and completeness marker of every reusable raw generation; and refuses to infer payload coverage from filenames or file counts. It enumerates the full call, row and byte perimeter, forecasts wall time, memory and free-disk demand under bounded concurrency, names the host split and immutable shard boundary, and proves overlapping consumers resolve to one canonical raw key before workers launch. A small pilot may establish these contracts but remains diagnostic. A provider-policy change, unrecognised legacy schema or forecast outside the available resource envelope reopens D1 before scale work begins. This gate was added after a route panel completed 113,822,022 rows against pre-release state lineage, a legacy V3 cache omitted Mint and Swap despite 13,094 plausible filenames, and the live RPC's global-log ceiling forced a cache redesign after acquisition had begun.
 
-**Provider rows do not prove event-source completeness.** Every load-bearing event stream must reconcile exact block, transaction and log identities against an independent source on a predeclared calendar before its canonical generation can be released. The comparison covers counts, missing and extra identities, duplicates, event class and exact signed quantities where available; a synthetic fixture, non-null coverage or a successful pagination loop cannot clear it. Any observed provider omission returns D to source repair and requires an independently retrieved supplement for that entire affected event class unless a separately reported audit establishes a bounded scope. Downstream code never floors an impossible state or calls a mostly complete event ledger exact. For V2-family replay, one shared 77-date transaction-frontier calendar now binds Uniswap V2 and Sushi V2 Mint, Burn and Swap streams to independently fetched Ethereum logs with exact UTC block cuts, audited token decimals and zero-event rows. Its pool registry comes from each factory's complete on-chain PairCreated sequence, and each daily core-event fetch is global by topic with no address filter before registered pools are attributed to venues; Graph rows under audit never define their own audit perimeter. The global raw responses live once in marker-last, globally aligned 50-block chunks, matching the current provider's enforced maximum; completeness and event-order reconciliation read the same files, complete chunks are immutable, and provenance points to them by portable relative path without copies or hardlinks. The workflow DAG is structural market-state prerelease, audited token decimals, independent V2 certificate, then full market-state release; builders of certificate inputs never call the downstream full-release gate. A current zero-exception certificate is required by both the market-state release and findings-freeze gates. This rule was added after the Uniswap V3 Graph corpus omitted one of six Mints in the same on-chain transaction, producing a false negative pool inventory even after exact decimal conversion.
+**Provider rows do not prove event-source completeness.** Every load-bearing event stream must reconcile exact block, transaction and log identities against an independent source on a predeclared calendar before its canonical generation can be released. The comparison covers counts, missing and extra identities, duplicates, event class and exact signed quantities where available; a synthetic fixture, non-null coverage or a successful pagination loop cannot clear it. Any observed provider omission returns D to source repair and requires an independently retrieved supplement for that entire affected event class unless a separately reported audit establishes a bounded scope. Downstream code never floors an impossible state or calls a mostly complete event ledger exact. For any factory-deployed pool family, the canonical pool census comes from the factory's complete on-chain creation-event sequence through a frozen upper block, with exact address, factory and creation-parameter validation; a provider's static pool snapshot may enrich that census but may not define it. For V2-family replay, one shared 77-date transaction-frontier calendar now binds Uniswap V2 and Sushi V2 Mint, Burn and Swap streams to independently fetched Ethereum logs with exact UTC block cuts, audited token decimals and zero-event rows. Its pool registry comes from each factory's complete on-chain PairCreated sequence, and each daily core-event fetch is global by topic with no address filter before registered pools are attributed to venues; Graph rows under audit never define their own audit perimeter. The global raw responses live once in marker-last, globally aligned 50-block chunks, matching the current provider's enforced maximum; every log request is issued as a bounded two-item RPC batch with the frozen-upper header on the same successful endpoint, and its exact request, canonicalized response digest, sanitized endpoint and attempt history are revalidated on reuse. Completeness and event-order reconciliation read the same files, complete chunks are immutable, and provenance points to them by portable relative path without copies or hardlinks. The workflow DAG is structural market-state prerelease, audited token decimals, independent V2 certificate, then full market-state release; builders of certificate inputs never call the downstream full-release gate. A current zero-exception certificate is required by both the market-state release and findings-freeze gates, which reopen every cited deployment, coverage, state and frozen-header artifact instead of accepting well-shaped digests. This rule was strengthened after the V3 Graph registry omitted 1,452 genuine canonical pools carrying 6,148 requested event logs in one completed shard, while one additional canonical-claiming address carrying four swaps failed CREATE2 identity; successful pagination and row decoding had both passed while the provider-defined pool perimeter remained incomplete.
 
 **Provider order is evidence, not an identity convention.** Ethereum receipt `logIndex` is block-global. If two different provider events claim one block-log position, do not widen the causal key with transaction hash or mutate the provider capture. Reconcile the complete affected provider block span against global topic-only Ethereum logs, matching exact transaction, pool, event class and quantities. The immutable provider files remain evidence; one hashed reconciliation generation records order overrides, collapsed provider duplicates, exact payload overrides, ignored zero-state events and exact-chain supplements for omitted state-changing events. A supplement enters canonical state only with canonical pool statics, exact base-unit decoding and independently retained block-timestamp evidence. An unmatched provider event, ambiguous match, missing static, unproved timestamp or unsupported payload difference keeps the partition red. The generation and all exact evidence enter the canonical state fingerprint. This affected-span repair does not substitute for the independently defined full-day completeness certificate.
 
@@ -134,7 +134,7 @@ This was violated on 2026-08-06 and the cost was legible in advance. Node P was 
 
 **One model ledger separates execution volume from admissible evidence.** `docs/model-ledger.json` is the canonical append-only run inventory for fitted statistical models; superseded pre-workflow batteries remain frozen under `legacy_families`, while every current execution creates a distinct record under `runs`. A run records its claim or discovery question, estimator, fixed effects, inference, artefacts, execution lane, lifecycle and evidentiary disposition. These are separate axes: exploratory versus confirmatory is how and when a run was chosen; planned versus executed versus retired is its lifecycle; not-assessed, admissible, diagnostic, withheld or rejected is its evidentiary disposition. Run identity binds lane, D3 generation, E0 generation, E1 lock, exact plan and engine, so changing an exploratory record's status cannot promote it. E1 expands every mandatory alternative and falsifier into named registered specifications and hashes that plan; F artefacts must cover the registered IDs exactly, with no omitted attack and no unregistered fit. Exploratory outputs may inform triage but are never the confirmatory artefact. A multivariate fit counts once, not once per coefficient; pretrend and pseudo-break fits are diagnostics; permutation, randomisation, and power-simulation fits are refits, not additional empirical specifications. The findings-freeze audit owns the ledger gate. Paper tables, old specification registries, and prose may consume the ledger but may not maintain a competing count.
 
-**Exploration is a first-class node, not leakage around the lock.** Before D3, `docs/specification-lock.json` is a `design_seed`: it tells D1 which fields and support contracts the current questions may require, but its candidate families and provisional analytical choices are neither registered regressions nor authority to preserve the current narrative. After D3 releases one harmonised analysis generation, E0 examines distributions, support geometry, anomalies, functional forms, heterogeneity, mechanism candidates and rival explanations. Every fitted family is logged as exploratory, including nulls and failures. E0 explicitly triages discoveries by scientific importance and fit with the paper. A central, publication-worthy discovery may reshape the headline, mechanism, definitions and paper structure: reopen B, C or D as needed, then register and rerun it through E1 and F. A useful subordinate result may become a companion family through the same route. A strong discovery too distant from the paper's contribution is preserved as a next-paper lead. Fragile or uninformative results remain visible without promotion. E0 closes with a hashed certificate binding the verified D3 release, the complete exploratory-run perimeter and one triage decision per run; arbitrary generation labels cannot open E1. E1 begins only after that discovery-and-critique loop has stopped changing the estimand; it selects the minimum defensible primary families, mandatory alternatives and falsifiers, changes the lock stage to `confirmatory`, and binds the exact D3/E0 certificates. The findings freeze rejects a design seed. F then runs the registered generation and its attack set while retaining a separate exploratory lane for surprises. Promotion requires a decision recorded before a new confirmatory run; relabelling the inspected exploratory run is invalid. The paper labels this archival-data process accurately instead of claiming external preregistration.
+**Exploration is a first-class node, not leakage around the lock.** Before D3, `docs/specification-lock.json` is a `design_seed`: it tells D1 which fields and support contracts the current questions may require, but its candidate families and provisional analytical choices are neither registered regressions nor authority to preserve the current narrative. After D3 releases one harmonised analysis generation, E0 actively searches beyond the seeded questions: distributions, support geometry, anomalies, functional forms, heterogeneity, mechanism candidates and rival explanations are all in scope, and every fitted family is logged as exploratory, including nulls and failures. E0 triages discoveries by novelty, economic magnitude, robustness, identification credibility, centrality to vehicle-currency dominance and fit with a JFE paper. A discovery that appears publication-worthy is a candidate headline, even when the original design seed did not anticipate it. It may reshape the headline, mechanism, definitions, empirical breadth and paper structure: reopen B, C or D as needed, specify the estimand and attack set in E1, then rerun it as a distinct confirmatory F generation. The safeguard is against promoting the same inspected exploratory fit without a new test, not against discovering a better paper. A useful subordinate result may become a companion family through the same route. A strong discovery too distant from the paper's contribution is preserved with its evidence and proposed design as a next-paper lead. Fragile or uninformative results remain visible without promotion. E0 closes with a hashed certificate binding the verified D3 release, the complete exploratory-run perimeter and one triage decision per run; arbitrary generation labels cannot open E1. E1 begins only after that discovery-and-critique loop has stopped changing the estimand; it selects the minimum defensible primary families, mandatory alternatives and falsifiers, changes the lock stage to `confirmatory`, and binds the exact D3/E0 certificates. The findings freeze rejects a design seed. F then runs the registered generation and its attack set while retaining a separate exploratory lane for surprises. Promotion requires a decision recorded before a new confirmatory run; relabelling the inspected exploratory run is invalid. The paper labels this archival-data process accurately instead of claiming external preregistration.
 
 **Audit calendars do not define economic horizons.** A transaction-state day sampled near the middle of each calendar month is an estimator-validation snapshot only. It can test causal ordering, quote reproduction, arithmetic, support, and failure concentration across the project span; it cannot establish persistence, a structural break, or a market-maturation trend. Final dynamic estimation uses daily exact-state observations and exact calendar-day links at 1, 7, 30, and 120 days. Calendar months and row shifts are prohibited substitutes because they change elapsed time when month length or observation density changes.
 
@@ -368,133 +368,39 @@ Nodes, with the paper/deck cycle explicit. Every node writes a committed file; e
 
 ```
 A. Venue study .................... COMPLETE (section 1)
-B. Domain literature .............. COMPLETE (`docs/literature-audit.md`)
-     The executable gate covers 41 cited sources, 53 complete main-plus-companion source sets, 55 five-axis cards, 14 published JFE venue exemplars and 11 independently re-read central papers. A new citation or mechanism reopens B.
-C. Definitions and measurement .... section 3. BLOCKING on everything below.
-     RECURRING, not phase 0. Reopened by K, by I, and by any F result that
-     the current definition cannot express. See the note below.
-D. Canonical cross-venue data layer BLOCKING before E and F. D1 freezes the
-     entered-claim field and consumer contract; D2 materialises every family
-     over the full locked calendar; D3 signs integrity, coverage and provenance,
-     then builds analysis-ready panels. Raw provider rows are inaccessible to
-     empirical runners. Full-panel cross-venue routing series and validation
-     subsets are outputs of D, not substitutes for completing it.
-E0. Exploration ................... open-minded distribution, anomaly, support,
-     functional-form, heterogeneity and mechanism search on released D3 data.
-     Every fitted family enters the model ledger as exploratory. E0 can return
-     to B, C or D; a publication-worthy discovery can reshape the paper after
-     prospective E1 registration and a distinct confirmatory F rerun.
-E1. Design + specification lock ... after E0 stabilises: section 4 estimands,
-     minimum primary families, decision registry, enumerated alternatives and
-     falsifiers, locked and hashed before confirmatory F runs.
-F. Empirics ....................... two explicit lanes. Confirmatory F runs E1,
-     specification curves and the attack set. Exploratory F investigates new
-     patterns but remains labelled and can only promote a result by reopening
-     E1 and rerunning the newly recorded generation. Multi-agent NSE remains a
-     bug detector, with the critique round before estimates fix.
-G. Paper .......................... six sections, JFE invariants of section 1,
-     pure-empirics lane, named rival mechanisms as the horse race.
-     Output: docs/paper-spine.md (architecture, claim inventory with
-     EXISTS/PENDING status, table shells, definitions text, horse race,
-     plus the two convergence sections F and H read).
+B. Domain literature .............. COMPLETE (`docs/literature-audit.md`). The executable gate covers 41 cited sources, 53 complete main-plus-companion source sets, 55 five-axis cards, 14 published JFE venue exemplars and 11 independently re-read central papers. A new citation or mechanism reopens B.
+C. Definitions and measurement .... section 3. BLOCKING on everything below. RECURRING, not phase 0. Reopened by K, by I, and by any F result that the current definition cannot express. See the note below.
+D. Canonical cross-venue data layer BLOCKING before E and F. D1 freezes the entered-claim field and consumer contract; D2 materialises every family over the full locked calendar; D3 signs integrity, coverage and provenance, then builds analysis-ready panels. Raw provider rows are inaccessible to empirical runners. Full-panel cross-venue routing series and validation subsets are outputs of D, not substitutes for completing it.
+E0. Exploration ................... open-minded distribution, anomaly, support, functional-form, heterogeneity and mechanism search on released D3 data, including questions absent from the design seed. Every fitted family enters the model ledger as exploratory. E0 can return to B, C or D; a finding that appears publication-worthy can become a candidate headline, reshape the paper, and receive its own definitions and attack set in E1 before a distinct confirmatory F rerun. Off-theme discoveries are preserved as next-paper leads.
+E1. Design + specification lock ... after E0 stabilises: section 4 estimands, minimum primary families, decision registry, enumerated alternatives and falsifiers, locked and hashed before confirmatory F runs.
+F. Empirics ....................... two explicit lanes. Confirmatory F runs E1, specification curves and the attack set. Exploratory F investigates new patterns but remains labelled and can only promote a result by reopening E1 and rerunning the newly recorded generation. Multi-agent NSE remains a bug detector, with the critique round before estimates fix.
+G. Paper .......................... six sections, JFE invariants of section 1, pure-empirics lane, named rival mechanisms as the horse race. Output: docs/paper-spine.md (architecture, claim inventory with EXISTS/PENDING status, table shells, definitions text, horse race, plus the two convergence sections F and H read).
 H. Deck ........................... derived from G.
-P. Prose rewrite .................. GATED. Does not start until the freeze gate in
-     section 0 passes. Writes paper/ FROM memo/, per
-     section, against the shape bands and the two discovery gates, and never
-     edits memo/. Re-runs by regenerating a section whenever G changes it.
-     A second "clean" copy was tried on 2026-08-06 and deleted the same day
-     (a92295d). The standing rule applies to the paper as much as to the deck:
-     two live copies cost a review cycle spent on the wrong file, and the
-     content of record is git history, not a parallel directory.
-     What does NOT work is word-level correction; see the standing rule above.
-     The rewrite is at sentence and paragraph shape, which is why it is a
-     rewrite node and not a lint.
+P. Prose rewrite .................. GATED. Does not start until the freeze gate in section 0 passes. Writes paper/ FROM memo/, per section, against the shape bands and the two discovery gates, and never edits memo/. Re-runs by regenerating a section whenever G changes it. A second "clean" copy was tried on 2026-08-06 and deleted the same day (a92295d). The standing rule applies to the paper as much as to the deck: two live copies cost a review cycle spent on the wrong file, and the content of record is git history, not a parallel directory. What does NOT work is word-level correction; see the standing rule above. The rewrite is at sentence and paragraph shape, which is why it is a rewrite node and not a lint.
 
-        F <-> G <-> H IS ONE ITERATING CLUSTER, not a chain with a cycle on
-        the end. G decides which results the narrative NEEDS; F decides which
-        results the data can SUPPORT. Fix G first and it demands results the
-        panel cannot identify; fix F first and it yields results with no
-        narrative slot, which is how an empirical paper becomes a list of
-        regressions. G <-> H has the same mutual pull: slides expose narrative
-        gaps, paper detail exposes missing slides. All three may start in
-        parallel and none is finished while another still moves.
+F <-> G <-> H IS ONE ITERATING CLUSTER, not a chain with a cycle on the end. G decides which results the narrative NEEDS; F decides which results the data can SUPPORT. Fix G first and it demands results the panel cannot identify; fix F first and it yields results with no narrative slot, which is how an empirical paper becomes a list of regressions. G <-> H has the same mutual pull: slides expose narrative gaps, paper detail exposes missing slides. All three may start in parallel and none is finished while another still moves.
 
-        CONVERGENCE CONDITION, because a cycle without a stopping rule is a
-        hang. Converged only when all four hold at once: every result F
-        produces has a slot in G; every claim G makes rests on a result F has
-        actually produced; every slide in H maps to a G section and adds no
-        claim of its own; and one complete pass generates no new demand in
-        either direction. Two consecutive passes changing nothing but wording
-        means converged, and the work moves to I.
+CONVERGENCE CONDITION, because a cycle without a stopping rule is a hang. Converged only when all four hold at once: every result F produces has a slot in G; every claim G makes rests on a result F has actually produced; every slide in H maps to a G section and adds no claim of its own; and one complete pass generates no new demand in either direction. Two consecutive passes changing nothing but wording means converged, and the work moves to I.
 
-        CONVERGENCE IS NOT COMPROMISE (Java, 2026-08-06). The standard stays a
-        JFE-level paper, so the cluster converges by MEETING that bar, never by
-        lowering a claim until the three nodes agree. If a claim cannot be
-        supported, it leaves the paper; it does not get softened until it fits.
-        Escalation rule: if five full passes do not close the gap and the
-        remaining distance is no longer shrinking, stop and hand it to Java
-        rather than declaring convergence on a weaker claim.
-I. Cross-family review ............ Codex/Gemini. Feeds back into C..H.
-     Desk-reject filter first, then rank-ordered referee.
-        C IS THE HIGHEST-LEVERAGE NODE AND IT WAS THE ONE THAT COULD NOT
-        LEARN. Java's diagnosis, 2026-08-06, sharper than the missing-generator
-        one it followed. The specification in this graph comes from C, which
-        fixes definitions and measurement, and from E, which screens candidates.
-        Both ran ONCE in an early pass. E screens the list in section 4.1, but
-        that list was written in the same early pass, so E cannot regenerate
-        what it screens. The result is a graph whose definitions are frozen at
-        the moment of least knowledge.
+CONVERGENCE IS NOT COMPROMISE (Java, 2026-08-06). The standard stays a JFE-level paper, so the cluster converges by MEETING that bar, never by lowering a claim until the three nodes agree. If a claim cannot be supported, it leaves the paper; it does not get softened until it fits. Escalation rule: if five full passes do not close the gap and the remaining distance is no longer shrinking, stop and hand it to Java rather than declaring convergence on a weaker claim.
 
-        The evidence is that measuring the vehicle role as network betweenness
-        was not a new candidate RESULT, it was a better DEFINITION. Vehicle
-        extent had been operationalised as a volume share, which is a proxy for
-        the concept, when the concept is that a vehicle lies on the paths
-        between other assets. That correction belongs in C and could only
-        arrive from outside the graph because C was closed.
+I. Cross-family review ............ Codex/Gemini. Feeds back into C..H. Desk-reject filter first, then rank-ordered referee.
 
-        C IS THEREFORE THE MOST LITERATURE-DEPENDENT NODE, not merely one that
-        cites. Betweenness was justified BY APPEAL TO Flandreau and Jobst
-        modelling currency use as a network, a paper absent from the corpus, so
-        that justification is currently uncited, so the definition is
-        what connects this paper to the conversation it wants to join. A
-        definition chosen without that reading produces a measurement nobody in
-        the field can engage with, however clean it is. So C reads the corpus
-        for how the target literature FORMALISES the object, and not only for
-        what it found.
+C IS THE HIGHEST-LEVERAGE NODE AND IT WAS THE ONE THAT COULD NOT LEARN. Java's diagnosis, 2026-08-06, sharper than the missing-generator one it followed. The specification in this graph comes from C, which fixes definitions and measurement, and from E, which screens candidates. Both ran ONCE in an early pass. E screens the list in section 4.1, but that list was written in the same early pass, so E cannot regenerate what it screens. The result is a graph whose definitions are frozen at the moment of least knowledge.
 
-        REOPENING RULES, so C recurs on a trigger and not on a whim. C reopens
-        when K proposes a measure the current definition cannot express, when I
-        rejects a claim on definitional grounds, and when an F result is true
-        but uninteresting because the definition made it close to a tautology,
-        which is exactly what happened to native intermediation is cheaper.
+The evidence is that measuring the vehicle role as network betweenness was not a new candidate RESULT, it was a better DEFINITION. Vehicle extent had been operationalised as a volume share, which is a proxy for the concept, when the concept is that a vehicle lies on the paths between other assets. That correction belongs in C and could only arrive from outside the graph because C was closed.
 
-K. Ideation ....................... proposes what nobody asked for. ADDED
-     2026-08-06 on Java's diagnosis that the graph had no generator.
+C IS THEREFORE THE MOST LITERATURE-DEPENDENT NODE, not merely one that cites. Betweenness was justified BY APPEAL TO Flandreau and Jobst modelling currency use as a network, a paper absent from the corpus, so that justification is currently uncited, so the definition is what connects this paper to the conversation it wants to join. A definition chosen without that reading produces a measurement nobody in the field can engage with, however clean it is. So C reads the corpus for how the target literature FORMALISES the object, and not only for what it found.
 
-        WHY K EXISTS. Every other node either builds what is specified or
-        attacks what is built. A..D construct, E screens, F estimates, G and H
-        write, I rejects, J gates. Nothing PROPOSES. The symptom was that the
-        two best ideas of a long session, measuring the vehicle role as network
-        betweenness and separating persistent replacement from fragmentation with a
-        Herfindahl index over vehicle shares, both came from Java and neither
-        came from the graph. A workflow whose only creative input is its owner
-        is not an agentic workflow, it is a very elaborate executor.
+REOPENING RULES, so C recurs on a trigger and not on a whim. C reopens when K proposes a measure the current definition cannot express, when I rejects a claim on definitional grounds, and when an F result is true but uninteresting because the definition made it close to a tautology, which is exactly what happened to native intermediation is cheaper.
 
-        WHAT K DOES, and the constraints that stop it being a platitude
-        generator. It reads the DATA's affordances, meaning what is measurable
-        here that is not being measured, and it reads the literature for
-        concepts that exist but have not been operationalised on this data. Each
-        proposal must name an estimand, sketch its identification, state what
-        would falsify it, and say which existing result it would displace or
-        support. A proposal with no identification sketch is an idea and not a
-        candidate, and is rejected by K itself before it reaches E.
+K. Ideation ....................... proposes what nobody asked for. ADDED 2026-08-06 on Java's diagnosis that the graph had no generator.
 
-        HOW K IS SCORED. By whether its proposals survive node I, not by how
-        many it makes. K runs CONTINUOUSLY rather than once, because the
-        affordances change as the data layer grows: centrality only became
-        proposable once the unified layer covered every venue, and the
-        replacement-against-fragmentation question only became sharp once
-        centrality existed.
+WHY K EXISTS. Every other node either builds what is specified or attacks what is built. A..D construct, E screens, F estimates, G and H write, I rejects, J gates. Nothing PROPOSES. The symptom was that the two best ideas of a long session, measuring the vehicle role as network betweenness and separating persistent replacement from fragmentation with a Herfindahl index over vehicle shares, both came from Java and neither came from the graph. A workflow whose only creative input is its owner is not an agentic workflow, it is a very elaborate executor.
+
+WHAT K DOES, and the constraints that stop it being a platitude generator. It reads the DATA's affordances, meaning what is measurable here that is not being measured, and it reads the literature for concepts that exist but have not been operationalised on this data. Each proposal must name an estimand, sketch its identification, state what would falsify it, and say which existing result it would displace or support. A proposal with no identification sketch is an idea and not a candidate, and is rejected by K itself before it reaches E.
+
+HOW K IS SCORED. By whether its proposals survive node I, not by how many it makes. K runs CONTINUOUSLY rather than once, because the affordances change as the data layer grows: centrality only became proposable once the unified layer covered every venue, and the replacement-against-fragmentation question only became sharp once centrality existed.
 J. Gates .......................... run on every G/H artefact (section 7).
 ```
 

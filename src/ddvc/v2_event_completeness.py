@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 from collections import Counter
+from concurrent.futures import as_completed
 from dataclasses import asdict, dataclass
 import gzip
 import hashlib
@@ -10,7 +11,7 @@ import json
 from pathlib import Path
 from typing import Iterable, Iterator
 
-from eth_abi import decode as abi_decode
+from eth_abi import decode as abi_decode, encode as abi_encode
 from eth_utils import keccak
 import pandas as pd
 import pyarrow.parquet as pq
@@ -18,15 +19,24 @@ import pyarrow.parquet as pq
 from ddvc.amounts import human_to_raw
 from ddvc.ethereum_logs import (
     EXACT_LOG_BLOCK_CAP,
+    ExactLogCapacityError,
     RAW_LOG_SCHEMA,
     RAW_LOG_STORAGE_FORMAT,
+    RpcEnvelope,
+    block_ranges,
+    coerce_rpc_envelope,
     fetch_exact_logs,
+    fetch_exact_logs_with_evidence,
     exact_log_block_ranges,
+    rpc_post_with_evidence,
     rpc_integer,
+    validate_canonical_log_records,
     write_exact_log_chunk,
 )
+from ddvc.fetch.raw import write_json
 from ddvc.fetch.sources import get_source
 from ddvc.paths import DATA_DIR, OUTPUT_DIR
+from ddvc.runtime import interruptible_thread_pool
 
 
 V2_EVENT_VENUES = ("uniswap_v2", "sushiswap_v2")
@@ -41,7 +51,7 @@ V2_EVENT_TOPICS = {
     for name, signature in V2_EVENT_SIGNATURES.items()
 }
 V2_EVENT_BY_TOPIC = {topic: name for name, topic in V2_EVENT_TOPICS.items()}
-V2_EVENT_SOURCE_SCHEMA_VERSION = 2
+V2_EVENT_SOURCE_SCHEMA_VERSION = 3
 V2_FACTORIES = {
     venue: str(get_source(venue).factory_address).lower()
     for venue in V2_EVENT_VENUES
@@ -55,6 +65,9 @@ V2_POOL_PERIMETER = "all_paircreated_pools_from_registered_mainnet_factories"
 RAW_V2_EVENT_ROOT = DATA_DIR / "raw" / "ethereum" / "v2_core_event_source"
 V2_EXACT_LOG_CACHE_ROOT = RAW_V2_EVENT_ROOT / "global_50_block_chunks"
 V2_EXACT_LOG_CHUNK_SIZE = EXACT_LOG_BLOCK_CAP
+V2_FACTORY_INITIAL_BLOCK_SPAN = 10_000
+V2_FACTORY_STATE_SAMPLE_SIZE = 1_024
+V2_FACTORY_EVIDENCE_SCHEMA_VERSION = 3
 RAW_V2_FACTORY_ROOT = DATA_DIR / "raw" / "ethereum" / "v2_factory_pair_registry"
 RAW_DAY_BOUND_ROOT = DATA_DIR / "raw" / "ethereum" / "utc_day_block_bounds"
 V2_EVENT_SOURCE_SUMMARY = DATA_DIR / "processed" / "v2_core_event_source_audit.parquet"
@@ -62,6 +75,9 @@ V2_EVENT_SOURCE_EXCEPTIONS = DATA_DIR / "processed" / "v2_core_event_source_exce
 V2_EVENT_SOURCE_CERTIFICATE = OUTPUT_DIR / "exhibits" / "v2_core_event_source_certificate.json"
 
 EventKey = tuple[str, str, int, str, int, str]
+ALL_PAIRS_LENGTH_SELECTOR = "0x" + keccak(text="allPairsLength()")[:4].hex()
+ALL_PAIRS_SELECTOR = "0x" + keccak(text="allPairs(uint256)")[:4].hex()
+GET_PAIR_SELECTOR = "0x" + keccak(text="getPair(address,address)")[:4].hex()
 
 
 @dataclass(frozen=True)
@@ -107,6 +123,7 @@ def v2_exact_log_ranges(start_block: int, end_block: int) -> list[tuple[int, int
 def missing_v2_exact_log_ranges(
     perimeters: Iterable[tuple[int, int]],
     *,
+    frozen_upper: dict[str, object],
     root: Path | None = None,
 ) -> list[tuple[int, int]]:
     """Return each missing global chunk once across overlapping consumers."""
@@ -116,7 +133,7 @@ def missing_v2_exact_log_ranges(
             block_range
             for start_block, end_block in perimeters
             for block_range in v2_exact_log_ranges(start_block, end_block)
-            if not v2_exact_log_chunk_complete(*block_range, root=root)
+            if not v2_exact_log_chunk_complete(*block_range, frozen_upper=frozen_upper, root=root)
         }
     )
 
@@ -148,6 +165,7 @@ def v2_exact_log_chunk_complete(
     start_block: int,
     end_block: int,
     *,
+    frozen_upper: dict[str, object],
     root: Path | None = None,
 ) -> bool:
     """Accept a shared chunk only after its exact marker and Parquet agree."""
@@ -161,11 +179,20 @@ def v2_exact_log_chunk_complete(
         return False
     try:
         marker = json.loads(marker_path.read_text(encoding="utf-8"))
-        table = pq.ParquetFile(raw_path)
-    except (OSError, ValueError, json.JSONDecodeError):
+        table = pq.read_table(raw_path)
+        validate_canonical_log_records(
+            table.to_pylist(),
+            start_block=start_block,
+            end_block=end_block,
+            topics=[V2_EVENT_TOPICS[name] for name in V2_CORE_EVENTS],
+            address=None,
+        )
+        _validate_anchored_log_evidence(marker, table.to_pylist(), frozen_upper)
+    except (IndexError, KeyError, OSError, TypeError, ValueError, json.JSONDecodeError):
         return False
     return bool(
         marker.get("status") == "complete"
+        and int(marker.get("schema_version", -1)) == V2_FACTORY_EVIDENCE_SCHEMA_VERSION
         and marker.get("kind") == "global_v2_core_events"
         and int(marker.get("start_block", -1)) == start_block
         and int(marker.get("end_block", -1)) == end_block
@@ -173,8 +200,9 @@ def v2_exact_log_chunk_complete(
         and marker.get("address_filter") is None
         and set(marker.get("event_topics") or []) == set(V2_EVENT_TOPICS.values())
         and marker.get("storage_format") == RAW_LOG_STORAGE_FORMAT
-        and int(marker.get("raw_logs", -1)) == table.metadata.num_rows
-        and table.schema_arrow == RAW_LOG_SCHEMA
+        and int(marker.get("raw_logs", -1)) == table.num_rows
+        and table.schema == RAW_LOG_SCHEMA
+        and marker.get("raw_sha256") == _file_sha256(raw_path)
     )
 
 
@@ -182,6 +210,7 @@ def fetch_v2_exact_log_chunk(
     start_block: int,
     end_block: int,
     *,
+    frozen_upper: dict[str, object],
     root: Path | None = None,
     rpc_request=None,
 ) -> dict[str, object]:
@@ -192,7 +221,7 @@ def fetch_v2_exact_log_chunk(
         end_block,
         root=root,
     )
-    if v2_exact_log_chunk_complete(start_block, end_block, root=root):
+    if v2_exact_log_chunk_complete(start_block, end_block, frozen_upper=frozen_upper, root=root):
         return json.loads(marker_path.read_text(encoding="utf-8"))
     if raw_path.exists() or marker_path.exists():
         raise RuntimeError(
@@ -201,11 +230,12 @@ def fetch_v2_exact_log_chunk(
         )
     kwargs = {"rpc_request": rpc_request} if rpc_request is not None else {}
     topics = [V2_EVENT_TOPICS[name] for name in V2_CORE_EVENTS]
-    records = fetch_exact_logs(
+    records, rpc_evidence = fetch_exact_logs_with_evidence(
         start_block=start_block,
         end_block=end_block,
         topics=topics,
         address=None,
+        frozen_upper=frozen_upper,
         **kwargs,
     )
     return write_exact_log_chunk(
@@ -214,12 +244,20 @@ def fetch_v2_exact_log_chunk(
         records,
         {
             "kind": "global_v2_core_events",
+            "schema_version": V2_FACTORY_EVIDENCE_SCHEMA_VERSION,
             "start_block": start_block,
             "end_block": end_block,
             "chunk_size": V2_EXACT_LOG_CHUNK_SIZE,
             "address_filter": None,
             "query_scope": "global_aligned_50_block_topic_only_no_address_filter",
             "event_topics": topics,
+            "rpc_request": rpc_evidence["request"],
+            "rpc_endpoint": rpc_evidence["endpoint"],
+            "rpc_attempts": rpc_evidence["attempts"],
+            "response_sha256": rpc_evidence["response_sha256"],
+            "frozen_upper_request": rpc_evidence["frozen_upper_request"],
+            "frozen_upper_response": rpc_evidence["frozen_upper_response"],
+            "frozen_upper_response_sha256": rpc_evidence["frozen_upper_response_sha256"],
             "raw_by_event": dict(
                 Counter(V2_EVENT_BY_TOPIC[str(record["topics"][0])] for record in records)
             ),
@@ -231,6 +269,7 @@ def read_v2_exact_logs(
     start_block: int,
     end_block: int,
     *,
+    frozen_upper: dict[str, object],
     root: Path | None = None,
 ) -> tuple[list[dict[str, object]], list[Path]]:
     """Read shared chunks and return only records inside the consumer's perimeter."""
@@ -238,7 +277,7 @@ def read_v2_exact_logs(
     records: list[dict[str, object]] = []
     inputs: list[Path] = []
     for lower, upper in v2_exact_log_ranges(start_block, end_block):
-        if not v2_exact_log_chunk_complete(lower, upper, root=root):
+        if not v2_exact_log_chunk_complete(lower, upper, frozen_upper=frozen_upper, root=root):
             raise RuntimeError(f"shared V2 exact-log chunk is incomplete: {lower}:{upper}")
         raw_path, marker_path = v2_exact_log_chunk_paths(lower, upper, root=root)
         chunk = pq.read_table(raw_path).to_pylist()
@@ -249,6 +288,812 @@ def read_v2_exact_logs(
             for record in chunk
             if start_block <= int(record["block_number"]) <= end_block
         )
+        inputs.extend((raw_path, marker_path))
+    return records, inputs
+
+
+def _file_sha256(path: Path) -> str:
+    digest = hashlib.sha256()
+    with path.open("rb") as handle:
+        for chunk in iter(lambda: handle.read(1024 * 1024), b""):
+            digest.update(chunk)
+    return digest.hexdigest()
+
+
+def _canonical_json_sha256(value: object) -> str:
+    return hashlib.sha256(
+        json.dumps(value, sort_keys=True, separators=(",", ":")).encode()
+    ).hexdigest()
+
+
+def _is_sha256(value: object) -> bool:
+    text = str(value or "")
+    return len(text) == 64 and all(character in "0123456789abcdef" for character in text.lower())
+
+
+def _frozen_upper_rpc_request(
+    frozen_upper: dict[str, object],
+    *,
+    rpc_id: int = 2,
+) -> dict[str, object]:
+    return {
+        "jsonrpc": "2.0",
+        "id": rpc_id,
+        "method": "eth_getBlockByNumber",
+        "params": [hex(int(frozen_upper["block_number"])), False],
+    }
+
+
+def _validate_anchored_log_evidence(
+    marker: dict[str, object],
+    records: list[dict[str, object]],
+    frozen_upper: dict[str, object],
+) -> None:
+    validate_frozen_upper_block(frozen_upper, int(frozen_upper["block_number"]))
+    endpoint = marker.get("rpc_endpoint")
+    attempts = marker.get("rpc_attempts")
+    if not isinstance(endpoint, dict) or not _is_sha256(endpoint.get("endpoint_sha256")):
+        raise ValueError("exact-log evidence lacks a sanitized endpoint identity")
+    if not isinstance(attempts, list) or not attempts:
+        raise ValueError("exact-log evidence lacks RPC attempt history")
+    frozen_request = _frozen_upper_rpc_request(frozen_upper)
+    if marker.get("frozen_upper_request") != frozen_request:
+        raise ValueError("exact-log evidence names a different frozen-upper request")
+    batch_request = marker.get("rpc_request")
+    topics = [str(topic).lower() for topic in marker.get("event_topics") or []]
+    log_filter: dict[str, object] = {
+        "fromBlock": hex(int(marker["start_block"])),
+        "toBlock": hex(int(marker["end_block"])),
+        "topics": [topics if len(topics) > 1 else topics[0]],
+    }
+    address = marker.get("address_filter")
+    if address is not None:
+        log_filter["address"] = str(address).lower()
+    expected_log_request = {
+        "jsonrpc": "2.0",
+        "id": 1,
+        "method": "eth_getLogs",
+        "params": [log_filter],
+    }
+    if (
+        not isinstance(batch_request, list)
+        or len(batch_request) != 2
+        or batch_request[0] != expected_log_request
+        or batch_request[1] != frozen_request
+    ):
+        raise ValueError("exact-log evidence lacks its exact two-item request")
+    frozen_response = marker.get("frozen_upper_response")
+    if not isinstance(frozen_response, dict) or frozen_response.get("id") != 2:
+        raise ValueError("exact-log evidence lacks its frozen-upper response")
+    header = frozen_response.get("result")
+    if not isinstance(header, dict):
+        raise ValueError("exact-log evidence lacks a frozen-upper header")
+    expected_header = {
+        "number": int(frozen_upper["block_number"]),
+        "hash": str(frozen_upper["block_hash"]).lower(),
+        "parentHash": str(frozen_upper["parent_hash"]).lower(),
+        "timestamp": int(frozen_upper["timestamp"]),
+    }
+    observed_header = {
+        "number": rpc_integer(header.get("number")),
+        "hash": str(header.get("hash") or "").lower(),
+        "parentHash": str(header.get("parentHash") or "").lower(),
+        "timestamp": rpc_integer(header.get("timestamp")),
+    }
+    if observed_header != expected_header:
+        raise ValueError("exact-log endpoint disagrees with the frozen upper header")
+    if marker.get("frozen_upper_response_sha256") != _canonical_json_sha256(frozen_response):
+        raise ValueError("exact-log frozen-upper response digest disagrees")
+    canonical_response_evidence = {
+        "logs": records,
+        "frozen_upper_response": frozen_response,
+    }
+    if marker.get("response_sha256") != _canonical_json_sha256(canonical_response_evidence):
+        raise ValueError("exact-log canonical response digest disagrees")
+
+
+def _rpc_envelope(payload: object, rpc_request=None) -> RpcEnvelope:
+    if rpc_request is None:
+        return rpc_post_with_evidence(payload)
+    response = rpc_request(payload, timeout=30, retries=2)
+    return coerce_rpc_envelope(response)
+
+
+def frozen_upper_block_path(block: int, *, root: Path | None = None) -> Path:
+    directory = root or RAW_V2_FACTORY_ROOT
+    return directory / "frozen_upper_blocks" / f"block_{block:08d}.json"
+
+
+def factory_deployment_path(
+    venue: str,
+    upper_block: int,
+    *,
+    root: Path | None = None,
+) -> Path:
+    if venue not in V2_EVENT_VENUES or upper_block < 0:
+        raise ValueError("invalid V2 factory deployment perimeter")
+    return (root or RAW_V2_FACTORY_ROOT) / venue / f"deployment_{upper_block:08d}.json"
+
+
+def validate_factory_deployment_proof(
+    record: dict[str, object],
+    venue: str,
+    upper_block: int,
+    upper_hash: str,
+) -> int:
+    """Revalidate the factory's exact deployment edge and frozen-upper bytecode."""
+
+    factory = V2_FACTORIES[venue]
+    deployment_block = int(record.get("deployment_block", -1))
+    if (
+        record.get("status") != "complete"
+        or int(record.get("schema_version", -1)) != V2_FACTORY_EVIDENCE_SCHEMA_VERSION
+        or record.get("factory") != factory
+        or deployment_block < 1
+        or int(record.get("upper_block", -1)) != upper_block
+        or record.get("upper_block_hash") != upper_hash
+    ):
+        raise ValueError(f"stale {venue} factory deployment evidence")
+    evidence = record.get("rpc_evidence")
+    if not isinstance(evidence, list):
+        raise ValueError(f"{venue} factory deployment evidence is absent")
+    observed: dict[int, str] = {}
+    frozen_observed: str | None = None
+    for item in evidence:
+        if not isinstance(item, dict):
+            continue
+        request = item.get("request")
+        response = item.get("response")
+        if not isinstance(request, dict) or not isinstance(response, dict):
+            continue
+        if request.get("method") != "eth_getCode":
+            continue
+        params = request.get("params")
+        if not isinstance(params, list) or len(params) != 2 or params[0] != factory:
+            continue
+        if item.get("response_sha256") != _canonical_json_sha256(response):
+            raise ValueError(f"{venue} factory code response digest disagrees")
+        if not isinstance(item.get("rpc_attempts"), list) or not item["rpc_attempts"]:
+            raise ValueError(f"{venue} factory code proof lacks RPC attempt evidence")
+        endpoint = item.get("rpc_endpoint")
+        if not isinstance(endpoint, dict) or not _is_sha256(endpoint.get("endpoint_sha256")):
+            raise ValueError(f"{venue} factory code proof lacks sanitized endpoint identity")
+        block_reference = params[1]
+        if isinstance(block_reference, dict):
+            if block_reference != {"blockHash": upper_hash, "requireCanonical": True}:
+                raise ValueError(f"{venue} factory code proof names a different frozen block hash")
+            frozen_observed = str(response.get("result") or "")
+        else:
+            observed[int(str(block_reference), 16)] = str(response.get("result") or "")
+    if observed.get(deployment_block - 1) not in {"0x", "0x0"}:
+        raise ValueError(f"{venue} pre-deployment factory code is not empty")
+    if observed.get(deployment_block) in {None, "", "0x", "0x0"}:
+        raise ValueError(f"{venue} deployment-block factory code is empty")
+    if frozen_observed in {None, "", "0x", "0x0"}:
+        raise ValueError(f"{venue} frozen-upper factory code is empty")
+    deployment_hash = hashlib.sha256(
+        bytes.fromhex(observed[deployment_block].removeprefix("0x"))
+    ).hexdigest()
+    frozen_hash = hashlib.sha256(
+        bytes.fromhex(str(frozen_observed).removeprefix("0x"))
+    ).hexdigest()
+    if deployment_hash != frozen_hash or record.get("runtime_code_sha256") != deployment_hash:
+        raise ValueError(f"{venue} factory runtime code changed across the frozen perimeter")
+    return deployment_block
+
+
+def validate_frozen_upper_block(record: dict[str, object], block: int) -> None:
+    if (
+        record.get("status") != "complete"
+        or int(record.get("schema_version", -1)) != V2_FACTORY_EVIDENCE_SCHEMA_VERSION
+        or int(record.get("block_number", -1)) != block
+    ):
+        raise ValueError("frozen V2 upper-block evidence is stale")
+    for field, length in (("block_hash", 66), ("parent_hash", 66)):
+        value = str(record.get(field) or "")
+        if not value.startswith("0x") or len(value) != length:
+            raise ValueError(f"frozen V2 upper-block evidence lacks {field}")
+    if int(record.get("timestamp", -1)) < 1:
+        raise ValueError("frozen V2 upper-block evidence lacks a timestamp")
+    endpoint = record.get("rpc_endpoint")
+    attempts = record.get("rpc_attempts")
+    if not isinstance(endpoint, dict) or not _is_sha256(endpoint.get("endpoint_sha256")):
+        raise ValueError("frozen V2 upper-block evidence lacks a sanitized endpoint identity")
+    if not isinstance(attempts, list) or not attempts:
+        raise ValueError("frozen V2 upper-block evidence lacks RPC attempt history")
+    expected_request = _frozen_upper_rpc_request(record, rpc_id=1)
+    if record.get("rpc_request") != expected_request:
+        raise ValueError("frozen V2 upper-block evidence lacks its exact RPC request")
+    response = record.get("rpc_response")
+    if not isinstance(response, dict) or response.get("id") != 1:
+        raise ValueError("frozen V2 upper-block evidence lacks its exact RPC response")
+    if record.get("response_sha256") != _canonical_json_sha256(response):
+        raise ValueError("frozen V2 upper-block response digest disagrees")
+    header = response.get("result")
+    if not isinstance(header, dict):
+        raise ValueError("frozen V2 upper-block RPC response lacks a header")
+    header_identity = {
+        "block_number": rpc_integer(header.get("number")),
+        "block_hash": str(header.get("hash") or "").lower(),
+        "parent_hash": str(header.get("parentHash") or "").lower(),
+        "timestamp": rpc_integer(header.get("timestamp")),
+    }
+    copied_identity = {
+        "block_number": int(record["block_number"]),
+        "block_hash": str(record["block_hash"]),
+        "parent_hash": str(record["parent_hash"]),
+        "timestamp": int(record["timestamp"]),
+    }
+    if header_identity != copied_identity:
+        raise ValueError("frozen V2 upper-block copied fields disagree with the RPC response")
+    identity_digest = record.get("header_identity_sha256")
+    if not _is_sha256(identity_digest):
+        raise ValueError("frozen V2 upper-block evidence lacks a header identity digest")
+    if identity_digest is not None and identity_digest != _canonical_json_sha256(header_identity):
+        raise ValueError("frozen V2 upper-block hash identity disagrees with its response evidence")
+
+
+def load_or_resolve_frozen_upper_block(
+    block: int,
+    *,
+    fetch: bool,
+    root: Path | None = None,
+    rpc_request=None,
+) -> dict[str, object]:
+    """Freeze the exact upper block header once; invalid evidence is never overwritten."""
+
+    path = frozen_upper_block_path(block, root=root)
+    if path.is_file():
+        record = json.loads(path.read_text(encoding="utf-8"))
+        validate_frozen_upper_block(record, block)
+        return record
+    if not fetch:
+        raise RuntimeError(f"V2 factory registry lacks frozen upper-block evidence for {block}")
+    payload = _frozen_upper_rpc_request({"block_number": block}, rpc_id=1)
+    envelope = _rpc_envelope(payload, rpc_request)
+    header = envelope.response.get("result") if isinstance(envelope.response, dict) else None
+    if not isinstance(header, dict):
+        raise RuntimeError(f"eth_getBlockByNumber lacks an exact result for frozen block {block}")
+    record = {
+        "status": "complete",
+        "schema_version": V2_FACTORY_EVIDENCE_SCHEMA_VERSION,
+        "block_number": rpc_integer(header.get("number")),
+        "block_hash": str(header.get("hash") or "").lower(),
+        "parent_hash": str(header.get("parentHash") or "").lower(),
+        "timestamp": rpc_integer(header.get("timestamp")),
+        "rpc_request": payload,
+        "rpc_response": envelope.response,
+        "rpc_endpoint": envelope.endpoint,
+        "rpc_attempts": list(envelope.attempts),
+        "response_sha256": _canonical_json_sha256(envelope.response),
+    }
+    record["header_identity_sha256"] = _canonical_json_sha256(
+        {
+            "block_number": record["block_number"],
+            "block_hash": record["block_hash"],
+            "parent_hash": record["parent_hash"],
+            "timestamp": record["timestamp"],
+        }
+    )
+    validate_frozen_upper_block(record, block)
+    path.parent.mkdir(parents=True, exist_ok=True)
+    write_json(path, record)
+    return record
+
+
+def factory_root_ranges(
+    deployment_block: int,
+    upper_block: int,
+    *,
+    initial_span: int = V2_FACTORY_INITIAL_BLOCK_SPAN,
+) -> list[tuple[int, int]]:
+    """Define deterministic address-filtered roots independently of provider splits."""
+
+    return block_ranges(deployment_block, upper_block, initial_span)
+
+
+def _bisected_factory_children(start_block: int, end_block: int) -> tuple[tuple[int, int], tuple[int, int]]:
+    if start_block >= end_block:
+        raise ValueError("a one-block factory range cannot be bisected")
+    midpoint = (start_block + end_block) // 2
+    return (start_block, midpoint), (midpoint + 1, end_block)
+
+
+def _validate_canonical_factory_root(
+    marker: dict[str, object],
+    *,
+    start_block: int,
+    end_block: int,
+    deterministic_roots: list[tuple[int, int]],
+) -> None:
+    matching_roots = [
+        perimeter
+        for perimeter in deterministic_roots
+        if perimeter[0] <= start_block <= end_block <= perimeter[1]
+    ]
+    marker_root = (
+        int(marker.get("root_start_block", -1)),
+        int(marker.get("root_end_block", -1)),
+    )
+    if len(matching_roots) != 1 or marker_root != matching_roots[0]:
+        raise ValueError("V2 factory leaf ancestry names a non-canonical root")
+
+
+def factory_leaf_paths(
+    venue: str,
+    start_block: int,
+    end_block: int,
+    *,
+    root: Path | None = None,
+) -> tuple[Path, Path]:
+    if venue not in V2_EVENT_VENUES or start_block < 0 or end_block < start_block:
+        raise ValueError("invalid V2 factory leaf perimeter")
+    directory = (root or RAW_V2_FACTORY_ROOT) / venue / "leaves"
+    stem = f"blocks_{start_block:08d}_{end_block:08d}"
+    return directory / f"{stem}.parquet", directory / f"{stem}.meta.json"
+
+
+def factory_leaf_complete(
+    venue: str,
+    start_block: int,
+    end_block: int,
+    *,
+    frozen_upper: dict[str, object],
+    root: Path | None = None,
+) -> bool:
+    raw_path, marker_path = factory_leaf_paths(
+        venue,
+        start_block,
+        end_block,
+        root=root,
+    )
+    if not raw_path.is_file() or not marker_path.is_file():
+        return False
+    try:
+        marker = json.loads(marker_path.read_text(encoding="utf-8"))
+        table = pq.read_table(raw_path)
+        _validate_factory_leaf_lineage(marker, start_block=start_block, end_block=end_block)
+        records = validate_canonical_log_records(
+            table.to_pylist(),
+            start_block=start_block,
+            end_block=end_block,
+            topics=[PAIR_CREATED_TOPIC],
+            address=V2_FACTORIES[venue],
+        )
+        for record in records:
+            decode_pair_created_log(venue, record)
+        _validate_anchored_log_evidence(marker, records, frozen_upper)
+    except (IndexError, KeyError, OSError, TypeError, ValueError, json.JSONDecodeError):
+        return False
+    return bool(
+        marker.get("status") == "complete"
+        and int(marker.get("schema_version", -1)) == V2_FACTORY_EVIDENCE_SCHEMA_VERSION
+        and marker.get("kind") == "factory_pair_created"
+        and marker.get("venue") == venue
+        and marker.get("address_filter") == V2_FACTORIES[venue]
+        and marker.get("event_topics") == [PAIR_CREATED_TOPIC]
+        and int(marker.get("start_block", -1)) == start_block
+        and int(marker.get("end_block", -1)) == end_block
+        and marker.get("query_scope") == "factory_address_and_paircreated_topic"
+        and marker.get("storage_format") == RAW_LOG_STORAGE_FORMAT
+        and int(marker.get("raw_logs", -1)) == table.num_rows
+        and table.schema == RAW_LOG_SCHEMA
+        and marker.get("raw_sha256") == _file_sha256(raw_path)
+        and isinstance(marker.get("rpc_endpoint"), dict)
+        and len(str(marker["rpc_endpoint"].get("endpoint_sha256") or "")) == 64
+    )
+
+
+def _validate_factory_leaf_lineage(
+    marker: dict[str, object],
+    *,
+    start_block: int,
+    end_block: int,
+) -> None:
+    """Require each adaptive leaf to descend through exact midpoint bisections."""
+
+    root_start = int(marker.get("root_start_block", -1))
+    root_end = int(marker.get("root_end_block", -1))
+    depth = int(marker.get("adaptive_depth", -1))
+    ancestry = marker.get("split_ancestry")
+    if not isinstance(ancestry, list) or depth != len(ancestry):
+        raise ValueError("factory leaf ancestry depth is invalid")
+    if not root_start <= start_block <= end_block <= root_end:
+        raise ValueError("factory leaf lies outside its deterministic root")
+    current = (root_start, root_end)
+    if not ancestry:
+        if current != (start_block, end_block):
+            raise ValueError("unsplit factory leaf does not equal its deterministic root")
+        return
+    for index, split in enumerate(ancestry):
+        if not isinstance(split, dict):
+            raise ValueError("factory leaf ancestry contains a malformed split")
+        observed = (int(split.get("start_block", -1)), int(split.get("end_block", -1)))
+        if observed != current:
+            raise ValueError("factory leaf ancestry does not follow its deterministic root")
+        children = _bisected_factory_children(*current)
+        descendant = (
+            (int(ancestry[index + 1]["start_block"]), int(ancestry[index + 1]["end_block"]))
+            if index + 1 < len(ancestry) and isinstance(ancestry[index + 1], dict)
+            else (start_block, end_block)
+        )
+        if descendant not in children:
+            raise ValueError("factory leaf ancestry violates exact midpoint bisection")
+        current = descendant
+
+
+def _existing_factory_split(
+    venue: str,
+    start_block: int,
+    end_block: int,
+    *,
+    root_start: int,
+    root_end: int,
+    depth: int,
+    frozen_upper: dict[str, object],
+    root: Path | None,
+) -> dict[str, object] | None:
+    """Recover a published descendant's split so an interrupted root cannot overlap it."""
+
+    leaf_directory = (root or RAW_V2_FACTORY_ROOT) / venue / "leaves"
+    if not leaf_directory.is_dir():
+        return None
+    split_records: list[dict[str, object]] = []
+    for marker_path in leaf_directory.glob("blocks_*.meta.json"):
+        try:
+            marker = json.loads(marker_path.read_text(encoding="utf-8"))
+            leaf_start = int(marker.get("start_block", -1))
+            leaf_end = int(marker.get("end_block", -1))
+        except (OSError, ValueError, json.JSONDecodeError):
+            continue
+        if (
+            int(marker.get("root_start_block", -1)) != root_start
+            or int(marker.get("root_end_block", -1)) != root_end
+            or not start_block <= leaf_start <= leaf_end <= end_block
+            or (leaf_start, leaf_end) == (start_block, end_block)
+        ):
+            continue
+        if not factory_leaf_complete(venue, leaf_start, leaf_end, frozen_upper=frozen_upper, root=root):
+            raise RuntimeError("published V2 factory descendant is invalid and must be quarantined")
+        ancestry = marker.get("split_ancestry")
+        if not isinstance(ancestry, list) or len(ancestry) <= depth:
+            raise RuntimeError("published V2 factory descendant lacks its parent split")
+        split = ancestry[depth]
+        if not isinstance(split, dict):
+            raise RuntimeError("published V2 factory descendant has malformed split evidence")
+        split_records.append(split)
+    if not split_records:
+        return None
+    canonical = json.dumps(split_records[0], sort_keys=True, separators=(",", ":"))
+    if any(json.dumps(split, sort_keys=True, separators=(",", ":")) != canonical for split in split_records[1:]):
+        raise RuntimeError("published V2 factory descendants disagree on their parent split")
+    if (
+        int(split_records[0].get("start_block", -1)) != start_block
+        or int(split_records[0].get("end_block", -1)) != end_block
+    ):
+        raise RuntimeError("published V2 factory descendant points to a different parent root")
+    return split_records[0]
+
+
+def fetch_factory_root_adaptive(
+    venue: str,
+    start_block: int,
+    end_block: int,
+    *,
+    frozen_upper: dict[str, object],
+    root_start: int | None = None,
+    root_end: int | None = None,
+    depth: int = 0,
+    split_ancestry: tuple[dict[str, object], ...] = (),
+    root: Path | None = None,
+    rpc_request=None,
+) -> list[tuple[int, int]]:
+    """Fetch one root, bisecting only structured capacity/timeout failures."""
+
+    root_start = start_block if root_start is None else root_start
+    root_end = end_block if root_end is None else root_end
+    raw_path, marker_path = factory_leaf_paths(venue, start_block, end_block, root=root)
+    existing_split = _existing_factory_split(
+        venue,
+        start_block,
+        end_block,
+        root_start=root_start,
+        root_end=root_end,
+        depth=depth,
+        frozen_upper=frozen_upper,
+        root=root,
+    )
+    if factory_leaf_complete(venue, start_block, end_block, frozen_upper=frozen_upper, root=root):
+        if existing_split is not None:
+            raise RuntimeError("V2 factory root overlaps already published descendants")
+        return [(start_block, end_block)]
+    if raw_path.exists() or marker_path.exists():
+        raise RuntimeError(
+            "partial or invalid V2 factory leaf must be quarantined, not overwritten: "
+            f"{raw_path.name}"
+        )
+    if existing_split is not None:
+        left_range, right_range = _bisected_factory_children(start_block, end_block)
+        ancestry = (*split_ancestry, existing_split)
+        left = fetch_factory_root_adaptive(
+            venue,
+            *left_range,
+            root_start=root_start,
+            root_end=root_end,
+            depth=depth + 1,
+            split_ancestry=ancestry,
+            frozen_upper=frozen_upper,
+            root=root,
+            rpc_request=rpc_request,
+        )
+        right = fetch_factory_root_adaptive(
+            venue,
+            *right_range,
+            root_start=root_start,
+            root_end=root_end,
+            depth=depth + 1,
+            split_ancestry=ancestry,
+            frozen_upper=frozen_upper,
+            root=root,
+            rpc_request=rpc_request,
+        )
+        return [*left, *right]
+    try:
+        records, rpc_evidence = fetch_exact_logs_with_evidence(
+            start_block=start_block,
+            end_block=end_block,
+            topics=[PAIR_CREATED_TOPIC],
+            address=V2_FACTORIES[venue],
+            frozen_upper=frozen_upper,
+            rpc_request=rpc_request,
+        )
+    except ExactLogCapacityError as error:
+        if start_block == end_block:
+            raise RuntimeError(
+                f"V2 factory exact-log query failed at one block: {venue}/{start_block}"
+            ) from error
+        left_range, right_range = _bisected_factory_children(start_block, end_block)
+        split = {
+            "start_block": start_block,
+            "end_block": end_block,
+            "attempts": list(error.attempts),
+        }
+        ancestry = (*split_ancestry, split)
+        left = fetch_factory_root_adaptive(
+            venue,
+            *left_range,
+            root_start=root_start,
+            root_end=root_end,
+            depth=depth + 1,
+            split_ancestry=ancestry,
+            frozen_upper=frozen_upper,
+            root=root,
+            rpc_request=rpc_request,
+        )
+        right = fetch_factory_root_adaptive(
+            venue,
+            *right_range,
+            root_start=root_start,
+            root_end=root_end,
+            depth=depth + 1,
+            split_ancestry=ancestry,
+            frozen_upper=frozen_upper,
+            root=root,
+            rpc_request=rpc_request,
+        )
+        return [*left, *right]
+    write_exact_log_chunk(
+        raw_path,
+        marker_path,
+        records,
+        {
+            "kind": "factory_pair_created",
+            "schema_version": V2_FACTORY_EVIDENCE_SCHEMA_VERSION,
+            "venue": venue,
+            "start_block": start_block,
+            "end_block": end_block,
+            "root_start_block": root_start,
+            "root_end_block": root_end,
+            "adaptive_depth": depth,
+            "split_ancestry": list(split_ancestry),
+            "address_filter": V2_FACTORIES[venue],
+            "query_scope": "factory_address_and_paircreated_topic",
+            "event_topics": [PAIR_CREATED_TOPIC],
+            "rpc_request": rpc_evidence["request"],
+            "rpc_endpoint": rpc_evidence["endpoint"],
+            "rpc_attempts": rpc_evidence["attempts"],
+            "response_sha256": rpc_evidence["response_sha256"],
+            "frozen_upper_request": rpc_evidence["frozen_upper_request"],
+            "frozen_upper_response": rpc_evidence["frozen_upper_response"],
+            "frozen_upper_response_sha256": rpc_evidence["frozen_upper_response_sha256"],
+        },
+    )
+    return [(start_block, end_block)]
+
+
+def validate_factory_coverage_ranges(
+    ranges: Iterable[tuple[int, int]],
+    deployment_block: int,
+    upper_block: int,
+) -> list[tuple[int, int]]:
+    ordered = sorted((int(start), int(end)) for start, end in ranges)
+    if not ordered or ordered[0][0] != deployment_block or ordered[-1][1] != upper_block:
+        raise ValueError("V2 factory coverage does not bind both frozen perimeter edges")
+    previous_end = deployment_block - 1
+    for start, end in ordered:
+        if start > end:
+            raise ValueError("V2 factory coverage contains an inverted leaf")
+        if start != previous_end + 1:
+            relation = "gap" if start > previous_end + 1 else "overlap"
+            raise ValueError(f"V2 factory coverage contains a {relation}: {previous_end}/{start}")
+        previous_end = end
+    return ordered
+
+
+def factory_coverage_manifest_path(
+    venue: str,
+    upper_block: int,
+    *,
+    root: Path | None = None,
+) -> Path:
+    return (root or RAW_V2_FACTORY_ROOT) / venue / f"coverage_{upper_block:08d}.json"
+
+
+def validate_factory_coverage_manifest(
+    manifest: dict[str, object],
+    *,
+    venue: str,
+    deployment_block: int,
+    frozen_upper: dict[str, object],
+    root: Path | None = None,
+) -> list[tuple[int, int]]:
+    upper_block = int(frozen_upper["block_number"])
+    expected = {
+        "status": "complete",
+        "schema_version": V2_FACTORY_EVIDENCE_SCHEMA_VERSION,
+        "venue": venue,
+        "factory": V2_FACTORIES[venue],
+        "deployment_block": deployment_block,
+        "upper_block": upper_block,
+        "upper_block_hash": frozen_upper["block_hash"],
+        "upper_block_timestamp": frozen_upper["timestamp"],
+        "initial_block_span": V2_FACTORY_INITIAL_BLOCK_SPAN,
+    }
+    stale = {
+        key: (manifest.get(key), value)
+        for key, value in expected.items()
+        if manifest.get(key) != value
+    }
+    if stale:
+        raise ValueError(f"V2 factory coverage manifest is stale: {stale}")
+    leaves = manifest.get("leaves")
+    if not isinstance(leaves, list):
+        raise ValueError("V2 factory coverage manifest lacks leaves")
+    ranges = validate_factory_coverage_ranges(
+        [(int(leaf["start_block"]), int(leaf["end_block"])) for leaf in leaves],
+        deployment_block,
+        upper_block,
+    )
+    base = (root or RAW_V2_FACTORY_ROOT) / venue
+    deterministic_roots = factory_root_ranges(deployment_block, upper_block)
+    rows = 0
+    for leaf, (start, end) in zip(leaves, ranges, strict=True):
+        raw_relative = Path(str(leaf.get("raw_path") or ""))
+        marker_relative = Path(str(leaf.get("marker_path") or ""))
+        if raw_relative.is_absolute() or marker_relative.is_absolute() or ".." in raw_relative.parts or ".." in marker_relative.parts:
+            raise ValueError("V2 factory coverage contains a non-portable leaf path")
+        raw_path, marker_path = factory_leaf_paths(venue, start, end, root=root)
+        if raw_path != base / raw_relative or marker_path != base / marker_relative:
+            raise ValueError("V2 factory coverage leaf path disagrees with its canonical range")
+        if not factory_leaf_complete(venue, start, end, frozen_upper=frozen_upper, root=root):
+            raise ValueError(f"V2 factory coverage leaf is incomplete: {start}:{end}")
+        marker = json.loads(marker_path.read_text(encoding="utf-8"))
+        _validate_factory_leaf_lineage(marker, start_block=start, end_block=end)
+        _validate_canonical_factory_root(
+            marker,
+            start_block=start,
+            end_block=end,
+            deterministic_roots=deterministic_roots,
+        )
+        if leaf.get("raw_sha256") != marker.get("raw_sha256") or leaf.get("marker_sha256") != _file_sha256(marker_path):
+            raise ValueError(f"V2 factory coverage leaf digest changed: {start}:{end}")
+        rows += int(marker["raw_logs"])
+    if int(manifest.get("raw_logs", -1)) != rows or int(manifest.get("leaf_count", -1)) != len(ranges):
+        raise ValueError("V2 factory coverage manifest totals disagree")
+    return ranges
+
+
+def write_factory_coverage_manifest(
+    venue: str,
+    deployment_block: int,
+    frozen_upper: dict[str, object],
+    ranges: Iterable[tuple[int, int]],
+    *,
+    root: Path | None = None,
+) -> dict[str, object]:
+    validate_frozen_upper_block(frozen_upper, int(frozen_upper["block_number"]))
+    upper_block = int(frozen_upper["block_number"])
+    ordered = validate_factory_coverage_ranges(ranges, deployment_block, upper_block)
+    base = (root or RAW_V2_FACTORY_ROOT) / venue
+    deterministic_roots = factory_root_ranges(deployment_block, upper_block)
+    leaves: list[dict[str, object]] = []
+    for start, end in ordered:
+        raw_path, marker_path = factory_leaf_paths(venue, start, end, root=root)
+        if not marker_path.is_file():
+            raise ValueError(f"cannot manifest incomplete V2 factory leaf: {start}:{end}")
+        marker = json.loads(marker_path.read_text(encoding="utf-8"))
+        _validate_factory_leaf_lineage(marker, start_block=start, end_block=end)
+        _validate_canonical_factory_root(
+            marker,
+            start_block=start,
+            end_block=end,
+            deterministic_roots=deterministic_roots,
+        )
+        if not factory_leaf_complete(venue, start, end, frozen_upper=frozen_upper, root=root):
+            raise ValueError(f"cannot manifest incomplete V2 factory leaf: {start}:{end}")
+        leaves.append(
+            {
+                "start_block": start,
+                "end_block": end,
+                "raw_logs": int(marker["raw_logs"]),
+                "raw_path": raw_path.relative_to(base).as_posix(),
+                "marker_path": marker_path.relative_to(base).as_posix(),
+                "raw_sha256": marker["raw_sha256"],
+                "marker_sha256": _file_sha256(marker_path),
+            }
+        )
+    manifest = {
+        "status": "complete",
+        "schema_version": V2_FACTORY_EVIDENCE_SCHEMA_VERSION,
+        "venue": venue,
+        "factory": V2_FACTORIES[venue],
+        "deployment_block": deployment_block,
+        "upper_block": upper_block,
+        "upper_block_hash": frozen_upper["block_hash"],
+        "upper_block_timestamp": frozen_upper["timestamp"],
+        "initial_block_span": V2_FACTORY_INITIAL_BLOCK_SPAN,
+        "leaf_count": len(leaves),
+        "raw_logs": sum(int(leaf["raw_logs"]) for leaf in leaves),
+        "leaves": leaves,
+    }
+    path = factory_coverage_manifest_path(venue, upper_block, root=root)
+    if path.exists():
+        existing = json.loads(path.read_text(encoding="utf-8"))
+        validate_factory_coverage_manifest(
+            existing,
+            venue=venue,
+            deployment_block=deployment_block,
+            frozen_upper=frozen_upper,
+            root=root,
+        )
+        if existing != manifest:
+            raise RuntimeError("immutable V2 factory coverage manifest disagrees with current leaves")
+        return existing
+    path.parent.mkdir(parents=True, exist_ok=True)
+    write_json(path, manifest)
+    return manifest
+
+
+def read_factory_coverage_records(
+    manifest: dict[str, object],
+    *,
+    venue: str,
+    deployment_block: int,
+    frozen_upper: dict[str, object],
+    root: Path | None = None,
+) -> tuple[list[dict[str, object]], list[Path]]:
+    ranges = validate_factory_coverage_manifest(
+        manifest,
+        venue=venue,
+        deployment_block=deployment_block,
+        frozen_upper=frozen_upper,
+        root=root,
+    )
+    records: list[dict[str, object]] = []
+    inputs: list[Path] = []
+    for start, end in ranges:
+        raw_path, marker_path = factory_leaf_paths(venue, start, end, root=root)
+        records.extend(pq.read_table(raw_path).to_pylist())
         inputs.extend((raw_path, marker_path))
     return records, inputs
 
@@ -359,10 +1204,17 @@ def decode_pair_created_log(venue: str, log: dict[str, object]) -> FactoryPair:
         ["address", "uint256"],
         bytes.fromhex(str(log.get("data") or "0x").removeprefix("0x")),
     )
+    pool = _address(pool, label="PairCreated pair")
+    if token0 == "0x" + "0" * 40 or token1 == "0x" + "0" * 40 or pool == "0x" + "0" * 40:
+        raise ValueError("PairCreated contains a zero token or pair address")
+    if token0 >= token1:
+        raise ValueError("PairCreated token order violates the factory contract")
+    if int(ordinal) < 1:
+        raise ValueError("PairCreated ordinal must be positive")
     return FactoryPair(
         venue=venue,
         factory=factory,
-        pool=_address(pool, label="PairCreated pair"),
+        pool=pool,
         token0=token0,
         token1=token1,
         creation_block=rpc_integer(log.get("blockNumber", log.get("block_number"))),
@@ -384,18 +1236,34 @@ def factory_pair_registry(
 
     by_pool: dict[str, FactoryPair] = {}
     by_ordinal: dict[int, FactoryPair] = {}
+    by_tokens: dict[tuple[str, str], FactoryPair] = {}
+    by_identity: dict[tuple[int, str, int], FactoryPair] = {}
     for record in records:
         pair = decode_pair_created_log(venue, record)
         if pair.pool in by_pool:
             raise ValueError(f"duplicate PairCreated pool identity: {pair.pool}")
         if pair.ordinal in by_ordinal:
             raise ValueError(f"duplicate PairCreated ordinal: {pair.ordinal}")
+        token_key = (pair.token0, pair.token1)
+        if token_key in by_tokens:
+            raise ValueError(f"duplicate PairCreated token identity: {token_key}")
+        identity = (pair.creation_block, pair.creation_tx_hash, pair.creation_log_index)
+        if identity in by_identity:
+            raise ValueError(f"duplicate PairCreated chain identity: {identity}")
         by_pool[pair.pool] = pair
         by_ordinal[pair.ordinal] = pair
+        by_tokens[token_key] = pair
+        by_identity[identity] = pair
     expected_ordinals = set(range(1, len(by_ordinal) + 1))
     if set(by_ordinal) != expected_ordinals:
         missing = sorted(expected_ordinals - set(by_ordinal))[:3]
         raise ValueError(f"factory PairCreated sequence is incomplete; missing={missing}")
+    chronological = sorted(
+        by_pool.values(),
+        key=lambda pair: (pair.creation_block, pair.creation_log_index),
+    )
+    if [pair.ordinal for pair in chronological] != list(range(1, len(chronological) + 1)):
+        raise ValueError("factory PairCreated ordinals disagree with exact chain order")
     statics = {
         pair.pool: PoolStatic(
             pool=pair.pool,
@@ -407,6 +1275,396 @@ def factory_pair_registry(
         for pair in by_pool.values()
     }
     return statics, sorted(by_pool.values(), key=lambda pair: pair.ordinal)
+
+
+def factory_registry_sha256(pairs: Iterable[FactoryPair]) -> str:
+    rows = [asdict(pair) for pair in sorted(pairs, key=lambda pair: (pair.venue, pair.ordinal))]
+    return hashlib.sha256(
+        json.dumps(rows, sort_keys=True, separators=(",", ":")).encode()
+    ).hexdigest()
+
+
+def deterministic_factory_state_sample(
+    pairs: Iterable[FactoryPair],
+    *,
+    sample_size: int = V2_FACTORY_STATE_SAMPLE_SIZE,
+) -> list[FactoryPair]:
+    """Select fixed boundary plus hash-ranked ordinals without Graph input."""
+
+    ordered = sorted(pairs, key=lambda pair: pair.ordinal)
+    if sample_size < 1:
+        raise ValueError("factory state sample size must be positive")
+    if len(ordered) <= sample_size:
+        return ordered
+    if sample_size == 1:
+        return [ordered[0]]
+    forced = {ordered[0].ordinal, ordered[-1].ordinal}
+    ranked = sorted(
+        (pair for pair in ordered if pair.ordinal not in forced),
+        key=lambda pair: hashlib.sha256(
+            f"v2-factory-state-v1:{pair.venue}:{pair.ordinal}:{pair.pool}".encode()
+        ).digest(),
+    )
+    chosen = [ordered[0], ordered[-1], *ranked[: sample_size - 2]]
+    return sorted(chosen, key=lambda pair: pair.ordinal)
+
+
+def _rpc_result_address(result: object, *, label: str) -> str:
+    value = str(result or "")
+    if not value.startswith("0x") or len(value) != 66:
+        raise ValueError(f"{label} lacks an exact ABI address result")
+    return _address("0x" + value[-40:], label=label)
+
+
+def _factory_state_batch(
+    specs: list[dict[str, object]],
+    *,
+    upper_block: int,
+    upper_block_hash: str,
+    rpc_request=None,
+) -> list[dict[str, object]]:
+    block_reference = {
+        "blockHash": upper_block_hash,
+        "requireCanonical": True,
+    }
+    payload = [
+        {
+            "jsonrpc": "2.0",
+            "id": int(spec["id"]),
+            "method": "eth_call",
+            "params": [
+                {"to": spec["target"], "data": spec["data"]},
+                block_reference,
+            ],
+        }
+        for spec in specs
+    ]
+    requests_by_id = {int(request["id"]): request for request in payload}
+    envelope = _rpc_envelope(payload, rpc_request)
+    responses = envelope.response
+    if not isinstance(responses, list):
+        raise RuntimeError("factory state batch lacks a JSON-RPC result list")
+    by_id = {
+        int(response["id"]): response
+        for response in responses
+        if isinstance(response, dict) and "id" in response
+    }
+    if set(by_id) != {int(spec["id"]) for spec in specs}:
+        raise RuntimeError("factory state batch response IDs are incomplete")
+    evidence: list[dict[str, object]] = []
+    for spec in specs:
+        response = by_id[int(spec["id"])]
+        if response.get("error") is not None:
+            raise RuntimeError(f"factory state call failed: {response['error']}")
+        observed = _rpc_result_address(
+            response.get("result"),
+            label=f"factory {spec['method']}",
+        )
+        expected = str(spec["expected"])
+        if observed != expected:
+            raise ValueError(
+                f"factory state disagrees at ordinal {spec['ordinal']} for {spec['method']}: "
+                f"{observed} != {expected}"
+            )
+        evidence.append(
+            {
+                "id": int(spec["id"]),
+                "ordinal": int(spec["ordinal"]),
+                "method": spec["method"],
+                "expected": expected,
+                "observed": observed,
+                "target": spec["target"],
+                "calldata": spec["data"],
+                "upper_block": upper_block,
+                "upper_block_hash": upper_block_hash,
+                "rpc_request": requests_by_id[int(spec["id"])],
+                "rpc_response": response,
+                "response_sha256": _canonical_json_sha256(response),
+                "rpc_endpoint": envelope.endpoint,
+                "rpc_attempts": list(envelope.attempts),
+            }
+        )
+    return evidence
+
+
+def validate_factory_state_proof(
+    proof: dict[str, object],
+    *,
+    venue: str,
+    pairs: list[FactoryPair],
+    frozen_upper: dict[str, object],
+    sample_size: int = V2_FACTORY_STATE_SAMPLE_SIZE,
+) -> None:
+    expected_sample = deterministic_factory_state_sample(pairs, sample_size=sample_size)
+    upper_block = int(frozen_upper["block_number"])
+    upper_block_hash = str(frozen_upper["block_hash"])
+    expected = {
+        "status": "complete",
+        "schema_version": V2_FACTORY_EVIDENCE_SCHEMA_VERSION,
+        "venue": venue,
+        "factory": V2_FACTORIES[venue],
+        "upper_block": upper_block,
+        "upper_block_hash": upper_block_hash,
+        "registry_rows": len(pairs),
+        "all_pairs_length": len(pairs),
+        "registry_sha256": factory_registry_sha256(pairs),
+        "sample_size": len(expected_sample),
+        "sample_contract": "first_last_plus_sha256_ranked_ordinals_v1",
+    }
+    stale = {
+        key: (proof.get(key), value)
+        for key, value in expected.items()
+        if proof.get(key) != value
+    }
+    if stale:
+        raise ValueError(f"V2 factory state proof is stale or count-mismatched: {stale}")
+    block_reference = {
+        "blockHash": upper_block_hash,
+        "requireCanonical": True,
+    }
+    expected_length_request = {
+        "jsonrpc": "2.0",
+        "id": 1,
+        "method": "eth_call",
+        "params": [
+            {"to": V2_FACTORIES[venue], "data": ALL_PAIRS_LENGTH_SELECTOR},
+            block_reference,
+        ],
+    }
+    if proof.get("length_rpc_request") != expected_length_request:
+        raise ValueError("V2 factory state proof lacks exact length RPC request evidence")
+    length_response = proof.get("length_rpc_response")
+    if not isinstance(length_response, dict):
+        raise ValueError("V2 factory state proof lacks exact length RPC response evidence")
+    if proof.get("length_rpc_response_sha256") != _canonical_json_sha256(length_response):
+        raise ValueError("V2 factory state proof length response digest disagrees")
+    length_result = length_response.get("result")
+    if not isinstance(length_result, str) or not length_result.startswith("0x"):
+        raise ValueError("V2 factory state proof length response is not revalidatable")
+    if int(length_result, 16) != len(pairs):
+        raise ValueError("V2 factory state proof length response disagrees with the registry")
+    length_endpoint = proof.get("length_rpc_endpoint")
+    if not isinstance(length_endpoint, dict) or not _is_sha256(length_endpoint.get("endpoint_sha256")):
+        raise ValueError("V2 factory state proof lacks sanitized length endpoint evidence")
+    if not isinstance(proof.get("length_rpc_attempts"), list):
+        raise ValueError("V2 factory state proof lacks length RPC attempt evidence")
+    results = proof.get("sample_results")
+    if not isinstance(results, list):
+        raise ValueError("V2 factory state proof lacks sample results")
+    expected_specs: dict[tuple[int, str], dict[str, object]] = {}
+    for pair in expected_sample:
+        expected_specs[(pair.ordinal, "allPairs")] = {
+            "target": pair.factory,
+            "calldata": ALL_PAIRS_SELECTOR + abi_encode(["uint256"], [pair.ordinal - 1]).hex(),
+            "expected": pair.pool,
+        }
+        expected_specs[(pair.ordinal, "getPair")] = {
+            "target": pair.factory,
+            "calldata": GET_PAIR_SELECTOR + abi_encode(["address", "address"], [pair.token0, pair.token1]).hex(),
+            "expected": pair.pool,
+        }
+    observed_keys: set[tuple[int, str]] = set()
+    for result in results:
+        if not isinstance(result, dict):
+            raise ValueError("V2 factory state proof contains malformed sample evidence")
+        key = (int(result.get("ordinal", -1)), str(result.get("method") or ""))
+        spec = expected_specs.get(key)
+        if spec is None or key in observed_keys:
+            raise ValueError("V2 factory state proof sample is incomplete or duplicated")
+        observed_keys.add(key)
+        if (
+            result.get("target") != spec["target"]
+            or result.get("calldata") != spec["calldata"]
+            or int(result.get("upper_block", -1)) != upper_block
+            or result.get("upper_block_hash") != upper_block_hash
+        ):
+            raise ValueError("V2 factory state proof sample request or calldata evidence disagrees")
+        expected_request = {
+            "jsonrpc": "2.0",
+            "id": int(result.get("id", -1)),
+            "method": "eth_call",
+            "params": [
+                {"to": spec["target"], "data": spec["calldata"]},
+                block_reference,
+            ],
+        }
+        if result.get("rpc_request") != expected_request:
+            raise ValueError("V2 factory state proof sample RPC request evidence disagrees")
+        response = result.get("rpc_response")
+        if not isinstance(response, dict) or response.get("error") is not None:
+            raise ValueError("V2 factory state proof lacks an exact sample RPC response")
+        if result.get("response_sha256") != _canonical_json_sha256(response):
+            raise ValueError("V2 factory state proof sample response digest disagrees")
+        observed = _rpc_result_address(response.get("result"), label="factory state proof sample")
+        if result.get("expected") != spec["expected"] or result.get("observed") != observed or observed != spec["expected"]:
+            raise ValueError("V2 factory state proof sample result disagrees with exact RPC evidence")
+        endpoint = result.get("rpc_endpoint")
+        if not isinstance(endpoint, dict) or not _is_sha256(endpoint.get("endpoint_sha256")):
+            raise ValueError("V2 factory state proof sample lacks sanitized endpoint evidence")
+        if not isinstance(result.get("rpc_attempts"), list):
+            raise ValueError("V2 factory state proof sample lacks RPC attempt evidence")
+    if observed_keys != set(expected_specs) or len(results) != len(expected_specs):
+        raise ValueError("V2 factory state proof sample is incomplete or mismatched")
+
+
+def build_factory_state_proof(
+    venue: str,
+    pairs: list[FactoryPair],
+    frozen_upper: dict[str, object],
+    *,
+    sample_size: int = V2_FACTORY_STATE_SAMPLE_SIZE,
+    workers: int = 4,
+    rpc_request=None,
+) -> dict[str, object]:
+    """Prove exact event count and a deterministic state identity sample at frozen U."""
+
+    validate_frozen_upper_block(frozen_upper, int(frozen_upper["block_number"]))
+    upper_block = int(frozen_upper["block_number"])
+    upper_block_hash = str(frozen_upper["block_hash"])
+    block_reference = {
+        "blockHash": upper_block_hash,
+        "requireCanonical": True,
+    }
+    length_payload = {
+        "jsonrpc": "2.0",
+        "id": 1,
+        "method": "eth_call",
+        "params": [
+            {"to": V2_FACTORIES[venue], "data": ALL_PAIRS_LENGTH_SELECTOR},
+            block_reference,
+        ],
+    }
+    length_envelope = _rpc_envelope(length_payload, rpc_request)
+    length_response = length_envelope.response
+    if isinstance(length_response, dict) and length_response.get("error") is not None:
+        raise RuntimeError(
+            f"historical allPairsLength failed at frozen canonical block hash: {length_response['error']}"
+        )
+    result = length_response.get("result") if isinstance(length_response, dict) else None
+    if not isinstance(result, str) or not result.startswith("0x"):
+        raise RuntimeError("historical allPairsLength lacks an exact result")
+    observed_length = int(result, 16)
+    if observed_length != len(pairs):
+        raise ValueError(
+            f"historical allPairsLength disagrees with PairCreated sequence: "
+            f"{observed_length} != {len(pairs)}"
+        )
+    sample = deterministic_factory_state_sample(pairs, sample_size=sample_size)
+    specs: list[dict[str, object]] = []
+    for pair in sample:
+        specs.extend(
+            [
+                {
+                    "id": len(specs),
+                    "ordinal": pair.ordinal,
+                    "method": "allPairs",
+                    "target": pair.factory,
+                    "data": ALL_PAIRS_SELECTOR + abi_encode(["uint256"], [pair.ordinal - 1]).hex(),
+                    "expected": pair.pool,
+                },
+                {
+                    "id": len(specs) + 1,
+                    "ordinal": pair.ordinal,
+                    "method": "getPair",
+                    "target": pair.factory,
+                    "data": GET_PAIR_SELECTOR + abi_encode(["address", "address"], [pair.token0, pair.token1]).hex(),
+                    "expected": pair.pool,
+                },
+            ]
+        )
+    batches = [specs[offset : offset + 3] for offset in range(0, len(specs), 3)]
+    sample_results: list[dict[str, object]] = []
+    with interruptible_thread_pool(max_workers=max(1, min(workers, 4))) as executor:
+        futures = [
+            executor.submit(
+                _factory_state_batch,
+                batch,
+                upper_block=upper_block,
+                upper_block_hash=upper_block_hash,
+                rpc_request=rpc_request,
+            )
+            for batch in batches
+        ]
+        for future in as_completed(futures):
+            sample_results.extend(future.result())
+    sample_results.sort(key=lambda item: int(item["id"]))
+    proof = {
+        "status": "complete",
+        "schema_version": V2_FACTORY_EVIDENCE_SCHEMA_VERSION,
+        "venue": venue,
+        "factory": V2_FACTORIES[venue],
+        "upper_block": upper_block,
+        "upper_block_hash": frozen_upper["block_hash"],
+        "registry_rows": len(pairs),
+        "all_pairs_length": observed_length,
+        "registry_sha256": factory_registry_sha256(pairs),
+        "sample_size": len(sample),
+        "sample_contract": "first_last_plus_sha256_ranked_ordinals_v1",
+        "length_rpc_request": length_payload,
+        "length_rpc_response": length_response,
+        "length_rpc_response_sha256": _canonical_json_sha256(length_response),
+        "length_rpc_endpoint": length_envelope.endpoint,
+        "length_rpc_attempts": list(length_envelope.attempts),
+        "sample_results": sample_results,
+    }
+    validate_factory_state_proof(
+        proof,
+        venue=venue,
+        pairs=pairs,
+        frozen_upper=frozen_upper,
+        sample_size=sample_size,
+    )
+    return proof
+
+
+def factory_state_proof_path(
+    venue: str,
+    upper_block: int,
+    *,
+    root: Path | None = None,
+) -> Path:
+    return (root or RAW_V2_FACTORY_ROOT) / venue / f"state_proof_{upper_block:08d}.json"
+
+
+def load_or_build_factory_state_proof(
+    venue: str,
+    pairs: list[FactoryPair],
+    frozen_upper: dict[str, object],
+    *,
+    fetch: bool,
+    sample_size: int = V2_FACTORY_STATE_SAMPLE_SIZE,
+    workers: int = 4,
+    root: Path | None = None,
+    rpc_request=None,
+) -> dict[str, object]:
+    path = factory_state_proof_path(
+        venue,
+        int(frozen_upper["block_number"]),
+        root=root,
+    )
+    if path.is_file():
+        proof = json.loads(path.read_text(encoding="utf-8"))
+        validate_factory_state_proof(
+            proof,
+            venue=venue,
+            pairs=pairs,
+            frozen_upper=frozen_upper,
+            sample_size=sample_size,
+        )
+        return proof
+    if not fetch:
+        raise RuntimeError(f"V2 factory registry lacks historical state proof for {venue}")
+    proof = build_factory_state_proof(
+        venue,
+        pairs,
+        frozen_upper,
+        sample_size=sample_size,
+        workers=workers,
+        rpc_request=rpc_request,
+    )
+    path.parent.mkdir(parents=True, exist_ok=True)
+    write_json(path, proof)
+    return proof
 
 
 def _graph_event_amounts(
@@ -707,12 +1965,26 @@ def validate_v2_event_source_certificate(
         "amount_mismatches",
     ]
     counts = summary[count_columns].apply(pd.to_numeric, errors="coerce")
-    if counts.isna().any().any() or (counts < 0).any().any():
+    if counts.isna().any().any() or (counts < 0).any().any() or (counts % 1 != 0).any().any():
         raise ValueError("V2 event-source summary contains invalid counts")
-    failures = counts[
-        ["missing_from_graph", "graph_only", "graph_duplicate_identities", "amount_mismatches"]
-    ].sum(axis=1)
-    if not summary["passed"].astype(bool).all() or int(failures.sum()) != 0:
+    for index, row in counts.iterrows():
+        raw_events = int(row["raw_events"])
+        graph_events = int(row["graph_events"])
+        matched = int(row["matched_identities"])
+        missing = int(row["missing_from_graph"])
+        graph_only = int(row["graph_only"])
+        duplicates = int(row["graph_duplicate_identities"])
+        mismatches = int(row["amount_mismatches"])
+        if raw_events != matched + missing or graph_events != matched + graph_only:
+            raise ValueError("V2 event-source summary contains impossible identity count algebra")
+        if matched > min(raw_events, graph_events) or duplicates > graph_events or mismatches > matched:
+            raise ValueError("V2 event-source summary contains impossible comparison counts")
+        expected_pass = not (missing or graph_only or duplicates or mismatches)
+        observed_pass = summary.loc[index, "passed"]
+        if observed_pass not in (True, False) or bool(observed_pass) != expected_pass:
+            raise ValueError("V2 event-source summary pass flag disagrees with its counts")
+    failures = counts[["missing_from_graph", "graph_only", "graph_duplicate_identities", "amount_mismatches"]].sum(axis=1)
+    if int(failures.sum()) != 0:
         raise ValueError("V2 event-source summary contains failed comparisons")
     for row in summary.itertuples(index=False):
         genesis = get_source(str(row.venue)).genesis.strftime("%Y%m%d")
@@ -732,6 +2004,8 @@ def validate_v2_event_source_certificate(
         "status": "pass",
         "audit_calendar_sha256": expected_hash,
         "audit_dates": len(expected_days),
+        "first_day": expected_days[0],
+        "last_day": expected_days[-1],
         "summary_rows": len(expected),
         "exception_rows": 0,
         "venues": list(V2_EVENT_VENUES),
@@ -739,6 +2013,15 @@ def validate_v2_event_source_certificate(
         "pool_perimeter": V2_POOL_PERIMETER,
         "registry_source": "complete_factory_PairCreated_histories",
         "global_event_query": "topic_only_without_address_filter",
+        "identity_fields": [
+            "venue",
+            "event_type",
+            "block_number",
+            "transaction_hash",
+            "log_index",
+            "pool",
+        ],
+        "quantity_contract": "exact_raw_token_deltas_and_swap_in_out_fields",
     }
     mismatched = {
         key: (certificate.get(key), value)
@@ -747,6 +2030,14 @@ def validate_v2_event_source_certificate(
     }
     if mismatched:
         raise ValueError(f"V2 event-source certificate fields are stale: {mismatched}")
+    for field in count_columns:
+        if int(certificate.get(field, -1)) != int(counts[field].sum()):
+            raise ValueError(f"V2 event-source certificate total disagrees for {field}")
+    for field in ("raw_factory_chunks", "raw_event_chunks"):
+        if not isinstance(certificate.get(field), int) or int(certificate[field]) < 1:
+            raise ValueError(f"V2 event-source certificate lacks a positive {field}")
+    if not isinstance(certificate.get("raw_global_event_logs"), int) or int(certificate["raw_global_event_logs"]) < int(counts["raw_events"].sum()):
+        raise ValueError("V2 event-source certificate global log total is impossible")
     pair_counts = certificate.get("factory_pairs_by_venue")
     if not isinstance(pair_counts, dict) or set(pair_counts) != set(V2_EVENT_VENUES):
         raise ValueError("V2 event-source certificate lacks exact factory pair counts")
@@ -757,9 +2048,115 @@ def validate_v2_event_source_certificate(
     ):
         raise ValueError("V2 event-source certificate factory pair totals disagree")
     registry_hash = str(certificate.get("factory_registry_sha256") or "")
-    if len(registry_hash) != 64:
+    if not _is_sha256(registry_hash):
         raise ValueError("V2 event-source certificate lacks a factory-registry digest")
+    upper_block = certificate.get("factory_registry_upper_block")
+    upper_hash = str(certificate.get("factory_registry_upper_block_hash") or "")
+    upper_timestamp = certificate.get("factory_registry_upper_block_timestamp")
+    if not isinstance(upper_block, int) or upper_block < 0:
+        raise ValueError("V2 event-source certificate lacks a frozen registry upper block")
+    if not upper_hash.startswith("0x") or len(upper_hash) != 66 or not _is_sha256(upper_hash[2:]):
+        raise ValueError("V2 event-source certificate lacks a frozen upper-block hash")
+    if not isinstance(upper_timestamp, int) or upper_timestamp < 1:
+        raise ValueError("V2 event-source certificate lacks a frozen upper-block timestamp")
+    if not _is_sha256(certificate.get("frozen_upper_block_sha256")):
+        raise ValueError("V2 event-source certificate lacks the frozen-upper evidence digest")
+    for field in (
+        "factory_deployment_proof_sha256_by_venue",
+        "factory_coverage_manifest_sha256_by_venue",
+        "factory_state_proof_sha256_by_venue",
+    ):
+        digests = certificate.get(field)
+        if not isinstance(digests, dict) or set(digests) != set(V2_EVENT_VENUES):
+            raise ValueError(f"V2 event-source certificate lacks exact {field}")
+        if any(not _is_sha256(digests[venue]) for venue in V2_EVENT_VENUES):
+            raise ValueError(f"V2 event-source certificate contains an invalid {field}")
+    sample_sizes = certificate.get("factory_state_sample_size_by_venue")
+    if not isinstance(sample_sizes, dict) or set(sample_sizes) != set(V2_EVENT_VENUES):
+        raise ValueError("V2 event-source certificate lacks exact factory state sample sizes")
+    if any(not isinstance(sample_sizes[venue], int) or sample_sizes[venue] < 1 for venue in V2_EVENT_VENUES):
+        raise ValueError("V2 event-source certificate contains an invalid factory state sample size")
     return len(expected_days), int(counts["raw_events"].sum())
+
+
+def validate_v2_event_source_evidence_bundle(
+    certificate: dict[str, object],
+    *,
+    root: Path | None = None,
+) -> tuple[int, int]:
+    """Reopen every cited factory artifact and rederive the registry contract."""
+
+    evidence_root = root or RAW_V2_FACTORY_ROOT
+    upper_block = int(certificate["factory_registry_upper_block"])
+    upper_hash = str(certificate["factory_registry_upper_block_hash"])
+    frozen_path = frozen_upper_block_path(upper_block, root=evidence_root)
+    if _file_sha256(frozen_path) != certificate.get("frozen_upper_block_sha256"):
+        raise ValueError("V2 frozen-upper evidence digest disagrees with the cited artifact")
+    frozen_upper = json.loads(frozen_path.read_text(encoding="utf-8"))
+    validate_frozen_upper_block(frozen_upper, upper_block)
+    if (
+        frozen_upper["block_hash"] != upper_hash
+        or int(frozen_upper["timestamp"]) != int(certificate["factory_registry_upper_block_timestamp"])
+    ):
+        raise ValueError("V2 frozen-upper evidence disagrees with the certificate perimeter")
+    deployment_digests = certificate["factory_deployment_proof_sha256_by_venue"]
+    coverage_digests = certificate["factory_coverage_manifest_sha256_by_venue"]
+    state_digests = certificate["factory_state_proof_sha256_by_venue"]
+    sample_sizes = certificate["factory_state_sample_size_by_venue"]
+    all_pairs: list[FactoryPair] = []
+    leaf_count = 0
+    for venue in V2_EVENT_VENUES:
+        deployment_path = factory_deployment_path(venue, upper_block, root=evidence_root)
+        if _file_sha256(deployment_path) != deployment_digests[venue]:
+            raise ValueError(f"{venue} deployment proof digest disagrees with the cited artifact")
+        deployment = json.loads(deployment_path.read_text(encoding="utf-8"))
+        deployment_block = validate_factory_deployment_proof(
+            deployment,
+            venue,
+            upper_block,
+            upper_hash,
+        )
+        coverage_path = factory_coverage_manifest_path(venue, upper_block, root=evidence_root)
+        if _file_sha256(coverage_path) != coverage_digests[venue]:
+            raise ValueError(f"{venue} coverage manifest digest disagrees with the cited artifact")
+        manifest = json.loads(coverage_path.read_text(encoding="utf-8"))
+        ranges = validate_factory_coverage_manifest(
+            manifest,
+            venue=venue,
+            deployment_block=deployment_block,
+            frozen_upper=frozen_upper,
+            root=evidence_root,
+        )
+        records, _inputs = read_factory_coverage_records(
+            manifest,
+            venue=venue,
+            deployment_block=deployment_block,
+            frozen_upper=frozen_upper,
+            root=evidence_root,
+        )
+        _statics, pairs = factory_pair_registry(venue, records, {})
+        state_path = factory_state_proof_path(venue, upper_block, root=evidence_root)
+        if _file_sha256(state_path) != state_digests[venue]:
+            raise ValueError(f"{venue} state proof digest disagrees with the cited artifact")
+        state_proof = json.loads(state_path.read_text(encoding="utf-8"))
+        validate_factory_state_proof(
+            state_proof,
+            venue=venue,
+            pairs=pairs,
+            frozen_upper=frozen_upper,
+            sample_size=int(sample_sizes[venue]),
+        )
+        if int(certificate["factory_pairs_by_venue"][venue]) != len(pairs):
+            raise ValueError(f"{venue} factory pair count disagrees with reopened evidence")
+        all_pairs.extend(pairs)
+        leaf_count += len(ranges)
+    if int(certificate["factory_pairs"]) != len(all_pairs):
+        raise ValueError("V2 factory pair total disagrees with reopened evidence")
+    if certificate["factory_registry_sha256"] != factory_registry_sha256(all_pairs):
+        raise ValueError("V2 factory registry digest disagrees with reopened evidence")
+    if int(certificate["raw_factory_chunks"]) != leaf_count:
+        raise ValueError("V2 factory chunk total disagrees with reopened evidence")
+    return len(all_pairs), leaf_count
 
 
 def read_v2_event_source_certificate(

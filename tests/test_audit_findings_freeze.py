@@ -103,6 +103,8 @@ class FindingsFreezeAuditTest(unittest.TestCase):
                         "status": "pass",
                         "audit_calendar_sha256": audit_calendar_sha256([day]),
                         "audit_dates": 1,
+                        "first_day": day,
+                        "last_day": day,
                         "summary_rows": len(rows),
                         "exception_rows": 0,
                         "venues": list(V2_EVENT_VENUES),
@@ -110,15 +112,56 @@ class FindingsFreezeAuditTest(unittest.TestCase):
                         "pool_perimeter": V2_POOL_PERIMETER,
                         "registry_source": "complete_factory_PairCreated_histories",
                         "global_event_query": "topic_only_without_address_filter",
+                        "identity_fields": [
+                            "venue",
+                            "event_type",
+                            "block_number",
+                            "transaction_hash",
+                            "log_index",
+                            "pool",
+                        ],
+                        "quantity_contract": "exact_raw_token_deltas_and_swap_in_out_fields",
+                        "raw_factory_chunks": 2,
+                        "raw_event_chunks": 2,
+                        "raw_global_event_logs": 0,
+                        "raw_events": 0,
+                        "graph_events": 0,
+                        "matched_identities": 0,
+                        "missing_from_graph": 0,
+                        "graph_only": 0,
+                        "graph_duplicate_identities": 0,
+                        "amount_mismatches": 0,
                         "factory_pairs": 2,
                         "factory_pairs_by_venue": {
                             venue: 1 for venue in V2_EVENT_VENUES
                         },
                         "factory_registry_sha256": "a" * 64,
+                        "factory_registry_upper_block": 109,
+                        "factory_registry_upper_block_hash": "0x" + "9" * 64,
+                        "factory_registry_upper_block_timestamp": 1_700_000_000,
+                        "frozen_upper_block_sha256": "d" * 64,
+                        "factory_deployment_proof_sha256_by_venue": {
+                            venue: "e" * 64 for venue in V2_EVENT_VENUES
+                        },
+                        "factory_coverage_manifest_sha256_by_venue": {
+                            venue: "b" * 64 for venue in V2_EVENT_VENUES
+                        },
+                        "factory_state_proof_sha256_by_venue": {
+                            venue: "c" * 64 for venue in V2_EVENT_VENUES
+                        },
+                        "factory_state_sample_size_by_venue": {
+                            venue: 1 for venue in V2_EVENT_VENUES
+                        },
                     }
                 )
             )
-            with patch("scripts.audit_findings_freeze.verify", return_value={"status": "ok"}):
+            with (
+                patch("scripts.audit_findings_freeze.verify", return_value={"status": "ok"}),
+                patch(
+                    "scripts.audit_findings_freeze.validate_v2_event_source_evidence_bundle",
+                    return_value=(2, 2),
+                ),
+            ):
                 checks = v2_event_source_certificate_checks(
                     summary_path,
                     exceptions_path,

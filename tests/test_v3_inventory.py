@@ -343,13 +343,20 @@ def test_inventory_fetch_persists_exact_raw_log_parquet() -> None:
         [-1, 2, 2**96, 99, 0],
         ["int256", "int256", "uint160", "uint128", "int24"],
     )
+    raw.update(
+        {
+            "address": "0x" + "a" * 40,
+            "blockHash": "0x" + "b" * 64,
+            "transactionHash": "0x" + "c" * 64,
+        }
+    )
     with tempfile.TemporaryDirectory() as directory:
         root = Path(directory)
         with patch(
             "scripts.fetch_v3_inventory_events.rpc_post",
             return_value={"result": [raw]},
         ):
-            metadata = fetch_chunk(100, 100, {"0xpool"}, root)
+            metadata = fetch_chunk(100, 100, {raw["address"]}, root)
         raw_path, _meta_path = inventory_chunk_paths(100, 100, root)
         table = pq.read_table(raw_path)
         assert table.schema == RAW_LOG_SCHEMA

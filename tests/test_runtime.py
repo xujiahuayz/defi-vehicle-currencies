@@ -1,6 +1,8 @@
 from __future__ import annotations
 
 import tempfile
+import threading
+import time
 import unittest
 from pathlib import Path
 from unittest.mock import MagicMock, patch
@@ -86,13 +88,33 @@ class RuntimeGuardTests(unittest.TestCase):
         executor.terminate_workers.assert_called_once_with()
         executor.shutdown.assert_not_called()
 
-    def test_interrupted_thread_pool_cancels_queued_work_without_waiting(self) -> None:
+    def test_interrupted_thread_pool_waits_for_active_work_before_failure_escapes(self) -> None:
         executor = MagicMock()
         with patch("ddvc.runtime.ThreadPoolExecutor", return_value=executor):
             with self.assertRaisesRegex(RuntimeError, "stop"):
                 with interruptible_thread_pool(2):
                     raise RuntimeError("stop")
-        executor.shutdown.assert_called_once_with(wait=False, cancel_futures=True)
+        executor.shutdown.assert_called_once_with(wait=True, cancel_futures=True)
+
+    def test_active_thread_cannot_publish_after_failure_escapes(self) -> None:
+        started = threading.Event()
+        write_times: list[float] = []
+
+        def active_write() -> None:
+            started.set()
+            time.sleep(0.03)
+            write_times.append(time.monotonic())
+
+        with self.assertRaisesRegex(RuntimeError, "stop"):
+            with interruptible_thread_pool(1) as executor:
+                executor.submit(active_write)
+                self.assertTrue(started.wait(timeout=1))
+                raise RuntimeError("stop")
+        escaped_at = time.monotonic()
+        self.assertEqual(len(write_times), 1)
+        self.assertLessEqual(write_times[0], escaped_at)
+        time.sleep(0.03)
+        self.assertEqual(len(write_times), 1)
 
 
 if __name__ == "__main__":

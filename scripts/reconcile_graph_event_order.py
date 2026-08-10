@@ -35,6 +35,7 @@ from ddvc.v2_event_completeness import (
     V2_EVENT_VENUES,
     V2_EXACT_LOG_CHUNK_SIZE,
     fetch_v2_exact_log_chunk,
+    load_or_resolve_frozen_upper_block,
     read_v2_exact_logs,
     v2_exact_log_chunk_complete,
     v2_exact_log_chunk_paths,
@@ -56,9 +57,18 @@ def exact_chunk_paths(venue: str, day: str, lower: int, upper: int) -> tuple[Pat
     return directory / f"{stem}.parquet", directory / f"{stem}.meta.json"
 
 
-def exact_chunk_complete(venue: str, day: str, lower: int, upper: int) -> bool:
+def exact_chunk_complete(
+    venue: str,
+    day: str,
+    lower: int,
+    upper: int,
+    *,
+    frozen_upper: dict[str, object] | None = None,
+) -> bool:
     if venue in V2_EVENT_VENUES:
-        return v2_exact_log_chunk_complete(lower, upper)
+        if frozen_upper is None:
+            raise ValueError("V2 shared exact logs require a frozen upper block")
+        return v2_exact_log_chunk_complete(lower, upper, frozen_upper=frozen_upper)
     raw, marker = exact_chunk_paths(venue, day, lower, upper)
     if not raw.is_file() or not marker.is_file():
         return False
@@ -82,12 +92,21 @@ def exact_chunk_complete(venue: str, day: str, lower: int, upper: int) -> bool:
     )
 
 
-def fetch_chunk(venue: str, day: str, lower: int, upper: int) -> dict[str, object]:
+def fetch_chunk(
+    venue: str,
+    day: str,
+    lower: int,
+    upper: int,
+    *,
+    frozen_upper: dict[str, object] | None = None,
+) -> dict[str, object]:
     if venue in V2_EVENT_VENUES:
+        if frozen_upper is None:
+            raise ValueError("V2 shared exact logs require a frozen upper block")
         return fetch_v2_exact_log_chunk(
             lower,
             upper,
-            rpc_request=rpc_post,
+            frozen_upper=frozen_upper,
         )
     topics = event_topics(venue)
     records = fetch_exact_logs(
@@ -119,6 +138,7 @@ def fetch_missing_chunks(
     day: str,
     ranges: list[tuple[int, int]],
     *,
+    frozen_upper: dict[str, object] | None,
     workers: int,
     force: bool,
 ) -> None:
@@ -126,7 +146,7 @@ def fetch_missing_chunks(
         item
         for item in ranges
         if (force and venue not in V2_EVENT_VENUES)
-        or not exact_chunk_complete(venue, day, *item)
+        or not exact_chunk_complete(venue, day, *item, frozen_upper=frozen_upper)
     ]
     for attempt in range(1, MAX_ATTEMPTS + 1):
         if not pending:
@@ -134,7 +154,7 @@ def fetch_missing_chunks(
         failed: list[tuple[int, int]] = []
         with interruptible_thread_pool(max_workers=workers) as pool:
             futures = {
-                pool.submit(fetch_chunk, venue, day, lower, upper): (lower, upper)
+                pool.submit(fetch_chunk, venue, day, lower, upper, frozen_upper=frozen_upper): (lower, upper)
                 for lower, upper in pending
             }
             for future in as_completed(futures):
@@ -160,6 +180,7 @@ def reconcile_day(
     venue: str,
     day: str,
     *,
+    frozen_upper: dict[str, object] | None = None,
     workers: int,
     chunk_size: int,
     force: bool,
@@ -177,16 +198,19 @@ def reconcile_day(
         venue,
         day,
         ranges,
+        frozen_upper=frozen_upper,
         workers=workers,
         force=force,
     )
     if venue in V2_EVENT_VENUES:
-        exact_records, exact_paths = read_v2_exact_logs(lower, upper)
+        if frozen_upper is None:
+            raise ValueError("V2 shared exact logs require a frozen upper block")
+        exact_records, exact_paths = read_v2_exact_logs(lower, upper, frozen_upper=frozen_upper)
     else:
         exact_paths = []
         exact_records = []
         for start, end in ranges:
-            if not exact_chunk_complete(venue, day, start, end):
+            if not exact_chunk_complete(venue, day, start, end, frozen_upper=frozen_upper):
                 raise RuntimeError(f"exact event-order chunk incomplete: {venue}/{day}/{start}:{end}")
             raw, marker = exact_chunk_paths(venue, day, start, end)
             exact_paths.extend((raw, marker))
@@ -247,20 +271,29 @@ def main() -> int:
     parser.add_argument("--workers", type=int, default=4)
     parser.add_argument("--chunk-size", type=int, default=DEFAULT_CHUNK_SIZE)
     parser.add_argument("--force", action="store_true")
+    parser.add_argument("--frozen-upper-block", type=int)
     args = parser.parse_args()
     if args.chunk_size < 1:
         parser.error("--chunk-size must be positive")
     if args.venue in V2_EVENT_VENUES and args.chunk_size != V2_EXACT_LOG_CHUNK_SIZE:
         parser.error("--chunk-size must be 50 for shared V2 exact-log reuse")
+    if args.venue in V2_EVENT_VENUES and args.frozen_upper_block is None:
+        parser.error("--frozen-upper-block is required for V2 shared exact-log reuse")
     days = sorted({str(day).replace("-", "") for day in args.day})
     if any(len(day) != 8 or not day.isdigit() for day in days):
         parser.error("--day must be YYYYMMDD or YYYY-MM-DD")
     workers = bounded_workers(args.workers, maximum=4)
+    frozen_upper = (
+        load_or_resolve_frozen_upper_block(args.frozen_upper_block, fetch=True)
+        if args.venue in V2_EVENT_VENUES
+        else None
+    )
     with exclusive_job(RAW_MARKET_DATA_LOCK, job="Graph event-order reconciliation"):
         for day in days:
             reconcile_day(
                 args.venue,
                 day,
+                frozen_upper=frozen_upper,
                 workers=workers,
                 chunk_size=args.chunk_size,
                 force=args.force,

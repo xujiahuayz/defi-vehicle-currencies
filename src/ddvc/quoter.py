@@ -33,6 +33,7 @@ answers, so `is_cached` here counts only successful quotes.
 from __future__ import annotations
 
 import gzip
+import hashlib
 import json
 import os
 import threading
@@ -42,6 +43,7 @@ import urllib.request
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Any, Iterable
+from urllib.parse import urlsplit
 
 from eth_abi import decode as abi_decode
 from eth_utils import keccak
@@ -66,6 +68,16 @@ _rpc_idx = 0
 _rpc_idx_lock = threading.Lock()
 _disabled_rpc_urls: set[str] = set()
 _RETRYABLE_HTTP_CODES = {429, 500, 502, 503, 504, 520, 521, 522, 523, 524}
+_CAPACITY_MARKERS = (
+    "block range",
+    "range over",
+    "ranges over",
+    "response size",
+    "result limit",
+    "too many results",
+    "query timeout",
+    "request timeout",
+)
 
 
 def rpc_urls() -> list[str]:
@@ -88,18 +100,132 @@ def _authentication_error(error: object) -> bool:
     return any(marker in message for marker in ("unauthorized", "authenticat", "api key"))
 
 
+def _authentication_failure(payload: object) -> bool:
+    if isinstance(payload, list):
+        return any(
+            _authentication_error(item.get("error"))
+            for item in payload
+            if isinstance(item, dict)
+        )
+    return isinstance(payload, dict) and _authentication_error(payload.get("error"))
+
+
 class Throttled(RuntimeError):
     """Endpoint refused for rate-limit reasons; the job is retryable."""
 
 
+@dataclass(frozen=True)
+class RpcEnvelope:
+    """One successful RPC response plus credential-safe transport evidence."""
+
+    response: object
+    endpoint: dict[str, str]
+    attempts: tuple[dict[str, object], ...]
+
+
+class RpcCapacityError(RuntimeError):
+    """An explicit provider range or result cap that licenses bisection."""
+
+    def __init__(self, message: str, *, attempts: tuple[dict[str, object], ...] = ()) -> None:
+        super().__init__(message)
+        self.attempts = attempts
+
+
+class RpcSemanticError(RuntimeError):
+    """A non-transient JSON-RPC failure that must not be treated as empty data."""
+
+    def __init__(self, message: str, *, attempts: tuple[dict[str, object], ...] = ()) -> None:
+        super().__init__(message)
+        self.attempts = attempts
+
+
+def sanitized_endpoint_identity(url: str) -> dict[str, str]:
+    """Identify a provider without retaining or hashing credentials."""
+
+    parsed = urlsplit(url)
+    scheme = parsed.scheme.lower() or "unknown"
+    host = (parsed.hostname or "unknown").lower()
+    port = parsed.port
+    authority = f"{scheme}://{host}" + (f":{port}" if port is not None else "")
+    return {
+        "host": host,
+        "endpoint_sha256": hashlib.sha256(authority.encode()).hexdigest(),
+    }
+
+
+def _rpc_error_details(payload: object) -> tuple[int | None, str]:
+    if isinstance(payload, list):
+        errors = [item for item in payload if isinstance(item, dict) and isinstance(item.get("error"), dict)]
+        if not errors:
+            return None, ""
+        return _rpc_error_details(errors[0])
+    if not isinstance(payload, dict) or not isinstance(payload.get("error"), dict):
+        return None, ""
+    error = payload["error"]
+    try:
+        code = int(error.get("code")) if error.get("code") is not None else None
+    except (TypeError, ValueError):
+        code = None
+    return code, str(error.get("message") or "")
+
+
+def _capacity_failure(http_status: int | None, rpc_code: int | None, message: str) -> bool:
+    normalized = message.lower()
+    return bool(
+        http_status == 408
+        or rpc_code in {30, 35}
+        or any(marker in normalized for marker in _CAPACITY_MARKERS)
+    )
+
+
+def _attempt_record(
+    endpoint: dict[str, str],
+    *,
+    attempt: int,
+    classification: str,
+    http_status: int | None,
+    rpc_code: int | None,
+    message: str,
+) -> dict[str, object]:
+    normalized = message.lower()
+    evidence_markers = (
+        *_CAPACITY_MARKERS,
+        "rate limit",
+        "usage limit",
+        "unauthorized",
+        "authentication",
+        "api key",
+        "invalid params",
+        "execution reverted",
+        "unknown block hash",
+    )
+    message_category = next(
+        (marker for marker in evidence_markers if marker in normalized),
+        "success" if classification == "success" else f"{classification} RPC failure",
+    )
+    return {
+        "endpoint": endpoint,
+        "attempt": attempt,
+        "classification": classification,
+        "http_status": http_status,
+        "rpc_code": rpc_code,
+        "message": message_category,
+    }
+
+
 def rpc_post(payload: dict | list[dict], *, timeout: int = 60,
              retries: int = 3, sleep: float = 0.0,
-             retry_json_errors: bool = False) -> Any:
+             retry_json_errors: bool = False,
+             return_evidence: bool = False,
+             classify_capacity: bool = False,
+             retry_delay: float | None = None) -> Any:
     """POST a JSON-RPC payload, rotating endpoints on failure.
 
     Raises Throttled when every endpoint refuses for rate-limit reasons, so the
     caller can distinguish "ask again later" from "this quote does not exist".
     """
+    if retries < 1:
+        raise ValueError("RPC retries must be positive")
     global _rpc_idx
     data = json.dumps(payload).encode()
     urls = rpc_urls()
@@ -109,10 +235,14 @@ def rpc_post(payload: dict | list[dict], *, timeout: int = 60,
             raise RuntimeError("no enabled Ethereum RPC endpoint remains")
         start = _rpc_idx % len(urls)
     ordered = urls[start:] + urls[:start]
-    transient_failure = False
+    attempts: list[dict[str, object]] = []
+    capacity_failures: list[dict[str, object]] = []
+    transient_failures: list[dict[str, object]] = []
+    terminal_failures: list[dict[str, object]] = []
     last: Exception | None = None
     for url in ordered:
-        for _ in range(retries):
+        endpoint = sanitized_endpoint_identity(url)
+        for attempt in range(1, retries + 1):
             req = urllib.request.Request(
                 url, data=data,
                 headers={"Content-Type": "application/json", "User-Agent": _UA},
@@ -120,44 +250,121 @@ def rpc_post(payload: dict | list[dict], *, timeout: int = 60,
             try:
                 with urllib.request.urlopen(req, timeout=timeout) as r:
                     response = json.loads(r.read())
-                    if (
-                        retry_json_errors
-                        and isinstance(response, dict)
-                        and response.get("error")
-                    ):
-                        error = response["error"]
-                        if _authentication_error(error):
+                    http_status = int(getattr(r, "status", 200))
+                    rpc_code, message = _rpc_error_details(response)
+                    if rpc_code is not None and (retry_json_errors or classify_capacity):
+                        authentication_failure = _authentication_failure(response)
+                        if authentication_failure:
                             with _rpc_idx_lock:
                                 _disabled_rpc_urls.add(url)
-                            last = RuntimeError(
-                                f"JSON-RPC endpoint authentication failed with code {error.get('code')}"
-                            )
-                            break
-                        last = RuntimeError(
-                            f"JSON-RPC error {error.get('code')}: {error.get('message')}"
+                            classification = "transient"
+                        elif classify_capacity and _capacity_failure(http_status, rpc_code, message):
+                            classification = "capacity"
+                        elif (
+                            rpc_code in {-32001, -32005}
+                            or "rate limit" in message.lower()
+                            or "usage limit" in message.lower()
+                        ):
+                            classification = "transient"
+                        else:
+                            classification = "terminal"
+                        record = _attempt_record(
+                            endpoint,
+                            attempt=attempt,
+                            classification=classification,
+                            http_status=http_status,
+                            rpc_code=rpc_code,
+                            message=message,
                         )
+                        attempts.append(record)
+                        last = RuntimeError(f"JSON-RPC error {rpc_code}: {message}")
+                        if classification == "capacity":
+                            capacity_failures.append(record)
+                            break
+                        if classification == "transient":
+                            transient_failures.append(record)
+                            if authentication_failure:
+                                break
+                            if attempt < retries:
+                                time.sleep(retry_delay if retry_delay is not None else max(sleep, 1.0))
+                                continue
+                            break
+                        terminal_failures.append(record)
                         break
                     with _rpc_idx_lock:
                         _rpc_idx = urls.index(url)
+                    attempts.append(_attempt_record(
+                        endpoint,
+                        attempt=attempt,
+                        classification="success",
+                        http_status=http_status,
+                        rpc_code=None,
+                        message="success",
+                    ))
                     if sleep:
                         time.sleep(sleep)
+                    if return_evidence:
+                        return RpcEnvelope(response, endpoint, tuple(attempts))
                     return response
             except urllib.error.HTTPError as exc:
                 last = exc
-                if exc.code in _RETRYABLE_HTTP_CODES:
-                    transient_failure = True
-                    time.sleep(max(sleep, 1.0))
-                    continue
-                if exc.code == 403:
-                    transient_failure = True
+                try:
+                    error_payload = json.loads(exc.read())
+                except (json.JSONDecodeError, UnicodeDecodeError):
+                    error_payload = {}
+                rpc_code, message = _rpc_error_details(error_payload)
+                message = message or str(exc)
+                if classify_capacity and _capacity_failure(exc.code, rpc_code, message):
+                    classification = "capacity"
+                elif exc.code in _RETRYABLE_HTTP_CODES or exc.code == 403:
+                    classification = "transient"
+                else:
+                    classification = "terminal"
+                record = _attempt_record(
+                    endpoint,
+                    attempt=attempt,
+                    classification=classification,
+                    http_status=exc.code,
+                    rpc_code=rpc_code,
+                    message=message,
+                )
+                attempts.append(record)
+                if classification == "capacity":
+                    capacity_failures.append(record)
                     break
+                if classification == "transient":
+                    transient_failures.append(record)
+                    if exc.code == 403:
+                        break
+                    if attempt < retries:
+                        time.sleep(retry_delay if retry_delay is not None else max(sleep, 1.0))
+                        continue
+                    break
+                terminal_failures.append(record)
                 break
             except Exception as exc:  # transport failures are retryable
                 last = exc
-                transient_failure = True
-                time.sleep(max(sleep, 0.5))
-    if transient_failure:
-        raise Throttled(str(last))
+                record = _attempt_record(
+                    endpoint,
+                    attempt=attempt,
+                    classification="transient",
+                    http_status=None,
+                    rpc_code=None,
+                    message=f"{type(exc).__name__}: {exc}",
+                )
+                attempts.append(record)
+                transient_failures.append(record)
+                if attempt < retries:
+                    time.sleep(retry_delay if retry_delay is not None else max(sleep, 0.5))
+    frozen_attempts = tuple(attempts)
+    if classify_capacity and terminal_failures:
+        raise RpcSemanticError("RPC request failed semantically", attempts=frozen_attempts)
+    if classify_capacity and capacity_failures:
+        raise RpcCapacityError("RPC request exceeded provider capacity", attempts=frozen_attempts)
+    if transient_failures:
+        raise Throttled("all RPC endpoints were transiently unavailable")
+    if return_evidence and terminal_failures:
+        raise RpcSemanticError("RPC request failed semantically", attempts=frozen_attempts)
     raise RuntimeError(f"all RPC endpoints failed: {last}")
 
 

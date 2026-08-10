@@ -68,6 +68,7 @@ from ddvc.v2_event_completeness import (
     V2_EVENT_SOURCE_SUMMARY,
     read_v2_event_source_certificate,
     validate_v2_event_source_certificate,
+    validate_v2_event_source_evidence_bundle,
 )
 from ddvc.paths import (
     LITERATURE_SOURCE_ADMISSION,
@@ -3059,6 +3060,7 @@ def v2_event_source_certificate_checks(
             f"provenance={provenance}",
         )
     ]
+    certificate: dict[str, object] | None = None
     try:
         expected_days = transaction_frontier_audit_days(quality_path)
         summary, exceptions, certificate = read_v2_event_source_certificate(
@@ -3076,6 +3078,15 @@ def v2_event_source_certificate_checks(
     except (FileNotFoundError, KeyError, OSError, TypeError, ValueError) as error:
         passed, detail = False, str(error)
     checks.append(("node D V2 event-source exact comparisons", passed, detail))
+    try:
+        if certificate is None:
+            raise ValueError("V2 event-source certificate is unavailable for evidence validation")
+        pairs, leaves = validate_v2_event_source_evidence_bundle(certificate)
+        evidence_passed = True
+        evidence_detail = f"factory_pairs={pairs:,}; factory_leaves={leaves:,}; cited_artifacts=reopened"
+    except (FileNotFoundError, KeyError, OSError, TypeError, ValueError) as error:
+        evidence_passed, evidence_detail = False, str(error)
+    checks.append(("node D V2 event-source cited evidence", evidence_passed, evidence_detail))
     return checks
 
 

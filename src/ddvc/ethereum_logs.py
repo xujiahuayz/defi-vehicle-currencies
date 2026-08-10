@@ -3,13 +3,20 @@
 from __future__ import annotations
 
 from datetime import datetime, timezone
+import hashlib
+import json
 from pathlib import Path
 
 import pyarrow as pa
 import pyarrow.parquet as pq
 
 from ddvc.fetch.raw import write_json
-from ddvc.quoter import rpc_post
+from ddvc.quoter import (
+    RpcCapacityError as ExactLogCapacityError,
+    RpcEnvelope,
+    RpcSemanticError as ExactLogRpcError,
+    rpc_post,
+)
 from ddvc.runtime import atomic_output
 
 
@@ -28,6 +35,51 @@ RAW_LOG_SCHEMA = pa.schema(
         pa.field("removed", pa.bool_(), nullable=False),
     ]
 )
+
+
+def coerce_rpc_envelope(response: object) -> RpcEnvelope:
+    """Wrap injected test transports in the same evidence shape as live RPC."""
+
+    if isinstance(response, RpcEnvelope) and response.attempts:
+        return response
+    endpoint = (
+        response.endpoint
+        if isinstance(response, RpcEnvelope)
+        else {"host": "injected", "endpoint_sha256": "0" * 64}
+    )
+    attempt = {
+        "endpoint": endpoint,
+        "attempt": 1,
+        "classification": "success",
+        "http_status": None,
+        "rpc_code": None,
+        "message": "success",
+    }
+    payload = response.response if isinstance(response, RpcEnvelope) else response
+    return RpcEnvelope(payload, endpoint, (attempt,))
+
+
+def rpc_post_with_evidence(
+    payload: dict[str, object] | list[dict[str, object]],
+    *,
+    timeout: int = 30,
+    retries: int = 2,
+    retry_delay: float = 0.5,
+) -> RpcEnvelope:
+    """Call the canonical RPC transport and retain sanitized attempt evidence."""
+
+    envelope = rpc_post(
+        payload,
+        timeout=timeout,
+        retries=retries,
+        retry_json_errors=True,
+        return_evidence=True,
+        classify_capacity=True,
+        retry_delay=retry_delay,
+    )
+    if not isinstance(envelope, RpcEnvelope):
+        raise TypeError("evidence RPC transport returned an unwrapped response")
+    return envelope
 
 
 def block_ranges(start: int, end: int, chunk_size: int) -> list[tuple[int, int]]:
@@ -96,16 +148,62 @@ def canonical_raw_log(log: dict[str, object]) -> dict[str, object]:
     return record
 
 
-def fetch_exact_logs(
+def _exact_hex(value: object, *, length: int | None = None) -> bool:
+    text = str(value or "").lower()
+    if not text.startswith("0x") or (len(text) - 2) % 2:
+        return False
+    if length is not None and len(text) != length:
+        return False
+    return all(character in "0123456789abcdef" for character in text[2:])
+
+
+def validate_canonical_log_records(
+    records: list[dict[str, object]],
     *,
     start_block: int,
     end_block: int,
     topics: list[str],
-    address: str | None = None,
-    rpc_request=rpc_post,
+    address: str | None,
 ) -> list[dict[str, object]]:
-    """Fetch and validate one exact inclusive Ethereum log perimeter."""
+    """Revalidate stored canonical rows against the exact query perimeter."""
 
+    allowed_topics = {str(topic).lower() for topic in topics}
+    normalized_address = str(address).lower() if address is not None else None
+    keys: set[tuple[int, str, int, str]] = set()
+    for record in records:
+        block = int(record["block_number"])
+        pool = str(record["address"]).lower()
+        transaction_hash = str(record["transaction_hash"]).lower()
+        log_index = int(record["log_index"])
+        record_topics = [str(value).lower() for value in record.get("topics") or []]
+        if not start_block <= block <= end_block:
+            raise ValueError("Ethereum log lies outside its requested block range")
+        if normalized_address is not None and pool != normalized_address:
+            raise ValueError("Ethereum log lies outside its requested address filter")
+        if not record_topics or record_topics[0] not in allowed_topics:
+            raise ValueError("Ethereum log lies outside its requested topic filter")
+        if not _exact_hex(pool, length=42) or not _exact_hex(record.get("block_hash"), length=66):
+            raise ValueError("Ethereum log lacks exact address or block-hash identity")
+        if not _exact_hex(transaction_hash, length=66) or int(record["transaction_index"]) < 0 or log_index < 0:
+            raise ValueError("Ethereum log lacks exact transaction identity")
+        if any(not _exact_hex(topic, length=66) for topic in record_topics) or not _exact_hex(record.get("data")):
+            raise ValueError("Ethereum log contains malformed topics or data")
+        if bool(record.get("removed")):
+            raise ValueError("removed Ethereum log cannot enter an immutable exact chunk")
+        key = (block, transaction_hash, log_index, pool)
+        if key in keys:
+            raise ValueError(f"duplicate exact Ethereum log in one chunk: {key}")
+        keys.add(key)
+    return records
+
+
+def _exact_log_payload(
+    *,
+    start_block: int,
+    end_block: int,
+    topics: list[str],
+    address: str | None,
+) -> tuple[dict[str, object], list[str], str | None]:
     if start_block < 0 or end_block < start_block or not topics:
         raise ValueError("invalid Ethereum log query perimeter")
     normalized_topics = [str(topic).lower() for topic in topics]
@@ -117,43 +215,143 @@ def fetch_exact_logs(
     normalized_address = str(address).lower() if address is not None else None
     if normalized_address is not None:
         log_filter["address"] = normalized_address
-    payload = {
-        "jsonrpc": "2.0",
-        "id": 1,
-        "method": "eth_getLogs",
-        "params": [log_filter],
-    }
+    return (
+        {
+            "jsonrpc": "2.0",
+            "id": 1,
+            "method": "eth_getLogs",
+            "params": [log_filter],
+        },
+        normalized_topics,
+        normalized_address,
+    )
+
+
+def _validated_log_records(
+    response: object,
+    *,
+    start_block: int,
+    end_block: int,
+    normalized_topics: list[str],
+    normalized_address: str | None,
+) -> list[dict[str, object]]:
+    logs = response.get("result") if isinstance(response, dict) else None
+    if not isinstance(logs, list):
+        raise ExactLogRpcError(
+            f"Ethereum log response lacks a result list for {start_block}:{end_block}"
+        )
+    records = [canonical_raw_log(log) for log in logs]
+    return validate_canonical_log_records(
+        records,
+        start_block=start_block,
+        end_block=end_block,
+        topics=normalized_topics,
+        address=normalized_address,
+    )
+
+
+def fetch_exact_logs(
+    *,
+    start_block: int,
+    end_block: int,
+    topics: list[str],
+    address: str | None = None,
+    rpc_request=rpc_post,
+) -> list[dict[str, object]]:
+    """Fetch and validate one exact inclusive Ethereum log perimeter."""
+
+    payload, normalized_topics, normalized_address = _exact_log_payload(
+        start_block=start_block,
+        end_block=end_block,
+        topics=topics,
+        address=address,
+    )
     response = rpc_request(
         payload,
         timeout=30,
         retries=1,
         retry_json_errors=True,
     )
-    logs = response.get("result") if isinstance(response, dict) else None
-    if not isinstance(logs, list):
-        raise RuntimeError(
-            f"Ethereum log response lacks a result list for {start_block}:{end_block}"
-        )
-    allowed_topics = set(normalized_topics)
-    keys: set[tuple[int, str, int, str]] = set()
-    records: list[dict[str, object]] = []
-    for log in logs:
-        record = canonical_raw_log(log)
-        block = int(record["block_number"])
-        pool = str(record["address"])
-        topic = str(record["topics"][0])
-        if not start_block <= block <= end_block:
-            raise ValueError("Ethereum log lies outside its requested block range")
-        if normalized_address is not None and pool != normalized_address:
-            raise ValueError("Ethereum log lies outside its requested address filter")
-        if topic not in allowed_topics:
-            raise ValueError("Ethereum log lies outside its requested topic filter")
-        key = (block, str(record["transaction_hash"]), int(record["log_index"]), pool)
-        if key in keys:
-            raise ValueError(f"duplicate exact Ethereum log in one chunk: {key}")
-        keys.add(key)
-        records.append(record)
-    return records
+    return _validated_log_records(
+        response,
+        start_block=start_block,
+        end_block=end_block,
+        normalized_topics=normalized_topics,
+        normalized_address=normalized_address,
+    )
+
+
+def fetch_exact_logs_with_evidence(
+    *,
+    start_block: int,
+    end_block: int,
+    topics: list[str],
+    address: str | None = None,
+    frozen_upper: dict[str, object],
+    rpc_request=None,
+) -> tuple[list[dict[str, object]], dict[str, object]]:
+    """Fetch exact logs and bind the successful endpoint to the frozen chain view."""
+
+    log_payload, normalized_topics, normalized_address = _exact_log_payload(
+        start_block=start_block,
+        end_block=end_block,
+        topics=topics,
+        address=address,
+    )
+    upper_block = int(frozen_upper["block_number"])
+    upper_hash = str(frozen_upper["block_hash"]).lower()
+    header_payload = {
+        "jsonrpc": "2.0",
+        "id": 2,
+        "method": "eth_getBlockByNumber",
+        "params": [hex(upper_block), False],
+    }
+    payload = [log_payload, header_payload]
+    if rpc_request is None:
+        envelope = rpc_post_with_evidence(payload)
+    else:
+        response = rpc_request(payload, timeout=30, retries=2)
+        envelope = coerce_rpc_envelope(response)
+    if not isinstance(envelope.response, list) or len(envelope.response) != 2:
+        raise ExactLogRpcError("anchored Ethereum log response is not an exact two-item batch")
+    by_id = {
+        item.get("id"): item
+        for item in envelope.response
+        if isinstance(item, dict) and item.get("id") in {1, 2}
+    }
+    if set(by_id) != {1, 2}:
+        raise ExactLogRpcError("anchored Ethereum log response lacks exact request identities")
+    header = by_id[2].get("result")
+    if not isinstance(header, dict):
+        raise ExactLogRpcError("anchored Ethereum log response lacks the frozen upper header")
+    observed_upper = rpc_integer(header.get("number"))
+    observed_hash = str(header.get("hash") or "").lower()
+    if observed_upper != upper_block or observed_hash != upper_hash:
+        raise ExactLogRpcError("Ethereum log endpoint disagrees with the frozen upper block")
+    records = _validated_log_records(
+        by_id[1],
+        start_block=start_block,
+        end_block=end_block,
+        normalized_topics=normalized_topics,
+        normalized_address=normalized_address,
+    )
+    canonical_response_evidence = {
+        "logs": records,
+        "frozen_upper_response": by_id[2],
+    }
+    return records, {
+        "request": payload,
+        "endpoint": envelope.endpoint,
+        "attempts": list(envelope.attempts),
+        "response_sha256": hashlib.sha256(
+            json.dumps(canonical_response_evidence, sort_keys=True, separators=(",", ":")).encode()
+        ).hexdigest(),
+        "frozen_upper_request": header_payload,
+        "frozen_upper_response": by_id[2],
+        "frozen_upper_response_sha256": hashlib.sha256(
+            json.dumps(by_id[2], sort_keys=True, separators=(",", ":")).encode()
+        ).hexdigest(),
+    }
 
 
 def write_exact_log_chunk(
@@ -178,6 +376,7 @@ def write_exact_log_chunk(
         "storage_format": RAW_LOG_STORAGE_FORMAT,
         "raw_logs": len(records),
         "fetched_at_utc": datetime.now(timezone.utc).isoformat(),
+        "raw_sha256": hashlib.sha256(raw_path.read_bytes()).hexdigest(),
     }
     write_json(marker_path, payload)
     return payload
