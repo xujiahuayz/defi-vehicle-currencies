@@ -189,7 +189,8 @@ def test_v3_role_exhibit_labels_provider_scale_and_withholds_capital_inference()
 def test_capital_and_return_model_gates_are_separate():
     assert capital_interpretable("uniswap_v2")
     assert not capital_interpretable("uniswap_v3")
-    assert return_inference_ready("uniswap_v2")
+    assert not lvr_inference_ready("uniswap_v2")
+    assert not return_inference_ready("uniswap_v2")
     assert not return_inference_ready("uniswap_v3")
     assert capital_scale_label("uniswap_v3") == "unvalidated provider TVL diagnostic"
 
@@ -282,7 +283,7 @@ def test_return_denominator_rejects_virtual_or_local_depth_sources():
         }
     )
     with pytest.raises(ValueError, match="cannot be a capital source"):
-        require_capital_denominator(frame, venue="uniswap_v2")
+        require_capital_denominator(frame, venue="uniswap_v2", purpose="descriptive")
 
 
 def test_return_denominator_rejects_an_unapproved_tvl_source():
@@ -332,6 +333,7 @@ def test_protocol_quantities_are_typed_and_fail_closed_independently():
     assert quantity_supported(
         "uniswap_v2", "deposited_capital", use="return"
     )
+    assert not quantity_supported("uniswap_v2", "lvr")
     assert quantity_supported("uniswap_v3", "local_marginal_depth")
     assert quantity_supported("uniswap_v3", "executable_band_depth")
     assert not quantity_supported("uniswap_v3", "lvr")

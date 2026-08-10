@@ -206,11 +206,11 @@ CP_CAPABILITIES = (
     ),
     _capability(
         "lvr",
-        state_generation=CP_STATE_GENERATION,
-        materializer="ddvc.liquidity:constant_product_lvr_usd",
-        validation="published_closed_form_and_scale_test",
+        state_generation="external_reference_price_variance_pending",
+        validation=(
+            "published_closed_form_scale_test_plus_independent_external_reference_price_path"
+        ),
         admissible_uses=("return_after_row_reconciliation",),
-        ready=True,
     ),
 )
 

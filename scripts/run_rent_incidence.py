@@ -10,13 +10,15 @@ Accounting, stated once.
 
   fee revenue      fee rate times USD volume. 30 basis points on v2; the exact
                    canonical-state tier on v3.
-  LVR              realised variance over eight, times contemporaneous pool
-                   value. This is admitted only for constant-product pools.
+  LVR              external-reference-price realised variance over eight, times
+                   contemporaneous pool value. The closed form is admitted only
+                   for constant-product pools after the external price path passes.
   gas              observed mints plus burns, times per-operation gas units,
                    times the day's median gas price, times the ETH price.
   net              fee revenue less LVR less gas.
 
-Return denominators are exact prior-calendar-day deposited capital. For v2 this
+Pool-price variance remains diagnostic and cannot enter LVR inference. Return
+denominators are exact prior-calendar-day deposited capital. For v2 this
 is lagged reconstructed reserve capital, valued from a separately validated
 anchored-leg price. The contemporaneous pool-value LVR scale is kept separately,
 so an LVR return is (current pool value / lagged capital) times realised variance

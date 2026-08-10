@@ -212,24 +212,24 @@
     },
     {
       "id": "liquidity_rent_incidence",
-      "status": "enter_fgh_companion",
+      "status": "blocked_external_reference_variance",
       "role": "companion distributional finding",
       "estimand": "fee revenue minus LVR minus LP gas by pool asset role",
-      "sample": "screened Uniswap V2 pool-days with at least 10000 dollars of exact prior-calendar-day reconstructed reserve capital valued from a separately validated anchored address-day price; Uniswap V3 is excluded until its core event identities pass independent source-completeness reconciliation, event-replayed inventory passes custody and LP-ownership reconciliation, and path-integrated LVR passes independently",
+      "sample": "screened Uniswap V2 pool-days with at least 10000 dollars of exact prior-calendar-day reconstructed reserve capital valued from a separately validated anchored address-day price and an independently identified external reference-price path for the exact token pair and date; Uniswap V3 is excluded until its core event identities pass independent source-completeness reconciliation, event-replayed inventory passes custody and LP-ownership reconciliation, and path-integrated LVR passes independently",
       "unit": "pool-day descriptives and pool-month inference",
       "dependent_variable": "V2 risk-adjusted net return and indicator that fees exceed LVR plus gas",
-      "transformation": "V2 annualised capital returns and fee-to-LVR ratio, with contemporaneous pool value as the LVR scale and exact prior-calendar capital as the return denominator",
+      "transformation": "V2 annualised capital returns and fee-to-LVR ratio, with external-reference-price realised variance, contemporaneous pool value as the LVR scale and exact prior-calendar capital as the return denominator; own-pool marginal-price variance is diagnostic only and cannot enter LVR inference",
       "outlier_treatment": "anchored-leg price within four times its trailing 91-day median with no future prices; stable price between 0.5 and 2 dollars; when both reserve legs have validated prices their values must agree within a 25-percent multiplicative band; no hourly pool-price move above 100 times; reconstructed V2 reserve capital must place the provider field within a 25-percent multiplicative band around either total-pool value or one priced reserve side, the two source semantics observed in the validation audit; exact-lag capital at least 10000 dollars",
       "inference": "V2 calendar-month fixed effects with two-way standard errors clustered by pool and calendar month and joint role tests from the same covariance; pool-only and month-only clustering are mandatory sensitivities; no V3 output or inference",
       "mandatory_alternatives": {
         "external_reference_support": [
-          "full screened cross-section",
-          "published 43-token positive CEX support within each token's sampled date bounds"
+          "all pool-days with an independently address-resolved external reference-price path",
+          "published 43-token positive CEX support only after full-frequency external prices are independently acquired within each token's validated date bounds"
         ],
         "lvr_sampling": [
-          "hourly realised variance",
-          "four-hour realised variance",
-          "open-to-close variance"
+          "hourly external-reference realised variance",
+          "four-hour external-reference realised variance",
+          "external-reference open-to-close variance"
         ],
         "gas_units": [
           "0.5 times receipt benchmark",
@@ -255,11 +255,12 @@
           "V3 dollar supply flows remain unnormalized until an ownership-reconciled exact-lag capital generation passes"
         ]
       },
-      "falsifier": "native-other net return becomes nonnegative under open-to-close LVR or role differences disappear in clustered pool-month tests; rotation-mechanism status additionally requires stable-linked capital or returns to move before stable vehicle share",
-      "admissible_interpretation": "trading revenue does not compensate native-long-tail LPs for measured adverse selection and gas; the direction survives the conservative LVR bound; the current temporal bridge rejects this result as the explanation for vehicle rotation",
-      "forbidden_interpretation": "all LP compensation is negative, token incentives are absent, V2 and V3 return levels are comparable, provider TVL or local virtual depth is V3 deposited capital, one-tick V3 LVR identifies dollar net flow, or rent incidence explains the stable vehicle transition",
+      "falsifier": "native-other net return becomes nonnegative under external-reference open-to-close LVR or role differences disappear in clustered pool-month tests; rotation-mechanism status additionally requires stable-linked capital or returns to move before stable vehicle share",
+      "admissible_interpretation": "conditional on exact external-reference support, trading revenue does not compensate the measured LP sample for LVR and gas; the result cannot generalize to pools without that support, and it remains separate from the vehicle-rotation mechanism",
+      "forbidden_interpretation": "own-pool marginal-price variance is LVR, unsupported long-tail pools inherit the result, all LP compensation is negative, token incentives are absent, V2 and V3 return levels are comparable, provider TVL or local virtual depth is V3 deposited capital, one-tick V3 LVR identifies dollar net flow, or rent incidence explains the stable vehicle transition",
       "inputs": [
         "data/processed/cex_reference_support.parquet",
+        "data/processed/external_reference_price_intraday.parquet",
         "data/processed/pool_capital_daily.parquet",
         "data/processed/daily_gas_price_graph.parquet",
         "data/processed/token_price_daily.parquet",
