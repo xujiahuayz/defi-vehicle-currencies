@@ -375,14 +375,14 @@ Not presented. Reached by number when a question lands. Every slide keeps the ph
 
 **Visual.** `deck/appendix_gas_hops.svg` remains withheld. Its replacement shows the exact-clock contract and adds route-unit distributions only after the full support hierarchy passes.
 
-### A11. The cost regime moves by three orders of magnitude [DAILY PRICE REBUILD REQUIRED; ALL-IN BPS BLOCKED]
+### A11. Gas is priced at the transaction clock [BLOCKED ON EXACT RECEIPT RELEASE]
 
-- Rebuild the daily median from every transaction in three fixed interior block quantiles selected from exact chain-wide UTC-day boundaries; the DEX-clock series is retired
-- Annual medians 84.00 gwei in 2021 and 0.13 gwei in 2026
-- 32.84 gwei before 2024-03-13 and 1.35 gwei after
-- Notional-scaled all-in basis points wait for the completed route-gas and gas-token-price join
+- Every admitted swap carries its own receipt `effectiveGasPrice`, `gasUsed`, transaction hash and block hash
+- Same-block base fee is the urgency-free sensitivity; pre-EIP-1559 observations remain unsupported for that sensitivity
+- The realised receipt charge is observed, while route-alternative gas units come from year, topology, exact venue-sequence and intermediary cells
+- Notional-scaled all-in basis points wait for complete receipt coverage and the route-unit support hierarchy
 
-**Visual.** `deck/appendix_gas_regime.svg`. Upper panel, x axis calendar time 2020-02 to 2026-06, y axis median gas price in gwei on a log scale from 0.03 to 500, the daily median as a thin line with the interquartile band as a light ribbon behind it, and a vertical rule at 2024-03-13 labelled with the blob-fee change. Lower panel on the same x axis, added only after the route-gas join, is a heat strip of the extra route cost in basis points by notional bucket on a sequential ramp. The read is that a vehicle route's gas handicap is not a constant of the technology and swings by three orders of magnitude inside the sample.
+**Visual.** `deck/appendix_gas_regime.svg` remains withheld. Its replacement is a support-first receipt panel: transaction-level effective-price distributions by year above, and the extra direct-versus-vehicle route cost by notional bucket below. No daily median series is rebuilt or plotted.
 
 **Citations.** Caparros, Chaudhary and Klein (2024) for gas and liquidity concentration; Barbon and Ranaldo for validator gas dominating trader cost.
 

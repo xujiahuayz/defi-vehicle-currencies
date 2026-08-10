@@ -1,12 +1,16 @@
 from __future__ import annotations
 
+import json
 from pathlib import Path
+from unittest.mock import patch
 
 import pandas as pd
 import pytest
 
 from ddvc.ethereum_blocks import block_header_is_current, parse_block_header
 from ddvc.ethereum_receipts import parse_receipt, receipt_is_current
+from ddvc.ethereum_receipts import fetch_receipt
+from ddvc import quoter
 from ddvc.quoter import canonical_json_sha256
 from ddvc.gas import load_route_transaction_gas
 from scripts.process import build_route_gas_units, build_route_transaction_gas
@@ -36,6 +40,20 @@ def evidence(request: dict[str, object], response: dict[str, object]) -> dict[st
         ],
         "response_sha256": canonical_json_sha256(response),
     }
+
+
+class HttpResponse:
+    def __init__(self, body: dict[str, object]) -> None:
+        self.body = body
+
+    def __enter__(self) -> HttpResponse:
+        return self
+
+    def __exit__(self, *_: object) -> None:
+        return None
+
+    def read(self) -> bytes:
+        return json.dumps(self.body).encode()
 
 
 def receipt(
@@ -223,6 +241,74 @@ def test_realised_gas_cost_uses_arbitrary_precision_decimal_text(tmp_path: Path)
     panel.to_parquet(path, index=False)
     loaded = load_route_transaction_gas(path)
     assert loaded.loc[0, "realised_gas_cost_wei"] == "30000000000000000000"
+
+
+def test_loader_rejects_support_flags_inconsistent_with_exact_prices(tmp_path: Path) -> None:
+    requests = pd.DataFrame({"tx_hash": ["0xabc"], "block_number": [10]})
+    panel = receipt_panel(
+        [receipt("0xabc", 10, 0)],
+        requests,
+        [header(10, 8_000_000_000)],
+    )
+    panel.loc[0, "gas_price_supported"] = True
+    panel.loc[0, "gas_gwei"] = 1.0
+    panel.loc[0, "gas_price_support_reason"] = "receipt_effective_gas_price"
+    panel.loc[0, "realised_gas_cost_wei"] = "0"
+    path = tmp_path / "route-gas.parquet"
+    panel.to_parquet(path, index=False)
+    with pytest.raises(ValueError, match="support disagrees"):
+        load_route_transaction_gas(path)
+
+
+def test_loader_rejects_base_fee_support_inconsistent_with_header(tmp_path: Path) -> None:
+    requests = pd.DataFrame({"tx_hash": ["0xabc"], "block_number": [10]})
+    panel = receipt_panel(
+        [receipt("0xabc", 10, 10_000_000_000)],
+        requests,
+        [header(10, 8_000_000_000)],
+    )
+    panel.loc[0, "base_fee_supported"] = False
+    panel.loc[0, "base_fee_gwei"] = None
+    panel.loc[0, "base_fee_support_reason"] = "pre_eip1559_block_no_base_fee"
+    path = tmp_path / "route-gas.parquet"
+    panel.to_parquet(path, index=False)
+    with pytest.raises(ValueError, match="support disagrees"):
+        load_route_transaction_gas(path)
+
+
+def test_receipt_fetch_rotates_past_malformed_http_success(tmp_path: Path) -> None:
+    exact = receipt("0xabc", 10, 10_000_000_000)["rpc_response"]
+    malformed = json.loads(json.dumps(exact))
+    malformed["result"]["blockHash"] = None
+    quoter._rpc_idx = 0
+    quoter._disabled_rpc_urls.clear()
+    with (
+        patch.object(quoter, "rpc_urls", return_value=["https://first", "https://second"]),
+        patch.object(
+            quoter.urllib.request,
+            "urlopen",
+            side_effect=[HttpResponse(malformed), HttpResponse(exact)],
+        ) as request,
+    ):
+        row = fetch_receipt(
+            "0xabc",
+            cache=tmp_path,
+            expected_block=10,
+            require_block_hash=True,
+            require_evidence=True,
+        )
+    assert request.call_count == 2
+    assert [attempt["classification"] for attempt in row["rpc_attempts"]] == [
+        "transient",
+        "success",
+    ]
+    assert receipt_is_current(
+        row,
+        "0xabc",
+        expected_block=10,
+        require_block_hash=True,
+        require_evidence=True,
+    )
 
 
 def test_receipt_panel_rejects_receipt_header_hash_disagreement() -> None:

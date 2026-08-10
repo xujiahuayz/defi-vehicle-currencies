@@ -253,14 +253,33 @@ def fetch_receipt(
         ):
             return row
     request = receipt_payload(normalized_hash)
-    response = rpc_request(
-        request,
-        timeout=20,
-        retries=2,
-        sleep=0.02,
-        retry_json_errors=True,
-        **({"return_evidence": True} if require_evidence and rpc_request is rpc_post else {}),
-    )
+    request_kwargs = {
+        "timeout": 20,
+        "retries": 2,
+        "sleep": 0.02,
+        "retry_json_errors": True,
+    }
+    if rpc_request is rpc_post:
+        def validate_response(candidate: object) -> None:
+            parsed = parse_receipt(
+                normalized_hash,
+                candidate,
+                expected_block=expected_block,
+                include_logs=include_logs,
+            )
+            if parsed is None or not receipt_is_current(
+                parsed,
+                normalized_hash,
+                expected_block=expected_block,
+                require_block_hash=require_block_hash,
+                require_logs=include_logs,
+            ):
+                raise ValueError("receipt response violates its requested identity")
+
+        request_kwargs["response_validator"] = validate_response
+        if require_evidence:
+            request_kwargs["return_evidence"] = True
+    response = rpc_request(request, **request_kwargs)
     envelope = coerce_rpc_envelope(response) if require_evidence else None
     raw_response = envelope.response if envelope is not None else response
     row = parse_receipt(

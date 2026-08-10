@@ -56,7 +56,15 @@ def load_route_transaction_gas(
         raise ValueError("route transaction gas panel has missing or negative prices")
     if any(gas_used <= 0 for gas_used in gas_units):
         raise ValueError("route transaction gas panel has missing or non-positive gas units")
+    if not panel["gas_price_supported"].isin([True, False]).all():
+        raise ValueError("route transaction gas support flags are not boolean")
     supported = panel["gas_price_supported"].astype(bool)
+    expected_supported = pd.Series(
+        [price > 0 for price in prices],
+        index=panel.index,
+    )
+    if not supported.eq(expected_supported).all():
+        raise ValueError("route transaction gas support disagrees with the receipt price")
     exact_costs: list[str | None] = []
     for raw_cost, gas_used, price, is_supported in zip(
         panel["realised_gas_cost_wei"],
@@ -89,15 +97,50 @@ def load_route_transaction_gas(
         raise ValueError("supported route transaction gas prices are not positive")
     if gas_gwei[~supported].notna().any():
         raise ValueError("unsupported route transaction gas prices must remain missing")
+    expected_gwei = pd.Series(
+        [price / 1e9 if is_supported else None for price, is_supported in zip(prices, supported, strict=True)],
+        index=panel.index,
+        dtype="float64",
+    )
+    if not gas_gwei[supported].eq(expected_gwei[supported]).all():
+        raise ValueError("route transaction gas gwei disagrees with the receipt price")
+    expected_gas_reasons = pd.Series(
+        [
+            "receipt_effective_gas_price"
+            if is_supported
+            else "zero_effective_price_private_payment_possible"
+            for is_supported in supported
+        ],
+        index=panel.index,
+    )
+    if not panel["gas_price_support_reason"].eq(expected_gas_reasons).all():
+        raise ValueError("route transaction gas support reason is inconsistent")
     base_fee = pd.to_numeric(panel["base_fee_per_gas_wei"], errors="coerce")
+    if not panel["base_fee_supported"].isin([True, False]).all():
+        raise ValueError("same-block base-fee support flags are not boolean")
     base_supported = panel["base_fee_supported"].astype(bool)
     base_gwei = pd.to_numeric(panel["base_fee_gwei"], errors="coerce")
+    if not base_supported.eq(base_fee.notna()).all():
+        raise ValueError("same-block base-fee support disagrees with the block header")
     if base_fee[base_supported].isna().any() or base_fee[base_supported].lt(0).any():
         raise ValueError("supported same-block base fees are missing or negative")
     if base_fee[~base_supported].notna().any() or base_gwei[~base_supported].notna().any():
         raise ValueError("unsupported same-block base fees must remain missing")
     if base_gwei[base_supported].isna().any() or base_gwei[base_supported].lt(0).any():
         raise ValueError("supported same-block base fees are not nonnegative")
+    if not base_gwei[base_supported].eq(base_fee[base_supported] / 1e9).all():
+        raise ValueError("same-block base-fee gwei disagrees with the block header")
+    expected_base_reasons = pd.Series(
+        [
+            "same_block_base_fee_per_gas"
+            if is_supported
+            else "pre_eip1559_block_no_base_fee"
+            for is_supported in base_supported
+        ],
+        index=panel.index,
+    )
+    if not panel["base_fee_support_reason"].eq(expected_base_reasons).all():
+        raise ValueError("same-block base-fee support reason is inconsistent")
     if required_routes is not None:
         expected = required_routes[["tx", "block"]].rename(
             columns={"tx": "tx_hash", "block": "block_number"}
