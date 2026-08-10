@@ -214,6 +214,56 @@ def test_v3_receipt_order_generation_repairs_causal_collisions(tmp_path: Path) -
     assert set(released["log_index"].astype(int)) == {99, 122}
 
 
+def test_missing_provider_log_index_is_repaired_from_exact_chain_order(tmp_path: Path) -> None:
+    raw_root = tmp_path / "raw" / "thegraph"
+    provider = graph_swap("event-one", "0xtx1", "1", "-2")
+    provider["logIndex"] = None
+    write_graph_day(raw_root, [provider])
+    graph = load_graph_events(raw_root, "uniswap_v3", "20250101")
+    corrections, supplements, audit = match_event_orders(
+        graph,
+        [exact_swap("0xtx1", 99, 10**18, -2 * 10**6)],
+        "uniswap_v3",
+    )
+    assert supplements == []
+    assert audit["correction_rows"] == 1
+    assert corrections[0]["provider_log_index"] is None
+    assert corrections[0]["chain_log_index"] == 99
+
+    correction_root = correction_root_for_graph(raw_root)
+    exact_path = correction_root / "uniswap_v3" / "20250101" / "blocks_10_10.parquet"
+    exact_marker = exact_path.with_suffix(".meta.json")
+    write_exact_log_chunk(
+        exact_path,
+        exact_marker,
+        [exact_swap("0xtx1", 99, 10**18, -2 * 10**6)],
+        {
+            "kind": "test",
+            "venue": "uniswap_v3",
+            "day": "20250101",
+            "start_block": 10,
+            "end_block": 10,
+            "event_topics": [V3_STATE_EVENT_TOPICS["swap"]],
+        },
+    )
+    write_correction_generation(
+        root=correction_root,
+        raw_root=raw_root,
+        venue="uniswap_v3",
+        day="20250101",
+        corrections=corrections,
+        supplements=[],
+        block_timestamp_evidence=[],
+        exact_log_paths=[exact_path, exact_marker],
+        audit=audit,
+        start_block=10,
+        end_block=10,
+    )
+    frame, quality = normalise_tick_partition(raw_root, "uniswap_v3", "20250101")
+    assert quality.passed
+    assert frame["log_index"].astype(int).tolist() == [99]
+
+
 def test_reconciliation_surfaces_an_exact_event_omitted_by_provider(tmp_path: Path) -> None:
     raw_root = tmp_path / "raw" / "thegraph"
     write_graph_day(raw_root, [graph_swap("event-one", "0xtx1", "1", "-2")])

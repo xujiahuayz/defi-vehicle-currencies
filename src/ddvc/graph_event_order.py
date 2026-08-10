@@ -40,7 +40,7 @@ V3_STATE_EVENT_TOPICS = {
 V3_STATE_EVENT_BY_TOPIC = {topic: name for name, topic in V3_STATE_EVENT_TOPICS.items()}
 STREAM_EVENT_TYPE = {"swaps": "swap", "mints": "mint", "burns": "burn"}
 Fingerprint = tuple[object, ...]
-CorrectionKey = tuple[str, str, str, str, int, int]
+CorrectionKey = tuple[str, str, str, str, int, int | None]
 
 
 @dataclass(frozen=True)
@@ -51,7 +51,7 @@ class GraphEvent:
     tx_hash: str
     pool: str
     block_number: int
-    provider_log_index: int
+    provider_log_index: int | None
     fingerprint: Fingerprint
     decimals0: int | None
     decimals1: int | None
@@ -301,11 +301,16 @@ def graph_event(
     tx_hash = transaction_id(row)
     event_id = str(row.get("id") or "")
     pool_id = str(pool.get("id") or "").lower()
+    raw_provider_log_index = row.get("logIndex")
     try:
-        provider_log_index = int(row.get("logIndex"))
+        provider_log_index = (
+            int(raw_provider_log_index) if raw_provider_log_index is not None else None
+        )
     except (TypeError, ValueError) as error:
-        raise ValueError("Graph event lacks a valid provider log index") from error
-    if block is None or block < 1 or provider_log_index < 0:
+        raise ValueError("Graph event has a malformed provider log index") from error
+    if block is None or block < 1 or (
+        provider_log_index is not None and provider_log_index < 0
+    ):
         raise ValueError("Graph event lacks a valid block-log order")
     if not event_id or not tx_hash or not pool_id:
         raise ValueError("Graph event lacks exact event, transaction, or pool identity")
@@ -641,7 +646,11 @@ def match_event_orders(
             duplicate_groups[event.duplicate_key].append(event)
         provider_groups = sorted(
             duplicate_groups.values(),
-            key=lambda group: (group[0].provider_log_index, group[0].event_id),
+            key=lambda group: (
+                group[0].provider_log_index is None,
+                group[0].provider_log_index or 0,
+                group[0].event_id,
+            ),
         )
         chain_remaining = sorted(exact_groups.get(key, []), key=lambda event: event.log_index)
         unique_graph_events += len(provider_groups)
@@ -656,11 +665,15 @@ def match_event_orders(
             if exact_payload_matches:
                 chain = min(exact_payload_matches, key=lambda event: event.log_index)
             else:
-                same_log = [
-                    event
-                    for event in chain_remaining
-                    if event.log_index == provider.provider_log_index
-                ]
+                same_log = (
+                    [
+                        event
+                        for event in chain_remaining
+                        if event.log_index == provider.provider_log_index
+                    ]
+                    if provider.provider_log_index is not None
+                    else []
+                )
                 if len(same_log) == 1:
                     chain = same_log[0]
                 elif len(chain_remaining) == 1:
@@ -828,7 +841,11 @@ class EventOrderCorrections:
                 str(row["tx_hash"]).lower(),
                 str(row["pool"]).lower(),
                 int(row["block_number"]),
-                int(row["provider_log_index"]),
+                (
+                    int(row["provider_log_index"])
+                    if row.get("provider_log_index") is not None
+                    else None
+                ),
             )
             if key in self._rows:
                 raise ValueError(f"duplicate event-order correction: {key}")
@@ -875,7 +892,10 @@ class EventOrderCorrections:
         pool, _token0, _token1 = _pool_and_tokens(row, venue)
         block = block_value(row)
         try:
-            provider_log = int(row.get("logIndex"))
+            raw_provider_log = row.get("logIndex")
+            provider_log = (
+                int(raw_provider_log) if raw_provider_log is not None else None
+            )
         except (TypeError, ValueError):
             return None
         key = (
