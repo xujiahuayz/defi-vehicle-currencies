@@ -2,28 +2,50 @@
 
 from __future__ import annotations
 
+from decimal import Decimal, InvalidOperation
+from itertools import zip_longest
 from pathlib import Path
 
 import pandas as pd
+import pyarrow.parquet as pq
+
+from ddvc.ethereum_blocks import iter_block_header_snapshot
+from ddvc.ethereum_receipts import iter_receipt_snapshot
 
 
-def load_route_transaction_gas(
-    path: Path,
+def _exact_integer(value: object) -> int:
+    """Parse one persisted integer without accepting truncation or nonfinite values."""
+
+    try:
+        parsed = Decimal(str(value))
+    except (InvalidOperation, TypeError, ValueError) as error:
+        raise ValueError from error
+    if not parsed.is_finite() or parsed != parsed.to_integral_value():
+        raise ValueError
+    return int(parsed)
+
+
+def validate_route_transaction_gas_frame(
+    panel: pd.DataFrame,
     *,
     required_routes: pd.DataFrame | None = None,
 ) -> pd.DataFrame:
-    """Load exact receipt gas prices and prove transaction/block coverage."""
+    """Validate one bounded exact-gas frame and optional matching route perimeter."""
 
-    if not path.exists():
-        raise FileNotFoundError(f"route transaction gas panel does not exist: {path}")
-    panel = pd.read_parquet(path)
     required_columns = {
         "tx_hash",
         "block_number",
         "block_hash",
+        "block_timestamp_utc",
         "status",
         "gas_used",
-        "realised_gas_cost_wei",
+        "execution_gas_cost_wei",
+        "blob_gas_used",
+        "blob_gas_price_wei",
+        "blob_gas_cost_wei",
+        "receipt_total_gas_cost_wei",
+        "receipt_gas_cost_scope",
+        "off_receipt_payment_status",
         "effective_gas_price_wei",
         "gas_gwei",
         "gas_price_supported",
@@ -38,15 +60,18 @@ def load_route_transaction_gas(
         raise ValueError(f"route transaction gas panel misses columns: {missing_columns}")
     panel = panel.copy()
     panel["tx_hash"] = panel["tx_hash"].astype(str).str.lower()
-    panel["block_number"] = pd.to_numeric(panel["block_number"], errors="raise").astype(
-        "int64"
-    )
     try:
-        prices = [int(value) for value in panel["effective_gas_price_wei"]]
-        gas_units = [int(value) for value in panel["gas_used"]]
-        statuses = [int(value) for value in panel["status"]]
-    except (TypeError, ValueError) as error:
+        block_numbers = [_exact_integer(value) for value in panel["block_number"]]
+        block_timestamps = [
+            _exact_integer(value) for value in panel["block_timestamp_utc"]
+        ]
+        prices = [_exact_integer(value) for value in panel["effective_gas_price_wei"]]
+        gas_units = [_exact_integer(value) for value in panel["gas_used"]]
+        statuses = [_exact_integer(value) for value in panel["status"]]
+    except ValueError as error:
         raise ValueError("route transaction gas panel has malformed receipt integers") from error
+    panel["block_number"] = block_numbers
+    panel["block_timestamp_utc"] = block_timestamps
     panel["effective_gas_price_wei"] = prices
     panel["gas_used"] = gas_units
     panel["status"] = statuses
@@ -56,6 +81,8 @@ def load_route_transaction_gas(
         raise ValueError("route transaction gas panel has missing or negative prices")
     if any(gas_used <= 0 for gas_used in gas_units):
         raise ValueError("route transaction gas panel has missing or non-positive gas units")
+    if any(timestamp <= 0 for timestamp in block_timestamps):
+        raise ValueError("route transaction gas panel has invalid block timestamps")
     if not panel["gas_price_supported"].isin([True, False]).all():
         raise ValueError("route transaction gas support flags are not boolean")
     supported = panel["gas_price_supported"].astype(bool)
@@ -65,9 +92,9 @@ def load_route_transaction_gas(
     )
     if not supported.eq(expected_supported).all():
         raise ValueError("route transaction gas support disagrees with the receipt price")
-    exact_costs: list[str | None] = []
+    execution_costs: list[str | None] = []
     for raw_cost, gas_used, price, is_supported in zip(
-        panel["realised_gas_cost_wei"],
+        panel["execution_gas_cost_wei"],
         gas_units,
         prices,
         supported,
@@ -75,14 +102,66 @@ def load_route_transaction_gas(
     ):
         if not is_supported:
             if not pd.isna(raw_cost):
-                raise ValueError("unsupported realised gas cost must remain missing")
-            exact_costs.append(None)
+                raise ValueError("unsupported execution gas cost must remain missing")
+            execution_costs.append(None)
             continue
         expected_cost = str(gas_used * price)
         if not isinstance(raw_cost, str) or raw_cost != expected_cost:
-            raise ValueError("route transaction gas panel has inconsistent realised gas cost")
-        exact_costs.append(expected_cost)
-    panel["realised_gas_cost_wei"] = exact_costs
+            raise ValueError("route transaction gas panel has inconsistent execution gas cost")
+        execution_costs.append(expected_cost)
+    panel["execution_gas_cost_wei"] = execution_costs
+    blob_units: list[int | None] = []
+    blob_prices: list[int | None] = []
+    blob_costs: list[str] = []
+    total_costs: list[str | None] = []
+    for raw_units, raw_price, raw_blob_cost, raw_total, execution in zip(
+        panel["blob_gas_used"],
+        panel["blob_gas_price_wei"],
+        panel["blob_gas_cost_wei"],
+        panel["receipt_total_gas_cost_wei"],
+        execution_costs,
+        strict=True,
+    ):
+        absent = pd.isna(raw_units) and pd.isna(raw_price)
+        if absent:
+            units = price = None
+            expected_blob = "0"
+        elif pd.isna(raw_units) or pd.isna(raw_price):
+            raise ValueError("route transaction gas panel has incomplete blob gas fields")
+        else:
+            try:
+                units = _exact_integer(raw_units)
+                price = _exact_integer(raw_price)
+            except ValueError as error:
+                raise ValueError("route transaction gas panel has malformed blob gas fields") from error
+            if units < 0 or price < 0:
+                raise ValueError("route transaction gas panel has negative blob gas fields")
+            expected_blob = str(units * price)
+        if not isinstance(raw_blob_cost, str) or raw_blob_cost != expected_blob:
+            raise ValueError("route transaction gas panel has inconsistent blob gas cost")
+        expected_total = (
+            str(int(execution) + int(expected_blob)) if execution is not None else None
+        )
+        if raw_total != expected_total and not (
+            expected_total is None and pd.isna(raw_total)
+        ):
+            raise ValueError("route transaction gas panel has inconsistent receipt total gas cost")
+        blob_units.append(units)
+        blob_prices.append(price)
+        blob_costs.append(expected_blob)
+        total_costs.append(expected_total)
+    panel["blob_gas_used"] = blob_units
+    panel["blob_gas_price_wei"] = blob_prices
+    panel["blob_gas_cost_wei"] = blob_costs
+    panel["receipt_total_gas_cost_wei"] = total_costs
+    if not panel["receipt_gas_cost_scope"].eq(
+        "execution_plus_blob_receipt_fields"
+    ).all():
+        raise ValueError("route transaction gas panel has an invalid receipt cost scope")
+    if not panel["off_receipt_payment_status"].eq(
+        "private_bundle_or_direct_block_beneficiary_payments_unobserved"
+    ).all():
+        raise ValueError("route transaction gas panel overstates off-receipt payment coverage")
     block_hashes = panel["block_hash"].astype(str).str.lower()
     if not all(
         len(block_hash) == 66 and block_hash.startswith("0x")
@@ -115,7 +194,16 @@ def load_route_transaction_gas(
     )
     if not panel["gas_price_support_reason"].eq(expected_gas_reasons).all():
         raise ValueError("route transaction gas support reason is inconsistent")
-    base_fee = pd.to_numeric(panel["base_fee_per_gas_wei"], errors="coerce")
+    base_fee_values: list[int | None] = []
+    for value in panel["base_fee_per_gas_wei"]:
+        if pd.isna(value):
+            base_fee_values.append(None)
+            continue
+        try:
+            base_fee_values.append(_exact_integer(value))
+        except ValueError as error:
+            raise ValueError("same-block base-fee panel has a malformed integer") from error
+    base_fee = pd.Series(base_fee_values, index=panel.index, dtype="Int64")
     if not panel["base_fee_supported"].isin([True, False]).all():
         raise ValueError("same-block base-fee support flags are not boolean")
     base_supported = panel["base_fee_supported"].astype(bool)
@@ -146,9 +234,12 @@ def load_route_transaction_gas(
             columns={"tx": "tx_hash", "block": "block_number"}
         )
         expected["tx_hash"] = expected["tx_hash"].astype(str).str.lower()
-        expected["block_number"] = pd.to_numeric(
-            expected["block_number"], errors="raise"
-        ).astype("int64")
+        try:
+            expected["block_number"] = [
+                _exact_integer(value) for value in expected["block_number"]
+            ]
+        except ValueError as error:
+            raise ValueError("required routes contain malformed block numbers") from error
         expected = expected.drop_duplicates()
         coverage = expected.merge(
             panel[["tx_hash", "block_number"]],
@@ -161,3 +252,85 @@ def load_route_transaction_gas(
         if missing:
             raise ValueError(f"route transaction gas panel misses {missing:,} exact routes")
     return panel.sort_values(["block_number", "tx_hash"]).reset_index(drop=True)
+
+
+def load_route_transaction_gas(path: Path, *, required_routes: pd.DataFrame | None = None) -> pd.DataFrame:
+    """Load exact receipt gas prices and prove transaction/block coverage."""
+
+    if not path.exists():
+        raise FileNotFoundError(f"route transaction gas panel does not exist: {path}")
+    return validate_route_transaction_gas_frame(pd.read_parquet(path), required_routes=required_routes)
+
+
+def _copied_field_matches(panel_row: dict[str, object], evidence_row: dict[str, object], mapping: dict[str, str]) -> bool:
+    for evidence_field, panel_field in mapping.items():
+        panel_value = panel_row.get(panel_field)
+        if pd.isna(panel_value):
+            panel_value = None
+        if panel_value != evidence_row.get(evidence_field):
+            return False
+    return True
+
+
+def validate_route_transaction_gas_release(path: Path, required_routes: pd.DataFrame, *, receipt_snapshot: Path, block_header_snapshot: Path, batch_size: int = 5_000) -> dict[str, int]:
+    """Stream Parquet beside exact receipt and header evidence and compare every copied field."""
+
+    if batch_size < 1:
+        raise ValueError("route transaction gas validation batch size must be positive")
+    if not path.exists():
+        raise FileNotFoundError(f"route transaction gas panel does not exist: {path}")
+    release_evidence_columns = {"tx_to", "tx_from", "parent_hash"}
+    missing_release_columns = sorted(release_evidence_columns - set(pq.ParquetFile(path).schema_arrow.names))
+    if missing_release_columns:
+        raise ValueError(f"route transaction gas release misses copied evidence columns: {missing_release_columns}")
+    expected = required_routes[["tx_hash", "block_number"]].copy()
+    expected["tx_hash"] = expected["tx_hash"].astype(str).str.lower()
+    try:
+        expected["block_number"] = [_exact_integer(value) for value in expected["block_number"]]
+    except ValueError as error:
+        raise ValueError("required routes contain malformed block numbers") from error
+    if expected.empty or expected["tx_hash"].duplicated().any():
+        raise ValueError("required route transaction perimeter is empty or duplicated")
+    expected = expected.sort_values(["block_number", "tx_hash"]).reset_index(drop=True)
+    expected_rows = expected.itertuples(index=False, name=None)
+
+    def actual_rows():
+        parquet = pq.ParquetFile(path)
+        for batch in parquet.iter_batches(batch_size=batch_size):
+            original = batch.to_pandas()
+            validated = validate_route_transaction_gas_frame(original)
+            original_keys = list(zip(original["block_number"], original["tx_hash"], strict=True))
+            validated_keys = list(zip(validated["block_number"], validated["tx_hash"], strict=True))
+            if original_keys != validated_keys:
+                raise ValueError("route transaction gas panel is not strictly ordered")
+            yield from validated.to_dict("records")
+
+    sentinel = object()
+    rows = 0
+    previous: tuple[int, str] | None = None
+    receipts = iter_receipt_snapshot(receipt_snapshot, require_evidence=True, order_by_block=True)
+    headers = iter_block_header_snapshot(block_header_snapshot, require_evidence=True)
+    current_header: object = next(headers, sentinel)
+    receipt_mapping = {"tx_hash": "tx_hash", "block_number": "block_number", "block_hash": "block_hash", "gas_used": "gas_used", "status": "status", "tx_to": "tx_to", "tx_from": "tx_from", "effective_gas_price_wei": "effective_gas_price_wei", "blob_gas_used": "blob_gas_used", "blob_gas_price_wei": "blob_gas_price_wei"}
+    header_mapping = {"block_number": "block_number", "block_hash": "block_hash", "parent_hash": "parent_hash", "timestamp": "block_timestamp_utc", "base_fee_per_gas_wei": "base_fee_per_gas_wei"}
+    for expected_row, actual_row, receipt_row in zip_longest(expected_rows, actual_rows(), receipts, fillvalue=sentinel):
+        if expected_row is sentinel or actual_row is sentinel or receipt_row is sentinel:
+            raise ValueError("route transaction gas panel differs from the exact route perimeter")
+        current = int(actual_row["block_number"]), str(actual_row["tx_hash"]).lower()
+        if tuple(expected_row) != (current[1], current[0]) or (int(receipt_row["block_number"]), str(receipt_row["tx_hash"]).lower()) != current:
+            raise ValueError("route transaction gas panel differs from the exact route perimeter")
+        if previous is not None and current <= previous:
+            raise ValueError("route transaction gas panel is duplicated or not strictly ordered")
+        if not _copied_field_matches(actual_row, receipt_row, receipt_mapping):
+            raise ValueError("route transaction gas panel differs from exact receipt evidence")
+        if previous is not None and current[0] != previous[0]:
+            current_header = next(headers, sentinel)
+        if current_header is sentinel or int(current_header["block_number"]) != current[0] or not _copied_field_matches(actual_row, current_header, header_mapping):
+            raise ValueError("route transaction gas panel differs from exact block-header evidence")
+        previous = current
+        rows += 1
+    if current_header is not sentinel:
+        current_header = next(headers, sentinel)
+    if current_header is not sentinel:
+        raise ValueError("block-header evidence exceeds the route transaction perimeter")
+    return {"rows": rows}

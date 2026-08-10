@@ -43,6 +43,7 @@ Writes  data/processed/counterfactual_dominance_gross.parquet
         data/processed/counterfactual_dominance.parquet
         output/exhibits/counterfactual_dominance_summary.jsonl
         output/exhibits/counterfactual_dominance_support.jsonl
+        output/exhibits/counterfactual_dominance_receipt_allocation_support.jsonl
 """
 
 from __future__ import annotations
@@ -63,13 +64,20 @@ from ddvc.cpquote import (
     quote_one_hop,
 )
 from ddvc.gas import load_route_transaction_gas
+from ddvc.external_prices import validate_external_weth_usd_release
 from ddvc.paths import (
     DATA_DIR,
     EXTERNAL_WETH_USD_INTRADAY_PANEL,
+    EXTERNAL_WETH_USD_RAW_ROOT,
     OUTPUT_DIR,
     REPO_ROOT,
 )
-from ddvc.prices import PRICE_COLUMNS, attach_strictly_prior_weth_usd, day_prices
+from ddvc.prices import (
+    PRICE_COLUMNS,
+    attach_strictly_prior_weth_usd,
+    day_prices,
+    load_intraday_weth_usd_marks,
+)
 from ddvc.realised import LINEAR_ROUTE_COLUMNS, extract_linear_realised_routes
 from ddvc.pricing.v2_replay import V2_VENUES, load_v2_replay_day
 from ddvc.provenance import require_current_artifacts
@@ -84,6 +92,7 @@ OUT_PARQUET = DATA_DIR / "processed" / "counterfactual_dominance.parquet"
 GROSS_PARQUET = DATA_DIR / "processed" / "counterfactual_dominance_gross.parquet"
 OUT_EXHIBIT = OUTPUT_DIR / "exhibits" / "counterfactual_dominance_summary.jsonl"
 OUT_SUPPORT = OUTPUT_DIR / "exhibits" / "counterfactual_dominance_support.jsonl"
+OUT_RECEIPT_ALLOCATION_SUPPORT = OUTPUT_DIR / "exhibits" / "counterfactual_dominance_receipt_allocation_support.jsonl"
 LOCK = OUT_PARQUET.with_suffix(".lock")
 TRANSACTION_GAS_PANEL = DATA_DIR / "processed" / "route_transaction_gas.parquet"
 ROUTE_GAS_PANEL = DATA_DIR / "processed" / "route_gas_units.parquet"
@@ -94,6 +103,7 @@ CODE_SOURCES = [
     "src/ddvc/pricing/v2_replay.py",
     "src/ddvc/state_data.py",
     "src/ddvc/gas.py",
+    "src/ddvc/external_prices.py",
     "src/ddvc/asset_types.py",
     "src/ddvc/prices.py",
     "src/ddvc/paths.py",
@@ -150,25 +160,103 @@ def counterfactual_days(
     return days[:limit] if limit is not None else days
 
 
-def one_day(day: str) -> pd.DataFrame | None:
+def receipt_allocation_support(day: str, routes: pd.DataFrame, unified: pd.DataFrame) -> tuple[pd.Index, dict[str, object]]:
+    """Quantify and identify routes whose whole-transaction receipt is not allocable."""
+
+    declared_components = pd.to_numeric(unified["n_components"], errors="coerce")
+    transaction_contract = unified.assign(_declared_components=declared_components).groupby("tx_hash", sort=False).agg(declared_min=("_declared_components", "min"), declared_max=("_declared_components", "max"), observed_components=("component_id", "nunique"))
+    admitted_transactions = transaction_contract.index[transaction_contract["declared_min"].eq(1) & transaction_contract["declared_max"].eq(1) & transaction_contract["observed_components"].eq(1)]
+    admitted = routes["tx_hash"].isin(admitted_transactions)
+    if routes.loc[admitted, "tx_hash"].duplicated(keep=False).any():
+        raise ValueError("one single-component transaction cannot own multiple gross route rows")
+    notionals = pd.to_numeric(routes["input_usd"], errors="coerce").fillna(0.0)
+    candidate_transactions = routes["tx_hash"].nunique()
+    admitted_transactions_count = routes.loc[admitted, "tx_hash"].nunique()
+    return admitted_transactions, {
+        "scope": "daily",
+        "date": pd.to_datetime(day, format="%Y%m%d"),
+        "year": int(day[:4]),
+        "receipt_allocation_estimand": "single_reconstructed_component_transactions_only",
+        "candidate_transactions": int(candidate_transactions),
+        "candidate_routes": int(len(routes)),
+        "candidate_route_notional_usd": float(notionals.sum()),
+        "admitted_transactions": int(admitted_transactions_count),
+        "admitted_routes": int(admitted.sum()),
+        "admitted_route_notional_usd": float(notionals[admitted].sum()),
+        "excluded_multi_component_transactions": int(candidate_transactions - admitted_transactions_count),
+        "excluded_multi_component_routes": int((~admitted).sum()),
+        "excluded_multi_component_route_notional_usd": float(notionals[~admitted].sum()),
+    }
+
+
+def receipt_allocation_support_summary(daily: pd.DataFrame) -> pd.DataFrame:
+    """Retain daily exclusions and add pooled and annual support-loss totals."""
+
+    count_columns = ["candidate_transactions", "candidate_routes", "admitted_transactions", "admitted_routes", "excluded_multi_component_transactions", "excluded_multi_component_routes"]
+    value_columns = ["candidate_route_notional_usd", "admitted_route_notional_usd", "excluded_multi_component_route_notional_usd"]
+    rows = daily.to_dict("records")
+    for scope, groups in (("pooled", [(None, daily)]), ("annual", daily.groupby("year", sort=True))):
+        for year, group in groups:
+            row = {"scope": scope, "date": None, "year": int(year) if year is not None else None, "receipt_allocation_estimand": "single_reconstructed_component_transactions_only"}
+            row.update({column: int(group[column].sum()) for column in count_columns})
+            row.update({column: float(group[column].sum()) for column in value_columns})
+            row["excluded_multi_component_route_share"] = row["excluded_multi_component_routes"] / row["candidate_routes"] if row["candidate_routes"] else None
+            row["excluded_multi_component_notional_share"] = row["excluded_multi_component_route_notional_usd"] / row["candidate_route_notional_usd"] if row["candidate_route_notional_usd"] else None
+            rows.append(row)
+    return pd.DataFrame(rows)
+
+
+def gross_panel_inputs() -> list[Path]:
+    """Declare the gross release inputs, including the allocation support-loss audit."""
+
+    return [*(MARKET_STATE / "constant_product" / venue for venue in VENUES), UNIFIED, OUT_RECEIPT_ALLOCATION_SUPPORT]
+
+
+def write_gross_release(frame: pd.DataFrame, output: Path = GROSS_PARQUET) -> Path:
+    """Publish gross routes only when every receipt has exactly one owning row."""
+
+    required = {"tx", "receipt_allocation_scope"}
+    missing = sorted(required - set(frame.columns))
+    if missing:
+        raise ValueError("gross route release lacks receipt-ownership columns: " + ", ".join(missing))
+    transactions = frame["tx"].astype(str).str.lower()
+    if transactions.eq("").any() or transactions.duplicated(keep=False).any():
+        raise ValueError("one transaction receipt cannot be allocated to multiple gross route rows")
+    if not frame["receipt_allocation_scope"].eq("single_reconstructed_component_transaction").all():
+        raise ValueError("gross route release violates the single-component receipt allocation contract")
+    write_panel(
+        frame,
+        output,
+        code_sources=CODE_SOURCES,
+        inputs=gross_panel_inputs(),
+        notes="gross V2-family exact-size direct counterfactual at strict pre-transaction block-log state for single-component transactions only, released before any gas-price dependency and bound to the receipt-allocation support-loss audit",
+    )
+    return output
+
+
+def one_day(day: str) -> tuple[pd.DataFrame | None, dict[str, object] | None]:
     replay = load_v2_replay_day(MARKET_STATE, day, venues=VENUES)
     if not replay.pool_hour_events or not replay.swaps_by_pool_hour:
-        return None
+        return None, None
 
     unified_path = UNIFIED / f"{day}.parquet"
     if not unified_path.exists():
-        return None
-    unified = pd.read_parquet(unified_path, columns=LINEAR_ROUTE_COLUMNS)
+        return None, None
+    unified = pd.read_parquet(unified_path, columns=[*LINEAR_ROUTE_COLUMNS, "n_components"])
     prices = day_prices(unified[PRICE_COLUMNS])
     routes = extract_linear_realised_routes(unified)
     if routes.empty:
-        return None
+        return None, None
     routes = routes[
         routes["realised_hop1_source"].isin(VENUES)
         & routes["realised_hop2_source"].isin(VENUES)
     ].copy()
     if routes.empty:
-        return None
+        return None, None
+    single_component_transactions, allocation_support = receipt_allocation_support(day, routes, unified)
+    routes = routes[routes["tx_hash"].isin(single_component_transactions)].copy()
+    if routes.empty:
+        return None, allocation_support
     component_keys = ["tx_hash", "component_id"]
     eligible_keys = {
         (str(tx_hash).lower(), int(component_id))
@@ -283,6 +371,7 @@ def one_day(day: str) -> pd.DataFrame | None:
             "date": pd.to_datetime(day, format="%Y%m%d"),
             "route_id": route["route_id"], "tx": tx,
             "component_id": int(route["component_id"]),
+            "receipt_allocation_scope": "single_reconstructed_component_transaction",
             "block": route_order[0], "first_log_index": route_order[1],
             "token_in": a_in, "token_out": b_out, "mid": mid1,
             "mid_symbol": sym, "mid_type": typ, "usd": usd,
@@ -313,7 +402,7 @@ def one_day(day: str) -> pd.DataFrame | None:
             "gross_direct_advantage_bps": gross_direct_advantage_bps,
             "direct_output_improvement_bps": direct_output_improvement_bps,
         })
-    return pd.DataFrame(rows) if rows else None
+    return (pd.DataFrame(rows) if rows else None), allocation_support
 
 
 def add_topology_gas_adjustment(
@@ -322,13 +411,22 @@ def add_topology_gas_adjustment(
     route_gas_panel=ROUTE_GAS_PANEL,
     intraday_price_panel=EXTERNAL_WETH_USD_INTRADAY_PANEL,
 ) -> pd.DataFrame:
-    """Join exact transaction gas, route units and strictly prior WETH/USD marks."""
+    """Join exact receipt gas and expose daily-denominator bps as sensitivity only."""
     out = frame.copy()
     out = out.drop(
         columns=[
             "effective_gas_price_wei",
             "gas_used",
-            "realised_gas_cost_wei",
+            "execution_gas_cost_wei",
+            "blob_gas_used",
+            "blob_gas_price_wei",
+            "blob_gas_cost_wei",
+            "receipt_total_gas_cost_wei",
+            "receipt_gas_cost_scope",
+            "off_receipt_payment_status",
+            "block_timestamp_utc",
+            "provider_route_timestamp_utc",
+            "provider_block_timestamp_disagreement_seconds",
             "receipt_block_hash",
             "receipt_status",
             "gas_gwei",
@@ -343,6 +441,9 @@ def add_topology_gas_adjustment(
             "eth_usd_mark_lag_seconds",
             "eth_usd_price_source",
             "eth_usd_validation_status",
+            "execution_gas_cost_usd",
+            "blob_gas_cost_usd",
+            "receipt_total_gas_cost_usd",
         ],
         errors="ignore",
     )
@@ -350,12 +451,9 @@ def add_topology_gas_adjustment(
     out["year"] = out["date"].dt.year
     out["tx"] = out["tx"].astype(str).str.lower()
     out["block"] = pd.to_numeric(out["block"], errors="raise").astype("int64")
-    marks = (
-        intraday_price_panel.copy()
-        if isinstance(intraday_price_panel, pd.DataFrame)
-        else pd.read_parquet(intraday_price_panel)
-    )
-    out = attach_strictly_prior_weth_usd(out, marks)
+    out["provider_route_timestamp_utc"] = pd.to_numeric(
+        out["timestamp_utc"], errors="raise"
+    ).astype("int64")
     gas = load_route_transaction_gas(
         gas_panel, required_routes=out
     )[
@@ -363,9 +461,16 @@ def add_topology_gas_adjustment(
             "tx_hash",
             "block_number",
             "block_hash",
+            "block_timestamp_utc",
             "status",
             "gas_used",
-            "realised_gas_cost_wei",
+            "execution_gas_cost_wei",
+            "blob_gas_used",
+            "blob_gas_price_wei",
+            "blob_gas_cost_wei",
+            "receipt_total_gas_cost_wei",
+            "receipt_gas_cost_scope",
+            "off_receipt_payment_status",
             "effective_gas_price_wei",
             "gas_gwei",
             "gas_price_supported",
@@ -386,6 +491,33 @@ def add_topology_gas_adjustment(
     out = out.merge(gas, on=["tx", "block"], how="left", validate="one_to_one")
     if out["gas_price_supported"].isna().any():
         raise RuntimeError("exact transaction gas join changed the route perimeter")
+    out["provider_block_timestamp_disagreement_seconds"] = (
+        out["provider_route_timestamp_utc"] - out["block_timestamp_utc"]
+    )
+    out["timestamp_utc"] = out["block_timestamp_utc"]
+    marks = load_intraday_weth_usd_marks(intraday_price_panel, out)
+    out = attach_strictly_prior_weth_usd(out, marks)
+
+    def receipt_cost_usd(column: str) -> list[float | None]:
+        values: list[float | None] = []
+        for raw_cost, eth_usd in zip(out[column], out["eth_usd"], strict=True):
+            if pd.isna(raw_cost) or pd.isna(eth_usd):
+                values.append(None)
+                continue
+            values.append(
+                float(
+                    Decimal(str(raw_cost))
+                    * Decimal(str(eth_usd))
+                    / Decimal(10**18)
+                )
+            )
+        return values
+
+    out["execution_gas_cost_usd"] = receipt_cost_usd("execution_gas_cost_wei")
+    out["blob_gas_cost_usd"] = receipt_cost_usd("blob_gas_cost_wei")
+    out["receipt_total_gas_cost_usd"] = receipt_cost_usd(
+        "receipt_total_gas_cost_wei"
+    )
     receipt_panel = (
         route_gas_panel.copy()
         if isinstance(route_gas_panel, pd.DataFrame)
@@ -454,23 +586,30 @@ def add_topology_gas_adjustment(
             )
         ]
 
-    out["all_in_direct_advantage_bps"] = apply_units(
+    prefix = "daily_denominator_sensitivity_"
+    out[f"{prefix}all_in_direct_advantage_bps"] = apply_units(
         "direct_gas_units_median", "vehicle_gas_units_median", "gas_gwei"
     )
-    out["all_in_direct_advantage_bps_iqr_lower"] = apply_units(
+    out[f"{prefix}all_in_direct_advantage_bps_iqr_lower"] = apply_units(
         "direct_gas_units_p75", "vehicle_gas_units_p25", "gas_gwei"
     )
-    out["all_in_direct_advantage_bps_iqr_upper"] = apply_units(
+    out[f"{prefix}all_in_direct_advantage_bps_iqr_upper"] = apply_units(
         "direct_gas_units_p25", "vehicle_gas_units_p75", "gas_gwei"
     )
-    out["same_block_base_fee_direct_advantage_bps"] = apply_units(
+    out[f"{prefix}same_block_base_fee_direct_advantage_bps"] = apply_units(
         "direct_gas_units_median", "vehicle_gas_units_median", "base_fee_gwei"
     )
-    out["same_block_base_fee_direct_advantage_bps_iqr_lower"] = apply_units(
+    out[f"{prefix}same_block_base_fee_direct_advantage_bps_iqr_lower"] = apply_units(
         "direct_gas_units_p75", "vehicle_gas_units_p25", "base_fee_gwei"
     )
-    out["same_block_base_fee_direct_advantage_bps_iqr_upper"] = apply_units(
+    out[f"{prefix}same_block_base_fee_direct_advantage_bps_iqr_upper"] = apply_units(
         "direct_gas_units_p25", "vehicle_gas_units_p75", "base_fee_gwei"
+    )
+    out["canonical_all_in_bps_release_status"] = (
+        "withheld_missing_transaction_time_endpoint_usd"
+    )
+    out["daily_denominator_sensitivity_status"] = (
+        "noncanonical_address_day_output_mark_with_provider_route_notional"
     )
     return out
 
@@ -521,7 +660,9 @@ def state_support_summary(frame: pd.DataFrame) -> pd.DataFrame:
 
     def append(scope: str, year: int | None, support: str, group: pd.DataFrame) -> None:
         coherent = group[group["valuation_coherent_20pct"]]
-        gas = group[group["all_in_direct_advantage_bps"].notna()]
+        gas = group[
+            group["daily_denominator_sensitivity_all_in_direct_advantage_bps"].notna()
+        ]
         dominated = group[group["dominated_gross"]]
         rows.append(
             {
@@ -536,32 +677,51 @@ def state_support_summary(frame: pd.DataFrame) -> pd.DataFrame:
                     if len(coherent)
                     else None
                 ),
-                "gas_supported_routes": len(gas),
-                "pct_dominated_topology_gas_adjusted": (
-                    100 * float(gas["all_in_direct_advantage_bps"].gt(0).mean())
+                "daily_denominator_sensitivity_gas_supported_routes": len(gas),
+                "daily_denominator_sensitivity_pct_dominated_topology_gas_adjusted": (
+                    100
+                    * float(
+                        gas[
+                            "daily_denominator_sensitivity_all_in_direct_advantage_bps"
+                        ]
+                        .gt(0)
+                        .mean()
+                    )
                     if len(gas)
                     else None
                 ),
-                "pct_dominated_gas_iqr_lower": (
+                "daily_denominator_sensitivity_pct_dominated_gas_iqr_lower": (
                     100
                     * float(
-                        group["all_in_direct_advantage_bps_iqr_lower"]
+                        group[
+                            "daily_denominator_sensitivity_all_in_direct_advantage_bps_iqr_lower"
+                        ]
                         .dropna()
                         .gt(0)
                         .mean()
                     )
-                    if group["all_in_direct_advantage_bps_iqr_lower"].notna().any()
+                    if group[
+                        "daily_denominator_sensitivity_all_in_direct_advantage_bps_iqr_lower"
+                    ]
+                    .notna()
+                    .any()
                     else None
                 ),
-                "pct_dominated_gas_iqr_upper": (
+                "daily_denominator_sensitivity_pct_dominated_gas_iqr_upper": (
                     100
                     * float(
-                        group["all_in_direct_advantage_bps_iqr_upper"]
+                        group[
+                            "daily_denominator_sensitivity_all_in_direct_advantage_bps_iqr_upper"
+                        ]
                         .dropna()
                         .gt(0)
                         .mean()
                     )
-                    if group["all_in_direct_advantage_bps_iqr_upper"].notna().any()
+                    if group[
+                        "daily_denominator_sensitivity_all_in_direct_advantage_bps_iqr_upper"
+                    ]
+                    .notna()
+                    .any()
                     else None
                 ),
                 "dominated_routes": len(dominated),
@@ -590,13 +750,16 @@ def dominance_level_summary(frame: pd.DataFrame) -> pd.DataFrame:
     """Pooled incidence, weighting sensitivity, uncertainty, and dollar magnitude."""
     definitions = {
         "gross_output": ("gross_direct_advantage_bps", "dominated_gross"),
-        "matched_gas_p25_bound": (
-            "all_in_direct_advantage_bps_iqr_lower",
+        "daily_denominator_sensitivity_matched_gas_p25_bound": (
+            "daily_denominator_sensitivity_all_in_direct_advantage_bps_iqr_lower",
             None,
         ),
-        "matched_gas_median": ("all_in_direct_advantage_bps", None),
-        "matched_gas_p75_bound": (
-            "all_in_direct_advantage_bps_iqr_upper",
+        "daily_denominator_sensitivity_matched_gas_median": (
+            "daily_denominator_sensitivity_all_in_direct_advantage_bps",
+            None,
+        ),
+        "daily_denominator_sensitivity_matched_gas_p75_bound": (
+            "daily_denominator_sensitivity_all_in_direct_advantage_bps_iqr_upper",
             None,
         ),
     }
@@ -720,6 +883,10 @@ def main() -> int:
             ],
             consumer="gas-adjusted counterfactual-dominance panel",
         )
+        validate_external_weth_usd_release(
+            EXTERNAL_WETH_USD_INTRADAY_PANEL,
+            EXTERNAL_WETH_USD_RAW_ROOT,
+        )
         df = add_topology_gas_adjustment(pd.read_parquet(GROSS_PARQUET))
         write_panel(
             df,
@@ -731,7 +898,7 @@ def main() -> int:
                 ROUTE_GAS_PANEL,
                 EXTERNAL_WETH_USD_INTRADAY_PANEL,
             ],
-            notes="V2-family exact-size direct counterfactual with realised-transaction effective gas price joined by transaction and block, receipt-calibrated route gas units and an independent strictly prior intraday WETH/USD mark",
+            notes="V2-family exact-size direct counterfactual with exact block-header time, receipt execution plus blob gas fields, receipt-calibrated route gas units and an independent strictly prior intraday WETH/USD mark; canonical all-in bps withheld because endpoint notionals remain address-day priced, with explicitly named daily-denominator sensitivities retained",
         )
         if args.panel_only:
             print(f"wrote analysis-ready panel {OUT_PARQUET.relative_to(REPO_ROOT)}")
@@ -745,10 +912,14 @@ def main() -> int:
         print(f"quoting counterfactuals on {len(days)} day(s)", flush=True)
 
         parts = []
+        allocation_support_rows = []
         comparable = 0
         with interruptible_process_pool(bounded_workers(args.workers, maximum=8)) as pool:
             results = pool.map(one_day, days, chunksize=1)
             for index, (day, result) in enumerate(zip(days, results, strict=True), 1):
+                result, allocation_support = result
+                if allocation_support is not None:
+                    allocation_support_rows.append(allocation_support)
                 if result is not None and len(result):
                     parts.append(result)
                     comparable += len(result)
@@ -758,6 +929,17 @@ def main() -> int:
                         f"{comparable:,} comparable two-leg routes",
                         flush=True,
                     )
+        if args.days is None and args.limit is None:
+            if not allocation_support_rows:
+                raise RuntimeError("receipt-allocation support perimeter is empty")
+            allocation_support = receipt_allocation_support_summary(pd.DataFrame(allocation_support_rows))
+            write_exhibit(
+                allocation_support,
+                OUT_RECEIPT_ALLOCATION_SUPPORT,
+                code_sources=CODE_SOURCES,
+                inputs=[UNIFIED],
+                notes="daily, annual and pooled support loss from excluding transactions with more than one reconstructed component because one whole-transaction receipt is not allocated across route rows",
+            )
         if not parts:
             print("no comparable routes")
             return 1
@@ -779,16 +961,7 @@ def main() -> int:
                 "canonical outputs unchanged"
             )
             return 0
-        write_panel(
-            df,
-            GROSS_PARQUET,
-            code_sources=CODE_SOURCES,
-            inputs=[
-                *(MARKET_STATE / "constant_product" / venue for venue in VENUES),
-                UNIFIED,
-            ],
-            notes="gross V2-family exact-size direct counterfactual at strict pre-transaction block-log state, released before any gas-price dependency",
-        )
+        write_gross_release(df)
         print(f"wrote gross route panel {GROSS_PARQUET.relative_to(REPO_ROOT)}")
         return 0
 
@@ -820,13 +993,18 @@ def main() -> int:
         "  dominated via a best direct pool outside the realised venue set: "
         f"{len(outside):,} ({outside_share:.1f}% of dominated routes)"
     )
-    gas_supported = df[df["all_in_direct_advantage_bps"].notna()]
+    sensitivity_column = "daily_denominator_sensitivity_all_in_direct_advantage_bps"
+    gas_supported = df[df[sensitivity_column].notna()]
     if len(gas_supported):
-        all_in_dominated = gas_supported["all_in_direct_advantage_bps"].gt(0)
-        lower = gas_supported["all_in_direct_advantage_bps_iqr_lower"].gt(0)
-        upper = gas_supported["all_in_direct_advantage_bps_iqr_upper"].gt(0)
+        all_in_dominated = gas_supported[sensitivity_column].gt(0)
+        lower = gas_supported[
+            "daily_denominator_sensitivity_all_in_direct_advantage_bps_iqr_lower"
+        ].gt(0)
+        upper = gas_supported[
+            "daily_denominator_sensitivity_all_in_direct_advantage_bps_iqr_upper"
+        ].gt(0)
         print(
-            "  receipt-calibrated direct dominance on historical-gas support: "
+            "  noncanonical daily-denominator sensitivity, receipt-calibrated gas: "
             f"{100*all_in_dominated.mean():.1f}% "
             f"(IQR sensitivity {100*lower.mean():.1f}% to {100*upper.mean():.1f}%; "
             f"{len(gas_supported):,} routes)"
@@ -882,16 +1060,20 @@ def main() -> int:
             "dominated_valuation_coherent_20pct",
             lambda x: 100 * x.dropna().mean(),
         ),
-        gas_supported_routes=("all_in_direct_advantage_bps", "count"),
-        pct_dominated_topology_gas_adjusted=(
-            "all_in_direct_advantage_bps", lambda x: 100 * (x.dropna() > 0).mean()
+        daily_denominator_sensitivity_gas_supported_routes=(
+            "daily_denominator_sensitivity_all_in_direct_advantage_bps",
+            "count",
         ),
-        pct_dominated_gas_iqr_lower=(
-            "all_in_direct_advantage_bps_iqr_lower",
+        daily_denominator_sensitivity_pct_dominated_topology_gas_adjusted=(
+            "daily_denominator_sensitivity_all_in_direct_advantage_bps",
             lambda x: 100 * (x.dropna() > 0).mean(),
         ),
-        pct_dominated_gas_iqr_upper=(
-            "all_in_direct_advantage_bps_iqr_upper",
+        daily_denominator_sensitivity_pct_dominated_gas_iqr_lower=(
+            "daily_denominator_sensitivity_all_in_direct_advantage_bps_iqr_lower",
+            lambda x: 100 * (x.dropna() > 0).mean(),
+        ),
+        daily_denominator_sensitivity_pct_dominated_gas_iqr_upper=(
+            "daily_denominator_sensitivity_all_in_direct_advantage_bps_iqr_upper",
             lambda x: 100 * (x.dropna() > 0).mean(),
         ),
     ).reset_index()
@@ -906,7 +1088,7 @@ def main() -> int:
         OUT_EXHIBIT,
         code_sources=CODE_SOURCES,
         inputs=[OUT_PARQUET],
-        notes="pooled and annual exact-size V2-family direct counterfactual; pooled rows retain route and equal-date weighting, date-clustered uncertainty, dollar magnitude, strict valuation support and matched-gas IQR sensitivity; annual rows split intermediary type and realised venue reach",
+        notes="pooled and annual exact-size V2-family direct counterfactual; pooled rows retain route and equal-date weighting, date-clustered uncertainty, dollar magnitude and strict valuation support; gas-adjusted bps are explicitly noncanonical daily-denominator sensitivities until transaction-time endpoint USD marks exist; annual rows split intermediary type and realised venue reach",
     )
     support = state_support_summary(df)
     write_exhibit(
@@ -925,9 +1107,9 @@ def main() -> int:
                 "routes",
                 "pct_dominated_gross",
                 "pct_dominated_valuation_coherent_20pct",
-                "pct_dominated_topology_gas_adjusted",
-                "pct_dominated_gas_iqr_lower",
-                "pct_dominated_gas_iqr_upper",
+                "daily_denominator_sensitivity_pct_dominated_topology_gas_adjusted",
+                "daily_denominator_sensitivity_pct_dominated_gas_iqr_lower",
+                "daily_denominator_sensitivity_pct_dominated_gas_iqr_upper",
             ],
         ].round(2).to_string(index=False)
     )

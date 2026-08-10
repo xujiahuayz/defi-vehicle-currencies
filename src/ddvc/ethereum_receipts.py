@@ -3,8 +3,10 @@
 from __future__ import annotations
 
 import json
+from collections.abc import Iterable, Iterator
 from pathlib import Path
 
+from ddvc.fetch.raw import write_jsonl
 from ddvc.paths import SHARED_RUNTIME_DIR
 from ddvc.quoter import (
     canonical_json_sha256,
@@ -57,6 +59,20 @@ def parse_receipt(
             if result.get("effectiveGasPrice") is not None
             else None
         )
+        raw_blob_gas_used = result.get("blobGasUsed")
+        raw_blob_gas_price = result.get("blobGasPrice")
+        if (raw_blob_gas_used is None) != (raw_blob_gas_price is None):
+            return None
+        blob_gas_used = (
+            int(str(raw_blob_gas_used), 16)
+            if raw_blob_gas_used is not None
+            else None
+        )
+        blob_gas_price = (
+            int(str(raw_blob_gas_price), 16)
+            if raw_blob_gas_price is not None
+            else None
+        )
     except (KeyError, TypeError, ValueError):
         return None
     normalized_hash = tx_hash.lower()
@@ -65,6 +81,11 @@ def parse_receipt(
         raise ValueError("Ethereum receipt transaction hash differs from the request")
     if expected_block is not None and block_number != int(expected_block):
         raise ValueError("Ethereum receipt block differs from the route identity")
+    if (
+        blob_gas_used is not None
+        and (blob_gas_used < 0 or blob_gas_price is None or blob_gas_price < 0)
+    ):
+        return None
     row: dict[str, object] = {
         "tx_hash": normalized_hash,
         "block_number": block_number,
@@ -74,6 +95,8 @@ def parse_receipt(
         "tx_to": str(result.get("to") or "").lower() or None,
         "tx_from": str(result.get("from") or "").lower() or None,
         "effective_gas_price_wei": effective_gas_price,
+        "blob_gas_used": blob_gas_used,
+        "blob_gas_price_wei": blob_gas_price,
     }
     if include_logs:
         raw_logs = result.get("logs")
@@ -132,6 +155,18 @@ def receipt_is_current(
         and row.get("status") in (0, 1)
         and "tx_to" in row
         and (
+            (
+                row.get("blob_gas_used") is None
+                and row.get("blob_gas_price_wei") is None
+            )
+            or (
+                isinstance(row.get("blob_gas_used"), int)
+                and int(row["blob_gas_used"]) >= 0
+                and isinstance(row.get("blob_gas_price_wei"), int)
+                and int(row["blob_gas_price_wei"]) >= 0
+            )
+        )
+        and (
             not require_block_hash
             or (
                 isinstance(row.get("block_number"), int)
@@ -186,6 +221,7 @@ def receipt_evidence_is_current(
             tx_hash,
             response,
             expected_block=expected_block,
+            include_logs="logs" in row,
         )
         if parsed is None:
             return False
@@ -238,20 +274,9 @@ def fetch_receipt(
 
     normalized_hash = tx_hash.lower()
     cached = cache / f"{normalized_hash}.json"
-    if cached.is_file():
-        try:
-            row = json.loads(cached.read_text(encoding="utf-8"))
-        except (OSError, json.JSONDecodeError):
-            row = None
-        if receipt_is_current(
-            row,
-            normalized_hash,
-            expected_block=expected_block,
-            require_block_hash=require_block_hash,
-            require_logs=include_logs,
-            require_evidence=require_evidence,
-        ):
-            return row
+    row = load_cached_receipt(cache, normalized_hash, expected_block=expected_block, require_block_hash=require_block_hash, require_logs=include_logs, require_evidence=require_evidence)
+    if row is not None:
+        return row
     request = receipt_payload(normalized_hash)
     request_kwargs = {
         "timeout": 20,
@@ -313,34 +338,66 @@ def fetch_receipt(
     return row
 
 
+def load_cached_receipt(cache: Path, tx_hash: str, *, expected_block: int | None, require_block_hash: bool = False, require_logs: bool = False, require_evidence: bool = False) -> dict[str, object] | None:
+    """Reopen one transaction-keyed receipt cache entry without falling through to RPC."""
+
+    normalized_hash = tx_hash.lower()
+    cached = cache / f"{normalized_hash}.json"
+    if not cached.is_file():
+        return None
+    try:
+        row = json.loads(cached.read_text(encoding="utf-8"))
+    except (OSError, json.JSONDecodeError):
+        return None
+    return row if receipt_is_current(row, normalized_hash, expected_block=expected_block, require_block_hash=require_block_hash, require_logs=require_logs, require_evidence=require_evidence) else None
+
+
 def write_receipt_snapshot(
-    receipts: list[dict],
+    receipts: Iterable[dict],
     path: Path,
     *,
     require_evidence: bool = False,
+    presorted: bool = False,
+    order_by_block: bool = False,
 ) -> Path:
-    """Install receipt evidence in deterministic transaction order."""
+    """Install deterministic receipt evidence, streaming a certified presorted iterable."""
 
-    ordered = sorted(receipts, key=lambda row: str(row["tx_hash"]))
-    hashes = [str(row["tx_hash"]) for row in ordered]
-    if len(hashes) != len(set(hashes)):
-        raise ValueError("selected receipt snapshot contains duplicate transactions")
-    if require_evidence and any(
-        not receipt_is_current(
-            row,
-            str(row.get("tx_hash") or ""),
-            expected_block=row.get("block_number"),
-            require_block_hash=True,
-            require_evidence=True,
-        )
-        for row in ordered
-    ):
-        raise ValueError("selected receipt snapshot contains unverifiable RPC evidence")
-    with atomic_output(path) as temporary:
-        with temporary.open("w", encoding="utf-8") as handle:
-            for row in ordered:
-                handle.write(json.dumps(row, sort_keys=True, separators=(",", ":")) + "\n")
+    order_key = (lambda row: (int(row["block_number"]), str(row["tx_hash"]))) if order_by_block else (lambda row: str(row["tx_hash"]))
+    ordered = receipts if presorted else sorted(receipts, key=order_key)
+
+    def validated_rows():
+        previous: object | None = None
+        for row in ordered:
+            tx_hash = str(row.get("tx_hash") or "")
+            current = (int(row.get("block_number", -1)), tx_hash) if order_by_block else tx_hash
+            if not tx_hash or (previous is not None and current <= previous):
+                raise ValueError("selected receipt snapshot is duplicated or not strictly ordered")
+            if require_evidence and not receipt_is_current(row, tx_hash, expected_block=row.get("block_number"), require_block_hash=True, require_evidence=True):
+                raise ValueError("selected receipt snapshot contains unverifiable RPC evidence")
+            previous = current
+            yield row
+
+    write_jsonl(path, validated_rows())
     return path
+
+
+def iter_receipt_snapshot(path: Path, *, require_evidence: bool = False, order_by_block: bool = False) -> Iterator[dict]:
+    """Stream a deterministic receipt snapshot and reject malformed, stale, or reordered rows."""
+
+    previous: object | None = None
+    with path.open(encoding="utf-8") as handle:
+        for line in handle:
+            try:
+                row = json.loads(line)
+            except json.JSONDecodeError as error:
+                raise ValueError("receipt snapshot contains malformed JSON") from error
+            tx_hash = str(row.get("tx_hash") or "").lower()
+            current = receipt_is_current(row, tx_hash, expected_block=row.get("block_number"), require_block_hash=True, require_evidence=require_evidence)
+            order_key = (int(row.get("block_number", -1)), tx_hash) if order_by_block else tx_hash
+            if not current or (previous is not None and order_key <= previous):
+                raise ValueError("receipt snapshot is stale, duplicated, or not strictly ordered")
+            previous = order_key
+            yield row
 
 
 def load_receipt_snapshot(

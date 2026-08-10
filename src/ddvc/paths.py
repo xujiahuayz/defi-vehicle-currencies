@@ -40,6 +40,7 @@ TOKEN_PRICE_DAILY_PANEL = DATA_DIR / "processed" / "token_price_daily.parquet"
 EXTERNAL_WETH_USD_INTRADAY_PANEL = (
     DATA_DIR / "processed" / "external_weth_usd_intraday.parquet"
 )
+EXTERNAL_WETH_USD_RAW_ROOT = DATA_DIR / "raw" / "external" / "coinbase_exchange" / "eth_usd_spot_1m"
 LP_CAPITAL_CONCENTRATION_PANEL = DATA_DIR / "exhibits" / "lp_capital_concentration.parquet"
 LP_LIQUIDITY_FLOW_EVENTS = DATA_DIR / "processed" / "lp_liquidity_flow_events_v3.parquet"
 LP_LIQUIDITY_FLOW_CANDIDATES = DATA_DIR / "processed" / "lp_liquidity_flow_candidates_v3.parquet"
@@ -92,6 +93,7 @@ def _shared_git_runtime_dir(repo_root: Path) -> Path:
 SHARED_RUNTIME_DIR = _shared_git_runtime_dir(REPO_ROOT)
 PRIMARY_REPO_ROOT = primary_checkout_root(REPO_ROOT)
 RAW_MARKET_DATA_LOCK = SHARED_RUNTIME_DIR / "raw-market-data.lock"
+EXTERNAL_WETH_USD_SOURCE_LOCK = SHARED_RUNTIME_DIR / "external-weth-usd.lock"
 
 
 def repo_path(value: str | Path) -> Path:

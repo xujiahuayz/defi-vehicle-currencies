@@ -12,9 +12,12 @@ from ddvc.ethereum_receipts import parse_receipt, receipt_is_current
 from ddvc.ethereum_receipts import fetch_receipt
 from ddvc import quoter
 from ddvc.quoter import canonical_json_sha256
-from ddvc.gas import load_route_transaction_gas
+from ddvc.gas import load_route_transaction_gas, validate_route_transaction_gas_release
+from ddvc.provenance import sidecar_path
 from scripts.process import build_route_gas_units, build_route_transaction_gas
 from scripts.process.build_route_transaction_gas import (
+    acquire_exact_cache,
+    assemble_exact_outputs,
     block_header_requests,
     receipt_panel,
     route_receipt_requests,
@@ -62,6 +65,8 @@ def receipt(
     gas_price: int,
     *,
     gas_used: int = 120_000,
+    blob_gas_used: int | None = None,
+    blob_gas_price: int | None = None,
 ) -> dict[str, object]:
     block_hash = "0x" + f"{block_number:064x}"
     response = {
@@ -79,6 +84,11 @@ def receipt(
             "logs": [],
         },
     }
+    if (blob_gas_used is None) != (blob_gas_price is None):
+        raise ValueError("test receipts require both blob gas fields or neither")
+    if blob_gas_used is not None and blob_gas_price is not None:
+        response["result"]["blobGasUsed"] = hex(blob_gas_used)
+        response["result"]["blobGasPrice"] = hex(blob_gas_price)
     return {
         "tx_hash": tx_hash,
         "block_number": block_number,
@@ -88,6 +98,8 @@ def receipt(
         "tx_to": "0xrouter",
         "tx_from": "0xsender",
         "effective_gas_price_wei": gas_price,
+        "blob_gas_used": blob_gas_used,
+        "blob_gas_price_wei": blob_gas_price,
         **evidence(
             {
                 "jsonrpc": "2.0",
@@ -135,10 +147,10 @@ def header(
     }
 
 
-def test_route_requests_deduplicate_exact_transaction_identity(tmp_path: Path) -> None:
+def test_route_requests_require_one_single_component_row_per_receipt(tmp_path: Path) -> None:
     source = tmp_path / "gross.parquet"
     pd.DataFrame(
-        {"tx": ["0xABC", "0xabc", "0xdef"], "block": [10, 10, 11]}
+        {"tx": ["0xABC", "0xdef"], "block": [10, 11], "component_id": [0, 0], "receipt_allocation_scope": ["single_reconstructed_component_transaction", "single_reconstructed_component_transaction"]}
     ).to_parquet(source, index=False)
     requests = route_receipt_requests(source)
     assert requests.to_dict("records") == [
@@ -177,10 +189,17 @@ def test_block_header_requests_are_unique_and_sorted() -> None:
 
 def test_route_requests_reject_conflicting_transaction_blocks(tmp_path: Path) -> None:
     source = tmp_path / "gross.parquet"
-    pd.DataFrame({"tx": ["0xabc", "0xabc"], "block": [10, 11]}).to_parquet(
+    pd.DataFrame({"tx": ["0xabc", "0xabc"], "block": [10, 11], "component_id": [0, 1], "receipt_allocation_scope": ["single_reconstructed_component_transaction", "single_reconstructed_component_transaction"]}).to_parquet(
         source, index=False
     )
-    with pytest.raises(ValueError, match="multiple Ethereum blocks"):
+    with pytest.raises(ValueError, match="cannot be allocated to multiple route rows"):
+        route_receipt_requests(source)
+
+
+def test_route_requests_reject_missing_single_component_contract(tmp_path: Path) -> None:
+    source = tmp_path / "gross.parquet"
+    pd.DataFrame({"tx": ["0xabc"], "block": [10], "component_id": [0], "receipt_allocation_scope": ["multi_component_unallocated"]}).to_parquet(source, index=False)
+    with pytest.raises(ValueError, match="single-component allocation contract"):
         route_receipt_requests(source)
 
 
@@ -194,8 +213,12 @@ def test_receipt_panel_marks_zero_effective_price_unsupported(tmp_path: Path) ->
         [header(10, 8_000_000_000), header(11, None)],
     )
     assert panel["gas_price_supported"].tolist() == [True, False]
-    assert panel.loc[0, "realised_gas_cost_wei"] == "1200000000000000"
-    assert pd.isna(panel.loc[1, "realised_gas_cost_wei"])
+    assert panel.loc[0, "execution_gas_cost_wei"] == "1200000000000000"
+    assert pd.isna(panel.loc[1, "execution_gas_cost_wei"])
+    assert panel["blob_gas_cost_wei"].tolist() == ["0", "0"]
+    assert panel.loc[0, "receipt_total_gas_cost_wei"] == "1200000000000000"
+    assert pd.isna(panel.loc[1, "receipt_total_gas_cost_wei"])
+    assert panel["block_timestamp_utc"].tolist() == [1_700_000_010, 1_700_000_011]
     assert panel["gas_gwei"].iloc[0] == 10.0
     assert pd.isna(panel["gas_gwei"].iloc[1])
     assert panel["gas_price_support_reason"].iloc[1] == "zero_effective_price_private_payment_possible"
@@ -215,32 +238,107 @@ def test_receipt_panel_marks_zero_effective_price_unsupported(tmp_path: Path) ->
     assert len(loaded) == 2
 
 
-def test_route_gas_loader_rejects_inconsistent_realised_cost(tmp_path: Path) -> None:
+def test_route_gas_loader_rejects_inconsistent_execution_cost(tmp_path: Path) -> None:
     requests = pd.DataFrame({"tx_hash": ["0xabc"], "block_number": [10]})
     panel = receipt_panel(
         [receipt("0xabc", 10, 10_000_000_000)],
         requests,
         [header(10, 8_000_000_000)],
     )
-    panel.loc[0, "realised_gas_cost_wei"] = "1"
+    panel.loc[0, "execution_gas_cost_wei"] = "1"
     path = tmp_path / "route-gas.parquet"
     panel.to_parquet(path, index=False)
-    with pytest.raises(ValueError, match="inconsistent realised gas cost"):
+    with pytest.raises(ValueError, match="inconsistent execution gas cost"):
         load_route_transaction_gas(path)
 
 
-def test_realised_gas_cost_uses_arbitrary_precision_decimal_text(tmp_path: Path) -> None:
+def test_receipt_gas_cost_uses_arbitrary_precision_decimal_text(tmp_path: Path) -> None:
     requests = pd.DataFrame({"tx_hash": ["0xabc"], "block_number": [10]})
     panel = receipt_panel(
         [receipt("0xabc", 10, 10**12, gas_used=30_000_000)],
         requests,
         [header(10, 8_000_000_000)],
     )
-    assert panel.loc[0, "realised_gas_cost_wei"] == "30000000000000000000"
+    assert panel.loc[0, "execution_gas_cost_wei"] == "30000000000000000000"
+    assert panel.loc[0, "receipt_total_gas_cost_wei"] == "30000000000000000000"
     path = tmp_path / "route-gas.parquet"
     panel.to_parquet(path, index=False)
     loaded = load_route_transaction_gas(path)
-    assert loaded.loc[0, "realised_gas_cost_wei"] == "30000000000000000000"
+    assert loaded.loc[0, "receipt_total_gas_cost_wei"] == "30000000000000000000"
+
+
+def test_receipt_gas_cost_includes_eip4844_blob_fee(tmp_path: Path) -> None:
+    requests = pd.DataFrame({"tx_hash": ["0xabc"], "block_number": [10]})
+    panel = receipt_panel(
+        [
+            receipt(
+                "0xabc",
+                10,
+                10_000_000_000,
+                blob_gas_used=131_072,
+                blob_gas_price=2_000_000_000,
+            )
+        ],
+        requests,
+        [header(10, 8_000_000_000)],
+    )
+    assert panel.loc[0, "execution_gas_cost_wei"] == "1200000000000000"
+    assert panel.loc[0, "blob_gas_cost_wei"] == "262144000000000"
+    assert panel.loc[0, "receipt_total_gas_cost_wei"] == "1462144000000000"
+    path = tmp_path / "route-gas.parquet"
+    panel.to_parquet(path, index=False)
+    loaded = load_route_transaction_gas(path)
+    assert loaded.loc[0, "blob_gas_used"] == 131_072
+    assert loaded.loc[0, "blob_gas_price_wei"] == 2_000_000_000
+
+
+def test_route_gas_loader_rejects_fractional_blob_fields(tmp_path: Path) -> None:
+    requests = pd.DataFrame({"tx_hash": ["0xabc"], "block_number": [10]})
+    panel = receipt_panel(
+        [receipt("0xabc", 10, 10_000_000_000, blob_gas_used=2, blob_gas_price=3)],
+        requests,
+        [header(10, 8_000_000_000)],
+    )
+    panel["blob_gas_used"] = panel["blob_gas_used"].astype(float)
+    panel.loc[0, "blob_gas_used"] = 1.5
+    path = tmp_path / "route-gas.parquet"
+    panel.to_parquet(path, index=False)
+    with pytest.raises(ValueError, match="malformed blob gas fields"):
+        load_route_transaction_gas(path)
+
+
+def test_arbitrary_precision_blob_fields_round_trip_and_tampering_fails(tmp_path: Path) -> None:
+    requests = pd.DataFrame({"tx_hash": ["0xabc"], "block_number": [10]})
+    huge_units = 2**80 + 7
+    panel = receipt_panel(
+        [receipt("0xabc", 10, 10_000_000_000, blob_gas_used=huge_units, blob_gas_price=3)],
+        requests,
+        [header(10, 8_000_000_000)],
+    )
+    path = tmp_path / "route-gas.parquet"
+    panel.to_parquet(path, index=False)
+    loaded = load_route_transaction_gas(path)
+    assert loaded.loc[0, "blob_gas_used"] == huge_units
+    tampered = panel.copy()
+    tampered.loc[0, "blob_gas_cost_wei"] = "1"
+    tampered.to_parquet(path, index=False)
+    with pytest.raises(ValueError, match="inconsistent blob gas cost"):
+        load_route_transaction_gas(path)
+
+
+def test_route_gas_loader_rejects_fractional_receipt_integers(tmp_path: Path) -> None:
+    requests = pd.DataFrame({"tx_hash": ["0xabc"], "block_number": [10]})
+    panel = receipt_panel(
+        [receipt("0xabc", 10, 10_000_000_000)],
+        requests,
+        [header(10, 8_000_000_000)],
+    )
+    panel["effective_gas_price_wei"] = panel["effective_gas_price_wei"].astype(float)
+    panel.loc[0, "effective_gas_price_wei"] = 1.5
+    path = tmp_path / "route-gas.parquet"
+    panel.to_parquet(path, index=False)
+    with pytest.raises(ValueError, match="malformed receipt integers"):
+        load_route_transaction_gas(path)
 
 
 def test_loader_rejects_support_flags_inconsistent_with_exact_prices(tmp_path: Path) -> None:
@@ -253,7 +351,7 @@ def test_loader_rejects_support_flags_inconsistent_with_exact_prices(tmp_path: P
     panel.loc[0, "gas_price_supported"] = True
     panel.loc[0, "gas_gwei"] = 1.0
     panel.loc[0, "gas_price_support_reason"] = "receipt_effective_gas_price"
-    panel.loc[0, "realised_gas_cost_wei"] = "0"
+    panel.loc[0, "execution_gas_cost_wei"] = "0"
     path = tmp_path / "route-gas.parquet"
     panel.to_parquet(path, index=False)
     with pytest.raises(ValueError, match="support disagrees"):
@@ -334,6 +432,26 @@ def test_receipt_panel_rejects_self_attested_copied_fields() -> None:
         )
 
 
+def test_receipt_evidence_rejects_normalized_logs_absent_from_rpc_response() -> None:
+    tampered = receipt("0xabc", 10, 10_000_000_000)
+    tampered["logs"] = [
+        {
+            "address": "0x" + "d" * 40,
+            "log_index": 1,
+            "topics": ["0x" + "e" * 64],
+            "data": "0x",
+        }
+    ]
+    assert not receipt_is_current(
+        tampered,
+        "0xabc",
+        expected_block=10,
+        require_block_hash=True,
+        require_logs=True,
+        require_evidence=True,
+    )
+
+
 def test_receipt_parser_enforces_requested_block() -> None:
     response = {
         "result": {
@@ -374,6 +492,12 @@ def test_receipt_parser_enforces_requested_block() -> None:
         parse_receipt("0xabc", response, expected_block=11)
 
 
+def test_receipt_parser_requires_paired_blob_gas_fields() -> None:
+    response = receipt("0xabc", 10, 10_000_000_000)["rpc_response"]
+    response["result"]["blobGasUsed"] = hex(131_072)
+    assert parse_receipt("0xabc", response, expected_block=10) is None
+
+
 def test_block_header_parser_preserves_pre_eip1559_missing_base_fee() -> None:
     response = {
         "result": {
@@ -408,3 +532,97 @@ def test_block_header_evidence_rejects_tampered_copied_fields() -> None:
         10,
         require_evidence=True,
     )
+
+
+def test_acquisition_and_final_assembly_retain_at_most_one_batch(tmp_path: Path) -> None:
+    requests = pd.DataFrame(
+        {
+            "tx_hash": [f"0x{index:04x}" for index in range(11)],
+            "block_number": list(range(10, 21)),
+        }
+    )
+    observed: list[int] = []
+
+    def fetch_receipt_batch(batch, **_kwargs):
+        observed.append(len(batch))
+        return [object()] * len(batch)
+
+    def fetch_header_batch(batch, **_kwargs):
+        observed.append(len(batch))
+        return [object()] * len(batch)
+
+    with (
+        patch.object(build_route_transaction_gas, "fetch_receipts", side_effect=fetch_receipt_batch),
+        patch.object(build_route_transaction_gas, "fetch_headers", side_effect=fetch_header_batch),
+    ):
+        assert acquire_exact_cache(requests, workers=2, batch_size=3) == (11, 11)
+    assert max(observed) == 3
+
+    receipt_cache = tmp_path / "receipts"
+    header_cache = tmp_path / "headers"
+    receipt_cache.mkdir()
+    header_cache.mkdir()
+    for row in requests.itertuples(index=False):
+        (receipt_cache / f"{row.tx_hash}.json").write_text(
+            json.dumps(receipt(row.tx_hash, row.block_number, 10_000_000_000), sort_keys=True),
+            encoding="utf-8",
+        )
+        (header_cache / f"{row.block_number}.json").write_text(
+            json.dumps(header(row.block_number, 8_000_000_000), sort_keys=True),
+            encoding="utf-8",
+        )
+    receipt_evidence = tmp_path / "receipts.jsonl"
+    block_evidence = tmp_path / "blocks.jsonl"
+    output = tmp_path / "gas.parquet"
+
+    with (
+        patch.object(build_route_transaction_gas, "CACHE", receipt_cache),
+        patch.object(build_route_transaction_gas, "HEADER_CACHE", header_cache),
+        patch.object(build_route_transaction_gas, "RECEIPT_EVIDENCE", receipt_evidence),
+        patch.object(build_route_transaction_gas, "BLOCK_HEADER_EVIDENCE", block_evidence),
+        patch.object(build_route_transaction_gas, "OUT_PANEL", output),
+    ):
+        support = assemble_exact_outputs(requests, batch_size=3)
+    assert support == {
+        "rows": 11,
+        "gas_price_supported": 11,
+        "receipt_evidence_rows": 11,
+        "block_evidence_rows": 11,
+    }
+    assert pd.read_parquet(output).shape[0] == 11
+    original = pd.read_parquet(output)
+    tampered_receipt = original.copy()
+    tampered_receipt.loc[0, "tx_to"] = "0xother"
+    tampered_receipt.to_parquet(output, index=False)
+    with pytest.raises(ValueError, match="exact receipt evidence"):
+        validate_route_transaction_gas_release(output, requests, receipt_snapshot=receipt_evidence, block_header_snapshot=block_evidence, batch_size=3)
+    tampered_header = original.copy()
+    tampered_header.loc[0, "parent_hash"] = "0x" + "f" * 64
+    tampered_header.to_parquet(output, index=False)
+    with pytest.raises(ValueError, match="exact block-header evidence"):
+        validate_route_transaction_gas_release(output, requests, receipt_snapshot=receipt_evidence, block_header_snapshot=block_evidence, batch_size=3)
+
+
+def test_route_gas_builder_preserves_prior_pair_when_exact_validation_fails(tmp_path: Path) -> None:
+    output = tmp_path / "gas.parquet"
+    pd.DataFrame({"prior": [1]}).to_parquet(output, index=False)
+    prior = output.read_bytes()
+    sidecar = sidecar_path(output)
+    sidecar.write_bytes(b"prior-sidecar\n")
+    requests = pd.DataFrame({"tx_hash": ["0xabc"], "block_number": [10]})
+    evidence = tmp_path / "receipts.jsonl"
+    block_evidence = tmp_path / "blocks.jsonl"
+    with (
+        patch.object(build_route_transaction_gas, "OUT_PANEL", output),
+        patch.object(build_route_transaction_gas, "RECEIPT_EVIDENCE", evidence),
+        patch.object(build_route_transaction_gas, "BLOCK_HEADER_EVIDENCE", block_evidence),
+        patch.object(build_route_transaction_gas, "write_receipt_snapshot", return_value=evidence),
+        patch.object(build_route_transaction_gas, "write_block_header_snapshot", return_value=block_evidence),
+        patch.object(build_route_transaction_gas, "cached_panel_batches", return_value=[pd.DataFrame({"candidate": [2]})]),
+        patch.object(build_route_transaction_gas, "validate_route_transaction_gas_release", side_effect=ValueError("exact validation failed")),
+        pytest.raises(ValueError, match="exact validation failed"),
+    ):
+        assemble_exact_outputs(requests, batch_size=1)
+    assert output.read_bytes() == prior
+    assert sidecar.read_bytes() == b"prior-sidecar\n"
+    assert list(tmp_path.glob(".*.tmp")) == []

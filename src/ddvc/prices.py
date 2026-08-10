@@ -5,6 +5,8 @@ from __future__ import annotations
 import numpy as np
 import pandas as pd
 
+from ddvc.fetch.coinbase_prices import SOURCE_ID as EXTERNAL_WETH_USD_SOURCE_ID
+
 PRICE_COLUMNS = [
     "token_in",
     "token_out",
@@ -29,7 +31,41 @@ PRICE_PANEL_COLUMNS = [
     "price_source",
     "validation_status",
 ]
-MAX_INTRADAY_MARK_LAG_SECONDS = 300
+MAX_INTRADAY_MARK_LAG_SECONDS = 60
+INTRADAY_WETH_USD_MARK_COLUMNS = [
+    "bucket_start_utc",
+    "bucket_end_utc",
+    "available_at_utc",
+    "weth_usd",
+    "price_source",
+    "validation_status",
+]
+
+
+def load_intraday_weth_usd_marks(
+    source,
+    targets: pd.DataFrame,
+    *,
+    max_lag_seconds: int = MAX_INTRADAY_MARK_LAG_SECONDS,
+    timestamp_column: str = "timestamp_utc",
+) -> pd.DataFrame:
+    """Read only the Parquet interval capable of supporting the target clock."""
+
+    if isinstance(source, pd.DataFrame):
+        return source.copy()
+    if timestamp_column not in targets:
+        raise ValueError(f"price-mark targets lack column: {timestamp_column}")
+    timestamp = pd.to_numeric(targets[timestamp_column], errors="raise").astype("int64")
+    if timestamp.empty:
+        return pd.DataFrame(columns=INTRADAY_WETH_USD_MARK_COLUMNS)
+    return pd.read_parquet(
+        source,
+        columns=INTRADAY_WETH_USD_MARK_COLUMNS,
+        filters=[
+            ("available_at_utc", ">=", int(timestamp.min()) - max_lag_seconds),
+            ("available_at_utc", "<", int(timestamp.max())),
+        ],
+    )
 
 
 def attach_strictly_prior_weth_usd(
@@ -37,15 +73,11 @@ def attach_strictly_prior_weth_usd(
     marks: pd.DataFrame,
     *,
     max_lag_seconds: int = MAX_INTRADAY_MARK_LAG_SECONDS,
+    timestamp_column: str = "timestamp_utc",
 ) -> pd.DataFrame:
     """Attach one independently observed WETH/USD mark strictly before each target."""
-    target_required = {"timestamp_utc"}
-    mark_required = (
-        "available_at_utc",
-        "weth_usd",
-        "price_source",
-        "validation_status",
-    )
+    target_required = {timestamp_column}
+    mark_required = INTRADAY_WETH_USD_MARK_COLUMNS
     target_missing = sorted(target_required - set(targets.columns))
     mark_missing = sorted(set(mark_required) - set(marks.columns))
     if target_missing:
@@ -55,17 +87,21 @@ def attach_strictly_prior_weth_usd(
     if max_lag_seconds < 1:
         raise ValueError("maximum intraday price-mark lag must be positive")
 
-    right = marks[list(mark_required)].copy()
-    right["available_at_utc"] = pd.to_numeric(
-        right["available_at_utc"], errors="raise"
-    ).astype("int64")
+    right = marks[mark_required].copy()
+    for column in ("bucket_start_utc", "bucket_end_utc", "available_at_utc"):
+        right[column] = pd.to_numeric(right[column], errors="raise").astype("int64")
     right["weth_usd"] = pd.to_numeric(right["weth_usd"], errors="coerce")
     if right["available_at_utc"].duplicated().any():
         raise ValueError("intraday WETH/USD marks contain duplicate availability times")
+    if not (
+        right["bucket_end_utc"].eq(right["available_at_utc"])
+        & right["bucket_end_utc"].sub(right["bucket_start_utc"]).eq(60)
+    ).all():
+        raise ValueError("intraday WETH/USD marks have an invalid availability clock")
     if not right["validation_status"].eq("valid").all():
         raise ValueError("intraday WETH/USD marks contain unreleased observations")
-    if right["price_source"].astype(str).str.strip().eq("").any():
-        raise ValueError("intraday WETH/USD marks contain an empty price source")
+    if not right["price_source"].eq(EXTERNAL_WETH_USD_SOURCE_ID).all():
+        raise ValueError("intraday WETH/USD marks do not use the canonical external source")
     if (~np.isfinite(right["weth_usd"]) | right["weth_usd"].le(0)).any():
         raise ValueError("intraday WETH/USD marks contain invalid prices")
     right = right.rename(
@@ -78,20 +114,20 @@ def attach_strictly_prior_weth_usd(
     ).sort_values("eth_usd_mark_available_at_utc")
 
     left = targets.copy()
-    left["timestamp_utc"] = pd.to_numeric(
-        left["timestamp_utc"], errors="raise"
+    left[timestamp_column] = pd.to_numeric(
+        left[timestamp_column], errors="raise"
     ).astype("int64")
     left["_price_mark_row_order"] = np.arange(len(left))
     joined = pd.merge_asof(
-        left.sort_values("timestamp_utc"),
+        left.sort_values(timestamp_column),
         right,
-        left_on="timestamp_utc",
+        left_on=timestamp_column,
         right_on="eth_usd_mark_available_at_utc",
         direction="backward",
         allow_exact_matches=False,
     )
     joined["eth_usd_mark_lag_seconds"] = (
-        joined["timestamp_utc"] - joined["eth_usd_mark_available_at_utc"]
+        joined[timestamp_column] - joined["eth_usd_mark_available_at_utc"]
     )
     supported = (
         joined["eth_usd"].notna()

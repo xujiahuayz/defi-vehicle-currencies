@@ -3,8 +3,10 @@
 from __future__ import annotations
 
 import json
+from collections.abc import Iterable, Iterator
 from pathlib import Path
 
+from ddvc.fetch.raw import write_jsonl
 from ddvc.paths import SHARED_RUNTIME_DIR
 from ddvc.quoter import (
     canonical_json_sha256,
@@ -152,13 +154,9 @@ def fetch_block_header(
 
     block = int(block_number)
     cached = cache / f"{block}.json"
-    if cached.is_file():
-        try:
-            row = json.loads(cached.read_text(encoding="utf-8"))
-        except (OSError, json.JSONDecodeError):
-            row = None
-        if block_header_is_current(row, block, require_evidence=require_evidence):
-            return row
+    row = load_cached_block_header(cache, block, require_evidence=require_evidence)
+    if row is not None:
+        return row
     if require_evidence:
         request = block_header_payload(block)
         request_kwargs = {
@@ -197,29 +195,58 @@ def fetch_block_header(
     return row
 
 
+def load_cached_block_header(cache: Path, block_number: int, *, require_evidence: bool = False) -> dict[str, object] | None:
+    """Reopen one exact-number block cache entry without falling through to RPC."""
+
+    block = int(block_number)
+    cached = cache / f"{block}.json"
+    if not cached.is_file():
+        return None
+    try:
+        row = json.loads(cached.read_text(encoding="utf-8"))
+    except (OSError, json.JSONDecodeError):
+        return None
+    return row if block_header_is_current(row, block, require_evidence=require_evidence) else None
+
+
 def write_block_header_snapshot(
-    headers: list[dict],
+    headers: Iterable[dict],
     path: Path,
     *,
     require_evidence: bool = False,
+    presorted: bool = False,
 ) -> Path:
-    """Install deterministic unique block-header evidence."""
+    """Install deterministic block evidence, streaming a certified presorted iterable."""
 
-    ordered = sorted(headers, key=lambda row: int(row["block_number"]))
-    blocks = [int(row["block_number"]) for row in ordered]
-    if len(blocks) != len(set(blocks)):
-        raise ValueError("selected block-header snapshot contains duplicate blocks")
-    if require_evidence and any(
-        not block_header_is_current(
-            row,
-            int(row.get("block_number", -1)),
-            require_evidence=True,
-        )
-        for row in ordered
-    ):
-        raise ValueError("selected block-header snapshot contains unverifiable RPC evidence")
-    with atomic_output(path) as temporary:
-        with temporary.open("w", encoding="utf-8") as handle:
-            for row in ordered:
-                handle.write(json.dumps(row, sort_keys=True, separators=(",", ":")) + "\n")
+    ordered = headers if presorted else sorted(headers, key=lambda row: int(row["block_number"]))
+
+    def validated_rows():
+        previous: int | None = None
+        for row in ordered:
+            block = int(row.get("block_number", -1))
+            if block < 0 or (previous is not None and block <= previous):
+                raise ValueError("selected block-header snapshot is duplicated or not strictly ordered")
+            if require_evidence and not block_header_is_current(row, block, require_evidence=True):
+                raise ValueError("selected block-header snapshot contains unverifiable RPC evidence")
+            previous = block
+            yield row
+
+    write_jsonl(path, validated_rows())
     return path
+
+
+def iter_block_header_snapshot(path: Path, *, require_evidence: bool = False) -> Iterator[dict]:
+    """Stream a deterministic block snapshot and reject malformed, stale, or reordered rows."""
+
+    previous: int | None = None
+    with path.open(encoding="utf-8") as handle:
+        for line in handle:
+            try:
+                row = json.loads(line)
+            except json.JSONDecodeError as error:
+                raise ValueError("block-header snapshot contains malformed JSON") from error
+            block = row.get("block_number")
+            if not isinstance(block, int) or not block_header_is_current(row, block, require_evidence=require_evidence) or (previous is not None and block <= previous):
+                raise ValueError("block-header snapshot is stale, duplicated, or not strictly ordered")
+            previous = block
+            yield row

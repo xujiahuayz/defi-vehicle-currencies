@@ -4,6 +4,7 @@ import unittest
 from decimal import Decimal
 from pathlib import Path
 from tempfile import TemporaryDirectory
+from unittest.mock import patch
 
 import pandas as pd
 
@@ -14,19 +15,55 @@ from scripts.build_counterfactual_dominance import (
     common_mark_direct_advantage_bps,
     counterfactual_days,
     dominance_level_summary,
+    gross_panel_inputs,
+    OUT_RECEIPT_ALLOCATION_SUPPORT,
+    receipt_allocation_support,
+    receipt_allocation_support_summary,
+    state_support_summary,
     target_price_usd,
+    write_gross_release,
 )
 from ddvc.prices import attach_strictly_prior_weth_usd
 
 
 class CounterfactualDominanceTests(unittest.TestCase):
+    def test_receipt_allocation_support_exposes_multi_component_count_value_and_era(self) -> None:
+        routes = pd.DataFrame({"tx_hash": ["0xsingle", "0xmulti", "0xmulti"], "input_usd": [100.0, 200.0, 300.0]})
+        unified = pd.DataFrame({"tx_hash": ["0xsingle", "0xmulti", "0xmulti"], "component_id": [0, 0, 1], "n_components": [1, 2, 2]})
+        admitted, daily = receipt_allocation_support("20250102", routes, unified)
+        self.assertEqual(set(admitted), {"0xsingle"})
+        self.assertEqual(daily["excluded_multi_component_transactions"], 1)
+        self.assertEqual(daily["excluded_multi_component_routes"], 2)
+        self.assertEqual(daily["excluded_multi_component_route_notional_usd"], 500.0)
+        summary = receipt_allocation_support_summary(pd.DataFrame([daily]))
+        pooled = summary[summary["scope"].eq("pooled")].iloc[0]
+        annual = summary[summary["scope"].eq("annual")].iloc[0]
+        self.assertEqual(annual["year"], 2025)
+        self.assertAlmostEqual(pooled["excluded_multi_component_route_share"], 2 / 3)
+        self.assertAlmostEqual(pooled["excluded_multi_component_notional_share"], 5 / 6)
+        self.assertIn(OUT_RECEIPT_ALLOCATION_SUPPORT, gross_panel_inputs())
+
+    def test_single_component_transaction_cannot_own_duplicate_gross_routes(self) -> None:
+        routes = pd.DataFrame({"tx_hash": ["0xsingle", "0xsingle"], "input_usd": [100.0, 100.0]})
+        unified = pd.DataFrame({"tx_hash": ["0xsingle"], "component_id": [0], "n_components": [1]})
+        with self.assertRaisesRegex(ValueError, "cannot own multiple gross route rows"):
+            receipt_allocation_support("20250102", routes, unified)
+
+    def test_gross_release_rechecks_unique_receipt_ownership_before_write(self) -> None:
+        duplicate = pd.DataFrame({"tx": ["0xabc", "0xABC"], "receipt_allocation_scope": ["single_reconstructed_component_transaction"] * 2})
+        with patch("scripts.build_counterfactual_dominance.write_panel") as writer, self.assertRaisesRegex(ValueError, "cannot be allocated"):
+            write_gross_release(duplicate, Path("ignored.parquet"))
+        writer.assert_not_called()
+
     def test_intraday_weth_mark_is_strictly_prior_and_fresh(self) -> None:
         targets = pd.DataFrame({"timestamp_utc": [1_000, 1_060]})
         marks = pd.DataFrame(
             {
+                "bucket_start_utc": [880, 940],
+                "bucket_end_utc": [940, 1_000],
                 "available_at_utc": [940, 1_000],
                 "weth_usd": [2_000.0, 2_010.0],
-                "price_source": ["independent_cex_minute"] * 2,
+                "price_source": ["coinbase_exchange_eth_usd_spot_1m_close"] * 2,
                 "validation_status": ["valid"] * 2,
             }
         )
@@ -78,9 +115,9 @@ class CounterfactualDominanceTests(unittest.TestCase):
                 ),
                 "gross_direct_advantage_bps": [100.0, -100.0, 200.0, -200.0],
                 "dominated_gross": [True, False, True, False],
-                "all_in_direct_advantage_bps_iqr_lower": [25.0, -25.0, 25.0, -25.0],
-                "all_in_direct_advantage_bps": [50.0, -50.0, 50.0, -50.0],
-                "all_in_direct_advantage_bps_iqr_upper": [75.0, -75.0, 75.0, -75.0],
+                "daily_denominator_sensitivity_all_in_direct_advantage_bps_iqr_lower": [25.0, -25.0, 25.0, -25.0],
+                "daily_denominator_sensitivity_all_in_direct_advantage_bps": [50.0, -50.0, 50.0, -50.0],
+                "daily_denominator_sensitivity_all_in_direct_advantage_bps_iqr_upper": [75.0, -75.0, 75.0, -75.0],
                 "valuation_coherent_2x": [True, True, True, True],
                 "valuation_coherent_20pct": [True, True, True, True],
                 "usd": [1_000.0, 1_000.0, 1_000.0, 1_000.0],
@@ -135,15 +172,17 @@ class CounterfactualDominanceTests(unittest.TestCase):
                 "mid_type": ["stable"],
                 "gross_direct_advantage_bps": [10.0],
                 "usd": [1_000.0],
-                "timestamp_utc": [1_700_000_100],
+                "timestamp_utc": [1_700_000_099],
                 "eth_usd_daily_sensitivity": [2_000.0],
             }
         )
         intraday_prices = pd.DataFrame(
             {
+                "bucket_start_utc": [1_699_999_980],
+                "bucket_end_utc": [1_700_000_040],
                 "available_at_utc": [1_700_000_040],
                 "weth_usd": [2_010.0],
-                "price_source": ["independent_cex_minute"],
+                "price_source": ["coinbase_exchange_eth_usd_spot_1m_close"],
                 "validation_status": ["valid"],
             }
         )
@@ -170,9 +209,16 @@ class CounterfactualDominanceTests(unittest.TestCase):
                     "tx_hash": ["0xabc"],
                     "block_number": [21_000_000],
                     "block_hash": ["0x" + "ab" * 32],
+                    "block_timestamp_utc": [1_700_000_100],
                     "status": [1],
                     "gas_used": [150_000],
-                    "realised_gas_cost_wei": ["1500000000000000"],
+                    "execution_gas_cost_wei": ["1500000000000000"],
+                    "blob_gas_used": [None],
+                    "blob_gas_price_wei": [None],
+                    "blob_gas_cost_wei": ["0"],
+                    "receipt_total_gas_cost_wei": ["1500000000000000"],
+                    "receipt_gas_cost_scope": ["execution_plus_blob_receipt_fields"],
+                    "off_receipt_payment_status": ["private_bundle_or_direct_block_beneficiary_payments_unobserved"],
                     "effective_gas_price_wei": [10_000_000_000],
                     "gas_gwei": [10.0],
                     "gas_price_supported": [True],
@@ -193,21 +239,36 @@ class CounterfactualDominanceTests(unittest.TestCase):
         self.assertEqual(out.loc[0, "vehicle_gas_support_level"], "year_venue_vehicle")
         self.assertEqual(out.loc[0, "effective_gas_price_wei"], 10_000_000_000)
         self.assertEqual(out.loc[0, "gas_used"], 150_000)
-        self.assertEqual(out.loc[0, "realised_gas_cost_wei"], "1500000000000000")
+        self.assertEqual(out.loc[0, "execution_gas_cost_wei"], "1500000000000000")
+        self.assertEqual(out.loc[0, "receipt_total_gas_cost_wei"], "1500000000000000")
+        self.assertEqual(out.loc[0, "timestamp_utc"], 1_700_000_100)
+        self.assertEqual(out.loc[0, "provider_route_timestamp_utc"], 1_700_000_099)
+        self.assertEqual(out.loc[0, "provider_block_timestamp_disagreement_seconds"], -1)
         self.assertEqual(out.loc[0, "eth_usd"], 2_010.0)
         self.assertEqual(out.loc[0, "eth_usd_mark_lag_seconds"], 60)
-        self.assertGreater(
-            out.loc[0, "all_in_direct_advantage_bps"],
-            out.loc[0, "same_block_base_fee_direct_advantage_bps"],
+        self.assertEqual(out.loc[0, "receipt_total_gas_cost_usd"], 3.015)
+        self.assertEqual(
+            out.loc[0, "canonical_all_in_bps_release_status"],
+            "withheld_missing_transaction_time_endpoint_usd",
+        )
+        self.assertEqual(
+            out.loc[0, "daily_denominator_sensitivity_status"],
+            "noncanonical_address_day_output_mark_with_provider_route_notional",
         )
         self.assertGreater(
-            out.loc[0, "all_in_direct_advantage_bps_iqr_upper"],
-            out.loc[0, "all_in_direct_advantage_bps"],
+            out.loc[0, "daily_denominator_sensitivity_all_in_direct_advantage_bps"],
+            out.loc[0, "daily_denominator_sensitivity_same_block_base_fee_direct_advantage_bps"],
         )
         self.assertGreater(
-            out.loc[0, "all_in_direct_advantage_bps"],
-            out.loc[0, "all_in_direct_advantage_bps_iqr_lower"],
+            out.loc[0, "daily_denominator_sensitivity_all_in_direct_advantage_bps_iqr_upper"],
+            out.loc[0, "daily_denominator_sensitivity_all_in_direct_advantage_bps"],
         )
+        self.assertGreater(
+            out.loc[0, "daily_denominator_sensitivity_all_in_direct_advantage_bps"],
+            out.loc[0, "daily_denominator_sensitivity_all_in_direct_advantage_bps_iqr_lower"],
+        )
+        all_in_bps_columns = [column for column in out if "all_in" in column and "bps" in column]
+        self.assertTrue(all(column.startswith(("daily_denominator_sensitivity_", "canonical_")) for column in all_in_bps_columns))
 
     def test_default_calendar_is_every_available_day(self) -> None:
         available = ["20200101", "20200114", "20200116", "20200202", "20200220"]
@@ -239,6 +300,32 @@ class CounterfactualDominanceTests(unittest.TestCase):
                 "liquidity_replayed",
             ],
         )
+
+    def test_state_support_display_columns_match_summary_schema(self) -> None:
+        frame = pd.DataFrame(
+            {
+                "date": [pd.Timestamp("2025-01-01")],
+                "state_support": ["adjacent_no_liquidity"],
+                "valuation_coherent_20pct": [True],
+                "dominated_gross": [True],
+                "best_direct_outside_realised_venue_set": [False],
+                "direct_output_improvement_bps": [5.0],
+                "daily_denominator_sensitivity_all_in_direct_advantage_bps": [1.0],
+                "daily_denominator_sensitivity_all_in_direct_advantage_bps_iqr_lower": [0.5],
+                "daily_denominator_sensitivity_all_in_direct_advantage_bps_iqr_upper": [1.5],
+            }
+        )
+        support = state_support_summary(frame)
+        display_columns = [
+            "state_support",
+            "routes",
+            "pct_dominated_gross",
+            "pct_dominated_valuation_coherent_20pct",
+            "daily_denominator_sensitivity_pct_dominated_topology_gas_adjusted",
+            "daily_denominator_sensitivity_pct_dominated_gas_iqr_lower",
+            "daily_denominator_sensitivity_pct_dominated_gas_iqr_upper",
+        ]
+        self.assertEqual(support.loc[support["scope"].eq("pooled"), display_columns].shape, (1, len(display_columns)))
 
 
 if __name__ == "__main__":

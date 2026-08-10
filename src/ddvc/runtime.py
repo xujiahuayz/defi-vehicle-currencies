@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import fcntl
+import hashlib
 import json
 import os
 import sys
@@ -24,8 +25,9 @@ def bounded_workers(requested: int, *, maximum: int = DEFAULT_MAX_WORKERS) -> in
 
 
 @contextmanager
-def atomic_output(target: Path) -> Iterator[Path]:
-    """Yield a unique sibling path and atomically install it on success."""
+def staged_output(target: Path) -> Iterator[Path]:
+    """Yield a unique sibling path without installing it automatically."""
+
     target.parent.mkdir(parents=True, exist_ok=True)
     descriptor, temporary_name = tempfile.mkstemp(
         dir=target.parent,
@@ -36,9 +38,34 @@ def atomic_output(target: Path) -> Iterator[Path]:
     temporary = Path(temporary_name)
     try:
         yield temporary
-        temporary.replace(target)
     finally:
         temporary.unlink(missing_ok=True)
+
+
+@contextmanager
+def atomic_output(target: Path) -> Iterator[Path]:
+    """Yield a unique sibling path and atomically install it on success."""
+
+    with staged_output(target) as temporary:
+        yield temporary
+        temporary.replace(target)
+
+
+@contextmanager
+def serialized_output_install(target: Path) -> Iterator[None]:
+    """Serialize the short publication boundary for one resolved target path."""
+
+    lock_root = Path(tempfile.gettempdir()) / "ddvc-artifact-install-locks"
+    lock_root.mkdir(parents=True, exist_ok=True)
+    lexical_target = target.parent.resolve() / target.name
+    identity = hashlib.sha256(str(lexical_target).encode()).hexdigest()
+    handle = (lock_root / f"{identity}.lock").open("a+")
+    try:
+        fcntl.flock(handle.fileno(), fcntl.LOCK_EX)
+        yield
+    finally:
+        fcntl.flock(handle.fileno(), fcntl.LOCK_UN)
+        handle.close()
 
 
 @contextmanager

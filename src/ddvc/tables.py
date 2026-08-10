@@ -41,14 +41,17 @@ import io
 import json
 import math
 import numbers
+from collections.abc import Callable, Iterable
 from contextlib import ExitStack
 from pathlib import Path
 
 import pandas as pd
+import pyarrow as pa
+import pyarrow.parquet as pq
 
 from ddvc.paths import REPO_ROOT
-from ddvc.provenance import stamp
-from ddvc.runtime import atomic_output
+from ddvc.provenance import install_stamped_artifact, prepare_stamp
+from ddvc.runtime import staged_output
 
 # Above this many rows an artefact is a panel, whatever directory it sits in, and
 # the columnar format wins on measured read cost.
@@ -98,10 +101,17 @@ def _caller_sources(extra: list[str] | None) -> list[str]:
     return sorted(set(out + (extra or [])))
 
 
-def write_exhibit(df: pd.DataFrame, path: str | Path,
-                  code_sources: list[str] | None = None,
-                  inputs: list[str | Path] | None = None,
-                  notes: str | None = None) -> Path:
+def _publish_staged(temporary: Path, output: Path, *, code_sources: list[str] | None, inputs: list[str | Path] | None, rows: int, notes: str | Callable[[], str] | None, preinstall_validator: Callable[[Path], object] | None) -> None:
+    """Validate and install staged bytes with their matching provenance sidecar."""
+
+    if preinstall_validator is not None:
+        preinstall_validator(temporary)
+    resolved_notes = notes() if callable(notes) else notes
+    prepared = prepare_stamp(output, content_path=temporary, code_sources=_caller_sources(code_sources), inputs=inputs, rows=rows, notes=resolved_notes)
+    install_stamped_artifact(temporary, output, prepared)
+
+
+def write_exhibit(df: pd.DataFrame, path: str | Path, code_sources: list[str] | None = None, inputs: list[str | Path] | None = None, notes: str | Callable[[], str] | None = None, *, preinstall_validator: Callable[[Path], object] | None = None) -> Path:
     """Write a paper-facing table as JSON Lines, one record per line.
 
     Refuses a frame large enough to belong in Parquet instead of silently writing
@@ -116,7 +126,7 @@ def write_exhibit(df: pd.DataFrame, path: str | Path,
     if p.suffix not in (".jsonl", ".gz"):
         p = p.with_suffix(".jsonl")
     frame = _stringify_big_ints(df)
-    with atomic_output(p) as temporary:
+    with staged_output(p) as temporary:
         with ExitStack() as stack:
             if p.suffix == ".gz":
                 binary = stack.enter_context(temporary.open("wb"))
@@ -136,13 +146,7 @@ def write_exhibit(df: pd.DataFrame, path: str | Path,
                 handle.write(
                     json.dumps(clean, allow_nan=False, default=str, sort_keys=True) + "\n"
                 )
-    stamp(
-        p,
-        code_sources=_caller_sources(code_sources),
-        inputs=inputs,
-        rows=len(df),
-        notes=notes,
-    )
+        _publish_staged(temporary, p, code_sources=code_sources, inputs=inputs, rows=len(df), notes=notes, preinstall_validator=preinstall_validator)
     return p
 
 
@@ -154,22 +158,40 @@ def read_exhibit(path: str | Path) -> pd.DataFrame:
     return pd.read_json(p, lines=True)
 
 
-def write_panel(df: pd.DataFrame, path: str | Path,
-                code_sources: list[str] | None = None,
-                inputs: list[str | Path] | None = None,
-                notes: str | None = None) -> Path:
+def write_panel(df: pd.DataFrame, path: str | Path, code_sources: list[str] | None = None, inputs: list[str | Path] | None = None, notes: str | Callable[[], str] | None = None, *, preinstall_validator: Callable[[Path], object] | None = None) -> Path:
     """Write an analytic panel as Parquet, which is what code reads."""
     p = Path(path)
-    with atomic_output(p) as temporary:
+    with staged_output(p) as temporary:
         df.to_parquet(temporary, index=False)
-    stamp(
-        p,
-        code_sources=_caller_sources(code_sources),
-        inputs=inputs,
-        rows=len(df),
-        notes=notes,
-    )
+        _publish_staged(temporary, p, code_sources=code_sources, inputs=inputs, rows=len(df), notes=notes, preinstall_validator=preinstall_validator)
     return p
+
+
+def write_panel_batches(frames: Iterable[pd.DataFrame], path: str | Path, code_sources: list[str] | None = None, inputs: list[str | Path] | None = None, notes: str | Callable[[], str] | None = None, *, preinstall_validator: Callable[[Path], object] | None = None) -> tuple[Path, int]:
+    """Atomically stream bounded DataFrame batches into deterministic Parquet row groups."""
+
+    output = Path(path)
+    writer = None
+    rows = 0
+    with staged_output(output) as temporary:
+        try:
+            for frame in frames:
+                if frame.empty:
+                    continue
+                table = pa.Table.from_pandas(_stringify_big_ints(frame), preserve_index=False)
+                if writer is None:
+                    writer = pq.ParquetWriter(temporary, table.schema, compression="zstd")
+                elif table.schema != writer.schema:
+                    raise ValueError("Parquet panel batches do not share one schema")
+                writer.write_table(table)
+                rows += len(frame)
+            if writer is None:
+                raise ValueError("Parquet panel batch stream is empty")
+        finally:
+            if writer is not None:
+                writer.close()
+        _publish_staged(temporary, output, code_sources=code_sources, inputs=inputs, rows=rows, notes=notes, preinstall_validator=preinstall_validator)
+    return output, rows
 
 
 def _is_missing(value: object) -> bool:

@@ -44,6 +44,7 @@ from datetime import datetime, timezone
 from pathlib import Path
 
 from ddvc.paths import REPO_ROOT
+from ddvc.runtime import atomic_output, serialized_output_install, staged_output
 
 ROOT = REPO_ROOT
 MANIFESTS = ROOT / "data" / "manifests"
@@ -369,6 +370,9 @@ class Provenance:
     git: dict[str, object]
     code_fingerprint: str
     code_sources: list[str]
+    artefact_bytes: int | None = None
+    artefact_mtime_ns: int | None = None
+    artefact_sha256: str | None = None
     inputs: list[dict[str, object]] = field(default_factory=list)
     rows: int | None = None
     notes: str | None = None
@@ -453,11 +457,22 @@ def ensure_released_directory_alias(
     return recorded
 
 
-def stamp(artefact: str | Path, *, code_sources: list[str],
-          inputs: list[str | Path] | None = None, rows: int | None = None,
-          notes: str | None = None, script: str | None = None) -> Path:
-    """Record how `artefact` was produced. Returns the sidecar path."""
+def _content_sha256(path: Path) -> str:
+    digest = hashlib.sha256()
+    with path.open("rb") as handle:
+        while chunk := handle.read(1024 * 1024):
+            digest.update(chunk)
+    return digest.hexdigest()
+
+
+def prepare_stamp(artefact: str | Path, *, content_path: str | Path, code_sources: list[str], inputs: list[str | Path] | None = None, rows: int | None = None, notes: str | None = None, script: str | None = None) -> bytes:
+    """Construct provenance for staged artefact bytes without changing released paths."""
+
+    content = Path(content_path)
+    if not content.is_file():
+        raise FileNotFoundError(f"staged provenance content is absent: {content}")
     out = sidecar_path(artefact)
+    content_stat = content.stat()
     prov = Provenance(
         artefact=str(_rel(Path(artefact))),
         script=script or str(_rel(Path(sys.argv[0]))) if sys.argv and sys.argv[0] else "<unknown>",
@@ -469,13 +484,69 @@ def stamp(artefact: str | Path, *, code_sources: list[str],
         git=git_state([artefact, out]),
         code_fingerprint=code_fingerprint(code_sources),
         code_sources=sorted(code_sources),
+        artefact_bytes=content_stat.st_size,
+        artefact_mtime_ns=content_stat.st_mtime_ns,
+        artefact_sha256=_content_sha256(content) if content_stat.st_size <= CONTENT_HASH_MAX_BYTES else None,
         inputs=[describe_input(i) for i in (inputs or [])],
         rows=rows,
         notes=notes,
         libraries=_libraries(),
     )
-    out.parent.mkdir(parents=True, exist_ok=True)
-    out.write_text(json.dumps(asdict(prov), indent=1, sort_keys=True) + "\n")
+    return (json.dumps(asdict(prov), indent=1, sort_keys=True) + "\n").encode()
+
+
+def install_stamped_artifact(staged: str | Path, artefact: str | Path, prepared_stamp: bytes) -> Path:
+    """Install staged artefact and sidecar together, restoring both on any Python-level failure."""
+
+    staged_path = Path(staged)
+    target = Path(artefact)
+    sidecar = sidecar_path(target)
+    try:
+        record = json.loads(prepared_stamp)
+    except (TypeError, json.JSONDecodeError) as error:
+        raise ValueError("prepared provenance is not valid JSON") from error
+    staged_stat = staged_path.stat()
+    recorded_digest = record.get("artefact_sha256")
+    if record.get("artefact") != str(_rel(target)) or record.get("artefact_bytes") != staged_stat.st_size or record.get("artefact_mtime_ns") != staged_stat.st_mtime_ns or (recorded_digest is not None and recorded_digest != _content_sha256(staged_path)):
+        raise ValueError("prepared provenance does not identify the staged artefact")
+    with serialized_output_install(target):
+        with staged_output(sidecar) as staged_sidecar, staged_output(target) as target_backup, staged_output(sidecar) as sidecar_backup:
+            staged_sidecar.write_bytes(prepared_stamp)
+            target_backup.unlink(missing_ok=True)
+            sidecar_backup.unlink(missing_ok=True)
+            target_existed = target.exists()
+            sidecar_existed = sidecar.exists()
+            try:
+                if target_existed:
+                    target.replace(target_backup)
+                if sidecar_existed:
+                    sidecar.replace(sidecar_backup)
+                staged_sidecar.replace(sidecar)
+                staged_path.replace(target)
+            except BaseException:
+                new_target_installed = not staged_path.exists() and target.exists()
+                new_sidecar_installed = not staged_sidecar.exists() and sidecar.exists()
+                if new_target_installed:
+                    target.unlink()
+                if new_sidecar_installed:
+                    sidecar.unlink()
+                if target_backup.exists():
+                    target_backup.replace(target)
+                if sidecar_backup.exists():
+                    sidecar_backup.replace(sidecar)
+                raise
+    return sidecar
+
+
+def stamp(artefact: str | Path, *, code_sources: list[str], inputs: list[str | Path] | None = None, rows: int | None = None, notes: str | None = None, script: str | None = None) -> Path:
+    """Record how `artefact` was produced. Returns the sidecar path."""
+
+    target = Path(artefact)
+    out = sidecar_path(target)
+    with serialized_output_install(target):
+        payload = prepare_stamp(target, content_path=target, code_sources=code_sources, inputs=inputs, rows=rows, notes=notes, script=script)
+        with atomic_output(out) as temporary:
+            temporary.write_bytes(payload)
     return out
 
 
@@ -513,6 +584,14 @@ def verify(artefact: str | Path) -> dict[str, object]:
     if not side.exists():
         return {"artefact": str(_rel(p)), "status": "unstamped"}
     rec = json.loads(side.read_text())
+    recorded_bytes = rec.get("artefact_bytes")
+    recorded_mtime_ns = rec.get("artefact_mtime_ns")
+    recorded_digest = rec.get("artefact_sha256")
+    if recorded_bytes is None and recorded_mtime_ns is None and recorded_digest is None:
+        content_ok = True
+    else:
+        current_stat = p.stat()
+        content_ok = recorded_bytes == current_stat.st_size and (recorded_mtime_ns is None or recorded_mtime_ns == current_stat.st_mtime_ns) and (recorded_digest is None or recorded_digest == _content_sha256(p))
     now = code_fingerprint(rec.get("code_sources") or [])
     byte_code_ok = now == rec.get("code_fingerprint")
     documentation_only_change = not byte_code_ok and _legacy_semantic_compatible(rec)
@@ -525,13 +604,14 @@ def verify(artefact: str | Path) -> dict[str, object]:
     inputs_ok = not input_changes
     return {
         "artefact": str(_rel(p)),
-        "status": "ok" if code_ok and inputs_ok else "stale",
+        "status": "ok" if code_ok and inputs_ok and content_ok else "stale",
         "stamped_fingerprint": rec.get("code_fingerprint"),
         "current_fingerprint": now,
         "code_current": code_ok,
         "byte_code_current": byte_code_ok,
         "documentation_only_change": documentation_only_change,
         "inputs_current": inputs_ok,
+        "content_current": content_ok,
         "changed_inputs": input_changes,
         "stamped_commit": (rec.get("git") or {}).get("commit"),
         "was_dirty": (rec.get("git") or {}).get("dirty"),
