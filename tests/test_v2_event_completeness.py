@@ -20,12 +20,13 @@ from ddvc.ethereum_logs import (
     ExactLogRpcError,
     RpcEnvelope,
     exact_log_block_ranges,
+    file_sha256,
     rpc_post_with_evidence,
     write_exact_log_chunk,
 )
 from ddvc.fetch.raw import write_jsonl_gz
 from ddvc.fetch.sources import get_source
-from ddvc.quoter import Throttled, sanitized_endpoint_identity
+from ddvc.quoter import Throttled, canonical_json_sha256, sanitized_endpoint_identity
 from ddvc.v2_event_completeness import (
     ALL_PAIRS_LENGTH_SELECTOR,
     ALL_PAIRS_SELECTOR,
@@ -63,6 +64,7 @@ from ddvc.v2_event_completeness import (
     validate_factory_deployment_proof,
     validate_factory_state_proof,
     validate_v2_event_source_certificate,
+    validate_v2_event_source_evidence_bundle,
     v2_exact_log_chunk_complete,
     v2_exact_log_chunk_paths,
     v2_exact_log_ranges,
@@ -930,6 +932,28 @@ def test_frozen_upper_block_rejects_unbound_attempt_evidence(tmp_path) -> None:
         load_or_resolve_frozen_upper_block(block, fetch=False, root=tmp_path)
 
 
+def test_frozen_upper_block_rejects_consistently_malformed_hash_identity(tmp_path) -> None:
+    block = 109
+    path = tmp_path / "frozen_upper_blocks" / f"block_{block:08d}.json"
+    path.parent.mkdir(parents=True)
+    record = frozen_upper(block)
+    malformed_hash = "0x" + "z" * 64
+    record["block_hash"] = malformed_hash
+    record["rpc_response"]["result"]["hash"] = malformed_hash
+    record["response_sha256"] = canonical_json_sha256(record["rpc_response"])
+    record["header_identity_sha256"] = canonical_json_sha256(
+        {
+            "block_number": record["block_number"],
+            "block_hash": record["block_hash"],
+            "parent_hash": record["parent_hash"],
+            "timestamp": record["timestamp"],
+        }
+    )
+    path.write_text(json.dumps(record))
+    with pytest.raises(ValueError, match="exact header identity"):
+        load_or_resolve_frozen_upper_block(block, fetch=False, root=tmp_path)
+
+
 def test_factory_state_calls_are_bound_to_the_frozen_upper_hash() -> None:
     pairs = factory_pairs(1)
     frozen = frozen_upper(109, block_hash="0x" + "9" * 64)
@@ -971,6 +995,7 @@ def test_factory_deployment_proof_binds_upper_code_to_frozen_hash(monkeypatch) -
     record = {
         "status": "complete",
         "schema_version": V2_FACTORY_EVIDENCE_SCHEMA_VERSION,
+        "venue": venue,
         "factory": factory,
         "deployment_block": 10,
         "upper_block": upper,
@@ -1159,7 +1184,7 @@ def test_exact_rpc_chunk_is_reusable_only_after_its_complete_marker(
         fetch_v2_exact_log_chunk(100, 149, frozen_upper=frozen, root=tmp_path, rpc_request=rpc_response)
 
 
-@pytest.mark.parametrize("mutation", ["response", "attempts"])
+@pytest.mark.parametrize("mutation", ["response", "attempts", "jsonrpc"])
 def test_exact_rpc_chunk_rejects_mutated_response_or_attempt_contract(tmp_path, mutation) -> None:
     frozen = frozen_upper(149)
     canonical = raw_event("swap")
@@ -1183,8 +1208,10 @@ def test_exact_rpc_chunk_rejects_mutated_response_or_attempt_contract(tmp_path, 
     marker = json.loads(marker_path.read_text())
     if mutation == "response":
         marker["rpc_response"][0]["result"] = []
-    else:
+    elif mutation == "attempts":
         marker["rpc_attempts"] = [{"classification": "success"}]
+    else:
+        marker["rpc_response"][0].pop("jsonrpc")
     marker_path.write_text(json.dumps(marker))
     assert not v2_exact_log_chunk_complete(100, 149, frozen_upper=frozen, root=tmp_path)
 
@@ -1293,6 +1320,10 @@ def test_release_certificate_requires_exact_calendar_and_zero_exceptions() -> No
         },
     }
     assert validate_v2_event_source_certificate(summary, exceptions, certificate, days) == (2, 0)
+    non_boolean = summary.copy()
+    non_boolean["passed"] = 1
+    with pytest.raises(ValueError, match="not Boolean"):
+        validate_v2_event_source_certificate(non_boolean, exceptions, certificate, days)
     impossible = summary.copy()
     audited_index = impossible.index[impossible["launch_status"] == "audited"][0]
     impossible.loc[audited_index, "raw_events"] = 1
@@ -1360,3 +1391,90 @@ def test_release_certificate_requires_exact_calendar_and_zero_exceptions() -> No
             certificate,
             days,
         )
+
+
+@pytest.mark.parametrize("artifact", ["coverage", "state"])
+def test_release_evidence_bundle_reopens_cited_artifacts(tmp_path, monkeypatch, artifact) -> None:
+    import ddvc.v2_event_completeness as completeness
+
+    paths = {}
+    for name in ("frozen", "deployment", "coverage", "state"):
+        for venue in V2_EVENT_VENUES if name != "frozen" else ("shared",):
+            path = tmp_path / f"{name}-{venue}.json"
+            path.write_text(json.dumps({"name": name, "venue": venue}))
+            paths[(name, venue)] = path
+
+    monkeypatch.setattr(
+        completeness,
+        "frozen_upper_block_path",
+        lambda *_args, **_kwargs: paths[("frozen", "shared")],
+    )
+    monkeypatch.setattr(
+        completeness,
+        "factory_deployment_path",
+        lambda venue, *_args, **_kwargs: paths[("deployment", venue)],
+    )
+    monkeypatch.setattr(
+        completeness,
+        "factory_coverage_manifest_path",
+        lambda venue, *_args, **_kwargs: paths[("coverage", venue)],
+    )
+    monkeypatch.setattr(
+        completeness,
+        "factory_state_proof_path",
+        lambda venue, *_args, **_kwargs: paths[("state", venue)],
+    )
+    monkeypatch.setattr(completeness, "validate_frozen_upper_block", lambda *_args, **_kwargs: None)
+    monkeypatch.setattr(
+        completeness,
+        "validate_factory_deployment_proof",
+        lambda *_args, **_kwargs: 1,
+    )
+    monkeypatch.setattr(
+        completeness,
+        "validate_factory_coverage_manifest",
+        lambda *_args, **_kwargs: [(1, 1)],
+    )
+    monkeypatch.setattr(
+        completeness,
+        "read_factory_coverage_records",
+        lambda *_args, **_kwargs: ([], []),
+    )
+    monkeypatch.setattr(
+        completeness,
+        "factory_pair_registry",
+        lambda venue, *_args, **_kwargs: ({}, [venue]),
+    )
+    monkeypatch.setattr(completeness, "validate_factory_state_proof", lambda *_args, **_kwargs: None)
+    monkeypatch.setattr(completeness, "factory_registry_sha256", lambda pairs: "a" * 64)
+
+    certificate = {
+        "factory_registry_upper_block": 1,
+        "factory_registry_upper_block_hash": "0x" + "9" * 64,
+        "factory_registry_upper_block_timestamp": 1,
+        "frozen_upper_block_sha256": file_sha256(paths[("frozen", "shared")]),
+        "factory_deployment_proof_sha256_by_venue": {
+            venue: file_sha256(paths[("deployment", venue)]) for venue in V2_EVENT_VENUES
+        },
+        "factory_coverage_manifest_sha256_by_venue": {
+            venue: file_sha256(paths[("coverage", venue)]) for venue in V2_EVENT_VENUES
+        },
+        "factory_state_proof_sha256_by_venue": {
+            venue: file_sha256(paths[("state", venue)]) for venue in V2_EVENT_VENUES
+        },
+        "factory_state_sample_size_by_venue": {venue: 1 for venue in V2_EVENT_VENUES},
+        "factory_pairs_by_venue": {venue: 1 for venue in V2_EVENT_VENUES},
+        "factory_pairs": len(V2_EVENT_VENUES),
+        "factory_registry_sha256": "a" * 64,
+        "raw_factory_chunks": len(V2_EVENT_VENUES),
+    }
+    frozen_record = {
+        "block_hash": certificate["factory_registry_upper_block_hash"],
+        "timestamp": certificate["factory_registry_upper_block_timestamp"],
+    }
+    paths[("frozen", "shared")].write_text(json.dumps(frozen_record))
+    certificate["frozen_upper_block_sha256"] = file_sha256(paths[("frozen", "shared")])
+    assert validate_v2_event_source_evidence_bundle(certificate, root=tmp_path) == (2, 2)
+    paths[(artifact, V2_EVENT_VENUES[0])].write_text("tampered")
+    with pytest.raises(ValueError, match=f"{artifact}.*digest"):
+        validate_v2_event_source_evidence_bundle(certificate, root=tmp_path)

@@ -85,7 +85,13 @@ def validate_frozen_block(
     if record.get("rpc_request") != expected_request:
         raise ValueError("frozen upper-block evidence lacks its exact RPC request")
     response = record.get("rpc_response")
-    if not isinstance(response, dict) or response.get("id") != 1:
+    if (
+        not isinstance(response, dict)
+        or response.get("jsonrpc") != "2.0"
+        or type(response.get("id")) is not int
+        or response.get("id") != 1
+        or response.get("error") is not None
+    ):
         raise ValueError("frozen upper-block evidence lacks its exact RPC response")
     if record.get("response_sha256") != canonical_json_sha256(response):
         raise ValueError("frozen upper-block response digest disagrees")
@@ -107,7 +113,7 @@ def validate_frozen_block(
     if observed != copied:
         raise ValueError("frozen upper-block copied fields disagree with the RPC response")
     if not all(
-        str(copied[field]).startswith("0x") and len(str(copied[field])) == 66
+        str(copied[field]).startswith("0x") and is_sha256(str(copied[field])[2:])
         for field in ("block_hash", "parent_hash")
     ) or copied["timestamp"] < 1:
         raise ValueError("frozen upper-block evidence lacks an exact header identity")
@@ -214,7 +220,9 @@ def validate_anchored_log_evidence(
     responses_by_id = {
         item.get("id"): item
         for item in rpc_response
-        if isinstance(item, dict) and item.get("id") in {1, 2}
+        if isinstance(item, dict)
+        and type(item.get("id")) is int
+        and item.get("id") in {1, 2}
     }
     if set(responses_by_id) != {1, 2}:
         raise ValueError("exact-log response lacks exact request identities")
@@ -431,7 +439,17 @@ def _validated_log_records(
     normalized_topics: list[str],
     normalized_address: str | None,
 ) -> list[dict[str, object]]:
-    logs = response.get("result") if isinstance(response, dict) else None
+    if (
+        not isinstance(response, dict)
+        or response.get("jsonrpc") != "2.0"
+        or type(response.get("id")) is not int
+        or response.get("id") != 1
+        or response.get("error") is not None
+    ):
+        raise ExactLogRpcError(
+            f"Ethereum log response is not an exact successful JSON-RPC response for {start_block}:{end_block}"
+        )
+    logs = response.get("result")
     if not isinstance(logs, list):
         raise ExactLogRpcError(
             f"Ethereum log response lacks a result list for {start_block}:{end_block}"
@@ -513,12 +531,19 @@ def fetch_exact_logs_with_evidence(
     by_id = {
         item.get("id"): item
         for item in envelope.response
-        if isinstance(item, dict) and item.get("id") in {1, 2}
+        if isinstance(item, dict)
+        and type(item.get("id")) is int
+        and item.get("id") in {1, 2}
     }
     if set(by_id) != {1, 2}:
         raise ExactLogRpcError("anchored Ethereum log response lacks exact request identities")
-    header = by_id[2].get("result")
-    if not isinstance(header, dict):
+    header_response = by_id[2]
+    header = header_response.get("result")
+    if (
+        header_response.get("jsonrpc") != "2.0"
+        or header_response.get("error") is not None
+        or not isinstance(header, dict)
+    ):
         raise ExactLogRpcError("anchored Ethereum log response lacks the frozen upper header")
     observed_upper = rpc_integer(header.get("number"))
     observed_hash = str(header.get("hash") or "").lower()

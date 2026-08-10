@@ -20,11 +20,13 @@ from ddvc.amounts import human_to_raw
 from ddvc.ethereum_logs import (
     EXACT_LOG_BLOCK_CAP,
     ExactLogCapacityError,
+    ExactLogRpcError,
     RAW_LOG_SCHEMA,
     RAW_LOG_STORAGE_FORMAT,
     block_ranges,
     fetch_exact_logs,
     fetch_exact_logs_with_evidence,
+    file_sha256 as _file_sha256,
     is_sha256 as _is_sha256,
     load_or_resolve_frozen_block,
     exact_log_block_ranges,
@@ -195,7 +197,7 @@ def v2_exact_log_chunk_complete(
             address=None,
         )
         validate_anchored_log_evidence(marker, table.to_pylist(), frozen_upper)
-    except (IndexError, KeyError, OSError, TypeError, ValueError, json.JSONDecodeError):
+    except (ExactLogRpcError, IndexError, KeyError, OSError, TypeError, ValueError, json.JSONDecodeError):
         return False
     return bool(
         marker.get("status") == "complete"
@@ -300,14 +302,6 @@ def read_v2_exact_logs(
     return records, inputs
 
 
-def _file_sha256(path: Path) -> str:
-    digest = hashlib.sha256()
-    with path.open("rb") as handle:
-        for chunk in iter(lambda: handle.read(1024 * 1024), b""):
-            digest.update(chunk)
-    return digest.hexdigest()
-
-
 def _rpc_envelope(payload: object, rpc_request=None) -> RpcEnvelope:
     if rpc_request is None:
         return rpc_post_with_evidence(payload)
@@ -344,6 +338,7 @@ def validate_factory_deployment_proof(
     if (
         record.get("status") != "complete"
         or int(record.get("schema_version", -1)) != V2_FACTORY_EVIDENCE_SCHEMA_VERSION
+        or record.get("venue") != venue
         or record.get("factory") != factory
         or deployment_block < 1
         or int(record.get("upper_block", -1)) != upper_block
@@ -351,22 +346,36 @@ def validate_factory_deployment_proof(
     ):
         raise ValueError(f"stale {venue} factory deployment evidence")
     evidence = record.get("rpc_evidence")
-    if not isinstance(evidence, list):
+    if not isinstance(evidence, list) or not evidence:
         raise ValueError(f"{venue} factory deployment evidence is absent")
     observed: dict[int, str] = {}
     frozen_observed: str | None = None
     for item in evidence:
         if not isinstance(item, dict):
-            continue
+            raise ValueError(f"{venue} factory deployment evidence is malformed")
         request = item.get("request")
         response = item.get("response")
         if not isinstance(request, dict) or not isinstance(response, dict):
-            continue
-        if request.get("method") != "eth_getCode":
-            continue
+            raise ValueError(f"{venue} factory deployment evidence lacks an exact RPC exchange")
+        if request.get("jsonrpc") != "2.0" or request.get("method") != "eth_getCode":
+            raise ValueError(f"{venue} factory deployment evidence contains a non-code request")
         params = request.get("params")
         if not isinstance(params, list) or len(params) != 2 or params[0] != factory:
-            continue
+            raise ValueError(f"{venue} factory deployment evidence names a different factory")
+        if (
+            response.get("jsonrpc") != "2.0"
+            or response.get("id") != request.get("id")
+            or response.get("error") is not None
+        ):
+            raise ValueError(f"{venue} factory deployment evidence lacks a successful RPC response")
+        code = response.get("result")
+        if (
+            not isinstance(code, str)
+            or not code.startswith("0x")
+            or len(code) % 2 != 0
+            or any(character not in "0123456789abcdef" for character in code[2:].lower())
+        ):
+            raise ValueError(f"{venue} factory deployment evidence contains malformed bytecode")
         if item.get("response_sha256") != _canonical_json_sha256(response):
             raise ValueError(f"{venue} factory code response digest disagrees")
         endpoint = item.get("rpc_endpoint")
@@ -378,9 +387,9 @@ def validate_factory_deployment_proof(
         if isinstance(block_reference, dict):
             if block_reference != {"blockHash": upper_hash, "requireCanonical": True}:
                 raise ValueError(f"{venue} factory code proof names a different frozen block hash")
-            frozen_observed = str(response.get("result") or "")
+            frozen_observed = code
         else:
-            observed[int(str(block_reference), 16)] = str(response.get("result") or "")
+            observed[int(str(block_reference), 16)] = code
     if observed.get(deployment_block - 1) not in {"0x", "0x0"}:
         raise ValueError(f"{venue} pre-deployment factory code is not empty")
     if observed.get(deployment_block) in {None, "", "0x", "0x0"}:
@@ -506,7 +515,7 @@ def factory_leaf_complete(
         for record in records:
             decode_pair_created_log(venue, record)
         validate_anchored_log_evidence(marker, records, frozen_upper)
-    except (IndexError, KeyError, OSError, TypeError, ValueError, json.JSONDecodeError):
+    except (ExactLogRpcError, IndexError, KeyError, OSError, TypeError, ValueError, json.JSONDecodeError):
         return False
     return bool(
         marker.get("status") == "complete"
@@ -1811,6 +1820,8 @@ def validate_v2_event_source_certificate(
     counts = summary[count_columns].apply(pd.to_numeric, errors="coerce")
     if counts.isna().any().any() or (counts < 0).any().any() or (counts % 1 != 0).any().any():
         raise ValueError("V2 event-source summary contains invalid counts")
+    if not pd.api.types.is_bool_dtype(summary["passed"].dtype) or summary["passed"].isna().any():
+        raise ValueError("V2 event-source summary pass flag is not Boolean")
     for index, row in counts.iterrows():
         raw_events = int(row["raw_events"])
         graph_events = int(row["graph_events"])
@@ -1825,7 +1836,7 @@ def validate_v2_event_source_certificate(
             raise ValueError("V2 event-source summary contains impossible comparison counts")
         expected_pass = not (missing or graph_only or duplicates or mismatches)
         observed_pass = summary.loc[index, "passed"]
-        if observed_pass not in (True, False) or bool(observed_pass) != expected_pass:
+        if bool(observed_pass) != expected_pass:
             raise ValueError("V2 event-source summary pass flag disagrees with its counts")
     failures = counts[["missing_from_graph", "graph_only", "graph_duplicate_identities", "amount_mismatches"]].sum(axis=1)
     if int(failures.sum()) != 0:
