@@ -42,6 +42,7 @@ def frozen_upper(block: int) -> dict[str, object]:
             "timestamp": hex(1_700_000_000),
         },
     }
+    endpoint = {"host": "injected", "endpoint_sha256": "0" * 64}
     record = {
         "status": "complete",
         "schema_version": V3_POOL_REGISTRY_SCHEMA_VERSION,
@@ -56,8 +57,17 @@ def frozen_upper(block: int) -> dict[str, object]:
             "params": [hex(block), False],
         },
         "rpc_response": response,
-        "rpc_endpoint": {"host": "injected", "endpoint_sha256": "0" * 64},
-        "rpc_attempts": [{"classification": "success"}],
+        "rpc_endpoint": endpoint,
+        "rpc_attempts": [
+            {
+                "endpoint": endpoint,
+                "attempt": 1,
+                "classification": "success",
+                "http_status": None,
+                "rpc_code": None,
+                "message": "success",
+            }
+        ],
         "response_sha256": hashlib.sha256(
             json.dumps(response, sort_keys=True, separators=(",", ":")).encode()
         ).hexdigest(),

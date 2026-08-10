@@ -37,7 +37,7 @@ from ddvc.quoter import Throttled
 from ddvc.runtime import atomic_output, interruptible_thread_pool
 
 
-V3_POOL_REGISTRY_SCHEMA_VERSION = 2
+V3_POOL_REGISTRY_SCHEMA_VERSION = 3
 V3_FACTORY_EVENT_LEAF_KIND = "uniswap_v3_factory_events"
 V3_FACTORY = "0x" + FACTORY.hex()
 POOL_CREATED_SIGNATURE = "PoolCreated(address,address,uint24,int24,address)"
@@ -271,6 +271,7 @@ def fetch_leaf(
             "query_scope": "canonical_factory_creation_and_fee_topics",
             "event_topics": FACTORY_EVENT_TOPICS,
             "rpc_request": evidence["request"],
+            "rpc_response": evidence["response"],
             "rpc_endpoint": evidence["endpoint"],
             "rpc_attempts": evidence["attempts"],
             "response_sha256": evidence["response_sha256"],
