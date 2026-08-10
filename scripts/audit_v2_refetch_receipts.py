@@ -13,8 +13,6 @@ from pathlib import Path
 import shutil
 import time
 
-from eth_utils import keccak
-
 from ddvc.amounts import human_to_raw
 from ddvc.fetch.graph import GraphClient, graph_keys
 from ddvc.fetch.raw import write_json, write_jsonl_gz
@@ -24,11 +22,12 @@ from ddvc.paths import DATA_DIR, RAW_MARKET_DATA_LOCK
 from ddvc.quoter import rpc_post, rpc_urls
 from ddvc.runtime import atomic_output, exclusive_job
 from ddvc.source_records import block_value
+from ddvc.v2_event_completeness import V2_EVENT_TOPICS
 
 
 RAW_ROOT = DATA_DIR / "raw" / "thegraph" / "uniswap_v2"
 DEFAULT_CACHE = DATA_DIR / "interim" / "provider_receipt_audit" / "uniswap_v2.jsonl"
-SWAP_TOPIC = "0x" + keccak(text="Swap(address,uint256,uint256,uint256,uint256,address)").hex()
+SWAP_TOPIC = V2_EVENT_TOPICS["swap"]
 
 
 def transaction_id(row: dict) -> str:

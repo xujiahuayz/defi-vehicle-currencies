@@ -256,6 +256,7 @@ def test_exact_day_cut_is_last_block_strictly_before_midnight() -> None:
 def test_calendar_provenance_covers_every_semantic_dependency() -> None:
     assert set(CALENDAR_CODE_SOURCES) == {
         "src/ddvc/v3_inventory_calendar.py",
+        "src/ddvc/ethereum_day_cuts.py",
         "src/ddvc/fetch/raw.py",
         "src/ddvc/paths.py",
         "src/ddvc/quoter.py",
@@ -268,6 +269,8 @@ def test_physical_inventory_cache_covers_every_semantic_dependency() -> None:
     assert set(PANEL_CODE_SOURCES) == {
         "scripts/build_v3_inventory_panel.py",
         "src/ddvc/asset_types.py",
+        "src/ddvc/ethereum_day_cuts.py",
+        "src/ddvc/ethereum_logs.py",
         "src/ddvc/fetch/raw.py",
         "src/ddvc/panel_assembly.py",
         "src/ddvc/paths.py",

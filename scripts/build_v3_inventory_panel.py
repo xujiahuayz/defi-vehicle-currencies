@@ -58,6 +58,8 @@ CHUNK_SIZE = 1_000
 CODE_SOURCES = [
     "scripts/build_v3_inventory_panel.py",
     "src/ddvc/asset_types.py",
+    "src/ddvc/ethereum_day_cuts.py",
+    "src/ddvc/ethereum_logs.py",
     "src/ddvc/fetch/raw.py",
     "src/ddvc/v3_inventory.py",
     "src/ddvc/panel_assembly.py",

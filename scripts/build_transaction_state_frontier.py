@@ -46,7 +46,6 @@ from ddvc.asset_types import (
     asset_type,
     canonical_token,
 )
-from ddvc.calendar import nearest_day_per_month
 from ddvc.data_release import require_node_d_release
 from ddvc.paths import DATA_DIR, OUTPUT_DIR
 from ddvc.panel_assembly import assemble_parquet_shards
@@ -67,7 +66,11 @@ from ddvc.pricing.v2_replay import V2ReplayDay, V2_VENUES, load_v2_replay_day
 from ddvc.provenance import cache_key, require_current_artifacts, stamp
 from ddvc.realised import LINEAR_ROUTE_COLUMNS, extract_linear_realised_routes
 from ddvc.reconstruct import UNIFIED_QUALITY_PANEL
-from ddvc.release_calendar import released_route_days
+from ddvc.release_calendar import (
+    released_route_days,
+    select_transaction_frontier_audit_days,
+    transaction_frontier_audit_days,
+)
 from ddvc.route_cost import MAX_PRICE_IMPACT
 from ddvc.runtime import atomic_output, exclusive_job
 from ddvc.state_data import STATE_ROOT
@@ -500,7 +503,7 @@ def select_days(
     if explicit:
         selected = list(dict.fromkeys(day.replace("-", "") for day in explicit))
     elif audit_calendar:
-        selected = nearest_day_per_month(available)
+        selected = select_transaction_frontier_audit_days(available)
     elif daily_calendar:
         selected = available
     else:
@@ -1560,7 +1563,7 @@ def main() -> int:
     selected_set = set(selected)
     daily_mode = bool(args.daily_calendar)
     if daily_mode:
-        expected_audit_days = nearest_day_per_month(available_days(nonempty=True))
+        expected_audit_days = transaction_frontier_audit_days(UNIFIED_QUALITY_PANEL)
         try:
             audit_reproduction, audit_state_coverage, audit_verified_coverage = (
                 require_frontier_audit_gate(expected_audit_days)

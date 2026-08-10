@@ -43,6 +43,8 @@ CODE_SOURCES = [
     "scripts/build_v3_inventory_panel.py",
     "src/ddvc/amounts.py",
     "src/ddvc/calendar.py",
+    "src/ddvc/ethereum_day_cuts.py",
+    "src/ddvc/ethereum_logs.py",
     "src/ddvc/provenance.py",
     "src/ddvc/runtime.py",
     "src/ddvc/state_data.py",

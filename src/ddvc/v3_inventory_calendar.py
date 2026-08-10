@@ -3,7 +3,6 @@
 from __future__ import annotations
 
 from concurrent.futures import as_completed
-from datetime import datetime, timedelta, timezone
 import json
 from pathlib import Path
 import time
@@ -11,9 +10,14 @@ import time
 import pandas as pd
 
 from ddvc.fetch.raw import write_json
+from ddvc.ethereum_day_cuts import (
+    fetch_block_timestamp,
+    last_block_before_timestamp,
+    utc_day_timestamps,
+)
 from ddvc.paths import DATA_DIR, SHARED_RUNTIME_DIR
 from ddvc.provenance import require_current_artifacts, stamp
-from ddvc.quoter import Throttled, rpc_post
+from ddvc.quoter import rpc_post
 from ddvc.runtime import atomic_output, interruptible_thread_pool
 from ddvc.state_data import available_state_days
 
@@ -24,6 +28,7 @@ CALENDAR = DATA_DIR / "processed" / "v3_inventory_day_calendar.parquet"
 CALENDAR_LOCK = SHARED_RUNTIME_DIR / "v3-inventory-day-calendar.lock"
 CODE_SOURCES = [
     "src/ddvc/v3_inventory_calendar.py",
+    "src/ddvc/ethereum_day_cuts.py",
     "src/ddvc/fetch/raw.py",
     "src/ddvc/paths.py",
     "src/ddvc/quoter.py",
@@ -31,35 +36,6 @@ CODE_SOURCES = [
     "src/ddvc/state_data.py",
 ]
 RPC_CALL_MAX_ATTEMPTS = 12
-
-
-def last_block_before_timestamp(
-    target_timestamp: int,
-    lower_block: int,
-    upper_block: int,
-    timestamp_for_block,
-) -> tuple[int, int, int]:
-    """Resolve the last block strictly before a UTC cut from a valid bracket."""
-
-    target = int(target_timestamp)
-    lower = int(lower_block)
-    upper = int(upper_block)
-    if lower < 0 or upper <= lower:
-        raise ValueError("invalid block bracket")
-    lower_timestamp = int(timestamp_for_block(lower))
-    upper_timestamp = int(timestamp_for_block(upper))
-    if not lower_timestamp < target <= upper_timestamp:
-        raise ValueError(
-            f"block bracket does not straddle timestamp {target}: "
-            f"{lower}={lower_timestamp}, {upper}={upper_timestamp}"
-        )
-    while upper - lower > 1:
-        midpoint = (lower + upper) // 2
-        if int(timestamp_for_block(midpoint)) < target:
-            lower = midpoint
-        else:
-            upper = midpoint
-    return lower, int(timestamp_for_block(lower)), int(timestamp_for_block(upper))
 
 
 def raw_day_metadata(day: str) -> dict[str, object]:
@@ -70,8 +46,7 @@ def raw_day_metadata(day: str) -> dict[str, object]:
 
 
 def _target_timestamp(day: str) -> int:
-    current = datetime.strptime(day, "%Y%m%d").replace(tzinfo=timezone.utc)
-    return int((current + timedelta(days=1)).timestamp())
+    return utc_day_timestamps(day)[1]
 
 
 def _day_cut_path(day: str) -> Path:
@@ -97,44 +72,13 @@ def _cached_day_cut(day: str, target_timestamp: int) -> dict[str, object] | None
 
 
 def _fetch_block_timestamp(block: int, evidence: list[dict[str, object]]) -> int:
-    payload = {
-        "jsonrpc": "2.0",
-        "id": 1,
-        "method": "eth_getBlockByNumber",
-        "params": [hex(block), False],
-    }
-    for attempt in range(RPC_CALL_MAX_ATTEMPTS):
-        try:
-            response = rpc_post(
-                payload,
-                timeout=30,
-                retries=1,
-                retry_json_errors=True,
-            )
-            break
-        except Throttled:
-            if attempt == RPC_CALL_MAX_ATTEMPTS - 1:
-                raise
-            time.sleep(min(2 ** attempt, 30))
-    result = response.get("result") if isinstance(response, dict) else None
-    if not isinstance(result, dict) or result.get("timestamp") is None:
-        raise RuntimeError(f"historical Ethereum block {block} lacks a timestamp")
-    returned_block = int(str(result.get("number")), 16)
-    if returned_block != block:
-        raise ValueError(f"Ethereum RPC returned block {returned_block} for requested {block}")
-    timestamp = int(str(result["timestamp"]), 16)
-    evidence.append(
-        {
-            "request": payload,
-            "response": {
-                "number": result.get("number"),
-                "hash": result.get("hash"),
-                "parentHash": result.get("parentHash"),
-                "timestamp": result.get("timestamp"),
-            },
-        }
+    return fetch_block_timestamp(
+        block,
+        evidence,
+        rpc_request=rpc_post,
+        sleeper=time.sleep,
+        max_attempts=RPC_CALL_MAX_ATTEMPTS,
     )
-    return timestamp
 
 
 def _resolve_day_cut(day: str, lower: int, upper: int) -> dict[str, object]:

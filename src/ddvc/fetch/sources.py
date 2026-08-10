@@ -27,6 +27,7 @@ class DexSource:
     graph_path: str = "subgraphs/id"
     backend: str = "thegraph"
     genesis_block: int | None = None
+    factory_address: str | None = None
     dune_project: str | None = None
     dune_version: str | None = None
     notes: str = ""
@@ -59,6 +60,7 @@ DEX_SOURCES: dict[str, DexSource] = {
         genesis_date_utc=dt.date(2020, 5, 5),
         subgraph_id="EYCKATKGBKLWvSfwvBjzfCBmGwYNdVkduYXVivCsLRFu",
         genesis_block=10_008_566,
+        factory_address="0x5c69bee701ef814a2b6a3edd4b1652cb9cc5aa6f",
         notes="Canonical V2 constant-product pair schema. Genesis is first indexed swap block from live Graph audit.",
     ),
     "balancer": DexSource(
@@ -84,6 +86,7 @@ DEX_SOURCES: dict[str, DexSource] = {
         subgraph_id="QmaR2nAMF6dCHBL1eFNQ4F5nGpJQs7V11PZobJB2FgQtbt",
         graph_path="deployments/id",
         genesis_block=10_794_365,
+        factory_address="0xc0aee478e3658e2610c5f7a4a2e1777ce9e4f2ac",
         notes="SushiSwap cpAMM/V2 deployment endpoint; Sushi has no separate V1 AMM in this sample frame.",
     ),
     "sushiswap_v3": DexSource(

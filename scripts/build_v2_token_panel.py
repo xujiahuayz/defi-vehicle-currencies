@@ -28,7 +28,7 @@ from concurrent.futures import as_completed
 
 import pandas as pd
 
-from ddvc.data_release import require_node_d_release
+from ddvc.data_release import require_market_state_prerelease
 from ddvc.paths import DATA_DIR, REPO_ROOT
 from ddvc.runtime import bounded_workers, exclusive_job, interruptible_process_pool
 from ddvc.state_data import STATE_ROOT, available_state_days, read_cp_partition
@@ -184,7 +184,7 @@ def main() -> int:
     ap.add_argument("--workers", type=int, default=8)
     ap.add_argument("--until", default=None, help="stop after this YYYYMMDD")
     args = ap.parse_args()
-    require_node_d_release(market_state=True)
+    require_market_state_prerelease()
     workers = bounded_workers(args.workers)
 
     swaps = available_state_days("constant_product", "uniswap_v2")

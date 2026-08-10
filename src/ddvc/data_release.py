@@ -24,6 +24,15 @@ from ddvc.state_data import (
     read_tick_quality,
 )
 from ddvc.paths import DATA_DIR
+from ddvc.provenance import require_current_artifacts
+from ddvc.release_calendar import transaction_frontier_audit_days
+from ddvc.v2_event_completeness import (
+    V2_EVENT_SOURCE_CERTIFICATE,
+    V2_EVENT_SOURCE_EXCEPTIONS,
+    V2_EVENT_SOURCE_SUMMARY,
+    read_v2_event_source_certificate,
+    validate_v2_event_source_certificate,
+)
 from ddvc.v4_quarantine import (
     V4_STATIC_QUARANTINE_PANEL,
     audit_v4_pool_static_conflicts,
@@ -182,7 +191,9 @@ def require_route_release() -> None:
         )
 
 
-def require_market_state_release() -> None:
+def require_market_state_prerelease() -> None:
+    """Require structural state integrity before dependent source certificates exist."""
+
     if not MARKET_STATE_QUALITY_PANEL.exists():
         raise RuntimeError("node D has not released the full market-state quality ledger")
     quality = pd.read_parquet(MARKET_STATE_QUALITY_PANEL)
@@ -223,6 +234,40 @@ def require_market_state_release() -> None:
         raise RuntimeError(
             f"node D market-state release has {len(stale)} stale partition(s), first={stale[0]}"
         )
+
+
+def require_market_state_release() -> None:
+    """Require structural state integrity and every independent source certificate."""
+
+    require_market_state_prerelease()
+    require_v2_event_source_release()
+
+
+def require_v2_event_source_release() -> None:
+    """Require the current independent-chain certificate for V2 replay events."""
+
+    artifacts = [
+        V2_EVENT_SOURCE_SUMMARY,
+        V2_EVENT_SOURCE_EXCEPTIONS,
+        V2_EVENT_SOURCE_CERTIFICATE,
+    ]
+    require_current_artifacts(
+        artifacts,
+        consumer="node D V2-family market-state release",
+    )
+    summary, exceptions, certificate = read_v2_event_source_certificate()
+    expected_days = transaction_frontier_audit_days(UNIFIED_QUALITY_PANEL)
+    try:
+        validate_v2_event_source_certificate(
+            summary,
+            exceptions,
+            certificate,
+            expected_days,
+        )
+    except ValueError as error:
+        raise RuntimeError(
+            f"node D V2-family event-source certificate failed: {error}"
+        ) from error
 
 
 def require_node_d_release(*, routes: bool = False, market_state: bool = False) -> None:

@@ -6,6 +6,8 @@ from pathlib import Path
 
 import pandas as pd
 
+from ddvc.calendar import nearest_day_per_month
+
 
 def released_route_days(
     quality_panel: str | Path, *, nonempty: bool
@@ -22,3 +24,20 @@ def released_route_days(
     if nonempty:
         quality = quality[quality["output_rows"].gt(0)]
     return sorted(quality["day"].astype(str).tolist())
+
+
+def select_transaction_frontier_audit_days(days: list[str]) -> list[str]:
+    """Select the one canonical construction-audit calendar from released days."""
+
+    days = nearest_day_per_month(sorted(set(days)))
+    if not days:
+        raise RuntimeError("transaction-frontier audit calendar is empty")
+    return days
+
+
+def transaction_frontier_audit_days(quality_panel: str | Path) -> list[str]:
+    """Load the released perimeter and return its canonical audit dates."""
+
+    return select_transaction_frontier_audit_days(
+        released_route_days(quality_panel, nonempty=True)
+    )

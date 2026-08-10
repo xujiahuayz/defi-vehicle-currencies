@@ -9,11 +9,51 @@ import pandas as pd
 from ddvc.data_release import (
     _exact_key_gate,
     audit_cross_venue_order_conflicts,
+    require_market_state_release,
+    require_v2_event_source_release,
 )
 from ddvc.v4_quarantine import audit_v4_pool_static_conflicts
 
 
 class DataReleaseTests(unittest.TestCase):
+    def test_full_market_state_release_adds_event_certificate_after_prerelease(self) -> None:
+        from unittest.mock import patch
+
+        with (
+            patch("ddvc.data_release.require_market_state_prerelease") as prerelease,
+            patch("ddvc.data_release.require_v2_event_source_release") as event_source,
+        ):
+            require_market_state_release()
+        prerelease.assert_called_once_with()
+        event_source.assert_called_once_with()
+
+    def test_v2_event_release_gate_requires_current_artifacts_and_exact_calendar(self) -> None:
+        from unittest.mock import patch
+
+        summary = pd.DataFrame()
+        exceptions = pd.DataFrame()
+        certificate = {"status": "pass"}
+        with (
+            patch("ddvc.data_release.require_current_artifacts") as current,
+            patch(
+                "ddvc.data_release.read_v2_event_source_certificate",
+                return_value=(summary, exceptions, certificate),
+            ),
+            patch(
+                "ddvc.data_release.transaction_frontier_audit_days",
+                return_value=["20250115"],
+            ),
+            patch("ddvc.data_release.validate_v2_event_source_certificate") as validate,
+        ):
+            require_v2_event_source_release()
+        current.assert_called_once()
+        validate.assert_called_once_with(
+            summary,
+            exceptions,
+            certificate,
+            ["20250115"],
+        )
+
     def test_v4_static_audit_returns_complete_pool_level_quarantine(self) -> None:
         with tempfile.TemporaryDirectory() as directory:
             path = Path(directory) / "v4.parquet"
@@ -125,7 +165,7 @@ class DataReleaseTests(unittest.TestCase):
             "scripts/build_routing_maturation_panel.py": "require_node_d_release(routes=True, market_state=True)",
             "scripts/build_counterfactual_dominance.py": "require_node_d_release(routes=True, market_state=True)",
             "scripts/build_rent_incidence_panel.py": "require_node_d_release(market_state=True)",
-            "scripts/build_v2_token_panel.py": "require_node_d_release(market_state=True)",
+            "scripts/build_v2_token_panel.py": "require_market_state_prerelease()",
             "scripts/run_rent_incidence.py": "require_node_d_release(routes=True, market_state=True)",
         }
         for filename, call in expected.items():
