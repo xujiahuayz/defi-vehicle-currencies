@@ -146,6 +146,20 @@ class FindingsFreezeAuditTest(unittest.TestCase):
             checks = {name: passed for name, passed, _detail in retired_route_gas_release_checks(root)}
             self.assertFalse(checks["withdrawn route-gas artifacts absent"])
 
+            artifact.unlink()
+            daily_artifact = root / "data" / "interim" / "gas_price_graph" / "20200211.json"
+            daily_artifact.parent.mkdir(parents=True, exist_ok=True)
+            daily_artifact.write_text("{}\n", encoding="utf-8")
+            checks = {name: passed for name, passed, _detail in retired_route_gas_release_checks(root)}
+            self.assertFalse(checks["withdrawn route-gas artifacts absent"])
+
+            daily_artifact.unlink()
+            (root / "scripts" / "new_daily_gas.py").write_text(
+                "path = 'data/interim/gas_days'\n", encoding="utf-8"
+            )
+            checks = {name: passed for name, passed, _detail in retired_route_gas_release_checks(root)}
+            self.assertFalse(checks["retired route-gas constants absent from code"])
+
     def test_findings_gate_requires_current_exact_v2_event_certificate(self) -> None:
         import json
 
@@ -642,8 +656,8 @@ class FindingsFreezeAuditTest(unittest.TestCase):
 
     def test_refresh_log_path_flattens_script_subdirectories(self) -> None:
         self.assertEqual(
-            refresher.stage_log_path("process/fetch_daily_gas_price_graph.py").name,
-            "process__fetch_daily_gas_price_graph.py.log",
+            refresher.stage_log_path("process/build_route_transaction_gas.py").name,
+            "process__build_route_transaction_gas.py.log",
         )
 
     @patch("scripts.refresh_panel_dependents.os.killpg")

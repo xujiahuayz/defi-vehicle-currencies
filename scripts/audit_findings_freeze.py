@@ -114,6 +114,17 @@ WITHDRAWN_ROUTE_GAS_SCRIPTS = (
     "scripts/run_rent_incidence.py",
 )
 WITHDRAWN_ROUTE_GAS_ARTIFACTS = (
+    "data/interim/gas_days",
+    "data/interim/gas_price_graph",
+    "data/manifests/data/processed/daily_gas_eth.parquet.prov.json",
+    "data/manifests/data/processed/daily_gas_price_graph.parquet.prov.json",
+    "data/manifests/output/exhibits/daily_gas_eth.jsonl.prov.json",
+    "data/manifests/output/exhibits/daily_gas_price_graph.jsonl.prov.json",
+    "data/processed/daily_gas_eth.parquet",
+    "data/processed/daily_gas_price_graph.parquet",
+    "output/exhibits/daily_gas_eth.csv",
+    "output/exhibits/daily_gas_eth.jsonl",
+    "output/exhibits/daily_gas_price_graph.jsonl",
     "output/exhibits/gap_arbitrage_bound.jsonl",
     "output/exhibits/dominance_windows_screened.jsonl",
 )
@@ -123,6 +134,12 @@ ROUTE_GAS_AUDIT_ONLY_DOCS = (
     "docs/review-node-i-round1.md",
 )
 WITHDRAWN_ROUTE_GAS_REFERENCES = (
+    "build_daily_gas_and_eth",
+    "daily_gas_eth",
+    "daily_gas_price_graph",
+    "fetch_daily_gas_price_graph",
+    "gas_price_graph",
+    "gas_days",
     "output/exhibits/gap_arbitrage_bound.jsonl",
     "output/exhibits/dominance_windows_screened.jsonl",
 )
