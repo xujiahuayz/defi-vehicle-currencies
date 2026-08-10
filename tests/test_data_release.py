@@ -9,8 +9,8 @@ import pandas as pd
 from ddvc.data_release import (
     _exact_key_gate,
     audit_cross_venue_order_conflicts,
-    audit_v4_pool_static_conflicts,
 )
+from ddvc.v4_quarantine import audit_v4_pool_static_conflicts
 
 
 class DataReleaseTests(unittest.TestCase):
@@ -139,6 +139,7 @@ class DataReleaseTests(unittest.TestCase):
             "scripts/build_vehicle_excess_use.py",
             "scripts/build_vehicle_centrality.py",
             "scripts/build_counterfactual_dominance.py",
+            "scripts/build_transaction_state_frontier.py",
             "scripts/build_routing_maturation_panel.py",
             "scripts/build_v2_token_panel.py",
             "scripts/build_rent_incidence_panel.py",

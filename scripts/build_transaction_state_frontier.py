@@ -47,11 +47,7 @@ from ddvc.asset_types import (
     canonical_token,
 )
 from ddvc.calendar import nearest_day_per_month
-from ddvc.data_release import (
-    V4_STATIC_QUARANTINE_PANEL,
-    load_v4_static_quarantine,
-    require_node_d_release,
-)
+from ddvc.data_release import require_node_d_release
 from ddvc.paths import DATA_DIR, OUTPUT_DIR
 from ddvc.panel_assembly import assemble_parquet_shards
 from ddvc.pricing.mixed_frontier import (
@@ -77,6 +73,10 @@ from ddvc.runtime import atomic_output, exclusive_job
 from ddvc.state_data import STATE_ROOT
 from ddvc.source_records import block_value, transaction_id, timestamp_value
 from ddvc.tables import write_exhibit, write_panel
+from ddvc.v4_quarantine import (
+    V4_STATIC_QUARANTINE_PANEL,
+    load_v4_static_quarantine,
+)
 
 
 MARKET_STATE = STATE_ROOT
@@ -99,6 +99,7 @@ CHECKPOINT_INTERVAL_DAYS = 180
 CHECKPOINT_GLOB = "pre_" + "[0-9]" * 8 + ".pkl"
 REPLAY_CHECKPOINT_SCHEMA_VERSION = 2
 DAY_CACHE_SCHEMA_VERSION = 2
+ORDERED_SHARD_MANIFEST_SCHEMA_VERSION = 1
 REPLAY_CAUSAL_FIELDS = (
     "unify_wrapped",
     "ticks_by_venue",
@@ -107,51 +108,55 @@ REPLAY_CAUSAL_FIELDS = (
     "token_decimals",
     "quarantined_pools",
 )
-FRONTIER_DEPENDENCY_MANIFEST = [
-    "scripts/build_transaction_state_frontier.py",
-    "src/ddvc/analysis/transaction_frontier.py",
-    "src/ddvc/asset_types.py",
-    "src/ddvc/calendar.py",
-    "src/ddvc/cpquote.py",
-    "src/ddvc/data_release.py",
-    "src/ddvc/panel_assembly.py",
-    "src/ddvc/paths.py",
-    "src/ddvc/pricing/path_frontier.py",
-    "src/ddvc/pricing/mixed_frontier.py",
-    "src/ddvc/pricing/tick_frontier.py",
-    "src/ddvc/pricing/tick_quote.py",
-    "src/ddvc/pricing/tick_replay.py",
-    "src/ddvc/pricing/tick_state.py",
-    "src/ddvc/pricing/v3pools.py",
-    "src/ddvc/pricing/v3quote.py",
-    "src/ddvc/pricing/v2_frontier.py",
-    "src/ddvc/pricing/v2_replay.py",
-    "src/ddvc/prices.py",
-    "src/ddvc/provenance.py",
-    "src/ddvc/realised.py",
-    "src/ddvc/reconstruct/__init__.py",
-    "src/ddvc/release_calendar.py",
-    "src/ddvc/route_cost.py",
-    "src/ddvc/route_roles.py",
-    "src/ddvc/runtime.py",
-    "src/ddvc/source_records.py",
-    "src/ddvc/state_data.py",
-    "src/ddvc/tables.py",
-]
-REPLAY_CHECKPOINT_DEPENDENCY_MANIFEST = [
-    "scripts/build_transaction_state_frontier.py",
-    "src/ddvc/asset_types.py",
-    "src/ddvc/data_release.py",
-    "src/ddvc/pricing/tick_replay.py",
-    "src/ddvc/pricing/tick_frontier.py",
-    "src/ddvc/pricing/tick_quote.py",
-    "src/ddvc/pricing/tick_state.py",
-    "src/ddvc/pricing/v3pools.py",
-    "src/ddvc/provenance.py",
-    "src/ddvc/runtime.py",
-    "src/ddvc/source_records.py",
-    "src/ddvc/state_data.py",
-]
+FRONTIER_DEPENDENCY_REGISTRY = {
+    "scoring": (
+        "scripts/build_transaction_state_frontier.py",
+        "src/ddvc/analysis/transaction_frontier.py",
+        "src/ddvc/asset_types.py",
+        "src/ddvc/calendar.py",
+        "src/ddvc/cpquote.py",
+        "src/ddvc/pricing/path_frontier.py",
+        "src/ddvc/pricing/mixed_frontier.py",
+        "src/ddvc/pricing/tick_frontier.py",
+        "src/ddvc/pricing/tick_quote.py",
+        "src/ddvc/pricing/tick_replay.py",
+        "src/ddvc/pricing/tick_state.py",
+        "src/ddvc/pricing/v3pools.py",
+        "src/ddvc/pricing/v3quote.py",
+        "src/ddvc/pricing/v2_frontier.py",
+        "src/ddvc/pricing/v2_replay.py",
+        "src/ddvc/prices.py",
+        "src/ddvc/realised.py",
+        "src/ddvc/reconstruct/__init__.py",
+        "src/ddvc/release_calendar.py",
+        "src/ddvc/route_cost.py",
+        "src/ddvc/route_roles.py",
+        "src/ddvc/source_records.py",
+        "src/ddvc/state_data.py",
+        "src/ddvc/v4_quarantine.py",
+    ),
+    "publication": (
+        "src/ddvc/panel_assembly.py",
+        "src/ddvc/provenance.py",
+        "src/ddvc/runtime.py",
+        "src/ddvc/tables.py",
+    ),
+}
+
+
+def frontier_dependency_sources(*groups: str) -> list[str]:
+    sources = [
+        source
+        for group in groups
+        for source in FRONTIER_DEPENDENCY_REGISTRY[group]
+    ]
+    if len(sources) != len(set(sources)):
+        raise RuntimeError("frontier dependency groups overlap")
+    return sources
+
+
+SCORING_CACHE_SOURCES = frontier_dependency_sources("scoring")
+OUTPUT_PROVENANCE_SOURCES = frontier_dependency_sources("scoring", "publication")
 
 
 def candidate_vehicles() -> tuple[str, ...]:
@@ -169,16 +174,16 @@ def candidate_vehicles() -> tuple[str, ...]:
 
 def frontier_cache_identity(inputs: list[Path]) -> tuple[str, str, str]:
     """Return separate code/input identities plus their short cache generation."""
-    engine_key = cache_key(FRONTIER_DEPENDENCY_MANIFEST, length=64)
+    engine_key = cache_key(SCORING_CACHE_SOURCES, length=64)
     input_key = cache_key([], inputs=inputs, length=64)
-    generation = cache_key(FRONTIER_DEPENDENCY_MANIFEST, inputs=inputs)
+    generation = cache_key(SCORING_CACHE_SOURCES, inputs=inputs)
     return engine_key, input_key, generation
 
 
 def replay_checkpoint_engine_key(inputs: list[Path]) -> str:
     """Identify the checkpoint schema, replay code, and immutable replay inputs."""
     return cache_key(
-        REPLAY_CHECKPOINT_DEPENDENCY_MANIFEST,
+        SCORING_CACHE_SOURCES,
         inputs=inputs,
         length=64,
     )
@@ -1400,6 +1405,65 @@ def summarise(panel: pd.DataFrame) -> pd.DataFrame:
     return pd.DataFrame(rows)
 
 
+def write_ordered_shard_manifest(
+    day_cache: Path,
+    support_rows: list[dict[str, object]],
+    *,
+    suffix: str,
+    count_column: str,
+    output: Path,
+    engine_key: str,
+    input_key: str,
+) -> tuple[Path, list[Path]]:
+    """Materialise the ordered marker closure for one assembled output."""
+    ordered_days = [str(row["day"]) for row in support_rows]
+    if not ordered_days or ordered_days != sorted(set(ordered_days)):
+        raise ValueError("frontier shard manifest days must be unique and ordered")
+    entries: list[dict[str, object]] = []
+    marker_paths: list[Path] = []
+    for row, day in zip(support_rows, ordered_days, strict=True):
+        contract = _cached_day_contract(
+            day_cache,
+            day,
+            engine_key=engine_key,
+            input_key=input_key,
+        )
+        if contract is None:
+            raise ValueError(f"frontier shard manifest lacks cached day: {day}")
+        marker_path = day_cache / f"{day}.support.json"
+        marker_paths.append(marker_path)
+        rows = int(row[count_column])
+        entries.append(
+            {
+                "day": day,
+                "rows": rows,
+                "shard": f"{day}{suffix}" if rows else None,
+                "marker": marker_path.name,
+                "marker_sha256": _file_sha256(marker_path),
+            }
+        )
+    manifest_body = {
+        "schema_version": ORDERED_SHARD_MANIFEST_SCHEMA_VERSION,
+        "artefact": output.name,
+        "engine_key": engine_key,
+        "input_key": input_key,
+        "count_column": count_column,
+        "shard_suffix": suffix,
+        "entries": entries,
+    }
+    root = hashlib.sha256(
+        json.dumps(manifest_body, sort_keys=True, separators=(",", ":")).encode()
+    ).hexdigest()
+    manifest = {**manifest_body, "ordered_shard_manifest_root": root}
+    manifest_path = day_cache / f"{output.name}.ordered-shards.json"
+    with atomic_output(manifest_path) as temporary:
+        temporary.write_text(
+            json.dumps(manifest, sort_keys=True, allow_nan=False) + "\n",
+            encoding="utf-8",
+        )
+    return manifest_path, marker_paths
+
+
 def assemble_cached_output(
     day_cache: Path,
     support_rows: list[dict[str, object]],
@@ -1413,42 +1477,15 @@ def assemble_cached_output(
     input_key: str,
 ) -> int:
     """Assemble a full-daily route ledger from validated day shards out of core."""
-    ordered_days = [str(row["day"]) for row in support_rows]
-    if ordered_days != sorted(set(ordered_days)):
-        raise ValueError("frontier shard manifest days must be unique and ordered")
-    manifest_digest = hashlib.sha256()
-    manifest_digest.update(
-        json.dumps(
-            {
-                "schema_version": DAY_CACHE_SCHEMA_VERSION,
-                "engine_key": engine_key,
-                "input_key": input_key,
-                "days": len(ordered_days),
-            },
-            sort_keys=True,
-            separators=(",", ":"),
-        ).encode()
+    manifest_path, marker_paths = write_ordered_shard_manifest(
+        day_cache,
+        support_rows,
+        suffix=suffix,
+        count_column=count_column,
+        output=output,
+        engine_key=engine_key,
+        input_key=input_key,
     )
-    manifest_digest.update(b"\n")
-    for day in ordered_days:
-        contract = _cached_day_contract(
-            day_cache,
-            day,
-            engine_key=engine_key,
-            input_key=input_key,
-        )
-        if contract is None:
-            raise ValueError(f"frontier shard manifest lacks cached day: {day}")
-        marker_sha256 = _file_sha256(day_cache / f"{day}.support.json")
-        manifest_digest.update(
-            json.dumps(
-                {"day": day, "marker_sha256": marker_sha256},
-                sort_keys=True,
-                separators=(",", ":"),
-            ).encode()
-        )
-        manifest_digest.update(b"\n")
-    ordered_shard_manifest_root = manifest_digest.hexdigest()
     expected = sum(int(row[count_column]) for row in support_rows)
     files = [
         day_cache / f"{row['day']}{suffix}"
@@ -1477,16 +1514,13 @@ def assemble_cached_output(
         )
     stamp(
         output,
-        code_sources=FRONTIER_DEPENDENCY_MANIFEST,
-        inputs=inputs,
+        code_sources=OUTPUT_PROVENANCE_SOURCES,
+        inputs=[*inputs, manifest_path, *marker_paths],
         rows=result.rows,
-        notes=f"{notes}; resumable day cache {day_cache.name}",
-        metadata={
-            "ordered_shard_manifest_root": ordered_shard_manifest_root,
-            "ordered_shard_manifest_count": len(ordered_days),
-            "ordered_shard_manifest_first_day": ordered_days[0],
-            "ordered_shard_manifest_last_day": ordered_days[-1],
-        },
+        notes=(
+            f"{notes}; resumable day cache {day_cache.name}; "
+            f"ordered shard manifest {manifest_path.name}"
+        ),
     )
     return result.rows
 
@@ -1725,7 +1759,7 @@ def main() -> int:
         write_panel(
             support,
             DAILY_SUPPORT,
-            code_sources=FRONTIER_DEPENDENCY_MANIFEST,
+            code_sources=OUTPUT_PROVENANCE_SOURCES,
             inputs=inputs,
             notes="daily V2/V3/V4 exact-state support funnel for the full estimation frontier",
         )
@@ -1759,28 +1793,28 @@ def main() -> int:
     write_panel(
         panel,
         AUDIT_PANEL,
-        code_sources=FRONTIER_DEPENDENCY_MANIFEST,
+        code_sources=OUTPUT_PROVENANCE_SOURCES,
         inputs=inputs,
         notes="77-date construction audit of the strict pre-transaction V2/V3/V4 frontier",
     )
     write_panel(
         rejections,
         AUDIT_REJECTIONS,
-        code_sources=FRONTIER_DEPENDENCY_MANIFEST,
+        code_sources=OUTPUT_PROVENANCE_SOURCES,
         inputs=inputs,
         notes="77-date route-level exclusion and chosen-route reproduction ledger",
     )
     write_exhibit(
         summary,
         AUDIT_SUMMARY,
-        code_sources=FRONTIER_DEPENDENCY_MANIFEST,
+        code_sources=OUTPUT_PROVENANCE_SOURCES,
         inputs=[AUDIT_PANEL],
         notes="construction-audit route and dollar magnitudes; not an estimation sample",
     )
     write_exhibit(
         support,
         AUDIT_SUPPORT,
-        code_sources=FRONTIER_DEPENDENCY_MANIFEST,
+        code_sources=OUTPUT_PROVENANCE_SOURCES,
         inputs=inputs,
         notes="77-date V2/V3/V4 exact-state support and chosen-route reproduction gate",
     )

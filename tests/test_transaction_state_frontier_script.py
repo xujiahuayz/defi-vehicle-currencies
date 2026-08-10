@@ -21,9 +21,12 @@ from ddvc.analysis.transaction_frontier import (
     positive_finite_amount,
 )
 from ddvc.pricing.path_frontier import PathQuote
+from ddvc.provenance import cache_key, sidecar_path, verify
 from scripts.build_transaction_state_frontier import (
-    FRONTIER_DEPENDENCY_MANIFEST,
+    FRONTIER_DEPENDENCY_REGISTRY,
+    OUTPUT_PROVENANCE_SOURCES,
     REPLAY_CAUSAL_FIELDS,
+    SCORING_CACHE_SOURCES,
     assemble_cached_output,
     candidate_vehicles,
     checkpoint_day,
@@ -270,26 +273,69 @@ class TransactionStateFrontierScriptTests(unittest.TestCase):
                     legacy, engine_key="engine", pre_day="20230416"
                 )
 
-    def test_frontier_engine_tracks_each_direct_load_bearing_dependency(self) -> None:
-        required = {
+    def test_frontier_dependency_groups_separate_scoring_from_publication(self) -> None:
+        scoring_changes = {
             "src/ddvc/route_cost.py",
-            "src/ddvc/data_release.py",
             "src/ddvc/calendar.py",
+            "src/ddvc/v4_quarantine.py",
         }
-        self.assertTrue(required <= set(FRONTIER_DEPENDENCY_MANIFEST))
+        non_scoring_changes = {
+            "src/ddvc/data_release.py",
+            "src/ddvc/runtime.py",
+            "src/ddvc/tables.py",
+            "src/ddvc/panel_assembly.py",
+        }
+        registered = [
+            source
+            for sources in FRONTIER_DEPENDENCY_REGISTRY.values()
+            for source in sources
+        ]
+        self.assertEqual(len(registered), len(set(registered)))
+        self.assertEqual(
+            SCORING_CACHE_SOURCES,
+            list(FRONTIER_DEPENDENCY_REGISTRY["scoring"]),
+        )
+        self.assertEqual(
+            OUTPUT_PROVENANCE_SOURCES,
+            [
+                *FRONTIER_DEPENDENCY_REGISTRY["scoring"],
+                *FRONTIER_DEPENDENCY_REGISTRY["publication"],
+            ],
+        )
+        self.assertTrue(scoring_changes <= set(SCORING_CACHE_SOURCES))
+        self.assertNotIn("src/ddvc/data_release.py", registered)
         with TemporaryDirectory() as directory:
             root = Path(directory)
-            for relative in FRONTIER_DEPENDENCY_MANIFEST:
+            for relative in [*registered, "src/ddvc/data_release.py"]:
                 path = root / relative
                 path.parent.mkdir(parents=True, exist_ok=True)
                 path.write_text(f"SOURCE = {relative!r}\n", encoding="utf-8")
             with patch("ddvc.provenance.ROOT", root):
-                baseline = frontier_cache_identity([])[0]
-                for relative in sorted(required):
+                baseline_scoring = frontier_cache_identity([])[0]
+                baseline_output = cache_key(OUTPUT_PROVENANCE_SOURCES)
+                for relative in sorted(scoring_changes):
                     path = root / relative
                     original = path.read_text(encoding="utf-8")
                     path.write_text(original + "CHANGED = True\n", encoding="utf-8")
-                    self.assertNotEqual(frontier_cache_identity([])[0], baseline)
+                    self.assertNotEqual(
+                        frontier_cache_identity([])[0], baseline_scoring
+                    )
+                    path.write_text(original, encoding="utf-8")
+                for relative in sorted(non_scoring_changes):
+                    path = root / relative
+                    original = path.read_text(encoding="utf-8")
+                    path.write_text(original + "CHANGED = True\n", encoding="utf-8")
+                    self.assertEqual(
+                        frontier_cache_identity([])[0], baseline_scoring
+                    )
+                    if relative == "src/ddvc/data_release.py":
+                        self.assertEqual(
+                            cache_key(OUTPUT_PROVENANCE_SOURCES), baseline_output
+                        )
+                    else:
+                        self.assertNotEqual(
+                            cache_key(OUTPUT_PROVENANCE_SOURCES), baseline_output
+                        )
                     path.write_text(original, encoding="utf-8")
 
     def test_validation_diagnostics_keep_rejected_tail_visible(self) -> None:
@@ -544,16 +590,68 @@ class TransactionStateFrontierScriptTests(unittest.TestCase):
                     input_key="input",
                 )
                 assembled = pd.read_parquet(output)
+                stamped_inputs = stamp_mock.call_args.kwargs["inputs"]
+                manifest_path = stamped_inputs[1]
+                manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
         self.assertEqual(rows, 2)
         self.assertEqual(len(assembled), 2)
         stamp_mock.assert_called_once()
-        self.assertEqual(stamp_mock.call_args.kwargs["inputs"], [canonical_input])
+        self.assertEqual(stamped_inputs[0], canonical_input)
+        self.assertEqual(manifest_path.name, "daily.parquet.ordered-shards.json")
+        self.assertEqual(
+            [path.name for path in stamped_inputs[2:]],
+            ["20250101.support.json", "20250102.support.json"],
+        )
         self.assertIn("resumable day cache", stamp_mock.call_args.kwargs["notes"])
-        metadata = stamp_mock.call_args.kwargs["metadata"]
-        self.assertEqual(len(metadata["ordered_shard_manifest_root"]), 64)
-        self.assertEqual(metadata["ordered_shard_manifest_count"], 2)
-        self.assertEqual(metadata["ordered_shard_manifest_first_day"], "20250101")
-        self.assertEqual(metadata["ordered_shard_manifest_last_day"], "20250102")
+        self.assertEqual(len(manifest["ordered_shard_manifest_root"]), 64)
+        self.assertEqual([entry["day"] for entry in manifest["entries"]], ["20250101", "20250102"])
+
+    def test_marker_mutation_makes_assembled_release_stale(self) -> None:
+        with TemporaryDirectory() as directory:
+            root = Path(directory)
+            day_cache = root / "cache"
+            for day in ("20250101", "20250102"):
+                write_cached_day(
+                    day_cache,
+                    day,
+                    pd.DataFrame({"day": [day], "route_id": [f"route-{day}"]}),
+                    pd.DataFrame(),
+                    {"day": day, "scored_routes": 1, "rejected_routes": 0},
+                    engine_key="engine",
+                    input_key="input",
+                )
+            output = root / "daily.parquet"
+            with (
+                patch("ddvc.provenance.ROOT", root),
+                patch("ddvc.provenance.MANIFESTS", root / "manifests"),
+            ):
+                assemble_cached_output(
+                    day_cache,
+                    [
+                        {"day": "20250101", "scored_routes": 1},
+                        {"day": "20250102", "scored_routes": 1},
+                    ],
+                    suffix=".parquet",
+                    count_column="scored_routes",
+                    output=output,
+                    inputs=[],
+                    notes="test",
+                    engine_key="engine",
+                    input_key="input",
+                )
+                self.assertEqual(verify(output)["status"], "ok")
+                record = json.loads(sidecar_path(output).read_text(encoding="utf-8"))
+                marker = day_cache / "20250101.support.json"
+                marker.write_text(marker.read_text(encoding="utf-8") + " ", encoding="utf-8")
+                verdict = verify(output)
+            self.assertTrue(
+                any(
+                    str(item["path"]).endswith("daily.parquet.ordered-shards.json")
+                    for item in record["inputs"]
+                )
+            )
+            self.assertEqual(verdict["status"], "stale")
+            self.assertIn("cache/20250101.support.json", verdict["changed_inputs"])
 
     def test_empty_day_preserves_calendar_support(self) -> None:
         empty_replay = V2ReplayDay({}, {}, {}, {}, {}, {})
