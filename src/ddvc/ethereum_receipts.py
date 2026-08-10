@@ -6,11 +6,27 @@ import json
 from pathlib import Path
 
 from ddvc.paths import SHARED_RUNTIME_DIR
-from ddvc.quoter import rpc_post
+from ddvc.quoter import (
+    canonical_json_sha256,
+    coerce_rpc_envelope,
+    rpc_post,
+    validate_rpc_attempts,
+)
 from ddvc.runtime import atomic_output
 
 
 RECEIPT_CACHE = SHARED_RUNTIME_DIR / "cache" / "ethereum_receipts"
+
+
+def receipt_payload(tx_hash: str) -> dict[str, object]:
+    """Canonical exact-receipt request for one transaction."""
+
+    return {
+        "jsonrpc": "2.0",
+        "id": 1,
+        "method": "eth_getTransactionReceipt",
+        "params": [tx_hash.lower()],
+    }
 
 
 def parse_receipt(
@@ -105,10 +121,11 @@ def receipt_is_current(
     expected_block: int | None,
     require_block_hash: bool = False,
     require_logs: bool = False,
+    require_evidence: bool = False,
 ) -> bool:
     if not isinstance(row, dict):
         return False
-    return bool(
+    fields_current = bool(
         row.get("tx_hash") == tx_hash.lower()
         and isinstance(row.get("gas_used"), int)
         and int(row["gas_used"]) > 0
@@ -117,7 +134,8 @@ def receipt_is_current(
         and (
             not require_block_hash
             or (
-                isinstance(row.get("block_hash"), str)
+                isinstance(row.get("block_number"), int)
+                and isinstance(row.get("block_hash"), str)
                 and str(row["block_hash"]).startswith("0x")
                 and len(str(row["block_hash"])) == 66
             )
@@ -131,6 +149,49 @@ def receipt_is_current(
             or row.get("block_number") == int(expected_block)
         )
     )
+    return fields_current and (
+        not require_evidence
+        or receipt_evidence_is_current(
+            row,
+            tx_hash,
+            expected_block=expected_block,
+        )
+    )
+
+
+def receipt_evidence_is_current(
+    row: object,
+    tx_hash: str,
+    *,
+    expected_block: int | None,
+) -> bool:
+    """Reopen one exact RPC response and match every copied receipt field."""
+
+    if not isinstance(row, dict):
+        return False
+    try:
+        endpoint = row.get("rpc_endpoint")
+        validate_rpc_attempts(row.get("rpc_attempts"), endpoint)
+        request = receipt_payload(tx_hash)
+        if row.get("rpc_request") != request:
+            return False
+        response = row.get("rpc_response")
+        if (
+            not isinstance(response, dict)
+            or response.get("id") != 1
+            or row.get("response_sha256") != canonical_json_sha256(response)
+        ):
+            return False
+        parsed = parse_receipt(
+            tx_hash,
+            response,
+            expected_block=expected_block,
+        )
+        if parsed is None:
+            return False
+    except (TypeError, ValueError):
+        return False
+    return all(row.get(key) == value for key, value in parsed.items())
 
 
 def receipt_logs_are_current(logs: object) -> bool:
@@ -170,6 +231,7 @@ def fetch_receipt(
     expected_block: int | None = None,
     require_block_hash: bool = False,
     include_logs: bool = False,
+    require_evidence: bool = False,
     rpc_request=rpc_post,
 ) -> dict[str, object]:
     """Fetch one receipt into a transaction-keyed atomic cache."""
@@ -187,32 +249,43 @@ def fetch_receipt(
             expected_block=expected_block,
             require_block_hash=require_block_hash,
             require_logs=include_logs,
+            require_evidence=require_evidence,
         ):
             return row
+    request = receipt_payload(normalized_hash)
     response = rpc_request(
-        {
-            "jsonrpc": "2.0",
-            "id": 1,
-            "method": "eth_getTransactionReceipt",
-            "params": [normalized_hash],
-        },
+        request,
         timeout=20,
         retries=2,
         sleep=0.02,
         retry_json_errors=True,
+        **({"return_evidence": True} if require_evidence and rpc_request is rpc_post else {}),
     )
+    envelope = coerce_rpc_envelope(response) if require_evidence else None
+    raw_response = envelope.response if envelope is not None else response
     row = parse_receipt(
         normalized_hash,
-        response,
+        raw_response,
         expected_block=expected_block,
         include_logs=include_logs,
     )
+    if row is not None and envelope is not None:
+        row.update(
+            {
+                "rpc_request": request,
+                "rpc_response": raw_response,
+                "rpc_endpoint": envelope.endpoint,
+                "rpc_attempts": list(envelope.attempts),
+                "response_sha256": canonical_json_sha256(raw_response),
+            }
+        )
     if row is None or not receipt_is_current(
         row,
         normalized_hash,
         expected_block=expected_block,
         require_block_hash=require_block_hash,
         require_logs=include_logs,
+        require_evidence=require_evidence,
     ):
         raise RuntimeError("receipt response is incomplete or violates its requested identity")
     cache.mkdir(parents=True, exist_ok=True)
@@ -221,13 +294,29 @@ def fetch_receipt(
     return row
 
 
-def write_receipt_snapshot(receipts: list[dict], path: Path) -> Path:
+def write_receipt_snapshot(
+    receipts: list[dict],
+    path: Path,
+    *,
+    require_evidence: bool = False,
+) -> Path:
     """Install receipt evidence in deterministic transaction order."""
 
     ordered = sorted(receipts, key=lambda row: str(row["tx_hash"]))
     hashes = [str(row["tx_hash"]) for row in ordered]
     if len(hashes) != len(set(hashes)):
         raise ValueError("selected receipt snapshot contains duplicate transactions")
+    if require_evidence and any(
+        not receipt_is_current(
+            row,
+            str(row.get("tx_hash") or ""),
+            expected_block=row.get("block_number"),
+            require_block_hash=True,
+            require_evidence=True,
+        )
+        for row in ordered
+    ):
+        raise ValueError("selected receipt snapshot contains unverifiable RPC evidence")
     with atomic_output(path) as temporary:
         with temporary.open("w", encoding="utf-8") as handle:
             for row in ordered:
@@ -235,7 +324,11 @@ def write_receipt_snapshot(receipts: list[dict], path: Path) -> Path:
     return path
 
 
-def load_receipt_snapshot(path: Path) -> dict[str, dict]:
+def load_receipt_snapshot(
+    path: Path,
+    *,
+    require_evidence: bool = False,
+) -> dict[str, dict]:
     """Load valid positive-gas immutable receipts from one evidence snapshot."""
 
     if not path.exists():
@@ -248,6 +341,19 @@ def load_receipt_snapshot(path: Path) -> dict[str, dict]:
             except json.JSONDecodeError:
                 continue
             tx_hash = str(row.get("tx_hash") or "").lower()
-            if tx_hash and isinstance(row.get("gas_used"), int) and row["gas_used"] > 0:
+            if (
+                tx_hash
+                and (
+                    receipt_is_current(
+                        row,
+                        tx_hash,
+                        expected_block=row.get("block_number"),
+                        require_block_hash=True,
+                        require_evidence=True,
+                    )
+                    if require_evidence
+                    else isinstance(row.get("gas_used"), int) and row["gas_used"] > 0
+                )
+            ):
                 rows[tx_hash] = row
     return rows

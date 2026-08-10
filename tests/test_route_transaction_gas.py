@@ -7,6 +7,7 @@ import pytest
 
 from ddvc.ethereum_blocks import block_header_is_current, parse_block_header
 from ddvc.ethereum_receipts import parse_receipt, receipt_is_current
+from ddvc.quoter import canonical_json_sha256
 from ddvc.gas import load_route_transaction_gas
 from scripts.process import build_route_gas_units, build_route_transaction_gas
 from scripts.process.build_route_transaction_gas import (
@@ -17,26 +18,96 @@ from scripts.process.build_route_transaction_gas import (
 )
 
 
+def evidence(request: dict[str, object], response: dict[str, object]) -> dict[str, object]:
+    endpoint = {"host": "injected", "endpoint_sha256": "0" * 64}
+    return {
+        "rpc_request": request,
+        "rpc_response": response,
+        "rpc_endpoint": endpoint,
+        "rpc_attempts": [
+            {
+                "endpoint": endpoint,
+                "attempt": 1,
+                "classification": "success",
+                "http_status": None,
+                "rpc_code": None,
+                "message": "success",
+            }
+        ],
+        "response_sha256": canonical_json_sha256(response),
+    }
+
+
 def receipt(tx_hash: str, block_number: int, gas_price: int) -> dict[str, object]:
+    block_hash = "0x" + f"{block_number:064x}"
+    response = {
+        "jsonrpc": "2.0",
+        "id": 1,
+        "result": {
+            "transactionHash": tx_hash,
+            "blockNumber": hex(block_number),
+            "blockHash": block_hash,
+            "gasUsed": hex(120_000),
+            "status": "0x1",
+            "to": "0xrouter",
+            "from": "0xsender",
+            "effectiveGasPrice": hex(gas_price),
+            "logs": [],
+        },
+    }
     return {
         "tx_hash": tx_hash,
         "block_number": block_number,
-        "block_hash": "0x" + f"{block_number:064x}",
+        "block_hash": block_hash,
         "gas_used": 120_000,
         "status": 1,
         "tx_to": "0xrouter",
         "tx_from": "0xsender",
         "effective_gas_price_wei": gas_price,
+        **evidence(
+            {
+                "jsonrpc": "2.0",
+                "id": 1,
+                "method": "eth_getTransactionReceipt",
+                "params": [tx_hash],
+            },
+            response,
+        ),
     }
 
 
-def header(block_number: int, base_fee: int | None) -> dict[str, object]:
+def header(
+    block_number: int,
+    base_fee: int | None,
+    *,
+    block_hash: str | None = None,
+) -> dict[str, object]:
+    block_hash = block_hash or "0x" + f"{block_number:064x}"
+    parent_hash = "0x" + f"{block_number - 1:064x}"
+    result = {
+        "number": hex(block_number),
+        "hash": block_hash,
+        "parentHash": parent_hash,
+        "timestamp": hex(1_700_000_000 + block_number),
+    }
+    if base_fee is not None:
+        result["baseFeePerGas"] = hex(base_fee)
+    response = {"jsonrpc": "2.0", "id": 1, "result": result}
     return {
         "block_number": block_number,
-        "block_hash": "0x" + f"{block_number:064x}",
-        "parent_hash": "0x" + f"{block_number - 1:064x}",
+        "block_hash": block_hash,
+        "parent_hash": parent_hash,
         "timestamp": 1_700_000_000 + block_number,
         "base_fee_per_gas_wei": base_fee,
+        **evidence(
+            {
+                "jsonrpc": "2.0",
+                "id": 1,
+                "method": "eth_getBlockByNumber",
+                "params": [hex(block_number), False],
+            },
+            response,
+        ),
     }
 
 
@@ -120,12 +191,24 @@ def test_receipt_panel_marks_zero_effective_price_unsupported(tmp_path: Path) ->
 
 def test_receipt_panel_rejects_receipt_header_hash_disagreement() -> None:
     requests = pd.DataFrame({"tx_hash": ["0xabc"], "block_number": [10]})
-    wrong_header = {**header(10, 8_000_000_000), "block_hash": "0x" + "f" * 64}
+    wrong_header = header(10, 8_000_000_000, block_hash="0x" + "f" * 64)
     with pytest.raises(RuntimeError, match="hashes disagree"):
         receipt_panel(
             [receipt("0xabc", 10, 10_000_000_000)],
             requests,
             [wrong_header],
+        )
+
+
+def test_receipt_panel_rejects_self_attested_copied_fields() -> None:
+    requests = pd.DataFrame({"tx_hash": ["0xabc"], "block_number": [10]})
+    tampered = receipt("0xabc", 10, 10_000_000_000)
+    tampered["gas_used"] = 1
+    with pytest.raises(RuntimeError, match="cannot be reopened"):
+        receipt_panel(
+            [tampered],
+            requests,
+            [header(10, 8_000_000_000)],
         )
 
 
@@ -193,3 +276,13 @@ def test_block_header_parser_preserves_pre_eip1559_missing_base_fee() -> None:
     assert post_london["base_fee_per_gas_wei"] == 8_000_000_000
     with pytest.raises(ValueError, match="returned block"):
         parse_block_header(11, response)
+
+
+def test_block_header_evidence_rejects_tampered_copied_fields() -> None:
+    exact = header(10, 8_000_000_000)
+    assert block_header_is_current(exact, 10, require_evidence=True)
+    assert not block_header_is_current(
+        {**exact, "base_fee_per_gas_wei": 1},
+        10,
+        require_evidence=True,
+    )

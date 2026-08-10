@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Fetch exact receipt gas prices for every route in the gross counterfactual panel."""
+"""Fetch exact, block-bound receipt gas prices and RPC evidence for every gross route."""
 
 from __future__ import annotations
 
@@ -13,13 +13,19 @@ import pandas as pd
 from ddvc.data_release import require_node_d_release
 from ddvc.ethereum_blocks import (
     BLOCK_HEADER_CACHE,
+    block_header_is_current,
     fetch_block_header,
     write_block_header_snapshot,
 )
-from ddvc.ethereum_receipts import RECEIPT_CACHE, fetch_receipt, write_receipt_snapshot
+from ddvc.ethereum_receipts import (
+    RECEIPT_CACHE,
+    fetch_receipt,
+    receipt_is_current,
+    write_receipt_snapshot,
+)
 from ddvc.paths import DATA_DIR, REPO_ROOT, SHARED_RUNTIME_DIR
 from ddvc.provenance import require_current_artifacts
-from ddvc.quoter import rpc_post
+from ddvc.quoter import RPC_EVIDENCE_FIELDS, rpc_post
 from ddvc.runtime import bounded_workers, exclusive_job, interruptible_thread_pool
 from ddvc.tables import write_panel
 
@@ -86,6 +92,7 @@ def fetch_one(tx_hash: str, block_number: int) -> dict[str, object]:
         cache=CACHE,
         expected_block=block_number,
         require_block_hash=True,
+        require_evidence=True,
         rpc_request=rpc_post,
     )
 
@@ -94,6 +101,7 @@ def fetch_one_header(block_number: int) -> dict[str, object]:
     return fetch_block_header(
         block_number,
         cache=HEADER_CACHE,
+        require_evidence=True,
         rpc_request=rpc_post,
     )
 
@@ -175,6 +183,29 @@ def receipt_panel(
     headers: list[dict[str, object]],
 ) -> pd.DataFrame:
     panel = pd.DataFrame.from_records(receipts)
+    if any(
+        not receipt_is_current(
+            row,
+            str(row.get("tx_hash") or ""),
+            expected_block=row.get("block_number"),
+            require_block_hash=True,
+            require_evidence=True,
+        )
+        for row in receipts
+    ):
+        raise RuntimeError("exact route receipt evidence cannot be reopened")
+    if any(
+        not block_header_is_current(
+            row,
+            int(row.get("block_number", -1)),
+            require_evidence=True,
+        )
+        for row in headers
+    ):
+        raise RuntimeError("exact route block-header evidence cannot be reopened")
+    panel = panel.drop(
+        columns=[column for column in RPC_EVIDENCE_FIELDS if column in panel],
+    )
     expected = requests.rename(columns={"block_number": "expected_block"})
     panel = panel.merge(expected, on="tx_hash", how="inner", validate="one_to_one")
     if len(panel) != len(requests):
@@ -185,6 +216,9 @@ def receipt_panel(
         raise RuntimeError("exact route receipt panel changed a transaction block identity")
     header_panel = pd.DataFrame.from_records(headers).rename(
         columns={"block_hash": "header_block_hash"}
+    )
+    header_panel = header_panel.drop(
+        columns=[column for column in RPC_EVIDENCE_FIELDS if column in header_panel],
     )
     expected_blocks = block_header_requests(requests)
     if header_panel.empty or header_panel["block_number"].duplicated().any():
@@ -278,8 +312,16 @@ def main() -> int:
                 f"receipts={len(panel):,}; blocks={len(headers):,}"
             )
             return 0
-        evidence = write_receipt_snapshot(receipts, RECEIPT_EVIDENCE)
-        block_evidence = write_block_header_snapshot(headers, BLOCK_HEADER_EVIDENCE)
+        evidence = write_receipt_snapshot(
+            receipts,
+            RECEIPT_EVIDENCE,
+            require_evidence=True,
+        )
+        block_evidence = write_block_header_snapshot(
+            headers,
+            BLOCK_HEADER_EVIDENCE,
+            require_evidence=True,
+        )
         write_panel(
             panel,
             OUT_PANEL,

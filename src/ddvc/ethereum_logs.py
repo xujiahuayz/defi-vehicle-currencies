@@ -15,6 +15,8 @@ from ddvc.quoter import (
     RpcCapacityError as ExactLogCapacityError,
     RpcEnvelope,
     RpcSemanticError as ExactLogRpcError,
+    canonical_json_sha256,
+    coerce_rpc_envelope,
     rpc_post,
     validate_rpc_attempts,
 )
@@ -36,34 +38,6 @@ RAW_LOG_SCHEMA = pa.schema(
         pa.field("removed", pa.bool_(), nullable=False),
     ]
 )
-
-
-def coerce_rpc_envelope(response: object) -> RpcEnvelope:
-    """Wrap injected test transports in the same evidence shape as live RPC."""
-
-    if isinstance(response, RpcEnvelope) and response.attempts:
-        return response
-    endpoint = (
-        response.endpoint
-        if isinstance(response, RpcEnvelope)
-        else {"host": "injected", "endpoint_sha256": "0" * 64}
-    )
-    attempt = {
-        "endpoint": endpoint,
-        "attempt": 1,
-        "classification": "success",
-        "http_status": None,
-        "rpc_code": None,
-        "message": "success",
-    }
-    payload = response.response if isinstance(response, RpcEnvelope) else response
-    return RpcEnvelope(payload, endpoint, (attempt,))
-
-
-def canonical_json_sha256(value: object) -> str:
-    return hashlib.sha256(
-        json.dumps(value, sort_keys=True, separators=(",", ":")).encode()
-    ).hexdigest()
 
 
 def is_sha256(value: object) -> bool:
@@ -555,9 +529,7 @@ def fetch_exact_logs_with_evidence(
         "response_sha256": canonical_json_sha256(envelope.response),
         "frozen_upper_request": header_payload,
         "frozen_upper_response": by_id[2],
-        "frozen_upper_response_sha256": hashlib.sha256(
-            json.dumps(by_id[2], sort_keys=True, separators=(",", ":")).encode()
-        ).hexdigest(),
+        "frozen_upper_response_sha256": canonical_json_sha256(by_id[2]),
     }
 
 

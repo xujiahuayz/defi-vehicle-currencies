@@ -9,6 +9,7 @@ from unittest.mock import patch
 import pandas as pd
 
 from ddvc.fetch.sources import DEX_SOURCES
+from ddvc.quoter import canonical_json_sha256
 from ddvc.route_gas import (
     candidate_transactions,
     deterministic_cell_sample,
@@ -38,9 +39,11 @@ def leg(
     source: str = "uniswap_v2",
     n_components: int = 1,
     route_class: str = "coherent",
+    block_number: int = 100,
 ) -> dict:
     return {
         "tx_hash": tx_hash,
+        "block_number": block_number,
         "component_id": 0,
         "n_components": n_components,
         "source": source,
@@ -51,6 +54,59 @@ def leg(
         "route_class": route_class,
         "tin_role": tin_role,
         "tout_role": tout_role,
+    }
+
+
+def receipt_evidence(
+    tx_hash: str,
+    block_number: int,
+    gas_used: int,
+) -> dict[str, object]:
+    block_hash = "0x" + f"{block_number:064x}"
+    response = {
+        "jsonrpc": "2.0",
+        "id": 1,
+        "result": {
+            "transactionHash": tx_hash,
+            "blockNumber": hex(block_number),
+            "blockHash": block_hash,
+            "gasUsed": hex(gas_used),
+            "status": "0x1",
+            "to": "0xrouter",
+            "from": "0xsender",
+            "effectiveGasPrice": "0x64",
+            "logs": [],
+        },
+    }
+    endpoint = {"host": "injected", "endpoint_sha256": "0" * 64}
+    return {
+        "tx_hash": tx_hash,
+        "block_number": block_number,
+        "block_hash": block_hash,
+        "gas_used": gas_used,
+        "status": 1,
+        "tx_to": "0xrouter",
+        "tx_from": "0xsender",
+        "effective_gas_price_wei": 100,
+        "rpc_request": {
+            "jsonrpc": "2.0",
+            "id": 1,
+            "method": "eth_getTransactionReceipt",
+            "params": [tx_hash],
+        },
+        "rpc_response": response,
+        "rpc_endpoint": endpoint,
+        "rpc_attempts": [
+            {
+                "endpoint": endpoint,
+                "attempt": 1,
+                "classification": "success",
+                "http_status": None,
+                "rpc_code": None,
+                "message": "success",
+            }
+        ],
+        "response_sha256": canonical_json_sha256(response),
     }
 
 
@@ -323,24 +379,33 @@ class RouteGasUnitTests(unittest.TestCase):
         with tempfile.TemporaryDirectory() as temporary:
             route_gas.CACHE = Path(temporary)
             response = {
+                "jsonrpc": "2.0",
+                "id": 1,
                 "result": {
+                    "transactionHash": "0xabc",
+                    "blockNumber": "0xa",
+                    "blockHash": "0x" + "a" * 64,
                     "gasUsed": "0x3e8",
                     "status": "0x1",
                     "to": "0xrouter",
                     "from": "0xsender",
+                    "effectiveGasPrice": "0x64",
+                    "logs": [],
                 }
             }
             try:
                 with patch.object(route_gas, "rpc_post", return_value=response) as request:
-                    route_gas.fetch_receipt("0xabc")
+                    fetched = route_gas.fetch_receipt("0xabc", 10)
             finally:
                 route_gas.CACHE = original_cache
         self.assertTrue(request.call_args.kwargs["retry_json_errors"])
+        self.assertEqual(fetched["block_number"], 10)
+        self.assertIn("rpc_response", fetched)
 
     def test_receipt_snapshot_is_sorted_and_byte_deterministic(self) -> None:
         receipts = [
-            {"tx_hash": "0xb", "gas_used": 2, "status": 1},
-            {"tx_hash": "0xa", "gas_used": 1, "status": 1},
+            receipt_evidence("0xb", 2, 2),
+            receipt_evidence("0xa", 1, 1),
         ]
         with tempfile.TemporaryDirectory() as temporary:
             path = Path(temporary) / "selection.jsonl"
@@ -360,6 +425,7 @@ class RouteGasUnitTests(unittest.TestCase):
             path.write_text(
                 "\n".join(
                     [
+                        json.dumps(receipt_evidence("0xa", 10, 10)),
                         json.dumps({"tx_hash": "0xA", "gas_used": 10, "status": 1}),
                         json.dumps({"tx_hash": "0xb", "gas_used": 0, "status": 1}),
                         "not-json",

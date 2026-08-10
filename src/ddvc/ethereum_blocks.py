@@ -6,7 +6,12 @@ import json
 from pathlib import Path
 
 from ddvc.paths import SHARED_RUNTIME_DIR
-from ddvc.quoter import rpc_post
+from ddvc.quoter import (
+    canonical_json_sha256,
+    coerce_rpc_envelope,
+    rpc_post,
+    validate_rpc_attempts,
+)
 from ddvc.runtime import atomic_output
 
 
@@ -78,10 +83,15 @@ def request_block_header(
     return parse_block_header(block_number, response)
 
 
-def block_header_is_current(row: object, block_number: int) -> bool:
+def block_header_is_current(
+    row: object,
+    block_number: int,
+    *,
+    require_evidence: bool = False,
+) -> bool:
     if not isinstance(row, dict):
         return False
-    return bool(
+    fields_current = bool(
         row.get("block_number") == int(block_number)
         and isinstance(row.get("timestamp"), int)
         and int(row["timestamp"]) > 0
@@ -97,12 +107,40 @@ def block_header_is_current(row: object, block_number: int) -> bool:
             )
         )
     )
+    return fields_current and (
+        not require_evidence
+        or block_header_evidence_is_current(row, block_number)
+    )
+
+
+def block_header_evidence_is_current(row: object, block_number: int) -> bool:
+    """Reopen one exact header response and match every copied field."""
+
+    if not isinstance(row, dict):
+        return False
+    try:
+        validate_rpc_attempts(row.get("rpc_attempts"), row.get("rpc_endpoint"))
+        request = block_header_payload(block_number)
+        if row.get("rpc_request") != request:
+            return False
+        response = row.get("rpc_response")
+        if (
+            not isinstance(response, dict)
+            or response.get("id") != 1
+            or row.get("response_sha256") != canonical_json_sha256(response)
+        ):
+            return False
+        parsed = parse_block_header(block_number, response)
+    except (RuntimeError, TypeError, ValueError):
+        return False
+    return all(row.get(key) == value for key, value in parsed.items())
 
 
 def fetch_block_header(
     block_number: int,
     *,
     cache: Path = BLOCK_HEADER_CACHE,
+    require_evidence: bool = False,
     rpc_request=rpc_post,
 ) -> dict[str, object]:
     """Fetch one block header into an exact-number atomic cache."""
@@ -114,22 +152,59 @@ def fetch_block_header(
             row = json.loads(cached.read_text(encoding="utf-8"))
         except (OSError, json.JSONDecodeError):
             row = None
-        if block_header_is_current(row, block):
+        if block_header_is_current(row, block, require_evidence=require_evidence):
             return row
-    row = request_block_header(block, rpc_request=rpc_request)
+    if require_evidence:
+        request = block_header_payload(block)
+        response = rpc_request(
+            request,
+            timeout=30,
+            retries=2,
+            retry_json_errors=True,
+            **({"return_evidence": True} if rpc_request is rpc_post else {}),
+        )
+        envelope = coerce_rpc_envelope(response)
+        row = parse_block_header(block, envelope.response)
+        row.update(
+            {
+                "rpc_request": request,
+                "rpc_response": envelope.response,
+                "rpc_endpoint": envelope.endpoint,
+                "rpc_attempts": list(envelope.attempts),
+                "response_sha256": canonical_json_sha256(envelope.response),
+            }
+        )
+        if not block_header_is_current(row, block, require_evidence=True):
+            raise RuntimeError("block-header response lacks verifiable RPC evidence")
+    else:
+        row = request_block_header(block, rpc_request=rpc_request)
     cache.mkdir(parents=True, exist_ok=True)
     with atomic_output(cached) as temporary:
         temporary.write_text(json.dumps(row, sort_keys=True), encoding="utf-8")
     return row
 
 
-def write_block_header_snapshot(headers: list[dict], path: Path) -> Path:
+def write_block_header_snapshot(
+    headers: list[dict],
+    path: Path,
+    *,
+    require_evidence: bool = False,
+) -> Path:
     """Install deterministic unique block-header evidence."""
 
     ordered = sorted(headers, key=lambda row: int(row["block_number"]))
     blocks = [int(row["block_number"]) for row in ordered]
     if len(blocks) != len(set(blocks)):
         raise ValueError("selected block-header snapshot contains duplicate blocks")
+    if require_evidence and any(
+        not block_header_is_current(
+            row,
+            int(row.get("block_number", -1)),
+            require_evidence=True,
+        )
+        for row in ordered
+    ):
+        raise ValueError("selected block-header snapshot contains unverifiable RPC evidence")
     with atomic_output(path) as temporary:
         with temporary.open("w", encoding="utf-8") as handle:
             for row in ordered:

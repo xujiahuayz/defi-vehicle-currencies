@@ -1,12 +1,7 @@
 #!/usr/bin/env python3
 """Receipt-measured gas units by route topology, venue sequence and executor.
 
-The paper currently carries three pooled constants for one-, two- and three-leg
-routes, but the script that produced them did not survive. That is not reproducible
-and it cannot support venue-specific all-in route costs. This instrument selects
-transactions containing exactly one linear reconstructed route component, keeps
-its ordered venue sequence and intermediary type, fetches one stored receipt per
-transaction, and reports the distribution of total gas used.
+The paper currently carries three pooled constants for one-, two- and three-leg routes, but the script that produced them did not survive. That is not reproducible and it cannot support venue-specific all-in route costs. This instrument selects transactions containing exactly one linear reconstructed route component, keeps its ordered venue sequence and intermediary type, fetches one block-bound receipt with reopenable RPC evidence per transaction, and reports total-gas distributions.
 
 Receipt gas is transaction-level. Restricting to one reconstructed component
 removes visible route mixtures, but a router transaction may still perform token
@@ -151,19 +146,26 @@ def sample_day(
     return len(candidates), sample, False
 
 
-def fetch_receipt(tx_hash: str) -> dict:
+def fetch_receipt(tx_hash: str, block_number: int) -> dict:
     """Fetch and atomically cache one transaction receipt."""
-    return fetch_ethereum_receipt(tx_hash, cache=CACHE, rpc_request=rpc_post)
+    return fetch_ethereum_receipt(
+        tx_hash,
+        cache=CACHE,
+        expected_block=block_number,
+        require_block_hash=True,
+        require_evidence=True,
+        rpc_request=rpc_post,
+    )
 
 
 def write_receipt_snapshot(receipts: list[dict], path: Path = RECEIPT_SNAPSHOT) -> Path:
     """Install the exact selected receipt inputs in deterministic transaction order."""
-    return write_ethereum_receipt_snapshot(receipts, path)
+    return write_ethereum_receipt_snapshot(receipts, path, require_evidence=True)
 
 
 def load_receipt_snapshot(path: Path = RECEIPT_SNAPSHOT) -> dict[str, dict]:
     """Reusable immutable-chain receipts from the previous selected sample."""
-    return load_ethereum_receipt_snapshot(path)
+    return load_ethereum_receipt_snapshot(path, require_evidence=True)
 
 
 def _main_unlocked() -> int:
@@ -234,18 +236,31 @@ def _main_unlocked() -> int:
     )
 
     stored_receipts = load_receipt_snapshot()
-    selected_hashes = [str(tx_hash).lower() for tx_hash in sample["tx_hash"]]
-    receipts = [stored_receipts[tx_hash] for tx_hash in selected_hashes if tx_hash in stored_receipts]
-    missing_hashes = [tx_hash for tx_hash in selected_hashes if tx_hash not in stored_receipts]
+    selected_requests = [
+        (str(row.tx_hash).lower(), int(row.block_number))
+        for row in sample.itertuples(index=False)
+    ]
+    receipts = [
+        stored_receipts[tx_hash]
+        for tx_hash, block_number in selected_requests
+        if tx_hash in stored_receipts
+        and int(stored_receipts[tx_hash]["block_number"]) == block_number
+    ]
+    missing_requests = [
+        (tx_hash, block_number)
+        for tx_hash, block_number in selected_requests
+        if tx_hash not in stored_receipts
+        or int(stored_receipts[tx_hash]["block_number"]) != block_number
+    ]
     print(
-        f"reused {len(receipts):,} immutable receipts; fetching {len(missing_hashes):,}",
+        f"reused {len(receipts):,} immutable receipts; fetching {len(missing_requests):,}",
         flush=True,
     )
     failed = []
     with interruptible_thread_pool(max_workers=args.workers) as pool:
         futures = {
-            pool.submit(fetch_receipt, tx_hash): tx_hash
-            for tx_hash in missing_hashes
+            pool.submit(fetch_receipt, tx_hash, block_number): tx_hash
+            for tx_hash, block_number in missing_requests
         }
         for index, future in enumerate(as_completed(futures), 1):
             tx_hash = futures[future]

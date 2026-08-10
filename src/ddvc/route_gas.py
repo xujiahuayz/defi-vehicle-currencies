@@ -14,6 +14,7 @@ from ddvc.route_roles import component_eligibility, component_notional
 SUPPORTED_VENUES = frozenset(DEX_SOURCES)
 REQUIRED_COLUMNS = [
     "tx_hash",
+    "block_number",
     "component_id",
     "n_components",
     "source",
@@ -52,6 +53,7 @@ CANDIDATE_COLUMNS = [
     "day",
     "year",
     "tx_hash",
+    "block_number",
     "legs",
     "venue_sequence",
     "mid",
@@ -95,6 +97,9 @@ def candidate_transactions(frame: pd.DataFrame, day: str) -> pd.DataFrame:
         if not group["source"].isin(SUPPORTED_VENUES).all():
             continue
         if group["component_id"].nunique() != 1:
+            continue
+        block_numbers = pd.to_numeric(group["block_number"], errors="coerce").dropna()
+        if block_numbers.nunique() != 1 or int(block_numbers.iloc[0]) < 0:
             continue
         n_components = pd.to_numeric(group["n_components"], errors="coerce").dropna()
         if n_components.empty or not n_components.eq(1).all():
@@ -143,6 +148,7 @@ def candidate_transactions(frame: pd.DataFrame, day: str) -> pd.DataFrame:
                 "day": day,
                 "year": int(day[:4]),
                 "tx_hash": str(tx_hash).lower(),
+                "block_number": int(block_numbers.iloc[0]),
                 "legs": legs,
                 "venue_sequence": ">".join(ordered["source"].astype(str)),
                 "mid": mid,

@@ -81,6 +81,13 @@ _CAPACITY_MARKERS = (
 )
 _AUTHENTICATION_MARKERS = ("unauthorized", "authenticat", "api key", "personal token")
 _TRANSIENT_RPC_MARKERS = ("rate limit", "usage limit", "temporarily unavailable", "can't route")
+RPC_EVIDENCE_FIELDS = (
+    "rpc_request",
+    "rpc_response",
+    "rpc_endpoint",
+    "rpc_attempts",
+    "response_sha256",
+)
 
 
 def rpc_urls() -> list[str]:
@@ -124,6 +131,36 @@ class RpcEnvelope:
     response: object
     endpoint: dict[str, str]
     attempts: tuple[dict[str, object], ...]
+
+
+def coerce_rpc_envelope(response: object) -> RpcEnvelope:
+    """Wrap an injected test transport in the canonical evidence shape."""
+
+    if isinstance(response, RpcEnvelope) and response.attempts:
+        return response
+    endpoint = (
+        response.endpoint
+        if isinstance(response, RpcEnvelope)
+        else {"host": "injected", "endpoint_sha256": "0" * 64}
+    )
+    attempt = {
+        "endpoint": endpoint,
+        "attempt": 1,
+        "classification": "success",
+        "http_status": None,
+        "rpc_code": None,
+        "message": "success",
+    }
+    payload = response.response if isinstance(response, RpcEnvelope) else response
+    return RpcEnvelope(payload, endpoint, (attempt,))
+
+
+def canonical_json_sha256(value: object) -> str:
+    """Digest one JSON-compatible RPC object under the shared canonical encoding."""
+
+    return hashlib.sha256(
+        json.dumps(value, sort_keys=True, separators=(",", ":")).encode()
+    ).hexdigest()
 
 
 class RpcCapacityError(RuntimeError):

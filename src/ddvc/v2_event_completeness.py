@@ -22,10 +22,7 @@ from ddvc.ethereum_logs import (
     ExactLogCapacityError,
     RAW_LOG_SCHEMA,
     RAW_LOG_STORAGE_FORMAT,
-    RpcEnvelope,
     block_ranges,
-    canonical_json_sha256 as _canonical_json_sha256,
-    coerce_rpc_envelope,
     fetch_exact_logs,
     fetch_exact_logs_with_evidence,
     is_sha256 as _is_sha256,
@@ -41,7 +38,12 @@ from ddvc.ethereum_logs import (
 from ddvc.fetch.raw import write_json
 from ddvc.fetch.sources import get_source
 from ddvc.paths import DATA_DIR, OUTPUT_DIR
-from ddvc.quoter import validate_rpc_attempts
+from ddvc.quoter import (
+    RpcEnvelope,
+    canonical_json_sha256 as _canonical_json_sha256,
+    coerce_rpc_envelope,
+    validate_rpc_attempts,
+)
 from ddvc.runtime import interruptible_thread_pool
 
 
