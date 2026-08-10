@@ -439,6 +439,29 @@ class ExternalPriceTests(unittest.TestCase):
         self.assertEqual(coverage["missing_minutes"], 0)
         self.assertEqual(loaded["available_at_utc"].tolist(), [180])
 
+    def test_streaming_writer_serializes_gap_boundaries_as_native_integers(self) -> None:
+        request = CandleRequest(0, 180)
+        rows = [
+            [0, 1.0, 2.1, 1.1, 2.0, 3.0],
+            [120, 3.0, 4.1, 3.1, 4.0, 5.0],
+        ]
+        with tempfile.TemporaryDirectory() as directory:
+            raw = Path(directory) / "raw.jsonl"
+            output = Path(directory) / "panel.parquet"
+            raw.write_text(json.dumps(raw_record(request, rows)) + "\n", encoding="utf-8")
+            coverage = write_panel_from_raw_files(
+                [raw],
+                output,
+                start_utc=0,
+                end_utc_exclusive=180,
+                code_sources=["tests/test_external_prices.py"],
+            )
+            provenance = json.loads(sidecar_path(output).read_text(encoding="utf-8"))
+
+        self.assertEqual(coverage["first_missing_utc"], 60)
+        self.assertEqual(coverage["last_missing_utc"], 60)
+        self.assertIn('"first_missing_utc": 60', provenance["notes"])
+
     def test_external_builder_preserves_prior_pair_on_stamp_or_lineage_failure(self) -> None:
         request = CandleRequest(60, 180)
         rows = [[60, 1.0, 2.1, 1.1, 2.0, 3.0], [120, 2.0, 3.1, 2.1, 3.0, 4.0]]

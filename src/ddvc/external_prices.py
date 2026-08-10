@@ -195,6 +195,7 @@ def write_panel_from_raw_files(paths: list[Path], output: Path, *, start_utc: in
         nonlocal cursor, first_missing, last_missing, missing, observed
         for frame in iter_panel_batches(paths, start_utc=perimeter.start_utc, end_utc_exclusive=perimeter.end_utc_exclusive):
             for value in frame["bucket_start_utc"].to_numpy(dtype="int64"):
+                value = int(value)
                 if value < cursor:
                     raise RuntimeError("external WETH/USD evidence is duplicated or out of order")
                 if value > cursor:
