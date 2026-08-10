@@ -660,6 +660,8 @@ def normalise_tick_partition(
                 if corrections is not None
                 else None
             )
+            if override is not None and override.exclude:
+                continue
             record, flags = _normalise_tick_row(
                 source,
                 venue=venue,
@@ -981,6 +983,8 @@ def normalise_cp_partition(
                 if corrections is not None and record_type != "snapshot"
                 else None
             )
+            if override is not None and override.exclude:
+                continue
             record, flags = _normalise_cp_row(
                 source,
                 venue=venue,

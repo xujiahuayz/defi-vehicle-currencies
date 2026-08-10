@@ -442,6 +442,16 @@ def test_v2_events_use_hashed_same_day_snapshot_decimals(tmp_path: Path) -> None
         "needsComplete": True,
         "pair": pair,
     }
+    phantom = {
+        **burn,
+        "id": "event-phantom",
+        "transaction": {
+            "id": "0xtx3",
+            "blockNumber": "10",
+            "timestamp": "100",
+        },
+        "logIndex": None,
+    }
     snapshot_pair = {
         **pair,
         "token0": {**pair["token0"], "decimals": "18"},
@@ -450,7 +460,7 @@ def test_v2_events_use_hashed_same_day_snapshot_decimals(tmp_path: Path) -> None
     rows = {
         "swaps": [swap],
         "mints": [],
-        "burns": [burn],
+        "burns": [burn, phantom],
         "hourly_reserves": [
             {
                 "id": "state",
@@ -500,6 +510,7 @@ def test_v2_events_use_hashed_same_day_snapshot_decimals(tmp_path: Path) -> None
     assert audit["matched_events"] == 2
     assert audit["payload_mismatches"] == 2
     assert audit["incomplete_liquidity_status_repairs"] == 1
+    assert audit["exclusion_rows"] == 1
     swap_correction = next(row for row in corrections if row["event_id"] == "event-one")
     assert swap_correction["amount0_in_override"] == "1"
     assert swap_correction["amount1_out_override"] == "3"
@@ -507,6 +518,11 @@ def test_v2_events_use_hashed_same_day_snapshot_decimals(tmp_path: Path) -> None
     assert burn_correction["needs_complete_override"] is False
     assert burn_correction["amount0_override"] == "3"
     assert burn_correction["amount1_override"] == "4"
+    phantom_exclusion = next(
+        row for row in corrections if row["event_id"] == "event-phantom"
+    )
+    assert phantom_exclusion["action"] == "exclusion"
+    assert phantom_exclusion["chain_log_index"] is None
 
     correction_root = correction_root_for_graph(raw_root)
     exact_path = (
@@ -552,6 +568,7 @@ def test_v2_events_use_hashed_same_day_snapshot_decimals(tmp_path: Path) -> None
     assert completed["unsupported_reason"] is None
     assert completed["amount0_delta"] == "-3"
     assert completed["amount1_delta"] == "-4"
+    assert "event-phantom" not in set(frame["event_id"])
     state_root = tmp_path / "state"
     write_cp_partition(raw_root, "uniswap_v2", "20250101", root=state_root)
     released = read_cp_partition(

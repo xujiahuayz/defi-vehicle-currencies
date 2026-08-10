@@ -107,6 +107,7 @@ class ChainEvent:
 
 @dataclass(frozen=True)
 class EventOverride:
+    exclude: bool = False
     log_index: int | None = None
     amount0: str | None = None
     amount1: str | None = None
@@ -640,6 +641,7 @@ def match_event_orders(
     incomplete_liquidity_status_repairs = 0
     ignored_zero_liquidity_events = 0
     unmatched_graph_events = 0
+    excluded_provider_events = 0
     correction_keys: set[CorrectionKey] = set()
     for key in sorted(set(graph_groups) | set(exact_groups), key=str):
         duplicate_groups: dict[tuple[object, ...], list[GraphEvent]] = defaultdict(list)
@@ -687,7 +689,34 @@ def match_event_orders(
                 else:
                     chain = None
             if chain is None:
-                unmatched_graph_events += 1
+                exact_absence_is_admissible = bool(
+                    venue in {"uniswap_v2", "sushiswap_v2"}
+                    and provider.stream in {"mints", "burns"}
+                    and provider.needs_complete
+                )
+                if not exact_absence_is_admissible:
+                    unmatched_graph_events += 1
+                    continue
+                for duplicate in duplicate_group:
+                    if duplicate.correction_key in correction_keys:
+                        continue
+                    correction_keys.add(duplicate.correction_key)
+                    corrections.append(
+                        {
+                            "action": "exclusion",
+                            "schema_version": SCHEMA_VERSION,
+                            "venue": venue,
+                            "stream": duplicate.stream,
+                            "event_id": duplicate.event_id,
+                            "tx_hash": duplicate.tx_hash,
+                            "pool": duplicate.pool,
+                            "block_number": duplicate.block_number,
+                            "provider_log_index": duplicate.provider_log_index,
+                            "chain_log_index": None,
+                            "reason": "incomplete_provider_liquidity_event_absent_from_exact_chain_logs",
+                        }
+                    )
+                    excluded_provider_events += 1
                 continue
             chain_remaining.remove(chain)
             if provider.block_number != chain.block_number:
@@ -809,7 +838,8 @@ def match_event_orders(
         "provider_duplicate_rows": provider_duplicate_rows,
         "exact_events_in_graph_pool_perimeter": len(exact),
         "matched_events": matched_events,
-        "correction_rows": len(corrections),
+        "correction_rows": sum(row["action"] == "correction" for row in corrections),
+        "exclusion_rows": excluded_provider_events,
         "payload_mismatches": payload_mismatches,
         "incomplete_liquidity_status_repairs": incomplete_liquidity_status_repairs,
         "supplement_rows": len(supplements),
@@ -848,7 +878,7 @@ class EventOrderCorrections:
                     raise ValueError("exact-event supplement identity does not reconcile")
                 self._supplements[stream].append(source_row)
                 continue
-            if action != "correction":
+            if action not in {"correction", "exclusion"}:
                 raise ValueError(f"unknown event reconciliation action: {action}")
             key = (
                 str(row["stream"]),
@@ -864,6 +894,15 @@ class EventOrderCorrections:
             )
             if key in self._rows:
                 raise ValueError(f"duplicate event-order correction: {key}")
+            if action == "exclusion":
+                if (
+                    row.get("chain_log_index") is not None
+                    or row.get("reason")
+                    != "incomplete_provider_liquidity_event_absent_from_exact_chain_logs"
+                ):
+                    raise ValueError(f"invalid exact-chain exclusion: {key}")
+                self._rows[key] = EventOverride(exclude=True)
+                continue
             chain_log_index = int(row["chain_log_index"])
             amount0 = row.get("amount0_override")
             amount1 = row.get("amount1_override")
@@ -964,7 +1003,9 @@ def write_correction_generation(
         ({**row, "day": day} for row in [*corrections, *supplements]),
         key=lambda row: (
             int(row["block_number"]),
-            int(row["chain_log_index"]),
+            int(row["chain_log_index"])
+            if row.get("chain_log_index") is not None
+            else -1,
             str(row["stream"]),
             str(row["event_id"]),
         ),
@@ -1063,8 +1104,10 @@ def load_event_order_corrections(
         timestamp = timestamp_value(source_row)
         if timestamp is None or timestamps.get(block) != timestamp:
             raise ValueError(f"unproved supplement timestamp for {venue}/{day}/{block}")
-    expected_rows = int(metadata.get("correction_rows", -1)) + int(
-        metadata.get("supplement_rows", -1)
+    expected_rows = (
+        int(metadata.get("correction_rows", -1))
+        + int(metadata.get("exclusion_rows", 0))
+        + int(metadata.get("supplement_rows", -1))
     )
     if len(rows) != expected_rows:
         raise ValueError(f"event-order reconciliation row count differs for {venue}/{day}")
