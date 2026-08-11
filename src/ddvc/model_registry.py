@@ -87,6 +87,8 @@ EXPLORATORY_PLAN_IDENTITY_FIELDS = (
     "question",
     "search_dimensions",
     "search_dimension_spec_ids",
+    "required_attack_ids",
+    "attack_evidence",
     "runner",
     "arguments",
     "engine_sources",

@@ -12,7 +12,7 @@ import ddvc.exploration as exploration
 from ddvc.analysis_release import publish_analysis_release
 from ddvc.exploration import EXPLORATION_PLAN_SCHEMA_VERSION, close_exploration, execute_exploration_plan as _execute_exploration_plan, resolve_exploration_release
 from ddvc.model_artifacts import attach_spec_ids, model_artifact_context, write_model_exhibit
-from ddvc.model_registry import canonical_hash, model_run_id, validate_artifact_spec_ids
+from ddvc.model_registry import canonical_hash, exploratory_plan_identity, model_run_id, validate_artifact_spec_ids
 from ddvc.paths import REPO_ROOT
 from ddvc.provenance import sidecar_path, stamp
 from scripts.audit_findings_freeze import validate_model_ledger
@@ -96,6 +96,10 @@ def _write_plan(directory: Path, d3_generation: str, *, artifact: Path, families
     family_records = []
     for index in range(families):
         output = artifact if index == 0 else artifact.with_name(f"result-{index}.jsonl")
+        required_attack_ids = [
+            f"{dimension}_attack"
+            for dimension in ("distribution", "heterogeneity", "mechanism", "rival_explanation")
+        ]
         family_records.append(
             {
                 "family_id": f"open-search-{index}",
@@ -106,6 +110,7 @@ def _write_plan(directory: Path, d3_generation: str, *, artifact: Path, families
                     dimension: [f"open-fit-{index}"]
                     for dimension in ("distribution", "heterogeneity", "mechanism", "rival_explanation")
                 },
+                "required_attack_ids": required_attack_ids,
                 "runner": runner.relative_to(REPO_ROOT).as_posix(),
                 "arguments": ["--output", output.relative_to(REPO_ROOT).as_posix()],
                 "engine_sources": [],
@@ -119,6 +124,13 @@ def _write_plan(directory: Path, d3_generation: str, *, artifact: Path, families
                         "spec_ids": [f"open-fit-{index}"],
                     }
                 ],
+                "attack_evidence": {
+                    attack_id: {
+                        "artifact_path": output.relative_to(REPO_ROOT).as_posix(),
+                        "spec_ids": [f"open-fit-{index}"],
+                    }
+                    for attack_id in required_attack_ids
+                },
                 "note": "Open-minded E0 family; no exploratory estimate is admissible evidence.",
             }
         )
@@ -132,7 +144,7 @@ def _write_plan(directory: Path, d3_generation: str, *, artifact: Path, families
                 "families": [
                     {
                         key: family[key]
-                        for key in ("family_id", "claim_id", "question", "search_dimensions")
+                        for key in ("family_id", "claim_id", "question", "search_dimensions", "required_attack_ids")
                     }
                     for family in family_records
                 ],
@@ -233,6 +245,16 @@ def test_e0_logs_before_fit_then_closes_exact_run_and_triage_algebra() -> None:
                 dimension: ["open-fit-0"]
                 for dimension in run["search_dimensions"]
             }
+            assert run["required_attack_ids"] == [
+                "distribution_attack",
+                "heterogeneity_attack",
+                "mechanism_attack",
+                "rival_explanation_attack",
+            ]
+            assert run["attack_evidence"]["distribution_attack"] == {
+                "artifact_path": artifact.relative_to(REPO_ROOT).as_posix(),
+                "spec_ids": ["open-fit-0"],
+            }
             assert run["declared_artifacts"] == [
                 {
                     "path": artifact.relative_to(REPO_ROOT).as_posix(),
@@ -299,7 +321,7 @@ def test_e0_rejects_an_executable_plan_below_the_template_perimeter() -> None:
             _cleanup_manifest_mirror(directory)
 
 
-def test_e0_rejects_precoverage_plan_schema_without_a_compatibility_path() -> None:
+def test_e0_rejects_pre_attack_plan_schema_without_a_compatibility_path() -> None:
     with _workspace() as raw_directory:
         directory = Path(raw_directory)
         try:
@@ -312,7 +334,7 @@ def test_e0_rejects_precoverage_plan_schema_without_a_compatibility_path() -> No
                 artifact=directory / "result.jsonl",
             )
             payload = json.loads(plan.read_text(encoding="utf-8"))
-            payload["schema_version"] = 1
+            payload["schema_version"] = 2
             plan.write_text(json.dumps(payload), encoding="utf-8")
             with pytest.raises(ValueError, match="plan schema is not current"):
                 execute_exploration_plan(
@@ -323,6 +345,148 @@ def test_e0_rejects_precoverage_plan_schema_without_a_compatibility_path() -> No
                     command_runner=_successful_runner,
                 )
             assert json.loads(ledger.read_text(encoding="utf-8"))["runs"] == []
+        finally:
+            _cleanup_manifest_mirror(directory)
+
+
+@pytest.mark.parametrize(
+    ("failure", "message"),
+    [
+        ("missing_attack", "attack evidence is not exact"),
+        ("unknown_artifact", "cites an unknown artifact"),
+        ("unknown_fitted_spec", "cites unknown fitted spec ids"),
+        ("missing_fitted_spec", "lacks exact spec ids"),
+        ("empty_evidence", "attack evidence is empty"),
+        ("support_fake_spec", "support attack evidence cannot cite fitted spec ids"),
+    ],
+)
+def test_e0_rejects_incomplete_or_unbound_attack_evidence(
+    failure: str,
+    message: str,
+) -> None:
+    with _workspace() as raw_directory:
+        directory = Path(raw_directory)
+        try:
+            d3 = _d3_release(directory)
+            ledger = directory / "model-ledger.json"
+            _write_ledger(ledger)
+            plan = _write_plan(directory, d3.generation, artifact=directory / "result.jsonl")
+            payload = json.loads(plan.read_text(encoding="utf-8"))
+            family = payload["families"][0]
+            attack_id = family["required_attack_ids"][0]
+            if failure == "missing_attack":
+                family["attack_evidence"].pop(attack_id)
+            elif failure == "unknown_artifact":
+                family["attack_evidence"][attack_id]["artifact_path"] = (
+                    directory / "unknown.jsonl"
+                ).relative_to(REPO_ROOT).as_posix()
+            elif failure == "unknown_fitted_spec":
+                family["attack_evidence"][attack_id]["spec_ids"] = ["unknown-fit"]
+            elif failure == "missing_fitted_spec":
+                family["attack_evidence"][attack_id].pop("spec_ids")
+            elif failure == "empty_evidence":
+                family["attack_evidence"][attack_id] = {}
+            else:
+                support_relative = (directory / "support.jsonl").relative_to(REPO_ROOT).as_posix()
+                family["artifacts"].append(
+                    {"path": support_relative, "role": "support", "spec_ids": []}
+                )
+                family["attack_evidence"][attack_id] = {
+                    "artifact_path": support_relative,
+                    "spec_ids": ["fake-support-fit"],
+                }
+            plan.write_text(json.dumps(payload), encoding="utf-8")
+            with pytest.raises(ValueError, match=message):
+                execute_exploration_plan(
+                    plan.relative_to(REPO_ROOT),
+                    d3_certificate_path=d3.certificate_path.relative_to(REPO_ROOT),
+                    ledger_path=ledger.relative_to(REPO_ROOT),
+                    lock_path=directory / "run.lock",
+                    command_runner=_successful_runner,
+                )
+            assert json.loads(ledger.read_text(encoding="utf-8"))["runs"] == []
+        finally:
+            _cleanup_manifest_mirror(directory)
+
+
+def test_e0_attack_evidence_accepts_a_declared_support_artifact_without_fake_spec_ids() -> None:
+    with _workspace() as raw_directory:
+        directory = Path(raw_directory)
+        try:
+            d3 = _d3_release(directory)
+            ledger = directory / "model-ledger.json"
+            _write_ledger(ledger)
+            plan = _write_plan(directory, d3.generation, artifact=directory / "result.jsonl")
+            payload = json.loads(plan.read_text(encoding="utf-8"))
+            family = payload["families"][0]
+            support = directory / "support.jsonl"
+            support_relative = support.relative_to(REPO_ROOT).as_posix()
+            family["artifacts"].append(
+                {"path": support_relative, "role": "support", "spec_ids": []}
+            )
+            attack_id = family["required_attack_ids"][0]
+            family["attack_evidence"][attack_id] = {"artifact_path": support_relative}
+            plan.write_text(json.dumps(payload), encoding="utf-8")
+
+            def support_runner(command, cwd, env):
+                return_code = _successful_runner(command, cwd, env)
+                support.write_text('{"eligible_rows":12}\n', encoding="utf-8")
+                stamp(
+                    support,
+                    code_sources=[Path(command[2]).relative_to(REPO_ROOT).as_posix()],
+                    inputs=[REPO_ROOT / env["DDVC_D3_CERTIFICATE"]],
+                )
+                return return_code
+
+            run_id = execute_exploration_plan(
+                plan.relative_to(REPO_ROOT),
+                d3_certificate_path=d3.certificate_path.relative_to(REPO_ROOT),
+                ledger_path=ledger.relative_to(REPO_ROOT),
+                lock_path=directory / "run.lock",
+                command_runner=support_runner,
+            )[0]
+            run = json.loads(ledger.read_text(encoding="utf-8"))["runs"][0]
+            assert run["run_id"] == run_id
+            assert run["attack_evidence"][attack_id] == {"artifact_path": support_relative}
+        finally:
+            _cleanup_manifest_mirror(directory)
+
+
+def test_e0_closure_rejects_attack_evidence_that_no_longer_matches_the_plan() -> None:
+    with _workspace() as raw_directory:
+        directory = Path(raw_directory)
+        try:
+            d3 = _d3_release(directory)
+            ledger = directory / "model-ledger.json"
+            _write_ledger(ledger)
+            plan = _write_plan(directory, d3.generation, artifact=directory / "result.jsonl")
+            execute_exploration_plan(
+                plan.relative_to(REPO_ROOT),
+                d3_certificate_path=d3.certificate_path.relative_to(REPO_ROOT),
+                ledger_path=ledger.relative_to(REPO_ROOT),
+                lock_path=directory / "run.lock",
+                command_runner=_successful_runner,
+            )
+            payload = json.loads(ledger.read_text(encoding="utf-8"))
+            run = payload["runs"][0]
+            attack_id = run["required_attack_ids"][0]
+            run["attack_evidence"][attack_id].pop("spec_ids")
+            run["plan_hash"] = canonical_hash(exploratory_plan_identity(run))
+            run["run_id"] = model_run_id(run)
+            ledger.write_text(json.dumps(payload), encoding="utf-8")
+            triage = directory / "triage.json"
+            triage.write_text(
+                json.dumps(_triage(run["run_id"], outcome="retain_auxiliary")),
+                encoding="utf-8",
+            )
+            with pytest.raises(ValueError, match="attack evidence differs from its exact plan"):
+                close_exploration(
+                    triage.relative_to(REPO_ROOT),
+                    d3_certificate_path=d3.certificate_path.relative_to(REPO_ROOT),
+                    ledger_path=ledger.relative_to(REPO_ROOT),
+                    pointer_path=(directory / "e0/current.json").relative_to(REPO_ROOT),
+                    lock_path=directory / "close.lock",
+                )
         finally:
             _cleanup_manifest_mirror(directory)
 
@@ -386,7 +550,7 @@ def test_canonical_e0_template_covers_seed_families_and_open_discovery() -> None
             encoding="utf-8"
         )
     )
-    assert template["schema_version"] == EXPLORATION_PLAN_SCHEMA_VERSION == 2
+    assert template["schema_version"] == EXPLORATION_PLAN_SCHEMA_VERSION == 3
     assert [family["family_id"] for family in template["families"]] == [
         "vehicle_transition_e0",
         "routing_maturation_e0",
@@ -396,6 +560,7 @@ def test_canonical_e0_template_covers_seed_families_and_open_discovery() -> None
     ]
     assert template["families"][-1]["claim_id"] == "open_question"
     assert "open_question" in template["families"][-1]["search_dimensions"]
+    assert all(family["required_attack_ids"] for family in template["families"])
 
 
 def test_e0_missing_or_invalid_triage_never_publishes_a_certificate() -> None:

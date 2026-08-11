@@ -35,7 +35,7 @@ from ddvc.provenance import (
 from ddvc.runtime import atomic_output, exclusive_job
 
 
-EXPLORATION_PLAN_SCHEMA_VERSION = 2
+EXPLORATION_PLAN_SCHEMA_VERSION = 3
 EXPLORATION_TRIAGE_SCHEMA_VERSION = 1
 EXPLORATION_CERTIFICATE_SCHEMA_VERSION = 1
 EXPLORATION_CERTIFICATE_KIND = "e0_exploration"
@@ -160,6 +160,74 @@ def _engine_hash(root: Path, sources: list[str]) -> str:
     return canonical_hash(records)
 
 
+def _normalize_attack_ids(value: object, *, label: str) -> list[str]:
+    if not isinstance(value, list) or not value:
+        raise ValueError(f"{label} has no required attack ids")
+    if any(
+        not isinstance(attack_id, str)
+        or not attack_id
+        or attack_id != attack_id.strip()
+        or attack_id != attack_id.lower()
+        or not attack_id[0].isalpha()
+        or any(character not in "abcdefghijklmnopqrstuvwxyz0123456789_" for character in attack_id)
+        for attack_id in value
+    ):
+        raise ValueError(f"{label} has invalid required attack ids")
+    if len(value) != len(set(value)):
+        raise ValueError(f"{label} repeats a required attack id")
+    return list(value)
+
+
+def _normalize_attack_evidence(
+    value: object,
+    *,
+    family_id: str,
+    required_attack_ids: list[str],
+    artifacts: list[dict[str, Any]],
+) -> dict[str, dict[str, Any]]:
+    if not isinstance(value, dict) or set(value) != set(required_attack_ids):
+        missing = sorted(set(required_attack_ids) - set(value or {})) if isinstance(value, dict) else sorted(required_attack_ids)
+        unexpected = sorted(set(value or {}) - set(required_attack_ids)) if isinstance(value, dict) else []
+        raise ValueError(
+            f"exploration family attack evidence is not exact: {family_id}: "
+            f"missing={missing or 'none'}; unexpected={unexpected or 'none'}"
+        )
+    artifacts_by_path = {artifact["path"]: artifact for artifact in artifacts}
+    normalized: dict[str, dict[str, Any]] = {}
+    for attack_id in required_attack_ids:
+        evidence = value[attack_id]
+        if not isinstance(evidence, dict) or not evidence:
+            raise ValueError(f"exploration attack evidence is empty: {family_id}/{attack_id}")
+        if not set(evidence).issubset({"artifact_path", "spec_ids"}):
+            raise ValueError(f"exploration attack evidence has unknown fields: {family_id}/{attack_id}")
+        artifact_path = str(evidence.get("artifact_path") or "")
+        artifact = artifacts_by_path.get(artifact_path)
+        if artifact is None:
+            raise ValueError(
+                f"exploration attack evidence cites an unknown artifact: {family_id}/{attack_id}/{artifact_path or 'missing'}"
+            )
+        if artifact["role"] == "support":
+            if set(evidence) != {"artifact_path"}:
+                raise ValueError(f"exploration support attack evidence cannot cite fitted spec ids: {family_id}/{attack_id}")
+            normalized[attack_id] = {"artifact_path": artifact_path}
+            continue
+        spec_ids = evidence.get("spec_ids")
+        if (
+            not isinstance(spec_ids, list)
+            or not spec_ids
+            or any(not isinstance(spec_id, str) or not spec_id for spec_id in spec_ids)
+            or len(spec_ids) != len(set(spec_ids))
+        ):
+            raise ValueError(f"exploration fitted attack evidence lacks exact spec ids: {family_id}/{attack_id}")
+        unknown = sorted(set(spec_ids) - set(artifact["spec_ids"]))
+        if unknown:
+            raise ValueError(
+                f"exploration attack evidence cites unknown fitted spec ids: {family_id}/{attack_id}: {unknown}"
+            )
+        normalized[attack_id] = {"artifact_path": artifact_path, "spec_ids": list(spec_ids)}
+    return normalized
+
+
 def _plan_family_contract(family: Mapping[str, Any], *, root: Path) -> dict[str, Any]:
     required_text = (
         "family_id",
@@ -213,6 +281,16 @@ def _plan_family_contract(family: Mapping[str, Any], *, root: Path) -> dict[str,
     paths = [record["path"] for record in normalized_artifacts]
     if len(paths) != len(set(paths)):
         raise ValueError(f"exploration family reuses one artifact path: {family['family_id']}")
+    required_attack_ids = _normalize_attack_ids(
+        family.get("required_attack_ids"),
+        label=f"exploration family {family['family_id']}",
+    )
+    attack_evidence = _normalize_attack_evidence(
+        family.get("attack_evidence"),
+        family_id=str(family["family_id"]),
+        required_attack_ids=required_attack_ids,
+        artifacts=normalized_artifacts,
+    )
     fitted_spec_ids = {
         spec_id
         for artifact in normalized_artifacts
@@ -258,6 +336,8 @@ def _plan_family_contract(family: Mapping[str, Any], *, root: Path) -> dict[str,
         "question": str(family["question"]),
         "search_dimensions": list(dimensions),
         "search_dimension_spec_ids": normalized_coverage,
+        "required_attack_ids": required_attack_ids,
+        "attack_evidence": attack_evidence,
         "runner": runner_relative,
         "arguments": list(arguments),
         "engine_sources": sources,
@@ -288,6 +368,10 @@ def _load_plan_template(path: Path, *, template_relative: str) -> list[dict[str,
         claim_id = str(family.get("claim_id") or "").strip()
         question = str(family.get("question") or "").strip()
         dimensions = family.get("search_dimensions")
+        required_attack_ids = _normalize_attack_ids(
+            family.get("required_attack_ids"),
+            label=f"E0 exploration plan template family {family_id or 'missing'}",
+        )
         if not family_id or not claim_id or not question:
             raise ValueError("E0 exploration plan template has an incomplete family identity")
         if (
@@ -303,6 +387,7 @@ def _load_plan_template(path: Path, *, template_relative: str) -> list[dict[str,
                 "claim_id": claim_id,
                 "question": question,
                 "search_dimensions": list(dimensions),
+                "required_attack_ids": required_attack_ids,
             }
         )
     family_ids = [family["family_id"] for family in normalized]
@@ -353,7 +438,7 @@ def _load_plan(
     actual = {
         contract["family_id"]: {
             key: contract[key]
-            for key in ("family_id", "claim_id", "question", "search_dimensions")
+            for key in ("family_id", "claim_id", "question", "search_dimensions", "required_attack_ids")
         }
         for contract in contracts
     }
@@ -439,6 +524,8 @@ def _planned_run(
         "question": contract["question"],
         "search_dimensions": contract["search_dimensions"],
         "search_dimension_spec_ids": contract["search_dimension_spec_ids"],
+        "required_attack_ids": contract["required_attack_ids"],
+        "attack_evidence": contract["attack_evidence"],
         "attempt": attempt,
         "retry_of_run_id": retry_of_run_id,
     }
@@ -944,6 +1031,14 @@ def _require_complete_family_perimeter(
             f"duplicate={duplicate or 'none'}; "
             f"retired_unexpected={retired_unexpected or 'none'}"
         )
+    contracts = {contract["family_id"]: contract for contract in plan.contracts}
+    for run in [*runs, *retired_runs]:
+        contract = contracts[str(run["family_id"])]
+        if (
+            run.get("required_attack_ids") != contract["required_attack_ids"]
+            or run.get("attack_evidence") != contract["attack_evidence"]
+        ):
+            raise ValueError(f"E0 run attack evidence differs from its exact plan: {run.get('run_id')}")
 
 
 def _validate_triage_decisions(

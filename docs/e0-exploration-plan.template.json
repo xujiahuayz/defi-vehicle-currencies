@@ -1,5 +1,5 @@
 {
-  "schema_version": 2,
+  "schema_version": 3,
   "kind": "e0_exploration_plan_template",
   "families": [
     {
@@ -12,6 +12,14 @@
         "functional_form",
         "heterogeneity",
         "rival_explanation"
+      ],
+      "required_attack_ids": [
+        "dominance_measure_triangulation",
+        "routing_strata_separation",
+        "dated_backing_regimes",
+        "fixed_opportunity_conditioning",
+        "support_uncertainty_ledger",
+        "within_pair_composition_decomposition"
       ]
     },
     {
@@ -25,6 +33,16 @@
         "heterogeneity",
         "mechanism",
         "rival_explanation"
+      ],
+      "required_attack_ids": [
+        "topology_margin_decomposition",
+        "within_reach_search_regret",
+        "public_reach_and_path_choice",
+        "fixed_and_persistent_cohorts",
+        "exact_state_reproduction",
+        "exact_calendar_horizons",
+        "technology_attribution_boundary",
+        "gas_liquidity_state_rivals"
       ]
     },
     {
@@ -37,6 +55,15 @@
         "heterogeneity",
         "mechanism",
         "rival_explanation"
+      ],
+      "required_attack_ids": [
+        "exact_state_reproduction",
+        "availability_valuation_ledger",
+        "gross_and_all_in_cost",
+        "fixed_and_realised_size",
+        "weighting_and_reach",
+        "contract_feasible_reach_boundary",
+        "main_text_quote_validation"
       ]
     },
     {
@@ -50,6 +77,16 @@
         "heterogeneity",
         "mechanism",
         "rival_explanation"
+      ],
+      "required_attack_ids": [
+        "bidirectional_exact_horizons",
+        "v2_stock_v3_flow_separation",
+        "absolute_share_sign_stability",
+        "common_shock_price_risk_placebos",
+        "stress_heterogeneity",
+        "provider_overlap_coverage",
+        "multiplicity_support_ledger",
+        "influence_concentration"
       ]
     },
     {
@@ -65,6 +102,15 @@
         "heterogeneity",
         "mechanism",
         "rival_explanation"
+      ],
+      "required_attack_ids": [
+        "immutable_reproduction",
+        "economic_magnitude_concentration",
+        "denominator_weighting",
+        "time_venue_stability",
+        "integrity_screens",
+        "strongest_literature_rival",
+        "centrality_and_triage"
       ]
     }
   ]
