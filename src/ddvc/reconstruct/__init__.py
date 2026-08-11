@@ -51,7 +51,12 @@ import pandas as pd
 from ddvc.artifact_release import canonical_json_sha256, file_sha256, is_sha256
 from ddvc.calendar import RESEARCH_SAMPLE_END, RESEARCH_SAMPLE_START, calendar_days
 from ddvc.fetch.raw import RawFetchInvariantError, verified_source_day_rows
-from ddvc.fetch.sources import get_source
+from ddvc.fetch.sources import (
+    ROUTE_DUNE_SOURCES,
+    ROUTE_SOURCE_FAMILIES,
+    ROUTE_SOURCE_STREAMS,
+    get_source,
+)
 from ddvc.paths import DATA_DIR, OUTPUT_DIR, RAW_MARKET_DATA_LOCK
 from ddvc.provenance import code_fingerprint
 from ddvc.runtime import atomic_output, bounded_workers, exclusive_job, interruptible_process_pool
@@ -134,31 +139,9 @@ def unified_quality_path(stamp: str, *, root: Path | None = None) -> Path:
 # ---------------------------------------------------------------------------
 
 # DEX -> normaliser family. Sources sharing a raw schema share a family.
-DEX_FAMILY: dict[str, str] = {
-    "uniswap_v3": "uni_signed",
-    "uniswap_v4": "uni_signed",
-    "uniswap_v2": "uni_v2",
-    "sushiswap_v2": "uni_v2",
-    "curve": "messari",
-    "sushiswap_v3": "messari",
-    "balancer": "balancer",
-    "fluid": "fluid",
-}
-
-# The 'swaps' stream name for each DEX (raw_path key)
-DEX_STREAM: dict[str, str] = {
-    "uniswap_v3": "swaps",
-    "uniswap_v4": "swaps",
-    "uniswap_v2": "swaps",
-    "sushiswap_v2": "swaps",
-    "curve": "swaps",
-    "sushiswap_v3": "swaps",
-    "balancer": "swaps",
-    "fluid": "swaps",  # dune backend uses dune_path
-}
-
-# fluid uses the dune backend
-DUNE_SOURCES = {"fluid"}
+DEX_FAMILY = ROUTE_SOURCE_FAMILIES
+DEX_STREAM = ROUTE_SOURCE_STREAMS
+DUNE_SOURCES = ROUTE_DUNE_SOURCES
 
 BRIDGE_TOL = 0.05        # value-conservation tolerance for bridged/independent split
 INTERMEDIATE_TOL = 0.01  # |net token USD| below this share of component gross => pass-through
@@ -349,11 +332,9 @@ def load_legs(
     *,
     data_root: Path | None = None,
     counters: dict[str, int] | None = None,
+    expected_generation_identity: str | None = None,
 ) -> list[dict]:
-    """Normalised legs for one DEX on one day; [] if no raw file that day."""
-    path = _raw_file_path(dex, day.replace("-", ""), data_root=data_root)
-    if not path.exists():
-        return []
+    """Normalised legs for one DEX on one certified source-day."""
     fn = NORMALISERS[DEX_FAMILY[dex]]
     legs: list[dict] = []
     with verified_source_day_rows(
@@ -361,6 +342,7 @@ def load_legs(
         DEX_STREAM[dex],
         datetime.strptime(day, "%Y-%m-%d").date(),
         data_root=data_root or DATA_DIR,
+        expected_generation_identity=expected_generation_identity,
     ) as rows:
         for rec in rows:
             if counters is not None:
@@ -680,8 +662,20 @@ def reconstruct_day_with_quality(
         return pd.DataFrame(), quality
 
     all_legs: list[dict] = []
+    generation_identities = {
+        str(record["source"]): str(record["generation_identity_sha256"])
+        for record in records
+    }
     for dex in active:
-        all_legs.extend(load_legs(dex, day, data_root=data_root, counters=quality))
+        all_legs.extend(
+            load_legs(
+                dex,
+                day,
+                data_root=data_root,
+                counters=quality,
+                expected_generation_identity=generation_identities[dex],
+            )
+        )
     all_legs = _deduplicate_legs(all_legs, quality)
 
     # Reprice off token amounts against a stablecoin-anchored day price table,

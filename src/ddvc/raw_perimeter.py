@@ -4,13 +4,14 @@ from __future__ import annotations
 
 from ddvc.fetch.pool_daily import POOL_DAILY_SCHEMAS
 from ddvc.fetch.schemas import get_schema
-from ddvc.fetch.sources import DEX_SOURCES, get_source
-from ddvc.reconstruct import DEX_FAMILY
+from ddvc.fetch.sources import DEX_SOURCES, ROUTE_SOURCE_FAMILIES, get_source
 from ddvc.state_data import FAMILY_STREAMS
 
 
 def consumer_required_streams() -> dict[str, frozenset[str]]:
-    required: dict[str, set[str]] = {venue: {"swaps"} for venue in DEX_FAMILY}
+    required: dict[str, set[str]] = {
+        venue: {"swaps"} for venue in ROUTE_SOURCE_FAMILIES
+    }
     for venues in FAMILY_STREAMS.values():
         for venue, specifications in venues.items():
             required.setdefault(venue, set()).update(

@@ -45,6 +45,34 @@ class RawRefetchDivergenceError(RawFetchInvariantError):
     """A refetch disagreed with an installed canonical capture."""
 
 
+def source_day_promotion_record(
+    source_name: str,
+    day: dt.date,
+    stream_hashes: Mapping[str, str],
+) -> dict[str, object]:
+    """Build the deterministic record binding every stream in one promoted day."""
+
+    if not stream_hashes or any(
+        not isinstance(digest, str) or len(digest) != 64
+        for digest in stream_hashes.values()
+    ):
+        raise RawFetchInvariantError("source-day promotion stream perimeter is invalid")
+    contract = {
+        "schema_version": RAW_SOURCE_DAY_PROMOTION_SCHEMA_VERSION,
+        "source": source_name,
+        "day": day.isoformat(),
+        "streams": dict(sorted(stream_hashes.items())),
+    }
+    promotion_id = hashlib.sha256(
+        json.dumps(contract, sort_keys=True, separators=(",", ":")).encode()
+    ).hexdigest()
+    return {
+        "policy": "raw-source-day-promotion-v1",
+        "promotion_id": promotion_id,
+        "contract": contract,
+    }
+
+
 def midnight_ts(day: dt.date) -> int:
     return calendar.timegm(dt.datetime(day.year, day.month, day.day).timetuple())
 
@@ -196,12 +224,31 @@ def committed_source_day_generation_identity(
     marker = json.loads(marker_path.read_text(encoding="utf-8"))
     stream_marker = marker["streams"][stream]
     promotion = marker.get("promotion")
+    marker_streams = marker["streams"]
+    stream_hashes = {
+        name: item.get("logical_content_sha256")
+        for name, item in marker_streams.items()
+        if isinstance(item, dict)
+    }
+    try:
+        expected_promotion = source_day_promotion_record(
+            source_name, day, stream_hashes
+        )
+    except RawFetchInvariantError:
+        expected_promotion = None
+    legacy_exact_promotion = (
+        {
+            "policy": "raw-source-day-promotion-v1",
+            "promotion_id": expected_promotion["promotion_id"],
+        }
+        if expected_promotion is not None
+        else None
+    )
     if (
-        not isinstance(promotion, dict)
-        or promotion.get("policy") != "raw-source-day-promotion-v1"
-        or not isinstance(promotion.get("promotion_id"), str)
-        or len(promotion["promotion_id"]) != 64
+        expected_promotion is None
+        or promotion not in (expected_promotion, legacy_exact_promotion)
         or stream_marker.get("path") != raw_stream_identity(path)
+        or stream_hashes.get(stream) != logical_content_sha256
     ):
         raise RawFetchInvariantError(
             f"raw source-day lacks a committed promotion identity: "
@@ -264,23 +311,21 @@ def committed_source_day_generation_identity(
 
 
 @contextmanager
-def verified_jsonl_gz_rows(
+def verified_jsonl_gz_content_rows(
     path: Path,
-    marker_path: Path,
+    expected_logical_sha256: str,
     *,
-    source_name: str,
-    stream: str,
-    day: dt.date,
+    authority_label: str,
 ):
-    """Parse a committed gzip JSONL stream once and verify its logical hash at EOF."""
+    """Parse gzip JSONL once and verify an authority-bound logical hash at EOF."""
 
-    expected_hash = _required_source_day_stream_hash(
-        path,
-        marker_path,
-        source_name=source_name,
-        stream=stream,
-        day=day,
-    )
+    if (
+        not isinstance(expected_logical_sha256, str)
+        or len(expected_logical_sha256) != 64
+    ):
+        raise RawFetchInvariantError(
+            f"raw stream authority lacks a logical content hash: {authority_label}"
+        )
     exhausted = False
 
     def rows():
@@ -302,9 +347,9 @@ def verified_jsonl_gz_rows(
                         f"committed raw JSONL row is not an object: {path}"
                     )
                 yield row
-        if digest.hexdigest() != expected_hash:
+        if digest.hexdigest() != expected_logical_sha256:
             raise RawFetchInvariantError(
-                f"raw source-day payload disagrees with its commit record: {source_name}/{stream}/{day:%Y%m%d}"
+                f"raw source-day payload disagrees with its commit record or certified authority: {authority_label}"
             )
         exhausted = True
 
@@ -318,8 +363,34 @@ def verified_jsonl_gz_rows(
         if not exhausted:
             iterator.close()
             raise RawFetchInvariantError(
-                f"committed raw stream was not exhausted: {source_name}/{stream}/{day:%Y%m%d}"
+                f"committed raw stream was not exhausted: {authority_label}"
             )
+
+
+@contextmanager
+def verified_jsonl_gz_rows(
+    path: Path,
+    marker_path: Path,
+    *,
+    source_name: str,
+    stream: str,
+    day: dt.date,
+):
+    """Parse a promoted gzip JSONL stream once and verify its logical hash at EOF."""
+
+    expected_hash = _required_source_day_stream_hash(
+        path,
+        marker_path,
+        source_name=source_name,
+        stream=stream,
+        day=day,
+    )
+    with verified_jsonl_gz_content_rows(
+        path,
+        expected_hash,
+        authority_label=f"{source_name}/{stream}/{day:%Y%m%d}",
+    ) as rows:
+        yield rows
 
 
 @contextmanager
@@ -329,20 +400,38 @@ def verified_source_day_rows(
     day: dt.date,
     *,
     data_root: Path = DATA_DIR,
+    expected_generation_identity: str | None = None,
 ):
-    """Resolve and single-pass one committed canonical source-day stream."""
+    """Single-pass one promoted or locally certified canonical source-day stream."""
 
-    path, marker_path = installed_source_day_paths(
-        source_name, stream, day, data_root=data_root
+    from ddvc.raw_certification import raw_partition_read_authority
+
+    stamp = day.strftime("%Y%m%d")
+    before = raw_partition_read_authority(
+        source_name, stream, stamp, data_root=data_root
     )
-    with verified_jsonl_gz_rows(
-        path,
-        marker_path,
-        source_name=source_name,
-        stream=stream,
-        day=day,
+    actual_identity = str(before["generation_identity_sha256"])
+    if (
+        expected_generation_identity is not None
+        and actual_identity != expected_generation_identity
+    ):
+        raise RawFetchInvariantError(
+            f"raw partition authority changed before read: {source_name}/{stream}/{stamp}"
+        )
+    label = f"{source_name}/{stream}/{stamp} via {before['authority_kind']}"
+    with verified_jsonl_gz_content_rows(
+        Path(before["path"]),
+        str(before["logical_content_sha256"]),
+        authority_label=label,
     ) as rows:
         yield rows
+    after = raw_partition_read_authority(
+        source_name, stream, stamp, data_root=data_root
+    )
+    if after != before:
+        raise RawFetchInvariantError(
+            f"raw partition authority changed during read: {source_name}/{stream}/{stamp}"
+        )
 
 
 def _raw_path_at(source: str, stream: str, day: dt.date, data_root: Path) -> Path:
@@ -847,19 +936,6 @@ def _promote_source_day_unlocked(
         raise RawFetchInvariantError(
             f"candidate stream fails the consumer contract: {first['source']}/{first['stream']}/{first['day']} errors={first.get('errors')}"
         )
-    promotion_contract = {
-        "schema_version": RAW_SOURCE_DAY_PROMOTION_SCHEMA_VERSION,
-        "source": source_name,
-        "day": day.isoformat(),
-        "streams": {
-            stream: digest for stream, (_path, digest) in sorted(candidates.items())
-        },
-    }
-    promotion_id = hashlib.sha256(
-        json.dumps(promotion_contract, sort_keys=True, separators=(",", ":")).encode()
-    ).hexdigest()
-    day_evidence = evidence_root / source_name / f"{day:%Y%m%d}" / promotion_id
-    prepared_path = day_evidence / "promotion-prepared.json"
     destination_marker_path: Path | None = None
     destinations: dict[str, Path] = {}
     for stream in sorted(streams):
@@ -886,20 +962,54 @@ def _promote_source_day_unlocked(
             raise RawFetchInvariantError(
                 f"canonical source-day marker is not an object: {destination_marker_path}"
             )
-        if installed_marker.get("promotion") == {
-            "policy": "raw-source-day-promotion-v1",
-            "promotion_id": promotion_id,
-        }:
-            for stream in streams:
-                require_committed_source_day_stream(
-                    source_name, stream, day, data_root=data_root
-                )
-            return {**promotion_contract, "promotion_id": promotion_id, "status": "already_committed"}
     else:
         installed_marker = {
             "source": source_name,
             "day": day.isoformat(),
             "streams": {},
+        }
+    installed_streams = installed_marker.get("streams")
+    if not isinstance(installed_streams, dict):
+        raise RawFetchInvariantError(
+            f"canonical source-day marker streams are invalid: {destination_marker_path}"
+        )
+    resulting_hashes: dict[str, str] = {}
+    for retained_stream, retained_marker in sorted(installed_streams.items()):
+        if retained_stream in candidates:
+            continue
+        if not isinstance(retained_marker, dict):
+            raise RawFetchInvariantError(
+                f"canonical source-day marker stream is invalid: {source_name}/{retained_stream}/{day:%Y%m%d}"
+            )
+        require_committed_source_day_stream(
+            source_name, retained_stream, day, data_root=data_root
+        )
+        retained_hash = retained_marker.get("logical_content_sha256")
+        if not isinstance(retained_hash, str) or len(retained_hash) != 64:
+            raise RawFetchInvariantError(
+                f"canonical source-day marker stream lacks content identity: {source_name}/{retained_stream}/{day:%Y%m%d}"
+            )
+        resulting_hashes[retained_stream] = retained_hash
+    resulting_hashes.update(
+        {
+            stream: digest
+            for stream, (_path, digest) in sorted(candidates.items())
+        }
+    )
+    promotion = source_day_promotion_record(source_name, day, resulting_hashes)
+    promotion_contract = promotion["contract"]
+    promotion_id = str(promotion["promotion_id"])
+    day_evidence = evidence_root / source_name / f"{day:%Y%m%d}" / promotion_id
+    prepared_path = day_evidence / "promotion-prepared.json"
+    if installed_marker.get("promotion") == promotion:
+        for stream in resulting_hashes:
+            committed_source_day_generation_identity(
+                source_name, stream, day, data_root=data_root
+            )
+        return {
+            **promotion_contract,
+            "promotion_id": promotion_id,
+            "status": "already_committed",
         }
     if prepared_path.is_file():
         prepared = json.loads(prepared_path.read_text(encoding="utf-8"))
@@ -998,10 +1108,7 @@ def _promote_source_day_unlocked(
                 raise RawFetchInvariantError(f"promoted raw stream failed its hash: {destinations[stream]}")
             if after_raw_install is not None:
                 after_raw_install(destinations[stream])
-    new_marker["promotion"] = {
-        "policy": "raw-source-day-promotion-v1",
-        "promotion_id": promotion_id,
-    }
+    new_marker["promotion"] = promotion
     write_json(destination_marker_path, new_marker)
     for stream in streams:
         require_committed_source_day_stream(

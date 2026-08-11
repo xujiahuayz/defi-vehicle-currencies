@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import datetime as dt
 import gzip
 import hashlib
 import importlib.util
@@ -10,6 +11,14 @@ import unittest
 from pathlib import Path
 
 import pandas as pd
+
+from ddvc.fetch.raw import (
+    graph_query_contract_sha256,
+    raw_stream_identity,
+    source_day_promotion_record,
+)
+from ddvc.fetch.schemas import get_schema
+from ddvc.fetch.sources import get_source
 
 
 def load_audit():
@@ -158,6 +167,12 @@ class StateCoverageMaterialityTests(unittest.TestCase):
             with gzip.open(raw, "wt") as handle:
                 handle.write(line)
             marker = directory / "curve_meta_20200101.json"
+            source = get_source("curve")
+            entity = next(
+                entity
+                for entity in get_schema(source.schema).entities
+                if entity.stream == "swaps"
+            )
             marker.write_text(
                 json.dumps(
                     {
@@ -165,11 +180,21 @@ class StateCoverageMaterialityTests(unittest.TestCase):
                         "day": "2020-01-01",
                         "streams": {
                             "swaps": {
+                                "path": raw_stream_identity(raw),
                                 "logical_content_sha256": hashlib.sha256(
                                     line.encode()
-                                ).hexdigest()
+                                ).hexdigest(),
+                                "query_contract_sha256": graph_query_contract_sha256(
+                                    entity
+                                ),
+                                "head_block_at_fetch": 20_000_000,
                             }
                         },
+                        "promotion": source_day_promotion_record(
+                            "curve",
+                            dt.date(2020, 1, 1),
+                            {"swaps": hashlib.sha256(line.encode()).hexdigest()},
+                        ),
                     }
                 )
             )

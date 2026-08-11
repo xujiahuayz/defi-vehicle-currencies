@@ -11,7 +11,7 @@ import subprocess
 from copy import deepcopy
 from collections.abc import Iterable, Mapping
 from concurrent.futures import ProcessPoolExecutor, as_completed
-from dataclasses import dataclass
+from dataclasses import dataclass, fields
 from functools import lru_cache
 from pathlib import Path
 
@@ -1090,6 +1090,14 @@ def write_local_scan_certificate(
                 f"local scan certificate lacks cheap mutation identity: "
                 f"{partition.source}/{partition.stream}/{partition.day}"
             )
+        metadata_present = item.get("metadata_present")
+        if not isinstance(metadata_present, bool) or (
+            metadata_present and not is_sha256(item.get("metadata_sha256"))
+        ):
+            raise ValueError(
+                f"local scan certificate lacks metadata identity: "
+                f"{partition.source}/{partition.stream}/{partition.day}"
+            )
     ledger = ledger_path or output.with_suffix(".partitions.jsonl")
     if ledger.resolve() == output.resolve():
         raise ValueError("local scan ledger and certificate paths must be distinct")
@@ -1197,6 +1205,11 @@ def _load_certified_ledger_cached(
             or item.get("contract_sha256")
             != contract_identity(partition.source, partition.stream)
             or not is_sha256(item.get("logical_content_sha256"))
+            or not isinstance(item.get("metadata_present"), bool)
+            or (
+                item.get("metadata_present") is True
+                and not is_sha256(item.get("metadata_sha256"))
+            )
         ):
             raise ValueError(
                 f"local scan certificate row mismatch: "
@@ -1256,6 +1269,27 @@ def load_certified_partition_ledger(
                 f"certified raw partition is missing: "
                 f"{partition.source}/{partition.stream}/{partition.day}"
             )
+        if item.get("contract_sha256") != contract_identity(
+            partition.source, partition.stream
+        ):
+            raise ValueError(
+                f"certified raw partition consumer contract changed: "
+                f"{partition.source}/{partition.stream}/{partition.day}"
+            )
+        metadata_path = _metadata_path(data_root, partition)
+        expected_metadata_present = item.get("metadata_present") is True
+        if metadata_path.is_file() != expected_metadata_present:
+            raise ValueError(
+                f"certified raw metadata presence changed after scan: "
+                f"{partition.source}/{partition.stream}/{partition.day}"
+            )
+        if expected_metadata_present and file_sha256(metadata_path) != item.get(
+            "metadata_sha256"
+        ):
+            raise ValueError(
+                f"certified raw metadata changed after scan: "
+                f"{partition.source}/{partition.stream}/{partition.day}"
+            )
         stat = expected_path.stat()
         if (
             item.get("container_bytes") != stat.st_size
@@ -1300,42 +1334,79 @@ def local_scan_certificate_path(
     return data_root / "processed" / "raw_generation" / f"{source}_local_certificate.json"
 
 
-def raw_partition_generation_identity(
+def raw_partition_read_authority(
     source: str,
     stream: str,
     day: str,
     *,
-    data_root: Path = DATA_DIR,
-) -> str:
-    """Resolve one exact raw generation through promotion or a certified local ledger."""
+    data_root: Path,
+) -> dict[str, object]:
+    """Resolve the exact authority and logical hash for one installed partition."""
+
+    def file_generation(path: Path) -> tuple[int, int, int]:
+        stat = path.stat()
+        return stat.st_size, stat.st_mtime_ns, stat.st_ctime_ns
+
+    def source_registry_generation() -> str:
+        source_record = get_source(source)
+        values: dict[str, object] = {}
+        for field in fields(source_record):
+            value = getattr(source_record, field.name)
+            values[field.name] = value.isoformat() if isinstance(value, dt.date) else value
+        return canonical_json_sha256(values)
 
     parsed_day = dt.datetime.strptime(day, "%Y%m%d").date()
-    _path, marker_path = installed_source_day_paths(
+    path, marker_path = installed_source_day_paths(
         source, stream, parsed_day, data_root=data_root
     )
+    marker_payload: object | None = None
     marker_has_promotion = False
     if marker_path.is_file():
         try:
             marker_payload = json.loads(marker_path.read_text(encoding="utf-8"))
         except (OSError, json.JSONDecodeError):
-            marker_payload = None
-        marker_has_promotion = not isinstance(marker_payload, dict) or (
-            "promotion" in marker_payload
-        )
+            marker_has_promotion = True
+        else:
+            marker_has_promotion = not isinstance(marker_payload, dict) or (
+                "promotion" in marker_payload
+            )
     if marker_has_promotion:
-        return committed_source_day_generation_identity(
+        committed_generation_identity = committed_source_day_generation_identity(
             source, stream, parsed_day, data_root=data_root
         )
+        marker_payload = json.loads(marker_path.read_text(encoding="utf-8"))
+        expected_hash = marker_payload["streams"][stream]["logical_content_sha256"]
+        registry_generation = source_registry_generation()
+        generation_identity = canonical_json_sha256(
+            {
+                "committed_generation_identity_sha256": committed_generation_identity,
+                "source_registry_generation_sha256": registry_generation,
+            }
+        )
+        return {
+            "authority_kind": "promoted-source-day-v1",
+            "path": path,
+            "path_generation": file_generation(path),
+            "authority_generation": file_generation(marker_path),
+            "source_registry_generation": registry_generation,
+            "logical_content_sha256": expected_hash,
+            "generation_identity_sha256": generation_identity,
+        }
     partition = RawPartition(source, stream, day)
-    rows, binding = load_certified_partition_ledger(
-        local_scan_certificate_path(source, data_root=data_root),
+    certificate_path = local_scan_certificate_path(source, data_root=data_root)
+    rows, authority = load_certified_partition_ledger(
+        certificate_path,
         data_root=data_root,
         partitions=[partition],
     )
+    certificate = _load_json(certificate_path, "local scan certificate")
+    ledger_path = certificate_path.with_name(str(certificate["partition_ledger"]))
+    metadata_path = _metadata_path(data_root, partition)
     row = rows[0]
-    return canonical_json_sha256(
+    registry_generation = source_registry_generation()
+    generation_identity = canonical_json_sha256(
         {
-            "authority": binding,
+            "authority": authority,
             "source": source,
             "stream": stream,
             "day": day,
@@ -1348,7 +1419,41 @@ def raw_partition_generation_identity(
                 "observed_head_block_at_fetch"
             ),
             "metadata_sha256": row.get("metadata_sha256"),
+            "source_registry_generation_sha256": registry_generation,
         }
+    )
+    return {
+        "authority_kind": LOCAL_CERTIFICATE_POLICY,
+        "path": path,
+        "path_generation": file_generation(path),
+        "authority_generation": (
+            file_generation(certificate_path),
+            file_generation(ledger_path),
+        ),
+        "metadata_generation": (
+            file_generation(metadata_path)
+            if row.get("metadata_present") is True
+            else None
+        ),
+        "source_registry_generation": registry_generation,
+        "logical_content_sha256": row["logical_content_sha256"],
+        "generation_identity_sha256": generation_identity,
+    }
+
+
+def raw_partition_generation_identity(
+    source: str,
+    stream: str,
+    day: str,
+    *,
+    data_root: Path = DATA_DIR,
+) -> str:
+    """Resolve one exact raw generation through promotion or a certified local ledger."""
+
+    return str(
+        raw_partition_read_authority(
+            source, stream, day, data_root=data_root
+        )["generation_identity_sha256"]
     )
 
 

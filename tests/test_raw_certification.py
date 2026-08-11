@@ -8,6 +8,7 @@ import os
 import subprocess
 import tempfile
 import unittest
+from dataclasses import replace
 from pathlib import Path
 from unittest.mock import patch
 
@@ -20,9 +21,13 @@ from scripts.certify_raw_generation import (
 )
 from ddvc.artifact_release import canonical_json_sha256, file_sha256
 from ddvc.fetch import dune
-from ddvc.fetch.raw import RawFetchInvariantError, graph_query_contract_sha256
+from ddvc.fetch.raw import (
+    RawFetchInvariantError,
+    graph_query_contract_sha256,
+    verified_source_day_rows,
+)
 from ddvc.fetch.schemas import get_schema
-from ddvc.fetch.sources import get_source
+from ddvc.fetch.sources import DEX_SOURCES, get_source
 from ddvc.provenance import portable_content_sha256
 from ddvc.raw_certification import (
     ADJUDICATION_ARTIFACT_POLICY,
@@ -798,6 +803,286 @@ class RawCertificationTests(unittest.TestCase):
         )
         with self.assertRaisesRegex(ValueError, "changed after scan"):
             load_certified_partition_ledger(output, data_root=self.data)
+
+    def test_verified_local_partition_reader_streams_once_and_binds_exact_authority(self) -> None:
+        partition = self.perimeter
+        expected_rows = [v3_swap("a"), v3_swap("b")]
+        write_gzip(self.path(partition), expected_rows)
+        observed = self.scan(partition)
+        certificate = self.data / "processed" / "raw_generation" / "uniswap_v3_local_certificate.json"
+        write_local_scan_certificate(
+            certificate,
+            [observed],
+            expected_partitions=[partition],
+        )
+        identity = raw_partition_generation_identity(
+            partition.source,
+            partition.stream,
+            partition.day,
+            data_root=self.data,
+        )
+        with patch("ddvc.fetch.raw.gzip.open", wraps=gzip.open) as gzip_open:
+            with verified_source_day_rows(
+                partition.source,
+                partition.stream,
+                dt.datetime.strptime(partition.day, "%Y%m%d").date(),
+                data_root=self.data,
+                expected_generation_identity=identity,
+            ) as rows:
+                self.assertEqual(list(rows), expected_rows)
+        self.assertEqual(gzip_open.call_count, 1)
+        with self.assertRaisesRegex(
+            RawFetchInvariantError, "authority changed before read"
+        ):
+            with verified_source_day_rows(
+                partition.source,
+                partition.stream,
+                dt.datetime.strptime(partition.day, "%Y%m%d").date(),
+                data_root=self.data,
+                expected_generation_identity="0" * 64,
+            ):
+                pass
+
+    def test_verified_local_partition_reader_rejects_early_exit_and_mutation(self) -> None:
+        partition = self.perimeter
+        write_gzip(self.path(partition), [v3_swap("a"), v3_swap("b")])
+        observed = self.scan(partition)
+        certificate = self.data / "processed" / "raw_generation" / "uniswap_v3_local_certificate.json"
+        write_local_scan_certificate(
+            certificate,
+            [observed],
+            expected_partitions=[partition],
+        )
+        with self.assertRaisesRegex(RawFetchInvariantError, "was not exhausted"):
+            with verified_source_day_rows(
+                partition.source,
+                partition.stream,
+                dt.datetime.strptime(partition.day, "%Y%m%d").date(),
+                data_root=self.data,
+            ) as rows:
+                next(rows)
+        original = self.path(partition).stat()
+        write_gzip(self.path(partition), [v3_swap("c"), v3_swap("d")])
+        os.utime(
+            self.path(partition),
+            ns=(original.st_atime_ns, original.st_mtime_ns),
+        )
+        with self.assertRaisesRegex(ValueError, "changed after scan"):
+            with verified_source_day_rows(
+                partition.source,
+                partition.stream,
+                dt.datetime.strptime(partition.day, "%Y%m%d").date(),
+                data_root=self.data,
+            ):
+                pass
+
+    def test_verified_local_partition_reader_rejects_ledger_certificate_and_mid_read_mutation(self) -> None:
+        partition = self.perimeter
+        expected_rows = [v3_swap("a"), v3_swap("b")]
+        write_gzip(self.path(partition), expected_rows)
+        observed = self.scan(partition)
+        certificate = self.data / "processed" / "raw_generation" / "uniswap_v3_local_certificate.json"
+        write_local_scan_certificate(
+            certificate,
+            [observed],
+            expected_partitions=[partition],
+        )
+        ledger = certificate.with_suffix(".partitions.jsonl")
+        ledger.write_text(ledger.read_text() + "\n", encoding="utf-8")
+        with self.assertRaisesRegex(ValueError, "ledger mismatch"):
+            with verified_source_day_rows(
+                partition.source,
+                partition.stream,
+                dt.datetime.strptime(partition.day, "%Y%m%d").date(),
+                data_root=self.data,
+            ):
+                pass
+        write_local_scan_certificate(
+            certificate,
+            [observed],
+            expected_partitions=[partition],
+        )
+        body = json.loads(certificate.read_text(encoding="utf-8"))
+        body["status"] = "tampered"
+        certificate.write_text(json.dumps(body), encoding="utf-8")
+        with self.assertRaisesRegex(ValueError, "envelope mismatch"):
+            with verified_source_day_rows(
+                partition.source,
+                partition.stream,
+                dt.datetime.strptime(partition.day, "%Y%m%d").date(),
+                data_root=self.data,
+            ):
+                pass
+        write_local_scan_certificate(
+            certificate,
+            [observed],
+            expected_partitions=[partition],
+        )
+        with self.assertRaisesRegex(
+            RawFetchInvariantError, "authority changed during read"
+        ):
+            with verified_source_day_rows(
+                partition.source,
+                partition.stream,
+                dt.datetime.strptime(partition.day, "%Y%m%d").date(),
+                data_root=self.data,
+            ) as rows:
+                self.assertEqual(next(rows), expected_rows[0])
+                certificate.write_text(
+                    certificate.read_text(encoding="utf-8") + "\n",
+                    encoding="utf-8",
+                )
+                self.assertEqual(list(rows), expected_rows[1:])
+
+    def test_verified_partition_reader_has_no_uncertified_fallback(self) -> None:
+        partition = self.perimeter
+        write_gzip(self.path(partition), [v3_swap("a")])
+        with self.assertRaisesRegex(ValueError, "certificate is unreadable"):
+            with verified_source_day_rows(
+                partition.source,
+                partition.stream,
+                dt.datetime.strptime(partition.day, "%Y%m%d").date(),
+                data_root=self.data,
+            ):
+                pass
+
+    def test_verified_local_reader_binds_metadata_presence_content_and_registry(self) -> None:
+        partition = self.perimeter
+        rows = [v3_swap("a"), v3_swap("b")]
+        write_gzip(self.path(partition), rows)
+        certificate = self.data / "processed" / "raw_generation" / "uniswap_v3_local_certificate.json"
+        observed = self.scan(partition)
+        write_local_scan_certificate(
+            certificate,
+            [observed],
+            expected_partitions=[partition],
+        )
+        metadata = self.meta_path(partition)
+        metadata.parent.mkdir(parents=True, exist_ok=True)
+        metadata.write_text("{}", encoding="utf-8")
+        with self.assertRaisesRegex(ValueError, "metadata presence changed"):
+            with verified_source_day_rows(
+                partition.source,
+                partition.stream,
+                dt.datetime.strptime(partition.day, "%Y%m%d").date(),
+                data_root=self.data,
+            ):
+                pass
+        metadata_payload = {
+            "source": partition.source,
+            "day": "2024-01-01",
+            "streams": {partition.stream: {"rows": len(rows)}},
+        }
+        metadata.write_text(json.dumps(metadata_payload), encoding="utf-8")
+        observed = self.scan(partition)
+        write_local_scan_certificate(
+            certificate,
+            [observed],
+            expected_partitions=[partition],
+        )
+        metadata_payload["streams"][partition.stream]["rows"] = 999
+        metadata.write_text(json.dumps(metadata_payload), encoding="utf-8")
+        with self.assertRaisesRegex(ValueError, "metadata changed after scan"):
+            with verified_source_day_rows(
+                partition.source,
+                partition.stream,
+                dt.datetime.strptime(partition.day, "%Y%m%d").date(),
+                data_root=self.data,
+            ):
+                pass
+        metadata_payload["streams"][partition.stream]["rows"] = len(rows)
+        metadata.write_text(json.dumps(metadata_payload), encoding="utf-8")
+        observed = self.scan(partition)
+        write_local_scan_certificate(
+            certificate,
+            [observed],
+            expected_partitions=[partition],
+        )
+        metadata.unlink()
+        with self.assertRaisesRegex(ValueError, "metadata presence changed"):
+            with verified_source_day_rows(
+                partition.source,
+                partition.stream,
+                dt.datetime.strptime(partition.day, "%Y%m%d").date(),
+                data_root=self.data,
+            ):
+                pass
+        metadata.write_text(json.dumps(metadata_payload), encoding="utf-8")
+        observed = self.scan(partition)
+        write_local_scan_certificate(
+            certificate,
+            [observed],
+            expected_partitions=[partition],
+        )
+        with self.assertRaisesRegex(ValueError, "metadata changed after scan"):
+            with verified_source_day_rows(
+                partition.source,
+                partition.stream,
+                dt.datetime.strptime(partition.day, "%Y%m%d").date(),
+                data_root=self.data,
+            ) as streamed:
+                self.assertEqual(next(streamed), rows[0])
+                metadata.write_text(
+                    metadata.read_text(encoding="utf-8") + "\n",
+                    encoding="utf-8",
+                )
+                self.assertEqual(list(streamed), rows[1:])
+        metadata.write_text(json.dumps(metadata_payload), encoding="utf-8")
+        observed = self.scan(partition)
+        write_local_scan_certificate(
+            certificate,
+            [observed],
+            expected_partitions=[partition],
+        )
+        expected_identity = raw_partition_generation_identity(
+            partition.source,
+            partition.stream,
+            partition.day,
+            data_root=self.data,
+        )
+        with patch.dict(
+            DEX_SOURCES,
+            {
+                partition.source: replace(
+                    DEX_SOURCES[partition.source],
+                    route_normalizer_family="mutated-before-read",
+                )
+            },
+        ):
+            with self.assertRaisesRegex(
+                RawFetchInvariantError, "authority changed before read"
+            ):
+                with verified_source_day_rows(
+                    partition.source,
+                    partition.stream,
+                    dt.datetime.strptime(partition.day, "%Y%m%d").date(),
+                    data_root=self.data,
+                    expected_generation_identity=expected_identity,
+                ):
+                    pass
+        registry_patch = patch.dict(
+            DEX_SOURCES,
+            {
+                partition.source: replace(
+                    DEX_SOURCES[partition.source], notes="mutated during read"
+                )
+            },
+        )
+        try:
+            with self.assertRaisesRegex(
+                RawFetchInvariantError, "authority changed during read"
+            ):
+                with verified_source_day_rows(
+                    partition.source,
+                    partition.stream,
+                    dt.datetime.strptime(partition.day, "%Y%m%d").date(),
+                    data_root=self.data,
+                ) as streamed:
+                    self.assertEqual(next(streamed), rows[0])
+                    registry_patch.start()
+                    self.assertEqual(list(streamed), rows[1:])
+        finally:
+            registry_patch.stop()
 
     def test_local_scan_certificate_owns_one_explicit_ledger_publication(self) -> None:
         partition = self.perimeter

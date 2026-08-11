@@ -32,6 +32,7 @@ from ddvc.fetch.raw import (
     raw_stream_identity,
     require_mergeable_partial_metadata,
     require_committed_source_day_stream,
+    source_day_promotion_record,
     verified_jsonl_gz_rows,
     write_json,
     write_jsonl_gz,
@@ -223,7 +224,35 @@ class RawMetaMergeTests(unittest.TestCase):
                 "fluid", "swaps", day, data_root=canonical
             )
             payload = json.loads(marker.read_text())
+            payload["promotion"] = {
+                "policy": payload["promotion"]["policy"],
+                "promotion_id": payload["promotion"]["promotion_id"],
+            }
+            marker.write_text(json.dumps(payload))
+            self.assertEqual(
+                len(
+                    committed_source_day_generation_identity(
+                        "fluid", "swaps", day, data_root=canonical
+                    )
+                ),
+                64,
+            )
             payload["promotion"]["promotion_id"] = "invalid"
+            marker.write_text(json.dumps(payload))
+            with self.assertRaisesRegex(
+                RawFetchInvariantError, "promotion identity"
+            ):
+                committed_source_day_generation_identity(
+                    "fluid", "swaps", day, data_root=canonical
+                )
+            write_jsonl_gz(_raw, [{"tampered": True}])
+            payload["streams"]["swaps"][
+                "logical_content_sha256"
+            ] = portable_content_sha256(_raw)
+            payload["promotion"] = {
+                "policy": "raw-source-day-promotion-v1",
+                "promotion_id": promoted["promotion_id"],
+            }
             marker.write_text(json.dumps(payload))
             with self.assertRaisesRegex(
                 RawFetchInvariantError, "promotion identity"
@@ -329,8 +358,24 @@ class RawMetaMergeTests(unittest.TestCase):
                     "source": "uniswap_v3",
                     "day": day.isoformat(),
                     "streams": {
-                        "swaps": {"logical_content_sha256": "0" * 64}
+                        "swaps": {
+                            "path": raw_stream_identity(raw),
+                            "logical_content_sha256": "0" * 64,
+                            "query_contract_sha256": graph_query_contract_sha256(
+                                next(
+                                    entity
+                                    for entity in get_schema("uniswap_v3").entities
+                                    if entity.stream == "swaps"
+                                )
+                            ),
+                            "head_block_at_fetch": 20_000_000,
+                        }
                     },
+                    "promotion": source_day_promotion_record(
+                        "uniswap_v3",
+                        day,
+                        {"swaps": "0" * 64},
+                    ),
                 },
             )
             with self.assertRaisesRegex(

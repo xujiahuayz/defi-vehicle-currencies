@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import datetime as dt
 import gzip
 import json
 import os
@@ -18,11 +19,21 @@ from ddvc.reconstruct import (
     active_route_sources,
     read_unified_quality,
     route_input_paths,
+    load_legs,
 )
-from ddvc.fetch.raw import graph_query_contract_sha256, raw_stream_identity
+from ddvc.fetch.raw import (
+    graph_query_contract_sha256,
+    raw_stream_identity,
+    source_day_promotion_record,
+)
 from ddvc.fetch.schemas import get_schema
 from ddvc.fetch.sources import get_source
 from ddvc.provenance import portable_content_sha256
+from ddvc.raw_certification import (
+    RawPartition,
+    scan_installed_generation,
+    write_local_scan_certificate,
+)
 
 
 USDC = "0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48"
@@ -75,10 +86,11 @@ def write_committed_marker(path: Path, day: str) -> None:
                         "head_block_at_fetch": 20_000_000,
                     }
                 },
-                "promotion": {
-                    "policy": "raw-source-day-promotion-v1",
-                    "promotion_id": "1" * 64,
-                },
+                "promotion": source_day_promotion_record(
+                    "uniswap_v2",
+                    dt.date.fromisoformat(day),
+                    {"swaps": portable_content_sha256(path)},
+                ),
             }
         )
     )
@@ -112,6 +124,15 @@ class ReconstructGateTests(unittest.TestCase):
         self.assertEqual(status, "failed")
         self.assertFalse(quality["passed"])
         self.assertEqual(quality["missing_sources"], 1)
+
+    def test_direct_route_loader_has_no_missing_raw_fallback(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            with self.assertRaisesRegex(ValueError, "certificate is unreadable"):
+                load_legs(
+                    "uniswap_v2",
+                    "2020-05-05",
+                    data_root=Path(directory),
+                )
 
     def test_route_day_is_current_only_against_exact_raw_inputs_and_output(self) -> None:
         with tempfile.TemporaryDirectory() as directory:
@@ -184,6 +205,46 @@ class ReconstructGateTests(unittest.TestCase):
                 )
             )
             raw.unlink()
+
+    def test_route_day_reads_legacy_payload_through_current_local_certificate(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            base = Path(directory)
+            data_root, unified_root = base / "data", base / "unified"
+            raw = write_v2_swap(data_root, "2020-05-05")
+            marker = raw.with_name("uniswap_v2_meta_20200505.json")
+            marker_payload = json.loads(marker.read_text(encoding="utf-8"))
+            marker_payload.pop("promotion")
+            marker_payload["streams"]["swaps"]["rows"] = 1
+            marker.write_text(json.dumps(marker_payload), encoding="utf-8")
+            partition = RawPartition("uniswap_v2", "swaps", "20200505")
+            observed = scan_installed_generation(
+                data_root,
+                base / "scan",
+                workers=1,
+                partitions=[partition],
+            )
+            certificate = (
+                data_root
+                / "processed"
+                / "raw_generation"
+                / "uniswap_v2_local_certificate.json"
+            )
+            write_local_scan_certificate(
+                certificate,
+                observed,
+                expected_partitions=[partition],
+            )
+            quality, status = _process_one(
+                "2020-05-05",
+                ["uniswap_v2"],
+                True,
+                data_root,
+                unified_root,
+            )
+        self.assertEqual(status, "written")
+        self.assertTrue(quality["passed"])
+        self.assertEqual(quality["raw_rows"], 1)
+        self.assertEqual(quality["output_rows"], 1)
 
     def test_empty_but_present_day_materialises_a_typed_empty_partition(self) -> None:
         with tempfile.TemporaryDirectory() as directory:
