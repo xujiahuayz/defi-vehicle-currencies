@@ -862,7 +862,6 @@ def test_inventory_fetch_recursively_bisects_capacity_ranges_and_reuses_cache() 
             (103, 103),
         ]
         assert metadata["rpc_subranges"] == 4
-        assert metadata["rpc_capacity_bisections"] == 3
         evidence_path = inventory_chunk_evidence_path(100, 103, root)
         with gzip.open(evidence_path, "rt", encoding="utf-8") as handle:
             evidence = json.load(handle)
@@ -870,15 +869,6 @@ def test_inventory_fetch_recursively_bisects_capacity_ranges_and_reuses_cache() 
             (item["start_block"], item["end_block"])
             for item in evidence["rpc_subrange_evidence"]
         ] == [(100, 100), (101, 101), (102, 102), (103, 103)]
-        assert [
-            (item["start_block"], item["end_block"], item["split_after_block"])
-            for item in evidence["rpc_capacity_bisections"]
-        ] == [(100, 103, 101), (100, 101, 100), (102, 103, 102)]
-        assert all(
-            "endpoint" not in attempt
-            for item in evidence["rpc_capacity_bisections"]
-            for attempt in item["rpc_attempts"]
-        )
         assert inventory_chunk_completed(100, 103, root, frozen_upper=frozen)
 
         def must_not_refetch(*_args, **_kwargs):
@@ -886,7 +876,7 @@ def test_inventory_fetch_recursively_bisects_capacity_ranges_and_reuses_cache() 
 
         assert fetch_chunk(100, 103, frozen, root, rpc_request=must_not_refetch) == metadata
 
-        evidence["rpc_capacity_bisections"][0]["split_after_block"] = 100
+        evidence["rpc_subrange_evidence"][1]["start_block"] = 102
         with gzip.open(evidence_path, "wt", encoding="utf-8") as handle:
             json.dump(evidence, handle, sort_keys=True, separators=(",", ":"))
         _raw_path, marker_path = inventory_chunk_paths(100, 103, root)

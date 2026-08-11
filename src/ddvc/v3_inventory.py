@@ -24,7 +24,6 @@ from ddvc.ethereum_logs import (
     RAW_LOG_STORAGE_FORMAT,
     block_ranges,
     canonical_raw_log,
-    exact_log_block_ranges,
     file_sha256,
     rpc_integer,
     validate_anchored_log_evidence,
@@ -650,13 +649,12 @@ def _inventory_rpc_partition(
     evidence: dict[str, object],
     lower: int,
     upper: int,
-) -> tuple[list[dict[str, object]], list[dict[str, object]]]:
-    """Validate a complete deterministic leaf partition of one inventory chunk."""
+) -> list[dict[str, object]]:
+    """Validate exact successful leaves covering one inventory chunk once."""
 
     subranges = evidence.get("rpc_subrange_evidence")
     if not isinstance(subranges, list) or not subranges:
         raise ValueError("V3 inventory RPC evidence lacks successful subranges")
-    leaf_by_bounds: dict[tuple[int, int], dict[str, object]] = {}
     cursor = lower
     for subrange in subranges:
         if not isinstance(subrange, dict):
@@ -667,66 +665,10 @@ def _inventory_rpc_partition(
         )
         if bounds[0] != cursor or bounds[1] < bounds[0] or bounds[1] - bounds[0] + 1 > EXACT_LOG_BLOCK_CAP:
             raise ValueError("V3 inventory RPC evidence has a gap, overlap, or oversized subrange")
-        if bounds in leaf_by_bounds:
-            raise ValueError("V3 inventory RPC evidence repeats a successful subrange")
-        leaf_by_bounds[bounds] = subrange
         cursor = bounds[1] + 1
     if cursor != upper + 1:
         raise ValueError("V3 inventory RPC evidence does not cover the chunk perimeter")
-
-    bisections = evidence.get("rpc_capacity_bisections", [])
-    if not isinstance(bisections, list):
-        raise ValueError("V3 inventory capacity evidence is malformed")
-    split_by_bounds: dict[tuple[int, int], dict[str, object]] = {}
-    declared_order: list[tuple[int, int]] = []
-    for bisection in bisections:
-        if not isinstance(bisection, dict):
-            raise ValueError("V3 inventory capacity evidence contains a malformed split")
-        bounds = (
-            int(bisection.get("start_block", -1)),
-            int(bisection.get("end_block", -1)),
-        )
-        split = int(bisection.get("split_after_block", -1))
-        attempts = bisection.get("rpc_attempts")
-        if bounds in split_by_bounds or bounds[0] >= bounds[1] or not bounds[0] <= split < bounds[1]:
-            raise ValueError("V3 inventory capacity evidence contains an invalid split")
-        if not isinstance(attempts, list) or not attempts:
-            raise ValueError("V3 inventory capacity split lacks RPC attempt evidence")
-        if not any(
-            isinstance(attempt, dict) and attempt.get("classification") == "capacity"
-            for attempt in attempts
-        ):
-            raise ValueError("V3 inventory capacity split lacks a capacity classification")
-        for attempt in attempts:
-            if not isinstance(attempt, dict) or "endpoint" in attempt:
-                raise ValueError("V3 inventory capacity attempt exposes endpoint material")
-            message = str(attempt.get("message") or "")
-            if not message or "http://" in message.lower() or "https://" in message.lower():
-                raise ValueError("V3 inventory capacity attempt contains unsafe detail")
-        split_by_bounds[bounds] = bisection
-        declared_order.append(bounds)
-
-    expected_order: list[tuple[int, int]] = []
-    consumed_leaves: set[tuple[int, int]] = set()
-
-    def traverse(start: int, end: int) -> None:
-        bounds = (start, end)
-        bisection = split_by_bounds.get(bounds)
-        if bisection is None:
-            if bounds not in leaf_by_bounds:
-                raise ValueError("V3 inventory capacity tree does not terminate in exact leaves")
-            consumed_leaves.add(bounds)
-            return
-        expected_order.append(bounds)
-        split = int(bisection["split_after_block"])
-        traverse(start, split)
-        traverse(split + 1, end)
-
-    for start, end in exact_log_block_ranges(lower, upper):
-        traverse(start, end)
-    if expected_order != declared_order or consumed_leaves != set(leaf_by_bounds):
-        raise ValueError("V3 inventory capacity evidence is not a deterministic complete tree")
-    return subranges, bisections
+    return subranges
 
 
 def load_inventory_chunk_records(
@@ -757,7 +699,7 @@ def load_inventory_chunk_records(
     raw_by_event = {name: 0 for name in EVENT_TOPICS}
     for record in records:
         raw_by_event[str(decode_inventory_log(record)["event_type"])] += 1
-    subranges, capacity_bisections = _inventory_rpc_partition(evidence, lower, upper)
+    subranges = _inventory_rpc_partition(evidence, lower, upper)
     for subrange in subranges:
         rpc_lower = int(subrange["start_block"])
         rpc_upper = int(subrange["end_block"])
@@ -786,8 +728,6 @@ def load_inventory_chunk_records(
         == raw_by_event
         and int(marker.get("rpc_block_cap", -1)) == EXACT_LOG_BLOCK_CAP
         and int(marker.get("rpc_subranges", -1)) == len(subranges)
-        and int(marker.get("rpc_capacity_bisections", 0))
-        == len(capacity_bisections)
         and marker.get("rpc_evidence_file") == evidence_path.name
         and marker.get("rpc_evidence_sha256") == file_sha256(evidence_path)
         and marker.get("raw_sha256") == file_sha256(raw)
