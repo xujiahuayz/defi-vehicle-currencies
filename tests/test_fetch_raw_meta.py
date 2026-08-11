@@ -17,6 +17,7 @@ from ddvc.fetch.dune import (
     fetch_dune_month,
 )
 from ddvc.fetch.raw import (
+    committed_source_day_generation_identity,
     RawFetchInvariantError,
     RawRefetchDivergenceError,
     fetch_source_day,
@@ -214,6 +215,22 @@ class RawMetaMergeTests(unittest.TestCase):
             require_committed_source_day_stream(
                 "fluid", "swaps", day, data_root=canonical
             )
+            identity = committed_source_day_generation_identity(
+                "fluid", "swaps", day, data_root=canonical
+            )
+            self.assertEqual(len(identity), 64)
+            _raw, marker = installed_source_day_paths(
+                "fluid", "swaps", day, data_root=canonical
+            )
+            payload = json.loads(marker.read_text())
+            payload["promotion"]["promotion_id"] = "invalid"
+            marker.write_text(json.dumps(payload))
+            with self.assertRaisesRegex(
+                RawFetchInvariantError, "promotion identity"
+            ):
+                committed_source_day_generation_identity(
+                    "fluid", "swaps", day, data_root=canonical
+                )
 
     def test_dune_promotion_rejects_window_and_contract_tampering(self) -> None:
         day = dt.date(2024, 11, 15)

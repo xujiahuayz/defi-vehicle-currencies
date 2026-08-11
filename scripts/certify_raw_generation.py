@@ -28,7 +28,10 @@ from ddvc.raw_certification import (
     FIELD_CONTRACTS,
     FETCH_CODE_ARTIFACT_POLICY,
     GENERATION_EVIDENCE_POLICY,
+    LOCAL_SCAN_POLICY,
     QUERY_ARTIFACT_POLICY,
+    RawPartition,
+    active_consumer_streams,
     comparison_contract,
     comparison_contract_identity,
     comparison_counts,
@@ -40,6 +43,7 @@ from ddvc.raw_certification import (
     validate_comparison_rows,
     verify_retro_certificate,
     write_normalized_legacy_ledger,
+    write_local_scan_certificate,
     write_local_scan_ledger,
     write_retro_certificate,
 )
@@ -49,6 +53,68 @@ from ddvc.runtime import atomic_output, bounded_workers
 
 EVIDENCE_PREPARATION_POLICY = "legacy-raw-evidence-preparation-v1"
 REFERENCE_ACQUISITION_POLICY = "fresh-reference-acquisition-plan-v1"
+
+
+def selected_required_partitions(
+    sources: list[str] | None,
+    streams: list[str] | None,
+) -> tuple[RawPartition, ...]:
+    """Resolve an exact active subset for a repeatable local integrity scan."""
+
+    active = active_consumer_streams()
+    selected_sources = set(sources or active)
+    if unknown_sources := sorted(selected_sources.difference(active)):
+        raise ValueError(
+            f"unknown or inactive raw source(s): {', '.join(unknown_sources)}"
+        )
+    selected_streams = set(streams or ())
+    if selected_streams and not sources:
+        raise ValueError("--stream requires at least one --source")
+    required = {
+        source: frozenset(selected_streams) if selected_streams else active[source]
+        for source in sorted(selected_sources)
+    }
+    if unavailable := sorted(
+        f"{source}/{stream}"
+        for source, source_streams in required.items()
+        for stream in source_streams.difference(active[source])
+    ):
+        raise ValueError(
+            f"source does not expose active stream(s): {', '.join(unavailable)}"
+        )
+    return required_partitions(required=required)
+
+
+def publish_local_scan(
+    ledger_output: Path,
+    certificate_output: Path | None,
+    local: list[dict[str, object]],
+    partitions: tuple[RawPartition, ...],
+) -> dict[str, object]:
+    """Publish one diagnostic ledger and a certificate only for an exact passing scan."""
+
+    failures = [item for item in local if item.get("local_pass") is not True]
+    if certificate_output is None or failures:
+        summary = write_local_scan_ledger(ledger_output, local)
+        if certificate_output is not None:
+            certificate_output.unlink(missing_ok=True)
+        return summary
+    certificate = write_local_scan_certificate(
+        certificate_output,
+        local,
+        expected_partitions=partitions,
+        ledger_path=ledger_output,
+    )
+    return {
+        "policy": LOCAL_SCAN_POLICY,
+        "partitions": len(local),
+        "passed": len(local),
+        "failed": 0,
+        "ledger": ledger_output.name,
+        "ledger_sha256": certificate["partition_ledger_sha256"],
+        "failed_source_streams": [],
+        "certificate": certificate["certificate_sha256"],
+    }
 
 
 def read_jsonl(path: Path) -> list[dict[str, object]]:
@@ -556,6 +622,9 @@ def main() -> int:
     local.add_argument("--data-root", type=Path, default=DATA_DIR)
     local.add_argument("--work-dir", type=Path, required=True)
     local.add_argument("--output", type=Path, required=True)
+    local.add_argument("--certificate-output", type=Path)
+    local.add_argument("--source", action="append")
+    local.add_argument("--stream", action="append")
     local.add_argument("--workers", type=int, default=4)
     verify = subparsers.add_parser("verify")
     verify.add_argument("certificate", type=Path)
@@ -622,7 +691,14 @@ def main() -> int:
         )
         print(json.dumps(payload, indent=2, sort_keys=True))
         return 0
-    partitions = required_partitions()
+    try:
+        partitions = (
+            selected_required_partitions(args.source, args.stream)
+            if args.command == "local-scan"
+            else required_partitions()
+        )
+    except ValueError as exc:
+        parser.error(str(exc))
     local = scan_installed_generation(
         args.data_root,
         args.work_dir,
@@ -630,7 +706,12 @@ def main() -> int:
         partitions=partitions,
     )
     if args.command == "local-scan":
-        summary = write_local_scan_ledger(args.output, local)
+        summary = publish_local_scan(
+            args.output,
+            args.certificate_output,
+            local,
+            partitions,
+        )
         print(json.dumps(summary, indent=2, sort_keys=True))
         return int(summary["failed"] != 0)
     certificate = write_retro_certificate(

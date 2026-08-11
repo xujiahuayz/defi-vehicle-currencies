@@ -15,10 +15,12 @@ from scripts.certify_raw_generation import (
     acquire_references,
     finalize_evidence,
     prepare_evidence,
+    publish_local_scan,
+    selected_required_partitions,
 )
 from ddvc.artifact_release import canonical_json_sha256, file_sha256
 from ddvc.fetch import dune
-from ddvc.fetch.raw import graph_query_contract_sha256
+from ddvc.fetch.raw import RawFetchInvariantError, graph_query_contract_sha256
 from ddvc.fetch.schemas import get_schema
 from ddvc.fetch.sources import get_source
 from ddvc.provenance import portable_content_sha256
@@ -41,8 +43,11 @@ from ddvc.raw_certification import (
     generation_identity,
     _validate_generation_against_local,
     required_partitions,
+    raw_partition_generation_identity,
     scan_installed_generation,
+    load_certified_partition_ledger,
     verify_retro_certificate,
+    write_local_scan_certificate,
     write_normalized_legacy_ledger,
     write_retro_certificate,
 )
@@ -138,6 +143,24 @@ class RawCertificationTests(unittest.TestCase):
             / partition.source
             / f"{partition.source}_{partition.stream}_{partition.day}.jsonl.gz"
         )
+
+    def test_local_scan_subset_is_exact_and_rejects_inactive_pairs(self) -> None:
+        selected = selected_required_partitions(
+            ["uniswap_v3"], ["swaps", "mints", "burns"]
+        )
+        self.assertEqual(
+            {(partition.source, partition.stream) for partition in selected},
+            {
+                ("uniswap_v3", "swaps"),
+                ("uniswap_v3", "mints"),
+                ("uniswap_v3", "burns"),
+            },
+        )
+        self.assertEqual(len(selected), 1884 * 3)
+        with self.assertRaisesRegex(ValueError, "does not expose"):
+            selected_required_partitions(["uniswap_v3"], ["joins_exits"])
+        with self.assertRaisesRegex(ValueError, "requires"):
+            selected_required_partitions(None, ["swaps"])
 
     def meta_path(self, partition: RawPartition) -> Path:
         return self.path(partition).with_name(
@@ -706,6 +729,139 @@ class RawCertificationTests(unittest.TestCase):
         self.assertEqual(observed["last_pagination_identity"], "b")
         self.assertEqual(observed["observed_query_contract_sha256"], "9" * 64)
 
+    def test_local_scan_certificate_binds_content_contract_perimeter_and_file_generation(self) -> None:
+        partition = self.perimeter
+        write_gzip(self.path(partition), [v3_swap("a")])
+        observed = self.scan(partition)
+        output = (
+            self.data
+            / "processed"
+            / "raw_generation"
+            / "uniswap_v3_local_certificate.json"
+        )
+        certificate = write_local_scan_certificate(
+            output,
+            [observed],
+            expected_partitions=[partition],
+        )
+        rows, binding = load_certified_partition_ledger(
+            output,
+            data_root=self.data,
+            partitions=[partition],
+        )
+        self.assertEqual(rows, [observed])
+        self.assertEqual(binding["certificate_sha256"], certificate["certificate_sha256"])
+        self.assertEqual(binding["selected_partition_count"], 1)
+        rows[0]["logical_content_sha256"] = "mutated"
+        rows[0]["errors"].append("caller mutation")
+        fresh_rows, _fresh_binding = load_certified_partition_ledger(
+            output,
+            data_root=self.data,
+            partitions=[partition],
+        )
+        self.assertEqual(fresh_rows, [observed])
+        identity = raw_partition_generation_identity(
+            "uniswap_v3", "swaps", DAY, data_root=self.data
+        )
+        self.assertEqual(len(identity), 64)
+        self.meta_path(partition).write_text(
+            json.dumps(
+                {
+                    "source": "uniswap_v3",
+                    "day": "2024-01-01",
+                    "streams": {
+                        "swaps": {
+                            "logical_content_sha256": observed[
+                                "logical_content_sha256"
+                            ]
+                        }
+                    },
+                    "promotion": {
+                        "policy": "raw-source-day-promotion-v1",
+                        "promotion_id": "corrupt",
+                    },
+                }
+            )
+        )
+        with self.assertRaisesRegex(
+            RawFetchInvariantError, "promotion identity"
+        ):
+            raw_partition_generation_identity(
+                "uniswap_v3", "swaps", DAY, data_root=self.data
+            )
+        self.meta_path(partition).unlink()
+        original = self.path(partition).stat()
+        write_gzip(self.path(partition), [v3_swap("b")])
+        os.utime(
+            self.path(partition),
+            ns=(original.st_atime_ns, original.st_mtime_ns),
+        )
+        with self.assertRaisesRegex(ValueError, "changed after scan"):
+            load_certified_partition_ledger(output, data_root=self.data)
+
+    def test_local_scan_certificate_owns_one_explicit_ledger_publication(self) -> None:
+        partition = self.perimeter
+        write_gzip(self.path(partition), [v3_swap("a")])
+        observed = self.scan(partition)
+        output = self.root / "certificate.json"
+        ledger = self.root / "local-scan.jsonl"
+        certificate = write_local_scan_certificate(
+            output,
+            [observed],
+            expected_partitions=[partition],
+            ledger_path=ledger,
+        )
+        self.assertTrue(ledger.is_file())
+        self.assertFalse(output.with_suffix(".partitions.jsonl").exists())
+        self.assertEqual(certificate["partition_ledger"], ledger.name)
+        rows, _binding = load_certified_partition_ledger(
+            output, data_root=self.data
+        )
+        self.assertEqual(rows, [observed])
+        with self.assertRaisesRegex(ValueError, "must be siblings"):
+            write_local_scan_certificate(
+                output,
+                [observed],
+                expected_partitions=[partition],
+                ledger_path=self.root / "nested" / "local-scan.jsonl",
+            )
+
+    def test_failed_local_scan_publishes_one_diagnostic_ledger_and_no_certificate(self) -> None:
+        partition = self.perimeter
+        write_gzip(self.path(partition), [v3_swap("a")])
+        observed = self.scan(partition)
+        ledger = self.root / "local-scan.jsonl"
+        certificate = self.root / "certificate.json"
+        publish_local_scan(ledger, certificate, [observed], (partition,))
+        self.assertTrue(certificate.is_file())
+        failed = {**observed, "local_pass": False, "errors": ["diagnostic"]}
+        summary = publish_local_scan(ledger, certificate, [failed], (partition,))
+        self.assertEqual(summary["failed"], 1)
+        self.assertFalse(certificate.exists())
+        self.assertFalse(certificate.with_suffix(".partitions.jsonl").exists())
+        self.assertEqual(json.loads(ledger.read_text()), failed)
+
+    def test_local_scan_certificate_rejects_tampered_ledger_and_partial_perimeter(self) -> None:
+        partition = self.perimeter
+        write_gzip(self.path(partition), [v3_swap("a")])
+        observed = self.scan(partition)
+        output = self.root / "local-certificate.json"
+        write_local_scan_certificate(
+            output,
+            [observed],
+            expected_partitions=[partition],
+        )
+        ledger = output.with_suffix(".partitions.jsonl")
+        ledger.write_text(ledger.read_text() + "\n")
+        with self.assertRaisesRegex(ValueError, "ledger mismatch"):
+            load_certified_partition_ledger(output, data_root=self.data)
+        with self.assertRaisesRegex(ValueError, "perimeter mismatch"):
+            write_local_scan_certificate(
+                output,
+                [observed],
+                expected_partitions=[partition, RawPartition("uniswap_v3", "mints", DAY)],
+            )
+
     def test_graph_scan_rejects_duplicate_out_of_order_and_out_of_day_rows(self) -> None:
         partition = RawPartition("uniswap_v3", "swaps", DAY)
         rows = [
@@ -1068,6 +1224,26 @@ class RawCertificationTests(unittest.TestCase):
         third = self.scan(partition)
         self.assertEqual(third["rows"], 2)
         self.assertNotEqual(third["logical_content_sha256"], first["logical_content_sha256"])
+
+    def test_v3_cache_without_file_generation_identity_is_forced_through_v4_rescan(self) -> None:
+        partition = RawPartition("uniswap_v3", "swaps", DAY)
+        write_gzip(self.path(partition), [v3_swap("a")])
+        self.scan(partition)
+        cache = next(self.work.glob("*.json"))
+        stale = json.loads(cache.read_text())
+        stale["scan_policy"] = "installed-required-raw-local-scan-v3"
+        stale["partitions"][0].pop("container_mtime_ns")
+        stale["partitions"][0].pop("container_ctime_ns")
+        cache.write_text(json.dumps(stale))
+        from ddvc.raw_certification import _scan_partition
+
+        with patch(
+            "ddvc.raw_certification._scan_partition", wraps=_scan_partition
+        ) as scan_partition:
+            observed = self.scan(partition)
+        scan_partition.assert_called_once()
+        self.assertIn("container_mtime_ns", observed)
+        self.assertIn("container_ctime_ns", observed)
 
     def test_cached_missing_partition_is_rescanned_when_file_appears(self) -> None:
         partition = RawPartition("uniswap_v3", "swaps", DAY)

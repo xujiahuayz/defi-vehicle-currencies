@@ -8,9 +8,11 @@ import hashlib
 import json
 import re
 import subprocess
+from copy import deepcopy
 from collections.abc import Iterable, Mapping
 from concurrent.futures import ProcessPoolExecutor, as_completed
 from dataclasses import dataclass
+from functools import lru_cache
 from pathlib import Path
 
 from ddvc.artifact_release import canonical_json_sha256, file_sha256, is_sha256
@@ -24,7 +26,9 @@ from ddvc.fetch.dune import (
     validated_dune_query_window,
 )
 from ddvc.fetch.raw import (
+    committed_source_day_generation_identity,
     graph_query_contract_sha256,
+    installed_source_day_paths,
     page_size_for_entity,
     query_chunk_policy,
 )
@@ -34,7 +38,8 @@ from ddvc.runtime import atomic_output
 
 
 CERTIFICATE_SCHEMA_VERSION = 1
-LOCAL_SCAN_POLICY = "installed-required-raw-local-scan-v3"
+LOCAL_SCAN_POLICY = "installed-required-raw-local-scan-v4"
+LOCAL_CERTIFICATE_POLICY = "installed-required-raw-local-certificate-v1"
 RETRO_CERTIFICATION_POLICY = "legacy-raw-generation-retro-certification-v1"
 GENERATION_EVIDENCE_POLICY = "raw-capture-generation-evidence-v1"
 ADJUDICATION_EVIDENCE_POLICY = "raw-generation-adjudication-evidence-v1"
@@ -852,6 +857,8 @@ def _scan_partition(data_root_text: str, partition: RawPartition) -> dict[str, o
         "day": partition.day,
         "path": relative,
         "container_bytes": path.stat().st_size,
+        "container_mtime_ns": path.stat().st_mtime_ns,
+        "container_ctime_ns": path.stat().st_ctime_ns,
         "logical_content_sha256": logical_sha256,
         "rows": rows,
         "recorded_rows": recorded_rows,
@@ -1034,6 +1041,315 @@ def write_local_scan_ledger(path: Path, partitions: Iterable[Mapping[str, object
             {f"{item['source']}/{item['stream']}" for item in failures}
         ),
     }
+
+
+def write_local_scan_certificate(
+    output: Path,
+    partitions: Iterable[Mapping[str, object]],
+    *,
+    expected_partitions: Iterable[RawPartition],
+    ledger_path: Path | None = None,
+) -> dict[str, object]:
+    """Publish one content-bound installed-generation scan without overstating provenance."""
+
+    ordered = sorted(
+        (dict(item) for item in partitions),
+        key=lambda item: (item["source"], item["stream"], item["day"]),
+    )
+    expected = tuple(sorted(expected_partitions))
+    actual = tuple(
+        RawPartition(str(item["source"]), str(item["stream"]), str(item["day"]))
+        for item in ordered
+    )
+    if actual != expected:
+        raise ValueError("local scan certificate perimeter mismatch")
+    for item, partition in zip(ordered, expected):
+        if item.get("local_pass") is not True or item.get("errors") != []:
+            raise ValueError(
+                f"local scan certificate contains failed partition: "
+                f"{partition.source}/{partition.stream}/{partition.day}"
+            )
+        if item.get("contract_sha256") != contract_identity(
+            partition.source, partition.stream
+        ):
+            raise ValueError(
+                f"local scan certificate contains stale contract: "
+                f"{partition.source}/{partition.stream}/{partition.day}"
+            )
+        if not is_sha256(item.get("logical_content_sha256")):
+            raise ValueError(
+                f"local scan certificate lacks content identity: "
+                f"{partition.source}/{partition.stream}/{partition.day}"
+            )
+        if (
+            not isinstance(item.get("container_bytes"), int)
+            or not isinstance(item.get("container_mtime_ns"), int)
+            or not isinstance(item.get("container_ctime_ns"), int)
+        ):
+            raise ValueError(
+                f"local scan certificate lacks cheap mutation identity: "
+                f"{partition.source}/{partition.stream}/{partition.day}"
+            )
+    ledger = ledger_path or output.with_suffix(".partitions.jsonl")
+    if ledger.resolve() == output.resolve():
+        raise ValueError("local scan ledger and certificate paths must be distinct")
+    if ledger.parent.resolve() != output.parent.resolve():
+        raise ValueError("local scan ledger and certificate must be siblings")
+    write_local_scan_ledger(ledger, ordered)
+    certificate = {
+        "schema_version": CERTIFICATE_SCHEMA_VERSION,
+        "policy": LOCAL_CERTIFICATE_POLICY,
+        "status": "passed",
+        "scan_policy": LOCAL_SCAN_POLICY,
+        "partition_ledger": ledger.name,
+        "partition_ledger_sha256": file_sha256(ledger),
+        "partition_count": len(ordered),
+        "partition_perimeter_sha256": canonical_json_sha256(
+            [partition.__dict__ for partition in expected]
+        ),
+        "active_consumer_contracts_sha256": canonical_json_sha256(
+            {
+                f"{source}/{stream}": contract_identity(source, stream)
+                for source, stream in sorted(
+                    {(partition.source, partition.stream) for partition in expected}
+                )
+            }
+        ),
+        "provenance_scope": "installed payload integrity and active consumer fields only",
+        "asserts_current_frozen_head_query_contract": False,
+    }
+    body = {
+        **certificate,
+        "certificate_sha256": canonical_json_sha256(certificate),
+    }
+    with atomic_output(output) as temporary:
+        temporary.write_text(
+            json.dumps(body, indent=2, sort_keys=True) + "\n", encoding="utf-8"
+        )
+    return body
+
+
+@lru_cache(maxsize=16)
+def _load_certified_ledger_cached(
+    certificate_path_text: str,
+    certificate_stat: tuple[int, int, int],
+    ledger_path_text: str,
+    ledger_stat: tuple[int, int, int],
+) -> tuple[dict[str, object], str, tuple[dict[str, object], ...]]:
+    del certificate_stat, ledger_stat
+    certificate_path = Path(certificate_path_text)
+    ledger_path = Path(ledger_path_text)
+    certificate = _load_json(certificate_path, "local scan certificate")
+    recorded_certificate_sha256 = certificate.pop("certificate_sha256", None)
+    if (
+        certificate.get("policy") != LOCAL_CERTIFICATE_POLICY
+        or certificate.get("schema_version") != CERTIFICATE_SCHEMA_VERSION
+        or certificate.get("status") != "passed"
+        or certificate.get("scan_policy") != LOCAL_SCAN_POLICY
+        or certificate.get("asserts_current_frozen_head_query_contract") is not False
+        or recorded_certificate_sha256 != canonical_json_sha256(certificate)
+    ):
+        raise ValueError("local scan certificate envelope mismatch")
+    if not ledger_path.is_file() or file_sha256(ledger_path) != certificate.get(
+        "partition_ledger_sha256"
+    ):
+        raise ValueError("local scan certificate partition ledger mismatch")
+    rows: list[dict[str, object]] = []
+    try:
+        with ledger_path.open(encoding="utf-8") as handle:
+            for line in handle:
+                item = json.loads(line)
+                if not isinstance(item, dict):
+                    raise ValueError("local scan ledger rows must be JSON objects")
+                rows.append(item)
+    except (OSError, json.JSONDecodeError) as exc:
+        raise ValueError("local scan certificate partition ledger is unreadable") from exc
+    identities = tuple(
+        RawPartition(str(item.get("source")), str(item.get("stream")), str(item.get("day")))
+        for item in rows
+    )
+    if identities != tuple(sorted(identities)) or len(set(identities)) != len(identities):
+        raise ValueError("local scan certificate partition ledger is unordered or duplicated")
+    if (
+        certificate.get("partition_count") != len(rows)
+        or certificate.get("partition_perimeter_sha256")
+        != canonical_json_sha256([partition.__dict__ for partition in identities])
+    ):
+        raise ValueError("local scan certificate partition perimeter mismatch")
+    pairs = {(partition.source, partition.stream) for partition in identities}
+    if certificate.get("active_consumer_contracts_sha256") != canonical_json_sha256(
+        {
+            f"{source}/{stream}": contract_identity(source, stream)
+            for source, stream in sorted(pairs)
+        }
+    ):
+        raise ValueError("local scan certificate consumer contracts changed")
+    for partition, item in zip(identities, rows):
+        backend = get_source(partition.source).backend
+        expected_relative = (
+            f"raw/{backend}/{partition.source}/"
+            f"{partition.source}_{partition.stream}_{partition.day}.jsonl.gz"
+        )
+        if (
+            item.get("path") != expected_relative
+            or item.get("local_pass") is not True
+            or item.get("errors") != []
+            or item.get("contract_sha256")
+            != contract_identity(partition.source, partition.stream)
+            or not is_sha256(item.get("logical_content_sha256"))
+        ):
+            raise ValueError(
+                f"local scan certificate row mismatch: "
+                f"{partition.source}/{partition.stream}/{partition.day}"
+            )
+    return certificate, str(recorded_certificate_sha256), tuple(rows)
+
+
+def load_certified_partition_ledger(
+    certificate_path: Path,
+    *,
+    data_root: Path = DATA_DIR,
+    partitions: Iterable[RawPartition] | None = None,
+) -> tuple[list[dict[str, object]], dict[str, object]]:
+    """Validate one local scan release without a second pass through gzip payloads."""
+
+    preview = _load_json(certificate_path, "local scan certificate")
+    ledger_path = certificate_path.with_name(
+        str(preview.get("partition_ledger") or "")
+    )
+    if not ledger_path.is_file():
+        raise ValueError("local scan certificate partition ledger mismatch")
+    certificate_file_stat = certificate_path.stat()
+    ledger_file_stat = ledger_path.stat()
+    certificate, recorded_certificate_sha256, cached_rows = _load_certified_ledger_cached(
+        str(certificate_path.resolve()),
+        (
+            certificate_file_stat.st_size,
+            certificate_file_stat.st_mtime_ns,
+            certificate_file_stat.st_ctime_ns,
+        ),
+        str(ledger_path.resolve()),
+        (
+            ledger_file_stat.st_size,
+            ledger_file_stat.st_mtime_ns,
+            ledger_file_stat.st_ctime_ns,
+        ),
+    )
+    rows = list(cached_rows)
+    identities = tuple(
+        RawPartition(str(item.get("source")), str(item.get("stream")), str(item.get("day")))
+        for item in rows
+    )
+    indexed = dict(zip(identities, rows))
+    selected = tuple(sorted(partitions)) if partitions is not None else identities
+    if missing := [partition for partition in selected if partition not in indexed]:
+        first = missing[0]
+        raise ValueError(
+            f"local scan certificate does not cover requested partition: "
+            f"{first.source}/{first.stream}/{first.day}"
+        )
+    cached_selected_rows = [indexed[partition] for partition in selected]
+    for partition, item in zip(selected, cached_selected_rows):
+        expected_path = _partition_path(data_root, partition)
+        if not expected_path.is_file():
+            raise ValueError(
+                f"certified raw partition is missing: "
+                f"{partition.source}/{partition.stream}/{partition.day}"
+            )
+        stat = expected_path.stat()
+        if (
+            item.get("container_bytes") != stat.st_size
+            or item.get("container_mtime_ns") != stat.st_mtime_ns
+            or item.get("container_ctime_ns") != stat.st_ctime_ns
+        ):
+            raise ValueError(
+                f"certified raw partition changed after scan: "
+                f"{partition.source}/{partition.stream}/{partition.day}"
+            )
+    selected_identity = [
+        {
+            "source": item["source"],
+            "stream": item["stream"],
+            "day": item["day"],
+            "logical_content_sha256": item["logical_content_sha256"],
+            "contract_sha256": item["contract_sha256"],
+            "observed_query_contract_sha256": item.get(
+                "observed_query_contract_sha256"
+            ),
+            "observed_head_block_at_fetch": item.get("observed_head_block_at_fetch"),
+            "metadata_sha256": item.get("metadata_sha256"),
+        }
+        for item in cached_selected_rows
+    ]
+    selected_rows = [deepcopy(item) for item in cached_selected_rows]
+    return selected_rows, {
+        "policy": LOCAL_CERTIFICATE_POLICY,
+        "certificate_sha256": recorded_certificate_sha256,
+        "partition_ledger_sha256": certificate["partition_ledger_sha256"],
+        "partition_count": len(rows),
+        "selected_partition_count": len(cached_selected_rows),
+        "selected_partition_identity_sha256": canonical_json_sha256(selected_identity),
+    }
+
+
+def local_scan_certificate_path(
+    source: str, *, data_root: Path = DATA_DIR
+) -> Path:
+    """Canonical per-source local-integrity certificate location."""
+
+    return data_root / "processed" / "raw_generation" / f"{source}_local_certificate.json"
+
+
+def raw_partition_generation_identity(
+    source: str,
+    stream: str,
+    day: str,
+    *,
+    data_root: Path = DATA_DIR,
+) -> str:
+    """Resolve one exact raw generation through promotion or a certified local ledger."""
+
+    parsed_day = dt.datetime.strptime(day, "%Y%m%d").date()
+    _path, marker_path = installed_source_day_paths(
+        source, stream, parsed_day, data_root=data_root
+    )
+    marker_has_promotion = False
+    if marker_path.is_file():
+        try:
+            marker_payload = json.loads(marker_path.read_text(encoding="utf-8"))
+        except (OSError, json.JSONDecodeError):
+            marker_payload = None
+        marker_has_promotion = not isinstance(marker_payload, dict) or (
+            "promotion" in marker_payload
+        )
+    if marker_has_promotion:
+        return committed_source_day_generation_identity(
+            source, stream, parsed_day, data_root=data_root
+        )
+    partition = RawPartition(source, stream, day)
+    rows, binding = load_certified_partition_ledger(
+        local_scan_certificate_path(source, data_root=data_root),
+        data_root=data_root,
+        partitions=[partition],
+    )
+    row = rows[0]
+    return canonical_json_sha256(
+        {
+            "authority": binding,
+            "source": source,
+            "stream": stream,
+            "day": day,
+            "logical_content_sha256": row["logical_content_sha256"],
+            "contract_sha256": row["contract_sha256"],
+            "observed_query_contract_sha256": row.get(
+                "observed_query_contract_sha256"
+            ),
+            "observed_head_block_at_fetch": row.get(
+                "observed_head_block_at_fetch"
+            ),
+            "metadata_sha256": row.get("metadata_sha256"),
+        }
+    )
 
 
 def _load_json(path: Path, label: str) -> dict[str, object]:

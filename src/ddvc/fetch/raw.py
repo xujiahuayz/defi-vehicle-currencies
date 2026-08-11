@@ -174,6 +174,95 @@ def _required_source_day_stream_hash(
     return expected_hash
 
 
+def committed_source_day_generation_identity(
+    source_name: str,
+    stream: str,
+    day: dt.date,
+    *,
+    data_root: Path = DATA_DIR,
+) -> str:
+    """Bind one promoted source-day payload to its exact query generation."""
+
+    path, marker_path = installed_source_day_paths(
+        source_name, stream, day, data_root=data_root
+    )
+    logical_content_sha256 = _required_source_day_stream_hash(
+        path,
+        marker_path,
+        source_name=source_name,
+        stream=stream,
+        day=day,
+    )
+    marker = json.loads(marker_path.read_text(encoding="utf-8"))
+    stream_marker = marker["streams"][stream]
+    promotion = marker.get("promotion")
+    if (
+        not isinstance(promotion, dict)
+        or promotion.get("policy") != "raw-source-day-promotion-v1"
+        or not isinstance(promotion.get("promotion_id"), str)
+        or len(promotion["promotion_id"]) != 64
+        or stream_marker.get("path") != raw_stream_identity(path)
+    ):
+        raise RawFetchInvariantError(
+            f"raw source-day lacks a committed promotion identity: "
+            f"{source_name}/{stream}/{day:%Y%m%d}"
+        )
+    source = get_source(source_name)
+    if source.backend == "thegraph":
+        entity = next(
+            entity
+            for entity in get_schema(source.schema).entities
+            if entity.stream == stream
+        )
+        expected_query_contract = graph_query_contract_sha256(entity)
+        head_block = stream_marker.get(
+            "head_block_at_fetch", marker.get("head_block_at_fetch")
+        )
+        if (
+            stream_marker.get("query_contract_sha256") != expected_query_contract
+            or isinstance(head_block, bool)
+            or not isinstance(head_block, int)
+            or head_block < 0
+        ):
+            raise RawFetchInvariantError(
+                f"raw source-day lacks current frozen query provenance: "
+                f"{source_name}/{stream}/{day:%Y%m%d}"
+            )
+        query_generation: dict[str, object] = {
+            "query_contract_sha256": expected_query_contract,
+            "head_block_at_fetch": head_block,
+        }
+    else:
+        from ddvc.fetch.dune import validated_dune_query_window
+
+        try:
+            query_start, query_end = validated_dune_query_window(
+                source, day, stream_marker
+            )
+        except ValueError as exc:
+            raise RawFetchInvariantError(
+                f"raw source-day lacks current Dune query provenance: "
+                f"{source_name}/{stream}/{day:%Y%m%d}: {exc}"
+            ) from exc
+        query_generation = {
+            "query_contract_sha256": stream_marker["query_contract_sha256"],
+            "query_start_date": query_start.isoformat(),
+            "query_end_date_exclusive": query_end.isoformat(),
+        }
+    identity = {
+        "authority": "promoted-source-day-v1",
+        "source": source_name,
+        "stream": stream,
+        "day": day.isoformat(),
+        "logical_content_sha256": logical_content_sha256,
+        "promotion": promotion,
+        "query_generation": query_generation,
+    }
+    return hashlib.sha256(
+        json.dumps(identity, sort_keys=True, separators=(",", ":")).encode()
+    ).hexdigest()
+
+
 @contextmanager
 def verified_jsonl_gz_rows(
     path: Path,
