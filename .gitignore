@@ -29,6 +29,7 @@ data/empirical/
 output/model/
 output/empirical/
 output/robustness/
+output/provisional/
 # flock files keep a stable inode after release; they are runtime state, not artefacts.
 /output/exhibits/.*.lock
 
