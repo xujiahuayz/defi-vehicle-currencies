@@ -9,12 +9,14 @@ analysis-ready panels and never re-query providers.
 from __future__ import annotations
 
 import calendar
+from contextlib import ExitStack
 import datetime as dt
 import gzip
 import hashlib
 import io
 import json
 import os
+import shutil
 from pathlib import Path
 from collections.abc import Iterable, Mapping
 from typing import Any
@@ -23,12 +25,23 @@ from ddvc.fetch.graph import GraphClient, graph_keys, head_block, paginate
 from ddvc.fetch.schemas import EntitySpec, get_schema
 from ddvc.fetch.sources import DexSource, get_source
 from ddvc.paths import DATA_DIR
-from ddvc.runtime import atomic_output
+from ddvc.provenance import portable_content_sha256
+from ddvc.runtime import atomic_output, serialized_output_install, staged_output
 from ddvc.source_records import block_value, block_values as _block_values
 
 
 RAW_GRAPH_QUERY_CONTRACT_VERSION = 1
 RAW_GRAPH_PAGE_SIZE = 1000
+RAW_REFETCH_DIVERGENCE_SCHEMA_VERSION = 1
+RAW_REFETCH_DIVERGENCE_ROOT = DATA_DIR / "raw" / "thegraph" / "_refetch_divergence"
+
+
+class RawFetchInvariantError(RuntimeError):
+    """A non-transient raw-fetch failure that retrying cannot repair."""
+
+
+class RawRefetchDivergenceError(RawFetchInvariantError):
+    """A refetch disagreed with an installed canonical capture."""
 
 
 def midnight_ts(day: dt.date) -> int:
@@ -78,16 +91,15 @@ def write_jsonl_gz(path: Path, rows: Iterable[Mapping[str, Any]]) -> None:
     """Atomically stream byte-deterministic gzip JSON Lines from any iterable."""
 
     with atomic_output(path) as temporary:
-        with temporary.open("wb") as raw_handle:
-            with gzip.GzipFile(
-                filename="",
-                mode="wb",
-                fileobj=raw_handle,
-                mtime=0,
-            ) as compressed:
-                with io.TextIOWrapper(compressed, encoding="utf-8", newline="\n") as fh:
-                    for row in rows:
-                        fh.write(_jsonl_line(row))
+        _write_jsonl_gz_payload(temporary, rows)
+
+
+def _write_jsonl_gz_payload(path: Path, rows: Iterable[Mapping[str, Any]]) -> None:
+    with path.open("wb") as raw_handle:
+        with gzip.GzipFile(filename="", mode="wb", fileobj=raw_handle, mtime=0) as compressed:
+            with io.TextIOWrapper(compressed, encoding="utf-8", newline="\n") as handle:
+                for row in rows:
+                    handle.write(_jsonl_line(row))
 
 
 def repair_torn_jsonl_journal(path: Path) -> bool:
@@ -218,6 +230,7 @@ def _raw_stream_metadata_item_is_current(
     *,
     expected_path: Path | None = None,
     expected_query_contract: str | None = None,
+    verify_content_hash: bool = False,
 ) -> bool:
     if (
         not isinstance(item, dict)
@@ -231,9 +244,21 @@ def _raw_stream_metadata_item_is_current(
     ):
         return False
     if expected_path is None:
-        return True
+        return not verify_content_hash
     recorded = Path(str(item["path"]))
-    return raw_stream_identity(recorded) == raw_stream_identity(expected_path)
+    if raw_stream_identity(recorded) != raw_stream_identity(expected_path):
+        return False
+    if not verify_content_hash:
+        return True
+    recorded_hash = item.get("logical_content_sha256")
+    recorded_head = item.get("head_block_at_fetch")
+    recorded_time = item.get("fetched_at_utc")
+    if not isinstance(recorded_hash, str) or len(recorded_hash) != 64 or isinstance(recorded_head, bool) or not isinstance(recorded_head, int) or recorded_head < 0 or not isinstance(recorded_time, str) or not recorded_time:
+        return False
+    try:
+        return portable_content_sha256(expected_path) == recorded_hash
+    except (OSError, EOFError):
+        return False
 
 
 def raw_stream_metadata_is_current(
@@ -256,6 +281,7 @@ def indexed_metadata_streams(
     *,
     expected_paths: dict[str, Path] | None = None,
     expected_query_contracts: dict[str, str] | None = None,
+    verify_content_hashes: bool = False,
 ) -> set[str]:
     """Return streams whose sidecar ledger and optional query identity are current."""
 
@@ -275,6 +301,7 @@ def indexed_metadata_streams(
             item,
             expected_path=expected,
             expected_query_contract=expected_contract,
+            verify_content_hash=verify_content_hashes,
         ):
             continue
         indexed.add(stream)
@@ -317,10 +344,117 @@ def require_mergeable_partial_metadata(
         return
     recorded = existing.get("streams")
     if not isinstance(recorded, dict) or not recorded:
-        raise RuntimeError(
+        raise RawFetchInvariantError(
             "partial raw refresh cannot merge into legacy metadata without a stream ledger; "
             "refresh the canonical stream set together once"
         )
+
+
+def read_source_day_metadata(source: DexSource, day: dt.date) -> dict[str, Any]:
+    """Read and validate the canonical source/day identity before any provider call."""
+
+    path = meta_path(source.name, day)
+    if not path.exists():
+        return {}
+    try:
+        payload = json.loads(path.read_text())
+    except (OSError, json.JSONDecodeError) as exc:
+        raise RawFetchInvariantError(f"raw metadata is unreadable: {path}: {exc}") from exc
+    if not isinstance(payload, dict):
+        raise RawFetchInvariantError(f"raw metadata is not an object: {path}")
+    expected = {"source": source.name, "day": day.isoformat()}
+    conflicts = {key: (payload.get(key), value) for key, value in expected.items() if payload.get(key) not in (None, value)}
+    if conflicts:
+        raise RawFetchInvariantError(f"raw metadata identity conflicts at {path}: {conflicts}")
+    return payload
+
+
+def require_frozen_graph_head(source: DexSource, head: int | None) -> int:
+    minimum = source.genesis_block or 0
+    if head is None or isinstance(head, bool) or head < minimum:
+        raise RuntimeError(f"Graph source did not expose a valid frozen head: {source.name}")
+    return head
+
+
+def frozen_graph_head(source: DexSource) -> int:
+    """Resolve one immutable Graph snapshot for a complete source fetch run."""
+
+    client = GraphClient(source.subgraph_id, graph_keys(), graph_path=source.graph_path)
+    return require_frozen_graph_head(source, head_block(client))
+
+
+def _evidence_relative_path(path: Path) -> str:
+    try:
+        return str(path.relative_to(DATA_DIR))
+    except ValueError:
+        return str(path)
+
+
+def _install_immutable_evidence(source: Path, target: Path, expected_hash: str) -> None:
+    """Install one content-addressed evidence file once and never replace it."""
+
+    with serialized_output_install(target):
+        if target.exists():
+            if portable_content_sha256(target) != expected_hash:
+                raise RawFetchInvariantError(f"content-addressed refetch evidence is corrupt: {target}")
+            return
+        with atomic_output(target) as temporary:
+            shutil.copyfile(source, temporary)
+        if portable_content_sha256(target) != expected_hash:
+            raise RawFetchInvariantError(f"installed refetch evidence failed its content hash: {target}")
+
+
+def preserve_refetch_divergence(
+    *,
+    source: DexSource,
+    day: dt.date,
+    entity: EntitySpec,
+    canonical_path: Path,
+    candidate_path: Path,
+    canonical_hash: str,
+    candidate_hash: str,
+    head_block_at_fetch: int,
+    fetched_at_utc: str,
+    prior_stream_metadata: object,
+    metadata_path: Path,
+) -> Path:
+    """Preserve both captures and an immutable comparison record without changing canonical state."""
+
+    root = RAW_REFETCH_DIVERGENCE_ROOT / source.name / f"{day:%Y%m%d}" / entity.stream
+    canonical_evidence = root / f"{canonical_hash}.jsonl.gz"
+    candidate_evidence = root / f"{candidate_hash}.jsonl.gz"
+    _install_immutable_evidence(canonical_path, canonical_evidence, canonical_hash)
+    _install_immutable_evidence(candidate_path, candidate_evidence, candidate_hash)
+    metadata_evidence: Path | None = None
+    metadata_hash: str | None = None
+    if metadata_path.exists():
+        metadata_hash = portable_content_sha256(metadata_path)
+        metadata_evidence = root / f"metadata-{metadata_hash}.json"
+        _install_immutable_evidence(metadata_path, metadata_evidence, metadata_hash)
+    record = {
+        "schema_version": RAW_REFETCH_DIVERGENCE_SCHEMA_VERSION,
+        "source": source.name,
+        "day": day.isoformat(),
+        "stream": entity.stream,
+        "entity": entity.entity,
+        "query_contract_sha256": graph_query_contract_sha256(entity),
+        "head_block_at_fetch": head_block_at_fetch,
+        "fetched_at_utc": fetched_at_utc,
+        "canonical": {"logical_content_sha256": canonical_hash, "evidence_path": _evidence_relative_path(canonical_evidence), "stream_metadata": prior_stream_metadata},
+        "candidate": {"logical_content_sha256": candidate_hash, "evidence_path": _evidence_relative_path(candidate_evidence)},
+        "canonical_metadata": {"logical_content_sha256": metadata_hash, "evidence_path": _evidence_relative_path(metadata_evidence) if metadata_evidence is not None else None},
+    }
+    payload = (json.dumps(record, indent=2, sort_keys=True) + "\n").encode()
+    record_hash = hashlib.sha256(payload).hexdigest()
+    record_path = root / f"comparison-{record_hash}.json"
+    with serialized_output_install(record_path):
+        if record_path.exists():
+            if record_path.read_bytes() != payload:
+                raise RawFetchInvariantError(f"content-addressed refetch comparison is corrupt: {record_path}")
+        else:
+            with atomic_output(record_path) as temporary:
+                temporary.write_bytes(payload)
+    return record_path
 
 
 def index_existing_stream(path: Path, entity: EntitySpec) -> dict[str, Any]:
@@ -354,6 +488,7 @@ def index_existing_stream(path: Path, entity: EntitySpec) -> dict[str, Any]:
         "rows": rows,
         "min_block": min_block,
         "max_block": max_block,
+        "logical_content_sha256": portable_content_sha256(path),
     }
 
 
@@ -370,20 +505,7 @@ def repair_source_day_metadata(
     if not selected:
         return {"source": source.name, "day": day.isoformat(), "streams": {}}
     meta_out = meta_path(source.name, day)
-    existing: dict[str, Any] = {}
-    if meta_out.exists():
-        try:
-            existing = json.loads(meta_out.read_text())
-        except (OSError, json.JSONDecodeError) as exc:
-            raise RuntimeError(f"raw metadata is unreadable: {meta_out}: {exc}") from exc
-        expected = {"source": source.name, "day": day.isoformat()}
-        conflicts = {
-            key: (existing.get(key), value)
-            for key, value in expected.items()
-            if existing.get(key) not in (None, value)
-        }
-        if conflicts:
-            raise RuntimeError(f"raw metadata identity conflicts at {meta_out}: {conflicts}")
+    existing = read_source_day_metadata(source, day)
     stream_meta: dict[str, dict[str, Any]] = {}
     existing_streams = existing.get("streams")
     for entity in selected:
@@ -424,6 +546,7 @@ def fetch_source_day(
     *,
     streams: set[str] | None = None,
     skip_existing: bool = True,
+    head_block_at_fetch: int | None = None,
 ) -> dict[str, Any]:
     schema = get_schema(source.schema)
     selected = [entity for entity in schema.entities if streams is None or entity.stream in streams]
@@ -431,12 +554,7 @@ def fetch_source_day(
         return {"source": source.name, "day": day.isoformat(), "streams": {}}
 
     meta_out = meta_path(source.name, day)
-    existing_meta: dict[str, Any] = {}
-    if meta_out.exists():
-        try:
-            existing_meta = json.loads(meta_out.read_text())
-        except (OSError, json.JSONDecodeError) as exc:
-            raise RuntimeError(f"raw metadata is unreadable: {meta_out}: {exc}") from exc
+    existing_meta = read_source_day_metadata(source, day)
     if streams is not None and meta_out.exists():
         require_mergeable_partial_metadata(
             existing_meta,
@@ -445,71 +563,108 @@ def fetch_source_day(
         )
 
     client = GraphClient(source.subgraph_id, graph_keys(), graph_path=source.graph_path)
-    head = head_block(client)
+    head = require_frozen_graph_head(source, head_block_at_fetch if head_block_at_fetch is not None else head_block(client))
     stream_meta: dict[str, dict[str, Any]] = {}
-    all_blocks: list[int] = []
-    for entity in selected:
-        out = raw_path(source.name, entity.stream, day)
-        existing_streams = existing_meta.get("streams")
-        existing_stream = (
-            existing_streams.get(entity.stream)
-            if isinstance(existing_streams, dict)
-            else None
-        )
-        if (
-            skip_existing
-            and out.exists()
-            and raw_stream_metadata_is_current(
-                existing_stream,
-                entity,
-                expected_path=out,
-            )
-        ):
-            stream_meta[entity.stream] = {"path": str(out), "status": "skipped"}
-            continue
-        rows: list[dict[str, Any]] = []
-        for where in where_chunks_for_entity(entity, day):
-            rows.extend(
-                paginate(
-                    client,
-                    entity=entity.entity,
-                    fields=entity.fields,
-                    base_where=where,
-                    page_size=page_size_for_entity(entity),
+    existing_streams = existing_meta.get("streams")
+    existing_streams = existing_streams if isinstance(existing_streams, dict) else {}
+    staged: list[dict[str, Any]] = []
+    with ExitStack() as stack:
+        for entity in selected:
+            out = raw_path(source.name, entity.stream, day)
+            existing_stream = existing_streams.get(entity.stream)
+            if skip_existing and out.exists() and raw_stream_metadata_is_current(existing_stream, entity, expected_path=out):
+                stream_meta[entity.stream] = {"path": raw_stream_identity(out), "status": "skipped"}
+                continue
+            rows: list[dict[str, Any]] = []
+            for where in where_chunks_for_entity(entity, day):
+                rows.extend(
+                    paginate(
+                        client,
+                        entity=entity.entity,
+                        fields=entity.fields,
+                        base_where=where,
+                        page_size=page_size_for_entity(entity),
+                        block_number=head,
+                    )
                 )
+            temporary = stack.enter_context(staged_output(out))
+            _write_jsonl_gz_payload(temporary, rows)
+            blocks = _block_values(rows)
+            fetched_at = dt.datetime.now(dt.timezone.utc).isoformat()
+            candidate_hash = portable_content_sha256(temporary, content_encoding="gzip")
+            canonical_hash = portable_content_sha256(out) if out.exists() else None
+            staged.append(
+                {
+                    "entity": entity,
+                    "target": out,
+                    "temporary": temporary,
+                    "target_existed": out.exists(),
+                    "canonical_hash": canonical_hash,
+                    "candidate_hash": candidate_hash,
+                    "metadata": {
+                        "path": raw_stream_identity(out),
+                        "status": "refetched_identical" if canonical_hash == candidate_hash else "fetched",
+                        "entity": entity.entity,
+                        "rows": len(rows),
+                        "min_block": min(blocks) if blocks else None,
+                        "max_block": max(blocks) if blocks else None,
+                        "query_contract_sha256": graph_query_contract_sha256(entity),
+                        "logical_content_sha256": candidate_hash,
+                        "head_block_at_fetch": head,
+                        "fetched_at_utc": fetched_at,
+                    },
+                }
             )
-        write_jsonl_gz(out, rows)
-        blocks = _block_values(rows)
-        all_blocks.extend(blocks)
-        stream_meta[entity.stream] = {
-            "path": raw_stream_identity(out),
-            "status": "fetched",
-            "entity": entity.entity,
-            "rows": len(rows),
-            "min_block": min(blocks) if blocks else None,
-            "max_block": max(blocks) if blocks else None,
-            "query_contract_sha256": graph_query_contract_sha256(entity),
-        }
 
-    meta = {
-        "source": source.name,
-        "schema": source.schema,
-        "subgraph_id": source.subgraph_id,
-        "graph_path": source.graph_path,
-        "source_genesis_block": source.genesis_block,
-        "source_genesis_date_utc": source.genesis_date_utc.isoformat(),
-        "day": day.isoformat(),
-        "head_block_at_fetch": head,
-        "min_block": min(all_blocks) if all_blocks else None,
-        "max_block": max(all_blocks) if all_blocks else None,
-        "streams": stream_meta,
-        "fetched_at_utc": dt.datetime.now(dt.timezone.utc).isoformat(),
-    }
-    meta_out.parent.mkdir(parents=True, exist_ok=True)
-    if existing_meta:
-        meta = merge_stream_metadata(existing_meta, meta)
-    write_json(meta_out, meta)
-    return meta
+        divergent = [item for item in staged if item["target_existed"] and item["canonical_hash"] != item["candidate_hash"]]
+        if divergent:
+            records = [
+                preserve_refetch_divergence(
+                    source=source,
+                    day=day,
+                    entity=item["entity"],
+                    canonical_path=item["target"],
+                    candidate_path=item["temporary"],
+                    canonical_hash=item["canonical_hash"],
+                    candidate_hash=item["candidate_hash"],
+                    head_block_at_fetch=head,
+                    fetched_at_utc=item["metadata"]["fetched_at_utc"],
+                    prior_stream_metadata=existing_streams.get(item["entity"].stream),
+                    metadata_path=meta_out,
+                )
+                for item in divergent
+            ]
+            raise RawRefetchDivergenceError(f"refetch diverged from {len(records)} installed canonical stream(s) for {source.name} {day}; evidence: {records[0]}")
+
+        for item in staged:
+            stream_meta[item["entity"].stream] = item["metadata"]
+        fetched_at = dt.datetime.now(dt.timezone.utc).isoformat()
+        fresh = {
+            "source": source.name,
+            "schema": source.schema,
+            "subgraph_id": source.subgraph_id,
+            "graph_path": source.graph_path,
+            "source_genesis_block": source.genesis_block,
+            "source_genesis_date_utc": source.genesis_date_utc.isoformat(),
+            "day": day.isoformat(),
+            "head_block_at_fetch": head,
+            "streams": stream_meta,
+            "fetched_at_utc": fetched_at,
+        }
+        meta = merge_stream_metadata(existing_meta, fresh) if existing_meta else merge_stream_metadata({}, fresh)
+        installed: list[Path] = []
+        try:
+            for item in staged:
+                if not item["target_existed"]:
+                    item["temporary"].replace(item["target"])
+                    installed.append(item["target"])
+            meta_out.parent.mkdir(parents=True, exist_ok=True)
+            write_json(meta_out, meta)
+        except BaseException:
+            for path in installed:
+                path.unlink(missing_ok=True)
+            raise
+        return meta
 
 
 def stream_names_for_source(source_name: str) -> list[str]:

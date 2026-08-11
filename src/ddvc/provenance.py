@@ -56,7 +56,7 @@ CONTENT_HASH_MAX_BYTES = 64 * 1024 * 1024
 GENERATED_PREFIXES = ("output/", "data/manifests/")
 
 
-def portable_content_sha256(path: str | Path) -> str:
+def portable_content_sha256(path: str | Path, *, content_encoding: str | None = None) -> str:
     """Hash a file's logical payload across hosts and compression implementations.
 
     Gzip container bytes can differ across Python, zlib, or operating-system builds
@@ -68,8 +68,11 @@ def portable_content_sha256(path: str | Path) -> str:
     """
 
     source = Path(path)
+    encoding = content_encoding or ("gzip" if source.suffix == ".gz" else "identity")
+    if encoding not in {"gzip", "identity"}:
+        raise ValueError(f"unsupported portable-content encoding: {encoding}")
     digest = hashlib.sha256()
-    handle_context = gzip.open(source, "rb") if source.suffix == ".gz" else source.open("rb")
+    handle_context = gzip.open(source, "rb") if encoding == "gzip" else source.open("rb")
     with handle_context as handle:
         while chunk := handle.read(1024 * 1024):
             digest.update(chunk)

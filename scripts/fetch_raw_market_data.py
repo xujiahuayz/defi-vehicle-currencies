@@ -18,6 +18,7 @@ from __future__ import annotations
 import argparse
 import datetime as dt
 from concurrent.futures import ThreadPoolExecutor, as_completed
+from functools import cache
 import gzip
 import json
 import sys
@@ -27,12 +28,15 @@ from pathlib import Path
 from ddvc.fetch.dune import dune_meta_path, dune_path, fetch_dune_month, month_ranges, stream_names_for_dune_source
 from ddvc.fetch.graph import GraphClient, first_record, graph_keys, paginate
 from ddvc.fetch.raw import (
+    RawFetchInvariantError,
     fetch_source_day,
+    frozen_graph_head,
     graph_query_contracts_for_source,
     indexed_metadata_streams,
     meta_path,
     midnight_ts,
     raw_path,
+    read_source_day_metadata,
     repair_source_day_metadata,
     stream_names_for_source,
     write_json,
@@ -316,6 +320,30 @@ def available_streams(source_name: str) -> list[str]:
     return stream_names_for_dune_source(source) if source.backend == "dune" else stream_names_for_source(source_name)
 
 
+@cache
+def required_streams_by_source() -> dict[str, frozenset[str]]:
+    """Union the canonical route, state and pool-day consumer registries without copying them."""
+
+    from ddvc.fetch.pool_daily import POOL_DAILY_SCHEMAS
+    from ddvc.reconstruct import DEX_FAMILY
+    from ddvc.state_data import FAMILY_STREAMS
+
+    required: dict[str, set[str]] = {venue: {"swaps"} for venue in DEX_FAMILY}
+    for venues in FAMILY_STREAMS.values():
+        for venue, specifications in venues.items():
+            required.setdefault(venue, set()).update(stream for stream, _kind, _sign in specifications)
+    for venue in POOL_DAILY_SCHEMAS:
+        required.setdefault(venue, set()).add("daily")
+    unknown_sources = sorted(set(required).difference(DEX_SOURCES))
+    if unknown_sources:
+        raise RuntimeError(f"raw consumer registry names unknown sources: {unknown_sources}")
+    for venue, streams in required.items():
+        unavailable = streams.difference(available_streams(venue))
+        if unavailable:
+            raise RuntimeError(f"raw consumer registry names unavailable {venue} streams: {sorted(unavailable)}")
+    return {venue: frozenset(streams) for venue, streams in required.items()}
+
+
 def stream_target(source_name: str, stream: str, day: dt.date) -> Path:
     source = get_source(source_name)
     return dune_path(source_name, stream, day) if source.backend == "dune" else raw_path(source_name, stream, day)
@@ -326,7 +354,7 @@ def metadata_target(source_name: str, day: dt.date) -> Path:
     return dune_meta_path(source_name, day) if source.backend == "dune" else meta_path(source_name, day)
 
 
-def missing_streams(source_name: str, day: dt.date, streams: list[str]) -> list[str]:
+def missing_streams(source_name: str, day: dt.date, streams: list[str], *, include_unindexed: bool = True) -> list[str]:
     source = get_source(source_name)
     expected_paths = {
         stream: stream_target(source_name, stream, day) for stream in streams
@@ -342,16 +370,19 @@ def missing_streams(source_name: str, day: dt.date, streams: list[str]) -> list[
     return [
         stream
         for stream, path in expected_paths.items()
-        if not path.exists() or stream not in current
+        if not path.exists() or (include_unindexed and stream not in current)
     ]
 
 
-def coverage_report(names: list[str], end_by_source: dict[str, dt.date]) -> dict[str, dict[str, object]]:
+def coverage_report(names: list[str], end_by_source: dict[str, dt.date], *, verify_content_hashes: bool = False) -> dict[str, dict[str, object]]:
     report: dict[str, dict[str, object]] = {}
+    required_by_source = required_streams_by_source()
     for name in names:
         source = get_source(name)
         end = end_by_source[name]
         streams = available_streams(name)
+        required_streams = required_by_source.get(name, frozenset())
+        optional_streams = set(streams).difference(required_streams)
         days = iter_days(source.genesis, end)
         by_stream: dict[str, list[str]] = {stream: [] for stream in streams}
         unindexed_by_stream: dict[str, list[str]] = {stream: [] for stream in streams}
@@ -367,15 +398,17 @@ def coverage_report(names: list[str], end_by_source: dict[str, dt.date]) -> dict
                 stream: stream_target(name, stream, day)
                 for stream in streams
             }
-            indexed = (
-                indexed_metadata_streams(
-                    metadata,
-                    expected_paths=expected_paths,
-                    expected_query_contracts=expected_contracts,
-                )
-                if metadata.exists()
-                else set()
-            )
+            indexed: set[str] = set()
+            if metadata.exists():
+                indexed = indexed_metadata_streams(metadata, expected_paths=expected_paths, expected_query_contracts=expected_contracts)
+                if verify_content_hashes and source.backend == "thegraph":
+                    strict_required = indexed_metadata_streams(
+                        metadata,
+                        expected_paths={stream: expected_paths[stream] for stream in required_streams},
+                        expected_query_contracts={stream: expected_contracts[stream] for stream in required_streams},
+                        verify_content_hashes=True,
+                    )
+                    indexed = indexed.difference(required_streams).union(strict_required)
             for stream in streams:
                 installed = stream_target(name, stream, day).exists()
                 if not installed:
@@ -389,7 +422,11 @@ def coverage_report(names: list[str], end_by_source: dict[str, dt.date]) -> dict
             "start": source.genesis.isoformat(),
             "end_exclusive": end.isoformat(),
             "days": len(days),
+            "required_streams": sorted(required_streams),
+            "optional_streams": sorted(optional_streams),
             "missing": {stream: len(items) for stream, items in by_stream.items()},
+            "missing_required": {stream: len(by_stream[stream]) for stream in sorted(required_streams)},
+            "missing_optional": {stream: len(by_stream[stream]) for stream in sorted(optional_streams)},
             "missing_ranges": {
                 stream: ([items[0], items[-1]] if items else [])
                 for stream, items in by_stream.items()
@@ -397,23 +434,28 @@ def coverage_report(names: list[str], end_by_source: dict[str, dt.date]) -> dict
             "unindexed_meta": {
                 stream: len(items) for stream, items in unindexed_by_stream.items()
             },
+            "unindexed_required_meta": {stream: len(unindexed_by_stream[stream]) for stream in sorted(required_streams)},
+            "unindexed_optional_meta": {stream: len(unindexed_by_stream[stream]) for stream in sorted(optional_streams)},
             "unindexed_meta_ranges": {
                 stream: ([items[0], items[-1]] if items else [])
                 for stream, items in unindexed_by_stream.items()
             },
             "missing_meta": len(meta_missing),
+            "missing_required_meta": len(meta_missing) if required_streams else 0,
             "missing_meta_range": [meta_missing[0], meta_missing[-1]] if meta_missing else [],
         }
     return report
 
 
 def coverage_has_gaps(report: dict[str, dict[str, object]]) -> bool:
-    """Whether any source lacks a file, sidecar, or exact stream ledger."""
+    """Whether any consumer-required source lacks a file, sidecar, or exact stream ledger."""
 
     for source in report.values():
-        if int(source.get("missing_meta") or 0) > 0:
+        required_shape = "missing_required" in source or "unindexed_required_meta" in source
+        if int(source.get("missing_required_meta" if required_shape else "missing_meta") or 0) > 0:
             return True
-        for field in ("missing", "unindexed_meta"):
+        fields = ("missing_required", "unindexed_required_meta") if required_shape else ("missing", "unindexed_meta")
+        for field in fields:
             counts = source.get(field) or {}
             if isinstance(counts, dict) and any(int(value) > 0 for value in counts.values()):
                 return True
@@ -423,7 +465,7 @@ def coverage_has_gaps(report: dict[str, dict[str, object]]) -> bool:
 def cmd_coverage(args: argparse.Namespace) -> int:
     names = source_names(args.dex)
     end_by_source = {name: effective_range(name, "genesis", args.end)[1] for name in names}
-    report = coverage_report(names, end_by_source)
+    report = coverage_report(names, end_by_source, verify_content_hashes=bool(args.strict))
     print(json.dumps(report, indent=2, sort_keys=True))
     return int(bool(args.strict) and coverage_has_gaps(report))
 
@@ -438,13 +480,17 @@ def fetch_gap_days(
     dry_run: bool,
     dune_sleep: float,
     max_retries: int,
+    missing_files_only: bool = False,
 ) -> dict[str, int]:
     source = get_source(source_name)
     selected = sorted(streams) if streams is not None else available_streams(source_name)
     counts = {"days_seen": 0, "days_fetched": 0, "streams_fetched": 0}
+    plan: list[tuple[dt.date, list[str]]] = []
     for day in iter_days(start, end):
         counts["days_seen"] += 1
-        missing = selected if overwrite else missing_streams(source_name, day, selected)
+        if source.backend == "thegraph":
+            read_source_day_metadata(source, day)
+        missing = selected if overwrite else missing_streams(source_name, day, selected, include_unindexed=not missing_files_only)
         if not missing:
             continue
         counts["days_fetched"] += 1
@@ -452,6 +498,9 @@ def fetch_gap_days(
         if dry_run:
             print(json.dumps({"source": source_name, "day": day.isoformat(), "missing_streams": missing}, sort_keys=True))
             continue
+        plan.append((day, missing))
+    graph_head = frozen_graph_head(source) if plan and source.backend == "thegraph" else None
+    for day, missing in plan:
         attempt = 0
         while True:
             try:
@@ -468,9 +517,11 @@ def fetch_gap_days(
                     if dune_sleep:
                         time.sleep(dune_sleep)
                 else:
-                    meta = fetch_source_day(source, day, streams=set(missing), skip_existing=not overwrite)
+                    meta = fetch_source_day(source, day, streams=set(missing), skip_existing=not overwrite, head_block_at_fetch=graph_head)
                     print(json.dumps(meta, sort_keys=True), flush=True)
                 break
+            except RawFetchInvariantError:
+                raise
             except RuntimeError as exc:
                 attempt += 1
                 if attempt > max_retries:
@@ -504,13 +555,21 @@ def _cmd_fetch(args: argparse.Namespace) -> int:
     failures: list[tuple[str, str, str]] = []
     if args.days_file and args.gaps_only:
         raise ValueError("--days-file and --gaps-only are mutually exclusive")
+    if args.missing_files_only and not args.gaps_only:
+        raise ValueError("--missing-files-only requires --gaps-only")
+    if args.missing_files_only and args.overwrite:
+        raise ValueError("--missing-files-only and --overwrite are mutually exclusive")
+    if args.required_only and not args.gaps_only:
+        raise ValueError("--required-only requires --gaps-only")
+    if args.required_only and args.streams != ["all"]:
+        raise ValueError("--required-only and explicit --streams are mutually exclusive")
     if args.gaps_only:
         totals = {}
         end_by_source = {}
         for name in source_names(args.dex):
             start, end = effective_range(name, args.start, args.end)
             end_by_source[name] = end
-            streams = selected_streams(name, args.streams)
+            streams = set(required_streams_by_source().get(name, frozenset())) if args.required_only else selected_streams(name, args.streams)
             totals[name] = fetch_gap_days(
                 name,
                 start,
@@ -520,6 +579,7 @@ def _cmd_fetch(args: argparse.Namespace) -> int:
                 dry_run=args.dry_run,
                 dune_sleep=args.dune_sleep,
                 max_retries=args.max_retries,
+                missing_files_only=args.missing_files_only,
             )
         print(json.dumps({"totals": totals, "coverage": coverage_report(list(totals), end_by_source)}, indent=2, sort_keys=True))
         return 0
@@ -562,6 +622,10 @@ def _cmd_fetch(args: argparse.Namespace) -> int:
                 print(json.dumps({"source": name, "day": day.isoformat(), "targets": targets}))
             continue
 
+        for day in days:
+            read_source_day_metadata(source, day)
+        graph_head = frozen_graph_head(source)
+
         # Days are independent and the work is waiting on gateway replies, not CPU,
         # so fetching them one at a time left the machine idle: a measured 64
         # seconds per day put a two-stream backfill of 2,248 days at roughly 38
@@ -575,14 +639,16 @@ def _cmd_fetch(args: argparse.Namespace) -> int:
         if workers == 1:
             for day in days:
                 meta = fetch_source_day(source, day, streams=streams,
-                                        skip_existing=not args.overwrite)
+                                        skip_existing=not args.overwrite,
+                                        head_block_at_fetch=graph_head)
                 print(json.dumps(meta, sort_keys=True))
             continue
         done = 0
         with ThreadPoolExecutor(max_workers=workers) as pool:
             futs = {
                 pool.submit(fetch_source_day, source, day, streams=streams,
-                            skip_existing=not args.overwrite): day
+                            skip_existing=not args.overwrite,
+                            head_block_at_fetch=graph_head): day
                 for day in days
             }
             for fut in as_completed(futs):
@@ -729,6 +795,8 @@ def build_parser() -> argparse.ArgumentParser:
     sub.choices["fetch"].add_argument("--overwrite", action="store_true")
     sub.choices["fetch"].add_argument("--max-days", type=int, default=0)
     sub.choices["fetch"].add_argument("--gaps-only", action="store_true", help="Fetch only missing day/stream targets.")
+    sub.choices["fetch"].add_argument("--missing-files-only", action="store_true", help="With --gaps-only, fetch absent payload files but leave installed legacy streams for separate provenance adjudication.")
+    sub.choices["fetch"].add_argument("--required-only", action="store_true", help="With --gaps-only, restrict the plan to the union of current route, state and pool-day consumer registries.")
     sub.choices["fetch"].add_argument(
         "--days-file",
         type=Path,

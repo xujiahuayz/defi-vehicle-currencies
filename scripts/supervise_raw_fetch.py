@@ -38,19 +38,25 @@ def coverage(end: str) -> dict[str, object]:
 
 
 def missing_total(report: dict[str, object]) -> int:
-    return sum(
-        int(count)
-        for source in report.values()
-        for count in source["missing"].values()  # type: ignore[index]
-    )
+    return missing_file_total(report) + unindexed_graph_total(report)
 
 
-def missing_sources(report: dict[str, object]) -> list[tuple[str, list[str]]]:
+def missing_file_total(report: dict[str, object]) -> int:
+    return sum(int(count) for source in report.values() for count in source.get("missing_required", source["missing"]).values())  # type: ignore[index,union-attr]
+
+
+def unindexed_graph_total(report: dict[str, object]) -> int:
+    return sum(int(count) for source in report.values() if source.get("backend") == "thegraph" for count in source.get("unindexed_required_meta", source.get("unindexed_meta", {})).values())  # type: ignore[union-attr]
+
+
+def missing_sources(report: dict[str, object], *, include_unindexed: bool = True) -> list[tuple[str, list[str]]]:
     rows: list[tuple[str, list[str]]] = []
     for name, source in report.items():
-        streams = [stream for stream, count in source["missing"].items() if count]  # type: ignore[index]
+        streams = {stream for stream, count in source.get("missing_required", source["missing"]).items() if count}  # type: ignore[index,union-attr]
+        if include_unindexed and source.get("backend") == "thegraph":
+            streams.update(stream for stream, count in source.get("unindexed_required_meta", source.get("unindexed_meta", {})).items() if count)  # type: ignore[union-attr]
         if streams:
-            rows.append((name, streams))
+            rows.append((name, sorted(streams)))
     return rows
 
 
@@ -65,13 +71,19 @@ def main() -> int:
     for cycle in range(1, args.cycles + 1):
         report = coverage(args.end)
         total = missing_total(report)
+        absent = missing_file_total(report)
+        unindexed = unindexed_graph_total(report)
         with args.log.open("a", encoding="utf-8") as fh:
-            fh.write(json.dumps({"event": "supervisor_coverage", "cycle": cycle, "missing_total": total}) + "\n")
+            fh.write(json.dumps({"event": "supervisor_coverage", "cycle": cycle, "missing_file_total": absent, "unindexed_graph_total": unindexed, "unresolved_stream_total": total}) + "\n")
         if total == 0:
             return 0
+        if absent == 0:
+            with args.log.open("a", encoding="utf-8") as fh:
+                fh.write(json.dumps({"event": "supervisor_requires_provenance_adjudication", "cycle": cycle, "unindexed_graph_total": unindexed}) + "\n")
+            return 3
 
         code = run(
-            ["fetch", "--dex", "all", "--start", "genesis", "--end", args.end, "--gaps-only", "--dune-sleep", "8", "--max-retries", "8"],
+            ["fetch", "--dex", "all", "--start", "genesis", "--end", args.end, "--gaps-only", "--required-only", "--missing-files-only", "--dune-sleep", "8", "--max-retries", "8"],
             args.log,
         )
         if code == 0:
@@ -79,7 +91,7 @@ def main() -> int:
 
         # Adaptive fallback: a broad multi-stream day can fail even when narrower
         # source/stream fetches work. Split the remaining work before retrying.
-        for source, streams in missing_sources(coverage(args.end)):
+        for source, streams in missing_sources(coverage(args.end), include_unindexed=False):
             for stream in streams:
                 run(
                     [
@@ -93,6 +105,7 @@ def main() -> int:
                         "--streams",
                         stream,
                         "--gaps-only",
+                        "--missing-files-only",
                         "--dune-sleep",
                         "8",
                         "--max-retries",
@@ -101,7 +114,10 @@ def main() -> int:
                     args.log,
                 )
         time.sleep(args.sleep)
-    return 2 if missing_total(coverage(args.end)) else 0
+    final_report = coverage(args.end)
+    if missing_file_total(final_report):
+        return 2
+    return 3 if unindexed_graph_total(final_report) else 0
 
 
 if __name__ == "__main__":

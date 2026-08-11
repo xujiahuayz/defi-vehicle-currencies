@@ -7,13 +7,17 @@ from argparse import Namespace
 from pathlib import Path
 from unittest.mock import patch
 
-from scripts import audit_v2_refetch_receipts, build_market_state, fetch_raw_market_data
+from scripts import audit_v2_refetch_receipts, build_market_state, fetch_raw_market_data, supervise_raw_fetch
 from scripts.fetch_raw_market_data import (
     build_parser,
     cmd_fetch,
     cmd_repair_meta,
+    coverage_report,
     coverage_has_gaps,
+    fetch_gap_days,
     indexed_metadata_streams,
+    missing_streams,
+    required_streams_by_source,
     sparse_days,
 )
 
@@ -131,6 +135,57 @@ class FetchPlanningTests(unittest.TestCase):
                 set(),
             )
 
+    def test_missing_files_only_does_not_treat_an_installed_unindexed_stream_as_absent(self) -> None:
+        day = dt.date(2022, 1, 1)
+        with tempfile.TemporaryDirectory() as directory:
+            raw = Path(directory) / "swaps.jsonl.gz"
+            raw.touch()
+            with (
+                patch.object(fetch_raw_market_data, "stream_target", return_value=raw),
+                patch.object(fetch_raw_market_data, "metadata_target", return_value=Path(directory) / "missing-meta.json"),
+            ):
+                self.assertEqual(missing_streams("uniswap_v3", day, ["swaps"]), ["swaps"])
+                self.assertEqual(missing_streams("uniswap_v3", day, ["swaps"], include_unindexed=False), [])
+
+    def test_one_frozen_graph_head_is_passed_to_every_planned_day(self) -> None:
+        start = dt.date(2022, 1, 1)
+        end = dt.date(2022, 1, 3)
+        with (
+            patch.object(fetch_raw_market_data, "read_source_day_metadata", return_value={}),
+            patch.object(fetch_raw_market_data, "missing_streams", return_value=["swaps"]),
+            patch.object(fetch_raw_market_data, "frozen_graph_head", return_value=999) as frozen,
+            patch.object(fetch_raw_market_data, "fetch_source_day", return_value={"streams": {}}) as fetch,
+            patch("builtins.print"),
+        ):
+            fetch_gap_days("uniswap_v3", start, end, streams={"swaps"}, overwrite=False, dry_run=False, dune_sleep=0, max_retries=0)
+        frozen.assert_called_once()
+        self.assertEqual(fetch.call_count, 2)
+        self.assertEqual({call.kwargs["head_block_at_fetch"] for call in fetch.call_args_list}, {999})
+
+    def test_supervisor_counts_unindexed_graph_streams_without_conflating_dune_metadata(self) -> None:
+        report = {
+            "graph": {"backend": "thegraph", "missing": {"swaps": 2, "daily": 100}, "missing_required": {"swaps": 2}, "unindexed_meta": {"swaps": 3, "mints": 100}, "unindexed_required_meta": {"swaps": 3}},
+            "dune": {"backend": "dune", "missing": {"swaps": 5, "daily": 100}, "missing_required": {"swaps": 5}, "unindexed_meta": {"swaps": 7}},
+        }
+        self.assertEqual(supervise_raw_fetch.missing_total(report), 10)
+        self.assertEqual(supervise_raw_fetch.missing_sources(report), [("graph", ["swaps"]), ("dune", ["swaps"])])
+        self.assertEqual(supervise_raw_fetch.missing_sources(report, include_unindexed=False), [("graph", ["swaps"]), ("dune", ["swaps"])])
+
+    def test_supervisor_fetches_only_absent_required_files_then_stops_for_adjudication(self) -> None:
+        initial = {"graph": {"backend": "thegraph", "missing": {"swaps": 1, "daily": 100}, "missing_required": {"swaps": 1}, "unindexed_required_meta": {"swaps": 1}}}
+        final = {"graph": {"backend": "thegraph", "missing": {"swaps": 0, "daily": 100}, "missing_required": {"swaps": 0}, "unindexed_required_meta": {"swaps": 1}}}
+        with tempfile.TemporaryDirectory() as directory:
+            log = Path(directory) / "supervisor.jsonl"
+            with (
+                patch.object(supervise_raw_fetch, "coverage", side_effect=[initial, final]),
+                patch.object(supervise_raw_fetch, "run", return_value=0) as run,
+                patch("sys.argv", ["supervise_raw_fetch.py", "--end", "2026-07-01", "--log", str(log), "--cycles", "1"]),
+            ):
+                self.assertEqual(supervise_raw_fetch.main(), 3)
+            invoked = run.call_args.args[0]
+            self.assertIn("--required-only", invoked)
+            self.assertIn("--missing-files-only", invoked)
+
     def test_strict_coverage_fails_any_missing_or_unindexed_perimeter(self) -> None:
         complete = {
             "venue": {
@@ -146,6 +201,54 @@ class FetchPlanningTests(unittest.TestCase):
         self.assertTrue(
             coverage_has_gaps({"venue": {**complete["venue"], "missing_meta": 1}})
         )
+
+    def test_strict_coverage_ignores_visible_optional_gaps(self) -> None:
+        report = {
+            "venue": {
+                "missing_required_meta": 0,
+                "missing_required": {"swaps": 0},
+                "unindexed_required_meta": {"swaps": 0},
+                "missing_optional": {"daily": 10},
+                "unindexed_optional_meta": {"daily": 20},
+                "missing_meta": 20,
+            }
+        }
+        self.assertFalse(coverage_has_gaps(report))
+        report["venue"]["unindexed_required_meta"]["swaps"] = 1
+        self.assertTrue(coverage_has_gaps(report))
+
+    def test_required_stream_union_is_derived_from_active_consumers(self) -> None:
+        required = required_streams_by_source()
+        end = dt.date(2026, 7, 1)
+        total = sum(len(iter_days(get_source(venue).genesis, end)) * len(streams) for venue, streams in required.items())
+        graph_total = sum(len(iter_days(get_source(venue).genesis, end)) * len(streams) for venue, streams in required.items() if get_source(venue).backend == "thegraph")
+        self.assertEqual(total, 43_120)
+        self.assertEqual(graph_total, 42_510)
+        self.assertNotIn("uniswap_v1", required)
+        self.assertEqual(required["fluid"], frozenset({"swaps"}))
+
+    def test_strict_coverage_hashes_required_graph_streams_only(self) -> None:
+        source = get_source("uniswap_v3")
+        end = source.genesis + dt.timedelta(days=1)
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            metadata = root / "meta.json"
+            metadata.write_text("{}")
+            targets = {stream: root / f"{stream}.jsonl.gz" for stream in ("swaps", "optional")}
+            for target in targets.values():
+                target.touch()
+            with (
+                patch.object(fetch_raw_market_data, "available_streams", return_value=["swaps", "optional"]),
+                patch.object(fetch_raw_market_data, "required_streams_by_source", return_value={"uniswap_v3": frozenset({"swaps"})}),
+                patch.object(fetch_raw_market_data, "metadata_target", return_value=metadata),
+                patch.object(fetch_raw_market_data, "stream_target", side_effect=lambda _name, stream, _day: targets[stream]),
+                patch.object(fetch_raw_market_data, "graph_query_contracts_for_source", return_value={"swaps": "s", "optional": "o"}),
+                patch.object(fetch_raw_market_data, "indexed_metadata_streams", side_effect=[{"swaps", "optional"}, {"swaps"}]) as indexed,
+            ):
+                report = coverage_report(["uniswap_v3"], {"uniswap_v3": end}, verify_content_hashes=True)
+            self.assertEqual(indexed.call_count, 2)
+            self.assertEqual(set(indexed.call_args_list[1].kwargs["expected_paths"]), {"swaps"})
+            self.assertEqual(report["uniswap_v3"]["optional_streams"], ["optional"])
 
     def test_fetch_and_materialisation_share_one_raw_data_lock(self) -> None:
         self.assertEqual(

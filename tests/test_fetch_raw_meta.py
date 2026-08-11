@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import datetime as dt
+import gzip
 import json
 import tempfile
 import unittest
@@ -9,10 +10,13 @@ from unittest.mock import patch
 
 from ddvc.fetch.graph import build_query
 from ddvc.fetch.raw import (
+    RawFetchInvariantError,
+    RawRefetchDivergenceError,
     fetch_source_day,
     graph_query_contract_sha256,
     index_existing_stream,
     merge_stream_metadata,
+    indexed_metadata_streams,
     raw_stream_metadata_is_current,
     repair_source_day_metadata,
     raw_stream_identity,
@@ -20,6 +24,7 @@ from ddvc.fetch.raw import (
     write_json,
     write_jsonl_gz,
 )
+from ddvc.provenance import portable_content_sha256
 from ddvc.fetch.schemas import EntitySpec, SchemaSpec, get_schema
 from ddvc.fetch.sources import get_source
 from ddvc.source_records import (
@@ -123,7 +128,10 @@ class RawMetaMergeTests(unittest.TestCase):
             root = Path(tmp)
             raw = root / "uniswap_v3_swaps_20220101.jsonl.gz"
             metadata = root / "uniswap_v3_meta_20220101.json"
-            write_jsonl_gz(raw, [{"id": "old-swap"}])
+            with raw.open("wb") as raw_handle:
+                with gzip.GzipFile(filename="legacy-name", mode="wb", fileobj=raw_handle, mtime=1) as compressed:
+                    compressed.write(b'{"id":"old-swap"}\n')
+            canonical_bytes = raw.read_bytes()
             old_stream = {
                 "status": "fetched",
                 "path": raw_stream_identity(raw),
@@ -154,8 +162,9 @@ class RawMetaMergeTests(unittest.TestCase):
                     "ddvc.fetch.raw.get_schema",
                     return_value=SchemaSpec(name=source.schema, entities=(current,)),
                 ),
-                patch("ddvc.fetch.raw.head_block", return_value=123),
-                patch("ddvc.fetch.raw.paginate", return_value=[]) as paginate,
+                patch("ddvc.fetch.raw.head_block", return_value=20_000_000),
+                patch("ddvc.fetch.raw.where_chunks_for_entity", return_value=[{}]),
+                patch("ddvc.fetch.raw.paginate", return_value=[{"id": "old-swap"}]) as paginate,
             ):
                 refreshed = fetch_source_day(
                     source,
@@ -164,11 +173,137 @@ class RawMetaMergeTests(unittest.TestCase):
                     skip_existing=True,
                 )
             paginate.assert_called()
-            self.assertEqual(refreshed["streams"]["swaps"]["status"], "fetched")
+            self.assertEqual(raw.read_bytes(), canonical_bytes)
+            self.assertEqual(refreshed["streams"]["swaps"]["status"], "refetched_identical")
             self.assertEqual(
                 refreshed["streams"]["swaps"]["query_contract_sha256"],
                 graph_query_contract_sha256(current),
             )
+            self.assertEqual(refreshed["streams"]["swaps"]["logical_content_sha256"], portable_content_sha256(raw))
+            self.assertEqual(refreshed["streams"]["swaps"]["head_block_at_fetch"], 20_000_000)
+            self.assertIn("fetched_at_utc", refreshed["streams"]["swaps"])
+            self.assertEqual(paginate.call_args.kwargs["block_number"], 20_000_000)
+            self.assertEqual(indexed_metadata_streams(metadata, expected_paths={"swaps": raw}, expected_query_contracts={"swaps": graph_query_contract_sha256(current)}, verify_content_hashes=True), {"swaps"})
+
+    def test_source_day_identity_is_rejected_before_network(self) -> None:
+        source = get_source("uniswap_v3")
+        day = dt.date(2022, 1, 1)
+        with tempfile.TemporaryDirectory() as tmp:
+            metadata = Path(tmp) / "meta.json"
+            write_json(metadata, {"source": "wrong-source", "day": day.isoformat()})
+            with (
+                patch("ddvc.fetch.raw.meta_path", return_value=metadata),
+                patch("ddvc.fetch.raw.GraphClient") as client,
+            ):
+                with self.assertRaisesRegex(RawFetchInvariantError, "identity conflicts"):
+                    fetch_source_day(source, day, streams={"swaps"})
+            client.assert_not_called()
+
+    def test_later_stream_failure_leaves_every_canonical_file_unchanged(self) -> None:
+        source = get_source("uniswap_v3")
+        day = dt.date(2022, 1, 1)
+        entities = (
+            EntitySpec(stream="first", entity="firstRows", fields="id"),
+            EntitySpec(stream="second", entity="secondRows", fields="id"),
+        )
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            paths = {name: root / f"{name}.jsonl.gz" for name in ("first", "second")}
+            metadata = root / "meta.json"
+            for name, path in paths.items():
+                write_jsonl_gz(path, [{"id": f"old-{name}"}])
+            write_json(metadata, {"source": source.name, "day": day.isoformat(), "streams": {}})
+            before = {name: path.read_bytes() for name, path in paths.items()}
+            metadata_before = metadata.read_bytes()
+            with (
+                patch("ddvc.fetch.raw.get_schema", return_value=SchemaSpec(name=source.schema, entities=entities)),
+                patch("ddvc.fetch.raw.raw_path", side_effect=lambda _source, stream, _day: paths[stream]),
+                patch("ddvc.fetch.raw.meta_path", return_value=metadata),
+                patch("ddvc.fetch.raw.GraphClient"),
+                patch("ddvc.fetch.raw.graph_keys", return_value=["key"]),
+                patch("ddvc.fetch.raw.where_chunks_for_entity", return_value=[{}]),
+                patch("ddvc.fetch.raw.paginate", side_effect=[[{"id": "new-first"}], RuntimeError("later stream failed")]),
+            ):
+                with self.assertRaisesRegex(RuntimeError, "later stream failed"):
+                    fetch_source_day(source, day, head_block_at_fetch=20_000_000)
+            self.assertEqual({name: path.read_bytes() for name, path in paths.items()}, before)
+            self.assertEqual(metadata.read_bytes(), metadata_before)
+
+    def test_divergence_preserves_canonical_raw_and_metadata_with_content_addressed_evidence(self) -> None:
+        source = get_source("uniswap_v3")
+        day = dt.date(2022, 1, 1)
+        entity = EntitySpec(stream="swaps", entity="swaps", fields="id")
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            raw = root / "uniswap_v3_swaps_20220101.jsonl.gz"
+            metadata = root / "uniswap_v3_meta_20220101.json"
+            evidence = root / "evidence"
+            write_jsonl_gz(raw, [{"id": "old"}])
+            write_json(metadata, {"source": source.name, "day": day.isoformat(), "streams": {"swaps": {"path": raw_stream_identity(raw), "rows": 1}}})
+            raw_before = raw.read_bytes()
+            metadata_before = metadata.read_bytes()
+            with (
+                patch("ddvc.fetch.raw.get_schema", return_value=SchemaSpec(name=source.schema, entities=(entity,))),
+                patch("ddvc.fetch.raw.raw_path", return_value=raw),
+                patch("ddvc.fetch.raw.meta_path", return_value=metadata),
+                patch("ddvc.fetch.raw.RAW_REFETCH_DIVERGENCE_ROOT", evidence),
+                patch("ddvc.fetch.raw.GraphClient"),
+                patch("ddvc.fetch.raw.graph_keys", return_value=["key"]),
+                patch("ddvc.fetch.raw.where_chunks_for_entity", return_value=[{}]),
+                patch("ddvc.fetch.raw.paginate", return_value=[{"id": "new"}]),
+            ):
+                with self.assertRaisesRegex(RawRefetchDivergenceError, "refetch diverged"):
+                    fetch_source_day(source, day, streams={"swaps"}, skip_existing=False, head_block_at_fetch=20_000_000)
+            self.assertEqual(raw.read_bytes(), raw_before)
+            self.assertEqual(metadata.read_bytes(), metadata_before)
+            records = list(evidence.rglob("comparison-*.json"))
+            self.assertEqual(len(records), 1)
+            record = json.loads(records[0].read_text())
+            self.assertNotEqual(record["canonical"]["logical_content_sha256"], record["candidate"]["logical_content_sha256"])
+            self.assertEqual(record["head_block_at_fetch"], 20_000_000)
+            self.assertEqual(len(list(evidence.rglob("*.jsonl.gz"))), 2)
+
+    def test_new_streams_publish_before_the_marker_sidecar_and_roll_back_if_it_fails(self) -> None:
+        source = get_source("uniswap_v3")
+        day = dt.date(2022, 1, 1)
+        entities = (
+            EntitySpec(stream="first", entity="firstRows", fields="id"),
+            EntitySpec(stream="second", entity="secondRows", fields="id"),
+        )
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            paths = {name: root / f"{name}.jsonl.gz" for name in ("first", "second")}
+            metadata = root / "meta.json"
+
+            def fail_after_observing_marker_order(_path, _value):
+                self.assertTrue(all(path.exists() for path in paths.values()))
+                raise OSError("sidecar failed")
+
+            with (
+                patch("ddvc.fetch.raw.get_schema", return_value=SchemaSpec(name=source.schema, entities=entities)),
+                patch("ddvc.fetch.raw.raw_path", side_effect=lambda _source, stream, _day: paths[stream]),
+                patch("ddvc.fetch.raw.meta_path", return_value=metadata),
+                patch("ddvc.fetch.raw.GraphClient"),
+                patch("ddvc.fetch.raw.graph_keys", return_value=["key"]),
+                patch("ddvc.fetch.raw.where_chunks_for_entity", return_value=[{}]),
+                patch("ddvc.fetch.raw.paginate", side_effect=[[{"id": "first"}], [{"id": "second"}]]),
+                patch("ddvc.fetch.raw.write_json", side_effect=fail_after_observing_marker_order),
+            ):
+                with self.assertRaisesRegex(OSError, "sidecar failed"):
+                    fetch_source_day(source, day, head_block_at_fetch=20_000_000)
+            self.assertFalse(metadata.exists())
+            self.assertFalse(any(path.exists() for path in paths.values()))
+
+    def test_strict_stream_index_reopens_the_recorded_logical_hash(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            raw = root / "source_swaps_20220101.jsonl.gz"
+            metadata = root / "source_meta_20220101.json"
+            write_jsonl_gz(raw, [{"id": "row"}])
+            write_json(metadata, {"streams": {"swaps": {"path": raw_stream_identity(raw), "rows": 1, "query_contract_sha256": "contract", "logical_content_sha256": "0" * 64}}})
+            with patch("ddvc.fetch.raw.portable_content_sha256", side_effect=AssertionError("routine coverage hashed payload")):
+                self.assertEqual(indexed_metadata_streams(metadata, expected_paths={"swaps": raw}, expected_query_contracts={"swaps": "contract"}), {"swaps"})
+            self.assertEqual(indexed_metadata_streams(metadata, expected_paths={"swaps": raw}, expected_query_contracts={"swaps": "contract"}, verify_content_hashes=True), set())
 
     def test_partial_refresh_refuses_legacy_metadata_without_stream_ledger(self) -> None:
         with self.assertRaisesRegex(RuntimeError, "legacy metadata"):
