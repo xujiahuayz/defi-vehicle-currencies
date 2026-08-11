@@ -597,6 +597,9 @@ def certify_materialization_support(
     result["initialize_tokens"] = len(initialization_tokens)
     result["initialize_tokens_outside_metadata_scope"] = len(absent_tokens)
     result["initialize_pools_excluded_unknown_token_metadata"] = sum(row.token0 in absent_tokens or row.token1 in absent_tokens for row in initializations)
+    if str(result.get("token_metadata_scope", "")).startswith("exact_anchor_v2_registry"):
+        result["venue_initialization_tokens_outside_v2_audit_scope"] = len(absent_tokens)
+        result["venue_initialization_pools_outside_v2_audit_scope"] = result["initialize_pools_excluded_unknown_token_metadata"]
     result["certificate_identity_sha256"] = certificate_identity_sha256(result)
     return result
 

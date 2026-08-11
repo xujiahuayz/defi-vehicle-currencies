@@ -127,8 +127,10 @@ TOKEN_REGISTRY_CODE_SOURCES = [
     "scripts/audit_v2_event_completeness.py",
     "src/ddvc/amounts.py",
     "src/ddvc/fetch/raw.py",
+    "src/ddvc/fetch/sources.py",
     "src/ddvc/provenance.py",
     "src/ddvc/quoter.py",
+    "src/ddvc/release_calendar.py",
     "src/ddvc/runtime.py",
     "src/ddvc/token_decimals.py",
     "src/ddvc/v2_event_completeness.py",
@@ -601,6 +603,61 @@ def collect_v2_token_decimals_perimeter(
     return anchors, provider_observations, event_inputs, raw_global_logs
 
 
+def token_registry_provenance_inputs(
+    *,
+    audit_days: list[str],
+    token_evidence_paths: dict[str, Path],
+    factory_inputs: list[Path],
+    event_inputs: dict[str, list[Path]],
+) -> list[Path]:
+    """Bind the exact released calendar and every source selecting the token perimeter."""
+
+    return sorted(
+        {
+            UNIFIED_QUALITY_PANEL,
+            sidecar_path(UNIFIED_QUALITY_PANEL),
+            *token_evidence_paths.values(),
+            *factory_inputs,
+            *(path for paths in event_inputs.values() for path in paths),
+            *(
+                path
+                for day in audit_days
+                for venue in _launched_venues(day)
+                for path in _graph_event_paths(venue, day)
+            ),
+        },
+        key=str,
+    )
+
+
+def publish_token_decimals_registry_release(
+    token_registry: pd.DataFrame,
+    *,
+    anchors: dict[str, TokenDecimalsAnchor],
+    provider_observations: dict[str, list[object]],
+    inputs: list[Path],
+) -> tuple[dict[str, int], pd.DataFrame]:
+    """Install, stamp, freshness-check, and reopen one exact registry release."""
+
+    write_token_decimals_registry(token_registry, V2_TOKEN_DECIMALS_REGISTRY)
+    stamp(
+        V2_TOKEN_DECIMALS_REGISTRY,
+        code_sources=TOKEN_REGISTRY_CODE_SOURCES,
+        inputs=inputs,
+        rows=len(token_registry),
+        notes="exact historical ERC-20 decimals for the V2 event-audit token perimeter",
+    )
+    require_current_artifacts(
+        [V2_TOKEN_DECIMALS_REGISTRY],
+        consumer="V2 exact event-source audit token state",
+    )
+    return validate_token_decimals_registry(
+        V2_TOKEN_DECIMALS_REGISTRY,
+        expected_anchors=anchors,
+        provider_observations=provider_observations,
+    )
+
+
 def corrected_v2_event_map(
     venue: str,
     day: str,
@@ -696,6 +753,7 @@ def build(
     force: bool,
     workers: int,
     event_block_chunk_size: int,
+    token_registry_only: bool = False,
 ) -> tuple[int, int]:
     if event_block_chunk_size != V2_EXACT_LOG_CHUNK_SIZE:
         raise ValueError(
@@ -849,37 +907,26 @@ def build(
         token_evidence_paths,
         provider_observations,
     )
-    write_token_decimals_registry(token_registry, V2_TOKEN_DECIMALS_REGISTRY)
-    token_registry_inputs = sorted(
-        {
-            *token_evidence_paths.values(),
-            *factory_inputs,
-            *(path for paths in event_inputs.values() for path in paths),
-            *(
-                path
-                for day in audit_days
-                for venue in _launched_venues(day)
-                for path in _graph_event_paths(venue, day)
-            ),
-        },
-        key=str,
+    token_registry_inputs = token_registry_provenance_inputs(
+        audit_days=audit_days,
+        token_evidence_paths=token_evidence_paths,
+        factory_inputs=factory_inputs,
+        event_inputs=event_inputs,
     )
-    stamp(
-        V2_TOKEN_DECIMALS_REGISTRY,
-        code_sources=TOKEN_REGISTRY_CODE_SOURCES,
-        inputs=token_registry_inputs,
-        rows=len(token_registry),
-        notes="exact historical ERC-20 decimals for the V2 event-audit token perimeter",
-    )
-    require_current_artifacts(
-        [V2_TOKEN_DECIMALS_REGISTRY],
-        consumer="V2 exact event-source audit token state",
-    )
-    token_decimals, token_registry = validate_token_decimals_registry(
-        V2_TOKEN_DECIMALS_REGISTRY,
-        expected_anchors=anchors,
+    token_decimals, token_registry = publish_token_decimals_registry_release(
+        token_registry,
+        anchors=anchors,
         provider_observations=provider_observations,
+        inputs=token_registry_inputs,
     )
+    print(
+        f"  exact token decimals: tokens={len(token_registry):,}; "
+        f"matched-event anchors={sum(anchor.priority == 0 for anchor in anchors.values()):,}; "
+        f"provider distinct reports={sum(len(values) for values in provider_observations.values()):,}",
+        flush=True,
+    )
+    if token_registry_only:
+        return len(token_registry), 0
     statics = {
         venue: factory_pair_registry(
             venue,
@@ -888,12 +935,6 @@ def build(
         )[0]
         for venue in V2_EVENT_VENUES
     }
-    print(
-        f"  exact token decimals: tokens={len(token_registry):,}; "
-        f"matched-event anchors={sum(anchor.priority == 0 for anchor in anchors.values()):,}; "
-        f"provider distinct reports={sum(len(values) for values in provider_observations.values()):,}",
-        flush=True,
-    )
     reconciliation_authorities = {
         venue: [
             V2_TOKEN_DECIMALS_REGISTRY,
@@ -1122,6 +1163,7 @@ def build(
 def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--no-fetch", action="store_true", help="audit complete cached RPC chunks only")
+    parser.add_argument("--token-registry-only", action="store_true", help="publish and reopen the exact token-decimals registry, then stop before event comparison")
     parser.add_argument(
         "--force",
         action="store_true",
@@ -1134,7 +1176,6 @@ def main() -> int:
         raise ValueError("event block chunk size must be positive")
     if args.event_block_chunk_size != V2_EXACT_LOG_CHUNK_SIZE:
         raise ValueError("--event-block-chunk-size must be 50 for shared V2 exact-log reuse")
-    _preflight_graph_streams(transaction_frontier_audit_days(UNIFIED_QUALITY_PANEL))
     with ExitStack() as stack:
         stack.enter_context(exclusive_job(RAW_MARKET_DATA_LOCK, job="V2 exact event-source audit"))
         stack.enter_context(exclusive_job(MARKET_STATE_LOCK, job="V2 exact event-source audit"))
@@ -1143,7 +1184,11 @@ def main() -> int:
             force=args.force,
             workers=args.workers,
             event_block_chunk_size=args.event_block_chunk_size,
+            token_registry_only=args.token_registry_only,
         )
+    if args.token_registry_only:
+        print(f"COMPLETE: V2 token-decimals registry rows={rows:,}")
+        return 0
     print(f"COMPLETE: V2 event-source rows={rows:,}; exceptions={exceptions:,}")
     return int(exceptions > 0)
 

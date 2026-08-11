@@ -12,6 +12,7 @@ from ddvc.token_decimals import (
     TokenDecimalsAnchor,
     build_token_decimals_registry,
     load_or_fetch_token_decimals_evidence,
+    resolve_token_decimals_evidence,
     select_token_decimals_anchors,
     token_decimals_evidence_path,
     validate_token_decimals_evidence,
@@ -108,6 +109,39 @@ def test_exact_decimals_covers_a_token_outside_any_priced_panel_and_reuses_cache
     )
     assert cached == record
     assert cached_path == path
+
+
+@pytest.mark.parametrize("failure_token", [TOKEN, "0x" + "6" * 40])
+def test_bounded_resolver_recovers_first_or_late_transient_token(tmp_path, failure_token) -> None:
+    late_token = "0x" + "6" * 40
+    anchors = {
+        TOKEN: anchor(),
+        late_token: TokenDecimalsAnchor(**{**anchor(block_number=101).__dict__, "token": late_token}),
+    }
+    calls = {token: 0 for token in anchors}
+
+    def resolve_one(expected, **_kwargs):
+        calls[expected.token] += 1
+        if expected.token == failure_token and calls[expected.token] == 1:
+            raise Throttled("temporary")
+        return {"token": expected.token}, tmp_path / f"{expected.token}.json"
+
+    with patch("ddvc.token_decimals.load_or_fetch_token_decimals_evidence", side_effect=resolve_one):
+        records, paths = resolve_token_decimals_evidence(anchors, fetch=True, workers=2, max_attempts=2, retry_backoff=0)
+    assert set(records) == set(anchors)
+    assert set(paths) == set(anchors)
+    assert calls[failure_token] == 2
+    assert calls[next(token for token in anchors if token != failure_token)] == 1
+
+
+def test_bounded_resolver_fails_closed_after_transient_cap(tmp_path) -> None:
+    with (
+        patch("ddvc.token_decimals.load_or_fetch_token_decimals_evidence", side_effect=Throttled("temporary")) as request,
+        pytest.raises(RuntimeError, match="after 3 bounded attempts"),
+    ):
+        resolve_token_decimals_evidence({TOKEN: anchor()}, fetch=True, workers=4, root=tmp_path, max_attempts=3, retry_backoff=0)
+    assert request.call_count == 3
+    assert list(tmp_path.rglob("*")) == []
 
 
 def test_tampered_exact_response_is_rejected_without_overwrite(tmp_path) -> None:

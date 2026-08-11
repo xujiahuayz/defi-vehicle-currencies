@@ -213,9 +213,10 @@ class TickStateEventTests(unittest.TestCase):
 
     def test_daily_release_is_deterministic_portable_and_keeps_unknown_metadata(self) -> None:
         initialization = TickInitialization("uniswap_v4", "pool", A, B, 500, 10, "0x" + "0" * 40, 2**96, 0, 10, BLOCK_HASH, TX, 1, 2, True, None)
-        support = certify_materialization_support(certificate("uniswap_v4"), [initialization], {A: ("A", 18)})
+        support = certify_materialization_support({**certificate("uniswap_v4"), "token_metadata_scope": "exact_anchor_v2_registry_plus_native_currency_only"}, [initialization], {A: ("A", 18)})
         self.assertEqual((support["protocol_static_quote_supported_pools"], support["metadata_supported_pools"], support["materialized_quote_supported_pools"]), (1, 0, 0))
         self.assertEqual((support["initialize_tokens_outside_metadata_scope"], support["initialize_pools_excluded_unknown_token_metadata"]), (1, 1))
+        self.assertEqual((support["venue_initialization_tokens_outside_v2_audit_scope"], support["venue_initialization_pools_outside_v2_audit_scope"]), (1, 1))
         with tempfile.TemporaryDirectory() as directory:
             root = Path(directory) / "thegraph"
             kwargs = dict(venue="uniswap_v4", rows=[initialization], day_cuts=certified_day_cuts({"20250101": (1, 20)}), token_metadata={A: ("A", 18)}, raw_root=root, generation_certificate=certificate("uniswap_v4"))

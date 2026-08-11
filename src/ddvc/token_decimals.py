@@ -11,6 +11,7 @@ from dataclasses import asdict, dataclass
 import hashlib
 import json
 from pathlib import Path
+import time
 from typing import Callable, Iterable, Mapping
 
 import pandas as pd
@@ -19,6 +20,7 @@ from ddvc.fetch.raw import write_json
 from ddvc.paths import DATA_DIR, REPO_ROOT
 from ddvc.quoter import (
     RpcEnvelope,
+    Throttled,
     canonical_json_sha256,
     coerce_rpc_envelope,
     rpc_post,
@@ -315,18 +317,30 @@ def resolve_token_decimals_evidence(
     workers: int,
     root: Path | None = None,
     rpc_request: Callable[..., object] | None = None,
+    max_attempts: int = 12,
+    retry_backoff: float = 0.5,
 ) -> tuple[dict[str, dict[str, object]], dict[str, Path]]:
     """Resolve a bounded, resumable set of exact calls with no unbounded queue."""
 
+    if max_attempts < 1 or retry_backoff < 0:
+        raise ValueError("token decimals retry bounds must be nonnegative with at least one attempt")
     worker_count = max(1, min(int(workers), 4))
     queue = deque(sorted(anchors.items()))
     records: dict[str, dict[str, object]] = {}
     paths: dict[str, Path] = {}
+    attempts: dict[str, int] = {}
+    retry_ready_at: dict[str, float] = {}
     with interruptible_thread_pool(max_workers=worker_count) as executor:
         futures: dict[object, tuple[str, TokenDecimalsAnchor]] = {}
         while queue or futures:
-            while queue and len(futures) < worker_count:
+            scan = len(queue)
+            while queue and len(futures) < worker_count and scan:
                 token, anchor = queue.popleft()
+                if retry_ready_at.get(token, 0.0) > time.monotonic():
+                    queue.append((token, anchor))
+                    scan -= 1
+                    continue
+                attempts[token] = attempts.get(token, 0) + 1
                 future = executor.submit(
                     load_or_fetch_token_decimals_evidence,
                     anchor,
@@ -335,12 +349,29 @@ def resolve_token_decimals_evidence(
                     rpc_request=rpc_request,
                 )
                 futures[future] = (token, anchor)
-            done, _pending = wait(futures, return_when=FIRST_COMPLETED)
+                scan = len(queue)
+            if not futures:
+                delay = min(retry_ready_at[token] for token, _anchor in queue) - time.monotonic()
+                time.sleep(max(0.0, delay))
+                continue
+            timeout = None
+            if queue and len(futures) < worker_count:
+                timeout = max(0.0, min(retry_ready_at.get(token, 0.0) for token, _anchor in queue) - time.monotonic())
+            done, _pending = wait(futures, timeout=timeout, return_when=FIRST_COMPLETED)
             for future in done:
-                token, _anchor = futures.pop(future)
-                record, path = future.result()
+                token, anchor = futures.pop(future)
+                try:
+                    record, path = future.result()
+                except Throttled as error:
+                    if attempts[token] >= max_attempts:
+                        raise RuntimeError(f"exact token decimals remained transiently unavailable after {max_attempts} bounded attempts: {token}") from error
+                    delay = retry_backoff * min(2 ** (attempts[token] - 1), 16)
+                    retry_ready_at[token] = time.monotonic() + delay
+                    queue.append((token, anchor))
+                    continue
                 records[token] = record
                 paths[token] = path
+                retry_ready_at.pop(token, None)
     return dict(sorted(records.items())), dict(sorted(paths.items()))
 
 

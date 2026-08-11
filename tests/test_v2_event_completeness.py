@@ -1,10 +1,12 @@
 from __future__ import annotations
 
 import copy
+from contextlib import nullcontext
 import io
 import gzip
 import hashlib
 import json
+import sys
 import urllib.error
 from types import SimpleNamespace
 
@@ -159,6 +161,54 @@ def test_graph_preflight_rejects_a_truncated_gzip_before_rpc_fetch(
     monkeypatch.setattr(auditor, "_launched_venues", lambda _day: (venue,))
     with pytest.raises(RuntimeError, match="unreadable Graph event file before RPC fetch"):
         auditor._preflight_graph_streams([day])
+
+
+def test_token_registry_provenance_binds_released_calendar(tmp_path, monkeypatch) -> None:
+    quality = tmp_path / "unified_route_quality.parquet"
+    evidence = tmp_path / "decimals.json"
+    factory = tmp_path / "factory.json"
+    exact = tmp_path / "exact.parquet"
+    provider = tmp_path / "provider.jsonl.gz"
+    monkeypatch.setattr(auditor, "UNIFIED_QUALITY_PANEL", quality)
+    monkeypatch.setattr(auditor, "_launched_venues", lambda _day: ("uniswap_v2",))
+    monkeypatch.setattr(auditor, "_graph_event_paths", lambda _venue, _day: [provider])
+    inputs = auditor.token_registry_provenance_inputs(
+        audit_days=["20250115"],
+        token_evidence_paths={TOKEN0: evidence},
+        factory_inputs=[factory],
+        event_inputs={"20250115": [exact]},
+    )
+    assert set(inputs) == {quality, auditor.sidecar_path(quality), evidence, factory, exact, provider}
+    assert "src/ddvc/release_calendar.py" in auditor.TOKEN_REGISTRY_CODE_SOURCES
+    assert "src/ddvc/fetch/sources.py" in auditor.TOKEN_REGISTRY_CODE_SOURCES
+
+
+def test_token_registry_release_reopens_only_after_install_and_freshness_check(tmp_path, monkeypatch) -> None:
+    registry_path = tmp_path / "registry.parquet"
+    registry = pd.DataFrame([{"token": TOKEN0}])
+    calls = []
+    monkeypatch.setattr(auditor, "V2_TOKEN_DECIMALS_REGISTRY", registry_path)
+    monkeypatch.setattr(auditor, "write_token_decimals_registry", lambda frame, path: calls.append(("write", frame is registry, path)))
+    monkeypatch.setattr(auditor, "stamp", lambda path, **kwargs: calls.append(("stamp", path, kwargs["inputs"])))
+    monkeypatch.setattr(auditor, "require_current_artifacts", lambda paths, **kwargs: calls.append(("require", paths, kwargs["consumer"])))
+    monkeypatch.setattr(auditor, "validate_token_decimals_registry", lambda path, **kwargs: (calls.append(("validate", path, kwargs["expected_anchors"])), ({TOKEN0: 6}, registry))[1])
+    values, reopened = auditor.publish_token_decimals_registry_release(registry, anchors={}, provider_observations={}, inputs=[tmp_path / "input"])
+    assert (values, reopened is registry) == ({TOKEN0: 6}, True)
+    assert [call[0] for call in calls] == ["write", "stamp", "require", "validate"]
+
+
+def test_token_registry_only_cli_stops_after_registry_release(monkeypatch) -> None:
+    calls = []
+    monkeypatch.setattr(sys, "argv", ["audit_v2_event_completeness.py", "--no-fetch", "--token-registry-only"])
+    monkeypatch.setattr(auditor, "exclusive_job", lambda *args, **kwargs: nullcontext())
+
+    def fake_build(**kwargs):
+        calls.append(kwargs)
+        return 17, 0
+
+    monkeypatch.setattr(auditor, "build", fake_build)
+    assert auditor.main() == 0
+    assert calls == [{"fetch": False, "force": False, "workers": 4, "event_block_chunk_size": V2_EXACT_LOG_CHUNK_SIZE, "token_registry_only": True}]
 
 
 def raw_event(event_type: str) -> dict[str, object]:
