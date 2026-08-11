@@ -575,13 +575,15 @@ class FindingsFreezeAuditTest(unittest.TestCase):
                     }
                 ]
             ).to_parquet(calendar, index=False)
-            with patch("scripts.audit_findings_freeze.verify", return_value={"status": "ok"}):
+            with (
+                patch("scripts.audit_findings_freeze.verify", return_value={"status": "ok"}),
+                patch("scripts.audit_findings_freeze.inventory_calendar_days", return_value=[day]),
+            ):
                 checks = dict(
                     (name, (passed, detail))
                     for name, passed, detail in v3_inventory_calendar_checks(
                         calendar,
                         raw_root,
-                        expected_days=[day],
                     )
                 )
             self.assertTrue(all(passed for passed, _detail in checks.values()), checks)

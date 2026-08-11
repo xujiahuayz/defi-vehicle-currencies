@@ -16,6 +16,7 @@ import pytest
 
 import scripts.assemble_v3_inventory_event_shards as assemble_v3_inventory_event_shards
 import scripts.fetch_v3_inventory_events as fetch_v3_inventory_events
+import ddvc.v3_inventory_calendar as inventory_calendar
 from ddvc.ethereum_logs import file_sha256
 from ddvc.fetch.sources import get_source
 from ddvc.v3_inventory import (
@@ -52,11 +53,13 @@ from ddvc.v3_pool_registry import V3_FACTORY_DEPLOYMENT_BLOCK, V3_POOL_REGISTRY_
 from ddvc.v3_inventory_calendar import (
     CODE_SOURCES as CALENDAR_CODE_SOURCES,
     _fetch_block_timestamp,
+    inventory_calendar_days,
     last_block_before_timestamp,
 )
 from ddvc.quoter import RpcCapacityError, RpcSemanticError, Throttled
 from scripts.build_v3_inventory_panel import (
     CODE_SOURCES as PANEL_CODE_SOURCES,
+    INPUTS as PANEL_INPUTS,
     inventory_perimeter,
 )
 from scripts.audit_v3_inventory_balances import audit_sample_table
@@ -568,13 +571,15 @@ def test_exact_day_cut_is_last_block_strictly_before_midnight() -> None:
 def test_calendar_provenance_covers_every_semantic_dependency() -> None:
     assert set(CALENDAR_CODE_SOURCES) == {
         "src/ddvc/v3_inventory_calendar.py",
+        "src/ddvc/calendar.py",
         "src/ddvc/ethereum_blocks.py",
         "src/ddvc/ethereum_day_cuts.py",
+        "src/ddvc/fetch/pool_daily.py",
         "src/ddvc/fetch/raw.py",
+        "src/ddvc/fetch/sources.py",
         "src/ddvc/paths.py",
         "src/ddvc/quoter.py",
         "src/ddvc/runtime.py",
-        "src/ddvc/state_data.py",
     }
 
 
@@ -592,12 +597,56 @@ def test_physical_inventory_cache_covers_every_semantic_dependency() -> None:
         "src/ddvc/paths.py",
         "src/ddvc/provenance.py",
         "src/ddvc/runtime.py",
-        "src/ddvc/state_data.py",
         "src/ddvc/v3_inventory.py",
         "src/ddvc/v3_inventory_calendar.py",
         "src/ddvc/v3_pool_registry.py",
         "src/ddvc/pricing/v3pools.py",
     }
+
+
+def test_physical_inventory_inputs_do_not_depend_on_derived_market_state() -> None:
+    assert all("market_state" not in path.as_posix() for path in PANEL_INPUTS)
+
+
+def test_inventory_calendar_comes_from_locked_raw_source_scope() -> None:
+    days = inventory_calendar_days()
+    assert days[0] == "20210504"
+    assert days[-1] == "20260630"
+    assert len(days) == 1_884
+
+
+def test_day_calendar_builds_from_raw_scope_without_materialized_state(tmp_path, monkeypatch) -> None:
+    days = ["20250101", "20250102"]
+    metadata = {
+        "20250101": {"max_block": 100, "head_block_at_fetch": 101},
+        "20250102": {"min_block": 101, "max_block": 200, "head_block_at_fetch": 201},
+    }
+
+    def resolve(day: str, _lower: int, _upper: int) -> dict[str, object]:
+        end_block = 100 if day == days[0] else 200
+        return {
+            "status": "complete",
+            "day": day,
+            "target_timestamp": 1,
+            "day_end_block": end_block,
+            "day_end_block_timestamp": 0,
+            "next_block": end_block + 1,
+            "next_block_timestamp": 1,
+            "initial_lower_bracket": end_block,
+            "resolved_upper_bracket": end_block + 1,
+        }
+
+    monkeypatch.setattr(inventory_calendar, "CALENDAR", tmp_path / "calendar.parquet")
+    monkeypatch.setattr(inventory_calendar, "RAW_DAY_CUT_ROOT", tmp_path / "cuts")
+    monkeypatch.setattr(inventory_calendar, "inventory_calendar_days", lambda: days)
+    monkeypatch.setattr(inventory_calendar, "raw_day_metadata", metadata.__getitem__)
+    monkeypatch.setattr(inventory_calendar, "_resolve_day_cut", resolve)
+    monkeypatch.setattr(inventory_calendar, "stamp", lambda *_args, **_kwargs: None)
+
+    rows, first, last = inventory_calendar.build_day_calendar(workers=1)
+
+    assert (rows, first, last) == (2, 100, 200)
+    assert pd.read_parquet(inventory_calendar.CALENDAR)["day"].tolist() == days
 
 
 def test_calendar_rpc_retry_budget_is_not_nested_inside_rpc_post() -> None:

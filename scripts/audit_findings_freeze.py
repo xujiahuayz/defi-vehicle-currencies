@@ -80,6 +80,7 @@ from ddvc.v3_event_completeness import (
     validate_v3_event_source_evidence_bundle,
     v3_audit_days,
 )
+from ddvc.v3_inventory_calendar import inventory_calendar_days
 from ddvc.paths import (
     LITERATURE_SOURCE_ADMISSION,
     LP_LIQUIDITY_FLOW_CANDIDATES,
@@ -348,7 +349,7 @@ def v3_inventory_calendar_checks(
     *,
     expected_days: list[str] | None = None,
 ) -> list[tuple[str, bool, str]]:
-    """Audit exact UTC cuts against their persisted RPC evidence and state calendar."""
+    """Audit exact UTC cuts against persisted RPC evidence and the raw-source calendar."""
 
     if not calendar_path.is_file() or not raw_root.is_dir():
         return [
@@ -388,7 +389,7 @@ def v3_inventory_calendar_checks(
     if missing:
         return results
 
-    expected = expected_days or available_state_days("tick", "uniswap_v3")
+    expected = expected_days or inventory_calendar_days()
     days = frame["day"].astype(str).tolist()
     duplicate_days = len(days) - len(set(days))
     results.append(

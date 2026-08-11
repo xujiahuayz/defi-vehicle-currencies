@@ -24,7 +24,6 @@ from ddvc.paths import (
 )
 from ddvc.provenance import cache_key, sidecar_path, stamp
 from ddvc.runtime import atomic_output, exclusive_job
-from ddvc.state_data import STATE_ROOT, available_state_days, read_tick_partition
 from ddvc.v3_inventory import (
     INVENTORY_STATE_GENERATION,
     INVENTORY_CHUNK_SIZE,
@@ -44,6 +43,7 @@ from ddvc.v3_inventory_calendar import (
     CALENDAR_LOCK,
     V3_GRAPH_ROOT,
     build_day_calendar,
+    inventory_calendar_days,
     load_day_calendar,
     raw_day_metadata,
 )
@@ -58,7 +58,7 @@ from ddvc.v3_pool_registry import (
 
 RAW_INVENTORY_ROOT = V3_INVENTORY_RAW_ROOT
 GRAPH_STATIC_PATH = V3_GRAPH_ROOT / "uniswap_v3_pool_statics_20260630.jsonl.gz"
-CACHE_ROOT = STATE_ROOT.parent / "_v3_pool_inventory_day_cache"
+CACHE_ROOT = DATA_DIR / "processed" / "_v3_pool_inventory_day_cache"
 OUT = DATA_DIR / "processed" / "v3_pool_inventory_daily.parquet"
 CODE_SOURCES = [
     "scripts/assemble_v3_inventory_event_shards.py",
@@ -74,13 +74,11 @@ CODE_SOURCES = [
     "src/ddvc/paths.py",
     "src/ddvc/provenance.py",
     "src/ddvc/runtime.py",
-    "src/ddvc/state_data.py",
     "src/ddvc/v3_inventory_calendar.py",
     "src/ddvc/v3_pool_registry.py",
     "src/ddvc/pricing/v3pools.py",
 ]
 INPUTS = [
-    STATE_ROOT / "tick" / "uniswap_v3",
     RAW_INVENTORY_ROOT,
     GRAPH_STATIC_PATH,
     V3_POOL_REGISTRY,
@@ -213,7 +211,7 @@ def require_complete_raw_chunks(
     start: int,
     end: int,
 ) -> tuple[list[tuple[int, int]], dict[str, object]]:
-    last_day = available_state_days("tick", "uniswap_v3")[-1]
+    last_day = inventory_calendar_days()[-1]
     terminal = int(raw_day_metadata(last_day)["head_block_at_fetch"])
     frozen_upper, factory_certificate = load_certified_frozen_upper()
     if int(frozen_upper["block_number"]) != terminal:
