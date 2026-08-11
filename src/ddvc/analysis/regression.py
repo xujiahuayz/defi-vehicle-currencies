@@ -193,7 +193,8 @@ def absorb_fixed_effects(
 
     Alternating projections are required for unbalanced multi-way panels. The
     common one-pass expression ``x - mean_a - mean_b + mean(x)`` is exact only
-    when the two fixed-effect partitions are orthogonal.
+    when the two fixed-effect partitions are orthogonal. Missing values remain
+    missing and are excluded from each column's weighted or unweighted mean.
     """
     if not groups:
         raise ValueError("at least one fixed-effect group is required")
@@ -203,34 +204,67 @@ def absorb_fixed_effects(
     for group in groups:
         if len(group) != len(result) or not group.index.equals(result.index):
             raise ValueError("fixed-effect groups must align with the values")
-    weight_series: pd.Series | None = None
+    weight_array: np.ndarray | None = None
     if weights is not None:
         if isinstance(weights, pd.Series):
             if len(weights) != len(result) or not weights.index.equals(result.index):
                 raise ValueError("fixed-effect weights must align with the values")
-            weight_series = weights.astype(float)
+            weight_array = weights.to_numpy(dtype=float)
         else:
             weight_array = np.asarray(weights, dtype=float).reshape(-1)
             if len(weight_array) != len(result):
                 raise ValueError("fixed-effect weights must align with the values")
-            weight_series = pd.Series(weight_array, index=result.index)
-        if not np.isfinite(weight_series).all() or (weight_series <= 0).any():
+        if not np.isfinite(weight_array).all() or np.any(weight_array <= 0):
             raise ValueError("fixed-effect weights must be finite and positive")
+    matrix = result.to_numpy(dtype=float, copy=True)
+    is_series = matrix.ndim == 1
+    if is_series:
+        matrix = matrix[:, None]
+    if np.isinf(matrix).any():
+        raise ValueError("fixed-effect values cannot contain infinite values")
+    observed = ~np.isnan(matrix)
+    encoded_groups: list[tuple[np.ndarray, np.ndarray]] = []
+    for group in groups:
+        codes, unique = pd.factorize(group, sort=False)
+        if np.any(codes < 0):
+            raise ValueError("fixed-effect groups cannot contain missing values")
+        codes = codes.astype(np.int64, copy=False)
+        denominator = np.empty((len(unique), matrix.shape[1]), dtype=float)
+        for column in range(matrix.shape[1]):
+            denominator_weights = observed[:, column].astype(float)
+            if weight_array is not None:
+                denominator_weights *= weight_array
+            denominator[:, column] = np.bincount(
+                codes,
+                weights=denominator_weights,
+                minlength=len(unique),
+            )
+        encoded_groups.append((codes, denominator))
     for _ in range(max_iterations):
-        previous = result.copy()
-        for group in groups:
-            if weight_series is None:
-                group_mean = result.groupby(group, observed=True).transform("mean")
-            else:
-                numerator = result.mul(weight_series, axis=0).groupby(
-                    group, observed=True
-                ).transform("sum")
-                denominator = weight_series.groupby(group, observed=True).transform("sum")
-                group_mean = numerator.div(denominator, axis=0)
-            result -= group_mean
-        delta = (result - previous).abs().to_numpy(dtype=float)
-        if delta.size == 0 or np.nanmax(delta) <= tolerance:
-            return result
+        previous = matrix.copy()
+        for codes, denominator in encoded_groups:
+            means = np.zeros_like(denominator)
+            for column in range(matrix.shape[1]):
+                numerator_weights = np.where(observed[:, column], matrix[:, column], 0.0)
+                if weight_array is not None:
+                    numerator_weights = numerator_weights * weight_array
+                numerator = np.bincount(
+                    codes,
+                    weights=numerator_weights,
+                    minlength=len(denominator),
+                )
+                np.divide(
+                    numerator,
+                    denominator[:, column],
+                    out=means[:, column],
+                    where=denominator[:, column] > 0,
+                )
+            matrix -= means[codes]
+        delta = np.abs(matrix[observed] - previous[observed])
+        if delta.size == 0 or np.max(delta) <= tolerance:
+            if is_series:
+                return pd.Series(matrix[:, 0], index=result.index, name=result.name)
+            return pd.DataFrame(matrix, index=result.index, columns=result.columns)
     raise RuntimeError("fixed-effect absorption did not converge")
 
 

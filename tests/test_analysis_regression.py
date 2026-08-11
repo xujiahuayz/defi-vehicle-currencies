@@ -191,6 +191,68 @@ class RegressionPrimitiveTests(unittest.TestCase):
         expected = frame["value"].to_numpy() - design @ coefficient
         np.testing.assert_allclose(absorbed, expected, atol=1e-9)
 
+    def test_absorb_fixed_effects_reuses_high_cardinality_group_codes(self) -> None:
+        rows = 100_000
+        values = pd.Series(np.sin(np.arange(rows) / 19.0))
+        first = pd.Series(np.arange(rows) // 2)
+        second = pd.Series(np.arange(rows) % 2)
+        absorbed = absorb_fixed_effects(values, first, second)
+        self.assertEqual(len(absorbed), rows)
+        np.testing.assert_allclose(absorbed.groupby(first).mean(), 0.0, atol=1e-10)
+        np.testing.assert_allclose(absorbed.groupby(second).mean(), 0.0, atol=1e-10)
+
+    def test_absorb_fixed_effects_rejects_missing_group_identity(self) -> None:
+        with self.assertRaisesRegex(ValueError, "cannot contain missing"):
+            absorb_fixed_effects(
+                pd.Series([1.0, 2.0, 3.0]),
+                pd.Series(["a", None, "b"]),
+            )
+
+    def test_absorb_fixed_effects_preserves_partial_missing_values_by_column(self) -> None:
+        frame = pd.DataFrame(
+            {
+                "group": ["a", "a", "a", "b", "b"],
+                "first": [1.0, np.nan, 5.0, 2.0, 8.0],
+                "second": [np.nan, 4.0, 10.0, 3.0, 9.0],
+            }
+        )
+
+        absorbed = absorb_fixed_effects(frame[["first", "second"]], frame["group"])
+
+        self.assertTrue(absorbed.isna().equals(frame[["first", "second"]].isna()))
+        for column in ["first", "second"]:
+            np.testing.assert_allclose(
+                absorbed[column].groupby(frame["group"]).mean(),
+                0.0,
+                atol=1e-12,
+            )
+
+    def test_weighted_absorption_excludes_missing_values_from_group_weight(self) -> None:
+        frame = pd.DataFrame(
+            {
+                "group": ["a", "a", "a", "b", "b"],
+                "value": [1.0, np.nan, 5.0, 2.0, 8.0],
+                "weight": [1.0, 100.0, 3.0, 2.0, 1.0],
+            }
+        )
+
+        absorbed = absorb_fixed_effects(
+            frame["value"],
+            frame["group"],
+            weights=frame["weight"],
+        )
+
+        self.assertTrue(np.isnan(absorbed.iloc[1]))
+        weighted_sums = (absorbed * frame["weight"]).groupby(frame["group"]).sum()
+        np.testing.assert_allclose(weighted_sums, 0.0, atol=1e-12)
+
+    def test_absorb_fixed_effects_rejects_infinite_values(self) -> None:
+        with self.assertRaisesRegex(ValueError, "cannot contain infinite"):
+            absorb_fixed_effects(
+                pd.Series([1.0, np.inf, 3.0]),
+                pd.Series(["a", "a", "b"]),
+            )
+
     def test_clustered_ols_matches_manual_cr1_covariance(self) -> None:
         x_value = np.arange(12, dtype=float)
         design = x_value[:, None]
