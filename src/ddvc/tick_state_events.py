@@ -20,6 +20,7 @@ from ddvc.amounts import raw_to_human
 from ddvc.ethereum_day_cuts import validate_utc_day_block_bounds
 from ddvc.ethereum_logs import (
     RAW_LOG_SCHEMA,
+    block_ranges,
     file_sha256,
     validate_anchored_log_evidence,
     validate_canonical_log_records,
@@ -445,10 +446,11 @@ def exact_v4_prefix_gap_ledger(
     for label, ranges in (("certified", certified), ("requested", requested)):
         if not ranges or ranges != sorted(ranges) or any(lower < 0 or upper < lower or upper > frozen_upper_block or (index and lower != ranges[index - 1][1] + 1) for index, (lower, upper) in enumerate(ranges)):
             raise ValueError(f"V4 {label} range perimeter is empty, noncanonical, or outside the frozen upper block")
-    if any(upper - lower + 1 != V4_EXACT_STATE_CHUNK_SIZE for lower, upper in requested[:-1]) or not 1 <= requested[-1][1] - requested[-1][0] + 1 <= V4_EXACT_STATE_CHUNK_SIZE:
-        raise ValueError("V4 requested range perimeter is not a canonical fixed-size chunk partition")
     if requested[0][0] != canonical_start_block or requested[-1][1] != frozen_upper_block:
         raise ValueError("V4 requested range perimeter does not span deployment through the frozen upper block")
+    canonical = block_ranges(canonical_start_block, frozen_upper_block, V4_EXACT_STATE_CHUNK_SIZE)
+    if requested != canonical:
+        raise ValueError("V4 requested range perimeter is not the canonical aligned chunk partition")
     if len(certified) > len(requested) or certified != requested[: len(certified)]:
         raise ValueError("V4 certified ranges are not an exact prefix of the requested perimeter")
     return [{"lower": lower, "upper": upper, "reason": V4_PREFIX_GAP_REASON} for lower, upper in requested[len(certified) :]]

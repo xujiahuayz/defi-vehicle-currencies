@@ -12,7 +12,7 @@ import threading
 import unittest
 from unittest.mock import patch
 
-from ddvc.ethereum_logs import fetch_exact_logs_with_capacity_bisection
+from ddvc.ethereum_logs import block_ranges, fetch_exact_logs_with_capacity_bisection
 from ddvc.quoter import RpcCapacityError, canonical_json_sha256
 from ddvc.tick_state_events import (
     TickInitialization,
@@ -457,15 +457,16 @@ class TickStateEventTests(unittest.TestCase):
         pool = v4_pool_id(A, B, 500, 10, zero)
         initialize = raw(UNISWAP_V4_POOL_MANAGER_ADDRESS, [V4_INITIALIZE_TOPIC, pool, topic_address(A), topic_address(B)], abi_encode(["uint24", "int24", "address", "uint160", "int24"], [500, 10, zero, 2**96, 0]), block=deployment, log_index=0)
         supported = raw(UNISWAP_V4_POOL_MANAGER_ADDRESS, [UNISWAP_V4_SWAP_TOPIC, pool, topic_address(A)], abi_encode(["int128", "int128", "uint160", "uint128", "int24", "uint24"], [5, -4, 2**96, 7, 0, 500]), block=deployment + 10, log_index=1)
-        tail = {**supported, "block_number": deployment + V4_EXACT_STATE_CHUNK_SIZE - 1, "log_index": 2, "transaction_hash": "0x" + "7" * 64}
-        frozen = frozen_upper(deployment + V4_EXACT_STATE_CHUNK_SIZE + 10)
+        canonical_ranges = block_ranges(deployment, deployment + V4_EXACT_STATE_CHUNK_SIZE + 10, V4_EXACT_STATE_CHUNK_SIZE)
+        tail = {**supported, "block_number": canonical_ranges[0][1], "log_index": 2, "transaction_hash": "0x" + "7" * 64}
+        frozen = frozen_upper(canonical_ranges[-1][1])
         with tempfile.TemporaryDirectory() as directory:
             root = Path(directory) / "thegraph"
             rows = [initialize, supported, tail]
-            first_upper = deployment + V4_EXACT_STATE_CHUNK_SIZE - 1
+            first_upper = canonical_ranges[0][1]
             write_state_event_chunk("uniswap_v4", deployment, first_upper, rows, exact_evidence(rows, frozen), frozen_upper=frozen, root=root)
-            decoded, release = certify_state_event_generation("uniswap_v4", [(deployment, first_upper)], frozen_upper=frozen, raw_root=root, support_end_block=deployment + 10, requested_ranges=[(deployment, first_upper), (first_upper + 1, deployment + V4_EXACT_STATE_CHUNK_SIZE + 10)])
-            _decoded_again, release_again = certify_state_event_generation("uniswap_v4", [(deployment, first_upper)], frozen_upper=frozen, raw_root=root, support_end_block=deployment + 10, requested_ranges=[(deployment, first_upper), (first_upper + 1, deployment + V4_EXACT_STATE_CHUNK_SIZE + 10)])
+            decoded, release = certify_state_event_generation("uniswap_v4", [canonical_ranges[0]], frozen_upper=frozen, raw_root=root, support_end_block=deployment + 10, requested_ranges=canonical_ranges)
+            _decoded_again, release_again = certify_state_event_generation("uniswap_v4", [canonical_ranges[0]], frozen_upper=frozen, raw_root=root, support_end_block=deployment + 10, requested_ranges=canonical_ranges)
             release = {**{key: value for key, value in release.items() if key != "certificate_identity_sha256"}, "support_end_day": "20250101", "scientific_support_calendar_sha256": scientific_support_calendar_sha256(["20250101", "20250102"], "20250101")}
             release["certificate_identity_sha256"] = certificate_identity_sha256(release)
             exact = list(iter_v4_state_events([(deployment, first_upper)], frozen_upper=frozen, raw_root=root, support_end_block=deployment + 10))
@@ -477,32 +478,37 @@ class TickStateEventTests(unittest.TestCase):
             validate_v4_state_day(root, "20250102")
         self.assertEqual(release["semantically_excluded_tail_logs"], 1)
         self.assertEqual((release["exact_state_gap_ledger_sha256"], release["semantically_excluded_tail_logs_sha256"]), (release_again["exact_state_gap_ledger_sha256"], release_again["semantically_excluded_tail_logs_sha256"]))
-        self.assertEqual(release["exact_state_gap_ledger"], [{"lower": deployment + V4_EXACT_STATE_CHUNK_SIZE, "upper": deployment + V4_EXACT_STATE_CHUNK_SIZE + 10, "reason": "outside_contiguous_exact_prefix"}])
+        self.assertEqual(release["exact_state_gap_ledger"], [{"lower": lower, "upper": upper, "reason": "outside_contiguous_exact_prefix"} for lower, upper in canonical_ranges[1:]])
         self.assertEqual(len(exact), 1)
         self.assertEqual((later_marker["scientific_support"], later_marker["rows"]), (False, 0))
 
     def test_v4_gap_perimeter_is_derived_and_rejects_drift(self) -> None:
-        canonical = [(10, 10_009), (10_010, 20_009), (20_010, 20_039)]
-        self.assertEqual(exact_v4_prefix_gap_ledger(canonical[:1], canonical, frozen_upper_block=20_039, canonical_start_block=10), [{"lower": 10_010, "upper": 20_009, "reason": "outside_contiguous_exact_prefix"}, {"lower": 20_010, "upper": 20_039, "reason": "outside_contiguous_exact_prefix"}])
-        for certified, requested, frozen in (([(10, 10_009)], [(10, 10_009), (10_011, 20_009)], 20_009), ([(10_010, 20_009)], [(10, 10_009), (10_010, 20_009)], 20_009), ([(10, 10_009)], [(10, 10_009), (10_010, 20_010)], 20_009), ([(10, 10_009)], [(10, 10_009), (10_010, 15_009), (15_010, 20_009)], 20_009)):
-            with self.assertRaises(ValueError):
-                exact_v4_prefix_gap_ledger(certified, requested, frozen_upper_block=frozen, canonical_start_block=10)
-        with self.assertRaisesRegex(ValueError, "deployment through the frozen upper block"):
-            exact_v4_prefix_gap_ledger([(10, 10_009)], [(10, 10_009), (10_010, 20_009)], frozen_upper_block=20_039, canonical_start_block=10)
-        with self.assertRaisesRegex(ValueError, "canonical fixed-size chunk partition"):
-            exact_v4_prefix_gap_ledger([(10, 14)], [(10, 14), (15, 19)], frozen_upper_block=19, canonical_start_block=10)
         deployment = UNISWAP_V4_POOL_MANAGER_DEPLOYMENT_BLOCK
+        frozen_block = 21_700_019
+        canonical = block_ranges(deployment, frozen_block, V4_EXACT_STATE_CHUNK_SIZE)
+        self.assertLess(canonical[0][1] - canonical[0][0] + 1, V4_EXACT_STATE_CHUNK_SIZE)
+        self.assertEqual(canonical[1][1] - canonical[1][0] + 1, V4_EXACT_STATE_CHUNK_SIZE)
+        self.assertLess(canonical[-1][1] - canonical[-1][0] + 1, V4_EXACT_STATE_CHUNK_SIZE)
+        self.assertEqual(exact_v4_prefix_gap_ledger(canonical[:1], canonical, frozen_upper_block=frozen_block), [{"lower": lower, "upper": upper, "reason": "outside_contiguous_exact_prefix"} for lower, upper in canonical[1:]])
+        for certified, requested, frozen in ((canonical[:1], [canonical[0], (canonical[1][0] + 1, canonical[1][1]), *canonical[2:]], frozen_block), (canonical[1:2], canonical, frozen_block), (canonical[:1], [canonical[0], (canonical[1][0], canonical[1][1] + 1), *canonical[2:]], frozen_block), (canonical[:1], [canonical[0], (canonical[1][0], canonical[1][0] + 4_999), (canonical[1][0] + 5_000, canonical[1][1]), *canonical[2:]], frozen_block)):
+            with self.assertRaises(ValueError):
+                exact_v4_prefix_gap_ledger(certified, requested, frozen_upper_block=frozen)
+        with self.assertRaisesRegex(ValueError, "deployment through the frozen upper block"):
+            exact_v4_prefix_gap_ledger(canonical[:1], canonical[:-1], frozen_upper_block=frozen_block)
+        with self.assertRaisesRegex(ValueError, "canonical aligned chunk partition"):
+            exact_v4_prefix_gap_ledger([(deployment, deployment + 4)], [(deployment, deployment + 4), (deployment + 5, deployment + 9)], frozen_upper_block=deployment + 9)
+        certificate_ranges = block_ranges(deployment, frozen_block, V4_EXACT_STATE_CHUNK_SIZE)
         certificate_payload = {
             "canonical_start_block": deployment,
             "start_block": deployment,
-            "end_block": deployment + V4_EXACT_STATE_CHUNK_SIZE - 1,
+            "end_block": certificate_ranges[0][1],
             "chunk_count": 1,
-            "support_end_block": deployment + V4_EXACT_STATE_CHUNK_SIZE - 1,
-            "frozen_upper_block": deployment + V4_EXACT_STATE_CHUNK_SIZE + 19,
-            "requested_range_count": 2,
-            "requested_range_manifest_sha256": hashlib.sha256(json.dumps([(deployment, deployment + V4_EXACT_STATE_CHUNK_SIZE - 1), (deployment + V4_EXACT_STATE_CHUNK_SIZE, deployment + V4_EXACT_STATE_CHUNK_SIZE + 19)], separators=(",", ":")).encode()).hexdigest(),
-            "requested_ranges": [[deployment, deployment + V4_EXACT_STATE_CHUNK_SIZE - 1], [deployment + V4_EXACT_STATE_CHUNK_SIZE, deployment + V4_EXACT_STATE_CHUNK_SIZE + 19]],
-            "exact_state_gap_ledger": [{"lower": deployment + V4_EXACT_STATE_CHUNK_SIZE, "upper": deployment + V4_EXACT_STATE_CHUNK_SIZE + 19, "reason": "outside_contiguous_exact_prefix"}],
+            "support_end_block": certificate_ranges[0][1],
+            "frozen_upper_block": frozen_block,
+            "requested_range_count": len(certificate_ranges),
+            "requested_range_manifest_sha256": hashlib.sha256(json.dumps(certificate_ranges, separators=(",", ":")).encode()).hexdigest(),
+            "requested_ranges": [[lower, upper] for lower, upper in certificate_ranges],
+            "exact_state_gap_ledger": [{"lower": lower, "upper": upper, "reason": "outside_contiguous_exact_prefix"} for lower, upper in certificate_ranges[1:]],
         }
         certificate_payload["exact_state_gap_ledger_sha256"] = hashlib.sha256(json.dumps(certificate_payload["exact_state_gap_ledger"], sort_keys=True, separators=(",", ":")).encode()).hexdigest()
         validate_v4_prefix_certificate(certificate_payload)
