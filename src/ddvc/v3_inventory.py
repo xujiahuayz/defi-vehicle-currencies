@@ -10,7 +10,6 @@ import hashlib
 import json
 from pathlib import Path
 import re
-import shutil
 from typing import Iterable, Iterator
 
 from eth_abi import decode as abi_decode
@@ -56,6 +55,16 @@ INVENTORY_RAW_GENERATION = "uniswap_v3_anchored_global_state_and_inventory_topic
 INVENTORY_RAW_EVIDENCE_KIND = "uniswap_v3_state_and_inventory_rpc_evidence_v2"
 INVENTORY_ORDERED_MANIFEST_SCHEMA_VERSION = 1
 INVENTORY_ORDERED_MANIFEST_NAME = "ordered_chunks.complete.json"
+INVENTORY_ASSEMBLY_CERTIFICATE_SCHEMA_VERSION = 1
+INVENTORY_ASSEMBLY_CERTIFICATE_GENERATION = "v3_inventory_exact_chunk_attestation_v1"
+INVENTORY_FIRST_CONSUMER_SCHEMA_VERSION = 1
+INVENTORY_FIRST_CONSUMER_GENERATION = "v3_inventory_first_consuming_event_certificate_v1"
+INVENTORY_FIRST_CONSUMER_DATA_NAME = "first_consuming_events.jsonl.gz"
+INVENTORY_FIRST_CONSUMER_MARKER_NAME = "first_consuming_events.complete.json"
+INVENTORY_INSTALLED_GENERATION_SCHEMA_VERSION = 1
+INVENTORY_INSTALLED_GENERATION = "v3_inventory_installed_generation_v1"
+INVENTORY_INSTALLED_GENERATION_MARKER_NAME = "installed_generation.complete.json"
+INVENTORY_INITIALIZATION_CONSUMERS = frozenset({"mint", "burn", "swap"})
 INVENTORY_CHUNK_SIZE = 1_000
 INVENTORY_STATE_GENERATION = "uniswap_v3_factory_perimeter_inventory_v5"
 INVENTORY_QUANTITY_KIND = "event_replayed_pool_inventory"
@@ -189,6 +198,31 @@ def inventory_ordered_manifest_path(root: Path) -> Path:
     return root / INVENTORY_ORDERED_MANIFEST_NAME
 
 
+def inventory_first_consuming_event_paths(root: Path) -> tuple[Path, Path]:
+    return (
+        root / INVENTORY_FIRST_CONSUMER_DATA_NAME,
+        root / INVENTORY_FIRST_CONSUMER_MARKER_NAME,
+    )
+
+
+def inventory_installed_generation_marker_path(root: Path) -> Path:
+    return root / INVENTORY_INSTALLED_GENERATION_MARKER_NAME
+
+
+def inventory_assembly_certificate_path(
+    lower: int,
+    upper: int,
+    root: Path,
+    validation_code_sha256: str,
+) -> Path:
+    certificate_root = (
+        root.parent
+        / f".{root.name}.assembly-certificates-v1"
+        / validation_code_sha256
+    )
+    return certificate_root / f"blocks_{lower:08d}_{upper:08d}.jsonl.gz"
+
+
 def inventory_chunk_triplet(lower: int, upper: int, root: Path) -> tuple[Path, Path, Path]:
     raw, marker = inventory_chunk_paths(lower, upper, root)
     return raw, inventory_chunk_evidence_path(lower, upper, root), marker
@@ -246,7 +280,12 @@ def _inventory_chunk_files(root: Path) -> dict[tuple[int, int], set[str]]:
     discovered: dict[tuple[int, int], set[str]] = {}
     malformed: list[str] = []
     for path in root.iterdir():
-        if path.name == INVENTORY_ORDERED_MANIFEST_NAME:
+        if path.name in {
+            INVENTORY_ORDERED_MANIFEST_NAME,
+            INVENTORY_FIRST_CONSUMER_DATA_NAME,
+            INVENTORY_FIRST_CONSUMER_MARKER_NAME,
+            INVENTORY_INSTALLED_GENERATION_MARKER_NAME,
+        }:
             continue
         if path.name.startswith(".") and path.name.endswith(".tmp"):
             malformed.append(path.name)
@@ -343,6 +382,86 @@ def _factory_manifest_identity(
     return identity
 
 
+def inventory_manifest_chunk_record(
+    *,
+    lower: int,
+    upper: int,
+    rows: int,
+    raw_by_event: dict[str, int],
+    parquet_schema_sha256: str,
+    raw_file: str,
+    raw_sha256: str,
+    marker_file: str,
+    marker_sha256: str,
+    evidence_file: str,
+    evidence_sha256: str,
+) -> dict[str, object]:
+    """Construct the sole canonical ordered-manifest chunk record."""
+
+    normalized_events = {name: int(raw_by_event[name]) for name in EVENT_TOPICS}
+    if rows != sum(normalized_events.values()) or any(
+        count < 0 for count in normalized_events.values()
+    ):
+        raise ValueError("V3 inventory manifest chunk has impossible event totals")
+    return {
+        "lower": int(lower),
+        "upper": int(upper),
+        "rows": int(rows),
+        "raw_by_event": normalized_events,
+        "parquet_schema_sha256": parquet_schema_sha256,
+        "raw_file": raw_file,
+        "raw_sha256": raw_sha256,
+        "marker_file": marker_file,
+        "marker_sha256": marker_sha256,
+        "evidence_file": evidence_file,
+        "evidence_sha256": evidence_sha256,
+    }
+
+
+def inventory_ordered_manifest_record(
+    ranges: list[tuple[int, int]],
+    chunks: list[dict[str, object]],
+    portable: list[dict[str, object]],
+    *,
+    chunk_size: int,
+    frozen_upper: dict[str, object],
+    factory_certificate: dict[str, object],
+) -> dict[str, object]:
+    """Construct the sole canonical root manifest from validated chunk identities."""
+
+    if not ranges or len(chunks) != len(ranges):
+        raise ValueError("V3 inventory manifest perimeter is empty or incomplete")
+    totals = {name: 0 for name in EVENT_TOPICS}
+    rows = 0
+    for bounds, chunk in zip(ranges, chunks, strict=True):
+        if (int(chunk["lower"]), int(chunk["upper"])) != bounds:
+            raise ValueError("V3 inventory manifest chunks are not strictly ordered")
+        rows += int(chunk["rows"])
+        for name in EVENT_TOPICS:
+            totals[name] += int(chunk["raw_by_event"][name])
+    ordered_portable = sorted(portable, key=lambda row: str(row["path"]))
+    return {
+        "schema_version": INVENTORY_ORDERED_MANIFEST_SCHEMA_VERSION,
+        "status": "complete",
+        "inventory_raw_generation": INVENTORY_RAW_GENERATION,
+        "inventory_marker_schema_version": INVENTORY_RAW_MARKER_SCHEMA_VERSION,
+        "start_block": ranges[0][0],
+        "end_block": ranges[-1][1],
+        "chunk_size": chunk_size,
+        "chunk_count": len(ranges),
+        "raw_logs": rows,
+        "raw_by_event": totals,
+        "chunk_manifest_sha256": hashlib.sha256(
+            json.dumps(chunks, sort_keys=True, separators=(",", ":")).encode()
+        ).hexdigest(),
+        "portable_manifest_sha256": portable_manifest_sha256(ordered_portable),
+        "factory_identity": _factory_manifest_identity(
+            factory_certificate, frozen_upper
+        ),
+        "chunks": chunks,
+    }
+
+
 def build_inventory_ordered_manifest(
     root: Path,
     ranges: list[tuple[int, int]],
@@ -358,7 +477,6 @@ def build_inventory_ordered_manifest(
     _validate_inventory_destination_names(root, ranges, complete=True)
     chunks: list[dict[str, object]] = []
     all_paths: list[Path] = []
-    totals = {name: 0 for name in EVENT_TOPICS}
     for lower, upper in ranges:
         try:
             records, marker, schema = load_inventory_chunk_records(
@@ -373,46 +491,33 @@ def build_inventory_ordered_manifest(
             ) from error
         raw, evidence_path, marker_path = inventory_chunk_triplet(lower, upper, root)
         raw_by_event = {name: int(marker["raw_by_event"][name]) for name in EVENT_TOPICS}
-        for name, count in raw_by_event.items():
-            totals[name] += count
         all_paths.extend((raw, marker_path, evidence_path))
         chunks.append(
-            {
-                "lower": lower,
-                "upper": upper,
-                "rows": len(records),
-                "raw_by_event": raw_by_event,
-                "parquet_schema_sha256": hashlib.sha256(
+            inventory_manifest_chunk_record(
+                lower=lower,
+                upper=upper,
+                rows=len(records),
+                raw_by_event=raw_by_event,
+                parquet_schema_sha256=hashlib.sha256(
                     schema.serialize().to_pybytes()
                 ).hexdigest(),
-                "raw_file": raw.name,
-                "raw_sha256": file_sha256(raw),
-                "marker_file": marker_path.name,
-                "marker_sha256": file_sha256(marker_path),
-                "evidence_file": evidence_path.name,
-                "evidence_sha256": file_sha256(evidence_path),
-            }
+                raw_file=raw.name,
+                raw_sha256=file_sha256(raw),
+                marker_file=marker_path.name,
+                marker_sha256=file_sha256(marker_path),
+                evidence_file=evidence_path.name,
+                evidence_sha256=file_sha256(evidence_path),
+            )
         )
     portable = portable_content_manifest_for_paths(root, all_paths)
-    chunk_manifest_sha256 = hashlib.sha256(
-        json.dumps(chunks, sort_keys=True, separators=(",", ":")).encode()
-    ).hexdigest()
-    return {
-        "schema_version": INVENTORY_ORDERED_MANIFEST_SCHEMA_VERSION,
-        "status": "complete",
-        "inventory_raw_generation": INVENTORY_RAW_GENERATION,
-        "inventory_marker_schema_version": INVENTORY_RAW_MARKER_SCHEMA_VERSION,
-        "start_block": ranges[0][0],
-        "end_block": ranges[-1][1],
-        "chunk_size": chunk_size,
-        "chunk_count": len(ranges),
-        "raw_logs": sum(item["rows"] for item in chunks),
-        "raw_by_event": totals,
-        "chunk_manifest_sha256": chunk_manifest_sha256,
-        "portable_manifest_sha256": portable_manifest_sha256(portable),
-        "factory_identity": _factory_manifest_identity(factory_certificate, frozen_upper),
-        "chunks": chunks,
-    }
+    return inventory_ordered_manifest_record(
+        ranges,
+        chunks,
+        portable,
+        chunk_size=chunk_size,
+        frozen_upper=frozen_upper,
+        factory_certificate=factory_certificate,
+    )
 
 
 def write_inventory_ordered_manifest(
@@ -483,21 +588,21 @@ def validate_inventory_ordered_manifest(
         parquet = pq.ParquetFile(raw)
         schema = parquet.schema_arrow
         raw_by_event = {name: int(marker["raw_by_event"][name]) for name in EVENT_TOPICS}
-        expected_chunk = {
-            "lower": lower,
-            "upper": upper,
-            "rows": int(marker["raw_logs"]),
-            "raw_by_event": raw_by_event,
-            "parquet_schema_sha256": hashlib.sha256(
+        expected_chunk = inventory_manifest_chunk_record(
+            lower=lower,
+            upper=upper,
+            rows=int(marker["raw_logs"]),
+            raw_by_event=raw_by_event,
+            parquet_schema_sha256=hashlib.sha256(
                 schema.serialize().to_pybytes()
             ).hexdigest(),
-            "raw_file": raw.name,
-            "raw_sha256": marker["raw_sha256"],
-            "marker_file": marker_path.name,
-            "marker_sha256": file_sha256(marker_path),
-            "evidence_file": evidence_path.name,
-            "evidence_sha256": marker["rpc_evidence_sha256"],
-        }
+            raw_file=raw.name,
+            raw_sha256=str(marker["raw_sha256"]),
+            marker_file=marker_path.name,
+            marker_sha256=file_sha256(marker_path),
+            evidence_file=evidence_path.name,
+            evidence_sha256=str(marker["rpc_evidence_sha256"]),
+        )
         if chunk != expected_chunk:
             raise ValueError(f"V3 inventory ordered manifest chunk drifted: {lower}-{upper}")
         if parquet.metadata.num_rows != expected_chunk["rows"]:
@@ -530,68 +635,6 @@ def validate_inventory_ordered_manifest(
     if observed != expected:
         raise ValueError("V3 inventory ordered manifest is stale or mutated")
     return observed
-
-
-def assemble_inventory_shards(
-    sources: list[tuple[Path, tuple[int, int]]],
-    destination: Path,
-    *,
-    start: int,
-    end: int,
-    chunk_size: int,
-    frozen_upper: dict[str, object],
-    factory_certificate: dict[str, object],
-) -> dict[str, object]:
-    """Copy verified shards without overwrite and publish the root manifest last."""
-
-    ranges = validate_inventory_shard_partition(
-        [bounds for _root, bounds in sources],
-        start=start,
-        end=end,
-        chunk_size=chunk_size,
-    )
-    owners: dict[tuple[int, int], Path] = {}
-    for root, (lower, upper) in sources:
-        source_ranges = block_ranges(lower, upper, chunk_size)
-        validate_inventory_source_perimeter(root, source_ranges, frozen_upper=frozen_upper)
-        for item in source_ranges:
-            if item in owners:
-                raise ValueError(f"V3 inventory chunk has multiple shard owners: {item}")
-            owners[item] = root
-    destination.mkdir(parents=True, exist_ok=True)
-    _validate_inventory_destination_names(destination, ranges, complete=False)
-    if inventory_ordered_manifest_path(destination).exists():
-        return validate_inventory_ordered_manifest(
-            destination,
-            ranges,
-            chunk_size=chunk_size,
-            frozen_upper=frozen_upper,
-            factory_certificate=factory_certificate,
-        )
-    for lower, upper in ranges:
-        source_root = owners[(lower, upper)]
-        for source, target in zip(
-            inventory_chunk_triplet(lower, upper, source_root),
-            inventory_chunk_triplet(lower, upper, destination),
-            strict=True,
-        ):
-            if source.resolve() == target.resolve():
-                continue
-            if target.exists():
-                if file_sha256(target) != file_sha256(source):
-                    raise FileExistsError(f"V3 inventory merge collision: {target.name}")
-                continue
-            with atomic_output(target) as temporary:
-                shutil.copyfile(source, temporary)
-            if file_sha256(target) != file_sha256(source):
-                raise OSError(f"V3 inventory copy verification failed: {target.name}")
-    return write_inventory_ordered_manifest(
-        destination,
-        ranges,
-        chunk_size=chunk_size,
-        frozen_upper=frozen_upper,
-        factory_certificate=factory_certificate,
-    )
 
 
 def iter_decoded_inventory_logs(
@@ -671,6 +714,27 @@ def _inventory_rpc_partition(
     return subranges
 
 
+def _records_by_rpc_subrange(
+    records: list[dict[str, object]],
+    subranges: list[dict[str, object]],
+) -> list[list[dict[str, object]]]:
+    """Assign each stored record to one exact RPC leaf in one bounded pass."""
+
+    uppers = [int(subrange["end_block"]) for subrange in subranges]
+    grouped: list[list[dict[str, object]]] = [[] for _subrange in subranges]
+    for record in records:
+        block = int(record["block_number"])
+        position = bisect_left(uppers, block)
+        if position == len(subranges) or block < int(
+            subranges[position]["start_block"]
+        ):
+            raise ValueError(
+                "V3 inventory record lies outside its RPC evidence partition"
+            )
+        grouped[position].append(record)
+    return grouped
+
+
 def load_inventory_chunk_records(
     lower: int,
     upper: int,
@@ -678,6 +742,7 @@ def load_inventory_chunk_records(
     *,
     frozen_upper: dict[str, object],
     event_topics: set[str] | frozenset[str] = frozenset(EVENT_TOPICS.values()),
+    first_consumers: dict[str, dict[str, object]] | None = None,
 ) -> tuple[list[dict[str, object]], dict[str, object], pa.Schema]:
     """Reopen one complete triplet once and return its validated raw records."""
 
@@ -698,16 +763,37 @@ def load_inventory_chunk_records(
     )
     raw_by_event = {name: 0 for name in EVENT_TOPICS}
     for record in records:
-        raw_by_event[str(decode_inventory_log(record)["event_type"])] += 1
+        decoded = decode_inventory_log(record)
+        event_type = str(decoded["event_type"])
+        raw_by_event[event_type] += 1
+        if (
+            first_consumers is not None
+            and event_type in INVENTORY_INITIALIZATION_CONSUMERS
+        ):
+            pool = str(decoded["pool"])
+            candidate = {
+                "pool": pool,
+                "block_number": int(decoded["block_number"]),
+                "transaction_index": int(record["transaction_index"]),
+                "log_index": int(decoded["log_index"]),
+                "transaction_hash": str(decoded["tx_hash"]),
+                "kind": event_type,
+            }
+            prior = first_consumers.get(pool)
+            candidate_order = (
+                int(candidate["block_number"]),
+                int(candidate["log_index"]),
+            )
+            if prior is None or candidate_order < (
+                int(prior["block_number"]),
+                int(prior["log_index"]),
+            ):
+                first_consumers[pool] = candidate
     subranges = _inventory_rpc_partition(evidence, lower, upper)
-    for subrange in subranges:
-        rpc_lower = int(subrange["start_block"])
-        rpc_upper = int(subrange["end_block"])
-        subrange_records = [
-            record
-            for record in records
-            if rpc_lower <= int(record["block_number"]) <= rpc_upper
-        ]
+    grouped_records = _records_by_rpc_subrange(records, subranges)
+    for subrange, subrange_records in zip(
+        subranges, grouped_records, strict=True
+    ):
         validate_anchored_log_evidence(subrange, subrange_records, frozen_upper)
     valid = bool(
         marker.get("status") == "complete"

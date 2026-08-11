@@ -572,6 +572,56 @@ def fetch_exact_logs_with_evidence(
     }
 
 
+def fetch_exact_logs_with_capacity_bisection(
+    *,
+    start_block: int,
+    end_block: int,
+    topics: list[str],
+    frozen_upper: dict[str, object],
+    address: str | None = None,
+    rpc_request=None,
+) -> tuple[list[dict[str, object]], list[dict[str, object]]]:
+    """Fetch an exact perimeter, bisecting only explicit provider-capacity failures."""
+
+    try:
+        records, evidence = fetch_exact_logs_with_evidence(
+            start_block=start_block,
+            end_block=end_block,
+            topics=topics,
+            address=address,
+            frozen_upper=frozen_upper,
+            rpc_request=rpc_request,
+        )
+        return records, [{
+            "start_block": start_block,
+            "end_block": end_block,
+            "event_topics": [str(topic).lower() for topic in topics],
+            "address_filter": str(address).lower() if address is not None else None,
+            **evidence,
+        }]
+    except ExactLogCapacityError:
+        if start_block == end_block:
+            raise
+        midpoint = (start_block + end_block) // 2
+        left_records, left_evidence = fetch_exact_logs_with_capacity_bisection(
+            start_block=start_block,
+            end_block=midpoint,
+            topics=topics,
+            address=address,
+            frozen_upper=frozen_upper,
+            rpc_request=rpc_request,
+        )
+        right_records, right_evidence = fetch_exact_logs_with_capacity_bisection(
+            start_block=midpoint + 1,
+            end_block=end_block,
+            topics=topics,
+            address=address,
+            frozen_upper=frozen_upper,
+            rpc_request=rpc_request,
+        )
+        return left_records + right_records, left_evidence + right_evidence
+
+
 def write_exact_log_chunk(
     raw_path: Path,
     marker_path: Path,

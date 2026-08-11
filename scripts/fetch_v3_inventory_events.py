@@ -18,7 +18,7 @@ from ddvc.fetch.sources import get_source
 from ddvc.ethereum_logs import (
     EXACT_LOG_BLOCK_CAP,
     exact_log_block_ranges,
-    fetch_exact_logs_with_evidence,
+    fetch_exact_logs_with_capacity_bisection,
     file_sha256,
     write_exact_log_chunk,
 )
@@ -112,7 +112,7 @@ def fetch_rpc_range_with_capacity_bisection(
     """Fetch one exact range, bisecting only explicit provider-capacity failures."""
 
     try:
-        records, evidence = fetch_exact_logs_with_evidence(
+        records, evidence = fetch_exact_logs_with_capacity_bisection(
             start_block=lower,
             end_block=upper,
             topics=topics,
@@ -121,45 +121,22 @@ def fetch_rpc_range_with_capacity_bisection(
         )
         return records, [
             {
-                "start_block": lower,
-                "end_block": upper,
-                "event_topics": topics,
-                "address_filter": None,
-                "rpc_request": evidence["request"],
-                "rpc_response": evidence["response"],
-                "rpc_endpoint": evidence["endpoint"],
-                "rpc_attempts": evidence["attempts"],
-                "response_sha256": evidence["response_sha256"],
-                "frozen_upper_request": evidence["frozen_upper_request"],
-                "frozen_upper_response": evidence["frozen_upper_response"],
-                "frozen_upper_response_sha256": evidence[
-                    "frozen_upper_response_sha256"
-                ],
+                **{key: value for key, value in item.items() if key not in {"request", "response", "endpoint", "attempts"}},
+                "rpc_request": item["request"],
+                "rpc_response": item["response"],
+                "rpc_endpoint": item["endpoint"],
+                "rpc_attempts": item["attempts"],
             }
+            for item in evidence
         ]
     except RpcCapacityError as error:
-        if lower == upper:
-            detail = safe_rpc_failure_reason(error, classification="capacity")
-            raise RpcCapacityError(
-                f"single-block exact-log capacity failure at block {lower}; {detail}",
-                attempts=error.attempts,
-            ) from None
-        midpoint = (lower + upper) // 2
-        left_records, left_evidence = fetch_rpc_range_with_capacity_bisection(
-            lower,
-            midpoint,
-            topics=topics,
-            frozen_upper=frozen_upper,
-            rpc_request=rpc_request,
-        )
-        right_records, right_evidence = fetch_rpc_range_with_capacity_bisection(
-            midpoint + 1,
-            upper,
-            topics=topics,
-            frozen_upper=frozen_upper,
-            rpc_request=rpc_request,
-        )
-        return left_records + right_records, left_evidence + right_evidence
+        if lower != upper:
+            raise
+        detail = safe_rpc_failure_reason(error, classification="capacity")
+        raise RpcCapacityError(
+            f"single-block exact-log capacity failure at block {lower}; {detail}",
+            attempts=error.attempts,
+        ) from None
 
 
 def default_end_block(path: Path = END_META_PATH) -> int:
