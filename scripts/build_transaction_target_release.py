@@ -21,12 +21,13 @@ from ddvc.paths import DATA_DIR, REPO_ROOT, V3_INVENTORY_RAW_ROOT
 from ddvc.pricing.tick_replay import TickReplayEvent, load_tick_day_events
 from ddvc.pricing.v2_replay import V2ReplayDay, V2_VENUES, load_v2_replay_day
 from ddvc.provenance import cache_key, sidecar_path
-from ddvc.realised import LINEAR_ROUTE_COLUMNS
+from ddvc.realised import LINEAR_ROUTE_COLUMNS, extract_linear_realised_routes
 from ddvc.reconstruct import UNIFIED_QUALITY_PANEL
 from ddvc.release_calendar import released_route_days, transaction_frontier_audit_days
 from ddvc.runtime import exclusive_job, interruptible_thread_pool
 from ddvc.source_records import transaction_id
-from ddvc.state_data import STATE_ROOT, cp_partition_path, tick_partition_path
+from ddvc.state_data import RAW_ROOT, STATE_ROOT, cp_partition_path, tick_partition_path, tick_scientific_support
+from ddvc.tick_state_events import daily_release_set_path, state_event_certificate_path, v4_state_day_inputs, validate_v4_state_day
 from ddvc.transaction_targets import (
     EXACT_VENUES,
     TARGET_RELEASE_ROOT,
@@ -107,6 +108,8 @@ def release_dependencies() -> list[Path]:
         *v2_release.artifact_paths,
         *v3_release.artifact_paths,
         V3_INVENTORY_RAW_ROOT / "ordered_chunks.complete.json",
+        state_event_certificate_path(RAW_ROOT, "uniswap_v4"),
+        daily_release_set_path(RAW_ROOT, "uniswap_v4", kind="v4_state"),
     ]
     return [Path(path) for path in paths]
 
@@ -121,12 +124,43 @@ def target_generation_id(scope: str, audit_days: list[str], full_days: list[str]
     return hashlib.sha256(json.dumps(identity, sort_keys=True, separators=(",", ":")).encode()).hexdigest()
 
 
-def load_provider_day(day: str, quarantined_v4_pools: set[str]) -> tuple[pd.DataFrame, dict[tuple[str, str, int], ProviderSwapEvent], dict[tuple[str, str, int], ProviderSwapEvent], list[Path]]:
+def exclude_post_support_v4_routes(day: str, legs: pd.DataFrame, scientific_support: bool | None) -> tuple[pd.DataFrame, dict[str, object]]:
+    """Remove exact-route components that require V4 after its certified prefix closes."""
+
+    routes = extract_linear_realised_routes(legs)
+    exact_routes = routes[routes["realised_hop1_source"].isin(EXACT_VENUES) & routes["realised_hop2_source"].isin(EXACT_VENUES)]
+    v4_routes = exact_routes[(exact_routes["realised_hop1_source"] == "uniswap_v4") | (exact_routes["realised_hop2_source"] == "uniswap_v4")]
+    if scientific_support is None and not v4_routes.empty:
+        raise TargetEvidenceError(f"V4 target routes exist without a certified scientific-support marker on {day}")
+    excluded = v4_routes if scientific_support is False else v4_routes.iloc[0:0]
+    excluded_keys = {(str(tx).lower(), int(component)) for tx, component in zip(excluded["tx_hash"], excluded["component_id"], strict=True)}
+    keep = [(str(tx).lower(), int(component)) not in excluded_keys for tx, component in zip(legs["tx_hash"], legs["component_id"], strict=True)] if len(legs) else []
+    filtered = legs.loc[keep].copy() if len(legs) else legs.copy()
+    route_ids = sorted(str(value) for value in excluded["route_id"])
+    status = "supported_exact_prefix" if scientific_support is True else "excluded_post_prefix" if scientific_support is False else "not_applicable_no_v4_target_routes"
+    return filtered, {
+        "v4_scientific_support_status": status,
+        "v4_scientific_support": scientific_support,
+        "post_support_v4_routes_excluded": len(route_ids),
+        "post_support_v4_route_ids_sha256": hashlib.sha256(json.dumps(route_ids, separators=(",", ":")).encode()).hexdigest(),
+    }
+
+
+def load_provider_day(day: str, quarantined_v4_pools: set[str]) -> tuple[pd.DataFrame, dict[tuple[str, str, int], ProviderSwapEvent], dict[tuple[str, str, int], ProviderSwapEvent], list[Path], dict[str, object]]:
     unified = UNIFIED / f"{day}.parquet"
     legs = pd.read_parquet(unified, columns=LINEAR_ROUTE_COLUMNS)
+    _v4_data, v4_marker, _v4_certificate = v4_state_day_inputs(RAW_ROOT, day)
+    if v4_marker.is_file():
+        support_inputs = list(validate_v4_state_day(RAW_ROOT, day))
+        v4_support: bool | None = tick_scientific_support(RAW_ROOT, "uniswap_v4", day)
+    else:
+        v4_support = None
+        support_inputs = []
+    legs, support_boundary = exclude_post_support_v4_routes(day, legs, v4_support)
     identities = exact_target_leg_identities(legs)
     v2_replay = load_v2_replay_day(STATE_ROOT, day, venues=V2_VENUES)
-    tick_events = load_tick_day_events(STATE_ROOT, day, venues=("uniswap_v3", "uniswap_v4"))
+    tick_venues = ("uniswap_v3", "uniswap_v4") if v4_support is True else ("uniswap_v3",)
+    tick_events = load_tick_day_events(STATE_ROOT, day, venues=tick_venues)
     v2_events: dict[tuple[str, str, int], ProviderSwapEvent] = {}
     for key in sorted(identity for identity in identities if identity[0] in V2_VENUES):
         source = v2_replay.swaps_by_identity.get(key)
@@ -158,13 +192,13 @@ def load_provider_day(day: str, quarantined_v4_pools: set[str]) -> tuple[pd.Data
         *(cp_partition_path(venue, day, root=STATE_ROOT) for venue in V2_VENUES),
         *(tick_partition_path(venue, day, root=STATE_ROOT) for venue in ("uniswap_v3", "uniswap_v4")),
     ]
-    return legs, v2_events, tick_provider, [path for path in inputs if path.is_file()]
+    return legs, v2_events, tick_provider, [path for path in [*inputs, *support_inputs] if path.is_file()], support_boundary
 
 
 def provider_ledger_day(day: str, quarantined_v4_pools: set[str]) -> tuple[pd.DataFrame, dict[str, object], dict[tuple[str, str, int], ProviderSwapEvent], dict[tuple[str, str, int], ProviderSwapEvent], list[Path]]:
-    legs, v2_events, tick_events, inputs = load_provider_day(day, quarantined_v4_pools)
+    legs, v2_events, tick_events, inputs, support_boundary = load_provider_day(day, quarantined_v4_pools)
     frame, support = build_provider_target_ledger(day, legs, v2_events=v2_events, tick_events=tick_events, chain_events=None)
-    return frame, support, v2_events, tick_events, inputs
+    return frame, {**support, **support_boundary}, v2_events, tick_events, inputs
 
 
 def target_header_path(audit_days: list[str], blocks: Iterable[int]) -> Path:
@@ -344,10 +378,11 @@ def build_audit_release(audit_days: list[str], full_days: list[str], generation:
             markers.append(marker)
             verified += int(record["support"]["verified_chain_log_legs"])
             continue
-        legs, v2_events, tick_events, provider_inputs = load_provider_day(day, quarantined)
+        legs, v2_events, tick_events, provider_inputs, support_boundary = load_provider_day(day, quarantined)
         providers = {**v2_events, **tick_events}
         chain_events, evidence_inputs = exact_chain_events_for_day(day, providers, timestamps, frozen_v2=frozen_v2, frozen_v3=frozen_v3, v3_ranges=ranges, fetch_v4=fetch_v4, workers=workers)
         frame, support = build_provider_target_ledger(day, legs, v2_events=v2_events, tick_events=tick_events, chain_events=chain_events)
+        support = {**support, **support_boundary}
         verified += int(support["verified_chain_log_legs"])
         marker = write_target_day(directory, day, frame, support, scope="audit", generation=generation, lineage=file_lineage([*provider_inputs, *evidence_inputs, header_snapshot]))
         markers.append(marker)

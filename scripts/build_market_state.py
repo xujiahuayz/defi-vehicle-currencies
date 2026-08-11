@@ -57,6 +57,7 @@ from ddvc.state_data import (
     read_multi_asset_quality,
     read_tick_quality,
     state_partition_output_is_current,
+    tick_scientific_support,
     write_cp_partition,
     write_multi_asset_partition,
     write_tick_partition,
@@ -76,7 +77,12 @@ LOCK = DATA_DIR / "processed" / ".market_state.lock"
 def market_state_quality_frame(rows: list[dict[str, object]]) -> pd.DataFrame:
     """Build the engine-bound ledger rows consumed by the node-D release gate."""
 
-    quality = pd.DataFrame(rows, columns=QUALITY_COLUMNS).sort_values(
+    records: list[dict[str, object]] = []
+    for row in rows:
+        record = dict(row)
+        record["scientific_support"] = tick_scientific_support(RAW, str(record["venue"]), str(record["day"])) if record.get("family") == "tick" else True
+        records.append(record)
+    quality = pd.DataFrame(records, columns=[*QUALITY_COLUMNS, "scientific_support"]).sort_values(
         ["family", "venue", "day"]
     )
     quality.insert(1, "engine", STATE_ENGINE)

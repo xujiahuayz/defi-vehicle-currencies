@@ -23,6 +23,7 @@ from ddvc.state_data import (
     read_multi_asset_quality,
     read_tick_partition,
     read_tick_quality,
+    tick_scientific_support,
     write_cp_partition,
     write_multi_asset_partition,
     write_tick_partition,
@@ -161,6 +162,15 @@ def cp_snapshot(*, reserve0: str = "100", reserve1: str = "200") -> dict:
 
 
 class StateDataTests(unittest.TestCase):
+    def test_v4_scientific_support_is_explicit_and_never_inferred_from_empty_rows(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory) / "thegraph"
+            marker = root.parent / "ethereum" / "tick_state_events" / "daily" / "uniswap_v4" / "20250101.jsonl.meta.json"
+            marker.parent.mkdir(parents=True)
+            marker.write_text(json.dumps({"status": "complete", "venue": "uniswap_v4", "day": "20250101", "scientific_support": False}))
+            self.assertFalse(tick_scientific_support(root, "uniswap_v4", "20250101"))
+            self.assertTrue(tick_scientific_support(root, "uniswap_v3", "20250101"))
+
     def test_state_engine_depends_on_record_semantics_not_fetch_orchestration(self) -> None:
         self.assertIn("src/ddvc/source_records.py", CODE_SOURCES)
         self.assertIn("src/ddvc/execution_contracts.py", CODE_SOURCES)

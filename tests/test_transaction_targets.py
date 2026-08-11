@@ -41,6 +41,7 @@ from ddvc.transaction_targets import (
 from ddvc.v2_event_completeness import V2_EVENT_TOPICS
 from ddvc.v3_inventory import EVENT_TOPICS as V3_EVENT_TOPICS
 from ddvc.v4_contract import UNISWAP_V4_POOL_MANAGER_ADDRESS, UNISWAP_V4_SWAP_TOPIC
+from scripts.build_transaction_target_release import exclude_post_support_v4_routes, load_provider_day
 
 
 A = "0x000000000000000000000000000000000000000a"
@@ -151,6 +152,39 @@ def raw_log(
 
 
 class TransactionTargetTests(unittest.TestCase):
+    def test_post_support_v4_routes_are_explicitly_excluded_and_certified(self) -> None:
+        legs = pd.DataFrame([
+            route_leg(7, A, K, "source", "intermediate", source="uniswap_v4", amount_in=100, amount_out=90, amount_usd=100.0),
+            route_leg(8, K, B, "intermediate", "sink", source="uniswap_v3", amount_in=90, amount_out=80, amount_usd=90.0),
+        ])
+        filtered, support = exclude_post_support_v4_routes("20250101", legs, False)
+        self.assertTrue(filtered.empty)
+        self.assertEqual((support["v4_scientific_support_status"], support["post_support_v4_routes_excluded"]), ("excluded_post_prefix", 1))
+        self.assertEqual(len(str(support["post_support_v4_route_ids_sha256"])), 64)
+        admitted, admitted_support = exclude_post_support_v4_routes("20250101", legs, True)
+        self.assertEqual(len(admitted), 2)
+        self.assertEqual(admitted_support["post_support_v4_routes_excluded"], 0)
+        with self.assertRaisesRegex(TargetEvidenceError, "without a certified scientific-support marker"):
+            exclude_post_support_v4_routes("20250101", legs, None)
+
+    def test_post_support_provider_day_never_loads_absent_v4_state(self) -> None:
+        legs = pd.DataFrame([
+            route_leg(7, A, K, "source", "intermediate", source="uniswap_v4", amount_in=100, amount_out=90, amount_usd=100.0),
+            route_leg(8, K, B, "intermediate", "sink", source="uniswap_v3", amount_in=90, amount_out=80, amount_usd=90.0),
+        ])
+        with TemporaryDirectory() as directory:
+            root = Path(directory)
+            support_paths = tuple(root / name for name in ("state.jsonl.gz", "state.meta.json", "certificate.json"))
+            for path in support_paths:
+                path.write_text("support", encoding="utf-8")
+            with patch("scripts.build_transaction_target_release.pd.read_parquet", return_value=legs), patch("scripts.build_transaction_target_release.v4_state_day_inputs", return_value=support_paths), patch("scripts.build_transaction_target_release.validate_v4_state_day", return_value=support_paths), patch("scripts.build_transaction_target_release.tick_scientific_support", return_value=False), patch("scripts.build_transaction_target_release.load_v2_replay_day", return_value=SimpleNamespace(swaps_by_identity={})), patch("scripts.build_transaction_target_release.load_tick_day_events", return_value=[]) as load_tick:
+                filtered, v2_events, tick_events, inputs, support = load_provider_day("20250101", set())
+        self.assertTrue(filtered.empty)
+        self.assertEqual((v2_events, tick_events), ({}, {}))
+        self.assertEqual(set(inputs), set(support_paths))
+        self.assertEqual(support["post_support_v4_routes_excluded"], 1)
+        self.assertEqual(load_tick.call_args.kwargs["venues"], ("uniswap_v3",))
+
     def test_v4_contract_identity_has_one_canonical_owner(self) -> None:
         self.assertEqual(len(UNISWAP_V4_POOL_MANAGER_ADDRESS), 42)
         self.assertEqual(len(UNISWAP_V4_SWAP_TOPIC), 66)

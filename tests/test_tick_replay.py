@@ -5,8 +5,12 @@ import json
 import tempfile
 import unittest
 from pathlib import Path
+from unittest.mock import patch
+
+import pandas as pd
 
 from ddvc.source_records import transaction_id
+from ddvc.pricing.tick_frontier import quote_tick_pool
 from ddvc.pricing.tick_quote import prepare_tick_quote_index
 from ddvc.pricing.tick_replay import (
     TickReplayEvent,
@@ -326,6 +330,37 @@ class TickReplayTests(unittest.TestCase):
         }
         state.apply(TickReplayEvent((101, 1), "uniswap_v4", "liquidity", change, 1))
         self.assertNotIn("pool", state.quote_indexes_by_venue["uniswap_v4"])
+
+    def test_unsupported_v4_day_purges_replay_state_and_cannot_quote_or_reopen(self) -> None:
+        replay = TickReplayState(token_decimals={"0xa": 18, "0xb": 18})
+        row = v4_swap()
+        self.initialize(replay, row)
+        replay.ticks_by_venue["uniswap_v4"]["pool"] = {-10: 1000, 10: -1000}
+        replay.quote_indexes_by_venue = {"uniswap_v4": {"pool": prepare_tick_quote_index(replay.ticks_by_venue["uniswap_v4"]["pool"])}}
+        replay.swap_samples["pool"] = [row]
+        with tempfile.TemporaryDirectory() as directory:
+            state_root = Path(directory)
+            with patch("ddvc.pricing.tick_replay.tick_scientific_support", return_value=False), patch("ddvc.pricing.tick_replay.tick_partition_path", return_value=state_root / "absent.parquet"):
+                events = load_tick_day_events(state_root, "20250102", raw_root=state_root / "raw")
+        self.assertEqual([(event.kind, event.order) for event in events], [("scientific_support_end", (0, 0))])
+        replay.apply_all(events)
+        self.assertNotIn("uniswap_v4", replay.states_by_venue)
+        self.assertNotIn("uniswap_v4", replay.ticks_by_venue)
+        self.assertNotIn("uniswap_v4", replay.quote_indexes_by_venue)
+        self.assertNotIn("pool", replay.swap_samples)
+        self.assertEqual(replay.pool_index, {})
+        self.assertIsNone(quote_tick_pool("0xa", "0xb", 1.0, venue="uniswap_v4", pool_id="pool", states_by_venue=replay.states_by_venue, ticks_by_venue=replay.ticks_by_venue, max_price_impact=None, quote_indexes_by_venue=replay.quote_indexes_by_venue))
+        with self.assertRaisesRegex(ValueError, "reopen closed scientific support"):
+            replay.apply(TickReplayEvent((20, 1), "uniswap_v4", "initialize", initialize_for(row, block=20)))
+
+    def test_unsupported_v4_day_rejects_nonempty_canonical_partition(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            state_root = Path(directory)
+            partition = state_root / "present.parquet"
+            partition.touch()
+            with patch("ddvc.pricing.tick_replay.tick_scientific_support", return_value=False), patch("ddvc.pricing.tick_replay.tick_partition_path", return_value=partition), patch("ddvc.pricing.tick_replay.read_tick_partition", return_value=pd.DataFrame([{"record_type": "swap"}])):
+                with self.assertRaisesRegex(ValueError, "unsupported V4 day carries canonical tick state"):
+                    load_tick_day_events(state_root, "20250102", venues=("uniswap_v4",), raw_root=state_root / "raw")
 
     def test_streaming_warm_matches_ordered_end_of_day_state(self) -> None:
         with tempfile.TemporaryDirectory() as directory:

@@ -102,7 +102,7 @@ MIN_INPUT_USD = 100.0
 INTERMEDIATE_FLOW_TOLERANCE_BPS = 0.01
 CHECKPOINT_INTERVAL_DAYS = 180
 CHECKPOINT_GLOB = "pre_" + "[0-9]" * 8 + ".pkl"
-REPLAY_CHECKPOINT_SCHEMA_VERSION = 4
+REPLAY_CHECKPOINT_SCHEMA_VERSION = 5
 REPLAY_CHECKPOINT_BOUNDARY = "strictly_before_first_event_of_day"
 DAY_CACHE_SCHEMA_VERSION = 2
 ORDERED_SHARD_MANIFEST_SCHEMA_VERSION = 1
@@ -118,6 +118,7 @@ REPLAY_CAUSAL_FIELDS = (
     "token_decimals",
     "quarantined_pools",
     "initialization_status_by_venue",
+    "scientifically_unsupported_venues",
 )
 FRONTIER_DEPENDENCY_REGISTRY = {
     "scoring": (

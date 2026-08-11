@@ -374,6 +374,18 @@ def tick_quality_path(venue: str, day: str, *, root: Path = STATE_ROOT) -> Path:
     return state_quality_path("tick", venue, day, root=root)
 
 
+def tick_scientific_support(raw_root: Path, venue: str, day: str) -> bool:
+    """Return the exact-prefix support flag owned by the certified V4 daily input."""
+
+    if venue != "uniswap_v4":
+        return True
+    marker_path = v4_state_day_inputs(raw_root, day)[1]
+    marker = json.loads(marker_path.read_text(encoding="utf-8"))
+    if marker.get("status") != "complete" or marker.get("venue") != venue or marker.get("day") != day or not isinstance(marker.get("scientific_support"), bool):
+        raise ValueError(f"V4 scientific-support marker is stale or malformed: {day}")
+    return marker["scientific_support"] is True
+
+
 def cp_partition_path(venue: str, day: str, *, root: Path = STATE_ROOT) -> Path:
     return state_partition_path("constant_product", venue, day, root=root)
 

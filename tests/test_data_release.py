@@ -309,6 +309,7 @@ class DataReleaseTests(unittest.TestCase):
                 "output_bytes": panel.stat().st_size,
                 "output_sha256": file_sha256(panel),
                 "passed": True,
+                "scientific_support": True,
             }
             marker.write_text(json.dumps(quality), encoding="utf-8")
             quarantine = root / "v4-quarantine.parquet"
@@ -323,7 +324,7 @@ class DataReleaseTests(unittest.TestCase):
                     }
                 ]
             ).to_parquet(quarantine, index=False)
-            ledger_frame = pd.DataFrame([quality])
+            ledger_frame = pd.DataFrame([quality, {**quality, "day": "20250102", "scientific_support": False}])
             ledger_frame.attrs["ledger_sha256"] = file_sha256(ledger)
             with (
                 patch("ddvc.data_release.MARKET_STATE_QUALITY_PANEL", ledger),
@@ -334,6 +335,7 @@ class DataReleaseTests(unittest.TestCase):
                 patch("ddvc.data_release.state_quality_path", return_value=marker),
             ):
                 release = released_state_partitions("tick", "uniswap_v4", ("day", "pool"))
+                self.assertEqual(release.days, ("20250101",))
                 frame = release.read_day("20250101")
                 self.assertEqual(frame["pool"].tolist(), ["usable"])
                 inclusive = released_state_partitions(

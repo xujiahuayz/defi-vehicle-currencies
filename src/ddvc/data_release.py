@@ -71,6 +71,7 @@ MARKET_STATE_QUALITY_COLUMNS = [
     QUALITY_COLUMNS[0],
     "engine",
     *QUALITY_COLUMNS[1:],
+    "scientific_support",
     "cross_venue_order_conflicts",
     "v4_static_conflict_pools",
 ]
@@ -502,6 +503,14 @@ def _validated_release_ledger(kind: str) -> pd.DataFrame:
         load_v4_static_quarantine(V4_STATIC_QUARANTINE_PANEL)
     ):
         raise RuntimeError("node D market-state ledger disagrees with the V4 quarantine")
+    support = quality["scientific_support"].astype(bool)
+    if not pd.api.types.is_bool_dtype(quality["scientific_support"]):
+        raise RuntimeError("node D market-state scientific support is not boolean")
+    if not support.loc[~((quality["family"] == "tick") & (quality["venue"] == "uniswap_v4"))].all():
+        raise RuntimeError("node D marks a non-V4 market-state partition scientifically unsupported")
+    v4_support = quality.loc[(quality["family"] == "tick") & (quality["venue"] == "uniswap_v4"), ["day", "scientific_support"]].sort_values("day", kind="stable")
+    if v4_support["scientific_support"].astype(bool).cummin().ne(v4_support["scientific_support"].astype(bool)).any():
+        raise RuntimeError("node D V4 scientific support reopens after the exact prefix ends")
     readers = {
         "tick": read_tick_quality,
         "constant_product": read_cp_quality,
@@ -692,6 +701,10 @@ def released_state_partitions(
         quality["family"].astype(str).eq(family)
         & quality["venue"].astype(str).eq(venue)
     ].sort_values("day", kind="stable")
+    if family == "tick" and venue == "uniswap_v4":
+        selected = selected.loc[selected["scientific_support"].astype(bool)].copy()
+        if selected.empty:
+            raise RuntimeError("node D V4 state release has no scientifically supported exact-prefix partitions")
     partitions = tuple(
         _released_partition(
             day=str(row.day).zfill(8),

@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import argparse
 from dataclasses import replace
 from eth_abi import encode as abi_encode
 import gzip
@@ -7,6 +8,7 @@ import hashlib
 import json
 from pathlib import Path
 import tempfile
+import threading
 import unittest
 from unittest.mock import patch
 
@@ -16,6 +18,7 @@ from ddvc.tick_state_events import (
     TickInitialization,
     V3_INITIALIZE_TOPIC,
     V4_INITIALIZE_TOPIC,
+    V4_EXACT_STATE_CHUNK_SIZE,
     certificate_identity_sha256,
     certify_materialization_support,
     certify_state_event_generation,
@@ -24,13 +27,16 @@ from ddvc.tick_state_events import (
     decode_v3_initialize,
     decode_v4_initialize,
     daily_release_set_path,
+    exact_v4_prefix_gap_ledger,
     initialization_day_inputs,
     iter_v4_state_events,
     state_event_chunk_paths,
     load_state_event_chunk,
+    scientific_support_calendar_sha256,
     state_event_generation,
     v4_pool_id,
     validate_initialization_day,
+    validate_v4_prefix_certificate,
     validate_v4_state_day,
     write_daily_initializations,
     write_daily_v4_state_events,
@@ -40,11 +46,12 @@ from ddvc.v3_pool_registry import V3FactoryPool
 from ddvc.v4_contract import (
     UNISWAP_V4_MODIFY_LIQUIDITY_TOPIC,
     UNISWAP_V4_POOL_MANAGER_ADDRESS,
+    UNISWAP_V4_POOL_MANAGER_DEPLOYMENT_BLOCK,
     UNISWAP_V4_SWAP_TOPIC,
     decode_v4_state_event_identity,
     validate_v4_provider_event_identity,
 )
-from scripts.fetch_tick_state_events import _v2_scoped_token_metadata, _v3_inputs
+from scripts.fetch_tick_state_events import _canonical_fetch_ranges, _fetch_ranges, _run_owned, _targeted_range, _v2_scoped_token_metadata, _v3_inputs
 from day_cut_fixtures import certified_day_cuts
 
 
@@ -174,9 +181,10 @@ class TickStateEventTests(unittest.TestCase):
         static = V3FactoryPool(pool, A, B, 500, 10, 9, BLOCK_HASH, TX, 1)
         first = raw(pool, [V3_INITIALIZE_TOPIC], abi_encode(["uint160", "int24"], [2**96, 0]), log_index=2)
         second = {**first, "log_index": 3}
-        with patch("ddvc.tick_state_events.load_state_event_chunk", return_value=[first, second]):
-            with self.assertRaisesRegex(ValueError, "duplicate V3 Initialize"):
-                certify_state_event_generation("uniswap_v3", [(10, 10)], frozen_upper=frozen_upper(), raw_root=Path("unused"), v3_registry={pool: static})
+        with patch("ddvc.tick_state_events.load_state_event_chunk", return_value=[first, second]), patch("ddvc.tick_state_events.portable_content_manifest_for_paths", return_value=[]):
+            evidence, release = certify_state_event_generation("uniswap_v3", [(10, 10)], frozen_upper=frozen_upper(), raw_root=Path("unused"))
+            with self.assertRaisesRegex(ValueError, "duplicate Initialize"):
+                certify_state_event_precedence(release, evidence, [], registry_pools={pool: static})
 
     def test_v4_initialize_recomputes_pool_id_and_retains_hook_status(self) -> None:
         pool = v4_pool_id(A, B, 500, 10, HOOK)
@@ -204,12 +212,95 @@ class TickStateEventTests(unittest.TestCase):
     def test_precedence_certificate_rejects_missing_or_late_initialize(self) -> None:
         initialization = TickInitialization("uniswap_v4", "pool", A, B, 500, 10, "0x" + "0" * 40, 2**96, 0, 10, BLOCK_HASH, TX, 1, 2, True, None)
         base = certificate("uniswap_v4")
-        passed = certify_state_event_precedence(base, [initialization], [{"pool": "pool", "block_number": 10, "log_index": 3, "kind": "swap"}], registry_pools=["pool", "never"])
+        _rows, passed = certify_state_event_precedence(base, [initialization], [{"pool": "pool", "block_number": 10, "log_index": 3, "kind": "swap"}], registry_pools=["pool", "never"])
         self.assertEqual(passed["registry_pools_zero_initialize"], 1)
         with self.assertRaisesRegex(ValueError, "missing"):
             certify_state_event_precedence(base, [], [{"pool": "pool", "block_number": 10, "log_index": 3, "kind": "swap"}])
         with self.assertRaisesRegex(ValueError, "nonpreceding"):
             certify_state_event_precedence(base, [replace(initialization, log_index=4)], [{"pool": "pool", "block_number": 10, "log_index": 3, "kind": "swap"}])
+
+    def test_v3_precedence_owns_registry_perimeter_and_hashes_lookalikes(self) -> None:
+        pool = "0x" + "66" * 20
+        idle = "0x" + "77" * 20
+        never = "0x" + "88" * 20
+        outside = "0x" + "99" * 20
+        statics = {
+            pool: V3FactoryPool(pool, A, B, 500, 10, 1, BLOCK_HASH, TX, 0),
+            idle: V3FactoryPool(idle, A, B, 500, 10, 1, BLOCK_HASH, TX, 1),
+            never: V3FactoryPool(never, A, B, 500, 10, 1, BLOCK_HASH, TX, 2),
+        }
+        initializations = [
+            TickInitialization("uniswap_v3", pool, A, B, 500, 10, "0x" + "0" * 40, 2**96, 0, 2, BLOCK_HASH, TX, 0, 1, True, None),
+            TickInitialization("uniswap_v3", idle, A, B, 500, 10, "0x" + "0" * 40, 2**96, 0, 2, BLOCK_HASH, TX, 0, 2, True, None),
+            raw(outside, [V3_INITIALIZE_TOPIC], abi_encode(["uint160", "int24"], [2**96, 0]), block=7, log_index=4),
+        ]
+        consumers = [
+            {"pool": pool, "block_number": 3, "transaction_index": 0, "log_index": 1, "transaction_hash": TX, "kind": "Swap"},
+            {"pool": outside, "block_number": 4, "transaction_index": 0, "log_index": 2, "transaction_hash": "0x" + "6" * 64, "kind": "Mint"},
+            {"pool": outside, "block_number": 6, "transaction_index": 0, "log_index": 3, "transaction_hash": "0x" + "7" * 64, "kind": "Swap"},
+        ]
+        _rows, first = certify_state_event_precedence(certificate("uniswap_v3"), initializations, consumers, registry_pools=statics)
+        _rows, second = certify_state_event_precedence(certificate("uniswap_v3"), initializations, reversed(consumers), registry_pools=statics)
+        self.assertEqual(first["state_events_checked"], 1)
+        self.assertEqual(first["outside_registry_consumer_lookalikes"], 2)
+        self.assertEqual(first["outside_registry_initialize_lookalikes"], 1)
+        self.assertEqual(first["outside_registry_consumer_lookalikes_sha256"], second["outside_registry_consumer_lookalikes_sha256"])
+        self.assertEqual(first["registry_pools_zero_initialize_zero_consumer"], 1)
+        self.assertEqual(first["registry_pools_initialized_without_consumer"], 1)
+        self.assertEqual([(row["kind"], row["first_block"], row["last_block"], row["reason"]) for row in first["outside_registry_consumer_lookalikes_by_kind_block_span_reason"]], [("Mint", 4, 4, "absent_from_canonical_poolcreated_registry"), ("Swap", 6, 6, "absent_from_canonical_poolcreated_registry")])
+
+    def test_targeted_fetch_only_reopens_named_chunks_and_propagates_failure(self) -> None:
+        self.assertEqual(_targeted_range("10:19"), (10, 19))
+        canonical = [(10, 19), (20, 29), (30, 39)]
+        self.assertEqual(_canonical_fetch_ranges([(10, 19), (30, 39)], canonical), [(10, 19), (30, 39)])
+        for invalid in ([(10, 20)], [(20, 29), (10, 19)], [(10, 19), (10, 19)], [(10, 19), (15, 24)]):
+            with self.assertRaises(ValueError):
+                _canonical_fetch_ranges(invalid, canonical)
+        completed: set[tuple[int, int]] = {(10, 19)}
+
+        def fetch(_venue, lower, upper, _frozen, _root):
+            completed.add((lower, upper))
+            return lower, upper, 0
+
+        with patch("scripts.fetch_tick_state_events._completed", side_effect=lambda _venue, lower, upper, _frozen, _root: (lower, upper) in completed), patch("scripts.fetch_tick_state_events._fetch_one", side_effect=fetch) as fetch_one:
+            _fetch_ranges("uniswap_v4", [(10, 19), (20, 29)], frozen_upper=frozen_upper(40), root=Path("unused"), workers=1)
+        fetch_one.assert_called_once()
+        with patch("scripts.fetch_tick_state_events._completed", return_value=False), patch("scripts.fetch_tick_state_events._fetch_one", side_effect=KeyboardInterrupt):
+            with self.assertRaises(KeyboardInterrupt):
+                _fetch_ranges("uniswap_v4", [(30, 39)], frozen_upper=frozen_upper(40), root=Path("unused"), workers=1)
+
+    def test_multiworker_failure_preserves_completed_marker_and_leaves_failed_chunk_open(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            first_done = threading.Event()
+            marker = lambda lower, upper: root / f"{lower}-{upper}.complete"
+
+            def fetch(_venue, lower, upper, _frozen, _root):
+                if (lower, upper) == (10, 19):
+                    marker(lower, upper).write_text("complete", encoding="utf-8")
+                    first_done.set()
+                    return lower, upper, 0
+                self.assertTrue(first_done.wait(timeout=2))
+                raise RuntimeError("injected worker failure")
+
+            with patch("scripts.fetch_tick_state_events._completed", side_effect=lambda _venue, lower, upper, _frozen, _root: marker(lower, upper).is_file()), patch("scripts.fetch_tick_state_events._fetch_one", side_effect=fetch):
+                with self.assertRaisesRegex(RuntimeError, "injected worker failure"):
+                    _fetch_ranges("uniswap_v4", [(10, 19), (20, 29)], frozen_upper=frozen_upper(40), root=root, workers=2)
+            self.assertTrue(marker(10, 19).is_file())
+            self.assertFalse(marker(20, 29).exists())
+
+    def test_targeted_fetch_only_exits_before_metadata_census_and_materialization(self) -> None:
+        deployment = UNISWAP_V4_POOL_MANAGER_DEPLOYMENT_BLOCK
+        args = argparse.Namespace(venue="uniswap_v4", start_block=None, end_block=None, chunk_size=10_000, root=Path("unused"), fetch_only=[(deployment, deployment + 9)], workers=1)
+        with patch("scripts.fetch_tick_state_events.load_certified_frozen_upper", return_value=(frozen_upper(deployment + 9), {})), patch("scripts.fetch_tick_state_events._fetch_ranges") as fetch_ranges, patch("scripts.fetch_tick_state_events._v2_scoped_token_metadata") as metadata, patch("scripts.fetch_tick_state_events.certify_state_event_generation") as census:
+            self.assertEqual(_run_owned(args), 0)
+        fetch_ranges.assert_called_once()
+        metadata.assert_not_called()
+        census.assert_not_called()
+        for overrides in ({"start_block": deployment}, {"end_block": deployment + 9}, {"chunk_size": 1_000}):
+            rejected = argparse.Namespace(**{**vars(args), **overrides})
+            with patch("scripts.fetch_tick_state_events.load_certified_frozen_upper", return_value=(frozen_upper(deployment + 9), {})), self.assertRaisesRegex(ValueError, "overrides are forbidden"):
+                _run_owned(rejected)
 
     def test_daily_release_is_deterministic_portable_and_keeps_unknown_metadata(self) -> None:
         initialization = TickInitialization("uniswap_v4", "pool", A, B, 500, 10, "0x" + "0" * 40, 2**96, 0, 10, BLOCK_HASH, TX, 1, 2, True, None)
@@ -307,6 +398,18 @@ class TickStateEventTests(unittest.TestCase):
             with self.assertRaisesRegex(ValueError, "marker"):
                 load_state_event_chunk("uniswap_v4", 10, 10, frozen_upper=frozen, root=root)
 
+    def test_interrupted_chunk_publication_never_installs_a_completion_marker(self) -> None:
+        pool = v4_pool_id(A, B, 500, 10, "0x" + "0" * 40)
+        record = raw(UNISWAP_V4_POOL_MANAGER_ADDRESS, [V4_INITIALIZE_TOPIC, pool, topic_address(A), topic_address(B)], abi_encode(["uint24", "int24", "address", "uint160", "int24"], [500, 10, "0x" + "0" * 40, 2**96, 0]))
+        frozen = frozen_upper()
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory) / "thegraph"
+            with patch("ddvc.tick_state_events.write_exact_log_chunk", side_effect=KeyboardInterrupt), self.assertRaises(KeyboardInterrupt):
+                write_state_event_chunk("uniswap_v4", 10, 10, [record], exact_evidence(record, frozen), frozen_upper=frozen, root=root)
+            raw_path, _evidence_path, marker_path = state_event_chunk_paths("uniswap_v4", 10, 10, root=root)
+            self.assertFalse(raw_path.exists())
+            self.assertFalse(marker_path.exists())
+
     def test_capacity_bisection_preserves_exact_partition(self) -> None:
         def fetch(**kwargs):
             if kwargs["start_block"] != kwargs["end_block"]:
@@ -318,23 +421,24 @@ class TickStateEventTests(unittest.TestCase):
         self.assertEqual([(row["start_block"], row["end_block"]) for row in evidence], [(10, 10), (11, 11)])
 
     def test_v4_generation_certifies_modify_and_swap_payloads_after_initialize(self) -> None:
+        deployment = UNISWAP_V4_POOL_MANAGER_DEPLOYMENT_BLOCK
         zero = "0x" + "0" * 40
         pool = v4_pool_id(A, B, 500, 10, zero)
-        initialize = raw(UNISWAP_V4_POOL_MANAGER_ADDRESS, [V4_INITIALIZE_TOPIC, pool, topic_address(A), topic_address(B)], abi_encode(["uint24", "int24", "address", "uint160", "int24"], [500, 10, zero, 2**96, 0]), log_index=0)
-        modify = raw(UNISWAP_V4_POOL_MANAGER_ADDRESS, [UNISWAP_V4_MODIFY_LIQUIDITY_TOPIC, pool, topic_address(A)], abi_encode(["int24", "int24", "int256", "bytes32"], [-10, 10, 7, b"\0" * 32]), log_index=1)
-        swap = raw(UNISWAP_V4_POOL_MANAGER_ADDRESS, [UNISWAP_V4_SWAP_TOPIC, pool, topic_address(A)], abi_encode(["int128", "int128", "uint160", "uint128", "int24", "uint24"], [5, -4, 2**96, 7, 0, 500]), log_index=2)
-        frozen = frozen_upper()
+        initialize = raw(UNISWAP_V4_POOL_MANAGER_ADDRESS, [V4_INITIALIZE_TOPIC, pool, topic_address(A), topic_address(B)], abi_encode(["uint24", "int24", "address", "uint160", "int24"], [500, 10, zero, 2**96, 0]), block=deployment, log_index=0)
+        modify = raw(UNISWAP_V4_POOL_MANAGER_ADDRESS, [UNISWAP_V4_MODIFY_LIQUIDITY_TOPIC, pool, topic_address(A)], abi_encode(["int24", "int24", "int256", "bytes32"], [-10, 10, 7, b"\0" * 32]), block=deployment, log_index=1)
+        swap = raw(UNISWAP_V4_POOL_MANAGER_ADDRESS, [UNISWAP_V4_SWAP_TOPIC, pool, topic_address(A)], abi_encode(["int128", "int128", "uint160", "uint128", "int24", "uint24"], [5, -4, 2**96, 7, 0, 500]), block=deployment, log_index=2)
+        frozen = frozen_upper(deployment)
         with tempfile.TemporaryDirectory() as directory:
             root = Path(directory) / "thegraph"
             rows = [initialize, modify, swap]
-            write_state_event_chunk("uniswap_v4", 10, 10, rows, exact_evidence(rows, frozen), frozen_upper=frozen, root=root)
-            decoded, release = certify_state_event_generation("uniswap_v4", [(10, 10)], frozen_upper=frozen, raw_root=root)
-            state_events = list(iter_v4_state_events([(10, 10)], frozen_upper=frozen, raw_root=root))
+            write_state_event_chunk("uniswap_v4", deployment, deployment, rows, exact_evidence(rows, frozen), frozen_upper=frozen, root=root)
+            decoded, release = certify_state_event_generation("uniswap_v4", [(deployment, deployment)], frozen_upper=frozen, raw_root=root)
+            state_events = list(iter_v4_state_events([(deployment, deployment)], frozen_upper=frozen, raw_root=root))
             release["metadata_source_manifest"] = []
             release["metadata_source_manifest_sha256"] = hashlib.sha256(b"[]").hexdigest()
             release["certificate_identity_sha256"] = certificate_identity_sha256(release)
             metadata = {A: ("A", 18), B: ("B", 6)}
-            cuts = certified_day_cuts({"20250101": (10, 10)})
+            cuts = certified_day_cuts({"20250101": (deployment, deployment)})
             write_daily_initializations("uniswap_v4", decoded, day_cuts=cuts, token_metadata=metadata, raw_root=root, generation_certificate=release)
             write_daily_v4_state_events(state_events, decoded, day_cuts=cuts, token_metadata=metadata, raw_root=root, generation_certificate=release)
             data, _marker, _certificate = validate_v4_state_day(root, "20250101")
@@ -346,6 +450,65 @@ class TickStateEventTests(unittest.TestCase):
         self.assertEqual([row["kind"] for row in state_events], ["modify_liquidity", "swap"])
         self.assertEqual((release["exact_modify_liquidity_events"], release["exact_swap_events"]), (1, 1))
         self.assertEqual(release["precedence_status"], "pass")
+
+    def test_v4_prefix_release_excludes_chunk_tail_and_closes_later_days(self) -> None:
+        deployment = UNISWAP_V4_POOL_MANAGER_DEPLOYMENT_BLOCK
+        zero = "0x" + "0" * 40
+        pool = v4_pool_id(A, B, 500, 10, zero)
+        initialize = raw(UNISWAP_V4_POOL_MANAGER_ADDRESS, [V4_INITIALIZE_TOPIC, pool, topic_address(A), topic_address(B)], abi_encode(["uint24", "int24", "address", "uint160", "int24"], [500, 10, zero, 2**96, 0]), block=deployment, log_index=0)
+        supported = raw(UNISWAP_V4_POOL_MANAGER_ADDRESS, [UNISWAP_V4_SWAP_TOPIC, pool, topic_address(A)], abi_encode(["int128", "int128", "uint160", "uint128", "int24", "uint24"], [5, -4, 2**96, 7, 0, 500]), block=deployment + 10, log_index=1)
+        tail = {**supported, "block_number": deployment + V4_EXACT_STATE_CHUNK_SIZE - 1, "log_index": 2, "transaction_hash": "0x" + "7" * 64}
+        frozen = frozen_upper(deployment + V4_EXACT_STATE_CHUNK_SIZE + 10)
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory) / "thegraph"
+            rows = [initialize, supported, tail]
+            first_upper = deployment + V4_EXACT_STATE_CHUNK_SIZE - 1
+            write_state_event_chunk("uniswap_v4", deployment, first_upper, rows, exact_evidence(rows, frozen), frozen_upper=frozen, root=root)
+            decoded, release = certify_state_event_generation("uniswap_v4", [(deployment, first_upper)], frozen_upper=frozen, raw_root=root, support_end_block=deployment + 10, requested_ranges=[(deployment, first_upper), (first_upper + 1, deployment + V4_EXACT_STATE_CHUNK_SIZE + 10)])
+            _decoded_again, release_again = certify_state_event_generation("uniswap_v4", [(deployment, first_upper)], frozen_upper=frozen, raw_root=root, support_end_block=deployment + 10, requested_ranges=[(deployment, first_upper), (first_upper + 1, deployment + V4_EXACT_STATE_CHUNK_SIZE + 10)])
+            release = {**{key: value for key, value in release.items() if key != "certificate_identity_sha256"}, "support_end_day": "20250101", "scientific_support_calendar_sha256": scientific_support_calendar_sha256(["20250101", "20250102"], "20250101")}
+            release["certificate_identity_sha256"] = certificate_identity_sha256(release)
+            exact = list(iter_v4_state_events([(deployment, first_upper)], frozen_upper=frozen, raw_root=root, support_end_block=deployment + 10))
+            cuts = certified_day_cuts({"20250101": (deployment, deployment + 10), "20250102": (deployment + 11, deployment + 20)})
+            metadata = {A: ("A", 18), B: ("B", 6)}
+            write_daily_initializations("uniswap_v4", decoded, day_cuts=cuts, token_metadata=metadata, raw_root=root, generation_certificate=release)
+            paths = write_daily_v4_state_events(exact, decoded, day_cuts=cuts, token_metadata=metadata, raw_root=root, generation_certificate=release)
+            later_marker = json.loads(paths[1].with_suffix(".meta.json").read_text())
+            validate_v4_state_day(root, "20250102")
+        self.assertEqual(release["semantically_excluded_tail_logs"], 1)
+        self.assertEqual((release["exact_state_gap_ledger_sha256"], release["semantically_excluded_tail_logs_sha256"]), (release_again["exact_state_gap_ledger_sha256"], release_again["semantically_excluded_tail_logs_sha256"]))
+        self.assertEqual(release["exact_state_gap_ledger"], [{"lower": deployment + V4_EXACT_STATE_CHUNK_SIZE, "upper": deployment + V4_EXACT_STATE_CHUNK_SIZE + 10, "reason": "outside_contiguous_exact_prefix"}])
+        self.assertEqual(len(exact), 1)
+        self.assertEqual((later_marker["scientific_support"], later_marker["rows"]), (False, 0))
+
+    def test_v4_gap_perimeter_is_derived_and_rejects_drift(self) -> None:
+        canonical = [(10, 10_009), (10_010, 20_009), (20_010, 20_039)]
+        self.assertEqual(exact_v4_prefix_gap_ledger(canonical[:1], canonical, frozen_upper_block=20_039, canonical_start_block=10), [{"lower": 10_010, "upper": 20_009, "reason": "outside_contiguous_exact_prefix"}, {"lower": 20_010, "upper": 20_039, "reason": "outside_contiguous_exact_prefix"}])
+        for certified, requested, frozen in (([(10, 10_009)], [(10, 10_009), (10_011, 20_009)], 20_009), ([(10_010, 20_009)], [(10, 10_009), (10_010, 20_009)], 20_009), ([(10, 10_009)], [(10, 10_009), (10_010, 20_010)], 20_009), ([(10, 10_009)], [(10, 10_009), (10_010, 15_009), (15_010, 20_009)], 20_009)):
+            with self.assertRaises(ValueError):
+                exact_v4_prefix_gap_ledger(certified, requested, frozen_upper_block=frozen, canonical_start_block=10)
+        with self.assertRaisesRegex(ValueError, "deployment through the frozen upper block"):
+            exact_v4_prefix_gap_ledger([(10, 10_009)], [(10, 10_009), (10_010, 20_009)], frozen_upper_block=20_039, canonical_start_block=10)
+        with self.assertRaisesRegex(ValueError, "canonical fixed-size chunk partition"):
+            exact_v4_prefix_gap_ledger([(10, 14)], [(10, 14), (15, 19)], frozen_upper_block=19, canonical_start_block=10)
+        deployment = UNISWAP_V4_POOL_MANAGER_DEPLOYMENT_BLOCK
+        certificate_payload = {
+            "canonical_start_block": deployment,
+            "start_block": deployment,
+            "end_block": deployment + V4_EXACT_STATE_CHUNK_SIZE - 1,
+            "chunk_count": 1,
+            "support_end_block": deployment + V4_EXACT_STATE_CHUNK_SIZE - 1,
+            "frozen_upper_block": deployment + V4_EXACT_STATE_CHUNK_SIZE + 19,
+            "requested_range_count": 2,
+            "requested_range_manifest_sha256": hashlib.sha256(json.dumps([(deployment, deployment + V4_EXACT_STATE_CHUNK_SIZE - 1), (deployment + V4_EXACT_STATE_CHUNK_SIZE, deployment + V4_EXACT_STATE_CHUNK_SIZE + 19)], separators=(",", ":")).encode()).hexdigest(),
+            "requested_ranges": [[deployment, deployment + V4_EXACT_STATE_CHUNK_SIZE - 1], [deployment + V4_EXACT_STATE_CHUNK_SIZE, deployment + V4_EXACT_STATE_CHUNK_SIZE + 19]],
+            "exact_state_gap_ledger": [{"lower": deployment + V4_EXACT_STATE_CHUNK_SIZE, "upper": deployment + V4_EXACT_STATE_CHUNK_SIZE + 19, "reason": "outside_contiguous_exact_prefix"}],
+        }
+        certificate_payload["exact_state_gap_ledger_sha256"] = hashlib.sha256(json.dumps(certificate_payload["exact_state_gap_ledger"], sort_keys=True, separators=(",", ":")).encode()).hexdigest()
+        validate_v4_prefix_certificate(certificate_payload)
+        certificate_payload["exact_state_gap_ledger"][0]["reason"] = "provider_omission"
+        with self.assertRaisesRegex(ValueError, "suffix perimeter"):
+            validate_v4_prefix_certificate(certificate_payload)
 
 
 if __name__ == "__main__":

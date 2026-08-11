@@ -21,11 +21,14 @@ from ddvc.source_records import V4_NATIVE_CURRENCY_DECIMALS, ZERO_ADDRESS
 from ddvc.tick_state_events import (
     VENUE_GENERATION_TOPICS,
     VENUE_TOPICS,
+    V4_EXACT_STATE_CHUNK_SIZE,
+    certificate_identity_sha256,
     certify_materialization_support,
     certify_state_event_generation,
     certify_state_event_precedence,
     load_state_event_chunk,
     iter_v4_state_events,
+    scientific_support_calendar_sha256,
     write_daily_v4_state_events,
     write_daily_initializations,
     write_state_event_chunk,
@@ -45,7 +48,7 @@ from ddvc.v4_contract import UNISWAP_V4_POOL_MANAGER_ADDRESS, UNISWAP_V4_POOL_MA
 
 LOCK = DATA_DIR / "raw" / "ethereum" / ".tick-state-events.lock"
 GRAPH_ROOT = DATA_DIR / "raw" / "thegraph"
-DEFAULT_CHUNK_SIZE = 10_000
+DEFAULT_CHUNK_SIZE = V4_EXACT_STATE_CHUNK_SIZE
 
 
 def _ranges(start: int, end: int, chunk_size: int) -> list[tuple[int, int]]:
@@ -130,45 +133,143 @@ def _fetch_one(venue: str, lower: int, upper: int, frozen_upper: dict[str, objec
     return lower, upper, len(records)
 
 
+def _targeted_range(value: str) -> tuple[int, int]:
+    try:
+        lower_text, upper_text = value.split(":", 1)
+        lower, upper = int(lower_text), int(upper_text)
+    except (TypeError, ValueError) as error:
+        raise argparse.ArgumentTypeError("targeted state-event ranges use LOWER:UPPER") from error
+    if lower < 0 or upper < lower:
+        raise argparse.ArgumentTypeError("targeted state-event range is negative or reversed")
+    return lower, upper
+
+
+def _canonical_fetch_ranges(requested: list[tuple[int, int]], canonical: list[tuple[int, int]]) -> list[tuple[int, int]]:
+    """Admit only ordered, nonoverlapping members of the frozen canonical partition."""
+
+    normalized = [(int(lower), int(upper)) for lower, upper in requested]
+    if not normalized or normalized != sorted(normalized) or len(normalized) != len(set(normalized)) or any(index and lower <= normalized[index - 1][1] for index, (lower, _upper) in enumerate(normalized)):
+        raise ValueError("targeted state-event ranges must be sorted, unique, and nonoverlapping")
+    canonical_members = set(canonical)
+    if any(bounds not in canonical_members for bounds in normalized):
+        raise ValueError("targeted state-event range is not a canonical chunk of the frozen generation perimeter")
+    return normalized
+
+
+def _fetch_ranges(
+    venue: str,
+    ranges: list[tuple[int, int]],
+    *,
+    frozen_upper: dict[str, object],
+    root: Path,
+    workers: int,
+) -> None:
+    """Fetch absent named chunks and reopen every member before returning."""
+
+    if not ranges or ranges != sorted(ranges) or len(ranges) != len(set(ranges)) or any(index and lower <= ranges[index - 1][1] for index, (lower, _upper) in enumerate(ranges)):
+        raise ValueError("state-event fetch range selection must be sorted, unique, and nonoverlapping")
+    if any(lower < 0 or upper < lower or upper > int(frozen_upper["block_number"]) for lower, upper in ranges):
+        raise ValueError("state-event fetch range lies outside the frozen chain perimeter")
+    pending = [bounds for bounds in ranges if not _completed(venue, *bounds, frozen_upper, root)]
+    queue = deque(pending)
+    worker_count = bounded_workers(workers)
+    completed = 0
+    with interruptible_thread_pool(worker_count) as pool:
+        futures = {}
+        while queue or futures:
+            while queue and len(futures) < worker_count:
+                lower, upper = queue.popleft()
+                futures[pool.submit(_fetch_one, venue, lower, upper, frozen_upper, root)] = (lower, upper)
+            done, _outstanding = wait(futures, return_when=FIRST_COMPLETED)
+            for future in done:
+                lower, upper = futures.pop(future)
+                _lower, _upper, rows = future.result()
+                if (_lower, _upper) != (lower, upper):
+                    raise RuntimeError("state-event worker returned the wrong block range")
+                completed += 1
+                print(f"state-event chunks {completed:,}/{len(pending):,}: {lower}-{upper}, rows={rows:,}", flush=True)
+    invalid = [bounds for bounds in ranges if not _completed(venue, *bounds, frozen_upper, root)]
+    if invalid:
+        raise RuntimeError(f"targeted state-event fetch did not reopen {len(invalid)} chunk(s), first={invalid[0]}")
+
+
 def _run_owned(args: argparse.Namespace) -> int:
     venue = args.venue
     frozen_upper, factory_certificate = load_certified_frozen_upper()
+    if venue == "uniswap_v4" and (args.start_block is not None or args.end_block is not None or args.chunk_size != DEFAULT_CHUNK_SIZE):
+        raise ValueError("V4 exact-state generation is bound to the canonical deployment-to-frozen-upper 10,000-block perimeter; start, end, and chunk-size overrides are forbidden")
+    if args.fetch_only and (args.start_block is not None or args.end_block is not None or args.chunk_size != DEFAULT_CHUNK_SIZE):
+        raise ValueError("targeted fetch-only ranges are bound to the canonical deployment-to-frozen-upper chunk perimeter; start, end, and chunk-size overrides are forbidden")
     default_start = V3_FACTORY_DEPLOYMENT_BLOCK if venue == "uniswap_v3" else UNISWAP_V4_POOL_MANAGER_DEPLOYMENT_BLOCK
     start = args.start_block if args.start_block is not None else default_start
     end = args.end_block if args.end_block is not None else int(frozen_upper["block_number"])
-    ranges = _ranges(start, end, args.chunk_size)
     root = args.root
+    ranges = _ranges(start, end, args.chunk_size)
+    if args.fetch_only:
+        _fetch_ranges(
+            venue,
+            _canonical_fetch_ranges(args.fetch_only, ranges),
+            frozen_upper=frozen_upper,
+            root=root,
+            workers=args.workers,
+        )
+        return 0
     if venue == "uniswap_v3":
         registry, metadata, metadata_inputs = _v3_inputs()
     else:
         registry = {}
         metadata, metadata_inputs = _v2_scoped_token_metadata()
     if args.fetch:
-        pending = [bounds for bounds in ranges if not _completed(venue, *bounds, frozen_upper, root)]
-        queue = deque(pending)
-        workers = bounded_workers(args.workers)
-        completed = 0
-        with interruptible_thread_pool(workers) as pool:
-            futures = {}
-            while queue or futures:
-                while queue and len(futures) < workers:
-                    lower, upper = queue.popleft()
-                    futures[pool.submit(_fetch_one, venue, lower, upper, frozen_upper, root)] = (lower, upper)
-                done, _outstanding = wait(futures, return_when=FIRST_COMPLETED)
-                for future in done:
-                    lower, upper = futures.pop(future)
-                    _lower, _upper, rows = future.result()
-                    if (_lower, _upper) != (lower, upper):
-                        raise RuntimeError("state-event worker returned the wrong block range")
-                    completed += 1
-                    print(f"state-event chunks {completed:,}/{len(pending):,}: {lower}-{upper}, rows={rows:,}", flush=True)
-    decoded, certificate = certify_state_event_generation(
+        _fetch_ranges(venue, ranges, frozen_upper=frozen_upper, root=root, workers=args.workers)
+    days = calendar_days(args.start_day, args.end_day)
+    day_cuts = {day: load_utc_day_block_bounds(day) for day in days}
+    support_end_day: str | None = None
+    support_end_block: int | None = None
+    generation_ranges = ranges
+    if venue == "uniswap_v4":
+        completion = [_completed(venue, *bounds, frozen_upper, root) for bounds in ranges]
+        prefix_length = next((index for index, complete in enumerate(completion) if not complete), len(ranges))
+        if prefix_length == 0:
+            raise RuntimeError("V4 exact-state release has no complete prefix chunk")
+        prefix_upper = ranges[prefix_length - 1][1]
+        explicit = args.support_end_day is not None or args.support_end_block is not None
+        if explicit and (args.support_end_day is None or args.support_end_block is None):
+            raise ValueError("V4 support end day and block must be supplied together")
+        if explicit:
+            support_end_day = str(args.support_end_day).replace("-", "")
+            support_end_block = int(args.support_end_block)
+        else:
+            supported_cuts = [
+                (day, int(cut["end_block"]))
+                for day, cut in sorted(day_cuts.items())
+                if int(cut["end_block"]) <= prefix_upper
+            ]
+            if not supported_cuts:
+                raise RuntimeError("V4 complete prefix does not cover one full research UTC day")
+            support_end_day, support_end_block = supported_cuts[-1]
+        cut = day_cuts.get(support_end_day)
+        if cut is None or int(cut["end_block"]) != support_end_block or support_end_block > prefix_upper:
+            raise ValueError("V4 support end must equal a fully covered research UTC-day boundary")
+        support_range_index = next(index for index, (_lower, upper) in enumerate(ranges) if support_end_block <= upper)
+        if not all(completion[: support_range_index + 1]):
+            raise RuntimeError("V4 support end crosses an incomplete exact-state chunk")
+        generation_ranges = ranges[: support_range_index + 1]
+    initialization_evidence, certificate = certify_state_event_generation(
         venue,
-        ranges,
+        generation_ranges,
         frozen_upper=frozen_upper,
         raw_root=root,
-        v3_registry=registry or None,
+        support_end_block=support_end_block,
+        requested_ranges=ranges if venue == "uniswap_v4" else None,
     )
+    decoded = initialization_evidence
+    if venue == "uniswap_v4":
+        certificate = {
+            **{key: value for key, value in certificate.items() if key != "certificate_identity_sha256"},
+            "support_end_day": support_end_day,
+            "scientific_support_calendar_sha256": scientific_support_calendar_sha256(days, str(support_end_day)),
+        }
+        certificate["certificate_identity_sha256"] = certificate_identity_sha256(certificate)
     if venue == "uniswap_v3":
         manifest_path = V3_INVENTORY_RAW_ROOT / "ordered_chunks.complete.json"
         manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
@@ -194,7 +295,7 @@ def _run_owned(args: argparse.Namespace) -> int:
             "precedence_source_data_portable_sha256": state_event_summary["data_portable_sha256"],
             "precedence_source_ordered_manifest_identity_sha256": state_event_summary["source_ordered_manifest_identity_sha256"],
         }
-        certificate = certify_state_event_precedence(certificate, decoded, state_events, registry_pools=registry)
+        decoded, certificate = certify_state_event_precedence(certificate, initialization_evidence, state_events, registry_pools=registry)
         state_event_data_path, state_event_marker_path = inventory_first_consuming_event_paths(V3_INVENTORY_RAW_ROOT)
         metadata_inputs.extend([manifest_path, state_event_data_path, state_event_marker_path])
     metadata_manifest = portable_content_manifest_for_paths(REPO_ROOT, [path for path in metadata_inputs if path is not None])
@@ -206,8 +307,6 @@ def _run_owned(args: argparse.Namespace) -> int:
     else:
         certificate["token_metadata_scope"] = "exact_anchor_v2_registry_only"
     certificate = certify_materialization_support(certificate, decoded, metadata)
-    days = calendar_days(args.start_day, args.end_day)
-    day_cuts = {day: load_utc_day_block_bounds(day) for day in days}
     write_daily_initializations(
         venue,
         decoded,
@@ -218,7 +317,7 @@ def _run_owned(args: argparse.Namespace) -> int:
     )
     if venue == "uniswap_v4":
         write_daily_v4_state_events(
-            iter_v4_state_events(ranges, frozen_upper=frozen_upper, raw_root=root),
+            iter_v4_state_events(generation_ranges, frozen_upper=frozen_upper, raw_root=root, support_end_block=support_end_block),
             decoded,
             day_cuts=day_cuts,
             token_metadata=metadata,
@@ -238,6 +337,7 @@ def parser() -> argparse.ArgumentParser:
     cli = argparse.ArgumentParser(description=__doc__)
     cli.add_argument("venue", choices=sorted(VENUE_TOPICS))
     cli.add_argument("--fetch", action="store_true", help="fetch absent state-event chunks before certification")
+    cli.add_argument("--fetch-only", action="append", type=_targeted_range, default=[], metavar="LOWER:UPPER", help="fetch or reopen only this exact chunk and exit before census or materialization; repeatable")
     cli.add_argument("--start-block", type=int)
     cli.add_argument("--end-block", type=int)
     cli.add_argument("--chunk-size", type=int, default=DEFAULT_CHUNK_SIZE)
@@ -245,6 +345,8 @@ def parser() -> argparse.ArgumentParser:
     cli.add_argument("--root", type=Path, default=TICK_STATE_EVENT_RAW_ROOT)
     cli.add_argument("--start-day", default=RESEARCH_SAMPLE_START)
     cli.add_argument("--end-day", default=RESEARCH_SAMPLE_END)
+    cli.add_argument("--support-end-day", help="last fully supported V4 UTC day")
+    cli.add_argument("--support-end-block", type=int, help="exact end block of the last fully supported V4 UTC day")
     return cli
 
 

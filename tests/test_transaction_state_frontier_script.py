@@ -297,6 +297,7 @@ class TransactionStateFrontierScriptTests(unittest.TestCase):
         }
         replay.pool_index = {frozenset(("stale-a", "stale-b")): [("bad", "pool")]}
         replay.quote_indexes_by_venue = {"uniswap_v3": {"pool": object()}}
+        replay.scientifically_unsupported_venues = {"uniswap_v4"}
         with TemporaryDirectory() as directory:
             path = Path(directory) / "pre_20230415.pkl"
             save_replay_checkpoint(
@@ -319,6 +320,9 @@ class TransactionStateFrontierScriptTests(unittest.TestCase):
             {frozenset(("token-a", "token-b")): [("uniswap_v3", "pool")]},
         )
         self.assertEqual(restored.quote_indexes_by_venue, {})
+        self.assertEqual(restored.scientifically_unsupported_venues, {"uniswap_v4"})
+        with self.assertRaisesRegex(ValueError, "reopen closed scientific support"):
+            restored.apply(TickReplayEvent((20, 1), "uniswap_v4", "initialize", {"transaction": {"blockNumber": "20"}, "logIndex": "1", "pool": {"id": "pool"}}))
 
     def test_replay_checkpoint_rejects_legacy_engine_and_pre_day(self) -> None:
         replay = TickReplayState()

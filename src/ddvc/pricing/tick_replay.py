@@ -11,7 +11,7 @@ from ddvc.pricing.tick_frontier import PoolIndex, TickQuoteIndexes, build_pool_i
 from ddvc.asset_types import canonical_token
 from ddvc.pricing.tick_state import TickPoolState, absorb_swap_state, apply_tick_change
 from ddvc.source_records import block_value, source_event_payload, transaction_id, v4_quote_status
-from ddvc.state_data import RAW_ROOT, read_tick_partition, tick_partition_path
+from ddvc.state_data import RAW_ROOT, read_tick_partition, tick_partition_path, tick_scientific_support
 
 
 TICK_VENUES = ("uniswap_v3", "uniswap_v4")
@@ -114,7 +114,22 @@ def load_tick_day_events(
     """Load and globally order one canonical day's swaps and liquidity changes."""
     events: list[TickReplayEvent] = []
     for venue in venues:
-        if not tick_partition_path(venue, day, root=state_root).exists():
+        partition_exists = tick_partition_path(venue, day, root=state_root).exists()
+        if venue == "uniswap_v4":
+            try:
+                scientifically_supported = tick_scientific_support(raw_root, venue, day)
+            except FileNotFoundError:
+                if not partition_exists:
+                    continue
+                raise
+            if not scientifically_supported:
+                frame = read_tick_partition(venue, day, root=state_root, raw_root=raw_root) if partition_exists else pd.DataFrame()
+                if not frame.empty:
+                    raise ValueError(f"unsupported V4 day carries canonical tick state: {day}")
+                timestamp = int(pd.Timestamp(f"{day[:4]}-{day[4:6]}-{day[6:]} 00:00:00", tz="UTC").timestamp())
+                events.append(TickReplayEvent((0, 0), venue, "scientific_support_end", {"timestamp": timestamp, "transaction": {"timestamp": timestamp}}))
+                continue
+        if not partition_exists:
             continue
         for record in read_tick_partition(
             venue, day, root=state_root, raw_root=raw_root
@@ -128,7 +143,7 @@ def load_tick_day_events(
     events.sort(
         key=lambda event: (
             event.order,
-            {"initialize": 0, "liquidity": 1, "swap": 2}.get(event.kind, 3),
+            {"scientific_support_end": 0, "initialize": 1, "liquidity": 2, "swap": 3}.get(event.kind, 4),
             event.venue,
         )
     )
@@ -161,6 +176,7 @@ class TickReplayState:
     token_decimals: dict[str, int] = field(default_factory=dict)
     quarantined_pools: dict[str, set[str]] = field(default_factory=dict)
     initialization_status_by_venue: dict[str, dict[str, str]] = field(default_factory=dict)
+    scientifically_unsupported_venues: set[str] = field(default_factory=set)
 
     def rebuild_derived_indexes(self) -> None:
         """Rebuild quote-discovery state from the causal replay state."""
@@ -168,6 +184,24 @@ class TickReplayState:
         for candidates in self.pool_index.values():
             candidates.sort()
         self.quote_indexes_by_venue = {}
+
+    def close_scientific_support(self, venue: str) -> None:
+        """Purge one venue when its certified exact-state prefix ends."""
+
+        unsupported = getattr(self, "scientifically_unsupported_venues", None)
+        if unsupported is None:
+            unsupported = set()
+            self.scientifically_unsupported_venues = unsupported
+        pool_ids = set(self.states_by_venue.get(venue, {})) | set(self.ticks_by_venue.get(venue, {})) | set(self.initialization_status_by_venue.get(venue, {}))
+        self.states_by_venue.pop(venue, None)
+        self.ticks_by_venue.pop(venue, None)
+        self.quote_indexes_by_venue.pop(venue, None)
+        self.initialization_status_by_venue.pop(venue, None)
+        self.quarantined_pools.pop(venue, None)
+        for pool in pool_ids:
+            self.swap_samples.pop(pool, None)
+        unsupported.add(venue)
+        self.rebuild_derived_indexes()
 
     def apply_liquidity(self, venue: str, row: dict, *, sign: int) -> None:
         ticks = self.ticks_by_venue.setdefault(venue, {})
@@ -286,6 +320,11 @@ class TickReplayState:
                 candidates.sort()
 
     def apply(self, event: TickReplayEvent) -> None:
+        if event.kind == "scientific_support_end":
+            self.close_scientific_support(event.venue)
+            return
+        if event.venue in getattr(self, "scientifically_unsupported_venues", set()):
+            raise ValueError(f"tick event attempts to reopen closed scientific support: {event.venue}")
         if event.kind == "initialize":
             self.apply_initialize(event.venue, event.row)
         elif event.kind == "liquidity":

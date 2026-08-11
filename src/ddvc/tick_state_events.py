@@ -35,6 +35,7 @@ from ddvc.v4_contract import (
     UNISWAP_V4_INITIALIZE_TOPIC,
     UNISWAP_V4_MODIFY_LIQUIDITY_TOPIC,
     UNISWAP_V4_POOL_MANAGER_ADDRESS,
+    UNISWAP_V4_POOL_MANAGER_DEPLOYMENT_BLOCK,
     UNISWAP_V4_SWAP_TOPIC,
     decode_v4_state_event_identity,
 )
@@ -45,9 +46,11 @@ V3_STATE_EVENT_GENERATION = "exact_v3_initialize_with_inventory_precedence_v1"
 V4_STATE_EVENT_GENERATION = "exact_v4_poolmanager_state_event_census_v1"
 DERIVED_INITIALIZATION_GENERATION = "certified_daily_tick_initializations_v1"
 DERIVED_V4_STATE_GENERATION = "certified_daily_v4_exact_state_events_v1"
-DAILY_RELEASE_SET_SCHEMA_VERSION = 1
+DAILY_RELEASE_SET_SCHEMA_VERSION = 2
 DAILY_INITIALIZATION_RELEASE_GENERATION = "certified_daily_tick_initialization_set_v1"
 DAILY_V4_STATE_RELEASE_GENERATION = "certified_daily_v4_exact_state_event_set_v1"
+V4_PREFIX_GAP_REASON = "outside_contiguous_exact_prefix"
+V4_EXACT_STATE_CHUNK_SIZE = 10_000
 V3_INITIALIZE_SIGNATURE = "Initialize(uint160,int24)"
 V3_INITIALIZE_TOPIC = "0x" + keccak(text=V3_INITIALIZE_SIGNATURE).hex()
 V4_INITIALIZE_TOPIC = UNISWAP_V4_INITIALIZE_TOPIC
@@ -412,31 +415,94 @@ def semantic_sha256(rows: Iterable[TickInitialization]) -> str:
     return hashlib.sha256(json.dumps(payload, sort_keys=True, separators=(",", ":")).encode()).hexdigest()
 
 
+def scientific_support_calendar(days: Iterable[str], support_end_day: str) -> list[dict[str, object]]:
+    """Normalize one monotone day calendar whose scientific support closes once."""
+
+    normalized_days = [str(day).replace("-", "") for day in days]
+    normalized_end = str(support_end_day).replace("-", "")
+    if not normalized_days or normalized_days != sorted(normalized_days) or len(normalized_days) != len(set(normalized_days)) or normalized_end not in normalized_days:
+        raise ValueError("scientific-support calendar must be sorted, unique, and contain its support end")
+    return [{"day": day, "scientific_support": day <= normalized_end} for day in normalized_days]
+
+
+def scientific_support_calendar_sha256(days: Iterable[str], support_end_day: str) -> str:
+    return hashlib.sha256(json.dumps(scientific_support_calendar(days, support_end_day), sort_keys=True, separators=(",", ":")).encode()).hexdigest()
+
+
+def exact_v4_prefix_gap_ledger(
+    certified_ranges: Iterable[tuple[int, int]],
+    requested_ranges: Iterable[tuple[int, int]],
+    *,
+    frozen_upper_block: int,
+    canonical_start_block: int = UNISWAP_V4_POOL_MANAGER_DEPLOYMENT_BLOCK,
+) -> list[dict[str, object]]:
+    """Derive the exact requested suffix excluded after a contiguous V4 prefix."""
+
+    certified = [(int(lower), int(upper)) for lower, upper in certified_ranges]
+    requested = [(int(lower), int(upper)) for lower, upper in requested_ranges]
+    if frozen_upper_block < 0:
+        raise ValueError("V4 frozen upper block is invalid")
+    for label, ranges in (("certified", certified), ("requested", requested)):
+        if not ranges or ranges != sorted(ranges) or any(lower < 0 or upper < lower or upper > frozen_upper_block or (index and lower != ranges[index - 1][1] + 1) for index, (lower, upper) in enumerate(ranges)):
+            raise ValueError(f"V4 {label} range perimeter is empty, noncanonical, or outside the frozen upper block")
+    if any(upper - lower + 1 != V4_EXACT_STATE_CHUNK_SIZE for lower, upper in requested[:-1]) or not 1 <= requested[-1][1] - requested[-1][0] + 1 <= V4_EXACT_STATE_CHUNK_SIZE:
+        raise ValueError("V4 requested range perimeter is not a canonical fixed-size chunk partition")
+    if requested[0][0] != canonical_start_block or requested[-1][1] != frozen_upper_block:
+        raise ValueError("V4 requested range perimeter does not span deployment through the frozen upper block")
+    if len(certified) > len(requested) or certified != requested[: len(certified)]:
+        raise ValueError("V4 certified ranges are not an exact prefix of the requested perimeter")
+    return [{"lower": lower, "upper": upper, "reason": V4_PREFIX_GAP_REASON} for lower, upper in requested[len(certified) :]]
+
+
+def validate_v4_prefix_certificate(certificate: Mapping[str, object]) -> None:
+    """Recompute the exact V4 certified-prefix and excluded-suffix identities."""
+
+    raw_requested = certificate.get("requested_ranges")
+    if not isinstance(raw_requested, list) or any(not isinstance(item, list) or len(item) != 2 for item in raw_requested):
+        raise ValueError("V4 exact-prefix certificate lacks its requested range perimeter")
+    requested = [(int(item[0]), int(item[1])) for item in raw_requested]
+    chunk_count = int(certificate.get("chunk_count", -1))
+    if chunk_count < 1 or chunk_count > len(requested):
+        raise ValueError("V4 exact-prefix certificate has an invalid certified chunk count")
+    certified = requested[:chunk_count]
+    expected_gaps = exact_v4_prefix_gap_ledger(certified, requested, frozen_upper_block=int(certificate.get("frozen_upper_block", -1)))
+    if int(certificate.get("canonical_start_block", -1)) != UNISWAP_V4_POOL_MANAGER_DEPLOYMENT_BLOCK or int(certificate.get("start_block", -1)) != certified[0][0] or int(certificate.get("end_block", -1)) != certified[-1][1] or certificate.get("exact_state_gap_ledger") != expected_gaps or certificate.get("exact_state_gap_ledger_sha256") != hashlib.sha256(json.dumps(expected_gaps, sort_keys=True, separators=(",", ":")).encode()).hexdigest() or int(certificate.get("requested_range_count", -1)) != len(requested) or certificate.get("requested_range_manifest_sha256") != hashlib.sha256(json.dumps(requested, separators=(",", ":")).encode()).hexdigest() or not certified[0][0] <= int(certificate.get("support_end_block", -1)) <= certified[-1][1]:
+        raise ValueError("V4 exact-prefix certificate disagrees with its requested suffix perimeter")
+
+
 def certify_state_event_generation(
     venue: str,
     ranges: Iterable[tuple[int, int]],
     *,
     frozen_upper: Mapping[str, object],
     raw_root: Path,
-    v3_registry: Mapping[str, V3FactoryPool] | None = None,
-) -> tuple[list[TickInitialization], dict[str, object]]:
+    support_end_block: int | None = None,
+    requested_ranges: Iterable[tuple[int, int]] | None = None,
+) -> tuple[list[TickInitialization] | list[dict[str, object]], dict[str, object]]:
     """Reopen a contiguous chunk perimeter and certify its ordered semantic release."""
 
-    ordered_ranges = sorted((int(lower), int(upper)) for lower, upper in ranges)
-    if not ordered_ranges or any(
+    ordered_ranges = [(int(lower), int(upper)) for lower, upper in ranges]
+    if not ordered_ranges or ordered_ranges != sorted(ordered_ranges) or any(
         upper < lower or (index and lower != ordered_ranges[index - 1][1] + 1)
         for index, (lower, upper) in enumerate(ordered_ranges)
     ):
         raise ValueError("state-event chunk perimeter is empty, gapped, or overlapping")
+    if support_end_block is not None and venue != "uniswap_v4":
+        raise ValueError("an exact-state support cut is only defined for Uniswap V4")
+    if support_end_block is not None and not ordered_ranges[0][0] <= support_end_block <= ordered_ranges[-1][1]:
+        raise ValueError("V4 support end block lies outside the certified chunk perimeter")
+    requested_perimeter = ordered_ranges if requested_ranges is None else [(int(lower), int(upper)) for lower, upper in requested_ranges]
+    normalized_gaps = exact_v4_prefix_gap_ledger(ordered_ranges, requested_perimeter, frozen_upper_block=int(frozen_upper["block_number"])) if venue == "uniswap_v4" else []
     paths: list[Path] = []
     decoded: list[TickInitialization] = []
+    v3_initialization_evidence: list[dict[str, object]] = []
     initialized_by_pool: dict[str, TickInitialization] = {}
     missing: set[str] = set()
     nonpreceding: set[str] = set()
     raw_log_count = 0
-    excluded_nonregistry = 0
     exact_modify_count = 0
     exact_swap_count = 0
+    excluded_tail: list[dict[str, object]] = []
     last_order: tuple[int, int] | None = None
     for lower, upper in ordered_ranges:
         records = load_state_event_chunk(venue, lower, upper, frozen_upper=frozen_upper, root=raw_root)
@@ -448,17 +514,27 @@ def certify_state_event_generation(
                 raise ValueError("state-event chunks are not globally strictly ordered")
             last_order = order
             topic = str((row.get("topics") or [""])[0]).lower()
+            if support_end_block is not None and order[0] > support_end_block:
+                excluded_tail.append(
+                    {
+                        "address": str(row["address"]).lower(),
+                        "block_number": order[0],
+                        "block_hash": str(row["block_hash"]).lower(),
+                        "transaction_hash": str(row["transaction_hash"]).lower(),
+                        "transaction_index": int(row["transaction_index"]),
+                        "log_index": order[1],
+                        "topic0": topic,
+                    }
+                )
+                continue
             if venue == "uniswap_v3":
-                if v3_registry is None:
-                    raise ValueError("V3 initialization certification requires the factory registry")
-                if str(row["address"]).lower() not in v3_registry:
-                    excluded_nonregistry += 1
-                    continue
-                initialization = decode_v3_initialize(row, v3_registry)
-                if initialization.pool in initialized_by_pool:
-                    raise ValueError(f"duplicate V3 Initialize for pool {initialization.pool}")
-                decoded.append(initialization)
-                initialized_by_pool[initialization.pool] = initialization
+                evidence = {
+                    "address": str(row["address"]).lower(),
+                    "data": str(row["data"]).lower(),
+                    "topics": [str(value).lower() for value in row.get("topics") or []],
+                    **_event_identity(row),
+                }
+                v3_initialization_evidence.append(evidence)
                 continue
             if topic == V4_INITIALIZE_TOPIC:
                 initialization = decode_v4_initialize(row)
@@ -488,13 +564,12 @@ def certify_state_event_generation(
         "end_block": ordered_ranges[-1][1],
         "chunk_count": len(ordered_ranges),
         "raw_logs": raw_log_count,
-        "initialize_events": len(decoded),
-        "excluded_nonregistry_same_topic_logs": excluded_nonregistry,
+        "initialize_events": len(v3_initialization_evidence) if venue == "uniswap_v3" else len(decoded),
         "protocol_static_quote_supported_pools": sum(row.quote_supported for row in decoded),
         "unsupported_hooked_or_dynamic_pools": sum(not row.quote_supported for row in decoded),
         "exact_modify_liquidity_events": exact_modify_count,
         "exact_swap_events": exact_swap_count,
-        "semantic_sha256": semantic_sha256(decoded),
+        "semantic_sha256": hashlib.sha256(json.dumps(v3_initialization_evidence, sort_keys=True, separators=(",", ":")).encode()).hexdigest() if venue == "uniswap_v3" else semantic_sha256(decoded),
         "frozen_upper_identity_sha256": frozen_upper["header_identity_sha256"],
         "source_manifest": source_manifest,
         "source_manifest_sha256": portable_manifest_sha256(source_manifest),
@@ -507,9 +582,20 @@ def certify_state_event_generation(
             "registry_pools_zero_initialize": 0,
             "registry_pools_zero_initialize_sha256": hashlib.sha256(b"[]").hexdigest(),
             "precedence_status": "pass",
+            "support_end_block": support_end_block if support_end_block is not None else ordered_ranges[-1][1],
+            "exact_state_gap_ledger": normalized_gaps,
+            "exact_state_gap_ledger_sha256": hashlib.sha256(json.dumps(normalized_gaps, sort_keys=True, separators=(",", ":")).encode()).hexdigest(),
+            "requested_range_count": len(requested_perimeter),
+            "requested_range_manifest_sha256": hashlib.sha256(json.dumps(requested_perimeter, separators=(",", ":")).encode()).hexdigest(),
+            "requested_ranges": [[lower, upper] for lower, upper in requested_perimeter],
+            "canonical_start_block": UNISWAP_V4_POOL_MANAGER_DEPLOYMENT_BLOCK,
+            "frozen_upper_block": int(frozen_upper["block_number"]),
+            "semantically_excluded_tail_logs": len(excluded_tail),
+            "semantically_excluded_tail_logs_sha256": hashlib.sha256(json.dumps(excluded_tail, sort_keys=True, separators=(",", ":")).encode()).hexdigest(),
         })
+        validate_v4_prefix_certificate(certificate)
     certificate["certificate_identity_sha256"] = certificate_identity_sha256(certificate)
-    return decoded, certificate
+    return (v3_initialization_evidence if venue == "uniswap_v3" else decoded), certificate
 
 
 def iter_v4_state_events(
@@ -517,11 +603,14 @@ def iter_v4_state_events(
     *,
     frozen_upper: Mapping[str, object],
     raw_root: Path,
+    support_end_block: int | None = None,
 ) -> Iterable[dict[str, object]]:
     """Reopen the certified chunk perimeter and yield exact V4 consumers once."""
 
     for lower, upper in sorted((int(lower), int(upper)) for lower, upper in ranges):
         for row in load_state_event_chunk("uniswap_v4", lower, upper, frozen_upper=frozen_upper, root=raw_root):
+            if support_end_block is not None and int(row["block_number"]) > support_end_block:
+                continue
             topic = str((row.get("topics") or [""])[0]).lower()
             if topic == UNISWAP_V4_MODIFY_LIQUIDITY_TOPIC:
                 yield decode_v4_state_event_identity(row, "modify_liquidity")
@@ -531,23 +620,82 @@ def iter_v4_state_events(
 
 def certify_state_event_precedence(
     certificate: Mapping[str, object],
-    initializations: Iterable[TickInitialization],
+    initializations: Iterable[TickInitialization | Mapping[str, object]],
     state_events: Iterable[Mapping[str, object]],
     *,
-    registry_pools: Iterable[str] | None = None,
-) -> dict[str, object]:
-    """Require exactly one earlier Initialize for every state-consuming event."""
+    registry_pools: Mapping[str, V3FactoryPool] | Iterable[str] | None = None,
+) -> tuple[list[TickInitialization], dict[str, object]]:
+    """Own the V3 registry perimeter and require precedence only within it."""
 
-    initialization_rows = list(initializations)
+    raw_initializations = list(initializations)
+    if isinstance(registry_pools, Mapping):
+        registry_mapping = {str(pool).lower(): row for pool, row in registry_pools.items()}
+    else:
+        registry_mapping = {}
+    outside_initialize_identities: list[dict[str, object]] = []
+    initialization_rows: list[TickInitialization] = []
+    for row in raw_initializations:
+        if isinstance(row, TickInitialization):
+            initialization_rows.append(row)
+            continue
+        pool = str(row.get("address") or "").lower()
+        if pool not in registry_mapping:
+            outside_initialize_identities.append(
+                {
+                    "pool": pool,
+                    "block_number": int(row["block_number"]),
+                    "block_hash": str(row["block_hash"]).lower(),
+                    "transaction_hash": str(row["transaction_hash"]).lower(),
+                    "transaction_index": int(row["transaction_index"]),
+                    "log_index": int(row["log_index"]),
+                    "reason": "absent_from_canonical_poolcreated_registry",
+                }
+            )
+            continue
+        initialization_rows.append(decode_v3_initialize(row, registry_mapping))
+    initialization_rows.sort(key=lambda row: row.order)
     by_pool = {row.pool: row for row in initialization_rows}
     if len(by_pool) != len(initialization_rows):
         raise ValueError("precedence certificate received duplicate Initialize identities")
+    if registry_mapping:
+        registry = set(registry_mapping)
+    else:
+        registry = {str(pool).lower() for pool in registry_pools or ()}
     missing: set[str] = set()
     nonpreceding: set[str] = set()
-    events = 0
+    consuming_registry: set[str] = set()
+    admitted_identities: list[dict[str, object]] = []
+    outside_identities: list[dict[str, object]] = []
+    outside_groups: dict[tuple[str, str], dict[str, object]] = {}
     for event in state_events:
-        events += 1
         pool = str(event["pool"]).lower()
+        identity = {
+            "pool": pool,
+            "kind": str(event.get("kind") or "unknown"),
+            "block_number": int(event["block_number"]),
+            "transaction_index": int(event.get("transaction_index", -1)),
+            "log_index": int(event["log_index"]),
+            "transaction_hash": str(event.get("transaction_hash") or "").lower(),
+        }
+        if registry and pool not in registry:
+            outside_identities.append(identity)
+            group_key = (identity["kind"], "absent_from_canonical_poolcreated_registry")
+            group = outside_groups.setdefault(
+                group_key,
+                {
+                    "kind": identity["kind"],
+                    "reason": group_key[1],
+                    "events": 0,
+                    "first_block": identity["block_number"],
+                    "last_block": identity["block_number"],
+                },
+            )
+            group["events"] = int(group["events"]) + 1
+            group["first_block"] = min(int(group["first_block"]), int(identity["block_number"]))
+            group["last_block"] = max(int(group["last_block"]), int(identity["block_number"]))
+            continue
+        consuming_registry.add(pool)
+        admitted_identities.append(identity)
         initialization = by_pool.get(pool)
         if initialization is None:
             missing.add(pool)
@@ -555,15 +703,35 @@ def certify_state_event_precedence(
         order = (int(event["block_number"]), int(event["log_index"]))
         if initialization.order >= order:
             nonpreceding.add(pool)
-    registry = {str(pool).lower() for pool in registry_pools or ()}
     zero_initialize = sorted(registry - set(by_pool))
+    zero_initialize_zero_consumer = sorted((registry - set(by_pool)) - consuming_registry)
+    initialized_without_consumer = sorted((registry & set(by_pool)) - consuming_registry)
+    outside_identities.sort(key=lambda row: (int(row["block_number"]), int(row["transaction_index"]), int(row["log_index"]), str(row["pool"])))
+    admitted_identities.sort(key=lambda row: (int(row["block_number"]), int(row["transaction_index"]), int(row["log_index"]), str(row["pool"])))
+    outside_summary = [outside_groups[key] for key in sorted(outside_groups)]
+    outside_initialize_identities.sort(key=lambda row: (int(row["block_number"]), int(row["transaction_index"]), int(row["log_index"]), str(row["pool"])))
     result = {
         **{key: value for key, value in certificate.items() if key != "certificate_identity_sha256"},
-        "state_events_checked": events,
+        "initialize_events": len(initialization_rows),
+        "registry_initializations_semantic_sha256": semantic_sha256(initialization_rows),
+        "outside_registry_initialize_lookalikes": len(outside_initialize_identities),
+        "outside_registry_initialize_lookalikes_sha256": hashlib.sha256(json.dumps(outside_initialize_identities, sort_keys=True, separators=(",", ":")).encode()).hexdigest(),
+        "protocol_static_quote_supported_pools": sum(row.quote_supported for row in initialization_rows),
+        "unsupported_hooked_or_dynamic_pools": sum(not row.quote_supported for row in initialization_rows),
+        "state_events_checked": len(admitted_identities),
+        "state_event_source_identities_sha256": hashlib.sha256(json.dumps(admitted_identities, sort_keys=True, separators=(",", ":")).encode()).hexdigest(),
+        "outside_registry_consumer_lookalikes": len(outside_identities),
+        "outside_registry_consumer_lookalikes_sha256": hashlib.sha256(json.dumps(outside_identities, sort_keys=True, separators=(",", ":")).encode()).hexdigest(),
+        "outside_registry_consumer_lookalikes_by_kind_block_span_reason": outside_summary,
+        "outside_registry_consumer_lookalikes_summary_sha256": hashlib.sha256(json.dumps(outside_summary, sort_keys=True, separators=(",", ":")).encode()).hexdigest(),
         "state_event_pools_missing_initialize": len(missing),
         "state_event_pools_nonpreceding_initialize": len(nonpreceding),
         "registry_pools_zero_initialize": len(zero_initialize),
         "registry_pools_zero_initialize_sha256": hashlib.sha256(json.dumps(zero_initialize, separators=(",", ":")).encode()).hexdigest(),
+        "registry_pools_zero_initialize_zero_consumer": len(zero_initialize_zero_consumer),
+        "registry_pools_zero_initialize_zero_consumer_sha256": hashlib.sha256(json.dumps(zero_initialize_zero_consumer, separators=(",", ":")).encode()).hexdigest(),
+        "registry_pools_initialized_without_consumer": len(initialized_without_consumer),
+        "registry_pools_initialized_without_consumer_sha256": hashlib.sha256(json.dumps(initialized_without_consumer, separators=(",", ":")).encode()).hexdigest(),
         "precedence_status": "pass" if not missing and not nonpreceding else "fail",
     }
     if missing or nonpreceding:
@@ -572,7 +740,7 @@ def certify_state_event_precedence(
             f"missing={sorted(missing)[:3]}, nonpreceding={sorted(nonpreceding)[:3]}"
         )
     result["certificate_identity_sha256"] = certificate_identity_sha256(result)
-    return result
+    return initialization_rows, result
 
 
 def certificate_identity_sha256(certificate: Mapping[str, object]) -> str:
@@ -641,6 +809,10 @@ def _write_daily_release_set(
     entries: list[dict[str, object]] = []
     for (day, cut), data_path in zip(cuts, data_paths, strict=True):
         marker_path = data_path.with_suffix(".meta.json")
+        marker = json.loads(marker_path.read_text(encoding="utf-8"))
+        support_value = marker.get("scientific_support", True)
+        if not isinstance(support_value, bool):
+            raise ValueError("daily tick-state scientific support must be boolean")
         entries.append(
             {
                 "day": day,
@@ -651,8 +823,19 @@ def _write_daily_release_set(
                 "data_sha256": file_sha256(data_path),
                 "marker_file": marker_path.name,
                 "marker_sha256": file_sha256(marker_path),
+                "scientific_support": support_value,
             }
         )
+    supported_days = [str(item["day"]) for item in entries if item["scientific_support"]]
+    if not supported_days:
+        raise ValueError("daily tick-state release has no scientifically supported prefix")
+    normalized_support = scientific_support_calendar([str(item["day"]) for item in entries], supported_days[-1])
+    if normalized_support != [{"day": item["day"], "scientific_support": item["scientific_support"]} for item in entries]:
+        raise ValueError("daily tick-state scientific support reopens after its prefix")
+    support_calendar_sha256 = scientific_support_calendar_sha256([str(item["day"]) for item in entries], supported_days[-1])
+    source_certificate = json.loads(certificate_path.read_text(encoding="utf-8"))
+    if kind == "v4_state" and source_certificate.get("support_end_day") is not None and source_certificate.get("scientific_support_calendar_sha256") != support_calendar_sha256:
+        raise ValueError("daily V4 scientific-support calendar disagrees with its prefix certificate")
     record = {
         "status": "complete",
         "schema_version": DAILY_RELEASE_SET_SCHEMA_VERSION,
@@ -664,6 +847,7 @@ def _write_daily_release_set(
         "calendar_sha256": hashlib.sha256(
             json.dumps([day for day, _cut in cuts], separators=(",", ":")).encode()
         ).hexdigest(),
+        "scientific_support_calendar_sha256": support_calendar_sha256,
         "day_cut_manifest_sha256": hashlib.sha256(
             json.dumps(
                 [
@@ -703,6 +887,7 @@ def _validate_daily_release_member(
 ) -> dict[str, object]:
     release_path = daily_release_set_path(raw_root, venue, kind=kind)
     release = json.loads(release_path.read_text(encoding="utf-8"))
+    source_certificate = json.loads(certificate_path.read_text(encoding="utf-8"))
     entries = release.get("entries")
     days = release.get("days")
     if not isinstance(entries, list) or not isinstance(days, list):
@@ -721,6 +906,13 @@ def _validate_daily_release_member(
         }
         for item in entries
     ]
+    support_calendar = [
+        {"day": item["day"], "scientific_support": item.get("scientific_support")}
+        for item in entries
+    ]
+    supported_days = [str(item["day"]) for item in support_calendar if item["scientific_support"] is True]
+    support_calendar_valid = bool(supported_days) and support_calendar == scientific_support_calendar(days, supported_days[-1])
+    expected_support_calendar_sha256 = scientific_support_calendar_sha256(days, supported_days[-1]) if support_calendar_valid else None
     members_exist = all(
         (release_path.parent / str(item["data_file"])).is_file()
         and (release_path.parent / str(item["marker_file"])).is_file()
@@ -745,8 +937,12 @@ def _validate_daily_release_member(
         != hashlib.sha256(
             json.dumps(cut_manifest, sort_keys=True, separators=(",", ":")).encode()
         ).hexdigest()
+        or release.get("scientific_support_calendar_sha256")
+        != expected_support_calendar_sha256
+        or not support_calendar_valid
         or release.get("certificate_file") != certificate_path.name
         or release.get("certificate_sha256") != file_sha256(certificate_path)
+        or (kind == "v4_state" and source_certificate.get("support_end_day") is not None and source_certificate.get("scientific_support_calendar_sha256") != release.get("scientific_support_calendar_sha256"))
         or release.get("certificate_identity_sha256") != certificate_identity_sha256(release)
     ):
         raise ValueError(
@@ -935,12 +1131,25 @@ def write_daily_v4_state_events(
     output: list[Path] = []
     emitted = 0
     cuts = _validated_day_cuts(day_cuts)
+    support_end_day = str(generation_certificate.get("support_end_day") or cuts[-1][0])
+    support_end_block = int(generation_certificate.get("support_end_block", cuts[-1][1]["end_block"]))
+    support_matches = [
+        (day, cut)
+        for day, cut in cuts
+        if day == support_end_day and int(cut["end_block"]) == support_end_block
+    ]
+    if len(support_matches) != 1:
+        raise ValueError("exact V4 prefix certificate must end on one full UTC-day cut")
+    if generation_certificate.get("support_end_day") is not None:
+        validate_v4_prefix_certificate(generation_certificate)
+    support_by_day = {str(item["day"]): bool(item["scientific_support"]) for item in scientific_support_calendar((day for day, _cut in cuts), support_end_day)}
     for day, cut in cuts:
         lower, upper = int(cut["start_block"]), int(cut["end_block"])
         if current is not None and int(current["block_number"]) < lower:
             raise ValueError(f"exact {venue} state row falls before the certified day bound")
         daily_rows: list[dict[str, object]] = []
-        while current is not None and int(current["block_number"]) <= upper:
+        scientific_support = support_by_day[day]
+        while scientific_support and current is not None and int(current["block_number"]) <= upper:
             order = (int(current["block_number"]), int(current["log_index"]))
             if last_order is not None and order <= last_order:
                 raise ValueError("exact V4 state rows are not globally strictly ordered")
@@ -967,10 +1176,13 @@ def write_daily_v4_state_events(
             "data_sha256": file_sha256(path),
             "certificate_identity": state_event_certificate_identity(venue),
             "certificate_sha256": file_sha256(certificate_path),
+            "scientific_support": scientific_support,
+            "support_end_day": support_end_day,
+            "support_end_block": support_end_block,
         })
         output.append(path)
     if current is not None:
-        raise ValueError(f"exact {venue} state rows fall outside the certified day calendar")
+        raise ValueError(f"exact {venue} state rows fall outside the certified support calendar")
     expected = int(generation_certificate.get("exact_modify_liquidity_events", -1)) + int(generation_certificate.get("exact_swap_events", -1))
     if emitted != expected:
         raise ValueError(f"exact V4 daily state count drifted: emitted={emitted}, certified={expected}")
@@ -993,6 +1205,8 @@ def validate_v4_state_day(raw_root: Path, day: str) -> tuple[Path, Path, Path]:
     data, marker_path, certificate_path = v4_state_day_inputs(raw_root, day)
     marker = json.loads(marker_path.read_text(encoding="utf-8"))
     certificate = json.loads(certificate_path.read_text(encoding="utf-8"))
+    if certificate.get("support_end_day") is not None:
+        validate_v4_prefix_certificate(certificate)
     release_entry = _validate_daily_release_member(
         raw_root,
         venue,
@@ -1014,6 +1228,9 @@ def validate_v4_state_day(raw_root: Path, day: str) -> tuple[Path, Path, Path]:
         or marker.get("data_sha256") != file_sha256(data)
         or marker.get("certificate_identity") != state_event_certificate_identity(venue)
         or marker.get("certificate_sha256") != file_sha256(certificate_path)
+        or marker.get("scientific_support") is not bool(release_entry.get("scientific_support"))
+        or (certificate.get("support_end_day") is not None and marker.get("support_end_day") != certificate.get("support_end_day"))
+        or (certificate.get("support_end_block") is not None and int(marker.get("support_end_block", -1)) != int(certificate["support_end_block"]))
         or certificate.get("status") != "pass"
         or certificate.get("generation") != state_event_generation(venue)
         or certificate.get("venue") != venue
@@ -1028,6 +1245,7 @@ def validate_v4_state_day(raw_root: Path, day: str) -> tuple[Path, Path, Path]:
         or int(marker.get("swap_rows", -1)) != sum(row.get("eventKind") == "swap" for row in rows)
         or int(marker.get("modify_liquidity_rows", -1)) != sum(row.get("eventKind") == "modify_liquidity" for row in rows)
         or any(row.get("eventKind") not in {"swap", "modify_liquidity"} for row in rows)
+        or (marker.get("scientific_support") is False and rows)
     ):
         raise ValueError(f"daily exact V4 state row contract drifted: {day}")
     return data, marker_path, certificate_path
