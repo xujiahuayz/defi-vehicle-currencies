@@ -17,6 +17,7 @@ from ddvc.analysis_release import AnalysisRelease, resolve_analysis_release, res
 from ddvc.artifact_release import file_sha256, publish_artifact_release, resolve_artifact_release
 from ddvc.fetch.raw import write_json
 from ddvc.model_registry import (
+    FITTED_MODEL_ARTIFACT_ROLES,
     MODEL_RUN_ARTIFACT_ROLES,
     canonical_hash,
     exploratory_plan_identity,
@@ -34,7 +35,7 @@ from ddvc.provenance import (
 from ddvc.runtime import atomic_output, exclusive_job
 
 
-EXPLORATION_PLAN_SCHEMA_VERSION = 1
+EXPLORATION_PLAN_SCHEMA_VERSION = 2
 EXPLORATION_TRIAGE_SCHEMA_VERSION = 1
 EXPLORATION_CERTIFICATE_SCHEMA_VERSION = 1
 EXPLORATION_CERTIFICATE_KIND = "e0_exploration"
@@ -212,6 +213,39 @@ def _plan_family_contract(family: Mapping[str, Any], *, root: Path) -> dict[str,
     paths = [record["path"] for record in normalized_artifacts]
     if len(paths) != len(set(paths)):
         raise ValueError(f"exploration family reuses one artifact path: {family['family_id']}")
+    fitted_spec_ids = {
+        spec_id
+        for artifact in normalized_artifacts
+        if artifact["role"] in FITTED_MODEL_ARTIFACT_ROLES
+        for spec_id in artifact["spec_ids"]
+    }
+    coverage = family.get("search_dimension_spec_ids")
+    if not isinstance(coverage, dict) or set(coverage) != set(dimensions):
+        missing_dimensions = sorted(set(dimensions) - set(coverage or {})) if isinstance(coverage, dict) else sorted(dimensions)
+        unexpected_dimensions = sorted(set(coverage or {}) - set(dimensions)) if isinstance(coverage, dict) else []
+        raise ValueError(
+            f"exploration family search-dimension coverage is not exact: {family['family_id']}: "
+            f"missing={missing_dimensions or 'none'}; unexpected={unexpected_dimensions or 'none'}"
+        )
+    normalized_coverage: dict[str, list[str]] = {}
+    for dimension in dimensions:
+        spec_ids = coverage[dimension]
+        if (
+            not isinstance(spec_ids, list)
+            or not spec_ids
+            or any(not isinstance(value, str) or not value for value in spec_ids)
+            or len(spec_ids) != len(set(spec_ids))
+        ):
+            raise ValueError(
+                f"exploration search dimension lacks exact fitted coverage: {family['family_id']}/{dimension}"
+            )
+        unknown = sorted(set(spec_ids) - fitted_spec_ids)
+        if unknown:
+            raise ValueError(
+                f"exploration search dimension cites non-fitted specification ids: "
+                f"{family['family_id']}/{dimension}: {unknown}"
+            )
+        normalized_coverage[dimension] = list(spec_ids)
     engine_sources = family.get("engine_sources")
     if not isinstance(engine_sources, list) or any(not isinstance(value, str) for value in engine_sources):
         raise ValueError(f"exploration engine_sources must be a string list: {family['family_id']}")
@@ -223,6 +257,7 @@ def _plan_family_contract(family: Mapping[str, Any], *, root: Path) -> dict[str,
         "claim_id": str(family["claim_id"]),
         "question": str(family["question"]),
         "search_dimensions": list(dimensions),
+        "search_dimension_spec_ids": normalized_coverage,
         "runner": runner_relative,
         "arguments": list(arguments),
         "engine_sources": sources,
@@ -403,6 +438,7 @@ def _planned_run(
         "note": contract["note"],
         "question": contract["question"],
         "search_dimensions": contract["search_dimensions"],
+        "search_dimension_spec_ids": contract["search_dimension_spec_ids"],
         "attempt": attempt,
         "retry_of_run_id": retry_of_run_id,
     }

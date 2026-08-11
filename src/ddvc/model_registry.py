@@ -86,6 +86,7 @@ EXPLORATORY_PLAN_IDENTITY_FIELDS = (
     "plan_path",
     "question",
     "search_dimensions",
+    "search_dimension_spec_ids",
     "runner",
     "arguments",
     "engine_sources",

@@ -10,7 +10,7 @@ import pytest
 
 import ddvc.exploration as exploration
 from ddvc.analysis_release import publish_analysis_release
-from ddvc.exploration import close_exploration, execute_exploration_plan as _execute_exploration_plan, resolve_exploration_release
+from ddvc.exploration import EXPLORATION_PLAN_SCHEMA_VERSION, close_exploration, execute_exploration_plan as _execute_exploration_plan, resolve_exploration_release
 from ddvc.model_artifacts import attach_spec_ids, model_artifact_context, write_model_exhibit
 from ddvc.model_registry import canonical_hash, model_run_id, validate_artifact_spec_ids
 from ddvc.paths import REPO_ROOT
@@ -102,6 +102,10 @@ def _write_plan(directory: Path, d3_generation: str, *, artifact: Path, families
                 "claim_id": f"unregistered-question-{index}",
                 "question": "Which data-supported mechanism or rival explanation is publication-worthy?",
                 "search_dimensions": ["distribution", "heterogeneity", "mechanism", "rival_explanation"],
+                "search_dimension_spec_ids": {
+                    dimension: [f"open-fit-{index}"]
+                    for dimension in ("distribution", "heterogeneity", "mechanism", "rival_explanation")
+                },
                 "runner": runner.relative_to(REPO_ROOT).as_posix(),
                 "arguments": ["--output", output.relative_to(REPO_ROOT).as_posix()],
                 "engine_sources": [],
@@ -123,7 +127,7 @@ def _write_plan(directory: Path, d3_generation: str, *, artifact: Path, families
     template.write_text(
         json.dumps(
             {
-                "schema_version": 1,
+                "schema_version": EXPLORATION_PLAN_SCHEMA_VERSION,
                 "kind": "e0_exploration_plan_template",
                 "families": [
                     {
@@ -137,7 +141,7 @@ def _write_plan(directory: Path, d3_generation: str, *, artifact: Path, families
         encoding="utf-8",
     )
     plan.write_text(
-        json.dumps({"schema_version": 1, "d3_generation": d3_generation, "families": family_records}),
+        json.dumps({"schema_version": EXPLORATION_PLAN_SCHEMA_VERSION, "d3_generation": d3_generation, "families": family_records}),
         encoding="utf-8",
     )
     return plan
@@ -225,6 +229,10 @@ def test_e0_logs_before_fit_then_closes_exact_run_and_triage_algebra() -> None:
                 "mechanism",
                 "rival_explanation",
             ]
+            assert run["search_dimension_spec_ids"] == {
+                dimension: ["open-fit-0"]
+                for dimension in run["search_dimensions"]
+            }
             assert run["declared_artifacts"] == [
                 {
                     "path": artifact.relative_to(REPO_ROOT).as_posix(),
@@ -291,12 +299,94 @@ def test_e0_rejects_an_executable_plan_below_the_template_perimeter() -> None:
             _cleanup_manifest_mirror(directory)
 
 
+def test_e0_rejects_precoverage_plan_schema_without_a_compatibility_path() -> None:
+    with _workspace() as raw_directory:
+        directory = Path(raw_directory)
+        try:
+            d3 = _d3_release(directory)
+            ledger = directory / "model-ledger.json"
+            _write_ledger(ledger)
+            plan = _write_plan(
+                directory,
+                d3.generation,
+                artifact=directory / "result.jsonl",
+            )
+            payload = json.loads(plan.read_text(encoding="utf-8"))
+            payload["schema_version"] = 1
+            plan.write_text(json.dumps(payload), encoding="utf-8")
+            with pytest.raises(ValueError, match="plan schema is not current"):
+                execute_exploration_plan(
+                    plan.relative_to(REPO_ROOT),
+                    d3_certificate_path=d3.certificate_path.relative_to(REPO_ROOT),
+                    ledger_path=ledger.relative_to(REPO_ROOT),
+                    lock_path=directory / "run.lock",
+                    command_runner=_successful_runner,
+                )
+            assert json.loads(ledger.read_text(encoding="utf-8"))["runs"] == []
+        finally:
+            _cleanup_manifest_mirror(directory)
+
+
+@pytest.mark.parametrize(
+    ("failure", "message"),
+    [
+        ("missing_dimension", "search-dimension coverage is not exact"),
+        ("empty_dimension", "lacks exact fitted coverage"),
+        ("support_only", "cites non-fitted specification ids"),
+    ],
+)
+def test_e0_rejects_incomplete_or_nonfitted_search_dimension_coverage(
+    failure: str,
+    message: str,
+) -> None:
+    with _workspace() as raw_directory:
+        directory = Path(raw_directory)
+        try:
+            d3 = _d3_release(directory)
+            ledger = directory / "model-ledger.json"
+            _write_ledger(ledger)
+            plan = _write_plan(
+                directory,
+                d3.generation,
+                artifact=directory / "result.jsonl",
+            )
+            payload = json.loads(plan.read_text(encoding="utf-8"))
+            family = payload["families"][0]
+            dimension = family["search_dimensions"][0]
+            if failure == "missing_dimension":
+                family["search_dimension_spec_ids"].pop(dimension)
+            elif failure == "empty_dimension":
+                family["search_dimension_spec_ids"][dimension] = []
+            else:
+                family["artifacts"].append(
+                    {
+                        "path": (directory / "support.jsonl").relative_to(REPO_ROOT).as_posix(),
+                        "role": "support",
+                        "spec_ids": [],
+                    }
+                )
+                family["search_dimension_spec_ids"][dimension] = ["support-only"]
+            plan.write_text(json.dumps(payload), encoding="utf-8")
+            with pytest.raises(ValueError, match=message):
+                execute_exploration_plan(
+                    plan.relative_to(REPO_ROOT),
+                    d3_certificate_path=d3.certificate_path.relative_to(REPO_ROOT),
+                    ledger_path=ledger.relative_to(REPO_ROOT),
+                    lock_path=directory / "run.lock",
+                    command_runner=_successful_runner,
+                )
+            assert json.loads(ledger.read_text(encoding="utf-8"))["runs"] == []
+        finally:
+            _cleanup_manifest_mirror(directory)
+
+
 def test_canonical_e0_template_covers_seed_families_and_open_discovery() -> None:
     template = json.loads(
         (REPO_ROOT / "docs" / "e0-exploration-plan.template.json").read_text(
             encoding="utf-8"
         )
     )
+    assert template["schema_version"] == EXPLORATION_PLAN_SCHEMA_VERSION == 2
     assert [family["family_id"] for family in template["families"]] == [
         "vehicle_transition_e0",
         "routing_maturation_e0",
