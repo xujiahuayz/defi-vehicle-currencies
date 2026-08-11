@@ -68,7 +68,7 @@ def _write_inputs(root: Path) -> tuple[Path, Path, Path]:
                     "pool_family": "full_range_constant_product",
                     "invariant_family": "full_range_constant_product",
                     "state_generation": "fixture_v2",
-                    "capital_validation_status": "reconciled_current",
+                    "capital_validation_status": "exact_state_current",
                 }
             )
     flow_rows = []
@@ -537,17 +537,18 @@ def test_registered_builder_wires_price_input_provenance_and_validators(
     _token_prices().to_parquet(price_path, index=False)
     candidate_output = tmp_path / "candidate.parquet"
     horizon_output = tmp_path / "horizons.parquet"
+    capital_input = tmp_path / "capital.parquet"
+    capital_pointer = tmp_path / "capital-current.json"
     monkeypatch.setattr(module, "ROUTE_INPUT", tmp_path / "route.parquet")
-    monkeypatch.setattr(module, "CAPITAL_INPUT", tmp_path / "capital.parquet")
     monkeypatch.setattr(module, "FLOW_INPUT", tmp_path / "flow.parquet")
     monkeypatch.setattr(module, "PRICE_INPUT", price_path)
     monkeypatch.setattr(module, "CANDIDATE_DAY_OUTPUT", candidate_output)
     monkeypatch.setattr(module, "EXACT_HORIZON_OUTPUT", horizon_output)
-    monkeypatch.setattr(
-        module,
-        "INPUTS",
-        [module.ROUTE_INPUT, module.CAPITAL_INPUT, module.FLOW_INPUT, price_path],
-    )
+    class CapitalRelease:
+        artifacts = {"candidate": capital_input}
+        lineage_paths = (capital_pointer, capital_input)
+
+    monkeypatch.setattr(module, "resolve_capital_release", lambda: CapitalRelease())
     monkeypatch.setattr(module, "build_candidate_day_panel", lambda *args, **kwargs: base)
     required = []
     monkeypatch.setattr(
@@ -569,6 +570,7 @@ def test_registered_builder_wires_price_input_provenance_and_validators(
     assert "src/ddvc/analysis/dynamics.py" in module.CODE_SOURCES
     assert len(writes) == 2
     assert all(price_path in inputs for _path, inputs in writes)
+    assert all(capital_pointer in inputs for _path, inputs in writes)
     written_candidate = pd.read_parquet(candidate_output)
     written_horizons = pd.read_parquet(horizon_output)
     assert set(LOOKAHEAD_SAFE_COVARIATE_COLUMNS).issubset(written_candidate)

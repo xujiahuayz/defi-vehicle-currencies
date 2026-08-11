@@ -30,7 +30,7 @@ def candidate_row(
         "quantity_kind": "deposited_capital",
         "pool_family": contract.pool_family,
         "state_generation": contract.capability("deposited_capital").state_generation,
-        "capital_validation_status": "reconciled_current",
+        "capital_validation_status": "exact_state_current",
     }
 
 

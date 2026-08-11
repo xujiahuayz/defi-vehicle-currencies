@@ -8,7 +8,7 @@
   "d3_certificate": null,
   "exploration_generation": null,
   "exploration_certificate": null,
-  "lock_hash": "632a7695f994271d207455a4a7d1fc6291eec5bc453ed7c09df2bd064b2ef84d",
+  "lock_hash": "5d7dd2b2cb80a7e457dc746d7aca6d600a6a515fbd807b8a1e8d99269df8529b",
   "paper_scope": "The making and displacement of vehicle-currency roles in Ethereum decentralised exchange",
   "global_rules": {
     "asset_identity": "canonical contract address; symbols are labels only",
@@ -231,7 +231,7 @@
       "unit": "candidate token address by origin calendar day",
       "dependent_variable": "in the route-to-liquidity direction: exact-horizon change in V2-family candidate deposited capital and candidate capital share, or cumulative V3 signed net LP flow and gross LP-flow allocation share over (t,t+h]; in the liquidity-to-route direction: exact-horizon change in candidate intermediary episode share, with vehicle excess-use count ratio as a mandatory alternative",
       "transformation": "V2 stock: change in log one plus candidate-attributed deposited capital dollars and change in candidate share of the five-candidate capital stock; V3 flow: signed log one plus absolute cumulative net flow divided by 1000 dollars and cumulative candidate gross flow divided by all five candidates' gross flow; route use: episode-count intermediary share in levels and changes. V3 dollar flow is never divided by V2 capital or described as capital",
-      "outlier_treatment": "no quantile trimming; canonical endpoint round trips remain excluded; V2 rows require deposited_capital quantity_kind, a reconciled_current or reconciled_exact_lag validation status, and exact calendar links; V3 rows require flow_normalization_status=dollar_flow_and_within_flow_shares_no_capital_stock; zero-flow days remain zeros and missing exact target dates remain missing",
+      "outlier_treatment": "no quantile trimming; canonical endpoint round trips remain excluded; V2 rows require deposited_capital quantity_kind, an exact_state_current or exact_state_prior_calendar validation status, and exact calendar links; V3 rows require flow_normalization_status=dollar_flow_and_within_flow_shares_no_capital_stock; zero-flow days remain zeros and missing exact target dates remain missing",
       "response_horizon_days": [
         1,
         7,
@@ -292,7 +292,7 @@
       "forbidden_interpretation": "causal LP feedback, common capital levels across V2 and V3, V3 flow normalized by V2 capital, LP profitability, or rent incidence",
       "inputs": [
         "data/processed/vehicle_excess_use_daily.parquet",
-        "data/processed/pool_candidate_capital_daily.parquet",
+        "data/processed/pool_capital_release/current.json",
         "data/processed/lp_liquidity_flow_daily_v3.parquet",
         "data/processed/liquidity_capital_flow_candidate_day.parquet",
         "data/processed/liquidity_capital_flow_exact_horizons.parquet"
@@ -317,7 +317,7 @@
       "unit": "pool-day descriptives and pool-month inference",
       "dependent_variable": "V2 risk-adjusted net return and indicator that fees exceed LVR plus gas",
       "transformation": "V2 annualised capital returns and fee-to-LVR ratio, with external-reference-price realised variance, contemporaneous pool value as the LVR scale and exact prior-calendar capital as the return denominator; own-pool marginal-price variance is diagnostic only and cannot enter LVR inference",
-      "outlier_treatment": "anchored-leg price within four times its trailing 91-day median with no future prices; stable price between 0.5 and 2 dollars; when both reserve legs have validated prices their values must agree within a 25-percent multiplicative band; no hourly pool-price move above 100 times; reconstructed V2 reserve capital must place the provider field within a 25-percent multiplicative band around either total-pool value or one priced reserve side, the two source semantics observed in the validation audit; exact-lag capital at least 10000 dollars",
+      "outlier_treatment": "anchored-leg price within four times its trailing 91-day median with no future prices; stable price between 0.5 and 2 dollars; when both reserve legs have validated prices their values must agree within a 25-percent multiplicative band; no hourly pool-price move above 100 times; provider reserveUSD or TVL is an overlap diagnostic whose absence or disagreement cannot determine scientific row eligibility; exact-lag capital at least 10000 dollars",
       "inference": "V2 calendar-month fixed effects with two-way standard errors clustered by pool and calendar month and joint role tests from the same covariance; pool-only and month-only clustering are mandatory sensitivities; no V3 output or inference",
       "mandatory_alternatives": {
         "external_reference_support": [
@@ -359,7 +359,6 @@
       "inputs": [
         "data/processed/cex_reference_support.parquet",
         "data/processed/external_reference_price_intraday.parquet",
-        "data/processed/pool_capital_daily.parquet",
         "data/processed/lp_transaction_gas.parquet",
         "data/processed/token_price_daily.parquet",
         "data/processed/vehicle_centrality_dense.parquet",

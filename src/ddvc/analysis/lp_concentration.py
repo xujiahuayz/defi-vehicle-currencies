@@ -22,12 +22,12 @@ import pandas as pd
 
 from ddvc.asset_types import VEHICLE_CANDIDATES
 from ddvc.capital_contracts import VALID_CAPITAL_STATUSES
+from ddvc.capital_release import resolve_capital_release
 from ddvc.paths import (
     LP_CAPITAL_CONCENTRATION_PANEL,
     OUTPUT_DIR,
-    POOL_CANDIDATE_CAPITAL_PANEL,
 )
-from ddvc.provenance import require_current_artifacts, stamp
+from ddvc.provenance import stamp
 from ddvc.runtime import atomic_output
 
 
@@ -146,14 +146,8 @@ def run(
 ) -> pd.DataFrame:
     """Aggregate canonical candidate capital over an optional inclusive date range."""
 
-    if not POOL_CANDIDATE_CAPITAL_PANEL.exists():
-        raise FileNotFoundError(
-            "canonical candidate-capital panel is missing; run the pool-capital materializer"
-        )
-    require_current_artifacts(
-        [POOL_CANDIDATE_CAPITAL_PANEL],
-        consumer="candidate-linked LP-capital aggregation",
-    )
+    capital_release = resolve_capital_release()
+    candidate_path = capital_release.artifacts["candidate"]
     clauses = []
     if start:
         clauses.append(f"day >= '{start.replace('-', '')}'")
@@ -162,12 +156,12 @@ def run(
     perimeter = " AND ".join(clauses) if clauses else "true"
     addresses = ",".join(f"'{address}'" for address in VEHICLE_CANDIDATES)
     statuses = ",".join(f"'{status}'" for status in sorted(VALID_CAPITAL_STATUSES))
-    source = POOL_CANDIDATE_CAPITAL_PANEL.as_posix()
+    source = candidate_path.as_posix()
     con = duckdb.connect()
     con.execute("SET memory_limit='1GB'")
     con.execute("SET threads=2")
     con.execute(
-        f"SET temp_directory='{(POOL_CANDIDATE_CAPITAL_PANEL.parent / '_duckdb_tmp').as_posix()}'"
+        f"SET temp_directory='{(candidate_path.parent / '_duckdb_tmp').as_posix()}'"
     )
     violations = con.execute(
         f"""
@@ -237,7 +231,7 @@ def run(
             "src/ddvc/paths.py",
             "src/ddvc/runtime.py",
         ],
-        inputs=[POOL_CANDIDATE_CAPITAL_PANEL],
+        inputs=list(capital_release.lineage_paths),
         rows=len(combined),
         notes="quantity=deposited_capital; cross-protocol admitted-capital perimeter",
     )

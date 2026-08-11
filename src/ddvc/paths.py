@@ -35,9 +35,6 @@ OUTPUT_DIR = REPO_ROOT / "output"
 V3_INVENTORY_RAW_ROOT = DATA_DIR / "raw" / "ethereum" / "uniswap_v3_inventory_events"
 TICK_STATE_EVENT_RAW_ROOT = DATA_DIR / "raw" / "ethereum" / "tick_state_events"
 V2_AUDITED_TOKEN_DECIMALS_REGISTRY = DATA_DIR / "processed" / "v2_audit_token_decimals.parquet"
-POOL_CAPITAL_PANEL = DATA_DIR / "processed" / "pool_capital_daily.parquet"
-POOL_CANDIDATE_CAPITAL_PANEL = DATA_DIR / "processed" / "pool_candidate_capital_daily.parquet"
-POOL_CAPITAL_REJECTIONS = DATA_DIR / "processed" / "pool_capital_rejections.parquet"
 TOKEN_PRICE_DAILY_PANEL = DATA_DIR / "processed" / "token_price_daily.parquet"
 EXTERNAL_WETH_USD_INTRADAY_PANEL = (
     DATA_DIR / "processed" / "external_weth_usd_intraday.parquet"
@@ -95,6 +92,7 @@ def _shared_git_runtime_dir(repo_root: Path) -> Path:
 SHARED_RUNTIME_DIR = _shared_git_runtime_dir(REPO_ROOT)
 PRIMARY_REPO_ROOT = primary_checkout_root(REPO_ROOT)
 RAW_MARKET_DATA_LOCK = SHARED_RUNTIME_DIR / "raw-market-data.lock"
+POOL_CAPITAL_RELEASE_LOCK = SHARED_RUNTIME_DIR / "pool-capital-release.lock"
 V3_INVENTORY_RANGE_LOCK_ROOT = SHARED_RUNTIME_DIR / "v3-inventory-range-locks"
 EXTERNAL_WETH_USD_SOURCE_LOCK = SHARED_RUNTIME_DIR / "external-weth-usd.lock"
 

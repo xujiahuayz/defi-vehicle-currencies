@@ -8,10 +8,10 @@ from dataclasses import dataclass
 MAX_POOL_CAPITAL_USD = 10_000_000_000.0
 CAPITAL_CURRENT_COLUMN = "capital_usd"
 CAPITAL_COLUMN = "capital_usd_lagged"
-CAPITAL_SOURCE = "reconciled_constant_product_reserves"
-CP_CAPITAL_STATE_GENERATION = "reconciled_constant_product_reserves_v2"
-CURRENT_CAPITAL_VALIDATION_STATUS = "reconciled_current"
-RETURN_CAPITAL_VALIDATION_STATUS = "reconciled_exact_lag"
+CAPITAL_SOURCE = "released_exact_constant_product_closing_reserves"
+CP_CAPITAL_STATE_GENERATION = "released_constant_product_closing_reserves_v1"
+CURRENT_CAPITAL_VALIDATION_STATUS = "exact_state_current"
+RETURN_CAPITAL_VALIDATION_STATUS = "exact_state_prior_calendar"
 VALID_CAPITAL_STATUSES = frozenset(
     {CURRENT_CAPITAL_VALIDATION_STATUS, RETURN_CAPITAL_VALIDATION_STATUS}
 )
@@ -41,7 +41,10 @@ READY_CAPITAL_CONTRACTS = {
         ),
         capital_sources=(CAPITAL_SOURCE,),
         materializer="scripts.build_pool_capital_panel:main",
-        validation="exact_lag_and_separately_validated_reserve_reconstruction",
+        validation=(
+            "released_exact_closing_reserves_with_audited_identity_decimals_"
+            "independent_prices_and_exact_prior_calendar_lag"
+        ),
         admissible_uses=("descriptive", "return"),
     )
     for venue in ("uniswap_v2", "sushiswap_v2")

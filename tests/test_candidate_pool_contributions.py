@@ -58,7 +58,7 @@ def candidate_capital(pool: str, candidate: str, value: float, weight: float) ->
         "allocation_weight": weight,
         "candidate_capital_usd": value,
         "quantity_kind": "deposited_capital",
-        "capital_validation_status": "reconciled_current",
+        "capital_validation_status": "exact_state_current",
         "state_generation": CP_CAPITAL_STATE_GENERATION,
     }
 

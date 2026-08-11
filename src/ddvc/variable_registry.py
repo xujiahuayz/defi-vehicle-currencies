@@ -1014,9 +1014,11 @@ VARIABLE_SPECS: tuple[VariableSpec, ...] = (
         formula=r"$\displaystyle\sum_{p\in\mathcal L_{k,t}}\frac{\mathrm{Capital}_{p,t}}{m_p}$",
         unit="USD",
         construction=(
-            r"Candidate $k$'s allocated share of validated accounting capital across every admitted "
-            r"protocol: full capital when $k$ is the pool's only candidate token and one half when "
-            r"both pool tokens are candidates. This is deposited capital, not marginal depth."
+            r"Candidate $k$'s allocated share of validated deposited capital reconstructed from the "
+            r"released exact constant-product closing reserves, audited token identity and decimals, "
+            r"and independent address-day prices. Allocation is full when $k$ is the pool's only "
+            r"candidate token and one half when both pool tokens are candidates. Provider-reported "
+            r"TVL or reserveUSD is an overlap diagnostic and never owns the measure or row eligibility."
         ),
         source="data/exhibits/lp_capital_concentration.parquet",
         used_for="LP-capital allocation, persistence, and stickiness tests.",

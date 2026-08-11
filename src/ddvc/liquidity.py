@@ -290,7 +290,7 @@ LIQUIDITY_CONTRACTS: dict[tuple[str, str], LiquidityContract] = {
         capital_sources=capital_contract("uniswap_v2").capital_sources,
         capabilities=CP_CAPABILITIES,
         return_model_ready=True,
-        scale_label="lagged reported reserve capital",
+        scale_label="lagged independently priced exact closing reserves",
     ),
     ("sushiswap_v2", "full_range_constant_product"): _contract(
         "sushiswap_v2",
@@ -299,7 +299,7 @@ LIQUIDITY_CONTRACTS: dict[tuple[str, str], LiquidityContract] = {
         capital_sources=capital_contract("sushiswap_v2").capital_sources,
         capabilities=CP_CAPABILITIES,
         return_model_ready=True,
-        scale_label="lagged reported reserve capital",
+        scale_label="lagged independently priced exact closing reserves",
     ),
     ("uniswap_v3", "concentrated_liquidity"): _contract(
         "uniswap_v3",
@@ -595,9 +595,9 @@ def require_capital_denominator(
         raise ValueError("capital denominator must retain exact prior-calendar-day validity")
     statuses = set(frame["capital_validation_status"].fillna("").astype(str))
     permitted = (
-        {"reconciled_exact_lag"}
+        {"exact_state_prior_calendar"}
         if purpose == "return"
-        else {"reported_plausible", "reconciled_exact_lag"}
+        else {"exact_state_prior_calendar"}
     )
     unexpected_statuses = statuses - permitted
     if unexpected_statuses:

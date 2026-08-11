@@ -29,6 +29,7 @@ from ddvc.capital_contracts import (
     CP_CAPITAL_STATE_GENERATION,
     VALID_CAPITAL_STATUSES,
 )
+from ddvc.capital_release import CapitalRelease, resolve_capital_release
 from ddvc.fetch.sources import DEX_SOURCES, get_source
 from ddvc.liquidity import (
     CAPITAL_COLUMN,
@@ -60,9 +61,9 @@ from ddvc.data_release import released_state_partitions
 from ddvc.route_cost import MAIN_ROUTE_COST_SPEC, QUOTE_CELL_KEYS
 from ddvc.route_roles import VALUE_SUPPORT_COLUMNS
 from ddvc.state_data import (
+    CP_COLUMNS,
     FAMILY_STREAMS,
     STATE_GENERATIONS,
-    STATE_ROOT,
     pool_semantics,
 )
 from ddvc.venue_corpus import JFE_VENUE_CARDS, JFE_VENUE_SOURCE_KEYS
@@ -87,9 +88,6 @@ from ddvc.paths import (
     LP_LIQUIDITY_FLOW_DAILY,
     LP_LIQUIDITY_FLOW_EVENTS,
     LP_LIQUIDITY_FLOW_REJECTIONS,
-    POOL_CANDIDATE_CAPITAL_PANEL,
-    POOL_CAPITAL_PANEL,
-    POOL_CAPITAL_REJECTIONS,
     TOKEN_PRICE_DAILY_PANEL,
     literature_papers_dir,
 )
@@ -1479,18 +1477,29 @@ def validate_capital_contract_rows(rows: pd.DataFrame) -> tuple[bool, str]:
 
 
 def capital_artifact_checks(
-    pool_path: Path = POOL_CAPITAL_PANEL,
-    candidate_path: Path = POOL_CANDIDATE_CAPITAL_PANEL,
-    rejection_path: Path = POOL_CAPITAL_REJECTIONS,
+    capital_release: CapitalRelease | None = None,
 ) -> list[tuple[str, bool, str]]:
     """Audit capital identities, exact lags, allocation conservation, and quarantine."""
 
-    artifacts = (pool_path, candidate_path, rejection_path)
+    try:
+        selected = capital_release or resolve_capital_release()
+    except (FileNotFoundError, OSError, RuntimeError, TypeError, ValueError) as exc:
+        return [("node D capital release current", False, f"{type(exc).__name__}: {exc}")]
+    pool_path = selected.artifacts["pool"]
+    candidate_path = selected.artifacts["candidate"]
+    rejection_path = selected.artifacts["rejection"]
+    overlap_path = selected.artifacts["overlap"]
+    artifacts = (pool_path, candidate_path, rejection_path, overlap_path)
     missing = [path.name for path in artifacts if not path.is_file()]
     if missing:
         return [("node D capital artifacts current", False, f"missing={missing}")]
     provenance = {path.name: verify(path).get("status") for path in artifacts}
     results: list[tuple[str, bool, str]] = [
+        (
+            "node D capital release current",
+            True,
+            f"generation={selected.generation_id}; artifacts={len(selected.artifacts)}",
+        ),
         (
             "node D capital artifacts current",
             all(status == "ok" for status in provenance.values()),
@@ -1512,6 +1521,11 @@ def capital_artifact_checks(
             "reserve_source",
             "reserve_state_timestamp",
             "reserve_validation_status",
+            "identity_validation_status",
+            "token_mechanics_status",
+            "provider_overlap_status",
+            "provider_reconciliation_status",
+            "token_mechanics_status",
             "price_source",
             "capital_validation_status",
             "failure_reason",
@@ -1528,6 +1542,8 @@ def capital_artifact_checks(
             "allocation_weight",
             "candidate_capital_usd",
             "candidate_capital_usd_lagged",
+            "provider_overlap_status",
+            "provider_reconciliation_status",
             "price_source",
             "capital_validation_status",
             "exact_lag_valid",
@@ -1546,6 +1562,10 @@ def capital_artifact_checks(
             "reserve_source",
             "reserve_state_timestamp",
             "reserve_validation_status",
+            "identity_validation_status",
+            "token_mechanics_status",
+            "provider_overlap_status",
+            "provider_reconciliation_status",
             "capital_source",
             "price_source",
             "quantity_kind",
@@ -1570,6 +1590,45 @@ def capital_artifact_checks(
     )
     if missing_columns:
         return results
+    try:
+        overlap = pd.read_json(overlap_path, lines=True)
+        overlap_required = {
+            "venue",
+            "era",
+            "candidate",
+            "provider_overlap_row_share",
+            "provider_overlap_capital_share",
+            "provider_disagreement_row_share",
+            "provider_disagreement_capital_share",
+            "materiality_status",
+            "limited_transition_row_share",
+            "limited_transition_capital_share",
+            "limited_transition_materiality_status",
+        }
+        overlap_missing = sorted(overlap_required - set(overlap.columns))
+        share_columns = [column for column in overlap_required if column.endswith("_share")]
+        shares_valid = all(
+            pd.to_numeric(overlap[column], errors="coerce").dropna().between(0, 1).all()
+            for column in share_columns
+            if column in overlap
+        )
+        overlap_valid = bool(
+            not overlap.empty
+            and not overlap_missing
+            and not overlap.duplicated(["venue", "era", "candidate"]).any()
+            and shares_valid
+            and overlap["materiality_status"].notna().all()
+            and overlap["limited_transition_materiality_status"].notna().all()
+        )
+    except (OSError, TypeError, ValueError):
+        overlap_missing, overlap_valid = ["unreadable"], False
+    results.append(
+        (
+            "node D provider-capital overlap and support diagnostics",
+            overlap_valid,
+            f"rows={len(overlap) if 'overlap' in locals() else 0}; missing_columns={overlap_missing or 'none'}",
+        )
+    )
 
     con = duckdb.connect()
     con.execute("SET memory_limit='1500MB'")
@@ -1713,10 +1772,7 @@ def capital_artifact_checks(
                 SELECT venue, day, pool, reported_capital_usd
                 FROM {pool}
                 WHERE NOT capital_valid
-            ), actual AS (
-                SELECT * FROM {rejection}
-                WHERE capital_validation_status!='missing_pool_day_capital'
-            )
+            ), actual AS (SELECT * FROM {rejection})
             SELECT
                 (SELECT count(*) FROM expected) AS expected,
                 (SELECT count(*) FROM actual) AS actual,
@@ -1737,11 +1793,17 @@ def capital_artifact_checks(
         )
 
         state_parts = []
+        state_releases = {}
         for venue in ("uniswap_v2", "sushiswap_v2"):
-            glob = (STATE_ROOT / "constant_product" / venue / "*.parquet").as_posix()
+            state_release = released_state_partitions("constant_product", venue, CP_COLUMNS)
+            state_releases[venue] = state_release
+            exact_paths = ",".join(
+                "'" + path.as_posix().replace("'", "''") + "'"
+                for path in state_release.paths
+            )
             state_parts.append(
-                f"SELECT '{venue}' AS venue, day, pool FROM read_parquet('{glob}') "
-                "GROUP BY day, pool"
+                f"SELECT '{venue}' AS venue, day, pool FROM read_parquet([{exact_paths}]) "
+                "WHERE usable GROUP BY day, pool"
             )
         state_sql = " UNION ALL ".join(state_parts)
         coverage = con.execute(
@@ -1751,33 +1813,39 @@ def capital_artifact_checks(
             ), expected AS (
                 SELECT s.* FROM state s LEFT JOIN capital c USING (venue, day, pool)
                 WHERE c.pool IS NULL
-            ), actual AS (
-                SELECT * FROM {rejection}
-                WHERE capital_validation_status='missing_pool_day_capital'
+            ), extra AS (
+                SELECT c.* FROM capital c LEFT JOIN state s USING (venue, day, pool)
+                WHERE s.pool IS NULL
             )
             SELECT
                 (SELECT count(*) FROM expected),
-                (SELECT count(*) FROM actual),
-                (SELECT count(*) FROM expected e LEFT JOIN actual a
-                    USING (venue, day, pool) WHERE a.pool IS NULL),
-                (SELECT count(*) FROM actual a LEFT JOIN expected e
-                    USING (venue, day, pool) WHERE e.pool IS NULL),
-                (SELECT count(*) FROM actual WHERE reported_capital_usd IS NOT NULL
-                    OR reported_capital_source!='unavailable_missing_provider_pool_day'
-                    OR capital_source!='{CAPITAL_SOURCE}'
-                    OR price_source!='unavailable_missing_provider_pool_day'
-                    OR failure_reason!='canonical state pool-day lacks provider capital')
+                (SELECT count(*) FROM extra),
+                (SELECT count(*) FROM {pool} WHERE reserve_source!='released_constant_product_closing_reserves'),
+                (SELECT count(*) FROM {pool} WHERE capital_source!='{CAPITAL_SOURCE}'),
+                (SELECT count(*) FROM {pool} WHERE failure_reason LIKE '%reported_capital%')
             """
         ).fetchone()
         results.append(
             (
-                "node D capital state-coverage rejection ledger",
-                coverage[0] == coverage[1]
-                and not coverage[2]
-                and not coverage[3]
-                and not coverage[4],
-                f"rows={coverage[1]:,}/{coverage[0]:,}; missing={coverage[2]:,}; "
-                f"extra={coverage[3]:,}; bad_semantics={coverage[4]:,}",
+                "node D capital released-state perimeter and source ownership",
+                not any(coverage),
+                f"missing={coverage[0]:,}; extra={coverage[1]:,}; "
+                f"bad_reserve_source={coverage[2]:,}; bad_capital_source={coverage[3]:,}; "
+                f"provider_eligibility_failures={coverage[4]:,}",
+            )
+        )
+        manifest_releases = selected.manifest.get("released_state") or {}
+        release_identity_mismatch = [
+            venue
+            for venue, state_release in state_releases.items()
+            if (manifest_releases.get(venue) or {}).get("content_identity_sha256")
+            != state_release.content_identity_sha256
+        ]
+        results.append(
+            (
+                "node D capital released-state identities",
+                not release_identity_mismatch,
+                f"mismatch={release_identity_mismatch or 'none'}",
             )
         )
     except (duckdb.Error, OSError, ValueError) as exc:
@@ -2066,10 +2134,15 @@ def route_cost_panel_checks(
 
 def rent_incidence_artifact_checks(
     rent_path: Path = RENT_V2_PANEL,
-    capital_path: Path = POOL_CAPITAL_PANEL,
+    capital_release: CapitalRelease | None = None,
 ) -> list[tuple[str, bool, str]]:
     """Audit the construction-only V2 rent panel before any screen or estimator."""
 
+    try:
+        selected_capital = capital_release or resolve_capital_release()
+        capital_path = selected_capital.artifacts["pool"]
+    except (FileNotFoundError, OSError, RuntimeError, TypeError, ValueError) as exc:
+        return [("node D V2 rent construction", False, f"capital release: {type(exc).__name__}: {exc}")]
     if not rent_path.is_file() or not capital_path.is_file():
         missing = [path.name for path in (rent_path, capital_path) if not path.is_file()]
         return [("node D V2 rent construction", False, f"missing={missing}")]

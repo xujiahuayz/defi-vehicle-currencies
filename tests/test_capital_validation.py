@@ -5,11 +5,9 @@ import pytest
 
 from ddvc.capital_validation import (
     CAPITAL_PRICE_SOURCE,
+    CAPITAL_PRICE_VALIDATION_STATUS,
     CapitalPrice,
-    ConstantProductReserveState,
-    canonical_constant_product_closing_reserves,
     capital_price_lookup,
-    pool_day_reserve_state,
     validate_constant_product_capital,
     validated_capital_prices,
 )
@@ -21,7 +19,7 @@ OTHER = "0x" + "1" * 40
 
 
 def price(value: float) -> CapitalPrice:
-    return CapitalPrice(value, CAPITAL_PRICE_SOURCE, "consensus_and_address_time_sanity_passed")
+    return CapitalPrice(value, CAPITAL_PRICE_SOURCE, CAPITAL_PRICE_VALIDATION_STATUS)
 
 
 def row(**overrides: object) -> dict[str, object]:
@@ -31,6 +29,8 @@ def row(**overrides: object) -> dict[str, object]:
         "reserve0": 10.0,
         "reserve1": 20_000.0,
         "reported_capital_usd": 40_000.0,
+        "identity_validation_status": "exact_identity_and_decimals_passed",
+        "token_mechanics_status": "reserve_transition_continuity_passed",
     }
     return {**base, **overrides}
 
@@ -62,21 +62,36 @@ def test_provider_capital_is_only_a_cross_check_not_the_admitted_quantity() -> N
         row(reported_capital_usd=20_000.0),
         {WETH: price(2_000.0)},
     )
-    rejected_between_supported_scales = validate_constant_product_capital(
+    different_provider_scale = validate_constant_product_capital(
         row(reported_capital_usd=30_000.0),
         {WETH: price(2_000.0)},
     )
-    rejected_far_from_supported_scales = validate_constant_product_capital(
-        row(reported_capital_usd=10_000.0),
+    missing_provider = validate_constant_product_capital(
+        row(reported_capital_usd=None),
         {WETH: price(2_000.0)},
     )
     assert accepted.valid
     assert accepted.capital_usd == 40_000.0
     assert accepted.reconciliation_ratio == 2.0
-    assert not rejected_between_supported_scales.valid
-    assert rejected_between_supported_scales.failure_reason == "reported_capital_disagreement"
-    assert not rejected_far_from_supported_scales.valid
-    assert rejected_far_from_supported_scales.failure_reason == "reported_capital_disagreement"
+    assert different_provider_scale.valid
+    assert different_provider_scale.capital_usd == 40_000.0
+    assert different_provider_scale.reconciliation_ratio == pytest.approx(4 / 3)
+    assert missing_provider.valid
+    assert missing_provider.reconciliation_ratio is None
+
+
+@pytest.mark.parametrize(
+    "bad_price",
+    [
+        CapitalPrice(-1.0, CAPITAL_PRICE_SOURCE, CAPITAL_PRICE_VALIDATION_STATUS),
+        CapitalPrice(2_000.0, "wrong_source", CAPITAL_PRICE_VALIDATION_STATUS),
+        CapitalPrice(2_000.0, CAPITAL_PRICE_SOURCE, "wrong_status"),
+    ],
+)
+def test_price_contract_adversaries_are_quarantined(bad_price: CapitalPrice) -> None:
+    result = validate_constant_product_capital(row(), {WETH: bad_price})
+    assert not result.valid
+    assert result.failure_reason == "invalid_anchor_price_contract"
 
 
 @pytest.mark.parametrize(
@@ -84,7 +99,8 @@ def test_provider_capital_is_only_a_cross_check_not_the_admitted_quantity() -> N
     [
         ({"token0_address": None}, {}, "missing_exact_token_identity"),
         ({"reserve0": 0.0}, {WETH: price(2_000.0)}, "nonpositive_or_missing_reserves"),
-        ({"reported_capital_usd": 0.0}, {WETH: price(2_000.0)}, "nonpositive_or_missing_reported_capital"),
+        ({"identity_validation_status": "quarantined_missing_audited_decimals"}, {WETH: price(2_000.0)}, "identity_or_decimals_not_audited"),
+        ({"token_mechanics_status": "quarantined_nonstandard_token_mechanics"}, {WETH: price(2_000.0)}, "nonstandard_token_mechanics"),
         ({"token0_address": OTHER}, {}, "no_valid_anchored_leg_price"),
     ],
 )
@@ -133,68 +149,3 @@ def test_capital_price_sanity_filter_never_uses_future_prices(tmp_path) -> None:
     panel.to_parquet(path, index=False)
     validated = validated_capital_prices(path)
     assert "20250105" in set(validated["day"])
-
-
-def test_closing_reserve_replay_applies_only_liquidity_after_latest_snapshot() -> None:
-    state = pd.DataFrame(
-        [
-            {
-                "record_type": "snapshot",
-                "pool": "pool",
-                "period_end": 200,
-                "timestamp": None,
-                "block_number": None,
-                "log_index": None,
-                "reserve0": "10",
-                "reserve1": "20",
-                "amount0_delta": None,
-                "amount1_delta": None,
-                "usable": True,
-            },
-            {
-                "record_type": "liquidity",
-                "pool": "pool",
-                "period_end": None,
-                "timestamp": 150,
-                "block_number": 1,
-                "log_index": 1,
-                "reserve0": None,
-                "reserve1": None,
-                "amount0_delta": "100",
-                "amount1_delta": "100",
-                "usable": True,
-            },
-            {
-                "record_type": "liquidity",
-                "pool": "pool",
-                "period_end": None,
-                "timestamp": 250,
-                "block_number": 2,
-                "log_index": 1,
-                "reserve0": None,
-                "reserve1": None,
-                "amount0_delta": "2",
-                "amount1_delta": "3",
-                "usable": True,
-            },
-        ]
-    )
-    closing = canonical_constant_product_closing_reserves(state)["pool"]
-    assert closing.reserve0 == 12.0
-    assert closing.reserve1 == 23.0
-    assert closing.state_timestamp == 250
-    assert closing.validation_status == "latest_snapshot_plus_subsequent_liquidity_events"
-
-
-def test_pool_day_reserves_use_replay_only_when_provider_fields_are_absent() -> None:
-    replay = ConstantProductReserveState(10.0, 20.0, "replay", 100, "valid")
-    observed = pool_day_reserve_state(
-        {"reserve0": 30.0, "reserve1": 40.0}, replay, day_end_timestamp=200
-    )
-    fallback = pool_day_reserve_state(
-        {"reserve0": float("nan"), "reserve1": float("nan")},
-        replay,
-        day_end_timestamp=200,
-    )
-    assert (observed.reserve0, observed.reserve1, observed.state_timestamp) == (30.0, 40.0, 200)
-    assert fallback == replay

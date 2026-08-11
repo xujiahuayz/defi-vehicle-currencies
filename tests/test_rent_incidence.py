@@ -276,13 +276,16 @@ def test_streaming_capital_lag_requires_the_exact_previous_calendar_day():
         "reported_volume_usd": 1.0,
         "reported_fees_usd": 0.1,
         "capital_source": "uniswap_v2.reserveUSD",
+        "identity_validation_status": "exact_identity_and_decimals_passed",
+        "token_mechanics_status": "reserve_transition_continuity_passed",
+        "provider_overlap_status": "provider_row_positive_finite",
     }
     first, state = capital_builder.with_exact_capital_lag(
         base,
         venue="uniswap_v2",
         day="20250101",
         ordinal=100,
-        prices={weth: CapitalPrice(2_000.0, CAPITAL_PRICE_SOURCE, "valid")},
+        prices={weth: CapitalPrice(2_000.0, CAPITAL_PRICE_SOURCE, "consensus_and_address_time_sanity_passed")},
         prior=None,
     )
     gap, _ = capital_builder.with_exact_capital_lag(
@@ -290,7 +293,7 @@ def test_streaming_capital_lag_requires_the_exact_previous_calendar_day():
         venue="uniswap_v2",
         day="20250103",
         ordinal=102,
-        prices={weth: CapitalPrice(2_000.0, CAPITAL_PRICE_SOURCE, "valid")},
+        prices={weth: CapitalPrice(2_000.0, CAPITAL_PRICE_SOURCE, "consensus_and_address_time_sanity_passed")},
         prior=state,
     )
     adjacent, _ = capital_builder.with_exact_capital_lag(
@@ -298,14 +301,14 @@ def test_streaming_capital_lag_requires_the_exact_previous_calendar_day():
         venue="uniswap_v2",
         day="20250102",
         ordinal=101,
-        prices={weth: CapitalPrice(2_000.0, CAPITAL_PRICE_SOURCE, "valid")},
+        prices={weth: CapitalPrice(2_000.0, CAPITAL_PRICE_SOURCE, "consensus_and_address_time_sanity_passed")},
         prior=state,
     )
     assert not first["exact_lag_valid"] and first[CAPITAL_COLUMN] is None
     assert not gap["exact_lag_valid"] and gap[CAPITAL_COLUMN] is None
     assert adjacent["exact_lag_valid"] and adjacent[CAPITAL_COLUMN] == 100.0
     assert adjacent["pool_family"] == "full_range_constant_product"
-    assert adjacent["state_generation"] == "reconciled_constant_product_reserves_v2"
+    assert adjacent["state_generation"] == "released_constant_product_closing_reserves_v1"
 
 
 def test_provider_capital_must_reconcile_to_independently_priced_holdings():
@@ -322,7 +325,7 @@ def test_return_denominator_rejects_virtual_or_local_depth_sources():
             "capital_source": ["local_virtual_depth"],
             "quantity_kind": ["deposited_capital"],
             **{key: [value] for key, value in capital_contract_fields("uniswap_v2").items()},
-            "capital_validation_status": ["reconciled_exact_lag"],
+            "capital_validation_status": ["exact_state_prior_calendar"],
             "exact_lag_valid": [True],
         }
     )
@@ -535,9 +538,13 @@ def test_candidate_capital_materializer_allocates_one_pool_once():
         "token1_symbol": "USDC",
         CAPITAL_CURRENT_COLUMN: 1_000.0,
         CAPITAL_COLUMN: 900.0,
-        "capital_source": "reconciled_constant_product_reserves",
+            "era": "post_uniswap_v3",
+            "provider_overlap_status": "provider_row_positive_finite",
+            "provider_reconciliation_status": "provider_overlap_within_diagnostic_bounds",
+            "token_mechanics_status": "reserve_transition_continuity_passed",
+            "capital_source": "released_exact_constant_product_closing_reserves",
         "price_source": CAPITAL_PRICE_SOURCE,
-        "capital_validation_status": "reconciled_exact_lag",
+            "capital_validation_status": "exact_state_prior_calendar",
         "capital_valid": True,
         "exact_lag_valid": True,
         **capital_contract_fields("uniswap_v2"),
@@ -569,7 +576,7 @@ def test_missing_exact_identity_is_quarantined_without_guessing_from_symbols():
         "reserve_source": "unavailable_reserve_state",
         "reserve_state_timestamp": None,
         "reserve_validation_status": "quarantined_missing_reserve_state",
-        "capital_source": "reconciled_constant_product_reserves",
+        "capital_source": "released_exact_constant_product_closing_reserves",
         "price_source": CAPITAL_PRICE_SOURCE,
         "capital_validation_status": "quarantined_missing_exact_token_identity",
         "failure_reason": "missing_exact_token_identity",
@@ -583,120 +590,6 @@ def test_missing_exact_identity_is_quarantined_without_guessing_from_symbols():
     assert rejection is not None
     assert rejection["capital_validation_status"] == "quarantined_missing_exact_token_identity"
     assert rejection["reported_capital_usd"] == 10.0
-
-
-def test_capital_materializer_streams_pool_and_candidate_panels_atomically(
-    tmp_path: Path,
-    monkeypatch: pytest.MonkeyPatch,
-):
-    from ddvc.asset_types import VEHICLE_CANDIDATES
-
-    address_by_symbol = {
-        symbol: address for address, symbol in VEHICLE_CANDIDATES.items()
-    }
-    raw = tmp_path / "raw"
-    venue_dir = raw / "uniswap_v2"
-    venue_dir.mkdir(parents=True)
-    reserves_by_day = {
-        "20250101": (0.25, 500.0),
-        "20250102": (0.30, 600.0),
-    }
-    for day, capital, reserve in (
-        ("20250101", "1000", "0.25"),
-        ("20250102", "1200", "0.30"),
-    ):
-        record = {
-            "pairAddress": "0xPool",
-            "token0": {"id": address_by_symbol["WETH"], "symbol": "WETH"},
-            "token1": {"id": address_by_symbol["USDC"], "symbol": "USDC"},
-            "reserveUSD": capital,
-            "reserve0": reserve,
-            "reserve1": str(float(capital) / 2),
-            "dailyVolumeUSD": "10",
-        }
-        path = venue_dir / f"uniswap_v2_daily_{day}.jsonl.gz"
-        with gzip.open(path, "wt") as handle:
-            handle.write(json.dumps(record) + "\n")
-        (venue_dir / f"uniswap_v2_meta_{day}.json").write_text(
-            json.dumps(
-                {
-                    "source": "uniswap_v2",
-                    "day": f"{day[:4]}-{day[4:6]}-{day[6:]}",
-                    "streams": {
-                        "daily": {
-                            "logical_content_sha256": portable_content_sha256(
-                                path
-                            )
-                        }
-                    },
-                }
-            )
-        )
-    pool_output = tmp_path / "pool.parquet"
-    candidate_output = tmp_path / "candidate.parquet"
-    rejection_output = tmp_path / "rejections.parquet"
-    monkeypatch.setattr(capital_builder, "RAW", raw)
-    monkeypatch.setattr(capital_builder, "OUT", pool_output)
-    monkeypatch.setattr(capital_builder, "CANDIDATE_OUT", candidate_output)
-    monkeypatch.setattr(capital_builder, "REJECTIONS_OUT", rejection_output)
-    monkeypatch.setattr(capital_builder, "VENUES", ("uniswap_v2",))
-    monkeypatch.setattr(capital_builder, "pool_identity_files", lambda _venue, _raw: [])
-    monkeypatch.setattr(
-        capital_builder,
-        "read_cp_partition",
-        lambda _venue, day: pd.DataFrame(
-            {
-                "record_type": ["snapshot"],
-                "pool": ["0xpool"],
-                "period_end": [
-                    int(
-                        (
-                            pd.Timestamp(day, tz="UTC")
-                            + pd.Timedelta(days=1, seconds=-1)
-                        ).timestamp()
-                    )
-                ],
-                "timestamp": [None],
-                "block_number": [None],
-                "log_index": [None],
-                "reserve0": [str(reserves_by_day[day][0])],
-                "reserve1": [str(reserves_by_day[day][1])],
-                "amount0_delta": [None],
-                "amount1_delta": [None],
-                "usable": [True],
-            }
-        ),
-    )
-
-    prices = {
-        day: {
-            address_by_symbol["WETH"]: CapitalPrice(2_000.0, CAPITAL_PRICE_SOURCE, "valid"),
-            address_by_symbol["USDC"]: CapitalPrice(1.0, CAPITAL_PRICE_SOURCE, "valid"),
-        }
-        for day in ("20250101", "20250102")
-    }
-    rows, candidate_rows, rejection_rows, summaries, sources = capital_builder.materialize(prices)
-
-    assert rows == 2
-    assert candidate_rows == 4
-    assert rejection_rows == 0
-    assert len(sources) == 4
-    assert summaries[0]["source_days"] == 2
-    assert summaries[0]["days_with_rows"] == 2
-    pool = pd.read_parquet(pool_output).sort_values("day")
-    candidates = pd.read_parquet(candidate_output).sort_values(["day", "candidate"])
-    assert pool["quantity_kind"].tolist() == ["deposited_capital"] * 2
-    assert pool["pool_family"].tolist() == ["full_range_constant_product"] * 2
-    assert pool["state_generation"].tolist() == ["reconciled_constant_product_reserves_v2"] * 2
-    assert pool["exact_lag_valid"].tolist() == [False, True]
-    assert pd.isna(pool[CAPITAL_COLUMN].iloc[0])
-    assert pool[CAPITAL_COLUMN].iloc[1] == 1_000.0
-    assert candidates.groupby("day")["candidate_capital_usd"].sum().to_dict() == {
-        "20250101": 1_000.0,
-        "20250102": 1_200.0,
-    }
-    assert candidates.groupby("day")["allocation_weight"].sum().eq(1.0).all()
-    assert pd.read_parquet(rejection_output).empty
 
 
 def test_pool_daily_coverage_gate_rejects_a_missing_calendar_day(

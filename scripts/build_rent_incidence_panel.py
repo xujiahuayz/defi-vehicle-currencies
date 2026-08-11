@@ -40,16 +40,16 @@ import pyarrow as pa
 import pyarrow.parquet as pq
 
 from ddvc.capital_contracts import CAPITAL_CURRENT_COLUMN, capital_contract
+from ddvc.capital_release import CapitalRelease, resolve_capital_release
 from ddvc.data_release import ReleasedPartitionSet, release_preinstall_validator, released_state_partitions, require_node_d_release
 from ddvc.liquidity import CAPITAL_COLUMN
 from ddvc.panel_assembly import assemble_parquet_shards
 from ddvc.paths import (
     DATA_DIR,
     MARKET_STATE_LOCK,
-    POOL_CAPITAL_PANEL,
     RAW_MARKET_DATA_LOCK,
 )
-from ddvc.provenance import cache_key, require_current_artifacts
+from ddvc.provenance import cache_key
 from ddvc.runtime import atomic_output, bounded_workers, exclusive_job, interruptible_process_pool, staged_output
 from ddvc.state_data import (
     CP_COLUMNS,
@@ -202,10 +202,10 @@ def _rv_multiscale(hours: np.ndarray, prices: np.ndarray,
     return rv1, rv4, rv_oc, float(np.max(np.abs(lr)))
 
 
-def _capital_day(venue: str, day: str) -> pd.DataFrame:
+def _capital_day(venue: str, day: str, capital_path: Path) -> pd.DataFrame:
     """Read only the accounting-capital partition needed by one output shard."""
     capital = pd.read_parquet(
-        POOL_CAPITAL_PANEL,
+        capital_path,
         columns=["venue", "day", "pool", *CAPITAL_COLUMNS],
         filters=[("venue", "==", venue), ("day", "==", day)],
     )
@@ -226,13 +226,14 @@ def _merge_capital_day(
     venue: str,
     day: str,
     columns: tuple[str, ...],
+    capital_path: Path,
 ) -> pd.DataFrame:
     """Attach exact-day accounting capital without loading a venue-wide panel."""
     if frame.empty:
         return frame.reindex(columns=columns)
     panel = frame.copy()
     panel["pool"] = panel["pool"].str.lower()
-    capital = _capital_day(venue, day)
+    capital = _capital_day(venue, day, capital_path)
     merged = panel.merge(
         capital[["day", "pool", *CAPITAL_COLUMNS]],
         on=["day", "pool"],
@@ -417,6 +418,7 @@ def _build_v2_chunk(payload: dict[str, object]) -> tuple[int, int]:
     release = payload["release"]
     if not isinstance(release, ReleasedPartitionSet):
         raise TypeError("V2 rent chunk requires a released partition subset")
+    capital_path = Path(str(payload["capital_path"]))
     built = rows = 0
     for day in payload["days"]:
         frame = pd.DataFrame.from_records(_v2_day(str(day), release)).reindex(columns=V2_BASE_COLUMNS)
@@ -425,6 +427,7 @@ def _build_v2_chunk(payload: dict[str, object]) -> tuple[int, int]:
             venue="uniswap_v2",
             day=str(day),
             columns=V2_COLUMNS,
+            capital_path=capital_path,
         )
         rows += _write_day_shard(
             frame,
@@ -442,6 +445,7 @@ def _build_v2_shards(
     cache_dir: Path,
     *,
     release: ReleasedPartitionSet,
+    capital_path: Path,
     workers: int,
     force: bool,
 ) -> None:
@@ -466,6 +470,7 @@ def _build_v2_shards(
             "days": chunk,
             "cache_dir": str(cache_dir),
             "release": release.select_days(chunk),
+            "capital_path": str(capital_path),
         }
         for chunk in chunks
     ]
@@ -574,16 +579,18 @@ def _assemble_family(
     print(f"{venue} pool-days: {result.rows:,}", flush=True)
 
 
-def build_v2(*, workers: int, force: bool) -> None:
+def build_v2(*, workers: int, force: bool, capital_release: CapitalRelease | None = None) -> None:
     state_release = released_state_partitions("constant_product", "uniswap_v2", CP_COLUMNS)
+    selected_capital = capital_release or resolve_capital_release()
+    capital_path = selected_capital.artifacts["pool"]
     days = list(state_release.days)
     if not days:
         raise RuntimeError("no canonical Uniswap V2 state days")
-    inputs = [*state_release.provenance_inputs, POOL_CAPITAL_PANEL]
+    inputs = [*state_release.provenance_inputs, *selected_capital.lineage_paths]
     generation = cache_key(V2_SHARD_CODE_SOURCES, inputs=inputs)
     cache_dir = _generation_cache_dir("v2", generation)
     _clean_interrupted_shard_temps(cache_dir)
-    _build_v2_shards(days, cache_dir, release=state_release, workers=workers, force=force)
+    _build_v2_shards(days, cache_dir, release=state_release, capital_path=capital_path, workers=workers, force=force)
     _require_generation_current(
         generation,
         code_sources=V2_SHARD_CODE_SOURCES,
@@ -617,11 +624,8 @@ def main() -> None:
         ):
             with exclusive_job(MARKET_STATE_LOCK, job="canonical market-state build"):
                 require_node_d_release(market_state=True)
-                require_current_artifacts(
-                    [POOL_CAPITAL_PANEL],
-                    consumer="rent-incidence panel builder",
-                )
-                build_v2(workers=workers, force=args.force)
+                capital_release = resolve_capital_release()
+                build_v2(workers=workers, force=args.force, capital_release=capital_release)
 
 
 if __name__ == "__main__":

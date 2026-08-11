@@ -8,6 +8,15 @@ from datetime import datetime, timedelta
 
 RESEARCH_SAMPLE_START = "20200211"
 RESEARCH_SAMPLE_END = "20260630"
+UNISWAP_V3_ERA_START = "20210505"
+
+
+def uniswap_v3_era(day: str) -> str:
+    """Return the canonical pre/post launch era for one UTC calendar day."""
+
+    normalized = str(day).replace("-", "")
+    datetime.strptime(normalized, "%Y%m%d")
+    return "pre_uniswap_v3" if normalized < UNISWAP_V3_ERA_START else "post_uniswap_v3"
 
 
 def calendar_days(start: str, end: str) -> list[str]:

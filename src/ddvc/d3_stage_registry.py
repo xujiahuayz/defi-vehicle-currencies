@@ -122,9 +122,7 @@ D3_BUILD_STAGES = (
         (),
         "only protocol-admitted deposited capital and exact candidate allocation; V3 provider TVL is excluded",
         (
-            "data/processed/pool_capital_daily.parquet",
-            "data/processed/pool_candidate_capital_daily.parquet",
-            "data/processed/pool_capital_rejections.parquet",
+            "data/processed/pool_capital_release/current.json",
         ),
     ),
     D3BuildStage(

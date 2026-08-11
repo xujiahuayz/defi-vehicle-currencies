@@ -43,7 +43,7 @@ def v2_frame(day: str, pool: str, *, symbol: str | None = None) -> pd.DataFrame:
             "pool_family": ["full_range_constant_product"],
             "invariant_family": ["full_range_constant_product"],
             "state_generation": [CP_CAPITAL_STATE_GENERATION],
-            "capital_validation_status": ["reconciled_current"],
+            "capital_validation_status": ["exact_state_current"],
             "capital_valid": [True],
             "exact_lag_valid": [False],
         }
@@ -130,13 +130,14 @@ def test_shard_writer_refuses_a_missing_semantic_column() -> None:
 def test_missing_provider_capital_is_explicitly_typed_and_not_coerced(monkeypatch) -> None:
     base = v2_frame("20250101", "pool-a").drop(columns=list(rent.CAPITAL_COLUMNS))
     empty_capital = pd.DataFrame(columns=["day", "pool", *rent.CAPITAL_COLUMNS])
-    monkeypatch.setattr(rent, "_capital_day", lambda _venue, _day: empty_capital)
+    monkeypatch.setattr(rent, "_capital_day", lambda _venue, _day, _path: empty_capital)
 
     merged = rent._merge_capital_day(
         base,
         venue="uniswap_v2",
         day="20250101",
         columns=rent.V2_COLUMNS,
+        capital_path=Path("unused"),
     ).iloc[0]
 
     assert merged["reported_capital_source"] == "unavailable_missing_provider_pool_day"

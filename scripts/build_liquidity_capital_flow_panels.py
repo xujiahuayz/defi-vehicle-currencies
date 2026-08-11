@@ -8,6 +8,7 @@ from pathlib import Path
 
 import pandas as pd
 
+from ddvc.capital_release import resolve_capital_release
 from ddvc.liquidity_predictability import (
     HORIZONS,
     attach_lookahead_safe_daily_covariates,
@@ -24,7 +25,6 @@ from ddvc.tables import write_panel
 
 
 ROUTE_INPUT = REPO_ROOT / "data" / "processed" / "vehicle_excess_use_daily.parquet"
-CAPITAL_INPUT = REPO_ROOT / "data" / "processed" / "pool_candidate_capital_daily.parquet"
 FLOW_INPUT = REPO_ROOT / "data" / "processed" / "lp_liquidity_flow_daily_v3.parquet"
 PRICE_INPUT = TOKEN_PRICE_DAILY_PANEL
 CANDIDATE_DAY_OUTPUT = REPO_ROOT / "data" / "processed" / "liquidity_capital_flow_candidate_day.parquet"
@@ -38,7 +38,6 @@ CODE_SOURCES = [
     "src/ddvc/provenance.py",
     "src/ddvc/tables.py",
 ]
-INPUTS = [ROUTE_INPUT, CAPITAL_INPUT, FLOW_INPUT, PRICE_INPUT]
 
 
 def main() -> int:
@@ -46,9 +45,12 @@ def main() -> int:
     parser.add_argument("--memory-limit", default="512MB")
     parser.add_argument("--threads", type=int, default=2)
     args = parser.parse_args()
+    capital_release = resolve_capital_release()
+    capital_input = capital_release.artifacts["candidate"]
+    inputs = [ROUTE_INPUT, *capital_release.lineage_paths, FLOW_INPUT, PRICE_INPUT]
     base_candidate_day = build_candidate_day_panel(
         ROUTE_INPUT,
-        CAPITAL_INPUT,
+        capital_input,
         FLOW_INPUT,
         memory_limit=args.memory_limit,
         threads=args.threads,
@@ -73,7 +75,7 @@ def main() -> int:
         candidate_day,
         CANDIDATE_DAY_OUTPUT,
         code_sources=CODE_SOURCES,
-        inputs=INPUTS,
+        inputs=inputs,
         notes="fixed five-address candidate-day construction with exact-prior-day price, risk, route, V2 capital, and V3 flow covariates; trailing and pre-shock volatility distinct; support and observed zeros explicit; zero fits",
         preinstall_validator=validate_candidate_output,
     )
@@ -81,7 +83,7 @@ def main() -> int:
         exact_horizons,
         EXACT_HORIZON_OUTPUT,
         code_sources=CODE_SOURCES,
-        inputs=[*INPUTS, CANDIDATE_DAY_OUTPUT],
+        inputs=[*inputs, CANDIDATE_DAY_OUTPUT],
         notes="exact 1/7/30/120 calendar-date links, origin covariates preserved at every horizon, and complete future V3 flow windows; no row shifts and zero fits",
         preinstall_validator=validate_horizon_output,
     )

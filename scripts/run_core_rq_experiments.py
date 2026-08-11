@@ -3,7 +3,7 @@
 
 Outputs:
   data/empirical/core_token_day_panel.parquet
-  data/processed/pool_candidate_capital_daily.parquet (canonical input)
+  data/processed/pool_capital_release/current.json (canonical release input)
   data/empirical/pair_vehicle_actual_daily.parquet
   output/empirical/variable_construction.pkl
   output/empirical/core_panel_regressions.pkl
@@ -30,10 +30,11 @@ from ddvc.analysis.dynamics import (
     value_at_day_offset,
 )
 from ddvc.analysis.lp_concentration import candidate_capital_changes
-from ddvc.capital_contracts import VALID_CAPITAL_STATUSES
 from ddvc.analysis.regression import absorb_fixed_effects, ols_clustered_named
 from ddvc.asset_types import VEHICLE_CANDIDATE_SYMBOLS
-from ddvc.paths import LP_CAPITAL_CONCENTRATION_PANEL, POOL_CANDIDATE_CAPITAL_PANEL
+from ddvc.capital_contracts import VALID_CAPITAL_STATUSES
+from ddvc.capital_release import resolve_capital_release
+from ddvc.paths import LP_CAPITAL_CONCENTRATION_PANEL
 
 ROOT = Path(__file__).resolve().parents[1]
 SCRIPTS = ROOT / "scripts"
@@ -95,7 +96,7 @@ def variable_construction_table() -> pd.DataFrame:
             "Variable / proxy": "VehicleLinkedCapital",
             "Level": "vehicle token x day",
             "Construction": "Allocated deposited capital in every admitted protocol pool containing candidate v: full pool capital when v is the only candidate side and half when both sides are candidates. This is not pool depth.",
-            "Source": "data/processed/pool_candidate_capital_daily.parquet; data/exhibits/lp_capital_concentration.parquet",
+            "Source": "current immutable pool-capital release; data/exhibits/lp_capital_concentration.parquet",
             "Used for": "RQ2, RQ3, RQ6",
         },
         {
@@ -137,7 +138,7 @@ def variable_construction_table() -> pd.DataFrame:
             "Variable / proxy": "VehicleCapitalFactor",
             "Level": "vehicle token x day",
             "Construction": "Leave-one-out average daily log deposited-capital change among other pools linked to the same vehicle; paired with a leave-one-out market capital factor.",
-            "Source": "data/processed/pool_candidate_capital_daily.parquet",
+            "Source": "current immutable pool-capital release",
             "Used for": "RQ7",
         },
     ]
@@ -417,10 +418,7 @@ def stress_event_time() -> pd.DataFrame:
 def load_pool_candidate_capital() -> pd.DataFrame:
     """Load the canonical pool-candidate deposited-capital panel, never provider raw."""
 
-    if not POOL_CANDIDATE_CAPITAL_PANEL.exists():
-        raise FileNotFoundError(
-            "canonical candidate-capital panel is missing; run the pool-capital materializer"
-        )
+    candidate_path = resolve_capital_release().artifacts["candidate"]
     columns = [
         "venue",
         "day",
@@ -435,7 +433,7 @@ def load_pool_candidate_capital() -> pd.DataFrame:
         "capital_validation_status",
         "exact_lag_valid",
     ]
-    out = pd.read_parquet(POOL_CANDIDATE_CAPITAL_PANEL, columns=columns)
+    out = pd.read_parquet(candidate_path, columns=columns)
     invalid_kind = set(out["quantity_kind"].dropna().astype(str)) - {"deposited_capital"}
     invalid_status = (
         set(out["capital_validation_status"].dropna().astype(str))
