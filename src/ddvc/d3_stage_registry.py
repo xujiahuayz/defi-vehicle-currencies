@@ -7,6 +7,7 @@ from collections.abc import Iterable, Mapping
 from dataclasses import dataclass
 from typing import Any, Literal
 
+from ddvc.analysis.dominance_cost_release import DOMINANCE_COST_RELEASE_RELATIVE
 from ddvc.model_registry import claim_execution_perimeter
 
 
@@ -42,6 +43,14 @@ class D3InputOwnership:
 
 
 D3_BUILD_STAGES = (
+    D3BuildStage(
+        "build_dominance_cost_panel.py",
+        ("--threads", "1", "--memory-limit", "2GB"),
+        "pairwise WETH-versus-comparator route-cost outcomes with an outcome-specific zero-retention support ledger",
+        (
+            DOMINANCE_COST_RELEASE_RELATIVE,
+        ),
+    ),
     D3BuildStage(
         "build_routing_maturation_panel.py",
         ("--threads", "1", "--memory-limit", "1GB"),
