@@ -29,12 +29,20 @@ from ddvc.ethereum_day_cuts import (
 from ddvc.ethereum_logs import file_sha256, rpc_post_with_evidence
 from ddvc.fetch.raw import write_json
 from ddvc.fetch.sources import get_source
+from ddvc.graph_event_order import (
+    SCHEMA_VERSION as EVENT_ORDER_SCHEMA_VERSION,
+    correction_pointer_path,
+    correction_root_for_graph,
+    load_event_order_corrections,
+    load_event_order_generation_metadata,
+    semantic_mapping_sha256,
+)
 from ddvc.paths import DATA_DIR, MARKET_STATE_LOCK, RAW_MARKET_DATA_LOCK
-from ddvc.provenance import require_current_artifacts, stamp
+from ddvc.provenance import require_current_artifacts, sidecar_path, stamp
 from ddvc.quoter import Throttled, rpc_post
 from ddvc.reconstruct import UNIFIED_QUALITY_PANEL
 from ddvc.release_calendar import transaction_frontier_audit_days
-from ddvc.runtime import atomic_output, exclusive_job, interruptible_thread_pool
+from ddvc.runtime import exclusive_job, interruptible_thread_pool
 from ddvc.token_decimals import (
     TokenDecimalsAnchor,
     build_token_decimals_registry,
@@ -48,18 +56,20 @@ from ddvc.v2_event_completeness import (
     RAW_V2_FACTORY_ROOT,
     V2_CORE_EVENTS,
     V2_EXACT_LOG_CHUNK_SIZE,
-    V2_EVENT_SOURCE_CERTIFICATE,
-    V2_EVENT_SOURCE_EXCEPTIONS,
     V2_EVENT_SOURCE_SCHEMA_VERSION,
-    V2_EVENT_SOURCE_SUMMARY,
     V2_EVENT_VENUES,
     V2_FACTORIES,
     V2_FACTORY_EVIDENCE_SCHEMA_VERSION,
+    V2_COMPARISON_LEDGER,
     V2_POOL_PERIMETER,
+    V2_RECONCILIATION_COUNT_FIELDS,
+    V2_RECONCILIATION_SCOPE,
     V2_TOKEN_DECIMALS_REGISTRY,
     V2_TOKEN_DECIMALS_CONTRACT,
     V2_TOKEN_DECIMALS_SCOPE,
     audit_calendar_sha256,
+    canonical_v2_reconciliation_counts,
+    canonical_v2_pool_templates,
     compare_event_maps,
     decode_pair_created_log,
     factory_deployment_path,
@@ -71,12 +81,13 @@ from ddvc.v2_event_completeness import (
     fetch_v2_exact_log_chunk,
     fetch_factory_root_adaptive,
     frozen_upper_block_path,
-    graph_core_events_for_amount_keys,
     graph_token_observations,
     iter_graph_rows,
     load_or_build_factory_state_proof,
     load_or_resolve_frozen_upper_block,
     missing_v2_exact_log_ranges,
+    provider_core_events,
+    publish_v2_event_source_release,
     raw_core_event_records,
     raw_core_events,
     read_factory_coverage_records,
@@ -88,6 +99,7 @@ from ddvc.v2_event_completeness import (
     v2_exact_log_ranges,
     write_factory_coverage_manifest,
 )
+from scripts.reconcile_graph_event_order import reconcile_day
 
 
 GRAPH_ROOT = DATA_DIR / "raw" / "thegraph"
@@ -95,17 +107,20 @@ DEFAULT_EVENT_BLOCK_CHUNK_SIZE = V2_EXACT_LOG_CHUNK_SIZE
 MAX_JOB_ATTEMPTS = 12
 CODE_SOURCES = [
     "scripts/audit_v2_event_completeness.py",
+    "scripts/reconcile_graph_event_order.py",
     "src/ddvc/amounts.py",
     "src/ddvc/ethereum_day_cuts.py",
     "src/ddvc/ethereum_blocks.py",
     "src/ddvc/ethereum_logs.py",
     "src/ddvc/fetch/raw.py",
     "src/ddvc/fetch/sources.py",
+    "src/ddvc/graph_event_order.py",
     "src/ddvc/provenance.py",
     "src/ddvc/quoter.py",
     "src/ddvc/release_calendar.py",
     "src/ddvc/runtime.py",
     "src/ddvc/token_decimals.py",
+    "src/ddvc/v2_event_contract.py",
     "src/ddvc/v2_event_completeness.py",
 ]
 TOKEN_REGISTRY_CODE_SOURCES = [
@@ -123,12 +138,12 @@ SUMMARY_COLUMNS = [
     "venue",
     "event_type",
     "launch_status",
-    "raw_events",
-    "graph_events",
+    "exact_events",
+    "canonical_events",
     "matched_identities",
-    "missing_from_graph",
-    "graph_only",
-    "graph_duplicate_identities",
+    "missing_from_canonical",
+    "canonical_only",
+    "canonical_duplicate_identities",
     "amount_mismatches",
     "passed",
 ]
@@ -149,7 +164,7 @@ EXCEPTION_COLUMNS = [
     "tx_hash",
     "log_index",
     "pool",
-    *(f"{prefix}_{field}" for prefix in ("raw", "graph") for field in AMOUNT_FIELDS),
+    *(f"{prefix}_{field}" for prefix in ("exact", "canonical") for field in AMOUNT_FIELDS),
 ]
 
 
@@ -439,12 +454,6 @@ def fetch_factory_roots(
     return sorted(leaves)
 
 
-def _write_parquet(frame: pd.DataFrame, path: Path) -> None:
-    path.parent.mkdir(parents=True, exist_ok=True)
-    with atomic_output(path) as temporary:
-        frame.to_parquet(temporary, index=False)
-
-
 def _preflight_graph_streams(audit_days: list[str]) -> None:
     paths: list[Path] = []
     for day in audit_days:
@@ -469,8 +478,6 @@ def _preflight_graph_streams(audit_days: list[str]) -> None:
         f"  Graph event preflight: files={len(paths):,}; rows={rows:,}; gzip/json=valid",
         flush=True,
     )
-
-
 def _token_anchor(
     token: str,
     record: dict[str, object],
@@ -592,6 +599,95 @@ def collect_v2_token_decimals_perimeter(
     if not anchors:
         raise RuntimeError("V2 event-source audit produced an empty token-state perimeter")
     return anchors, provider_observations, event_inputs, raw_global_logs
+
+
+def corrected_v2_event_map(
+    venue: str,
+    day: str,
+    statics: dict,
+) -> tuple[dict, set, list[Path]]:
+    """Reopen the same corrected provider ledger consumed by canonical state."""
+
+    reconciliation, correction_inputs = load_event_order_corrections(
+        GRAPH_ROOT,
+        venue,
+        day,
+    )
+    if reconciliation is None:
+        raise RuntimeError(f"V2 corrected event ledger is absent for {venue}/{day}")
+    def stream_rows(stream: str):
+        return (
+            row
+            for row in reconciliation.reconciled_rows(
+                venue,
+                stream,
+                iter_graph_rows(
+                    GRAPH_ROOT / venue / f"{venue}_{stream}_{day}.jsonl.gz"
+                ),
+            )
+            if row is not None
+        )
+
+    rows_by_stream = {
+        stream: stream_rows(stream)
+        for stream in ("mints", "burns", "swaps")
+    }
+    events, duplicates = provider_core_events(rows_by_stream, venue, statics)
+    reconciliation.require_fully_applied()
+    return events, duplicates, correction_inputs
+
+
+def correction_generation_record(
+    venue: str,
+    day: str,
+    *,
+    bounds: dict[str, object],
+    expected_pools: set[str],
+    token_decimals: dict[str, int],
+    reconciliation_counts: dict[str, int],
+) -> dict[str, object]:
+    """Bind one released correction generation to the full-day research perimeter."""
+
+    generation = load_event_order_generation_metadata(GRAPH_ROOT, venue, day)
+    if generation is None:
+        raise RuntimeError(f"V2 correction generation is absent for {venue}/{day}")
+    data_path, metadata_path, metadata = generation
+    expected_pool_hash = semantic_mapping_sha256(
+        {pool: True for pool in expected_pools}
+    )
+    expected_decimals_hash = semantic_mapping_sha256(token_decimals)
+    expected = {
+        "scope": V2_RECONCILIATION_SCOPE,
+        "start_block": int(bounds["start_block"]),
+        "end_block": int(bounds["end_block"]),
+        "reconciliation_pool_perimeter_count": len(expected_pools),
+        "reconciliation_pool_perimeter_sha256": expected_pool_hash,
+        "audited_token_decimals_count": len(token_decimals),
+        "audited_token_decimals_sha256": expected_decimals_hash,
+    }
+    mismatched = {
+        field: (metadata.get(field), value)
+        for field, value in expected.items()
+        if metadata.get(field) != value
+    }
+    if mismatched:
+        raise ValueError(f"V2 correction generation perimeter is stale: {venue}/{day}: {mismatched}")
+    return {
+        "generation_id": metadata["generation_id"],
+        "pointer_sha256": file_sha256(
+            correction_pointer_path(
+                correction_root_for_graph(GRAPH_ROOT),
+                venue,
+                day,
+            )
+        ),
+        "data_sha256": file_sha256(data_path),
+        "metadata_sha256": file_sha256(metadata_path),
+        "exact_log_inputs_sha256": metadata["exact_log_inputs_sha256"],
+        "authority_inputs_sha256": metadata["authority_inputs_sha256"],
+        "reconciliation_counts": reconciliation_counts,
+        **expected,
+    }
 
 
 def build(
@@ -798,9 +894,25 @@ def build(
         f"provider distinct reports={sum(len(values) for values in provider_observations.values()):,}",
         flush=True,
     )
+    reconciliation_authorities = {
+        venue: [
+            V2_TOKEN_DECIMALS_REGISTRY,
+            sidecar_path(V2_TOKEN_DECIMALS_REGISTRY),
+            frozen_upper_block_path(maximum_block),
+            factory_deployment_path(venue, maximum_block),
+            factory_coverage_manifest_path(venue, maximum_block),
+            factory_state_proof_path(venue, maximum_block),
+        ]
+        for venue in V2_EVENT_VENUES
+    }
 
     summaries: list[dict[str, object]] = []
     exceptions: list[dict[str, object]] = []
+    reconciliation_totals = Counter(
+        {field: 0 for field in V2_RECONCILIATION_COUNT_FIELDS}
+    )
+    correction_generations: dict[str, dict[str, object]] = {}
+    correction_inputs: list[Path] = []
     for count, day in enumerate(audit_days, 1):
         if day in day_bounds:
             records, _inputs = read_v2_exact_logs(
@@ -821,7 +933,7 @@ def build(
                     launch_status="pre_genesis",
                 )
             else:
-                raw = raw_core_events(
+                exact = raw_core_events(
                     venue,
                     records,
                     expected_pools=set(statics[venue]),
@@ -830,18 +942,54 @@ def build(
                     },
                     ignore_unregistered=True,
                 )
-                graph, duplicates = graph_core_events_for_amount_keys(
-                    GRAPH_ROOT,
+                complete_statics = {
+                    pool: static
+                    for pool, static in statics[venue].items()
+                    if static.decimals0 is not None and static.decimals1 is not None
+                }
+                reconciliation_audit = reconcile_day(
+                    venue,
+                    day,
+                    frozen_upper=frozen_upper,
+                    workers=workers,
+                    chunk_size=event_block_chunk_size,
+                    force=force,
+                    start_block=int(day_bounds[day]["start_block"]),
+                    end_block=int(day_bounds[day]["end_block"]),
+                    expected_pools=set(statics[venue]),
+                    audited_token_decimals=token_decimals,
+                    pool_templates=canonical_v2_pool_templates(complete_statics),
+                    raw_root=GRAPH_ROOT,
+                    reconciliation_scope=V2_RECONCILIATION_SCOPE,
+                    authority_inputs=[
+                        *reconciliation_authorities[venue],
+                        _day_bound_path(day),
+                    ],
+                )
+                canonical, duplicates, venue_correction_inputs = corrected_v2_event_map(
                     venue,
                     day,
                     statics[venue],
-                    amount_keys=set(raw),
+                )
+                correction_inputs.extend(venue_correction_inputs)
+                reconciliation_counts = canonical_v2_reconciliation_counts(
+                    reconciliation_audit,
+                    canonical_rows=len(canonical),
+                )
+                reconciliation_totals.update(reconciliation_counts)
+                correction_generations[f"{venue}/{day}"] = correction_generation_record(
+                    venue,
+                    day,
+                    bounds=day_bounds[day],
+                    expected_pools=set(statics[venue]),
+                    token_decimals=token_decimals,
+                    reconciliation_counts=reconciliation_counts,
                 )
                 day_summary, day_exceptions = compare_event_maps(
                     day,
                     venue,
-                    raw,
-                    graph,
+                    exact,
+                    canonical,
                     duplicates,
                 )
             summaries.extend(day_summary)
@@ -855,16 +1003,14 @@ def build(
 
     summary = pd.DataFrame(summaries, columns=SUMMARY_COLUMNS)
     exception_frame = pd.DataFrame(exceptions, columns=EXCEPTION_COLUMNS)
-    _write_parquet(summary, V2_EVENT_SOURCE_SUMMARY)
-    _write_parquet(exception_frame, V2_EVENT_SOURCE_EXCEPTIONS)
     totals = summary[
         [
-            "raw_events",
-            "graph_events",
+            "exact_events",
+            "canonical_events",
             "matched_identities",
-            "missing_from_graph",
-            "graph_only",
-            "graph_duplicate_identities",
+            "missing_from_canonical",
+            "canonical_only",
+            "canonical_duplicate_identities",
             "amount_mismatches",
         ]
     ].sum().astype(int).to_dict()
@@ -880,6 +1026,11 @@ def build(
         "venues": list(V2_EVENT_VENUES),
         "event_types": list(V2_CORE_EVENTS),
         "pool_perimeter": V2_POOL_PERIMETER,
+        "reconciliation_scope": V2_RECONCILIATION_SCOPE,
+        "comparison_ledger": V2_COMPARISON_LEDGER,
+        "correction_generation_schema_version": EVENT_ORDER_SCHEMA_VERSION,
+        "correction_generations": correction_generations,
+        "reconciliation_totals": dict(reconciliation_totals),
         "registry_source": "complete_factory_PairCreated_histories",
         "global_event_query": "topic_only_without_address_filter",
         "factory_pairs": len(all_pairs),
@@ -935,33 +1086,36 @@ def build(
         "raw_global_event_logs": raw_global_logs,
         **totals,
         "interpretation": (
-            "Exact global Ethereum topic logs certify every Mint, Burn, and Swap identity "
-            "and raw token amount on the construction-audit calendar for every pair emitted "
-            "by the two registered factories; these dates are not an estimation sample."
+            "The released corrected provider ledger matches every exact global Ethereum Mint, "
+            "Burn, and Swap identity and raw token amount on the construction-audit calendar "
+            "across every pair emitted by the two registered factories; these dates are not "
+            "an estimation sample."
         ),
     }
     if certificate["status"] == "pass":
         validate_v2_event_source_certificate(summary, exception_frame, certificate, audit_days)
-        validate_v2_event_source_evidence_bundle(certificate)
-    V2_EVENT_SOURCE_CERTIFICATE.parent.mkdir(parents=True, exist_ok=True)
-    write_json(V2_EVENT_SOURCE_CERTIFICATE, certificate)
+        validate_v2_event_source_evidence_bundle(certificate, summary=summary)
     inputs: list[Path] = [UNIFIED_QUALITY_PANEL, V2_TOKEN_DECIMALS_REGISTRY]
     inputs.extend(_day_bound_path(day) for day in day_bounds)
     inputs.append(frozen_upper_block_path(maximum_block))
     inputs.extend(factory_deployment_path(venue, maximum_block) for venue in V2_EVENT_VENUES)
     inputs.extend(factory_inputs)
+    inputs.extend(correction_inputs)
     for day in audit_days:
         for venue in _launched_venues(day):
             inputs.append(_meta_path(venue, day))
             inputs.extend(_graph_event_paths(venue, day))
         inputs.extend(event_inputs[day])
-    notes = "exact 77-date V2-family Mint/Burn/Swap global-chain source certificate"
-    for path, rows in (
-        (V2_EVENT_SOURCE_SUMMARY, len(summary)),
-        (V2_EVENT_SOURCE_EXCEPTIONS, len(exception_frame)),
-        (V2_EVENT_SOURCE_CERTIFICATE, 1),
-    ):
-        stamp(path, code_sources=CODE_SOURCES, inputs=inputs, rows=rows, notes=notes)
+    inputs = sorted(set(inputs), key=str)
+    notes = "exact 77-date V2-family corrected-ledger certificate against full-day factory-perimeter chain logs"
+    publish_v2_event_source_release(
+        summary,
+        exception_frame,
+        certificate,
+        code_sources=CODE_SOURCES,
+        inputs=inputs,
+        notes=notes,
+    )
     return len(summary), len(exception_frame)
 
 

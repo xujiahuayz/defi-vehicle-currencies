@@ -18,6 +18,7 @@ from ddvc.route_state import (
     OrderedTickStateCursor,
     TickStateCut,
     load_cp_quote_states_by_hour,
+    released_state_lineage_inputs,
 )
 from ddvc.state_data import write_cp_partition
 from scripts import run_route_cost_panel
@@ -95,6 +96,26 @@ def test_each_state_lineage_change_creates_a_new_quote_cache_generation(tmp_path
     generations.append(run_route_cost_panel.quote_cache_generation(inputs=inputs))
 
     assert len(set(generations)) == 4
+
+
+def test_state_lineage_resolves_the_marker_released_v2_generation(tmp_path: Path, monkeypatch) -> None:
+    import ddvc.route_state as route_state
+
+    pointer = tmp_path / "release" / "current.json"
+    pointer.parent.mkdir(parents=True)
+    pointer.write_text("{}\n", encoding="utf-8")
+    artifacts = tuple(tmp_path / "release" / name for name in ("summary.parquet", "exceptions.parquet", "certificate.json"))
+    lineage = (pointer, *artifacts, *(route_state.sidecar_path(path) for path in artifacts))
+    release = type("Release", (), {"lineage_paths": lineage})()
+    monkeypatch.setattr(route_state, "V2_EVENT_SOURCE_CURRENT", pointer)
+    monkeypatch.setattr(route_state, "resolve_v2_event_source_release", lambda: release)
+    inputs = released_state_lineage_inputs(
+        state_root=tmp_path / "state",
+        raw_root=tmp_path / "raw",
+    )
+    assert pointer in inputs
+    assert all(path in inputs for path in artifacts)
+    assert all(route_state.sidecar_path(path) in inputs for path in artifacts)
 
 
 class RecordingReplay:

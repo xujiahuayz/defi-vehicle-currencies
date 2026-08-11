@@ -25,7 +25,7 @@ from ddvc.execution_contracts import (
     TICK_STATE_GENERATIONS,
     execution_semantics,
 )
-from ddvc.graph_event_order import EventOrderCorrections, load_event_order_corrections
+from ddvc.graph_event_order import CORE_STREAMS, EventOrderCorrections, load_event_order_corrections
 from ddvc.paths import DATA_DIR
 from ddvc.provenance import cache_key
 from ddvc.runtime import atomic_output
@@ -467,16 +467,22 @@ def _state_partition_inputs(
 
 def _reconciled_stream_rows(
     path: Path,
+    venue: str,
     stream: str,
     reconciliation: EventOrderCorrections | None,
 ):
-    if path.exists():
-        with gzip.open(path, "rt") as handle:
-            for line in handle:
-                if line.strip():
-                    yield json.loads(line)
-    if reconciliation is not None:
-        yield from reconciliation.supplements(stream)
+    def provider_rows():
+        if path.exists():
+            with gzip.open(path, "rt") as handle:
+                for line in handle:
+                    if line.strip():
+                        yield json.loads(line)
+
+    rows = provider_rows()
+    if reconciliation is None or stream not in CORE_STREAMS:
+        yield from rows
+    else:
+        yield from reconciliation.reconciled_rows(venue, stream, rows)
 
 
 def partition_input_fingerprint(paths: list[Path]) -> str:
@@ -509,14 +515,6 @@ def _normalise_tick_row(
     record_type: str,
     liquidity_sign: int,
     known_pool_family: str | None = None,
-    log_index_override: int | None = None,
-    amount0_override: str | None = None,
-    amount1_override: str | None = None,
-    sqrt_price_x96_override: int | None = None,
-    tick_override: int | None = None,
-    liquidity_amount_override: int | None = None,
-    tick_lower_override: int | None = None,
-    tick_upper_override: int | None = None,
 ) -> tuple[dict[str, object], dict[str, bool]]:
     pool = row.get("pool") or {}
     token0 = pool.get("token0") or {}
@@ -526,11 +524,7 @@ def _normalise_tick_row(
     canonical0 = canonical_token(raw0) if raw0 else None
     canonical1 = canonical_token(raw1) if raw1 else None
     block = block_value(row)
-    log_index = (
-        int(log_index_override)
-        if log_index_override is not None
-        else _optional_int(row.get("logIndex"))
-    )
+    log_index = _optional_int(row.get("logIndex"))
     timestamp = timestamp_value(row)
     tx_hash = transaction_id(row)
     pool_id = str(pool.get("id") or "").lower()
@@ -546,8 +540,8 @@ def _normalise_tick_row(
         or timestamp is None
         or (record_type == "swap" and (not raw0 or not raw1))
     )
-    amount0 = amount0_override if amount0_override is not None else row.get("amount0")
-    amount1 = amount1_override if amount1_override is not None else row.get("amount1")
+    amount0 = row.get("amount0")
+    amount1 = row.get("amount1")
     sign_state = _swap_sign(amount0, amount1) if record_type == "swap" else "valid"
     missing_statics = False
     if record_type == "swap" and venue == "uniswap_v4":
@@ -577,11 +571,7 @@ def _normalise_tick_row(
     liquidity_delta = None
     if record_type == "liquidity":
         try:
-            liquidity_amount = (
-                liquidity_amount_override
-                if liquidity_amount_override is not None
-                else row.get("amount") or 0
-            )
+            liquidity_amount = row.get("amount") or 0
             liquidity_delta = str(liquidity_sign * int(liquidity_amount))
         except (TypeError, ValueError):
             reasons.append("invalid_liquidity_delta")
@@ -615,27 +605,11 @@ def _normalise_tick_row(
         "amount0": _text(amount0),
         "amount1": _text(amount1),
         "value_usd": _text(row.get("amountUSD")),
-        "sqrt_price_x96": (
-            str(sqrt_price_x96_override)
-            if sqrt_price_x96_override is not None
-            else _text(row.get("sqrtPriceX96") or row.get("sqrtPrice"))
-        ),
-        "tick": (
-            int(tick_override)
-            if tick_override is not None
-            else _optional_int(row.get("tick"))
-        ),
+        "sqrt_price_x96": _text(row.get("sqrtPriceX96") or row.get("sqrtPrice")),
+        "tick": _optional_int(row.get("tick")),
         "liquidity_delta": liquidity_delta,
-        "tick_lower": (
-            int(tick_lower_override)
-            if tick_lower_override is not None
-            else _optional_int(row.get("tickLower"))
-        ),
-        "tick_upper": (
-            int(tick_upper_override)
-            if tick_upper_override is not None
-            else _optional_int(row.get("tickUpper"))
-        ),
+        "tick_lower": _optional_int(row.get("tickLower")),
+        "tick_upper": _optional_int(row.get("tickUpper")),
         "quote_supported": quote_supported,
         "quote_unsupported_reason": (
             None
@@ -680,14 +654,9 @@ def normalise_tick_partition(
     pool_families: dict[str, str] = {}
     for stream, record_type, sign in TICK_STREAMS[venue]:
         path = raw_stream_path(raw_root, venue, stream, day)
-        for source in _reconciled_stream_rows(path, stream, corrections):
+        for source in _reconciled_stream_rows(path, venue, stream, corrections):
             counters["raw_rows"] += 1
-            override = (
-                corrections.resolve(venue, stream, source)
-                if corrections is not None
-                else None
-            )
-            if override is not None and override.exclude:
+            if source is None:
                 continue
             record, flags = _normalise_tick_row(
                 source,
@@ -702,22 +671,6 @@ def normalise_tick_partition(
                     )
                     if record_type != "swap"
                     else None
-                ),
-                log_index_override=override.log_index if override is not None else None,
-                amount0_override=override.amount0 if override is not None else None,
-                amount1_override=override.amount1 if override is not None else None,
-                sqrt_price_x96_override=(
-                    override.sqrt_price_x96 if override is not None else None
-                ),
-                tick_override=override.tick if override is not None else None,
-                liquidity_amount_override=(
-                    override.liquidity_amount if override is not None else None
-                ),
-                tick_lower_override=(
-                    override.tick_lower if override is not None else None
-                ),
-                tick_upper_override=(
-                    override.tick_upper if override is not None else None
                 ),
             )
             if record_type == "swap" and record["pool"]:
@@ -811,14 +764,6 @@ def _normalise_cp_row(
     stream: str,
     record_type: str,
     liquidity_sign: int,
-    log_index_override: int | None = None,
-    needs_complete_override: bool | None = None,
-    amount0_override: str | None = None,
-    amount1_override: str | None = None,
-    amount0_in_override: str | None = None,
-    amount1_in_override: str | None = None,
-    amount0_out_override: str | None = None,
-    amount1_out_override: str | None = None,
 ) -> tuple[dict[str, object], dict[str, bool]]:
     pair = row.get("pair") or {}
     token0 = pair.get("token0") or {}
@@ -839,16 +784,10 @@ def _normalise_cp_row(
     log_index = (
         None
         if record_type == "snapshot"
-        else int(log_index_override)
-        if log_index_override is not None
         else _optional_int(row.get("logIndex"))
     )
     tx_hash = None if record_type == "snapshot" else transaction_id(row)
-    needs_complete = (
-        needs_complete_override
-        if needs_complete_override is not None
-        else bool(row.get("needsComplete"))
-    )
+    needs_complete = bool(row.get("needsComplete"))
     known_incomplete = bool(record_type == "liquidity" and needs_complete)
     missing_order = bool(
         record_type != "snapshot"
@@ -867,26 +806,13 @@ def _normalise_cp_row(
     sign_state = "valid"
     invalid_state = False
     if record_type == "swap":
-        swap_row = row
-        overrides = {
-            "amount0In": amount0_in_override,
-            "amount1In": amount1_in_override,
-            "amount0Out": amount0_out_override,
-            "amount1Out": amount1_out_override,
-        }
-        if any(value is not None for value in overrides.values()):
-            if any(value is None for value in overrides.values()):
-                raise ValueError("partial exact-chain V2 swap override")
-            swap_row = {**row, **overrides}
-        amount0_delta, amount1_delta, sign_state = _cp_swap_delta(swap_row)
+        amount0_delta, amount1_delta, sign_state = _cp_swap_delta(row)
     elif record_type == "liquidity":
-        if (amount0_override is None) != (amount1_override is None):
-            raise ValueError("partial exact-chain V2 liquidity override")
         amount0 = None if known_incomplete else _decimal_text(
-            amount0_override if amount0_override is not None else row.get("amount0")
+            row.get("amount0")
         )
         amount1 = None if known_incomplete else _decimal_text(
-            amount1_override if amount1_override is not None else row.get("amount1")
+            row.get("amount1")
         )
         if known_incomplete:
             pass
@@ -1016,14 +942,9 @@ def normalise_cp_partition(
     snapshot_keys: dict[tuple[str, int], dict[str, object]] = {}
     for stream, record_type, sign in CP_STREAMS[venue]:
         path = raw_stream_path(raw_root, venue, stream, day)
-        for source in _reconciled_stream_rows(path, stream, corrections):
+        for source in _reconciled_stream_rows(path, venue, stream, corrections):
             counters["raw_rows"] += 1
-            override = (
-                corrections.resolve(venue, stream, source)
-                if corrections is not None and record_type != "snapshot"
-                else None
-            )
-            if override is not None and override.exclude:
+            if source is None:
                 continue
             record, flags = _normalise_cp_row(
                 source,
@@ -1032,28 +953,6 @@ def normalise_cp_partition(
                 stream=stream,
                 record_type=record_type,
                 liquidity_sign=sign,
-                log_index_override=override.log_index if override is not None else None,
-                needs_complete_override=(
-                    override.needs_complete if override is not None else None
-                ),
-                amount0_override=(
-                    override.amount0 if override is not None else None
-                ),
-                amount1_override=(
-                    override.amount1 if override is not None else None
-                ),
-                amount0_in_override=(
-                    override.amount0_in if override is not None else None
-                ),
-                amount1_in_override=(
-                    override.amount1_in if override is not None else None
-                ),
-                amount0_out_override=(
-                    override.amount0_out if override is not None else None
-                ),
-                amount1_out_override=(
-                    override.amount1_out if override is not None else None
-                ),
             )
             counters[f"{record_type}_rows"] += 1
             for name, flagged in flags.items():

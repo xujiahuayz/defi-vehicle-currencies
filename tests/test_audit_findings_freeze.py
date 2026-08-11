@@ -164,11 +164,15 @@ class FindingsFreezeAuditTest(unittest.TestCase):
         import json
 
         from ddvc.fetch.sources import get_source
+        from ddvc.graph_event_order import SCHEMA_VERSION as EVENT_ORDER_SCHEMA_VERSION
         from ddvc.v2_event_completeness import (
             V2_CORE_EVENTS,
+            V2_COMPARISON_LEDGER,
             V2_EVENT_SOURCE_SCHEMA_VERSION,
             V2_EVENT_VENUES,
             V2_POOL_PERIMETER,
+            V2_RECONCILIATION_COUNT_FIELDS,
+            V2_RECONCILIATION_SCOPE,
             V2_TOKEN_DECIMALS_CONTRACT,
             V2_TOKEN_DECIMALS_SCOPE,
             audit_calendar_sha256,
@@ -198,6 +202,26 @@ class FindingsFreezeAuditTest(unittest.TestCase):
                     launch_status="pre_genesis" if day < genesis else "audited",
                 )
                 rows.extend(venue_rows)
+            zero_reconciliation = {field: 0 for field in V2_RECONCILIATION_COUNT_FIELDS}
+            correction_generations = {
+                f"{venue}/{day}": {
+                    "generation_id": "1" * 64,
+                    "pointer_sha256": "2" * 64,
+                    "data_sha256": "3" * 64,
+                    "metadata_sha256": "4" * 64,
+                    "scope": V2_RECONCILIATION_SCOPE,
+                    "start_block": 1,
+                    "end_block": 2,
+                    "reconciliation_pool_perimeter_count": 1,
+                    "reconciliation_pool_perimeter_sha256": "5" * 64,
+                    "audited_token_decimals_count": 2,
+                    "audited_token_decimals_sha256": "6" * 64,
+                    "exact_log_inputs_sha256": {"exact": "7" * 64},
+                    "authority_inputs_sha256": {"authority": "8" * 64},
+                    "reconciliation_counts": dict(zero_reconciliation),
+                }
+                for venue in V2_EVENT_VENUES
+            }
             pd.DataFrame(rows).to_parquet(summary_path, index=False)
             pd.DataFrame(columns=["status"]).to_parquet(exceptions_path, index=False)
             certificate_path.write_text(
@@ -214,6 +238,11 @@ class FindingsFreezeAuditTest(unittest.TestCase):
                         "venues": list(V2_EVENT_VENUES),
                         "event_types": list(V2_CORE_EVENTS),
                         "pool_perimeter": V2_POOL_PERIMETER,
+                        "reconciliation_scope": V2_RECONCILIATION_SCOPE,
+                        "comparison_ledger": V2_COMPARISON_LEDGER,
+                        "correction_generation_schema_version": EVENT_ORDER_SCHEMA_VERSION,
+                        "correction_generations": correction_generations,
+                        "reconciliation_totals": zero_reconciliation,
                         "registry_source": "complete_factory_PairCreated_histories",
                         "global_event_query": "topic_only_without_address_filter",
                         "identity_fields": [
@@ -230,12 +259,12 @@ class FindingsFreezeAuditTest(unittest.TestCase):
                         "raw_factory_chunks": 2,
                         "raw_event_chunks": 2,
                         "raw_global_event_logs": 0,
-                        "raw_events": 0,
-                        "graph_events": 0,
+                        "exact_events": 0,
+                        "canonical_events": 0,
                         "matched_identities": 0,
-                        "missing_from_graph": 0,
-                        "graph_only": 0,
-                        "graph_duplicate_identities": 0,
+                        "missing_from_canonical": 0,
+                        "canonical_only": 0,
+                        "canonical_duplicate_identities": 0,
                         "amount_mismatches": 0,
                         "factory_pairs": 2,
                         "factory_pairs_by_venue": {

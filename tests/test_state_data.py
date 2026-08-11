@@ -5,7 +5,9 @@ import json
 import tempfile
 import unittest
 from pathlib import Path
+from unittest.mock import patch
 
+from ddvc.graph_event_order import EventOrderCorrections, SCHEMA_VERSION as EVENT_ORDER_SCHEMA
 from ddvc.state_data import (
     CODE_SOURCES,
     FAMILY_STREAMS,
@@ -333,6 +335,75 @@ class StateDataTests(unittest.TestCase):
         self.assertTrue(frame.loc[frame["record_type"] == "swap", "quote_supported"].iloc[0])
         self.assertEqual(set(frame["pool_family"]), {"full_range_constant_product"})
         self.assertEqual(set(frame["state_generation"]), {"constant_product_state_v2"})
+
+    def test_cp_and_tick_normalizers_share_the_corrected_provider_ledger(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            raw = Path(directory) / "raw"
+            write_rows(raw, "uniswap_v2", "hourly_reserves", "20250101", [cp_snapshot()])
+            write_rows(raw, "uniswap_v2", "swaps", "20250101", [cp_swap()])
+            cp_action = {
+                "action": "correction",
+                "schema_version": EVENT_ORDER_SCHEMA,
+                "venue": "uniswap_v2",
+                "stream": "swaps",
+                "event_id": "swap",
+                "tx_hash": "0xtx",
+                "pool": "pool",
+                "block_number": 10,
+                "provider_log_index": 4,
+                "provider_occurrence": 0,
+                "chain_log_index": 14,
+                "amount0_in_override": "3",
+                "amount1_in_override": "0",
+                "amount0_out_override": "0",
+                "amount1_out_override": "4",
+            }
+            with patch(
+                "ddvc.state_data.load_event_order_corrections",
+                return_value=(EventOrderCorrections([cp_action]), []),
+            ):
+                cp_frame, cp_quality = normalise_cp_partition(
+                    raw,
+                    "uniswap_v2",
+                    "20250101",
+                )
+
+            write_rows(raw, "uniswap_v3", "swaps", "20250101", [swap()])
+            tick_action = {
+                "action": "correction",
+                "schema_version": EVENT_ORDER_SCHEMA,
+                "venue": "uniswap_v3",
+                "stream": "swaps",
+                "event_id": "event",
+                "tx_hash": "0xtx",
+                "pool": "pool",
+                "block_number": 10,
+                "provider_log_index": 4,
+                "provider_occurrence": 0,
+                "chain_log_index": 14,
+                "amount0_override": "3",
+                "amount1_override": "-4",
+                "sqrt_price_x96_override": 1 << 96,
+                "tick_override": 0,
+            }
+            with patch(
+                "ddvc.state_data.load_event_order_corrections",
+                return_value=(EventOrderCorrections([tick_action]), []),
+            ):
+                tick_frame, tick_quality = normalise_tick_partition(
+                    raw,
+                    "uniswap_v3",
+                    "20250101",
+                )
+
+        cp_trade = cp_frame.loc[cp_frame["record_type"] == "swap"].iloc[0]
+        tick_trade = tick_frame.loc[tick_frame["record_type"] == "swap"].iloc[0]
+        self.assertTrue(cp_quality.passed)
+        self.assertTrue(tick_quality.passed)
+        self.assertEqual(int(cp_trade["log_index"]), 14)
+        self.assertEqual(int(tick_trade["log_index"]), 14)
+        self.assertEqual((cp_trade["amount0_delta"], cp_trade["amount1_delta"]), ("3", "-4"))
+        self.assertEqual((tick_trade["amount0"], tick_trade["amount1"]), ("3", "-4"))
 
     def test_constant_product_partition_rejects_conflicting_chain_order(self) -> None:
         with tempfile.TemporaryDirectory() as directory:

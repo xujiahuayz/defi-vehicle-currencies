@@ -9,7 +9,8 @@ import gzip
 import hashlib
 import json
 from pathlib import Path
-from typing import Iterable, Iterator
+import tempfile
+from typing import Iterable, Iterator, Mapping
 
 from eth_abi import decode as abi_decode, encode as abi_encode
 from eth_utils import keccak
@@ -17,6 +18,11 @@ import pandas as pd
 import pyarrow.parquet as pq
 
 from ddvc.amounts import human_to_raw
+from ddvc.ethereum_day_cuts import (
+    RAW_DAY_BOUND_ROOT,
+    day_bound_path,
+    validate_utc_day_block_bounds,
+)
 from ddvc.ethereum_logs import (
     EXACT_LOG_BLOCK_CAP,
     ExactLogCapacityError,
@@ -39,33 +45,50 @@ from ddvc.ethereum_logs import (
 )
 from ddvc.fetch.raw import write_json
 from ddvc.fetch.sources import get_source
+from ddvc.graph_event_order import (
+    SCHEMA_VERSION as EVENT_ORDER_SCHEMA_VERSION,
+    correction_pointer_path,
+    correction_root_for_graph,
+    load_event_order_corrections,
+    load_event_order_generation_metadata,
+    portable_evidence_path,
+    semantic_mapping_sha256,
+)
 from ddvc.paths import DATA_DIR, OUTPUT_DIR, REPO_ROOT
+from ddvc.provenance import (
+    code_fingerprint,
+    describe_input,
+    install_stamped_artifact,
+    prepare_stamp,
+    sidecar_path,
+    verify,
+)
 from ddvc.quoter import (
     RpcEnvelope,
     canonical_json_sha256 as _canonical_json_sha256,
     coerce_rpc_envelope,
     validate_rpc_attempts,
 )
-from ddvc.runtime import interruptible_thread_pool
+from ddvc.runtime import interruptible_thread_pool, serialized_output_install
 from ddvc.token_decimals import (
     token_decimals_registry_sha256,
     validate_token_decimals_registry,
 )
+from ddvc.v2_event_contract import (
+    V2_COMPARISON_LEDGER,
+    V2_CORE_EVENTS,
+    V2_EVENT_BY_TOPIC,
+    V2_EVENT_SIGNATURES,
+    V2_EVENT_SOURCE_SCHEMA_VERSION,
+    V2_EVENT_TOPICS,
+    V2_EVENT_VENUES,
+    V2_POOL_PERIMETER,
+    V2_RECONCILIATION_COUNT_FIELDS,
+    V2_RECONCILIATION_DETAILED_EXCLUSION_FIELDS,
+    V2_RECONCILIATION_SCOPE,
+)
 
 
-V2_EVENT_VENUES = ("uniswap_v2", "sushiswap_v2")
-V2_CORE_EVENTS = ("burn", "mint", "swap")
-V2_EVENT_SIGNATURES = {
-    "mint": "Mint(address,uint256,uint256)",
-    "burn": "Burn(address,uint256,uint256,address)",
-    "swap": "Swap(address,uint256,uint256,uint256,uint256,address)",
-}
-V2_EVENT_TOPICS = {
-    name: "0x" + keccak(text=signature).hex()
-    for name, signature in V2_EVENT_SIGNATURES.items()
-}
-V2_EVENT_BY_TOPIC = {topic: name for name, topic in V2_EVENT_TOPICS.items()}
-V2_EVENT_SOURCE_SCHEMA_VERSION = 5
 V2_FACTORIES = {
     venue: str(get_source(venue).factory_address).lower()
     for venue in V2_EVENT_VENUES
@@ -75,7 +98,6 @@ if any(not address.startswith("0x") or len(address) != 42 for address in V2_FACT
 PAIR_CREATED_TOPIC = "0x" + keccak(
     text="PairCreated(address,address,address,uint256)"
 ).hex()
-V2_POOL_PERIMETER = "all_paircreated_pools_from_registered_mainnet_factories"
 RAW_V2_EVENT_ROOT = DATA_DIR / "raw" / "ethereum" / "v2_core_event_source"
 V2_EXACT_LOG_CACHE_ROOT = RAW_V2_EVENT_ROOT / "global_50_block_chunks"
 V2_EXACT_LOG_CHUNK_SIZE = EXACT_LOG_BLOCK_CAP
@@ -83,9 +105,18 @@ V2_FACTORY_INITIAL_BLOCK_SPAN = 10_000
 V2_FACTORY_STATE_SAMPLE_SIZE = 1_024
 V2_FACTORY_EVIDENCE_SCHEMA_VERSION = 4
 RAW_V2_FACTORY_ROOT = DATA_DIR / "raw" / "ethereum" / "v2_factory_pair_registry"
+# Legacy paths remain available only for callers that pass all three paths explicitly.
 V2_EVENT_SOURCE_SUMMARY = DATA_DIR / "processed" / "v2_core_event_source_audit.parquet"
 V2_EVENT_SOURCE_EXCEPTIONS = DATA_DIR / "processed" / "v2_core_event_source_exceptions.parquet"
 V2_EVENT_SOURCE_CERTIFICATE = OUTPUT_DIR / "exhibits" / "v2_core_event_source_certificate.json"
+V2_EVENT_SOURCE_RELEASE_SCHEMA_VERSION = 1
+V2_EVENT_SOURCE_RELEASE_ROOT = DATA_DIR / "processed" / "v2_core_event_source_release"
+V2_EVENT_SOURCE_CURRENT = V2_EVENT_SOURCE_RELEASE_ROOT / "current.json"
+V2_EVENT_SOURCE_RELEASE_FILENAMES = {
+    "summary": "summary.parquet",
+    "exceptions": "exceptions.parquet",
+    "certificate": "certificate.json",
+}
 V2_TOKEN_DECIMALS_REGISTRY = DATA_DIR / "processed" / "v2_audit_token_decimals.parquet"
 V2_TOKEN_DECIMALS_CONTRACT = "one_exact_erc20_decimals_call_per_token_at_deterministic_canonical_event_anchor"
 V2_TOKEN_DECIMALS_SCOPE = "provider_decimals_observed_on_every_graph_event_must_be_constant_and_match_exact_anchor; exact_proxy_history_between_anchor_and_other_event_blocks_is_not_proven"
@@ -126,6 +157,29 @@ class EventAmounts:
     amount1_in_raw: int
     amount0_out_raw: int
     amount1_out_raw: int
+
+
+@dataclass(frozen=True)
+class V2EventSourceRelease:
+    """One verified immutable V2 event-source generation."""
+
+    generation_id: str
+    pointer_path: Path
+    summary_path: Path
+    exceptions_path: Path
+    certificate_path: Path
+
+    @property
+    def artifact_paths(self) -> tuple[Path, Path, Path]:
+        return self.summary_path, self.exceptions_path, self.certificate_path
+
+    @property
+    def provenance_paths(self) -> tuple[Path, Path, Path]:
+        return tuple(sidecar_path(path) for path in self.artifact_paths)
+
+    @property
+    def lineage_paths(self) -> tuple[Path, ...]:
+        return self.pointer_path, *self.artifact_paths, *self.provenance_paths
 
 
 def v2_exact_log_ranges(start_block: int, end_block: int) -> list[tuple[int, int]]:
@@ -1687,10 +1741,33 @@ def graph_core_event_rows(
 ) -> tuple[dict[EventKey, tuple[dict[str, object], str, PoolStatic]], set[EventKey]]:
     """Read Graph identities and token metadata before any decimal conversion."""
 
+    rows_by_stream = {
+        stream: iter_graph_rows(graph_stream_path(graph_root, venue, stream, day))
+        for stream in ("mints", "burns", "swaps")
+    }
+    return provider_core_event_rows(
+        rows_by_stream,
+        venue,
+        statics,
+        provider_observations=provider_observations,
+    )
+
+
+def provider_core_event_rows(
+    rows_by_stream: Mapping[str, Iterable[dict[str, object]]],
+    venue: str,
+    statics: dict[str, PoolStatic],
+    *,
+    provider_observations: dict[str, list[object]] | None = None,
+) -> tuple[dict[EventKey, tuple[dict[str, object], str, PoolStatic]], set[EventKey]]:
+    """Parse provider-shaped V2 rows from raw or corrected canonical streams."""
+
+    if set(rows_by_stream) != {"mints", "burns", "swaps"}:
+        raise ValueError("V2 core-event rows require exact mint, burn, and swap streams")
     events: dict[EventKey, tuple[dict[str, object], str, PoolStatic]] = {}
     duplicates: set[EventKey] = set()
     for event_type, stream in (("mint", "mints"), ("burn", "burns"), ("swap", "swaps")):
-        for row in iter_graph_rows(graph_stream_path(graph_root, venue, stream, day)):
+        for row in rows_by_stream[stream]:
             pair = row.get("pair")
             pool = _address(pair.get("id") if isinstance(pair, dict) else None, label="V2 event pool")
             static = statics.get(pool)
@@ -1737,6 +1814,20 @@ def graph_core_event_rows(
             )
             _add_event(events, duplicates, key, (row, event_type, static))
     return events, duplicates
+
+
+def provider_core_events(
+    rows_by_stream: Mapping[str, Iterable[dict[str, object]]],
+    venue: str,
+    statics: dict[str, PoolStatic],
+) -> tuple[dict[EventKey, EventAmounts], set[EventKey]]:
+    """Decode one corrected provider-shaped ledger at exact identity and quantities."""
+
+    rows, duplicates = provider_core_event_rows(rows_by_stream, venue, statics)
+    return {
+        key: _graph_event_amounts(row, event_type, static)
+        for key, (row, event_type, static) in rows.items()
+    }, duplicates
 
 
 def graph_core_events(
@@ -1873,8 +1964,8 @@ def _exception_row(
     day: str,
     key: EventKey,
     status: str,
-    raw: EventAmounts | None,
-    graph: EventAmounts | None,
+    exact: EventAmounts | None,
+    canonical: EventAmounts | None,
 ) -> dict[str, object]:
     venue, event_type, block, tx_hash, log_index, pool = key
     return {
@@ -1886,68 +1977,122 @@ def _exception_row(
         "tx_hash": tx_hash,
         "log_index": log_index,
         "pool": pool,
-        **_amount_columns("raw", raw),
-        **_amount_columns("graph", graph),
+        **_amount_columns("exact", exact),
+        **_amount_columns("canonical", canonical),
     }
 
 
 def compare_event_maps(
     day: str,
     venue: str,
-    raw: dict[EventKey, EventAmounts],
-    graph: dict[EventKey, EventAmounts | None],
-    graph_duplicates: set[EventKey],
+    exact: dict[EventKey, EventAmounts],
+    canonical: dict[EventKey, EventAmounts | None],
+    canonical_duplicates: set[EventKey],
     *,
     launch_status: str = "audited",
 ) -> tuple[list[dict[str, object]], list[dict[str, object]]]:
     summaries: list[dict[str, object]] = []
     exceptions: list[dict[str, object]] = []
     for event_type in V2_CORE_EVENTS:
-        raw_keys = {key for key in raw if key[1] == event_type}
-        graph_keys = {key for key in graph if key[1] == event_type}
-        matched = raw_keys & graph_keys
-        missing = raw_keys - graph_keys
-        graph_only = graph_keys - raw_keys
-        duplicates = {key for key in graph_duplicates if key[1] == event_type}
-        unavailable = {key for key in matched if graph[key] is None}
+        exact_keys = {key for key in exact if key[1] == event_type}
+        canonical_keys = {key for key in canonical if key[1] == event_type}
+        matched = exact_keys & canonical_keys
+        missing = exact_keys - canonical_keys
+        canonical_only = canonical_keys - exact_keys
+        duplicates = {key for key in canonical_duplicates if key[1] == event_type}
+        unavailable = {key for key in matched if canonical[key] is None}
         if unavailable:
             raise ValueError(
-                f"matched V2 identities lack decoded Graph amounts: {sorted(unavailable)[:3]}"
+                f"matched V2 identities lack decoded canonical amounts: {sorted(unavailable)[:3]}"
             )
-        mismatches = {key for key in matched if raw[key] != graph[key]}
+        mismatches = {key for key in matched if exact[key] != canonical[key]}
         summaries.append(
             {
                 "day": day,
                 "venue": venue,
                 "event_type": event_type,
                 "launch_status": launch_status,
-                "raw_events": len(raw_keys),
-                "graph_events": len(graph_keys),
+                "exact_events": len(exact_keys),
+                "canonical_events": len(canonical_keys),
                 "matched_identities": len(matched),
-                "missing_from_graph": len(missing),
-                "graph_only": len(graph_only),
-                "graph_duplicate_identities": len(duplicates),
+                "missing_from_canonical": len(missing),
+                "canonical_only": len(canonical_only),
+                "canonical_duplicate_identities": len(duplicates),
                 "amount_mismatches": len(mismatches),
-                "passed": not (missing or graph_only or duplicates or mismatches),
+                "passed": not (missing or canonical_only or duplicates or mismatches),
             }
         )
         exceptions.extend(
-            _exception_row(day, key, "missing_from_graph", raw[key], None)
+            _exception_row(day, key, "missing_from_canonical", exact[key], None)
             for key in sorted(missing)
         )
         exceptions.extend(
-            _exception_row(day, key, "graph_only", None, graph[key])
-            for key in sorted(graph_only)
+            _exception_row(day, key, "canonical_only", None, canonical[key])
+            for key in sorted(canonical_only)
         )
         exceptions.extend(
-            _exception_row(day, key, "amount_mismatch", raw[key], graph[key])
+            _exception_row(day, key, "amount_mismatch", exact[key], canonical[key])
             for key in sorted(mismatches)
         )
         exceptions.extend(
-            _exception_row(day, key, "graph_duplicate_identity", raw.get(key), graph.get(key))
+            _exception_row(day, key, "canonical_duplicate_identity", exact.get(key), canonical.get(key))
             for key in sorted(duplicates)
         )
     return summaries, exceptions
+
+
+def canonical_v2_reconciliation_counts(
+    audit: Mapping[str, object],
+    *,
+    canonical_rows: int,
+) -> dict[str, int]:
+    """Translate one exact reconciliation audit into the certificate contract."""
+
+    if any(
+        type(audit.get(field)) is not int or int(audit[field]) != 0
+        for field in (
+            "ignored_zero_liquidity_events",
+            "unmatched_graph_events",
+            "unmatched_exact_events",
+        )
+    ):
+        raise ValueError("V2 reconciliation retained ignored or unmatched events")
+    values = {
+        "provider_rows": audit.get("graph_events"),
+        "unique_provider_events": audit.get("unique_graph_events"),
+        "provider_duplicate_rows": audit.get("provider_duplicate_rows"),
+        "exact_events_in_provider_observed_pool_perimeter": audit.get(
+            "exact_events_in_graph_pool_perimeter"
+        ),
+        "exact_events_in_factory_pool_perimeter": audit.get(
+            "exact_events_in_reconciliation_pool_perimeter"
+        ),
+        "matched_events": audit.get("matched_events"),
+        "correction_rows": audit.get("correction_rows"),
+        "log_index_repairs": audit.get("log_index_repairs"),
+        "payload_repairs": audit.get("payload_mismatches"),
+        "incomplete_liquidity_repairs": audit.get(
+            "incomplete_liquidity_status_repairs"
+        ),
+        "exclusion_rows": audit.get("exclusion_rows"),
+        "reverted_transaction_exclusions": audit.get(
+            "reverted_transaction_exclusions"
+        ),
+        "successful_transaction_absence_exclusions": audit.get(
+            "successful_transaction_absence_exclusions"
+        ),
+        "incomplete_liquidity_absence_exclusions": audit.get(
+            "incomplete_liquidity_absence_exclusions"
+        ),
+        "provider_duplicate_exclusions": audit.get(
+            "provider_duplicate_exclusions"
+        ),
+        "supplement_rows": audit.get("supplement_rows"),
+        "canonical_rows": canonical_rows,
+    }
+    if any(type(value) is not int or value < 0 for value in values.values()):
+        raise ValueError("V2 reconciliation audit contains invalid counts")
+    return values
 
 
 def expected_summary_keys(days: Iterable[str]) -> set[tuple[str, str, str]]:
@@ -1972,12 +2117,12 @@ def validate_v2_event_source_certificate(
         "venue",
         "event_type",
         "launch_status",
-        "raw_events",
-        "graph_events",
+        "exact_events",
+        "canonical_events",
         "matched_identities",
-        "missing_from_graph",
-        "graph_only",
-        "graph_duplicate_identities",
+        "missing_from_canonical",
+        "canonical_only",
+        "canonical_duplicate_identities",
         "amount_mismatches",
         "passed",
     }
@@ -1996,36 +2141,42 @@ def validate_v2_event_source_certificate(
             f"missing={sorted(expected - actual)[:3]}, extra={sorted(actual - expected)[:3]}"
         )
     count_columns = [
-        "raw_events",
-        "graph_events",
+        "exact_events",
+        "canonical_events",
         "matched_identities",
-        "missing_from_graph",
-        "graph_only",
-        "graph_duplicate_identities",
+        "missing_from_canonical",
+        "canonical_only",
+        "canonical_duplicate_identities",
         "amount_mismatches",
     ]
-    counts = summary[count_columns].apply(pd.to_numeric, errors="coerce")
-    if counts.isna().any().any() or (counts < 0).any().any() or (counts % 1 != 0).any().any():
+    if any(
+        not pd.api.types.is_integer_dtype(summary[column].dtype)
+        or pd.api.types.is_bool_dtype(summary[column].dtype)
+        for column in count_columns
+    ):
+        raise ValueError("V2 event-source summary counts are not integer typed")
+    counts = summary[count_columns]
+    if counts.isna().any().any() or (counts < 0).any().any():
         raise ValueError("V2 event-source summary contains invalid counts")
     if not pd.api.types.is_bool_dtype(summary["passed"].dtype) or summary["passed"].isna().any():
         raise ValueError("V2 event-source summary pass flag is not Boolean")
     for index, row in counts.iterrows():
-        raw_events = int(row["raw_events"])
-        graph_events = int(row["graph_events"])
+        exact_events = int(row["exact_events"])
+        canonical_events = int(row["canonical_events"])
         matched = int(row["matched_identities"])
-        missing = int(row["missing_from_graph"])
-        graph_only = int(row["graph_only"])
-        duplicates = int(row["graph_duplicate_identities"])
+        missing = int(row["missing_from_canonical"])
+        canonical_only = int(row["canonical_only"])
+        duplicates = int(row["canonical_duplicate_identities"])
         mismatches = int(row["amount_mismatches"])
-        if raw_events != matched + missing or graph_events != matched + graph_only:
+        if exact_events != matched + missing or canonical_events != matched + canonical_only:
             raise ValueError("V2 event-source summary contains impossible identity count algebra")
-        if matched > min(raw_events, graph_events) or duplicates > graph_events or mismatches > matched:
+        if matched > min(exact_events, canonical_events) or duplicates > canonical_events or mismatches > matched:
             raise ValueError("V2 event-source summary contains impossible comparison counts")
-        expected_pass = not (missing or graph_only or duplicates or mismatches)
+        expected_pass = not (missing or canonical_only or duplicates or mismatches)
         observed_pass = summary.loc[index, "passed"]
         if bool(observed_pass) != expected_pass:
             raise ValueError("V2 event-source summary pass flag disagrees with its counts")
-    failures = counts[["missing_from_graph", "graph_only", "graph_duplicate_identities", "amount_mismatches"]].sum(axis=1)
+    failures = counts[["missing_from_canonical", "canonical_only", "canonical_duplicate_identities", "amount_mismatches"]].sum(axis=1)
     if int(failures.sum()) != 0:
         raise ValueError("V2 event-source summary contains failed comparisons")
     for row in summary.itertuples(index=False):
@@ -2053,6 +2204,8 @@ def validate_v2_event_source_certificate(
         "venues": list(V2_EVENT_VENUES),
         "event_types": list(V2_CORE_EVENTS),
         "pool_perimeter": V2_POOL_PERIMETER,
+        "reconciliation_scope": V2_RECONCILIATION_SCOPE,
+        "comparison_ledger": V2_COMPARISON_LEDGER,
         "registry_source": "complete_factory_PairCreated_histories",
         "global_event_query": "topic_only_without_address_filter",
         "identity_fields": [
@@ -2075,12 +2228,110 @@ def validate_v2_event_source_certificate(
     if mismatched:
         raise ValueError(f"V2 event-source certificate fields are stale: {mismatched}")
     for field in count_columns:
-        if int(certificate.get(field, -1)) != int(counts[field].sum()):
+        if type(certificate.get(field)) is not int or certificate[field] != int(counts[field].sum()):
             raise ValueError(f"V2 event-source certificate total disagrees for {field}")
+    correction_schema = certificate.get("correction_generation_schema_version")
+    if type(correction_schema) is not int or correction_schema != EVENT_ORDER_SCHEMA_VERSION:
+        raise ValueError("V2 event-source certificate lacks a correction-generation schema")
+    reconciliation = certificate.get("reconciliation_totals")
+    if not isinstance(reconciliation, dict) or set(reconciliation) != set(V2_RECONCILIATION_COUNT_FIELDS):
+        raise ValueError("V2 event-source certificate lacks exact reconciliation totals")
+    if any(type(reconciliation[field]) is not int for field in V2_RECONCILIATION_COUNT_FIELDS):
+        raise ValueError("V2 event-source certificate has malformed reconciliation totals")
+    reconciliation_counts = {
+        field: reconciliation[field] for field in V2_RECONCILIATION_COUNT_FIELDS
+    }
+    if any(value < 0 for value in reconciliation_counts.values()):
+        raise ValueError("V2 event-source certificate has invalid reconciliation totals")
+    exact_total = int(counts["exact_events"].sum())
+    if reconciliation_counts["provider_rows"] - reconciliation_counts["provider_duplicate_rows"] != reconciliation_counts["unique_provider_events"]:
+        raise ValueError("V2 provider duplicate accounting does not balance")
+    if reconciliation_counts["provider_duplicate_exclusions"] != reconciliation_counts["provider_duplicate_rows"]:
+        raise ValueError("V2 provider duplicates are not all explicitly excluded")
+    detailed_exclusions = sum(
+        reconciliation_counts[field]
+        for field in V2_RECONCILIATION_DETAILED_EXCLUSION_FIELDS
+    )
+    if detailed_exclusions != reconciliation_counts["exclusion_rows"]:
+        raise ValueError("V2 reconciliation exclusion accounting does not balance")
+    canonical_rows = reconciliation_counts["provider_rows"] - reconciliation_counts["exclusion_rows"] + reconciliation_counts["supplement_rows"]
+    if canonical_rows != reconciliation_counts["canonical_rows"] or canonical_rows != exact_total:
+        raise ValueError("V2 corrected-ledger row accounting does not balance")
+    if reconciliation_counts["matched_events"] + reconciliation_counts["supplement_rows"] != exact_total:
+        raise ValueError("V2 exact-event reconciliation accounting does not balance")
+    if reconciliation_counts["exact_events_in_factory_pool_perimeter"] != exact_total:
+        raise ValueError("V2 factory-perimeter exact-event count disagrees")
+    if reconciliation_counts["exact_events_in_provider_observed_pool_perimeter"] > exact_total:
+        raise ValueError("V2 provider-observed exact-event perimeter exceeds the factory perimeter")
+    nonduplicate_absences = detailed_exclusions - reconciliation_counts["provider_duplicate_exclusions"]
+    if reconciliation_counts["unique_provider_events"] != reconciliation_counts["matched_events"] + nonduplicate_absences:
+        raise ValueError("V2 unique-provider reconciliation accounting does not balance")
+    if reconciliation_counts["correction_rows"] > reconciliation_counts["matched_events"]:
+        raise ValueError("V2 correction rows exceed matched events")
+    for field in ("log_index_repairs", "payload_repairs", "incomplete_liquidity_repairs"):
+        if reconciliation_counts[field] > reconciliation_counts["correction_rows"]:
+            raise ValueError(f"V2 reconciliation {field} exceeds correction rows")
+    if reconciliation_counts["correction_rows"] > sum(
+        reconciliation_counts[field]
+        for field in ("log_index_repairs", "payload_repairs", "incomplete_liquidity_repairs")
+    ):
+        raise ValueError("V2 correction rows lack a recorded repair reason")
+    expected_generation_keys = {
+        f"{venue}/{day}"
+        for venue in V2_EVENT_VENUES
+        for day in expected_days
+        if day >= get_source(venue).genesis.strftime("%Y%m%d")
+    }
+    generations = certificate.get("correction_generations")
+    if not isinstance(generations, dict) or set(generations) != expected_generation_keys:
+        raise ValueError("V2 event-source certificate lacks the exact correction-generation perimeter")
+    generation_totals = Counter(
+        {field: 0 for field in V2_RECONCILIATION_COUNT_FIELDS}
+    )
+    for key, record in generations.items():
+        if not isinstance(record, dict):
+            raise ValueError(f"V2 correction-generation record is malformed: {key}")
+        required_digests = (
+            "generation_id",
+            "pointer_sha256",
+            "data_sha256",
+            "metadata_sha256",
+            "reconciliation_pool_perimeter_sha256",
+            "audited_token_decimals_sha256",
+        )
+        if any(not _is_sha256(record.get(field)) for field in required_digests):
+            raise ValueError(f"V2 correction-generation record lacks digests: {key}")
+        if record.get("scope") != V2_RECONCILIATION_SCOPE:
+            raise ValueError(f"V2 correction-generation scope is stale: {key}")
+        if any(
+            type(record.get(field)) is not int or int(record[field]) < 0
+            for field in (
+                "start_block",
+                "end_block",
+                "reconciliation_pool_perimeter_count",
+                "audited_token_decimals_count",
+            )
+        ):
+            raise ValueError(f"V2 correction-generation perimeter is malformed: {key}")
+        record_counts = record.get("reconciliation_counts")
+        if not isinstance(record_counts, dict) or set(record_counts) != set(V2_RECONCILIATION_COUNT_FIELDS):
+            raise ValueError(f"V2 correction-generation counts are malformed: {key}")
+        if any(type(record_counts[field]) is not int or record_counts[field] < 0 for field in V2_RECONCILIATION_COUNT_FIELDS):
+            raise ValueError(f"V2 correction-generation counts are invalid: {key}")
+        generation_totals.update(record_counts)
+        for evidence_field in ("exact_log_inputs_sha256", "authority_inputs_sha256"):
+            evidence = record.get(evidence_field)
+            if not isinstance(evidence, dict) or not evidence or any(
+                not isinstance(path, str) or not _is_sha256(digest)
+                for path, digest in evidence.items()
+            ):
+                raise ValueError(f"V2 correction-generation evidence is malformed: {key}")
+    if dict(generation_totals) != reconciliation_counts:
+        raise ValueError("V2 correction-generation counts do not reproduce certificate totals")
     for field in ("raw_factory_chunks", "raw_event_chunks"):
         if not isinstance(certificate.get(field), int) or int(certificate[field]) < 1:
             raise ValueError(f"V2 event-source certificate lacks a positive {field}")
-    if not isinstance(certificate.get("raw_global_event_logs"), int) or int(certificate["raw_global_event_logs"]) < int(counts["raw_events"].sum()):
+    if not isinstance(certificate.get("raw_global_event_logs"), int) or int(certificate["raw_global_event_logs"]) < int(counts["exact_events"].sum()):
         raise ValueError("V2 event-source certificate global log total is impossible")
     pair_counts = certificate.get("factory_pairs_by_venue")
     if not isinstance(pair_counts, dict) or set(pair_counts) != set(V2_EVENT_VENUES):
@@ -2130,14 +2381,14 @@ def validate_v2_event_source_certificate(
     }
     if sample_sizes != expected_sample_sizes:
         raise ValueError("V2 event-source certificate contains a noncanonical factory state sample size")
-    return len(expected_days), int(counts["raw_events"].sum())
+    return len(expected_days), int(counts["exact_events"].sum())
 
 
 def reopen_v2_factory_pool_registry(
     certificate: dict[str, object],
     *,
     root: Path | None = None,
-) -> tuple[dict[str, set[str]], list[Path], int]:
+) -> tuple[dict[str, set[str]], dict[str, list[FactoryPair]], list[Path], int]:
     """Reopen every cited factory artifact and return exact venue ownership."""
 
     evidence_root = root or RAW_V2_FACTORY_ROOT
@@ -2159,6 +2410,7 @@ def reopen_v2_factory_pool_registry(
     sample_sizes = certificate["factory_state_sample_size_by_venue"]
     all_pairs: list[FactoryPair] = []
     pools_by_venue: dict[str, set[str]] = {}
+    pairs_by_venue: dict[str, list[FactoryPair]] = {}
     inputs = [frozen_path]
     leaf_count = 0
     for venue in V2_EVENT_VENUES:
@@ -2208,6 +2460,7 @@ def reopen_v2_factory_pool_registry(
         if int(certificate["factory_pairs_by_venue"][venue]) != len(pairs):
             raise ValueError(f"{venue} factory pair count disagrees with reopened evidence")
         pools_by_venue[venue] = {pair.pool for pair in pairs}
+        pairs_by_venue[venue] = pairs
         all_pairs.extend(pairs)
         leaf_count += len(ranges)
     if int(certificate["factory_pairs"]) != len(all_pairs):
@@ -2218,52 +2471,405 @@ def reopen_v2_factory_pool_registry(
         raise ValueError("V2 factory chunk total disagrees with reopened evidence")
     if set.intersection(*pools_by_venue.values()):
         raise ValueError("V2 factory registries assign one pool to multiple venues")
-    return pools_by_venue, inputs, leaf_count
+    return pools_by_venue, pairs_by_venue, inputs, leaf_count
 
 
 def validate_v2_event_source_evidence_bundle(
     certificate: dict[str, object],
     *,
+    summary: pd.DataFrame | None = None,
     root: Path | None = None,
     token_registry_path: Path | None = None,
     repo_root: Path = REPO_ROOT,
+    graph_root: Path | None = None,
+    day_bound_root: Path | None = None,
+    exact_root: Path | None = None,
 ) -> tuple[int, int]:
-    """Reopen every cited factory artifact and rederive the registry contract."""
+    """Reopen every cited input and reproduce the released corrected-ledger audit."""
 
-    pools_by_venue, _inputs, leaf_count = reopen_v2_factory_pool_registry(
+    evidence_root = root or RAW_V2_FACTORY_ROOT
+    pools_by_venue, pairs_by_venue, _inputs, leaf_count = reopen_v2_factory_pool_registry(
         certificate,
         root=root,
     )
-    if int(certificate.get("schema_version", -1)) == V2_EVENT_SOURCE_SCHEMA_VERSION or "token_decimals_registry_sha256" in certificate:
-        registry_path = token_registry_path or V2_TOKEN_DECIMALS_REGISTRY
-        if _file_sha256(registry_path) != certificate.get("token_decimals_registry_file_sha256"):
-            raise ValueError("V2 token-decimals registry file digest disagrees")
-        decimals, registry = validate_token_decimals_registry(
-            registry_path,
-            repo_root=repo_root,
+    registry_path = token_registry_path or V2_TOKEN_DECIMALS_REGISTRY
+    if _file_sha256(registry_path) != certificate.get("token_decimals_registry_file_sha256"):
+        raise ValueError("V2 token-decimals registry file digest disagrees")
+    decimals, registry = validate_token_decimals_registry(
+        registry_path,
+        repo_root=repo_root,
+    )
+    if len(registry) != int(certificate.get("token_decimals_registry_rows", -1)) or len(decimals) != len(registry):
+        raise ValueError("V2 token-decimals registry perimeter disagrees with the certificate")
+    if token_decimals_registry_sha256(registry) != certificate.get("token_decimals_registry_sha256"):
+        raise ValueError("V2 token-decimals registry semantic digest disagrees")
+    frozen_path = frozen_upper_block_path(
+        int(certificate["factory_registry_upper_block"]),
+        root=evidence_root,
+    )
+    frozen_upper = json.loads(frozen_path.read_text(encoding="utf-8"))
+    provider_root = graph_root or DATA_DIR / "raw" / "thegraph"
+    correction_root = correction_root_for_graph(provider_root)
+    bounds_root = day_bound_root or RAW_DAY_BOUND_ROOT
+    raw_exact_root = exact_root or V2_EXACT_LOG_CACHE_ROOT
+    generations = certificate.get("correction_generations")
+    if not isinstance(generations, dict):
+        raise ValueError("V2 certificate lacks correction-generation evidence")
+    rederived_summaries: list[dict[str, object]] = []
+    rederived_totals = Counter(
+        {field: 0 for field in V2_RECONCILIATION_COUNT_FIELDS}
+    )
+    for key in sorted(generations):
+        venue, separator, day = key.partition("/")
+        if not separator or venue not in V2_EVENT_VENUES or len(day) != 8:
+            raise ValueError(f"invalid V2 correction-generation key: {key}")
+        record = generations[key]
+        bound_path = day_bound_path(day, root=bounds_root)
+        bounds = json.loads(bound_path.read_text(encoding="utf-8"))
+        validate_utc_day_block_bounds(bounds, day)
+        start_block = int(bounds["start_block"])
+        end_block = int(bounds["end_block"])
+        if record.get("start_block") != start_block or record.get("end_block") != end_block:
+            raise ValueError(f"V2 correction-generation bounds disagree: {key}")
+        expected_pools = pools_by_venue[venue]
+        expected_pool_hash = semantic_mapping_sha256(
+            {pool: True for pool in expected_pools}
         )
-        if len(registry) != int(certificate.get("token_decimals_registry_rows", -1)) or len(decimals) != len(registry):
-            raise ValueError("V2 token-decimals registry perimeter disagrees with the certificate")
-        if token_decimals_registry_sha256(registry) != certificate.get("token_decimals_registry_sha256"):
-            raise ValueError("V2 token-decimals registry semantic digest disagrees")
+        expected_decimals_hash = semantic_mapping_sha256(decimals)
+        if (
+            record.get("reconciliation_pool_perimeter_count") != len(expected_pools)
+            or record.get("reconciliation_pool_perimeter_sha256") != expected_pool_hash
+            or record.get("audited_token_decimals_count") != len(decimals)
+            or record.get("audited_token_decimals_sha256") != expected_decimals_hash
+        ):
+            raise ValueError(f"V2 correction-generation registry perimeter disagrees: {key}")
+        generation = load_event_order_generation_metadata(provider_root, venue, day)
+        if generation is None:
+            raise ValueError(f"V2 correction generation is missing: {key}")
+        data_path, metadata_path, metadata = generation
+        pointer_path = correction_pointer_path(correction_root, venue, day)
+        expected_generation_fields = {
+            "generation_id": metadata["generation_id"],
+            "pointer_sha256": _file_sha256(pointer_path),
+            "data_sha256": _file_sha256(data_path),
+            "metadata_sha256": _file_sha256(metadata_path),
+            "scope": V2_RECONCILIATION_SCOPE,
+            "start_block": start_block,
+            "end_block": end_block,
+            "reconciliation_pool_perimeter_count": len(expected_pools),
+            "reconciliation_pool_perimeter_sha256": expected_pool_hash,
+            "audited_token_decimals_count": len(decimals),
+            "audited_token_decimals_sha256": expected_decimals_hash,
+            "exact_log_inputs_sha256": metadata["exact_log_inputs_sha256"],
+            "authority_inputs_sha256": metadata["authority_inputs_sha256"],
+        }
+        mismatched = {
+            field: (record.get(field), value)
+            for field, value in expected_generation_fields.items()
+            if record.get(field) != value
+        }
+        if mismatched:
+            raise ValueError(f"V2 correction-generation record is stale: {key}: {mismatched}")
+        exact_records, exact_paths = read_v2_exact_logs(
+            start_block,
+            end_block,
+            frozen_upper=frozen_upper,
+            root=raw_exact_root,
+        )
+        expected_exact_inputs = {
+            portable_evidence_path(path, correction_root): _file_sha256(path)
+            for path in exact_paths
+        }
+        if metadata.get("exact_log_inputs_sha256") != expected_exact_inputs:
+            raise ValueError(f"V2 correction generation cites the wrong exact chunks: {key}")
+        statics = {
+            pair.pool: PoolStatic(
+                pair.pool,
+                pair.token0,
+                pair.token1,
+                decimals.get(pair.token0),
+                decimals.get(pair.token1),
+            )
+            for pair in pairs_by_venue[venue]
+        }
+        exact = raw_core_events(
+            venue,
+            exact_records,
+            expected_pools=expected_pools,
+            expected_creation_blocks={
+                pair.pool: pair.creation_block for pair in pairs_by_venue[venue]
+            },
+            ignore_unregistered=True,
+        )
+        reconciliation, _correction_inputs = load_event_order_corrections(
+            provider_root,
+            venue,
+            day,
+        )
+        if reconciliation is None:
+            raise ValueError(f"V2 correction generation is absent after validation: {key}")
+        rows_by_stream = {
+            stream: reconciliation.reconciled_rows(
+                venue,
+                stream,
+                iter_graph_rows(graph_stream_path(provider_root, venue, stream, day)),
+            )
+            for stream in ("mints", "burns", "swaps")
+        }
+        canonical, duplicates = provider_core_events(rows_by_stream, venue, statics)
+        reconciliation.require_fully_applied()
+        day_summary, day_exceptions = compare_event_maps(
+            day,
+            venue,
+            exact,
+            canonical,
+            duplicates,
+        )
+        if day_exceptions or not all(row["passed"] for row in day_summary):
+            raise ValueError(f"V2 correction generation no longer matches exact logs: {key}")
+        rederived_summaries.extend(day_summary)
+        generation_counts = canonical_v2_reconciliation_counts(
+            metadata,
+            canonical_rows=len(canonical),
+        )
+        if record.get("reconciliation_counts") != generation_counts:
+            raise ValueError(f"V2 correction-generation counts no longer reproduce: {key}")
+        rederived_totals.update(generation_counts)
+    if dict(rederived_totals) != certificate.get("reconciliation_totals"):
+        raise ValueError("V2 reopened correction generations do not reproduce certificate totals")
+    if summary is None:
+        raise ValueError("V2 evidence validation requires the released summary")
+    pre_genesis = summary.loc[summary["launch_status"].astype(str) == "pre_genesis"].copy()
+    rederived = pd.concat(
+        [pre_genesis, pd.DataFrame(rederived_summaries)],
+        ignore_index=True,
+    )[list(summary.columns)]
+    sort_columns = ["venue", "day", "event_type"]
+    observed = summary.sort_values(sort_columns, kind="stable").reset_index(drop=True)
+    expected = rederived.sort_values(sort_columns, kind="stable").reset_index(drop=True)
+    try:
+        pd.testing.assert_frame_equal(observed, expected, check_dtype=True)
+    except AssertionError as error:
+        raise ValueError("V2 released summary does not match reopened correction generations") from error
     return sum(len(pools) for pools in pools_by_venue.values()), leaf_count
 
 
+def _v2_event_source_generation_id(
+    artifact_sha256: Mapping[str, str],
+    build_identity_sha256: str,
+) -> str:
+    identity = {
+        "artifacts": dict(sorted(artifact_sha256.items())),
+        "build_identity_sha256": build_identity_sha256,
+    }
+    return _canonical_json_sha256(identity)
+
+
+def _v2_event_source_generation_paths(
+    release_root: Path,
+    generation_id: str,
+) -> dict[str, Path]:
+    directory = release_root / "generations" / generation_id
+    return {
+        name: directory / filename
+        for name, filename in V2_EVENT_SOURCE_RELEASE_FILENAMES.items()
+    }
+
+
+def _read_v2_event_source_pointer(pointer_path: Path) -> dict[str, object]:
+    if not pointer_path.is_file():
+        if pointer_path == V2_EVENT_SOURCE_CURRENT and any(
+            path.is_file()
+            for path in (
+                V2_EVENT_SOURCE_SUMMARY,
+                V2_EVENT_SOURCE_EXCEPTIONS,
+                V2_EVENT_SOURCE_CERTIFICATE,
+            )
+        ):
+            raise RuntimeError("legacy flat V2 event-source artifacts require regeneration")
+        raise FileNotFoundError(f"missing V2 event-source current pointer: {pointer_path}")
+    try:
+        pointer = json.loads(pointer_path.read_text(encoding="utf-8"))
+    except (OSError, json.JSONDecodeError) as error:
+        raise ValueError("V2 event-source current pointer is not valid JSON") from error
+    if not isinstance(pointer, dict):
+        raise ValueError("V2 event-source current pointer is not a JSON object")
+    return pointer
+
+
+def resolve_v2_event_source_release(
+    pointer_path: Path = V2_EVENT_SOURCE_CURRENT,
+) -> V2EventSourceRelease:
+    """Resolve and hash-verify the one marker-released V2 generation."""
+
+    pointer_path = Path(pointer_path)
+    pointer = _read_v2_event_source_pointer(pointer_path)
+    generation_id = pointer.get("generation_id")
+    build_identity_sha256 = pointer.get("build_identity_sha256")
+    artifacts = pointer.get("artifacts")
+    if (
+        pointer.get("schema_version") != V2_EVENT_SOURCE_RELEASE_SCHEMA_VERSION
+        or pointer.get("kind") != "v2_event_source_release"
+        or not _is_sha256(generation_id)
+        or not _is_sha256(build_identity_sha256)
+        or not isinstance(artifacts, dict)
+        or set(artifacts) != set(V2_EVENT_SOURCE_RELEASE_FILENAMES)
+    ):
+        raise ValueError("invalid V2 event-source current pointer")
+    artifact_sha256: dict[str, str] = {}
+    provenance_sha256: dict[str, str] = {}
+    for name, filename in V2_EVENT_SOURCE_RELEASE_FILENAMES.items():
+        record = artifacts.get(name)
+        if (
+            not isinstance(record, dict)
+            or record.get("filename") != filename
+            or not _is_sha256(record.get("sha256"))
+            or not _is_sha256(record.get("provenance_sha256"))
+        ):
+            raise ValueError(f"invalid V2 event-source pointer record: {name}")
+        artifact_sha256[name] = str(record["sha256"])
+        provenance_sha256[name] = str(record["provenance_sha256"])
+    if _v2_event_source_generation_id(artifact_sha256, str(build_identity_sha256)) != generation_id:
+        raise ValueError("V2 event-source generation identity disagrees with its pointer")
+    paths = _v2_event_source_generation_paths(pointer_path.parent, str(generation_id))
+    missing = [path.name for path in paths.values() if not path.is_file()]
+    if missing:
+        raise FileNotFoundError(f"partial V2 event-source generation: missing={missing}")
+    for name, path in paths.items():
+        if _file_sha256(path) != artifact_sha256[name]:
+            raise ValueError(f"V2 event-source generation artifact digest disagrees: {name}")
+        provenance_path = sidecar_path(path)
+        if not provenance_path.is_file():
+            raise FileNotFoundError(f"V2 event-source generation lacks provenance: {name}")
+        if _file_sha256(provenance_path) != provenance_sha256[name]:
+            raise ValueError(f"V2 event-source generation provenance digest disagrees: {name}")
+        try:
+            provenance = json.loads(provenance_path.read_text(encoding="utf-8"))
+        except (OSError, json.JSONDecodeError) as error:
+            raise ValueError(f"V2 event-source generation provenance is invalid: {name}") from error
+        if not isinstance(provenance, dict) or provenance.get("artefact") != describe_input(path).get("path"):
+            raise ValueError(f"V2 event-source generation provenance identifies a different target: {name}")
+        recorded_digest = provenance.get("artefact_sha256")
+        if recorded_digest is not None and recorded_digest != artifact_sha256[name]:
+            raise ValueError(f"V2 event-source generation provenance identifies different content: {name}")
+    return V2EventSourceRelease(
+        generation_id=str(generation_id),
+        pointer_path=pointer_path,
+        summary_path=paths["summary"],
+        exceptions_path=paths["exceptions"],
+        certificate_path=paths["certificate"],
+    )
+
+
+def _write_v2_event_source_pointer(pointer_path: Path, pointer: dict[str, object]) -> None:
+    write_json(pointer_path, pointer)
+
+
+def publish_v2_event_source_release(
+    summary: pd.DataFrame,
+    exceptions: pd.DataFrame,
+    certificate: dict[str, object],
+    *,
+    code_sources: list[str],
+    inputs: list[str | Path] | None = None,
+    notes: str | None = None,
+    pointer_path: Path = V2_EVENT_SOURCE_CURRENT,
+) -> V2EventSourceRelease:
+    """Install, stamp, reopen, and marker-release one immutable generation."""
+
+    pointer_path = Path(pointer_path)
+    release_root = pointer_path.parent
+    release_root.mkdir(parents=True, exist_ok=True)
+    resolved_inputs = list(inputs or [])
+    with serialized_output_install(pointer_path):
+        current = resolve_v2_event_source_release(pointer_path) if pointer_path.is_file() else None
+        with tempfile.TemporaryDirectory(prefix=".v2-event-source-", dir=release_root) as temporary_directory:
+            staged = {
+                name: Path(temporary_directory) / filename
+                for name, filename in V2_EVENT_SOURCE_RELEASE_FILENAMES.items()
+            }
+            summary.to_parquet(staged["summary"], index=False)
+            exceptions.to_parquet(staged["exceptions"], index=False)
+            write_json(staged["certificate"], certificate)
+            pd.testing.assert_frame_equal(summary, pd.read_parquet(staged["summary"]), check_dtype=True)
+            pd.testing.assert_frame_equal(exceptions, pd.read_parquet(staged["exceptions"]), check_dtype=True)
+            reopened_certificate = json.loads(staged["certificate"].read_text(encoding="utf-8"))
+            if reopened_certificate != certificate:
+                raise ValueError("staged V2 event-source certificate does not round-trip exactly")
+            artifact_sha256 = {name: _file_sha256(path) for name, path in staged.items()}
+            described_inputs = sorted(
+                (describe_input(path) for path in resolved_inputs),
+                key=lambda record: json.dumps(record, sort_keys=True, separators=(",", ":")),
+            )
+            build_identity = {
+                "code_fingerprint": code_fingerprint(code_sources),
+                "inputs": described_inputs,
+                "notes": notes,
+            }
+            build_identity_sha256 = _canonical_json_sha256(build_identity)
+            generation_id = _v2_event_source_generation_id(artifact_sha256, build_identity_sha256)
+            if current is not None and current.generation_id == generation_id:
+                return current
+            targets = _v2_event_source_generation_paths(release_root, generation_id)
+            for name, target in targets.items():
+                prepared = prepare_stamp(
+                    target,
+                    content_path=staged[name],
+                    code_sources=code_sources,
+                    inputs=resolved_inputs,
+                    rows=1 if name == "certificate" else len(summary if name == "summary" else exceptions),
+                    notes=notes,
+                )
+                install_stamped_artifact(staged[name], target, prepared)
+            pd.testing.assert_frame_equal(summary, pd.read_parquet(targets["summary"]), check_dtype=True)
+            pd.testing.assert_frame_equal(exceptions, pd.read_parquet(targets["exceptions"]), check_dtype=True)
+            installed_certificate = json.loads(targets["certificate"].read_text(encoding="utf-8"))
+            if installed_certificate != certificate:
+                raise ValueError("installed V2 event-source certificate does not round-trip exactly")
+            verdicts = {name: verify(path) for name, path in targets.items()}
+            stale = {name: verdict.get("status") for name, verdict in verdicts.items() if verdict.get("status") != "ok"}
+            if stale:
+                raise RuntimeError(f"V2 event-source generation is not current before release: {stale}")
+            pointer = {
+                "schema_version": V2_EVENT_SOURCE_RELEASE_SCHEMA_VERSION,
+                "kind": "v2_event_source_release",
+                "generation_id": generation_id,
+                "build_identity_sha256": build_identity_sha256,
+                "artifacts": {
+                    name: {
+                        "filename": V2_EVENT_SOURCE_RELEASE_FILENAMES[name],
+                        "sha256": artifact_sha256[name],
+                        "provenance_sha256": _file_sha256(sidecar_path(targets[name])),
+                    }
+                    for name in V2_EVENT_SOURCE_RELEASE_FILENAMES
+                },
+            }
+            _write_v2_event_source_pointer(pointer_path, pointer)
+        return resolve_v2_event_source_release(pointer_path)
+
+
 def read_v2_event_source_certificate(
-    summary_path: Path = V2_EVENT_SOURCE_SUMMARY,
-    exceptions_path: Path = V2_EVENT_SOURCE_EXCEPTIONS,
-    certificate_path: Path = V2_EVENT_SOURCE_CERTIFICATE,
+    summary_path: Path | None = None,
+    exceptions_path: Path | None = None,
+    certificate_path: Path | None = None,
+    *,
+    pointer_path: Path = V2_EVENT_SOURCE_CURRENT,
 ) -> tuple[pd.DataFrame, pd.DataFrame, dict[str, object]]:
-    if not summary_path.is_file() or not exceptions_path.is_file() or not certificate_path.is_file():
-        missing = [
-            path.name
-            for path in (summary_path, exceptions_path, certificate_path)
-            if not path.is_file()
-        ]
+    explicit = (summary_path, exceptions_path, certificate_path)
+    if any(path is not None for path in explicit) and not all(path is not None for path in explicit):
+        raise ValueError("explicit V2 event-source reads require all three artifact paths")
+    if all(path is None for path in explicit):
+        release = resolve_v2_event_source_release(pointer_path)
+        summary_path, exceptions_path, certificate_path = release.artifact_paths
+    resolved = tuple(Path(path) for path in (summary_path, exceptions_path, certificate_path) if path is not None)
+    if len(resolved) != 3:
+        raise AssertionError("V2 event-source artifact resolution is incomplete")
+    missing = [path.name for path in resolved if not path.is_file()]
+    if missing:
         raise FileNotFoundError(f"missing V2 event-source artifacts: {missing}")
-    summary = pd.read_parquet(summary_path)
-    exceptions = pd.read_parquet(exceptions_path)
-    certificate = json.loads(certificate_path.read_text(encoding="utf-8"))
+    summary = pd.read_parquet(resolved[0])
+    exceptions = pd.read_parquet(resolved[1])
+    certificate = json.loads(resolved[2].read_text(encoding="utf-8"))
     if not isinstance(certificate, dict):
         raise ValueError("V2 event-source certificate is not a JSON object")
     return summary, exceptions, certificate

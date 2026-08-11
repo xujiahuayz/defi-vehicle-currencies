@@ -27,10 +27,8 @@ from ddvc.paths import DATA_DIR
 from ddvc.provenance import require_current_artifacts
 from ddvc.release_calendar import transaction_frontier_audit_days
 from ddvc.v2_event_completeness import (
-    V2_EVENT_SOURCE_CERTIFICATE,
-    V2_EVENT_SOURCE_EXCEPTIONS,
-    V2_EVENT_SOURCE_SUMMARY,
     read_v2_event_source_certificate,
+    resolve_v2_event_source_release,
     validate_v2_event_source_certificate,
     validate_v2_event_source_evidence_bundle,
 )
@@ -247,26 +245,22 @@ def require_market_state_release() -> None:
 def require_v2_event_source_release() -> None:
     """Require the current independent-chain certificate for V2 replay events."""
 
-    artifacts = [
-        V2_EVENT_SOURCE_SUMMARY,
-        V2_EVENT_SOURCE_EXCEPTIONS,
-        V2_EVENT_SOURCE_CERTIFICATE,
-    ]
-    require_current_artifacts(
-        artifacts,
-        consumer="node D V2-family market-state release",
-    )
-    summary, exceptions, certificate = read_v2_event_source_certificate()
-    expected_days = transaction_frontier_audit_days(UNIFIED_QUALITY_PANEL)
     try:
+        release = resolve_v2_event_source_release()
+        require_current_artifacts(
+            list(release.artifact_paths),
+            consumer="node D V2-family market-state release",
+        )
+        summary, exceptions, certificate = read_v2_event_source_certificate(*release.artifact_paths)
+        expected_days = transaction_frontier_audit_days(UNIFIED_QUALITY_PANEL)
         validate_v2_event_source_certificate(
             summary,
             exceptions,
             certificate,
             expected_days,
         )
-        validate_v2_event_source_evidence_bundle(certificate)
-    except (FileNotFoundError, KeyError, OSError, TypeError, ValueError) as error:
+        validate_v2_event_source_evidence_bundle(certificate, summary=summary)
+    except (FileNotFoundError, KeyError, OSError, RuntimeError, TypeError, ValueError) as error:
         raise RuntimeError(
             f"node D V2-family event-source certificate failed: {error}"
         ) from error

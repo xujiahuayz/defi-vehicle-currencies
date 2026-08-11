@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import copy
 import io
 import gzip
 import hashlib
@@ -28,21 +29,27 @@ from ddvc.ethereum_logs import (
 )
 from ddvc.fetch.raw import write_jsonl_gz
 from ddvc.fetch.sources import get_source
+from ddvc.graph_event_order import SCHEMA_VERSION as EVENT_ORDER_SCHEMA_VERSION
 from ddvc.quoter import Throttled, canonical_json_sha256, sanitized_endpoint_identity
 from ddvc.v2_event_completeness import (
     ALL_PAIRS_LENGTH_SELECTOR,
     ALL_PAIRS_SELECTOR,
     EventAmounts,
+    FactoryPair,
     GET_PAIR_SELECTOR,
     PAIR_CREATED_TOPIC,
     V2_CORE_EVENTS,
+    V2_COMPARISON_LEDGER,
     V2_FACTORIES,
     V2_EVENT_SOURCE_SCHEMA_VERSION,
     V2_EVENT_TOPICS,
     V2_EVENT_VENUES,
+    V2_EXACT_LOG_CHUNK_SIZE,
     V2_FACTORY_EVIDENCE_SCHEMA_VERSION,
     V2_FACTORY_INITIAL_BLOCK_SPAN,
     V2_POOL_PERIMETER,
+    V2_RECONCILIATION_COUNT_FIELDS,
+    V2_RECONCILIATION_SCOPE,
     V2_TOKEN_DECIMALS_CONTRACT,
     V2_TOKEN_DECIMALS_SCOPE,
     audit_calendar_sha256,
@@ -64,9 +71,14 @@ from ddvc.v2_event_completeness import (
     graph_token_observations,
     load_or_resolve_frozen_upper_block,
     missing_v2_exact_log_ranges,
+    provider_core_events,
+    publish_v2_event_source_release,
     raw_core_events,
     read_factory_coverage_records,
     read_v2_exact_logs,
+    read_v2_event_source_certificate,
+    resolve_v2_event_source_release,
+    reopen_v2_factory_pool_registry,
     validate_factory_coverage_manifest,
     validate_factory_coverage_ranges,
     validate_factory_deployment_proof,
@@ -540,6 +552,123 @@ def test_graph_comparison_uses_audited_decimals_and_all_three_streams(tmp_path) 
     summaries, exceptions = compare_event_maps(day, venue, raw, graph, duplicates)
     assert all(row["passed"] for row in summaries)
     assert not exceptions
+
+
+def test_corrected_provider_rows_share_the_canonical_v2_decoder() -> None:
+    venue = "uniswap_v2"
+    statics, _pairs = factory_pair_registry(
+        venue,
+        [pair_created_raw()],
+        {TOKEN0: 6, TOKEN1: 18},
+    )
+    rows = {
+        stream: [graph_event(event_type)]
+        for event_type, stream in (("mint", "mints"), ("burn", "burns"), ("swap", "swaps"))
+    }
+    observed, duplicates = provider_core_events(rows, venue, statics)
+    expected = dict(
+        decode_v2_log(venue, raw_event(event_type))
+        for event_type in V2_CORE_EVENTS
+    )
+
+    assert observed == expected
+    assert duplicates == set()
+
+
+def test_reconciler_uses_explicit_full_day_and_factory_perimeter(
+    monkeypatch,
+) -> None:
+    observed: dict[str, object] = {}
+    audit = {
+        "graph_events": 0,
+        "exact_events_in_reconciliation_pool_perimeter": 0,
+        "correction_rows": 0,
+        "provider_duplicate_rows": 0,
+        "payload_mismatches": 0,
+        "incomplete_liquidity_status_repairs": 0,
+        "exclusion_rows": 0,
+        "supplement_rows": 0,
+    }
+
+    def load_graph(_root, venue, day, *, audited_token_decimals=None, allow_empty=False):
+        observed["graph"] = (venue, day, audited_token_decimals, allow_empty)
+        return []
+
+    def fetch_chunks(venue, day, ranges, **_kwargs):
+        observed["fetch"] = (venue, day, ranges)
+
+    def read_exact(lower, upper, *, frozen_upper):
+        observed["exact"] = (lower, upper, frozen_upper)
+        return [], []
+
+    def match(graph, exact, venue, *, expected_pools=None, **_kwargs):
+        observed["match"] = (graph, exact, venue, expected_pools)
+        return [], [], audit
+
+    def write_generation(**kwargs):
+        observed["write"] = kwargs
+
+    monkeypatch.setattr(reconciler, "load_graph_events", load_graph)
+    monkeypatch.setattr(reconciler, "fetch_missing_chunks", fetch_chunks)
+    monkeypatch.setattr(reconciler, "read_v2_exact_logs", read_exact)
+    monkeypatch.setattr(reconciler, "match_event_orders", match)
+    monkeypatch.setattr(reconciler, "write_correction_generation", write_generation)
+
+    result = reconciler.reconcile_day(
+        "uniswap_v2",
+        "20250115",
+        frozen_upper={"block_number": 199},
+        workers=1,
+        chunk_size=V2_EXACT_LOG_CHUNK_SIZE,
+        force=False,
+        start_block=100,
+        end_block=199,
+        expected_pools={POOL},
+        audited_token_decimals={TOKEN0: 6, TOKEN1: 18},
+        pool_templates={},
+        reconciliation_scope=V2_RECONCILIATION_SCOPE,
+    )
+
+    assert result == audit
+    assert observed["graph"] == (
+        "uniswap_v2",
+        "20250115",
+        {TOKEN0: 6, TOKEN1: 18},
+        True,
+    )
+    assert observed["fetch"] == (
+        "uniswap_v2",
+        "20250115",
+        [(100, 149), (150, 199)],
+    )
+    assert observed["match"] == ([], [], "uniswap_v2", {POOL})
+    assert observed["write"]["start_block"] == 100
+    assert observed["write"]["end_block"] == 199
+
+
+def test_reconciler_rejects_provider_events_outside_explicit_day_bounds(
+    monkeypatch,
+) -> None:
+    monkeypatch.setattr(
+        reconciler,
+        "load_graph_events",
+        lambda *_args, **_kwargs: [SimpleNamespace(block_number=99)],
+    )
+    with pytest.raises(ValueError, match="outside the certified block bounds"):
+        reconciler.reconcile_day(
+            "uniswap_v2",
+            "20250115",
+            frozen_upper={"block_number": 199},
+            workers=1,
+            chunk_size=V2_EXACT_LOG_CHUNK_SIZE,
+            force=False,
+            start_block=100,
+            end_block=199,
+            expected_pools={POOL},
+            audited_token_decimals={TOKEN0: 6, TOKEN1: 18},
+            pool_templates={},
+            reconciliation_scope=V2_RECONCILIATION_SCOPE,
+        )
 
 
 def test_graph_pool_statics_reject_decimal_registry_disagreement(tmp_path) -> None:
@@ -1232,9 +1361,9 @@ def test_graph_only_identity_remains_explicit_without_token_decimals(tmp_path) -
     )
     summaries, exceptions = compare_event_maps(day, venue, {}, graph, duplicates)
     mint = next(row for row in summaries if row["event_type"] == "mint")
-    assert mint["graph_only"] == 1
-    assert exceptions[0]["status"] == "graph_only"
-    assert exceptions[0]["graph_amount0_delta_raw"] is None
+    assert mint["canonical_only"] == 1
+    assert exceptions[0]["status"] == "canonical_only"
+    assert exceptions[0]["canonical_amount0_delta_raw"] is None
 
 
 def test_utc_day_bounds_prove_both_adjacent_boundary_blocks() -> None:
@@ -1488,6 +1617,28 @@ def test_release_certificate_requires_exact_calendar_and_zero_exceptions() -> No
             rows.extend(summaries)
     summary = pd.DataFrame(rows)
     exceptions = pd.DataFrame()
+    zero_reconciliation = {
+        field: 0 for field in V2_RECONCILIATION_COUNT_FIELDS
+    }
+    correction_generations = {
+        f"{venue}/20201015": {
+            "generation_id": "1" * 64,
+            "pointer_sha256": "2" * 64,
+            "data_sha256": "3" * 64,
+            "metadata_sha256": "4" * 64,
+            "scope": V2_RECONCILIATION_SCOPE,
+            "start_block": 1,
+            "end_block": 2,
+            "reconciliation_pool_perimeter_count": 1,
+            "reconciliation_pool_perimeter_sha256": "5" * 64,
+            "audited_token_decimals_count": 2,
+            "audited_token_decimals_sha256": "6" * 64,
+            "exact_log_inputs_sha256": {"exact": "7" * 64},
+            "authority_inputs_sha256": {"authority": "8" * 64},
+            "reconciliation_counts": dict(zero_reconciliation),
+        }
+        for venue in V2_EVENT_VENUES
+    }
     certificate = {
         "schema_version": V2_EVENT_SOURCE_SCHEMA_VERSION,
         "status": "pass",
@@ -1500,6 +1651,11 @@ def test_release_certificate_requires_exact_calendar_and_zero_exceptions() -> No
         "venues": list(V2_EVENT_VENUES),
         "event_types": list(V2_CORE_EVENTS),
         "pool_perimeter": V2_POOL_PERIMETER,
+        "reconciliation_scope": V2_RECONCILIATION_SCOPE,
+        "comparison_ledger": V2_COMPARISON_LEDGER,
+        "correction_generation_schema_version": EVENT_ORDER_SCHEMA_VERSION,
+        "correction_generations": correction_generations,
+        "reconciliation_totals": zero_reconciliation,
         "registry_source": "complete_factory_PairCreated_histories",
         "global_event_query": "topic_only_without_address_filter",
         "identity_fields": [
@@ -1516,12 +1672,12 @@ def test_release_certificate_requires_exact_calendar_and_zero_exceptions() -> No
         "raw_factory_chunks": 2,
         "raw_event_chunks": 2,
         "raw_global_event_logs": 0,
-        "raw_events": 0,
-        "graph_events": 0,
+        "exact_events": 0,
+        "canonical_events": 0,
         "matched_identities": 0,
-        "missing_from_graph": 0,
-        "graph_only": 0,
-        "graph_duplicate_identities": 0,
+        "missing_from_canonical": 0,
+        "canonical_only": 0,
+        "canonical_duplicate_identities": 0,
         "amount_mismatches": 0,
         "factory_pairs": 2,
         "factory_pairs_by_venue": {venue: 1 for venue in V2_EVENT_VENUES},
@@ -1548,14 +1704,91 @@ def test_release_certificate_requires_exact_calendar_and_zero_exceptions() -> No
         },
     }
     assert validate_v2_event_source_certificate(summary, exceptions, certificate, days) == (2, 0)
+    nonzero_summary = summary.copy()
+    nonzero_index = nonzero_summary.index[
+        (nonzero_summary["venue"] == "uniswap_v2")
+        & (nonzero_summary["day"] == "20201015")
+        & (nonzero_summary["event_type"] == "swap")
+    ][0]
+    for field in ("exact_events", "canonical_events", "matched_identities"):
+        nonzero_summary.loc[nonzero_index, field] = 3
+    nonzero_counts = {
+        "provider_rows": 4,
+        "unique_provider_events": 3,
+        "provider_duplicate_rows": 1,
+        "exact_events_in_provider_observed_pool_perimeter": 2,
+        "exact_events_in_factory_pool_perimeter": 3,
+        "matched_events": 2,
+        "correction_rows": 1,
+        "log_index_repairs": 1,
+        "payload_repairs": 0,
+        "incomplete_liquidity_repairs": 0,
+        "exclusion_rows": 2,
+        "reverted_transaction_exclusions": 1,
+        "successful_transaction_absence_exclusions": 0,
+        "incomplete_liquidity_absence_exclusions": 0,
+        "provider_duplicate_exclusions": 1,
+        "supplement_rows": 1,
+        "canonical_rows": 3,
+    }
+    nonzero_certificate = copy.deepcopy(certificate)
+    nonzero_certificate["exact_events"] = 3
+    nonzero_certificate["canonical_events"] = 3
+    nonzero_certificate["matched_identities"] = 3
+    nonzero_certificate["raw_global_event_logs"] = 3
+    nonzero_certificate["reconciliation_totals"] = dict(nonzero_counts)
+    nonzero_certificate["correction_generations"]["uniswap_v2/20201015"][
+        "reconciliation_counts"
+    ] = dict(nonzero_counts)
+    assert validate_v2_event_source_certificate(
+        nonzero_summary,
+        exceptions,
+        nonzero_certificate,
+        days,
+    ) == (2, 3)
+
+    def mutated_reconciliation(**updates):
+        mutated = copy.deepcopy(nonzero_certificate)
+        mutated["reconciliation_totals"].update(updates)
+        mutated["correction_generations"]["uniswap_v2/20201015"][
+            "reconciliation_counts"
+        ].update(updates)
+        return mutated
+
+    adversarial_counts = (
+        {"correction_rows": 1.0},
+        {"exact_events_in_provider_observed_pool_perimeter": 4},
+        {"correction_rows": 3, "log_index_repairs": 3},
+        {
+            "log_index_repairs": 0,
+            "payload_repairs": 0,
+            "incomplete_liquidity_repairs": 0,
+        },
+    )
+    for updates in adversarial_counts:
+        with pytest.raises(ValueError):
+            validate_v2_event_source_certificate(
+                nonzero_summary,
+                exceptions,
+                mutated_reconciliation(**updates),
+                days,
+            )
+    stale_schema = {**nonzero_certificate, "correction_generation_schema_version": EVENT_ORDER_SCHEMA_VERSION - 1}
+    with pytest.raises(ValueError, match="correction-generation schema"):
+        validate_v2_event_source_certificate(
+            nonzero_summary,
+            exceptions,
+            stale_schema,
+            days,
+        )
     non_boolean = summary.copy()
     non_boolean["passed"] = 1
     with pytest.raises(ValueError, match="not Boolean"):
         validate_v2_event_source_certificate(non_boolean, exceptions, certificate, days)
     impossible = summary.copy()
     audited_index = impossible.index[impossible["launch_status"] == "audited"][0]
-    impossible.loc[audited_index, "raw_events"] = 1
-    impossible_certificate = {**certificate, "raw_events": 1, "raw_global_event_logs": 1}
+    impossible.loc[audited_index, "exact_events"] = 1
+    impossible_certificate = {**certificate, "exact_events": 1, "raw_global_event_logs": 1}
     with pytest.raises(ValueError, match="impossible identity count algebra"):
         validate_v2_event_source_certificate(
             impossible,
@@ -1717,7 +1950,349 @@ def test_release_evidence_bundle_reopens_cited_artifacts(tmp_path, monkeypatch, 
     }
     paths[("frozen", "shared")].write_text(json.dumps(frozen_record))
     certificate["frozen_upper_block_sha256"] = file_sha256(paths[("frozen", "shared")])
-    assert validate_v2_event_source_evidence_bundle(certificate, root=tmp_path) == (2, 2)
+    pools, pairs, _inputs, leaves = reopen_v2_factory_pool_registry(
+        certificate,
+        root=tmp_path,
+    )
+    assert sum(len(value) for value in pools.values()) == 2
+    assert sum(len(value) for value in pairs.values()) == 2
+    assert leaves == 2
     paths[(artifact, V2_EVENT_VENUES[0])].write_text("tampered")
     with pytest.raises(ValueError, match=f"{artifact}.*digest"):
-        validate_v2_event_source_evidence_bundle(certificate, root=tmp_path)
+        reopen_v2_factory_pool_registry(certificate, root=tmp_path)
+
+
+def test_release_evidence_bundle_reopens_each_corrected_generation(
+    tmp_path,
+    monkeypatch,
+) -> None:
+    import ddvc.v2_event_completeness as completeness
+
+    venue = "uniswap_v2"
+    day = "20250115"
+    provider_root = tmp_path / "thegraph"
+    correction_root = completeness.correction_root_for_graph(provider_root)
+    pointer_path = completeness.correction_pointer_path(correction_root, venue, day)
+    data_path = correction_root / "generation" / "actions.jsonl.gz"
+    metadata_path = correction_root / "generation" / "metadata.json"
+    exact_path = correction_root.parent / "exact" / "blocks.parquet"
+    exact_marker = exact_path.with_suffix(".meta.json")
+    for path, content in (
+        (pointer_path, b"pointer"),
+        (data_path, b"actions"),
+        (metadata_path, b"metadata"),
+        (exact_path, b"exact"),
+        (exact_marker, b"marker"),
+    ):
+        path.parent.mkdir(parents=True, exist_ok=True)
+        path.write_bytes(content)
+    bounds_root = tmp_path / "bounds"
+    bounds_root.mkdir()
+    (bounds_root / f"{day}.json").write_text(
+        json.dumps({"start_block": 10, "end_block": 10})
+    )
+    registry_path = tmp_path / "token-registry.parquet"
+    registry_path.write_bytes(b"registry")
+    frozen_path = tmp_path / "frozen.json"
+    frozen_path.write_text(json.dumps({"block_number": 10, "block_hash": "0x" + "9" * 64}))
+    pair_record = FactoryPair(
+        venue=venue,
+        factory=V2_FACTORIES[venue],
+        pool=POOL,
+        token0=TOKEN0,
+        token1=TOKEN1,
+        creation_block=1,
+        creation_tx_hash=TX,
+        creation_log_index=0,
+        ordinal=1,
+    )
+    decimals = {TOKEN0: 6, TOKEN1: 18}
+    exact_records = [raw_event("swap")]
+    exact_map = raw_core_events(
+        venue,
+        exact_records,
+        expected_pools={POOL},
+        expected_creation_blocks={POOL: 1},
+        ignore_unregistered=True,
+    )
+    summary_rows, summary_exceptions = compare_event_maps(
+        day,
+        venue,
+        exact_map,
+        exact_map,
+        set(),
+    )
+    assert summary_exceptions == []
+    summary = pd.DataFrame(summary_rows)
+    exact_inputs = {
+        completeness.portable_evidence_path(path, correction_root): file_sha256(path)
+        for path in (exact_path, exact_marker)
+    }
+    authority_inputs = {"authority": "8" * 64}
+    audit = {
+        "graph_events": 0,
+        "unique_graph_events": 0,
+        "provider_duplicate_rows": 0,
+        "exact_events_in_graph_pool_perimeter": 0,
+        "exact_events_in_reconciliation_pool_perimeter": 1,
+        "matched_events": 0,
+        "correction_rows": 0,
+        "log_index_repairs": 0,
+        "payload_mismatches": 0,
+        "incomplete_liquidity_status_repairs": 0,
+        "exclusion_rows": 0,
+        "reverted_transaction_exclusions": 0,
+        "successful_transaction_absence_exclusions": 0,
+        "incomplete_liquidity_absence_exclusions": 0,
+        "provider_duplicate_exclusions": 0,
+        "supplement_rows": 1,
+        "ignored_zero_liquidity_events": 0,
+        "unmatched_graph_events": 0,
+        "unmatched_exact_events": 0,
+    }
+    reconciliation_counts = {
+        "provider_rows": 0,
+        "unique_provider_events": 0,
+        "provider_duplicate_rows": 0,
+        "exact_events_in_provider_observed_pool_perimeter": 0,
+        "exact_events_in_factory_pool_perimeter": 1,
+        "matched_events": 0,
+        "correction_rows": 0,
+        "log_index_repairs": 0,
+        "payload_repairs": 0,
+        "incomplete_liquidity_repairs": 0,
+        "exclusion_rows": 0,
+        "reverted_transaction_exclusions": 0,
+        "successful_transaction_absence_exclusions": 0,
+        "incomplete_liquidity_absence_exclusions": 0,
+        "provider_duplicate_exclusions": 0,
+        "supplement_rows": 1,
+        "canonical_rows": 1,
+    }
+    generation_id = "1" * 64
+    metadata = {
+        "generation_id": generation_id,
+        "scope": V2_RECONCILIATION_SCOPE,
+        "start_block": 10,
+        "end_block": 10,
+        "exact_log_inputs_sha256": exact_inputs,
+        "authority_inputs_sha256": authority_inputs,
+        **audit,
+    }
+    pool_hash = completeness.semantic_mapping_sha256({POOL: True})
+    decimals_hash = completeness.semantic_mapping_sha256(decimals)
+    generation_record = {
+        "generation_id": generation_id,
+        "pointer_sha256": file_sha256(pointer_path),
+        "data_sha256": file_sha256(data_path),
+        "metadata_sha256": file_sha256(metadata_path),
+        "scope": V2_RECONCILIATION_SCOPE,
+        "start_block": 10,
+        "end_block": 10,
+        "reconciliation_pool_perimeter_count": 1,
+        "reconciliation_pool_perimeter_sha256": pool_hash,
+        "audited_token_decimals_count": 2,
+        "audited_token_decimals_sha256": decimals_hash,
+        "exact_log_inputs_sha256": exact_inputs,
+        "authority_inputs_sha256": authority_inputs,
+        "reconciliation_counts": reconciliation_counts,
+    }
+    certificate = {
+        "factory_registry_upper_block": 10,
+        "token_decimals_registry_file_sha256": file_sha256(registry_path),
+        "token_decimals_registry_rows": 2,
+        "token_decimals_registry_sha256": "f" * 64,
+        "correction_generations": {f"{venue}/{day}": generation_record},
+        "reconciliation_totals": reconciliation_counts,
+    }
+
+    class Reconciliation:
+        def reconciled_rows(self, _venue, _stream, _rows):
+            return iter(())
+
+        def require_fully_applied(self):
+            return None
+
+    monkeypatch.setattr(
+        completeness,
+        "reopen_v2_factory_pool_registry",
+        lambda *_args, **_kwargs: (
+            {venue: {POOL}},
+            {venue: [pair_record]},
+            [],
+            1,
+        ),
+    )
+    monkeypatch.setattr(
+        completeness,
+        "validate_token_decimals_registry",
+        lambda *_args, **_kwargs: (decimals, [object(), object()]),
+    )
+    monkeypatch.setattr(
+        completeness,
+        "token_decimals_registry_sha256",
+        lambda _registry: "f" * 64,
+    )
+    monkeypatch.setattr(
+        completeness,
+        "frozen_upper_block_path",
+        lambda *_args, **_kwargs: frozen_path,
+    )
+    monkeypatch.setattr(completeness, "validate_utc_day_block_bounds", lambda *_args: None)
+    monkeypatch.setattr(
+        completeness,
+        "load_event_order_generation_metadata",
+        lambda *_args: (data_path, metadata_path, metadata),
+    )
+    monkeypatch.setattr(
+        completeness,
+        "read_v2_exact_logs",
+        lambda *_args, **_kwargs: (exact_records, [exact_path, exact_marker]),
+    )
+    monkeypatch.setattr(
+        completeness,
+        "load_event_order_corrections",
+        lambda *_args: (Reconciliation(), []),
+    )
+    monkeypatch.setattr(
+        completeness,
+        "provider_core_events",
+        lambda *_args, **_kwargs: (exact_map, set()),
+    )
+    assert validate_v2_event_source_evidence_bundle(
+        certificate,
+        summary=summary,
+        root=tmp_path,
+        token_registry_path=registry_path,
+        graph_root=provider_root,
+        day_bound_root=bounds_root,
+        exact_root=tmp_path / "exact",
+    ) == (1, 1)
+    stale_scope = copy.deepcopy(certificate)
+    stale_scope["correction_generations"][f"{venue}/{day}"]["scope"] = "observed_span"
+    with pytest.raises(ValueError, match="record is stale"):
+        validate_v2_event_source_evidence_bundle(
+            stale_scope,
+            summary=summary,
+            root=tmp_path,
+            token_registry_path=registry_path,
+            graph_root=provider_root,
+            day_bound_root=bounds_root,
+            exact_root=tmp_path / "exact",
+        )
+    data_path.unlink()
+    with pytest.raises(FileNotFoundError):
+        validate_v2_event_source_evidence_bundle(
+            certificate,
+            summary=summary,
+            root=tmp_path,
+            token_registry_path=registry_path,
+            graph_root=provider_root,
+            day_bound_root=bounds_root,
+            exact_root=tmp_path / "exact",
+        )
+
+
+def test_v2_event_source_release_pointer_is_marker_last_and_crash_safe(tmp_path, monkeypatch) -> None:
+    import ddvc.v2_event_completeness as completeness
+
+    pointer_path = tmp_path / "release" / "current.json"
+    summary = pd.DataFrame({"day": ["20250115"], "events": [1]})
+    exceptions = pd.DataFrame({"status": ["none"], "count": [0]})
+    certificate = {"status": "pass", "version": 1}
+    first = publish_v2_event_source_release(
+        summary,
+        exceptions,
+        certificate,
+        code_sources=["src/ddvc/v2_event_completeness.py"],
+        pointer_path=pointer_path,
+    )
+    pointer_before = pointer_path.read_bytes()
+    changed_summary = summary.assign(events=[2])
+    changed_certificate = {"status": "pass", "version": 2}
+
+    def crash_before_pointer(*_args, **_kwargs):
+        raise RuntimeError("injected pointer crash")
+
+    monkeypatch.setattr(completeness, "_write_v2_event_source_pointer", crash_before_pointer)
+    with pytest.raises(RuntimeError, match="injected pointer crash"):
+        publish_v2_event_source_release(
+            changed_summary,
+            exceptions,
+            changed_certificate,
+            code_sources=["src/ddvc/v2_event_completeness.py"],
+            pointer_path=pointer_path,
+        )
+    assert pointer_path.read_bytes() == pointer_before
+    observed_summary, observed_exceptions, observed_certificate = read_v2_event_source_certificate(pointer_path=pointer_path)
+    pd.testing.assert_frame_equal(observed_summary, summary)
+    pd.testing.assert_frame_equal(observed_exceptions, exceptions)
+    assert observed_certificate == certificate
+    assert resolve_v2_event_source_release(pointer_path).generation_id == first.generation_id
+    generations = list((pointer_path.parent / "generations").iterdir())
+    assert len(generations) == 2
+    orphan = next(directory for directory in generations if directory.name != first.generation_id)
+    for filename in completeness.V2_EVENT_SOURCE_RELEASE_FILENAMES.values():
+        artifact = orphan / filename
+        assert artifact.is_file()
+        assert completeness.sidecar_path(artifact).is_file()
+
+
+def test_v2_event_source_release_reader_rejects_missing_and_tampered_generation(tmp_path) -> None:
+    pointer_path = tmp_path / "release" / "current.json"
+    release = publish_v2_event_source_release(
+        pd.DataFrame({"events": [1]}),
+        pd.DataFrame({"status": ["none"]}),
+        {"status": "pass"},
+        code_sources=["src/ddvc/v2_event_completeness.py"],
+        pointer_path=pointer_path,
+    )
+    release.certificate_path.write_text('{"status":"tampered"}\n', encoding="utf-8")
+    with pytest.raises(ValueError, match="artifact digest disagrees: certificate"):
+        read_v2_event_source_certificate(pointer_path=pointer_path)
+    release.certificate_path.unlink()
+    with pytest.raises(FileNotFoundError, match="partial V2 event-source generation"):
+        read_v2_event_source_certificate(pointer_path=pointer_path)
+
+
+def test_v2_event_source_release_binds_provenance_to_the_resolved_target(tmp_path) -> None:
+    import ddvc.v2_event_completeness as completeness
+
+    pointer_path = tmp_path / "release" / "current.json"
+    release = publish_v2_event_source_release(
+        pd.DataFrame({"events": [1]}),
+        pd.DataFrame({"status": ["none"]}),
+        {"status": "pass"},
+        code_sources=["src/ddvc/v2_event_completeness.py"],
+        pointer_path=pointer_path,
+    )
+    provenance_path = completeness.sidecar_path(release.summary_path)
+    provenance = json.loads(provenance_path.read_text(encoding="utf-8"))
+    provenance["artefact"] = "different/generation/summary.parquet"
+    provenance_path.write_text(json.dumps(provenance, sort_keys=True) + "\n", encoding="utf-8")
+    pointer = json.loads(pointer_path.read_text(encoding="utf-8"))
+    pointer["artifacts"]["summary"]["provenance_sha256"] = file_sha256(provenance_path)
+    pointer_path.write_text(json.dumps(pointer, sort_keys=True) + "\n", encoding="utf-8")
+    with pytest.raises(ValueError, match="provenance identifies a different target: summary"):
+        resolve_v2_event_source_release(pointer_path)
+
+
+def test_v2_event_source_release_reader_never_falls_back_to_explicit_legacy_paths(tmp_path) -> None:
+    summary_path = tmp_path / "summary.parquet"
+    exceptions_path = tmp_path / "exceptions.parquet"
+    certificate_path = tmp_path / "certificate.json"
+    summary = pd.DataFrame({"events": [1]})
+    exceptions = pd.DataFrame({"status": ["none"]})
+    summary.to_parquet(summary_path, index=False)
+    exceptions.to_parquet(exceptions_path, index=False)
+    certificate_path.write_text('{"status":"pass"}\n', encoding="utf-8")
+    with pytest.raises(FileNotFoundError, match="current pointer"):
+        read_v2_event_source_certificate(pointer_path=tmp_path / "missing" / "current.json")
+    observed_summary, observed_exceptions, observed_certificate = read_v2_event_source_certificate(
+        summary_path,
+        exceptions_path,
+        certificate_path,
+    )
+    pd.testing.assert_frame_equal(observed_summary, summary)
+    pd.testing.assert_frame_equal(observed_exceptions, exceptions)
+    assert observed_certificate == {"status": "pass"}

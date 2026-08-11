@@ -3,6 +3,7 @@ from __future__ import annotations
 import tempfile
 import unittest
 from pathlib import Path
+from types import SimpleNamespace
 
 import pandas as pd
 
@@ -33,12 +34,16 @@ class DataReleaseTests(unittest.TestCase):
         summary = pd.DataFrame()
         exceptions = pd.DataFrame()
         certificate = {"status": "pass"}
+        release = SimpleNamespace(
+            artifact_paths=(Path("summary.parquet"), Path("exceptions.parquet"), Path("certificate.json")),
+        )
         with (
+            patch("ddvc.data_release.resolve_v2_event_source_release", return_value=release) as resolve,
             patch("ddvc.data_release.require_current_artifacts") as current,
             patch(
                 "ddvc.data_release.read_v2_event_source_certificate",
                 return_value=(summary, exceptions, certificate),
-            ),
+            ) as read,
             patch(
                 "ddvc.data_release.transaction_frontier_audit_days",
                 return_value=["20250115"],
@@ -47,14 +52,28 @@ class DataReleaseTests(unittest.TestCase):
             patch("ddvc.data_release.validate_v2_event_source_evidence_bundle") as validate_evidence,
         ):
             require_v2_event_source_release()
+        resolve.assert_called_once_with()
         current.assert_called_once()
+        read.assert_called_once_with(*release.artifact_paths)
         validate.assert_called_once_with(
             summary,
             exceptions,
             certificate,
             ["20250115"],
         )
-        validate_evidence.assert_called_once_with(certificate)
+        validate_evidence.assert_called_once_with(certificate, summary=summary)
+
+    def test_v2_event_release_gate_wraps_legacy_flat_failure(self) -> None:
+        from unittest.mock import patch
+
+        with (
+            patch(
+                "ddvc.data_release.resolve_v2_event_source_release",
+                side_effect=RuntimeError("legacy flat V2 event-source artifacts require regeneration"),
+            ),
+            self.assertRaisesRegex(RuntimeError, "node D V2-family event-source certificate failed.*legacy flat"),
+        ):
+            require_v2_event_source_release()
 
     def test_v4_static_audit_returns_complete_pool_level_quarantine(self) -> None:
         with tempfile.TemporaryDirectory() as directory:

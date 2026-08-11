@@ -28,9 +28,8 @@ from ddvc.state_data import (
     read_cp_partition,
 )
 from ddvc.v2_event_completeness import (
-    V2_EVENT_SOURCE_CERTIFICATE,
-    V2_EVENT_SOURCE_EXCEPTIONS,
-    V2_EVENT_SOURCE_SUMMARY,
+    V2_EVENT_SOURCE_CURRENT,
+    resolve_v2_event_source_release,
 )
 from ddvc.v4_quarantine import V4_STATIC_QUARANTINE_PANEL
 
@@ -140,18 +139,19 @@ def released_state_lineage_inputs(
     included so a certificate replacement cannot inherit an earlier cache.
     """
 
+    event_source_inputs = [V2_EVENT_SOURCE_CURRENT]
+    if V2_EVENT_SOURCE_CURRENT.is_file():
+        event_source_inputs = list(resolve_v2_event_source_release().lineage_paths)
     certificates = [
         MARKET_STATE_QUALITY_PANEL,
         V4_STATIC_QUARANTINE_PANEL,
-        V2_EVENT_SOURCE_SUMMARY,
-        V2_EVENT_SOURCE_EXCEPTIONS,
-        V2_EVENT_SOURCE_CERTIFICATE,
+        *event_source_inputs,
     ]
     return [
         state_root,
         correction_root_for_graph(raw_root),
         *certificates,
-        *(sidecar_path(path) for path in certificates),
+        *(sidecar_path(path) for path in (MARKET_STATE_QUALITY_PANEL, V4_STATIC_QUARANTINE_PANEL)),
     ]
 
 

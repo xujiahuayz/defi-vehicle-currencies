@@ -63,10 +63,8 @@ from ddvc.state_data import (
 from ddvc.venue_corpus import JFE_VENUE_CARDS, JFE_VENUE_SOURCE_KEYS
 from ddvc.release_calendar import transaction_frontier_audit_days
 from ddvc.v2_event_completeness import (
-    V2_EVENT_SOURCE_CERTIFICATE,
-    V2_EVENT_SOURCE_EXCEPTIONS,
-    V2_EVENT_SOURCE_SUMMARY,
     read_v2_event_source_certificate,
+    resolve_v2_event_source_release,
     validate_v2_event_source_certificate,
     validate_v2_event_source_evidence_bundle,
 )
@@ -3186,18 +3184,33 @@ def validate_model_ledger(
 
 
 def v2_event_source_certificate_checks(
-    summary_path: Path = V2_EVENT_SOURCE_SUMMARY,
-    exceptions_path: Path = V2_EVENT_SOURCE_EXCEPTIONS,
-    certificate_path: Path = V2_EVENT_SOURCE_CERTIFICATE,
+    summary_path: Path | None = None,
+    exceptions_path: Path | None = None,
+    certificate_path: Path | None = None,
     quality_path: Path = UNIFIED_QUALITY_PANEL,
 ) -> list[tuple[str, bool, str]]:
     """Require current, exact, zero-exception V2 event-source evidence."""
 
-    artifacts = (summary_path, exceptions_path, certificate_path)
+    explicit = (summary_path, exceptions_path, certificate_path)
+    if any(path is not None for path in explicit) and not all(path is not None for path in explicit):
+        return [("node D V2 event-source certificate exists", False, "explicit reads require all three artifact paths")]
+    try:
+        if all(path is None for path in explicit):
+            release = resolve_v2_event_source_release()
+            artifacts = release.artifact_paths
+            read_args = artifacts
+        else:
+            artifacts = tuple(Path(path) for path in explicit if path is not None)
+            read_args = artifacts
+    except (FileNotFoundError, OSError, RuntimeError, TypeError, ValueError) as error:
+        return [("node D V2 event-source certificate exists", False, str(error))]
     missing = [path.name for path in artifacts if not path.is_file()]
     if missing:
         return [("node D V2 event-source certificate exists", False, f"missing={missing}")]
-    provenance = {path.name: verify(path).get("status") for path in artifacts}
+    try:
+        provenance = {path.name: verify(path).get("status") for path in artifacts}
+    except (OSError, TypeError, ValueError) as error:
+        provenance = {"invalid": str(error)}
     checks = [
         (
             "node D V2 event-source provenance current",
@@ -3206,13 +3219,10 @@ def v2_event_source_certificate_checks(
         )
     ]
     certificate: dict[str, object] | None = None
+    summary: pd.DataFrame | None = None
     try:
         expected_days = transaction_frontier_audit_days(quality_path)
-        summary, exceptions, certificate = read_v2_event_source_certificate(
-            summary_path,
-            exceptions_path,
-            certificate_path,
-        )
+        summary, exceptions, certificate = read_v2_event_source_certificate(*read_args)
         days, raw_events = validate_v2_event_source_certificate(
             summary,
             exceptions,
@@ -3226,7 +3236,10 @@ def v2_event_source_certificate_checks(
     try:
         if certificate is None:
             raise ValueError("V2 event-source certificate is unavailable for evidence validation")
-        pairs, leaves = validate_v2_event_source_evidence_bundle(certificate)
+        pairs, leaves = validate_v2_event_source_evidence_bundle(
+            certificate,
+            summary=summary,
+        )
         evidence_passed = True
         evidence_detail = f"factory_pairs={pairs:,}; factory_leaves={leaves:,}; cited_artifacts=reopened"
     except (FileNotFoundError, KeyError, OSError, TypeError, ValueError) as error:

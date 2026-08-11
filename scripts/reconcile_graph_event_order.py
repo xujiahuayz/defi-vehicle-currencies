@@ -4,6 +4,7 @@
 from __future__ import annotations
 
 import argparse
+from collections.abc import Mapping
 from concurrent.futures import as_completed
 import json
 from pathlib import Path
@@ -35,15 +36,14 @@ from ddvc.paths import DATA_DIR, RAW_MARKET_DATA_LOCK
 from ddvc.quoter import Throttled, rpc_post
 from ddvc.runtime import bounded_workers, exclusive_job, interruptible_thread_pool
 from ddvc.v2_event_completeness import (
-    V2_EVENT_VENUES,
     V2_EXACT_LOG_CHUNK_SIZE,
     fetch_v2_exact_log_chunk,
-    load_or_resolve_frozen_upper_block,
     read_v2_exact_logs,
     v2_exact_log_chunk_complete,
     v2_exact_log_chunk_paths,
     v2_exact_log_ranges,
 )
+from ddvc.v2_event_contract import V2_EVENT_VENUES, V2_RECONCILIATION_SCOPE
 
 
 GRAPH_ROOT = DATA_DIR / "raw" / "thegraph"
@@ -187,10 +187,51 @@ def reconcile_day(
     workers: int,
     chunk_size: int,
     force: bool,
+    start_block: int | None = None,
+    end_block: int | None = None,
+    expected_pools: set[str] | None = None,
+    audited_token_decimals: Mapping[str, int] | None = None,
+    pool_templates: Mapping[str, dict] | None = None,
+    raw_root: Path = GRAPH_ROOT,
+    reconciliation_scope: str = "complete_graph_observed_block_span",
+    authority_inputs: list[Path] | None = None,
 ) -> dict[str, int]:
-    graph_events = load_graph_events(GRAPH_ROOT, venue, day)
-    lower = min(event.block_number for event in graph_events)
-    upper = max(event.block_number for event in graph_events)
+    if venue in V2_EVENT_VENUES and reconciliation_scope != V2_RECONCILIATION_SCOPE:
+        raise ValueError(
+            "V2 reconciliation requires the full UTC-day factory-pool perimeter"
+        )
+    if (start_block is None) != (end_block is None):
+        raise ValueError("event reconciliation requires both explicit block bounds")
+    graph_events = load_graph_events(
+        raw_root,
+        venue,
+        day,
+        audited_token_decimals=audited_token_decimals,
+        allow_empty=start_block is not None,
+    )
+    if not graph_events and not expected_pools:
+        raise ValueError(
+            "empty provider day requires a nonempty explicit pool perimeter"
+        )
+    if start_block is None:
+        if not graph_events:
+            raise ValueError("event reconciliation needs explicit bounds for an empty provider day")
+        lower = min(event.block_number for event in graph_events)
+        upper = max(event.block_number for event in graph_events)
+    else:
+        lower = int(start_block)
+        upper = int(end_block)
+        outside = [
+            event
+            for event in graph_events
+            if event.block_number < lower or event.block_number > upper
+        ]
+        if outside:
+            raise ValueError(
+                f"provider events fall outside the certified block bounds: {venue}/{day}"
+            )
+    if lower < 0 or upper < lower:
+        raise ValueError("event reconciliation block bounds are invalid")
     if venue in V2_EVENT_VENUES:
         if chunk_size != V2_EXACT_LOG_CHUNK_SIZE:
             raise ValueError("V2 event reconciliation requires shared 50-block chunks")
@@ -221,7 +262,10 @@ def reconcile_day(
     transaction_receipt_evidence: list[dict[str, object]] = []
     try:
         corrections, missing_events, audit = match_event_orders(
-            graph_events, exact_records, venue
+            graph_events,
+            exact_records,
+            venue,
+            expected_pools=expected_pools,
         )
     except ProviderEventsAbsentError as error:
         absent_transactions = {
@@ -234,6 +278,7 @@ def reconcile_day(
                 expected_block=block_number,
                 require_block_hash=True,
                 include_logs=True,
+                require_evidence=True,
             )
             for tx_hash, block_number in sorted(absent_transactions.items())
         ]
@@ -260,8 +305,9 @@ def reconcile_day(
                 tx_hash: int(receipt["status"])
                 for tx_hash, receipt in receipts_by_tx.items()
             },
+            expected_pools=expected_pools,
         )
-    templates = load_pool_templates(GRAPH_ROOT, venue, day)
+    templates = dict(pool_templates) if pool_templates is not None else load_pool_templates(raw_root, venue, day)
     timestamp_evidence: list[dict[str, object]] = []
     timestamps: dict[int, int] = {}
     supplements: list[dict[str, object]] = []
@@ -282,8 +328,8 @@ def reconcile_day(
             )
         )
     write_correction_generation(
-        root=CORRECTION_ROOT,
-        raw_root=GRAPH_ROOT,
+        root=correction_root_for_graph(raw_root),
+        raw_root=raw_root,
         venue=venue,
         day=day,
         corrections=corrections,
@@ -294,10 +340,14 @@ def reconcile_day(
         start_block=lower,
         end_block=upper,
         transaction_receipt_evidence=transaction_receipt_evidence,
+        scope=reconciliation_scope,
+        expected_pools=expected_pools,
+        audited_token_decimals=audited_token_decimals,
+        authority_inputs=authority_inputs,
     )
     print(
         f"COMPLETE: {venue}/{day} graph={audit['graph_events']:,}; "
-        f"exact={audit['exact_events_in_graph_pool_perimeter']:,}; "
+        f"exact={audit['exact_events_in_reconciliation_pool_perimeter']:,}; "
         f"order_corrections={audit['correction_rows']:,}; "
         f"duplicates={audit['provider_duplicate_rows']:,}; "
         f"payload_corrections={audit['payload_mismatches']:,}; "
@@ -316,29 +366,23 @@ def main() -> int:
     parser.add_argument("--workers", type=int, default=4)
     parser.add_argument("--chunk-size", type=int, default=DEFAULT_CHUNK_SIZE)
     parser.add_argument("--force", action="store_true")
-    parser.add_argument("--frozen-upper-block", type=int)
     args = parser.parse_args()
     if args.chunk_size < 1:
         parser.error("--chunk-size must be positive")
-    if args.venue in V2_EVENT_VENUES and args.chunk_size != V2_EXACT_LOG_CHUNK_SIZE:
-        parser.error("--chunk-size must be 50 for shared V2 exact-log reuse")
-    if args.venue in V2_EVENT_VENUES and args.frozen_upper_block is None:
-        parser.error("--frozen-upper-block is required for V2 shared exact-log reuse")
+    if args.venue in V2_EVENT_VENUES:
+        parser.error(
+            "V2 reconciliation is owned by audit_v2_event_completeness.py so every day uses the certified full-day factory perimeter"
+        )
     days = sorted({str(day).replace("-", "") for day in args.day})
     if any(len(day) != 8 or not day.isdigit() for day in days):
         parser.error("--day must be YYYYMMDD or YYYY-MM-DD")
     workers = bounded_workers(args.workers, maximum=4)
-    frozen_upper = (
-        load_or_resolve_frozen_upper_block(args.frozen_upper_block, fetch=True)
-        if args.venue in V2_EVENT_VENUES
-        else None
-    )
     with exclusive_job(RAW_MARKET_DATA_LOCK, job="Graph event-order reconciliation"):
         for day in days:
             reconcile_day(
                 args.venue,
                 day,
-                frozen_upper=frozen_upper,
+                frozen_upper=None,
                 workers=workers,
                 chunk_size=args.chunk_size,
                 force=args.force,
