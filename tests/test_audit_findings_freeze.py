@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import json
 import subprocess
 import tempfile
 import unittest
@@ -11,6 +12,7 @@ import pandas as pd
 from ddvc.asset_types import TYPES
 from scripts import refresh_panel_dependents as refresher
 from scripts.audit_findings_freeze import (
+    SPECIFICATION_LOCK,
     card_source_evidence_text,
     cex_reference_support_checks,
     cited_bibliography_keys,
@@ -50,14 +52,17 @@ from scripts.audit_findings_freeze import (
     validate_unified_route_layer,
     v3_inventory_calendar_checks,
 )
+from ddvc.d3_stage_registry import D3_BUILD_STAGES, d3_input_ownership
 from ddvc.literature_admission import validate_source_admission
 from ddvc.liquidity import LIQUIDITY_CONTRACTS
-from ddvc.model_registry import canonical_hash, exploratory_plan_identity, model_run_id
-from ddvc.provenance import portable_content_sha256, sidecar_path
-from scripts.refresh_panel_dependents import (
-    CLAIM_INPUT_STAGES,
-    DAILY_FRONTIER_PREREQUISITES,
+from ddvc.model_registry import (
+    canonical_hash,
+    claim_execution_perimeter,
+    exploratory_plan_identity,
+    model_run_id,
 )
+from ddvc.provenance import portable_content_sha256, sidecar_path
+from scripts.refresh_panel_dependents import DAILY_FRONTIER_PREREQUISITES
 
 
 def _bind_exploratory_plan(run: dict) -> None:
@@ -785,42 +790,26 @@ class FindingsFreezeAuditTest(unittest.TestCase):
         terminate.assert_called_once_with(process)
 
     def test_d3_refresh_owns_every_stale_canonical_claim_input(self) -> None:
-        outputs = {
-            output
-            for _script, _args, _why, stage_outputs in CLAIM_INPUT_STAGES
-            for output in stage_outputs
+        specification = json.loads(SPECIFICATION_LOCK.read_text(encoding="utf-8"))
+        ownership = d3_input_ownership(specification)
+        by_path = {record.path: record for record in ownership}
+        expected = {
+            path
+            for claim in claim_execution_perimeter(specification).executable_claims
+            for path in claim["inputs"]
         }
-        self.assertEqual(
-            outputs,
-            {
-                "data/processed/cex_reference_support.parquet",
-                "data/processed/counterfactual_dominance.parquet",
-                "data/processed/counterfactual_dominance_gross.parquet",
-                "data/processed/cross_venue_routing_daily.parquet",
-                "data/processed/ethereum_utc_day_calendar.parquet",
-                "data/processed/intermediation_by_type_daily.parquet",
-                "data/processed/lp_liquidity_flow_candidates_v3.parquet",
-                "data/processed/lp_liquidity_flow_events_v3.parquet",
-                "data/processed/lp_liquidity_flow_daily_v3.parquet",
-                "data/processed/lp_liquidity_flow_rejections_v3.parquet",
-                "data/processed/pool_candidate_capital_daily.parquet",
-                "data/processed/pool_capital_daily.parquet",
-                "data/processed/pool_capital_rejections.parquet",
-                "data/processed/rent_incidence_v2_pool_day.parquet",
-                "data/processed/routing_maturation_cell_day.parquet",
-                "data/processed/routing_maturation_exact_horizons.parquet",
-                "data/processed/routing_transition_cells.parquet",
-                "data/processed/route_gas_units.parquet",
-                "data/processed/route_transaction_gas.parquet",
-                "data/processed/token_price_daily.parquet",
-                "data/processed/vehicle_centrality_dense.parquet",
-                "data/processed/vehicle_excess_use_daily.parquet",
-            },
-        )
+        self.assertEqual(set(by_path), expected)
+        for path in (
+            "data/processed/liquidity_capital_flow_candidate_day.parquet",
+            "data/processed/liquidity_capital_flow_exact_horizons.parquet",
+        ):
+            self.assertEqual(by_path[path].status, "built")
+            self.assertEqual(by_path[path].owner, "build_liquidity_capital_flow_panels.py")
+        route_cost = by_path["data/empirical/route_cost_panel_v2.parquet"]
+        self.assertEqual(route_cost.status, "external_prerequisite")
+        self.assertEqual(route_cost.owner, "scripts/run_route_cost_panel.py")
         self.assertEqual(len(DAILY_FRONTIER_PREREQUISITES), 3)
-        self.assertFalse(
-            any("run_" in script for script, _args, _why, _outputs in CLAIM_INPUT_STAGES)
-        )
+        self.assertFalse(any("run_" in stage.script for stage in D3_BUILD_STAGES))
 
     def test_claim_input_gate_rejects_raw_missing_and_stale_inputs(self) -> None:
         import tempfile

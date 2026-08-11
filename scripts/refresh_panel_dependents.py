@@ -31,6 +31,7 @@ import sys
 import time
 from pathlib import Path
 
+from ddvc.d3_stage_registry import D3_BUILD_STAGES, D3BuildStage
 from ddvc.paths import DATA_DIR, MARKET_STATE_LOCK, SHARED_RUNTIME_DIR
 from ddvc.provenance import ensure_released_directory_alias, verify
 from ddvc.runtime import exclusive_job
@@ -40,128 +41,20 @@ PANEL = ROOT / "data" / "empirical" / "route_cost_panel_v2.parquet"
 LOGS = ROOT / "logs" / "refresh"
 REFRESH_LOCK = SHARED_RUNTIME_DIR / "panel-dependent-refresh.lock"
 
-# (script, args, why it sits here in the order). Withheld scripts are deliberately absent;
-# `audit_findings_freeze.py` tests that they do not silently return.
-STAGES: list[tuple[str, list[str], str]] = [
-    ("measure_quoter_support.py", [],
-     "the support bound every later screen depends on"),
-]
+DIAGNOSTIC_STAGES = (
+    D3BuildStage(
+        "measure_quoter_support.py",
+        (),
+        "the support bound every later screen depends on",
+        (),
+    ),
+)
 
 DAILY_FRONTIER_PREREQUISITES = (
     "data/processed/transaction_state_frontier_daily.parquet",
     "data/processed/transaction_state_frontier_daily_rejections.parquet",
     "data/processed/transaction_state_frontier_daily_support.parquet",
 )
-
-# This is the executable owner of D3-refresh. These are canonical panels, not finding estimators. The order keeps raw- and receipt-dependent measurement ahead of consumers and deliberately runs one memory-heavy transform at a time.
-CLAIM_INPUT_STAGES: list[tuple[str, list[str], str, tuple[str, ...]]] = [
-    (
-        "build_routing_maturation_panel.py",
-        ["--threads", "1", "--memory-limit", "1GB"],
-        "estimator-ready recurrent cell-days, conditioned transition cells, and exact-calendar routing links",
-        (
-            "data/processed/routing_maturation_cell_day.parquet",
-            "data/processed/routing_transition_cells.parquet",
-            "data/processed/routing_maturation_exact_horizons.parquet",
-        ),
-    ),
-    (
-        "process/build_cex_reference_support.py",
-        [],
-        "published exact-address positive CEX-reference support for the rent bound",
-        ("data/processed/cex_reference_support.parquet",),
-    ),
-    (
-        "build_ethereum_day_calendar.py",
-        ["--workers", "4"],
-        "exact chain-wide UTC-day block bounds for DEX-independent sampling",
-        ("data/processed/ethereum_utc_day_calendar.parquet",),
-    ),
-    (
-        "process/build_route_gas_units.py",
-        ["--workers", "8", "--panel-only"],
-        "receipt-measured route gas by topology, venue and vehicle",
-        ("data/processed/route_gas_units.parquet",),
-    ),
-    (
-        "build_intermediation_by_type.py",
-        ["--workers", "8", "--panel-only"],
-        "one-vehicle route counts and value support by asset type",
-        ("data/processed/intermediation_by_type_daily.parquet",),
-    ),
-    (
-        "build_cross_venue_routing_series.py",
-        ["--workers", "8", "--panel-only"],
-        "routing integration, splitting and complexity margins",
-        ("data/processed/cross_venue_routing_daily.parquet",),
-    ),
-    (
-        "build_vehicle_excess_use.py",
-        ["--workers", "8", "--panel-only"],
-        "continuous vehicle dominance normalized by endpoint demand",
-        ("data/processed/vehicle_excess_use_daily.parquet",),
-    ),
-    (
-        "build_vehicle_centrality.py",
-        ["--stride", "24", "--jobs", "4", "--out", "data/processed/vehicle_centrality_dense.parquet", "--panel-only"],
-        "metric-sensitive topology companion",
-        ("data/processed/vehicle_centrality_dense.parquet",),
-    ),
-    (
-        "build_token_price_panel.py",
-        ["--workers", "2"],
-        "canonical address-day USD prices used by liquidity and route valuation",
-        ("data/processed/token_price_daily.parquet",),
-    ),
-    (
-        "build_pool_capital_panel.py",
-        [],
-        "only protocol-admitted deposited capital and exact candidate allocation; V3 provider TVL is excluded",
-        (
-            "data/processed/pool_capital_daily.parquet",
-            "data/processed/pool_candidate_capital_daily.parquet",
-            "data/processed/pool_capital_rejections.parquet",
-        ),
-    ),
-    (
-        "build_rent_incidence_panel.py",
-        ["v2"],
-        "constant-product liquidity-provider rent inputs; V3 is withheld pending custody, ownership, and path-LVR reconciliation",
-        (
-            "data/processed/rent_incidence_v2_pool_day.parquet",
-        ),
-    ),
-    (
-        "build_lp_liquidity_flow_panel.py",
-        [],
-        "causal V3 LP dollar-flow inputs without an unvalidated capital-stock proxy",
-        (
-            "data/processed/lp_liquidity_flow_events_v3.parquet",
-            "data/processed/lp_liquidity_flow_candidates_v3.parquet",
-            "data/processed/lp_liquidity_flow_rejections_v3.parquet",
-            "data/processed/lp_liquidity_flow_daily_v3.parquet",
-        ),
-    ),
-    (
-        "build_counterfactual_dominance.py",
-        ["--stage", "gross", "--workers", "4"],
-        "gross exact-state route counterfactual released before any gas-price dependency",
-        ("data/processed/counterfactual_dominance_gross.parquet",),
-    ),
-    (
-        "process/build_route_transaction_gas.py",
-        ["--workers", "8"],
-        "exact realised-transaction effective gas price joined by transaction and block",
-        ("data/processed/route_transaction_gas.parquet",),
-    ),
-    (
-        "build_counterfactual_dominance.py",
-        ["--stage", "final", "--panel-only"],
-        "gas-adjusted exact-state route counterfactual with common transaction gas price across alternatives",
-        ("data/processed/counterfactual_dominance.parquet",),
-    ),
-]
-
 
 def current_artifacts(paths: tuple[str, ...]) -> tuple[bool, list[str]]:
     """Return whether every artifact exists with current input-aware provenance."""
@@ -271,23 +164,26 @@ def main() -> int:
                     help="run even if the panel looks like it is still being written")
     args = ap.parse_args()
 
-    diagnostics = [(script, extra, why, ()) for script, extra, why in STAGES]
     if args.scope == "diagnostics":
-        stages = diagnostics
+        stages = list(DIAGNOSTIC_STAGES)
     elif args.scope == "claim-inputs":
-        stages = CLAIM_INPUT_STAGES
+        stages = list(D3_BUILD_STAGES)
     else:
-        stages = [*CLAIM_INPUT_STAGES, *diagnostics]
-    stages = [stage for stage in stages if not args.only or args.only in stage[0]]
+        stages = [*D3_BUILD_STAGES, *DIAGNOSTIC_STAGES]
+    stages = [
+        stage
+        for stage in stages
+        if not args.only or args.only in stage.script
+    ]
     if not stages:
         print(f"no stage matches {args.only!r}")
         return 1
 
     if args.dry_run:
         print(f"{len(stages)} stages, in dependency order:\n")
-        for i, (script, extra, why, _outputs) in enumerate(stages, 1):
-            print(f"  {i:>2}. {script} {' '.join(extra)}")
-            print(f"      {why}")
+        for i, stage in enumerate(stages, 1):
+            print(f"  {i:>2}. {stage.script} {' '.join(stage.arguments)}")
+            print(f"      {stage.purpose}")
         return 0
 
     if args.scope in {"claim-inputs", "all"}:
@@ -333,9 +229,10 @@ def main() -> int:
            "MKL_NUM_THREADS": "1", "NUMEXPR_NUM_THREADS": "1"}
 
     failures: list[tuple[str, str]] = []
-    claim_input_scripts = {stage[0] for stage in CLAIM_INPUT_STAGES}
-    for i, (script, extra, _why, outputs) in enumerate(stages, 1):
-        path = ROOT / "scripts" / script
+    claim_input_scripts = {stage.script for stage in D3_BUILD_STAGES}
+    for i, stage in enumerate(stages, 1):
+        script = stage.script
+        path = ROOT / "scripts" / stage.script
         if not path.exists():
             print(f"  {i:>2}/{len(stages)} {script:<44} MISSING")
             failures.append((script, "missing"))
@@ -349,14 +246,18 @@ def main() -> int:
         try:
             with log.open("w") as fh:
                 returncode = run_stage(
-                    [sys.executable, str(path), *extra],
+                    [sys.executable, str(path), *stage.arguments],
                     log=fh,
                     env=env,
                     timeout=args.timeout,
                 )
             took = time.time() - started
             if returncode == 0:
-                current, bad = current_artifacts(outputs) if outputs else (True, [])
+                current, bad = (
+                    current_artifacts(stage.outputs)
+                    if stage.outputs
+                    else (True, [])
+                )
                 if current:
                     print(f"\r  {i:>2}/{len(stages)} {script:<44} ok    {took:>6.0f}s")
                 else:
