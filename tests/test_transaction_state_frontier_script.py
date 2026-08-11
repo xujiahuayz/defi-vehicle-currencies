@@ -3,6 +3,8 @@ from __future__ import annotations
 import json
 import pickle
 import unittest
+from concurrent.futures import Future
+from contextlib import contextmanager
 from pathlib import Path
 from tempfile import TemporaryDirectory
 from unittest.mock import patch
@@ -22,15 +24,21 @@ from ddvc.analysis.transaction_frontier import (
 )
 from ddvc.pricing.path_frontier import PathQuote
 from ddvc.provenance import cache_key, sidecar_path, verify
+from ddvc.transaction_targets import ProviderSwapEvent, TargetRelease
 from scripts.build_transaction_state_frontier import (
+    DAILY_PARENT_MEMORY_RESERVE_BYTES,
+    DAILY_WORKER_MEMORY_BUDGET_BYTES,
     FRONTIER_DEPENDENCY_REGISTRY,
     OUTPUT_PROVENANCE_SOURCES,
     REPLAY_CAUSAL_FIELDS,
+    REPLAY_CHECKPOINT_BOUNDARY,
     SCORING_CACHE_SOURCES,
+    DailySegmentTask,
     assemble_cached_output,
     candidate_vehicles,
     checkpoint_day,
     chosen_path_validation_errors,
+    daily_worker_count,
     intermediate_amount_gap_bps,
     latest_replay_checkpoint,
     load_cached_day,
@@ -38,10 +46,14 @@ from scripts.build_transaction_state_frontier import (
     load_replay_checkpoint,
     main,
     frontier_cache_identity,
+    materialize_segment_checkpoints,
+    plan_daily_segments,
     rejection_record,
     require_full_daily_target_release,
     replay_checkpoint_due,
+    run_daily_segments,
     save_replay_checkpoint,
+    score_daily_segment,
     select_days,
     strict_route_order,
     summarise,
@@ -56,15 +68,31 @@ from ddvc.pricing.v2_replay import V2ReplayDay
 from ddvc.realised import LINEAR_ROUTE_COLUMNS
 
 
-class TransactionStateFrontierScriptTests(unittest.TestCase):
-    def test_full_daily_target_release_is_explicitly_fail_closed(self) -> None:
-        with self.assertRaisesRegex(
-            RuntimeError,
-            "streamed, immutable receipt-anchored target-route ledger",
-        ):
-            require_full_daily_target_release()
+class InlineExecutor:
+    """Synchronous future executor for deterministic process-orchestration tests."""
 
-    def test_full_daily_mode_stops_before_every_downstream_gate(self) -> None:
+    def submit(self, function, *args, **kwargs):
+        future = Future()
+        try:
+            future.set_result(function(*args, **kwargs))
+        except BaseException as error:
+            future.set_exception(error)
+        return future
+
+
+@contextmanager
+def inline_process_pool(_workers: int):
+    yield InlineExecutor()
+
+
+class TransactionStateFrontierScriptTests(unittest.TestCase):
+    def test_full_daily_target_release_has_one_certified_resolver(self) -> None:
+        released = object()
+        with patch("scripts.build_transaction_state_frontier.resolve_target_release", return_value=released) as resolve:
+            self.assertIs(require_full_daily_target_release(["20250101"]), released)
+        resolve.assert_called_once_with("daily", expected_days=["20250101"])
+
+    def test_full_daily_mode_stops_at_missing_certified_target_release(self) -> None:
         with (
             patch(
                 "sys.argv",
@@ -78,22 +106,28 @@ class TransactionStateFrontierScriptTests(unittest.TestCase):
             ) as artifact_gate,
             patch(
                 "scripts.build_transaction_state_frontier.available_days"
-            ) as calendar_load,
+            , return_value=["20250101"]) as calendar_load,
+            patch(
+                "scripts.build_transaction_state_frontier.require_full_daily_target_release",
+                side_effect=FileNotFoundError("missing target release"),
+            ) as target_gate,
         ):
             self.assertEqual(main(), 1)
-        node_gate.assert_not_called()
-        artifact_gate.assert_not_called()
-        calendar_load.assert_not_called()
+        node_gate.assert_called_once_with(routes=True, market_state=True)
+        artifact_gate.assert_called_once()
+        calendar_load.assert_called_once_with(nonempty=False)
+        target_gate.assert_called_once_with(["20250101"])
 
     def test_strict_route_order_requires_one_block(self) -> None:
-        events = [
-            {"block": 12, "log_index": 8},
-            {"block": 12, "log_index": 13},
-        ]
+        def event(block: int, log_index: int) -> ProviderSwapEvent:
+            return ProviderSwapEvent("uniswap_v2", "0xtx", block, log_index, 100, "pool", "a", "b", 0, 0, 1, -1, True)
+
+        events = [event(12, 8), event(12, 13)]
         self.assertEqual(strict_route_order(events), (12, 8))
-        self.assertIsNone(strict_route_order([{**events[0], "block": None}, events[1]]))
         with self.assertRaisesRegex(ValueError, "disagree"):
-            strict_route_order([events[0], {**events[1], "block": 13}])
+            strict_route_order([events[0], event(13, 13)])
+        with self.assertRaisesRegex(ValueError, "duplicate"):
+            strict_route_order([events[0], event(12, 8)])
 
     def test_candidate_set_canonicalises_native_forms_once(self) -> None:
         vehicles = candidate_vehicles()
@@ -269,9 +303,12 @@ class TransactionStateFrontierScriptTests(unittest.TestCase):
             restored = load_replay_checkpoint(
                 path, engine_key="engine", pre_day="20230415"
             )
-        self.assertEqual(set(payload["causal_state"]), set(REPLAY_CAUSAL_FIELDS))
-        self.assertNotIn("pool_index", payload["causal_state"])
-        self.assertNotIn("quote_indexes_by_venue", payload["causal_state"])
+        causal_state = pickle.loads(payload["causal_state_pickle"])
+        self.assertEqual(set(causal_state), set(REPLAY_CAUSAL_FIELDS))
+        self.assertNotIn("pool_index", causal_state)
+        self.assertNotIn("quote_indexes_by_venue", causal_state)
+        self.assertEqual(len(payload["causal_state_sha256"]), 64)
+        self.assertEqual(payload["causal_boundary"], REPLAY_CHECKPOINT_BOUNDARY)
         self.assertEqual(restored.ticks_by_venue, replay.ticks_by_venue)
         self.assertEqual(
             restored.pool_index,
@@ -302,6 +339,161 @@ class TransactionStateFrontierScriptTests(unittest.TestCase):
                 load_replay_checkpoint(
                     legacy, engine_key="engine", pre_day="20230416"
                 )
+
+    def test_replay_checkpoint_is_immutable_and_content_checked(self) -> None:
+        replay = TickReplayState(token_decimals={"token": 18})
+        with TemporaryDirectory() as directory:
+            path = Path(directory) / "pre_20230415.pkl"
+            save_replay_checkpoint(path, replay, engine_key="engine", pre_day="20230415")
+            with self.assertRaisesRegex(FileExistsError, "immutable"):
+                save_replay_checkpoint(path, replay, engine_key="engine", pre_day="20230415")
+            payload = pickle.loads(path.read_bytes())
+            payload["causal_state_pickle"] += b"corrupt"
+            path.write_bytes(pickle.dumps(payload))
+            with self.assertRaisesRegex(ValueError, "content mismatch"):
+                load_replay_checkpoint(path, engine_key="engine", pre_day="20230415")
+
+    def test_daily_workers_are_memory_and_cpu_bounded(self) -> None:
+        m3_memory = DAILY_PARENT_MEMORY_RESERVE_BYTES + 2 * DAILY_WORKER_MEMORY_BUDGET_BYTES
+        studio_memory = 64 * 1024**3
+        self.assertEqual(daily_worker_count(None, total_memory_bytes=m3_memory, cpu_count=14), 2)
+        self.assertEqual(daily_worker_count(4, total_memory_bytes=m3_memory, cpu_count=14), 2)
+        self.assertEqual(daily_worker_count(None, total_memory_bytes=studio_memory, cpu_count=16), 4)
+        self.assertEqual(daily_worker_count(2, total_memory_bytes=studio_memory, cpu_count=16), 2)
+        with self.assertRaisesRegex(ValueError, "positive"):
+            daily_worker_count(0, total_memory_bytes=studio_memory, cpu_count=16)
+
+    def test_daily_segment_plan_has_no_overlap_or_gap(self) -> None:
+        days = [day.strftime("%Y%m%d") for day in pd.date_range("2021-05-04", periods=8)]
+        segments = plan_daily_segments(days, workers=3, checkpoint_dir=Path("checkpoints"))
+        self.assertEqual([len(segment.days) for segment in segments], [3, 3, 2])
+        self.assertEqual([day for segment in segments for day in segment.days], days)
+        self.assertEqual([checkpoint_day(segment.checkpoint_path) for segment in segments], ["20210504", "20210507", "20210510"])
+        with self.assertRaisesRegex(ValueError, "gap"):
+            plan_daily_segments([days[0], days[2]], workers=2, checkpoint_dir=Path("checkpoints"))
+
+    def test_daily_segment_plan_balances_certified_scoring_load(self) -> None:
+        days = [day.strftime("%Y%m%d") for day in pd.date_range("2021-05-04", periods=8)]
+        weights = {day: (1 if index < 4 else 10) for index, day in enumerate(days)}
+        segments = plan_daily_segments(days, workers=2, checkpoint_dir=Path("checkpoints"), scoring_weights=weights)
+        self.assertEqual([len(segment.days) for segment in segments], [6, 2])
+        self.assertEqual([segment.scoring_weight for segment in segments], [24, 20])
+
+    def test_segment_checkpoints_hold_exact_causal_start_and_are_reused(self) -> None:
+        days = [day.strftime("%Y%m%d") for day in pd.date_range("2021-05-04", periods=4)]
+        with TemporaryDirectory() as directory:
+            checkpoint_dir = Path(directory)
+            segments = plan_daily_segments(days, workers=2, checkpoint_dir=checkpoint_dir)
+
+            def empty_replay() -> TickReplayState:
+                return TickReplayState(token_decimals={})
+
+            def warm(_root: Path, day: str, replay: TickReplayState) -> None:
+                replay.token_decimals[f"seen-{day}"] = 1
+
+            with (
+                patch("scripts.build_transaction_state_frontier.new_tick_replay", side_effect=empty_replay),
+                patch("scripts.build_transaction_state_frontier.warm_tick_day", side_effect=warm),
+            ):
+                first = materialize_segment_checkpoints(segments, checkpoint_dir=checkpoint_dir, checkpoint_engine_key="engine", market_state=Path("state"))
+                second = materialize_segment_checkpoints(segments, checkpoint_dir=checkpoint_dir, checkpoint_engine_key="engine", market_state=Path("state"))
+            first_state = load_replay_checkpoint(segments[0].checkpoint_path, engine_key="engine", pre_day=days[0])
+            second_state = load_replay_checkpoint(segments[1].checkpoint_path, engine_key="engine", pre_day=days[2])
+        self.assertEqual(first, (2, 2))
+        self.assertEqual(second, (0, 0))
+        self.assertEqual(first_state.token_decimals, {})
+        self.assertEqual(second_state.token_decimals, {f"seen-{days[0]}": 1, f"seen-{days[1]}": 1})
+
+    def test_serial_and_parallel_segments_write_frame_equivalent_days(self) -> None:
+        days = [day.strftime("%Y%m%d") for day in pd.date_range("2021-05-04", periods=4)]
+        release = TargetRelease("daily", "1" * 64, Path("pointer"), Path("manifest"), tuple(Path("day_generation") / "days" / f"{day}.json" for day in days), tuple(days), {})
+
+        class FakeReplay:
+            def __init__(self, position: int):
+                self.position = position
+
+        def load_checkpoint(path: Path, **_kwargs):
+            return FakeReplay(days.index(checkpoint_day(path)))
+
+        def score(day, _events, replay, _v2, _vehicles, _release):
+            self.assertEqual(day, days[replay.position])
+            value = replay.position
+            replay.position += 1
+            panel = pd.DataFrame({"day": [day], "route_id": [f"route-{day}"], "causal_position": [value]})
+            return panel, pd.DataFrame(), {"day": day, "scored_routes": 1, "rejected_routes": 0}
+
+        with TemporaryDirectory() as directory:
+            root = Path(directory)
+            serial_cache = root / "serial"
+            parallel_cache = root / "parallel"
+            serial_segments = plan_daily_segments(days, workers=1, checkpoint_dir=root / "serial-checkpoints")
+            parallel_segments = plan_daily_segments(days, workers=2, checkpoint_dir=root / "parallel-checkpoints")
+            common = {"checkpoint_engine_key": "checkpoint", "frontier_engine_key": "frontier", "frontier_input_key": "input", "vehicles": (), "target_release": release, "market_state": Path("state")}
+            with (
+                patch("scripts.build_transaction_state_frontier.load_replay_checkpoint", side_effect=load_checkpoint),
+                patch("scripts.build_transaction_state_frontier.load_tick_day_events", return_value=[]),
+                patch("scripts.build_transaction_state_frontier.load_v2_replay_day", return_value=object()),
+                patch("scripts.build_transaction_state_frontier.score_day", side_effect=score),
+                patch("scripts.build_transaction_state_frontier.interruptible_process_pool", side_effect=inline_process_pool),
+            ):
+                serial_support = run_daily_segments(serial_segments, workers=1, day_cache=serial_cache, **common)
+                parallel_support = run_daily_segments(parallel_segments, workers=2, day_cache=parallel_cache, **common)
+            serial_panel = pd.concat([pd.read_parquet(serial_cache / f"{day}.parquet") for day in days], ignore_index=True)
+            parallel_panel = pd.concat([pd.read_parquet(parallel_cache / f"{day}.parquet") for day in days], ignore_index=True)
+        self.assertEqual(serial_support, parallel_support)
+        pd.testing.assert_frame_equal(serial_panel, parallel_panel)
+
+    def test_segment_worker_reuses_completed_days_without_rescoring(self) -> None:
+        days = ("20210504", "20210505")
+        release = TargetRelease("daily", "1" * 64, Path("pointer"), Path("manifest"), (), days, {})
+        with TemporaryDirectory() as directory:
+            root = Path(directory)
+            cache = root / "cache"
+            for day in days:
+                write_cached_day(cache, day, pd.DataFrame({"day": [day], "route_id": [f"route-{day}"]}), pd.DataFrame(), {"day": day, "scored_routes": 1, "rejected_routes": 0}, engine_key="frontier", input_key="input")
+            segment = plan_daily_segments(list(days), workers=1, checkpoint_dir=root / "checkpoints")[0]
+            task = DailySegmentTask(segment, "checkpoint", cache, "frontier", "input", (), release, Path("state"))
+            with (
+                patch("scripts.build_transaction_state_frontier.load_replay_checkpoint", return_value=TickReplayState()),
+                patch("scripts.build_transaction_state_frontier.warm_tick_day") as warm,
+                patch("scripts.build_transaction_state_frontier.score_day") as score,
+                patch("scripts.build_transaction_state_frontier.write_cached_day") as write,
+            ):
+                result = score_daily_segment(task)
+        self.assertEqual((result.scored_days, result.cached_days), (0, 2))
+        self.assertEqual(warm.call_count, 2)
+        score.assert_not_called()
+        write.assert_not_called()
+
+    def test_segment_task_is_spawn_serializable(self) -> None:
+        days = ["20210504", "20210505"]
+        segment = plan_daily_segments(days, workers=1, checkpoint_dir=Path("checkpoints"))[0]
+        release = TargetRelease("daily", "1" * 64, Path("pointer"), Path("manifest"), (Path("day"),), tuple(days), {"full_daily_dates": 2})
+        task = DailySegmentTask(segment, "checkpoint", Path("cache"), "frontier", "input", (WETH,), release, Path("state"))
+        self.assertEqual(pickle.loads(pickle.dumps(task)), task)
+
+    def test_worker_failure_prevents_daily_publication(self) -> None:
+        days = ["20210504", "20210505"]
+        release = TargetRelease("daily", "1" * 64, Path("pointer"), Path("manifest"), tuple(Path("day_generation") / "days" / f"{day}.json" for day in days), tuple(days), {})
+        with (
+            patch("sys.argv", ["build_transaction_state_frontier.py", "--daily-calendar", "--workers", "2"]),
+            patch("scripts.build_transaction_state_frontier.require_node_d_release"),
+            patch("scripts.build_transaction_state_frontier.require_current_artifacts"),
+            patch("scripts.build_transaction_state_frontier.available_days", return_value=days),
+            patch("scripts.build_transaction_state_frontier.require_full_daily_target_release", return_value=release),
+            patch("scripts.build_transaction_state_frontier.transaction_frontier_audit_days", return_value=days),
+            patch("scripts.build_transaction_state_frontier.require_frontier_audit_gate", return_value=(1.0, 1.0, 1.0)),
+            patch("scripts.build_transaction_state_frontier.frontier_cache_identity", return_value=("frontier", "input", "generation")),
+            patch("scripts.build_transaction_state_frontier.load_cached_day_support", return_value=None),
+            patch("scripts.build_transaction_state_frontier.replay_checkpoint_engine_key", return_value="checkpoint"),
+            patch("scripts.build_transaction_state_frontier.target_day_scoring_weights", return_value={day: 1 for day in days}),
+            patch("scripts.build_transaction_state_frontier.materialize_segment_checkpoints", return_value=(1, 2)),
+            patch("scripts.build_transaction_state_frontier.run_daily_segments", side_effect=RuntimeError("worker failed")),
+            patch("scripts.build_transaction_state_frontier.publish_full_daily_frontier") as publish,
+        ):
+            result = main()
+        self.assertEqual(result, 1)
+        publish.assert_not_called()
 
     def test_frontier_dependency_groups_separate_scoring_from_publication(self) -> None:
         scoring_changes = {
@@ -685,16 +877,10 @@ class TransactionStateFrontierScriptTests(unittest.TestCase):
 
     def test_empty_day_preserves_calendar_support(self) -> None:
         empty_replay = V2ReplayDay({}, {}, {}, {}, {}, {})
-        with TemporaryDirectory() as directory:
-            root = Path(directory)
-            pd.DataFrame(columns=LINEAR_ROUTE_COLUMNS).to_parquet(
-                root / "20200214.parquet",
-                index=False,
-            )
-            with patch("scripts.build_transaction_state_frontier.UNIFIED", root):
-                targets, rejections, support = load_target_routes(
-                    "20200214", [], empty_replay
-                )
+        release = TargetRelease("audit", "1" * 64, Path("pointer"), Path("manifest"), (), ("20200214",), {})
+        released_support = {"all_exact_two_leg_routes": 0, "exact_venue_two_leg_routes": 0}
+        with patch("scripts.build_transaction_state_frontier.read_target_day", return_value=(pd.DataFrame(columns=["leg1_venue", "leg2_venue"]), released_support)):
+            targets, rejections, support = load_target_routes("20200214", release, empty_replay)
         self.assertEqual(targets, [])
         self.assertEqual(rejections, [])
         self.assertEqual(support["all_exact_two_leg_routes"], 0)

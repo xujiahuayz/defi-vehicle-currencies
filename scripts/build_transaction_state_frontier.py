@@ -6,10 +6,7 @@ V3, or V4 adapters and searches all supported paths at the same pre-transaction
 state. Every admitted route and replay event requires block-log order. Curve,
 Balancer, and Fluid remain outside the exact-state perimeter.
 
-The 77-date audit calendar validates construction and chosen-route reproduction.
-It is never an estimation sample. Only after that gate passes does
-``--daily-calendar`` publish the separate full-daily analysis input used for exact
-1-, 7-, 30-, and 120-calendar-day outcome links.
+The current audit calendar validates construction and chosen-route reproduction. It is never an estimation sample. Only after that gate passes does ``--daily-calendar`` publish the separate full-daily analysis input used for exact 1-, 7-, 30-, and 120-calendar-day outcome links.
 """
 
 from __future__ import annotations
@@ -17,8 +14,11 @@ from __future__ import annotations
 import argparse
 import hashlib
 import json
+import os
 import pickle
 from collections import defaultdict
+from concurrent.futures import as_completed
+from dataclasses import dataclass
 from functools import partial
 from pathlib import Path
 
@@ -64,7 +64,6 @@ from ddvc.pricing.tick_replay import (
 from ddvc.pricing.v3pools import load_token_decimals
 from ddvc.pricing.v2_replay import V2ReplayDay, V2_VENUES, load_v2_replay_day
 from ddvc.provenance import cache_key, require_current_artifacts, stamp
-from ddvc.realised import LINEAR_ROUTE_COLUMNS, extract_linear_realised_routes
 from ddvc.reconstruct import UNIFIED_QUALITY_PANEL
 from ddvc.release_calendar import (
     released_route_days,
@@ -73,10 +72,10 @@ from ddvc.release_calendar import (
 )
 from ddvc.route_cost import MAX_PRICE_IMPACT
 from ddvc.route_state import OrderedTickStateCursor, TickStateCut
-from ddvc.runtime import atomic_output, exclusive_job
+from ddvc.runtime import atomic_output, exclusive_job, interruptible_process_pool
 from ddvc.state_data import STATE_ROOT
-from ddvc.source_records import block_value, transaction_id, timestamp_value
 from ddvc.tables import write_exhibit, write_panel
+from ddvc.transaction_targets import TargetRelease, read_target_day, resolve_target_release, strict_route_order
 from ddvc.v4_quarantine import (
     V4_STATIC_QUARANTINE_PANEL,
     load_v4_static_quarantine,
@@ -101,9 +100,14 @@ MIN_INPUT_USD = 100.0
 INTERMEDIATE_FLOW_TOLERANCE_BPS = 0.01
 CHECKPOINT_INTERVAL_DAYS = 180
 CHECKPOINT_GLOB = "pre_" + "[0-9]" * 8 + ".pkl"
-REPLAY_CHECKPOINT_SCHEMA_VERSION = 2
+REPLAY_CHECKPOINT_SCHEMA_VERSION = 3
+REPLAY_CHECKPOINT_BOUNDARY = "strictly_before_first_event_of_day"
 DAY_CACHE_SCHEMA_VERSION = 2
 ORDERED_SHARD_MANIFEST_SCHEMA_VERSION = 1
+MAX_DAILY_WORKERS = 4
+DEFAULT_DAILY_WORKERS = 2
+DAILY_PARENT_MEMORY_RESERVE_BYTES = 12 * 1024**3
+DAILY_WORKER_MEMORY_BUDGET_BYTES = 12 * 1024**3
 REPLAY_CAUSAL_FIELDS = (
     "unify_wrapped",
     "ticks_by_venue",
@@ -138,6 +142,7 @@ FRONTIER_DEPENDENCY_REGISTRY = {
         "src/ddvc/route_roles.py",
         "src/ddvc/source_records.py",
         "src/ddvc/state_data.py",
+        "src/ddvc/transaction_targets.py",
         "src/ddvc/v4_quarantine.py",
     ),
     "publication": (
@@ -162,6 +167,41 @@ def frontier_dependency_sources(*groups: str) -> list[str]:
 
 SCORING_CACHE_SOURCES = frontier_dependency_sources("scoring")
 OUTPUT_PROVENANCE_SOURCES = frontier_dependency_sources("scoring", "publication")
+
+
+@dataclass(frozen=True)
+class DailySegment:
+    """One exclusive contiguous slice of the full-daily calendar."""
+
+    index: int
+    days: tuple[str, ...]
+    checkpoint_path: Path
+    scoring_weight: int
+
+
+@dataclass(frozen=True)
+class DailySegmentTask:
+    """Complete immutable input contract for one scoring process."""
+
+    segment: DailySegment
+    checkpoint_engine_key: str
+    day_cache: Path
+    frontier_engine_key: str
+    frontier_input_key: str
+    vehicles: tuple[str, ...]
+    target_release: TargetRelease
+    market_state: Path
+
+
+@dataclass(frozen=True)
+class DailySegmentResult:
+    """Ordered support closure returned by one segment process."""
+
+    index: int
+    days: tuple[str, ...]
+    support_rows: tuple[dict[str, object], ...]
+    scored_days: int
+    cached_days: int
 
 
 def candidate_vehicles() -> tuple[str, ...]:
@@ -203,14 +243,17 @@ def save_replay_checkpoint(
 ) -> None:
     if checkpoint_day(path) != pre_day:
         raise ValueError("replay checkpoint pre-day disagrees with filename")
+    if path.exists():
+        raise FileExistsError(f"replay checkpoint is immutable once installed: {path}")
+    causal_state = {field: getattr(replay, field) for field in REPLAY_CAUSAL_FIELDS}
+    causal_state_pickle = pickle.dumps(causal_state, protocol=pickle.HIGHEST_PROTOCOL)
     payload = {
         "schema_version": REPLAY_CHECKPOINT_SCHEMA_VERSION,
         "engine_key": engine_key,
         "pre_day": pre_day,
-        "causal_state": {
-            field: getattr(replay, field)
-            for field in REPLAY_CAUSAL_FIELDS
-        },
+        "causal_boundary": REPLAY_CHECKPOINT_BOUNDARY,
+        "causal_state_sha256": hashlib.sha256(causal_state_pickle).hexdigest(),
+        "causal_state_pickle": causal_state_pickle,
     }
     with atomic_output(path) as temporary:
         with temporary.open("wb") as handle:
@@ -233,12 +276,33 @@ def load_replay_checkpoint(
         raise ValueError(f"tick replay checkpoint engine mismatch: {path}")
     if payload.get("pre_day") != pre_day or checkpoint_day(path) != pre_day:
         raise ValueError(f"tick replay checkpoint pre-day mismatch: {path}")
-    causal_state = payload.get("causal_state")
+    if payload.get("causal_boundary") != REPLAY_CHECKPOINT_BOUNDARY:
+        raise ValueError(f"tick replay checkpoint boundary mismatch: {path}")
+    causal_state_pickle = payload.get("causal_state_pickle")
+    if not isinstance(causal_state_pickle, bytes) or payload.get("causal_state_sha256") != hashlib.sha256(causal_state_pickle).hexdigest():
+        raise ValueError(f"tick replay checkpoint content mismatch: {path}")
+    try:
+        causal_state = pickle.loads(causal_state_pickle)
+    except (AttributeError, EOFError, ImportError, IndexError, pickle.UnpicklingError) as error:
+        raise ValueError(f"tick replay checkpoint causal-state payload is invalid: {path}") from error
     if not isinstance(causal_state, dict) or set(causal_state) != set(REPLAY_CAUSAL_FIELDS):
         raise ValueError(f"tick replay checkpoint causal-state mismatch: {path}")
     replay = TickReplayState(**causal_state)
     replay.rebuild_derived_indexes()
     return replay
+
+
+def ensure_replay_checkpoint(path: Path, replay: TickReplayState, *, engine_key: str, pre_day: str) -> bool:
+    """Install one immutable checkpoint or prove an existing one has identical causal state."""
+    if not path.exists():
+        save_replay_checkpoint(path, replay, engine_key=engine_key, pre_day=pre_day)
+        created = True
+    else:
+        created = False
+    restored = load_replay_checkpoint(path, engine_key=engine_key, pre_day=pre_day)
+    if any(getattr(restored, field) != getattr(replay, field) for field in REPLAY_CAUSAL_FIELDS):
+        raise ValueError(f"tick replay checkpoint disagrees with sequential causal state: {path}")
+    return created
 
 
 def checkpoint_day(path: Path) -> str:
@@ -491,6 +555,204 @@ def replay_checkpoint_due(*, index: int) -> bool:
     return (index - 1) % CHECKPOINT_INTERVAL_DAYS == 0
 
 
+def physical_memory_bytes() -> int | None:
+    """Return installed memory without adding a platform-specific dependency."""
+    try:
+        return int(os.sysconf("SC_PAGE_SIZE")) * int(os.sysconf("SC_PHYS_PAGES"))
+    except (AttributeError, OSError, TypeError, ValueError):
+        return None
+
+
+def daily_worker_count(requested: int | None, *, total_memory_bytes: int | None = None, cpu_count: int | None = None) -> int:
+    """Bound full-daily processes by CPU and a conservative per-process memory budget."""
+    memory = physical_memory_bytes() if total_memory_bytes is None else total_memory_bytes
+    processors = os.cpu_count() if cpu_count is None else cpu_count
+    cpu_cap = max(1, min(MAX_DAILY_WORKERS, int(processors or 1)))
+    if memory is None:
+        capacity = min(DEFAULT_DAILY_WORKERS, cpu_cap)
+    else:
+        memory_cap = max(1, (int(memory) - DAILY_PARENT_MEMORY_RESERVE_BYTES) // DAILY_WORKER_MEMORY_BUDGET_BYTES)
+        capacity = min(cpu_cap, memory_cap)
+    if requested is None:
+        return capacity
+    if requested < 1:
+        raise ValueError("full-daily frontier workers must be positive")
+    return min(int(requested), capacity)
+
+
+def target_day_scoring_weights(release: TargetRelease) -> dict[str, int]:
+    """Read deterministic route-count weights from the already certified target release."""
+    if len(release.calendar) != len(release.day_markers):
+        raise ValueError("daily target release calendar and marker counts disagree")
+    weights: dict[str, int] = {}
+    for day, marker in zip(release.calendar, release.day_markers, strict=True):
+        record = json.loads(marker.read_text(encoding="utf-8"))
+        support = record.get("support")
+        if record.get("day") != day or record.get("generation") != release.generation or not isinstance(support, dict):
+            raise ValueError(f"daily target marker identity drifted before segment planning: {day}")
+        routes = int(support.get("admitted_provider_targets", -1))
+        if routes < 0:
+            raise ValueError(f"daily target marker lacks a scoring weight: {day}")
+        weights[day] = max(1, routes)
+    return weights
+
+
+def plan_daily_segments(days: list[str], *, workers: int, checkpoint_dir: Path, scoring_weights: dict[str, int] | None = None) -> tuple[DailySegment, ...]:
+    """Partition one exact daily calendar into deterministic exclusive contiguous segments."""
+    if workers < 1:
+        raise ValueError("daily segment worker count must be positive")
+    if not days or days != sorted(set(days)):
+        raise ValueError("full-daily frontier calendar must be nonempty, unique, and ordered")
+    expected = [day.strftime("%Y%m%d") for day in pd.date_range(pd.to_datetime(days[0], format="%Y%m%d"), pd.to_datetime(days[-1], format="%Y%m%d"), freq="D")]
+    if days != expected:
+        raise ValueError("full-daily frontier calendar contains a gap")
+    segment_count = min(workers, len(days))
+    if scoring_weights is None:
+        quotient, remainder = divmod(len(days), segment_count)
+        boundaries = []
+        offset = 0
+        for index in range(segment_count - 1):
+            offset += quotient + int(index < remainder)
+            boundaries.append(offset)
+        weights = {day: 1 for day in days}
+    else:
+        if set(scoring_weights) != set(days) or any(isinstance(weight, bool) or not isinstance(weight, int) or weight < 1 for weight in scoring_weights.values()):
+            raise ValueError("full-daily frontier scoring weights must be positive integers on the exact calendar")
+        weights = scoring_weights
+        cumulative = [0]
+        for day in days:
+            cumulative.append(cumulative[-1] + weights[day])
+        boundaries = []
+        prior = 0
+        for index in range(1, segment_count):
+            target = cumulative[-1] * index / segment_count
+            maximum = len(days) - (segment_count - index)
+            candidates = range(prior + 1, maximum + 1)
+            boundary = min(candidates, key=lambda value: (abs(cumulative[value] - target), value))
+            boundaries.append(boundary)
+            prior = boundary
+    boundaries.append(len(days))
+    segments: list[DailySegment] = []
+    offset = 0
+    for index, boundary in enumerate(boundaries):
+        owned = tuple(days[offset:boundary])
+        segments.append(DailySegment(index, owned, checkpoint_dir / f"pre_{owned[0]}.pkl", sum(weights[day] for day in owned)))
+        offset = boundary
+    validate_daily_segment_plan(segments, days)
+    return tuple(segments)
+
+
+def validate_daily_segment_plan(segments: list[DailySegment] | tuple[DailySegment, ...], days: list[str]) -> None:
+    """Prove exact ordered ownership before any worker can write a shard."""
+    if not segments:
+        raise ValueError("full-daily frontier segment plan is empty")
+    if [segment.index for segment in segments] != list(range(len(segments))):
+        raise ValueError("full-daily frontier segment indexes are not canonical")
+    flattened = [day for segment in segments for day in segment.days]
+    if flattened != days or len(flattened) != len(set(flattened)):
+        raise ValueError("full-daily frontier segments overlap or leave a gap")
+    for segment in segments:
+        if not segment.days or segment.scoring_weight < 1 or checkpoint_day(segment.checkpoint_path) != segment.days[0]:
+            raise ValueError("full-daily frontier segment lacks its exact pre-start checkpoint")
+
+
+def new_tick_replay() -> TickReplayState:
+    """Construct the sole canonical empty replay state for this frontier."""
+    return TickReplayState(token_decimals=load_token_decimals(TOKEN_DECIMALS), quarantined_pools={"uniswap_v4": load_v4_static_quarantine()})
+
+
+def materialize_segment_checkpoints(segments: tuple[DailySegment, ...], *, checkpoint_dir: Path, checkpoint_engine_key: str, market_state: Path = MARKET_STATE) -> tuple[int, int]:
+    """Sequentially warm causal state and install every immutable pre-segment checkpoint."""
+    checkpoint_dir.mkdir(parents=True, exist_ok=True)
+    needed = {segment.days[0]: segment.checkpoint_path for segment in segments}
+    missing = []
+    for day, path in needed.items():
+        if path.exists():
+            load_replay_checkpoint(path, engine_key=checkpoint_engine_key, pre_day=day)
+        else:
+            missing.append(day)
+    if not missing:
+        return 0, 0
+    first_day = min(missing)
+    last_day = max(missing)
+    resume_checkpoint = latest_replay_checkpoint(checkpoint_dir, first_day)
+    if resume_checkpoint is None:
+        replay = new_tick_replay()
+        replay_start = min(REPLAY_START, first_day)
+    else:
+        replay_start = checkpoint_day(resume_checkpoint)
+        replay = load_replay_checkpoint(resume_checkpoint, engine_key=checkpoint_engine_key, pre_day=replay_start)
+    warmed_days = 0
+    created_checkpoints = 0
+    for observed in pd.date_range(pd.to_datetime(replay_start, format="%Y%m%d"), pd.to_datetime(last_day, format="%Y%m%d"), freq="D"):
+        day = observed.strftime("%Y%m%d")
+        if day in needed:
+            created_checkpoints += int(ensure_replay_checkpoint(needed[day], replay, engine_key=checkpoint_engine_key, pre_day=day))
+        if day != last_day:
+            warm_tick_day(market_state, day, replay)
+            warmed_days += 1
+    return warmed_days, created_checkpoints
+
+
+def score_daily_segment(task: DailySegmentTask) -> DailySegmentResult:
+    """Score one exclusive segment from its exact immutable pre-start state."""
+    segment = task.segment
+    replay = load_replay_checkpoint(segment.checkpoint_path, engine_key=task.checkpoint_engine_key, pre_day=segment.days[0])
+    support_rows: list[dict[str, object]] = []
+    scored_days = 0
+    cached_days = 0
+    for offset, day in enumerate(segment.days, 1):
+        cached = load_cached_day_support(task.day_cache, day, engine_key=task.frontier_engine_key, input_key=task.frontier_input_key)
+        if cached is not None:
+            warm_tick_day(task.market_state, day, replay)
+            support = cached
+            cached_days += 1
+        else:
+            events = load_tick_day_events(task.market_state, day)
+            v2_replay = load_v2_replay_day(task.market_state, day)
+            frame, rejections, support = score_day(day, events, replay, v2_replay, task.vehicles, task.target_release)
+            write_cached_day(task.day_cache, day, frame, rejections, support, engine_key=task.frontier_engine_key, input_key=task.frontier_input_key)
+            support = load_cached_day_support(task.day_cache, day, engine_key=task.frontier_engine_key, input_key=task.frontier_input_key)
+            if support is None:
+                raise RuntimeError(f"frontier worker failed to reopen its completed day: {day}")
+            scored_days += 1
+        support_rows.append(support)
+        if offset % 30 == 0 or offset == len(segment.days):
+            print(f"frontier segment {segment.index + 1}: {offset:,}/{len(segment.days):,} days; {scored_days:,} scored; {cached_days:,} cached; through {day}", flush=True)
+    return DailySegmentResult(segment.index, segment.days, tuple(support_rows), scored_days, cached_days)
+
+
+def run_daily_segments(segments: tuple[DailySegment, ...], *, workers: int, checkpoint_engine_key: str, day_cache: Path, frontier_engine_key: str, frontier_input_key: str, vehicles: tuple[str, ...], target_release: TargetRelease, market_state: Path = MARKET_STATE) -> list[dict[str, object]]:
+    """Run bounded disjoint scoring processes and return support in canonical calendar order."""
+    expected_days = [day for segment in segments for day in segment.days]
+    validate_daily_segment_plan(segments, expected_days)
+    tasks = [DailySegmentTask(segment, checkpoint_engine_key, day_cache, frontier_engine_key, frontier_input_key, vehicles, target_release, market_state) for segment in segments]
+    results: dict[int, DailySegmentResult] = {}
+    if workers == 1:
+        for task in tasks:
+            result = score_daily_segment(task)
+            results[result.index] = result
+    else:
+        with interruptible_process_pool(min(workers, len(tasks))) as pool:
+            futures = {pool.submit(score_daily_segment, task): task.segment.index for task in tasks}
+            for future in as_completed(futures):
+                result = future.result()
+                if result.index != futures[future] or result.index in results:
+                    raise RuntimeError("full-daily frontier worker returned the wrong segment identity")
+                results[result.index] = result
+                completed = sum(len(item.days) for item in results.values())
+                print(f"parallel frontier segments {len(results):,}/{len(tasks):,}; days {completed:,}/{len(expected_days):,}", flush=True)
+    if sorted(results) != list(range(len(segments))):
+        raise RuntimeError("full-daily frontier worker result set is incomplete")
+    support_rows: list[dict[str, object]] = []
+    for segment in segments:
+        result = results[segment.index]
+        if result.days != segment.days or tuple(str(row.get("day")) for row in result.support_rows) != segment.days:
+            raise RuntimeError("full-daily frontier worker support does not match segment ownership")
+        support_rows.extend(result.support_rows)
+    return support_rows
+
+
 def available_days(*, nonempty: bool = False) -> list[str]:
     return released_route_days(UNIFIED_QUALITY_PANEL, nonempty=nonempty)
 
@@ -518,16 +780,10 @@ def select_days(
     return sorted(selected)
 
 
-def require_full_daily_target_release() -> None:
-    """Keep the canonical daily frontier closed until its target ledger is certified."""
+def require_full_daily_target_release(expected_days: list[str] | None = None) -> TargetRelease:
+    """Resolve the current provider-derived daily target release without a fallback reader."""
 
-    raise RuntimeError(
-        "full-daily transaction-state frontier is fail-closed pending a streamed, "
-        "immutable receipt-anchored target-route ledger, a factory-certified V2 "
-        "candidate perimeter with exact pre-transaction state, exact-to-scored V3 "
-        "state lineage, bounded full-history V4 state, and a scorer that consumes "
-        "the certified target ledger"
-    )
+    return resolve_target_release("daily", expected_days=expected_days)
 
 
 def validate_reproduction_support(
@@ -641,32 +897,6 @@ def require_frontier_audit_gate(
     return validate_audit_support(support, expected_days)
 
 
-def _event_key(event: TickReplayEvent) -> tuple[str, str, int] | None:
-    if event.kind != "swap":
-        return None
-    tx_hash = transaction_id(event.row)
-    try:
-        log_index = int(event.row.get("logIndex") or 0)
-    except (TypeError, ValueError):
-        return None
-    if not tx_hash:
-        return None
-    return event.venue, str(tx_hash).lower(), log_index
-
-
-def strict_route_order(
-    matched_events: list[dict[str, object]],
-) -> tuple[int, int] | None:
-    """Return one transaction's exact block-log order or reject incomplete order."""
-    blocks = [event.get("block") for event in matched_events]
-    if any(block is None for block in blocks):
-        return None
-    unique_blocks = {int(block) for block in blocks if block is not None}
-    if len(unique_blocks) != 1:
-        raise ValueError("route legs disagree on block number")
-    return unique_blocks.pop(), min(int(event["log_index"]) for event in matched_events)
-
-
 def rejection_record(
     day: str,
     route: dict[str, object],
@@ -737,85 +967,21 @@ def intermediate_amount_gap_bps(
 
 def load_target_routes(
     day: str,
-    events: list[TickReplayEvent],
+    release: TargetRelease,
     v2_replay: V2ReplayDay,
 ) -> tuple[list[dict[str, object]], list[dict[str, object]], dict[str, object]]:
-    path = UNIFIED / f"{day}.parquet"
-    legs = pd.read_parquet(path, columns=LINEAR_ROUTE_COLUMNS)
-    all_routes = extract_linear_realised_routes(legs)
-    exact_routes = all_routes[
-        all_routes["realised_hop1_source"].isin(EXACT_VENUES)
-        & all_routes["realised_hop2_source"].isin(EXACT_VENUES)
-    ].copy()
-    route_keys = {
-        (str(tx_hash).lower(), int(component_id))
-        for tx_hash, component_id in zip(
-            exact_routes["tx_hash"], exact_routes["component_id"], strict=True
-        )
-    }
-    route_legs = legs[
-        legs["route_class"].eq("coherent") & legs["source"].isin(EXACT_VENUES)
-    ].copy()
-    route_mask = pd.Series(
-        [
-            (str(tx_hash).lower(), int(component_id)) in route_keys
-            for tx_hash, component_id in zip(
-                route_legs["tx_hash"], route_legs["component_id"], strict=True
-            )
-        ],
-        index=route_legs.index,
-        dtype=bool,
-    )
-    route_legs = route_legs.loc[route_mask].copy()
-    grouped_legs = {
-        (str(key[0]).lower(), int(key[1])): group.sort_values(
-            "log_index", kind="stable"
-        )
-        for key, group in route_legs.groupby(["tx_hash", "component_id"], sort=False)
-    }
-    raw_tick_events: dict[tuple[str, str, int], TickReplayEvent] = {}
-    for event in events:
-        key = _event_key(event)
-        if key is None:
-            continue
-        prior = raw_tick_events.get(key)
-        if prior is not None and prior.row != event.row:
-            raise ValueError(f"conflicting raw tick swap identity: {key}")
-        raw_tick_events[key] = event
-
+    ledger, released_support = read_target_day(release, day)
     targets: list[dict[str, object]] = []
     rejections: list[dict[str, object]] = []
-    mapped = 0
+    mapped = len(ledger)
     above_minimum = 0
-    block_order_unavailable = 0
     intermediate_amount_coherent = 0
     intermediate_amount_incoherent = 0
-    for route in exact_routes.to_dict("records"):
-        tx_hash = str(route["tx_hash"]).lower()
-        component_id = int(route["component_id"])
-        selected_legs = grouped_legs.get((tx_hash, component_id))
-        if selected_legs is None or len(selected_legs) != 2:
-            rejections.append(
-                rejection_record(
-                    day,
-                    route,
-                    "route_leg_identity_unavailable",
-                    reason_detail=(
-                        "missing"
-                        if selected_legs is None
-                        else f"observed_legs={len(selected_legs)}"
-                    ),
-                )
-            )
-            continue
-        first_leg, second_leg = tuple(selected_legs.itertuples(index=False))
-        flow_gap = intermediate_amount_gap_bps(
-            first_leg.amount_out, second_leg.amount_in
-        )
+    structurally_rejected = 0
+    for route in ledger.to_dict("records"):
+        flow_gap = intermediate_amount_gap_bps(route["realised_leg1_output"], route["realised_leg2_input"])
         route = {
             **route,
-            "realised_leg1_output": first_leg.amount_out,
-            "realised_leg2_input": second_leg.amount_in,
             "intermediate_amount_gap_bps": flow_gap,
         }
         if flow_gap is None or abs(flow_gap) > INTERMEDIATE_FLOW_TOLERANCE_BPS:
@@ -834,73 +1000,26 @@ def load_target_routes(
             )
             continue
         intermediate_amount_coherent += 1
-        matched_events: list[dict[str, object]] = []
-        rejection_reason: str | None = None
-        rejection_detail: str | None = None
-        for leg in selected_legs.itertuples(index=False):
-            try:
-                log_index = int(leg.log_index)
-            except (TypeError, ValueError):
-                rejection_reason = "invalid_log_index"
-                rejection_detail = str(leg.log_index)
-                break
-            venue = str(leg.source)
-            if venue in V2_VENUES:
-                event = v2_replay.swaps_by_identity.get((venue, tx_hash, log_index))
-                if event is None:
-                    rejection_reason = "raw_swap_identity_unavailable"
-                    rejection_detail = f"{venue}:{log_index}"
-                    break
-                matched_events.append(
-                    {
-                        "venue": venue,
-                        "pool": event.pool,
-                        "timestamp": event.timestamp,
-                        "log_index": log_index,
-                        "block": event.order[0],
-                    }
-                )
-            else:
-                event = raw_tick_events.get((venue, tx_hash, log_index))
-                if event is None:
-                    rejection_reason = "raw_swap_identity_unavailable"
-                    rejection_detail = f"{venue}:{log_index}"
-                    break
-                pool = str((event.row.get("pool") or {}).get("id") or "").lower()
-                try:
-                    timestamp = int(timestamp_value(event.row) or 0)
-                    block = block_value(event.row)
-                    block_number = int(block) if block is not None else None
-                except (TypeError, ValueError):
-                    rejection_reason = "raw_swap_payload_invalid"
-                    rejection_detail = f"{venue}:{log_index}"
-                    break
-                if not pool or timestamp <= 0:
-                    rejection_reason = "raw_swap_payload_invalid"
-                    rejection_detail = f"{venue}:{log_index}"
-                    break
-                matched_events.append(
-                    {
-                        "venue": venue,
-                        "pool": pool,
-                        "timestamp": timestamp,
-                        "log_index": log_index,
-                        "block": block_number,
-                    }
-                )
-        if len(matched_events) != 2:
+        venues = (str(route["leg1_venue"]), str(route["leg2_venue"]))
+        pools = (str(route["leg1_pool"]), str(route["leg2_pool"]))
+        target_order = (int(route["target_order_block"]), int(route["target_order_log_index"]))
+        if not bool(route["target_admitted"]):
+            structurally_rejected += 1
+            detail = route.get("target_structural_rejection")
+            if pd.isna(detail):
+                detail = None
             rejections.append(
                 rejection_record(
                     day,
                     route,
-                    rejection_reason or "raw_swap_mapping_incomplete",
-                    reason_detail=rejection_detail,
-                    venues=tuple(str(event["venue"]) for event in matched_events),
-                    pools=tuple(str(event["pool"]) for event in matched_events),
+                    "certified_target_structural_rejection",
+                    reason_detail=str(detail) if detail else None,
+                    causal_order=target_order,
+                    venues=venues,
+                    pools=pools,
                 )
             )
             continue
-        mapped += 1
         input_usd = float(route["input_usd"])
         if not np.isfinite(input_usd) or input_usd < MIN_INPUT_USD:
             rejections.append(
@@ -909,36 +1028,18 @@ def load_target_routes(
                     route,
                     "realised_input_below_minimum",
                     reason_detail=f"input_usd={input_usd}",
-                    venues=tuple(str(event["venue"]) for event in matched_events),
-                    pools=tuple(str(event["pool"]) for event in matched_events),
-                )
-            )
-            continue
-        above_minimum += 1
-        pools = tuple(str(event["pool"]) for event in matched_events)
-        venues = tuple(str(event["venue"]) for event in matched_events)
-        try:
-            target_order = strict_route_order(matched_events)
-        except ValueError as error:
-            raise ValueError(f"{error}: {route['route_id']}") from error
-        if target_order is None:
-            block_order_unavailable += 1
-            rejections.append(
-                rejection_record(
-                    day,
-                    route,
-                    "block_order_unavailable",
+                    causal_order=target_order,
                     venues=venues,
                     pools=pools,
                 )
             )
             continue
-        target_timestamp = min(int(event["timestamp"]) for event in matched_events)
+        above_minimum += 1
+        target_timestamp = int(route["target_timestamp"])
         targets.append(
             {
                 **route,
                 "day": day,
-                "tx_hash": tx_hash,
                 "target_order": target_order,
                 "v2_hour": target_timestamp - target_timestamp % 3600,
                 "v2_order": target_order,
@@ -948,24 +1049,19 @@ def load_target_routes(
             }
         )
     targets.sort(key=lambda row: (row["target_order"], row["route_id"]))
-    tick_only = exact_routes[
-        exact_routes["realised_hop1_source"].isin(TICK_VENUES)
-        & exact_routes["realised_hop2_source"].isin(TICK_VENUES)
-    ]
-    v2_only = exact_routes[
-        exact_routes["realised_hop1_source"].isin(V2_VENUES)
-        & exact_routes["realised_hop2_source"].isin(V2_VENUES)
-    ]
+    tick_only = ledger[ledger["leg1_venue"].isin(TICK_VENUES) & ledger["leg2_venue"].isin(TICK_VENUES)]
+    v2_only = ledger[ledger["leg1_venue"].isin(V2_VENUES) & ledger["leg2_venue"].isin(V2_VENUES)]
     support = {
         "day": day,
-        "all_exact_two_leg_routes": int(len(all_routes)),
-        "exact_venue_two_leg_routes": int(len(exact_routes)),
-        "exact_venue_share": float(len(exact_routes) / len(all_routes)) if len(all_routes) else None,
+        "all_exact_two_leg_routes": int(released_support["all_exact_two_leg_routes"]),
+        "exact_venue_two_leg_routes": int(released_support["exact_venue_two_leg_routes"]),
+        "exact_venue_share": float(len(ledger) / int(released_support["all_exact_two_leg_routes"])) if int(released_support["all_exact_two_leg_routes"]) else None,
         "tick_venue_exact_two_leg_routes": int(len(tick_only)),
         "v2_venue_exact_two_leg_routes": int(len(v2_only)),
-        "mixed_family_exact_two_leg_routes": int(len(exact_routes) - len(tick_only) - len(v2_only)),
-        "block_order_unavailable_routes": block_order_unavailable,
+        "mixed_family_exact_two_leg_routes": int(len(ledger) - len(tick_only) - len(v2_only)),
+        "block_order_unavailable_routes": 0,
         "raw_tx_log_mapped_routes": mapped,
+        "certified_target_structural_rejections": structurally_rejected,
         "intermediate_amount_coherent_routes": intermediate_amount_coherent,
         "intermediate_amount_incoherent_routes": int(
             intermediate_amount_incoherent
@@ -1053,8 +1149,9 @@ def score_day(
     replay: TickReplayState,
     v2_replay: V2ReplayDay,
     vehicles: tuple[str, ...],
+    target_release: TargetRelease,
 ) -> tuple[pd.DataFrame, pd.DataFrame, dict[str, object]]:
-    targets, rejection_rows, support = load_target_routes(day, events, v2_replay)
+    targets, rejection_rows, support = load_target_routes(day, target_release, v2_replay)
     by_order: dict[tuple[int, int], list[dict[str, object]]] = defaultdict(list)
     for target in targets:
         by_order[target["target_order"]].append(target)
@@ -1541,6 +1638,17 @@ def assemble_cached_output(
     return result.rows
 
 
+def publish_full_daily_frontier(support_rows: list[dict[str, object]], *, selected: list[str], day_cache: Path, inputs: list[Path], engine_key: str, input_key: str) -> int:
+    """Validate complete worker closure before the existing ordered assembly publishes anything."""
+    support = pd.DataFrame(support_rows)
+    daily_reproduction, daily_state_coverage, daily_verified_coverage = validate_daily_support(support, selected)
+    panel_rows = assemble_cached_output(day_cache, support_rows, suffix=".parquet", count_column="scored_routes", output=DAILY_PANEL, inputs=inputs, notes="full-daily strict pre-transaction V2/V3/V4 realised and public-path frontier; distinct from the construction audit", engine_key=engine_key, input_key=input_key)
+    rejection_rows = assemble_cached_output(day_cache, support_rows, suffix=".rejections.parquet", count_column="rejected_routes", output=DAILY_REJECTIONS, inputs=inputs, notes="full-daily route-level exclusion and chosen-route reproduction ledger", engine_key=engine_key, input_key=input_key)
+    write_panel(support, DAILY_SUPPORT, code_sources=OUTPUT_PROVENANCE_SOURCES, inputs=inputs, notes="daily V2/V3/V4 exact-state support funnel for the full estimation frontier")
+    print(f"wrote full-daily frontier on {len(selected):,} calendar days: {panel_rows:,} scored and {rejection_rows:,} rejected routes; chosen-route reproduction {daily_reproduction:.2%}; chosen-state coverage {daily_state_coverage:.2%}; verified coverage {daily_verified_coverage:.2%}")
+    return 0
+
+
 def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     selection = parser.add_mutually_exclusive_group(required=True)
@@ -1557,13 +1665,8 @@ def main() -> int:
         action="store_true",
         help="materialise the distinct full-daily estimation frontier after the audit passes",
     )
+    parser.add_argument("--workers", type=int, help="bounded full-daily scoring processes; ignored by serial audit and explicit-day modes")
     args = parser.parse_args()
-    if args.daily_calendar:
-        try:
-            require_full_daily_target_release()
-        except RuntimeError as error:
-            print(f"error: {error}")
-            return 1
     require_node_d_release(routes=True, market_state=True)
     require_current_artifacts(
         [TOKEN_DECIMALS], consumer="transaction-state frontier"
@@ -1581,6 +1684,20 @@ def main() -> int:
     vehicles = candidate_vehicles()
     selected_set = set(selected)
     daily_mode = bool(args.daily_calendar)
+    try:
+        if daily_mode:
+            target_release = require_full_daily_target_release(selected)
+        elif args.audit_calendar:
+            target_release = resolve_target_release("audit", expected_days=selected)
+        else:
+            target_release = resolve_target_release("audit")
+            if not selected_set.issubset(target_release.calendar):
+                target_release = resolve_target_release("daily")
+            if not selected_set.issubset(target_release.calendar):
+                raise ValueError("explicit frontier dates are absent from every certified target release")
+    except (FileNotFoundError, RuntimeError, ValueError) as error:
+        print(f"error: certified transaction-target release gate failed: {error}")
+        return 1
     if daily_mode:
         expected_audit_days = transaction_frontier_audit_days(UNIFIED_QUALITY_PANEL)
         try:
@@ -1611,6 +1728,10 @@ def main() -> int:
         ),
         TOKEN_DECIMALS,
         V4_STATIC_QUARANTINE_PANEL,
+        target_release.pointer_path,
+        target_release.manifest_path,
+        target_release.day_markers[0].parents[1],
+        *target_release.day_markers,
     ]
     frontier_engine_key, frontier_input_key, frontier_generation = (
         frontier_cache_identity(inputs)
@@ -1653,6 +1774,25 @@ def main() -> int:
         / "_tick_replay_checkpoints"
         / f"engine_v{REPLAY_CHECKPOINT_SCHEMA_VERSION}_{checkpoint_engine_key[:12]}"
     )
+    if daily_mode:
+        try:
+            workers = daily_worker_count(args.workers)
+            if args.workers is not None and workers != args.workers:
+                print(f"capped full-daily workers at {workers:,} for this host's CPU/memory budget", flush=True)
+            target_weights = target_day_scoring_weights(target_release)
+            scoring_weights = {day: 1 if cached_days[day] is not None else target_weights[day] for day in selected}
+            segments = plan_daily_segments(selected, workers=workers, checkpoint_dir=checkpoint_dir, scoring_weights=scoring_weights)
+            if uncached_days:
+                warmed_days, created_checkpoints = materialize_segment_checkpoints(segments, checkpoint_dir=checkpoint_dir, checkpoint_engine_key=checkpoint_engine_key)
+                print(f"full-daily checkpoint phase: {warmed_days:,} days warmed; {created_checkpoints:,} checkpoints created; {workers:,} scoring workers", flush=True)
+                print("full-daily segment loads: " + ", ".join(f"{segment.days[0]}..{segment.days[-1]}={segment.scoring_weight:,}" for segment in segments), flush=True)
+                support_rows = run_daily_segments(segments, workers=workers, checkpoint_engine_key=checkpoint_engine_key, day_cache=day_cache, frontier_engine_key=frontier_engine_key, frontier_input_key=frontier_input_key, vehicles=vehicles, target_release=target_release)
+            else:
+                support_rows = [cached_days[day] for day in selected if cached_days[day] is not None]
+            return publish_full_daily_frontier(support_rows, selected=selected, day_cache=day_cache, inputs=inputs, engine_key=frontier_engine_key, input_key=frontier_input_key)
+        except (FileNotFoundError, RuntimeError, ValueError) as error:
+            print(f"error: full-daily frontier scoring/release failed: {error}")
+            return 1
     replay_start: str | None = None
     replay: TickReplayState | None = None
     if uncached_days:
@@ -1679,12 +1819,9 @@ def main() -> int:
         cached = cached_days[day]
         if cached is None:
             raise RuntimeError(f"uncached frontier day precedes replay start: {day}")
-        if daily_mode:
-            support = cached
-        else:
-            frame, rejections, support = cached
-            frames.append(frame)
-            rejection_frames.append(rejections)
+        frame, rejections, support = cached
+        frames.append(frame)
+        rejection_frames.append(rejections)
         support_rows.append(support)
     calendar = (
         pd.date_range(
@@ -1711,17 +1848,14 @@ def main() -> int:
         if day in selected_set:
             cached = cached_days[day]
             if cached is not None:
-                if daily_mode:
-                    support = cached
-                else:
-                    frame, rejections, support = cached
+                frame, rejections, support = cached
                 warm_tick_day(MARKET_STATE, day, replay)
                 cache_note = " [cached]"
             else:
                 events = load_tick_day_events(MARKET_STATE, day)
                 v2_replay = load_v2_replay_day(MARKET_STATE, day)
                 frame, rejections, support = score_day(
-                    day, events, replay, v2_replay, vehicles
+                    day, events, replay, v2_replay, vehicles, target_release
                 )
                 write_cached_day(
                     day_cache,
@@ -1733,9 +1867,8 @@ def main() -> int:
                     input_key=frontier_input_key,
                 )
                 cache_note = ""
-            if not daily_mode:
-                frames.append(frame)
-                rejection_frames.append(rejections)
+            frames.append(frame)
+            rejection_frames.append(rejections)
             support_rows.append(support)
             print(
                 f"{day}: {support['all_exact_two_leg_routes']:,} exact two-leg; "
@@ -1748,52 +1881,6 @@ def main() -> int:
         if index % 180 == 0:
             print(f"replayed through {day} ({index:,}/{len(calendar):,} days)", flush=True)
     support = pd.DataFrame(support_rows)
-    if daily_mode:
-        try:
-            daily_reproduction, daily_state_coverage, daily_verified_coverage = (
-                validate_daily_support(support, selected)
-            )
-        except ValueError as error:
-            print(f"error: full-daily frontier release gate failed: {error}")
-            return 1
-        panel_rows = assemble_cached_output(
-            day_cache,
-            support_rows,
-            suffix=".parquet",
-            count_column="scored_routes",
-            output=DAILY_PANEL,
-            inputs=inputs,
-            notes="full-daily strict pre-transaction V2/V3/V4 realised and public-path frontier; distinct from the construction audit",
-            engine_key=frontier_engine_key,
-            input_key=frontier_input_key,
-        )
-        rejection_rows = assemble_cached_output(
-            day_cache,
-            support_rows,
-            suffix=".rejections.parquet",
-            count_column="rejected_routes",
-            output=DAILY_REJECTIONS,
-            inputs=inputs,
-            notes="full-daily route-level exclusion and chosen-route reproduction ledger",
-            engine_key=frontier_engine_key,
-            input_key=frontier_input_key,
-        )
-        write_panel(
-            support,
-            DAILY_SUPPORT,
-            code_sources=OUTPUT_PROVENANCE_SOURCES,
-            inputs=inputs,
-            notes="daily V2/V3/V4 exact-state support funnel for the full estimation frontier",
-        )
-        print(
-            f"wrote full-daily frontier on {len(selected):,} calendar days: "
-            f"{panel_rows:,} scored and {rejection_rows:,} rejected routes; "
-            f"chosen-route reproduction {daily_reproduction:.2%}; "
-            f"chosen-state coverage {daily_state_coverage:.2%}; "
-            f"verified coverage {daily_verified_coverage:.2%}"
-        )
-        return 0
-
     panel = pd.concat(frames, ignore_index=True) if frames else pd.DataFrame()
     rejections = (
         pd.concat(rejection_frames, ignore_index=True)
@@ -1817,14 +1904,14 @@ def main() -> int:
         AUDIT_PANEL,
         code_sources=OUTPUT_PROVENANCE_SOURCES,
         inputs=inputs,
-        notes="77-date construction audit of the strict pre-transaction V2/V3/V4 frontier",
+        notes=f"{len(selected)}-date construction audit of the strict pre-transaction V2/V3/V4 frontier",
     )
     write_panel(
         rejections,
         AUDIT_REJECTIONS,
         code_sources=OUTPUT_PROVENANCE_SOURCES,
         inputs=inputs,
-        notes="77-date route-level exclusion and chosen-route reproduction ledger",
+        notes=f"{len(selected)}-date route-level exclusion and chosen-route reproduction ledger",
     )
     write_exhibit(
         summary,
@@ -1838,7 +1925,7 @@ def main() -> int:
         AUDIT_SUPPORT,
         code_sources=OUTPUT_PROVENANCE_SOURCES,
         inputs=inputs,
-        notes="77-date V2/V3/V4 exact-state support and chosen-route reproduction gate",
+        notes=f"{len(selected)}-date V2/V3/V4 exact-state support and chosen-route reproduction gate",
     )
     coherent_available = int(support["within_20pct_chosen_quote_available"].sum())
     coherent_mismatches = int(
