@@ -90,6 +90,17 @@ def safe_rpc_failure_reason(
     )
 
 
+def retryable_inventory_semantic_failure(error: RpcSemanticError) -> bool:
+    """Retry ambiguous provider-internal log errors while preserving fail-closed exhaustion."""
+
+    terminal = [
+        attempt
+        for attempt in error.attempts
+        if isinstance(attempt, dict) and attempt.get("classification") == "terminal"
+    ]
+    return bool(terminal) and all(attempt.get("rpc_code") == -32000 for attempt in terminal)
+
+
 def fetch_rpc_range_with_capacity_bisection(
     lower: int,
     upper: int,
@@ -395,6 +406,14 @@ def run_fetch_jobs(
                     continue
                 except RpcSemanticError as error:
                     reason = safe_rpc_failure_reason(error, classification="terminal")
+                    if retryable_inventory_semantic_failure(error) and attempt < max_attempts:
+                        queue.append((lower, upper, attempt + 1))
+                        print(
+                            f"  retrying ambiguous semantic inventory chunk {lower}-{upper} "
+                            f"at queue tail ({attempt + 1}/{max_attempts}); cause={reason}",
+                            flush=True,
+                        )
+                        continue
                     failures.append((lower, upper, reason))
                     print(
                         f"  terminal semantic inventory chunk {lower}-{upper}; {reason}",

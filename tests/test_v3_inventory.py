@@ -745,6 +745,62 @@ def test_fetch_queue_records_semantic_rpc_failure_without_abandoning_other_work(
     assert "secret" not in output
 
 
+def test_fetch_queue_retries_ambiguous_provider_internal_error(capsys) -> None:
+    frozen = frozen_upper(2)
+    endpoint = {
+        "host": "provider.example",
+        "endpoint_sha256": "1" * 64,
+    }
+    calls = 0
+
+    def fetch(
+        _lower: int,
+        _upper: int,
+        _frozen_upper: dict[str, object],
+    ) -> dict[str, int]:
+        nonlocal calls
+        calls += 1
+        if calls == 1:
+            raise RpcSemanticError(
+                "provider internal error",
+                attempts=(
+                    {
+                        "endpoint": endpoint,
+                        "attempt": 1,
+                        "classification": "terminal",
+                        "http_status": 200,
+                        "rpc_code": -32000,
+                        "message": "terminal RPC failure",
+                    },
+                ),
+            )
+        return {"raw_logs": 1}
+
+    totals, failures = run_fetch_jobs(
+        [(1, 1)],
+        frozen,
+        workers=1,
+        max_attempts=2,
+        fetch=fetch,
+    )
+    assert totals == {"raw": 1}
+    assert failures == []
+    assert calls == 2
+    assert "retrying ambiguous semantic inventory chunk 1-1" in capsys.readouterr().out
+
+    calls = 0
+    totals, failures = run_fetch_jobs(
+        [(1, 1)],
+        frozen,
+        workers=1,
+        max_attempts=1,
+        fetch=fetch,
+    )
+    assert totals == {"raw": 0}
+    assert len(failures) == 1
+    assert calls == 1
+
+
 def test_fetch_queue_records_single_block_capacity_once_without_endpoint_leakage(capsys) -> None:
     frozen = frozen_upper(2)
     calls = 0
