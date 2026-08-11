@@ -8,7 +8,7 @@
   "d3_certificate": null,
   "exploration_generation": null,
   "exploration_certificate": null,
-  "lock_hash": "fb6adb507767b8a008ed94972f3de2ced13ab45e3c9d64e36e2c9ed80bd7c59d",
+  "lock_hash": "066716f7b6dd9c527b82c0bf69548ee4a80dc5458d1bc2e5acf6eb66103c9ab6",
   "paper_scope": "The making and displacement of vehicle-currency roles in Ethereum decentralised exchange",
   "global_rules": {
     "asset_identity": "canonical contract address; symbols are labels only",
@@ -231,7 +231,7 @@
       "unit": "candidate token address by origin calendar day",
       "dependent_variable": "in the route-to-liquidity direction: exact-horizon change in V2-family candidate deposited capital and candidate capital share, or cumulative V3 signed net LP flow and gross LP-flow allocation share over (t,t+h]; in the liquidity-to-route direction: exact-horizon change in candidate intermediary episode share, with vehicle excess-use count ratio as a mandatory alternative",
       "transformation": "V2 stock: change in log one plus candidate-attributed deposited capital dollars and change in candidate share of the five-candidate capital stock; V3 flow: signed log one plus absolute cumulative net flow divided by 1000 dollars and cumulative candidate gross flow divided by all five candidates' gross flow; route use: episode-count intermediary share in levels and changes. V3 dollar flow is never divided by V2 capital or described as capital",
-      "outlier_treatment": "no quantile trimming; canonical endpoint round trips remain excluded; V2 rows require deposited_capital quantity_kind, reported_plausible validation and exact calendar links; V3 rows require flow_normalization_status=dollar_flow_and_within_flow_shares_no_capital_stock; zero-flow days remain zeros and missing exact target dates remain missing",
+      "outlier_treatment": "no quantile trimming; canonical endpoint round trips remain excluded; V2 rows require deposited_capital quantity_kind, a reconciled_current or reconciled_exact_lag validation status, and exact calendar links; V3 rows require flow_normalization_status=dollar_flow_and_within_flow_shares_no_capital_stock; zero-flow days remain zeros and missing exact target dates remain missing",
       "response_horizon_days": [
         1,
         7,
