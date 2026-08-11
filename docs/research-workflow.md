@@ -420,6 +420,8 @@ J. Gates .......................... run on every G/H artefact (section 7).
 
 Graph contract: A and B feed C; C and K reopen each other; C sends data-changing definitions through D and then E0; D must pass its full-calendar canonical-input gate before E0, E1 or F may execute; E0 may return to B, C or D, E1 locks only after E0 stabilises, and F may reopen E0 or E1; F, G and H iterate in both directions; I can return a defect to C, D, E0, E1, F, G or H; J runs continuously; P remains closed until the findings freeze. The active edge, parent loop and next edge live in the machine-readable frontmatter of `docs/findings-freeze.md`, so a long-running D build never makes the project look as though it has left C <-> K or entered prose.
 
+Literature synthesis stays live in parallel with D whenever the source-set audit is complete enough to support it. During that wait, B does not bulk-read indiscriminately or draft prose. It converts full-text cards into the family-level attack map in `docs/literature-audit.md`: the closest admissible precedent, strongest rival mechanism, required falsifier or conditioning test, contribution boundary, and expected structure, depth, breadth and optics. E0 consumes that map when interpreting anomalies; E1 must either encode each applicable attack or record why it does not apply. This is a reasoning lane and may not execute on unreleased data, promote a claim, or alter a locked estimand merely to fit the literature.
+
 ---
 
 ## 7. Gates on every deliverable
