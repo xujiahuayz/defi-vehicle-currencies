@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import json
+import re
 import shutil
 import tempfile
 from pathlib import Path
@@ -41,6 +42,21 @@ def _legacy_family() -> dict:
         "artifacts": [],
         "note": "historical",
     }
+
+
+def test_literature_attack_crosswalk_matches_template_exactly() -> None:
+    template = json.loads((REPO_ROOT / "docs/e0-exploration-plan.template.json").read_text(encoding="utf-8"))
+    expected = {
+        (family["family_id"], attack_id)
+        for family in template["families"]
+        for attack_id in family["required_attack_ids"]
+    }
+    audit = (REPO_ROOT / "docs/literature-audit.md").read_text(encoding="utf-8")
+    section = audit.split("## Pre-D3 attack-feasibility crosswalk", 1)[1].split("## Incident findings already established", 1)[0]
+    rows = re.findall(r"^\| `([^`]+_e0)` \| `([^`]+)` \|", section, flags=re.MULTILINE)
+    assert len(rows) == len(expected) == 36
+    assert len(set(rows)) == len(rows)
+    assert set(rows) == expected
 
 
 def _write_ledger(path: Path) -> None:
