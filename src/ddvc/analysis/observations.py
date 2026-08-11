@@ -16,7 +16,7 @@ import pyarrow.parquet as pq
 
 from ddvc.analysis.dynamics import (
     CANONICAL_RESPONSE_HORIZONS,
-    exact_daily_log_return,
+    daily_price_risk_features,
     value_at_day_offset,
 )
 from ddvc.paths import DATA_DIR
@@ -318,10 +318,10 @@ def _add_stress(panel: pd.DataFrame) -> pd.DataFrame:
         .drop_duplicates("date")
         .sort_values("date")
     )
-    weth["weth_log_return"] = exact_daily_log_return(weth, "weth_price")
-    weth["stress_downside"] = (-weth["weth_log_return"]).clip(lower=0)
-    weth["stress_event_8pct"] = (
-        weth["stress_downside"].ge(0.08).astype(float).where(weth["stress_downside"].notna())
+    risk = daily_price_risk_features(weth, "weth_price")
+    risk["stress_event_8pct"] = risk["stress_event_8pct"].astype("Float64")
+    weth = risk.rename(
+        columns={"log_return": "weth_log_return", "downside_stress": "stress_downside"}
     )
     return panel.merge(weth[["date", "weth_log_return", "stress_downside", "stress_event_8pct"]], on="date", how="left")
 

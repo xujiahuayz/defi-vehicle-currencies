@@ -9,6 +9,13 @@ import duckdb
 import numpy as np
 import pandas as pd
 
+from ddvc.analysis.dynamics import (
+    DAILY_VOLATILITY_MIN_RETURNS,
+    DAILY_VOLATILITY_WINDOW_DAYS,
+    WETH_DOWNSIDE_EVENT_THRESHOLD,
+    daily_price_risk_features,
+    value_at_day_offset,
+)
 from ddvc.asset_types import VEHICLE_CANDIDATES
 from ddvc.capital_contracts import VALID_CAPITAL_STATUSES
 from ddvc.provenance import require_current_artifacts
@@ -22,6 +29,67 @@ V3_NORMALIZATION_STATUS = "dollar_flow_and_within_flow_shares_no_capital_stock"
 ROUTE_FAMILY = "topology_valid_non_round_trip_route_use"
 V2_FAMILY = "v2_family_deposited_capital_stock"
 V3_FAMILY = "uniswap_v3_lp_dollar_flow"
+COVARIATE_LAG_DAYS = 1
+TOKEN_PRICE_SOURCE = "canonical_repriced_route_legs"
+TOKEN_PRICE_VALIDATION_STATUS = "minimum_observations_and_price_consensus_passed"
+
+LOOKAHEAD_SAFE_COVARIATE_COLUMNS = (
+    "covariate_observation_cutoff_date",
+    "candidate_stress_scale_cutoff_date",
+    "covariate_lag_days",
+    "covariate_volatility_window_calendar_days",
+    "covariate_volatility_min_valid_returns",
+    "lag1_candidate_log_return",
+    "lag1_candidate_return_supported",
+    "lag1_candidate_trailing_30d_volatility",
+    "lag1_candidate_volatility_valid_returns",
+    "lag1_candidate_volatility_supported",
+    "lag1_candidate_pre_shock_30d_volatility",
+    "lag1_candidate_pre_shock_volatility_valid_returns",
+    "lag1_candidate_pre_shock_volatility_supported",
+    "lag1_candidate_downside_stress",
+    "lag1_candidate_stress_supported",
+    "lag1_weth_log_return",
+    "lag1_weth_return_supported",
+    "lag1_weth_trailing_30d_volatility",
+    "lag1_weth_volatility_valid_returns",
+    "lag1_weth_volatility_supported",
+    "lag1_weth_downside_stress",
+    "lag1_weth_stress_event_8pct",
+    "lag1_weth_stress_supported",
+    "lag1_route_day_supported",
+    "lag1_route_endpoint_supported",
+    "lag1_intermediary_episode_share",
+    "lag1_vehicle_excess_use_count_ratio",
+    "lag1_intermediate_route_count",
+    "lag1_endpoint_route_count",
+    "lag1_route_total_count",
+    "lag1_v2_capital_day_supported",
+    "lag1_v2_log1p_deposited_capital_usd",
+    "lag1_v2_five_candidate_capital_share",
+    "lag1_v3_flow_day_supported",
+    "lag1_v3_signed_log1p_net_flow_per_1000",
+    "lag1_v3_gross_candidate_flow_share",
+)
+
+LAGGED_CONTROL_COLUMNS = {
+    "route_day_supported": "lag1_route_day_supported",
+    "route_endpoint_supported": "lag1_route_endpoint_supported",
+    "intermediary_episode_share": "lag1_intermediary_episode_share",
+    "vehicle_excess_use_count_ratio": "lag1_vehicle_excess_use_count_ratio",
+    "intermediate_route_count": "lag1_intermediate_route_count",
+    "endpoint_route_count": "lag1_endpoint_route_count",
+    "v2_capital_day_supported": "lag1_v2_capital_day_supported",
+    "v2_log1p_deposited_capital_usd": "lag1_v2_log1p_deposited_capital_usd",
+    "v2_five_candidate_capital_share": "lag1_v2_five_candidate_capital_share",
+    "v3_flow_day_supported": "lag1_v3_flow_day_supported",
+    "v3_signed_log1p_net_flow_per_1000": "lag1_v3_signed_log1p_net_flow_per_1000",
+    "v3_gross_candidate_flow_share": "lag1_v3_gross_candidate_flow_share",
+}
+
+TOKEN_PRICE_COVARIATE_COLUMNS = frozenset(
+    {"day", "token", "symbol", "price_usd", "price_source", "validation_status"}
+)
 
 ROUTE_COLUMNS = frozenset(
     {
@@ -93,6 +161,341 @@ def _candidate_rows() -> list[tuple[str, str]]:
     if len(rows) != 5 or len({address for address, _symbol in rows}) != 5 or len({symbol for _address, symbol in rows}) != 5:
         raise RuntimeError("canonical vehicle-candidate identity must contain five unique addresses and symbols")
     return rows
+
+
+def _weth_candidate_address() -> str:
+    matches = [address for address, symbol in _candidate_rows() if symbol == "WETH"]
+    if len(matches) != 1:
+        raise RuntimeError("canonical candidates must contain exactly one WETH address")
+    return matches[0]
+
+
+def _price_feature_history(
+    token_prices: pd.DataFrame,
+    *,
+    first_origin_date: pd.Timestamp,
+    last_origin_date: pd.Timestamp,
+) -> pd.DataFrame:
+    missing = sorted(TOKEN_PRICE_COVARIATE_COLUMNS - set(token_prices.columns))
+    if missing:
+        raise ValueError(f"token-price covariates lack required columns: {missing}")
+    identities = dict(_candidate_rows())
+    prices = token_prices.copy()
+    prices["token"] = prices["token"].astype(str)
+    prices = prices.loc[prices["token"].str.lower().isin(identities)].copy()
+    raw_days = prices["day"].astype(str)
+    prices["price_date"] = pd.to_datetime(raw_days, format="%Y%m%d", errors="coerce")
+    invalid = (
+        prices["token"].ne(prices["token"].str.lower())
+        | prices["price_date"].isna()
+        | ~raw_days.str.fullmatch(r"\d{8}")
+        | prices["symbol"].ne(prices["token"].map(identities))
+        | prices["price_source"].ne(TOKEN_PRICE_SOURCE)
+        | prices["validation_status"].ne(TOKEN_PRICE_VALIDATION_STATUS)
+    )
+    numeric_price = pd.to_numeric(prices["price_usd"], errors="coerce")
+    if invalid.any() or (~np.isfinite(numeric_price) | numeric_price.le(0)).any():
+        raise ValueError("token-price covariates violate identity, date, source, or value")
+    if prices.duplicated(["price_date", "token"]).any():
+        raise ValueError("token-price covariates contain duplicate candidate-days")
+    prices["price_usd"] = numeric_price
+
+    start = pd.Timestamp(first_origin_date).normalize() - pd.Timedelta(
+        days=DAILY_VOLATILITY_WINDOW_DAYS + COVARIATE_LAG_DAYS + 1
+    )
+    end = pd.Timestamp(last_origin_date).normalize() - pd.Timedelta(
+        days=COVARIATE_LAG_DAYS
+    )
+    index = pd.MultiIndex.from_product(
+        [identities, pd.date_range(start, end, freq="D")],
+        names=["candidate_address", "price_date"],
+    )
+    history = (
+        prices.rename(columns={"token": "candidate_address"})
+        .set_index(["candidate_address", "price_date"])[["price_usd"]]
+        .reindex(index)
+        .reset_index()
+    )
+    return daily_price_risk_features(
+        history,
+        "price_usd",
+        entity_columns=("candidate_address",),
+        date_column="price_date",
+    )
+
+
+def _lagged_controls(candidate_day: pd.DataFrame) -> pd.DataFrame:
+    controls = candidate_day[["origin_date", "candidate_address"]].copy()
+    for source, target in LAGGED_CONTROL_COLUMNS.items():
+        controls[target] = value_at_day_offset(
+            candidate_day,
+            source,
+            -COVARIATE_LAG_DAYS,
+            entity_columns=("candidate_address",),
+            date_column="origin_date",
+        )
+    for column in (
+        "lag1_route_day_supported",
+        "lag1_route_endpoint_supported",
+        "lag1_v2_capital_day_supported",
+        "lag1_v3_flow_day_supported",
+    ):
+        controls[column] = pd.array(controls[column], dtype="boolean")
+    for column in ("lag1_intermediate_route_count", "lag1_endpoint_route_count"):
+        controls[column] = pd.array(controls[column], dtype="Int64")
+    controls["lag1_route_total_count"] = (
+        controls["lag1_intermediate_route_count"]
+        + controls["lag1_endpoint_route_count"]
+    )
+    return controls
+
+
+def _compute_lookahead_safe_daily_covariates(
+    candidate_day: pd.DataFrame, token_prices: pd.DataFrame
+) -> pd.DataFrame:
+    original_columns = tuple(candidate_day.columns)
+    base = candidate_day.copy()
+    base["origin_date"] = pd.to_datetime(base["origin_date"]).dt.normalize()
+    base = base.sort_values(["origin_date", "candidate_address"]).reset_index(drop=True)
+    cutoff = base["origin_date"] - pd.Timedelta(days=COVARIATE_LAG_DAYS)
+    base["covariate_observation_cutoff_date"] = cutoff
+    base["candidate_stress_scale_cutoff_date"] = cutoff - pd.Timedelta(days=1)
+    base["covariate_lag_days"] = COVARIATE_LAG_DAYS
+    base["covariate_volatility_window_calendar_days"] = DAILY_VOLATILITY_WINDOW_DAYS
+    base["covariate_volatility_min_valid_returns"] = DAILY_VOLATILITY_MIN_RETURNS
+
+    history = _price_feature_history(
+        token_prices,
+        first_origin_date=base["origin_date"].min(),
+        last_origin_date=base["origin_date"].max(),
+    )
+    candidate = history.rename(
+        columns={
+            "price_date": "covariate_observation_cutoff_date",
+            "log_return": "lag1_candidate_log_return",
+            "trailing_30d_volatility": "lag1_candidate_trailing_30d_volatility",
+            "trailing_volatility_valid_returns": "lag1_candidate_volatility_valid_returns",
+            "pre_shock_30d_volatility": "lag1_candidate_pre_shock_30d_volatility",
+            "pre_shock_volatility_valid_returns": "lag1_candidate_pre_shock_volatility_valid_returns",
+            "standardized_downside_stress": "lag1_candidate_downside_stress",
+        }
+    )
+    candidate_columns = [
+        "candidate_address",
+        "covariate_observation_cutoff_date",
+        "lag1_candidate_log_return",
+        "lag1_candidate_trailing_30d_volatility",
+        "lag1_candidate_volatility_valid_returns",
+        "lag1_candidate_pre_shock_30d_volatility",
+        "lag1_candidate_pre_shock_volatility_valid_returns",
+        "lag1_candidate_downside_stress",
+    ]
+    base = base.merge(
+        candidate[candidate_columns],
+        on=["candidate_address", "covariate_observation_cutoff_date"],
+        how="left",
+        validate="one_to_one",
+    )
+    weth = history.loc[history["candidate_address"].eq(_weth_candidate_address())].rename(
+        columns={
+            "price_date": "covariate_observation_cutoff_date",
+            "log_return": "lag1_weth_log_return",
+            "trailing_30d_volatility": "lag1_weth_trailing_30d_volatility",
+            "trailing_volatility_valid_returns": "lag1_weth_volatility_valid_returns",
+            "downside_stress": "lag1_weth_downside_stress",
+            "stress_event_8pct": "lag1_weth_stress_event_8pct",
+        }
+    )
+    weth_columns = [
+        "covariate_observation_cutoff_date",
+        "lag1_weth_log_return",
+        "lag1_weth_trailing_30d_volatility",
+        "lag1_weth_volatility_valid_returns",
+        "lag1_weth_downside_stress",
+        "lag1_weth_stress_event_8pct",
+    ]
+    base = base.merge(
+        weth[weth_columns],
+        on="covariate_observation_cutoff_date",
+        how="left",
+        validate="many_to_one",
+    )
+    for stem in ("candidate", "weth"):
+        base[f"lag1_{stem}_return_supported"] = base[f"lag1_{stem}_log_return"].notna()
+        base[f"lag1_{stem}_volatility_supported"] = base[f"lag1_{stem}_trailing_30d_volatility"].notna()
+        base[f"lag1_{stem}_stress_supported"] = base[f"lag1_{stem}_downside_stress"].notna()
+    base["lag1_candidate_pre_shock_volatility_supported"] = base[
+        "lag1_candidate_pre_shock_30d_volatility"
+    ].notna()
+    base = base.merge(
+        _lagged_controls(candidate_day),
+        on=["origin_date", "candidate_address"],
+        how="left",
+        validate="one_to_one",
+    )
+    base = base.sort_values(["origin_date", "candidate_address"]).reset_index(drop=True)
+    return base[[*original_columns, *LOOKAHEAD_SAFE_COVARIATE_COLUMNS]]
+
+
+def validate_lookahead_safe_daily_covariates(
+    original: pd.DataFrame, token_prices: pd.DataFrame, transformed: pd.DataFrame
+) -> None:
+    validate_candidate_day_panel(original)
+    original_columns = tuple(original.columns)
+    if tuple(transformed.columns) != (
+        *original_columns,
+        *LOOKAHEAD_SAFE_COVARIATE_COLUMNS,
+    ):
+        raise ValueError("look-ahead-safe covariates added, removed, or reordered columns")
+    if not transformed[list(original_columns)].reset_index(drop=True).equals(
+        original[list(original_columns)].reset_index(drop=True)
+    ):
+        raise ValueError("look-ahead-safe covariates changed an original column")
+    ordered = transformed.sort_values(
+        ["origin_date", "candidate_address"]
+    ).reset_index(drop=True)
+    if transformed.empty or not transformed.reset_index(drop=True).equals(ordered):
+        raise ValueError("look-ahead-safe covariates are empty or not deterministically ordered")
+    cutoff = pd.to_datetime(transformed["origin_date"]) - pd.Timedelta(
+        days=COVARIATE_LAG_DAYS
+    )
+    if not pd.to_datetime(transformed["covariate_observation_cutoff_date"]).equals(
+        cutoff
+    ) or not pd.to_datetime(transformed["candidate_stress_scale_cutoff_date"]).equals(
+        cutoff - pd.Timedelta(days=1)
+    ):
+        raise ValueError("look-ahead-safe covariate cutoff is not the declared exact lag")
+    constants = {
+        "covariate_lag_days": COVARIATE_LAG_DAYS,
+        "covariate_volatility_window_calendar_days": DAILY_VOLATILITY_WINDOW_DAYS,
+        "covariate_volatility_min_valid_returns": DAILY_VOLATILITY_MIN_RETURNS,
+    }
+    if any(not transformed[column].eq(value).all() for column, value in constants.items()):
+        raise ValueError("look-ahead-safe covariate timing contract drifted")
+    for stem in ("candidate", "weth"):
+        return_supported = transformed[f"lag1_{stem}_log_return"].notna()
+        volatility_supported = transformed[
+            f"lag1_{stem}_trailing_30d_volatility"
+        ].notna()
+        stress_supported = transformed[f"lag1_{stem}_downside_stress"].notna()
+        if not transformed[f"lag1_{stem}_return_supported"].eq(return_supported).all():
+            raise ValueError(f"lagged {stem} return support is inconsistent")
+        if not transformed[f"lag1_{stem}_volatility_supported"].eq(
+            volatility_supported
+        ).all() or (
+            volatility_supported
+            & transformed[f"lag1_{stem}_volatility_valid_returns"].lt(
+                DAILY_VOLATILITY_MIN_RETURNS
+            )
+        ).any():
+            raise ValueError(f"lagged {stem} volatility support is inconsistent")
+        if not transformed[f"lag1_{stem}_stress_supported"].eq(stress_supported).all():
+            raise ValueError(f"lagged {stem} stress support is inconsistent")
+    pre_shock_supported = transformed["lag1_candidate_pre_shock_30d_volatility"].notna()
+    if not transformed["lag1_candidate_pre_shock_volatility_supported"].eq(pre_shock_supported).all() or (
+        pre_shock_supported
+        & transformed["lag1_candidate_pre_shock_volatility_valid_returns"].lt(DAILY_VOLATILITY_MIN_RETURNS)
+    ).any():
+        raise ValueError("lagged candidate pre-shock volatility support is inconsistent")
+    expected_candidate_stress = (
+        (-transformed["lag1_candidate_log_return"])
+        .clip(lower=0)
+        .div(transformed["lag1_candidate_pre_shock_30d_volatility"])
+        .where(
+            transformed["lag1_candidate_log_return"].notna()
+            & transformed["lag1_candidate_pre_shock_30d_volatility"].gt(0)
+        )
+    )
+    try:
+        pd.testing.assert_series_equal(
+            transformed["lag1_candidate_downside_stress"],
+            expected_candidate_stress.rename("lag1_candidate_downside_stress"),
+        )
+    except AssertionError as error:
+        raise ValueError("lagged candidate stress does not use its persisted pre-shock denominator") from error
+    route_total = (
+        transformed["lag1_intermediate_route_count"].astype("Int64")
+        + transformed["lag1_endpoint_route_count"].astype("Int64")
+    )
+    if not transformed["lag1_route_total_count"].astype("Int64").equals(route_total):
+        raise ValueError("lagged route count reconciliation failed")
+    support_contracts = {
+        "lag1_route_day_supported": (
+            "lag1_intermediary_episode_share",
+            "lag1_intermediate_route_count",
+            "lag1_endpoint_route_count",
+            "lag1_route_total_count",
+        ),
+        "lag1_v2_capital_day_supported": (
+            "lag1_v2_log1p_deposited_capital_usd",
+            "lag1_v2_five_candidate_capital_share",
+        ),
+        "lag1_v3_flow_day_supported": (
+            "lag1_v3_signed_log1p_net_flow_per_1000",
+            "lag1_v3_gross_candidate_flow_share",
+        ),
+    }
+    for support_column, value_columns in support_contracts.items():
+        unsupported = ~transformed[support_column].fillna(False)
+        if transformed.loc[unsupported, list(value_columns)].notna().any().any():
+            raise ValueError(f"{support_column} has values on unsupported dates")
+    weth_columns = [column for column in LOOKAHEAD_SAFE_COVARIATE_COLUMNS if column.startswith("lag1_weth_")]
+    if transformed.groupby("origin_date", sort=False)[weth_columns].nunique(dropna=False).gt(1).any().any():
+        raise ValueError("lagged WETH controls are not global within origin date")
+    weth_candidate = transformed.loc[transformed["candidate_address"].eq(_weth_candidate_address())]
+    identity_pairs = (
+        ("lag1_candidate_log_return", "lag1_weth_log_return"),
+        ("lag1_candidate_return_supported", "lag1_weth_return_supported"),
+        ("lag1_candidate_trailing_30d_volatility", "lag1_weth_trailing_30d_volatility"),
+        ("lag1_candidate_volatility_valid_returns", "lag1_weth_volatility_valid_returns"),
+        ("lag1_candidate_volatility_supported", "lag1_weth_volatility_supported"),
+    )
+    for candidate_column, weth_column in identity_pairs:
+        try:
+            pd.testing.assert_series_equal(
+                weth_candidate[candidate_column].reset_index(drop=True),
+                weth_candidate[weth_column].reset_index(drop=True),
+                check_names=False,
+            )
+        except AssertionError as error:
+            raise ValueError("WETH candidate and global risk controls disagree") from error
+    expected_event = (
+        transformed["lag1_weth_downside_stress"]
+        .ge(WETH_DOWNSIDE_EVENT_THRESHOLD)
+        .where(transformed["lag1_weth_stress_supported"])
+        .astype("boolean")
+    )
+    if not transformed["lag1_weth_stress_event_8pct"].astype("boolean").equals(expected_event):
+        raise ValueError("lagged WETH stress event disagrees with the canonical threshold")
+    original_sorted = original.sort_values(["origin_date", "candidate_address"]).reset_index(drop=True)
+    expected = _compute_lookahead_safe_daily_covariates(original_sorted, token_prices)
+    try:
+        pd.testing.assert_frame_equal(transformed.reset_index(drop=True), expected)
+    except AssertionError as error:
+        raise ValueError("look-ahead-safe covariates disagree with canonical recomputation") from error
+
+
+def attach_lookahead_safe_daily_covariates(
+    candidate_day: pd.DataFrame, token_prices: pd.DataFrame
+) -> pd.DataFrame:
+    """Attach controls observable by the end of the exact prior UTC day.
+
+    Returns use the cutoff date and its exact prior date. Volatility uses the 30
+    calendar dates ending at the cutoff with at least 20 valid returns. Candidate
+    stress divides the cutoff shock by the same window ending one day earlier.
+    Missing dates and startup windows remain unsupported instead of compressing.
+    """
+
+    validate_candidate_day_panel(candidate_day)
+    collisions = sorted(set(candidate_day) & set(LOOKAHEAD_SAFE_COVARIATE_COLUMNS))
+    if collisions:
+        raise ValueError(f"candidate-day panel already contains covariates: {collisions}")
+    original = candidate_day.sort_values(
+        ["origin_date", "candidate_address"]
+    ).reset_index(drop=True)
+    base = _compute_lookahead_safe_daily_covariates(original, token_prices)
+    validate_lookahead_safe_daily_covariates(original, token_prices, base)
+    return base
 
 
 def _raise_on_count(connection: duckdb.DuckDBPyConnection, query: str, message: str) -> None:
@@ -558,3 +961,31 @@ def validate_exact_horizon_panel(panel: pd.DataFrame, horizons: Iterable[int] = 
         raise ValueError("exact-horizon panel does not use the fixed five-address identity")
     if any("capital" in column for column in panel.columns if column.startswith("v3_")) or any("flow" in column for column in panel.columns if column.startswith("v2_")):
         raise ValueError("exact-horizon panel mixed V2 capital stocks and V3 dollar flows")
+
+
+def validate_exact_horizon_covariates(
+    candidate_day: pd.DataFrame,
+    exact_horizons: pd.DataFrame,
+    horizons: Iterable[int] = HORIZONS,
+) -> None:
+    """Verify every registered horizon preserves its origin-day covariates exactly."""
+
+    validate_exact_horizon_panel(exact_horizons, horizons)
+    missing_candidate = sorted(set(LOOKAHEAD_SAFE_COVARIATE_COLUMNS) - set(candidate_day.columns))
+    missing_horizon = sorted(set(LOOKAHEAD_SAFE_COVARIATE_COLUMNS) - set(exact_horizons.columns))
+    if missing_candidate or missing_horizon:
+        raise ValueError(
+            f"exact-horizon covariates are incomplete: candidate={missing_candidate}, horizon={missing_horizon}"
+        )
+    keys = ["origin_date", "candidate_address"]
+    expected = exact_horizons[[*keys, "horizon_days"]].merge(
+        candidate_day[[*keys, *LOOKAHEAD_SAFE_COVARIATE_COLUMNS]],
+        on=keys,
+        how="left",
+        validate="many_to_one",
+    )
+    actual = exact_horizons[[*keys, "horizon_days", *LOOKAHEAD_SAFE_COVARIATE_COLUMNS]]
+    try:
+        pd.testing.assert_frame_equal(actual.reset_index(drop=True), expected.reset_index(drop=True))
+    except AssertionError as error:
+        raise ValueError("exact-horizon panel changed an origin-day covariate") from error
