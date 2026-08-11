@@ -61,6 +61,26 @@ COMPLEXITY_SCOPES = (
     "single_venue_more_than_two_legs",
     "cross_venue_more_than_two_legs",
 )
+VEHICLE_TRANSITION_SCOPES = (
+    "two_leg",
+    "single_venue_two_leg",
+    "cross_venue_two_leg",
+)
+STABLE_SHARE_ESTIMANDS = (
+    ("episode", "all_routes", "cnt_"),
+    ("value", "all_routes", "usd_"),
+    ("value", "within_2x", "usd_within_2x_"),
+    ("value", "within_20pct", "usd_within_20pct_"),
+)
+VEHICLE_TRANSITION_ESTIMANDS = (
+    ("episode", "all_routes", "cnt_"),
+    ("value", "within_20pct", "usd_within_20pct_"),
+)
+VEHICLE_TRANSITION_SPECIFICATIONS = (
+    len(VEHICLE_TRANSITION_SCOPES) * len(VEHICLE_TRANSITION_ESTIMANDS) * 2
+)
+
+
 def value_field(asset_type: str, *, scope: str = "all", support: str = "all_routes") -> str:
     scope_prefix = "" if scope == "all" else f"{scope}_"
     support_prefix = "usd_" if support == "all_routes" else f"usd_{support}_"
@@ -199,16 +219,17 @@ def annual_composition(panel: pd.DataFrame) -> pd.DataFrame:
     return pd.DataFrame(rows)
 
 
-def _stable_share_change_tests(
+def _stable_share_samples(
     panel: pd.DataFrame,
     *,
     scopes: tuple[str, ...],
     scope_field: str,
     baseline_year: int = 2024,
     comparison_year: int = 2026,
-    hac_lag: int = HAC_LAG,
-) -> pd.DataFrame:
-    """Estimate the stable share change within prespecified route regimes."""
+    estimands: tuple[tuple[str, str, str], ...] = STABLE_SHARE_ESTIMANDS,
+):
+    """Yield the exact transformed samples shared by support and estimation."""
+
     data = panel.copy().sort_values("date", kind="stable")
     data["year"] = pd.to_datetime(data["date"]).dt.year
     data = data[data["year"].between(baseline_year, comparison_year)]
@@ -223,13 +244,6 @@ def _stable_share_change_tests(
     years = sorted(int(value) for value in data["year"].unique())
     if baseline_year not in years or comparison_year not in years:
         raise ValueError("route-regime rival requires both comparison endpoint years")
-    rows: list[dict[str, object]] = []
-    estimands = [
-        ("episode", "all_routes", "cnt_"),
-        ("value", "all_routes", "usd_"),
-        ("value", "within_2x", "usd_within_2x_"),
-        ("value", "within_20pct", "usd_within_20pct_"),
-    ]
     for weighting, value_support, column_prefix in estimands:
         for scope in scopes:
             scope_prefix = "" if scope == "all" else f"{scope}_"
@@ -254,15 +268,7 @@ def _stable_share_change_tests(
                     sample["estimand"] = np.log(sample["share"] / (1 - sample["share"]))
                 else:
                     sample["estimand"] = sample["share"]
-                estimate = year_endpoint_change(
-                    sample["estimand"],
-                    sample["year"],
-                    baseline_year=baseline_year,
-                    comparison_year=comparison_year,
-                    hac_lag=hac_lag,
-                    dates=sample["date"],
-                )
-                rows.append(
+                yield (
                     {
                         scope_field: scope,
                         "weighting": weighting,
@@ -270,18 +276,55 @@ def _stable_share_change_tests(
                         "transformation": transformation,
                         "baseline_year": baseline_year,
                         "comparison_year": comparison_year,
-                        "baseline_daily_mean": estimate.baseline_mean,
-                        "comparison_daily_mean": estimate.comparison_mean,
-                        "change": estimate.change,
-                        "hac_standard_error": estimate.standard_error,
-                        "t_statistic": estimate.t_statistic,
-                        "p_value": estimate.p_value,
-                        "days": estimate.n_observations,
-                        "hac_lag_days": hac_lag,
-                        "calendar_support": "daily observations at calendar month-and-day positions observed in both endpoint years; calendar-day HAC excludes unsupported gaps",
-                        "share_denominator": "native_plus_stable",
-                    }
+                    },
+                    sample,
                 )
+
+
+def _stable_share_change_tests(
+    panel: pd.DataFrame,
+    *,
+    scopes: tuple[str, ...],
+    scope_field: str,
+    baseline_year: int = 2024,
+    comparison_year: int = 2026,
+    hac_lag: int = HAC_LAG,
+    estimands: tuple[tuple[str, str, str], ...] = STABLE_SHARE_ESTIMANDS,
+) -> pd.DataFrame:
+    """Estimate the stable share change within prespecified route regimes."""
+
+    rows: list[dict[str, object]] = []
+    for identity, sample in _stable_share_samples(
+        panel,
+        scopes=scopes,
+        scope_field=scope_field,
+        baseline_year=baseline_year,
+        comparison_year=comparison_year,
+        estimands=estimands,
+    ):
+        estimate = year_endpoint_change(
+            sample["estimand"],
+            sample["year"],
+            baseline_year=baseline_year,
+            comparison_year=comparison_year,
+            hac_lag=hac_lag,
+            dates=sample["date"],
+        )
+        rows.append(
+            {
+                **identity,
+                "baseline_daily_mean": estimate.baseline_mean,
+                "comparison_daily_mean": estimate.comparison_mean,
+                "change": estimate.change,
+                "hac_standard_error": estimate.standard_error,
+                "t_statistic": estimate.t_statistic,
+                "p_value": estimate.p_value,
+                "days": estimate.n_observations,
+                "hac_lag_days": hac_lag,
+                "calendar_support": "daily observations at calendar month-and-day positions observed in both endpoint years; calendar-day HAC excludes unsupported gaps",
+                "share_denominator": "native_plus_stable",
+            }
+        )
     result = pd.DataFrame(rows)
     family = [
         "baseline_year",
@@ -293,6 +336,75 @@ def _stable_share_change_tests(
     result["p_value_holm"] = result.groupby(family, sort=False)["p_value"].transform(
         holm_adjusted_pvalues
     )
+    return result
+
+
+def vehicle_transition_tests(
+    panel: pd.DataFrame,
+    *,
+    baseline_year: int = 2024,
+    comparison_year: int = 2026,
+    hac_lag: int = HAC_LAG,
+) -> pd.DataFrame:
+    """Estimate the E0 transition family on exact two-leg routing strata."""
+
+    result = _stable_share_change_tests(
+        panel,
+        scopes=VEHICLE_TRANSITION_SCOPES,
+        scope_field="routing_scope",
+        baseline_year=baseline_year,
+        comparison_year=comparison_year,
+        hac_lag=hac_lag,
+        estimands=VEHICLE_TRANSITION_ESTIMANDS,
+    )
+    if len(result) != VEHICLE_TRANSITION_SPECIFICATIONS:
+        raise ValueError("vehicle-transition estimator does not cover its exact specification perimeter")
+    return result
+
+
+def vehicle_transition_support_geometry(
+    panel: pd.DataFrame,
+    *,
+    baseline_year: int = 2024,
+    comparison_year: int = 2026,
+    minimum_endpoint_days: int = HAC_LAG + 1,
+) -> pd.DataFrame:
+    """Gate every E0 transition specification on its exact pre-fit sample."""
+
+    if minimum_endpoint_days < 2:
+        raise ValueError("vehicle-transition support minimum must be at least two days")
+    rows: list[dict[str, object]] = []
+    for identity, sample in _stable_share_samples(
+        panel,
+        scopes=VEHICLE_TRANSITION_SCOPES,
+        scope_field="routing_scope",
+        baseline_year=baseline_year,
+        comparison_year=comparison_year,
+        estimands=VEHICLE_TRANSITION_ESTIMANDS,
+    ):
+        counts = sample.groupby("year", observed=True).size()
+        baseline_days = int(counts.get(baseline_year, 0))
+        comparison_days = int(counts.get(comparison_year, 0))
+        review = min(baseline_days, comparison_days) < minimum_endpoint_days
+        rows.append(
+            {
+                "record_type": "support",
+                "family": "vehicle_transition",
+                **identity,
+                "baseline_supported_days": baseline_days,
+                "comparison_supported_days": comparison_days,
+                "minimum_endpoint_days": minimum_endpoint_days,
+                "support_exit_review_required": review,
+                "support_reason": (
+                    "insufficient endpoint-year days for the declared HAC horizon"
+                    if review
+                    else "pass"
+                ),
+            }
+        )
+    result = pd.DataFrame(rows)
+    if len(result) != VEHICLE_TRANSITION_SPECIFICATIONS:
+        raise ValueError("vehicle-transition support does not cover its exact specification perimeter")
     return result
 
 

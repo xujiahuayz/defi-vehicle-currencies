@@ -7,11 +7,13 @@ import re
 from collections.abc import Mapping, Sequence
 from dataclasses import dataclass
 from pathlib import Path
+
 import pandas as pd
 
 from ddvc.analysis_release import resolve_analysis_release, resolve_repo_path
 from ddvc.model_registry import FITTED_MODEL_ARTIFACT_ROLES, MODEL_RUN_ARTIFACT_ROLES
 from ddvc.paths import REPO_ROOT
+from ddvc.provenance import require_current_artifacts
 from ddvc.tables import write_exhibit
 
 
@@ -25,6 +27,7 @@ class ModelArtifactContext:
     d3_generation: str
     d3_certificate_relative: str
     d3_certificate_path: Path
+    d3_input_relatives: frozenset[str]
 
 
 def model_artifact_context(
@@ -57,7 +60,44 @@ def model_artifact_context(
         d3_generation=release.generation,
         d3_certificate_relative=certificate_relative,
         d3_certificate_path=release.certificate_path,
+        d3_input_relatives=frozenset(
+            path.relative_to(root).as_posix() for path in release.input_paths
+        ),
     )
+
+
+def require_released_model_inputs(
+    context: ModelArtifactContext,
+    inputs: Sequence[str | Path],
+    *,
+    root: Path = REPO_ROOT,
+    consumer: str,
+) -> list[Path]:
+    """Require every model input to be an exact, current member of the bound D3 release."""
+
+    resolved_root = root.resolve()
+    resolved_inputs: list[Path] = []
+    relative_inputs: list[str] = []
+    for value in inputs:
+        candidate = Path(value)
+        if candidate.is_absolute():
+            resolved = candidate.resolve()
+            if not resolved.is_relative_to(resolved_root):
+                raise ValueError(f"{consumer} input escapes the repository: {value}")
+            relative = resolved.relative_to(resolved_root).as_posix()
+        else:
+            relative, resolved = resolve_repo_path(
+                candidate,
+                root=root,
+                label=f"{consumer} input",
+            )
+        relative_inputs.append(relative)
+        resolved_inputs.append(resolved)
+    missing = sorted(set(relative_inputs) - context.d3_input_relatives)
+    if missing:
+        raise ValueError(f"{consumer} input is outside the bound D3 release: {missing}")
+    require_current_artifacts(resolved_inputs, consumer=consumer)
+    return resolved_inputs
 
 
 def _spec_token(value: object) -> str:
