@@ -17,6 +17,7 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parents[1]
 SPINE_PATH = ROOT / "docs" / "paper-spine.md"
 LITERATURE_AUDIT_PATH = ROOT / "docs" / "literature-audit.md"
+DECK_OUTLINE_PATH = ROOT / "docs" / "deck-outline.md"
 
 # Tells calibrated against the JFE corpus plus the house-voice blocklist.
 BANNED_SUBSTRINGS = (
@@ -146,6 +147,21 @@ class PaperSpineTests(unittest.TestCase):
         gate_families = set(re.findall(r"^\| `([^`]+_e0)` \|", section, flags=re.MULTILINE))
         self.assertEqual(len(venue_cards), 14)
         self.assertEqual(gate_sources, venue_cards)
+        self.assertEqual(
+            gate_families,
+            {
+                "vehicle_transition_e0",
+                "routing_maturation_e0",
+                "direct_cost_dominance_e0",
+                "liquidity_allocation_e0",
+                "open_question_anomaly_e0",
+            },
+        )
+
+    def test_deck_architecture_gate_covers_every_claim_family(self) -> None:
+        outline = DECK_OUTLINE_PATH.read_text(encoding="utf-8")
+        section = outline.split("## Pre-findings slide architecture gate", 1)[1].split("## Legacy pre-E1 outline", 1)[0]
+        gate_families = set(re.findall(r"^\| `([^`]+_e0)` \|", section, flags=re.MULTILINE))
         self.assertEqual(
             gate_families,
             {

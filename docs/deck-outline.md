@@ -2,6 +2,69 @@
 
 Slot: 30 minutes including Q&A, so roughly 20 minutes of speaking. Main deck 17 slides, of which cover and references consume seconds, leaving 15 slides carrying content at about 80 seconds each. Appendix 29 slides, unpresented, reached by number when a question lands. Paper title, settled 2026-08-06: "The Making of Dominant Vehicle Currencies: Evidence from DeFi".
 
+## Pre-findings slide architecture gate
+
+This is the canonical deck topology until E1 promotes the final claim set. It applies the JFE paper-and-exhibit dependency order in `docs/literature-audit.md` to a twenty-minute talk: one visual idea per slide, proof before result, and only valid secondary evidence in backup. The numbered outline below remains source material and is not build authority where it conflicts with this gate.
+
+### Core dependency order
+
+1. Cover and question.
+2. Vehicle status versus vehicle dominance: one observed intermediary use makes status binary, while dominance is the continuous share of the role.
+3. The phenomenon: dominance and composition over time, with count and value denominators visibly separate.
+4. Data perimeter, support and economically material exclusions.
+5. Compact validation of every contested object needed by the first promoted result.
+6. Promoted result blocks in contribution order; each block begins with its remaining design condition and ends with its strongest rival or boundary.
+7. Mechanism synthesis only after the relevant families have admissible evidence.
+8. Conclusion containing only results established in the preceding slides; references may follow as an unspoken or backup slide.
+
+The order is binding and the slide count is not. A result family that fails E1 disappears with its setup slides. Separate slides may merge when one display establishes both the proof condition and the result without hiding support or uncertainty.
+
+### Proof that must appear before each result family
+
+| Claim family | Proof or validation before the result slide | Result-slide visual contract | Backup after the compact main proof | Slide block closes only if |
+|---|---|---|---|---|
+| `vehicle_transition_e0` | Define the exact denominator; show count/value and excess-use agreement; disclose calendar/candidate support, dated backing and routing strata; separate within-pair change from pair entry and exit | Continuous dominance over time plus a compact within-pair/composition decomposition; leader and concentration are separate margins | Full transition matrices, alternative weights, type/backing details, pair/venue splits and support calendars | Rotation is not called succession unless persistent replacement is measured, and aggregate migration is not treated as within-pair displacement |
+| `routing_maturation_e0` | Show topology versus opportunity reach; establish exact-state route reproduction; define within-reach, public-reach and path-choice margins; name fixed/persistent cohorts | Separate margin panels or small multiples over fixed opportunity cells and exact horizons | Reproduction tolerances, cohort thresholds, horizon support, gas/liquidity/volatility strata and labelled-router sensitivities | Calendar improvement is called market routing maturation, with no aggregator attribution absent validated authorship and timing |
+| `direct_cost_dominance_e0` | Validate same-state quotes; show availability/valuation exclusions, matched-versus-realised selection, realised-size versus fixed-notional scope, gas support and reach | Incidence and economic magnitude on the same support, with uncovered share drawn on the visual rather than relegated to speech | Protocol quoter derivations, full waterfall, gas quantiles, notional grid, venue/pair/year detail and alternative weights | The slide says a cheaper available path coexisted with realised routing and does not imply irrationality, persistence or market-wide inefficiency |
+| `liquidity_allocation_e0` | Define V2 deposited-capital stocks and V3 LP flows as different quantities; show their separate calendars/support; establish exact bidirectional horizons | Two visibly separate direction-by-family panels, followed by the strongest control/placebo or concentration result | Full horizons, covariance alternatives, leave-one-unit results, stress grids and provider-overlap tests only on validated ownership | Predictability is not called causal feedback, and no rent-return result enters through virtual depth or unsupported capital |
+| `open_question_anomaly_e0` | Reproduce from D3; show economic magnitude, concentration, denominator stability, integrity screen and strongest rival; complete centrality triage | No reserved slide; a promoted anomaly adopts the proof contract of the family it changes | Auxiliary, rejected and next-paper patterns stay outside the live talk, with internal evidence preserved | A distinct confirmatory generation exists and the anomaly materially changes the central contribution |
+
+### Visual grammar for status and dominance
+
+- Binary vehicle status uses a route diagram or a zero/one indicator: one path through asset `k` is enough to turn status on. It never uses a graded color scale or a time-series y-axis.
+- Continuous vehicle dominance uses an explicit zero-to-one share axis and prints the denominator on the slide. Count and value shares use aligned separate panels or clearly distinct encodings; they are not averaged into one series.
+- Composition uses candidate/type shares that sum to the stated supported perimeter. Dominance concentration and leader identity use their own encodings, since more effective vehicles and a new leader answer different questions.
+- Rotation, fragmentation and replacement are visually distinct. Rotation changes shares, fragmentation lowers concentration, and replacement requires a leader change that persists. The word succession is withheld until the replacement condition passes.
+- Support loss is drawn as a missing band, hatched share or denominator strip on the relevant exhibit. A spoken caveat cannot carry an exclusion that could change the result.
+- Backing regimes are dated annotations or facets, not permanent colors that imply one unchanging stablecoin mechanism.
+
+### Main deck versus backup
+
+The main deck retains the object definition, phenomenon, compact sample/support slide, load-bearing validation, promoted estimates, economic magnitude, strongest rival, adverse null and interpretation boundary. Backup carries protocol-by-protocol quoter mechanics, full exclusion ledgers, tolerance and notional grids, gas calibration, alternative covariance, extended horizons, venue/pair splits, transition matrices, placebo grids and additional citations. A compact version of state reproduction, selection, support loss, pretrends or any limitation that changes interpretation remains before the relevant main result. Retired generations, invalid denominators, blocked estimates and process/status slides belong in neither the live talk nor conference backup.
+
+### Audit of the current deck topology
+
+| Current slide block | Verdict before E1 |
+|---|---|
+| Slides 2 to 5 open with cost domination and use three slides on V1-to-V4 history before defining dominance | Reorder: promote current A1's binary-status/continuous-dominance distinction to the opening; compress protocol history to one context slide or move it to backup unless promoted |
+| Slide 6 uses a static type taxonomy | Keep only after the object definition and apply dated backing regimes; taxonomy cannot stand in for a mechanism |
+| Slide 7 shows the aggregate native-to-stable transition | Retain as a phenomenon shell, then replace its generation and add within-pair versus entry/exit evidence before interpreting displacement or replacement |
+| Slide 8 reports an earlier panel perimeter and quote generation | Stale until D3; rebuild from the certified release and show support and material omissions, not pipeline inventory |
+| Slides 9 and 10 put quote construction and support before direct-cost incidence | Correct dependency in form, but the displayed hour-state generation is superseded; replace with exact transaction-state reproduction and current selection/support evidence |
+| Slide 11 headlines four-day direct-cost incidence | Preliminary and ineligible for the live deck until full-daily E0/E1 support, selection, valuation, gas and reach attacks close |
+| Slide 12 presents survival as the talk's estimand without a result | Premature; no main slot unless E1 promotes a valid full-daily duration or transition family |
+| Slide 13 presents block-versus-hour instability from the retired generation | Diagnostic source material only; the live deck needs current exact-state reproduction before any cost result, with detailed timing failures in backup if still informative |
+| Slide 14 is titled “Fragmentation against succession” | Terminology and evidence are premature; use rotation/fragmentation until pair-level persistent replacement is established |
+| Slide 15 ranks mechanisms that include blocked or retired evidence | Remove from the live topology; a horse race appears only after its inputs are admissible and one rival actually discriminates among promoted results |
+| Slide 16 recaps preliminary claims and promises “the duration next” | Invalid close; recap only preceding admitted results and never narrate unfinished work |
+| Backup A1 | Structurally load-bearing and currently misplaced; its binary-versus-continuous visual belongs in the opening main block |
+| Backup state, matching, support and coverage slides | Preserve the valid detailed versions in backup, but lift a compact current-generation state/selection/support proof before each affected main result |
+| Backup rent, provider-depth, block/hour and artefact-status material | Remove or regenerate after E1; conference backup is not a storage area for retired estimates, invalid capital, superseded timing or internal process |
+
+The post-E1 deck is rebuilt from this dependency graph and the active evidence manifest. Existing TikZ and layout assets may be reused only when their scientific object and generation remain current.
+
+## Legacy pre-E1 outline
+
 The deck is built on the survival estimand. The question the talk asks and answers is how long the vehicle role survives once the asset carrying it stops being the cheapest route, priced in dollars foregone and in days of delay, with the asymmetry between the edge a challenger needs to displace an incumbent and the edge a displaced incumbent needs to return separating hysteresis from persistence. Deck order follows the paper architecture in `docs/paper-spine.md` section 1.3, whose section 3 leads on the state itself, section 4 carries the survival estimand, and section 6 defends the measured object as a numbered section. One divergence is recorded and held: the paper reads the migration in which asset intermediates as the time axis inside section 3, and the deck puts it before the state on slide 7, because an audience needs the setting before it can be told what happens inside the setting.
 
 The level comparison between asset types appears in the appendix as a validation exhibit at about -25.3 basis points on the continuous gap (0.037). The retired binary version at -0.383, which was measuring quote collapse, and the retired size gradient, whose interaction with log size reads +0.0023 (0.914), appear only as the appendix line that says why they went.
