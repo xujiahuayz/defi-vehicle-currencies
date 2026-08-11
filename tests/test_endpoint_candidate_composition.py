@@ -1,23 +1,26 @@
 from __future__ import annotations
 
+from dataclasses import replace
+
 import pandas as pd
 import pytest
 
-from ddvc.asset_types import VEHICLE_CANDIDATES
+from ddvc.asset_types import NATIVE, STABLE, classify
 from ddvc.endpoint_candidate_composition import (
-    PANEL_KEYS,
+    INCLUDED,
+    EndpointCandidateComposition,
     endpoint_candidate_composition_for_day,
     finalize_endpoint_candidate_composition,
     validate_endpoint_candidate_composition,
 )
-from ddvc.vehicle_extent import compute_vehicle_extent
+from ddvc.realised import ROUTE_COLUMNS, extract_realised_routes
 
 
 SRC = "0x1111111111111111111111111111111111111111"
 TGT = "0x2222222222222222222222222222222222222222"
 OTHER = "0x3333333333333333333333333333333333333333"
-WETH = next(address for address, symbol in VEHICLE_CANDIDATES.items() if symbol == "WETH")
-USDC = next(address for address, symbol in VEHICLE_CANDIDATES.items() if symbol == "USDC")
+WETH = next(address for address, symbol in NATIVE.items() if symbol == "WETH")
+USDC = next(address for address, symbol in STABLE.items() if symbol == "USDC")
 
 
 def leg(
@@ -25,155 +28,295 @@ def leg(
     log_index: int,
     token_in: str,
     token_out: str,
-    tin_role: str,
-    tout_role: str,
     *,
     component_id: int = 0,
     route_class: str = "coherent",
+    source: str = "uniswap_v2",
     amount_usd: float = 100.0,
 ) -> dict[str, object]:
     return {
         "tx_hash": tx_hash,
         "component_id": component_id,
         "route_class": route_class,
+        "source": source,
         "token_in": token_in,
         "token_out": token_out,
-        "tin_role": tin_role,
-        "tout_role": tout_role,
         "amount_usd": amount_usd,
         "log_index": log_index,
+        "tin_role": "source",
+        "tout_role": "sink",
+        "timestamp_utc": 1_704_153_600,
     }
 
 
 def sample_legs() -> pd.DataFrame:
     return pd.DataFrame(
         [
-            leg("direct", 0, SRC, TGT, "source", "sink", route_class="single"),
-            leg("weth", 1, SRC, WETH, "source", "intermediate"),
-            leg("weth", 2, WETH, TGT, "intermediate", "sink"),
-            leg("usdc", 3, SRC, USDC, "source", "intermediate", amount_usd=100),
-            leg("usdc", 4, USDC, TGT, "intermediate", "sink", amount_usd=50),
-            leg("other", 5, SRC, OTHER, "source", "intermediate"),
-            leg("other", 6, OTHER, TGT, "intermediate", "sink"),
+            leg("direct", 0, SRC, TGT, route_class="single"),
+            leg("weth", 1, SRC, WETH),
+            leg("weth", 2, WETH, TGT),
+            leg("usdc", 3, SRC, USDC, amount_usd=100),
+            leg("usdc", 4, USDC, TGT, source="sushiswap_v2", amount_usd=50),
+            leg("other", 5, SRC, OTHER),
+            leg("other", 6, OTHER, TGT),
         ]
     )
 
 
-def test_count_and_strict_value_denominators_are_explicit() -> None:
-    panel = endpoint_candidate_composition_for_day(sample_legs(), "20240102").set_index(
-        "candidate_symbol"
+def test_primary_choice_has_exact_unit_sequences_and_nested_values() -> None:
+    bundle = endpoint_candidate_composition_for_day(sample_legs(), "20240102")
+    choices = bundle.choices.set_index("candidate_address")
+    assert set(choices.index) == {WETH, USDC}
+    assert choices["route_count"].eq(1).all()
+    assert choices.loc[WETH, "candidate_type"] == "native"
+    assert choices.loc[USDC, "candidate_type"] == "stable"
+    assert choices.loc[USDC, "backing_regime"] == "fiat_reserve"
+    assert choices.loc[WETH, "integration_scope"] == "single_venue"
+    assert choices.loc[USDC, "integration_scope"] == "cross_venue"
+    assert choices.loc[USDC, "venue_sequence"] == "uniswap_v2>sushiswap_v2"
+    assert choices.loc[USDC, "protocol_sequence"] == "uniswap>sushiswap"
+    assert choices.loc[WETH, "raw_value_usd"] == pytest.approx(100.0)
+    assert choices.loc[WETH, "within_20pct_value_usd"] == pytest.approx(100.0)
+    assert choices.loc[USDC, "raw_value_usd"] == pytest.approx(75.0)
+    assert choices.loc[USDC, "within_2x_value_usd"] == pytest.approx(75.0)
+    assert choices.loc[USDC, "within_20pct_routes"] == 0
+
+    support = bundle.pair_support.iloc[0]
+    assert support["market_route_count"] == 4
+    assert support["primary_choice_route_count"] == 2
+    assert support["direct_route_count"] == 1
+    assert support["other_candidate_route_count"] == 1
+    assert set(bundle.exclusions["exclusion_reason"]) == {"direct_route", "other_candidate"}
+    assert bundle.exclusions["route_count"].sum() + bundle.choices["route_count"].sum() == 4
+
+
+def test_primary_choice_reconciles_to_canonical_realised_route_owner() -> None:
+    legs = sample_legs()
+    canonical = extract_realised_routes(
+        legs[ROUTE_COLUMNS],
+        require_positive_value=False,
     )
-    assert len(panel) == len(VEHICLE_CANDIDATES)
-    assert panel["count_denominator_routes"].eq(4).all()
-    assert panel.loc["WETH", "count_numerator_routes"] == 1
-    assert panel.loc["WETH", "count_share"] == pytest.approx(0.25)
-    assert panel["strict_value_denominator_routes"].eq(3).all()
-    assert panel["strict_value_denominator_usd"].eq(300.0).all()
-    assert panel.loc["WETH", "strict_value_numerator_usd"] == pytest.approx(100.0)
-    assert panel.loc["WETH", "strict_value_share"] == pytest.approx(1 / 3)
-    assert panel.loc["USDC", "candidate_strict_value_reason"] == "candidate_has_no_strict_value_route"
-    assert panel["count_leader_reason"].eq("tie").all()
-
-
-def test_direct_only_pair_is_supported_zero_not_missing() -> None:
-    direct = pd.DataFrame(
-        [leg("direct", 0, SRC, TGT, "source", "sink", route_class="single")]
+    canonical["candidate_type"] = canonical["vehicle"].map(
+        lambda address: classify(address)[1]
     )
-    panel = endpoint_candidate_composition_for_day(direct, "20240102")
-    assert len(panel) == len(VEHICLE_CANDIDATES)
-    assert panel["count_supported"].all()
-    assert panel["count_numerator_routes"].eq(0).all()
-    assert panel["count_share"].eq(0.0).all()
-    assert panel["strict_value_supported"].all()
-    assert panel["strict_value_share"].eq(0.0).all()
-    assert panel["candidate_route_reason"].eq("no_candidate_vehicle_route").all()
-    assert panel["count_leader_reason"].eq("no_candidate_vehicle_route").all()
+    canonical = canonical[
+        canonical["legs"].eq(2)
+        & canonical["candidate_type"].isin(("native", "stable"))
+    ]
+    choices = endpoint_candidate_composition_for_day(
+        legs, "20240102"
+    ).choices
+    assert choices["route_count"].sum() == len(canonical)
+    expected = canonical.groupby("candidate_type")["usd"].sum().sort_index()
+    observed = choices.groupby("candidate_type")["raw_value_usd"].sum().sort_index()
+    pd.testing.assert_series_equal(observed, expected, check_names=False)
 
 
-def test_empty_strict_value_support_has_reason_and_no_share() -> None:
+def test_direct_and_other_candidates_are_explicit_exclusions() -> None:
+    direct = pd.DataFrame([leg("direct", 0, SRC, TGT, route_class="single")])
+    bundle = endpoint_candidate_composition_for_day(direct, "20240102")
+    assert bundle.choices.empty
+    assert bundle.pair_support.iloc[0]["direct_route_count"] == 1
+    assert bundle.exclusions.iloc[0]["exclusion_reason"] == "direct_route"
+
+    other = pd.DataFrame([leg("other", 0, SRC, OTHER), leg("other", 1, OTHER, TGT)])
+    bundle = endpoint_candidate_composition_for_day(other, "20240102")
+    assert bundle.choices.empty
+    assert bundle.pair_support.iloc[0]["other_candidate_route_count"] == 1
+    excluded = bundle.exclusions.iloc[0]
+    assert excluded["candidate_address"] == OTHER
+    assert excluded["candidate_type"] == "other"
+
+
+def test_unsupported_value_preserves_count_and_zero_supported_value() -> None:
     unsupported = pd.DataFrame(
         [
-            leg(
-                "direct",
-                0,
-                SRC,
-                TGT,
-                "source",
-                "sink",
-                route_class="single",
-                amount_usd=float("nan"),
-            )
+            leg("weth", 0, SRC, WETH, amount_usd=float("nan")),
+            leg("weth", 1, WETH, TGT, amount_usd=float("nan")),
         ]
     )
-    panel = endpoint_candidate_composition_for_day(unsupported, "20240102")
-    assert (~panel["strict_value_supported"]).all()
-    assert panel["strict_value_share"].isna().all()
-    assert panel["strict_value_support_reason"].eq(
-        "no_strict_value_routes_for_endpoint_pair"
-    ).all()
-    assert panel["candidate_strict_value_reason"].eq(
-        "pair_has_no_strict_value_support"
-    ).all()
+    choice = endpoint_candidate_composition_for_day(unsupported, "20240102").choices.iloc[0]
+    assert choice["route_count"] == 1
+    assert choice["raw_value_supported_routes"] == 0
+    assert choice["raw_value_usd"] == 0
+    assert choice["within_2x_routes"] == 0
+    assert choice["within_20pct_routes"] == 0
 
 
-def test_candidate_endpoint_is_structural_zero_not_missing_support() -> None:
-    direct = pd.DataFrame(
-        [leg("direct", 0, WETH, TGT, "source", "sink", route_class="single")]
-    )
-    panel = endpoint_candidate_composition_for_day(direct, "20240102").set_index(
-        "candidate_address"
-    )
-    assert panel.loc[WETH, "count_supported"]
-    assert panel.loc[WETH, "count_share"] == 0.0
-    assert panel.loc[WETH, "candidate_route_reason"] == "candidate_is_endpoint"
-    assert panel.loc[WETH, "candidate_strict_value_reason"] == "candidate_is_endpoint"
-
-
-def test_duplicate_event_and_duplicate_panel_key_fail_closed() -> None:
-    legs = sample_legs()
-    with pytest.raises(ValueError, match="duplicate event identity"):
-        endpoint_candidate_composition_for_day(
-            pd.concat([legs, legs.iloc[[0]]], ignore_index=True), "20240102"
-        )
-    panel = endpoint_candidate_composition_for_day(legs, "20240102")
-    with pytest.raises(ValueError, match="duplicate endpoint-candidate composition key"):
-        validate_endpoint_candidate_composition(
-            pd.concat([panel, panel.iloc[[0]]], ignore_index=True)
-        )
-
-
-def test_results_are_deterministic_under_input_and_day_completion_order() -> None:
-    first = endpoint_candidate_composition_for_day(sample_legs(), "20240102")
-    shuffled = endpoint_candidate_composition_for_day(
-        sample_legs().sample(frac=1, random_state=19), "20240102"
-    )
-    pd.testing.assert_frame_equal(first, shuffled)
-    second = endpoint_candidate_composition_for_day(sample_legs(), "20240103")
-    forward = finalize_endpoint_candidate_composition([first, second])
-    reverse = finalize_endpoint_candidate_composition([second, first])
-    pd.testing.assert_frame_equal(forward, reverse)
-    assert not forward.duplicated(PANEL_KEYS).any()
-    assert forward.loc[forward["date"].eq(pd.Timestamp("2024-01-02")), "pair_entry_on_day"].all()
-    assert forward.loc[forward["date"].eq(pd.Timestamp("2024-01-03")), "pair_last_observed_on_day"].all()
-
-
-def test_multi_candidate_route_matches_token_level_vehicle_extent_semantics() -> None:
+def test_multi_candidate_route_is_excluded_once() -> None:
     multi = pd.DataFrame(
         [
-            leg("multi", 0, SRC, WETH, "source", "intermediate"),
-            leg("multi", 1, WETH, USDC, "intermediate", "intermediate"),
-            leg("multi", 2, USDC, TGT, "intermediate", "sink"),
+            leg("multi", 0, SRC, WETH),
+            leg("multi", 1, WETH, USDC),
+            leg("multi", 2, USDC, TGT),
         ]
     )
-    panel = endpoint_candidate_composition_for_day(multi, "20240102").set_index(
-        "candidate_address"
+    bundle = endpoint_candidate_composition_for_day(multi, "20240102")
+    assert bundle.choices.empty
+    assert bundle.pair_support.iloc[0]["multiple_intermediary_route_count"] == 1
+    assert bundle.exclusions.iloc[0]["exclusion_reason"] == "multiple_intermediaries"
+    assert bundle.exclusions.iloc[0]["route_count"] == 1
+
+
+def test_split_join_and_direct_split_are_not_vehicle_choices() -> None:
+    split_around_candidate = pd.DataFrame(
+        [
+            leg("split", 0, SRC, WETH, amount_usd=50),
+            leg("split", 1, SRC, WETH, source="sushiswap_v2", amount_usd=50),
+            leg("split", 2, WETH, TGT, amount_usd=100),
+        ]
     )
-    extent = compute_vehicle_extent(multi).set_index("token")
-    assert panel.loc[WETH, "count_numerator_routes"] == 1
-    assert panel.loc[USDC, "count_numerator_routes"] == 1
-    assert panel.loc[WETH, "count_denominator_routes"] == 1
-    assert panel.loc[USDC, "count_denominator_routes"] == 1
-    assert panel.loc[WETH, "count_share"] == 1.0
-    assert panel.loc[USDC, "count_share"] == 1.0
-    assert extent.loc[WETH, "intermediate_routes"] == 1
-    assert extent.loc[USDC, "intermediate_routes"] == 1
+    bundle = endpoint_candidate_composition_for_day(split_around_candidate, "20240102")
+    assert bundle.choices.empty
+    assert bundle.pair_support.iloc[0]["split_or_join_route_count"] == 1
+    assert bundle.exclusions.iloc[0]["exclusion_reason"] == "split_or_join"
+
+    direct_split = pd.DataFrame(
+        [
+            leg("direct-split", 0, SRC, TGT, amount_usd=50),
+            leg("direct-split", 1, SRC, TGT, source="sushiswap_v2", amount_usd=50),
+        ]
+    )
+    bundle = endpoint_candidate_composition_for_day(direct_split, "20240102")
+    assert bundle.choices.empty
+    assert bundle.pair_support.iloc[0]["direct_split_route_count"] == 1
+    assert bundle.exclusions.iloc[0]["exclusion_reason"] == "direct_split"
+
+
+def test_round_trip_cycle_and_ambiguous_route_class_are_audited() -> None:
+    round_trip = pd.DataFrame([leg("cycle", 0, SRC, WETH), leg("cycle", 1, WETH, SRC)])
+    bundle = endpoint_candidate_composition_for_day(round_trip, "20240102")
+    assert bundle.choices.empty
+    assert bundle.pair_support.empty
+    assert bundle.exclusions.iloc[0]["exclusion_reason"] == "round_trip"
+
+    ambiguous = pd.DataFrame(
+        [
+            leg("ambiguous", 0, SRC, WETH, route_class="tricky_bridged"),
+            leg("ambiguous", 1, WETH, TGT, route_class="tricky_bridged"),
+        ]
+    )
+    bundle = endpoint_candidate_composition_for_day(ambiguous, "20240102")
+    assert bundle.exclusions.iloc[0]["exclusion_reason"] == "ambiguous_route_class"
+
+
+def test_candidate_identity_and_event_identity_fail_closed() -> None:
+    invalid = pd.DataFrame([leg("bad", 0, SRC, "USDC"), leg("bad", 1, "USDC", TGT)])
+    with pytest.raises(ValueError, match="invalid token_.* address"):
+        endpoint_candidate_composition_for_day(invalid, "20240102")
+
+    duplicate = sample_legs()
+    with pytest.raises(ValueError, match="duplicate event identity"):
+        endpoint_candidate_composition_for_day(pd.concat([duplicate, duplicate.iloc[[0]]], ignore_index=True), "20240102")
+
+    bundle = endpoint_candidate_composition_for_day(sample_legs(), "20240102")
+    tampered = bundle.choices.copy()
+    tampered.loc[0, "candidate_type"] = (
+        "native" if tampered.loc[0, "candidate_type"] == "stable" else "stable"
+    )
+    with pytest.raises(ValueError, match="canonical candidate identity"):
+        validate_endpoint_candidate_composition(replace(bundle, choices=tampered))
+
+
+def test_transaction_timestamp_must_match_supplied_utc_day() -> None:
+    with pytest.raises(ValueError, match="outside supplied UTC day"):
+        endpoint_candidate_composition_for_day(sample_legs(), "20240103")
+
+
+def test_order_and_pair_lifecycle_are_deterministic() -> None:
+    first = endpoint_candidate_composition_for_day(sample_legs(), "20240102")
+    shuffled = endpoint_candidate_composition_for_day(sample_legs().sample(frac=1, random_state=19), "20240102")
+    pd.testing.assert_frame_equal(first.choices, shuffled.choices)
+    pd.testing.assert_frame_equal(first.pair_support, shuffled.pair_support)
+    pd.testing.assert_frame_equal(first.exclusions, shuffled.exclusions)
+
+    second_legs = sample_legs()
+    second_legs["timestamp_utc"] = 1_704_240_000
+    second = endpoint_candidate_composition_for_day(second_legs, "20240103")
+    forward = finalize_endpoint_candidate_composition([first, second])
+    reverse = finalize_endpoint_candidate_composition([second, first])
+    pd.testing.assert_frame_equal(forward.choices, reverse.choices)
+    pd.testing.assert_frame_equal(forward.pair_support, reverse.pair_support)
+    pd.testing.assert_frame_equal(forward.exclusions, reverse.exclusions)
+    early = forward.pair_support[forward.pair_support["date"].eq(pd.Timestamp("2024-01-02"))]
+    late = forward.pair_support[forward.pair_support["date"].eq(pd.Timestamp("2024-01-03"))]
+    assert early["pair_entry_on_day"].all()
+    assert late["pair_last_observed_on_day"].all()
+
+
+def test_venue_sequence_follows_directed_route_when_events_execute_in_reverse() -> None:
+    reverse_execution = pd.DataFrame(
+        [
+            leg("reverse", 0, WETH, TGT, source="uniswap_v3"),
+            leg("reverse", 1, SRC, WETH, source="sushiswap_v2"),
+        ]
+    )
+    choice = endpoint_candidate_composition_for_day(
+        reverse_execution, "20240102"
+    ).choices.iloc[0]
+    assert choice["venue_sequence"] == "sushiswap_v2>uniswap_v3"
+    assert choice["protocol_sequence"] == "sushiswap>uniswap"
+    assert choice["integration_scope"] == "cross_venue"
+
+
+def test_validation_rejects_non_nested_support_and_accounting_drift() -> None:
+    bundle = endpoint_candidate_composition_for_day(sample_legs(), "20240102")
+    bad_support = bundle.choices.copy()
+    bad_support.loc[0, "within_20pct_routes"] = 2
+    with pytest.raises(ValueError, match="not nested"):
+        validate_endpoint_candidate_composition(replace(bundle, choices=bad_support))
+
+    bad_pair = bundle.pair_support.copy()
+    bad_pair.loc[0, "primary_choice_route_count"] += 1
+    with pytest.raises(ValueError, match="does not reconcile"):
+        validate_endpoint_candidate_composition(replace(bundle, pair_support=bad_pair))
+
+    bad_exclusion = bundle.exclusions.copy()
+    bad_exclusion.loc[0, "exclusion_reason"] = "unregistered"
+    with pytest.raises(ValueError, match="unknown reason"):
+        validate_endpoint_candidate_composition(replace(bundle, exclusions=bad_exclusion))
+
+
+def test_validation_rejects_duplicate_exclusions_and_reason_drift() -> None:
+    bundle = endpoint_candidate_composition_for_day(sample_legs(), "20240102")
+    duplicated = pd.concat([bundle.exclusions, bundle.exclusions.iloc[[0]]], ignore_index=True)
+    with pytest.raises(ValueError, match="duplicate composition keys"):
+        validate_endpoint_candidate_composition(replace(bundle, exclusions=duplicated))
+
+    drifted = bundle.exclusions.copy()
+    direct = drifted["exclusion_reason"].eq("direct_route")
+    other = drifted["exclusion_reason"].eq("other_candidate")
+    drifted.loc[direct, "route_count"] -= 1
+    drifted.loc[other, "route_count"] += 1
+    with pytest.raises(ValueError, match="disagree with pair support"):
+        validate_endpoint_candidate_composition(replace(bundle, exclusions=drifted))
+
+
+def test_validation_rejects_infinite_and_non_nested_values() -> None:
+    bundle = endpoint_candidate_composition_for_day(sample_legs(), "20240102")
+    infinite = bundle.choices.copy()
+    infinite.loc[0, "raw_value_usd"] = float("inf")
+    with pytest.raises(ValueError, match="invalid raw_value_usd"):
+        validate_endpoint_candidate_composition(replace(bundle, choices=infinite))
+
+    non_nested = bundle.choices.copy()
+    non_nested.loc[0, "within_2x_value_usd"] = (
+        non_nested.loc[0, "raw_value_usd"] + 1
+    )
+    with pytest.raises(ValueError, match="magnitudes are not nested"):
+        validate_endpoint_candidate_composition(replace(bundle, choices=non_nested))
+
+    unsupported = bundle.choices.copy()
+    unsupported.loc[0, "within_20pct_routes"] = 0
+    unsupported.loc[0, "within_20pct_value_usd"] = 1
+    with pytest.raises(ValueError, match="without supported routes"):
+        validate_endpoint_candidate_composition(replace(bundle, choices=unsupported))
+
+    positive_support_without_value = bundle.choices.copy()
+    positive_support_without_value.loc[
+        :, ["raw_value_usd", "within_2x_value_usd", "within_20pct_value_usd"]
+    ] = 0
+    with pytest.raises(ValueError, match="supported routes without value"):
+        validate_endpoint_candidate_composition(
+            replace(bundle, choices=positive_support_without_value)
+        )
