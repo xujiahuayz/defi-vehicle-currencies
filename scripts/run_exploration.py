@@ -14,6 +14,11 @@ def main() -> int:
     subparsers = parser.add_subparsers(dest="command", required=True)
     run = subparsers.add_parser("run", help="execute and append every fitted family")
     run.add_argument("--plan", required=True)
+    run.add_argument(
+        "--template",
+        default="docs/e0-exploration-plan.template.json",
+        help="canonical family-perimeter template that the executable plan must match",
+    )
     run.add_argument("--d3-certificate", required=True)
     run.add_argument("--ledger", default="docs/model-ledger.json")
     close = subparsers.add_parser("close", help="require exact triage and publish E0")
@@ -27,6 +32,7 @@ def main() -> int:
             args.plan,
             d3_certificate_path=args.d3_certificate,
             ledger_path=args.ledger,
+            template_path=args.template,
         )
         print(json.dumps({"status": "in_progress", "executed_run_ids": run_ids}, sort_keys=True))
         return 0

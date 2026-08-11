@@ -10,7 +10,8 @@ import pytest
 
 import ddvc.exploration as exploration
 from ddvc.analysis_release import publish_analysis_release
-from ddvc.exploration import close_exploration, execute_exploration_plan, resolve_exploration_release
+from ddvc.exploration import close_exploration, execute_exploration_plan as _execute_exploration_plan, resolve_exploration_release
+from ddvc.model_artifacts import attach_spec_ids, model_artifact_context, write_model_exhibit
 from ddvc.model_registry import canonical_hash, model_run_id, validate_artifact_spec_ids
 from ddvc.paths import REPO_ROOT
 from ddvc.provenance import sidecar_path, stamp
@@ -118,6 +119,23 @@ def _write_plan(directory: Path, d3_generation: str, *, artifact: Path, families
             }
         )
     plan = directory / "plan.json"
+    template = directory / "plan-template.json"
+    template.write_text(
+        json.dumps(
+            {
+                "schema_version": 1,
+                "kind": "e0_exploration_plan_template",
+                "families": [
+                    {
+                        key: family[key]
+                        for key in ("family_id", "claim_id", "question", "search_dimensions")
+                    }
+                    for family in family_records
+                ],
+            }
+        ),
+        encoding="utf-8",
+    )
     plan.write_text(
         json.dumps({"schema_version": 1, "d3_generation": d3_generation, "families": family_records}),
         encoding="utf-8",
@@ -125,10 +143,24 @@ def _write_plan(directory: Path, d3_generation: str, *, artifact: Path, families
     return plan
 
 
+def execute_exploration_plan(plan_path, **kwargs):
+    plan = REPO_ROOT / plan_path
+    template = plan.with_name("plan-template.json")
+    return _execute_exploration_plan(
+        plan_path,
+        template_path=template.relative_to(REPO_ROOT),
+        **kwargs,
+    )
+
+
 def _successful_runner(command: list[str], _cwd: Path, env: dict[str, str]) -> int:
     output = REPO_ROOT / command[command.index("--output") + 1]
     output.parent.mkdir(parents=True, exist_ok=True)
-    output.write_text('{"spec_id":"open-fit-0","estimate":0.25}\n', encoding="utf-8")
+    index = int(output.stem.rsplit("-", 1)[1]) if output.stem.startswith("result-") else 0
+    output.write_text(
+        json.dumps({"spec_id": f"open-fit-{index}", "estimate": 0.25}) + "\n",
+        encoding="utf-8",
+    )
     runner = Path(command[2]).relative_to(REPO_ROOT).as_posix()
     stamp(output, code_sources=[runner], inputs=[REPO_ROOT / env["DDVC_D3_CERTIFICATE"]])
     return 0
@@ -228,6 +260,52 @@ def test_e0_logs_before_fit_then_closes_exact_run_and_triage_algebra() -> None:
             ).generation == release.generation
         finally:
             _cleanup_manifest_mirror(directory)
+
+
+def test_e0_rejects_an_executable_plan_below_the_template_perimeter() -> None:
+    with _workspace() as raw_directory:
+        directory = Path(raw_directory)
+        try:
+            d3 = _d3_release(directory)
+            ledger = directory / "model-ledger.json"
+            _write_ledger(ledger)
+            plan = _write_plan(
+                directory,
+                d3.generation,
+                artifact=directory / "result.jsonl",
+                families=2,
+            )
+            payload = json.loads(plan.read_text(encoding="utf-8"))
+            payload["families"] = payload["families"][:1]
+            plan.write_text(json.dumps(payload), encoding="utf-8")
+            with pytest.raises(ValueError, match="canonical family perimeter"):
+                execute_exploration_plan(
+                    plan.relative_to(REPO_ROOT),
+                    d3_certificate_path=d3.certificate_path.relative_to(REPO_ROOT),
+                    ledger_path=ledger.relative_to(REPO_ROOT),
+                    lock_path=directory / "run.lock",
+                    command_runner=_successful_runner,
+                )
+            assert json.loads(ledger.read_text(encoding="utf-8"))["runs"] == []
+        finally:
+            _cleanup_manifest_mirror(directory)
+
+
+def test_canonical_e0_template_covers_seed_families_and_open_discovery() -> None:
+    template = json.loads(
+        (REPO_ROOT / "docs" / "e0-exploration-plan.template.json").read_text(
+            encoding="utf-8"
+        )
+    )
+    assert [family["family_id"] for family in template["families"]] == [
+        "vehicle_transition_e0",
+        "routing_maturation_e0",
+        "direct_cost_dominance_e0",
+        "liquidity_allocation_e0",
+        "open_question_anomaly_e0",
+    ]
+    assert template["families"][-1]["claim_id"] == "open_question"
+    assert "open_question" in template["families"][-1]["search_dimensions"]
 
 
 def test_e0_missing_or_invalid_triage_never_publishes_a_certificate() -> None:
@@ -344,7 +422,7 @@ def test_e0_rejects_a_fit_not_provenance_bound_to_the_d3_release() -> None:
             _cleanup_manifest_mirror(directory)
 
 
-def test_e0_requires_explicit_rejection_for_each_retired_execution() -> None:
+def test_e0_requires_explicit_rejection_for_a_repaired_execution_attempt() -> None:
     with _workspace() as raw_directory:
         directory = Path(raw_directory)
         try:
@@ -369,8 +447,29 @@ def test_e0_requires_explicit_rejection_for_each_retired_execution() -> None:
             payload = json.loads(ledger.read_text(encoding="utf-8"))
             executed_id = next(run["run_id"] for run in payload["runs"] if run["lifecycle"] == "executed")
             retired_id = next(run["run_id"] for run in payload["runs"] if run["lifecycle"] == "retired")
+            corrected_ids = execute_exploration_plan(
+                plan.relative_to(REPO_ROOT),
+                d3_certificate_path=d3.certificate_path.relative_to(REPO_ROOT),
+                ledger_path=ledger.relative_to(REPO_ROOT),
+                lock_path=directory / "run.lock",
+                command_runner=_successful_runner,
+            )
+            assert executed_id in corrected_ids
+            assert len(corrected_ids) == 2
+            payload = json.loads(ledger.read_text(encoding="utf-8"))
+            corrected = next(
+                run
+                for run in payload["runs"]
+                if run["family_id"] == "open-search-1" and run["lifecycle"] == "executed"
+            )
+            assert corrected["attempt"] == 2
+            assert corrected["retry_of_run_id"] == retired_id
             triage = directory / "triage.json"
-            triage.write_text(json.dumps(_triage(executed_id)), encoding="utf-8")
+            incomplete_triage = _triage(executed_id)
+            incomplete_triage["decisions"].append(
+                _triage(corrected["run_id"], outcome="retain_auxiliary")["decisions"][0]
+            )
+            triage.write_text(json.dumps(incomplete_triage), encoding="utf-8")
             with pytest.raises(ValueError, match="triage perimeter"):
                 close_exploration(
                     triage.relative_to(REPO_ROOT),
@@ -379,7 +478,7 @@ def test_e0_requires_explicit_rejection_for_each_retired_execution() -> None:
                     pointer_path=(directory / "e0/current.json").relative_to(REPO_ROOT),
                     lock_path=directory / "close.lock",
                 )
-            complete_triage = _triage(executed_id)
+            complete_triage = incomplete_triage
             complete_triage["decisions"].append(_triage(retired_id, outcome="reject")["decisions"][0])
             triage.write_text(json.dumps(complete_triage), encoding="utf-8")
             release = close_exploration(
@@ -389,9 +488,92 @@ def test_e0_requires_explicit_rejection_for_each_retired_execution() -> None:
                 pointer_path=(directory / "e0/current.json").relative_to(REPO_ROOT),
                 lock_path=directory / "close.lock",
             )
-            assert release.certificate["exploratory_run_ids"] == [executed_id]
+            assert set(release.certificate["exploratory_run_ids"]) == set(corrected_ids)
             assert release.certificate["retired_run_ids"] == [retired_id]
             assert release.certificate["retired_run_decisions"][0]["outcome"] == "reject"
+        finally:
+            _cleanup_manifest_mirror(directory)
+
+
+def test_e0_cannot_close_after_a_terminal_family_disappears() -> None:
+    with _workspace() as raw_directory:
+        directory = Path(raw_directory)
+        try:
+            d3 = _d3_release(directory)
+            ledger = directory / "model-ledger.json"
+            _write_ledger(ledger)
+            plan = _write_plan(
+                directory,
+                d3.generation,
+                artifact=directory / "result.jsonl",
+                families=2,
+            )
+            run_ids = execute_exploration_plan(
+                plan.relative_to(REPO_ROOT),
+                d3_certificate_path=d3.certificate_path.relative_to(REPO_ROOT),
+                ledger_path=ledger.relative_to(REPO_ROOT),
+                lock_path=directory / "run.lock",
+                command_runner=_successful_runner,
+            )
+            payload = json.loads(ledger.read_text(encoding="utf-8"))
+            payload["runs"] = [payload["runs"][0]]
+            ledger.write_text(json.dumps(payload), encoding="utf-8")
+            triage = directory / "triage.json"
+            triage.write_text(json.dumps(_triage(run_ids[0])), encoding="utf-8")
+            with pytest.raises(RuntimeError, match="canonical family perimeter"):
+                close_exploration(
+                    triage.relative_to(REPO_ROOT),
+                    d3_certificate_path=d3.certificate_path.relative_to(REPO_ROOT),
+                    ledger_path=ledger.relative_to(REPO_ROOT),
+                    pointer_path=(directory / "e0/current.json").relative_to(REPO_ROOT),
+                    lock_path=directory / "close.lock",
+                )
+        finally:
+            _cleanup_manifest_mirror(directory)
+
+
+def test_e0_operational_failures_never_satisfy_the_executed_family_perimeter() -> None:
+    with _workspace() as raw_directory:
+        directory = Path(raw_directory)
+        try:
+            d3 = _d3_release(directory)
+            ledger = directory / "model-ledger.json"
+            _write_ledger(ledger)
+            plan = _write_plan(
+                directory,
+                d3.generation,
+                artifact=directory / "result.jsonl",
+                families=5,
+            )
+            run_ids = execute_exploration_plan(
+                plan.relative_to(REPO_ROOT),
+                d3_certificate_path=d3.certificate_path.relative_to(REPO_ROOT),
+                ledger_path=ledger.relative_to(REPO_ROOT),
+                lock_path=directory / "run.lock",
+                command_runner=_successful_runner,
+            )
+            payload = json.loads(ledger.read_text(encoding="utf-8"))
+            for run in payload["runs"][1:]:
+                run["lifecycle"] = "retired"
+                run["disposition"] = "rejected"
+                run["artifacts"] = []
+                run["execution_note"] = "Runner exited with status 3; no fitted artifact is admitted."
+            ledger.write_text(json.dumps(payload), encoding="utf-8")
+            triage_payload = _triage(run_ids[0], outcome="retain_auxiliary")
+            triage_payload["decisions"].extend(
+                _triage(run_id, outcome="reject")["decisions"][0]
+                for run_id in run_ids[1:]
+            )
+            triage = directory / "triage.json"
+            triage.write_text(json.dumps(triage_payload), encoding="utf-8")
+            with pytest.raises(RuntimeError, match="executed runs do not close"):
+                close_exploration(
+                    triage.relative_to(REPO_ROOT),
+                    d3_certificate_path=d3.certificate_path.relative_to(REPO_ROOT),
+                    ledger_path=ledger.relative_to(REPO_ROOT),
+                    pointer_path=(directory / "e0/current.json").relative_to(REPO_ROOT),
+                    lock_path=directory / "close.lock",
+                )
         finally:
             _cleanup_manifest_mirror(directory)
 
@@ -583,6 +765,68 @@ def test_structured_artifact_spec_ids_cover_json_jsonl_parquet_and_support() -> 
         support_path.write_text(json.dumps({"spec_id": "hidden-fit"}), encoding="utf-8")
         with pytest.raises(ValueError, match="support artifact contains fitted"):
             validate_artifact_spec_ids(support_path, role="support", declared=[])
+
+
+def test_model_artifact_adapter_binds_spec_ids_and_exact_d3_certificate() -> None:
+    with _workspace() as raw_directory:
+        directory = Path(raw_directory)
+        try:
+            d3 = _d3_release(directory)
+            context = model_artifact_context(
+                environment={
+                    "DDVC_D3_CERTIFICATE": d3.certificate_path.relative_to(REPO_ROOT).as_posix(),
+                    "DDVC_D3_GENERATION": d3.generation,
+                }
+            )
+            frame = attach_spec_ids(
+                pd.DataFrame(
+                    {
+                        "family": ["routing", "routing"],
+                        "spec": ["primary", "alternative"],
+                        "estimate": [0.1, 0.2],
+                    }
+                ),
+                prefix="routing-e0",
+                columns=("family", "spec"),
+            )
+            output = directory / "model.jsonl"
+            write_model_exhibit(
+                frame,
+                output,
+                role="result",
+                context=context,
+                code_sources=["tests/test_exploration.py"],
+                inputs=[],
+                notes="adapter contract test",
+            )
+            assert validate_artifact_spec_ids(
+                output,
+                role="result",
+                declared=["routing-e0.routing.primary", "routing-e0.routing.alternative"],
+            ) == {"routing-e0.routing.primary", "routing-e0.routing.alternative"}
+            provenance = json.loads(sidecar_path(output).read_text(encoding="utf-8"))
+            assert d3.certificate_path.relative_to(REPO_ROOT).as_posix() in {
+                record["path"] for record in provenance["inputs"]
+            }
+            with pytest.raises(ValueError, match="disagrees with its certificate"):
+                model_artifact_context(
+                    environment={
+                        "DDVC_D3_CERTIFICATE": d3.certificate_path.relative_to(REPO_ROOT).as_posix(),
+                        "DDVC_D3_GENERATION": "0" * 64,
+                    }
+                )
+            with pytest.raises(ValueError, match="support artifact cannot contain spec_id"):
+                write_model_exhibit(
+                    frame,
+                    directory / "support.jsonl",
+                    role="support",
+                    context=context,
+                    code_sources=["tests/test_exploration.py"],
+                    inputs=[],
+                    notes="invalid support",
+                )
+        finally:
+            _cleanup_manifest_mirror(directory)
 
 
 def test_e0_identity_reuse_compares_the_complete_planned_record() -> None:

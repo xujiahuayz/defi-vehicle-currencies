@@ -17,7 +17,8 @@ from ddvc.analysis.routing_maturation import (
     support_geometry,
     transition_support_geometry,
 )
-from scripts.run_routing_maturation import support_review_required
+from ddvc.model_artifacts import attach_spec_ids
+from scripts.run_routing_maturation import SPEC_ID_COLUMNS, support_review_required
 
 
 class RoutingMaturationEstimatorTests(unittest.TestCase):
@@ -197,6 +198,24 @@ class RoutingMaturationEstimatorTests(unittest.TestCase):
         self.assertTrue((short["link_coverage"] == 1).all())
         self.assertTrue((long["link_coverage"] == 0.8).all())
         self.assertTrue(result["current_share_beta"].between(0.2, 0.8).all())
+
+    def test_every_routing_estimate_gets_one_distinct_stable_specification_id(self) -> None:
+        estimates = pd.concat(
+            [
+                estimate_maturation(self._maturation()),
+                estimate_transition(self._transition()),
+                estimate_dynamics(self._dynamics()),
+            ],
+            ignore_index=True,
+            sort=False,
+        )
+        identified = attach_spec_ids(
+            estimates,
+            prefix="routing_maturation_e0",
+            columns=SPEC_ID_COLUMNS,
+        )
+        self.assertEqual(len(identified), identified["spec_id"].nunique())
+        self.assertFalse(identified["spec_id"].str.contains("nan", case=False).any())
 
     def test_exact_horizon_support_is_annual_and_gates_attrition(self) -> None:
         frame = self._dynamics()

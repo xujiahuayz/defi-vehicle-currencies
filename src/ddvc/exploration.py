@@ -43,6 +43,7 @@ EXPLORATION_POINTER_KIND = "e0_exploration_bundle"
 EXPLORATION_FILENAMES = {"certificate": "certificate.json"}
 EXPLORATION_LEDGER = REPO_ROOT / "docs" / "model-ledger.json"
 EXPLORATION_CURRENT = REPO_ROOT / "data" / "processed" / "e0_exploration_release" / "current.json"
+EXPLORATION_PLAN_TEMPLATE = REPO_ROOT / "docs" / "e0-exploration-plan.template.json"
 EXPLORATION_LOCK = SHARED_RUNTIME_DIR / "e0-exploration.lock"
 EXPLORATION_CODE_SOURCES = (
     "src/ddvc/artifact_release.py",
@@ -86,6 +87,19 @@ class ExplorationRelease:
     certificate_path: Path
     certificate: dict[str, Any]
     root: Path
+
+
+@dataclass(frozen=True)
+class ExplorationPlan:
+    """One executable plan bound to the canonical family perimeter and D3."""
+
+    contracts: tuple[dict[str, Any], ...]
+    plan_relative: str
+    plan_sha256: str
+    template_relative: str
+    template_sha256: str
+    expected_family_ids: tuple[str, ...]
+    family_perimeter_sha256: str
 
 
 CommandRunner = Callable[[list[str], Path, dict[str, str]], int]
@@ -221,7 +235,61 @@ def _plan_family_contract(family: Mapping[str, Any], *, root: Path) -> dict[str,
     return contract
 
 
-def _load_plan(path: Path, *, plan_relative: str, root: Path, d3_generation: str) -> list[dict[str, Any]]:
+def _load_plan_template(path: Path, *, template_relative: str) -> list[dict[str, Any]]:
+    template = _read_json_object(path, label="E0 exploration plan template")
+    if (
+        template.get("schema_version") != EXPLORATION_PLAN_SCHEMA_VERSION
+        or template.get("kind") != "e0_exploration_plan_template"
+    ):
+        raise ValueError("E0 exploration plan template schema is not current")
+    families = template.get("families")
+    if not isinstance(families, list) or not families:
+        raise ValueError("E0 exploration plan template has no family perimeter")
+    normalized: list[dict[str, Any]] = []
+    for family in families:
+        if not isinstance(family, dict):
+            raise ValueError("E0 exploration plan template contains a non-object family")
+        family_id = str(family.get("family_id") or "").strip()
+        claim_id = str(family.get("claim_id") or "").strip()
+        question = str(family.get("question") or "").strip()
+        dimensions = family.get("search_dimensions")
+        if not family_id or not claim_id or not question:
+            raise ValueError("E0 exploration plan template has an incomplete family identity")
+        if (
+            not isinstance(dimensions, list)
+            or not dimensions
+            or any(value not in EXPLORATION_DIMENSIONS for value in dimensions)
+            or len(dimensions) != len(set(dimensions))
+        ):
+            raise ValueError(f"E0 exploration plan template has invalid dimensions: {family_id}")
+        normalized.append(
+            {
+                "family_id": family_id,
+                "claim_id": claim_id,
+                "question": question,
+                "search_dimensions": list(dimensions),
+            }
+        )
+    family_ids = [family["family_id"] for family in normalized]
+    if len(family_ids) != len(set(family_ids)):
+        raise ValueError("E0 exploration plan template contains duplicate family ids")
+    claim_family_pairs = [(family["claim_id"], family["family_id"]) for family in normalized]
+    if len(claim_family_pairs) != len(set(claim_family_pairs)):
+        raise ValueError("E0 exploration plan template repeats a claim-family identity")
+    if not template_relative:
+        raise ValueError("E0 exploration plan template path is empty")
+    return normalized
+
+
+def _load_plan(
+    path: Path,
+    *,
+    plan_relative: str,
+    template_path: Path,
+    template_relative: str,
+    root: Path,
+    d3_generation: str,
+) -> ExplorationPlan:
     plan = _read_json_object(path, label="E0 exploration plan")
     if plan.get("schema_version") != EXPLORATION_PLAN_SCHEMA_VERSION:
         raise ValueError("E0 exploration plan schema is not current")
@@ -242,7 +310,41 @@ def _load_plan(path: Path, *, plan_relative: str, root: Path, d3_generation: str
     for contract in contracts:
         contract["d3_generation"] = d3_generation
         contract["plan_path"] = plan_relative
-    return contracts
+    template_families = _load_plan_template(
+        template_path,
+        template_relative=template_relative,
+    )
+    expected = {family["family_id"]: family for family in template_families}
+    actual = {
+        contract["family_id"]: {
+            key: contract[key]
+            for key in ("family_id", "claim_id", "question", "search_dimensions")
+        }
+        for contract in contracts
+    }
+    if actual != expected:
+        missing = sorted(set(expected) - set(actual))
+        unexpected = sorted(set(actual) - set(expected))
+        changed = sorted(
+            family_id
+            for family_id in set(actual) & set(expected)
+            if actual[family_id] != expected[family_id]
+        )
+        raise ValueError(
+            "E0 exploration plan does not match the canonical family perimeter: "
+            f"missing={missing or 'none'}; unexpected={unexpected or 'none'}; "
+            f"changed={changed or 'none'}"
+        )
+    expected_family_ids = tuple(sorted(expected))
+    return ExplorationPlan(
+        contracts=tuple(contracts),
+        plan_relative=plan_relative,
+        plan_sha256=file_sha256(path),
+        template_relative=template_relative,
+        template_sha256=file_sha256(template_path),
+        expected_family_ids=expected_family_ids,
+        family_perimeter_sha256=canonical_hash(template_families),
+    )
 
 
 def _default_command_runner(command: list[str], cwd: Path, env: dict[str, str]) -> int:
@@ -264,7 +366,16 @@ def _planned_identity(run: Mapping[str, Any]) -> dict[str, Any]:
     return exploratory_plan_identity(run)
 
 
-def _planned_run(contract: Mapping[str, Any], *, d3_generation: str, root: Path) -> dict[str, Any]:
+def _planned_run(
+    contract: Mapping[str, Any],
+    *,
+    d3_generation: str,
+    root: Path,
+    attempt: int = 1,
+    retry_of_run_id: str | None = None,
+) -> dict[str, Any]:
+    if attempt < 1 or (attempt == 1) != (retry_of_run_id is None):
+        raise ValueError("E0 execution attempt identity is inconsistent")
     run: dict[str, Any] = {
         "family_id": contract["family_id"],
         "run_id": "pending",
@@ -292,10 +403,21 @@ def _planned_run(contract: Mapping[str, Any], *, d3_generation: str, root: Path)
         "note": contract["note"],
         "question": contract["question"],
         "search_dimensions": contract["search_dimensions"],
+        "attempt": attempt,
+        "retry_of_run_id": retry_of_run_id,
     }
     run["plan_hash"] = canonical_hash(_planned_identity(run))
     run["run_id"] = model_run_id(run)
     return run
+
+
+def _contract_identity(run: Mapping[str, Any]) -> dict[str, Any]:
+    """Return the immutable family contract without its execution-attempt identity."""
+
+    identity = _planned_identity(run)
+    identity.pop("attempt", None)
+    identity.pop("retry_of_run_id", None)
+    return identity
 
 
 def _artifact_records(
@@ -358,6 +480,7 @@ def _start_ledger_exploration(
     *,
     d3: AnalysisRelease,
     d3_certificate_relative: str,
+    plan: ExplorationPlan,
 ) -> None:
     exploration = ledger["exploration"]
     status = str(exploration.get("status") or "")
@@ -369,6 +492,12 @@ def _start_ledger_exploration(
             "status": "in_progress",
             "d3_generation": d3.generation,
             "d3_certificate": d3_certificate_relative,
+            "plan_path": plan.plan_relative,
+            "plan_sha256": plan.plan_sha256,
+            "template_path": plan.template_relative,
+            "template_sha256": plan.template_sha256,
+            "expected_family_ids": list(plan.expected_family_ids),
+            "family_perimeter_sha256": plan.family_perimeter_sha256,
             "generation": None,
             "certificate": None,
             "started_at": _utc_now(),
@@ -381,6 +510,12 @@ def _start_ledger_exploration(
         ledger.get("current_analysis_generation") != d3.generation
         or exploration.get("d3_generation") != d3.generation
         or exploration.get("d3_certificate") != d3_certificate_relative
+        or exploration.get("plan_path") != plan.plan_relative
+        or exploration.get("plan_sha256") != plan.plan_sha256
+        or exploration.get("template_path") != plan.template_relative
+        or exploration.get("template_sha256") != plan.template_sha256
+        or exploration.get("expected_family_ids") != list(plan.expected_family_ids)
+        or exploration.get("family_perimeter_sha256") != plan.family_perimeter_sha256
         or exploration.get("generation") is not None
         or exploration.get("certificate") is not None
     ):
@@ -393,6 +528,7 @@ def execute_exploration_plan(
     d3_certificate_path: str | Path,
     root: Path = REPO_ROOT,
     ledger_path: str | Path = "docs/model-ledger.json",
+    template_path: str | Path = "docs/e0-exploration-plan.template.json",
     lock_path: Path = EXPLORATION_LOCK,
     verifier: Callable[[str | Path], dict[str, object]] = verify,
     command_runner: CommandRunner = _default_command_runner,
@@ -405,34 +541,91 @@ def execute_exploration_plan(
     ledger_relative, resolved_ledger = resolve_repo_path(ledger_path, root=root, label="model ledger")
     d3_relative, _resolved_d3 = resolve_repo_path(d3_certificate_path, root=root, label="D3 certificate")
     d3 = resolve_analysis_release(certificate_path=d3_relative, root=root, verifier=verifier)
-    contracts = _load_plan(
+    template_relative, resolved_template = resolve_repo_path(
+        template_path,
+        root=root,
+        label="E0 exploration plan template",
+    )
+    if not resolved_template.is_file():
+        raise FileNotFoundError(f"E0 exploration plan template is absent: {template_relative}")
+    plan = _load_plan(
         resolved_plan,
         plan_relative=plan_relative,
+        template_path=resolved_template,
+        template_relative=template_relative,
         root=root,
         d3_generation=d3.generation,
     )
     completed: list[str] = []
     with exclusive_job(lock_path, job="E0 exploration"):
         ledger = _load_ledger(resolved_ledger)
-        _start_ledger_exploration(ledger, d3=d3, d3_certificate_relative=d3_relative)
+        _start_ledger_exploration(
+            ledger,
+            d3=d3,
+            d3_certificate_relative=d3_relative,
+            plan=plan,
+        )
         _write_json_atomic(resolved_ledger, ledger)
-        owned_artifacts = {
-            path
-            for run in ledger["runs"]
-            if isinstance(run, dict)
-            for path in [
-                *[str(artifact.get("path") or "") for artifact in run.get("artifacts", []) if isinstance(artifact, dict)],
-                *[
-                    str(value.get("path") or "")
-                    for value in run.get("declared_artifacts", [])
-                    if isinstance(value, dict)
-                ],
+        artifact_owners: dict[str, list[dict[str, Any]]] = {}
+        for run in ledger["runs"]:
+            if not isinstance(run, dict):
+                continue
+            paths = {
+                str(value.get("path") or "")
+                for field in ("artifacts", "declared_artifacts")
+                for value in run.get(field, [])
+                if isinstance(value, dict) and value.get("path")
+            }
+            for path in paths:
+                artifact_owners.setdefault(path, []).append(run)
+        for contract in plan.contracts:
+            family_runs = [
+                run
+                for run in ledger["runs"]
+                if isinstance(run, dict) and run.get("family_id") == contract["family_id"]
             ]
-            if path
-        }
-        for contract in contracts:
-            planned = _planned_run(contract, d3_generation=d3.generation, root=root)
-            matching = [run for run in ledger["runs"] if isinstance(run, dict) and run.get("run_id") == planned["run_id"]]
+            executed_family_runs = [run for run in family_runs if run.get("lifecycle") == "executed"]
+            if len(executed_family_runs) > 1:
+                raise RuntimeError(f"E0 family has multiple executed attempts: {contract['family_id']}")
+            planned_family_runs = [run for run in family_runs if run.get("lifecycle") == "planned"]
+            if len(planned_family_runs) > 1:
+                raise RuntimeError(f"E0 family has multiple open attempts: {contract['family_id']}")
+            retired_family_runs = [run for run in family_runs if run.get("lifecycle") == "retired"]
+            if any(run.get("lifecycle") not in {"planned", "executed", "retired"} for run in family_runs):
+                raise RuntimeError(f"E0 family has an invalid execution lifecycle: {contract['family_id']}")
+            if planned_family_runs:
+                current = planned_family_runs[0]
+                planned = _planned_run(
+                    contract,
+                    d3_generation=d3.generation,
+                    root=root,
+                    attempt=int(current.get("attempt") or 0),
+                    retry_of_run_id=current.get("retry_of_run_id"),
+                )
+            elif executed_family_runs:
+                current = executed_family_runs[0]
+                planned = _planned_run(
+                    contract,
+                    d3_generation=d3.generation,
+                    root=root,
+                    attempt=int(current.get("attempt") or 0),
+                    retry_of_run_id=current.get("retry_of_run_id"),
+                )
+            else:
+                attempts = [int(run.get("attempt") or 0) for run in retired_family_runs]
+                if any(attempt < 1 for attempt in attempts) or len(attempts) != len(set(attempts)):
+                    raise RuntimeError(f"E0 family has invalid retired attempt identities: {contract['family_id']}")
+                prior = max(retired_family_runs, key=lambda run: int(run["attempt"])) if retired_family_runs else None
+                planned = _planned_run(
+                    contract,
+                    d3_generation=d3.generation,
+                    root=root,
+                    attempt=(max(attempts) + 1) if attempts else 1,
+                    retry_of_run_id=str(prior["run_id"]) if prior is not None else None,
+                )
+            if any(_contract_identity(run) != _contract_identity(planned) for run in family_runs):
+                raise RuntimeError(f"E0 family execution reuses a different complete plan: {contract['family_id']}")
+            matching = [run for run in family_runs if run.get("run_id") == planned["run_id"]]
             if matching:
                 existing = matching[0]
                 if (
@@ -457,10 +650,20 @@ def execute_exploration_plan(
                     raise RuntimeError(f"E0 plan previously terminated; change its explicit plan before retry: {planned['run_id']}")
                 _replace_run(ledger, planned)
             else:
-                conflicts = sorted({artifact["path"] for artifact in contract["artifacts"]} & owned_artifacts)
+                conflicts = sorted(
+                    artifact["path"]
+                    for artifact in contract["artifacts"]
+                    if any(
+                        owner.get("lifecycle") != "retired"
+                        or owner.get("family_id") != contract["family_id"]
+                        for owner in artifact_owners.get(artifact["path"], [])
+                    )
+                )
                 if conflicts:
                     raise RuntimeError(f"E0 plan reuses artifacts owned by another run: {conflicts}")
                 ledger["runs"].append(planned)
+                for artifact in contract["artifacts"]:
+                    artifact_owners.setdefault(artifact["path"], []).append(planned)
             _write_json_atomic(resolved_ledger, ledger)
             before = {
                 artifact["path"]: _relative_artifact_identity(root / artifact["path"])
@@ -504,7 +707,6 @@ def execute_exploration_plan(
             executed["artifacts"] = artifacts
             _replace_run(ledger, executed)
             _write_json_atomic(resolved_ledger, ledger)
-            owned_artifacts.update(artifact["path"] for artifact in artifacts)
             completed.append(str(executed["run_id"]))
     return completed
 
@@ -644,6 +846,70 @@ def _retired_exploratory_runs(ledger: Mapping[str, Any]) -> list[dict[str, Any]]
     return retired
 
 
+def _reopen_ledger_plan(
+    exploration: Mapping[str, Any],
+    *,
+    d3_generation: str,
+    root: Path,
+) -> ExplorationPlan:
+    plan_relative, plan_path = resolve_repo_path(
+        str(exploration.get("plan_path") or ""),
+        root=root,
+        label="ledger E0 exploration plan",
+    )
+    template_relative, template_path = resolve_repo_path(
+        str(exploration.get("template_path") or ""),
+        root=root,
+        label="ledger E0 exploration plan template",
+    )
+    plan = _load_plan(
+        plan_path,
+        plan_relative=plan_relative,
+        template_path=template_path,
+        template_relative=template_relative,
+        root=root,
+        d3_generation=d3_generation,
+    )
+    expected = {
+        "plan_sha256": plan.plan_sha256,
+        "template_sha256": plan.template_sha256,
+        "expected_family_ids": list(plan.expected_family_ids),
+        "family_perimeter_sha256": plan.family_perimeter_sha256,
+    }
+    changed = [field for field, value in expected.items() if exploration.get(field) != value]
+    if changed:
+        raise ValueError(f"E0 exploration plan identity changed after execution: {changed}")
+    return plan
+
+
+def _require_complete_family_perimeter(
+    runs: list[dict[str, Any]],
+    retired_runs: list[dict[str, Any]],
+    *,
+    plan: ExplorationPlan,
+) -> None:
+    family_ids = [str(run.get("family_id") or "") for run in runs]
+    observed = set(family_ids)
+    expected = set(plan.expected_family_ids)
+    duplicate = sorted({family_id for family_id in family_ids if family_ids.count(family_id) > 1})
+    missing = sorted(expected - observed)
+    unexpected = sorted(observed - expected)
+    retired_unexpected = sorted(
+        {
+            str(run.get("family_id") or "")
+            for run in retired_runs
+        }
+        - expected
+    )
+    if duplicate or missing or unexpected or retired_unexpected:
+        raise RuntimeError(
+            "E0 executed runs do not close the canonical family perimeter: "
+            f"missing={missing or 'none'}; unexpected={unexpected or 'none'}; "
+            f"duplicate={duplicate or 'none'}; "
+            f"retired_unexpected={retired_unexpected or 'none'}"
+        )
+
+
 def _validate_triage_decisions(
     payload: Mapping[str, Any],
     *,
@@ -696,6 +962,7 @@ def _build_exploration_certificate(
     runs: list[dict[str, Any]],
     retired_runs: list[dict[str, Any]],
     decisions: list[dict[str, Any]],
+    plan: ExplorationPlan,
 ) -> dict[str, Any]:
     run_records = [{"run_id": run["run_id"], "record_sha256": canonical_hash(run)} for run in runs]
     retired_records = [{"run_id": run["run_id"], "record_sha256": canonical_hash(run)} for run in retired_runs]
@@ -709,6 +976,12 @@ def _build_exploration_certificate(
         "d3_generation": d3.generation,
         "d3_certificate": d3_relative,
         "d3_certificate_sha256": file_sha256(d3.certificate_path),
+        "plan_path": plan.plan_relative,
+        "plan_sha256": plan.plan_sha256,
+        "template_path": plan.template_relative,
+        "template_sha256": plan.template_sha256,
+        "expected_family_ids": list(plan.expected_family_ids),
+        "family_perimeter_sha256": plan.family_perimeter_sha256,
         "exploratory_run_ids": [record["run_id"] for record in run_records],
         "exploratory_run_records": run_records,
         "exploratory_run_perimeter_sha256": canonical_hash(run_records),
@@ -787,6 +1060,12 @@ def close_exploration(
             raise RuntimeError("E0 ledger does not target the reopened D3 release")
         runs = _executed_exploratory_runs(ledger, root=root, verifier=verifier)
         retired_runs = _retired_exploratory_runs(ledger)
+        plan = _reopen_ledger_plan(
+            exploration,
+            d3_generation=d3.generation,
+            root=root,
+        )
+        _require_complete_family_perimeter(runs, retired_runs, plan=plan)
         triage = _read_json_object(resolved_triage, label="E0 triage")
         retired_ids = {str(run["run_id"]) for run in retired_runs}
         decisions = _validate_triage_decisions(
@@ -800,6 +1079,7 @@ def close_exploration(
             runs=runs,
             retired_runs=retired_runs,
             decisions=decisions,
+            plan=plan,
         )
         if exploration.get("status") == "complete":
             certificate_relative = str(exploration.get("certificate") or "")
@@ -825,6 +1105,8 @@ def close_exploration(
             return existing
         inputs = [
             d3.certificate_path,
+            root / plan.plan_relative,
+            root / plan.template_relative,
             *[root / artifact["path"] for run in runs for artifact in run["artifacts"]],
             *[root / artifact["provenance_path"] for run in runs for artifact in run["artifacts"]],
         ]
@@ -889,6 +1171,12 @@ def resolve_exploration_release(
         raise ValueError("E0 exploration certificate disagrees with the model ledger state")
     runs = _executed_exploratory_runs(ledger, root=root, verifier=verifier)
     retired_runs = _retired_exploratory_runs(ledger)
+    plan = _reopen_ledger_plan(
+        exploration,
+        d3_generation=d3.generation,
+        root=root,
+    )
+    _require_complete_family_perimeter(runs, retired_runs, plan=plan)
     certificate_decisions = [
         *(certificate.get("triage_decisions") or []),
         *(certificate.get("retired_run_decisions") or []),
@@ -905,6 +1193,7 @@ def resolve_exploration_release(
         runs=runs,
         retired_runs=retired_runs,
         decisions=decisions,
+        plan=plan,
     )
     if expected != certificate:
         raise ValueError("E0 exploration certificate does not reproduce from the current run ledger")

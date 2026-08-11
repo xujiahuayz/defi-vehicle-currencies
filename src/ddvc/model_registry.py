@@ -94,6 +94,8 @@ EXPLORATORY_PLAN_IDENTITY_FIELDS = (
     "inference",
     "declared_artifacts",
     "note",
+    "attempt",
+    "retry_of_run_id",
 )
 
 

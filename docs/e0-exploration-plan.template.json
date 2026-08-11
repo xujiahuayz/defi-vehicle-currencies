@@ -1,0 +1,71 @@
+{
+  "schema_version": 1,
+  "kind": "e0_exploration_plan_template",
+  "families": [
+    {
+      "family_id": "vehicle_transition_e0",
+      "claim_id": "vehicle_transition",
+      "question": "How does the continuous degree and composition of vehicle-currency use vary across time, support, backing regimes, and routing strata?",
+      "search_dimensions": [
+        "distribution",
+        "support",
+        "functional_form",
+        "heterogeneity",
+        "rival_explanation"
+      ]
+    },
+    {
+      "family_id": "routing_maturation_e0",
+      "claim_id": "routing_maturation_rival",
+      "question": "How do opportunity sets and measured routing shortfalls vary across time, support, route scope, and exact calendar horizons?",
+      "search_dimensions": [
+        "distribution",
+        "support",
+        "functional_form",
+        "heterogeneity",
+        "mechanism",
+        "rival_explanation"
+      ]
+    },
+    {
+      "family_id": "direct_cost_dominance_e0",
+      "claim_id": "direct_cost_dominance",
+      "question": "Where does a same-state direct alternative improve on realised two-leg vehicle routing, and how sensitive is that pattern to valuation, gas, state, and venue reach?",
+      "search_dimensions": [
+        "distribution",
+        "support",
+        "heterogeneity",
+        "mechanism",
+        "rival_explanation"
+      ]
+    },
+    {
+      "family_id": "liquidity_allocation_e0",
+      "claim_id": "liquidity_capital_flow_predictability",
+      "question": "What temporal relationships connect vehicle use to V2 deposited-capital stocks and V3 liquidity-supply flows when the two measurement families remain separate?",
+      "search_dimensions": [
+        "distribution",
+        "support",
+        "functional_form",
+        "heterogeneity",
+        "mechanism",
+        "rival_explanation"
+      ]
+    },
+    {
+      "family_id": "open_question_anomaly_e0",
+      "claim_id": "open_question",
+      "question": "Which unanticipated anomaly, mechanism, rival explanation, or adjacent question in the released panels merits promotion, auxiliary retention, or preservation for a later paper?",
+      "search_dimensions": [
+        "anomaly",
+        "open_question",
+        "distribution",
+        "support",
+        "functional_form",
+        "heterogeneity",
+        "mechanism",
+        "rival_explanation"
+      ]
+    }
+  ]
+}

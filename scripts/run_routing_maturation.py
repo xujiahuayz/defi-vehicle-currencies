@@ -7,7 +7,8 @@ Reads
   data/processed/routing_maturation_exact_horizons.parquet
 
 Writes
-  output/exhibits/routing_maturation_results.jsonl
+  output/exhibits/e0_routing_maturation_estimates.jsonl
+  output/exhibits/e0_routing_maturation_support.jsonl
 """
 
 from __future__ import annotations
@@ -28,17 +29,22 @@ from ddvc.analysis.routing_maturation import (
     support_geometry,
     transition_support_geometry,
 )
+from ddvc.model_artifacts import (
+    attach_spec_ids,
+    model_artifact_context,
+    write_model_exhibit,
+)
 from ddvc.paths import DATA_DIR, OUTPUT_DIR
 from ddvc.provenance import require_current_artifacts
 from ddvc.runtime import exclusive_job
-from ddvc.tables import write_exhibit
 
 
 CELL_DAY = DATA_DIR / "processed" / "routing_maturation_cell_day.parquet"
 TRANSITION = DATA_DIR / "processed" / "routing_transition_cells.parquet"
 EXACT_HORIZONS = DATA_DIR / "processed" / "routing_maturation_exact_horizons.parquet"
 FRONTIER_SUPPORT = DATA_DIR / "processed" / "transaction_state_frontier_daily_support.parquet"
-OUTPUT = OUTPUT_DIR / "exhibits" / "routing_maturation_results.jsonl"
+ESTIMATE_OUTPUT = OUTPUT_DIR / "exhibits" / "e0_routing_maturation_estimates.jsonl"
+SUPPORT_OUTPUT = OUTPUT_DIR / "exhibits" / "e0_routing_maturation_support.jsonl"
 LOCK = DATA_DIR / "processed" / ".routing_maturation_estimates.lock"
 CODE_SOURCES = [
     "scripts/run_routing_maturation.py",
@@ -46,7 +52,18 @@ CODE_SOURCES = [
     "src/ddvc/analysis/routing_contract.py",
     "src/ddvc/analysis/routing_maturation.py",
     "src/ddvc/analysis/regression.py",
+    "src/ddvc/model_artifacts.py",
 ]
+SPEC_ID_COLUMNS = (
+    "family",
+    "spec",
+    "margin",
+    "outcome",
+    "horizon_days",
+    "weighting",
+    "support",
+    "reproduction_tolerance_bps",
+)
 
 
 def support_review_required(support_frames: list[pd.DataFrame]) -> bool:
@@ -59,6 +76,7 @@ def support_review_required(support_frames: list[pd.DataFrame]) -> bool:
 
 
 def main() -> int:
+    context = model_artifact_context()
     inputs = [FRONTIER_SUPPORT, CELL_DAY, TRANSITION, EXACT_HORIZONS]
     require_current_artifacts(inputs, consumer="routing-maturation estimator")
     frontier_support = pd.read_parquet(
@@ -99,9 +117,11 @@ def main() -> int:
         del horizons
         gc.collect()
         combined = pd.concat(results, ignore_index=True, sort=False)
-        write_exhibit(
+        write_model_exhibit(
             combined,
-            OUTPUT,
+            SUPPORT_OUTPUT,
+            role="support",
+            context=context,
             code_sources=CODE_SOURCES,
             inputs=inputs,
             notes=(
@@ -126,14 +146,31 @@ def main() -> int:
     del cell_day
     gc.collect()
     combined = pd.concat(results, ignore_index=True, sort=False)
-    write_exhibit(
-        combined,
-        OUTPUT,
+    estimates = combined[combined["record_type"].eq("estimate")].reset_index(drop=True)
+    support = combined[~combined["record_type"].eq("estimate")].reset_index(drop=True)
+    estimates = attach_spec_ids(
+        estimates,
+        prefix="routing_maturation_e0",
+        columns=SPEC_ID_COLUMNS,
+    )
+    write_model_exhibit(
+        estimates,
+        ESTIMATE_OUTPUT,
+        role="result",
+        context=context,
         code_sources=CODE_SOURCES,
         inputs=inputs,
         notes="locked routing maturation, conditioned transition, exact-calendar dynamics, and support geometry",
     )
-    estimates = combined[combined["record_type"].eq("estimate")]
+    write_model_exhibit(
+        support,
+        SUPPORT_OUTPUT,
+        role="support",
+        context=context,
+        code_sources=CODE_SOURCES,
+        inputs=inputs,
+        notes="pre-fit routing-maturation support geometry bound to the same D3 release",
+    )
     print(
         f"wrote {len(estimates):,} fitted specifications and "
         f"{len(combined) - len(estimates):,} support rows"
