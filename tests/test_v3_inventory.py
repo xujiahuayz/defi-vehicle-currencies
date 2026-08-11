@@ -54,7 +54,7 @@ from ddvc.v3_inventory_calendar import (
     _fetch_block_timestamp,
     last_block_before_timestamp,
 )
-from ddvc.quoter import RpcSemanticError, Throttled
+from ddvc.quoter import RpcCapacityError, RpcSemanticError, Throttled
 from scripts.build_v3_inventory_panel import (
     CODE_SOURCES as PANEL_CODE_SOURCES,
     inventory_perimeter,
@@ -620,7 +620,7 @@ def test_calendar_rpc_retry_budget_is_not_nested_inside_rpc_post() -> None:
     assert len(evidence) == 1
 
 
-def test_fetch_queue_retries_throttled_chunk_without_abandoning_other_work() -> None:
+def test_fetch_queue_retries_throttled_chunk_without_abandoning_other_work(capsys) -> None:
     calls: dict[tuple[int, int], int] = {}
     frozen = frozen_upper(2)
 
@@ -645,10 +645,17 @@ def test_fetch_queue_retries_throttled_chunk_without_abandoning_other_work() -> 
     assert totals == {"raw": 2}
     assert failures == []
     assert calls == {(1, 1): 2, (2, 2): 1}
+    output = capsys.readouterr().out
+    assert "retrying throttled inventory chunk 1-1" in output
+    assert "queued_remaining=" in output
 
 
-def test_fetch_queue_records_semantic_rpc_failure_without_abandoning_other_work() -> None:
+def test_fetch_queue_records_semantic_rpc_failure_without_abandoning_other_work(capsys) -> None:
     frozen = frozen_upper(2)
+    endpoint = {
+        "host": "provider.example",
+        "endpoint_sha256": "1" * 64,
+    }
 
     def fetch(
         lower: int,
@@ -656,7 +663,19 @@ def test_fetch_queue_records_semantic_rpc_failure_without_abandoning_other_work(
         _frozen_upper: dict[str, object],
     ) -> dict[str, int]:
         if (lower, upper) == (1, 1):
-            raise RpcSemanticError("invalid upstream response")
+            raise RpcSemanticError(
+                "invalid upstream response at https://provider.example/key/secret",
+                attempts=(
+                    {
+                        "endpoint": endpoint,
+                        "attempt": 1,
+                        "classification": "terminal",
+                        "http_status": 200,
+                        "rpc_code": -32602,
+                        "message": "invalid params",
+                    },
+                ),
+            )
         return {"raw_logs": 1}
 
     totals, failures = run_fetch_jobs(
@@ -667,7 +686,62 @@ def test_fetch_queue_records_semantic_rpc_failure_without_abandoning_other_work(
         fetch=fetch,
     )
     assert totals == {"raw": 1}
-    assert failures == [(1, 1, "invalid upstream response")]
+    assert len(failures) == 1
+    assert failures[0][:2] == (1, 1)
+    assert "rpc_code=-32602" in failures[0][2]
+    output = capsys.readouterr().out
+    assert "terminal semantic inventory chunk 1-1" in output
+    assert "message=invalid params" in output
+    assert "provider.example" not in output
+    assert "secret" not in output
+
+
+def test_fetch_queue_records_single_block_capacity_once_without_endpoint_leakage(capsys) -> None:
+    frozen = frozen_upper(2)
+    calls = 0
+
+    def fetch(
+        lower: int,
+        upper: int,
+        _frozen_upper: dict[str, object],
+    ) -> dict[str, int]:
+        nonlocal calls
+        calls += 1
+        if (lower, upper) == (1, 1):
+            raise RpcCapacityError(
+                "capacity at https://provider.example/key/secret",
+                attempts=(
+                    {
+                        "endpoint": {
+                            "host": "provider.example",
+                            "endpoint_sha256": "1" * 64,
+                        },
+                        "attempt": 1,
+                        "classification": "capacity",
+                        "http_status": 200,
+                        "rpc_code": 30,
+                        "message": "response size",
+                    },
+                ),
+            )
+        return {"raw_logs": 1}
+
+    totals, failures = run_fetch_jobs(
+        [(1, 1), (2, 2)],
+        frozen,
+        workers=1,
+        max_attempts=12,
+        fetch=fetch,
+    )
+    assert totals == {"raw": 1}
+    assert len(failures) == 1
+    assert failures[0][:2] == (1, 1)
+    assert "rpc_code=30" in failures[0][2]
+    assert calls == 2
+    output = capsys.readouterr().out
+    assert "terminal single-block capacity inventory chunk 1-1" in output
+    assert "provider.example" not in output
+    assert "secret" not in output
 
 
 def test_inventory_retry_reason_redacts_endpoints_and_bounds_output() -> None:
@@ -745,6 +819,114 @@ def test_inventory_fetch_splits_storage_chunk_under_rpc_block_cap() -> None:
             root,
             frozen_upper=frozen,
         )
+
+
+def test_inventory_fetch_recursively_bisects_capacity_ranges_and_reuses_cache() -> None:
+    calls: list[tuple[int, int]] = []
+    endpoint = {"host": "provider.example", "endpoint_sha256": "1" * 64}
+
+    with tempfile.TemporaryDirectory() as directory:
+        root = Path(directory)
+        frozen = frozen_upper()
+        success = anchored_rpc([], frozen)
+
+        def request(payload, **kwargs):
+            log_filter = payload[0]["params"][0]
+            lower = int(str(log_filter["fromBlock"]), 16)
+            upper = int(str(log_filter["toBlock"]), 16)
+            calls.append((lower, upper))
+            if lower != upper:
+                raise RpcCapacityError(
+                    "provider response size exceeded",
+                    attempts=(
+                        {
+                            "endpoint": endpoint,
+                            "attempt": 1,
+                            "classification": "capacity",
+                            "http_status": 200,
+                            "rpc_code": 30,
+                            "message": "response size",
+                        },
+                    ),
+                )
+            return success(payload, **kwargs)
+
+        metadata = fetch_chunk(100, 103, frozen, root, rpc_request=request)
+        assert calls == [
+            (100, 103),
+            (100, 101),
+            (100, 100),
+            (101, 101),
+            (102, 103),
+            (102, 102),
+            (103, 103),
+        ]
+        assert metadata["rpc_subranges"] == 4
+        assert metadata["rpc_capacity_bisections"] == 3
+        evidence_path = inventory_chunk_evidence_path(100, 103, root)
+        with gzip.open(evidence_path, "rt", encoding="utf-8") as handle:
+            evidence = json.load(handle)
+        assert [
+            (item["start_block"], item["end_block"])
+            for item in evidence["rpc_subrange_evidence"]
+        ] == [(100, 100), (101, 101), (102, 102), (103, 103)]
+        assert [
+            (item["start_block"], item["end_block"], item["split_after_block"])
+            for item in evidence["rpc_capacity_bisections"]
+        ] == [(100, 103, 101), (100, 101, 100), (102, 103, 102)]
+        assert all(
+            "endpoint" not in attempt
+            for item in evidence["rpc_capacity_bisections"]
+            for attempt in item["rpc_attempts"]
+        )
+        assert inventory_chunk_completed(100, 103, root, frozen_upper=frozen)
+
+        def must_not_refetch(*_args, **_kwargs):
+            raise AssertionError("completed exact chunk should be reused")
+
+        assert fetch_chunk(100, 103, frozen, root, rpc_request=must_not_refetch) == metadata
+
+        evidence["rpc_capacity_bisections"][0]["split_after_block"] = 100
+        with gzip.open(evidence_path, "wt", encoding="utf-8") as handle:
+            json.dump(evidence, handle, sort_keys=True, separators=(",", ":"))
+        _raw_path, marker_path = inventory_chunk_paths(100, 103, root)
+        marker = json.loads(marker_path.read_text(encoding="utf-8"))
+        marker["rpc_evidence_sha256"] = file_sha256(evidence_path)
+        marker_path.write_text(json.dumps(marker), encoding="utf-8")
+        assert not inventory_chunk_completed(100, 103, root, frozen_upper=frozen)
+
+
+def test_inventory_fetch_fails_closed_on_single_block_capacity_without_endpoint_leakage() -> None:
+    endpoint = {"host": "provider.example", "endpoint_sha256": "1" * 64}
+
+    with tempfile.TemporaryDirectory() as directory:
+        root = Path(directory)
+        frozen = frozen_upper()
+
+        def request(_payload, **_kwargs):
+            raise RpcCapacityError(
+                "capacity at https://provider.example/key/secret",
+                attempts=(
+                    {
+                        "endpoint": endpoint,
+                        "attempt": 1,
+                        "classification": "capacity",
+                        "http_status": 200,
+                        "rpc_code": 30,
+                        "message": "response size",
+                    },
+                ),
+            )
+
+        with pytest.raises(RpcCapacityError, match="single-block") as raised:
+            fetch_chunk(100, 100, frozen, root, rpc_request=request)
+        detail = str(raised.value)
+        assert "block 100" in detail
+        assert "rpc_code=30" in detail
+        assert "provider.example" not in detail
+        assert "secret" not in detail
+        assert not any(path.exists() for path in inventory_chunk_paths(100, 100, root))
+        assert not inventory_chunk_evidence_path(100, 100, root).exists()
 
 
 def _two_inventory_shards(base: Path) -> tuple[Path, Path, dict[str, object]]:

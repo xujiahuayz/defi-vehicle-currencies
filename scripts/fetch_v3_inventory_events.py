@@ -29,7 +29,7 @@ from ddvc.paths import (
     V3_INVENTORY_RANGE_LOCK_ROOT,
     V3_INVENTORY_RAW_ROOT,
 )
-from ddvc.quoter import RpcSemanticError, Throttled
+from ddvc.quoter import RpcCapacityError, RpcSemanticError, Throttled
 from ddvc.runtime import (
     atomic_output,
     exclusive_interval_job,
@@ -64,6 +64,91 @@ def safe_retry_reason(error: BaseException, *, limit: int = 200) -> str:
 
     reason = " ".join(str(error).split()) or type(error).__name__
     return _URL.sub("<endpoint>", reason)[:limit]
+
+
+def safe_rpc_failure_reason(
+    error: RpcCapacityError | RpcSemanticError,
+    *,
+    classification: str,
+) -> str:
+    """Report one classified RPC failure without endpoint or credential material."""
+
+    matching = [
+        attempt
+        for attempt in error.attempts
+        if isinstance(attempt, dict) and attempt.get("classification") == classification
+    ]
+    attempt = matching[-1] if matching else {}
+    code = attempt.get("rpc_code")
+    message = safe_retry_reason(
+        RuntimeError(str(attempt.get("message") or str(error))),
+        limit=120,
+    )
+    return (
+        f"classification={classification}; rpc_code={code if code is not None else 'none'}; "
+        f"message={message}; attempts={len(error.attempts)}"
+    )
+
+
+def fetch_rpc_range_with_capacity_bisection(
+    lower: int,
+    upper: int,
+    *,
+    topics: list[str],
+    frozen_upper: dict[str, object],
+    rpc_request,
+) -> tuple[list[dict[str, object]], list[dict[str, object]]]:
+    """Fetch one exact range, bisecting only explicit provider-capacity failures."""
+
+    try:
+        records, evidence = fetch_exact_logs_with_evidence(
+            start_block=lower,
+            end_block=upper,
+            topics=topics,
+            frozen_upper=frozen_upper,
+            rpc_request=rpc_request,
+        )
+        return records, [
+            {
+                "start_block": lower,
+                "end_block": upper,
+                "event_topics": topics,
+                "address_filter": None,
+                "rpc_request": evidence["request"],
+                "rpc_response": evidence["response"],
+                "rpc_endpoint": evidence["endpoint"],
+                "rpc_attempts": evidence["attempts"],
+                "response_sha256": evidence["response_sha256"],
+                "frozen_upper_request": evidence["frozen_upper_request"],
+                "frozen_upper_response": evidence["frozen_upper_response"],
+                "frozen_upper_response_sha256": evidence[
+                    "frozen_upper_response_sha256"
+                ],
+            }
+        ]
+    except RpcCapacityError as error:
+        if lower == upper:
+            detail = safe_rpc_failure_reason(error, classification="capacity")
+            raise RpcCapacityError(
+                f"single-block exact-log capacity failure at block {lower}; {detail}",
+                attempts=error.attempts,
+            ) from None
+        midpoint = (lower + upper) // 2
+        left_records, left_evidence = fetch_rpc_range_with_capacity_bisection(
+            lower,
+            midpoint,
+            topics=topics,
+            frozen_upper=frozen_upper,
+            rpc_request=rpc_request,
+        )
+        right_records, right_evidence = fetch_rpc_range_with_capacity_bisection(
+            midpoint + 1,
+            upper,
+            topics=topics,
+            frozen_upper=frozen_upper,
+            rpc_request=rpc_request,
+        )
+        return left_records + right_records, left_evidence + right_evidence
 
 
 def default_end_block(path: Path = END_META_PATH) -> int:
@@ -203,32 +288,15 @@ def fetch_chunk(
     raw_records: list[dict[str, object]] = []
     rpc_evidence: list[dict[str, object]] = []
     for rpc_lower, rpc_upper in rpc_ranges:
-        records, evidence = fetch_exact_logs_with_evidence(
-            start_block=rpc_lower,
-            end_block=rpc_upper,
+        records, evidence = fetch_rpc_range_with_capacity_bisection(
+            rpc_lower,
+            rpc_upper,
             topics=topics,
             frozen_upper=frozen_upper,
             rpc_request=rpc_request,
         )
         raw_records.extend(records)
-        rpc_evidence.append(
-            {
-                "start_block": rpc_lower,
-                "end_block": rpc_upper,
-                "event_topics": topics,
-                "address_filter": None,
-                "rpc_request": evidence["request"],
-                "rpc_response": evidence["response"],
-                "rpc_endpoint": evidence["endpoint"],
-                "rpc_attempts": evidence["attempts"],
-                "response_sha256": evidence["response_sha256"],
-                "frozen_upper_request": evidence["frozen_upper_request"],
-                "frozen_upper_response": evidence["frozen_upper_response"],
-                "frozen_upper_response_sha256": evidence[
-                    "frozen_upper_response_sha256"
-                ],
-            }
-        )
+        rpc_evidence.extend(evidence)
     raw_records.sort(
         key=lambda record: (
             int(record["block_number"]),
@@ -276,7 +344,7 @@ def fetch_chunk(
         "schema_version": INVENTORY_RAW_MARKER_SCHEMA_VERSION,
         "inventory_raw_generation": INVENTORY_RAW_GENERATION,
         "rpc_block_cap": EXACT_LOG_BLOCK_CAP,
-        "rpc_subranges": len(rpc_ranges),
+        "rpc_subranges": len(rpc_evidence),
         "rpc_evidence_file": evidence_path.name,
         "rpc_evidence_sha256": file_sha256(evidence_path),
         "frozen_upper_block": int(frozen_upper["block_number"]),
@@ -326,7 +394,21 @@ def run_fetch_jobs(
                         failures.append((lower, upper, reason))
                     continue
                 except RpcSemanticError as error:
-                    failures.append((lower, upper, safe_retry_reason(error)))
+                    reason = safe_rpc_failure_reason(error, classification="terminal")
+                    failures.append((lower, upper, reason))
+                    print(
+                        f"  terminal semantic inventory chunk {lower}-{upper}; {reason}",
+                        flush=True,
+                    )
+                    continue
+                except RpcCapacityError as error:
+                    reason = safe_rpc_failure_reason(error, classification="capacity")
+                    failures.append((lower, upper, reason))
+                    print(
+                        f"  terminal single-block capacity inventory chunk {lower}-{upper}; "
+                        f"{reason}",
+                        flush=True,
+                    )
                     continue
                 totals["raw"] += int(result["raw_logs"])
                 complete += 1
@@ -400,8 +482,9 @@ def main() -> int:
                 f"{lower}-{upper}: {error}" for lower, upper, error in failures[:3]
             )
             raise RuntimeError(
-                f"V3 inventory fetch exhausted {max_attempts} attempts for "
-                f"{len(failures):,} chunks; first={sample}"
+                f"V3 inventory fetch ended with {len(failures):,} terminal or "
+                f"transient-exhausted chunks under a {max_attempts}-attempt transient "
+                f"retry limit; first={sample}"
             )
     return 0
 
