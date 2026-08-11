@@ -426,7 +426,7 @@ class TransactionStateFrontierScriptTests(unittest.TestCase):
             checkpoint_dir = root / "checkpoints"
             segments = plan_daily_segments(days, workers=3, checkpoint_dir=checkpoint_dir)
             with (
-                patch("scripts.build_transaction_state_frontier.new_tick_replay", return_value=TickReplayState(token_decimals={}, quarantined_pools={"uniswap_v4": set()})),
+                patch("scripts.build_transaction_state_frontier.new_tick_replay", return_value=TickReplayState(token_decimals={}, quarantined_pools={"uniswap_v4": set()}, initialization_status_by_venue={"uniswap_v3": {"pool": "quote_supported"}})),
                 patch("scripts.build_transaction_state_frontier.load_tick_day_events", side_effect=events),
             ):
                 self.assertEqual(materialize_segment_checkpoints(segments, checkpoint_dir=checkpoint_dir, checkpoint_engine_key="engine", market_state=root / "state"), (4, 3))
@@ -496,8 +496,19 @@ class TransactionStateFrontierScriptTests(unittest.TestCase):
         def liquidity(venue: str, pool: str, *, block: int, log_index: int, amount: int) -> TickReplayEvent:
             return TickReplayEvent((block, log_index), venue, "liquidity", {"pool": {"id": pool}, "tickLower": "-10", "tickUpper": "10", "amount": str(amount)}, 1)
 
+        def initialize(event: TickReplayEvent, *, log_index: int) -> TickReplayEvent:
+            row = {**event.row, "id": f"0x9#{log_index}", "transaction": {"id": "0x9", "blockNumber": "9"}, "logIndex": str(log_index)}
+            return TickReplayEvent((9, log_index), event.venue, "initialize", row)
+
+        first_v3_swap = swap("uniswap_v3", v3_pool, usdc, token_x, block=10, log_index=2)
+        linked_v3_swap = swap("uniswap_v3", linked_v3_pool, dai, token_x, block=10, log_index=10)
+        first_v4_swap = swap("uniswap_v4", v4_pool, lusd, frax, block=10, log_index=21, tick_spacing=10)
+
         events_by_day = {
             days[0]: [
+                initialize(first_v3_swap, log_index=0),
+                initialize(linked_v3_swap, log_index=1),
+                initialize(first_v4_swap, log_index=2),
                 liquidity("uniswap_v3", v3_pool, block=10, log_index=1, amount=1_000),
                 *[swap("uniswap_v3", v3_pool, usdc, token_x, block=10, log_index=index) for index in range(2, 8)],
                 *[swap("uniswap_v3", linked_v3_pool, dai, token_x, block=10, log_index=index) for index in range(10, 16)],
@@ -538,8 +549,8 @@ class TransactionStateFrontierScriptTests(unittest.TestCase):
         for day, replay in observed.items():
             for field in REPLAY_CAUSAL_FIELDS:
                 self.assertEqual(getattr(replay, field), expected[day][field], f"{day} {field}")
-        self.assertEqual(len(observed[days[2]].swap_samples[v3_pool]), 6)
-        self.assertNotIn(v3_pool, observed[days[2]].states_by_venue.get("uniswap_v3", {}))
+        self.assertNotIn(v3_pool, observed[days[2]].swap_samples)
+        self.assertIn(v3_pool, observed[days[2]].states_by_venue.get("uniswap_v3", {}))
         self.assertEqual(observed[days[2]].states_by_venue["uniswap_v4"][v4_pool].fee_pips, 500)
         self.assertEqual(observed[days[2]].states_by_venue["uniswap_v4"][v4_pool].tick_spacing, 10)
         self.assertEqual(observed[days[4]].states_by_venue["uniswap_v3"][v3_pool].log_index, 7)
@@ -564,7 +575,7 @@ class TransactionStateFrontierScriptTests(unittest.TestCase):
                 pickle.dump(("20210504", event_early), handle)
             result = ReplayShardResult(0, ("20210504",), shard, 2)
             with self.assertRaisesRegex(ValueError, "strict causal order"):
-                replay_ordered_event_shards([result], boundaries=("20210504",), checkpoint_paths={"20210504": root / "pre_20210504.pkl"}, checkpoint_engine_key="engine", replay=TickReplayState())
+                replay_ordered_event_shards([result], boundaries=("20210504",), checkpoint_paths={"20210504": root / "pre_20210504.pkl"}, checkpoint_engine_key="engine", replay=TickReplayState(initialization_status_by_venue={"uniswap_v3": {"pool": "quote_supported"}}))
 
     def test_parallel_checkpoint_handles_base_boundary_without_history(self) -> None:
         day = "20210504"

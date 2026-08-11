@@ -54,7 +54,7 @@ from ddvc.graph_event_order import (
     portable_evidence_path,
     semantic_mapping_sha256,
 )
-from ddvc.paths import DATA_DIR, OUTPUT_DIR, REPO_ROOT
+from ddvc.paths import V2_AUDITED_TOKEN_DECIMALS_REGISTRY, DATA_DIR, OUTPUT_DIR, REPO_ROOT
 from ddvc.provenance import (
     code_fingerprint,
     describe_input,
@@ -117,7 +117,7 @@ V2_EVENT_SOURCE_RELEASE_FILENAMES = {
     "exceptions": "exceptions.parquet",
     "certificate": "certificate.json",
 }
-V2_TOKEN_DECIMALS_REGISTRY = DATA_DIR / "processed" / "v2_audit_token_decimals.parquet"
+V2_TOKEN_DECIMALS_REGISTRY = V2_AUDITED_TOKEN_DECIMALS_REGISTRY
 V2_TOKEN_DECIMALS_CONTRACT = "one_exact_erc20_decimals_call_per_token_at_deterministic_canonical_event_anchor"
 V2_TOKEN_DECIMALS_SCOPE = "provider_decimals_observed_on_every_graph_event_must_be_constant_and_match_exact_anchor; exact_proxy_history_between_anchor_and_other_event_blocks_is_not_proven"
 

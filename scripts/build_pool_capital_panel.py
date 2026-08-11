@@ -6,8 +6,6 @@ from __future__ import annotations
 from collections import defaultdict
 from contextlib import ExitStack
 from datetime import datetime, timedelta, timezone
-import gzip
-import json
 from pathlib import Path
 
 import duckdb
@@ -39,6 +37,7 @@ from ddvc.fetch.pool_daily import (
     pool_day_values,
     pool_identity_files,
     require_pool_daily_coverage,
+    verified_pool_provider_rows,
 )
 from ddvc.panel_assembly import assert_unique_parquet_keys
 from ddvc.paths import (
@@ -466,7 +465,9 @@ def materialize(
                     raise RuntimeError(f"no canonical pool-day source files for {venue}")
                 sources.extend(files)
                 identity_sources = pool_identity_files(venue, RAW)
-                identities = load_pool_identity_crosswalk(identity_sources)
+                identities = load_pool_identity_crosswalk(
+                    identity_sources, venue=venue
+                )
                 sources.extend(identity_sources)
                 last: dict[str, tuple[int, float, bool]] = {}
                 counts: defaultdict[str, int] = defaultdict(int)
@@ -488,15 +489,8 @@ def materialize(
                     candidate_rows: list[dict[str, object]] = []
                     rejection_rows: list[dict[str, object]] = []
                     seen: set[str] = set()
-                    with gzip.open(path, "rt") as handle:
-                        for line in handle:
-                            if not line.strip():
-                                continue
-                            try:
-                                record = json.loads(line)
-                            except json.JSONDecodeError:
-                                counts["invalid_json"] += 1
-                                continue
+                    with verified_pool_provider_rows(venue, "daily", path) as records:
+                        for record in records:
                             row = pool_day_values(venue, record)
                             if row is None:
                                 counts["unresolved_pool"] += 1

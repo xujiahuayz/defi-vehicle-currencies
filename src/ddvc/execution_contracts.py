@@ -14,8 +14,8 @@ from dataclasses import dataclass
 
 CP_STATE_GENERATION = "constant_product_state_v2"
 TICK_STATE_GENERATIONS = {
-    "uniswap_v3": "uniswap_v3_tick_state_v2",
-    "uniswap_v4": "uniswap_v4_tick_state_v2",
+    "uniswap_v3": "uniswap_v3_tick_state_v3_initialize_exact",
+    "uniswap_v4": "uniswap_v4_tick_state_v3_poolmanager_exact",
 }
 MULTI_ASSET_STATE_GENERATIONS = {
     "curve": "curve_multi_asset_state_v2",

@@ -13,7 +13,6 @@ from typing import Iterable, Mapping
 
 import pandas as pd
 import pyarrow.parquet as pq
-from eth_abi import decode as abi_decode
 
 from ddvc.amounts import human_to_raw
 from ddvc.artifact_release import publish_artifact_release, resolve_artifact_release
@@ -31,7 +30,7 @@ from ddvc.runtime import atomic_output, serialized_output_install
 from ddvc.source_records import timestamp_value, transaction_id, v4_quote_status
 from ddvc.v2_event_completeness import decode_v2_log
 from ddvc.v3_inventory import decode_inventory_log
-from ddvc.v4_contract import UNISWAP_V4_POOL_MANAGER_ADDRESS, UNISWAP_V4_SWAP_TOPIC
+from ddvc.v4_contract import UNISWAP_V4_POOL_MANAGER_ADDRESS, UNISWAP_V4_SWAP_TOPIC, decode_v4_state_event_identity
 
 
 TARGET_RELEASE_SCHEMA_VERSION = 1
@@ -401,25 +400,15 @@ def decode_v3_chain_swap(
 def decode_v4_chain_swap(
     record: Mapping[str, object], *, block_timestamps: Mapping[int, int]
 ) -> ChainSwapEvent:
-    address = str(record.get("address") or "").lower()
-    topics = [str(topic).lower() for topic in record.get("topics") or []]
-    if address != UNISWAP_V4_POOL_MANAGER_ADDRESS or len(topics) != 3 or topics[0] != UNISWAP_V4_SWAP_TOPIC:
-        raise ValueError("target evidence is not a canonical V4 PoolManager swap log")
-    pool = topics[1]
-    if len(pool) != 66:
-        raise ValueError("V4 swap log lacks an exact pool id")
-    data = bytes.fromhex(str(record.get("data") or "0x").removeprefix("0x"))
-    amount0, amount1, _sqrt_price, _liquidity, _tick, _fee = abi_decode(
-        ["int128", "int128", "uint160", "uint128", "int24", "uint24"], data
-    )
+    decoded = decode_v4_state_event_identity(dict(record), "swap")
     return ChainSwapEvent(
         "uniswap_v4",
         str(record.get("transaction_hash") or "").lower(),
         int(record["block_number"]),
         int(record["log_index"]),
-        pool,
-        int(amount0),
-        int(amount1),
+        str(decoded["pool"]),
+        int(decoded["amount0"]),
+        int(decoded["amount1"]),
         _block_timestamp(record, block_timestamps),
         str(record.get("block_hash") or "").lower() or None,
     )

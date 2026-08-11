@@ -19,7 +19,7 @@ from typing import Iterable
 
 import pandas as pd
 
-from ddvc.artifact_release import canonical_json_sha256, file_sha256
+from ddvc.artifact_release import canonical_json_sha256, file_sha256, is_sha256
 from ddvc.asset_types import VEHICLE_CANDIDATES
 from ddvc.fetch.raw import (
     RawFetchInvariantError,
@@ -318,6 +318,7 @@ def installed_generation_identity(
         "output_rows",
         "output_bytes",
         "output_mtime_ns",
+        "output_sha256",
         "passed",
     ]
     records = quality[fields].to_dict("records")
@@ -328,6 +329,12 @@ def installed_generation_identity(
             row["output_mtime_ns"]
         ):
             raise ValueError(f"unified partition changed after quality marker: {row['day']}")
+        if not is_sha256(row["output_sha256"]) or file_sha256(path) != row[
+            "output_sha256"
+        ]:
+            raise ValueError(
+                f"unified partition content disagrees with quality marker: {row['day']}"
+            )
     days = frozenset(quality["day"].astype(str))
     return {
         "engine": str(quality["engine"].iloc[0]),
