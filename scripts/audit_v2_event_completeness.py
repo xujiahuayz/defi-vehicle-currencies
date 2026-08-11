@@ -42,12 +42,17 @@ from ddvc.reconstruct import UNIFIED_QUALITY_PANEL
 from ddvc.release_calendar import transaction_frontier_audit_days
 from ddvc.runtime import exclusive_job, interruptible_thread_pool
 from ddvc.token_decimals import (
+    TOKEN_DECIMALS_ANCHOR_MANIFEST,
+    UNRESOLVED_TOKEN_DECIMALS_LEDGER,
     TokenDecimalsAnchor,
+    build_token_decimals_anchor_manifest,
     build_token_decimals_registry,
+    load_token_decimals_anchor_manifest,
     resolve_token_decimals_evidence,
     retain_token_decimals_anchor,
     token_decimals_registry_sha256,
     validate_token_decimals_registry,
+    write_token_decimals_anchor_manifest,
     write_token_decimals_registry,
 )
 from ddvc.v2_event_completeness import (
@@ -864,18 +869,78 @@ def build(
         factory_inputs.extend((manifest_path, factory_state_proof_path(venue, maximum_block)))
         all_pairs.extend(venue_pairs)
 
-    anchors, provider_observations, event_inputs, raw_global_logs = collect_v2_token_decimals_perimeter(
-        audit_days,
-        day_bounds,
-        frozen_upper,
-        statics,
-        pairs_by_venue,
-        factory_records_by_venue,
-    )
+    anchor_context = {
+        "audit_days": audit_days,
+        "audit_calendar_sha256": audit_calendar_sha256(audit_days),
+        "launched_venues_by_day": {
+            day: list(_launched_venues(day)) for day in audit_days
+        },
+        "factory_registry_upper_block": maximum_block,
+        "frozen_upper_block_hash": str(frozen_upper["block_hash"]),
+        "factory_registry_sha256": factory_registry_sha256(all_pairs),
+    }
+    if TOKEN_DECIMALS_ANCHOR_MANIFEST.is_file() and not force:
+        (
+            anchors,
+            provider_observations,
+            selection_inputs,
+            selection_statistics,
+        ) = load_token_decimals_anchor_manifest(
+            TOKEN_DECIMALS_ANCHOR_MANIFEST,
+            expected_context=anchor_context,
+        )
+        raw_global_logs = int(selection_statistics["raw_global_event_logs"])
+        print(
+            f"  V2 token-state perimeter resumed from manifest: selected_anchors={len(anchors):,}",
+            flush=True,
+        )
+    else:
+        (
+            anchors,
+            provider_observations,
+            event_inputs,
+            raw_global_logs,
+        ) = collect_v2_token_decimals_perimeter(
+            audit_days,
+            day_bounds,
+            frozen_upper,
+            statics,
+            pairs_by_venue,
+            factory_records_by_venue,
+        )
+        selection_inputs = token_registry_provenance_inputs(
+            audit_days=audit_days,
+            token_evidence_paths={},
+            factory_inputs=factory_inputs,
+            event_inputs=event_inputs,
+        )
+        anchor_manifest = build_token_decimals_anchor_manifest(
+            anchors,
+            provider_observations,
+            context=anchor_context,
+            lineage_inputs=selection_inputs,
+            statistics={"raw_global_event_logs": raw_global_logs},
+        )
+        write_token_decimals_anchor_manifest(
+            anchor_manifest,
+            TOKEN_DECIMALS_ANCHOR_MANIFEST,
+        )
+        (
+            anchors,
+            provider_observations,
+            selection_inputs,
+            selection_statistics,
+        ) = load_token_decimals_anchor_manifest(
+            TOKEN_DECIMALS_ANCHOR_MANIFEST,
+            expected_context=anchor_context,
+        )
+        raw_global_logs = int(selection_statistics["raw_global_event_logs"])
     token_evidence, token_evidence_paths = resolve_token_decimals_evidence(
         anchors,
         fetch=fetch,
         workers=workers,
+        unresolved_ledger_path=UNRESOLVED_TOKEN_DECIMALS_LEDGER,
+        anchor_manifest_path=TOKEN_DECIMALS_ANCHOR_MANIFEST,
     )
     token_registry = build_token_decimals_registry(
         anchors,
@@ -883,11 +948,14 @@ def build(
         token_evidence_paths,
         provider_observations,
     )
-    token_registry_inputs = token_registry_provenance_inputs(
-        audit_days=audit_days,
-        token_evidence_paths=token_evidence_paths,
-        factory_inputs=factory_inputs,
-        event_inputs=event_inputs,
+    token_registry_inputs = sorted(
+        {
+            TOKEN_DECIMALS_ANCHOR_MANIFEST,
+            UNRESOLVED_TOKEN_DECIMALS_LEDGER,
+            *selection_inputs,
+            *token_evidence_paths.values(),
+        },
+        key=str,
     )
     token_decimals, token_registry = publish_token_decimals_registry_release(
         token_registry,
@@ -1116,13 +1184,12 @@ def build(
     inputs.extend(_day_bound_path(day) for day in day_bounds)
     inputs.append(frozen_upper_block_path(maximum_block))
     inputs.extend(factory_deployment_path(venue, maximum_block) for venue in V2_EVENT_VENUES)
-    inputs.extend(factory_inputs)
+    inputs.extend(selection_inputs)
     inputs.extend(correction_inputs)
     for day in audit_days:
         for venue in _launched_venues(day):
             inputs.append(_meta_path(venue, day))
             inputs.extend(_graph_event_paths(venue, day))
-        inputs.extend(event_inputs[day])
     inputs = sorted(set(inputs), key=str)
     notes = "exact 77-date V2-family corrected-ledger certificate against full-day factory-perimeter chain logs"
     publish_v2_event_source_release(

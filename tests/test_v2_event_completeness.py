@@ -824,6 +824,155 @@ def test_audit_token_perimeter_comes_from_events_not_the_priced_token_panel(
     assert raw_logs == 1
 
 
+def test_token_registry_build_resume_uses_anchor_manifest_without_perimeter_rescan(
+    tmp_path,
+    monkeypatch,
+) -> None:
+    day = "20250115"
+    maximum_block = 149
+    frozen = frozen_upper(maximum_block)
+    repo_root = tmp_path / "repo"
+    manifest_path = repo_root / "data" / "raw" / "selected.json"
+    ledger_path = repo_root / "data" / "raw" / "unresolved.json"
+    lineage_path = repo_root / "data" / "raw" / "selection-input.parquet"
+    lineage_path.parent.mkdir(parents=True)
+    lineage_path.write_bytes(b"selected-anchor-lineage")
+    registry_hash = "f" * 64
+    context = {
+        "audit_days": [day],
+        "audit_calendar_sha256": audit_calendar_sha256([day]),
+        "launched_venues_by_day": {
+            day: list(auditor._launched_venues(day)),
+        },
+        "factory_registry_upper_block": maximum_block,
+        "frozen_upper_block_hash": frozen["block_hash"],
+        "factory_registry_sha256": registry_hash,
+    }
+    selected = auditor.TokenDecimalsAnchor(
+        token=TOKEN0,
+        block_number=maximum_block,
+        block_hash=frozen["block_hash"],
+        priority=0,
+        proof_kind="exact_core_event",
+        venue="uniswap_v2",
+        pool=POOL,
+        event_type="swap",
+        transaction_hash=TX,
+        transaction_index=1,
+        log_index=2,
+    )
+    manifest = auditor.build_token_decimals_anchor_manifest(
+        {TOKEN0: selected},
+        {TOKEN0: ["6"]},
+        context=context,
+        lineage_inputs=[lineage_path],
+        statistics={"raw_global_event_logs": 19_250_000},
+        repo_root=repo_root,
+    )
+    auditor.write_token_decimals_anchor_manifest(manifest, manifest_path)
+    real_load_manifest = auditor.load_token_decimals_anchor_manifest
+
+    monkeypatch.setattr(auditor, "TOKEN_DECIMALS_ANCHOR_MANIFEST", manifest_path)
+    monkeypatch.setattr(auditor, "UNRESOLVED_TOKEN_DECIMALS_LEDGER", ledger_path)
+    monkeypatch.setattr(auditor, "require_current_artifacts", lambda *_args, **_kwargs: None)
+    monkeypatch.setattr(auditor, "transaction_frontier_audit_days", lambda _path: [day])
+    monkeypatch.setattr(auditor, "_preflight_graph_streams", lambda _days: None)
+    monkeypatch.setattr(
+        auditor,
+        "load_or_resolve_day_bounds",
+        lambda _day, **_kwargs: {
+            "start_block": 100,
+            "end_block": 100,
+        },
+    )
+    monkeypatch.setattr(auditor, "missing_v2_exact_log_ranges", lambda *_args, **_kwargs: [])
+    monkeypatch.setattr(
+        auditor,
+        "load_or_resolve_frozen_upper_block",
+        lambda *_args, **_kwargs: frozen,
+    )
+    monkeypatch.setattr(
+        auditor,
+        "load_or_resolve_factory_deployment",
+        lambda *_args, **_kwargs: {"deployment_block": 1},
+    )
+    manifest_paths = {}
+    proof_paths = {}
+    for index, venue in enumerate(V2_EVENT_VENUES):
+        venue_manifest = repo_root / "data" / "raw" / f"{venue}-factory.json"
+        venue_proof = repo_root / "data" / "raw" / f"{venue}-proof.json"
+        venue_manifest.write_text("{}\n", encoding="utf-8")
+        venue_proof.write_text("{}\n", encoding="utf-8")
+        manifest_paths[venue] = venue_manifest
+        proof_paths[venue] = venue_proof
+    monkeypatch.setattr(
+        auditor,
+        "factory_coverage_manifest_path",
+        lambda venue, _maximum: manifest_paths[venue],
+    )
+    monkeypatch.setattr(auditor, "validate_factory_coverage_manifest", lambda *_args, **_kwargs: None)
+    monkeypatch.setattr(
+        auditor,
+        "read_factory_coverage_records",
+        lambda _manifest, *, venue, **_kwargs: ([], [manifest_paths[venue]]),
+    )
+
+    def fake_registry(venue, _records, _decimals):
+        pool = "0x" + ("a" if venue == "uniswap_v2" else "b") * 40
+        return {pool: SimpleNamespace()}, [SimpleNamespace(pool=pool)]
+
+    monkeypatch.setattr(auditor, "factory_pair_registry", fake_registry)
+    monkeypatch.setattr(auditor, "load_or_build_factory_state_proof", lambda *_args, **_kwargs: {})
+    monkeypatch.setattr(
+        auditor,
+        "factory_state_proof_path",
+        lambda venue, _maximum: proof_paths[venue],
+    )
+    monkeypatch.setattr(auditor, "factory_registry_sha256", lambda _pairs: registry_hash)
+    monkeypatch.setattr(
+        auditor,
+        "load_token_decimals_anchor_manifest",
+        lambda path, *, expected_context: real_load_manifest(
+            path,
+            expected_context=expected_context,
+            repo_root=repo_root,
+        ),
+    )
+    monkeypatch.setattr(
+        auditor,
+        "collect_v2_token_decimals_perimeter",
+        lambda *_args, **_kwargs: pytest.fail(
+            "resume must not rerun the 19.25m-event anchor-selection scan"
+        ),
+    )
+    evidence_path = repo_root / "data" / "raw" / "resolved.json"
+    evidence_path.write_text("{}\n", encoding="utf-8")
+
+    def fake_resolve(anchors, **_kwargs):
+        assert anchors == {TOKEN0: selected}
+        return {TOKEN0: {"token": TOKEN0}}, {TOKEN0: evidence_path}
+
+    monkeypatch.setattr(auditor, "resolve_token_decimals_evidence", fake_resolve)
+    registry = pd.DataFrame({"token": [TOKEN0]})
+    monkeypatch.setattr(
+        auditor,
+        "build_token_decimals_registry",
+        lambda *_args, **_kwargs: registry,
+    )
+    monkeypatch.setattr(
+        auditor,
+        "publish_token_decimals_registry_release",
+        lambda frame, **_kwargs: ({TOKEN0: 6}, frame),
+    )
+    assert auditor.build(
+        fetch=False,
+        force=False,
+        workers=2,
+        event_block_chunk_size=V2_EXACT_LOG_CHUNK_SIZE,
+        token_registry_only=True,
+    ) == (1, 0)
+
+
 def test_factory_registry_rejects_a_missing_paircreated_ordinal() -> None:
     with pytest.raises(ValueError, match="sequence is incomplete"):
         factory_pair_registry(

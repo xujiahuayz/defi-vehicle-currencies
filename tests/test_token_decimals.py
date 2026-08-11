@@ -9,8 +9,11 @@ from ddvc import quoter
 from ddvc.quoter import RpcEnvelope, RpcSemanticError, Throttled
 from ddvc.token_decimals import (
     ERC20_DECIMALS_SELECTOR,
+    TokenDecimalsResolutionError,
     TokenDecimalsAnchor,
+    build_token_decimals_anchor_manifest,
     build_token_decimals_registry,
+    load_token_decimals_anchor_manifest,
     load_or_fetch_token_decimals_evidence,
     retain_token_decimals_anchor,
     resolve_token_decimals_evidence,
@@ -18,6 +21,7 @@ from ddvc.token_decimals import (
     token_decimals_evidence_path,
     validate_token_decimals_evidence,
     validate_token_decimals_registry,
+    write_token_decimals_anchor_manifest,
     write_token_decimals_registry,
 )
 
@@ -143,6 +147,184 @@ def test_bounded_resolver_fails_closed_after_transient_cap(tmp_path) -> None:
         resolve_token_decimals_evidence({TOKEN: anchor()}, fetch=True, workers=4, root=tmp_path, max_attempts=3, retry_backoff=0)
     assert request.call_count == 3
     assert list(tmp_path.rglob("*")) == []
+
+
+def test_resolver_collects_distinct_terminal_failures_retains_success_and_installs_ledger_last(tmp_path) -> None:
+    tokens = [TOKEN, "0x" + "6" * 40, "0x" + "7" * 40]
+    anchors = {
+        token: TokenDecimalsAnchor(
+            **{
+                **anchor(block_number=100 + index).__dict__,
+                "token": token,
+            }
+        )
+        for index, token in enumerate(tokens)
+    }
+    repo_root = tmp_path / "repo"
+    ledger_path = repo_root / "data" / "raw" / "unresolved.json"
+    manifest_path = repo_root / "data" / "raw" / "anchors.json"
+    manifest_path.parent.mkdir(parents=True)
+    manifest_path.write_text("{}")
+    calls = {token: 0 for token in anchors}
+
+    def resolve_one(expected, **_kwargs):
+        assert not ledger_path.exists()
+        calls[expected.token] += 1
+        if expected.token in tokens[:2]:
+            raise Throttled(f"unavailable-{expected.token[-1]}")
+        path = repo_root / "data" / "raw" / f"{expected.token}.json"
+        path.write_text('{"complete":true}\n')
+        return {"token": expected.token}, path
+
+    with (
+        patch("ddvc.token_decimals.load_or_fetch_token_decimals_evidence", side_effect=resolve_one),
+        pytest.raises(TokenDecimalsResolutionError) as caught,
+    ):
+        resolve_token_decimals_evidence(
+            anchors,
+            fetch=True,
+            workers=3,
+            max_attempts=2,
+            retry_backoff=0,
+            unresolved_ledger_path=ledger_path,
+            anchor_manifest_path=manifest_path,
+            repo_root=repo_root,
+        )
+    assert set(caught.value.failures) == set(tokens[:2])
+    assert set(caught.value.records) == {tokens[2]}
+    assert calls == {tokens[0]: 2, tokens[1]: 2, tokens[2]: 1}
+    ledger = json.loads(ledger_path.read_text())
+    assert ledger["status"] == "complete"
+    assert ledger["resolved_count"] == 1
+    assert ledger["unresolved_count"] == 2
+    assert [row["token"] for row in ledger["unresolved"]] == sorted(tokens[:2])
+
+
+def test_resolver_drains_invalid_cache_semantic_rpc_and_transient_cap_before_one_raise(tmp_path) -> None:
+    invalid_token, semantic_token, transient_token, success_token = [
+        "0x" + digit * 40 for digit in ("6", "7", "8", "9")
+    ]
+    anchors = {
+        token: TokenDecimalsAnchor(
+            **{
+                **anchor(block_number=100 + index).__dict__,
+                "token": token,
+            }
+        )
+        for index, token in enumerate(
+            (invalid_token, semantic_token, transient_token, success_token)
+        )
+    }
+    repo_root = tmp_path / "repo"
+    evidence_root = repo_root / "data" / "raw" / "token_decimals"
+    invalid_path = token_decimals_evidence_path(
+        anchors[invalid_token],
+        root=evidence_root,
+    )
+    invalid_path.parent.mkdir(parents=True)
+    invalid_path.write_text('{"schema_version":null}\n', encoding="utf-8")
+    ledger_path = repo_root / "data" / "raw" / "unresolved.json"
+    manifest_path = repo_root / "data" / "raw" / "anchors.json"
+    manifest_path.parent.mkdir(parents=True, exist_ok=True)
+    manifest_path.write_text("{}\n", encoding="utf-8")
+    calls = {token: 0 for token in anchors}
+
+    def rpc(payload, **_kwargs):
+        assert not ledger_path.exists()
+        token = payload["params"][0]["to"]
+        calls[token] += 1
+        if token == semantic_token:
+            raise RpcSemanticError("historical state is terminal")
+        if token == transient_token:
+            raise Throttled("provider capacity")
+        return envelope(payload, "0x" + f"{18:064x}")
+
+    with pytest.raises(TokenDecimalsResolutionError) as caught:
+        resolve_token_decimals_evidence(
+            anchors,
+            fetch=True,
+            workers=4,
+            root=evidence_root,
+            rpc_request=rpc,
+            max_attempts=2,
+            retry_backoff=0,
+            unresolved_ledger_path=ledger_path,
+            anchor_manifest_path=manifest_path,
+            repo_root=repo_root,
+        )
+    assert set(caught.value.records) == {success_token}
+    assert {token: failure["classification"] for token, failure in caught.value.failures.items()} == {
+        invalid_token: "invalid_cached_evidence",
+        semantic_token: "terminal_rpc_semantics",
+        transient_token: "transient_attempt_cap",
+    }
+    assert calls == {
+        invalid_token: 0,
+        semantic_token: 1,
+        transient_token: 2,
+        success_token: 1,
+    }
+    ledger = json.loads(ledger_path.read_text(encoding="utf-8"))
+    assert ledger["status"] == "complete"
+    assert ledger["resolved_count"] == 1
+    assert ledger["unresolved_count"] == 3
+    assert str(repo_root) not in ledger["unresolved"][0]["error_message"]
+    assert [row["classification"] for row in ledger["unresolved"]] == [
+        "invalid_cached_evidence",
+        "terminal_rpc_semantics",
+        "transient_attempt_cap",
+    ]
+
+
+def test_selected_anchor_manifest_reopens_without_reselection_and_revalidates_lineage(tmp_path) -> None:
+    repo_root = tmp_path / "repo"
+    lineage_path = repo_root / "data" / "raw" / "exact.parquet"
+    lineage_path.parent.mkdir(parents=True)
+    lineage_path.write_bytes(b"exact-v1")
+    manifest_path = repo_root / "data" / "raw" / "selected.json"
+    context = {"audit_days": ["20250101"], "factory_registry_sha256": "a" * 64}
+    expected = anchor()
+    manifest = build_token_decimals_anchor_manifest(
+        {TOKEN: expected},
+        {TOKEN: ["6"]},
+        context=context,
+        lineage_inputs=[lineage_path],
+        statistics={"raw_global_event_logs": 7},
+        repo_root=repo_root,
+    )
+    write_token_decimals_anchor_manifest(manifest, manifest_path)
+    with patch(
+        "ddvc.token_decimals.select_token_decimals_anchors",
+        side_effect=lambda *_args, **_kwargs: pytest.fail(
+            "resume must not rerun anchor selection"
+        ),
+    ):
+        anchors, observations, paths, statistics = load_token_decimals_anchor_manifest(
+            manifest_path,
+            expected_context=context,
+            repo_root=repo_root,
+        )
+    assert anchors == {TOKEN: expected}
+    assert observations == {TOKEN: ["6"]}
+    assert paths == [lineage_path]
+    assert statistics == {"raw_global_event_logs": 7}
+    tampered = json.loads(manifest_path.read_text(encoding="utf-8"))
+    tampered["statistics"]["raw_global_event_logs"] = 8
+    manifest_path.write_text(json.dumps(tampered), encoding="utf-8")
+    with pytest.raises(ValueError, match="statistics digest"):
+        load_token_decimals_anchor_manifest(
+            manifest_path,
+            expected_context=context,
+            repo_root=repo_root,
+        )
+    write_token_decimals_anchor_manifest(manifest, manifest_path)
+    lineage_path.write_bytes(b"exact-v2")
+    with pytest.raises(ValueError, match="lineage changed"):
+        load_token_decimals_anchor_manifest(
+            manifest_path,
+            expected_context=context,
+            repo_root=repo_root,
+        )
 
 
 def test_tampered_exact_response_is_rejected_without_overwrite(tmp_path) -> None:

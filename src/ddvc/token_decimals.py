@@ -20,6 +20,7 @@ from ddvc.fetch.raw import write_json
 from ddvc.paths import DATA_DIR, REPO_ROOT
 from ddvc.quoter import (
     RpcEnvelope,
+    RpcSemanticError,
     Throttled,
     canonical_json_sha256,
     coerce_rpc_envelope,
@@ -31,9 +32,13 @@ from ddvc.runtime import atomic_output, interruptible_thread_pool
 
 TOKEN_DECIMALS_EVIDENCE_SCHEMA_VERSION = 1
 TOKEN_DECIMALS_REGISTRY_SCHEMA_VERSION = 1
+TOKEN_DECIMALS_ANCHOR_MANIFEST_SCHEMA_VERSION = 1
+UNRESOLVED_TOKEN_DECIMALS_LEDGER_SCHEMA_VERSION = 1
 ERC20_DECIMALS_SELECTOR = "0x313ce567"
 MAX_TOKEN_DECIMALS = 36
 RAW_TOKEN_DECIMALS_ROOT = DATA_DIR / "raw" / "ethereum" / "token_decimals"
+TOKEN_DECIMALS_ANCHOR_MANIFEST = RAW_TOKEN_DECIMALS_ROOT / "v2_selected_anchors.json"
+UNRESOLVED_TOKEN_DECIMALS_LEDGER = RAW_TOKEN_DECIMALS_ROOT / "v2_unresolved_tokens.json"
 TOKEN_DECIMALS_REGISTRY_COLUMNS = (
     "schema_version",
     "token",
@@ -76,6 +81,29 @@ class TokenDecimalsAnchor:
     log_index: int
 
 
+class TokenDecimalsResolutionError(RuntimeError):
+    """All missing anchors were attempted and the complete failure ledger is durable."""
+
+    def __init__(
+        self,
+        message: str,
+        *,
+        records: Mapping[str, Mapping[str, object]],
+        paths: Mapping[str, Path],
+        failures: Mapping[str, Mapping[str, object]],
+        ledger_path: Path | None,
+    ) -> None:
+        super().__init__(message)
+        self.records = dict(records)
+        self.paths = dict(paths)
+        self.failures = dict(failures)
+        self.ledger_path = ledger_path
+
+
+class InvalidCachedTokenDecimalsEvidence(ValueError):
+    """An existing cache row failed JSON decoding or semantic validation."""
+
+
 def _address(value: object, *, label: str) -> str:
     address = str(value or "").lower()
     if (
@@ -115,6 +143,171 @@ def validate_token_decimals_anchor(anchor: TokenDecimalsAnchor) -> TokenDecimals
 def token_decimals_anchor_sha256(anchor: TokenDecimalsAnchor) -> str:
     validate_token_decimals_anchor(anchor)
     return canonical_json_sha256(asdict(anchor))
+
+
+def token_decimals_anchors_sha256(
+    anchors: Mapping[str, TokenDecimalsAnchor],
+) -> str:
+    """Digest the complete selected-anchor perimeter in canonical token order."""
+
+    rows = []
+    for token, anchor in sorted(anchors.items()):
+        validate_token_decimals_anchor(anchor)
+        if token != anchor.token:
+            raise ValueError("token decimals anchor map key disagrees with its token")
+        rows.append(asdict(anchor))
+    return canonical_json_sha256(rows)
+
+
+def _lineage_file_records(
+    paths: Iterable[Path],
+    *,
+    repo_root: Path,
+) -> list[dict[str, str]]:
+    records = []
+    for path in sorted(set(paths), key=str):
+        if not path.is_file():
+            raise FileNotFoundError(f"token decimals lineage input is absent: {path}")
+        records.append(
+            {
+                "path": _portable_path(path, repo_root),
+                "sha256": hashlib.sha256(path.read_bytes()).hexdigest(),
+            }
+        )
+    return records
+
+
+def build_token_decimals_anchor_manifest(
+    anchors: Mapping[str, TokenDecimalsAnchor],
+    provider_observations: Mapping[str, Iterable[object]],
+    *,
+    context: Mapping[str, object],
+    lineage_inputs: Iterable[Path],
+    statistics: Mapping[str, int],
+    repo_root: Path = REPO_ROOT,
+) -> dict[str, object]:
+    """Freeze expensive anchor selection before any token-state RPC fetch."""
+
+    if not anchors:
+        raise ValueError("token decimals anchor manifest cannot be empty")
+    canonical_anchors = [asdict(anchors[token]) for token in sorted(anchors)]
+    for token, anchor in sorted(anchors.items()):
+        validate_token_decimals_anchor(anchor)
+        if token != anchor.token:
+            raise ValueError("token decimals anchor map key disagrees with its token")
+    observations = {
+        token: _distinct_provider_reports(values)
+        for token, values in sorted(provider_observations.items())
+    }
+    lineage = _lineage_file_records(lineage_inputs, repo_root=repo_root)
+    normalized_statistics = {
+        str(key): int(value) for key, value in sorted(statistics.items())
+    }
+    manifest = {
+        "schema_version": TOKEN_DECIMALS_ANCHOR_MANIFEST_SCHEMA_VERSION,
+        "kind": "v2_token_decimals_selected_anchors",
+        "status": "complete",
+        "context": dict(context),
+        "context_sha256": canonical_json_sha256(dict(context)),
+        "statistics": normalized_statistics,
+        "statistics_sha256": canonical_json_sha256(normalized_statistics),
+        "anchors": canonical_anchors,
+        "anchor_count": len(canonical_anchors),
+        "anchors_sha256": token_decimals_anchors_sha256(anchors),
+        "provider_observations": observations,
+        "provider_observations_sha256": canonical_json_sha256(observations),
+        "lineage_inputs": lineage,
+        "lineage_inputs_sha256": canonical_json_sha256(lineage),
+    }
+    return manifest
+
+
+def write_token_decimals_anchor_manifest(
+    manifest: Mapping[str, object],
+    path: Path = TOKEN_DECIMALS_ANCHOR_MANIFEST,
+) -> None:
+    """Install the complete selected-anchor marker atomically."""
+
+    write_json(path, dict(manifest))
+
+
+def load_token_decimals_anchor_manifest(
+    path: Path = TOKEN_DECIMALS_ANCHOR_MANIFEST,
+    *,
+    expected_context: Mapping[str, object],
+    repo_root: Path = REPO_ROOT,
+) -> tuple[
+    dict[str, TokenDecimalsAnchor],
+    dict[str, list[object]],
+    list[Path],
+    dict[str, int],
+]:
+    """Reopen selection without rescanning, after revalidating every cited input."""
+
+    manifest = json.loads(path.read_text(encoding="utf-8"))
+    if not isinstance(manifest, dict):
+        raise ValueError("token decimals anchor manifest is not an object")
+    if (
+        int(manifest.get("schema_version", -1))
+        != TOKEN_DECIMALS_ANCHOR_MANIFEST_SCHEMA_VERSION
+        or manifest.get("kind") != "v2_token_decimals_selected_anchors"
+        or manifest.get("status") != "complete"
+    ):
+        raise ValueError("token decimals anchor manifest has a stale schema or incomplete marker")
+    context = manifest.get("context")
+    if context != dict(expected_context) or manifest.get("context_sha256") != canonical_json_sha256(context):
+        raise ValueError("token decimals anchor manifest context is stale")
+    raw_anchors = manifest.get("anchors")
+    if not isinstance(raw_anchors, list) or not raw_anchors:
+        raise ValueError("token decimals anchor manifest has an empty perimeter")
+    anchors: dict[str, TokenDecimalsAnchor] = {}
+    for value in raw_anchors:
+        if not isinstance(value, dict):
+            raise ValueError("token decimals anchor manifest contains a malformed anchor")
+        try:
+            anchor = TokenDecimalsAnchor(**value)
+        except TypeError as error:
+            raise ValueError("token decimals anchor manifest contains a malformed anchor") from error
+        validate_token_decimals_anchor(anchor)
+        if anchor.token in anchors:
+            raise ValueError("token decimals anchor manifest contains duplicate tokens")
+        anchors[anchor.token] = anchor
+    anchors = dict(sorted(anchors.items()))
+    if int(manifest.get("anchor_count", -1)) != len(anchors) or manifest.get("anchors_sha256") != token_decimals_anchors_sha256(anchors):
+        raise ValueError("token decimals anchor manifest digest disagrees")
+    provider_observations = manifest.get("provider_observations")
+    if not isinstance(provider_observations, dict) or manifest.get("provider_observations_sha256") != canonical_json_sha256(provider_observations):
+        raise ValueError("token decimals anchor manifest provider observations disagree")
+    normalized_observations = {
+        str(token): list(values)
+        for token, values in sorted(provider_observations.items())
+        if isinstance(values, list)
+    }
+    if len(normalized_observations) != len(provider_observations):
+        raise ValueError("token decimals anchor manifest provider observations are malformed")
+    raw_lineage = manifest.get("lineage_inputs")
+    if not isinstance(raw_lineage, list) or manifest.get("lineage_inputs_sha256") != canonical_json_sha256(raw_lineage):
+        raise ValueError("token decimals anchor manifest lineage digest disagrees")
+    lineage_paths = []
+    for record in raw_lineage:
+        if not isinstance(record, dict) or set(record) != {"path", "sha256"}:
+            raise ValueError("token decimals anchor manifest lineage record is malformed")
+        relative = Path(str(record["path"]))
+        if relative.is_absolute() or ".." in relative.parts:
+            raise ValueError("token decimals anchor manifest contains a non-portable lineage path")
+        lineage_path = repo_root / relative
+        if hashlib.sha256(lineage_path.read_bytes()).hexdigest() != record["sha256"]:
+            raise ValueError(f"token decimals anchor manifest lineage changed: {relative}")
+        lineage_paths.append(lineage_path)
+    statistics = manifest.get("statistics")
+    if not isinstance(statistics, dict) or not all(
+        isinstance(key, str) and isinstance(value, int) and not isinstance(value, bool)
+        for key, value in statistics.items()
+    ):
+        raise ValueError("token decimals anchor manifest statistics are malformed")
+    if manifest.get("statistics_sha256") != canonical_json_sha256(statistics):
+        raise ValueError("token decimals anchor manifest statistics digest disagrees")
+    return anchors, normalized_observations, lineage_paths, dict(statistics)
 
 
 def select_token_decimals_anchors(
@@ -303,10 +496,15 @@ def load_or_fetch_token_decimals_evidence(
 
     path = token_decimals_evidence_path(anchor, root=root)
     if path.is_file():
-        record = json.loads(path.read_text(encoding="utf-8"))
-        if not isinstance(record, dict):
-            raise ValueError(f"token decimals evidence is not an object: {path}")
-        validate_token_decimals_evidence(record, expected_anchor=anchor)
+        try:
+            record = json.loads(path.read_text(encoding="utf-8"))
+            if not isinstance(record, dict):
+                raise ValueError("token decimals evidence is not an object")
+            validate_token_decimals_evidence(record, expected_anchor=anchor)
+        except (json.JSONDecodeError, TypeError, ValueError) as error:
+            raise InvalidCachedTokenDecimalsEvidence(
+                f"invalid cached token decimals evidence for {anchor.token}: {error}"
+            ) from error
         return record, path
     if not fetch:
         raise RuntimeError(f"missing exact token decimals evidence for {anchor.token}")
@@ -325,8 +523,11 @@ def resolve_token_decimals_evidence(
     rpc_request: Callable[..., object] | None = None,
     max_attempts: int = 12,
     retry_backoff: float = 0.5,
+    unresolved_ledger_path: Path | None = None,
+    anchor_manifest_path: Path | None = None,
+    repo_root: Path = REPO_ROOT,
 ) -> tuple[dict[str, dict[str, object]], dict[str, Path]]:
-    """Resolve a bounded, resumable set of exact calls with no unbounded queue."""
+    """Resolve every anchor, retaining successes and reporting all terminal failures."""
 
     if max_attempts < 1 or retry_backoff < 0:
         raise ValueError("token decimals retry bounds must be nonnegative with at least one attempt")
@@ -336,6 +537,7 @@ def resolve_token_decimals_evidence(
     paths: dict[str, Path] = {}
     attempts: dict[str, int] = {}
     retry_ready_at: dict[str, float] = {}
+    failures: dict[str, dict[str, object]] = {}
     with interruptible_thread_pool(max_workers=worker_count) as executor:
         futures: dict[object, tuple[str, TokenDecimalsAnchor]] = {}
         while queue or futures:
@@ -370,15 +572,158 @@ def resolve_token_decimals_evidence(
                     record, path = future.result()
                 except Throttled as error:
                     if attempts[token] >= max_attempts:
-                        raise RuntimeError(f"exact token decimals remained transiently unavailable after {max_attempts} bounded attempts: {token}") from error
+                        failures[token] = _token_decimals_failure_record(
+                            anchor,
+                            attempts=attempts[token],
+                            error=error,
+                            classification="transient_attempt_cap",
+                        )
+                        retry_ready_at.pop(token, None)
+                        continue
                     delay = retry_backoff * min(2 ** (attempts[token] - 1), 16)
                     retry_ready_at[token] = time.monotonic() + delay
                     queue.append((token, anchor))
                     continue
+                except RpcSemanticError as error:
+                    failures[token] = _token_decimals_failure_record(
+                        anchor,
+                        attempts=attempts[token],
+                        error=error,
+                        classification="terminal_rpc_semantics",
+                    )
+                    retry_ready_at.pop(token, None)
+                    continue
+                except InvalidCachedTokenDecimalsEvidence as error:
+                    failures[token] = _token_decimals_failure_record(
+                        anchor,
+                        attempts=attempts[token],
+                        error=error,
+                        classification="invalid_cached_evidence",
+                    )
+                    retry_ready_at.pop(token, None)
+                    continue
+                except RuntimeError as error:
+                    if fetch:
+                        raise
+                    failures[token] = _token_decimals_failure_record(
+                        anchor,
+                        attempts=attempts[token],
+                        error=error,
+                        classification="missing_cached_evidence",
+                    )
+                    retry_ready_at.pop(token, None)
+                    continue
                 records[token] = record
                 paths[token] = path
                 retry_ready_at.pop(token, None)
-    return dict(sorted(records.items())), dict(sorted(paths.items()))
+    records = dict(sorted(records.items()))
+    paths = dict(sorted(paths.items()))
+    failures = dict(sorted(failures.items()))
+    if unresolved_ledger_path is not None:
+        ledger = build_unresolved_token_decimals_ledger(
+            anchors,
+            records=records,
+            paths=paths,
+            failures=failures,
+            anchor_manifest_path=anchor_manifest_path,
+            repo_root=repo_root,
+        )
+        write_unresolved_token_decimals_ledger(ledger, unresolved_ledger_path)
+    if failures:
+        raise TokenDecimalsResolutionError(
+            f"exact token decimals unresolved for {len(failures):,}/{len(anchors):,} anchors after {max_attempts} bounded attempts and complete traversal",
+            records=records,
+            paths=paths,
+            failures=failures,
+            ledger_path=unresolved_ledger_path,
+        )
+    return records, paths
+
+
+def _token_decimals_failure_record(
+    anchor: TokenDecimalsAnchor,
+    *,
+    attempts: int,
+    error: Exception,
+    classification: str,
+) -> dict[str, object]:
+    rpc_attempts = getattr(error, "attempts", ())
+    return {
+        "token": anchor.token,
+        "anchor_identity_sha256": token_decimals_anchor_sha256(anchor),
+        "attempts": attempts,
+        "classification": classification,
+        "error_type": type(error).__name__,
+        "error_message": str(error),
+        "rpc_attempts": list(rpc_attempts) if isinstance(rpc_attempts, (list, tuple)) else [],
+    }
+
+
+def build_unresolved_token_decimals_ledger(
+    anchors: Mapping[str, TokenDecimalsAnchor],
+    *,
+    records: Mapping[str, Mapping[str, object]],
+    paths: Mapping[str, Path],
+    failures: Mapping[str, Mapping[str, object]],
+    anchor_manifest_path: Path | None,
+    repo_root: Path = REPO_ROOT,
+) -> dict[str, object]:
+    """Build the marker-last resolution ledger with exact lineage hashes."""
+
+    if set(records) != set(paths):
+        raise ValueError("resolved token decimals records and paths have different perimeters")
+    if set(records).intersection(failures) or set(records).union(failures) != set(anchors):
+        raise ValueError("token decimals resolution ledger does not partition the anchor perimeter")
+    manifest_lineage = None
+    if anchor_manifest_path is not None:
+        if not anchor_manifest_path.is_file():
+            raise FileNotFoundError("token decimals resolution lacks its selected-anchor manifest")
+        manifest_lineage = {
+            "path": _portable_path(anchor_manifest_path, repo_root),
+            "sha256": hashlib.sha256(anchor_manifest_path.read_bytes()).hexdigest(),
+        }
+    evidence_lineage = [
+        {
+            "token": token,
+            "path": _portable_path(paths[token], repo_root),
+            "sha256": hashlib.sha256(paths[token].read_bytes()).hexdigest(),
+        }
+        for token in sorted(paths)
+    ]
+    unresolved = []
+    for token in sorted(failures):
+        failure = failures[token]
+        if failure.get("token") != token or failure.get("anchor_identity_sha256") != token_decimals_anchor_sha256(anchors[token]):
+            raise ValueError("token decimals failure record disagrees with its anchor")
+        unresolved.append(
+            {
+                "anchor": asdict(anchors[token]),
+                **dict(failure),
+            }
+        )
+    return {
+        "schema_version": UNRESOLVED_TOKEN_DECIMALS_LEDGER_SCHEMA_VERSION,
+        "kind": "unresolved_token_decimals",
+        "status": "complete",
+        "anchor_count": len(anchors),
+        "anchors_sha256": token_decimals_anchors_sha256(anchors),
+        "resolved_count": len(records),
+        "unresolved_count": len(unresolved),
+        "selected_anchor_manifest": manifest_lineage,
+        "resolved_evidence": evidence_lineage,
+        "resolved_evidence_sha256": canonical_json_sha256(evidence_lineage),
+        "unresolved": unresolved,
+        "unresolved_sha256": canonical_json_sha256(unresolved),
+    }
+
+
+def write_unresolved_token_decimals_ledger(
+    ledger: Mapping[str, object],
+    path: Path = UNRESOLVED_TOKEN_DECIMALS_LEDGER,
+) -> None:
+    """Install the complete failure ledger only after the resolver drains."""
+
+    write_json(path, dict(ledger))
 
 
 def _provider_values(values: Iterable[object]) -> tuple[list[int], list[str], str]:
