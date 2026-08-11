@@ -16,6 +16,7 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
 SPINE_PATH = ROOT / "docs" / "paper-spine.md"
+LITERATURE_AUDIT_PATH = ROOT / "docs" / "literature-audit.md"
 
 # Tells calibrated against the JFE corpus plus the house-voice blocklist.
 BANNED_SUBSTRINGS = (
@@ -136,6 +137,25 @@ class PaperSpineTests(unittest.TestCase):
 
     def test_superseded_outline_is_deleted(self) -> None:
         self.assertFalse((ROOT / "paper" / "jfe_detailed_outline.md").exists())
+
+    def test_jfe_architecture_gate_covers_every_venue_card_and_claim_family(self) -> None:
+        audit = LITERATURE_AUDIT_PATH.read_text(encoding="utf-8")
+        venue_cards = set(re.findall(r"^### (venue:[^\s]+)$", audit, flags=re.MULTILINE))
+        section = audit.split("## JFE paper-and-exhibit architecture gate", 1)[1].split("## Incident findings already established", 1)[0]
+        gate_sources = set(re.findall(r"`(venue:[^`]+)`", section))
+        gate_families = set(re.findall(r"^\| `([^`]+_e0)` \|", section, flags=re.MULTILINE))
+        self.assertEqual(len(venue_cards), 14)
+        self.assertEqual(gate_sources, venue_cards)
+        self.assertEqual(
+            gate_families,
+            {
+                "vehicle_transition_e0",
+                "routing_maturation_e0",
+                "direct_cost_dominance_e0",
+                "liquidity_allocation_e0",
+                "open_question_anomaly_e0",
+            },
+        )
 
 
 if __name__ == "__main__":

@@ -98,6 +98,63 @@ This is the canonical field-level owner for the 36 literature attacks required b
 
 The immediate pre-D3 additions are therefore narrow: preserve within-pair vehicle composition; attach already available gas, price, volatility, stress and route-demand states to the routing and liquidity objects without future information; and retain a compact candidate-by-pool-by-day contribution object from which concentration and leave-one-pool results can be derived. Unsupported venue-day state regimes remain explicit. Router contract capabilities and cross-protocol LP ownership remain coverage boundaries. E0 may reopen D for either only after a central, economically material result makes the missing distinction consequential.
 
+## JFE paper-and-exhibit architecture gate
+
+This gate converts the individually read published JFE articles and their verified companions into an ordering constraint for node G. It does not select findings, fix an exhibit count or license claims by resemblance. The empirical exemplars show how a difficult measured object earns interpretation; the theory exemplars show how breadth is earned when every extension follows from one formal mechanism. This empirical paper must earn breadth through distinct evidence and cannot use theory-paper compression to hide measurement or identification.
+
+- Evidence base: `venue:makarov-schoar-crypto-arbitrage`, `venue:chang-ripples-into-waves`, `venue:cong-li-wang-token-platform`, `venue:eren-malamud-dominant-currency-debt`, `venue:li-ye-zheng-refusing-best-price`, `venue:carletti-banks-patient-lenders`, `venue:huang-constrained-liquidity-fx`, `venue:hinzen-bitcoin-adoption`, `venue:graham-corporate-culture`, `venue:bolton-kacperczyk-carbon`, `venue:diamond-hu-rajan-liquidity-pledgeability`, `venue:hajda-nikolov-product-market`, `venue:mayer-financing-breakthroughs`, and `venue:pastor-sustainable-investing`.
+
+### Gate rules
+
+1. One economic object organizes the paper. The opening names continuous vehicle dominance, shows its scale and evolution, and states the question the later designs answer. Binary vehicle status, dominance degree, realised route choice, counterfactual cost and liquidity allocation remain distinct objects throughout.
+2. Evidence rises in formality: definition and institutional perimeter, sample and support, validation of contested measures, visible descriptive fact, conditioned estimate, discriminating mechanism or rival, then implication. Notation enters when it shortens an already visible object. A regression table cannot introduce a construct the reader has not seen measured.
+3. Every headline magnitude carries its denominator, unit, economic scale and admissible interpretation in the main text. Counts and value weights, route and equal-date weights, support exits and economically material exclusions travel with the result they can change.
+4. A load-bearing validation result remains in the main paper. The appendix may hold protocol-by-protocol construction, derivations, complete threshold grids, secondary covariance estimators, exhaustive subsamples and additional venues. It may not be the only location for state reproduction, sample selection, construct disagreement, support loss, pretrends, the strongest falsifier or a limitation that changes the sign or interpretation.
+5. Robustness stays local to the claim it defends. A standalone object-defence section is allowed when executability itself is contested, as in Makarov-Schoar, but it deepens an earlier compact validation exhibit and cannot repair a headline estimate that appeared before its measurement was earned.
+6. Main exhibits form a cumulative argument. Figures first make the phenomenon and economically relevant heterogeneity visible; tables then establish construction, support, estimates and rivals. Captions and notes are portable: object, unit, sample, weighting, support, uncertainty and interpretation boundary appear without requiring a search through prose.
+7. Breadth is conditional. A mechanism, protocol episode or adjacent anomaly receives main-text space only after it contributes a distinct test of the central dominance question. A blocked companion, retired diagnostic, preliminary subset or unregistered exploratory pattern may remain durable source material but cannot occupy a main section or numbered headline exhibit.
+8. The appendix is an audit trail, not a second paper. Its order mirrors the main claims and its first sentence for each block states which main exhibit it supports. Nulls, failed alternatives and adverse validation evidence remain visible; exhibit volume cannot substitute for identification.
+9. Counts from the venue corpus are calibration checks, not quotas. Section, table, figure, equation and page counts move with the promoted evidence. Node G closes only when `paper/main.tex`, the paper spine, the active claim/model ledgers and one generated exhibit manifest describe the same topology and status.
+
+### Evidence that must precede each claim family
+
+| Claim family | Required evidence sequence before a headline claim | Main-text minimum | Appendix allocation | Architecture closes only if |
+|---|---|---|---|---|
+| `vehicle_transition_e0` | Continuous measure and denominator; count/value and excess-use triangulation; calendar and candidate support; dated backing; routing strata; within-pair versus entry/exit decomposition; conditioned transition estimate | Phenomenon figure, compact measurement/support table, pair-composition result and economic magnitude | Full definitions, alternative weights, regime details, transition matrices and extended pair/venue splits | The claim is about degree and composition of vehicle use, with rotation separated from persistent replacement |
+| `routing_maturation_e0` | Topology and opportunity-set margins; exact-state reproduction; public versus observed reach; fixed and persistent cohorts; exact 1/7/30/120-day responses; gas, liquidity and volatility rivals | Topology figure, exact-state validation panel and conditioned margin/dynamics table | Tolerance grids, cohort definitions, additional cells and technology-window sensitivities | Market maturation is distinguished from executor-labelled aggregator attribution and changing opportunity sets |
+| `direct_cost_dominance_e0` | Exact same-state reproduction; availability and valuation waterfall; matched-versus-realised selection; identical-size gross quote; gas-supported all-in cost; reach and weighting sensitivities | Contested-quote validation before incidence, selection/support panel, gross/all-in magnitude and dollars affected | Protocol quote derivations, full exclusion ledger, gas quantiles, fixed-notional grid and venue/pair/year detail | The result is scoped to a cheaper available path coexisting with realised routing and does not imply irrationality, persistence or market-wide inefficiency |
+| `liquidity_allocation_e0` | Quantity contract; separate V2 stock and V3 flow support; exact bidirectional horizons; absolute/share sign stability; common-shock controls and placebos; stress and influence diagnostics; multiplicity ledger | Quantity-and-support table before estimates, separate direction-by-family result panels, strongest control/placebo and concentration result | Alternative covariance, full horizons, leave-one-unit refits, extra states and ownership heterogeneity only where validated | Predictability is not called causal feedback, V2 and V3 are never pooled, and rent incidence remains outside unless its external-reference return contract passes |
+| `open_question_anomaly_e0` | Immutable reproduction; economic magnitude and concentration; denominator/weighting alternatives; time/venue stability; integrity screens; strongest literature rival; centrality triage | No reserved slot; a promoted anomaly inherits the full gate of the claim family it joins | Rejected, auxiliary and next-paper diagnostics remain durable with their disposition | A distinct confirmatory generation exists and the anomaly changes the central contribution rather than adding an interesting detour |
+
+### Provisional exhibit dependency order
+
+The order below defines dependencies, not exhibit numbers. Several requirements may share one multi-panel display after E1, and a weak family may disappear.
+
+1. Continuous vehicle dominance and its composition over time.
+2. Sample construction, denominators, support and economically material omissions.
+3. Measurement triangulation and exact-state quote reproduction.
+4. Within-pair transition versus pair entry and exit.
+5. Routing opportunity, reach and conditioned maturation margins.
+6. Direct-path cost incidence and magnitude, after availability, valuation, selection and gas are visible.
+7. Liquidity allocation dynamics, with V2 stocks and V3 flows visibly separate.
+8. The strongest mechanism horse race, placebo, concentration result and surviving boundary.
+
+### Audit of the current topology before node G resumes
+
+| Surface | Current state | Gate verdict |
+|---|---|---|
+| `paper/main.tex` and section includes | Eight main sections before the appendix, including separate liquidity-return and mechanism sections; the header says seven | Structural drift; reconcile only after E1 determines which families survive |
+| `docs/paper-spine.md` | Seven-section, seven-table, four-figure architecture centered on cost domination, survival and a survival-mechanism race | Premature and scientifically stale: continuous dominance now owns the object, while survival awaits the full frontier and cannot size the paper yet |
+| `output/exhibits/paper_exhibit_manifest.md` | Seven main tables and six figures from an older RQ pipeline, different from both the spine and actual TeX | Not an authority; regenerate from the promoted claim set and actual includes after topology reconciliation |
+| Main paper exhibit load | Ten actual main tables and four main figures; nine appendix tables and three appendix figures | Counts are within venue scale but content eligibility is unresolved; count conformance does not clear the architecture gate |
+| Vehicle and direct-cost sections | Four-day matched estimates and incomplete transaction-state diagnostics occupy numbered main exhibits | Preliminary source material only until the certified full-daily frontier, selection ledger and E1 promotion replace or retire them |
+| Turnover and rival sections | The turnover section reports an estimand with no admitted final estimate; the rival race depends on that result and includes blocked measures | Premature as main-paper architecture; retain specifications outside the claim-bearing spine until E1 |
+| Liquidity-return section | The section states that the findings freeze admits no estimate; its V3 capital/return generation is retired and external-reference return support remains blocked | Remove from the future main topology unless the separate rent-incidence claim passes its own gate; it is not a substitute for the active liquidity-allocation family |
+| Executability and appendix validation | A late standalone defence carries timing and reach objections, while protocol validation, support screens and signed coverage are mostly in the appendix | Keep the deeper defence only if direct-cost evidence survives, but place a compact exact-state, support and selection validation before the first cost-incidence claim |
+| Internal results packet | `paper/results_evidence_map.tex` carries a different seven-RQ evidence architecture and is not included by `paper/main.tex` | Treat as legacy internal source material, never as a parallel paper spine or evidence manifest |
+
+The next node-G rewrite must therefore begin from E1 dispositions and the dependency order above, not from any current section count or table shell. That rewrite may reuse scientifically valid source material, but every section and exhibit must re-earn its place against the active claim family and current generation.
+
 ## Incident findings already established
 
 | Source/use | Prior status | Audit verdict | Required closure |
