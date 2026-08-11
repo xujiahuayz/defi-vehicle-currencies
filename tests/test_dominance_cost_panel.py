@@ -5,6 +5,7 @@ import math
 from pathlib import Path
 
 import pyarrow as pa
+import pyarrow.compute as pc
 import pyarrow.parquet as pq
 import pytest
 
@@ -127,6 +128,132 @@ def install_without_provenance(monkeypatch: pytest.MonkeyPatch) -> None:
 def release_members(pointer: Path) -> tuple[Path, Path]:
     release = resolve_dominance_cost_release(pointer)
     return release.artifacts["panel"], release.artifacts["support"]
+
+
+def sorted_pair_stage(path: Path) -> pa.Table:
+    table = pq.read_table(path)
+    indices = pc.sort_indices(
+        table,
+        sort_keys=[
+            ("date", "ascending"),
+            ("reserve_hour_utc", "ascending"),
+            ("src", "ascending"),
+            ("tgt", "ascending"),
+            ("trade_size_usd", "ascending"),
+            ("comparator", "ascending"),
+        ],
+    )
+    return pc.take(table, indices)
+
+
+def test_streamed_candidate_stage_matches_globally_sorted_reference(
+    tmp_path: Path,
+) -> None:
+    source = tmp_path / "source.parquet"
+    streamed = tmp_path / "streamed.parquet"
+    reference = tmp_path / "reference.parquet"
+    rows = [
+        quote_row("USDC", trade_size_usd=10_000.0, output_usd=9_800.0),
+        quote_row("WETH", trade_size_usd=1_000.0, output_usd=990.0),
+        {**quote_row("WETH", trade_size_usd=1_000.0, output_usd=995.0), "date": "2026-01-02"},
+        {**quote_row("USDT", trade_size_usd=1_000.0, output_usd=985.0), "date": "2026-01-02"},
+    ]
+    write_source(source, rows)
+    connection = builder.duckdb.connect()
+    try:
+        builder._write_candidate_stage(connection, source, streamed, batch_days=1)
+        connection.execute(
+            f"COPY ({builder._candidate_select_sql(source)}) "
+            f"TO '{reference.as_posix()}' (FORMAT PARQUET, COMPRESSION ZSTD)"
+        )
+    finally:
+        connection.close()
+    assert pq.read_table(streamed).equals(pq.read_table(reference))
+
+
+def test_streamed_pair_stage_matches_globally_sorted_reference(
+    tmp_path: Path,
+) -> None:
+    candidate = tmp_path / "candidate.parquet"
+    streamed = tmp_path / "streamed.parquet"
+    reference = tmp_path / "reference.parquet"
+    rows = [
+        quote_row("USDC", trade_size_usd=10_000.0, output_usd=9_800.0),
+        quote_row("WETH", trade_size_usd=1_000.0, output_usd=990.0),
+        quote_row("DAI", trade_size_usd=1_000.0, output_usd=975.0, available=False),
+        quote_row("USDC", trade_size_usd=1_000.0, output_usd=980.0),
+        quote_row("WETH", trade_size_usd=10_000.0, output_usd=9_900.0),
+    ]
+    second_day = [
+        {**quote_row("WETH", trade_size_usd=1_000.0, output_usd=995.0), "date": "2026-01-02"},
+        {**quote_row("USDT", trade_size_usd=1_000.0, output_usd=985.0), "date": "2026-01-02"},
+    ]
+    rows.extend(second_day)
+    write_source(candidate, rows)
+    connection = builder.duckdb.connect()
+    try:
+        builder._write_pair_stage(connection, candidate, streamed, batch_days=1)
+        connection.execute(
+            f"""
+            COPY (
+                WITH {builder._pair_ctes(candidate)}
+                SELECT * FROM supported
+                ORDER BY date, reserve_hour_utc, src, tgt, trade_size_usd, comparator
+            ) TO '{reference.as_posix()}' (FORMAT PARQUET, COMPRESSION ZSTD)
+            """
+        )
+    finally:
+        connection.close()
+    assert sorted_pair_stage(streamed).equals(pq.read_table(reference))
+    assert pq.read_table(streamed).equals(pq.read_table(reference))
+
+
+def test_batched_stage_bytes_and_release_are_deterministic_across_threads(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    source = tmp_path / "route_cost_panel_v2.parquet"
+    calendar = tmp_path / "unified_route_quality.parquet"
+    first_pointer = tmp_path / "first" / "current.json"
+    second_pointer = tmp_path / "second" / "current.json"
+    days = [f"2026-01-{day:02d}" for day in range(1, builder.STAGE_BATCH_DAYS + 2)]
+    rows = [
+        {**quote_row(symbol, trade_size_usd=1_000.0, output_usd=output), "date": day}
+        for day in days
+        for symbol, output in (("WETH", 990.0), ("USDC", 980.0), ("DAI", 975.0))
+    ]
+    write_source(source, rows)
+    write_calendar(calendar, [day.replace("-", "") for day in days])
+    install_without_provenance(monkeypatch)
+    first = builder.build_panel(
+        source,
+        calendar,
+        pointer_path=first_pointer,
+        cache_root=tmp_path / "first-cache",
+        threads=1,
+        memory_limit="256MB",
+    )
+    second = builder.build_panel(
+        source,
+        calendar,
+        pointer_path=second_pointer,
+        cache_root=tmp_path / "second-cache",
+        threads=2,
+        memory_limit="256MB",
+    )
+    first_panel, first_support = release_members(first_pointer)
+    second_panel, second_support = release_members(second_pointer)
+    first_candidate = next((tmp_path / "first-cache").glob("candidate-*.parquet"))
+    second_candidate = next((tmp_path / "second-cache").glob("candidate-*.parquet"))
+    first_pair = next((tmp_path / "first-cache").glob("pair-*.parquet"))
+    second_pair = next((tmp_path / "second-cache").glob("pair-*.parquet"))
+    assert first["pair_stage_rows"] == second["pair_stage_rows"]
+    assert pq.read_table(first_candidate).equals(pq.read_table(second_candidate))
+    assert first_candidate.read_bytes() == second_candidate.read_bytes()
+    assert pq.read_table(first_pair).equals(pq.read_table(second_pair))
+    assert first_pair.read_bytes() == second_pair.read_bytes()
+    assert pq.read_table(first_panel).equals(pq.read_table(second_panel))
+    assert pq.read_table(first_support).equals(pq.read_table(second_support))
 
 
 def test_streaming_pairwise_panel_retains_member_architecture_and_zero_support(

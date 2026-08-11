@@ -8,7 +8,7 @@ import json
 from datetime import datetime
 from pathlib import Path
 from tempfile import TemporaryDirectory
-from typing import Callable, Mapping
+from typing import Callable, Iterator, Mapping, Sequence
 
 import duckdb
 import pyarrow.parquet as pq
@@ -69,6 +69,7 @@ REQUIRED_SOURCE_COLUMNS = {
     "hop2_source",
     "hop2_pool",
 }
+STAGE_BATCH_DAYS = 16
 
 
 def _quoted(path: Path) -> str:
@@ -166,9 +167,29 @@ def _assert_source_perimeter(
         raise ValueError(f"route-cost source notional is outside the locked grid: {unexpected_size}")
 
 
-def _write_candidate_stage(
-    connection: duckdb.DuckDBPyConnection, source: Path, output: Path
-) -> None:
+def _date_bounds_sql(
+    first_date: str | None,
+    last_date: str | None,
+) -> str:
+    if (first_date is None) != (last_date is None):
+        raise ValueError("stage date bounds must be both present or both absent")
+    if first_date is None or last_date is None:
+        return ""
+    if first_date > last_date:
+        raise ValueError("stage date bounds are reversed")
+    return f"date BETWEEN {_sql_string(first_date)} AND {_sql_string(last_date)}"
+
+
+def _candidate_select_sql(
+    source: Path,
+    *,
+    first_date: str | None = None,
+    last_date: str | None = None,
+) -> str:
+    date_bounds = _date_bounds_sql(first_date, last_date)
+    filters = [f"lower(vehicle) IN ({_address_values_sql()})"]
+    if date_bounds:
+        filters.insert(0, date_bounds)
     projected = ",\n                ".join(
         [
             "date",
@@ -190,15 +211,32 @@ def _write_candidate_stage(
             "hop2_pool",
         ]
     )
-    connection.execute(
-        f"""
-        COPY (
-            SELECT {projected}
-            FROM read_parquet('{_quoted(source)}')
-            WHERE lower(vehicle) IN ({_address_values_sql()})
-            ORDER BY date, reserve_hour_utc, src, tgt, trade_size_usd, vehicle
-        ) TO '{_quoted(output)}' (FORMAT PARQUET, COMPRESSION ZSTD)
-        """
+    return f"""
+        SELECT {projected}
+        FROM read_parquet('{_quoted(source)}')
+        WHERE {' AND '.join(filters)}
+        ORDER BY date, reserve_hour_utc, src, tgt, trade_size_usd, vehicle
+    """
+
+
+def _write_candidate_stage(
+    connection: duckdb.DuckDBPyConnection,
+    source: Path,
+    output: Path,
+    *,
+    batch_days: int = STAGE_BATCH_DAYS,
+) -> None:
+    _write_ordered_date_batches(
+        connection,
+        source=source,
+        output=output,
+        stage="candidate",
+        batch_days=batch_days,
+        select_sql=lambda first_date, last_date: _candidate_select_sql(
+            source,
+            first_date=first_date,
+            last_date=last_date,
+        ),
     )
 
 
@@ -209,19 +247,22 @@ def _assert_candidate_stage(
     if rows < 1:
         raise ValueError("canonical route-cost panel has no locked candidate rows")
     keys = ",".join(QUOTE_CELL_KEYS)
-    duplicate = connection.execute(
-        f"""
-        SELECT {keys}, count(*) AS rows
-        FROM read_parquet('{_quoted(candidate_stage)}')
-        GROUP BY {keys}
-        HAVING count(*)<>1
-        LIMIT 1
-        """
-    ).fetchone()
-    if duplicate is not None:
-        raise ValueError(
-            f"canonical route-cost panel has duplicate candidate quote cells: {duplicate}"
-        )
+    days = _stage_dates(connection, candidate_stage)
+    for first_date, last_date in _date_batches(days, STAGE_BATCH_DAYS):
+        duplicate = connection.execute(
+            f"""
+            SELECT {keys}, count(*) AS rows
+            FROM read_parquet('{_quoted(candidate_stage)}')
+            WHERE {_date_bounds_sql(first_date, last_date)}
+            GROUP BY {keys}
+            HAVING count(*)<>1
+            LIMIT 1
+            """
+        ).fetchone()
+        if duplicate is not None:
+            raise ValueError(
+                f"canonical route-cost panel has duplicate candidate quote cells: {duplicate}"
+            )
     invalid_available = connection.execute(
         f"""
         SELECT date, reserve_hour_utc, src, tgt, vehicle, trade_size_usd
@@ -241,13 +282,20 @@ def _assert_candidate_stage(
     return rows
 
 
-def _pair_ctes(candidate_stage: Path) -> str:
+def _pair_ctes(
+    candidate_stage: Path,
+    *,
+    first_date: str | None = None,
+    last_date: str | None = None,
+) -> str:
+    date_bounds = _date_bounds_sql(first_date, last_date)
+    date_filter = f" WHERE {date_bounds}" if date_bounds else ""
     quote_keys_without_vehicle = [key for key in QUOTE_CELL_KEYS if key != "vehicle"]
     economic_keys = ", ".join(quote_keys_without_vehicle)
     join = " AND ".join(f"member.{key}=attempted.{key}" for key in quote_keys_without_vehicle)
     return f"""
         candidate_rows AS (
-            SELECT * FROM read_parquet('{_quoted(candidate_stage)}')
+            SELECT * FROM read_parquet('{_quoted(candidate_stage)}'){date_filter}
         ),
         economic_cells AS (
             SELECT {economic_keys},
@@ -324,19 +372,97 @@ def _pair_ctes(candidate_stage: Path) -> str:
     """
 
 
+def _stage_dates(
+    connection: duckdb.DuckDBPyConnection,
+    source: Path,
+) -> list[str]:
+    return [
+        str(row[0])
+        for row in connection.execute(
+            f"SELECT DISTINCT date FROM read_parquet('{_quoted(source)}') ORDER BY date"
+        ).fetchall()
+    ]
+
+
+def _date_batches(days: Sequence[str], size: int) -> Iterator[tuple[str, str]]:
+    if size < 1:
+        raise ValueError("stage date batch size must be positive")
+    for start in range(0, len(days), size):
+        batch = days[start : start + size]
+        yield batch[0], batch[-1]
+
+
+def _append_parquet(source: Path, writer: pq.ParquetWriter) -> None:
+    parquet = pq.ParquetFile(source)
+    for batch in parquet.iter_batches(batch_size=65_536):
+        writer.write_batch(batch)
+
+
+def _write_ordered_date_batches(
+    connection: duckdb.DuckDBPyConnection,
+    *,
+    source: Path,
+    output: Path,
+    stage: str,
+    batch_days: int,
+    select_sql: Callable[[str, str], str],
+) -> None:
+    days = _stage_dates(connection, source)
+    if not days:
+        raise ValueError(f"{stage} stage source has no dates")
+    writer: pq.ParquetWriter | None = None
+    try:
+        with TemporaryDirectory(
+            prefix=f"dominance-cost-{stage}-batch-",
+            dir=output.parent,
+        ) as temporary:
+            shard = Path(temporary) / "batch.parquet"
+            for first_date, last_date in _date_batches(days, batch_days):
+                connection.execute(
+                    f"COPY ({select_sql(first_date, last_date)}) "
+                    f"TO '{_quoted(shard)}' (FORMAT PARQUET, COMPRESSION ZSTD)"
+                )
+                parquet = pq.ParquetFile(shard)
+                if writer is None:
+                    writer = pq.ParquetWriter(output, parquet.schema_arrow, compression="zstd")
+                _append_parquet(shard, writer)
+                shard.unlink()
+    finally:
+        if writer is not None:
+            writer.close()
+
+
+def _pair_select_sql(
+    candidate_stage: Path,
+    *,
+    first_date: str | None = None,
+    last_date: str | None = None,
+) -> str:
+    return f"""
+        WITH {_pair_ctes(candidate_stage, first_date=first_date, last_date=last_date)}
+        SELECT * FROM supported
+        ORDER BY date, reserve_hour_utc, src, tgt, trade_size_usd, comparator
+    """
+
+
 def _write_pair_stage(
     connection: duckdb.DuckDBPyConnection,
     candidate_stage: Path,
     output: Path,
+    *,
+    batch_days: int = STAGE_BATCH_DAYS,
 ) -> None:
-    connection.execute(
-        f"""
-        COPY (
-            WITH {_pair_ctes(candidate_stage)}
-            SELECT * FROM supported
-            ORDER BY date, reserve_hour_utc, src, tgt, trade_size_usd, comparator
-        ) TO '{_quoted(output)}' (FORMAT PARQUET, COMPRESSION ZSTD)
-        """
+    _write_ordered_date_batches(
+        connection,
+        source=candidate_stage,
+        output=output,
+        stage="pair",
+        batch_days=batch_days,
+        select_sql=lambda first_date, last_date: _pair_select_sql(
+            candidate_stage,
+            first_date=first_date,
+            last_date=last_date,
+        ),
     )
 
 
@@ -634,6 +760,7 @@ def build_panel(
     cache_root: Path | None = None,
     threads: int = 1,
     memory_limit: str = "2GB",
+    max_temp_directory_size: str = "8GB",
     write_pointer: Callable[[Path, dict[str, object]], None] = write_json,
 ) -> dict[str, int | bool | str]:
     if threads < 1:
@@ -655,6 +782,9 @@ def build_panel(
         try:
             connection.execute(f"SET threads={int(threads)}")
             connection.execute(f"SET memory_limit={_sql_string(memory_limit)}")
+            connection.execute(
+                f"SET max_temp_directory_size={_sql_string(max_temp_directory_size)}"
+            )
             connection.execute("SET preserve_insertion_order=false")
             connection.execute(f"SET temp_directory={_sql_string(temporary_directory)}")
             source_rows = _assert_source_contract(connection, source)
@@ -740,6 +870,7 @@ def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--threads", type=int, default=1)
     parser.add_argument("--memory-limit", default="2GB")
+    parser.add_argument("--max-temp-directory-size", default="8GB")
     parser.add_argument("--source", type=Path, default=SOURCE)
     parser.add_argument("--calendar", type=Path, default=CALENDAR)
     parser.add_argument("--release", type=Path, default=RELEASE)
@@ -756,6 +887,7 @@ def main() -> int:
             cache_root=args.cache_root,
             threads=args.threads,
             memory_limit=args.memory_limit,
+            max_temp_directory_size=args.max_temp_directory_size,
         )
     print(
         f"validated {results['source_rows']:,} source rows; wrote {results['panel_rows']:,} supported pairs and {results['support_rows']:,} support strata from {results['attempted_pairs']:,} pair attempts"
