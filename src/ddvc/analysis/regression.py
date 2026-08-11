@@ -336,7 +336,16 @@ def ols_clustered(
         else n
     )
     cluster_arrays = [cluster_array, *additional_cluster_arrays]
-    cluster_counts = tuple(len(pd.unique(value)) for value in cluster_arrays)
+    encoded_clusters: list[tuple[np.ndarray, int]] = []
+    for index, labels in enumerate(cluster_arrays):
+        codes, unique = pd.factorize(
+            labels,
+            sort=index == 0 and cluster_hac_lag is not None,
+        )
+        if np.any(codes < 0):
+            raise RuntimeError("cluster encoding retained a missing label")
+        encoded_clusters.append((codes.astype(np.int64, copy=False), len(unique)))
+    cluster_counts = tuple(groups for _codes, groups in encoded_clusters)
     n_clusters = min(cluster_counts)
     absorbed_rank = _absorbed_fixed_effect_rank(group_arrays)
     absorbed_degrees_of_freedom = k_absorbed + max(
@@ -367,13 +376,14 @@ def ols_clustered(
         finite_sample_observations - k - absorbed_degrees_of_freedom
     )
 
-    def clustered_covariance(labels: object, *, ordered_hac_lag: int | None = None) -> np.ndarray:
-        codes, unique = pd.factorize(labels, sort=ordered_hac_lag is not None)
-        groups = len(unique)
+    def clustered_covariance(codes: np.ndarray, groups: int, *, ordered_hac_lag: int | None = None) -> np.ndarray:
         scores = np.zeros((groups, k))
-        for code in range(groups):
-            selected = codes == code
-            scores[code] = x_array[selected].T @ residual[selected]
+        for column in range(k):
+            scores[:, column] = np.bincount(
+                codes,
+                weights=x_array[:, column] * residual,
+                minlength=groups,
+            )
         meat = scores.T @ scores
         if ordered_hac_lag is not None:
             for offset in range(1, min(ordered_hac_lag, groups - 1) + 1):
@@ -383,15 +393,21 @@ def ols_clustered(
         scale = (groups / (groups - 1)) * residual_dof_scale
         return scale * xtx_inverse @ meat @ xtx_inverse
 
+    primary_codes, primary_groups = encoded_clusters[0]
     covariance = clustered_covariance(
-        cluster_array,
+        primary_codes,
+        primary_groups,
         ordered_hac_lag=cluster_hac_lag,
     )
-    if additional_cluster_arrays:
-        second = additional_cluster_arrays[0]
-        intersection = pd.MultiIndex.from_arrays([cluster_array, second])
-        covariance += clustered_covariance(second)
-        covariance -= clustered_covariance(intersection)
+    if len(encoded_clusters) == 2:
+        second_codes, second_groups = encoded_clusters[1]
+        intersection_labels = primary_codes * second_groups + second_codes
+        intersection_codes, intersection_unique = pd.factorize(intersection_labels, sort=False)
+        covariance += clustered_covariance(second_codes, second_groups)
+        covariance -= clustered_covariance(
+            intersection_codes.astype(np.int64, copy=False),
+            len(intersection_unique),
+        )
     return ClusteredOLSResult(
         beta=beta,
         covariance=covariance,

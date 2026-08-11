@@ -331,6 +331,23 @@ class RegressionPrimitiveTests(unittest.TestCase):
         expected_p = 2 * stats.t.sf(abs(result.t_statistics), 2)
         np.testing.assert_allclose(result.p_values, expected_p)
 
+    def test_many_cluster_groups_use_bounded_grouped_score_accumulation(self) -> None:
+        rows = 40_000
+        x_value = np.linspace(-2.0, 2.0, rows)
+        outcome = 1.5 + 0.4 * x_value + np.sin(np.arange(rows) / 13.0)
+        first = np.arange(rows) // 2
+        second = np.arange(rows) % 101
+        result = ols_clustered(
+            outcome,
+            x_value,
+            first,
+            additional_clusters=(second,),
+        )
+        self.assertEqual(result.n_observations, rows)
+        self.assertEqual(result.cluster_counts, (20_000, 101))
+        np.testing.assert_allclose(result.beta, [1.5, 0.4], atol=1e-3)
+        self.assertTrue(np.isfinite(result.covariance).all())
+
     def test_multiway_cluster_rejects_hac_and_a_third_dimension(self) -> None:
         values = np.arange(8, dtype=float)
         first = np.repeat(["a", "b"], 4)
