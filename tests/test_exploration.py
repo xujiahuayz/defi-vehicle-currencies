@@ -54,7 +54,7 @@ def test_literature_attack_crosswalk_matches_template_exactly() -> None:
     audit = (REPO_ROOT / "docs/literature-audit.md").read_text(encoding="utf-8")
     section = audit.split("## Pre-D3 attack-feasibility crosswalk", 1)[1].split("## Incident findings already established", 1)[0]
     rows = re.findall(r"^\| `([^`]+_e0)` \| `([^`]+)` \|", section, flags=re.MULTILINE)
-    assert len(rows) == len(expected) == 36
+    assert len(rows) == len(expected) == 37
     assert len(set(rows)) == len(rows)
     assert set(rows) == expected
 

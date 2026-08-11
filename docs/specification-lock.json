@@ -8,7 +8,7 @@
   "d3_certificate": null,
   "exploration_generation": null,
   "exploration_certificate": null,
-  "lock_hash": "066716f7b6dd9c527b82c0bf69548ee4a80dc5458d1bc2e5acf6eb66103c9ab6",
+  "lock_hash": "632a7695f994271d207455a4a7d1fc6291eec5bc453ed7c09df2bd064b2ef84d",
   "paper_scope": "The making and displacement of vehicle-currency roles in Ethereum decentralised exchange",
   "global_rules": {
     "asset_identity": "canonical contract address; symbols are labels only",
@@ -266,6 +266,12 @@
           "near-range signed net dollar flow",
           "gross candidate flow share",
           "near-range gross flow share"
+        ],
+        "v2_calendar_perimeter": [
+          "full V2-family measurement calendar",
+          "pre-Uniswap-V3-launch V2-family subsample using the canonical protocol launch clock",
+          "balanced V2 pool and venue perimeter observed before and after the Uniswap V3 launch",
+          "post-Uniswap-V3-launch V2-family comparison"
         ],
         "response_horizon_days": [
           1,

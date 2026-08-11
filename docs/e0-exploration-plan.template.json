@@ -81,6 +81,7 @@
       "required_attack_ids": [
         "bidirectional_exact_horizons",
         "v2_stock_v3_flow_separation",
+        "v2_calendar_perimeter_subsamples",
         "absolute_share_sign_stability",
         "common_shock_price_risk_placebos",
         "stress_heterogeneity",
