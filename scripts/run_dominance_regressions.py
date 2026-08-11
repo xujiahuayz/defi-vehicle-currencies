@@ -124,7 +124,7 @@ def main() -> int:
     mix = f.groupby("cell").native.agg(["mean", "size"])
     ident = mix[(mix["mean"] > 0) & (mix["mean"] < 1)].index
     c = f[f.cell.isin(ident)].copy()
-    dm = demean(c, ["dominated", "native", "log_usd"], c.cell)
+    dm = absorb_fixed_effects(c[["dominated", "native", "log_usd"]], c.cell)
     X4 = np.column_stack([dm.native, dm.log_usd])
     rows.append(report("(4) pair-by-day FE", dm.dominated.to_numpy(), X4,
                        ["native", "log_usd"], c.pair.to_numpy(),
@@ -133,7 +133,10 @@ def main() -> int:
 
     # same design on the continuous outcome, so the result is not an artefact of
     # the binary threshold
-    dmg = demean(c.assign(gap=c.gap_bps), ["gap", "native", "log_usd"], c.cell)
+    dmg = absorb_fixed_effects(
+        c.assign(gap=c.gap_bps)[["gap", "native", "log_usd"]],
+        c.cell,
+    )
     rows.append(report("(5) pair-by-day FE, gap_bps outcome",
                        dmg.gap.to_numpy(),
                        np.column_stack([dmg.native, dmg.log_usd]),
