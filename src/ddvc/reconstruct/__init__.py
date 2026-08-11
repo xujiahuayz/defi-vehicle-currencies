@@ -38,7 +38,6 @@ which validated to 0.24%) are trusted as-is and only sanity-capped.
 """
 from __future__ import annotations
 
-import gzip
 import hashlib
 import inspect
 import json
@@ -49,7 +48,9 @@ from pathlib import Path
 
 import pandas as pd
 
+from ddvc.artifact_release import canonical_json_sha256, file_sha256, is_sha256
 from ddvc.calendar import RESEARCH_SAMPLE_END, RESEARCH_SAMPLE_START, calendar_days
+from ddvc.fetch.raw import RawFetchInvariantError, verified_source_day_rows
 from ddvc.fetch.sources import get_source
 from ddvc.paths import DATA_DIR, OUTPUT_DIR, RAW_MARKET_DATA_LOCK
 from ddvc.provenance import code_fingerprint
@@ -91,6 +92,7 @@ UNIFIED_QUALITY_COLUMNS = [
     "output_rows",
     "output_bytes",
     "output_mtime_ns",
+    "output_sha256",
     "passed",
 ]
 UNIFIED_QUALITY_PANEL = DATA_DIR / "processed" / "unified_route_quality.parquet"
@@ -354,19 +356,15 @@ def load_legs(
         return []
     fn = NORMALISERS[DEX_FAMILY[dex]]
     legs: list[dict] = []
-    with gzip.open(path, "rt") as fh:
-        for line in fh:
-            line = line.strip()
-            if not line:
-                continue
+    with verified_source_day_rows(
+        dex,
+        DEX_STREAM[dex],
+        datetime.strptime(day, "%Y-%m-%d").date(),
+        data_root=data_root or DATA_DIR,
+    ) as rows:
+        for rec in rows:
             if counters is not None:
                 counters["raw_rows"] += 1
-            try:
-                rec = json.loads(line)
-            except json.JSONDecodeError:
-                if counters is not None:
-                    counters["malformed_rows"] += 1
-                continue
             leg = fn(rec)
             if not (
                 leg
@@ -562,6 +560,7 @@ def _empty_quality(day: str, active_sources: list[str]) -> dict[str, object]:
         "output_rows": 0,
         "output_bytes": 0,
         "output_mtime_ns": 0,
+        "output_sha256": "",
         "passed": False,
     }
 
@@ -590,18 +589,53 @@ def route_input_paths(
     ]
 
 
-def route_input_fingerprint(paths: list[Path]) -> str:
-    """Cheap exact-partition identity for atomically replaced immutable inputs."""
-    digest = hashlib.sha256()
-    for path in sorted(paths):
-        digest.update(path.name.encode())
-        if not path.exists():
-            digest.update(b"<missing>")
+def _route_input_generation_records(
+    day: str,
+    dexes: list[str],
+    *,
+    data_root: Path | None = None,
+) -> tuple[list[dict[str, str]], list[str]]:
+    from ddvc.raw_certification import raw_partition_generation_identity
+
+    stamp = day.replace("-", "")
+    root = data_root or DATA_DIR
+    records: list[dict[str, str]] = []
+    unavailable: list[str] = []
+    for dex in active_route_sources(day, dexes):
+        try:
+            identity = raw_partition_generation_identity(
+                dex, DEX_STREAM[dex], stamp, data_root=root
+            )
+        except (FileNotFoundError, OSError, RawFetchInvariantError, ValueError):
+            unavailable.append(dex)
             continue
-        stat = path.stat()
-        digest.update(str(stat.st_size).encode())
-        digest.update(str(stat.st_mtime_ns).encode())
-    return digest.hexdigest()
+        records.append(
+            {
+                "source": dex,
+                "stream": DEX_STREAM[dex],
+                "day": stamp,
+                "generation_identity_sha256": identity,
+            }
+        )
+    return records, unavailable
+
+
+def route_input_fingerprint(
+    day: str,
+    dexes: list[str],
+    *,
+    data_root: Path | None = None,
+) -> str:
+    """Bind an exact route day to committed content and query generations."""
+
+    records, unavailable = _route_input_generation_records(
+        day, dexes, data_root=data_root
+    )
+    if unavailable:
+        raise RawFetchInvariantError(
+            f"route inputs lack committed generation identity: {', '.join(unavailable)}"
+        )
+    return canonical_json_sha256(records)
 
 
 def _deduplicate_legs(
@@ -637,10 +671,12 @@ def reconstruct_day_with_quality(
     active = active_route_sources(day, dexes)
     quality = _empty_quality(day, active)
     inputs = route_input_paths(day, dexes, data_root=data_root)
-    quality["input_fingerprint"] = route_input_fingerprint(inputs)
-    missing = [path for path in inputs if not path.exists()]
-    quality["missing_sources"] = len(missing)
-    if missing:
+    records, unavailable = _route_input_generation_records(
+        day, dexes, data_root=data_root
+    )
+    quality["input_fingerprint"] = canonical_json_sha256(records)
+    quality["missing_sources"] = len(unavailable)
+    if unavailable:
         return pd.DataFrame(), quality
 
     all_legs: list[dict] = []
@@ -853,8 +889,10 @@ def read_unified_quality(
         quality = json.loads(marker.read_text())
     except (json.JSONDecodeError, OSError):
         return None
-    inputs = route_input_paths(day, dexes, data_root=data_root)
-    current = route_input_fingerprint(inputs)
+    try:
+        current = route_input_fingerprint(day, dexes, data_root=data_root)
+    except (FileNotFoundError, OSError, RawFetchInvariantError, ValueError):
+        return None
     output_stat = output.stat()
     if (
         quality.get("engine") != RECONSTRUCTION_ENGINE
@@ -863,6 +901,8 @@ def read_unified_quality(
         or int(quality.get("output_rows", -1)) < 0
         or int(quality.get("output_bytes", -1)) != output_stat.st_size
         or int(quality.get("output_mtime_ns", -1)) != output_stat.st_mtime_ns
+        or not is_sha256(quality.get("output_sha256"))
+        or quality.get("output_sha256") != file_sha256(output)
     ):
         return None
     return quality
@@ -894,6 +934,7 @@ def _process_one(
     output_stat = out.stat()
     quality["output_bytes"] = output_stat.st_size
     quality["output_mtime_ns"] = output_stat.st_mtime_ns
+    quality["output_sha256"] = file_sha256(out)
     _write_quality_marker(quality, unified_root=unified_root)
     return quality, "written"
 

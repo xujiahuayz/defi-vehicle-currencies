@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import gzip
 import json
+import os
 import tempfile
 import unittest
 from pathlib import Path
@@ -18,6 +19,10 @@ from ddvc.reconstruct import (
     read_unified_quality,
     route_input_paths,
 )
+from ddvc.fetch.raw import graph_query_contract_sha256, raw_stream_identity
+from ddvc.fetch.schemas import get_schema
+from ddvc.fetch.sources import get_source
+from ddvc.provenance import portable_content_sha256
 
 
 USDC = "0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48"
@@ -45,7 +50,38 @@ def write_v2_swap(data_root: Path, day: str, *, amount_in: str = "100") -> Path:
     }
     with gzip.open(path, "wt") as handle:
         handle.write(json.dumps(row) + "\n")
+    write_committed_marker(path, day)
     return path
+
+
+def write_committed_marker(path: Path, day: str) -> None:
+    source = get_source("uniswap_v2")
+    entity = next(
+        entity for entity in get_schema(source.schema).entities if entity.stream == "swaps"
+    )
+    stamp = day.replace("-", "")
+    marker = path.with_name(f"uniswap_v2_meta_{stamp}.json")
+    marker.write_text(
+        json.dumps(
+            {
+                "source": "uniswap_v2",
+                "day": day,
+                "streams": {
+                    "swaps": {
+                        "path": raw_stream_identity(path),
+                        "rows": 0,
+                        "logical_content_sha256": portable_content_sha256(path),
+                        "query_contract_sha256": graph_query_contract_sha256(entity),
+                        "head_block_at_fetch": 20_000_000,
+                    }
+                },
+                "promotion": {
+                    "policy": "raw-source-day-promotion-v1",
+                    "promotion_id": "1" * 64,
+                },
+            }
+        )
+    )
 
 
 class ReconstructGateTests(unittest.TestCase):
@@ -103,6 +139,41 @@ class ReconstructGateTests(unittest.TestCase):
             )
             frame = pd.read_parquet(unified_root / "20200505.parquet")
             self.assertEqual(frame.loc[0, "amount_in"], 100.0)
+            marker = raw.with_name("uniswap_v2_meta_20200505.json")
+            marker_payload = json.loads(marker.read_text())
+            marker_payload["streams"]["swaps"]["query_contract_sha256"] = "0" * 64
+            marker.write_text(json.dumps(marker_payload))
+            self.assertIsNone(
+                read_unified_quality(
+                    "2020-05-05",
+                    ["uniswap_v2"],
+                    data_root=data_root,
+                    unified_root=unified_root,
+                )
+            )
+            write_committed_marker(raw, "2020-05-05")
+            output = unified_root / "20200505.parquet"
+            original = output.stat()
+            payload = bytearray(output.read_bytes())
+            payload[-1] ^= 1
+            output.write_bytes(payload)
+            os.utime(output, ns=(original.st_atime_ns, original.st_mtime_ns))
+            self.assertIsNone(
+                read_unified_quality(
+                    "2020-05-05",
+                    ["uniswap_v2"],
+                    data_root=data_root,
+                    unified_root=unified_root,
+                )
+            )
+            quality, status = _process_one(
+                "2020-05-05",
+                ["uniswap_v2"],
+                True,
+                data_root,
+                unified_root,
+            )
+            self.assertEqual(status, "written")
             write_v2_swap(data_root, "2020-05-05", amount_in="101")
             self.assertIsNone(
                 read_unified_quality(
@@ -122,6 +193,7 @@ class ReconstructGateTests(unittest.TestCase):
             raw.parent.mkdir(parents=True, exist_ok=True)
             with gzip.open(raw, "wt"):
                 pass
+            write_committed_marker(raw, "2020-05-05")
             quality, status = _process_one(
                 "2020-05-05",
                 ["uniswap_v2"],
