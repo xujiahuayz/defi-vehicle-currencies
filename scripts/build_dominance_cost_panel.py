@@ -32,18 +32,17 @@ from ddvc.analysis.dominance_cost_release import (
     resolve_dominance_cost_release,
 )
 from ddvc.artifact_release import publish_artifact_release
+from ddvc.calendar import RESEARCH_SAMPLE_END, RESEARCH_SAMPLE_START, calendar_days
 from ddvc.d3_stage_registry import D3_BUILD_STAGES
 from ddvc.fetch.raw import write_json
 from ddvc.paths import DATA_DIR, REPO_ROOT
 from ddvc.provenance import cache_key, install_stamped_artifact, prepare_stamp, require_current_artifacts, sidecar_path, verify
-from ddvc.reconstruct import UNIFIED_QUALITY_PANEL
 from ddvc.release_calendar import released_route_days
 from ddvc.route_cost import MAIN_ROUTE_COST_SPEC, QUOTE_CELL_KEYS
 from ddvc.runtime import exclusive_job, staged_output
 
 
 SOURCE = DATA_DIR / "empirical" / "route_cost_panel_v2.parquet"
-CALENDAR = UNIFIED_QUALITY_PANEL
 CACHE_ROOT = DATA_DIR / "processed" / "_dominance_cost_pair_stage"
 LOCK = DATA_DIR / "processed" / ".dominance_cost_panel.lock"
 CACHE_CODE_SOURCES = [
@@ -754,7 +753,7 @@ def _assert_sole_materializer() -> None:
 
 def build_panel(
     source: Path,
-    calendar: Path,
+    calendar: Path | None,
     *,
     pointer_path: Path = RELEASE,
     cache_root: Path | None = None,
@@ -788,10 +787,12 @@ def build_panel(
             connection.execute("SET preserve_insertion_order=false")
             connection.execute(f"SET temp_directory={_sql_string(temporary_directory)}")
             source_rows = _assert_source_contract(connection, source)
-            calendar_days = _route_calendar_days(
+            release_days = _route_calendar_days(
                 released_route_days(calendar, nonempty=False)
+                if calendar is not None
+                else calendar_days(RESEARCH_SAMPLE_START, RESEARCH_SAMPLE_END)
             )
-            _assert_source_perimeter(connection, source, calendar_days)
+            _assert_source_perimeter(connection, source, release_days)
             candidate_rows, candidate_reused = _ensure_candidate_stage(
                 connection, source, candidate_stage
             )
@@ -799,7 +800,7 @@ def build_panel(
                 connection, source, candidate_stage, pair_stage
             )
             expected_support_rows = (
-                len(calendar_days)
+                len(release_days)
                 * len(MAIN_ROUTE_COST_SPEC.trade_sizes_usd)
                 * len(COMPARATOR_VEHICLES)
             )
@@ -836,7 +837,7 @@ def build_panel(
                 writers={
                     "panel": lambda path: _write_panel(connection, pair_stage, path),
                     "support": lambda path: _write_support(
-                        connection, calendar_days, pair_stage, path
+                        connection, release_days, pair_stage, path
                     ),
                 },
                 row_counts={
@@ -844,7 +845,12 @@ def build_panel(
                     "support": expected_support_rows,
                 },
                 code_sources=RELEASE_CODE_SOURCES,
-                inputs=[source, calendar, candidate_stage, pair_stage],
+                inputs=[
+                    source,
+                    *([calendar] if calendar is not None else []),
+                    candidate_stage,
+                    pair_stage,
+                ],
                 notes="immutable pairwise WETH-versus-comparator outcomes and full zero-retention support; no all-five balance; prior generations retained as evidence",
                 validate_staged=validate_staged,
                 write_pointer=write_pointer,
@@ -854,7 +860,7 @@ def build_panel(
             connection.close()
     return {
         "source_rows": source_rows,
-        "calendar_days": len(calendar_days),
+        "calendar_days": len(release_days),
         "candidate_rows": candidate_rows,
         "pair_stage_rows": pair_stage_rows,
         "panel_rows": panel_rows,
@@ -872,13 +878,17 @@ def main() -> int:
     parser.add_argument("--memory-limit", default="2GB")
     parser.add_argument("--max-temp-directory-size", default="8GB")
     parser.add_argument("--source", type=Path, default=SOURCE)
-    parser.add_argument("--calendar", type=Path, default=CALENDAR)
+    parser.add_argument(
+        "--calendar",
+        type=Path,
+        help="optional released route-quality calendar override; production uses the fixed research perimeter",
+    )
     parser.add_argument("--release", type=Path, default=RELEASE)
     parser.add_argument("--cache-root", type=Path, default=CACHE_ROOT)
     args = parser.parse_args()
     _assert_sole_materializer()
-    if args.source == SOURCE and args.calendar == CALENDAR:
-        require_current_artifacts([SOURCE, CALENDAR], consumer="dominance-cost D3 materializer")
+    if args.source == SOURCE and args.calendar is None:
+        require_current_artifacts([SOURCE], consumer="dominance-cost D3 materializer")
     with exclusive_job(LOCK, job="pairwise dominance-cost D3 materialization"):
         results = build_panel(
             args.source,

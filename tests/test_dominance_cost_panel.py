@@ -352,6 +352,38 @@ def test_streaming_pairwise_panel_retains_member_architecture_and_zero_support(
     assert panel.read_bytes() == panel_digest
 
 
+def test_production_calendar_uses_fixed_research_perimeter_without_route_ledger(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    source = tmp_path / "route_cost_panel_v2.parquet"
+    pointer = tmp_path / "release" / "current.json"
+    write_source(
+        source,
+        [
+            quote_row("WETH", trade_size_usd=1_000.0, output_usd=990.0),
+            quote_row("USDC", trade_size_usd=1_000.0, output_usd=980.0),
+        ],
+    )
+    monkeypatch.setattr(builder, "RESEARCH_SAMPLE_START", "20260101")
+    monkeypatch.setattr(builder, "RESEARCH_SAMPLE_END", "20260102")
+    install_without_provenance(monkeypatch)
+    result = builder.build_panel(
+        source,
+        None,
+        pointer_path=pointer,
+        memory_limit="256MB",
+    )
+    _panel, support = release_members(pointer)
+    ledger = pq.read_table(support).to_pandas()
+    assert result["calendar_days"] == 2
+    assert result["support_rows"] == 24
+    assert set(ledger["date"]) == {"2026-01-01", "2026-01-02"}
+    assert not ledger.loc[
+        ledger["date"].eq("2026-01-02"), list(SUPPORT_STAGES)
+    ].to_numpy().any()
+
+
 def test_pair_member_method_drift_fails_before_publication(
     tmp_path: Path, monkeypatch: pytest.MonkeyPatch
 ) -> None:
