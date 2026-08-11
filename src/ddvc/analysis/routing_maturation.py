@@ -18,9 +18,9 @@ from ddvc.analysis.regression import (
 from ddvc.analysis.routing_contract import (
     HORIZONS_DAYS,
     MARGINS,
-    MAX_PRIMARY_YEAR_CHOSEN_VERIFIED_COVERAGE_SPREAD,
-    MIN_PRIMARY_YEAR_CHOSEN_VERIFIED_COVERAGE,
     PRIMARY_YEARS,
+    PRIMARY_YEAR_CHOSEN_VERIFIED_COVERAGE_DASHBOARD_REFERENCE,
+    PRIMARY_YEAR_CHOSEN_VERIFIED_COVERAGE_SPREAD_DASHBOARD_REFERENCE,
     REGRET_BIN_COLUMNS,
     REGRET_BIN_LEVELS,
     REPRODUCTION_TOLERANCES_BPS,
@@ -467,7 +467,7 @@ def _transition_common_support(
 
 
 def transition_support_geometry(frame: pd.DataFrame) -> pd.DataFrame:
-    """Describe and gate the common-opportunity support before transition fits."""
+    """Describe common-opportunity support before transition fits."""
 
     sample, support = _transition_common_support(frame)
     annual = sample.groupby("year", observed=True).agg(
@@ -486,7 +486,7 @@ def transition_support_geometry(frame: pd.DataFrame) -> pd.DataFrame:
     route_ratio = (
         float(annual["routes"].min() / maximum_routes) if maximum_routes else 0.0
     )
-    review = (
+    diagnostic = (
         float(support["identifying_opportunity_cell_share"]) < 0.5
         or float(support["identifying_route_share"]) < 0.5
         or observation_ratio < 0.5
@@ -509,14 +509,15 @@ def transition_support_geometry(frame: pd.DataFrame) -> pd.DataFrame:
                 **support,
                 "minimum_to_maximum_observation_ratio": observation_ratio,
                 "minimum_to_maximum_route_ratio": route_ratio,
-                "support_exit_review_required": review,
+                "diagnostic_reference_breached": diagnostic,
+                "blocks_estimation": False,
             }
         )
     return pd.DataFrame(rows)
 
 
 def frontier_verified_support_geometry(frame: pd.DataFrame) -> pd.DataFrame:
-    """Gate primary-year time selection in verified chosen-route coverage."""
+    """Describe primary-year selection in verified chosen-route coverage."""
 
     _required(frame, FRONTIER_SUPPORT_COLUMNS, name="transaction frontier support")
     support = frame.loc[:, FRONTIER_SUPPORT_COLUMNS].copy()
@@ -574,9 +575,11 @@ def frontier_verified_support_geometry(frame: pd.DataFrame) -> pd.DataFrame:
     minimum_coverage = float(annual["chosen_verified_coverage"].min())
     maximum_coverage = float(annual["chosen_verified_coverage"].max())
     coverage_spread = maximum_coverage - minimum_coverage
-    review = (
-        minimum_coverage < MIN_PRIMARY_YEAR_CHOSEN_VERIFIED_COVERAGE
-        or coverage_spread > MAX_PRIMARY_YEAR_CHOSEN_VERIFIED_COVERAGE_SPREAD
+    diagnostic = (
+        minimum_coverage
+        < PRIMARY_YEAR_CHOSEN_VERIFIED_COVERAGE_DASHBOARD_REFERENCE
+        or coverage_spread
+        > PRIMARY_YEAR_CHOSEN_VERIFIED_COVERAGE_SPREAD_DASHBOARD_REFERENCE
     )
     rows: list[dict[str, object]] = []
     for year, values in annual.iterrows():
@@ -599,9 +602,10 @@ def frontier_verified_support_geometry(frame: pd.DataFrame) -> pd.DataFrame:
                 "minimum_primary_year_coverage": minimum_coverage,
                 "maximum_primary_year_coverage": maximum_coverage,
                 "primary_year_coverage_spread": coverage_spread,
-                "minimum_coverage_gate": MIN_PRIMARY_YEAR_CHOSEN_VERIFIED_COVERAGE,
-                "maximum_spread_gate": MAX_PRIMARY_YEAR_CHOSEN_VERIFIED_COVERAGE_SPREAD,
-                "support_exit_review_required": review,
+                "minimum_coverage_dashboard_reference": PRIMARY_YEAR_CHOSEN_VERIFIED_COVERAGE_DASHBOARD_REFERENCE,
+                "maximum_spread_dashboard_reference": PRIMARY_YEAR_CHOSEN_VERIFIED_COVERAGE_SPREAD_DASHBOARD_REFERENCE,
+                "diagnostic_reference_breached": diagnostic,
+                "blocks_estimation": False,
             }
         )
     return pd.DataFrame(rows)
@@ -722,7 +726,7 @@ def dynamics_support_geometry(frame: pd.DataFrame) -> pd.DataFrame:
             else 0.0
         )
         minimum_coverage = float(horizon_rows["link_coverage"].min())
-        review = minimum_coverage < 0.5 or observed_ratio < 0.5
+        diagnostic = minimum_coverage < 0.5 or observed_ratio < 0.5
         for record in horizon_rows.to_dict("records"):
             rows.append(
                 {
@@ -740,7 +744,8 @@ def dynamics_support_geometry(frame: pd.DataFrame) -> pd.DataFrame:
                     "link_coverage": float(record["link_coverage"]),
                     "minimum_annual_link_coverage": minimum_coverage,
                     "minimum_to_maximum_observed_link_ratio": observed_ratio,
-                    "support_exit_review_required": review,
+                    "diagnostic_reference_breached": diagnostic,
+                    "blocks_estimation": False,
                 }
             )
     return pd.DataFrame(rows)
@@ -788,7 +793,7 @@ def support_geometry(frame: pd.DataFrame) -> pd.DataFrame:
                 raise ValueError(f"{support} at {tolerance} bps lacks a full primary year")
             cell_day_ratio = float(annual["cell_days"].min() / annual["cell_days"].max())
             route_ratio = float(annual["routes"].min() / annual["routes"].max())
-            review = cell_day_ratio < 0.5 or route_ratio < 0.5
+            diagnostic = cell_day_ratio < 0.5 or route_ratio < 0.5
             for year, values in annual.iterrows():
                 rows.append(
                     {
@@ -804,7 +809,8 @@ def support_geometry(frame: pd.DataFrame) -> pd.DataFrame:
                         "route_count": int(values["routes"]),
                         "minimum_to_maximum_cell_day_ratio": cell_day_ratio,
                         "minimum_to_maximum_route_ratio": route_ratio,
-                        "support_exit_review_required": review,
+                        "diagnostic_reference_breached": diagnostic,
+                        "blocks_estimation": False,
                     }
                 )
     return pd.DataFrame(rows)

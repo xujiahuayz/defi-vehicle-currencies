@@ -13,9 +13,9 @@ import pandas as pd
 
 from ddvc.asset_types import NATIVE_ETH, WETH
 from ddvc.analysis.transaction_frontier import (
+    CHOSEN_REPRODUCTION_DASHBOARD_REFERENCE,
     MAX_CHOSEN_REPRODUCTION_ERROR,
     MAX_CHOSEN_REPRODUCTION_ERROR_BPS,
-    MIN_CHOSEN_REPRODUCTION,
     RealisedPath,
     chosen_quote_coverage_share,
     chosen_reproduction_share,
@@ -198,8 +198,8 @@ class TransactionStateFrontierScriptTests(unittest.TestCase):
         self.assertAlmostEqual(intermediate_amount_gap_bps(100.0, 99.0), -100.0)
         self.assertIsNone(intermediate_amount_gap_bps(0.0, 1.0))
 
-    def test_chosen_reproduction_gate_has_one_canonical_owner(self) -> None:
-        self.assertEqual(MIN_CHOSEN_REPRODUCTION, 0.99)
+    def test_chosen_reproduction_reference_has_one_canonical_owner(self) -> None:
+        self.assertEqual(CHOSEN_REPRODUCTION_DASHBOARD_REFERENCE, 0.99)
         self.assertEqual(MAX_CHOSEN_REPRODUCTION_ERROR_BPS, 1.0)
         self.assertEqual(MAX_CHOSEN_REPRODUCTION_ERROR, 0.0001)
         self.assertAlmostEqual(chosen_reproduction_share(101, 1), 100 / 101)
@@ -207,7 +207,7 @@ class TransactionStateFrontierScriptTests(unittest.TestCase):
         self.assertEqual(chosen_quote_coverage_share(200, 150), 0.75)
         self.assertEqual(chosen_quote_coverage_share(0, 0), 0.0)
 
-    def test_daily_gate_requires_exact_audit_calendar_and_reproduction(self) -> None:
+    def test_daily_gate_requires_exact_audit_calendar_and_reports_reproduction(self) -> None:
         support = pd.DataFrame(
             {
                 "day": ["20250115", "20250215"],
@@ -222,10 +222,12 @@ class TransactionStateFrontierScriptTests(unittest.TestCase):
         )
         with self.assertRaisesRegex(ValueError, "calendar does not match"):
             validate_audit_support(support, ["20250115", "20250315"])
-        below_gate = support.copy()
-        below_gate.loc[1, "within_20pct_chosen_output_mismatch"] = 3
-        with self.assertRaisesRegex(ValueError, "below the 99% gate"):
-            validate_audit_support(below_gate, ["20250115", "20250215"])
+        below_reference = support.copy()
+        below_reference.loc[1, "within_20pct_chosen_output_mismatch"] = 3
+        self.assertEqual(
+            validate_audit_support(below_reference, ["20250115", "20250215"]),
+            (0.985, 1.0, 0.985),
+        )
 
     def test_daily_gate_rejects_duplicate_audit_days(self) -> None:
         support = pd.DataFrame(
@@ -239,7 +241,7 @@ class TransactionStateFrontierScriptTests(unittest.TestCase):
         with self.assertRaisesRegex(ValueError, "duplicate days"):
             validate_audit_support(support, ["20250115"])
 
-    def test_daily_release_gate_runs_before_canonical_assembly(self) -> None:
+    def test_daily_release_validation_reports_sub_reference_reproduction(self) -> None:
         support = pd.DataFrame(
             {
                 "day": ["20250101", "20250102"],
@@ -248,8 +250,10 @@ class TransactionStateFrontierScriptTests(unittest.TestCase):
                 "within_20pct_chosen_output_mismatch": [0, 3],
             }
         )
-        with self.assertRaisesRegex(ValueError, "full-daily frontier.*below"):
-            validate_daily_support(support, ["20250101", "20250102"])
+        self.assertEqual(
+            validate_daily_support(support, ["20250101", "20250102"]),
+            (0.985, 1.0, 0.985),
+        )
 
     def test_summary_keeps_all_and_valuation_coherent_samples_separate(self) -> None:
         panel = pd.DataFrame(

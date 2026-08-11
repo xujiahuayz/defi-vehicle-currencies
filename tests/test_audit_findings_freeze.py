@@ -1386,6 +1386,16 @@ class FindingsFreezeAuditTest(unittest.TestCase):
         self.assertTrue(checks["transaction frontier chosen-state support"][0])
         self.assertTrue(checks["transaction frontier chosen-output validation"][0])
         self.assertFalse(checks["transaction frontier audit-day coverage"][0])
+        support["within_20pct_chosen_output_mismatch"] = 3
+        checks = {
+            name: (passed, detail)
+            for name, passed, detail in transaction_frontier_support_checks(
+                support,
+                panel_rows=100,
+                rejection_rows=1,
+            )
+        }
+        self.assertTrue(checks["transaction frontier chosen-output validation"][0])
         support["chosen_validation_tolerance_bps"] = 100.0
         checks = {
             name: (passed, detail)

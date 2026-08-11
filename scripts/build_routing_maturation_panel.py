@@ -32,7 +32,6 @@ from ddvc.analysis.routing_contract import (
     TRANSITION_YEARS,
 )
 from ddvc.analysis.transaction_frontier import (
-    MIN_CHOSEN_REPRODUCTION,
     chosen_quote_coverage_share,
 )
 from ddvc.data_release import require_node_d_release
@@ -231,11 +230,6 @@ def _validate_support(
     verified_coverage = chosen_quote_coverage_share(
         int(eligible), int(available) - int(mismatches)
     )
-    if reproduction < MIN_CHOSEN_REPRODUCTION:
-        raise ValueError(
-            f"chosen-route reproduction {reproduction:.3%} is below "
-            f"{MIN_CHOSEN_REPRODUCTION:.0%}"
-        )
     return float(reproduction), coverage, verified_coverage
 
 

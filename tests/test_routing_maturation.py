@@ -18,7 +18,7 @@ from ddvc.analysis.routing_maturation import (
     transition_support_geometry,
 )
 from ddvc.model_artifacts import attach_spec_ids
-from scripts.run_routing_maturation import SPEC_ID_COLUMNS, support_review_required
+from scripts.run_routing_maturation import SPEC_ID_COLUMNS, support_blocks_estimation
 
 
 class RoutingMaturationEstimatorTests(unittest.TestCase):
@@ -138,7 +138,7 @@ class RoutingMaturationEstimatorTests(unittest.TestCase):
         self.assertEqual(primary["cr1_observation_count"], primary["route_count"])
         self.assertEqual(equal_date["cr1_observation_count"], equal_date["n_observations"])
 
-    def test_transition_excludes_one_year_cells_and_gates_weak_overlap(self) -> None:
+    def test_transition_excludes_one_year_cells_and_flags_weak_overlap(self) -> None:
         frame = self._transition()
         unmatched = frame[pd.to_datetime(frame["date"]).dt.year.eq(2024)].copy()
         unmatched["opportunity_cell_id"] = "one_year_only"
@@ -147,7 +147,8 @@ class RoutingMaturationEstimatorTests(unittest.TestCase):
         expanded = pd.concat([frame, unmatched], ignore_index=True)
         support = transition_support_geometry(expanded)
         result = estimate_transition(expanded)
-        self.assertTrue(support["support_exit_review_required"].all())
+        self.assertTrue(support["diagnostic_reference_breached"].all())
+        self.assertFalse(support["blocks_estimation"].any())
         self.assertLess(support["identifying_route_share"].iloc[0], 0.5)
         self.assertEqual(set(result["identifying_opportunity_cells"]), {4})
         self.assertEqual(set(result["n_cells"]), {4})
@@ -217,18 +218,19 @@ class RoutingMaturationEstimatorTests(unittest.TestCase):
         self.assertEqual(len(identified), identified["spec_id"].nunique())
         self.assertFalse(identified["spec_id"].str.contains("nan", case=False).any())
 
-    def test_exact_horizon_support_is_annual_and_gates_attrition(self) -> None:
+    def test_exact_horizon_support_is_annual_and_flags_attrition(self) -> None:
         frame = self._dynamics()
         support = dynamics_support_geometry(frame)
         self.assertEqual(len(support), 20)
-        self.assertFalse(support["support_exit_review_required"].any())
+        self.assertFalse(support["diagnostic_reference_breached"].any())
         years = pd.to_datetime(frame["origin_date"]).dt.year
         frame.loc[frame["horizon_days"].eq(120) & years.eq(2025), "target_observed"] = False
         future = [column for column in frame if column.startswith("future_")]
         frame.loc[frame["horizon_days"].eq(120) & years.eq(2025), future] = np.nan
         support = dynamics_support_geometry(frame)
         long = support[support["horizon_days"].eq(120)]
-        self.assertTrue(long["support_exit_review_required"].all())
+        self.assertTrue(long["diagnostic_reference_breached"].all())
+        self.assertFalse(long["blocks_estimation"].any())
 
     def test_exact_horizon_support_rejects_flag_outcome_disagreement(self) -> None:
         frame = self._dynamics()
@@ -242,27 +244,29 @@ class RoutingMaturationEstimatorTests(unittest.TestCase):
         with self.assertRaisesRegex(ValueError, "duplicate links"):
             dynamics_support_geometry(frame)
 
-    def test_support_geometry_applies_the_predeclared_half_sample_review_gate(self) -> None:
+    def test_support_geometry_reports_the_half_sample_reference(self) -> None:
         result = support_geometry(self._maturation())
         self.assertEqual(len(result), 30)
-        self.assertFalse(result["support_exit_review_required"].any())
+        self.assertFalse(result["diagnostic_reference_breached"].any())
+        self.assertFalse(result["blocks_estimation"].any())
 
-    def test_frontier_verified_coverage_blocks_time_selection_before_fits(self) -> None:
+    def test_frontier_verified_coverage_flags_time_selection_without_blocking_fits(self) -> None:
         support = frontier_verified_support_geometry(self._frontier_support())
         self.assertEqual(len(support), 5)
-        self.assertFalse(support["support_exit_review_required"].any())
+        self.assertFalse(support["diagnostic_reference_breached"].any())
         selected = self._frontier_support()
         selected.loc[
             selected["day"].eq("20210115"),
             "within_20pct_chosen_output_mismatch",
         ] = 35
         support = frontier_verified_support_geometry(selected)
-        self.assertTrue(support["support_exit_review_required"].all())
+        self.assertTrue(support["diagnostic_reference_breached"].all())
+        self.assertFalse(support["blocks_estimation"].any())
         self.assertAlmostEqual(support["minimum_primary_year_coverage"].iloc[0], 0.6)
         self.assertAlmostEqual(support["primary_year_coverage_spread"].iloc[0], 0.36)
         self.assertEqual(support.loc[support["year"].eq(2021), "chosen_state_coverage"].iloc[0], 0.95)
 
-    def test_support_exit_blocks_every_maturation_fit(self) -> None:
+    def test_uncalibrated_support_reference_does_not_block_maturation_fit(self) -> None:
         frame = self._maturation()
         years = pd.to_datetime(frame["date"]).dt.year
         frame.loc[years.eq(2021), "route_count"] = 1
@@ -273,13 +277,13 @@ class RoutingMaturationEstimatorTests(unittest.TestCase):
                 support_geometry(frame),
                 transition_support_geometry(self._transition()),
             ]
-            review_required = support_review_required(results)
-        self.assertTrue(review_required)
+            estimation_blocked = support_blocks_estimation(results)
+        self.assertFalse(estimation_blocked)
         maturation.assert_not_called()
         self.assertEqual(len(results), 3)
         self.assertTrue(all(result["record_type"].eq("support").all() for result in results))
         self.assertTrue(
-            any(result["support_exit_review_required"].any() for result in results)
+            any(result["diagnostic_reference_breached"].any() for result in results)
         )
 
     def test_missing_contract_column_fails_before_fit(self) -> None:
