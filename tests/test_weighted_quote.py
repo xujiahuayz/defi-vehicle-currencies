@@ -15,7 +15,7 @@ from ddvc.pricing.weighted import (
     quote_exact_input,
     rebuild_pre_trade_balances,
 )
-from ddvc.state_data import write_multi_asset_partition
+from ddvc.state_data import read_multi_asset_partition, write_multi_asset_partition
 from scripts import validate_weighted_quoter
 
 
@@ -158,18 +158,16 @@ class BalancerCanonicalStateTests(unittest.TestCase):
                     for record in records:
                         handle.write(json.dumps(record) + "\n")
             write_multi_asset_partition(raw, "balancer", "20250101", root=state)
-            original = validate_weighted_quoter.MARKET_STATE
-            original_source = validate_weighted_quoter.SOURCE_FINGERPRINT_ROOT
-            try:
-                validate_weighted_quoter.MARKET_STATE = state
-                validate_weighted_quoter.SOURCE_FINGERPRINT_ROOT = raw
-                validate_weighted_quoter._state.cache_clear()
-                pools = validate_weighted_quoter.load_pools("20250101")
-                events, volume = validate_weighted_quoter.load_events("20250101")
-            finally:
-                validate_weighted_quoter.MARKET_STATE = original
-                validate_weighted_quoter.SOURCE_FINGERPRINT_ROOT = original_source
-                validate_weighted_quoter._state.cache_clear()
+            frame = read_multi_asset_partition("balancer", "20250101", root=state, raw_root=raw)
+
+            class Release:
+                @staticmethod
+                def read_day(day: str):
+                    self.assertEqual(day, "20250101")
+                    return frame.copy()
+
+            pools = validate_weighted_quoter.load_pools("20250101", Release())
+            events, volume = validate_weighted_quoter.load_events("20250101", Release())
         self.assertEqual(pools["pool"]["closing"], (101 * 10 ** 18, 198 * 10 ** 6))
         self.assertEqual(pools["pool"]["weights"], (8 * 10 ** 17, 2 * 10 ** 17))
         self.assertEqual(events["pool"][0][5:7], (10 ** 18, 2 * 10 ** 6))

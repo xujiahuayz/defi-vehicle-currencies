@@ -28,10 +28,14 @@ from concurrent.futures import as_completed
 
 import pandas as pd
 
-from ddvc.data_release import require_market_state_prerelease
+from ddvc.data_release import (
+    ReleasedPartitionSet,
+    release_preinstall_validator,
+    released_state_partitions,
+)
 from ddvc.paths import DATA_DIR, REPO_ROOT
 from ddvc.runtime import bounded_workers, exclusive_job, interruptible_process_pool
-from ddvc.state_data import STATE_ROOT, available_state_days, read_cp_partition
+from ddvc.state_data import CP_COLUMNS
 from ddvc.tables import write_panel
 
 OUT_PRICE = DATA_DIR / "processed" / "v2_token_price_daily.parquet"
@@ -46,6 +50,8 @@ CODE_SOURCES = [
 # Trades below this USD notional give a price built from a tiny denominator and are
 # dropped from the price panel; they are the main source of absurd implied prices.
 MIN_TRADE_USD = 50.0
+
+
 def _f(x: object) -> float:
     try:
         return float(x)  # noqa: TRY300
@@ -53,9 +59,9 @@ def _f(x: object) -> float:
         return 0.0
 
 
-def one_swaps_day(day: str) -> dict | None:
+def one_swaps_day(day: str, release: ReleasedPartitionSet) -> dict | None:
     """Median USD price per token, and every (token0, token1) pair that traded."""
-    state = read_cp_partition("uniswap_v2", day)
+    state = release.read_day(day)
     swaps = state[state["record_type"].eq("swap")]
     if swaps.empty:
         return None
@@ -157,10 +163,13 @@ def token_decimals(token_days: pd.DataFrame) -> pd.DataFrame:
     return decimals
 
 
-def _run(fn, days: list[str], workers: int, label: str) -> tuple[list[dict], list[dict]]:
+def _run(fn, days: list[str], workers: int, label: str, release: ReleasedPartitionSet) -> tuple[list[dict], list[dict]]:
     ok, err = [], []
     with interruptible_process_pool(workers) as pool:
-        futs = {pool.submit(fn, day): day for day in days}
+        futs = {
+            pool.submit(fn, day, release.select_days((day,))): day
+            for day in days
+        }
         for i, f in enumerate(as_completed(futs), 1):
             try:
                 r = f.result()
@@ -177,6 +186,46 @@ def _run(fn, days: list[str], workers: int, label: str) -> tuple[list[dict], lis
     return ok, err
 
 
+def _publish_panels(
+    px: pd.DataFrame,
+    dec: pd.DataFrame,
+    first: pd.DataFrame,
+    state_release: ReleasedPartitionSet,
+) -> None:
+    """Publish independently consumable panels bound to one exact state release."""
+
+    state_inputs = list(state_release.provenance_inputs)
+    validator = release_preinstall_validator(state_release)
+    release_note = f"released-state identity {state_release.content_identity_sha256}"
+    outputs = (
+        (
+            px,
+            OUT_PRICE,
+            f"daily median token prices from usable canonical Uniswap V2 swaps with at least $50 reported notional; {release_note}",
+        ),
+        (
+            dec,
+            OUT_DEC,
+            f"conflict-checked token decimals from every usable canonical Uniswap V2 swap pair; {release_note}",
+        ),
+        (
+            first,
+            OUT_PAIR,
+            f"first and last usable canonical Uniswap V2 swap date per unordered token pair; {release_note}",
+        ),
+    )
+    # This is not a group-atomic bundle: every panel is independently usable, carries the same exact release bindings, and becomes provenance-stale if that release moves.
+    for frame, output, notes in outputs:
+        write_panel(
+            frame,
+            output,
+            code_sources=CODE_SOURCES,
+            inputs=state_inputs,
+            notes=notes,
+            preinstall_validator=validator,
+        )
+
+
 def main() -> int:
     ap = argparse.ArgumentParser(
         description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter
@@ -184,10 +233,10 @@ def main() -> int:
     ap.add_argument("--workers", type=int, default=8)
     ap.add_argument("--until", default=None, help="stop after this YYYYMMDD")
     args = ap.parse_args()
-    require_market_state_prerelease()
     workers = bounded_workers(args.workers)
 
-    swaps = available_state_days("constant_product", "uniswap_v2")
+    state_release = released_state_partitions("constant_product", "uniswap_v2", CP_COLUMNS)
+    swaps = list(state_release.days)
     if args.until:
         swaps = [day for day in swaps if day <= args.until]
     if not swaps:
@@ -195,7 +244,7 @@ def main() -> int:
         return 1
     print(f"V2 swaps days: {len(swaps):,}", flush=True)
 
-    srows, serr = _run(one_swaps_day, swaps, workers, "swaps")
+    srows, serr = _run(one_swaps_day, swaps, workers, "swaps", state_release)
     if serr:
         print(f"\n{len(serr)} swap day(s) failed to parse:")
         for error in serr[:5]:
@@ -226,28 +275,8 @@ def main() -> int:
         )
         return 0
 
-    state_input = STATE_ROOT / "constant_product" / "uniswap_v2"
-    write_panel(
-        px,
-        OUT_PRICE,
-        code_sources=CODE_SOURCES,
-        inputs=[state_input],
-        notes="daily median token prices from usable canonical Uniswap V2 swaps with at least $50 reported notional",
-    )
-    write_panel(
-        dec,
-        OUT_DEC,
-        code_sources=CODE_SOURCES,
-        inputs=[state_input],
-        notes="conflict-checked token decimals from every usable canonical Uniswap V2 swap pair",
-    )
-    write_panel(
-        first,
-        OUT_PAIR,
-        code_sources=CODE_SOURCES,
-        inputs=[state_input],
-        notes="first and last usable canonical Uniswap V2 swap date per unordered token pair",
-    )
+    state_release.assert_current()
+    _publish_panels(px, dec, first, state_release)
 
     tot_obs = sum(r["price_obs_kept"] for r in srows)
     tot_small = sum(r["price_obs_dropped_small"] for r in srows)
@@ -267,6 +296,7 @@ def main() -> int:
           f"non-WETH pairs: {len(first) - n_weth:,}")
     print(f"\nwrote {OUT_PRICE.relative_to(REPO_ROOT)}, {OUT_DEC.relative_to(REPO_ROOT)}, "
           f"{OUT_PAIR.relative_to(REPO_ROOT)}")
+    state_release.assert_current()
     return 0
 
 

@@ -20,7 +20,6 @@ import statistics
 import sys
 from collections import defaultdict
 from decimal import Decimal
-from functools import lru_cache
 from pathlib import Path
 
 import pandas as pd
@@ -41,11 +40,10 @@ from ddvc.pricing.weighted import (  # noqa: E402
     quote_exact_input,
     rebuild_pre_trade_balances,
 )
-from ddvc.state_data import STATE_ROOT, read_multi_asset_partition  # noqa: E402
+from ddvc.data_release import release_preinstall_validator, released_state_partitions  # noqa: E402
+from ddvc.state_data import MULTI_ASSET_COLUMNS  # noqa: E402
 from ddvc.tables import write_exhibit  # noqa: E402
 
-MARKET_STATE = STATE_ROOT
-SOURCE_FINGERPRINT_ROOT: Path | None = None
 OUT = ROOT / "output" / "exhibits" / "weighted_quoter_validation.jsonl"
 CODE_SOURCES = [
     "scripts/validate_weighted_quoter.py",
@@ -54,32 +52,20 @@ CODE_SOURCES = [
 ]
 
 
-@lru_cache(maxsize=4)
-def _state(day: str) -> pd.DataFrame:
-    kwargs = (
-        {}
-        if SOURCE_FINGERPRINT_ROOT is None
-        else {"raw_root": SOURCE_FINGERPRINT_ROOT}
-    )
-    return read_multi_asset_partition("balancer", day, root=MARKET_STATE, **kwargs)
-
-
-def days_with_state() -> list[str]:
+def days_with_state(release) -> list[str]:
     """Days whose canonical partition passed and carries usable closing balances."""
     out: list[str] = []
-    for path in sorted(
-        (MARKET_STATE / "multi_asset" / "balancer").glob("[0-9]" * 8 + ".parquet")
-    ):
-        state = _state(path.stem)
+    for day in release.days:
+        state = release.read_day(day)
         if state["record_type"].eq("snapshot_token").any():
-            out.append(path.stem)
+            out.append(day)
     return out
 
 
-def load_pools(day: str) -> dict[str, dict]:
+def load_pools(day: str, release) -> dict[str, dict]:
     """Pool statics plus closing balances from one canonical state partition."""
     pools: dict[str, dict] = {}
-    snapshots = _state(day)
+    snapshots = release.read_day(day)
     snapshots = snapshots[snapshots["record_type"].eq("snapshot_token")]
     for pid, group in snapshots.groupby("pool", sort=False):
         try:
@@ -105,7 +91,7 @@ def load_pools(day: str) -> dict[str, dict]:
     return pools
 
 
-def load_events(day: str) -> tuple[dict[str, list], dict[str, float]]:
+def load_events(day: str, release) -> tuple[dict[str, list], dict[str, float]]:
     """The day's swaps and liquidity events per pool in execution order, plus USD swap volume.
 
     Order matters because the reconstruction replays the flow. `block` orders across blocks and
@@ -116,7 +102,7 @@ def load_events(day: str) -> tuple[dict[str, list], dict[str, float]]:
     """
     staged: dict[str, list] = defaultdict(list)
     volume: dict[str, float] = defaultdict(float)
-    state = _state(day)
+    state = release.read_day(day)
     for swap in state[state["record_type"].eq("swap")].to_dict("records"):
         pid = str(swap.get("pool") or "").lower()
         if not pid:
@@ -299,10 +285,10 @@ def score(obs: list, ratios: dict, fee: int | None) -> list[float]:
     return errs
 
 
-def evaluate_day(day: str, min_swaps: int, gate: float) -> dict | None:
+def evaluate_day(day: str, min_swaps: int, gate: float, release) -> dict | None:
     """Score one day, returning its exhibit row, or None when nothing on it is scorable."""
-    pools = load_pools(day)
-    staged, volume = load_events(day)
+    pools = load_pools(day, release)
+    staged, volume = load_events(day, release)
     day_volume = sum(volume.values())
 
     priced = excluded = untested = 0
@@ -423,7 +409,8 @@ def main() -> int:
                     help="achieved fit error above which a pool-day is excluded")
     args = ap.parse_args()
 
-    days = days_with_state()
+    state_release = released_state_partitions("multi_asset", "balancer", MULTI_ASSET_COLUMNS)
+    days = days_with_state(state_release)
     if not days:
         print("no Balancer days carry both per-token balances and liquidity events yet")
         return 1
@@ -441,7 +428,7 @@ def main() -> int:
     for k, start in enumerate(slots):
         stop = slots[k + 1] if k + 1 < len(slots) else len(days)
         for day in days[start:stop]:
-            row = evaluate_day(day, args.min_swaps, args.gate)
+            row = evaluate_day(day, args.min_swaps, args.gate, state_release)
             if row is not None:
                 rows.append(row)
                 break
@@ -500,8 +487,9 @@ def main() -> int:
         pd.DataFrame(rows),
         OUT,
         code_sources=CODE_SOURCES,
-        inputs=[MARKET_STATE / "multi_asset" / "balancer"],
-        notes="held-out Balancer quote errors from canonical transaction-state partitions",
+        inputs=list(state_release.provenance_inputs),
+        notes=f"held-out Balancer quote errors from canonical transaction-state partitions; released-state identity {state_release.content_identity_sha256}",
+        preinstall_validator=release_preinstall_validator(state_release),
     )
     print(f"\nwrote {OUT.relative_to(ROOT)}")
     return 0

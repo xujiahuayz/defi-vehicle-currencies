@@ -10,7 +10,9 @@ import pytest
 
 from ddvc.state_data import (
     FAMILY_STREAMS,
+    SCHEMA_VERSION as STATE_SCHEMA_VERSION,
     StatePartitionQuality,
+    bind_state_partition_output,
     normalise_cp_partition,
     normalise_multi_asset_partition,
 )
@@ -86,6 +88,7 @@ def write_v2_source(source: Path, family: str, venue: str, day: str, frame, qual
     path = source / family / venue / f"{day}.parquet"
     path.parent.mkdir(parents=True, exist_ok=True)
     frame.to_parquet(path, index=False)
+    quality = bind_state_partition_output(quality, path)
     path.with_suffix(".quality.json").write_text(json.dumps(asdict(quality)))
     return path
 
@@ -135,7 +138,7 @@ def test_rekey_refuses_a_marker_when_any_current_required_stream_is_missing(tmp_
     panel.with_suffix(".quality.json").write_text(
         json.dumps(
             {
-                "schema_version": 2,
+                "schema_version": STATE_SCHEMA_VERSION,
                 "passed": True,
                 "input_fingerprint": "old",
             }
@@ -258,7 +261,7 @@ def test_cached_migration_partition_is_revalidated_after_restart(tmp_path) -> No
     source_day.touch()
     source_day.with_suffix(".quality.json").touch()
     quality = StatePartitionQuality(
-        schema_version=2,
+        schema_version=STATE_SCHEMA_VERSION,
         family="constant_product",
         venue="sushiswap_v2",
         day=day,
@@ -268,6 +271,7 @@ def test_cached_migration_partition_is_revalidated_after_restart(tmp_path) -> No
         snapshot_rows=0,
         swap_rows=0,
         liquidity_rows=0,
+        initialization_rows=0,
         usable_rows=0,
         missing_order=0,
         missing_identity=0,
@@ -280,6 +284,8 @@ def test_cached_migration_partition_is_revalidated_after_restart(tmp_path) -> No
         zero_swap_amounts=0,
         missing_quote_statics=0,
         quote_supported_swaps=0,
+        output_bytes=0,
+        output_sha256="",
         passed=True,
     )
     with (

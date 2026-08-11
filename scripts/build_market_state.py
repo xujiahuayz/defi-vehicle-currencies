@@ -38,9 +38,11 @@ from ddvc.state_data import (
     MULTI_ASSET_STATE_GENERATIONS,
     QUALITY_COLUMNS,
     SCHEMA_VERSION,
+    STATE_ENGINE,
     STATE_ROOT,
     StatePartitionQuality,
     balancer_pool_family,
+    bind_state_partition_output,
     cp_partition_path,
     cp_quality_path,
     multi_asset_partition_path,
@@ -54,6 +56,7 @@ from ddvc.state_data import (
     read_cp_quality,
     read_multi_asset_quality,
     read_tick_quality,
+    state_partition_output_is_current,
     write_cp_partition,
     write_multi_asset_partition,
     write_tick_partition,
@@ -61,6 +64,7 @@ from ddvc.state_data import (
     tick_quality_path,
 )
 from ddvc.tables import write_exhibit, write_panel
+from ddvc.tick_state_events import initialization_day_inputs, v4_state_day_inputs, validate_initialization_day, validate_v4_state_day
 
 
 RAW = DATA_DIR / "raw" / "thegraph"
@@ -69,17 +73,35 @@ QUALITY_EXHIBIT = OUTPUT_DIR / "exhibits" / "market_state_quality.jsonl"
 LOCK = DATA_DIR / "processed" / ".market_state.lock"
 
 
+def market_state_quality_frame(rows: list[dict[str, object]]) -> pd.DataFrame:
+    """Build the engine-bound ledger rows consumed by the node-D release gate."""
+
+    quality = pd.DataFrame(rows, columns=QUALITY_COLUMNS).sort_values(
+        ["family", "venue", "day"]
+    )
+    quality.insert(1, "engine", STATE_ENGINE)
+    return quality
+
+
 def _current_partition_fingerprint(family: str, venue: str, day: str) -> str:
-    required = [
+    required = [] if family == "tick" and venue == "uniswap_v4" else [
         raw_stream_path(RAW, venue, stream, day)
         for stream, _kind, _sign in FAMILY_STREAMS[family][venue]
     ]
+    if family == "tick":
+        required.extend(initialization_day_inputs(RAW, venue, day))
+        if venue == "uniswap_v4":
+            required.extend(v4_state_day_inputs(RAW, day))
     missing = [path.name for path in required if not path.exists()]
     if missing:
         raise FileNotFoundError(
             f"required raw stream(s) missing for {family}/{venue}/{day}: "
             f"{', '.join(missing)}"
         )
+    if family == "tick":
+        validate_initialization_day(RAW, venue, day)
+        if venue == "uniswap_v4":
+            validate_v4_state_day(RAW, day)
     return partition_input_fingerprint(required)
 
 
@@ -158,12 +180,14 @@ def migrate_v1_partition(
         marker_path = multi_asset_quality_path(venue, day, root=target_root)
     frame = frame.reindex(columns=columns)
     payload["schema_version"] = SCHEMA_VERSION
+    payload["output_bytes"] = 0
+    payload["output_sha256"] = ""
     payload["quote_supported_swaps"] = int(
         (frame["record_type"].eq("swap") & frame["quote_supported"]).sum()
     )
-    quality = StatePartitionQuality(**payload)
     with atomic_output(panel_path) as temporary:
         frame.to_parquet(temporary, index=False)
+    quality = bind_state_partition_output(StatePartitionQuality(**payload), panel_path)
     with atomic_output(marker_path) as temporary:
         temporary.write_text(
             json.dumps(asdict(quality), allow_nan=False, sort_keys=True) + "\n",
@@ -198,6 +222,12 @@ def validate_migration_sample(
             if family == "constant_product"
             else multi_asset_quality_path(venue, day, root=target_root)
         ).read_text(encoding="utf-8")
+    )
+    expected_quality = bind_state_partition_output(
+        expected_quality,
+        cp_partition_path(venue, day, root=target_root)
+        if family == "constant_product"
+        else multi_asset_partition_path(venue, day, root=target_root),
     )
     if marker != asdict(expected_quality):
         raise ValueError(f"migrated quality differs from raw normalization: {family}/{venue}/{day}")
@@ -251,6 +281,10 @@ def rekey_current_partition(
     if payload.get("input_fingerprint") != current_fingerprint:
         raise ValueError(f"rekey source is stale against raw input: {family}/{venue}/{day}")
     quality = StatePartitionQuality(**payload)
+    if not state_partition_output_is_current(quality, source_panel):
+        raise ValueError(
+            f"rekey source content disagrees with its marker: {family}/{venue}/{day}"
+        )
     _atomic_hardlink(source_panel, target_panel)
     _atomic_hardlink(source_marker, target_marker)
     return quality
@@ -279,6 +313,9 @@ def rekey_source_current(
         payload.get("schema_version") == SCHEMA_VERSION
         and payload.get("passed")
         and payload.get("input_fingerprint") == current_fingerprint
+        and state_partition_output_is_current(
+            StatePartitionQuality(**payload), panel
+        )
     )
 
 
@@ -304,6 +341,7 @@ def validate_rekey_sample(
         check_dtype=False,
         check_exact=True,
     )
+    expected_quality = bind_state_partition_output(expected_quality, panel)
     if json.loads(marker.read_text(encoding="utf-8")) != asdict(expected_quality):
         raise ValueError(f"rekeyed quality differs from raw normalization: {family}/{venue}/{day}")
 
@@ -548,9 +586,7 @@ def main() -> int:
                         rekey_from=args.rekey_from,
                     )
                 )
-            quality = pd.DataFrame(rows, columns=QUALITY_COLUMNS).sort_values(
-                ["family", "venue", "day"]
-            )
+            quality = market_state_quality_frame(rows)
             failed = quality[~quality["passed"]]
             if not full_run:
                 print(

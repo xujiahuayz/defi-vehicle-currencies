@@ -10,6 +10,7 @@ from unittest.mock import Mock, call, patch
 import pandas as pd
 
 from ddvc.asset_types import TYPES
+from ddvc.state_data import STATE_GENERATIONS
 from scripts import refresh_panel_dependents as refresher
 from scripts.audit_findings_freeze import (
     SPECIFICATION_LOCK,
@@ -642,7 +643,7 @@ class FindingsFreezeAuditTest(unittest.TestCase):
                     "venue": "uniswap_v3",
                     "pool_family": "concentrated_liquidity",
                     "invariant_family": "concentrated_liquidity",
-                    "state_generation": "uniswap_v3_tick_state_v2",
+                    "state_generation": STATE_GENERATIONS["uniswap_v3"],
                     "quote_supported": True,
                 },
                 {

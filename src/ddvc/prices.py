@@ -2,10 +2,16 @@
 
 from __future__ import annotations
 
+from pathlib import Path
+
 import numpy as np
 import pandas as pd
+import pyarrow.parquet as pq
 
 from ddvc.fetch.coinbase_prices import SOURCE_ID as EXTERNAL_WETH_USD_SOURCE_ID
+from ddvc.artifact_release import file_sha256, file_stat_identity
+from ddvc.paths import TOKEN_PRICE_DAILY_PANEL
+from ddvc.provenance import require_current_artifacts, sidecar_path
 
 PRICE_COLUMNS = [
     "token_in",
@@ -31,6 +37,7 @@ PRICE_PANEL_COLUMNS = [
     "price_source",
     "validation_status",
 ]
+CANONICAL_TOKEN_PRICE_COLUMNS = ["day", *PRICE_PANEL_COLUMNS]
 MAX_INTRADAY_MARK_LAG_SECONDS = 60
 INTRADAY_WETH_USD_MARK_COLUMNS = [
     "bucket_start_utc",
@@ -40,6 +47,74 @@ INTRADAY_WETH_USD_MARK_COLUMNS = [
     "price_source",
     "validation_status",
 ]
+
+
+def load_canonical_token_prices(
+    path: str | Path = TOKEN_PRICE_DAILY_PANEL,
+    *,
+    columns: list[str] | tuple[str, ...] | None = None,
+) -> pd.DataFrame:
+    """Reopen the provenance-current address-day price owner and its value contract."""
+
+    source = Path(path)
+    sidecar = sidecar_path(source)
+    require_current_artifacts([source], consumer="canonical address-day token prices")
+    before_identity = (file_stat_identity(source), file_stat_identity(sidecar))
+    before_sha256 = (file_sha256(source), file_sha256(sidecar))
+    require_current_artifacts([source], consumer="canonical address-day token prices")
+    if before_identity != (file_stat_identity(source), file_stat_identity(sidecar)) or before_sha256 != (file_sha256(source), file_sha256(sidecar)):
+        raise RuntimeError(f"canonical token-price provenance changed during admission: {source}")
+    content_sha256 = before_sha256[0]
+    selected = tuple(CANONICAL_TOKEN_PRICE_COLUMNS if columns is None else columns)
+    if not selected or len(selected) != len(set(selected)):
+        raise ValueError("canonical token-price columns must be nonempty and unique")
+    unknown = sorted(set(selected) - set(CANONICAL_TOKEN_PRICE_COLUMNS))
+    if unknown:
+        raise ValueError(f"canonical token-price columns are unknown: {unknown}")
+    if tuple(pq.ParquetFile(source).schema_arrow.names) != tuple(CANONICAL_TOKEN_PRICE_COLUMNS):
+        raise ValueError("canonical token-price panel schema is stale")
+    validation_columns = list(CANONICAL_TOKEN_PRICE_COLUMNS)
+    frame = pd.read_parquet(source, columns=validation_columns)
+    if before_identity != (file_stat_identity(source), file_stat_identity(sidecar)) or before_sha256 != (file_sha256(source), file_sha256(sidecar)):
+        raise RuntimeError(f"canonical token-price panel or provenance mutated during read: {source}")
+    if frame.empty or frame.duplicated(["day", "token"]).any():
+        raise ValueError("canonical token-price panel is empty or duplicated")
+    day = frame["day"].astype(str)
+    token = frame["token"].astype(str)
+    numeric = frame[
+        [
+            "price_usd",
+            "n_observations",
+            "n_consensus",
+            "consensus_share",
+            "gross_weight_usd",
+            "consensus_weight_usd",
+        ]
+    ].apply(pd.to_numeric, errors="coerce")
+    invalid = (
+        ~day.str.fullmatch(r"\d{8}")
+        | token.eq("")
+        | token.ne(token.str.lower())
+        | ~np.isfinite(numeric["price_usd"])
+        | numeric["price_usd"].le(0)
+        | numeric["n_observations"].lt(3)
+        | numeric["n_consensus"].lt(3)
+        | numeric["consensus_share"].lt(0.75)
+        | numeric["consensus_share"].gt(1)
+        | numeric["gross_weight_usd"].le(0)
+        | numeric["consensus_weight_usd"].le(0)
+        | numeric["consensus_weight_usd"].gt(
+            numeric["gross_weight_usd"]
+            + np.maximum(1e-6, numeric["gross_weight_usd"] * 1e-12)
+        )
+        | frame["price_source"].ne("canonical_repriced_route_legs")
+        | frame["validation_status"].ne("minimum_observations_and_price_consensus_passed")
+    )
+    if invalid.any():
+        raise ValueError("canonical token-price panel violates its identity, support, or value contract")
+    selected_frame = frame.loc[:, list(selected)].copy()
+    selected_frame.attrs["content_sha256"] = content_sha256
+    return selected_frame
 
 
 def load_intraday_weth_usd_marks(

@@ -6,6 +6,9 @@ import tempfile
 import unittest
 from decimal import Decimal
 from pathlib import Path
+from unittest.mock import patch
+
+import pandas as pd
 
 from ddvc.cpquote import ReserveEvent
 from ddvc.pricing.mixed_frontier import MixedFrontierState, mixed_leg_quotes, quote_mixed_path
@@ -82,6 +85,22 @@ class V2ReplayFrontierTests(unittest.TestCase):
             self.assertEqual(
                 replay.swaps_by_identity[(venue, "tx", 5)].pool,
                 "pool",
+            )
+            state_frames = {
+                (venue, day): pd.read_parquet(state / "constant_product" / venue / f"{day}.parquet")
+                for day in ("20250614", "20250615")
+            }
+            with patch("ddvc.pricing.v2_replay.read_cp_partition", side_effect=AssertionError("legacy reader used")):
+                released_replay = load_v2_replay_day(
+                    state,
+                    "20250615",
+                    venues=(venue,),
+                    raw_root=raw,
+                    state_frames=state_frames,
+                )
+            self.assertEqual(
+                released_replay.state_before(venue, "pool", 3600, (100, 5)),
+                (Decimal("1000"), Decimal("1000")),
             )
 
     def test_frontier_quotes_identified_and_enumerated_pool(self) -> None:

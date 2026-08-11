@@ -15,7 +15,12 @@ from ddvc.analysis.lp_liquidity_flow import (
     finalize_daily_liquidity_flow,
 )
 from ddvc.asset_types import VEHICLE_CANDIDATES
-from ddvc.data_release import require_node_d_release
+from ddvc.data_release import (
+    ReleasedPartitionSet,
+    release_preinstall_validator,
+    released_state_partitions,
+    require_node_d_release,
+)
 from ddvc.panel_assembly import assemble_parquet_shards
 from ddvc.paths import (
     DATA_DIR,
@@ -27,9 +32,10 @@ from ddvc.paths import (
     TOKEN_PRICE_DAILY_PANEL,
 )
 from ddvc.pricing.v3pools import load_token_decimals
-from ddvc.provenance import cache_key, require_current_artifacts, sidecar_path, stamp
-from ddvc.runtime import atomic_output, exclusive_job
-from ddvc.state_data import STATE_ROOT, available_state_days, read_tick_partition
+from ddvc.provenance import cache_key, require_current_artifacts
+from ddvc.runtime import atomic_output, exclusive_job, staged_output
+from ddvc.state_data import STATE_ROOT, TICK_COLUMNS
+from ddvc.tables import publish_staged_artifact
 
 
 CODE_SOURCES = [
@@ -89,10 +95,11 @@ def _day_prices(con: duckdb.DuckDBPyConnection, day: str) -> dict[str, float]:
     return {str(token).lower(): float(price) for token, price in rows}
 
 
-def _real_field_preflight(days: list[str]) -> None:
+def _real_field_preflight(release: ReleasedPartitionSet) -> None:
     required = {"amount0", "amount1", "tick_lower", "tick_upper", "liquidity_delta"}
+    days = list(release.days)
     for day in (days[0], days[len(days) // 2], days[-1]):
-        state = read_tick_partition("uniswap_v3", day)
+        state = release.read_day(day)
         missing = sorted(required - set(state.columns))
         if missing:
             raise RuntimeError(f"V3 real-data preflight {day} misses fields: {missing}")
@@ -126,10 +133,19 @@ def _candidate_days(days: list[str]) -> pd.DataFrame:
     )
 
 
+def _generation(state_release: ReleasedPartitionSet) -> str:
+    code_and_inputs = cache_key(
+        CODE_SOURCES,
+        inputs=[*INPUTS[1:], *state_release.provenance_inputs],
+    )
+    return code_and_inputs[:32] + state_release.content_identity_sha256[:32]
+
+
 def _write_daily_panel(
     con: duckdb.DuckDBPyConnection,
     days: list[str],
     generation: str,
+    state_release: ReleasedPartitionSet,
 ) -> int:
     numerators = con.execute(
         """
@@ -149,34 +165,40 @@ def _write_daily_panel(
         [str(LP_LIQUIDITY_FLOW_CANDIDATES)],
     ).df()
     panel = finalize_daily_liquidity_flow(numerators, _candidate_days(days))
-    with atomic_output(LP_LIQUIDITY_FLOW_DAILY) as temporary:
+    with staged_output(LP_LIQUIDITY_FLOW_DAILY) as temporary:
         panel.to_parquet(temporary, index=False)
-    stamp(
-        LP_LIQUIDITY_FLOW_DAILY,
-        code_sources=CODE_SOURCES,
-        inputs=[LP_LIQUIDITY_FLOW_CANDIDATES],
-        rows=len(panel),
-        notes=f"candidate-day V3 LP dollar-flow generation {generation}; no capital proxy",
-    )
+        publish_staged_artifact(
+            temporary,
+            LP_LIQUIDITY_FLOW_DAILY,
+            code_sources=CODE_SOURCES,
+            inputs=[LP_LIQUIDITY_FLOW_CANDIDATES, *state_release.provenance_inputs],
+            rows=len(panel),
+            notes=f"candidate-day V3 LP dollar-flow generation {generation}; released-state identity {state_release.content_identity_sha256}; no capital proxy",
+            preinstall_validator=release_preinstall_validator(state_release),
+        )
     return len(panel)
 
 
-def _assemble(files: list[Path], output: Path, keys: tuple[str, ...], generation: str) -> int:
-    sidecar_path(output).unlink(missing_ok=True)
-    result = assemble_parquet_shards(files, output, unique_keys=keys)
-    stamp(
-        output,
-        code_sources=CODE_SOURCES,
-        inputs=INPUTS,
-        rows=result.rows,
-        notes=(
-            f"causal V3 LP liquidity-flow generation {generation}; "
-            f"resumable cache {files[0].parent.name}"
-        ),
-    )
+def _assemble(
+    files: list[Path],
+    output: Path,
+    keys: tuple[str, ...],
+    generation: str,
+    state_release: ReleasedPartitionSet,
+) -> int:
+    inputs = [*INPUTS[1:], *state_release.provenance_inputs]
+    with staged_output(output) as temporary:
+        result = assemble_parquet_shards(files, temporary, unique_keys=keys)
+        publish_staged_artifact(
+            temporary,
+            output,
+            code_sources=CODE_SOURCES,
+            inputs=inputs,
+            rows=result.rows,
+            notes=f"causal V3 LP liquidity-flow generation {generation}; released-state identity {state_release.content_identity_sha256}; resumable cache {files[0].parent.name}",
+            preinstall_validator=release_preinstall_validator(state_release),
+        )
     return result.rows
-
-
 def _build(*, force: bool = False) -> tuple[int, int, int]:
     require_node_d_release(routes=True, market_state=True)
     require_current_artifacts(
@@ -186,11 +208,12 @@ def _build(*, force: bool = False) -> tuple[int, int, int]:
         ],
         consumer="LP liquidity-flow panel builder",
     )
-    days = available_state_days("tick", "uniswap_v3")
+    state_release = released_state_partitions("tick", "uniswap_v3", TICK_COLUMNS)
+    days = list(state_release.days)
     if not days:
         raise RuntimeError("no canonical Uniswap V3 state days")
-    _real_field_preflight(days)
-    generation = cache_key(CODE_SOURCES, inputs=INPUTS)
+    _real_field_preflight(state_release)
+    generation = _generation(state_release)
     root = CACHE_ROOT / f"engine_{generation}"
     event_dir, candidate_dir, rejection_dir = (
         root / "events",
@@ -207,7 +230,7 @@ def _build(*, force: bool = False) -> tuple[int, int, int]:
     con = duckdb.connect()
     try:
         for index, day in enumerate(days, 1):
-            state = read_tick_partition("uniswap_v3", day)
+            state = state_release.read_day(day)
             events, state_rejections = classifier.classify_day(
                 day, state, _day_prices(con, day)
             )
@@ -238,31 +261,36 @@ def _build(*, force: bool = False) -> tuple[int, int, int]:
                 )
     finally:
         con.close()
-    if cache_key(CODE_SOURCES, inputs=INPUTS) != generation:
+    state_release.assert_current()
+    if _generation(state_release) != generation:
         raise RuntimeError("LP liquidity-flow inputs or code changed during materialization")
     event_files = [event_dir / f"{day}.parquet" for day in days]
     candidate_files = [candidate_dir / f"{day}.parquet" for day in days]
     rejection_files = [rejection_dir / f"{day}.parquet" for day in days]
     if any(not path.exists() for path in (*event_files, *candidate_files, *rejection_files)):
         raise RuntimeError("LP liquidity-flow day cache is incomplete")
-    event_rows = _assemble(event_files, LP_LIQUIDITY_FLOW_EVENTS, EVENT_KEYS, generation)
+    # These are independently consumable outputs, not a group-atomic bundle. Each publication carries the same exact released-state bindings and independently fails closed if the source release moves.
+    event_rows = _assemble(event_files, LP_LIQUIDITY_FLOW_EVENTS, EVENT_KEYS, generation, state_release)
     candidate_rows = _assemble(
         candidate_files,
         LP_LIQUIDITY_FLOW_CANDIDATES,
         CANDIDATE_KEYS,
         generation,
+        state_release,
     )
     rejection_rows = _assemble(
         rejection_files,
         LP_LIQUIDITY_FLOW_REJECTIONS,
         (*EVENT_KEYS, "candidate", "failure_reason"),
         generation,
+        state_release,
     )
     con = duckdb.connect()
     try:
-        daily_rows = _write_daily_panel(con, days, generation)
+        daily_rows = _write_daily_panel(con, days, generation, state_release)
     finally:
         con.close()
+    state_release.assert_current()
     print(
         f"PASS: LP liquidity-flow events={event_rows:,}; "
         f"candidate allocations={candidate_rows:,}; rejections={rejection_rows:,}; "

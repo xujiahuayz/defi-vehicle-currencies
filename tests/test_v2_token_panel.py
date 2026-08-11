@@ -1,10 +1,13 @@
 from __future__ import annotations
 
-from unittest.mock import patch
+from pathlib import Path
+from types import SimpleNamespace
 
 import pandas as pd
 import pytest
 
+from ddvc.provenance import sidecar_path
+from scripts import build_v2_token_panel as builder
 from scripts.build_v2_token_panel import one_swaps_day, token_decimals
 
 
@@ -51,14 +54,17 @@ def canonical_state() -> pd.DataFrame:
     )
 
 
-@patch("scripts.build_v2_token_panel.read_cp_partition")
-def test_price_and_pair_panels_consume_canonical_state(read_partition) -> None:
-    read_partition.return_value = canonical_state()
+class Release:
+    def read_day(self, day: str) -> pd.DataFrame:
+        assert day == "20250101"
+        return canonical_state()
 
-    result = one_swaps_day("20250101")
+
+def test_price_and_pair_panels_consume_canonical_state() -> None:
+
+    result = one_swaps_day("20250101", Release())
 
     assert result is not None
-    assert read_partition.call_args.args == ("uniswap_v2", "20250101")
     assert result["n_swaps"] == 3
     assert result["price_obs_dropped_small"] == 1
     prices = {row["token"]: row["price_usd"] for row in result["_px"]}
@@ -66,10 +72,8 @@ def test_price_and_pair_panels_consume_canonical_state(read_partition) -> None:
     assert result["_pairs"][0]["n_swaps"] == 3
 
 
-@patch("scripts.build_v2_token_panel.read_cp_partition")
-def test_decimals_cover_tokens_in_small_swaps_too(read_partition) -> None:
-    read_partition.return_value = canonical_state()
-    result = one_swaps_day("20250101")
+def test_decimals_cover_tokens_in_small_swaps_too() -> None:
+    result = one_swaps_day("20250101", Release())
     assert result is not None
     decimals = token_decimals(pd.DataFrame(result["_px"]))
     assert dict(zip(decimals["token"], decimals["decimals"], strict=True)) == {
@@ -88,3 +92,47 @@ def test_decimals_conflict_is_a_hard_failure() -> None:
     )
     with pytest.raises(RuntimeError, match="disagrees on decimals"):
         token_decimals(token_days)
+
+
+def test_release_mutation_during_v2_publication_preserves_prior_pair(
+    monkeypatch: pytest.MonkeyPatch, tmp_path: Path
+) -> None:
+    source = tmp_path / "released-state.parquet"
+    source.write_bytes(b"released")
+    outputs = [tmp_path / name for name in ("price.parquet", "decimals.parquet", "pairs.parquet")]
+    for output in outputs:
+        pd.DataFrame({"prior": [1]}).to_parquet(output, index=False)
+        sidecar_path(output).write_bytes(b"prior-sidecar\n")
+    prior = [(output.read_bytes(), sidecar_path(output).read_bytes()) for output in outputs]
+
+    class MutatedDuringStamp:
+        def __call__(self, _staged_path: Path) -> None:
+            pass
+
+        def validate_prepared_stamp(self, _prepared: bytes) -> bytes:
+            raise RuntimeError("released state changed during provenance")
+
+    monkeypatch.setattr(builder, "OUT_PRICE", outputs[0])
+    monkeypatch.setattr(builder, "OUT_DEC", outputs[1])
+    monkeypatch.setattr(builder, "OUT_PAIR", outputs[2])
+    monkeypatch.setattr(builder, "release_preinstall_validator", lambda *_releases: MutatedDuringStamp())
+    release = SimpleNamespace(
+        provenance_inputs=(source,),
+        content_identity_sha256="a" * 64,
+    )
+
+    with pytest.raises(RuntimeError, match="changed during provenance"):
+        builder._publish_panels(
+            pd.DataFrame({"value": [2]}),
+            pd.DataFrame({"value": [2]}),
+            pd.DataFrame({"value": [2]}),
+            release,
+        )
+
+    assert [(output.read_bytes(), sidecar_path(output).read_bytes()) for output in outputs] == prior
+
+
+def test_v2_publication_reuses_canonical_panel_lifecycle() -> None:
+    source = Path(builder.__file__).read_text(encoding="utf-8")
+    assert source.count("write_panel(") == 1
+    assert "preinstall_validator=validator" in source

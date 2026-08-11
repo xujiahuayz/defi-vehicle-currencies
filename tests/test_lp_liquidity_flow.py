@@ -4,8 +4,11 @@ from pathlib import Path
 from types import SimpleNamespace
 
 import pandas as pd
+import pytest
 
+from ddvc.provenance import sidecar_path
 from ddvc.asset_types import VEHICLE_CANDIDATES
+from ddvc.state_data import STATE_GENERATIONS
 from ddvc.analysis.lp_liquidity_flow import (
     CausalRangeClassifier,
     Q96,
@@ -30,7 +33,7 @@ def row(record_type: str, *, block: int, log_index: int, **updates) -> dict:
         "source_stream": "swaps" if record_type == "swap" else "mints",
         "pool_family": "concentrated_liquidity",
         "invariant_family": "concentrated_liquidity",
-        "state_generation": "uniswap_v3_tick_state_v2",
+        "state_generation": STATE_GENERATIONS["uniswap_v3"],
         "token0": TOKEN_BY_SYMBOL["WETH"],
         "token1": TOKEN_BY_SYMBOL["USDC"],
         "symbol0": "WETH",
@@ -299,19 +302,65 @@ def test_assembled_release_provenance_excludes_resumability_cache(
     shard.touch()
     output = tmp_path / "events.parquet"
     canonical = tmp_path / "canonical-input"
-    stamps = []
-    monkeypatch.setattr(builder, "INPUTS", [canonical])
-    monkeypatch.setattr(
-        builder,
-        "assemble_parquet_shards",
-        lambda *args, **kwargs: SimpleNamespace(rows=1),
-    )
-    monkeypatch.setattr(
-        builder,
-        "stamp",
-        lambda artefact, **kwargs: stamps.append((artefact, kwargs)),
-    )
+    publications = []
 
-    assert builder._assemble([shard], output, ("day",), "test") == 1
-    assert stamps[0][1]["inputs"] == [canonical]
-    assert "resumable cache events" in stamps[0][1]["notes"]
+    def assemble(_files, temporary, **_kwargs):
+        Path(temporary).write_bytes(b"assembled")
+        return SimpleNamespace(rows=1)
+
+    monkeypatch.setattr(builder, "INPUTS", [canonical])
+    monkeypatch.setattr(builder, "assemble_parquet_shards", assemble)
+    monkeypatch.setattr(
+        builder,
+        "publish_staged_artifact",
+        lambda temporary, output, **kwargs: publications.append((temporary, output, kwargs)),
+    )
+    release = SimpleNamespace(
+        provenance_inputs=(),
+        content_identity_sha256="a" * 64,
+    )
+    monkeypatch.setattr(builder, "release_preinstall_validator", lambda *_releases: object())
+
+    assert builder._assemble([shard], output, ("day",), "test", release) == 1
+    assert publications[0][2]["inputs"] == []
+    assert "resumable cache events" in publications[0][2]["notes"]
+
+
+def test_lp_assembly_release_mutation_preserves_prior_pair(
+    monkeypatch: pytest.MonkeyPatch, tmp_path: Path
+) -> None:
+    shard = tmp_path / "engine_test" / "events" / "20250101.parquet"
+    shard.parent.mkdir(parents=True)
+    pd.DataFrame({"day": ["20250101"]}).to_parquet(shard, index=False)
+    source = tmp_path / "released-state.parquet"
+    source.write_bytes(b"released")
+    output = tmp_path / "events.parquet"
+    pd.DataFrame({"prior": [1]}).to_parquet(output, index=False)
+    sidecar_path(output).write_bytes(b"prior-sidecar\n")
+    prior = output.read_bytes(), sidecar_path(output).read_bytes()
+
+    class MutatedDuringStamp:
+        def __call__(self, _staged_path: Path) -> None:
+            pass
+
+        def validate_prepared_stamp(self, _prepared: bytes) -> bytes:
+            raise RuntimeError("released state changed during provenance")
+
+    release = SimpleNamespace(
+        provenance_inputs=(source,),
+        content_identity_sha256="a" * 64,
+    )
+    monkeypatch.setattr(builder, "INPUTS", [source])
+    monkeypatch.setattr(builder, "release_preinstall_validator", lambda *_releases: MutatedDuringStamp())
+
+    with pytest.raises(RuntimeError, match="changed during provenance"):
+        builder._assemble([shard], output, ("day",), "test", release)
+
+    assert (output.read_bytes(), sidecar_path(output).read_bytes()) == prior
+
+
+def test_lp_builder_reuses_canonical_staged_publication_lifecycle() -> None:
+    source = Path(builder.__file__).read_text(encoding="utf-8")
+    assert source.count("publish_staged_artifact(") == 2
+    assert "stamp(" not in source
+    assert "sidecar_path(output).unlink" not in source

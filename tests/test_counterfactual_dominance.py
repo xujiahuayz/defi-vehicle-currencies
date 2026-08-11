@@ -4,6 +4,7 @@ import unittest
 from decimal import Decimal
 from pathlib import Path
 from tempfile import TemporaryDirectory
+from types import SimpleNamespace
 from unittest.mock import patch
 
 import pandas as pd
@@ -24,6 +25,7 @@ from scripts.build_counterfactual_dominance import (
     write_gross_release,
 )
 from ddvc.prices import attach_strictly_prior_weth_usd
+from ddvc.provenance import sidecar_path
 
 
 class CounterfactualDominanceTests(unittest.TestCase):
@@ -41,7 +43,12 @@ class CounterfactualDominanceTests(unittest.TestCase):
         self.assertEqual(annual["year"], 2025)
         self.assertAlmostEqual(pooled["excluded_multi_component_route_share"], 2 / 3)
         self.assertAlmostEqual(pooled["excluded_multi_component_notional_share"], 5 / 6)
-        self.assertIn(OUT_RECEIPT_ALLOCATION_SUPPORT, gross_panel_inputs())
+        route_release = SimpleNamespace(provenance_inputs=(Path("route-ledger"),))
+        state_release = SimpleNamespace(provenance_inputs=(Path("state-ledger"),))
+        self.assertIn(
+            OUT_RECEIPT_ALLOCATION_SUPPORT,
+            gross_panel_inputs(route_release, {"uniswap_v2": state_release}),
+        )
 
     def test_single_component_transaction_cannot_own_duplicate_gross_routes(self) -> None:
         routes = pd.DataFrame({"tx_hash": ["0xsingle", "0xsingle"], "input_usd": [100.0, 100.0]})
@@ -54,6 +61,48 @@ class CounterfactualDominanceTests(unittest.TestCase):
         with patch("scripts.build_counterfactual_dominance.write_panel") as writer, self.assertRaisesRegex(ValueError, "cannot be allocated"):
             write_gross_release(duplicate, Path("ignored.parquet"))
         writer.assert_not_called()
+
+    def test_gross_release_rejects_state_mutation_before_install_and_preserves_prior_pair(self) -> None:
+        class CurrentRoute:
+            provenance_inputs = (Path("route-ledger"),)
+            content_identity_sha256 = "a" * 64
+
+            @staticmethod
+            def assert_current() -> None:
+                return None
+
+        class MutatedState:
+            provenance_inputs = (Path("state-ledger"),)
+            content_identity_sha256 = "b" * 64
+
+            @staticmethod
+            def assert_current() -> None:
+                raise RuntimeError("released state marker changed")
+
+        frame = pd.DataFrame(
+            {
+                "tx": ["0xabc"],
+                "receipt_allocation_scope": [
+                    "single_reconstructed_component_transaction"
+                ],
+            }
+        )
+        with TemporaryDirectory() as temporary:
+            output = Path(temporary) / "gross.parquet"
+            pd.DataFrame({"prior": [1]}).to_parquet(output, index=False)
+            prior = output.read_bytes()
+            sidecar = sidecar_path(output)
+            sidecar.parent.mkdir(parents=True, exist_ok=True)
+            sidecar.write_bytes(b"prior-sidecar\n")
+            with self.assertRaisesRegex(RuntimeError, "marker changed"):
+                write_gross_release(
+                    frame,
+                    output,
+                    route_release=CurrentRoute(),
+                    state_releases={"uniswap_v2": MutatedState()},
+                )
+            self.assertEqual(output.read_bytes(), prior)
+            self.assertEqual(sidecar.read_bytes(), b"prior-sidecar\n")
 
     def test_intraday_weth_mark_is_strictly_prior_and_fresh(self) -> None:
         targets = pd.DataFrame({"timestamp_utc": [1_000, 1_060]})

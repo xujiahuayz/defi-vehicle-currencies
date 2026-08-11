@@ -39,6 +39,7 @@ from ddvc.liquidity import (
 )
 from ddvc.literature_admission import load_source_admission, validate_source_admission
 from ddvc.provenance import portable_content_sha256, sidecar_path, verify
+from ddvc.prices import load_canonical_token_prices
 from ddvc.model_registry import (
     DESIGN_SEED_CLAIM_STATUSES,
     LEGACY_MODEL_STATUSES,
@@ -56,13 +57,13 @@ from ddvc.model_registry import (
     validate_registered_plan,
 )
 from ddvc.reconstruct import DEX_FAMILY, UNIFIED_QUALITY_PANEL
+from ddvc.data_release import released_state_partitions
 from ddvc.route_cost import MAIN_ROUTE_COST_SPEC, QUOTE_CELL_KEYS
 from ddvc.route_roles import VALUE_SUPPORT_COLUMNS
 from ddvc.state_data import (
     FAMILY_STREAMS,
     STATE_GENERATIONS,
     STATE_ROOT,
-    available_state_days,
     pool_semantics,
 )
 from ddvc.venue_corpus import JFE_VENUE_CARDS, JFE_VENUE_SOURCE_KEYS
@@ -174,12 +175,15 @@ RETIRED_ROUTE_GAS_PUBLICATION_PATTERNS = (
     re.compile(r"\b(?:gas|ETH price|converted at)[^\n]{0,120}(?:\\?\$2,500)\b", re.IGNORECASE),
 )
 CANONICAL_EMPIRICAL_CONSUMERS = (
+    "scripts/build_intermediation_by_type.py",
     "scripts/build_transaction_state_frontier.py",
     "scripts/build_counterfactual_dominance.py",
     "scripts/build_rent_incidence_panel.py",
     "scripts/build_lp_liquidity_flow_panel.py",
     "scripts/build_token_price_panel.py",
     "scripts/run_core_rq_experiments.py",
+    "scripts/run_rent_incidence.py",
+    "scripts/test_block_vs_hour_verdict.py",
     "scripts/validate_curve_quoter.py",
     "scripts/validate_weighted_quoter.py",
     "scripts/run_balancer_weighted_quote_extension.py",
@@ -1412,36 +1416,29 @@ def validate_quote_state_contract_rows(rows: pd.DataFrame) -> tuple[bool, str]:
     )
 
 
-def quote_state_artifact_check(
-    state_root: Path = STATE_ROOT,
-) -> tuple[bool, str]:
+def quote_state_artifact_check() -> tuple[bool, str]:
     """Read distinct state contracts across every materialized family partition."""
 
     missing: list[str] = []
     contracts: list[pd.DataFrame] = []
-    con = duckdb.connect()
-    try:
-        for family, venues in FAMILY_STREAMS.items():
-            for venue in venues:
-                directory = state_root / family / venue
-                if not any(directory.glob("[0-9]" * 8 + ".parquet")):
-                    missing.append(f"{family}/{venue}")
-                    continue
-                glob = (directory / "*.parquet").as_posix().replace("'", "''")
-                try:
-                    contracts.append(
-                        con.execute(
-                            f"""
-                            SELECT DISTINCT venue, pool_family, invariant_family,
-                                state_generation, quote_supported
-                            FROM read_parquet('{glob}')
-                            """
-                        ).df()
-                    )
-                except (duckdb.Error, OSError) as exc:
-                    missing.append(f"{family}/{venue}:{type(exc).__name__}")
-    finally:
-        con.close()
+    for family, venues in FAMILY_STREAMS.items():
+        for venue in venues:
+            try:
+                release = released_state_partitions(
+                    family,
+                    venue,
+                    ("venue", "pool_family", "invariant_family", "state_generation", "quote_supported"),
+                    include_quarantined=True,
+                )
+                contracts.append(
+                    pd.concat(
+                        [release.read_day(day).drop_duplicates() for day in release.days],
+                        ignore_index=True,
+                    ).drop_duplicates()
+                )
+                release.assert_current()
+            except (OSError, RuntimeError, ValueError) as exc:
+                missing.append(f"{family}/{venue}:{type(exc).__name__}")
     if missing:
         return False, f"missing_or_invalid={missing}"
     rows = pd.concat(contracts, ignore_index=True) if contracts else pd.DataFrame()
@@ -1796,58 +1793,18 @@ def token_price_artifact_checks() -> list[tuple[str, bool, str]]:
 
     if not TOKEN_PRICE_DAILY_PANEL.exists():
         return [("node D token-price artifact", False, "missing canonical panel")]
-    provenance = verify(TOKEN_PRICE_DAILY_PANEL).get("status")
-    required = {
-        "day", "token", "symbol", "price_usd", "n_observations", "n_consensus",
-        "consensus_share", "gross_weight_usd", "consensus_weight_usd",
-        "price_source", "validation_status",
-    }
-    columns = set(pq.ParquetFile(TOKEN_PRICE_DAILY_PANEL).schema_arrow.names)
-    missing = sorted(required - columns)
-    results = [
+    try:
+        prices = load_canonical_token_prices(TOKEN_PRICE_DAILY_PANEL)
+    except (OSError, RuntimeError, ValueError) as exc:
+        return [("node D token-price canonical release", False, f"{type(exc).__name__}: {exc}")]
+    candidates = prices.loc[prices["token"].isin(VEHICLE_CANDIDATES)]
+    return [
         (
-            "node D token-price provenance and schema",
-            provenance == "ok" and not missing,
-            f"provenance={provenance}; missing_columns={missing or 'none'}",
+            "node D token-price canonical release",
+            True,
+            f"rows={len(prices):,}; candidate_rows={len(candidates):,}; candidate_days={candidates['day'].nunique():,}; content_sha256={prices.attrs['content_sha256']}",
         )
     ]
-    if missing:
-        return results
-    con = duckdb.connect()
-    try:
-        core = con.execute(
-            """
-            SELECT count(*) AS rows,
-                count(DISTINCT (day, token)) AS unique_rows,
-                count(*) FILTER (WHERE price_usd <= 0 OR NOT isfinite(price_usd)) AS bad_price,
-                count(*) FILTER (WHERE n_observations < 3 OR n_consensus < 3
-                    OR consensus_share < 0.75 OR consensus_share > 1) AS bad_consensus,
-                count(*) FILTER (WHERE consensus_weight_usd <= 0
-                    OR consensus_weight_usd - gross_weight_usd
-                        > greatest(1e-6, gross_weight_usd * 1e-12)) AS bad_weight,
-                count(*) FILTER (WHERE price_source!='canonical_repriced_route_legs'
-                    OR validation_status!='minimum_observations_and_price_consensus_passed')
-                    AS bad_lineage
-            FROM read_parquet(?)
-            """,
-            [str(TOKEN_PRICE_DAILY_PANEL)],
-        ).fetchone()
-        candidate_rows = con.execute(
-            "SELECT count(*), count(DISTINCT day) FROM read_parquet(?) WHERE token IN (SELECT unnest(?))",
-            [str(TOKEN_PRICE_DAILY_PANEL), sorted(VEHICLE_CANDIDATES)],
-        ).fetchone()
-    finally:
-        con.close()
-    results.append(
-        (
-            "node D token-price value and consensus contract",
-            core[0] == core[1] and not any(core[index] for index in range(2, 6)),
-            f"rows={core[0]:,}; unique={core[1]:,}; price={core[2]:,}; "
-            f"consensus={core[3]:,}; weight={core[4]:,}; lineage={core[5]:,}; "
-            f"candidate_rows={candidate_rows[0]:,}; candidate_days={candidate_rows[1]:,}",
-        )
-    )
-    return results
 
 
 def cex_reference_support_checks(
@@ -2331,7 +2288,7 @@ def lp_liquidity_flow_artifact_checks() -> list[tuple[str, bool, str]]:
                 count(*) FILTER (WHERE venue!='uniswap_v3'
                     OR pool_family!='concentrated_liquidity'
                     OR invariant_family!='concentrated_liquidity'
-                    OR state_generation!='uniswap_v3_tick_state_v2') AS family_mismatch,
+                    OR state_generation!='{STATE_GENERATIONS["uniswap_v3"]}') AS family_mismatch,
                 count(*) FILTER (WHERE tick_state_age_seconds < 0) AS noncausal,
                 count(*) FILTER (WHERE range_active_before !=
                     (tick_lower <= tick_before AND tick_before < tick_upper)) AS active_mismatch,

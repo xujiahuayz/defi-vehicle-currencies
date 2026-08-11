@@ -13,6 +13,7 @@ import importlib.util
 import gzip
 import json
 from pathlib import Path
+from types import SimpleNamespace
 
 import numpy as np
 import pandas as pd
@@ -27,6 +28,7 @@ from scripts.run_rent_incidence import (
 )
 from ddvc.fetch.pool_daily import pool_day_values, require_pool_daily_coverage
 from ddvc.fetch.sources import DEX_SOURCES
+from ddvc.provenance import portable_content_sha256, sidecar_path
 from ddvc.liquidity import (
     CAPITAL_COLUMN,
     LIQUIDITY_CONTRACTS,
@@ -72,6 +74,48 @@ def test_every_estimator_output_uses_one_current_input_contract():
     source = (ROOT / "scripts" / "run_rent_incidence.py").read_text()
     assert OUTPUT_PROVENANCE["inputs"] == REQUIRED_PANELS
     assert source.count("**OUTPUT_PROVENANCE") == 7
+
+
+def test_rent_assembly_rejects_release_mutation_before_install_and_preserves_prior_pair(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+):
+    cache_dir = tmp_path / "cache"
+    cache_dir.mkdir()
+    output = tmp_path / "rent.parquet"
+    pd.DataFrame({"value": [1]}).to_parquet(output, index=False)
+    prior = output.read_bytes()
+    sidecar = sidecar_path(output)
+    sidecar.parent.mkdir(parents=True, exist_ok=True)
+    sidecar.write_bytes(b"prior-sidecar\n")
+    canonical_input = tmp_path / "ledger"
+    canonical_input.write_bytes(b"ledger")
+
+    monkeypatch.setattr(brp, "_missing_day_shards", lambda *args, **kwargs: [])
+
+    def assemble(_files, staged, **_kwargs):
+        pd.DataFrame({"venue": ["uniswap_v2"], "day": ["20250101"], "pool": ["0xpool"]}).to_parquet(staged, index=False)
+        return SimpleNamespace(rows=1, shards=1)
+
+    monkeypatch.setattr(brp, "assemble_parquet_shards", assemble)
+
+    def reject(_staged: Path) -> None:
+        raise RuntimeError("released state marker changed")
+
+    with pytest.raises(RuntimeError, match="marker changed"):
+        brp._assemble_family(
+            days=["20250101"],
+            cache_dir=cache_dir,
+            venue="uniswap_v2",
+            columns=brp.V2_COLUMNS,
+            output=output,
+            code_sources=["tests/test_rent_incidence.py"],
+            canonical_inputs=[canonical_input],
+            generation="generation",
+            preinstall_validator=reject,
+        )
+    assert output.read_bytes() == prior
+    assert sidecar.read_bytes() == b"prior-sidecar\n"
 
 
 def test_rent_report_uses_two_way_primary_and_keeps_one_way_sensitivities():
@@ -573,6 +617,21 @@ def test_capital_materializer_streams_pool_and_candidate_panels_atomically(
         path = venue_dir / f"uniswap_v2_daily_{day}.jsonl.gz"
         with gzip.open(path, "wt") as handle:
             handle.write(json.dumps(record) + "\n")
+        (venue_dir / f"uniswap_v2_meta_{day}.json").write_text(
+            json.dumps(
+                {
+                    "source": "uniswap_v2",
+                    "day": f"{day[:4]}-{day[4:6]}-{day[6:]}",
+                    "streams": {
+                        "daily": {
+                            "logical_content_sha256": portable_content_sha256(
+                                path
+                            )
+                        }
+                    },
+                }
+            )
+        )
     pool_output = tmp_path / "pool.parquet"
     candidate_output = tmp_path / "candidate.parquet"
     rejection_output = tmp_path / "rejections.parquet"

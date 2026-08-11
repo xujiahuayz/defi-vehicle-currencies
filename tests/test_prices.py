@@ -1,13 +1,75 @@
 from __future__ import annotations
 
 import unittest
+import tempfile
+from pathlib import Path
+from unittest.mock import patch
 
 import pandas as pd
 
-from ddvc.prices import day_price_frame, day_prices
+from ddvc.prices import day_price_frame, day_prices, load_canonical_token_prices
+from ddvc.provenance import sidecar_path
 
 
 class DayPriceTests(unittest.TestCase):
+    def test_canonical_price_loader_requires_provenance_and_full_value_contract(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            path = Path(directory) / "token-price.parquet"
+            frame = pd.DataFrame(
+                [
+                    {
+                        "day": "20250101",
+                        "token": "0xabc",
+                        "symbol": "ABC",
+                        "price_usd": 2.0,
+                        "n_observations": 4,
+                        "n_consensus": 3,
+                        "consensus_share": 0.75,
+                        "gross_weight_usd": 10.0,
+                        "consensus_weight_usd": 8.0,
+                        "price_source": "canonical_repriced_route_legs",
+                        "validation_status": "minimum_observations_and_price_consensus_passed",
+                    }
+                ]
+            )
+            frame.to_parquet(path, index=False)
+            sidecar_path(path).parent.mkdir(parents=True, exist_ok=True)
+            sidecar_path(path).write_text("{}", encoding="utf-8")
+            with patch("ddvc.prices.require_current_artifacts") as current:
+                loaded = load_canonical_token_prices(path, columns=("day", "token", "price_usd"))
+            self.assertEqual(current.call_count, 2)
+            current.assert_called_with([path], consumer="canonical address-day token prices")
+            self.assertEqual(loaded.to_dict("records"), [{"day": "20250101", "token": "0xabc", "price_usd": 2.0}])
+            frame.loc[0, "n_consensus"] = 2
+            frame.to_parquet(path, index=False)
+            with (
+                patch("ddvc.prices.require_current_artifacts"),
+                self.assertRaisesRegex(ValueError, "support"),
+            ):
+                load_canonical_token_prices(path)
+
+            frame.loc[0, "n_consensus"] = 3
+            frame.to_parquet(path, index=False)
+            with (
+                patch("ddvc.prices.require_current_artifacts"),
+                self.assertRaisesRegex(ValueError, "nonempty"),
+            ):
+                load_canonical_token_prices(path, columns=[])
+
+            original_read = pd.read_parquet
+
+            def mutate_sidecar(*args, **kwargs):
+                loaded = original_read(*args, **kwargs)
+                sidecar_path(path).write_text('{"changed":true}', encoding="utf-8")
+                return loaded
+
+            with (
+                patch("ddvc.prices.require_current_artifacts"),
+                patch("ddvc.prices.pd.read_parquet", side_effect=mutate_sidecar),
+                self.assertRaisesRegex(RuntimeError, "provenance mutated"),
+            ):
+                load_canonical_token_prices(path)
+
     def test_consensus_screened_volume_weighted_median(self) -> None:
         legs = pd.DataFrame(
             {

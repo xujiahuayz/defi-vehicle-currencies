@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import importlib.util
+import json
 import tempfile
 from pathlib import Path
 
@@ -194,8 +195,6 @@ def test_assembly_refuses_a_missing_day_before_replacing_output(monkeypatch) -> 
             day="20250101",
             columns=rent.V2_COLUMNS,
         )
-        monkeypatch.setattr(rent, "stamp", lambda *args, **kwargs: None)
-
         with pytest.raises(RuntimeError, match="1 day shards"):
             rent._assemble_family(
                 days=["20250101", "20250102"],
@@ -230,12 +229,6 @@ def test_assembly_unifies_null_and_string_shard_schema(monkeypatch) -> None:
             day="20250102",
             columns=rent.V2_COLUMNS,
         )
-        stamps = []
-        monkeypatch.setattr(
-            rent,
-            "stamp",
-            lambda artefact, **kwargs: stamps.append((artefact, kwargs)),
-        )
         canonical = root / "canonical-input"
         canonical.touch()
 
@@ -256,11 +249,11 @@ def test_assembly_unifies_null_and_string_shard_schema(monkeypatch) -> None:
             None,
             "TOKEN",
         ]
-        assert stamps[0][0] == output
-        assert stamps[0][1]["inputs"] == [canonical]
-        assert stamps[0][1]["rows"] == 2
-        assert "generation test" in stamps[0][1]["notes"]
-        assert "resumable cache" in stamps[0][1]["notes"]
+        stamped = json.loads(provenance.sidecar_path(output).read_text())
+        assert stamped["inputs"][0]["path"] == str(canonical)
+        assert stamped["rows"] == 2
+        assert "generation test" in stamped["notes"]
+        assert "resumable cache" in stamped["notes"]
 
 
 def test_interrupted_stamp_cannot_leave_old_provenance_blessing_new_panel(monkeypatch) -> None:
@@ -278,9 +271,10 @@ def test_interrupted_stamp_cannot_leave_old_provenance_blessing_new_panel(monkey
         v2_frame("20240101", "old").to_parquet(output, index=False)
         old_sidecar = provenance.sidecar_path(output)
         old_sidecar.write_text('{"old": true}\n')
+        old_panel = output.read_bytes()
+        old_provenance = old_sidecar.read_bytes()
         monkeypatch.setattr(
-            rent,
-            "stamp",
+            "ddvc.tables.prepare_stamp",
             lambda *args, **kwargs: (_ for _ in ()).throw(RuntimeError("interrupted")),
         )
 
@@ -296,8 +290,8 @@ def test_interrupted_stamp_cannot_leave_old_provenance_blessing_new_panel(monkey
                 generation="new",
             )
 
-        assert not old_sidecar.exists()
-        assert pq.read_table(output).column("pool").to_pylist() == ["new"]
+        assert output.read_bytes() == old_panel
+        assert old_sidecar.read_bytes() == old_provenance
 
 
 def test_work_partition_changes_invalidate_the_shard_generation(monkeypatch) -> None:

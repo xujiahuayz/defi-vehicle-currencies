@@ -32,10 +32,10 @@ import pandas as pd
 
 from ddvc.paths import OUTPUT_DIR, REPO_ROOT
 from ddvc.pricing.stableswap import StablePool, calibrate_amp, quote_exact_input
-from ddvc.state_data import STATE_ROOT, read_multi_asset_partition
+from ddvc.data_release import release_preinstall_validator, released_state_partitions
+from ddvc.state_data import MULTI_ASSET_COLUMNS
 from ddvc.tables import write_exhibit
 
-MARKET_STATE = STATE_ROOT
 OUT = OUTPUT_DIR / "exhibits" / "curve_quoter_validation.jsonl"
 CODE_SOURCES = [
     "scripts/validate_curve_quoter.py",
@@ -44,11 +44,8 @@ CODE_SOURCES = [
 ]
 
 
-def days_with_balances(limit: int | None) -> list[str]:
-    days = sorted(
-        path.stem
-        for path in (MARKET_STATE / "multi_asset" / "curve").glob("[0-9]" * 8 + ".parquet")
-    )
+def days_with_balances(release, limit: int | None) -> list[str]:
+    days = list(release.days)
     return days[:limit] if limit else days
 
 
@@ -78,7 +75,8 @@ def main() -> int:
                     help="pool-days with fewer trades cannot be fitted and scored apart")
     args = ap.parse_args()
 
-    days = days_with_balances(None)
+    state_release = released_state_partitions("multi_asset", "curve", MULTI_ASSET_COLUMNS)
+    days = days_with_balances(state_release, None)
     if not days:
         print("no re-fetched Curve days carry balances yet")
         return 1
@@ -90,7 +88,7 @@ def main() -> int:
     rows = []
     pooled_signed_errors: list[float] = []
     for day in picked:
-        state = read_multi_asset_partition("curve", day, root=MARKET_STATE)
+        state = state_release.read_day(day)
         pools: dict[str, dict] = {}
         snapshots = state[state["record_type"].eq("snapshot_token")]
         for pid, group in snapshots.groupby("pool", sort=False):
@@ -180,8 +178,9 @@ def main() -> int:
         pd.DataFrame(rows),
         OUT,
         code_sources=CODE_SOURCES,
-        inputs=[MARKET_STATE / "multi_asset" / "curve"],
-        notes="held-out Curve quote errors with upper-tail and signed-overquote diagnostics",
+        inputs=list(state_release.provenance_inputs),
+        notes=f"held-out Curve quote errors with upper-tail and signed-overquote diagnostics; released-state identity {state_release.content_identity_sha256}",
+        preinstall_validator=release_preinstall_validator(state_release),
     )
     print(f"\nwrote {OUT.relative_to(REPO_ROOT)}")
     return 0

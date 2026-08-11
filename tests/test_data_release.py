@@ -2,6 +2,8 @@ from __future__ import annotations
 
 import tempfile
 import unittest
+import json
+import os
 from pathlib import Path
 from types import SimpleNamespace
 
@@ -9,15 +11,342 @@ import pandas as pd
 
 from ddvc.data_release import (
     _exact_key_gate,
+    _validated_release_ledger,
+    ReleasedPartition,
+    ReleasedPartitionSet,
     audit_cross_venue_order_conflicts,
+    released_route_partitions,
+    released_state_partitions,
+    release_preinstall_validator,
     require_market_state_release,
     require_v2_event_source_release,
     require_v3_event_source_release,
 )
+from ddvc.artifact_release import file_sha256
+from ddvc.provenance import sidecar_path, verify
+from ddvc.state_data import QUALITY_COLUMNS, SCHEMA_VERSION, STATE_ENGINE
+from ddvc.tables import write_panel
 from ddvc.v4_quarantine import audit_v4_pool_static_conflicts
 
 
 class DataReleaseTests(unittest.TestCase):
+    @staticmethod
+    def _test_release(root: Path) -> ReleasedPartitionSet:
+        ledger = root / "ledger.parquet"
+        ledger.write_bytes(b"ledger")
+        panel = root / "source.parquet"
+        panel.write_bytes(b"source-a")
+        marker = root / "source.quality.json"
+        marker.write_bytes(b'{"passed":true}\n')
+        partition = ReleasedPartition(
+            day="20250101",
+            path=panel,
+            marker_path=marker,
+            expected_rows=1,
+            expected_bytes=panel.stat().st_size,
+            expected_sha256=file_sha256(panel),
+            marker_sha256=file_sha256(marker),
+            input_fingerprint="a" * 64,
+        )
+        return ReleasedPartitionSet(
+            kind="state",
+            columns=("value",),
+            ledger_path=ledger,
+            ledger_sha256=file_sha256(ledger),
+            partitions=(partition,),
+            content_identity_sha256="b" * 64,
+            provenance_inputs=(ledger, panel, marker),
+        )
+
+    def test_release_validator_rejects_mutation_before_install_and_preserves_prior_pair(self) -> None:
+        class MutatedRelease:
+            @staticmethod
+            def assert_current() -> None:
+                raise RuntimeError("released state marker changed")
+
+        with tempfile.TemporaryDirectory() as directory:
+            output = Path(directory) / "panel.parquet"
+            pd.DataFrame({"value": [1]}).to_parquet(output, index=False)
+            prior = output.read_bytes()
+            sidecar = sidecar_path(output)
+            sidecar.write_bytes(b"prior-sidecar\n")
+            with self.assertRaisesRegex(RuntimeError, "marker changed"):
+                write_panel(
+                    pd.DataFrame({"value": [2]}),
+                    output,
+                    code_sources=["tests/test_data_release.py"],
+                    preinstall_validator=release_preinstall_validator(MutatedRelease()),
+                )
+            self.assertEqual(output.read_bytes(), prior)
+            self.assertEqual(sidecar.read_bytes(), b"prior-sidecar\n")
+
+    def test_release_mutation_during_provenance_preparation_cannot_install_or_misstamp(self) -> None:
+        from unittest.mock import patch
+        import ddvc.tables as tables
+
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            release = self._test_release(root)
+            output = root / "result.parquet"
+            pd.DataFrame({"value": [1]}).to_parquet(output, index=False)
+            prior = output.read_bytes()
+            sidecar = sidecar_path(output)
+            sidecar.parent.mkdir(parents=True, exist_ok=True)
+            sidecar.write_bytes(b"prior-sidecar\n")
+            original_prepare = tables.prepare_stamp
+
+            def mutate_then_prepare(*args, **kwargs):
+                release.partitions[0].marker_path.write_bytes(b'{"passed":false}\n')
+                return original_prepare(*args, **kwargs)
+
+            with (
+                patch("ddvc.tables.prepare_stamp", side_effect=mutate_then_prepare),
+                self.assertRaisesRegex(RuntimeError, "marker changed"),
+            ):
+                write_panel(
+                    pd.DataFrame({"value": [2]}),
+                    output,
+                    code_sources=["tests/test_data_release.py"],
+                    inputs=list(release.provenance_inputs),
+                    preinstall_validator=release_preinstall_validator(release),
+                )
+            self.assertEqual(output.read_bytes(), prior)
+            self.assertEqual(sidecar.read_bytes(), b"prior-sidecar\n")
+
+    def test_exact_release_binding_detects_large_input_mutation_with_restored_mtime(self) -> None:
+        from unittest.mock import patch
+
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            release = self._test_release(root)
+            source = release.partitions[0].path
+            source_stat = source.stat()
+            output = root / "result.parquet"
+            with patch("ddvc.provenance.CONTENT_HASH_MAX_BYTES", 0):
+                write_panel(
+                    pd.DataFrame({"value": [2]}),
+                    output,
+                    code_sources=["tests/test_data_release.py"],
+                    inputs=list(release.provenance_inputs),
+                    preinstall_validator=release_preinstall_validator(release),
+                )
+                stamped = json.loads(sidecar_path(output).read_text())
+                self.assertEqual(len(stamped["released_input_bindings"]), 3)
+                source.write_bytes(b"source-b")
+                os.utime(
+                    source,
+                    ns=(source_stat.st_atime_ns, source_stat.st_mtime_ns),
+                )
+                verdict = verify(output)
+            self.assertEqual(verdict["status"], "stale")
+            self.assertIn(str(source.resolve()), verdict["changed_inputs"])
+
+    def test_independent_multi_output_contract_cannot_leave_a_stale_member_current(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            release = self._test_release(root)
+            validator = release_preinstall_validator(release)
+            first = root / "first.parquet"
+            second = root / "second.parquet"
+            write_panel(
+                pd.DataFrame({"value": [1]}),
+                first,
+                code_sources=["tests/test_data_release.py"],
+                inputs=list(release.provenance_inputs),
+                preinstall_validator=validator,
+            )
+            pd.DataFrame({"value": [0]}).to_parquet(second, index=False)
+            prior_second = second.read_bytes()
+            second_sidecar = sidecar_path(second)
+            second_sidecar.parent.mkdir(parents=True, exist_ok=True)
+            second_sidecar.write_bytes(b"prior-sidecar\n")
+            release.partitions[0].marker_path.write_bytes(b'{"passed":false}\n')
+            with self.assertRaisesRegex(RuntimeError, "marker changed"):
+                write_panel(
+                    pd.DataFrame({"value": [2]}),
+                    second,
+                    code_sources=["tests/test_data_release.py"],
+                    inputs=list(release.provenance_inputs),
+                    preinstall_validator=validator,
+                )
+            self.assertEqual(verify(first)["status"], "stale")
+            self.assertEqual(second.read_bytes(), prior_second)
+            self.assertEqual(second_sidecar.read_bytes(), b"prior-sidecar\n")
+
+    def test_market_state_producer_publishes_engine_contract_consumed_by_release_gate(self) -> None:
+        from unittest.mock import patch
+        from scripts.build_market_state import market_state_quality_frame
+
+        row = {column: 0 for column in QUALITY_COLUMNS}
+        row.update(
+            {
+                "schema_version": SCHEMA_VERSION,
+                "family": "tick",
+                "venue": "uniswap_v3",
+                "day": "20250101",
+                "input_fingerprint": "c" * 64,
+                "output_sha256": "d" * 64,
+                "passed": True,
+            }
+        )
+        produced = market_state_quality_frame([row])
+        self.assertEqual(produced["engine"].tolist(), [STATE_ENGINE])
+        produced["cross_venue_order_conflicts"] = 0
+        produced["v4_static_conflict_pools"] = 0
+        with tempfile.TemporaryDirectory() as directory:
+            ledger = Path(directory) / "market-state-quality.parquet"
+            produced.to_parquet(ledger, index=False)
+            with (
+                patch("ddvc.data_release.MARKET_STATE_QUALITY_PANEL", ledger),
+                patch("ddvc.data_release.require_current_artifacts"),
+                patch("ddvc.data_release.expected_state_keys", return_value=[("tick", "uniswap_v3", "20250101")]),
+                patch("ddvc.data_release.read_tick_quality", return_value=SimpleNamespace()),
+                patch("ddvc.data_release.load_v4_static_quarantine", return_value=set()),
+            ):
+                consumed = _validated_release_ledger("state")
+        self.assertEqual(list(consumed.columns), list(produced.columns))
+
+    def test_released_route_partitions_bind_exact_order_rows_and_mutation_safe_reads(self) -> None:
+        from unittest.mock import patch
+
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            ledger = root / "route-ledger.parquet"
+            ledger.write_bytes(b"ledger")
+            panel = root / "20250101.parquet"
+            pd.DataFrame(
+                [
+                    {"source": "uniswap_v2", "tx_hash": "0xa"},
+                    {"source": "uniswap_v3", "tx_hash": "0xb"},
+                ]
+            ).to_parquet(panel, index=False)
+            marker = root / "20250101.json"
+            quality = {
+                "day": "20250101",
+                "input_fingerprint": "a" * 64,
+                "output_rows": 2,
+                "output_bytes": panel.stat().st_size,
+                "output_sha256": file_sha256(panel),
+                "passed": True,
+            }
+            marker.write_text(json.dumps(quality), encoding="utf-8")
+            empty_panel = root / "20250102.parquet"
+            pd.DataFrame(columns=["source", "tx_hash"]).to_parquet(empty_panel, index=False)
+            empty_marker = root / "20250102.json"
+            empty_quality = {
+                **quality,
+                "day": "20250102",
+                "output_rows": 0,
+                "output_bytes": empty_panel.stat().st_size,
+                "output_sha256": file_sha256(empty_panel),
+            }
+            empty_marker.write_text(json.dumps(empty_quality), encoding="utf-8")
+            ledger_frame = pd.DataFrame([quality, empty_quality])
+            ledger_frame.attrs["ledger_sha256"] = file_sha256(ledger)
+            empty_ledger_frame = pd.DataFrame([empty_quality])
+            empty_ledger_frame.attrs["ledger_sha256"] = file_sha256(ledger)
+            panels = {"20250101": panel, "20250102": empty_panel}
+            markers = {"20250101": marker, "20250102": empty_marker}
+            with (
+                patch("ddvc.data_release.UNIFIED_QUALITY_PANEL", ledger),
+                patch("ddvc.data_release._validated_release_ledger", return_value=ledger_frame),
+                patch("ddvc.data_release.unified_path", side_effect=lambda day: panels[day]),
+                patch("ddvc.data_release.unified_quality_path", side_effect=lambda day: markers[day]),
+            ):
+                release = released_route_partitions(("source", "tx_hash"), nonempty=True)
+                self.assertEqual(release.days, ("20250101",))
+                self.assertEqual(release.expected_rows, (2,))
+                self.assertEqual(
+                    released_route_partitions(("source",), nonempty=False).days,
+                    ("20250101", "20250102"),
+                )
+                with (
+                    patch("ddvc.data_release._validated_release_ledger", return_value=empty_ledger_frame),
+                    self.assertRaisesRegex(RuntimeError, "no nonempty partitions"),
+                ):
+                    released_route_partitions(("source",), nonempty=True)
+                self.assertEqual(release.read_day("2025-01-01")["tx_hash"].tolist(), ["0xa", "0xb"])
+                self.assertEqual(len(release.content_identity_sha256), 64)
+                subset = release.select_days(("2025-01-01",))
+                self.assertEqual(subset.days, ("20250101",))
+                self.assertNotEqual(subset.content_identity_sha256, release.content_identity_sha256)
+                self.assertEqual(subset.read_day("20250101")["tx_hash"].tolist(), ["0xa", "0xb"])
+                with self.assertRaisesRegex(ValueError, "nonempty and unique"):
+                    release.select_days(())
+                read_parquet = pd.read_parquet
+
+                def mutate_during_read(*args, **kwargs):
+                    frame = read_parquet(*args, **kwargs)
+                    panel.write_bytes(b"x" * quality["output_bytes"])
+                    return frame
+
+                with self.assertRaisesRegex(RuntimeError, "content changed"):
+                    with patch("ddvc.data_release.pd.read_parquet", side_effect=mutate_during_read):
+                        release.read_day("20250101")
+
+    def test_released_v4_state_partitions_exclude_static_conflict_pool_identities(self) -> None:
+        from unittest.mock import patch
+
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            ledger = root / "state-ledger.parquet"
+            ledger.write_bytes(b"ledger")
+            panel = root / "20250101.parquet"
+            pd.DataFrame(
+                [
+                    {"day": "20250101", "pool": "usable", "usable": True},
+                    {"day": "20250101", "pool": "conflict", "usable": True},
+                    {"day": "20250101", "pool": "unusable", "usable": False},
+                ]
+            ).to_parquet(panel, index=False)
+            marker = root / "20250101.quality.json"
+            quality = {
+                "family": "tick",
+                "venue": "uniswap_v4",
+                "day": "20250101",
+                "input_fingerprint": "b" * 64,
+                "canonical_rows": 3,
+                "output_bytes": panel.stat().st_size,
+                "output_sha256": file_sha256(panel),
+                "passed": True,
+            }
+            marker.write_text(json.dumps(quality), encoding="utf-8")
+            quarantine = root / "v4-quarantine.parquet"
+            pd.DataFrame(
+                [
+                    {
+                        "pool": "conflict",
+                        "swap_rows": 2,
+                        "static_variants": 2,
+                        "first_day": "20250101",
+                        "last_day": "20250102",
+                    }
+                ]
+            ).to_parquet(quarantine, index=False)
+            ledger_frame = pd.DataFrame([quality])
+            ledger_frame.attrs["ledger_sha256"] = file_sha256(ledger)
+            with (
+                patch("ddvc.data_release.MARKET_STATE_QUALITY_PANEL", ledger),
+                patch("ddvc.data_release.V4_STATIC_QUARANTINE_PANEL", quarantine),
+                patch("ddvc.v4_quarantine.require_current_artifacts"),
+                patch("ddvc.data_release._validated_release_ledger", return_value=ledger_frame),
+                patch("ddvc.data_release.state_partition_path", return_value=panel),
+                patch("ddvc.data_release.state_quality_path", return_value=marker),
+            ):
+                release = released_state_partitions("tick", "uniswap_v4", ("day", "pool"))
+                frame = release.read_day("20250101")
+                self.assertEqual(frame["pool"].tolist(), ["usable"])
+                inclusive = released_state_partitions(
+                    "tick",
+                    "uniswap_v4",
+                    ("pool",),
+                    include_quarantined=True,
+                ).read_day("20250101")
+                self.assertEqual(inclusive["pool"].tolist(), ["usable", "conflict", "unusable"])
+                marker.write_text(json.dumps({**quality, "passed": False}), encoding="utf-8")
+                with self.assertRaisesRegex(RuntimeError, "marker changed"):
+                    release.assert_current()
+
     def test_full_market_state_release_adds_event_certificate_after_prerelease(self) -> None:
         from unittest.mock import patch
 
@@ -252,12 +581,55 @@ class DataReleaseTests(unittest.TestCase):
             "scripts/build_routing_maturation_panel.py": "require_node_d_release(routes=True, market_state=True)",
             "scripts/build_counterfactual_dominance.py": "require_node_d_release(routes=True, market_state=True)",
             "scripts/build_rent_incidence_panel.py": "require_node_d_release(market_state=True)",
-            "scripts/build_v2_token_panel.py": "require_market_state_prerelease()",
+            "scripts/build_v2_token_panel.py": "released_state_partitions(",
             "scripts/run_rent_incidence.py": "require_node_d_release(routes=True, market_state=True)",
         }
         for filename, call in expected.items():
             with self.subTest(filename=filename):
                 self.assertIn(call, Path(filename).read_text(encoding="utf-8"))
+
+    def test_market_state_consumers_take_days_from_the_release_ledger(self) -> None:
+        filenames = [
+            "scripts/build_counterfactual_dominance.py",
+            "scripts/validate_curve_quoter.py",
+            "scripts/validate_weighted_quoter.py",
+            "scripts/build_lp_liquidity_flow_panel.py",
+            "scripts/build_rent_incidence_panel.py",
+            "scripts/build_v2_token_panel.py",
+            "scripts/test_block_vs_hour_verdict.py",
+            "scripts/audit_findings_freeze.py",
+        ]
+        for filename in filenames:
+            with self.subTest(filename=filename):
+                source = Path(filename).read_text(encoding="utf-8")
+                self.assertIn("released_state_partitions", source)
+                self.assertIn(".read_day(", source)
+                self.assertNotIn("available_state_days", source)
+                self.assertNotIn("released_state_days", source)
+                self.assertNotIn("read_cp_partition", source)
+                self.assertNotIn("read_tick_partition", source)
+                self.assertNotIn("read_multi_asset_partition", source)
+                self.assertNotRegex(source, r"MARKET_STATE.*\.glob\(")
+
+    def test_release_bound_publishers_validate_again_immediately_before_install(self) -> None:
+        filenames = [
+            "scripts/test_block_vs_hour_verdict.py",
+            "scripts/validate_curve_quoter.py",
+            "scripts/validate_weighted_quoter.py",
+            "scripts/build_rent_incidence_panel.py",
+            "scripts/build_counterfactual_dominance.py",
+        ]
+        for filename in filenames:
+            with self.subTest(filename=filename):
+                source = Path(filename).read_text(encoding="utf-8")
+                self.assertIn("release_preinstall_validator(", source)
+                self.assertIn("preinstall_validator=", source)
+
+    def test_v3_materiality_reads_only_released_route_partitions(self) -> None:
+        source = Path("src/ddvc/v3_graph_materiality.py").read_text(encoding="utf-8")
+        self.assertIn("route_release.read_day(day)", source)
+        self.assertNotRegex(source, r"unified.*\.parquet")
+        self.assertNotIn(".glob(", source)
 
     def test_retired_daily_gas_pipeline_is_absent(self) -> None:
         self.assertFalse(Path("scripts/process/fetch_daily_gas_price_graph.py").exists())

@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 from collections import defaultdict
+from collections.abc import Mapping
 from dataclasses import dataclass
 from datetime import datetime, timedelta
 from decimal import Decimal, InvalidOperation
@@ -114,6 +115,7 @@ def load_v2_replay_day(
     *,
     venues: tuple[str, ...] = V2_VENUES,
     raw_root: Path = RAW_ROOT,
+    state_frames: Mapping[tuple[str, str], object] | None = None,
 ) -> V2ReplayDay:
     """Load and validate every reconstructable canonical V2 pool-hour for ``day``."""
     reserves: dict[PoolHourKey, tuple[Decimal, Decimal]] = {}
@@ -127,16 +129,20 @@ def load_v2_replay_day(
     )
 
     for venue in venues:
-        previous_frame = (
-            read_cp_partition(venue, previous_day, root=state_root, raw_root=raw_root)
-            if cp_partition_path(venue, previous_day, root=state_root).exists()
-            else None
-        )
-        day_frame = (
-            read_cp_partition(venue, day, root=state_root, raw_root=raw_root)
-            if cp_partition_path(venue, day, root=state_root).exists()
-            else None
-        )
+        if state_frames is None:
+            previous_frame = (
+                read_cp_partition(venue, previous_day, root=state_root, raw_root=raw_root)
+                if cp_partition_path(venue, previous_day, root=state_root).exists()
+                else None
+            )
+            day_frame = (
+                read_cp_partition(venue, day, root=state_root, raw_root=raw_root)
+                if cp_partition_path(venue, day, root=state_root).exists()
+                else None
+            )
+        else:
+            previous_frame = state_frames.get((venue, previous_day))
+            day_frame = state_frames.get((venue, day))
         if previous_frame is not None:
             _read_reserves(previous_frame, venue, reserves, meta, latest_only=True)
         if day_frame is None:

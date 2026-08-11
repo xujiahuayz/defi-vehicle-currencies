@@ -61,13 +61,13 @@ from ddvc.analysis.block_timing import (
     summarise_timing_conditionals,
     summarise_triangle_maturation,
 )
+from ddvc.data_release import ReleasedPartitionSet, release_preinstall_validator, released_state_partitions
 from ddvc.paths import DATA_DIR, OUTPUT_DIR, REPO_ROOT
 from ddvc.provenance import cache_key
 from ddvc.runtime import atomic_output, exclusive_job
-from ddvc.state_data import STATE_ROOT, available_state_days, read_tick_partition
+from ddvc.state_data import TICK_COLUMNS
 from ddvc.tables import write_exhibit
 
-V3_STATE = STATE_ROOT / "tick" / "uniswap_v3"
 OUT = OUTPUT_DIR / "exhibits" / "block_vs_hour_verdict.jsonl"
 COND_OUT = OUTPUT_DIR / "exhibits" / "block_vs_hour_conditional.jsonl"
 MATURATION_OUT = OUTPUT_DIR / "exhibits" / "triangle_gap_maturation.jsonl"
@@ -96,15 +96,19 @@ TRIANGLE_COLUMNS = [
 OBSERVATION_COLUMNS = ["m_own_bps", "m_hr_bps", "secs_to_boundary"]
 
 
-def load_day(day: str):
+def load_day(day: str, release: ReleasedPartitionSet):
     """Load one canonical V3 day through the shared block-timing owner."""
-    state = load_v3_state_day(read_tick_partition("uniswap_v3", day))
+    frame = release.read_day(day)
+    state = load_v3_state_day(frame)
     return state.tokens, state.series
 
 
 def measure_day(day: str, max_triangles: int, min_swaps: int,
-                observations: list[tuple[float, float, int]] | None = None) -> list[dict]:
-    tokens, series = load_day(day)
+                observations: list[tuple[float, float, int]] | None = None,
+                release: ReleasedPartitionSet | None = None) -> list[dict]:
+    if release is None:
+        raise ValueError("block-vs-hour measurement requires a released state partition")
+    tokens, series = load_day(day, release)
     if not series:
         return []
     views = {pid: PoolView(seq) for pid, seq in series.items() if len(seq) >= min_swaps}
@@ -247,6 +251,7 @@ def _measure_and_cache_day(
     min_swaps: int,
     cache_dir_text: str,
     force: bool,
+    release: ReleasedPartitionSet,
 ) -> dict[str, object]:
     cache_dir = Path(cache_dir_text)
     if not force:
@@ -254,7 +259,7 @@ def _measure_and_cache_day(
         if cached is not None:
             return {**cached, "cached": True}
     observations: list[tuple[float, float, int]] = []
-    rows = measure_day(day, max_triangles, min_swaps, observations)
+    rows = measure_day(day, max_triangles, min_swaps, observations, release)
     triangles = pd.DataFrame(rows, columns=TRIANGLE_COLUMNS)
     observation_frame = pd.DataFrame(observations, columns=OBSERVATION_COLUMNS)
     expected = int(triangles["n_observations"].sum()) if not triangles.empty else 0
@@ -298,12 +303,13 @@ def main() -> int:
     if args.workers < 1:
         ap.error("--workers must be positive")
 
-    days = available_state_days("tick", "uniswap_v3")
+    state_release = released_state_partitions("tick", "uniswap_v3", TICK_COLUMNS)
+    days = list(state_release.days)
     if not days:
-        print(f"no canonical V3 state under {V3_STATE.relative_to(REPO_ROOT)}")
+        print("no released canonical V3 state")
         return 1
     picked = _pick_days(days, args.days)
-    generation = cache_key(CODE_SOURCES, inputs=[V3_STATE])
+    generation = cache_key(CODE_SOURCES, inputs=list(state_release.provenance_inputs))[:32] + state_release.content_identity_sha256[:32]
     cache_dir = (
         CACHE_ROOT
         / generation
@@ -317,7 +323,14 @@ def main() -> int:
 
     with exclusive_job(LOCK, job="block-vs-hour verdict"):
         payloads = [
-            (day, args.triangles, args.min_swaps, str(cache_dir), args.force)
+            (
+                day,
+                args.triangles,
+                args.min_swaps,
+                str(cache_dir),
+                args.force,
+                state_release.select_days((day,)),
+            )
             for day in picked
         ]
         with ProcessPoolExecutor(
@@ -437,32 +450,36 @@ def main() -> int:
                 f"  {int(row.year)}: median {row.median_gap_bps:.1f} bps; "
                 f"snapshot-weighted mean {row.snapshot_weighted_mean_gap_bps:.1f} bps"
             )
-    # Keep the three exhibits from one invocation together. Cache population and output
-    # assembly have separate locks so a long rebuild does not block a completed cache from
-    # being inspected, while two differently sized runs cannot interleave their exhibits.
+    # These are independently consumable exhibits, not one group-atomic bundle. Each carries
+    # the same exact released-state lineage and is rejected independently if that release
+    # changes; a partial refresh therefore cannot present any stale member as current.
     with exclusive_job(OUTPUT_LOCK, job="block-vs-hour output assembly"):
+        validate_release = release_preinstall_validator(state_release)
         write_exhibit(
             df,
             OUT,
             code_sources=CODE_SOURCES,
-            inputs=[V3_STATE],
-            notes="V3 direct-pool opportunity snapshots; strict pre-event block-log state",
+            inputs=list(state_release.provenance_inputs),
+            notes=f"V3 direct-pool opportunity snapshots; strict pre-event block-log state; released-state identity {state_release.content_identity_sha256}",
+            preinstall_validator=validate_release,
         )
         if not cond.empty:
             write_exhibit(
                 cond,
                 COND_OUT,
                 code_sources=CODE_SOURCES,
-                inputs=[V3_STATE],
-                notes="V3 direct-pool opportunity snapshots; strict pre-event block-log state",
+                inputs=list(state_release.provenance_inputs),
+                notes=f"V3 direct-pool opportunity snapshots; strict pre-event block-log state; released-state identity {state_release.content_identity_sha256}",
+                preinstall_validator=validate_release,
             )
         if not maturation.empty:
             write_exhibit(
                 maturation,
                 MATURATION_OUT,
                 code_sources=CODE_SOURCES,
-                inputs=[V3_STATE],
-                notes="V3 strict transaction-state triangle gaps; recurrent and horizon-balanced time trends",
+                inputs=list(state_release.provenance_inputs),
+                notes=f"V3 strict transaction-state triangle gaps; recurrent and horizon-balanced time trends; released-state identity {state_release.content_identity_sha256}",
+                preinstall_validator=validate_release,
             )
     print(f"\nwrote {OUT.relative_to(REPO_ROOT)}")
     if not cond.empty:

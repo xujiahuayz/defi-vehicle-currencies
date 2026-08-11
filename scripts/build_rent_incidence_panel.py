@@ -31,6 +31,7 @@ from __future__ import annotations
 
 import argparse
 from collections import defaultdict
+from collections.abc import Callable
 from pathlib import Path
 
 import numpy as np
@@ -39,7 +40,7 @@ import pyarrow as pa
 import pyarrow.parquet as pq
 
 from ddvc.capital_contracts import CAPITAL_CURRENT_COLUMN, capital_contract
-from ddvc.data_release import require_node_d_release
+from ddvc.data_release import ReleasedPartitionSet, release_preinstall_validator, released_state_partitions, require_node_d_release
 from ddvc.liquidity import CAPITAL_COLUMN
 from ddvc.panel_assembly import assemble_parquet_shards
 from ddvc.paths import (
@@ -48,14 +49,12 @@ from ddvc.paths import (
     POOL_CAPITAL_PANEL,
     RAW_MARKET_DATA_LOCK,
 )
-from ddvc.provenance import cache_key, require_current_artifacts, sidecar_path, stamp
-from ddvc.runtime import atomic_output, bounded_workers, exclusive_job, interruptible_process_pool
+from ddvc.provenance import cache_key, require_current_artifacts
+from ddvc.runtime import atomic_output, bounded_workers, exclusive_job, interruptible_process_pool, staged_output
 from ddvc.state_data import (
-    STATE_ROOT,
-    available_state_days,
-    read_cp_partition,
-    state_partition_path,
+    CP_COLUMNS,
 )
+from ddvc.tables import publish_staged_artifact
 from ddvc.work_partition import weighted_contiguous_chunks
 
 PROC = DATA_DIR / "processed"
@@ -201,10 +200,6 @@ def _rv_multiscale(hours: np.ndarray, prices: np.ndarray,
     rv4 = float(np.sum(np.diff(lp4) ** 2)) if lp4.size > 1 else 0.0
     rv_oc = float((lp[-1] - lp[0]) ** 2)
     return rv1, rv4, rv_oc, float(np.max(np.abs(lr)))
-
-
-def _days(family: str, venue: str) -> list[str]:
-    return available_state_days(family, venue)
 
 
 def _capital_day(venue: str, day: str) -> pd.DataFrame:
@@ -364,16 +359,12 @@ def _write_day_shard(
     return rows
 
 
-def _day_input_bytes(family: str, venue: str, day: str) -> int:
-    return state_partition_path(family, venue, day).stat().st_size
-
-
 # ---------------------------------------------------------------------------
 # Uniswap v2
 # ---------------------------------------------------------------------------
 
-def _v2_day(day: str) -> list[dict]:
-    state = read_cp_partition("uniswap_v2", day)
+def _v2_day(day: str, release: ReleasedPartitionSet) -> list[dict]:
+    state = release.read_day(day)
     hours: dict[str, list] = defaultdict(list)
     meta: dict[str, tuple] = {}
     snapshots = state[state["record_type"].eq("snapshot")]
@@ -423,9 +414,12 @@ def _v2_day(day: str) -> list[dict]:
 def _build_v2_chunk(payload: dict[str, object]) -> tuple[int, int]:
     """Build independent V2 day shards inside one bounded worker."""
     cache_dir = Path(str(payload["cache_dir"]))
+    release = payload["release"]
+    if not isinstance(release, ReleasedPartitionSet):
+        raise TypeError("V2 rent chunk requires a released partition subset")
     built = rows = 0
     for day in payload["days"]:
-        frame = pd.DataFrame.from_records(_v2_day(str(day))).reindex(columns=V2_BASE_COLUMNS)
+        frame = pd.DataFrame.from_records(_v2_day(str(day), release)).reindex(columns=V2_BASE_COLUMNS)
         frame = _merge_capital_day(
             frame,
             venue="uniswap_v2",
@@ -447,6 +441,7 @@ def _build_v2_shards(
     days: list[str],
     cache_dir: Path,
     *,
+    release: ReleasedPartitionSet,
     workers: int,
     force: bool,
 ) -> None:
@@ -463,10 +458,17 @@ def _build_v2_shards(
     cache_dir.mkdir(parents=True, exist_ok=True)
     chunks = weighted_contiguous_chunks(
         pending,
-        [_day_input_bytes("constant_product", "uniswap_v2", day) for day in pending],
+        [max(1, release.select_days((day,)).expected_rows[0]) for day in pending],
         workers,
     )
-    payloads = [{"days": chunk, "cache_dir": str(cache_dir)} for chunk in chunks]
+    payloads = [
+        {
+            "days": chunk,
+            "cache_dir": str(cache_dir),
+            "release": release.select_days(chunk),
+        }
+        for chunk in chunks
+    ]
     print(
         f"  v2 building {len(pending):,}/{len(days):,} days in {len(chunks)} bounded chunks",
         flush=True,
@@ -524,6 +526,8 @@ def _assemble_family(
     code_sources: list[str],
     canonical_inputs: list[Path],
     generation: str,
+    release_identity: str | None = None,
+    preinstall_validator: Callable[[Path], None] | None = None,
 ) -> None:
     missing = _missing_day_shards(
         days,
@@ -543,40 +547,43 @@ def _assemble_family(
 
     release_inputs = [*canonical_inputs, cache_dir]
     release_key = cache_key(code_sources, inputs=release_inputs)
-    # Output and provenance are separate files. Removing the old sidecar first
-    # makes an interruption fail closed: new panel bytes can never inherit a
-    # still-current manifest from the prior top-N or generation.
-    sidecar_path(output).unlink(missing_ok=True)
-    result = assemble_parquet_shards(
-        [_cache_path(cache_dir, day) for day in days],
-        output,
-        progress=progress,
-        unique_keys=UNIQUE_KEYS,
-    )
-    if cache_key(code_sources, inputs=release_inputs) != release_key:
-        raise RuntimeError(f"{venue} release inputs or code changed during assembly")
-    stamp(
-        output,
-        code_sources=code_sources,
-        inputs=canonical_inputs,
-        rows=result.rows,
-        notes=(
+    with staged_output(output) as staged:
+        result = assemble_parquet_shards(
+            [_cache_path(cache_dir, day) for day in days],
+            staged,
+            progress=progress,
+            unique_keys=UNIQUE_KEYS,
+        )
+        if cache_key(code_sources, inputs=release_inputs) != release_key:
+            raise RuntimeError(f"{venue} release inputs or code changed during assembly")
+        if preinstall_validator is not None:
+            preinstall_validator(staged)
+        notes = (
             f"generation {generation}; assembled {len(days)} validated day shards; "
-            f"{result.shards} nonempty; resumable cache {cache_dir.name}"
-        ),
-    )
+            f"{result.shards} nonempty; {f'released-state identity {release_identity}; ' if release_identity else ''}resumable cache {cache_dir.name}"
+        )
+        publish_staged_artifact(
+            staged,
+            output,
+            code_sources=code_sources,
+            inputs=canonical_inputs,
+            rows=result.rows,
+            notes=notes,
+            preinstall_validator=preinstall_validator,
+        )
     print(f"{venue} pool-days: {result.rows:,}", flush=True)
 
 
 def build_v2(*, workers: int, force: bool) -> None:
-    days = _days("constant_product", "uniswap_v2")
+    state_release = released_state_partitions("constant_product", "uniswap_v2", CP_COLUMNS)
+    days = list(state_release.days)
     if not days:
         raise RuntimeError("no canonical Uniswap V2 state days")
-    inputs = [STATE_ROOT / "constant_product" / "uniswap_v2", POOL_CAPITAL_PANEL]
+    inputs = [*state_release.provenance_inputs, POOL_CAPITAL_PANEL]
     generation = cache_key(V2_SHARD_CODE_SOURCES, inputs=inputs)
     cache_dir = _generation_cache_dir("v2", generation)
     _clean_interrupted_shard_temps(cache_dir)
-    _build_v2_shards(days, cache_dir, workers=workers, force=force)
+    _build_v2_shards(days, cache_dir, release=state_release, workers=workers, force=force)
     _require_generation_current(
         generation,
         code_sources=V2_SHARD_CODE_SOURCES,
@@ -591,6 +598,8 @@ def build_v2(*, workers: int, force: bool) -> None:
         code_sources=V2_OUTPUT_CODE_SOURCES,
         canonical_inputs=inputs,
         generation=generation,
+        release_identity=state_release.content_identity_sha256,
+        preinstall_validator=release_preinstall_validator(state_release),
     )
 
 

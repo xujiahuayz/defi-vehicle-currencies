@@ -573,6 +573,19 @@ def input_matches(record: dict[str, object]) -> bool:
     return all(current.get(key) == record.get(key) for key in keys if key in record)
 
 
+def released_input_binding_matches(binding: dict[str, object]) -> bool:
+    """Verify an exact release identity even when generic input hashing is bounded."""
+
+    path = _recorded_input_path(binding)
+    expected = binding.get("sha256")
+    return (
+        isinstance(expected, str)
+        and len(expected) == 64
+        and path.is_file()
+        and _content_sha256(path) == expected
+    )
+
+
 def verify(artefact: str | Path) -> dict[str, object]:
     """Is this artefact still the product of the code now in the tree?
 
@@ -604,6 +617,15 @@ def verify(artefact: str | Path) -> dict[str, object]:
         for item in rec.get("inputs") or []
         if not input_matches(item)
     ]
+    release_binding_changes: list[str] = []
+    for item in rec.get("released_input_bindings") or []:
+        if not isinstance(item, dict):
+            release_binding_changes.append("<invalid-release-binding>")
+        elif not released_input_binding_matches(item):
+            release_binding_changes.append(str(item.get("path")))
+    input_changes.extend(
+        path for path in release_binding_changes if path not in input_changes
+    )
     inputs_ok = not input_changes
     return {
         "artefact": str(_rel(p)),

@@ -53,6 +53,14 @@ POOL_IDENTITY_STREAMS: Mapping[str, str] = {
 POOL_IDENTITY_STATIC_SNAPSHOTS: Mapping[str, str] = {
     "uniswap_v3": "uniswap_v3_pool_statics_20260630.jsonl.gz",
 }
+UNISWAP_V3_STATIC_FIELDS = "id feeTier token0 { id symbol decimals } token1 { id symbol decimals }"
+UNISWAP_V3_STATIC_VALIDATION = "ordered token identities plus canonical V3 CREATE2 fee match"
+UNISWAP_V3_STATIC_QUERY_CONTRACT = {
+    "entity": "pools",
+    "fields": UNISWAP_V3_STATIC_FIELDS,
+    "base_where": {},
+    "pagination": "ascending_id_gt_at_fixed_historical_block",
+}
 
 
 @contextmanager

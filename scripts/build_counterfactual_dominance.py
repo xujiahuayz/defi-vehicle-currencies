@@ -49,6 +49,7 @@ Writes  data/processed/counterfactual_dominance_gross.parquet
 from __future__ import annotations
 
 import argparse
+from datetime import datetime, timedelta
 from decimal import Decimal
 from math import isfinite
 
@@ -56,7 +57,7 @@ import pandas as pd
 
 from ddvc.analysis.regression import mean_clustered
 from ddvc.asset_types import WETH, classify
-from ddvc.data_release import require_node_d_release
+from ddvc.data_release import ReleasedPartitionSet, release_preinstall_validator, require_node_d_release
 from ddvc.cpquote import (
     Pool,
     all_in_direct_advantage_bps_from_units,
@@ -83,7 +84,8 @@ from ddvc.pricing.v2_replay import V2_VENUES, load_v2_replay_day
 from ddvc.provenance import require_current_artifacts
 from ddvc.route_gas import GAS_ESTIMATE_COLUMNS, estimate_route_gas
 from ddvc.runtime import bounded_workers, exclusive_job, interruptible_process_pool
-from ddvc.state_data import STATE_ROOT
+from ddvc.data_release import released_route_partitions, released_state_partitions
+from ddvc.state_data import CP_COLUMNS, STATE_ROOT
 from ddvc.tables import write_exhibit, write_panel
 
 MARKET_STATE = STATE_ROOT
@@ -206,13 +208,26 @@ def receipt_allocation_support_summary(daily: pd.DataFrame) -> pd.DataFrame:
     return pd.DataFrame(rows)
 
 
-def gross_panel_inputs() -> list[Path]:
+def gross_panel_inputs(
+    route_release: ReleasedPartitionSet,
+    state_releases: dict[str, ReleasedPartitionSet],
+) -> list[Path]:
     """Declare the gross release inputs, including the allocation support-loss audit."""
 
-    return [*(MARKET_STATE / "constant_product" / venue for venue in VENUES), UNIFIED, OUT_RECEIPT_ALLOCATION_SUPPORT]
+    return [
+        *route_release.provenance_inputs,
+        *(path for release in state_releases.values() for path in release.provenance_inputs),
+        OUT_RECEIPT_ALLOCATION_SUPPORT,
+    ]
 
 
-def write_gross_release(frame: pd.DataFrame, output: Path = GROSS_PARQUET) -> Path:
+def write_gross_release(
+    frame: pd.DataFrame,
+    output: Path = GROSS_PARQUET,
+    *,
+    route_release: ReleasedPartitionSet | None = None,
+    state_releases: dict[str, ReleasedPartitionSet] | None = None,
+) -> Path:
     """Publish gross routes only when every receipt has exactly one owning row."""
 
     required = {"tx", "receipt_allocation_scope"}
@@ -224,25 +239,44 @@ def write_gross_release(frame: pd.DataFrame, output: Path = GROSS_PARQUET) -> Pa
         raise ValueError("one transaction receipt cannot be allocated to multiple gross route rows")
     if not frame["receipt_allocation_scope"].eq("single_reconstructed_component_transaction").all():
         raise ValueError("gross route release violates the single-component receipt allocation contract")
+    if route_release is None or state_releases is None:
+        raise ValueError("gross route publication requires released route and state identities")
     write_panel(
         frame,
         output,
         code_sources=CODE_SOURCES,
-        inputs=gross_panel_inputs(),
-        notes="gross V2-family exact-size direct counterfactual at strict pre-transaction block-log state for single-component transactions only, released before any gas-price dependency and bound to the receipt-allocation support-loss audit",
+        inputs=gross_panel_inputs(route_release, state_releases),
+        notes=f"gross V2-family exact-size direct counterfactual at strict pre-transaction block-log state for single-component transactions only, released before any gas-price dependency and bound to the receipt-allocation support-loss audit; route release {route_release.content_identity_sha256}; state releases {','.join(release.content_identity_sha256 for release in state_releases.values())}",
+        preinstall_validator=release_preinstall_validator(
+            route_release, *state_releases.values()
+        ),
     )
     return output
 
 
-def one_day(day: str) -> tuple[pd.DataFrame | None, dict[str, object] | None]:
-    replay = load_v2_replay_day(MARKET_STATE, day, venues=VENUES)
+def one_day(
+    day: str,
+    route_release: ReleasedPartitionSet | None = None,
+    state_releases: dict[str, ReleasedPartitionSet] | None = None,
+) -> tuple[pd.DataFrame | None, dict[str, object] | None]:
+    if route_release is None or state_releases is None:
+        raise ValueError("counterfactual day construction requires released route and state partitions")
+    previous_day = (datetime.strptime(day, "%Y%m%d") - timedelta(days=1)).strftime("%Y%m%d")
+    state_frames = {
+        (venue, selected_day): release.read_day(selected_day)
+        for venue, release in state_releases.items()
+        for selected_day in (previous_day, day)
+        if selected_day in release.days
+    }
+    replay = load_v2_replay_day(
+        MARKET_STATE,
+        day,
+        venues=VENUES,
+        state_frames=state_frames,
+    )
+    unified = route_release.read_day(day)
     if not replay.pool_hour_events or not replay.swaps_by_pool_hour:
         return None, None
-
-    unified_path = UNIFIED / f"{day}.parquet"
-    if not unified_path.exists():
-        return None, None
-    unified = pd.read_parquet(unified_path, columns=[*LINEAR_ROUTE_COLUMNS, "n_components"])
     prices = day_prices(unified[PRICE_COLUMNS])
     routes = extract_linear_realised_routes(unified)
     if routes.empty:
@@ -403,6 +437,10 @@ def one_day(day: str) -> tuple[pd.DataFrame | None, dict[str, object] | None]:
             "direct_output_improvement_bps": direct_output_improvement_bps,
         })
     return (pd.DataFrame(rows) if rows else None), allocation_support
+
+
+def _one_day_payload(payload):
+    return one_day(*payload)
 
 
 def add_topology_gas_adjustment(
@@ -869,6 +907,14 @@ def main() -> int:
     ap.add_argument("--panel-only", action="store_true")
     args = ap.parse_args()
     require_node_d_release(routes=True, market_state=True)
+    state_releases = {
+        venue: released_state_partitions("constant_product", venue, CP_COLUMNS)
+        for venue in VENUES
+    }
+    route_release = released_route_partitions([*LINEAR_ROUTE_COLUMNS, "n_components"])
+    validate_release = release_preinstall_validator(
+        route_release, *state_releases.values()
+    )
     if args.limit is not None and args.limit < 1:
         ap.error("--limit must be positive")
     if args.stage == "final":
@@ -899,23 +945,30 @@ def main() -> int:
                 EXTERNAL_WETH_USD_INTRADAY_PANEL,
             ],
             notes="V2-family exact-size direct counterfactual with exact block-header time, receipt execution plus blob gas fields, receipt-calibrated route gas units and an independent strictly prior intraday WETH/USD mark; canonical all-in bps withheld because endpoint notionals remain address-day priced, with explicitly named daily-denominator sensitivities retained",
+            preinstall_validator=validate_release,
         )
         if args.panel_only:
             print(f"wrote analysis-ready panel {OUT_PARQUET.relative_to(REPO_ROOT)}")
             return 0
     else:
-        available = sorted(
-            p.stem
-            for p in (MARKET_STATE / "constant_product" / "uniswap_v2").glob("[0-9]" * 8 + ".parquet")
-        )
+        available = list(state_releases["uniswap_v2"].days)
         days = counterfactual_days(available, explicit=args.days, limit=args.limit)
         print(f"quoting counterfactuals on {len(days)} day(s)", flush=True)
 
         parts = []
         allocation_support_rows = []
         comparable = 0
+        payloads = []
+        for day in days:
+            previous_day = (datetime.strptime(day, "%Y%m%d") - timedelta(days=1)).strftime("%Y%m%d")
+            selected_state = {
+                venue: release.select_days(selected_days)
+                for venue, release in state_releases.items()
+                if (selected_days := tuple(selected for selected in (previous_day, day) if selected in release.days))
+            }
+            payloads.append((day, route_release.select_days((day,)), selected_state))
         with interruptible_process_pool(bounded_workers(args.workers, maximum=8)) as pool:
-            results = pool.map(one_day, days, chunksize=1)
+            results = pool.map(_one_day_payload, payloads, chunksize=1)
             for index, (day, result) in enumerate(zip(days, results, strict=True), 1):
                 result, allocation_support = result
                 if allocation_support is not None:
@@ -937,8 +990,9 @@ def main() -> int:
                 allocation_support,
                 OUT_RECEIPT_ALLOCATION_SUPPORT,
                 code_sources=CODE_SOURCES,
-                inputs=[UNIFIED],
-                notes="daily, annual and pooled support loss from excluding transactions with more than one reconstructed component because one whole-transaction receipt is not allocated across route rows",
+                inputs=list(route_release.provenance_inputs),
+                notes=f"daily, annual and pooled support loss from excluding transactions with more than one reconstructed component because one whole-transaction receipt is not allocated across route rows; released-route identity {route_release.content_identity_sha256}",
+                preinstall_validator=validate_release,
             )
         if not parts:
             print("no comparable routes")
@@ -961,7 +1015,11 @@ def main() -> int:
                 "canonical outputs unchanged"
             )
             return 0
-        write_gross_release(df)
+        write_gross_release(
+            df,
+            route_release=route_release,
+            state_releases=state_releases,
+        )
         print(f"wrote gross route panel {GROSS_PARQUET.relative_to(REPO_ROOT)}")
         return 0
 
@@ -1083,12 +1141,15 @@ def main() -> int:
         ignore_index=True,
         sort=False,
     )
+    # Summary and support are independently consumable children of the same installed panel,
+    # not a group-atomic bundle. Each has its own panel lineage and release pre-install gate.
     write_exhibit(
         summary,
         OUT_EXHIBIT,
         code_sources=CODE_SOURCES,
         inputs=[OUT_PARQUET],
         notes="pooled and annual exact-size V2-family direct counterfactual; pooled rows retain route and equal-date weighting, date-clustered uncertainty, dollar magnitude and strict valuation support; gas-adjusted bps are explicitly noncanonical daily-denominator sensitivities until transaction-time endpoint USD marks exist; annual rows split intermediary type and realised venue reach",
+        preinstall_validator=validate_release,
     )
     support = state_support_summary(df)
     write_exhibit(
@@ -1097,6 +1158,7 @@ def main() -> int:
         code_sources=CODE_SOURCES,
         inputs=[OUT_PARQUET],
         notes="reserve-state support split; adjacent means all three prior observations are one hour back with no liquidity event, bridged advances a more distant observed state through all intervening raw events, and replayed includes at least one mint or burn",
+        preinstall_validator=validate_release,
     )
     print("\nby reserve-state support:")
     print(

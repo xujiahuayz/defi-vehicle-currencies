@@ -30,6 +30,13 @@ def file_sha256(path: Path) -> str:
     return digest.hexdigest()
 
 
+def file_stat_identity(path: Path) -> tuple[int, int, int, int, int]:
+    """Return the exact filesystem identity used by mutation-safe readers."""
+
+    stat = path.stat()
+    return stat.st_dev, stat.st_ino, stat.st_size, stat.st_mtime_ns, stat.st_ctime_ns
+
+
 def canonical_json_sha256(value: object) -> str:
     return hashlib.sha256(
         json.dumps(value, sort_keys=True, separators=(",", ":")).encode()

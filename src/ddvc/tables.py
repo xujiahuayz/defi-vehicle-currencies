@@ -101,13 +101,18 @@ def _caller_sources(extra: list[str] | None) -> list[str]:
     return sorted(set(out + (extra or [])))
 
 
-def _publish_staged(temporary: Path, output: Path, *, code_sources: list[str] | None, inputs: list[str | Path] | None, rows: int, notes: str | Callable[[], str] | None, preinstall_validator: Callable[[Path], object] | None) -> None:
+def publish_staged_artifact(temporary: Path, output: Path, *, code_sources: list[str] | None, inputs: list[str | Path] | None, rows: int, notes: str | Callable[[], str] | None, preinstall_validator: Callable[[Path], object] | None) -> None:
     """Validate and install staged bytes with their matching provenance sidecar."""
 
     if preinstall_validator is not None:
         preinstall_validator(temporary)
     resolved_notes = notes() if callable(notes) else notes
     prepared = prepare_stamp(output, content_path=temporary, code_sources=_caller_sources(code_sources), inputs=inputs, rows=rows, notes=resolved_notes)
+    prepared_validator = getattr(
+        preinstall_validator, "validate_prepared_stamp", None
+    )
+    if prepared_validator is not None:
+        prepared = prepared_validator(prepared)
     install_stamped_artifact(temporary, output, prepared)
 
 
@@ -146,7 +151,7 @@ def write_exhibit(df: pd.DataFrame, path: str | Path, code_sources: list[str] | 
                 handle.write(
                     json.dumps(clean, allow_nan=False, default=str, sort_keys=True) + "\n"
                 )
-        _publish_staged(temporary, p, code_sources=code_sources, inputs=inputs, rows=len(df), notes=notes, preinstall_validator=preinstall_validator)
+        publish_staged_artifact(temporary, p, code_sources=code_sources, inputs=inputs, rows=len(df), notes=notes, preinstall_validator=preinstall_validator)
     return p
 
 
@@ -163,7 +168,7 @@ def write_panel(df: pd.DataFrame, path: str | Path, code_sources: list[str] | No
     p = Path(path)
     with staged_output(p) as temporary:
         df.to_parquet(temporary, index=False)
-        _publish_staged(temporary, p, code_sources=code_sources, inputs=inputs, rows=len(df), notes=notes, preinstall_validator=preinstall_validator)
+        publish_staged_artifact(temporary, p, code_sources=code_sources, inputs=inputs, rows=len(df), notes=notes, preinstall_validator=preinstall_validator)
     return p
 
 
@@ -190,7 +195,7 @@ def write_panel_batches(frames: Iterable[pd.DataFrame], path: str | Path, code_s
         finally:
             if writer is not None:
                 writer.close()
-        _publish_staged(temporary, output, code_sources=code_sources, inputs=inputs, rows=rows, notes=notes, preinstall_validator=preinstall_validator)
+        publish_staged_artifact(temporary, output, code_sources=code_sources, inputs=inputs, rows=rows, notes=notes, preinstall_validator=preinstall_validator)
     return output, rows
 
 
