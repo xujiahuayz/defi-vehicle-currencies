@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import gzip
 import json
+import os
 import tempfile
 import unittest
 from pathlib import Path
@@ -11,7 +12,7 @@ from ddvc.graph_event_order import EventOrderCorrections, SCHEMA_VERSION as EVEN
 from ddvc.state_data import (
     CODE_SOURCES,
     FAMILY_STREAMS,
-    available_state_days,
+    STATE_GENERATIONS,
     balancer_pool_family,
     normalise_cp_partition,
     normalise_multi_asset_partition,
@@ -26,6 +27,14 @@ from ddvc.state_data import (
     write_multi_asset_partition,
     write_tick_partition,
 )
+from ddvc.tick_state_events import TickInitialization, certificate_identity_sha256, state_event_generation, write_daily_initializations, write_daily_v4_state_events
+from day_cut_fixtures import certified_day_cuts
+
+
+def initialization_certificate(venue: str) -> dict[str, object]:
+    certificate = {"status": "pass", "generation": state_event_generation(venue), "venue": venue, "precedence_status": "pass"}
+    certificate["certificate_identity_sha256"] = certificate_identity_sha256(certificate)
+    return certificate
 from scripts.build_market_state import selected_days
 
 
@@ -61,11 +70,62 @@ def write_rows(root: Path, venue: str, stream: str, day: str, rows: list[dict]) 
         if not required_path.exists():
             with gzip.open(required_path, "wt"):
                 pass
+    write_daily_initializations(
+        venue,
+        [],
+        day_cuts=certified_day_cuts({day: (0, 1)}),
+        token_metadata={},
+        raw_root=root,
+        generation_certificate=initialization_certificate(venue),
+    )
     path = root / venue / f"{venue}_{stream}_{day}.jsonl.gz"
     path.parent.mkdir(parents=True, exist_ok=True)
     with gzip.open(path, "wt") as handle:
         for row in rows:
             handle.write(json.dumps(row) + "\n")
+
+
+def write_v4_exact_rows(root: Path, day: str, rows: list[dict]) -> None:
+    pool_rows = {str(row["pool"]["id"]): row for row in rows if (row.get("pool") or {}).get("token0")}
+    initializations = []
+    metadata: dict[str, tuple[str, int]] = {}
+    for index, (pool_id, row) in enumerate(pool_rows.items(), start=1):
+        pool = row["pool"]
+        status = "hooks" if pool["hooks"] != "0x" + "0" * 40 else None
+        initializations.append(TickInitialization(
+            venue="uniswap_v4", pool=pool_id,
+            token0=pool["token0"]["id"], token1=pool["token1"]["id"],
+            fee_pips=int(pool["feeTier"]), tick_spacing=int(pool["tickSpacing"]), hooks=pool["hooks"],
+            sqrt_price_x96=1 << 96, tick=0, block_number=8, block_hash="0x" + "1" * 64,
+            transaction_hash="0x" + f"{index:064x}", transaction_index=index, log_index=index,
+            quote_supported=status is None, quote_unsupported_reason=status,
+        ))
+        for token in (pool["token0"], pool["token1"]):
+            metadata[token["id"]] = (token["symbol"], int(token["decimals"]))
+    exact = []
+    for row in rows:
+        pool_id = str(row["pool"]["id"])
+        transaction = row.get("transaction") or {}
+        common = {
+            "kind": "modify_liquidity" if row.get("tickLower") is not None else "swap",
+            "pool": pool_id,
+            "block_number": int(transaction["blockNumber"]),
+            "block_hash": "0x" + "2" * 64,
+            "transaction_hash": transaction["id"],
+            "transaction_index": 0,
+            "log_index": int(row["logIndex"]),
+        }
+        if common["kind"] == "swap":
+            common.update(amount0=int(row["amount0"]), amount1=int(row["amount1"]), sqrt_price_x96=int(row["sqrtPriceX96"]), liquidity=1, tick=int(row["tick"]), fee=int(pool_rows[pool_id]["pool"]["feeTier"]))
+        else:
+            common.update(tick_lower=int(row["tickLower"]), tick_upper=int(row["tickUpper"]), liquidity_delta=int(row["amount"]), salt="0x" + "0" * 64)
+        exact.append(common)
+    certificate = initialization_certificate("uniswap_v4")
+    certificate.update(exact_modify_liquidity_events=sum(row["kind"] == "modify_liquidity" for row in exact), exact_swap_events=sum(row["kind"] == "swap" for row in exact))
+    certificate["certificate_identity_sha256"] = certificate_identity_sha256(certificate)
+    cuts = certified_day_cuts({day: (0, 20)})
+    write_daily_initializations("uniswap_v4", initializations, day_cuts=cuts, token_metadata=metadata, raw_root=root, generation_certificate=certificate)
+    write_daily_v4_state_events(exact, initializations, day_cuts=cuts, token_metadata=metadata, raw_root=root, generation_certificate=certificate)
 
 
 def cp_pair() -> dict:
@@ -495,23 +555,30 @@ class StateDataTests(unittest.TestCase):
         self.assertEqual(liquidity["amount0_delta"].tolist(), ["3", "-1"])
         self.assertEqual(liquidity["amount1_delta"].tolist(), ["4", "-2"])
 
-    def test_available_state_days_requires_panel_and_quality_marker(self) -> None:
+    def test_state_quality_rejects_same_size_output_tampering(self) -> None:
         with tempfile.TemporaryDirectory() as directory:
-            root = Path(directory)
-            path = root / "tick" / "uniswap_v3" / "20250101.parquet"
-            path.parent.mkdir(parents=True)
-            path.touch()
-            self.assertEqual(available_state_days("tick", "uniswap_v3", root=root), [])
-            path.with_suffix(".quality.json").write_text("{}")
-            self.assertEqual(
-                available_state_days("tick", "uniswap_v3", root=root),
-                ["20250101"],
+            base = Path(directory)
+            raw, out = base / "raw", base / "out"
+            write_rows(raw, "sushiswap_v2", "hourly_reserves", "20250101", [cp_snapshot()])
+            write_rows(raw, "sushiswap_v2", "swaps", "20250101", [cp_swap()])
+            write_cp_partition(raw, "sushiswap_v2", "20250101", root=out)
+            path = out / "constant_product" / "sushiswap_v2" / "20250101.parquet"
+            original = path.stat()
+            payload = bytearray(path.read_bytes())
+            payload[-1] ^= 1
+            path.write_bytes(payload)
+            os.utime(path, ns=(original.st_atime_ns, original.st_mtime_ns))
+            self.assertIsNone(
+                read_cp_quality(raw, "sushiswap_v2", "20250101", root=out)
             )
+            with self.assertRaisesRegex(ValueError, "content disagrees"):
+                read_cp_partition(
+                    "sushiswap_v2", "20250101", root=out, raw_root=raw
+                )
 
     def test_tick_partition_normalises_exact_order_and_signed_liquidity(self) -> None:
         with tempfile.TemporaryDirectory() as directory:
             raw = Path(directory) / "raw"
-            write_rows(raw, "uniswap_v4", "swaps", "20250101", [swap()])
             change = {
                 **swap(block=9),
                 "id": "change",
@@ -519,47 +586,45 @@ class StateDataTests(unittest.TestCase):
                 "amount": "-7",
                 "tickLower": "-10",
                 "tickUpper": "10",
-                "pool": {"id": "pool"},
+                "pool": swap()["pool"],
             }
-            write_rows(raw, "uniswap_v4", "modify_liquidities", "20250101", [change])
+            write_v4_exact_rows(raw, "20250101", [change, swap()])
             frame, quality = normalise_tick_partition(raw, "uniswap_v4", "20250101")
         self.assertTrue(quality.passed)
-        self.assertEqual(frame["record_type"].tolist(), ["liquidity", "swap"])
-        self.assertEqual(frame.iloc[0]["liquidity_delta"], "-7")
-        self.assertEqual(frame.iloc[1]["block_number"], 10)
+        self.assertEqual(frame["record_type"].tolist(), ["initialize", "liquidity", "swap"])
+        self.assertEqual(frame.iloc[1]["liquidity_delta"], "-7")
+        self.assertEqual(frame.iloc[2]["block_number"], 10)
         self.assertEqual(set(frame["pool_family"]), {"vanilla_concentrated"})
-        self.assertEqual(set(frame["state_generation"]), {"uniswap_v4_tick_state_v2"})
-        self.assertTrue(frame.iloc[1]["quote_supported"])
+        self.assertEqual(set(frame["state_generation"]), {STATE_GENERATIONS["uniswap_v4"]})
+        self.assertTrue(frame.iloc[2]["quote_supported"])
 
     def test_v4_hooked_pool_is_usable_evidence_but_not_quote_supported(self) -> None:
         with tempfile.TemporaryDirectory() as directory:
             raw = Path(directory) / "raw"
             hooked = swap()
             hooked["pool"]["hooks"] = "0x0000000000000000000000000000000000000001"
-            write_rows(raw, "uniswap_v4", "swaps", "20250101", [hooked])
+            write_v4_exact_rows(raw, "20250101", [hooked])
             frame, quality = normalise_tick_partition(raw, "uniswap_v4", "20250101")
         self.assertTrue(quality.passed)
-        self.assertTrue(frame.iloc[0]["usable"])
-        self.assertEqual(frame.iloc[0]["pool_family"], "hooked_or_dynamic_fee")
-        self.assertFalse(frame.iloc[0]["quote_supported"])
+        swap_row = frame[frame["record_type"].eq("swap")].iloc[0]
+        self.assertTrue(swap_row["usable"])
+        self.assertEqual(swap_row["pool_family"], "hooked_or_dynamic_fee")
+        self.assertFalse(swap_row["quote_supported"])
 
-    def test_tick_partition_quarantines_missing_order_and_same_sign_swap(self) -> None:
+    def test_tick_partition_ignores_conflicting_graph_v4_state_rows(self) -> None:
         with tempfile.TemporaryDirectory() as directory:
             raw = Path(directory) / "raw"
-            write_rows(
-                raw,
-                "uniswap_v4",
-                "swaps",
-                "20250101",
-                [swap(block=None, amount0="1", amount1="2")],
-            )
+            write_v4_exact_rows(raw, "20250101", [swap()])
+            provider_path = raw / "uniswap_v4" / "uniswap_v4_swaps_20250101.jsonl.gz"
+            provider_path.parent.mkdir(parents=True)
+            with gzip.open(provider_path, "wt") as handle:
+                handle.write(json.dumps({**swap(amount0="999", amount1="-1"), "sqrtPriceX96": "1"}) + "\n")
             frame, quality = normalise_tick_partition(raw, "uniswap_v4", "20250101")
         self.assertTrue(quality.passed)
-        self.assertEqual(quality.missing_order, 1)
-        self.assertEqual(quality.invalid_swap_sign, 1)
-        self.assertEqual(quality.quote_supported_swaps, 0)
-        self.assertFalse(frame.iloc[0]["usable"])
-        self.assertFalse(frame.iloc[0]["quote_supported"])
+        swap_row = frame[frame["record_type"].eq("swap")].iloc[0]
+        self.assertEqual((swap_row["amount0"], swap_row["amount0_raw"]), ("0.000000000000000001", "1"))
+        self.assertEqual(swap_row["sqrt_price_x96"], str(1 << 96))
+        self.assertNotIn("uniswap_v4_swaps_20250101.jsonl.gz", [path.name for path in __import__("ddvc.state_data", fromlist=["_state_partition_inputs"])._state_partition_inputs(raw, "tick", "uniswap_v4", "20250101")])
 
     def test_constant_product_quote_support_requires_usable_order(self) -> None:
         with tempfile.TemporaryDirectory() as directory:
@@ -599,12 +664,12 @@ class StateDataTests(unittest.TestCase):
         with tempfile.TemporaryDirectory() as directory:
             base = Path(directory)
             raw, out = base / "raw", base / "out"
-            write_rows(raw, "uniswap_v4", "swaps", "20250101", [swap()])
+            write_v4_exact_rows(raw, "20250101", [swap()])
             write_tick_partition(raw, "uniswap_v4", "20250101", root=out)
             self.assertIsNotNone(read_tick_quality(raw, "uniswap_v4", "20250101", root=out))
             frame = read_tick_partition("uniswap_v4", "20250101", root=out, raw_root=raw)
-            self.assertEqual(len(frame), 1)
-            write_rows(raw, "uniswap_v4", "swaps", "20250101", [swap(), {**swap(), "id": "two", "logIndex": "5"}])
+            self.assertEqual(len(frame), 2)
+            write_v4_exact_rows(raw, "20250101", [swap(), {**swap(), "id": "two", "logIndex": "5"}])
             self.assertIsNone(read_tick_quality(raw, "uniswap_v4", "20250101", root=out))
 
 

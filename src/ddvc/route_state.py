@@ -9,7 +9,7 @@ globally ordered concentrated-liquidity events bucketed by UTC hour.
 
 from __future__ import annotations
 
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 import json
 from pathlib import Path
 from typing import Literal
@@ -88,14 +88,26 @@ class OrderedTickStateCursor:
 
     events: tuple[TickReplayEvent, ...]
     position: int = 0
+    _effective_timestamps: tuple[int | None, ...] = field(init=False, repr=False)
 
     def __post_init__(self) -> None:
         orders = [event.order for event in self.events]
         if orders != sorted(orders) or len(orders) != len(set(orders)):
             raise ValueError("tick quote events are not uniquely ordered by block-log")
-        timestamps = [_event_timestamp(event) for event in self.events]
-        if any(value <= 0 for value in timestamps) or timestamps != sorted(timestamps):
-            raise ValueError("tick quote event timestamps are not positive and monotone")
+        timestamps: list[int | None] = [
+            value if (value := _event_timestamp(event)) > 0 else None
+            for event in self.events
+        ]
+        next_timestamp: int | None = None
+        for index in range(len(timestamps) - 1, -1, -1):
+            if timestamps[index] is not None:
+                next_timestamp = timestamps[index]
+            elif self.events[index].kind == "initialize" and next_timestamp is not None:
+                timestamps[index] = next_timestamp
+        known_timestamps = [value for value in timestamps if value is not None]
+        if known_timestamps != sorted(known_timestamps):
+            raise ValueError("known tick quote event timestamps are not monotone")
+        self._effective_timestamps = tuple(timestamps)
 
     def apply_until(self, replay, cut: TickStateCut) -> int:
         """Advance through one exclusive cut and return the number applied."""
@@ -103,7 +115,13 @@ class OrderedTickStateCursor:
         if cut.kind == "hour_end":
             if cut.timestamp_exclusive is None or cut.order_exclusive is not None:
                 raise ValueError("hour-end cut requires one exclusive timestamp")
-            eligible = lambda event: _event_timestamp(event) < cut.timestamp_exclusive
+            def eligible(_event: TickReplayEvent) -> bool:
+                timestamp = self._effective_timestamps[self.position]
+                if timestamp is None:
+                    raise ValueError(
+                        "hour-end tick-state cut cannot cross an event without a certified timestamp"
+                    )
+                return timestamp < cut.timestamp_exclusive
         elif cut.kind == "strict_before_event":
             if cut.order_exclusive is None or cut.timestamp_exclusive is not None:
                 raise ValueError("strict event cut requires one exclusive block-log order")

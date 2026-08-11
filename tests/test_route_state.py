@@ -22,6 +22,7 @@ from ddvc.route_state import (
 )
 from ddvc.state_data import write_cp_partition
 from scripts import run_route_cost_panel
+from raw_cert_fixtures import install_local_raw_certificate
 
 
 def _write_gzip_rows(path: Path, rows: list[dict]) -> None:
@@ -61,6 +62,12 @@ def test_route_quotes_exact_requested_hour_from_canonical_partition(tmp_path: Pa
             raw_root / venue / f"{venue}_{stream}_20250101.jsonl.gz",
             [],
         )
+    install_local_raw_certificate(
+        raw_root,
+        venue,
+        ("hourly_reserves", "swaps", "mints", "burns"),
+        "20250101",
+    )
     write_cp_partition(raw_root, venue, "20250101", root=state_root)
 
     states = load_cp_quote_states_by_hour(
@@ -176,6 +183,19 @@ def test_ordered_tick_cursor_keeps_intervening_liquidity_and_distinct_cuts() -> 
     cursor = OrderedTickStateCursor(events)
     cursor.apply_until(frontier, TickStateCut.strict_before_event((10, 2)))
     assert frontier.applied == [("swap", (10, 1))]
+
+
+def test_ordered_tick_cursor_allows_timestamp_free_strict_event_cuts() -> None:
+    events = (
+        _tick_event((10, 1), "initialize", 0),
+        _tick_event((10, 2), "liquidity", 0),
+    )
+    replay = RecordingReplay()
+    cursor = OrderedTickStateCursor(events)
+    cursor.apply_until(replay, TickStateCut.strict_before_event((10, 2)))
+    assert replay.applied == [("initialize", (10, 1))]
+    with pytest.raises(ValueError, match="without a certified timestamp"):
+        cursor.apply_until(replay, TickStateCut.hour_end(1_735_689_600))
 
 
 def _route_day(day: str = "2025-01-01") -> pd.DataFrame:

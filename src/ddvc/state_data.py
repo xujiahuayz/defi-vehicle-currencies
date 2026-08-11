@@ -10,13 +10,15 @@ from __future__ import annotations
 import gzip
 import hashlib
 import json
-from dataclasses import asdict, dataclass
+import datetime as dt
+from dataclasses import asdict, dataclass, replace
 from decimal import Decimal, InvalidOperation
 from pathlib import Path
 
 import pandas as pd
 
 from ddvc.amounts import human_to_raw
+from ddvc.artifact_release import canonical_json_sha256, file_sha256, is_sha256
 from ddvc.asset_types import canonical_token
 from ddvc.execution_contracts import (
     CP_STATE_GENERATION,
@@ -29,10 +31,18 @@ from ddvc.graph_event_order import CORE_STREAMS, EventOrderCorrections, load_eve
 from ddvc.paths import DATA_DIR
 from ddvc.provenance import cache_key
 from ddvc.runtime import atomic_output
-from ddvc.source_records import block_value, timestamp_value, transaction_id, v4_quote_status
+from ddvc.source_records import block_value, timestamp_value, transaction_id, v4_static_quote_status
+from ddvc.tick_state_events import (
+    initialization_day_inputs,
+    initialization_day_path,
+    validate_initialization_day,
+    validate_v4_state_day,
+    v4_state_day_inputs,
+    v4_state_day_path,
+)
 
 
-SCHEMA_VERSION = 2
+SCHEMA_VERSION = 3
 CODE_SOURCES = [
     "src/ddvc/state_data.py",
     "src/ddvc/amounts.py",
@@ -41,6 +51,7 @@ CODE_SOURCES = [
     "src/ddvc/graph_event_order.py",
     "src/ddvc/ethereum_receipts.py",
     "src/ddvc/source_records.py",
+    "src/ddvc/tick_state_events.py",
 ]
 STATE_ENGINE = cache_key(CODE_SOURCES)
 STATE_ROOT = DATA_DIR / "processed" / "market_state" / f"engine_{STATE_ENGINE}"
@@ -56,6 +67,7 @@ QUALITY_COLUMNS = [
     "snapshot_rows",
     "swap_rows",
     "liquidity_rows",
+    "initialization_rows",
     "usable_rows",
     "missing_order",
     "missing_identity",
@@ -68,6 +80,8 @@ QUALITY_COLUMNS = [
     "zero_swap_amounts",
     "missing_quote_statics",
     "quote_supported_swaps",
+    "output_bytes",
+    "output_sha256",
     "passed",
 ]
 TICK_COLUMNS = [
@@ -98,6 +112,8 @@ TICK_COLUMNS = [
     "hooks",
     "amount0",
     "amount1",
+    "amount0_raw",
+    "amount1_raw",
     "value_usd",
     "sqrt_price_x96",
     "tick",
@@ -120,6 +136,7 @@ TICK_STREAMS: dict[str, tuple[tuple[str, str, int], ...]] = {
         ("modify_liquidities", "liquidity", 1),
     ),
 }
+TICK_INITIALIZATION_STREAM = ("initializes", "initialize", 0)
 CP_COLUMNS = [
     "schema_version",
     "venue",
@@ -257,6 +274,7 @@ class StatePartitionQuality:
     snapshot_rows: int
     swap_rows: int
     liquidity_rows: int
+    initialization_rows: int
     usable_rows: int
     missing_order: int
     missing_identity: int
@@ -269,6 +287,8 @@ class StatePartitionQuality:
     zero_swap_amounts: int
     missing_quote_statics: int
     quote_supported_swaps: int
+    output_bytes: int
+    output_sha256: str
     passed: bool
 
 
@@ -279,6 +299,7 @@ def quality_counters() -> dict[str, int]:
         "snapshot_rows": 0,
         "swap_rows": 0,
         "liquidity_rows": 0,
+        "initialization_rows": 0,
         "missing_order": 0,
         "missing_identity": 0,
         "missing_required_streams": 0,
@@ -314,6 +335,8 @@ def finish_quality(
         input_fingerprint=partition_input_fingerprint(inputs),
         canonical_rows=len(frame),
         usable_rows=int(frame["usable"].sum()) if not frame.empty else 0,
+        output_bytes=0,
+        output_sha256="",
         passed=hard_failures == 0,
         **counters,
     )
@@ -341,23 +364,6 @@ def state_quality_path(
     root: Path = STATE_ROOT,
 ) -> Path:
     return root / family / venue / f"{day}.quality.json"
-
-
-def available_state_days(
-    family: str,
-    venue: str,
-    *,
-    root: Path = STATE_ROOT,
-) -> list[str]:
-    """Days with both a materialised partition and its quality marker."""
-    if family not in FAMILY_STREAMS or venue not in FAMILY_STREAMS[family]:
-        raise ValueError(f"unsupported canonical state family/venue: {family}/{venue}")
-    directory = root / family / venue
-    return sorted(
-        path.stem
-        for path in directory.glob("[0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9].parquet")
-        if path.with_suffix(".quality.json").exists()
-    )
 
 
 def tick_partition_path(venue: str, day: str, *, root: Path = STATE_ROOT) -> Path:
@@ -421,7 +427,13 @@ def _tick_pool_family(
         return "concentrated_liquidity"
     if known_pool_family:
         return known_pool_family
-    status = v4_quote_status(row)
+    pool = row.get("pool") or {}
+    try:
+        status = v4_static_quote_status(
+            int(pool["feeTier"]), int(pool["tickSpacing"]), str(pool["hooks"])
+        )
+    except (KeyError, TypeError, ValueError):
+        status = "invalid_statics"
     if status == "vanilla_static_fee":
         return "vanilla_concentrated"
     if status in {"dynamic_fee", "hooks", "dynamic_fee_and_hooks"}:
@@ -462,7 +474,13 @@ def _state_partition_inputs(
         _corrections, correction_inputs = load_event_order_corrections(
             raw_root, venue, day
         )
-    return [*_stream_inputs(raw_root, family, venue, day), *correction_inputs]
+    provider_inputs = [] if family == "tick" and venue == "uniswap_v4" else _stream_inputs(raw_root, family, venue, day)
+    inputs = [*provider_inputs, *correction_inputs]
+    if family == "tick":
+        inputs.extend(path for path in initialization_day_inputs(raw_root, venue, day) if path.exists())
+        if venue == "uniswap_v4":
+            inputs.extend(path for path in v4_state_day_inputs(raw_root, day) if path.exists())
+    return inputs
 
 
 def _reconciled_stream_rows(
@@ -485,15 +503,53 @@ def _reconciled_stream_rows(
         yield from reconciliation.reconciled_rows(venue, stream, rows)
 
 
+def _provider_partition_coordinates(
+    path: Path,
+) -> tuple[Path, str, str, str] | None:
+    if len(path.parents) < 4 or path.parents[1].name not in {"thegraph", "dune"}:
+        return None
+    source = path.parent.name
+    prefix = f"{source}_"
+    suffix = ".jsonl.gz"
+    if not path.name.startswith(prefix) or not path.name.endswith(suffix):
+        return None
+    body = path.name[len(prefix) : -len(suffix)]
+    try:
+        stream, day = body.rsplit("_", 1)
+        dt.datetime.strptime(day, "%Y%m%d")
+    except (ValueError, TypeError):
+        return None
+    return path.parents[3], source, stream, day
+
+
 def partition_input_fingerprint(paths: list[Path]) -> str:
-    """Cheap partition identity; raw files are immutable and atomically replaced."""
-    digest = hashlib.sha256()
+    """Bind provider inputs to certified generations and other inputs to content."""
+
+    from ddvc.raw_certification import raw_partition_generation_identity
+
+    identities: list[dict[str, str]] = []
     for path in sorted(paths):
-        stat = path.stat()
-        digest.update(path.name.encode())
-        digest.update(str(stat.st_size).encode())
-        digest.update(str(stat.st_mtime_ns).encode())
-    return digest.hexdigest()
+        provider = _provider_partition_coordinates(path)
+        if provider is None:
+            identities.append(
+                {
+                    "path": path.name,
+                    "authority": "content-sha256",
+                    "identity_sha256": file_sha256(path),
+                }
+            )
+            continue
+        data_root, source, stream, day = provider
+        identities.append(
+            {
+                "path": f"{source}/{path.name}",
+                "authority": "certified-raw-generation",
+                "identity_sha256": raw_partition_generation_identity(
+                    source, stream, day, data_root=data_root
+                ),
+            }
+        )
+    return canonical_json_sha256(identities)
 
 
 def _swap_sign(amount0: object, amount1: object) -> str:
@@ -537,12 +593,27 @@ def _normalise_tick_row(
     missing_identity = (
         not tx_hash
         or not pool_id
-        or timestamp is None
-        or (record_type == "swap" and (not raw0 or not raw1))
+        or (timestamp is None and record_type != "initialize" and venue != "uniswap_v4")
+        or (record_type in {"swap", "initialize"} and (not raw0 or not raw1))
     )
     amount0 = row.get("amount0")
     amount1 = row.get("amount1")
-    sign_state = _swap_sign(amount0, amount1) if record_type == "swap" else "valid"
+    explicit_quote_reason = _text(row.get("quoteUnsupportedReason"))
+    if explicit_quote_reason is not None and explicit_quote_reason not in {
+        "unknown_token_metadata",
+        "hooks",
+        "dynamic_fee",
+        "dynamic_fee_and_hooks",
+        "invalid_statics",
+    }:
+        raise ValueError(f"unregistered exact quote-unsupported reason: {explicit_quote_reason}")
+    amount0_raw, amount1_raw = row.get("amount0Raw"), row.get("amount1Raw")
+    sign_state = _swap_sign(amount0_raw if amount0_raw is not None else amount0, amount1_raw if amount1_raw is not None else amount1) if record_type == "swap" else "valid"
+    initialize_price = _optional_int(row.get("sqrtPriceX96") or row.get("sqrtPrice"))
+    invalid_initialization = bool(
+        record_type == "initialize"
+        and (initialize_price is None or initialize_price <= 0 or _optional_int(row.get("tick")) is None)
+    )
     missing_statics = False
     if record_type == "swap" and venue == "uniswap_v4":
         missing_statics = any(
@@ -555,6 +626,8 @@ def _normalise_tick_row(
         and not missing_order
         and not missing_identity
         and quote_capability_ready
+        and not missing_statics
+        and explicit_quote_reason is None
     )
     reasons: list[str] = []
     if missing_order:
@@ -567,7 +640,9 @@ def _normalise_tick_row(
         reasons.append("zero_swap_amounts")
     if missing_statics:
         reasons.append("missing_quote_statics")
-    usable = not missing_order and not missing_identity and sign_state != "invalid"
+    if invalid_initialization:
+        reasons.append("invalid_initialization_state")
+    usable = not missing_order and not missing_identity and sign_state != "invalid" and not invalid_initialization
     liquidity_delta = None
     if record_type == "liquidity":
         try:
@@ -604,6 +679,8 @@ def _normalise_tick_row(
         "hooks": _text(pool.get("hooks")),
         "amount0": _text(amount0),
         "amount1": _text(amount1),
+        "amount0_raw": _text(amount0_raw),
+        "amount1_raw": _text(amount1_raw),
         "value_usd": _text(row.get("amountUSD")),
         "sqrt_price_x96": _text(row.get("sqrtPriceX96") or row.get("sqrtPrice")),
         "tick": _optional_int(row.get("tick")),
@@ -611,11 +688,9 @@ def _normalise_tick_row(
         "tick_lower": _optional_int(row.get("tickLower")),
         "tick_upper": _optional_int(row.get("tickUpper")),
         "quote_supported": quote_supported,
-        "quote_unsupported_reason": (
-            None
-            if quote_supported or record_type != "swap"
-            else "pool_family_or_state_generation_not_admitted"
-            if not quote_capability_ready
+        "quote_unsupported_reason": explicit_quote_reason or (
+            None if quote_supported or record_type != "swap"
+            else "pool_family_or_state_generation_not_admitted" if not quote_capability_ready
             else "row_state_not_quotable"
         ),
         "usable": usable,
@@ -625,7 +700,7 @@ def _normalise_tick_row(
         "missing_order": missing_order,
         "missing_identity": missing_identity,
         "invalid_swap_sign": sign_state == "invalid",
-        "invalid_state": False,
+        "invalid_state": invalid_initialization,
         "unsupported_state": False,
         "zero_swap_amounts": sign_state == "zero",
         "missing_quote_statics": missing_statics,
@@ -641,45 +716,71 @@ def normalise_tick_partition(
     """Normalise and audit one concentrated-liquidity venue-day."""
     if venue not in TICK_STREAMS:
         raise ValueError(f"unsupported tick venue: {venue}")
-    corrections, correction_inputs = load_event_order_corrections(raw_root, venue, day)
+    if venue == "uniswap_v3":
+        corrections, correction_inputs = load_event_order_corrections(raw_root, venue, day)
+    else:
+        corrections, correction_inputs = None, []
     inputs = _state_partition_inputs(
         raw_root, "tick", venue, day, correction_inputs
     )
     rows: list[dict[str, object]] = []
     counters = quality_counters()
-    counters["missing_required_streams"] = _missing_stream_count(
-        raw_root, "tick", venue, day
-    )
+    initialization_inputs = initialization_day_inputs(raw_root, venue, day)
+    initialization_missing = any(not path.exists() for path in initialization_inputs)
+    exact_state_missing = venue == "uniswap_v4" and any(not path.exists() for path in v4_state_day_inputs(raw_root, day))
+    counters["missing_required_streams"] = int(initialization_missing) + int(exact_state_missing)
+    if venue == "uniswap_v3":
+        counters["missing_required_streams"] += _missing_stream_count(raw_root, "tick", venue, day)
+    if not initialization_missing:
+        validate_initialization_day(raw_root, venue, day)
+    if venue == "uniswap_v4" and not exact_state_missing:
+        validate_v4_state_day(raw_root, day)
     by_order: dict[tuple[int, int], dict[str, object]] = {}
     pool_families: dict[str, str] = {}
-    for stream, record_type, sign in TICK_STREAMS[venue]:
-        path = raw_stream_path(raw_root, venue, stream, day)
+    stream_specs = [TICK_INITIALIZATION_STREAM]
+    stream_specs.extend(TICK_STREAMS[venue] if venue == "uniswap_v3" else (("exact_state_events", "exact_state_event", 1),))
+    for stream, record_type, sign in stream_specs:
+        path = (
+            initialization_day_path(raw_root, venue, day)
+            if record_type == "initialize"
+            else v4_state_day_path(raw_root, day)
+            if record_type == "exact_state_event"
+            else raw_stream_path(raw_root, venue, stream, day)
+        )
         for source in _reconciled_stream_rows(path, venue, stream, corrections):
             counters["raw_rows"] += 1
             if source is None:
                 continue
+            if record_type == "exact_state_event":
+                kind = str(source.get("eventKind") or "")
+                if kind not in {"swap", "modify_liquidity"}:
+                    counters["conflicting_events"] += 1
+                    continue
+                effective_record_type = "swap" if kind == "swap" else "liquidity"
+            else:
+                effective_record_type = record_type
             record, flags = _normalise_tick_row(
                 source,
                 venue=venue,
                 day=day,
                 stream=stream,
-                record_type=record_type,
+                record_type=effective_record_type,
                 liquidity_sign=sign,
                 known_pool_family=(
                     pool_families.get(
                         str((source.get("pool") or {}).get("id") or "").lower()
                     )
-                    if record_type != "swap"
+                    if effective_record_type == "liquidity"
                     else None
                 ),
             )
-            if record_type == "swap" and record["pool"]:
+            if effective_record_type in {"initialize", "swap"} and record["pool"]:
                 prior_family = pool_families.get(str(record["pool"]))
                 if prior_family is not None and prior_family != record["pool_family"]:
                     counters["conflicting_events"] += 1
                     continue
                 pool_families[str(record["pool"])] = str(record["pool_family"])
-            counters[f"{record_type}_rows"] += 1
+            counters["initialization_rows" if effective_record_type == "initialize" else f"{effective_record_type}_rows"] += 1
             for name, flagged in flags.items():
                 counters[name] += int(flagged)
             counters["quote_supported_swaps"] += int(record["quote_supported"])
@@ -1529,12 +1630,38 @@ def _write_state_partition(
 ) -> StatePartitionQuality:
     with atomic_output(panel_path) as temporary:
         frame.to_parquet(temporary, index=False)
+    quality = bind_state_partition_output(quality, panel_path)
     with atomic_output(marker_path) as temporary:
         temporary.write_text(
             json.dumps(asdict(quality), allow_nan=False, sort_keys=True) + "\n",
             encoding="utf-8",
         )
     return quality
+
+
+def bind_state_partition_output(
+    quality: StatePartitionQuality, panel_path: Path
+) -> StatePartitionQuality:
+    """Bind one quality record to the exact installed canonical partition bytes."""
+
+    stat = panel_path.stat()
+    return replace(
+        quality,
+        output_bytes=stat.st_size,
+        output_sha256=file_sha256(panel_path),
+    )
+
+
+def state_partition_output_is_current(
+    quality: StatePartitionQuality, panel: Path
+) -> bool:
+    if not panel.is_file() or not is_sha256(quality.output_sha256):
+        return False
+    stat = panel.stat()
+    return bool(
+        quality.output_bytes == stat.st_size
+        and quality.output_sha256 == file_sha256(panel)
+    )
 
 
 def _read_state_quality(
@@ -1547,7 +1674,11 @@ def _read_state_quality(
         return None
     quality = StatePartitionQuality(**json.loads(marker.read_text(encoding="utf-8")))
     current = partition_input_fingerprint(inputs)
-    if quality.schema_version != SCHEMA_VERSION or quality.input_fingerprint != current:
+    if (
+        quality.schema_version != SCHEMA_VERSION
+        or quality.input_fingerprint != current
+        or not state_partition_output_is_current(quality, panel)
+    ):
         return None
     return quality
 
@@ -1565,8 +1696,12 @@ def _read_state_partition(
     if not marker.exists():
         raise ValueError(f"canonical {family} quality marker missing: {path}")
     quality = StatePartitionQuality(**json.loads(marker.read_text(encoding="utf-8")))
+    if quality.schema_version != SCHEMA_VERSION:
+        raise ValueError(f"canonical {family} quality schema is stale: {path}")
     if quality.input_fingerprint != current_input_fingerprint:
         raise ValueError(f"canonical {family} partition is stale against its source inputs: {path}")
+    if not state_partition_output_is_current(quality, path):
+        raise ValueError(f"canonical {family} partition content disagrees with its quality marker: {path}")
     if not allow_failed_partition and not quality.passed:
         raise ValueError(f"canonical {family} partition failed its identity gate: {path}")
     frame = pd.read_parquet(path)

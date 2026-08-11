@@ -40,8 +40,14 @@ from ddvc.pricing.tick_replay import TickReplayState, load_tick_day_events
 from ddvc.pricing.tick_state import TickPoolState
 from ddvc.route_state import OrderedTickStateCursor, TickStateCut
 from ddvc.quoter import canonical_json_sha256
+from ddvc.tick_state_events import TickInitialization, certificate_identity_sha256, state_event_generation, write_daily_initializations
+from day_cut_fixtures import certified_day_cuts
+from raw_cert_fixtures import install_local_raw_certificate
 from ddvc.v2_event_completeness import V2_EVENT_TOPICS, V2_RECONCILIATION_SCOPE
 from scripts import reconcile_graph_event_order as reconcile
+
+
+TEST_DAY_TIMESTAMP = "1735689700"
 
 
 def test_reconciliation_cli_routes_v2_to_full_audit_owner(
@@ -140,8 +146,8 @@ def test_external_exact_log_provenance_stays_portable(tmp_path: Path) -> None:
 def graph_swap(event_id: str, tx_hash: str, amount0: str, amount1: str) -> dict:
     return {
         "id": event_id,
-        "transaction": {"id": tx_hash, "blockNumber": "10", "timestamp": "100"},
-        "timestamp": "100",
+        "transaction": {"id": tx_hash, "blockNumber": "10", "timestamp": TEST_DAY_TIMESTAMP},
+        "timestamp": TEST_DAY_TIMESTAMP,
         "logIndex": "7",
         "amount0": amount0,
         "amount1": amount1,
@@ -213,8 +219,8 @@ def exact_burn(
 def v2_provider_swap(event_id: str, tx_hash: str, log_index: int = 7) -> dict:
     return {
         "id": event_id,
-        "transaction": {"id": tx_hash, "blockNumber": "10", "timestamp": "100"},
-        "timestamp": "100",
+        "transaction": {"id": tx_hash, "blockNumber": "10", "timestamp": TEST_DAY_TIMESTAMP},
+        "timestamp": TEST_DAY_TIMESTAMP,
         "logIndex": str(log_index),
         "amount0In": "1",
         "amount1In": "0",
@@ -347,6 +353,18 @@ def write_graph_day(
         with gzip.open(path, "wt") as handle:
             for row in stream_rows[stream]:
                 handle.write(json.dumps(row) + "\n")
+    source = next(iter([*rows, *(mints or []), *(burns or [])]))
+    pool = source["pool"]
+    token0, token1 = pool["token0"], pool["token1"]
+    initialization = TickInitialization("uniswap_v3", pool["id"], token0["id"], token1["id"], int(pool["feeTier"]), int(pool.get("tickSpacing") or 10), "0x" + "0" * 40, 1 << 96, 0, 9, "0x" + "1" * 64, "0x" + "2" * 64, 0, 1, True, None)
+    certificate = {"status": "pass", "generation": state_event_generation("uniswap_v3"), "venue": "uniswap_v3", "precedence_status": "pass"}
+    certificate["certificate_identity_sha256"] = certificate_identity_sha256(certificate)
+    metadata = {
+        token["id"]: (token.get("symbol") or "", int(token["decimals"]))
+        for token in (token0, token1)
+        if token.get("decimals") is not None
+    }
+    write_daily_initializations("uniswap_v3", [initialization], day_cuts=certified_day_cuts({"20250101": (0, 20)}), token_metadata=metadata, raw_root=raw_root, generation_certificate=certificate)
 
 
 def write_v3_statics(raw_root: Path) -> None:
@@ -410,10 +428,16 @@ def test_v3_receipt_order_generation_repairs_causal_collisions(tmp_path: Path) -
         start_block=10,
         end_block=10,
     )
+    install_local_raw_certificate(
+        raw_root,
+        "uniswap_v3",
+        ("swaps", "mints", "burns"),
+        "20250101",
+    )
     frame, quality = normalise_tick_partition(raw_root, "uniswap_v3", "20250101")
     assert quality.passed
     assert quality.conflicting_events == 0
-    assert set(frame["log_index"].astype(int)) == {99, 122}
+    assert set(frame.loc[frame["record_type"] == "swap", "log_index"].astype(int)) == {99, 122}
     assert len(quality.input_fingerprint) == 64
     state_root = tmp_path / "state"
     write_tick_partition(raw_root, "uniswap_v3", "20250101", root=state_root)
@@ -423,7 +447,7 @@ def test_v3_receipt_order_generation_repairs_causal_collisions(tmp_path: Path) -
         root=state_root,
         raw_root=raw_root,
     )
-    assert set(released["log_index"].astype(int)) == {99, 122}
+    assert set(released.loc[released["record_type"] == "swap", "log_index"].astype(int)) == {99, 122}
 
 
 def test_missing_provider_log_index_is_repaired_from_exact_chain_order(tmp_path: Path) -> None:
@@ -471,9 +495,13 @@ def test_missing_provider_log_index_is_repaired_from_exact_chain_order(tmp_path:
         start_block=10,
         end_block=10,
     )
-    frame, quality = normalise_tick_partition(raw_root, "uniswap_v3", "20250101")
-    assert quality.passed
-    assert frame["log_index"].astype(int).tolist() == [99]
+    with pytest.raises(AssertionError, match="missing_field:logIndex"):
+        install_local_raw_certificate(
+            raw_root,
+            "uniswap_v3",
+            ("swaps", "mints", "burns"),
+            "20250101",
+        )
 
 
 def test_reconciliation_surfaces_an_exact_event_omitted_by_provider(tmp_path: Path) -> None:
@@ -566,8 +594,8 @@ def test_reconciliation_repairs_duplicates_rounding_and_omissions(
 ) -> None:
     raw_root = tmp_path / "raw" / "thegraph"
     graph_rows = [
-        graph_swap("provider-one", "0xtx1", "1.000000000000000003", "-2"),
-        graph_swap("provider-duplicate", "0xtx1", "1.000000000000000003", "-2"),
+        graph_swap("provider-a", "0xtx1", "1.000000000000000003", "-2"),
+        graph_swap("provider-b", "0xtx1", "1.000000000000000003", "-2"),
     ]
     for row in graph_rows:
         row["sqrtPriceX96"] = str((1 << 96) + 123)
@@ -575,8 +603,12 @@ def test_reconciliation_repairs_duplicates_rounding_and_omissions(
         row["pool"]["tickSpacing"] = "10"
     provider_burn = {
         "id": "provider-burn",
-        "transaction": {"id": "0xtx3", "blockNumber": "10", "timestamp": "100"},
-        "timestamp": "100",
+        "transaction": {
+            "id": "0xtx3",
+            "blockNumber": "10",
+            "timestamp": TEST_DAY_TIMESTAMP,
+        },
+        "timestamp": TEST_DAY_TIMESTAMP,
         "logIndex": "9",
         "amount": "12",
         "amount0": "2",
@@ -604,7 +636,7 @@ def test_reconciliation_repairs_duplicates_rounding_and_omissions(
     duplicate_exclusion = next(
         row for row in corrections if row["action"] == "exclusion"
     )
-    assert duplicate_exclusion["event_id"] == "provider-one"
+    assert duplicate_exclusion["event_id"] == "provider-b"
     assert duplicate_exclusion["reason"] == "duplicate_provider_event"
     burn_correction = next(
         row for row in corrections if row["event_id"] == "provider-burn"
@@ -615,14 +647,17 @@ def test_reconciliation_repairs_duplicates_rounding_and_omissions(
     assert burn_correction["tick_lower_override"] == -10
     assert burn_correction["tick_upper_override"] == 10
     swap_correction = next(
-        row for row in corrections if row["event_id"] == "provider-duplicate"
+        row for row in corrections if row["event_id"] == "provider-a"
     )
     assert swap_correction["sqrt_price_x96_override"] == 1 << 96
     assert swap_correction["tick_override"] == 0
 
     template = graph_rows[0]["pool"]
     supplements = [
-        supplement_action(event, supplement_source_row(event, template, 100))
+        supplement_action(
+            event,
+            supplement_source_row(event, template, int(TEST_DAY_TIMESTAMP)),
+        )
         for event in missing
     ]
     correction_root = correction_root_for_graph(raw_root)
@@ -654,7 +689,7 @@ def test_reconciliation_repairs_duplicates_rounding_and_omissions(
                     "method": "eth_getBlockByNumber",
                     "params": ["0xa", False],
                 },
-                "response": {"number": "0xa", "timestamp": "0x64"},
+                "response": {"number": "0xa", "timestamp": "0x677485e4"},
             }
         ],
         exact_log_paths=[exact_path, exact_marker],
@@ -693,7 +728,7 @@ def test_reconciliation_repairs_duplicates_rounding_and_omissions(
                             "method": "eth_getBlockByNumber",
                             "params": ["0xa", False],
                         },
-                        "response": {"number": "0xa", "timestamp": "0x64"},
+                        "response": {"number": "0xa", "timestamp": "0x677485e4"},
                     }
                 ],
                 exact_log_paths=[exact_path, exact_marker],
@@ -703,11 +738,17 @@ def test_reconciliation_repairs_duplicates_rounding_and_omissions(
                 scope="alternate_graph_span",
             )
     assert pointer_path.read_bytes() == prior_pointer
+    install_local_raw_certificate(
+        raw_root,
+        "uniswap_v3",
+        ("swaps", "mints", "burns"),
+        "20250101",
+    )
     frame, quality = normalise_tick_partition(raw_root, "uniswap_v3", "20250101")
     assert quality.passed
     assert quality.duplicate_events == 0
     assert quality.conflicting_events == 0
-    assert set(frame["log_index"].astype(int)) == {7, 8, 9}
+    assert set(frame.loc[frame["record_type"] != "initialize", "log_index"].astype(int)) == {7, 8, 9}
     corrected = frame.loc[frame["tx_hash"] == "0xtx1"].iloc[0]
     assert corrected["amount0"] == "1"
     assert corrected["sqrt_price_x96"] == str(1 << 96)
@@ -737,6 +778,7 @@ def test_reconciliation_repairs_duplicates_rounding_and_omissions(
         if str((event.row.get("transaction") or {}).get("id")) == "0xtx3"
     )
     replay = TickReplayState()
+    replay.apply(next(event for event in quote_events if event.kind == "initialize"))
     replay.apply(burn_event)
     assert replay.ticks_by_venue["uniswap_v3"]["0xpool"] == {-10: -10, 10: 10}
     swap_event = next(
@@ -1103,45 +1145,47 @@ def test_v3_swap_uses_hashed_pool_statics_when_event_decimals_are_absent(tmp_pat
     assert corrections[0]["chain_log_index"] == 99
 
 
-def test_v2_events_use_hashed_same_day_snapshot_decimals(tmp_path: Path) -> None:
+def test_v2_events_bind_hashed_same_day_snapshot_decimals(tmp_path: Path) -> None:
     raw_root = tmp_path / "raw" / "thegraph"
     venue_root = raw_root / "uniswap_v2"
     venue_root.mkdir(parents=True)
     pair = {
         "id": "0xpool",
-        "token0": {"id": "0xa", "symbol": "A"},
-        "token1": {"id": "0xb", "symbol": "B"},
+        "token0": {"id": "0xa", "symbol": "A", "decimals": "18"},
+        "token1": {"id": "0xb", "symbol": "B", "decimals": "6"},
     }
     swap = {
         "id": "event-one",
-        "transaction": {"id": "0xtx1", "blockNumber": "10", "timestamp": "100"},
-        "timestamp": "100",
+        "transaction": {"id": "0xtx1", "blockNumber": "10", "timestamp": TEST_DAY_TIMESTAMP},
+        "timestamp": TEST_DAY_TIMESTAMP,
         "logIndex": "7",
         "amount0In": "1",
         "amount1In": "0",
         "amount0Out": "0",
         "amount1Out": "2",
+        "amountUSD": "2",
         "pair": pair,
     }
     reverted_swap = {
         **swap,
         "id": "event-reverted",
-        "transaction": {"id": "0xtx4", "blockNumber": "10", "timestamp": "100"},
+        "transaction": {"id": "0xtx4", "blockNumber": "10", "timestamp": TEST_DAY_TIMESTAMP},
         "logIndex": "9",
     }
     successful_orphan = {
         **swap,
         "id": "event-successful-orphan",
-        "transaction": {"id": "0xtx5", "blockNumber": "10", "timestamp": "100"},
+        "transaction": {"id": "0xtx5", "blockNumber": "10", "timestamp": TEST_DAY_TIMESTAMP},
         "logIndex": "10",
     }
     burn = {
         "id": "event-burn",
-        "transaction": {"id": "0xtx2", "blockNumber": "10", "timestamp": "100"},
-        "timestamp": "100",
+        "transaction": {"id": "0xtx2", "blockNumber": "10", "timestamp": TEST_DAY_TIMESTAMP},
+        "timestamp": TEST_DAY_TIMESTAMP,
         "logIndex": "8",
         "amount0": None,
         "amount1": None,
+        "amount": "1",
         "needsComplete": True,
         "pair": pair,
     }
@@ -1151,10 +1195,15 @@ def test_v2_events_use_hashed_same_day_snapshot_decimals(tmp_path: Path) -> None
         "transaction": {
             "id": "0xtx3",
             "blockNumber": "10",
-            "timestamp": "100",
+            "timestamp": TEST_DAY_TIMESTAMP,
         },
         "logIndex": None,
     }
+    burn["amount0"] = "9"
+    burn["amount1"] = "9"
+    phantom["amount0"] = "9"
+    phantom["amount1"] = "9"
+    phantom["logIndex"] = "11"
     snapshot_pair = {
         **pair,
         "token0": {**pair["token0"], "decimals": "18"},
@@ -1167,7 +1216,7 @@ def test_v2_events_use_hashed_same_day_snapshot_decimals(tmp_path: Path) -> None
         "hourly_reserves": [
             {
                 "id": "state",
-                "hourStartUnix": "0",
+                "hourStartUnix": "1735689600",
                 "reserve0": "10",
                 "reserve1": "20",
                 "pair": snapshot_pair,
@@ -1301,6 +1350,12 @@ def test_v2_events_use_hashed_same_day_snapshot_decimals(tmp_path: Path) -> None
         expected_pools={"0xpool"},
         audited_token_decimals={"0xa": 18, "0xb": 6},
         authority_inputs=[Path(__file__)],
+    )
+    install_local_raw_certificate(
+        raw_root,
+        "uniswap_v2",
+        ("hourly_reserves", "swaps", "mints", "burns"),
+        "20250101",
     )
     frame, quality = normalise_cp_partition(raw_root, "uniswap_v2", "20250101")
     corrected_swap = frame.loc[frame["event_id"] == "event-one"].iloc[0]

@@ -8,8 +8,9 @@ from pathlib import Path
 import pandas as pd
 
 from ddvc.pricing.tick_frontier import PoolIndex, TickQuoteIndexes, build_pool_index
+from ddvc.asset_types import canonical_token
 from ddvc.pricing.tick_state import TickPoolState, absorb_swap_state, apply_tick_change
-from ddvc.source_records import block_value, source_event_payload, transaction_id
+from ddvc.source_records import block_value, source_event_payload, transaction_id, v4_quote_status
 from ddvc.state_data import RAW_ROOT, read_tick_partition, tick_partition_path
 
 
@@ -26,13 +27,16 @@ class TickReplayEvent:
 
 
 def chain_order(row: dict) -> tuple[int, int] | None:
-    """Exact on-chain order; rows without a block number are not replayable."""
+    """Exact on-chain order; both block and log index must be explicit."""
     try:
         block = int(block_value(row) or 0)
-        log_index = int(row.get("logIndex") or 0)
+        raw_log_index = row.get("logIndex")
+        if raw_log_index is None or bool(pd.isna(raw_log_index)):
+            return None
+        log_index = int(raw_log_index)
     except (TypeError, ValueError):
         return None
-    return (block, log_index) if block > 0 else None
+    return (block, log_index) if block > 0 and log_index >= 0 else None
 
 
 def _plain(value: object) -> object | None:
@@ -65,6 +69,7 @@ def canonical_tick_row(record: dict) -> dict:
     tx_hash = _plain(record.get("tx_hash"))
     block = _plain(record.get("block_number"))
     timestamp = _plain(record.get("timestamp"))
+    quote_unsupported_reason = _plain(record.get("quote_unsupported_reason"))
     return {
         "id": _plain(record.get("event_id")),
         "transaction": {
@@ -82,6 +87,7 @@ def canonical_tick_row(record: dict) -> dict:
         "amount": _plain(record.get("liquidity_delta")),
         "tickLower": _plain(record.get("tick_lower")),
         "tickUpper": _plain(record.get("tick_upper")),
+        "quoteUnsupportedReason": quote_unsupported_reason,
     }
 
 
@@ -122,7 +128,7 @@ def load_tick_day_events(
     events.sort(
         key=lambda event: (
             event.order,
-            0 if event.kind == "liquidity" else 1,
+            {"initialize": 0, "liquidity": 1, "swap": 2}.get(event.kind, 3),
             event.venue,
         )
     )
@@ -154,6 +160,7 @@ class TickReplayState:
     swap_samples: dict[str, list[dict]] = field(default_factory=dict)
     token_decimals: dict[str, int] = field(default_factory=dict)
     quarantined_pools: dict[str, set[str]] = field(default_factory=dict)
+    initialization_status_by_venue: dict[str, dict[str, str]] = field(default_factory=dict)
 
     def rebuild_derived_indexes(self) -> None:
         """Rebuild quote-discovery state from the causal replay state."""
@@ -167,13 +174,75 @@ class TickReplayState:
         pool = str((row.get("pool") or {}).get("id") or "").lower()
         if not pool or pool in self.quarantined_pools.get(venue, set()):
             return
+        status = self.initialization_status_by_venue.get(venue, {}).get(pool)
+        if status is None:
+            raise ValueError(f"liquidity event precedes certified Initialize: {venue}/{pool}")
+        if status != "quote_supported":
+            return
         apply_tick_change(ticks.setdefault(pool, {}), row, sign=sign)
         self.quote_indexes_by_venue.setdefault(venue, {}).pop(pool, None)
 
+    def apply_initialize(self, venue: str, row: dict) -> None:
+        """Create exact pool state before any liquidity change or Swap can consume it."""
+
+        order = chain_order(row)
+        pool_data = row.get("pool") or {}
+        pool = str(pool_data.get("id") or "").lower()
+        if order is None or not pool:
+            raise ValueError(f"certified Initialize lacks causal identity: {venue}/{pool}")
+        statuses = self.initialization_status_by_venue.setdefault(venue, {})
+        if pool in statuses:
+            raise ValueError(f"pool has more than one certified Initialize: {venue}/{pool}")
+        token0, token1 = pool_data.get("token0") or {}, pool_data.get("token1") or {}
+        raw0, raw1 = str(token0.get("id") or "").lower(), str(token1.get("id") or "").lower()
+        explicit_reason = str(row.get("quoteUnsupportedReason") or "")
+        if explicit_reason == "unknown_token_metadata":
+            statuses[pool] = "unsupported:unknown_token_metadata"
+            return
+        try:
+            decimals = (int(token0["decimals"]), int(token1["decimals"]))
+            fee_pips = int(pool_data["feeTier"])
+            tick_spacing = int(pool_data["tickSpacing"])
+            sqrt_price_x96 = int(row["sqrtPriceX96"])
+            tick = int(row["tick"])
+        except (KeyError, TypeError, ValueError) as error:
+            raise ValueError(f"certified Initialize lacks exact state statics: {venue}/{pool}") from error
+        if not raw0 or not raw1 or any(value < 0 or value > 36 for value in decimals) or sqrt_price_x96 <= 0 or tick_spacing <= 0:
+            raise ValueError(f"certified Initialize has invalid state statics: {venue}/{pool}")
+        reason = v4_quote_status(row) if venue == "uniswap_v4" else "vanilla_static_fee"
+        if venue == "uniswap_v4" and reason != "vanilla_static_fee":
+            statuses[pool] = f"unsupported:{reason}"
+            return
+        canonical0 = canonical_token(raw0, unify_wrapped=self.unify_wrapped)
+        canonical1 = canonical_token(raw1, unify_wrapped=self.unify_wrapped)
+        state = TickPoolState(
+            pool=pool,
+            token0=canonical0,
+            token1=canonical1,
+            sym0=str(token0.get("symbol") or ""),
+            sym1=str(token1.get("symbol") or ""),
+            dec0=decimals[0],
+            dec1=decimals[1],
+            sqrt_price_x96=sqrt_price_x96,
+            tick=tick,
+            fee_pips=fee_pips,
+            tick_spacing=tick_spacing,
+            block=order[0],
+            log_index=order[1],
+        )
+        self.states_by_venue.setdefault(venue, {})[pool] = state
+        self.ticks_by_venue.setdefault(venue, {}).setdefault(pool, {})
+        statuses[pool] = "quote_supported"
+        key = frozenset((canonical0, canonical1))
+        entry = (venue, pool)
+        candidates = self.pool_index.setdefault(key, [])
+        if entry not in candidates:
+            candidates.append(entry)
+            candidates.sort()
+        self.token_decimals[raw0], self.token_decimals[raw1] = decimals
+
     def apply_swap(self, venue: str, row: dict) -> None:
-        # Exact-state replay must never compare a Unix timestamp with an Ethereum
-        # block height. Some legacy V4 rows have only a scalar transaction hash;
-        # they can identify a swap, but cannot establish its causal chain order.
+        # Exact-state replay never substitutes a Unix timestamp for an Ethereum block height; a scalar transaction hash identifies a legacy V4 swap but cannot establish causal chain order.
         if chain_order(row) is None:
             return
         states = self.states_by_venue.setdefault(venue, {})
@@ -181,6 +250,10 @@ class TickReplayState:
         if not pool:
             return
         prior = states.get(pool)
+        if pool not in self.initialization_status_by_venue.get(venue, {}):
+            raise ValueError(f"swap event precedes certified Initialize: {venue}/{pool}")
+        if self.initialization_status_by_venue[venue][pool] != "quote_supported":
+            return
         absorb_swap_state(
             venue,
             row,
@@ -213,10 +286,14 @@ class TickReplayState:
                 candidates.sort()
 
     def apply(self, event: TickReplayEvent) -> None:
-        if event.kind == "liquidity":
+        if event.kind == "initialize":
+            self.apply_initialize(event.venue, event.row)
+        elif event.kind == "liquidity":
             self.apply_liquidity(event.venue, event.row, sign=event.sign)
-        else:
+        elif event.kind == "swap":
             self.apply_swap(event.venue, event.row)
+        else:
+            raise ValueError(f"unsupported tick replay event kind: {event.kind}")
 
     def apply_all(self, events: list[TickReplayEvent]) -> None:
         for event in events:

@@ -90,6 +90,7 @@ def v4_statics_complete(row: dict[str, Any]) -> bool:
 
 V4_DYNAMIC_FEE_FLAG = 1 << 23
 ZERO_ADDRESS = "0x0000000000000000000000000000000000000000"
+V4_NATIVE_CURRENCY_DECIMALS = 18
 
 
 def v4_quote_status(row: dict[str, Any]) -> str:
@@ -103,16 +104,35 @@ def v4_quote_status(row: dict[str, Any]) -> str:
     except (KeyError, TypeError, ValueError):
         return "invalid_statics"
     hooks = str(pool.get("hooks") or "").lower()
-    dynamic = bool(fee & V4_DYNAMIC_FEE_FLAG)
-    hooked = hooks != ZERO_ADDRESS
+    return v4_static_quote_status(fee, tick_spacing, hooks)
+
+
+def v4_static_quote_status(fee: int, tick_spacing: int, hooks: str) -> str:
+    """Classify immutable V4 PoolKey statics without requiring token metadata."""
+
+    hook = str(hooks).lower()
+    try:
+        canonical_hook = len(hook) == 42 and hook.startswith("0x") and len(bytes.fromhex(hook[2:])) == 20
+    except ValueError:
+        canonical_hook = False
+    if (
+        not canonical_hook
+        or fee < 0
+        or fee > 0xFFFFFF
+        or tick_spacing < 1
+        or tick_spacing > 32_767
+        or (fee & V4_DYNAMIC_FEE_FLAG and fee != V4_DYNAMIC_FEE_FLAG)
+        or ((fee & V4_DYNAMIC_FEE_FLAG) == 0 and fee > 1_000_000)
+    ):
+        return "invalid_statics"
+    dynamic = fee == V4_DYNAMIC_FEE_FLAG
+    hooked = hook != ZERO_ADDRESS
     if dynamic and hooked:
         return "dynamic_fee_and_hooks"
     if dynamic:
         return "dynamic_fee"
     if hooked:
         return "hooks"
-    if fee < 0 or fee >= 1_000_000 or tick_spacing <= 0:
-        return "invalid_statics"
     return "vanilla_static_fee"
 
 

@@ -1,0 +1,253 @@
+#!/usr/bin/env python3
+"""Fetch and certify exact V3/V4 state events and materialize replay inputs."""
+
+from __future__ import annotations
+
+import argparse
+from collections import deque
+from concurrent.futures import FIRST_COMPLETED, wait
+import gzip
+import json
+from pathlib import Path
+
+from ddvc.calendar import RESEARCH_SAMPLE_END, RESEARCH_SAMPLE_START, calendar_days
+from ddvc.ethereum_day_cuts import load_utc_day_block_bounds
+from ddvc.ethereum_logs import block_ranges, fetch_exact_logs_with_capacity_bisection
+from ddvc.graph_event_order import v3_pool_static_path
+from ddvc.paths import V2_AUDITED_TOKEN_DECIMALS_REGISTRY, DATA_DIR, REPO_ROOT, TICK_STATE_EVENT_RAW_ROOT, V3_INVENTORY_RAW_ROOT
+from ddvc.provenance import portable_content_manifest_for_paths, portable_manifest_sha256, sidecar_path
+from ddvc.runtime import bounded_workers, exclusive_job, interruptible_thread_pool
+from ddvc.source_records import V4_NATIVE_CURRENCY_DECIMALS, ZERO_ADDRESS
+from ddvc.tick_state_events import (
+    VENUE_GENERATION_TOPICS,
+    VENUE_TOPICS,
+    certify_materialization_support,
+    certify_state_event_generation,
+    certify_state_event_precedence,
+    load_state_event_chunk,
+    iter_v4_state_events,
+    write_daily_v4_state_events,
+    write_daily_initializations,
+    write_state_event_chunk,
+)
+from ddvc.token_decimals import validate_token_decimals_registry
+from ddvc.v3_inventory import inventory_first_consuming_event_paths, validate_inventory_ordered_manifest
+from ddvc.v3_inventory_assembly import load_v3_first_consuming_events
+from ddvc.v3_pool_registry import (
+    V3_FACTORY_DEPLOYMENT_BLOCK,
+    V3_POOL_REGISTRY,
+    V3_POOL_REGISTRY_CERTIFICATE,
+    load_certified_frozen_upper,
+    load_registry,
+)
+from ddvc.v4_contract import UNISWAP_V4_POOL_MANAGER_ADDRESS, UNISWAP_V4_POOL_MANAGER_DEPLOYMENT_BLOCK
+
+
+LOCK = DATA_DIR / "raw" / "ethereum" / ".tick-state-events.lock"
+GRAPH_ROOT = DATA_DIR / "raw" / "thegraph"
+DEFAULT_CHUNK_SIZE = 10_000
+
+
+def _ranges(start: int, end: int, chunk_size: int) -> list[tuple[int, int]]:
+    return block_ranges(start, end, chunk_size)
+
+
+def _v2_scoped_token_metadata() -> tuple[dict[str, tuple[str, int]], list[Path]]:
+    if not V2_AUDITED_TOKEN_DECIMALS_REGISTRY.is_file():
+        raise FileNotFoundError(f"certified V2-scoped token-decimals prerequisite is absent: {V2_AUDITED_TOKEN_DECIMALS_REGISTRY}; build and certify the exact-anchor V2 decimals registry before the first tick-state subset release")
+    values, _registry = validate_token_decimals_registry(V2_AUDITED_TOKEN_DECIMALS_REGISTRY)
+    inputs = [V2_AUDITED_TOKEN_DECIMALS_REGISTRY]
+    marker = sidecar_path(V2_AUDITED_TOKEN_DECIMALS_REGISTRY)
+    if marker.is_file():
+        inputs.append(marker)
+    metadata = {token: ("", decimals) for token, decimals in values.items()}
+    metadata[ZERO_ADDRESS] = ("ETH", V4_NATIVE_CURRENCY_DECIMALS)
+    return metadata, inputs
+
+
+def _optional_v3_graph_symbols(path: Path | None, exact_tokens: set[str]) -> dict[str, str]:
+    """Read optional provider symbols without accepting provider identity or decimals."""
+
+    if path is None:
+        return {}
+    symbols: dict[str, str] = {}
+    conflicting: set[str] = set()
+    with gzip.open(path, "rt", encoding="utf-8") as handle:
+        for line in handle:
+            if not line.strip():
+                continue
+            try:
+                row = json.loads(line)
+            except json.JSONDecodeError:
+                continue
+            if not isinstance(row, dict):
+                continue
+            for token_row in (row.get("token0"), row.get("token1")):
+                if not isinstance(token_row, dict):
+                    continue
+                token = str(token_row.get("id") or "").lower()
+                symbol = str(token_row.get("symbol") or "")
+                if token not in exact_tokens or not symbol or token in conflicting:
+                    continue
+                prior = symbols.get(token)
+                if prior is None:
+                    symbols[token] = symbol
+                elif prior != symbol:
+                    symbols.pop(token, None)
+                    conflicting.add(token)
+    return symbols
+
+
+def _v3_inputs() -> tuple[dict, dict[str, tuple[str, int]], list[Path]]:
+    registry_rows = load_registry()
+    registry = {row.pool: row for row in registry_rows}
+    exact_metadata, exact_inputs = _v2_scoped_token_metadata()
+    graph_static = v3_pool_static_path(GRAPH_ROOT)
+    symbols = _optional_v3_graph_symbols(graph_static, set(exact_metadata))
+    metadata = {token: (symbols.get(token, symbol), decimals) for token, (symbol, decimals) in exact_metadata.items()}
+    graph_inputs = [graph_static] if graph_static is not None else []
+    return registry, metadata, [V3_POOL_REGISTRY, V3_POOL_REGISTRY_CERTIFICATE, *graph_inputs, *exact_inputs]
+
+
+def _completed(venue: str, lower: int, upper: int, frozen_upper: dict[str, object], root: Path) -> bool:
+    try:
+        load_state_event_chunk(venue, lower, upper, frozen_upper=frozen_upper, root=root)
+        return True
+    except (FileNotFoundError, OSError, TypeError, ValueError, json.JSONDecodeError):
+        return False
+
+
+def _fetch_one(venue: str, lower: int, upper: int, frozen_upper: dict[str, object], root: Path) -> tuple[int, int, int]:
+    address = UNISWAP_V4_POOL_MANAGER_ADDRESS if venue == "uniswap_v4" else None
+    records, evidence = fetch_exact_logs_with_capacity_bisection(
+        start_block=lower,
+        end_block=upper,
+        topics=list(VENUE_GENERATION_TOPICS[venue]),
+        address=address,
+        frozen_upper=frozen_upper,
+    )
+    write_state_event_chunk(venue, lower, upper, records, evidence, frozen_upper=frozen_upper, root=root)
+    return lower, upper, len(records)
+
+
+def _run_owned(args: argparse.Namespace) -> int:
+    venue = args.venue
+    frozen_upper, factory_certificate = load_certified_frozen_upper()
+    default_start = V3_FACTORY_DEPLOYMENT_BLOCK if venue == "uniswap_v3" else UNISWAP_V4_POOL_MANAGER_DEPLOYMENT_BLOCK
+    start = args.start_block if args.start_block is not None else default_start
+    end = args.end_block if args.end_block is not None else int(frozen_upper["block_number"])
+    ranges = _ranges(start, end, args.chunk_size)
+    root = args.root
+    if venue == "uniswap_v3":
+        registry, metadata, metadata_inputs = _v3_inputs()
+    else:
+        registry = {}
+        metadata, metadata_inputs = _v2_scoped_token_metadata()
+    if args.fetch:
+        pending = [bounds for bounds in ranges if not _completed(venue, *bounds, frozen_upper, root)]
+        queue = deque(pending)
+        workers = bounded_workers(args.workers)
+        completed = 0
+        with interruptible_thread_pool(workers) as pool:
+            futures = {}
+            while queue or futures:
+                while queue and len(futures) < workers:
+                    lower, upper = queue.popleft()
+                    futures[pool.submit(_fetch_one, venue, lower, upper, frozen_upper, root)] = (lower, upper)
+                done, _outstanding = wait(futures, return_when=FIRST_COMPLETED)
+                for future in done:
+                    lower, upper = futures.pop(future)
+                    _lower, _upper, rows = future.result()
+                    if (_lower, _upper) != (lower, upper):
+                        raise RuntimeError("state-event worker returned the wrong block range")
+                    completed += 1
+                    print(f"state-event chunks {completed:,}/{len(pending):,}: {lower}-{upper}, rows={rows:,}", flush=True)
+    decoded, certificate = certify_state_event_generation(
+        venue,
+        ranges,
+        frozen_upper=frozen_upper,
+        raw_root=root,
+        v3_registry=registry or None,
+    )
+    if venue == "uniswap_v3":
+        manifest_path = V3_INVENTORY_RAW_ROOT / "ordered_chunks.complete.json"
+        manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
+        inventory_ranges = [(int(row["lower"]), int(row["upper"])) for row in manifest["chunks"]]
+        validate_inventory_ordered_manifest(
+            V3_INVENTORY_RAW_ROOT,
+            inventory_ranges,
+            chunk_size=int(manifest["chunk_size"]),
+            frozen_upper=frozen_upper,
+            factory_certificate=factory_certificate,
+            reopen_chunks=False,
+        )
+        state_events, state_event_summary = load_v3_first_consuming_events(
+            V3_INVENTORY_RAW_ROOT,
+            ordered_manifest=manifest,
+            frozen_upper=frozen_upper,
+            factory_certificate=factory_certificate,
+        )
+        certificate = {
+            **{key: value for key, value in certificate.items() if key != "certificate_identity_sha256"},
+            "precedence_source_generation": state_event_summary["generation"],
+            "precedence_source_certificate_identity_sha256": state_event_summary["certificate_identity_sha256"],
+            "precedence_source_data_portable_sha256": state_event_summary["data_portable_sha256"],
+            "precedence_source_ordered_manifest_identity_sha256": state_event_summary["source_ordered_manifest_identity_sha256"],
+        }
+        certificate = certify_state_event_precedence(certificate, decoded, state_events, registry_pools=registry)
+        state_event_data_path, state_event_marker_path = inventory_first_consuming_event_paths(V3_INVENTORY_RAW_ROOT)
+        metadata_inputs.extend([manifest_path, state_event_data_path, state_event_marker_path])
+    metadata_manifest = portable_content_manifest_for_paths(REPO_ROOT, [path for path in metadata_inputs if path is not None])
+    certificate["metadata_source_manifest"] = metadata_manifest
+    certificate["metadata_source_manifest_sha256"] = portable_manifest_sha256(metadata_manifest)
+    if venue == "uniswap_v4":
+        certificate["native_currency_decimals"] = V4_NATIVE_CURRENCY_DECIMALS
+        certificate["token_metadata_scope"] = "exact_anchor_v2_registry_plus_native_currency_only"
+    else:
+        certificate["token_metadata_scope"] = "exact_anchor_v2_registry_only"
+    certificate = certify_materialization_support(certificate, decoded, metadata)
+    days = calendar_days(args.start_day, args.end_day)
+    day_cuts = {day: load_utc_day_block_bounds(day) for day in days}
+    write_daily_initializations(
+        venue,
+        decoded,
+        day_cuts=day_cuts,
+        token_metadata=metadata,
+        raw_root=GRAPH_ROOT,
+        generation_certificate=certificate,
+    )
+    if venue == "uniswap_v4":
+        write_daily_v4_state_events(
+            iter_v4_state_events(ranges, frozen_upper=frozen_upper, raw_root=root),
+            decoded,
+            day_cuts=day_cuts,
+            token_metadata=metadata,
+            raw_root=GRAPH_ROOT,
+            generation_certificate=certificate,
+        )
+    print(json.dumps(certificate, sort_keys=True))
+    return 0
+
+
+def run(args: argparse.Namespace) -> int:
+    with exclusive_job(LOCK, job=f"{args.venue} exact state-event generation and release"):
+        return _run_owned(args)
+
+
+def parser() -> argparse.ArgumentParser:
+    cli = argparse.ArgumentParser(description=__doc__)
+    cli.add_argument("venue", choices=sorted(VENUE_TOPICS))
+    cli.add_argument("--fetch", action="store_true", help="fetch absent state-event chunks before certification")
+    cli.add_argument("--start-block", type=int)
+    cli.add_argument("--end-block", type=int)
+    cli.add_argument("--chunk-size", type=int, default=DEFAULT_CHUNK_SIZE)
+    cli.add_argument("--workers", type=int, default=4)
+    cli.add_argument("--root", type=Path, default=TICK_STATE_EVENT_RAW_ROOT)
+    cli.add_argument("--start-day", default=RESEARCH_SAMPLE_START)
+    cli.add_argument("--end-day", default=RESEARCH_SAMPLE_END)
+    return cli
+
+
+if __name__ == "__main__":
+    arguments = parser().parse_args()
+    raise SystemExit(run(arguments))
