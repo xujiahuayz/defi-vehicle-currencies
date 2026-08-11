@@ -87,6 +87,90 @@ class ClusteredOLSResult:
 
 
 @dataclass(frozen=True)
+class LinearContrastResult:
+    """One linear contrast evaluated against a fitted clustered covariance."""
+
+    estimate: float
+    standard_error: float
+    t_statistic: float
+    p_value: float
+    confidence_interval_lower: float
+    confidence_interval_upper: float
+    degrees_freedom: int
+
+
+def linear_contrast(
+    fit: ClusteredOLSResult,
+    weights: np.ndarray | list[float] | tuple[float, ...],
+    *,
+    confidence_level: float = 0.95,
+) -> LinearContrastResult:
+    """Evaluate a declared linear contrast using the fitted clustered covariance."""
+
+    contrast = np.asarray(weights, dtype=float).reshape(-1)
+    if len(contrast) != len(fit.beta) or not np.isfinite(contrast).all():
+        raise ValueError("linear contrast weights do not match the fitted design")
+    if not 0 < confidence_level < 1:
+        raise ValueError("linear contrast confidence level must lie inside zero and one")
+    if not np.isfinite(fit.beta).all() or not np.isfinite(fit.covariance).all():
+        raise ValueError("linear contrast fit is nonfinite")
+    variance = float(contrast @ fit.covariance @ contrast)
+    if not np.isfinite(variance) or variance <= 0:
+        raise ValueError("linear contrast variance must be finite and positive")
+    estimate = float(contrast @ fit.beta)
+    standard_error = float(np.sqrt(variance))
+    t_statistic = estimate / standard_error
+    degrees_freedom = fit.n_clusters - 1
+    if degrees_freedom < 1:
+        raise ValueError("linear contrast requires at least two clusters")
+    p_value = float(2 * stats.t.sf(abs(t_statistic), degrees_freedom))
+    critical = float(stats.t.ppf(0.5 + confidence_level / 2, degrees_freedom))
+    return LinearContrastResult(
+        estimate=estimate,
+        standard_error=standard_error,
+        t_statistic=t_statistic,
+        p_value=p_value,
+        confidence_interval_lower=estimate - critical * standard_error,
+        confidence_interval_upper=estimate + critical * standard_error,
+        degrees_freedom=degrees_freedom,
+    )
+
+
+def joint_wald_f(
+    fit: ClusteredOLSResult,
+    names: list[str] | tuple[str, ...],
+    tested: list[str] | tuple[str, ...],
+) -> tuple[float, int, int, float]:
+    """Test a named coefficient block with the fitted clustered covariance."""
+
+    if not tested:
+        raise ValueError("joint Wald test requires at least one coefficient")
+    if len(names) != len(set(names)) or len(tested) != len(set(tested)):
+        raise ValueError("joint Wald coefficient names must be unique")
+    if len(names) != len(fit.beta) or not set(tested).issubset(names):
+        raise ValueError("joint Wald coefficient names do not match the fitted design")
+    positions = [names.index(name) for name in tested]
+    restriction_beta = fit.beta[positions]
+    restriction_covariance = fit.covariance[np.ix_(positions, positions)]
+    restriction_covariance = (restriction_covariance + restriction_covariance.T) / 2
+    if not np.isfinite(restriction_covariance).all():
+        raise ValueError("joint Wald covariance matrix is not finite")
+    if np.linalg.eigvalsh(restriction_covariance).min() <= 0:
+        raise ValueError("joint Wald covariance matrix is not positive definite")
+    rank = int(np.linalg.matrix_rank(restriction_covariance))
+    if rank != len(positions):
+        raise ValueError("joint Wald covariance matrix is rank deficient")
+    statistic = float(
+        restriction_beta.T
+        @ np.linalg.solve(restriction_covariance, restriction_beta)
+        / rank
+    )
+    denominator_df = fit.n_clusters - 1
+    p_value = float(stats.f.sf(statistic, rank, denominator_df))
+    return statistic, rank, denominator_df, p_value
+
+
+@dataclass(frozen=True)
 class ClusteredMeanResult:
     """Mean and confidence interval with one-way cluster dependence."""
 

@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import unittest
+from dataclasses import replace
 
 import numpy as np
 import pandas as pd
@@ -11,6 +12,8 @@ from ddvc.analysis.regression import (
     absorb_fixed_effects,
     common_calendar_day_mask,
     holm_adjusted_pvalues,
+    joint_wald_f,
+    linear_contrast,
     mean_clustered,
     ols_clustered,
     ols_clustered_named,
@@ -46,6 +49,44 @@ class RegressionPrimitiveTests(unittest.TestCase):
         adjusted = holm_adjusted_pvalues(np.array([0.01, 0.04, 0.03, np.nan]))
         np.testing.assert_allclose(adjusted[:3], [0.03, 0.06, 0.06])
         self.assertTrue(np.isnan(adjusted[3]))
+
+    def test_joint_wald_f_uses_named_clustered_covariance_block(self) -> None:
+        result = ClusteredOLSResult(
+            beta=np.array([1.0, 2.0]),
+            covariance=np.diag([1.0, 4.0]),
+            n_observations=100,
+            n_clusters=10,
+            absorbed_degrees_of_freedom=0,
+        )
+        statistic, numerator_df, denominator_df, p_value = joint_wald_f(
+            result, ("first", "second"), ("first", "second")
+        )
+        self.assertAlmostEqual(statistic, 1.0)
+        self.assertEqual(numerator_df, 2)
+        self.assertEqual(denominator_df, 9)
+        self.assertAlmostEqual(p_value, stats.f.sf(1.0, 2, 9))
+        with self.assertRaisesRegex(ValueError, "must be unique"):
+            joint_wald_f(result, ("first", "first"), ("first",))
+        with self.assertRaisesRegex(ValueError, "must be unique"):
+            joint_wald_f(result, ("first", "second"), ("first", "first"))
+
+    def test_linear_contrast_uses_full_clustered_covariance(self) -> None:
+        result = ClusteredOLSResult(
+            beta=np.array([3.0, 2.0]),
+            covariance=np.array([[4.0, 1.0], [1.0, 9.0]]),
+            n_observations=100,
+            n_clusters=11,
+            absorbed_degrees_of_freedom=0,
+        )
+        contrast = linear_contrast(result, (1.0, -2.0))
+        self.assertAlmostEqual(contrast.estimate, -1.0)
+        self.assertAlmostEqual(contrast.standard_error, 6.0)
+        self.assertEqual(contrast.degrees_freedom, 10)
+        self.assertLess(contrast.confidence_interval_lower, contrast.estimate)
+        self.assertGreater(contrast.confidence_interval_upper, contrast.estimate)
+        invalid = replace(result, covariance=np.array([[-1.0, 0.0], [0.0, 1.0]]))
+        with self.assertRaisesRegex(ValueError, "finite and positive"):
+            linear_contrast(invalid, (1.0, 0.0))
 
     def test_common_calendar_mask_balances_a_partial_endpoint_year(self) -> None:
         dates = pd.to_datetime(

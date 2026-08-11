@@ -6,13 +6,13 @@ from collections.abc import Sequence
 
 import numpy as np
 import pandas as pd
-from scipy import stats
 
 from ddvc.analysis.regression import (
     ClusteredOLSResult,
     absorb_fixed_effects,
     common_calendar_day_mask,
     holm_adjusted_pvalues,
+    joint_wald_f,
     ols_clustered,
 )
 from ddvc.analysis.routing_contract import (
@@ -156,31 +156,6 @@ def _fit_within(
     return fit, kept, dropped, model
 
 
-def _joint_wald(
-    fit: ClusteredOLSResult, names: Sequence[str], tested: Sequence[str]
-) -> tuple[float, int, float]:
-    positions = [names.index(name) for name in tested]
-    restriction_beta = fit.beta[positions]
-    restriction_covariance = fit.covariance[np.ix_(positions, positions)]
-    restriction_covariance = (
-        restriction_covariance + restriction_covariance.T
-    ) / 2
-    if not np.isfinite(restriction_covariance).all():
-        raise ValueError("joint year test has a non-finite covariance matrix")
-    if np.linalg.eigvalsh(restriction_covariance).min() <= 0:
-        raise ValueError("joint year test covariance matrix is not positive definite")
-    rank = int(np.linalg.matrix_rank(restriction_covariance))
-    if rank != len(positions):
-        raise ValueError("joint year test has a rank-deficient covariance matrix")
-    statistic = float(
-        restriction_beta.T @ np.linalg.solve(restriction_covariance, restriction_beta)
-        / rank
-    )
-    denominator_df = fit.n_clusters - 1
-    p_value = float(stats.f.sf(statistic, rank, denominator_df))
-    return statistic, rank, p_value
-
-
 def _weighted_mean(values: pd.Series, weights: pd.Series | None) -> float:
     if weights is None:
         return float(values.mean())
@@ -227,7 +202,9 @@ def _annual_fit(
     tested = [term for term in primary_year_terms if term in kept]
     if len(tested) != len(primary_year_terms):
         raise ValueError(f"{spec} does not identify all four primary year indicators")
-    joint_statistic, joint_df, joint_p = _joint_wald(fit, kept, tested)
+    joint_statistic, joint_df, _joint_denominator_df, joint_p = joint_wald_f(
+        fit, kept, tested
+    )
     model_weights = model[weight_column] if weight_column else None
     baseline = model[model["year"].eq(2021)]
     comparison = model[model["year"].eq(2025)]
