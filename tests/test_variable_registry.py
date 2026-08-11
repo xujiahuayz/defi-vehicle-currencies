@@ -543,8 +543,11 @@ class VariableRegistryTests(unittest.TestCase):
         decomposition = (
             root / "scripts" / "run_claim_defense_analytics.py"
         ).read_text(encoding="utf-8")
-        self.assertIn('direct_quality"].lt(0.90)', decomposition)
-        self.assertIn('direct_quality"].ge(0.90)', decomposition)
+        self.assertIn("direct_quality < 0.90", decomposition)
+        self.assertIn("direct_quality >= 0.90", decomposition)
+        self.assertIn("isfinite(direct_quality)", decomposition)
+        self.assertIn("isfinite(direct_cost_advantage)", decomposition)
+        self.assertIn('ROUTE_COST_MEMORY_LIMIT = "900MB"', decomposition)
         self.assertNotIn("0.995", decomposition)
 
     def test_every_auxiliary_formula_symbol_is_defined(self) -> None:

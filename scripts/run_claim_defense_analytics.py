@@ -27,6 +27,171 @@ EMP = OUT / "empirical"
 from ddvc.paper_tables import _int, _num, _p, _pct, _write_table
 
 
+ROUTE_COST_REQUIRED_COLUMNS = {
+    "date",
+    "src",
+    "tgt",
+    "vehicle_sym",
+    "trade_size_usd",
+    "direct_output_usd",
+    "direct_available",
+    "vehicle_available",
+    "direct_cost_advantage",
+}
+ROUTE_COST_MEMORY_LIMIT = "900MB"
+
+ROUTE_COST_DECOMPOSITION_QUERY = """
+WITH weth AS NOT MATERIALIZED (
+    SELECT date,
+           src,
+           tgt,
+           trade_size_usd,
+           direct_output_usd,
+           direct_available,
+           vehicle_available,
+           direct_cost_advantage,
+           direct_output_usd / trade_size_usd AS direct_quality
+    FROM read_parquet(?)
+    WHERE vehicle_sym = 'WETH'
+      AND trade_size_usd IS NOT NULL
+      AND isfinite(trade_size_usd)
+      AND trade_size_usd > 0
+),
+row_summary AS (
+    SELECT trade_size_usd,
+           count(*) AS rows,
+           avg(CAST(direct_available AS DOUBLE)) AS direct_available_share,
+           avg(CAST(vehicle_available AS DOUBLE)) AS vehicle_available_share,
+           count(*) FILTER (
+               WHERE NOT direct_available AND vehicle_available
+           ) AS no_direct_vehicle_available_rows,
+           count(*) FILTER (
+               WHERE direct_available
+                 AND vehicle_available
+                 AND direct_cost_advantage IS NOT NULL
+                 AND isfinite(direct_cost_advantage)
+           ) AS common_support_rows,
+           median(direct_cost_advantage) FILTER (
+               WHERE direct_available
+                 AND vehicle_available
+                 AND direct_cost_advantage IS NOT NULL
+                 AND isfinite(direct_cost_advantage)
+           ) AS common_support_median,
+           median(direct_cost_advantage) FILTER (
+               WHERE direct_available
+                 AND vehicle_available
+                 AND direct_cost_advantage IS NOT NULL
+                 AND isfinite(direct_cost_advantage)
+                 AND direct_output_usd IS NOT NULL
+                 AND isfinite(direct_output_usd)
+                 AND isfinite(direct_quality)
+                 AND direct_quality < 0.90
+           ) AS thin_direct_median,
+           median(direct_cost_advantage) FILTER (
+               WHERE direct_available
+                 AND vehicle_available
+                 AND direct_cost_advantage IS NOT NULL
+                 AND isfinite(direct_cost_advantage)
+                 AND direct_output_usd IS NOT NULL
+                 AND isfinite(direct_output_usd)
+                 AND isfinite(direct_quality)
+                 AND direct_quality >= 0.90
+           ) AS high_quality_direct_median,
+           count(*) FILTER (
+               WHERE (direct_output_usd IS NOT NULL AND NOT isfinite(direct_output_usd))
+                  OR (direct_cost_advantage IS NOT NULL AND NOT isfinite(direct_cost_advantage))
+           ) AS nonfinite_quote_rows,
+           count(*) FILTER (
+               WHERE direct_available
+                 AND direct_output_usd IS NOT NULL
+                 AND isfinite(direct_output_usd)
+                 AND direct_output_usd <= 0
+           ) AS impossible_quote_rows
+    FROM weth
+    GROUP BY trade_size_usd
+),
+pair_day AS (
+    SELECT trade_size_usd,
+           date,
+           src,
+           tgt,
+           avg(direct_cost_advantage) AS pair_day_mean
+    FROM weth
+    WHERE direct_available
+      AND vehicle_available
+      AND direct_cost_advantage IS NOT NULL
+      AND isfinite(direct_cost_advantage)
+    GROUP BY trade_size_usd, date, src, tgt
+),
+pair_day_clipped AS (
+    SELECT trade_size_usd,
+           CASE
+               WHEN pair_day_mean < -10.0 THEN -10.0
+               WHEN pair_day_mean > 10.0 THEN 10.0
+               ELSE pair_day_mean
+           END AS pair_day_mean_clipped
+    FROM pair_day
+),
+pair_summary AS (
+    SELECT trade_size_usd,
+           count(*) AS pair_days,
+           avg(pair_day_mean_clipped) AS pair_day_mean,
+           stddev_samp(pair_day_mean_clipped) AS pair_day_stddev,
+           min(pair_day_mean_clipped) AS pair_day_min,
+           max(pair_day_mean_clipped) AS pair_day_max
+    FROM pair_day_clipped
+    GROUP BY trade_size_usd
+)
+SELECT row_summary.*,
+       coalesce(pair_summary.pair_days, 0) AS pair_days,
+       pair_summary.pair_day_mean,
+       pair_summary.pair_day_stddev,
+       pair_summary.pair_day_min,
+       pair_summary.pair_day_max
+FROM row_summary
+LEFT JOIN pair_summary USING (trade_size_usd)
+ORDER BY trade_size_usd
+"""
+
+ROUTE_COST_TRADE_SIZE_VALIDATION_QUERY = """
+SELECT count(*) FILTER (WHERE trade_size_usd IS NULL) AS null_rows,
+       count(*) FILTER (
+           WHERE trade_size_usd IS NOT NULL AND NOT isfinite(trade_size_usd)
+       ) AS nonfinite_rows,
+       count(*) FILTER (
+           WHERE trade_size_usd IS NOT NULL
+             AND isfinite(trade_size_usd)
+             AND trade_size_usd <= 0
+       ) AS nonpositive_rows
+FROM read_parquet(?)
+WHERE vehicle_sym = 'WETH'
+"""
+
+
+def _pair_day_ttest(
+    *, n: int, mean: float, standard_deviation: float, minimum: float, maximum: float
+) -> tuple[float, float]:
+    """Return the one-sample pair-day t-test with explicit degenerate semantics.
+
+    Fewer than three observations and an exact all-zero sample are undefined. An exact
+    constant nonzero sample has a signed infinite t statistic and a zero p-value. Exact
+    minimum/maximum equality identifies constants before floating variance noise can.
+    """
+    values = (mean, minimum, maximum)
+    if n <= 2 or any(not math.isfinite(value) for value in values):
+        return math.nan, math.nan
+    if minimum == maximum:
+        if mean == 0:
+            return math.nan, math.nan
+        return math.copysign(math.inf, mean), 0.0
+    if not math.isfinite(standard_deviation) or standard_deviation <= 0:
+        raise ValueError(
+            "nonconstant pair-day differences require a positive finite standard deviation"
+        )
+    statistic = mean / (standard_deviation / math.sqrt(n))
+    return statistic, float(2 * stats.t.sf(abs(statistic), n - 1))
+
+
 def _load_module(name: str, file: str):
     path = SCRIPTS / file
     spec = importlib.util.spec_from_file_location(name, path)
@@ -120,63 +285,95 @@ def stress_window_and_placebo() -> pd.DataFrame:
     return out
 
 
-def route_cost_decomposition() -> pd.DataFrame:
-    panel = pd.read_parquet(DATA / "empirical" / "route_cost_panel_v2.parquet")
-    d = panel[panel["vehicle_sym"].eq("WETH")].copy()
-    d["direct_quality"] = d["direct_output_usd"] / d["trade_size_usd"]
+def route_cost_decomposition(
+    panel_path: Path | None = None, *, write_outputs: bool = True
+) -> pd.DataFrame:
+    import duckdb
+    import pyarrow.parquet as pq
+
+    panel_path = panel_path or DATA / "empirical" / "route_cost_panel_v2.parquet"
+    missing = sorted(ROUTE_COST_REQUIRED_COLUMNS - set(pq.ParquetFile(panel_path).schema.names))
+    if missing:
+        raise ValueError(f"route-cost decomposition is missing columns: {', '.join(missing)}")
+    connection = duckdb.connect()
+    try:
+        connection.execute(f"SET memory_limit = '{ROUTE_COST_MEMORY_LIMIT}'")
+        connection.execute("SET preserve_insertion_order = false")
+        invalid_trade_sizes = connection.execute(
+            ROUTE_COST_TRADE_SIZE_VALIDATION_QUERY, [str(panel_path)]
+        ).fetchone()
+        invalid_names = ("null", "nonfinite", "nonpositive")
+        invalid_counts = dict(zip(invalid_names, map(int, invalid_trade_sizes), strict=True))
+        if sum(invalid_counts.values()):
+            details = ", ".join(
+                f"{name}={count}" for name, count in invalid_counts.items()
+            )
+            raise ValueError(
+                "route-cost decomposition requires positive finite WETH "
+                f"trade_size_usd values; invalid rows: {details}"
+            )
+        numeric = connection.execute(
+            ROUTE_COST_DECOMPOSITION_QUERY, [str(panel_path)]
+        ).to_arrow_table().to_pandas()
+    finally:
+        connection.close()
     rows = []
-    for size, g in d.groupby("trade_size_usd"):
-        both = g[
-            g["direct_available"]
-            & g["vehicle_available"]
-            & g["direct_cost_advantage"].notna()
-        ].copy()
-        thin = both[both["direct_quality"].lt(0.90)]
-        high = both[both["direct_quality"].ge(0.90)]
-        no_direct = g[(~g["direct_available"]) & g["vehicle_available"]]
-        grouped = (
-            both.assign(pair_day=both["date"].astype(str) + "|" + both["src"].astype(str) + "|" + both["tgt"].astype(str))
-            .groupby("pair_day", as_index=False)["direct_cost_advantage"]
-            .mean()
+    for result in numeric.itertuples(index=False):
+        n = int(result.pair_days)
+        mean = float(result.pair_day_mean) if pd.notna(result.pair_day_mean) else math.nan
+        standard_deviation = (
+            float(result.pair_day_stddev)
+            if pd.notna(result.pair_day_stddev)
+            else math.nan
         )
-        direct_advantage = grouped["direct_cost_advantage"].clip(-10, 10).to_numpy(float)
-        t, p = (
-            stats.ttest_1samp(direct_advantage, 0.0)
-            if len(direct_advantage) > 2
-            else (math.nan, math.nan)
+        minimum = float(result.pair_day_min) if pd.notna(result.pair_day_min) else math.nan
+        maximum = float(result.pair_day_max) if pd.notna(result.pair_day_max) else math.nan
+        t, p = _pair_day_ttest(
+            n=n,
+            mean=mean,
+            standard_deviation=standard_deviation,
+            minimum=minimum,
+            maximum=maximum,
         )
         rows.append({
-            "Trade size": f"${int(size):,}",
-            "Rows": _int(len(g)),
-            "Direct available (%)": _pct(g["direct_available"].mean()),
-            "WETH route available (%)": _pct(g["vehicle_available"].mean()),
-            "No-direct, WETH-available rows": _int(len(no_direct)),
-            "Common-support rows": _int(len(both)),
+            "Trade size": f"${int(result.trade_size_usd):,}",
+            "Rows": _int(result.rows),
+            "Direct available (%)": _pct(result.direct_available_share),
+            "WETH route available (%)": _pct(result.vehicle_available_share),
+            "No-direct, WETH-available rows": _int(result.no_direct_vehicle_available_rows),
+            "Common-support rows": _int(result.common_support_rows),
             "Median common-support direct cost advantage (fraction)": _num(
-                both["direct_cost_advantage"].median(), 4
+                result.common_support_median, 4
             ),
             "Median thin-direct direct cost advantage (fraction)": _num(
-                thin["direct_cost_advantage"].median(), 4
+                result.thin_direct_median, 4
             ),
             "Median high-quality-direct cost advantage (fraction)": _num(
-                high["direct_cost_advantage"].median(), 4
+                result.high_quality_direct_median, 4
             ),
+            "Nonfinite quote rows": _int(result.nonfinite_quote_rows),
+            "Impossible quote rows": _int(result.impossible_quote_rows),
             "Pair-day t": _num(t, 2),
             "p": _p(p),
         })
     out = pd.DataFrame(rows)
-    out.to_pickle(EMP / "route_cost_decomposition.pkl")
-    _write_table(
-        out,
-        "table_r12_route_cost_decomposition",
-        "Direct cost-advantage decomposition against WETH indirect routes.",
-        "tab:route-cost-decomposition",
-        note=(
-            "The table separates route availability, missing-direct-route cases, thin-direct "
-            "markets, and common-support price improvement. High-quality direct routes are "
-            "rows where direct output is at least 90 percent of notional."
-        ),
-    )
+    if write_outputs:
+        out.to_pickle(EMP / "route_cost_decomposition.pkl")
+        _write_table(
+            out,
+            "table_r12_route_cost_decomposition",
+            "Direct cost-advantage decomposition against WETH indirect routes.",
+            "tab:route-cost-decomposition",
+            note=(
+                "The table separates route availability, missing-direct-route cases, thin-direct "
+                "markets, and common-support price improvement. High-quality direct routes are "
+                "rows where direct output is at least 90 percent of notional. Nonfinite and "
+                "economically impossible quote rows are reported and excluded from statistics "
+                "that require their affected quote fields. Exact constant nonzero pair-day "
+                "differences imply an infinite t statistic and zero p-value; exact all-zero "
+                "differences leave the t-test undefined."
+            ),
+        )
     return out
 
 
