@@ -9,7 +9,6 @@ import gzip
 import hashlib
 import json
 from pathlib import Path
-import tempfile
 from typing import Iterable, Iterator, Mapping
 
 from eth_abi import decode as abi_decode, encode as abi_encode
@@ -18,6 +17,11 @@ import pandas as pd
 import pyarrow.parquet as pq
 
 from ddvc.amounts import human_to_raw
+from ddvc.artifact_release import (
+    ArtifactRelease,
+    publish_artifact_release,
+    resolve_artifact_release,
+)
 from ddvc.ethereum_day_cuts import (
     RAW_DAY_BOUND_ROOT,
     day_bound_path,
@@ -55,21 +59,14 @@ from ddvc.graph_event_order import (
     semantic_mapping_sha256,
 )
 from ddvc.paths import V2_AUDITED_TOKEN_DECIMALS_REGISTRY, DATA_DIR, OUTPUT_DIR, REPO_ROOT
-from ddvc.provenance import (
-    code_fingerprint,
-    describe_input,
-    install_stamped_artifact,
-    prepare_stamp,
-    sidecar_path,
-    verify,
-)
+from ddvc.provenance import sidecar_path
 from ddvc.quoter import (
     RpcEnvelope,
     canonical_json_sha256 as _canonical_json_sha256,
     coerce_rpc_envelope,
     validate_rpc_attempts,
 )
-from ddvc.runtime import interruptible_thread_pool, serialized_output_install
+from ddvc.runtime import interruptible_thread_pool
 from ddvc.token_decimals import (
     token_decimals_registry_sha256,
     validate_token_decimals_registry,
@@ -110,6 +107,7 @@ V2_EVENT_SOURCE_SUMMARY = DATA_DIR / "processed" / "v2_core_event_source_audit.p
 V2_EVENT_SOURCE_EXCEPTIONS = DATA_DIR / "processed" / "v2_core_event_source_exceptions.parquet"
 V2_EVENT_SOURCE_CERTIFICATE = OUTPUT_DIR / "exhibits" / "v2_core_event_source_certificate.json"
 V2_EVENT_SOURCE_RELEASE_SCHEMA_VERSION = 1
+V2_EVENT_SOURCE_RELEASE_KIND = "v2_event_source_release"
 V2_EVENT_SOURCE_RELEASE_ROOT = DATA_DIR / "processed" / "v2_core_event_source_release"
 V2_EVENT_SOURCE_CURRENT = V2_EVENT_SOURCE_RELEASE_ROOT / "current.json"
 V2_EVENT_SOURCE_RELEASE_FILENAMES = {
@@ -180,6 +178,20 @@ class V2EventSourceRelease:
     @property
     def lineage_paths(self) -> tuple[Path, ...]:
         return self.pointer_path, *self.artifact_paths, *self.provenance_paths
+
+
+def _v2_event_source_release(release: ArtifactRelease) -> V2EventSourceRelease:
+    """Expose the established V2 path API over the shared bundle owner."""
+
+    if set(release.artifacts) != set(V2_EVENT_SOURCE_RELEASE_FILENAMES):
+        raise ValueError("V2 event-source release has an unexpected artifact perimeter")
+    return V2EventSourceRelease(
+        generation_id=release.generation_id,
+        pointer_path=release.pointer_path,
+        summary_path=release.artifacts["summary"],
+        exceptions_path=release.artifacts["exceptions"],
+        certificate_path=release.artifacts["certificate"],
+    )
 
 
 def v2_exact_log_ranges(start_block: int, end_block: int) -> list[tuple[int, int]]:
@@ -2679,111 +2691,29 @@ def validate_v2_event_source_evidence_bundle(
     return sum(len(pools) for pools in pools_by_venue.values()), leaf_count
 
 
-def _v2_event_source_generation_id(
-    artifact_sha256: Mapping[str, str],
-    build_identity_sha256: str,
-) -> str:
-    identity = {
-        "artifacts": dict(sorted(artifact_sha256.items())),
-        "build_identity_sha256": build_identity_sha256,
-    }
-    return _canonical_json_sha256(identity)
-
-
-def _v2_event_source_generation_paths(
-    release_root: Path,
-    generation_id: str,
-) -> dict[str, Path]:
-    directory = release_root / "generations" / generation_id
-    return {
-        name: directory / filename
-        for name, filename in V2_EVENT_SOURCE_RELEASE_FILENAMES.items()
-    }
-
-
-def _read_v2_event_source_pointer(pointer_path: Path) -> dict[str, object]:
-    if not pointer_path.is_file():
-        if pointer_path == V2_EVENT_SOURCE_CURRENT and any(
-            path.is_file()
-            for path in (
-                V2_EVENT_SOURCE_SUMMARY,
-                V2_EVENT_SOURCE_EXCEPTIONS,
-                V2_EVENT_SOURCE_CERTIFICATE,
-            )
-        ):
-            raise RuntimeError("legacy flat V2 event-source artifacts require regeneration")
-        raise FileNotFoundError(f"missing V2 event-source current pointer: {pointer_path}")
-    try:
-        pointer = json.loads(pointer_path.read_text(encoding="utf-8"))
-    except (OSError, json.JSONDecodeError) as error:
-        raise ValueError("V2 event-source current pointer is not valid JSON") from error
-    if not isinstance(pointer, dict):
-        raise ValueError("V2 event-source current pointer is not a JSON object")
-    return pointer
-
-
 def resolve_v2_event_source_release(
     pointer_path: Path = V2_EVENT_SOURCE_CURRENT,
 ) -> V2EventSourceRelease:
     """Resolve and hash-verify the one marker-released V2 generation."""
 
     pointer_path = Path(pointer_path)
-    pointer = _read_v2_event_source_pointer(pointer_path)
-    generation_id = pointer.get("generation_id")
-    build_identity_sha256 = pointer.get("build_identity_sha256")
-    artifacts = pointer.get("artifacts")
-    if (
-        pointer.get("schema_version") != V2_EVENT_SOURCE_RELEASE_SCHEMA_VERSION
-        or pointer.get("kind") != "v2_event_source_release"
-        or not _is_sha256(generation_id)
-        or not _is_sha256(build_identity_sha256)
-        or not isinstance(artifacts, dict)
-        or set(artifacts) != set(V2_EVENT_SOURCE_RELEASE_FILENAMES)
+    if not pointer_path.is_file() and pointer_path == V2_EVENT_SOURCE_CURRENT and any(
+        path.is_file()
+        for path in (
+            V2_EVENT_SOURCE_SUMMARY,
+            V2_EVENT_SOURCE_EXCEPTIONS,
+            V2_EVENT_SOURCE_CERTIFICATE,
+        )
     ):
-        raise ValueError("invalid V2 event-source current pointer")
-    artifact_sha256: dict[str, str] = {}
-    provenance_sha256: dict[str, str] = {}
-    for name, filename in V2_EVENT_SOURCE_RELEASE_FILENAMES.items():
-        record = artifacts.get(name)
-        if (
-            not isinstance(record, dict)
-            or record.get("filename") != filename
-            or not _is_sha256(record.get("sha256"))
-            or not _is_sha256(record.get("provenance_sha256"))
-        ):
-            raise ValueError(f"invalid V2 event-source pointer record: {name}")
-        artifact_sha256[name] = str(record["sha256"])
-        provenance_sha256[name] = str(record["provenance_sha256"])
-    if _v2_event_source_generation_id(artifact_sha256, str(build_identity_sha256)) != generation_id:
-        raise ValueError("V2 event-source generation identity disagrees with its pointer")
-    paths = _v2_event_source_generation_paths(pointer_path.parent, str(generation_id))
-    missing = [path.name for path in paths.values() if not path.is_file()]
-    if missing:
-        raise FileNotFoundError(f"partial V2 event-source generation: missing={missing}")
-    for name, path in paths.items():
-        if _file_sha256(path) != artifact_sha256[name]:
-            raise ValueError(f"V2 event-source generation artifact digest disagrees: {name}")
-        provenance_path = sidecar_path(path)
-        if not provenance_path.is_file():
-            raise FileNotFoundError(f"V2 event-source generation lacks provenance: {name}")
-        if _file_sha256(provenance_path) != provenance_sha256[name]:
-            raise ValueError(f"V2 event-source generation provenance digest disagrees: {name}")
-        try:
-            provenance = json.loads(provenance_path.read_text(encoding="utf-8"))
-        except (OSError, json.JSONDecodeError) as error:
-            raise ValueError(f"V2 event-source generation provenance is invalid: {name}") from error
-        if not isinstance(provenance, dict) or provenance.get("artefact") != describe_input(path).get("path"):
-            raise ValueError(f"V2 event-source generation provenance identifies a different target: {name}")
-        recorded_digest = provenance.get("artefact_sha256")
-        if recorded_digest is not None and recorded_digest != artifact_sha256[name]:
-            raise ValueError(f"V2 event-source generation provenance identifies different content: {name}")
-    return V2EventSourceRelease(
-        generation_id=str(generation_id),
-        pointer_path=pointer_path,
-        summary_path=paths["summary"],
-        exceptions_path=paths["exceptions"],
-        certificate_path=paths["certificate"],
+        raise RuntimeError("legacy flat V2 event-source artifacts require regeneration")
+    release = resolve_artifact_release(
+        pointer_path,
+        kind=V2_EVENT_SOURCE_RELEASE_KIND,
+        schema_version=V2_EVENT_SOURCE_RELEASE_SCHEMA_VERSION,
+        filenames=V2_EVENT_SOURCE_RELEASE_FILENAMES,
+        require_current_provenance=True,
     )
+    return _v2_event_source_release(release)
 
 
 def _write_v2_event_source_pointer(pointer_path: Path, pointer: dict[str, object]) -> None:
@@ -2803,74 +2733,47 @@ def publish_v2_event_source_release(
     """Install, stamp, reopen, and marker-release one immutable generation."""
 
     pointer_path = Path(pointer_path)
-    release_root = pointer_path.parent
-    release_root.mkdir(parents=True, exist_ok=True)
     resolved_inputs = list(inputs or [])
-    with serialized_output_install(pointer_path):
-        current = resolve_v2_event_source_release(pointer_path) if pointer_path.is_file() else None
-        with tempfile.TemporaryDirectory(prefix=".v2-event-source-", dir=release_root) as temporary_directory:
-            staged = {
-                name: Path(temporary_directory) / filename
-                for name, filename in V2_EVENT_SOURCE_RELEASE_FILENAMES.items()
-            }
-            summary.to_parquet(staged["summary"], index=False)
-            exceptions.to_parquet(staged["exceptions"], index=False)
-            write_json(staged["certificate"], certificate)
-            pd.testing.assert_frame_equal(summary, pd.read_parquet(staged["summary"]), check_dtype=True)
-            pd.testing.assert_frame_equal(exceptions, pd.read_parquet(staged["exceptions"]), check_dtype=True)
-            reopened_certificate = json.loads(staged["certificate"].read_text(encoding="utf-8"))
-            if reopened_certificate != certificate:
-                raise ValueError("staged V2 event-source certificate does not round-trip exactly")
-            artifact_sha256 = {name: _file_sha256(path) for name, path in staged.items()}
-            described_inputs = sorted(
-                (describe_input(path) for path in resolved_inputs),
-                key=lambda record: json.dumps(record, sort_keys=True, separators=(",", ":")),
-            )
-            build_identity = {
-                "code_fingerprint": code_fingerprint(code_sources),
-                "inputs": described_inputs,
-                "notes": notes,
-            }
-            build_identity_sha256 = _canonical_json_sha256(build_identity)
-            generation_id = _v2_event_source_generation_id(artifact_sha256, build_identity_sha256)
-            if current is not None and current.generation_id == generation_id:
-                return current
-            targets = _v2_event_source_generation_paths(release_root, generation_id)
-            for name, target in targets.items():
-                prepared = prepare_stamp(
-                    target,
-                    content_path=staged[name],
-                    code_sources=code_sources,
-                    inputs=resolved_inputs,
-                    rows=1 if name == "certificate" else len(summary if name == "summary" else exceptions),
-                    notes=notes,
-                )
-                install_stamped_artifact(staged[name], target, prepared)
-            pd.testing.assert_frame_equal(summary, pd.read_parquet(targets["summary"]), check_dtype=True)
-            pd.testing.assert_frame_equal(exceptions, pd.read_parquet(targets["exceptions"]), check_dtype=True)
-            installed_certificate = json.loads(targets["certificate"].read_text(encoding="utf-8"))
-            if installed_certificate != certificate:
-                raise ValueError("installed V2 event-source certificate does not round-trip exactly")
-            verdicts = {name: verify(path) for name, path in targets.items()}
-            stale = {name: verdict.get("status") for name, verdict in verdicts.items() if verdict.get("status") != "ok"}
-            if stale:
-                raise RuntimeError(f"V2 event-source generation is not current before release: {stale}")
-            pointer = {
-                "schema_version": V2_EVENT_SOURCE_RELEASE_SCHEMA_VERSION,
-                "kind": "v2_event_source_release",
-                "generation_id": generation_id,
-                "build_identity_sha256": build_identity_sha256,
-                "artifacts": {
-                    name: {
-                        "filename": V2_EVENT_SOURCE_RELEASE_FILENAMES[name],
-                        "sha256": artifact_sha256[name],
-                        "provenance_sha256": _file_sha256(sidecar_path(targets[name])),
-                    }
-                    for name in V2_EVENT_SOURCE_RELEASE_FILENAMES
-                },
-            }
-            _write_v2_event_source_pointer(pointer_path, pointer)
-        return resolve_v2_event_source_release(pointer_path)
+
+    def validate(paths: Mapping[str, Path]) -> None:
+        pd.testing.assert_frame_equal(
+            summary,
+            pd.read_parquet(paths["summary"]),
+            check_dtype=True,
+        )
+        pd.testing.assert_frame_equal(
+            exceptions,
+            pd.read_parquet(paths["exceptions"]),
+            check_dtype=True,
+        )
+        reopened_certificate = json.loads(
+            paths["certificate"].read_text(encoding="utf-8")
+        )
+        if reopened_certificate != certificate:
+            raise ValueError("V2 event-source certificate does not round-trip exactly")
+
+    release = publish_artifact_release(
+        pointer_path=pointer_path,
+        kind=V2_EVENT_SOURCE_RELEASE_KIND,
+        schema_version=V2_EVENT_SOURCE_RELEASE_SCHEMA_VERSION,
+        filenames=V2_EVENT_SOURCE_RELEASE_FILENAMES,
+        writers={
+            "summary": lambda path: summary.to_parquet(path, index=False),
+            "exceptions": lambda path: exceptions.to_parquet(path, index=False),
+            "certificate": lambda path: write_json(path, certificate),
+        },
+        row_counts={
+            "summary": len(summary),
+            "exceptions": len(exceptions),
+            "certificate": 1,
+        },
+        code_sources=code_sources,
+        inputs=resolved_inputs,
+        notes=notes,
+        validate_staged=validate,
+        write_pointer=_write_v2_event_source_pointer,
+    )
+    return _v2_event_source_release(release)
 
 
 def read_v2_event_source_certificate(

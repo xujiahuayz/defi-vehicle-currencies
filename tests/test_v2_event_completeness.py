@@ -29,9 +29,15 @@ from ddvc.ethereum_logs import (
     rpc_post_with_evidence,
     write_exact_log_chunk,
 )
-from ddvc.fetch.raw import write_jsonl_gz
+from ddvc.fetch.raw import write_json, write_jsonl_gz
 from ddvc.fetch.sources import get_source
 from ddvc.graph_event_order import SCHEMA_VERSION as EVENT_ORDER_SCHEMA_VERSION
+from ddvc.provenance import (
+    code_fingerprint,
+    install_stamped_artifact,
+    prepare_stamp,
+    sidecar_path,
+)
 from ddvc.quoter import Throttled, canonical_json_sha256, sanitized_endpoint_identity
 from ddvc.v2_event_completeness import (
     ALL_PAIRS_LENGTH_SELECTOR,
@@ -101,6 +107,77 @@ TOKEN0 = "0x" + "1" * 40
 TOKEN1 = "0x" + "2" * 40
 TX = "0x" + "b" * 64
 INJECTED_ENDPOINT = {"host": "injected", "endpoint_sha256": "0" * 64}
+
+
+def publish_legacy_v2_event_source_release(
+    pointer_path,
+    summary: pd.DataFrame,
+    exceptions: pd.DataFrame,
+    certificate: dict[str, object],
+) -> dict[str, object]:
+    """Create the pre-migration three-artifact pointer format for compatibility tests."""
+
+    import ddvc.v2_event_completeness as completeness
+
+    code_sources = ["src/ddvc/v2_event_completeness.py"]
+    notes = "legacy test bundle"
+    staged_root = pointer_path.parent / "legacy-stage"
+    staged_root.mkdir(parents=True)
+    staged = {
+        name: staged_root / filename
+        for name, filename in completeness.V2_EVENT_SOURCE_RELEASE_FILENAMES.items()
+    }
+    summary.to_parquet(staged["summary"], index=False)
+    exceptions.to_parquet(staged["exceptions"], index=False)
+    write_json(staged["certificate"], certificate)
+    artifact_sha256 = {name: file_sha256(path) for name, path in staged.items()}
+    build_identity_sha256 = canonical_json_sha256(
+        {
+            "code_fingerprint": code_fingerprint(code_sources),
+            "inputs": [],
+            "notes": notes,
+        }
+    )
+    generation_id = canonical_json_sha256(
+        {
+            "artifacts": dict(sorted(artifact_sha256.items())),
+            "build_identity_sha256": build_identity_sha256,
+        }
+    )
+    targets = {
+        name: pointer_path.parent / "generations" / generation_id / filename
+        for name, filename in completeness.V2_EVENT_SOURCE_RELEASE_FILENAMES.items()
+    }
+    for name, target in targets.items():
+        prepared = prepare_stamp(
+            target,
+            content_path=staged[name],
+            code_sources=code_sources,
+            inputs=[],
+            rows=(
+                1
+                if name == "certificate"
+                else len(summary if name == "summary" else exceptions)
+            ),
+            notes=notes,
+        )
+        install_stamped_artifact(staged[name], target, prepared)
+    pointer = {
+        "schema_version": completeness.V2_EVENT_SOURCE_RELEASE_SCHEMA_VERSION,
+        "kind": completeness.V2_EVENT_SOURCE_RELEASE_KIND,
+        "generation_id": generation_id,
+        "build_identity_sha256": build_identity_sha256,
+        "artifacts": {
+            name: {
+                "filename": completeness.V2_EVENT_SOURCE_RELEASE_FILENAMES[name],
+                "sha256": artifact_sha256[name],
+                "provenance_sha256": file_sha256(sidecar_path(targets[name])),
+            }
+            for name in completeness.V2_EVENT_SOURCE_RELEASE_FILENAMES
+        },
+    }
+    write_json(pointer_path, pointer)
+    return pointer
 
 
 def successful_rpc_attempt(endpoint: dict[str, str]) -> dict[str, object]:
@@ -2499,6 +2576,101 @@ def test_v2_event_source_release_pointer_is_marker_last_and_crash_safe(tmp_path,
         assert completeness.sidecar_path(artifact).is_file()
 
 
+def test_v2_event_source_release_adapter_preserves_public_path_contract(tmp_path) -> None:
+    pointer_path = tmp_path / "release" / "current.json"
+    release = publish_v2_event_source_release(
+        pd.DataFrame({"events": [1]}),
+        pd.DataFrame({"status": ["none"]}),
+        {"status": "pass"},
+        code_sources=["src/ddvc/v2_event_completeness.py"],
+        pointer_path=pointer_path,
+    )
+
+    assert release.artifact_paths == (
+        release.summary_path,
+        release.exceptions_path,
+        release.certificate_path,
+    )
+    assert release.provenance_paths == tuple(
+        sidecar_path(path) for path in release.artifact_paths
+    )
+    assert release.lineage_paths == (
+        pointer_path,
+        *release.artifact_paths,
+        *release.provenance_paths,
+    )
+
+
+def test_v2_event_source_release_reopens_and_supersedes_legacy_pointer(tmp_path) -> None:
+    pointer_path = tmp_path / "release" / "current.json"
+    summary = pd.DataFrame({"events": [1]})
+    exceptions = pd.DataFrame({"status": ["none"]})
+    certificate = {"status": "pass"}
+    legacy_pointer = publish_legacy_v2_event_source_release(
+        pointer_path,
+        summary,
+        exceptions,
+        certificate,
+    )
+
+    legacy = resolve_v2_event_source_release(pointer_path)
+    assert legacy.generation_id == legacy_pointer["generation_id"]
+    observed = read_v2_event_source_certificate(pointer_path=pointer_path)
+    pd.testing.assert_frame_equal(observed[0], summary)
+    pd.testing.assert_frame_equal(observed[1], exceptions)
+    assert observed[2] == certificate
+
+    migrated = publish_v2_event_source_release(
+        summary,
+        exceptions,
+        certificate,
+        code_sources=["src/ddvc/v2_event_completeness.py"],
+        pointer_path=pointer_path,
+    )
+    assert migrated.generation_id != legacy.generation_id
+    assert legacy.summary_path.is_file()
+    assert resolve_v2_event_source_release(pointer_path).generation_id == migrated.generation_id
+
+
+def test_v2_event_source_release_staging_failure_cleans_up_and_preserves_pointer(
+    tmp_path,
+    monkeypatch,
+) -> None:
+    import ddvc.v2_event_completeness as completeness
+
+    pointer_path = tmp_path / "release" / "current.json"
+    first = publish_v2_event_source_release(
+        pd.DataFrame({"events": [1]}),
+        pd.DataFrame({"status": ["none"]}),
+        {"status": "pass", "version": 1},
+        code_sources=["src/ddvc/v2_event_completeness.py"],
+        pointer_path=pointer_path,
+    )
+    pointer_before = pointer_path.read_bytes()
+    real_write_json = completeness.write_json
+
+    def fail_staged_certificate(path, payload):
+        if path.name == "certificate.json" and path.parent.name.startswith(
+            ".v2_event_source_release-"
+        ):
+            raise RuntimeError("injected staged certificate failure")
+        real_write_json(path, payload)
+
+    monkeypatch.setattr(completeness, "write_json", fail_staged_certificate)
+    with pytest.raises(RuntimeError, match="staged certificate failure"):
+        publish_v2_event_source_release(
+            pd.DataFrame({"events": [2]}),
+            pd.DataFrame({"status": ["none"]}),
+            {"status": "pass", "version": 2},
+            code_sources=["src/ddvc/v2_event_completeness.py"],
+            pointer_path=pointer_path,
+        )
+
+    assert pointer_path.read_bytes() == pointer_before
+    assert resolve_v2_event_source_release(pointer_path).generation_id == first.generation_id
+    assert not list(pointer_path.parent.glob(".v2_event_source_release-*"))
+
+
 def test_v2_event_source_release_reader_rejects_missing_and_tampered_generation(tmp_path) -> None:
     pointer_path = tmp_path / "release" / "current.json"
     release = publish_v2_event_source_release(
@@ -2512,7 +2684,7 @@ def test_v2_event_source_release_reader_rejects_missing_and_tampered_generation(
     with pytest.raises(ValueError, match="artifact digest disagrees: certificate"):
         read_v2_event_source_certificate(pointer_path=pointer_path)
     release.certificate_path.unlink()
-    with pytest.raises(FileNotFoundError, match="partial V2 event-source generation"):
+    with pytest.raises(FileNotFoundError, match="partial v2_event_source_release generation"):
         read_v2_event_source_certificate(pointer_path=pointer_path)
 
 
@@ -2534,7 +2706,32 @@ def test_v2_event_source_release_binds_provenance_to_the_resolved_target(tmp_pat
     pointer = json.loads(pointer_path.read_text(encoding="utf-8"))
     pointer["artifacts"]["summary"]["provenance_sha256"] = file_sha256(provenance_path)
     pointer_path.write_text(json.dumps(pointer, sort_keys=True) + "\n", encoding="utf-8")
-    with pytest.raises(ValueError, match="provenance identifies a different target: summary"):
+    with pytest.raises(ValueError, match="provenance identifies different content: summary"):
+        resolve_v2_event_source_release(pointer_path)
+
+
+def test_v2_event_source_release_rejects_stale_provenance_with_current_pointer_digest(
+    tmp_path,
+) -> None:
+    pointer_path = tmp_path / "release" / "current.json"
+    release = publish_v2_event_source_release(
+        pd.DataFrame({"events": [1]}),
+        pd.DataFrame({"status": ["none"]}),
+        {"status": "pass"},
+        code_sources=["src/ddvc/v2_event_completeness.py"],
+        pointer_path=pointer_path,
+    )
+    provenance_path = sidecar_path(release.summary_path)
+    provenance = json.loads(provenance_path.read_text(encoding="utf-8"))
+    provenance["code_fingerprint"] = "0" * 64
+    write_json(provenance_path, provenance)
+    pointer = json.loads(pointer_path.read_text(encoding="utf-8"))
+    pointer["artifacts"]["summary"]["provenance_sha256"] = file_sha256(
+        provenance_path
+    )
+    write_json(pointer_path, pointer)
+
+    with pytest.raises(ValueError, match="provenance is not current: summary"):
         resolve_v2_event_source_release(pointer_path)
 
 
