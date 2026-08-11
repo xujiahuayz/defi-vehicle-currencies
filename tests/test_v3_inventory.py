@@ -50,7 +50,7 @@ from ddvc.v3_inventory_calendar import (
     _fetch_block_timestamp,
     last_block_before_timestamp,
 )
-from ddvc.quoter import Throttled
+from ddvc.quoter import RpcSemanticError, Throttled
 from scripts.build_v3_inventory_panel import (
     CODE_SOURCES as PANEL_CODE_SOURCES,
     inventory_perimeter,
@@ -504,6 +504,29 @@ def test_fetch_queue_retries_throttled_chunk_without_abandoning_other_work() -> 
     assert totals == {"raw": 2}
     assert failures == []
     assert calls == {(1, 1): 2, (2, 2): 1}
+
+
+def test_fetch_queue_records_semantic_rpc_failure_without_abandoning_other_work() -> None:
+    frozen = frozen_upper(2)
+
+    def fetch(
+        lower: int,
+        upper: int,
+        _frozen_upper: dict[str, object],
+    ) -> dict[str, int]:
+        if (lower, upper) == (1, 1):
+            raise RpcSemanticError("invalid upstream response")
+        return {"raw_logs": 1}
+
+    totals, failures = run_fetch_jobs(
+        [(1, 1), (2, 2)],
+        frozen,
+        workers=1,
+        max_attempts=2,
+        fetch=fetch,
+    )
+    assert totals == {"raw": 1}
+    assert failures == [(1, 1, "invalid upstream response")]
 
 
 def test_inventory_retry_reason_redacts_endpoints_and_bounds_output() -> None:

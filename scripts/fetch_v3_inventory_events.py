@@ -22,7 +22,7 @@ from ddvc.ethereum_logs import (
 )
 from ddvc.fetch.raw import write_json
 from ddvc.paths import DATA_DIR, RAW_MARKET_DATA_LOCK, V3_INVENTORY_RAW_ROOT
-from ddvc.quoter import Throttled
+from ddvc.quoter import RpcSemanticError, Throttled
 from ddvc.runtime import atomic_output, exclusive_job, interruptible_thread_pool
 from ddvc.v3_inventory import (
     EVENT_TOPICS,
@@ -284,6 +284,9 @@ def run_fetch_jobs(
                         )
                     else:
                         failures.append((lower, upper, reason))
+                    continue
+                except RpcSemanticError as error:
+                    failures.append((lower, upper, safe_retry_reason(error)))
                     continue
                 totals["raw"] += int(result["raw_logs"])
                 complete += 1
