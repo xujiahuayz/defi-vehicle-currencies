@@ -4,12 +4,32 @@
 from __future__ import annotations
 
 import argparse
+from collections.abc import Iterator
+from contextlib import contextmanager
 from pathlib import Path
 
-from ddvc.paths import RAW_MARKET_DATA_LOCK, V3_INVENTORY_RAW_ROOT
-from ddvc.runtime import exclusive_job
+from ddvc.paths import (
+    RAW_MARKET_DATA_LOCK,
+    V3_INVENTORY_RANGE_LOCK_ROOT,
+    V3_INVENTORY_RAW_ROOT,
+)
+from ddvc.runtime import exclusive_interval_job, exclusive_job
 from ddvc.v3_inventory import INVENTORY_CHUNK_SIZE, assemble_inventory_shards
 from ddvc.v3_pool_registry import V3_FACTORY_DEPLOYMENT_BLOCK, load_certified_frozen_upper
+
+
+@contextmanager
+def inventory_assembly_ownership(*, terminal: int) -> Iterator[None]:
+    """Exclude publication peers and every in-flight V3 fetch interval."""
+
+    with exclusive_job(RAW_MARKET_DATA_LOCK, job="V3 inventory shard assembly"):
+        with exclusive_interval_job(
+            V3_INVENTORY_RANGE_LOCK_ROOT,
+            V3_FACTORY_DEPLOYMENT_BLOCK,
+            terminal,
+            job="V3 inventory shard assembly",
+        ):
+            yield
 
 
 def main() -> int:
@@ -30,7 +50,7 @@ def main() -> int:
         (Path(root), (int(lower), int(upper)))
         for root, lower, upper in args.source
     ]
-    with exclusive_job(RAW_MARKET_DATA_LOCK, job="V3 inventory shard assembly"):
+    with inventory_assembly_ownership(terminal=int(frozen_upper["block_number"])):
         record = assemble_inventory_shards(
             sources,
             args.destination,

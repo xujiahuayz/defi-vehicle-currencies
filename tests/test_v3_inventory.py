@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+from collections import Counter
+from dataclasses import replace
 from eth_abi import encode as abi_encode
 import gzip
 import hashlib
@@ -12,6 +14,8 @@ import pandas as pd
 import pyarrow.parquet as pq
 import pytest
 
+import scripts.assemble_v3_inventory_event_shards as assemble_v3_inventory_event_shards
+import scripts.fetch_v3_inventory_events as fetch_v3_inventory_events
 from ddvc.ethereum_logs import file_sha256
 from ddvc.fetch.sources import get_source
 from ddvc.v3_inventory import (
@@ -56,9 +60,11 @@ from scripts.build_v3_inventory_panel import (
     inventory_perimeter,
 )
 from scripts.audit_v3_inventory_balances import audit_sample_table
-from scripts.audit_v3_graph_event_completeness import (
+from ddvc.v3_event_completeness import (
+    V3EventPayload,
+    V3PoolAuthority,
+    canonical_event_map,
     compare_event_maps,
-    graph_core_events,
 )
 from scripts.fetch_v3_inventory_events import (
     default_start_block,
@@ -71,6 +77,15 @@ from scripts.fetch_v3_inventory_events import (
 
 
 def log(event: str, values: list[int], types: list[str]) -> dict:
+    topics = [EVENT_TOPICS[event]]
+    if event in {"mint", "burn"}:
+        topics.extend(
+            [
+                "0x" + "00" * 32,
+                "0x" + abi_encode(["int24"], [-120]).hex(),
+                "0x" + abi_encode(["int24"], [120]).hex(),
+            ]
+        )
     return {
         "address": "0xpool",
         "blockNumber": "0x64",
@@ -78,7 +93,7 @@ def log(event: str, values: list[int], types: list[str]) -> dict:
         "logIndex": "0x7",
         "transactionHash": "0xtx",
         "transactionIndex": "0x2",
-        "topics": [EVENT_TOPICS[event]],
+        "topics": topics,
         "data": "0x" + abi_encode(types, values).hex(),
     }
 
@@ -204,6 +219,8 @@ def test_raw_mint_uses_exact_integer_transfer_amounts() -> None:
     decoded = decode_inventory_log(mint)
     assert decoded["amount0_delta_raw"] == 775_343_764_933_267_394_725_819_694_029
     assert decoded["amount1_delta_raw"] == 10**18
+    assert decoded["liquidity_amount"] == 99
+    assert (decoded["tick_lower"], decoded["tick_upper"]) == (-120, 120)
 
 
 def test_raw_swap_uses_exact_signed_integer_transfer_amounts() -> None:
@@ -215,6 +232,9 @@ def test_raw_swap_uses_exact_signed_integer_transfer_amounts() -> None:
     decoded = decode_inventory_log(swap)
     assert decoded["amount0_delta_raw"] == -123
     assert decoded["amount1_delta_raw"] == 456
+    assert decoded["sqrt_price_x96"] == 2**96
+    assert decoded["active_liquidity"] == 999
+    assert decoded["tick"] == -12
 
 
 def test_burn_is_not_a_physical_inventory_transfer() -> None:
@@ -248,6 +268,15 @@ def test_burn_is_not_a_physical_inventory_transfer() -> None:
 
 def test_graph_source_audit_converts_large_decimal_amounts_exactly() -> None:
     item = static()
+    authority = V3PoolAuthority(
+        item.pool,
+        item.token0,
+        item.token1,
+        item.decimals0,
+        item.decimals1,
+        3_000,
+        60,
+    )
     frame = pd.DataFrame(
         [
             {
@@ -257,8 +286,18 @@ def test_graph_source_audit_converts_large_decimal_amounts_exactly() -> None:
                 "block_number": 100,
                 "log_index": 7,
                 "tx_hash": "0xtx",
+                "timestamp": 1_700_000_000,
+                "token0_raw": item.token0,
+                "token1_raw": item.token1,
+                "decimals0": item.decimals0,
+                "decimals1": item.decimals1,
                 "amount0": "775343764933267394725819.694029",
                 "amount1": "1",
+                "liquidity_delta": 99,
+                "tick_lower": -120,
+                "tick_upper": 120,
+                "sqrt_price_x96": None,
+                "tick": None,
             },
             {
                 "pool": item.pool,
@@ -267,43 +306,72 @@ def test_graph_source_audit_converts_large_decimal_amounts_exactly() -> None:
                 "block_number": 101,
                 "log_index": 8,
                 "tx_hash": "0xburn",
+                "timestamp": 1_700_000_012,
+                "token0_raw": item.token0,
+                "token1_raw": item.token1,
+                "decimals0": item.decimals0,
+                "decimals1": item.decimals1,
                 "amount0": "2.5",
                 "amount1": "3",
+                "liquidity_delta": -50,
+                "tick_lower": -60,
+                "tick_upper": 60,
+                "sqrt_price_x96": None,
+                "tick": None,
             },
         ]
     )
-    events, duplicates = graph_core_events(frame, {item.pool: item})
-    assert duplicates == set()
-    assert events[("mint", 100, "0xtx", 7, item.pool)] == (
-        775_343_764_933_267_394_725_819_694_029,
-        10**18,
+    events, duplicates = canonical_event_map(frame, {item.pool: authority})
+    assert duplicates == Counter(
+        {
+            ("mint", 100, "0xtx", 7, item.pool): 1,
+            ("burn", 101, "0xburn", 8, item.pool): 1,
+        }
     )
-    assert events[("burn", 101, "0xburn", 8, item.pool)] == (
-        2_500_000,
-        3 * 10**18,
+    assert events[("mint", 100, "0xtx", 7, item.pool)].amount0_raw == (
+        775_343_764_933_267_394_725_819_694_029
     )
+    assert events[("mint", 100, "0xtx", 7, item.pool)].amount1_raw == 10**18
+    assert events[("burn", 101, "0xburn", 8, item.pool)].amount0_raw == 2_500_000
+    assert events[("burn", 101, "0xburn", 8, item.pool)].amount1_raw == 3 * 10**18
 
 
 def test_source_audit_separates_omissions_extras_and_amount_mismatches() -> None:
     mint = ("mint", 100, "0xa", 1, "0xpool")
     swap = ("swap", 101, "0xb", 2, "0xpool")
     graph_only = ("mint", 102, "0xc", 3, "0xpool")
+    payload = V3EventPayload(
+        1_700_000_000,
+        "0xtoken0",
+        "0xtoken1",
+        6,
+        18,
+        3_000,
+        60,
+        1,
+        2,
+        None,
+        None,
+        10,
+        -60,
+        60,
+    )
     summaries, exceptions = compare_event_maps(
         "20250115",
-        {mint: (1, 2), swap: (3, 4)},
-        {mint: (1, 9), graph_only: (5, 6)},
-        {graph_only},
+        {mint: payload, swap: payload},
+        {mint: replace(payload, amount1_raw=9), graph_only: payload},
+        Counter({mint: 1, graph_only: 2}),
     )
     by_type = {row["event_type"]: row for row in summaries}
-    assert by_type["swap"]["missing_from_graph"] == 1
-    assert by_type["mint"]["graph_only"] == 1
-    assert by_type["mint"]["amount_mismatches"] == 1
-    assert by_type["mint"]["graph_duplicate_identities"] == 1
+    assert by_type["swap"]["missing_from_canonical"] == 1
+    assert by_type["mint"]["canonical_only"] == 1
+    assert by_type["mint"]["payload_mismatches"] == 1
+    assert by_type["mint"]["canonical_duplicate_rows"] == 1
     assert {row["status"] for row in exceptions} == {
-        "missing_from_graph",
-        "graph_only",
-        "amount_mismatch",
-        "graph_duplicate_identity",
+        "missing_from_canonical",
+        "canonical_only",
+        "payload_mismatch",
+        "canonical_duplicate_identity",
     }
 
 
@@ -322,6 +390,79 @@ def test_raw_event_shard_bounds_must_align_to_canonical_chunks() -> None:
     validate_shard_bounds(ranges[0][0], ranges[1][1], terminal, 1_000)
     with pytest.raises(ValueError, match="align"):
         validate_shard_bounds(ranges[0][0] + 1, ranges[1][1], terminal, 1_000)
+
+
+def test_full_inventory_fetch_conflicts_with_an_active_shard() -> None:
+    start = V3_FACTORY_DEPLOYMENT_BLOCK
+    terminal = start + 199
+    with tempfile.TemporaryDirectory() as directory:
+        root = Path(directory)
+        with (
+            patch.object(
+                fetch_v3_inventory_events,
+                "RAW_MARKET_DATA_LOCK",
+                root / "raw-market.lock",
+            ),
+            patch.object(
+                fetch_v3_inventory_events,
+                "V3_INVENTORY_RANGE_LOCK_ROOT",
+                root / "ranges",
+            ),
+        ):
+            with fetch_v3_inventory_events.inventory_fetch_ownership(
+                start=start,
+                end=start + 99,
+                global_publication=False,
+            ):
+                with pytest.raises(RuntimeError, match="overlaps active V3 inventory shard fetch"):
+                    with fetch_v3_inventory_events.inventory_fetch_ownership(
+                        start=start,
+                        end=terminal,
+                        global_publication=True,
+                    ):
+                        raise AssertionError("full fetch acquired an active shard interval")
+            with fetch_v3_inventory_events.inventory_fetch_ownership(
+                start=start,
+                end=terminal,
+                global_publication=True,
+            ):
+                pass
+
+
+def test_inventory_assembly_conflicts_with_an_active_shard() -> None:
+    start = V3_FACTORY_DEPLOYMENT_BLOCK
+    terminal = start + 199
+    with tempfile.TemporaryDirectory() as directory:
+        root = Path(directory)
+        range_root = root / "ranges"
+        global_lock = root / "raw-market.lock"
+        with (
+            patch.object(
+                fetch_v3_inventory_events,
+                "V3_INVENTORY_RANGE_LOCK_ROOT",
+                range_root,
+            ),
+            patch.object(
+                assemble_v3_inventory_event_shards,
+                "RAW_MARKET_DATA_LOCK",
+                global_lock,
+            ),
+            patch.object(
+                assemble_v3_inventory_event_shards,
+                "V3_INVENTORY_RANGE_LOCK_ROOT",
+                range_root,
+            ),
+        ):
+            with fetch_v3_inventory_events.inventory_fetch_ownership(
+                start=start + 100,
+                end=terminal,
+                global_publication=False,
+            ):
+                with pytest.raises(RuntimeError, match="overlaps active V3 inventory shard fetch"):
+                    with assemble_v3_inventory_event_shards.inventory_assembly_ownership(
+                        terminal=terminal
+                    ):
+                        raise AssertionError("assembly acquired an active shard interval")
 
 
 def test_inventory_perimeter_starts_at_first_mint_or_swap_not_first_swap() -> None:

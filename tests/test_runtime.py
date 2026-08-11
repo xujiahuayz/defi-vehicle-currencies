@@ -11,6 +11,7 @@ from ddvc.paths import REPO_ROOT, _shared_git_runtime_dir, literature_papers_dir
 from ddvc.runtime import (
     atomic_output,
     bounded_workers,
+    exclusive_interval_job,
     exclusive_job,
     interruptible_process_pool,
     interruptible_thread_pool,
@@ -78,6 +79,67 @@ class RuntimeGuardTests(unittest.TestCase):
                 with self.assertRaisesRegex(RuntimeError, "test job is already running"):
                     with exclusive_job(lock_path, job="test job"):
                         self.fail("a second owner acquired the same job lock")
+
+    def test_disjoint_interval_jobs_can_run_concurrently(self) -> None:
+        with tempfile.TemporaryDirectory() as temporary_directory:
+            lock_root = Path(temporary_directory) / "ranges"
+            first_entered = threading.Event()
+            release_first = threading.Event()
+            failures: list[BaseException] = []
+
+            def hold_first() -> None:
+                try:
+                    with exclusive_interval_job(lock_root, 100, 199, job="first"):
+                        first_entered.set()
+                        release_first.wait(timeout=2)
+                except BaseException as error:
+                    failures.append(error)
+
+            thread = threading.Thread(target=hold_first)
+            thread.start()
+            self.assertTrue(first_entered.wait(timeout=1))
+            try:
+                with exclusive_interval_job(lock_root, 200, 299, job="second"):
+                    self.assertTrue(thread.is_alive())
+            finally:
+                release_first.set()
+                thread.join(timeout=2)
+            self.assertFalse(thread.is_alive())
+            self.assertEqual(failures, [])
+
+    def test_interval_job_refuses_an_inclusive_overlap(self) -> None:
+        with tempfile.TemporaryDirectory() as temporary_directory:
+            lock_root = Path(temporary_directory) / "ranges"
+            with exclusive_interval_job(lock_root, 100, 199, job="first"):
+                with self.assertRaisesRegex(
+                    RuntimeError,
+                    r"second interval \[199, 250\] overlaps active first interval",
+                ):
+                    with exclusive_interval_job(lock_root, 199, 250, job="second"):
+                        self.fail("an overlapping interval acquired ownership")
+
+    def test_interval_job_recovers_a_stale_owner_file(self) -> None:
+        with tempfile.TemporaryDirectory() as temporary_directory:
+            lock_root = Path(temporary_directory) / "ranges"
+            lock_root.mkdir()
+            stale = lock_root / "stale.owner.json"
+            stale.write_text(
+                '{"end": 199, "job": "dead", "pid": 1, "start": 100}\n',
+                encoding="utf-8",
+            )
+            with exclusive_interval_job(lock_root, 150, 250, job="replacement"):
+                self.assertFalse(stale.exists())
+                self.assertEqual(len(list(lock_root.glob("*.owner.json"))), 1)
+            self.assertEqual(list(lock_root.glob("*.owner.json")), [])
+
+    def test_interval_job_releases_ownership_after_failure(self) -> None:
+        with tempfile.TemporaryDirectory() as temporary_directory:
+            lock_root = Path(temporary_directory) / "ranges"
+            with self.assertRaisesRegex(RuntimeError, "stop"):
+                with exclusive_interval_job(lock_root, 100, 199, job="failed"):
+                    raise RuntimeError("stop")
+            with exclusive_interval_job(lock_root, 100, 199, job="replacement"):
+                pass
 
     def test_interrupted_process_pool_terminates_workers(self) -> None:
         executor = MagicMock()

@@ -32,6 +32,13 @@ from ddvc.v2_event_completeness import (
     validate_v2_event_source_certificate,
     validate_v2_event_source_evidence_bundle,
 )
+from ddvc.v3_event_completeness import (
+    read_v3_event_source_release,
+    resolve_v3_event_source_release,
+    validate_v3_event_source_certificate,
+    validate_v3_event_source_evidence_bundle,
+    v3_audit_days,
+)
 from ddvc.v4_quarantine import (
     V4_STATIC_QUARANTINE_PANEL,
     audit_v4_pool_static_conflicts,
@@ -240,6 +247,7 @@ def require_market_state_release() -> None:
 
     require_market_state_prerelease()
     require_v2_event_source_release()
+    require_v3_event_source_release()
 
 
 def require_v2_event_source_release() -> None:
@@ -263,6 +271,35 @@ def require_v2_event_source_release() -> None:
     except (FileNotFoundError, KeyError, OSError, RuntimeError, TypeError, ValueError) as error:
         raise RuntimeError(
             f"node D V2-family event-source certificate failed: {error}"
+        ) from error
+
+
+def require_v3_event_source_release() -> None:
+    """Require the current independent-chain certificate for V3 core events."""
+
+    try:
+        release = resolve_v3_event_source_release()
+        require_current_artifacts(
+            list(release.artifact_paths),
+            consumer="node D V3 market-state release",
+        )
+        summary, exceptions, quarantine, certificate = read_v3_event_source_release(
+            release
+        )
+        expected_days = v3_audit_days(UNIFIED_QUALITY_PANEL)
+        validate_v3_event_source_certificate(
+            summary,
+            exceptions,
+            quarantine,
+            certificate,
+            expected_days,
+        )
+        validate_v3_event_source_evidence_bundle(
+            certificate, summary=summary, quarantine=quarantine
+        )
+    except (FileNotFoundError, KeyError, OSError, RuntimeError, TypeError, ValueError) as error:
+        raise RuntimeError(
+            f"node D V3 event-source certificate failed: {error}"
         ) from error
 
 

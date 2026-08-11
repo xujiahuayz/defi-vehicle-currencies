@@ -93,6 +93,7 @@ def _shared_git_runtime_dir(repo_root: Path) -> Path:
 SHARED_RUNTIME_DIR = _shared_git_runtime_dir(REPO_ROOT)
 PRIMARY_REPO_ROOT = primary_checkout_root(REPO_ROOT)
 RAW_MARKET_DATA_LOCK = SHARED_RUNTIME_DIR / "raw-market-data.lock"
+V3_INVENTORY_RANGE_LOCK_ROOT = SHARED_RUNTIME_DIR / "v3-inventory-range-locks"
 EXTERNAL_WETH_USD_SOURCE_LOCK = SHARED_RUNTIME_DIR / "external-weth-usd.lock"
 
 

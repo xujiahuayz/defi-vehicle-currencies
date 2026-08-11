@@ -97,6 +97,127 @@ def exclusive_job(lock_path: Path, *, job: str) -> Iterator[None]:
         handle.close()
 
 
+def _inclusive_intervals_overlap(
+    first_start: int,
+    first_end: int,
+    second_start: int,
+    second_end: int,
+) -> bool:
+    return first_start <= second_end and second_start <= first_end
+
+
+@contextmanager
+def exclusive_interval_job(
+    lock_root: Path,
+    start: int,
+    end: int,
+    *,
+    job: str,
+) -> Iterator[None]:
+    """Own one inclusive integer interval while refusing concurrent overlaps.
+
+    A short registry lock makes stale-owner cleanup, overlap inspection, and owner
+    publication atomic. Each live owner then holds its own file lock, so disjoint
+    intervals can proceed independently after leaving the registry boundary.
+    """
+
+    if isinstance(start, bool) or isinstance(end, bool):
+        raise TypeError("interval bounds must be integers")
+    if not isinstance(start, int) or not isinstance(end, int):
+        raise TypeError("interval bounds must be integers")
+    if start > end:
+        raise ValueError(f"interval start {start} exceeds end {end}")
+    if not job.strip():
+        raise ValueError("interval job name must be non-empty")
+
+    lock_root.mkdir(parents=True, exist_ok=True)
+    registry_path = lock_root / ".registry.lock"
+    registry_handle = registry_path.open("a+")
+    owner_handle = None
+    owner_path = None
+    registry_locked = False
+    try:
+        fcntl.flock(registry_handle.fileno(), fcntl.LOCK_EX)
+        registry_locked = True
+        for candidate_path in sorted(lock_root.glob("*.owner.json")):
+            try:
+                candidate_handle = candidate_path.open("a+", encoding="utf-8")
+            except FileNotFoundError:
+                continue
+            try:
+                try:
+                    fcntl.flock(
+                        candidate_handle.fileno(),
+                        fcntl.LOCK_EX | fcntl.LOCK_NB,
+                    )
+                except BlockingIOError:
+                    candidate_handle.seek(0)
+                    try:
+                        candidate = json.load(candidate_handle)
+                        candidate_start = int(candidate["start"])
+                        candidate_end = int(candidate["end"])
+                    except (KeyError, TypeError, ValueError, json.JSONDecodeError) as exc:
+                        raise RuntimeError(
+                            f"{job} cannot inspect active interval owner metadata: "
+                            f"{candidate_path.name}"
+                        ) from exc
+                    if _inclusive_intervals_overlap(
+                        start,
+                        end,
+                        candidate_start,
+                        candidate_end,
+                    ):
+                        active_job = candidate.get("job", "unknown job")
+                        active_pid = candidate.get("pid", "unknown")
+                        active_started = candidate.get("started_at_utc", "unknown")
+                        raise RuntimeError(
+                            f"{job} interval [{start}, {end}] overlaps active "
+                            f"{active_job} interval [{candidate_start}, {candidate_end}]; "
+                            f"pid={active_pid}; started_at_utc={active_started}"
+                        )
+                else:
+                    candidate_path.unlink(missing_ok=True)
+                    fcntl.flock(candidate_handle.fileno(), fcntl.LOCK_UN)
+            finally:
+                candidate_handle.close()
+
+        descriptor, owner_name = tempfile.mkstemp(
+            dir=lock_root,
+            prefix=f"range-{start}-{end}-",
+            suffix=".owner.json",
+        )
+        owner_path = Path(owner_name)
+        owner_handle = os.fdopen(descriptor, "w+", encoding="utf-8")
+        fcntl.flock(owner_handle.fileno(), fcntl.LOCK_EX | fcntl.LOCK_NB)
+        owner = {
+            "argv": sys.argv,
+            "end": end,
+            "job": job,
+            "pid": os.getpid(),
+            "start": start,
+            "started_at_utc": datetime.now(timezone.utc).isoformat(),
+        }
+        json.dump(owner, owner_handle, sort_keys=True)
+        owner_handle.write("\n")
+        owner_handle.flush()
+        os.fsync(owner_handle.fileno())
+        fcntl.flock(registry_handle.fileno(), fcntl.LOCK_UN)
+        registry_locked = False
+        yield
+    finally:
+        if owner_handle is not None:
+            if not registry_locked:
+                fcntl.flock(registry_handle.fileno(), fcntl.LOCK_EX)
+                registry_locked = True
+            if owner_path is not None:
+                owner_path.unlink(missing_ok=True)
+            fcntl.flock(owner_handle.fileno(), fcntl.LOCK_UN)
+            owner_handle.close()
+        if registry_locked:
+            fcntl.flock(registry_handle.fileno(), fcntl.LOCK_UN)
+        registry_handle.close()
+
+
 @contextmanager
 def interruptible_process_pool(max_workers: int) -> Iterator[ProcessPoolExecutor]:
     """Terminate worker processes promptly when a long reduction is interrupted."""

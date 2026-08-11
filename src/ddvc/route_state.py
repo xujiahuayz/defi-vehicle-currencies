@@ -31,6 +31,10 @@ from ddvc.v2_event_completeness import (
     V2_EVENT_SOURCE_CURRENT,
     resolve_v2_event_source_release,
 )
+from ddvc.v3_event_completeness import (
+    V3_EVENT_SOURCE_CURRENT,
+    resolve_v3_event_source_release,
+)
 from ddvc.v4_quarantine import V4_STATIC_QUARANTINE_PANEL
 
 
@@ -130,18 +134,16 @@ def released_state_lineage_inputs(
     state_root: Path = STATE_ROOT,
     raw_root: Path = RAW_ROOT,
 ) -> list[Path]:
-    """Return every released-state ancestor that can change a route quote.
+    """Return the exact state, quality, correction, certificate, and provenance ancestors that can change a route quote or cache generation."""
 
-    The materialised tree covers exact state and its per-partition quality
-    markers.  The correction tree is also explicit: changing a reconciliation
-    invalidates a quote generation immediately, while node D separately refuses
-    stale materialisations.  Certificates and their provenance records are
-    included so a certificate replacement cannot inherit an earlier cache.
-    """
-
-    event_source_inputs = [V2_EVENT_SOURCE_CURRENT]
-    if V2_EVENT_SOURCE_CURRENT.is_file():
-        event_source_inputs = list(resolve_v2_event_source_release().lineage_paths)
+    event_source_inputs: list[Path] = []
+    for current, resolver in (
+        (V2_EVENT_SOURCE_CURRENT, resolve_v2_event_source_release),
+        (V3_EVENT_SOURCE_CURRENT, resolve_v3_event_source_release),
+    ):
+        event_source_inputs.extend(
+            resolver().lineage_paths if current.is_file() else (current,)
+        )
     certificates = [
         MARKET_STATE_QUALITY_PANEL,
         V4_STATIC_QUARANTINE_PANEL,

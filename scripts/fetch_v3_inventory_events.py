@@ -4,8 +4,10 @@
 from __future__ import annotations
 
 import argparse
+from collections.abc import Iterator
 from collections import deque
 from concurrent.futures import FIRST_COMPLETED, wait
+from contextlib import contextmanager
 from datetime import datetime, timezone
 import gzip
 import json
@@ -21,9 +23,19 @@ from ddvc.ethereum_logs import (
     write_exact_log_chunk,
 )
 from ddvc.fetch.raw import write_json
-from ddvc.paths import DATA_DIR, RAW_MARKET_DATA_LOCK, V3_INVENTORY_RAW_ROOT
+from ddvc.paths import (
+    DATA_DIR,
+    RAW_MARKET_DATA_LOCK,
+    V3_INVENTORY_RANGE_LOCK_ROOT,
+    V3_INVENTORY_RAW_ROOT,
+)
 from ddvc.quoter import RpcSemanticError, Throttled
-from ddvc.runtime import atomic_output, exclusive_job, interruptible_thread_pool
+from ddvc.runtime import (
+    atomic_output,
+    exclusive_interval_job,
+    exclusive_job,
+    interruptible_thread_pool,
+)
 from ddvc.v3_inventory import (
     EVENT_TOPICS,
     INVENTORY_CHUNK_SIZE,
@@ -74,6 +86,34 @@ def validate_shard_bounds(start: int, end: int, terminal: int, chunk_size: int) 
         perimeter_end=terminal,
         chunk_size=chunk_size,
     )
+
+
+@contextmanager
+def inventory_fetch_ownership(
+    *,
+    start: int,
+    end: int,
+    global_publication: bool,
+) -> Iterator[None]:
+    """Own a V3 shard interval, reserving global publication for full fetches."""
+
+    if not global_publication:
+        with exclusive_interval_job(
+            V3_INVENTORY_RANGE_LOCK_ROOT,
+            start,
+            end,
+            job="V3 inventory shard fetch",
+        ):
+            yield
+        return
+    with exclusive_job(RAW_MARKET_DATA_LOCK, job="full raw V3 inventory-event fetch"):
+        with exclusive_interval_job(
+            V3_INVENTORY_RANGE_LOCK_ROOT,
+            start,
+            end,
+            job="full V3 inventory-event fetch",
+        ):
+            yield
 
 
 def paths(lower: int, upper: int, root: Path = RAW_ROOT) -> tuple[Path, Path]:
@@ -342,7 +382,11 @@ def main() -> int:
         f"cached={len(ranges) - len(jobs):,}; fetch={len(jobs):,}",
         flush=True,
     )
-    with exclusive_job(RAW_MARKET_DATA_LOCK, job="raw V3 inventory-event fetch"):
+    with inventory_fetch_ownership(
+        start=start if args.shard else default_start_block(),
+        end=end if args.shard else terminal,
+        global_publication=not args.shard,
+    ):
         workers = max(1, min(args.workers, 4))
         max_attempts = max(1, args.max_job_attempts)
         _totals, failures = run_fetch_jobs(

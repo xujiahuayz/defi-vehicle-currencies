@@ -40,14 +40,19 @@ from ddvc.liquidity import (
 from ddvc.literature_admission import load_source_admission, validate_source_admission
 from ddvc.provenance import portable_content_sha256, sidecar_path, verify
 from ddvc.model_registry import (
+    DESIGN_SEED_CLAIM_STATUSES,
     LEGACY_MODEL_STATUSES,
     MODEL_RUN_ARTIFACT_ROLES,
     MODEL_RUN_DISPOSITIONS,
     MODEL_RUN_LANES,
     MODEL_RUN_LIFECYCLES,
     REGISTERED_CLAIM_STATUSES,
+    canonical_hash,
+    claim_execution_perimeter,
+    exploratory_plan_identity,
     generation_id,
     model_run_id,
+    validate_artifact_spec_ids,
     validate_registered_plan,
 )
 from ddvc.reconstruct import DEX_FAMILY, UNIFIED_QUALITY_PANEL
@@ -67,6 +72,13 @@ from ddvc.v2_event_completeness import (
     resolve_v2_event_source_release,
     validate_v2_event_source_certificate,
     validate_v2_event_source_evidence_bundle,
+)
+from ddvc.v3_event_completeness import (
+    read_v3_event_source_release,
+    resolve_v3_event_source_release,
+    validate_v3_event_source_certificate,
+    validate_v3_event_source_evidence_bundle,
+    v3_audit_days,
 )
 from ddvc.paths import (
     LITERATURE_SOURCE_ADMISSION,
@@ -315,12 +327,6 @@ LITERATURE_CARD_EVIDENCE_FIELDS = frozenset(
 )
 RENT_V2_PANEL = ROOT / "data" / "processed" / "rent_incidence_v2_pool_day.parquet"
 GRAPH_FIELDS = ("active_node", "parent_loop", "next_edge", "prose_node")
-DESIGN_SEED_CLAIM_STATUSES = {
-    "candidate_primary",
-    "candidate_foundation",
-    "candidate_mechanism",
-    "candidate_companion",
-}
 CAPITAL_CONTRACT_COLUMNS = (
     "venue",
     "pool_family",
@@ -1287,7 +1293,10 @@ def validate_canonical_consumer_boundary(
 ) -> tuple[bool, str]:
     """Keep active estimators and quote consumers behind the node-D data boundary."""
     if paths is None:
-        paths = registered_empirical_consumers()
+        try:
+            paths = registered_empirical_consumers()
+        except ValueError as error:
+            return False, f"claim execution policy invalid: {error}"
     violations: list[str] = []
     missing: list[str] = []
     for relative in paths:
@@ -2490,9 +2499,8 @@ def registered_empirical_consumers() -> tuple[str, ...]:
         specification = json.loads(SPECIFICATION_LOCK.read_text(encoding="utf-8"))
     except (json.JSONDecodeError, OSError):
         specification = {}
-    for claim in specification.get("claims", []):
-        if not isinstance(claim, dict) or str(claim.get("status", "")).startswith("retired"):
-            continue
+    perimeter = claim_execution_perimeter(specification)
+    for claim in perimeter.executable_claims:
         for artifact in claim.get("outputs", []):
             producer = _artifact_producer(str(artifact))
             if producer:
@@ -2626,6 +2634,13 @@ def validate_specification_lock(
         for claim in claims
         if isinstance(claim, dict) and claim.get("status") in stage_claim_statuses
     ]
+    try:
+        execution_perimeter = claim_execution_perimeter(payload)
+        execution_policy_error = ""
+        executable_stage_claims = list(execution_perimeter.executable_claims)
+    except ValueError as error:
+        execution_policy_error = str(error)
+        executable_stage_claims = []
     required = {
         "id",
         "status",
@@ -2646,7 +2661,7 @@ def validate_specification_lock(
     }
     incomplete = [
         str(claim.get("id") or "missing")
-        for claim in stage_claims
+        for claim in executable_stage_claims
         if required - set(claim)
     ]
     global_rules = payload.get("global_rules") or {}
@@ -2709,8 +2724,8 @@ def validate_specification_lock(
         "registered_primary" if stage == "confirmatory" else "candidate_primary"
     )
     has_primary = any(
-        isinstance(claim, dict) and claim.get("status") == primary_status
-        for claim in claims
+        claim.get("status") == primary_status
+        for claim in executable_stage_claims
     )
     d3_generation = str(payload.get("d3_generation") or "")
     d3_certificate = str(payload.get("d3_certificate") or "")
@@ -2726,10 +2741,11 @@ def validate_specification_lock(
         and exploration_certificate.strip()
         and choices_status_valid
         and not invalid_stage_statuses
+        and not execution_policy_error
     )
     registered_plan_errors: dict[str, str] = {}
     if stage == "confirmatory":
-        for claim in stage_claims:
+        for claim in executable_stage_claims:
             claim_id = str(claim.get("id") or "missing")
             plan_passed, plan_detail = validate_registered_plan(claim)
             if not plan_passed:
@@ -2739,10 +2755,11 @@ def validate_specification_lock(
         and declared_hash == actual_hash
         and len(ids) == len(claims)
         and len(ids) == len(set(ids))
-        and bool(stage_claims)
+        and bool(executable_stage_claims)
         and has_primary
         and not incomplete
         and not invalid_stage_statuses
+        and not execution_policy_error
         and not missing_semantic_rules
         and dynamic_rule_valid
         and sampling_rule_valid
@@ -2757,6 +2774,7 @@ def validate_specification_lock(
         f"claims={len(claims)}; stage_claims={len(stage_claims)}; "
         f"incomplete={incomplete or 'none'}; "
         f"invalid_stage_statuses={invalid_stage_statuses or 'none'}; "
+        f"execution_policy={execution_policy_error or 'valid'}; "
         f"primary={'ok' if has_primary else 'missing'}; "
         f"missing_semantic_rules={missing_semantic_rules or 'none'}; "
         f"dynamic_rule={'ok' if dynamic_rule_valid else 'invalid'}; "
@@ -2780,13 +2798,15 @@ def validate_claim_input_layer(
     root: Path = ROOT,
     verifier=verify,
 ) -> tuple[bool, str]:
-    """Require every registered non-retired claim input to be canonical and current."""
+    """Require every execution-open claim input to be canonical and current."""
+    try:
+        perimeter = claim_execution_perimeter(payload)
+    except ValueError as error:
+        return False, f"claim execution policy invalid: {error}"
     inputs = sorted(
         {
             str(relative)
-            for claim in payload.get("claims", [])
-            if isinstance(claim, dict)
-            and not str(claim.get("status", "")).startswith("retired")
+            for claim in perimeter.executable_claims
             for relative in claim.get("inputs", [])
         }
     )
@@ -2803,6 +2823,77 @@ def validate_claim_input_layer(
         f"inputs={len(inputs)}; current={sum(status == 'ok' for status in statuses.values())}; "
         f"raw={raw_inputs or 'none'}; missing={missing or 'none'}; stale={stale or 'none'}"
     )
+
+
+def confirmatory_promotion_errors(
+    runs: list[dict],
+    e0_certificate: dict,
+) -> tuple[dict[str, list[str]], list[str]]:
+    """Bind each exploratory promotion to its exact E0 decision and a distinct confirmation."""
+    errors: dict[str, list[str]] = {}
+    certificate_errors: list[str] = []
+    decisions = [
+        decision
+        for decision in e0_certificate.get("triage_decisions", [])
+        if isinstance(decision, dict)
+    ]
+    decision_ids = [str(decision.get("decision_id") or "") for decision in decisions]
+    if not all(decision_ids) or len(decision_ids) != len(set(decision_ids)):
+        certificate_errors.append("e0_decision_identity")
+    decisions_by_id = {
+        str(decision["decision_id"]): decision
+        for decision in decisions
+        if str(decision.get("decision_id") or "")
+    }
+    recorded_exploratory_runs = {
+        str(run_id) for run_id in e0_certificate.get("exploratory_run_ids", [])
+    }
+    runs_by_id = {str(run.get("run_id") or ""): run for run in runs}
+
+    def add(run_id: str, error: str) -> None:
+        errors.setdefault(run_id, []).append(error)
+        errors[run_id] = sorted(set(errors[run_id]))
+
+    for run in runs:
+        if run.get("lane") != "confirmatory" or run.get("selection_origin") != "exploratory_discovery":
+            continue
+        run_id = str(run.get("run_id") or run.get("family_id") or "missing")
+        source_run_id = str(run.get("promoted_from_run_id") or "")
+        source = runs_by_id.get(source_run_id)
+        decision = decisions_by_id.get(str(run.get("decision_id") or ""))
+        if (
+            source is None
+            or source_run_id not in recorded_exploratory_runs
+            or source.get("lane") != "exploratory"
+            or source.get("lifecycle") != "executed"
+        ):
+            add(run_id, "promotion_source_certificate")
+            continue
+        required_nodes = decision.get("required_reopen_nodes") if decision is not None else None
+        if (
+            decision is None
+            or decision.get("run_id") != source_run_id
+            or decision.get("outcome") != "promote"
+            or decision.get("proposed_claim_id") != run.get("claim_id")
+            or not isinstance(required_nodes, list)
+            or "E1" not in required_nodes
+        ):
+            add(run_id, "promotion_decision")
+        if run.get("plan_hash") == source.get("plan_hash"):
+            add(run_id, "confirmation_plan_not_distinct")
+        source_artifacts = [artifact for artifact in source.get("artifacts", []) if isinstance(artifact, dict)]
+        confirmation_artifacts = [artifact for artifact in run.get("artifacts", []) if isinstance(artifact, dict)]
+        source_paths = {str(artifact.get("path") or "") for artifact in source_artifacts}
+        confirmation_paths = {str(artifact.get("path") or "") for artifact in confirmation_artifacts}
+        source_hashes = {str(artifact.get("sha256") or "") for artifact in source_artifacts}
+        confirmation_hashes = {str(artifact.get("sha256") or "") for artifact in confirmation_artifacts}
+        if source_paths & confirmation_paths:
+            add(run_id, "confirmation_artifact_path_not_distinct")
+        if (source_hashes - {""}) & (confirmation_hashes - {""}):
+            add(run_id, "confirmation_artifact_content_not_distinct")
+    return errors, certificate_errors
+
+
 def validate_model_ledger(
     payload: dict,
     *,
@@ -2935,12 +3026,15 @@ def validate_model_ledger(
         and run.get("lane") == "exploratory"
         and run.get("lifecycle") == "executed"
     }
-    registered_claims = {
-        str(claim.get("id")): claim
-        for claim in lock_payload.get("claims", [])
-        if isinstance(claim, dict)
-        and claim.get("status") in REGISTERED_CLAIM_STATUSES
-    }
+    try:
+        registered_perimeter = claim_execution_perimeter(lock_payload)
+        registered_claims = {
+            str(claim["id"]): claim
+            for claim in registered_perimeter.executable_claims
+            if claim.get("status") in REGISTERED_CLAIM_STATUSES
+        }
+    except ValueError:
+        registered_claims = {}
     admissible_claims: set[str] = set()
 
     for run in runs:
@@ -2998,6 +3092,10 @@ def validate_model_ledger(
                 errors.append("artifact_contract")
             if artifact.get("role") not in MODEL_RUN_ARTIFACT_ROLES:
                 errors.append("artifact_role")
+            if artifact.get("role") == "support" and artifact_spec_ids:
+                errors.append("support_claims_fitted_coverage")
+            if artifact.get("role") != "support" and not artifact_spec_ids:
+                errors.append("fitted_artifact_without_spec_ids")
             if artifact_path in artifact_owners and artifact_owners[artifact_path] != run_id:
                 reused_artifacts.append(artifact_path)
             artifact_owners[artifact_path] = run_id
@@ -3015,14 +3113,36 @@ def validate_model_ledger(
                     errors.append("provenance_missing")
                 elif verifier(resolved_artifact).get("status") != "ok":
                     errors.append("provenance_stale")
-            if artifact.get("role") in {"result", "falsifier", "diagnostic"}:
-                executed_specification_ids.update(
-                    str(specification_id)
-                    for specification_id in artifact_spec_ids or []
-                )
+                if resolved_artifact.is_file():
+                    try:
+                        actual_spec_ids = validate_artifact_spec_ids(
+                            resolved_artifact,
+                            role=str(artifact.get("role") or ""),
+                            declared=artifact_spec_ids,
+                        )
+                    except (OSError, TypeError, ValueError):
+                        errors.append("artifact_spec_ids")
+                    else:
+                        executed_specification_ids.update(actual_spec_ids)
+            elif artifact.get("role") in {"result", "falsifier", "diagnostic", "resampling"}:
+                executed_specification_ids.update(str(specification_id) for specification_id in artifact_spec_ids or [])
         if lifecycle == "executed" and not artifacts:
             errors.append("executed_without_artifacts")
         if lane == "exploratory":
+            if run.get("plan_hash") != canonical_hash(exploratory_plan_identity(run)):
+                errors.append("exploratory_plan_identity")
+            declared_artifacts = run.get("declared_artifacts")
+            realized_contract = [
+                {
+                    "path": artifact.get("path"),
+                    "role": artifact.get("role"),
+                    "spec_ids": artifact.get("spec_ids"),
+                }
+                for artifact in artifacts
+                if isinstance(artifact, dict)
+            ]
+            if not isinstance(declared_artifacts, list) or realized_contract != declared_artifacts:
+                errors.append("exploratory_artifact_plan")
             if run.get("lock_hash") is not None or run.get("exploration_generation") is not None:
                 errors.append("exploratory_generation_binding")
             if disposition == "admissible":
@@ -3071,11 +3191,8 @@ def validate_model_ledger(
                     errors.append("design_seed_promotion_source")
             else:
                 errors.append("selection_origin")
-            if disposition == "admissible":
-                if lifecycle != "executed" or errors:
-                    errors.append("inadmissible_execution_state")
-                else:
-                    admissible_claims.add(claim_id)
+            if disposition == "admissible" and (lifecycle != "executed" or errors):
+                errors.append("inadmissible_execution_state")
         if errors:
             invalid_runs[run_id] = sorted(set(errors))
 
@@ -3114,6 +3231,7 @@ def validate_model_ledger(
         )
         if d3_certificate.get("generation") != current_generation:
             certificate_errors.append("d3_analysis_release_binding")
+    e0_certificate: dict = {}
     if exploration_status == "complete" and verify_certificates:
         e0_certificate = load_certificate(
             exploration_certificate,
@@ -3135,6 +3253,36 @@ def validate_model_ledger(
         }
         if triage_run_ids != exploratory_run_ids:
             certificate_errors.append("e0_triage_perimeter")
+
+        exploratory_records = {
+            str(record.get("run_id") or ""): str(record.get("record_sha256") or "")
+            for record in e0_certificate.get("exploratory_run_records", [])
+            if isinstance(record, dict)
+        }
+        current_exploratory_records = {
+            str(run.get("run_id") or ""): canonical_hash(run)
+            for run in runs
+            if isinstance(run, dict)
+            and run.get("lane") == "exploratory"
+            and run.get("lifecycle") == "executed"
+        }
+        if exploratory_records != current_exploratory_records:
+            certificate_errors.append("e0_exploratory_run_records")
+
+        promotion_errors, promotion_certificate_errors = confirmatory_promotion_errors(runs, e0_certificate)
+        certificate_errors.extend(promotion_certificate_errors)
+        for run_id, errors in promotion_errors.items():
+            invalid_runs[run_id] = sorted(set([*invalid_runs.get(run_id, []), *errors]))
+
+    admissible_claims = {
+        str(run.get("claim_id") or "")
+        for run in runs
+        if isinstance(run, dict)
+        and run.get("lane") == "confirmatory"
+        and run.get("lifecycle") == "executed"
+        and run.get("disposition") == "admissible"
+        and str(run.get("run_id") or "") not in invalid_runs
+    }
 
     missing_claim_evidence = sorted(claim_ids - admissible_claims)
     confirmatory_context_valid = bool(
@@ -3245,6 +3393,92 @@ def v2_event_source_certificate_checks(
     except (FileNotFoundError, KeyError, OSError, TypeError, ValueError) as error:
         evidence_passed, evidence_detail = False, str(error)
     checks.append(("node D V2 event-source cited evidence", evidence_passed, evidence_detail))
+    return checks
+
+
+def v3_event_source_certificate_checks(
+    summary_path: Path | None = None,
+    exceptions_path: Path | None = None,
+    quarantine_path: Path | None = None,
+    certificate_path: Path | None = None,
+    quality_path: Path = UNIFIED_QUALITY_PANEL,
+) -> list[tuple[str, bool, str]]:
+    """Require current, exact, zero-exception V3 event-source evidence."""
+
+    explicit = (summary_path, exceptions_path, quarantine_path, certificate_path)
+    if any(path is not None for path in explicit) and not all(
+        path is not None for path in explicit
+    ):
+        return [
+            (
+                "node D V3 event-source certificate exists",
+                False,
+                "explicit reads require all four artifact paths",
+            )
+        ]
+    try:
+        if all(path is None for path in explicit):
+            release = resolve_v3_event_source_release()
+            artifacts = release.artifact_paths
+            summary, exceptions, quarantine, certificate = read_v3_event_source_release(
+                release
+            )
+        else:
+            artifacts = tuple(Path(path) for path in explicit if path is not None)
+            summary = pd.read_parquet(Path(summary_path))
+            exceptions = pd.read_parquet(Path(exceptions_path))
+            quarantine = pd.read_parquet(Path(quarantine_path))
+            certificate = json.loads(Path(certificate_path).read_text(encoding="utf-8"))
+    except (FileNotFoundError, OSError, RuntimeError, TypeError, ValueError) as error:
+        return [("node D V3 event-source certificate exists", False, str(error))]
+    missing = [path.name for path in artifacts if not path.is_file()]
+    if missing:
+        return [
+            ("node D V3 event-source certificate exists", False, f"missing={missing}")
+        ]
+    try:
+        provenance = {path.name: verify(path).get("status") for path in artifacts}
+    except (OSError, TypeError, ValueError) as error:
+        provenance = {"invalid": str(error)}
+    checks = [
+        (
+            "node D V3 event-source provenance current",
+            all(status == "ok" for status in provenance.values()),
+            f"provenance={provenance}",
+        )
+    ]
+    try:
+        expected_days = v3_audit_days(quality_path)
+        days, exact_events = validate_v3_event_source_certificate(
+            summary,
+            exceptions,
+            quarantine,
+            certificate,
+            expected_days,
+        )
+        passed = True
+        detail = (
+            f"audit_dates={days}; exact_events={exact_events:,}; exceptions=0; "
+            f"pools={certificate['pool_count']:,}"
+        )
+    except (FileNotFoundError, KeyError, OSError, TypeError, ValueError) as error:
+        passed, detail = False, str(error)
+    checks.append(("node D V3 event-source exact comparisons", passed, detail))
+    try:
+        pools, events = validate_v3_event_source_evidence_bundle(
+            certificate,
+            summary=summary,
+            quarantine=quarantine,
+        )
+        evidence_passed = True
+        evidence_detail = (
+            f"factory_pools={pools:,}; exact_events={events:,}; cited_artifacts=reopened"
+        )
+    except (FileNotFoundError, KeyError, OSError, TypeError, ValueError) as error:
+        evidence_passed, evidence_detail = False, str(error)
+    checks.append(
+        ("node D V3 event-source cited evidence", evidence_passed, evidence_detail)
+    )
     return checks
 
 
@@ -3576,6 +3810,8 @@ def main() -> int:
         record(name, passed, detail)
     for name, passed, detail in v2_event_source_certificate_checks():
         record(name, passed, detail)
+    for name, passed, detail in v3_event_source_certificate_checks():
+        record(name, passed, detail)
     for name, passed, detail in retired_route_gas_release_checks():
         record(name, passed, detail)
 
@@ -3659,15 +3895,14 @@ def main() -> int:
                 lock_payload,
                 require_confirmatory=True,
             )
+            execution_perimeter = claim_execution_perimeter(lock_payload)
             lock_claim_ids = {
-                str(claim.get("id"))
-                for claim in lock_payload.get("claims", [])
-                if isinstance(claim, dict)
-                and claim.get("id")
-                and claim.get("status") in REGISTERED_CLAIM_STATUSES
+                str(claim["id"])
+                for claim in execution_perimeter.executable_claims
+                if claim.get("status") in REGISTERED_CLAIM_STATUSES
             }
             input_passed, input_detail = validate_claim_input_layer(lock_payload)
-        except (json.JSONDecodeError, OSError) as exc:
+        except (json.JSONDecodeError, OSError, ValueError) as exc:
             lock_passed, lock_detail = False, type(exc).__name__
             input_passed, input_detail = False, type(exc).__name__
         record("node E1 specification lock", lock_passed, lock_detail)

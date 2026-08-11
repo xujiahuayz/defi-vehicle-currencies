@@ -17,6 +17,7 @@ from scripts.audit_findings_freeze import (
     companion_sources_closed,
     companion_source_keys,
     complete_literature_card,
+    confirmatory_promotion_errors,
     expected_market_state_keys,
     expected_unified_route_venue_days,
     graph_status,
@@ -36,6 +37,7 @@ from scripts.audit_findings_freeze import (
     transaction_frontier_artifact_checks,
     transaction_frontier_support_checks,
     v2_event_source_certificate_checks,
+    v3_event_source_certificate_checks,
     validate_capital_contract_rows,
     validate_literature_audit,
     validate_literature_use_contracts,
@@ -50,12 +52,35 @@ from scripts.audit_findings_freeze import (
 )
 from ddvc.literature_admission import validate_source_admission
 from ddvc.liquidity import LIQUIDITY_CONTRACTS
-from ddvc.model_registry import canonical_hash, model_run_id
+from ddvc.model_registry import canonical_hash, exploratory_plan_identity, model_run_id
 from ddvc.provenance import portable_content_sha256, sidecar_path
 from scripts.refresh_panel_dependents import (
     CLAIM_INPUT_STAGES,
     DAILY_FRONTIER_PREREQUISITES,
 )
+
+
+def _bind_exploratory_plan(run: dict) -> None:
+    run.update(
+        {
+            "plan_path": "docs/test-exploration-plan.json",
+            "runner": "scripts/test-exploration-runner.py",
+            "arguments": [],
+            "engine_sources": ["scripts/test-exploration-runner.py"],
+            "question": "Which exploratory pattern merits confirmation?",
+            "search_dimensions": ["mechanism"],
+            "declared_artifacts": [
+                {
+                    "path": artifact["path"],
+                    "role": artifact["role"],
+                    "spec_ids": artifact["spec_ids"],
+                }
+                for artifact in run["artifacts"]
+            ],
+        }
+    )
+    run["plan_hash"] = canonical_hash(exploratory_plan_identity(run))
+    run["run_id"] = model_run_id(run)
 
 
 class FindingsFreezeAuditTest(unittest.TestCase):
@@ -308,6 +333,51 @@ class FindingsFreezeAuditTest(unittest.TestCase):
                     quality,
                 )
         self.assertTrue(all(passed for _name, passed, _detail in checks), checks)
+
+    def test_findings_gate_requires_current_exact_v3_event_certificate(self) -> None:
+        release = Mock(
+            artifact_paths=(
+                Path("summary.parquet"),
+                Path("exceptions.parquet"),
+                Path("quarantine.parquet"),
+                Path("certificate.json"),
+            )
+        )
+        summary = pd.DataFrame()
+        quarantine = pd.DataFrame()
+        certificate = {"pool_count": 12}
+        with (
+            patch(
+                "scripts.audit_findings_freeze.resolve_v3_event_source_release",
+                return_value=release,
+            ),
+            patch(
+                "scripts.audit_findings_freeze.read_v3_event_source_release",
+                return_value=(summary, pd.DataFrame(), quarantine, certificate),
+            ),
+            patch("scripts.audit_findings_freeze.Path.is_file", return_value=True),
+            patch(
+                "scripts.audit_findings_freeze.verify", return_value={"status": "ok"}
+            ),
+            patch(
+                "scripts.audit_findings_freeze.v3_audit_days",
+                return_value=["20250115"],
+            ),
+            patch(
+                "scripts.audit_findings_freeze.validate_v3_event_source_certificate",
+                return_value=(1, 34),
+            ) as validate,
+            patch(
+                "scripts.audit_findings_freeze.validate_v3_event_source_evidence_bundle",
+                return_value=(12, 34),
+            ) as reopen,
+        ):
+            checks = v3_event_source_certificate_checks()
+        self.assertTrue(all(passed for _name, passed, _detail in checks), checks)
+        validate.assert_called_once()
+        reopen.assert_called_once_with(
+            certificate, summary=summary, quarantine=quarantine
+        )
 
     def test_live_json_contracts_have_unique_keys_and_a_current_lock_hash(self) -> None:
         import copy
@@ -755,12 +825,20 @@ class FindingsFreezeAuditTest(unittest.TestCase):
         from pathlib import Path
 
         payload = {
+            "stage": "confirmatory",
             "claims": [
                 {
                     "id": "live",
                     "status": "registered_primary",
+                    "execution_gate": "open",
                     "inputs": ["data/processed/clean.parquet"],
-                }
+                },
+                {
+                    "id": "blocked",
+                    "status": "registered_companion",
+                    "execution_gate": "blocked_external_reference_variance",
+                    "inputs": ["data/processed/missing-blocked.parquet"],
+                },
             ]
         }
         with tempfile.TemporaryDirectory() as directory:
@@ -774,6 +852,15 @@ class FindingsFreezeAuditTest(unittest.TestCase):
                 verifier=lambda _path: {"status": "ok"},
             )
             self.assertTrue(passed, detail)
+            payload["claims"][0].pop("execution_gate")
+            passed, detail = validate_claim_input_layer(
+                payload,
+                root=root,
+                verifier=lambda _path: {"status": "ok"},
+            )
+            self.assertFalse(passed, detail)
+            self.assertIn("must explicitly declare", detail)
+            payload["claims"][0]["execution_gate"] = "open"
             passed, _detail = validate_claim_input_layer(
                 payload,
                 root=root,
@@ -872,7 +959,7 @@ class FindingsFreezeAuditTest(unittest.TestCase):
             ],
             "note": "open-ended discovery",
         }
-        exploratory["run_id"] = model_run_id(exploratory)
+        _bind_exploratory_plan(exploratory)
         payload = {
             "schema_version": 2,
             "current_analysis_generation": "d3-generation",
@@ -929,6 +1016,98 @@ class FindingsFreezeAuditTest(unittest.TestCase):
         self.assertFalse(passed, detail)
         self.assertIn("run_id", detail)
 
+    def test_model_run_identity_binds_claim_and_selection_history(self) -> None:
+        run = {
+            "family_id": "family",
+            "claim_id": "claim",
+            "lane": "confirmatory",
+            "selection_origin": "exploratory_discovery",
+            "promoted_from_run_id": "source",
+            "decision_id": "decision",
+            "d3_generation": "d3",
+            "exploration_generation": "e0",
+            "lock_hash": "lock",
+            "plan_hash": "plan",
+            "engine_hash": "engine",
+        }
+        original = model_run_id(run)
+        for field in ("claim_id", "selection_origin", "promoted_from_run_id", "decision_id"):
+            changed = dict(run)
+            changed[field] = f"different-{field}"
+            self.assertNotEqual(model_run_id(changed), original, field)
+
+    def test_confirmatory_promotion_requires_exact_promote_decision_and_distinct_execution(self) -> None:
+        import copy
+
+        source = {
+            "run_id": "exploratory-run",
+            "lane": "exploratory",
+            "lifecycle": "executed",
+            "plan_hash": "exploratory-plan",
+            "engine_hash": "shared-engine",
+            "artifacts": [{"path": "output/exploratory.jsonl", "sha256": "1" * 64}],
+        }
+        confirmation = {
+            "run_id": "confirmatory-run",
+            "lane": "confirmatory",
+            "claim_id": "promoted-claim",
+            "selection_origin": "exploratory_discovery",
+            "promoted_from_run_id": source["run_id"],
+            "decision_id": "decision-promote",
+            "plan_hash": "registered-e1-plan",
+            "engine_hash": "shared-engine",
+            "artifacts": [{"path": "output/confirmatory.jsonl", "sha256": "2" * 64}],
+        }
+        certificate = {
+            "exploratory_run_ids": [source["run_id"]],
+            "triage_decisions": [
+                {
+                    "decision_id": "decision-promote",
+                    "run_id": source["run_id"],
+                    "outcome": "promote",
+                    "proposed_claim_id": confirmation["claim_id"],
+                    "required_reopen_nodes": ["C", "E1"],
+                }
+            ],
+        }
+        errors, certificate_errors = confirmatory_promotion_errors([source, confirmation], certificate)
+        self.assertEqual(errors, {})
+        self.assertEqual(certificate_errors, [])
+
+        for outcome in ("reject", "retain_auxiliary", "park_next_paper"):
+            changed = copy.deepcopy(certificate)
+            changed["triage_decisions"][0]["outcome"] = outcome
+            errors, _certificate_errors = confirmatory_promotion_errors([source, confirmation], changed)
+            self.assertIn("promotion_decision", errors[confirmation["run_id"]])
+
+        for field, value in (
+            ("decision_id", "different-decision"),
+            ("proposed_claim_id", "different-claim"),
+            ("required_reopen_nodes", ["C"]),
+        ):
+            changed_confirmation = copy.deepcopy(confirmation)
+            changed_certificate = copy.deepcopy(certificate)
+            if field == "decision_id":
+                changed_confirmation[field] = value
+            else:
+                changed_certificate["triage_decisions"][0][field] = value
+            errors, _certificate_errors = confirmatory_promotion_errors(
+                [source, changed_confirmation], changed_certificate
+            )
+            self.assertIn("promotion_decision", errors[confirmation["run_id"]])
+
+        same_plan = {**confirmation, "plan_hash": source["plan_hash"]}
+        errors, _certificate_errors = confirmatory_promotion_errors([source, same_plan], certificate)
+        self.assertIn("confirmation_plan_not_distinct", errors[confirmation["run_id"]])
+        same_path = copy.deepcopy(confirmation)
+        same_path["artifacts"][0]["path"] = source["artifacts"][0]["path"]
+        errors, _certificate_errors = confirmatory_promotion_errors([source, same_path], certificate)
+        self.assertIn("confirmation_artifact_path_not_distinct", errors[confirmation["run_id"]])
+        same_content = copy.deepcopy(confirmation)
+        same_content["artifacts"][0]["sha256"] = source["artifacts"][0]["sha256"]
+        errors, _certificate_errors = confirmatory_promotion_errors([source, same_content], certificate)
+        self.assertIn("confirmation_artifact_content_not_distinct", errors[confirmation["run_id"]])
+
     def test_model_ledger_requires_distinct_complete_confirmatory_rerun(self) -> None:
         registered_specifications = [
             {
@@ -956,6 +1135,7 @@ class FindingsFreezeAuditTest(unittest.TestCase):
                 {
                     "id": "lead",
                     "status": "registered_primary",
+                    "execution_gate": "open",
                     "plan_hash": plan_hash,
                     "registered_specifications": registered_specifications,
                 }
@@ -990,7 +1170,7 @@ class FindingsFreezeAuditTest(unittest.TestCase):
             ],
             "note": "publication-worthy discovery",
         }
-        exploratory["run_id"] = model_run_id(exploratory)
+        _bind_exploratory_plan(exploratory)
         confirmatory = {
             "family_id": "lead",
             "run_id": "pending",
@@ -1098,7 +1278,7 @@ class FindingsFreezeAuditTest(unittest.TestCase):
         self.assertIn("promotion_source", detail)
 
     def test_model_ledger_verifies_current_artifact_content_and_provenance(self) -> None:
-        with tempfile.NamedTemporaryFile(dir=Path.cwd(), delete=False) as handle:
+        with tempfile.NamedTemporaryFile(dir=Path.cwd(), suffix=".jsonl", delete=False) as handle:
             handle.write(b'{"spec_id":"explore-1","estimate":0.0}\n')
             artifact_path = Path(handle.name)
         provenance_path = sidecar_path(artifact_path)
@@ -1136,7 +1316,7 @@ class FindingsFreezeAuditTest(unittest.TestCase):
                 ],
                 "note": "artifact verification",
             }
-            run["run_id"] = model_run_id(run)
+            _bind_exploratory_plan(run)
             payload = {
                 "schema_version": 2,
                 "current_analysis_generation": "d3-generation",
@@ -1767,6 +1947,7 @@ status: complete
         claim = {
             "id": "lead",
             "status": "registered_primary",
+            "execution_gate": "open",
             "role": "lead",
             "estimand": "change",
             "sample": "sample",
@@ -1831,6 +2012,25 @@ status: complete
         ).hexdigest()
         passed, detail = validate_specification_lock(payload)
         self.assertTrue(passed, detail)
+        missing_gate = copy.deepcopy(payload)
+        missing_gate["claims"][0].pop("execution_gate")
+        missing_gate["lock_hash"] = canonical_hash(
+            {key: value for key, value in missing_gate.items() if key != "lock_hash"}
+        )
+        passed, detail = validate_specification_lock(missing_gate)
+        self.assertFalse(passed, detail)
+        self.assertIn("must explicitly declare", detail)
+        blocked_incomplete = copy.deepcopy(payload)
+        blocked_claim = blocked_incomplete["claims"][-1]
+        blocked_claim["execution_gate"] = "blocked_external_reference_variance"
+        blocked_claim.pop("inputs")
+        blocked_claim.pop("registered_specifications")
+        blocked_claim.pop("plan_hash")
+        blocked_incomplete["lock_hash"] = canonical_hash(
+            {key: value for key, value in blocked_incomplete.items() if key != "lock_hash"}
+        )
+        passed, detail = validate_specification_lock(blocked_incomplete)
+        self.assertTrue(passed, detail)
         incomplete_attack = copy.deepcopy(payload)
         registered_claim = incomplete_attack["claims"][0]
         registered_claim["registered_specifications"][0]["covers"].remove(
@@ -1864,6 +2064,7 @@ status: complete
         claim = {
             "id": "lead",
             "status": "registered_primary",
+            "execution_gate": "open",
             "role": "lead",
             "estimand": "change",
             "sample": "sample",
@@ -1906,6 +2107,7 @@ status: complete
         claim = {
             "id": "lead",
             "status": "registered_primary",
+            "execution_gate": "open",
             "role": "lead",
             "estimand": "change",
             "sample": "sample",

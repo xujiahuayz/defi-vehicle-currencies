@@ -12,6 +12,7 @@ from ddvc.data_release import (
     audit_cross_venue_order_conflicts,
     require_market_state_release,
     require_v2_event_source_release,
+    require_v3_event_source_release,
 )
 from ddvc.v4_quarantine import audit_v4_pool_static_conflicts
 
@@ -23,10 +24,12 @@ class DataReleaseTests(unittest.TestCase):
         with (
             patch("ddvc.data_release.require_market_state_prerelease") as prerelease,
             patch("ddvc.data_release.require_v2_event_source_release") as event_source,
+            patch("ddvc.data_release.require_v3_event_source_release") as v3_event_source,
         ):
             require_market_state_release()
         prerelease.assert_called_once_with()
         event_source.assert_called_once_with()
+        v3_event_source.assert_called_once_with()
 
     def test_v2_event_release_gate_requires_current_artifacts_and_exact_calendar(self) -> None:
         from unittest.mock import patch
@@ -74,6 +77,67 @@ class DataReleaseTests(unittest.TestCase):
             self.assertRaisesRegex(RuntimeError, "node D V2-family event-source certificate failed.*legacy flat"),
         ):
             require_v2_event_source_release()
+
+    def test_v3_event_release_gate_requires_current_artifacts_and_reopening(self) -> None:
+        from unittest.mock import patch
+
+        summary = pd.DataFrame()
+        exceptions = pd.DataFrame()
+        quarantine = pd.DataFrame()
+        certificate = {"status": "pass"}
+        release = SimpleNamespace(
+            artifact_paths=(
+                Path("summary.parquet"),
+                Path("exceptions.parquet"),
+                Path("quarantine.parquet"),
+                Path("certificate.json"),
+            ),
+        )
+        with (
+            patch(
+                "ddvc.data_release.resolve_v3_event_source_release",
+                return_value=release,
+            ) as resolve,
+            patch("ddvc.data_release.require_current_artifacts") as current,
+            patch(
+                "ddvc.data_release.read_v3_event_source_release",
+                return_value=(summary, exceptions, quarantine, certificate),
+            ) as read,
+            patch("ddvc.data_release.v3_audit_days", return_value=["20250115"]),
+            patch("ddvc.data_release.validate_v3_event_source_certificate") as validate,
+            patch(
+                "ddvc.data_release.validate_v3_event_source_evidence_bundle"
+            ) as validate_evidence,
+        ):
+            require_v3_event_source_release()
+        resolve.assert_called_once_with()
+        current.assert_called_once()
+        read.assert_called_once_with(release)
+        validate.assert_called_once_with(
+            summary,
+            exceptions,
+            quarantine,
+            certificate,
+            ["20250115"],
+        )
+        validate_evidence.assert_called_once_with(
+            certificate, summary=summary, quarantine=quarantine
+        )
+
+    def test_v3_event_release_gate_wraps_missing_release(self) -> None:
+        from unittest.mock import patch
+
+        with (
+            patch(
+                "ddvc.data_release.resolve_v3_event_source_release",
+                side_effect=FileNotFoundError("missing current pointer"),
+            ),
+            self.assertRaisesRegex(
+                RuntimeError,
+                "node D V3 event-source certificate failed.*missing current pointer",
+            ),
+        ):
+            require_v3_event_source_release()
 
     def test_v4_static_audit_returns_complete_pool_level_quarantine(self) -> None:
         with tempfile.TemporaryDirectory() as directory:

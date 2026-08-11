@@ -8,7 +8,7 @@
   "d3_certificate": null,
   "exploration_generation": null,
   "exploration_certificate": null,
-  "lock_hash": "185a490fb208a1e4d010075059e213141d2bbde812cb70c1ab6c06468d5a3d47",
+  "lock_hash": "fb6adb507767b8a008ed94972f3de2ced13ab45e3c9d64e36e2c9ed80bd7c59d",
   "paper_scope": "The making and displacement of vehicle-currency roles in Ethereum decentralised exchange",
   "global_rules": {
     "asset_identity": "canonical contract address; symbols are labels only",
@@ -35,6 +35,7 @@
     {
       "id": "vehicle_transition",
       "status": "candidate_primary",
+      "execution_gate": "open",
       "role": "lead finding",
       "estimand": "change in stable share of native-plus-stable exact two-leg intermediary routes between 2024 and 2026 on common calendar support",
       "sample": "topology-valid clean-leg routes with exactly two pool legs and one intermediary; daily observations whose calendar month-and-day position is observed in both endpoint years; full venue perimeter",
@@ -89,6 +90,7 @@
     {
       "id": "routing_maturation_rival",
       "status": "candidate_mechanism",
+      "execution_gate": "open",
       "role": "first rival mechanism",
       "estimand": "changes in opportunity-set integration, direct splitting, true intermediation, path complexity, and realised routing regret",
       "sample": "economic routes on full and balanced venue perimeters; topology uses the full daily calendar; the fixed-notional cost landscape uses the 200 most heavily intermediated directed endpoint pairs per day at all 24 UTC hours as a selected descriptive panel, a cohort fixed from the first 365 released days for within-established-market changes, and a persistent common-support cohort; exact-state regret uses the full daily realised-route frontier after a separate 77-day estimator-validation audit passes",
@@ -174,6 +176,7 @@
     {
       "id": "direct_cost_dominance",
       "status": "candidate_foundation",
+      "execution_gate": "open",
       "role": "necessary state for persistence, not a persistence estimate",
       "estimand": "share of realised V2-family two-leg routes for which an available direct pool returns more or costs less all-in at strict pre-transaction state",
       "sample": "realised Uniswap V2 and SushiSwap V2 two-leg routes with input notional at least 100 dollars and an exact-state direct alternative on the full daily calendar spanning 74 calendar months",
@@ -216,6 +219,86 @@
         "output/exhibits/counterfactual_dominance_summary.jsonl",
         "output/exhibits/counterfactual_dominance_support.jsonl",
         "output/exhibits/route_gas_units_summary.jsonl"
+      ]
+    },
+    {
+      "id": "liquidity_capital_flow_predictability",
+      "status": "candidate_mechanism",
+      "execution_gate": "open",
+      "role": "liquidity-provision mechanism candidate based on bidirectional predictability, not causal feedback",
+      "estimand": "whether candidate-level vehicle dominance predicts subsequent liquidity allocation and whether candidate-level liquidity allocation predicts subsequent vehicle dominance, adjudicated separately for V2-family deposited-capital stocks and Uniswap V3 LP flows",
+      "sample": "the fixed intersection of WETH, WBTC, DAI, USDC, and USDT identified by canonical token address; topology-valid clean non-round-trip routes joined by exact calendar date to candidate-attributed Uniswap V2 and SushiSwap V2 deposited-capital stocks and Uniswap V3 LP dollar flows. The stock and flow samples retain their own start dates and support and are never pooled or normalized by one another",
+      "unit": "candidate token address by origin calendar day",
+      "dependent_variable": "in the route-to-liquidity direction: exact-horizon change in V2-family candidate deposited capital and candidate capital share, or cumulative V3 signed net LP flow and gross LP-flow allocation share over (t,t+h]; in the liquidity-to-route direction: exact-horizon change in candidate intermediary episode share, with vehicle excess-use count ratio as a mandatory alternative",
+      "transformation": "V2 stock: change in log one plus candidate-attributed deposited capital dollars and change in candidate share of the five-candidate capital stock; V3 flow: signed log one plus absolute cumulative net flow divided by 1000 dollars and cumulative candidate gross flow divided by all five candidates' gross flow; route use: episode-count intermediary share in levels and changes. V3 dollar flow is never divided by V2 capital or described as capital",
+      "outlier_treatment": "no quantile trimming; canonical endpoint round trips remain excluded; V2 rows require deposited_capital quantity_kind, reported_plausible validation and exact calendar links; V3 rows require flow_normalization_status=dollar_flow_and_within_flow_shares_no_capital_stock; zero-flow days remain zeros and missing exact target dates remain missing",
+      "response_horizon_days": [
+        1,
+        7,
+        30,
+        120
+      ],
+      "primary_horizons": [
+        1,
+        7,
+        30
+      ],
+      "long_horizon_sensitivity": 120,
+      "estimators": {
+        "route_to_v2_stock": "future stock change on origin vehicle share with candidate and origin-date fixed effects",
+        "v2_stock_to_route": "future vehicle-share change on origin log capital and capital share with candidate and origin-date fixed effects",
+        "route_to_v3_flow": "future cumulative signed net flow or gross-flow share on origin vehicle share with candidate and origin-date fixed effects",
+        "v3_flow_to_route": "future vehicle-share change on origin signed net flow or gross-flow share with candidate and origin-date fixed effects"
+      },
+      "inference": "two-sided 95-percent intervals with Driscoll-Kraay covariance at 30 calendar-day bandwidth on the candidate-date fixed-effect panel; calendar-month moving-block bootstrap and origin-date-clustered 30-day score-HAC are mandatory sensitivities; two-way candidate and origin-date clustering is reported only with the five-candidate cluster limitation stated; Holm adjustment within each direction-by-measurement-family primary coefficient family",
+      "mandatory_alternatives": {
+        "vehicle_dominance": [
+          "intermediary episode-count share",
+          "vehicle excess-use count ratio on endpoint-supported observations"
+        ],
+        "v2_capital_stock": [
+          "log one plus candidate-attributed deposited capital dollars",
+          "five-candidate capital share"
+        ],
+        "v3_lp_flow": [
+          "signed cumulative net dollar flow",
+          "active signed net dollar flow",
+          "near-range signed net dollar flow",
+          "gross candidate flow share",
+          "near-range gross flow share"
+        ],
+        "response_horizon_days": [
+          1,
+          7,
+          30,
+          120
+        ],
+        "covariance": [
+          "Driscoll-Kraay with 30-day bandwidth",
+          "calendar-month moving-block bootstrap",
+          "two-way candidate and origin-date clustered",
+          "origin-date clustered with 30-day score HAC"
+        ]
+      },
+      "decision_rule": "a measurement family supports a bidirectional predictive liquidity-allocation loop only if at least one predeclared route-to-liquidity coefficient and its reciprocal liquidity-to-route coefficient are positive with Holm q below 0.05 at at least two of the three primary horizons 1, 7, and 30 days, retain their signs under the absolute-versus-share alternatives, and do not reverse significantly at 120 days. One direction alone is one-way predictability, not feedback. V2 stock and V3 flow are adjudicated separately; success in one cannot rescue failure in the other. Call the mechanism cross-family corroborated only if both pass. An economically large opposite-signed result returns to E for an explicitly re-registered claim; it is not silently discarded or promoted from exploration",
+      "falsifier": "vehicle-use coefficients do not predict later liquidity allocation, liquidity coefficients do not predict later vehicle use, signs reverse across primary horizons, or results arise only after mixing V2 stocks with V3 flows",
+      "admissible_interpretation": "vehicle use and liquidity provision exhibit temporally ordered bidirectional predictability within an explicitly supported protocol-family measurement contract",
+      "forbidden_interpretation": "causal LP feedback, common capital levels across V2 and V3, V3 flow normalized by V2 capital, LP profitability, or rent incidence",
+      "inputs": [
+        "data/processed/vehicle_excess_use_daily.parquet",
+        "data/processed/pool_candidate_capital_daily.parquet",
+        "data/processed/lp_liquidity_flow_daily_v3.parquet",
+        "data/processed/liquidity_capital_flow_candidate_day.parquet",
+        "data/processed/liquidity_capital_flow_exact_horizons.parquet"
+      ],
+      "analysis_ready_outputs": [
+        "data/processed/liquidity_capital_flow_candidate_day.parquet",
+        "data/processed/liquidity_capital_flow_exact_horizons.parquet"
+      ],
+      "outputs": [
+        "output/exhibits/liquidity_capital_flow_predictability.jsonl",
+        "output/exhibits/liquidity_capital_flow_support.jsonl",
+        "output/tables/liquidity_capital_flow_predictability.tex"
       ]
     },
     {

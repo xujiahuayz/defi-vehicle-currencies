@@ -186,6 +186,21 @@ def load_candidate_statics(
     )
 
 
+def load_full_consumer_statics(
+    graph_static_path: Path = GRAPH_STATIC_PATH,
+    registry_path: Path = V3_POOL_REGISTRY,
+    certificate_path: Path = V3_POOL_REGISTRY_CERTIFICATE,
+) -> dict[str, PoolStatic]:
+    """Load every factory-certified pool in the canonical V3 consumer statics."""
+
+    return pool_statics_from_factory(
+        registry_path,
+        certificate_path,
+        graph_static_path,
+        candidate_tokens=None,
+    )
+
+
 def inventory_perimeter(_days: list[str], end_blocks: list[int]) -> tuple[int, int]:
     start = V3_FACTORY_DEPLOYMENT_BLOCK
     end = end_blocks[-1]

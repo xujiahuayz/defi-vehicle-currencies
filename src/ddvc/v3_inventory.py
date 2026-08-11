@@ -114,9 +114,9 @@ def pool_statics_from_factory(
     certificate_path: Path,
     graph_static_path: Path,
     *,
-    candidate_tokens: set[str],
+    candidate_tokens: set[str] | None,
 ) -> dict[str, PoolStatic]:
-    """Join exact factory identities to provider token metadata without widening the census."""
+    """Join exact factory identities to provider metadata for a token or full consumer scope."""
 
     token_metadata: dict[str, tuple[str, int]] = {}
     graph_pools: dict[str, PoolStatic] = {}
@@ -139,7 +139,12 @@ def pool_statics_from_factory(
                     token_metadata[token] = (symbol, decimals)
     statics: dict[str, PoolStatic] = {}
     for factory_pool in load_registry(registry_path, certificate_path):
-        if not ({factory_pool.token0, factory_pool.token1} & candidate_tokens):
+        selected = (
+            factory_pool.pool in graph_pools
+            if candidate_tokens is None
+            else bool({factory_pool.token0, factory_pool.token1} & candidate_tokens)
+        )
+        if not selected:
             continue
         graph_static = graph_pools.get(factory_pool.pool)
         if graph_static is not None and (
@@ -165,7 +170,9 @@ def pool_statics_from_factory(
             decimals1=metadata1[1],
         )
     if not statics:
-        raise RuntimeError("candidate-linked certified V3 factory registry is empty")
+        raise RuntimeError("selected certified V3 factory registry is empty")
+    if candidate_tokens is None and set(statics) != set(graph_pools):
+        raise ValueError("full V3 consumer statics contain a pool outside the factory census")
     return statics
 
 
@@ -1015,18 +1022,28 @@ def decode_inventory_log(log: dict) -> dict[str, object]:
         raise ValueError("log is not a registered V3 inventory event")
     event_type = EVENT_BY_TOPIC[topics[0]]
     data = bytes.fromhex(str(log.get("data") or "0x").removeprefix("0x"))
+    liquidity_amount: int | None = None
+    tick_lower: int | None = None
+    tick_upper: int | None = None
+    sqrt_price_x96: int | None = None
+    active_liquidity: int | None = None
+    tick: int | None = None
     if event_type == "mint":
-        _sender, _amount, amount0, amount1 = abi_decode(
+        _sender, liquidity_amount, amount0, amount1 = abi_decode(
             ["address", "uint128", "uint256", "uint256"], data
         )
+        tick_lower = int(abi_decode(["int24"], bytes.fromhex(topics[2].removeprefix("0x")))[0])
+        tick_upper = int(abi_decode(["int24"], bytes.fromhex(topics[3].removeprefix("0x")))[0])
         delta0, delta1 = int(amount0), int(amount1)
     elif event_type == "burn":
-        _amount, amount0, amount1 = abi_decode(
+        liquidity_amount, amount0, amount1 = abi_decode(
             ["uint128", "uint256", "uint256"], data
         )
+        tick_lower = int(abi_decode(["int24"], bytes.fromhex(topics[2].removeprefix("0x")))[0])
+        tick_upper = int(abi_decode(["int24"], bytes.fromhex(topics[3].removeprefix("0x")))[0])
         delta0, delta1 = int(amount0), int(amount1)
     elif event_type == "swap":
-        amount0, amount1, _sqrt_price, _liquidity, _tick = abi_decode(
+        amount0, amount1, sqrt_price_x96, active_liquidity, tick = abi_decode(
             ["int256", "int256", "uint160", "uint128", "int24"], data
         )
         delta0, delta1 = int(amount0), int(amount1)
@@ -1059,5 +1076,11 @@ def decode_inventory_log(log: dict) -> dict[str, object]:
         "timestamp": timestamp,
         "amount0_delta_raw": delta0,
         "amount1_delta_raw": delta1,
+        "sqrt_price_x96": int(sqrt_price_x96) if sqrt_price_x96 is not None else None,
+        "active_liquidity": int(active_liquidity) if active_liquidity is not None else None,
+        "tick": int(tick) if tick is not None else None,
+        "liquidity_amount": int(liquidity_amount) if liquidity_amount is not None else None,
+        "tick_lower": tick_lower,
+        "tick_upper": tick_upper,
         "physical_inventory_transfer": event_type != "burn",
     }
