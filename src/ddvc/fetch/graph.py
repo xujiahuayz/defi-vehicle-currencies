@@ -308,10 +308,15 @@ def paginate(
     page_size: int = PAGE_SIZE,
     block_number: int | None = None,
     progress: Callable[[int, str], None] | None = None,
+    max_pages: int = 10_000,
 ) -> list[dict[str, Any]]:
     rows: list[dict[str, Any]] = []
     last_id = ""
+    pages = 0
     while True:
+        pages += 1
+        if pages > max_pages:
+            raise RuntimeError(f"Graph pagination exceeded {max_pages} pages for {entity}")
         where = dict(base_where)
         if last_id:
             where["id_gt"] = last_id

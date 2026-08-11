@@ -3,7 +3,9 @@
 from __future__ import annotations
 
 from collections.abc import Mapping
+from contextlib import contextmanager
 from dataclasses import dataclass
+import datetime as dt
 import gzip
 import json
 from pathlib import Path
@@ -12,6 +14,7 @@ import numpy as np
 import pandas as pd
 
 from ddvc.calendar import RESEARCH_SAMPLE_END, RESEARCH_SAMPLE_START, calendar_days
+from ddvc.fetch.raw import verified_jsonl_gz_rows
 from ddvc.fetch.sources import get_source
 
 
@@ -50,6 +53,23 @@ POOL_IDENTITY_STREAMS: Mapping[str, str] = {
 POOL_IDENTITY_STATIC_SNAPSHOTS: Mapping[str, str] = {
     "uniswap_v3": "uniswap_v3_pool_statics_20260630.jsonl.gz",
 }
+
+
+@contextmanager
+def verified_pool_provider_rows(venue: str, stream: str, path: Path):
+    """Single-pass one pool materializer input through the shared source-day gate."""
+
+    stamp = path.name.removesuffix(".jsonl.gz").rsplit("_", 1)[-1]
+    if len(stamp) != 8 or not stamp.isdigit():
+        raise ValueError(f"provider partition lacks a UTC day: {path}")
+    with verified_jsonl_gz_rows(
+        path,
+        path.with_name(f"{venue}_meta_{stamp}.json"),
+        source_name=venue,
+        stream=stream,
+        day=dt.datetime.strptime(stamp, "%Y%m%d").date(),
+    ) as rows:
+        yield rows
 
 
 def expected_pool_daily_days(venue: str) -> tuple[str, ...]:
@@ -156,31 +176,46 @@ def pool_identity_values(record: Mapping[str, object]) -> tuple[str, PoolIdentit
     )
 
 
-def load_pool_identity_crosswalk(files: list[Path]) -> dict[str, PoolIdentity]:
+def load_pool_identity_crosswalk(
+    files: list[Path], *, venue: str | None = None
+) -> dict[str, PoolIdentity]:
     """Build one conflict-free pool-address crosswalk from immutable events."""
 
     identities: dict[str, PoolIdentity] = {}
+
+    def retain(record: Mapping[str, object]) -> None:
+        resolved = pool_identity_values(record)
+        if resolved is None:
+            return
+        pool, identity = resolved
+        prior = identities.get(pool)
+        if prior is not None and (
+            prior.token0_address != identity.token0_address
+            or prior.token1_address != identity.token1_address
+        ):
+            raise ValueError(f"conflicting immutable token identities for pool {pool}")
+        if prior is None:
+            identities[pool] = identity
+
+    provider_stream = POOL_IDENTITY_STREAMS.get(venue or "")
+    static_name = POOL_IDENTITY_STATIC_SNAPSHOTS.get(venue or "")
     for path in files:
-        with gzip.open(path, "rt") as handle:
-            for line in handle:
-                if not line.strip():
-                    continue
-                try:
-                    record = json.loads(line)
-                except json.JSONDecodeError:
-                    continue
-                resolved = pool_identity_values(record)
-                if resolved is None:
-                    continue
-                pool, identity = resolved
-                prior = identities.get(pool)
-                if prior is not None and (
-                    prior.token0_address != identity.token0_address
-                    or prior.token1_address != identity.token1_address
-                ):
-                    raise ValueError(f"conflicting immutable token identities for pool {pool}")
-                if prior is None:
-                    identities[pool] = identity
+        if provider_stream is not None and path.name != static_name:
+            with verified_pool_provider_rows(
+                str(venue), provider_stream, path
+            ) as records:
+                for record in records:
+                    retain(record)
+        else:
+            with gzip.open(path, "rt") as handle:
+                for line in handle:
+                    if not line.strip():
+                        continue
+                    try:
+                        record = json.loads(line)
+                    except json.JSONDecodeError:
+                        continue
+                    retain(record)
     return identities
 
 
@@ -270,14 +305,8 @@ def read_pool_day_values(
     pattern = f"{venue}_daily_[0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9].jsonl.gz"
     for path in sorted(raw_directory.glob(pattern)):
         stamp = path.name.removesuffix(".jsonl.gz").rsplit("_", 1)[-1]
-        with gzip.open(path, "rt") as handle:
-            for line in handle:
-                if not line.strip():
-                    continue
-                try:
-                    record = json.loads(line)
-                except json.JSONDecodeError:
-                    continue
+        with verified_pool_provider_rows(venue, "daily", path) as records:
+            for record in records:
                 normalized = pool_day_values(venue, record)
                 if normalized is None or (keep is not None and normalized["pool"] not in keep):
                     continue

@@ -9,7 +9,7 @@ analysis-ready panels and never re-query providers.
 from __future__ import annotations
 
 import calendar
-from contextlib import ExitStack
+from contextlib import ExitStack, contextmanager
 import datetime as dt
 import gzip
 import hashlib
@@ -19,7 +19,7 @@ import os
 import shutil
 from pathlib import Path
 from collections.abc import Iterable, Mapping
-from typing import Any
+from typing import Any, Callable
 
 from ddvc.fetch.graph import GraphClient, graph_keys, head_block, paginate
 from ddvc.fetch.schemas import EntitySpec, get_schema
@@ -33,6 +33,7 @@ from ddvc.source_records import block_value, block_values as _block_values
 RAW_GRAPH_QUERY_CONTRACT_VERSION = 1
 RAW_GRAPH_PAGE_SIZE = 1000
 RAW_REFETCH_DIVERGENCE_SCHEMA_VERSION = 1
+RAW_SOURCE_DAY_PROMOTION_SCHEMA_VERSION = 1
 RAW_REFETCH_DIVERGENCE_ROOT = DATA_DIR / "raw" / "thegraph" / "_refetch_divergence"
 
 
@@ -48,9 +49,11 @@ def midnight_ts(day: dt.date) -> int:
     return calendar.timegm(dt.datetime(day.year, day.month, day.day).timetuple())
 
 
-def raw_path(source: str, stream: str, day: dt.date) -> Path:
+def raw_path(
+    source: str, stream: str, day: dt.date, *, data_root: Path = DATA_DIR
+) -> Path:
     return (
-        DATA_DIR
+        data_root
         / "raw"
         / "thegraph"
         / source
@@ -58,13 +61,206 @@ def raw_path(source: str, stream: str, day: dt.date) -> Path:
     )
 
 
-def meta_path(source: str, day: dt.date) -> Path:
+def meta_path(source: str, day: dt.date, *, data_root: Path = DATA_DIR) -> Path:
     return (
-        DATA_DIR
+        data_root
         / "raw"
         / "thegraph"
         / source
         / f"{source}_meta_{day:%Y%m%d}.json"
+    )
+
+
+def installed_source_day_paths(
+    source_name: str,
+    stream: str,
+    day: dt.date,
+    *,
+    data_root: Path = DATA_DIR,
+) -> tuple[Path, Path]:
+    """Resolve one provider partition and its source-day commit record."""
+
+    backend = "dune" if get_source(source_name).backend == "dune" else "thegraph"
+    directory = data_root / "raw" / backend / source_name
+    return (
+        directory / f"{source_name}_{stream}_{day:%Y%m%d}.jsonl.gz",
+        directory / f"{source_name}_meta_{day:%Y%m%d}.json",
+    )
+
+
+def require_committed_source_day_stream(
+    source_name: str,
+    stream: str,
+    day: dt.date,
+    *,
+    data_root: Path = DATA_DIR,
+) -> Path:
+    """Reject a missing or torn raw/source-day pair before canonical consumption."""
+
+    path, marker_path = installed_source_day_paths(
+        source_name, stream, day, data_root=data_root
+    )
+    return require_committed_source_day_path(
+        path,
+        marker_path,
+        source_name=source_name,
+        stream=stream,
+        day=day,
+    )
+
+
+def require_committed_source_day_path(
+    path: Path,
+    marker_path: Path,
+    *,
+    source_name: str,
+    stream: str,
+    day: dt.date,
+) -> Path:
+    """Validate an explicitly resolved raw path against its source-day commit record."""
+
+    expected_hash = _required_source_day_stream_hash(
+        path,
+        marker_path,
+        source_name=source_name,
+        stream=stream,
+        day=day,
+    )
+    if portable_content_sha256(path) != expected_hash:
+        raise RawFetchInvariantError(
+            f"raw source-day payload disagrees with its commit record: {source_name}/{stream}/{day:%Y%m%d}"
+        )
+    return path
+
+
+def _required_source_day_stream_hash(
+    path: Path,
+    marker_path: Path,
+    *,
+    source_name: str,
+    stream: str,
+    day: dt.date,
+) -> str:
+    """Validate source-day marker identity and return its committed logical hash."""
+
+    if not path.is_file() or not marker_path.is_file():
+        raise RawFetchInvariantError(
+            f"raw source-day is uncommitted: {source_name}/{stream}/{day:%Y%m%d}"
+        )
+    try:
+        marker = json.loads(marker_path.read_text(encoding="utf-8"))
+    except (OSError, json.JSONDecodeError) as exc:
+        raise RawFetchInvariantError(f"raw source-day marker is unreadable: {marker_path}") from exc
+    streams = marker.get("streams") if isinstance(marker, dict) else None
+    stream_marker = streams.get(stream) if isinstance(streams, dict) else None
+    expected_day = day.isoformat()
+    if (
+        not isinstance(marker, dict)
+        or marker.get("source") != source_name
+        or marker.get("day") != expected_day
+        or not isinstance(stream_marker, dict)
+    ):
+        raise RawFetchInvariantError(
+            f"raw source-day marker perimeter mismatch: {source_name}/{stream}/{day:%Y%m%d}"
+        )
+    expected_hash = stream_marker.get("logical_content_sha256")
+    if (
+        not isinstance(expected_hash, str)
+        or len(expected_hash) != 64
+    ):
+        raise RawFetchInvariantError(
+            f"raw source-day payload disagrees with its commit record: {source_name}/{stream}/{day:%Y%m%d}"
+        )
+    return expected_hash
+
+
+@contextmanager
+def verified_jsonl_gz_rows(
+    path: Path,
+    marker_path: Path,
+    *,
+    source_name: str,
+    stream: str,
+    day: dt.date,
+):
+    """Parse a committed gzip JSONL stream once and verify its logical hash at EOF."""
+
+    expected_hash = _required_source_day_stream_hash(
+        path,
+        marker_path,
+        source_name=source_name,
+        stream=stream,
+        day=day,
+    )
+    exhausted = False
+
+    def rows():
+        nonlocal exhausted
+        digest = hashlib.sha256()
+        with gzip.open(path, "rb") as handle:
+            for raw_line in handle:
+                digest.update(raw_line)
+                if not raw_line.strip():
+                    continue
+                try:
+                    row = json.loads(raw_line)
+                except (UnicodeDecodeError, json.JSONDecodeError) as exc:
+                    raise RawFetchInvariantError(
+                        f"committed raw JSONL is malformed: {path}"
+                    ) from exc
+                if not isinstance(row, dict):
+                    raise RawFetchInvariantError(
+                        f"committed raw JSONL row is not an object: {path}"
+                    )
+                yield row
+        if digest.hexdigest() != expected_hash:
+            raise RawFetchInvariantError(
+                f"raw source-day payload disagrees with its commit record: {source_name}/{stream}/{day:%Y%m%d}"
+            )
+        exhausted = True
+
+    iterator = rows()
+    try:
+        yield iterator
+    except BaseException:
+        iterator.close()
+        raise
+    else:
+        if not exhausted:
+            iterator.close()
+            raise RawFetchInvariantError(
+                f"committed raw stream was not exhausted: {source_name}/{stream}/{day:%Y%m%d}"
+            )
+
+
+@contextmanager
+def verified_source_day_rows(
+    source_name: str,
+    stream: str,
+    day: dt.date,
+    *,
+    data_root: Path = DATA_DIR,
+):
+    """Resolve and single-pass one committed canonical source-day stream."""
+
+    path, marker_path = installed_source_day_paths(
+        source_name, stream, day, data_root=data_root
+    )
+    with verified_jsonl_gz_rows(
+        path,
+        marker_path,
+        source_name=source_name,
+        stream=stream,
+        day=day,
+    ) as rows:
+        yield rows
+
+
+def _raw_path_at(source: str, stream: str, day: dt.date, data_root: Path) -> Path:
+    return (
+        raw_path(source, stream, day)
+        if data_root == DATA_DIR
+        else raw_path(source, stream, day, data_root=data_root)
     )
 
 
@@ -350,10 +546,12 @@ def require_mergeable_partial_metadata(
         )
 
 
-def read_source_day_metadata(source: DexSource, day: dt.date) -> dict[str, Any]:
+def read_source_day_metadata(
+    source: DexSource, day: dt.date, *, data_root: Path = DATA_DIR
+) -> dict[str, Any]:
     """Read and validate the canonical source/day identity before any provider call."""
 
-    path = meta_path(source.name, day)
+    path = meta_path(source.name, day, data_root=data_root)
     if not path.exists():
         return {}
     try:
@@ -417,10 +615,16 @@ def preserve_refetch_divergence(
     fetched_at_utc: str,
     prior_stream_metadata: object,
     metadata_path: Path,
+    data_root: Path = DATA_DIR,
 ) -> Path:
     """Preserve both captures and an immutable comparison record without changing canonical state."""
 
-    root = RAW_REFETCH_DIVERGENCE_ROOT / source.name / f"{day:%Y%m%d}" / entity.stream
+    root = (
+        (RAW_REFETCH_DIVERGENCE_ROOT if data_root == DATA_DIR else data_root / "raw" / "thegraph" / "_refetch_divergence")
+        / source.name
+        / f"{day:%Y%m%d}"
+        / entity.stream
+    )
     canonical_evidence = root / f"{canonical_hash}.jsonl.gz"
     candidate_evidence = root / f"{candidate_hash}.jsonl.gz"
     _install_immutable_evidence(canonical_path, canonical_evidence, canonical_hash)
@@ -455,6 +659,296 @@ def preserve_refetch_divergence(
             with atomic_output(record_path) as temporary:
                 temporary.write_bytes(payload)
     return record_path
+
+
+def _promote_source_day_unlocked(
+    source_name: str,
+    day: dt.date,
+    streams: set[str],
+    *,
+    candidate_root: Path,
+    evidence_root: Path,
+    data_root: Path = DATA_DIR,
+    after_raw_install: Callable[[Path], None] | None = None,
+) -> dict[str, Any]:
+    """Crash-safely promote verified candidate streams and commit the source-day marker last."""
+
+    if not streams:
+        raise ValueError("source-day promotion requires at least one stream")
+    source = get_source(source_name)
+    available = (
+        {"swaps", "daily"}
+        if source.backend == "dune"
+        else {entity.stream for entity in get_schema(source.schema).entities}
+    )
+    if unknown := sorted(streams.difference(available)):
+        raise ValueError(f"source-day promotion names unavailable streams: {unknown}")
+    candidate_marker_path: Path | None = None
+    candidates: dict[str, tuple[Path, str]] = {}
+    for stream in sorted(streams):
+        candidate_path = require_committed_source_day_stream(
+            source_name,
+            stream,
+            day,
+            data_root=candidate_root,
+        )
+        _candidate_path, observed_marker = installed_source_day_paths(
+            source_name,
+            stream,
+            day,
+            data_root=candidate_root,
+        )
+        candidate_marker_path = candidate_marker_path or observed_marker
+        if observed_marker != candidate_marker_path:
+            raise RawFetchInvariantError("candidate streams do not share one source-day marker")
+        candidates[stream] = (candidate_path, portable_content_sha256(candidate_path))
+    if candidate_marker_path is None:
+        raise AssertionError("candidate source-day marker was not resolved")
+    candidate_marker = json.loads(candidate_marker_path.read_text(encoding="utf-8"))
+    candidate_streams = candidate_marker.get("streams") or {}
+    for stream in sorted(streams):
+        stream_marker = candidate_streams.get(stream)
+        if not isinstance(stream_marker, dict):
+            raise RawFetchInvariantError(f"candidate source-day marker omits {stream}")
+        if source.backend == "thegraph":
+            entity = next(
+                entity
+                for entity in get_schema(source.schema).entities
+                if entity.stream == stream
+            )
+            expected_query = graph_query_contract_sha256(entity)
+            head = stream_marker.get(
+                "head_block_at_fetch", candidate_marker.get("head_block_at_fetch")
+            )
+            if (
+                stream_marker.get("query_contract_sha256") != expected_query
+                or isinstance(head, bool)
+                or not isinstance(head, int)
+                or head < 0
+            ):
+                raise RawFetchInvariantError(
+                    f"candidate stream lacks current frozen query provenance: {source_name}/{stream}/{day:%Y%m%d}"
+                )
+        else:
+            from ddvc.fetch.dune import validated_dune_query_window
+
+            try:
+                validated_dune_query_window(source, day, stream_marker)
+            except ValueError as error:
+                raise RawFetchInvariantError(
+                    f"candidate Dune stream lacks current query provenance: {source_name}/{stream}/{day:%Y%m%d}: {error}"
+                ) from error
+    from ddvc.raw_certification import RawPartition, scan_installed_generation
+
+    candidate_partitions = [
+        RawPartition(source_name, stream, f"{day:%Y%m%d}")
+        for stream in sorted(streams)
+    ]
+    candidate_scan = scan_installed_generation(
+        candidate_root,
+        evidence_root / ".promotion-scan-cache",
+        workers=1,
+        partitions=candidate_partitions,
+    )
+    candidate_failures = [
+        row for row in candidate_scan if row.get("local_pass") is not True
+    ]
+    if candidate_failures:
+        first = candidate_failures[0]
+        raise RawFetchInvariantError(
+            f"candidate stream fails the consumer contract: {first['source']}/{first['stream']}/{first['day']} errors={first.get('errors')}"
+        )
+    promotion_contract = {
+        "schema_version": RAW_SOURCE_DAY_PROMOTION_SCHEMA_VERSION,
+        "source": source_name,
+        "day": day.isoformat(),
+        "streams": {
+            stream: digest for stream, (_path, digest) in sorted(candidates.items())
+        },
+    }
+    promotion_id = hashlib.sha256(
+        json.dumps(promotion_contract, sort_keys=True, separators=(",", ":")).encode()
+    ).hexdigest()
+    day_evidence = evidence_root / source_name / f"{day:%Y%m%d}" / promotion_id
+    prepared_path = day_evidence / "promotion-prepared.json"
+    destination_marker_path: Path | None = None
+    destinations: dict[str, Path] = {}
+    for stream in sorted(streams):
+        destination_path, observed_marker = installed_source_day_paths(
+            source_name,
+            stream,
+            day,
+            data_root=data_root,
+        )
+        destination_marker_path = destination_marker_path or observed_marker
+        if observed_marker != destination_marker_path:
+            raise RawFetchInvariantError("canonical streams do not share one source-day marker")
+        destinations[stream] = destination_path
+    if destination_marker_path is None:
+        raise AssertionError("canonical source-day marker was not resolved")
+    if destination_marker_path.is_file():
+        try:
+            installed_marker = json.loads(destination_marker_path.read_text(encoding="utf-8"))
+        except json.JSONDecodeError as exc:
+            raise RawFetchInvariantError(
+                f"canonical source-day marker is unreadable: {destination_marker_path}"
+            ) from exc
+        if not isinstance(installed_marker, dict):
+            raise RawFetchInvariantError(
+                f"canonical source-day marker is not an object: {destination_marker_path}"
+            )
+        if installed_marker.get("promotion") == {
+            "policy": "raw-source-day-promotion-v1",
+            "promotion_id": promotion_id,
+        }:
+            for stream in streams:
+                require_committed_source_day_stream(
+                    source_name, stream, day, data_root=data_root
+                )
+            return {**promotion_contract, "promotion_id": promotion_id, "status": "already_committed"}
+    else:
+        installed_marker = {
+            "source": source_name,
+            "day": day.isoformat(),
+            "streams": {},
+        }
+    if prepared_path.is_file():
+        prepared = json.loads(prepared_path.read_text(encoding="utf-8"))
+        if prepared.get("promotion_contract") != promotion_contract:
+            raise RawFetchInvariantError("prepared promotion contract changed")
+    else:
+        retained: list[dict[str, object]] = []
+        for stream, destination in sorted(destinations.items()):
+            legacy_missing = not destination.is_file()
+            legacy_hash = (
+                None if legacy_missing else portable_content_sha256(destination)
+            )
+            legacy_evidence = (
+                None
+                if legacy_missing
+                else day_evidence / stream / f"legacy-{legacy_hash}.jsonl.gz"
+            )
+            candidate_path, candidate_hash = candidates[stream]
+            candidate_evidence = day_evidence / stream / f"candidate-{candidate_hash}.jsonl.gz"
+            if legacy_evidence is not None and legacy_hash is not None:
+                _install_immutable_evidence(
+                    destination, legacy_evidence, legacy_hash
+                )
+            _install_immutable_evidence(candidate_path, candidate_evidence, candidate_hash)
+            retained.append(
+                {
+                    "stream": stream,
+                    "legacy_missing": legacy_missing,
+                    "legacy_sha256": legacy_hash,
+                    "legacy_evidence": (
+                        str(legacy_evidence.relative_to(evidence_root))
+                        if legacy_evidence is not None
+                        else None
+                    ),
+                    "candidate_sha256": candidate_hash,
+                    "candidate_evidence": str(candidate_evidence.relative_to(evidence_root)),
+                }
+            )
+        marker_hash = portable_content_sha256(destination_marker_path) if destination_marker_path.is_file() else None
+        marker_evidence = None
+        if marker_hash is not None:
+            marker_evidence = day_evidence / f"legacy-marker-{marker_hash}.json"
+            _install_immutable_evidence(
+                destination_marker_path, marker_evidence, marker_hash
+            )
+        prepared = {
+            "policy": "raw-source-day-promotion-prepared-v1",
+            "promotion_contract": promotion_contract,
+            "retained_streams": retained,
+            "legacy_marker_sha256": marker_hash,
+            "legacy_marker_evidence": (
+                str(marker_evidence.relative_to(evidence_root))
+                if marker_evidence is not None
+                else None
+            ),
+        }
+        write_json(prepared_path, prepared)
+    retained_by_stream = {
+        item["stream"]: item for item in prepared.get("retained_streams") or []
+    }
+    if set(retained_by_stream) != streams:
+        raise RawFetchInvariantError("prepared promotion evidence perimeter changed")
+    new_marker = dict(installed_marker)
+    new_marker.update(
+        {
+            "source": source_name,
+            "day": day.isoformat(),
+            "streams": dict(installed_marker.get("streams") or {}),
+        }
+    )
+    for stream, (candidate_path, candidate_hash) in sorted(candidates.items()):
+        candidate_stream_marker = candidate_streams.get(stream)
+        if not isinstance(candidate_stream_marker, dict):
+            raise RawFetchInvariantError(f"candidate source-day marker omits {stream}")
+        candidate_stream_marker = dict(candidate_stream_marker)
+        candidate_stream_marker["path"] = raw_stream_identity(destinations[stream])
+        candidate_stream_marker["logical_content_sha256"] = candidate_hash
+        new_marker["streams"][stream] = candidate_stream_marker
+        retained = retained_by_stream[stream]
+        destination_hash = (
+            portable_content_sha256(destinations[stream])
+            if destinations[stream].is_file()
+            else None
+        )
+        if destination_hash != candidate_hash:
+            expected_legacy = retained.get("legacy_sha256")
+            if destination_hash != expected_legacy or bool(
+                retained.get("legacy_missing")
+            ) != (destination_hash is None):
+                raise RawFetchInvariantError(
+                    f"canonical source-day changed outside promotion: {source_name}/{stream}/{day:%Y%m%d}"
+                )
+            with atomic_output(destinations[stream]) as temporary:
+                shutil.copyfile(candidate_path, temporary)
+            if portable_content_sha256(destinations[stream]) != candidate_hash:
+                raise RawFetchInvariantError(f"promoted raw stream failed its hash: {destinations[stream]}")
+            if after_raw_install is not None:
+                after_raw_install(destinations[stream])
+    new_marker["promotion"] = {
+        "policy": "raw-source-day-promotion-v1",
+        "promotion_id": promotion_id,
+    }
+    write_json(destination_marker_path, new_marker)
+    for stream in streams:
+        require_committed_source_day_stream(
+            source_name, stream, day, data_root=data_root
+        )
+    return {**promotion_contract, "promotion_id": promotion_id, "status": "committed"}
+
+
+def promote_source_day(
+    source_name: str,
+    day: dt.date,
+    streams: set[str],
+    *,
+    candidate_root: Path,
+    evidence_root: Path,
+    data_root: Path = DATA_DIR,
+    after_raw_install: Callable[[Path], None] | None = None,
+) -> dict[str, Any]:
+    """Serialize one source-day promotion so concurrent stream sets cannot lose marker state."""
+
+    _path, marker_path = installed_source_day_paths(
+        source_name,
+        next(iter(sorted(streams)), "swaps"),
+        day,
+        data_root=data_root,
+    )
+    with serialized_output_install(marker_path):
+        return _promote_source_day_unlocked(
+            source_name,
+            day,
+            streams,
+            candidate_root=candidate_root,
+            evidence_root=evidence_root,
+            data_root=data_root,
+            after_raw_install=after_raw_install,
+        )
 
 
 def index_existing_stream(path: Path, entity: EntitySpec) -> dict[str, Any]:
@@ -497,6 +991,7 @@ def repair_source_day_metadata(
     day: dt.date,
     *,
     streams: set[str] | None = None,
+    data_root: Path = DATA_DIR,
 ) -> dict[str, Any]:
     """Index installed streams and merge them into one source-day sidecar."""
 
@@ -504,12 +999,12 @@ def repair_source_day_metadata(
     selected = [entity for entity in schema.entities if streams is None or entity.stream in streams]
     if not selected:
         return {"source": source.name, "day": day.isoformat(), "streams": {}}
-    meta_out = meta_path(source.name, day)
-    existing = read_source_day_metadata(source, day)
+    meta_out = meta_path(source.name, day, data_root=data_root)
+    existing = read_source_day_metadata(source, day, data_root=data_root)
     stream_meta: dict[str, dict[str, Any]] = {}
     existing_streams = existing.get("streams")
     for entity in selected:
-        path = raw_path(source.name, entity.stream, day)
+        path = _raw_path_at(source.name, entity.stream, day, data_root)
         if not path.is_file():
             raise FileNotFoundError(f"installed raw stream is missing: {path}")
         indexed = index_existing_stream(path, entity)
@@ -547,14 +1042,17 @@ def fetch_source_day(
     streams: set[str] | None = None,
     skip_existing: bool = True,
     head_block_at_fetch: int | None = None,
+    data_root: Path = DATA_DIR,
+    max_pages_per_chunk: int = 10_000,
+    max_transient_retries: int = 4,
 ) -> dict[str, Any]:
     schema = get_schema(source.schema)
     selected = [entity for entity in schema.entities if streams is None or entity.stream in streams]
     if not selected:
         return {"source": source.name, "day": day.isoformat(), "streams": {}}
 
-    meta_out = meta_path(source.name, day)
-    existing_meta = read_source_day_metadata(source, day)
+    meta_out = meta_path(source.name, day, data_root=data_root)
+    existing_meta = read_source_day_metadata(source, day, data_root=data_root)
     if streams is not None and meta_out.exists():
         require_mergeable_partial_metadata(
             existing_meta,
@@ -562,7 +1060,12 @@ def fetch_source_day(
             canonical_streams={entity.stream for entity in schema.entities},
         )
 
-    client = GraphClient(source.subgraph_id, graph_keys(), graph_path=source.graph_path)
+    client = GraphClient(
+        source.subgraph_id,
+        graph_keys(),
+        graph_path=source.graph_path,
+        max_transient_retries=max_transient_retries,
+    )
     head = require_frozen_graph_head(source, head_block_at_fetch if head_block_at_fetch is not None else head_block(client))
     stream_meta: dict[str, dict[str, Any]] = {}
     existing_streams = existing_meta.get("streams")
@@ -570,7 +1073,7 @@ def fetch_source_day(
     staged: list[dict[str, Any]] = []
     with ExitStack() as stack:
         for entity in selected:
-            out = raw_path(source.name, entity.stream, day)
+            out = _raw_path_at(source.name, entity.stream, day, data_root)
             existing_stream = existing_streams.get(entity.stream)
             if skip_existing and out.exists() and raw_stream_metadata_is_current(existing_stream, entity, expected_path=out):
                 stream_meta[entity.stream] = {"path": raw_stream_identity(out), "status": "skipped"}
@@ -585,6 +1088,7 @@ def fetch_source_day(
                         base_where=where,
                         page_size=page_size_for_entity(entity),
                         block_number=head,
+                        max_pages=max_pages_per_chunk,
                     )
                 )
             temporary = stack.enter_context(staged_output(out))
@@ -631,6 +1135,7 @@ def fetch_source_day(
                     fetched_at_utc=item["metadata"]["fetched_at_utc"],
                     prior_stream_metadata=existing_streams.get(item["entity"].stream),
                     metadata_path=meta_out,
+                    data_root=data_root,
                 )
                 for item in divergent
             ]

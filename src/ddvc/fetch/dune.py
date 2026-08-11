@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import calendar
 import datetime as dt
+import hashlib
 import json
 import os
 import time
@@ -17,8 +18,11 @@ from ddvc.config import dotenv_value
 from ddvc.fetch.raw import write_jsonl_gz
 from ddvc.fetch.sources import DexSource
 from ddvc.paths import DATA_DIR
+from ddvc.provenance import portable_content_sha256
 
 API = "https://api.dune.com/api/v1"
+DUNE_QUERY_START_FIELD = "query_start_date"
+DUNE_QUERY_END_EXCLUSIVE_FIELD = "query_end_date_exclusive"
 
 
 def dune_keys() -> list[str]:
@@ -37,12 +41,16 @@ def dune_keys() -> list[str]:
         keys.append(key)
     return keys
 
-def dune_path(source: str, stream: str, day: dt.date) -> Path:
-    return DATA_DIR / "raw" / "dune" / source / f"{source}_{stream}_{day:%Y%m%d}.jsonl.gz"
+def dune_path(
+    source: str, stream: str, day: dt.date, *, data_root: Path = DATA_DIR
+) -> Path:
+    return data_root / "raw" / "dune" / source / f"{source}_{stream}_{day:%Y%m%d}.jsonl.gz"
 
 
-def dune_meta_path(source: str, day: dt.date) -> Path:
-    return DATA_DIR / "raw" / "dune" / source / f"{source}_meta_{day:%Y%m%d}.json"
+def dune_meta_path(
+    source: str, day: dt.date, *, data_root: Path = DATA_DIR
+) -> Path:
+    return data_root / "raw" / "dune" / source / f"{source}_meta_{day:%Y%m%d}.json"
 
 
 def _request(key: str, method: str, path: str, body: dict[str, Any] | None = None) -> tuple[int, Any]:
@@ -133,6 +141,49 @@ ORDER BY block_time, evt_index
 """
 
 
+def dune_query_contract_sha256(
+    source: DexSource, start: dt.date, end: dt.date
+) -> str:
+    payload = {
+        "backend": "dune",
+        "source": source.name,
+        "project": source.dune_project,
+        "version": source.dune_version,
+        "sql": " ".join(_source_sql(source, start, end).split()),
+    }
+    return hashlib.sha256(
+        json.dumps(payload, sort_keys=True, separators=(",", ":")).encode()
+    ).hexdigest()
+
+
+def validated_dune_query_window(
+    source: DexSource,
+    day: dt.date,
+    stream_marker: dict[str, Any],
+) -> tuple[dt.date, dt.date]:
+    """Reopen one recorded Dune query window and bind it to its SQL contract."""
+
+    raw_start = stream_marker.get(DUNE_QUERY_START_FIELD)
+    raw_end = stream_marker.get(DUNE_QUERY_END_EXCLUSIVE_FIELD)
+    if not isinstance(raw_start, str) or not isinstance(raw_end, str):
+        raise ValueError("Dune query window is absent")
+    try:
+        start = dt.date.fromisoformat(raw_start)
+        end = dt.date.fromisoformat(raw_end)
+    except ValueError as error:
+        raise ValueError("Dune query window is not ISO calendar dates") from error
+    if raw_start != start.isoformat() or raw_end != end.isoformat():
+        raise ValueError("Dune query window is not canonical ISO calendar dates")
+    if start >= end:
+        raise ValueError("Dune query window is empty or reversed")
+    if not start <= day < end:
+        raise ValueError("Dune query window does not contain the source day")
+    expected = dune_query_contract_sha256(source, start, end)
+    if stream_marker.get("query_contract_sha256") != expected:
+        raise ValueError("Dune query contract does not match its recorded window")
+    return start, end
+
+
 def _query_id(source: DexSource) -> int:
     state_path = _query_state_path()
     state: dict[str, int] = {}
@@ -176,7 +227,14 @@ def _execute_sql(source: DexSource, start: dt.date, end: dt.date) -> str:
     return str(payload["execution_id"])
 
 
-def _await_rows(execution_id: str, *, poll_seconds: int = 3, max_polls: int = 240) -> list[dict[str, Any]]:
+def _await_rows(
+    execution_id: str,
+    *,
+    poll_seconds: int = 3,
+    max_polls: int = 240,
+    max_result_pages: int = 10_000,
+    max_page_retries: int = 5,
+) -> list[dict[str, Any]]:
     for _ in range(max_polls):
         status, payload = _call("GET", f"/execution/{execution_id}/status")
         if status == 429:
@@ -196,9 +254,18 @@ def _await_rows(execution_id: str, *, poll_seconds: int = 3, max_polls: int = 24
     rows: list[dict[str, Any]] = []
     offset = 0
     limit = 1000
+    page_count = 0
+    page_retries = 0
     while True:
+        page_count += 1
+        if page_count > max_result_pages:
+            raise RuntimeError(f"Dune result exceeded {max_result_pages} pages: {execution_id}")
         status, payload = _call("GET", f"/execution/{execution_id}/results?limit={limit}&offset={offset}")
         if status == 429:
+            page_count -= 1
+            page_retries += 1
+            if page_retries > max_page_retries:
+                raise RuntimeError(f"Dune result page exceeded retry bound: {execution_id}/{offset}")
             time.sleep(10)
             continue
         if status != 200:
@@ -207,6 +274,7 @@ def _await_rows(execution_id: str, *, poll_seconds: int = 3, max_polls: int = 24
         rows.extend(page)
         if len(page) < limit:
             break
+        page_retries = 0
         offset += limit
     return rows
 
@@ -264,14 +332,19 @@ def fetch_dune_month(
     *,
     streams: set[str] | None = None,
     skip_existing: bool = True,
+    data_root: Path = DATA_DIR,
+    max_result_pages: int = 10_000,
+    max_page_retries: int = 5,
 ) -> list[dict[str, Any]]:
+    if month_start >= month_end:
+        raise ValueError("Dune query window must have a positive duration")
     selected = streams or {"swaps", "daily"}
     days = [
         month_start + dt.timedelta(days=offset)
         for offset in range((month_end - month_start).days)
     ]
     if skip_existing and all(
-        all(dune_path(source.name, stream, day).exists() for stream in selected)
+        all(dune_path(source.name, stream, day, data_root=data_root).exists() for stream in selected)
         for day in days
     ):
         return [
@@ -280,24 +353,55 @@ def fetch_dune_month(
         ]
 
     execution_id = _execute_sql(source, month_start, month_end)
-    rows = _await_rows(execution_id)
+    rows = _await_rows(
+        execution_id,
+        max_result_pages=max_result_pages,
+        max_page_retries=max_page_retries,
+    )
     by_day: dict[dt.date, list[dict[str, Any]]] = defaultdict(list)
     for row in rows:
-        by_day[_date_from_row(row)].append(row)
+        row_day = _date_from_row(row)
+        if not month_start <= row_day < month_end:
+            raise ValueError(
+                f"Dune returned a row outside the requested query window: {row_day}"
+            )
+        by_day[row_day].append(row)
 
     metas: list[dict[str, Any]] = []
     for day in days:
         day_rows = by_day.get(day, [])
         stream_meta: dict[str, dict[str, Any]] = {}
         if "swaps" in selected:
-            out = dune_path(source.name, "swaps", day)
+            out = dune_path(source.name, "swaps", day, data_root=data_root)
             write_jsonl_gz(out, day_rows)
-            stream_meta["swaps"] = {"path": str(out), "status": "fetched", "rows": len(day_rows)}
+            stream_meta["swaps"] = {
+                "path": str(out),
+                "status": "fetched",
+                "rows": len(day_rows),
+                "logical_content_sha256": portable_content_sha256(out),
+                "query_contract_sha256": dune_query_contract_sha256(
+                    source, month_start, month_end
+                ),
+                DUNE_QUERY_START_FIELD: month_start.isoformat(),
+                DUNE_QUERY_END_EXCLUSIVE_FIELD: month_end.isoformat(),
+                "execution_id": execution_id,
+            }
         if "daily" in selected:
             summary = _daily_summary(day_rows)
-            out = dune_path(source.name, "daily", day)
+            out = dune_path(source.name, "daily", day, data_root=data_root)
             write_jsonl_gz(out, summary)
-            stream_meta["daily"] = {"path": str(out), "status": "fetched", "rows": len(summary)}
+            stream_meta["daily"] = {
+                "path": str(out),
+                "status": "fetched",
+                "rows": len(summary),
+                "logical_content_sha256": portable_content_sha256(out),
+                "query_contract_sha256": dune_query_contract_sha256(
+                    source, month_start, month_end
+                ),
+                DUNE_QUERY_START_FIELD: month_start.isoformat(),
+                DUNE_QUERY_END_EXCLUSIVE_FIELD: month_end.isoformat(),
+                "execution_id": execution_id,
+            }
         blocks = _block_values(day_rows)
         meta = {
             "source": source.name,
@@ -314,7 +418,7 @@ def fetch_dune_month(
             "streams": stream_meta,
             "fetched_at_utc": dt.datetime.now(dt.timezone.utc).isoformat(),
         }
-        meta_out = dune_meta_path(source.name, day)
+        meta_out = dune_meta_path(source.name, day, data_root=data_root)
         meta_out.parent.mkdir(parents=True, exist_ok=True)
         tmp = meta_out.with_name(meta_out.name + ".tmp")
         tmp.write_text(json.dumps(meta, indent=2, sort_keys=True))

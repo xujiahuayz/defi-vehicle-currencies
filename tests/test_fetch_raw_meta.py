@@ -9,6 +9,13 @@ from pathlib import Path
 from unittest.mock import patch
 
 from ddvc.fetch.graph import build_query
+from ddvc.fetch.dune import (
+    DUNE_QUERY_END_EXCLUSIVE_FIELD,
+    DUNE_QUERY_START_FIELD,
+    dune_meta_path,
+    dune_query_contract_sha256,
+    fetch_dune_month,
+)
 from ddvc.fetch.raw import (
     RawFetchInvariantError,
     RawRefetchDivergenceError,
@@ -16,17 +23,23 @@ from ddvc.fetch.raw import (
     graph_query_contract_sha256,
     index_existing_stream,
     merge_stream_metadata,
+    installed_source_day_paths,
     indexed_metadata_streams,
+    promote_source_day,
     raw_stream_metadata_is_current,
     repair_source_day_metadata,
     raw_stream_identity,
     require_mergeable_partial_metadata,
+    require_committed_source_day_stream,
+    verified_jsonl_gz_rows,
     write_json,
     write_jsonl_gz,
 )
 from ddvc.provenance import portable_content_sha256
 from ddvc.fetch.schemas import EntitySpec, SchemaSpec, get_schema
 from ddvc.fetch.sources import get_source
+from ddvc.fetch.pool_daily import read_pool_day_values
+from ddvc.reconstruct import load_legs
 from ddvc.source_records import (
     block_value,
     merge_v4_statics,
@@ -40,7 +53,465 @@ from ddvc.source_records import (
 from scripts.fetch_raw_market_data import enrich_v4_statics_day
 
 
+def v3_route_row(identity: str = "current") -> dict[str, object]:
+    return {
+        "id": identity,
+        "transaction": {
+            "id": f"tx-{identity}",
+            "blockNumber": "1",
+            "timestamp": "1640995201",
+        },
+        "timestamp": "1640995201",
+        "pool": {
+            "id": "pool",
+            "token0": {"id": "token0", "symbol": "T0"},
+            "token1": {"id": "token1", "symbol": "T1"},
+        },
+        "amount0": "1",
+        "amount1": "-1",
+        "logIndex": "0",
+    }
+
+
+def fluid_route_row(day: dt.date) -> dict[str, object]:
+    return {
+        "tx_hash": "0xabc",
+        "evt_index": 1,
+        "block_number": 18_900_000,
+        "block_time": f"{day.isoformat()} 00:00:01.000 UTC",
+        "token_sold_address": "token0",
+        "token_sold_symbol": "T0",
+        "token_sold_amount": 1,
+        "token_bought_address": "token1",
+        "token_bought_symbol": "T1",
+        "token_bought_amount": 2,
+        "amount_usd": 2,
+        "pool": "pool",
+    }
+
+
+def graph_stream_query_sha256(source_name: str, stream: str) -> str:
+    source = get_source(source_name)
+    entity = next(
+        entity
+        for entity in get_schema(source.schema).entities
+        if entity.stream == stream
+    )
+    return graph_query_contract_sha256(entity)
+
+
 class RawMetaMergeTests(unittest.TestCase):
+    def test_dune_fetch_records_exact_query_window_on_every_stream(self) -> None:
+        source = get_source("fluid")
+        start = dt.date(2024, 11, 1)
+        end = dt.date(2024, 11, 3)
+        rows = [fluid_route_row(start), fluid_route_row(start + dt.timedelta(days=1))]
+        with tempfile.TemporaryDirectory() as tmp, patch(
+            "ddvc.fetch.dune._execute_sql", return_value="execution"
+        ), patch("ddvc.fetch.dune._await_rows", return_value=rows):
+            root = Path(tmp)
+            fetch_dune_month(
+                source,
+                start,
+                end,
+                streams={"swaps", "daily"},
+                skip_existing=False,
+                data_root=root,
+            )
+            expected_hash = dune_query_contract_sha256(source, start, end)
+            for day in (start, start + dt.timedelta(days=1)):
+                marker = json.loads(
+                    dune_meta_path(source.name, day, data_root=root).read_text()
+                )
+                for stream in ("swaps", "daily"):
+                    self.assertEqual(
+                        marker["streams"][stream][DUNE_QUERY_START_FIELD],
+                        start.isoformat(),
+                    )
+                    self.assertEqual(
+                        marker["streams"][stream][DUNE_QUERY_END_EXCLUSIVE_FIELD],
+                        end.isoformat(),
+                    )
+                    self.assertEqual(
+                        marker["streams"][stream]["query_contract_sha256"],
+                        expected_hash,
+                    )
+
+    def test_dune_fetch_rejects_provider_rows_outside_query_window(self) -> None:
+        source = get_source("fluid")
+        start = dt.date(2024, 11, 1)
+        end = dt.date(2024, 11, 2)
+        with tempfile.TemporaryDirectory() as tmp, patch(
+            "ddvc.fetch.dune._execute_sql", return_value="execution"
+        ), patch(
+            "ddvc.fetch.dune._await_rows", return_value=[fluid_route_row(end)]
+        ):
+            with self.assertRaisesRegex(ValueError, "outside the requested query window"):
+                fetch_dune_month(
+                    source,
+                    start,
+                    end,
+                    streams={"swaps"},
+                    skip_existing=False,
+                    data_root=Path(tmp),
+                )
+
+    def _write_dune_candidate(
+        self,
+        root: Path,
+        day: dt.date,
+        *,
+        query_start: object,
+        query_end_exclusive: object,
+        query_contract_sha256: str,
+    ) -> None:
+        raw, marker = installed_source_day_paths(
+            "fluid", "swaps", day, data_root=root
+        )
+        write_jsonl_gz(raw, [fluid_route_row(day)])
+        write_json(
+            marker,
+            {
+                "source": "fluid",
+                "day": day.isoformat(),
+                "streams": {
+                    "swaps": {
+                        "rows": 1,
+                        "logical_content_sha256": portable_content_sha256(raw),
+                        "query_contract_sha256": query_contract_sha256,
+                        DUNE_QUERY_START_FIELD: query_start,
+                        DUNE_QUERY_END_EXCLUSIVE_FIELD: query_end_exclusive,
+                    }
+                },
+            },
+        )
+
+    def test_dune_month_window_promotes_with_exact_recorded_query_contract(self) -> None:
+        day = dt.date(2024, 11, 15)
+        start = dt.date(2024, 11, 1)
+        end = dt.date(2024, 12, 1)
+        source = get_source("fluid")
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            candidate = root / "candidate"
+            canonical = root / "canonical"
+            self._write_dune_candidate(
+                candidate,
+                day,
+                query_start=start.isoformat(),
+                query_end_exclusive=end.isoformat(),
+                query_contract_sha256=dune_query_contract_sha256(source, start, end),
+            )
+            promoted = promote_source_day(
+                "fluid",
+                day,
+                {"swaps"},
+                candidate_root=candidate,
+                evidence_root=root / "evidence",
+                data_root=canonical,
+            )
+            self.assertEqual(promoted["status"], "committed")
+            require_committed_source_day_stream(
+                "fluid", "swaps", day, data_root=canonical
+            )
+
+    def test_dune_promotion_rejects_window_and_contract_tampering(self) -> None:
+        day = dt.date(2024, 11, 15)
+        source = get_source("fluid")
+        valid_start = dt.date(2024, 11, 1)
+        valid_end = dt.date(2024, 12, 1)
+        cases = {
+            "unparseable": (
+                "not-a-date",
+                valid_end.isoformat(),
+                dune_query_contract_sha256(source, valid_start, valid_end),
+            ),
+            "reversed": (
+                valid_end.isoformat(),
+                valid_start.isoformat(),
+                dune_query_contract_sha256(source, valid_start, valid_end),
+            ),
+            "outside_day": (
+                "2024-10-01",
+                "2024-11-01",
+                dune_query_contract_sha256(
+                    source, dt.date(2024, 10, 1), dt.date(2024, 11, 1)
+                ),
+            ),
+            "hash_mismatch": (
+                valid_start.isoformat(),
+                valid_end.isoformat(),
+                "0" * 64,
+            ),
+        }
+        for label, (start, end, query_hash) in cases.items():
+            with self.subTest(label=label), tempfile.TemporaryDirectory() as tmp:
+                root = Path(tmp)
+                self._write_dune_candidate(
+                    root / "candidate",
+                    day,
+                    query_start=start,
+                    query_end_exclusive=end,
+                    query_contract_sha256=query_hash,
+                )
+                with self.assertRaisesRegex(
+                    RawFetchInvariantError, "current query provenance"
+                ):
+                    promote_source_day(
+                        "fluid",
+                        day,
+                        {"swaps"},
+                        candidate_root=root / "candidate",
+                        evidence_root=root / "evidence",
+                        data_root=root / "canonical",
+                    )
+
+    def test_verified_reader_rejects_early_exit_without_rehashing_twice(self) -> None:
+        day = dt.date(2022, 1, 1)
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            raw, marker = installed_source_day_paths(
+                "uniswap_v3", "swaps", day, data_root=root
+            )
+            write_jsonl_gz(raw, [{"id": "first"}, {"id": "second"}])
+            write_json(
+                marker,
+                {
+                    "source": "uniswap_v3",
+                    "day": day.isoformat(),
+                    "streams": {
+                        "swaps": {
+                            "logical_content_sha256": portable_content_sha256(raw)
+                        }
+                    },
+                },
+            )
+            with self.assertRaisesRegex(
+                RawFetchInvariantError, "was not exhausted"
+            ):
+                with verified_jsonl_gz_rows(
+                    raw,
+                    marker,
+                    source_name="uniswap_v3",
+                    stream="swaps",
+                    day=day,
+                ) as rows:
+                    next(rows)
+
+    def test_route_loader_enforces_source_day_gate_with_exact_perimeter(self) -> None:
+        day = dt.date(2022, 1, 1)
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            raw, marker = installed_source_day_paths(
+                "uniswap_v3", "swaps", day, data_root=root
+            )
+            write_jsonl_gz(raw, [{"id": "row"}])
+            write_json(
+                marker,
+                {
+                    "source": "uniswap_v3",
+                    "day": day.isoformat(),
+                    "streams": {
+                        "swaps": {"logical_content_sha256": "0" * 64}
+                    },
+                },
+            )
+            with self.assertRaisesRegex(
+                RawFetchInvariantError, "disagrees with its commit record"
+            ):
+                load_legs("uniswap_v3", day.isoformat(), data_root=root)
+
+    def test_pool_daily_reader_rejects_raw_marker_mismatch(self) -> None:
+        day = dt.date(2022, 1, 1)
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            raw, marker = installed_source_day_paths(
+                "uniswap_v2", "daily", day, data_root=root
+            )
+            write_jsonl_gz(raw, [{"id": "row"}])
+            write_json(
+                marker,
+                {
+                    "source": "uniswap_v2",
+                    "day": day.isoformat(),
+                    "streams": {
+                        "daily": {"logical_content_sha256": "0" * 64}
+                    },
+                },
+            )
+            with self.assertRaisesRegex(
+                RawFetchInvariantError, "disagrees with its commit record"
+            ):
+                read_pool_day_values("uniswap_v2", raw.parent)
+
+    def test_source_day_promotion_fails_closed_after_raw_before_marker_and_resumes(self) -> None:
+        source = "uniswap_v3"
+        stream = "swaps"
+        day = dt.date(2022, 1, 1)
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            canonical = root / "canonical"
+            candidate = root / "candidate"
+            evidence = root / "evidence"
+            canonical_raw, canonical_marker = installed_source_day_paths(
+                source, stream, day, data_root=canonical
+            )
+            candidate_raw, candidate_marker = installed_source_day_paths(
+                source, stream, day, data_root=candidate
+            )
+            write_jsonl_gz(canonical_raw, [{"id": "legacy"}])
+            write_jsonl_gz(candidate_raw, [v3_route_row()])
+            for path, marker in (
+                (canonical_raw, canonical_marker),
+                (candidate_raw, candidate_marker),
+            ):
+                write_json(
+                    marker,
+                    {
+                        "source": source,
+                        "day": day.isoformat(),
+                        "streams": {
+                            stream: {
+                                "rows": 1,
+                                "logical_content_sha256": portable_content_sha256(path),
+                                **(
+                                    {
+                                        "query_contract_sha256": graph_stream_query_sha256(
+                                            source, stream
+                                        ),
+                                        "head_block_at_fetch": 20_000_000,
+                                    }
+                                    if path == candidate_raw
+                                    else {}
+                                ),
+                            }
+                        },
+                    },
+                )
+            require_committed_source_day_stream(
+                source, stream, day, data_root=canonical
+            )
+
+            def crash(_path: Path) -> None:
+                raise RuntimeError("injected crash after raw install")
+
+            with self.assertRaisesRegex(RuntimeError, "injected crash"):
+                promote_source_day(
+                    source,
+                    day,
+                    {stream},
+                    candidate_root=candidate,
+                    evidence_root=evidence,
+                    data_root=canonical,
+                    after_raw_install=crash,
+                )
+            with self.assertRaisesRegex(
+                RawFetchInvariantError, "disagrees with its commit record"
+            ):
+                require_committed_source_day_stream(
+                    source, stream, day, data_root=canonical
+                )
+            resumed = promote_source_day(
+                source,
+                day,
+                {stream},
+                candidate_root=candidate,
+                evidence_root=evidence,
+                data_root=canonical,
+            )
+            self.assertEqual(resumed["status"], "committed")
+            self.assertEqual(
+                require_committed_source_day_stream(
+                    source, stream, day, data_root=canonical
+                ),
+                canonical_raw,
+            )
+            self.assertEqual(
+                promote_source_day(
+                    source,
+                    day,
+                    {stream},
+                    candidate_root=candidate,
+                    evidence_root=evidence,
+                    data_root=canonical,
+                )["status"],
+                "already_committed",
+            )
+            self.assertEqual(len(list(evidence.rglob("legacy-*.jsonl.gz"))), 1)
+            self.assertEqual(len(list(evidence.rglob("candidate-*.jsonl.gz"))), 1)
+
+    def test_missing_partition_promotion_records_absence_and_resumes_after_crash(self) -> None:
+        source = "uniswap_v3"
+        stream = "swaps"
+        day = dt.date(2022, 1, 1)
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            canonical = root / "canonical"
+            candidate = root / "candidate"
+            evidence = root / "evidence"
+            candidate_raw, candidate_marker = installed_source_day_paths(
+                source, stream, day, data_root=candidate
+            )
+            write_jsonl_gz(candidate_raw, [v3_route_row()])
+            write_json(
+                candidate_marker,
+                {
+                    "source": source,
+                    "day": day.isoformat(),
+                    "streams": {
+                        stream: {
+                            "rows": 1,
+                            "logical_content_sha256": portable_content_sha256(
+                                candidate_raw
+                            ),
+                            "query_contract_sha256": graph_stream_query_sha256(
+                                source, stream
+                            ),
+                            "head_block_at_fetch": 20_000_000,
+                        }
+                    },
+                },
+            )
+
+            def crash(_path: Path) -> None:
+                raise RuntimeError("injected missing-partition crash")
+
+            with self.assertRaisesRegex(RuntimeError, "missing-partition crash"):
+                promote_source_day(
+                    source,
+                    day,
+                    {stream},
+                    candidate_root=candidate,
+                    evidence_root=evidence,
+                    data_root=canonical,
+                    after_raw_install=crash,
+                )
+            with self.assertRaisesRegex(RawFetchInvariantError, "uncommitted"):
+                require_committed_source_day_stream(
+                    source, stream, day, data_root=canonical
+                )
+            resumed = promote_source_day(
+                source,
+                day,
+                {stream},
+                candidate_root=candidate,
+                evidence_root=evidence,
+                data_root=canonical,
+            )
+            self.assertEqual(resumed["status"], "committed")
+            prepared = json.loads(
+                next(evidence.rglob("promotion-prepared.json")).read_text()
+            )
+            self.assertTrue(
+                prepared["retained_streams"][0]["legacy_missing"]
+            )
+            self.assertIsNone(
+                prepared["retained_streams"][0]["legacy_evidence"]
+            )
+            require_committed_source_day_stream(
+                source, stream, day, data_root=canonical
+            )
+
     def test_existing_stream_index_rejects_invalid_gzip_jsonl(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:
             path = Path(tmp) / "bad.jsonl.gz"
@@ -418,13 +889,13 @@ class RawMetaMergeTests(unittest.TestCase):
         self.assertEqual(primary["pool"]["token0"]["decimals"], "18")
 
     def test_v4_quote_support_excludes_dynamic_fees_and_hooks(self) -> None:
-        def row(fee: int, hooks: str = "0x0000000000000000000000000000000000000000"):
+        def row(fee: int, hooks: str = "0x0000000000000000000000000000000000000000", tick_spacing: int = 10):
             return {
                 "id": "swap",
                 "pool": {
                     "id": "pool",
                     "feeTier": fee,
-                    "tickSpacing": 10,
+                    "tickSpacing": tick_spacing,
                     "hooks": hooks,
                     "token0": {"id": "token-a", "decimals": "18"},
                     "token1": {"id": "token-b", "decimals": "6"},
@@ -438,6 +909,9 @@ class RawMetaMergeTests(unittest.TestCase):
             v4_quote_status(row(1 << 23, "0x0000000000000000000000000000000000000001")),
             "dynamic_fee_and_hooks",
         )
+        self.assertTrue(v4_pool_quote_supported(row(1_000_000, tick_spacing=32_767)))
+        for invalid in (row(1_000_001), row((1 << 23) | 1), row(500, tick_spacing=0), row(500, tick_spacing=32_768), row(500, "0x01"), row(500, "0x" + "gg" * 20)):
+            self.assertEqual(v4_quote_status(invalid), "invalid_statics")
 
     def test_v4_static_merge_refuses_a_pool_identity_mismatch(self) -> None:
         primary = {

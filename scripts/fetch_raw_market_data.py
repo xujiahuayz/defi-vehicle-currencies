@@ -52,6 +52,7 @@ from ddvc.fetch.sources import (
     source_names,
 )
 from ddvc.paths import DATA_DIR, RAW_MARKET_DATA_LOCK
+from ddvc.raw_perimeter import consumer_required_streams
 from ddvc.runtime import bounded_workers, exclusive_job
 from ddvc.source_records import (
     block_value,
@@ -323,25 +324,7 @@ def available_streams(source_name: str) -> list[str]:
 @cache
 def required_streams_by_source() -> dict[str, frozenset[str]]:
     """Union the canonical route, state and pool-day consumer registries without copying them."""
-
-    from ddvc.fetch.pool_daily import POOL_DAILY_SCHEMAS
-    from ddvc.reconstruct import DEX_FAMILY
-    from ddvc.state_data import FAMILY_STREAMS
-
-    required: dict[str, set[str]] = {venue: {"swaps"} for venue in DEX_FAMILY}
-    for venues in FAMILY_STREAMS.values():
-        for venue, specifications in venues.items():
-            required.setdefault(venue, set()).update(stream for stream, _kind, _sign in specifications)
-    for venue in POOL_DAILY_SCHEMAS:
-        required.setdefault(venue, set()).add("daily")
-    unknown_sources = sorted(set(required).difference(DEX_SOURCES))
-    if unknown_sources:
-        raise RuntimeError(f"raw consumer registry names unknown sources: {unknown_sources}")
-    for venue, streams in required.items():
-        unavailable = streams.difference(available_streams(venue))
-        if unavailable:
-            raise RuntimeError(f"raw consumer registry names unavailable {venue} streams: {sorted(unavailable)}")
-    return {venue: frozenset(streams) for venue, streams in required.items()}
+    return consumer_required_streams()
 
 
 def stream_target(source_name: str, stream: str, day: dt.date) -> Path:
