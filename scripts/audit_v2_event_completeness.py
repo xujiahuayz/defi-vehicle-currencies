@@ -22,9 +22,7 @@ import pandas as pd
 from ddvc.ethereum_day_cuts import (
     RAW_DAY_BOUND_ROOT,
     day_bound_path,
-    fetch_block_timestamp,
-    utc_day_block_bounds,
-    validate_utc_day_block_bounds,
+    load_or_resolve_utc_day_block_bounds,
 )
 from ddvc.ethereum_logs import file_sha256, rpc_post_with_evidence
 from ddvc.fetch.raw import write_json
@@ -182,7 +180,7 @@ def _graph_event_paths(venue: str, day: str) -> list[Path]:
 
 
 def _day_bound_path(day: str) -> Path:
-    return day_bound_path(day)
+    return day_bound_path(day, root=RAW_DAY_BOUND_ROOT)
 
 
 def _launched_venues(day: str) -> tuple[str, ...]:
@@ -228,41 +226,15 @@ def _day_lower(day: str) -> int:
 
 
 def load_or_resolve_day_bounds(day: str, *, fetch: bool = True) -> dict[str, object]:
-    """Persist exact adjacent UTC-boundary block evidence and validate every reuse."""
+    """Use the canonical exact-day resolver with V2-family search brackets."""
 
-    path = _day_bound_path(day)
-    if path.is_file():
-        try:
-            cached = json.loads(path.read_text(encoding="utf-8"))
-            if cached.get("status") == "complete":
-                validate_utc_day_block_bounds(cached, day)
-                return cached
-        except (KeyError, OSError, TypeError, ValueError, json.JSONDecodeError):
-            pass
-    if not fetch:
-        raise RuntimeError(f"V2 event-source audit lacks a current UTC block cut for {day}")
-    evidence: list[dict[str, object]] = []
-    timestamps: dict[int, int] = {}
-
-    def timestamp_for_block(block: int) -> int:
-        if block not in timestamps:
-            timestamps[block] = fetch_block_timestamp(block, evidence)
-        return timestamps[block]
-
-    record = {
-        "status": "complete",
-        **utc_day_block_bounds(
-            day,
-            _day_lower(day),
-            _day_upper(day),
-            timestamp_for_block,
-        ),
-        "rpc_evidence": evidence,
-    }
-    validate_utc_day_block_bounds(record, day)
-    RAW_DAY_BOUND_ROOT.mkdir(parents=True, exist_ok=True)
-    write_json(path, record)
-    return record
+    return load_or_resolve_utc_day_block_bounds(
+        day,
+        lambda: _day_upper(day),
+        fetch=fetch,
+        root=RAW_DAY_BOUND_ROOT,
+        lower_block=lambda: _day_lower(day),
+    )
 
 
 def _code_at_block(

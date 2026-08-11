@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+from copy import deepcopy
 from datetime import datetime, timedelta, timezone
 import json
 from pathlib import Path
@@ -37,10 +38,12 @@ def load_utc_day_block_bounds(day: str, *, root: Path | None = None) -> dict[str
 
 def load_or_resolve_utc_day_block_bounds(
     day: str,
-    upper_block: int,
+    upper_block: int | Callable[[], int],
     *,
     fetch: bool,
     root: Path | None = None,
+    lower_block: int | Callable[[], int] = 0,
+    previous_record: dict[str, object] | None = None,
     rpc_request=rpc_post,
     sleeper=time.sleep,
 ) -> dict[str, object]:
@@ -51,6 +54,8 @@ def load_or_resolve_utc_day_block_bounds(
     except RuntimeError:
         if not fetch:
             raise
+    resolved_lower = int(lower_block() if callable(lower_block) else lower_block)
+    resolved_upper = int(upper_block() if callable(upper_block) else upper_block)
     evidence: list[dict[str, object]] = []
     timestamps: dict[int, int] = {}
 
@@ -64,16 +69,107 @@ def load_or_resolve_utc_day_block_bounds(
             )
         return timestamps[block]
 
-    record = {
-        "status": "complete",
-        **utc_day_block_bounds(day, 0, upper_block, timestamp_for_block),
-        "rpc_evidence": evidence,
-    }
+    adjacent_seed = _adjacent_day_boundary_seed(day, previous_record)
+    if adjacent_seed is None:
+        bounds = utc_day_block_bounds(day, resolved_lower, resolved_upper, timestamp_for_block)
+    else:
+        timestamps.update(adjacent_seed["timestamps"])
+        evidence.extend(adjacent_seed["evidence"])
+        bounds = _utc_day_block_bounds_from_previous(
+            day,
+            adjacent_seed["record"],
+            resolved_upper,
+            timestamp_for_block,
+        )
+    record = {"status": "complete", **bounds, "rpc_evidence": evidence}
     validate_utc_day_block_bounds(record, day)
     path = day_bound_path(day, root=root)
     path.parent.mkdir(parents=True, exist_ok=True)
     write_json(path, record)
     return record
+
+
+def _adjacent_day_boundary_seed(
+    day: str,
+    previous_record: dict[str, object] | None,
+) -> dict[str, object] | None:
+    """Return a validated exact boundary seed for the immediately prior UTC day."""
+
+    if previous_record is None:
+        return None
+    try:
+        current = datetime.strptime(day, "%Y%m%d")
+        previous_day = (current - timedelta(days=1)).strftime("%Y%m%d")
+        validate_utc_day_block_bounds(previous_record, previous_day)
+        end_block = int(previous_record["end_block"])
+        after_end_block = int(previous_record["after_end_block"])
+        evidence_by_block: dict[int, dict[str, object]] = {}
+        for item in previous_record["rpc_evidence"]:
+            request = item["request"]
+            requested = int(str(request["params"][0]), 16)
+            if requested in {end_block, after_end_block}:
+                evidence_by_block[requested] = item
+        end_evidence = evidence_by_block[end_block]
+        after_end_evidence = evidence_by_block[after_end_block]
+        start_timestamp, _ = utc_day_timestamps(day)
+        if (
+            int(previous_record["end_timestamp"]) != start_timestamp
+            or int(previous_record["after_end_block"]) != int(previous_record["end_block"]) + 1
+        ):
+            return None
+    except (KeyError, TypeError, ValueError):
+        return None
+    return {
+        "record": previous_record,
+        "timestamps": {
+            end_block: int(previous_record["end_block_timestamp"]),
+            after_end_block: int(previous_record["after_end_block_timestamp"]),
+        },
+        "evidence": [deepcopy(end_evidence), deepcopy(after_end_evidence)],
+    }
+
+
+def _utc_day_block_bounds_from_previous(
+    day: str,
+    previous_record: dict[str, object],
+    upper_block: int,
+    timestamp_for_block: Callable[[int], int],
+) -> dict[str, int | str]:
+    """Resolve one UTC day from the exact closing boundary of its predecessor."""
+
+    start_timestamp, end_timestamp = utc_day_timestamps(day)
+    before_start = int(previous_record["end_block"])
+    start_block = int(previous_record["after_end_block"])
+    prior_day_blocks = int(previous_record["end_block"]) - int(previous_record["start_block"]) + 1
+    if prior_day_blocks < 1 or int(upper_block) <= before_start:
+        raise ValueError("invalid adjacent-day block bracket")
+    candidate_upper = min(int(upper_block), before_start + 2 * prior_day_blocks)
+    while int(timestamp_for_block(candidate_upper)) < end_timestamp and candidate_upper < int(upper_block):
+        next_upper = min(int(upper_block), before_start + 2 * (candidate_upper - before_start))
+        if next_upper <= candidate_upper:
+            break
+        candidate_upper = next_upper
+    end_block, end_block_timestamp, after_end_timestamp = last_block_before_timestamp(
+        end_timestamp,
+        before_start,
+        candidate_upper,
+        timestamp_for_block,
+    )
+    return {
+        "day": day,
+        "start_timestamp": start_timestamp,
+        "end_timestamp": end_timestamp,
+        "start_block": start_block,
+        "start_block_timestamp": int(previous_record["after_end_block_timestamp"]),
+        "end_block": end_block,
+        "end_block_timestamp": end_block_timestamp,
+        "before_start_block": before_start,
+        "before_start_block_timestamp": int(previous_record["end_block_timestamp"]),
+        "after_end_block": end_block + 1,
+        "after_end_block_timestamp": after_end_timestamp,
+        "initial_lower_bracket": before_start,
+        "initial_upper_bracket": candidate_upper,
+    }
 
 
 def utc_day_timestamps(day: str) -> tuple[int, int]:
@@ -219,6 +315,8 @@ def validate_utc_day_block_bounds(record: dict[str, object], day: str) -> None:
     if not isinstance(evidence, list):
         raise ValueError(f"UTC block-bound record lacks RPC evidence for {day}")
     observed: dict[int, int] = {}
+    observed_hashes: dict[int, str] = {}
+    observed_parents: dict[int, str] = {}
     for item in evidence:
         request = item.get("request") if isinstance(item, dict) else None
         response = item.get("response") if isinstance(item, dict) else None
@@ -231,11 +329,13 @@ def validate_utc_day_block_bounds(record: dict[str, object], day: str) -> None:
         returned = int(str(response.get("number")), 16)
         if returned != requested:
             raise ValueError(f"mismatched block identity in UTC block-bound evidence for {day}")
-        if not str(response.get("hash") or "").startswith("0x") or not str(
-            response.get("parentHash") or ""
-        ).startswith("0x"):
+        block_hash = str(response.get("hash") or "").lower()
+        parent_hash = str(response.get("parentHash") or "").lower()
+        if not block_hash.startswith("0x") or not parent_hash.startswith("0x"):
             raise ValueError(f"missing block hashes in UTC block-bound evidence for {day}")
         observed[returned] = int(str(response.get("timestamp")), 16)
+        observed_hashes[returned] = block_hash
+        observed_parents[returned] = parent_hash
     required_evidence = {
         int(record["before_start_block"]): int(record["before_start_block_timestamp"]),
         int(record["start_block"]): int(record["start_block_timestamp"]),
@@ -244,3 +344,12 @@ def validate_utc_day_block_bounds(record: dict[str, object], day: str) -> None:
     }
     if any(observed.get(block) != timestamp for block, timestamp in required_evidence.items()):
         raise ValueError(f"UTC block-bound RPC evidence is incomplete for {day}")
+    before_start_block = int(record["before_start_block"])
+    start_block = int(record["start_block"])
+    end_block = int(record["end_block"])
+    after_end_block = int(record["after_end_block"])
+    if (
+        observed_parents.get(start_block) != observed_hashes.get(before_start_block)
+        or observed_parents.get(after_end_block) != observed_hashes.get(end_block)
+    ):
+        raise ValueError(f"UTC block-bound RPC evidence breaks parent linkage for {day}")

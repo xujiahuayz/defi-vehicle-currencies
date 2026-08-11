@@ -51,6 +51,7 @@ CALENDAR_COLUMNS = [
     "after_end_block",
     "after_end_block_timestamp",
 ]
+MAX_CHRONOLOGICAL_SHARDS = 4
 
 
 def _previous_day(day: str) -> str:
@@ -127,28 +128,102 @@ def graph_head_upper(day: str) -> int:
     return max(upper_blocks)
 
 
-def resolve_day(day: str, *, fetch: bool) -> dict[str, object]:
+def load_cached_or_promoted_day(day: str) -> dict[str, object] | None:
     try:
         return load_utc_day_block_bounds(day)
     except RuntimeError:
         promoted = promote_adjacent_v3_cuts(day)
         if promoted is not None:
             return promoted
+    return None
+
+
+def resolve_day(
+    day: str,
+    *,
+    fetch: bool,
+    previous_record: dict[str, object] | None = None,
+) -> dict[str, object]:
+    cached = load_cached_or_promoted_day(day)
+    if cached is not None:
+        return cached
     return load_or_resolve_utc_day_block_bounds(
         day,
         graph_head_upper(day),
         fetch=fetch,
+        previous_record=previous_record,
     )
 
 
-def build_calendar(days: list[str], *, fetch: bool, workers: int) -> pd.DataFrame:
+def chronological_shards(days: list[str], cached_days: set[str] | None = None) -> list[list[str]]:
+    if days != sorted(days) or len(days) != len(set(days)):
+        raise ValueError("Ethereum UTC calendar days must be sorted and unique")
+    if not days:
+        return []
+    cached = cached_days or set()
+    unresolved_positions = [index for index, day in enumerate(days) if day not in cached]
+    if not unresolved_positions:
+        return [days]
+    shard_count = min(len(unresolved_positions), MAX_CHRONOLOGICAL_SHARDS)
+    quotient, remainder = divmod(len(unresolved_positions), shard_count)
+    shards: list[list[str]] = []
+    start = 0
+    resolved_offset = 0
+    for index in range(shard_count):
+        unresolved_size = quotient + (1 if index < remainder else 0)
+        resolved_offset += unresolved_size
+        end = len(days) if index == shard_count - 1 else unresolved_positions[resolved_offset - 1] + 1
+        shards.append(days[start:end])
+        start = end
+    return shards
+
+
+def resolve_day_shard(
+    days: list[str],
+    *,
+    fetch: bool,
+    cached_records: dict[str, dict[str, object]] | None = None,
+    initial_previous: dict[str, object] | None = None,
+) -> list[dict[str, object]]:
     records: list[dict[str, object]] = []
-    with interruptible_thread_pool(max_workers=bounded_workers(workers, maximum=4)) as executor:
-        futures = {executor.submit(resolve_day, day, fetch=fetch): day for day in days}
-        for index, future in enumerate(as_completed(futures), 1):
-            records.append(future.result())
-            if index % 100 == 0 or index == len(futures):
-                print(f"  exact UTC day bounds [{index:,}/{len(futures):,}]", flush=True)
+    previous_record = initial_previous
+    cached = cached_records or {}
+    for day in days:
+        record = cached.get(day)
+        if record is None:
+            record = resolve_day(day, fetch=fetch, previous_record=previous_record)
+        records.append(record)
+        previous_record = record
+    return records
+
+
+def build_calendar(days: list[str], *, fetch: bool, workers: int) -> pd.DataFrame:
+    chronological_shards(days)
+    if not days:
+        return pd.DataFrame(columns=CALENDAR_COLUMNS)
+    cached = {day: record for day in days if (record := load_cached_or_promoted_day(day)) is not None}
+    records: list[dict[str, object]] = []
+    shards = chronological_shards(days, set(cached))
+    if len(cached) == len(days):
+        records.extend(cached[day] for day in days)
+    else:
+        with interruptible_thread_pool(max_workers=bounded_workers(workers, maximum=len(shards))) as executor:
+            futures = {
+                executor.submit(
+                    resolve_day_shard,
+                    shard,
+                    fetch=fetch,
+                    cached_records=cached,
+                    initial_previous=cached.get(_previous_day(shard[0])),
+                ): shard
+                for shard in shards
+            }
+            completed = 0
+            for future in as_completed(futures):
+                shard_records = future.result()
+                records.extend(shard_records)
+                completed += len(shard_records)
+                print(f"  exact UTC day bounds [{completed:,}/{len(days):,}]", flush=True)
     frame = pd.DataFrame.from_records(records, columns=CALENDAR_COLUMNS).sort_values("day").reset_index(drop=True)
     if frame["day"].tolist() != days:
         raise RuntimeError("Ethereum UTC calendar differs from the released route calendar")

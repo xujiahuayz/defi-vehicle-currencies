@@ -1439,8 +1439,8 @@ def test_utc_day_bounds_prove_both_adjacent_boundary_blocks() -> None:
                 },
                 "response": {
                     "number": hex(block),
-                    "hash": "0x" + "a" * 64,
-                    "parentHash": "0x" + "b" * 64,
+                    "hash": "0x" + f"{block:064x}",
+                    "parentHash": "0x" + f"{max(0, block - 1):064x}",
                     "timestamp": hex(timestamp_for_block(block)),
                 },
             }
@@ -1671,8 +1671,38 @@ def test_both_v2_consumers_import_the_same_exact_log_owner() -> None:
 
 def test_no_fetch_refuses_to_resolve_a_missing_day_cut(tmp_path, monkeypatch) -> None:
     monkeypatch.setattr(auditor, "RAW_DAY_BOUND_ROOT", tmp_path)
-    with pytest.raises(RuntimeError, match="lacks a current UTC block cut"):
+    with pytest.raises(RuntimeError, match="missing or invalid exact UTC block bounds"):
         auditor.load_or_resolve_day_bounds("20250115", fetch=False)
+
+
+def test_v2_day_bound_loader_delegates_cache_write_retry_and_validation(monkeypatch) -> None:
+    captured = {}
+    expected = {"status": "complete", "day": "20250115"}
+
+    def canonical(day, upper_block, *, fetch, root, lower_block):
+        captured.update(
+            {
+                "day": day,
+                "upper": upper_block(),
+                "fetch": fetch,
+                "root": root,
+                "lower": lower_block(),
+            }
+        )
+        return expected
+
+    monkeypatch.setattr(auditor, "load_or_resolve_utc_day_block_bounds", canonical)
+    monkeypatch.setattr(auditor, "_day_upper", lambda _day: 200)
+    monkeypatch.setattr(auditor, "_day_lower", lambda _day: 100)
+
+    assert auditor.load_or_resolve_day_bounds("20250115") is expected
+    assert captured == {
+        "day": "20250115",
+        "upper": 200,
+        "fetch": True,
+        "root": auditor.RAW_DAY_BOUND_ROOT,
+        "lower": 100,
+    }
 
 
 def test_day_bound_search_starts_at_a_strictly_prior_protocol_block() -> None:
