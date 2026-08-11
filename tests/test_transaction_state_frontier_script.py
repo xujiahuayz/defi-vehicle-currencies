@@ -23,6 +23,7 @@ from ddvc.analysis.transaction_frontier import (
     positive_finite_amount,
 )
 from ddvc.pricing.path_frontier import PathQuote
+from ddvc.pricing.v3pools import compute_pool_address
 from ddvc.provenance import cache_key, sidecar_path, verify
 from ddvc.transaction_targets import ProviderSwapEvent, TargetRelease
 from scripts.build_transaction_state_frontier import (
@@ -32,6 +33,8 @@ from scripts.build_transaction_state_frontier import (
     OUTPUT_PROVENANCE_SOURCES,
     REPLAY_CAUSAL_FIELDS,
     REPLAY_CHECKPOINT_BOUNDARY,
+    ReplayShardResult,
+    ReplayShardTask,
     SCORING_CACHE_SOURCES,
     DailySegmentTask,
     assemble_cached_output,
@@ -51,6 +54,7 @@ from scripts.build_transaction_state_frontier import (
     rejection_record,
     require_full_daily_target_release,
     replay_checkpoint_due,
+    replay_ordered_event_shards,
     run_daily_segments,
     save_replay_checkpoint,
     score_daily_segment,
@@ -62,7 +66,7 @@ from scripts.build_transaction_state_frontier import (
     validation_error_diagnostics,
     write_cached_day,
 )
-from ddvc.pricing.tick_replay import TickReplayState
+from ddvc.pricing.tick_replay import TickReplayEvent, TickReplayState
 from ddvc.pricing.tick_state import TickPoolState
 from ddvc.pricing.v2_replay import V2ReplayDay
 from ddvc.realised import LINEAR_ROUTE_COLUMNS
@@ -385,15 +389,16 @@ class TransactionStateFrontierScriptTests(unittest.TestCase):
             checkpoint_dir = Path(directory)
             segments = plan_daily_segments(days, workers=2, checkpoint_dir=checkpoint_dir)
 
-            def empty_replay() -> TickReplayState:
-                return TickReplayState(token_decimals={})
+            def events(_root: Path, day: str, **_kwargs) -> list[TickReplayEvent]:
+                return [TickReplayEvent((days.index(day) + 1, 0), "uniswap_v3", "swap", {"pool": {}}, 0)]
 
-            def warm(_root: Path, day: str, replay: TickReplayState) -> None:
-                replay.token_decimals[f"seen-{day}"] = 1
+            class TrackingReplay(TickReplayState):
+                def apply(self, event: TickReplayEvent) -> None:
+                    self.token_decimals[f"seen-{days[event.order[0] - 1]}"] = 1
 
             with (
-                patch("scripts.build_transaction_state_frontier.new_tick_replay", side_effect=empty_replay),
-                patch("scripts.build_transaction_state_frontier.warm_tick_day", side_effect=warm),
+                patch("scripts.build_transaction_state_frontier.new_tick_replay", side_effect=lambda: TrackingReplay(token_decimals={})),
+                patch("scripts.build_transaction_state_frontier.load_tick_day_events", side_effect=events),
             ):
                 first = materialize_segment_checkpoints(segments, checkpoint_dir=checkpoint_dir, checkpoint_engine_key="engine", market_state=Path("state"))
                 second = materialize_segment_checkpoints(segments, checkpoint_dir=checkpoint_dir, checkpoint_engine_key="engine", market_state=Path("state"))
@@ -403,6 +408,176 @@ class TransactionStateFrontierScriptTests(unittest.TestCase):
         self.assertEqual(second, (0, 0))
         self.assertEqual(first_state.token_decimals, {})
         self.assertEqual(second_state.token_decimals, {f"seen-{days[0]}": 1, f"seen-{days[1]}": 1})
+
+    def test_parallel_checkpoint_partial_resume_skips_prior_days_and_preserves_causal_state(self) -> None:
+        days = [day.strftime("%Y%m%d") for day in pd.date_range("2021-05-04", periods=6)]
+        events_by_day = {
+            day: [TickReplayEvent((index + 1, 0), "uniswap_v3", "liquidity", {"pool": {"id": "pool"}, "tickLower": str(index), "tickUpper": str(index + 1), "amount": str(index + 2)}, 1)]
+            for index, day in enumerate(days)
+        }
+        loaded_days: list[str] = []
+
+        def events(_root: Path, day: str, **_kwargs) -> list[TickReplayEvent]:
+            loaded_days.append(day)
+            return events_by_day[day]
+
+        with TemporaryDirectory() as directory:
+            root = Path(directory)
+            checkpoint_dir = root / "checkpoints"
+            segments = plan_daily_segments(days, workers=3, checkpoint_dir=checkpoint_dir)
+            with (
+                patch("scripts.build_transaction_state_frontier.new_tick_replay", return_value=TickReplayState(token_decimals={}, quarantined_pools={"uniswap_v4": set()})),
+                patch("scripts.build_transaction_state_frontier.load_tick_day_events", side_effect=events),
+            ):
+                self.assertEqual(materialize_segment_checkpoints(segments, checkpoint_dir=checkpoint_dir, checkpoint_engine_key="engine", market_state=root / "state"), (4, 3))
+            final_path = segments[-1].checkpoint_path
+            expected = load_replay_checkpoint(final_path, engine_key="engine", pre_day=days[4])
+            final_path.unlink()
+            loaded_days.clear()
+            with (
+                patch("scripts.build_transaction_state_frontier.load_tick_day_events", side_effect=events),
+                patch("scripts.build_transaction_state_frontier.new_tick_replay", side_effect=AssertionError("partial resume must not create an empty replay")),
+            ):
+                self.assertEqual(materialize_segment_checkpoints(segments, checkpoint_dir=checkpoint_dir, checkpoint_engine_key="engine", market_state=root / "state"), (2, 1))
+            resumed = load_replay_checkpoint(final_path, engine_key="engine", pre_day=days[4])
+            self.assertEqual(loaded_days, days[2:4])
+            for field in REPLAY_CAUSAL_FIELDS:
+                self.assertEqual(getattr(resumed, field), getattr(expected, field), field)
+            middle_path = segments[1].checkpoint_path
+            expected_middle = load_replay_checkpoint(middle_path, engine_key="engine", pre_day=days[2])
+            later_checkpoint_bytes = final_path.read_bytes()
+            middle_path.unlink()
+            loaded_days.clear()
+            with (
+                patch("scripts.build_transaction_state_frontier.load_tick_day_events", side_effect=events),
+                patch("scripts.build_transaction_state_frontier.new_tick_replay", side_effect=AssertionError("an earlier checkpoint must resume before its own boundary")),
+            ):
+                self.assertEqual(materialize_segment_checkpoints(segments, checkpoint_dir=checkpoint_dir, checkpoint_engine_key="engine", market_state=root / "state"), (2, 1))
+            restored_middle = load_replay_checkpoint(middle_path, engine_key="engine", pre_day=days[2])
+            self.assertEqual(loaded_days, days[:2])
+            self.assertEqual(final_path.read_bytes(), later_checkpoint_bytes)
+            for field in REPLAY_CAUSAL_FIELDS:
+                self.assertEqual(getattr(restored_middle, field), getattr(expected_middle, field), field)
+
+    def test_parallel_checkpoint_materializer_matches_sequential_replay(self) -> None:
+        usdc = "0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48"
+        token_x = "0xb000000000000000000000000000000000000001"
+        dai = "0x6b175474e89094c44da98b954eedeac495271d0f"
+        frax = "0x853d955acef822db058eb8505911ed77f175b99e"
+        lusd = "0x5f98805a4e8be255a32880fdec7f6728c6568ba0"
+        v3_pool = compute_pool_address(usdc, token_x, 3_000)
+        linked_v3_pool = compute_pool_address(dai, token_x, 500)
+        v4_pool = "0x" + "4" * 64
+        days = [day.strftime("%Y%m%d") for day in pd.date_range("2021-05-04", periods=5)]
+
+        def swap(venue: str, pool: str, token0: str, token1: str, *, block: int, log_index: int, tick: int = 0, tick_spacing: int = 60) -> TickReplayEvent:
+            decimals0, decimals1 = (6, 18) if (token0, token1) == (usdc, token_x) else (18, 18)
+            sqrt_price_x96 = int((1 << 96) * (10 ** ((decimals1 - decimals0) / 2)))
+            row = {
+                "id": f"0x{block:x}#{log_index}",
+                "transaction": {"id": f"0x{block:x}", "blockNumber": str(block), "timestamp": str(block)},
+                "timestamp": str(block),
+                "logIndex": str(log_index),
+                "amount0": "1",
+                "amount1": "-1",
+                "sqrtPriceX96": str(sqrt_price_x96),
+                "tick": str(tick),
+                "pool": {
+                    "id": pool,
+                    "feeTier": 3_000 if venue == "uniswap_v3" else 500,
+                    "tickSpacing": tick_spacing if venue == "uniswap_v4" else 60,
+                    "hooks": "0x0000000000000000000000000000000000000000",
+                    "token0": {"id": token0, "symbol": "T0", "decimals": decimals0},
+                    "token1": {"id": token1, "symbol": "T1", "decimals": decimals1},
+                },
+            }
+            return TickReplayEvent((block, log_index), venue, "swap", row)
+
+        def liquidity(venue: str, pool: str, *, block: int, log_index: int, amount: int) -> TickReplayEvent:
+            return TickReplayEvent((block, log_index), venue, "liquidity", {"pool": {"id": pool}, "tickLower": "-10", "tickUpper": "10", "amount": str(amount)}, 1)
+
+        events_by_day = {
+            days[0]: [
+                liquidity("uniswap_v3", v3_pool, block=10, log_index=1, amount=1_000),
+                *[swap("uniswap_v3", v3_pool, usdc, token_x, block=10, log_index=index) for index in range(2, 8)],
+                *[swap("uniswap_v3", linked_v3_pool, dai, token_x, block=10, log_index=index) for index in range(10, 16)],
+                liquidity("uniswap_v4", v4_pool, block=10, log_index=20, amount=2_000),
+                swap("uniswap_v4", v4_pool, lusd, frax, block=10, log_index=21, tick_spacing=10),
+            ],
+            days[1]: [],
+            days[2]: [
+                liquidity("uniswap_v3", v3_pool, block=30, log_index=1, amount=500),
+                *[swap("uniswap_v3", v3_pool, usdc, token_x, block=30, log_index=index, tick=index) for index in range(2, 8)],
+                *[swap("uniswap_v3", linked_v3_pool, dai, token_x, block=30, log_index=index, tick=index) for index in range(8, 14)],
+                liquidity("uniswap_v4", v4_pool, block=30, log_index=20, amount=300),
+                swap("uniswap_v4", v4_pool, lusd, frax, block=30, log_index=21, tick_spacing=60),
+            ],
+            days[3]: [],
+            days[4]: [],
+        }
+        base = TickReplayState(token_decimals={}, quarantined_pools={"uniswap_v4": set()})
+        expected: dict[str, dict[str, object]] = {}
+        boundaries = {days[0], days[2], days[4]}
+        sequential = pickle.loads(pickle.dumps(base))
+        for day in days:
+            if day in boundaries:
+                expected[day] = {field: pickle.loads(pickle.dumps(getattr(sequential, field))) for field in REPLAY_CAUSAL_FIELDS}
+            sequential.apply_all(events_by_day[day])
+        with TemporaryDirectory() as directory:
+            root = Path(directory)
+            checkpoint_dir = root / "parallel"
+            segments = plan_daily_segments(days, workers=3, checkpoint_dir=checkpoint_dir)
+            with (
+                patch("scripts.build_transaction_state_frontier.new_tick_replay", return_value=base),
+                patch("scripts.build_transaction_state_frontier.load_tick_day_events", side_effect=lambda _root, day, **_kwargs: events_by_day[day]),
+                patch("scripts.build_transaction_state_frontier.interruptible_process_pool", side_effect=inline_process_pool),
+            ):
+                result = materialize_segment_checkpoints(segments, checkpoint_dir=checkpoint_dir, checkpoint_engine_key="engine", market_state=root / "state", raw_root=root / "raw", workers=3)
+            observed = {day: load_replay_checkpoint(checkpoint_dir / f"pre_{day}.pkl", engine_key="engine", pre_day=day) for day in sorted(boundaries)}
+        self.assertEqual(result, (4, 3))
+        for day, replay in observed.items():
+            for field in REPLAY_CAUSAL_FIELDS:
+                self.assertEqual(getattr(replay, field), expected[day][field], f"{day} {field}")
+        self.assertEqual(len(observed[days[2]].swap_samples[v3_pool]), 6)
+        self.assertNotIn(v3_pool, observed[days[2]].states_by_venue.get("uniswap_v3", {}))
+        self.assertEqual(observed[days[2]].states_by_venue["uniswap_v4"][v4_pool].fee_pips, 500)
+        self.assertEqual(observed[days[2]].states_by_venue["uniswap_v4"][v4_pool].tick_spacing, 10)
+        self.assertEqual(observed[days[4]].states_by_venue["uniswap_v3"][v3_pool].log_index, 7)
+        self.assertEqual(observed[days[4]].states_by_venue["uniswap_v3"][linked_v3_pool].log_index, 13)
+        self.assertIn(v4_pool, observed[days[4]].quarantined_pools["uniswap_v4"])
+        self.assertNotIn(v4_pool, observed[days[4]].states_by_venue["uniswap_v4"])
+
+    def test_replay_shard_contract_is_spawn_serializable(self) -> None:
+        task = ReplayShardTask(0, ("20210504",), Path("state"), Path("raw"), Path("events.pkl"))
+        result = ReplayShardResult(0, task.days, task.output_path, 12)
+        self.assertEqual(pickle.loads(pickle.dumps(task)), task)
+        self.assertEqual(pickle.loads(pickle.dumps(result)), result)
+
+    def test_replay_shard_reduce_fails_closed_on_causal_disorder(self) -> None:
+        event_late = TickReplayEvent((10, 2), "uniswap_v3", "liquidity", {"pool": {"id": "pool"}, "tickLower": "-10", "tickUpper": "10", "amount": "1"}, 1)
+        event_early = TickReplayEvent((10, 1), "uniswap_v3", "liquidity", {"pool": {"id": "pool"}, "tickLower": "-10", "tickUpper": "10", "amount": "1"}, 1)
+        with TemporaryDirectory() as directory:
+            root = Path(directory)
+            shard = root / "events.pkl"
+            with shard.open("wb") as handle:
+                pickle.dump(("20210504", event_late), handle)
+                pickle.dump(("20210504", event_early), handle)
+            result = ReplayShardResult(0, ("20210504",), shard, 2)
+            with self.assertRaisesRegex(ValueError, "strict causal order"):
+                replay_ordered_event_shards([result], boundaries=("20210504",), checkpoint_paths={"20210504": root / "pre_20210504.pkl"}, checkpoint_engine_key="engine", replay=TickReplayState())
+
+    def test_parallel_checkpoint_handles_base_boundary_without_history(self) -> None:
+        day = "20210504"
+        base = TickReplayState(token_decimals={"token": 18}, quarantined_pools={"uniswap_v4": {"static"}})
+        with TemporaryDirectory() as directory:
+            root = Path(directory)
+            segments = plan_daily_segments([day], workers=1, checkpoint_dir=root / "checkpoints")
+            with patch("scripts.build_transaction_state_frontier.new_tick_replay", return_value=base):
+                result = materialize_segment_checkpoints(segments, checkpoint_dir=root / "checkpoints", checkpoint_engine_key="engine", market_state=root / "state", raw_root=root / "raw", workers=2)
+            observed = load_replay_checkpoint(segments[0].checkpoint_path, engine_key="engine", pre_day=day)
+        self.assertEqual(result, (0, 1))
+        self.assertEqual(observed.token_decimals, base.token_decimals)
+        self.assertEqual(observed.quarantined_pools, base.quarantined_pools)
 
     def test_serial_and_parallel_segments_write_frame_equivalent_days(self) -> None:
         days = [day.strftime("%Y%m%d") for day in pd.date_range("2021-05-04", periods=4)]

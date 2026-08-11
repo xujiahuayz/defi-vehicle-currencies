@@ -21,6 +21,7 @@ from concurrent.futures import as_completed
 from dataclasses import dataclass
 from functools import partial
 from pathlib import Path
+from tempfile import TemporaryDirectory
 
 import numpy as np
 import pandas as pd
@@ -73,13 +74,14 @@ from ddvc.release_calendar import (
 from ddvc.route_cost import MAX_PRICE_IMPACT
 from ddvc.route_state import OrderedTickStateCursor, TickStateCut
 from ddvc.runtime import atomic_output, exclusive_job, interruptible_process_pool
-from ddvc.state_data import STATE_ROOT
+from ddvc.state_data import RAW_ROOT, STATE_ROOT, tick_partition_path
 from ddvc.tables import write_exhibit, write_panel
 from ddvc.transaction_targets import TargetRelease, read_target_day, resolve_target_release, strict_route_order
 from ddvc.v4_quarantine import (
     V4_STATIC_QUARANTINE_PANEL,
     load_v4_static_quarantine,
 )
+from ddvc.work_partition import weighted_contiguous_chunks
 
 
 MARKET_STATE = STATE_ROOT
@@ -144,6 +146,7 @@ FRONTIER_DEPENDENCY_REGISTRY = {
         "src/ddvc/state_data.py",
         "src/ddvc/transaction_targets.py",
         "src/ddvc/v4_quarantine.py",
+        "src/ddvc/work_partition.py",
     ),
     "publication": (
         "src/ddvc/panel_assembly.py",
@@ -202,6 +205,27 @@ class DailySegmentResult:
     support_rows: tuple[dict[str, object], ...]
     scored_days: int
     cached_days: int
+
+
+@dataclass(frozen=True)
+class ReplayShardTask:
+    """One contiguous calendar slice loaded by an independent process."""
+
+    index: int
+    days: tuple[str, ...]
+    market_state: Path
+    raw_root: Path
+    output_path: Path
+
+
+@dataclass(frozen=True)
+class ReplayShardResult:
+    """One closed ordered event stream owned by a single map task."""
+
+    index: int
+    days: tuple[str, ...]
+    output_path: Path
+    event_count: int
 
 
 def candidate_vehicles() -> tuple[str, ...]:
@@ -661,37 +685,145 @@ def new_tick_replay() -> TickReplayState:
     return TickReplayState(token_decimals=load_token_decimals(TOKEN_DECIMALS), quarantined_pools={"uniswap_v4": load_v4_static_quarantine()})
 
 
-def materialize_segment_checkpoints(segments: tuple[DailySegment, ...], *, checkpoint_dir: Path, checkpoint_engine_key: str, market_state: Path = MARKET_STATE) -> tuple[int, int]:
-    """Sequentially warm causal state and install every immutable pre-segment checkpoint."""
+def plan_replay_shard_tasks(days: tuple[str, ...], *, workers: int, market_state: Path, raw_root: Path, output_dir: Path) -> tuple[ReplayShardTask, ...]:
+    """Split an ordered calendar into bounded contiguous partition-load tasks."""
+    if workers < 1:
+        raise ValueError("replay checkpoint workers must be positive")
+    if not days:
+        return ()
+    if days != tuple(sorted(set(days))):
+        raise ValueError("replay checkpoint calendar must be unique and ordered")
+    def partition_bytes(day: str) -> int:
+        paths = [tick_partition_path(venue, day, root=market_state) for venue in TICK_VENUES]
+        return sum(path.stat().st_size for path in paths if path.exists())
+
+    weights = [partition_bytes(day) for day in days]
+    chunks = weighted_contiguous_chunks(days, weights, workers * 2)
+    tasks = [ReplayShardTask(index, tuple(owned), market_state, raw_root, output_dir / f"events_{index:04d}.pkl") for index, owned in enumerate(chunks)]
+    if [day for task in tasks for day in task.days] != list(days):
+        raise RuntimeError("replay shard plan does not own the exact ordered calendar")
+    return tuple(tasks)
+
+
+def write_replay_event_shard(task: ReplayShardTask) -> ReplayShardResult:
+    """Load certified day partitions and write one memory-bounded ordered stream."""
+    event_count = 0
+    with task.output_path.open("wb") as handle:
+        pickler = pickle.Pickler(handle, protocol=pickle.HIGHEST_PROTOCOL)
+        for day in task.days:
+            for event in load_tick_day_events(task.market_state, day, raw_root=task.raw_root):
+                pickler.dump((day, event))
+                pickler.clear_memo()
+                event_count += 1
+    return ReplayShardResult(task.index, task.days, task.output_path, event_count)
+
+
+def replay_ordered_event_shards(results: list[ReplayShardResult], *, boundaries: tuple[str, ...], checkpoint_paths: dict[str, Path], checkpoint_engine_key: str, replay: TickReplayState) -> tuple[int, int]:
+    """Fold loaded shards in strict order and install exact pre-day checkpoints."""
+    if not boundaries or tuple(sorted(checkpoint_paths)) != boundaries:
+        raise ValueError("replay checkpoint boundaries are missing or out of order")
+    if [result.index for result in results] != list(range(len(results))):
+        raise ValueError("replay event shards are missing or out of order")
+    boundary_index = 0
+    events_applied = 0
+    created_checkpoints = 0
+    prior_key: tuple[str, tuple[int, int]] | None = None
+
+    def checkpoint_before(day: str) -> None:
+        nonlocal boundary_index, created_checkpoints
+        while boundary_index < len(boundaries) and boundaries[boundary_index] <= day:
+            boundary = boundaries[boundary_index]
+            created_checkpoints += int(ensure_replay_checkpoint(checkpoint_paths[boundary], replay, engine_key=checkpoint_engine_key, pre_day=boundary))
+            boundary_index += 1
+
+    for result in results:
+        shard_events = 0
+        with result.output_path.open("rb") as handle:
+            while True:
+                try:
+                    day, event = pickle.load(handle)
+                except EOFError:
+                    break
+                if not isinstance(day, str) or not isinstance(event, TickReplayEvent) or event.venue not in TICK_VENUES:
+                    raise ValueError(f"invalid tick replay event shard: {result.output_path}")
+                key = (day, event.order)
+                if prior_key is not None and key <= prior_key:
+                    raise ValueError(f"tick replay event shard is not in strict causal order: {result.output_path}")
+                checkpoint_before(day)
+                replay.apply(event)
+                prior_key = key
+                shard_events += 1
+                events_applied += 1
+                if events_applied % 10_000_000 == 0:
+                    print(f"checkpoint replay reduce: {events_applied:,} events through {day}", flush=True)
+        if shard_events != result.event_count:
+            raise ValueError(f"tick replay event shard count mismatch: {result.output_path}")
+    checkpoint_before("99999999")
+    if boundary_index != len(boundaries):
+        raise RuntimeError("checkpoint replay did not close every pre-day boundary")
+    return events_applied, created_checkpoints
+
+
+def materialize_segment_checkpoints(segments: tuple[DailySegment, ...], *, checkpoint_dir: Path, checkpoint_engine_key: str, market_state: Path = MARKET_STATE, raw_root: Path = RAW_ROOT, workers: int = 1) -> tuple[int, int]:
+    """Resume the latest pre-day state, prefetch its suffix, and replay it exactly once."""
+    if workers < 1:
+        raise ValueError("replay checkpoint workers must be positive")
     checkpoint_dir.mkdir(parents=True, exist_ok=True)
-    needed = {segment.days[0]: segment.checkpoint_path for segment in segments}
-    missing = []
-    for day, path in needed.items():
+    checkpoint_paths = {segment.days[0]: segment.checkpoint_path for segment in segments}
+    if not checkpoint_paths or len(checkpoint_paths) != len(segments):
+        raise ValueError("replay checkpoint segments are empty or share a boundary")
+    missing: list[str] = []
+    for day, path in checkpoint_paths.items():
         if path.exists():
             load_replay_checkpoint(path, engine_key=checkpoint_engine_key, pre_day=day)
         else:
             missing.append(day)
     if not missing:
         return 0, 0
-    first_day = min(missing)
-    last_day = max(missing)
-    resume_checkpoint = latest_replay_checkpoint(checkpoint_dir, first_day)
+    first_missing = min(missing)
+    last_missing = max(missing)
+    resume_checkpoint = latest_replay_checkpoint(checkpoint_dir, first_missing)
     if resume_checkpoint is None:
+        replay_start = min(REPLAY_START, first_missing)
         replay = new_tick_replay()
-        replay_start = min(REPLAY_START, first_day)
     else:
         replay_start = checkpoint_day(resume_checkpoint)
         replay = load_replay_checkpoint(resume_checkpoint, engine_key=checkpoint_engine_key, pre_day=replay_start)
-    warmed_days = 0
-    created_checkpoints = 0
-    for observed in pd.date_range(pd.to_datetime(replay_start, format="%Y%m%d"), pd.to_datetime(last_day, format="%Y%m%d"), freq="D"):
-        day = observed.strftime("%Y%m%d")
-        if day in needed:
-            created_checkpoints += int(ensure_replay_checkpoint(needed[day], replay, engine_key=checkpoint_engine_key, pre_day=day))
-        if day != last_day:
-            warm_tick_day(market_state, day, replay)
-            warmed_days += 1
-    return warmed_days, created_checkpoints
+    active_checkpoint_paths = {
+        day: path
+        for day, path in checkpoint_paths.items()
+        if replay_start <= day <= last_missing
+    }
+    boundaries = tuple(sorted(active_checkpoint_paths))
+    if not boundaries or min(missing) < replay_start or max(missing) > boundaries[-1]:
+        raise RuntimeError("checkpoint resume window does not contain every missing boundary")
+    history_days = tuple(day.strftime("%Y%m%d") for day in pd.date_range(pd.to_datetime(replay_start, format="%Y%m%d"), pd.to_datetime(last_missing, format="%Y%m%d") - pd.Timedelta(days=1), freq="D"))
+    with TemporaryDirectory(prefix=".checkpoint-events-", dir=checkpoint_dir) as temporary_directory:
+        tasks = plan_replay_shard_tasks(history_days, workers=workers, market_state=market_state, raw_root=raw_root, output_dir=Path(temporary_directory))
+        if workers == 1 or len(tasks) <= 1:
+            results = [write_replay_event_shard(task) for task in tasks]
+        else:
+            by_index: dict[int, ReplayShardResult] = {}
+            with interruptible_process_pool(min(workers, len(tasks))) as pool:
+                futures = {pool.submit(write_replay_event_shard, task): task.index for task in tasks}
+                for future in as_completed(futures):
+                    result = future.result()
+                    if result.index != futures[future] or result.index in by_index:
+                        raise RuntimeError("replay partition loader returned the wrong shard identity")
+                    by_index[result.index] = result
+                    print(f"checkpoint event load: {len(by_index):,}/{len(tasks):,} shards complete", flush=True)
+            if sorted(by_index) != list(range(len(tasks))):
+                raise RuntimeError("replay partition loader result set is incomplete")
+            results = [by_index[index] for index in range(len(tasks))]
+        if [day for result in results for day in result.days] != list(history_days):
+            raise RuntimeError("replay event shards do not close the exact historical calendar")
+        mapped_events = sum(result.event_count for result in results)
+        events_applied, created_checkpoints = replay_ordered_event_shards(results, boundaries=boundaries, checkpoint_paths=active_checkpoint_paths, checkpoint_engine_key=checkpoint_engine_key, replay=replay)
+        if events_applied != mapped_events:
+            raise RuntimeError("checkpoint replay event count disagrees with loaded partitions")
+        temporary_bytes = sum(path.stat().st_size for path in Path(temporary_directory).glob("events_*.pkl"))
+        print(f"checkpoint event closure: {events_applied:,} events; temporary shuffle {temporary_bytes / 1024**3:.2f} GiB", flush=True)
+    return len(history_days), created_checkpoints
 
 
 def score_daily_segment(task: DailySegmentTask) -> DailySegmentResult:
@@ -1783,8 +1915,8 @@ def main() -> int:
             scoring_weights = {day: 1 if cached_days[day] is not None else target_weights[day] for day in selected}
             segments = plan_daily_segments(selected, workers=workers, checkpoint_dir=checkpoint_dir, scoring_weights=scoring_weights)
             if uncached_days:
-                warmed_days, created_checkpoints = materialize_segment_checkpoints(segments, checkpoint_dir=checkpoint_dir, checkpoint_engine_key=checkpoint_engine_key)
-                print(f"full-daily checkpoint phase: {warmed_days:,} days warmed; {created_checkpoints:,} checkpoints created; {workers:,} scoring workers", flush=True)
+                mapped_days, created_checkpoints = materialize_segment_checkpoints(segments, checkpoint_dir=checkpoint_dir, checkpoint_engine_key=checkpoint_engine_key, workers=workers)
+                print(f"full-daily checkpoint phase: {mapped_days:,} historical days mapped; {created_checkpoints:,} checkpoints created; {workers:,} bounded workers", flush=True)
                 print("full-daily segment loads: " + ", ".join(f"{segment.days[0]}..{segment.days[-1]}={segment.scoring_weight:,}" for segment in segments), flush=True)
                 support_rows = run_daily_segments(segments, workers=workers, checkpoint_engine_key=checkpoint_engine_key, day_cache=day_cache, frontier_engine_key=frontier_engine_key, frontier_input_key=frontier_input_key, vehicles=vehicles, target_release=target_release)
             else:
