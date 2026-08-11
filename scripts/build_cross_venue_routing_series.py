@@ -64,6 +64,7 @@ from pathlib import Path
 import pandas as pd
 
 from ddvc.analysis.regression import common_calendar_day_mask, year_endpoint_change
+from ddvc.analysis.routing_technology import ROUTING_TECHNOLOGY_EVENTS
 from ddvc.asset_types import canonical_token
 from ddvc.data_release import require_node_d_release
 from ddvc.paths import DATA_DIR, OUTPUT_DIR, REPO_ROOT
@@ -84,6 +85,7 @@ LOCK = OUT_PARQUET.with_suffix(".lock")
 CODE_SOURCES = [
     "scripts/build_cross_venue_routing_series.py",
     "src/ddvc/analysis/regression.py",
+    "src/ddvc/analysis/routing_technology.py",
     "src/ddvc/asset_types.py",
     "src/ddvc/reconstruct/__init__.py",
     "src/ddvc/route_roles.py",
@@ -99,21 +101,6 @@ COLS = ["tx_hash", "component_id", "source", "amount_usd", "route_class",
 BALANCED_VENUES = frozenset(
     {"uniswap_v2", "sushiswap_v2", "curve", "balancer", "uniswap_v3"}
 )
-ROUTING_TECHNOLOGY_EVENTS = (
-    ("auto_router_v1", "2021-09-16", "https://blog.uniswap.org/auto-router"),
-    (
-        "cross_version_auto_router",
-        "2021-12-16",
-        "https://blog.uniswap.org/SuperiorReturnsForLiquidityProviders.pdf",
-    ),
-    (
-        "universal_router",
-        "2022-11-17",
-        "https://blog.uniswap.org/permit2-and-universal-router",
-    ),
-)
-
-
 def empty_day(date: object) -> dict[str, object]:
     return {
         "date": date,
