@@ -1493,6 +1493,38 @@ def test_exact_rpc_chunk_is_reusable_only_after_its_complete_marker(
         fetch_v2_exact_log_chunk(100, 149, frozen_upper=frozen, root=tmp_path, rpc_request=rpc_response)
 
 
+def test_exact_log_reader_reuses_rows_opened_for_complete_validation(
+    tmp_path,
+    monkeypatch,
+) -> None:
+    import ddvc.v2_event_completeness as completeness
+
+    frozen = frozen_upper(149)
+
+    def rpc_response(payload, **_kwargs):
+        return anchored_rpc_batch(payload, [], frozen)
+
+    fetch_v2_exact_log_chunk(
+        100,
+        149,
+        frozen_upper=frozen,
+        root=tmp_path,
+        rpc_request=rpc_response,
+    )
+    original = completeness.pq.read_table
+    reads = 0
+
+    def counted_read(*args, **kwargs):
+        nonlocal reads
+        reads += 1
+        return original(*args, **kwargs)
+
+    monkeypatch.setattr(completeness.pq, "read_table", counted_read)
+    records, _inputs = read_v2_exact_logs(100, 110, frozen_upper=frozen, root=tmp_path)
+    assert records == []
+    assert reads == 1
+
+
 def test_exact_rpc_chunk_remains_reusable_when_the_sample_upper_block_advances(
     tmp_path,
 ) -> None:

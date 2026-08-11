@@ -12,6 +12,7 @@ from ddvc.token_decimals import (
     TokenDecimalsAnchor,
     build_token_decimals_registry,
     load_or_fetch_token_decimals_evidence,
+    retain_token_decimals_anchor,
     resolve_token_decimals_evidence,
     select_token_decimals_anchors,
     token_decimals_evidence_path,
@@ -264,6 +265,24 @@ def test_anchor_selection_prefers_a_matched_event_before_earlier_fallback() -> N
     )
     matched = anchor(priority=0, block_number=100)
     assert select_token_decimals_anchors([earlier_fallback, matched]) == {TOKEN: matched}
+
+
+def test_online_anchor_selection_matches_batch_order_across_ties_and_fallbacks() -> None:
+    fallback = TokenDecimalsAnchor(
+        **{
+            **anchor(priority=2, block_number=90).__dict__,
+            "proof_kind": "factory_pair_created",
+            "event_type": "pair_created",
+        }
+    )
+    later_event = anchor(priority=0, block_number=101)
+    winning_event = anchor(priority=0, block_number=100)
+    tied_event = TokenDecimalsAnchor(**winning_event.__dict__)
+    candidates = [fallback, later_event, winning_event, tied_event]
+    selected: dict[str, TokenDecimalsAnchor] = {}
+    for candidate in candidates:
+        retain_token_decimals_anchor(selected, candidate)
+    assert selected == select_token_decimals_anchors(candidates) == {TOKEN: winning_event}
 
 
 def test_registry_rejects_tampered_raw_evidence(tmp_path) -> None:

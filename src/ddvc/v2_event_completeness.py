@@ -240,33 +240,48 @@ def v2_exact_log_chunk_complete(
 ) -> bool:
     """Accept a shared chunk only after its exact marker and Parquet agree."""
 
-    raw_path, marker_path = v2_exact_log_chunk_paths(
-        start_block,
-        end_block,
-        root=root,
-    )
-    if not raw_path.is_file() or not marker_path.is_file():
-        return False
     try:
-        marker = json.loads(marker_path.read_text(encoding="utf-8"))
-        table = pq.read_table(raw_path)
-        validate_canonical_log_records(
-            table.to_pylist(),
-            start_block=start_block,
-            end_block=end_block,
-            topics=[V2_EVENT_TOPICS[name] for name in V2_CORE_EVENTS],
-            address=None,
-        )
-        validation_upper = persisted_chunk_frozen_upper(
-            marker,
-            current_frozen_upper=frozen_upper,
-            end_block=end_block,
+        _read_complete_v2_exact_log_chunk(
+            start_block,
+            end_block,
+            frozen_upper=frozen_upper,
             root=root,
         )
-        validate_anchored_log_evidence(marker, table.to_pylist(), validation_upper)
     except (ExactLogRpcError, IndexError, KeyError, OSError, TypeError, ValueError, json.JSONDecodeError):
         return False
-    return bool(
+    return True
+
+
+def _read_complete_v2_exact_log_chunk(
+    start_block: int,
+    end_block: int,
+    *,
+    frozen_upper: dict[str, object],
+    root: Path | None = None,
+) -> list[dict[str, object]]:
+    """Validate one immutable chunk and return the rows already opened for validation."""
+
+    raw_path, marker_path = v2_exact_log_chunk_paths(start_block, end_block, root=root)
+    if not raw_path.is_file() or not marker_path.is_file():
+        raise FileNotFoundError(raw_path if not raw_path.is_file() else marker_path)
+    marker = json.loads(marker_path.read_text(encoding="utf-8"))
+    table = pq.read_table(raw_path)
+    records = table.to_pylist()
+    validate_canonical_log_records(
+        records,
+        start_block=start_block,
+        end_block=end_block,
+        topics=[V2_EVENT_TOPICS[name] for name in V2_CORE_EVENTS],
+        address=None,
+    )
+    validation_upper = persisted_chunk_frozen_upper(
+        marker,
+        current_frozen_upper=frozen_upper,
+        end_block=end_block,
+        root=root,
+    )
+    validate_anchored_log_evidence(marker, records, validation_upper)
+    complete = bool(
         marker.get("status") == "complete"
         and int(marker.get("schema_version", -1)) == V2_FACTORY_EVIDENCE_SCHEMA_VERSION
         and marker.get("kind") == "global_v2_core_events"
@@ -280,6 +295,9 @@ def v2_exact_log_chunk_complete(
         and table.schema == RAW_LOG_SCHEMA
         and marker.get("raw_sha256") == _file_sha256(raw_path)
     )
+    if not complete:
+        raise ValueError("shared V2 exact-log chunk marker disagrees with its canonical rows")
+    return records
 
 
 def persisted_chunk_frozen_upper(
@@ -390,10 +408,17 @@ def read_v2_exact_logs(
     records: list[dict[str, object]] = []
     inputs: list[Path] = []
     for lower, upper in v2_exact_log_ranges(start_block, end_block):
-        if not v2_exact_log_chunk_complete(lower, upper, frozen_upper=frozen_upper, root=root):
-            raise RuntimeError(f"shared V2 exact-log chunk is incomplete: {lower}:{upper}")
+        try:
+            chunk = _read_complete_v2_exact_log_chunk(
+                lower,
+                upper,
+                frozen_upper=frozen_upper,
+                root=root,
+            )
+        except (ExactLogRpcError, IndexError, KeyError, OSError, TypeError, ValueError, json.JSONDecodeError) as error:
+            raise RuntimeError(f"shared V2 exact-log chunk is incomplete: {lower}:{upper}") from error
+
         raw_path, marker_path = v2_exact_log_chunk_paths(lower, upper, root=root)
-        chunk = pq.read_table(raw_path).to_pylist()
         if any(not lower <= int(record["block_number"]) <= upper for record in chunk):
             raise ValueError(f"shared V2 exact-log chunk contains an out-of-range row: {lower}:{upper}")
         records.extend(

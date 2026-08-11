@@ -47,7 +47,7 @@ from ddvc.token_decimals import (
     TokenDecimalsAnchor,
     build_token_decimals_registry,
     resolve_token_decimals_evidence,
-    select_token_decimals_anchors,
+    retain_token_decimals_anchor,
     token_decimals_registry_sha256,
     validate_token_decimals_registry,
     write_token_decimals_registry,
@@ -526,7 +526,8 @@ def collect_v2_token_decimals_perimeter(
             decode_pair_created_log(venue, record).pool: record
             for record in factory_records_by_venue[venue]
         }
-    candidates: list[TokenDecimalsAnchor] = []
+    anchors: dict[str, TokenDecimalsAnchor] = {}
+    candidate_anchors = 0
     provider_observations: dict[str, list[object]] = {}
     event_inputs: dict[str, list[Path]] = {}
     raw_global_logs = 0
@@ -564,7 +565,8 @@ def collect_v2_token_decimals_perimeter(
                 pool = key[-1]
                 static = statics[venue][pool]
                 for token in (static.token0, static.token1):
-                    candidates.append(
+                    retain_token_decimals_anchor(
+                        anchors,
                         _token_anchor(
                             token,
                             record,
@@ -573,14 +575,16 @@ def collect_v2_token_decimals_perimeter(
                             venue=venue,
                             pool=pool,
                             event_type=key[1],
-                        )
+                        ),
                     )
+                    candidate_anchors += 1
             raw_pools = {key[-1] for key in raw_rows}
             for pool in observed_pools - raw_pools:
                 static = statics[venue][pool]
                 record = pair_records[venue][pool]
                 for token in (static.token0, static.token1):
-                    candidates.append(
+                    retain_token_decimals_anchor(
+                        anchors,
                         _token_anchor(
                             token,
                             record,
@@ -589,18 +593,18 @@ def collect_v2_token_decimals_perimeter(
                             venue=venue,
                             pool=pool,
                             event_type="pair_created",
-                        )
+                        ),
                     )
+                    candidate_anchors += 1
         if count % 10 == 0 or count == len(audit_days):
             print(
                 f"  V2 token-state perimeter [{count:,}/{len(audit_days):,}]; "
-                f"candidate_anchors={len(candidates):,}",
+                f"candidate_anchors={candidate_anchors:,}; selected_anchors={len(anchors):,}",
                 flush=True,
             )
-    anchors = select_token_decimals_anchors(candidates)
     if not anchors:
         raise RuntimeError("V2 event-source audit produced an empty token-state perimeter")
-    return anchors, provider_observations, event_inputs, raw_global_logs
+    return dict(sorted(anchors.items())), provider_observations, event_inputs, raw_global_logs
 
 
 def token_registry_provenance_inputs(

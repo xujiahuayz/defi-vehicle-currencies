@@ -124,34 +124,40 @@ def select_token_decimals_anchors(
 
     selected: dict[str, TokenDecimalsAnchor] = {}
     for candidate in candidates:
-        validate_token_decimals_anchor(candidate)
-        current = selected.get(candidate.token)
-        candidate_order = (
-            candidate.priority,
-            candidate.block_number,
-            candidate.transaction_index,
-            candidate.log_index,
-            candidate.transaction_hash,
-            candidate.pool,
-            candidate.venue,
-            candidate.event_type,
-        )
-        if current is None:
-            selected[candidate.token] = candidate
-            continue
-        current_order = (
-            current.priority,
-            current.block_number,
-            current.transaction_index,
-            current.log_index,
-            current.transaction_hash,
-            current.pool,
-            current.venue,
-            current.event_type,
-        )
-        if candidate_order < current_order:
-            selected[candidate.token] = candidate
+        retain_token_decimals_anchor(selected, candidate)
     return dict(sorted(selected.items()))
+
+
+def token_decimals_anchor_order(anchor: TokenDecimalsAnchor) -> tuple[object, ...]:
+    """Return the one canonical ordering used to select historical anchors."""
+
+    validate_token_decimals_anchor(anchor)
+    return _token_decimals_anchor_order(anchor)
+
+
+def _token_decimals_anchor_order(anchor: TokenDecimalsAnchor) -> tuple[object, ...]:
+    return (
+        anchor.priority,
+        anchor.block_number,
+        anchor.transaction_index,
+        anchor.log_index,
+        anchor.transaction_hash,
+        anchor.pool,
+        anchor.venue,
+        anchor.event_type,
+    )
+
+
+def retain_token_decimals_anchor(
+    selected: dict[str, TokenDecimalsAnchor],
+    candidate: TokenDecimalsAnchor,
+) -> None:
+    """Retain a candidate online without materialising the full candidate stream."""
+
+    candidate_order = token_decimals_anchor_order(candidate)
+    current = selected.get(candidate.token)
+    if current is None or candidate_order < _token_decimals_anchor_order(current):
+        selected[candidate.token] = candidate
 
 
 def token_decimals_request(anchor: TokenDecimalsAnchor) -> dict[str, object]:
