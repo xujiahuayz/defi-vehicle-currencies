@@ -66,11 +66,11 @@ SPEC_ID_COLUMNS = (
 )
 
 
-def support_review_required(support_frames: list[pd.DataFrame]) -> bool:
-    """Collapse already-computed support ledgers without fitting a model."""
+def support_blocks_estimation(support_frames: list[pd.DataFrame]) -> bool:
+    """Collapse calibrated hard support failures without fitting a model."""
 
     return any(
-        bool(frame["support_exit_review_required"].astype(bool).any())
+        bool(frame["blocks_estimation"].astype(bool).any())
         for frame in support_frames
     )
 
@@ -112,8 +112,8 @@ def main() -> int:
     horizons = pd.read_parquet(EXACT_HORIZONS, columns=list(DYNAMIC_COLUMNS))
     horizon_support = dynamics_support_geometry(horizons)
     results = [verified_support, maturation_support, transition_support, horizon_support]
-    review_required = support_review_required(results)
-    if review_required:
+    estimation_blocked = support_blocks_estimation(results)
+    if estimation_blocked:
         del horizons
         gc.collect()
         combined = pd.concat(results, ignore_index=True, sort=False)
@@ -125,12 +125,12 @@ def main() -> int:
             code_sources=CODE_SOURCES,
             inputs=inputs,
             notes=(
-                "routing maturation support geometry only; E-to-D review required; "
+                "routing maturation support geometry only; calibrated hard support failure; "
                 "no fitted specifications"
             ),
         )
         print(
-            "BLOCKED: routing-maturation support exit requires E-to-D review; "
+            "BLOCKED: routing-maturation calibrated support contract failed; "
             "wrote 0 fitted specifications"
         )
         return 2
