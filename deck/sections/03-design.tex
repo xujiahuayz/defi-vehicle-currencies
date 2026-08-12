@@ -1,64 +1,49 @@
-% Slides 9 and 10. How the counterfactual is priced, and where the quoters are allowed to
-% quote. Sources: paper sections 2.4 and 2.5; output/exhibits/quoter_support_bounds.jsonl.
+% Mechanisms and estimands. Sources: docs/specification-lock.json and docs/research-workflow.md.
 
-\begin{frame}{Pricing the road not taken}
-\centering
-\begin{tikzpicture}[scale=0.95,transform shape]
-\node[card,fill=cpanel,draw=cnative,minimum width=2.6cm,minimum height=1.5cm,align=center] (st) at (0,1.25) {\textbf{one state}\\reserves\\ticks\\balances};
-\node[card,draw=crule,minimum width=1.9cm,align=center] (d1) at (4.6,2.5) {quote $a \to b$};
-\node[card,draw=crule,minimum width=1.9cm,align=center] (v1) at (3.4,0.0) {quote $a \to k$};
-\node[card,draw=crule,minimum width=1.9cm,align=center] (v2) at (6.1,0.0) {quote $k \to b$};
-\node[card,fill=cstable!12,draw=cstable,minimum width=1.9cm,align=center] (o1) at (8.6,2.5) {direct output};
-\node[card,fill=cnative!12,draw=cnative,minimum width=1.9cm,align=center] (o2) at (8.6,0.0) {vehicle output};
-\draw[flow] (st.east) to[out=20,in=180] (d1.west);
-\draw[flow] (d1.east) -- (o1.west);
-\draw[flow] (st.east) to[out=-20,in=180] (v1.west);
-\draw[flow] (v1.east) -- (v2.west);
-\draw[flow] (v2.east) -- (o2.west);
-\draw[decorate,decoration={brace,amplitude=4pt},draw=caccent] (9.9,2.5) -- (9.9,0.0);
-\node[font=\scriptsize,text=caccent,anchor=west,align=left] (gp) at (10.05,1.25) {gross gap in\\basis points};
+\begin{frame}{Four forces can sustain vehicle dominance}
+\begin{center}
+\begin{tikzpicture}[scale=0.98,transform shape]
+\node[nodepoint,fill=ucldark,text=white,draw=ucldark,minimum size=46pt,font=\normalsize\bfseries,align=center] (d) at (0,0) {vehicle\\dominance};
+\node[softbox,minimum width=3.15cm,align=center] (liq) at (-4.15,2.15) {\textbf{Liquidity provision}\\capital follows order flow};
+\node[softbox,minimum width=3.15cm,align=center] (def) at (4.15,2.15) {\textbf{Coordination}\\pairs and defaults persist};
+\node[softbox,minimum width=3.15cm,align=center] (int) at (-4.15,-2.15) {\textbf{Market integration}\\more routes become reachable};
+\node[softbox,minimum width=3.15cm,align=center] (hold) at (4.15,-2.15) {\textbf{Holding cost}\\volatility and backing differ};
+\draw[route,draw=native] (liq)--(d);
+\draw[route,draw=uclbright] (def)--(d);
+\draw[route,draw=stable] (int)--(d);
+\draw[route,draw=imported] (hold)--(d);
 \end{tikzpicture}
-\vspace{0.5em}
-\begin{columns}[T]
-\begin{column}{0.48\textwidth}
-\begin{itemize}
-\item Both routes quoted at one reconstructed state
-\item Price movement cannot enter the comparison
-\end{itemize}
-\end{column}
-\begin{column}{0.48\textwidth}
-\begin{itemize}
-\item Constant product, tick traversal, StableSwap, weighted geometric mean
-\item Every quoter accepted only against swaps that executed
-\end{itemize}
-\end{column}
-\end{columns}
-\vspace{0.2em}
-\srcnote{Adams et al. (2021, technical whitepaper); Lehar and Parlour (2024)}
+\end{center}
+\vspace{0.2cm}
+{\small The design measures each force separately before asking which one accounts for changes in dominance.\par}
 \end{frame}
 
-\begin{frame}{Quoting only where the quoter was validated}
+\begin{frame}{The empirical design separates formation, rotation, and persistence}
 \begin{columns}[T]
-\begin{column}{0.34\textwidth}
-\begin{itemize}
-\item Realised trade at \keyfig{0.34\%} of the input reserve at the median, 3.3\% at the 90th percentile
-\item Screen refuses any leg whose own price impact exceeds \keyfig{5\%}
-\item Current-generation removal rates wait for the exact-clock rebuild
-\item No route-gap distribution enters from the retired panel
-\end{itemize}
-\vspace{0.2em}
-\srcnote{Stated in pool state, known before the quote}
+\begin{column}{0.30\textwidth}
+\evidencekicker{Formation}
+\textbf{Architecture changes}\par
+Imposed intermediation, arbitrary pairing, concentrated liquidity, and singleton settlement.
 \end{column}
-\begin{column}{0.64\textwidth}
-\centering
-% output/exhibits/quoter_support_bounds.jsonl POOLED row, 932,270 validated swaps on eight days
-\begin{tikzpicture}
-\begin{axis}[deckaxis,nearlabels,width=8.2cm,height=4.8cm,ybar,bar width=15pt,ymode=log,ymin=0.1,ymax=600,symbolic x coords={median,p90,p99,p999},xtick=data,xticklabels={median,90th,99th,99.9th},title={realised size over input reserve, \%}]
-\addplot[fill=cnative!35,draw=cnative] coordinates {(median,0.34) [0.34] (p90,3.29) [3.29] (p99,14.86) [14.9] (p999,78.33) [78.3]};
-\draw[draw=caccent,line width=1pt,dashed] (axis cs:median,5) -- (axis cs:p999,5);
-\node[font=\tiny,text=caccent,anchor=south west,fill=white,inner sep=0.5pt] at (axis cs:median,5.4) {5\% screen};
-\end{axis}
-\end{tikzpicture}
+\begin{column}{0.30\textwidth}
+\evidencekicker{Rotation}
+\textbf{Panel variation}\par
+Count share, value share, excess use, network position, and route complexity over time.
+\end{column}
+\begin{column}{0.30\textwidth}
+\evidencekicker{Persistence}
+\textbf{Exact alternatives}\par
+The role can be observed while another feasible route is cheaper at the same state.
 \end{column}
 \end{columns}
+\vspace{0.75cm}
+\begin{tikzpicture}
+\draw[route,draw=rule,line width=2pt] (0,0) -- (11.8,0);
+\fill[ucldark] (0.7,0) circle (3pt);
+\fill[stable] (5.9,0) circle (3pt);
+\fill[accent] (11.1,0) circle (3pt);
+\node[below,font=\small] at (0.7,-0.15) {how the role begins};
+\node[below,font=\small] at (5.9,-0.15) {how its share moves};
+\node[below,font=\small] at (11.1,-0.15) {how long it survives};
+\end{tikzpicture}
 \end{frame}
