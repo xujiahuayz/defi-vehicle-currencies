@@ -1,0 +1,137 @@
+{
+ "argv": [
+  "--concurrency",
+  "10"
+ ],
+ "artefact": "data/processed/unified_route_quality.parquet",
+ "artefact_bytes": 457240,
+ "artefact_mtime_ns": 1786534129486166393,
+ "artefact_sha256": "5f45d527c9067295ce77f800b9210d14efaef05e51431468122730f052943c16",
+ "code_fingerprint": "8cdb3ee4b4856918428f98bb8d324a6f05a9f79855b2d9340441270098900d5a",
+ "code_sources": [
+  "scripts/run_reconstruct.py",
+  "src/ddvc/calendar.py",
+  "src/ddvc/fetch/sources.py",
+  "src/ddvc/reconstruct/__init__.py",
+  "src/ddvc/source_records.py",
+  "src/ddvc/tables.py"
+ ],
+ "created_at": "2026-08-12T11:28:49+00:00",
+ "git": {
+  "branch": "main",
+  "commit": "1e61cf8c2a17290b11a9bd8ebae954c380ea8b60",
+  "dirty": false,
+  "dirty_generated_files": [
+   "data/manifests/output/exhibits/unified_route_quality.jsonl.prov.json",
+   "output/exhibits/unified_route_quality.jsonl"
+  ],
+  "dirty_tracked_files": [],
+  "dirty_untracked_files": []
+ },
+ "inputs": [
+  {
+   "entries": 2332,
+   "exists": true,
+   "kind": "directory",
+   "path": "data/unified/.quality",
+   "tree_fingerprint": "7da822c0c61eff7184558815b1162e60dd8a9457544cf070a9ac3161c8a51032"
+  },
+  {
+   "entries": 7590,
+   "exists": true,
+   "kind": "directory",
+   "path": "data/raw/thegraph/balancer",
+   "tree_fingerprint": "e51e5ff16737fdd09c16c22c729b1eaef45e6c422745b326c7996d7a93e3fc7f"
+  },
+  {
+   "entries": 7119,
+   "exists": true,
+   "kind": "directory",
+   "path": "data/raw/thegraph/curve",
+   "tree_fingerprint": "7a19cdfa9010dc5af89eedadfadde7d9fe233fc03af82ba16694daeb3aec4056"
+  },
+  {
+   "entries": 1914,
+   "exists": true,
+   "kind": "directory",
+   "path": "data/raw/dune/fluid",
+   "tree_fingerprint": "26a87941db9df17a62bec87a449eb91783d7700427548802f16d4b759b7f70e8"
+  },
+  {
+   "entries": 12756,
+   "exists": true,
+   "kind": "directory",
+   "path": "data/raw/thegraph/sushiswap_v2",
+   "tree_fingerprint": "ee65e0509d9b8962befab28bb7a8528e6899087f91b9657c95277a1154a1b0a7"
+  },
+  {
+   "entries": 6021,
+   "exists": true,
+   "kind": "directory",
+   "path": "data/raw/thegraph/sushiswap_v3",
+   "tree_fingerprint": "55ee2e9e815f6bc2cc4c7605586ed998d965764a04528f646403d6580450afeb"
+  },
+  {
+   "entries": 13488,
+   "exists": true,
+   "kind": "directory",
+   "path": "data/raw/thegraph/uniswap_v2",
+   "tree_fingerprint": "c9c36cfe3a00f51c06ca894644266f36ab8edebbf252ab9aa987b0777c0681cf"
+  },
+  {
+   "entries": 9421,
+   "exists": true,
+   "kind": "directory",
+   "path": "data/raw/thegraph/uniswap_v3",
+   "tree_fingerprint": "7769e53a46d0be8e496a7abc7a814ca85bf61fdce985f5b7634876f70b004510"
+  },
+  {
+   "entries": 2161,
+   "exists": true,
+   "kind": "directory",
+   "path": "data/raw/thegraph/uniswap_v4",
+   "tree_fingerprint": "c9a8a4d255d2430ca3335093db90be7584be77b00230f57efd9d215215621d41"
+  }
+ ],
+ "libraries": {
+  "numpy": "2.5.1",
+  "pandas": "3.0.3",
+  "pyarrow": "25.0.0",
+  "scipy": "1.18.0"
+ },
+ "notes": "full-calendar canonical directed-route quality gate",
+ "payload_identity": {
+  "bytes": 457240,
+  "columns": [
+   "schema_version",
+   "engine",
+   "day",
+   "input_fingerprint",
+   "expected_sources",
+   "missing_sources",
+   "raw_rows",
+   "normalised_rows",
+   "usable_rows",
+   "duplicate_events",
+   "conflicting_events",
+   "malformed_rows",
+   "missing_identity",
+   "missing_order",
+   "unpriced_rows",
+   "unpriced_provider_usd",
+   "output_rows",
+   "output_bytes",
+   "output_mtime_ns",
+   "output_sha256",
+   "passed"
+  ],
+  "format": "parquet",
+  "rows": 2332,
+  "schema_sha256": "12168b9860872e2b40ff66f6322bd8f924d5112fe9a1b35066d55db8d56372d9",
+  "schema_version": 1,
+  "sha256": "5f45d527c9067295ce77f800b9210d14efaef05e51431468122730f052943c16"
+ },
+ "python": "3.14.6",
+ "rows": 2332,
+ "script": "scripts/run_reconstruct.py"
+}
