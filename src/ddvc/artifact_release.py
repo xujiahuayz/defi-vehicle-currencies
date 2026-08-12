@@ -12,6 +12,7 @@ import tempfile
 from typing import Callable, Mapping
 
 from ddvc.fetch.raw import write_json
+from ddvc.journaled_publication import recover_journaled_publications
 from ddvc.provenance import (
     code_fingerprint,
     describe_input,
@@ -24,6 +25,7 @@ from ddvc.runtime import (
     atomic_output,
     file_sha256,
     serialized_output_install,
+    serialized_output_installs,
     serialized_read_installs,
     source_lock_paths,
     staged_output,
@@ -332,6 +334,106 @@ def _resume_unselected_generation(
         staged[name].replace(target)
 
 
+def _recover_generation_publications(targets: Mapping[str, Path]) -> None:
+    """Recover every payload-sidecar journal before inspecting a generation."""
+
+    for target in targets.values():
+        recover_journaled_publications(
+            {"payload": target, "sidecar": sidecar_path(target)},
+            journal_root=target.parent / ".ddvc-publication-journals",
+        )
+
+
+def _publish_generation_under_lock(
+    *,
+    pointer_path: Path,
+    kind: str,
+    schema_version: int,
+    filenames: Mapping[str, str],
+    targets: Mapping[str, Path],
+    staged: Mapping[str, Path],
+    artifact_hashes: Mapping[str, str],
+    prepared_stamps: Mapping[str, bytes],
+    build_identity: str,
+    generation: str,
+    code_sources: list[str],
+    inputs: list[str | Path],
+    row_counts: Mapping[str, int],
+    notes: str | None,
+    validate_staged: Callable[[Mapping[str, Path]], None],
+    write_pointer: Callable[[Path, dict[str, object]], None],
+) -> ArtifactRelease:
+    """Recover, resume, validate and select one generation under its full lock."""
+
+    _recover_generation_publications(targets)
+    prior_pointer = pointer_path.read_bytes() if pointer_path.is_file() else None
+    selected = _pointer_generation(pointer_path) == generation
+    if selected:
+        try:
+            _reopen_existing_generation(targets, artifact_hashes, validate_staged)
+        except (FileNotFoundError, OSError, RuntimeError, TypeError, ValueError) as error:
+            raise RuntimeError(
+                f"selected {kind} generation is incomplete or invalid"
+            ) from error
+    else:
+        try:
+            _resume_unselected_generation(
+                targets=targets,
+                staged=staged,
+                artifact_hashes=artifact_hashes,
+                prepared_stamps=prepared_stamps,
+                code_sources=code_sources,
+                inputs=inputs,
+                row_counts=row_counts,
+                notes=notes,
+            )
+        except (FileNotFoundError, OSError, RuntimeError, TypeError, ValueError) as error:
+            raise RuntimeError(
+                f"unselected {kind} generation is incomplete or invalid"
+            ) from error
+    validate_staged(targets)
+    stale = {
+        name: verdict.get("status")
+        for name, path in targets.items()
+        if (verdict := verify(path)).get("status") != "ok"
+    }
+    if stale:
+        raise RuntimeError(f"{kind} generation is not current before release: {stale}")
+    _recover_generation_publications(targets)
+    pointer = {
+        "schema_version": schema_version,
+        "kind": kind,
+        "generation_id": generation,
+        "build_identity_sha256": build_identity,
+        "artifacts": {
+            name: {
+                "filename": filenames[name],
+                "sha256": artifact_hashes[name],
+                "provenance_sha256": file_sha256(sidecar_path(targets[name])),
+            }
+            for name in filenames
+        },
+    }
+    try:
+        write_pointer(pointer_path, pointer)
+        return _resolve_artifact_release_unlocked(
+            pointer_path,
+            kind=kind,
+            schema_version=schema_version,
+            filenames=filenames,
+            require_current_provenance=True,
+            expected_generation=generation,
+        )
+    except BaseException:
+        if prior_pointer is None:
+            pointer_path.unlink(missing_ok=True)
+        else:
+            with staged_output(pointer_path) as rollback:
+                rollback.write_bytes(prior_pointer)
+                rollback.replace(pointer_path)
+        raise
+
+
 def _resolve_artifact_release_unlocked(
     pointer_path: Path,
     *,
@@ -449,7 +551,6 @@ def publish_artifact_release(
     release_root = pointer_path.parent
     release_root.mkdir(parents=True, exist_ok=True)
     with serialized_output_install(pointer_path):
-        prior_pointer = pointer_path.read_bytes() if pointer_path.is_file() else None
         with tempfile.TemporaryDirectory(prefix=f".{kind}-", dir=release_root) as directory:
             staged = {
                 name: Path(directory) / filename for name, filename in filenames.items()
@@ -488,67 +589,27 @@ def publish_artifact_release(
                 )
                 for name in filenames
             }
-            selected = _pointer_generation(pointer_path) == generation
-            if selected:
-                try:
-                    _reopen_existing_generation(targets, artifact_hashes, validate_staged)
-                except (FileNotFoundError, OSError, RuntimeError, TypeError, ValueError) as error:
-                    raise RuntimeError(
-                        f"selected {kind} generation is incomplete or invalid"
-                    ) from error
-            else:
-                try:
-                    _resume_unselected_generation(
-                        targets=targets,
-                        staged=staged,
-                        artifact_hashes=artifact_hashes,
-                        prepared_stamps=prepared_stamps,
-                        code_sources=code_sources,
-                        inputs=inputs,
-                        row_counts=row_counts,
-                        notes=notes,
-                    )
-                except (FileNotFoundError, OSError, RuntimeError, TypeError, ValueError) as error:
-                    raise RuntimeError(
-                        f"unselected {kind} generation is incomplete or invalid"
-                    ) from error
-            validate_staged(targets)
-            stale = {
-                name: verdict.get("status")
-                for name, path in targets.items()
-                if (verdict := verify(path)).get("status") != "ok"
-            }
-            if stale:
-                raise RuntimeError(f"{kind} generation is not current before release: {stale}")
-            pointer = {
-                "schema_version": schema_version,
-                "kind": kind,
-                "generation_id": generation,
-                "build_identity_sha256": build_identity,
-                "artifacts": {
-                    name: {
-                        "filename": filenames[name],
-                        "sha256": artifact_hashes[name],
-                        "provenance_sha256": file_sha256(sidecar_path(targets[name])),
-                    }
-                    for name in filenames
-                },
-            }
-            try:
-                write_pointer(pointer_path, pointer)
-                return _resolve_artifact_release_unlocked(
-                    pointer_path,
+            publication_paths = tuple(
+                path
+                for target in targets.values()
+                for path in (target, sidecar_path(target))
+            )
+            with serialized_output_installs(publication_paths):
+                return _publish_generation_under_lock(
+                    pointer_path=pointer_path,
                     kind=kind,
                     schema_version=schema_version,
                     filenames=filenames,
-                    require_current_provenance=True,
-                    expected_generation=generation,
+                    targets=targets,
+                    staged=staged,
+                    artifact_hashes=artifact_hashes,
+                    prepared_stamps=prepared_stamps,
+                    build_identity=build_identity,
+                    generation=generation,
+                    code_sources=code_sources,
+                    inputs=inputs,
+                    row_counts=row_counts,
+                    notes=notes,
+                    validate_staged=validate_staged,
+                    write_pointer=write_pointer,
                 )
-            except BaseException:
-                if prior_pointer is None:
-                    pointer_path.unlink(missing_ok=True)
-                else:
-                    with staged_output(pointer_path) as rollback:
-                        rollback.write_bytes(prior_pointer)
-                        rollback.replace(pointer_path)
-                raise

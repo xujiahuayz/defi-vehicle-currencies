@@ -3,6 +3,9 @@ from __future__ import annotations
 from contextlib import contextmanager
 import json
 from pathlib import Path
+import signal
+import subprocess
+import sys
 import threading
 
 import pytest
@@ -20,6 +23,7 @@ from ddvc.artifact_release import (
 from ddvc.runtime import atomic_output
 from ddvc.fetch.raw import write_json
 from ddvc.provenance import sidecar_path
+from ddvc.journaled_publication import recover_journaled_publications
 
 
 KIND = "test_release"
@@ -587,3 +591,77 @@ def test_release_reopening_rejects_tampered_generation(
             schema_version=1,
             filenames=FILENAMES,
         )
+
+
+@pytest.mark.parametrize("cut", ["installed:payload", "installed:sidecar", "committed"])
+def test_real_sigkill_is_recovered_before_generation_resume_and_pointer_selection(
+    tmp_path: Path, cut: str
+) -> None:
+    pointer = tmp_path / "release" / "current.json"
+    program = r'''
+import json
+import os
+from pathlib import Path
+import signal
+import sys
+
+from ddvc import journaled_publication as publication
+from ddvc.artifact_release import publish_artifact_release
+from ddvc.fetch.raw import write_json
+
+pointer = Path(sys.argv[1])
+cut = sys.argv[2]
+
+def kill_at(label):
+    if label == cut:
+        os.kill(os.getpid(), signal.SIGKILL)
+
+publication._publication_cut = kill_at
+payloads = {"rows": {"value": 7}, "certificate": {"status": "pass", "value": 7}}
+publish_artifact_release(
+    pointer_path=pointer,
+    kind="test_release",
+    schema_version=1,
+    filenames={"rows": "rows.json", "certificate": "certificate.json"},
+    writers={
+        name: lambda path, payload=payload: write_json(path, payload)
+        for name, payload in payloads.items()
+    },
+    row_counts={"rows": 1, "certificate": 1},
+    code_sources=["src/ddvc/artifact_release.py"],
+    inputs=[],
+    notes="test bundle",
+    validate_staged=lambda paths: [json.loads(path.read_text()) for path in paths.values()],
+)
+'''
+    killed = subprocess.run(
+        [sys.executable, "-c", program, str(pointer), cut],
+        cwd=Path(__file__).resolve().parents[1],
+        check=False,
+    )
+    assert killed.returncode == -signal.SIGKILL
+    resumed = _publish(pointer, 7)
+    assert json.loads(resumed.artifacts["rows"].read_text(encoding="utf-8")) == {
+        "value": 7
+    }
+    assert not list(pointer.parent.rglob(".ddvc-publish-*"))
+    selected_bytes = {
+        name: (path.read_bytes(), sidecar_path(path).read_bytes())
+        for name, path in resumed.artifacts.items()
+    }
+    for path in resumed.artifacts.values():
+        recovery = recover_journaled_publications(
+            {"payload": path, "sidecar": sidecar_path(path)},
+            journal_root=path.parent / ".ddvc-publication-journals",
+        )
+        assert recovery.recovered == 0
+    assert {
+        name: (path.read_bytes(), sidecar_path(path).read_bytes())
+        for name, path in resumed.artifacts.items()
+    } == selected_bytes
+    assert resolve_artifact_release(
+        pointer,
+        kind=KIND,
+        schema_version=1,
+        filenames=FILENAMES,
+    ).generation_id == resumed.generation_id

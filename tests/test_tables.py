@@ -485,7 +485,7 @@ class ExhibitWriterTests(unittest.TestCase):
             self.assertEqual(record["artefact_sha256"], hashlib.sha256(output.read_bytes()).hexdigest())
             self.assertEqual(list(root.glob(".*.tmp")), [])
 
-    def test_symlink_replacement_does_not_change_same_target_lock_identity(self) -> None:
+    def test_symlink_target_is_rejected_without_replacing_referent_or_link(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:
             root = Path(tmp)
             referent = root / "referent.parquet"
@@ -494,62 +494,16 @@ class ExhibitWriterTests(unittest.TestCase):
             output.symlink_to(referent.name)
             stamp(output, code_sources=["tests/test_tables.py"])
             sidecar = sidecar_path(output)
-            first_replaced_symlink = Event()
-            release_first = Event()
-            second_attempted_lock = Event()
-            second_acquired_lock = Event()
-            errors: list[BaseException] = []
-            real_install_lock = provenance.serialized_output_installs
-            real_replace = Path.replace
-            held_after_replace = False
-
-            @contextmanager
-            def observed_install_lock(targets):
-                if current_thread().name == "symlink-publisher-b":
-                    second_attempted_lock.set()
-                with real_install_lock(targets):
-                    if current_thread().name == "symlink-publisher-b":
-                        second_acquired_lock.set()
-                    yield
-
-            def held_replace(source: Path, target: Path, *args, **kwargs):
-                nonlocal held_after_replace
-                result = real_replace(source, target, *args, **kwargs)
-                if current_thread().name == "symlink-publisher-a" and Path(target) == output and Path(source) != output and not held_after_replace:
-                    held_after_replace = True
-                    first_replaced_symlink.set()
-                    if not release_first.wait(timeout=5):
-                        raise TimeoutError("test did not release symlink publisher")
-                return result
-
-            def publish(value: int) -> None:
-                try:
-                    write_panel(pd.DataFrame({"value": [value]}), output, code_sources=["tests/test_tables.py"])
-                except BaseException as error:
-                    errors.append(error)
-
-            with patch("ddvc.provenance.serialized_output_installs", new=observed_install_lock), patch.object(Path, "replace", new=held_replace):
-                first = Thread(target=publish, args=(1,), name="symlink-publisher-a")
-                second = Thread(target=publish, args=(2,), name="symlink-publisher-b")
-                first.start()
-                self.assertTrue(first_replaced_symlink.wait(timeout=5))
-                self.assertFalse(output.is_symlink())
-                second.start()
-                self.assertTrue(second_attempted_lock.wait(timeout=5))
-                self.assertFalse(second_acquired_lock.is_set())
-                release_first.set()
-                first.join(timeout=5)
-                second.join(timeout=5)
-            self.assertFalse(first.is_alive())
-            self.assertFalse(second.is_alive())
-            self.assertEqual(errors, [])
-            self.assertTrue(second_acquired_lock.is_set())
-            self.assertEqual(pd.read_parquet(output)["value"].tolist(), [2])
+            before_sidecar = sidecar.read_bytes()
+            with self.assertRaisesRegex(ValueError, "leaf symlink"):
+                write_panel(
+                    pd.DataFrame({"value": [1]}),
+                    output,
+                    code_sources=["tests/test_tables.py"],
+                )
+            self.assertTrue(output.is_symlink())
             self.assertEqual(pd.read_parquet(referent)["value"].tolist(), [0])
-            record = json.loads(sidecar.read_text(encoding="utf-8"))
-            self.assertEqual(record["artefact_bytes"], output.stat().st_size)
-            self.assertEqual(record["artefact_mtime_ns"], output.stat().st_mtime_ns)
-            self.assertEqual(record["artefact_sha256"], hashlib.sha256(output.read_bytes()).hexdigest())
+            self.assertEqual(sidecar.read_bytes(), before_sidecar)
             self.assertEqual(list(root.glob(".*.tmp")), [])
 
 

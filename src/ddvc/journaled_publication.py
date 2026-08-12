@@ -29,6 +29,13 @@ class PublicationRecovery:
     committed_metadata: tuple[dict[str, object], ...]
 
 
+@dataclass(frozen=True)
+class _PublicationPerimeter:
+    targets: dict[str, Path]
+    staged: dict[str, Path] | None
+    journal_root: Path
+
+
 def _fsync_file(path: Path) -> None:
     with path.open("rb") as handle:
         os.fsync(handle.fileno())
@@ -49,10 +56,151 @@ def _remove(path: Path) -> None:
         path.unlink(missing_ok=True)
 
 
+def _lexical(path: Path) -> Path:
+    return Path(os.path.abspath(os.path.normpath(os.fspath(path))))
+
+
+def _simple_label(raw: object) -> str:
+    label = str(raw)
+    if (
+        not label
+        or label in {".", ".."}
+        or Path(label).is_absolute()
+        or Path(label).name != label
+        or "/" in label
+        or "\\" in label
+    ):
+        raise ValueError(f"publication label is not a simple basename: {label!r}")
+    return label
+
+
+def _normalized_mapping(
+    values: Mapping[object, Path], *, role: str
+) -> dict[str, Path]:
+    normalized: dict[str, Path] = {}
+    for raw_label, raw_path in values.items():
+        label = _simple_label(raw_label)
+        if label in normalized:
+            raise ValueError(f"publication {role} labels are not unique: {label}")
+        normalized[label] = _lexical(Path(raw_path))
+    return normalized
+
+
+def _path_identities(path: Path) -> tuple[Path, ...]:
+    try:
+        resolved = path.resolve(strict=False)
+    except (OSError, RuntimeError) as error:
+        raise ValueError(f"publication path cannot be resolved: {path}") from error
+    identities = (path, resolved)
+    return tuple(dict.fromkeys(identities))
+
+
+def _paths_overlap(left: Path, right: Path) -> bool:
+    return left == right or left in right.parents or right in left.parents
+
+
+def _require_disjoint(
+    left_label: str,
+    left: Path,
+    right_label: str,
+    right: Path,
+) -> None:
+    if any(
+        _paths_overlap(left_identity, right_identity)
+        for left_identity in _path_identities(left)
+        for right_identity in _path_identities(right)
+    ):
+        raise ValueError(
+            f"publication paths overlap: {left_label}={left}; {right_label}={right}"
+        )
+
+
+def _validate_leaf(path: Path, *, role: str, required: bool) -> None:
+    if path.is_symlink():
+        raise ValueError(f"publication {role} cannot be a leaf symlink: {path}")
+    if not path.exists():
+        if required:
+            raise FileNotFoundError(f"publication {role} is absent: {path}")
+        return
+    if not path.is_file() and not path.is_dir():
+        raise ValueError(f"publication {role} has an unsupported type: {path}")
+    if path.is_dir():
+        for child in path.rglob("*"):
+            if child.is_symlink() or (not child.is_file() and not child.is_dir()):
+                raise ValueError(
+                    f"publication {role} has an unsupported entry: {child}"
+                )
+
+
+def _validate_perimeter(
+    targets: Mapping[object, Path],
+    *,
+    journal_root: Path,
+    staged: Mapping[object, Path] | None = None,
+) -> _PublicationPerimeter:
+    """Validate the complete path graph without creating or changing a path."""
+
+    selected_targets = _normalized_mapping(targets, role="target")
+    if not selected_targets:
+        raise ValueError("journaled publication requires at least one target")
+    selected_staged = (
+        _normalized_mapping(staged, role="staged") if staged is not None else None
+    )
+    if selected_staged is not None and set(selected_targets) != set(selected_staged):
+        raise ValueError("journaled publication staged perimeter differs from targets")
+    selected_journal_root = _lexical(Path(journal_root))
+    if selected_journal_root.is_symlink():
+        raise ValueError(
+            f"publication journal root cannot be a leaf symlink: {selected_journal_root}"
+        )
+    if selected_journal_root.exists() and not selected_journal_root.is_dir():
+        raise ValueError(
+            f"publication journal root is not a directory: {selected_journal_root}"
+        )
+    for label, path in selected_targets.items():
+        _validate_leaf(path, role=f"target {label}", required=False)
+    if selected_staged is not None:
+        for label, path in selected_staged.items():
+            _validate_leaf(path, role=f"staged {label}", required=True)
+
+    target_items = tuple(selected_targets.items())
+    for index, (label, path) in enumerate(target_items):
+        for other_label, other_path in target_items[index + 1 :]:
+            _require_disjoint(f"target {label}", path, f"target {other_label}", other_path)
+    if selected_staged is not None:
+        staged_items = tuple(selected_staged.items())
+        for index, (label, path) in enumerate(staged_items):
+            for other_label, other_path in staged_items[index + 1 :]:
+                _require_disjoint(f"staged {label}", path, f"staged {other_label}", other_path)
+        for target_label, target in target_items:
+            for staged_label, staged_path in staged_items:
+                _require_disjoint(
+                    f"target {target_label}",
+                    target,
+                    f"staged {staged_label}",
+                    staged_path,
+                )
+    all_paths = [
+        (f"target {label}", path) for label, path in target_items
+    ] + [
+        (f"staged {label}", path)
+        for label, path in (selected_staged or {}).items()
+    ]
+    for label, path in all_paths:
+        _require_disjoint("journal root", selected_journal_root, label, path)
+    return _PublicationPerimeter(
+        selected_targets,
+        selected_staged,
+        selected_journal_root,
+    )
+
+
 def _identity(path: Path) -> dict[str, object]:
+    if path.is_symlink():
+        raise ValueError(f"publication target has an unsupported type: {path}")
     if path.is_file():
         return {"kind": "file", "sha256": file_sha256(path)}
-    if path.is_dir() and not path.is_symlink():
+    if path.is_dir():
         entries: list[dict[str, str]] = []
         for child in sorted(path.rglob("*")):
             if child.is_symlink() or (not child.is_file() and not child.is_dir()):
@@ -87,10 +235,12 @@ def _durable_replace(source: Path, target: Path) -> None:
 def _fsync_tree(path: Path) -> None:
     """Durably flush every staged file and directory before PREPARED."""
 
+    if path.is_symlink():
+        raise ValueError(f"publication stage has an unsupported type: {path}")
     if path.is_file():
         _fsync_file(path)
         return
-    if not path.is_dir() or path.is_symlink():
+    if not path.is_dir():
         raise ValueError(f"publication stage has an unsupported type: {path}")
     directories = [path]
     for child in sorted(path.rglob("*")):
@@ -248,10 +398,9 @@ def _recover_journaled_publications_unlocked(
 ) -> PublicationRecovery:
     """Recover prepared rollbacks and finish committed cleanup for one perimeter."""
 
-    if not targets:
-        raise ValueError("journaled publication requires at least one target")
-    selected = {str(name): Path(path) for name, path in targets.items()}
-    stage_parent = Path(journal_root)
+    perimeter = _validate_perimeter(targets, journal_root=journal_root)
+    selected = perimeter.targets
+    stage_parent = perimeter.journal_root
     stage_parent.mkdir(parents=True, exist_ok=True)
     recovered = 0
     committed_metadata: list[dict[str, object]] = []
@@ -297,12 +446,10 @@ def recover_journaled_publications(
 ) -> PublicationRecovery:
     """Recover one perimeter while excluding every reader and writer."""
 
-    selected = {str(name): Path(path) for name, path in targets.items()}
-    if not selected:
-        raise ValueError("journaled publication requires at least one target")
-    with serialized_output_installs(selected.values()):
+    perimeter = _validate_perimeter(targets, journal_root=journal_root)
+    with serialized_output_installs(perimeter.targets.values()):
         return _recover_journaled_publications_unlocked(
-            selected, journal_root=journal_root
+            perimeter.targets, journal_root=perimeter.journal_root
         )
 
 
@@ -320,18 +467,22 @@ def _publish_journaled_bundle_unlocked(
     target for recovery, publication, validation, and cleanup.
     """
 
-    selected_targets = {str(name): Path(path) for name, path in targets.items()}
-    selected_staged = {str(name): Path(path) for name, path in staged.items()}
-    if not selected_targets or set(selected_targets) != set(selected_staged):
-        raise ValueError("journaled publication staged perimeter differs from targets")
+    perimeter = _validate_perimeter(
+        targets,
+        staged=staged,
+        journal_root=journal_root,
+    )
+    selected_targets = perimeter.targets
+    assert perimeter.staged is not None
+    selected_staged = perimeter.staged
     _recover_journaled_publications_unlocked(
-        selected_targets, journal_root=journal_root
+        selected_targets, journal_root=perimeter.journal_root
     )
     for parent in {path.parent for path in selected_targets.values()}:
         if not parent.exists():
             parent.mkdir(parents=True, exist_ok=True)
             _fsync_directory(parent.parent)
-    stage_parent = Path(journal_root)
+    stage_parent = perimeter.journal_root
     stage_parent.mkdir(parents=True, exist_ok=True)
     _fsync_directory(stage_parent.parent)
     stage = Path(
@@ -344,8 +495,6 @@ def _publish_journaled_bundle_unlocked(
     try:
         for name, _target, new, _backup in records:
             source = selected_staged[name]
-            if not source.is_file() and not source.is_dir():
-                raise FileNotFoundError(f"staged publication source is absent: {source}")
             _durable_replace(source, new)
             _fsync_tree(new)
         _fsync_directory(stage / "new")
@@ -406,14 +555,17 @@ def publish_journaled_bundle(
 ) -> None:
     """Publish a fixed bundle under one exclusive target perimeter."""
 
-    selected = {str(name): Path(path) for name, path in targets.items()}
-    if not selected:
-        raise ValueError("journaled publication requires at least one target")
-    with serialized_output_installs(selected.values()):
+    perimeter = _validate_perimeter(
+        targets,
+        staged=staged,
+        journal_root=journal_root,
+    )
+    assert perimeter.staged is not None
+    with serialized_output_installs(perimeter.targets.values()):
         _publish_journaled_bundle_unlocked(
-            targets=selected,
-            staged=staged,
-            journal_root=journal_root,
+            targets=perimeter.targets,
+            staged=perimeter.staged,
+            journal_root=perimeter.journal_root,
             metadata=metadata,
             validate_live=validate_live,
         )
