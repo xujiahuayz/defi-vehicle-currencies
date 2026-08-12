@@ -13,10 +13,12 @@ from ddvc.data_release import ReleasedPartition, ReleasedPartitionSet
 from ddvc.endpoint_candidate_composition import (
     ENDPOINT_CANDIDATE_COMPOSITION_SCIENTIFIC_SOURCES,
     ROUTE_INPUT_COLUMNS,
+    endpoint_candidate_composition_for_day,
 )
 from ddvc.endpoint_candidate_composition_release import (
     publish_endpoint_candidate_composition_release,
     resolve_endpoint_candidate_composition_release,
+    validate_endpoint_candidate_composition_paths,
 )
 from ddvc.provenance import sidecar_path
 from scripts import build_endpoint_candidate_composition as builder
@@ -220,6 +222,39 @@ def test_diagnostic_limit_validates_subset_without_creating_pointer(tmp_path: Pa
     assert outcome.release is None
     assert outcome.row_counts == {"choices": 2, "pair_support": 1, "exclusions": 0}
     assert not pointer.exists()
+
+
+def test_collision_audit_round_trips_through_release_schemas(tmp_path: Path) -> None:
+    frame = pd.concat(
+        [
+            _day_frame(1_704_153_600),
+            pd.DataFrame(
+                [
+                    _leg("collision", 10, SRC, WETH, timestamp=1_704_153_600),
+                    _leg(
+                        "collision",
+                        10,
+                        WETH,
+                        TGT,
+                        timestamp=1_704_153_600,
+                        source="sushiswap_v2",
+                    ),
+                ]
+            ),
+        ],
+        ignore_index=True,
+    )[ROUTE_INPUT_COLUMNS]
+    bundle = endpoint_candidate_composition_for_day(frame, "20240102")
+    paths = {}
+    for table in builder.TABLE_COLUMNS:
+        path = tmp_path / f"{table}.parquet"
+        builder._write_frame(getattr(bundle, table), path, table=table)
+        paths[table] = path
+    assert validate_endpoint_candidate_composition_paths(paths) == {
+        "choices": len(bundle.choices),
+        "pair_support": len(bundle.pair_support),
+        "exclusions": len(bundle.exclusions),
+    }
 
 
 def test_every_scientific_dependency_invalidates_the_release_fingerprint(
