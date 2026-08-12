@@ -24,7 +24,7 @@ ETH's excess-use fell below one in 2022Q2 and returned above one by 2023Q1. The 
 
 ## Count leads nothing; value leads count
 
-By count the ordering barely moves: native asset-type excess-use sits near 0.8 to 0.95 across the whole sample and stable near 1.2 to 1.5 throughout, so on a per-route basis stables were already the more excess-used class early. The crossing is a value event. Large trades relocate the vehicle role first and the count of routes follows later, which reads as diffusion of a new vehicle from large flow to small flow. The gap between the value crossing (2025Q1) and any count crossing is the diffusion lag and is itself an estimand.
+By count the ordering barely moves and it points the other way from value. Native asset-type excess-use by count sits near 0.8 to 0.95 across the whole sample, below one throughout, so per route the native asset was never the excess-vehicle. Stable excess-use by count sits near 1.2 to 1.5 throughout, above one throughout, so per route the stable class was always the excess-vehicle. The switch is a value event alone. Small routes favoured the stable vehicle from the start, and it was the large-value flow that relocated last, crossing to stables only in 2025. The vehicle role by number of trades was stable-tilted years before the vehicle role by dollars followed, so the large trades were the laggards, not the leaders. The lag between the count tilt, present from the start, and the value crossing in 2025Q1 is itself an estimand and reads as a vehicle adopted first on many small trades and only later on the large flow that dominates value.
 
 ## The vehicle role is a fiat-reserve phenomenon, and that is the mechanism
 
@@ -42,7 +42,19 @@ The economics is exactly the vehicle-currency theory made visible. A vehicle nee
 
 2. The 2022-transient against the 2025-sustained crossing as a within-asset natural contrast for succession versus stress. Estimand: the mean-reversion half-life of excess-use after a sub-unit excursion, estimated separately for the recovered 2022 episode and the 2025 episode, testing whether 2025 is drawn from the same reverting process.
 
-3. The value-leads-count diffusion. Estimand: the lag between an asset's value excess-use crossing one and its count excess-use crossing one, as a measure of how a vehicle role propagates from large to small trades. This is not answerable in FX, where trade-size-resolved vehicle use at daily frequency is unobservable.
+3. The count-leads-value diffusion. A vehicle appears on many small trades before it appears on the large flow that dominates dollars, so the stable role is above one by count for years before it crosses one by value in 2025. Estimand: the lag between the count tilt and the value crossing, as a measure of how a vehicle role propagates from small trades up to large trades. This is not answerable in FX, where trade-size-resolved vehicle use at daily frequency is unobservable.
+
+## The maturation rival is rejected for the core, and the residual is the mechanism
+
+The strongest rival, that market maturation and aggregator routing manufacture the apparent rotation by composition, is tested in `docs/provisional-rotation-robustness.md` and does not hold for the core of the effect. Three results.
+
+First, the rebound survives inside a fixed opportunity set. Within the single-venue cell the stable share still rises by 22.97 points on episodes and 35.03 points on strict-support value from 2024 to 2026, with Holm p from about 1e-41 to 1e-73, which is roughly four fifths of the marginal magnitude. Holding both margins the rival names fixed, in the single-venue two-leg cell, it is still 20.67 and 38.09 points. Composition inside one venue cannot be the whole story when the effect is nearly intact inside one venue.
+
+Second, the rival predicts the wrong sign on the aggregate. If integration created the rotation by letting routers reach stable paths they could not reach before, intermediation would rise as venues integrated. It does the opposite. As cross-venue incidence goes from 1.7 percent to 57 percent, true intermediation is flat to falling, minus 2.03 to minus 5.35 points. The vehicle composition rotated inside a roughly constant, even shrinking, intermediation layer, so the rotation is a reallocation of the vehicle role and not an expansion of intermediation.
+
+Third, the endpoint-netted excess-use reversal, which differences out volume by construction, moves anyway, and USDT's endpoint-netted gap change of 15.27 points on strict value at Holm 5e-22 is not producible by proportional volume or venue growth.
+
+The residual the rival keeps is a cross-venue amplification, about a quarter of the effect, where the rotation is faster across venues than within one venue by 7.45 to 8.17 points. This is not yet resolved into mechanism against artifact. It is either the opportunity-set channel the rival names, or the thick-market externality itself operating through integration, where a stable vehicle becomes more attractive as its route can be assembled across venues. The forced-versus-chosen and routing-search-efficiency test named in the registry is what distinguishes the two, and it is what the state-dependent D layer is being built to support. The honest current statement is that three quarters of the rotation is venue-invariant and outside the rival's reach, and the remaining quarter is an integration channel whose interpretation is open.
 
 ## What this still needs before promotion
 
