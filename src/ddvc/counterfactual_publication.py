@@ -96,6 +96,15 @@ class _Capability:
     seal: object = field(default_factory=object, repr=False, compare=False)
 
 
+@dataclass(frozen=True)
+class _OutputIdentity:
+    """One output's exact path, referent, metadata and byte identity."""
+
+    description: dict[str, object]
+    path_stat: tuple[int, int, int, int, int, int]
+    referent_stat: tuple[int, int, int, int, int, int]
+
+
 _CAPABILITIES: dict[str, _Capability] = {}
 _CAPABILITY_OWNERS: dict[str, Callable] = {}
 _ACTIVE_CAPABILITY: ContextVar[object | None] = ContextVar(
@@ -109,6 +118,17 @@ def _sha256(path: Path) -> str:
         for chunk in iter(lambda: handle.read(1024 * 1024), b""):
             digest.update(chunk)
     return digest.hexdigest()
+
+
+def _stat_identity(stat: os.stat_result) -> tuple[int, int, int, int, int, int]:
+    return (
+        stat.st_mode,
+        stat.st_dev,
+        stat.st_ino,
+        stat.st_size,
+        stat.st_mtime_ns,
+        stat.st_ctime_ns,
+    )
 
 
 def _lexical(path: Path) -> Path:
@@ -320,6 +340,52 @@ def _describe_output(path: Path) -> dict[str, object]:
         "resolved_path": str(path.resolve(strict=True)),
         "sha256": _sha256(path),
     }
+
+
+def _seal_output(path: Path) -> _OutputIdentity:
+    """Bind exact bytes and metadata while rejecting mutation during hashing."""
+
+    selected = _lexical(path)
+    path_before = _stat_identity(selected.lstat())
+    referent = selected.resolve(strict=True) if selected.is_symlink() else selected
+    referent_before = _stat_identity(referent.stat())
+    description = _describe_output(selected)
+    path_after = _stat_identity(selected.lstat())
+    referent_after = _stat_identity(referent.stat())
+    if path_before != path_after or referent_before != referent_after:
+        raise RuntimeError(f"published output changed while sealed: {selected}")
+    return _OutputIdentity(description, path_after, referent_after)
+
+
+def _seal_outputs(outputs: Iterable[Path]) -> tuple[_OutputIdentity, ...]:
+    return tuple(_seal_output(Path(path)) for path in outputs)
+
+
+def _require_marker_commit(
+    capability: _Capability,
+    *,
+    transaction_id: str,
+    expected_payload: dict[str, object],
+    sealed_outputs: tuple[_OutputIdentity, ...],
+) -> None:
+    """Reopen the marker and exact outputs before discarding rollback evidence."""
+
+    try:
+        installed = json.loads(capability.marker.read_text(encoding="utf-8"))
+    except (OSError, json.JSONDecodeError) as error:
+        raise RuntimeError("counterfactual publication marker did not reopen") from error
+    if installed != expected_payload:
+        raise RuntimeError("counterfactual publication marker changed during commit")
+    if _seal_outputs(capability.outputs) != sealed_outputs:
+        raise RuntimeError("counterfactual publication output changed during commit")
+    validated = _validate_marker_payload(
+        capability.capability_id,
+        capability.marker,
+        installed,
+        expected_outputs=capability.outputs,
+    )
+    if validated.get("transaction_id") != transaction_id:
+        raise RuntimeError("counterfactual publication marker selected another transaction")
 
 
 def _marker_payload(
@@ -660,19 +726,27 @@ def _publication_transaction(
                 transaction.assert_output_identities()
                 _sync_outputs(selected_outputs)
                 transaction.assert_output_identities()
+                sealed_outputs = _seal_outputs(selected_outputs)
                 output_descriptions = [
-                    _describe_output(path) for path in selected_outputs
+                    identity.description for identity in sealed_outputs
                 ]
                 transaction.assert_output_identities()
+                marker_payload = _marker_payload(
+                    capability,
+                    transaction_id=transaction_id,
+                    outputs=output_descriptions,
+                )
                 _atomic_json(
                     capability.marker,
-                    _marker_payload(
-                        capability,
-                        transaction_id=transaction_id,
-                        outputs=output_descriptions,
-                    ),
+                    marker_payload,
                 )
                 transaction.assert_output_identities()
+                _require_marker_commit(
+                    capability,
+                    transaction_id=transaction_id,
+                    expected_payload=marker_payload,
+                    sealed_outputs=sealed_outputs,
+                )
                 _write_status(
                     root,
                     capability=capability,
@@ -681,6 +755,10 @@ def _publication_transaction(
                     backups=backups,
                 )
                 transaction.assert_output_identities()
+                if _seal_outputs(selected_outputs) != sealed_outputs:
+                    raise RuntimeError(
+                        "counterfactual publication output changed before cleanup"
+                    )
             except BaseException as original:
                 _rollback(root, capability, transaction_id, backups, original)
                 raise

@@ -561,6 +561,63 @@ def test_retarget_during_marker_install_cannot_select_attacker_output() -> None:
         shutil.rmtree(recovery)
 
 
+@pytest.mark.parametrize("mutation", ["in_place", "replace", "stat_only"])
+def test_marker_install_cannot_commit_mutated_output_bytes(mutation: str) -> None:
+    with tempfile.TemporaryDirectory() as directory:
+        root = Path(directory)
+        output = root / "output"
+        output.write_text("prior", encoding="utf-8")
+        marker = root / "marker.json"
+        capability_id = f"test.marker-byte-mutation.{uuid.uuid4().hex}"
+        register_publication_capability(
+            capability_id, (output,), marker_path=marker
+        )
+
+        @publication_capability(
+            capability_id,
+            output_selector=lambda: (output,),
+            source_selector=lambda: (),
+        )
+        def owner():
+            output.write_text("published", encoding="utf-8")
+
+        real_atomic_json = publication._atomic_json
+
+        def mutate_before_marker(path: Path, payload: object) -> None:
+            if path == marker:
+                if mutation == "in_place":
+                    with output.open("r+b") as handle:
+                        handle.write(b"ATTACKED!")
+                        handle.flush()
+                        os.fsync(handle.fileno())
+                elif mutation == "replace":
+                    replacement = output.with_suffix(".replacement")
+                    replacement.write_text("attacker", encoding="utf-8")
+                    replacement.replace(output)
+                else:
+                    observed = output.stat()
+                    os.utime(
+                        output,
+                        ns=(observed.st_atime_ns, observed.st_mtime_ns + 1_000_000_000),
+                    )
+            real_atomic_json(path, payload)
+
+        with (
+            _install_for_test(owner),
+            patch.object(
+                publication, "_atomic_json", side_effect=mutate_before_marker
+            ),
+            pytest.raises(RuntimeError, match="output changed during commit"),
+        ):
+            owner()
+        assert output.read_text(encoding="utf-8") == "prior"
+        assert not marker.exists()
+        with pytest.raises(RuntimeError, match="not current"):
+            require_current_publication(capability_id, marker_path=marker)
+        journal = marker.parent / f".{marker.name}.transactions"
+        assert not journal.exists() or not tuple(journal.iterdir())
+
+
 def test_empty_preparing_journal_is_ignored_before_next_publication() -> None:
     with tempfile.TemporaryDirectory() as directory:
         root = Path(directory)
