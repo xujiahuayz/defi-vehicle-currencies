@@ -4,6 +4,7 @@ from __future__ import annotations
 
 from collections import Counter
 from concurrent.futures import as_completed
+from contextlib import contextmanager
 from dataclasses import asdict, dataclass
 import gzip
 import hashlib
@@ -66,7 +67,7 @@ from ddvc.quoter import (
     coerce_rpc_envelope,
     validate_rpc_attempts,
 )
-from ddvc.runtime import interruptible_thread_pool
+from ddvc.runtime import interruptible_thread_pool, serialized_read_installs
 from ddvc.token_decimals import (
     token_decimals_registry_sha256,
     validate_token_decimals_registry,
@@ -166,6 +167,7 @@ class V2EventSourceRelease:
     summary_path: Path
     exceptions_path: Path
     certificate_path: Path
+    pointer_sha256: str
 
     @property
     def artifact_paths(self) -> tuple[Path, Path, Path]:
@@ -179,6 +181,23 @@ class V2EventSourceRelease:
     def lineage_paths(self) -> tuple[Path, ...]:
         return self.pointer_path, *self.artifact_paths, *self.provenance_paths
 
+    def assert_current(self) -> None:
+        if (
+            not self.pointer_path.is_file()
+            or _file_sha256(self.pointer_path) != self.pointer_sha256
+        ):
+            raise RuntimeError("V2 event-source pointer changed after resolution")
+
+
+@contextmanager
+def current_v2_event_source_release(release: V2EventSourceRelease):
+    """Lease the selected V2 pointer and artifacts through a complete read."""
+
+    with serialized_read_installs(release.lineage_paths):
+        release.assert_current()
+        yield release
+        release.assert_current()
+
 
 def _v2_event_source_release(release: ArtifactRelease) -> V2EventSourceRelease:
     """Expose the established V2 path API over the shared bundle owner."""
@@ -191,6 +210,7 @@ def _v2_event_source_release(release: ArtifactRelease) -> V2EventSourceRelease:
         summary_path=release.artifacts["summary"],
         exceptions_path=release.artifacts["exceptions"],
         certificate_path=release.artifacts["certificate"],
+        pointer_sha256=release.pointer_sha256,
     )
 
 
@@ -2788,7 +2808,8 @@ def read_v2_event_source_certificate(
         raise ValueError("explicit V2 event-source reads require all three artifact paths")
     if all(path is None for path in explicit):
         release = resolve_v2_event_source_release(pointer_path)
-        summary_path, exceptions_path, certificate_path = release.artifact_paths
+        with current_v2_event_source_release(release):
+            return read_v2_event_source_certificate(*release.artifact_paths)
     resolved = tuple(Path(path) for path in (summary_path, exceptions_path, certificate_path) if path is not None)
     if len(resolved) != 3:
         raise AssertionError("V2 event-source artifact resolution is incomplete")

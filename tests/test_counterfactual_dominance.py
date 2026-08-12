@@ -22,10 +22,9 @@ from scripts.build_counterfactual_dominance import (
     receipt_allocation_support_summary,
     state_support_summary,
     target_price_usd,
-    write_gross_release,
+    _write_gross_release,
 )
 from ddvc.prices import attach_strictly_prior_weth_usd
-from ddvc.provenance import sidecar_path
 
 
 class CounterfactualDominanceTests(unittest.TestCase):
@@ -59,10 +58,10 @@ class CounterfactualDominanceTests(unittest.TestCase):
     def test_gross_release_rechecks_unique_receipt_ownership_before_write(self) -> None:
         duplicate = pd.DataFrame({"tx": ["0xabc", "0xABC"], "receipt_allocation_scope": ["single_reconstructed_component_transaction"] * 2})
         with patch("scripts.build_counterfactual_dominance.write_panel") as writer, self.assertRaisesRegex(ValueError, "cannot be allocated"):
-            write_gross_release(duplicate, Path("ignored.parquet"))
+            _write_gross_release(duplicate)
         writer.assert_not_called()
 
-    def test_gross_release_rejects_state_mutation_before_install_and_preserves_prior_pair(self) -> None:
+    def test_canonical_gross_writer_cannot_bypass_registered_owner(self) -> None:
         class CurrentRoute:
             provenance_inputs = (Path("route-ledger"),)
             content_identity_sha256 = "a" * 64
@@ -71,13 +70,13 @@ class CounterfactualDominanceTests(unittest.TestCase):
             def assert_current() -> None:
                 return None
 
-        class MutatedState:
+        class CurrentState:
             provenance_inputs = (Path("state-ledger"),)
             content_identity_sha256 = "b" * 64
 
             @staticmethod
             def assert_current() -> None:
-                raise RuntimeError("released state marker changed")
+                return None
 
         frame = pd.DataFrame(
             {
@@ -87,22 +86,12 @@ class CounterfactualDominanceTests(unittest.TestCase):
                 ],
             }
         )
-        with TemporaryDirectory() as temporary:
-            output = Path(temporary) / "gross.parquet"
-            pd.DataFrame({"prior": [1]}).to_parquet(output, index=False)
-            prior = output.read_bytes()
-            sidecar = sidecar_path(output)
-            sidecar.parent.mkdir(parents=True, exist_ok=True)
-            sidecar.write_bytes(b"prior-sidecar\n")
-            with self.assertRaisesRegex(RuntimeError, "marker changed"):
-                write_gross_release(
-                    frame,
-                    output,
-                    route_release=CurrentRoute(),
-                    state_releases={"uniswap_v2": MutatedState()},
-                )
-            self.assertEqual(output.read_bytes(), prior)
-            self.assertEqual(sidecar.read_bytes(), b"prior-sidecar\n")
+        with self.assertRaisesRegex(RuntimeError, "requires publication capability"):
+            _write_gross_release(
+                frame,
+                route_release=CurrentRoute(),
+                state_releases={"uniswap_v2": CurrentState()},
+            )
 
     def test_intraday_weth_mark_is_strictly_prior_and_fresh(self) -> None:
         targets = pd.DataFrame({"timestamp_utc": [1_000, 1_060]})

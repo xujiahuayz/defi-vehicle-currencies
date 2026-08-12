@@ -64,6 +64,11 @@ from ddvc.cpquote import (
     cost_gap_bps,
     quote_one_hop,
 )
+from ddvc.counterfactual_publication import (
+    publication_capability,
+    register_publication_capability,
+    require_active_publication,
+)
 from ddvc.gas import load_route_transaction_gas
 from ddvc.external_prices import validate_external_weth_usd_release
 from ddvc.paths import (
@@ -81,7 +86,7 @@ from ddvc.prices import (
 )
 from ddvc.realised import LINEAR_ROUTE_COLUMNS, extract_linear_realised_routes
 from ddvc.pricing.v2_replay import V2_VENUES, load_v2_replay_day
-from ddvc.provenance import require_current_artifacts
+from ddvc.provenance import require_current_artifacts, sidecar_path
 from ddvc.route_gas import GAS_ESTIMATE_COLUMNS, estimate_route_gas
 from ddvc.runtime import bounded_workers, exclusive_job, interruptible_process_pool
 from ddvc.data_release import released_route_partitions, released_state_partitions
@@ -102,6 +107,7 @@ CODE_SOURCES = [
     "scripts/build_counterfactual_dominance.py",
     "src/ddvc/calendar.py",
     "src/ddvc/cpquote.py",
+    "src/ddvc/counterfactual_publication.py",
     "src/ddvc/pricing/v2_replay.py",
     "src/ddvc/state_data.py",
     "src/ddvc/gas.py",
@@ -112,7 +118,26 @@ CODE_SOURCES = [
     "src/ddvc/realised.py",
     "src/ddvc/route_gas.py",
     "src/ddvc/route_roles.py",
+    "src/ddvc/runtime.py",
 ]
+
+register_publication_capability(
+    "counterfactual.gross",
+    (
+        GROSS_PARQUET,
+        sidecar_path(GROSS_PARQUET),
+        OUT_RECEIPT_ALLOCATION_SUPPORT,
+        sidecar_path(OUT_RECEIPT_ALLOCATION_SUPPORT),
+    ),
+)
+register_publication_capability(
+    "counterfactual.final_panel",
+    (OUT_PARQUET, sidecar_path(OUT_PARQUET)),
+)
+register_publication_capability(
+    "counterfactual.final_exhibits",
+    (OUT_EXHIBIT, sidecar_path(OUT_EXHIBIT), OUT_SUPPORT, sidecar_path(OUT_SUPPORT)),
+)
 
 VENUES = V2_VENUES
 MIN_USD = 100.0            # below this, gas dominates and the comparison is moot
@@ -221,9 +246,8 @@ def gross_panel_inputs(
     ]
 
 
-def write_gross_release(
+def _write_gross_release(
     frame: pd.DataFrame,
-    output: Path = GROSS_PARQUET,
     *,
     route_release: ReleasedPartitionSet | None = None,
     state_releases: dict[str, ReleasedPartitionSet] | None = None,
@@ -241,9 +265,10 @@ def write_gross_release(
         raise ValueError("gross route release violates the single-component receipt allocation contract")
     if route_release is None or state_releases is None:
         raise ValueError("gross route publication requires released route and state identities")
+    require_active_publication("counterfactual.gross")
     write_panel(
         frame,
-        output,
+        GROSS_PARQUET,
         code_sources=CODE_SOURCES,
         inputs=gross_panel_inputs(route_release, state_releases),
         notes=f"gross V2-family exact-size direct counterfactual at strict pre-transaction block-log state for single-component transactions only, released before any gas-price dependency and bound to the receipt-allocation support-loss audit; route release {route_release.content_identity_sha256}; state releases {','.join(release.content_identity_sha256 for release in state_releases.values())}",
@@ -251,7 +276,167 @@ def write_gross_release(
             route_release, *state_releases.values()
         ),
     )
-    return output
+    return GROSS_PARQUET
+
+
+def _release_sources(validate_release) -> list[Path]:
+    return [
+        path
+        for release in validate_release.releases
+        for path in release.provenance_inputs
+    ]
+
+
+def _assert_releases_current(validate_release) -> None:
+    validate_release(Path("<publication-boundary>"))
+
+
+@publication_capability(
+    "counterfactual.gross",
+    output_selector=lambda *_args, **_kwargs: (
+        GROSS_PARQUET,
+        sidecar_path(GROSS_PARQUET),
+        OUT_RECEIPT_ALLOCATION_SUPPORT,
+        sidecar_path(OUT_RECEIPT_ALLOCATION_SUPPORT),
+    ),
+    source_selector=lambda _frame, _support, _route_release, _state_releases, validate_release: _release_sources(validate_release),
+    assert_current=lambda _frame, _support, _route_release, _state_releases, validate_release: _assert_releases_current(validate_release),
+)
+def build_gross_publication(
+    frame: pd.DataFrame,
+    allocation_support: pd.DataFrame,
+    route_release: ReleasedPartitionSet,
+    state_releases: dict[str, ReleasedPartitionSet],
+    validate_release,
+) -> Path:
+    """Publish the route-only support audit and full gross panel atomically."""
+
+    require_active_publication("counterfactual.gross")
+    write_exhibit(
+        allocation_support,
+        OUT_RECEIPT_ALLOCATION_SUPPORT,
+        code_sources=CODE_SOURCES,
+        inputs=list(route_release.provenance_inputs),
+        notes=f"daily, annual and pooled support loss from excluding transactions with more than one reconstructed component because one whole-transaction receipt is not allocated across route rows; released-route identity {route_release.content_identity_sha256}",
+        preinstall_validator=release_preinstall_validator(route_release),
+    )
+    return _write_gross_release(
+        frame,
+        route_release=route_release,
+        state_releases=state_releases,
+    )
+
+
+FINAL_INPUTS = (
+    GROSS_PARQUET,
+    TRANSACTION_GAS_PANEL,
+    ROUTE_GAS_PANEL,
+    EXTERNAL_WETH_USD_INTRADAY_PANEL,
+)
+
+
+def _final_input_sources() -> tuple[Path, ...]:
+    return (*FINAL_INPUTS, *(sidecar_path(path) for path in FINAL_INPUTS))
+
+
+def _assert_final_inputs_current(_staged_path: Path | None = None) -> None:
+    require_current_artifacts(
+        list(FINAL_INPUTS),
+        consumer="gas-adjusted counterfactual-dominance panel",
+    )
+    validate_external_weth_usd_release(
+        EXTERNAL_WETH_USD_INTRADAY_PANEL,
+        EXTERNAL_WETH_USD_RAW_ROOT,
+    )
+
+
+@publication_capability(
+    "counterfactual.final_panel",
+    output_selector=lambda: (OUT_PARQUET, sidecar_path(OUT_PARQUET)),
+    source_selector=lambda: _final_input_sources(),
+    assert_current=lambda: _assert_final_inputs_current(),
+)
+def build_final_panel() -> pd.DataFrame:
+    """Install the final panel under the exact current inputs it reads."""
+
+    require_active_publication("counterfactual.final_panel")
+    frame = add_topology_gas_adjustment(pd.read_parquet(GROSS_PARQUET))
+    write_panel(
+        frame,
+        OUT_PARQUET,
+        code_sources=CODE_SOURCES,
+        inputs=list(_final_input_sources()),
+        notes="V2-family exact-size direct counterfactual with exact block-header time, receipt execution plus blob gas fields, receipt-calibrated route gas units and an independent strictly prior intraday WETH/USD mark; canonical all-in bps withheld because endpoint notionals remain address-day priced, with explicitly named daily-denominator sensitivities retained",
+        preinstall_validator=_assert_final_inputs_current,
+    )
+    return frame
+
+
+def _assert_final_panel_current(_staged_path: Path | None = None) -> None:
+    require_current_artifacts(
+        [OUT_PARQUET], consumer="counterfactual-dominance exhibits"
+    )
+
+
+@publication_capability(
+    "counterfactual.final_exhibits",
+    output_selector=lambda: (
+        OUT_EXHIBIT,
+        sidecar_path(OUT_EXHIBIT),
+        OUT_SUPPORT,
+        sidecar_path(OUT_SUPPORT),
+    ),
+    source_selector=lambda: (OUT_PARQUET, sidecar_path(OUT_PARQUET)),
+    assert_current=lambda: _assert_final_panel_current(),
+)
+def build_final_exhibits() -> tuple[pd.DataFrame, pd.DataFrame]:
+    """Publish both exhibits from one exact installed panel."""
+
+    require_active_publication("counterfactual.final_exhibits")
+    frame = pd.read_parquet(OUT_PARQUET)
+    annual = frame.groupby(
+        [
+            pd.Grouper(key="date", freq="YS"),
+            "mid_type",
+            "best_direct_outside_realised_venue_set",
+        ]
+    ).agg(
+        routes=("gross_direct_advantage_bps", "size"),
+        pct_dominated_gross=("direct_output_improvement_bps", lambda values: 100 * (values > 0).mean()),
+        median_gross_direct_advantage_bps=("gross_direct_advantage_bps", "median"),
+        median_direct_output_improvement_bps=("direct_output_improvement_bps", "median"),
+        valuation_coherent_2x_routes=("valuation_coherent_2x", "sum"),
+        pct_dominated_valuation_coherent_2x=("dominated_valuation_coherent_2x", lambda values: 100 * values.dropna().mean()),
+        valuation_coherent_20pct_routes=("valuation_coherent_20pct", "sum"),
+        pct_dominated_valuation_coherent_20pct=("dominated_valuation_coherent_20pct", lambda values: 100 * values.dropna().mean()),
+        daily_denominator_sensitivity_gas_supported_routes=("daily_denominator_sensitivity_all_in_direct_advantage_bps", "count"),
+        daily_denominator_sensitivity_pct_dominated_topology_gas_adjusted=("daily_denominator_sensitivity_all_in_direct_advantage_bps", lambda values: 100 * (values.dropna() > 0).mean()),
+        daily_denominator_sensitivity_pct_dominated_gas_iqr_lower=("daily_denominator_sensitivity_all_in_direct_advantage_bps_iqr_lower", lambda values: 100 * (values.dropna() > 0).mean()),
+        daily_denominator_sensitivity_pct_dominated_gas_iqr_upper=("daily_denominator_sensitivity_all_in_direct_advantage_bps_iqr_upper", lambda values: 100 * (values.dropna() > 0).mean()),
+    ).reset_index()
+    annual.insert(0, "scope", "annual_type_reach")
+    summary = pd.concat(
+        [dominance_level_summary(frame), annual], ignore_index=True, sort=False
+    )
+    inputs = [OUT_PARQUET, sidecar_path(OUT_PARQUET)]
+    write_exhibit(
+        summary,
+        OUT_EXHIBIT,
+        code_sources=CODE_SOURCES,
+        inputs=inputs,
+        notes="pooled and annual exact-size V2-family direct counterfactual; pooled rows retain route and equal-date weighting, date-clustered uncertainty, dollar magnitude and strict valuation support; gas-adjusted bps are explicitly noncanonical daily-denominator sensitivities until transaction-time endpoint USD marks exist; annual rows split intermediary type and realised venue reach",
+        preinstall_validator=_assert_final_panel_current,
+    )
+    support = state_support_summary(frame)
+    write_exhibit(
+        support,
+        OUT_SUPPORT,
+        code_sources=CODE_SOURCES,
+        inputs=inputs,
+        notes="reserve-state support split; adjacent means all three prior observations are one hour back with no liquidity event, bridged advances a more distant observed state through all intervening raw events, and replayed includes at least one mint or burn",
+        preinstall_validator=_assert_final_panel_current,
+    )
+    return frame, support
 
 
 def one_day(
@@ -906,51 +1091,28 @@ def main() -> int:
     ap.add_argument("--workers", type=int, default=4)
     ap.add_argument("--panel-only", action="store_true")
     args = ap.parse_args()
-    require_node_d_release(routes=True, market_state=True)
-    state_releases = {
-        venue: released_state_partitions("constant_product", venue, CP_COLUMNS)
-        for venue in VENUES
-    }
-    route_release = released_route_partitions([*LINEAR_ROUTE_COLUMNS, "n_components"])
-    validate_release = release_preinstall_validator(
-        route_release, *state_releases.values()
-    )
     if args.limit is not None and args.limit < 1:
         ap.error("--limit must be positive")
     if args.stage == "final":
         if args.days is not None or args.limit is not None:
             ap.error("--days and --limit apply only to the gross diagnostic stage")
-        require_current_artifacts(
-            [
-                GROSS_PARQUET,
-                TRANSACTION_GAS_PANEL,
-                ROUTE_GAS_PANEL,
-                EXTERNAL_WETH_USD_INTRADAY_PANEL,
-            ],
-            consumer="gas-adjusted counterfactual-dominance panel",
-        )
-        validate_external_weth_usd_release(
-            EXTERNAL_WETH_USD_INTRADAY_PANEL,
-            EXTERNAL_WETH_USD_RAW_ROOT,
-        )
-        df = add_topology_gas_adjustment(pd.read_parquet(GROSS_PARQUET))
-        write_panel(
-            df,
-            OUT_PARQUET,
-            code_sources=CODE_SOURCES,
-            inputs=[
-                GROSS_PARQUET,
-                TRANSACTION_GAS_PANEL,
-                ROUTE_GAS_PANEL,
-                EXTERNAL_WETH_USD_INTRADAY_PANEL,
-            ],
-            notes="V2-family exact-size direct counterfactual with exact block-header time, receipt execution plus blob gas fields, receipt-calibrated route gas units and an independent strictly prior intraday WETH/USD mark; canonical all-in bps withheld because endpoint notionals remain address-day priced, with explicitly named daily-denominator sensitivities retained",
-            preinstall_validator=validate_release,
-        )
+        df = build_final_panel()
         if args.panel_only:
             print(f"wrote analysis-ready panel {OUT_PARQUET.relative_to(REPO_ROOT)}")
             return 0
+        df, support = build_final_exhibits()
     else:
+        require_node_d_release(routes=True, market_state=True)
+        state_releases = {
+            venue: released_state_partitions("constant_product", venue, CP_COLUMNS)
+            for venue in VENUES
+        }
+        route_release = released_route_partitions(
+            [*LINEAR_ROUTE_COLUMNS, "n_components"]
+        )
+        validate_release = release_preinstall_validator(
+            route_release, *state_releases.values()
+        )
         available = list(state_releases["uniswap_v2"].days)
         days = counterfactual_days(available, explicit=args.days, limit=args.limit)
         print(f"quoting counterfactuals on {len(days)} day(s)", flush=True)
@@ -986,14 +1148,6 @@ def main() -> int:
             if not allocation_support_rows:
                 raise RuntimeError("receipt-allocation support perimeter is empty")
             allocation_support = receipt_allocation_support_summary(pd.DataFrame(allocation_support_rows))
-            write_exhibit(
-                allocation_support,
-                OUT_RECEIPT_ALLOCATION_SUPPORT,
-                code_sources=CODE_SOURCES,
-                inputs=list(route_release.provenance_inputs),
-                notes=f"daily, annual and pooled support loss from excluding transactions with more than one reconstructed component because one whole-transaction receipt is not allocated across route rows; released-route identity {route_release.content_identity_sha256}",
-                preinstall_validator=validate_release,
-            )
         if not parts:
             print("no comparable routes")
             return 1
@@ -1015,10 +1169,12 @@ def main() -> int:
                 "canonical outputs unchanged"
             )
             return 0
-        write_gross_release(
+        build_gross_publication(
             df,
-            route_release=route_release,
-            state_releases=state_releases,
+            allocation_support,
+            route_release,
+            state_releases,
+            validate_release,
         )
         print(f"wrote gross route panel {GROSS_PARQUET.relative_to(REPO_ROOT)}")
         return 0
@@ -1091,75 +1247,6 @@ def main() -> int:
         print(f"  {b:>9}  routes {len(s):7,}  dominated {100*len(d)/len(s):5.1f}%"
               f"  median advantage "
               f"{d.gross_direct_advantage_bps.median() if len(d) else float('nan'):8.1f} bps")
-    annual = df.groupby(
-        [
-            pd.Grouper(key="date", freq="YS"),
-            "mid_type",
-            "best_direct_outside_realised_venue_set",
-        ]
-    ).agg(
-        routes=("gross_direct_advantage_bps", "size"),
-        pct_dominated_gross=(
-            "direct_output_improvement_bps", lambda x: 100 * (x > 0).mean()
-        ),
-        median_gross_direct_advantage_bps=(
-            "gross_direct_advantage_bps", "median"
-        ),
-        median_direct_output_improvement_bps=(
-            "direct_output_improvement_bps", "median"
-        ),
-        valuation_coherent_2x_routes=("valuation_coherent_2x", "sum"),
-        pct_dominated_valuation_coherent_2x=(
-            "dominated_valuation_coherent_2x",
-            lambda x: 100 * x.dropna().mean(),
-        ),
-        valuation_coherent_20pct_routes=("valuation_coherent_20pct", "sum"),
-        pct_dominated_valuation_coherent_20pct=(
-            "dominated_valuation_coherent_20pct",
-            lambda x: 100 * x.dropna().mean(),
-        ),
-        daily_denominator_sensitivity_gas_supported_routes=(
-            "daily_denominator_sensitivity_all_in_direct_advantage_bps",
-            "count",
-        ),
-        daily_denominator_sensitivity_pct_dominated_topology_gas_adjusted=(
-            "daily_denominator_sensitivity_all_in_direct_advantage_bps",
-            lambda x: 100 * (x.dropna() > 0).mean(),
-        ),
-        daily_denominator_sensitivity_pct_dominated_gas_iqr_lower=(
-            "daily_denominator_sensitivity_all_in_direct_advantage_bps_iqr_lower",
-            lambda x: 100 * (x.dropna() > 0).mean(),
-        ),
-        daily_denominator_sensitivity_pct_dominated_gas_iqr_upper=(
-            "daily_denominator_sensitivity_all_in_direct_advantage_bps_iqr_upper",
-            lambda x: 100 * (x.dropna() > 0).mean(),
-        ),
-    ).reset_index()
-    annual.insert(0, "scope", "annual_type_reach")
-    summary = pd.concat(
-        [dominance_level_summary(df), annual],
-        ignore_index=True,
-        sort=False,
-    )
-    # Summary and support are independently consumable children of the same installed panel,
-    # not a group-atomic bundle. Each has its own panel lineage and release pre-install gate.
-    write_exhibit(
-        summary,
-        OUT_EXHIBIT,
-        code_sources=CODE_SOURCES,
-        inputs=[OUT_PARQUET],
-        notes="pooled and annual exact-size V2-family direct counterfactual; pooled rows retain route and equal-date weighting, date-clustered uncertainty, dollar magnitude and strict valuation support; gas-adjusted bps are explicitly noncanonical daily-denominator sensitivities until transaction-time endpoint USD marks exist; annual rows split intermediary type and realised venue reach",
-        preinstall_validator=validate_release,
-    )
-    support = state_support_summary(df)
-    write_exhibit(
-        support,
-        OUT_SUPPORT,
-        code_sources=CODE_SOURCES,
-        inputs=[OUT_PARQUET],
-        notes="reserve-state support split; adjacent means all three prior observations are one hour back with no liquidity event, bridged advances a more distant observed state through all intervening raw events, and replayed includes at least one mint or burn",
-        preinstall_validator=validate_release,
-    )
     print("\nby reserve-state support:")
     print(
         support.loc[
