@@ -23,12 +23,17 @@ from ddvc.data_release import (
 from ddvc.endpoint_candidate_composition import (
     CHOICE_COLUMNS,
     CHOICE_KEYS,
+    COLLISION_AUDIT_INTEGER_COLUMNS,
+    COLLISION_AUDIT_VALUE_COLUMNS,
     ENDPOINT_CANDIDATE_COMPOSITION_SCIENTIFIC_SOURCES,
     EXCLUSION_COLUMNS,
     EXCLUSION_KEYS,
-    MAGNITUDE_COLUMNS,
+    MAGNITUDE_COUNT_COLUMNS,
+    MAGNITUDE_VALUE_COLUMNS,
     PAIR_KEYS,
     PAIR_SUPPORT_COLUMNS,
+    PAIR_SUPPORT_COUNT_COLUMNS,
+    PAIR_SUPPORT_VALUE_COLUMNS,
     ROUTE_INPUT_COLUMNS,
     endpoint_candidate_composition_for_day,
 )
@@ -61,52 +66,13 @@ TABLE_KEYS = {
     "pair_support": PAIR_KEYS,
     "exclusions": EXCLUSION_KEYS,
 }
-COUNT_COLUMNS = {
-    "route_count",
-    "raw_value_supported_routes",
-    "within_2x_routes",
-    "within_20pct_routes",
-    "market_route_count",
-    "primary_choice_route_count",
-    "direct_route_count",
-    "direct_split_route_count",
-    "other_candidate_route_count",
-    "multiple_intermediary_route_count",
-    "split_or_join_route_count",
-    "nonsequential_two_leg_route_count",
-    "day_source_component_count",
-    "day_accounted_component_count",
-    "day_unpaired_exclusion_component_count",
-    "day_event_collision_component_count",
-    "day_event_collision_value_missing_component_count",
-    "source_pair_component_count",
-    "event_collision_component_count",
-    "event_collision_value_missing_component_count",
-    "native_choice_route_count",
-    "stable_choice_route_count",
-    "native_within_20pct_routes",
-    "stable_within_20pct_routes",
-    "primary_choice_transaction_count",
-    "primary_choice_multi_component_transaction_count",
-    "primary_choice_component_excess_count",
-    "duplicate_choice_transaction_candidate_count",
-    "collision_event_coordinate_count",
-    "collision_row_count",
-    "collision_source_count",
-    "collision_value_missing_leg_count",
-}
-VALUE_COLUMNS = (set(MAGNITUDE_COLUMNS) - COUNT_COLUMNS) | {
-    "day_event_collision_observed_abs_leg_value_usd_upper_bound",
-    "event_collision_observed_abs_leg_value_usd_upper_bound",
-    "native_within_20pct_value_usd",
-    "stable_within_20pct_value_usd",
-    "collision_observed_abs_leg_value_usd_upper_bound",
-}
-INTEGER_COLUMNS = COUNT_COLUMNS | {
-    "audit_component_id",
-    "collision_first_timestamp_utc",
-    "collision_last_timestamp_utc",
-}
+COUNT_COLUMNS = set(MAGNITUDE_COUNT_COLUMNS) | set(PAIR_SUPPORT_COUNT_COLUMNS)
+VALUE_COLUMNS = (
+    set(MAGNITUDE_VALUE_COLUMNS)
+    | set(PAIR_SUPPORT_VALUE_COLUMNS)
+    | set(COLLISION_AUDIT_VALUE_COLUMNS)
+)
+INTEGER_COLUMNS = COUNT_COLUMNS | set(COLLISION_AUDIT_INTEGER_COLUMNS)
 DATE_COLUMNS = {
     "date",
     "pair_first_supported_date",

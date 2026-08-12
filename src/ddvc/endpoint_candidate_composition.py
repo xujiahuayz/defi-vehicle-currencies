@@ -40,6 +40,17 @@ MAGNITUDE_COLUMNS = [
     "within_20pct_routes",
     "within_20pct_value_usd",
 ]
+MAGNITUDE_COUNT_COLUMNS = [
+    "route_count",
+    "raw_value_supported_routes",
+    "within_2x_routes",
+    "within_20pct_routes",
+]
+MAGNITUDE_VALUE_COLUMNS = [
+    "raw_value_usd",
+    "within_2x_value_usd",
+    "within_20pct_value_usd",
+]
 CHOICE_COLUMNS = [
     *CHOICE_KEYS,
     "candidate_symbol",
@@ -86,6 +97,17 @@ PAIR_SUPPORT_COLUMNS = [
     "pair_last_observed_on_day",
     "pair_support_reason",
 ]
+PAIR_SUPPORT_COUNT_COLUMNS = [
+    column
+    for column in PAIR_SUPPORT_COLUMNS
+    if column.endswith("_count") or column.endswith("_routes")
+]
+PAIR_SUPPORT_VALUE_COLUMNS = [
+    "day_event_collision_observed_abs_leg_value_usd_upper_bound",
+    "event_collision_observed_abs_leg_value_usd_upper_bound",
+    "native_within_20pct_value_usd",
+    "stable_within_20pct_value_usd",
+]
 EXCLUSION_KEYS = [
     "date",
     "exclusion_reason",
@@ -107,6 +129,18 @@ COLLISION_AUDIT_COLUMNS = [
     "collision_last_timestamp_utc",
     "collision_value_missing_leg_count",
     "collision_observed_abs_leg_value_usd_upper_bound",
+]
+COLLISION_AUDIT_INTEGER_COLUMNS = [
+    "audit_component_id",
+    "collision_event_coordinate_count",
+    "collision_row_count",
+    "collision_source_count",
+    "collision_first_timestamp_utc",
+    "collision_last_timestamp_utc",
+    "collision_value_missing_leg_count",
+]
+COLLISION_AUDIT_VALUE_COLUMNS = [
+    "collision_observed_abs_leg_value_usd_upper_bound"
 ]
 EXCLUSION_COLUMNS = [*EXCLUSION_KEYS, *MAGNITUDE_COLUMNS, *COLLISION_AUDIT_COLUMNS]
 INCLUDED = "included_primary_vehicle_choice"
@@ -720,27 +754,16 @@ def _require_schema(frame: pd.DataFrame, columns: list[str], label: str) -> pd.D
 def _validate_magnitudes(frame: pd.DataFrame, *, label: str) -> None:
     if frame.empty:
         return
-    count_columns = [
-        "route_count",
-        "raw_value_supported_routes",
-        "within_2x_routes",
-        "within_20pct_routes",
-    ]
-    value_columns = [
-        "raw_value_usd",
-        "within_2x_value_usd",
-        "within_20pct_value_usd",
-    ]
     for column in MAGNITUDE_COLUMNS:
         numeric = pd.to_numeric(frame[column], errors="coerce")
         if not np.isfinite(numeric.to_numpy(dtype="float64")).all() or numeric.lt(0).any():
             raise ValueError(f"{label} contains invalid {column}")
-    counts = frame[count_columns].apply(pd.to_numeric, errors="coerce")
+    counts = frame[MAGNITUDE_COUNT_COLUMNS].apply(pd.to_numeric, errors="coerce")
     if not counts.eq(np.floor(counts)).all().all():
         raise ValueError(f"{label} contains non-integer route counts")
     if not (counts["route_count"].ge(counts["raw_value_supported_routes"]) & counts["raw_value_supported_routes"].ge(counts["within_2x_routes"]) & counts["within_2x_routes"].ge(counts["within_20pct_routes"])).all():
         raise ValueError(f"{label} value-support counts are not nested")
-    values = frame[value_columns].apply(pd.to_numeric, errors="coerce")
+    values = frame[MAGNITUDE_VALUE_COLUMNS].apply(pd.to_numeric, errors="coerce")
     if not (
         values["raw_value_usd"].ge(values["within_2x_value_usd"])
         & values["within_2x_value_usd"].ge(values["within_20pct_value_usd"])
@@ -830,12 +853,7 @@ def validate_endpoint_candidate_composition(bundle: EndpointCandidateComposition
         reconciled = pair_support.merge(observed, on=PAIR_KEYS, how="left", validate="one_to_one")
         if not reconciled["primary_choice_route_count"].eq(reconciled["observed_primary"].fillna(0)).all():
             raise ValueError("vehicle choice cells disagree with pair support")
-        integer_support = [
-            column
-            for column in PAIR_SUPPORT_COLUMNS
-            if column.endswith("_count") or column.endswith("_routes")
-        ]
-        numeric_support = pair_support[integer_support].apply(pd.to_numeric, errors="coerce")
+        numeric_support = pair_support[PAIR_SUPPORT_COUNT_COLUMNS].apply(pd.to_numeric, errors="coerce")
         if (
             not np.isfinite(numeric_support.to_numpy(dtype="float64")).all()
             or numeric_support.lt(0).any().any()
@@ -861,14 +879,7 @@ def validate_endpoint_candidate_composition(bundle: EndpointCandidateComposition
             pair_support["market_route_count"] + pair_support["event_collision_component_count"]
         ).all():
             raise ValueError("vehicle pair support does not reconcile source components")
-        value_support = pair_support[
-            [
-                "day_event_collision_observed_abs_leg_value_usd_upper_bound",
-                "event_collision_observed_abs_leg_value_usd_upper_bound",
-                "native_within_20pct_value_usd",
-                "stable_within_20pct_value_usd",
-            ]
-        ].apply(pd.to_numeric, errors="coerce")
+        value_support = pair_support[PAIR_SUPPORT_VALUE_COLUMNS].apply(pd.to_numeric, errors="coerce")
         if not np.isfinite(value_support.to_numpy(dtype="float64")).all() or value_support.lt(0).any().any():
             raise ValueError("vehicle pair support contains invalid value bounds")
     pair_exclusions = exclusions[
