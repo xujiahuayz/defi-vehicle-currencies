@@ -116,6 +116,36 @@ class TargetRelease:
     calendar: tuple[str, ...]
     validation: Mapping[str, object]
 
+    @property
+    def content_identity_sha256(self) -> str:
+        """Bind a long-running consumer to one exact resolved release."""
+
+        return _json_sha256(
+            {
+                "scope": self.scope,
+                "generation": self.generation,
+                "calendar": self.calendar,
+                "pointer_sha256": _sha256(self.pointer_path),
+                "manifest_sha256": _sha256(self.manifest_path),
+            }
+        )
+
+    def assert_current(self) -> None:
+        """Reopen every day lineage and reject source drift since resolution."""
+
+        reopened = resolve_target_release(
+            self.scope,
+            expected_days=self.calendar,
+            root=self.pointer_path.parents[2],
+        )
+        if (
+            reopened.generation != self.generation
+            or reopened.content_identity_sha256 != self.content_identity_sha256
+        ):
+            raise TargetEvidenceError(
+                f"{self.scope} transaction-target release changed during consumption"
+            )
+
 
 def _sha256(path: Path) -> str:
     digest = hashlib.sha256()

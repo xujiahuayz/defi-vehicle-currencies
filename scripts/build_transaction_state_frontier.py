@@ -16,6 +16,7 @@ import hashlib
 import json
 import os
 import pickle
+import shutil
 from collections import defaultdict
 from concurrent.futures import as_completed
 from dataclasses import dataclass
@@ -74,7 +75,7 @@ from ddvc.release_calendar import (
 from ddvc.route_cost import MAX_PRICE_IMPACT
 from ddvc.route_state import OrderedTickStateCursor, TickStateCut
 from ddvc.runtime import atomic_output, exclusive_job, interruptible_process_pool
-from ddvc.state_data import RAW_ROOT, STATE_ROOT, tick_partition_path
+from ddvc.state_data import RAW_ROOT, state_partition_inputs, tick_partition_path
 from ddvc.tables import write_exhibit, write_panel
 from ddvc.transaction_targets import TargetRelease, read_target_day, resolve_target_release, strict_route_order
 from ddvc.v4_quarantine import (
@@ -84,7 +85,6 @@ from ddvc.v4_quarantine import (
 from ddvc.work_partition import weighted_contiguous_chunks
 
 
-MARKET_STATE = STATE_ROOT
 UNIFIED = DATA_DIR / "unified"
 AUDIT_PANEL = DATA_DIR / "processed" / "transaction_state_frontier_audit.parquet"
 AUDIT_REJECTIONS = DATA_DIR / "processed" / "transaction_state_frontier_audit_rejections.parquet"
@@ -190,12 +190,14 @@ class DailySegmentTask:
 
     segment: DailySegment
     checkpoint_engine_key: str
-    day_cache: Path
+    read_day_cache: Path
+    write_day_cache: Path
     frontier_engine_key: str
     frontier_input_key: str
     vehicles: tuple[str, ...]
     target_release: TargetRelease
-    market_state: Path
+    market_state: Path | None
+    cp_market_state: Path | None = None
 
 
 @dataclass(frozen=True)
@@ -215,7 +217,7 @@ class ReplayShardTask:
 
     index: int
     days: tuple[str, ...]
-    market_state: Path
+    market_state: Path | None
     raw_root: Path
     output_path: Path
 
@@ -243,21 +245,31 @@ def candidate_vehicles() -> tuple[str, ...]:
     )
 
 
-def frontier_cache_identity(inputs: list[Path]) -> tuple[str, str, str]:
+def frontier_cache_identity(
+    inputs: list[Path], *, source_identity: str | None = None
+) -> tuple[str, str, str]:
     """Return separate code/input identities plus their short cache generation."""
     engine_key = cache_key(SCORING_CACHE_SOURCES, length=64)
-    input_key = cache_key([], inputs=inputs, length=64)
-    generation = cache_key(SCORING_CACHE_SOURCES, inputs=inputs)
+    base_input_key = cache_key([], inputs=inputs, length=64)
+    input_key = hashlib.sha256(
+        f"{base_input_key}:{source_identity or 'no-release-context'}".encode()
+    ).hexdigest()
+    generation = hashlib.sha256(f"{engine_key}:{input_key}".encode()).hexdigest()[:12]
     return engine_key, input_key, generation
 
 
-def replay_checkpoint_engine_key(inputs: list[Path]) -> str:
+def replay_checkpoint_engine_key(
+    inputs: list[Path], *, source_identity: str | None = None
+) -> str:
     """Identify the checkpoint schema, replay code, and immutable replay inputs."""
-    return cache_key(
+    base = cache_key(
         SCORING_CACHE_SOURCES,
         inputs=inputs,
         length=64,
     )
+    return hashlib.sha256(
+        f"{base}:{source_identity or 'no-release-context'}".encode()
+    ).hexdigest()
 
 
 def save_replay_checkpoint(
@@ -567,6 +579,71 @@ def write_cached_day(
         )
 
 
+def _install_immutable_file(source: Path, target: Path) -> bool:
+    """Install one private staged file without replacing an existing generation."""
+
+    if target.exists():
+        if _file_sha256(target) != _file_sha256(source):
+            raise FileExistsError(f"immutable frontier cache differs: {target}")
+        return False
+    target.parent.mkdir(parents=True, exist_ok=True)
+    with atomic_output(target) as temporary:
+        shutil.copyfile(source, temporary)
+    return True
+
+
+def promote_cached_days(
+    staging: Path,
+    target: Path,
+    days: tuple[str, ...],
+    *,
+    engine_key: str,
+    input_key: str,
+) -> tuple[Path, ...]:
+    """Publish complete private day bundles marker-last and return new paths."""
+
+    installed: list[Path] = []
+    try:
+        for day in days:
+            if _cached_day_contract(
+                staging, day, engine_key=engine_key, input_key=input_key
+            ) is None:
+                raise RuntimeError(f"frontier private day bundle is incomplete: {day}")
+            marker = target / f"{day}.support.json"
+            if marker.exists():
+                if _cached_day_contract(
+                    target, day, engine_key=engine_key, input_key=input_key
+                ) is None:
+                    raise RuntimeError(f"frontier installed day bundle is incomplete: {day}")
+                continue
+            target_paths = (
+                target / f"{day}.parquet",
+                target / f"{day}.rejections.parquet",
+                marker,
+            )
+            if any(path.exists() for path in target_paths):
+                raise FileExistsError(
+                    f"frontier cache contains an unpublished partial bundle: {day}"
+                )
+            for suffix in (".parquet", ".rejections.parquet"):
+                source = staging / f"{day}{suffix}"
+                if source.exists():
+                    destination = target / source.name
+                    if _install_immutable_file(source, destination):
+                        installed.append(destination)
+            if _install_immutable_file(staging / marker.name, marker):
+                installed.append(marker)
+            if _cached_day_contract(
+                target, day, engine_key=engine_key, input_key=input_key
+            ) is None:
+                raise RuntimeError(f"frontier promoted day bundle did not reopen: {day}")
+    except BaseException:
+        for path in reversed(installed):
+            path.unlink(missing_ok=True)
+        raise
+    return tuple(installed)
+
+
 def latest_replay_checkpoint(directory: Path, target_day: str) -> Path | None:
     candidates = [
         path
@@ -687,7 +764,7 @@ def new_tick_replay() -> TickReplayState:
     return TickReplayState(token_decimals=load_token_decimals(TOKEN_DECIMALS), quarantined_pools={"uniswap_v4": load_v4_static_quarantine()})
 
 
-def plan_replay_shard_tasks(days: tuple[str, ...], *, workers: int, market_state: Path, raw_root: Path, output_dir: Path) -> tuple[ReplayShardTask, ...]:
+def plan_replay_shard_tasks(days: tuple[str, ...], *, workers: int, market_state: Path | None, raw_root: Path, output_dir: Path) -> tuple[ReplayShardTask, ...]:
     """Split an ordered calendar into bounded contiguous partition-load tasks."""
     if workers < 1:
         raise ValueError("replay checkpoint workers must be positive")
@@ -696,7 +773,15 @@ def plan_replay_shard_tasks(days: tuple[str, ...], *, workers: int, market_state
     if days != tuple(sorted(set(days))):
         raise ValueError("replay checkpoint calendar must be unique and ordered")
     def partition_bytes(day: str) -> int:
-        paths = [tick_partition_path(venue, day, root=market_state) for venue in TICK_VENUES]
+        paths = (
+            [tick_partition_path(venue, day, root=market_state) for venue in TICK_VENUES]
+            if market_state is not None
+            else [
+                path
+                for venue in TICK_VENUES
+                for path in state_partition_inputs(raw_root, "tick", venue, day)
+            ]
+        )
         return sum(path.stat().st_size for path in paths if path.exists())
 
     weights = [partition_bytes(day) for day in days]
@@ -766,10 +851,20 @@ def replay_ordered_event_shards(results: list[ReplayShardResult], *, boundaries:
     return events_applied, created_checkpoints
 
 
-def materialize_segment_checkpoints(segments: tuple[DailySegment, ...], *, checkpoint_dir: Path, checkpoint_engine_key: str, market_state: Path = MARKET_STATE, raw_root: Path = RAW_ROOT, workers: int = 1) -> tuple[int, int]:
+def materialize_segment_checkpoints(
+    segments: tuple[DailySegment, ...],
+    *,
+    checkpoint_dir: Path,
+    checkpoint_engine_key: str,
+    target_release: TargetRelease,
+    market_state: Path | None = None,
+    raw_root: Path = RAW_ROOT,
+    workers: int = 1,
+) -> tuple[int, int]:
     """Resume the latest pre-day state, prefetch its suffix, and replay it exactly once."""
     if workers < 1:
         raise ValueError("replay checkpoint workers must be positive")
+    target_release.assert_current()
     checkpoint_dir.mkdir(parents=True, exist_ok=True)
     checkpoint_paths = {segment.days[0]: segment.checkpoint_path for segment in segments}
     if not checkpoint_paths or len(checkpoint_paths) != len(segments):
@@ -800,8 +895,21 @@ def materialize_segment_checkpoints(segments: tuple[DailySegment, ...], *, check
     if not boundaries or min(missing) < replay_start or max(missing) > boundaries[-1]:
         raise RuntimeError("checkpoint resume window does not contain every missing boundary")
     history_days = tuple(day.strftime("%Y%m%d") for day in pd.date_range(pd.to_datetime(replay_start, format="%Y%m%d"), pd.to_datetime(last_missing, format="%Y%m%d") - pd.Timedelta(days=1), freq="D"))
-    with TemporaryDirectory(prefix=".checkpoint-events-", dir=checkpoint_dir) as temporary_directory:
-        tasks = plan_replay_shard_tasks(history_days, workers=workers, market_state=market_state, raw_root=raw_root, output_dir=Path(temporary_directory))
+    with TemporaryDirectory(prefix=".checkpoint-transaction-", dir=checkpoint_dir) as transaction_directory:
+        transaction_root = Path(transaction_directory)
+        event_directory = transaction_root / "events"
+        event_directory.mkdir()
+        staged_checkpoint_directory = transaction_root / "checkpoints"
+        staged_checkpoint_directory.mkdir()
+        transactional_checkpoint_paths = {
+            day: (
+                path
+                if path.exists()
+                else staged_checkpoint_directory / path.name
+            )
+            for day, path in active_checkpoint_paths.items()
+        }
+        tasks = plan_replay_shard_tasks(history_days, workers=workers, market_state=market_state, raw_root=raw_root, output_dir=event_directory)
         if workers == 1 or len(tasks) <= 1:
             results = [write_replay_event_shard(task) for task in tasks]
         else:
@@ -820,11 +928,30 @@ def materialize_segment_checkpoints(segments: tuple[DailySegment, ...], *, check
         if [day for result in results for day in result.days] != list(history_days):
             raise RuntimeError("replay event shards do not close the exact historical calendar")
         mapped_events = sum(result.event_count for result in results)
-        events_applied, created_checkpoints = replay_ordered_event_shards(results, boundaries=boundaries, checkpoint_paths=active_checkpoint_paths, checkpoint_engine_key=checkpoint_engine_key, replay=replay)
+        events_applied, created_checkpoints = replay_ordered_event_shards(results, boundaries=boundaries, checkpoint_paths=transactional_checkpoint_paths, checkpoint_engine_key=checkpoint_engine_key, replay=replay)
         if events_applied != mapped_events:
             raise RuntimeError("checkpoint replay event count disagrees with loaded partitions")
-        temporary_bytes = sum(path.stat().st_size for path in Path(temporary_directory).glob("events_*.pkl"))
+        temporary_bytes = sum(path.stat().st_size for path in event_directory.glob("events_*.pkl"))
         print(f"checkpoint event closure: {events_applied:,} events; temporary shuffle {temporary_bytes / 1024**3:.2f} GiB", flush=True)
+        target_release.assert_current()
+        installed: list[Path] = []
+        try:
+            for day, live_path in active_checkpoint_paths.items():
+                staged_path = transactional_checkpoint_paths[day]
+                if staged_path == live_path:
+                    continue
+                if _install_immutable_file(staged_path, live_path):
+                    installed.append(live_path)
+                load_replay_checkpoint(
+                    live_path,
+                    engine_key=checkpoint_engine_key,
+                    pre_day=day,
+                )
+            target_release.assert_current()
+        except BaseException:
+            for path in reversed(installed):
+                path.unlink(missing_ok=True)
+            raise
     return len(history_days), created_checkpoints
 
 
@@ -836,17 +963,17 @@ def score_daily_segment(task: DailySegmentTask) -> DailySegmentResult:
     scored_days = 0
     cached_days = 0
     for offset, day in enumerate(segment.days, 1):
-        cached = load_cached_day_support(task.day_cache, day, engine_key=task.frontier_engine_key, input_key=task.frontier_input_key)
+        cached = load_cached_day_support(task.read_day_cache, day, engine_key=task.frontier_engine_key, input_key=task.frontier_input_key)
         if cached is not None:
             warm_tick_day(task.market_state, day, replay)
             support = cached
             cached_days += 1
         else:
             events = load_tick_day_events(task.market_state, day)
-            v2_replay = load_v2_replay_day(task.market_state, day)
+            v2_replay = load_v2_replay_day(task.cp_market_state or task.market_state, day)
             frame, rejections, support = score_day(day, events, replay, v2_replay, task.vehicles, task.target_release)
-            write_cached_day(task.day_cache, day, frame, rejections, support, engine_key=task.frontier_engine_key, input_key=task.frontier_input_key)
-            support = load_cached_day_support(task.day_cache, day, engine_key=task.frontier_engine_key, input_key=task.frontier_input_key)
+            write_cached_day(task.write_day_cache, day, frame, rejections, support, engine_key=task.frontier_engine_key, input_key=task.frontier_input_key)
+            support = load_cached_day_support(task.write_day_cache, day, engine_key=task.frontier_engine_key, input_key=task.frontier_input_key)
             if support is None:
                 raise RuntimeError(f"frontier worker failed to reopen its completed day: {day}")
             scored_days += 1
@@ -856,26 +983,49 @@ def score_daily_segment(task: DailySegmentTask) -> DailySegmentResult:
     return DailySegmentResult(segment.index, segment.days, tuple(support_rows), scored_days, cached_days)
 
 
-def run_daily_segments(segments: tuple[DailySegment, ...], *, workers: int, checkpoint_engine_key: str, day_cache: Path, frontier_engine_key: str, frontier_input_key: str, vehicles: tuple[str, ...], target_release: TargetRelease, market_state: Path = MARKET_STATE) -> list[dict[str, object]]:
+def run_daily_segments(segments: tuple[DailySegment, ...], *, workers: int, checkpoint_engine_key: str, day_cache: Path, frontier_engine_key: str, frontier_input_key: str, vehicles: tuple[str, ...], target_release: TargetRelease, market_state: Path | None = None, cp_market_state: Path | None = None) -> list[dict[str, object]]:
     """Run bounded disjoint scoring processes and return support in canonical calendar order."""
     expected_days = [day for segment in segments for day in segment.days]
     validate_daily_segment_plan(segments, expected_days)
-    tasks = [DailySegmentTask(segment, checkpoint_engine_key, day_cache, frontier_engine_key, frontier_input_key, vehicles, target_release, market_state) for segment in segments]
+    target_release.assert_current()
+    day_cache.parent.mkdir(parents=True, exist_ok=True)
     results: dict[int, DailySegmentResult] = {}
-    if workers == 1:
-        for task in tasks:
-            result = score_daily_segment(task)
-            results[result.index] = result
-    else:
-        with interruptible_process_pool(min(workers, len(tasks))) as pool:
-            futures = {pool.submit(score_daily_segment, task): task.segment.index for task in tasks}
-            for future in as_completed(futures):
-                result = future.result()
-                if result.index != futures[future] or result.index in results:
-                    raise RuntimeError("full-daily frontier worker returned the wrong segment identity")
+    with TemporaryDirectory(prefix=".frontier-day-transaction-", dir=day_cache.parent) as temporary_directory:
+        staging_cache = Path(temporary_directory)
+        tasks = [DailySegmentTask(segment, checkpoint_engine_key, day_cache, staging_cache, frontier_engine_key, frontier_input_key, vehicles, target_release, market_state, cp_market_state) for segment in segments]
+        if workers == 1:
+            for task in tasks:
+                result = score_daily_segment(task)
                 results[result.index] = result
-                completed = sum(len(item.days) for item in results.values())
-                print(f"parallel frontier segments {len(results):,}/{len(tasks):,}; days {completed:,}/{len(expected_days):,}", flush=True)
+        else:
+            with interruptible_process_pool(min(workers, len(tasks))) as pool:
+                futures = {pool.submit(score_daily_segment, task): task.segment.index for task in tasks}
+                for future in as_completed(futures):
+                    result = future.result()
+                    if result.index != futures[future] or result.index in results:
+                        raise RuntimeError("full-daily frontier worker returned the wrong segment identity")
+                    results[result.index] = result
+                    completed = sum(len(item.days) for item in results.values())
+                    print(f"parallel frontier segments {len(results):,}/{len(tasks):,}; days {completed:,}/{len(expected_days):,}", flush=True)
+        target_release.assert_current()
+        staged_days = tuple(
+            day
+            for day in expected_days
+            if (staging_cache / f"{day}.support.json").is_file()
+        )
+        installed = promote_cached_days(
+            staging_cache,
+            day_cache,
+            staged_days,
+            engine_key=frontier_engine_key,
+            input_key=frontier_input_key,
+        )
+        try:
+            target_release.assert_current()
+        except BaseException:
+            for path in reversed(installed):
+                path.unlink(missing_ok=True)
+            raise
     if sorted(results) != list(range(len(segments))):
         raise RuntimeError("full-daily frontier worker result set is incomplete")
     support_rows: list[dict[str, object]] = []
@@ -1796,7 +1946,7 @@ def main() -> int:
     )
     parser.add_argument("--workers", type=int, help="bounded full-daily scoring processes; ignored by serial audit and explicit-day modes")
     args = parser.parse_args()
-    require_node_d_release(routes=True, market_state=True)
+    require_node_d_release(routes=True)
     require_current_artifacts(
         [TOKEN_DECIMALS], consumer="transaction-state frontier"
     )
@@ -1849,12 +1999,6 @@ def main() -> int:
     inputs = [
         UNIFIED,
         UNIFIED_QUALITY_PANEL,
-        *(
-            MARKET_STATE
-            / ("constant_product" if venue in V2_VENUES else "tick")
-            / venue
-            for venue in EXACT_VENUES
-        ),
         TOKEN_DECIMALS,
         V4_STATIC_QUARANTINE_PANEL,
         target_release.pointer_path,
@@ -1863,7 +2007,9 @@ def main() -> int:
         *target_release.day_markers,
     ]
     frontier_engine_key, frontier_input_key, frontier_generation = (
-        frontier_cache_identity(inputs)
+        frontier_cache_identity(
+            inputs, source_identity=target_release.content_identity_sha256
+        )
     )
     day_cache = (
         DATA_DIR
@@ -1891,12 +2037,14 @@ def main() -> int:
     }
     uncached_days = [day for day in selected if cached_days[day] is None]
     replay_inputs = [
-        MARKET_STATE / "tick" / "uniswap_v3",
-        MARKET_STATE / "tick" / "uniswap_v4",
+        target_release.pointer_path,
+        target_release.manifest_path,
         TOKEN_DECIMALS,
         V4_STATIC_QUARANTINE_PANEL,
     ]
-    checkpoint_engine_key = replay_checkpoint_engine_key(replay_inputs)
+    checkpoint_engine_key = replay_checkpoint_engine_key(
+        replay_inputs, source_identity=target_release.content_identity_sha256
+    )
     checkpoint_dir = (
         DATA_DIR
         / "empirical"
@@ -1912,10 +2060,10 @@ def main() -> int:
             scoring_weights = {day: 1 if cached_days[day] is not None else target_weights[day] for day in selected}
             segments = plan_daily_segments(selected, workers=workers, checkpoint_dir=checkpoint_dir, scoring_weights=scoring_weights)
             if uncached_days:
-                mapped_days, created_checkpoints = materialize_segment_checkpoints(segments, checkpoint_dir=checkpoint_dir, checkpoint_engine_key=checkpoint_engine_key, workers=workers)
+                mapped_days, created_checkpoints = materialize_segment_checkpoints(segments, checkpoint_dir=checkpoint_dir, checkpoint_engine_key=checkpoint_engine_key, target_release=target_release, market_state=None, workers=workers)
                 print(f"full-daily checkpoint phase: {mapped_days:,} historical days mapped; {created_checkpoints:,} checkpoints created; {workers:,} bounded workers", flush=True)
                 print("full-daily segment loads: " + ", ".join(f"{segment.days[0]}..{segment.days[-1]}={segment.scoring_weight:,}" for segment in segments), flush=True)
-                support_rows = run_daily_segments(segments, workers=workers, checkpoint_engine_key=checkpoint_engine_key, day_cache=day_cache, frontier_engine_key=frontier_engine_key, frontier_input_key=frontier_input_key, vehicles=vehicles, target_release=target_release)
+                support_rows = run_daily_segments(segments, workers=workers, checkpoint_engine_key=checkpoint_engine_key, day_cache=day_cache, frontier_engine_key=frontier_engine_key, frontier_input_key=frontier_input_key, vehicles=vehicles, target_release=target_release, market_state=None, cp_market_state=None)
             else:
                 support_rows = [cached_days[day] for day in selected if cached_days[day] is not None]
             return publish_full_daily_frontier(support_rows, selected=selected, day_cache=day_cache, inputs=inputs, engine_key=frontier_engine_key, input_key=frontier_input_key)
@@ -1978,11 +2126,11 @@ def main() -> int:
             cached = cached_days[day]
             if cached is not None:
                 frame, rejections, support = cached
-                warm_tick_day(MARKET_STATE, day, replay)
+                warm_tick_day(None, day, replay)
                 cache_note = " [cached]"
             else:
-                events = load_tick_day_events(MARKET_STATE, day)
-                v2_replay = load_v2_replay_day(MARKET_STATE, day)
+                events = load_tick_day_events(None, day)
+                v2_replay = load_v2_replay_day(None, day)
                 frame, rejections, support = score_day(
                     day, events, replay, v2_replay, vehicles, target_release
                 )
@@ -2006,7 +2154,7 @@ def main() -> int:
                 flush=True,
             )
         else:
-            warm_tick_day(MARKET_STATE, day, replay)
+            warm_tick_day(None, day, replay)
         if index % 180 == 0:
             print(f"replayed through {day} ({index:,}/{len(calendar):,} days)", flush=True)
     support = pd.DataFrame(support_rows)

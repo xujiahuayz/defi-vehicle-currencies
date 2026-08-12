@@ -8,13 +8,17 @@ import unittest
 from pathlib import Path
 from unittest.mock import patch
 
+import pandas as pd
+
 from ddvc.graph_event_order import EventOrderCorrections, SCHEMA_VERSION as EVENT_ORDER_SCHEMA
 from ddvc.state_data import (
     CODE_SOURCES,
+    CP_COLUMNS,
     FAMILY_STREAMS,
     STATE_GENERATIONS,
     balancer_pool_family,
     normalise_cp_partition,
+    iter_normalised_cp_records,
     normalise_multi_asset_partition,
     normalise_tick_partition,
     read_cp_partition,
@@ -485,6 +489,27 @@ class StateDataTests(unittest.TestCase):
         self.assertFalse(quality.passed)
         self.assertEqual(quality.conflicting_events, 1)
 
+    def test_streamed_constant_product_records_equal_optional_audit_cache(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            raw = Path(directory) / "raw"
+            write_rows(raw, "uniswap_v2", "hourly_reserves", "20250101", [cp_snapshot()])
+            write_rows(raw, "uniswap_v2", "swaps", "20250101", [cp_swap()])
+            frame, quality = normalise_cp_partition(raw, "uniswap_v2", "20250101")
+            streamed = pd.DataFrame.from_records(
+                iter_normalised_cp_records(raw, "uniswap_v2", "20250101"),
+                columns=CP_COLUMNS,
+            ).sort_values(
+                ["timestamp", "block_number", "log_index", "record_type", "event_id"],
+                na_position="first",
+                kind="stable",
+            ).reset_index(drop=True)
+        self.assertTrue(quality.passed)
+        pd.testing.assert_frame_equal(
+            streamed.reset_index(drop=True),
+            frame.reset_index(drop=True),
+            check_dtype=False,
+        )
+
     def test_constant_product_nontrade_delta_updates_state_without_supporting_a_quote(self) -> None:
         with tempfile.TemporaryDirectory() as directory:
             raw = Path(directory) / "raw"
@@ -634,7 +659,7 @@ class StateDataTests(unittest.TestCase):
         swap_row = frame[frame["record_type"].eq("swap")].iloc[0]
         self.assertEqual((swap_row["amount0"], swap_row["amount0_raw"]), ("0.000000000000000001", "1"))
         self.assertEqual(swap_row["sqrt_price_x96"], str(1 << 96))
-        self.assertNotIn("uniswap_v4_swaps_20250101.jsonl.gz", [path.name for path in __import__("ddvc.state_data", fromlist=["_state_partition_inputs"])._state_partition_inputs(raw, "tick", "uniswap_v4", "20250101")])
+        self.assertNotIn("uniswap_v4_swaps_20250101.jsonl.gz", [path.name for path in __import__("ddvc.state_data", fromlist=["state_partition_inputs"]).state_partition_inputs(raw, "tick", "uniswap_v4", "20250101")])
 
     def test_constant_product_quote_support_requires_usable_order(self) -> None:
         with tempfile.TemporaryDirectory() as directory:
@@ -650,6 +675,16 @@ class StateDataTests(unittest.TestCase):
         self.assertEqual(quality.quote_supported_swaps, 0)
         self.assertFalse(swap_row["usable"])
         self.assertFalse(swap_row["quote_supported"])
+
+    def test_streamed_constant_product_frontier_rejects_missing_event_streams(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            raw = Path(directory) / "raw"
+            path = raw / "uniswap_v2" / "uniswap_v2_hourly_reserves_20250101.jsonl.gz"
+            path.parent.mkdir(parents=True)
+            with gzip.open(path, "wt") as handle:
+                handle.write(json.dumps(cp_snapshot()) + "\n")
+            with self.assertRaisesRegex(ValueError, "exact-event contract failed.*missing_streams=3"):
+                list(iter_normalised_cp_records(raw, "uniswap_v2", "20250101"))
 
     def test_liquidity_identity_needs_pool_and_order_but_not_repeated_tokens(self) -> None:
         with tempfile.TemporaryDirectory() as directory:

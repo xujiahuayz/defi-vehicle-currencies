@@ -177,13 +177,23 @@ class TransactionTargetTests(unittest.TestCase):
             support_paths = tuple(root / name for name in ("state.jsonl.gz", "state.meta.json", "certificate.json"))
             for path in support_paths:
                 path.write_text("support", encoding="utf-8")
-            with patch("scripts.build_transaction_target_release.pd.read_parquet", return_value=legs), patch("scripts.build_transaction_target_release.v4_state_day_inputs", return_value=support_paths), patch("scripts.build_transaction_target_release.validate_v4_state_day", return_value=support_paths), patch("scripts.build_transaction_target_release.tick_scientific_support", return_value=False), patch("scripts.build_transaction_target_release.load_v2_replay_day", return_value=SimpleNamespace(swaps_by_identity={})), patch("scripts.build_transaction_target_release.load_tick_day_events", return_value=[]) as load_tick:
+            with patch("scripts.build_transaction_target_release.pd.read_parquet", return_value=legs), patch("scripts.build_transaction_target_release.v4_state_day_inputs", return_value=support_paths), patch("scripts.build_transaction_target_release.validate_v4_state_day", return_value=support_paths), patch("scripts.build_transaction_target_release.tick_scientific_support", return_value=False), patch("scripts.build_transaction_target_release.state_partition_inputs", return_value=[]), patch("scripts.build_transaction_target_release.load_v2_replay_day", return_value=SimpleNamespace(swaps_by_identity={})), patch("scripts.build_transaction_target_release.load_tick_day_events", return_value=[]) as load_tick:
                 filtered, v2_events, tick_events, inputs, support = load_provider_day("20250101", set())
         self.assertTrue(filtered.empty)
         self.assertEqual((v2_events, tick_events), ({}, {}))
         self.assertEqual(set(inputs), set(support_paths))
         self.assertEqual(support["post_support_v4_routes_excluded"], 1)
         self.assertEqual(load_tick.call_args.kwargs["venues"], ("uniswap_v3",))
+
+    def test_exact_frontier_still_rejects_a_missing_certified_event(self) -> None:
+        legs = pd.DataFrame([
+            route_leg(7, A, K, "source", "intermediate", source="uniswap_v2", amount_in=100, amount_out=90, amount_usd=100.0),
+            route_leg(8, K, B, "intermediate", "sink", source="uniswap_v2", amount_in=90, amount_out=80, amount_usd=90.0),
+        ])
+        support_paths = (Path(__file__), Path(__file__), Path(__file__))
+        with patch("scripts.build_transaction_target_release.pd.read_parquet", return_value=legs), patch("scripts.build_transaction_target_release.tick_scientific_support", return_value=False), patch("scripts.build_transaction_target_release.v4_state_day_inputs", return_value=support_paths), patch("scripts.build_transaction_target_release.validate_v4_state_day", return_value=support_paths), patch("scripts.build_transaction_target_release.state_partition_inputs", return_value=[]), patch("scripts.build_transaction_target_release.load_v2_replay_day", return_value=SimpleNamespace(swaps_by_identity={})), patch("scripts.build_transaction_target_release.load_tick_day_events", return_value=[]):
+            with self.assertRaisesRegex(TargetEvidenceError, "canonical V2 state lacks target swap identity"):
+                load_provider_day("20250101", set())
 
     def test_v4_contract_identity_has_one_canonical_owner(self) -> None:
         self.assertEqual(len(UNISWAP_V4_POOL_MANAGER_ADDRESS), 42)
@@ -327,6 +337,7 @@ class TransactionTargetTests(unittest.TestCase):
             with patch("ddvc.provenance.ROOT", root), patch("ddvc.provenance.MANIFESTS", root / "provenance"):
                 release = publish_target_release(directory, [marker], scope="audit", generation=GENERATION, validation=validation, full_calendar=["20250101", "20250102"], code_sources=["src/ddvc/transaction_targets.py"], inputs=[], root=root)
                 reopened = resolve_target_release("audit", expected_days=["20250101"], root=root)
+                reopened.assert_current()
                 observed, _ = read_target_day(reopened, "20250101")
                 self.assertEqual(observed["route_id"].tolist(), ["r1"])
 
@@ -340,6 +351,8 @@ class TransactionTargetTests(unittest.TestCase):
                 shard.write_bytes(b"mutated")
                 with self.assertRaisesRegex(TargetEvidenceError, "mutated"):
                     read_target_day(release, "20250101")
+                with self.assertRaises(TargetEvidenceError):
+                    reopened.assert_current()
 
     def test_target_day_retry_proves_frame_support_and_lineage_identity(self) -> None:
         with TemporaryDirectory() as temporary:

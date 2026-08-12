@@ -41,21 +41,22 @@ import pyarrow.parquet as pq
 
 from ddvc.capital_contracts import CAPITAL_CURRENT_COLUMN, capital_contract
 from ddvc.capital_release import CapitalRelease, resolve_capital_release
-from ddvc.data_release import ReleasedPartitionSet, release_preinstall_validator, released_state_partitions, require_node_d_release
+from ddvc.cp_state_stream import CPStateStreamSet, certified_cp_event_stream
 from ddvc.liquidity import CAPITAL_COLUMN
 from ddvc.panel_assembly import assemble_parquet_shards
 from ddvc.paths import (
     DATA_DIR,
-    MARKET_STATE_LOCK,
     RAW_MARKET_DATA_LOCK,
 )
 from ddvc.provenance import cache_key
 from ddvc.runtime import atomic_output, bounded_workers, exclusive_job, interruptible_process_pool, staged_output
 from ddvc.state_data import (
     CP_COLUMNS,
+    RAW_ROOT,
 )
 from ddvc.tables import publish_staged_artifact
 from ddvc.work_partition import weighted_contiguous_chunks
+from ddvc.v2_event_completeness import V2EventSourceRelease, resolve_v2_event_source_release
 
 PROC = DATA_DIR / "processed"
 LOCK = PROC / ".rent_incidence_panels.lock"
@@ -364,8 +365,8 @@ def _write_day_shard(
 # Uniswap v2
 # ---------------------------------------------------------------------------
 
-def _v2_day(day: str, release: ReleasedPartitionSet) -> list[dict]:
-    state = release.read_day(day)
+def _v2_day(day: str, release: CPStateStreamSet) -> list[dict]:
+    state = pd.DataFrame.from_records(release.read_day(day), columns=CP_COLUMNS)
     hours: dict[str, list] = defaultdict(list)
     meta: dict[str, tuple] = {}
     snapshots = state[state["record_type"].eq("snapshot")]
@@ -416,8 +417,8 @@ def _build_v2_chunk(payload: dict[str, object]) -> tuple[int, int]:
     """Build independent V2 day shards inside one bounded worker."""
     cache_dir = Path(str(payload["cache_dir"]))
     release = payload["release"]
-    if not isinstance(release, ReleasedPartitionSet):
-        raise TypeError("V2 rent chunk requires a released partition subset")
+    if not isinstance(release, CPStateStreamSet) or release.kind != "event_stream":
+        raise TypeError("V2 rent chunk requires a certified event-stream subset")
     capital_path = Path(str(payload["capital_path"]))
     built = rows = 0
     for day in payload["days"]:
@@ -444,7 +445,7 @@ def _build_v2_shards(
     days: list[str],
     cache_dir: Path,
     *,
-    release: ReleasedPartitionSet,
+    release: CPStateStreamSet,
     capital_path: Path,
     workers: int,
     force: bool,
@@ -462,7 +463,10 @@ def _build_v2_shards(
     cache_dir.mkdir(parents=True, exist_ok=True)
     chunks = weighted_contiguous_chunks(
         pending,
-        [max(1, release.select_days((day,)).expected_rows[0]) for day in pending],
+        [
+            max(1, release.select_days((day,)).partitions[0].expected_rows)
+            for day in pending
+        ],
         workers,
     )
     payloads = [
@@ -579,14 +583,30 @@ def _assemble_family(
     print(f"{venue} pool-days: {result.rows:,}", flush=True)
 
 
-def build_v2(*, workers: int, force: bool, capital_release: CapitalRelease | None = None) -> None:
-    state_release = released_state_partitions("constant_product", "uniswap_v2", CP_COLUMNS)
+def build_v2(
+    *,
+    workers: int,
+    force: bool,
+    capital_release: CapitalRelease | None = None,
+    event_source_release: V2EventSourceRelease | None = None,
+) -> None:
     selected_capital = capital_release or resolve_capital_release()
+    reserve_authority = selected_capital.manifest["certified_reserve_stream"]["uniswap_v2"]
+    days = [str(partition["day"]) for partition in reserve_authority["partitions"]]
+    state_release = certified_cp_event_stream(
+        "uniswap_v2",
+        days,
+        raw_root=RAW_ROOT,
+    )
+    selected_event_source = event_source_release or resolve_v2_event_source_release()
     capital_path = selected_capital.artifacts["pool"]
-    days = list(state_release.days)
     if not days:
-        raise RuntimeError("no canonical Uniswap V2 state days")
-    inputs = [*state_release.provenance_inputs, *selected_capital.lineage_paths]
+        raise RuntimeError("no certified Uniswap V2 event days")
+    inputs = [
+        *state_release.provenance_inputs,
+        *selected_capital.lineage_paths,
+        *selected_event_source.lineage_paths,
+    ]
     generation = cache_key(V2_SHARD_CODE_SOURCES, inputs=inputs)
     cache_dir = _generation_cache_dir("v2", generation)
     _clean_interrupted_shard_temps(cache_dir)
@@ -596,6 +616,15 @@ def build_v2(*, workers: int, force: bool, capital_release: CapitalRelease | Non
         code_sources=V2_SHARD_CODE_SOURCES,
         inputs=inputs,
     )
+    def validate_sources(_path: Path) -> None:
+        state_release.assert_current()
+        reopened_event_source = resolve_v2_event_source_release(
+            selected_event_source.pointer_path
+        )
+        if reopened_event_source.generation_id != selected_event_source.generation_id:
+            raise RuntimeError("V2 event-source generation changed during rent build")
+        resolve_capital_release(selected_capital.pointer_path)
+
     _assemble_family(
         days=days,
         cache_dir=cache_dir,
@@ -606,7 +635,7 @@ def build_v2(*, workers: int, force: bool, capital_release: CapitalRelease | Non
         canonical_inputs=inputs,
         generation=generation,
         release_identity=state_release.content_identity_sha256,
-        preinstall_validator=release_preinstall_validator(state_release),
+        preinstall_validator=validate_sources,
     )
 
 
@@ -622,10 +651,14 @@ def main() -> None:
             RAW_MARKET_DATA_LOCK,
             job="raw market-data fetch, enrichment, or canonical materialisation",
         ):
-            with exclusive_job(MARKET_STATE_LOCK, job="canonical market-state build"):
-                require_node_d_release(market_state=True)
-                capital_release = resolve_capital_release()
-                build_v2(workers=workers, force=args.force, capital_release=capital_release)
+            capital_release = resolve_capital_release()
+            event_source_release = resolve_v2_event_source_release()
+            build_v2(
+                workers=workers,
+                force=args.force,
+                capital_release=capital_release,
+                event_source_release=event_source_release,
+            )
 
 
 if __name__ == "__main__":

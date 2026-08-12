@@ -308,7 +308,7 @@ def test_streaming_capital_lag_requires_the_exact_previous_calendar_day():
     assert not gap["exact_lag_valid"] and gap[CAPITAL_COLUMN] is None
     assert adjacent["exact_lag_valid"] and adjacent[CAPITAL_COLUMN] == 100.0
     assert adjacent["pool_family"] == "full_range_constant_product"
-    assert adjacent["state_generation"] == "released_constant_product_closing_reserves_v1"
+    assert adjacent["state_generation"] == "certified_hourly_reserve_snapshot_v1"
 
 
 def test_provider_capital_must_reconcile_to_independently_priced_holdings():

@@ -19,14 +19,14 @@ from ddvc.ethereum_day_cuts import day_bound_path, load_utc_day_block_bounds
 from ddvc.ethereum_logs import exact_log_block_ranges, fetch_exact_logs_with_evidence, file_sha256, write_exact_log_chunk
 from ddvc.paths import DATA_DIR, REPO_ROOT, V3_INVENTORY_RAW_ROOT
 from ddvc.pricing.tick_replay import TickReplayEvent, load_tick_day_events
-from ddvc.pricing.v2_replay import V2ReplayDay, V2_VENUES, load_v2_replay_day
+from ddvc.pricing.v2_replay import V2ReplayDay, V2_VENUES, load_v2_replay_day, v2_replay_day_inputs
 from ddvc.provenance import cache_key, sidecar_path
 from ddvc.realised import LINEAR_ROUTE_COLUMNS, extract_linear_realised_routes
 from ddvc.reconstruct import UNIFIED_QUALITY_PANEL
 from ddvc.release_calendar import released_route_days, transaction_frontier_audit_days
 from ddvc.runtime import exclusive_job, interruptible_thread_pool
 from ddvc.source_records import transaction_id
-from ddvc.state_data import RAW_ROOT, STATE_ROOT, cp_partition_path, tick_partition_path, tick_scientific_support
+from ddvc.state_data import RAW_ROOT, state_partition_inputs, tick_scientific_support
 from ddvc.tick_state_events import daily_release_set_path, state_event_certificate_path, v4_state_day_inputs, validate_v4_state_day
 from ddvc.transaction_targets import (
     EXACT_VENUES,
@@ -76,6 +76,7 @@ BUILD_SOURCES = [
     "src/ddvc/realised.py",
     "src/ddvc/release_calendar.py",
     "src/ddvc/source_records.py",
+    "src/ddvc/state_data.py",
     "src/ddvc/transaction_targets.py",
     "src/ddvc/v2_event_completeness.py",
     "src/ddvc/v3_event_completeness.py",
@@ -158,9 +159,9 @@ def load_provider_day(day: str, quarantined_v4_pools: set[str]) -> tuple[pd.Data
         support_inputs = []
     legs, support_boundary = exclude_post_support_v4_routes(day, legs, v4_support)
     identities = exact_target_leg_identities(legs)
-    v2_replay = load_v2_replay_day(STATE_ROOT, day, venues=V2_VENUES)
+    v2_replay = load_v2_replay_day(None, day, venues=V2_VENUES)
     tick_venues = ("uniswap_v3", "uniswap_v4") if v4_support is True else ("uniswap_v3",)
-    tick_events = load_tick_day_events(STATE_ROOT, day, venues=tick_venues)
+    tick_events = load_tick_day_events(None, day, venues=tick_venues)
     v2_events: dict[tuple[str, str, int], ProviderSwapEvent] = {}
     for key in sorted(identity for identity in identities if identity[0] in V2_VENUES):
         source = v2_replay.swaps_by_identity.get(key)
@@ -189,8 +190,8 @@ def load_provider_day(day: str, quarantined_v4_pools: set[str]) -> tuple[pd.Data
         raise TargetEvidenceError(f"provider target perimeter is incomplete on {day}: missing={sorted(identities - observed)[:3]}, extra={sorted(observed - identities)[:3]}")
     inputs = [
         unified,
-        *(cp_partition_path(venue, day, root=STATE_ROOT) for venue in V2_VENUES),
-        *(tick_partition_path(venue, day, root=STATE_ROOT) for venue in ("uniswap_v3", "uniswap_v4")),
+        *v2_replay_day_inputs(RAW_ROOT, day, venues=V2_VENUES),
+        *(path for venue in tick_venues for path in state_partition_inputs(RAW_ROOT, "tick", venue, day)),
     ]
     return legs, v2_events, tick_provider, [path for path in [*inputs, *support_inputs] if path.is_file()], support_boundary
 
@@ -430,7 +431,7 @@ def main() -> int:
     if args.workers < 1:
         parser.error("--workers must be positive")
     try:
-        require_node_d_release(routes=True, market_state=True)
+        require_node_d_release(routes=True)
         full_days = released_route_days(UNIFIED_QUALITY_PANEL, nonempty=False)
         audit_days = transaction_frontier_audit_days(UNIFIED_QUALITY_PANEL)
         dependencies = release_dependencies()

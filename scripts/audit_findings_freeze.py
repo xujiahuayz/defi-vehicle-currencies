@@ -30,6 +30,7 @@ from ddvc.capital_contracts import (
     VALID_CAPITAL_STATUSES,
 )
 from ddvc.capital_release import CapitalRelease, resolve_capital_release
+from ddvc.cp_state_stream import certified_cp_event_stream, certified_cp_state_stream
 from ddvc.fetch.sources import DEX_SOURCES, get_source
 from ddvc.liquidity import (
     CAPITAL_COLUMN,
@@ -63,6 +64,7 @@ from ddvc.route_roles import VALUE_SUPPORT_COLUMNS
 from ddvc.state_data import (
     CP_COLUMNS,
     FAMILY_STREAMS,
+    RAW_ROOT,
     STATE_GENERATIONS,
     pool_semantics,
 )
@@ -1442,6 +1444,22 @@ def quote_state_artifact_check() -> tuple[bool, str]:
     return validate_quote_state_contract_rows(rows)
 
 
+def active_claim_requires_wide_state(payload: dict) -> bool:
+    """Gate the optional wide state cache only when an executable claim names it."""
+
+    perimeter = claim_execution_perimeter(payload)
+    inputs = {
+        str(path)
+        for claim in perimeter.executable_claims
+        for path in claim.get("inputs", [])
+    }
+    return any(
+        path == "data/processed/market_state_quality.parquet"
+        or path.startswith("data/processed/market_state/")
+        for path in inputs
+    )
+
+
 def validate_capital_contract_rows(rows: pd.DataFrame) -> tuple[bool, str]:
     """Bind every materialized capital row family/generation/source to the registry."""
 
@@ -1601,9 +1619,6 @@ def capital_artifact_checks(
             "provider_disagreement_row_share",
             "provider_disagreement_capital_share",
             "materiality_status",
-            "limited_transition_row_share",
-            "limited_transition_capital_share",
-            "limited_transition_materiality_status",
         }
         overlap_missing = sorted(overlap_required - set(overlap.columns))
         share_columns = [column for column in overlap_required if column.endswith("_share")]
@@ -1618,7 +1633,6 @@ def capital_artifact_checks(
             and not overlap.duplicated(["venue", "era", "candidate"]).any()
             and shares_valid
             and overlap["materiality_status"].notna().all()
-            and overlap["limited_transition_materiality_status"].notna().all()
         )
     except (OSError, TypeError, ValueError):
         overlap_missing, overlap_valid = ["unreadable"], False
@@ -1792,58 +1806,54 @@ def capital_artifact_checks(
             )
         )
 
-        state_parts = []
-        state_releases = {}
+        reserve_streams = {}
         for venue in ("uniswap_v2", "sushiswap_v2"):
-            state_release = released_state_partitions("constant_product", venue, CP_COLUMNS)
-            state_releases[venue] = state_release
-            exact_paths = ",".join(
-                "'" + path.as_posix().replace("'", "''") + "'"
-                for path in state_release.paths
+            reserve_streams[venue] = certified_cp_state_stream(
+                venue,
+                calendar_days(
+                    max(RESEARCH_SAMPLE_START, get_source(venue).genesis.strftime("%Y%m%d")),
+                    RESEARCH_SAMPLE_END,
+                ),
+                raw_root=RAW_ROOT,
             )
-            state_parts.append(
-                f"SELECT '{venue}' AS venue, day, pool FROM read_parquet([{exact_paths}]) "
-                "WHERE usable GROUP BY day, pool"
-            )
-        state_sql = " UNION ALL ".join(state_parts)
         coverage = con.execute(
             f"""
-            WITH state AS ({state_sql}), capital AS (
-                SELECT venue, day, pool FROM {pool}
-            ), expected AS (
-                SELECT s.* FROM state s LEFT JOIN capital c USING (venue, day, pool)
-                WHERE c.pool IS NULL
-            ), extra AS (
-                SELECT c.* FROM capital c LEFT JOIN state s USING (venue, day, pool)
-                WHERE s.pool IS NULL
-            )
             SELECT
-                (SELECT count(*) FROM expected),
-                (SELECT count(*) FROM extra),
-                (SELECT count(*) FROM {pool} WHERE reserve_source!='released_constant_product_closing_reserves'),
+                (SELECT count(*) FROM {pool} WHERE reserve_source!='certified_hourly_reserve_snapshot'),
                 (SELECT count(*) FROM {pool} WHERE capital_source!='{CAPITAL_SOURCE}'),
                 (SELECT count(*) FROM {pool} WHERE failure_reason LIKE '%reported_capital%')
             """
         ).fetchone()
+        manifest_support = {
+            (str((shard.get("spec") or {}).get("venue")), str(record.get("day"))): record
+            for shard in selected.manifest.get("shards") or []
+            for record in shard.get("daily_support") or []
+        }
+        expected_support = {
+            (venue, day)
+            for venue, stream in reserve_streams.items()
+            for day in stream.days
+        }
+        support_mismatch = expected_support.symmetric_difference(manifest_support)
         results.append(
             (
-                "node D capital released-state perimeter and source ownership",
-                not any(coverage),
-                f"missing={coverage[0]:,}; extra={coverage[1]:,}; "
-                f"bad_reserve_source={coverage[2]:,}; bad_capital_source={coverage[3]:,}; "
-                f"provider_eligibility_failures={coverage[4]:,}",
+                "node D capital certified-reserve perimeter and source ownership",
+                not any(coverage) and not support_mismatch,
+                f"support_mismatch={len(support_mismatch):,}; "
+                f"bad_reserve_source={coverage[0]:,}; bad_capital_source={coverage[1]:,}; "
+                f"provider_eligibility_failures={coverage[2]:,}",
             )
         )
-        manifest_releases = selected.manifest.get("released_state") or {}
+        manifest_releases = selected.manifest.get("certified_reserve_stream") or {}
         release_identity_mismatch = [
             venue
-            for venue, state_release in state_releases.items()
+            for venue, reserve_stream in reserve_streams.items()
             if (manifest_releases.get(venue) or {}).get("content_identity_sha256")
-            != state_release.content_identity_sha256
+            != reserve_stream.content_identity_sha256
         ]
         results.append(
             (
-                "node D capital released-state identities",
+                "node D capital certified-reserve identities",
                 not release_identity_mismatch,
                 f"mismatch={release_identity_mismatch or 'none'}",
             )
@@ -2141,8 +2151,15 @@ def rent_incidence_artifact_checks(
     try:
         selected_capital = capital_release or resolve_capital_release()
         capital_path = selected_capital.artifacts["pool"]
+        reserve_authority = selected_capital.manifest["certified_reserve_stream"]["uniswap_v2"]
+        event_stream = certified_cp_event_stream(
+            "uniswap_v2",
+            [str(partition["day"]) for partition in reserve_authority["partitions"]],
+            raw_root=RAW_ROOT,
+        )
+        event_stream.assert_current()
     except (FileNotFoundError, OSError, RuntimeError, TypeError, ValueError) as exc:
-        return [("node D V2 rent construction", False, f"capital release: {type(exc).__name__}: {exc}")]
+        return [("node D V2 rent construction", False, f"purpose-bound source: {type(exc).__name__}: {exc}")]
     if not rent_path.is_file() or not capital_path.is_file():
         missing = [path.name for path in (rent_path, capital_path) if not path.is_file()]
         return [("node D V2 rent construction", False, f"missing={missing}")]
@@ -2183,6 +2200,11 @@ def rent_incidence_artifact_checks(
     }
     missing_columns = sorted(required - set(pq.ParquetFile(rent_path).schema_arrow.names))
     results = [
+        (
+            "node D V2 rent purpose-bound event source",
+            True,
+            f"days={len(event_stream.days):,}; identity={event_stream.content_identity_sha256}",
+        ),
         (
             "node D V2 rent construction provenance and schema",
             provenance == "ok" and not missing_columns,
@@ -3809,6 +3831,12 @@ def route_measurement_invariants(
 def main() -> int:
     checks: list[tuple[str, bool, str]] = []
     state = _state_fields()
+    try:
+        early_lock_payload = json.loads(SPECIFICATION_LOCK.read_text())
+        wide_state_required = active_claim_requires_wide_state(early_lock_payload)
+    except (FileNotFoundError, json.JSONDecodeError, OSError, ValueError):
+        early_lock_payload = {}
+        wide_state_required = False
 
     def record(name: str, passed: bool, detail: str) -> None:
         checks.append((name, passed, detail))
@@ -3823,8 +3851,15 @@ def main() -> int:
     record("node D raw-provider boundary", boundary_passed, boundary_detail)
     liquidity_passed, liquidity_detail = validate_liquidity_contracts()
     record("cross-protocol liquidity semantics", liquidity_passed, liquidity_detail)
-    quote_state_passed, quote_state_detail = quote_state_artifact_check()
-    record("node D quote-state family contracts", quote_state_passed, quote_state_detail)
+    if wide_state_required:
+        quote_state_passed, quote_state_detail = quote_state_artifact_check()
+        record("node D quote-state family contracts", quote_state_passed, quote_state_detail)
+    else:
+        record(
+            "node D quote-state family contracts",
+            True,
+            "not required by the executable claim-input perimeter",
+        )
     for name, passed, detail in capital_artifact_checks():
         record(name, passed, detail)
     for name, passed, detail in token_price_artifact_checks():
@@ -3844,7 +3879,7 @@ def main() -> int:
     for name, passed, detail in retired_route_gas_release_checks():
         record(name, passed, detail)
 
-    if MARKET_STATE_QUALITY.exists():
+    if wide_state_required and MARKET_STATE_QUALITY.exists():
         quality = pd.read_parquet(MARKET_STATE_QUALITY)
         required_quality_columns = {
             "family",
@@ -3895,11 +3930,17 @@ def main() -> int:
             f"missing_columns={missing_quality_columns or 'none'}; "
             f"provenance={verify(MARKET_STATE_QUALITY).get('status')}",
         )
-    else:
+    elif wide_state_required:
         record(
             "node D full-calendar market-state gate",
             False,
             str(MARKET_STATE_QUALITY.relative_to(ROOT)),
+        )
+    else:
+        record(
+            "node D full-calendar market-state gate",
+            True,
+            "not required by the executable claim-input perimeter",
         )
     if UNIFIED_QUALITY_PANEL.exists():
         route_quality = pd.read_parquet(UNIFIED_QUALITY_PANEL)

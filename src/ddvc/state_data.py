@@ -1,8 +1,8 @@
-"""Canonical, materialised market-state inputs for empirical runners.
+"""Canonical market-state normalization for cached and streamed consumers.
 
 Raw provider JSON is immutable evidence. This module is the only boundary that
-translates its source-specific schemas into stable research records. Downstream
-replay and quote code reads the materialised partitions, never provider rows.
+translates its source-specific schemas into stable research records. Purpose-bound
+builders may consume normalized records directly without writing a full event copy.
 """
 
 from __future__ import annotations
@@ -11,6 +11,7 @@ import gzip
 import hashlib
 import json
 import datetime as dt
+from collections.abc import Iterator
 from dataclasses import asdict, dataclass, replace
 from decimal import Decimal, InvalidOperation
 from pathlib import Path
@@ -493,6 +494,18 @@ def _state_partition_inputs(
         if venue == "uniswap_v4":
             inputs.extend(path for path in v4_state_day_inputs(raw_root, day) if path.exists())
     return inputs
+
+
+def state_partition_inputs(
+    raw_root: Path,
+    family: str,
+    venue: str,
+    day: str,
+    correction_inputs: list[Path] | None = None,
+) -> list[Path]:
+    """Expose the exact raw/correction perimeter used by one normalized day."""
+
+    return _state_partition_inputs(raw_root, family, venue, day, correction_inputs)
 
 
 def _reconciled_stream_rows(
@@ -1125,6 +1138,66 @@ def normalise_cp_partition(
         counters=counters,
     )
     return frame, quality
+
+
+def iter_normalised_cp_records(
+    raw_root: Path,
+    venue: str,
+    day: str,
+) -> Iterator[dict[str, object]]:
+    """Yield one normalized CP day without installing an event-state partition."""
+
+    frame, quality = normalise_cp_partition(raw_root, venue, day)
+    if not quality.passed:
+        raise ValueError(
+            f"constant-product exact-event contract failed: {venue}/{day}; "
+            f"missing_streams={quality.missing_required_streams}; "
+            f"conflicts={quality.conflicting_events}"
+        )
+    yield from frame.to_dict("records")
+
+
+def iter_normalised_cp_reserve_records(
+    raw_root: Path,
+    venue: str,
+    day: str,
+) -> Iterator[dict[str, object]]:
+    """Yield only normalized hourly reserve observations for deposited capital."""
+
+    if venue not in CP_STREAMS:
+        raise ValueError(f"unsupported constant-product venue: {venue}")
+    path = raw_stream_path(raw_root, venue, "hourly_reserves", day)
+    if not path.is_file():
+        raise FileNotFoundError(f"certified reserve stream is missing: {venue}/{day}")
+    seen: dict[tuple[str, int], dict[str, object]] = {}
+    for source in _reconciled_stream_rows(path, venue, "hourly_reserves", None):
+        if source is None:
+            continue
+        record, _flags = _normalise_cp_row(
+            source,
+            venue=venue,
+            day=day,
+            stream="hourly_reserves",
+            record_type="snapshot",
+            liquidity_sign=0,
+        )
+        pool = str(record.get("pool") or "").lower()
+        period_start = record.get("period_start")
+        if not pool or period_start is None:
+            yield record
+            continue
+        key = pool, int(period_start)
+        prior = seen.get(key)
+        if prior is None:
+            seen[key] = record
+            yield record
+            continue
+        comparable = {name: value for name, value in record.items() if name != "event_id"}
+        prior_comparable = {name: value for name, value in prior.items() if name != "event_id"}
+        if comparable != prior_comparable:
+            raise ValueError(
+                f"hourly reserve snapshots conflict at one pool-period: {venue}/{day}/{pool}/{period_start}"
+            )
 
 
 def _event_log_index(row: dict, venue: str) -> int | None:

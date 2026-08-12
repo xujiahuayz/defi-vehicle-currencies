@@ -579,11 +579,12 @@ class DataReleaseTests(unittest.TestCase):
             "scripts/process/build_route_gas_units.py": "require_node_d_release(routes=True)",
             "scripts/process/build_route_transaction_gas.py": "require_node_d_release(routes=True, market_state=True)",
             "scripts/run_route_cost_panel.py": "require_node_d_release(routes=True, market_state=True)",
-            "scripts/build_transaction_state_frontier.py": "require_node_d_release(routes=True, market_state=True)",
+            "scripts/build_transaction_state_frontier.py": "require_node_d_release(routes=True)",
             "scripts/build_routing_maturation_panel.py": "require_node_d_release(routes=True, market_state=True)",
             "scripts/build_counterfactual_dominance.py": "require_node_d_release(routes=True, market_state=True)",
-            "scripts/build_rent_incidence_panel.py": "require_node_d_release(market_state=True)",
+            "scripts/build_rent_incidence_panel.py": "certified_cp_event_stream(",
             "scripts/build_v2_token_panel.py": "released_state_partitions(",
+            "scripts/build_pool_capital_panel.py": "certified_cp_state_stream(",
             "scripts/run_rent_incidence.py": "require_node_d_release(routes=True, market_state=True)",
         }
         for filename, call in expected.items():
@@ -596,7 +597,6 @@ class DataReleaseTests(unittest.TestCase):
             "scripts/validate_curve_quoter.py",
             "scripts/validate_weighted_quoter.py",
             "scripts/build_lp_liquidity_flow_panel.py",
-            "scripts/build_rent_incidence_panel.py",
             "scripts/build_v2_token_panel.py",
             "scripts/test_block_vs_hour_verdict.py",
             "scripts/audit_findings_freeze.py",
@@ -612,13 +612,17 @@ class DataReleaseTests(unittest.TestCase):
                 self.assertNotIn("read_tick_partition", source)
                 self.assertNotIn("read_multi_asset_partition", source)
                 self.assertNotRegex(source, r"MARKET_STATE.*\.glob\(")
+        rent_source = Path("scripts/build_rent_incidence_panel.py").read_text(encoding="utf-8")
+        self.assertIn('selected_capital.manifest["certified_reserve_stream"]', rent_source)
+        self.assertIn("certified_cp_event_stream(", rent_source)
+        self.assertIn("release.read_day(day)", rent_source)
+        self.assertNotIn("released_state_partitions", rent_source)
 
     def test_release_bound_publishers_validate_again_immediately_before_install(self) -> None:
         filenames = [
             "scripts/test_block_vs_hour_verdict.py",
             "scripts/validate_curve_quoter.py",
             "scripts/validate_weighted_quoter.py",
-            "scripts/build_rent_incidence_panel.py",
             "scripts/build_counterfactual_dominance.py",
         ]
         for filename in filenames:
@@ -626,6 +630,9 @@ class DataReleaseTests(unittest.TestCase):
                 source = Path(filename).read_text(encoding="utf-8")
                 self.assertIn("release_preinstall_validator(", source)
                 self.assertIn("preinstall_validator=", source)
+        rent_source = Path("scripts/build_rent_incidence_panel.py").read_text(encoding="utf-8")
+        self.assertIn("state_release.assert_current()", rent_source)
+        self.assertIn("preinstall_validator=validate_sources", rent_source)
 
     def test_v3_materiality_reads_only_released_route_partitions(self) -> None:
         source = Path("src/ddvc/v3_graph_materiality.py").read_text(encoding="utf-8")

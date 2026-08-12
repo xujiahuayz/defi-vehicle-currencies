@@ -9,6 +9,8 @@ from datetime import datetime, timedelta
 from decimal import Decimal, InvalidOperation
 from pathlib import Path
 
+import pandas as pd
+
 from ddvc.cpquote import (
     ReserveEvent,
     hour_is_clean,
@@ -16,10 +18,38 @@ from ddvc.cpquote import (
     prior_observed_state,
     reserve_state_before,
 )
-from ddvc.state_data import RAW_ROOT, cp_partition_path, read_cp_partition
+from ddvc.fetch.sources import get_source
+from ddvc.state_data import CP_COLUMNS, RAW_ROOT, cp_partition_path, iter_normalised_cp_records, read_cp_partition, state_partition_inputs
 
 
 V2_VENUES = ("uniswap_v2", "sushiswap_v2")
+
+
+def v2_replay_day_inputs(
+    raw_root: Path,
+    day: str,
+    *,
+    venues: tuple[str, ...] = V2_VENUES,
+) -> tuple[Path, ...]:
+    """Return the exact raw perimeter read by one streamed V2 replay day."""
+
+    selected_date = datetime.strptime(day, "%Y%m%d").date()
+    previous_day = (datetime.strptime(day, "%Y%m%d") - timedelta(days=1)).strftime(
+        "%Y%m%d"
+    )
+    previous_date = datetime.strptime(previous_day, "%Y%m%d").date()
+    return tuple(
+        path
+        for venue in venues
+        if selected_date >= get_source(venue).genesis
+        for selected in (
+            *((previous_day,) if previous_date >= get_source(venue).genesis else ()),
+            day,
+        )
+        for path in state_partition_inputs(
+            raw_root, "constant_product", venue, selected
+        )
+    )
 PoolKey = tuple[str, str]
 PoolHourKey = tuple[str, str, int]
 ChainOrder = tuple[int, int]
@@ -110,7 +140,7 @@ def _read_reserves(
 
 
 def load_v2_replay_day(
-    state_root: Path,
+    state_root: Path | None,
     day: str,
     *,
     venues: tuple[str, ...] = V2_VENUES,
@@ -127,19 +157,36 @@ def load_v2_replay_day(
     previous_day = (datetime.strptime(day, "%Y%m%d") - timedelta(days=1)).strftime(
         "%Y%m%d"
     )
+    selected_date = datetime.strptime(day, "%Y%m%d").date()
 
     for venue in venues:
+        if selected_date < get_source(venue).genesis:
+            continue
         if state_frames is None:
-            previous_frame = (
-                read_cp_partition(venue, previous_day, root=state_root, raw_root=raw_root)
-                if cp_partition_path(venue, previous_day, root=state_root).exists()
-                else None
-            )
-            day_frame = (
-                read_cp_partition(venue, day, root=state_root, raw_root=raw_root)
-                if cp_partition_path(venue, day, root=state_root).exists()
-                else None
-            )
+            if state_root is None:
+                previous_date = datetime.strptime(previous_day, "%Y%m%d").date()
+                if previous_date >= get_source(venue).genesis:
+                    previous_frame = pd.DataFrame.from_records(
+                        iter_normalised_cp_records(raw_root, venue, previous_day),
+                        columns=CP_COLUMNS,
+                    )
+                else:
+                    previous_frame = None
+                day_frame = pd.DataFrame.from_records(
+                    iter_normalised_cp_records(raw_root, venue, day),
+                    columns=CP_COLUMNS,
+                )
+            else:
+                previous_frame = (
+                    read_cp_partition(venue, previous_day, root=state_root, raw_root=raw_root)
+                    if cp_partition_path(venue, previous_day, root=state_root).exists()
+                    else None
+                )
+                day_frame = (
+                    read_cp_partition(venue, day, root=state_root, raw_root=raw_root)
+                    if cp_partition_path(venue, day, root=state_root).exists()
+                    else None
+                )
         else:
             previous_frame = state_frames.get((venue, previous_day))
             day_frame = state_frames.get((venue, day))

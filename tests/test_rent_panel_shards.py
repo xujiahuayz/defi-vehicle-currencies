@@ -340,9 +340,11 @@ def test_resume_cleans_only_orphaned_atomic_shard_temporaries() -> None:
         assert not orphan.exists()
 
 
-def test_input_locks_follow_canonical_raw_then_market_state_order() -> None:
+def test_v2_rent_build_uses_raw_lock_without_wide_market_state_lock() -> None:
     source = (ROOT / "scripts" / "build_rent_incidence_panel.py").read_text()
     execution = source.split("def main() -> None:", 1)[1].split(
         'if __name__ == "__main__":', 1
     )[0]
-    assert execution.index("RAW_MARKET_DATA_LOCK") < execution.index("MARKET_STATE_LOCK")
+    assert "RAW_MARKET_DATA_LOCK" in execution
+    assert "MARKET_STATE_LOCK" not in source
+    assert "certified_cp_event_stream" in source

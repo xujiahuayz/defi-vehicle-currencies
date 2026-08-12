@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Build V2 deposited capital from the immutable node-D state release.
+"""Build V2 deposited capital directly from certified hourly reserve snapshots.
 
 Provider ``reserveUSD`` is retained only as an overlap diagnostic. It neither
 defines the pool-day perimeter nor determines scientific row eligibility.
@@ -12,10 +12,11 @@ from contextlib import ExitStack
 from datetime import datetime
 from decimal import Decimal, InvalidOperation
 import json
+import math
 from pathlib import Path
 import shutil
 import tempfile
-from typing import Callable, Iterable, Mapping, NamedTuple
+from typing import Callable, Iterable, Mapping, NamedTuple, Protocol
 
 import numpy as np
 import pandas as pd
@@ -25,7 +26,7 @@ import pyarrow.parquet as pq
 
 from ddvc.artifact_release import canonical_json_sha256, file_sha256, file_stat_identity, publish_artifact_release
 from ddvc.asset_types import VEHICLE_CANDIDATES
-from ddvc.calendar import uniswap_v3_era
+from ddvc.calendar import RESEARCH_SAMPLE_END, RESEARCH_SAMPLE_START, calendar_days, uniswap_v3_era
 from ddvc.capital_release import (
     CAPITAL_RELEASE_FILENAMES,
     CAPITAL_RELEASE_KIND,
@@ -49,13 +50,8 @@ from ddvc.capital_validation import (
     validate_constant_product_capital,
     validated_capital_prices,
 )
-from ddvc.data_release import (
-    ReleasedPartitionSet,
-    release_preinstall_validator,
-    released_state_partitions,
-    require_market_state_prerelease,
-    require_v2_event_source_release,
-)
+from ddvc.cp_state_stream import CPStateStreamSet, certified_cp_state_stream
+from ddvc.fetch.sources import get_source
 from ddvc.fetch.pool_daily import pool_day_values, verified_pool_provider_rows
 from ddvc.fetch.raw import write_json
 from ddvc.panel_assembly import assert_unique_parquet_keys
@@ -69,13 +65,15 @@ from ddvc.provenance import code_fingerprint, require_current_artifacts, sidecar
 from ddvc.runtime import atomic_output, bounded_workers, exclusive_job, interruptible_process_pool
 from ddvc.state_data import CP_COLUMNS
 from ddvc.token_decimals import validate_token_decimals_registry
-from ddvc.v2_event_completeness import resolve_v2_event_source_release
 
 
 RAW = DATA_DIR / "raw" / "thegraph"
 VENUES = tuple(venue for venue in ("uniswap_v2", "sushiswap_v2") if capital_supported(venue))
 PROVIDER_RATIO_BOUNDS = (0.5, 2.0)
-LIMITED_TRANSITION_DIAGNOSTIC_REFERENCE_SHARE = 0.10
+CAPITAL_FORECAST_CARDINALITY_MARGIN = 1.25
+CAPITAL_FORECAST_PEAK_MULTIPLIER = 2.25
+CAPITAL_FORECAST_FIXED_BYTES = 1024**3
+CAPITAL_FORECAST_RESERVE_BYTES = 10 * 1024**3
 CAPITAL_CODE_SOURCES = [
     "scripts/build_pool_capital_panel.py",
     "src/ddvc/artifact_release.py",
@@ -83,9 +81,36 @@ CAPITAL_CODE_SOURCES = [
     "src/ddvc/capital_contracts.py",
     "src/ddvc/capital_release.py",
     "src/ddvc/capital_validation.py",
-    "src/ddvc/data_release.py",
+    "src/ddvc/cp_state_stream.py",
+    "src/ddvc/raw_certification.py",
+    "src/ddvc/state_data.py",
     "src/ddvc/token_decimals.py",
 ]
+
+
+class CapitalPartition(Protocol):
+    day: str
+    expected_bytes: int
+    expected_rows: int
+
+
+class CapitalStateSource(Protocol):
+    """Minimum immutable reserve-source contract required by the capital builder."""
+
+    venue: str
+    days: tuple[str, ...]
+    partitions: tuple[CapitalPartition, ...]
+    provenance_inputs: tuple[Path, ...]
+    content_identity_sha256: str
+    ledger_sha256: str
+
+    def assert_current(self) -> None: ...
+
+    def read_day(self, day: str) -> pd.DataFrame | Iterable[Mapping[str, object]]: ...
+
+    def manifest_record(self) -> dict[str, object]: ...
+
+    def certified_rows(self, day: str) -> int: ...
 
 
 SCHEMA = pa.schema(
@@ -178,6 +203,101 @@ class ShardOutputs(NamedTuple):
     manifest: Path
 
 
+class CapitalStorageForecast(NamedTuple):
+    raw_input_bytes: int
+    sampled_days: int
+    sampled_bytes: int
+    sampled_pool_days: int
+    sampled_release_bytes: int
+    projected_pool_days: int
+    projected_release_bytes: int
+    peak_workspace_bytes: int
+
+
+def _stratified_partition_sample(release: CPStateStreamSet, count: int) -> tuple:
+    partitions = release.partitions
+    if len(partitions) <= count:
+        return partitions
+    indices = sorted({round(index * (len(partitions) - 1) / (count - 1)) for index in range(count)})
+    return tuple(partitions[index] for index in indices)
+
+
+def forecast_capital_storage(
+    releases: Mapping[str, CPStateStreamSet],
+    *,
+    prices_by_day: Mapping[str, Mapping[str, CapitalPrice]],
+    exact_decimals: Mapping[str, int],
+    sample_days_per_venue: int = 18,
+) -> CapitalStorageForecast:
+    """Project final and peak physical bytes from a stratified raw-backed pool sample."""
+
+    if sample_days_per_venue < 2:
+        raise ValueError("capital storage forecast requires at least two sample days per venue")
+    raw_bytes = sampled_bytes = sampled_pool_days = sampled_days = 0
+    projected_pool_days = 0
+    sample_pool_rows: list[dict[str, object]] = []
+    sample_candidate_rows: list[dict[str, object]] = []
+    sample_rejection_rows: list[dict[str, object]] = []
+    for release in releases.values():
+        venue_bytes = sum(partition.expected_bytes for partition in release.partitions)
+        raw_bytes += venue_bytes
+        sample = _stratified_partition_sample(release, sample_days_per_venue)
+        venue_sample_bytes = 0
+        venue_sample_pools = 0
+        for partition in sample:
+            venue_sample_bytes += partition.expected_bytes
+            source = release.read_day(partition.day)
+            state = source if isinstance(source, pd.DataFrame) else pd.DataFrame.from_records(source, columns=CP_COLUMNS)
+            pools = set(state["pool"].dropna().astype(str).str.lower())
+            venue_sample_pools += len(pools)
+            ordinal = datetime.strptime(partition.day, "%Y%m%d").date().toordinal()
+            for base in released_closing_reserve_rows(state, exact_decimals):
+                row, _current = with_exact_capital_lag(
+                    {**base, **_provider_fields(None)},
+                    venue=release.venue,
+                    day=partition.day,
+                    ordinal=ordinal,
+                    prices=prices_by_day.get(partition.day, {}),
+                    prior=None,
+                )
+                sample_pool_rows.append(row)
+                sample_candidate_rows.extend(candidate_capital_rows(row))
+                rejection = capital_validation_rejection(row)
+                if rejection is not None:
+                    sample_rejection_rows.append(rejection)
+        sampled_days += len(sample)
+        sampled_bytes += venue_sample_bytes
+        sampled_pool_days += venue_sample_pools
+        by_day = venue_sample_pools * len(release.partitions) / len(sample)
+        by_bytes = venue_sample_pools * venue_bytes / max(1, venue_sample_bytes)
+        projected_pool_days += math.ceil(max(by_day, by_bytes) * CAPITAL_FORECAST_CARDINALITY_MARGIN)
+    with tempfile.TemporaryDirectory(prefix="ddvc-capital-storage-calibration-") as directory:
+        sample_paths = []
+        for name, rows, schema in (
+            ("pool", sample_pool_rows, SCHEMA),
+            ("candidate", sample_candidate_rows, CANDIDATE_SCHEMA),
+            ("rejection", sample_rejection_rows, REJECTION_SCHEMA),
+        ):
+            path = Path(directory) / f"{name}.parquet"
+            pq.write_table(pa.Table.from_pylist(rows, schema=schema), path, compression="zstd")
+            sample_paths.append(path)
+        sampled_release_bytes = sum(path.stat().st_size for path in sample_paths)
+    bytes_per_pool_day = sampled_release_bytes / max(1, len(sample_pool_rows))
+    release_bytes = math.ceil(projected_pool_days * bytes_per_pool_day) + CAPITAL_FORECAST_FIXED_BYTES
+    peak_bytes = math.ceil(release_bytes * CAPITAL_FORECAST_PEAK_MULTIPLIER)
+    return CapitalStorageForecast(raw_bytes, sampled_days, sampled_bytes, sampled_pool_days, sampled_release_bytes, projected_pool_days, release_bytes, peak_bytes)
+
+
+def require_capital_storage_capacity(forecast: CapitalStorageForecast, path: Path) -> None:
+    available = shutil.disk_usage(path).free
+    required = forecast.peak_workspace_bytes + CAPITAL_FORECAST_RESERVE_BYTES
+    if available < required:
+        raise RuntimeError(
+            f"capital build needs {required / 1024**3:.1f} GiB including reserve; "
+            f"only {available / 1024**3:.1f} GiB is free"
+        )
+
+
 class ProviderDiagnostic(NamedTuple):
     rows: dict[str, dict[str, object]]
     input_sha256: dict[str, str]
@@ -188,12 +308,12 @@ def _era(day: str) -> str:
     return uniswap_v3_era(day)
 
 
-def _contiguous_byte_ranges(release: ReleasedPartitionSet, pieces: int) -> list[tuple[str, ...]]:
+def _contiguous_byte_ranges(release: CapitalStateSource, pieces: int) -> list[tuple[str, ...]]:
     if pieces < 1:
         raise ValueError("capital shard count must be positive")
     partitions = list(release.partitions)
     if not partitions:
-        raise ValueError(f"released state perimeter is empty for {release.venue}")
+        raise ValueError(f"certified reserve perimeter is empty for {release.venue}")
     pieces = min(pieces, len(partitions))
     total = sum(max(1, partition.expected_bytes) for partition in partitions)
     ranges: list[tuple[str, ...]] = []
@@ -216,7 +336,7 @@ def _contiguous_byte_ranges(release: ReleasedPartitionSet, pieces: int) -> list[
 
 
 def plan_capital_shards(
-    releases: Mapping[str, ReleasedPartitionSet],
+    releases: Mapping[str, CapitalStateSource],
 ) -> tuple[CapitalShard, ...]:
     """Plan seven byte-balanced Uni ranges and one serial Sushi range."""
 
@@ -246,7 +366,7 @@ def plan_capital_shards(
 
 def validate_capital_shard_plan(
     specs: Iterable[CapitalShard],
-    releases: Mapping[str, ReleasedPartitionSet],
+    releases: Mapping[str, CapitalStateSource],
 ) -> None:
     specs = tuple(specs)
     if not specs or len(specs) > 8 or len({spec.shard_id for spec in specs}) != len(specs):
@@ -266,18 +386,15 @@ def validate_capital_shard_plan(
                 raise ValueError(f"capital shard predecessor is stale: {spec.shard_id}")
 
 
-def assert_released_state_current_stable(release: ReleasedPartitionSet) -> None:
-    """Revalidate a complete state release with mutation detection around the scan."""
+def assert_reserve_stream_current_stable(release: CapitalStateSource) -> None:
+    """Revalidate a complete reserve stream with mutation detection around the scan."""
 
-    paths = (
-        release.ledger_path,
-        *(path for partition in release.partitions for path in (partition.path, partition.marker_path)),
-    )
+    paths = release.provenance_inputs
     before = {path: file_stat_identity(path) for path in paths}
     release.assert_current()
     changed = [path for path in paths if before[path] != file_stat_identity(path)]
     if changed:
-        raise RuntimeError(f"released state mutated during final revalidation: {changed[0]}")
+        raise RuntimeError(f"certified reserve stream mutated during final revalidation: {changed[0]}")
 
 
 def _decimal(value: object) -> Decimal | None:
@@ -318,51 +435,15 @@ def _pool_identity(rows: pd.DataFrame, exact_decimals: Mapping[str, int]) -> tup
     )
 
 
-def _pool_mechanics_status(rows: pd.DataFrame) -> str:
-    """Quarantine a pool-day when observed reserve transitions do not reconcile."""
-
-    snapshots = rows.loc[rows["record_type"].eq("snapshot")].copy()
-    snapshots["period_end"] = pd.to_numeric(snapshots["period_end"], errors="coerce")
-    snapshots = snapshots.dropna(subset=["period_end"]).sort_values("period_end")
-    if len(snapshots) < 2:
-        return "no_detected_nonstandard_mechanics_limited_transition_support"
-    events = rows.loc[rows["record_type"].isin(["swap", "liquidity"])].copy()
-    events["timestamp"] = pd.to_numeric(events["timestamp"], errors="coerce")
-    checked = 0
-    for previous, current in zip(snapshots.iloc[:-1].to_dict("records"), snapshots.iloc[1:].to_dict("records"), strict=True):
-        previous_state = (_decimal(previous["reserve0"]), _decimal(previous["reserve1"]))
-        current_state = (_decimal(current["reserve0"]), _decimal(current["reserve1"]))
-        if None in previous_state or None in current_state:
-            return "quarantined_nonstandard_token_mechanics"
-        start, end = int(previous["period_end"]), int(current["period_end"])
-        between = events.loc[events["timestamp"].ge(start) & events["timestamp"].lt(end)]
-        expected0, expected1 = previous_state
-        assert expected0 is not None and expected1 is not None
-        for event in between.sort_values(["block_number", "log_index"]).to_dict("records"):
-            delta0, delta1 = _decimal(event["amount0_delta"]), _decimal(event["amount1_delta"])
-            if delta0 is None or delta1 is None:
-                return "quarantined_nonstandard_token_mechanics"
-            expected0 += delta0
-            expected1 += delta1
-        actual0, actual1 = current_state
-        assert actual0 is not None and actual1 is not None
-        if expected0 <= 0 or expected1 <= 0 or actual0 <= 0 or actual1 <= 0:
-            return "quarantined_nonstandard_token_mechanics"
-        if abs(float((expected0 - actual0) / actual0)) >= 1e-9 or abs(float((expected1 - actual1) / actual1)) >= 1e-9:
-            return "quarantined_nonstandard_token_mechanics"
-        checked += 1
-    return "reserve_transition_continuity_passed" if checked else "no_detected_nonstandard_mechanics_limited_transition_support"
-
-
 def released_closing_reserve_rows(
     state: pd.DataFrame,
     exact_decimals: Mapping[str, int],
 ) -> list[dict[str, object]]:
-    """Return one exact released closing-reserve record per pool."""
+    """Return the last admissible certified reserve observation per pool-day."""
 
     missing = set(CP_COLUMNS) - set(state.columns)
     if missing:
-        raise ValueError(f"released constant-product state lacks columns: {sorted(missing)}")
+        raise ValueError(f"certified hourly reserve state lacks columns: {sorted(missing)}")
     rows: list[dict[str, object]] = []
     for pool, pool_rows in state.groupby(state["pool"].astype(str).str.lower(), sort=True):
         snapshots = pool_rows.loc[pool_rows["record_type"].eq("snapshot")].copy()
@@ -378,20 +459,7 @@ def released_closing_reserve_rows(
             latest = snapshots.iloc[-1]
             reserve0, reserve1 = _decimal(latest["reserve0"]), _decimal(latest["reserve1"])
             timestamp = int(latest["period_end"])
-            later = pool_rows.loc[
-                pool_rows["record_type"].isin(["swap", "liquidity"])
-                & pd.to_numeric(pool_rows["timestamp"], errors="coerce").ge(timestamp)
-            ].sort_values(["block_number", "log_index"])
-            if reserve0 is not None and reserve1 is not None:
-                for event in later.to_dict("records"):
-                    delta0, delta1 = _decimal(event["amount0_delta"]), _decimal(event["amount1_delta"])
-                    if delta0 is None or delta1 is None:
-                        reserve0 = reserve1 = None
-                        break
-                    reserve0 += delta0
-                    reserve1 += delta1
-                    timestamp = max(timestamp, int(event["timestamp"]))
-            reserve_status = "released_closing_state_replayed_through_last_event"
+            reserve_status = "certified_last_hourly_reserve_snapshot"
         rows.append(
             {
                 "pool": pool,
@@ -401,11 +469,11 @@ def released_closing_reserve_rows(
                 "token1_symbol": symbol1,
                 "reserve0": float(reserve0) if reserve0 is not None and reserve0 > 0 else None,
                 "reserve1": float(reserve1) if reserve1 is not None and reserve1 > 0 else None,
-                "reserve_source": "released_constant_product_closing_reserves",
+                "reserve_source": "certified_hourly_reserve_snapshot",
                 "reserve_state_timestamp": timestamp,
                 "reserve_validation_status": reserve_status,
                 "identity_validation_status": identity_status,
-                "token_mechanics_status": _pool_mechanics_status(pool_rows),
+                "token_mechanics_status": "not_applicable_snapshot_measurement",
             }
         )
     return rows
@@ -438,7 +506,10 @@ def provider_diagnostics(venue: str, day: str, raw_root: Path = RAW) -> Provider
     except (FileNotFoundError, OSError, RuntimeError, ValueError):
         return ProviderDiagnostic({}, before, "provider_diagnostic_validation_failed")
     try:
-        after = {str(item): file_sha256(item) for item in inputs}
+        existing_after = [item for item in inputs if item.exists()]
+        if existing_after != existing:
+            return ProviderDiagnostic({}, before, "provider_diagnostic_mutated_during_read")
+        after = {str(item): file_sha256(item) for item in existing_after}
     except OSError:
         return ProviderDiagnostic({}, before, "provider_diagnostic_mutated_during_read")
     if before != after:
@@ -568,7 +639,7 @@ def _shard_outputs(directory: Path, shard_id: str) -> ShardOutputs:
 
 def materialize_shard(
     spec: CapitalShard,
-    release: ReleasedPartitionSet,
+    release: CapitalStateSource,
     prices_by_day: Mapping[str, Mapping[str, CapitalPrice]],
     exact_decimals: Mapping[str, int],
     output_directory: Path,
@@ -585,6 +656,7 @@ def materialize_shard(
     outputs = _shard_outputs(output_directory, spec.shard_id)
     counts = {"pool": 0, "candidate": 0, "rejection": 0}
     provider_input_sha256: dict[str, str] = {}
+    daily_support: list[dict[str, object]] = []
     prior: dict[str, tuple[int, float, bool]] = {}
     read_days = (*((spec.predecessor_day,) if spec.predecessor_day else ()), *spec.owned_days)
     with ExitStack() as stack:
@@ -592,13 +664,14 @@ def materialize_shard(
         candidate_temporary = stack.enter_context(atomic_output(outputs.candidate))
         rejection_temporary = stack.enter_context(atomic_output(outputs.rejection))
         writers = {
-            "pool": pq.ParquetWriter(pool_temporary, SCHEMA, compression="snappy"),
-            "candidate": pq.ParquetWriter(candidate_temporary, CANDIDATE_SCHEMA, compression="snappy"),
-            "rejection": pq.ParquetWriter(rejection_temporary, REJECTION_SCHEMA, compression="snappy"),
+            "pool": pq.ParquetWriter(pool_temporary, SCHEMA, compression="zstd"),
+            "candidate": pq.ParquetWriter(candidate_temporary, CANDIDATE_SCHEMA, compression="zstd"),
+            "rejection": pq.ParquetWriter(rejection_temporary, REJECTION_SCHEMA, compression="zstd"),
         }
         try:
             for day in read_days:
-                state = release.read_day(day)
+                state_source = release.read_day(day)
+                state = state_source if isinstance(state_source, pd.DataFrame) else pd.DataFrame.from_records(state_source, columns=CP_COLUMNS)
                 diagnostic = provider_loader(spec.venue, day, raw_root)
                 for path, digest in diagnostic.input_sha256.items():
                     prior_digest = provider_input_sha256.setdefault(path, digest)
@@ -634,6 +707,30 @@ def materialize_shard(
                     rejection = capital_validation_rejection(row)
                     if rejection is not None:
                         day_rejection_rows.append(rejection)
+                if emitted:
+                    certified_source_rows = release.certified_rows(day)
+                    normalised_reserve_rows = int(state["record_type"].eq("snapshot").sum())
+                    if normalised_reserve_rows != certified_source_rows:
+                        raise RuntimeError(
+                            "certified reserve source and normalised row counts differ: "
+                            f"{spec.venue}/{day} source={certified_source_rows} normalised={normalised_reserve_rows}"
+                        )
+                    admitted_rows = len(day_pool_rows)
+                    daily_support.append(
+                        {
+                            "day": day,
+                            "certified_source_rows": certified_source_rows,
+                            "normalised_reserve_rows": normalised_reserve_rows,
+                            "pool_rows": admitted_rows,
+                            "status": (
+                                "certified_empty"
+                                if certified_source_rows == 0
+                                else "observed"
+                                if admitted_rows > 0
+                                else "certified_rows_none_admitted"
+                            ),
+                        }
+                    )
                 for name, rows, schema in (
                     ("pool", day_pool_rows, SCHEMA),
                     ("candidate", day_candidate_rows, CANDIDATE_SCHEMA),
@@ -663,6 +760,7 @@ def materialize_shard(
             {"path": path, "sha256": provider_input_sha256[path]}
             for path in sorted(provider_input_sha256)
         ],
+        "daily_support": daily_support,
     }
     validate_exact_file_bindings(scientific_input_sha256, scientific_input_paths)
     manifest["identity_sha256"] = canonical_json_sha256(manifest)
@@ -671,7 +769,7 @@ def materialize_shard(
     return outputs
 
 
-def _materialize_payload(payload: tuple[CapitalShard, ReleasedPartitionSet, dict[str, dict[str, CapitalPrice]], dict[str, int], Path, Path, dict[str, str], tuple[Path, ...]]) -> ShardOutputs:
+def _materialize_payload(payload: tuple[CapitalShard, CapitalStateSource, dict[str, dict[str, CapitalPrice]], dict[str, int], Path, Path, dict[str, str], tuple[Path, ...]]) -> ShardOutputs:
     spec, release, prices, decimals, output_directory, raw_root, scientific_inputs, scientific_paths = payload
     return materialize_shard(
         spec,
@@ -685,7 +783,7 @@ def _materialize_payload(payload: tuple[CapitalShard, ReleasedPartitionSet, dict
     )
 
 
-def _validate_shard_output(spec: CapitalShard, release: ReleasedPartitionSet, outputs: ShardOutputs) -> dict[str, object]:
+def _validate_shard_output(spec: CapitalShard, release: CapitalStateSource, outputs: ShardOutputs) -> dict[str, object]:
     manifest = json.loads(outputs.manifest.read_text(encoding="utf-8"))
     identity = manifest.get("identity_sha256")
     body = {key: value for key, value in manifest.items() if key != "identity_sha256"}
@@ -695,6 +793,26 @@ def _validate_shard_output(spec: CapitalShard, release: ReleasedPartitionSet, ou
         raise RuntimeError(f"capital shard belongs to a stale release: {spec.shard_id}")
     if manifest.get("spec") != {**spec._asdict(), "owned_days": list(spec.owned_days)}:
         raise RuntimeError(f"capital shard manifest scope differs: {spec.shard_id}")
+    support = manifest.get("daily_support")
+    if (
+        not isinstance(support, list)
+        or any(not isinstance(record, dict) for record in support)
+        or [str(record.get("day")) for record in support] != list(spec.owned_days)
+        or any(
+            record.get("status") not in {"observed", "certified_empty", "certified_rows_none_admitted"}
+            or not isinstance(record.get("certified_source_rows"), int)
+            or int(record["certified_source_rows"]) < 0
+            or not isinstance(record.get("normalised_reserve_rows"), int)
+            or int(record["normalised_reserve_rows"]) < 0
+            or record["certified_source_rows"] != record["normalised_reserve_rows"]
+            or not isinstance(record.get("pool_rows"), int)
+            or int(record["pool_rows"]) < 0
+            or (record["status"] == "certified_empty") != (record["certified_source_rows"] == 0)
+            or (record["status"] == "observed") != (record["pool_rows"] > 0)
+            for record in support
+        )
+    ):
+        raise RuntimeError(f"capital shard support ledger differs: {spec.shard_id}")
     for name, path, schema in (
         ("pool", outputs.pool, SCHEMA),
         ("candidate", outputs.candidate, CANDIDATE_SCHEMA),
@@ -721,8 +839,6 @@ def provider_overlap_summary(candidate_paths: Iterable[Path]) -> pd.DataFrame:
         "provider_overlap_rows", "provider_overlap_capital_usd", "provider_disagreement_rows",
         "provider_disagreement_capital_usd", "provider_overlap_row_share", "provider_overlap_capital_share",
         "provider_disagreement_row_share", "provider_disagreement_capital_share", "materiality_status",
-        "limited_transition_rows", "limited_transition_capital_usd", "limited_transition_row_share",
-        "limited_transition_capital_share", "limited_transition_materiality_status",
     ]
     if not paths:
         return pd.DataFrame(columns=columns)
@@ -741,9 +857,7 @@ def provider_overlap_summary(candidate_paths: Iterable[Path]) -> pd.DataFrame:
                 count(*) FILTER (WHERE provider_overlap_status='provider_row_positive_finite') AS provider_overlap_rows,
                 sum(candidate_capital_usd) FILTER (WHERE provider_overlap_status='provider_row_positive_finite') AS provider_overlap_capital_usd,
                 count(*) FILTER (WHERE provider_reconciliation_status='provider_overlap_outside_diagnostic_bounds') AS provider_disagreement_rows,
-                sum(candidate_capital_usd) FILTER (WHERE provider_reconciliation_status='provider_overlap_outside_diagnostic_bounds') AS provider_disagreement_capital_usd,
-                count(*) FILTER (WHERE token_mechanics_status='no_detected_nonstandard_mechanics_limited_transition_support') AS limited_transition_rows,
-                sum(candidate_capital_usd) FILTER (WHERE token_mechanics_status='no_detected_nonstandard_mechanics_limited_transition_support') AS limited_transition_capital_usd
+                sum(candidate_capital_usd) FILTER (WHERE provider_reconciliation_status='provider_overlap_outside_diagnostic_bounds') AS provider_disagreement_capital_usd
             FROM read_parquet(?, union_by_name=true)
             GROUP BY venue, era, candidate
             ORDER BY venue, era, candidate
@@ -760,24 +874,14 @@ def provider_overlap_summary(candidate_paths: Iterable[Path]) -> pd.DataFrame:
         overlap_rows = int(record["provider_overlap_rows"])
         disagreement_rows = int(record["provider_disagreement_rows"])
         candidate_rows = int(record["candidate_rows"])
-        limited_rows = int(record["limited_transition_rows"])
-        limited_capital = 0.0 if pd.isna(record["limited_transition_capital_usd"]) else float(record["limited_transition_capital_usd"])
         overlap_capital_share = overlap_capital / total_capital if total_capital else 0.0
         disagreement_capital_share = disagreement_capital / overlap_capital if overlap_capital else None
-        limited_row_share = limited_rows / candidate_rows
-        limited_capital_share = limited_capital / total_capital if total_capital else 0.0
         materiality = (
             "indeterminate_provider_overlap_below_half_capital_weight"
             if overlap_capital_share < 0.5
             else "potentially_material_provider_disagreement"
             if disagreement_capital_share is not None and disagreement_capital_share > 0.1
             else "provider_disagreement_bounded_below_ten_percent_overlap_capital"
-        )
-        limited_materiality = (
-            "limited_transition_support_above_ten_percent_diagnostic_reference"
-            if max(limited_row_share, limited_capital_share)
-            > LIMITED_TRANSITION_DIAGNOSTIC_REFERENCE_SHARE
-            else "limited_transition_support_at_or_below_ten_percent_diagnostic_reference"
         )
         rows.append(
             dict(
@@ -788,9 +892,6 @@ def provider_overlap_summary(candidate_paths: Iterable[Path]) -> pd.DataFrame:
                 provider_overlap_row_share=overlap_rows / candidate_rows, provider_overlap_capital_share=overlap_capital_share,
                 provider_disagreement_row_share=disagreement_rows / overlap_rows if overlap_rows else None,
                 provider_disagreement_capital_share=disagreement_capital_share, materiality_status=materiality,
-                limited_transition_rows=limited_rows, limited_transition_capital_usd=limited_capital,
-                limited_transition_row_share=limited_row_share, limited_transition_capital_share=limited_capital_share,
-                limited_transition_materiality_status=limited_materiality,
             )
         )
     return pd.DataFrame(rows, columns=columns)
@@ -806,7 +907,7 @@ def _concatenate_shards(
 ) -> int:
     rows = 0
     with atomic_output(target) as temporary:
-        writer = pq.ParquetWriter(temporary, schema, compression="snappy")
+        writer = pq.ParquetWriter(temporary, schema, compression="zstd")
         try:
             for path in paths:
                 parquet = pq.ParquetFile(path)
@@ -824,14 +925,13 @@ def _concatenate_shards(
 
 def _publish_shards_unlocked(
     specs: Iterable[CapitalShard],
-    releases: Mapping[str, ReleasedPartitionSet],
+    releases: Mapping[str, CapitalStateSource],
     outputs: Iterable[ShardOutputs],
     *,
     pointer_path: Path,
     scientific_input_sha256: Mapping[str, str],
     scientific_input_paths: tuple[Path, ...],
-    v2_event_generation_id: str,
-    upstream_validator: Callable[[], None],
+    storage_forecast: CapitalStorageForecast | None = None,
     write_pointer: Callable[[Path, dict[str, object]], None] = write_json,
 ):
     """Validate all workers, then perform the only serial publication boundary."""
@@ -839,6 +939,8 @@ def _publish_shards_unlocked(
     specs, outputs = tuple(specs), tuple(outputs)
     if len(specs) != len(outputs):
         raise ValueError("capital publisher received an incomplete shard set")
+    if storage_forecast is None:
+        raise ValueError("capital publisher requires measured storage calibration")
     validate_capital_shard_plan(specs, releases)
     provider_input_sha256: dict[Path, str] = {}
     exact_scientific = validate_exact_file_bindings(scientific_input_sha256, scientific_input_paths)
@@ -857,9 +959,11 @@ def _publish_shards_unlocked(
             if not path.is_file() or file_sha256(path) != digest:
                 raise RuntimeError(f"provider diagnostic input changed before publication: {path}")
             provider_input_sha256[path] = digest
-    validator = release_preinstall_validator(*releases.values())
+    def validator(_path: Path) -> None:
+        for selected_release in releases.values():
+            assert_reserve_stream_current_stable(selected_release)
     for release in releases.values():
-        assert_released_state_current_stable(release)
+        assert_reserve_stream_current_stable(release)
     with tempfile.TemporaryDirectory(prefix="ddvc-v2-capital-release-") as directory:
         assembled = Path(directory)
         staged = {
@@ -874,6 +978,12 @@ def _publish_shards_unlocked(
         summary = provider_overlap_summary(shard.candidate for shard in outputs)
         summary.to_json(staged["overlap"], orient="records", lines=True)
         rows["overlap"] = len(summary)
+        observed_release_bytes = sum(staged[name].stat().st_size for name in ("pool", "candidate", "rejection", "overlap"))
+        if observed_release_bytes > storage_forecast.projected_release_bytes:
+            raise RuntimeError(
+                "capital release exceeded its measured storage forecast: "
+                f"observed={observed_release_bytes} projected={storage_forecast.projected_release_bytes}"
+            )
         manifest = {
             "schema_version": CAPITAL_RELEASE_SCHEMA_VERSION,
             "kind": CAPITAL_RELEASE_KIND,
@@ -882,21 +992,21 @@ def _publish_shards_unlocked(
                 for name in ("pool", "candidate", "rejection", "overlap")
             },
             "shards": shard_manifests,
-            "released_state": {
-                venue: {
-                    "content_identity_sha256": release.content_identity_sha256,
-                    "ledger_sha256": release.ledger_sha256,
-                    "partitions": len(release.partitions),
-                    "first_day": release.days[0],
-                    "last_day": release.days[-1],
-                }
+            "certified_reserve_stream": {
+                venue: release.manifest_record()
                 for venue, release in sorted(releases.items())
             },
-            "upstream_releases": {"v2_event_source_generation_id": v2_event_generation_id},
             "scientific_inputs": dict(sorted(exact_scientific.items())),
+            "storage_forecast": {
+                "policy": "stratified-exact-capital-output-calibration-v1",
+                **storage_forecast._asdict(),
+                "cardinality_margin": CAPITAL_FORECAST_CARDINALITY_MARGIN,
+                "fixed_bytes": CAPITAL_FORECAST_FIXED_BYTES,
+                "peak_multiplier": CAPITAL_FORECAST_PEAK_MULTIPLIER,
+                "free_space_reserve_bytes": CAPITAL_FORECAST_RESERVE_BYTES,
+            },
             "code_sources": sorted(CAPITAL_CODE_SOURCES),
             "code_fingerprint": code_fingerprint(CAPITAL_CODE_SOURCES),
-            "limited_transition_diagnostic_reference_share": LIMITED_TRANSITION_DIAGNOSTIC_REFERENCE_SHARE,
         }
         staged["manifest"].write_text(json.dumps(manifest, sort_keys=True) + "\n", encoding="utf-8")
         rows["manifest"] = 1
@@ -919,9 +1029,8 @@ def _publish_shards_unlocked(
                     raise RuntimeError(f"capital generation artifact changed during staging: {name}")
 
         def marker_last(path: Path, payload: dict[str, object]) -> None:
-            upstream_validator()
             for release in releases.values():
-                assert_released_state_current_stable(release)
+                assert_reserve_stream_current_stable(release)
             validate_exact_file_bindings(exact_scientific, scientific_input_paths)
             for provider_input, expected in provider_input_sha256.items():
                 if not provider_input.is_file() or file_sha256(provider_input) != expected:
@@ -938,24 +1047,28 @@ def _publish_shards_unlocked(
             writers={name: (lambda path, source=source: shutil.copyfile(source, path)) for name, source in staged.items()},
             row_counts=rows,
             code_sources=CAPITAL_CODE_SOURCES,
-            inputs=[*scientific_input_paths, *sorted(provider_input_sha256), *(release.ledger_path for release in releases.values())],
+            inputs=[*scientific_input_paths, *sorted(provider_input_sha256), *(path for release in releases.values() for path in release.provenance_inputs)],
             notes="released exact V2 deposited capital; provider fields diagnostic only",
             validate_staged=validate_staged,
             write_pointer=marker_last,
         )
-    return resolve_capital_release(bundle.pointer_path)
+    return resolve_capital_release(
+        bundle.pointer_path,
+        require_current_inputs=all(
+            isinstance(release, CPStateStreamSet) for release in releases.values()
+        ),
+    )
 
 
 def publish_shards(
     specs: Iterable[CapitalShard],
-    releases: Mapping[str, ReleasedPartitionSet],
+    releases: Mapping[str, CapitalStateSource],
     outputs: Iterable[ShardOutputs],
     *,
     pointer_path: Path = CAPITAL_RELEASE_POINTER,
     scientific_input_sha256: Mapping[str, str],
     scientific_input_paths: tuple[Path, ...],
-    v2_event_generation_id: str,
-    upstream_validator: Callable[[], None],
+    storage_forecast: CapitalStorageForecast | None = None,
     write_pointer: Callable[[Path, dict[str, object]], None] = write_json,
 ):
     with exclusive_job(
@@ -969,8 +1082,7 @@ def publish_shards(
             pointer_path=pointer_path,
             scientific_input_sha256=scientific_input_sha256,
             scientific_input_paths=scientific_input_paths,
-            v2_event_generation_id=v2_event_generation_id,
-            upstream_validator=upstream_validator,
+            storage_forecast=storage_forecast,
             write_pointer=write_pointer,
         )
 
@@ -979,27 +1091,46 @@ def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--workers", type=int, default=8)
     args = parser.parse_args(argv)
-    require_market_state_prerelease()
-    require_v2_event_source_release()
     require_current_artifacts(
         [TOKEN_PRICE_DAILY_PANEL, V2_AUDITED_TOKEN_DECIMALS_REGISTRY],
         consumer="released V2 capital materializer",
     )
-    releases = {venue: released_state_partitions("constant_product", venue, CP_COLUMNS) for venue in VENUES}
-    specs = plan_capital_shards(releases)
-    v2_release = resolve_v2_event_source_release()
+    releases = {
+        venue: certified_cp_state_stream(
+            venue,
+            calendar_days(
+                max(RESEARCH_SAMPLE_START, get_source(venue).genesis.strftime("%Y%m%d")),
+                RESEARCH_SAMPLE_END,
+            ),
+            raw_root=RAW,
+        )
+        for venue in VENUES
+    }
     scientific_paths = tuple([
         TOKEN_PRICE_DAILY_PANEL,
         sidecar_path(TOKEN_PRICE_DAILY_PANEL),
         V2_AUDITED_TOKEN_DECIMALS_REGISTRY,
         sidecar_path(V2_AUDITED_TOKEN_DECIMALS_REGISTRY),
-        v2_release.pointer_path,
-        *v2_release.artifact_paths,
-        *v2_release.provenance_paths,
     ])
     scientific_input_sha256 = exact_file_bindings(scientific_paths)
     decimals, _registry = validate_token_decimals_registry(V2_AUDITED_TOKEN_DECIMALS_REGISTRY)
     prices = capital_price_lookup(validated_capital_prices())
+    storage = forecast_capital_storage(
+        releases,
+        prices_by_day=prices,
+        exact_decimals=decimals,
+    )
+    print(
+        "capital physical-byte forecast: "
+        f"{storage.sampled_pool_days:,} observed pool-days across {storage.sampled_days:,} stratified days; "
+        f"{storage.sampled_release_bytes / 1024**2:.2f} MiB measured sample output; "
+        f"{storage.projected_pool_days:,} projected pool-days; "
+        f"{storage.projected_release_bytes / 1024**3:.2f} GiB final; "
+        f"{storage.peak_workspace_bytes / 1024**3:.2f} GiB peak workspace",
+        flush=True,
+    )
+    require_capital_storage_capacity(storage, DATA_DIR)
+    specs = plan_capital_shards(releases)
     validate_exact_file_bindings(scientific_input_sha256, scientific_paths)
     workers = bounded_workers(args.workers, maximum=8)
     with tempfile.TemporaryDirectory(prefix="ddvc-v2-capital-shards-") as directory:
@@ -1022,19 +1153,13 @@ def main(argv: list[str] | None = None) -> int:
         ]
         with interruptible_process_pool(workers) as pool:
             outputs = tuple(pool.map(_materialize_payload, payloads, chunksize=1))
-        def upstream_validator() -> None:
-            selected = resolve_v2_event_source_release()
-            if selected.generation_id != v2_release.generation_id:
-                raise RuntimeError("V2 event-source release changed during capital build")
-
         release = publish_shards(
             specs,
             releases,
             outputs,
             scientific_input_sha256=scientific_input_sha256,
             scientific_input_paths=scientific_paths,
-            v2_event_generation_id=v2_release.generation_id,
-            upstream_validator=upstream_validator,
+            storage_forecast=storage,
         )
     rows = release.manifest["artifacts"]
     print(f"pool capital release {release.generation_id}: {rows['pool']['rows']:,} pool rows; {rows['candidate']['rows']:,} candidate rows; {rows['rejection']['rows']:,} quarantined rows")
