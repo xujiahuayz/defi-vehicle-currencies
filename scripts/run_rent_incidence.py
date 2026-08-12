@@ -1,5 +1,7 @@
 #!/usr/bin/env python3
-"""Does intermediating pay? Fee yield against LVR against net return, by asset role.
+"""Withdrawn rent-incidence accounting helpers retained for validated unit tests.
+
+The executable estimator is unavailable until receipt-measured LP-operation gas is certified.
 
 Reads the pool-day panels built by `build_rent_incidence_panel.py`, prices them,
 nets gas, groups by the asset roles of the pool's two legs, and tests the
@@ -29,7 +31,6 @@ path-integrated concentrated-liquidity LVR adapter passes independently.
 
 from __future__ import annotations
 
-import json
 from pathlib import Path
 
 import numpy as np
@@ -40,7 +41,6 @@ ROOT = Path(__file__).resolve().parents[1]
 
 from ddvc.asset_types import asset_type
 from ddvc.analysis.regression import ClusteredOLSResult, ols_clustered
-from ddvc.data_release import require_node_d_release
 from ddvc.capital_contracts import RETURN_CAPITAL_VALIDATION_STATUS, capital_contract
 from ddvc.capital_validation import (
     ANCHORED_CAPITAL_ROLES,
@@ -58,30 +58,9 @@ from ddvc.liquidity import (
     require_capital_denominator,
     return_inference_ready,
 )
-from ddvc.provenance import require_current_artifacts, stamp
-from ddvc.paths import TOKEN_PRICE_DAILY_PANEL
 from ddvc.runtime import exclusive_job
-from ddvc.tables import write_exhibit, write_panel
 
-PROC = ROOT / "data" / "processed"
-OUT = ROOT / "output" / "empirical" / "rent_incidence"
-LOCK = OUT / ".run.lock"
-REQUIRED_PANELS = [
-    TOKEN_PRICE_DAILY_PANEL,
-    PROC / "vehicle_centrality_dense.parquet",
-    PROC / "rent_incidence_v2_pool_day.parquet",
-]
-SRC = [
-    "scripts/run_rent_incidence.py",
-    "scripts/build_rent_incidence_panel.py",
-    "src/ddvc/capital_contracts.py",
-    "src/ddvc/capital_validation.py",
-    "src/ddvc/liquidity.py",
-    "src/ddvc/asset_types.py",
-    "src/ddvc/analysis/regression.py",
-    "src/ddvc/tables.py",
-]
-OUTPUT_PROVENANCE = {"code_sources": SRC, "inputs": REQUIRED_PANELS}
+LOCK = ROOT / "output" / "empirical" / "rent_incidence" / ".run.lock"
 
 MIN_TVL = 10_000.0
 MIN_MONTH_DAYS = 15
@@ -529,300 +508,6 @@ def main() -> int:
     raise RuntimeError(
         "rent-incidence estimator withdrawn pending receipt-measured LP-operation gas"
     )
-    require_node_d_release(routes=True, market_state=True)
-    require_current_artifacts(REQUIRED_PANELS, consumer="rent-incidence estimator")
-    OUT.mkdir(parents=True, exist_ok=True)
-    cpath = PROC / "vehicle_centrality_dense.parquet"
-    cent = pd.read_parquet(cpath, columns=["day", "token", "betweenness_volume", "degree"])
-    print(f"centrality from {cpath.name}: {cent.day.nunique()} sampled days, "
-          f"{cent.token.nunique():,} tokens")
-
-    frames, all_steps, role_tabs, size_tabs = {}, [], [], []
-    for venue, path in (("uniswap_v2", "rent_incidence_v2_pool_day.parquet"),):
-        p = PROC / path
-        if not p.exists():
-            print(f"skip {venue}: {p} absent")
-            continue
-        raw = pd.read_parquet(p)
-        df, steps = price_and_screen(raw, venue)
-        all_steps += steps
-        frames[venue] = df
-        print(f"\n=== {venue}: {len(df):,} screened pool-days, "
-              f"{df.pool.nunique():,} pools, {df.day.nunique():,} days")
-        for s in steps:
-            print(f"   {s['screen']:<52} {s['pool_days']:>12,} pool-days  {s['pools']:>8,} pools")
-        role_tabs.append(by_role_over_time(df, venue))
-        if return_inference_ready(venue):
-            size_tabs.append(by_size(df, venue))
-
-    screens = pd.DataFrame(all_steps)
-    write_exhibit(screens, OUT / "screens.jsonl", **OUTPUT_PROVENANCE)
-
-    roles = pd.concat(role_tabs, ignore_index=True)
-    print("\n=== Rent incidence by pool asset role (annualised) ===")
-    fmt = lambda v: f"{v:,.4f}"
-    print(roles[(roles.venue == "uniswap_v2") & roles.scope.eq("pooled")][
-        ["pool_role", "pools", "pool_days", "scale_days_usd_bn",
-         "med_fee_yield_apr", "med_lvr_rate_apr", "mean_gas_rate_apr",
-         "share_days_with_lp_event", "med_net_yield_apr", "share_net_positive",
-         "cw_net_yield_apr"]].to_string(index=False, float_format=fmt))
-    print("\n=== Invariant-validated rent incidence ===")
-    print(
-        "(v3 is excluded until event-replayed inventory passes custody and LP-ownership "
-        "reconciliation and path-integrated LVR passes)"
-    )
-    print(roles[roles.scope.eq("pooled")][["venue", "pool_role", "pools", "token_pairs", "pool_days",
-                 "net_musd", "fee_over_lvr", "fee_over_lvr_plus_gas",
-                 "med_pool_day_fee_over_lvr", "share_net_positive",
-                 "share_net_positive_pre_gas"]].to_string(index=False, float_format=fmt))
-    write_exhibit(roles, OUT / "rent_by_asset_role.jsonl", **OUTPUT_PROVENANCE)
-
-    sizes = pd.concat(size_tabs, ignore_index=True)
-    sizes = sizes[sizes.venue == "uniswap_v2"]
-    print("\n=== Net yield by capital decile, v2 only while v3 path-integrated LVR is open ===")
-    print(sizes.to_string(index=False, float_format=lambda v: f"{v:,.4f}"))
-    write_exhibit(sizes, OUT / "rent_by_capital_decile.jsonl", **OUTPUT_PROVENANCE)
-
-    # ---------------- centrality curse ----------------
-    pms = []
-    for venue, df in frames.items():
-        pm = pool_months(df, cent, venue)
-        pm["venue"] = venue
-        pms.append(pm)
-    pm = pd.concat(pms, ignore_index=True)
-    pm = pm[np.isfinite(pm.log_scale) & np.isfinite(pm.log_rv)]
-    pm = pm[~pm.venue.map(return_inference_ready) | np.isfinite(pm.sharpe)]
-    write_panel(pm, PROC / "rent_incidence_pool_month.parquet", **OUTPUT_PROVENANCE)
-
-    regs = []
-    print("\n=== Does profitability differ by asset role? Tested, not read off a table ===")
-    for venue in sorted(pm.venue.unique()):
-        sr = pm[pm.venue == venue].copy()
-        cnt = sr.pool_role.value_counts()
-        keep = [r_ for r_ in cnt.index if cnt[r_] >= 100]
-        sr = sr[sr.pool_role.isin(keep)]
-        base = sr.pool_role.value_counts().index[0]
-        others = [r_ for r_ in keep if r_ != base]
-        if not others:
-            continue
-        D = np.column_stack([(sr.pool_role == r_).astype(float) for r_ in others])
-        mo = pd.get_dummies(sr.month, prefix="m", drop_first=True).astype(float).to_numpy()
-        outcomes = [(f"{venue} role differences in the chance a pool-month pays", sr.net_positive)]
-        if return_inference_ready(venue):
-            outcomes = [
-                (f"{venue} role differences in risk-adjusted net return", sr.sharpe),
-                (f"{venue} role differences in net return APR", sr.net_yield_apr_w),
-                *outcomes,
-            ]
-        for label, yv in outcomes:
-            m = np.isfinite(yv.to_numpy())
-            X = np.column_stack([np.ones(len(sr)), D, mo])[m]
-            cols = ["const"] + [f"role[{r_}]" for r_ in others] + \
-                   [f"m{i}" for i in range(mo.shape[1])]
-            beta, V, fit, r = report(
-                f"{label} (base {base})",
-                yv.to_numpy()[m],
-                X,
-                cols,
-                sr.pool.to_numpy()[m],
-                additional_cluster=sr.month.to_numpy()[m],
-                focus=set(cols[:1 + len(others)]),
-            )
-            regs += r
-            stat, q, pv = wald(beta, V, list(range(1, 1 + len(others))))
-            print(f"  joint Wald, all role effects zero: chi2({q}) = {stat:.2f}, p = {pv:.3f}")
-            regs.append({"spec": f"{label} Wald", "term": "joint", "coef": stat,
-                         "se": float("nan"), "t": float("nan"), "p": pv,
-                         "mde_80pct": float("nan"),
-                         "se_pool_only": float("nan"),
-                         "p_pool_only": float("nan"),
-                         "se_month_only": float("nan"),
-                         "p_month_only": float("nan"),
-                         **_inference_fields(fit)})
-
-    for venue in sorted(pm.venue.unique()):
-        s = pm[(pm.venue == venue) & pm.log_c.notna()].copy()
-        if len(s) < 200:
-            continue
-        mo = pd.get_dummies(s.month, prefix="m", drop_first=True).astype(float).to_numpy()
-        cl = s.pool.to_numpy()
-        print(f"\n### centrality curse, {venue}: {len(s):,} pool-months, "
-              f"{s.pool.nunique():,} pools, {s.month.nunique()} months")
-        if return_inference_ready(venue):
-            X = np.column_stack([np.ones(len(s)), s.log_c, mo])
-            cols = ["const", "log_c"] + [f"m{i}" for i in range(mo.shape[1])]
-            _, _, _, r = report(
-                f"{venue} (1) risk-adjusted net return, centrality + month FE",
-                s.sharpe.to_numpy(),
-                X,
-                cols,
-                cl,
-                additional_cluster=s.month.to_numpy(),
-                focus={"log_c"},
-            )
-            regs += r
-
-        if venue == "uniswap_v3":
-            X = np.column_stack(
-                [np.ones(len(s)), s.log_c, s.log_scale, s.log_local_depth, s.log_rv, mo]
-            )
-            cols = ["const", "log_c", "log_capital", "log_local_depth", "log_rv"] + [
-                f"m{i}" for i in range(mo.shape[1])
-            ]
-        else:
-            X = np.column_stack([np.ones(len(s)), s.log_c, s.log_scale, s.log_rv, mo])
-            cols = ["const", "log_c", "log_capital", "log_rv"] + [
-                f"m{i}" for i in range(mo.shape[1])
-            ]
-        outcomes = (
-            [
-                ("(5) log fee revenue over LVR", s.log_fee_over_lvr),
-                ("(6) chance a pool-month pays", s.net_positive),
-            ]
-            if lvr_inference_ready(venue)
-            else []
-        )
-        if return_inference_ready(venue):
-            outcomes = [
-                ("(2) risk-adjusted net return, + depth + volatility", s.sharpe),
-                ("(3) net return APR, winsorised at 1 and 99", s.net_yield_apr_w),
-                ("(4) fee yield APR", s.fee_yield_apr),
-                *outcomes,
-            ]
-        for label, yv in outcomes:
-            m = np.isfinite(yv.to_numpy())
-            _, _, _, r = report(
-                f"{venue} {label}",
-                yv.to_numpy()[m],
-                X[m],
-                cols,
-                cl[m],
-                additional_cluster=s.month.to_numpy()[m],
-                focus={"log_c", "log_capital", "log_local_depth", "log_rv"},
-            )
-            regs += r
-
-        if return_inference_ready(venue):
-            X = np.column_stack([np.ones(len(s)), s.log_deg, s.log_scale, s.log_rv, mo])
-            cols = ["const", "log_deg", "log_scale", "log_rv"] + [f"m{i}" for i in range(mo.shape[1])]
-            _, _, _, r = report(
-                f"{venue} (7) degree instead of betweenness",
-                s.sharpe.to_numpy(),
-                X,
-                cols,
-                cl,
-                additional_cluster=s.month.to_numpy(),
-                focus={"log_deg"},
-            )
-            regs += r
-
-        # Within pools quoted against the native asset the quote leg is held
-        # fixed, so the surviving cross-sectional variation is the hub status of
-        # the OTHER leg. This is where the curse is identified, and the role
-        # interaction is tested formally on the same subsample rather than by
-        # comparing point estimates across subsamples.
-        sw = (
-            s[s.log_c_other.notna() & s.other_role.notna()].copy()
-            if return_inference_ready(venue)
-            else s.iloc[0:0]
-        )
-        if len(sw) >= 200:
-            mow = pd.get_dummies(sw.month, prefix="m", drop_first=True).astype(float).to_numpy()
-            Xw = np.column_stack([np.ones(len(sw)), sw.log_c_other, sw.log_scale, sw.log_rv, mow])
-            cw = ["const", "log_c_other", "log_scale", "log_rv"] + [f"m{i}" for i in range(mow.shape[1])]
-            _, _, _, r = report(
-                f"{venue} (7) native-quoted pools, other leg's centrality",
-                sw.sharpe.to_numpy(),
-                Xw,
-                cw,
-                sw.pool.to_numpy(),
-                additional_cluster=sw.month.to_numpy(),
-                focus={"log_c_other", "log_scale", "log_rv"},
-            )
-            regs += r
-
-            cnt = sw.other_role.value_counts()
-            keep = [r_ for r_ in cnt.index if cnt[r_] >= 100]
-            si = sw[sw.other_role.isin(keep)].copy()
-            base = si.other_role.value_counts().index[0]
-            others = [r_ for r_ in keep if r_ != base]
-            if others:
-                D = np.column_stack([(si.other_role == r_).astype(float) for r_ in others])
-                moi = pd.get_dummies(si.month, prefix="m", drop_first=True).astype(float).to_numpy()
-                Xi = np.column_stack([np.ones(len(si)), si.log_c_other, si.log_scale,
-                                      si.log_rv, D,
-                                      D * si.log_c_other.to_numpy()[:, None], moi])
-                icols = (["const", "log_c_other", "log_scale", "log_rv"]
-                         + [f"role[{r_}]" for r_ in others]
-                         + [f"log_c_other x role[{r_}]" for r_ in others])
-                nfoc = len(icols)
-                icols += [f"m{i}" for i in range(Xi.shape[1] - nfoc)]
-                beta, V, fit, r = report(
-                    f"{venue} (8) centrality x other-leg role (base {base})",
-                    si.sharpe.to_numpy(), Xi, icols, si.pool.to_numpy(),
-                    additional_cluster=si.month.to_numpy(),
-                    focus=set(icols[:nfoc]))
-                regs += r
-                idx = list(range(4 + len(others), 4 + 2 * len(others)))
-                stat, q, p = wald(beta, V, idx)
-                print(f"  joint Wald, all centrality x role interactions zero: "
-                      f"chi2({q}) = {stat:.2f}, p = {p:.3f}; "
-                      f"{len(si):,} pool-months, {fit.cluster_counts[0]:,} pools, "
-                      f"{fit.cluster_counts[1]:,} months")
-                regs.append({"spec": f"{venue} (9) interaction Wald", "term": "joint",
-                             "coef": stat, "se": float("nan"), "t": float("nan"),
-                             "p": p, "mde_80pct": float("nan"), "n": int(len(si)),
-                             "se_pool_only": float("nan"),
-                             "p_pool_only": float("nan"),
-                             "se_month_only": float("nan"),
-                             "p_month_only": float("nan"),
-                             **_inference_fields(fit)})
-
-    write_exhibit(
-        pd.DataFrame(regs),
-        OUT / "centrality_curse_regressions.jsonl",
-        **OUTPUT_PROVENANCE,
-    )
-
-    # ---------------- robustness ----------------
-    rob = []
-    for venue, df in frames.items():
-        d = df[df.gas_usd.notna()]
-        for mult, label in ((0.5, "gas units x0.5"), (1.0, "gas units x1"),
-                            (2.0, "gas units x2"), (4.0, "gas units x4")):
-            net_usd = d.fees_usd - d.lvr_usd - mult * d.gas_usd
-            rob.append(robustness_row(venue, label, d, net_usd))
-        scale_name = "lagged capital"
-        for thr, label in ((1e5, f"{scale_name} >= $100k"),
-                           (1e6, f"{scale_name} >= $1m")):
-            g = d[d[CAPITAL_COLUMN] >= thr]
-            rob.append(robustness_row(venue, label, g, g.net_usd))
-        for col, label in (("lvr_usd_4h", "LVR from 4-hour sampled variance"),
-                           ("lvr_usd_oc", "LVR from the open-to-close move only")):
-            net_usd = d.fees_usd - d[col] - d.gas_usd
-            rob.append(robustness_row(venue, label, d, net_usd))
-        g = d[d.turnover <= 10]
-        rob.append(robustness_row(
-            venue,
-            f"daily turnover <= 10x {scale_name}",
-            g,
-            g.net_usd,
-        ))
-    robf = pd.DataFrame(rob)
-    print("\n=== Robustness ===")
-    print(robf.to_string(index=False, float_format=lambda v: f"{v:,.4f}"))
-    write_exhibit(robf, OUT / "robustness.jsonl", **OUTPUT_PROVENANCE)
-
-    summary = {"min_lagged_capital_usd": MIN_TVL,
-               "capital_validation_owner": "canonical pool-capital materializer",
-               "min_month_days": MIN_MONTH_DAYS,
-               "gas_status": "withheld pending exact LP transaction receipts",
-               "venues": {v: {"pool_days": int(len(f)), "pools": int(f.pool.nunique()),
-                              "days": int(f.day.nunique())} for v, f in frames.items()}}
-    (OUT / "summary.json").write_text(json.dumps(summary, indent=1, sort_keys=True) + "\n")
-    stamp(OUT / "summary.json", **OUTPUT_PROVENANCE)
-    return 0
-
 
 if __name__ == "__main__":
     with exclusive_job(LOCK, job="rent-incidence estimator"):

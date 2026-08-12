@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import json
+from contextlib import nullcontext
 from pathlib import Path
 from unittest.mock import patch
 
@@ -157,6 +158,34 @@ def test_route_requests_require_one_single_component_row_per_receipt(tmp_path: P
         {"tx_hash": "0xabc", "block_number": 10},
         {"tx_hash": "0xdef", "block_number": 11},
     ]
+
+
+def test_default_route_request_reader_leases_the_complete_gross_publication() -> None:
+    frame = pd.DataFrame(
+        {
+            "tx": ["0xabc"],
+            "block": [10],
+            "component_id": [0],
+            "receipt_allocation_scope": [
+                "single_reconstructed_component_transaction"
+            ],
+        }
+    )
+    with (
+        patch.object(Path, "is_file", return_value=True),
+        patch.object(
+            build_route_transaction_gas,
+            "current_publication",
+            return_value=nullcontext(),
+        ) as lease,
+        patch.object(
+            build_route_transaction_gas.pd, "read_parquet", return_value=frame
+        ),
+    ):
+        route_receipt_requests()
+    lease.assert_called_once()
+    self_kwargs = lease.call_args.kwargs
+    assert self_kwargs["expected_outputs"][0] == build_route_transaction_gas.GROSS_PANEL
 
 
 def test_receipt_builders_share_one_canonical_cache() -> None:

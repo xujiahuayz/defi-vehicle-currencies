@@ -10,10 +10,14 @@ import pytest
 import ddvc.artifact_release as artifact_release
 from ddvc.artifact_release import (
     ArtifactRelease,
+    bind_file_lineage,
+    current_artifact_release,
+    current_file_lineage,
     file_sha256,
     publish_artifact_release,
     resolve_artifact_release,
 )
+from ddvc.runtime import atomic_output
 from ddvc.fetch.raw import write_json
 from ddvc.provenance import sidecar_path
 
@@ -117,6 +121,61 @@ def test_reader_cannot_observe_failed_pointer_publication(tmp_path: Path) -> Non
     assert json.loads(observed.artifacts["rows"].read_text()) == {"value": 1}
 
 
+def test_current_release_lease_blocks_pointer_switch_twenty_times(tmp_path: Path) -> None:
+    pointer = tmp_path / "release" / "current.json"
+    for trial in range(20):
+        selected = _publish(pointer, trial)
+        entered = threading.Event()
+        completed = threading.Event()
+
+        def switch() -> None:
+            entered.set()
+            _publish(pointer, trial + 1000)
+            completed.set()
+
+        with current_artifact_release(selected):
+            thread = threading.Thread(target=switch)
+            thread.start()
+            assert entered.wait(timeout=1)
+            assert not completed.wait(timeout=0.02)
+            assert json.loads(selected.artifacts["rows"].read_text()) == {
+                "value": trial
+            }
+        thread.join(timeout=2)
+        assert completed.is_set()
+
+
+def test_absent_file_lineage_lease_blocks_creation_until_reader_exits(
+    tmp_path: Path,
+) -> None:
+    target = tmp_path / "absent.json"
+    lease = bind_file_lineage([target], allow_missing=True)
+    entered = threading.Event()
+    completed = threading.Event()
+
+    def create() -> None:
+        entered.set()
+        with atomic_output(target) as temporary:
+            temporary.write_text("created\n", encoding="utf-8")
+        completed.set()
+
+    with current_file_lineage(lease):
+        thread = threading.Thread(target=create)
+        thread.start()
+        assert entered.wait(timeout=1)
+        assert not completed.wait(timeout=0.05)
+        assert not target.exists()
+    thread.join(timeout=2)
+    assert completed.is_set()
+
+
+def test_dangling_symlink_is_not_bound_as_an_absent_source(tmp_path: Path) -> None:
+    dangling = tmp_path / "dangling"
+    dangling.symlink_to("missing")
+    with pytest.raises(FileNotFoundError, match="dangling symlink"):
+        bind_file_lineage([dangling], allow_missing=True)
+
+
 def test_bundle_validation_finishes_before_pointer_publication(tmp_path: Path) -> None:
     pointer = tmp_path / "release" / "current.json"
     first = _publish(pointer, 1)
@@ -139,6 +198,42 @@ def test_bundle_validation_finishes_before_pointer_publication(tmp_path: Path) -
         schema_version=1,
         filenames=FILENAMES,
     ).generation_id == first.generation_id
+
+
+def test_post_pointer_validation_failure_rolls_back_visibility(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    pointer = tmp_path / "release" / "current.json"
+    first = _publish(pointer, 1)
+    original = artifact_release._resolve_artifact_release_unlocked
+
+    def reject_new(path: Path, **kwargs):
+        if kwargs.get("expected_generation") is not None:
+            raise RuntimeError("post-install rejection")
+        return original(path, **kwargs)
+
+    monkeypatch.setattr(
+        artifact_release, "_resolve_artifact_release_unlocked", reject_new
+    )
+    with pytest.raises(RuntimeError, match="post-install rejection"):
+        _publish(pointer, 2)
+    monkeypatch.setattr(
+        artifact_release, "_resolve_artifact_release_unlocked", original
+    )
+    assert resolve_artifact_release(
+        pointer,
+        kind=KIND,
+        schema_version=1,
+        filenames=FILENAMES,
+    ).generation_id == first.generation_id
+
+    empty_pointer = tmp_path / "empty" / "current.json"
+    monkeypatch.setattr(
+        artifact_release, "_resolve_artifact_release_unlocked", reject_new
+    )
+    with pytest.raises(RuntimeError, match="post-install rejection"):
+        _publish(empty_pointer, 3)
+    assert not empty_pointer.exists()
 
 
 def test_identical_retry_never_rewrites_the_selected_generation(tmp_path: Path) -> None:

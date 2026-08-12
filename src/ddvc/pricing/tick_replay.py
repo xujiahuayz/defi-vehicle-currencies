@@ -3,15 +3,17 @@
 from __future__ import annotations
 
 from dataclasses import dataclass, field
+from datetime import datetime
 from pathlib import Path
 
 import pandas as pd
 
 from ddvc.pricing.tick_frontier import PoolIndex, TickQuoteIndexes, build_pool_index
 from ddvc.asset_types import canonical_token
+from ddvc.fetch.sources import get_source
 from ddvc.pricing.tick_state import TickPoolState, absorb_swap_state, apply_tick_change
 from ddvc.source_records import block_value, source_event_payload, transaction_id, v4_quote_status
-from ddvc.state_data import RAW_ROOT, read_tick_partition, tick_partition_path, tick_scientific_support
+from ddvc.state_data import RAW_ROOT, normalise_tick_partition, read_tick_partition, tick_partition_path, tick_scientific_support
 
 
 TICK_VENUES = ("uniswap_v3", "uniswap_v4")
@@ -105,7 +107,7 @@ def _same_chain_event(left: TickReplayEvent, right: TickReplayEvent) -> bool:
 
 
 def load_tick_day_events(
-    state_root: Path,
+    state_root: Path | None,
     day: str,
     *,
     venues: tuple[str, ...] = TICK_VENUES,
@@ -113,8 +115,11 @@ def load_tick_day_events(
 ) -> list[TickReplayEvent]:
     """Load and globally order one canonical day's swaps and liquidity changes."""
     events: list[TickReplayEvent] = []
+    selected_date = datetime.strptime(day, "%Y%m%d").date()
     for venue in venues:
-        partition_exists = tick_partition_path(venue, day, root=state_root).exists()
+        if state_root is None and selected_date < get_source(venue).genesis:
+            continue
+        partition_exists = state_root is None or tick_partition_path(venue, day, root=state_root).exists()
         if venue == "uniswap_v4":
             try:
                 scientifically_supported = tick_scientific_support(raw_root, venue, day)
@@ -131,9 +136,17 @@ def load_tick_day_events(
                 continue
         if not partition_exists:
             continue
-        for record in read_tick_partition(
-            venue, day, root=state_root, raw_root=raw_root
-        ).to_dict("records"):
+        if state_root is None:
+            frame, quality = normalise_tick_partition(raw_root, venue, day)
+            if not quality.passed:
+                raise ValueError(
+                    f"tick exact-event contract failed: {venue}/{day}; "
+                    f"missing_streams={quality.missing_required_streams}; "
+                    f"conflicts={quality.conflicting_events}"
+                )
+        else:
+            frame = read_tick_partition(venue, day, root=state_root, raw_root=raw_root)
+        for record in frame.to_dict("records"):
             row = canonical_tick_row(record)
             order = chain_order(row)
             if order is None:
@@ -340,7 +353,7 @@ class TickReplayState:
 
 
 def warm_tick_day(
-    state_root: Path,
+    state_root: Path | None,
     day: str,
     replay: TickReplayState,
     *,

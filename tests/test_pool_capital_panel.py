@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
+import json
 from pathlib import Path
 
 import pandas as pd
@@ -10,8 +11,9 @@ import pyarrow.parquet as pq
 
 from ddvc.capital_validation import CAPITAL_PRICE_SOURCE, CAPITAL_PRICE_VALIDATION_STATUS, CapitalPrice
 from ddvc.capital_release import exact_file_bindings, resolve_capital_release
-from ddvc.artifact_release import file_sha256
-from ddvc.state_data import CP_COLUMNS
+from ddvc.artifact_release import canonical_json_sha256, file_sha256
+from ddvc.cp_state_stream import _reserve_identity
+from ddvc.state_data import CP_COLUMNS, SCHEMA_VERSION, STATE_ENGINE
 from scripts import build_pool_capital_panel as builder
 
 
@@ -24,6 +26,7 @@ POOL = "0x" + "01" * 20
 class Partition:
     day: str
     expected_bytes: int = 100
+    expected_rows: int = 2
     path: Path = Path(__file__)
     marker_path: Path = Path(__file__)
 
@@ -33,7 +36,10 @@ class FakeRelease:
         self.venue = venue
         self.frames = frames
         self.days = tuple(frames)
-        self.partitions = tuple(Partition(day) for day in self.days)
+        self.partitions = tuple(
+            Partition(day, expected_rows=int(frame["record_type"].eq("snapshot").sum()))
+            for day, frame in frames.items()
+        )
         self.content_identity_sha256 = ("1" if venue == "uniswap_v2" else "2") * 64
         self.ledger_path = Path(__file__)
         self.ledger_sha256 = file_sha256(self.ledger_path)
@@ -44,6 +50,30 @@ class FakeRelease:
 
     def assert_current(self) -> None:
         return None
+
+    def certified_rows(self, day: str) -> int:
+        return int(self.frames[day]["record_type"].eq("snapshot").sum())
+
+    def manifest_record(self) -> dict[str, object]:
+        digest = file_sha256(Path(__file__))
+        return {
+            "authority_kind": "local_certified_reserve_stream_v1",
+            "venue": self.venue,
+            "content_identity_sha256": self.content_identity_sha256,
+            "certificate_path": str(Path(__file__).resolve()),
+            "certificate_sha256": digest,
+            "ledger_path": str(Path(__file__).resolve()),
+            "ledger_sha256": digest,
+            "partitions": [
+                {
+                    "day": partition.day,
+                    "expected_bytes": partition.expected_bytes,
+                    "expected_rows": partition.expected_rows,
+                    "input_fingerprint": "a" * 64,
+                }
+                for partition in self.partitions
+            ],
+        }
 
 
 def cp_frame(day: str, *, broken: bool = False) -> pd.DataFrame:
@@ -113,15 +143,24 @@ def scientific_inputs(tmp_path: Path) -> tuple[dict[str, str], tuple[Path, ...]]
     return exact_file_bindings(paths), paths
 
 
-def test_released_closing_reserves_use_exact_identity_decimals_and_detect_breaks() -> None:
+def storage_forecast(releases: dict[str, FakeRelease]) -> builder.CapitalStorageForecast:
+    return builder.forecast_capital_storage(
+        releases,
+        prices_by_day=prices(*(day for release in releases.values() for day in release.days)),
+        exact_decimals={WETH: 18, USDC: 6},
+        sample_days_per_venue=2,
+    )
+
+
+def test_capital_uses_last_certified_snapshot_without_replaying_events() -> None:
     exact = {WETH: 18, USDC: 6}
     clean = builder.released_closing_reserve_rows(cp_frame("20250101"), exact)[0]
-    broken = builder.released_closing_reserve_rows(cp_frame("20250101", broken=True), exact)[0]
     assert clean["reserve0"] == 11.0
     assert clean["reserve1"] == 19_000.0
     assert clean["identity_validation_status"] == "exact_identity_and_decimals_passed"
-    assert clean["token_mechanics_status"] == "reserve_transition_continuity_passed"
-    assert broken["token_mechanics_status"] == "quarantined_nonstandard_token_mechanics"
+    assert clean["reserve_state_timestamp"] == 200
+    assert clean["reserve_validation_status"] == "certified_last_hourly_reserve_snapshot"
+    assert clean["token_mechanics_status"] == "not_applicable_snapshot_measurement"
 
 
 def test_capital_era_uses_the_canonical_v3_launch_boundary() -> None:
@@ -129,13 +168,30 @@ def test_capital_era_uses_the_canonical_v3_launch_boundary() -> None:
     assert builder._era("20210505") == "post_uniswap_v3"
 
 
-def test_released_pool_without_snapshot_remains_in_typed_rejection_perimeter() -> None:
+def test_storage_forecast_scales_from_thin_pool_day_cardinality() -> None:
+    frames = {
+        f"2025010{day}": cp_frame(f"2025010{day}")
+        for day in range(1, 4)
+    }
+    release = FakeRelease("uniswap_v2", frames)
+    forecast = builder.forecast_capital_storage(
+        {"uniswap_v2": release},
+        prices_by_day=prices(*frames),
+        exact_decimals={WETH: 18, USDC: 6},
+        sample_days_per_venue=2,
+    )
+    assert forecast.raw_input_bytes == 300
+    assert forecast.sampled_pool_days == 2
+    assert forecast.projected_pool_days == 4
+    assert forecast.sampled_release_bytes > 0
+    assert forecast.projected_release_bytes < 2 * 1024**3
+    assert forecast.peak_workspace_bytes > forecast.projected_release_bytes
+
+
+def test_day_without_reserve_observations_emits_no_invented_pool() -> None:
     frame = cp_frame("20250101")
     frame = frame.loc[~frame["record_type"].eq("snapshot")].reset_index(drop=True)
-    row = builder.released_closing_reserve_rows(frame, {WETH: 18, USDC: 6})[0]
-    assert row["pool"] == POOL
-    assert row["reserve0"] is None and row["reserve1"] is None
-    assert row["reserve_validation_status"] == "quarantined_missing_released_closing_snapshot"
+    assert builder.released_closing_reserve_rows(frame.iloc[0:0], {WETH: 18, USDC: 6}) == []
 
 
 def test_missing_or_disagreeing_provider_capital_never_controls_eligibility() -> None:
@@ -194,6 +250,43 @@ def test_shard_reads_predecessor_only_for_exact_lag_seed(tmp_path: Path) -> None
     assert pool["exact_lag_valid"].tolist() == [True]
     assert pool["capital_usd_lagged"].tolist() == [41_000.0]
     assert candidates.groupby("day")["candidate_capital_usd"].sum().to_dict() == {"20250102": 41_000.0}
+    support = json.loads(outputs.manifest.read_text())["daily_support"]
+    assert support == [
+        {
+            "day": "20250102",
+            "certified_source_rows": 2,
+            "normalised_reserve_rows": 2,
+            "pool_rows": 1,
+            "status": "observed",
+        }
+    ]
+
+
+def test_shard_preserves_certified_empty_reserve_day(tmp_path: Path) -> None:
+    empty = pd.DataFrame(columns=CP_COLUMNS)
+    release = FakeRelease("uniswap_v2", {"20250101": empty})
+    spec = builder.CapitalShard("uniswap_v2-00", "uniswap_v2", ("20250101",), None, 100)
+    bindings, input_paths = scientific_inputs(tmp_path)
+    outputs = builder.materialize_shard(
+        spec,
+        release,
+        prices("20250101"),
+        {WETH: 18, USDC: 6},
+        tmp_path,
+        provider_loader=no_provider,
+        scientific_input_sha256=bindings,
+        scientific_input_paths=input_paths,
+    )
+    assert pq.ParquetFile(outputs.pool).metadata.num_rows == 0
+    assert json.loads(outputs.manifest.read_text())["daily_support"] == [
+        {
+            "day": "20250101",
+            "certified_source_rows": 0,
+            "normalised_reserve_rows": 0,
+            "pool_rows": 0,
+            "status": "certified_empty",
+        }
+    ]
 
 
 def test_shard_manifest_rejects_post_completion_mutation(tmp_path: Path) -> None:
@@ -247,8 +340,6 @@ def test_incomplete_shard_set_cannot_replace_existing_outputs(tmp_path: Path) ->
             pointer_path=tmp_path / "release" / "current.json",
             scientific_input_sha256=bindings,
             scientific_input_paths=input_paths,
-            v2_event_generation_id="3" * 64,
-            upstream_validator=lambda: None,
         )
     assert target.read_bytes() == b"existing"
 
@@ -289,8 +380,6 @@ def test_provider_overlap_summary_reports_row_and_capital_weight_materiality(tmp
     assert summary["provider_overlap_row_share"] == 0.5
     assert summary["provider_overlap_capital_share"] == 0.9
     assert summary["materiality_status"] == "provider_disagreement_bounded_below_ten_percent_overlap_capital"
-    assert summary["limited_transition_row_share"] == 0.0
-    assert summary["limited_transition_capital_share"] == 0.0
 
 
 def _complete_shards(
@@ -332,8 +421,7 @@ def test_marker_last_capital_release_preserves_prior_generation_on_failure(tmp_p
         pointer_path=pointer,
         scientific_input_sha256=bindings,
         scientific_input_paths=input_paths,
-        v2_event_generation_id="3" * 64,
-        upstream_validator=lambda: None,
+        storage_forecast=storage_forecast(releases),
     )
     assert len(first.manifest["shards"]) == len(specs)
     changed_releases = {
@@ -361,11 +449,10 @@ def test_marker_last_capital_release_preserves_prior_generation_on_failure(tmp_p
             pointer_path=pointer,
             scientific_input_sha256=bindings,
             scientific_input_paths=input_paths,
-            v2_event_generation_id="3" * 64,
-            upstream_validator=lambda: None,
+            storage_forecast=storage_forecast(changed_releases),
             write_pointer=interrupted,
         )
-    assert resolve_capital_release(pointer).generation_id == first.generation_id
+    assert resolve_capital_release(pointer, require_current_inputs=False).generation_id == first.generation_id
 
 
 def test_scientific_input_mutation_at_final_boundary_preserves_pointer(tmp_path: Path) -> None:
@@ -377,10 +464,11 @@ def test_scientific_input_mutation_at_final_boundary_preserves_pointer(tmp_path:
     specs, outputs = _complete_shards(tmp_path, releases, bindings, input_paths)
     pointer = tmp_path / "release" / "current.json"
 
-    def mutate_upstream() -> None:
+    def mutate_before_pointer(_path: Path, _payload: dict[str, object]) -> None:
         input_paths[0].write_text("mutated", encoding="utf-8")
+        raise RuntimeError("injected pointer failure")
 
-    with pytest.raises(RuntimeError, match="canonical set"):
+    with pytest.raises(RuntimeError, match="injected pointer failure"):
         builder.publish_shards(
             specs,
             releases,
@@ -388,8 +476,8 @@ def test_scientific_input_mutation_at_final_boundary_preserves_pointer(tmp_path:
             pointer_path=pointer,
             scientific_input_sha256=bindings,
             scientific_input_paths=input_paths,
-            v2_event_generation_id="3" * 64,
-            upstream_validator=mutate_upstream,
+            storage_forecast=storage_forecast(releases),
+            write_pointer=mutate_before_pointer,
         )
     assert not pointer.exists()
 
@@ -409,15 +497,97 @@ def test_capital_release_resolver_rejects_post_release_scientific_input_mutation
         pointer_path=pointer,
         scientific_input_sha256=bindings,
         scientific_input_paths=input_paths,
-        v2_event_generation_id="3" * 64,
-        upstream_validator=lambda: None,
+        storage_forecast=storage_forecast(releases),
     )
     input_paths[0].write_text("stale", encoding="utf-8")
     with pytest.raises(ValueError, match="provenance is not current|scientific input is stale"):
         resolve_capital_release(pointer)
 
 
-def test_limited_transition_support_is_disclosed_without_blocking_generation(tmp_path: Path) -> None:
+def test_capital_release_resolver_reopens_exact_raw_partition_identity(tmp_path: Path, monkeypatch) -> None:
+    bindings, input_paths = scientific_inputs(tmp_path)
+    raw = tmp_path / "data" / "raw" / "thegraph" / "reserve.jsonl.gz"
+    raw.parent.mkdir(parents=True)
+    raw.write_bytes(b"certified raw generation")
+    certificate = tmp_path / "data" / "processed" / "raw_generation" / "certificate.json"
+    certificate.parent.mkdir(parents=True)
+    ledger = certificate.with_name("ledger.jsonl")
+    certificate.write_text('{"partition_ledger":"ledger.jsonl"}\n', encoding="utf-8")
+    ledger.write_text("immutable ledger\n", encoding="utf-8")
+
+    def certified_row(venue: str, day: str) -> dict[str, object]:
+        return {
+            "source": venue,
+            "stream": "hourly_reserves",
+            "day": day,
+            "logical_content_sha256": file_sha256(raw),
+            "contract_sha256": "b" * 64,
+            "observed_query_contract_sha256": "c" * 64,
+            "observed_head_block_at_fetch": 123,
+            "metadata_sha256": "d" * 64,
+            "container_bytes": raw.stat().st_size,
+            "rows": 2,
+        }
+
+    def load(_certificate, *, data_root, partitions):
+        return [certified_row(partition.source, partition.day) for partition in partitions], {}
+
+    monkeypatch.setattr("ddvc.cp_state_stream.load_certified_partition_ledger", load)
+    releases = {
+        venue: FakeRelease(venue, {"20250101": cp_frame("20250101")})
+        for venue in ("uniswap_v2", "sushiswap_v2")
+    }
+    for release in releases.values():
+        row = certified_row(release.venue, "20250101")
+        release.content_identity_sha256 = canonical_json_sha256(
+            {
+                "policy": "certified-cp-reserve-stream-v1",
+                "schema_version": SCHEMA_VERSION,
+                "normalizer_engine": STATE_ENGINE,
+                "partitions": [
+                    {"venue": release.venue, "day": "20250101", "input_fingerprint": _reserve_identity(row)}
+                ],
+            }
+        )
+        release.ledger_path = ledger
+        release.ledger_sha256 = file_sha256(ledger)
+
+        def manifest_record(selected=release, selected_row=row):
+            return {
+                "authority_kind": "local_certified_reserve_stream_v1",
+                "venue": selected.venue,
+                "content_identity_sha256": selected.content_identity_sha256,
+                "certificate_path": str(certificate),
+                "certificate_sha256": file_sha256(certificate),
+                "ledger_path": str(ledger),
+                "ledger_sha256": file_sha256(ledger),
+                "partitions": [{
+                    "day": "20250101",
+                    "expected_bytes": selected_row["container_bytes"],
+                    "expected_rows": selected_row["rows"],
+                    "input_fingerprint": _reserve_identity(selected_row),
+                }],
+            }
+
+        release.manifest_record = manifest_record
+    specs, outputs = _complete_shards(tmp_path, releases, bindings, input_paths)
+    pointer = tmp_path / "release" / "current.json"
+    builder.publish_shards(
+        specs,
+        releases,
+        outputs,
+        pointer_path=pointer,
+        scientific_input_sha256=bindings,
+        scientific_input_paths=input_paths,
+        storage_forecast=storage_forecast(releases),
+    )
+    resolve_capital_release(pointer)
+    raw.write_bytes(b"mutated raw generation")
+    with pytest.raises(ValueError, match="partition identity changed"):
+        resolve_capital_release(pointer)
+
+
+def test_snapshot_measurement_does_not_claim_event_transition_validation(tmp_path: Path) -> None:
     bindings, input_paths = scientific_inputs(tmp_path)
     one_snapshot = cp_frame("20250101").loc[lambda frame: ~frame["record_type"].eq("snapshot") | frame["period_end"].eq(200)]
     releases = {
@@ -432,11 +602,8 @@ def test_limited_transition_support_is_disclosed_without_blocking_generation(tmp
         pointer_path=tmp_path / "release" / "current.json",
         scientific_input_sha256=bindings,
         scientific_input_paths=input_paths,
-        v2_event_generation_id="3" * 64,
-        upstream_validator=lambda: None,
+        storage_forecast=storage_forecast(releases),
     )
     overlap = pd.read_json(release.artifacts["overlap"], lines=True)
-    assert overlap["limited_transition_materiality_status"].eq(
-        "limited_transition_support_above_ten_percent_diagnostic_reference"
-    ).all()
-    assert release.manifest["limited_transition_diagnostic_reference_share"] == 0.10
+    pool = pd.read_parquet(release.artifacts["pool"])
+    assert pool["token_mechanics_status"].eq("not_applicable_snapshot_measurement").all()

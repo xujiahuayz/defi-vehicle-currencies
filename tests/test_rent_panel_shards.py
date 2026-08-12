@@ -3,6 +3,7 @@ from __future__ import annotations
 import importlib.util
 import json
 import tempfile
+from contextlib import contextmanager
 from pathlib import Path
 
 import pandas as pd
@@ -312,6 +313,57 @@ def test_work_partition_changes_invalidate_the_shard_generation(monkeypatch) -> 
         assert after != before
 
 
+def test_cp_stream_semantics_change_invalidates_the_rent_shard_generation(monkeypatch) -> None:
+    with tempfile.TemporaryDirectory() as temporary:
+        root = Path(temporary)
+        for relative in rent.V2_SHARD_CODE_SOURCES:
+            path = root / relative
+            path.parent.mkdir(parents=True, exist_ok=True)
+            path.write_text(f"# {relative}\n")
+        monkeypatch.setattr(provenance, "ROOT", root)
+
+        before = rent.cache_key(rent.V2_SHARD_CODE_SOURCES)
+        (root / "src/ddvc/cp_state_stream.py").write_text("CHANGED = True\n")
+        after = rent.cache_key(rent.V2_SHARD_CODE_SOURCES)
+
+        assert "src/ddvc/cp_state_stream.py" in rent.V2_SHARD_CODE_SOURCES
+        assert after != before
+
+
+def test_rent_build_seals_capital_and_event_pointers_through_publication(monkeypatch) -> None:
+    capital = object()
+    event = object()
+    entered = []
+
+    @contextmanager
+    def lease(label):
+        entered.append(f"enter-{label}")
+        yield
+        entered.append(f"exit-{label}")
+
+    monkeypatch.setattr(rent, "current_capital_release", lambda selected: lease("capital"))
+    monkeypatch.setattr(rent, "current_v2_event_source_release", lambda selected: lease("event"))
+    monkeypatch.setattr(
+        rent,
+        "_build_v2_current",
+        lambda **_kwargs: entered.append("publish"),
+    )
+
+    rent.build_v2(
+        workers=1,
+        force=False,
+        capital_release=capital,
+        event_source_release=event,
+    )
+    assert entered == [
+        "enter-capital",
+        "enter-event",
+        "publish",
+        "exit-event",
+        "exit-capital",
+    ]
+
+
 def test_generation_change_aborts_before_publication(monkeypatch) -> None:
     monkeypatch.setattr(rent, "cache_key", lambda *args, **kwargs: "new")
     with pytest.raises(RuntimeError, match="changed during the build"):
@@ -340,9 +392,11 @@ def test_resume_cleans_only_orphaned_atomic_shard_temporaries() -> None:
         assert not orphan.exists()
 
 
-def test_input_locks_follow_canonical_raw_then_market_state_order() -> None:
+def test_v2_rent_build_uses_raw_lock_without_wide_market_state_lock() -> None:
     source = (ROOT / "scripts" / "build_rent_incidence_panel.py").read_text()
     execution = source.split("def main() -> None:", 1)[1].split(
         'if __name__ == "__main__":', 1
     )[0]
-    assert execution.index("RAW_MARKET_DATA_LOCK") < execution.index("MARKET_STATE_LOCK")
+    assert "RAW_MARKET_DATA_LOCK" in execution
+    assert "MARKET_STATE_LOCK" not in source
+    assert "certified_cp_event_stream" in source

@@ -14,6 +14,8 @@ from ddvc.state_data import STATE_GENERATIONS
 from scripts import refresh_panel_dependents as refresher
 from scripts.audit_findings_freeze import (
     SPECIFICATION_LOCK,
+    active_claim_requires_any,
+    active_claim_requires_wide_state,
     card_source_evidence_text,
     cex_reference_support_checks,
     cited_bibliography_keys,
@@ -63,7 +65,7 @@ from ddvc.model_registry import (
     model_run_id,
 )
 from ddvc.provenance import portable_content_sha256, sidecar_path
-from scripts.refresh_panel_dependents import DAILY_FRONTIER_PREREQUISITES
+from ddvc.frontier_release import FRONTIER_RELEASE_MARKER
 
 
 def _bind_exploratory_plan(run: dict) -> None:
@@ -90,6 +92,28 @@ def _bind_exploratory_plan(run: dict) -> None:
 
 
 class FindingsFreezeAuditTest(unittest.TestCase):
+    def test_wide_state_gate_is_bound_to_executable_claim_inputs(self) -> None:
+        payload = json.loads(SPECIFICATION_LOCK.read_text())
+        self.assertFalse(active_claim_requires_wide_state(payload))
+        executable = claim_execution_perimeter(payload).executable_claims[0]
+        executable["inputs"].append("data/processed/market_state/engine_x")
+        self.assertTrue(active_claim_requires_wide_state(payload))
+
+    def test_optional_artifact_gates_follow_only_executable_claim_inputs(self) -> None:
+        payload = json.loads(SPECIFICATION_LOCK.read_text())
+        self.assertTrue(
+            active_claim_requires_any(
+                payload,
+                ("data/processed/pool_capital_release/current.json",),
+            )
+        )
+        self.assertFalse(
+            active_claim_requires_any(
+                payload,
+                ("data/processed/rent_incidence_v2_pool_day.parquet",),
+            )
+        )
+
     def test_retired_route_gas_gate_covers_code_refresh_publications_and_artifacts(self) -> None:
         with tempfile.TemporaryDirectory() as directory:
             root = Path(directory)
@@ -384,6 +408,48 @@ class FindingsFreezeAuditTest(unittest.TestCase):
         reopen.assert_called_once_with(
             certificate, summary=summary, quarantine=quarantine
         )
+
+    def test_default_v2_gate_reads_the_resolved_generation_under_lease(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            artifacts = tuple(
+                Path(directory) / name
+                for name in ("summary.parquet", "exceptions.parquet", "certificate.json")
+            )
+            for path in artifacts:
+                path.write_text("fixture", encoding="utf-8")
+            release = Mock(artifact_paths=artifacts)
+            summary = pd.DataFrame()
+            exceptions = pd.DataFrame()
+            certificate = {"certificate": True}
+            with (
+                patch(
+                    "scripts.audit_findings_freeze.resolve_v2_event_source_release",
+                    return_value=release,
+                ),
+                patch(
+                    "scripts.audit_findings_freeze.read_v2_event_source_release",
+                    return_value=(summary, exceptions, certificate),
+                ) as read,
+                patch(
+                    "scripts.audit_findings_freeze.transaction_frontier_audit_days",
+                    return_value=("20200101",),
+                ),
+                patch(
+                    "scripts.audit_findings_freeze.validate_v2_event_source_certificate",
+                    return_value=(1, 0),
+                ),
+                patch(
+                    "scripts.audit_findings_freeze.validate_v2_event_source_evidence_bundle",
+                    return_value=(1, 1),
+                ),
+                patch(
+                    "scripts.audit_findings_freeze.verify",
+                    return_value={"status": "ok"},
+                ),
+            ):
+                checks = v2_event_source_certificate_checks()
+        read.assert_called_once_with(release)
+        self.assertTrue(all(passed for _name, passed, _detail in checks), checks)
 
     def test_live_json_contracts_have_unique_keys_and_a_current_lock_hash(self) -> None:
         import copy
@@ -809,7 +875,7 @@ class FindingsFreezeAuditTest(unittest.TestCase):
         route_cost = by_path["data/empirical/route_cost_panel_v2.parquet"]
         self.assertEqual(route_cost.status, "external_prerequisite")
         self.assertEqual(route_cost.owner, "scripts/run_route_cost_panel.py")
-        self.assertEqual(len(DAILY_FRONTIER_PREREQUISITES), 3)
+        self.assertEqual(FRONTIER_RELEASE_MARKER.name, "current.json")
         self.assertFalse(any("run_" in stage.script for stage in D3_BUILD_STAGES))
 
     def test_claim_input_gate_rejects_raw_missing_and_stale_inputs(self) -> None:

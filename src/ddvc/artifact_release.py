@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+from contextlib import contextmanager
 from dataclasses import dataclass
 import hashlib
 import json
@@ -19,7 +20,13 @@ from ddvc.provenance import (
     sidecar_path,
     verify,
 )
-from ddvc.runtime import atomic_output, serialized_output_install
+from ddvc.runtime import (
+    atomic_output,
+    serialized_output_install,
+    serialized_read_installs,
+    source_lock_paths,
+    staged_output,
+)
 
 
 def file_sha256(path: Path) -> str:
@@ -58,6 +65,7 @@ class ArtifactRelease:
     generation_id: str
     pointer_path: Path
     artifacts: Mapping[str, Path]
+    pointer_sha256: str
 
     @property
     def artifact_paths(self) -> tuple[Path, ...]:
@@ -70,6 +78,107 @@ class ArtifactRelease:
     @property
     def lineage_paths(self) -> tuple[Path, ...]:
         return self.pointer_path, *self.artifact_paths, *self.provenance_paths
+
+    def assert_current(self) -> None:
+        if (
+            not self.pointer_path.is_file()
+            or file_sha256(self.pointer_path) != self.pointer_sha256
+        ):
+            raise RuntimeError("artifact release pointer changed after resolution")
+
+
+@contextmanager
+def current_artifact_release(release: ArtifactRelease):
+    """Lease one pointer and its exact artifacts for the complete read."""
+
+    with serialized_read_installs(release.lineage_paths):
+        release.assert_current()
+        yield release
+        release.assert_current()
+
+
+@dataclass(frozen=True)
+class FileLineageLease:
+    """One immutable identity over an exact set of source files."""
+
+    bindings: tuple[tuple[Path, str | None], ...]
+
+    @property
+    def paths(self) -> tuple[Path, ...]:
+        return tuple(path for path, _digest in self.bindings)
+
+    @property
+    def existing_paths(self) -> tuple[Path, ...]:
+        return tuple(path for path, digest in self.bindings if digest is not None)
+
+    @property
+    def content_identity_sha256(self) -> str:
+        return canonical_json_sha256(
+            [(str(path), digest) for path, digest in self.bindings]
+        )
+
+    def assert_current(self) -> None:
+        for path, expected in self.bindings:
+            if expected is None:
+                if path.exists():
+                    raise RuntimeError(f"leased absent source file appeared: {path}")
+                continue
+            if not path.is_file():
+                raise RuntimeError(f"leased source file disappeared: {path}")
+            before = file_stat_identity(path)
+            observed = file_sha256(path)
+            if before != file_stat_identity(path) or observed != expected:
+                raise RuntimeError(f"leased source file changed: {path}")
+
+
+@contextmanager
+def current_file_lineage(lease: FileLineageLease):
+    """Hold one absence-aware filesystem lease around a complete source read."""
+
+    with serialized_read_installs(lease.paths, allow_missing=True):
+        lease.assert_current()
+        yield lease
+        lease.assert_current()
+
+
+def bind_file_lineage(
+    paths: list[Path] | tuple[Path, ...], *, allow_missing: bool = False
+) -> FileLineageLease:
+    """Hash one duplicate-free file perimeter with mutation detection."""
+
+    selected = tuple(dict.fromkeys(Path(path) for path in paths))
+    if not selected:
+        raise ValueError("file-lineage lease requires at least one input")
+    source_lock_paths(selected, allow_missing=allow_missing)
+    bindings: list[tuple[Path, str | None]] = []
+    for path in selected:
+        if not path.is_file():
+            if allow_missing and not path.exists() and not path.is_symlink():
+                bindings.append((path, None))
+                continue
+            raise FileNotFoundError(f"leased source file is missing: {path}")
+        before = file_stat_identity(path)
+        digest = file_sha256(path)
+        if before != file_stat_identity(path):
+            raise RuntimeError(f"leased source file changed during hashing: {path}")
+        bindings.append((path, digest))
+    return FileLineageLease(tuple(bindings))
+
+
+def combine_file_lineages(
+    leases: list[FileLineageLease] | tuple[FileLineageLease, ...],
+) -> FileLineageLease:
+    """Combine already-bound snapshots without reopening their source pointers."""
+
+    bindings: dict[Path, str | None] = {}
+    for lease in leases:
+        for path, digest in lease.bindings:
+            prior = bindings.setdefault(path, digest)
+            if prior != digest:
+                raise RuntimeError(f"file lineage snapshots disagree: {path}")
+    if not bindings:
+        raise ValueError("combined file lineage requires at least one input")
+    return FileLineageLease(tuple(bindings.items()))
 
 
 def generation_id(artifact_sha256: Mapping[str, str], build_identity_sha256: str) -> str:
@@ -299,7 +408,9 @@ def _resolve_artifact_release_unlocked(
             raise ValueError(f"{kind} provenance identifies different content: {name}")
         if require_current_provenance and verify(path).get("status") != "ok":
             raise ValueError(f"{kind} provenance is not current: {name}")
-    return ArtifactRelease(str(generation), pointer_path, paths)
+    return ArtifactRelease(
+        str(generation), pointer_path, paths, file_sha256(pointer_path)
+    )
 
 
 def resolve_artifact_release(
@@ -345,6 +456,7 @@ def publish_artifact_release(
     release_root = pointer_path.parent
     release_root.mkdir(parents=True, exist_ok=True)
     with serialized_output_install(pointer_path):
+        prior_pointer = pointer_path.read_bytes() if pointer_path.is_file() else None
         with tempfile.TemporaryDirectory(prefix=f".{kind}-", dir=release_root) as directory:
             staged = {
                 name: Path(directory) / filename for name, filename in filenames.items()
@@ -429,7 +541,6 @@ def publish_artifact_release(
                     for name in filenames
                 },
             }
-            prior_pointer = pointer_path.read_bytes() if pointer_path.is_file() else None
             try:
                 write_pointer(pointer_path, pointer)
                 return _resolve_artifact_release_unlocked(
@@ -444,6 +555,7 @@ def publish_artifact_release(
                 if prior_pointer is None:
                     pointer_path.unlink(missing_ok=True)
                 else:
-                    with atomic_output(pointer_path) as temporary:
-                        temporary.write_bytes(prior_pointer)
+                    with staged_output(pointer_path) as rollback:
+                        rollback.write_bytes(prior_pointer)
+                        rollback.replace(pointer_path)
                 raise

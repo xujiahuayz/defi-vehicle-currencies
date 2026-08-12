@@ -5,12 +5,14 @@ from __future__ import annotations
 
 import argparse
 from concurrent.futures import as_completed
+from contextlib import nullcontext
 from pathlib import Path
 from typing import Callable
 
 import pandas as pd
 
 from ddvc.data_release import require_node_d_release
+from ddvc.counterfactual_publication import current_publication, publication_marker_path
 from ddvc.ethereum_blocks import (
     BLOCK_HEADER_CACHE,
     block_header_is_current,
@@ -28,14 +30,16 @@ from ddvc.ethereum_receipts import (
     write_receipt_snapshot,
 )
 from ddvc.gas import validate_route_transaction_gas_release
-from ddvc.paths import DATA_DIR, REPO_ROOT, SHARED_RUNTIME_DIR
-from ddvc.provenance import require_current_artifacts
+from ddvc.paths import DATA_DIR, OUTPUT_DIR, REPO_ROOT, SHARED_RUNTIME_DIR
+from ddvc.provenance import require_current_artifacts, sidecar_path
 from ddvc.quoter import RPC_EVIDENCE_FIELDS, rpc_post
 from ddvc.runtime import bounded_workers, exclusive_job, interruptible_thread_pool
 from ddvc.tables import write_panel_batches
 
 
 GROSS_PANEL = DATA_DIR / "processed" / "counterfactual_dominance_gross.parquet"
+GROSS_SUPPORT = OUTPUT_DIR / "exhibits" / "counterfactual_dominance_receipt_allocation_support.jsonl"
+GROSS_MARKER = publication_marker_path("counterfactual.gross")
 OUT_PANEL = DATA_DIR / "processed" / "route_transaction_gas.parquet"
 RECEIPT_EVIDENCE = DATA_DIR / "empirical" / "route_transaction_gas_receipts.jsonl"
 BLOCK_HEADER_EVIDENCE = DATA_DIR / "empirical" / "route_transaction_gas_blocks.jsonl"
@@ -44,6 +48,7 @@ HEADER_CACHE = BLOCK_HEADER_CACHE
 LOCK = SHARED_RUNTIME_DIR / "route-transaction-gas.lock"
 CODE_SOURCES = [
     "scripts/process/build_route_transaction_gas.py",
+    "src/ddvc/counterfactual_publication.py",
     "src/ddvc/ethereum_blocks.py",
     "src/ddvc/ethereum_receipts.py",
     "src/ddvc/fetch/raw.py",
@@ -57,9 +62,23 @@ CODE_SOURCES = [
 def route_receipt_requests(path: Path = GROSS_PANEL) -> pd.DataFrame:
     if not path.is_file():
         raise RuntimeError("gross counterfactual route panel has not been released")
-    requests = pd.read_parquet(path, columns=["tx", "block", "component_id", "receipt_allocation_scope"]).rename(
-        columns={"tx": "tx_hash", "block": "block_number"}
+    publication = (
+        current_publication(
+            "counterfactual.gross",
+            expected_outputs=(
+                GROSS_PANEL,
+                sidecar_path(GROSS_PANEL),
+                GROSS_SUPPORT,
+                sidecar_path(GROSS_SUPPORT),
+            ),
+        )
+        if Path(path) == GROSS_PANEL
+        else nullcontext()
     )
+    with publication:
+        requests = pd.read_parquet(path, columns=["tx", "block", "component_id", "receipt_allocation_scope"]).rename(
+            columns={"tx": "tx_hash", "block": "block_number"}
+        )
     requests["tx_hash"] = requests["tx_hash"].astype(str).str.lower()
     requests["block_number"] = pd.to_numeric(
         requests["block_number"], errors="raise"
@@ -369,7 +388,7 @@ def assemble_exact_outputs(requests: pd.DataFrame, *, batch_size: int) -> dict[s
     def validate_staged(path: Path) -> None:
         staged_release.update(validate_route_transaction_gas_release(path, requests, receipt_snapshot=evidence, block_header_snapshot=block_evidence, batch_size=batch_size))
 
-    write_panel_batches(cached_panel_batches(requests, batch_size=batch_size, support=support), OUT_PANEL, code_sources=CODE_SOURCES, inputs=[GROSS_PANEL, evidence, block_evidence], notes="exact realised-route receipt execution and EIP-4844 blob gas fields plus same-block timestamp/base fee with transaction/block/hash identity; private or direct coinbase payments remain unobserved", preinstall_validator=validate_staged)
+    write_panel_batches(cached_panel_batches(requests, batch_size=batch_size, support=support), OUT_PANEL, code_sources=CODE_SOURCES, inputs=[GROSS_PANEL, GROSS_MARKER, evidence, block_evidence], notes="exact realised-route receipt execution and EIP-4844 blob gas fields plus same-block timestamp/base fee with transaction/block/hash identity; private or direct coinbase payments remain unobserved", preinstall_validator=validate_staged)
     receipt_rows = sum(1 for _row in iter_receipt_snapshot(evidence, require_evidence=True, order_by_block=True))
     header_rows = sum(1 for _row in iter_block_header_snapshot(block_evidence, require_evidence=True))
     if receipt_rows != len(requests) or header_rows != len(block_header_requests(requests)) or staged_release.get("rows") != support["rows"]:
@@ -377,15 +396,7 @@ def assemble_exact_outputs(requests: pd.DataFrame, *, batch_size: int) -> dict[s
     return {**support, "receipt_evidence_rows": receipt_rows, "block_evidence_rows": header_rows}
 
 
-def main() -> int:
-    parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("--workers", type=int, default=8)
-    parser.add_argument("--batch-size", type=int, default=5_000)
-    parser.add_argument("--limit", type=int)
-    parser.add_argument("--shards", type=int, default=1)
-    parser.add_argument("--shard-index", type=int, default=0)
-    parser.add_argument("--cache-only", action="store_true")
-    args = parser.parse_args()
+def _run(args: argparse.Namespace, parser: argparse.ArgumentParser) -> int:
     require_node_d_release(routes=True, market_state=True)
     require_current_artifacts([GROSS_PANEL], consumer="exact route transaction gas")
     if args.batch_size < 1 or (args.limit is not None and args.limit < 1):
@@ -433,6 +444,27 @@ def main() -> int:
         f"wrote {OUT_PANEL.relative_to(REPO_ROOT)}"
     )
     return 0
+
+
+def main() -> int:
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument("--workers", type=int, default=8)
+    parser.add_argument("--batch-size", type=int, default=5_000)
+    parser.add_argument("--limit", type=int)
+    parser.add_argument("--shards", type=int, default=1)
+    parser.add_argument("--shard-index", type=int, default=0)
+    parser.add_argument("--cache-only", action="store_true")
+    args = parser.parse_args()
+    with current_publication(
+        "counterfactual.gross",
+        expected_outputs=(
+            GROSS_PANEL,
+            sidecar_path(GROSS_PANEL),
+            GROSS_SUPPORT,
+            sidecar_path(GROSS_SUPPORT),
+        ),
+    ):
+        return _run(args, parser)
 
 
 if __name__ == "__main__":

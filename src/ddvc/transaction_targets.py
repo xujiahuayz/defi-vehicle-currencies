@@ -7,6 +7,7 @@ from __future__ import annotations
 
 import hashlib
 import json
+from contextlib import contextmanager
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Iterable, Mapping
@@ -26,7 +27,7 @@ from ddvc.ethereum_logs import (
 from ddvc.paths import DATA_DIR, REPO_ROOT
 from ddvc.provenance import code_fingerprint
 from ddvc.realised import LINEAR_REALISED_ROUTE_OUTPUT_COLUMNS, LINEAR_ROUTE_COLUMNS, extract_linear_realised_routes
-from ddvc.runtime import atomic_output, serialized_output_install
+from ddvc.runtime import atomic_output, serialized_output_install, serialized_read_installs
 from ddvc.source_records import timestamp_value, transaction_id, v4_quote_status
 from ddvc.v2_event_completeness import decode_v2_log
 from ddvc.v3_inventory import decode_inventory_log
@@ -115,6 +116,75 @@ class TargetRelease:
     day_markers: tuple[Path, ...]
     calendar: tuple[str, ...]
     validation: Mapping[str, object]
+    pointer_sha256: str | None = None
+    manifest_sha256: str | None = None
+    day_marker_sha256: tuple[str, ...] = ()
+
+    @property
+    def content_identity_sha256(self) -> str:
+        """Bind a long-running consumer to one exact resolved release."""
+
+        pointer_sha256 = self.pointer_sha256 or _sha256(self.pointer_path)
+        manifest_sha256 = self.manifest_sha256 or _sha256(self.manifest_path)
+        return _json_sha256(
+            {
+                "scope": self.scope,
+                "generation": self.generation,
+                "calendar": self.calendar,
+                "pointer_sha256": pointer_sha256,
+                "manifest_sha256": manifest_sha256,
+            }
+        )
+
+    def assert_current(self) -> None:
+        """Validate the bound bytes directly under the caller's shared lease."""
+
+        expected_pointer = self.pointer_sha256 or _sha256(self.pointer_path)
+        expected_manifest = self.manifest_sha256 or _sha256(self.manifest_path)
+        expected_markers = self.day_marker_sha256 or tuple(
+            _sha256(path) for path in self.day_markers
+        )
+        if (
+            not self.pointer_path.is_file()
+            or _sha256(self.pointer_path) != expected_pointer
+            or not self.manifest_path.is_file()
+            or _sha256(self.manifest_path) != expected_manifest
+            or len(expected_markers) != len(self.day_markers)
+            or any(
+                not path.is_file() or _sha256(path) != expected
+                for path, expected in zip(
+                    self.day_markers, expected_markers, strict=True
+                )
+            )
+        ):
+            raise TargetEvidenceError(
+                f"{self.scope} transaction-target release changed during consumption"
+            )
+        for marker in self.day_markers:
+            validate_target_day(
+                marker,
+                scope=self.scope,
+                generation=self.generation,
+            )
+
+    @property
+    def lineage_paths(self) -> tuple[Path, ...]:
+        return (
+            self.pointer_path,
+            self.manifest_path,
+            self.day_markers[0].parents[1],
+            *self.day_markers,
+        )
+
+
+@contextmanager
+def current_target_release(release: TargetRelease):
+    """Lease one complete transaction-target generation during consumption."""
+
+    with serialized_read_installs(release.lineage_paths):
+        release.assert_current()
+        yield release
+        release.assert_current()
 
 
 def _sha256(path: Path) -> str:
@@ -966,6 +1036,9 @@ def resolve_target_release(
         tuple(markers),
         calendar,
         validation,
+        _sha256(pointer),
+        _sha256(manifest),
+        tuple(_sha256(marker) for marker in markers),
     )
 
 

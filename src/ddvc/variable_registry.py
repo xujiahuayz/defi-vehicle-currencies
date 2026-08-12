@@ -1374,7 +1374,7 @@ VARIABLE_SPECS: tuple[VariableSpec, ...] = (
             r"and its observed token output. The construction sample requires an absolute error "
             r"of at most one basis point; 0.1- and 0.01-basis-point subsets are prespecified."
         ),
-        source="data/processed/transaction_state_frontier_daily.parquet",
+        source="data/processed/transaction_state_frontier_daily_release/current.json",
         used_for="Exact-state construction validation and nested routing-efficiency support.",
         in_observations_table=False,
     ),
@@ -1391,7 +1391,7 @@ VARIABLE_SPECS: tuple[VariableSpec, ...] = (
             r"requires this measure to be at most one basis point; 0.1- and "
             r"0.01-basis-point subsets are prespecified."
         ),
-        source="data/processed/transaction_state_frontier_daily.parquet",
+        source="data/processed/transaction_state_frontier_daily_release/current.json",
         used_for="Exact-state construction validation and nested routing-efficiency support.",
         in_observations_table=False,
     ),
@@ -1409,7 +1409,7 @@ VARIABLE_SPECS: tuple[VariableSpec, ...] = (
             r"Output gain from the best path through the realised vehicle $k$ using only the "
             r"venues observed on route $r$, relative to realised output at the same pre-transaction state."
         ),
-        source="data/processed/transaction_state_frontier_daily.parquet",
+        source="data/processed/transaction_state_frontier_daily_release/current.json",
         used_for="Routing search quality while holding venue reach and intermediary fixed.",
         in_observations_table=False,
     ),
@@ -1428,7 +1428,7 @@ VARIABLE_SPECS: tuple[VariableSpec, ...] = (
             r"Additional output from expanding the same-vehicle search from route $r$'s observed "
             r"venues $\mathcal V_r$ to the admitted public venue set $\mathcal V$."
         ),
-        source="data/processed/transaction_state_frontier_daily.parquet",
+        source="data/processed/transaction_state_frontier_daily_release/current.json",
         used_for="Opportunity-set expansion separated from within-reach search.",
         in_observations_table=False,
     ),
@@ -1447,7 +1447,7 @@ VARIABLE_SPECS: tuple[VariableSpec, ...] = (
             r"Additional output from allowing the admitted public frontier to change the "
             r"intermediary or choose a direct path after public venue reach is already available."
         ),
-        source="data/processed/transaction_state_frontier_daily.parquet",
+        source="data/processed/transaction_state_frontier_daily_release/current.json",
         used_for="Intermediary/path choice separated from search and venue reach.",
         in_observations_table=False,
     ),
@@ -1465,7 +1465,7 @@ VARIABLE_SPECS: tuple[VariableSpec, ...] = (
             r"Total nonnegative output shortfall against the best admitted direct or two-leg "
             r"public path at the same pre-transaction state."
         ),
-        source="data/processed/transaction_state_frontier_daily.parquet",
+        source="data/processed/transaction_state_frontier_daily_release/current.json",
         used_for="Overall realised-to-public-frontier routing efficiency.",
         in_observations_table=False,
     ),
@@ -1483,7 +1483,7 @@ VARIABLE_SPECS: tuple[VariableSpec, ...] = (
             r"Output gain from the best admitted public direct path relative to the realised "
             r"indirect route; undefined when no direct path is executable."
         ),
-        source="data/processed/transaction_state_frontier_daily.parquet",
+        source="data/processed/transaction_state_frontier_daily_release/current.json",
         used_for="Direct-route omission as a separate extensive routing margin.",
         in_observations_table=False,
     ),

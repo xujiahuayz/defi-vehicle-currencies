@@ -32,6 +32,7 @@ import time
 from pathlib import Path
 
 from ddvc.d3_stage_registry import D3_BUILD_STAGES, D3BuildStage
+from ddvc.frontier_release import resolve_frontier_release
 from ddvc.paths import DATA_DIR, MARKET_STATE_LOCK, SHARED_RUNTIME_DIR
 from ddvc.provenance import ensure_released_directory_alias, verify
 from ddvc.runtime import exclusive_job
@@ -48,12 +49,6 @@ DIAGNOSTIC_STAGES = (
         "the support bound every later screen depends on",
         (),
     ),
-)
-
-DAILY_FRONTIER_PREREQUISITES = (
-    "data/processed/transaction_state_frontier_daily.parquet",
-    "data/processed/transaction_state_frontier_daily_rejections.parquet",
-    "data/processed/transaction_state_frontier_daily_support.parquet",
 )
 
 def current_artifacts(paths: tuple[str, ...]) -> tuple[bool, list[str]]:
@@ -202,9 +197,10 @@ def main() -> int:
                 f"aliases released {released.name}",
                 flush=True,
             )
-        ready, bad = current_artifacts(DAILY_FRONTIER_PREREQUISITES)
-        if not ready:
-            print(f"REFUSING: full-daily transaction frontier is incomplete or stale: {bad}")
+        try:
+            resolve_frontier_release()
+        except (FileNotFoundError, OSError, RuntimeError, ValueError) as error:
+            print(f"REFUSING: full-daily transaction frontier is incomplete or stale: {error}")
             return 1
 
     if args.scope in {"diagnostics", "all"}:

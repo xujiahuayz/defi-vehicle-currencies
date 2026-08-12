@@ -1,8 +1,10 @@
 from __future__ import annotations
 
 import unittest
+from contextlib import contextmanager
 from pathlib import Path
 from tempfile import TemporaryDirectory
+from unittest.mock import patch
 
 import pandas as pd
 
@@ -11,10 +13,65 @@ from scripts.build_routing_maturation_panel import (
     notional_bin_sql,
     observed_reach_sql,
     regret_bin_sql,
+    main,
 )
 
 
 class RoutingMaturationPanelTests(unittest.TestCase):
+    def test_main_holds_frontier_lease_through_all_output_stamps(self) -> None:
+        release = type(
+            "Release",
+            (),
+            {
+                "artifacts": {
+                    "panel": Path("panel"),
+                    "rejections": Path("rejections"),
+                    "support": Path("support"),
+                },
+                "lineage_paths": (Path("current.json"), Path("panel")),
+            },
+        )()
+        events = []
+
+        @contextmanager
+        def leased(selected):
+            events.append("lease-enter")
+            yield selected
+            events.append("lease-exit")
+
+        with (
+            patch("sys.argv", ["build_routing_maturation_panel.py"]),
+            patch("scripts.build_routing_maturation_panel.require_node_d_release"),
+            patch(
+                "scripts.build_routing_maturation_panel.resolve_frontier_release",
+                return_value=release,
+            ),
+            patch(
+                "scripts.build_routing_maturation_panel.current_frontier_release",
+                side_effect=leased,
+            ),
+            patch("scripts.build_routing_maturation_panel.require_current_artifacts"),
+            patch(
+                "scripts.build_routing_maturation_panel.build_panels",
+                return_value={
+                    "source_rows": 1,
+                    "chosen_reproduction": 1.0,
+                    "chosen_state_coverage": 1.0,
+                    "chosen_verified_coverage": 1.0,
+                    "cell_rows": 1,
+                    "transition_rows": 1,
+                    "horizon_rows": 1,
+                },
+            ) as build,
+            patch(
+                "scripts.build_routing_maturation_panel.stamp",
+                side_effect=lambda *_args, **_kwargs: events.append("stamp"),
+            ),
+        ):
+            self.assertEqual(main(), 0)
+        self.assertEqual(events, ["lease-enter", "stamp", "stamp", "stamp", "lease-exit"])
+        build.assert_called_once()
+
     def _source(self, root: Path) -> tuple[Path, Path]:
         source = root / "frontier.parquet"
         support = root / "support.parquet"

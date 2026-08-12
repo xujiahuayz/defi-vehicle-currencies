@@ -1,9 +1,7 @@
 #!/usr/bin/env python3
 """Materialise estimator-ready routing-maturation panels from the daily frontier.
 
-Reads
-  data/processed/transaction_state_frontier_daily.parquet
-  data/processed/transaction_state_frontier_daily_support.parquet
+Reads the generation selected by the canonical daily-frontier pointer.
 
 Writes
   data/processed/routing_maturation_cell_day.parquet
@@ -35,13 +33,12 @@ from ddvc.analysis.transaction_frontier import (
     chosen_quote_coverage_share,
 )
 from ddvc.data_release import require_node_d_release
+from ddvc.frontier_release import current_frontier_release, resolve_frontier_release
 from ddvc.paths import DATA_DIR
 from ddvc.provenance import require_current_artifacts, stamp
 from ddvc.runtime import atomic_output, exclusive_job
 
 
-SOURCE = DATA_DIR / "processed" / "transaction_state_frontier_daily.parquet"
-SUPPORT = DATA_DIR / "processed" / "transaction_state_frontier_daily_support.parquet"
 CELL_DAY = DATA_DIR / "processed" / "routing_maturation_cell_day.parquet"
 TRANSITION = DATA_DIR / "processed" / "routing_transition_cells.parquet"
 EXACT_HORIZONS = DATA_DIR / "processed" / "routing_maturation_exact_horizons.parquet"
@@ -51,6 +48,7 @@ CODE_SOURCES = [
     "src/ddvc/analysis/dynamics.py",
     "src/ddvc/analysis/routing_contract.py",
     "src/ddvc/analysis/transaction_frontier.py",
+    "src/ddvc/frontier_release.py",
 ]
 
 REQUIRED_COLUMNS = {
@@ -495,44 +493,49 @@ def main() -> int:
     parser.add_argument("--memory-limit", default="1GB")
     args = parser.parse_args()
     require_node_d_release(routes=True, market_state=True)
-    require_current_artifacts(
-        [SOURCE, SUPPORT], consumer="routing-maturation D3 materializer"
-    )
-    results = build_panels(
-        SOURCE,
-        SUPPORT,
-        CELL_DAY,
-        TRANSITION,
-        EXACT_HORIZONS,
-        memory_limit=args.memory_limit,
-        threads=args.threads,
-    )
-    inputs = [SOURCE, SUPPORT]
-    stamp(
-        CELL_DAY,
-        code_sources=CODE_SOURCES,
-        inputs=inputs,
-        rows=int(results["cell_rows"]),
-        notes="equal cell-day exact-state routing margins; fixed 2021-2025 recurrent support; no fitted models",
-    )
-    stamp(
-        TRANSITION,
-        code_sources=CODE_SOURCES,
-        inputs=inputs,
-        rows=int(results["transition_rows"]),
-        notes=(
-            "2024/2026 native-versus-stable route counts at the locked one-basis-point "
-            "reproduction tolerance, with separate endpoint-reach-notional opportunity "
-            "keys and saturated regret strata; no fitted models"
-        ),
-    )
-    stamp(
-        EXACT_HORIZONS,
-        code_sources=CODE_SOURCES,
-        inputs=[CELL_DAY],
-        rows=int(results["horizon_rows"]),
-        notes="exact 1/7/30/120-calendar-day links with missing targets retained as missing; no fitted models",
-    )
+    frontier_release = resolve_frontier_release()
+    source = frontier_release.artifacts["panel"]
+    support = frontier_release.artifacts["support"]
+    with current_frontier_release(frontier_release):
+        require_current_artifacts(
+            frontier_release.artifacts.values(),
+            consumer="routing-maturation D3 materializer",
+        )
+        results = build_panels(
+            source,
+            support,
+            CELL_DAY,
+            TRANSITION,
+            EXACT_HORIZONS,
+            memory_limit=args.memory_limit,
+            threads=args.threads,
+        )
+        inputs = list(frontier_release.lineage_paths)
+        stamp(
+            CELL_DAY,
+            code_sources=CODE_SOURCES,
+            inputs=inputs,
+            rows=int(results["cell_rows"]),
+            notes="equal cell-day exact-state routing margins; fixed 2021-2025 recurrent support; no fitted models",
+        )
+        stamp(
+            TRANSITION,
+            code_sources=CODE_SOURCES,
+            inputs=inputs,
+            rows=int(results["transition_rows"]),
+            notes=(
+                "2024/2026 native-versus-stable route counts at the locked one-basis-point "
+                "reproduction tolerance, with separate endpoint-reach-notional opportunity "
+                "keys and saturated regret strata; no fitted models"
+            ),
+        )
+        stamp(
+            EXACT_HORIZONS,
+            code_sources=CODE_SOURCES,
+            inputs=[CELL_DAY],
+            rows=int(results["horizon_rows"]),
+            notes="exact 1/7/30/120-calendar-day links with missing targets retained as missing; no fitted models",
+        )
     print(
         f"validated {int(results['source_rows']):,} route rows at "
         f"{float(results['chosen_reproduction']):.3%} chosen-route reproduction and "

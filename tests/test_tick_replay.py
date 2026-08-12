@@ -5,6 +5,7 @@ import json
 import tempfile
 import unittest
 from pathlib import Path
+from types import SimpleNamespace
 from unittest.mock import patch
 
 import pandas as pd
@@ -361,6 +362,20 @@ class TickReplayTests(unittest.TestCase):
             with patch("ddvc.pricing.tick_replay.tick_scientific_support", return_value=False), patch("ddvc.pricing.tick_replay.tick_partition_path", return_value=partition), patch("ddvc.pricing.tick_replay.read_tick_partition", return_value=pd.DataFrame([{"record_type": "swap"}])):
                 with self.assertRaisesRegex(ValueError, "unsupported V4 day carries canonical tick state"):
                     load_tick_day_events(state_root, "20250102", venues=("uniswap_v4",), raw_root=state_root / "raw")
+
+    def test_streamed_tick_frontier_rejects_failed_event_contract(self) -> None:
+        failed = SimpleNamespace(passed=False, missing_required_streams=1, conflicting_events=0)
+        with patch("ddvc.pricing.tick_replay.tick_scientific_support", return_value=True), patch("ddvc.pricing.tick_replay.normalise_tick_partition", return_value=(pd.DataFrame(), failed)):
+            with self.assertRaisesRegex(ValueError, "tick exact-event contract failed.*missing_streams=1"):
+                load_tick_day_events(None, "20250102", venues=("uniswap_v3",), raw_root=Path("unused"))
+
+    def test_streamed_tick_frontier_skips_prelaunch_venue(self) -> None:
+        with patch("ddvc.pricing.tick_replay.normalise_tick_partition") as normalise:
+            self.assertEqual(
+                load_tick_day_events(None, "20200101", venues=("uniswap_v3",), raw_root=Path("unused")),
+                [],
+            )
+        normalise.assert_not_called()
 
     def test_streaming_warm_matches_ordered_end_of_day_state(self) -> None:
         with tempfile.TemporaryDirectory() as directory:

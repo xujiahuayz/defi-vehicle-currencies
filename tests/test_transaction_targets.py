@@ -1,10 +1,12 @@
 from __future__ import annotations
 
 from concurrent.futures import ThreadPoolExecutor
+from contextlib import nullcontext
 import hashlib
 import json
 from pathlib import Path
 from threading import Barrier
+import threading
 from types import SimpleNamespace
 from tempfile import TemporaryDirectory
 import unittest
@@ -23,6 +25,7 @@ from ddvc.transaction_targets import (
     TargetEvidenceError,
     build_provider_target_ledger,
     calendar_sha256,
+    current_target_release,
     decode_v2_chain_swap,
     decode_v3_chain_swap,
     decode_v4_chain_swap,
@@ -41,7 +44,7 @@ from ddvc.transaction_targets import (
 from ddvc.v2_event_completeness import V2_EVENT_TOPICS
 from ddvc.v3_inventory import EVENT_TOPICS as V3_EVENT_TOPICS
 from ddvc.v4_contract import UNISWAP_V4_POOL_MANAGER_ADDRESS, UNISWAP_V4_SWAP_TOPIC
-from scripts.build_transaction_target_release import exclude_post_support_v4_routes, load_provider_day
+from scripts.build_transaction_target_release import LOCK, exclude_post_support_v4_routes, load_provider_day, main as build_target_main, release_dependencies
 
 
 A = "0x000000000000000000000000000000000000000a"
@@ -152,6 +155,31 @@ def raw_log(
 
 
 class TransactionTargetTests(unittest.TestCase):
+    def test_target_builder_resolves_each_event_release_once_and_passes_exact_objects(self) -> None:
+        v2 = SimpleNamespace(lineage_paths=(Path("v2-pointer"), Path("v2-artifact")), assert_current=lambda: None)
+        v3 = SimpleNamespace(lineage_paths=(Path("v3-pointer"), Path("v3-artifact")), assert_current=lambda: None)
+        dependencies = release_dependencies(v2, v3)
+        self.assertTrue(set(v2.lineage_paths).issubset(dependencies))
+        self.assertTrue(set(v3.lineage_paths).issubset(dependencies))
+        with (
+            patch("sys.argv", ["build_transaction_target_release.py", "--audit-calendar"]),
+            patch("scripts.build_transaction_target_release.require_node_d_release"),
+            patch("scripts.build_transaction_target_release.released_route_days", return_value=["20250101"]),
+            patch("scripts.build_transaction_target_release.transaction_frontier_audit_days", return_value=["20250101"]),
+            patch("scripts.build_transaction_target_release.resolve_v2_event_source_release", return_value=v2) as resolve_v2,
+            patch("scripts.build_transaction_target_release.resolve_v3_event_source_release", return_value=v3) as resolve_v3,
+            patch("scripts.build_transaction_target_release.target_generation_id", return_value="1" * 64),
+            patch("scripts.build_transaction_target_release.current_event_source_releases", return_value=nullcontext()),
+            patch("scripts.build_transaction_target_release.exclusive_job", return_value=nullcontext()) as lock,
+            patch("scripts.build_transaction_target_release.build_audit_release") as build,
+        ):
+            self.assertEqual(build_target_main(), 0)
+        resolve_v2.assert_called_once_with()
+        resolve_v3.assert_called_once_with()
+        self.assertIs(build.call_args.kwargs["v2_release"], v2)
+        self.assertIs(build.call_args.kwargs["v3_release"], v3)
+        lock.assert_called_once_with(LOCK, job="transaction-target release builder")
+
     def test_post_support_v4_routes_are_explicitly_excluded_and_certified(self) -> None:
         legs = pd.DataFrame([
             route_leg(7, A, K, "source", "intermediate", source="uniswap_v4", amount_in=100, amount_out=90, amount_usd=100.0),
@@ -177,13 +205,23 @@ class TransactionTargetTests(unittest.TestCase):
             support_paths = tuple(root / name for name in ("state.jsonl.gz", "state.meta.json", "certificate.json"))
             for path in support_paths:
                 path.write_text("support", encoding="utf-8")
-            with patch("scripts.build_transaction_target_release.pd.read_parquet", return_value=legs), patch("scripts.build_transaction_target_release.v4_state_day_inputs", return_value=support_paths), patch("scripts.build_transaction_target_release.validate_v4_state_day", return_value=support_paths), patch("scripts.build_transaction_target_release.tick_scientific_support", return_value=False), patch("scripts.build_transaction_target_release.load_v2_replay_day", return_value=SimpleNamespace(swaps_by_identity={})), patch("scripts.build_transaction_target_release.load_tick_day_events", return_value=[]) as load_tick:
+            with patch("scripts.build_transaction_target_release.pd.read_parquet", return_value=legs), patch("scripts.build_transaction_target_release.v4_state_day_inputs", return_value=support_paths), patch("scripts.build_transaction_target_release.validate_v4_state_day", return_value=support_paths), patch("scripts.build_transaction_target_release.tick_scientific_support", return_value=False), patch("scripts.build_transaction_target_release.state_partition_inputs", return_value=[]), patch("scripts.build_transaction_target_release.load_v2_replay_day", return_value=SimpleNamespace(swaps_by_identity={})), patch("scripts.build_transaction_target_release.load_tick_day_events", return_value=[]) as load_tick:
                 filtered, v2_events, tick_events, inputs, support = load_provider_day("20250101", set())
         self.assertTrue(filtered.empty)
         self.assertEqual((v2_events, tick_events), ({}, {}))
         self.assertEqual(set(inputs), set(support_paths))
         self.assertEqual(support["post_support_v4_routes_excluded"], 1)
         self.assertEqual(load_tick.call_args.kwargs["venues"], ("uniswap_v3",))
+
+    def test_exact_frontier_still_rejects_a_missing_certified_event(self) -> None:
+        legs = pd.DataFrame([
+            route_leg(7, A, K, "source", "intermediate", source="uniswap_v2", amount_in=100, amount_out=90, amount_usd=100.0),
+            route_leg(8, K, B, "intermediate", "sink", source="uniswap_v2", amount_in=90, amount_out=80, amount_usd=90.0),
+        ])
+        support_paths = (Path(__file__), Path(__file__), Path(__file__))
+        with patch("scripts.build_transaction_target_release.pd.read_parquet", return_value=legs), patch("scripts.build_transaction_target_release.tick_scientific_support", return_value=False), patch("scripts.build_transaction_target_release.v4_state_day_inputs", return_value=support_paths), patch("scripts.build_transaction_target_release.validate_v4_state_day", return_value=support_paths), patch("scripts.build_transaction_target_release.state_partition_inputs", return_value=[]), patch("scripts.build_transaction_target_release.load_v2_replay_day", return_value=SimpleNamespace(swaps_by_identity={})), patch("scripts.build_transaction_target_release.load_tick_day_events", return_value=[]):
+            with self.assertRaisesRegex(TargetEvidenceError, "canonical V2 state lacks target swap identity"):
+                load_provider_day("20250101", set())
 
     def test_v4_contract_identity_has_one_canonical_owner(self) -> None:
         self.assertEqual(len(UNISWAP_V4_POOL_MANAGER_ADDRESS), 42)
@@ -327,6 +365,8 @@ class TransactionTargetTests(unittest.TestCase):
             with patch("ddvc.provenance.ROOT", root), patch("ddvc.provenance.MANIFESTS", root / "provenance"):
                 release = publish_target_release(directory, [marker], scope="audit", generation=GENERATION, validation=validation, full_calendar=["20250101", "20250102"], code_sources=["src/ddvc/transaction_targets.py"], inputs=[], root=root)
                 reopened = resolve_target_release("audit", expected_days=["20250101"], root=root)
+                with current_target_release(reopened):
+                    reopened.assert_current()
                 observed, _ = read_target_day(reopened, "20250101")
                 self.assertEqual(observed["route_id"].tolist(), ["r1"])
 
@@ -340,6 +380,61 @@ class TransactionTargetTests(unittest.TestCase):
                 shard.write_bytes(b"mutated")
                 with self.assertRaisesRegex(TargetEvidenceError, "mutated"):
                     read_target_day(release, "20250101")
+                with self.assertRaises(TargetEvidenceError):
+                    reopened.assert_current()
+
+    def test_target_lease_validates_in_place_without_lock_upgrade(self) -> None:
+        with TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            pointer = root / "current.json"
+            manifest = root / "manifest.json"
+            generation = root / "generation"
+            marker = write_target_day(
+                generation,
+                "20250101",
+                pd.DataFrame({"route_id": ["r1"]}),
+                {
+                    "day": "20250101",
+                    "provider_mapped_routes": 1,
+                    "evidence_failures": 0,
+                },
+                scope="daily",
+                generation=GENERATION,
+                lineage={},
+            )
+            pointer.write_text("pointer\n", encoding="utf-8")
+            manifest.write_text("manifest\n", encoding="utf-8")
+            release = TargetRelease(
+                "daily",
+                GENERATION,
+                pointer,
+                manifest,
+                (marker,),
+                ("20250101",),
+                {},
+                hashlib.sha256(pointer.read_bytes()).hexdigest(),
+                hashlib.sha256(manifest.read_bytes()).hexdigest(),
+                (hashlib.sha256(marker.read_bytes()).hexdigest(),),
+            )
+            entered = threading.Event()
+            completed = threading.Event()
+
+            def replace_pointer() -> None:
+                entered.set()
+                with __import__("ddvc.runtime", fromlist=["atomic_output"]).atomic_output(pointer) as temporary:
+                    temporary.write_text("new\n", encoding="utf-8")
+                completed.set()
+
+            with patch(
+                "ddvc.transaction_targets.resolve_target_release",
+                side_effect=AssertionError("lease assertion must not reopen the pointer"),
+            ), current_target_release(release):
+                thread = threading.Thread(target=replace_pointer)
+                thread.start()
+                self.assertTrue(entered.wait(timeout=1))
+                self.assertFalse(completed.wait(timeout=0.05))
+            thread.join(timeout=2)
+            self.assertTrue(completed.is_set())
 
     def test_target_day_retry_proves_frame_support_and_lineage_identity(self) -> None:
         with TemporaryDirectory() as temporary:

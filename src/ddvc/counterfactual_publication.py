@@ -1,0 +1,677 @@
+"""Crash-recoverable publication boundary for counterfactual outputs only."""
+
+from __future__ import annotations
+
+from collections.abc import Callable, Iterable, Mapping
+from contextlib import contextmanager
+from contextvars import ContextVar
+from dataclasses import dataclass, field
+from datetime import datetime, timezone
+import hashlib
+import json
+import os
+from pathlib import Path
+import shutil
+import sys
+from typing import Iterator
+import uuid
+
+from ddvc.paths import DATA_DIR
+from ddvc.runtime import serialized_artifact_transaction, serialized_read_installs
+
+
+class PublicationRecoveryRequired(RuntimeError):
+    """A failed rollback retained independent evidence for manual recovery."""
+
+
+@dataclass(frozen=True)
+class _Backup:
+    target: Path
+    kind: str
+    resolved_parent: Path
+    backup: Path | None = None
+    sha256: str | None = None
+    link_target: str | None = None
+    referent: Path | None = None
+    referent_kind: str | None = None
+    referent_backup: Path | None = None
+    referent_sha256: str | None = None
+
+    def record(self) -> dict[str, object]:
+        return {
+            "target": str(self.target),
+            "kind": self.kind,
+            "resolved_parent": str(self.resolved_parent),
+            "backup": str(self.backup) if self.backup is not None else None,
+            "sha256": self.sha256,
+            "link_target": self.link_target,
+            "referent": str(self.referent) if self.referent is not None else None,
+            "referent_kind": self.referent_kind,
+            "referent_backup": (
+                str(self.referent_backup)
+                if self.referent_backup is not None
+                else None
+            ),
+            "referent_sha256": self.referent_sha256,
+        }
+
+    @classmethod
+    def from_record(cls, record: Mapping[str, object]) -> _Backup:
+        def optional_path(key: str) -> Path | None:
+            value = record.get(key)
+            return Path(str(value)) if value is not None else None
+
+        return cls(
+            target=Path(str(record["target"])),
+            kind=str(record["kind"]),
+            resolved_parent=Path(str(record["resolved_parent"])),
+            backup=optional_path("backup"),
+            sha256=str(record["sha256"]) if record.get("sha256") else None,
+            link_target=(
+                str(record["link_target"])
+                if record.get("link_target") is not None
+                else None
+            ),
+            referent=optional_path("referent"),
+            referent_kind=(
+                str(record["referent_kind"])
+                if record.get("referent_kind") is not None
+                else None
+            ),
+            referent_backup=optional_path("referent_backup"),
+            referent_sha256=(
+                str(record["referent_sha256"])
+                if record.get("referent_sha256")
+                else None
+            ),
+        )
+
+
+@dataclass(frozen=True)
+class _Capability:
+    capability_id: str
+    outputs: tuple[Path, ...]
+    marker: Path
+    seal: object = field(default_factory=object, repr=False, compare=False)
+
+
+_CAPABILITIES: dict[str, _Capability] = {}
+_CAPABILITY_OWNERS: dict[str, Callable] = {}
+_ACTIVE_CAPABILITY: ContextVar[object | None] = ContextVar(
+    "ddvc_counterfactual_publication_capability", default=None
+)
+
+
+def _sha256(path: Path) -> str:
+    digest = hashlib.sha256()
+    with path.open("rb") as handle:
+        for chunk in iter(lambda: handle.read(1024 * 1024), b""):
+            digest.update(chunk)
+    return digest.hexdigest()
+
+
+def _lexical(path: Path) -> Path:
+    return Path(os.path.abspath(os.path.normpath(os.fspath(path))))
+
+
+def publication_marker_path(capability_id: str) -> Path:
+    slug = "".join(
+        character if character.isalnum() else "-" for character in capability_id
+    ).strip("-")
+    suffix = hashlib.sha256(capability_id.encode()).hexdigest()[:12]
+    return (
+        DATA_DIR
+        / "processed"
+        / "counterfactual_publications"
+        / f"{slug}-{suffix}.json"
+    )
+
+
+def _atomic_json(path: Path, payload: object) -> None:
+    path.parent.mkdir(parents=True, exist_ok=True)
+    temporary = path.with_name(f".{path.name}.{uuid.uuid4().hex}.tmp")
+    try:
+        temporary.write_text(
+            json.dumps(payload, indent=1, sort_keys=True) + "\n", encoding="utf-8"
+        )
+        temporary.replace(path)
+    finally:
+        temporary.unlink(missing_ok=True)
+
+
+def _independent_copy(source: Path, destination: Path) -> None:
+    destination.parent.mkdir(parents=True, exist_ok=True)
+    shutil.copy2(source, destination)
+    if source.stat().st_ino == destination.stat().st_ino:
+        raise RuntimeError("publication backup is not independent")
+
+
+def _snapshot(target: Path, root: Path) -> _Backup:
+    target = _lexical(target)
+    resolved_parent = target.parent.resolve(strict=False)
+    key = hashlib.sha256(str(target).encode()).hexdigest()
+    backup = root / "backups" / key
+    if target.is_symlink():
+        link_target = os.readlink(target)
+        referent = target.resolve(strict=False)
+        if referent.is_file():
+            referent_backup = root / "backups" / f"{key}.referent"
+            _independent_copy(referent, referent_backup)
+            return _Backup(
+                target,
+                "symlink",
+                resolved_parent,
+                link_target=link_target,
+                referent=referent,
+                referent_kind="file",
+                referent_backup=referent_backup,
+                referent_sha256=_sha256(referent),
+            )
+        if referent.exists():
+            raise RuntimeError(
+                f"counterfactual publication symlink targets a non-file: {target}"
+            )
+        return _Backup(
+            target,
+            "symlink",
+            resolved_parent,
+            link_target=link_target,
+            referent=referent,
+            referent_kind="absent",
+        )
+    if target.is_file():
+        _independent_copy(target, backup)
+        return _Backup(
+            target,
+            "file",
+            resolved_parent,
+            backup=backup,
+            sha256=_sha256(target),
+        )
+    if target.exists():
+        raise RuntimeError(f"counterfactual publication target is not a file: {target}")
+    return _Backup(target, "absent", resolved_parent)
+
+
+def _restore_file(backup: Path | None, target: Path, digest: str | None) -> None:
+    if (
+        backup is None
+        or digest is None
+        or not backup.is_file()
+        or _sha256(backup) != digest
+    ):
+        raise RuntimeError("rollback backup is absent or corrupt")
+    target.parent.mkdir(parents=True, exist_ok=True)
+    temporary = target.with_name(f".{target.name}.{uuid.uuid4().hex}.restore")
+    try:
+        _independent_copy(backup, temporary)
+        temporary.replace(target)
+        if _sha256(target) != digest or target.stat().st_ino == backup.stat().st_ino:
+            raise RuntimeError("restored output failed independent digest verification")
+    finally:
+        temporary.unlink(missing_ok=True)
+
+
+def _restore(backup: _Backup) -> None:
+    target = backup.target
+    if target.parent.resolve(strict=False) != backup.resolved_parent:
+        raise RuntimeError("publication output ancestor changed before rollback")
+    if backup.kind == "absent":
+        target.unlink(missing_ok=True)
+        if target.exists() or target.is_symlink():
+            raise RuntimeError("new output survived rollback")
+        return
+    if backup.kind == "file":
+        _restore_file(backup.backup, target, backup.sha256)
+        return
+    if backup.kind != "symlink" or backup.link_target is None:
+        raise RuntimeError(f"unknown backup kind: {backup.kind}")
+    if backup.referent is None or backup.referent_kind not in {"file", "absent"}:
+        raise RuntimeError("symlink rollback lacks referent identity")
+    if backup.referent_kind == "file":
+        _restore_file(
+            backup.referent_backup,
+            backup.referent,
+            backup.referent_sha256,
+        )
+    else:
+        backup.referent.unlink(missing_ok=True)
+    target.parent.mkdir(parents=True, exist_ok=True)
+    temporary = target.with_name(f".{target.name}.{uuid.uuid4().hex}.restore")
+    try:
+        temporary.symlink_to(backup.link_target)
+        temporary.replace(target)
+        if not target.is_symlink() or os.readlink(target) != backup.link_target:
+            raise RuntimeError("restored symlink failed verification")
+    finally:
+        temporary.unlink(missing_ok=True)
+
+
+def _describe_output(path: Path) -> dict[str, object]:
+    path = _lexical(path)
+    if path.is_symlink():
+        referent = path.resolve(strict=True)
+        if not referent.is_file():
+            raise RuntimeError(f"published output is not a file: {path}")
+        return {
+            "path": str(path),
+            "kind": "symlink",
+            "link_target": os.readlink(path),
+            "resolved_path": str(referent),
+            "sha256": _sha256(referent),
+        }
+    if not path.is_file():
+        raise RuntimeError(f"published output is absent: {path}")
+    return {
+        "path": str(path),
+        "kind": "file",
+        "resolved_path": str(path.resolve(strict=True)),
+        "sha256": _sha256(path),
+    }
+
+
+def _marker_payload(
+    capability: _Capability, *, transaction_id: str
+) -> dict[str, object]:
+    outputs = [_describe_output(path) for path in capability.outputs]
+    generation_id = hashlib.sha256(
+        json.dumps(outputs, sort_keys=True, separators=(",", ":")).encode()
+    ).hexdigest()
+    return {
+        "schema_version": 1,
+        "capability_id": capability.capability_id,
+        "transaction_id": transaction_id,
+        "generation_id": generation_id,
+        "committed_at_utc": datetime.now(timezone.utc).isoformat(),
+        "outputs": outputs,
+    }
+
+
+def _validate_marker_payload(
+    capability_id: str,
+    marker: Path,
+    payload: object,
+    *,
+    expected_outputs: Iterable[Path] | None = None,
+) -> dict[str, object]:
+    if (
+        not isinstance(payload, dict)
+        or payload.get("schema_version") != 1
+        or payload.get("capability_id") != capability_id
+        or not isinstance(payload.get("outputs"), list)
+    ):
+        raise RuntimeError(
+            f"counterfactual publication marker is invalid: {capability_id}"
+        )
+    observed = [_describe_output(Path(str(row.get("path", "")))) for row in payload["outputs"] if isinstance(row, dict)]
+    if observed != payload["outputs"]:
+        raise RuntimeError(
+            f"counterfactual publication outputs disagree with marker: {capability_id}"
+        )
+    expected = (
+        tuple(_lexical(Path(path)) for path in expected_outputs)
+        if expected_outputs is not None
+        else _CAPABILITIES.get(capability_id).outputs
+        if capability_id in _CAPABILITIES
+        else None
+    )
+    if expected is not None and tuple(Path(row["path"]) for row in observed) != expected:
+        raise RuntimeError(
+            f"counterfactual publication marker has the wrong output perimeter: {capability_id}"
+        )
+    generation_id = hashlib.sha256(
+        json.dumps(observed, sort_keys=True, separators=(",", ":")).encode()
+    ).hexdigest()
+    if payload.get("generation_id") != generation_id:
+        raise RuntimeError(
+            f"counterfactual publication generation is invalid: {capability_id}"
+        )
+    return payload
+
+
+def require_current_publication(
+    capability_id: str,
+    *,
+    marker_path: Path | None = None,
+    expected_outputs: Iterable[Path] | None = None,
+) -> dict[str, object]:
+    """Require one marker-last generation before consuming any member output."""
+
+    marker = _lexical(marker_path or publication_marker_path(capability_id))
+    try:
+        payload = json.loads(marker.read_text(encoding="utf-8"))
+    except (FileNotFoundError, json.JSONDecodeError, OSError) as error:
+        raise RuntimeError(
+            f"counterfactual publication is not current: {capability_id}"
+        ) from error
+    return _validate_marker_payload(
+        capability_id,
+        marker,
+        payload,
+        expected_outputs=expected_outputs,
+    )
+
+
+@contextmanager
+def current_publication(
+    capability_id: str,
+    *,
+    marker_path: Path | None = None,
+    expected_outputs: Iterable[Path] | None = None,
+) -> Iterator[dict[str, object]]:
+    """Lease a complete marker-selected generation through a consumer read."""
+
+    marker = _lexical(marker_path or publication_marker_path(capability_id))
+    initial = require_current_publication(
+        capability_id,
+        marker_path=marker,
+        expected_outputs=expected_outputs,
+    )
+    paths = tuple(Path(str(row["path"])) for row in initial["outputs"])
+    with serialized_read_installs((marker, *paths)):
+        current = require_current_publication(
+            capability_id,
+            marker_path=marker,
+            expected_outputs=expected_outputs,
+        )
+        if current != initial:
+            raise RuntimeError(
+                f"counterfactual publication changed while its lease was acquired: {capability_id}"
+            )
+        yield current
+        if require_current_publication(
+            capability_id,
+            marker_path=marker,
+            expected_outputs=expected_outputs,
+        ) != current:
+            raise RuntimeError(
+                f"counterfactual publication changed during read: {capability_id}"
+            )
+
+
+def _journal_root(capability: _Capability) -> Path:
+    return capability.marker.parent / f".{capability.marker.name}.transactions"
+
+
+def _write_status(
+    root: Path,
+    *,
+    capability: _Capability,
+    transaction_id: str,
+    status: str,
+    backups: Iterable[_Backup],
+    failures: list[dict[str, str]] | None = None,
+    original_error: str | None = None,
+) -> None:
+    payload = {
+        "schema_version": 1,
+        "capability_id": capability.capability_id,
+        "transaction_id": transaction_id,
+        "status": status,
+        "backups": [backup.record() for backup in backups],
+        "failures": failures or [],
+        "original_error": original_error,
+    }
+    _atomic_json(root / "transaction.json", payload)
+    _atomic_json(root / "recovery.json", payload)
+
+
+def _rollback(
+    root: Path,
+    capability: _Capability,
+    transaction_id: str,
+    backups: list[_Backup],
+    original: BaseException | None,
+) -> None:
+    failures: list[dict[str, str]] = []
+    for backup in reversed(backups):
+        try:
+            _restore(backup)
+        except BaseException as error:
+            failures.append(
+                {
+                    "target": str(backup.target),
+                    "error": f"{type(error).__name__}: {error}",
+                }
+            )
+    if failures:
+        manifest_error = ""
+        try:
+            _write_status(
+                root,
+                capability=capability,
+                transaction_id=transaction_id,
+                status="manual_recovery_required",
+                backups=backups,
+                failures=failures,
+                original_error=(
+                    f"{type(original).__name__}: {original}"
+                    if original is not None
+                    else "process_exit_or_restart"
+                ),
+            )
+        except BaseException as error:
+            manifest_error = (
+                f"; recovery manifest update failed: {type(error).__name__}: {error}"
+            )
+        raise PublicationRecoveryRequired(
+            f"counterfactual publication rollback failed; recovery evidence retained at {root}{manifest_error}"
+        ) from original
+    _write_status(
+        root,
+        capability=capability,
+        transaction_id=transaction_id,
+        status="rolled_back",
+        backups=backups,
+        original_error=(
+            f"{type(original).__name__}: {original}"
+            if original is not None
+            else "process_exit_or_restart"
+        ),
+    )
+    shutil.rmtree(root, ignore_errors=True)
+
+
+def _marker_commits_transaction(
+    capability: _Capability, transaction_id: str
+) -> bool:
+    try:
+        payload = require_current_publication(
+            capability.capability_id, marker_path=capability.marker
+        )
+    except RuntimeError:
+        return False
+    return payload.get("transaction_id") == transaction_id
+
+
+def _recover_transactions(capability: _Capability) -> None:
+    journal = _journal_root(capability)
+    if not journal.is_dir():
+        return
+    for root in sorted(path for path in journal.iterdir() if path.is_dir()):
+        try:
+            record = json.loads(
+                (root / "transaction.json").read_text(encoding="utf-8")
+            )
+            if (
+                not isinstance(record, dict)
+                or record.get("schema_version") != 1
+                or record.get("capability_id") != capability.capability_id
+                or not isinstance(record.get("backups"), list)
+            ):
+                raise ValueError("invalid transaction record")
+            transaction_id = str(record["transaction_id"])
+            status = str(record["status"])
+            backups = [
+                _Backup.from_record(item)
+                for item in record["backups"]
+                if isinstance(item, dict)
+            ]
+        except (KeyError, OSError, TypeError, ValueError, json.JSONDecodeError) as error:
+            raise PublicationRecoveryRequired(
+                f"counterfactual publication has corrupt recovery evidence at {root}"
+            ) from error
+        expected_targets = (*capability.outputs, capability.marker)
+        if status == "active" and tuple(backup.target for backup in backups) != expected_targets:
+            raise PublicationRecoveryRequired(
+                f"counterfactual publication has incomplete recovery evidence at {root}"
+            )
+        if status in {"preparing", "committed", "rolled_back"}:
+            shutil.rmtree(root)
+        elif status == "active" and _marker_commits_transaction(
+            capability, transaction_id
+        ):
+            shutil.rmtree(root)
+        elif status == "active":
+            _rollback(root, capability, transaction_id, backups, None)
+        else:
+            raise PublicationRecoveryRequired(
+                f"counterfactual publication requires manual recovery at {root}"
+            )
+
+
+@contextmanager
+def _publication_transaction(
+    capability: _Capability,
+    *,
+    sources: Iterable[Path],
+    outputs: Iterable[Path],
+) -> Iterator[None]:
+    selected_outputs = tuple(dict.fromkeys(_lexical(Path(path)) for path in outputs))
+    if selected_outputs != capability.outputs:
+        raise RuntimeError(
+            f"publication capability {capability.capability_id} declared the wrong output perimeter"
+        )
+    capability.marker.parent.mkdir(parents=True, exist_ok=True)
+    with serialized_artifact_transaction(
+        sources=sources, outputs=(*selected_outputs, capability.marker)
+    ):
+        _recover_transactions(capability)
+        journal = _journal_root(capability)
+        journal.mkdir(parents=True, exist_ok=True)
+        transaction_id = uuid.uuid4().hex
+        root = journal / transaction_id
+        root.mkdir()
+        backups: list[_Backup] = []
+        _write_status(
+            root,
+            capability=capability,
+            transaction_id=transaction_id,
+            status="preparing",
+            backups=backups,
+        )
+        try:
+            backups = [
+                _snapshot(path, root) for path in (*selected_outputs, capability.marker)
+            ]
+            _write_status(
+                root,
+                capability=capability,
+                transaction_id=transaction_id,
+                status="active",
+                backups=backups,
+            )
+        except BaseException:
+            shutil.rmtree(root, ignore_errors=True)
+            raise
+        token = _ACTIVE_CAPABILITY.set(capability.seal)
+        try:
+            try:
+                yield
+                _atomic_json(
+                    capability.marker,
+                    _marker_payload(capability, transaction_id=transaction_id),
+                )
+                _write_status(
+                    root,
+                    capability=capability,
+                    transaction_id=transaction_id,
+                    status="committed",
+                    backups=backups,
+                )
+            except BaseException as original:
+                _rollback(root, capability, transaction_id, backups, original)
+                raise
+        finally:
+            _ACTIVE_CAPABILITY.reset(token)
+        shutil.rmtree(root, ignore_errors=True)
+
+
+def register_publication_capability(
+    capability_id: str,
+    outputs: Iterable[Path],
+    *,
+    marker_path: Path | None = None,
+) -> None:
+    selected = tuple(dict.fromkeys(_lexical(Path(path)) for path in outputs))
+    marker = _lexical(marker_path or publication_marker_path(capability_id))
+    if not capability_id.strip() or not selected:
+        raise ValueError("publication capability must have an id and outputs")
+    if marker in selected:
+        raise ValueError("publication marker cannot be a member output")
+    prior = _CAPABILITIES.setdefault(
+        capability_id, _Capability(capability_id, selected, marker)
+    )
+    if prior.outputs != selected or prior.marker != marker:
+        raise RuntimeError(f"publication capability {capability_id} changed perimeter")
+
+
+def publication_capability(
+    capability_id: str,
+    *,
+    output_selector: Callable[..., Iterable[Path]],
+    source_selector: Callable[..., Iterable[Path]],
+    assert_current: Callable[..., object] | None = None,
+):
+    try:
+        capability = _CAPABILITIES[capability_id]
+    except KeyError as error:
+        raise ValueError(f"unknown publication capability: {capability_id}") from error
+
+    def decorate(function: Callable):
+        def owner(*args, **kwargs):
+            validate_publication_capability(owner)
+            outputs = tuple(
+                _lexical(Path(path)) for path in output_selector(*args, **kwargs)
+            )
+            sources = tuple(Path(path) for path in source_selector(*args, **kwargs))
+            with _publication_transaction(
+                capability, sources=sources, outputs=outputs
+            ):
+                if assert_current is not None:
+                    assert_current(*args, **kwargs)
+                result = function(*args, **kwargs)
+                if assert_current is not None:
+                    assert_current(*args, **kwargs)
+                return result
+
+        owner.__name__ = function.__name__
+        owner.__qualname__ = function.__qualname__
+        owner.__doc__ = function.__doc__
+        owner.__module__ = function.__module__
+        owner.__ddvc_publication_capability__ = capability_id
+        if capability_id in _CAPABILITY_OWNERS:
+            raise RuntimeError(f"publication capability {capability_id} has two owners")
+        _CAPABILITY_OWNERS[capability_id] = owner
+        return owner
+
+    return decorate
+
+
+def validate_publication_capability(owner: Callable) -> str:
+    capability_id = getattr(owner, "__ddvc_publication_capability__", None)
+    capability = _CAPABILITIES.get(str(capability_id))
+    if capability is None or _CAPABILITY_OWNERS.get(str(capability_id)) is not owner:
+        raise RuntimeError("callable is not the registered publication owner")
+    installed = getattr(sys.modules.get(owner.__module__), owner.__name__, None)
+    if installed is not owner:
+        raise RuntimeError("publication owner is not the installed callable object")
+    return str(capability_id)
+
+
+def require_active_publication(capability_id: str) -> None:
+    capability = _CAPABILITIES.get(capability_id)
+    if capability is None or _ACTIVE_CAPABILITY.get() is not capability.seal:
+        raise RuntimeError(
+            f"canonical output requires publication capability {capability_id}"
+        )

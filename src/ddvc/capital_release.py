@@ -3,18 +3,24 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
+from collections import Counter
+from contextlib import contextmanager
 import json
 from pathlib import Path
 from typing import Mapping
 
-from ddvc.artifact_release import ArtifactRelease, canonical_json_sha256, file_sha256, file_stat_identity, is_sha256, resolve_artifact_release
+import pyarrow.parquet as pq
+import pyarrow as pa
+
+from ddvc.artifact_release import ArtifactRelease, canonical_json_sha256, current_artifact_release, file_sha256, file_stat_identity, is_sha256, resolve_artifact_release
 from ddvc.paths import DATA_DIR, REPO_ROOT
 from ddvc.provenance import code_fingerprint
+from ddvc.cp_state_stream import validate_certified_cp_stream_manifest
 
 
 CAPITAL_RELEASE_POINTER = DATA_DIR / "processed" / "pool_capital_release" / "current.json"
 CAPITAL_RELEASE_KIND = "pool_capital"
-CAPITAL_RELEASE_SCHEMA_VERSION = 1
+CAPITAL_RELEASE_SCHEMA_VERSION = 2
 CAPITAL_RELEASE_FILENAMES = {
     "pool": "pool_capital_daily.parquet",
     "candidate": "pool_candidate_capital_daily.parquet",
@@ -104,6 +110,19 @@ class CapitalRelease:
         return self.bundle.lineage_paths
 
 
+@contextmanager
+def current_capital_release(release: CapitalRelease):
+    """Lease one selected capital pointer through its complete consumption."""
+
+    with current_artifact_release(release.bundle):
+        validate_capital_generation_manifest(
+            release.bundle,
+            release.manifest,
+            require_current_inputs=True,
+        )
+        yield release
+
+
 def validate_capital_generation_manifest(
     bundle: ArtifactRelease,
     manifest: Mapping[str, object],
@@ -136,24 +155,126 @@ def validate_capital_generation_manifest(
     for shard in shards:
         identity = shard.get("identity_sha256") if isinstance(shard, dict) else None
         shard_id = (shard.get("spec") or {}).get("shard_id") if isinstance(shard, dict) else None
+        owned_days = (shard.get("spec") or {}).get("owned_days") if isinstance(shard, dict) else None
+        support = shard.get("daily_support") if isinstance(shard, dict) else None
         shard_body = {key: value for key, value in shard.items() if key != "identity_sha256"} if isinstance(shard, dict) else {}
-        if not is_sha256(identity) or identity != canonical_json_sha256(shard_body) or not isinstance(shard_id, str) or not shard_id or shard_id in shard_ids:
+        support_valid = bool(
+            isinstance(owned_days, list)
+            and owned_days
+            and all(isinstance(day, str) and day for day in owned_days)
+            and len(owned_days) == len(set(owned_days))
+            and isinstance(support, list)
+            and all(isinstance(record, dict) for record in support)
+            and [record.get("day") for record in support] == owned_days
+            and all(
+                record.get("status") in {"observed", "certified_empty", "certified_rows_none_admitted"}
+                and isinstance(record.get("certified_source_rows"), int)
+                and int(record["certified_source_rows"]) >= 0
+                and isinstance(record.get("normalised_reserve_rows"), int)
+                and int(record["normalised_reserve_rows"]) >= 0
+                and record["certified_source_rows"] == record["normalised_reserve_rows"]
+                and isinstance(record.get("pool_rows"), int)
+                and int(record["pool_rows"]) >= 0
+                and (record["status"] == "certified_empty")
+                == (record["certified_source_rows"] == 0)
+                and (record["status"] == "observed") == (record["pool_rows"] > 0)
+                for record in support
+            )
+        )
+        if not is_sha256(identity) or identity != canonical_json_sha256(shard_body) or not isinstance(shard_id, str) or not shard_id or shard_id in shard_ids or not support_valid:
             raise ValueError("capital generation manifest contains an invalid shard identity")
         shard_ids.add(shard_id)
-    releases = manifest.get("released_state")
+    releases = manifest.get("certified_reserve_stream")
     if not isinstance(releases, dict) or set(releases) != {"uniswap_v2", "sushiswap_v2"}:
-        raise ValueError("capital generation manifest has an invalid released-state perimeter")
-    for record in releases.values():
+        raise ValueError("capital generation manifest has an invalid certified-reserve perimeter")
+    for venue, record in releases.items():
+        partitions = record.get("partitions") if isinstance(record, dict) else None
         if (
             not isinstance(record, dict)
+            or record.get("venue") != venue
+            or record.get("authority_kind") != "local_certified_reserve_stream_v1"
             or not is_sha256(record.get("content_identity_sha256"))
+            or not isinstance(record.get("certificate_path"), str)
+            or not is_sha256(record.get("certificate_sha256"))
+            or not isinstance(record.get("ledger_path"), str)
             or not is_sha256(record.get("ledger_sha256"))
-            or int(record.get("partitions") or 0) <= 0
+            or not isinstance(partitions, list)
+            or not partitions
+            or any(
+                not isinstance(partition, dict)
+                or set(partition) != {"day", "expected_bytes", "expected_rows", "input_fingerprint"}
+                or not isinstance(partition.get("day"), str)
+                or not partition["day"]
+                or not isinstance(partition.get("expected_bytes"), int)
+                or int(partition["expected_bytes"]) < 0
+                or not isinstance(partition.get("expected_rows"), int)
+                or int(partition["expected_rows"]) < 0
+                or not is_sha256(partition.get("input_fingerprint"))
+                for partition in partitions
+            )
+            or [partition["day"] for partition in partitions]
+            != sorted({partition["day"] for partition in partitions})
         ):
-            raise ValueError("capital generation manifest has an invalid released-state identity")
-    upstream = manifest.get("upstream_releases")
-    if not isinstance(upstream, dict) or not is_sha256(upstream.get("v2_event_source_generation_id")):
-        raise ValueError("capital generation manifest lacks the V2 event release identity")
+            raise ValueError("capital generation manifest has an invalid certified-reserve identity")
+    expected_source_rows = {
+        (venue, str(partition["day"])): int(partition["expected_rows"])
+        for venue, release in releases.items()
+        for partition in release["partitions"]
+    }
+    support_rows: dict[tuple[str, str], Mapping[str, object]] = {}
+    for shard in shards:
+        venue = str(shard["spec"]["venue"])
+        for support_record in shard["daily_support"]:
+            key = (venue, str(support_record["day"]))
+            if key in support_rows:
+                raise ValueError("capital generation support ledger contains a duplicate venue-day")
+            support_rows[key] = support_record
+    if set(support_rows) != set(expected_source_rows) or any(
+        int(support_rows[key]["certified_source_rows"]) != expected
+        for key, expected in expected_source_rows.items()
+    ):
+        raise ValueError("capital generation support ledger differs from certified source rows")
+    observed_pool_rows: Counter[tuple[str, str]] = Counter()
+    try:
+        parquet = pq.ParquetFile(bundle.artifacts["pool"])
+        for batch in parquet.iter_batches(columns=["venue", "day"], batch_size=250_000):
+            venues = batch.column(0).to_pylist()
+            days = batch.column(1).to_pylist()
+            observed_pool_rows.update(zip(venues, days, strict=True))
+    except (OSError, ValueError, pa.ArrowException) as error:
+        raise ValueError("capital generation pool support cannot be read") from error
+    expected_pool_rows = {
+        key: int(record["pool_rows"])
+        for key, record in support_rows.items()
+        if int(record["pool_rows"]) > 0
+    }
+    if dict(observed_pool_rows) != expected_pool_rows:
+        raise ValueError("capital generation support ledger differs from released pool rows")
+    forecast = manifest.get("storage_forecast")
+    forecast_fields = {
+        "raw_input_bytes", "sampled_days", "sampled_bytes", "sampled_pool_days",
+        "sampled_release_bytes", "projected_pool_days", "projected_release_bytes",
+        "peak_workspace_bytes", "cardinality_margin", "fixed_bytes", "peak_multiplier",
+        "free_space_reserve_bytes",
+    }
+    if (
+        not isinstance(forecast, dict)
+        or forecast.get("policy") != "stratified-exact-capital-output-calibration-v1"
+        or not forecast_fields.issubset(forecast)
+        or any(
+            isinstance(forecast[field], bool)
+            or not isinstance(forecast[field], (int, float))
+            or float(forecast[field]) < 0
+            for field in forecast_fields
+        )
+        or int(forecast["sampled_days"]) <= 0
+        or int(forecast["sampled_pool_days"]) <= 0
+        or int(forecast["sampled_release_bytes"]) <= 0
+        or int(forecast["projected_pool_days"]) < int(forecast["sampled_pool_days"])
+        or int(forecast["projected_release_bytes"]) < int(forecast["sampled_release_bytes"])
+        or int(forecast["peak_workspace_bytes"]) < int(forecast["projected_release_bytes"])
+    ):
+        raise ValueError("capital generation storage calibration is invalid")
     scientific = manifest.get("scientific_inputs")
     if not isinstance(scientific, dict) or not scientific:
         raise ValueError("capital generation manifest lacks scientific input bindings")
@@ -187,6 +308,8 @@ def validate_capital_generation_manifest(
             observed = file_sha256(path)
             if before != file_stat_identity(path) or observed != digest:
                 raise ValueError(f"capital generation scientific input is stale: {path_text}")
+        for venue, record in sorted(releases.items()):
+            validate_certified_cp_stream_manifest(record, expected_venue=venue)
 
 
 def resolve_capital_release(

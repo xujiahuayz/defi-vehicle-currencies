@@ -14,7 +14,7 @@ from ddvc.cpquote import ReserveEvent
 from ddvc.pricing.mixed_frontier import MixedFrontierState, mixed_leg_quotes, quote_mixed_path
 from ddvc.pricing.tick_state import TickPoolState
 from ddvc.pricing.v2_frontier import quote_v2_pool, v2_leg_quotes
-from ddvc.pricing.v2_replay import V2PoolMeta, V2ReplayDay, load_v2_replay_day
+from ddvc.pricing.v2_replay import V2PoolMeta, V2ReplayDay, load_v2_replay_day, v2_replay_day_inputs
 from ddvc.state_data import CP_STREAMS, write_cp_partition
 
 
@@ -38,6 +38,33 @@ def complete_cp_day(raw: Path, venue: str, day: str) -> None:
 
 
 class V2ReplayFrontierTests(unittest.TestCase):
+    def test_streamed_replay_lineage_includes_previous_reserve_seed_day(self) -> None:
+        with patch(
+            "ddvc.pricing.v2_replay.state_partition_inputs",
+            side_effect=lambda _root, _family, venue, day: [Path(f"{venue}-{day}")],
+        ) as inputs:
+            observed = v2_replay_day_inputs(
+                Path("raw"), "20250102", venues=("uniswap_v2",)
+            )
+        self.assertEqual(
+            observed,
+            (Path("uniswap_v2-20250101"), Path("uniswap_v2-20250102")),
+        )
+        self.assertEqual(inputs.call_count, 2)
+
+    def test_streamed_loader_skips_prelaunch_venue(self) -> None:
+        with patch("ddvc.pricing.v2_replay.iter_normalised_cp_records") as normalise:
+            replay = load_v2_replay_day(
+                None,
+                "20200101",
+                venues=("sushiswap_v2",),
+                raw_root=Path("unused"),
+            )
+        normalise.assert_not_called()
+        self.assertEqual(replay.meta, {})
+        self.assertEqual(replay.pool_hour_events, {})
+        self.assertEqual(replay.swaps_by_identity, {})
+
     def test_loader_owns_clean_pretrade_state_and_identity(self) -> None:
         with tempfile.TemporaryDirectory() as directory:
             root = Path(directory)

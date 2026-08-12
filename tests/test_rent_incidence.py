@@ -20,9 +20,8 @@ import pandas as pd
 import pytest
 
 from scripts.run_rent_incidence import (
-    OUTPUT_PROVENANCE,
-    REQUIRED_PANELS,
     by_role_over_time,
+    main,
     pool_months,
     report,
 )
@@ -70,10 +69,13 @@ def capital_contract_fields(venue: str) -> dict[str, object]:
     }
 
 
-def test_every_estimator_output_uses_one_current_input_contract():
+def test_withdrawn_estimator_has_no_reachable_output_pipeline():
     source = (ROOT / "scripts" / "run_rent_incidence.py").read_text()
-    assert OUTPUT_PROVENANCE["inputs"] == REQUIRED_PANELS
-    assert source.count("**OUTPUT_PROVENANCE") == 7
+    assert "require_node_d_release" not in source
+    assert "write_exhibit(" not in source
+    assert "write_panel(" not in source
+    with pytest.raises(RuntimeError, match="estimator withdrawn"):
+        main()
 
 
 def test_rent_assembly_rejects_release_mutation_before_install_and_preserves_prior_pair(
@@ -308,7 +310,7 @@ def test_streaming_capital_lag_requires_the_exact_previous_calendar_day():
     assert not gap["exact_lag_valid"] and gap[CAPITAL_COLUMN] is None
     assert adjacent["exact_lag_valid"] and adjacent[CAPITAL_COLUMN] == 100.0
     assert adjacent["pool_family"] == "full_range_constant_product"
-    assert adjacent["state_generation"] == "released_constant_product_closing_reserves_v1"
+    assert adjacent["state_generation"] == "certified_hourly_reserve_snapshot_v1"
 
 
 def test_provider_capital_must_reconcile_to_independently_priced_holdings():

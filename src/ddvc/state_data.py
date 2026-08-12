@@ -1,8 +1,8 @@
-"""Canonical, materialised market-state inputs for empirical runners.
+"""Canonical market-state normalization for cached and streamed consumers.
 
 Raw provider JSON is immutable evidence. This module is the only boundary that
-translates its source-specific schemas into stable research records. Downstream
-replay and quote code reads the materialised partitions, never provider rows.
+translates its source-specific schemas into stable research records. Purpose-bound
+builders may consume normalized records directly without writing a full event copy.
 """
 
 from __future__ import annotations
@@ -11,6 +11,7 @@ import gzip
 import hashlib
 import json
 import datetime as dt
+from collections.abc import Iterator
 from dataclasses import asdict, dataclass, replace
 from decimal import Decimal, InvalidOperation
 from pathlib import Path
@@ -18,7 +19,13 @@ from pathlib import Path
 import pandas as pd
 
 from ddvc.amounts import human_to_raw
-from ddvc.artifact_release import canonical_json_sha256, file_sha256, is_sha256
+from ddvc.artifact_release import (
+    FileLineageLease,
+    bind_file_lineage,
+    canonical_json_sha256,
+    file_sha256,
+    is_sha256,
+)
 from ddvc.asset_types import canonical_token
 from ddvc.execution_contracts import (
     CP_STATE_GENERATION,
@@ -27,10 +34,16 @@ from ddvc.execution_contracts import (
     TICK_STATE_GENERATIONS,
     execution_semantics,
 )
-from ddvc.graph_event_order import CORE_STREAMS, EventOrderCorrections, load_event_order_corrections
+from ddvc.graph_event_order import (
+    CORE_STREAMS,
+    EventOrderCorrections,
+    correction_pointer_path,
+    correction_root_for_graph,
+    load_event_order_corrections,
+)
 from ddvc.paths import DATA_DIR
 from ddvc.provenance import cache_key
-from ddvc.runtime import atomic_output
+from ddvc.runtime import atomic_output, serialized_read_installs
 from ddvc.source_records import block_value, timestamp_value, transaction_id, v4_static_quote_status
 from ddvc.tick_state_events import (
     initialization_day_inputs,
@@ -481,18 +494,91 @@ def _state_partition_inputs(
     venue: str,
     day: str,
     correction_inputs: list[Path] | None = None,
+    include_absent: bool = False,
 ) -> list[Path]:
     if correction_inputs is None:
         _corrections, correction_inputs = load_event_order_corrections(
             raw_root, venue, day
         )
-    provider_inputs = [] if family == "tick" and venue == "uniswap_v4" else _stream_inputs(raw_root, family, venue, day)
+    provider_inputs = (
+        []
+        if family == "tick" and venue == "uniswap_v4"
+        else [
+            raw_stream_path(raw_root, venue, stream, day)
+            for stream, _kind, _sign in FAMILY_STREAMS[family][venue]
+            if include_absent
+            or raw_stream_path(raw_root, venue, stream, day).exists()
+        ]
+    )
     inputs = [*provider_inputs, *correction_inputs]
+    if include_absent:
+        inputs.append(
+            correction_pointer_path(
+                correction_root_for_graph(raw_root), venue, day
+            )
+        )
     if family == "tick":
-        inputs.extend(path for path in initialization_day_inputs(raw_root, venue, day) if path.exists())
+        inputs.extend(
+            path
+            for path in initialization_day_inputs(raw_root, venue, day)
+            if include_absent or path.exists()
+        )
         if venue == "uniswap_v4":
-            inputs.extend(path for path in v4_state_day_inputs(raw_root, day) if path.exists())
-    return inputs
+            inputs.extend(
+                path
+                for path in v4_state_day_inputs(raw_root, day)
+                if include_absent or path.exists()
+            )
+    return list(dict.fromkeys(inputs))
+
+
+def state_partition_inputs(
+    raw_root: Path,
+    family: str,
+    venue: str,
+    day: str,
+    correction_inputs: list[Path] | None = None,
+    include_absent: bool = False,
+) -> list[Path]:
+    """Expose the exact raw/correction perimeter used by one normalized day."""
+
+    return _state_partition_inputs(
+        raw_root,
+        family,
+        venue,
+        day,
+        correction_inputs,
+        include_absent,
+    )
+
+
+def state_partition_lineage(
+    raw_root: Path,
+    family: str,
+    venue: str,
+    day: str,
+    *,
+    include_absent: bool = False,
+) -> FileLineageLease:
+    """Bind one state partition to a single event-correction pointer snapshot."""
+
+    pointer = correction_pointer_path(
+        correction_root_for_graph(raw_root), venue, day
+    )
+    with serialized_read_installs((pointer,), allow_missing=True):
+        _corrections, correction_inputs = load_event_order_corrections(
+            raw_root, venue, day
+        )
+        paths = _state_partition_inputs(
+            raw_root,
+            family,
+            venue,
+            day,
+            correction_inputs,
+            include_absent,
+        )
+        with serialized_read_installs(paths, allow_missing=include_absent):
+            return bind_file_lineage(paths, allow_missing=include_absent)
 
 
 def _reconciled_stream_rows(
@@ -1125,6 +1211,66 @@ def normalise_cp_partition(
         counters=counters,
     )
     return frame, quality
+
+
+def iter_normalised_cp_records(
+    raw_root: Path,
+    venue: str,
+    day: str,
+) -> Iterator[dict[str, object]]:
+    """Yield one normalized CP day without installing an event-state partition."""
+
+    frame, quality = normalise_cp_partition(raw_root, venue, day)
+    if not quality.passed:
+        raise ValueError(
+            f"constant-product exact-event contract failed: {venue}/{day}; "
+            f"missing_streams={quality.missing_required_streams}; "
+            f"conflicts={quality.conflicting_events}"
+        )
+    yield from frame.to_dict("records")
+
+
+def iter_normalised_cp_reserve_records(
+    raw_root: Path,
+    venue: str,
+    day: str,
+) -> Iterator[dict[str, object]]:
+    """Yield only normalized hourly reserve observations for deposited capital."""
+
+    if venue not in CP_STREAMS:
+        raise ValueError(f"unsupported constant-product venue: {venue}")
+    path = raw_stream_path(raw_root, venue, "hourly_reserves", day)
+    if not path.is_file():
+        raise FileNotFoundError(f"certified reserve stream is missing: {venue}/{day}")
+    seen: dict[tuple[str, int], dict[str, object]] = {}
+    for source in _reconciled_stream_rows(path, venue, "hourly_reserves", None):
+        if source is None:
+            continue
+        record, _flags = _normalise_cp_row(
+            source,
+            venue=venue,
+            day=day,
+            stream="hourly_reserves",
+            record_type="snapshot",
+            liquidity_sign=0,
+        )
+        pool = str(record.get("pool") or "").lower()
+        period_start = record.get("period_start")
+        if not pool or period_start is None:
+            yield record
+            continue
+        key = pool, int(period_start)
+        prior = seen.get(key)
+        if prior is None:
+            seen[key] = record
+            yield record
+            continue
+        comparable = {name: value for name, value in record.items() if name != "event_id"}
+        prior_comparable = {name: value for name, value in prior.items() if name != "event_id"}
+        if comparable != prior_comparable:
+            raise ValueError(
+                f"hourly reserve snapshots conflict at one pool-period: {venue}/{day}/{pool}/{period_start}"
+            )
 
 
 def _event_log_index(row: dict, venue: str) -> int | None:
