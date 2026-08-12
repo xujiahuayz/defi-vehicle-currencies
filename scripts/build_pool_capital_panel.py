@@ -53,7 +53,7 @@ from ddvc.data_release import (
     ReleasedPartitionSet,
     release_preinstall_validator,
     released_state_partitions,
-    require_market_state_prerelease,
+    require_market_state_family_prerelease,
     require_v2_event_source_release,
 )
 from ddvc.fetch.pool_daily import pool_day_values, verified_pool_provider_rows
@@ -979,7 +979,7 @@ def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--workers", type=int, default=8)
     args = parser.parse_args(argv)
-    require_market_state_prerelease()
+    require_market_state_family_prerelease("constant_product")
     require_v2_event_source_release()
     require_current_artifacts(
         [TOKEN_PRICE_DAILY_PANEL, V2_AUDITED_TOKEN_DECIMALS_REGISTRY],

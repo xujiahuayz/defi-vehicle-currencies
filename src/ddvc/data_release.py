@@ -17,6 +17,7 @@ from ddvc.artifact_release import (
 )
 from ddvc.calendar import RESEARCH_SAMPLE_END, RESEARCH_SAMPLE_START, calendar_days
 from ddvc.fetch.sources import get_source
+from ddvc.market_state_release import release_entry_is_current, resolve_market_state_family_release
 from ddvc.reconstruct import (
     DEX_FAMILY,
     RECONSTRUCTION_ENGINE,
@@ -30,6 +31,7 @@ from ddvc.reconstruct import (
 )
 from ddvc.state_data import (
     CP_COLUMNS,
+    FAMILY_PRODUCER_FINGERPRINTS,
     FAMILY_STREAMS,
     MULTI_ASSET_COLUMNS,
     QUALITY_COLUMNS,
@@ -67,6 +69,7 @@ from ddvc.v4_quarantine import (
 
 
 MARKET_STATE_QUALITY_PANEL = DATA_DIR / "processed" / "market_state_quality.parquet"
+MARKET_STATE_FAMILY_QUALITY_ROOT = DATA_DIR / "processed" / "market_state_quality"
 MARKET_STATE_QUALITY_COLUMNS = [
     QUALITY_COLUMNS[0],
     "engine",
@@ -434,6 +437,127 @@ def expected_state_keys() -> list[tuple[str, str, str]]:
     return keys
 
 
+def state_family_quality_panel(family: str) -> Path:
+    if family not in FAMILY_STREAMS:
+        raise ValueError(f"unsupported canonical state family: {family}")
+    return MARKET_STATE_FAMILY_QUALITY_ROOT / f"{family}.parquet"
+
+
+def expected_state_family_keys(family: str) -> list[tuple[str, str, str]]:
+    if family not in FAMILY_STREAMS:
+        raise ValueError(f"unsupported canonical state family: {family}")
+    return [key for key in expected_state_keys() if key[0] == family]
+
+
+def _validated_state_family_ledger(family: str) -> pd.DataFrame:
+    """Validate one complete state family without requiring unrelated families."""
+
+    path = state_family_quality_panel(family)
+    if not path.is_file():
+        raise RuntimeError(f"node D has not released the {family} market-state ledger")
+    require_current_artifacts(
+        [path], consumer=f"node D {family} market-state release"
+    )
+    before = file_stat_identity(path)
+    ledger_sha256 = file_sha256(path)
+    quality = pd.read_parquet(path)
+    if before != file_stat_identity(path) or file_sha256(path) != ledger_sha256:
+        raise RuntimeError(f"node D {family} market-state ledger mutated during validation")
+    release = resolve_market_state_family_release(family)
+    if (
+        release.ledger_sha256 != ledger_sha256
+        or release.engine != STATE_ENGINE
+        or release.producer_fingerprint != FAMILY_PRODUCER_FINGERPRINTS[family]
+        or release.state_root != STATE_ROOT
+    ):
+        raise RuntimeError(f"node D {family} market-state pointer disagrees with its ledger or engine")
+    if list(quality.columns) != MARKET_STATE_QUALITY_COLUMNS:
+        raise RuntimeError(f"node D {family} market-state quality schema is stale")
+    expected = expected_state_family_keys(family)
+    actual = (
+        (str(row.family), str(row.venue), str(row.day).zfill(8))
+        for row in quality.itertuples(index=False)
+    )
+    _exact_key_gate(
+        label=f"the full {family} market-state calendar",
+        actual=actual,
+        expected=expected,
+    )
+    if quality.duplicated(["family", "venue", "day"]).any():
+        raise RuntimeError(f"node D {family} market-state ledger contains duplicate partitions")
+    if set(quality["family"].astype(str)) != {family}:
+        raise RuntimeError(f"node D {family} market-state ledger mixes families")
+    if set(quality["engine"].astype(str)) != {STATE_ENGINE}:
+        raise RuntimeError(f"node D {family} market-state ledger belongs to a stale engine")
+    if set(quality["producer_fingerprint"].astype(str)) != {
+        FAMILY_PRODUCER_FINGERPRINTS[family]
+    }:
+        raise RuntimeError(f"node D {family} market-state ledger belongs to a stale producer")
+    if not quality["passed"].astype(bool).all():
+        raise RuntimeError(f"node D {family} market-state ledger contains failed partitions")
+    if not pd.api.types.is_bool_dtype(quality["scientific_support"]):
+        raise RuntimeError(f"node D {family} scientific support is not boolean")
+    support = quality["scientific_support"].astype(bool)
+    if family != "tick" and not support.all():
+        raise RuntimeError(f"node D {family} marks a partition scientifically unsupported")
+    if family == "tick":
+        conflict_counts = quality["cross_venue_order_conflicts"].astype(int)
+        if conflict_counts.nunique() != 1 or int(conflict_counts.iloc[0]) != 0:
+            raise RuntimeError("node D tick state has inconsistent or nonzero cross-venue conflicts")
+        quarantine_counts = quality["v4_static_conflict_pools"].astype(int)
+        if quarantine_counts.nunique() != 1 or int(quarantine_counts.iloc[0]) != len(
+            load_v4_static_quarantine(V4_STATIC_QUARANTINE_PANEL)
+        ):
+            raise RuntimeError("node D tick state disagrees with the V4 quarantine")
+        v4_support = quality.loc[
+            quality["venue"].astype(str).eq("uniswap_v4"),
+            ["day", "scientific_support"],
+        ].sort_values("day", kind="stable")
+        if v4_support["scientific_support"].astype(bool).cummin().ne(
+            v4_support["scientific_support"].astype(bool)
+        ).any():
+            raise RuntimeError("node D V4 scientific support reopens after the exact prefix ends")
+    readers = {
+        "tick": read_tick_quality,
+        "constant_product": read_cp_quality,
+        "multi_asset": read_multi_asset_quality,
+    }
+    stale: list[tuple[str, str]] = []
+    for _family, venue, day in expected:
+        marker_quality = readers[family](RAW_ROOT, venue, day, verify_output=False)
+        entry = release.entries.get((venue, day))
+        if marker_quality is None or entry is None:
+            stale.append((venue, day))
+            continue
+        panel = state_partition_path(family, venue, day, root=release.state_root)
+        marker = state_quality_path(family, venue, day, root=release.state_root)
+        if not release_entry_is_current(entry, panel=panel, marker=marker):
+            stale.append((venue, day))
+    if stale:
+        raise RuntimeError(
+            f"node D {family} market-state release has {len(stale)} stale partition(s), first={stale[0]}"
+        )
+    ledger_entries = {
+        (str(row.venue), str(row.day).zfill(8)): (
+            str(row.input_fingerprint),
+            int(row.output_bytes),
+            str(row.output_sha256),
+        )
+        for row in quality.itertuples(index=False)
+    }
+    released_entries = {
+        key: (entry.input_fingerprint, entry.output_bytes, entry.output_sha256)
+        for key, entry in release.entries.items()
+    }
+    if ledger_entries != released_entries:
+        raise RuntimeError(f"node D {family} market-state pointer perimeter disagrees with its ledger")
+    ordered = quality.sort_values(["venue", "day"], kind="stable").reset_index(drop=True)
+    ordered.attrs["ledger_sha256"] = ledger_sha256
+    ordered.attrs["ledger_path"] = path
+    ordered.attrs["state_root"] = release.state_root
+    return ordered
+
+
 def _validated_release_ledger(kind: str) -> pd.DataFrame:
     """Read and fully validate the one canonical ledger for a node-D family."""
 
@@ -536,6 +660,12 @@ def require_market_state_prerelease() -> None:
     """Require structural state integrity before dependent source certificates exist."""
 
     _validated_release_ledger("state")
+
+
+def require_market_state_family_prerelease(family: str) -> None:
+    """Require a complete released family while other state families may still build."""
+
+    _validated_state_family_ledger(family)
 
 
 def _released_partition(
@@ -695,8 +825,10 @@ def released_state_partitions(
     if family not in FAMILY_STREAMS or venue not in FAMILY_STREAMS[family]:
         raise ValueError(f"unsupported canonical state family/venue: {family}/{venue}")
     selected_columns = _normalized_columns(columns, STATE_COLUMN_CONTRACTS[family])
-    quality = _validated_release_ledger("state")
+    quality = _validated_state_family_ledger(family)
     ledger_sha256 = str(quality.attrs["ledger_sha256"])
+    ledger_path = Path(quality.attrs["ledger_path"])
+    state_root = Path(quality.attrs["state_root"])
     selected = quality.loc[
         quality["family"].astype(str).eq(family)
         & quality["venue"].astype(str).eq(venue)
@@ -708,8 +840,8 @@ def released_state_partitions(
     partitions = tuple(
         _released_partition(
             day=str(row.day).zfill(8),
-            path=state_partition_path(family, venue, str(row.day).zfill(8), root=STATE_ROOT),
-            marker_path=state_quality_path(family, venue, str(row.day).zfill(8), root=STATE_ROOT),
+            path=state_partition_path(family, venue, str(row.day).zfill(8), root=state_root),
+            marker_path=state_quality_path(family, venue, str(row.day).zfill(8), root=state_root),
             expected_rows=row.canonical_rows,
             expected_bytes=row.output_bytes,
             expected_sha256=row.output_sha256,
@@ -735,7 +867,7 @@ def released_state_partitions(
     return _released_partition_set(
         kind="state",
         columns=selected_columns,
-        ledger_path=MARKET_STATE_QUALITY_PANEL,
+        ledger_path=ledger_path,
         ledger_sha256=ledger_sha256,
         partitions=partitions,
         family=family,

@@ -29,7 +29,7 @@ from ddvc.execution_contracts import (
 )
 from ddvc.graph_event_order import CORE_STREAMS, EventOrderCorrections, load_event_order_corrections
 from ddvc.paths import DATA_DIR
-from ddvc.provenance import cache_key
+from ddvc.provenance import semantic_code_fingerprint
 from ddvc.runtime import atomic_output
 from ddvc.source_records import block_value, timestamp_value, transaction_id, v4_static_quote_status
 from ddvc.tick_state_events import (
@@ -43,7 +43,7 @@ from ddvc.tick_state_events import (
 
 
 SCHEMA_VERSION = 3
-CODE_SOURCES = [
+COMMON_CODE_SOURCES = [
     "src/ddvc/state_data.py",
     "src/ddvc/amounts.py",
     "src/ddvc/asset_types.py",
@@ -51,9 +51,23 @@ CODE_SOURCES = [
     "src/ddvc/graph_event_order.py",
     "src/ddvc/ethereum_receipts.py",
     "src/ddvc/source_records.py",
-    "src/ddvc/tick_state_events.py",
 ]
-STATE_ENGINE = cache_key(CODE_SOURCES)
+FAMILY_CODE_SOURCES = {
+    "tick": [*COMMON_CODE_SOURCES, "src/ddvc/tick_state_events.py"],
+    "constant_product": COMMON_CODE_SOURCES,
+    "multi_asset": COMMON_CODE_SOURCES,
+}
+CODE_SOURCES = sorted({path for paths in FAMILY_CODE_SOURCES.values() for path in paths})
+FAMILY_PRODUCER_FINGERPRINTS = {
+    family: semantic_code_fingerprint(paths)
+    for family, paths in FAMILY_CODE_SOURCES.items()
+}
+STATE_ENGINE = canonical_json_sha256(
+    {
+        "schema_version": SCHEMA_VERSION,
+        "family_producer_fingerprints": FAMILY_PRODUCER_FINGERPRINTS,
+    }
+)[:12]
 STATE_ROOT = DATA_DIR / "processed" / "market_state" / f"engine_{STATE_ENGINE}"
 RAW_ROOT = DATA_DIR / "raw" / "thegraph"
 QUALITY_COLUMNS = [
@@ -61,6 +75,7 @@ QUALITY_COLUMNS = [
     "family",
     "venue",
     "day",
+    "producer_fingerprint",
     "input_fingerprint",
     "raw_rows",
     "canonical_rows",
@@ -268,6 +283,7 @@ class StatePartitionQuality:
     family: str
     venue: str
     day: str
+    producer_fingerprint: str
     input_fingerprint: str
     raw_rows: int
     canonical_rows: int
@@ -332,6 +348,7 @@ def finish_quality(
         family=family,
         venue=venue,
         day=day,
+        producer_fingerprint=FAMILY_PRODUCER_FINGERPRINTS[family],
         input_fingerprint=partition_input_fingerprint(inputs),
         canonical_rows=len(frame),
         usable_rows=int(frame["usable"].sum()) if not frame.empty else 0,
@@ -1681,6 +1698,8 @@ def _read_state_quality(
     marker: Path,
     panel: Path,
     inputs: list[Path],
+    family: str,
+    verify_output: bool,
 ) -> StatePartitionQuality | None:
     if not marker.exists() or not panel.exists():
         return None
@@ -1688,8 +1707,9 @@ def _read_state_quality(
     current = partition_input_fingerprint(inputs)
     if (
         quality.schema_version != SCHEMA_VERSION
+        or quality.producer_fingerprint != FAMILY_PRODUCER_FINGERPRINTS[family]
         or quality.input_fingerprint != current
-        or not state_partition_output_is_current(quality, panel)
+        or (verify_output and not state_partition_output_is_current(quality, panel))
     ):
         return None
     return quality
@@ -1700,6 +1720,7 @@ def _read_state_partition(
     columns: list[str],
     *,
     family: str,
+    producer_family: str,
     current_input_fingerprint: str,
     include_quarantined: bool,
     allow_failed_partition: bool,
@@ -1710,6 +1731,8 @@ def _read_state_partition(
     quality = StatePartitionQuality(**json.loads(marker.read_text(encoding="utf-8")))
     if quality.schema_version != SCHEMA_VERSION:
         raise ValueError(f"canonical {family} quality schema is stale: {path}")
+    if quality.producer_fingerprint != FAMILY_PRODUCER_FINGERPRINTS[producer_family]:
+        raise ValueError(f"canonical {family} producer is stale: {path}")
     if quality.input_fingerprint != current_input_fingerprint:
         raise ValueError(f"canonical {family} partition is stale against its source inputs: {path}")
     if not state_partition_output_is_current(quality, path):
@@ -1748,11 +1771,14 @@ def read_tick_quality(
     day: str,
     *,
     root: Path = STATE_ROOT,
+    verify_output: bool = True,
 ) -> StatePartitionQuality | None:
     return _read_state_quality(
         marker=tick_quality_path(venue, day, root=root),
         panel=tick_partition_path(venue, day, root=root),
         inputs=_state_partition_inputs(raw_root, "tick", venue, day),
+        family="tick",
+        verify_output=verify_output,
     )
 
 
@@ -1770,6 +1796,7 @@ def read_tick_partition(
         path,
         TICK_COLUMNS,
         family="tick",
+        producer_family="tick",
         current_input_fingerprint=partition_input_fingerprint(
             _state_partition_inputs(raw_root, "tick", venue, day)
         ),
@@ -1800,11 +1827,14 @@ def read_cp_quality(
     day: str,
     *,
     root: Path = STATE_ROOT,
+    verify_output: bool = True,
 ) -> StatePartitionQuality | None:
     return _read_state_quality(
         marker=cp_quality_path(venue, day, root=root),
         panel=cp_partition_path(venue, day, root=root),
         inputs=_state_partition_inputs(raw_root, "constant_product", venue, day),
+        family="constant_product",
+        verify_output=verify_output,
     )
 
 
@@ -1822,6 +1852,7 @@ def read_cp_partition(
         path,
         CP_COLUMNS,
         family="constant-product",
+        producer_family="constant_product",
         current_input_fingerprint=partition_input_fingerprint(
             _state_partition_inputs(raw_root, "constant_product", venue, day)
         ),
@@ -1852,11 +1883,14 @@ def read_multi_asset_quality(
     day: str,
     *,
     root: Path = STATE_ROOT,
+    verify_output: bool = True,
 ) -> StatePartitionQuality | None:
     return _read_state_quality(
         marker=multi_asset_quality_path(venue, day, root=root),
         panel=multi_asset_partition_path(venue, day, root=root),
         inputs=_stream_inputs(raw_root, "multi_asset", venue, day),
+        family="multi_asset",
+        verify_output=verify_output,
     )
 
 
@@ -1874,6 +1908,7 @@ def read_multi_asset_partition(
         path,
         MULTI_ASSET_COLUMNS,
         family="multi-asset",
+        producer_family="multi_asset",
         current_input_fingerprint=partition_input_fingerprint(
             _stream_inputs(raw_root, "multi_asset", venue, day)
         ),

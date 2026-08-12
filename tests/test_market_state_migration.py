@@ -8,9 +8,13 @@ from unittest.mock import patch
 
 import pytest
 
+from ddvc.artifact_release import file_sha256
+from ddvc.market_state_release import MarketStateReleaseEntry, panel_content_identity
 from ddvc.state_data import (
+    FAMILY_PRODUCER_FINGERPRINTS,
     FAMILY_STREAMS,
     SCHEMA_VERSION as STATE_SCHEMA_VERSION,
+    STATE_ROOT,
     StatePartitionQuality,
     bind_state_partition_output,
     normalise_cp_partition,
@@ -127,6 +131,51 @@ def test_schema_current_rekey_hardlinks_only_after_raw_exact_validation(tmp_path
         )
     target_path = target / "constant_product" / "sushiswap_v2" / f"{day}.parquet"
     assert source_path.stat().st_ino == target_path.stat().st_ino
+
+
+def test_released_rekey_uses_marker_and_stat_identity_without_rereading_panel_bytes(tmp_path) -> None:
+    raw, source, target = tmp_path / "raw", tmp_path / "source", tmp_path / "target"
+    day = "20250101"
+    pair = {
+        "id": "pool",
+        "token0": {"id": "0xa", "symbol": "A", "decimals": 18},
+        "token1": {"id": "0xb", "symbol": "B", "decimals": 6},
+    }
+    write_streams(
+        raw,
+        "constant_product",
+        "sushiswap_v2",
+        day,
+        {
+            "hourly_reserves": [{"id": "snapshot", "hourStartUnix": 0, "reserve0": "100", "reserve1": "200", "pair": pair}],
+            "swaps": [],
+        },
+    )
+    frame, quality = normalise_cp_partition(raw, "sushiswap_v2", day)
+    panel = write_v2_source(source, "constant_product", "sushiswap_v2", day, frame, quality)
+    marker = panel.with_suffix(".quality.json")
+    bound = json.loads(marker.read_text(encoding="utf-8"))
+    entry = MarketStateReleaseEntry(
+        family="constant_product",
+        venue="sushiswap_v2",
+        day=day,
+        panel_relative=f"constant_product/sushiswap_v2/{day}.parquet",
+        marker_relative=f"constant_product/sushiswap_v2/{day}.quality.json",
+        input_fingerprint=bound["input_fingerprint"],
+        producer_fingerprint=bound["producer_fingerprint"],
+        output_bytes=bound["output_bytes"],
+        output_sha256=bound["output_sha256"],
+        marker_sha256=file_sha256(marker),
+        panel_stat_identity=panel_content_identity(panel),
+    )
+    with (
+        patch("scripts.build_market_state.RAW", raw),
+        patch("scripts.build_market_state.state_partition_output_is_current", side_effect=AssertionError("full panel hash should not run")),
+    ):
+        rekey_current_partition(source, "constant_product", "sushiswap_v2", day, target, entry)
+        rekey_current_partition(source, "constant_product", "sushiswap_v2", day, tmp_path / "retry", entry)
+    assert panel.stat().st_ino == (target / entry.panel_relative).stat().st_ino
+    assert panel_content_identity(panel) == entry.panel_stat_identity
 
 
 def test_rekey_refuses_a_marker_when_any_current_required_stream_is_missing(tmp_path) -> None:
@@ -265,6 +314,7 @@ def test_cached_migration_partition_is_revalidated_after_restart(tmp_path) -> No
         family="constant_product",
         venue="sushiswap_v2",
         day=day,
+        producer_fingerprint=FAMILY_PRODUCER_FINGERPRINTS["constant_product"],
         input_fingerprint="fingerprint",
         raw_rows=0,
         canonical_rows=0,
@@ -303,4 +353,4 @@ def test_cached_migration_partition_is_revalidated_after_restart(tmp_path) -> No
             migrate_from=source,
         )
     assert len(rows) == 1
-    validate.assert_called_once_with("constant_product", "sushiswap_v2", day)
+    validate.assert_called_once_with("constant_product", "sushiswap_v2", day, STATE_ROOT)

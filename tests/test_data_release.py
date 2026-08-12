@@ -11,6 +11,7 @@ import pandas as pd
 
 from ddvc.data_release import (
     _exact_key_gate,
+    _validated_state_family_ledger,
     _validated_release_ledger,
     ReleasedPartition,
     ReleasedPartitionSet,
@@ -24,7 +25,7 @@ from ddvc.data_release import (
 )
 from ddvc.artifact_release import file_sha256
 from ddvc.provenance import sidecar_path, verify
-from ddvc.state_data import QUALITY_COLUMNS, SCHEMA_VERSION, STATE_ENGINE
+from ddvc.state_data import QUALITY_COLUMNS, SCHEMA_VERSION, STATE_ENGINE, STATE_ROOT
 from ddvc.tables import write_panel
 from ddvc.v4_quarantine import audit_v4_pool_static_conflicts
 
@@ -206,6 +207,55 @@ class DataReleaseTests(unittest.TestCase):
                 consumed = _validated_release_ledger("state")
         self.assertEqual(list(consumed.columns), list(produced.columns))
 
+    def test_constant_product_family_release_does_not_require_tick_or_multi_asset(self) -> None:
+        from unittest.mock import patch
+        from ddvc.data_release import MARKET_STATE_QUALITY_COLUMNS
+        from ddvc.state_data import FAMILY_PRODUCER_FINGERPRINTS
+
+        row = {column: 0 for column in MARKET_STATE_QUALITY_COLUMNS}
+        row.update(
+            {
+                "schema_version": SCHEMA_VERSION,
+                "engine": STATE_ENGINE,
+                "family": "constant_product",
+                "venue": "uniswap_v2",
+                "day": "20250101",
+                "producer_fingerprint": FAMILY_PRODUCER_FINGERPRINTS["constant_product"],
+                "input_fingerprint": "c" * 64,
+                "output_sha256": "d" * 64,
+                "passed": True,
+                "scientific_support": True,
+            }
+        )
+        with tempfile.TemporaryDirectory() as directory:
+            ledger = Path(directory) / "constant_product.parquet"
+            pd.DataFrame([row], columns=MARKET_STATE_QUALITY_COLUMNS).to_parquet(ledger, index=False)
+            released_entry = SimpleNamespace(
+                input_fingerprint="c" * 64,
+                output_bytes=0,
+                output_sha256="d" * 64,
+            )
+            pointer_release = SimpleNamespace(
+                ledger_sha256=file_sha256(ledger),
+                engine=STATE_ENGINE,
+                producer_fingerprint=FAMILY_PRODUCER_FINGERPRINTS["constant_product"],
+                state_root=STATE_ROOT,
+                entries={("uniswap_v2", "20250101"): released_entry},
+            )
+            with (
+                patch("ddvc.data_release.state_family_quality_panel", return_value=ledger),
+                patch("ddvc.data_release.require_current_artifacts"),
+                patch("ddvc.data_release.resolve_market_state_family_release", return_value=pointer_release),
+                patch(
+                    "ddvc.data_release.expected_state_family_keys",
+                    return_value=[("constant_product", "uniswap_v2", "20250101")],
+                ),
+                patch("ddvc.data_release.read_cp_quality", return_value=SimpleNamespace()),
+                patch("ddvc.data_release.release_entry_is_current", return_value=True),
+            ):
+                released = _validated_state_family_ledger("constant_product")
+        self.assertEqual(released[["family", "venue", "day"]].astype(str).values.tolist(), [["constant_product", "uniswap_v2", "20250101"]])
+
     def test_released_route_partitions_bind_exact_order_rows_and_mutation_safe_reads(self) -> None:
         from unittest.mock import patch
 
@@ -326,11 +376,13 @@ class DataReleaseTests(unittest.TestCase):
             ).to_parquet(quarantine, index=False)
             ledger_frame = pd.DataFrame([quality, {**quality, "day": "20250102", "scientific_support": False}])
             ledger_frame.attrs["ledger_sha256"] = file_sha256(ledger)
+            ledger_frame.attrs["ledger_path"] = ledger
+            ledger_frame.attrs["state_root"] = root
             with (
                 patch("ddvc.data_release.MARKET_STATE_QUALITY_PANEL", ledger),
                 patch("ddvc.data_release.V4_STATIC_QUARANTINE_PANEL", quarantine),
                 patch("ddvc.v4_quarantine.require_current_artifacts"),
-                patch("ddvc.data_release._validated_release_ledger", return_value=ledger_frame),
+                patch("ddvc.data_release._validated_state_family_ledger", return_value=ledger_frame),
                 patch("ddvc.data_release.state_partition_path", return_value=panel),
                 patch("ddvc.data_release.state_quality_path", return_value=marker),
             ):
@@ -584,6 +636,7 @@ class DataReleaseTests(unittest.TestCase):
             "scripts/build_counterfactual_dominance.py": "require_node_d_release(routes=True, market_state=True)",
             "scripts/build_rent_incidence_panel.py": "require_node_d_release(market_state=True)",
             "scripts/build_v2_token_panel.py": "released_state_partitions(",
+            "scripts/build_pool_capital_panel.py": 'require_market_state_family_prerelease("constant_product")',
             "scripts/run_rent_incidence.py": "require_node_d_release(routes=True, market_state=True)",
         }
         for filename, call in expected.items():

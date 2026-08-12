@@ -17,11 +17,19 @@ from ddvc.data_release import (
     V4_STATIC_QUARANTINE_PANEL,
     audit_cross_venue_order_conflicts,
     audit_v4_pool_static_conflicts,
+    state_family_quality_panel,
 )
 from ddvc.fetch.sources import get_source
 from ddvc.graph_event_order import SUPPORTED_VENUES, load_event_order_generation_metadata
+from ddvc.market_state_release import (
+    MarketStateFamilyRelease,
+    MarketStateReleaseEntry,
+    market_state_gc_candidates,
+    release_entry_is_current,
+    publish_market_state_family_release,
+    resolve_market_state_family_release,
+)
 from ddvc.paths import DATA_DIR, OUTPUT_DIR, RAW_MARKET_DATA_LOCK
-from ddvc.provenance import stamp
 from ddvc.runtime import (
     atomic_output,
     bounded_workers,
@@ -33,6 +41,7 @@ from ddvc.state_data import (
     CP_COLUMNS,
     CP_STATE_GENERATION,
     CODE_SOURCES,
+    FAMILY_PRODUCER_FINGERPRINTS,
     FAMILY_STREAMS,
     MULTI_ASSET_COLUMNS,
     MULTI_ASSET_STATE_GENERATIONS,
@@ -186,6 +195,7 @@ def migrate_v1_partition(
         marker_path = multi_asset_quality_path(venue, day, root=target_root)
     frame = frame.reindex(columns=columns)
     payload["schema_version"] = SCHEMA_VERSION
+    payload["producer_fingerprint"] = FAMILY_PRODUCER_FINGERPRINTS[family]
     payload["output_bytes"] = 0
     payload["output_sha256"] = ""
     payload["quote_supported_swaps"] = int(
@@ -271,6 +281,7 @@ def rekey_current_partition(
     venue: str,
     day: str,
     target_root: Path = STATE_ROOT,
+    release_entry: MarketStateReleaseEntry | None = None,
 ) -> StatePartitionQuality:
     """Hardlink one schema-current partition after proving its raw input is current."""
 
@@ -281,16 +292,34 @@ def rekey_current_partition(
     payload = json.loads(source_marker.read_text(encoding="utf-8"))
     if payload.get("schema_version") != SCHEMA_VERSION:
         raise ValueError(f"rekey source is not schema v{SCHEMA_VERSION}: {family}/{venue}/{day}")
+    current_fingerprint = _current_partition_fingerprint(family, venue, day)
+    if payload.get("producer_fingerprint") != FAMILY_PRODUCER_FINGERPRINTS[family]:
+        raise ValueError(f"rekey source belongs to a different {family} producer: {venue}/{day}")
     if not payload.get("passed"):
         raise ValueError(f"rekey source did not pass its partition gate: {family}/{venue}/{day}")
-    current_fingerprint = _current_partition_fingerprint(family, venue, day)
     if payload.get("input_fingerprint") != current_fingerprint:
         raise ValueError(f"rekey source is stale against raw input: {family}/{venue}/{day}")
     quality = StatePartitionQuality(**payload)
-    if not state_partition_output_is_current(quality, source_panel):
-        raise ValueError(
-            f"rekey source content disagrees with its marker: {family}/{venue}/{day}"
+    if release_entry is None:
+        if not state_partition_output_is_current(quality, source_panel):
+            raise ValueError(
+                f"rekey source content disagrees with its marker: {family}/{venue}/{day}"
+            )
+    elif (
+        release_entry.family != family
+        or release_entry.venue != venue
+        or release_entry.day != day
+        or release_entry.producer_fingerprint != FAMILY_PRODUCER_FINGERPRINTS[family]
+        or release_entry.input_fingerprint != current_fingerprint
+        or release_entry.output_bytes != quality.output_bytes
+        or release_entry.output_sha256 != quality.output_sha256
+        or not release_entry_is_current(
+            release_entry,
+            panel=source_panel,
+            marker=source_marker,
         )
+    ):
+        raise ValueError(f"released rekey identity changed: {family}/{venue}/{day}")
     _atomic_hardlink(source_panel, target_panel)
     _atomic_hardlink(source_marker, target_marker)
     return quality
@@ -317,6 +346,7 @@ def rekey_source_current(
         return False
     return bool(
         payload.get("schema_version") == SCHEMA_VERSION
+        and payload.get("producer_fingerprint") == FAMILY_PRODUCER_FINGERPRINTS[family]
         and payload.get("passed")
         and payload.get("input_fingerprint") == current_fingerprint
         and state_partition_output_is_current(
@@ -394,6 +424,9 @@ def build_family(
     force: bool,
     migrate_from: Path | None,
     rekey_from: Path | None = None,
+    rekey_release: MarketStateFamilyRelease | None = None,
+    target_root: Path = STATE_ROOT,
+    target_released: bool = False,
 ) -> list[dict[str, object]]:
     readers = {
         "tick": read_tick_quality,
@@ -411,17 +444,29 @@ def build_family(
     for venue in venues:
         for day in selected_days(venue, start, end):
             selected.append((venue, day))
-            cached = None if force else readers[family](RAW, venue, day)
+            cached = None if force else readers[family](RAW, venue, day, root=target_root)
             if cached is None:
                 jobs.append((venue, day))
             else:
                 qualities.append(asdict(cached))
+    if jobs and target_released:
+        raise RuntimeError(
+            f"refusing to mutate released market-state family {family} under {target_root.name}"
+        )
     migration_perimeter: list[tuple[str, str]] = []
+    if rekey_release is not None:
+        rekey_from = rekey_release.state_root
     if rekey_from is not None:
         rekey_perimeter = [
             (venue, day)
-            for venue, day in selected
-            if rekey_source_current(rekey_from, family, venue, day)
+            for venue, day in jobs
+            if (
+                (rekey_release is not None and (venue, day) in rekey_release.entries)
+                or (
+                    rekey_release is None
+                    and rekey_source_current(rekey_from, family, venue, day)
+                )
+            )
         ]
         rekey_keys = set(rekey_perimeter)
         rekey_jobs = [job for job in jobs if job in rekey_keys]
@@ -439,6 +484,12 @@ def build_family(
                         family,
                         venue,
                         day,
+                        target_root,
+                        (
+                            rekey_release.entries[(venue, day)]
+                            if rekey_release is not None
+                            else None
+                        ),
                     ): (venue, day)
                     for venue, day in rekey_jobs
                 }
@@ -451,7 +502,7 @@ def build_family(
             venue_days = sorted(day for item_venue, day in rekey_perimeter if item_venue == venue)
             sample = sorted({venue_days[0], venue_days[len(venue_days) // 2], venue_days[-1]})
             for day in sample:
-                validate_rekey_sample(family, venue, day)
+                validate_rekey_sample(family, venue, day, target_root)
             print(
                 f"  {family}/{venue} rekey validation: {len(sample)} raw-normalized days exact",
                 flush=True,
@@ -483,6 +534,7 @@ def build_family(
                         family,
                         venue,
                         day,
+                        target_root,
                     ): (venue, day)
                     for venue, day in migration_jobs
                 }
@@ -510,7 +562,7 @@ def build_family(
                 }
             )
             for day in sample:
-                validate_migration_sample(family, venue, day)
+                validate_migration_sample(family, venue, day, target_root)
             print(
                 f"  {family}/{venue} migration validation: {len(sample)} raw-normalized days exact",
                 flush=True,
@@ -519,7 +571,7 @@ def build_family(
         print(f"building {len(jobs):,} canonical {family} partitions with {workers} workers", flush=True)
         with interruptible_process_pool(workers) as pool:
             futures = {
-                pool.submit(writers[family], RAW, venue, day): (venue, day)
+                pool.submit(writers[family], RAW, venue, day, root=target_root): (venue, day)
                 for venue, day in jobs
             }
             for index, future in enumerate(as_completed(futures), 1):
@@ -527,6 +579,93 @@ def build_family(
                 if index % 100 == 0 or index == len(futures):
                     print(f"  {family} [{index:,}/{len(futures):,}]", flush=True)
     return qualities
+
+
+def _audit_family_quality(
+    quality: pd.DataFrame,
+    family: str,
+) -> tuple[pd.DataFrame, int, list[dict[str, object]], pd.DataFrame]:
+    audited = quality.copy()
+    conflicts = 0
+    conflict_samples: list[dict[str, object]] = []
+    quarantine = pd.DataFrame(columns=["pool", "swap_rows"])
+    if family == "tick":
+        tick_paths = {
+            venue: [
+                tick_partition_path(venue, str(day), root=STATE_ROOT)
+                for day in audited.loc[audited["venue"] == venue, "day"]
+            ]
+            for venue in FAMILY_STREAMS["tick"]
+        }
+        conflicts, conflict_samples = audit_cross_venue_order_conflicts(tick_paths)
+        quarantine = audit_v4_pool_static_conflicts(tick_paths["uniswap_v4"])
+        write_panel(
+            quarantine,
+            V4_STATIC_QUARANTINE_PANEL,
+            code_sources=[*CODE_SOURCES, "src/ddvc/data_release.py", "scripts/build_market_state.py"],
+            inputs=[STATE_ROOT / "tick" / "uniswap_v4"],
+            notes="complete V4 pool exclusion set for provider-supplied immutable-static drift",
+        )
+    audited["cross_venue_order_conflicts"] = conflicts
+    audited["v4_static_conflict_pools"] = len(quarantine)
+    return audited, conflicts, conflict_samples, quarantine
+
+
+def _publish_family_quality(quality: pd.DataFrame, family: str) -> None:
+    ledger = state_family_quality_panel(family)
+    venues = list(FAMILY_STREAMS[family])
+    write_panel(
+        quality,
+        ledger,
+        code_sources=[*CODE_SOURCES, "src/ddvc/data_release.py", "src/ddvc/market_state_release.py", "scripts/build_market_state.py"],
+        inputs=[*[RAW / venue for venue in venues], STATE_ROOT / family],
+        notes=f"complete canonical {family} market-state release under {STATE_ROOT.name}",
+    )
+    publish_market_state_family_release(
+        quality,
+        family=family,
+        ledger_path=ledger,
+    )
+
+
+def _quality_summary(quality: pd.DataFrame, quarantine: pd.DataFrame) -> pd.DataFrame:
+    summary = quality.groupby(["family", "venue"], as_index=False).agg(
+        partitions=("day", "size"),
+        raw_rows=("raw_rows", "sum"),
+        canonical_rows=("canonical_rows", "sum"),
+        snapshot_rows=("snapshot_rows", "sum"),
+        swap_rows=("swap_rows", "sum"),
+        liquidity_rows=("liquidity_rows", "sum"),
+        usable_rows=("usable_rows", "sum"),
+        missing_order=("missing_order", "sum"),
+        missing_identity=("missing_identity", "sum"),
+        missing_required_streams=("missing_required_streams", "sum"),
+        invalid_swap_sign=("invalid_swap_sign", "sum"),
+        invalid_state=("invalid_state", "sum"),
+        unsupported_state=("unsupported_state", "sum"),
+        zero_swap_amounts=("zero_swap_amounts", "sum"),
+        missing_quote_statics=("missing_quote_statics", "sum"),
+        quote_supported_swaps=("quote_supported_swaps", "sum"),
+        conflicting_events=("conflicting_events", "sum"),
+        failed_partitions=("passed", lambda values: int((~values).sum())),
+    )
+    summary["quarantined_rows"] = summary["canonical_rows"] - summary["usable_rows"]
+    summary["quote_support_pct"] = (
+        100 * summary["quote_supported_swaps"] / summary["swap_rows"].where(summary["swap_rows"] > 0)
+    ).round(3)
+    summary["static_conflict_rows"] = 0
+    v4 = (summary["family"] == "tick") & (summary["venue"] == "uniswap_v4")
+    if not quarantine.empty:
+        summary.loc[v4, "static_conflict_rows"] = int(quarantine["swap_rows"].sum())
+    summary["released_quote_supported_swaps"] = summary["quote_supported_swaps"] - summary["static_conflict_rows"]
+    summary["released_quote_support_pct"] = (
+        100 * summary["released_quote_supported_swaps"] / summary["swap_rows"].where(summary["swap_rows"] > 0)
+    ).round(3)
+    return summary
+
+
+def _tree_logical_bytes(path: Path) -> int:
+    return sum(item.stat().st_size for item in path.rglob("*") if item.is_file())
 
 
 def main() -> int:
@@ -537,157 +676,88 @@ def main() -> int:
     parser.add_argument("--end", default=RESEARCH_SAMPLE_END)
     parser.add_argument("--workers", type=int, default=8)
     parser.add_argument("--force", action="store_true")
-    parser.add_argument(
-        "--migrate-from",
-        type=Path,
-        help="schema-v1 state root for exact additive CP/multi-asset migration",
-    )
-    parser.add_argument(
-        "--rekey-from",
-        type=Path,
-        help="schema-current state root whose exact partitions may be hardlinked under the new engine key",
-    )
+    parser.add_argument("--gc-plan", action="store_true")
+    parser.add_argument("--migrate-from", type=Path, help="schema-v1 state root for exact additive CP/multi-asset migration")
+    parser.add_argument("--rekey-from", type=Path, help="schema-current state root whose exact partitions may be hardlinked under the new engine key")
     args = parser.parse_args()
     if args.migrate_from and args.rekey_from:
         parser.error("--migrate-from and --rekey-from are mutually exclusive")
     if args.family == "all" and args.venue:
         parser.error("--venue requires one explicit --family")
+    if args.gc_plan:
+        with exclusive_job(LOCK, job="canonical market-state garbage collection"):
+            candidates = market_state_gc_candidates()
+            for path in candidates:
+                print(f"GC {path.name}: logical_bytes={_tree_logical_bytes(path):,}")
+            print(f"planned {len(candidates):,} unreferenced market-state generation(s); no files removed")
+        return 0
     families = list(FAMILY_STREAMS) if args.family == "all" else [args.family]
     if args.family != "all":
-        allowed_venues = FAMILY_STREAMS[args.family]
-        unknown = sorted(set(args.venue or ()) - set(allowed_venues))
+        unknown = sorted(set(args.venue or ()) - set(FAMILY_STREAMS[args.family]))
         if unknown:
             parser.error(f"unsupported venue(s) for {args.family}: {', '.join(unknown)}")
-    full_run = (
-        args.family == "all"
-        and args.start.replace("-", "") == RESEARCH_SAMPLE_START
-        and args.end.replace("-", "") == RESEARCH_SAMPLE_END
-    )
-    venue_days = sorted(
-        {
-            (venue, day)
-            for family in families
-            for venue in (args.venue or list(FAMILY_STREAMS[family]))
-            for day in selected_days(venue, args.start, args.end)
-        }
-    )
+    full_span = args.start.replace("-", "") == RESEARCH_SAMPLE_START and args.end.replace("-", "") == RESEARCH_SAMPLE_END
+    full_run = args.family == "all" and full_span
+    complete_families = full_span and not args.venue
+    venue_days = sorted({
+        (venue, day)
+        for family in families
+        for venue in (args.venue or list(FAMILY_STREAMS[family]))
+        for day in selected_days(venue, args.start, args.end)
+    })
     preflight_event_order_generations(venue_days)
-    with exclusive_job(
-        RAW_MARKET_DATA_LOCK,
-        job="raw market-data fetch, enrichment, or canonical materialisation",
-    ):
+    with exclusive_job(RAW_MARKET_DATA_LOCK, job="raw market-data fetch, enrichment, or canonical materialisation"):
         with exclusive_job(LOCK, job="canonical market-state build"):
-            rows: list[dict[str, object]] = []
+            frames: list[pd.DataFrame] = []
+            conflict_samples: list[dict[str, object]] = []
+            tick_quarantine = pd.DataFrame(columns=["pool", "swap_rows"])
             for family in families:
-                venues = args.venue or list(FAMILY_STREAMS[family])
-                rows.extend(
-                    build_family(
-                        family,
-                        venues,
-                        start=args.start,
-                        end=args.end,
-                        workers=bounded_workers(args.workers, maximum=10),
-                        force=args.force,
-                        migrate_from=args.migrate_from,
-                        rekey_from=args.rekey_from,
-                    )
+                current = resolve_market_state_family_release(family, required=False)
+                prior = current
+                if args.force or args.migrate_from is not None or args.rekey_from is not None or (prior is not None and prior.producer_fingerprint != FAMILY_PRODUCER_FINGERPRINTS[family]):
+                    prior = None
+                rows = build_family(
+                    family,
+                    args.venue or list(FAMILY_STREAMS[family]),
+                    start=args.start,
+                    end=args.end,
+                    workers=bounded_workers(args.workers, maximum=10),
+                    force=args.force,
+                    migrate_from=args.migrate_from,
+                    rekey_from=args.rekey_from,
+                    rekey_release=prior,
+                    target_released=current is not None and current.state_root == STATE_ROOT,
                 )
-            quality = market_state_quality_frame(rows)
-            failed = quality[~quality["passed"]]
-            if not full_run:
-                print(
-                    f"PARTIAL: built/audited {len(quality):,} partition(s); "
-                    "the global six-venue quality ledger was not published",
-                    flush=True,
-                )
+                family_quality = market_state_quality_frame(rows)
+                failed = family_quality[~family_quality["passed"]]
                 if not failed.empty:
-                    print(f"FAILED: {len(failed):,} selected partition(s) violate the data contract")
+                    print(f"FAILED: {len(failed):,} selected {family} partition(s) violate the data contract")
                     return 1
+                if complete_families:
+                    family_quality, conflicts, samples, quarantine = _audit_family_quality(family_quality, family)
+                    if conflicts:
+                        print(f"FAILED: canonical {family} state has {conflicts:,} cross-venue causal-order conflicts")
+                        return 1
+                    _publish_family_quality(family_quality, family)
+                    conflict_samples.extend(samples)
+                    if family == "tick":
+                        tick_quarantine = quarantine
+                    print(f"RELEASED: {len(family_quality):,} {family} partitions", flush=True)
+                frames.append(family_quality)
+            quality = pd.concat(frames, ignore_index=True).sort_values(["family", "venue", "day"], kind="stable")
+            if not full_run:
+                status = "family release published" if complete_families else "no release published"
+                print(f"PARTIAL: built/audited {len(quality):,} partition(s); {status}; global ledger unchanged", flush=True)
                 return 0
-            tick_paths = {
-                venue: [
-                    tick_partition_path(venue, str(day), root=STATE_ROOT)
-                    for day in quality.loc[
-                        (quality["family"] == "tick") & (quality["venue"] == venue),
-                        "day",
-                    ]
-                ]
-                for venue in FAMILY_STREAMS["tick"]
-            }
-            cross_venue_conflicts, conflict_samples = audit_cross_venue_order_conflicts(
-                tick_paths
-            )
-            v4_static_quarantine = audit_v4_pool_static_conflicts(
-                tick_paths["uniswap_v4"]
-            )
-            write_panel(
-                v4_static_quarantine,
-                V4_STATIC_QUARANTINE_PANEL,
-                code_sources=[
-                    *CODE_SOURCES,
-                    "src/ddvc/data_release.py",
-                    "scripts/build_market_state.py",
-                ],
-                inputs=[STATE_ROOT / "tick" / "uniswap_v4"],
-                notes="complete V4 pool exclusion set for provider-supplied immutable-static drift",
-            )
-            quality["cross_venue_order_conflicts"] = cross_venue_conflicts
-            quality["v4_static_conflict_pools"] = len(v4_static_quarantine)
             all_venues = [venue for venues in FAMILY_STREAMS.values() for venue in venues]
             write_panel(
                 quality,
                 QUALITY_PANEL,
-                code_sources=[
-                    *CODE_SOURCES,
-                    "src/ddvc/data_release.py",
-                    "scripts/build_market_state.py",
-                ],
+                code_sources=[*CODE_SOURCES, "src/ddvc/data_release.py", "src/ddvc/market_state_release.py", "scripts/build_market_state.py"],
                 inputs=[*[RAW / venue for venue in all_venues], STATE_ROOT],
-                notes=f"canonical market-state engine {STATE_ROOT.name}",
+                notes=f"canonical market-state engine {STATE_ROOT.name}; composed from complete family releases",
             )
-            summary = (
-                quality.groupby(["family", "venue"], as_index=False)
-                .agg(
-                    partitions=("day", "size"),
-                    raw_rows=("raw_rows", "sum"),
-                    canonical_rows=("canonical_rows", "sum"),
-                    snapshot_rows=("snapshot_rows", "sum"),
-                    swap_rows=("swap_rows", "sum"),
-                    liquidity_rows=("liquidity_rows", "sum"),
-                    usable_rows=("usable_rows", "sum"),
-                    missing_order=("missing_order", "sum"),
-                    missing_identity=("missing_identity", "sum"),
-                    missing_required_streams=("missing_required_streams", "sum"),
-                    invalid_swap_sign=("invalid_swap_sign", "sum"),
-                    invalid_state=("invalid_state", "sum"),
-                    unsupported_state=("unsupported_state", "sum"),
-                    zero_swap_amounts=("zero_swap_amounts", "sum"),
-                    missing_quote_statics=("missing_quote_statics", "sum"),
-                    quote_supported_swaps=("quote_supported_swaps", "sum"),
-                    conflicting_events=("conflicting_events", "sum"),
-                    failed_partitions=("passed", lambda values: int((~values).sum())),
-                )
-            )
-            summary["quarantined_rows"] = summary["canonical_rows"] - summary["usable_rows"]
-            summary["quote_support_pct"] = (
-                100 * summary["quote_supported_swaps"] / summary["swap_rows"].where(summary["swap_rows"] > 0)
-            ).round(3)
-            summary["static_conflict_rows"] = 0
-            v4_summary = (summary["family"] == "tick") & (
-                summary["venue"] == "uniswap_v4"
-            )
-            summary.loc[v4_summary, "static_conflict_rows"] = int(
-                v4_static_quarantine["swap_rows"].sum()
-            )
-            summary["released_quote_supported_swaps"] = (
-                summary["quote_supported_swaps"]
-                - summary["static_conflict_rows"]
-            )
-            summary["released_quote_support_pct"] = (
-                100
-                * summary["released_quote_supported_swaps"]
-                / summary["swap_rows"].where(summary["swap_rows"] > 0)
-            ).round(3)
+            summary = _quality_summary(quality, tick_quarantine)
             write_exhibit(
                 summary,
                 QUALITY_EXHIBIT,
@@ -696,25 +766,8 @@ def main() -> int:
                 notes="full-calendar canonical market-state quality gate",
             )
             print(summary.to_string(index=False), flush=True)
-            print(
-                f"cross-venue block-log conflicts: {cross_venue_conflicts:,}",
-                flush=True,
-            )
-            print(
-                f"V4 pools quarantined for immutable-static drift: "
-                f"{len(v4_static_quarantine):,}",
-                flush=True,
-            )
-            for row in v4_static_quarantine.head(3).to_dict("records"):
-                print(f"  V4 quarantine sample: {row}", flush=True)
             for sample in conflict_samples:
                 print(f"  conflict sample: {sample}", flush=True)
-            if not failed.empty:
-                print(f"FAILED: {len(failed):,} canonical partition(s) violate the data contract")
-                return 1
-            if cross_venue_conflicts:
-                print("FAILED: canonical tick state has cross-venue causal-order conflicts")
-                return 1
             print(f"PASS: {len(quality):,} canonical partitions under {STATE_ROOT}")
     return 0
 
