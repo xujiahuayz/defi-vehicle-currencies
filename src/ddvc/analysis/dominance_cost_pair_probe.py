@@ -234,7 +234,7 @@ def _validate_comparator_mapping(frame: pd.DataFrame) -> None:
 
 
 def _validate_prepared_frame(frame: pd.DataFrame) -> None:
-    required = {"date", "reserve_hour_utc", "endpoint_pair", "attempt_id", "comparator_support_mask", "comparator", "comparator_symbol", "trade_size_usd", "available_candidate_count", "sample_year", "routing_era", "architecture", OUTCOME, *HOUR_COLUMNS}
+    required = {"date", "reserve_hour_utc", "endpoint_pair", "attempt_id", "comparator_support_mask", "comparator", "comparator_symbol", "trade_size_usd", "available_candidate_count", "sample_year", "routing_era", "architecture", "weth_output_usd", "comparator_output_usd", OUTCOME, *HOUR_COLUMNS}
     missing = sorted(required - set(frame.columns))
     if missing:
         raise ValueError(f"paired dominance-cost prepared frame lacks fields: {missing}")
@@ -252,10 +252,11 @@ def _validate_prepared_frame(frame: pd.DataFrame) -> None:
     if not np.isfinite(hour).all() or not np.equal(hour, np.floor(hour)).all() or ((hour < 0) | (hour > 23)).any():
         raise ValueError("paired dominance-cost reserve_hour_utc must be an integer from 0 through 23")
     outcome = pd.to_numeric(frame[OUTCOME], errors="coerce").to_numpy(dtype=float)
+    candidate_outputs = frame[["weth_output_usd", "comparator_output_usd"]].to_numpy(dtype=float)
     trade_size = pd.to_numeric(frame["trade_size_usd"], errors="coerce").to_numpy(dtype=float)
     year = pd.to_numeric(frame["sample_year"], errors="coerce").to_numpy(dtype=float)
     harmonics = frame[list(HOUR_COLUMNS)].to_numpy(dtype=float)
-    if not np.isfinite(outcome).all() or not np.isfinite(trade_size).all() or not np.isfinite(year).all() or not np.isfinite(harmonics).all() or not np.equal(year, np.floor(year)).all():
+    if not np.isfinite(outcome).all() or not np.isfinite(candidate_outputs).all() or (candidate_outputs <= 0).any() or not np.isfinite(trade_size).all() or not np.isfinite(year).all() or not np.isfinite(harmonics).all() or not np.equal(year, np.floor(year)).all():
         raise ValueError("paired dominance-cost prepared frame has non-finite or non-integral core values")
     if frame["endpoint_pair"].isna().any():
         raise ValueError("paired dominance-cost prepared frame has missing endpoint pairs")
@@ -369,7 +370,6 @@ def load_panel(path: Path) -> pd.DataFrame:
     reconstructed = 20_000.0 * (frame["weth_output_usd"] - frame["comparator_output_usd"]) / (frame["weth_output_usd"] + frame["comparator_output_usd"])
     if not np.allclose(reconstructed, frame[OUTCOME], rtol=0.0, atol=1e-10):
         raise ValueError("paired dominance-cost outcome disagrees with its declared formula")
-    frame.drop(columns=["weth_output_usd", "comparator_output_usd"], inplace=True)
     return prepare_frame(frame)
 
 
