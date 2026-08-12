@@ -17,7 +17,7 @@ from unittest.mock import patch
 import pandas as pd
 import pytest
 
-import ddvc.counterfactual_publication as publication
+import ddvc.journaled_capability as publication
 from ddvc.counterfactual_publication import (
     PublicationRecoveryRequired,
     current_publication,
@@ -57,6 +57,26 @@ def test_real_counterfactual_cli_supports_direct_and_module_entrypoints() -> Non
         )
         assert completed.returncode == 0, completed.stderr
         assert "--stage" in completed.stdout
+
+
+def test_counterfactual_policy_does_not_reown_journal_lifecycle() -> None:
+    root = Path(__file__).resolve().parents[1]
+    policy = (root / "src/ddvc/counterfactual_publication.py").read_text(
+        encoding="utf-8"
+    )
+    generic = (root / "src/ddvc/journaled_capability.py").read_text(
+        encoding="utf-8"
+    )
+    for lifecycle_symbol in (
+        "_Backup",
+        "_rollback",
+        "_recover_transactions",
+        "_retire_transaction",
+        "_fsync_file",
+        "_fsync_directory",
+    ):
+        assert lifecycle_symbol not in policy
+        assert lifecycle_symbol in generic
 
 
 def test_capability_identity_cannot_be_copied_or_reexported() -> None:
@@ -981,7 +1001,7 @@ from pathlib import Path
 import signal
 import sys
 
-import ddvc.counterfactual_publication as publication
+import ddvc.journaled_capability as publication
 from ddvc.counterfactual_publication import publication_capability, register_publication_capability
 
 capability_id, output_raw, marker_raw, cut = sys.argv[1:]

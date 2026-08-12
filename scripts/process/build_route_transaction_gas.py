@@ -50,6 +50,7 @@ LOCK = SHARED_RUNTIME_DIR / "route-transaction-gas.lock"
 CODE_SOURCES = [
     "scripts/process/build_route_transaction_gas.py",
     "src/ddvc/counterfactual_publication.py",
+    "src/ddvc/journaled_capability.py",
     "src/ddvc/ethereum_blocks.py",
     "src/ddvc/ethereum_receipts.py",
     "src/ddvc/fetch/raw.py",

@@ -110,6 +110,7 @@ CODE_SOURCES = [
     "src/ddvc/calendar.py",
     "src/ddvc/cpquote.py",
     "src/ddvc/counterfactual_publication.py",
+    "src/ddvc/journaled_capability.py",
     "src/ddvc/pricing/v2_replay.py",
     "src/ddvc/state_data.py",
     "src/ddvc/gas.py",
