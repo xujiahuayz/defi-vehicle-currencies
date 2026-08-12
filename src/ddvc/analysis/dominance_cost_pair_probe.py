@@ -37,7 +37,7 @@ from ddvc.paths import REPO_ROOT
 from ddvc.runtime import atomic_output, serialized_output_install
 
 
-PROBE_SCHEMA_VERSION = 3
+PROBE_SCHEMA_VERSION = 4
 CANONICAL_FLOAT_SIGNIFICANT_DIGITS = 7
 SERIALIZED_P_VALUE_FLOOR = 1e-12
 OUTCOME = "weth_symmetric_output_edge_bps"
@@ -158,6 +158,13 @@ MATCHED_CHANGE_ESTIMATE_FIELDS = {
     "equal_cell_delta_bps",
     "median_cell_delta_bps",
     "min_support_weighted_delta_bps",
+    "p05_cell_delta_bps",
+    "p25_cell_delta_bps",
+    "p75_cell_delta_bps",
+    "p95_cell_delta_bps",
+    "trimmed_mean_1pct_delta_bps",
+    "trimmed_mean_5pct_delta_bps",
+    "negative_cell_share",
 }
 
 
@@ -761,6 +768,15 @@ def _matched_year_change(frame: pd.DataFrame) -> dict[str, object]:
         matched_cells = int(len(current_index))
         matched_rows_start = int(matched_sizes[MATCHED_YEAR_START].sum()) if matched_cells else 0
         matched_rows_end = int(matched_sizes[MATCHED_YEAR_END].sum()) if matched_cells else 0
+        ordered_delta = np.sort(delta.to_numpy(dtype=float))
+
+        def trimmed_mean(fraction: float) -> float | None:
+            if not matched_cells:
+                return None
+            lower = int(math.floor(fraction * matched_cells))
+            upper = int(math.ceil((1 - fraction) * matched_cells))
+            return float(ordered_delta[lower:upper].mean())
+
         return {
             "candidate_cells_start": candidate_cells_start,
             "candidate_cells_end": candidate_cells_end,
@@ -776,6 +792,13 @@ def _matched_year_change(frame: pd.DataFrame) -> dict[str, object]:
             "equal_cell_delta_bps": float(delta.mean()) if matched_cells else None,
             "median_cell_delta_bps": float(delta.median()) if matched_cells else None,
             "min_support_weighted_delta_bps": float(np.average(delta.to_numpy(dtype=float), weights=weights)) if weights.sum() else None,
+            "p05_cell_delta_bps": float(delta.quantile(0.05)) if matched_cells else None,
+            "p25_cell_delta_bps": float(delta.quantile(0.25)) if matched_cells else None,
+            "p75_cell_delta_bps": float(delta.quantile(0.75)) if matched_cells else None,
+            "p95_cell_delta_bps": float(delta.quantile(0.95)) if matched_cells else None,
+            "trimmed_mean_1pct_delta_bps": trimmed_mean(0.01),
+            "trimmed_mean_5pct_delta_bps": trimmed_mean(0.05),
+            "negative_cell_share": float((delta < 0).mean()) if matched_cells else None,
         }
 
     result = {
@@ -1143,6 +1166,9 @@ def _validate_matched_change_cell(value: object) -> None:
     if value["matched_cells"]:
         if any(not _finite_number(item) for item in estimates) or not value["matched_rows_start"] or not value["matched_rows_end"]:
             raise ValueError("paired dominance-cost matched-year estimates lack support")
+        quantiles = [value[field] for field in ("p05_cell_delta_bps", "p25_cell_delta_bps", "median_cell_delta_bps", "p75_cell_delta_bps", "p95_cell_delta_bps")]
+        if quantiles != sorted(quantiles) or not 0 <= float(value["negative_cell_share"]) <= 1:
+            raise ValueError("paired dominance-cost matched-year distribution summary is invalid")
     elif any(item is not None for item in estimates) or value["matched_rows_start"] or value["matched_rows_end"]:
         raise ValueError("paired dominance-cost unsupported matched-year estimates are not null")
 

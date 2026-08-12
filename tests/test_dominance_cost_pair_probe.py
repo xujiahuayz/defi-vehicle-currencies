@@ -227,6 +227,8 @@ def test_synthetic_probe_is_deterministic_and_retains_support_failures(tmp_path:
     assert matched["pooled"]["matched_cells"] > 0
     assert matched["pooled"]["matched_rows_start"] > 0
     assert matched["pooled"]["matched_rows_end"] > 0
+    assert 0 <= matched["pooled"]["negative_cell_share"] <= 1
+    assert matched["pooled"]["p05_cell_delta_bps"] <= matched["pooled"]["median_cell_delta_bps"] <= matched["pooled"]["p95_cell_delta_bps"]
     selection = matched["selection_diagnostics"]["years"]["2024"]
     assert selection["candidate_cells"] == selection["included_cells"] + selection["excluded_cells"]
     assert selection["dimensions"]["reserve_hour_utc"]["cell_total_variation"] >= 0
