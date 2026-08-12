@@ -25,15 +25,17 @@ from matplotlib.ticker import PercentFormatter  # noqa: E402
 
 
 ASSET_TYPES = ("native", "staked_native", "stable", "imported", "other")
-DISPLAYED_ASSET_TYPES = ("native", "stable", "imported", "other")
+DISPLAYED_ASSET_TYPES = ASSET_TYPES
 ASSET_LABELS = {
     "native": "Native",
+    "staked_native": "Staked native",
     "stable": "Stable",
     "imported": "Imported",
     "other": "Other",
 }
 PALETTE = {
     "native": "#1F4E79",
+    "staked_native": "#7C3AED",
     "stable": "#238B78",
     "imported": "#D97706",
     "other": "#6B7280",
@@ -42,12 +44,14 @@ PALETTE = {
 }
 LINE_STYLES = {
     "native": "-",
+    "staked_native": (0, (5, 1)),
     "stable": "--",
     "imported": "-.",
     "other": ":",
 }
 MARKERS = {
     "native": "o",
+    "staked_native": "P",
     "stable": "s",
     "imported": "^",
     "other": "D",
@@ -199,9 +203,9 @@ def render_vehicle_type_shares(frame: pd.DataFrame, output: Path) -> None:
                 _style_axis(axis, title=title, ylabel="Share of intermediation" if axis is axes[0] else None)
                 axis.set_ylim(0, 0.9)
             handles, labels = axes[0].get_legend_handles_labels()
-            figure.legend(handles, labels, loc="lower center", ncol=4, frameon=False, bbox_to_anchor=(0.5, 0.045))
+            figure.legend(handles, labels, loc="lower center", ncol=5, frameon=False, bbox_to_anchor=(0.5, 0.045))
             figure.suptitle("The intermediating asset changes over time", x=0.06, ha="left", fontsize=15, fontweight="bold")
-            figure.text(0.995, 0.015, "Quarterly ratios of totals. Value requires source–intermediary–sink amounts within 20%. Staked-native remains in the denominator.", ha="right", va="bottom", fontsize=8, color="#4B5563")
+            figure.text(0.995, 0.015, "Quarterly ratios of totals. Value requires source–intermediary–sink amounts within 20%.", ha="right", va="bottom", fontsize=8, color="#4B5563")
             figure.tight_layout(rect=(0, 0.16, 1, 0.92))
             figure.savefig(output, format="pdf", bbox_inches="tight", metadata={"Creator": "ddvc", "CreationDate": None, "ModDate": None})
         finally:

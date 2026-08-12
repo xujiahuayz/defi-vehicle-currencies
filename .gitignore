@@ -18,14 +18,22 @@ dist/
 secrets/
 
 # Data and intermediate generated artifacts
-data/raw/
-data/interim/
-data/processed/
-data/external/
-data/unified
-data/metrics/
-data/exhibits/
-data/empirical/
+data/raw/*
+!data/raw/README.md
+data/interim/*
+!data/interim/README.md
+data/processed/*
+!data/processed/README.md
+data/external/*
+!data/external/README.md
+data/unified/*
+!data/unified/README.md
+data/metrics/*
+!data/metrics/README.md
+data/exhibits/*
+!data/exhibits/README.md
+data/empirical/*
+!data/empirical/README.md
 output/model/
 output/empirical/
 output/robustness/
