@@ -71,6 +71,8 @@ def v3_route_row(identity: str = "current") -> dict[str, object]:
         },
         "amount0": "1",
         "amount1": "-1",
+        "sqrtPriceX96": "79228162514264337593543950336",
+        "tick": "0",
         "logIndex": "0",
     }
 

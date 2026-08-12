@@ -2,14 +2,16 @@ from __future__ import annotations
 
 import datetime as dt
 import tempfile
+import threading
 import unittest
 from argparse import Namespace
 from pathlib import Path
 from unittest.mock import patch
 
-from scripts import audit_v2_refetch_receipts, build_market_state, fetch_raw_market_data, supervise_raw_fetch
+from scripts import audit_v2_refetch_receipts, audit_v3_graph_omission_materiality, build_graph_acquisition_forecast, build_market_state, fetch_raw_market_data, supervise_raw_fetch
 from scripts.fetch_raw_market_data import (
     build_parser,
+    cmd_coverage,
     cmd_fetch,
     cmd_repair_meta,
     coverage_report,
@@ -26,6 +28,7 @@ from ddvc.fetch.graph import GraphClient
 from ddvc.fetch.schemas import EntitySpec, get_schema
 from ddvc.fetch.sources import get_source, iter_days, last_complete_month_exclusive
 from ddvc.reconstruct import RAW_MARKET_DATA_LOCK as RECONSTRUCT_RAW_MARKET_DATA_LOCK
+from ddvc.runtime import exclusive_job
 
 
 class FetchPlanningTests(unittest.TestCase):
@@ -263,6 +266,14 @@ class FetchPlanningTests(unittest.TestCase):
             fetch_raw_market_data.RAW_MUTATION_LOCK,
             audit_v2_refetch_receipts.RAW_MARKET_DATA_LOCK,
         )
+        self.assertEqual(
+            fetch_raw_market_data.RAW_MUTATION_LOCK,
+            build_graph_acquisition_forecast.RAW_MARKET_DATA_LOCK,
+        )
+        self.assertEqual(
+            fetch_raw_market_data.RAW_MUTATION_LOCK,
+            audit_v3_graph_omission_materiality.RAW_MARKET_DATA_LOCK,
+        )
 
     def test_fetch_command_holds_the_shared_raw_mutation_lock(self) -> None:
         with tempfile.TemporaryDirectory() as directory:
@@ -274,6 +285,39 @@ class FetchPlanningTests(unittest.TestCase):
                 self.assertEqual(cmd_fetch(Namespace()), 7)
             inner.assert_called_once()
             self.assertTrue(lock.exists())
+
+    def test_coverage_holds_raw_mutation_lease_through_report_completion(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            lock = Path(directory) / "raw.lock"
+            entered = threading.Event()
+            release = threading.Event()
+            errors: list[BaseException] = []
+
+            def paused_coverage(_args):
+                entered.set()
+                self.assertTrue(release.wait(timeout=10))
+                return 0
+
+            def cover() -> None:
+                try:
+                    cmd_coverage(Namespace())
+                except BaseException as error:
+                    errors.append(error)
+
+            with (
+                patch.object(fetch_raw_market_data, "RAW_MUTATION_LOCK", lock),
+                patch.object(fetch_raw_market_data, "_cmd_coverage", side_effect=paused_coverage),
+            ):
+                coverage = threading.Thread(target=cover)
+                coverage.start()
+                self.assertTrue(entered.wait(timeout=10))
+                with self.assertRaisesRegex(RuntimeError, "already running"):
+                    with exclusive_job(lock, job="synthetic raw writer"):
+                        self.fail("raw writer entered during coverage reporting")
+                release.set()
+                coverage.join(timeout=10)
+            self.assertFalse(coverage.is_alive())
+            self.assertEqual(errors, [])
 
     def test_sparse_repair_calendar_is_unique_sorted_and_genesis_checked(self) -> None:
         with tempfile.TemporaryDirectory() as directory:

@@ -7,6 +7,7 @@ import json
 import os
 import subprocess
 import tempfile
+import threading
 import unittest
 from dataclasses import replace
 from pathlib import Path
@@ -16,8 +17,10 @@ from scripts.certify_raw_generation import (
     acquire_references,
     finalize_evidence,
     prepare_evidence,
+    prepare_evidence_under_lease,
     publish_local_scan,
     selected_required_partitions,
+    verify_installed_generation,
 )
 from ddvc.artifact_release import canonical_json_sha256, file_sha256
 from ddvc.fetch import dune
@@ -56,6 +59,7 @@ from ddvc.raw_certification import (
     write_normalized_legacy_ledger,
     write_retro_certificate,
 )
+from ddvc.runtime import exclusive_job
 
 
 DAY = "20240101"
@@ -1219,13 +1223,20 @@ class RawCertificationTests(unittest.TestCase):
         assert isinstance(token0, dict)
         token0["symbol"] = None
         pool["feeTier"] = None
-        row["sqrtPriceX96"] = ""
         write_gzip(self.path(partition), [row])
         observed = self.scan(partition)
         self.assertTrue(observed["local_pass"], observed["errors"])
         self.assertNotIn("missing_field:pool.token0.symbol", observed["errors"])
         self.assertNotIn("missing_field:pool.feeTier", observed["errors"])
-        self.assertNotIn("missing_field:sqrtPriceX96", observed["errors"])
+
+    def test_v3_swap_replay_state_is_a_required_consumer_field(self) -> None:
+        partition = RawPartition("uniswap_v3", "swaps", DAY)
+        for field in ("sqrtPriceX96", "tick"):
+            with self.subTest(field=field):
+                row = v3_swap("a")
+                row[field] = ""
+                write_gzip(self.path(partition), [row])
+                self.assertIn(f"missing_field:{field}", self.scan(partition)["errors"])
 
     def test_missing_metadata_is_allowed_for_legacy_local_content_only(self) -> None:
         partition = self.perimeter
@@ -2085,6 +2096,79 @@ class RawCertificationTests(unittest.TestCase):
         write_gzip(self.path(partition), [v3_swap("b")])
         with self.assertRaisesRegex(ValueError, "installed raw partitions changed"):
             verify_retro_certificate(output, data_root=self.data)
+
+    def test_verify_holds_raw_mutation_lease_across_reopen(self) -> None:
+        mutation_lock = self.root / "raw-mutation.lock"
+        entered = threading.Event()
+        release = threading.Event()
+        errors: list[BaseException] = []
+
+        def paused_verify(*args, **kwargs):
+            entered.set()
+            self.assertTrue(release.wait(timeout=10))
+            return {"status": "passed"}
+
+        def verify() -> None:
+            try:
+                verify_installed_generation(
+                    self.root / "certificate.json",
+                    data_root=self.data,
+                    mutation_lock=mutation_lock,
+                )
+            except BaseException as error:
+                errors.append(error)
+
+        with patch(
+            "scripts.certify_raw_generation.verify_retro_certificate",
+            side_effect=paused_verify,
+        ):
+            resolver = threading.Thread(target=verify)
+            resolver.start()
+            self.assertTrue(entered.wait(timeout=10))
+            with self.assertRaisesRegex(RuntimeError, "already running"):
+                with exclusive_job(mutation_lock, job="synthetic raw writer"):
+                    self.fail("raw writer entered during verification")
+            release.set()
+            resolver.join(timeout=10)
+        self.assertFalse(resolver.is_alive())
+        self.assertEqual(errors, [])
+
+    def test_prepare_evidence_holds_raw_mutation_lease_across_canonical_reads(self) -> None:
+        mutation_lock = self.root / "raw-mutation.lock"
+        entered = threading.Event()
+        release = threading.Event()
+        errors: list[BaseException] = []
+
+        def paused_prepare(*args, **kwargs):
+            entered.set()
+            self.assertTrue(release.wait(timeout=10))
+            return {"status": "prepared"}
+
+        def prepare() -> None:
+            try:
+                prepare_evidence_under_lease(
+                    self.data,
+                    self.root / "local.jsonl",
+                    self.root / "evidence",
+                    mutation_lock=mutation_lock,
+                )
+            except BaseException as error:
+                errors.append(error)
+
+        with patch(
+            "scripts.certify_raw_generation.prepare_evidence",
+            side_effect=paused_prepare,
+        ):
+            preparer = threading.Thread(target=prepare)
+            preparer.start()
+            self.assertTrue(entered.wait(timeout=10))
+            with self.assertRaisesRegex(RuntimeError, "already running"):
+                with exclusive_job(mutation_lock, job="synthetic raw writer"):
+                    self.fail("raw writer entered during evidence preparation")
+            release.set()
+            preparer.join(timeout=10)
+        self.assertFalse(preparer.is_alive())
+        self.assertEqual(errors, [])
 
 
 if __name__ == "__main__":

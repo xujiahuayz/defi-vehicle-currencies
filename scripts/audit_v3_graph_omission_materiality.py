@@ -37,7 +37,7 @@ from ddvc.raw_certification import load_certified_partition_ledger
 from ddvc.data_release import released_route_partitions, require_v2_event_source_release
 from ddvc.fetch.pool_daily import POOL_IDENTITY_STATIC_SNAPSHOTS
 from ddvc.fetch.sources import get_source
-from ddvc.paths import TOKEN_PRICE_DAILY_PANEL, V2_AUDITED_TOKEN_DECIMALS_REGISTRY
+from ddvc.paths import RAW_MARKET_DATA_LOCK, TOKEN_PRICE_DAILY_PANEL, V2_AUDITED_TOKEN_DECIMALS_REGISTRY
 from ddvc.provenance import require_current_artifacts
 from ddvc.quoter import canonical_json_sha256
 from ddvc.realised import LINEAR_ROUTE_COLUMNS
@@ -59,6 +59,7 @@ from ddvc.v3_inventory import EVENT_TOPICS
 from ddvc.v3_inventory_assembly import load_certified_inventory_generation
 from ddvc.v3_inventory_calendar import CALENDAR, load_day_calendar
 from ddvc.v3_pool_registry import V3_POOL_REGISTRY, V3_POOL_REGISTRY_CERTIFICATE, load_certified_frozen_upper, load_registry
+from ddvc.runtime import exclusive_job
 
 
 CODE_SOURCES = {
@@ -85,13 +86,18 @@ MAX_MATERIAL_SHARE_CHANGE = 0.01
 MAX_MATERIAL_ROUTE_COST_BPS = 1.0
 
 
-def main() -> int:
+def _parse_args() -> argparse.Namespace:
     cli = argparse.ArgumentParser(description=__doc__)
     cli.add_argument("--data-root", type=Path, default=Path("data"))
     cli.add_argument("--output", type=Path)
     cli.add_argument("--threads", type=int, default=8)
     cli.add_argument("--raw-certificate", type=Path)
-    args = cli.parse_args()
+    return cli.parse_args()
+
+
+def _audit_and_publish(args: argparse.Namespace) -> int:
+    """Read, recertify and publish the omission bound under one raw lease."""
+
     root = args.data_root
     factory_root = root / "raw" / "ethereum" / "uniswap_v3_pool_registry"
     inventory_root = root / "raw" / "ethereum" / "uniswap_v3_inventory_events"
@@ -428,6 +434,15 @@ def main() -> int:
         write_json(args.output, result)
     print(json.dumps(result, allow_nan=False, indent=2, sort_keys=True))
     return 0
+
+
+def main() -> int:
+    args = _parse_args()
+    with exclusive_job(
+        RAW_MARKET_DATA_LOCK,
+        job="V3 Graph omission materiality audit",
+    ):
+        return _audit_and_publish(args)
 
 
 if __name__ == "__main__":

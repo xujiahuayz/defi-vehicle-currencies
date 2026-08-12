@@ -1,0 +1,1550 @@
+{
+  "captured_at_utc": "2026-08-12T03:05:52+00:00",
+  "existing_raw": {
+    "entry_physical_bytes": 9098420224,
+    "files": 61392,
+    "logical_bytes": 90079095549,
+    "measurement_note": "logical bytes follow symlink targets; entry physical bytes count only storage owned below this root",
+    "payload_files": 47234,
+    "sources": {
+      "balancer": {
+        "entry_physical_bytes": 46202880,
+        "files": 7683,
+        "logical_bytes": 419810762,
+        "payload_files": 5754
+      },
+      "curve": {
+        "entry_physical_bytes": 50487296,
+        "files": 7181,
+        "logical_bytes": 1099335782,
+        "payload_files": 4777
+      },
+      "sushiswap_v2": {
+        "entry_physical_bytes": 3038457856,
+        "files": 8732,
+        "logical_bytes": 3018675563,
+        "payload_files": 6606
+      },
+      "sushiswap_v3": {
+        "entry_physical_bytes": 11833344,
+        "files": 6083,
+        "logical_bytes": 67533299,
+        "payload_files": 4045
+      },
+      "uniswap_v1": {
+        "entry_physical_bytes": 788115456,
+        "files": 8394,
+        "logical_bytes": 767735859,
+        "payload_files": 5596
+      },
+      "uniswap_v2": {
+        "entry_physical_bytes": 3759341568,
+        "files": 13582,
+        "logical_bytes": 53301152473,
+        "payload_files": 11303
+      },
+      "uniswap_v3": {
+        "entry_physical_bytes": 641228800,
+        "files": 7576,
+        "logical_bytes": 26170178240,
+        "payload_files": 7538
+      },
+      "uniswap_v4": {
+        "entry_physical_bytes": 762753024,
+        "files": 2161,
+        "logical_bytes": 5234673571,
+        "payload_files": 1615
+      }
+    }
+  },
+  "forecast": {
+    "active_bytes": 108010106680,
+    "active_graph_call_forecast_from_installed_bytes_and_frozen_current_bytes_per_row": {
+      "central": 612683,
+      "low": 532875,
+      "stress": 859770
+    },
+    "alignment_comparisons": 76347,
+    "alignment_failure_comparison_rate": 0.0031435419859326495,
+    "alignment_failure_comparisons": 240,
+    "alignment_failure_rows": 135,
+    "authorized_fetch": {
+      "bytes": 0,
+      "graph_calls": 0,
+      "stream_count": 0,
+      "streams": []
+    },
+    "available_disk_bytes": 5997815668736,
+    "available_disk_evidence": {
+      "host": "studio",
+      "inventory_observation_host": "DSF-pro16-m3s-MacBook-Pro.local",
+      "inventory_observation_path": "/Users/dsf-pro16-m3/projects/defi-vehicle-currencies/data/raw/thegraph",
+      "observed_statvfs_available_bytes": 270958387200,
+      "override_bytes": 5997815668736,
+      "path": "/Users/java/projects/defi-vehicle-currencies/data/raw/thegraph"
+    },
+    "central_graph_calls_new_streams": 88773,
+    "disk_headroom_ratio": 20.249534958831365,
+    "forecast_class": "whole_inventory_engineering_scenarios_not_an_acquisition_plan",
+    "generation_byte_scenarios_not_bounds": {
+      "central": 117456124496,
+      "high": 187378304235,
+      "low": 112219018864
+    },
+    "minimum_graph_calls_new_streams": 76066,
+    "new_byte_scenarios_not_bounds": {
+      "central": 9446017816,
+      "high": 79368197555,
+      "low": 4208912184
+    },
+    "peak_disk_bytes_with_rollback_and_ten_percent_staging_margin": 296195230208,
+    "quality": {
+      "provider_archive_quarantined_roots": 8,
+      "provider_archive_quarantined_streams": [
+        "sushiswap_v2/tokens",
+        "uniswap_v4/tokens"
+      ],
+      "unresolved_root_errors": 0,
+      "unresolved_streams": []
+    },
+    "runtime_estimate": {
+      "benchmark": null,
+      "canary_latency_not_used_as_eta_seconds": {
+        "p50": 0.671861,
+        "p90": 2.851328,
+        "p95": 9.638915
+      },
+      "status": "unbounded_without_sustained_pagination_benchmark",
+      "wall_hours": null
+    },
+    "scenario_assumptions_not_empirical_bounds": {
+      "capped_static_rows_per_stream": 10000000,
+      "dense_rows_per_day_per_stream": 10000,
+      "temporal_observed_peak_multiplier": 2
+    },
+    "selection_policy": "the reviewed registry authorizes no incremental stream; adding one requires a reviewed executor and measured budget",
+    "stress_graph_calls_new_streams": 552679,
+    "total_graph_call_forecast": {
+      "central": 701456,
+      "low": 608941,
+      "stress": 1412449
+    }
+  },
+  "inputs": {
+    "consumer_registry_sha256": "efdafa1649c7bc0a97ce3b64a73f5e7e2f1961a38c4777fa49159a4ca82de4a3",
+    "current_canary_sha256": "e7aecbe3fbd603278b39a790d0c3af33ae55d70ea80ef5f089173ef07e14d5bb",
+    "final_canary_sha256": "fd3595fe85b13c62a261b0a59b6acd7de115e2e9f63e4ef9322d58a3273cf04a",
+    "freeze_sha256": "2c935682c70de83d55c3bec87d771ea63287c48f9121caf158126b9cfa012de4",
+    "pagination_benchmark_sha256": null,
+    "root_population_sha256": "db5b721babe00fa5afd90e0b3a657af6e9290c04b288de186281c2d28dd2c49a",
+    "thin_consumer_audit_sha256": "77287bbf4e550ac394a5fca9a627cc56dae50a7c53db8083350571d42111ded0"
+  },
+  "kind": "graph_acquisition_prelaunch_forecast",
+  "launch_decision": "inventory_validated_consumer_selection_required",
+  "research_sample_end": "20260630",
+  "schema_version": 2,
+  "sources": [
+    {
+      "active_call_forecast": {
+        "central": 5754,
+        "low": 5754,
+        "stress": 5754
+      },
+      "active_payload_factor": 0.988503,
+      "forecast_active_bytes": 414984172,
+      "installed_active_logical_bytes": 419810762,
+      "new_streams": [
+        {
+          "basis": "early_middle_head_local_density_with_two_times_observed_peak",
+          "central_calls": 1896,
+          "compressed_byte_scenarios_not_bounds": {
+            "central": 26456,
+            "high": 151219,
+            "low": 23883
+          },
+          "minimum_calls": 1896,
+          "mode": "historical_event_full",
+          "order_by": "startTimestamp",
+          "row_scenarios_not_bounds": {
+            "central": 257,
+            "high": 1469,
+            "low": 232
+          },
+          "stream": "ampUpdates",
+          "stress_calls": 1896
+        },
+        {
+          "basis": "early_middle_head_local_density_with_two_times_observed_peak",
+          "central_calls": 1896,
+          "compressed_byte_scenarios_not_bounds": {
+            "central": 188707,
+            "high": 377316,
+            "low": 188707
+          },
+          "minimum_calls": 1896,
+          "mode": "historical_snapshot_full",
+          "order_by": "timestamp",
+          "row_scenarios_not_bounds": {
+            "central": 1916,
+            "high": 3831,
+            "low": 1916
+          },
+          "stream": "balancerSnapshots",
+          "stress_calls": 1896
+        },
+        {
+          "basis": "frozen_head_population_with_ten_million_row_stress_ceiling",
+          "central_calls": 1,
+          "compressed_byte_scenarios_not_bounds": {
+            "central": 216,
+            "high": 216,
+            "low": 216
+          },
+          "minimum_calls": 1,
+          "mode": "static_identity",
+          "order_by": "id",
+          "row_scenarios_not_bounds": {
+            "central": 3,
+            "high": 3,
+            "low": 3
+          },
+          "stream": "fxoracles",
+          "stress_calls": 1
+        },
+        {
+          "basis": "early_middle_head_local_density_with_two_times_observed_peak",
+          "central_calls": 1896,
+          "compressed_byte_scenarios_not_bounds": {
+            "central": 177757,
+            "high": 432338,
+            "low": 34727
+          },
+          "minimum_calls": 1896,
+          "mode": "historical_event_full",
+          "order_by": "startTimestamp",
+          "row_scenarios_not_bounds": {
+            "central": 1423,
+            "high": 3461,
+            "low": 278
+          },
+          "stream": "gradualWeightUpdates",
+          "stress_calls": 1896
+        },
+        {
+          "basis": "early_middle_head_local_density_with_two_times_observed_peak",
+          "central_calls": 1896,
+          "compressed_byte_scenarios_not_bounds": {
+            "central": 93590,
+            "high": 315849,
+            "low": 92869
+          },
+          "minimum_calls": 1896,
+          "mode": "historical_event_full",
+          "order_by": "block",
+          "row_scenarios_not_bounds": {
+            "central": 779,
+            "high": 2629,
+            "low": 773
+          },
+          "stream": "latestPrices",
+          "stress_calls": 1896
+        },
+        {
+          "basis": "early_middle_head_local_density_with_two_times_observed_peak",
+          "central_calls": 1896,
+          "compressed_byte_scenarios_not_bounds": {
+            "central": 165658,
+            "high": 590371,
+            "low": 36176
+          },
+          "minimum_calls": 1896,
+          "mode": "historical_event_full",
+          "order_by": "timestamp",
+          "row_scenarios_not_bounds": {
+            "central": 3581,
+            "high": 12762,
+            "low": 782
+          },
+          "stream": "managementOperations",
+          "stress_calls": 1896
+        },
+        {
+          "basis": "frozen_head_population_with_ten_million_row_stress_ceiling",
+          "central_calls": 1,
+          "compressed_byte_scenarios_not_bounds": {
+            "central": 135110,
+            "high": 1351100001,
+            "low": 135110
+          },
+          "minimum_calls": 1,
+          "mode": "static_identity",
+          "order_by": "id",
+          "row_scenarios_not_bounds": {
+            "central": 1000,
+            "high": 10000000,
+            "low": 1000
+          },
+          "stream": "poolContracts",
+          "stress_calls": 10000
+        },
+        {
+          "basis": "early_middle_head_local_density_with_two_times_observed_peak",
+          "central_calls": 2427,
+          "compressed_byte_scenarios_not_bounds": {
+            "central": 239729012,
+            "high": 1562469044,
+            "low": 142194739
+          },
+          "minimum_calls": 1896,
+          "mode": "historical_event_full",
+          "order_by": "block",
+          "row_scenarios_not_bounds": {
+            "central": 2426407,
+            "high": 15814464,
+            "low": 1439218
+          },
+          "stream": "poolHistoricalLiquidities",
+          "stress_calls": 15815
+        },
+        {
+          "basis": "daily_block_checkpoint_head_population_with_dense_day_stress_ceiling",
+          "central_calls": 1896,
+          "compressed_byte_scenarios_not_bounds": {
+            "central": 197487360,
+            "high": 1974873600,
+            "low": 197487360
+          },
+          "minimum_calls": 1896,
+          "mode": "block_pinned_configuration",
+          "order_by": "id",
+          "row_scenarios_not_bounds": {
+            "central": 1896000,
+            "high": 18960000,
+            "low": 1896000
+          },
+          "stream": "poolTokens",
+          "stress_calls": 18960
+        },
+        {
+          "basis": "daily_block_checkpoint_head_population_with_dense_day_stress_ceiling",
+          "central_calls": 1896,
+          "compressed_byte_scenarios_not_bounds": {
+            "central": 620655600,
+            "high": 6206556000,
+            "low": 620655600
+          },
+          "minimum_calls": 1896,
+          "mode": "block_pinned_configuration",
+          "order_by": "createTime",
+          "row_scenarios_not_bounds": {
+            "central": 1896000,
+            "high": 18960000,
+            "low": 1896000
+          },
+          "stream": "pools",
+          "stress_calls": 18960
+        },
+        {
+          "basis": "daily_block_checkpoint_head_population_with_dense_day_stress_ceiling",
+          "central_calls": 1896,
+          "compressed_byte_scenarios_not_bounds": {
+            "central": 393848496,
+            "high": 393848496,
+            "low": 393848496
+          },
+          "minimum_calls": 1896,
+          "mode": "block_pinned_configuration",
+          "order_by": "id",
+          "row_scenarios_not_bounds": {
+            "central": 1475088,
+            "high": 1475088,
+            "low": 1475088
+          },
+          "stream": "priceRateProviders",
+          "stress_calls": 1896
+        },
+        {
+          "basis": "daily_block_checkpoint_head_population_with_dense_day_stress_ceiling",
+          "central_calls": 1896,
+          "compressed_byte_scenarios_not_bounds": {
+            "central": 396264,
+            "high": 396264,
+            "low": 396264
+          },
+          "minimum_calls": 1896,
+          "mode": "block_pinned_configuration",
+          "order_by": "id",
+          "row_scenarios_not_bounds": {
+            "central": 37920,
+            "high": 37920,
+            "low": 37920
+          },
+          "stream": "protocolIdDatas",
+          "stress_calls": 1896
+        },
+        {
+          "basis": "early_middle_head_local_density_with_two_times_observed_peak",
+          "central_calls": 1896,
+          "compressed_byte_scenarios_not_bounds": {
+            "central": 48538326,
+            "high": 307850008,
+            "low": 563868
+          },
+          "minimum_calls": 1896,
+          "mode": "historical_event_full",
+          "order_by": "startTimestamp",
+          "row_scenarios_not_bounds": {
+            "central": 452614,
+            "high": 2870664,
+            "low": 5258
+          },
+          "stream": "swapFeeUpdates",
+          "stress_calls": 2871
+        },
+        {
+          "basis": "early_middle_head_local_density_with_two_times_observed_peak",
+          "central_calls": 2668,
+          "compressed_byte_scenarios_not_bounds": {
+            "central": 244081100,
+            "high": 707529789,
+            "low": 112928660
+          },
+          "minimum_calls": 1896,
+          "mode": "historical_event_full",
+          "order_by": "timestamp",
+          "row_scenarios_not_bounds": {
+            "central": 2667553,
+            "high": 7732566,
+            "low": 1234193
+          },
+          "stream": "tokenPrices",
+          "stress_calls": 7733
+        },
+        {
+          "basis": "early_middle_head_local_density_with_two_times_observed_peak",
+          "central_calls": 1896,
+          "compressed_byte_scenarios_not_bounds": {
+            "central": 23582200,
+            "high": 47164399,
+            "low": 23582200
+          },
+          "minimum_calls": 1896,
+          "mode": "historical_snapshot_full",
+          "order_by": "timestamp",
+          "row_scenarios_not_bounds": {
+            "central": 189598,
+            "high": 379196,
+            "low": 189598
+          },
+          "stream": "tokenSnapshots",
+          "stress_calls": 1896
+        },
+        {
+          "basis": "daily_block_checkpoint_head_population_with_dense_day_stress_ceiling",
+          "central_calls": 1896,
+          "compressed_byte_scenarios_not_bounds": {
+            "central": 324765840,
+            "high": 3247658400,
+            "low": 324765840
+          },
+          "minimum_calls": 1896,
+          "mode": "block_pinned_configuration",
+          "order_by": "id",
+          "row_scenarios_not_bounds": {
+            "central": 1896000,
+            "high": 18960000,
+            "low": 1896000
+          },
+          "stream": "tokens",
+          "stress_calls": 18960
+        },
+        {
+          "basis": "early_middle_head_local_density_with_two_times_observed_peak",
+          "central_calls": 1896,
+          "compressed_byte_scenarios_not_bounds": {
+            "central": 18717115,
+            "high": 37434230,
+            "low": 18717115
+          },
+          "minimum_calls": 1896,
+          "mode": "historical_snapshot_full",
+          "order_by": "timestamp",
+          "row_scenarios_not_bounds": {
+            "central": 189598,
+            "high": 379196,
+            "low": 189598
+          },
+          "stream": "tradePairSnapshots",
+          "stress_calls": 1896
+        },
+        {
+          "basis": "frozen_head_population_with_ten_million_row_stress_ceiling",
+          "central_calls": 1,
+          "compressed_byte_scenarios_not_bounds": {
+            "central": 107090,
+            "high": 1070900000,
+            "low": 107090
+          },
+          "minimum_calls": 1,
+          "mode": "static_or_right_censored_auxiliary",
+          "order_by": "id",
+          "row_scenarios_not_bounds": {
+            "central": 1000,
+            "high": 10000000,
+            "low": 1000
+          },
+          "stream": "tradePairs",
+          "stress_calls": 10000
+        }
+      ],
+      "source": "balancer"
+    },
+    {
+      "active_call_forecast": {
+        "central": 7530,
+        "low": 6832,
+        "stress": 8386
+      },
+      "active_payload_factor": 1.795297,
+      "forecast_active_bytes": 1973634172,
+      "installed_active_logical_bytes": 1099335782,
+      "new_streams": [
+        {
+          "basis": "early_middle_head_local_density_with_two_times_observed_peak",
+          "central_calls": 2332,
+          "compressed_byte_scenarios_not_bounds": {
+            "central": 179892511,
+            "high": 366647347,
+            "low": 99746286
+          },
+          "minimum_calls": 2332,
+          "mode": "historical_event_full",
+          "order_by": "timestamp",
+          "row_scenarios_not_bounds": {
+            "central": 1112439,
+            "high": 2267314,
+            "low": 616822
+          },
+          "stream": "deposits",
+          "stress_calls": 2332
+        },
+        {
+          "basis": "frozen_head_population_with_ten_million_row_stress_ceiling",
+          "central_calls": 1,
+          "compressed_byte_scenarios_not_bounds": {
+            "central": 104,
+            "high": 104,
+            "low": 104
+          },
+          "minimum_calls": 1,
+          "mode": "static_identity",
+          "order_by": "id",
+          "row_scenarios_not_bounds": {
+            "central": 1,
+            "high": 1,
+            "low": 1
+          },
+          "stream": "dexAmmProtocols",
+          "stress_calls": 1
+        },
+        {
+          "basis": "early_middle_head_local_density_with_two_times_observed_peak",
+          "central_calls": 2332,
+          "compressed_byte_scenarios_not_bounds": {
+            "central": 483216,
+            "high": 966432,
+            "low": 483216
+          },
+          "minimum_calls": 2332,
+          "mode": "historical_snapshot_full",
+          "order_by": "timestamp",
+          "row_scenarios_not_bounds": {
+            "central": 2356,
+            "high": 4712,
+            "low": 2356
+          },
+          "stream": "financialsDailySnapshots",
+          "stress_calls": 2332
+        },
+        {
+          "basis": "frozen_head_population_with_ten_million_row_stress_ceiling",
+          "central_calls": 1,
+          "compressed_byte_scenarios_not_bounds": {
+            "central": 21645,
+            "high": 21645,
+            "low": 21645
+          },
+          "minimum_calls": 1,
+          "mode": "static_identity",
+          "order_by": "id",
+          "row_scenarios_not_bounds": {
+            "central": 870,
+            "high": 870,
+            "low": 870
+          },
+          "stream": "liquidityGauges",
+          "stress_calls": 1
+        },
+        {
+          "basis": "frozen_head_population_with_ten_million_row_stress_ceiling",
+          "central_calls": 1,
+          "compressed_byte_scenarios_not_bounds": {
+            "central": 25227,
+            "high": 252270000,
+            "low": 25227
+          },
+          "minimum_calls": 1,
+          "mode": "static_identity",
+          "order_by": "id",
+          "row_scenarios_not_bounds": {
+            "central": 1000,
+            "high": 10000000,
+            "low": 1000
+          },
+          "stream": "liquidityPoolFees",
+          "stress_calls": 10000
+        },
+        {
+          "basis": "early_middle_head_local_density_with_two_times_observed_peak",
+          "central_calls": 2332,
+          "compressed_byte_scenarios_not_bounds": {
+            "central": 729441783,
+            "high": 5006309800,
+            "low": 186913211
+          },
+          "minimum_calls": 2332,
+          "mode": "historical_snapshot_full",
+          "order_by": "timestamp",
+          "row_scenarios_not_bounds": {
+            "central": 1577922,
+            "high": 10829605,
+            "low": 404329
+          },
+          "stream": "liquidityPoolHourlySnapshots",
+          "stress_calls": 10830
+        },
+        {
+          "basis": "frozen_head_population_with_ten_million_row_stress_ceiling",
+          "central_calls": 1,
+          "compressed_byte_scenarios_not_bounds": {
+            "central": 116943,
+            "high": 1169430000,
+            "low": 116943
+          },
+          "minimum_calls": 1,
+          "mode": "static_identity",
+          "order_by": "createdTimestamp",
+          "row_scenarios_not_bounds": {
+            "central": 1000,
+            "high": 10000000,
+            "low": 1000
+          },
+          "stream": "liquidityPools",
+          "stress_calls": 10000
+        },
+        {
+          "basis": "frozen_head_population_with_ten_million_row_stress_ceiling",
+          "central_calls": 1,
+          "compressed_byte_scenarios_not_bounds": {
+            "central": 24848,
+            "high": 248480000,
+            "low": 24848
+          },
+          "minimum_calls": 1,
+          "mode": "static_identity",
+          "order_by": "id",
+          "row_scenarios_not_bounds": {
+            "central": 1000,
+            "high": 10000000,
+            "low": 1000
+          },
+          "stream": "lpTokens",
+          "stress_calls": 10000
+        },
+        {
+          "basis": "frozen_head_population_with_ten_million_row_stress_ceiling",
+          "central_calls": 1,
+          "compressed_byte_scenarios_not_bounds": {
+            "central": 3604,
+            "high": 3604,
+            "low": 3604
+          },
+          "minimum_calls": 1,
+          "mode": "static_identity",
+          "order_by": "id",
+          "row_scenarios_not_bounds": {
+            "central": 79,
+            "high": 79,
+            "low": 79
+          },
+          "stream": "rewardTokens",
+          "stress_calls": 1
+        },
+        {
+          "basis": "frozen_head_population_with_ten_million_row_stress_ceiling",
+          "central_calls": 1,
+          "compressed_byte_scenarios_not_bounds": {
+            "central": 44820,
+            "high": 448200000,
+            "low": 44820
+          },
+          "minimum_calls": 1,
+          "mode": "static_identity",
+          "order_by": "id",
+          "row_scenarios_not_bounds": {
+            "central": 1000,
+            "high": 10000000,
+            "low": 1000
+          },
+          "stream": "tokens",
+          "stress_calls": 10000
+        },
+        {
+          "basis": "early_middle_head_local_density_with_two_times_observed_peak",
+          "central_calls": 2332,
+          "compressed_byte_scenarios_not_bounds": {
+            "central": 93439,
+            "high": 186878,
+            "low": 93439
+          },
+          "minimum_calls": 2332,
+          "mode": "historical_snapshot_full",
+          "order_by": "timestamp",
+          "row_scenarios_not_bounds": {
+            "central": 2356,
+            "high": 4712,
+            "low": 2356
+          },
+          "stream": "usageMetricsDailySnapshots",
+          "stress_calls": 2332
+        },
+        {
+          "basis": "early_middle_head_local_density_with_two_times_observed_peak",
+          "central_calls": 2332,
+          "compressed_byte_scenarios_not_bounds": {
+            "central": 1697091,
+            "high": 3394152,
+            "low": 1696851
+          },
+          "minimum_calls": 2332,
+          "mode": "historical_snapshot_full",
+          "order_by": "timestamp",
+          "row_scenarios_not_bounds": {
+            "central": 56532,
+            "high": 113063,
+            "low": 56524
+          },
+          "stream": "usageMetricsHourlySnapshots",
+          "stress_calls": 2332
+        },
+        {
+          "basis": "early_middle_head_local_density_with_two_times_observed_peak",
+          "central_calls": 2332,
+          "compressed_byte_scenarios_not_bounds": {
+            "central": 172833057,
+            "high": 459478551,
+            "low": 136997435
+          },
+          "minimum_calls": 2332,
+          "mode": "historical_event_full",
+          "order_by": "timestamp",
+          "row_scenarios_not_bounds": {
+            "central": 1024378,
+            "high": 2723320,
+            "low": 811981
+          },
+          "stream": "withdraws",
+          "stress_calls": 2724
+        }
+      ],
+      "source": "curve"
+    },
+    {
+      "active_call_forecast": {
+        "central": 22046,
+        "low": 18293,
+        "stress": 31495
+      },
+      "active_payload_factor": 1.213735,
+      "forecast_active_bytes": 3663873528,
+      "installed_active_logical_bytes": 3018675563,
+      "new_streams": [
+        {
+          "basis": "early_middle_head_local_density_with_two_times_observed_peak",
+          "central_calls": 2126,
+          "compressed_byte_scenarios_not_bounds": {
+            "central": 43053631,
+            "high": 4067511102,
+            "low": 5554211
+          },
+          "minimum_calls": 2126,
+          "mode": "historical_snapshot_full",
+          "order_by": "timestamp",
+          "row_scenarios_not_bounds": {
+            "central": 358392,
+            "high": 33859245,
+            "low": 46235
+          },
+          "stream": "liquidityPositionSnapshots",
+          "stress_calls": 33860
+        },
+        {
+          "basis": "frozen_head_population_with_ten_million_row_stress_ceiling",
+          "central_calls": 1,
+          "compressed_byte_scenarios_not_bounds": {
+            "central": 82547,
+            "high": 825470000,
+            "low": 82547
+          },
+          "minimum_calls": 1,
+          "mode": "static_identity",
+          "order_by": "createdAtTimestamp",
+          "row_scenarios_not_bounds": {
+            "central": 1000,
+            "high": 10000000,
+            "low": 1000
+          },
+          "stream": "pairs",
+          "stress_calls": 10000
+        },
+        {
+          "basis": "same_period_head_cap_with_ten_thousand_rows_per_day_stress_ceiling",
+          "central_calls": 2126,
+          "compressed_byte_scenarios_not_bounds": {
+            "central": 362483000,
+            "high": 3624830000,
+            "low": 170500
+          },
+          "minimum_calls": 2126,
+          "mode": "historical_snapshot_full",
+          "order_by": "date",
+          "row_scenarios_not_bounds": {
+            "central": 2126000,
+            "high": 21260000,
+            "low": 1000
+          },
+          "stream": "tokenDayDatas",
+          "stress_calls": 21260
+        },
+        {
+          "basis": "provider_archive_unavailable_quarantined_no_payload",
+          "central_calls": 0,
+          "compressed_byte_scenarios_not_bounds": {
+            "central": 0,
+            "high": 0,
+            "low": 0
+          },
+          "minimum_calls": 0,
+          "mode": "static_identity",
+          "order_by": "id",
+          "row_scenarios_not_bounds": {
+            "central": 0,
+            "high": 0,
+            "low": 0
+          },
+          "stream": "tokens",
+          "stress_calls": 0
+        }
+      ],
+      "source": "sushiswap_v2"
+    },
+    {
+      "active_call_forecast": {
+        "central": 4045,
+        "low": 4045,
+        "stress": 4045
+      },
+      "active_payload_factor": 2.241002,
+      "forecast_active_bytes": 151342228,
+      "installed_active_logical_bytes": 67533299,
+      "new_streams": [
+        {
+          "basis": "early_middle_head_local_density_with_two_times_observed_peak",
+          "central_calls": 1183,
+          "compressed_byte_scenarios_not_bounds": {
+            "central": 905954,
+            "high": 3660027,
+            "low": 573602
+          },
+          "minimum_calls": 1183,
+          "mode": "historical_event_full",
+          "order_by": "timestamp",
+          "row_scenarios_not_bounds": {
+            "central": 3928,
+            "high": 15869,
+            "low": 2487
+          },
+          "stream": "deposits",
+          "stress_calls": 1183
+        },
+        {
+          "basis": "frozen_head_population_with_ten_million_row_stress_ceiling",
+          "central_calls": 1,
+          "compressed_byte_scenarios_not_bounds": {
+            "central": 494,
+            "high": 494,
+            "low": 494
+          },
+          "minimum_calls": 1,
+          "mode": "static_or_right_censored_auxiliary",
+          "order_by": "id",
+          "row_scenarios_not_bounds": {
+            "central": 1,
+            "high": 1,
+            "low": 1
+          },
+          "stream": "dexAmmProtocols",
+          "stress_calls": 1
+        },
+        {
+          "basis": "early_middle_head_local_density_with_two_times_observed_peak",
+          "central_calls": 1183,
+          "compressed_byte_scenarios_not_bounds": {
+            "central": 165472,
+            "high": 330944,
+            "low": 164780
+          },
+          "minimum_calls": 1183,
+          "mode": "historical_snapshot_full",
+          "order_by": "timestamp",
+          "row_scenarios_not_bounds": {
+            "central": 1195,
+            "high": 2390,
+            "low": 1190
+          },
+          "stream": "financialsDailySnapshots",
+          "stress_calls": 1183
+        },
+        {
+          "basis": "frozen_head_population_with_ten_million_row_stress_ceiling",
+          "central_calls": 1,
+          "compressed_byte_scenarios_not_bounds": {
+            "central": 27380,
+            "high": 273800000,
+            "low": 27380
+          },
+          "minimum_calls": 1,
+          "mode": "static_or_right_censored_auxiliary",
+          "order_by": "id",
+          "row_scenarios_not_bounds": {
+            "central": 1000,
+            "high": 10000000,
+            "low": 1000
+          },
+          "stream": "liquidityPoolFees",
+          "stress_calls": 10000
+        },
+        {
+          "basis": "early_middle_head_local_density_with_two_times_observed_peak",
+          "central_calls": 1183,
+          "compressed_byte_scenarios_not_bounds": {
+            "central": 39774746,
+            "high": 381231818,
+            "low": 32980525
+          },
+          "minimum_calls": 1183,
+          "mode": "historical_snapshot_full",
+          "order_by": "timestamp",
+          "row_scenarios_not_bounds": {
+            "central": 102671,
+            "high": 984078,
+            "low": 85133
+          },
+          "stream": "liquidityPoolHourlySnapshots",
+          "stress_calls": 1183
+        },
+        {
+          "basis": "frozen_head_population_with_ten_million_row_stress_ceiling",
+          "central_calls": 1,
+          "compressed_byte_scenarios_not_bounds": {
+            "central": 189246,
+            "high": 189246,
+            "low": 189246
+          },
+          "minimum_calls": 1,
+          "mode": "static_or_right_censored_auxiliary",
+          "order_by": "createdTimestamp",
+          "row_scenarios_not_bounds": {
+            "central": 837,
+            "high": 837,
+            "low": 837
+          },
+          "stream": "liquidityPools",
+          "stress_calls": 1
+        },
+        {
+          "basis": "early_middle_head_local_density_with_two_times_observed_peak",
+          "central_calls": 1183,
+          "compressed_byte_scenarios_not_bounds": {
+            "central": 970366,
+            "high": 1965219,
+            "low": 549163
+          },
+          "minimum_calls": 1183,
+          "mode": "historical_snapshot_full",
+          "order_by": "timestamp",
+          "row_scenarios_not_bounds": {
+            "central": 6499,
+            "high": 13162,
+            "low": 3678
+          },
+          "stream": "positionSnapshots",
+          "stress_calls": 1183
+        },
+        {
+          "basis": "frozen_head_population_with_ten_million_row_stress_ceiling",
+          "central_calls": 1,
+          "compressed_byte_scenarios_not_bounds": {
+            "central": 252530,
+            "high": 2525300000,
+            "low": 252530
+          },
+          "minimum_calls": 1,
+          "mode": "static_or_right_censored_auxiliary",
+          "order_by": "id",
+          "row_scenarios_not_bounds": {
+            "central": 1000,
+            "high": 10000000,
+            "low": 1000
+          },
+          "stream": "positions",
+          "stress_calls": 10000
+        },
+        {
+          "basis": "early_middle_head_local_density_with_two_times_observed_peak",
+          "central_calls": 1183,
+          "compressed_byte_scenarios_not_bounds": {
+            "central": 459020,
+            "high": 1853635,
+            "low": 281321
+          },
+          "minimum_calls": 1183,
+          "mode": "historical_snapshot_full",
+          "order_by": "timestamp",
+          "row_scenarios_not_bounds": {
+            "central": 7504,
+            "high": 30303,
+            "low": 4599
+          },
+          "stream": "tickDailySnapshots",
+          "stress_calls": 1183
+        },
+        {
+          "basis": "early_middle_head_local_density_with_two_times_observed_peak",
+          "central_calls": 1183,
+          "compressed_byte_scenarios_not_bounds": {
+            "central": 478522,
+            "high": 1837268,
+            "low": 310086
+          },
+          "minimum_calls": 1183,
+          "mode": "historical_snapshot_full",
+          "order_by": "timestamp",
+          "row_scenarios_not_bounds": {
+            "central": 7986,
+            "high": 30662,
+            "low": 5175
+          },
+          "stream": "tickHourlySnapshots",
+          "stress_calls": 1183
+        },
+        {
+          "basis": "canary_only_never_backfill",
+          "central_calls": 0,
+          "compressed_byte_scenarios_not_bounds": {
+            "central": 0,
+            "high": 0,
+            "low": 0
+          },
+          "minimum_calls": 0,
+          "mode": "head_validation_only",
+          "order_by": "createdTimestamp",
+          "row_scenarios_not_bounds": {
+            "central": 0,
+            "high": 0,
+            "low": 0
+          },
+          "stream": "ticks",
+          "stress_calls": 0
+        },
+        {
+          "basis": "frozen_head_population_with_ten_million_row_stress_ceiling",
+          "central_calls": 1,
+          "compressed_byte_scenarios_not_bounds": {
+            "central": 52870,
+            "high": 52870,
+            "low": 52870
+          },
+          "minimum_calls": 1,
+          "mode": "static_or_right_censored_auxiliary",
+          "order_by": "id",
+          "row_scenarios_not_bounds": {
+            "central": 680,
+            "high": 680,
+            "low": 680
+          },
+          "stream": "tokens",
+          "stress_calls": 1
+        },
+        {
+          "basis": "early_middle_head_local_density_with_two_times_observed_peak",
+          "central_calls": 1183,
+          "compressed_byte_scenarios_not_bounds": {
+            "central": 48338,
+            "high": 96716,
+            "low": 47367
+          },
+          "minimum_calls": 1183,
+          "mode": "historical_snapshot_full",
+          "order_by": "timestamp",
+          "row_scenarios_not_bounds": {
+            "central": 1195,
+            "high": 2391,
+            "low": 1171
+          },
+          "stream": "usageMetricsDailySnapshots",
+          "stress_calls": 1183
+        },
+        {
+          "basis": "early_middle_head_local_density_with_two_times_observed_peak",
+          "central_calls": 1183,
+          "compressed_byte_scenarios_not_bounds": {
+            "central": 832943,
+            "high": 1716032,
+            "low": 831896
+          },
+          "minimum_calls": 1183,
+          "mode": "historical_snapshot_full",
+          "order_by": "timestamp",
+          "row_scenarios_not_bounds": {
+            "central": 27839,
+            "high": 57354,
+            "low": 27804
+          },
+          "stream": "usageMetricsHourlySnapshots",
+          "stress_calls": 1183
+        },
+        {
+          "basis": "early_middle_head_local_density_with_two_times_observed_peak",
+          "central_calls": 1183,
+          "compressed_byte_scenarios_not_bounds": {
+            "central": 403713,
+            "high": 3957708,
+            "low": 360901
+          },
+          "minimum_calls": 1183,
+          "mode": "historical_event_full",
+          "order_by": "timestamp",
+          "row_scenarios_not_bounds": {
+            "central": 1952,
+            "high": 19136,
+            "low": 1745
+          },
+          "stream": "withdraws",
+          "stress_calls": 1183
+        }
+      ],
+      "source": "sushiswap_v3"
+    },
+    {
+      "active_call_forecast": {
+        "central": 375363,
+        "low": 340472,
+        "stress": 480980
+      },
+      "active_payload_factor": 1.185782,
+      "forecast_active_bytes": 63203534496,
+      "installed_active_logical_bytes": 53301152473,
+      "new_streams": [
+        {
+          "basis": "early_middle_head_local_density_with_two_times_observed_peak",
+          "central_calls": 13368,
+          "compressed_byte_scenarios_not_bounds": {
+            "central": 2283005096,
+            "high": 14677904209,
+            "low": 429857082
+          },
+          "minimum_calls": 2517,
+          "mode": "historical_snapshot_full",
+          "order_by": "timestamp",
+          "row_scenarios_not_bounds": {
+            "central": 13367323,
+            "high": 85941239,
+            "low": 2516875
+          },
+          "stream": "liquidityPositionSnapshots",
+          "stress_calls": 85942
+        },
+        {
+          "basis": "frozen_head_population_with_ten_million_row_stress_ceiling",
+          "central_calls": 1,
+          "compressed_byte_scenarios_not_bounds": {
+            "central": 79000,
+            "high": 790000000,
+            "low": 79000
+          },
+          "minimum_calls": 1,
+          "mode": "static_identity",
+          "order_by": "createdAtTimestamp",
+          "row_scenarios_not_bounds": {
+            "central": 1000,
+            "high": 10000000,
+            "low": 1000
+          },
+          "stream": "pairs",
+          "stress_calls": 10000
+        },
+        {
+          "basis": "same_period_head_cap_with_ten_thousand_rows_per_day_stress_ceiling",
+          "central_calls": 2248,
+          "compressed_byte_scenarios_not_bounds": {
+            "central": 396277440,
+            "high": 3962774400,
+            "low": 176280
+          },
+          "minimum_calls": 2248,
+          "mode": "historical_snapshot_full",
+          "order_by": "date",
+          "row_scenarios_not_bounds": {
+            "central": 2248000,
+            "high": 22480000,
+            "low": 1000
+          },
+          "stream": "tokenDayDatas",
+          "stress_calls": 22480
+        },
+        {
+          "basis": "frozen_head_population_with_ten_million_row_stress_ceiling",
+          "central_calls": 1,
+          "compressed_byte_scenarios_not_bounds": {
+            "central": 40754,
+            "high": 407540000,
+            "low": 40754
+          },
+          "minimum_calls": 1,
+          "mode": "static_identity",
+          "order_by": "id",
+          "row_scenarios_not_bounds": {
+            "central": 1000,
+            "high": 10000000,
+            "low": 1000
+          },
+          "stream": "tokens",
+          "stress_calls": 10000
+        }
+      ],
+      "source": "uniswap_v2"
+    },
+    {
+      "active_call_forecast": {
+        "central": 167154,
+        "low": 131298,
+        "stress": 291942
+      },
+      "active_payload_factor": 1.239749,
+      "forecast_active_bytes": 32444442060,
+      "installed_active_logical_bytes": 26170178240,
+      "new_streams": [
+        {
+          "basis": "same_period_head_cap_with_ten_thousand_rows_per_day_stress_ceiling",
+          "central_calls": 1884,
+          "compressed_byte_scenarios_not_bounds": {
+            "central": 601410480,
+            "high": 6014104801,
+            "low": 319220
+          },
+          "minimum_calls": 1884,
+          "mode": "historical_snapshot_full",
+          "order_by": "periodStartUnix",
+          "row_scenarios_not_bounds": {
+            "central": 1884000,
+            "high": 18840000,
+            "low": 1000
+          },
+          "stream": "poolHourDatas",
+          "stress_calls": 18840
+        },
+        {
+          "basis": "frozen_head_population_with_ten_million_row_stress_ceiling",
+          "central_calls": 1,
+          "compressed_byte_scenarios_not_bounds": {
+            "central": 78760,
+            "high": 787600000,
+            "low": 78760
+          },
+          "minimum_calls": 1,
+          "mode": "static_identity",
+          "order_by": "createdAtTimestamp",
+          "row_scenarios_not_bounds": {
+            "central": 1000,
+            "high": 10000000,
+            "low": 1000
+          },
+          "stream": "pools",
+          "stress_calls": 10000
+        },
+        {
+          "basis": "early_middle_head_local_density_with_two_times_observed_peak",
+          "central_calls": 3408,
+          "compressed_byte_scenarios_not_bounds": {
+            "central": 1036978921,
+            "high": 2358318711,
+            "low": 868604143
+          },
+          "minimum_calls": 2855,
+          "mode": "historical_snapshot_full",
+          "order_by": "timestamp",
+          "row_scenarios_not_bounds": {
+            "central": 3407528,
+            "high": 7749470,
+            "low": 2854246
+          },
+          "stream": "positionSnapshots",
+          "stress_calls": 7750
+        },
+        {
+          "basis": "frozen_head_population_with_ten_million_row_stress_ceiling",
+          "central_calls": 1,
+          "compressed_byte_scenarios_not_bounds": {
+            "central": 248100,
+            "high": 2481000000,
+            "low": 248100
+          },
+          "minimum_calls": 1,
+          "mode": "static_or_right_censored_auxiliary",
+          "order_by": "id",
+          "row_scenarios_not_bounds": {
+            "central": 1000,
+            "high": 10000000,
+            "low": 1000
+          },
+          "stream": "positions",
+          "stress_calls": 10000
+        },
+        {
+          "basis": "same_period_head_cap_with_ten_thousand_rows_per_day_stress_ceiling",
+          "central_calls": 1884,
+          "compressed_byte_scenarios_not_bounds": {
+            "central": 158576280,
+            "high": 1585762800,
+            "low": 84170
+          },
+          "minimum_calls": 1884,
+          "mode": "historical_snapshot_full",
+          "order_by": "date",
+          "row_scenarios_not_bounds": {
+            "central": 1884000,
+            "high": 18840000,
+            "low": 1000
+          },
+          "stream": "tickDayDatas",
+          "stress_calls": 18840
+        },
+        {
+          "basis": "same_period_head_cap_with_ten_thousand_rows_per_day_stress_ceiling",
+          "central_calls": 1884,
+          "compressed_byte_scenarios_not_bounds": {
+            "central": 312744000,
+            "high": 3127440000,
+            "low": 166000
+          },
+          "minimum_calls": 1884,
+          "mode": "historical_snapshot_full",
+          "order_by": "date",
+          "row_scenarios_not_bounds": {
+            "central": 1884000,
+            "high": 18840000,
+            "low": 1000
+          },
+          "stream": "tokenDayDatas",
+          "stress_calls": 18840
+        },
+        {
+          "basis": "same_period_head_cap_with_ten_thousand_rows_per_day_stress_ceiling",
+          "central_calls": 1884,
+          "compressed_byte_scenarios_not_bounds": {
+            "central": 299480640,
+            "high": 2994806400,
+            "low": 158960
+          },
+          "minimum_calls": 1884,
+          "mode": "historical_snapshot_full",
+          "order_by": "periodStartUnix",
+          "row_scenarios_not_bounds": {
+            "central": 1884000,
+            "high": 18840000,
+            "low": 1000
+          },
+          "stream": "tokenHourDatas",
+          "stress_calls": 18840
+        },
+        {
+          "basis": "frozen_head_population_with_ten_million_row_stress_ceiling",
+          "central_calls": 1,
+          "compressed_byte_scenarios_not_bounds": {
+            "central": 39570,
+            "high": 395700000,
+            "low": 39570
+          },
+          "minimum_calls": 1,
+          "mode": "static_identity",
+          "order_by": "id",
+          "row_scenarios_not_bounds": {
+            "central": 1000,
+            "high": 10000000,
+            "low": 1000
+          },
+          "stream": "tokens",
+          "stress_calls": 10000
+        }
+      ],
+      "source": "uniswap_v3"
+    },
+    {
+      "active_call_forecast": {
+        "central": 30791,
+        "low": 26181,
+        "stress": 37168
+      },
+      "active_payload_factor": 1.176443,
+      "forecast_active_bytes": 6158296024,
+      "installed_active_logical_bytes": 5234673571,
+      "new_streams": [
+        {
+          "basis": "early_middle_head_local_density_with_two_times_observed_peak",
+          "central_calls": 1255,
+          "compressed_byte_scenarios_not_bounds": {
+            "central": 374121576,
+            "high": 748242853,
+            "low": 374121576
+          },
+          "minimum_calls": 1255,
+          "mode": "historical_snapshot_full",
+          "order_by": "periodStartUnix",
+          "row_scenarios_not_bounds": {
+            "central": 1254852,
+            "high": 2509703,
+            "low": 1254852
+          },
+          "stream": "poolHourDatas",
+          "stress_calls": 2510
+        },
+        {
+          "basis": "frozen_head_population_with_ten_million_row_stress_ceiling",
+          "central_calls": 1,
+          "compressed_byte_scenarios_not_bounds": {
+            "central": 95120,
+            "high": 951200000,
+            "low": 95120
+          },
+          "minimum_calls": 1,
+          "mode": "static_identity",
+          "order_by": "createdAtTimestamp",
+          "row_scenarios_not_bounds": {
+            "central": 1000,
+            "high": 10000000,
+            "low": 1000
+          },
+          "stream": "pools",
+          "stress_calls": 10000
+        },
+        {
+          "basis": "frozen_head_population_with_ten_million_row_stress_ceiling",
+          "central_calls": 1,
+          "compressed_byte_scenarios_not_bounds": {
+            "central": 6110,
+            "high": 61100000,
+            "low": 6110
+          },
+          "minimum_calls": 1,
+          "mode": "static_identity",
+          "order_by": "createdAtTimestamp",
+          "row_scenarios_not_bounds": {
+            "central": 1000,
+            "high": 10000000,
+            "low": 1000
+          },
+          "stream": "positions",
+          "stress_calls": 10000
+        },
+        {
+          "basis": "same_period_head_cap_with_ten_thousand_rows_per_day_stress_ceiling",
+          "central_calls": 523,
+          "compressed_byte_scenarios_not_bounds": {
+            "central": 79961470,
+            "high": 799614700,
+            "low": 152890
+          },
+          "minimum_calls": 523,
+          "mode": "historical_snapshot_full",
+          "order_by": "date",
+          "row_scenarios_not_bounds": {
+            "central": 523000,
+            "high": 5230000,
+            "low": 1000
+          },
+          "stream": "tokenDayDatas",
+          "stress_calls": 5230
+        },
+        {
+          "basis": "early_middle_head_local_density_with_two_times_observed_peak",
+          "central_calls": 1255,
+          "compressed_byte_scenarios_not_bounds": {
+            "central": 223915791,
+            "high": 447831404,
+            "low": 223915791
+          },
+          "minimum_calls": 1255,
+          "mode": "historical_snapshot_full",
+          "order_by": "periodStartUnix",
+          "row_scenarios_not_bounds": {
+            "central": 1254852,
+            "high": 2509703,
+            "low": 1254852
+          },
+          "stream": "tokenHourDatas",
+          "stress_calls": 2510
+        },
+        {
+          "basis": "provider_archive_unavailable_quarantined_no_payload",
+          "central_calls": 0,
+          "compressed_byte_scenarios_not_bounds": {
+            "central": 0,
+            "high": 0,
+            "low": 0
+          },
+          "minimum_calls": 0,
+          "mode": "static_identity",
+          "order_by": "id",
+          "row_scenarios_not_bounds": {
+            "central": 0,
+            "high": 0,
+            "low": 0
+          },
+          "stream": "tokens",
+          "stress_calls": 0
+        },
+        {
+          "basis": "early_middle_head_local_density_with_two_times_observed_peak",
+          "central_calls": 523,
+          "compressed_byte_scenarios_not_bounds": {
+            "central": 31403751,
+            "high": 198418145,
+            "low": 6412690
+          },
+          "minimum_calls": 523,
+          "mode": "historical_event_full",
+          "order_by": "timestamp",
+          "row_scenarios_not_bounds": {
+            "central": 297187,
+            "high": 1877715,
+            "low": 60686
+          },
+          "stream": "transfers",
+          "stress_calls": 1878
+        }
+      ],
+      "source": "uniswap_v4"
+    }
+  ]
+}

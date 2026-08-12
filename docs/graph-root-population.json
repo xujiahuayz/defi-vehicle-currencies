@@ -1,0 +1,2285 @@
+{
+  "active_manifest_sha256": "f37e4704a594525852e5902f6c53180e2b3f8318f40419249b5b52431eb17ce4",
+  "captured_at_utc": "2026-08-12T00:46:33+00:00",
+  "freeze_sha256": "2c935682c70de83d55c3bec87d771ea63287c48f9121caf158126b9cfa012de4",
+  "kind": "graph_root_population_at_frozen_generation",
+  "new_manifest_sha256": "f19b2a05ef3f67e4daaaf821690dca3578ae4061262193f1133e0415269f3c21",
+  "research_sample_end": "20260630",
+  "schema_inventory_sha256": "967b17fd1e067218a3efaf4980e856213ed448d6463914e08f7d3fb0aade80aa",
+  "schema_version": 1,
+  "sources": [
+    {
+      "head_block": 25735362,
+      "roots": [
+        {
+          "adjudication": {
+            "decision": "admit",
+            "list_valued": true,
+            "mode": "historical_event_full",
+            "name": "ampUpdates",
+            "reason": "historical_event_full",
+            "type": "AmpUpdate"
+          },
+          "cutoff_field": "startTimestamp",
+          "probe_field": "id",
+          "returned_rows": 1,
+          "root": "ampUpdates",
+          "status": "nonempty",
+          "type": "AmpUpdate"
+        },
+        {
+          "adjudication": {
+            "decision": "admit",
+            "list_valued": true,
+            "mode": "historical_snapshot_full",
+            "name": "balancerSnapshots",
+            "reason": "historical_snapshot_full",
+            "type": "BalancerSnapshot"
+          },
+          "cutoff_field": "timestamp",
+          "probe_field": "id",
+          "returned_rows": 1,
+          "root": "balancerSnapshots",
+          "status": "nonempty",
+          "type": "BalancerSnapshot"
+        },
+        {
+          "adjudication": {
+            "decision": "exclude",
+            "list_valued": true,
+            "mode": "none",
+            "name": "balancers",
+            "reason": "mutable_current_or_reverse_index",
+            "type": "Balancer"
+          },
+          "cutoff_field": null,
+          "probe_field": "id",
+          "returned_rows": 1,
+          "root": "balancers",
+          "status": "nonempty",
+          "type": "Balancer"
+        },
+        {
+          "adjudication": {
+            "decision": "exclude",
+            "list_valued": true,
+            "mode": "none",
+            "name": "circuitBreakers",
+            "reason": "confirmed_empty_at_frozen_cutoff",
+            "type": "CircuitBreaker"
+          },
+          "cutoff_field": null,
+          "probe_field": "id",
+          "returned_rows": 0,
+          "root": "circuitBreakers",
+          "status": "empty",
+          "type": "CircuitBreaker"
+        },
+        {
+          "adjudication": {
+            "decision": "admit",
+            "list_valued": true,
+            "mode": "static_identity",
+            "name": "fxoracles",
+            "reason": "static_identity",
+            "type": "FXOracle"
+          },
+          "cutoff_field": null,
+          "probe_field": "id",
+          "returned_rows": 1,
+          "root": "fxoracles",
+          "status": "nonempty",
+          "type": "FXOracle"
+        },
+        {
+          "adjudication": {
+            "decision": "admit",
+            "list_valued": true,
+            "mode": "historical_event_full",
+            "name": "gradualWeightUpdates",
+            "reason": "historical_event_full",
+            "type": "GradualWeightUpdate"
+          },
+          "cutoff_field": "startTimestamp",
+          "probe_field": "id",
+          "returned_rows": 1,
+          "root": "gradualWeightUpdates",
+          "status": "nonempty",
+          "type": "GradualWeightUpdate"
+        },
+        {
+          "adjudication": {
+            "decision": "admit",
+            "list_valued": true,
+            "mode": "active_stream",
+            "name": "joinExits",
+            "reason": "existing_active_stream",
+            "type": "JoinExit"
+          },
+          "cutoff_field": "timestamp",
+          "probe_field": "id",
+          "returned_rows": 1,
+          "root": "joinExits",
+          "status": "nonempty",
+          "type": "JoinExit"
+        },
+        {
+          "adjudication": {
+            "decision": "admit",
+            "list_valued": true,
+            "mode": "historical_event_full",
+            "name": "latestPrices",
+            "reason": "historical_event_full",
+            "type": "LatestPrice"
+          },
+          "cutoff_field": null,
+          "probe_field": "id",
+          "returned_rows": 1,
+          "root": "latestPrices",
+          "status": "nonempty",
+          "type": "LatestPrice"
+        },
+        {
+          "adjudication": {
+            "decision": "admit",
+            "list_valued": true,
+            "mode": "historical_event_full",
+            "name": "managementOperations",
+            "reason": "historical_event_full",
+            "type": "ManagementOperation"
+          },
+          "cutoff_field": "timestamp",
+          "probe_field": "id",
+          "returned_rows": 1,
+          "root": "managementOperations",
+          "status": "nonempty",
+          "type": "ManagementOperation"
+        },
+        {
+          "adjudication": {
+            "decision": "admit",
+            "list_valued": true,
+            "mode": "static_identity",
+            "name": "poolContracts",
+            "reason": "static_identity",
+            "type": "PoolContract"
+          },
+          "cutoff_field": null,
+          "probe_field": "id",
+          "returned_rows": 1,
+          "root": "poolContracts",
+          "status": "nonempty",
+          "type": "PoolContract"
+        },
+        {
+          "adjudication": {
+            "decision": "admit",
+            "list_valued": true,
+            "mode": "historical_event_full",
+            "name": "poolHistoricalLiquidities",
+            "reason": "historical_event_full",
+            "type": "PoolHistoricalLiquidity"
+          },
+          "cutoff_field": null,
+          "probe_field": "id",
+          "returned_rows": 1,
+          "root": "poolHistoricalLiquidities",
+          "status": "nonempty",
+          "type": "PoolHistoricalLiquidity"
+        },
+        {
+          "adjudication": {
+            "decision": "exclude",
+            "list_valued": true,
+            "mode": "none",
+            "name": "poolShares",
+            "reason": "mutable_current_or_reverse_index",
+            "type": "PoolShare"
+          },
+          "cutoff_field": null,
+          "probe_field": "id",
+          "returned_rows": 1,
+          "root": "poolShares",
+          "status": "nonempty",
+          "type": "PoolShare"
+        },
+        {
+          "adjudication": {
+            "decision": "admit",
+            "list_valued": true,
+            "mode": "active_stream",
+            "name": "poolSnapshots",
+            "reason": "existing_active_stream",
+            "type": "PoolSnapshot"
+          },
+          "cutoff_field": "timestamp",
+          "probe_field": "id",
+          "returned_rows": 1,
+          "root": "poolSnapshots",
+          "status": "nonempty",
+          "type": "PoolSnapshot"
+        },
+        {
+          "adjudication": {
+            "decision": "admit",
+            "list_valued": true,
+            "mode": "block_pinned_configuration",
+            "name": "poolTokens",
+            "reason": "block_pinned_configuration",
+            "type": "PoolToken"
+          },
+          "cutoff_field": null,
+          "probe_field": "id",
+          "returned_rows": 1,
+          "root": "poolTokens",
+          "status": "nonempty",
+          "type": "PoolToken"
+        },
+        {
+          "adjudication": {
+            "decision": "admit",
+            "list_valued": true,
+            "mode": "block_pinned_configuration",
+            "name": "pools",
+            "reason": "block_pinned_configuration",
+            "type": "Pool"
+          },
+          "cutoff_field": "createTime",
+          "probe_field": "id",
+          "returned_rows": 1,
+          "root": "pools",
+          "status": "nonempty",
+          "type": "Pool"
+        },
+        {
+          "adjudication": {
+            "decision": "admit",
+            "list_valued": true,
+            "mode": "block_pinned_configuration",
+            "name": "priceRateProviders",
+            "reason": "block_pinned_configuration",
+            "type": "PriceRateProvider"
+          },
+          "cutoff_field": null,
+          "probe_field": "id",
+          "returned_rows": 1,
+          "root": "priceRateProviders",
+          "status": "nonempty",
+          "type": "PriceRateProvider"
+        },
+        {
+          "adjudication": {
+            "decision": "admit",
+            "list_valued": true,
+            "mode": "block_pinned_configuration",
+            "name": "protocolIdDatas",
+            "reason": "block_pinned_configuration",
+            "type": "ProtocolIdData"
+          },
+          "cutoff_field": null,
+          "probe_field": "id",
+          "returned_rows": 1,
+          "root": "protocolIdDatas",
+          "status": "nonempty",
+          "type": "ProtocolIdData"
+        },
+        {
+          "adjudication": {
+            "decision": "admit",
+            "list_valued": true,
+            "mode": "historical_event_full",
+            "name": "swapFeeUpdates",
+            "reason": "historical_event_full",
+            "type": "SwapFeeUpdate"
+          },
+          "cutoff_field": "startTimestamp",
+          "probe_field": "id",
+          "returned_rows": 1,
+          "root": "swapFeeUpdates",
+          "status": "nonempty",
+          "type": "SwapFeeUpdate"
+        },
+        {
+          "adjudication": {
+            "decision": "admit",
+            "list_valued": true,
+            "mode": "active_stream",
+            "name": "swaps",
+            "reason": "existing_active_stream",
+            "type": "Swap"
+          },
+          "cutoff_field": "timestamp",
+          "probe_field": "id",
+          "returned_rows": 1,
+          "root": "swaps",
+          "status": "nonempty",
+          "type": "Swap"
+        },
+        {
+          "adjudication": {
+            "decision": "admit",
+            "list_valued": true,
+            "mode": "historical_event_full",
+            "name": "tokenPrices",
+            "reason": "historical_event_full",
+            "type": "TokenPrice"
+          },
+          "cutoff_field": "timestamp",
+          "probe_field": "id",
+          "returned_rows": 1,
+          "root": "tokenPrices",
+          "status": "nonempty",
+          "type": "TokenPrice"
+        },
+        {
+          "adjudication": {
+            "decision": "admit",
+            "list_valued": true,
+            "mode": "historical_snapshot_full",
+            "name": "tokenSnapshots",
+            "reason": "historical_snapshot_full",
+            "type": "TokenSnapshot"
+          },
+          "cutoff_field": "timestamp",
+          "probe_field": "id",
+          "returned_rows": 1,
+          "root": "tokenSnapshots",
+          "status": "nonempty",
+          "type": "TokenSnapshot"
+        },
+        {
+          "adjudication": {
+            "decision": "admit",
+            "list_valued": true,
+            "mode": "block_pinned_configuration",
+            "name": "tokens",
+            "reason": "block_pinned_configuration",
+            "type": "Token"
+          },
+          "cutoff_field": null,
+          "probe_field": "id",
+          "returned_rows": 1,
+          "root": "tokens",
+          "status": "nonempty",
+          "type": "Token"
+        },
+        {
+          "adjudication": {
+            "decision": "admit",
+            "list_valued": true,
+            "mode": "historical_snapshot_full",
+            "name": "tradePairSnapshots",
+            "reason": "historical_snapshot_full",
+            "type": "TradePairSnapshot"
+          },
+          "cutoff_field": "timestamp",
+          "probe_field": "id",
+          "returned_rows": 1,
+          "root": "tradePairSnapshots",
+          "status": "nonempty",
+          "type": "TradePairSnapshot"
+        },
+        {
+          "adjudication": {
+            "decision": "admit",
+            "list_valued": true,
+            "mode": "static_or_right_censored_auxiliary",
+            "name": "tradePairs",
+            "reason": "static_or_right_censored_auxiliary",
+            "type": "TradePair"
+          },
+          "cutoff_field": null,
+          "probe_field": "id",
+          "returned_rows": 1,
+          "root": "tradePairs",
+          "status": "nonempty",
+          "type": "TradePair"
+        },
+        {
+          "adjudication": {
+            "decision": "exclude",
+            "list_valued": true,
+            "mode": "none",
+            "name": "userInternalBalances",
+            "reason": "mutable_current_or_reverse_index",
+            "type": "UserInternalBalance"
+          },
+          "cutoff_field": null,
+          "probe_field": "id",
+          "returned_rows": 1,
+          "root": "userInternalBalances",
+          "status": "nonempty",
+          "type": "UserInternalBalance"
+        },
+        {
+          "adjudication": {
+            "decision": "exclude",
+            "list_valued": true,
+            "mode": "none",
+            "name": "users",
+            "reason": "mutable_current_or_reverse_index",
+            "type": "User"
+          },
+          "cutoff_field": null,
+          "probe_field": "id",
+          "returned_rows": 1,
+          "root": "users",
+          "status": "nonempty",
+          "type": "User"
+        }
+      ],
+      "sample_end_block": 25433938,
+      "source": "balancer"
+    },
+    {
+      "head_block": 25735363,
+      "roots": [
+        {
+          "adjudication": {
+            "decision": "exclude",
+            "list_valued": true,
+            "mode": "none",
+            "name": "accounts",
+            "reason": "identity_only_nonresearch_entity",
+            "type": "Account"
+          },
+          "cutoff_field": null,
+          "probe_field": "id",
+          "returned_rows": 1,
+          "root": "accounts",
+          "status": "nonempty",
+          "type": "Account"
+        },
+        {
+          "adjudication": {
+            "decision": "exclude",
+            "list_valued": true,
+            "mode": "none",
+            "name": "activeAccounts",
+            "reason": "identity_only_nonresearch_entity",
+            "type": "ActiveAccount"
+          },
+          "cutoff_field": null,
+          "probe_field": "id",
+          "returned_rows": 1,
+          "root": "activeAccounts",
+          "status": "nonempty",
+          "type": "ActiveAccount"
+        },
+        {
+          "adjudication": {
+            "decision": "exclude",
+            "list_valued": true,
+            "mode": "none",
+            "name": "circularBuffers",
+            "reason": "provider_internal_state",
+            "type": "_CircularBuffer"
+          },
+          "cutoff_field": null,
+          "probe_field": "id",
+          "returned_rows": 1,
+          "root": "circularBuffers",
+          "status": "nonempty",
+          "type": "_CircularBuffer"
+        },
+        {
+          "adjudication": {
+            "decision": "admit",
+            "list_valued": true,
+            "mode": "historical_event_full",
+            "name": "deposits",
+            "reason": "historical_event_full",
+            "type": "Deposit"
+          },
+          "cutoff_field": "timestamp",
+          "probe_field": "id",
+          "returned_rows": 1,
+          "root": "deposits",
+          "status": "nonempty",
+          "type": "Deposit"
+        },
+        {
+          "adjudication": {
+            "decision": "admit",
+            "list_valued": true,
+            "mode": "static_identity",
+            "name": "dexAmmProtocols",
+            "reason": "static_identity",
+            "type": "DexAmmProtocol"
+          },
+          "cutoff_field": null,
+          "probe_field": "id",
+          "returned_rows": 1,
+          "root": "dexAmmProtocols",
+          "status": "nonempty",
+          "type": "DexAmmProtocol"
+        },
+        {
+          "adjudication": {
+            "decision": "exclude",
+            "list_valued": true,
+            "mode": "none",
+            "name": "events",
+            "reason": "duplicate_derivable_index",
+            "type": "Event"
+          },
+          "cutoff_field": "timestamp",
+          "probe_field": "id",
+          "returned_rows": 1,
+          "root": "events",
+          "status": "nonempty",
+          "type": "Event"
+        },
+        {
+          "adjudication": {
+            "decision": "admit",
+            "list_valued": true,
+            "mode": "historical_snapshot_full",
+            "name": "financialsDailySnapshots",
+            "reason": "historical_snapshot_full",
+            "type": "FinancialsDailySnapshot"
+          },
+          "cutoff_field": "timestamp",
+          "probe_field": "id",
+          "returned_rows": 1,
+          "root": "financialsDailySnapshots",
+          "status": "nonempty",
+          "type": "FinancialsDailySnapshot"
+        },
+        {
+          "adjudication": {
+            "decision": "admit",
+            "list_valued": true,
+            "mode": "static_identity",
+            "name": "liquidityGauges",
+            "reason": "static_identity",
+            "type": "_LiquidityGauge"
+          },
+          "cutoff_field": null,
+          "probe_field": "id",
+          "returned_rows": 1,
+          "root": "liquidityGauges",
+          "status": "nonempty",
+          "type": "_LiquidityGauge"
+        },
+        {
+          "adjudication": {
+            "decision": "admit",
+            "list_valued": true,
+            "mode": "active_stream",
+            "name": "liquidityPoolDailySnapshots",
+            "reason": "existing_active_stream",
+            "type": "LiquidityPoolDailySnapshot"
+          },
+          "cutoff_field": "timestamp",
+          "probe_field": "id",
+          "returned_rows": 1,
+          "root": "liquidityPoolDailySnapshots",
+          "status": "nonempty",
+          "type": "LiquidityPoolDailySnapshot"
+        },
+        {
+          "adjudication": {
+            "decision": "admit",
+            "list_valued": true,
+            "mode": "static_identity",
+            "name": "liquidityPoolFees",
+            "reason": "static_identity",
+            "type": "LiquidityPoolFee"
+          },
+          "cutoff_field": null,
+          "probe_field": "id",
+          "returned_rows": 1,
+          "root": "liquidityPoolFees",
+          "status": "nonempty",
+          "type": "LiquidityPoolFee"
+        },
+        {
+          "adjudication": {
+            "decision": "admit",
+            "list_valued": true,
+            "mode": "historical_snapshot_full",
+            "name": "liquidityPoolHourlySnapshots",
+            "reason": "historical_snapshot_full",
+            "type": "LiquidityPoolHourlySnapshot"
+          },
+          "cutoff_field": "timestamp",
+          "probe_field": "id",
+          "returned_rows": 1,
+          "root": "liquidityPoolHourlySnapshots",
+          "status": "nonempty",
+          "type": "LiquidityPoolHourlySnapshot"
+        },
+        {
+          "adjudication": {
+            "decision": "admit",
+            "list_valued": true,
+            "mode": "static_identity",
+            "name": "liquidityPools",
+            "reason": "static_identity",
+            "type": "LiquidityPool"
+          },
+          "cutoff_field": "createdTimestamp",
+          "probe_field": "id",
+          "returned_rows": 1,
+          "root": "liquidityPools",
+          "status": "nonempty",
+          "type": "LiquidityPool"
+        },
+        {
+          "adjudication": {
+            "decision": "admit",
+            "list_valued": true,
+            "mode": "static_identity",
+            "name": "lpTokens",
+            "reason": "static_identity",
+            "type": "_LpToken"
+          },
+          "cutoff_field": null,
+          "probe_field": "id",
+          "returned_rows": 1,
+          "root": "lpTokens",
+          "status": "nonempty",
+          "type": "_LpToken"
+        },
+        {
+          "adjudication": {
+            "decision": "exclude",
+            "list_valued": true,
+            "mode": "none",
+            "name": "protocols",
+            "reason": "duplicate_derivable_index",
+            "type": "Protocol"
+          },
+          "cutoff_field": null,
+          "probe_field": "id",
+          "returned_rows": 1,
+          "root": "protocols",
+          "status": "nonempty",
+          "type": "Protocol"
+        },
+        {
+          "adjudication": {
+            "decision": "admit",
+            "list_valued": true,
+            "mode": "static_identity",
+            "name": "rewardTokens",
+            "reason": "static_identity",
+            "type": "RewardToken"
+          },
+          "cutoff_field": null,
+          "probe_field": "id",
+          "returned_rows": 1,
+          "root": "rewardTokens",
+          "status": "nonempty",
+          "type": "RewardToken"
+        },
+        {
+          "adjudication": {
+            "decision": "admit",
+            "list_valued": true,
+            "mode": "active_stream",
+            "name": "swaps",
+            "reason": "existing_active_stream",
+            "type": "Swap"
+          },
+          "cutoff_field": "timestamp",
+          "probe_field": "id",
+          "returned_rows": 1,
+          "root": "swaps",
+          "status": "nonempty",
+          "type": "Swap"
+        },
+        {
+          "adjudication": {
+            "decision": "admit",
+            "list_valued": true,
+            "mode": "static_identity",
+            "name": "tokens",
+            "reason": "static_identity",
+            "type": "Token"
+          },
+          "cutoff_field": null,
+          "probe_field": "id",
+          "returned_rows": 1,
+          "root": "tokens",
+          "status": "nonempty",
+          "type": "Token"
+        },
+        {
+          "adjudication": {
+            "decision": "admit",
+            "list_valued": true,
+            "mode": "historical_snapshot_full",
+            "name": "usageMetricsDailySnapshots",
+            "reason": "historical_snapshot_full",
+            "type": "UsageMetricsDailySnapshot"
+          },
+          "cutoff_field": "timestamp",
+          "probe_field": "id",
+          "returned_rows": 1,
+          "root": "usageMetricsDailySnapshots",
+          "status": "nonempty",
+          "type": "UsageMetricsDailySnapshot"
+        },
+        {
+          "adjudication": {
+            "decision": "admit",
+            "list_valued": true,
+            "mode": "historical_snapshot_full",
+            "name": "usageMetricsHourlySnapshots",
+            "reason": "historical_snapshot_full",
+            "type": "UsageMetricsHourlySnapshot"
+          },
+          "cutoff_field": "timestamp",
+          "probe_field": "id",
+          "returned_rows": 1,
+          "root": "usageMetricsHourlySnapshots",
+          "status": "nonempty",
+          "type": "UsageMetricsHourlySnapshot"
+        },
+        {
+          "adjudication": {
+            "decision": "admit",
+            "list_valued": true,
+            "mode": "historical_event_full",
+            "name": "withdraws",
+            "reason": "historical_event_full",
+            "type": "Withdraw"
+          },
+          "cutoff_field": "timestamp",
+          "probe_field": "id",
+          "returned_rows": 1,
+          "root": "withdraws",
+          "status": "nonempty",
+          "type": "Withdraw"
+        }
+      ],
+      "sample_end_block": 25433938,
+      "source": "curve"
+    },
+    {
+      "head_block": 25735363,
+      "roots": [
+        {
+          "adjudication": {
+            "decision": "exclude",
+            "list_valued": true,
+            "mode": "none",
+            "name": "bundles",
+            "reason": "duplicate_aggregate_or_external_price",
+            "type": "Bundle"
+          },
+          "cutoff_field": null,
+          "error": "[{\"message\": \"bad indexers: {0x090f7382f9ea85c733cd501f4d87f16cb5b83ed3: Unavailable(missing block: 25433938, latest: 25735428), 0x2b3c7d1ef5fdfc0557934019c531d3e70d6200ae: Unavailable(missing block: 25433938, latest: 25735428), 0x8bbe94c2894f76406568dfb44e905dac4b7df699: BadResponse(400), 0x9af3fc811a66dbbca44acce94906d8743f9cf0d0: Unavailable(missing block: 25433938, latest: 25735428), 0xa6ff993e0f6253f1b7f55c873577a2f0f0ceb325: Unavailable(missing block: 25433938, latest: 25735428), 0xdc53e62df89fd07b31ed4ff886397b9e7ae4625e: Unavailable(missing block: 25433938, latest: 25735428), 0xe6de2325ef1aac1f058fae59d3c38a472f569846: Unavailable(missing block: 25433938, latest: 25735428), 0xe9e284277648fcdb09b8efc1832c73c09b5ecf59: Unavailable(missing block: 25433938, latest: 25735428), 0xf92f430dd8567b0d466358c79594ab58d919a6d4: Unavailable(missing block: 25433938, latest: 25735428)}\"}]",
+          "error_type": "RuntimeError",
+          "probe_field": "id",
+          "root": "bundles",
+          "status": "provider_archive_unavailable_quarantined",
+          "type": "Bundle"
+        },
+        {
+          "adjudication": {
+            "decision": "admit",
+            "list_valued": true,
+            "mode": "active_stream",
+            "name": "burns",
+            "reason": "existing_active_stream",
+            "type": "Burn"
+          },
+          "cutoff_field": "timestamp",
+          "probe_field": "id",
+          "returned_rows": 1,
+          "root": "burns",
+          "status": "nonempty",
+          "type": "Burn"
+        },
+        {
+          "adjudication": {
+            "decision": "admit",
+            "list_valued": true,
+            "mode": "historical_snapshot_full",
+            "name": "liquidityPositionSnapshots",
+            "reason": "historical_snapshot_full",
+            "type": "LiquidityPositionSnapshot"
+          },
+          "cutoff_field": "timestamp",
+          "probe_field": "id",
+          "returned_rows": 1,
+          "root": "liquidityPositionSnapshots",
+          "status": "nonempty",
+          "type": "LiquidityPositionSnapshot"
+        },
+        {
+          "adjudication": {
+            "decision": "exclude",
+            "list_valued": true,
+            "mode": "none",
+            "name": "liquidityPositions",
+            "reason": "mutable_current_entity",
+            "type": "LiquidityPosition"
+          },
+          "cutoff_field": null,
+          "error": "[{\"message\": \"bad indexers: {0x090f7382f9ea85c733cd501f4d87f16cb5b83ed3: Unavailable(missing block: 25433938, latest: 25735428), 0x2b3c7d1ef5fdfc0557934019c531d3e70d6200ae: Unavailable(missing block: 25433938, latest: 25735428), 0x8bbe94c2894f76406568dfb44e905dac4b7df699: BadResponse(400), 0x9af3fc811a66dbbca44acce94906d8743f9cf0d0: Unavailable(missing block: 25433938, latest: 25735428), 0xa6ff993e0f6253f1b7f55c873577a2f0f0ceb325: Unavailable(missing block: 25433938, latest: 25735428), 0xdc53e62df89fd07b31ed4ff886397b9e7ae4625e: Unavailable(missing block: 25433938, latest: 25735428), 0xe6de2325ef1aac1f058fae59d3c38a472f569846: Unavailable(missing block: 25433938, latest: 25735428), 0xe9e284277648fcdb09b8efc1832c73c09b5ecf59: Unavailable(missing block: 25433938, latest: 25735428), 0xf92f430dd8567b0d466358c79594ab58d919a6d4: Unavailable(missing block: 25433938, latest: 25735431)}\"}]",
+          "error_type": "RuntimeError",
+          "probe_field": "id",
+          "root": "liquidityPositions",
+          "status": "provider_archive_unavailable_quarantined",
+          "type": "LiquidityPosition"
+        },
+        {
+          "adjudication": {
+            "decision": "admit",
+            "list_valued": true,
+            "mode": "active_stream",
+            "name": "mints",
+            "reason": "existing_active_stream",
+            "type": "Mint"
+          },
+          "cutoff_field": "timestamp",
+          "probe_field": "id",
+          "returned_rows": 1,
+          "root": "mints",
+          "status": "nonempty",
+          "type": "Mint"
+        },
+        {
+          "adjudication": {
+            "decision": "admit",
+            "list_valued": true,
+            "mode": "active_stream",
+            "name": "pairDayDatas",
+            "reason": "existing_active_stream",
+            "type": "PairDayData"
+          },
+          "cutoff_field": "date",
+          "probe_field": "id",
+          "returned_rows": 1,
+          "root": "pairDayDatas",
+          "status": "nonempty",
+          "type": "PairDayData"
+        },
+        {
+          "adjudication": {
+            "decision": "admit",
+            "list_valued": true,
+            "mode": "active_stream",
+            "name": "pairHourDatas",
+            "reason": "existing_active_stream",
+            "type": "PairHourData"
+          },
+          "cutoff_field": "hourStartUnix",
+          "probe_field": "id",
+          "returned_rows": 1,
+          "root": "pairHourDatas",
+          "status": "nonempty",
+          "type": "PairHourData"
+        },
+        {
+          "adjudication": {
+            "decision": "admit",
+            "list_valued": true,
+            "mode": "static_identity",
+            "name": "pairs",
+            "reason": "static_identity",
+            "type": "Pair"
+          },
+          "cutoff_field": "createdAtTimestamp",
+          "probe_field": "id",
+          "returned_rows": 1,
+          "root": "pairs",
+          "status": "nonempty",
+          "type": "Pair"
+        },
+        {
+          "adjudication": {
+            "decision": "admit",
+            "list_valued": true,
+            "mode": "active_stream",
+            "name": "swaps",
+            "reason": "existing_active_stream",
+            "type": "Swap"
+          },
+          "cutoff_field": "timestamp",
+          "probe_field": "id",
+          "returned_rows": 1,
+          "root": "swaps",
+          "status": "nonempty",
+          "type": "Swap"
+        },
+        {
+          "adjudication": {
+            "decision": "admit",
+            "list_valued": true,
+            "mode": "historical_snapshot_full",
+            "name": "tokenDayDatas",
+            "reason": "historical_snapshot_full",
+            "type": "TokenDayData"
+          },
+          "cutoff_field": "date",
+          "probe_field": "id",
+          "returned_rows": 1,
+          "root": "tokenDayDatas",
+          "status": "nonempty",
+          "type": "TokenDayData"
+        },
+        {
+          "adjudication": {
+            "decision": "admit",
+            "list_valued": true,
+            "mode": "static_identity",
+            "name": "tokens",
+            "reason": "static_identity",
+            "type": "Token"
+          },
+          "cutoff_field": null,
+          "error": "[{\"message\": \"bad indexers: {0x090f7382f9ea85c733cd501f4d87f16cb5b83ed3: Unavailable(missing block: 25433938, latest: 25735428), 0x2b3c7d1ef5fdfc0557934019c531d3e70d6200ae: Unavailable(missing block: 25433938, latest: 25735428), 0x8bbe94c2894f76406568dfb44e905dac4b7df699: BadResponse(400), 0x9af3fc811a66dbbca44acce94906d8743f9cf0d0: Unavailable(missing block: 25433938, latest: 25735428), 0xa6ff993e0f6253f1b7f55c873577a2f0f0ceb325: Unavailable(missing block: 25433938, latest: 25735428), 0xdc53e62df89fd07b31ed4ff886397b9e7ae4625e: Unavailable(missing block: 25433938, latest: 25735428), 0xe6de2325ef1aac1f058fae59d3c38a472f569846: Unavailable(missing block: 25433938, latest: 25735428), 0xe9e284277648fcdb09b8efc1832c73c09b5ecf59: Unavailable(missing block: 25433938, latest: 25735428), 0xf92f430dd8567b0d466358c79594ab58d919a6d4: Unavailable(missing block: 25433938, latest: 25735431)}\"}]",
+          "error_type": "RuntimeError",
+          "probe_field": "id",
+          "root": "tokens",
+          "status": "provider_archive_unavailable_quarantined",
+          "type": "Token"
+        },
+        {
+          "adjudication": {
+            "decision": "exclude",
+            "list_valued": true,
+            "mode": "none",
+            "name": "transactions",
+            "reason": "duplicate_derivable_index",
+            "type": "Transaction"
+          },
+          "cutoff_field": "timestamp",
+          "probe_field": "id",
+          "returned_rows": 1,
+          "root": "transactions",
+          "status": "nonempty",
+          "type": "Transaction"
+        },
+        {
+          "adjudication": {
+            "decision": "exclude",
+            "list_valued": true,
+            "mode": "none",
+            "name": "uniswapDayDatas",
+            "reason": "duplicate_aggregate_or_external_price",
+            "type": "UniswapDayData"
+          },
+          "cutoff_field": "date",
+          "probe_field": "id",
+          "returned_rows": 1,
+          "root": "uniswapDayDatas",
+          "status": "nonempty",
+          "type": "UniswapDayData"
+        },
+        {
+          "adjudication": {
+            "decision": "exclude",
+            "list_valued": true,
+            "mode": "none",
+            "name": "uniswapFactories",
+            "reason": "duplicate_aggregate_or_external_price",
+            "type": "UniswapFactory"
+          },
+          "cutoff_field": null,
+          "error": "[{\"message\": \"bad indexers: {0x090f7382f9ea85c733cd501f4d87f16cb5b83ed3: Unavailable(missing block: 25433938, latest: 25735428), 0x2b3c7d1ef5fdfc0557934019c531d3e70d6200ae: Unavailable(missing block: 25433938, latest: 25735428), 0x8bbe94c2894f76406568dfb44e905dac4b7df699: BadResponse(400), 0x9af3fc811a66dbbca44acce94906d8743f9cf0d0: Unavailable(missing block: 25433938, latest: 25735428), 0xa6ff993e0f6253f1b7f55c873577a2f0f0ceb325: Unavailable(missing block: 25433938, latest: 25735428), 0xdc53e62df89fd07b31ed4ff886397b9e7ae4625e: Unavailable(missing block: 25433938, latest: 25735428), 0xe6de2325ef1aac1f058fae59d3c38a472f569846: Unavailable(missing block: 25433938, latest: 25735428), 0xe9e284277648fcdb09b8efc1832c73c09b5ecf59: Unavailable(missing block: 25433938, latest: 25735428), 0xf92f430dd8567b0d466358c79594ab58d919a6d4: Unavailable(missing block: 25433938, latest: 25735431)}\"}]",
+          "error_type": "RuntimeError",
+          "probe_field": "id",
+          "root": "uniswapFactories",
+          "status": "provider_archive_unavailable_quarantined",
+          "type": "UniswapFactory"
+        },
+        {
+          "adjudication": {
+            "decision": "exclude",
+            "list_valued": true,
+            "mode": "none",
+            "name": "users",
+            "reason": "mutable_current_entity",
+            "type": "User"
+          },
+          "cutoff_field": null,
+          "error": "[{\"message\": \"bad indexers: {0x090f7382f9ea85c733cd501f4d87f16cb5b83ed3: Unavailable(missing block: 25433938, latest: 25735428), 0x2b3c7d1ef5fdfc0557934019c531d3e70d6200ae: Unavailable(missing block: 25433938, latest: 25735428), 0x8bbe94c2894f76406568dfb44e905dac4b7df699: BadResponse(400), 0x9af3fc811a66dbbca44acce94906d8743f9cf0d0: Unavailable(missing block: 25433938, latest: 25735428), 0xa6ff993e0f6253f1b7f55c873577a2f0f0ceb325: Unavailable(missing block: 25433938, latest: 25735428), 0xdc53e62df89fd07b31ed4ff886397b9e7ae4625e: Unavailable(missing block: 25433938, latest: 25735428), 0xe6de2325ef1aac1f058fae59d3c38a472f569846: Unavailable(missing block: 25433938, latest: 25735428), 0xe9e284277648fcdb09b8efc1832c73c09b5ecf59: Unavailable(missing block: 25433938, latest: 25735428), 0xf92f430dd8567b0d466358c79594ab58d919a6d4: Unavailable(missing block: 25433938, latest: 25735431)}\"}]",
+          "error_type": "RuntimeError",
+          "probe_field": "id",
+          "root": "users",
+          "status": "provider_archive_unavailable_quarantined",
+          "type": "User"
+        }
+      ],
+      "sample_end_block": 25433938,
+      "source": "sushiswap_v2"
+    },
+    {
+      "head_block": 25735362,
+      "roots": [
+        {
+          "adjudication": {
+            "decision": "exclude",
+            "list_valued": true,
+            "mode": "none",
+            "name": "accounts",
+            "reason": "mutable_current_entity",
+            "type": "Account"
+          },
+          "cutoff_field": null,
+          "probe_field": "id",
+          "returned_rows": 1,
+          "root": "accounts",
+          "status": "nonempty",
+          "type": "Account"
+        },
+        {
+          "adjudication": {
+            "decision": "exclude",
+            "list_valued": true,
+            "mode": "none",
+            "name": "activeAccounts",
+            "reason": "identity_only_nonresearch_entity",
+            "type": "ActiveAccount"
+          },
+          "cutoff_field": null,
+          "probe_field": "id",
+          "returned_rows": 1,
+          "root": "activeAccounts",
+          "status": "nonempty",
+          "type": "ActiveAccount"
+        },
+        {
+          "adjudication": {
+            "decision": "admit",
+            "list_valued": true,
+            "mode": "historical_event_full",
+            "name": "deposits",
+            "reason": "historical_event_full",
+            "type": "Deposit"
+          },
+          "cutoff_field": "timestamp",
+          "probe_field": "id",
+          "returned_rows": 1,
+          "root": "deposits",
+          "status": "nonempty",
+          "type": "Deposit"
+        },
+        {
+          "adjudication": {
+            "decision": "admit",
+            "list_valued": true,
+            "mode": "static_or_right_censored_auxiliary",
+            "name": "dexAmmProtocols",
+            "reason": "static_or_right_censored_auxiliary",
+            "type": "DexAmmProtocol"
+          },
+          "cutoff_field": null,
+          "probe_field": "id",
+          "returned_rows": 1,
+          "root": "dexAmmProtocols",
+          "status": "nonempty",
+          "type": "DexAmmProtocol"
+        },
+        {
+          "adjudication": {
+            "decision": "admit",
+            "list_valued": true,
+            "mode": "historical_snapshot_full",
+            "name": "financialsDailySnapshots",
+            "reason": "historical_snapshot_full",
+            "type": "FinancialsDailySnapshot"
+          },
+          "cutoff_field": "timestamp",
+          "probe_field": "id",
+          "returned_rows": 1,
+          "root": "financialsDailySnapshots",
+          "status": "nonempty",
+          "type": "FinancialsDailySnapshot"
+        },
+        {
+          "adjudication": {
+            "decision": "exclude",
+            "list_valued": true,
+            "mode": "none",
+            "name": "helperStores",
+            "reason": "provider_internal_state",
+            "type": "_HelperStore"
+          },
+          "cutoff_field": null,
+          "probe_field": "id",
+          "returned_rows": 1,
+          "root": "helperStores",
+          "status": "nonempty",
+          "type": "_HelperStore"
+        },
+        {
+          "adjudication": {
+            "decision": "exclude",
+            "list_valued": true,
+            "mode": "none",
+            "name": "liquidityPoolAmounts",
+            "reason": "provider_internal_state",
+            "type": "_LiquidityPoolAmount"
+          },
+          "cutoff_field": null,
+          "probe_field": "id",
+          "returned_rows": 1,
+          "root": "liquidityPoolAmounts",
+          "status": "nonempty",
+          "type": "_LiquidityPoolAmount"
+        },
+        {
+          "adjudication": {
+            "decision": "admit",
+            "list_valued": true,
+            "mode": "active_stream",
+            "name": "liquidityPoolDailySnapshots",
+            "reason": "existing_active_stream",
+            "type": "LiquidityPoolDailySnapshot"
+          },
+          "cutoff_field": "timestamp",
+          "probe_field": "id",
+          "returned_rows": 1,
+          "root": "liquidityPoolDailySnapshots",
+          "status": "nonempty",
+          "type": "LiquidityPoolDailySnapshot"
+        },
+        {
+          "adjudication": {
+            "decision": "admit",
+            "list_valued": true,
+            "mode": "static_or_right_censored_auxiliary",
+            "name": "liquidityPoolFees",
+            "reason": "static_or_right_censored_auxiliary",
+            "type": "LiquidityPoolFee"
+          },
+          "cutoff_field": null,
+          "probe_field": "id",
+          "returned_rows": 1,
+          "root": "liquidityPoolFees",
+          "status": "nonempty",
+          "type": "LiquidityPoolFee"
+        },
+        {
+          "adjudication": {
+            "decision": "admit",
+            "list_valued": true,
+            "mode": "historical_snapshot_full",
+            "name": "liquidityPoolHourlySnapshots",
+            "reason": "historical_snapshot_full",
+            "type": "LiquidityPoolHourlySnapshot"
+          },
+          "cutoff_field": "timestamp",
+          "probe_field": "id",
+          "returned_rows": 1,
+          "root": "liquidityPoolHourlySnapshots",
+          "status": "nonempty",
+          "type": "LiquidityPoolHourlySnapshot"
+        },
+        {
+          "adjudication": {
+            "decision": "admit",
+            "list_valued": true,
+            "mode": "static_or_right_censored_auxiliary",
+            "name": "liquidityPools",
+            "reason": "static_or_right_censored_auxiliary",
+            "type": "LiquidityPool"
+          },
+          "cutoff_field": "createdTimestamp",
+          "probe_field": "id",
+          "returned_rows": 1,
+          "root": "liquidityPools",
+          "status": "nonempty",
+          "type": "LiquidityPool"
+        },
+        {
+          "adjudication": {
+            "decision": "admit",
+            "list_valued": true,
+            "mode": "historical_snapshot_full",
+            "name": "positionSnapshots",
+            "reason": "historical_snapshot_full",
+            "type": "PositionSnapshot"
+          },
+          "cutoff_field": "timestamp",
+          "probe_field": "id",
+          "returned_rows": 1,
+          "root": "positionSnapshots",
+          "status": "nonempty",
+          "type": "PositionSnapshot"
+        },
+        {
+          "adjudication": {
+            "decision": "admit",
+            "list_valued": true,
+            "mode": "static_or_right_censored_auxiliary",
+            "name": "positions",
+            "reason": "static_or_right_censored_auxiliary",
+            "type": "Position"
+          },
+          "cutoff_field": null,
+          "probe_field": "id",
+          "returned_rows": 1,
+          "root": "positions",
+          "status": "nonempty",
+          "type": "Position"
+        },
+        {
+          "adjudication": {
+            "decision": "exclude",
+            "list_valued": true,
+            "mode": "none",
+            "name": "protocols",
+            "reason": "duplicate_derivable_index",
+            "type": "Protocol"
+          },
+          "cutoff_field": null,
+          "probe_field": "id",
+          "returned_rows": 1,
+          "root": "protocols",
+          "status": "nonempty",
+          "type": "Protocol"
+        },
+        {
+          "adjudication": {
+            "decision": "exclude",
+            "list_valued": true,
+            "mode": "none",
+            "name": "rewardTokens",
+            "reason": "confirmed_empty_at_frozen_cutoff",
+            "type": "RewardToken"
+          },
+          "cutoff_field": null,
+          "probe_field": "id",
+          "returned_rows": 0,
+          "root": "rewardTokens",
+          "status": "empty",
+          "type": "RewardToken"
+        },
+        {
+          "adjudication": {
+            "decision": "admit",
+            "list_valued": true,
+            "mode": "active_stream",
+            "name": "swaps",
+            "reason": "existing_active_stream",
+            "type": "Swap"
+          },
+          "cutoff_field": "timestamp",
+          "probe_field": "id",
+          "returned_rows": 1,
+          "root": "swaps",
+          "status": "nonempty",
+          "type": "Swap"
+        },
+        {
+          "adjudication": {
+            "decision": "admit",
+            "list_valued": true,
+            "mode": "historical_snapshot_full",
+            "name": "tickDailySnapshots",
+            "reason": "historical_snapshot_full",
+            "type": "TickDailySnapshot"
+          },
+          "cutoff_field": "timestamp",
+          "probe_field": "id",
+          "returned_rows": 1,
+          "root": "tickDailySnapshots",
+          "status": "nonempty",
+          "type": "TickDailySnapshot"
+        },
+        {
+          "adjudication": {
+            "decision": "admit",
+            "list_valued": true,
+            "mode": "historical_snapshot_full",
+            "name": "tickHourlySnapshots",
+            "reason": "historical_snapshot_full",
+            "type": "TickHourlySnapshot"
+          },
+          "cutoff_field": "timestamp",
+          "probe_field": "id",
+          "returned_rows": 1,
+          "root": "tickHourlySnapshots",
+          "status": "nonempty",
+          "type": "TickHourlySnapshot"
+        },
+        {
+          "adjudication": {
+            "decision": "admit",
+            "list_valued": true,
+            "mode": "head_validation_only",
+            "name": "ticks",
+            "reason": "head_validation_only",
+            "type": "Tick"
+          },
+          "cutoff_field": "createdTimestamp",
+          "probe_field": "id",
+          "returned_rows": 1,
+          "root": "ticks",
+          "status": "nonempty",
+          "type": "Tick"
+        },
+        {
+          "adjudication": {
+            "decision": "exclude",
+            "list_valued": true,
+            "mode": "none",
+            "name": "tokenWhitelistSymbols",
+            "reason": "provider_internal_state",
+            "type": "_TokenWhitelistSymbol"
+          },
+          "cutoff_field": null,
+          "probe_field": "id",
+          "returned_rows": 1,
+          "root": "tokenWhitelistSymbols",
+          "status": "nonempty",
+          "type": "_TokenWhitelistSymbol"
+        },
+        {
+          "adjudication": {
+            "decision": "exclude",
+            "list_valued": true,
+            "mode": "none",
+            "name": "tokenWhitelists",
+            "reason": "provider_internal_state",
+            "type": "_TokenWhitelist"
+          },
+          "cutoff_field": null,
+          "probe_field": "id",
+          "returned_rows": 1,
+          "root": "tokenWhitelists",
+          "status": "nonempty",
+          "type": "_TokenWhitelist"
+        },
+        {
+          "adjudication": {
+            "decision": "admit",
+            "list_valued": true,
+            "mode": "static_or_right_censored_auxiliary",
+            "name": "tokens",
+            "reason": "static_or_right_censored_auxiliary",
+            "type": "Token"
+          },
+          "cutoff_field": null,
+          "probe_field": "id",
+          "returned_rows": 1,
+          "root": "tokens",
+          "status": "nonempty",
+          "type": "Token"
+        },
+        {
+          "adjudication": {
+            "decision": "admit",
+            "list_valued": true,
+            "mode": "historical_snapshot_full",
+            "name": "usageMetricsDailySnapshots",
+            "reason": "historical_snapshot_full",
+            "type": "UsageMetricsDailySnapshot"
+          },
+          "cutoff_field": "timestamp",
+          "probe_field": "id",
+          "returned_rows": 1,
+          "root": "usageMetricsDailySnapshots",
+          "status": "nonempty",
+          "type": "UsageMetricsDailySnapshot"
+        },
+        {
+          "adjudication": {
+            "decision": "admit",
+            "list_valued": true,
+            "mode": "historical_snapshot_full",
+            "name": "usageMetricsHourlySnapshots",
+            "reason": "historical_snapshot_full",
+            "type": "UsageMetricsHourlySnapshot"
+          },
+          "cutoff_field": "timestamp",
+          "probe_field": "id",
+          "returned_rows": 1,
+          "root": "usageMetricsHourlySnapshots",
+          "status": "nonempty",
+          "type": "UsageMetricsHourlySnapshot"
+        },
+        {
+          "adjudication": {
+            "decision": "admit",
+            "list_valued": true,
+            "mode": "historical_event_full",
+            "name": "withdraws",
+            "reason": "historical_event_full",
+            "type": "Withdraw"
+          },
+          "cutoff_field": "timestamp",
+          "probe_field": "id",
+          "returned_rows": 1,
+          "root": "withdraws",
+          "status": "nonempty",
+          "type": "Withdraw"
+        }
+      ],
+      "sample_end_block": 25433938,
+      "source": "sushiswap_v3"
+    },
+    {
+      "head_block": 25735364,
+      "roots": [
+        {
+          "adjudication": {
+            "decision": "exclude",
+            "list_valued": true,
+            "mode": "none",
+            "name": "bundles",
+            "reason": "duplicate_aggregate_or_external_price",
+            "type": "Bundle"
+          },
+          "cutoff_field": null,
+          "probe_field": "id",
+          "returned_rows": 1,
+          "root": "bundles",
+          "status": "nonempty",
+          "type": "Bundle"
+        },
+        {
+          "adjudication": {
+            "decision": "admit",
+            "list_valued": true,
+            "mode": "active_stream",
+            "name": "burns",
+            "reason": "existing_active_stream",
+            "type": "Burn"
+          },
+          "cutoff_field": "timestamp",
+          "probe_field": "id",
+          "returned_rows": 1,
+          "root": "burns",
+          "status": "nonempty",
+          "type": "Burn"
+        },
+        {
+          "adjudication": {
+            "decision": "admit",
+            "list_valued": true,
+            "mode": "historical_snapshot_full",
+            "name": "liquidityPositionSnapshots",
+            "reason": "historical_snapshot_full",
+            "type": "LiquidityPositionSnapshot"
+          },
+          "cutoff_field": "timestamp",
+          "probe_field": "id",
+          "returned_rows": 1,
+          "root": "liquidityPositionSnapshots",
+          "status": "nonempty",
+          "type": "LiquidityPositionSnapshot"
+        },
+        {
+          "adjudication": {
+            "decision": "exclude",
+            "list_valued": true,
+            "mode": "none",
+            "name": "liquidityPositions",
+            "reason": "mutable_current_entity",
+            "type": "LiquidityPosition"
+          },
+          "cutoff_field": null,
+          "probe_field": "id",
+          "returned_rows": 1,
+          "root": "liquidityPositions",
+          "status": "nonempty",
+          "type": "LiquidityPosition"
+        },
+        {
+          "adjudication": {
+            "decision": "admit",
+            "list_valued": true,
+            "mode": "active_stream",
+            "name": "mints",
+            "reason": "existing_active_stream",
+            "type": "Mint"
+          },
+          "cutoff_field": "timestamp",
+          "probe_field": "id",
+          "returned_rows": 1,
+          "root": "mints",
+          "status": "nonempty",
+          "type": "Mint"
+        },
+        {
+          "adjudication": {
+            "decision": "admit",
+            "list_valued": true,
+            "mode": "active_stream",
+            "name": "pairDayDatas",
+            "reason": "existing_active_stream",
+            "type": "PairDayData"
+          },
+          "cutoff_field": "date",
+          "probe_field": "id",
+          "returned_rows": 1,
+          "root": "pairDayDatas",
+          "status": "nonempty",
+          "type": "PairDayData"
+        },
+        {
+          "adjudication": {
+            "decision": "admit",
+            "list_valued": true,
+            "mode": "active_stream",
+            "name": "pairHourDatas",
+            "reason": "existing_active_stream",
+            "type": "PairHourData"
+          },
+          "cutoff_field": "hourStartUnix",
+          "probe_field": "id",
+          "returned_rows": 1,
+          "root": "pairHourDatas",
+          "status": "nonempty",
+          "type": "PairHourData"
+        },
+        {
+          "adjudication": {
+            "decision": "admit",
+            "list_valued": true,
+            "mode": "static_identity",
+            "name": "pairs",
+            "reason": "static_identity",
+            "type": "Pair"
+          },
+          "cutoff_field": "createdAtTimestamp",
+          "probe_field": "id",
+          "returned_rows": 1,
+          "root": "pairs",
+          "status": "nonempty",
+          "type": "Pair"
+        },
+        {
+          "adjudication": {
+            "decision": "admit",
+            "list_valued": true,
+            "mode": "active_stream",
+            "name": "swaps",
+            "reason": "existing_active_stream",
+            "type": "Swap"
+          },
+          "cutoff_field": "timestamp",
+          "probe_field": "id",
+          "returned_rows": 1,
+          "root": "swaps",
+          "status": "nonempty",
+          "type": "Swap"
+        },
+        {
+          "adjudication": {
+            "decision": "admit",
+            "list_valued": true,
+            "mode": "historical_snapshot_full",
+            "name": "tokenDayDatas",
+            "reason": "historical_snapshot_full",
+            "type": "TokenDayData"
+          },
+          "cutoff_field": "date",
+          "probe_field": "id",
+          "returned_rows": 1,
+          "root": "tokenDayDatas",
+          "status": "nonempty",
+          "type": "TokenDayData"
+        },
+        {
+          "adjudication": {
+            "decision": "admit",
+            "list_valued": true,
+            "mode": "static_identity",
+            "name": "tokens",
+            "reason": "static_identity",
+            "type": "Token"
+          },
+          "cutoff_field": null,
+          "probe_field": "id",
+          "returned_rows": 1,
+          "root": "tokens",
+          "status": "nonempty",
+          "type": "Token"
+        },
+        {
+          "adjudication": {
+            "decision": "exclude",
+            "list_valued": true,
+            "mode": "none",
+            "name": "transactions",
+            "reason": "duplicate_derivable_index",
+            "type": "Transaction"
+          },
+          "cutoff_field": "timestamp",
+          "probe_field": "id",
+          "returned_rows": 1,
+          "root": "transactions",
+          "status": "nonempty",
+          "type": "Transaction"
+        },
+        {
+          "adjudication": {
+            "decision": "exclude",
+            "list_valued": true,
+            "mode": "none",
+            "name": "uniswapDayDatas",
+            "reason": "duplicate_aggregate_or_external_price",
+            "type": "UniswapDayData"
+          },
+          "cutoff_field": "date",
+          "probe_field": "id",
+          "returned_rows": 1,
+          "root": "uniswapDayDatas",
+          "status": "nonempty",
+          "type": "UniswapDayData"
+        },
+        {
+          "adjudication": {
+            "decision": "exclude",
+            "list_valued": true,
+            "mode": "none",
+            "name": "uniswapFactories",
+            "reason": "duplicate_aggregate_or_external_price",
+            "type": "UniswapFactory"
+          },
+          "cutoff_field": null,
+          "probe_field": "id",
+          "returned_rows": 1,
+          "root": "uniswapFactories",
+          "status": "nonempty",
+          "type": "UniswapFactory"
+        },
+        {
+          "adjudication": {
+            "decision": "exclude",
+            "list_valued": true,
+            "mode": "none",
+            "name": "users",
+            "reason": "mutable_current_entity",
+            "type": "User"
+          },
+          "cutoff_field": null,
+          "probe_field": "id",
+          "returned_rows": 1,
+          "root": "users",
+          "status": "nonempty",
+          "type": "User"
+        }
+      ],
+      "sample_end_block": 25433938,
+      "source": "uniswap_v2"
+    },
+    {
+      "head_block": 25735364,
+      "roots": [
+        {
+          "adjudication": {
+            "decision": "exclude",
+            "list_valued": true,
+            "mode": "none",
+            "name": "bundles",
+            "reason": "duplicate_aggregate_or_external_price",
+            "type": "Bundle"
+          },
+          "cutoff_field": null,
+          "probe_field": "id",
+          "returned_rows": 1,
+          "root": "bundles",
+          "status": "nonempty",
+          "type": "Bundle"
+        },
+        {
+          "adjudication": {
+            "decision": "admit",
+            "list_valued": true,
+            "mode": "active_stream",
+            "name": "burns",
+            "reason": "existing_active_stream",
+            "type": "Burn"
+          },
+          "cutoff_field": "timestamp",
+          "probe_field": "id",
+          "returned_rows": 1,
+          "root": "burns",
+          "status": "nonempty",
+          "type": "Burn"
+        },
+        {
+          "adjudication": {
+            "decision": "exclude",
+            "list_valued": true,
+            "mode": "none",
+            "name": "collects",
+            "reason": "confirmed_empty_at_frozen_cutoff",
+            "type": "Collect"
+          },
+          "cutoff_field": "timestamp",
+          "probe_field": "id",
+          "returned_rows": 0,
+          "root": "collects",
+          "status": "empty",
+          "type": "Collect"
+        },
+        {
+          "adjudication": {
+            "decision": "exclude",
+            "list_valued": true,
+            "mode": "none",
+            "name": "factories",
+            "reason": "duplicate_aggregate_or_external_price",
+            "type": "Factory"
+          },
+          "cutoff_field": null,
+          "probe_field": "id",
+          "returned_rows": 1,
+          "root": "factories",
+          "status": "nonempty",
+          "type": "Factory"
+        },
+        {
+          "adjudication": {
+            "decision": "exclude",
+            "list_valued": true,
+            "mode": "none",
+            "name": "flashes",
+            "reason": "confirmed_empty_at_frozen_cutoff",
+            "type": "Flash"
+          },
+          "cutoff_field": "timestamp",
+          "probe_field": "id",
+          "returned_rows": 0,
+          "root": "flashes",
+          "status": "empty",
+          "type": "Flash"
+        },
+        {
+          "adjudication": {
+            "decision": "admit",
+            "list_valued": true,
+            "mode": "active_stream",
+            "name": "mints",
+            "reason": "existing_active_stream",
+            "type": "Mint"
+          },
+          "cutoff_field": "timestamp",
+          "probe_field": "id",
+          "returned_rows": 1,
+          "root": "mints",
+          "status": "nonempty",
+          "type": "Mint"
+        },
+        {
+          "adjudication": {
+            "decision": "admit",
+            "list_valued": true,
+            "mode": "active_stream",
+            "name": "poolDayDatas",
+            "reason": "existing_active_stream",
+            "type": "PoolDayData"
+          },
+          "cutoff_field": "date",
+          "probe_field": "id",
+          "returned_rows": 1,
+          "root": "poolDayDatas",
+          "status": "nonempty",
+          "type": "PoolDayData"
+        },
+        {
+          "adjudication": {
+            "decision": "admit",
+            "list_valued": true,
+            "mode": "historical_snapshot_full",
+            "name": "poolHourDatas",
+            "reason": "historical_snapshot_full",
+            "type": "PoolHourData"
+          },
+          "cutoff_field": "periodStartUnix",
+          "probe_field": "id",
+          "returned_rows": 1,
+          "root": "poolHourDatas",
+          "status": "nonempty",
+          "type": "PoolHourData"
+        },
+        {
+          "adjudication": {
+            "decision": "admit",
+            "list_valued": true,
+            "mode": "static_identity",
+            "name": "pools",
+            "reason": "static_identity",
+            "type": "Pool"
+          },
+          "cutoff_field": "createdAtTimestamp",
+          "probe_field": "id",
+          "returned_rows": 1,
+          "root": "pools",
+          "status": "nonempty",
+          "type": "Pool"
+        },
+        {
+          "adjudication": {
+            "decision": "admit",
+            "list_valued": true,
+            "mode": "historical_snapshot_full",
+            "name": "positionSnapshots",
+            "reason": "historical_snapshot_full",
+            "type": "PositionSnapshot"
+          },
+          "cutoff_field": "timestamp",
+          "probe_field": "id",
+          "returned_rows": 1,
+          "root": "positionSnapshots",
+          "status": "nonempty",
+          "type": "PositionSnapshot"
+        },
+        {
+          "adjudication": {
+            "decision": "admit",
+            "list_valued": true,
+            "mode": "static_or_right_censored_auxiliary",
+            "name": "positions",
+            "reason": "static_or_right_censored_auxiliary",
+            "type": "Position"
+          },
+          "cutoff_field": null,
+          "probe_field": "id",
+          "returned_rows": 1,
+          "root": "positions",
+          "status": "nonempty",
+          "type": "Position"
+        },
+        {
+          "adjudication": {
+            "decision": "admit",
+            "list_valued": true,
+            "mode": "active_stream",
+            "name": "swaps",
+            "reason": "existing_active_stream",
+            "type": "Swap"
+          },
+          "cutoff_field": "timestamp",
+          "probe_field": "id",
+          "returned_rows": 1,
+          "root": "swaps",
+          "status": "nonempty",
+          "type": "Swap"
+        },
+        {
+          "adjudication": {
+            "decision": "admit",
+            "list_valued": true,
+            "mode": "historical_snapshot_full",
+            "name": "tickDayDatas",
+            "reason": "historical_snapshot_full",
+            "type": "TickDayData"
+          },
+          "cutoff_field": "date",
+          "probe_field": "id",
+          "returned_rows": 1,
+          "root": "tickDayDatas",
+          "status": "nonempty",
+          "type": "TickDayData"
+        },
+        {
+          "adjudication": {
+            "decision": "exclude",
+            "list_valued": true,
+            "mode": "none",
+            "name": "tickHourDatas",
+            "reason": "confirmed_empty_at_frozen_cutoff",
+            "type": "TickHourData"
+          },
+          "cutoff_field": "periodStartUnix",
+          "probe_field": "id",
+          "returned_rows": 0,
+          "root": "tickHourDatas",
+          "status": "empty",
+          "type": "TickHourData"
+        },
+        {
+          "adjudication": {
+            "decision": "exclude",
+            "list_valued": true,
+            "mode": "none",
+            "name": "ticks",
+            "reason": "mutable_current_entity",
+            "type": "Tick"
+          },
+          "cutoff_field": "createdAtTimestamp",
+          "probe_field": "id",
+          "returned_rows": 1,
+          "root": "ticks",
+          "status": "nonempty",
+          "type": "Tick"
+        },
+        {
+          "adjudication": {
+            "decision": "admit",
+            "list_valued": true,
+            "mode": "historical_snapshot_full",
+            "name": "tokenDayDatas",
+            "reason": "historical_snapshot_full",
+            "type": "TokenDayData"
+          },
+          "cutoff_field": "date",
+          "probe_field": "id",
+          "returned_rows": 1,
+          "root": "tokenDayDatas",
+          "status": "nonempty",
+          "type": "TokenDayData"
+        },
+        {
+          "adjudication": {
+            "decision": "admit",
+            "list_valued": true,
+            "mode": "historical_snapshot_full",
+            "name": "tokenHourDatas",
+            "reason": "historical_snapshot_full",
+            "type": "TokenHourData"
+          },
+          "cutoff_field": "periodStartUnix",
+          "probe_field": "id",
+          "returned_rows": 1,
+          "root": "tokenHourDatas",
+          "status": "nonempty",
+          "type": "TokenHourData"
+        },
+        {
+          "adjudication": {
+            "decision": "admit",
+            "list_valued": true,
+            "mode": "static_identity",
+            "name": "tokens",
+            "reason": "static_identity",
+            "type": "Token"
+          },
+          "cutoff_field": null,
+          "probe_field": "id",
+          "returned_rows": 1,
+          "root": "tokens",
+          "status": "nonempty",
+          "type": "Token"
+        },
+        {
+          "adjudication": {
+            "decision": "exclude",
+            "list_valued": true,
+            "mode": "none",
+            "name": "transactions",
+            "reason": "duplicate_derivable_index",
+            "type": "Transaction"
+          },
+          "cutoff_field": "timestamp",
+          "probe_field": "id",
+          "returned_rows": 1,
+          "root": "transactions",
+          "status": "nonempty",
+          "type": "Transaction"
+        },
+        {
+          "adjudication": {
+            "decision": "exclude",
+            "list_valued": true,
+            "mode": "none",
+            "name": "uniswapDayDatas",
+            "reason": "duplicate_aggregate_or_external_price",
+            "type": "UniswapDayData"
+          },
+          "cutoff_field": "date",
+          "probe_field": "id",
+          "returned_rows": 1,
+          "root": "uniswapDayDatas",
+          "status": "nonempty",
+          "type": "UniswapDayData"
+        }
+      ],
+      "sample_end_block": 25433938,
+      "source": "uniswap_v3"
+    },
+    {
+      "head_block": 25735363,
+      "roots": [
+        {
+          "adjudication": {
+            "decision": "exclude",
+            "list_valued": true,
+            "mode": "none",
+            "name": "bundles",
+            "reason": "duplicate_aggregate_or_external_price",
+            "type": "Bundle"
+          },
+          "cutoff_field": null,
+          "error": "[{\"message\": \"bad indexers: {0x3b9ba748691f135b71582dc3292e5e3ed7e13341: Unavailable(missing block: 25433938, latest: 25735430), 0x6f9bb7e454f5b3eb2310343f0e99269dc2bb8a1d: Unavailable(missing block: 25433938, latest: 25735428), 0x9da1017766bfeb2835db4f811516eea68996538b: Unavailable(missing block: 25433938, latest: 25735428), 0xe13840a2e92e0cb17a246609b432d0fa2e418774: BadResponse(no attestation: indexing_error), 0xf00f7157fa8fd0420b87956d46058a16b2f23adc: Unavailable(no status: indexer not available), 0xf92f430dd8567b0d466358c79594ab58d919a6d4: BadResponse(no attestation: indexing_error)}\"}]",
+          "error_type": "RuntimeError",
+          "probe_field": "id",
+          "root": "bundles",
+          "status": "provider_archive_unavailable_quarantined",
+          "type": "Bundle"
+        },
+        {
+          "adjudication": {
+            "decision": "admit",
+            "list_valued": true,
+            "mode": "active_stream",
+            "name": "modifyLiquidities",
+            "reason": "existing_active_stream",
+            "type": "ModifyLiquidity"
+          },
+          "cutoff_field": "timestamp",
+          "probe_field": "id",
+          "returned_rows": 1,
+          "root": "modifyLiquidities",
+          "status": "nonempty",
+          "type": "ModifyLiquidity"
+        },
+        {
+          "adjudication": {
+            "decision": "admit",
+            "list_valued": true,
+            "mode": "active_stream",
+            "name": "poolDayDatas",
+            "reason": "existing_active_stream",
+            "type": "PoolDayData"
+          },
+          "cutoff_field": "date",
+          "probe_field": "id",
+          "returned_rows": 1,
+          "root": "poolDayDatas",
+          "status": "nonempty",
+          "type": "PoolDayData"
+        },
+        {
+          "adjudication": {
+            "decision": "admit",
+            "list_valued": true,
+            "mode": "historical_snapshot_full",
+            "name": "poolHourDatas",
+            "reason": "historical_snapshot_full",
+            "type": "PoolHourData"
+          },
+          "cutoff_field": "periodStartUnix",
+          "probe_field": "id",
+          "returned_rows": 1,
+          "root": "poolHourDatas",
+          "status": "nonempty",
+          "type": "PoolHourData"
+        },
+        {
+          "adjudication": {
+            "decision": "exclude",
+            "list_valued": true,
+            "mode": "none",
+            "name": "poolManagers",
+            "reason": "duplicate_aggregate_or_external_price",
+            "type": "PoolManager"
+          },
+          "cutoff_field": null,
+          "error": "[{\"message\": \"bad indexers: {0x3b9ba748691f135b71582dc3292e5e3ed7e13341: Unavailable(missing block: 25433938, latest: 25735430), 0x6f9bb7e454f5b3eb2310343f0e99269dc2bb8a1d: Unavailable(missing block: 25433938, latest: 25735428), 0x9da1017766bfeb2835db4f811516eea68996538b: Unavailable(missing block: 25433938, latest: 25735428), 0xe13840a2e92e0cb17a246609b432d0fa2e418774: BadResponse(no attestation: indexing_error), 0xf00f7157fa8fd0420b87956d46058a16b2f23adc: Unavailable(no status: indexer not available), 0xf92f430dd8567b0d466358c79594ab58d919a6d4: BadResponse(no attestation: indexing_error)}\"}]",
+          "error_type": "RuntimeError",
+          "probe_field": "id",
+          "root": "poolManagers",
+          "status": "provider_archive_unavailable_quarantined",
+          "type": "PoolManager"
+        },
+        {
+          "adjudication": {
+            "decision": "admit",
+            "list_valued": true,
+            "mode": "static_identity",
+            "name": "pools",
+            "reason": "static_identity",
+            "type": "Pool"
+          },
+          "cutoff_field": "createdAtTimestamp",
+          "probe_field": "id",
+          "returned_rows": 1,
+          "root": "pools",
+          "status": "nonempty",
+          "type": "Pool"
+        },
+        {
+          "adjudication": {
+            "decision": "admit",
+            "list_valued": true,
+            "mode": "static_identity",
+            "name": "positions",
+            "reason": "static_identity",
+            "type": "Position"
+          },
+          "cutoff_field": "createdAtTimestamp",
+          "probe_field": "id",
+          "returned_rows": 1,
+          "root": "positions",
+          "status": "nonempty",
+          "type": "Position"
+        },
+        {
+          "adjudication": {
+            "decision": "exclude",
+            "list_valued": true,
+            "mode": "none",
+            "name": "subscribes",
+            "reason": "confirmed_empty_at_frozen_cutoff",
+            "type": "Subscribe"
+          },
+          "cutoff_field": "timestamp",
+          "probe_field": "id",
+          "returned_rows": 0,
+          "root": "subscribes",
+          "status": "empty",
+          "type": "Subscribe"
+        },
+        {
+          "adjudication": {
+            "decision": "admit",
+            "list_valued": true,
+            "mode": "active_stream",
+            "name": "swaps",
+            "reason": "existing_active_stream",
+            "type": "Swap"
+          },
+          "cutoff_field": "timestamp",
+          "probe_field": "id",
+          "returned_rows": 1,
+          "root": "swaps",
+          "status": "nonempty",
+          "type": "Swap"
+        },
+        {
+          "adjudication": {
+            "decision": "exclude",
+            "list_valued": true,
+            "mode": "none",
+            "name": "ticks",
+            "reason": "mutable_current_entity",
+            "type": "Tick"
+          },
+          "cutoff_field": "createdAtTimestamp",
+          "probe_field": "id",
+          "returned_rows": 1,
+          "root": "ticks",
+          "status": "nonempty",
+          "type": "Tick"
+        },
+        {
+          "adjudication": {
+            "decision": "admit",
+            "list_valued": true,
+            "mode": "historical_snapshot_full",
+            "name": "tokenDayDatas",
+            "reason": "historical_snapshot_full",
+            "type": "TokenDayData"
+          },
+          "cutoff_field": "date",
+          "probe_field": "id",
+          "returned_rows": 1,
+          "root": "tokenDayDatas",
+          "status": "nonempty",
+          "type": "TokenDayData"
+        },
+        {
+          "adjudication": {
+            "decision": "admit",
+            "list_valued": true,
+            "mode": "historical_snapshot_full",
+            "name": "tokenHourDatas",
+            "reason": "historical_snapshot_full",
+            "type": "TokenHourData"
+          },
+          "cutoff_field": "periodStartUnix",
+          "probe_field": "id",
+          "returned_rows": 1,
+          "root": "tokenHourDatas",
+          "status": "nonempty",
+          "type": "TokenHourData"
+        },
+        {
+          "adjudication": {
+            "decision": "admit",
+            "list_valued": true,
+            "mode": "static_identity",
+            "name": "tokens",
+            "reason": "static_identity",
+            "type": "Token"
+          },
+          "cutoff_field": null,
+          "error": "[{\"message\": \"bad indexers: {0x3b9ba748691f135b71582dc3292e5e3ed7e13341: Unavailable(missing block: 25433938, latest: 25735430), 0x6f9bb7e454f5b3eb2310343f0e99269dc2bb8a1d: Unavailable(missing block: 25433938, latest: 25735428), 0x9da1017766bfeb2835db4f811516eea68996538b: Unavailable(missing block: 25433938, latest: 25735428), 0xe13840a2e92e0cb17a246609b432d0fa2e418774: BadResponse(no attestation: indexing_error), 0xf00f7157fa8fd0420b87956d46058a16b2f23adc: Unavailable(no status: indexer not available), 0xf92f430dd8567b0d466358c79594ab58d919a6d4: BadResponse(no attestation: indexing_error)}\"}]",
+          "error_type": "RuntimeError",
+          "probe_field": "id",
+          "root": "tokens",
+          "status": "provider_archive_unavailable_quarantined",
+          "type": "Token"
+        },
+        {
+          "adjudication": {
+            "decision": "exclude",
+            "list_valued": true,
+            "mode": "none",
+            "name": "transactions",
+            "reason": "duplicate_derivable_index",
+            "type": "Transaction"
+          },
+          "cutoff_field": "timestamp",
+          "probe_field": "id",
+          "returned_rows": 1,
+          "root": "transactions",
+          "status": "nonempty",
+          "type": "Transaction"
+        },
+        {
+          "adjudication": {
+            "decision": "admit",
+            "list_valued": true,
+            "mode": "historical_event_full",
+            "name": "transfers",
+            "reason": "historical_event_full",
+            "type": "Transfer"
+          },
+          "cutoff_field": "timestamp",
+          "probe_field": "id",
+          "returned_rows": 1,
+          "root": "transfers",
+          "status": "nonempty",
+          "type": "Transfer"
+        },
+        {
+          "adjudication": {
+            "decision": "exclude",
+            "list_valued": true,
+            "mode": "none",
+            "name": "uniswapDayDatas",
+            "reason": "duplicate_aggregate_or_external_price",
+            "type": "UniswapDayData"
+          },
+          "cutoff_field": "date",
+          "probe_field": "id",
+          "returned_rows": 1,
+          "root": "uniswapDayDatas",
+          "status": "nonempty",
+          "type": "UniswapDayData"
+        },
+        {
+          "adjudication": {
+            "decision": "exclude",
+            "list_valued": true,
+            "mode": "none",
+            "name": "unsubscribes",
+            "reason": "confirmed_empty_at_frozen_cutoff",
+            "type": "Unsubscribe"
+          },
+          "cutoff_field": "timestamp",
+          "probe_field": "id",
+          "returned_rows": 0,
+          "root": "unsubscribes",
+          "status": "empty",
+          "type": "Unsubscribe"
+        }
+      ],
+      "sample_end_block": 25433938,
+      "source": "uniswap_v4"
+    }
+  ],
+  "summary": {
+    "collection_roots": 138,
+    "confirmed_empty_adjudications": 7,
+    "empty": 7,
+    "errors": 0,
+    "nonempty": 123,
+    "provider_archive_unavailable_quarantined": 8
+  }
+}

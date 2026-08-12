@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import gzip
 import tempfile
+import threading
 import unittest
 from pathlib import Path
 from unittest.mock import patch
@@ -13,12 +14,52 @@ from ddvc.analysis.raw_data_inventory import (
     build_raw_data_inventory,
     count_jsonl_gz_rows,
     metadata_row_count,
+    publish_raw_data_inventory,
     summarize_raw_data_inventory,
 )
 from ddvc.fetch.sources import DEX_SOURCES
+from ddvc.runtime import exclusive_job
 
 
 class RawDataInventoryTests(unittest.TestCase):
+    def test_builder_holds_raw_mutation_lease_through_publication(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            lock = Path(tmp) / "raw.lock"
+            entered = threading.Event()
+            release = threading.Event()
+            errors: list[BaseException] = []
+
+            def paused_build() -> int:
+                entered.set()
+                self.assertTrue(release.wait(timeout=10))
+                return 0
+
+            def build() -> None:
+                try:
+                    publish_raw_data_inventory(
+                        Path(tmp) / "raw",
+                        Path(tmp) / "inventory.parquet",
+                        mutation_lock=lock,
+                    )
+                except BaseException as error:
+                    errors.append(error)
+
+            with patch.object(
+                raw_data_inventory,
+                "_build_and_publish_raw_data_inventory",
+                side_effect=lambda *_args, **_kwargs: paused_build(),
+            ):
+                builder = threading.Thread(target=build)
+                builder.start()
+                self.assertTrue(entered.wait(timeout=10))
+                with self.assertRaisesRegex(RuntimeError, "already running"):
+                    with exclusive_job(lock, job="synthetic raw writer"):
+                        self.fail("raw writer entered during inventory publication")
+                release.set()
+                builder.join(timeout=10)
+            self.assertFalse(builder.is_alive())
+            self.assertEqual(errors, [])
+
     def test_metadata_count_supports_current_and_legacy_sidecars(self) -> None:
         current = {"streams": {"swaps": {"rows": 12}}}
         legacy = {"swaps": 8, "pool_days": 3}

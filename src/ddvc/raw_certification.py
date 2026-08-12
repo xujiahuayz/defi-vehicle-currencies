@@ -19,6 +19,7 @@ from ddvc.artifact_release import canonical_json_sha256, file_sha256, is_sha256
 from ddvc.calendar import RESEARCH_SAMPLE_END
 from ddvc.fetch.sources import get_source, iter_days
 from ddvc.fetch.schemas import get_schema
+from ddvc.fetch.graphql_selection import selected_paths
 from ddvc.fetch.dune import (
     DUNE_QUERY_END_EXCLUSIVE_FIELD,
     DUNE_QUERY_START_FIELD,
@@ -129,6 +130,8 @@ ROUTE_SWAP_FIELDS: dict[str, tuple[str, ...]] = {
         "pool.token1.id",
         "amount0",
         "amount1",
+        "sqrtPriceX96",
+        "tick",
         "logIndex",
     ),
     "uniswap_v4": (
@@ -1467,32 +1470,6 @@ def _load_json(path: Path, label: str) -> dict[str, object]:
     return payload
 
 
-def _graphql_selected_paths(selection: str) -> set[str]:
-    """Return response-key paths from the repository's compact GraphQL selections."""
-
-    tokens = re.findall(r"[A-Za-z_][A-Za-z0-9_]*|[{}:]", selection)
-
-    def parse(index: int, prefix: str) -> tuple[set[str], int]:
-        paths: set[str] = set()
-        while index < len(tokens) and tokens[index] != "}":
-            response_key = tokens[index]
-            index += 1
-            if index < len(tokens) and tokens[index] == ":":
-                index += 2
-            path = f"{prefix}.{response_key}" if prefix else response_key
-            if index < len(tokens) and tokens[index] == "{":
-                nested, index = parse(index + 1, path)
-                paths.update(nested)
-            else:
-                paths.add(path)
-        return paths, index + int(index < len(tokens) and tokens[index] == "}")
-
-    paths, consumed = parse(0, "")
-    if consumed != len(tokens):
-        raise ValueError("GraphQL selection parser did not consume the field contract")
-    return paths
-
-
 def _portable_evidence_artifact(
     base: Path,
     entry: Mapping[str, object],
@@ -1642,7 +1619,7 @@ def _validate_query_artifact(
             "order_field": "id",
             "page_size": page_size_for_entity(entity),
         }
-        selected_query_paths = _graphql_selected_paths(entity.fields)
+        selected_query_paths = selected_paths(entity.fields)
         if not {
             field.replace("[]", "") for field in expected_fields
         }.issubset(selected_query_paths):

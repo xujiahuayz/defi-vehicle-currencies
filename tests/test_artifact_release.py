@@ -9,6 +9,7 @@ import pytest
 
 import ddvc.artifact_release as artifact_release
 from ddvc.artifact_release import (
+    ArtifactRelease,
     file_sha256,
     publish_artifact_release,
     resolve_artifact_release,
@@ -70,6 +71,50 @@ def test_marker_last_interruption_preserves_the_prior_release(tmp_path: Path) ->
     )
     assert reopened.generation_id == first.generation_id
     assert json.loads(reopened.artifacts["rows"].read_text()) == {"value": 1}
+
+
+def test_reader_cannot_observe_failed_pointer_publication(tmp_path: Path) -> None:
+    pointer = tmp_path / "release" / "current.json"
+    first = _publish(pointer, 1)
+    pointer_written = threading.Event()
+    release_failure = threading.Event()
+    observations: list[object] = []
+
+    def fail_after_write(path: Path, payload: dict[str, object]) -> None:
+        write_json(path, payload)
+        pointer_written.set()
+        assert release_failure.wait(timeout=10)
+        raise RuntimeError("simulated pointer publication")
+
+    def publish() -> None:
+        with pytest.raises(RuntimeError, match="pointer publication"):
+            _publish(pointer, 2, write_pointer=fail_after_write)
+
+    def read() -> None:
+        assert pointer_written.wait(timeout=10)
+        observations.append(
+            resolve_artifact_release(
+                pointer,
+                kind=KIND,
+                schema_version=1,
+                filenames=FILENAMES,
+            )
+        )
+
+    publisher = threading.Thread(target=publish)
+    reader = threading.Thread(target=read)
+    publisher.start()
+    assert pointer_written.wait(timeout=10)
+    reader.start()
+    release_failure.set()
+    publisher.join(timeout=10)
+    reader.join(timeout=10)
+    assert not publisher.is_alive() and not reader.is_alive()
+    assert len(observations) == 1
+    observed = observations[0]
+    assert isinstance(observed, ArtifactRelease)
+    assert observed.generation_id == first.generation_id
+    assert json.loads(observed.artifacts["rows"].read_text()) == {"value": 1}
 
 
 def test_bundle_validation_finishes_before_pointer_publication(tmp_path: Path) -> None:
