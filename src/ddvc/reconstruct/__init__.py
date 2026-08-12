@@ -50,7 +50,11 @@ import pandas as pd
 
 from ddvc.artifact_release import canonical_json_sha256, file_sha256, is_sha256
 from ddvc.calendar import RESEARCH_SAMPLE_END, RESEARCH_SAMPLE_START, calendar_days
-from ddvc.fetch.raw import RawFetchInvariantError, verified_source_day_rows
+from ddvc.fetch.raw import (
+    RawFetchInvariantError,
+    installed_source_day_paths,
+    verified_source_day_rows,
+)
 from ddvc.fetch.sources import (
     ROUTE_DUNE_SOURCES,
     ROUTE_SOURCE_FAMILIES,
@@ -571,6 +575,44 @@ def route_input_paths(
     ]
 
 
+def preflight_route_input_perimeter(
+    days: list[str],
+    dexes: list[str],
+    *,
+    data_root: Path | None = None,
+) -> int:
+    """Reject an incomplete raw perimeter before any route output is touched."""
+
+    root = data_root or DATA_DIR
+    missing: list[str] = []
+    expected = 0
+    for day in days:
+        calendar_day = datetime.strptime(day, "%Y-%m-%d").date()
+        for dex in active_route_sources(day, dexes):
+            expected += 1
+            raw, marker = installed_source_day_paths(
+                dex,
+                DEX_STREAM[dex],
+                calendar_day,
+                data_root=root,
+            )
+            absent = [
+                label
+                for label, path in (("payload", raw), ("marker", marker))
+                if not path.is_file()
+            ]
+            if absent:
+                missing.append(f"{dex}/{calendar_day:%Y%m%d}:{'+'.join(absent)}")
+    if missing:
+        preview = ", ".join(missing[:8])
+        suffix = "" if len(missing) <= 8 else f", plus {len(missing) - 8} more"
+        raise FileNotFoundError(
+            f"route reconstruction raw preflight failed for {len(missing)} of {expected} "
+            f"source-days before output publication: {preview}{suffix}"
+        )
+    return expected
+
+
 def _route_input_generation_records(
     day: str,
     dexes: list[str],
@@ -973,6 +1015,7 @@ def run(
         RAW_MARKET_DATA_LOCK,
         job="raw market-data fetch, enrichment, or canonical materialisation",
     ):
+        preflight_route_input_perimeter(days, dexes)
         with interruptible_process_pool(workers) as pool:
             futures = {
                 pool.submit(_process_one, day_value, dexes, not skip_existing): day_value

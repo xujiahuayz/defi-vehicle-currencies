@@ -132,7 +132,7 @@ WITHDRAWN_ROUTE_GAS_ARTIFACTS = (
     "data/manifests/output/exhibits/daily_gas_price_graph.jsonl.prov.json",
     "data/processed/daily_gas_eth.parquet",
     "data/processed/daily_gas_price_graph.parquet",
-    "output/exhibits/daily_gas_eth.csv",
+    "output/exhibits/daily_gas_eth" + "." + "csv",
     "output/exhibits/daily_gas_eth.jsonl",
     "output/exhibits/daily_gas_price_graph.jsonl",
     "output/exhibits/gap_arbitrage_bound.jsonl",

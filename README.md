@@ -8,10 +8,10 @@ This repository contains the data pipeline, analysis code, literature workspace,
 - `scripts/` — command-line entry points for reproducible fetch/build/analysis steps. Mathematica/Wolfram source belongs under `scripts/model/`.
 - `scripts/process/` — explicit data-processing steps. Each script is a directly runnable wrapper that reads data-layer inputs and writes one reusable analysis table under `data/processed/` or `data/empirical/`.
 - `scripts/tabulate/` — one script per journal table. A script named `render_<exhibit>.py` owns exactly one table and writes `output/tables/<exhibit>.tex` containing only a `tabular` or `tabularx` body, plus `output/tables/<exhibit>.pdf` for inspection. Use content-driven or automatically allocated column widths rather than hard-coded fractions of `\linewidth`. Table numbering belongs only in the paper or slides; output filenames must be descriptive and unnumbered. Paper-facing table renderers do not write data sidecars. Captions, labels, notes, sizing, and outer `table` wrappers belong in the paper or slides. Shared table-output helpers live in `scripts/tabulate/utils.py`.
-- `data/` — local data workspace for raw responses, intermediate tables, processed panels, external inputs, and run manifests. Data payloads are not committed.
-- `output/` — generated paper artifacts, including tables, figures, and internal review PDFs. These are products of scripts, not the source of truth.
-- `paper/` — manuscript source. Keep this directory clean: LaTeX files when drafting starts, plus at most one outline Markdown file.
-- `slides/` — presentation decks and compiled talk PDFs.
+- `data/` — local data workspace for raw responses, transient runtime files, processed panels, and run manifests. Data payloads are not committed.
+- `output/` — code-generated tables, figures, exhibits, macros, and inspection renders consumed by the paper or deck. It does not own the compiled paper or talk.
+- `paper/` — manuscript source and its single compiled review PDF.
+- `deck/` — presentation source and its single compiled review PDF, `deck/main.pdf`.
 - `literature/` — flat literature workspace for cited, related, and venue-style references.
 - `tests/` — offline tests for parsing, reconstruction, pricing, metrics, and analysis helpers.
 
@@ -19,7 +19,7 @@ This repository contains the data pipeline, analysis code, literature workspace,
 
 - Put propositions, manuscript structure, and final paper wording in `paper/`.
 - Put executable analysis, model, and build logic in `scripts/` or `src/ddvc/`.
-- Put generated tables, figures, and review PDFs in `output/`.
+- Put code-generated tables, figures, exhibits, macros, and inspection renders in `output/`; put the compiled paper and talk in their own deliverable directories.
 - Put local raw/intermediate/generated datasets in `data/`.
 - Put bibliography metadata and local PDF retrieval tooling in `literature/`.
 - Keep reviewer transcripts, one-off assistant notes, and scratch memos out of `paper/`; fold any durable paper point into the single outline or a manuscript source file.

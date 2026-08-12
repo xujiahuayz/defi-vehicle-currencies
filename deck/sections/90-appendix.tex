@@ -102,16 +102,13 @@
 
 \begin{frame}{A4. State is reconstructed immediately before execution}
 \begin{tikzpicture}[x=1cm,y=1cm]
-\node[softbox,text width=2.15cm,align=center] (checkpoint) at (0,0) {validated checkpoint};
-\node[softbox,text width=2.15cm,align=center] (events) at (3.25,0) {ordered pool events};
-\node[softbox,text width=2.15cm,align=center] (pre) at (6.50,0) {pre-transaction state};
-\node[softbox,text width=2.15cm,align=center,draw=ucldark] (quote) at (9.75,0) {direct and vehicle quotes};
+\node[softbox,text width=2.10cm,minimum height=1.35cm,align=center] (checkpoint) at (0,0) {\textbf{1}\\validated checkpoint};
+\node[softbox,text width=2.10cm,minimum height=1.35cm,align=center] (events) at (3.20,0) {\textbf{2}\\replay ordered events};
+\node[softbox,text width=2.10cm,minimum height=1.35cm,align=center] (pre) at (6.40,0) {\textbf{3}\\freeze pre-trade state};
+\node[softbox,text width=2.10cm,minimum height=1.35cm,align=center,draw=ucldark] (quote) at (9.60,0) {\textbf{4}\\quote both routes};
 \draw[route] (checkpoint)--(events);
 \draw[route] (events)--(pre);
 \draw[route] (pre)--(quote);
-\node[above,font=\small] at (1.63,0.25) {replay};
-\node[above,font=\small] at (4.88,0.25) {strict order};
-\node[above,font=\small] at (8.13,0.25) {same input};
 \end{tikzpicture}
 \vspace{0.85cm}
 \begin{itemize}

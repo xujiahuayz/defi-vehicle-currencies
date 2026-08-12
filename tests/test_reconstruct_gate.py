@@ -17,6 +17,7 @@ from ddvc.reconstruct import (
     _available_days,
     _process_one,
     active_route_sources,
+    preflight_route_input_perimeter,
     read_unified_quality,
     route_input_paths,
     load_legs,
@@ -124,6 +125,25 @@ class ReconstructGateTests(unittest.TestCase):
         self.assertEqual(status, "failed")
         self.assertFalse(quality["passed"])
         self.assertEqual(quality["missing_sources"], 1)
+
+    def test_raw_preflight_rejects_broken_perimeter_before_output_mutation(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            base = Path(directory)
+            data_root, unified_root = base / "data", base / "unified"
+            marker = unified_root / ".quality" / "20200505.json"
+            marker.parent.mkdir(parents=True)
+            marker.write_text('{"sentinel": true}\n', encoding="utf-8")
+            before = marker.read_bytes()
+            with self.assertRaisesRegex(
+                FileNotFoundError,
+                "raw preflight failed.*uniswap_v2/20200505:payload\\+marker",
+            ):
+                preflight_route_input_perimeter(
+                    ["2020-05-05"],
+                    ["uniswap_v2"],
+                    data_root=data_root,
+                )
+            self.assertEqual(marker.read_bytes(), before)
 
     def test_direct_route_loader_has_no_missing_raw_fallback(self) -> None:
         with tempfile.TemporaryDirectory() as directory:
