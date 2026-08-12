@@ -5,6 +5,7 @@ Reads   data/unified/YYYYMMDD.parquet
 Writes  data/processed/vehicle_excess_use_daily.parquet
         output/exhibits/vehicle_excess_use.jsonl
         output/exhibits/vehicle_excess_use_quarterly.jsonl
+        output/exhibits/vehicle_excess_use_transition.jsonl
 """
 
 from __future__ import annotations
@@ -13,8 +14,14 @@ import argparse
 from concurrent.futures import as_completed
 from pathlib import Path
 
+import numpy as np
 import pandas as pd
 
+from ddvc.analysis.regression import (
+    common_calendar_day_mask,
+    holm_adjusted_pvalues,
+    year_endpoint_change,
+)
 from ddvc.asset_types import CURRENCY_TYPES, backing
 from ddvc.data_release import require_node_d_release
 from ddvc.paths import REPO_ROOT
@@ -30,13 +37,16 @@ UNIFIED = REPO_ROOT / "data" / "unified"
 OUT_PANEL = REPO_ROOT / "data" / "processed" / "vehicle_excess_use_daily.parquet"
 OUT_EXHIBIT = REPO_ROOT / "output" / "exhibits" / "vehicle_excess_use.jsonl"
 OUT_QUARTERLY = REPO_ROOT / "output" / "exhibits" / "vehicle_excess_use_quarterly.jsonl"
+OUT_TRANSITION = REPO_ROOT / "output" / "exhibits" / "vehicle_excess_use_transition.jsonl"
 LOCK = OUT_PANEL.with_suffix(".lock")
 CODE_SOURCES = [
     "scripts/build_vehicle_excess_use.py",
     "src/ddvc/asset_types.py",
     "src/ddvc/vehicle_extent.py",
     "src/ddvc/route_roles.py",
+    "src/ddvc/analysis/regression.py",
 ]
+HAC_LAG = 30
 
 
 def one_day(path: Path) -> pd.DataFrame:
@@ -66,6 +76,96 @@ def stable_backing_year(candidate: pd.DataFrame) -> pd.DataFrame:
         ),
         "stable_currencies",
     )
+
+
+def token_excess_use_transition_tests(
+    panel: pd.DataFrame,
+    *,
+    focal_symbol: str = "USDT",
+    baseline_year: int = 2024,
+    comparison_year: int = 2026,
+    hac_lag: int = HAC_LAG,
+) -> pd.DataFrame:
+    """Test whether intermediary use rises beyond ordinary endpoint demand."""
+
+    data = panel[panel["asset_type"].isin(CURRENCY_TYPES)].copy()
+    data["year"] = pd.to_datetime(data["date"]).dt.year
+    data = data[data["year"].between(baseline_year, comparison_year)]
+    data = data.loc[
+        common_calendar_day_mask(
+            data["date"],
+            data["year"],
+            baseline_year=baseline_year,
+            comparison_year=comparison_year,
+        )
+    ]
+    if focal_symbol not in set(data["symbol"].dropna()):
+        raise ValueError(f"focal token {focal_symbol} is absent")
+    specifications = (
+        ("episode", "all_routes", "intermediate_routes", "endpoint_routes"),
+        (
+            "value",
+            "within_20pct",
+            "intermediate_usd_within_20pct",
+            "endpoint_usd_within_20pct",
+        ),
+    )
+    rows: list[dict[str, object]] = []
+    for weighting, value_support, intermediate_field, endpoint_field in specifications:
+        totals = data.groupby("date")[[intermediate_field, endpoint_field]].transform("sum")
+        focal = data[data["symbol"].eq(focal_symbol)].copy()
+        focal["intermediate_share"] = pd.to_numeric(
+            focal[intermediate_field], errors="coerce"
+        ) / totals.loc[focal.index, intermediate_field].where(
+            totals.loc[focal.index, intermediate_field].gt(0)
+        )
+        focal["endpoint_share"] = pd.to_numeric(
+            focal[endpoint_field], errors="coerce"
+        ) / totals.loc[focal.index, endpoint_field].where(
+            totals.loc[focal.index, endpoint_field].gt(0)
+        )
+        for transformation in ("share_gap", "log_excess_ratio"):
+            sample = focal[["date", "year", "intermediate_share", "endpoint_share"]].copy()
+            if transformation == "share_gap":
+                sample["estimand"] = sample["intermediate_share"] - sample["endpoint_share"]
+            else:
+                sample = sample[
+                    sample["intermediate_share"].gt(0) & sample["endpoint_share"].gt(0)
+                ]
+                sample["estimand"] = np.log(
+                    sample["intermediate_share"] / sample["endpoint_share"]
+                )
+            sample = sample.dropna(subset=["estimand"])
+            estimate = year_endpoint_change(
+                sample["estimand"],
+                sample["year"],
+                baseline_year=baseline_year,
+                comparison_year=comparison_year,
+                hac_lag=hac_lag,
+                dates=sample["date"],
+            )
+            rows.append(
+                {
+                    "focal_symbol": focal_symbol,
+                    "weighting": weighting,
+                    "value_support": value_support,
+                    "transformation": transformation,
+                    "baseline_year": baseline_year,
+                    "comparison_year": comparison_year,
+                    "baseline_daily_mean": estimate.baseline_mean,
+                    "comparison_daily_mean": estimate.comparison_mean,
+                    "change": estimate.change,
+                    "hac_standard_error": estimate.standard_error,
+                    "t_statistic": estimate.t_statistic,
+                    "p_value": estimate.p_value,
+                    "days": estimate.n_observations,
+                    "hac_lag_days": hac_lag,
+                    "share_perimeter": "prespecified_currency_types",
+                }
+            )
+    result = pd.DataFrame(rows)
+    result["p_value_holm"] = holm_adjusted_pvalues(result["p_value"])
+    return result
 
 
 def main() -> int:
@@ -192,6 +292,14 @@ def main() -> int:
         code_sources=CODE_SOURCES,
         inputs=[OUT_PANEL],
     )
+    transition = token_excess_use_transition_tests(panel)
+    write_exhibit(
+        transition,
+        OUT_TRANSITION,
+        code_sources=CODE_SOURCES,
+        inputs=[OUT_PANEL],
+        notes="paired-date USDT intermediary-minus-endpoint use on the prespecified currency perimeter; Newey-West Bartlett covariance",
+    )
     print(f"\n{panel.date.nunique():,} days, {len(panel):,} token-days")
     print("annual excess-use ratio by asset type, prespecified currencies only (20 percent value-coherence support)")
     table = type_year.pivot(
@@ -217,7 +325,7 @@ def main() -> int:
     )
     print(
         f"wrote {OUT_PANEL.relative_to(REPO_ROOT)}, {OUT_EXHIBIT.relative_to(REPO_ROOT)}, "
-        f"and {OUT_QUARTERLY.relative_to(REPO_ROOT)}"
+        f"{OUT_QUARTERLY.relative_to(REPO_ROOT)}, and {OUT_TRANSITION.relative_to(REPO_ROOT)}"
     )
     return 0
 

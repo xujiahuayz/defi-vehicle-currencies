@@ -11,7 +11,11 @@ from ddvc.vehicle_extent import (
     compute_vehicle_extent,
     restrict_routes_to_venues,
 )
-from scripts.build_vehicle_excess_use import bounded_workers, stable_backing_year
+from scripts.build_vehicle_excess_use import (
+    bounded_workers,
+    stable_backing_year,
+    token_excess_use_transition_tests,
+)
 
 
 def leg(
@@ -309,6 +313,40 @@ class VehicleExtentTests(unittest.TestCase):
         self.assertTrue(out["scope"].eq("stable_currencies").all())
         self.assertAlmostEqual(out.loc["fiat_reserve", "vehicle_excess_use_ratio"], 1.5)
         self.assertAlmostEqual(out.loc["synthetic", "vehicle_excess_use_count_ratio"], 0.5)
+
+    def test_usdt_transition_nets_out_endpoint_demand(self) -> None:
+        rows = []
+        for year, usdt_intermediate in ((2024, 20.0), (2025, 30.0), (2026, 40.0)):
+            for day in range(4):
+                for symbol, asset_type, intermediate, endpoint in (
+                    ("USDT", "stable", usdt_intermediate + day, 10.0 + day),
+                    ("USDC", "stable", 40.0 - day / 2, 45.0 - day / 2),
+                    ("WETH", "native", 60.0 - usdt_intermediate - day / 2, 45.0 - day / 2),
+                ):
+                    rows.append(
+                        {
+                            "date": pd.Timestamp(f"{year}-01-{day + 1:02d}"),
+                            "symbol": symbol,
+                            "asset_type": asset_type,
+                            "intermediate_routes": intermediate,
+                            "endpoint_routes": endpoint,
+                            "intermediate_usd_within_20pct": intermediate,
+                            "endpoint_usd_within_20pct": endpoint,
+                        }
+                    )
+        result = token_excess_use_transition_tests(pd.DataFrame(rows), hac_lag=1)
+        count_gap = result[
+            result["weighting"].eq("episode")
+            & result["transformation"].eq("share_gap")
+        ].iloc[0]
+        self.assertGreater(count_gap["comparison_daily_mean"], count_gap["baseline_daily_mean"])
+        self.assertGreater(count_gap["change"], 0.15)
+        value_log_ratio = result[
+            result["weighting"].eq("value")
+            & result["transformation"].eq("log_excess_ratio")
+        ].iloc[0]
+        self.assertGreater(value_log_ratio["change"], 0.5)
+        self.assertEqual(count_gap["share_perimeter"], "prespecified_currency_types")
 
 
 if __name__ == "__main__":

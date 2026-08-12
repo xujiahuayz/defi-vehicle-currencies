@@ -711,8 +711,8 @@ VARIABLE_SPECS: tuple[VariableSpec, ...] = (
         ),
         source="data/processed/vehicle_excess_use_daily.parquet",
         used_for=(
-            "Normalized vehicle-dominance measure; values above one indicate use beyond "
-            "endpoint demand."
+            "Economic-weight dimension of vehicle dominance; values above one indicate "
+            "use beyond endpoint demand on the stated value-support perimeter."
         ),
         in_observations_table=False,
     ),
@@ -767,7 +767,7 @@ VARIABLE_SPECS: tuple[VariableSpec, ...] = (
             r"route universe; undefined when endpoint count is zero."
         ),
         source="data/processed/vehicle_excess_use_daily.parquet",
-        used_for="Count-weighted robustness of the primary vehicle-extent measure.",
+        used_for="Frequency dimension of vehicle dominance with full topology support.",
         in_observations_table=False,
     ),
     VariableSpec(
