@@ -864,6 +864,70 @@ def validate_endpoint_candidate_composition(bundle: EndpointCandidateComposition
             pair_support["stable_choice_route_count"]
         ).eq(pair_support["primary_choice_route_count"]).all():
             raise ValueError("vehicle pair support does not reconcile native and stable choices")
+        type_observed = (
+            choices.groupby([*PAIR_KEYS, "candidate_type"], as_index=False, sort=True)
+            .agg(
+                route_count=("route_count", "sum"),
+                within_20pct_routes=("within_20pct_routes", "sum"),
+                within_20pct_value_usd=("within_20pct_value_usd", "sum"),
+            )
+            if not choices.empty
+            else pd.DataFrame(
+                columns=[
+                    *PAIR_KEYS,
+                    "candidate_type",
+                    "route_count",
+                    "within_20pct_routes",
+                    "within_20pct_value_usd",
+                ]
+            )
+        )
+        type_reconciled = pair_support.copy()
+        for candidate_type in ("native", "stable"):
+            observed_type = type_observed[
+                type_observed["candidate_type"].eq(candidate_type)
+            ][
+                [
+                    *PAIR_KEYS,
+                    "route_count",
+                    "within_20pct_routes",
+                    "within_20pct_value_usd",
+                ]
+            ].rename(
+                columns={
+                    "route_count": f"observed_{candidate_type}_choice_route_count",
+                    "within_20pct_routes": f"observed_{candidate_type}_within_20pct_routes",
+                    "within_20pct_value_usd": f"observed_{candidate_type}_within_20pct_value_usd",
+                }
+            )
+            type_reconciled = type_reconciled.merge(
+                observed_type,
+                on=PAIR_KEYS,
+                how="left",
+                validate="one_to_one",
+            )
+            for suffix in ("choice_route_count", "within_20pct_routes"):
+                if not type_reconciled[f"{candidate_type}_{suffix}"].eq(
+                    type_reconciled[f"observed_{candidate_type}_{suffix}"].fillna(0)
+                ).all():
+                    raise ValueError(
+                        f"vehicle pair support disagrees with {candidate_type} choice counts"
+                    )
+            if not np.isclose(
+                pd.to_numeric(
+                    type_reconciled[f"{candidate_type}_within_20pct_value_usd"],
+                    errors="raise",
+                ).to_numpy(dtype="float64"),
+                pd.to_numeric(
+                    type_reconciled[f"observed_{candidate_type}_within_20pct_value_usd"],
+                    errors="coerce",
+                ).fillna(0).to_numpy(dtype="float64"),
+                rtol=1e-12,
+                atol=1e-8,
+            ).all():
+                raise ValueError(
+                    f"vehicle pair support disagrees with {candidate_type} choice value"
+                )
         if not (
             pair_support["native_within_20pct_routes"].le(pair_support["native_choice_route_count"])
             & pair_support["stable_within_20pct_routes"].le(pair_support["stable_choice_route_count"])
@@ -879,6 +943,58 @@ def validate_endpoint_candidate_composition(bundle: EndpointCandidateComposition
             pair_support["market_route_count"] + pair_support["event_collision_component_count"]
         ).all():
             raise ValueError("vehicle pair support does not reconcile source components")
+        pair_collisions = exclusions[
+            exclusions["exclusion_reason"].eq(EVENT_COLLISION)
+            & exclusions["src"].ne("")
+            & exclusions["tgt"].ne("")
+        ]
+        observed_collisions = (
+            pair_collisions.groupby(PAIR_KEYS, as_index=False, sort=True).agg(
+                observed_collision_component_count=("route_count", "sum"),
+                observed_collision_value_missing_component_count=("collision_value_missing_leg_count", lambda values: int(values.gt(0).sum())),
+                observed_collision_value_bound=("collision_observed_abs_leg_value_usd_upper_bound", "sum"),
+            )
+            if not pair_collisions.empty
+            else pd.DataFrame(
+                columns=[
+                    *PAIR_KEYS,
+                    "observed_collision_component_count",
+                    "observed_collision_value_missing_component_count",
+                    "observed_collision_value_bound",
+                ]
+            )
+        )
+        collision_pair_reconciled = pair_support.merge(
+            observed_collisions,
+            on=PAIR_KEYS,
+            how="left",
+            validate="one_to_one",
+        )
+        if (
+            not collision_pair_reconciled["event_collision_component_count"].eq(
+                collision_pair_reconciled["observed_collision_component_count"].fillna(0)
+            ).all()
+            or not collision_pair_reconciled["event_collision_value_missing_component_count"].eq(
+                collision_pair_reconciled[
+                    "observed_collision_value_missing_component_count"
+                ].fillna(0)
+            ).all()
+            or not np.isclose(
+                pd.to_numeric(
+                    collision_pair_reconciled[
+                        "event_collision_observed_abs_leg_value_usd_upper_bound"
+                    ],
+                    errors="raise",
+                ).to_numpy(dtype="float64"),
+                pd.to_numeric(
+                    collision_pair_reconciled["observed_collision_value_bound"],
+                    errors="coerce",
+                ).fillna(0).to_numpy(dtype="float64"),
+                rtol=1e-12,
+                atol=1e-8,
+            ).all()
+        ):
+            raise ValueError("vehicle pair support disagrees with collision exclusions")
         value_support = pair_support[PAIR_SUPPORT_VALUE_COLUMNS].apply(pd.to_numeric, errors="coerce")
         if not np.isfinite(value_support.to_numpy(dtype="float64")).all() or value_support.lt(0).any().any():
             raise ValueError("vehicle pair support contains invalid value bounds")

@@ -301,9 +301,31 @@ def test_collision_audit_and_choice_decomposition_fail_closed_on_tamper() -> Non
         validate_endpoint_candidate_composition(replace(bundle, exclusions=bad_audit))
 
     bad_support = bundle.pair_support.copy()
-    bad_support.loc[0, "native_choice_route_count"] += 1
-    with pytest.raises(ValueError, match="native and stable choices"):
+    native_count = bad_support.loc[0, "native_choice_route_count"]
+    stable_count = bad_support.loc[0, "stable_choice_route_count"]
+    native_value = bad_support.loc[0, "native_within_20pct_value_usd"]
+    stable_value = bad_support.loc[0, "stable_within_20pct_value_usd"]
+    bad_support.loc[0, "native_choice_route_count"] = stable_count
+    bad_support.loc[0, "stable_choice_route_count"] = native_count
+    bad_support.loc[0, "native_within_20pct_routes"] = stable_count
+    bad_support.loc[0, "stable_within_20pct_routes"] = native_count
+    bad_support.loc[0, "native_within_20pct_value_usd"] = stable_value
+    bad_support.loc[0, "stable_within_20pct_value_usd"] = native_value
+    with pytest.raises(ValueError, match="disagrees with native choice"):
         validate_endpoint_candidate_composition(replace(bundle, pair_support=bad_support))
+
+    bad_collision = bundle.pair_support.copy()
+    bad_collision.loc[0, "event_collision_component_count"] = 99
+    bad_collision.loc[0, "source_pair_component_count"] = (
+        bad_collision.loc[0, "market_route_count"] + 99
+    )
+    bad_collision.loc[
+        0, "event_collision_observed_abs_leg_value_usd_upper_bound"
+    ] = 999
+    with pytest.raises(ValueError, match="disagrees with collision exclusions"):
+        validate_endpoint_candidate_composition(
+            replace(bundle, pair_support=bad_collision)
+        )
 
 
 def test_transaction_timestamp_must_match_supplied_utc_day() -> None:
