@@ -1,0 +1,4 @@
+{"contribution": 0.007176378897071674, "matched_n": 38277, "matched_rate": 0.5096533166131098, "matched_weight": 0.057057464410822094, "mid_type": "imported", "population_weight": 0.014080902965102133}
+{"contribution": 0.256610209590276, "matched_n": 162405, "matched_rate": 0.35470582802253625, "matched_weight": 0.24208839531937096, "mid_type": "native", "population_weight": 0.7234451461394433}
+{"contribution": 0.12477865198549896, "matched_n": 470168, "matched_rate": 0.5562096952578652, "matched_weight": 0.700854140269807, "mid_type": "stable", "population_weight": 0.22433742714184465}
+{"contribution": 0.38856524047284663, "matched_n": 670850, "matched_rate": 0.504771558470597, "matched_weight": 1.0, "mid_type": "TOTAL", "population_weight": 0.9618634762463901}

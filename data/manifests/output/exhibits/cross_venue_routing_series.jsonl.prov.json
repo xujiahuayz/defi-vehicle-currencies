@@ -1,33 +1,46 @@
 {
  "argv": [
   "--workers",
-  "8"
+  "4"
  ],
  "artefact": "output/exhibits/cross_venue_routing_series.jsonl",
- "code_fingerprint": "7be521e061bffb0b90e2e9b98ba9cb50d47803ca0255ead8f55edd076018d807",
+ "code_fingerprint": "7eb3f414c73fc259c6de94fc95ac5617f3a624d7447689e6ac4cda2a6e5b12df",
  "code_sources": [
   "scripts/build_cross_venue_routing_series.py",
   "src/ddvc/analysis/regression.py",
   "src/ddvc/asset_types.py",
   "src/ddvc/reconstruct/__init__.py",
+  "src/ddvc/route_roles.py",
   "src/ddvc/tables.py"
  ],
- "created_at": "2026-08-06T20:06:40+00:00",
+ "created_at": "2026-08-06T22:42:20+00:00",
  "git": {
   "branch": "main",
-  "commit": "3234394950e938967e89f49cd4128c08010bf09f",
-  "dirty": false,
+  "commit": "ff9367df3f8e7ecc25749a3dee37b39b92bd932a",
+  "dirty": true,
   "dirty_generated_files": [
    "data/manifests/data/processed/cross_venue_routing_daily.parquet.prov.json",
+   "data/manifests/data/processed/intermediation_by_type_daily.parquet.prov.json",
+   "data/manifests/data/processed/vehicle_excess_use_daily.parquet.prov.json",
    "data/manifests/output/exhibits/dominance_specification_curve.jsonl.prov.json",
+   "data/manifests/output/exhibits/intermediation_by_type.jsonl.prov.json",
+   "data/manifests/output/exhibits/intermediation_complexity_rival.jsonl.prov.json",
+   "data/manifests/output/exhibits/intermediation_integration_rival.jsonl.prov.json",
    "data/manifests/output/exhibits/realised_dominance.jsonl.prov.json",
    "data/manifests/output/exhibits/realised_dominance_reweighting.jsonl.prov.json",
    "data/manifests/output/exhibits/survival_after_dominance.jsonl.prov.json",
    "data/manifests/output/exhibits/vehicle_dominance_hdfe.jsonl.prov.json",
+   "data/manifests/output/exhibits/vehicle_excess_use.jsonl.prov.json",
+   "data/manifests/output/exhibits/vehicle_excess_use_quarterly.jsonl.prov.json",
    "output/exhibits/dominance_specification_curve.jsonl",
+   "output/exhibits/intermediation_by_type.jsonl",
+   "output/exhibits/intermediation_complexity_rival.jsonl",
+   "output/exhibits/intermediation_integration_rival.jsonl",
    "output/exhibits/realised_dominance.jsonl",
    "output/exhibits/survival_after_dominance.jsonl",
    "output/exhibits/vehicle_dominance_hdfe.jsonl",
+   "output/exhibits/vehicle_excess_use.jsonl",
+   "output/exhibits/vehicle_excess_use_quarterly.jsonl",
    "output/tables/bridge_denominator_robustness.pdf",
    "output/tables/liquidity_robustness.pdf",
    "output/tables/measurement_robustness.pdf",
@@ -41,15 +54,23 @@
    "output/tables/v4_robustness.pdf",
    "output/exhibits/realised_dominance_reweighting.jsonl"
   ],
-  "dirty_tracked_files": [],
+  "dirty_tracked_files": [
+   "docs/research-workflow.md",
+   "scripts/audit_findings_freeze.py",
+   "scripts/build_counterfactual_dominance.py",
+   "src/ddvc/route_gas.py",
+   "tests/test_audit_findings_freeze.py",
+   "tests/test_counterfactual_dominance.py",
+   "tests/test_route_gas_units.py"
+  ],
   "dirty_untracked_files": []
  },
  "inputs": [
   {
-   "bytes": 759157,
+   "bytes": 1256351,
    "exists": true,
    "path": "data/processed/cross_venue_routing_daily.parquet",
-   "sha256": "8a8b872a1565661c701f9e7a38cd3cb65b8a239f10e8c5ea9c579d743bbfa0c7"
+   "sha256": "f45a80038974e3c5a39c115aa276a821e428e1fc54ce233d00eed18319d324c4"
   }
  ],
  "libraries": {

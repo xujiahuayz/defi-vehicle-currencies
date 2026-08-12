@@ -1,0 +1,197 @@
+
+
+===== PAGE 1 =====
+
+Liquidity and Market Structure: Discussion
+STOR O
+David K. Whitcomb
+The Journal of Finance, Vol. 43, No. 3, Papers and Proceedings of the Forty-Seventh
+Annual Meeting of the American Finance Association, Chicago, Illinois, December
+28-30, 1987 (Jul., 1988), 634-637.
+Stable URL:
+http://links.jstor.org/sici?sici=0022-1082%28198807%2943%3A3%3C634%3ALAMSD%3E2.0.CO%3B2-N
+The Journal of Finance is currently published by American Finance Association.
+Your use of the JSTOR archive indicates your acceptance of ISTOR's Terms and Conditions of Use, available at
+http://www.jstor.org/about/terms.html. ISTOR's Terms and Conditions of Use provides, in part, that unless you
+have obtained prior permission, you may not download an entire issue of a journal or multiple copies of articles, and
+you may use content in the JSTOR archive only for your personal, non-commercial use.
+Please contact the publisher regarding any further use of this work. Publisher contact information may be obtained at
+http://www.jstor.org/journals/afina.html.
+Each copy of any part of a JSTOR transmission must contain the same copyright notice that appears on the screen or
+printed page of such transmission.
+JSTOR is an independent not-for-profit organization dedicated to creating and preserving a digital archive of
+scholarly journals. For more information regarding JSTOR, please contact support@jstor.org.
+http://www.jstor.org/
+Fri Feb 11 10:05:46 2005
+
+===== PAGE 2 =====
+
+634
+The Journal of Finance
+DISCUSSION
+DAVID K. WHITCOMB*: It is a privilege to be asked to discuss any paper by
+Miller and Grossman. It also represents a coming of age for market microstructure
+that such eminent mainstream financial economists should be contributing to it.
+Like at least half of the significant theoretical papers in microstructure, the
+Grossman and Miller paper seeks to model the activities of market makers. The
+authors' interest is in liquidity, but they rightly point out that we can't understand
+liquidity, much less measure it, until we have a better understanding of market
+making, which is the sale of liquidity.
+If there have been so many papers on market making, why don't we understand
+it better? One reason may be that there are so many competing models with no
+attempt so far at a general synthesis. One set of papers (including Stoll (14], Ho
+and Stoll [9, 10, 11], Amihud and Mendelson [11, and Mildenstein and Schleef
+(12])' models the pricing and inventory behavior of risk-averse dealers, usually
+assuming either monopolistic dealers or ignoring the interactions among dealers'
+quotes. A second set of models (including Bagehöt [2], Copeland and Galai [5]
+and Glosten and Milgrom (6]) allows for risk-neutral dealers who charge a price
+for liquidity to compensate for losses to traders possessing superior information
+whose activities are camouflaged by "noise traders"? A third model (Cohen,
+Maier, Schwartz, and Whitcomb, hereinafter CMSW, (3]) treats the price of
+liquidity as a natural property of markets- even markets without dealers. Trans-
+action costs and a finite number of investors keep price generation from behaving
+as a continuous-time Weiner process, and the "gravitational pull" of counterpart
+limit orders results in a positive price of liquidity.
+Although Grossman and Miller do not seek "
+... to expand [the] ... class of
+inventory models," their model shares the risk-averse market-maker assumption
+with "inventory models". This leads to some disturbing implications. By equation
+(15), we have that the expected return of market makers would be zero if "a",
+the risk-aversion parameter, were zero. This is not a problem in a timeless
+framework like Grossman and Miller's, except that it implies that market making
+will be dominated by the least risk-averse individuals. Indeed, it would require
+some agency-theoretic handwaving to avoid the implication that market making
+would be the province of corporations in equilibrium and that it would therefore
+be free. Further, because the Grossman and Miller model does not explore the
+interactions among market makers in price setting, it does not make it possible
+to see what would happen to price if market makers did not all have the same
+risk-aversion parameter. Among all the risk-aversion models of market making,
+only Ho and Stoll [9, 11], adopting the CMSW model of interaction, explore the
+effect of differing market-maker prices.
+One of the subtle consequences of a model that does not consider pricing
+interactions among traders is that it leads to policy conclusions such as that"...
+* Rutgers University.
+^ Mildensteen and Schleef [12] do not explicitly assume risk aversion, but their Assumptions D.2:
+(b) and D.3 imply risk aversion.
+2 Grossman and Stiglitz (7] first modeled the activities of noise traders and information traders,
+though their focus is on market efficiency rather than market making.
+3 See, for example, Stoll [14], footnote 3.
+
+===== PAGE 3 =====
+
+Discussion
+635
+in highly active markets ... where many separate buy and sell orders are entering
+the trading pit virtually simultaneously.... it might seem that quoted bid-ask
+spreads and market-makers' profits ... would be driven towards zero by the
+competitive entry of new market makers. The market, of course, would then
+collapse..." The use of the subjunctive made me believe that Grossman and
+Miller were going to refute this conclusion. However, they then went on to say
+"To keep markets viable, therefore, exchanges limit the number of 'seats' avail-
+able to market makers.... Exchanges also typically define a minimum price-
+unit (called a 'tick') which, in highly active markets, serves also to set a minimum
+on the quoted bid-ask spread and the profits a 'scalper' makes from a quick
+turnaround." I must say I am shocked to hear from a Chicago Professor and a
+Chicago Ph.D. that unrestrained competition is a threat to the viability of the
+Fortunately, this is not so; CMSW [3] show, in a model where there is no
+minimum "tick" size, that free entry and exit of market makers does not detract
+from market "viability". Indeed, formal market makers are not needed at all for
+market viability; individuals provide liquidity to each other when some choose to
+(and are allowed to) trade via limit order. If "outside customers" do not post
+enough limit orders, market makers will come into existence to sell liquidity. The
+CMSW model does show that as the flow of orders increases without bound, the
+spread goes to zero, but that is a cause for rejoicing, not a cause for alarm.*
+Grossman and Miller defer until after their formal model any mention of the
+bid-ask spread, because they feel, quite correctly, that the spread is an inappro-
+priate measure of market liquidity. However, the spread is the eminence gris of
+their model. In drawing empirical implications from their model, Grossman and
+Miller focus on serial correlation. Their equation (24) gives the initially surprising
+implication that price changes will exhibit negative serial correlation in a world
+with market makers and that, ceteris paribus, assets with higher variability of
+expected price changes will have higher negative serial correlation.
+This implication becomes less surprising when it is realized that it would
+appear to be built in. First, the authors assume that positive immediacy demand
+of outside customers at time 1 is exactly offset by new customers with the
+opposite imbalance at time 2. This enables market makers to buy low (at time 1)
+and sell high (at time 2), giving them market-making profits and creating the
+appearance of negative serial correlation of price changes. What we really have
+is just the well-known bouncing of the transaction price back and forth between
+the bid and the ask, except that, in the Grossman and Miller model, the bid-ask
+spread is "in the closet".
+Negative serial correlation observed in tick-to-tick price change data is purely
+an artifact of two things: (1) the way we conventionally measure price changes
+and (2) the minimum "tick" sizes Grossman and Miller appear to favor. There
+* Clearly, with the large fixed costs of market making posited by Grossman and Miller, the number
+of traders willing to "make markets" would be limited. Given 1988 technology, however, it is mainly
+institutional impediments to public limit-order trading in futures exchanges and the OTC market
+that inhibit competition in market making. See Schwartz and Whitcomb [13] on the role of
+institutional investors using automated trading systems in providing competition to conventional
+market makers in equities.
+5 A formal model is given in CMSW [4], Chapter 6. See especially the discussion following
+Proposition 1.
+
+===== PAGE 4 =====
+
+636
+The Journal of Finance
+is no way a trader, however low his or her transaction costs, can profit from the
+apparent future price predictions. It we could measure price changes from bid
+price to bid price (or from ask price to ask price) and eliminate or control for the
+price-rounding effect of minimum "tick" sizes, this artifactual negative serial
+correlation would be eliminated.
+Greater price variance will be empirically associated with greater negative
+serial correlation of returns as Grossman and Miller predict, but for a different
+reason. Higher variance is associated with higher spreads in both the "inventory"
+models and the adverse-selection models; and a greater spread means greater
+artifactual negative serial correlation.
+Despite my carping comments, which are exactly what you would expect from
+a competing market maker in the market-microstructure literature, I welcome
+the Grossman and Miller model of market making. It is time the big guns of
+finance were brought to bear on the question of liquidity and on the implications
+of the demand for liquidity on the relevance of the way we conventionally measure
+returns. The proliferation of models of market making and the failure of any one
+model to completely capture all the determinants of the price of liquidity also
+mandate that we turn our efforts toward a synthesis of the models of market
+making.
+prices and bid-ask prices are disseminated; but owing to the "crowd" or "open outery" nature of
+* A test of this prediction is possible in equities markets or options markets, where both transaction
+trading in futures markets (where no limit order "book" is maintained and bilateral trades occur
+nearly continuously), only transaction prices are observed in commodities and futures markets.
+Empirical evidence in support of this prediction is given by Hasbrouck and Ho [8], who find that
+common stock tick-to-tick transaction-price returns are negatively serially correlated, whereas
+quotation-price returns have much smaller negative correlation on average and the 75th percentile
+shows positive correlation.
+REFERENCES
+1. Y. Amihud and H. Mendelson. "Dealership Markets: Market-Making With Inventory." Journal
+of Financial Economics 8 (1980), 31-53.
+2. W. Bagehot. "The Only Game in Town," Financial Analysts' Journal 27 (1971), 12-14, 22.
+3. K. J. Cohen, S. F. Maier, R. A. Schwartz and D. K. Whitcomb. "Transaction Costs, Order
+Placement Strategy, and the Existence of the Bid-Ask Spread." Journal of Political Economy
+89 (April 1981), 287-305.
+5. T. Cope and MidD. Cuture of Securitien Warket New ork: Prestige Hal, 198a of Finance 38
+(1983), 1457-69.
+6. L. Glosten and P. Milgrom. "Bid, Ask and Transaction Prices in a Specialist Market With
+Heterogeneously Informed Traders." Journal of Financial Economics 14 (March 1985), 71-100.
+7. S. Grossman and J. Stiglitz. "On the Impossibility of Informationally Efficient Markets."
+American Economic Review 70 (1980), 393-407.
+8. J. Hasbrouck and T. Ho. "Order Arrival, Quote Behavior, and the Return-Generating Process."
+Journal of Finance 42 (1987), 1035-48.
+9. T. Ho and H. R. Stoll. "On Dealer Markets Under Competition." Journal of Finance 35 (1980),
+259-67.
+10. —
+-. "Optimal Dealer Pricing Under Transactions and Return Uncertainty." Journal of
+Financial Economics 9 (1981), 47-73.
+11. -
+- "The Dynamics of Dealer Markets Under Competition." Journal of Finance 38 (1983),
+1053-74.
+
+===== PAGE 5 =====
+
+Discussion
+637
+12. E. Mildenstein and H. J. Schleef. "The Optimal Pricing Policy of a Monopolistic Marketmaker
+in the Equity Market." Journal of Finance 38 (1983), 218-31.
+13. R. A. Schwartz and D. K. Whitcomb. Transaction Costs and Institutional Investor Trading
+Strategies. New York: Salomon Brothers Center for the Study of Financial Institutions
+Monograph Series, forthcoming, 1988.
+14. H. R. Stoll. "The Supply of Dealer Services in Security Markets." Journal of Finance 33 (1978),

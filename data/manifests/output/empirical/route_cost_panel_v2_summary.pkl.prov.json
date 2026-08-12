@@ -1,7 +1,7 @@
 {
  "argv": [
   "--spec",
-  "data/empirical/_route_cost_day_cache/engine_6a8414831c66/hall_p200_s1000-10000-100000"
+  "data/empirical/_route_cost_day_cache/engine_a785f5a19f7a/hall_p200_s1000-10000-100000"
  ],
  "artefact": "output/empirical/route_cost_panel_v2_summary.pkl",
  "code_fingerprint": "d7c68961a9c77962a9033cb10dd8b40e3b8c635d1379fd421371e5131f7018a9",
@@ -17,44 +17,76 @@
   "src/ddvc/route_cost.py",
   "src/ddvc/route_cost_summary.py"
  ],
- "created_at": "2026-08-06T20:11:07+00:00",
+ "created_at": "2026-08-11T19:38:25+00:00",
  "git": {
   "branch": "main",
-  "commit": "4e46fbe29328f1e9a2fc7f0deb414240c25bb215",
-  "dirty": false,
+  "commit": "d0c0dbf0fd35b7eccf50d954379bf74a114f7a6f",
+  "dirty": true,
   "dirty_generated_files": [
    "data/manifests/data/empirical/route_cost_panel_v2.parquet.prov.json",
+   "data/manifests/data/processed/cross_venue_routing_daily.parquet.prov.json",
+   "data/manifests/data/processed/daily_gas_eth.parquet.prov.json",
+   "data/manifests/data/processed/daily_gas_price_graph.parquet.prov.json",
+   "data/manifests/data/processed/intermediation_by_type_daily.parquet.prov.json",
+   "data/manifests/data/processed/vehicle_excess_use_daily.parquet.prov.json",
+   "data/manifests/output/exhibits/cross_venue_routing_inference.jsonl.prov.json",
+   "data/manifests/output/exhibits/cross_venue_routing_series.jsonl.prov.json",
+   "data/manifests/output/exhibits/daily_gas_eth.jsonl.prov.json",
+   "data/manifests/output/exhibits/daily_gas_price_graph.jsonl.prov.json",
+   "data/manifests/output/exhibits/dominance_regressions.jsonl.prov.json",
    "data/manifests/output/exhibits/dominance_specification_curve.jsonl.prov.json",
+   "data/manifests/output/exhibits/intermediation_by_type.jsonl.prov.json",
+   "data/manifests/output/exhibits/intermediation_complexity_rival.jsonl.prov.json",
+   "data/manifests/output/exhibits/intermediation_integration_rival.jsonl.prov.json",
    "data/manifests/output/exhibits/realised_dominance.jsonl.prov.json",
    "data/manifests/output/exhibits/realised_dominance_reweighting.jsonl.prov.json",
+   "data/manifests/output/exhibits/routing_technology_windows.jsonl.prov.json",
    "data/manifests/output/exhibits/survival_after_dominance.jsonl.prov.json",
    "data/manifests/output/exhibits/vehicle_dominance_hdfe.jsonl.prov.json",
+   "data/manifests/output/exhibits/vehicle_excess_use.jsonl.prov.json",
+   "data/manifests/output/exhibits/vehicle_excess_use_quarterly.jsonl.prov.json",
+   "output/exhibits/cross_venue_routing_inference.jsonl",
+   "output/exhibits/cross_venue_routing_series.jsonl",
+   "output/exhibits/daily_gas_eth.csv",
+   "output/exhibits/daily_gas_eth.jsonl",
+   "output/exhibits/daily_gas_price_graph.jsonl",
    "output/exhibits/dominance_specification_curve.jsonl",
+   "output/exhibits/intermediation_by_type.jsonl",
+   "output/exhibits/intermediation_complexity_rival.jsonl",
+   "output/exhibits/intermediation_integration_rival.jsonl",
    "output/exhibits/realised_dominance.jsonl",
+   "output/exhibits/routing_technology_windows.jsonl",
    "output/exhibits/survival_after_dominance.jsonl",
    "output/exhibits/vehicle_dominance_hdfe.jsonl",
+   "output/exhibits/vehicle_excess_use.jsonl",
+   "output/exhibits/vehicle_excess_use_quarterly.jsonl",
    "output/tables/bridge_denominator_robustness.pdf",
    "output/tables/liquidity_robustness.pdf",
-   "output/tables/measurement_robustness.pdf",
-   "output/tables/route_cost_distribution_weighting.pdf",
-   "output/tables/route_cost_distribution_weighting.tex",
-   "output/tables/route_cost_robustness.pdf",
-   "output/tables/route_cost_robustness.tex",
-   "output/tables/stress_robustness.pdf",
-   "output/tables/stress_rotation_decomposition.pdf",
-   "output/tables/v4_match_balance.pdf",
-   "output/tables/v4_robustness.pdf",
-   "output/exhibits/realised_dominance_reweighting.jsonl"
+   "output/tables/measurement_robustness.pdf"
   ],
-  "dirty_tracked_files": [],
-  "dirty_untracked_files": []
+  "dirty_tracked_files": [
+   "literature/text/1981-HoStoll1981OptimalDealer-working-paper-optimal-dealer-pricing-under-transactions-and-return-uncertainty.txt",
+   "literature/text/1988-GrossmanMiller1988Liquidity-working-paper-liquidity-and-market-structure.txt",
+   "literature/text/1989-KiyotakiWright1989MoneyMedium-on-money-as-a-medium-of-exchange.txt",
+   "literature/text/_index.jsonl",
+   "scripts/process/fetch_daily_gas_price_graph.py",
+   "tests/test_gas_price_fetch.py"
+  ],
+  "dirty_untracked_files": [
+   "literature/text/1979-HoStoll1981OptimalDealerMathematicalAppendix-mathematical-appendix-to-optimal-dealer-pricing-under-transactions-and-return-uncertainty.txt",
+   "literature/text/1981-HoStoll1981OptimalDealer-optimal-dealer-pricing-under-transactions-and-return-uncertainty.txt",
+   "literature/text/1988-GrossmanMiller1988Liquidity-liquidity-and-market-structure.txt",
+   "literature/text/1988-GrossmanMiller1988LiquidityDiscussion-discussion-of-liquidity-and-market-structure.txt",
+   "literature/text/2021-AdamsEtAl2021UniswapV3ABDkAudit-supplement-core-beta3-audit.txt",
+   "literature/text/2021-AdamsEtAl2021UniswapV3TrailOfBitsAudit-supplement-core-beta7-audit.txt"
+  ]
  },
  "inputs": [
   {
-   "bytes": 880070422,
+   "bytes": 810761590,
    "exists": true,
    "hashed": false,
-   "mtime_ns": 1786047053536970566,
+   "mtime_ns": 1786477100867282631,
    "path": "data/empirical/route_cost_panel_v2.parquet"
   }
  ],

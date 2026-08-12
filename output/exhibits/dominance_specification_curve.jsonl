@@ -1,12 +1,20 @@
-{"coef": -0.10091284159127241, "dimension": "fe", "groups": 0, "n": 1839, "p": 0.1504800707789533, "se": 0.06957894551600831, "spec": "no fixed effect, pooled"}
-{"coef": -0.10199736577983576, "dimension": "fe", "groups": 0, "n": 1839, "p": 0.14496435348944692, "se": 0.06936434503915805, "spec": "+ log size as a regressor"}
-{"coef": -0.06289267426972395, "dimension": "fe", "groups": 23, "n": 812, "p": 0.38063229817349287, "se": 0.07029475255788273, "spec": "pair fixed effect"}
-{"coef": -0.04274353876739567, "dimension": "fe", "groups": 274, "n": 732, "p": 0.542811213774474, "se": 0.06914538083407457, "spec": "pair x window x size fixed effect"}
-{"coef": -0.04274353876739567, "dimension": "outcome", "groups": 274, "n": 732, "p": 0.542811213774474, "se": 0.06914538083407457, "spec": "binary dominance"}
-{"coef": -25.25828101228492, "dimension": "outcome", "groups": 274, "n": 732, "p": 0.03702579305580511, "se": 11.377080709689867, "spec": "continuous gap in basis points"}
-{"coef": -0.04655870445344134, "dimension": "venue", "groups": 269, "n": 719, "p": 0.5102163138905329, "se": 0.06955474163233356, "spec": "routes touching a tick venue"}
-{"coef": -0.011111111111111112, "dimension": "candidates", "groups": 90, "n": 180, "p": 0.9267479253048378, "se": 0.11896681717158024, "spec": "exactly 2 candidates"}
-{"coef": -0.054347826086956576, "dimension": "candidates", "groups": 184, "n": 552, "p": 0.4253081376834671, "se": 0.06618276456091834, "spec": "exactly 3 candidates"}
-{"coef": -0.0630207677784774, "dimension": "interaction", "groups": 274, "n": 732, "p": 0.6972181593737004, "se": 0.15986425534937418, "spec": "native, with native x log size in model"}
-{"coef": 0.002290363598709453, "dimension": "interaction", "groups": 274, "n": 732, "p": 0.9136951028012783, "se": 0.020891372547401373, "spec": "interaction native x log size"}
-{"coef": -0.04274353876739567, "dimension": "era", "groups": 274, "n": 732, "p": 0.542811213774474, "se": 0.06914538083407457, "spec": "year 2023"}
+{"coef": -0.11025131247765486, "dimension": "fe", "groups": 0, "n": 14568284, "p": 0.00242943203366619, "se": 0.03633189845555914, "spec": "no fixed effect, pooled"}
+{"coef": -0.10984136485431252, "dimension": "fe", "groups": 0, "n": 14568284, "p": 0.0025505980554918484, "se": 0.03637368487642102, "spec": "+ log size as a regressor"}
+{"coef": -0.0982942759629941, "dimension": "fe", "groups": 684, "n": 7340026, "p": 0.0024764928569362965, "se": 0.03236037001243887, "spec": "pair fixed effect"}
+{"coef": -0.08070332156772746, "dimension": "fe", "groups": 206725, "n": 6122609, "p": 0.017396251626744075, "se": 0.03385063618486987, "spec": "pair x window x size fixed effect"}
+{"coef": -0.08070332156772746, "dimension": "outcome", "groups": 206725, "n": 6122609, "p": 0.017396251626744075, "se": 0.03385063618486987, "spec": "binary dominance"}
+{"coef": 40477950.83731795, "dimension": "outcome", "groups": 206725, "n": 6122609, "p": 0.32733655498048764, "se": 41295430.363856636, "spec": "continuous gap in basis points"}
+{"coef": -0.0690456331979395, "dimension": "venue", "groups": 194760, "n": 5798837, "p": 0.06487629090190983, "se": 0.03733550190899469, "spec": "routes touching a tick venue"}
+{"coef": -0.34361892498331803, "dimension": "venue", "groups": 12336, "n": 282672, "p": 0.0, "se": 0.02213580309765391, "spec": "routes on constant-product only"}
+{"coef": -0.03754332745536492, "dimension": "candidates", "groups": 96780, "n": 2220579, "p": 0.30258445945350676, "se": 0.03638747456137318, "spec": "exactly 2 candidates"}
+{"coef": -0.11067693947781922, "dimension": "candidates", "groups": 104909, "n": 3665111, "p": 0.006152558700994515, "se": 0.040036094948822695, "spec": "exactly 3 candidates"}
+{"coef": -0.06603595278987189, "dimension": "candidates", "groups": 5036, "n": 236919, "p": 0.11229160361795598, "se": 0.0408670146682513, "spec": "4 or more candidates"}
+{"coef": -0.22927235576106975, "dimension": "interaction", "groups": 206725, "n": 6122609, "p": 0.0011113786454213237, "se": 0.07001105485210576, "spec": "native, with native x log size in model"}
+{"coef": 0.0171180705190416, "dimension": "interaction", "groups": 206725, "n": 6122609, "p": 0.09511345009565897, "se": 0.010241981016076046, "spec": "interaction native x log size"}
+{"coef": -0.3740654619683782, "dimension": "era", "groups": 5753, "n": 139502, "p": 0.0, "se": 0.028195235569487012, "spec": "year 2020"}
+{"coef": -0.17209405637029945, "dimension": "era", "groups": 34047, "n": 942032, "p": 3.4207790267082316e-07, "se": 0.032717049781393316, "spec": "year 2021"}
+{"coef": -0.0746156632730771, "dimension": "era", "groups": 42424, "n": 1303169, "p": 0.19943401305042152, "se": 0.05796468850841853, "spec": "year 2022"}
+{"coef": -0.14964677211881328, "dimension": "era", "groups": 34141, "n": 1018537, "p": 0.007343840788692768, "se": 0.05518314617998395, "spec": "year 2023"}
+{"coef": -0.1736554724888898, "dimension": "era", "groups": 26970, "n": 839860, "p": 0.0010176112522042313, "se": 0.05158912257573612, "spec": "year 2024"}
+{"coef": 0.04143835979280805, "dimension": "era", "groups": 36470, "n": 1083345, "p": 0.22021860480066335, "se": 0.03368226968476356, "spec": "year 2025"}
+{"coef": 0.09321709201572646, "dimension": "era", "groups": 26920, "n": 796164, "p": 0.018838252306861092, "se": 0.039236620746454724, "spec": "year 2026"}

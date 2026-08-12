@@ -1,6 +1,4 @@
-{"dominated": false, "mean_share": 0.06069450732405688, "median_share": 0.060814371972754216, "mid_type": "imported", "obs": 4, "usd": 2292531.7019121083}
-{"dominated": true, "mean_share": 0.027534846133579798, "median_share": 0.0055298430483487464, "mid_type": "imported", "obs": 20, "usd": 4181838.5582180303}
-{"dominated": false, "mean_share": 0.6862193539644261, "median_share": 0.6280529399466561, "mid_type": "native", "obs": 23, "usd": 12194432.128215518}
-{"dominated": true, "mean_share": 0.3941958238906922, "median_share": 0.42307368940440016, "mid_type": "native", "obs": 25, "usd": 9132312.514201358}
-{"dominated": false, "mean_share": 0.43444860141914404, "median_share": 0.3713548745231781, "mid_type": "stable", "obs": 53, "usd": 58727509.97440166}
-{"dominated": true, "mean_share": 0.28217398357962253, "median_share": 0.24472569647639714, "mid_type": "stable", "obs": 98, "usd": 69743191.5596423}
+{"dominated": false, "mean_share": 0.8224305953589324, "median_share": 0.9463038898157292, "mid_type": "native", "obs": 51, "usd": 504740.25038393773}
+{"dominated": true, "mean_share": 0.8146497194270627, "median_share": 1.0, "mid_type": "native", "obs": 98, "usd": 424425.827414537}
+{"dominated": false, "mean_share": 0.5241424289211877, "median_share": 0.5039594884898322, "mid_type": "stable", "obs": 115, "usd": 1340464.7847374238}
+{"dominated": true, "mean_share": 0.4706486927781168, "median_share": 0.5, "mid_type": "stable", "obs": 301, "usd": 1239261.6453019336}
