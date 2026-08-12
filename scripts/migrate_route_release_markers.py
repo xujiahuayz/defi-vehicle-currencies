@@ -421,6 +421,14 @@ def _fsync_directory(path: Path) -> None:
         os.close(descriptor)
 
 
+def _remove_stage_durably(stage: Path) -> None:
+    """Remove a completed or recovered stage and persist its directory entry."""
+
+    parent = stage.parent
+    shutil.rmtree(stage)
+    _fsync_directory(parent)
+
+
 def _durable_replace(source: Path, target: Path) -> None:
     source_parent = source.parent
     target_parent = target.parent
@@ -489,7 +497,7 @@ def recover_interrupted_publication(
                 raise RuntimeError(
                     f"interrupted route migration has backups but no journal: {stage}"
                 )
-            shutil.rmtree(stage)
+            _remove_stage_durably(stage)
             continue
         try:
             journal = json.loads(journal_path.read_text(encoding="utf-8"))
@@ -521,7 +529,7 @@ def recover_interrupted_publication(
                     f"interrupted route migration journal identity is invalid: {label}"
                 )
             _restore(path, backup, expected_identity=expected_identity)
-        shutil.rmtree(stage)
+        _remove_stage_durably(stage)
         recovered += 1
     return recovered
 
@@ -665,7 +673,8 @@ def publish_migration(
             raise
     finally:
         if cleanup_stage or not journal_published:
-            shutil.rmtree(stage, ignore_errors=True)
+            if stage.exists():
+                _remove_stage_durably(stage)
 
 
 def migrate_route_release_markers(

@@ -68,6 +68,7 @@ from ddvc.v4_quarantine import (
 
 
 MARKET_STATE_QUALITY_PANEL = DATA_DIR / "processed" / "market_state_quality.parquet"
+ROUTE_RELEASE_ROOT = DATA_DIR / "unified"
 MARKET_STATE_QUALITY_COLUMNS = [
     QUALITY_COLUMNS[0],
     "engine",
@@ -561,13 +562,18 @@ def _validated_release_ledger(kind: str) -> pd.DataFrame:
 
     if kind not in {"route", "state"}:
         raise ValueError(f"unsupported node-D ledger kind: {kind}")
-    path = UNIFIED_QUALITY_PANEL if kind == "route" else MARKET_STATE_QUALITY_PANEL
-    if kind == "route":
-        release_root = unified_path("sentinel").parent
-        with serialized_read_installs((path, release_root), allow_missing=True):
-            return _validated_release_ledger_unlocked(kind)
-    with serialized_read_installs((path,), allow_missing=True):
+    with serialized_read_installs(_release_lease_paths(kind), allow_missing=True):
         return _validated_release_ledger_unlocked(kind)
+
+
+def _release_lease_paths(kind: str) -> tuple[Path, ...]:
+    """Return the one publication perimeter leased by a node-D reader."""
+
+    if kind == "route":
+        return (UNIFIED_QUALITY_PANEL, ROUTE_RELEASE_ROOT)
+    if kind == "state":
+        return (MARKET_STATE_QUALITY_PANEL,)
+    raise ValueError(f"unsupported node-D ledger kind: {kind}")
 
 
 def require_route_release() -> None:
@@ -698,31 +704,32 @@ def released_route_partitions(columns: Iterable[str], *, nonempty: bool = False)
     """Return all released days, or only days with positive route-row support."""
 
     selected_columns = _normalized_columns(columns, UNIFIED_COLUMNS)
-    quality = _validated_release_ledger("route")
-    ledger_sha256 = str(quality.attrs["ledger_sha256"])
-    if nonempty:
-        quality = quality.loc[quality["output_rows"].astype(int).gt(0)].copy()
-        if quality.empty:
-            raise RuntimeError("node D released route perimeter has no nonempty partitions")
-    partitions = tuple(
-        _released_partition(
-            day=str(row.day).zfill(8),
-            path=unified_path(str(row.day).zfill(8)),
-            marker_path=unified_quality_path(str(row.day).zfill(8)),
-            expected_rows=row.output_rows,
-            expected_bytes=row.output_bytes,
-            expected_sha256=row.output_sha256,
-            input_fingerprint=row.input_fingerprint,
+    with serialized_read_installs(_release_lease_paths("route"), allow_missing=True):
+        quality = _validated_release_ledger_unlocked("route")
+        ledger_sha256 = str(quality.attrs["ledger_sha256"])
+        if nonempty:
+            quality = quality.loc[quality["output_rows"].astype(int).gt(0)].copy()
+            if quality.empty:
+                raise RuntimeError("node D released route perimeter has no nonempty partitions")
+        partitions = tuple(
+            _released_partition(
+                day=str(row.day).zfill(8),
+                path=unified_path(str(row.day).zfill(8)),
+                marker_path=unified_quality_path(str(row.day).zfill(8)),
+                expected_rows=row.output_rows,
+                expected_bytes=row.output_bytes,
+                expected_sha256=row.output_sha256,
+                input_fingerprint=row.input_fingerprint,
+            )
+            for row in quality.itertuples(index=False)
         )
-        for row in quality.itertuples(index=False)
-    )
-    return _released_partition_set(
-        kind="route",
-        columns=selected_columns,
-        ledger_path=UNIFIED_QUALITY_PANEL,
-        ledger_sha256=ledger_sha256,
-        partitions=partitions,
-    )
+        return _released_partition_set(
+            kind="route",
+            columns=selected_columns,
+            ledger_path=UNIFIED_QUALITY_PANEL,
+            ledger_sha256=ledger_sha256,
+            partitions=partitions,
+        )
 
 
 def released_state_partitions(

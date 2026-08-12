@@ -249,7 +249,8 @@ class DataReleaseTests(unittest.TestCase):
             markers = {"20250101": marker, "20250102": empty_marker}
             with (
                 patch("ddvc.data_release.UNIFIED_QUALITY_PANEL", ledger),
-                patch("ddvc.data_release._validated_release_ledger", return_value=ledger_frame),
+                patch("ddvc.data_release.ROUTE_RELEASE_ROOT", root),
+                patch("ddvc.data_release._validated_release_ledger_unlocked", return_value=ledger_frame),
                 patch("ddvc.data_release.unified_path", side_effect=lambda day: panels[day]),
                 patch("ddvc.data_release.unified_quality_path", side_effect=lambda day: markers[day]),
             ):
@@ -261,7 +262,7 @@ class DataReleaseTests(unittest.TestCase):
                     ("20250101", "20250102"),
                 )
                 with (
-                    patch("ddvc.data_release._validated_release_ledger", return_value=empty_ledger_frame),
+                    patch("ddvc.data_release._validated_release_ledger_unlocked", return_value=empty_ledger_frame),
                     self.assertRaisesRegex(RuntimeError, "no nonempty partitions"),
                 ):
                     released_route_partitions(("source",), nonempty=True)

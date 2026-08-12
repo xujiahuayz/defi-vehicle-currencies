@@ -1,6 +1,8 @@
 from __future__ import annotations
 
 import json
+import subprocess
+import sys
 import threading
 from concurrent.futures import ThreadPoolExecutor
 from pathlib import Path
@@ -401,3 +403,135 @@ def test_route_reader_lease_blocks_marker_and_ledger_publication(
         assert reader.result(timeout=5)["tx_hash"].tolist() == ["0xtx"]
         publisher.result(timeout=10)
     assert publisher_entered.is_set()
+
+
+def test_public_route_release_binding_holds_one_reader_lease(
+    tmp_path: Path,
+) -> None:
+    days = ["20200505"]
+    paths = prepare_legacy_release(tmp_path, days)
+    from ddvc import data_release
+    from scripts import migrate_route_release_markers as migration
+
+    binding_entered = threading.Event()
+    release_binding = threading.Event()
+    publisher_entered = threading.Event()
+    original_partition = data_release._released_partition
+    original_plan = migration.plan_migration
+
+    def validate_test_ledger(kind: str) -> pd.DataFrame:
+        assert kind == "route"
+        quality = pd.read_parquet(paths["quality_panel"])
+        quality.attrs["ledger_sha256"] = file_sha256(paths["quality_panel"])
+        return quality
+
+    def blocked_partition(**kwargs):
+        binding_entered.set()
+        assert release_binding.wait(timeout=5)
+        return original_partition(**kwargs)
+
+    def observed_plan(*args, **kwargs):
+        publisher_entered.set()
+        return original_plan(*args, **kwargs)
+
+    def test_unified_path(day: object, *, root: Path | None = None) -> Path:
+        return unified_path(day, root=paths["unified_root"])
+
+    def test_quality_path(day: object, *, root: Path | None = None) -> Path:
+        return unified_quality_path(day, root=paths["unified_root"])
+
+    with (
+        patch.object(data_release, "UNIFIED_QUALITY_PANEL", paths["quality_panel"]),
+        patch.object(data_release, "ROUTE_RELEASE_ROOT", paths["unified_root"]),
+        patch.object(data_release, "unified_path", test_unified_path),
+        patch.object(data_release, "unified_quality_path", test_quality_path),
+        patch.object(
+            data_release,
+            "_validated_release_ledger_unlocked",
+            side_effect=validate_test_ledger,
+        ),
+        patch.object(
+            data_release,
+            "_released_partition",
+            side_effect=blocked_partition,
+        ),
+        patch.object(migration, "plan_migration", side_effect=observed_plan),
+        ThreadPoolExecutor(max_workers=2) as pool,
+    ):
+        reader = pool.submit(data_release.released_route_partitions, ("tx_hash",))
+        assert binding_entered.wait(timeout=5)
+        publisher = pool.submit(migrate, paths, days, publish=True)
+        assert not publisher_entered.wait(timeout=0.2)
+        release_binding.set()
+        release = reader.result(timeout=5)
+        assert release.days == tuple(days)
+        publisher.result(timeout=10)
+    assert publisher_entered.is_set()
+
+
+@pytest.mark.parametrize("durable_replace_count", [2, 3])
+def test_real_sigkill_recovers_reachable_durable_replace_cut_points(
+    tmp_path: Path,
+    durable_replace_count: int,
+) -> None:
+    days = ["20200505"]
+    paths = prepare_legacy_release(tmp_path, days)
+    marker_path = unified_quality_path(days[0], root=paths["unified_root"])
+    before_marker = file_sha256(marker_path)
+    before_ledger = file_sha256(paths["quality_panel"])
+    program = """
+import json
+import os
+import signal
+import sys
+from pathlib import Path
+from scripts import migrate_route_release_markers as migration
+
+config = json.loads(sys.argv[1])
+original = migration._durable_replace
+calls = 0
+
+def kill_after_replace(source, target):
+    global calls
+    original(source, target)
+    calls += 1
+    if calls == config["cut"]:
+        os.kill(os.getpid(), signal.SIGKILL)
+
+migration._durable_replace = kill_after_replace
+migration.migrate_route_release_markers(
+    data_root=Path(config["data_root"]),
+    unified_root=Path(config["unified_root"]),
+    quality_panel=Path(config["quality_panel"]),
+    quality_exhibit=Path(config["quality_exhibit"]),
+    dexes=["uniswap_v2"],
+    days=config["days"],
+    workers=1,
+    publish=True,
+    raw_lock=Path(config["raw_lock"]),
+)
+"""
+    config = {
+        **{name: str(path) for name, path in paths.items()},
+        "days": days,
+        "cut": durable_replace_count,
+    }
+    killed = subprocess.run(
+        [sys.executable, "-c", program, json.dumps(config)],
+        cwd=Path(__file__).resolve().parents[1],
+        capture_output=True,
+        text=True,
+        timeout=20,
+        check=False,
+    )
+    assert killed.returncode == -9, killed.stderr
+    stages = list(
+        paths["unified_root"].parent.glob(
+            ".route-marker-migration-*"
+        )
+    )
+    assert len(stages) == 1
+    migrate(paths, days, publish=False)
+    assert file_sha256(marker_path) == before_marker
+    assert file_sha256(paths["quality_panel"]) == before_ledger
+    assert not stages[0].exists()
