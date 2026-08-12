@@ -14,8 +14,6 @@ from __future__ import annotations
 
 import argparse
 import json
-import os
-import shutil
 import tempfile
 from concurrent.futures import as_completed
 from dataclasses import dataclass
@@ -26,7 +24,8 @@ import pyarrow.parquet as pq
 
 from ddvc.artifact_release import canonical_json_sha256, file_sha256, file_stat_identity, is_sha256
 from ddvc.paths import DATA_DIR, RAW_MARKET_DATA_LOCK
-from ddvc.provenance import require_current_artifacts, sidecar_path
+from ddvc.journaled_publication import publish_journaled_bundle, recover_journaled_publications
+from ddvc.provenance import current_artifacts, describe_input, prepare_stamp, sidecar_path
 from ddvc.reconstruct import (
     DEX_FAMILY,
     DUNE_SOURCES,
@@ -43,24 +42,19 @@ from ddvc.reconstruct import (
     unified_quality_path,
 )
 from ddvc.runtime import (
-    atomic_output,
     bounded_workers,
     exclusive_job,
     interruptible_process_pool,
     interruptible_thread_pool,
     serialized_output_installs,
 )
-from ddvc.tables import write_exhibit, write_panel
+from ddvc.tables import _stringify_big_ints
 
 
 LEGACY_ENGINE = "514160b28189"
 MIGRATION_TARGET_ENGINE = "d3f16e9c4da6"
-MIGRATION_POLICY = "route-release-marker-migration-v1"
-_STAGE_PREFIX = ".route-marker-migration-"
-_JOURNAL_NAME = "publication-journal.json"
-_PREPARED = "prepared"
-_COMMITTED = "committed"
-_ROLLED_BACK = "rolled_back"
+MIGRATION_POLICY = "route-release-marker-migration-v2"
+JOURNAL_ROOT_NAME = ".route-marker-migration-journals"
 _OUTPUT_IDENTITY_FIELDS = {
     "output_bytes",
     "output_mtime_ns",
@@ -383,257 +377,21 @@ def _quality_summary(quality: pd.DataFrame) -> pd.DataFrame:
     )
 
 
-def _remove(path: Path) -> None:
-    if path.is_dir():
-        shutil.rmtree(path)
-    else:
-        path.unlink(missing_ok=True)
-
-
-def _content_identity(path: Path) -> dict[str, object]:
-    if path.is_file():
-        return {"kind": "file", "sha256": file_sha256(path)}
-    if path.is_dir():
-        entries = []
-        for item in sorted(path.rglob("*")):
-            if item.is_symlink() or (not item.is_file() and not item.is_dir()):
-                raise ValueError(f"publication target has an unsupported entry: {item}")
-            if item.is_file():
-                entries.append(
-                    {
-                        "path": str(item.relative_to(path)),
-                        "sha256": file_sha256(item),
-                    }
-                )
-        return {"kind": "directory", "entries": entries}
-    if path.exists() or path.is_symlink():
-        raise ValueError(f"publication target has an unsupported type: {path}")
-    return {"kind": "absent"}
-
-
-def _fsync_file(path: Path) -> None:
-    with path.open("rb") as handle:
-        os.fsync(handle.fileno())
-
-
-def _fsync_directory(path: Path) -> None:
-    descriptor = os.open(path, os.O_RDONLY)
-    try:
-        os.fsync(descriptor)
-    finally:
-        os.close(descriptor)
-
-
-def _remove_stage_durably(stage: Path) -> None:
-    """Remove a stage that has no recoverable publication state."""
-
-    parent = stage.parent
-    shutil.rmtree(stage)
-    _fsync_directory(parent)
-
-
-def _publication_cut(_label: str) -> None:
-    """Named no-op cut point used by real-process crash-recovery tests."""
-
-
-def _write_journal(stage: Path, journal: dict[str, object]) -> None:
-    """Atomically replace and durably publish the release journal."""
-
-    path = stage / _JOURNAL_NAME
-    with atomic_output(path) as temporary:
-        temporary.write_text(
-            json.dumps(journal, indent=2, sort_keys=True) + "\n",
-            encoding="utf-8",
-        )
-    _fsync_file(path)
-    _fsync_directory(stage)
-    _fsync_directory(stage.parent)
-
-
-def _read_journal(stage: Path) -> dict[str, object]:
-    path = stage / _JOURNAL_NAME
-    try:
-        journal = json.loads(path.read_text(encoding="utf-8"))
-    except (OSError, json.JSONDecodeError) as error:
-        raise RuntimeError(
-            f"interrupted route migration journal is unreadable: {stage}"
-        ) from error
-    if (
-        not isinstance(journal, dict)
-        or journal.get("policy") != MIGRATION_POLICY
-        or journal.get("state") not in {_PREPARED, _COMMITTED, _ROLLED_BACK}
-        or not isinstance(journal.get("original_identities"), dict)
-    ):
-        raise RuntimeError(
-            f"interrupted route migration journal is invalid: {stage}"
-        )
-    return journal
-
-
-def _require_identity_perimeter(
-    identities: object,
-    targets: tuple[tuple[str, Path, Path], ...],
-    *,
-    name: str,
-) -> dict[str, dict[str, object]]:
-    if not isinstance(identities, dict) or set(identities) != {
-        label for label, _path, _backup in targets
-    }:
-        raise RuntimeError(
-            f"interrupted route migration {name} identity perimeter changed"
-        )
-    checked: dict[str, dict[str, object]] = {}
-    for label, identity in identities.items():
-        if not isinstance(identity, dict):
-            raise RuntimeError(
-                f"interrupted route migration {name} identity is invalid: {label}"
-            )
-        checked[label] = identity
-    return checked
-
-
-def _require_live_identities(
-    targets: tuple[tuple[str, Path, Path], ...],
-    identities: dict[str, dict[str, object]],
-) -> None:
-    for label, path, _backup in targets:
-        if _content_identity(path) != identities[label]:
-            raise RuntimeError(
-                f"interrupted route migration live identity mismatch: {label}"
-            )
-
-
-def _finish_stage_cleanup(
-    stage: Path,
-    targets: tuple[tuple[str, Path, Path], ...],
-    *,
-    live_identities: dict[str, dict[str, object]],
-) -> None:
-    """Delete backups while retaining a durable recovery journal until last."""
-
-    _require_live_identities(targets, live_identities)
-    for label, _path, backup in targets:
-        if backup.exists() or backup.is_symlink():
-            _remove(backup)
-            _fsync_directory(stage)
-        _publication_cut(f"cleanup:{label}")
-    staged_markers = stage / "quality"
-    if staged_markers.exists() or staged_markers.is_symlink():
-        _remove(staged_markers)
-        _fsync_directory(stage)
-    allowed = {stage / _JOURNAL_NAME}
-    unexpected = [path for path in stage.iterdir() if path not in allowed]
-    if unexpected:
-        raise RuntimeError(
-            f"route migration stage contains unexpected cleanup entries: {unexpected}"
-        )
-    journal_path = stage / _JOURNAL_NAME
-    journal_path.unlink()
-    _fsync_directory(stage)
-    stage.rmdir()
-    _fsync_directory(stage.parent)
-
-
-def _durable_replace(source: Path, target: Path) -> None:
-    source_parent = source.parent
-    target_parent = target.parent
-    source.replace(target)
-    _fsync_directory(target_parent)
-    if source_parent != target_parent:
-        _fsync_directory(source_parent)
-
-
-def _restore(
-    path: Path,
-    backup: Path,
-    *,
-    expected_identity: dict[str, object],
-) -> None:
-    if backup.exists():
-        _remove(path)
-        _durable_replace(backup, path)
-    elif expected_identity.get("kind") == "absent":
-        _remove(path)
-    if _content_identity(path) != expected_identity:
-        raise RuntimeError(f"route migration rollback identity mismatch: {path}")
-
-
 def _publication_targets(
-    stage: Path,
     *,
     unified_root: Path,
     quality_panel: Path,
     quality_exhibit: Path,
-) -> tuple[tuple[str, Path, Path], ...]:
+) -> dict[str, Path]:
     panel_sidecar = sidecar_path(quality_panel)
     exhibit_sidecar = sidecar_path(quality_exhibit)
-    return (
-        ("markers", unified_root / ".quality", stage / "legacy-quality"),
-        ("panel", quality_panel, stage / "legacy-quality-panel"),
-        (
-            "panel_sidecar",
-            panel_sidecar,
-            stage / "legacy-quality-panel.provenance",
-        ),
-        ("exhibit", quality_exhibit, stage / "legacy-quality-exhibit"),
-        (
-            "exhibit_sidecar",
-            exhibit_sidecar,
-            stage / "legacy-quality-exhibit.provenance",
-        ),
-    )
-
-
-def recover_interrupted_publication(
-    *,
-    unified_root: Path,
-    quality_panel: Path,
-    quality_exhibit: Path,
-) -> tuple[int, dict[str, object] | None]:
-    """Recover a prepared rollback or finish a committed release cleanup."""
-
-    recovered = 0
-    committed_journal: dict[str, object] | None = None
-    for stage in sorted(unified_root.parent.glob(f"{_STAGE_PREFIX}*")):
-        if not stage.is_dir():
-            continue
-        journal_path = stage / _JOURNAL_NAME
-        if not journal_path.is_file():
-            if any(stage.glob("legacy-*")):
-                raise RuntimeError(
-                    f"interrupted route migration has backups but no journal: {stage}"
-                )
-            _remove_stage_durably(stage)
-            continue
-        journal = _read_journal(stage)
-        targets = _publication_targets(
-            stage,
-            unified_root=unified_root,
-            quality_panel=quality_panel,
-            quality_exhibit=quality_exhibit,
-        )
-        original = _require_identity_perimeter(
-            journal["original_identities"], targets, name="original"
-        )
-        state = journal["state"]
-        if state == _PREPARED:
-            for label, path, backup in reversed(targets):
-                _restore(path, backup, expected_identity=original[label])
-            journal = {**journal, "state": _ROLLED_BACK}
-            _write_journal(stage, journal)
-            live = original
-        elif state == _COMMITTED:
-            if committed_journal is not None:
-                raise RuntimeError("multiple committed route migration stages exist")
-            live = _require_identity_perimeter(
-                journal.get("published_identities"), targets, name="published"
-            )
-            committed_journal = journal
-        else:
-            live = original
-        _finish_stage_cleanup(stage, targets, live_identities=live)
-        recovered += 1
-    return recovered, committed_journal
+    return {
+        "markers": unified_root / ".quality",
+        "panel": quality_panel,
+        "panel_sidecar": panel_sidecar,
+        "exhibit": quality_exhibit,
+        "exhibit_sidecar": exhibit_sidecar,
+    }
 
 
 def _plan_from_committed_recovery(
@@ -694,18 +452,20 @@ def publish_migration(
     quality_panel: Path,
     quality_exhibit: Path,
 ) -> None:
-    """Publish marker-first and ledger-last, restoring the old release on failure."""
+    """Stage and publish all five route-release outputs as one journaled bundle."""
 
-    stage = Path(
-        tempfile.mkdtemp(
-            dir=unified_root.parent,
-            prefix=_STAGE_PREFIX,
-        )
+    targets = _publication_targets(
+        unified_root=unified_root,
+        quality_panel=quality_panel,
+        quality_exhibit=quality_exhibit,
     )
-    staged_markers = stage / "quality"
-    staged_markers.mkdir()
-    journal_published = False
-    try:
+    journal_root = unified_root.parent / JOURNAL_ROOT_NAME
+    with tempfile.TemporaryDirectory(
+        dir=unified_root.parent, prefix=".route-marker-stage-"
+    ) as directory:
+        stage = Path(directory)
+        staged_markers = stage / "markers"
+        staged_markers.mkdir()
         planned_marker_hashes: dict[str, str] = {}
         for day in plan.days:
             path = staged_markers / f"{day}.json"
@@ -717,81 +477,80 @@ def publish_migration(
             if reopened != plan.markers[day]:
                 raise RuntimeError(f"staged route marker did not reopen exactly: {day}")
             planned_marker_hashes[day] = file_sha256(path)
-            _fsync_file(path)
         if set(planned_marker_hashes) != set(plan.days):
             raise RuntimeError("staged route marker perimeter is incomplete")
-        _fsync_directory(staged_markers)
-        targets = _publication_targets(
-            stage,
-            unified_root=unified_root,
-            quality_panel=quality_panel,
-            quality_exhibit=quality_exhibit,
+        raw_roots = [
+            data_root / "raw" / ("dune" if dex in DUNE_SOURCES else "thegraph") / dex
+            for dex in sorted(DEX_FAMILY)
+        ]
+        notes = (
+            f"{MIGRATION_POLICY}; legacy_engine={LEGACY_ENGINE}; "
+            f"current_engine={RECONSTRUCTION_ENGINE}; "
+            f"legacy_marker_set_sha256={plan.legacy_marker_set_sha256}; "
+            f"exact_fresh_validation_days={len(plan.validation)}"
         )
-        original_identities = {
-            label: _content_identity(path) for label, path, _backup in targets
-        }
-        journal = {
+        staged_panel = stage / "panel.parquet"
+        plan.quality.to_parquet(staged_panel, index=False)
+        marker_input = describe_input(staged_markers)
+        marker_input["path"] = describe_input(targets["markers"])["path"]
+        panel_stamp = json.loads(
+            prepare_stamp(
+                quality_panel,
+                content_path=staged_panel,
+                code_sources=[
+                    *RECONSTRUCT_CODE_SOURCES,
+                    "scripts/migrate_route_release_markers.py",
+                ],
+                inputs=raw_roots,
+                rows=len(plan.quality),
+                notes=notes,
+            )
+        )
+        panel_stamp["inputs"] = [
+            marker_input,
+            *panel_stamp["inputs"],
+        ]
+        staged_panel_sidecar = stage / "panel.prov.json"
+        staged_panel_sidecar.write_text(
+            json.dumps(panel_stamp, indent=1, sort_keys=True) + "\n",
+            encoding="utf-8",
+        )
+        staged_exhibit = stage / "exhibit.jsonl"
+        summary = _stringify_big_ints(_quality_summary(plan.quality))
+        with staged_exhibit.open("w", encoding="utf-8") as handle:
+            for record in summary.to_dict("records"):
+                handle.write(json.dumps(record, allow_nan=False, default=str, sort_keys=True) + "\n")
+        panel_input = describe_input(staged_panel)
+        panel_input["path"] = describe_input(quality_panel)["path"]
+        exhibit_stamp = json.loads(
+            prepare_stamp(
+                quality_exhibit,
+                content_path=staged_exhibit,
+                code_sources=[
+                    *RECONSTRUCT_CODE_SOURCES,
+                    "scripts/migrate_route_release_markers.py",
+                ],
+                inputs=[],
+                rows=len(summary),
+                notes=notes,
+            )
+        )
+        exhibit_stamp["inputs"] = [panel_input]
+        staged_exhibit_sidecar = stage / "exhibit.prov.json"
+        staged_exhibit_sidecar.write_text(
+            json.dumps(exhibit_stamp, indent=1, sort_keys=True) + "\n",
+            encoding="utf-8",
+        )
+        metadata = {
             "policy": MIGRATION_POLICY,
-            "state": _PREPARED,
             "legacy_engine": LEGACY_ENGINE,
             "current_engine": RECONSTRUCTION_ENGINE,
             "days": list(plan.days),
             "legacy_marker_sha256": plan.legacy_marker_sha256,
             "current_input_fingerprints": plan.current_input_fingerprints,
             "validation": plan.validation.to_dict("records"),
-            "original_identities": original_identities,
         }
-        _write_journal(stage, journal)
-        journal_published = True
-        target_by_label = {
-            label: (path, backup) for label, path, backup in targets
-        }
-        live_markers, marker_backup = target_by_label["markers"]
-        try:
-            _durable_replace(live_markers, marker_backup)
-            _durable_replace(staged_markers, live_markers)
-            for label, path, backup in targets[1:]:
-                if original_identities[label]["kind"] != "absent":
-                    _durable_replace(path, backup)
-            raw_roots = [
-                data_root / "raw" / ("dune" if dex in DUNE_SOURCES else "thegraph") / dex
-                for dex in sorted(DEX_FAMILY)
-            ]
-            notes = (
-                f"{MIGRATION_POLICY}; legacy_engine={LEGACY_ENGINE}; "
-                f"current_engine={RECONSTRUCTION_ENGINE}; "
-                f"legacy_marker_set_sha256={plan.legacy_marker_set_sha256}; "
-                f"exact_fresh_validation_days={len(plan.validation)}"
-            )
-            write_panel(
-                plan.quality,
-                quality_panel,
-                code_sources=[
-                    *RECONSTRUCT_CODE_SOURCES,
-                    "scripts/migrate_route_release_markers.py",
-                ],
-                inputs=[live_markers, *raw_roots],
-                notes=notes,
-            )
-            _publication_cut("ledger_installed")
-            write_exhibit(
-                _quality_summary(plan.quality),
-                quality_exhibit,
-                code_sources=[
-                    *RECONSTRUCT_CODE_SOURCES,
-                    "scripts/migrate_route_release_markers.py",
-                ],
-                inputs=[quality_panel],
-                notes=notes,
-            )
-            for path in (
-                quality_panel,
-                sidecar_path(quality_panel),
-                quality_exhibit,
-                sidecar_path(quality_exhibit),
-            ):
-                _fsync_file(path)
-                _fsync_directory(path.parent)
+        def validate_live() -> None:
             observed = pd.read_parquet(quality_panel)
             pd.testing.assert_frame_equal(
                 observed.reset_index(drop=True),
@@ -799,53 +558,28 @@ def publish_migration(
                 check_dtype=True,
                 check_exact=True,
             )
-            require_current_artifacts(
+            with current_artifacts(
                 [quality_panel, quality_exhibit],
                 consumer="route marker migration publication",
-            )
+            ):
+                pass
             for day, expected_hash in planned_marker_hashes.items():
                 if file_sha256(unified_quality_path(day, root=unified_root)) != expected_hash:
                     raise RuntimeError(f"published route marker changed: {day}")
-            published_identities = {
-                label: _content_identity(path)
-                for label, path, _backup in targets
-            }
-            journal = {
-                **journal,
-                "state": _COMMITTED,
-                "published_identities": published_identities,
-            }
-            _write_journal(stage, journal)
-            _publication_cut("committed")
-            _finish_stage_cleanup(
-                stage,
-                targets,
-                live_identities=published_identities,
-            )
-        except BaseException:
-            state = _read_journal(stage)["state"]
-            if state != _PREPARED:
-                raise
-            try:
-                for label, path, backup in reversed(targets):
-                    _restore(
-                        path,
-                        backup,
-                        expected_identity=original_identities[label],
-                    )
-            except BaseException:
-                raise
-            journal = {**journal, "state": _ROLLED_BACK}
-            _write_journal(stage, journal)
-            _finish_stage_cleanup(
-                stage,
-                targets,
-                live_identities=original_identities,
-            )
-            raise
-    finally:
-        if not journal_published and stage.exists():
-            _remove_stage_durably(stage)
+
+        publish_journaled_bundle(
+            targets=targets,
+            staged={
+                "markers": staged_markers,
+                "panel": staged_panel,
+                "panel_sidecar": staged_panel_sidecar,
+                "exhibit": staged_exhibit,
+                "exhibit_sidecar": staged_exhibit_sidecar,
+            },
+            journal_root=journal_root,
+            metadata=metadata,
+            validate_live=validate_live,
+        )
 
 
 def migrate_route_release_markers(
@@ -869,14 +603,20 @@ def migrate_route_release_markers(
         job="raw market-data fetch, enrichment, or canonical materialisation",
     ):
         with serialized_output_installs((unified_root, quality_panel, quality_exhibit)):
-            _recovered, committed_journal = recover_interrupted_publication(
+            targets = _publication_targets(
                 unified_root=unified_root,
                 quality_panel=quality_panel,
                 quality_exhibit=quality_exhibit,
             )
-            if committed_journal is not None:
+            recovery = recover_journaled_publications(
+                targets,
+                journal_root=unified_root.parent / JOURNAL_ROOT_NAME,
+            )
+            if len(recovery.committed_metadata) > 1:
+                raise RuntimeError("multiple committed route migration stages exist")
+            if recovery.committed_metadata:
                 return _plan_from_committed_recovery(
-                    committed_journal,
+                    recovery.committed_metadata[0],
                     unified_root=unified_root,
                     quality_panel=quality_panel,
                 )

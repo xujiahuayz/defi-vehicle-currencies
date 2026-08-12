@@ -36,7 +36,7 @@ from ddvc.model_artifacts import (
 )
 from ddvc.frontier_release import current_frontier_release, resolve_frontier_release
 from ddvc.paths import DATA_DIR, OUTPUT_DIR
-from ddvc.provenance import require_current_artifacts
+from ddvc.provenance import current_artifacts
 from ddvc.runtime import exclusive_job
 
 
@@ -79,10 +79,6 @@ def support_blocks_estimation(support_frames: list[pd.DataFrame]) -> bool:
 def _run(frontier_release, context) -> int:
     frontier_support_path = frontier_release.artifacts["support"]
     inputs = [*frontier_release.lineage_paths, CELL_DAY, TRANSITION, EXACT_HORIZONS]
-    require_current_artifacts(
-        [*frontier_release.artifacts.values(), CELL_DAY, TRANSITION, EXACT_HORIZONS],
-        consumer="routing-maturation estimator",
-    )
     frontier_support = pd.read_parquet(
         frontier_support_path,
         columns=[
@@ -190,7 +186,11 @@ def main() -> int:
     context = model_artifact_context()
     frontier_release = resolve_frontier_release()
     with current_frontier_release(frontier_release):
-        return _run(frontier_release, context)
+        with current_artifacts(
+            [*frontier_release.artifacts.values(), CELL_DAY, TRANSITION, EXACT_HORIZONS],
+            consumer="routing-maturation estimator",
+        ):
+            return _run(frontier_release, context)
 
 
 if __name__ == "__main__":

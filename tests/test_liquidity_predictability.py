@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import importlib.util
+from contextlib import nullcontext
 from pathlib import Path
 import sys
 
@@ -551,11 +552,11 @@ def test_registered_builder_wires_price_input_provenance_and_validators(
     monkeypatch.setattr(module, "resolve_capital_release", lambda: CapitalRelease())
     monkeypatch.setattr(module, "build_candidate_day_panel", lambda *args, **kwargs: base)
     required = []
-    monkeypatch.setattr(
-        module,
-        "require_current_artifacts",
-        lambda paths, **kwargs: required.extend(paths),
-    )
+    def current_artifacts(paths: list[Path], **kwargs: object):
+        required.extend(paths)
+        return nullcontext()
+
+    monkeypatch.setattr(module, "current_artifacts", current_artifacts)
     writes = []
 
     def write_panel(frame: pd.DataFrame, path: Path, **kwargs: object) -> None:

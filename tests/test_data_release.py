@@ -199,7 +199,7 @@ class DataReleaseTests(unittest.TestCase):
             produced.to_parquet(ledger, index=False)
             with (
                 patch("ddvc.data_release.MARKET_STATE_QUALITY_PANEL", ledger),
-                patch("ddvc.data_release.require_current_artifacts"),
+                patch("ddvc.data_release.current_artifacts", return_value=nullcontext()),
                 patch("ddvc.data_release.expected_state_keys", return_value=[("tick", "uniswap_v3", "20250101")]),
                 patch("ddvc.data_release.read_tick_quality", return_value=SimpleNamespace()),
                 patch("ddvc.data_release.load_v4_static_quarantine", return_value=set()),
@@ -251,6 +251,7 @@ class DataReleaseTests(unittest.TestCase):
             with (
                 patch("ddvc.data_release.UNIFIED_QUALITY_PANEL", ledger),
                 patch("ddvc.data_release.ROUTE_RELEASE_ROOT", root),
+                patch("ddvc.data_release.current_artifacts", return_value=nullcontext()),
                 patch("ddvc.data_release._validated_release_ledger_unlocked", return_value=ledger_frame),
                 patch("ddvc.data_release.unified_path", side_effect=lambda day: panels[day]),
                 patch("ddvc.data_release.unified_quality_path", side_effect=lambda day: markers[day]),
@@ -332,7 +333,8 @@ class DataReleaseTests(unittest.TestCase):
                 patch("ddvc.data_release.MARKET_STATE_QUALITY_PANEL", ledger),
                 patch("ddvc.data_release.V4_STATIC_QUARANTINE_PANEL", quarantine),
                 patch("ddvc.v4_quarantine.current_artifacts", return_value=nullcontext((quarantine,))),
-                patch("ddvc.data_release._validated_release_ledger", return_value=ledger_frame),
+                patch("ddvc.data_release.current_artifacts", return_value=nullcontext()),
+                patch("ddvc.data_release._validated_release_ledger_unlocked", return_value=ledger_frame),
                 patch("ddvc.data_release.state_partition_path", return_value=panel),
                 patch("ddvc.data_release.state_quality_path", return_value=marker),
             ):
@@ -375,7 +377,7 @@ class DataReleaseTests(unittest.TestCase):
         )
         with (
             patch("ddvc.data_release.resolve_v2_event_source_release", return_value=release) as resolve,
-            patch("ddvc.data_release.require_current_artifacts") as current,
+            patch("ddvc.data_release.current_artifacts") as current,
             patch(
                 "ddvc.data_release.read_v2_event_source_release",
                 return_value=(summary, exceptions, certificate),
@@ -431,7 +433,7 @@ class DataReleaseTests(unittest.TestCase):
                 "ddvc.data_release.resolve_v3_event_source_release",
                 return_value=release,
             ) as resolve,
-            patch("ddvc.data_release.require_current_artifacts") as current,
+            patch("ddvc.data_release.current_artifacts") as current,
             patch(
                 "ddvc.data_release.read_v3_event_source_release",
                 return_value=(summary, exceptions, quarantine, certificate),
@@ -736,7 +738,10 @@ class DataReleaseTests(unittest.TestCase):
         for filename in filenames:
             with self.subTest(filename=filename):
                 source = Path(filename).read_text(encoding="utf-8")
-                self.assertIn("require_current_artifacts(", source)
+                self.assertTrue(
+                    "current_artifacts(" in source
+                    or "require_current_artifacts(" in source
+                )
 
 
 if __name__ == "__main__":

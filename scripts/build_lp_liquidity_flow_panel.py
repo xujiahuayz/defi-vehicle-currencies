@@ -32,7 +32,7 @@ from ddvc.paths import (
     TOKEN_PRICE_DAILY_PANEL,
 )
 from ddvc.pricing.v3pools import load_token_decimals
-from ddvc.provenance import cache_key, require_current_artifacts
+from ddvc.provenance import cache_key, current_artifacts
 from ddvc.runtime import atomic_output, exclusive_job, staged_output
 from ddvc.state_data import STATE_ROOT, TICK_COLUMNS
 from ddvc.tables import publish_staged_artifact
@@ -199,15 +199,8 @@ def _assemble(
             preinstall_validator=release_preinstall_validator(state_release),
         )
     return result.rows
-def _build(*, force: bool = False) -> tuple[int, int, int]:
+def _build_with_inputs(*, force: bool = False) -> tuple[int, int, int]:
     require_node_d_release(routes=True, market_state=True)
-    require_current_artifacts(
-        [
-            TOKEN_PRICE_DAILY_PANEL,
-            DATA_DIR / "processed" / "v2_token_decimals.parquet",
-        ],
-        consumer="LP liquidity-flow panel builder",
-    )
     state_release = released_state_partitions("tick", "uniswap_v3", TICK_COLUMNS)
     days = list(state_release.days)
     if not days:
@@ -298,6 +291,17 @@ def _build(*, force: bool = False) -> tuple[int, int, int]:
         flush=True,
     )
     return event_rows, candidate_rows, rejection_rows
+
+
+def _build(*, force: bool = False) -> tuple[int, int, int]:
+    with current_artifacts(
+        [
+            TOKEN_PRICE_DAILY_PANEL,
+            DATA_DIR / "processed" / "v2_token_decimals.parquet",
+        ],
+        consumer="LP liquidity-flow panel builder",
+    ):
+        return _build_with_inputs(force=force)
 
 
 def build(*, force: bool = False) -> tuple[int, int, int]:

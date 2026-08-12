@@ -36,7 +36,7 @@ from ddvc.graph_event_order import (
     semantic_mapping_sha256,
 )
 from ddvc.paths import DATA_DIR, MARKET_STATE_LOCK, RAW_MARKET_DATA_LOCK
-from ddvc.provenance import require_current_artifacts, sidecar_path, stamp
+from ddvc.provenance import current_artifacts, sidecar_path, stamp
 from ddvc.quoter import Throttled, rpc_post
 from ddvc.reconstruct import UNIFIED_QUALITY_PANEL
 from ddvc.release_calendar import transaction_frontier_audit_days
@@ -628,15 +628,15 @@ def publish_token_decimals_registry_release(
         rows=len(token_registry),
         notes="exact historical ERC-20 decimals for the V2 event-audit token perimeter",
     )
-    require_current_artifacts(
+    with current_artifacts(
         [V2_TOKEN_DECIMALS_REGISTRY],
         consumer="V2 exact event-source audit token state",
-    )
-    return validate_token_decimals_registry(
-        V2_TOKEN_DECIMALS_REGISTRY,
-        expected_anchors=anchors,
-        provider_observations=provider_observations,
-    )
+    ):
+        return validate_token_decimals_registry(
+            V2_TOKEN_DECIMALS_REGISTRY,
+            expected_anchors=anchors,
+            provider_observations=provider_observations,
+        )
 
 
 def corrected_v2_event_map(
@@ -740,11 +740,11 @@ def build(
         raise ValueError(
             "V2 exact-log cache uses one canonical 50-block chunk size"
         )
-    require_current_artifacts(
+    with current_artifacts(
         [UNIFIED_QUALITY_PANEL],
         consumer="V2 exact event-source audit",
-    )
-    audit_days = transaction_frontier_audit_days(UNIFIED_QUALITY_PANEL)
+    ):
+        audit_days = transaction_frontier_audit_days(UNIFIED_QUALITY_PANEL)
     _preflight_graph_streams(audit_days)
     day_bounds = {
         day: load_or_resolve_day_bounds(day, fetch=fetch)

@@ -35,9 +35,15 @@ class RoutingMaturationPanelTests(unittest.TestCase):
 
         @contextmanager
         def leased(selected):
-            events.append("lease-enter")
+            events.append("frontier-lease-enter")
             yield selected
-            events.append("lease-exit")
+            events.append("frontier-lease-exit")
+
+        @contextmanager
+        def artifact_lease(*_args, **_kwargs):
+            events.append("artifact-lease-enter")
+            yield
+            events.append("artifact-lease-exit")
 
         with (
             patch("sys.argv", ["build_routing_maturation_panel.py"]),
@@ -50,7 +56,10 @@ class RoutingMaturationPanelTests(unittest.TestCase):
                 "scripts.build_routing_maturation_panel.current_frontier_release",
                 side_effect=leased,
             ),
-            patch("scripts.build_routing_maturation_panel.require_current_artifacts"),
+            patch(
+                "scripts.build_routing_maturation_panel.current_artifacts",
+                side_effect=artifact_lease,
+            ),
             patch(
                 "scripts.build_routing_maturation_panel.build_panels",
                 return_value={
@@ -69,7 +78,18 @@ class RoutingMaturationPanelTests(unittest.TestCase):
             ),
         ):
             self.assertEqual(main(), 0)
-        self.assertEqual(events, ["lease-enter", "stamp", "stamp", "stamp", "lease-exit"])
+        self.assertEqual(
+            events,
+            [
+                "frontier-lease-enter",
+                "artifact-lease-enter",
+                "artifact-lease-exit",
+                "stamp",
+                "stamp",
+                "stamp",
+                "frontier-lease-exit",
+            ],
+        )
         build.assert_called_once()
 
     def _source(self, root: Path) -> tuple[Path, Path]:

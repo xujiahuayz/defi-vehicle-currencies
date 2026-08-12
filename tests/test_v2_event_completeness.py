@@ -267,7 +267,11 @@ def test_token_registry_release_reopens_only_after_install_and_freshness_check(t
     monkeypatch.setattr(auditor, "V2_TOKEN_DECIMALS_REGISTRY", registry_path)
     monkeypatch.setattr(auditor, "write_token_decimals_registry", lambda frame, path: calls.append(("write", frame is registry, path)))
     monkeypatch.setattr(auditor, "stamp", lambda path, **kwargs: calls.append(("stamp", path, kwargs["inputs"])))
-    monkeypatch.setattr(auditor, "require_current_artifacts", lambda paths, **kwargs: calls.append(("require", paths, kwargs["consumer"])))
+    def current(paths, **kwargs):
+        calls.append(("require", paths, kwargs["consumer"]))
+        return nullcontext()
+
+    monkeypatch.setattr(auditor, "current_artifacts", current)
     monkeypatch.setattr(auditor, "validate_token_decimals_registry", lambda path, **kwargs: (calls.append(("validate", path, kwargs["expected_anchors"])), ({TOKEN0: 6}, registry))[1])
     values, reopened = auditor.publish_token_decimals_registry_release(registry, anchors={}, provider_observations={}, inputs=[tmp_path / "input"])
     assert (values, reopened is registry) == ({TOKEN0: 6}, True)
@@ -951,7 +955,7 @@ def test_token_registry_build_resume_uses_anchor_manifest_without_perimeter_resc
 
     monkeypatch.setattr(auditor, "TOKEN_DECIMALS_ANCHOR_MANIFEST", manifest_path)
     monkeypatch.setattr(auditor, "UNRESOLVED_TOKEN_DECIMALS_LEDGER", ledger_path)
-    monkeypatch.setattr(auditor, "require_current_artifacts", lambda *_args, **_kwargs: None)
+    monkeypatch.setattr(auditor, "current_artifacts", lambda *_args, **_kwargs: nullcontext())
     monkeypatch.setattr(auditor, "transaction_frontier_audit_days", lambda _path: [day])
     monkeypatch.setattr(auditor, "_preflight_graph_streams", lambda _days: None)
     monkeypatch.setattr(

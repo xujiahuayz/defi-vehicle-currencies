@@ -7,7 +7,7 @@ Key boundaries:
 - `ddvc.fetch` owns source discovery, schema admission, provider acquisition, and raw release contracts.
 - `ddvc.pricing` owns AMM-family quote and replay logic.
 - `ddvc.analysis` owns estimators and analysis transformations shared by runners and tests.
-- `ddvc.journaled_publication` owns the prepared-to-committed filesystem publication state machine; `ddvc.data_release`, `ddvc.artifact_release`, and `ddvc.provenance` own released-data identity and fail-closed consumption through that boundary.
+- `ddvc.journaled_publication` owns prepared-to-committed installation of fully staged filesystem bundles; `ddvc.data_release`, `ddvc.artifact_release`, and `ddvc.provenance` own released-data identity and fail-closed consumption through that boundary. `ddvc.counterfactual_publication` still owns the older callback-based capability transaction used only by the three counterfactual bundles. Consolidate it only after those owners stage every member before installation; do not claim that the generic publisher already governs it.
 - `ddvc.d3_stage_registry` owns the registered purpose-bound build graph.
 
 Do not create a second path registry, release protocol, variable definition, or regression primitive inside a consumer. See [`../docs/repository-data-map.md`](../docs/repository-data-map.md) for the full data lineage.

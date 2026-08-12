@@ -29,6 +29,90 @@ from ddvc.runtime import file_sha256
 from ddvc.tables import write_panel
 
 
+def test_journal_root_and_recovery_are_mapping_order_independent() -> None:
+    with tempfile.TemporaryDirectory() as directory:
+        root = Path(directory)
+        journal_root = root / "journals"
+        targets = {"first": root / "first.bin", "second": root / "second.bin"}
+        for path, value in zip(targets.values(), (b"old-a", b"old-b"), strict=True):
+            path.write_bytes(value)
+        staged_root = root / "staged"
+        staged_root.mkdir()
+        staged = {"first": staged_root / "first.bin", "second": staged_root / "second.bin"}
+        for path, value in zip(staged.values(), (b"new-a", b"new-b"), strict=True):
+            path.write_bytes(value)
+
+        def kill_after_first(label: str) -> None:
+            if label == "installed:first":
+                raise RuntimeError("interrupt")
+
+        with patch.object(publication, "_publication_cut", side_effect=kill_after_first), patch.object(
+            publication, "_restore", side_effect=RuntimeError("rollback failed")
+        ), pytest.raises(RuntimeError, match="rollback failed"):
+            publication.publish_journaled_bundle(
+                targets=targets,
+                staged=staged,
+                journal_root=journal_root,
+            )
+        reversed_targets = dict(reversed(tuple(targets.items())))
+        recovery = publication.recover_journaled_publications(
+            reversed_targets, journal_root=journal_root
+        )
+        assert recovery.recovered == 1
+        assert targets["first"].read_bytes() == b"old-a"
+        assert targets["second"].read_bytes() == b"old-b"
+
+
+def test_directory_identity_binds_empty_directory_topology() -> None:
+    with tempfile.TemporaryDirectory() as directory:
+        root = Path(directory)
+        tree = root / "tree"
+        (tree / "empty" / "nested").mkdir(parents=True)
+        (tree / "nonempty").mkdir()
+        (tree / "nonempty" / "value.txt").write_text("value", encoding="utf-8")
+        before = publication._identity(tree)
+        (tree / "empty" / "nested").rmdir()
+        after = publication._identity(tree)
+        assert before != after
+        assert {entry["path"] for entry in before["entries"] if entry["kind"] == "directory"} == {
+            "empty",
+            "empty/nested",
+            "nonempty",
+        }
+
+
+def test_staged_directory_tree_is_fsynced_before_prepared_journal() -> None:
+    with tempfile.TemporaryDirectory() as directory:
+        root = Path(directory)
+        target = root / "target"
+        staged = root / "staged"
+        (staged / "empty").mkdir(parents=True)
+        (staged / "nested").mkdir()
+        (staged / "nested" / "value.txt").write_text("value", encoding="utf-8")
+        observed: list[tuple[str, bool]] = []
+        real_sync_tree = publication._fsync_tree
+        real_write_journal = publication._write_journal
+
+        def sync_tree(path: Path) -> None:
+            real_sync_tree(path)
+            observed.append(("tree", True))
+
+        def write_journal(path: Path, payload: dict[str, object]) -> None:
+            observed.append(("journal", (path / "new" / "tree" / "empty").is_dir()))
+            real_write_journal(path, payload)
+
+        with patch.object(publication, "_fsync_tree", side_effect=sync_tree), patch.object(
+            publication, "_write_journal", side_effect=write_journal
+        ):
+            publication.publish_journaled_bundle(
+                targets={"tree": target},
+                staged={"tree": staged},
+                journal_root=root / "journals",
+            )
+        assert observed[0] == ("tree", True)
+        assert observed[1] == ("journal", True)
+
+
 def test_jsonl_identity_counts_valid_records_with_optional_final_newline() -> None:
     with tempfile.TemporaryDirectory() as directory:
         root = Path(directory)
@@ -125,7 +209,8 @@ def test_rollback_failure_preserves_complete_recovery_state() -> None:
                 code_sources=["tests/test_provenance_publication.py"],
             )
 
-        stages = list(root.glob(".ddvc-publish-*"))
+        journal_root = root / ".ddvc-publication-journals"
+        stages = list(journal_root.glob(".ddvc-publish-*"))
         assert len(stages) == 1
         journal = json.loads((stages[0] / publication.JOURNAL).read_text())
         assert journal["state"] == publication.PREPARED
@@ -135,7 +220,7 @@ def test_rollback_failure_preserves_complete_recovery_state() -> None:
         assert recover_stamped_artifact_install(path) == 1
         assert path.read_bytes() == prior_payload
         assert sidecar_path(path).read_bytes() == prior_sidecar
-        assert list(root.glob(".ddvc-publish-*")) == []
+        assert list(journal_root.glob(".ddvc-publish-*")) == []
 
 
 @pytest.mark.parametrize("cut", ["installed:payload", "installed:sidecar"])
@@ -172,7 +257,7 @@ write_panel(pd.DataFrame({"value": [2]}), path, code_sources=["tests/test_proven
         assert path.read_bytes() == prior_payload
         assert sidecar_path(path).read_bytes() == prior_sidecar
         assert verify(path)["status"] == "ok"
-        assert list(root.glob(".ddvc-publish-*")) == []
+        assert list((root / ".ddvc-publication-journals").glob(".ddvc-publish-*")) == []
 
 
 def test_real_sigkill_after_committed_journal_finishes_new_release_cleanup() -> None:
@@ -204,7 +289,7 @@ write_panel(pd.DataFrame({"value": [2]}), path, code_sources=["tests/test_proven
         assert recover_stamped_artifact_install(path) == 1
         assert pd.read_parquet(path)["value"].tolist() == [2]
         assert verify(path)["status"] == "ok"
-        assert list(root.glob(".ddvc-publish-*")) == []
+        assert list((root / ".ddvc-publication-journals").glob(".ddvc-publish-*")) == []
 
 
 def test_current_artifacts_holds_one_lease_through_multi_artifact_read() -> None:

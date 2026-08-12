@@ -31,7 +31,7 @@ from ddvc.ethereum_receipts import (
 )
 from ddvc.gas import validate_route_transaction_gas_release
 from ddvc.paths import DATA_DIR, OUTPUT_DIR, REPO_ROOT, SHARED_RUNTIME_DIR
-from ddvc.provenance import require_current_artifacts, sidecar_path
+from ddvc.provenance import current_artifacts, sidecar_path
 from ddvc.quoter import RPC_EVIDENCE_FIELDS, rpc_post
 from ddvc.runtime import bounded_workers, exclusive_job, interruptible_thread_pool
 from ddvc.tables import write_panel_batches
@@ -398,7 +398,6 @@ def assemble_exact_outputs(requests: pd.DataFrame, *, batch_size: int) -> dict[s
 
 def _run(args: argparse.Namespace, parser: argparse.ArgumentParser) -> int:
     require_node_d_release(routes=True, market_state=True)
-    require_current_artifacts([GROSS_PANEL], consumer="exact route transaction gas")
     if args.batch_size < 1 or (args.limit is not None and args.limit < 1):
         parser.error("--batch-size and --limit must be positive")
     if args.shards != 1 and not args.cache_only:
@@ -464,7 +463,8 @@ def main() -> int:
             sidecar_path(GROSS_SUPPORT),
         ),
     ):
-        return _run(args, parser)
+        with current_artifacts([GROSS_PANEL], consumer="exact route transaction gas"):
+            return _run(args, parser)
 
 
 if __name__ == "__main__":

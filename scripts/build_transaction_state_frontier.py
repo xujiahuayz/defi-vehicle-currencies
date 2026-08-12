@@ -74,7 +74,7 @@ from ddvc.pricing.tick_replay import (
 )
 from ddvc.pricing.v3pools import load_token_decimals
 from ddvc.pricing.v2_replay import V2ReplayDay, V2_VENUES, load_v2_replay_day
-from ddvc.provenance import cache_key, require_current_artifacts, stamp
+from ddvc.provenance import cache_key, current_artifacts, stamp
 from ddvc.reconstruct import UNIFIED_QUALITY_PANEL
 from ddvc.release_calendar import (
     released_route_days,
@@ -1240,12 +1240,12 @@ def require_frontier_audit_gate(
     expected_days: list[str],
 ) -> tuple[float, float, float]:
     """Require a current, complete audit certificate before a full-daily build."""
-    require_current_artifacts(
+    with current_artifacts(
         [AUDIT_PANEL, AUDIT_REJECTIONS, AUDIT_SUPPORT],
         consumer="full-daily transaction-state frontier",
-    )
-    support = pd.read_json(AUDIT_SUPPORT, lines=True, dtype={"day": str})
-    return validate_audit_support(support, expected_days)
+    ):
+        support = pd.read_json(AUDIT_SUPPORT, lines=True, dtype={"day": str})
+        return validate_audit_support(support, expected_days)
 
 
 def rejection_record(
@@ -2170,7 +2170,7 @@ def publish_sparse_audit(
     return summary
 
 
-def main() -> int:
+def _main() -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     selection = parser.add_mutually_exclusive_group(required=True)
     selection.add_argument(
@@ -2189,9 +2189,6 @@ def main() -> int:
     parser.add_argument("--workers", type=int, help="bounded full-daily scoring processes; ignored by serial audit and explicit-day modes")
     args = parser.parse_args()
     require_node_d_release(routes=True)
-    require_current_artifacts(
-        [TOKEN_DECIMALS], consumer="transaction-state frontier"
-    )
     try:
         selected = select_days(
             available_days(nonempty=args.audit_calendar),
@@ -2437,6 +2434,13 @@ def main() -> int:
         f"aggregate gain ${pooled.aggregate_public_gain_usd:,.2f}"
     )
     return 0
+
+
+def main() -> int:
+    with current_artifacts(
+        [TOKEN_DECIMALS], consumer="transaction-state frontier"
+    ):
+        return _main()
 
 
 if __name__ == "__main__":

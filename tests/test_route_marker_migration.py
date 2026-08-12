@@ -5,6 +5,7 @@ import subprocess
 import sys
 import threading
 from concurrent.futures import ThreadPoolExecutor
+from contextlib import nullcontext
 from pathlib import Path
 from unittest.mock import patch
 
@@ -228,9 +229,13 @@ def test_publication_failure_restores_the_legacy_release(tmp_path: Path) -> None
     marker_path = unified_quality_path(days[0], root=paths["unified_root"])
     before_marker = file_sha256(marker_path)
     before_ledger = file_sha256(paths["quality_panel"])
+    def fail_after_panel(label: str) -> None:
+        if label == "installed:panel":
+            raise RuntimeError("injected publication failure")
+
     with patch(
-        "scripts.migrate_route_release_markers.write_panel",
-        side_effect=RuntimeError("injected publication failure"),
+        "ddvc.journaled_publication._publication_cut",
+        side_effect=fail_after_panel,
     ):
         with pytest.raises(RuntimeError, match="injected publication failure"):
             migrate(paths, days, publish=True)
@@ -255,90 +260,37 @@ def test_missing_current_raw_marker_fails_before_publication(tmp_path: Path) -> 
     assert file_sha256(marker_path) == before_marker
 
 
-@pytest.mark.parametrize("cut_point", ["marker_swap", "ledger_swap"])
-def test_restart_recovers_each_durable_publication_cut_point(
-    tmp_path: Path,
-    cut_point: str,
-) -> None:
-    days = ["20200505"]
-    paths = prepare_legacy_release(tmp_path, days)
-    from scripts import migrate_route_release_markers as migration
-
-    marker_path = unified_quality_path(days[0], root=paths["unified_root"])
-    before_marker = file_sha256(marker_path)
-    before_ledger = file_sha256(paths["quality_panel"])
-    stage = paths["unified_root"].parent / f"{migration._STAGE_PREFIX}crash"
-    stage.mkdir()
-    targets = migration._publication_targets(
-        stage,
-        unified_root=paths["unified_root"],
-        quality_panel=paths["quality_panel"],
-        quality_exhibit=paths["quality_exhibit"],
-    )
-    original = {
-        label: migration._content_identity(path)
-        for label, path, _backup in targets
-    }
-    (stage / migration._JOURNAL_NAME).write_text(
-        json.dumps(
-            {
-                "policy": migration.MIGRATION_POLICY,
-                "state": migration._PREPARED,
-                "legacy_engine": migration.LEGACY_ENGINE,
-                "current_engine": migration.RECONSTRUCTION_ENGINE,
-                "original_identities": original,
-            }
-        )
-    )
-    marker_target, marker_backup = next(
-        (path, backup) for label, path, backup in targets if label == "markers"
-    )
-    panel_target, panel_backup = next(
-        (path, backup) for label, path, backup in targets if label == "panel"
-    )
-    marker_target.replace(marker_backup)
-    marker_target.mkdir()
-    (marker_target / f"{days[0]}.json").write_text('{"partial": true}\n')
-    if cut_point == "ledger_swap":
-        panel_target.replace(panel_backup)
-        panel_target.write_text("partial")
-    migrate(paths, days, publish=False)
-    assert file_sha256(marker_path) == before_marker
-    assert file_sha256(paths["quality_panel"]) == before_ledger
-    assert not stage.exists()
-
-
 def test_rollback_failure_preserves_recovery_state_for_the_next_run(
     tmp_path: Path,
 ) -> None:
     days = ["20200505"]
     paths = prepare_legacy_release(tmp_path, days)
+    from ddvc import journaled_publication as publication
     from scripts import migrate_route_release_markers as migration
 
     marker_path = unified_quality_path(days[0], root=paths["unified_root"])
     before_marker = file_sha256(marker_path)
     before_ledger = file_sha256(paths["quality_panel"])
+    def fail_after_panel(label: str) -> None:
+        if label == "installed:panel":
+            raise RuntimeError("injected publication failure")
+
     with (
+        patch.object(publication, "_publication_cut", side_effect=fail_after_panel),
         patch.object(
-            migration,
-            "write_panel",
-            side_effect=RuntimeError("injected publication failure"),
-        ),
-        patch.object(
-            migration,
+            publication,
             "_restore",
             side_effect=RuntimeError("injected rollback failure"),
         ),
         pytest.raises(RuntimeError, match="injected rollback failure"),
     ):
         migrate(paths, days, publish=True)
-    stages = list(
-        paths["unified_root"].parent.glob(f"{migration._STAGE_PREFIX}*")
-    )
+    journal_root = paths["unified_root"].parent / migration.JOURNAL_ROOT_NAME
+    stages = list(journal_root.glob(".ddvc-publish-*"))
     assert len(stages) == 1
-    assert (stages[0] / migration._JOURNAL_NAME).is_file()
-    assert (stages[0] / "legacy-quality").is_dir()
-    assert (stages[0] / "legacy-quality-panel").is_file()
+    assert (stages[0] / publication.JOURNAL).is_file()
+    assert (stages[0] / "backup" / "markers").is_dir()
+    assert (stages[0] / "backup" / "panel").is_file()
     migrate(paths, days, publish=False)
     assert file_sha256(marker_path) == before_marker
     assert file_sha256(paths["quality_panel"]) == before_ledger
@@ -446,11 +398,16 @@ def test_public_route_release_binding_holds_one_reader_lease(
         patch.object(data_release, "ROUTE_RELEASE_ROOT", paths["unified_root"]),
         patch.object(data_release, "unified_path", test_unified_path),
         patch.object(data_release, "unified_quality_path", test_quality_path),
-        patch.object(
-            data_release,
-            "_validated_release_ledger_unlocked",
-            side_effect=validate_test_ledger,
-        ),
+            patch.object(
+                data_release,
+                "_validated_release_ledger_unlocked",
+                side_effect=validate_test_ledger,
+            ),
+            patch.object(
+                data_release,
+                "current_artifacts",
+                return_value=nullcontext(),
+            ),
         patch.object(
             data_release,
             "_released_partition",
@@ -470,86 +427,10 @@ def test_public_route_release_binding_holds_one_reader_lease(
     assert publisher_entered.is_set()
 
 
-@pytest.mark.parametrize("durable_replace_count", [2, 3])
-def test_real_sigkill_recovers_reachable_durable_replace_cut_points(
-    tmp_path: Path,
-    durable_replace_count: int,
-) -> None:
-    days = ["20200505"]
-    paths = prepare_legacy_release(tmp_path, days)
-    marker_path = unified_quality_path(days[0], root=paths["unified_root"])
-    before_marker = file_sha256(marker_path)
-    before_ledger = file_sha256(paths["quality_panel"])
-    program = """
-import json
-import os
-import signal
-import sys
-from pathlib import Path
-from scripts import migrate_route_release_markers as migration
-
-config = json.loads(sys.argv[1])
-original = migration._durable_replace
-calls = 0
-
-def kill_after_replace(source, target):
-    global calls
-    original(source, target)
-    calls += 1
-    if calls == config["cut"]:
-        os.kill(os.getpid(), signal.SIGKILL)
-
-migration._durable_replace = kill_after_replace
-migration.migrate_route_release_markers(
-    data_root=Path(config["data_root"]),
-    unified_root=Path(config["unified_root"]),
-    quality_panel=Path(config["quality_panel"]),
-    quality_exhibit=Path(config["quality_exhibit"]),
-    dexes=["uniswap_v2"],
-    days=config["days"],
-    workers=1,
-    publish=True,
-    raw_lock=Path(config["raw_lock"]),
-)
-"""
-    config = {
-        **{name: str(path) for name, path in paths.items()},
-        "days": days,
-        "cut": durable_replace_count,
-    }
-    killed = subprocess.run(
-        [sys.executable, "-c", program, json.dumps(config)],
-        cwd=Path(__file__).resolve().parents[1],
-        capture_output=True,
-        text=True,
-        timeout=20,
-        check=False,
-    )
-    assert killed.returncode == -9, killed.stderr
-    stages = list(
-        paths["unified_root"].parent.glob(
-            ".route-marker-migration-*"
-        )
-    )
-    assert len(stages) == 1
-    migrate(paths, days, publish=False)
-    assert file_sha256(marker_path) == before_marker
-    assert file_sha256(paths["quality_panel"]) == before_ledger
-    assert not stages[0].exists()
-
-
-@pytest.mark.parametrize(
-    ("cut_point", "expected_state", "keeps_published_release"),
-    [
-        ("ledger_installed", "prepared", False),
-        ("cleanup:panel", "committed", True),
-    ],
-)
-def test_real_sigkill_recovers_installed_ledger_and_committed_cleanup(
+@pytest.mark.parametrize("cut_point", ["installed:markers", "installed:panel"])
+def test_real_sigkill_recovers_prepared_route_bundle_cut_points(
     tmp_path: Path,
     cut_point: str,
-    expected_state: str,
-    keeps_published_release: bool,
 ) -> None:
     days = ["20200505"]
     paths = prepare_legacy_release(tmp_path, days)
@@ -562,15 +443,15 @@ import os
 import signal
 import sys
 from pathlib import Path
+from ddvc import journaled_publication as publication
 from scripts import migrate_route_release_markers as migration
 
 config = json.loads(sys.argv[1])
-
 def kill_at_cut(label):
     if label == config["cut"]:
         os.kill(os.getpid(), signal.SIGKILL)
 
-migration._publication_cut = kill_at_cut
+publication._publication_cut = kill_at_cut
 migration.migrate_route_release_markers(
     data_root=Path(config["data_root"]),
     unified_root=Path(config["unified_root"]),
@@ -598,11 +479,83 @@ migration.migrate_route_release_markers(
     )
     assert killed.returncode == -9, killed.stderr
     stages = list(
-        paths["unified_root"].parent.glob(".route-marker-migration-*")
+        (paths["unified_root"].parent / ".route-marker-migration-journals").glob(
+            ".ddvc-publish-*"
+        )
+    )
+    assert len(stages) == 1
+    migrate(paths, days, publish=False)
+    assert file_sha256(marker_path) == before_marker
+    assert file_sha256(paths["quality_panel"]) == before_ledger
+    assert not stages[0].exists()
+
+
+@pytest.mark.parametrize(
+    ("cut_point", "expected_state", "keeps_published_release"),
+    [
+        ("installed:panel_sidecar", "prepared", False),
+        ("cleanup:panel", "committed", True),
+    ],
+)
+def test_real_sigkill_recovers_installed_ledger_and_committed_cleanup(
+    tmp_path: Path,
+    cut_point: str,
+    expected_state: str,
+    keeps_published_release: bool,
+) -> None:
+    days = ["20200505"]
+    paths = prepare_legacy_release(tmp_path, days)
+    marker_path = unified_quality_path(days[0], root=paths["unified_root"])
+    before_marker = file_sha256(marker_path)
+    before_ledger = file_sha256(paths["quality_panel"])
+    program = """
+import json
+import os
+import signal
+import sys
+from pathlib import Path
+from ddvc import journaled_publication as publication
+from scripts import migrate_route_release_markers as migration
+
+config = json.loads(sys.argv[1])
+
+def kill_at_cut(label):
+    if label == config["cut"]:
+        os.kill(os.getpid(), signal.SIGKILL)
+
+publication._publication_cut = kill_at_cut
+migration.migrate_route_release_markers(
+    data_root=Path(config["data_root"]),
+    unified_root=Path(config["unified_root"]),
+    quality_panel=Path(config["quality_panel"]),
+    quality_exhibit=Path(config["quality_exhibit"]),
+    dexes=["uniswap_v2"],
+    days=config["days"],
+    workers=1,
+    publish=True,
+    raw_lock=Path(config["raw_lock"]),
+)
+"""
+    config = {
+        **{name: str(path) for name, path in paths.items()},
+        "days": days,
+        "cut": cut_point,
+    }
+    killed = subprocess.run(
+        [sys.executable, "-c", program, json.dumps(config)],
+        cwd=Path(__file__).resolve().parents[1],
+        capture_output=True,
+        text=True,
+        timeout=20,
+        check=False,
+    )
+    assert killed.returncode == -9, killed.stderr
+    stages = list(
+        (paths["unified_root"].parent / ".route-marker-migration-journals").glob(".ddvc-publish-*")
     )
     assert len(stages) == 1
     journal = json.loads(
-        (stages[0] / "publication-journal.json").read_text(encoding="utf-8")
+        (stages[0] / "journal.json").read_text(encoding="utf-8")
     )
     assert journal["state"] == expected_state
     recovered = migrate(paths, days, publish=False)

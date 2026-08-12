@@ -40,7 +40,7 @@ from ddvc.analysis.dominance_cost_release import (
 )
 from ddvc.artifact_release import ArtifactRelease, publish_artifact_release
 from ddvc.paths import REPO_ROOT
-from ddvc.provenance import require_current_artifacts
+from ddvc.provenance import current_artifacts
 
 
 CONTROL_PANEL = REPO_ROOT / "data" / "processed" / "liquidity_capital_flow_candidate_day.parquet"
@@ -124,9 +124,11 @@ def run(
             raise FileNotFoundError(f"{kind}-input dominance-cost exploratory sub-ledger requires the candidate-day control panel: {control_path}")
         if not high_memory_full_control or _physical_memory_bytes() < MIN_FULL_CONTROL_MEMORY_BYTES:
             raise RuntimeError("full-control dominance-cost execution requires explicit assignment to a worker with at least 48 GiB physical memory")
-        if not provisional:
-            require_current_artifacts([control_path], consumer="immutable-input dominance-cost exploratory sub-ledger")
-        controls = pd.read_parquet(control_path, columns=sorted(CONTROL_REQUIRED_COLUMNS))
+        if provisional:
+            controls = pd.read_parquet(control_path, columns=sorted(CONTROL_REQUIRED_COLUMNS))
+        else:
+            with current_artifacts([control_path], consumer="immutable-input dominance-cost exploratory sub-ledger"):
+                controls = pd.read_parquet(control_path, columns=sorted(CONTROL_REQUIRED_COLUMNS))
         inputs.append(control_path)
     status = PROVISIONAL_STATUS if provisional else EXPLORATORY_STATUS
     pair_columns = sorted({column for column in PAIR_REQUIRED_COLUMNS if column in pq.ParquetFile(pair_panel_path).schema_arrow.names})

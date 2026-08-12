@@ -2,7 +2,8 @@
 
 from __future__ import annotations
 
-from collections.abc import Iterable, Mapping
+from collections.abc import Iterable, Iterator, Mapping
+from contextlib import contextmanager
 from dataclasses import dataclass, replace
 import json
 from pathlib import Path
@@ -44,7 +45,7 @@ from ddvc.state_data import (
     state_quality_path,
 )
 from ddvc.paths import DATA_DIR, REPO_ROOT
-from ddvc.provenance import require_current_artifacts
+from ddvc.provenance import current_artifacts
 from ddvc.release_calendar import transaction_frontier_audit_days
 from ddvc.runtime import serialized_read_installs
 from ddvc.v2_event_completeness import (
@@ -472,7 +473,6 @@ def _validated_release_ledger_unlocked(kind: str) -> pd.DataFrame:
     label = "directed-route" if kind == "route" else "market-state"
     if not path.is_file():
         raise RuntimeError(f"node D has not released the full {label} quality ledger")
-    require_current_artifacts([path], consumer=f"node D {label} release")
     before = file_stat_identity(path)
     ledger_sha256 = file_sha256(path)
     quality = pd.read_parquet(path)
@@ -557,13 +557,24 @@ def _validated_release_ledger_unlocked(kind: str) -> pd.DataFrame:
     return ordered
 
 
-def _validated_release_ledger(kind: str) -> pd.DataFrame:
-    """Validate one ledger while excluding a concurrent release publication."""
+@contextmanager
+def _current_release_ledger(kind: str) -> Iterator[pd.DataFrame]:
+    """Lease and validate one ledger through its caller's complete consumption."""
 
     if kind not in {"route", "state"}:
         raise ValueError(f"unsupported node-D ledger kind: {kind}")
+    path = UNIFIED_QUALITY_PANEL if kind == "route" else MARKET_STATE_QUALITY_PANEL
+    label = "directed-route" if kind == "route" else "market-state"
     with serialized_read_installs(_release_lease_paths(kind), allow_missing=True):
-        return _validated_release_ledger_unlocked(kind)
+        with current_artifacts([path], consumer=f"node D {label} release"):
+            yield _validated_release_ledger_unlocked(kind)
+
+
+def _validated_release_ledger(kind: str) -> pd.DataFrame:
+    """Validate one ledger while excluding a concurrent release publication."""
+
+    with _current_release_ledger(kind) as quality:
+        return quality
 
 
 def _release_lease_paths(kind: str) -> tuple[Path, ...]:
@@ -704,8 +715,7 @@ def released_route_partitions(columns: Iterable[str], *, nonempty: bool = False)
     """Return all released days, or only days with positive route-row support."""
 
     selected_columns = _normalized_columns(columns, UNIFIED_COLUMNS)
-    with serialized_read_installs(_release_lease_paths("route"), allow_missing=True):
-        quality = _validated_release_ledger_unlocked("route")
+    with _current_release_ledger("route") as quality:
         ledger_sha256 = str(quality.attrs["ledger_sha256"])
         if nonempty:
             quality = quality.loc[quality["output_rows"].astype(int).gt(0)].copy()
@@ -744,56 +754,56 @@ def released_state_partitions(
     if family not in FAMILY_STREAMS or venue not in FAMILY_STREAMS[family]:
         raise ValueError(f"unsupported canonical state family/venue: {family}/{venue}")
     selected_columns = _normalized_columns(columns, STATE_COLUMN_CONTRACTS[family])
-    quality = _validated_release_ledger("state")
-    ledger_sha256 = str(quality.attrs["ledger_sha256"])
-    selected = quality.loc[
-        quality["family"].astype(str).eq(family)
-        & quality["venue"].astype(str).eq(venue)
-    ].sort_values("day", kind="stable")
-    if family == "tick" and venue == "uniswap_v4":
-        selected = selected.loc[selected["scientific_support"].astype(bool)].copy()
-        if selected.empty:
-            raise RuntimeError("node D V4 state release has no scientifically supported exact-prefix partitions")
-    partitions = tuple(
-        _released_partition(
-            day=str(row.day).zfill(8),
-            path=state_partition_path(family, venue, str(row.day).zfill(8), root=STATE_ROOT),
-            marker_path=state_quality_path(family, venue, str(row.day).zfill(8), root=STATE_ROOT),
-            expected_rows=row.canonical_rows,
-            expected_bytes=row.output_bytes,
-            expected_sha256=row.output_sha256,
-            input_fingerprint=row.input_fingerprint,
+    with _current_release_ledger("state") as quality:
+        ledger_sha256 = str(quality.attrs["ledger_sha256"])
+        selected = quality.loc[
+            quality["family"].astype(str).eq(family)
+            & quality["venue"].astype(str).eq(venue)
+        ].sort_values("day", kind="stable")
+        if family == "tick" and venue == "uniswap_v4":
+            selected = selected.loc[selected["scientific_support"].astype(bool)].copy()
+            if selected.empty:
+                raise RuntimeError("node D V4 state release has no scientifically supported exact-prefix partitions")
+        partitions = tuple(
+            _released_partition(
+                day=str(row.day).zfill(8),
+                path=state_partition_path(family, venue, str(row.day).zfill(8), root=STATE_ROOT),
+                marker_path=state_quality_path(family, venue, str(row.day).zfill(8), root=STATE_ROOT),
+                expected_rows=row.canonical_rows,
+                expected_bytes=row.output_bytes,
+                expected_sha256=row.output_sha256,
+                input_fingerprint=row.input_fingerprint,
+            )
+            for row in selected.itertuples(index=False)
         )
-        for row in selected.itertuples(index=False)
-    )
-    quarantined_pools: tuple[str, ...] = ()
-    quarantine_path: Path | None = None
-    quarantine_sha256: str | None = None
-    if family == "tick" and venue == "uniswap_v4" and not include_quarantined:
-        quarantine_path = V4_STATIC_QUARANTINE_PANEL
-        before = file_stat_identity(quarantine_path)
-        quarantine_sha256 = file_sha256(quarantine_path)
-        quarantined_pools = tuple(
-            sorted(load_v4_static_quarantine(quarantine_path))
+        quarantined_pools: tuple[str, ...] = ()
+        quarantine_path: Path | None = None
+        quarantine_sha256: str | None = None
+        if family == "tick" and venue == "uniswap_v4" and not include_quarantined:
+            quarantine_path = V4_STATIC_QUARANTINE_PANEL
+            before = file_stat_identity(quarantine_path)
+            quarantine_sha256 = file_sha256(quarantine_path)
+            quarantined_pools = tuple(
+                sorted(load_v4_static_quarantine(quarantine_path))
+            )
+            if (
+                before != file_stat_identity(quarantine_path)
+                or file_sha256(quarantine_path) != quarantine_sha256
+            ):
+                raise RuntimeError("V4 static quarantine mutated during release binding")
+        return _released_partition_set(
+            kind="state",
+            columns=selected_columns,
+            ledger_path=MARKET_STATE_QUALITY_PANEL,
+            ledger_sha256=ledger_sha256,
+            partitions=partitions,
+            family=family,
+            venue=venue,
+            include_quarantined=include_quarantined,
+            quarantined_pools=quarantined_pools,
+            quarantine_path=quarantine_path,
+            quarantine_sha256=quarantine_sha256,
         )
-        if (
-            before != file_stat_identity(quarantine_path)
-            or file_sha256(quarantine_path) != quarantine_sha256
-        ):
-            raise RuntimeError("V4 static quarantine mutated during release binding")
-    return _released_partition_set(
-        kind="state",
-        columns=selected_columns,
-        ledger_path=MARKET_STATE_QUALITY_PANEL,
-        ledger_sha256=ledger_sha256,
-        partitions=partitions,
-        family=family,
-        venue=venue,
-        include_quarantined=include_quarantined,
-        quarantined_pools=quarantined_pools,
-        quarantine_path=quarantine_path,
-        quarantine_sha256=quarantine_sha256,
-    )
 
 
 def require_market_state_release() -> None:
@@ -809,19 +819,19 @@ def require_v2_event_source_release() -> None:
 
     try:
         release = resolve_v2_event_source_release()
-        require_current_artifacts(
+        with current_artifacts(
             list(release.artifact_paths),
             consumer="node D V2-family market-state release",
-        )
-        summary, exceptions, certificate = read_v2_event_source_release(release)
-        expected_days = transaction_frontier_audit_days(UNIFIED_QUALITY_PANEL)
-        validate_v2_event_source_certificate(
-            summary,
-            exceptions,
-            certificate,
-            expected_days,
-        )
-        validate_v2_event_source_evidence_bundle(certificate, summary=summary)
+        ):
+            summary, exceptions, certificate = read_v2_event_source_release(release)
+            expected_days = transaction_frontier_audit_days(UNIFIED_QUALITY_PANEL)
+            validate_v2_event_source_certificate(
+                summary,
+                exceptions,
+                certificate,
+                expected_days,
+            )
+            validate_v2_event_source_evidence_bundle(certificate, summary=summary)
     except (FileNotFoundError, KeyError, OSError, RuntimeError, TypeError, ValueError) as error:
         raise RuntimeError(
             f"node D V2-family event-source certificate failed: {error}"
@@ -833,24 +843,24 @@ def require_v3_event_source_release() -> None:
 
     try:
         release = resolve_v3_event_source_release()
-        require_current_artifacts(
+        with current_artifacts(
             list(release.artifact_paths),
             consumer="node D V3 market-state release",
-        )
-        summary, exceptions, quarantine, certificate = read_v3_event_source_release(
-            release
-        )
-        expected_days = v3_audit_days(UNIFIED_QUALITY_PANEL)
-        validate_v3_event_source_certificate(
-            summary,
-            exceptions,
-            quarantine,
-            certificate,
-            expected_days,
-        )
-        validate_v3_event_source_evidence_bundle(
-            certificate, summary=summary, quarantine=quarantine
-        )
+        ):
+            summary, exceptions, quarantine, certificate = read_v3_event_source_release(
+                release
+            )
+            expected_days = v3_audit_days(UNIFIED_QUALITY_PANEL)
+            validate_v3_event_source_certificate(
+                summary,
+                exceptions,
+                quarantine,
+                certificate,
+                expected_days,
+            )
+            validate_v3_event_source_evidence_bundle(
+                certificate, summary=summary, quarantine=quarantine
+            )
     except (FileNotFoundError, KeyError, OSError, RuntimeError, TypeError, ValueError) as error:
         raise RuntimeError(
             f"node D V3 event-source certificate failed: {error}"

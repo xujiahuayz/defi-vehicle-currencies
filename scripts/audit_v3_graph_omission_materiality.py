@@ -38,7 +38,7 @@ from ddvc.data_release import released_route_partitions, require_v2_event_source
 from ddvc.fetch.pool_daily import POOL_IDENTITY_STATIC_SNAPSHOTS
 from ddvc.fetch.sources import get_source
 from ddvc.paths import RAW_MARKET_DATA_LOCK, TOKEN_PRICE_DAILY_PANEL, V2_AUDITED_TOKEN_DECIMALS_REGISTRY
-from ddvc.provenance import require_current_artifacts
+from ddvc.provenance import current_artifacts
 from ddvc.quoter import canonical_json_sha256
 from ddvc.realised import LINEAR_ROUTE_COLUMNS
 from ddvc.release_calendar import select_transaction_frontier_audit_days
@@ -96,6 +96,14 @@ def _parse_args() -> argparse.Namespace:
 
 
 def _audit_and_publish(args: argparse.Namespace) -> int:
+    decimals_path = args.data_root / "processed" / V2_AUDITED_TOKEN_DECIMALS_REGISTRY.name
+    with current_artifacts(
+        [decimals_path], consumer="V3 omission materiality token decimals"
+    ):
+        return _audit_and_publish_current(args)
+
+
+def _audit_and_publish_current(args: argparse.Namespace) -> int:
     """Read, recertify and publish the omission bound under one raw lease."""
 
     root = args.data_root
@@ -164,7 +172,6 @@ def _audit_and_publish(args: argparse.Namespace) -> int:
     registry["vehicle_pair"] = registry["token0"].isin(vehicle_tokens) | registry["token1"].isin(vehicle_tokens)
     registry["stable_pair"] = registry["token0"].isin(stable_tokens) | registry["token1"].isin(stable_tokens)
     require_v2_event_source_release()
-    require_current_artifacts([decimals_path], consumer="V3 omission materiality token decimals")
     decimals_state = file_stat_identity(decimals_path)
     decimals_file_sha256 = file_sha256(decimals_path)
     token_decimals, token_decimals_registry = validate_token_decimals_registry(decimals_path)

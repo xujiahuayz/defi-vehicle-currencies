@@ -5,6 +5,7 @@ from __future__ import annotations
 
 import argparse
 import json
+from contextlib import nullcontext
 from datetime import datetime
 from pathlib import Path
 from tempfile import TemporaryDirectory
@@ -36,7 +37,7 @@ from ddvc.calendar import RESEARCH_SAMPLE_END, RESEARCH_SAMPLE_START, calendar_d
 from ddvc.d3_stage_registry import D3_BUILD_STAGES
 from ddvc.fetch.raw import write_json
 from ddvc.paths import DATA_DIR, REPO_ROOT
-from ddvc.provenance import cache_key, install_stamped_artifact, prepare_stamp, require_current_artifacts, sidecar_path, verify
+from ddvc.provenance import cache_key, current_artifacts, install_stamped_artifact, prepare_stamp, sidecar_path, verify
 from ddvc.release_calendar import released_route_days
 from ddvc.route_cost import MAIN_ROUTE_COST_SPEC, QUOTE_CELL_KEYS
 from ddvc.runtime import exclusive_job, staged_output
@@ -887,18 +888,22 @@ def main() -> int:
     parser.add_argument("--cache-root", type=Path, default=CACHE_ROOT)
     args = parser.parse_args()
     _assert_sole_materializer()
-    if args.source == SOURCE and args.calendar is None:
-        require_current_artifacts([SOURCE], consumer="dominance-cost D3 materializer")
-    with exclusive_job(LOCK, job="pairwise dominance-cost D3 materialization"):
-        results = build_panel(
-            args.source,
-            args.calendar,
-            pointer_path=args.release,
-            cache_root=args.cache_root,
-            threads=args.threads,
-            memory_limit=args.memory_limit,
-            max_temp_directory_size=args.max_temp_directory_size,
-        )
+    lease = (
+        current_artifacts([SOURCE], consumer="dominance-cost D3 materializer")
+        if args.source == SOURCE and args.calendar is None
+        else nullcontext()
+    )
+    with lease:
+        with exclusive_job(LOCK, job="pairwise dominance-cost D3 materialization"):
+            results = build_panel(
+                args.source,
+                args.calendar,
+                pointer_path=args.release,
+                cache_root=args.cache_root,
+                threads=args.threads,
+                memory_limit=args.memory_limit,
+                max_temp_directory_size=args.max_temp_directory_size,
+            )
     print(
         f"validated {results['source_rows']:,} source rows; wrote {results['panel_rows']:,} supported pairs and {results['support_rows']:,} support strata from {results['attempted_pairs']:,} pair attempts"
     )

@@ -5,6 +5,7 @@ from __future__ import annotations
 import os
 import re
 from collections.abc import Mapping, Sequence
+from contextlib import contextmanager
 from dataclasses import dataclass
 from pathlib import Path
 
@@ -13,7 +14,7 @@ import pandas as pd
 from ddvc.analysis_release import resolve_analysis_release, resolve_repo_path
 from ddvc.model_registry import FITTED_MODEL_ARTIFACT_ROLES, MODEL_RUN_ARTIFACT_ROLES
 from ddvc.paths import REPO_ROOT
-from ddvc.provenance import require_current_artifacts
+from ddvc.provenance import current_artifacts
 from ddvc.tables import write_exhibit
 
 
@@ -66,14 +67,15 @@ def model_artifact_context(
     )
 
 
+@contextmanager
 def require_released_model_inputs(
     context: ModelArtifactContext,
     inputs: Sequence[str | Path],
     *,
     root: Path = REPO_ROOT,
     consumer: str,
-) -> list[Path]:
-    """Require every model input to be an exact, current member of the bound D3 release."""
+):
+    """Lease every model input as an exact, current member of the D3 release."""
 
     resolved_root = root.resolve()
     resolved_inputs: list[Path] = []
@@ -96,8 +98,8 @@ def require_released_model_inputs(
     missing = sorted(set(relative_inputs) - context.d3_input_relatives)
     if missing:
         raise ValueError(f"{consumer} input is outside the bound D3 release: {missing}")
-    require_current_artifacts(resolved_inputs, consumer=consumer)
-    return resolved_inputs
+    with current_artifacts(resolved_inputs, consumer=consumer):
+        yield resolved_inputs
 
 
 def _spec_token(value: object) -> str:

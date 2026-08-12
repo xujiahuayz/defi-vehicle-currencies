@@ -13,7 +13,7 @@ from ddvc.paths import (
     DATA_DIR,
     LP_LIQUIDITY_FLOW_DAILY,
 )
-from ddvc.provenance import require_current_artifacts
+from ddvc.provenance import current_artifacts
 from ddvc.tables import write_panel
 
 
@@ -31,15 +31,19 @@ REGRESSORS = (
 def daily_liquidity_flow_panel() -> pd.DataFrame:
     """Load the canonical candidate-day flow panel without a capital-stock proxy."""
 
-    require_current_artifacts(
-        [LP_LIQUIDITY_FLOW_DAILY, BRIDGE_PANEL],
-        consumer="LP supply-flow estimator",
-    )
     panel = pd.read_parquet(LP_LIQUIDITY_FLOW_DAILY)
     return panel.rename(columns={"day": "date", "candidate": "token"})
 
 
 def run() -> pd.DataFrame:
+    with current_artifacts(
+        [LP_LIQUIDITY_FLOW_DAILY, BRIDGE_PANEL],
+        consumer="LP supply-flow estimator",
+    ):
+        return _run_current_inputs()
+
+
+def _run_current_inputs() -> pd.DataFrame:
     panel = daily_liquidity_flow_panel()
     vehicle = pd.read_parquet(
         BRIDGE_PANEL,

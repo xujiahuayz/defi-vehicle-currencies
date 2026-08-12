@@ -88,58 +88,58 @@ def run_vehicle_transition(
     """Write green support then fitted output, or only red support and exit two."""
 
     context = model_artifact_context(root=root, environment=environment)
-    inputs = require_released_model_inputs(
+    with require_released_model_inputs(
         context,
         [intermediation_path],
         root=root,
         consumer="E0 vehicle-transition runner",
-    )
-    intermediation = pd.read_parquet(intermediation_path)
-    support = vehicle_transition_support_geometry(
-        intermediation,
-        baseline_year=BASELINE_YEAR,
-        comparison_year=COMPARISON_YEAR,
-        minimum_endpoint_days=minimum_endpoint_days,
-    )
-    support["family"] = COMPONENT_FAMILY
-    write_model_exhibit(
-        support,
-        support_output,
-        role="support",
-        context=context,
-        code_sources=CODE_SOURCES,
-        inputs=inputs,
-        notes="incomplete E0 smoke component: pre-fit support for the exact intermediation contrasts only",
-    )
-    if bool(support["support_exit_review_required"].astype(bool).any()):
-        return 2
-    estimates = vehicle_transition_tests(
-        intermediation,
-        baseline_year=BASELINE_YEAR,
-        comparison_year=COMPARISON_YEAR,
-        hac_lag=HAC_LAG,
-    )
-    required_finite = ["change", "hac_standard_error", "t_statistic", "p_value", "p_value_holm"]
-    numeric = estimates[required_finite].apply(pd.to_numeric, errors="coerce")
-    if len(estimates) != VEHICLE_TRANSITION_SPECIFICATIONS or not np.isfinite(numeric).all().all():
-        raise ValueError("vehicle-transition fitted perimeter is incomplete or nonfinite")
-    estimates.insert(0, "family", COMPONENT_FAMILY)
-    estimates = attach_spec_ids(
-        estimates,
-        prefix="vehicle_transition_e0_smoke",
-        columns=SPEC_ID_COLUMNS,
-    )
-    if sorted(estimates["spec_id"].tolist()) != expected_spec_ids():
-        raise ValueError("vehicle-transition fitted spec_ids differ from the declared perimeter")
-    write_model_exhibit(
-        estimates,
-        estimate_output,
-        role="result",
-        context=context,
-        code_sources=CODE_SOURCES,
-        inputs=inputs,
-        notes="incomplete E0 smoke component: native-to-stable share changes on exact two-leg routing strata with daily HAC inference",
-    )
+    ) as inputs:
+        intermediation = pd.read_parquet(intermediation_path)
+        support = vehicle_transition_support_geometry(
+            intermediation,
+            baseline_year=BASELINE_YEAR,
+            comparison_year=COMPARISON_YEAR,
+            minimum_endpoint_days=minimum_endpoint_days,
+        )
+        support["family"] = COMPONENT_FAMILY
+        write_model_exhibit(
+            support,
+            support_output,
+            role="support",
+            context=context,
+            code_sources=CODE_SOURCES,
+            inputs=inputs,
+            notes="incomplete E0 smoke component: pre-fit support for the exact intermediation contrasts only",
+        )
+        if bool(support["support_exit_review_required"].astype(bool).any()):
+            return 2
+        estimates = vehicle_transition_tests(
+            intermediation,
+            baseline_year=BASELINE_YEAR,
+            comparison_year=COMPARISON_YEAR,
+            hac_lag=HAC_LAG,
+        )
+        required_finite = ["change", "hac_standard_error", "t_statistic", "p_value", "p_value_holm"]
+        numeric = estimates[required_finite].apply(pd.to_numeric, errors="coerce")
+        if len(estimates) != VEHICLE_TRANSITION_SPECIFICATIONS or not np.isfinite(numeric).all().all():
+            raise ValueError("vehicle-transition fitted perimeter is incomplete or nonfinite")
+        estimates.insert(0, "family", COMPONENT_FAMILY)
+        estimates = attach_spec_ids(
+            estimates,
+            prefix="vehicle_transition_e0_smoke",
+            columns=SPEC_ID_COLUMNS,
+        )
+        if sorted(estimates["spec_id"].tolist()) != expected_spec_ids():
+            raise ValueError("vehicle-transition fitted spec_ids differ from the declared perimeter")
+        write_model_exhibit(
+            estimates,
+            estimate_output,
+            role="result",
+            context=context,
+            code_sources=CODE_SOURCES,
+            inputs=inputs,
+            notes="incomplete E0 smoke component: native-to-stable share changes on exact two-leg routing strata with daily HAC inference",
+        )
     return 0
 
 

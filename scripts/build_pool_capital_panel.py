@@ -61,7 +61,7 @@ from ddvc.paths import (
     TOKEN_PRICE_DAILY_PANEL,
     V2_AUDITED_TOKEN_DECIMALS_REGISTRY,
 )
-from ddvc.provenance import code_fingerprint, require_current_artifacts, sidecar_path
+from ddvc.provenance import code_fingerprint, current_artifacts, sidecar_path
 from ddvc.runtime import atomic_output, bounded_workers, exclusive_job, interruptible_process_pool
 from ddvc.state_data import CP_COLUMNS
 from ddvc.token_decimals import validate_token_decimals_registry
@@ -1087,14 +1087,10 @@ def publish_shards(
         )
 
 
-def main(argv: list[str] | None = None) -> int:
+def _main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--workers", type=int, default=8)
     args = parser.parse_args(argv)
-    require_current_artifacts(
-        [TOKEN_PRICE_DAILY_PANEL, V2_AUDITED_TOKEN_DECIMALS_REGISTRY],
-        consumer="released V2 capital materializer",
-    )
     releases = {
         venue: certified_cp_state_stream(
             venue,
@@ -1164,6 +1160,14 @@ def main(argv: list[str] | None = None) -> int:
     rows = release.manifest["artifacts"]
     print(f"pool capital release {release.generation_id}: {rows['pool']['rows']:,} pool rows; {rows['candidate']['rows']:,} candidate rows; {rows['rejection']['rows']:,} quarantined rows")
     return 0
+
+
+def main(argv: list[str] | None = None) -> int:
+    with current_artifacts(
+        [TOKEN_PRICE_DAILY_PANEL, V2_AUDITED_TOKEN_DECIMALS_REGISTRY],
+        consumer="released V2 capital materializer",
+    ):
+        return _main(argv)
 
 
 if __name__ == "__main__":

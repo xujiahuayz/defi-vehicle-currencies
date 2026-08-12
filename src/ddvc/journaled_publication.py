@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 from collections.abc import Callable, Mapping
+from dataclasses import dataclass
 import hashlib
 import json
 import os
@@ -18,6 +19,14 @@ JOURNAL = "journal.json"
 PREPARED = "prepared"
 COMMITTED = "committed"
 ROLLED_BACK = "rolled_back"
+
+
+@dataclass(frozen=True)
+class PublicationRecovery:
+    """Recovery outcome and immutable metadata from committed publications."""
+
+    recovered: int
+    committed_metadata: tuple[dict[str, object], ...]
 
 
 def _fsync_file(path: Path) -> None:
@@ -48,10 +57,14 @@ def _identity(path: Path) -> dict[str, object]:
         for child in sorted(path.rglob("*")):
             if child.is_symlink() or (not child.is_file() and not child.is_dir()):
                 raise ValueError(f"publication target has an unsupported entry: {child}")
-            if child.is_file():
+            relative = child.relative_to(path).as_posix()
+            if child.is_dir():
+                entries.append({"path": relative, "kind": "directory"})
+            elif child.is_file():
                 entries.append(
                     {
-                        "path": child.relative_to(path).as_posix(),
+                        "path": relative,
+                        "kind": "file",
                         "sha256": file_sha256(child),
                     }
                 )
@@ -69,6 +82,26 @@ def _durable_replace(source: Path, target: Path) -> None:
     _fsync_directory(target_parent)
     if source_parent != target_parent:
         _fsync_directory(source_parent)
+
+
+def _fsync_tree(path: Path) -> None:
+    """Durably flush every staged file and directory before PREPARED."""
+
+    if path.is_file():
+        _fsync_file(path)
+        return
+    if not path.is_dir() or path.is_symlink():
+        raise ValueError(f"publication stage has an unsupported type: {path}")
+    directories = [path]
+    for child in sorted(path.rglob("*")):
+        if child.is_symlink() or (not child.is_file() and not child.is_dir()):
+            raise ValueError(f"publication stage has an unsupported entry: {child}")
+        if child.is_file():
+            _fsync_file(child)
+        else:
+            directories.append(child)
+    for directory in sorted(directories, key=lambda item: len(item.parts), reverse=True):
+        _fsync_directory(directory)
 
 
 def _write_journal(stage: Path, payload: Mapping[str, object]) -> None:
@@ -94,6 +127,7 @@ def _read_journal(stage: Path) -> dict[str, object]:
         or not isinstance(payload.get("targets"), dict)
         or not isinstance(payload.get("original_identities"), dict)
         or not isinstance(payload.get("published_identities"), dict)
+        or not isinstance(payload.get("metadata"), dict)
     ):
         raise RuntimeError(f"publication journal is invalid: {stage}")
     return payload
@@ -209,14 +243,18 @@ def _stage_prefix(targets: Mapping[str, Path]) -> str:
     return f".ddvc-publish-{hashlib.sha256(perimeter).hexdigest()[:24]}-"
 
 
-def _recover_journaled_publications_unlocked(targets: Mapping[str, Path]) -> int:
+def _recover_journaled_publications_unlocked(
+    targets: Mapping[str, Path], *, journal_root: Path
+) -> PublicationRecovery:
     """Recover prepared rollbacks and finish committed cleanup for one perimeter."""
 
     if not targets:
         raise ValueError("journaled publication requires at least one target")
     selected = {str(name): Path(path) for name, path in targets.items()}
-    stage_parent = next(iter(selected.values())).parent
+    stage_parent = Path(journal_root)
+    stage_parent.mkdir(parents=True, exist_ok=True)
     recovered = 0
+    committed_metadata: list[dict[str, object]] = []
     for stage in sorted(stage_parent.glob(f"{_stage_prefix(selected)}*")):
         if not stage.is_dir():
             continue
@@ -246,27 +284,34 @@ def _recover_journaled_publications_unlocked(targets: Mapping[str, Path]) -> int
             live = original
         elif state == COMMITTED:
             live = published
+            committed_metadata.append(dict(journal["metadata"]))
         else:
             live = original
         _finish_cleanup(stage, records, live_identities=live)
         recovered += 1
-    return recovered
+    return PublicationRecovery(recovered, tuple(committed_metadata))
 
 
-def recover_journaled_publications(targets: Mapping[str, Path]) -> int:
+def recover_journaled_publications(
+    targets: Mapping[str, Path], *, journal_root: Path
+) -> PublicationRecovery:
     """Recover one perimeter while excluding every reader and writer."""
 
     selected = {str(name): Path(path) for name, path in targets.items()}
     if not selected:
         raise ValueError("journaled publication requires at least one target")
     with serialized_output_installs(selected.values()):
-        return _recover_journaled_publications_unlocked(selected)
+        return _recover_journaled_publications_unlocked(
+            selected, journal_root=journal_root
+        )
 
 
 def _publish_journaled_bundle_unlocked(
     *,
     targets: Mapping[str, Path],
     staged: Mapping[str, Path],
+    journal_root: Path,
+    metadata: Mapping[str, object] | None = None,
     validate_live: Callable[[], None] | None = None,
 ) -> None:
     """Publish a complete fixed bundle and preserve recovery state on failure.
@@ -279,12 +324,16 @@ def _publish_journaled_bundle_unlocked(
     selected_staged = {str(name): Path(path) for name, path in staged.items()}
     if not selected_targets or set(selected_targets) != set(selected_staged):
         raise ValueError("journaled publication staged perimeter differs from targets")
-    _recover_journaled_publications_unlocked(selected_targets)
+    _recover_journaled_publications_unlocked(
+        selected_targets, journal_root=journal_root
+    )
     for parent in {path.parent for path in selected_targets.values()}:
         if not parent.exists():
             parent.mkdir(parents=True, exist_ok=True)
             _fsync_directory(parent.parent)
-    stage_parent = next(iter(selected_targets.values())).parent
+    stage_parent = Path(journal_root)
+    stage_parent.mkdir(parents=True, exist_ok=True)
+    _fsync_directory(stage_parent.parent)
     stage = Path(
         tempfile.mkdtemp(dir=stage_parent, prefix=_stage_prefix(selected_targets))
     )
@@ -298,8 +347,7 @@ def _publish_journaled_bundle_unlocked(
             if not source.is_file() and not source.is_dir():
                 raise FileNotFoundError(f"staged publication source is absent: {source}")
             _durable_replace(source, new)
-            if new.is_file():
-                _fsync_file(new)
+            _fsync_tree(new)
         _fsync_directory(stage / "new")
         original = {
             name: _identity(target) for name, target, _new, _backup in records
@@ -314,6 +362,7 @@ def _publish_journaled_bundle_unlocked(
             },
             "original_identities": original,
             "published_identities": published,
+            "metadata": dict(metadata or {}),
         }
         _write_journal(stage, journal)
         journal_written = True
@@ -351,6 +400,8 @@ def publish_journaled_bundle(
     *,
     targets: Mapping[str, Path],
     staged: Mapping[str, Path],
+    journal_root: Path,
+    metadata: Mapping[str, object] | None = None,
     validate_live: Callable[[], None] | None = None,
 ) -> None:
     """Publish a fixed bundle under one exclusive target perimeter."""
@@ -362,5 +413,7 @@ def publish_journaled_bundle(
         _publish_journaled_bundle_unlocked(
             targets=selected,
             staged=staged,
+            journal_root=journal_root,
+            metadata=metadata,
             validate_live=validate_live,
         )

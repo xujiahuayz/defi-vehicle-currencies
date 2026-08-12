@@ -35,7 +35,7 @@ from ddvc.analysis.transaction_frontier import (
 from ddvc.data_release import require_node_d_release
 from ddvc.frontier_release import current_frontier_release, resolve_frontier_release
 from ddvc.paths import DATA_DIR
-from ddvc.provenance import require_current_artifacts, stamp
+from ddvc.provenance import current_artifacts, stamp
 from ddvc.runtime import atomic_output, exclusive_job
 
 
@@ -497,19 +497,19 @@ def main() -> int:
     source = frontier_release.artifacts["panel"]
     support = frontier_release.artifacts["support"]
     with current_frontier_release(frontier_release):
-        require_current_artifacts(
+        with current_artifacts(
             frontier_release.artifacts.values(),
             consumer="routing-maturation D3 materializer",
-        )
-        results = build_panels(
-            source,
-            support,
-            CELL_DAY,
-            TRANSITION,
-            EXACT_HORIZONS,
-            memory_limit=args.memory_limit,
-            threads=args.threads,
-        )
+        ):
+            results = build_panels(
+                source,
+                support,
+                CELL_DAY,
+                TRANSITION,
+                EXACT_HORIZONS,
+                memory_limit=args.memory_limit,
+                threads=args.threads,
+            )
         inputs = list(frontier_release.lineage_paths)
         stamp(
             CELL_DAY,

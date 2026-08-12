@@ -18,7 +18,7 @@ import pyarrow.parquet as pq
 from ddvc.fetch.raw import write_json
 from ddvc.panel_assembly import assemble_parquet_shards
 from ddvc.paths import DATA_DIR, SHARED_RUNTIME_DIR, TOKEN_PRICE_DAILY_PANEL
-from ddvc.provenance import cache_key, require_current_artifacts, stamp
+from ddvc.provenance import cache_key, current_artifacts, stamp
 from ddvc.quoter import rpc_post
 from ddvc.runtime import atomic_output, exclusive_job, interruptible_thread_pool
 from ddvc.v3_inventory import balance_of_calldata, decode_balance_of_result
@@ -203,63 +203,65 @@ def build_audit_sample(
 ) -> int:
     """Lock the validation sample before making any historical RPC request."""
 
-    require_current_artifacts(
+    with current_artifacts(
         [inventory_path, price_path],
         consumer="V3 historical custody-balance audit sample",
-    )
-    table = audit_sample_table(inventory_path, price_path)
-    if table.num_rows == 0:
-        raise RuntimeError("V3 custody-balance audit sample is empty")
-    keys = table.select(["day", "pool"]).to_pandas()
-    if keys.duplicated().any():
-        raise RuntimeError("V3 custody-balance audit sample has duplicate pool-days")
-    with atomic_output(output) as temporary:
-        pq.write_table(table, temporary, compression="snappy")
-    stamp(
-        output,
-        code_sources=CODE_SOURCES,
-        inputs=[inventory_path, price_path],
-        rows=table.num_rows,
-        notes=(
-            "precommitted first/final pool cuts plus one audit date per calendar month; "
-            f"value mass={VALUE_MASS_SHARE:.1%}; minimum value pools/day="
-            f"{MIN_VALUE_POOLS_PER_AUDIT_DAY}; deterministic tail/day="
-            f"{TAIL_POOLS_PER_AUDIT_DAY}; audit dates are validation support, not horizons"
-        ),
-    )
+    ):
+        table = audit_sample_table(inventory_path, price_path)
+        if table.num_rows == 0:
+            raise RuntimeError("V3 custody-balance audit sample is empty")
+        keys = table.select(["day", "pool"]).to_pandas()
+        if keys.duplicated().any():
+            raise RuntimeError("V3 custody-balance audit sample has duplicate pool-days")
+        with atomic_output(output) as temporary:
+            pq.write_table(table, temporary, compression="snappy")
+        stamp(
+            output,
+            code_sources=CODE_SOURCES,
+            inputs=[inventory_path, price_path],
+            rows=table.num_rows,
+            notes=(
+                "precommitted first/final pool cuts plus one audit date per calendar month; "
+                f"value mass={VALUE_MASS_SHARE:.1%}; minimum value pools/day="
+                f"{MIN_VALUE_POOLS_PER_AUDIT_DAY}; deterministic tail/day="
+                f"{TAIL_POOLS_PER_AUDIT_DAY}; audit dates are validation support, not horizons"
+            ),
+        )
     return table.num_rows
 
 
 def balance_calls(sample_path: Path = SAMPLE) -> list[BalanceCall]:
-    require_current_artifacts([sample_path], consumer="V3 historical custody-balance audit")
-    frame = pq.read_table(
-        sample_path,
-        columns=[
-            "day",
-            "day_end_block",
-            "pool",
-            "token0_address",
-            "token1_address",
-            "balance0_raw",
-            "balance1_raw",
-            "sample_reason",
-        ],
-    ).to_pandas()
-    calls: list[BalanceCall] = []
-    for row in frame.itertuples(index=False):
-        for side in (0, 1):
-            calls.append(
-                BalanceCall(
-                    job_id=f"{row.day}:{row.pool}:{side}",
-                    day=str(row.day),
-                    block=int(row.day_end_block),
-                    pool=str(row.pool),
-                    token=str(getattr(row, f"token{side}_address")),
-                    side=side,
-                    expected_raw=str(getattr(row, f"balance{side}_raw")),
-                    sample_reason=str(row.sample_reason),
+    with current_artifacts(
+        [sample_path], consumer="V3 historical custody-balance audit"
+    ):
+        frame = pq.read_table(
+            sample_path,
+            columns=[
+                "day",
+                "day_end_block",
+                "pool",
+                "token0_address",
+                "token1_address",
+                "balance0_raw",
+                "balance1_raw",
+                "sample_reason",
+            ],
+        ).to_pandas()
+        calls: list[BalanceCall] = []
+        for row in frame.itertuples(index=False):
+            for side in (0, 1):
+                calls.append(
+                    BalanceCall(
+                        job_id=f"{row.day}:{row.pool}:{side}",
+                        day=str(row.day),
+                        block=int(row.day_end_block),
+                        pool=str(row.pool),
+                        token=str(getattr(row, f"token{side}_address")),
+                        side=side,
+                        expected_raw=str(getattr(row, f"balance{side}_raw")),
+                        sample_reason=str(row.sample_reason),
+                    )
                 )
-            )
     if len({call.job_id for call in calls}) != len(calls):
         raise RuntimeError("V3 custody-balance audit calls are not unique")
     return calls

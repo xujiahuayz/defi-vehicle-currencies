@@ -187,7 +187,8 @@ class TransactionStateFrontierScriptTests(unittest.TestCase):
                 "scripts.build_transaction_state_frontier.require_node_d_release"
             ) as node_gate,
             patch(
-                "scripts.build_transaction_state_frontier.require_current_artifacts"
+                "scripts.build_transaction_state_frontier.current_artifacts",
+                return_value=nullcontext(),
             ) as artifact_gate,
             patch(
                 "scripts.build_transaction_state_frontier.available_days"
@@ -816,7 +817,10 @@ class TransactionStateFrontierScriptTests(unittest.TestCase):
         with (
             patch("sys.argv", ["build_transaction_state_frontier.py", "--daily-calendar", "--workers", "2"]),
             patch("scripts.build_transaction_state_frontier.require_node_d_release"),
-            patch("scripts.build_transaction_state_frontier.require_current_artifacts"),
+            patch(
+                "scripts.build_transaction_state_frontier.current_artifacts",
+                return_value=nullcontext(),
+            ),
             patch("scripts.build_transaction_state_frontier.available_days", return_value=days),
             patch("scripts.build_transaction_state_frontier.require_full_daily_target_release", return_value=release),
             patch.object(TargetRelease, "content_identity_sha256", new_callable=PropertyMock, return_value="source"),

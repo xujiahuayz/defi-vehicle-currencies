@@ -593,6 +593,7 @@ def install_stamped_artifact(staged: str | Path, artefact: str | Path, prepared_
             publish_journaled_bundle(
                 targets={"payload": target, "sidecar": sidecar},
                 staged={"payload": staged_path, "sidecar": staged_sidecar},
+                journal_root=target.parent / ".ddvc-publication-journals",
                 validate_live=lambda: _require_current_unlocked(target),
             )
     return sidecar
@@ -605,8 +606,9 @@ def recover_stamped_artifact_install(artefact: str | Path) -> int:
     sidecar = sidecar_path(target)
     with serialized_output_installs((target, sidecar)):
         return recover_journaled_publications(
-            {"payload": target, "sidecar": sidecar}
-        )
+            {"payload": target, "sidecar": sidecar},
+            journal_root=target.parent / ".ddvc-publication-journals",
+        ).recovered
 
 
 def stamp(artefact: str | Path, *, code_sources: list[str], inputs: list[str | Path] | None = None, rows: int | None = None, notes: str | None = None, script: str | None = None) -> Path:

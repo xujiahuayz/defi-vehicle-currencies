@@ -20,7 +20,7 @@ from ddvc.liquidity_predictability import (
     validate_lookahead_safe_daily_covariates,
 )
 from ddvc.paths import REPO_ROOT, TOKEN_PRICE_DAILY_PANEL
-from ddvc.provenance import require_current_artifacts
+from ddvc.provenance import current_artifacts
 from ddvc.tables import write_panel
 
 
@@ -56,37 +56,37 @@ def main() -> int:
         threads=args.threads,
         temp_directory=REPO_ROOT / "data" / "interim" / "liquidity_predictability_duckdb",
     )
-    require_current_artifacts([PRICE_INPUT], consumer="liquidity covariate builder")
-    token_prices = pd.read_parquet(PRICE_INPUT)
-    candidate_day = attach_lookahead_safe_daily_covariates(base_candidate_day, token_prices)
-    exact_horizons = build_exact_horizon_panel(candidate_day, HORIZONS)
+    with current_artifacts([PRICE_INPUT], consumer="liquidity covariate builder"):
+        token_prices = pd.read_parquet(PRICE_INPUT)
+        candidate_day = attach_lookahead_safe_daily_covariates(base_candidate_day, token_prices)
+        exact_horizons = build_exact_horizon_panel(candidate_day, HORIZONS)
 
-    def validate_candidate_output(path: Path) -> None:
-        frame = pd.read_parquet(path)
-        validate_candidate_day_panel(frame)
-        validate_lookahead_safe_daily_covariates(base_candidate_day, token_prices, frame)
+        def validate_candidate_output(path: Path) -> None:
+            frame = pd.read_parquet(path)
+            validate_candidate_day_panel(frame)
+            validate_lookahead_safe_daily_covariates(base_candidate_day, token_prices, frame)
 
-    def validate_horizon_output(path: Path) -> None:
-        frame = pd.read_parquet(path)
-        validate_exact_horizon_panel(frame, HORIZONS)
-        validate_exact_horizon_covariates(candidate_day, frame, HORIZONS)
+        def validate_horizon_output(path: Path) -> None:
+            frame = pd.read_parquet(path)
+            validate_exact_horizon_panel(frame, HORIZONS)
+            validate_exact_horizon_covariates(candidate_day, frame, HORIZONS)
 
-    write_panel(
-        candidate_day,
-        CANDIDATE_DAY_OUTPUT,
-        code_sources=CODE_SOURCES,
-        inputs=inputs,
-        notes="fixed five-address candidate-day construction with exact-prior-day price, risk, route, V2 capital, and V3 flow covariates; trailing and pre-shock volatility distinct; support and observed zeros explicit; zero fits",
-        preinstall_validator=validate_candidate_output,
-    )
-    write_panel(
-        exact_horizons,
-        EXACT_HORIZON_OUTPUT,
-        code_sources=CODE_SOURCES,
-        inputs=[*inputs, CANDIDATE_DAY_OUTPUT],
-        notes="exact 1/7/30/120 calendar-date links, origin covariates preserved at every horizon, and complete future V3 flow windows; no row shifts and zero fits",
-        preinstall_validator=validate_horizon_output,
-    )
+        write_panel(
+            candidate_day,
+            CANDIDATE_DAY_OUTPUT,
+            code_sources=CODE_SOURCES,
+            inputs=inputs,
+            notes="fixed five-address candidate-day construction with exact-prior-day price, risk, route, V2 capital, and V3 flow covariates; trailing and pre-shock volatility distinct; support and observed zeros explicit; zero fits",
+            preinstall_validator=validate_candidate_output,
+        )
+        write_panel(
+            exact_horizons,
+            EXACT_HORIZON_OUTPUT,
+            code_sources=CODE_SOURCES,
+            inputs=[*inputs, CANDIDATE_DAY_OUTPUT],
+            notes="exact 1/7/30/120 calendar-date links, origin covariates preserved at every horizon, and complete future V3 flow windows; no row shifts and zero fits",
+            preinstall_validator=validate_horizon_output,
+        )
     print(
         f"candidate-day rows={len(candidate_day):,}; exact-horizon rows={len(exact_horizons):,}; "
         f"calendar={candidate_day.origin_date.min().date()}..{candidate_day.origin_date.max().date()}; "

@@ -17,7 +17,7 @@ from ddvc.ethereum_day_cuts import (
     utc_day_timestamps,
 )
 from ddvc.paths import DATA_DIR, SHARED_RUNTIME_DIR
-from ddvc.provenance import require_current_artifacts, stamp
+from ddvc.provenance import current_artifacts, stamp
 from ddvc.quoter import rpc_post
 from ddvc.runtime import atomic_output, interruptible_thread_pool
 
@@ -185,8 +185,8 @@ def build_day_calendar(*, workers: int = 2) -> tuple[int, int, int]:
 
 
 def load_day_calendar() -> tuple[list[str], list[int]]:
-    require_current_artifacts([CALENDAR], consumer="V3 event-accounted inventory replay")
-    frame = pd.read_parquet(CALENDAR)
+    with current_artifacts([CALENDAR], consumer="V3 event-accounted inventory replay"):
+        frame = pd.read_parquet(CALENDAR)
     days = frame["day"].astype(str).tolist()
     end_blocks = frame["day_end_block"].astype("int64").tolist()
     expected = inventory_calendar_days()
