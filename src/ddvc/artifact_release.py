@@ -209,6 +209,7 @@ def _validated_filenames(filenames: Mapping[str, object]) -> dict[str, str]:
             or Path(filename).name != filename
             or "/" in filename
             or "\\" in filename
+            or "\x00" in filename
         ):
             raise ValueError(
                 f"artifact filename is not a simple basename: {filename!r}"
@@ -236,6 +237,10 @@ _STAGE_POLICY = "ddvc-artifact-release-stage-v1"
 _STAGE_OWNER = "owner.json"
 
 
+def _artifact_stage_cut(_label: str) -> None:
+    """Test hook for process-death cuts in outer-stage setup."""
+
+
 def _pointer_stage_root(pointer_path: Path) -> Path:
     identity = hashlib.sha256(
         str(pointer_path.resolve(strict=False)).encode()
@@ -258,8 +263,19 @@ def _recover_pointer_stage(pointer_path: Path) -> None:
         return
     if root.is_symlink() or not root.is_dir():
         raise RuntimeError(f"artifact release stage has an unsafe type: {root}")
+    owner_path = root / _STAGE_OWNER
+    if not owner_path.exists() and not owner_path.is_symlink():
+        try:
+            root.rmdir()
+        except OSError as error:
+            raise RuntimeError(
+                f"artifact release stage ownership is invalid: {root}"
+            ) from error
+        return
+    if owner_path.is_symlink() or not owner_path.is_file():
+        raise RuntimeError(f"artifact release stage ownership is invalid: {root}")
     try:
-        owner = json.loads((root / _STAGE_OWNER).read_text(encoding="utf-8"))
+        owner = json.loads(owner_path.read_text(encoding="utf-8"))
     except (OSError, json.JSONDecodeError) as error:
         raise RuntimeError(f"artifact release stage ownership is invalid: {root}") from error
     if owner != _stage_owner_payload(pointer_path):
@@ -277,6 +293,7 @@ def _pointer_stage(pointer_path: Path):
     created_identity = (root.stat().st_dev, root.stat().st_ino)
     owner_installed = False
     try:
+        _artifact_stage_cut("created")
         write_json(root / _STAGE_OWNER, _stage_owner_payload(pointer_path))
         owner_installed = True
         payload = root / "payload"

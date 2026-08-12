@@ -46,7 +46,15 @@ def _tree_snapshot(root: Path) -> tuple[tuple[str, str, object], ...]:
 
 @pytest.mark.parametrize(
     "filename",
-    ["", ".", "..", "../escape.json", "nested/value.json", "nested\\value.json"],
+    [
+        "",
+        ".",
+        "..",
+        "../escape.json",
+        "nested/value.json",
+        "nested\\value.json",
+        "nul\x00name.json",
+    ],
 )
 @pytest.mark.parametrize("operation", ["publish", "resolve", "generation_paths"])
 def test_invalid_filenames_are_rejected_before_any_mutation(
@@ -874,3 +882,57 @@ def test_pointer_stage_setup_failure_removes_only_the_stage_it_created(
             raise AssertionError("stage setup unexpectedly completed")
 
     assert not artifact_release._pointer_stage_root(pointer).exists()
+
+
+def test_real_sigkill_before_stage_owner_is_recovered_by_ordinary_retry(
+    tmp_path: Path,
+) -> None:
+    pointer = tmp_path / "release" / "current.json"
+    program = r'''
+import os
+from pathlib import Path
+import signal
+import sys
+
+import ddvc.artifact_release as release
+from ddvc.artifact_release import publish_artifact_release
+from ddvc.fetch.raw import write_json
+
+pointer = Path(sys.argv[1])
+
+def kill_at(label):
+    if label == "created":
+        os.kill(os.getpid(), signal.SIGKILL)
+
+release._artifact_stage_cut = kill_at
+publish_artifact_release(
+    pointer_path=pointer,
+    kind="test_release",
+    schema_version=1,
+    filenames={"rows": "rows.json", "certificate": "certificate.json"},
+    writers={
+        "rows": lambda path: write_json(path, {"value": 7}),
+        "certificate": lambda path: write_json(path, {"status": "pass"}),
+    },
+    row_counts={"rows": 1, "certificate": 1},
+    code_sources=["src/ddvc/artifact_release.py"],
+    inputs=[],
+    notes="pre-owner process-death test",
+    validate_staged=lambda _paths: None,
+)
+'''
+    killed = subprocess.run(
+        [sys.executable, "-c", program, str(pointer)],
+        cwd=Path(__file__).resolve().parents[1],
+        check=False,
+    )
+
+    assert killed.returncode == -signal.SIGKILL
+    stage = artifact_release._pointer_stage_root(pointer)
+    assert stage.is_dir()
+    assert list(stage.iterdir()) == []
+
+    resumed = _publish(pointer, 7)
+
+    assert json.loads(resumed.artifacts["rows"].read_text()) == {"value": 7}
+    assert not stage.exists()
