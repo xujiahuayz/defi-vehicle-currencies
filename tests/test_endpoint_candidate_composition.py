@@ -266,7 +266,8 @@ def test_choice_support_exposes_transaction_multiplicity_and_conditional_values(
             leg("stable-choice", 5, USDC, TGT, amount_usd=50),
         ]
     )
-    support = endpoint_candidate_composition_for_day(routes, "20240102").pair_support.iloc[0]
+    bundle = endpoint_candidate_composition_for_day(routes, "20240102")
+    support = bundle.pair_support.iloc[0]
     assert support["primary_choice_route_count"] == 3
     assert support["native_choice_route_count"] == 2
     assert support["stable_choice_route_count"] == 1
@@ -278,6 +279,16 @@ def test_choice_support_exposes_transaction_multiplicity_and_conditional_values(
     assert support["primary_choice_multi_component_transaction_count"] == 1
     assert support["primary_choice_component_excess_count"] == 1
     assert support["duplicate_choice_transaction_candidate_count"] == 1
+
+    coherent_tamper = bundle.pair_support.copy()
+    coherent_tamper.loc[0, "primary_choice_transaction_count"] = 1
+    coherent_tamper.loc[0, "primary_choice_multi_component_transaction_count"] = 1
+    coherent_tamper.loc[0, "primary_choice_component_excess_count"] = 2
+    coherent_tamper.loc[0, "duplicate_choice_transaction_candidate_count"] = 2
+    with pytest.raises(ValueError, match="component-keyed choice multiplicity"):
+        validate_endpoint_candidate_composition(
+            replace(bundle, pair_support=coherent_tamper)
+        )
 
 
 def test_collision_audit_and_choice_decomposition_fail_closed_on_tamper() -> None:
@@ -325,6 +336,18 @@ def test_collision_audit_and_choice_decomposition_fail_closed_on_tamper() -> Non
     with pytest.raises(ValueError, match="disagrees with collision exclusions"):
         validate_endpoint_candidate_composition(
             replace(bundle, pair_support=bad_collision)
+        )
+
+    bad_day = bundle.pair_support.copy()
+    bad_day.loc[0, "day_unpaired_exclusion_component_count"] += 1
+    with pytest.raises(ValueError, match="unpaired exclusions"):
+        validate_endpoint_candidate_composition(replace(bundle, pair_support=bad_day))
+
+    bad_missing_value = bundle.pair_support.copy()
+    bad_missing_value.loc[0, "day_event_collision_value_missing_component_count"] += 1
+    with pytest.raises(ValueError, match="collision exclusions"):
+        validate_endpoint_candidate_composition(
+            replace(bundle, pair_support=bad_missing_value)
         )
 
 

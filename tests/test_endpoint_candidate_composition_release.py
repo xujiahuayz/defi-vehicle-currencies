@@ -139,8 +139,18 @@ def test_full_perimeter_publishes_one_resolvable_bound_generation(tmp_path: Path
     assert outcome.release is not None
     resolved = resolve_endpoint_candidate_composition_release(pointer)
     assert resolved.generation_id == outcome.release.generation_id
-    assert set(resolved.artifacts) == {"choices", "pair_support", "exclusions"}
-    assert outcome.row_counts == {"choices": 2, "pair_support": 1, "exclusions": 0}
+    assert set(resolved.artifacts) == {
+        "choices",
+        "choice_audit",
+        "pair_support",
+        "exclusions",
+    }
+    assert outcome.row_counts == {
+        "choices": 2,
+        "choice_audit": 2,
+        "pair_support": 1,
+        "exclusions": 0,
+    }
     expected_bindings = {str(path.resolve()) for path in release.provenance_inputs}
     for artifact in resolved.artifacts.values():
         provenance = json.loads(sidecar_path(artifact).read_text(encoding="utf-8"))
@@ -220,7 +230,12 @@ def test_diagnostic_limit_validates_subset_without_creating_pointer(tmp_path: Pa
     )
     assert outcome.days == 1
     assert outcome.release is None
-    assert outcome.row_counts == {"choices": 2, "pair_support": 1, "exclusions": 0}
+    assert outcome.row_counts == {
+        "choices": 2,
+        "choice_audit": 2,
+        "pair_support": 1,
+        "exclusions": 0,
+    }
     assert not pointer.exists()
 
 
@@ -252,6 +267,7 @@ def test_collision_audit_round_trips_through_release_schemas(tmp_path: Path) -> 
         paths[table] = path
     assert validate_endpoint_candidate_composition_paths(paths) == {
         "choices": len(bundle.choices),
+        "choice_audit": len(bundle.choice_audit),
         "pair_support": len(bundle.pair_support),
         "exclusions": len(bundle.exclusions),
     }

@@ -30,9 +30,10 @@ ENDPOINT_CANDIDATE_COMPOSITION_RELEASE = (
     DATA_DIR / "processed" / "endpoint_candidate_composition_release" / "current.json"
 )
 ENDPOINT_CANDIDATE_COMPOSITION_RELEASE_KIND = "endpoint_candidate_composition"
-ENDPOINT_CANDIDATE_COMPOSITION_RELEASE_SCHEMA_VERSION = 2
+ENDPOINT_CANDIDATE_COMPOSITION_RELEASE_SCHEMA_VERSION = 3
 ENDPOINT_CANDIDATE_COMPOSITION_RELEASE_FILENAMES = {
     "choices": "endpoint_candidate_choices.parquet",
+    "choice_audit": "endpoint_candidate_choice_audit.parquet",
     "pair_support": "endpoint_candidate_pair_support.parquet",
     "exclusions": "endpoint_candidate_exclusions.parquet",
 }
@@ -40,7 +41,7 @@ ENDPOINT_CANDIDATE_COMPOSITION_RELEASE_FILENAMES = {
 
 @dataclass(frozen=True)
 class EndpointCandidateCompositionRelease:
-    """One selected and fully validated three-table composition generation."""
+    """One selected and fully validated four-table composition generation."""
 
     bundle: ArtifactRelease
 
@@ -60,13 +61,14 @@ class EndpointCandidateCompositionRelease:
 def read_endpoint_candidate_composition(
     paths: Mapping[str, Path],
 ) -> EndpointCandidateComposition:
-    """Read exactly the three registered Parquet members."""
+    """Read exactly the four registered Parquet members."""
 
     if set(paths) != set(ENDPOINT_CANDIDATE_COMPOSITION_RELEASE_FILENAMES):
         raise ValueError("endpoint-candidate release has an invalid artifact perimeter")
     try:
         bundle = EndpointCandidateComposition(
             choices=pd.read_parquet(paths["choices"]),
+            choice_audit=pd.read_parquet(paths["choice_audit"]),
             pair_support=pd.read_parquet(paths["pair_support"]),
             exclusions=pd.read_parquet(paths["exclusions"]),
         )
@@ -93,6 +95,7 @@ def validate_endpoint_candidate_composition_paths(
             ) from error
     return {
         "choices": len(validated.choices),
+        "choice_audit": len(validated.choice_audit),
         "pair_support": len(validated.pair_support),
         "exclusions": len(validated.exclusions),
     }
@@ -108,11 +111,11 @@ def publish_endpoint_candidate_composition_release(
     preinstall_validator: Callable[[Path], object],
     pointer_path: Path = ENDPOINT_CANDIDATE_COMPOSITION_RELEASE,
 ) -> EndpointCandidateCompositionRelease:
-    """Publish the exact three-table bundle through one marker-last pointer."""
+    """Publish the exact four-table bundle through one marker-last pointer."""
 
     expected = set(ENDPOINT_CANDIDATE_COMPOSITION_RELEASE_FILENAMES)
     if set(writers) != expected or set(row_counts) != expected:
-        raise ValueError("endpoint-candidate publication requires exactly three tables")
+        raise ValueError("endpoint-candidate publication requires exactly four tables")
 
     def validate(paths: Mapping[str, Path]) -> None:
         observed = validate_endpoint_candidate_composition_paths(paths)

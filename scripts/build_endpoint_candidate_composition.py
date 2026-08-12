@@ -22,6 +22,9 @@ from ddvc.data_release import (
 )
 from ddvc.endpoint_candidate_composition import (
     CHOICE_COLUMNS,
+    CHOICE_AUDIT_COLUMNS,
+    CHOICE_AUDIT_INTEGER_COLUMNS,
+    CHOICE_AUDIT_KEYS,
     CHOICE_KEYS,
     COLLISION_AUDIT_INTEGER_COLUMNS,
     COLLISION_AUDIT_VALUE_COLUMNS,
@@ -58,11 +61,13 @@ CODE_SOURCES = [
 ]
 TABLE_COLUMNS = {
     "choices": CHOICE_COLUMNS,
+    "choice_audit": CHOICE_AUDIT_COLUMNS,
     "pair_support": PAIR_SUPPORT_COLUMNS,
     "exclusions": EXCLUSION_COLUMNS,
 }
 TABLE_KEYS = {
     "choices": CHOICE_KEYS,
+    "choice_audit": CHOICE_AUDIT_KEYS,
     "pair_support": PAIR_KEYS,
     "exclusions": EXCLUSION_KEYS,
 }
@@ -72,7 +77,11 @@ VALUE_COLUMNS = (
     | set(PAIR_SUPPORT_VALUE_COLUMNS)
     | set(COLLISION_AUDIT_VALUE_COLUMNS)
 )
-INTEGER_COLUMNS = COUNT_COLUMNS | set(COLLISION_AUDIT_INTEGER_COLUMNS)
+INTEGER_COLUMNS = (
+    COUNT_COLUMNS
+    | set(CHOICE_AUDIT_INTEGER_COLUMNS)
+    | set(COLLISION_AUDIT_INTEGER_COLUMNS)
+)
 DATE_COLUMNS = {
     "date",
     "pair_first_supported_date",

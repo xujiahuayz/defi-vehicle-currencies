@@ -8,7 +8,7 @@
   "d3_certificate": null,
   "exploration_generation": null,
   "exploration_certificate": null,
-  "lock_hash": "1b28ec10a1d809a9ba6746573ed2fc55effacf2cd5705d059f20b5190f883ab2",
+  "lock_hash": "67019a9f4be4e1d6de280fc6af51814795de0357357beea479fc1b713d0f056f",
   "paper_scope": "The making and displacement of vehicle-currency roles in Ethereum decentralised exchange",
   "global_rules": {
     "asset_identity": "canonical contract address; symbols are labels only",
@@ -43,7 +43,7 @@
       "dependent_variable": "stable intermediary episode share within native plus stable",
       "transformation": "level share and percentage-point change",
       "outlier_treatment": "none for counts; canonical endpoint round trips excluded by route definition",
-      "analysis_ready_panel": "D3 publishes one marker-last three-table endpoint-candidate composition generation over the exact released route calendar. The choices table has one ordered-endpoint, date, stable-or-native candidate, integration-scope, and ordered-venue-sequence cell with route counts plus raw, within-2x, and within-20-percent value support. The pair-support table reconciles source components to clean pair classifications and quarantined provider-coordinate collisions, carries unique-transaction and component-multiplicity diagnostics, and reports native and stable route counts plus matched within-20-percent counts and values within the conditional native-plus-stable choice set. These conditional native-plus-stable values are not a strict-value measure of the full market. The exclusions table records every route outside the primary choice object in mutually exclusive reason cells and retains component-keyed collision evidence with count, observed absolute leg-value, time, and venue bounds. The release pointer, not a loose Parquet filename, is the analysis input and must resolve all three provenance-bound tables before estimation.",
+      "analysis_ready_panel": "D3 publishes one marker-last four-table endpoint-candidate composition generation over the exact released route calendar. The choices table has one ordered-endpoint, date, stable-or-native candidate, integration-scope, and ordered-venue-sequence cell with route counts plus raw, within-2x, and within-20-percent value support. The component-keyed choice-audit table independently reconciles every aggregate choice and its transaction multiplicity. The pair-support table reconciles source components to clean pair classifications and quarantined provider-coordinate collisions, carries unique-transaction and component-multiplicity diagnostics, and reports native and stable route counts plus matched within-20-percent counts and values within the conditional native-plus-stable choice set. These conditional native-plus-stable values are not a strict-value measure of the full market. The exclusions table records every route outside the primary choice object in mutually exclusive reason cells and retains component-keyed collision evidence with count, observed absolute leg-value, time, and venue bounds. The release pointer, not a loose Parquet filename, is the analysis input and must resolve all four provenance-bound tables before estimation.",
       "inference": "difference in daily means with 30-day HAC standard error",
       "primary_comparison": "2024 versus 2026",
       "mandatory_alternatives": {

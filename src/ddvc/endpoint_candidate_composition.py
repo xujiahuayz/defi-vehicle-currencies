@@ -61,6 +61,19 @@ CHOICE_COLUMNS = [
     "protocol_sequence",
     *MAGNITUDE_COLUMNS,
 ]
+CHOICE_AUDIT_KEYS = ["date", "tx_hash", "component_id"]
+CHOICE_AUDIT_INTEGER_COLUMNS = ["component_id"]
+CHOICE_AUDIT_COLUMNS = [
+    *CHOICE_AUDIT_KEYS,
+    *CHOICE_KEYS[1:],
+    "candidate_symbol",
+    "candidate_type",
+    "backing_regime",
+    "hop1_venue",
+    "hop2_venue",
+    "protocol_sequence",
+    *MAGNITUDE_COLUMNS,
+]
 PAIR_SUPPORT_COLUMNS = [
     *PAIR_KEYS,
     "day_source_component_count",
@@ -185,9 +198,10 @@ _VERSION_SUFFIX = re.compile(r"_v[0-9]+$")
 
 @dataclass(frozen=True)
 class EndpointCandidateComposition:
-    """Primary choice cells, pair support, and mutually exclusive exclusions."""
+    """Primary choice cells, keyed audit, support, and exclusive exclusions."""
 
     choices: pd.DataFrame
+    choice_audit: pd.DataFrame
     pair_support: pd.DataFrame
     exclusions: pd.DataFrame
 
@@ -195,6 +209,7 @@ class EndpointCandidateComposition:
 def _empty_bundle() -> EndpointCandidateComposition:
     return EndpointCandidateComposition(
         pd.DataFrame(columns=CHOICE_COLUMNS),
+        pd.DataFrame(columns=CHOICE_AUDIT_COLUMNS),
         pd.DataFrame(columns=PAIR_SUPPORT_COLUMNS),
         pd.DataFrame(columns=EXCLUSION_COLUMNS),
     )
@@ -524,7 +539,10 @@ def _component_frame(legs: pd.DataFrame, day: str) -> pd.DataFrame:
     return components
 
 
-def _pair_support_table(components: pd.DataFrame) -> pd.DataFrame:
+def _pair_support_table(
+    components: pd.DataFrame,
+    choice_audit: pd.DataFrame,
+) -> pd.DataFrame:
     eligible = components[components["selection_reason"].isin(PAIR_REASONS)].copy()
     if eligible.empty:
         return pd.DataFrame(columns=PAIR_SUPPORT_COLUMNS)
@@ -566,7 +584,7 @@ def _pair_support_table(components: pd.DataFrame) -> pd.DataFrame:
             primary_choice_transaction_count=("tx_hash", "nunique"),
         )
         tx_multiplicity = (
-            included.groupby([*PAIR_KEYS, "tx_hash"], as_index=False, sort=True)
+            choice_audit.groupby([*PAIR_KEYS, "tx_hash"], as_index=False, sort=True)
             .size()
             .rename(columns={"size": "component_count"})
         )
@@ -575,7 +593,7 @@ def _pair_support_table(components: pd.DataFrame) -> pd.DataFrame:
             primary_choice_component_excess_count=("component_count", lambda values: int((values - 1).sum())),
         )
         duplicate_choice = (
-            included.groupby([*PAIR_KEYS, "tx_hash", "candidate_address"], as_index=False, sort=True)
+            choice_audit.groupby([*PAIR_KEYS, "tx_hash", "candidate_address"], as_index=False, sort=True)
             .size()
             .assign(duplicate_count=lambda frame: (frame["size"] - 1).clip(lower=0))
             .groupby(PAIR_KEYS, as_index=False, sort=True)["duplicate_count"]
@@ -713,6 +731,7 @@ def endpoint_candidate_composition_for_day(legs: pd.DataFrame, day: str) -> Endp
     included = components[components["selection_reason"].eq(INCLUDED)].copy()
     if included.empty:
         choices = pd.DataFrame(columns=CHOICE_COLUMNS)
+        choice_audit = pd.DataFrame(columns=CHOICE_AUDIT_COLUMNS)
     else:
         included["integration_scope"] = np.where(included["hop1_venue"].eq(included["hop2_venue"]), "single_venue", "cross_venue")
         included["venue_sequence"] = included["hop1_venue"] + ">" + included["hop2_venue"]
@@ -720,10 +739,25 @@ def endpoint_candidate_composition_for_day(legs: pd.DataFrame, day: str) -> Endp
         included["backing_regime"] = [backing(address, date) for address, date in zip(included["candidate_address"], included["date"], strict=True)]
         identity = [*CHOICE_KEYS, "candidate_symbol", "candidate_type", "backing_regime", "hop1_venue", "hop2_venue", "protocol_sequence"]
         choices = _summarize(included, identity)[CHOICE_COLUMNS]
+        audit_identity = [
+            "date",
+            "tx_hash",
+            "component_id",
+            *CHOICE_KEYS[1:],
+            "candidate_symbol",
+            "candidate_type",
+            "backing_regime",
+            "hop1_venue",
+            "hop2_venue",
+            "protocol_sequence",
+        ]
+        choice_audit = _summarize(included, audit_identity)[CHOICE_AUDIT_COLUMNS]
 
-    pair_support = _pair_support_table(components)
+    pair_support = _pair_support_table(components, choice_audit)
     exclusions = _exclusion_table(components)
-    return validate_endpoint_candidate_composition(EndpointCandidateComposition(choices, pair_support, exclusions))
+    return validate_endpoint_candidate_composition(
+        EndpointCandidateComposition(choices, choice_audit, pair_support, exclusions)
+    )
 
 
 def finalize_endpoint_candidate_composition(daily: Iterable[EndpointCandidateComposition]) -> EndpointCandidateComposition:
@@ -732,6 +766,7 @@ def finalize_endpoint_candidate_composition(daily: Iterable[EndpointCandidateCom
     if not bundles:
         return _empty_bundle()
     choices = pd.concat([bundle.choices for bundle in bundles], ignore_index=True)
+    choice_audit = pd.concat([bundle.choice_audit for bundle in bundles], ignore_index=True)
     pair_support = pd.concat([bundle.pair_support for bundle in bundles], ignore_index=True)
     exclusions = pd.concat([bundle.exclusions for bundle in bundles], ignore_index=True)
     if not pair_support.empty:
@@ -740,7 +775,9 @@ def finalize_endpoint_candidate_composition(daily: Iterable[EndpointCandidateCom
         pair_support["pair_last_supported_date"] = dates.transform("max")
         pair_support["pair_entry_on_day"] = pair_support["date"].eq(pair_support["pair_first_supported_date"])
         pair_support["pair_last_observed_on_day"] = pair_support["date"].eq(pair_support["pair_last_supported_date"])
-    return validate_endpoint_candidate_composition(EndpointCandidateComposition(choices, pair_support, exclusions))
+    return validate_endpoint_candidate_composition(
+        EndpointCandidateComposition(choices, choice_audit, pair_support, exclusions)
+    )
 
 
 def _require_schema(frame: pd.DataFrame, columns: list[str], label: str) -> pd.DataFrame:
@@ -784,9 +821,15 @@ def _validate_magnitudes(frame: pd.DataFrame, *, label: str) -> None:
 def validate_endpoint_candidate_composition(bundle: EndpointCandidateComposition) -> EndpointCandidateComposition:
     """Validate deterministic identities, accounting, and nested value support."""
     choices = _require_schema(bundle.choices, CHOICE_COLUMNS, "vehicle choices")
+    choice_audit = _require_schema(
+        bundle.choice_audit,
+        CHOICE_AUDIT_COLUMNS,
+        "vehicle choice audit",
+    )
     pair_support = _require_schema(bundle.pair_support, PAIR_SUPPORT_COLUMNS, "vehicle pair support")
     exclusions = _require_schema(bundle.exclusions, EXCLUSION_COLUMNS, "vehicle exclusions")
     _validate_magnitudes(choices, label="vehicle choices")
+    _validate_magnitudes(choice_audit, label="vehicle choice audit")
     _validate_magnitudes(exclusions, label="vehicle exclusions")
     if not exclusions.empty and not exclusions["exclusion_reason"].isin(EXCLUSION_REASONS).all():
         raise ValueError("vehicle exclusions contain an unknown reason")
@@ -843,6 +886,39 @@ def validate_endpoint_candidate_composition(bundle: EndpointCandidateComposition
         expected_backing = pd.Series([backing(address, date) for address, date in zip(choices["candidate_address"], choices["date"], strict=True)], index=choices.index)
         if not choices["backing_regime"].eq(expected_backing).all():
             raise ValueError("vehicle choices disagree with dated backing identity")
+    if not choice_audit.empty:
+        if choice_audit.duplicated(CHOICE_AUDIT_KEYS).any():
+            raise ValueError("vehicle choice audit contains duplicate component keys")
+        if not choice_audit["route_count"].eq(1).all():
+            raise ValueError("vehicle choice audit contains non-unit components")
+        observed_choices = (
+            choice_audit.groupby(
+                [
+                    *CHOICE_KEYS,
+                    "candidate_symbol",
+                    "candidate_type",
+                    "backing_regime",
+                    "hop1_venue",
+                    "hop2_venue",
+                    "protocol_sequence",
+                ],
+                as_index=False,
+                sort=True,
+            )[MAGNITUDE_COLUMNS]
+            .sum()
+            .sort_values(CHOICE_KEYS, kind="stable")
+            .reset_index(drop=True)[CHOICE_COLUMNS]
+        )
+        try:
+            pd.testing.assert_frame_equal(
+                choices.sort_values(CHOICE_KEYS, kind="stable").reset_index(drop=True),
+                observed_choices,
+                check_dtype=False,
+            )
+        except AssertionError as error:
+            raise ValueError("vehicle choices disagree with component-keyed audit") from error
+    elif not choices.empty:
+        raise ValueError("vehicle choices lack component-keyed audit")
     if not pair_support.empty:
         if pair_support.duplicated(PAIR_KEYS).any() or not pair_support["market_route_count"].gt(0).all():
             raise ValueError("vehicle pair support has invalid keys or support")
@@ -939,6 +1015,78 @@ def validate_endpoint_candidate_composition(bundle: EndpointCandidateComposition
             & pair_support["duplicate_choice_transaction_candidate_count"].le(pair_support["primary_choice_component_excess_count"])
         ).all():
             raise ValueError("vehicle pair support contains inconsistent choice multiplicity")
+        audit_transactions = (
+            choice_audit.groupby([*PAIR_KEYS, "tx_hash"], as_index=False, sort=True)
+            .size()
+            .rename(columns={"size": "component_count"})
+            if not choice_audit.empty
+            else pd.DataFrame(columns=[*PAIR_KEYS, "tx_hash", "component_count"])
+        )
+        audit_multiplicity = (
+            audit_transactions.groupby(PAIR_KEYS, as_index=False, sort=True).agg(
+                observed_choice_transaction_count=("tx_hash", "nunique"),
+                observed_multi_component_transaction_count=("component_count", lambda values: int(values.gt(1).sum())),
+                observed_component_excess_count=("component_count", lambda values: int((values - 1).sum())),
+            )
+            if not audit_transactions.empty
+            else pd.DataFrame(
+                columns=[
+                    *PAIR_KEYS,
+                    "observed_choice_transaction_count",
+                    "observed_multi_component_transaction_count",
+                    "observed_component_excess_count",
+                ]
+            )
+        )
+        audit_duplicate_candidate = (
+            choice_audit.groupby(
+                [*PAIR_KEYS, "tx_hash", "candidate_address"],
+                as_index=False,
+                sort=True,
+            )
+            .size()
+            .assign(duplicate_count=lambda frame: (frame["size"] - 1).clip(lower=0))
+            .groupby(PAIR_KEYS, as_index=False, sort=True)["duplicate_count"]
+            .sum()
+            .rename(columns={"duplicate_count": "observed_duplicate_choice_count"})
+            if not choice_audit.empty
+            else pd.DataFrame(
+                columns=[*PAIR_KEYS, "observed_duplicate_choice_count"]
+            )
+        )
+        multiplicity_reconciled = pair_support.merge(
+            audit_multiplicity,
+            on=PAIR_KEYS,
+            how="left",
+            validate="one_to_one",
+        ).merge(
+            audit_duplicate_candidate,
+            on=PAIR_KEYS,
+            how="left",
+            validate="one_to_one",
+        )
+        multiplicity_pairs = (
+            ("primary_choice_transaction_count", "observed_choice_transaction_count"),
+            (
+                "primary_choice_multi_component_transaction_count",
+                "observed_multi_component_transaction_count",
+            ),
+            (
+                "primary_choice_component_excess_count",
+                "observed_component_excess_count",
+            ),
+            (
+                "duplicate_choice_transaction_candidate_count",
+                "observed_duplicate_choice_count",
+            ),
+        )
+        for published, observed_name in multiplicity_pairs:
+            if not multiplicity_reconciled[published].eq(
+                multiplicity_reconciled[observed_name].fillna(0)
+            ).all():
+                raise ValueError(
+                    "vehicle pair support disagrees with component-keyed choice multiplicity"
+                )
         if not pair_support["source_pair_component_count"].eq(
             pair_support["market_route_count"] + pair_support["event_collision_component_count"]
         ).all():
@@ -1053,6 +1201,10 @@ def validate_endpoint_candidate_composition(bundle: EndpointCandidateComposition
             day_accounted_component_count_nunique=("day_accounted_component_count", "nunique"),
             day_event_collision_component_count=("day_event_collision_component_count", "first"),
             day_event_collision_component_count_nunique=("day_event_collision_component_count", "nunique"),
+            day_unpaired_exclusion_component_count=("day_unpaired_exclusion_component_count", "first"),
+            day_unpaired_exclusion_component_count_nunique=("day_unpaired_exclusion_component_count", "nunique"),
+            day_event_collision_value_missing_component_count=("day_event_collision_value_missing_component_count", "first"),
+            day_event_collision_value_missing_component_count_nunique=("day_event_collision_value_missing_component_count", "nunique"),
             day_event_collision_observed_abs_leg_value_usd_upper_bound=("day_event_collision_observed_abs_leg_value_usd_upper_bound", "first"),
             day_event_collision_value_nunique=("day_event_collision_observed_abs_leg_value_usd_upper_bound", "nunique"),
         ).merge(accounted, on="date", how="left", validate="one_to_one")
@@ -1067,6 +1219,7 @@ def validate_endpoint_candidate_composition(bundle: EndpointCandidateComposition
             .groupby("date", as_index=False, sort=True)
             .agg(
                 observed_collision_count=("route_count", "sum"),
+                observed_collision_value_missing_count=("collision_value_missing_leg_count", lambda values: int(values.gt(0).sum())),
                 observed_collision_value=("collision_observed_abs_leg_value_usd_upper_bound", "sum"),
             )
         )
@@ -1079,6 +1232,13 @@ def validate_endpoint_candidate_composition(bundle: EndpointCandidateComposition
         if (
             not collision_reconciled["day_event_collision_component_count"].eq(
                 collision_reconciled["observed_collision_count"].fillna(0)
+            ).all()
+            or not collision_reconciled[
+                "day_event_collision_value_missing_component_count"
+            ].eq(
+                collision_reconciled[
+                    "observed_collision_value_missing_count"
+                ].fillna(0)
             ).all()
             or not np.isclose(
                 pd.to_numeric(
@@ -1094,8 +1254,32 @@ def validate_endpoint_candidate_composition(bundle: EndpointCandidateComposition
             ).all()
         ):
             raise ValueError("vehicle collision exclusions disagree with daily support bounds")
+        unpaired_exclusions = exclusions[
+            ~exclusions["exclusion_reason"].isin(set(PAIR_REASONS) - {INCLUDED})
+            & ~(
+                exclusions["exclusion_reason"].eq(EVENT_COLLISION)
+                & exclusions["src"].ne("")
+                & exclusions["tgt"].ne("")
+            )
+        ]
+        unpaired_daily = (
+            unpaired_exclusions.groupby("date", as_index=False, sort=True)["route_count"]
+            .sum()
+            .rename(columns={"route_count": "observed_unpaired_count"})
+        )
+        unpaired_reconciled = daily.merge(
+            unpaired_daily,
+            on="date",
+            how="left",
+            validate="one_to_one",
+        )
+        if not unpaired_reconciled["day_unpaired_exclusion_component_count"].eq(
+            unpaired_reconciled["observed_unpaired_count"].fillna(0)
+        ).all():
+            raise ValueError("vehicle unpaired exclusions disagree with daily support")
     return EndpointCandidateComposition(
         choices.sort_values(CHOICE_KEYS, kind="stable").reset_index(drop=True),
+        choice_audit.sort_values(CHOICE_AUDIT_KEYS, kind="stable").reset_index(drop=True),
         pair_support.sort_values(PAIR_KEYS, kind="stable").reset_index(drop=True),
         exclusions.sort_values(EXCLUSION_KEYS, kind="stable").reset_index(drop=True),
     )
