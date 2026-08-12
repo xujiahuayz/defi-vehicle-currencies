@@ -2807,9 +2807,9 @@ def read_v2_event_source_certificate(
     if any(path is not None for path in explicit) and not all(path is not None for path in explicit):
         raise ValueError("explicit V2 event-source reads require all three artifact paths")
     if all(path is None for path in explicit):
-        release = resolve_v2_event_source_release(pointer_path)
-        with current_v2_event_source_release(release):
-            return read_v2_event_source_certificate(*release.artifact_paths)
+        return read_v2_event_source_release(
+            resolve_v2_event_source_release(pointer_path)
+        )
     resolved = tuple(Path(path) for path in (summary_path, exceptions_path, certificate_path) if path is not None)
     if len(resolved) != 3:
         raise AssertionError("V2 event-source artifact resolution is incomplete")
@@ -2822,3 +2822,12 @@ def read_v2_event_source_certificate(
     if not isinstance(certificate, dict):
         raise ValueError("V2 event-source certificate is not a JSON object")
     return summary, exceptions, certificate
+
+
+def read_v2_event_source_release(
+    release: V2EventSourceRelease,
+) -> tuple[pd.DataFrame, pd.DataFrame, dict[str, object]]:
+    """Lease and read the exact resolved V2 generation as one operation."""
+
+    with current_v2_event_source_release(release):
+        return read_v2_event_source_certificate(*release.artifact_paths)

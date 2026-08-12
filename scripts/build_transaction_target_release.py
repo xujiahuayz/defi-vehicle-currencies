@@ -53,7 +53,7 @@ from ddvc.transaction_targets import (
     validation_contract,
     write_target_day,
 )
-from ddvc.v2_event_completeness import V2EventSourceRelease, V2_EXACT_LOG_CACHE_ROOT, frozen_upper_block_path, read_v2_event_source_certificate, read_v2_exact_logs, resolve_v2_event_source_release
+from ddvc.v2_event_completeness import V2EventSourceRelease, V2_EXACT_LOG_CACHE_ROOT, frozen_upper_block_path, read_v2_event_source_release, read_v2_exact_logs, resolve_v2_event_source_release
 from ddvc.v3_event_completeness import block_perimeter_sha256, certified_header_snapshot_path, read_v3_event_source_release, resolve_v3_event_source_release
 from ddvc.v3_inventory import EVENT_TOPICS as V3_EVENT_TOPICS, inventory_chunk_triplet, load_inventory_chunk_records
 from ddvc.v3_pool_registry import load_certified_frozen_upper
@@ -383,7 +383,7 @@ def build_audit_release(audit_days: list[str], full_days: list[str], generation:
     v3_seed = certified_header_snapshot_path(audit_days, v3_certificate)
     header_snapshot = ensure_target_header_snapshot(target_blocks, audit_days, seed_paths=[v3_seed], fetch_missing=fetch_headers, workers=workers)
     timestamps = {int(row["block_number"]): int(row["timestamp"]) for row in iter_block_header_snapshot(header_snapshot, require_evidence=True)}
-    _v2_summary, _v2_exceptions, v2_certificate = read_v2_event_source_certificate(*v2_release.artifact_paths)
+    _v2_summary, _v2_exceptions, v2_certificate = read_v2_event_source_release(v2_release)
     frozen_v2_path = frozen_upper_block_path(int(v2_certificate["factory_registry_upper_block"]))
     frozen_v2 = json.loads(frozen_v2_path.read_text(encoding="utf-8"))
     frozen_v3, _factory_certificate = load_certified_frozen_upper()
@@ -458,7 +458,7 @@ def main() -> int:
             dependencies = release_dependencies(v2_release, v3_release)
             selected_scope = "audit" if args.audit_calendar else "daily"
             generation = target_generation_id(selected_scope, audit_days, full_days, dependencies)
-            with exclusive_job(LOCK):
+            with exclusive_job(LOCK, job="transaction-target release builder"):
                 if selected_scope == "audit":
                     build_audit_release(audit_days, full_days, generation, dependencies, v2_release=v2_release, v3_release=v3_release, fetch_v4=args.fetch_v4_evidence, fetch_headers=args.fetch_header_evidence, workers=args.workers)
                 else:

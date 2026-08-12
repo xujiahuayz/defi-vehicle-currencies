@@ -3,12 +3,13 @@
 from __future__ import annotations
 
 import fcntl
-import hashlib
 import json
 import os
 import sys
 import tempfile
 import threading
+import time
+import uuid
 from concurrent.futures import ProcessPoolExecutor, ThreadPoolExecutor
 from collections.abc import Iterable, Mapping
 from contextlib import contextmanager
@@ -60,16 +61,26 @@ def atomic_output(target: Path) -> Iterator[Path]:
 
 
 def _lexical_path(path: Path) -> Path:
-    candidate = Path(path)
-    return candidate.parent.resolve() / candidate.name
+    """Return an absolute lexical identity without erasing symlink ancestors."""
+
+    return Path(os.path.abspath(os.path.normpath(os.fspath(path))))
 
 
 def _source_paths(paths: Iterable[Path]) -> tuple[Path, ...]:
     selected: list[Path] = []
     for raw in paths:
-        path = Path(raw)
-        selected.append(_lexical_path(path))
-        if path.is_symlink():
+        path = _lexical_path(Path(raw))
+        selected.append(path)
+        selected.append(path.resolve(strict=True))
+    return tuple(dict.fromkeys(selected))
+
+
+def _output_lock_paths(paths: Iterable[Path]) -> tuple[Path, ...]:
+    selected: list[Path] = []
+    for raw in paths:
+        path = _lexical_path(Path(raw))
+        selected.append(path)
+        if path.exists() or path.is_symlink():
             selected.append(path.resolve(strict=True))
     return tuple(dict.fromkeys(selected))
 
@@ -78,16 +89,71 @@ def _paths_overlap(first: Path, second: Path) -> bool:
     return first == second or first in second.parents or second in first.parents
 
 
-def _lock_modes(exact_modes: Mapping[Path, int]) -> dict[Path, int]:
-    modes: dict[Path, int] = {}
-    for raw, exact_mode in exact_modes.items():
-        target = _lexical_path(Path(raw))
-        modes[target] = max(exact_mode, modes.get(target, 0))
-        parent = target.parent
-        while parent != parent.parent:
-            modes[parent] = max(fcntl.LOCK_SH, modes.get(parent, 0))
-            parent = parent.parent
-    return modes
+def _artifact_lock_root() -> Path:
+    root = Path(tempfile.gettempdir()) / "ddvc-artifact-lock-registry"
+    root.mkdir(parents=True, exist_ok=True)
+    return root
+
+
+def _atomic_lock_registry(path: Path, rows: list[dict[str, object]]) -> None:
+    temporary = path.with_name(f".{path.name}.{uuid.uuid4().hex}.tmp")
+    try:
+        temporary.write_text(json.dumps(rows, sort_keys=True) + "\n", encoding="utf-8")
+        temporary.replace(path)
+    finally:
+        temporary.unlink(missing_ok=True)
+
+
+def _owner_is_live(path: Path) -> bool:
+    try:
+        handle = path.open("a+")
+    except OSError:
+        return False
+    try:
+        try:
+            fcntl.flock(handle.fileno(), fcntl.LOCK_EX | fcntl.LOCK_NB)
+        except BlockingIOError:
+            return True
+        fcntl.flock(handle.fileno(), fcntl.LOCK_UN)
+        return False
+    finally:
+        handle.close()
+
+
+def _read_live_lock_rows(registry: Path) -> list[dict[str, object]]:
+    try:
+        rows = json.loads(registry.read_text(encoding="utf-8"))
+    except (FileNotFoundError, json.JSONDecodeError, OSError):
+        rows = []
+    if not isinstance(rows, list):
+        rows = []
+    live: list[dict[str, object]] = []
+    for row in rows:
+        if not isinstance(row, dict):
+            continue
+        owner = Path(str(row.get("owner", "")))
+        if owner.is_file() and _owner_is_live(owner):
+            live.append(row)
+        else:
+            owner.unlink(missing_ok=True)
+    return live
+
+
+def _lock_conflicts(
+    requested: Mapping[Path, int], existing: Iterable[dict[str, object]]
+) -> bool:
+    for row in existing:
+        try:
+            path = Path(str(row["path"]))
+            mode = int(row["mode"])
+        except (KeyError, TypeError, ValueError):
+            continue
+        for target, requested_mode in requested.items():
+            if _paths_overlap(target, path) and (
+                mode == fcntl.LOCK_EX or requested_mode == fcntl.LOCK_EX
+            ):
+                return True
+    return False
 
 
 @contextmanager
@@ -96,11 +162,7 @@ def _serialized_artifact_locks(
 ) -> Iterator[None]:
     """Own exact paths and conflict with owners of every ancestor or descendant."""
 
-    lock_root = Path(tempfile.gettempdir()) / "ddvc-artifact-install-locks"
-    lock_root.mkdir(parents=True, exist_ok=True)
-    exact = {
-        _lexical_path(Path(path)): mode for path, mode in exact_modes.items()
-    }
+    exact = {_lexical_path(Path(path)): mode for path, mode in exact_modes.items()}
     if any(
         _paths_overlap(target, source)
         for target, mode in exact.items()
@@ -112,45 +174,106 @@ def _serialized_artifact_locks(
     if held is None:
         held = {}
         _HELD_ARTIFACT_LOCKS.counts = held
-    acquired: list[tuple[str, object | None]] = []
+    reused: list[str] = []
+    requested: dict[Path, int] = {}
+    for path, mode in exact.items():
+        overlapping = [
+            (Path(identity), prior_mode)
+            for identity, (_count, prior_mode) in held.items()
+            if _paths_overlap(Path(identity), path)
+        ]
+        covering = [
+            (identity, prior_mode)
+            for identity, prior_mode in overlapping
+            if identity == path or identity in path.parents
+        ]
+        if covering:
+            if any(mode > prior_mode for _prior, prior_mode in covering):
+                raise RuntimeError(f"nested artifact lock cannot upgrade {path}")
+            identity = str(covering[0][0])
+            count, prior_mode = held[identity]
+            held[identity] = (count + 1, prior_mode)
+            reused.append(identity)
+        else:
+            if any(
+                mode == fcntl.LOCK_EX or prior_mode == fcntl.LOCK_EX
+                for _prior, prior_mode in overlapping
+            ):
+                raise RuntimeError(
+                    f"nested artifact lock cannot expand exclusive scope to {path}"
+                )
+            requested[path] = mode
+    lock_root = _artifact_lock_root()
+    owner = lock_root / f"owner-{os.getpid()}-{uuid.uuid4().hex}.lock"
+    token = uuid.uuid4().hex
+    registry = lock_root / "leases.json"
+    owner_handle = None
+    coordinator = None
+    registered = False
     try:
-        modes = _lock_modes(exact)
-        for path in sorted(modes, key=lambda value: (len(value.parts), str(value))):
-            identity = str(path)
-            mode = modes[path]
-            prior = held.get(identity)
-            if prior is not None:
-                count, prior_mode = prior
-                if mode > prior_mode:
-                    raise RuntimeError(
-                        f"nested artifact lock cannot upgrade {path}"
-                    )
-                held[identity] = (count + 1, prior_mode)
-                acquired.append((identity, None))
-                continue
-            lock_name = hashlib.sha256(identity.encode()).hexdigest()
-            handle = (lock_root / f"{lock_name}.lock").open("a+")
-            fcntl.flock(handle.fileno(), mode)
-            held[identity] = (1, mode)
-            acquired.append((identity, handle))
+        if requested:
+            owner_handle = owner.open("a+")
+            coordinator = (lock_root / "coordinator.lock").open("a+")
+            fcntl.flock(owner_handle.fileno(), fcntl.LOCK_EX)
+            while True:
+                fcntl.flock(coordinator.fileno(), fcntl.LOCK_EX)
+                try:
+                    rows = _read_live_lock_rows(registry)
+                    if not _lock_conflicts(requested, rows):
+                        rows.extend(
+                            {
+                                "mode": int(mode),
+                                "owner": str(owner),
+                                "path": str(path),
+                                "token": token,
+                            }
+                            for path, mode in requested.items()
+                        )
+                        registered = True
+                    _atomic_lock_registry(registry, rows)
+                finally:
+                    fcntl.flock(coordinator.fileno(), fcntl.LOCK_UN)
+                if registered:
+                    break
+                time.sleep(0.01)
+            for path, mode in requested.items():
+                held[str(path)] = (1, mode)
         yield
     finally:
-        for identity, handle in reversed(acquired):
+        for identity in reversed(reused):
             count, mode = held[identity]
             if count > 1:
                 held[identity] = (count - 1, mode)
-                continue
-            held.pop(identity, None)
-            if handle is not None:
-                fcntl.flock(handle.fileno(), fcntl.LOCK_UN)
-                handle.close()
+            else:
+                held.pop(identity, None)
+        for path in requested:
+            held.pop(str(path), None)
+        try:
+            if registered and coordinator is not None:
+                fcntl.flock(coordinator.fileno(), fcntl.LOCK_EX)
+                try:
+                    rows = [
+                        row
+                        for row in _read_live_lock_rows(registry)
+                        if row.get("token") != token
+                    ]
+                    _atomic_lock_registry(registry, rows)
+                finally:
+                    fcntl.flock(coordinator.fileno(), fcntl.LOCK_UN)
+        finally:
+            if owner_handle is not None:
+                fcntl.flock(owner_handle.fileno(), fcntl.LOCK_UN)
+                owner_handle.close()
+                owner.unlink(missing_ok=True)
+            if coordinator is not None:
+                coordinator.close()
 
 
 @contextmanager
 def serialized_output_installs(targets: Iterable[Path]) -> Iterator[None]:
     """Own exact paths and conflict with owners of every ancestor or descendant."""
 
-    exact = {_lexical_path(Path(path)): fcntl.LOCK_EX for path in targets}
+    exact = {path: fcntl.LOCK_EX for path in _output_lock_paths(targets)}
     with _serialized_artifact_locks(exact):
         yield
 
@@ -167,7 +290,7 @@ def serialized_output_install(target: Path) -> Iterator[None]:
 def serialized_read_installs(targets: Iterable[Path]) -> Iterator[None]:
     """Lease source bytes, including a symlink's referent, through a complete read."""
 
-    requested = tuple(Path(path) for path in targets)
+    requested = tuple(_lexical_path(Path(path)) for path in targets)
     selected = _source_paths(requested)
     if not selected:
         raise ValueError("source lease requires at least one path")
@@ -191,24 +314,25 @@ def serialized_artifact_transaction(
 ) -> Iterator[tuple[tuple[Path, ...], tuple[Path, ...]]]:
     """Lease exact sources and own exact outputs under one ordered lock perimeter."""
 
-    requested_sources = tuple(Path(path) for path in sources)
+    requested_sources = tuple(_lexical_path(Path(path)) for path in sources)
     selected_sources = _source_paths(requested_sources)
-    selected_outputs = tuple(
-        dict.fromkeys(_lexical_path(Path(path)) for path in outputs)
-    )
+    selected_outputs = tuple(dict.fromkeys(_lexical_path(Path(path)) for path in outputs))
+    selected_output_locks = _output_lock_paths(selected_outputs)
     if not selected_outputs:
         raise ValueError("artifact transaction requires at least one output")
     if any(
         _paths_overlap(source, output)
         for source in selected_sources
-        for output in selected_outputs
+        for output in selected_output_locks
     ):
         raise ValueError("artifact transaction source overlaps an output")
     modes = {path: fcntl.LOCK_SH for path in selected_sources}
-    modes.update({path: fcntl.LOCK_EX for path in selected_outputs})
+    modes.update({path: fcntl.LOCK_EX for path in selected_output_locks})
     with _serialized_artifact_locks(modes):
         if _source_paths(requested_sources) != selected_sources:
             raise RuntimeError("source symlink changed while its lease was acquired")
+        if _output_lock_paths(selected_outputs) != selected_output_locks:
+            raise RuntimeError("output symlink changed while its lease was acquired")
         token = _ACTIVE_READ_SOURCES.set(
             frozenset((*_ACTIVE_READ_SOURCES.get(), *selected_sources))
         )

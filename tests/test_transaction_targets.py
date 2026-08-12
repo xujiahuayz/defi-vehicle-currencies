@@ -42,7 +42,7 @@ from ddvc.transaction_targets import (
 from ddvc.v2_event_completeness import V2_EVENT_TOPICS
 from ddvc.v3_inventory import EVENT_TOPICS as V3_EVENT_TOPICS
 from ddvc.v4_contract import UNISWAP_V4_POOL_MANAGER_ADDRESS, UNISWAP_V4_SWAP_TOPIC
-from scripts.build_transaction_target_release import exclude_post_support_v4_routes, load_provider_day, main as build_target_main, release_dependencies
+from scripts.build_transaction_target_release import LOCK, exclude_post_support_v4_routes, load_provider_day, main as build_target_main, release_dependencies
 
 
 A = "0x000000000000000000000000000000000000000a"
@@ -167,7 +167,8 @@ class TransactionTargetTests(unittest.TestCase):
             patch("scripts.build_transaction_target_release.resolve_v2_event_source_release", return_value=v2) as resolve_v2,
             patch("scripts.build_transaction_target_release.resolve_v3_event_source_release", return_value=v3) as resolve_v3,
             patch("scripts.build_transaction_target_release.target_generation_id", return_value="1" * 64),
-            patch("scripts.build_transaction_target_release.exclusive_job", return_value=nullcontext()),
+            patch("scripts.build_transaction_target_release.current_event_source_releases", return_value=nullcontext()),
+            patch("scripts.build_transaction_target_release.exclusive_job", return_value=nullcontext()) as lock,
             patch("scripts.build_transaction_target_release.build_audit_release") as build,
         ):
             self.assertEqual(build_target_main(), 0)
@@ -175,6 +176,7 @@ class TransactionTargetTests(unittest.TestCase):
         resolve_v3.assert_called_once_with()
         self.assertIs(build.call_args.kwargs["v2_release"], v2)
         self.assertIs(build.call_args.kwargs["v3_release"], v3)
+        lock.assert_called_once_with(LOCK, job="transaction-target release builder")
 
     def test_post_support_v4_routes_are_explicitly_excluded_and_certified(self) -> None:
         legs = pd.DataFrame([

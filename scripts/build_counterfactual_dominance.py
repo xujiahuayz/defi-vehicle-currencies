@@ -66,7 +66,9 @@ from ddvc.cpquote import (
 )
 from ddvc.counterfactual_publication import (
     publication_capability,
+    publication_marker_path,
     register_publication_capability,
+    require_current_publication,
     require_active_publication,
 )
 from ddvc.gas import load_route_transaction_gas
@@ -279,16 +281,24 @@ def _write_gross_release(
     return GROSS_PARQUET
 
 
-def _release_sources(validate_release) -> list[Path]:
+def _release_sources(
+    route_release: ReleasedPartitionSet,
+    state_releases: dict[str, ReleasedPartitionSet],
+) -> list[Path]:
     return [
         path
-        for release in validate_release.releases
+        for release in (route_release, *state_releases.values())
         for path in release.provenance_inputs
     ]
 
 
-def _assert_releases_current(validate_release) -> None:
-    validate_release(Path("<publication-boundary>"))
+def _assert_releases_current(
+    route_release: ReleasedPartitionSet,
+    state_releases: dict[str, ReleasedPartitionSet],
+) -> None:
+    release_preinstall_validator(
+        route_release, *state_releases.values()
+    )(Path("<publication-boundary>"))
 
 
 @publication_capability(
@@ -299,15 +309,14 @@ def _assert_releases_current(validate_release) -> None:
         OUT_RECEIPT_ALLOCATION_SUPPORT,
         sidecar_path(OUT_RECEIPT_ALLOCATION_SUPPORT),
     ),
-    source_selector=lambda _frame, _support, _route_release, _state_releases, validate_release: _release_sources(validate_release),
-    assert_current=lambda _frame, _support, _route_release, _state_releases, validate_release: _assert_releases_current(validate_release),
+    source_selector=lambda _frame, _support, route_release, state_releases: _release_sources(route_release, state_releases),
+    assert_current=lambda _frame, _support, route_release, state_releases: _assert_releases_current(route_release, state_releases),
 )
 def build_gross_publication(
     frame: pd.DataFrame,
     allocation_support: pd.DataFrame,
     route_release: ReleasedPartitionSet,
     state_releases: dict[str, ReleasedPartitionSet],
-    validate_release,
 ) -> Path:
     """Publish the route-only support audit and full gross panel atomically."""
 
@@ -336,10 +345,23 @@ FINAL_INPUTS = (
 
 
 def _final_input_sources() -> tuple[Path, ...]:
-    return (*FINAL_INPUTS, *(sidecar_path(path) for path in FINAL_INPUTS))
+    return (
+        *FINAL_INPUTS,
+        *(sidecar_path(path) for path in FINAL_INPUTS),
+        publication_marker_path("counterfactual.gross"),
+    )
 
 
 def _assert_final_inputs_current(_staged_path: Path | None = None) -> None:
+    require_current_publication(
+        "counterfactual.gross",
+        expected_outputs=(
+            GROSS_PARQUET,
+            sidecar_path(GROSS_PARQUET),
+            OUT_RECEIPT_ALLOCATION_SUPPORT,
+            sidecar_path(OUT_RECEIPT_ALLOCATION_SUPPORT),
+        ),
+    )
     require_current_artifacts(
         list(FINAL_INPUTS),
         consumer="gas-adjusted counterfactual-dominance panel",
@@ -373,6 +395,10 @@ def build_final_panel() -> pd.DataFrame:
 
 
 def _assert_final_panel_current(_staged_path: Path | None = None) -> None:
+    require_current_publication(
+        "counterfactual.final_panel",
+        expected_outputs=(OUT_PARQUET, sidecar_path(OUT_PARQUET)),
+    )
     require_current_artifacts(
         [OUT_PARQUET], consumer="counterfactual-dominance exhibits"
     )
@@ -386,7 +412,11 @@ def _assert_final_panel_current(_staged_path: Path | None = None) -> None:
         OUT_SUPPORT,
         sidecar_path(OUT_SUPPORT),
     ),
-    source_selector=lambda: (OUT_PARQUET, sidecar_path(OUT_PARQUET)),
+    source_selector=lambda: (
+        OUT_PARQUET,
+        sidecar_path(OUT_PARQUET),
+        publication_marker_path("counterfactual.final_panel"),
+    ),
     assert_current=lambda: _assert_final_panel_current(),
 )
 def build_final_exhibits() -> tuple[pd.DataFrame, pd.DataFrame]:
@@ -418,7 +448,11 @@ def build_final_exhibits() -> tuple[pd.DataFrame, pd.DataFrame]:
     summary = pd.concat(
         [dominance_level_summary(frame), annual], ignore_index=True, sort=False
     )
-    inputs = [OUT_PARQUET, sidecar_path(OUT_PARQUET)]
+    inputs = [
+        OUT_PARQUET,
+        sidecar_path(OUT_PARQUET),
+        publication_marker_path("counterfactual.final_panel"),
+    ]
     write_exhibit(
         summary,
         OUT_EXHIBIT,
@@ -1110,9 +1144,6 @@ def main() -> int:
         route_release = released_route_partitions(
             [*LINEAR_ROUTE_COLUMNS, "n_components"]
         )
-        validate_release = release_preinstall_validator(
-            route_release, *state_releases.values()
-        )
         available = list(state_releases["uniswap_v2"].days)
         days = counterfactual_days(available, explicit=args.days, limit=args.limit)
         print(f"quoting counterfactuals on {len(days)} day(s)", flush=True)
@@ -1174,7 +1205,6 @@ def main() -> int:
             allocation_support,
             route_release,
             state_releases,
-            validate_release,
         )
         print(f"wrote gross route panel {GROSS_PARQUET.relative_to(REPO_ROOT)}")
         return 0

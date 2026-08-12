@@ -375,7 +375,7 @@ class DataReleaseTests(unittest.TestCase):
             patch("ddvc.data_release.resolve_v2_event_source_release", return_value=release) as resolve,
             patch("ddvc.data_release.require_current_artifacts") as current,
             patch(
-                "ddvc.data_release.read_v2_event_source_certificate",
+                "ddvc.data_release.read_v2_event_source_release",
                 return_value=(summary, exceptions, certificate),
             ) as read,
             patch(
@@ -388,7 +388,7 @@ class DataReleaseTests(unittest.TestCase):
             require_v2_event_source_release()
         resolve.assert_called_once_with()
         current.assert_called_once()
-        read.assert_called_once_with(*release.artifact_paths)
+        read.assert_called_once_with(release)
         validate.assert_called_once_with(
             summary,
             exceptions,

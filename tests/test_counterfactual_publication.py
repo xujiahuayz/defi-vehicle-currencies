@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import functools
+import json
 import os
 from pathlib import Path
 import shutil
@@ -18,12 +19,15 @@ import pytest
 import ddvc.counterfactual_publication as publication
 from ddvc.counterfactual_publication import (
     PublicationRecoveryRequired,
+    current_publication,
+    publication_marker_path,
     publication_capability,
     register_publication_capability,
+    require_current_publication,
     validate_publication_capability,
 )
 from ddvc.provenance import sidecar_path, verify
-from ddvc.runtime import atomic_output, serialized_read_installs
+from ddvc.runtime import atomic_output, serialized_output_install, serialized_read_installs
 from ddvc.tables import write_exhibit, write_panel
 
 
@@ -221,19 +225,27 @@ def test_rollback_backup_is_independent_of_in_place_target_mutation() -> None:
 
 
 def test_entry_failure_leaves_no_transaction_directory() -> None:
-    transaction_root = Path(tempfile.gettempdir())
-    before = set(transaction_root.glob("ddvc-counterfactual-publication-*"))
+    capability_id = f"test.entry.{uuid.uuid4().hex}"
+    output = Path(tempfile.gettempdir()) / f"{capability_id}.out"
+    register_publication_capability(capability_id, (output,))
+
+    @publication_capability(
+        capability_id,
+        output_selector=lambda: (output,),
+        source_selector=lambda: (),
+    )
+    def owner():
+        raise AssertionError("body should not run")
 
     def fail_lock(**_perimeter):
         raise OSError("lock entry failed")
 
-    with patch.object(publication, "serialized_artifact_transaction", fail_lock):
+    with _install_for_test(owner), patch.object(
+        publication, "serialized_artifact_transaction", fail_lock
+    ):
         with pytest.raises(OSError, match="lock entry failed"):
-            with publication.counterfactual_publication(
-                "test.entry", sources=(Path("source"),), outputs=(Path("output"),)
-            ):
-                raise AssertionError("body should not run")
-    assert set(transaction_root.glob("ddvc-counterfactual-publication-*")) == before
+            owner()
+    assert not publication_marker_path(capability_id).exists()
 
 
 def test_corrupt_on_disk_recovery_record_cannot_prevent_rollback() -> None:
@@ -244,9 +256,9 @@ def test_corrupt_on_disk_recovery_record_cannot_prevent_rollback() -> None:
         source.write_text("source", encoding="utf-8")
         target.write_text("prior", encoding="utf-8")
         capability_id = f"test.corrupt-record.{uuid.uuid4().hex}"
-        register_publication_capability(capability_id, (target,))
-        transaction_root = Path(tempfile.gettempdir())
-        before = set(transaction_root.glob("ddvc-counterfactual-publication-*"))
+        marker = root / "marker.json"
+        register_publication_capability(capability_id, (target,), marker_path=marker)
+        transaction_root = marker.parent / f".{marker.name}.transactions"
 
         @publication_capability(
             capability_id,
@@ -256,9 +268,7 @@ def test_corrupt_on_disk_recovery_record_cannot_prevent_rollback() -> None:
         def corrupting_owner():
             with atomic_output(target) as temporary:
                 temporary.write_text("replacement", encoding="utf-8")
-            active = set(
-                transaction_root.glob("ddvc-counterfactual-publication-*")
-            ) - before
+            active = set(transaction_root.iterdir())
             assert len(active) == 1
             (next(iter(active)) / "recovery.json").write_text(
                 "{broken", encoding="utf-8"
@@ -269,7 +279,7 @@ def test_corrupt_on_disk_recovery_record_cannot_prevent_rollback() -> None:
             with pytest.raises(RuntimeError, match="reject publication"):
                 corrupting_owner()
         assert target.read_text(encoding="utf-8") == "prior"
-        assert set(transaction_root.glob("ddvc-counterfactual-publication-*")) == before
+        assert not transaction_root.exists() or not list(transaction_root.iterdir())
 
 
 def test_restore_failure_retains_verified_backup_and_recovery_manifest() -> None:
@@ -280,7 +290,8 @@ def test_restore_failure_retains_verified_backup_and_recovery_manifest() -> None
         source.write_text("source", encoding="utf-8")
         target.write_text("prior", encoding="utf-8")
         capability_id = f"test.recovery.{uuid.uuid4().hex}"
-        register_publication_capability(capability_id, (target,))
+        marker = root / "marker.json"
+        register_publication_capability(capability_id, (target,), marker_path=marker)
 
         @publication_capability(
             capability_id,
@@ -292,8 +303,7 @@ def test_restore_failure_retains_verified_backup_and_recovery_manifest() -> None
                 temporary.write_text("replacement", encoding="utf-8")
             raise RuntimeError("reject publication")
 
-        transaction_root = Path(tempfile.gettempdir())
-        before = set(transaction_root.glob("ddvc-counterfactual-publication-*"))
+        transaction_root = marker.parent / f".{marker.name}.transactions"
         original_replace = Path.replace
 
         def fail_restore(path: Path, destination: Path) -> Path:
@@ -308,7 +318,7 @@ def test_restore_failure_retains_verified_backup_and_recovery_manifest() -> None
                 PublicationRecoveryRequired, match="recovery evidence retained"
             ):
                 failing_owner()
-        retained = set(transaction_root.glob("ddvc-counterfactual-publication-*")) - before
+        retained = set(transaction_root.iterdir())
         assert len(retained) == 1
         recovery_root = retained.pop()
         try:
@@ -371,3 +381,289 @@ def test_symlink_source_lease_blocks_alias_retarget_twenty_times() -> None:
             process.wait(timeout=2)
             assert not alias.is_symlink()
             assert alias.read_text(encoding="utf-8") == "new-alias"
+
+
+def test_active_capability_cannot_be_forged_by_naming_its_id() -> None:
+    from scripts import build_counterfactual_dominance as builder
+
+    frame = pd.DataFrame(
+        {
+            "tx": ["0xabc"],
+            "receipt_allocation_scope": [
+                "single_reconstructed_component_transaction"
+            ],
+        }
+    )
+    release = type(
+        "Release",
+        (),
+        {
+            "provenance_inputs": (Path("source"),),
+            "content_identity_sha256": "a" * 64,
+        },
+    )()
+    with pytest.raises(RuntimeError, match="requires publication capability"):
+        builder._write_gross_release(
+            frame,
+            route_release=release,
+            state_releases={"uniswap_v2": release},
+        )
+    assert not hasattr(publication, "counterfactual_publication")
+
+
+def test_symlink_output_rollback_restores_referent_bytes() -> None:
+    with tempfile.TemporaryDirectory() as directory:
+        root = Path(directory)
+        source = root / "source"
+        referent = root / "referent"
+        output = root / "output"
+        marker = root / "marker.json"
+        source.write_text("source", encoding="utf-8")
+        referent.write_text("prior", encoding="utf-8")
+        output.symlink_to(referent.name)
+        capability_id = f"test.symlink-output.{uuid.uuid4().hex}"
+        register_publication_capability(
+            capability_id, (output,), marker_path=marker
+        )
+
+        @publication_capability(
+            capability_id,
+            output_selector=lambda: (output,),
+            source_selector=lambda: (source,),
+        )
+        def owner():
+            output.write_text("mutated-through-link", encoding="utf-8")
+            raise RuntimeError("reject")
+
+        with _install_for_test(owner), pytest.raises(RuntimeError, match="reject"):
+            owner()
+        assert output.is_symlink()
+        assert referent.read_text(encoding="utf-8") == "prior"
+
+
+def test_retained_recovery_backups_remain_independent_after_partial_restore() -> None:
+    with tempfile.TemporaryDirectory() as directory:
+        root = Path(directory)
+        source = root / "source"
+        first = root / "first"
+        second = root / "second"
+        marker = root / "marker.json"
+        source.write_text("source", encoding="utf-8")
+        first.write_text("prior-first", encoding="utf-8")
+        second.write_text("prior-second", encoding="utf-8")
+        capability_id = f"test.independent-retained.{uuid.uuid4().hex}"
+        register_publication_capability(
+            capability_id, (first, second), marker_path=marker
+        )
+
+        @publication_capability(
+            capability_id,
+            output_selector=lambda: (first, second),
+            source_selector=lambda: (source,),
+        )
+        def owner():
+            first.write_text("new-first", encoding="utf-8")
+            second.write_text("new-second", encoding="utf-8")
+            raise RuntimeError("reject")
+
+        original_replace = Path.replace
+
+        def fail_one_restore(path: Path, destination: Path) -> Path:
+            if path.name.endswith(".restore") and Path(destination) == first:
+                raise OSError("restore failed")
+            return original_replace(path, destination)
+
+        with _install_for_test(owner), patch.object(
+            Path, "replace", autospec=True, side_effect=fail_one_restore
+        ), pytest.raises(PublicationRecoveryRequired) as error:
+            owner()
+        recovery = Path(str(error.value).split(" at ", 1)[1])
+        try:
+            record = json.loads(
+                (recovery / "recovery.json").read_text(encoding="utf-8")
+            )
+            second_record = next(
+                row
+                for row in record["backups"]
+                if Path(row["target"]) == second
+            )
+            backup = Path(second_record["backup"])
+            assert second.stat().st_ino != backup.stat().st_ino
+            second.write_text("later-mutation", encoding="utf-8")
+            assert backup.read_text(encoding="utf-8") == "prior-second"
+        finally:
+            shutil.rmtree(recovery)
+
+
+def test_parent_read_lease_blocks_child_writer() -> None:
+    root = Path(__file__).resolve().parents[1]
+    script = "from pathlib import Path; from ddvc.runtime import atomic_output; import sys; target=Path(sys.argv[1]); context=atomic_output(target); temporary=context.__enter__(); temporary.write_text('new'); context.__exit__(None,None,None)"
+    with tempfile.TemporaryDirectory() as directory:
+        parent = Path(directory) / "parent"
+        parent.mkdir()
+        child = parent / "child"
+        child.write_text("prior", encoding="utf-8")
+        with serialized_read_installs((parent,)):
+            process = subprocess.Popen(
+                [sys.executable, "-c", script, str(child)],
+                cwd=root,
+                env={**os.environ, "PYTHONPATH": f"{root / 'src'}:{root}"},
+            )
+            time.sleep(0.05)
+            assert process.poll() is None
+            assert child.read_text(encoding="utf-8") == "prior"
+        process.wait(timeout=2)
+        assert child.read_text(encoding="utf-8") == "new"
+
+
+def test_nested_parent_read_lease_expands_beyond_child_scope() -> None:
+    root = Path(__file__).resolve().parents[1]
+    script = "from pathlib import Path; from ddvc.runtime import atomic_output; import sys; target=Path(sys.argv[1]); context=atomic_output(target); temporary=context.__enter__(); temporary.write_text('new'); context.__exit__(None,None,None)"
+    with tempfile.TemporaryDirectory() as directory:
+        parent = Path(directory) / "parent"
+        parent.mkdir()
+        child = parent / "child"
+        sibling = parent / "sibling"
+        child.write_text("child", encoding="utf-8")
+        sibling.write_text("prior", encoding="utf-8")
+        with serialized_read_installs((child,)):
+            with serialized_read_installs((parent,)):
+                process = subprocess.Popen(
+                    [sys.executable, "-c", script, str(sibling)],
+                    cwd=root,
+                    env={**os.environ, "PYTHONPATH": f"{root / 'src'}:{root}"},
+                )
+                time.sleep(0.05)
+                assert process.poll() is None
+                assert sibling.read_text(encoding="utf-8") == "prior"
+            process.wait(timeout=2)
+            assert sibling.read_text(encoding="utf-8") == "new"
+
+
+def test_symlinked_ancestor_cannot_retarget_during_source_lease() -> None:
+    root = Path(__file__).resolve().parents[1]
+    script = "from pathlib import Path; from ddvc.runtime import atomic_output; import sys; target=Path(sys.argv[1]); context=atomic_output(target); temporary=context.__enter__(); temporary.unlink(); temporary.symlink_to(sys.argv[2], target_is_directory=True); context.__exit__(None,None,None)"
+    with tempfile.TemporaryDirectory() as directory:
+        work = Path(directory)
+        old = work / "old"
+        new = work / "new"
+        old.mkdir()
+        new.mkdir()
+        (old / "file").write_text("old", encoding="utf-8")
+        (new / "file").write_text("new", encoding="utf-8")
+        alias = work / "alias"
+        alias.symlink_to(old.name, target_is_directory=True)
+        source = alias / "file"
+        with serialized_read_installs((source,)):
+            process = subprocess.Popen(
+                [sys.executable, "-c", script, str(alias), new.name],
+                cwd=root,
+                env={**os.environ, "PYTHONPATH": f"{root / 'src'}:{root}"},
+            )
+            time.sleep(0.05)
+            assert process.poll() is None
+            assert source.read_text(encoding="utf-8") == "old"
+        process.wait(timeout=2)
+        assert source.read_text(encoding="utf-8") == "new"
+
+
+def test_publication_marker_binds_symlinked_ancestor_identity() -> None:
+    with tempfile.TemporaryDirectory() as directory:
+        root = Path(directory)
+        old = root / "old"
+        new = root / "new"
+        old.mkdir()
+        new.mkdir()
+        (old / "output").write_text("published", encoding="utf-8")
+        (new / "output").write_text("published", encoding="utf-8")
+        alias = root / "alias"
+        alias.symlink_to(old.name, target_is_directory=True)
+        output = alias / "output"
+        marker = root / "marker.json"
+        capability_id = f"test.ancestor-marker.{uuid.uuid4().hex}"
+        register_publication_capability(
+            capability_id, (output,), marker_path=marker
+        )
+
+        @publication_capability(
+            capability_id,
+            output_selector=lambda: (output,),
+            source_selector=lambda: (),
+        )
+        def owner():
+            output.write_text("published", encoding="utf-8")
+
+        with _install_for_test(owner):
+            owner()
+        require_current_publication(capability_id, marker_path=marker)
+        alias.unlink()
+        alias.symlink_to(new.name, target_is_directory=True)
+        with pytest.raises(RuntimeError, match="disagree with marker"):
+            require_current_publication(capability_id, marker_path=marker)
+
+
+def test_process_exit_is_recovered_before_next_publication() -> None:
+    root = Path(__file__).resolve().parents[1]
+    with tempfile.TemporaryDirectory() as directory:
+        work = Path(directory)
+        source = work / "source"
+        first = work / "first"
+        second = work / "second"
+        marker = work / "marker.json"
+        source.write_text("source", encoding="utf-8")
+        first.write_text("prior-first", encoding="utf-8")
+        second.write_text("prior-second", encoding="utf-8")
+        capability_id = f"test.crash.{uuid.uuid4().hex}"
+        crash_program = """
+from pathlib import Path
+from ddvc.counterfactual_publication import register_publication_capability, publication_capability
+import os
+import sys
+capability_id = sys.argv[1]
+source, first, second, marker = map(Path, sys.argv[2:])
+register_publication_capability(capability_id, (first, second), marker_path=marker)
+@publication_capability(capability_id, output_selector=lambda: (first, second), source_selector=lambda: (source,))
+def owner():
+    first.write_text("new-first", encoding="utf-8")
+    os._exit(17)
+owner()
+"""
+        completed = subprocess.run(
+            [
+                sys.executable,
+                "-c",
+                crash_program,
+                capability_id,
+                str(source),
+                str(first),
+                str(second),
+                str(marker),
+            ],
+            cwd=root,
+            env={**os.environ, "PYTHONPATH": f"{root / 'src'}:{root}"},
+        )
+        assert completed.returncode == 17
+        assert first.read_text(encoding="utf-8") == "new-first"
+        register_publication_capability(
+            capability_id, (first, second), marker_path=marker
+        )
+
+        @publication_capability(
+            capability_id,
+            output_selector=lambda: (first, second),
+            source_selector=lambda: (source,),
+        )
+        def owner():
+            first.write_text("committed-first", encoding="utf-8")
+            second.write_text("committed-second", encoding="utf-8")
+
+        with _install_for_test(owner):
+            owner()
+        assert first.read_text(encoding="utf-8") == "committed-first"
+        assert second.read_text(encoding="utf-8") == "committed-second"
+        with current_publication(
+            capability_id,
+            marker_path=marker,
+            expected_outputs=(first, second),
+        ):
+            pass

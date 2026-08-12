@@ -47,7 +47,7 @@ from ddvc.paths import DATA_DIR, REPO_ROOT
 from ddvc.provenance import require_current_artifacts
 from ddvc.release_calendar import transaction_frontier_audit_days
 from ddvc.v2_event_completeness import (
-    read_v2_event_source_certificate,
+    read_v2_event_source_release,
     resolve_v2_event_source_release,
     validate_v2_event_source_certificate,
     validate_v2_event_source_evidence_bundle,
@@ -764,7 +764,7 @@ def require_v2_event_source_release() -> None:
             list(release.artifact_paths),
             consumer="node D V2-family market-state release",
         )
-        summary, exceptions, certificate = read_v2_event_source_certificate(*release.artifact_paths)
+        summary, exceptions, certificate = read_v2_event_source_release(release)
         expected_days = transaction_frontier_audit_days(UNIFIED_QUALITY_PANEL)
         validate_v2_event_source_certificate(
             summary,

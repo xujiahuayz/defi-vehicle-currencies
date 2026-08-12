@@ -385,6 +385,48 @@ class FindingsFreezeAuditTest(unittest.TestCase):
             certificate, summary=summary, quarantine=quarantine
         )
 
+    def test_default_v2_gate_reads_the_resolved_generation_under_lease(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            artifacts = tuple(
+                Path(directory) / name
+                for name in ("summary.parquet", "exceptions.parquet", "certificate.json")
+            )
+            for path in artifacts:
+                path.write_text("fixture", encoding="utf-8")
+            release = Mock(artifact_paths=artifacts)
+            summary = pd.DataFrame()
+            exceptions = pd.DataFrame()
+            certificate = {"certificate": True}
+            with (
+                patch(
+                    "scripts.audit_findings_freeze.resolve_v2_event_source_release",
+                    return_value=release,
+                ),
+                patch(
+                    "scripts.audit_findings_freeze.read_v2_event_source_release",
+                    return_value=(summary, exceptions, certificate),
+                ) as read,
+                patch(
+                    "scripts.audit_findings_freeze.transaction_frontier_audit_days",
+                    return_value=("20200101",),
+                ),
+                patch(
+                    "scripts.audit_findings_freeze.validate_v2_event_source_certificate",
+                    return_value=(1, 0),
+                ),
+                patch(
+                    "scripts.audit_findings_freeze.validate_v2_event_source_evidence_bundle",
+                    return_value=(1, 1),
+                ),
+                patch(
+                    "scripts.audit_findings_freeze.verify",
+                    return_value={"status": "ok"},
+                ),
+            ):
+                checks = v2_event_source_certificate_checks()
+        read.assert_called_once_with(release)
+        self.assertTrue(all(passed for _name, passed, _detail in checks), checks)
+
     def test_live_json_contracts_have_unique_keys_and_a_current_lock_hash(self) -> None:
         import copy
         import hashlib

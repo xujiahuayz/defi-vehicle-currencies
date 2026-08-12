@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import unittest
+import inspect
 from decimal import Decimal
 from pathlib import Path
 from tempfile import TemporaryDirectory
@@ -17,6 +18,8 @@ from scripts.build_counterfactual_dominance import (
     counterfactual_days,
     dominance_level_summary,
     gross_panel_inputs,
+    build_gross_publication,
+    _release_sources,
     OUT_RECEIPT_ALLOCATION_SUPPORT,
     receipt_allocation_support,
     receipt_allocation_support_summary,
@@ -28,6 +31,17 @@ from ddvc.prices import attach_strictly_prior_weth_usd
 
 
 class CounterfactualDominanceTests(unittest.TestCase):
+    def test_gross_owner_has_one_input_authority(self) -> None:
+        route = SimpleNamespace(provenance_inputs=(Path("route"),))
+        state = SimpleNamespace(provenance_inputs=(Path("state"),))
+        self.assertEqual(
+            _release_sources(route, {"uniswap_v2": state}),
+            [Path("route"), Path("state")],
+        )
+        self.assertNotIn(
+            "validate_release", inspect.signature(build_gross_publication).parameters
+        )
+
     def test_receipt_allocation_support_exposes_multi_component_count_value_and_era(self) -> None:
         routes = pd.DataFrame({"tx_hash": ["0xsingle", "0xmulti", "0xmulti"], "input_usd": [100.0, 200.0, 300.0]})
         unified = pd.DataFrame({"tx_hash": ["0xsingle", "0xmulti", "0xmulti"], "component_id": [0, 0, 1], "n_components": [1, 2, 2]})
