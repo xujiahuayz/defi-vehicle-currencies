@@ -124,6 +124,20 @@ class VehicleCentralityTests(unittest.TestCase):
             self.assertEqual(result.loc["x", f"eigenvector_{dimension}"], 0.0)
             self.assertEqual(result.loc["y", f"eigenvector_{dimension}"], 0.0)
 
+    def test_count_support_threshold_does_not_filter_value_edges(self) -> None:
+        edges = pd.DataFrame(
+            [
+                {"a": "a", "b": "b", "usd": 10_000.0, "legs": 1},
+                {"a": "b", "b": "c", "usd": 10.0, "legs": 10},
+                {"a": "c", "b": "d", "usd": 10.0, "legs": 10},
+                {"a": "d", "b": "e", "usd": 10.0, "legs": 10},
+                {"a": "b", "b": "e", "usd": 10.0, "legs": 10},
+            ]
+        )
+        result = centralities(edges, k=None, min_legs=5).set_index("token")
+        self.assertEqual(result.loc["a", "direct_count_share"], 0.0)
+        self.assertGreater(result.loc["a", "direct_value_share"], 0.0)
+
 
 if __name__ == "__main__":
     unittest.main()

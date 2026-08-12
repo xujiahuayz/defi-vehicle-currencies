@@ -175,12 +175,14 @@ def centralities(
     e: pd.DataFrame,
     k: int | None,
     *,
+    min_legs: int = 1,
     min_usd: float = 0.0,
 ) -> pd.DataFrame:
     import networkx as nx
 
+    count_edges = e[pd.to_numeric(e["legs"], errors="coerce").ge(min_legs)]
     g = nx.Graph()
-    for r in e.itertuples(index=False):
+    for r in count_edges.itertuples(index=False):
         g.add_edge(
             r.a,
             r.b,
@@ -220,7 +222,7 @@ def centralities(
     eigen_topological = largest_component_eigenvector(g, weight=None)
     eigen_count = largest_component_eigenvector(g, weight="legs")
     rows = []
-    for n in g.nodes():
+    for n in sorted(set(g.nodes()) | set(gv.nodes())):
         sym, typ = classify(n)
         rows.append({"token": n, "symbol": sym, "asset_type": typ,
                      "betweenness_topological": topo.get(n, 0.0),
@@ -298,11 +300,16 @@ def add_network_position_shares(frame: pd.DataFrame) -> pd.DataFrame:
     return out
 
 
-def _one_day(day: str, min_usd: float, k: int | None) -> pd.DataFrame | None:
+def _one_day(
+    day: str,
+    min_usd: float,
+    k: int | None,
+    min_legs: int = 1,
+) -> pd.DataFrame | None:
     e = day_edges(day)
     if e.empty:
         return None
-    c = centralities(e, k, min_usd=min_usd)
+    c = centralities(e, k, min_legs=min_legs, min_usd=min_usd)
     if c.empty:
         return None
     c["day"] = day
@@ -316,6 +323,12 @@ def main() -> int:
                                  formatter_class=argparse.RawDescriptionHelpFormatter)
     ap.add_argument("--stride", type=int, default=90, help="sample every Nth day")
     ap.add_argument("--min-usd", type=float, default=1000.0)
+    ap.add_argument(
+        "--min-legs",
+        type=int,
+        default=1,
+        help="minimum clean leg count for topological and count edges",
+    )
     ap.add_argument("--k", type=int, default=250, help="source nodes sampled per graph")
     ap.add_argument("--jobs", type=int, default=1,
                     help="days built in parallel; reading a day's unified parquet "
@@ -338,7 +351,7 @@ def main() -> int:
         from functools import partial
         with interruptible_process_pool(jobs) as ex:
             for i, c in enumerate(ex.map(partial(_one_day, min_usd=args.min_usd,
-                                                 k=args.k), days), 1):
+                                                 k=args.k, min_legs=args.min_legs), days), 1):
                 if c is None or c.empty:
                     continue
                 frames.append(c)
@@ -348,7 +361,7 @@ def main() -> int:
                           flush=True)
     else:
         for i, day in enumerate(days, 1):
-            c = _one_day(day, args.min_usd, args.k)
+            c = _one_day(day, args.min_usd, args.k, args.min_legs)
             if c is None or c.empty:
                 continue
             frames.append(c)
