@@ -11,6 +11,7 @@ from unittest.mock import PropertyMock, patch
 
 import pandas as pd
 
+from ddvc.artifact_release import bind_file_lineage
 from ddvc.asset_types import NATIVE_ETH, WETH
 from ddvc.analysis.transaction_frontier import (
     CHOSEN_REPRODUCTION_DASHBOARD_REFERENCE,
@@ -121,8 +122,10 @@ class TransactionStateFrontierScriptTests(unittest.TestCase):
             for path in paths.values():
                 path.write_text("source\n", encoding="utf-8")
             with patch(
-                "scripts.build_transaction_state_frontier.state_partition_inputs",
-                side_effect=lambda _root, _family, venue, day, **_kwargs: [paths[(venue, day)]],
+                "scripts.build_transaction_state_frontier.state_partition_lineage",
+                side_effect=lambda _root, _family, venue, day, **_kwargs: bind_file_lineage(
+                    [paths[(venue, day)]]
+                ),
             ):
                 lease = sparse_replay_history_lease(["20210506"], raw_root=root)
             paths[("uniswap_v3", "20210505")].write_text(

@@ -30,8 +30,8 @@ import pyarrow.parquet as pq
 
 from ddvc.artifact_release import (
     FileLineageLease,
-    bind_file_lineage,
     canonical_json_sha256,
+    combine_file_lineages,
     current_file_lineage,
 )
 from ddvc.analysis.transaction_frontier import (
@@ -84,7 +84,12 @@ from ddvc.release_calendar import (
 from ddvc.route_cost import MAX_PRICE_IMPACT
 from ddvc.route_state import OrderedTickStateCursor, TickStateCut
 from ddvc.runtime import atomic_output, exclusive_job, interruptible_process_pool
-from ddvc.state_data import RAW_ROOT, state_partition_inputs, tick_partition_path
+from ddvc.state_data import (
+    RAW_ROOT,
+    state_partition_inputs,
+    state_partition_lineage,
+    tick_partition_path,
+)
 from ddvc.tables import write_exhibit, write_panel
 from ddvc.transaction_targets import (
     TargetRelease,
@@ -284,19 +289,18 @@ def sparse_replay_history_lease(
         pd.to_datetime(max(selected), format="%Y%m%d"),
         freq="D",
     )
-    paths = [
-        path
-        for observed in calendar
-        for venue in TICK_VENUES
-        for path in state_partition_inputs(
+    snapshots = [
+        state_partition_lineage(
             raw_root,
             "tick",
             venue,
             observed.strftime("%Y%m%d"),
             include_absent=True,
         )
+        for observed in calendar
+        for venue in TICK_VENUES
     ]
-    return bind_file_lineage(paths, allow_missing=True)
+    return combine_file_lineages(snapshots)
 
 
 def frontier_source_identity(

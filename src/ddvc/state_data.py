@@ -19,7 +19,13 @@ from pathlib import Path
 import pandas as pd
 
 from ddvc.amounts import human_to_raw
-from ddvc.artifact_release import canonical_json_sha256, file_sha256, is_sha256
+from ddvc.artifact_release import (
+    FileLineageLease,
+    bind_file_lineage,
+    canonical_json_sha256,
+    file_sha256,
+    is_sha256,
+)
 from ddvc.asset_types import canonical_token
 from ddvc.execution_contracts import (
     CP_STATE_GENERATION,
@@ -37,7 +43,7 @@ from ddvc.graph_event_order import (
 )
 from ddvc.paths import DATA_DIR
 from ddvc.provenance import cache_key
-from ddvc.runtime import atomic_output
+from ddvc.runtime import atomic_output, serialized_read_installs
 from ddvc.source_records import block_value, timestamp_value, transaction_id, v4_static_quote_status
 from ddvc.tick_state_events import (
     initialization_day_inputs,
@@ -544,6 +550,35 @@ def state_partition_inputs(
         correction_inputs,
         include_absent,
     )
+
+
+def state_partition_lineage(
+    raw_root: Path,
+    family: str,
+    venue: str,
+    day: str,
+    *,
+    include_absent: bool = False,
+) -> FileLineageLease:
+    """Bind one state partition to a single event-correction pointer snapshot."""
+
+    pointer = correction_pointer_path(
+        correction_root_for_graph(raw_root), venue, day
+    )
+    with serialized_read_installs((pointer,), allow_missing=True):
+        _corrections, correction_inputs = load_event_order_corrections(
+            raw_root, venue, day
+        )
+        paths = _state_partition_inputs(
+            raw_root,
+            family,
+            venue,
+            day,
+            correction_inputs,
+            include_absent,
+        )
+        with serialized_read_installs(paths, allow_missing=include_absent):
+            return bind_file_lineage(paths, allow_missing=include_absent)
 
 
 def _reconciled_stream_rows(

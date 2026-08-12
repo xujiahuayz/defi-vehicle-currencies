@@ -6,6 +6,7 @@ import hashlib
 import json
 from pathlib import Path
 from threading import Barrier
+import threading
 from types import SimpleNamespace
 from tempfile import TemporaryDirectory
 import unittest
@@ -24,6 +25,7 @@ from ddvc.transaction_targets import (
     TargetEvidenceError,
     build_provider_target_ledger,
     calendar_sha256,
+    current_target_release,
     decode_v2_chain_swap,
     decode_v3_chain_swap,
     decode_v4_chain_swap,
@@ -363,7 +365,8 @@ class TransactionTargetTests(unittest.TestCase):
             with patch("ddvc.provenance.ROOT", root), patch("ddvc.provenance.MANIFESTS", root / "provenance"):
                 release = publish_target_release(directory, [marker], scope="audit", generation=GENERATION, validation=validation, full_calendar=["20250101", "20250102"], code_sources=["src/ddvc/transaction_targets.py"], inputs=[], root=root)
                 reopened = resolve_target_release("audit", expected_days=["20250101"], root=root)
-                reopened.assert_current()
+                with current_target_release(reopened):
+                    reopened.assert_current()
                 observed, _ = read_target_day(reopened, "20250101")
                 self.assertEqual(observed["route_id"].tolist(), ["r1"])
 
@@ -379,6 +382,59 @@ class TransactionTargetTests(unittest.TestCase):
                     read_target_day(release, "20250101")
                 with self.assertRaises(TargetEvidenceError):
                     reopened.assert_current()
+
+    def test_target_lease_validates_in_place_without_lock_upgrade(self) -> None:
+        with TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            pointer = root / "current.json"
+            manifest = root / "manifest.json"
+            generation = root / "generation"
+            marker = write_target_day(
+                generation,
+                "20250101",
+                pd.DataFrame({"route_id": ["r1"]}),
+                {
+                    "day": "20250101",
+                    "provider_mapped_routes": 1,
+                    "evidence_failures": 0,
+                },
+                scope="daily",
+                generation=GENERATION,
+                lineage={},
+            )
+            pointer.write_text("pointer\n", encoding="utf-8")
+            manifest.write_text("manifest\n", encoding="utf-8")
+            release = TargetRelease(
+                "daily",
+                GENERATION,
+                pointer,
+                manifest,
+                (marker,),
+                ("20250101",),
+                {},
+                hashlib.sha256(pointer.read_bytes()).hexdigest(),
+                hashlib.sha256(manifest.read_bytes()).hexdigest(),
+                (hashlib.sha256(marker.read_bytes()).hexdigest(),),
+            )
+            entered = threading.Event()
+            completed = threading.Event()
+
+            def replace_pointer() -> None:
+                entered.set()
+                with __import__("ddvc.runtime", fromlist=["atomic_output"]).atomic_output(pointer) as temporary:
+                    temporary.write_text("new\n", encoding="utf-8")
+                completed.set()
+
+            with patch(
+                "ddvc.transaction_targets.resolve_target_release",
+                side_effect=AssertionError("lease assertion must not reopen the pointer"),
+            ), current_target_release(release):
+                thread = threading.Thread(target=replace_pointer)
+                thread.start()
+                self.assertTrue(entered.wait(timeout=1))
+                self.assertFalse(completed.wait(timeout=0.05))
+            thread.join(timeout=2)
+            self.assertTrue(completed.is_set())
 
     def test_target_day_retry_proves_frame_support_and_lineage_identity(self) -> None:
         with TemporaryDirectory() as temporary:

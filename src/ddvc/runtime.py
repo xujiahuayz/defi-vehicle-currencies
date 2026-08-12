@@ -73,10 +73,20 @@ def _source_paths(
     for raw in paths:
         path = _lexical_path(Path(raw))
         selected.append(path)
-        if path.exists() or path.is_symlink():
+        if path.exists():
             selected.append(path.resolve(strict=True))
+        elif path.is_symlink():
+            raise FileNotFoundError(f"source lease path is a dangling symlink: {path}")
         elif not allow_missing:
             raise FileNotFoundError(f"source lease path is missing: {path}")
+        else:
+            # Resolve every existing symlink ancestor even when the leaf has not
+            # been created.  Without this identity, ``alias/new`` and
+            # ``real/new`` can bypass one another's locks.
+            for ancestor in path.parents:
+                if ancestor.is_symlink():
+                    ancestor.resolve(strict=True)
+            selected.append(path.resolve(strict=False))
     return tuple(dict.fromkeys(selected))
 
 
@@ -85,9 +95,18 @@ def _output_lock_paths(paths: Iterable[Path]) -> tuple[Path, ...]:
     for raw in paths:
         path = _lexical_path(Path(raw))
         selected.append(path)
-        if path.exists() or path.is_symlink():
-            selected.append(path.resolve(strict=True))
+        # Non-strict resolution gives an as-yet absent output under a symlinked
+        # ancestor the same lock identity as publication through its referent.
+        selected.append(path.resolve(strict=False))
     return tuple(dict.fromkeys(selected))
+
+
+def source_lock_paths(
+    paths: Iterable[Path], *, allow_missing: bool = False
+) -> tuple[Path, ...]:
+    """Expose the canonical read identities used by the lock registry."""
+
+    return _source_paths(paths, allow_missing=allow_missing)
 
 
 def _paths_overlap(first: Path, second: Path) -> bool:

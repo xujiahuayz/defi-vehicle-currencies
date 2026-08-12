@@ -24,6 +24,7 @@ from ddvc.ethereum_receipts import receipt_is_current
 from ddvc.fetch.raw import write_json, write_jsonl_gz
 from ddvc.paths import REPO_ROOT
 from ddvc.source_records import block_value, timestamp_value, transaction_id
+from ddvc.runtime import serialized_read_installs
 from ddvc.v2_event_contract import (
     V2_EVENT_BY_TOPIC,
     V2_EVENT_TOPICS,
@@ -1906,7 +1907,7 @@ def load_event_order_generation_metadata(
     return data_path, meta_path, metadata
 
 
-def load_event_order_corrections(
+def _load_event_order_corrections_unlocked(
     raw_root: Path,
     venue: str,
     day: str,
@@ -2091,3 +2092,17 @@ def load_event_order_corrections(
         *exact_paths,
         *authority_paths,
     ]
+
+
+def load_event_order_corrections(
+    raw_root: Path,
+    venue: str,
+    day: str,
+) -> tuple[EventOrderCorrections | None, list[Path]]:
+    """Load one pointer-selected correction generation under a pointer lease."""
+
+    pointer = correction_pointer_path(
+        correction_root_for_graph(raw_root), venue, day
+    )
+    with serialized_read_installs((pointer,), allow_missing=True):
+        return _load_event_order_corrections_unlocked(raw_root, venue, day)

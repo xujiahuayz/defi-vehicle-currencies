@@ -4,6 +4,7 @@ import gzip
 import json
 import os
 import tempfile
+import threading
 import unittest
 from pathlib import Path
 from unittest.mock import patch
@@ -28,12 +29,14 @@ from ddvc.state_data import (
     read_tick_partition,
     read_tick_quality,
     state_partition_inputs,
+    state_partition_lineage,
     tick_scientific_support,
     write_cp_partition,
     write_multi_asset_partition,
     write_tick_partition,
 )
 from ddvc.graph_event_order import correction_pointer_path, correction_root_for_graph
+from ddvc.runtime import atomic_output
 from ddvc.tick_state_events import TickInitialization, certificate_identity_sha256, state_event_generation, write_daily_initializations, write_daily_v4_state_events
 from day_cut_fixtures import certified_day_cuts
 
@@ -684,6 +687,52 @@ class StateDataTests(unittest.TestCase):
             ),
             inputs,
         )
+
+    def test_correction_pointer_and_generation_are_bound_as_one_snapshot(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            raw = Path(directory) / "raw" / "thegraph"
+            root = correction_root_for_graph(raw)
+            pointer = correction_pointer_path(root, "uniswap_v3", "20250101")
+            pointer.parent.mkdir(parents=True)
+            old = root / "old-generation.json"
+            old.write_text("old\n", encoding="utf-8")
+            pointer.write_text('{"generation_id":"old"}\n', encoding="utf-8")
+            attempted = threading.Event()
+            completed = threading.Event()
+            threads: list[threading.Thread] = []
+
+            def replace_pointer() -> None:
+                attempted.set()
+                with atomic_output(pointer) as temporary:
+                    temporary.write_text(
+                        '{"generation_id":"new"}\n', encoding="utf-8"
+                    )
+                completed.set()
+
+            def selected_generation(*_args, **_kwargs):
+                self.assertIn('"old"', pointer.read_text(encoding="utf-8"))
+                thread = threading.Thread(target=replace_pointer)
+                threads.append(thread)
+                thread.start()
+                self.assertTrue(attempted.wait(timeout=1))
+                self.assertFalse(completed.wait(timeout=0.05))
+                return None, [pointer, old]
+
+            with patch(
+                "ddvc.state_data.load_event_order_corrections",
+                side_effect=selected_generation,
+            ):
+                lease = state_partition_lineage(
+                    raw,
+                    "tick",
+                    "uniswap_v3",
+                    "20250101",
+                    include_absent=True,
+                )
+            threads[0].join(timeout=2)
+            self.assertTrue(completed.is_set())
+            with self.assertRaisesRegex(RuntimeError, "leased source file changed"):
+                lease.assert_current()
 
     def test_constant_product_quote_support_requires_usable_order(self) -> None:
         with tempfile.TemporaryDirectory() as directory:

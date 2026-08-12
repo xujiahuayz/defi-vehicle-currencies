@@ -116,35 +116,55 @@ class TargetRelease:
     day_markers: tuple[Path, ...]
     calendar: tuple[str, ...]
     validation: Mapping[str, object]
+    pointer_sha256: str | None = None
+    manifest_sha256: str | None = None
+    day_marker_sha256: tuple[str, ...] = ()
 
     @property
     def content_identity_sha256(self) -> str:
         """Bind a long-running consumer to one exact resolved release."""
 
+        pointer_sha256 = self.pointer_sha256 or _sha256(self.pointer_path)
+        manifest_sha256 = self.manifest_sha256 or _sha256(self.manifest_path)
         return _json_sha256(
             {
                 "scope": self.scope,
                 "generation": self.generation,
                 "calendar": self.calendar,
-                "pointer_sha256": _sha256(self.pointer_path),
-                "manifest_sha256": _sha256(self.manifest_path),
+                "pointer_sha256": pointer_sha256,
+                "manifest_sha256": manifest_sha256,
             }
         )
 
     def assert_current(self) -> None:
-        """Reopen every day lineage and reject source drift since resolution."""
+        """Validate the bound bytes directly under the caller's shared lease."""
 
-        reopened = resolve_target_release(
-            self.scope,
-            expected_days=self.calendar,
-            root=self.pointer_path.parents[2],
+        expected_pointer = self.pointer_sha256 or _sha256(self.pointer_path)
+        expected_manifest = self.manifest_sha256 or _sha256(self.manifest_path)
+        expected_markers = self.day_marker_sha256 or tuple(
+            _sha256(path) for path in self.day_markers
         )
         if (
-            reopened.generation != self.generation
-            or reopened.content_identity_sha256 != self.content_identity_sha256
+            not self.pointer_path.is_file()
+            or _sha256(self.pointer_path) != expected_pointer
+            or not self.manifest_path.is_file()
+            or _sha256(self.manifest_path) != expected_manifest
+            or len(expected_markers) != len(self.day_markers)
+            or any(
+                not path.is_file() or _sha256(path) != expected
+                for path, expected in zip(
+                    self.day_markers, expected_markers, strict=True
+                )
+            )
         ):
             raise TargetEvidenceError(
                 f"{self.scope} transaction-target release changed during consumption"
+            )
+        for marker in self.day_markers:
+            validate_target_day(
+                marker,
+                scope=self.scope,
+                generation=self.generation,
             )
 
     @property
@@ -1016,6 +1036,9 @@ def resolve_target_release(
         tuple(markers),
         calendar,
         validation,
+        _sha256(pointer),
+        _sha256(manifest),
+        tuple(_sha256(marker) for marker in markers),
     )
 
 

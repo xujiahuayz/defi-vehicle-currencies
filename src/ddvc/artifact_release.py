@@ -20,7 +20,13 @@ from ddvc.provenance import (
     sidecar_path,
     verify,
 )
-from ddvc.runtime import atomic_output, serialized_output_install, serialized_read_installs
+from ddvc.runtime import (
+    atomic_output,
+    serialized_output_install,
+    serialized_read_installs,
+    source_lock_paths,
+    staged_output,
+)
 
 
 def file_sha256(path: Path) -> str:
@@ -143,6 +149,7 @@ def bind_file_lineage(
     selected = tuple(dict.fromkeys(Path(path) for path in paths))
     if not selected:
         raise ValueError("file-lineage lease requires at least one input")
+    source_lock_paths(selected, allow_missing=allow_missing)
     bindings: list[tuple[Path, str | None]] = []
     for path in selected:
         if not path.is_file():
@@ -156,6 +163,22 @@ def bind_file_lineage(
             raise RuntimeError(f"leased source file changed during hashing: {path}")
         bindings.append((path, digest))
     return FileLineageLease(tuple(bindings))
+
+
+def combine_file_lineages(
+    leases: list[FileLineageLease] | tuple[FileLineageLease, ...],
+) -> FileLineageLease:
+    """Combine already-bound snapshots without reopening their source pointers."""
+
+    bindings: dict[Path, str | None] = {}
+    for lease in leases:
+        for path, digest in lease.bindings:
+            prior = bindings.setdefault(path, digest)
+            if prior != digest:
+                raise RuntimeError(f"file lineage snapshots disagree: {path}")
+    if not bindings:
+        raise ValueError("combined file lineage requires at least one input")
+    return FileLineageLease(tuple(bindings.items()))
 
 
 def generation_id(artifact_sha256: Mapping[str, str], build_identity_sha256: str) -> str:
@@ -433,6 +456,7 @@ def publish_artifact_release(
     release_root = pointer_path.parent
     release_root.mkdir(parents=True, exist_ok=True)
     with serialized_output_install(pointer_path):
+        prior_pointer = pointer_path.read_bytes() if pointer_path.is_file() else None
         with tempfile.TemporaryDirectory(prefix=f".{kind}-", dir=release_root) as directory:
             staged = {
                 name: Path(directory) / filename for name, filename in filenames.items()
@@ -517,12 +541,21 @@ def publish_artifact_release(
                     for name in filenames
                 },
             }
-            write_pointer(pointer_path, pointer)
-            return _resolve_artifact_release_unlocked(
-                pointer_path,
-                kind=kind,
-                schema_version=schema_version,
-                filenames=filenames,
-                require_current_provenance=True,
-                expected_generation=generation,
-            )
+            try:
+                write_pointer(pointer_path, pointer)
+                return _resolve_artifact_release_unlocked(
+                    pointer_path,
+                    kind=kind,
+                    schema_version=schema_version,
+                    filenames=filenames,
+                    require_current_provenance=True,
+                    expected_generation=generation,
+                )
+            except BaseException:
+                if prior_pointer is None:
+                    pointer_path.unlink(missing_ok=True)
+                else:
+                    with staged_output(pointer_path) as rollback:
+                        rollback.write_bytes(prior_pointer)
+                        rollback.replace(pointer_path)
+                raise

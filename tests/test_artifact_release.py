@@ -124,6 +124,13 @@ def test_absent_file_lineage_lease_blocks_creation_until_reader_exits(
     assert completed.is_set()
 
 
+def test_dangling_symlink_is_not_bound_as_an_absent_source(tmp_path: Path) -> None:
+    dangling = tmp_path / "dangling"
+    dangling.symlink_to("missing")
+    with pytest.raises(FileNotFoundError, match="dangling symlink"):
+        bind_file_lineage([dangling], allow_missing=True)
+
+
 def test_bundle_validation_finishes_before_pointer_publication(tmp_path: Path) -> None:
     pointer = tmp_path / "release" / "current.json"
     first = _publish(pointer, 1)
@@ -146,6 +153,42 @@ def test_bundle_validation_finishes_before_pointer_publication(tmp_path: Path) -
         schema_version=1,
         filenames=FILENAMES,
     ).generation_id == first.generation_id
+
+
+def test_post_pointer_validation_failure_rolls_back_visibility(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    pointer = tmp_path / "release" / "current.json"
+    first = _publish(pointer, 1)
+    original = artifact_release._resolve_artifact_release_unlocked
+
+    def reject_new(path: Path, **kwargs):
+        if kwargs.get("expected_generation") is not None:
+            raise RuntimeError("post-install rejection")
+        return original(path, **kwargs)
+
+    monkeypatch.setattr(
+        artifact_release, "_resolve_artifact_release_unlocked", reject_new
+    )
+    with pytest.raises(RuntimeError, match="post-install rejection"):
+        _publish(pointer, 2)
+    monkeypatch.setattr(
+        artifact_release, "_resolve_artifact_release_unlocked", original
+    )
+    assert resolve_artifact_release(
+        pointer,
+        kind=KIND,
+        schema_version=1,
+        filenames=FILENAMES,
+    ).generation_id == first.generation_id
+
+    empty_pointer = tmp_path / "empty" / "current.json"
+    monkeypatch.setattr(
+        artifact_release, "_resolve_artifact_release_unlocked", reject_new
+    )
+    with pytest.raises(RuntimeError, match="post-install rejection"):
+        _publish(empty_pointer, 3)
+    assert not empty_pointer.exists()
 
 
 def test_identical_retry_never_rewrites_the_selected_generation(tmp_path: Path) -> None:
