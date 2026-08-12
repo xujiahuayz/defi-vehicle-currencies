@@ -1364,9 +1364,12 @@ def _validate_candidate_dispersion_change(value: object) -> None:
     _validate_candidate_dispersion_cell(value["pooled"])
     for cell in masks.values():
         _validate_candidate_dispersion_cell(cell)
-    for field in CANDIDATE_DISPERSION_COUNT_FIELDS:
+    for field in ("matched_cells", "matched_attempts_start", "matched_attempts_end"):
         if int(value["pooled"][field]) != sum(int(cell[field]) for cell in masks.values()):
             raise ValueError("paired dominance-cost candidate-dispersion pooled support disagrees with masks")
+    for field in ("candidate_cells_start", "candidate_cells_end"):
+        if int(value["pooled"][field]) < sum(int(cell[field]) for cell in masks.values()):
+            raise ValueError("paired dominance-cost candidate-dispersion mask candidates exceed pooled support")
 
 
 def _validate_sample_summary(value: object) -> None:
