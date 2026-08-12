@@ -8,6 +8,7 @@ import pandas as pd
 import pytest
 
 from ddvc.artifact_release import file_sha256
+from ddvc.fetch.raw import RawFetchInvariantError
 from ddvc.reconstruct import (
     RECONSTRUCTION_ENGINE,
     UNIFIED_QUALITY_COLUMNS,
@@ -70,7 +71,6 @@ def migrate(
         quality_exhibit=paths["quality_exhibit"],
         dexes=["uniswap_v2"],
         days=days,
-        sample_days=days,
         workers=workers,
         publish=publish,
         raw_lock=paths["raw_lock"],
@@ -86,8 +86,8 @@ def test_dry_run_proves_exact_semantics_without_mutating_release(tmp_path: Path)
     }
     before_ledger = file_sha256(paths["quality_panel"])
     plan = migrate(paths, days, publish=False, workers=2)
-    assert plan.sample["exact_frame_equal"].all()
-    assert plan.sample["fresh_serialization_deterministic"].all()
+    assert plan.validation["exact_frame_equal"].all()
+    assert plan.validation["fresh_serialization_deterministic"].all()
     assert {
         day: file_sha256(unified_quality_path(day, root=paths["unified_root"]))
         for day in days
@@ -146,6 +146,31 @@ def test_semantic_mismatch_fails_before_any_marker_or_ledger_change(
     assert file_sha256(paths["quality_panel"]) == before_ledger
 
 
+def test_unsampled_same_era_semantic_change_blocks_the_complete_migration(
+    tmp_path: Path,
+) -> None:
+    days = [f"202005{day:02d}" for day in range(5, 11)]
+    paths = prepare_legacy_release(tmp_path, days)
+    changed_day = "20200506"
+    write_v2_swap(
+        paths["data_root"],
+        "2020-05-06",
+        amount_in="999",
+    )
+    markers_before = {
+        day: file_sha256(unified_quality_path(day, root=paths["unified_root"]))
+        for day in days
+    }
+    ledger_before = file_sha256(paths["quality_panel"])
+    with pytest.raises(ValueError, match=f"semantics differ.*{changed_day}"):
+        migrate(paths, days, publish=True, workers=2)
+    assert {
+        day: file_sha256(unified_quality_path(day, root=paths["unified_root"]))
+        for day in days
+    } == markers_before
+    assert file_sha256(paths["quality_panel"]) == ledger_before
+
+
 def test_tampered_legacy_parquet_fails_before_publication(tmp_path: Path) -> None:
     days = ["20200505"]
     paths = prepare_legacy_release(tmp_path, days)
@@ -188,7 +213,7 @@ def test_missing_current_raw_marker_fails_before_publication(tmp_path: Path) -> 
     raw_marker.unlink()
     marker_path = unified_quality_path(days[0], root=paths["unified_root"])
     before_marker = file_sha256(marker_path)
-    with pytest.raises(FileNotFoundError, match="raw preflight failed"):
+    with pytest.raises(RawFetchInvariantError, match="generation identity"):
         migrate(paths, days, publish=True)
     assert file_sha256(marker_path) == before_marker
 

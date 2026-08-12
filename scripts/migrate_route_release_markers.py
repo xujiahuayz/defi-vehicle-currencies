@@ -4,7 +4,7 @@
 This is a marker migration, not a route rebuild. It accepts only the named
 legacy and current engines, validates every legacy Parquet against its marker
 and ledger, resolves every current raw input through its installed authority,
-and requires exact fresh reconstruction on a deterministic venue-era sample.
+and requires exact fresh reconstruction on every released day.
 No live marker changes until the complete plan passes. Publication swaps the
 marker directory and writes the global quality ledger last; any ordinary
 publication failure restores the legacy release.
@@ -36,7 +36,6 @@ from ddvc.reconstruct import (
     UNIFIED_QUALITY_PANEL,
     _available_days,
     active_route_sources,
-    preflight_route_input_perimeter,
     reconstruct_day_with_quality,
     route_input_fingerprint,
     unified_path,
@@ -77,7 +76,7 @@ class MigrationPlan:
     markers: dict[str, dict[str, object]]
     legacy_marker_sha256: dict[str, str]
     current_input_fingerprints: dict[str, str]
-    sample: pd.DataFrame
+    validation: pd.DataFrame
 
     @property
     def legacy_marker_set_sha256(self) -> str:
@@ -179,33 +178,7 @@ def _plan_day(
     return day, migrated, marker_hash, current_fingerprint
 
 
-def stratified_validation_days(
-    quality: pd.DataFrame,
-    dexes: list[str],
-) -> tuple[str, ...]:
-    """Cover every active-venue era at early, middle, late, quiet and busy dates."""
-
-    rows = quality.copy()
-    rows["day"] = rows["day"].map(_stamp)
-    rows["venue_era"] = rows["day"].map(
-        lambda day: tuple(active_route_sources(_calendar_day(day), dexes))
-    )
-    selected: set[str] = set()
-    for _era, group in rows.groupby("venue_era", sort=False):
-        group = group.sort_values("day", kind="stable").reset_index(drop=True)
-        selected.update(
-            {
-                str(group.iloc[0]["day"]),
-                str(group.iloc[len(group) // 2]["day"]),
-                str(group.iloc[-1]["day"]),
-                str(group.loc[group["raw_rows"].astype(int).idxmin(), "day"]),
-                str(group.loc[group["raw_rows"].astype(int).idxmax(), "day"]),
-            }
-        )
-    return tuple(sorted(selected))
-
-
-def _validate_fresh_sample(
+def _validate_fresh_day(
     day: str,
     *,
     dexes: list[str],
@@ -219,9 +192,9 @@ def _validate_fresh_sample(
         _calendar_day(day), dexes, data_root=data_root
     )
     if quality.get("passed") is not True:
-        raise ValueError(f"current raw reconstruction failed on migration sample: {day}")
+        raise ValueError(f"current raw reconstruction failed during migration: {day}")
     if quality.get("input_fingerprint") != current_input_fingerprint:
-        raise RuntimeError(f"current route input changed during migration sample: {day}")
+        raise RuntimeError(f"current route input changed during migration: {day}")
     old = pd.read_parquet(unified_path(day, root=unified_root))
     try:
         pd.testing.assert_frame_equal(
@@ -233,14 +206,14 @@ def _validate_fresh_sample(
         )
     except AssertionError as error:
         raise ValueError(
-            f"legacy and current route semantics differ on migration sample: {day}"
+            f"legacy and current route semantics differ during migration: {day}"
         ) from error
     for field in UNIFIED_QUALITY_COLUMNS:
         if field in _MIGRATABLE_IDENTITY_FIELDS:
             continue
         if legacy_marker.get(field) != _json_value(quality.get(field)):
             raise ValueError(
-                f"legacy and current route quality differ on migration sample: {day}/{field}"
+                f"legacy and current route quality differ during migration: {day}/{field}"
             )
     first = scratch / f"{day}-a.parquet"
     second = scratch / f"{day}-b.parquet"
@@ -263,7 +236,7 @@ def _validate_fresh_sample(
     }
 
 
-def _validate_fresh_sample_job(
+def _validate_fresh_day_job(
     job: tuple[
         str,
         list[str],
@@ -275,7 +248,7 @@ def _validate_fresh_sample_job(
     ],
 ) -> dict[str, object]:
     day, dexes, data_root, unified_root, marker, fingerprint, scratch = job
-    return _validate_fresh_sample(
+    return _validate_fresh_day(
         day,
         dexes=dexes,
         data_root=data_root,
@@ -293,7 +266,6 @@ def plan_migration(
     quality_panel: Path,
     dexes: list[str],
     days: list[str] | None = None,
-    sample_days: list[str] | None = None,
     workers: int = 4,
 ) -> MigrationPlan:
     """Validate the complete migration perimeter without changing live outputs."""
@@ -324,9 +296,6 @@ def plan_migration(
     }
     if observed_markers != set(selected):
         raise ValueError("legacy route marker directory perimeter is not exact")
-    preflight_route_input_perimeter(
-        [_calendar_day(day) for day in selected], dexes, data_root=data_root
-    )
     markers: dict[str, dict[str, object]] = {}
     marker_hashes: dict[str, str] = {}
     fingerprints: dict[str, str] = {}
@@ -353,14 +322,7 @@ def plan_migration(
         )
         for day in selected
     })
-    validation_days = tuple(
-        sorted(_stamp(day) for day in sample_days)
-        if sample_days is not None
-        else stratified_validation_days(ledger, dexes)
-    )
-    if not validation_days or not set(validation_days).issubset(selected):
-        raise ValueError("route migration sample is empty or outside the perimeter")
-    with tempfile.TemporaryDirectory(prefix="ddvc-route-marker-sample-") as directory:
+    with tempfile.TemporaryDirectory(prefix="ddvc-route-marker-validation-") as directory:
         scratch = Path(directory)
         jobs = [
             (
@@ -372,13 +334,13 @@ def plan_migration(
                 fingerprints[day],
                 scratch,
             )
-            for day in validation_days
+            for day in selected
         ]
         if worker_count == 1:
-            sample_rows = [_validate_fresh_sample_job(job) for job in jobs]
+            validation_rows = [_validate_fresh_day_job(job) for job in jobs]
         else:
             with interruptible_process_pool(worker_count) as pool:
-                sample_rows = list(pool.map(_validate_fresh_sample_job, jobs))
+                validation_rows = list(pool.map(_validate_fresh_day_job, jobs))
     quality = pd.DataFrame(
         [markers[day] for day in selected], columns=UNIFIED_QUALITY_COLUMNS
     )
@@ -388,7 +350,7 @@ def plan_migration(
         markers=markers,
         legacy_marker_sha256=marker_hashes,
         current_input_fingerprints=fingerprints,
-        sample=pd.DataFrame(sample_rows),
+        validation=pd.DataFrame(validation_rows),
     )
 
 
@@ -574,7 +536,7 @@ def publish_migration(
                 f"{MIGRATION_POLICY}; legacy_engine={LEGACY_ENGINE}; "
                 f"current_engine={RECONSTRUCTION_ENGINE}; "
                 f"legacy_marker_set_sha256={plan.legacy_marker_set_sha256}; "
-                f"exact_fresh_sample_days={len(plan.sample)}"
+                f"exact_fresh_validation_days={len(plan.validation)}"
             )
             write_panel(
                 plan.quality,
@@ -622,7 +584,6 @@ def migrate_route_release_markers(
     quality_exhibit: Path = UNIFIED_QUALITY_EXHIBIT,
     dexes: list[str] | None = None,
     days: list[str] | None = None,
-    sample_days: list[str] | None = None,
     workers: int = 4,
     publish: bool = False,
     raw_lock: Path = RAW_MARKET_DATA_LOCK,
@@ -647,7 +608,6 @@ def migrate_route_release_markers(
                 quality_panel=quality_panel,
                 dexes=dexes,
                 days=days,
-                sample_days=sample_days,
                 workers=workers,
             )
             if publish:
@@ -674,10 +634,12 @@ def main() -> int:
         publish=args.publish,
         workers=args.workers,
     )
-    byte_equal = int(plan.sample["fresh_parquet_matches_legacy_bytes"].sum())
+    byte_equal = int(
+        plan.validation["fresh_parquet_matches_legacy_bytes"].sum()
+    )
     print(
         f"route marker migration gate passed: {len(plan.days):,} days; "
-        f"{len(plan.sample):,} exact fresh sample days; "
+        f"{len(plan.validation):,} exact fresh validation days; "
         f"{byte_equal:,} byte-identical fresh Parquets; "
         f"published={args.publish}",
         flush=True,
