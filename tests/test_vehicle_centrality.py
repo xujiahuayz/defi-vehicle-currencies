@@ -5,7 +5,11 @@ import unittest
 import pandas as pd
 
 from ddvc.asset_types import NATIVE_ETH, WETH
-from scripts.build_vehicle_centrality import aggregate_day_edges, centralities
+from scripts.build_vehicle_centrality import (
+    aggregate_day_edges,
+    annual_asset_type_summary,
+    centralities,
+)
 
 
 class VehicleCentralityTests(unittest.TestCase):
@@ -137,6 +141,41 @@ class VehicleCentralityTests(unittest.TestCase):
         result = centralities(edges, k=None, min_legs=5).set_index("token")
         self.assertEqual(result.loc["a", "direct_count_share"], 0.0)
         self.assertGreater(result.loc["a", "direct_value_share"], 0.0)
+
+    def test_annual_type_summary_equal_weights_days_and_fills_absence_with_zero(self) -> None:
+        panel = pd.DataFrame(
+            [
+                {
+                    "date": "2024-01-01",
+                    "day": "20240101",
+                    "asset_type": "native",
+                    "direct_count_share": 0.8,
+                    "excess_betweenness_over_direct_count": 0.1,
+                },
+                {
+                    "date": "2024-01-01",
+                    "day": "20240101",
+                    "asset_type": "stable",
+                    "direct_count_share": 0.2,
+                    "excess_betweenness_over_direct_count": -0.1,
+                },
+                {
+                    "date": "2024-01-02",
+                    "day": "20240102",
+                    "asset_type": "native",
+                    "direct_count_share": 1.0,
+                    "excess_betweenness_over_direct_count": 0.0,
+                },
+            ]
+        )
+        result = annual_asset_type_summary(panel).set_index("asset_type")
+        self.assertAlmostEqual(result.loc["native", "direct_count_share"], 0.9)
+        self.assertAlmostEqual(result.loc["stable", "direct_count_share"], 0.1)
+        self.assertAlmostEqual(
+            result.loc["stable", "excess_betweenness_over_direct_count"], -0.05
+        )
+        self.assertEqual(result.loc["native", "sampled_days"], 2)
+        self.assertEqual(result.loc["stable", "sampled_days"], 2)
 
 
 if __name__ == "__main__":

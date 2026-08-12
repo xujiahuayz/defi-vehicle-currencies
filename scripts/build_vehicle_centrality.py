@@ -300,6 +300,46 @@ def add_network_position_shares(frame: pd.DataFrame) -> pd.DataFrame:
     return out
 
 
+def annual_asset_type_summary(panel: pd.DataFrame) -> pd.DataFrame:
+    """Equal-weight daily network positions, with absent type-days represented by zero."""
+
+    data = panel.copy()
+    data["date"] = pd.to_datetime(data["date"])
+    data["year"] = data["date"].dt.year
+    share_columns = [
+        column
+        for column in data.columns
+        if column.endswith("_share") or column.startswith("excess_betweenness_")
+    ]
+    daily = data.groupby(["year", "day", "asset_type"], as_index=False)[
+        share_columns
+    ].sum()
+    years = sorted(daily["year"].unique())
+    types = sorted(data["asset_type"].unique())
+    frames = []
+    for year in years:
+        days = sorted(daily.loc[daily["year"].eq(year), "day"].unique())
+        perimeter = pd.MultiIndex.from_product(
+            [[year], days, types], names=["year", "day", "asset_type"]
+        )
+        frames.append(
+            daily[daily["year"].eq(year)]
+            .set_index(["year", "day", "asset_type"])
+            .reindex(perimeter, fill_value=0.0)
+            .reset_index()
+        )
+    complete = pd.concat(frames, ignore_index=True)
+    summary = complete.groupby(["year", "asset_type"], as_index=False)[
+        share_columns
+    ].mean()
+    counts = (
+        complete.groupby(["year", "asset_type"], as_index=False)["day"]
+        .nunique()
+        .rename(columns={"day": "sampled_days"})
+    )
+    return summary.merge(counts, on=["year", "asset_type"], how="inner")
+
+
 def _one_day(
     day: str,
     min_usd: float,
@@ -410,35 +450,7 @@ def main() -> int:
             print(f"    {yr}  {r.symbol:<8} {r.betweenness_topological:.4f}")
 
     write_exhibit(
-        panel.groupby(["year", "asset_type"], as_index=False)[
-            [
-                "betweenness_topological",
-                "betweenness_count",
-                "betweenness_volume",
-                "degree",
-                "degree_topological",
-                "strength_count",
-                "strength_usd",
-                "eigenvector_topological",
-                "eigenvector_count",
-                "eigenvector_value",
-                "direct_topological_share",
-                "direct_count_share",
-                "direct_value_share",
-                "eigenvector_topological_share",
-                "eigenvector_count_share",
-                "eigenvector_value_share",
-                "betweenness_topological_share",
-                "betweenness_count_share",
-                "betweenness_value_share",
-                "excess_betweenness_over_direct_topological",
-                "excess_betweenness_over_direct_count",
-                "excess_betweenness_over_direct_value",
-                "excess_betweenness_over_eigenvector_topological",
-                "excess_betweenness_over_eigenvector_count",
-                "excess_betweenness_over_eigenvector_value",
-            ]
-        ].sum(),
+        annual_asset_type_summary(panel),
         OUT_EXHIBIT,
         code_sources=CODE_SOURCES,
         inputs=[args.out],
