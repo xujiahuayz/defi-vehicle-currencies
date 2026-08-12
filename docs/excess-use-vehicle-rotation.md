@@ -26,6 +26,16 @@ ETH's excess-use fell below one in 2022Q2 and returned above one by 2023Q1. The 
 
 By count the ordering barely moves: native asset-type excess-use sits near 0.8 to 0.95 across the whole sample and stable near 1.2 to 1.5 throughout, so on a per-route basis stables were already the more excess-used class early. The crossing is a value event. Large trades relocate the vehicle role first and the count of routes follows later, which reads as diffusion of a new vehicle from large flow to small flow. The gap between the value crossing (2025Q1) and any count crossing is the diffusion lag and is itself an estimand.
 
+## The vehicle role is a fiat-reserve phenomenon, and that is the mechanism
+
+Being a stablecoin is not sufficient to become a vehicle. Decomposing stable excess-use by collateral backing, weighted by intermediary dollars so that tiny categories do not mislead, the vehicle role concentrates entirely in fiat-reserve stables and is absent from the alternatives. Source `output/exhibits/vehicle_excess_use.jsonl`, `level = stable_backing`.
+
+Fiat-reserve backing (USDT, USDC) carries the intermediary volume, 30.6 billion dollars in 2021 rising to 36.4 billion in 2025, at a value excess-use ratio moving from 0.93 in 2020 to 1.09 in 2025. On-chain-collateralized backing (DAI) sits at 0.08 to 0.29 and falls to 0.02 to 0.04 by 2025 and 2026, so it is held and not routed through. Synthetic backing stays below one throughout. Fractional-algorithmic backing shows high ratios of 2.1 to 3.4 in 2021 to 2023 but only on 0.1 to 1.1 billion dollars, a niche conduit that then disappears after the 2022 algorithmic-stablecoin collapse. The extreme non-USD ratios, reaching 13.1 in 2024, sit on effectively zero dollars and are category noise, not a vehicle.
+
+The token level sharpens it. Within fiat-reserve, USDC was already a vehicle and is the incumbent, while USDT is the entrant crossing into vehicle status in 2025. So the rotation is not native-to-stables in general. It is native-to-fiat-reserve-stables, and specifically the recruitment of USDT alongside USDC.
+
+The economics is exactly the vehicle-currency theory made visible. A vehicle needs two things at once, a credible unit of account so a route can denominate through it without price risk, and a thick market so routing through it is cheap. A credible peg without depth, which is DAI, does not qualify. Depth without a reliable peg, which is the algorithmic stables before they broke, qualifies only briefly and at trivial scale. Only fiat-reserve stables hold both, and only they capture the role. The data does what the FX literature cannot, which is to show the full field of candidate media and which of them the thick-market and numéraire-stability conditions actually select.
+
 ## Above and beyond, three angles this measure opens
 
 1. Excess-use as a continuous vehicle-status state variable, with the unit threshold as the operational definition of becoming or ceasing to be dominant. The paper can report the crossing as an event and characterise the speed of the crossing, not only the endpoint shares. Estimand: the hazard of an asset's excess-use crossing one, and the persistence of the post-crossing state.
