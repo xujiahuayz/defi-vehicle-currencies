@@ -24,7 +24,10 @@ from ddvc.analysis.regression import (
 )
 from ddvc.analysis.dynamics import aggregate_complete_day_bins
 from ddvc.asset_types import CURRENCY_TYPES, backing
-from ddvc.data_release import require_node_d_release
+from ddvc.data_release import (
+    release_preinstall_validator,
+    released_route_partitions,
+)
 from ddvc.paths import REPO_ROOT
 from ddvc.runtime import bounded_workers, exclusive_job, interruptible_process_pool
 from ddvc.tables import write_exhibit, write_panel
@@ -251,10 +254,10 @@ def main() -> int:
     ap.add_argument("--limit", type=int, default=None)
     ap.add_argument("--panel-only", action="store_true")
     args = ap.parse_args()
-    require_node_d_release(routes=True)
     workers = bounded_workers(args.workers)
 
-    files = sorted(UNIFIED.glob("*.parquet"))
+    route_release = released_route_partitions(REQUIRED_COLUMNS)
+    files = list(route_release.paths)
     if args.limit:
         files = files[: args.limit]
     if not files:
@@ -295,12 +298,13 @@ def main() -> int:
         panel,
         OUT_PANEL,
         code_sources=CODE_SOURCES,
-        inputs=[UNIFIED],
+        inputs=list(route_release.provenance_anchors),
         notes=(
             "topology-valid cycles excluded; counts use full support; value fields "
             "retain all routes plus nested 2x and 20 percent "
             "source-intermediary-sink coherence bands"
         ),
+        preinstall_validator=release_preinstall_validator(route_release),
     )
     if args.panel_only:
         print(f"wrote analysis-ready panel {OUT_PANEL.relative_to(REPO_ROOT)}")

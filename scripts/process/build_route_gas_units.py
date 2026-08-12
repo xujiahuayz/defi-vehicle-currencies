@@ -19,7 +19,10 @@ from pathlib import Path
 
 import pandas as pd
 
-from ddvc.data_release import require_node_d_release
+from ddvc.data_release import (
+    release_preinstall_validator,
+    released_route_partitions,
+)
 from ddvc.ethereum_receipts import (
     RECEIPT_CACHE,
     fetch_receipt as fetch_ethereum_receipt,
@@ -30,8 +33,6 @@ from ddvc.ethereum_receipts import (
 from ddvc.paths import DATA_DIR, OUTPUT_DIR, REPO_ROOT, SHARED_RUNTIME_DIR
 from ddvc.provenance import cache_key
 from ddvc.quoter import rpc_post
-from ddvc.reconstruct import UNIFIED_QUALITY_PANEL
-from ddvc.release_calendar import released_route_days
 from ddvc.route_gas import (
     CANDIDATE_COLUMNS,
     REQUIRED_COLUMNS,
@@ -176,20 +177,19 @@ def _main_unlocked() -> int:
     )
     parser.add_argument("--panel-only", action="store_true")
     args = parser.parse_args()
-    require_node_d_release(routes=True)
     if args.per_cell < 1:
         parser.error("--per-cell must be positive")
     if args.workers < 1:
         parser.error("--workers must be positive")
     args.workers = bounded_workers(args.workers)
 
-    days = list(
-        dict.fromkeys(
-            args.days
-            or released_route_days(UNIFIED_QUALITY_PANEL, nonempty=True)
-        )
+    full_route_release = released_route_partitions(REQUIRED_COLUMNS, nonempty=True)
+    days = list(dict.fromkeys(args.days or full_route_release.days))
+    route_release = full_route_release.select_days(days)
+    generation = cache_key(
+        CANDIDATE_CODE_SOURCES,
+        inputs=list(route_release.provenance_anchors),
     )
-    generation = cache_key(CANDIDATE_CODE_SOURCES, inputs=[UNIFIED])
     candidate_cache = CANDIDATE_CACHE_ROOT / generation / f"per_cell_{args.per_cell}"
     parts = []
     candidate_count = 0
@@ -286,8 +286,9 @@ def _main_unlocked() -> int:
         panel,
         OUT_PANEL,
         code_sources=CODE_SOURCES,
-        inputs=[UNIFIED, UNIFIED_QUALITY_PANEL, receipt_snapshot],
+        inputs=[*route_release.provenance_anchors, receipt_snapshot],
         notes=f"hash-ranked cap of {args.per_cell} exact one-component transactions per year-topology-venue-intermediary cell",
+        preinstall_validator=release_preinstall_validator(route_release),
     )
     if args.panel_only:
         print(f"wrote analysis-ready panel {OUT_PANEL.relative_to(REPO_ROOT)}")

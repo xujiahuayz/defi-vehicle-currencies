@@ -32,10 +32,13 @@ from ddvc.analysis.regression import (
     year_endpoint_change,
 )
 from ddvc.asset_types import TYPES, VEHICLE_CANDIDATE_SYMBOLS, classify
-from ddvc.data_release import require_node_d_release
+from ddvc.data_release import (
+    release_preinstall_validator,
+    released_route_partitions,
+)
 from ddvc.paths import DATA_DIR, OUTPUT_DIR, REPO_ROOT
 from ddvc.route_roles import VALUE_SUPPORT_SCOPES
-from ddvc.realised import realised_routes
+from ddvc.realised import ROUTE_COLUMNS, realised_routes
 from ddvc.runtime import bounded_workers, exclusive_job, interruptible_process_pool
 from ddvc.tables import write_exhibit, write_panel
 
@@ -671,10 +674,10 @@ def main() -> int:
     parser.add_argument("--limit", type=int, default=None)
     parser.add_argument("--panel-only", action="store_true")
     args = parser.parse_args()
-    require_node_d_release(routes=True)
     workers = bounded_workers(args.workers)
 
-    days = sorted(UNIFIED.glob("*.parquet"))
+    route_release = released_route_partitions(ROUTE_COLUMNS)
+    days = list(route_release.paths)
     if args.limit:
         days = days[: args.limit]
     if not days:
@@ -714,8 +717,9 @@ def main() -> int:
         panel,
         OUT_PARQUET,
         code_sources=CODE_SOURCES,
-        inputs=[UNIFIED],
+        inputs=list(route_release.provenance_anchors),
         notes="topology-valid non-cyclic routes; counts use full topology support; values report all, 2x and 20 percent source-intermediary-sink coherence bands",
+        preinstall_validator=release_preinstall_validator(route_release),
     )
     if args.panel_only:
         print(f"wrote analysis-ready panel {OUT_PARQUET.relative_to(REPO_ROOT)}")

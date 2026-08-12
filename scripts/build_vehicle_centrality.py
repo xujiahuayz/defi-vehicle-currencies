@@ -95,7 +95,10 @@ import numpy as np
 import pandas as pd
 
 from ddvc.asset_types import canonical_token, classify
-from ddvc.data_release import require_node_d_release
+from ddvc.data_release import (
+    release_preinstall_validator,
+    released_route_partitions,
+)
 from ddvc.paths import DATA_DIR, OUTPUT_DIR, REPO_ROOT, repo_path
 from ddvc.runtime import bounded_workers, exclusive_job, interruptible_process_pool
 from ddvc.route_roles import ROUTE_KEYS, component_eligibility, component_value_support
@@ -108,6 +111,13 @@ LOCK = DATA_DIR / "processed" / ".vehicle_centrality.lock"
 CODE_SOURCES = [
     "scripts/build_vehicle_centrality.py",
     "src/ddvc/asset_types.py",
+]
+CENTRALITY_INPUT_COLUMNS = [
+    *ROUTE_KEYS,
+    "token_in",
+    "token_out",
+    "amount_usd",
+    "route_class",
 ]
 
 
@@ -160,13 +170,7 @@ def day_edges(day: str) -> pd.DataFrame:
     return aggregate_day_edges(
         pd.read_parquet(
             p,
-            columns=[
-                *ROUTE_KEYS,
-                "token_in",
-                "token_out",
-                "amount_usd",
-                "route_class",
-            ],
+            columns=CENTRALITY_INPUT_COLUMNS,
         )
     )
 
@@ -385,10 +389,11 @@ def main() -> int:
     ap.add_argument("--panel-only", action="store_true")
     args = ap.parse_args()
     args.out = repo_path(args.out)
-    require_node_d_release(routes=True)
     jobs = bounded_workers(args.jobs)
 
-    days = sorted(p.stem for p in UNIFIED.glob("[0-9]" * 8 + ".parquet"))[:: args.stride]
+    full_route_release = released_route_partitions(CENTRALITY_INPUT_COLUMNS)
+    days = list(full_route_release.days[:: args.stride])
+    route_release = full_route_release.select_days(days)
     print(f"building trading graphs on {len(days)} sampled days "
           f"({days[0]}..{days[-1]}), k={args.k} source nodes, seed={args.seed}\n")
 
@@ -425,8 +430,9 @@ def main() -> int:
         panel,
         args.out,
         code_sources=CODE_SOURCES,
-        inputs=[UNIFIED],
+        inputs=list(route_release.provenance_anchors),
         notes=f"network robustness panel on the canonical directed-route layer; k={args.k}; seed={args.seed}; min_legs={args.min_legs}; min_usd={args.min_usd}",
+        preinstall_validator=release_preinstall_validator(route_release),
     )
     if args.panel_only:
         print(f"wrote analysis-ready panel {args.out.relative_to(REPO_ROOT)}")

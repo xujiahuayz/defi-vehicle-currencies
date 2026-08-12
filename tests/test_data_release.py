@@ -142,6 +142,49 @@ class DataReleaseTests(unittest.TestCase):
             self.assertEqual(verdict["status"], "stale")
             self.assertIn(str(source.resolve()), verdict["changed_inputs"])
 
+    def test_release_bound_provenance_ignores_mtime_only_drift_but_tracks_science(self) -> None:
+        from unittest.mock import patch
+
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            dependency = root / "scientific.py"
+            dependency.write_text("VALUE = 1\n", encoding="utf-8")
+            release = self._test_release(root)
+            output = root / "result.parquet"
+            with (
+                patch("ddvc.provenance.ROOT", root),
+                patch("ddvc.provenance.MANIFESTS", root / "manifests"),
+                patch("ddvc.data_release.REPO_ROOT", root),
+            ):
+                write_panel(
+                    pd.DataFrame({"value": [2]}),
+                    output,
+                    code_sources=["scientific.py"],
+                    inputs=list(release.provenance_anchors),
+                    preinstall_validator=release_preinstall_validator(release),
+                )
+                stamped = json.loads(sidecar_path(output).read_text())
+                self.assertEqual(len(stamped["inputs"]), 1)
+                self.assertTrue(stamped["inputs"][0]["path"].endswith("ledger.parquet"))
+                self.assertEqual(stamped["inputs"][0]["sha256"], release.ledger_sha256)
+                self.assertEqual(len(stamped["released_input_bindings"]), 3)
+
+                for path in release.provenance_inputs:
+                    stat = path.stat()
+                    os.utime(path, ns=(stat.st_atime_ns, stat.st_mtime_ns + 1_000_000))
+                self.assertEqual(verify(output)["status"], "ok")
+
+                dependency.write_text("VALUE = 2\n", encoding="utf-8")
+                self.assertEqual(verify(output)["status"], "stale")
+                dependency.write_text("VALUE = 1\n", encoding="utf-8")
+                self.assertEqual(verify(output)["status"], "ok")
+
+                source = release.partitions[0].path
+                source.write_bytes(b"source-b")
+                verdict = verify(output)
+                self.assertEqual(verdict["status"], "stale")
+                self.assertIn(str(source.resolve()), verdict["changed_inputs"])
+
     def test_independent_multi_output_contract_cannot_leave_a_stale_member_current(self) -> None:
         with tempfile.TemporaryDirectory() as directory:
             root = Path(directory)
@@ -575,13 +618,13 @@ class DataReleaseTests(unittest.TestCase):
 
     def test_analysis_panel_builders_call_the_shared_release_gate(self) -> None:
         expected = {
-            "scripts/build_intermediation_by_type.py": "require_node_d_release(routes=True)",
-            "scripts/build_cross_venue_routing_series.py": "require_node_d_release(routes=True)",
-            "scripts/build_vehicle_excess_use.py": "require_node_d_release(routes=True)",
-            "scripts/build_vehicle_swap_style.py": "require_node_d_release(routes=True)",
-            "scripts/build_vehicle_centrality.py": "require_node_d_release(routes=True)",
+            "scripts/build_intermediation_by_type.py": "released_route_partitions(",
+            "scripts/build_cross_venue_routing_series.py": "released_route_partitions(",
+            "scripts/build_vehicle_excess_use.py": "released_route_partitions(",
+            "scripts/build_vehicle_swap_style.py": "released_route_partitions(",
+            "scripts/build_vehicle_centrality.py": "released_route_partitions(",
             "scripts/build_ethereum_day_calendar.py": "require_node_d_release(routes=True)",
-            "scripts/process/build_route_gas_units.py": "require_node_d_release(routes=True)",
+            "scripts/process/build_route_gas_units.py": "released_route_partitions(",
             "scripts/process/build_route_transaction_gas.py": "require_node_d_release(routes=True, market_state=True)",
             "scripts/run_route_cost_panel.py": "require_node_d_release(routes=True, market_state=True)",
             "scripts/build_transaction_state_frontier.py": "require_node_d_release(routes=True)",
@@ -594,6 +637,35 @@ class DataReleaseTests(unittest.TestCase):
         for filename, call in expected.items():
             with self.subTest(filename=filename):
                 self.assertIn(call, Path(filename).read_text(encoding="utf-8"))
+
+    def test_intermediation_panel_binds_the_exact_route_release(self) -> None:
+        source = Path("scripts/build_intermediation_by_type.py").read_text(
+            encoding="utf-8"
+        )
+        self.assertIn("days = list(route_release.paths)", source)
+        self.assertIn("inputs=list(route_release.provenance_anchors)", source)
+        self.assertIn(
+            "preinstall_validator=release_preinstall_validator(route_release)",
+            source,
+        )
+        self.assertNotIn("inputs=[UNIFIED]", source)
+
+    def test_route_only_d3_builders_use_portable_exact_release_bindings(self) -> None:
+        filenames = [
+            "scripts/build_intermediation_by_type.py",
+            "scripts/build_cross_venue_routing_series.py",
+            "scripts/build_vehicle_excess_use.py",
+            "scripts/build_vehicle_swap_style.py",
+            "scripts/build_vehicle_centrality.py",
+            "scripts/process/build_route_gas_units.py",
+        ]
+        for filename in filenames:
+            with self.subTest(filename=filename):
+                source = Path(filename).read_text(encoding="utf-8")
+                self.assertIn("released_route_partitions(", source)
+                self.assertIn("provenance_anchors", source)
+                self.assertIn("release_preinstall_validator(route_release)", source)
+                self.assertNotIn("inputs=[UNIFIED]", source)
 
     def test_market_state_consumers_take_days_from_the_release_ledger(self) -> None:
         filenames = [

@@ -152,6 +152,18 @@ class ReleasedPartitionSet:
     def expected_rows(self) -> tuple[int, ...]:
         return tuple(partition.expected_rows for partition in self.partitions)
 
+    @property
+    def provenance_anchors(self) -> tuple[Path, ...]:
+        """Stable release files for generic provenance plus exact bound members.
+
+        Partition and marker bytes are added separately by :class:`ReleasePreinstallValidator`. Keeping them out of generic provenance avoids treating an mtime-only copy between hosts as a scientific change.
+        """
+
+        return (
+            self.ledger_path,
+            *((self.quarantine_path,) if self.quarantine_path is not None else ()),
+        )
+
     def _partition(self, day: str) -> ReleasedPartition:
         normalized = str(day).replace("-", "")
         matches = [partition for partition in self.partitions if partition.day == normalized]

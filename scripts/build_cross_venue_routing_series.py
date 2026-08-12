@@ -66,7 +66,10 @@ import pandas as pd
 from ddvc.analysis.regression import common_calendar_day_mask, year_endpoint_change
 from ddvc.analysis.routing_technology import ROUTING_TECHNOLOGY_EVENTS
 from ddvc.asset_types import canonical_token
-from ddvc.data_release import require_node_d_release
+from ddvc.data_release import (
+    release_preinstall_validator,
+    released_route_partitions,
+)
 from ddvc.paths import DATA_DIR, OUTPUT_DIR, REPO_ROOT
 from ddvc.route_roles import (
     VALUE_SUPPORT_SCOPES,
@@ -531,10 +534,10 @@ def main() -> int:
     ap.add_argument("--limit", type=int, default=None, help="first N days only, for a smoke test")
     ap.add_argument("--panel-only", action="store_true")
     args = ap.parse_args()
-    require_node_d_release(routes=True)
     args.workers = bounded_workers(args.workers)
 
-    days = sorted(UNIFIED.glob("*.parquet"))
+    route_release = released_route_partitions(COLS)
+    days = list(route_release.paths)
     if args.limit:
         days = days[: args.limit]
     if not days:
@@ -571,8 +574,9 @@ def main() -> int:
         df,
         OUT_PARQUET,
         code_sources=CODE_SOURCES,
-        inputs=[UNIFIED],
+        inputs=list(route_release.provenance_anchors),
         notes="topology-valid routes; indirect incidence requires an intermediary; direct pool splits are separate; values report all, 2x and 20 percent flow-coherence bands",
+        preinstall_validator=release_preinstall_validator(route_release),
     )
     if args.panel_only:
         print(f"wrote analysis-ready panel {OUT_PARQUET.relative_to(REPO_ROOT)}")
