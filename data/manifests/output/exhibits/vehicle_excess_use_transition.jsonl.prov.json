@@ -1,0 +1,50 @@
+{
+ "argv": [],
+ "artefact": "output/exhibits/vehicle_excess_use_transition.jsonl",
+ "artefact_bytes": 2068,
+ "artefact_mtime_ns": 1786501949893212488,
+ "artefact_sha256": "e0e4f254b4d76af4504d95301d367d59e28cbae899204bf5db60ce1e415408af",
+ "code_fingerprint": "701dc75183df0ca879029fa847ba550c7f038c5c1803a329c934f36eca7272e2",
+ "code_sources": [
+  "<stdin>",
+  "scripts/build_vehicle_excess_use.py",
+  "src/ddvc/analysis/regression.py",
+  "src/ddvc/asset_types.py",
+  "src/ddvc/route_roles.py",
+  "src/ddvc/tables.py",
+  "src/ddvc/vehicle_extent.py"
+ ],
+ "created_at": "2026-08-12T02:32:29+00:00",
+ "git": {
+  "branch": "glotl/dominance-cost-temporal-match",
+  "commit": "9385c52806c42ed031a5e8c922aea21564bb98a4",
+  "dirty": true,
+  "dirty_generated_files": [
+   "output/exhibits/.vehicle_excess_use_transition.jsonl.oe_q_k4z.tmp"
+  ],
+  "dirty_tracked_files": [
+   "scripts/build_vehicle_excess_use.py",
+   "tests/test_vehicle_extent.py"
+  ],
+  "dirty_untracked_files": []
+ },
+ "inputs": [
+  {
+   "bytes": 599014686,
+   "exists": true,
+   "hashed": false,
+   "mtime_ns": 1786501948853901352,
+   "path": "data/processed/vehicle_excess_use_daily.parquet"
+  }
+ ],
+ "libraries": {
+  "numpy": "2.5.1",
+  "pandas": "3.0.3",
+  "pyarrow": "25.0.0",
+  "scipy": "1.18.0"
+ },
+ "notes": "paired-date USDT intermediary-minus-endpoint use on the prespecified currency perimeter; Newey-West Bartlett covariance",
+ "python": "3.14.5",
+ "rows": 4,
+ "script": "-"
+}

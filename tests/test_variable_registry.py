@@ -54,6 +54,22 @@ class VariableRegistryTests(unittest.TestCase):
             columns,
         )
 
+    def test_count_and_value_dominance_have_identical_support_variants(self) -> None:
+        by_column = {spec.column: spec for spec in VARIABLE_SPECS}
+        expected = {
+            "intermediate_count_share_within_20pct",
+            "endpoint_count_share_within_20pct",
+            "vehicle_excess_use_count_ratio_within_20pct",
+            "intermediate_share_within_20pct",
+            "endpoint_share_within_20pct",
+            "vehicle_excess_use_ratio_within_20pct",
+        }
+        self.assertTrue(expected.issubset(by_column))
+        for column in expected:
+            spec = by_column[column]
+            self.assertIn("20", spec.notation)
+            self.assertIn("vehicle_excess_use_daily.parquet", spec.source)
+
     def test_transaction_frontier_efficiency_variables_are_registered(self) -> None:
         columns = {spec.column for spec in VARIABLE_SPECS}
         self.assertLessEqual(

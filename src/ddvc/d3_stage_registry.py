@@ -98,6 +98,12 @@ D3_BUILD_STAGES = (
         ("data/processed/vehicle_excess_use_daily.parquet",),
     ),
     D3BuildStage(
+        "build_vehicle_swap_style.py",
+        ("--workers", "8", "--panel-only"),
+        "matched-support count/value dominance by observable route morphology, complexity, integration, and capped notional",
+        ("data/processed/vehicle_swap_style_daily.parquet",),
+    ),
+    D3BuildStage(
         "build_vehicle_centrality.py",
         (
             "--stride",

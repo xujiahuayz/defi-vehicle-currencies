@@ -11,7 +11,11 @@ from ddvc.vehicle_extent import (
     compute_vehicle_extent,
     restrict_routes_to_venues,
 )
-from scripts.build_vehicle_excess_use import bounded_workers, stable_backing_year
+from scripts.build_vehicle_excess_use import (
+    bounded_workers,
+    stable_backing_year,
+    token_excess_use_transition_tests,
+)
 
 
 def leg(
@@ -168,7 +172,26 @@ class VehicleExtentTests(unittest.TestCase):
         self.assertAlmostEqual(out.loc["k", "intermediate_usd"], 550.0)
         self.assertEqual(out.loc["k", "intermediate_usd_within_2x"], 0.0)
         self.assertEqual(out.loc["m", "intermediate_usd_within_20pct"], 0.0)
+        self.assertEqual(out.loc["k", "intermediate_routes_within_20pct"], 0)
+        self.assertEqual(out.loc["m", "intermediate_routes_within_20pct"], 0)
         self.assertAlmostEqual(out.loc["a", "endpoint_usd_within_20pct"], 100.0)
+        self.assertEqual(out.loc["a", "endpoint_routes_within_20pct"], 1)
+
+    def test_value_and_count_shares_can_be_compared_on_identical_support(self) -> None:
+        rows = [
+            leg("small", 0, "a", "k", "source", "intermediate", 10, log_index=0),
+            leg("small", 0, "k", "b", "intermediate", "sink", 10, log_index=1),
+            leg("large", 0, "a", "m", "source", "intermediate", 90, log_index=0),
+            leg("large", 0, "m", "b", "intermediate", "sink", 90, log_index=1),
+            leg("broken", 0, "a", "k", "source", "intermediate", 10, log_index=0),
+            leg("broken", 0, "k", "b", "intermediate", "sink", 100, log_index=1),
+        ]
+        out = compute_vehicle_extent(pd.DataFrame(rows)).set_index("token")
+        self.assertAlmostEqual(out.loc["k", "intermediate_count_share"], 2 / 3)
+        self.assertAlmostEqual(out.loc["k", "intermediate_count_share_within_20pct"], 0.5)
+        self.assertAlmostEqual(out.loc["k", "intermediate_share_within_20pct"], 0.1)
+        self.assertAlmostEqual(out.loc["m", "intermediate_count_share_within_20pct"], 0.5)
+        self.assertAlmostEqual(out.loc["m", "intermediate_share_within_20pct"], 0.9)
 
     def test_branched_dag_is_economic_not_cyclic(self) -> None:
         rows = [
@@ -309,6 +332,67 @@ class VehicleExtentTests(unittest.TestCase):
         self.assertTrue(out["scope"].eq("stable_currencies").all())
         self.assertAlmostEqual(out.loc["fiat_reserve", "vehicle_excess_use_ratio"], 1.5)
         self.assertAlmostEqual(out.loc["synthetic", "vehicle_excess_use_count_ratio"], 0.5)
+
+    def test_usdt_transition_nets_out_endpoint_demand(self) -> None:
+        rows = []
+        for year, usdt_intermediate in ((2024, 20.0), (2025, 30.0), (2026, 40.0)):
+            for day in range(4):
+                for symbol, asset_type, intermediate, endpoint in (
+                    ("USDT", "stable", usdt_intermediate + day, 10.0 + day),
+                    ("USDC", "stable", 40.0 - day / 2, 45.0 - day / 2),
+                    ("WETH", "native", 60.0 - usdt_intermediate - day / 2, 45.0 - day / 2),
+                ):
+                    rows.append(
+                        {
+                            "date": pd.Timestamp(f"{year}-01-{day + 1:02d}"),
+                            "symbol": symbol,
+                            "asset_type": asset_type,
+                            "intermediate_routes": intermediate,
+                            "endpoint_routes": endpoint,
+                            "intermediate_usd_within_20pct": intermediate,
+                            "endpoint_usd_within_20pct": endpoint,
+                        }
+                    )
+        result = token_excess_use_transition_tests(pd.DataFrame(rows), hac_lag=1)
+        count_gap = result[
+            result["weighting"].eq("episode")
+            & result["transformation"].eq("share_gap")
+        ].iloc[0]
+        self.assertEqual(count_gap["observation_clock"], "daily")
+        self.assertGreater(count_gap["comparison_period_mean"], count_gap["baseline_period_mean"])
+        self.assertGreater(count_gap["change"], 0.15)
+        value_log_ratio = result[
+            result["weighting"].eq("value")
+            & result["transformation"].eq("log_excess_ratio")
+        ].iloc[0]
+        self.assertGreater(value_log_ratio["change"], 0.5)
+        self.assertEqual(count_gap["share_perimeter"], "prespecified_currency_types")
+
+    def test_usdt_transition_runs_every_complete_week_anchor(self) -> None:
+        rows = []
+        for year, usdt_intermediate in ((2024, 20.0), (2025, 30.0), (2026, 40.0)):
+            for day in range(1, 29):
+                for symbol, asset_type, intermediate, endpoint in (
+                    ("USDT", "stable", usdt_intermediate, 10.0),
+                    ("USDC", "stable", 40.0, 45.0),
+                    ("WETH", "native", 40.0, 45.0),
+                ):
+                    rows.append(
+                        {
+                            "date": pd.Timestamp(year, 1, 1) + pd.Timedelta(days=day - 1),
+                            "symbol": symbol,
+                            "asset_type": asset_type,
+                            "intermediate_routes": intermediate,
+                            "endpoint_routes": endpoint,
+                            "intermediate_usd_within_20pct": intermediate,
+                            "endpoint_usd_within_20pct": endpoint,
+                        }
+                    )
+        result = token_excess_use_transition_tests(pd.DataFrame(rows), hac_lag=1)
+        weekly = result[result["observation_clock"].eq("weekly")]
+        self.assertEqual(set(weekly["anchor_offset_days"]), set(range(7)))
+        self.assertTrue(weekly["period_days"].eq(7).all())
+        self.assertEqual(weekly.groupby("anchor_offset_days").size().to_dict(), {anchor: 4 for anchor in range(7)})
 
 
 if __name__ == "__main__":

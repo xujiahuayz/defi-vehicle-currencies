@@ -37,7 +37,7 @@ from ddvc.paths import REPO_ROOT
 from ddvc.runtime import atomic_output, serialized_output_install
 
 
-PROBE_SCHEMA_VERSION = 1
+PROBE_SCHEMA_VERSION = 5
 CANONICAL_FLOAT_SIGNIFICANT_DIGITS = 7
 SERIALIZED_P_VALUE_FLOOR = 1e-12
 OUTCOME = "weth_symmetric_output_edge_bps"
@@ -69,6 +69,23 @@ COMPARATOR_MODEL_NAMES = (
 TAIL_FRACTIONS = (0.005, 0.01)
 ENDPOINT_DELETION_RULES = ("largest_endpoint_pair", "largest_one_percent_endpoint_pairs")
 POOLED_MODEL_NAMES = ("year", "routing_era")
+MATCHED_YEAR_START = 2024
+MATCHED_YEAR_END = 2026
+MATCHED_CELL_KEYS = (
+    "comparator_symbol",
+    "endpoint_pair",
+    "trade_size_usd",
+    "reserve_hour_utc",
+    "architecture",
+    "available_candidate_count",
+)
+MATCHED_SELECTION_FIELDS = (
+    "comparator_symbol",
+    "trade_size_usd",
+    "reserve_hour_utc",
+    "architecture",
+    "available_candidate_count",
+)
 COMMON_SUPPORT_MODEL_LADDER = tuple(
     (model, blocks, cluster_mode)
     for model, blocks in (
@@ -82,6 +99,8 @@ COMMON_SUPPORT_MODEL_LADDER = tuple(
 LEDGER_REQUIRED_FIELDS = {
     "sample_summary": {"sample"},
     "support_attrition_summary": {"support_attrition"},
+    "matched_year_change_summary": {"matched_year_change"},
+    "candidate_dispersion_change_summary": {"candidate_dispersion_change"},
     "pooled_model": {"model", "status", "covariance", "estimate"},
     "comparator_summary": {"comparator", "support", "reference_support", "reference_raw_mean_bps"},
     "main_level_support": {"comparator", "field", "level", "n", "dates", "endpoint_pairs"},
@@ -109,6 +128,8 @@ REPORT_FIELDS = {
     "routing_era_cutoffs",
     "sample",
     "support_attrition",
+    "matched_year_change",
+    "candidate_dispersion_change",
     "pooled_models",
     "comparator_models",
     "common_support_sets",
@@ -118,6 +139,53 @@ REPORT_FIELDS = {
     "headline_boundary",
     "ledger_manifest",
     "result_sha256",
+}
+
+MATCHED_CHANGE_COUNT_FIELDS = {
+    "candidate_cells_start",
+    "candidate_cells_end",
+    "matched_cells",
+    "candidate_rows_start",
+    "candidate_rows_end",
+    "matched_rows_start",
+    "matched_rows_end",
+}
+MATCHED_CHANGE_SHARE_FIELDS = {
+    "matched_cell_share_of_start",
+    "matched_cell_share_of_end",
+    "matched_row_share_of_start",
+    "matched_row_share_of_end",
+}
+MATCHED_CHANGE_ESTIMATE_FIELDS = {
+    "equal_cell_delta_bps",
+    "median_cell_delta_bps",
+    "min_support_weighted_delta_bps",
+    "p05_cell_delta_bps",
+    "p25_cell_delta_bps",
+    "p75_cell_delta_bps",
+    "p95_cell_delta_bps",
+    "trimmed_mean_1pct_delta_bps",
+    "trimmed_mean_5pct_delta_bps",
+    "negative_cell_share",
+}
+CANDIDATE_DISPERSION_COUNT_FIELDS = {
+    "candidate_cells_start",
+    "candidate_cells_end",
+    "matched_cells",
+    "matched_attempts_start",
+    "matched_attempts_end",
+}
+CANDIDATE_DISPERSION_ESTIMATE_FIELDS = {
+    "equal_cell_dispersion_mean_bps",
+    "equal_cell_dispersion_median_bps",
+    "equal_cell_dispersion_p25_bps",
+    "equal_cell_dispersion_p75_bps",
+    "min_support_weighted_dispersion_mean_bps",
+    "equal_cell_weth_regret_mean_bps",
+    "equal_cell_weth_regret_median_bps",
+    "equal_cell_weth_regret_p25_bps",
+    "equal_cell_weth_regret_p75_bps",
+    "min_support_weighted_weth_regret_mean_bps",
 }
 
 
@@ -166,7 +234,7 @@ def _validate_comparator_mapping(frame: pd.DataFrame) -> None:
 
 
 def _validate_prepared_frame(frame: pd.DataFrame) -> None:
-    required = {"date", "reserve_hour_utc", "endpoint_pair", "attempt_id", "comparator_support_mask", "comparator", "comparator_symbol", "trade_size_usd", "available_candidate_count", "sample_year", "routing_era", "architecture", OUTCOME, *HOUR_COLUMNS}
+    required = {"date", "reserve_hour_utc", "endpoint_pair", "attempt_id", "comparator_support_mask", "comparator", "comparator_symbol", "trade_size_usd", "available_candidate_count", "sample_year", "routing_era", "architecture", "weth_output_usd", "comparator_output_usd", OUTCOME, *HOUR_COLUMNS}
     missing = sorted(required - set(frame.columns))
     if missing:
         raise ValueError(f"paired dominance-cost prepared frame lacks fields: {missing}")
@@ -184,10 +252,11 @@ def _validate_prepared_frame(frame: pd.DataFrame) -> None:
     if not np.isfinite(hour).all() or not np.equal(hour, np.floor(hour)).all() or ((hour < 0) | (hour > 23)).any():
         raise ValueError("paired dominance-cost reserve_hour_utc must be an integer from 0 through 23")
     outcome = pd.to_numeric(frame[OUTCOME], errors="coerce").to_numpy(dtype=float)
+    candidate_outputs = frame[["weth_output_usd", "comparator_output_usd"]].to_numpy(dtype=float)
     trade_size = pd.to_numeric(frame["trade_size_usd"], errors="coerce").to_numpy(dtype=float)
     year = pd.to_numeric(frame["sample_year"], errors="coerce").to_numpy(dtype=float)
     harmonics = frame[list(HOUR_COLUMNS)].to_numpy(dtype=float)
-    if not np.isfinite(outcome).all() or not np.isfinite(trade_size).all() or not np.isfinite(year).all() or not np.isfinite(harmonics).all() or not np.equal(year, np.floor(year)).all():
+    if not np.isfinite(outcome).all() or not np.isfinite(candidate_outputs).all() or (candidate_outputs <= 0).any() or not np.isfinite(trade_size).all() or not np.isfinite(year).all() or not np.isfinite(harmonics).all() or not np.equal(year, np.floor(year)).all():
         raise ValueError("paired dominance-cost prepared frame has non-finite or non-integral core values")
     if frame["endpoint_pair"].isna().any():
         raise ValueError("paired dominance-cost prepared frame has missing endpoint pairs")
@@ -301,7 +370,6 @@ def load_panel(path: Path) -> pd.DataFrame:
     reconstructed = 20_000.0 * (frame["weth_output_usd"] - frame["comparator_output_usd"]) / (frame["weth_output_usd"] + frame["comparator_output_usd"])
     if not np.allclose(reconstructed, frame[OUTCOME], rtol=0.0, atol=1e-10):
         raise ValueError("paired dominance-cost outcome disagrees with its declared formula")
-    frame.drop(columns=["weth_output_usd", "comparator_output_usd"], inplace=True)
     return prepare_frame(frame)
 
 
@@ -636,6 +704,219 @@ def _influence_records(frame: pd.DataFrame) -> list[dict[str, object]]:
     return records
 
 
+def _matched_year_change(frame: pd.DataFrame) -> dict[str, object]:
+    """Compare endpoint-year means only inside cells observed in both endpoint years."""
+
+    selected = frame[frame["sample_year"].isin((MATCHED_YEAR_START, MATCHED_YEAR_END))]
+    grouped = (
+        selected.groupby([*MATCHED_CELL_KEYS, "sample_year"], observed=True, sort=True)[OUTCOME]
+        .agg(["mean", "size"])
+        .reset_index()
+    )
+    means = grouped.pivot(index=list(MATCHED_CELL_KEYS), columns="sample_year", values="mean")
+    sizes = grouped.pivot(index=list(MATCHED_CELL_KEYS), columns="sample_year", values="size")
+    matched_index = means.dropna(subset=[MATCHED_YEAR_START, MATCHED_YEAR_END]).index
+
+    def selection_diagnostics() -> dict[str, object]:
+        years: dict[str, object] = {}
+        for year in (MATCHED_YEAR_START, MATCHED_YEAR_END):
+            candidate = grouped[grouped["sample_year"].eq(year)].copy()
+            candidate_index = pd.MultiIndex.from_frame(candidate[list(MATCHED_CELL_KEYS)])
+            candidate["matched_cell"] = candidate_index.isin(matched_index)
+            dimensions: dict[str, object] = {}
+            for field in MATCHED_SELECTION_FIELDS:
+                cells = candidate.groupby([field, "matched_cell"], observed=True, sort=True)["size"].agg(["size", "sum"])
+                levels = sorted(candidate[field].unique().tolist(), key=lambda value: str(value))
+                included_cells = int(candidate["matched_cell"].sum())
+                excluded_cells = int((~candidate["matched_cell"]).sum())
+                included_rows = int(candidate.loc[candidate["matched_cell"], "size"].sum())
+                excluded_rows = int(candidate.loc[~candidate["matched_cell"], "size"].sum())
+                records = []
+                cell_gaps: list[float] = []
+                row_gaps: list[float] = []
+                for level in levels:
+                    included = cells.loc[(level, True)] if (level, True) in cells.index else None
+                    excluded = cells.loc[(level, False)] if (level, False) in cells.index else None
+                    included_cell_share = float(included["size"] / included_cells) if included_cells and included is not None else 0.0
+                    excluded_cell_share = float(excluded["size"] / excluded_cells) if excluded_cells and excluded is not None else 0.0
+                    included_row_share = float(included["sum"] / included_rows) if included_rows and included is not None else 0.0
+                    excluded_row_share = float(excluded["sum"] / excluded_rows) if excluded_rows and excluded is not None else 0.0
+                    records.append(
+                        {
+                            "level": str(level),
+                            "included_cell_share": included_cell_share,
+                            "excluded_cell_share": excluded_cell_share,
+                            "included_row_share": included_row_share,
+                            "excluded_row_share": excluded_row_share,
+                        }
+                    )
+                    cell_gaps.append(abs(included_cell_share - excluded_cell_share))
+                    row_gaps.append(abs(included_row_share - excluded_row_share))
+                dimensions[field] = {
+                    "levels": records,
+                    "cell_total_variation": None if not included_cells or not excluded_cells else 0.5 * sum(cell_gaps),
+                    "row_total_variation": None if not included_rows or not excluded_rows else 0.5 * sum(row_gaps),
+                }
+            years[str(year)] = {
+                "candidate_cells": int(len(candidate)),
+                "included_cells": int(candidate["matched_cell"].sum()),
+                "excluded_cells": int((~candidate["matched_cell"]).sum()),
+                "candidate_rows": int(candidate["size"].sum()),
+                "included_rows": int(candidate.loc[candidate["matched_cell"], "size"].sum()),
+                "excluded_rows": int(candidate.loc[~candidate["matched_cell"], "size"].sum()),
+                "dimensions": dimensions,
+            }
+        return {"unit": "candidate_economic_cells", "fields": list(MATCHED_SELECTION_FIELDS), "years": years}
+
+    def summarize(comparator: str | None) -> dict[str, object]:
+        candidate = grouped if comparator is None else grouped[grouped["comparator_symbol"].eq(comparator)]
+        candidate_start = candidate[candidate["sample_year"].eq(MATCHED_YEAR_START)]
+        candidate_end = candidate[candidate["sample_year"].eq(MATCHED_YEAR_END)]
+        current_index = matched_index
+        if comparator is not None:
+            current_index = matched_index[matched_index.get_level_values("comparator_symbol") == comparator]
+        matched_means = means.loc[current_index]
+        matched_sizes = sizes.loc[current_index]
+        delta = matched_means[MATCHED_YEAR_END] - matched_means[MATCHED_YEAR_START]
+        weights = np.minimum(
+            matched_sizes[MATCHED_YEAR_START].to_numpy(dtype=float),
+            matched_sizes[MATCHED_YEAR_END].to_numpy(dtype=float),
+        )
+        candidate_cells_start = int(len(candidate_start))
+        candidate_cells_end = int(len(candidate_end))
+        candidate_rows_start = int(candidate_start["size"].sum())
+        candidate_rows_end = int(candidate_end["size"].sum())
+        matched_cells = int(len(current_index))
+        matched_rows_start = int(matched_sizes[MATCHED_YEAR_START].sum()) if matched_cells else 0
+        matched_rows_end = int(matched_sizes[MATCHED_YEAR_END].sum()) if matched_cells else 0
+        ordered_delta = np.sort(delta.to_numpy(dtype=float))
+
+        def trimmed_mean(fraction: float) -> float | None:
+            if not matched_cells:
+                return None
+            lower = int(math.floor(fraction * matched_cells))
+            upper = int(math.ceil((1 - fraction) * matched_cells))
+            return float(ordered_delta[lower:upper].mean())
+
+        return {
+            "candidate_cells_start": candidate_cells_start,
+            "candidate_cells_end": candidate_cells_end,
+            "matched_cells": matched_cells,
+            "candidate_rows_start": candidate_rows_start,
+            "candidate_rows_end": candidate_rows_end,
+            "matched_rows_start": matched_rows_start,
+            "matched_rows_end": matched_rows_end,
+            "matched_cell_share_of_start": matched_cells / candidate_cells_start if candidate_cells_start else None,
+            "matched_cell_share_of_end": matched_cells / candidate_cells_end if candidate_cells_end else None,
+            "matched_row_share_of_start": matched_rows_start / candidate_rows_start if candidate_rows_start else None,
+            "matched_row_share_of_end": matched_rows_end / candidate_rows_end if candidate_rows_end else None,
+            "equal_cell_delta_bps": float(delta.mean()) if matched_cells else None,
+            "median_cell_delta_bps": float(delta.median()) if matched_cells else None,
+            "min_support_weighted_delta_bps": float(np.average(delta.to_numpy(dtype=float), weights=weights)) if weights.sum() else None,
+            "p05_cell_delta_bps": float(delta.quantile(0.05)) if matched_cells else None,
+            "p25_cell_delta_bps": float(delta.quantile(0.25)) if matched_cells else None,
+            "p75_cell_delta_bps": float(delta.quantile(0.75)) if matched_cells else None,
+            "p95_cell_delta_bps": float(delta.quantile(0.95)) if matched_cells else None,
+            "trimmed_mean_1pct_delta_bps": trimmed_mean(0.01),
+            "trimmed_mean_5pct_delta_bps": trimmed_mean(0.05),
+            "negative_cell_share": float((delta < 0).mean()) if matched_cells else None,
+        }
+
+    result = {
+        "status": "provisional_descriptive_not_admissible",
+        "start_year": MATCHED_YEAR_START,
+        "end_year": MATCHED_YEAR_END,
+        "cell_keys": list(MATCHED_CELL_KEYS),
+        "pooled": summarize(None),
+        "comparators": {comparator: summarize(comparator) for comparator in COMPARATOR_SYMBOLS},
+        "selection_diagnostics": selection_diagnostics(),
+        "interpretation": "same-cell descriptive change; matching fixes comparator, ordered endpoints, notional, reserve hour, architecture, and candidate breadth but does not identify an aggregator effect",
+    }
+    return _finite_json(result)
+
+
+def _candidate_dispersion_change(frame: pd.DataFrame) -> dict[str, object]:
+    """Measure 2024--26 output-spread changes within fixed candidate-set cells."""
+
+    selected = frame[frame["sample_year"].isin((MATCHED_YEAR_START, MATCHED_YEAR_END))]
+    attempts = (
+        selected.groupby(
+            ["attempt_id", "date", "sample_year", "endpoint_pair", "trade_size_usd", "reserve_hour_utc", "comparator_support_mask"],
+            observed=True,
+            sort=True,
+        )
+        .agg(
+            comparator_count=("comparator_symbol", "nunique"),
+            row_count=("comparator_symbol", "size"),
+            weth_values=("weth_output_usd", "nunique"),
+            weth_output=("weth_output_usd", "first"),
+            best_comparator_output=("comparator_output_usd", "max"),
+            worst_comparator_output=("comparator_output_usd", "min"),
+        )
+        .reset_index()
+    )
+    popcounts = attempts["comparator_support_mask"].astype(int).map(int.bit_count)
+    if not attempts["weth_values"].eq(1).all() or not attempts["row_count"].eq(attempts["comparator_count"]).all() or not attempts["comparator_count"].eq(popcounts).all():
+        raise ValueError("paired dominance-cost attempt-level candidate outputs are inconsistent")
+    attempts = attempts[attempts["comparator_count"].ge(2)].copy()
+    best = np.maximum(attempts["weth_output"].to_numpy(dtype=float), attempts["best_comparator_output"].to_numpy(dtype=float))
+    worst = np.minimum(attempts["weth_output"].to_numpy(dtype=float), attempts["worst_comparator_output"].to_numpy(dtype=float))
+    if attempts.empty or not np.isfinite(best).all() or not np.isfinite(worst).all() or (best <= 0).any() or (worst <= 0).any():
+        raise ValueError("paired dominance-cost attempt-level candidate outputs are not positive and finite")
+    attempts["dispersion_bps"] = 10_000 * (best - worst) / best
+    attempts["weth_regret_bps"] = 10_000 * (best - attempts["weth_output"].to_numpy(dtype=float)) / best
+    cell_keys = ("comparator_support_mask", "endpoint_pair", "trade_size_usd", "reserve_hour_utc")
+    cells = (
+        attempts.groupby([*cell_keys, "sample_year"], observed=True, sort=True)
+        .agg(dispersion_bps=("dispersion_bps", "mean"), weth_regret_bps=("weth_regret_bps", "mean"), attempts=("attempt_id", "size"))
+        .reset_index()
+    )
+    dispersion = cells.pivot(index=list(cell_keys), columns="sample_year", values="dispersion_bps")
+    regret = cells.pivot(index=list(cell_keys), columns="sample_year", values="weth_regret_bps")
+    sizes = cells.pivot(index=list(cell_keys), columns="sample_year", values="attempts")
+    matched_index = dispersion.dropna(subset=[MATCHED_YEAR_START, MATCHED_YEAR_END]).index
+
+    def summarize(support_mask: int | None) -> dict[str, object]:
+        candidate = cells if support_mask is None else cells[cells["comparator_support_mask"].eq(support_mask)]
+        start = candidate[candidate["sample_year"].eq(MATCHED_YEAR_START)]
+        end = candidate[candidate["sample_year"].eq(MATCHED_YEAR_END)]
+        current = matched_index if support_mask is None else matched_index[matched_index.get_level_values("comparator_support_mask") == support_mask]
+        dispersion_delta = dispersion.loc[current, MATCHED_YEAR_END] - dispersion.loc[current, MATCHED_YEAR_START]
+        regret_delta = regret.loc[current, MATCHED_YEAR_END] - regret.loc[current, MATCHED_YEAR_START]
+        weights = np.minimum(sizes.loc[current, MATCHED_YEAR_START].to_numpy(dtype=float), sizes.loc[current, MATCHED_YEAR_END].to_numpy(dtype=float))
+        result: dict[str, object] = {
+            "candidate_cells_start": int(len(start)),
+            "candidate_cells_end": int(len(end)),
+            "matched_cells": int(len(current)),
+            "matched_attempts_start": int(sizes.loc[current, MATCHED_YEAR_START].sum()),
+            "matched_attempts_end": int(sizes.loc[current, MATCHED_YEAR_END].sum()),
+        }
+        for name, delta in (("dispersion", dispersion_delta), ("weth_regret", regret_delta)):
+            result.update(
+                {
+                    f"equal_cell_{name}_mean_bps": float(delta.mean()),
+                    f"equal_cell_{name}_median_bps": float(delta.median()),
+                    f"equal_cell_{name}_p25_bps": float(delta.quantile(0.25)),
+                    f"equal_cell_{name}_p75_bps": float(delta.quantile(0.75)),
+                    f"min_support_weighted_{name}_mean_bps": float(np.average(delta.to_numpy(dtype=float), weights=weights)),
+                }
+            )
+        return result
+
+    observed_masks = sorted(int(value) for value in matched_index.get_level_values("comparator_support_mask").unique())
+    return _finite_json(
+        {
+            "status": "provisional_descriptive_not_admissible",
+            "start_year": MATCHED_YEAR_START,
+            "end_year": MATCHED_YEAR_END,
+            "cell_keys": list(cell_keys),
+            "pooled": summarize(None),
+            "support_masks": {str(mask): summarize(mask) for mask in observed_masks},
+            "interpretation": "same-cell candidate-output dispersion and WETH regret; matching fixes ordered endpoints, notional, reserve hour, and the exact observed comparator set but does not identify aggregator adoption or realised router performance",
+        }
+    )
+
+
 def _common_support_records(frame: pd.DataFrame) -> list[dict[str, object]]:
     records: list[dict[str, object]] = []
     for size in range(2, len(COMPARATOR_SYMBOLS) + 1):
@@ -688,7 +969,7 @@ def _common_support_records(frame: pd.DataFrame) -> list[dict[str, object]]:
 
 def _ledger_identity(record: Mapping[str, object]) -> list[object]:
     record_type = str(record["record_type"])
-    if record_type in {"sample_summary", "support_attrition_summary"}:
+    if record_type in {"sample_summary", "support_attrition_summary", "matched_year_change_summary", "candidate_dispersion_change_summary"}:
         return [record_type]
     if record_type == "pooled_model":
         return [record_type, record["model"]]
@@ -731,6 +1012,8 @@ def run_probe(frame: pd.DataFrame, support: pd.DataFrame, input_identity: Mappin
     sample["all_four_common_attempts"] = int(mask_counts.get(sum(COMPARATOR_MASKS.values()), 0))
     sample["observed_years_by_comparator"] = {comparator: sorted(int(year) for year in frame.loc[frame["comparator_symbol"].eq(comparator), "sample_year"].unique()) for comparator in COMPARATOR_SYMBOLS}
     support_attrition = _attrition_summary(support)
+    matched_year_change = _matched_year_change(frame)
+    candidate_dispersion_change = _candidate_dispersion_change(frame)
     pooled: dict[str, object] = {}
     for name, time_block in (("year", "sample_year"), ("routing_era", "routing_era")):
         if time_block == "sample_year":
@@ -741,6 +1024,8 @@ def run_probe(frame: pd.DataFrame, support: pd.DataFrame, input_identity: Mappin
     ledger = [
         {"record_type": "sample_summary", "sample": sample},
         {"record_type": "support_attrition_summary", "support_attrition": support_attrition},
+        {"record_type": "matched_year_change_summary", "matched_year_change": matched_year_change},
+        {"record_type": "candidate_dispersion_change_summary", "candidate_dispersion_change": candidate_dispersion_change},
         *[
             {"record_type": "pooled_model", "model": model_name, "status": pooled[model_name]["status"], "covariance": pooled[model_name]["covariance"], "estimate": pooled[model_name]}
             for model_name in POOLED_MODEL_NAMES
@@ -794,6 +1079,8 @@ def run_probe(frame: pd.DataFrame, support: pd.DataFrame, input_identity: Mappin
             "inference": "CR1 clustered by date and ordered src>tgt endpoint pair unless the diagnostic name states otherwise",
             "hour": "two centered UTC Fourier harmonics; reference hour 12",
             "common_support": "fit comparators on identical priceable attempt IDs; select the first jointly valid specification in the declared M3-to-M0 ladder, trying two-way then date-only clustering at each model rung; a date-only fallback after non-PD endpoint-pair covariance remains descriptive sensitivity evidence and is not confirmatory inference",
+            "matched_year_change": "2026 minus 2024 mean outcome inside cells with the same comparator, ordered endpoint pair, notional, reserve hour, architecture, and candidate breadth; report equal-cell, median-cell, and minimum-support-weighted changes",
+            "candidate_dispersion_change": "2026 minus 2024 mean candidate-output range and WETH regret inside cells with the same ordered endpoint pair, notional, reserve hour, and exact observed comparator-support mask; require at least two observed comparators per attempt",
             "numeric_serialization": "finite floating outputs are rounded to 7 significant digits before hashing; fit status is evaluated at machine precision",
             "p_value_serialization": "p-values below 1e-12 are serialized as 0.0; hypothesis-test decisions use machine-precision values",
         },
@@ -801,6 +1088,8 @@ def run_probe(frame: pd.DataFrame, support: pd.DataFrame, input_identity: Mappin
         "routing_era_cutoffs": [{"date": date, "era_from_date": era, "source": source} for date, era, source in ROUTING_ERA_CUTOFFS],
         "sample": sample,
         "support_attrition": support_attrition,
+        "matched_year_change": matched_year_change,
+        "candidate_dispersion_change": candidate_dispersion_change,
         "pooled_models": pooled,
         "comparator_models": comparator_models,
         "common_support_sets": [{"comparators": record["comparators"], "support_mask": record["support_mask"], "support": record["support"], "selected_model": record["selected_model"], "selected_cluster_mode": record["selected_cluster_mode"], "rejected_models": record["rejected_models"]} for record in common_support],
@@ -957,6 +1246,132 @@ def _validate_support_attrition(value: object, sample: Mapping[str, object], *, 
             raise ValueError("paired dominance-cost comparator attrition disagrees with the sample")
 
 
+def _validate_matched_change_cell(value: object) -> None:
+    expected = MATCHED_CHANGE_COUNT_FIELDS | MATCHED_CHANGE_SHARE_FIELDS | MATCHED_CHANGE_ESTIMATE_FIELDS
+    if not isinstance(value, Mapping) or set(value) != expected:
+        raise ValueError("paired dominance-cost matched-year cell schema is invalid")
+    if any(not _plain_integer(value[field]) for field in MATCHED_CHANGE_COUNT_FIELDS):
+        raise ValueError("paired dominance-cost matched-year counts are invalid")
+    if value["matched_cells"] > min(value["candidate_cells_start"], value["candidate_cells_end"]):
+        raise ValueError("paired dominance-cost matched-year cell support exceeds its candidates")
+    if value["matched_rows_start"] > value["candidate_rows_start"] or value["matched_rows_end"] > value["candidate_rows_end"]:
+        raise ValueError("paired dominance-cost matched-year row support exceeds its candidates")
+    expected_shares = {
+        "matched_cell_share_of_start": None if value["candidate_cells_start"] == 0 else value["matched_cells"] / value["candidate_cells_start"],
+        "matched_cell_share_of_end": None if value["candidate_cells_end"] == 0 else value["matched_cells"] / value["candidate_cells_end"],
+        "matched_row_share_of_start": None if value["candidate_rows_start"] == 0 else value["matched_rows_start"] / value["candidate_rows_start"],
+        "matched_row_share_of_end": None if value["candidate_rows_end"] == 0 else value["matched_rows_end"] / value["candidate_rows_end"],
+    }
+    for field, expected_share in expected_shares.items():
+        observed = value[field]
+        if expected_share is None:
+            if observed is not None:
+                raise ValueError("paired dominance-cost matched-year zero-support share is invalid")
+        elif not _finite_number(observed) or not math.isclose(float(observed), expected_share, rel_tol=1e-6, abs_tol=1e-7):
+            raise ValueError("paired dominance-cost matched-year support share is invalid")
+    estimates = [value[field] for field in MATCHED_CHANGE_ESTIMATE_FIELDS]
+    if value["matched_cells"]:
+        if any(not _finite_number(item) for item in estimates) or not value["matched_rows_start"] or not value["matched_rows_end"]:
+            raise ValueError("paired dominance-cost matched-year estimates lack support")
+        quantiles = [value[field] for field in ("p05_cell_delta_bps", "p25_cell_delta_bps", "median_cell_delta_bps", "p75_cell_delta_bps", "p95_cell_delta_bps")]
+        if quantiles != sorted(quantiles) or not 0 <= float(value["negative_cell_share"]) <= 1:
+            raise ValueError("paired dominance-cost matched-year distribution summary is invalid")
+    elif any(item is not None for item in estimates) or value["matched_rows_start"] or value["matched_rows_end"]:
+        raise ValueError("paired dominance-cost unsupported matched-year estimates are not null")
+
+
+def _validate_matched_year_change(value: object) -> None:
+    expected = {"status", "start_year", "end_year", "cell_keys", "pooled", "comparators", "selection_diagnostics", "interpretation"}
+    if not isinstance(value, Mapping) or set(value) != expected:
+        raise ValueError("paired dominance-cost matched-year schema is invalid")
+    if value["status"] != "provisional_descriptive_not_admissible" or value["start_year"] != MATCHED_YEAR_START or value["end_year"] != MATCHED_YEAR_END:
+        raise ValueError("paired dominance-cost matched-year perimeter is invalid")
+    if value["cell_keys"] != list(MATCHED_CELL_KEYS) or not isinstance(value["interpretation"], str) or not value["interpretation"]:
+        raise ValueError("paired dominance-cost matched-year contract is invalid")
+    comparators = value["comparators"]
+    if not isinstance(comparators, Mapping) or set(comparators) != set(COMPARATOR_SYMBOLS):
+        raise ValueError("paired dominance-cost matched-year comparator coverage is invalid")
+    _validate_matched_change_cell(value["pooled"])
+    for cell in comparators.values():
+        _validate_matched_change_cell(cell)
+    for field in MATCHED_CHANGE_COUNT_FIELDS:
+        if int(value["pooled"][field]) != sum(int(cell[field]) for cell in comparators.values()):
+            raise ValueError("paired dominance-cost matched-year pooled support disagrees with comparators")
+    diagnostics = value["selection_diagnostics"]
+    if not isinstance(diagnostics, Mapping) or set(diagnostics) != {"unit", "fields", "years"} or diagnostics["unit"] != "candidate_economic_cells" or diagnostics["fields"] != list(MATCHED_SELECTION_FIELDS):
+        raise ValueError("paired dominance-cost matched-year selection contract is invalid")
+    years = diagnostics["years"]
+    if not isinstance(years, Mapping) or set(years) != {str(MATCHED_YEAR_START), str(MATCHED_YEAR_END)}:
+        raise ValueError("paired dominance-cost matched-year selection years are invalid")
+    for year, cell in years.items():
+        if not isinstance(cell, Mapping) or set(cell) != {"candidate_cells", "included_cells", "excluded_cells", "candidate_rows", "included_rows", "excluded_rows", "dimensions"}:
+            raise ValueError("paired dominance-cost matched-year selection schema is invalid")
+        if any(not _plain_integer(cell[field]) for field in ("candidate_cells", "included_cells", "excluded_cells", "candidate_rows", "included_rows", "excluded_rows")):
+            raise ValueError("paired dominance-cost matched-year selection counts are invalid")
+        if cell["candidate_cells"] != cell["included_cells"] + cell["excluded_cells"] or cell["candidate_rows"] != cell["included_rows"] + cell["excluded_rows"]:
+            raise ValueError("paired dominance-cost matched-year selection totals disagree")
+        pooled_suffix = "start" if year == str(MATCHED_YEAR_START) else "end"
+        if cell["candidate_cells"] != value["pooled"][f"candidate_cells_{pooled_suffix}"] or cell["included_cells"] != value["pooled"]["matched_cells"] or cell["candidate_rows"] != value["pooled"][f"candidate_rows_{pooled_suffix}"] or cell["included_rows"] != value["pooled"][f"matched_rows_{pooled_suffix}"]:
+            raise ValueError("paired dominance-cost matched-year selection support disagrees")
+        dimensions = cell["dimensions"]
+        if not isinstance(dimensions, Mapping) or set(dimensions) != set(MATCHED_SELECTION_FIELDS):
+            raise ValueError("paired dominance-cost matched-year selection dimensions are invalid")
+        for dimension in dimensions.values():
+            if not isinstance(dimension, Mapping) or set(dimension) != {"levels", "cell_total_variation", "row_total_variation"} or not isinstance(dimension["levels"], list) or not dimension["levels"]:
+                raise ValueError("paired dominance-cost matched-year selection dimension schema is invalid")
+            for record in dimension["levels"]:
+                if not isinstance(record, Mapping) or set(record) != {"level", "included_cell_share", "excluded_cell_share", "included_row_share", "excluded_row_share"} or not isinstance(record["level"], str) or any(not _finite_number(record[field]) or not 0 <= float(record[field]) <= 1 for field in ("included_cell_share", "excluded_cell_share", "included_row_share", "excluded_row_share")):
+                    raise ValueError("paired dominance-cost matched-year selection level is invalid")
+            for metric, included_total, excluded_total in (("cell", cell["included_cells"], cell["excluded_cells"]), ("row", cell["included_rows"], cell["excluded_rows"])):
+                observed = dimension[f"{metric}_total_variation"]
+                shares = dimension["levels"]
+                for population, total in (("included", included_total), ("excluded", excluded_total)):
+                    share_sum = sum(float(record[f"{population}_{metric}_share"]) for record in shares)
+                    expected_sum = 1.0 if total else 0.0
+                    if not math.isclose(share_sum, expected_sum, rel_tol=1e-6, abs_tol=1e-7):
+                        raise ValueError("paired dominance-cost matched-year selection shares do not sum to their population")
+                expected_tv = 0.5 * sum(abs(float(record[f"included_{metric}_share"]) - float(record[f"excluded_{metric}_share"])) for record in shares)
+                if included_total and excluded_total:
+                    if not _finite_number(observed) or not math.isclose(float(observed), expected_tv, rel_tol=1e-6, abs_tol=1e-7):
+                        raise ValueError("paired dominance-cost matched-year selection distance is invalid")
+                elif observed is not None:
+                    raise ValueError("paired dominance-cost matched-year unsupported selection distance is not null")
+
+
+def _validate_candidate_dispersion_cell(value: object) -> None:
+    expected = CANDIDATE_DISPERSION_COUNT_FIELDS | CANDIDATE_DISPERSION_ESTIMATE_FIELDS
+    if not isinstance(value, Mapping) or set(value) != expected:
+        raise ValueError("paired dominance-cost candidate-dispersion cell schema is invalid")
+    if any(not _plain_integer(value[field], minimum=1) for field in CANDIDATE_DISPERSION_COUNT_FIELDS) or any(not _finite_number(value[field]) for field in CANDIDATE_DISPERSION_ESTIMATE_FIELDS):
+        raise ValueError("paired dominance-cost candidate-dispersion cell values are invalid")
+    if value["matched_cells"] > min(value["candidate_cells_start"], value["candidate_cells_end"]) or value["matched_attempts_start"] < value["matched_cells"] or value["matched_attempts_end"] < value["matched_cells"]:
+        raise ValueError("paired dominance-cost candidate-dispersion support geometry is invalid")
+    for outcome in ("dispersion", "weth_regret"):
+        ordered = [value[f"equal_cell_{outcome}_{stat}_bps"] for stat in ("p25", "median", "p75")]
+        if ordered != sorted(ordered):
+            raise ValueError("paired dominance-cost candidate-dispersion quantiles are invalid")
+
+
+def _validate_candidate_dispersion_change(value: object) -> None:
+    expected = {"status", "start_year", "end_year", "cell_keys", "pooled", "support_masks", "interpretation"}
+    if not isinstance(value, Mapping) or set(value) != expected or value["status"] != "provisional_descriptive_not_admissible" or value["start_year"] != MATCHED_YEAR_START or value["end_year"] != MATCHED_YEAR_END:
+        raise ValueError("paired dominance-cost candidate-dispersion perimeter is invalid")
+    if value["cell_keys"] != ["comparator_support_mask", "endpoint_pair", "trade_size_usd", "reserve_hour_utc"] or not isinstance(value["interpretation"], str) or not value["interpretation"]:
+        raise ValueError("paired dominance-cost candidate-dispersion contract is invalid")
+    masks = value["support_masks"]
+    if not isinstance(masks, Mapping) or not masks or list(masks) != sorted(masks, key=int) or any(not str(mask).isdigit() or int(mask).bit_count() < 2 for mask in masks):
+        raise ValueError("paired dominance-cost candidate-dispersion masks are invalid")
+    _validate_candidate_dispersion_cell(value["pooled"])
+    for cell in masks.values():
+        _validate_candidate_dispersion_cell(cell)
+    for field in ("matched_cells", "matched_attempts_start", "matched_attempts_end"):
+        if int(value["pooled"][field]) != sum(int(cell[field]) for cell in masks.values()):
+            raise ValueError("paired dominance-cost candidate-dispersion pooled support disagrees with masks")
+    for field in ("candidate_cells_start", "candidate_cells_end"):
+        if int(value["pooled"][field]) < sum(int(cell[field]) for cell in masks.values()):
+            raise ValueError("paired dominance-cost candidate-dispersion mask candidates exceed pooled support")
+
+
 def _validate_sample_summary(value: object) -> None:
     raw_fields = SUPPORT_FIELDS | {"opportunity_weighted_mean_bps", "equal_date_mean_bps", "median_bps"}
     fields = raw_fields | {"comparators", "unique_priceable_attempts", "prepared_frame_deep_bytes", "common_support_mask_attempts", "all_four_common_attempts", "observed_years_by_comparator"}
@@ -992,10 +1407,10 @@ def _validate_sample_summary(value: object) -> None:
 def _validate_publish_payload(report: Mapping[str, object], ledger: list[Mapping[str, object]]) -> None:
     if set(report) != REPORT_FIELDS or report.get("schema_version") != PROBE_SCHEMA_VERSION or report.get("status") != "provisional_descriptive_not_admissible" or not is_sha256(report.get("result_sha256")):
         raise ValueError("paired dominance-cost probe report contract is invalid")
-    for field in ("input", "instrument_source_sha256", "formulas", "reference", "sample", "support_attrition", "pooled_models", "comparator_models", "state_admissibility_counts", "support_thresholds", "old_estimand_bridge", "ledger_manifest"):
+    for field in ("input", "instrument_source_sha256", "formulas", "reference", "sample", "support_attrition", "matched_year_change", "candidate_dispersion_change", "pooled_models", "comparator_models", "state_admissibility_counts", "support_thresholds", "old_estimand_bridge", "ledger_manifest"):
         if not isinstance(report.get(field), Mapping):
             raise ValueError(f"paired dominance-cost probe report field is invalid: {field}")
-    if set(report["formulas"]) != {"outcome", "positive_sign", "architecture", "candidate_breadth", "equal_date_weight", "inference", "hour", "common_support", "numeric_serialization", "p_value_serialization"} or any(not isinstance(value, str) or not value for value in report["formulas"].values()):
+    if set(report["formulas"]) != {"outcome", "positive_sign", "architecture", "candidate_breadth", "equal_date_weight", "inference", "hour", "common_support", "matched_year_change", "candidate_dispersion_change", "numeric_serialization", "p_value_serialization"} or any(not isinstance(value, str) or not value for value in report["formulas"].values()):
         raise ValueError("paired dominance-cost formula schema is invalid")
     if set(report["old_estimand_bridge"]) != {"older_cp_native_dummy", "older_breadth_four_plus_native_dummy", "direct_numeric_comparison_valid", "reason"} or report["old_estimand_bridge"]["direct_numeric_comparison_valid"] is not False or not isinstance(report["old_estimand_bridge"]["reason"], str) or not _finite_number(report["old_estimand_bridge"]["older_cp_native_dummy"]) or not _finite_number(report["old_estimand_bridge"]["older_breadth_four_plus_native_dummy"]):
         raise ValueError("paired dominance-cost old-estimand bridge schema is invalid")
@@ -1008,6 +1423,8 @@ def _validate_publish_payload(report: Mapping[str, object], ledger: list[Mapping
     if not isinstance(report.get("common_support_sets"), list) or report.get("reference") != REFERENCE:
         raise ValueError("paired dominance-cost common-support report is invalid")
     _validate_sample_summary(report["sample"])
+    _validate_matched_year_change(report["matched_year_change"])
+    _validate_candidate_dispersion_change(report["candidate_dispersion_change"])
     canonical_perimeter = report["input"].get("provenance_status") != "synthetic"
     _validate_support_attrition(report["support_attrition"], report["sample"], canonical_perimeter=canonical_perimeter)
     if not is_sha256(report["input"].get("panel_sha256")) or not is_sha256(report["input"].get("support_sha256")):
@@ -1057,6 +1474,10 @@ def _validate_publish_payload(report: Mapping[str, object], ledger: list[Mapping
             _validate_sample_summary(record["sample"])
         if record_type == "support_attrition_summary":
             _validate_support_attrition(record["support_attrition"], report["sample"], canonical_perimeter=canonical_perimeter)
+        if record_type == "matched_year_change_summary":
+            _validate_matched_year_change(record["matched_year_change"])
+        if record_type == "candidate_dispersion_change_summary":
+            _validate_candidate_dispersion_change(record["candidate_dispersion_change"])
         if record_type == "pooled_model":
             if record["model"] not in POOLED_MODEL_NAMES or record["status"] != record["estimate"].get("status") or record["covariance"] != record["estimate"].get("covariance"):
                 raise ValueError("paired dominance-cost pooled-model record is inconsistent")
@@ -1169,6 +1590,8 @@ def _validate_publish_payload(report: Mapping[str, object], ledger: list[Mapping
     expected_grids = {
         "sample_summary": {json.dumps(["sample_summary"], sort_keys=True)},
         "support_attrition_summary": {json.dumps(["support_attrition_summary"], sort_keys=True)},
+        "matched_year_change_summary": {json.dumps(["matched_year_change_summary"], sort_keys=True)},
+        "candidate_dispersion_change_summary": {json.dumps(["candidate_dispersion_change_summary"], sort_keys=True)},
         "pooled_model": expected_pooled,
         "comparator_summary": expected_comparator_summaries,
         "main_level_support": expected_level,
@@ -1242,6 +1665,10 @@ def _validate_publish_payload(report: Mapping[str, object], ledger: list[Mapping
         raise ValueError("paired dominance-cost report and sample-summary ledger disagree")
     if records_by_type["support_attrition_summary"][0]["support_attrition"] != report["support_attrition"]:
         raise ValueError("paired dominance-cost report and support-attrition ledger disagree")
+    if records_by_type["matched_year_change_summary"][0]["matched_year_change"] != report["matched_year_change"]:
+        raise ValueError("paired dominance-cost report and matched-year ledger disagree")
+    if records_by_type["candidate_dispersion_change_summary"][0]["candidate_dispersion_change"] != report["candidate_dispersion_change"]:
+        raise ValueError("paired dominance-cost report and candidate-dispersion ledger disagree")
     common_projection = [{"comparators": record["comparators"], "support_mask": record["support_mask"], "support": record["support"], "selected_model": record["selected_model"], "selected_cluster_mode": record["selected_cluster_mode"], "rejected_models": record["rejected_models"]} for record in records_by_type["common_support_sensitivity"]]
     if common_projection != report["common_support_sets"]:
         raise ValueError("paired dominance-cost report and common-support ledger disagree")

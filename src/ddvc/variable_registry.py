@@ -711,8 +711,8 @@ VARIABLE_SPECS: tuple[VariableSpec, ...] = (
         ),
         source="data/processed/vehicle_excess_use_daily.parquet",
         used_for=(
-            "Normalized vehicle-dominance measure; values above one indicate use beyond "
-            "endpoint demand."
+            "Economic-weight dimension of vehicle dominance; values above one indicate "
+            "use beyond endpoint demand on the stated value-support perimeter."
         ),
         in_observations_table=False,
     ),
@@ -767,7 +767,100 @@ VARIABLE_SPECS: tuple[VariableSpec, ...] = (
             r"route universe; undefined when endpoint count is zero."
         ),
         source="data/processed/vehicle_excess_use_daily.parquet",
-        used_for="Count-weighted robustness of the primary vehicle-extent measure.",
+        used_for="Frequency dimension of vehicle dominance with full topology support.",
+        in_observations_table=False,
+    ),
+    VariableSpec(
+        group="Vehicle-use measures",
+        name="Strict-support intermediate-use count share",
+        column="intermediate_count_share_within_20pct",
+        notation=r"$\mathrm{IShare}^{N,20}_{k,t}$",
+        formula=(
+            r"$\displaystyle\frac{N^{I,20}_{k,t}}"
+            r"{\sum_{j:\mathrm{Type}(j)\ne\mathrm{other}}N^{I,20}_{j,t}}$"
+        ),
+        unit="Fraction (0--1)",
+        construction=(
+            r"Count share on the exact route components used by the strict-value measure: "
+            r"source, sink and every intermediary reconcile within 20 percent."
+        ),
+        source="data/processed/vehicle_excess_use_daily.parquet",
+        used_for="Separating value weighting from strict-support sample selection.",
+        in_observations_table=False,
+    ),
+    VariableSpec(
+        group="Vehicle-use measures",
+        name="Strict-support endpoint-demand count share",
+        column="endpoint_count_share_within_20pct",
+        notation=r"$\mathrm{EShare}^{N,20}_{k,t}$",
+        formula=(
+            r"$\displaystyle\frac{N^{E,20}_{k,t}}"
+            r"{\sum_{j:\mathrm{Type}(j)\ne\mathrm{other}}N^{E,20}_{j,t}}$"
+        ),
+        unit="Fraction (0--1)",
+        construction=r"Endpoint count share on the same 20-percent value-coherence support.",
+        source="data/processed/vehicle_excess_use_daily.parquet",
+        used_for="Matched-support endpoint-demand benchmark for count-versus-value decomposition.",
+        in_observations_table=False,
+    ),
+    VariableSpec(
+        group="Vehicle-use measures",
+        name="Strict-support vehicle excess-use count ratio",
+        column="vehicle_excess_use_count_ratio_within_20pct",
+        notation=r"$\mathrm{ExcessUse}^{N,20}_{k,t}$",
+        formula=(
+            r"$\displaystyle\frac{\mathrm{IShare}^{N,20}_{k,t}}"
+            r"{\mathrm{EShare}^{N,20}_{k,t}}$"
+        ),
+        unit="Ratio",
+        construction=r"Matched-support count excess use; undefined when strict-support endpoint count is zero.",
+        source="data/processed/vehicle_excess_use_daily.parquet",
+        used_for="Matched-support frequency benchmark for the strict-value dominance measure.",
+        in_observations_table=False,
+    ),
+    VariableSpec(
+        group="Vehicle-use measures",
+        name="Strict-value intermediate-use share",
+        column="intermediate_share_within_20pct",
+        notation=r"$\mathrm{IShare}^{V,20}_{k,t}$",
+        formula=(
+            r"$\displaystyle\frac{\mathrm{IVol}^{20}_{k,t}}"
+            r"{\sum_{j:\mathrm{Type}(j)\ne\mathrm{other}}\mathrm{IVol}^{20}_{j,t}}$"
+        ),
+        unit="Fraction (0--1)",
+        construction=r"Intermediary value share where source, sink and every intermediary reconcile within 20 percent.",
+        source="data/processed/vehicle_excess_use_daily.parquet",
+        used_for="Strict-value dimension of vehicle dominance.",
+        in_observations_table=False,
+    ),
+    VariableSpec(
+        group="Vehicle-use measures",
+        name="Strict-value endpoint-demand share",
+        column="endpoint_share_within_20pct",
+        notation=r"$\mathrm{EShare}^{V,20}_{k,t}$",
+        formula=(
+            r"$\displaystyle\frac{\mathrm{EVol}^{20}_{k,t}}"
+            r"{\sum_{j:\mathrm{Type}(j)\ne\mathrm{other}}\mathrm{EVol}^{20}_{j,t}}$"
+        ),
+        unit="Fraction (0--1)",
+        construction=r"Endpoint value share on the same 20-percent value-coherence support.",
+        source="data/processed/vehicle_excess_use_daily.parquet",
+        used_for="Strict-value endpoint-demand benchmark.",
+        in_observations_table=False,
+    ),
+    VariableSpec(
+        group="Vehicle-use measures",
+        name="Strict-value vehicle excess-use ratio",
+        column="vehicle_excess_use_ratio_within_20pct",
+        notation=r"$\mathrm{ExcessUse}^{V,20}_{k,t}$",
+        formula=(
+            r"$\displaystyle\frac{\mathrm{IShare}^{V,20}_{k,t}}"
+            r"{\mathrm{EShare}^{V,20}_{k,t}}$"
+        ),
+        unit="Ratio",
+        construction=r"Strict-value intermediary share divided by strict-value endpoint share on identical support.",
+        source="data/processed/vehicle_excess_use_daily.parquet",
+        used_for="Economic-value dimension of vehicle dominance.",
         in_observations_table=False,
     ),
     VariableSpec(
@@ -922,9 +1015,9 @@ VARIABLE_SPECS: tuple[VariableSpec, ...] = (
     ),
     VariableSpec(
         group="Network and route-denominator controls",
-        name="Route betweenness",
+        name="Intent-route intermediary incidence",
         column="betweenness_centrality",
-        notation=r"$\mathrm{Betweenness}_{k,t}$",
+        notation=r"$\mathrm{RouteIncidence}^{N}_{k,t}$",
         formula=(
             r"$\displaystyle\frac{N^{I}_{k,t}}"
             r"{N_t-N^{\mathrm{in}}_{k,t}-N^{\mathrm{out}}_{k,t}}$"
@@ -935,16 +1028,19 @@ VARIABLE_SPECS: tuple[VariableSpec, ...] = (
             r"where $k$ is the input or output endpoint. Superscripts identify each route role."
         ),
         source="data/metrics/<date>.parquet",
-        used_for="Network-topology robustness only; not a primary vehicle-extent measure.",
+        used_for=(
+            "Historical realized-route diagnostic; this is intermediary incidence, not "
+            "graph-theoretic shortest-path betweenness and not a primary dominance measure."
+        ),
         include_in_summary=True,
         summary_panel="Vehicle-use measures, token-day",
         summary_unit="Fraction (0--1)",
     ),
     VariableSpec(
         group="Network and route-denominator controls",
-        name="Volume-weighted betweenness",
+        name="Value-weighted intent-route intermediary incidence",
         column="volume_weighted_betweenness",
-        notation=r"$\mathrm{Betweenness}^{\mathrm{vol}}_{k,t}$",
+        notation=r"$\mathrm{RouteIncidence}^{V}_{k,t}$",
         formula=(
             r"$\displaystyle\frac{\mathrm{IVol}_{k,t}}"
             r"{\mathrm{Vol}_t-\mathrm{Vol}^{\mathrm{in}}_{k,t}"
@@ -952,11 +1048,14 @@ VARIABLE_SPECS: tuple[VariableSpec, ...] = (
         ),
         unit="Fraction (0--1)",
         construction=(
-            r"USD-volume analogue of $\mathrm{Betweenness}_{k,t}$ using the same route "
+            r"USD-volume analogue of $\mathrm{RouteIncidence}^{N}_{k,t}$ using the same route "
             r"universe and input/output-endpoint exclusions."
         ),
         source="data/metrics/<date>.parquet",
-        used_for="Network-theoretic robustness.",
+        used_for=(
+            "Historical realized-route diagnostic; distinct from graph-theoretic "
+            "value-weighted betweenness."
+        ),
     ),
     VariableSpec(
         group="Network and route-denominator controls",
