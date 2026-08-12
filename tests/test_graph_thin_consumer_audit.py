@@ -10,7 +10,7 @@ import pytest
 
 from ddvc.fetch.material_consumers import ExistingStreamRequirement, GraphMaterialConsumerIntent, material_consumer_registry_sha256
 from ddvc.fetch.raw import installed_source_day_paths
-from ddvc.fetch.thin_consumer_audit import build_thin_consumer_audit, resolve_thin_consumer_audit, validate_thin_consumer_audit_envelope
+from ddvc.fetch.thin_consumer_audit import build_thin_consumer_audit, publish_thin_consumer_audit, resolve_thin_consumer_audit, validate_thin_consumer_audit_envelope
 from ddvc.provenance import portable_content_sha256
 from ddvc.raw_certification import RawPartition, _scan_partition, write_local_scan_certificate
 from ddvc.runtime import exclusive_job
@@ -212,3 +212,52 @@ def test_resolver_holds_raw_mutation_lease_across_source_reopen(tmp_path: Path, 
     resolver.join(timeout=10)
     assert not resolver.is_alive()
     assert not resolver_errors
+
+
+def test_publisher_holds_raw_mutation_lease_through_atomic_install(tmp_path: Path, monkeypatch) -> None:
+    _audit_path, data_root, certificate_root, raw_path, intents = certified_audit(tmp_path, monkeypatch)
+    output = tmp_path / "published-audit.json"
+    mutation_lock = tmp_path / "raw-mutation.lock"
+    entered_writer = threading.Event()
+    release_writer = threading.Event()
+    publisher_errors: list[BaseException] = []
+    from ddvc.fetch import thin_consumer_audit
+
+    original_writer = thin_consumer_audit._write_thin_consumer_audit_unlocked
+
+    def paused_writer(*args, **kwargs):
+        entered_writer.set()
+        assert release_writer.wait(timeout=10)
+        return original_writer(*args, **kwargs)
+
+    monkeypatch.setattr(
+        thin_consumer_audit,
+        "_write_thin_consumer_audit_unlocked",
+        paused_writer,
+    )
+
+    def publish() -> None:
+        try:
+            publish_thin_consumer_audit(
+                output,
+                data_root=data_root,
+                certificate_root=certificate_root,
+                intents=intents,
+                mutation_lock=mutation_lock,
+            )
+        except BaseException as error:
+            publisher_errors.append(error)
+
+    publisher = threading.Thread(target=publish)
+    publisher.start()
+    assert entered_writer.wait(timeout=10)
+    with pytest.raises(RuntimeError, match="already running"):
+        with exclusive_job(mutation_lock, job="raw market-data fetch or enrichment"):
+            raw_path.write_bytes(raw_path.read_bytes() + b"forbidden mutation")
+    release_writer.set()
+    publisher.join(timeout=10)
+    assert not publisher.is_alive()
+    assert not publisher_errors
+    assert validate_thin_consumer_audit_envelope(output, intents=intents)["audit"][
+        "authorized_graph_acquisition"
+    ] == {"streams": [], "stream_count": 0}

@@ -7,8 +7,7 @@ import argparse
 import json
 from pathlib import Path
 
-from ddvc.fetch.raw import write_json
-from ddvc.fetch.thin_consumer_audit import build_thin_consumer_audit
+from ddvc.fetch.thin_consumer_audit import publish_thin_consumer_audit
 from ddvc.paths import PRIMARY_REPO_ROOT, REPO_ROOT
 
 
@@ -23,8 +22,11 @@ def main() -> int:
     parser.add_argument("--certificate-root", type=Path, default=DEFAULT_CERTIFICATE_ROOT)
     parser.add_argument("--output", type=Path, default=DEFAULT_OUTPUT)
     args = parser.parse_args()
-    payload = build_thin_consumer_audit(data_root=args.data_root, certificate_root=args.certificate_root)
-    write_json(args.output, payload)
+    payload = publish_thin_consumer_audit(
+        args.output,
+        data_root=args.data_root,
+        certificate_root=args.certificate_root,
+    )
     print(json.dumps({"consumers": len(payload["consumers"]), "source_markers": len(payload["source_release_markers"]), "authorized_streams": payload["authorized_graph_acquisition"]["stream_count"]}, sort_keys=True))
     return 0
 

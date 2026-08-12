@@ -55,6 +55,31 @@ EVIDENCE_PREPARATION_POLICY = "legacy-raw-evidence-preparation-v1"
 REFERENCE_ACQUISITION_POLICY = "fresh-reference-acquisition-plan-v1"
 
 
+def verify_installed_generation(
+    certificate: Path,
+    *,
+    data_root: Path,
+    mutation_lock: Path = RAW_MARKET_DATA_LOCK,
+) -> dict[str, object]:
+    """Reopen one installed generation while excluding canonical raw writers."""
+
+    with exclusive_job(mutation_lock, job="raw generation verification"):
+        return verify_retro_certificate(certificate, data_root=data_root)
+
+
+def prepare_evidence_under_lease(
+    data_root: Path,
+    local_ledger: Path,
+    output_dir: Path,
+    *,
+    mutation_lock: Path = RAW_MARKET_DATA_LOCK,
+) -> dict[str, object]:
+    """Prepare evidence from a stable installed raw generation."""
+
+    with exclusive_job(mutation_lock, job="raw generation evidence preparation"):
+        return prepare_evidence(data_root, local_ledger, output_dir)
+
+
 def selected_required_partitions(
     sources: list[str] | None,
     streams: list[str] | None,
@@ -660,11 +685,20 @@ def main() -> int:
     promote.add_argument("--data-root", type=Path, default=DATA_DIR)
     args = parser.parse_args()
     if args.command == "verify":
-        payload = verify_retro_certificate(args.certificate, data_root=args.data_root)
+        payload = verify_installed_generation(
+            args.certificate,
+            data_root=args.data_root,
+            mutation_lock=RAW_MARKET_DATA_LOCK,
+        )
         print(json.dumps(payload, indent=2, sort_keys=True))
         return 0
     if args.command == "prepare-evidence":
-        payload = prepare_evidence(args.data_root, args.local_ledger, args.output_dir)
+        payload = prepare_evidence_under_lease(
+            args.data_root,
+            args.local_ledger,
+            args.output_dir,
+            mutation_lock=RAW_MARKET_DATA_LOCK,
+        )
         print(json.dumps(payload, indent=2, sort_keys=True))
         return 0
     if args.command == "finalize-evidence":

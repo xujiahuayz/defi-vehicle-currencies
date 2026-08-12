@@ -12,7 +12,7 @@ from ddvc.fetch.material_consumers import GRAPH_MATERIAL_CONSUMER_INTENTS, Graph
 from ddvc.fetch.sources import get_source, iter_days
 from ddvc.paths import RAW_MARKET_DATA_LOCK
 from ddvc.provenance import portable_content_sha256
-from ddvc.runtime import exclusive_job
+from ddvc.runtime import atomic_output, exclusive_job
 
 if TYPE_CHECKING:
     from ddvc.raw_certification import RawPartition
@@ -119,6 +119,40 @@ def build_thin_consumer_audit(
             certificate_root=certificate_root,
             intents=intents,
         )
+
+
+def _write_thin_consumer_audit_unlocked(
+    audit_path: Path,
+    payload: Mapping[str, object],
+) -> None:
+    """Atomically install a built audit; the caller owns the raw mutation lease."""
+
+    audit_path.parent.mkdir(parents=True, exist_ok=True)
+    with atomic_output(audit_path) as temporary:
+        temporary.write_text(
+            json.dumps(payload, indent=2, sort_keys=True) + "\n",
+            encoding="utf-8",
+        )
+
+
+def publish_thin_consumer_audit(
+    audit_path: Path,
+    *,
+    data_root: Path,
+    certificate_root: Path,
+    intents: Mapping[str, GraphMaterialConsumerIntent] | None = None,
+    mutation_lock: Path = RAW_MARKET_DATA_LOCK,
+) -> dict[str, object]:
+    """Build and publish one audit under a single raw-generation lease."""
+
+    with exclusive_job(mutation_lock, job="Graph thin-consumer audit publication"):
+        payload = _build_thin_consumer_audit_unlocked(
+            data_root=data_root,
+            certificate_root=certificate_root,
+            intents=intents,
+        )
+        _write_thin_consumer_audit_unlocked(audit_path, payload)
+        return payload
 
 
 def resolve_thin_consumer_audit(
