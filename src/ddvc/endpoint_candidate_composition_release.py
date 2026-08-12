@@ -30,7 +30,7 @@ ENDPOINT_CANDIDATE_COMPOSITION_RELEASE = (
     DATA_DIR / "processed" / "endpoint_candidate_composition_release" / "current.json"
 )
 ENDPOINT_CANDIDATE_COMPOSITION_RELEASE_KIND = "endpoint_candidate_composition"
-ENDPOINT_CANDIDATE_COMPOSITION_RELEASE_SCHEMA_VERSION = 1
+ENDPOINT_CANDIDATE_COMPOSITION_RELEASE_SCHEMA_VERSION = 2
 ENDPOINT_CANDIDATE_COMPOSITION_RELEASE_FILENAMES = {
     "choices": "endpoint_candidate_choices.parquet",
     "pair_support": "endpoint_candidate_pair_support.parquet",

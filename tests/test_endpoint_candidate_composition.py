@@ -7,6 +7,7 @@ import pytest
 
 from ddvc.asset_types import NATIVE, STABLE, classify
 from ddvc.endpoint_candidate_composition import (
+    EVENT_COLLISION,
     INCLUDED,
     EndpointCandidateComposition,
     endpoint_candidate_composition_for_day,
@@ -216,6 +217,93 @@ def test_candidate_identity_and_event_identity_fail_closed() -> None:
     )
     with pytest.raises(ValueError, match="canonical candidate identity"):
         validate_endpoint_candidate_composition(replace(bundle, choices=tampered))
+
+
+def test_cross_source_coordinate_collision_quarantines_every_affected_component() -> None:
+    rows = sample_legs()
+    collisions = pd.DataFrame(
+        [
+            leg("colliding", 10, SRC, WETH, component_id=0, source="uniswap_v2", amount_usd=40),
+            leg("colliding", 11, WETH, TGT, component_id=0, source="uniswap_v2", amount_usd=40),
+            leg("colliding", 10, SRC, USDC, component_id=1, source="sushiswap_v2", amount_usd=60),
+            leg("colliding", 12, USDC, TGT, component_id=1, source="sushiswap_v2", amount_usd=60),
+        ]
+    )
+    bundle = endpoint_candidate_composition_for_day(
+        pd.concat([rows, collisions], ignore_index=True),
+        "20240102",
+    )
+    quarantined = bundle.exclusions[
+        bundle.exclusions["exclusion_reason"].eq(EVENT_COLLISION)
+    ].sort_values("audit_component_id")
+    assert len(quarantined) == 2
+    assert quarantined["audit_tx_hash"].eq("colliding").all()
+    assert quarantined["audit_component_id"].tolist() == [0, 1]
+    assert quarantined["collision_event_coordinate_count"].eq(1).all()
+    assert quarantined["collision_row_count"].eq(1).all()
+    assert quarantined["collision_source_count"].eq(2).all()
+    assert quarantined["collision_sources"].eq("sushiswap_v2>uniswap_v2").all()
+    assert quarantined["collision_log_indices"].eq("10").all()
+    assert quarantined["collision_observed_abs_leg_value_usd_upper_bound"].tolist() == [80, 120]
+    assert bundle.choices["route_count"].sum() == 2
+    support = bundle.pair_support.iloc[0]
+    assert support["day_source_component_count"] == 6
+    assert support["day_accounted_component_count"] == 6
+    assert support["day_event_collision_component_count"] == 2
+    assert support["day_event_collision_observed_abs_leg_value_usd_upper_bound"] == 200
+    assert support["source_pair_component_count"] == 6
+    assert support["event_collision_component_count"] == 2
+
+
+def test_choice_support_exposes_transaction_multiplicity_and_conditional_values() -> None:
+    routes = pd.DataFrame(
+        [
+            leg("multi-choice", 0, SRC, WETH, component_id=0, amount_usd=100),
+            leg("multi-choice", 1, WETH, TGT, component_id=0, amount_usd=100),
+            leg("multi-choice", 2, SRC, WETH, component_id=1, amount_usd=200),
+            leg("multi-choice", 3, WETH, TGT, component_id=1, amount_usd=200),
+            leg("stable-choice", 4, SRC, USDC, amount_usd=50),
+            leg("stable-choice", 5, USDC, TGT, amount_usd=50),
+        ]
+    )
+    support = endpoint_candidate_composition_for_day(routes, "20240102").pair_support.iloc[0]
+    assert support["primary_choice_route_count"] == 3
+    assert support["native_choice_route_count"] == 2
+    assert support["stable_choice_route_count"] == 1
+    assert support["native_within_20pct_routes"] == 2
+    assert support["stable_within_20pct_routes"] == 1
+    assert support["native_within_20pct_value_usd"] == 300
+    assert support["stable_within_20pct_value_usd"] == 50
+    assert support["primary_choice_transaction_count"] == 2
+    assert support["primary_choice_multi_component_transaction_count"] == 1
+    assert support["primary_choice_component_excess_count"] == 1
+    assert support["duplicate_choice_transaction_candidate_count"] == 1
+
+
+def test_collision_audit_and_choice_decomposition_fail_closed_on_tamper() -> None:
+    rows = pd.concat(
+        [
+            sample_legs(),
+            pd.DataFrame(
+                [
+                    leg("colliding", 10, SRC, WETH, source="uniswap_v2"),
+                    leg("colliding", 10, WETH, TGT, source="sushiswap_v2"),
+                ]
+            ),
+        ],
+        ignore_index=True,
+    )
+    bundle = endpoint_candidate_composition_for_day(rows, "20240102")
+    bad_audit = bundle.exclusions.copy()
+    collision = bad_audit["exclusion_reason"].eq(EVENT_COLLISION)
+    bad_audit.loc[collision, "audit_tx_hash"] = ""
+    with pytest.raises(ValueError, match="component-keyed audit evidence"):
+        validate_endpoint_candidate_composition(replace(bundle, exclusions=bad_audit))
+
+    bad_support = bundle.pair_support.copy()
+    bad_support.loc[0, "native_choice_route_count"] += 1
+    with pytest.raises(ValueError, match="native and stable choices"):
+        validate_endpoint_candidate_composition(replace(bundle, pair_support=bad_support))
 
 
 def test_transaction_timestamp_must_match_supplied_utc_day() -> None:

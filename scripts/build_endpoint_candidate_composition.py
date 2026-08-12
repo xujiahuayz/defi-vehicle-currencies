@@ -74,8 +74,39 @@ COUNT_COLUMNS = {
     "multiple_intermediary_route_count",
     "split_or_join_route_count",
     "nonsequential_two_leg_route_count",
+    "day_source_component_count",
+    "day_accounted_component_count",
+    "day_unpaired_exclusion_component_count",
+    "day_event_collision_component_count",
+    "day_event_collision_value_missing_component_count",
+    "source_pair_component_count",
+    "event_collision_component_count",
+    "event_collision_value_missing_component_count",
+    "native_choice_route_count",
+    "stable_choice_route_count",
+    "native_within_20pct_routes",
+    "stable_within_20pct_routes",
+    "primary_choice_transaction_count",
+    "primary_choice_multi_component_transaction_count",
+    "primary_choice_component_excess_count",
+    "duplicate_choice_transaction_candidate_count",
+    "collision_event_coordinate_count",
+    "collision_row_count",
+    "collision_source_count",
+    "collision_value_missing_leg_count",
 }
-VALUE_COLUMNS = set(MAGNITUDE_COLUMNS) - COUNT_COLUMNS
+VALUE_COLUMNS = (set(MAGNITUDE_COLUMNS) - COUNT_COLUMNS) | {
+    "day_event_collision_observed_abs_leg_value_usd_upper_bound",
+    "event_collision_observed_abs_leg_value_usd_upper_bound",
+    "native_within_20pct_value_usd",
+    "stable_within_20pct_value_usd",
+    "collision_observed_abs_leg_value_usd_upper_bound",
+}
+INTEGER_COLUMNS = COUNT_COLUMNS | {
+    "audit_component_id",
+    "collision_first_timestamp_utc",
+    "collision_last_timestamp_utc",
+}
 DATE_COLUMNS = {
     "date",
     "pair_first_supported_date",
@@ -87,7 +118,7 @@ BOOL_COLUMNS = {"pair_entry_on_day", "pair_last_observed_on_day"}
 def _schema(columns: list[str]) -> pa.Schema:
     fields: list[pa.Field] = []
     for column in columns:
-        if column in COUNT_COLUMNS:
+        if column in INTEGER_COLUMNS:
             dtype = pa.int64()
         elif column in VALUE_COLUMNS:
             dtype = pa.float64()
@@ -306,7 +337,9 @@ def build_endpoint_candidate_composition_release(
                 inputs=[release.ledger_path],
                 notes=(
                     "exact two-leg stable/native endpoint-candidate choices; complete "
-                    "released route calendar; explicit mutually exclusive exclusions; "
+                    "released route calendar; source-component accounting; component-keyed "
+                    "provider-coordinate collision quarantine and materiality bounds; "
+                    "explicit mutually exclusive exclusions; "
                     f"source release identity {release.content_identity_sha256}"
                 ),
                 preinstall_validator=validator,
