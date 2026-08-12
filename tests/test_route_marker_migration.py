@@ -283,6 +283,7 @@ def test_restart_recovers_each_durable_publication_cut_point(
         json.dumps(
             {
                 "policy": migration.MIGRATION_POLICY,
+                "state": migration._PREPARED,
                 "legacy_engine": migration.LEGACY_ENGINE,
                 "current_engine": migration.RECONSTRUCTION_ENGINE,
                 "original_identities": original,
@@ -535,3 +536,84 @@ migration.migrate_route_release_markers(
     assert file_sha256(marker_path) == before_marker
     assert file_sha256(paths["quality_panel"]) == before_ledger
     assert not stages[0].exists()
+
+
+@pytest.mark.parametrize(
+    ("cut_point", "expected_state", "keeps_published_release"),
+    [
+        ("ledger_installed", "prepared", False),
+        ("cleanup:panel", "committed", True),
+    ],
+)
+def test_real_sigkill_recovers_installed_ledger_and_committed_cleanup(
+    tmp_path: Path,
+    cut_point: str,
+    expected_state: str,
+    keeps_published_release: bool,
+) -> None:
+    days = ["20200505"]
+    paths = prepare_legacy_release(tmp_path, days)
+    marker_path = unified_quality_path(days[0], root=paths["unified_root"])
+    before_marker = file_sha256(marker_path)
+    before_ledger = file_sha256(paths["quality_panel"])
+    program = """
+import json
+import os
+import signal
+import sys
+from pathlib import Path
+from scripts import migrate_route_release_markers as migration
+
+config = json.loads(sys.argv[1])
+
+def kill_at_cut(label):
+    if label == config["cut"]:
+        os.kill(os.getpid(), signal.SIGKILL)
+
+migration._publication_cut = kill_at_cut
+migration.migrate_route_release_markers(
+    data_root=Path(config["data_root"]),
+    unified_root=Path(config["unified_root"]),
+    quality_panel=Path(config["quality_panel"]),
+    quality_exhibit=Path(config["quality_exhibit"]),
+    dexes=["uniswap_v2"],
+    days=config["days"],
+    workers=1,
+    publish=True,
+    raw_lock=Path(config["raw_lock"]),
+)
+"""
+    config = {
+        **{name: str(path) for name, path in paths.items()},
+        "days": days,
+        "cut": cut_point,
+    }
+    killed = subprocess.run(
+        [sys.executable, "-c", program, json.dumps(config)],
+        cwd=Path(__file__).resolve().parents[1],
+        capture_output=True,
+        text=True,
+        timeout=20,
+        check=False,
+    )
+    assert killed.returncode == -9, killed.stderr
+    stages = list(
+        paths["unified_root"].parent.glob(".route-marker-migration-*")
+    )
+    assert len(stages) == 1
+    journal = json.loads(
+        (stages[0] / "publication-journal.json").read_text(encoding="utf-8")
+    )
+    assert journal["state"] == expected_state
+    recovered = migrate(paths, days, publish=False)
+    assert not stages[0].exists()
+    marker = json.loads(marker_path.read_text(encoding="utf-8"))
+    if keeps_published_release:
+        assert marker["engine"] == RECONSTRUCTION_ENGINE
+        assert file_sha256(marker_path) != before_marker
+        assert file_sha256(paths["quality_panel"]) != before_ledger
+        assert recovered.validation["exact_frame_equal"].all()
+    else:
+        assert marker["engine"] == LEGACY_ENGINE
+        assert file_sha256(marker_path) == before_marker
+        assert file_sha256(paths["quality_panel"]) == before_ledger
