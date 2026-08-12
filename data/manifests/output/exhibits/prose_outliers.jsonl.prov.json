@@ -1,39 +1,32 @@
 {
  "argv": [],
  "artefact": "output/exhibits/prose_outliers.jsonl",
- "code_fingerprint": "ef680c901c33653671e8fad61e7acffca9c854fa4d22abca7190cf9a45774e69",
+ "artefact_bytes": 227124,
+ "artefact_mtime_ns": 1786528420020354571,
+ "artefact_sha256": "d94cdf384b8d0e0e6c7c5a693b0c57bc92611dda53e9dcf77445ac6dd608bbaa",
+ "code_fingerprint": "cb6788c820ca80baaf94ab4554a825b76c49a494a3058f0dd052f07c62dd7270",
  "code_sources": [
   "scripts/find_prose_outliers.py",
   "src/ddvc/tables.py"
  ],
- "created_at": "2026-08-09T04:33:32+00:00",
+ "created_at": "2026-08-12T09:53:40+00:00",
  "git": {
-  "branch": "glotl/fgh-evidence",
-  "commit": "6c976c48f45db8a566f7b49b397d2530fbe40106",
+  "branch": "main",
+  "commit": "556f5fe5c35317be83fe6663b7a74c826b1dba59",
   "dirty": true,
   "dirty_generated_files": [
    "data/manifests/output/exhibits/prose_conventions.jsonl.prov.json",
-   "data/manifests/output/exhibits/venue_optics.jsonl.prov.json"
+   "data/manifests/output/exhibits/venue_optics.jsonl.prov.json",
+   "data/manifests/output/exhibits/venue_shape.jsonl.prov.json",
+   "output/exhibits/prose_conventions.jsonl",
+   "output/exhibits/venue_optics.jsonl",
+   "output/exhibits/venue_shape.jsonl",
+   "output/exhibits/.prose_outliers.jsonl.kys9p88a.tmp"
   ],
   "dirty_tracked_files": [
-   "docs/findings-freeze.md",
-   "docs/literature-audit.md",
-   "literature/pdf-sources.json",
-   "literature/source-admission.json",
-   "literature/text/2023-LiuMakarovSchoar2023Terra-working-paper-anatomy-of-a-run-the-terra-luna-crash.txt",
-   "literature/text/_index.jsonl",
-   "literature/vehicle-currencies.bib"
+   "deck/main.pdf"
   ],
-  "dirty_untracked_files": [
-   "literature/source-notes/2026-LiuMakarovSchoar2023TerraDiscussions.md",
-   "literature/source-notes/2026-LiuMakarovSchoar2023TerraInternetAppendix.md",
-   "literature/source-notes/2026-LiuMakarovSchoar2023TerraReplication.md",
-   "literature/text/2023-LiuMakarovSchoar2023Terra-working-paper-revision-anatomy-of-a-run-the-terra-luna-crash.txt",
-   "literature/text/2023-LiuMakarovSchoar2023TerraBouvardDiscussion-supplement-riksbank-discussion.txt",
-   "literature/text/2023-LiuMakarovSchoar2023TerraPresentation-supplement-riksbank-presentation.txt",
-   "literature/text/2023-LiuMakarovSchoar2023TerraWilkinsDiscussion-supplement-riksbank-discussion.txt",
-   "literature/text/2024-LiuMakarovSchoar2023TerraLiaoDiscussion-supplement-wfa-discussion.txt"
-  ]
+  "dirty_untracked_files": []
  },
  "inputs": [],
  "libraries": {
@@ -44,6 +37,6 @@
  },
  "notes": null,
  "python": "3.14.5",
- "rows": 608,
+ "rows": 1062,
  "script": "scripts/find_prose_outliers.py"
 }

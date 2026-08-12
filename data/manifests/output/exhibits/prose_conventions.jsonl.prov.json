@@ -1,38 +1,32 @@
 {
  "argv": [],
  "artefact": "output/exhibits/prose_conventions.jsonl",
- "code_fingerprint": "ba7eecac68affd5fb8ed3c1c2c1d550c352324ffb856019eb51b9972c47bca14",
+ "artefact_bytes": 3101,
+ "artefact_mtime_ns": 1786528362564830937,
+ "artefact_sha256": "257764923f5066fd05d7ffef1f516f6e670e0f75ec6786fe53b638f9efc5bc90",
+ "code_fingerprint": "eff8b1f02f96a55399f38b499f465e044e015e37ae3f4be7184623c60434c43a",
  "code_sources": [
   "scripts/measure_prose_conventions.py",
   "src/ddvc/tables.py"
  ],
- "created_at": "2026-08-09T04:32:59+00:00",
+ "created_at": "2026-08-12T09:52:42+00:00",
  "git": {
-  "branch": "glotl/fgh-evidence",
-  "commit": "6c976c48f45db8a566f7b49b397d2530fbe40106",
+  "branch": "main",
+  "commit": "556f5fe5c35317be83fe6663b7a74c826b1dba59",
   "dirty": true,
   "dirty_generated_files": [
-   "data/manifests/output/exhibits/venue_optics.jsonl.prov.json"
+   "data/manifests/output/exhibits/prose_outliers.jsonl.prov.json",
+   "data/manifests/output/exhibits/venue_optics.jsonl.prov.json",
+   "data/manifests/output/exhibits/venue_shape.jsonl.prov.json",
+   "output/exhibits/prose_outliers.jsonl",
+   "output/exhibits/venue_optics.jsonl",
+   "output/exhibits/venue_shape.jsonl",
+   "output/exhibits/.prose_conventions.jsonl.t5m8956k.tmp"
   ],
   "dirty_tracked_files": [
-   "docs/findings-freeze.md",
-   "docs/literature-audit.md",
-   "literature/pdf-sources.json",
-   "literature/source-admission.json",
-   "literature/text/2023-LiuMakarovSchoar2023Terra-working-paper-anatomy-of-a-run-the-terra-luna-crash.txt",
-   "literature/text/_index.jsonl",
-   "literature/vehicle-currencies.bib"
+   "deck/main.pdf"
   ],
-  "dirty_untracked_files": [
-   "literature/source-notes/2026-LiuMakarovSchoar2023TerraDiscussions.md",
-   "literature/source-notes/2026-LiuMakarovSchoar2023TerraInternetAppendix.md",
-   "literature/source-notes/2026-LiuMakarovSchoar2023TerraReplication.md",
-   "literature/text/2023-LiuMakarovSchoar2023Terra-working-paper-revision-anatomy-of-a-run-the-terra-luna-crash.txt",
-   "literature/text/2023-LiuMakarovSchoar2023TerraBouvardDiscussion-supplement-riksbank-discussion.txt",
-   "literature/text/2023-LiuMakarovSchoar2023TerraPresentation-supplement-riksbank-presentation.txt",
-   "literature/text/2023-LiuMakarovSchoar2023TerraWilkinsDiscussion-supplement-riksbank-discussion.txt",
-   "literature/text/2024-LiuMakarovSchoar2023TerraLiaoDiscussion-supplement-wfa-discussion.txt"
-  ]
+  "dirty_untracked_files": []
  },
  "inputs": [],
  "libraries": {
