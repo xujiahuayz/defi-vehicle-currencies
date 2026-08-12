@@ -13,6 +13,7 @@ from ddvc.reconstruct import (
     RECONSTRUCTION_ENGINE,
     UNIFIED_QUALITY_COLUMNS,
     _process_one,
+    route_input_fingerprint,
     unified_path,
     unified_quality_path,
 )
@@ -93,6 +94,37 @@ def test_dry_run_proves_exact_semantics_without_mutating_release(tmp_path: Path)
         for day in days
     } == before_markers
     assert file_sha256(paths["quality_panel"]) == before_ledger
+
+
+def test_fresh_validation_removes_its_bounded_serialization_scratch(
+    tmp_path: Path,
+) -> None:
+    days = ["20200505"]
+    paths = prepare_legacy_release(tmp_path, days)
+    from scripts import migrate_route_release_markers as migration
+
+    day = days[0]
+    marker = json.loads(
+        unified_quality_path(day, root=paths["unified_root"]).read_text(
+            encoding="utf-8"
+        )
+    )
+    scratch = tmp_path / "scratch"
+    scratch.mkdir()
+    migration._validate_fresh_day(
+        day,
+        dexes=["uniswap_v2"],
+        data_root=paths["data_root"],
+        unified_root=paths["unified_root"],
+        legacy_marker=marker,
+        current_input_fingerprint=route_input_fingerprint(
+            "2020-05-05",
+            ["uniswap_v2"],
+            data_root=paths["data_root"],
+        ),
+        scratch=scratch,
+    )
+    assert list(scratch.iterdir()) == []
 
 
 def test_publish_changes_only_markers_and_global_quality_outputs(tmp_path: Path) -> None:
