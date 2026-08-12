@@ -37,7 +37,7 @@ from ddvc.paths import REPO_ROOT
 from ddvc.runtime import atomic_output, serialized_output_install
 
 
-PROBE_SCHEMA_VERSION = 2
+PROBE_SCHEMA_VERSION = 3
 CANONICAL_FLOAT_SIGNIFICANT_DIGITS = 7
 SERIALIZED_P_VALUE_FLOOR = 1e-12
 OUTCOME = "weth_symmetric_output_edge_bps"
@@ -74,6 +74,13 @@ MATCHED_YEAR_END = 2026
 MATCHED_CELL_KEYS = (
     "comparator_symbol",
     "endpoint_pair",
+    "trade_size_usd",
+    "reserve_hour_utc",
+    "architecture",
+    "available_candidate_count",
+)
+MATCHED_SELECTION_FIELDS = (
+    "comparator_symbol",
     "trade_size_usd",
     "reserve_hour_utc",
     "architecture",
@@ -682,6 +689,57 @@ def _matched_year_change(frame: pd.DataFrame) -> dict[str, object]:
     sizes = grouped.pivot(index=list(MATCHED_CELL_KEYS), columns="sample_year", values="size")
     matched_index = means.dropna(subset=[MATCHED_YEAR_START, MATCHED_YEAR_END]).index
 
+    def selection_diagnostics() -> dict[str, object]:
+        years: dict[str, object] = {}
+        for year in (MATCHED_YEAR_START, MATCHED_YEAR_END):
+            candidate = grouped[grouped["sample_year"].eq(year)].copy()
+            candidate_index = pd.MultiIndex.from_frame(candidate[list(MATCHED_CELL_KEYS)])
+            candidate["matched_cell"] = candidate_index.isin(matched_index)
+            dimensions: dict[str, object] = {}
+            for field in MATCHED_SELECTION_FIELDS:
+                cells = candidate.groupby([field, "matched_cell"], observed=True, sort=True)["size"].agg(["size", "sum"])
+                levels = sorted(candidate[field].unique().tolist(), key=lambda value: str(value))
+                included_cells = int(candidate["matched_cell"].sum())
+                excluded_cells = int((~candidate["matched_cell"]).sum())
+                included_rows = int(candidate.loc[candidate["matched_cell"], "size"].sum())
+                excluded_rows = int(candidate.loc[~candidate["matched_cell"], "size"].sum())
+                records = []
+                cell_gaps: list[float] = []
+                row_gaps: list[float] = []
+                for level in levels:
+                    included = cells.loc[(level, True)] if (level, True) in cells.index else None
+                    excluded = cells.loc[(level, False)] if (level, False) in cells.index else None
+                    included_cell_share = float(included["size"] / included_cells) if included_cells and included is not None else 0.0
+                    excluded_cell_share = float(excluded["size"] / excluded_cells) if excluded_cells and excluded is not None else 0.0
+                    included_row_share = float(included["sum"] / included_rows) if included_rows and included is not None else 0.0
+                    excluded_row_share = float(excluded["sum"] / excluded_rows) if excluded_rows and excluded is not None else 0.0
+                    records.append(
+                        {
+                            "level": str(level),
+                            "included_cell_share": included_cell_share,
+                            "excluded_cell_share": excluded_cell_share,
+                            "included_row_share": included_row_share,
+                            "excluded_row_share": excluded_row_share,
+                        }
+                    )
+                    cell_gaps.append(abs(included_cell_share - excluded_cell_share))
+                    row_gaps.append(abs(included_row_share - excluded_row_share))
+                dimensions[field] = {
+                    "levels": records,
+                    "cell_total_variation": None if not included_cells or not excluded_cells else 0.5 * sum(cell_gaps),
+                    "row_total_variation": None if not included_rows or not excluded_rows else 0.5 * sum(row_gaps),
+                }
+            years[str(year)] = {
+                "candidate_cells": int(len(candidate)),
+                "included_cells": int(candidate["matched_cell"].sum()),
+                "excluded_cells": int((~candidate["matched_cell"]).sum()),
+                "candidate_rows": int(candidate["size"].sum()),
+                "included_rows": int(candidate.loc[candidate["matched_cell"], "size"].sum()),
+                "excluded_rows": int(candidate.loc[~candidate["matched_cell"], "size"].sum()),
+                "dimensions": dimensions,
+            }
+        return {"unit": "candidate_economic_cells", "fields": list(MATCHED_SELECTION_FIELDS), "years": years}
+
     def summarize(comparator: str | None) -> dict[str, object]:
         candidate = grouped if comparator is None else grouped[grouped["comparator_symbol"].eq(comparator)]
         candidate_start = candidate[candidate["sample_year"].eq(MATCHED_YEAR_START)]
@@ -727,6 +785,7 @@ def _matched_year_change(frame: pd.DataFrame) -> dict[str, object]:
         "cell_keys": list(MATCHED_CELL_KEYS),
         "pooled": summarize(None),
         "comparators": {comparator: summarize(comparator) for comparator in COMPARATOR_SYMBOLS},
+        "selection_diagnostics": selection_diagnostics(),
         "interpretation": "same-cell descriptive change; matching fixes comparator, ordered endpoints, notional, reserve hour, architecture, and candidate breadth but does not identify an aggregator effect",
     }
     return _finite_json(result)
@@ -1089,7 +1148,7 @@ def _validate_matched_change_cell(value: object) -> None:
 
 
 def _validate_matched_year_change(value: object) -> None:
-    expected = {"status", "start_year", "end_year", "cell_keys", "pooled", "comparators", "interpretation"}
+    expected = {"status", "start_year", "end_year", "cell_keys", "pooled", "comparators", "selection_diagnostics", "interpretation"}
     if not isinstance(value, Mapping) or set(value) != expected:
         raise ValueError("paired dominance-cost matched-year schema is invalid")
     if value["status"] != "provisional_descriptive_not_admissible" or value["start_year"] != MATCHED_YEAR_START or value["end_year"] != MATCHED_YEAR_END:
@@ -1105,6 +1164,45 @@ def _validate_matched_year_change(value: object) -> None:
     for field in MATCHED_CHANGE_COUNT_FIELDS:
         if int(value["pooled"][field]) != sum(int(cell[field]) for cell in comparators.values()):
             raise ValueError("paired dominance-cost matched-year pooled support disagrees with comparators")
+    diagnostics = value["selection_diagnostics"]
+    if not isinstance(diagnostics, Mapping) or set(diagnostics) != {"unit", "fields", "years"} or diagnostics["unit"] != "candidate_economic_cells" or diagnostics["fields"] != list(MATCHED_SELECTION_FIELDS):
+        raise ValueError("paired dominance-cost matched-year selection contract is invalid")
+    years = diagnostics["years"]
+    if not isinstance(years, Mapping) or set(years) != {str(MATCHED_YEAR_START), str(MATCHED_YEAR_END)}:
+        raise ValueError("paired dominance-cost matched-year selection years are invalid")
+    for year, cell in years.items():
+        if not isinstance(cell, Mapping) or set(cell) != {"candidate_cells", "included_cells", "excluded_cells", "candidate_rows", "included_rows", "excluded_rows", "dimensions"}:
+            raise ValueError("paired dominance-cost matched-year selection schema is invalid")
+        if any(not _plain_integer(cell[field]) for field in ("candidate_cells", "included_cells", "excluded_cells", "candidate_rows", "included_rows", "excluded_rows")):
+            raise ValueError("paired dominance-cost matched-year selection counts are invalid")
+        if cell["candidate_cells"] != cell["included_cells"] + cell["excluded_cells"] or cell["candidate_rows"] != cell["included_rows"] + cell["excluded_rows"]:
+            raise ValueError("paired dominance-cost matched-year selection totals disagree")
+        pooled_suffix = "start" if year == str(MATCHED_YEAR_START) else "end"
+        if cell["candidate_cells"] != value["pooled"][f"candidate_cells_{pooled_suffix}"] or cell["included_cells"] != value["pooled"]["matched_cells"] or cell["candidate_rows"] != value["pooled"][f"candidate_rows_{pooled_suffix}"] or cell["included_rows"] != value["pooled"][f"matched_rows_{pooled_suffix}"]:
+            raise ValueError("paired dominance-cost matched-year selection support disagrees")
+        dimensions = cell["dimensions"]
+        if not isinstance(dimensions, Mapping) or set(dimensions) != set(MATCHED_SELECTION_FIELDS):
+            raise ValueError("paired dominance-cost matched-year selection dimensions are invalid")
+        for dimension in dimensions.values():
+            if not isinstance(dimension, Mapping) or set(dimension) != {"levels", "cell_total_variation", "row_total_variation"} or not isinstance(dimension["levels"], list) or not dimension["levels"]:
+                raise ValueError("paired dominance-cost matched-year selection dimension schema is invalid")
+            for record in dimension["levels"]:
+                if not isinstance(record, Mapping) or set(record) != {"level", "included_cell_share", "excluded_cell_share", "included_row_share", "excluded_row_share"} or not isinstance(record["level"], str) or any(not _finite_number(record[field]) or not 0 <= float(record[field]) <= 1 for field in ("included_cell_share", "excluded_cell_share", "included_row_share", "excluded_row_share")):
+                    raise ValueError("paired dominance-cost matched-year selection level is invalid")
+            for metric, included_total, excluded_total in (("cell", cell["included_cells"], cell["excluded_cells"]), ("row", cell["included_rows"], cell["excluded_rows"])):
+                observed = dimension[f"{metric}_total_variation"]
+                shares = dimension["levels"]
+                for population, total in (("included", included_total), ("excluded", excluded_total)):
+                    share_sum = sum(float(record[f"{population}_{metric}_share"]) for record in shares)
+                    expected_sum = 1.0 if total else 0.0
+                    if not math.isclose(share_sum, expected_sum, rel_tol=1e-6, abs_tol=1e-7):
+                        raise ValueError("paired dominance-cost matched-year selection shares do not sum to their population")
+                expected_tv = 0.5 * sum(abs(float(record[f"included_{metric}_share"]) - float(record[f"excluded_{metric}_share"])) for record in shares)
+                if included_total and excluded_total:
+                    if not _finite_number(observed) or not math.isclose(float(observed), expected_tv, rel_tol=1e-6, abs_tol=1e-7):
+                        raise ValueError("paired dominance-cost matched-year selection distance is invalid")
+                elif observed is not None:
+                    raise ValueError("paired dominance-cost matched-year unsupported selection distance is not null")
 
 
 def _validate_sample_summary(value: object) -> None:

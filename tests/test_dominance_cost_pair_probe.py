@@ -227,7 +227,29 @@ def test_synthetic_probe_is_deterministic_and_retains_support_failures(tmp_path:
     assert matched["pooled"]["matched_cells"] > 0
     assert matched["pooled"]["matched_rows_start"] > 0
     assert matched["pooled"]["matched_rows_end"] > 0
+    selection = matched["selection_diagnostics"]["years"]["2024"]
+    assert selection["candidate_cells"] == selection["included_cells"] + selection["excluded_cells"]
+    assert selection["dimensions"]["reserve_hour_utc"]["cell_total_variation"] >= 0
     assert sum(record["record_type"] == "matched_year_change_summary" for record in first_ledger) == 1
+
+
+def test_matched_year_selection_diagnostics_measure_observable_composition() -> None:
+    frame = _synthetic_frame()
+    frame = frame[~((frame["sample_year"] == 2026) & (frame["trade_size_usd"] == 100_000.0) & (frame["endpoint_pair"] <= 20))].copy()
+    support = _synthetic_support()
+    changed = support["date"].str.startswith("2026-") & support["trade_size_usd"].eq(100_000.0)
+    support.loc[changed, "positive_finite_indirect_outputs"] = 20
+    support.loc[changed, "direct_available"] = 15
+    support.loc[changed, "positive_finite_direct_output"] = 10
+    report, _ledger = run_probe(frame, support, _synthetic_identity("a"))
+    matched = report["matched_year_change"]
+    start = matched["selection_diagnostics"]["years"]["2024"]
+    end = matched["selection_diagnostics"]["years"]["2026"]
+    assert start["excluded_cells"] > 0
+    assert end["excluded_cells"] > 0
+    size_diagnostic = start["dimensions"]["trade_size_usd"]
+    assert size_diagnostic["cell_total_variation"] > 0
+    assert size_diagnostic["row_total_variation"] > 0
 
 
 def test_state_reference_support_requires_noon_and_publisher_rejects_mutation(tmp_path: Path) -> None:
