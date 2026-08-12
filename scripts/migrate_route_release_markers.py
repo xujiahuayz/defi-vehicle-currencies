@@ -217,10 +217,14 @@ def _validate_fresh_day(
             )
     first = scratch / f"{day}-a.parquet"
     second = scratch / f"{day}-b.parquet"
-    fresh.to_parquet(first, index=False)
-    fresh.to_parquet(second, index=False)
-    first_hash = file_sha256(first)
-    second_hash = file_sha256(second)
+    try:
+        fresh.to_parquet(first, index=False)
+        fresh.to_parquet(second, index=False)
+        first_hash = file_sha256(first)
+        second_hash = file_sha256(second)
+    finally:
+        first.unlink(missing_ok=True)
+        second.unlink(missing_ok=True)
     if first_hash != second_hash:
         raise RuntimeError(f"fresh route serialization is not deterministic: {day}")
     return {
