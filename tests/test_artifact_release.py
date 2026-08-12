@@ -176,6 +176,55 @@ def test_dangling_symlink_is_not_bound_as_an_absent_source(tmp_path: Path) -> No
         bind_file_lineage([dangling], allow_missing=True)
 
 
+def test_dangling_symlink_ancestor_is_not_bound_as_an_absent_source(
+    tmp_path: Path,
+) -> None:
+    alias = tmp_path / "alias"
+    alias.symlink_to("missing-directory", target_is_directory=True)
+
+    with pytest.raises(FileNotFoundError, match="dangling symlink ancestor"):
+        bind_file_lineage([alias / "new.json"], allow_missing=True)
+
+
+def test_absent_file_lineage_detects_a_new_dangling_symlink(tmp_path: Path) -> None:
+    target = tmp_path / "absent.json"
+    lease = bind_file_lineage([target], allow_missing=True)
+    target.symlink_to("still-missing.json")
+
+    with pytest.raises(RuntimeError, match="absent source file appeared"):
+        lease.assert_current()
+
+
+def test_absent_alias_lease_blocks_publication_through_its_referent(
+    tmp_path: Path,
+) -> None:
+    real = tmp_path / "real"
+    real.mkdir()
+    alias = tmp_path / "alias"
+    alias.symlink_to(real, target_is_directory=True)
+    alias_target = alias / "current.json"
+    real_target = real / "current.json"
+    lease = bind_file_lineage([alias_target], allow_missing=True)
+    attempted = threading.Event()
+    completed = threading.Event()
+
+    def publish() -> None:
+        attempted.set()
+        with atomic_output(real_target) as temporary:
+            temporary.write_text("published\n", encoding="utf-8")
+        completed.set()
+
+    with current_file_lineage(lease):
+        thread = threading.Thread(target=publish)
+        thread.start()
+        assert attempted.wait(timeout=1)
+        assert not completed.wait(timeout=0.05)
+        assert not alias_target.exists()
+    thread.join(timeout=2)
+    assert completed.is_set()
+    assert alias_target.read_text(encoding="utf-8") == "published\n"
+
+
 def test_bundle_validation_finishes_before_pointer_publication(tmp_path: Path) -> None:
     pointer = tmp_path / "release" / "current.json"
     first = _publish(pointer, 1)

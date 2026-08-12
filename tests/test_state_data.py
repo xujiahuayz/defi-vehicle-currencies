@@ -11,6 +11,7 @@ from unittest.mock import patch
 
 import pandas as pd
 
+from ddvc.artifact_release import current_file_lineage
 from ddvc.graph_event_order import EventOrderCorrections, SCHEMA_VERSION as EVENT_ORDER_SCHEMA
 from ddvc.state_data import (
     CODE_SOURCES,
@@ -732,7 +733,8 @@ class StateDataTests(unittest.TestCase):
             threads[0].join(timeout=2)
             self.assertTrue(completed.is_set())
             with self.assertRaisesRegex(RuntimeError, "leased source file changed"):
-                lease.assert_current()
+                with current_file_lineage(lease):
+                    self.fail("replay entered with a mixed correction generation")
 
     def test_constant_product_quote_support_requires_usable_order(self) -> None:
         with tempfile.TemporaryDirectory() as directory:
