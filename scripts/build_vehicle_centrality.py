@@ -209,9 +209,7 @@ def centralities(
         vol = nx.betweenness_centrality(
             gv, k=value_k, weight="inv", normalized=True, seed=7
         )
-        eigen_value = nx.eigenvector_centrality(
-            gv, max_iter=2_000, tol=1e-10, weight="usd"
-        )
+        eigen_value = largest_component_eigenvector(gv, weight="usd")
         strength = {n: sum(gv[n][m]["usd"] for m in gv[n]) for n in gv}
     else:
         vol = {}
@@ -219,12 +217,8 @@ def centralities(
         strength = {}
     deg = dict(g.degree())
     count_strength = {n: sum(g[n][m]["legs"] for m in g[n]) for n in g}
-    eigen_topological = nx.eigenvector_centrality(
-        g, max_iter=2_000, tol=1e-10, weight=None
-    )
-    eigen_count = nx.eigenvector_centrality(
-        g, max_iter=2_000, tol=1e-10, weight="legs"
-    )
+    eigen_topological = largest_component_eigenvector(g, weight=None)
+    eigen_count = largest_component_eigenvector(g, weight="legs")
     rows = []
     for n in g.nodes():
         sym, typ = classify(n)
@@ -240,6 +234,31 @@ def centralities(
                      "eigenvector_count": eigen_count.get(n, 0.0),
                      "eigenvector_value": eigen_value.get(n, 0.0)})
     return add_network_position_shares(pd.DataFrame(rows))
+
+
+def largest_component_eigenvector(
+    graph: object,
+    *,
+    weight: str | None,
+) -> dict[str, float]:
+    """Deterministic eigenvector centrality on the market-wide connected component."""
+
+    import networkx as nx
+
+    if graph.number_of_nodes() == 0:
+        return {}
+    components = list(nx.connected_components(graph))
+    nodes = max(components, key=lambda component: (len(component), min(component)))
+    component = graph.subgraph(nodes)
+    if component.number_of_nodes() == 1:
+        centrality = {next(iter(nodes)): 1.0}
+    elif component.number_of_nodes() == 2:
+        centrality = {node: 2**-0.5 for node in nodes}
+    else:
+        centrality = nx.eigenvector_centrality_numpy(component, weight=weight)
+    result = {node: 0.0 for node in graph.nodes()}
+    result.update({node: abs(float(value)) for node, value in centrality.items()})
+    return result
 
 
 def _unit_share(values: pd.Series) -> pd.Series:

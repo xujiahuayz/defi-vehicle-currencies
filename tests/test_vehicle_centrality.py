@@ -110,6 +110,20 @@ class VehicleCentralityTests(unittest.TestCase):
             )
         )
 
+    def test_eigenvector_perimeter_is_the_largest_connected_component(self) -> None:
+        edges = pd.DataFrame(
+            [
+                {"a": "a", "b": "b", "usd": 10.0, "legs": 1},
+                {"a": "b", "b": "c", "usd": 10.0, "legs": 1},
+                {"a": "c", "b": "d", "usd": 10.0, "legs": 1},
+                {"a": "x", "b": "y", "usd": 1_000.0, "legs": 1_000},
+            ]
+        )
+        result = centralities(edges, k=None).set_index("token")
+        for dimension in ("topological", "count", "value"):
+            self.assertEqual(result.loc["x", f"eigenvector_{dimension}"], 0.0)
+            self.assertEqual(result.loc["y", f"eigenvector_{dimension}"], 0.0)
+
 
 if __name__ == "__main__":
     unittest.main()
