@@ -136,8 +136,8 @@ def _synthetic_frame() -> pd.DataFrame:
                             "trade_size_usd": notional,
                             "available_candidate_count": 5 if endpoint_pair < 8 else 3,
                             "architecture": "both_tick",
-                            "weth_output_usd": output * (1 + ratio) / (1 - ratio),
-                            "comparator_output_usd": output,
+                            "weth_output_usd": output,
+                            "comparator_output_usd": output * (1 - ratio) / (1 + ratio),
                             "weth_symmetric_output_edge_bps": edge,
                         }
                     )
@@ -232,6 +232,10 @@ def test_synthetic_probe_is_deterministic_and_retains_support_failures(tmp_path:
     selection = matched["selection_diagnostics"]["years"]["2024"]
     assert selection["candidate_cells"] == selection["included_cells"] + selection["excluded_cells"]
     assert selection["dimensions"]["reserve_hour_utc"]["cell_total_variation"] >= 0
+    dispersion = first_report["candidate_dispersion_change"]
+    assert dispersion["pooled"]["matched_cells"] > 0
+    assert dispersion["pooled"]["matched_cells"] == sum(cell["matched_cells"] for cell in dispersion["support_masks"].values())
+    assert sum(record["record_type"] == "candidate_dispersion_change_summary" for record in first_ledger) == 1
     assert sum(record["record_type"] == "matched_year_change_summary" for record in first_ledger) == 1
 
 
@@ -323,7 +327,7 @@ def test_publisher_rejects_resealed_truncated_fit_vector_in_report_and_ledger(tm
         publish_probe(malformed, malformed_ledger, tmp_path / "provisional-truncated-fit")
 
 
-@pytest.mark.parametrize("mutation", ("pooled", "sample_n", "attrition", "matched"))
+@pytest.mark.parametrize("mutation", ("pooled", "sample_n", "attrition", "matched", "dispersion"))
 def test_publisher_rejects_resealed_report_summary_mutations(tmp_path: Path, mutation: str) -> None:
     report, ledger = run_probe(_synthetic_frame(), _synthetic_support(), _synthetic_identity("9"))
     malformed = copy.deepcopy(report)
@@ -333,8 +337,10 @@ def test_publisher_rejects_resealed_report_summary_mutations(tmp_path: Path, mut
         malformed["sample"]["n"] += 1
     elif mutation == "attrition":
         malformed["support_attrition"]["overall"]["counts"]["candidate_pair_attempted"] += 1
-    else:
+    elif mutation == "matched":
         malformed["matched_year_change"]["pooled"]["median_cell_delta_bps"] += 1
+    else:
+        malformed["candidate_dispersion_change"]["pooled"]["matched_cells"] += 1
     _reseal(malformed, ledger)
     with pytest.raises(ValueError):
         publish_probe(malformed, ledger, tmp_path / f"provisional-mutated-{mutation}")
