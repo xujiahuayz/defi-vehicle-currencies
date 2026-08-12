@@ -110,6 +110,8 @@ _CAPABILITY_OWNERS: dict[str, Callable] = {}
 _ACTIVE_CAPABILITY: ContextVar[object | None] = ContextVar(
     "ddvc_counterfactual_publication_capability", default=None
 )
+_RETIRED_OWNER = "retired-owner.json"
+_RETIRED_CLEANUP_LIMIT = 64
 
 
 def _sha256(path: Path) -> str:
@@ -195,10 +197,8 @@ def _durable_mkdir(path: Path) -> None:
             _fsync_directory(directory.parent)
 
 
-def _durable_rmtree(path: Path) -> None:
-    parent = path.parent
-    shutil.rmtree(path)
-    _fsync_directory(parent)
+def _publication_cleanup_cut(_label: str) -> None:
+    """Named no-op cut point used by real-process cleanup crash tests."""
 
 
 def _independent_copy(source: Path, destination: Path) -> None:
@@ -527,6 +527,103 @@ def _journal_root(capability: _Capability) -> Path:
     return capability.marker.parent / f".{capability.marker.name}.transactions"
 
 
+def _retired_prefix(capability: _Capability) -> str:
+    return f"{_journal_root(capability).name}.retired."
+
+
+def _retired_owner_payload(
+    capability: _Capability, transaction_id: str
+) -> dict[str, object]:
+    return {
+        "schema_version": 1,
+        "capability_id": capability.capability_id,
+        "transaction_id": transaction_id,
+        "policy": "ddvc-counterfactual-retired-transaction-v1",
+    }
+
+
+def _valid_transaction_id(value: str) -> bool:
+    return len(value) == 32 and all(
+        character in "0123456789abcdef" for character in value
+    )
+
+
+def _cleanup_retired_transactions(capability: _Capability) -> None:
+    """Boundedly remove only transaction tombstones owned by this capability."""
+
+    parent = capability.marker.parent
+    prefix = _retired_prefix(capability)
+    seen = 0
+    for candidate in sorted(parent.iterdir()):
+        if not candidate.name.startswith(prefix):
+            continue
+        transaction_id = candidate.name[len(prefix) :]
+        if not _valid_transaction_id(transaction_id):
+            continue
+        if seen >= _RETIRED_CLEANUP_LIMIT:
+            break
+        seen += 1
+        if candidate.is_symlink() or not candidate.is_dir():
+            continue
+        owner = candidate / _RETIRED_OWNER
+        if not owner.exists() and not owner.is_symlink():
+            try:
+                candidate.rmdir()
+            except OSError:
+                pass
+            else:
+                _fsync_directory(parent)
+            continue
+        if owner.is_symlink() or not owner.is_file():
+            continue
+        try:
+            payload = json.loads(owner.read_text(encoding="utf-8"))
+        except (OSError, json.JSONDecodeError):
+            continue
+        if payload != _retired_owner_payload(capability, transaction_id):
+            continue
+        for child in sorted(candidate.iterdir()):
+            if child == owner:
+                continue
+            if child.is_dir() and not child.is_symlink():
+                shutil.rmtree(child)
+            else:
+                child.unlink()
+            _fsync_directory(candidate)
+            _publication_cleanup_cut(f"retired_removed:{child.name}")
+        owner.unlink()
+        _fsync_directory(candidate)
+        _publication_cleanup_cut("retired_owner_removed")
+        candidate.rmdir()
+        _fsync_directory(parent)
+        _publication_cleanup_cut("retired_removed")
+
+
+def _retire_transaction(
+    root: Path, capability: _Capability, transaction_id: str
+) -> None:
+    """Atomically leave the active journal namespace before recursive cleanup."""
+
+    journal = _journal_root(capability)
+    if (
+        root.parent != journal
+        or root.name != transaction_id
+        or not _valid_transaction_id(transaction_id)
+    ):
+        raise RuntimeError("counterfactual transaction retirement perimeter is invalid")
+    owner = root / _RETIRED_OWNER
+    _atomic_json(owner, _retired_owner_payload(capability, transaction_id))
+    _publication_cleanup_cut("retired_owner_installed")
+    retired = journal.parent / f"{_retired_prefix(capability)}{transaction_id}"
+    if retired.exists() or retired.is_symlink():
+        raise RuntimeError("counterfactual transaction tombstone already exists")
+    root.replace(retired)
+    _fsync_directory(journal)
+    _fsync_directory(journal.parent)
+    _publication_cleanup_cut("retired")
+    _cleanup_retired_transactions(capability)
+
+
 def _write_status(
     root: Path,
     *,
@@ -603,7 +700,7 @@ def _rollback(
             else "process_exit_or_restart"
         ),
     )
-    _durable_rmtree(root)
+    _retire_transaction(root, capability, transaction_id)
 
 
 def _marker_commits_transaction(
@@ -619,6 +716,7 @@ def _marker_commits_transaction(
 
 
 def _recover_transactions(capability: _Capability) -> None:
+    _cleanup_retired_transactions(capability)
     journal = _journal_root(capability)
     if not journal.is_dir():
         return
@@ -632,7 +730,11 @@ def _recover_transactions(capability: _Capability) -> None:
                 and path.name.endswith(".tmp")
                 for path in entries
             ):
-                _durable_rmtree(root)
+                for path in entries:
+                    path.unlink()
+                    _fsync_directory(root)
+                root.rmdir()
+                _fsync_directory(journal)
                 continue
         try:
             record = json.loads(
@@ -662,11 +764,11 @@ def _recover_transactions(capability: _Capability) -> None:
                 f"counterfactual publication has incomplete recovery evidence at {root}"
             )
         if status in {"preparing", "committed", "rolled_back"}:
-            _durable_rmtree(root)
+            _retire_transaction(root, capability, transaction_id)
         elif status == "active" and _marker_commits_transaction(
             capability, transaction_id
         ):
-            _durable_rmtree(root)
+            _retire_transaction(root, capability, transaction_id)
         elif status == "active":
             _rollback(root, capability, transaction_id, backups, None)
         else:
@@ -717,7 +819,7 @@ def _publication_transaction(
                 backups=backups,
             )
         except BaseException:
-            _durable_rmtree(root)
+            _retire_transaction(root, capability, transaction_id)
             raise
         token = _ACTIVE_CAPABILITY.set(capability.seal)
         try:
@@ -766,7 +868,7 @@ def _publication_transaction(
                 raise
         finally:
             _ACTIVE_CAPABILITY.reset(token)
-        _durable_rmtree(root)
+        _retire_transaction(root, capability, transaction_id)
 
 
 def register_publication_capability(

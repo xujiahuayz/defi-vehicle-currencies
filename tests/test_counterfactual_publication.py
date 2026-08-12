@@ -5,6 +5,7 @@ import json
 import os
 from pathlib import Path
 import shutil
+import signal
 import subprocess
 import sys
 import tempfile
@@ -953,3 +954,123 @@ owner()
             expected_outputs=(first, second),
         ):
             pass
+
+
+@pytest.mark.parametrize(
+    "cut",
+    [
+        "retired_owner_installed",
+        "retired",
+        "retired_removed:transaction.json",
+        "retired_owner_removed",
+    ],
+)
+def test_real_sigkill_during_transaction_retirement_does_not_block_retry(
+    cut: str,
+) -> None:
+    root = Path(__file__).resolve().parents[1]
+    with tempfile.TemporaryDirectory() as directory:
+        work = Path(directory)
+        output = work / "output"
+        marker = work / "marker.json"
+        output.write_text("prior", encoding="utf-8")
+        capability_id = f"test.retirement-crash.{uuid.uuid4().hex}"
+        program = r'''
+import os
+from pathlib import Path
+import signal
+import sys
+
+import ddvc.counterfactual_publication as publication
+from ddvc.counterfactual_publication import publication_capability, register_publication_capability
+
+capability_id, output_raw, marker_raw, cut = sys.argv[1:]
+output = Path(output_raw)
+marker = Path(marker_raw)
+register_publication_capability(capability_id, (output,), marker_path=marker)
+
+def kill_at(label):
+    if label == cut:
+        os.kill(os.getpid(), signal.SIGKILL)
+
+publication._publication_cleanup_cut = kill_at
+
+@publication_capability(
+    capability_id,
+    output_selector=lambda: (output,),
+    source_selector=lambda: (),
+)
+def owner():
+    output.write_text("candidate", encoding="utf-8")
+
+owner()
+'''
+        killed = subprocess.run(
+            [
+                sys.executable,
+                "-c",
+                program,
+                capability_id,
+                str(output),
+                str(marker),
+                cut,
+            ],
+            cwd=root,
+            env={**os.environ, "PYTHONPATH": f"{root / 'src'}:{root}"},
+            check=False,
+        )
+        assert killed.returncode == -signal.SIGKILL
+        register_publication_capability(
+            capability_id, (output,), marker_path=marker
+        )
+
+        @publication_capability(
+            capability_id,
+            output_selector=lambda: (output,),
+            source_selector=lambda: (),
+        )
+        def owner():
+            output.write_text("recovered", encoding="utf-8")
+
+        with _install_for_test(owner):
+            owner()
+        assert output.read_text(encoding="utf-8") == "recovered"
+        require_current_publication(
+            capability_id,
+            marker_path=marker,
+            expected_outputs=(output,),
+        )
+        assert not list(work.glob(".marker.json.transactions.retired.*"))
+
+
+def test_retired_cleanup_preserves_unowned_foreign_directories() -> None:
+    with tempfile.TemporaryDirectory() as directory:
+        root = Path(directory)
+        output = root / "output"
+        marker = root / "marker.json"
+        capability_id = f"test.foreign-retired.{uuid.uuid4().hex}"
+        prefix = ".marker.json.transactions.retired."
+        foreign = root / f"{prefix}{'a' * 32}"
+        foreign.mkdir()
+        (foreign / "keep").write_text("foreign", encoding="utf-8")
+        invalid_owner = root / f"{prefix}{'b' * 32}"
+        invalid_owner.mkdir()
+        (invalid_owner / "retired-owner.json").write_text(
+            '{"policy": "foreign"}\n', encoding="utf-8"
+        )
+        register_publication_capability(
+            capability_id, (output,), marker_path=marker
+        )
+
+        @publication_capability(
+            capability_id,
+            output_selector=lambda: (output,),
+            source_selector=lambda: (),
+        )
+        def owner():
+            output.write_text("published", encoding="utf-8")
+
+        with _install_for_test(owner):
+            owner()
+        assert (foreign / "keep").read_text(encoding="utf-8") == "foreign"
+        assert invalid_owner.is_dir()
