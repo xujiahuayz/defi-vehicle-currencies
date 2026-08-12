@@ -13,7 +13,7 @@ No current estimand warrants a surface or three-dimensional chart. Three-dimensi
 | Page | Current form | Intellectual comparison | Best form and exact action |
 |---|---|---|---|
 | 1 | Branded cover | Question and identity | Keep the asymmetrical UCL CBT cover. Do not add a stock photograph. |
-| 2 | Numbered list and small route diagram | Four rival explanations for dominance | Convert to a live audience poll with four large icon-labelled choices: holding cost, network depth, architecture and routing, and multiple dominance margins. The static fallback is the same four-choice prompt. |
+| 2 | Numbered list and small route diagram | Four rival explanations for dominance | Replace the list with one economic mechanism map only if the visual clarifies how the mechanisms differ. Do not force an audience poll or another participation device when it adds no intellectual value. |
 | 3 | Route glyph and two share bars | Frequency, value and network breadth | Animate repeated routes accumulating into count and value shares and add a compact network-breadth glyph. The static fallback shows three aligned measures with an explicit common denominator. |
 | 4 | Schematic chosen route and alternative | Executed route against a feasible contemporaneous alternative | Replace the generic schematic with one authentic transaction trace showing executed legs, venues, value and the direct alternative priced at the same pre-trade state. Use a local progressive replay live and a fully annotated still in the PDF. |
 | 5 | V1 and V2 network comparison | Imposed ETH routing against optional but persistent centrality | Preserve the network form and restore the old four-architecture idea as a V1 to V2 to V3 to V4 morph. The PDF fallback is a four-panel architecture strip using current institutional facts only. |
@@ -64,7 +64,7 @@ The saved finance and economics presentations support one economic comparison pe
 9. Test the market-integration explanation with the interaction plot.
 10. Return to the opening route and close with three visual takeaways.
 
-The poll must work by show of hands if no audience-response service is available. The transaction replay must run from local data and assets, not a live explorer. An optional local HTML view may animate the trace or support screen sharing, but it is generated from the same manifest and assets as the deck, not maintained as a second presentation.
+The transaction replay must run from local data and assets, not a live explorer. An optional local HTML view may animate the trace or support screen sharing, but it is generated from the same manifest and assets as the deck, not maintained as a second presentation. Audience participation is used only when it sharpens the economic question; a generic show-of-hands prompt is not a default engagement device.
 
 ## Static fallbacks and build discipline
 
