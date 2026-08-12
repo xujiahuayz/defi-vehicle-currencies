@@ -72,7 +72,7 @@ choice changes the answer:
 can make a pair look like a highway; a thousand small ones mean it is one.
 
 For each graph the panel separates direct connectivity from indirect path position.
-Topological degree, count strength and raw-USD strength measure the number or activity of
+Topological degree, count strength and strict-support USD strength measure the number or activity of
 the token's incident markets. Matching eigenvector centralities measure whether those
 direct neighbors are themselves important. Matching betweenness measures path position.
 All three are converted to within-day shares before constructing excess path position as
@@ -177,6 +177,7 @@ def centralities(
     *,
     min_legs: int = 1,
     min_usd: float = 0.0,
+    seed: int = 7,
 ) -> pd.DataFrame:
     import networkx as nx
 
@@ -204,12 +205,12 @@ def centralities(
     # thousands of nodes, so sampling is the difference between minutes and hours. The
     # sample is reported so the estimate's noise is visible.
     kk = min(k or g.number_of_nodes(), g.number_of_nodes())
-    topo = nx.betweenness_centrality(g, k=kk, normalized=True, seed=7)
-    cnt = nx.betweenness_centrality(g, k=kk, weight="inv_count", normalized=True, seed=7)
+    topo = nx.betweenness_centrality(g, k=kk, normalized=True, seed=seed)
+    cnt = nx.betweenness_centrality(g, k=kk, weight="inv_count", normalized=True, seed=seed)
     if gv.number_of_nodes() >= 4:
         value_k = min(k or gv.number_of_nodes(), gv.number_of_nodes())
         vol = nx.betweenness_centrality(
-            gv, k=value_k, weight="inv", normalized=True, seed=7
+            gv, k=value_k, weight="inv", normalized=True, seed=seed
         )
         eigen_value = largest_component_eigenvector(gv, weight="usd")
         strength = {n: sum(gv[n][m]["usd"] for m in gv[n]) for n in gv}
@@ -234,7 +235,10 @@ def centralities(
                      "strength_usd": strength.get(n, 0.0),
                      "eigenvector_topological": eigen_topological.get(n, 0.0),
                      "eigenvector_count": eigen_count.get(n, 0.0),
-                     "eigenvector_value": eigen_value.get(n, 0.0)})
+                     "eigenvector_value": eigen_value.get(n, 0.0),
+                     "betweenness_sample_k_count": kk,
+                     "betweenness_sample_k_value": value_k if gv.number_of_nodes() >= 4 else 0,
+                     "betweenness_seed": seed})
     return add_network_position_shares(pd.DataFrame(rows))
 
 
@@ -345,11 +349,12 @@ def _one_day(
     min_usd: float,
     k: int | None,
     min_legs: int = 1,
+    seed: int = 7,
 ) -> pd.DataFrame | None:
     e = day_edges(day)
     if e.empty:
         return None
-    c = centralities(e, k, min_legs=min_legs, min_usd=min_usd)
+    c = centralities(e, k, min_legs=min_legs, min_usd=min_usd, seed=seed)
     if c.empty:
         return None
     c["day"] = day
@@ -370,6 +375,7 @@ def main() -> int:
         help="minimum clean leg count for topological and count edges",
     )
     ap.add_argument("--k", type=int, default=250, help="source nodes sampled per graph")
+    ap.add_argument("--seed", type=int, default=7, help="betweenness source-sampling seed")
     ap.add_argument("--jobs", type=int, default=1,
                     help="days built in parallel; reading a day's unified parquet "
                          "dominates the cost and is independent across days")
@@ -384,14 +390,15 @@ def main() -> int:
 
     days = sorted(p.stem for p in UNIFIED.glob("[0-9]" * 8 + ".parquet"))[:: args.stride]
     print(f"building trading graphs on {len(days)} sampled days "
-          f"({days[0]}..{days[-1]}), k={args.k} source nodes\n")
+          f"({days[0]}..{days[-1]}), k={args.k} source nodes, seed={args.seed}\n")
 
     frames = []
     if jobs > 1:
         from functools import partial
         with interruptible_process_pool(jobs) as ex:
             for i, c in enumerate(ex.map(partial(_one_day, min_usd=args.min_usd,
-                                                 k=args.k, min_legs=args.min_legs), days), 1):
+                                                 k=args.k, min_legs=args.min_legs,
+                                                 seed=args.seed), days), 1):
                 if c is None or c.empty:
                     continue
                 frames.append(c)
@@ -401,7 +408,7 @@ def main() -> int:
                           flush=True)
     else:
         for i, day in enumerate(days, 1):
-            c = _one_day(day, args.min_usd, args.k, args.min_legs)
+            c = _one_day(day, args.min_usd, args.k, args.min_legs, args.seed)
             if c is None or c.empty:
                 continue
             frames.append(c)
@@ -419,7 +426,7 @@ def main() -> int:
         args.out,
         code_sources=CODE_SOURCES,
         inputs=[UNIFIED],
-        notes="network robustness panel on the canonical directed-route layer",
+        notes=f"network robustness panel on the canonical directed-route layer; k={args.k}; seed={args.seed}; min_legs={args.min_legs}; min_usd={args.min_usd}",
     )
     if args.panel_only:
         print(f"wrote analysis-ready panel {args.out.relative_to(REPO_ROOT)}")

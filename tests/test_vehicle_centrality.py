@@ -114,6 +114,26 @@ class VehicleCentralityTests(unittest.TestCase):
             )
         )
 
+    def test_sample_contract_is_explicit_and_reproducible(self) -> None:
+        edges = pd.DataFrame(
+            [
+                {"a": f"n{i}", "b": f"n{(i + 1) % 20}", "usd": i + 1.0, "legs": i + 1}
+                for i in range(20)
+            ]
+            + [
+                {"a": f"n{i}", "b": f"n{(i + 5) % 20}", "usd": i + 2.0, "legs": i + 2}
+                for i in range(20)
+            ]
+        )
+        first = centralities(edges, k=5, seed=17).set_index("token")
+        second = centralities(edges, k=5, seed=17).set_index("token")
+        self.assertTrue((first["betweenness_sample_k_count"] == 5).all())
+        self.assertTrue((first["betweenness_sample_k_value"] == 5).all())
+        self.assertTrue((first["betweenness_seed"] == 17).all())
+        pd.testing.assert_series_equal(
+            first["betweenness_count"], second["betweenness_count"]
+        )
+
     def test_eigenvector_perimeter_is_the_largest_connected_component(self) -> None:
         edges = pd.DataFrame(
             [
