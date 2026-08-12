@@ -1,41 +1,5 @@
 % Framing and institutional setting. Sources: Krugman (1980); Flandreau and Jobst (2009); project route-release audit.
 
-% Live poll and reveal. The answer is an institutional property of Uniswap V1.
-\begin{frame}{Which asset intermediates a V1 token-to-token swap?}
-\vspace{0.65cm}
-\begin{columns}[T,totalwidth=\textwidth]
-\begin{column}{0.40\textwidth}
-\centering
-\begin{tikzpicture}[x=1cm,y=1cm]
-\node[nodepoint,minimum size=29pt] (a) at (0,1.35) {A};
-\node[nodepoint,minimum size=29pt] (m) at (2.05,1.35) {?};
-\node[nodepoint,minimum size=29pt] (b) at (4.10,1.35) {B};
-\draw[route] (a)--(m);
-\draw[route] (m)--(b);
-\only<2>{\node[nodepoint,fill=ucldark,text=white,draw=ucldark,minimum size=29pt] at (2.05,1.35) {ETH};}
-\end{tikzpicture}
-\end{column}
-\begin{column}{0.56\textwidth}
-\only<1>{
-\begin{tikzpicture}[x=1cm,y=1cm]
-\node[softbox,text width=2.15cm,minimum height=0.78cm,align=center] at (1.20,2.20) {ETH};
-\node[softbox,text width=2.15cm,minimum height=0.78cm,align=center] at (4.20,2.20) {USDC};
-\node[softbox,text width=2.15cm,minimum height=0.78cm,align=center] at (1.20,0.92) {the deepest asset};
-\node[softbox,text width=2.15cm,minimum height=0.78cm,align=center] at (4.20,0.92) {no intermediary};
-\end{tikzpicture}}
-\only<2>{
-\begin{tikzpicture}[x=1cm,y=1cm]
-\node[softbox,text width=2.15cm,minimum height=0.78cm,align=center,fill=ucldark,draw=ucldark,text=white,font=\bfseries] at (1.20,2.20) {ETH};
-\node[softbox,text width=2.15cm,minimum height=0.78cm,align=center] at (4.20,2.20) {USDC};
-\node[softbox,text width=2.15cm,minimum height=0.78cm,align=center] at (1.20,0.92) {the deepest asset};
-\node[softbox,text width=2.15cm,minimum height=0.78cm,align=center] at (4.20,0.92) {no intermediary};
-\end{tikzpicture}}
-\end{column}
-\end{columns}
-\only<1>{\vspace{0.1cm}{\large\bfseries\color{ucldark} Your prediction\par}}
-\only<2>{\vspace{0.1cm}{\large\bfseries\color{ucldark} V1 paired every token exchange with ETH.\par}}
-\end{frame}
-
 % Symbolic hashes distinguish the schematic route grammar from a live transaction.
 \begin{frame}{Transaction-level route structures}
 \begin{tikzpicture}[x=1cm,y=1cm]
