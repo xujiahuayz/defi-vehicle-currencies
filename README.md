@@ -11,14 +11,14 @@ This repository contains the acquisition, reconstruction, analysis, literature, 
 
 ## Repository Topology
 
-- `src/ddvc/` contains reusable research logic and registries.
-- `scripts/` contains thin, directly runnable acquisition, processing, analysis, and rendering entry points.
+- [`src/ddvc/`](src/README.md) contains reusable research logic and registries.
+- [`scripts/`](scripts/README.md) contains thin, directly runnable acquisition, processing, analysis, and rendering entry points.
 - `data/` contains local evidence, canonical derived panels, runtime intermediates, and tracked provenance manifests; payloads are not committed.
 - `output/` contains code-generated tables, figures, exhibits, and inspection artifacts consumed by the paper and deck.
 - `literature/` contains the bibliography, admission records, full-text audit material, and retrieval metadata.
-- `paper/` and `deck/` contain the two authored deliverables and their review builds.
+- [`paper/`](paper/README.md) and [`deck/`](deck/README.md) contain the two authored deliverables and their review builds.
 - `docs/` contains research design, audit, findings, certification, and workflow records.
-- `tests/` verifies acquisition contracts, reconstruction, pricing, releases, metrics, and analysis behavior.
+- [`tests/`](tests/README.md) verifies acquisition contracts, reconstruction, pricing, releases, metrics, and analysis behavior.
 
 ## Environment
 
