@@ -265,6 +265,28 @@ def _recover_pointer_stage(pointer_path: Path) -> None:
         raise RuntimeError(f"artifact release stage has an unsafe type: {root}")
     owner_path = root / _STAGE_OWNER
     if not owner_path.exists() and not owner_path.is_symlink():
+        entries = list(root.iterdir())
+        if len(entries) == 1:
+            owner_temporary = entries[0]
+            prefix = f".{_STAGE_OWNER}."
+            name = owner_temporary.name
+            token = name[len(prefix) : -len(".tmp")] if name.endswith(".tmp") else ""
+            if (
+                not owner_temporary.is_symlink()
+                and owner_temporary.is_file()
+                and name.startswith(prefix)
+                and name.endswith(".tmp")
+                and len(token) == 8
+                and all(character in "abcdefghijklmnopqrstuvwxyz0123456789_" for character in token)
+            ):
+                try:
+                    temporary_owner = json.loads(
+                        owner_temporary.read_text(encoding="utf-8")
+                    )
+                except (OSError, json.JSONDecodeError):
+                    temporary_owner = None
+                if temporary_owner == _stage_owner_payload(pointer_path):
+                    owner_temporary.unlink()
         try:
             root.rmdir()
         except OSError as error:

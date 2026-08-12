@@ -936,3 +936,125 @@ publish_artifact_release(
 
     assert json.loads(resumed.artifacts["rows"].read_text()) == {"value": 7}
     assert not stage.exists()
+
+
+def test_real_sigkill_after_owner_temporary_fsync_is_recovered_by_ordinary_retry(
+    tmp_path: Path,
+) -> None:
+    pointer = tmp_path / "release" / "current.json"
+    program = r'''
+import json
+import os
+from pathlib import Path
+import signal
+import sys
+
+import ddvc.artifact_release as release
+from ddvc.artifact_release import publish_artifact_release
+from ddvc.fetch.raw import write_json
+from ddvc.runtime import staged_output
+
+pointer = Path(sys.argv[1])
+
+def kill_after_owner_temporary_fsync(path, payload):
+    if path.name == "owner.json":
+        with staged_output(path) as temporary:
+            temporary.write_text(
+                json.dumps(payload, sort_keys=True) + "\n",
+                encoding="utf-8",
+            )
+            with temporary.open("rb") as handle:
+                os.fsync(handle.fileno())
+            os.kill(os.getpid(), signal.SIGKILL)
+    write_json(path, payload)
+
+release.write_json = kill_after_owner_temporary_fsync
+publish_artifact_release(
+    pointer_path=pointer,
+    kind="test_release",
+    schema_version=1,
+    filenames={"rows": "rows.json", "certificate": "certificate.json"},
+    writers={
+        "rows": lambda path: write_json(path, {"value": 7}),
+        "certificate": lambda path: write_json(path, {"status": "pass"}),
+    },
+    row_counts={"rows": 1, "certificate": 1},
+    code_sources=["src/ddvc/artifact_release.py"],
+    inputs=[],
+    notes="owner temporary process-death test",
+    validate_staged=lambda _paths: None,
+)
+'''
+    killed = subprocess.run(
+        [sys.executable, "-c", program, str(pointer)],
+        cwd=Path(__file__).resolve().parents[1],
+        check=False,
+    )
+
+    assert killed.returncode == -signal.SIGKILL
+    stage = artifact_release._pointer_stage_root(pointer)
+    entries = list(stage.iterdir())
+    assert len(entries) == 1
+    assert entries[0].name.startswith(".owner.json.")
+    assert entries[0].name.endswith(".tmp")
+
+    resumed = _publish(pointer, 7)
+
+    assert json.loads(resumed.artifacts["rows"].read_text()) == {"value": 7}
+    assert not stage.exists()
+
+
+@pytest.mark.parametrize("extra_content", [False, True])
+def test_foreign_owner_temporary_is_rejected_and_preserved(
+    tmp_path: Path, extra_content: bool
+) -> None:
+    pointer = tmp_path / "release" / "current.json"
+    stage = artifact_release._pointer_stage_root(pointer)
+    stage.mkdir(parents=True)
+    foreign = stage / ".owner.json.abc123_4.tmp"
+    write_json(
+        foreign,
+        artifact_release._stage_owner_payload(tmp_path / "different.json"),
+    )
+    if extra_content:
+        (stage / "foreign.bin").write_bytes(b"unrelated")
+    before = _tree_snapshot(stage)
+
+    with pytest.raises(RuntimeError, match="ownership is invalid"):
+        _publish(pointer, 1)
+
+    assert _tree_snapshot(stage) == before
+
+
+def test_valid_owner_temporary_with_extra_content_is_rejected_and_preserved(
+    tmp_path: Path,
+) -> None:
+    pointer = tmp_path / "release" / "current.json"
+    stage = artifact_release._pointer_stage_root(pointer)
+    stage.mkdir(parents=True)
+    write_json(
+        stage / ".owner.json.abc123_4.tmp",
+        artifact_release._stage_owner_payload(pointer),
+    )
+    (stage / "foreign.bin").write_bytes(b"unrelated")
+    before = _tree_snapshot(stage)
+
+    with pytest.raises(RuntimeError, match="ownership is invalid"):
+        _publish(pointer, 1)
+
+    assert _tree_snapshot(stage) == before
+
+
+def test_owner_temporary_symlink_is_rejected_and_preserved(tmp_path: Path) -> None:
+    pointer = tmp_path / "release" / "current.json"
+    stage = artifact_release._pointer_stage_root(pointer)
+    stage.mkdir(parents=True)
+    outside = tmp_path / "outside.json"
+    write_json(outside, artifact_release._stage_owner_payload(pointer))
+    (stage / ".owner.json.abc123_4.tmp").symlink_to(outside)
+    before = _tree_snapshot(tmp_path)
+
+    with pytest.raises(RuntimeError, match="ownership is invalid"):
+        _publish(pointer, 1)
+
+    assert _tree_snapshot(tmp_path) == before
