@@ -16,7 +16,7 @@
 \begin{column}{0.47\textwidth}
 \centering
 \begin{tikzpicture}
-\begin{axis}[deckaxis,width=6.0cm,height=5.0cm,ybar,bar width=20pt,ymin=0,ymax=85,xtick=data,symbolic x coords={2024,2026},ylabel={stable share, \%},title={strict-support value},nodes near coords,every node near coord/.append style={font=\small,color=ink}]
+\begin{axis}[deckaxis,width=6.0cm,height=5.0cm,ybar,bar width=20pt,ymin=0,ymax=85,xtick=data,symbolic x coords={2024,2026},ylabel={stable share, \%},title={common-support value},nodes near coords,every node near coord/.append style={font=\small,color=ink}]
 \addplot[fill=uclbright!45,draw=uclbright] coordinates {(2024,32.7) (2026,76.5)};
 \end{axis}
 \end{tikzpicture}
@@ -24,17 +24,17 @@
 {\small Change: \textbf{43.9 pp} \quad SE 2.0 pp\par}
 \end{column}
 \end{columns}
-\vspace{0.25cm}
-{\small Exact two-leg routes; daily equal-weighted shares on common endpoint-year calendar support.\par}
+\vspace{0.05cm}
+{\small Observed two-leg routes with comparable dollar values; daily shares are equally weighted within endpoint-year.\par}
 \end{frame}
 
-\begin{frame}{USDT is the transition margin}
+\begin{frame}{USDT drives the shift toward stablecoin intermediation}
 \begin{columns}[T]
 \begin{column}{0.38\textwidth}
 \evidencekicker{Token decomposition}
 \begin{itemize}
-\item USDC already had excess intermediary use in 2024 and changed little.
-\item USDT moved from endpoint-heavy value to intermediary-heavy value.
+\item USDC was already used more as an intermediary than its endpoint share implies.
+\item USDT shifted from route endpoints toward intermediation.
 \item USDC and USDT account for 92.1\% of the stable count-share increase.
 \end{itemize}
 \end{column}
@@ -67,7 +67,7 @@
 \begin{column}{0.47\textwidth}
 \centering
 \begin{tikzpicture}
-\begin{axis}[deckaxis,width=5.9cm,height=4.9cm,ybar,bar width=22pt,ymin=0,ymax=50,xtick=data,symbolic x coords={single,cross},xticklabels={single venue,cross venue},ylabel={2024--26 change, pp},title={strict-support value},nodes near coords,every node near coord/.append style={font=\small,color=ink}]
+\begin{axis}[deckaxis,width=5.9cm,height=4.9cm,ybar,bar width=22pt,ymin=0,ymax=50,xtick=data,symbolic x coords={single,cross},xticklabels={single venue,cross venue},ylabel={2024--26 change, pp},title={common-support value},nodes near coords,every node near coord/.append style={font=\small,color=ink}]
 \addplot[fill=stable!55,draw=stable] coordinates {(single,35.0) (cross,43.2)};
 \end{axis}
 \end{tikzpicture}
@@ -75,6 +75,6 @@
 \end{columns}
 \vspace{0.15cm}
 \begin{center}
-{\small Cross-minus-single: \textbf{7.5 pp} by count (SE 1.3) and \textbf{8.2 pp} by value (SE 2.3).\par}
+{\small The increase is \textbf{7.5 pp} larger for cross-venue routes by count (SE 1.3) and \textbf{8.2 pp} larger by value (SE 2.3).\par}
 \end{center}
 \end{frame}

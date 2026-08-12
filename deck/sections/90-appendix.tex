@@ -6,8 +6,8 @@
 \textbf{Definitions and data}
 \begin{itemize}
 \item A1 Route units and vehicle status
-\item A2 Candidate types and backing regimes
-\item A3 Sample integrity and exclusions
+\item A2 Asset types and backing regimes
+\item A3 Sample construction and exclusions
 \end{itemize}
 \vspace{0.45cm}
 \textbf{Reconstruction and validation}
@@ -20,8 +20,8 @@
 \begin{column}{0.47\textwidth}
 \textbf{Robustness}
 \begin{itemize}
-\item A7 Daily and weekly clocks
-\item A8 Count and value support
+\item A7 Daily and weekly frequencies
+\item A8 Count and value weighting
 \item A9 Endpoint demand
 \end{itemize}
 \vspace{0.45cm}
@@ -51,15 +51,15 @@
 \end{column}
 \begin{column}{0.47\textwidth}
 \begin{itemize}
-\item A coherent $i\rightarrow k\rightarrow o$ component increments the route count once.
-\item Vehicle status turns on when $k$ appears as an intermediary.
+\item Each linked $i\rightarrow k\rightarrow o$ route is counted once.
+\item Asset $k$ is classified as the intermediary on that route.
 \item Dominance is the share of route units or supported value carried by $k$.
 \end{itemize}
 \end{column}
 \end{columns}
 \end{frame}
 
-\begin{frame}{A2. Backing regimes are dated, not permanent labels}
+\begin{frame}{A2. Backing regimes vary over time}
 \begin{columns}[T]
 \begin{column}{0.47\textwidth}
 \textbf{Native platform asset}\par ETH, WETH; volatile settlement asset and protocol-native demand.
@@ -69,20 +69,20 @@
 \begin{column}{0.47\textwidth}
 \textbf{On-chain collateralised}\par DAI, LUSD, crvUSD; collateral, liquidation, and backing changes.
 \vspace{0.45cm}
-\textbf{Imported store of value}\par WBTC, tokenised gold; wrapped claim on an external asset.
+\textbf{Tokenised external asset}\par WBTC, tokenised gold; wrapped claim on an external asset.
 \end{column}
 \end{columns}
 \vspace{0.75cm}
-{\small Dated backing classifications enter heterogeneity tests. Ticker categories do not substitute for backing evidence.\par}
+{\small Heterogeneity tests use each asset's contemporaneous backing regime.\par}
 \end{frame}
 
-\begin{frame}{A3. Integrity screens protect the value denominator}
+\begin{frame}{A3. Sample restrictions preserve value measurement}
 \begin{columns}[T]
 \begin{column}{0.42\textwidth}
 \begin{itemize}
 \item Round trips are excluded from intermediation measures.
-\item Token values require price consensus and explicit token identity.
-\item Strict-support value retains observations within the registered coherence band.
+\item Dollar values require consistent prices and verified token identities.
+\item We retain routes whose two legs imply dollar values within the pre-specified tolerance.
 \end{itemize}
 \end{column}
 \begin{column}{0.54\textwidth}
@@ -94,7 +94,7 @@
 \draw[route,draw=accent] (a)--(x);
 \draw[route,draw=accent] (x)--(b);
 \draw[accent,line width=1.6pt] (-0.25,-0.55)--(4.45,1.90);
-\node[font=\small,align=center] at (2.1,-1.1) {no endpoint exchange\\no vehicle-use value};
+\node[font=\small,align=center] at (2.1,-1.1) {round trip: excluded from\\value-weighted vehicle measures};
 \end{tikzpicture}
 \end{column}
 \end{columns}
@@ -102,9 +102,9 @@
 
 \begin{frame}{A4. State is reconstructed immediately before execution}
 \begin{tikzpicture}[x=1cm,y=1cm]
-\node[softbox,text width=2.10cm,minimum height=1.35cm,align=center] (checkpoint) at (0,0) {\textbf{1}\\validated checkpoint};
-\node[softbox,text width=2.10cm,minimum height=1.35cm,align=center] (events) at (3.20,0) {\textbf{2}\\replay ordered events};
-\node[softbox,text width=2.10cm,minimum height=1.35cm,align=center] (pre) at (6.40,0) {\textbf{3}\\freeze pre-trade state};
+\node[softbox,text width=2.10cm,minimum height=1.35cm,align=center] (checkpoint) at (0,0) {\textbf{1}\\verified starting state};
+\node[softbox,text width=2.10cm,minimum height=1.35cm,align=center] (events) at (3.20,0) {\textbf{2}\\apply events in blockchain order};
+\node[softbox,text width=2.10cm,minimum height=1.35cm,align=center] (pre) at (6.40,0) {\textbf{3}\\recover state before the trade};
 \node[softbox,text width=2.10cm,minimum height=1.35cm,align=center,draw=ucldark] (quote) at (9.60,0) {\textbf{4}\\quote both routes};
 \draw[route] (checkpoint)--(events);
 \draw[route] (events)--(pre);
@@ -112,13 +112,13 @@
 \end{tikzpicture}
 \vspace{0.85cm}
 \begin{itemize}
-\item Checkpoints make replay parallel without changing event order within a partition.
-\item Quotes use the exact pool state visible before the focal transaction.
-\item Unsupported provider intervals remain explicit exclusions with economic-weight bounds.
+\item Pool events are applied in blockchain order from a verified starting state.
+\item Each route is quoted using the pool state immediately before the transaction.
+\item Missing state intervals are excluded, and their share of trading volume is reported.
 \end{itemize}
 \end{frame}
 
-\begin{frame}{A5. Each protocol family has its own state contract}
+\begin{frame}{A5. AMM designs require different state variables}
 \begin{columns}[T]
 \begin{column}{0.47\textwidth}
 \textbf{Constant product}\par Reserves, fee, invariant.
@@ -130,11 +130,11 @@
 \begin{column}{0.47\textwidth}
 \textbf{Weighted pools}\par Vault balances, weights, scaling, and rate providers.
 \vspace{0.35cm}
-\textbf{V4 singleton}\par Pool key, exact vanilla tick state, fee, and validated hook behavior.
+\textbf{V4 singleton}\par Pool key, tick state, and fee for standard pools without custom hooks.
 \end{column}
 \end{columns}
 \vspace{0.55cm}
-{\small A venue enters an estimand only after its quantity and state contract pass validation.\par}
+{\small Estimates include protocol families whose balances, fees, and pricing state can be independently validated.\par}
 \end{frame}
 
 \begin{frame}{A6. V1 forced routes have an on-chain signature}
@@ -143,7 +143,7 @@
 \begin{itemize}
 \item Token-to-token execution emits two linked swaps through ETH.
 \item The paired legs report equal ETH quantities in 87.4\% of identified forced routes.
-\item The signature identifies protocol-imposed intermediation, not user choice.
+\item This two-leg signature identifies protocol-imposed intermediation.
 \end{itemize}
 \end{column}
 \begin{column}{0.53\textwidth}
@@ -161,15 +161,15 @@
 \end{columns}
 \end{frame}
 
-\begin{frame}{A7. Daily and weekly clocks answer different questions}
+\begin{frame}{A7. Daily and weekly frequencies answer different questions}
 \begin{enumerate}
 \item \textbf{Primary panel}\hfill day observations; date fixed effects
 \item \textbf{Calendar sensitivity}\hfill day observations; week and weekday fixed effects
 \item \textbf{Aggregation robustness}\hfill complete weeks; week fixed effects
-\item \textbf{Transition series}\hfill exact calendar links; HAC at 1, 7, 30, and 120 days
+\item \textbf{Transition series}\hfill exact 1-, 7-, 30-, and 120-day links; HAC inference
 \end{enumerate}
 \vspace{0.65cm}
-{\small Weekly ratios aggregate raw numerators and denominators before division. All seven weekday anchors are reported.\par}
+{\small Weekly ratios are formed from weekly sums; results are reported for weeks ending on each day of the week.\par}
 \end{frame}
 
 \begin{frame}{A8. Count and value define separate dominance margins}
@@ -186,67 +186,67 @@ Each reconstructed route carries one unit of weight.
 \[
 S^{V}_{k,t}=\frac{\mathrm{Vol}^I_{k,t}}{\sum_j \mathrm{Vol}^I_{j,t}}
 \]
-Each route carries supported realised USD value.
+Each route carries reliably priced dollar value on common support.
 \end{column}
 \end{columns}
 \vspace{0.75cm}
-{\small A larger value shift can reflect route size, routing topology, or candidate composition. The decomposition tests these margins directly.\par}
+{\small Differences between count and value shares may reflect trade size, route structure, or the mix of intermediary assets.\par}
 \end{frame}
 
 \begin{frame}{A9. USDT gains intermediary use beyond endpoint demand}
 \begin{columns}[T]
 \begin{column}{0.44\textwidth}
-\textbf{Count margin}
+\textbf{Route-count share}
 \vspace{0.25cm}
 \begin{itemize}
 \item Intermediary-minus-endpoint share rises by \textbf{2.39 pp}.
-\item Calendar-HAC SE: 0.89 pp.
+\item HAC s.e.: 0.89 pp.
 \end{itemize}
 \end{column}
 \begin{column}{0.50\textwidth}
-\textbf{Strict-value margin}
+\textbf{Dollar-value share (common support)}
 \vspace{0.25cm}
 \begin{itemize}
 \item Gap moves from \textbf{$-7.13$ pp} to \textbf{$+8.14$ pp}.
-\item Change: 15.27 pp; calendar-HAC SE: 1.50 pp.
+\item Change: 15.27 pp; HAC s.e.: 1.50 pp.
 \end{itemize}
 \end{column}
 \end{columns}
 \vspace{0.75cm}
 \begin{center}
-{\large\color{ucldark}\bfseries USDT becomes an intermediary beyond what its endpoint demand predicts.\par}
+{\large\color{ucldark}\bfseries USDT's intermediary share rises above its endpoint share.\par}
 \end{center}
 \end{frame}
 
 \begin{frame}{A10. Capital, inventory, and depth are distinct quantities}
 \begin{columns}[T]
 \begin{column}{0.47\textwidth}
-\textbf{Deposited capital}\par Funds committed to a pool; reconciled balances or audited provider TVL.
+\textbf{Deposited capital}\par Funds committed to a pool; on-chain balances or independently audited TVL.
 \vspace{0.45cm}
 \textbf{Inventory}\par Exact token amounts held by the pool.
 \end{column}
 \begin{column}{0.47\textwidth}
-\textbf{Executable depth}\par Output near a price under the invariant and exact quote state.
+\textbf{Executable depth}\par Amount that can be traded for a given price impact under current pool state.
 \vspace{0.45cm}
-\textbf{Quote quality}\par Realised output for notional $q$ on executable paths.
+\textbf{Quote quality}\par Execution price for trade size $q$ along feasible routes.
 \end{column}
 \end{columns}
 \vspace{0.65cm}
-{\small TVL can measure capital. It is not automatically the denominator for executable depth.\par}
+{\small We measure capital with TVL and execution depth from the pool's pricing function.\par}
 \end{frame}
 
 \begin{frame}{A11. Integration changes both reach and route choice}
 \begin{columns}[T]
 \begin{column}{0.47\textwidth}
-\textbf{Opportunity reach}
+\textbf{Available trading opportunities}
 \begin{itemize}
 \item active venues
 \item feasible paths
-\item candidate vehicles
+\item available intermediary assets
 \end{itemize}
 \end{column}
 \begin{column}{0.47\textwidth}
-\textbf{Choice within reach}
+\textbf{Route choice conditional on availability}
 \begin{itemize}
 \item direct versus intermediated
 \item single- versus cross-venue
@@ -256,7 +256,7 @@ Each route carries supported realised USD value.
 \end{columns}
 \vspace{0.7cm}
 \begin{center}
-{\large The interaction test asks whether vehicle rotation changes with integration while holding the opportunity cell fixed.\par}
+{\large We test whether stablecoin intermediation rises more when additional venues and routes are available, conditional on endpoint pair and date.\par}
 \end{center}
 \end{frame}
 

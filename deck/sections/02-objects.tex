@@ -5,7 +5,7 @@
 \vspace{0.25cm}
 \begin{center}
 \bigstat{2,332}{calendar days}\hfill
-\bigstat{471.6m}{usable swap legs}\hfill
+\bigstat{471.6m}{swap legs in reconstructed routes}\hfill
 \bigstat{8}{DEX deployments}
 \end{center}
 \vspace{0.25cm}
@@ -20,10 +20,10 @@
 \node[above,align=center,font=\small] at (10.05,1.05) {V4: singleton};
 \end{tikzpicture}
 \vspace{0.12cm}
-{\small Route reconstruction is transaction-level. Daily and weekly panels are analysis clocks, not raw-data clocks.\par}
+{\small Routes are reconstructed transaction by transaction, then aggregated to daily and weekly observations.\par}
 \end{frame}
 
-\begin{frame}{Four measurements separate role, scale, and network position}
+\begin{frame}{Four measures capture use, scale, and network position}
 \begin{columns}[T]
 \begin{column}{0.48\textwidth}
 \begin{enumerate}
@@ -37,10 +37,10 @@
 \setcounter{enumi}{2}
 \item \textbf{Network position}\par Degree, strength, and betweenness on the trading graph.
 \vspace{0.35em}
-\item \textbf{Execution advantage}\par Direct output relative to a vehicle route at one state.
+\item \textbf{Execution advantage}\par Direct-route output relative to a feasible vehicle route at the same pre-trade state.
 \end{enumerate}
 \end{column}
 \end{columns}
 \vspace{0.75cm}
-{\large\color{ucldark}\bfseries A single statistic cannot stand in for all four objects.\par}
+{\large\color{ucldark}\bfseries Together, the measures distinguish use, scale, network position, and execution cost.\par}
 \end{frame}

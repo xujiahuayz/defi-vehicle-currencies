@@ -2,11 +2,11 @@
 
 \begin{frame}{Four forces can sustain vehicle dominance}
 \begin{center}
-\begin{tikzpicture}[scale=0.98,transform shape]
+\begin{tikzpicture}[scale=0.90,transform shape]
 \node[nodepoint,fill=ucldark,text=white,draw=ucldark,minimum size=46pt,font=\normalsize\bfseries,align=center] (d) at (0,0) {vehicle\\dominance};
 \node[softbox,minimum width=3.15cm,align=center] (liq) at (-4.15,2.15) {\textbf{Liquidity provision}\\capital follows order flow};
-\node[softbox,minimum width=3.15cm,align=center] (def) at (4.15,2.15) {\textbf{Coordination}\\pairs and defaults persist};
-\node[softbox,minimum width=3.15cm,align=center] (int) at (-4.15,-2.15) {\textbf{Market integration}\\more routes become reachable};
+\node[softbox,minimum width=3.15cm,align=center] (def) at (4.15,2.15) {\textbf{Coordination}\\pairings and routing conventions persist};
+\node[softbox,minimum width=3.15cm,align=center] (int) at (-4.15,-2.15) {\textbf{Market integration}\\additional venues expand feasible routing};
 \node[softbox,minimum width=3.15cm,align=center] (hold) at (4.15,-2.15) {\textbf{Holding cost}\\volatility and backing differ};
 \draw[route,draw=native] (liq)--(d);
 \draw[route,draw=uclbright] (def)--(d);
@@ -15,7 +15,6 @@
 \end{tikzpicture}
 \end{center}
 \vspace{0.2cm}
-{\small The design measures each force separately before asking which one accounts for changes in dominance.\par}
 \end{frame}
 
 \begin{frame}{The empirical design separates formation, rotation, and persistence}
@@ -32,8 +31,8 @@ Count share, value share, excess use, network position, and route complexity ove
 \end{column}
 \begin{column}{0.30\textwidth}
 \evidencekicker{Persistence}
-\textbf{Exact alternatives}\par
-The role can be observed while another feasible route is cheaper at the same state.
+\textbf{Contemporaneous alternatives}\par
+An incumbent retains volume despite a cheaper feasible route.
 \end{column}
 \end{columns}
 \vspace{0.75cm}
