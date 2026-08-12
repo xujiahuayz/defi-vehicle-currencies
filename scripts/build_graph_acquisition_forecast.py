@@ -14,8 +14,9 @@ import statistics
 from typing import Any
 
 from ddvc.calendar import RESEARCH_SAMPLE_END
-from ddvc.fetch.acquisition import GRAPH_ACQUISITION_FORECAST, GRAPH_ACQUISITION_FREEZE, GRAPH_BLOCK_FIELDS, GRAPH_CANARY_CURRENT, GRAPH_CANARY_FINAL, GRAPH_ROOT_POPULATION, sha256_file
+from ddvc.fetch.acquisition import GRAPH_ACQUISITION_FORECAST, GRAPH_ACQUISITION_FREEZE, GRAPH_BLOCK_FIELDS, GRAPH_CANARY_CURRENT, GRAPH_CANARY_FINAL, GRAPH_ROOT_POPULATION, GRAPH_THIN_CONSUMER_AUDIT, sha256_file
 from ddvc.fetch.sources import DEX_SOURCES
+from ddvc.fetch.thin_consumer_audit import validate_thin_consumer_audit_envelope
 from ddvc.paths import PRIMARY_REPO_ROOT
 from ddvc.runtime import atomic_output
 
@@ -24,6 +25,7 @@ FINAL_CANARY = GRAPH_CANARY_FINAL
 CURRENT_CANARY = GRAPH_CANARY_CURRENT
 ROOT_POPULATION = GRAPH_ROOT_POPULATION
 FREEZE = GRAPH_ACQUISITION_FREEZE
+THIN_AUDIT = GRAPH_THIN_CONSUMER_AUDIT
 DEFAULT_RAW_ROOT = PRIMARY_REPO_ROOT / "data" / "raw" / "thegraph"
 DEFAULT_OUTPUT = GRAPH_ACQUISITION_FORECAST
 TEMPORAL_MODES = frozenset({"historical_event_full", "historical_snapshot_full"})
@@ -124,6 +126,7 @@ def main() -> int:
     parser.add_argument("--current-canary", type=Path, default=CURRENT_CANARY)
     parser.add_argument("--root-population", type=Path, default=ROOT_POPULATION)
     parser.add_argument("--freeze", type=Path, default=FREEZE)
+    parser.add_argument("--thin-audit", type=Path, default=THIN_AUDIT)
     parser.add_argument("--existing-raw-root", type=Path, default=DEFAULT_RAW_ROOT)
     parser.add_argument("--available-disk-bytes", type=int)
     parser.add_argument("--available-disk-host")
@@ -139,6 +142,7 @@ def main() -> int:
     current = json.loads(args.current_canary.read_text(encoding="utf-8"))
     population = json.loads(args.root_population.read_text(encoding="utf-8"))
     freeze_hash = sha256_file(args.freeze)
+    thin_audit = validate_thin_consumer_audit_envelope(args.thin_audit)
     for name, payload in (("final canary", final), ("current canary", current), ("root population", population)):
         if payload.get("freeze_sha256") != freeze_hash:
             raise ValueError(f"{name} is not bound to the current freeze")
@@ -353,6 +357,8 @@ def main() -> int:
             "current_canary_sha256": sha256_file(args.current_canary),
             "root_population_sha256": sha256_file(args.root_population),
             "freeze_sha256": freeze_hash,
+            "thin_consumer_audit_sha256": thin_audit["audit_sha256"],
+            "consumer_registry_sha256": thin_audit["consumer_registry_sha256"],
             "pagination_benchmark_sha256": sha256_file(args.pagination_benchmark) if args.pagination_benchmark else None,
         },
         "existing_raw": {

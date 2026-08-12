@@ -270,14 +270,6 @@ def _generation_directories(pointer_path: Path) -> set[Path]:
     return {path for path in root.iterdir() if path.is_dir()} if root.is_dir() else set()
 
 
-def _restore_pointer(pointer_path: Path, prior: bytes | None) -> None:
-    if prior is None:
-        pointer_path.unlink(missing_ok=True)
-        return
-    with atomic_output(pointer_path) as temporary:
-        temporary.write_bytes(prior)
-
-
 def _prune_empty_payload_directories(paths: Iterable[Path], root: Path) -> None:
     for path in sorted({parent for path in paths for parent in path.parents if root in parent.parents}, reverse=True):
         try:
@@ -354,7 +346,6 @@ def publish_graph_acquisition(
         created_payloads: list[Path] = []
         transaction_target = payload_root / ".publication-transaction"
         with serialized_output_install(transaction_target):
-            prior_pointer = pointer_path.read_bytes() if pointer_path.is_file() else None
             prior_generations = _generation_directories(pointer_path)
             try:
                 records: list[dict[str, Any]] = []
@@ -431,7 +422,6 @@ def publish_graph_acquisition(
                     ),
                 )
             except BaseException:
-                _restore_pointer(pointer_path, prior_pointer)
                 for directory in sorted(
                     _generation_directories(pointer_path).difference(prior_generations),
                     reverse=True,

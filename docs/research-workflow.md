@@ -8,6 +8,8 @@ Every claim in the "grounding" column below was measured or read in this project
 
 ## 0. Standing rules
 
+**A no-fetch result is a certification, not an inventory status.** The executable stage must reopen the current thin-consumer audit, every cited certificate and every installed raw stat identity, bind both the audit digest and the closed consumer-registry identity into its prelaunch forecast, and return a distinct inventory-only status when that certification is unavailable. A whole-schema engineering scenario remains diagnostic and must never be reported as installed storage or an authorized project requirement.
+
 **Portability.** This file and every node's output is a plain tracked file in this repo. No node's real state may live only inside one model's session. Whatever executes a node reads this file plus the previous node's committed output and continues.
 
 **One runner owns the research environment.** Invoke scripts and tests through `./scripts/run`; individual entry points never mutate `sys.path`. The runner places the current worktree's `src` and repository root on the import path, suppresses script-directory shadowing, and may reuse the primary checkout's environment without importing its source. Reusable logic still belongs in `src/ddvc/`, while `scripts/` remains thin entry points. This is a correctness gate, not only style: an editable environment shared with a linked worktree otherwise imports the primary checkout silently and can validate code other than the code under review.

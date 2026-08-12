@@ -429,12 +429,21 @@ def publish_artifact_release(
                     for name in filenames
                 },
             }
-            write_pointer(pointer_path, pointer)
-            return _resolve_artifact_release_unlocked(
-                pointer_path,
-                kind=kind,
-                schema_version=schema_version,
-                filenames=filenames,
-                require_current_provenance=True,
-                expected_generation=generation,
-            )
+            prior_pointer = pointer_path.read_bytes() if pointer_path.is_file() else None
+            try:
+                write_pointer(pointer_path, pointer)
+                return _resolve_artifact_release_unlocked(
+                    pointer_path,
+                    kind=kind,
+                    schema_version=schema_version,
+                    filenames=filenames,
+                    require_current_provenance=True,
+                    expected_generation=generation,
+                )
+            except BaseException:
+                if prior_pointer is None:
+                    pointer_path.unlink(missing_ok=True)
+                else:
+                    with atomic_output(pointer_path) as temporary:
+                        temporary.write_bytes(prior_pointer)
+                raise

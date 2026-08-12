@@ -11,7 +11,7 @@ from datetime import datetime, timezone
 from ddvc.calendar import RESEARCH_SAMPLE_END
 from ddvc.fetch.acquisition import _validate_canary_evidence, source_contract_sha256, validate_freeze, validate_prelaunch_inputs, vector_alignment_failures, vector_alignment_results
 from ddvc.fetch.acquisition_release import AcquisitionTask, _install_content_addressed, _write_task_payloads, acquisition_cutoff, acquisition_tasks, publish_graph_acquisition, resolve_graph_acquisition
-from ddvc.fetch.material_consumers import GRAPH_MATERIAL_CONSUMER_INTENTS, ExistingStreamRequirement, GraphMaterialConsumerIntent, UNSUPPORTED_OWNERSHIP_STREAMS, validate_material_consumer_registry, validate_material_consumer_selection
+from ddvc.fetch.material_consumers import GRAPH_MATERIAL_CONSUMER_INTENTS, ExistingStreamRequirement, GraphMaterialConsumerIntent, UNSUPPORTED_OWNERSHIP_STREAMS, material_consumer_registry_sha256, validate_material_consumer_registry, validate_material_consumer_selection
 from ddvc.fetch.schemas import EntitySpec, acquisition_schema, get_schema
 from ddvc.fetch.graph import iter_paginate
 from ddvc.paths import REPO_ROOT
@@ -682,6 +682,18 @@ def test_prelaunch_recomputes_hashes_and_accepts_explicit_provider_quarantine(tm
         encoding="utf-8",
     )
     root_population.write_text(json.dumps({**shared_identity, "summary": {"errors": 0}}), encoding="utf-8")
+    thin_audit = tmp_path / "thin-audit.json"
+    thin_audit.write_text(
+        json.dumps(
+            {
+                "schema_version": 2,
+                "kind": "graph_thin_consumer_materiality_audit",
+                "research_sample_end": RESEARCH_SAMPLE_END,
+                "consumer_registry_sha256": material_consumer_registry_sha256(),
+            }
+        ),
+        encoding="utf-8",
+    )
     forecast = tmp_path / "forecast.json"
     forecast.write_text(
         json.dumps(
@@ -691,6 +703,8 @@ def test_prelaunch_recomputes_hashes_and_accepts_explicit_provider_quarantine(tm
                     "final_canary_sha256": digest(canary_path),
                     "current_canary_sha256": digest(current_canary),
                     "root_population_sha256": digest(root_population),
+                    "thin_consumer_audit_sha256": digest(thin_audit),
+                    "consumer_registry_sha256": material_consumer_registry_sha256(),
                 },
                 "launch_decision": "inventory_validated_consumer_selection_required",
             }
@@ -708,6 +722,7 @@ def test_prelaunch_recomputes_hashes_and_accepts_explicit_provider_quarantine(tm
         current_canary_evidence_path=current_evidence,
         root_population_path=root_population,
         forecast_path=forecast,
+        thin_audit_path=thin_audit,
     )["stream_count"] == 1
     active.write_text("drift", encoding="utf-8")
     with pytest.raises(ValueError, match="stale active_manifest_sha256"):
@@ -722,6 +737,7 @@ def test_prelaunch_recomputes_hashes_and_accepts_explicit_provider_quarantine(tm
             current_canary_evidence_path=current_evidence,
             root_population_path=root_population,
             forecast_path=forecast,
+            thin_audit_path=thin_audit,
         )
 
 

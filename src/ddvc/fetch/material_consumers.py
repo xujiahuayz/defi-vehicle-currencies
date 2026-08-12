@@ -3,10 +3,18 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
+import hashlib
+import json
 from typing import Mapping
 
 
 StreamIdentity = tuple[str, str]
+
+
+def _canonical_json_sha256(value: object) -> str:
+    return hashlib.sha256(
+        json.dumps(value, sort_keys=True, separators=(",", ":")).encode()
+    ).hexdigest()
 
 
 @dataclass(frozen=True)
@@ -199,6 +207,46 @@ def validate_material_consumer_selection(
     if len(selected) > intent.max_selected_streams:
         raise ValueError(f"Graph acquisition exceeds the named consumer maximum scope: {len(selected)} > {intent.max_selected_streams}")
     return intent
+
+
+def material_consumer_registry_identity(
+    registry: Mapping[str, GraphMaterialConsumerIntent] | None = None,
+) -> dict[str, object]:
+    """Return the canonical closed-registry identity used by release gates."""
+
+    registry = GRAPH_MATERIAL_CONSUMER_INTENTS if registry is None else registry
+    validate_material_consumer_registry(registry)
+    return {
+        name: {
+            "materiality_reason": intent.reason,
+            "existing_stream_field_perimeter": [
+                {
+                    "source": requirement.source,
+                    "stream": requirement.stream,
+                    "fields": list(requirement.fields),
+                    "field_perimeter_sha256": _canonical_json_sha256(
+                        list(requirement.fields)
+                    ),
+                }
+                for requirement in intent.existing_streams
+            ],
+            "allowed_new_streams": [
+                f"{source}/{stream}"
+                for source, stream in sorted(intent.allowed_new_streams)
+            ],
+            "max_selected_streams": intent.max_selected_streams,
+            "unresolved_non_graph_prerequisites": list(
+                intent.unresolved_prerequisites
+            ),
+        }
+        for name, intent in sorted(registry.items())
+    }
+
+
+def material_consumer_registry_sha256(
+    registry: Mapping[str, GraphMaterialConsumerIntent] | None = None,
+) -> str:
+    return _canonical_json_sha256(material_consumer_registry_identity(registry))
 
 
 validate_material_consumer_registry()

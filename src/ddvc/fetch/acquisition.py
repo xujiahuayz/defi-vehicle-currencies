@@ -12,6 +12,7 @@ from decimal import Decimal, InvalidOperation
 from typing import Any, Mapping
 
 from ddvc.calendar import RESEARCH_SAMPLE_END
+from ddvc.fetch.thin_consumer_audit import validate_thin_consumer_audit_envelope
 from ddvc.fetch.sources import DEX_SOURCES
 from ddvc.paths import REPO_ROOT
 
@@ -25,6 +26,7 @@ GRAPH_ROOT_POPULATION = REPO_ROOT / "docs" / "graph-root-population.json"
 GRAPH_CANARY_CURRENT = REPO_ROOT / "docs" / "graph-query-canaries-active-current.json"
 GRAPH_CANARY_FINAL = REPO_ROOT / "docs" / "graph-query-canaries-final.json"
 GRAPH_ACQUISITION_FORECAST = REPO_ROOT / "docs" / "graph-acquisition-forecast.json"
+GRAPH_THIN_CONSUMER_AUDIT = REPO_ROOT / "docs" / "graph-thin-consumer-audit.json"
 GRAPH_CANARY_EVIDENCE = REPO_ROOT / "docs" / "graph-query-canary-failures.jsonl.gz"
 GRAPH_CANARY_CURRENT_EVIDENCE = REPO_ROOT / "docs" / "graph-query-canary-active-failures.jsonl.gz"
 GRAPH_TIME_FIELDS = (
@@ -368,6 +370,7 @@ def validate_prelaunch_inputs(
     current_canary_evidence_path: Path,
     root_population_path: Path,
     forecast_path: Path,
+    thin_audit_path: Path,
 ) -> dict[str, object]:
     """Recompute every launch identity and veto unresolved quality evidence."""
 
@@ -388,6 +391,7 @@ def validate_prelaunch_inputs(
     current_canary = json.loads(current_canary_path.read_text(encoding="utf-8"))
     root_population = json.loads(root_population_path.read_text(encoding="utf-8"))
     forecast = json.loads(forecast_path.read_text(encoding="utf-8"))
+    thin_audit = validate_thin_consumer_audit_envelope(thin_audit_path)
     expected = {
         "freeze_sha256": sha256_file(freeze_path),
         "schema_inventory_sha256": sha256_file(inventory_path),
@@ -407,6 +411,10 @@ def validate_prelaunch_inputs(
         raise ValueError("Graph forecast has stale current_canary_sha256")
     if forecast_inputs.get("root_population_sha256") != sha256_file(root_population_path):
         raise ValueError("Graph forecast has stale root_population_sha256")
+    if forecast_inputs.get("thin_consumer_audit_sha256") != thin_audit["audit_sha256"]:
+        raise ValueError("Graph forecast has stale thin_consumer_audit_sha256")
+    if forecast_inputs.get("consumer_registry_sha256") != thin_audit["consumer_registry_sha256"]:
+        raise ValueError("Graph forecast has stale consumer_registry_sha256")
     _validate_canary_evidence(canary, canary_evidence_path, label="canary")
     _validate_canary_evidence(
         current_canary,
@@ -439,4 +447,6 @@ def validate_prelaunch_inputs(
             len(source.get("streams", [])) for source in canary.get("sources", [])
         ),
         "freeze_sha256": expected["freeze_sha256"],
+        "thin_consumer_audit_sha256": thin_audit["audit_sha256"],
+        "consumer_registry_sha256": thin_audit["consumer_registry_sha256"],
     }

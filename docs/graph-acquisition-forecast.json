@@ -1,5 +1,5 @@
 {
-  "captured_at_utc": "2026-08-12T01:44:41+00:00",
+  "captured_at_utc": "2026-08-12T03:05:52+00:00",
   "existing_raw": {
     "entry_physical_bytes": 9098420224,
     "files": 61392,
@@ -78,7 +78,7 @@
       "host": "studio",
       "inventory_observation_host": "DSF-pro16-m3s-MacBook-Pro.local",
       "inventory_observation_path": "/Users/dsf-pro16-m3/projects/defi-vehicle-currencies/data/raw/thegraph",
-      "observed_statvfs_available_bytes": 274977992704,
+      "observed_statvfs_available_bytes": 270958387200,
       "override_bytes": 5997815668736,
       "path": "/Users/java/projects/defi-vehicle-currencies/data/raw/thegraph"
     },
@@ -130,11 +130,13 @@
     }
   },
   "inputs": {
+    "consumer_registry_sha256": "efdafa1649c7bc0a97ce3b64a73f5e7e2f1961a38c4777fa49159a4ca82de4a3",
     "current_canary_sha256": "e7aecbe3fbd603278b39a790d0c3af33ae55d70ea80ef5f089173ef07e14d5bb",
     "final_canary_sha256": "fd3595fe85b13c62a261b0a59b6acd7de115e2e9f63e4ef9322d58a3273cf04a",
     "freeze_sha256": "2c935682c70de83d55c3bec87d771ea63287c48f9121caf158126b9cfa012de4",
     "pagination_benchmark_sha256": null,
-    "root_population_sha256": "db5b721babe00fa5afd90e0b3a657af6e9290c04b288de186281c2d28dd2c49a"
+    "root_population_sha256": "db5b721babe00fa5afd90e0b3a657af6e9290c04b288de186281c2d28dd2c49a",
+    "thin_consumer_audit_sha256": "77287bbf4e550ac394a5fca9a627cc56dae50a7c53db8083350571d42111ded0"
   },
   "kind": "graph_acquisition_prelaunch_forecast",
   "launch_decision": "inventory_validated_consumer_selection_required",

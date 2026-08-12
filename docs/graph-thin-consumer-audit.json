@@ -3,7 +3,7 @@
     "stream_count": 0,
     "streams": []
   },
-  "consumer_registry_sha256": "7dc3396175807339d94f5a1b5da1e47a1277a3aa4dfe254b7d9f40957e075e52",
+  "consumer_registry_sha256": "efdafa1649c7bc0a97ce3b64a73f5e7e2f1961a38c4777fa49159a4ca82de4a3",
   "consumers": [
     {
       "allowed_new_streams": [],
