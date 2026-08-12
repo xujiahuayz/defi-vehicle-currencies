@@ -14,7 +14,7 @@ import time
 from typing import Any
 
 from ddvc.fetch.graph import GraphClient, graph_keys, head_block
-from ddvc.fetch.acquisition import GRAPH_ACTIVE_MANIFEST, GRAPH_BLOCK_FIELDS, GRAPH_CANARY_EVIDENCE, GRAPH_CANARY_FINAL, GRAPH_NEW_MANIFEST, GRAPH_SCHEMA_INVENTORY, GRAPH_TIME_FIELDS, frozen_provider_heads, path_value, repository_path_identity, research_sample_end_unix, sha256_file, validate_freeze, vector_alignment_failures, vector_alignment_results
+from ddvc.fetch.acquisition import GRAPH_ACTIVE_MANIFEST, GRAPH_BLOCK_FIELDS, GRAPH_CANARY_CURRENT_EVIDENCE, GRAPH_CANARY_EVIDENCE, GRAPH_CANARY_FINAL, GRAPH_NEW_MANIFEST, GRAPH_SCHEMA_INVENTORY, GRAPH_TIME_FIELDS, frozen_provider_heads, path_value, repository_path_identity, research_sample_end_unix, sha256_file, validate_freeze, vector_alignment_failures, vector_alignment_results
 from ddvc.fetch.graphql_selection import render_selection
 from ddvc.fetch.raw import write_jsonl_gz
 from ddvc.fetch.sources import DEX_SOURCES
@@ -118,7 +118,7 @@ def main() -> int:
     parser.add_argument("--new-manifest", type=Path, default=NEW_MANIFEST)
     parser.add_argument("--schema-inventory", type=Path, default=SCHEMA_INVENTORY)
     parser.add_argument("--output", type=Path, default=DEFAULT_OUTPUT)
-    parser.add_argument("--evidence-output", type=Path, default=GRAPH_CANARY_EVIDENCE)
+    parser.add_argument("--evidence-output", type=Path)
     parser.add_argument("--workers", type=int, default=4)
     parser.add_argument("--large-sample", type=int, default=1000)
     parser.add_argument("--retry-failed-from", type=Path)
@@ -129,6 +129,12 @@ def main() -> int:
     parser.add_argument("--active-current", action="store_true")
     parser.add_argument("--active-only", action="store_true")
     args = parser.parse_args()
+    if args.evidence_output is None:
+        args.evidence_output = (
+            GRAPH_CANARY_CURRENT_EVIDENCE
+            if args.active_current
+            else GRAPH_CANARY_EVIDENCE
+        )
     head_overrides = {}
     for item in args.head_block:
         source_name, separator, value = item.partition("=")
@@ -276,21 +282,19 @@ def main() -> int:
                             failures = vector_alignment_failures(row, stream["vector_owners"])
                             if failures:
                                 failure_indices.append(row_index)
-                            evidence_rows.append(
-                                {
-                                    "sample_key": sample_key,
-                                    "source": source_name,
-                                    "stream": stream["stream"],
-                                    "epoch": epoch,
-                                    "requested_rows": requested,
-                                    "row_index": row_index,
-                                    "row": row,
-                                    "missing_paths": [
-                                        path for path in stream["paths"] if _path_is_missing(row, path)
-                                    ],
-                                    "alignment_failures": failures,
-                                }
-                            )
+                            if failures:
+                                evidence_rows.append(
+                                    {
+                                        "sample_key": sample_key,
+                                        "source": source_name,
+                                        "stream": stream["stream"],
+                                        "epoch": epoch,
+                                        "requested_rows": requested,
+                                        "row_index": row_index,
+                                        "row": row,
+                                        "alignment_failures": failures,
+                                    }
+                                )
                         samples.append(
                             {
                                 "epoch": epoch,
@@ -306,8 +310,8 @@ def main() -> int:
                                 "alignment_results": vector_alignment_results(
                                     rows, stream["vector_owners"]
                                 ),
-                                "pre_quarantine_evidence_key": sample_key,
-                                "pre_quarantine_evidence_rows": len(rows),
+                                "quarantine_failure_evidence_key": sample_key,
+                                "quarantine_failure_evidence_rows": len(failure_indices),
                                 "alignment_failure_row_indices": failure_indices,
                                 "status": "ok",
                             }
@@ -400,10 +404,17 @@ def main() -> int:
         "active_manifest_sha256": sha256_file(args.active_manifest),
         "new_manifest_sha256": sha256_file(args.new_manifest),
         "freeze_sha256": sha256_file(args.freeze) if args.freeze else None,
-        "pre_quarantine_evidence": {
+        "quarantine_failure_evidence": {
             "path": repository_path_identity(args.evidence_output),
             "sha256": sha256_file(args.evidence_output),
             "rows": len(evidence_rows),
+            "sampled_rows": sum(
+                int(sample.get("returned_rows", 0))
+                for source in sources
+                for stream in source["streams"]
+                for sample in stream["samples"]
+                if sample.get("status") == "ok"
+            ),
         },
         "sources": sources,
     }

@@ -1,113 +1,302 @@
 {
-  "as_of": "2026-08-12",
   "authorized_graph_acquisition": {
-    "bytes": 0,
-    "graph_calls": 0,
+    "stream_count": 0,
     "streams": []
   },
+  "consumer_registry_sha256": "7dc3396175807339d94f5a1b5da1e47a1277a3aa4dfe254b7d9f40957e075e52",
   "consumers": [
     {
-      "consumer": "v2_end_of_day_deposited_capital",
-      "existing_graph_streams": {
-        "sushiswap_v2": {
-          "burns": 2126,
-          "daily": 2126,
-          "hourly_reserves": 2126,
-          "mints": 2126,
-          "swaps": 2126
-        },
-        "uniswap_v2": {
-          "burns": 2248,
-          "daily": 2248,
-          "hourly_reserves": 2248,
-          "mints": 2248,
-          "swaps": 2248
-        }
-      },
-      "material_fields": [
-        "pool contract and ordered token addresses/decimals",
-        "end-of-day reserveUSD and dailyVolumeUSD",
-        "hourly reserve0 and reserve1",
-        "ordered Mint, Burn, and Swap amounts with block/transaction/log identity"
-      ],
-      "new_graph_acquisition_required": false,
-      "status": "raw_fields_present_full_sample_on_authoritative_host",
-      "unresolved_non_graph_work": "materialize and certify constant-product state and capital panels from the existing streams"
-    },
-    {
+      "allowed_new_streams": [],
       "consumer": "exact_transaction_target_and_quote_state_replay",
-      "existing_graph_streams": {
-        "uniswap_v2": {
-          "swaps": 2248
+      "existing_stream_field_perimeter": [
+        {
+          "field_perimeter_sha256": "5e8225d4be295229b0ab78d8e2d5bec7536da1d4a79e14b2569715497b8b0cd6",
+          "fields": [
+            "id",
+            "transaction.id",
+            "transaction.blockNumber",
+            "transaction.timestamp",
+            "timestamp",
+            "pair.id",
+            "pair.token0.id",
+            "pair.token1.id",
+            "amount0In",
+            "amount0Out",
+            "amount1In",
+            "amount1Out",
+            "logIndex"
+          ],
+          "source": "uniswap_v2",
+          "stream": "swaps"
         },
-        "uniswap_v3": {
-          "swaps": 1884
+        {
+          "field_perimeter_sha256": "5e8225d4be295229b0ab78d8e2d5bec7536da1d4a79e14b2569715497b8b0cd6",
+          "fields": [
+            "id",
+            "transaction.id",
+            "transaction.blockNumber",
+            "transaction.timestamp",
+            "timestamp",
+            "pair.id",
+            "pair.token0.id",
+            "pair.token1.id",
+            "amount0In",
+            "amount0Out",
+            "amount1In",
+            "amount1Out",
+            "logIndex"
+          ],
+          "source": "sushiswap_v2",
+          "stream": "swaps"
         },
-        "uniswap_v4": {
-          "modify_liquidities": 523,
-          "swaps": 546
+        {
+          "field_perimeter_sha256": "4708685582b673123b482f6eaf3c1ecce071b48beca3022e6f6d50e3c989ae28",
+          "fields": [
+            "id",
+            "transaction.id",
+            "transaction.blockNumber",
+            "transaction.timestamp",
+            "timestamp",
+            "pool.id",
+            "pool.token0.id",
+            "pool.token1.id",
+            "amount0",
+            "amount1",
+            "sqrtPriceX96",
+            "tick",
+            "logIndex"
+          ],
+          "source": "uniswap_v3",
+          "stream": "swaps"
+        },
+        {
+          "field_perimeter_sha256": "2b868de1dee52dadf21d285c0bb88341f5ad188d83d7585eb7ffb79f8f3f2c4a",
+          "fields": [
+            "id",
+            "transaction.id",
+            "transaction.blockNumber",
+            "transaction.timestamp",
+            "timestamp",
+            "pool.id",
+            "pool.token0.id",
+            "pool.token1.id",
+            "amount0",
+            "amount1",
+            "logIndex"
+          ],
+          "source": "uniswap_v4",
+          "stream": "swaps"
         }
-      },
-      "material_fields": [
-        "pool and ordered token identity",
-        "exact transaction block and log order",
-        "signed swap amounts",
-        "exact pool state strictly before the target event"
       ],
+      "materiality_reason": "certify exact transaction targets and strictly prior quote state from installed Graph streams plus independent chain logs",
+      "max_selected_streams": 0,
       "new_graph_acquisition_required": false,
-      "status": "graph_target_fields_present_rpc_release_certification_still_required",
-      "unresolved_non_graph_work": "finish and certify the existing V2 and V4 exact-RPC sources before daily target promotion"
+      "unresolved_non_graph_prerequisites": [
+        "bind the exact V2 and V3 event-source release markers on the authoritative data host",
+        "bind the exact transaction-target audit and daily release markers after publication"
+      ]
     },
     {
-      "consumer": "v3_pool_inventory_and_liquidity_supply",
-      "existing_graph_streams": {
-        "uniswap_v3": {
-          "burns": 1884,
-          "mints": 1884,
-          "swaps": 1884
+      "allowed_new_streams": [],
+      "consumer": "v2_end_of_day_deposited_capital",
+      "existing_stream_field_perimeter": [
+        {
+          "field_perimeter_sha256": "dc0e825406cb59c1b9622f7aaf2d12923d580f95f2a30cf66f964276c5e67761",
+          "fields": [
+            "id",
+            "date",
+            "pairAddress",
+            "reserveUSD",
+            "dailyVolumeUSD",
+            "token0.id",
+            "token1.id"
+          ],
+          "source": "sushiswap_v2",
+          "stream": "daily"
+        },
+        {
+          "field_perimeter_sha256": "b134d0ae896bb9ccde7ed19d51b227dce7e6b7d948c972ae557fe7dbdbd0be9d",
+          "fields": [
+            "id",
+            "date",
+            "pairAddress",
+            "reserveUSD",
+            "dailyVolumeUSD"
+          ],
+          "source": "uniswap_v2",
+          "stream": "daily"
+        },
+        {
+          "field_perimeter_sha256": "842d491c16351d0a0548a088c16eeab07d847834ffce5ff3f563542f434eba32",
+          "fields": [
+            "id",
+            "pair.id",
+            "pair.token0.id",
+            "pair.token1.id"
+          ],
+          "source": "uniswap_v2",
+          "stream": "mints"
         }
-      },
-      "existing_rpc_release": {
-        "burns": 3263966,
-        "collect_protocol": 437880,
-        "collects": 3144537,
-        "flashes": 9493,
-        "mints": 2849664,
-        "status": "complete",
-        "swaps": 137671078,
-        "total_logs": 147376618
-      },
-      "material_fields": [
-        "certified factory pool identity and token decimals",
-        "exact Mint, Burn, Collect, CollectProtocol, Flash, and Swap events",
-        "initial price/tick and exact causal order"
       ],
+      "materiality_reason": "materialize V2 end-of-day deposited capital from already installed raw streams",
+      "max_selected_streams": 0,
       "new_graph_acquisition_required": false,
-      "status": "exact_inventory_event_release_present_initialization_and_balance_validation_pending",
-      "unsupported_extension": "provider-level position ownership or profitability remains outside the admitted claim set; positionSnapshots are not authorized without a promoted estimator and a separate validity audit"
+      "unresolved_non_graph_prerequisites": [
+        "certify the current constant-product state partitions before capital publication"
+      ]
+    },
+    {
+      "allowed_new_streams": [],
+      "consumer": "v3_pool_inventory_and_liquidity_supply",
+      "existing_stream_field_perimeter": [
+        {
+          "field_perimeter_sha256": "4708685582b673123b482f6eaf3c1ecce071b48beca3022e6f6d50e3c989ae28",
+          "fields": [
+            "id",
+            "transaction.id",
+            "transaction.blockNumber",
+            "transaction.timestamp",
+            "timestamp",
+            "pool.id",
+            "pool.token0.id",
+            "pool.token1.id",
+            "amount0",
+            "amount1",
+            "sqrtPriceX96",
+            "tick",
+            "logIndex"
+          ],
+          "source": "uniswap_v3",
+          "stream": "swaps"
+        },
+        {
+          "field_perimeter_sha256": "5d291de815c2208cc8c6e89efe24a0a5d929fbd7bf25f1798fe9b61e47dd6f5c",
+          "fields": [
+            "id",
+            "transaction.id",
+            "transaction.blockNumber",
+            "transaction.timestamp",
+            "timestamp",
+            "pool.id",
+            "amount",
+            "amount0",
+            "amount1",
+            "tickLower",
+            "tickUpper",
+            "logIndex"
+          ],
+          "source": "uniswap_v3",
+          "stream": "mints"
+        },
+        {
+          "field_perimeter_sha256": "5d291de815c2208cc8c6e89efe24a0a5d929fbd7bf25f1798fe9b61e47dd6f5c",
+          "fields": [
+            "id",
+            "transaction.id",
+            "transaction.blockNumber",
+            "transaction.timestamp",
+            "timestamp",
+            "pool.id",
+            "amount",
+            "amount0",
+            "amount1",
+            "tickLower",
+            "tickUpper",
+            "logIndex"
+          ],
+          "source": "uniswap_v3",
+          "stream": "burns"
+        }
+      ],
+      "materiality_reason": "certify V3 pool inventory and liquidity supply from existing event streams and independent chain logs",
+      "max_selected_streams": 0,
+      "new_graph_acquisition_required": false,
+      "unresolved_non_graph_prerequisites": [
+        "bind the exact V3 event-source and inventory release markers on the authoritative data host"
+      ]
     }
   ],
-  "evidence": {
-    "active_canary": {
-      "alignment_comparisons": 7800,
-      "alignment_failures": 0,
-      "streams": 24
-    },
-    "broad_schema_canary": {
-      "admitted_streams": 88,
-      "provider_archive_quarantined_streams": 2,
-      "row_quarantine_streams": 3,
-      "streams": 93
-    },
-    "existing_graph_corpus": {
-      "direct_storage_below_project_graph_root": "8.5 GiB",
-      "logical_bytes_following_reused_symlink_targets": 90079095549,
-      "resolved_disk_usage": "84 GiB",
-      "storage_note": "Most installed files are reused through 27287 symlinks to the legacy canonical raw store; copying those streams into a new universal generation would duplicate data without adding a consumer capability."
-    },
-    "measurement_host": "studio"
-  },
   "kind": "graph_thin_consumer_materiality_audit",
-  "schema_version": 1,
-  "selection_rule": "A network fetch requires a named consumer, a material missing field, and an explicit frozen stream selection. Broad schema inventory is discovery evidence, not an acquisition perimeter."
+  "research_sample_end": "20260630",
+  "schema_version": 2,
+  "selection_rule": "Only a closed named consumer intent may authorize exact missing streams; installed-stream sufficiency is bound to certified partition identities and explicit consumer fields.",
+  "source_release_markers": [
+    {
+      "certificate_file_sha256": "8e8c9e1bb5ac1096724c0fc1de1a64f3a4ed04626c64ea51e951ec992b6a9026",
+      "certificate_sha256": "f2df076d36be1df058be90c1732346d7721d4cec229ae022aa018e9c6dfca999",
+      "first_day": "20200904",
+      "last_day": "20260630",
+      "nonempty_partitions": 4252,
+      "partition_count": 4252,
+      "partition_ledger_sha256": "44f70a1e43d8d76c93e9f4d77d5748e3170f999e6fbfd1c12aba18707dc6e58b",
+      "policy": "installed-required-raw-local-certificate-v1",
+      "selected_partition_count": 4252,
+      "selected_partition_identity_sha256": "469d23ad14668591c25cdd0e1829ed282d56d4a4ef6dfd1dca9dca08d4a2b6dc",
+      "selected_partitions": 4252,
+      "selected_rows": 18500520,
+      "source": "sushiswap_v2",
+      "streams": [
+        "daily",
+        "swaps"
+      ]
+    },
+    {
+      "certificate_file_sha256": "84d533e95cc7fcf702d080b68b9a1a72ee13ece69c98ee8b198ec0569d7d4f70",
+      "certificate_sha256": "eca75d07269d78ace2d3e5f8d2dc721977443750571e0ce2a20ec85815e73f71",
+      "first_day": "20200505",
+      "last_day": "20260630",
+      "nonempty_partitions": 6735,
+      "partition_count": 6744,
+      "partition_ledger_sha256": "6876509e1f3dadad108a8f737372b4c2f599ada00c425fab571fbce678b2c839",
+      "policy": "installed-required-raw-local-certificate-v1",
+      "selected_partition_count": 6744,
+      "selected_partition_identity_sha256": "a4214bf42307e5c0d09768df9ff1a8b973d1d77d9e24edf3e3aff085e341a3ce",
+      "selected_partitions": 6744,
+      "selected_rows": 287757042,
+      "source": "uniswap_v2",
+      "streams": [
+        "daily",
+        "mints",
+        "swaps"
+      ]
+    },
+    {
+      "certificate_file_sha256": "deae97c008e1ee17e7f596b6542c522a1e6f399c0e68fb0730e073c0f318ed5b",
+      "certificate_sha256": "96636140444573269f4b13665c61bf61fc73c81e20096c31576e9e9c4d84ec44",
+      "first_day": "20210504",
+      "last_day": "20260630",
+      "nonempty_partitions": 5652,
+      "partition_count": 5652,
+      "partition_ledger_sha256": "5dbd728e38a56d95e00d40f754e8beef67da64761608d203a954d00964b40b1a",
+      "policy": "installed-required-raw-local-certificate-v1",
+      "selected_partition_count": 5652,
+      "selected_partition_identity_sha256": "344f5cdc3f08c7ad7b20c8c3b45f422cd96e203c5261665a6ca32235878aa5e8",
+      "selected_partitions": 5652,
+      "selected_rows": 140997239,
+      "source": "uniswap_v3",
+      "streams": [
+        "burns",
+        "mints",
+        "swaps"
+      ]
+    },
+    {
+      "certificate_file_sha256": "4fa49957595afa741bec795f1f1cf6b656cef74ef73899dfcd6c7ce50d2631f2",
+      "certificate_sha256": "aed6651b6a2e18a09fc4b28f17ce400e3ccb1cba67d6d5bfe10b9144c1ddaa77",
+      "first_day": "20250124",
+      "last_day": "20260630",
+      "nonempty_partitions": 522,
+      "partition_count": 1046,
+      "partition_ledger_sha256": "489387dbb30b65d40369bffdc93ea36369dc85413fc7d5056a1470b1a94861e6",
+      "policy": "installed-required-raw-local-certificate-v1",
+      "selected_partition_count": 523,
+      "selected_partition_identity_sha256": "7f4e9edbd7211eb1245afb939e7cfa1cdffe3e8caa2f64d3049cb1e12203cf85",
+      "selected_partitions": 523,
+      "selected_rows": 29005863,
+      "source": "uniswap_v4",
+      "streams": [
+        "swaps"
+      ]
+    }
+  ]
 }

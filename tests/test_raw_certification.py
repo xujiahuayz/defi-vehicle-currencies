@@ -1219,13 +1219,20 @@ class RawCertificationTests(unittest.TestCase):
         assert isinstance(token0, dict)
         token0["symbol"] = None
         pool["feeTier"] = None
-        row["sqrtPriceX96"] = ""
         write_gzip(self.path(partition), [row])
         observed = self.scan(partition)
         self.assertTrue(observed["local_pass"], observed["errors"])
         self.assertNotIn("missing_field:pool.token0.symbol", observed["errors"])
         self.assertNotIn("missing_field:pool.feeTier", observed["errors"])
-        self.assertNotIn("missing_field:sqrtPriceX96", observed["errors"])
+
+    def test_v3_swap_replay_state_is_a_required_consumer_field(self) -> None:
+        partition = RawPartition("uniswap_v3", "swaps", DAY)
+        for field in ("sqrtPriceX96", "tick"):
+            with self.subTest(field=field):
+                row = v3_swap("a")
+                row[field] = ""
+                write_gzip(self.path(partition), [row])
+                self.assertIn(f"missing_field:{field}", self.scan(partition)["errors"])
 
     def test_missing_metadata_is_allowed_for_legacy_local_content_only(self) -> None:
         partition = self.perimeter

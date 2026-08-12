@@ -9,6 +9,7 @@ import hashlib
 import json
 from pathlib import Path
 import shutil
+import tempfile
 from typing import Any, Iterable, Mapping
 
 from ddvc.artifact_release import file_sha256, publish_artifact_release, resolve_artifact_release
@@ -16,10 +17,11 @@ from ddvc.calendar import RESEARCH_SAMPLE_END
 from ddvc.fetch.acquisition import research_sample_end_unix, vector_alignment_failures
 from ddvc.fetch.graph import GraphClient, graph_keys
 from ddvc.fetch.graphql_selection import selected_paths
+from ddvc.fetch.material_consumers import validate_material_consumer_selection
 from ddvc.fetch.raw import graph_query_contract_sha256, iter_graph_entity_rows, where_chunks_for_entity
 from ddvc.fetch.schemas import EntitySpec, acquisition_schema
 from ddvc.fetch.sources import DEX_SOURCES
-from ddvc.runtime import atomic_output, bounded_workers, interruptible_thread_pool, serialized_output_install, staged_output
+from ddvc.runtime import atomic_output, bounded_workers, interruptible_thread_pool, serialized_output_install
 
 
 GRAPH_ACQUISITION_RELEASE_KIND = "graph_acquisition_generation"
@@ -53,28 +55,60 @@ def acquisition_tasks(
     new_manifest: Path,
     sample_end_blocks: Mapping[str, int],
     provider_head_blocks: Mapping[str, int] | None = None,
-    canary_path: Path | None = None,
+    canary_path: Path,
 ) -> tuple[AcquisitionTask, ...]:
     """Materialize exactly one task for every frozen source/stream contract."""
 
     active = json.loads(active_manifest.read_text(encoding="utf-8"))
     new = json.loads(new_manifest.read_text(encoding="utf-8"))
     owners = _manifest_vector_owners(active, new)
-    quality_actions: dict[tuple[str, str], str] = {}
-    if canary_path is not None:
-        canary = json.loads(canary_path.read_text(encoding="utf-8"))
-        quality_actions = {
-            (str(source["source"]), str(stream["stream"])): str(stream.get("quality_action") or "unresolved_query_failure")
-            for source in canary.get("sources", [])
-            for stream in source.get("streams", [])
-        }
-    tasks = []
+    canary = json.loads(canary_path.read_text(encoding="utf-8"))
+    canary_records = [
+        (str(source["source"]), str(stream["stream"]), stream.get("quality_action"))
+        for source in canary.get("sources", [])
+        for stream in source.get("streams", [])
+    ]
+    canary_identities = [(source, stream) for source, stream, _action in canary_records]
+    if len(canary_identities) != len(set(canary_identities)):
+        raise ValueError("Graph canary perimeter contains duplicate streams")
+    valid_actions = {
+        "admit",
+        "provider_archive_unavailable_quarantined",
+        "row_quarantine_before_release",
+    }
+    invalid_actions = [
+        (source, stream, action)
+        for source, stream, action in canary_records
+        if action not in valid_actions
+    ]
+    if invalid_actions:
+        raise ValueError(f"Graph canary has invalid quality actions: {invalid_actions[:3]}")
+    quality_actions = {
+        (source, stream): str(action)
+        for source, stream, action in canary_records
+    }
+    entities_by_source = {}
     for source in sorted(sample_end_blocks):
-        schema = acquisition_schema(
+        entities_by_source[source] = acquisition_schema(
             source,
             active_manifest=active_manifest,
             new_manifest=new_manifest,
+        ).entities
+    identities = [
+        (source, entity.stream)
+        for source, entities in entities_by_source.items()
+        for entity in entities
+    ]
+    if len(identities) != len(set(identities)):
+        raise ValueError("Graph acquisition task perimeter contains duplicate streams")
+    if set(identities) != set(canary_identities):
+        raise ValueError(
+            "Graph acquisition manifest and canary stream perimeters differ: "
+            f"missing={sorted(set(identities) - set(canary_identities))[:3]}, "
+            f"extra={sorted(set(canary_identities) - set(identities))[:3]}"
         )
+    tasks = []
+    for source, entities in entities_by_source.items():
         tasks.extend(
             AcquisitionTask(
                 source=source,
@@ -82,13 +116,10 @@ def acquisition_tasks(
                 sample_end_block=int(sample_end_blocks[source]),
                 provider_head_block=int((provider_head_blocks or sample_end_blocks)[source]),
                 vector_owners=owners.get((source, entity.stream), ()),
-                quality_action=quality_actions.get((source, entity.stream), "admit"),
+                quality_action=quality_actions[(source, entity.stream)],
             )
-            for entity in schema.entities
+            for entity in entities
         )
-    identities = [(task.source, task.entity.stream) for task in tasks]
-    if len(identities) != len(set(identities)):
-        raise ValueError("Graph acquisition task perimeter contains duplicate streams")
     return tuple(tasks)
 
 
@@ -174,20 +205,31 @@ def _write_task_payloads(
     return {"clean_rows": clean_rows, "quarantine_rows": quarantine_rows}
 
 
-def _install_content_addressed(source: Path, root: Path) -> Path:
+def _install_content_addressed(
+    source: Path, root: Path, *, semantic_suffix: str
+) -> tuple[Path, bool]:
+    if not semantic_suffix.startswith(".") or "/" in semantic_suffix:
+        raise ValueError("Graph acquisition payload suffix is not canonical")
     digest = file_sha256(source)
-    target = root / f"{digest}{''.join(source.suffixes)}"
+    target = root / f"{digest}{semantic_suffix}"
     target.parent.mkdir(parents=True, exist_ok=True)
+    created = False
     with serialized_output_install(target):
-        if target.is_file():
+        try:
+            if target.is_file():
+                if file_sha256(target) != digest:
+                    raise RuntimeError(f"immutable Graph acquisition payload is corrupt: {target}")
+            else:
+                with atomic_output(target) as temporary:
+                    shutil.copyfile(source, temporary)
+                created = True
             if file_sha256(target) != digest:
-                raise RuntimeError(f"immutable Graph acquisition payload is corrupt: {target}")
-        else:
-            with atomic_output(target) as temporary:
-                shutil.copyfile(source, temporary)
-        if file_sha256(target) != digest:
-            raise RuntimeError(f"Graph acquisition payload failed install verification: {target}")
-    return target
+                raise RuntimeError(f"Graph acquisition payload failed install verification: {target}")
+        except BaseException:
+            if created:
+                target.unlink(missing_ok=True)
+            raise
+    return target, created
 
 
 def _validate_generation_manifest(path: Path, *, release_root: Path | None = None) -> dict[str, Any]:
@@ -199,6 +241,16 @@ def _validate_generation_manifest(path: Path, *, release_root: Path | None = Non
         raise ValueError("Graph acquisition payload manifest has no selected streams")
     if not isinstance(payload.get("selection_reason"), str) or not str(payload["selection_reason"]).strip():
         raise ValueError("Graph acquisition payload manifest lacks its materiality reason")
+    consumer = payload.get("material_consumer")
+    if not isinstance(consumer, str) or not consumer:
+        raise ValueError("Graph acquisition payload manifest lacks its material consumer")
+    identities = {
+        (str(record.get("source")), str(record.get("stream")))
+        for record in streams
+    }
+    if len(identities) != len(streams):
+        raise ValueError("Graph acquisition payload manifest repeats a selected stream")
+    validate_material_consumer_selection(consumer, identities)
     for record in streams:
         if record.get("status") in {"canary_only_never_backfill", "provider_archive_unavailable_quarantined"}:
             continue
@@ -213,13 +265,34 @@ def _validate_generation_manifest(path: Path, *, release_root: Path | None = Non
     return payload
 
 
+def _generation_directories(pointer_path: Path) -> set[Path]:
+    root = pointer_path.parent / "generations"
+    return {path for path in root.iterdir() if path.is_dir()} if root.is_dir() else set()
+
+
+def _restore_pointer(pointer_path: Path, prior: bytes | None) -> None:
+    if prior is None:
+        pointer_path.unlink(missing_ok=True)
+        return
+    with atomic_output(pointer_path) as temporary:
+        temporary.write_bytes(prior)
+
+
+def _prune_empty_payload_directories(paths: Iterable[Path], root: Path) -> None:
+    for path in sorted({parent for path in paths for parent in path.parents if root in parent.parents}, reverse=True):
+        try:
+            path.rmdir()
+        except (FileNotFoundError, OSError):
+            pass
+
+
 def publish_graph_acquisition(
     *,
     pointer_path: Path,
     tasks: tuple[AcquisitionTask, ...],
     inputs: list[Path],
     code_sources: list[str],
-    selection_reason: str,
+    material_consumer: str,
     max_pages_per_chunk: int = 10_000,
     workers: int = 5,
 ) -> None:
@@ -227,71 +300,147 @@ def publish_graph_acquisition(
 
     if not tasks:
         raise ValueError("Graph acquisition requires at least one selected task")
-    if not selection_reason.strip():
-        raise ValueError("Graph acquisition requires a named materiality reason")
     identities = [(task.source, task.entity.stream) for task in tasks]
     if len(identities) != len(set(identities)):
         raise ValueError("selected Graph acquisition contains duplicate streams")
+    intent = validate_material_consumer_selection(material_consumer, set(identities))
     payload_root = pointer_path.parent / "payloads"
+    pointer_path.parent.mkdir(parents=True, exist_ok=True)
+    with tempfile.TemporaryDirectory(
+        dir=pointer_path.parent, prefix=".graph-acquisition-stage-"
+    ) as temporary_name:
+        stage_root = Path(temporary_name)
 
-    def stage(task: AcquisitionTask) -> dict[str, Any]:
-        if task.entity.fetch_mode == "head_validation_only" or task.quality_action == "provider_archive_unavailable_quarantined":
-            return {
+        def stage(task: AcquisitionTask) -> dict[str, Any]:
+            common = {
                 "source": task.source,
                 "stream": task.entity.stream,
-                "status": (
-                    "canary_only_never_backfill"
-                    if task.entity.fetch_mode == "head_validation_only"
-                    else "provider_archive_unavailable_quarantined"
-                ),
                 "query_contract_sha256": graph_query_contract_sha256(task.entity),
             }
-        with staged_output(payload_root / "candidate.jsonl.gz") as clean, staged_output(payload_root / "candidate-quarantine.jsonl.gz") as quarantine:
+            if task.entity.fetch_mode == "head_validation_only" or task.quality_action == "provider_archive_unavailable_quarantined":
+                return {
+                    **common,
+                    "status": (
+                        "canary_only_never_backfill"
+                        if task.entity.fetch_mode == "head_validation_only"
+                        else "provider_archive_unavailable_quarantined"
+                    ),
+                }
+            task_root = stage_root / task.source / task.entity.stream
+            task_root.mkdir(parents=True, exist_ok=True)
+            clean = task_root / "clean.jsonl.gz"
+            quarantine = task_root / "quarantine.jsonl.gz"
             counts = _write_task_payloads(
                 task,
                 clean_path=clean,
                 quarantine_path=quarantine,
                 max_pages_per_chunk=max_pages_per_chunk,
             )
-            clean_target = _install_content_addressed(clean, payload_root / task.source / task.entity.stream / "clean")
-            quarantine_target = _install_content_addressed(quarantine, payload_root / task.source / task.entity.stream / "quarantine")
             return {
-                "source": task.source,
-                "stream": task.entity.stream,
+                **common,
                 "status": "staged",
                 "fetch_mode": task.entity.fetch_mode,
                 "sample_end_block": task.sample_end_block,
                 "provider_head_block": task.provider_head_block,
-                "query_contract_sha256": graph_query_contract_sha256(task.entity),
-                "payload": {"path": str(clean_target.relative_to(pointer_path.parent)), "sha256": file_sha256(clean_target), "rows": counts["clean_rows"]},
-                "quarantine": {"path": str(quarantine_target.relative_to(pointer_path.parent)), "sha256": file_sha256(quarantine_target), "rows": counts["quarantine_rows"]},
+                "clean_stage": clean,
+                "quarantine_stage": quarantine,
+                "clean_rows": counts["clean_rows"],
+                "quarantine_rows": counts["quarantine_rows"],
             }
 
-    with interruptible_thread_pool(max_workers=bounded_workers(workers)) as executor:
-        records = list(executor.map(stage, tasks))
-    manifest = {
-        "schema_version": 1,
-        "kind": "graph_acquisition_payload_manifest",
-        "research_sample_end": RESEARCH_SAMPLE_END,
-        "selection_reason": selection_reason,
-        "streams": records,
-    }
+        with interruptible_thread_pool(max_workers=bounded_workers(workers)) as executor:
+            staged_records = list(executor.map(stage, tasks))
 
-    def write_manifest(path: Path) -> None:
-        path.write_text(json.dumps(manifest, indent=2, sort_keys=True) + "\n", encoding="utf-8")
+        created_payloads: list[Path] = []
+        transaction_target = payload_root / ".publication-transaction"
+        with serialized_output_install(transaction_target):
+            prior_pointer = pointer_path.read_bytes() if pointer_path.is_file() else None
+            prior_generations = _generation_directories(pointer_path)
+            try:
+                records: list[dict[str, Any]] = []
+                for staged in staged_records:
+                    if staged["status"] != "staged":
+                        records.append(staged)
+                        continue
+                    clean_target, clean_created = _install_content_addressed(
+                        staged["clean_stage"],
+                        payload_root / staged["source"] / staged["stream"] / "clean",
+                        semantic_suffix=".jsonl.gz",
+                    )
+                    if clean_created:
+                        created_payloads.append(clean_target)
+                    quarantine_target, quarantine_created = _install_content_addressed(
+                        staged["quarantine_stage"],
+                        payload_root / staged["source"] / staged["stream"] / "quarantine",
+                        semantic_suffix=".jsonl.gz",
+                    )
+                    if quarantine_created:
+                        created_payloads.append(quarantine_target)
+                    records.append(
+                        {
+                            key: value
+                            for key, value in staged.items()
+                            if key
+                            not in {
+                                "clean_stage",
+                                "quarantine_stage",
+                                "clean_rows",
+                                "quarantine_rows",
+                            }
+                        }
+                        | {
+                            "payload": {
+                                "path": str(clean_target.relative_to(pointer_path.parent)),
+                                "sha256": file_sha256(clean_target),
+                                "rows": staged["clean_rows"],
+                            },
+                            "quarantine": {
+                                "path": str(quarantine_target.relative_to(pointer_path.parent)),
+                                "sha256": file_sha256(quarantine_target),
+                                "rows": staged["quarantine_rows"],
+                            },
+                        }
+                    )
+                manifest = {
+                    "schema_version": 1,
+                    "kind": "graph_acquisition_payload_manifest",
+                    "research_sample_end": RESEARCH_SAMPLE_END,
+                    "material_consumer": material_consumer,
+                    "selection_reason": intent.reason,
+                    "streams": records,
+                }
 
-    publish_artifact_release(
-        pointer_path=pointer_path,
-        kind=GRAPH_ACQUISITION_RELEASE_KIND,
-        schema_version=GRAPH_ACQUISITION_RELEASE_SCHEMA_VERSION,
-        filenames=GRAPH_ACQUISITION_RELEASE_FILENAMES,
-        writers={"manifest": write_manifest},
-        row_counts={"manifest": len(records)},
-        code_sources=code_sources,
-        inputs=inputs,
-        notes="consumer-selected Graph acquisition; clean rows released only after row-level vector quarantine",
-        validate_staged=lambda paths: _validate_generation_manifest(paths["manifest"], release_root=pointer_path.parent),
-    )
+                def write_manifest(path: Path) -> None:
+                    path.write_text(
+                        json.dumps(manifest, indent=2, sort_keys=True) + "\n",
+                        encoding="utf-8",
+                    )
+
+                publish_artifact_release(
+                    pointer_path=pointer_path,
+                    kind=GRAPH_ACQUISITION_RELEASE_KIND,
+                    schema_version=GRAPH_ACQUISITION_RELEASE_SCHEMA_VERSION,
+                    filenames=GRAPH_ACQUISITION_RELEASE_FILENAMES,
+                    writers={"manifest": write_manifest},
+                    row_counts={"manifest": len(records)},
+                    code_sources=code_sources,
+                    inputs=inputs,
+                    notes="consumer-selected Graph acquisition; clean rows released only after row-level vector quarantine",
+                    validate_staged=lambda paths: _validate_generation_manifest(
+                        paths["manifest"], release_root=pointer_path.parent
+                    ),
+                )
+            except BaseException:
+                _restore_pointer(pointer_path, prior_pointer)
+                for directory in sorted(
+                    _generation_directories(pointer_path).difference(prior_generations),
+                    reverse=True,
+                ):
+                    shutil.rmtree(directory)
+                for path in reversed(created_payloads):
+                    path.unlink(missing_ok=True)
+                _prune_empty_payload_directories(created_payloads, payload_root)
+                raise
 
 
 def resolve_graph_acquisition(pointer_path: Path) -> dict[str, Any]:

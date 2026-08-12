@@ -130,6 +130,8 @@ ROUTE_SWAP_FIELDS: dict[str, tuple[str, ...]] = {
         "pool.token1.id",
         "amount0",
         "amount1",
+        "sqrtPriceX96",
+        "tick",
         "logIndex",
     ),
     "uniswap_v4": (

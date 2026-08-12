@@ -9,11 +9,25 @@ import pytest
 from datetime import datetime, timezone
 
 from ddvc.calendar import RESEARCH_SAMPLE_END
-from ddvc.fetch.acquisition import source_contract_sha256, validate_freeze, validate_prelaunch_inputs, vector_alignment_failures, vector_alignment_results
-from ddvc.fetch.acquisition_release import AcquisitionTask, _write_task_payloads, acquisition_cutoff, acquisition_tasks, publish_graph_acquisition, resolve_graph_acquisition
+from ddvc.fetch.acquisition import _validate_canary_evidence, source_contract_sha256, validate_freeze, validate_prelaunch_inputs, vector_alignment_failures, vector_alignment_results
+from ddvc.fetch.acquisition_release import AcquisitionTask, _install_content_addressed, _write_task_payloads, acquisition_cutoff, acquisition_tasks, publish_graph_acquisition, resolve_graph_acquisition
+from ddvc.fetch.material_consumers import GRAPH_MATERIAL_CONSUMER_INTENTS, ExistingStreamRequirement, GraphMaterialConsumerIntent, UNSUPPORTED_OWNERSHIP_STREAMS, validate_material_consumer_registry, validate_material_consumer_selection
 from ddvc.fetch.schemas import EntitySpec, acquisition_schema, get_schema
 from ddvc.fetch.graph import iter_paginate
 from ddvc.paths import REPO_ROOT
+
+
+def allow_intent(*streams: tuple[str, str]) -> dict[str, GraphMaterialConsumerIntent]:
+    return {
+        "test_consumer": GraphMaterialConsumerIntent(
+            reason="test-only material missing stream",
+            existing_streams=(
+                ExistingStreamRequirement("uniswap_v3", "swaps", ("id",)),
+            ),
+            allowed_new_streams=frozenset(streams),
+            max_selected_streams=len(streams),
+        )
+    }
 
 
 def sample_end_boundary() -> dict:
@@ -119,16 +133,17 @@ def test_vector_alignment_counts_missing_identity_as_failure() -> None:
         ],
         owners,
     )
-    assert results["amounts~pool.tokens"] == {"compared_rows": 2, "failure_rows": 1}
+    assert results["amounts~pool.tokens"] == {"compared_rows": 3, "failure_rows": 2}
 
 
-def test_vector_alignment_excludes_self_comparisons_and_keeps_exact_failures() -> None:
+def test_vector_alignment_validates_self_identity_vectors_and_keeps_exact_failures() -> None:
     owners = [
         {"values_path": "tokens", "identities_path": "tokens", "reason": "identity_vector"},
         {"values_path": "amounts", "identities_path": "tokens", "reason": "pool_token_order"},
     ]
     row = {"tokens": ["a"], "amounts": [1, 2]}
     assert vector_alignment_results([row], owners) == {
+        "tokens~tokens": {"compared_rows": 1, "failure_rows": 0},
         "amounts~tokens": {"compared_rows": 1, "failure_rows": 1}
     }
     assert vector_alignment_failures(row, owners) == [
@@ -138,8 +153,26 @@ def test_vector_alignment_excludes_self_comparisons_and_keeps_exact_failures() -
             "values_length": 2,
             "identities_length": 1,
             "reason": "pool_token_order",
+            "failure": "length_mismatch",
         }
     ]
+
+
+@pytest.mark.parametrize(
+    ("row", "failure"),
+    [
+        ({"amounts": None, "tokens": ["a"]}, "missing_or_empty_values"),
+        ({"amounts": [], "tokens": []}, "missing_or_empty_values"),
+        ({"amounts": [None], "tokens": ["a"]}, "malformed_values"),
+        ({"amounts": ["NaN"], "tokens": ["a"]}, "malformed_values"),
+        ({"amounts": ["not-a-number"], "tokens": ["a"]}, "malformed_values"),
+        ({"amounts": ["1"], "tokens": [{"id": None}]}, "malformed_identities"),
+        ({"amounts": ["1"], "tokens": []}, "missing_or_empty_identities"),
+    ],
+)
+def test_vector_alignment_rejects_missing_empty_or_malformed_items(row, failure) -> None:
+    owners = [{"values_path": "amounts", "identities_path": "tokens", "reason": "pool_token_order"}]
+    assert vector_alignment_failures(row, owners)[0]["failure"] == failure
 
 
 def test_graph_paginator_yields_before_collecting_the_generation() -> None:
@@ -191,6 +224,7 @@ def test_live_manifests_materialise_exactly_93_tasks() -> None:
         active_manifest=REPO_ROOT / "docs" / "graph-field-admission.json",
         new_manifest=REPO_ROOT / "docs" / "graph-new-stream-field-admission.json",
         sample_end_blocks={name: 30_000_000 for name in ("balancer", "curve", "sushiswap_v2", "sushiswap_v3", "uniswap_v2", "uniswap_v3", "uniswap_v4")},
+        canary_path=REPO_ROOT / "docs" / "graph-query-canaries-final.json",
     )
     assert len(tasks) == 93
 
@@ -231,6 +265,10 @@ def test_failed_selected_stream_stage_never_publishes_pointer(tmp_path: Path, mo
         provider_head_block=456,
         vector_owners=(),
     )
+    monkeypatch.setattr(
+        "ddvc.fetch.material_consumers.GRAPH_MATERIAL_CONSUMER_INTENTS",
+        allow_intent(("uniswap_v3", "snapshots")),
+    )
     monkeypatch.setattr("ddvc.fetch.acquisition_release._write_task_payloads", lambda *args, **kwargs: (_ for _ in ()).throw(RuntimeError("provider failed")))
     pointer = tmp_path / "current.json"
     with pytest.raises(RuntimeError, match="provider failed"):
@@ -239,12 +277,13 @@ def test_failed_selected_stream_stage_never_publishes_pointer(tmp_path: Path, mo
             tasks=(task,),
             inputs=[],
             code_sources=[],
-            selection_reason="exact target replay lacks one material state stream",
+            material_consumer="test_consumer",
         )
     assert not pointer.exists()
+    assert not list((tmp_path / "payloads").rglob("*.jsonl.gz"))
 
 
-def test_selected_canary_only_generation_publishes_marker_last_and_reopens(tmp_path: Path) -> None:
+def test_selected_canary_only_generation_publishes_marker_last_and_reopens(tmp_path: Path, monkeypatch) -> None:
     tasks = tuple(
         AcquisitionTask(
             source="uniswap_v3",
@@ -255,13 +294,17 @@ def test_selected_canary_only_generation_publishes_marker_last_and_reopens(tmp_p
         )
         for index in range(2)
     )
+    monkeypatch.setattr(
+        "ddvc.fetch.material_consumers.GRAPH_MATERIAL_CONSUMER_INTENTS",
+        allow_intent(*((task.source, task.entity.stream) for task in tasks)),
+    )
     pointer = tmp_path / "current.json"
-    publish_graph_acquisition(pointer_path=pointer, tasks=tasks, inputs=[], code_sources=[], selection_reason="bounded canary-only consumer check")
+    publish_graph_acquisition(pointer_path=pointer, tasks=tasks, inputs=[], code_sources=[], material_consumer="test_consumer")
     assert pointer.is_file()
     assert len(resolve_graph_acquisition(pointer)["streams"]) == 2
 
 
-def test_acquisition_requires_a_selected_stream_and_materiality_reason(tmp_path: Path) -> None:
+def test_acquisition_requires_a_selected_stream_and_closed_consumer(tmp_path: Path, monkeypatch) -> None:
     task = AcquisitionTask(
         source="uniswap_v3",
         entity=EntitySpec("validation", "validations", "id", fetch_mode="head_validation_only"),
@@ -275,15 +318,239 @@ def test_acquisition_requires_a_selected_stream_and_materiality_reason(tmp_path:
             tasks=(),
             inputs=[],
             code_sources=[],
-            selection_reason="material field",
+            material_consumer="test_consumer",
         )
-    with pytest.raises(ValueError, match="named materiality reason"):
+    monkeypatch.setattr(
+        "ddvc.fetch.material_consumers.GRAPH_MATERIAL_CONSUMER_INTENTS",
+        allow_intent(("uniswap_v3", "validation")),
+    )
+    with pytest.raises(ValueError, match="unknown Graph material consumer"):
         publish_graph_acquisition(
             pointer_path=tmp_path / "unnamed.json",
             tasks=(task,),
             inputs=[],
             code_sources=[],
-            selection_reason="",
+            material_consumer="not_registered",
+        )
+
+
+def test_material_consumer_registry_rejects_broad_and_ownership_scope() -> None:
+    all_streams = {
+        (source["source"], stream["stream"])
+        for source in json.loads((REPO_ROOT / "docs" / "graph-query-canaries-final.json").read_text())["sources"]
+        for stream in source["streams"]
+    }
+    with pytest.raises(ValueError, match="exceeds the named consumer allowlist"):
+        validate_material_consumer_selection(
+            "v2_end_of_day_deposited_capital",
+            all_streams.difference(UNSUPPORTED_OWNERSHIP_STREAMS),
+        )
+    forbidden = next(iter(UNSUPPORTED_OWNERSHIP_STREAMS))
+    invalid = allow_intent(forbidden)
+    with pytest.raises(ValueError, match="unsupported ownership"):
+        validate_material_consumer_registry(invalid)
+
+
+def test_exact_quote_state_consumer_requires_v3_swap_replay_state() -> None:
+    requirements = {
+        (requirement.source, requirement.stream): set(requirement.fields)
+        for requirement in GRAPH_MATERIAL_CONSUMER_INTENTS[
+            "exact_transaction_target_and_quote_state_replay"
+        ].existing_streams
+    }
+    assert {"sqrtPriceX96", "tick"}.issubset(requirements[("uniswap_v3", "swaps")])
+    assert {"sqrtPriceX96", "tick"}.isdisjoint(requirements[("uniswap_v4", "swaps")])
+
+
+def test_publisher_independently_rejects_scope_outside_named_consumer(tmp_path: Path, monkeypatch) -> None:
+    allowed = AcquisitionTask(
+        source="uniswap_v3",
+        entity=EntitySpec("allowed", "allowed", "id", fetch_mode="head_validation_only"),
+        sample_end_block=123,
+        provider_head_block=456,
+        vector_owners=(),
+    )
+    extra = AcquisitionTask(
+        source="uniswap_v3",
+        entity=EntitySpec("extra", "extra", "id", fetch_mode="head_validation_only"),
+        sample_end_block=123,
+        provider_head_block=456,
+        vector_owners=(),
+    )
+    monkeypatch.setattr(
+        "ddvc.fetch.material_consumers.GRAPH_MATERIAL_CONSUMER_INTENTS",
+        allow_intent(("uniswap_v3", "allowed")),
+    )
+    with pytest.raises(ValueError, match="exceeds the named consumer allowlist"):
+        publish_graph_acquisition(
+            pointer_path=tmp_path / "current.json",
+            tasks=(allowed, extra),
+            inputs=[],
+            code_sources=[],
+            material_consumer="test_consumer",
+        )
+    assert not (tmp_path / "current.json").exists()
+
+
+def test_content_address_install_deduplicates_identical_staged_names(tmp_path: Path) -> None:
+    first = tmp_path / ".candidate.jsonl.gz.first.tmp"
+    second = tmp_path / ".candidate.jsonl.gz.second.tmp"
+    first.write_bytes(b"identical")
+    second.write_bytes(b"identical")
+    target1, created1 = _install_content_addressed(first, tmp_path / "payloads", semantic_suffix=".jsonl.gz")
+    target2, created2 = _install_content_addressed(second, tmp_path / "payloads", semantic_suffix=".jsonl.gz")
+    assert target1 == target2
+    assert target1.name == f"{hashlib.sha256(b'identical').hexdigest()}.jsonl.gz"
+    assert created1 and not created2
+    assert list((tmp_path / "payloads").iterdir()) == [target1]
+
+
+def test_later_stage_failure_removes_all_transaction_staging_and_payloads(tmp_path: Path, monkeypatch) -> None:
+    tasks = tuple(
+        AcquisitionTask(
+            source="uniswap_v3",
+            entity=EntitySpec(name, name, "id", fetch_mode="global_historical"),
+            sample_end_block=123,
+            provider_head_block=456,
+            vector_owners=(),
+        )
+        for name in ("first", "second")
+    )
+    monkeypatch.setattr(
+        "ddvc.fetch.material_consumers.GRAPH_MATERIAL_CONSUMER_INTENTS",
+        allow_intent(*((task.source, task.entity.stream) for task in tasks)),
+    )
+
+    def write_then_fail(task, *, clean_path, quarantine_path, max_pages_per_chunk):
+        if task.entity.stream == "second":
+            raise RuntimeError("later failure")
+        clean_path.write_bytes(b"clean")
+        quarantine_path.write_bytes(b"quarantine")
+        return {"clean_rows": 1, "quarantine_rows": 0}
+
+    monkeypatch.setattr("ddvc.fetch.acquisition_release._write_task_payloads", write_then_fail)
+    pointer = tmp_path / "current.json"
+    with pytest.raises(RuntimeError, match="later failure"):
+        publish_graph_acquisition(
+            pointer_path=pointer,
+            tasks=tasks,
+            inputs=[],
+            code_sources=[],
+            material_consumer="test_consumer",
+            workers=1,
+        )
+    assert not pointer.exists()
+    assert not list(tmp_path.glob(".graph-acquisition-stage-*"))
+    assert not list((tmp_path / "payloads").rglob("*.jsonl.gz"))
+
+
+def test_pointer_publication_failure_restores_pointer_and_removes_new_generation(tmp_path: Path, monkeypatch) -> None:
+    task = AcquisitionTask(
+        source="uniswap_v3",
+        entity=EntitySpec("allowed", "allowed", "id", fetch_mode="head_validation_only"),
+        sample_end_block=123,
+        provider_head_block=456,
+        vector_owners=(),
+    )
+    monkeypatch.setattr(
+        "ddvc.fetch.material_consumers.GRAPH_MATERIAL_CONSUMER_INTENTS",
+        allow_intent((task.source, task.entity.stream)),
+    )
+    pointer = tmp_path / "current.json"
+    from ddvc.artifact_release import publish_artifact_release as real_publish
+
+    def fail_pointer(**kwargs):
+        def writer(path, payload):
+            path.write_text(json.dumps(payload), encoding="utf-8")
+            raise RuntimeError("pointer publication")
+
+        return real_publish(**kwargs, write_pointer=writer)
+
+    monkeypatch.setattr(
+        "ddvc.fetch.acquisition_release.publish_artifact_release",
+        fail_pointer,
+    )
+    with pytest.raises(RuntimeError, match="pointer publication"):
+        publish_graph_acquisition(
+            pointer_path=pointer,
+            tasks=(task,),
+            inputs=[],
+            code_sources=[],
+            material_consumer="test_consumer",
+        )
+    assert not pointer.exists()
+    assert not list((tmp_path / "generations").glob("*"))
+    assert not list(tmp_path.glob(".graph-acquisition-stage-*"))
+
+
+def test_acquisition_tasks_require_exact_canary_identity_and_action(tmp_path: Path) -> None:
+    active = tmp_path / "active.json"
+    new = tmp_path / "new.json"
+    active.write_text(
+        json.dumps(
+            {
+                "sources": [
+                    {
+                        "source": "uniswap_v3",
+                        "status": "available",
+                        "entities": [
+                            {
+                                "stream": "swaps",
+                                "entity": "swaps",
+                                "proposed_selected_paths": ["id", "timestamp"],
+                                "proposed_selection": "id timestamp",
+                            }
+                        ],
+                    }
+                ]
+            }
+        ),
+        encoding="utf-8",
+    )
+    new.write_text(
+        json.dumps({"sources": [{"source": "uniswap_v3", "status": "available", "entities": []}]}),
+        encoding="utf-8",
+    )
+    canary = tmp_path / "canary.json"
+    canary.write_text(
+        json.dumps(
+            {
+                "sources": [
+                    {
+                        "source": "uniswap_v3",
+                        "streams": [{"stream": "different", "quality_action": "admit"}],
+                    }
+                ]
+            }
+        ),
+        encoding="utf-8",
+    )
+    with pytest.raises(ValueError, match="perimeters differ"):
+        acquisition_tasks(
+            active_manifest=active,
+            new_manifest=new,
+            sample_end_blocks={"uniswap_v3": 123},
+            canary_path=canary,
+        )
+    canary.write_text(
+        json.dumps(
+            {
+                "sources": [
+                    {
+                        "source": "uniswap_v3",
+                        "streams": [{"stream": "swaps", "quality_action": None}],
+                    }
+                ]
+            }
+        ),
+        encoding="utf-8",
+    )
+    with pytest.raises(ValueError, match="invalid quality actions"):
+        acquisition_tasks(
+            active_manifest=active,
+            new_manifest=new,
+            sample_end_blocks={"uniswap_v3": 123},
+            canary_path=canary,
         )
 
 
@@ -356,7 +623,8 @@ def test_prelaunch_recomputes_hashes_and_accepts_explicit_provider_quarantine(tm
         encoding="utf-8",
     )
     evidence = tmp_path / "evidence.jsonl.gz"
-    evidence.write_bytes(b"evidence")
+    with gzip.open(evidence, "wt", encoding="utf-8"):
+        pass
     canary_path = tmp_path / "canary.json"
     canary_path.write_text(
         json.dumps(
@@ -365,7 +633,12 @@ def test_prelaunch_recomputes_hashes_and_accepts_explicit_provider_quarantine(tm
                 "schema_inventory_sha256": digest(inventory),
                 "active_manifest_sha256": digest(active),
                 "new_manifest_sha256": digest(new),
-                "pre_quarantine_evidence": {"path": str(evidence), "sha256": digest(evidence)},
+                    "quarantine_failure_evidence": {
+                        "path": str(evidence.resolve()),
+                        "sha256": digest(evidence),
+                        "rows": 0,
+                        "sampled_rows": 0,
+                },
                 "sources": [
                     {
                         "source": "uniswap_v3",
@@ -383,6 +656,9 @@ def test_prelaunch_recomputes_hashes_and_accepts_explicit_provider_quarantine(tm
         encoding="utf-8",
     )
     current_canary = tmp_path / "current-canary.json"
+    current_evidence = tmp_path / "current-evidence.jsonl.gz"
+    with gzip.open(current_evidence, "wt", encoding="utf-8"):
+        pass
     root_population = tmp_path / "root-population.json"
     shared_identity = {
         "freeze_sha256": digest(freeze_path),
@@ -390,7 +666,21 @@ def test_prelaunch_recomputes_hashes_and_accepts_explicit_provider_quarantine(tm
         "active_manifest_sha256": digest(active),
         "new_manifest_sha256": digest(new),
     }
-    current_canary.write_text(json.dumps(shared_identity), encoding="utf-8")
+    current_canary.write_text(
+        json.dumps(
+            {
+                **shared_identity,
+                    "quarantine_failure_evidence": {
+                        "path": str(current_evidence.resolve()),
+                        "sha256": digest(current_evidence),
+                        "rows": 0,
+                        "sampled_rows": 0,
+                },
+                "sources": [],
+            }
+        ),
+        encoding="utf-8",
+    )
     root_population.write_text(json.dumps({**shared_identity, "summary": {"errors": 0}}), encoding="utf-8")
     forecast = tmp_path / "forecast.json"
     forecast.write_text(
@@ -415,6 +705,7 @@ def test_prelaunch_recomputes_hashes_and_accepts_explicit_provider_quarantine(tm
         canary_path=canary_path,
         canary_evidence_path=evidence,
         current_canary_path=current_canary,
+        current_canary_evidence_path=current_evidence,
         root_population_path=root_population,
         forecast_path=forecast,
     )["stream_count"] == 1
@@ -428,6 +719,74 @@ def test_prelaunch_recomputes_hashes_and_accepts_explicit_provider_quarantine(tm
             canary_path=canary_path,
             canary_evidence_path=evidence,
             current_canary_path=current_canary,
+            current_canary_evidence_path=current_evidence,
             root_population_path=root_population,
             forecast_path=forecast,
         )
+
+
+def test_canary_failure_evidence_recomputes_the_recorded_vector_failure(tmp_path: Path) -> None:
+    evidence = tmp_path / "failures.jsonl.gz"
+    owner = {
+        "values_path": "amounts",
+        "identities_path": "tokens",
+        "reason": "ordered amount vector",
+    }
+    row = {"amounts": [1, 2], "tokens": [{"id": "token"}]}
+    failure = vector_alignment_failures(row, [owner])
+    record = {
+        "sample_key": "source/stream/head/100",
+        "source": "source",
+        "stream": "stream",
+        "epoch": "head",
+        "requested_rows": 100,
+        "row_index": 3,
+        "row": row,
+        "alignment_failures": failure,
+    }
+    with gzip.open(evidence, "wt", encoding="utf-8") as handle:
+        handle.write(json.dumps(record) + "\n")
+    canary = {
+        "quarantine_failure_evidence": {
+            "path": str(evidence.resolve()),
+            "sha256": hashlib.sha256(evidence.read_bytes()).hexdigest(),
+            "rows": 1,
+            "sampled_rows": 4,
+        },
+        "sources": [
+            {
+                "source": "source",
+                "streams": [
+                    {
+                        "stream": "stream",
+                        "vector_owners": [owner],
+                        "samples": [
+                            {
+                                "status": "ok",
+                                "epoch": "head",
+                                "requested_rows": 100,
+                                "returned_rows": 4,
+                                "alignment_failure_row_indices": [3],
+                                "quarantine_failure_evidence_key": "source/stream/head/100",
+                                "quarantine_failure_evidence_rows": 1,
+                            }
+                        ],
+                    }
+                ],
+            }
+        ],
+    }
+    _validate_canary_evidence(canary, evidence, label="test")
+    record["row_index"] = 2
+    with gzip.open(evidence, "wt", encoding="utf-8") as handle:
+        handle.write(json.dumps(record) + "\n")
+    canary["quarantine_failure_evidence"]["sha256"] = hashlib.sha256(evidence.read_bytes()).hexdigest()
+    with pytest.raises(ValueError, match="non-failure row"):
+        _validate_canary_evidence(canary, evidence, label="test")
+    record["row_index"] = 3
+    record["alignment_failures"] = [{"failure": "fabricated"}]
+    with gzip.open(evidence, "wt", encoding="utf-8") as handle:
+        handle.write(json.dumps(record) + "\n")
+    canary["quarantine_failure_evidence"]["sha256"] = hashlib.sha256(evidence.read_bytes()).hexdigest()
+    with pytest.raises(ValueError, match="non-failure row"):
+        _validate_canary_evidence(canary, evidence, label="test")

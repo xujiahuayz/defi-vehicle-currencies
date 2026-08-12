@@ -3,10 +3,13 @@
 from __future__ import annotations
 
 import hashlib
+import gzip
 import json
+import math
 from pathlib import Path
 from datetime import datetime, timezone
-from typing import Any
+from decimal import Decimal, InvalidOperation
+from typing import Any, Mapping
 
 from ddvc.calendar import RESEARCH_SAMPLE_END
 from ddvc.fetch.sources import DEX_SOURCES
@@ -22,7 +25,8 @@ GRAPH_ROOT_POPULATION = REPO_ROOT / "docs" / "graph-root-population.json"
 GRAPH_CANARY_CURRENT = REPO_ROOT / "docs" / "graph-query-canaries-active-current.json"
 GRAPH_CANARY_FINAL = REPO_ROOT / "docs" / "graph-query-canaries-final.json"
 GRAPH_ACQUISITION_FORECAST = REPO_ROOT / "docs" / "graph-acquisition-forecast.json"
-GRAPH_CANARY_EVIDENCE = REPO_ROOT / "docs" / "graph-query-canaries-final-evidence.jsonl.gz"
+GRAPH_CANARY_EVIDENCE = REPO_ROOT / "docs" / "graph-query-canary-failures.jsonl.gz"
+GRAPH_CANARY_CURRENT_EVIDENCE = REPO_ROOT / "docs" / "graph-query-canary-active-failures.jsonl.gz"
 GRAPH_TIME_FIELDS = (
     "timestamp",
     "startTimestamp",
@@ -105,19 +109,12 @@ def vector_alignment_results(
     for owner in owners:
         values_path = owner["values_path"]
         identities_path = owner["identities_path"]
-        if values_path == identities_path:
-            continue
         compared = 0
         failed = 0
         for row in rows:
             values = path_value(row, values_path)
-            if not isinstance(values, list):
-                continue
-            identities = path_value(row, identities_path)
             compared += 1
-            failed += int(
-                not isinstance(identities, list) or len(values) != len(identities)
-            )
+            failed += int(bool(_vector_owner_failures(row, owner)))
         results[f"{values_path}~{identities_path}"] = {
             "compared_rows": compared,
             "failure_rows": failed,
@@ -128,31 +125,66 @@ def vector_alignment_results(
 def vector_alignment_failures(
     row: dict[str, Any], owners: list[dict[str, str]]
 ) -> list[dict[str, object]]:
-    """Return exact non-self vector failures for one pre-quarantine row."""
+    """Return exact vector failures for one pre-quarantine row."""
 
     failures: list[dict[str, object]] = []
     for owner in owners:
-        values_path = owner["values_path"]
-        identities_path = owner["identities_path"]
-        if values_path == identities_path:
-            continue
-        values = path_value(row, values_path)
-        if not isinstance(values, list):
-            continue
-        identities = path_value(row, identities_path)
-        if not isinstance(identities, list) or len(values) != len(identities):
-            failures.append(
-                {
-                    "values_path": values_path,
-                    "identities_path": identities_path,
-                    "values_length": len(values),
-                    "identities_length": (
-                        len(identities) if isinstance(identities, list) else None
-                    ),
-                    "reason": owner.get("reason"),
-                }
-            )
+        failures.extend(_vector_owner_failures(row, owner))
     return failures
+
+
+def _valid_vector_value(value: object, *, identity: bool = False) -> bool:
+    if value is None or isinstance(value, bool):
+        return False
+    if isinstance(value, str):
+        if identity:
+            return bool(value.strip())
+        try:
+            return Decimal(value.strip()).is_finite()
+        except InvalidOperation:
+            return False
+    if isinstance(value, (int, float)):
+        return math.isfinite(float(value))
+    return False
+
+
+def _valid_vector_identity(value: object) -> bool:
+    if isinstance(value, Mapping):
+        return any(
+            _valid_vector_value(value.get(field), identity=True)
+            for field in ("id", "address")
+        )
+    return _valid_vector_value(value, identity=True)
+
+
+def _vector_owner_failures(
+    row: dict[str, Any], owner: Mapping[str, str]
+) -> list[dict[str, object]]:
+    values_path = owner["values_path"]
+    identities_path = owner["identities_path"]
+    values = path_value(row, values_path)
+    identities = path_value(row, identities_path)
+    values_length = len(values) if isinstance(values, list) else None
+    identities_length = len(identities) if isinstance(identities, list) else None
+    base = {
+        "values_path": values_path,
+        "identities_path": identities_path,
+        "values_length": values_length,
+        "identities_length": identities_length,
+        "reason": owner.get("reason"),
+    }
+    if not isinstance(values, list) or not values:
+        return [{**base, "failure": "missing_or_empty_values"}]
+    identity_vector = values_path == identities_path or owner.get("reason") == "identity_vector"
+    if not all(_valid_vector_value(value, identity=identity_vector) for value in values):
+        return [{**base, "failure": "malformed_values"}]
+    if not isinstance(identities, list) or not identities:
+        return [{**base, "failure": "missing_or_empty_identities"}]
+    if not all(_valid_vector_identity(value) for value in identities):
+        return [{**base, "failure": "malformed_identities"}]
+    if len(values) != len(identities):
+        return [{**base, "failure": "length_mismatch"}]
+    return []
 
 
 def validate_freeze(
@@ -219,6 +251,111 @@ def frozen_provider_heads(freeze: dict[str, Any]) -> dict[str, int]:
     }
 
 
+def _validate_canary_evidence(
+    canary: Mapping[str, Any], evidence_path: Path, *, label: str
+) -> None:
+    evidence = canary.get("quarantine_failure_evidence") or {}
+    if (
+        not evidence_path.is_file()
+        or evidence.get("sha256") != sha256_file(evidence_path)
+        or evidence.get("path") != repository_path_identity(evidence_path)
+    ):
+        raise ValueError(f"Graph {label} lacks current compact quarantine evidence")
+    expected: dict[
+        str,
+        tuple[
+            str,
+            str,
+            str,
+            int,
+            int,
+            frozenset[int],
+            list[dict[str, str]],
+        ],
+    ] = {}
+    sampled_rows = 0
+    for source in canary.get("sources", []):
+        source_name = str(source.get("source") or "")
+        for stream in source.get("streams", []):
+            stream_name = str(stream.get("stream") or "")
+            for sample in stream.get("samples", []):
+                if sample.get("status") != "ok":
+                    continue
+                key = sample.get("quarantine_failure_evidence_key")
+                rows = sample.get("quarantine_failure_evidence_rows")
+                if not isinstance(key, str) or not key or type(rows) is not int or rows < 0:
+                    raise ValueError(f"Graph {label} has malformed quarantine evidence metadata")
+                if key in expected:
+                    raise ValueError(f"Graph {label} repeats a quarantine evidence key")
+                returned = sample.get("returned_rows")
+                if type(returned) is not int or returned < rows:
+                    raise ValueError(f"Graph {label} has malformed quarantine sample counts")
+                failure_indices = sample.get("alignment_failure_row_indices")
+                requested = sample.get("requested_rows")
+                epoch = sample.get("epoch")
+                if (
+                    not isinstance(failure_indices, list)
+                    or any(type(index) is not int or index < 0 or index >= returned for index in failure_indices)
+                    or len(failure_indices) != len(set(failure_indices))
+                    or len(failure_indices) != rows
+                    or type(requested) is not int
+                    or requested < returned
+                    or not isinstance(epoch, str)
+                    or not epoch
+                ):
+                    raise ValueError(f"Graph {label} has malformed quarantine sample identity")
+                expected[key] = (
+                    source_name,
+                    stream_name,
+                    epoch,
+                    requested,
+                    rows,
+                    frozenset(failure_indices),
+                    list(stream.get("vector_owners") or []),
+                )
+                sampled_rows += returned
+    if evidence.get("sampled_rows") != sampled_rows:
+        raise ValueError(f"Graph {label} quarantine evidence sampled-row count disagrees")
+    observed_counts: dict[str, int] = {}
+    observed_rows: set[tuple[str, int]] = set()
+    try:
+        with gzip.open(evidence_path, "rt", encoding="utf-8") as handle:
+            for line in handle:
+                if not line.strip():
+                    continue
+                row = json.loads(line)
+                key = row.get("sample_key") if isinstance(row, dict) else None
+                index = row.get("row_index") if isinstance(row, dict) else None
+                if (
+                    key not in expected
+                    or type(index) is not int
+                    or index < 0
+                    or not isinstance(row.get("alignment_failures"), list)
+                    or not row["alignment_failures"]
+                    or row.get("source") != expected[key][0]
+                    or row.get("stream") != expected[key][1]
+                    or row.get("epoch") != expected[key][2]
+                    or row.get("requested_rows") != expected[key][3]
+                    or index not in expected[key][5]
+                    or not isinstance(row.get("row"), dict)
+                    or vector_alignment_failures(row["row"], expected[key][6])
+                    != row["alignment_failures"]
+                    or (key, index) in observed_rows
+                ):
+                    raise ValueError(f"Graph {label} quarantine evidence contains a non-failure row")
+                observed_rows.add((key, index))
+                observed_counts[key] = observed_counts.get(key, 0) + 1
+    except (OSError, json.JSONDecodeError) as error:
+        raise ValueError(f"Graph {label} quarantine evidence is unreadable") from error
+    expected_counts = {
+        key: rows
+        for key, (_source, _stream, _epoch, _requested, rows, _indices, _owners) in expected.items()
+        if rows
+    }
+    if observed_counts != expected_counts or evidence.get("rows") != len(observed_rows):
+        raise ValueError(f"Graph {label} quarantine evidence row counts disagree")
+
+
 def validate_prelaunch_inputs(
     *,
     freeze_path: Path,
@@ -228,6 +365,7 @@ def validate_prelaunch_inputs(
     canary_path: Path,
     canary_evidence_path: Path,
     current_canary_path: Path,
+    current_canary_evidence_path: Path,
     root_population_path: Path,
     forecast_path: Path,
 ) -> dict[str, object]:
@@ -269,13 +407,12 @@ def validate_prelaunch_inputs(
         raise ValueError("Graph forecast has stale current_canary_sha256")
     if forecast_inputs.get("root_population_sha256") != sha256_file(root_population_path):
         raise ValueError("Graph forecast has stale root_population_sha256")
-    evidence = canary.get("pre_quarantine_evidence") or {}
-    if (
-        not canary_evidence_path.is_file()
-        or evidence.get("sha256") != sha256_file(canary_evidence_path)
-        or evidence.get("path") != repository_path_identity(canary_evidence_path)
-    ):
-        raise ValueError("Graph canary lacks current pre-quarantine row evidence")
+    _validate_canary_evidence(canary, canary_evidence_path, label="canary")
+    _validate_canary_evidence(
+        current_canary,
+        current_canary_evidence_path,
+        label="current canary",
+    )
     unresolved = [
         (source["source"], stream["stream"])
         for source in canary.get("sources", [])

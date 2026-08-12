@@ -1,5 +1,5 @@
 {
-  "captured_at_utc": "2026-08-12T01:00:52+00:00",
+  "captured_at_utc": "2026-08-12T01:44:41+00:00",
   "existing_raw": {
     "entry_physical_bytes": 9098420224,
     "files": 61392,
@@ -58,16 +58,16 @@
     }
   },
   "forecast": {
-    "active_bytes": 108008735143,
+    "active_bytes": 108010106680,
     "active_graph_call_forecast_from_installed_bytes_and_frozen_current_bytes_per_row": {
       "central": 612683,
       "low": 532875,
       "stress": 859770
     },
-    "alignment_comparisons": 70105,
-    "alignment_failure_comparison_rate": 0.0007702731616860424,
-    "alignment_failure_comparisons": 54,
-    "alignment_failure_rows": 27,
+    "alignment_comparisons": 76347,
+    "alignment_failure_comparison_rate": 0.0031435419859326495,
+    "alignment_failure_comparisons": 240,
+    "alignment_failure_rows": 135,
     "authorized_fetch": {
       "bytes": 0,
       "graph_calls": 0,
@@ -78,25 +78,25 @@
       "host": "studio",
       "inventory_observation_host": "DSF-pro16-m3s-MacBook-Pro.local",
       "inventory_observation_path": "/Users/dsf-pro16-m3/projects/defi-vehicle-currencies/data/raw/thegraph",
-      "observed_statvfs_available_bytes": 270526906368,
+      "observed_statvfs_available_bytes": 274977992704,
       "override_bytes": 5997815668736,
       "path": "/Users/java/projects/defi-vehicle-currencies/data/raw/thegraph"
     },
     "central_graph_calls_new_streams": 88773,
-    "disk_headroom_ratio": 20.250163234980327,
+    "disk_headroom_ratio": 20.249534958831365,
     "forecast_class": "whole_inventory_engineering_scenarios_not_an_acquisition_plan",
     "generation_byte_scenarios_not_bounds": {
-      "central": 117454847674,
-      "high": 187369949986,
-      "low": 112217740635
+      "central": 117456124496,
+      "high": 187378304235,
+      "low": 112219018864
     },
     "minimum_graph_calls_new_streams": 76066,
     "new_byte_scenarios_not_bounds": {
-      "central": 9446112531,
-      "high": 79361214843,
-      "low": 4209005492
+      "central": 9446017816,
+      "high": 79368197555,
+      "low": 4208912184
     },
-    "peak_disk_bytes_with_rollback_and_ten_percent_staging_margin": 296186040534,
+    "peak_disk_bytes_with_rollback_and_ten_percent_staging_margin": 296195230208,
     "quality": {
       "provider_archive_quarantined_roots": 8,
       "provider_archive_quarantined_streams": [
@@ -109,9 +109,9 @@
     "runtime_estimate": {
       "benchmark": null,
       "canary_latency_not_used_as_eta_seconds": {
-        "p50": 0.402728,
-        "p90": 1.547214,
-        "p95": 2.35125
+        "p50": 0.671861,
+        "p90": 2.851328,
+        "p95": 9.638915
       },
       "status": "unbounded_without_sustained_pagination_benchmark",
       "wall_hours": null
@@ -122,16 +122,16 @@
       "temporal_observed_peak_multiplier": 2
     },
     "selection_policy": "a fetch requires a named consumer, a material missing field, and explicit selected streams",
-    "stress_graph_calls_new_streams": 552592,
+    "stress_graph_calls_new_streams": 552679,
     "total_graph_call_forecast": {
       "central": 701456,
       "low": 608941,
-      "stress": 1412362
+      "stress": 1412449
     }
   },
   "inputs": {
-    "current_canary_sha256": "14a50ee93767f3651bda0a8abe58b2e57538b36c52f37675322caa2c066a28c3",
-    "final_canary_sha256": "c45def2d28b62a4832712ebaf33091f3a9e2f929c94550ca7ea56882794cb2ff",
+    "current_canary_sha256": "e7aecbe3fbd603278b39a790d0c3af33ae55d70ea80ef5f089173ef07e14d5bb",
+    "final_canary_sha256": "fd3595fe85b13c62a261b0a59b6acd7de115e2e9f63e4ef9322d58a3273cf04a",
     "freeze_sha256": "2c935682c70de83d55c3bec87d771ea63287c48f9121caf158126b9cfa012de4",
     "pagination_benchmark_sha256": null,
     "root_population_sha256": "db5b721babe00fa5afd90e0b3a657af6e9290c04b288de186281c2d28dd2c49a"
@@ -147,8 +147,8 @@
         "low": 5754,
         "stress": 5754
       },
-      "active_payload_factor": 0.988779,
-      "forecast_active_bytes": 415100097,
+      "active_payload_factor": 0.988503,
+      "forecast_active_bytes": 414984172,
       "installed_active_logical_bytes": 419810762,
       "new_streams": [
         {
@@ -231,15 +231,15 @@
           "basis": "early_middle_head_local_density_with_two_times_observed_peak",
           "central_calls": 1896,
           "compressed_byte_scenarios_not_bounds": {
-            "central": 93505,
-            "high": 310775,
-            "low": 91377
+            "central": 93590,
+            "high": 315849,
+            "low": 92869
           },
           "minimum_calls": 1896,
           "mode": "historical_event_full",
           "order_by": "block",
           "row_scenarios_not_bounds": {
-            "central": 791,
+            "central": 779,
             "high": 2629,
             "low": 773
           },
@@ -307,9 +307,9 @@
           "basis": "daily_block_checkpoint_head_population_with_dense_day_stress_ceiling",
           "central_calls": 1896,
           "compressed_byte_scenarios_not_bounds": {
-            "central": 197430480,
-            "high": 1974304800,
-            "low": 197430480
+            "central": 197487360,
+            "high": 1974873600,
+            "low": 197487360
           },
           "minimum_calls": 1896,
           "mode": "block_pinned_configuration",
@@ -403,7 +403,7 @@
           "central_calls": 2668,
           "compressed_byte_scenarios_not_bounds": {
             "central": 244081100,
-            "high": 699604151,
+            "high": 707529789,
             "low": 112928660
           },
           "minimum_calls": 1896,
@@ -411,11 +411,11 @@
           "order_by": "timestamp",
           "row_scenarios_not_bounds": {
             "central": 2667553,
-            "high": 7645947,
+            "high": 7732566,
             "low": 1234193
           },
           "stream": "tokenPrices",
-          "stress_calls": 7646
+          "stress_calls": 7733
         },
         {
           "basis": "early_middle_head_local_density_with_two_times_observed_peak",
@@ -440,9 +440,9 @@
           "basis": "daily_block_checkpoint_head_population_with_dense_day_stress_ceiling",
           "central_calls": 1896,
           "compressed_byte_scenarios_not_bounds": {
-            "central": 324917520,
-            "high": 3249175200,
-            "low": 324917520
+            "central": 324765840,
+            "high": 3247658400,
+            "low": 324765840
           },
           "minimum_calls": 1896,
           "mode": "block_pinned_configuration",
@@ -502,8 +502,8 @@
         "low": 6832,
         "stress": 8386
       },
-      "active_payload_factor": 1.794924,
-      "forecast_active_bytes": 1973223836,
+      "active_payload_factor": 1.795297,
+      "forecast_active_bytes": 1973634172,
       "installed_active_logical_bytes": 1099335782,
       "new_streams": [
         {
@@ -1149,8 +1149,8 @@
         "low": 340472,
         "stress": 480980
       },
-      "active_payload_factor": 1.18578,
-      "forecast_active_bytes": 63203457079,
+      "active_payload_factor": 1.185782,
+      "forecast_active_bytes": 63203534496,
       "installed_active_logical_bytes": 53301152473,
       "new_streams": [
         {
@@ -1238,8 +1238,8 @@
         "low": 131298,
         "stress": 291942
       },
-      "active_payload_factor": 1.23971,
-      "forecast_active_bytes": 32443442351,
+      "active_payload_factor": 1.239749,
+      "forecast_active_bytes": 32444442060,
       "installed_active_logical_bytes": 26170178240,
       "new_streams": [
         {
