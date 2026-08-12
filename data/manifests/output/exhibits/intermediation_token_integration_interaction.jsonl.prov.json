@@ -1,0 +1,49 @@
+{
+ "argv": [],
+ "artefact": "output/exhibits/intermediation_token_integration_interaction.jsonl",
+ "artefact_bytes": 2147,
+ "artefact_mtime_ns": 1786501615286996503,
+ "artefact_sha256": "426c7bb67c552e218a61d4af0bfcc141546728cc34fc2ed11cf11fc29d58acef",
+ "code_fingerprint": "8f57e412c328631f62978d1b4c1a79f0e05b322ff76383a3241185e589ee014a",
+ "code_sources": [
+  "scripts/build_intermediation_by_type.py",
+  "src/ddvc/analysis/regression.py",
+  "src/ddvc/asset_types.py",
+  "src/ddvc/realised.py",
+  "src/ddvc/route_roles.py",
+  "src/ddvc/tables.py"
+ ],
+ "created_at": "2026-08-12T02:26:55+00:00",
+ "git": {
+  "branch": "glotl/dominance-cost-temporal-match",
+  "commit": "1568423f80a71790bf68dd5456e3628ced227a09",
+  "dirty": true,
+  "dirty_generated_files": [
+   "output/exhibits/.intermediation_token_integration_interaction.jsonl.kstvhx3p.tmp"
+  ],
+  "dirty_tracked_files": [
+   "scripts/build_intermediation_by_type.py",
+   "tests/test_intermediation_by_type.py"
+  ],
+  "dirty_untracked_files": []
+ },
+ "inputs": [
+  {
+   "entries": 4664,
+   "exists": true,
+   "kind": "directory",
+   "path": "data/unified",
+   "tree_fingerprint": "994f3ddc56d90d0ce3eac7e2f697b225ec5fa1ce67469b9c138689dd714d6ad4"
+  }
+ ],
+ "libraries": {
+  "numpy": "2.5.1",
+  "pandas": "3.0.3",
+  "pyarrow": "25.0.0",
+  "scipy": "1.18.0"
+ },
+ "notes": "paired-date USDT share interaction among exact two-leg native-currency, USDC and USDT routes; native currency combines ETH and WETH; Newey-West Bartlett covariance",
+ "python": "3.14.5",
+ "rows": 4,
+ "script": "/private/tmp/ddvc_token_interaction_build.py"
+}

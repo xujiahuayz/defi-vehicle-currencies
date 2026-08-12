@@ -12,6 +12,7 @@ Writes  data/processed/intermediation_by_type_daily.parquet
         output/exhibits/intermediation_by_type.jsonl
         output/exhibits/intermediation_integration_rival.jsonl
         output/exhibits/intermediation_integration_interaction.jsonl
+        output/exhibits/intermediation_token_integration_interaction.jsonl
         output/exhibits/intermediation_complexity_rival.jsonl
 """
 
@@ -30,7 +31,7 @@ from ddvc.analysis.regression import (
     holm_adjusted_pvalues,
     year_endpoint_change,
 )
-from ddvc.asset_types import TYPES, classify
+from ddvc.asset_types import TYPES, VEHICLE_CANDIDATE_SYMBOLS, classify
 from ddvc.data_release import require_node_d_release
 from ddvc.paths import DATA_DIR, OUTPUT_DIR, REPO_ROOT
 from ddvc.route_roles import VALUE_SUPPORT_SCOPES
@@ -43,6 +44,7 @@ OUT_PARQUET = DATA_DIR / "processed" / "intermediation_by_type_daily.parquet"
 OUT_EXHIBIT = OUTPUT_DIR / "exhibits" / "intermediation_by_type.jsonl"
 OUT_RIVAL = OUTPUT_DIR / "exhibits" / "intermediation_integration_rival.jsonl"
 OUT_INTERACTION = OUTPUT_DIR / "exhibits" / "intermediation_integration_interaction.jsonl"
+OUT_TOKEN_INTERACTION = OUTPUT_DIR / "exhibits" / "intermediation_token_integration_interaction.jsonl"
 OUT_COMPLEXITY_RIVAL = OUTPUT_DIR / "exhibits" / "intermediation_complexity_rival.jsonl"
 LOCK = OUT_PARQUET.with_suffix(".lock")
 HAC_LAG = 30
@@ -81,6 +83,7 @@ VEHICLE_TRANSITION_ESTIMANDS = (
 VEHICLE_TRANSITION_SPECIFICATIONS = (
     len(VEHICLE_TRANSITION_SCOPES) * len(VEHICLE_TRANSITION_ESTIMANDS) * 2
 )
+TOKEN_INTERACTION_COMPONENTS = ("native", "USDC", "USDT")
 
 
 def value_field(asset_type: str, *, scope: str = "all", support: str = "all_routes") -> str:
@@ -107,6 +110,12 @@ def empty_day(day: str) -> dict[str, object]:
             out[f"cnt_{scope}_{asset_type}"] = 0
             for support in VALUE_SUPPORT_SCOPES:
                 out[value_field(asset_type, scope=scope, support=support)] = 0.0
+    for symbol in VEHICLE_CANDIDATE_SYMBOLS:
+        out[f"cnt_{symbol}"] = 0
+        for scope in VEHICLE_TRANSITION_SCOPES:
+            out[f"cnt_{scope}_{symbol}"] = 0
+            for support in VALUE_SUPPORT_SCOPES:
+                out[value_field(symbol, scope=scope, support=support)] = 0.0
     return out
 
 
@@ -178,8 +187,21 @@ def one_day(path: Path) -> dict[str, object]:
                     out[value_field(asset_type, scope=scope, support=support)] = float(
                         supported["usd"].sum()
                     )
-    for symbol, count in routes["symbol"].dropna().value_counts().items():
-        out[f"cnt_{symbol}"] = int(count)
+    for symbol in VEHICLE_CANDIDATE_SYMBOLS:
+        selected = routes[routes["symbol"].eq(symbol)]
+        out[f"cnt_{symbol}"] = int(len(selected))
+        two_leg = selected[selected["complexity_scope"].eq("two_leg")]
+        for scope in VEHICLE_TRANSITION_SCOPES:
+            cell = two_leg
+            if scope != "two_leg":
+                integration_scope = scope.removesuffix("_two_leg")
+                cell = cell[cell["integration_scope"].eq(integration_scope)]
+            out[f"cnt_{scope}_{symbol}"] = int(len(cell))
+            for support in VALUE_SUPPORT_SCOPES:
+                supported = cell if support == "all_routes" else cell[cell[support]]
+                out[value_field(symbol, scope=scope, support=support)] = float(
+                    supported["usd"].sum()
+                )
     return out
 
 
@@ -541,6 +563,88 @@ def integration_interaction_windows(
     )
 
 
+def token_integration_interaction_tests(
+    panel: pd.DataFrame,
+    *,
+    focal_symbol: str = "USDT",
+    comparison_components: tuple[str, ...] = TOKEN_INTERACTION_COMPONENTS,
+    baseline_year: int = 2024,
+    comparison_year: int = 2026,
+    hac_lag: int = HAC_LAG,
+) -> pd.DataFrame:
+    """Test a token's share transition across exact two-leg integration regimes."""
+
+    if focal_symbol not in comparison_components:
+        raise ValueError("focal token must be included in the comparison set")
+    data = panel.copy().sort_values("date", kind="stable")
+    data["year"] = pd.to_datetime(data["date"]).dt.year
+    data = data[data["year"].between(baseline_year, comparison_year)]
+    data = data.loc[
+        common_calendar_day_mask(
+            data["date"],
+            data["year"],
+            baseline_year=baseline_year,
+            comparison_year=comparison_year,
+        )
+    ]
+    rows: list[dict[str, object]] = []
+    estimands = (
+        ("episode", "all_routes", "cnt_"),
+        ("value", "within_20pct", "usd_within_20pct_"),
+    )
+    for weighting, value_support, prefix in estimands:
+        shares: dict[str, pd.Series] = {}
+        for integration_scope in INTEGRATION_SCOPES:
+            scope = f"{integration_scope}_two_leg"
+            focal = pd.to_numeric(data[f"{prefix}{scope}_{focal_symbol}"], errors="coerce")
+            denominator = sum(
+                pd.to_numeric(data[f"{prefix}{scope}_{component}"], errors="coerce")
+                for component in comparison_components
+            )
+            shares[integration_scope] = focal / denominator.where(denominator.gt(0))
+        for transformation in ("share_level", "log_odds"):
+            sample = data[["date", "year"]].copy()
+            for integration_scope in INTEGRATION_SCOPES:
+                share = shares[integration_scope]
+                if transformation == "log_odds":
+                    share = np.log(share / (1 - share)).where(
+                        share.between(0, 1, inclusive="neither")
+                    )
+                sample[integration_scope] = share
+            sample = sample.dropna(subset=list(INTEGRATION_SCOPES))
+            sample["estimand"] = sample["cross_venue"] - sample["single_venue"]
+            estimate = year_endpoint_change(
+                sample["estimand"],
+                sample["year"],
+                baseline_year=baseline_year,
+                comparison_year=comparison_year,
+                hac_lag=hac_lag,
+                dates=sample["date"],
+            )
+            rows.append(
+                {
+                    "focal_symbol": focal_symbol,
+                    "comparison_components": "+".join(comparison_components),
+                    "weighting": weighting,
+                    "value_support": value_support,
+                    "transformation": transformation,
+                    "baseline_year": baseline_year,
+                    "comparison_year": comparison_year,
+                    "baseline_cross_minus_single": estimate.baseline_mean,
+                    "comparison_cross_minus_single": estimate.comparison_mean,
+                    "differential_change": estimate.change,
+                    "hac_standard_error": estimate.standard_error,
+                    "t_statistic": estimate.t_statistic,
+                    "p_value": estimate.p_value,
+                    "days": estimate.n_observations,
+                    "hac_lag_days": hac_lag,
+                }
+            )
+    result = pd.DataFrame(rows)
+    result["p_value_holm"] = holm_adjusted_pvalues(result["p_value"])
+    return result
+
+
 def complexity_rival_tests(
     panel: pd.DataFrame,
     *,
@@ -619,6 +723,7 @@ def main() -> int:
     annual = annual_composition(panel)
     rival = integration_rival_windows(panel)
     interaction = integration_interaction_windows(panel)
+    token_interaction = token_integration_interaction_tests(panel)
     complexity_rival = complexity_rival_tests(panel)
     write_exhibit(
         annual,
@@ -639,6 +744,13 @@ def main() -> int:
         code_sources=CODE_SOURCES,
         inputs=[OUT_PARQUET],
         notes="paired-date cross-venue minus single-venue stable-share interaction; Newey-West Bartlett covariance; descriptive because integration regime is selected",
+    )
+    write_exhibit(
+        token_interaction,
+        OUT_TOKEN_INTERACTION,
+        code_sources=CODE_SOURCES,
+        inputs=[OUT_PARQUET],
+        notes="paired-date USDT share interaction among exact two-leg native-currency, USDC and USDT routes; native currency combines ETH and WETH; Newey-West Bartlett covariance",
     )
     write_exhibit(
         complexity_rival,
@@ -696,6 +808,7 @@ def main() -> int:
         f"\nwrote {OUT_PARQUET.relative_to(REPO_ROOT)}, "
         f"{OUT_EXHIBIT.relative_to(REPO_ROOT)}, {OUT_RIVAL.relative_to(REPO_ROOT)}, "
         f"{OUT_INTERACTION.relative_to(REPO_ROOT)}, "
+        f"{OUT_TOKEN_INTERACTION.relative_to(REPO_ROOT)}, "
         f"and {OUT_COMPLEXITY_RIVAL.relative_to(REPO_ROOT)}"
     )
     return 0

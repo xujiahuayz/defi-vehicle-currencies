@@ -15,6 +15,7 @@ from scripts.build_intermediation_by_type import (
     integration_rival_windows,
     integration_rival_tests,
     one_day,
+    token_integration_interaction_tests,
 )
 
 USDC = next(address for address, symbol in STABLE.items() if symbol == "USDC")
@@ -103,6 +104,9 @@ class IntermediationByTypeTests(unittest.TestCase):
         ].iloc[0]
         self.assertEqual(single_native["episode_share"], 1.0)
         self.assertEqual(cross_stable["episode_share"], 1.0)
+        self.assertEqual(result["cnt_single_venue_two_leg_WETH"], 1)
+        self.assertEqual(result["cnt_cross_venue_two_leg_USDC"], 1)
+        self.assertEqual(result["usd_within_20pct_cross_venue_two_leg_USDC"], 100.0)
 
     def test_workers_are_bounded(self) -> None:
         self.assertEqual(bounded_workers(0), 1)
@@ -216,6 +220,32 @@ class IntermediationByTypeTests(unittest.TestCase):
             episode["null_hypothesis"],
             "cross_venue_change_equals_single_venue_change",
         )
+        self.assertTrue(result["p_value_holm"].notna().all())
+
+    def test_token_interaction_uses_paired_daily_exact_two_leg_shares(self) -> None:
+        rows = []
+        for year, single_usdt, cross_usdt in (
+            (2024, 10.0, 10.0),
+            (2025, 20.0, 30.0),
+            (2026, 30.0, 60.0),
+        ):
+            for day in range(4):
+                row: dict[str, object] = {"date": f"{year}-01-{day + 1:02d}"}
+                for scope in ("single_venue_two_leg", "cross_venue_two_leg"):
+                    usdt = cross_usdt if scope.startswith("cross") else single_usdt
+                    for prefix in ("cnt_", "usd_within_20pct_"):
+                        row[f"{prefix}{scope}_USDT"] = usdt
+                        row[f"{prefix}{scope}_USDC"] = 50.0
+                        row[f"{prefix}{scope}_native"] = 50.0 - usdt
+                rows.append(row)
+        result = token_integration_interaction_tests(pd.DataFrame(rows), hac_lag=1)
+        episode = result[
+            result["weighting"].eq("episode")
+            & result["transformation"].eq("share_level")
+        ].iloc[0]
+        self.assertAlmostEqual(episode["baseline_cross_minus_single"], 0.0)
+        self.assertAlmostEqual(episode["comparison_cross_minus_single"], 0.3)
+        self.assertAlmostEqual(episode["differential_change"], 0.3)
         self.assertTrue(result["p_value_holm"].notna().all())
 
     def test_complexity_rival_keeps_combined_route_regimes_separate(self) -> None:
