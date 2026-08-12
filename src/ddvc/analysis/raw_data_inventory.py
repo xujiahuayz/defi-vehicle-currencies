@@ -13,6 +13,8 @@ import re
 import pandas as pd
 
 from ddvc.fetch.sources import DEX_SOURCES
+from ddvc.paths import RAW_MARKET_DATA_LOCK
+from ddvc.runtime import exclusive_job
 
 
 RAW_STREAMS = frozenset(
@@ -181,6 +183,42 @@ def build_raw_data_inventory(
         raise ValueError("Raw-data inventory contains duplicate file paths.")
     inventory["records"] = inventory["records"].astype("int64")
     return inventory.sort_values(["source", "date", "stream"]).reset_index(drop=True)
+
+
+def _build_and_publish_raw_data_inventory(
+    raw_root: Path,
+    output: Path,
+    *,
+    progress: Callable[[str], None] | None,
+) -> pd.DataFrame:
+    previous = pd.read_parquet(output) if output.exists() else None
+    inventory = build_raw_data_inventory(
+        raw_root,
+        previous=previous,
+        progress=progress,
+    )
+    output.parent.mkdir(parents=True, exist_ok=True)
+    temporary = Path(f"{output}.tmp")
+    inventory.to_parquet(temporary, index=False)
+    temporary.replace(output)
+    return inventory
+
+
+def publish_raw_data_inventory(
+    raw_root: Path,
+    output: Path,
+    *,
+    mutation_lock: Path = RAW_MARKET_DATA_LOCK,
+    progress: Callable[[str], None] | None = None,
+) -> pd.DataFrame:
+    """Scan canonical raw bytes and publish one inventory under one lease."""
+
+    with exclusive_job(mutation_lock, job="canonical raw-data inventory"):
+        return _build_and_publish_raw_data_inventory(
+            raw_root,
+            output,
+            progress=progress,
+        )
 
 
 def summarize_raw_data_inventory(inventory: pd.DataFrame) -> pd.DataFrame:
