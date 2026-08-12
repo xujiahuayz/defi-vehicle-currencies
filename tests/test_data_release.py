@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import tempfile
 import unittest
+from contextlib import nullcontext
 import json
 import os
 from pathlib import Path
@@ -330,7 +331,7 @@ class DataReleaseTests(unittest.TestCase):
             with (
                 patch("ddvc.data_release.MARKET_STATE_QUALITY_PANEL", ledger),
                 patch("ddvc.data_release.V4_STATIC_QUARANTINE_PANEL", quarantine),
-                patch("ddvc.v4_quarantine.require_current_artifacts"),
+                patch("ddvc.v4_quarantine.current_artifacts", return_value=nullcontext((quarantine,))),
                 patch("ddvc.data_release._validated_release_ledger", return_value=ledger_frame),
                 patch("ddvc.data_release.state_partition_path", return_value=panel),
                 patch("ddvc.data_release.state_quality_path", return_value=marker),

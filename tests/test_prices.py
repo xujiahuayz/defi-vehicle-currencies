@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import unittest
 import tempfile
+from contextlib import nullcontext
 from pathlib import Path
 from unittest.mock import patch
 
@@ -35,15 +36,15 @@ class DayPriceTests(unittest.TestCase):
             frame.to_parquet(path, index=False)
             sidecar_path(path).parent.mkdir(parents=True, exist_ok=True)
             sidecar_path(path).write_text("{}", encoding="utf-8")
-            with patch("ddvc.prices.require_current_artifacts") as current:
+            with patch("ddvc.prices.current_artifacts", return_value=nullcontext((path,))) as current:
                 loaded = load_canonical_token_prices(path, columns=("day", "token", "price_usd"))
-            self.assertEqual(current.call_count, 2)
+            self.assertEqual(current.call_count, 1)
             current.assert_called_with([path], consumer="canonical address-day token prices")
             self.assertEqual(loaded.to_dict("records"), [{"day": "20250101", "token": "0xabc", "price_usd": 2.0}])
             frame.loc[0, "n_consensus"] = 2
             frame.to_parquet(path, index=False)
             with (
-                patch("ddvc.prices.require_current_artifacts"),
+                patch("ddvc.prices.current_artifacts", return_value=nullcontext((path,))),
                 self.assertRaisesRegex(ValueError, "support"),
             ):
                 load_canonical_token_prices(path)
@@ -51,24 +52,10 @@ class DayPriceTests(unittest.TestCase):
             frame.loc[0, "n_consensus"] = 3
             frame.to_parquet(path, index=False)
             with (
-                patch("ddvc.prices.require_current_artifacts"),
+                patch("ddvc.prices.current_artifacts", return_value=nullcontext((path,))),
                 self.assertRaisesRegex(ValueError, "nonempty"),
             ):
                 load_canonical_token_prices(path, columns=[])
-
-            original_read = pd.read_parquet
-
-            def mutate_sidecar(*args, **kwargs):
-                loaded = original_read(*args, **kwargs)
-                sidecar_path(path).write_text('{"changed":true}', encoding="utf-8")
-                return loaded
-
-            with (
-                patch("ddvc.prices.require_current_artifacts"),
-                patch("ddvc.prices.pd.read_parquet", side_effect=mutate_sidecar),
-                self.assertRaisesRegex(RuntimeError, "provenance mutated"),
-            ):
-                load_canonical_token_prices(path)
 
     def test_consensus_screened_volume_weighted_median(self) -> None:
         legs = pd.DataFrame(

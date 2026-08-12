@@ -300,7 +300,9 @@ def validate_external_weth_usd_content(panel_path: Path, raw_root: Path, *, star
 def validate_external_weth_usd_release(panel_path: Path, raw_root: Path, *, start_utc: int = SAMPLE_START_UTC, end_utc_exclusive: int = SAMPLE_END_UTC_EXCLUSIVE) -> dict[str, object]:
     """Require current provenance and exact source lineage for the released panel."""
 
-    from ddvc.provenance import require_current_artifacts
+    from ddvc.provenance import current_artifacts
 
-    require_current_artifacts([panel_path], consumer="external intraday WETH/USD release")
-    return validate_external_weth_usd_content(panel_path, raw_root, start_utc=start_utc, end_utc_exclusive=end_utc_exclusive)
+    with current_artifacts(
+        [panel_path], consumer="external intraday WETH/USD release"
+    ):
+        return validate_external_weth_usd_content(panel_path, raw_root, start_utc=start_utc, end_utc_exclusive=end_utc_exclusive)

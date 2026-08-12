@@ -14,7 +14,7 @@ from ddvc.provenance import (
     describe_input,
     install_stamped_artifact,
     prepare_stamp,
-    require_current_artifacts,
+    current_artifacts,
 )
 from ddvc.runtime import staged_output
 
@@ -171,11 +171,9 @@ def _style_axis(axis, *, title: str, ylabel: str | None = None) -> None:
 def load_current_parquet(path: Path, *, consumer: str) -> tuple[pd.DataFrame, dict[str, object]]:
     """Read a provenance-current panel and bind the exact bytes used by the figure."""
 
-    require_current_artifacts([path], consumer=consumer)
-    identity = describe_input(path)
-    frame = pd.read_parquet(path)
-    if describe_input(path) != identity:
-        raise RuntimeError(f"{consumer} input changed while it was being read")
+    with current_artifacts([path], consumer=consumer):
+        identity = describe_input(path)
+        frame = pd.read_parquet(path)
     return frame, identity
 
 

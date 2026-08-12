@@ -149,9 +149,9 @@ class ProvenanceInputTests(unittest.TestCase):
                 source.write_bytes(new)
                 self.assertFalse(_legacy_semantic_compatible(record))
 
-    @patch("ddvc.provenance.verify")
-    def test_consumer_gate_rejects_any_noncurrent_input(self, verify) -> None:
-        verify.side_effect = [
+    @patch("ddvc.provenance._verify_unlocked")
+    def test_consumer_gate_rejects_any_noncurrent_input(self, verify_unlocked) -> None:
+        verify_unlocked.side_effect = [
             {"artefact": "first.parquet", "status": "ok"},
             {"artefact": "second.parquet", "status": "stale"},
         ]

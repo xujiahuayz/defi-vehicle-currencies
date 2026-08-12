@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 from collections.abc import Iterable
+from contextlib import nullcontext
 from pathlib import Path
 
 import duckdb
@@ -18,7 +19,7 @@ from ddvc.analysis.dynamics import (
 )
 from ddvc.asset_types import VEHICLE_CANDIDATES
 from ddvc.capital_contracts import VALID_CAPITAL_STATUSES
-from ddvc.provenance import require_current_artifacts
+from ddvc.provenance import current_artifacts
 
 
 HORIZONS = (1, 7, 30, 120)
@@ -821,28 +822,32 @@ def build_candidate_day_panel(
     """Aggregate the three current releases into one fixed-address daily panel."""
 
     inputs = [Path(route_path), Path(capital_path), Path(flow_path)]
-    if verify_inputs:
-        require_current_artifacts(inputs, consumer="liquidity predictability panel builder")
-    connection = duckdb.connect()
-    try:
-        connection.execute(f"SET memory_limit='{memory_limit}'")
-        connection.execute(f"SET threads={max(1, int(threads))}")
-        connection.execute("SET preserve_insertion_order=false")
-        if temp_directory is not None:
-            directory = Path(temp_directory)
-            directory.mkdir(parents=True, exist_ok=True)
-            connection.execute(f"SET temp_directory='{_sql_path(directory)}'")
-        connection.execute(f"CREATE VIEW route_input AS SELECT * FROM read_parquet('{_sql_path(inputs[0])}')")
-        connection.execute(f"CREATE VIEW capital_input AS SELECT * FROM read_parquet('{_sql_path(inputs[1])}')")
-        connection.execute(f"CREATE VIEW flow_input AS SELECT * FROM read_parquet('{_sql_path(inputs[2])}')")
-        values = ",".join(f"('{address}','{symbol}')" for address, symbol in _candidate_rows())
-        connection.execute(f"CREATE TEMP TABLE candidate_dim(candidate_address VARCHAR, candidate_symbol VARCHAR); INSERT INTO candidate_dim VALUES {values}")
-        _preflight_route(connection)
-        _preflight_capital(connection)
-        _preflight_flow(connection)
-        panel = connection.execute(_candidate_day_query()).df()
-    finally:
-        connection.close()
+    lease = (
+        current_artifacts(inputs, consumer="liquidity predictability panel builder")
+        if verify_inputs
+        else nullcontext()
+    )
+    with lease:
+        connection = duckdb.connect()
+        try:
+            connection.execute(f"SET memory_limit='{memory_limit}'")
+            connection.execute(f"SET threads={max(1, int(threads))}")
+            connection.execute("SET preserve_insertion_order=false")
+            if temp_directory is not None:
+                directory = Path(temp_directory)
+                directory.mkdir(parents=True, exist_ok=True)
+                connection.execute(f"SET temp_directory='{_sql_path(directory)}'")
+            connection.execute(f"CREATE VIEW route_input AS SELECT * FROM read_parquet('{_sql_path(inputs[0])}')")
+            connection.execute(f"CREATE VIEW capital_input AS SELECT * FROM read_parquet('{_sql_path(inputs[1])}')")
+            connection.execute(f"CREATE VIEW flow_input AS SELECT * FROM read_parquet('{_sql_path(inputs[2])}')")
+            values = ",".join(f"('{address}','{symbol}')" for address, symbol in _candidate_rows())
+            connection.execute(f"CREATE TEMP TABLE candidate_dim(candidate_address VARCHAR, candidate_symbol VARCHAR); INSERT INTO candidate_dim VALUES {values}")
+            _preflight_route(connection)
+            _preflight_capital(connection)
+            _preflight_flow(connection)
+            panel = connection.execute(_candidate_day_query()).df()
+        finally:
+            connection.close()
     panel["origin_date"] = pd.to_datetime(panel["origin_date"])
     for column in ("route_day_supported", "route_candidate_observed", "route_endpoint_supported", "v2_capital_day_supported", "v2_candidate_pool_observed", "v3_flow_day_supported", "v3_has_liquidity_flow"):
         panel[column] = panel[column].astype(bool)

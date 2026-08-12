@@ -39,11 +39,16 @@ import os
 import subprocess
 import sys
 from collections.abc import Iterable
+from contextlib import contextmanager
 from dataclasses import asdict, dataclass, field
 from datetime import datetime, timezone
 from pathlib import Path
 
 from ddvc.paths import REPO_ROOT
+from ddvc.journaled_publication import (
+    publish_journaled_bundle,
+    recover_journaled_publications,
+)
 from ddvc.runtime import (
     atomic_output,
     file_sha256,
@@ -501,13 +506,25 @@ def describe_artifact_payload(
                 ).hexdigest(),
             }
         )
-    elif lower_name.endswith(".jsonl"):
-        with source.open("rb") as handle:
-            rows = sum(chunk.count(b"\n") for chunk in iter(lambda: handle.read(1024 * 1024), b""))
-        identity.update({"format": "jsonl", "rows": rows})
-    elif lower_name.endswith(".jsonl.gz"):
-        with gzip.open(source, "rb") as handle:
-            rows = sum(chunk.count(b"\n") for chunk in iter(lambda: handle.read(1024 * 1024), b""))
+    elif lower_name.endswith(".jsonl") or lower_name.endswith(".jsonl.gz"):
+        opener = gzip.open if lower_name.endswith(".gz") else open
+        rows = 0
+        try:
+            with opener(source, "rt", encoding="utf-8") as handle:
+                for line_number, line in enumerate(handle, start=1):
+                    if not line.strip():
+                        raise ValueError(
+                            f"JSON Lines payload contains a blank record at line {line_number}: {source}"
+                        )
+                    try:
+                        json.loads(line)
+                    except json.JSONDecodeError as error:
+                        raise ValueError(
+                            f"JSON Lines payload contains invalid JSON at line {line_number}: {source}"
+                        ) from error
+                    rows += 1
+        except UnicodeDecodeError as error:
+            raise ValueError(f"JSON Lines payload is not UTF-8: {source}") from error
         identity.update({"format": "jsonl", "rows": rows})
     else:
         identity["format"] = "binary"
@@ -553,7 +570,7 @@ def prepare_stamp(artefact: str | Path, *, content_path: str | Path, code_source
 
 
 def install_stamped_artifact(staged: str | Path, artefact: str | Path, prepared_stamp: bytes) -> Path:
-    """Install staged artefact and sidecar together, restoring both on any Python-level failure."""
+    """Install one payload/sidecar pair through a durable recovery journal."""
 
     staged_path = Path(staged)
     target = Path(artefact)
@@ -571,32 +588,25 @@ def install_stamped_artifact(staged: str | Path, artefact: str | Path, prepared_
     if record.get("artefact") != str(_rel(target)) or record.get("artefact_bytes") != staged_stat.st_size or record.get("artefact_mtime_ns") != staged_stat.st_mtime_ns or recorded_identity != current_identity or not rows_match:
         raise ValueError("prepared provenance does not identify the staged artefact")
     with serialized_output_installs((target, sidecar)):
-        with staged_output(sidecar) as staged_sidecar, staged_output(target) as target_backup, staged_output(sidecar) as sidecar_backup:
+        with staged_output(sidecar) as staged_sidecar:
             staged_sidecar.write_bytes(prepared_stamp)
-            target_backup.unlink(missing_ok=True)
-            sidecar_backup.unlink(missing_ok=True)
-            target_existed = target.exists()
-            sidecar_existed = sidecar.exists()
-            try:
-                if target_existed:
-                    target.replace(target_backup)
-                if sidecar_existed:
-                    sidecar.replace(sidecar_backup)
-                staged_sidecar.replace(sidecar)
-                staged_path.replace(target)
-            except BaseException:
-                new_target_installed = not staged_path.exists() and target.exists()
-                new_sidecar_installed = not staged_sidecar.exists() and sidecar.exists()
-                if new_target_installed:
-                    target.unlink()
-                if new_sidecar_installed:
-                    sidecar.unlink()
-                if target_backup.exists():
-                    target_backup.replace(target)
-                if sidecar_backup.exists():
-                    sidecar_backup.replace(sidecar)
-                raise
+            publish_journaled_bundle(
+                targets={"payload": target, "sidecar": sidecar},
+                staged={"payload": staged_path, "sidecar": staged_sidecar},
+                validate_live=lambda: _require_current_unlocked(target),
+            )
     return sidecar
+
+
+def recover_stamped_artifact_install(artefact: str | Path) -> int:
+    """Recover an interrupted payload/sidecar publication without starting a build."""
+
+    target = Path(artefact)
+    sidecar = sidecar_path(target)
+    with serialized_output_installs((target, sidecar)):
+        return recover_journaled_publications(
+            {"payload": target, "sidecar": sidecar}
+        )
 
 
 def stamp(artefact: str | Path, *, code_sources: list[str], inputs: list[str | Path] | None = None, rows: int | None = None, notes: str | None = None, script: str | None = None) -> Path:
@@ -684,7 +694,7 @@ def _verify_unlocked(artefact: str | Path) -> dict[str, object]:
             or declared_rows == physical_rows
         )
         if recorded_bytes is None and recorded_mtime_ns is None and recorded_digest is None:
-            content_ok = rows_ok
+            content_ok = False
         else:
             current_stat = p.stat()
             content_ok = rows_ok and recorded_bytes == current_stat.st_size and (recorded_mtime_ns is None or recorded_mtime_ns == current_stat.st_mtime_ns) and isinstance(recorded_digest, str) and len(recorded_digest) == 64 and recorded_digest == current_identity["sha256"]
@@ -736,18 +746,55 @@ def verify(artefact: str | Path) -> dict[str, object]:
         return _verify_unlocked(target)
 
 
+def _require_current_unlocked(artefact: str | Path) -> None:
+    verdict = _verify_unlocked(artefact)
+    if verdict.get("status") != "ok":
+        raise RuntimeError(
+            f"installed artifact is not current: {verdict['artefact']}={verdict['status']}"
+        )
+
+
+@contextmanager
+def current_artifacts(
+    artefacts: Iterable[str | Path], *, consumer: str
+):
+    """Verify and lease a complete payload/sidecar snapshot through consumption."""
+
+    targets = tuple(dict.fromkeys(Path(artefact) for artefact in artefacts))
+    if not targets:
+        raise ValueError("current-artifact lease requires at least one artifact")
+    perimeter = tuple(
+        path for target in targets for path in (target, sidecar_path(target))
+    )
+    with serialized_read_installs(perimeter, allow_missing=True):
+        failures = [
+            verdict
+            for target in targets
+            if (verdict := _verify_unlocked(target)).get("status") != "ok"
+        ]
+        if failures:
+            detail = "; ".join(
+                f"{verdict['artefact']}={verdict['status']}"
+                for verdict in failures
+            )
+            raise RuntimeError(f"{consumer} requires current analysis inputs: {detail}")
+        yield targets
+        changed = [
+            verdict
+            for target in targets
+            if (verdict := _verify_unlocked(target)).get("status") != "ok"
+        ]
+        if changed:
+            detail = "; ".join(
+                f"{verdict['artefact']}={verdict['status']}"
+                for verdict in changed
+            )
+            raise RuntimeError(f"{consumer} inputs changed during consumption: {detail}")
+
+
 def require_current_artifacts(
     artefacts: list[str | Path], *, consumer: str
 ) -> None:
     """Refuse to run a consumer against missing, unstamped, or stale inputs."""
-    failures = [
-        verdict
-        for artefact in artefacts
-        if (verdict := verify(artefact)).get("status") != "ok"
-    ]
-    if failures:
-        detail = "; ".join(
-            f"{verdict['artefact']}={verdict['status']}"
-            for verdict in failures
-        )
-        raise RuntimeError(f"{consumer} requires current analysis inputs: {detail}")
+    with current_artifacts(artefacts, consumer=consumer):
+        pass

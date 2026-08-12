@@ -9,9 +9,9 @@ import pandas as pd
 import pyarrow.parquet as pq
 
 from ddvc.fetch.coinbase_prices import SOURCE_ID as EXTERNAL_WETH_USD_SOURCE_ID
-from ddvc.artifact_release import file_sha256, file_stat_identity
 from ddvc.paths import TOKEN_PRICE_DAILY_PANEL
-from ddvc.provenance import require_current_artifacts, sidecar_path
+from ddvc.provenance import current_artifacts
+from ddvc.runtime import file_sha256
 
 PRICE_COLUMNS = [
     "token_in",
@@ -57,26 +57,20 @@ def load_canonical_token_prices(
     """Reopen the provenance-current address-day price owner and its value contract."""
 
     source = Path(path)
-    sidecar = sidecar_path(source)
-    require_current_artifacts([source], consumer="canonical address-day token prices")
-    before_identity = (file_stat_identity(source), file_stat_identity(sidecar))
-    before_sha256 = (file_sha256(source), file_sha256(sidecar))
-    require_current_artifacts([source], consumer="canonical address-day token prices")
-    if before_identity != (file_stat_identity(source), file_stat_identity(sidecar)) or before_sha256 != (file_sha256(source), file_sha256(sidecar)):
-        raise RuntimeError(f"canonical token-price provenance changed during admission: {source}")
-    content_sha256 = before_sha256[0]
     selected = tuple(CANONICAL_TOKEN_PRICE_COLUMNS if columns is None else columns)
     if not selected or len(selected) != len(set(selected)):
         raise ValueError("canonical token-price columns must be nonempty and unique")
     unknown = sorted(set(selected) - set(CANONICAL_TOKEN_PRICE_COLUMNS))
     if unknown:
         raise ValueError(f"canonical token-price columns are unknown: {unknown}")
-    if tuple(pq.ParquetFile(source).schema_arrow.names) != tuple(CANONICAL_TOKEN_PRICE_COLUMNS):
-        raise ValueError("canonical token-price panel schema is stale")
-    validation_columns = list(CANONICAL_TOKEN_PRICE_COLUMNS)
-    frame = pd.read_parquet(source, columns=validation_columns)
-    if before_identity != (file_stat_identity(source), file_stat_identity(sidecar)) or before_sha256 != (file_sha256(source), file_sha256(sidecar)):
-        raise RuntimeError(f"canonical token-price panel or provenance mutated during read: {source}")
+    with current_artifacts(
+        [source], consumer="canonical address-day token prices"
+    ):
+        content_sha256 = file_sha256(source)
+        if tuple(pq.ParquetFile(source).schema_arrow.names) != tuple(CANONICAL_TOKEN_PRICE_COLUMNS):
+            raise ValueError("canonical token-price panel schema is stale")
+        validation_columns = list(CANONICAL_TOKEN_PRICE_COLUMNS)
+        frame = pd.read_parquet(source, columns=validation_columns)
     if frame.empty or frame.duplicated(["day", "token"]).any():
         raise ValueError("canonical token-price panel is empty or duplicated")
     day = frame["day"].astype(str)

@@ -5,6 +5,7 @@ import json
 import tempfile
 import tracemalloc
 import unittest
+from contextlib import nullcontext
 from pathlib import Path
 from urllib.parse import parse_qsl, urlencode, urlparse, urlunparse
 from unittest.mock import patch
@@ -538,7 +539,7 @@ class ExternalPriceTests(unittest.TestCase):
             write_panel_from_raw_files(
                 [base, gaps], panel_path, start_utc=0, end_utc_exclusive=180
             )
-            with patch("ddvc.provenance.require_current_artifacts"):
+            with patch("ddvc.provenance.current_artifacts", return_value=nullcontext((panel_path,))):
                 release = validate_external_weth_usd_release(
                     panel_path,
                     root,
@@ -550,7 +551,7 @@ class ExternalPriceTests(unittest.TestCase):
             panel.loc[1, "weth_usd"] = 99.0
             panel.to_parquet(panel_path, index=False)
             with (
-                patch("ddvc.provenance.require_current_artifacts"),
+                patch("ddvc.provenance.current_artifacts", return_value=nullcontext((panel_path,))),
                 self.assertRaisesRegex(ValueError, "lineage differs"),
             ):
                 validate_external_weth_usd_release(

@@ -8,7 +8,7 @@ from pathlib import Path
 import pandas as pd
 
 from ddvc.paths import DATA_DIR
-from ddvc.provenance import require_current_artifacts
+from ddvc.provenance import current_artifacts
 
 
 V4_STATIC_QUARANTINE_PANEL = (
@@ -75,8 +75,8 @@ def load_v4_static_quarantine(
 ) -> set[str]:
     """Load the complete pool-level exclusion set released with canonical D2."""
     panel = Path(path)
-    require_current_artifacts([panel], consumer="V4 static quarantine")
-    frame = pd.read_parquet(panel)
+    with current_artifacts([panel], consumer="V4 static quarantine"):
+        frame = pd.read_parquet(panel)
     if list(frame.columns) != V4_STATIC_QUARANTINE_COLUMNS:
         raise RuntimeError("node D V4 static-quarantine schema is stale")
     pools = frame["pool"].astype(str).str.lower()
