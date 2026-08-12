@@ -85,7 +85,12 @@ def _source_paths(
             # ``real/new`` can bypass one another's locks.
             for ancestor in path.parents:
                 if ancestor.is_symlink():
-                    ancestor.resolve(strict=True)
+                    try:
+                        ancestor.resolve(strict=True)
+                    except FileNotFoundError as error:
+                        raise FileNotFoundError(
+                            f"source lease path has a dangling symlink ancestor: {path}"
+                        ) from error
             selected.append(path.resolve(strict=False))
     return tuple(dict.fromkeys(selected))
 

@@ -120,7 +120,7 @@ class FileLineageLease:
     def assert_current(self) -> None:
         for path, expected in self.bindings:
             if expected is None:
-                if path.exists():
+                if path.exists() or path.is_symlink():
                     raise RuntimeError(f"leased absent source file appeared: {path}")
                 continue
             if not path.is_file():

@@ -436,6 +436,93 @@ class TransactionTargetTests(unittest.TestCase):
             thread.join(timeout=2)
             self.assertTrue(completed.is_set())
 
+    def test_published_target_lease_blocks_a_real_pointer_switch(self) -> None:
+        with TemporaryDirectory() as temporary:
+            root = Path(temporary) / "target_release"
+            validation = validation_contract(
+                verified_legs=2,
+                evidence_failures=0,
+                audit_calendar=["20250101"],
+                full_calendar=["20250101"],
+            )
+
+            def prepared(generation: str, route_id: str) -> tuple[Path, Path]:
+                directory = target_generation_root(generation, root=root)
+                marker = write_target_day(
+                    directory,
+                    "20250101",
+                    pd.DataFrame(
+                        {"route_id": [route_id], "target_admitted": [True]}
+                    ),
+                    {
+                        "day": "20250101",
+                        "provider_mapped_routes": 1,
+                        "verified_chain_log_legs": 2,
+                        "evidence_failures": 0,
+                    },
+                    scope="audit",
+                    generation=generation,
+                    lineage={},
+                )
+                return directory, marker
+
+            first_directory, first_marker = prepared(GENERATION, "first")
+            second_directory, second_marker = prepared(
+                DAILY_GENERATION, "second"
+            )
+            attempted = threading.Event()
+            completed = threading.Event()
+            failures: list[BaseException] = []
+
+            with patch("ddvc.provenance.ROOT", root), patch(
+                "ddvc.provenance.MANIFESTS", root / "provenance"
+            ):
+                first = publish_target_release(
+                    first_directory,
+                    [first_marker],
+                    scope="audit",
+                    generation=GENERATION,
+                    validation=validation,
+                    full_calendar=["20250101"],
+                    code_sources=["src/ddvc/transaction_targets.py"],
+                    inputs=[],
+                    root=root,
+                )
+
+                def switch() -> None:
+                    attempted.set()
+                    try:
+                        publish_target_release(
+                            second_directory,
+                            [second_marker],
+                            scope="audit",
+                            generation=DAILY_GENERATION,
+                            validation=validation,
+                            full_calendar=["20250101"],
+                            code_sources=["src/ddvc/transaction_targets.py"],
+                            inputs=[],
+                            root=root,
+                        )
+                    except BaseException as error:
+                        failures.append(error)
+                    finally:
+                        completed.set()
+
+                with current_target_release(first):
+                    thread = threading.Thread(target=switch)
+                    thread.start()
+                    self.assertTrue(attempted.wait(timeout=1))
+                    self.assertFalse(completed.wait(timeout=0.05))
+                    observed, _support = read_target_day(first, "20250101")
+                    self.assertEqual(observed["route_id"].tolist(), ["first"])
+                thread.join(timeout=2)
+                self.assertFalse(thread.is_alive())
+                self.assertEqual(failures, [])
+                selected = resolve_target_release(
+                    "audit", expected_days=["20250101"], root=root
+                )
+                self.assertEqual(selected.generation, DAILY_GENERATION)
+
     def test_target_day_retry_proves_frame_support_and_lineage_identity(self) -> None:
         with TemporaryDirectory() as temporary:
             directory = Path(temporary) / "target"
