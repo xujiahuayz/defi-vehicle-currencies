@@ -17,6 +17,7 @@ from ddvc.artifact_release import (
     canonical_json_sha256,
     file_sha256,
     is_sha256,
+    current_artifact_release,
     publish_artifact_release,
     resolve_artifact_release,
 )
@@ -657,14 +658,15 @@ def read_v3_event_source_release(
     release: ArtifactRelease | None = None,
 ) -> tuple[pd.DataFrame, pd.DataFrame, pd.DataFrame, dict[str, object]]:
     observed = release or resolve_v3_event_source_release()
-    artifacts = observed.artifacts
-    summary = pd.read_parquet(artifacts["summary"])
-    exceptions = pd.read_parquet(artifacts["exceptions"])
-    quarantine = pd.read_parquet(artifacts["quarantine"])
-    certificate = json.loads(artifacts["certificate"].read_text(encoding="utf-8"))
-    if not isinstance(certificate, dict):
-        raise ValueError("V3 event-source certificate is not a JSON object")
-    return summary, exceptions, quarantine, certificate
+    with current_artifact_release(observed):
+        artifacts = observed.artifacts
+        summary = pd.read_parquet(artifacts["summary"])
+        exceptions = pd.read_parquet(artifacts["exceptions"])
+        quarantine = pd.read_parquet(artifacts["quarantine"])
+        certificate = json.loads(artifacts["certificate"].read_text(encoding="utf-8"))
+        if not isinstance(certificate, dict):
+            raise ValueError("V3 event-source certificate is not a JSON object")
+        return summary, exceptions, quarantine, certificate
 
 
 def publish_v3_event_source_release(

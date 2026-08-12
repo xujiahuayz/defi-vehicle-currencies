@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import unittest
+import functools
 from decimal import Decimal
 from pathlib import Path
 from tempfile import TemporaryDirectory
@@ -23,12 +24,54 @@ from scripts.build_counterfactual_dominance import (
     state_support_summary,
     target_price_usd,
     write_gross_release,
+    build_final_exhibits,
+    build_final_panel,
+    build_gross_publication,
 )
 from ddvc.prices import attach_strictly_prior_weth_usd
 from ddvc.provenance import sidecar_path
+from ddvc.runtime import PUBLICATION_CAPABILITY_REGISTRY, publication_capability, validate_publication_capability
 
 
 class CounterfactualDominanceTests(unittest.TestCase):
+    def test_runtime_registry_validates_installed_owners_and_reexport_only(self) -> None:
+        owners = {
+            "counterfactual.gross": build_gross_publication,
+            "counterfactual.final_panel": build_final_panel,
+            "counterfactual.final_exhibits": build_final_exhibits,
+        }
+        self.assertEqual(set(owners), set(PUBLICATION_CAPABILITY_REGISTRY))
+        for capability_id, owner in owners.items():
+            metadata = validate_publication_capability(owner)
+            self.assertEqual(metadata["capability_id"], capability_id)
+            alias = owner
+            self.assertIs(validate_publication_capability(alias), metadata)
+
+            @functools.wraps(owner)
+            def helper(*args, **kwargs):
+                return owner(*args, **kwargs)
+
+            with self.assertRaisesRegex(RuntimeError, "not the installed callable object"):
+                validate_publication_capability(helper)
+
+    def test_runtime_registry_rejects_empty_and_wrong_output_selectors(self) -> None:
+        import scripts.build_counterfactual_dominance as module
+
+        for selected in ((), (Path("wrong"),)):
+            def fake_owner() -> None:
+                return None
+
+            fake_owner.__module__ = module.__name__
+            fake_owner.__name__ = "build_gross_publication"
+            owner = publication_capability(
+                "counterfactual.gross",
+                output_selector=lambda: selected,
+                source_selector=lambda: (),
+            )(fake_owner)
+            with patch.object(module, "build_gross_publication", owner):
+                with self.assertRaisesRegex(RuntimeError, "wrong output perimeter"):
+                    owner()
+
     def test_receipt_allocation_support_exposes_multi_component_count_value_and_era(self) -> None:
         routes = pd.DataFrame({"tx_hash": ["0xsingle", "0xmulti", "0xmulti"], "input_usd": [100.0, 200.0, 300.0]})
         unified = pd.DataFrame({"tx_hash": ["0xsingle", "0xmulti", "0xmulti"], "component_id": [0, 0, 1], "n_components": [1, 2, 2]})

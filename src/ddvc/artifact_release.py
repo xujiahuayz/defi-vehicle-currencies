@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+from contextlib import contextmanager
 from dataclasses import dataclass
 import hashlib
 import json
@@ -19,7 +20,7 @@ from ddvc.provenance import (
     sidecar_path,
     verify,
 )
-from ddvc.runtime import atomic_output, serialized_output_install
+from ddvc.runtime import atomic_output, serialized_output_install, serialized_read_installs
 
 
 def file_sha256(path: Path) -> str:
@@ -58,6 +59,7 @@ class ArtifactRelease:
     generation_id: str
     pointer_path: Path
     artifacts: Mapping[str, Path]
+    pointer_sha256: str
 
     @property
     def artifact_paths(self) -> tuple[Path, ...]:
@@ -70,6 +72,20 @@ class ArtifactRelease:
     @property
     def lineage_paths(self) -> tuple[Path, ...]:
         return self.pointer_path, *self.artifact_paths, *self.provenance_paths
+
+    def assert_current(self) -> None:
+        if not self.pointer_path.is_file() or file_sha256(self.pointer_path) != self.pointer_sha256:
+            raise RuntimeError("artifact release pointer changed after resolution")
+
+
+@contextmanager
+def current_artifact_release(release: ArtifactRelease):
+    """Lease one resolved pointer and its exact artifacts for the whole read."""
+
+    with serialized_read_installs(release.lineage_paths):
+        release.assert_current()
+        yield release
+        release.assert_current()
 
 
 def generation_id(artifact_sha256: Mapping[str, str], build_identity_sha256: str) -> str:
@@ -299,7 +315,7 @@ def _resolve_artifact_release_unlocked(
             raise ValueError(f"{kind} provenance identifies different content: {name}")
         if require_current_provenance and verify(path).get("status") != "ok":
             raise ValueError(f"{kind} provenance is not current: {name}")
-    return ArtifactRelease(str(generation), pointer_path, paths)
+    return ArtifactRelease(str(generation), pointer_path, paths, file_sha256(pointer_path))
 
 
 def resolve_artifact_release(

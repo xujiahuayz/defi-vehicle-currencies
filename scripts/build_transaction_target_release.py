@@ -5,6 +5,7 @@ from __future__ import annotations
 
 import argparse
 from concurrent.futures import as_completed
+from contextlib import contextmanager
 import hashlib
 import json
 from pathlib import Path
@@ -13,6 +14,7 @@ from typing import Iterable, Mapping
 import pandas as pd
 import pyarrow.parquet as pq
 
+from ddvc.artifact_release import ArtifactRelease
 from ddvc.data_release import require_node_d_release
 from ddvc.ethereum_blocks import fetch_block_header, iter_block_header_snapshot, write_block_header_snapshot
 from ddvc.ethereum_day_cuts import day_bound_path, load_utc_day_block_bounds
@@ -24,7 +26,7 @@ from ddvc.provenance import cache_key, sidecar_path
 from ddvc.realised import LINEAR_ROUTE_COLUMNS, extract_linear_realised_routes
 from ddvc.reconstruct import UNIFIED_QUALITY_PANEL
 from ddvc.release_calendar import released_route_days, transaction_frontier_audit_days
-from ddvc.runtime import exclusive_job, interruptible_thread_pool
+from ddvc.runtime import exclusive_job, interruptible_thread_pool, serialized_read_installs
 from ddvc.source_records import transaction_id
 from ddvc.state_data import RAW_ROOT, STATE_ROOT, cp_partition_path, tick_partition_path, tick_scientific_support
 from ddvc.tick_state_events import daily_release_set_path, state_event_certificate_path, v4_state_day_inputs, validate_v4_state_day
@@ -51,7 +53,7 @@ from ddvc.transaction_targets import (
     validation_contract,
     write_target_day,
 )
-from ddvc.v2_event_completeness import V2_EXACT_LOG_CACHE_ROOT, frozen_upper_block_path, read_v2_event_source_certificate, read_v2_exact_logs, resolve_v2_event_source_release
+from ddvc.v2_event_completeness import V2EventSourceRelease, V2_EXACT_LOG_CACHE_ROOT, frozen_upper_block_path, read_v2_event_source_certificate, read_v2_exact_logs, resolve_v2_event_source_release
 from ddvc.v3_event_completeness import block_perimeter_sha256, certified_header_snapshot_path, read_v3_event_source_release, resolve_v3_event_source_release
 from ddvc.v3_inventory import EVENT_TOPICS as V3_EVENT_TOPICS, inventory_chunk_triplet, load_inventory_chunk_records
 from ddvc.v3_pool_registry import load_certified_frozen_upper
@@ -97,16 +99,26 @@ def file_lineage(paths: Iterable[Path]) -> dict[str, str]:
     return {portable_path(path): file_sha256(path) for path in files}
 
 
-def release_dependencies() -> list[Path]:
-    v2_release = resolve_v2_event_source_release()
-    v3_release = resolve_v3_event_source_release()
+@contextmanager
+def current_event_source_releases(v2_release: V2EventSourceRelease, v3_release: ArtifactRelease):
+    """Lease both resolved source generations through target construction."""
+
+    with serialized_read_installs((*v2_release.lineage_paths, *v3_release.lineage_paths)):
+        v2_release.assert_current()
+        v3_release.assert_current()
+        yield
+        v2_release.assert_current()
+        v3_release.assert_current()
+
+
+def release_dependencies(v2_release: V2EventSourceRelease, v3_release: ArtifactRelease) -> list[Path]:
     paths = [
         UNIFIED_QUALITY_PANEL,
         sidecar_path(UNIFIED_QUALITY_PANEL),
         V4_STATIC_QUARANTINE_PANEL,
         sidecar_path(V4_STATIC_QUARANTINE_PANEL),
-        *v2_release.artifact_paths,
-        *v3_release.artifact_paths,
+        *v2_release.lineage_paths,
+        *v3_release.lineage_paths,
         V3_INVENTORY_RAW_ROOT / "ordered_chunks.complete.json",
         state_event_certificate_path(RAW_ROOT, "uniswap_v4"),
         daily_release_set_path(RAW_ROOT, "uniswap_v4", kind="v4_state"),
@@ -348,7 +360,7 @@ def exact_chain_events_for_day(day: str, providers: Mapping[tuple[str, str, int]
     return chain, inputs
 
 
-def build_audit_release(audit_days: list[str], full_days: list[str], generation: str, dependencies: list[Path], *, fetch_v4: bool, fetch_headers: bool, workers: int) -> None:
+def build_audit_release(audit_days: list[str], full_days: list[str], generation: str, dependencies: list[Path], *, v2_release: V2EventSourceRelease, v3_release: ArtifactRelease, fetch_v4: bool, fetch_headers: bool, workers: int) -> None:
     quarantined = load_v4_static_quarantine()
     directory = target_generation_root(generation)
     target_blocks: set[int] = set()
@@ -360,11 +372,11 @@ def build_audit_release(audit_days: list[str], full_days: list[str], generation:
         if index % 12 == 0 or index == len(audit_days):
             print(f"  audit target-block perimeter [{index:,}/{len(audit_days):,}] unique_blocks={len(target_blocks):,}", flush=True)
 
-    _v3_summary, _v3_exceptions, _v3_quarantine, v3_certificate = read_v3_event_source_release()
+    _v3_summary, _v3_exceptions, _v3_quarantine, v3_certificate = read_v3_event_source_release(v3_release)
     v3_seed = certified_header_snapshot_path(audit_days, v3_certificate)
     header_snapshot = ensure_target_header_snapshot(target_blocks, audit_days, seed_paths=[v3_seed], fetch_missing=fetch_headers, workers=workers)
     timestamps = {int(row["block_number"]): int(row["timestamp"]) for row in iter_block_header_snapshot(header_snapshot, require_evidence=True)}
-    _v2_summary, _v2_exceptions, v2_certificate = read_v2_event_source_certificate()
+    _v2_summary, _v2_exceptions, v2_certificate = read_v2_event_source_certificate(*v2_release.artifact_paths)
     frozen_v2_path = frozen_upper_block_path(int(v2_certificate["factory_registry_upper_block"]))
     frozen_v2 = json.loads(frozen_v2_path.read_text(encoding="utf-8"))
     frozen_v3, _factory_certificate = load_certified_frozen_upper()
@@ -433,14 +445,17 @@ def main() -> int:
         require_node_d_release(routes=True, market_state=True)
         full_days = released_route_days(UNIFIED_QUALITY_PANEL, nonempty=False)
         audit_days = transaction_frontier_audit_days(UNIFIED_QUALITY_PANEL)
-        dependencies = release_dependencies()
-        selected_scope = "audit" if args.audit_calendar else "daily"
-        generation = target_generation_id(selected_scope, audit_days, full_days, dependencies)
-        with exclusive_job(LOCK):
-            if selected_scope == "audit":
-                build_audit_release(audit_days, full_days, generation, dependencies, fetch_v4=args.fetch_v4_evidence, fetch_headers=args.fetch_header_evidence, workers=args.workers)
-            else:
-                build_daily_release(audit_days, full_days, generation, dependencies)
+        v2_release = resolve_v2_event_source_release()
+        v3_release = resolve_v3_event_source_release()
+        with current_event_source_releases(v2_release, v3_release):
+            dependencies = release_dependencies(v2_release, v3_release)
+            selected_scope = "audit" if args.audit_calendar else "daily"
+            generation = target_generation_id(selected_scope, audit_days, full_days, dependencies)
+            with exclusive_job(LOCK):
+                if selected_scope == "audit":
+                    build_audit_release(audit_days, full_days, generation, dependencies, v2_release=v2_release, v3_release=v3_release, fetch_v4=args.fetch_v4_evidence, fetch_headers=args.fetch_header_evidence, workers=args.workers)
+                else:
+                    build_daily_release(audit_days, full_days, generation, dependencies)
     except (FileNotFoundError, KeyError, OSError, RuntimeError, TargetEvidenceError, TypeError, ValueError) as error:
         print(f"error: {error}")
         return 1

@@ -512,7 +512,7 @@ def install_stamped_artifact(staged: str | Path, artefact: str | Path, prepared_
     recorded_digest = record.get("artefact_sha256")
     if record.get("artefact") != str(_rel(target)) or record.get("artefact_bytes") != staged_stat.st_size or record.get("artefact_mtime_ns") != staged_stat.st_mtime_ns or (recorded_digest is not None and recorded_digest != _content_sha256(staged_path)):
         raise ValueError("prepared provenance does not identify the staged artefact")
-    with serialized_output_install(target):
+    with serialized_output_install(target), serialized_output_install(sidecar):
         with staged_output(sidecar) as staged_sidecar, staged_output(target) as target_backup, staged_output(sidecar) as sidecar_backup:
             staged_sidecar.write_bytes(prepared_stamp)
             target_backup.unlink(missing_ok=True)
@@ -529,14 +529,14 @@ def install_stamped_artifact(staged: str | Path, artefact: str | Path, prepared_
             except BaseException:
                 new_target_installed = not staged_path.exists() and target.exists()
                 new_sidecar_installed = not staged_sidecar.exists() and sidecar.exists()
-                if new_target_installed:
-                    target.unlink()
-                if new_sidecar_installed:
-                    sidecar.unlink()
                 if target_backup.exists():
                     target_backup.replace(target)
+                elif new_target_installed:
+                    target.unlink()
                 if sidecar_backup.exists():
                     sidecar_backup.replace(sidecar)
+                elif new_sidecar_installed:
+                    sidecar.unlink()
                 raise
     return sidecar
 
