@@ -8,6 +8,7 @@ import pytest
 
 import ddvc.provenance as provenance
 from ddvc.artifact_release import file_sha256
+from ddvc.artifact_release import current_artifact_release
 from ddvc.asset_types import NATIVE, STABLE
 from ddvc.data_release import ReleasedPartition, ReleasedPartitionSet
 from ddvc.endpoint_candidate_composition import (
@@ -17,7 +18,8 @@ from ddvc.endpoint_candidate_composition import (
 )
 from ddvc.endpoint_candidate_composition_release import (
     publish_endpoint_candidate_composition_release,
-    resolve_loaded_endpoint_candidate_composition_release,
+    load_endpoint_candidate_composition_release,
+    resolve_endpoint_candidate_composition_release_pointer,
     resolve_endpoint_candidate_composition_release,
     validate_endpoint_candidate_composition_paths,
 )
@@ -152,9 +154,11 @@ def test_full_perimeter_publishes_one_resolvable_bound_generation(tmp_path: Path
         "pair_support": 1,
         "exclusions": 0,
     }
-    loaded = resolve_loaded_endpoint_candidate_composition_release(pointer)
-    assert loaded.release.generation_id == resolved.generation_id
-    assert len(loaded.composition.choices) == 2
+    pointer_only = resolve_endpoint_candidate_composition_release_pointer(pointer)
+    with current_artifact_release(pointer_only.bundle):
+        loaded = load_endpoint_candidate_composition_release(pointer_only)
+    assert pointer_only.generation_id == resolved.generation_id
+    assert len(loaded.choices) == 2
     expected_bindings = {str(path.resolve()) for path in release.provenance_inputs}
     for artifact in resolved.artifacts.values():
         provenance = json.loads(sidecar_path(artifact).read_text(encoding="utf-8"))
@@ -190,6 +194,20 @@ def test_staged_accounting_failure_cannot_replace_prior_release(tmp_path: Path) 
             pointer_path=pointer,
         )
     assert pointer.read_bytes() == prior
+
+
+def test_consumer_lease_rejects_artifact_mutation_after_pointer_resolution(
+    tmp_path: Path,
+) -> None:
+    release = _route_release(tmp_path / "source")
+    pointer = tmp_path / "release" / "current.json"
+    _build(tmp_path, release, pointer)
+    pointer_only = resolve_endpoint_candidate_composition_release_pointer(pointer)
+    choices = pointer_only.artifacts["choices"]
+    choices.write_bytes(choices.read_bytes() + b"tamper-after-resolution")
+    with current_artifact_release(pointer_only.bundle):
+        with pytest.raises(RuntimeError, match="not current"):
+            load_endpoint_candidate_composition_release(pointer_only)
 
 
 def test_failed_day_and_interruption_preserve_previous_pointer(

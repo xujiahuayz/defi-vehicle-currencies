@@ -28,7 +28,8 @@ from ddvc.artifact_release import (
 )
 from ddvc.endpoint_candidate_composition_release import (
     ENDPOINT_CANDIDATE_COMPOSITION_RELEASE,
-    resolve_loaded_endpoint_candidate_composition_release,
+    load_endpoint_candidate_composition_release,
+    resolve_endpoint_candidate_composition_release_pointer,
 )
 from ddvc.paths import OUTPUT_DIR, REPO_ROOT
 
@@ -173,10 +174,11 @@ def run_vehicle_transition_e1(
     """Consume one four-table endpoint pointer and publish one three-file E1 release."""
 
     _claim, measures = load_registered_e1_design(specification_path)
-    loaded = resolve_loaded_endpoint_candidate_composition_release(release_pointer)
-    endpoint_release = loaded.release
+    endpoint_release = resolve_endpoint_candidate_composition_release_pointer(
+        release_pointer
+    )
     with current_artifact_release(endpoint_release.bundle):
-        bundle = loaded.composition
+        bundle = load_endpoint_candidate_composition_release(endpoint_release)
         outputs = build_e1_outputs(
             bundle.choices,
             release_calendar(bundle),

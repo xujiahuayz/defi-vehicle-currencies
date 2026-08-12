@@ -10,6 +10,7 @@ import pandas as pd
 
 from ddvc.artifact_release import (
     ArtifactRelease,
+    current_artifact_release,
     publish_artifact_release,
     resolve_artifact_release,
 )
@@ -21,6 +22,7 @@ from ddvc.endpoint_candidate_composition import (
     validate_endpoint_candidate_composition,
 )
 from ddvc.paths import DATA_DIR
+from ddvc.provenance import verify
 
 
 ENDPOINT_CANDIDATE_COMPOSITION_RELEASE_RELATIVE = (
@@ -56,14 +58,6 @@ class EndpointCandidateCompositionRelease:
     @property
     def artifacts(self) -> Mapping[str, Path]:
         return self.bundle.artifacts
-
-
-@dataclass(frozen=True)
-class LoadedEndpointCandidateCompositionRelease:
-    """One resolved release plus its single-read validated four-table payload."""
-
-    release: EndpointCandidateCompositionRelease
-    composition: EndpointCandidateComposition
 
 
 def read_endpoint_candidate_composition(
@@ -154,13 +148,16 @@ def resolve_endpoint_candidate_composition_release(
 ) -> EndpointCandidateCompositionRelease:
     """Resolve one current generation and validate its complete accounting contract."""
 
-    return resolve_loaded_endpoint_candidate_composition_release(pointer_path).release
+    release = resolve_endpoint_candidate_composition_release_pointer(pointer_path)
+    with current_artifact_release(release.bundle):
+        load_endpoint_candidate_composition_release(release)
+    return release
 
 
-def resolve_loaded_endpoint_candidate_composition_release(
+def resolve_endpoint_candidate_composition_release_pointer(
     pointer_path: Path = ENDPOINT_CANDIDATE_COMPOSITION_RELEASE,
-) -> LoadedEndpointCandidateCompositionRelease:
-    """Resolve and validate one generation without making a consumer read it twice."""
+) -> EndpointCandidateCompositionRelease:
+    """Resolve the immutable pointer; the consuming lease owns payload loading."""
 
     bundle = resolve_artifact_release(
         pointer_path,
@@ -169,7 +166,22 @@ def resolve_loaded_endpoint_candidate_composition_release(
         filenames=ENDPOINT_CANDIDATE_COMPOSITION_RELEASE_FILENAMES,
         require_current_provenance=True,
     )
-    observed = read_endpoint_candidate_composition(bundle.artifacts)
+    return EndpointCandidateCompositionRelease(bundle)
+
+
+def load_endpoint_candidate_composition_release(
+    release: EndpointCandidateCompositionRelease,
+) -> EndpointCandidateComposition:
+    """Load and validate one resolved release while its consumer holds the lease."""
+
+    release.bundle.assert_current()
+    for name, path in release.artifacts.items():
+        verdict = verify(path)
+        if verdict.get("status") != "ok":
+            raise RuntimeError(
+                f"endpoint-candidate {name} artifact is not current: {verdict.get('status')}"
+            )
+    observed = read_endpoint_candidate_composition(release.artifacts)
     validated = validate_endpoint_candidate_composition(observed)
     for name in ENDPOINT_CANDIDATE_COMPOSITION_RELEASE_FILENAMES:
         try:
@@ -182,5 +194,5 @@ def resolve_loaded_endpoint_candidate_composition_release(
             raise ValueError(
                 f"endpoint-candidate {name} table is not in canonical validated order"
             ) from error
-    release = EndpointCandidateCompositionRelease(bundle)
-    return LoadedEndpointCandidateCompositionRelease(release, validated)
+    release.bundle.assert_current()
+    return validated
