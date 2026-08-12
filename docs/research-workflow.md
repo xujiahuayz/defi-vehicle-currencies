@@ -210,6 +210,8 @@ It remains true that the corpus uses em dashes, "rather than" and three-item lis
 
 **No internal process in any deliverable.** No slide or paragraph reconciles the work against its own earlier plans, renumbers propositions, references pipeline phases, or opens with limitations. Reporting a null is mandatory and belongs in results, stated as a finding. Performed uncertainty at the reader is a different thing and has no place there.
 
+**State the supported result affirmatively; consolidate identification boundaries.** The empirical ledger records whether an estimate is descriptive, quasi-experimental or causal, but the paper does not append an unproved opposite to each supported sentence. Say that two variables are associated, or that one change is larger in a named regime, and reserve non-identification, alternative explanations and caveats for the design paragraph or a consolidated discussion where they materially govern interpretation. Full-text inspection of the 14 JFE exemplars supports this placement: ten never use “causal” at all; explicit noncausal caveats in the descriptive papers appear at the design boundary or in discussion/conclusion, while papers with natural experiments or instruments make affirmative causal claims. This rule never licenses causal verbs for a descriptive design.
+
 ---
 
 ## 1. What the venue appears to require (node A output, literature audit reopened)
