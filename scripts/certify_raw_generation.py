@@ -11,7 +11,7 @@ import subprocess
 from concurrent.futures import ThreadPoolExecutor, as_completed
 from pathlib import Path
 
-from ddvc.paths import DATA_DIR
+from ddvc.paths import DATA_DIR, RAW_MARKET_DATA_LOCK
 from ddvc.fetch.dune import fetch_dune_month
 from ddvc.fetch.raw import (
     fetch_source_day,
@@ -48,7 +48,7 @@ from ddvc.raw_certification import (
     write_retro_certificate,
 )
 from ddvc.artifact_release import canonical_json_sha256, file_sha256
-from ddvc.runtime import atomic_output, bounded_workers
+from ddvc.runtime import atomic_output, bounded_workers, exclusive_job
 
 
 EVIDENCE_PREPARATION_POLICY = "legacy-raw-evidence-preparation-v1"
@@ -681,14 +681,15 @@ def main() -> int:
         print(json.dumps(payload, indent=2, sort_keys=True))
         return 0
     if args.command == "promote-source-day":
-        payload = promote_source_day(
-            args.source,
-            dt.datetime.strptime(args.day, "%Y%m%d").date(),
-            set(args.stream),
-            candidate_root=args.candidate_root,
-            evidence_root=args.evidence_root,
-            data_root=args.data_root,
-        )
+        with exclusive_job(RAW_MARKET_DATA_LOCK, job="raw source-day promotion"):
+            payload = promote_source_day(
+                args.source,
+                dt.datetime.strptime(args.day, "%Y%m%d").date(),
+                set(args.stream),
+                candidate_root=args.candidate_root,
+                evidence_root=args.evidence_root,
+                data_root=args.data_root,
+            )
         print(json.dumps(payload, indent=2, sort_keys=True))
         return 0
     try:
@@ -699,27 +700,28 @@ def main() -> int:
         )
     except ValueError as exc:
         parser.error(str(exc))
-    local = scan_installed_generation(
-        args.data_root,
-        args.work_dir,
-        workers=bounded_workers(args.workers),
-        partitions=partitions,
-    )
-    if args.command == "local-scan":
-        summary = publish_local_scan(
-            args.output,
-            args.certificate_output,
-            local,
-            partitions,
+    with exclusive_job(RAW_MARKET_DATA_LOCK, job="raw generation certification"):
+        local = scan_installed_generation(
+            args.data_root,
+            args.work_dir,
+            workers=bounded_workers(args.workers),
+            partitions=partitions,
         )
-        print(json.dumps(summary, indent=2, sort_keys=True))
-        return int(summary["failed"] != 0)
-    certificate = write_retro_certificate(
-        args.output,
-        local,
-        generation_evidence=args.generation_evidence,
-        adjudication_evidence=args.adjudication_evidence,
-    )
+        if args.command == "local-scan":
+            summary = publish_local_scan(
+                args.output,
+                args.certificate_output,
+                local,
+                partitions,
+            )
+            print(json.dumps(summary, indent=2, sort_keys=True))
+            return int(summary["failed"] != 0)
+        certificate = write_retro_certificate(
+            args.output,
+            local,
+            generation_evidence=args.generation_evidence,
+            adjudication_evidence=args.adjudication_evidence,
+        )
     print(json.dumps(certificate, indent=2, sort_keys=True))
     return int(certificate["status"] != "passed")
 

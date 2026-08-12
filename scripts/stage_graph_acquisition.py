@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Validate the Graph inventory or stage an explicitly selected thin acquisition."""
+"""Validate the Graph inventory and certify that installed data need no fetch."""
 
 from __future__ import annotations
 
@@ -8,14 +8,11 @@ import json
 from pathlib import Path
 
 from ddvc.fetch.acquisition import GRAPH_ACQUISITION_FORECAST, GRAPH_ACQUISITION_FREEZE, GRAPH_ACTIVE_MANIFEST, GRAPH_CANARY_CURRENT, GRAPH_CANARY_CURRENT_EVIDENCE, GRAPH_CANARY_EVIDENCE, GRAPH_CANARY_FINAL, GRAPH_NEW_MANIFEST, GRAPH_ROOT_POPULATION, GRAPH_SCHEMA_INVENTORY, GRAPH_THIN_CONSUMER_AUDIT, validate_prelaunch_inputs
-from ddvc.fetch.acquisition_release import acquisition_tasks, publish_graph_acquisition
-from ddvc.fetch.material_consumers import GRAPH_MATERIAL_CONSUMER_INTENTS, validate_material_consumer_selection
+from ddvc.fetch.acquisition_release import acquisition_tasks
 from ddvc.fetch.thin_consumer_audit import resolve_thin_consumer_audit
-from ddvc.paths import DATA_DIR, PRIMARY_REPO_ROOT
-from ddvc.runtime import exclusive_job
+from ddvc.paths import PRIMARY_REPO_ROOT
 
 
-DEFAULT_POINTER = DATA_DIR / "raw" / "thegraph_d1" / "current.json"
 DEFAULT_DATA_ROOT = PRIMARY_REPO_ROOT / "data"
 DEFAULT_CERTIFICATE_ROOT = DEFAULT_DATA_ROOT / "processed" / "graph_thin_consumer_audit" / "source_markers"
 
@@ -51,12 +48,6 @@ def main() -> int:
     parser.add_argument("--thin-audit", type=Path, default=GRAPH_THIN_CONSUMER_AUDIT)
     parser.add_argument("--data-root", type=Path, default=DEFAULT_DATA_ROOT)
     parser.add_argument("--certificate-root", type=Path, default=DEFAULT_CERTIFICATE_ROOT)
-    parser.add_argument("--pointer", type=Path, default=DEFAULT_POINTER)
-    parser.add_argument("--max-pages-per-chunk", type=int, default=10_000)
-    parser.add_argument("--workers", type=int, default=5)
-    parser.add_argument("--stream", action="append", default=[], metavar="SOURCE/STREAM", help="stage one named stream; repeat for a bounded thin acquisition")
-    parser.add_argument("--consumer", choices=sorted(GRAPH_MATERIAL_CONSUMER_INTENTS), help="closed material-consumer intent whose reviewed allowlist owns the selected streams")
-    parser.add_argument("--execute", action="store_true", help="perform only the explicitly selected fetch; omitted means inventory validation only")
     args = parser.parse_args()
     prelaunch = validate_prelaunch_inputs(
         freeze_path=args.freeze,
@@ -82,48 +73,10 @@ def main() -> int:
         raise ValueError("prelaunch canary and frozen manifest stream perimeters disagree")
     try:
         certification = certify_installed_no_fetch(thin_audit=args.thin_audit, data_root=args.data_root, certificate_root=args.certificate_root, prelaunch=prelaunch)
-    except (FileNotFoundError, OSError, ValueError) as error:
-        if args.execute:
-            raise
+    except (FileNotFoundError, OSError, RuntimeError, ValueError) as error:
         print(json.dumps({"status": "inventory_validated_only_certification_unavailable", "inventoried_streams": len(tasks), "freeze_sha256": prelaunch["freeze_sha256"], "certification_error": str(error)}, sort_keys=True))
         return 0
-    if not args.execute:
-        print(json.dumps({"status": "inventory_validated_no_fetch", "inventoried_streams": len(tasks), "freeze_sha256": prelaunch["freeze_sha256"], "thin_consumer_audit_sha256": certification["audit_sha256"]}, sort_keys=True))
-        return 0
-    if not args.stream or not args.consumer:
-        raise ValueError("execution requires at least one --stream and one closed --consumer intent; the frozen inventory is not an acquisition plan")
-    requested = []
-    for value in args.stream:
-        source, separator, stream = value.partition("/")
-        if not separator or not source or not stream:
-            raise ValueError(f"invalid --stream {value!r}; expected SOURCE/STREAM")
-        requested.append((source, stream))
-    if len(requested) != len(set(requested)):
-        raise ValueError("selected Graph streams contain duplicates")
-    task_map = {(task.source, task.entity.stream): task for task in tasks}
-    unknown = sorted(set(requested).difference(task_map))
-    if unknown:
-        raise ValueError(f"selected Graph streams are outside the frozen inventory: {unknown}")
-    validate_material_consumer_selection(args.consumer, set(requested))
-    selected_tasks = tuple(task_map[key] for key in sorted(requested))
-    inputs = [args.freeze, args.inventory, args.active_manifest, args.new_manifest, args.canary, args.canary_evidence, args.current_canary, args.current_canary_evidence, args.root_population, args.forecast, args.thin_audit]
-    with exclusive_job(args.pointer.with_suffix(".lock"), job="selected Graph acquisition"):
-        publish_graph_acquisition(
-            pointer_path=args.pointer,
-            tasks=selected_tasks,
-            inputs=inputs,
-            code_sources=[
-                "scripts/stage_graph_acquisition.py",
-                "src/ddvc/fetch/acquisition.py",
-                "src/ddvc/fetch/acquisition_release.py",
-                "src/ddvc/fetch/raw.py",
-                "src/ddvc/fetch/schemas.py",
-            ],
-            max_pages_per_chunk=args.max_pages_per_chunk,
-            workers=args.workers,
-            material_consumer=args.consumer,
-        )
-    print(json.dumps({"status": "released", "streams": len(selected_tasks), "pointer": str(args.pointer)}, sort_keys=True))
+    print(json.dumps({"status": "inventory_validated_no_fetch", "inventoried_streams": len(tasks), "freeze_sha256": prelaunch["freeze_sha256"], "thin_consumer_audit_sha256": certification["audit_sha256"]}, sort_keys=True))
     return 0
 
 

@@ -71,7 +71,8 @@
     "authorized_fetch": {
       "bytes": 0,
       "graph_calls": 0,
-      "streams": 0
+      "stream_count": 0,
+      "streams": []
     },
     "available_disk_bytes": 5997815668736,
     "available_disk_evidence": {
@@ -121,7 +122,7 @@
       "dense_rows_per_day_per_stream": 10000,
       "temporal_observed_peak_multiplier": 2
     },
-    "selection_policy": "a fetch requires a named consumer, a material missing field, and explicit selected streams",
+    "selection_policy": "the reviewed registry authorizes no incremental stream; adding one requires a reviewed executor and measured budget",
     "stress_graph_calls_new_streams": 552679,
     "total_graph_call_forecast": {
       "central": 701456,

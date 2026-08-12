@@ -143,6 +143,9 @@ def main() -> int:
     population = json.loads(args.root_population.read_text(encoding="utf-8"))
     freeze_hash = sha256_file(args.freeze)
     thin_audit = validate_thin_consumer_audit_envelope(args.thin_audit)
+    authorization = thin_audit["authorized_graph_acquisition"]
+    if int(authorization["stream_count"]):
+        raise ValueError("incremental Graph acquisition execution is disabled; a nonzero registry requires a reviewed executor and measured budget")
     for name, payload in (("final canary", final), ("current canary", current), ("root population", population)):
         if payload.get("freeze_sha256") != freeze_hash:
             raise ValueError(f"{name} is not bound to the current freeze")
@@ -371,8 +374,8 @@ def main() -> int:
         },
         "forecast": {
             "forecast_class": "whole_inventory_engineering_scenarios_not_an_acquisition_plan",
-            "authorized_fetch": {"streams": 0, "bytes": 0, "graph_calls": 0},
-            "selection_policy": "a fetch requires a named consumer, a material missing field, and explicit selected streams",
+            "authorized_fetch": {**authorization, "bytes": 0, "graph_calls": 0},
+            "selection_policy": "the reviewed registry authorizes no incremental stream; adding one requires a reviewed executor and measured budget",
             "active_bytes": total_active,
             "new_byte_scenarios_not_bounds": {"low": total_new_low, "central": total_new_central, "high": total_new_high},
             "generation_byte_scenarios_not_bounds": {

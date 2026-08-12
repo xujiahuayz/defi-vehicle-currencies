@@ -3,15 +3,17 @@ from __future__ import annotations
 import datetime as dt
 import gzip
 import json
+import threading
 from pathlib import Path
 
 import pytest
 
 from ddvc.fetch.material_consumers import ExistingStreamRequirement, GraphMaterialConsumerIntent, material_consumer_registry_sha256
 from ddvc.fetch.raw import installed_source_day_paths
-from ddvc.fetch.thin_consumer_audit import build_thin_consumer_audit
-from ddvc.raw_certification import RawPartition, _scan_partition, write_local_scan_certificate
+from ddvc.fetch.thin_consumer_audit import build_thin_consumer_audit, resolve_thin_consumer_audit, validate_thin_consumer_audit_envelope
 from ddvc.provenance import portable_content_sha256
+from ddvc.raw_certification import RawPartition, _scan_partition, write_local_scan_certificate
+from ddvc.runtime import exclusive_job
 from scripts.stage_graph_acquisition import certify_installed_no_fetch
 
 
@@ -157,3 +159,56 @@ def test_thin_consumer_resolver_rejects_registry_drift(tmp_path: Path, monkeypat
     drifted["consumer"] = GraphMaterialConsumerIntent(reason="changed materiality reason", existing_streams=current.existing_streams, allowed_new_streams=current.allowed_new_streams, max_selected_streams=current.max_selected_streams)
     with pytest.raises(ValueError, match="stale consumer registry identity"):
         certify_installed_no_fetch(thin_audit=audit_path, data_root=data_root, certificate_root=certificate_root, prelaunch=prelaunch_identity(audit_path, intents), intents=drifted)
+
+
+def test_thin_consumer_envelope_rejects_authorization_drift(tmp_path: Path, monkeypatch) -> None:
+    audit_path, _data_root, _certificate_root, _raw_path, intents = certified_audit(tmp_path, monkeypatch)
+    payload = json.loads(audit_path.read_text(encoding="utf-8"))
+    payload["authorized_graph_acquisition"] = {
+        "streams": ["uniswap_v3/swaps"],
+        "stream_count": 1,
+    }
+    audit_path.write_text(json.dumps(payload), encoding="utf-8")
+    with pytest.raises(ValueError, match="stale acquisition authorization"):
+        validate_thin_consumer_audit_envelope(audit_path, intents=intents)
+
+
+def test_resolver_holds_raw_mutation_lease_across_source_reopen(tmp_path: Path, monkeypatch) -> None:
+    audit_path, data_root, certificate_root, raw_path, intents = certified_audit(tmp_path, monkeypatch)
+    mutation_lock = tmp_path / "raw-mutation.lock"
+    entered_loader = threading.Event()
+    release_loader = threading.Event()
+    resolver_errors: list[BaseException] = []
+    from ddvc import raw_certification
+
+    original_loader = raw_certification.load_certified_partition_ledger
+
+    def paused_loader(*args, **kwargs):
+        entered_loader.set()
+        assert release_loader.wait(timeout=10)
+        return original_loader(*args, **kwargs)
+
+    monkeypatch.setattr(raw_certification, "load_certified_partition_ledger", paused_loader)
+
+    def resolve() -> None:
+        try:
+            resolve_thin_consumer_audit(
+                audit_path,
+                data_root=data_root,
+                certificate_root=certificate_root,
+                intents=intents,
+                mutation_lock=mutation_lock,
+            )
+        except BaseException as error:
+            resolver_errors.append(error)
+
+    resolver = threading.Thread(target=resolve)
+    resolver.start()
+    assert entered_loader.wait(timeout=10)
+    with pytest.raises(RuntimeError, match="already running"):
+        with exclusive_job(mutation_lock, job="raw market-data fetch or enrichment"):
+            raw_path.write_bytes(raw_path.read_bytes() + b"forbidden mutation")
+    release_loader.set()
+    resolver.join(timeout=10)
+    assert not resolver.is_alive()
+    assert not resolver_errors

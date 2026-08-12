@@ -415,6 +415,15 @@ def validate_prelaunch_inputs(
         raise ValueError("Graph forecast has stale thin_consumer_audit_sha256")
     if forecast_inputs.get("consumer_registry_sha256") != thin_audit["consumer_registry_sha256"]:
         raise ValueError("Graph forecast has stale consumer_registry_sha256")
+    expected_authorization = {
+        **thin_audit["authorized_graph_acquisition"],
+        "bytes": 0,
+        "graph_calls": 0,
+    }
+    if (forecast.get("forecast") or {}).get("authorized_fetch") != expected_authorization:
+        raise ValueError("Graph forecast has stale acquisition authorization or budget")
+    if int(expected_authorization["stream_count"]):
+        raise ValueError("incremental Graph acquisition execution is disabled")
     _validate_canary_evidence(canary, canary_evidence_path, label="canary")
     _validate_canary_evidence(
         current_canary,

@@ -249,4 +249,21 @@ def material_consumer_registry_sha256(
     return _canonical_json_sha256(material_consumer_registry_identity(registry))
 
 
+def graph_acquisition_authorization(
+    registry: Mapping[str, GraphMaterialConsumerIntent] | None = None,
+) -> dict[str, object]:
+    """Return the exact incremental-fetch perimeter admitted by the registry."""
+
+    registry = GRAPH_MATERIAL_CONSUMER_INTENTS if registry is None else registry
+    validate_material_consumer_registry(registry)
+    streams = sorted(
+        {
+            f"{source}/{stream}"
+            for intent in registry.values()
+            for source, stream in intent.allowed_new_streams
+        }
+    )
+    return {"streams": streams, "stream_count": len(streams)}
+
+
 validate_material_consumer_registry()

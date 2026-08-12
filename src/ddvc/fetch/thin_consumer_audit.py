@@ -8,9 +8,11 @@ from pathlib import Path
 from typing import TYPE_CHECKING, Mapping
 
 from ddvc.calendar import RESEARCH_SAMPLE_END
-from ddvc.fetch.material_consumers import GRAPH_MATERIAL_CONSUMER_INTENTS, GraphMaterialConsumerIntent, material_consumer_registry_identity, material_consumer_registry_sha256, validate_material_consumer_registry
+from ddvc.fetch.material_consumers import GRAPH_MATERIAL_CONSUMER_INTENTS, GraphMaterialConsumerIntent, graph_acquisition_authorization, material_consumer_registry_identity, material_consumer_registry_sha256, validate_material_consumer_registry
 from ddvc.fetch.sources import get_source, iter_days
+from ddvc.paths import RAW_MARKET_DATA_LOCK
 from ddvc.provenance import portable_content_sha256
+from ddvc.runtime import exclusive_job
 
 if TYPE_CHECKING:
     from ddvc.raw_certification import RawPartition
@@ -36,7 +38,7 @@ def contract_fields(source: str, stream: str) -> set[str]:
     return set(contract.required_paths).union(*(set(group) for group in contract.required_any_paths))
 
 
-def build_thin_consumer_audit(
+def _build_thin_consumer_audit_unlocked(
     *,
     data_root: Path,
     certificate_root: Path,
@@ -89,7 +91,7 @@ def build_thin_consumer_audit(
             }
         )
 
-    authorized = sorted({f"{source}/{stream}" for intent in intents.values() for source, stream in intent.allowed_new_streams})
+    authorization = graph_acquisition_authorization(intents)
     return {
         "schema_version": 2,
         "kind": "graph_thin_consumer_materiality_audit",
@@ -97,9 +99,26 @@ def build_thin_consumer_audit(
         "consumer_registry_sha256": material_consumer_registry_sha256(intents),
         "source_release_markers": source_markers,
         "consumers": consumers,
-        "authorized_graph_acquisition": {"streams": authorized, "stream_count": len(authorized)},
+        "authorized_graph_acquisition": authorization,
         "selection_rule": "Only a closed named consumer intent may authorize exact missing streams; installed-stream sufficiency is bound to certified partition identities and explicit consumer fields.",
     }
+
+
+def build_thin_consumer_audit(
+    *,
+    data_root: Path,
+    certificate_root: Path,
+    intents: Mapping[str, GraphMaterialConsumerIntent] | None = None,
+    mutation_lock: Path = RAW_MARKET_DATA_LOCK,
+) -> dict[str, object]:
+    """Build exact proof while excluding every canonical raw-data writer."""
+
+    with exclusive_job(mutation_lock, job="Graph thin-consumer source certification"):
+        return _build_thin_consumer_audit_unlocked(
+            data_root=data_root,
+            certificate_root=certificate_root,
+            intents=intents,
+        )
 
 
 def resolve_thin_consumer_audit(
@@ -108,16 +127,18 @@ def resolve_thin_consumer_audit(
     data_root: Path,
     certificate_root: Path,
     intents: Mapping[str, GraphMaterialConsumerIntent] | None = None,
+    mutation_lock: Path = RAW_MARKET_DATA_LOCK,
 ) -> dict[str, object]:
     """Recompute the checked-in audit from live certificates and raw identities."""
 
-    recorded_identity = validate_thin_consumer_audit_envelope(audit_path, intents=intents)
-    recorded = recorded_identity["audit"]
-    intents = GRAPH_MATERIAL_CONSUMER_INTENTS if intents is None else intents
-    recomputed = build_thin_consumer_audit(data_root=data_root, certificate_root=certificate_root, intents=intents)
-    if recorded != recomputed:
-        raise ValueError("Graph thin-consumer audit disagrees with live certified raw identities")
-    return recorded_identity
+    with exclusive_job(mutation_lock, job="Graph thin-consumer source certification"):
+        recorded_identity = validate_thin_consumer_audit_envelope(audit_path, intents=intents)
+        recorded = recorded_identity["audit"]
+        intents = GRAPH_MATERIAL_CONSUMER_INTENTS if intents is None else intents
+        recomputed = _build_thin_consumer_audit_unlocked(data_root=data_root, certificate_root=certificate_root, intents=intents)
+        if recorded != recomputed:
+            raise ValueError("Graph thin-consumer audit disagrees with live certified raw identities")
+        return recorded_identity
 
 
 def validate_thin_consumer_audit_envelope(
@@ -142,8 +163,12 @@ def validate_thin_consumer_audit_envelope(
     registry_sha256 = material_consumer_registry_sha256(intents)
     if recorded.get("consumer_registry_sha256") != registry_sha256:
         raise ValueError("Graph thin-consumer audit has stale consumer registry identity")
+    authorization = graph_acquisition_authorization(intents)
+    if recorded.get("authorized_graph_acquisition") != authorization:
+        raise ValueError("Graph thin-consumer audit has stale acquisition authorization")
     return {
         "audit": recorded,
         "audit_sha256": portable_content_sha256(audit_path),
         "consumer_registry_sha256": registry_sha256,
+        "authorized_graph_acquisition": authorization,
     }
