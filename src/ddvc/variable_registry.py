@@ -922,9 +922,9 @@ VARIABLE_SPECS: tuple[VariableSpec, ...] = (
     ),
     VariableSpec(
         group="Network and route-denominator controls",
-        name="Route betweenness",
+        name="Intent-route intermediary incidence",
         column="betweenness_centrality",
-        notation=r"$\mathrm{Betweenness}_{k,t}$",
+        notation=r"$\mathrm{RouteIncidence}^{N}_{k,t}$",
         formula=(
             r"$\displaystyle\frac{N^{I}_{k,t}}"
             r"{N_t-N^{\mathrm{in}}_{k,t}-N^{\mathrm{out}}_{k,t}}$"
@@ -935,16 +935,19 @@ VARIABLE_SPECS: tuple[VariableSpec, ...] = (
             r"where $k$ is the input or output endpoint. Superscripts identify each route role."
         ),
         source="data/metrics/<date>.parquet",
-        used_for="Network-topology robustness only; not a primary vehicle-extent measure.",
+        used_for=(
+            "Historical realized-route diagnostic; this is intermediary incidence, not "
+            "graph-theoretic shortest-path betweenness and not a primary dominance measure."
+        ),
         include_in_summary=True,
         summary_panel="Vehicle-use measures, token-day",
         summary_unit="Fraction (0--1)",
     ),
     VariableSpec(
         group="Network and route-denominator controls",
-        name="Volume-weighted betweenness",
+        name="Value-weighted intent-route intermediary incidence",
         column="volume_weighted_betweenness",
-        notation=r"$\mathrm{Betweenness}^{\mathrm{vol}}_{k,t}$",
+        notation=r"$\mathrm{RouteIncidence}^{V}_{k,t}$",
         formula=(
             r"$\displaystyle\frac{\mathrm{IVol}_{k,t}}"
             r"{\mathrm{Vol}_t-\mathrm{Vol}^{\mathrm{in}}_{k,t}"
@@ -952,11 +955,14 @@ VARIABLE_SPECS: tuple[VariableSpec, ...] = (
         ),
         unit="Fraction (0--1)",
         construction=(
-            r"USD-volume analogue of $\mathrm{Betweenness}_{k,t}$ using the same route "
+            r"USD-volume analogue of $\mathrm{RouteIncidence}^{N}_{k,t}$ using the same route "
             r"universe and input/output-endpoint exclusions."
         ),
         source="data/metrics/<date>.parquet",
-        used_for="Network-theoretic robustness.",
+        used_for=(
+            "Historical realized-route diagnostic; distinct from graph-theoretic "
+            "value-weighted betweenness."
+        ),
     ),
     VariableSpec(
         group="Network and route-denominator controls",

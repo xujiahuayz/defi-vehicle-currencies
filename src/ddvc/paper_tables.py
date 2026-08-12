@@ -92,6 +92,7 @@ def validate_output_stem(stem: str) -> str:
 def _standalone_document(table_latex: str, preview_width: str | None = None) -> str:
     lines = [
         r"\documentclass[border=2pt]{standalone}",
+        r"\usepackage{amsmath}",
         r"\usepackage{booktabs}",
         r"\usepackage{array}",
         r"\usepackage{tabularx}",
