@@ -58,6 +58,14 @@ class EndpointCandidateCompositionRelease:
         return self.bundle.artifacts
 
 
+@dataclass(frozen=True)
+class LoadedEndpointCandidateCompositionRelease:
+    """One resolved release plus its single-read validated four-table payload."""
+
+    release: EndpointCandidateCompositionRelease
+    composition: EndpointCandidateComposition
+
+
 def read_endpoint_candidate_composition(
     paths: Mapping[str, Path],
 ) -> EndpointCandidateComposition:
@@ -146,6 +154,14 @@ def resolve_endpoint_candidate_composition_release(
 ) -> EndpointCandidateCompositionRelease:
     """Resolve one current generation and validate its complete accounting contract."""
 
+    return resolve_loaded_endpoint_candidate_composition_release(pointer_path).release
+
+
+def resolve_loaded_endpoint_candidate_composition_release(
+    pointer_path: Path = ENDPOINT_CANDIDATE_COMPOSITION_RELEASE,
+) -> LoadedEndpointCandidateCompositionRelease:
+    """Resolve and validate one generation without making a consumer read it twice."""
+
     bundle = resolve_artifact_release(
         pointer_path,
         kind=ENDPOINT_CANDIDATE_COMPOSITION_RELEASE_KIND,
@@ -153,5 +169,18 @@ def resolve_endpoint_candidate_composition_release(
         filenames=ENDPOINT_CANDIDATE_COMPOSITION_RELEASE_FILENAMES,
         require_current_provenance=True,
     )
-    validate_endpoint_candidate_composition_paths(bundle.artifacts)
-    return EndpointCandidateCompositionRelease(bundle)
+    observed = read_endpoint_candidate_composition(bundle.artifacts)
+    validated = validate_endpoint_candidate_composition(observed)
+    for name in ENDPOINT_CANDIDATE_COMPOSITION_RELEASE_FILENAMES:
+        try:
+            pd.testing.assert_frame_equal(
+                getattr(observed, name),
+                getattr(validated, name),
+                check_like=False,
+            )
+        except AssertionError as error:
+            raise ValueError(
+                f"endpoint-candidate {name} table is not in canonical validated order"
+            ) from error
+    release = EndpointCandidateCompositionRelease(bundle)
+    return LoadedEndpointCandidateCompositionRelease(release, validated)

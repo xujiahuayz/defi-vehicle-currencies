@@ -17,6 +17,7 @@ from ddvc.endpoint_candidate_composition import (
 )
 from ddvc.endpoint_candidate_composition_release import (
     publish_endpoint_candidate_composition_release,
+    resolve_loaded_endpoint_candidate_composition_release,
     resolve_endpoint_candidate_composition_release,
     validate_endpoint_candidate_composition_paths,
 )
@@ -151,6 +152,9 @@ def test_full_perimeter_publishes_one_resolvable_bound_generation(tmp_path: Path
         "pair_support": 1,
         "exclusions": 0,
     }
+    loaded = resolve_loaded_endpoint_candidate_composition_release(pointer)
+    assert loaded.release.generation_id == resolved.generation_id
+    assert len(loaded.composition.choices) == 2
     expected_bindings = {str(path.resolve()) for path in release.provenance_inputs}
     for artifact in resolved.artifacts.values():
         provenance = json.loads(sidecar_path(artifact).read_text(encoding="utf-8"))
