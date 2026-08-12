@@ -1,39 +1,51 @@
-# The Making of Vehicle Currencies
+# The Making of Dominant Vehicle Currencies
 
-This repository contains the data pipeline, analysis code, literature workspace, and manuscript source for the current vehicle-currencies paper.
+This repository contains the acquisition, reconstruction, analysis, literature, paper, and presentation workflow for the DeFi vehicle-currencies project.
 
-## Repository Layout
+## Start Here
 
-- `src/ddvc/` — importable research package for fetching, route reconstruction, pricing, metrics, analysis, and paper export helpers.
-- `scripts/` — command-line entry points for reproducible fetch/build/analysis steps. Mathematica/Wolfram source belongs under `scripts/model/`.
-- `scripts/process/` — explicit data-processing steps. Each script is a directly runnable wrapper that reads data-layer inputs and writes one reusable analysis table under `data/processed/` or `data/empirical/`.
-- `scripts/tabulate/` — one script per journal table. A script named `render_<exhibit>.py` owns exactly one table and writes `output/tables/<exhibit>.tex` containing only a `tabular` or `tabularx` body, plus `output/tables/<exhibit>.pdf` for inspection. Use content-driven or automatically allocated column widths rather than hard-coded fractions of `\linewidth`. Table numbering belongs only in the paper or slides; output filenames must be descriptive and unnumbered. Paper-facing table renderers do not write data sidecars. Captions, labels, notes, sizing, and outer `table` wrappers belong in the paper or slides. Shared table-output helpers live in `scripts/tabulate/utils.py`.
-- `data/` — local data workspace for raw responses, transient runtime files, processed panels, and run manifests. Data payloads are not committed.
-- `output/` — code-generated tables, figures, exhibits, macros, and inspection renders consumed by the paper or deck. It does not own the compiled paper or talk.
-- `paper/` — manuscript source and its single compiled review PDF.
-- `deck/` — presentation source and its single compiled review PDF, `deck/main.pdf`.
-- `literature/` — flat literature workspace for cited, related, and venue-style references.
-- `tests/` — offline tests for parsing, reconstruction, pricing, metrics, and analysis helpers.
+- [`docs/research-workflow.md`](docs/research-workflow.md) defines the iterative research graph and its gates.
+- [`docs/repository-data-map.md`](docs/repository-data-map.md) is the canonical map of repository ownership, data lineage, scientific roles, downstream consumers, and cleanup rules.
+- [`data/README.md`](data/README.md) gives concise operator guidance for the local data workspace.
+- [`output/README.md`](output/README.md) defines the code-to-deliverable handoff.
 
-## Recording Policy
+## Repository Topology
 
-- Put propositions, manuscript structure, and final paper wording in `paper/`.
-- Put executable analysis, model, and build logic in `scripts/` or `src/ddvc/`.
-- Put code-generated tables, figures, exhibits, macros, and inspection renders in `output/`; put the compiled paper and talk in their own deliverable directories.
-- Put local raw/intermediate/generated datasets in `data/`.
-- Put bibliography metadata and local PDF retrieval tooling in `literature/`.
-- Keep reviewer transcripts, one-off assistant notes, and scratch memos out of `paper/`; fold any durable paper point into the single outline or a manuscript source file.
-- Build paper exhibits as separate reproducible units. Tables live under `scripts/tabulate/`, plots under `scripts/figure/`, and diagrams under `scripts/diagram/` when those folders are needed. Do not add new monolithic exhibit builders for paper-facing artifacts. Scripts should stay directly runnable and thin; reusable functions belong in `src/ddvc/`.
-- Track paper-facing outputs under `output/tables/`, `output/figures/`, and `output/exhibits/`. Do not generate CSV artifacts, and do not replace CSV sidecars with pickle sidecars. Native serialized intermediates are allowed only for current downstream consumers, expensive reusable caches, or canonical data panels; prefer Parquet for data panels. Paper-facing table artifacts are TeX/PDF only, with no generated data sidecars and no hard-coded `table_01`/`figure_02` style numbering in output filenames.
-- Build the canonical wide observations table before rendering summary statistics, regressions, or exploratory plots:
+- `src/ddvc/` contains reusable research logic and registries.
+- `scripts/` contains thin, directly runnable acquisition, processing, analysis, and rendering entry points.
+- `data/` contains local evidence, canonical derived panels, runtime intermediates, and tracked provenance manifests; payloads are not committed.
+- `output/` contains code-generated tables, figures, exhibits, and inspection artifacts consumed by the paper and deck.
+- `literature/` contains the bibliography, admission records, full-text audit material, and retrieval metadata.
+- `paper/` and `deck/` contain the two authored deliverables and their review builds.
+- `docs/` contains research design, audit, findings, certification, and workflow records.
+- `tests/` verifies acquisition contracts, reconstruction, pricing, releases, metrics, and analysis behavior.
+
+## Environment
+
+Install runtime dependencies with:
 
 ```bash
-./scripts/run scripts/process/build_observations_table.py
+uv sync
 ```
 
-This writes `data/processed/observations_token_day.parquet`. Table renderers should read this table or another explicit processing output in a native serialized format.
+Install development dependencies with:
 
-Build the incremental raw-file inventory and render the descriptive tables with:
+```bash
+uv sync --extra dev
+```
+
+Run project commands through `./scripts/run`; it selects the current worktree's package source once and reuses the primary checkout's environment when a linked worktree has none.
+
+## Core Commands
+
+Plan or run the registered raw-market acquisition through the current sample boundary:
+
+```bash
+./scripts/run scripts/fetch_raw_market_data.py plan --dex all
+GRAPH_API_KEYS=... DUNE_API_KEYS=... ./scripts/run scripts/fetch_raw_market_data.py fetch --dex all --start genesis --end 2026-07-01
+```
+
+Build the raw inventory and descriptive paper tables:
 
 ```bash
 ./scripts/run scripts/process/build_raw_data_inventory.py
@@ -42,44 +54,16 @@ Build the incremental raw-file inventory and render the descriptive tables with:
 ./scripts/run scripts/tabulate/render_summary_statistics.py
 ```
 
-The inventory is `data/processed/raw_data_inventory.parquet`. It caches exact record counts only for raw files whose sidecars do not contain stream counts; the cache is consumed by the coverage tabulator and avoids rescanning unchanged compressed files. The paper-facing products are the tracked, unnumbered TeX/PDF pairs under `output/tables/`.
-
-## Graph API Keys
-
-Subgraph fetches read a rotating pool of gateway keys from `GRAPH_API_KEYS` in `.env`, comma-separated. `src/ddvc/fetch/graph.py` advances to the next key when one answers 401, 403, 429, or "payment required", so an exhausted key costs a wasted request rather than a failed run. Top the pool up with:
+Run tests with:
 
 ```bash
-./scripts/run scripts/mint_graph_keys.py --count 5 --email you@gmail.com
+./scripts/run -m unittest discover -s tests
 ```
 
-The Free Plan meters 100k queries a month per *account*, so each key needs a fresh account, which needs a burner wallet and a confirmed email. Each is recorded in `secrets/minted_graph_keys.json` with the wallet that owns it, the only route back into an account if a key must be reissued. That ledger holds private keys, so `secrets/` is gitignored and it needs an out-of-band backup. Spreading the free tier over many accounts is grey against The Graph's terms of service; the Growth plan, about $2 per 100k queries, is the clean alternative.
+## Sample Boundary
 
-## Current Target
+The current target is through 2026-06-30 UTC, represented as the half-open interval `start <= date < 2026-07-01`.
 
-The working sample target is through 2026-06-30 UTC, implemented as an exclusive end date of 2026-07-01 in fetch and build commands.
+## Source Credentials
 
-## Environment
-
-Install runtime dependencies from repo metadata with:
-
-```bash
-uv sync
-```
-
-For tests and development tools, install the development extra:
-
-```bash
-uv sync --extra dev
-```
-
-Run every project script and test through `./scripts/run`. It injects the current worktree's package source once, uses the primary checkout's environment when a linked worktree has none, and keeps a script directory from shadowing installed packages.
-
-## Results Evidence Map
-
-Regenerate the ignored result tables, the tracked TeX evidence map, and a local PDF render with:
-
-```bash
-./scripts/run scripts/build_results_evidence_outputs.py
-```
-
-This orchestrates the descriptive tabulators, supporting analytics, JFE main tables, core RQ tables, then `paper/results_evidence_map.tex` and `paper/results_evidence_map.pdf`. Analysis intermediates stay in native serialized formats under ignored analysis folders such as `output/empirical/`; `output/tables/` is reserved for tracked, descriptive TeX/PDF table artifacts. Both evidence-map artifacts are tracked. The PDF step uses `tectonic`, `latexmk`, or `pdflatex` when available, and falls back to a matplotlib review PDF on machines without a TeX engine.
+The Graph acquisition reads a comma-separated `GRAPH_API_KEYS` pool and Dune acquisition reads `DUNE_API_KEYS`. Secrets and the local key ledger remain outside git. The registered provider and protocol mapping is documented in [`docs/repository-data-map.md`](docs/repository-data-map.md#providers-protocols-and-scientific-layers); `src/ddvc/fetch/sources.py` is executable authority.

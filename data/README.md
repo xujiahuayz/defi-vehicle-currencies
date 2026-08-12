@@ -1,52 +1,31 @@
 # Data Workspace
 
-All data payloads are local and regenerated from code. Do not commit raw, interim, processed, or external data files.
+`data/` is the local evidence and derived-panel workspace. Payloads are ignored by git; compact provenance and release identities under `data/manifests/` are tracked. The canonical ownership, lineage, scientific-role, consumer, and cleanup map is [`docs/repository-data-map.md`](../docs/repository-data-map.md).
 
-## Layout
+## Working Contract
 
-- `raw/` — verbatim source responses fetched once from subgraphs, APIs, RPC calls, downloads, or other sources.
-- `interim/` — normalized intermediate files that preserve source identifiers and provenance.
-- `processed/` — route tables, metrics, analysis panels, and figure-source datasets.
-- `external/` — local licensed or manually supplied inputs, if any.
-- `manifests/` — lightweight run manifests that are safe to commit when they contain no secrets and no private-source references.
+- `raw/` retains immutable provider or chain responses. The Graph supplies the registered indexed-protocol streams, Dune supplies Fluid route records, direct Ethereum JSON-RPC supplies independent chain evidence and exact event or transaction fields, and `raw/external/` holds named off-chain sources.
+- `unified/` is the released daily cross-venue route topology reconstructed from certified raw swap streams.
+- `processed/` contains registered, purpose-bound analysis panels and release pointers.
+- `empirical/`, `metrics/`, and `exhibits/` contain specialized or legacy derived families whose owners and current status must be checked in the canonical map before use.
+- `interim/` is command-local scratch and must not become a scientific input.
+- `external/` is reserved for licensed or manually supplied inputs that cannot live under a named raw acquisition source.
+- `manifests/` contains tracked provenance for ignored data and generated output artifacts.
 
-## Date Convention
+Never select an input because a filename sounds current. Use the executable owner registry, release pointer, provenance stamp, or explicit findings freeze. Do not overwrite a released generation in place, and do not remove a generation until its consumers and release references have been checked.
 
-The target sample through 2026-06-30 UTC should be represented in scripts as `start <= date < 2026-07-01`.
+## Acquisition
 
-## Raw Market Fetch
-
-Plan the full genesis-through-last-complete-month raw fetch:
-
-```bash
-./scripts/run scripts/fetch_raw_market_data.py plan --dex all
-```
-
-Genesis is recorded by block first where known, with a cached UTC date used only
-for day partitioning. Audit the configured block/date against the first indexed
-swap in each Graph source before a full run:
+Audit registered genesis boundaries before a full fetch:
 
 ```bash
 GRAPH_API_KEYS=... ./scripts/run scripts/fetch_raw_market_data.py audit-genesis --dex all --strict
 ```
 
-Run the fetch after setting `GRAPH_API_KEYS` and, for Dune-backed sources such as
-Uniswap V1, SushiSwap V2, and Fluid, `DUNE_API_KEYS` in `.env` or the shell:
+Fetch the half-open sample through 2026-06-30 UTC:
 
 ```bash
 GRAPH_API_KEYS=... DUNE_API_KEYS=... ./scripts/run scripts/fetch_raw_market_data.py fetch --dex all --start genesis --end 2026-07-01
 ```
 
-The fetcher writes verbatim gzipped JSONL and tiny metadata sidecars under
-`data/raw/thegraph/<source>/` or `data/raw/dune/<source>/`. The source, stream,
-and date are all encoded in the filename, for example
-`uniswap_v3_swaps_20260630.jsonl.gz`. This keeps the raw tree shallow while
-avoiding one huge mixed-source directory. It over-fetches swap, daily-pool, LP
-mint/burn, V4 liquidity-modification, V2 reserve, and Dune `dex.trades` fields so
-route reconstruction, vehicle-route costs, liquidity concentration, LP
-repositioning, and settlement-implementation tests can be derived locally
-without repeated network queries.
-
-## Data Dictionary
-
-Column definitions will be added here as each table family is created. Keep this file as the only markdown file under `data/`.
+The raw fetcher writes source-, stream-, and date-addressed gzipped JSONL plus metadata sidecars. Exact Ethereum RPC acquisitions have their own immutable, range-addressed owners. The data layout is partitioned for restartability and bounded parallelism; a partition is not a scientific aggregation unit.
