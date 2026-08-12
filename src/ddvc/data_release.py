@@ -315,7 +315,7 @@ class ReleasePreinstallValidator:
         ]
 
     def validate_prepared_stamp(self, prepared_stamp: bytes) -> bytes:
-        """Recheck sources after stamping and embed their exact release identities."""
+        """Embed exact release identities; the caller rechecks once before install."""
 
         try:
             record = json.loads(prepared_stamp)
@@ -327,16 +327,19 @@ class ReleasePreinstallValidator:
             if isinstance(item, dict) and item.get("path") is not None
         }
         bindings = self._bindings()
-        missing = [
-            binding["path"]
-            for binding in bindings
-            if self._resolved_record_path(binding["path"]) not in input_paths
-        ]
+        anchors = {
+            release.ledger_path.resolve()
+            for release in self.releases
+        } | {
+            release.quarantine_path.resolve()
+            for release in self.releases
+            if release.quarantine_path is not None
+        }
+        missing = [self._record_path(path) for path in sorted(anchors) if path not in input_paths]
         if missing:
             raise RuntimeError(
-                f"prepared provenance omits {len(missing)} released inputs"
+                f"prepared provenance omits {len(missing)} release anchors"
             )
-        self(Path("<prepared-provenance>"))
         record["released_input_bindings"] = bindings
         return (
             json.dumps(record, indent=1, sort_keys=True) + "\n"

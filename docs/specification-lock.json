@@ -8,7 +8,7 @@
   "d3_certificate": null,
   "exploration_generation": null,
   "exploration_certificate": null,
-  "lock_hash": "f8a0d60e0a674cc6dc1285da883fb2001b4ff84f4e716d0d99703221b88cde94",
+  "lock_hash": "d321f697b544a4c3f407112cf34024956b336d45f3b36d5407e6b5fab8722f78",
   "paper_scope": "The making and displacement of vehicle-currency roles in Ethereum decentralised exchange",
   "global_rules": {
     "asset_identity": "canonical contract address; symbols are labels only",
@@ -43,6 +43,7 @@
       "dependent_variable": "stable intermediary episode share within native plus stable",
       "transformation": "level share and percentage-point change",
       "outlier_treatment": "none for counts; canonical endpoint round trips excluded by route definition",
+      "analysis_ready_panel": "D3 publishes one marker-last three-table endpoint-candidate composition generation over the exact released route calendar. The choices table has one ordered-endpoint, date, stable-or-native candidate, integration-scope, and ordered-venue-sequence cell with route counts plus raw, within-2x, and within-20-percent value support. The pair-support table is the exact full-market denominator and separately counts included primary choices, direct routes, direct splits, other intermediaries, multiple intermediaries, split or join paths, and nonsequential two-leg paths. The exclusions table records every route outside the primary choice object in mutually exclusive reason cells. The release pointer, not a loose Parquet filename, is the analysis input and must resolve all three provenance-bound tables before estimation.",
       "inference": "difference in daily means with 30-day HAC standard error",
       "primary_comparison": "2024 versus 2026",
       "mandatory_alternatives": {
@@ -76,6 +77,7 @@
       "admissible_interpretation": "vehicle composition rotates toward stable assets; count leadership is not sustained before 2026-Q2 and the backing mechanism is not homogeneous",
       "forbidden_interpretation": "monotone stable transition, persistent replacement before it is observed, or aggregator causality",
       "inputs": [
+        "data/processed/endpoint_candidate_composition_release/current.json",
         "data/processed/intermediation_by_type_daily.parquet",
         "data/processed/cross_venue_routing_daily.parquet",
         "data/processed/vehicle_excess_use_daily.parquet"

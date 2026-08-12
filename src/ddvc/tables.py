@@ -113,6 +113,8 @@ def publish_staged_artifact(temporary: Path, output: Path, *, code_sources: list
     )
     if prepared_validator is not None:
         prepared = prepared_validator(prepared)
+    if preinstall_validator is not None:
+        preinstall_validator(temporary)
     install_stamped_artifact(temporary, output, prepared)
 
 

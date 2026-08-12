@@ -51,10 +51,20 @@ DIAGNOSTIC_STAGES = (
     ),
 )
 
-def current_artifacts(paths: tuple[str, ...]) -> tuple[bool, list[str]]:
-    """Return whether every artifact exists with current input-aware provenance."""
+def current_stage_artifacts(stage: D3BuildStage) -> tuple[bool, list[str]]:
+    """Validate flat outputs normally and release pointers through their resolver."""
+
     bad = []
-    for relative in paths:
+    release_pointer = None
+    if stage.release_postcondition is not None:
+        release_pointer = stage.release_postcondition.pointer
+        try:
+            stage.release_postcondition.resolver(ROOT / release_pointer)
+        except (FileNotFoundError, OSError, RuntimeError, TypeError, ValueError) as error:
+            bad.append(f"{release_pointer}:release-invalid:{error}")
+    for relative in stage.outputs:
+        if relative == release_pointer:
+            continue
         path = ROOT / relative
         status = str(verify(path).get("status")) if path.exists() else "missing"
         if status != "ok":
@@ -250,7 +260,7 @@ def main() -> int:
             took = time.time() - started
             if returncode == 0:
                 current, bad = (
-                    current_artifacts(stage.outputs)
+                    current_stage_artifacts(stage)
                     if stage.outputs
                     else (True, [])
                 )

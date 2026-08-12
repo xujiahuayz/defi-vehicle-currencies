@@ -38,7 +38,7 @@ import json
 import os
 import subprocess
 import sys
-from collections.abc import Iterable
+from collections.abc import Iterable, Mapping
 from contextlib import contextmanager
 from dataclasses import asdict, dataclass, field
 from datetime import datetime, timezone
@@ -531,9 +531,16 @@ def describe_artifact_payload(
     return identity
 
 
-def prepare_stamp(artefact: str | Path, *, content_path: str | Path, code_sources: list[str], inputs: list[str | Path] | None = None, rows: int | None = None, notes: str | None = None, script: str | None = None) -> bytes:
+def prepare_stamp(artefact: str | Path, *, content_path: str | Path, code_sources: list[str], inputs: list[str | Path] | None = None, described_inputs: list[Mapping[str, object]] | None = None, rows: int | None = None, notes: str | None = None, script: str | None = None) -> bytes:
     """Construct provenance for staged artefact bytes without changing released paths."""
 
+    if inputs is not None and described_inputs is not None:
+        raise ValueError("provenance inputs may be paths or prepared records, not both")
+    input_records = (
+        [dict(record) for record in described_inputs]
+        if described_inputs is not None
+        else [describe_input(i) for i in (inputs or [])]
+    )
     content = Path(content_path)
     if not content.is_file():
         raise FileNotFoundError(f"staged provenance content is absent: {content}")
@@ -561,7 +568,7 @@ def prepare_stamp(artefact: str | Path, *, content_path: str | Path, code_source
         artefact_mtime_ns=content_stat.st_mtime_ns,
         artefact_sha256=str(payload_identity["sha256"]),
         payload_identity=payload_identity,
-        inputs=[describe_input(i) for i in (inputs or [])],
+        inputs=input_records,
         rows=rows,
         notes=notes,
         libraries=_libraries(),

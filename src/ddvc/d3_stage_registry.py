@@ -5,13 +5,29 @@ from __future__ import annotations
 from collections import defaultdict
 from collections.abc import Iterable, Mapping
 from dataclasses import dataclass
-from typing import Any, Literal
+from pathlib import Path
+from typing import Any, Callable, Literal
 
-from ddvc.analysis.dominance_cost_release import DOMINANCE_COST_RELEASE_RELATIVE
+from ddvc.analysis.dominance_cost_release import (
+    DOMINANCE_COST_RELEASE_RELATIVE,
+    resolve_dominance_cost_release,
+)
+from ddvc.endpoint_candidate_composition_release import (
+    ENDPOINT_CANDIDATE_COMPOSITION_RELEASE_RELATIVE,
+    resolve_endpoint_candidate_composition_release,
+)
 from ddvc.model_registry import claim_execution_perimeter
 
 
 OwnershipStatus = Literal["built", "external_prerequisite"]
+
+
+@dataclass(frozen=True)
+class D3ReleasePostcondition:
+    """A marker-last output that must be reopened through its typed resolver."""
+
+    pointer: str
+    resolver: Callable[[Path], object]
 
 
 @dataclass(frozen=True)
@@ -22,6 +38,14 @@ class D3BuildStage:
     arguments: tuple[str, ...]
     purpose: str
     outputs: tuple[str, ...]
+    release_postcondition: D3ReleasePostcondition | None = None
+
+    def __post_init__(self) -> None:
+        if (
+            self.release_postcondition is not None
+            and self.release_postcondition.pointer not in self.outputs
+        ):
+            raise ValueError("D3 release postcondition pointer must be an owned output")
 
 
 @dataclass(frozen=True)
@@ -49,6 +73,10 @@ D3_BUILD_STAGES = (
         "pairwise WETH-versus-comparator route-cost outcomes with an outcome-specific zero-retention support ledger",
         (
             DOMINANCE_COST_RELEASE_RELATIVE,
+        ),
+        D3ReleasePostcondition(
+            DOMINANCE_COST_RELEASE_RELATIVE,
+            resolve_dominance_cost_release,
         ),
     ),
     D3BuildStage(
@@ -84,6 +112,16 @@ D3_BUILD_STAGES = (
         ("--workers", "8", "--panel-only"),
         "one-vehicle route counts and value support by asset type",
         ("data/processed/intermediation_by_type_daily.parquet",),
+    ),
+    D3BuildStage(
+        "build_endpoint_candidate_composition.py",
+        ("--workers", "8"),
+        "exact stable/native endpoint-candidate choices, pair support, and mutually exclusive exclusions",
+        (ENDPOINT_CANDIDATE_COMPOSITION_RELEASE_RELATIVE,),
+        D3ReleasePostcondition(
+            ENDPOINT_CANDIDATE_COMPOSITION_RELEASE_RELATIVE,
+            resolve_endpoint_candidate_composition_release,
+        ),
     ),
     D3BuildStage(
         "build_cross_venue_routing_series.py",

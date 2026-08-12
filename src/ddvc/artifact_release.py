@@ -462,6 +462,7 @@ def _resume_unselected_generation(
     inputs: list[str | Path],
     row_counts: Mapping[str, int],
     notes: str | None,
+    preinstall_validator: Callable[[Path], object] | None,
 ) -> None:
     """Resume only fragments that prove they belong to the expected generation."""
 
@@ -499,6 +500,8 @@ def _resume_unselected_generation(
             install_stamped_artifact(staged[name], target, prepared_stamps[name])
             continue
         if state == "artifact_only":
+            if preinstall_validator is not None:
+                preinstall_validator(target)
             prepared = prepare_stamp(
                 target,
                 content_path=target,
@@ -507,6 +510,11 @@ def _resume_unselected_generation(
                 rows=int(row_counts[name]),
                 notes=notes,
             )
+            prepared_validator = getattr(
+                preinstall_validator, "validate_prepared_stamp", None
+            )
+            if prepared_validator is not None:
+                prepared = prepared_validator(prepared)
             with atomic_output(sidecar_path(target)) as temporary:
                 temporary.write_bytes(prepared)
             continue
@@ -545,6 +553,7 @@ def _publish_generation_under_lock(
     inputs: list[str | Path],
     row_counts: Mapping[str, int],
     notes: str | None,
+    preinstall_validator: Callable[[Path], object] | None,
     validate_staged: Callable[[Mapping[str, Path]], None],
     write_pointer: Callable[[Path, dict[str, object]], None],
 ) -> ArtifactRelease:
@@ -571,6 +580,7 @@ def _publish_generation_under_lock(
                 inputs=inputs,
                 row_counts=row_counts,
                 notes=notes,
+                preinstall_validator=preinstall_validator,
             )
         except (FileNotFoundError, OSError, RuntimeError, TypeError, ValueError) as error:
             raise RuntimeError(
@@ -728,6 +738,7 @@ def publish_artifact_release(
     inputs: list[str | Path],
     notes: str | None,
     validate_staged: Callable[[Mapping[str, Path]], None],
+    preinstall_validator: Callable[[Path], object] | None = None,
     write_pointer: Callable[[Path, dict[str, object]], None] = write_json,
 ) -> ArtifactRelease:
     """Stage, stamp, reopen, and marker-release one complete artifact bundle."""
@@ -766,17 +777,24 @@ def publish_artifact_release(
             )
             generation = generation_id(artifact_hashes, build_identity)
             targets = generation_paths(release_root, generation, filenames)
-            prepared_stamps = {
-                name: prepare_stamp(
+            prepared_stamps: dict[str, bytes] = {}
+            prepared_validator = getattr(
+                preinstall_validator, "validate_prepared_stamp", None
+            )
+            for name in filenames:
+                prepared = prepare_stamp(
                     targets[name],
                     content_path=staged[name],
                     code_sources=code_sources,
-                    inputs=inputs,
+                    described_inputs=described_inputs,
                     rows=int(row_counts[name]),
                     notes=notes,
                 )
-                for name in filenames
-            }
+                if prepared_validator is not None:
+                    prepared = prepared_validator(prepared)
+                prepared_stamps[name] = prepared
+            if preinstall_validator is not None:
+                preinstall_validator(directory)
             publication_paths = tuple(
                 path
                 for target in targets.values()
@@ -798,6 +816,7 @@ def publish_artifact_release(
                     inputs=inputs,
                     row_counts=row_counts,
                     notes=notes,
+                    preinstall_validator=preinstall_validator,
                     validate_staged=validate_staged,
                     write_pointer=write_pointer,
                 )
