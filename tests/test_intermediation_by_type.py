@@ -11,6 +11,7 @@ from scripts.build_intermediation_by_type import (
     annual_composition,
     bounded_workers,
     complexity_rival_tests,
+    integration_interaction_tests,
     integration_rival_windows,
     integration_rival_tests,
     one_day,
@@ -187,6 +188,35 @@ class IntermediationByTypeTests(unittest.TestCase):
             {(2023, 2024), (2024, 2026)},
         )
         self.assertEqual(len(result), 24)
+
+    def test_integration_interaction_tests_the_difference_in_changes(self) -> None:
+        rows = []
+        for year, single_stable, cross_stable in (
+            (2024, 20.0, 20.0),
+            (2025, 30.0, 45.0),
+            (2026, 40.0, 70.0),
+        ):
+            for day in range(4):
+                row: dict[str, object] = {"date": f"{year}-01-{day + 1:02d}"}
+                for prefix in ("cnt_", "usd_", "usd_within_2x_", "usd_within_20pct_"):
+                    row[f"{prefix}single_venue_stable"] = single_stable
+                    row[f"{prefix}single_venue_native"] = 100.0 - single_stable
+                    row[f"{prefix}cross_venue_stable"] = cross_stable
+                    row[f"{prefix}cross_venue_native"] = 100.0 - cross_stable
+                rows.append(row)
+        result = integration_interaction_tests(pd.DataFrame(rows), hac_lag=1)
+        episode = result[
+            result["weighting"].eq("episode")
+            & result["transformation"].eq("share_level")
+        ].iloc[0]
+        self.assertAlmostEqual(episode["baseline_cross_minus_single"], 0.0)
+        self.assertAlmostEqual(episode["comparison_cross_minus_single"], 0.3)
+        self.assertAlmostEqual(episode["differential_change"], 0.3)
+        self.assertEqual(
+            episode["null_hypothesis"],
+            "cross_venue_change_equals_single_venue_change",
+        )
+        self.assertTrue(result["p_value_holm"].notna().all())
 
     def test_complexity_rival_keeps_combined_route_regimes_separate(self) -> None:
         rows = []

@@ -11,6 +11,7 @@ Reads   data/unified/YYYYMMDD.parquet
 Writes  data/processed/intermediation_by_type_daily.parquet
         output/exhibits/intermediation_by_type.jsonl
         output/exhibits/intermediation_integration_rival.jsonl
+        output/exhibits/intermediation_integration_interaction.jsonl
         output/exhibits/intermediation_complexity_rival.jsonl
 """
 
@@ -41,6 +42,7 @@ UNIFIED = DATA_DIR / "unified"
 OUT_PARQUET = DATA_DIR / "processed" / "intermediation_by_type_daily.parquet"
 OUT_EXHIBIT = OUTPUT_DIR / "exhibits" / "intermediation_by_type.jsonl"
 OUT_RIVAL = OUTPUT_DIR / "exhibits" / "intermediation_integration_rival.jsonl"
+OUT_INTERACTION = OUTPUT_DIR / "exhibits" / "intermediation_integration_interaction.jsonl"
 OUT_COMPLEXITY_RIVAL = OUTPUT_DIR / "exhibits" / "intermediation_complexity_rival.jsonl"
 LOCK = OUT_PARQUET.with_suffix(".lock")
 HAC_LAG = 30
@@ -447,6 +449,98 @@ def integration_rival_windows(
     )
 
 
+def integration_interaction_tests(
+    panel: pd.DataFrame,
+    *,
+    baseline_year: int = 2024,
+    comparison_year: int = 2026,
+    hac_lag: int = HAC_LAG,
+) -> pd.DataFrame:
+    """Test whether the stable-share change differs across integration regimes."""
+
+    data = panel.copy().sort_values("date", kind="stable")
+    data["year"] = pd.to_datetime(data["date"]).dt.year
+    data = data[data["year"].between(baseline_year, comparison_year)]
+    data = data.loc[
+        common_calendar_day_mask(
+            data["date"],
+            data["year"],
+            baseline_year=baseline_year,
+            comparison_year=comparison_year,
+        )
+    ]
+    rows: list[dict[str, object]] = []
+    for weighting, value_support, column_prefix in STABLE_SHARE_ESTIMANDS:
+        shares: dict[str, pd.Series] = {}
+        for scope in INTEGRATION_SCOPES:
+            stable = pd.to_numeric(data[f"{column_prefix}{scope}_stable"], errors="coerce")
+            native = pd.to_numeric(data[f"{column_prefix}{scope}_native"], errors="coerce")
+            shares[scope] = stable / (stable + native).where((stable + native).gt(0))
+        for transformation in ("share_level", "log_odds"):
+            sample = data[["date", "year"]].copy()
+            for scope in INTEGRATION_SCOPES:
+                share = shares[scope]
+                if transformation == "log_odds":
+                    share = np.log(share / (1 - share)).where(
+                        share.between(0, 1, inclusive="neither")
+                    )
+                sample[scope] = share
+            sample = sample.dropna(subset=list(INTEGRATION_SCOPES))
+            sample["estimand"] = sample["cross_venue"] - sample["single_venue"]
+            estimate = year_endpoint_change(
+                sample["estimand"],
+                sample["year"],
+                baseline_year=baseline_year,
+                comparison_year=comparison_year,
+                hac_lag=hac_lag,
+                dates=sample["date"],
+            )
+            rows.append(
+                {
+                    "weighting": weighting,
+                    "value_support": value_support,
+                    "transformation": transformation,
+                    "baseline_year": baseline_year,
+                    "comparison_year": comparison_year,
+                    "baseline_cross_minus_single": estimate.baseline_mean,
+                    "comparison_cross_minus_single": estimate.comparison_mean,
+                    "differential_change": estimate.change,
+                    "hac_standard_error": estimate.standard_error,
+                    "t_statistic": estimate.t_statistic,
+                    "p_value": estimate.p_value,
+                    "days": estimate.n_observations,
+                    "hac_lag_days": hac_lag,
+                    "null_hypothesis": "cross_venue_change_equals_single_venue_change",
+                    "interpretation_boundary": "descriptive interaction; integration regime is selected and the coefficient is not a causal effect of integration",
+                }
+            )
+    result = pd.DataFrame(rows)
+    result["p_value_holm"] = holm_adjusted_pvalues(result["p_value"])
+    return result
+
+
+def integration_interaction_windows(
+    panel: pd.DataFrame,
+    *,
+    windows: tuple[tuple[int, int], ...] = INTEGRATION_RIVAL_WINDOWS,
+    hac_lag: int = HAC_LAG,
+) -> pd.DataFrame:
+    """Test integration-regime interactions over each declared transition window."""
+
+    return pd.concat(
+        [
+            integration_interaction_tests(
+                panel,
+                baseline_year=baseline_year,
+                comparison_year=comparison_year,
+                hac_lag=hac_lag,
+            )
+            for baseline_year, comparison_year in windows
+        ],
+        ignore_index=True,
+    )
+
+
 def complexity_rival_tests(
     panel: pd.DataFrame,
     *,
@@ -524,6 +618,7 @@ def main() -> int:
         return 0
     annual = annual_composition(panel)
     rival = integration_rival_windows(panel)
+    interaction = integration_interaction_windows(panel)
     complexity_rival = complexity_rival_tests(panel)
     write_exhibit(
         annual,
@@ -537,6 +632,13 @@ def main() -> int:
         code_sources=CODE_SOURCES,
         inputs=[OUT_PARQUET],
         notes="equal-weighted daily stable share within native plus stable; Newey-West Bartlett covariance",
+    )
+    write_exhibit(
+        interaction,
+        OUT_INTERACTION,
+        code_sources=CODE_SOURCES,
+        inputs=[OUT_PARQUET],
+        notes="paired-date cross-venue minus single-venue stable-share interaction; Newey-West Bartlett covariance; descriptive because integration regime is selected",
     )
     write_exhibit(
         complexity_rival,
@@ -593,6 +695,7 @@ def main() -> int:
     print(
         f"\nwrote {OUT_PARQUET.relative_to(REPO_ROOT)}, "
         f"{OUT_EXHIBIT.relative_to(REPO_ROOT)}, {OUT_RIVAL.relative_to(REPO_ROOT)}, "
+        f"{OUT_INTERACTION.relative_to(REPO_ROOT)}, "
         f"and {OUT_COMPLEXITY_RIVAL.relative_to(REPO_ROOT)}"
     )
     return 0
