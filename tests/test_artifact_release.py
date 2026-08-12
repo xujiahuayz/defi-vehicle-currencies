@@ -17,6 +17,7 @@ from ddvc.artifact_release import (
     current_artifact_release,
     current_file_lineage,
     file_sha256,
+    generation_paths,
     publish_artifact_release,
     resolve_artifact_release,
 )
@@ -28,6 +29,125 @@ from ddvc.journaled_publication import recover_journaled_publications
 
 KIND = "test_release"
 FILENAMES = {"rows": "rows.json", "certificate": "certificate.json"}
+
+
+def _tree_snapshot(root: Path) -> tuple[tuple[str, str, object], ...]:
+    records: list[tuple[str, str, object]] = []
+    for path in sorted(root.rglob("*")):
+        relative = path.relative_to(root).as_posix()
+        if path.is_symlink():
+            records.append((relative, "symlink", path.readlink().as_posix()))
+        elif path.is_dir():
+            records.append((relative, "directory", None))
+        else:
+            records.append((relative, "file", path.read_bytes()))
+    return tuple(records)
+
+
+@pytest.mark.parametrize(
+    "filename",
+    ["", ".", "..", "../escape.json", "nested/value.json", "nested\\value.json"],
+)
+@pytest.mark.parametrize("operation", ["publish", "resolve", "generation_paths"])
+def test_invalid_filenames_are_rejected_before_any_mutation(
+    tmp_path: Path, filename: str, operation: str
+) -> None:
+    pointer = tmp_path / "release" / "current.json"
+    outside = tmp_path / "escape.json"
+    outside.write_text("untouched", encoding="utf-8")
+    selected = {"rows": filename}
+    before = _tree_snapshot(tmp_path)
+    with pytest.raises(ValueError, match="simple basename"):
+        if operation == "publish":
+            publish_artifact_release(
+                pointer_path=pointer,
+                kind=KIND,
+                schema_version=1,
+                filenames=selected,
+                writers={"rows": lambda path: path.write_text("mutated", encoding="utf-8")},
+                row_counts={"rows": 1},
+                code_sources=["src/ddvc/artifact_release.py"],
+                inputs=[],
+                notes="invalid filename",
+                validate_staged=lambda _paths: None,
+            )
+        elif operation == "resolve":
+            resolve_artifact_release(
+                pointer,
+                kind=KIND,
+                schema_version=1,
+                filenames=selected,
+            )
+        else:
+            generation_paths(tmp_path / "release", "a" * 64, selected)
+    assert _tree_snapshot(tmp_path) == before
+
+
+@pytest.mark.parametrize("operation", ["publish", "resolve", "generation_paths"])
+def test_absolute_filename_is_rejected_before_any_mutation(
+    tmp_path: Path, operation: str
+) -> None:
+    pointer = tmp_path / "release" / "current.json"
+    outside = tmp_path / "outside.json"
+    selected = {"rows": str(outside)}
+    before = _tree_snapshot(tmp_path)
+    with pytest.raises(ValueError, match="simple basename"):
+        if operation == "publish":
+            publish_artifact_release(
+                pointer_path=pointer,
+                kind=KIND,
+                schema_version=1,
+                filenames=selected,
+                writers={"rows": lambda path: path.write_text("mutated", encoding="utf-8")},
+                row_counts={"rows": 1},
+                code_sources=["src/ddvc/artifact_release.py"],
+                inputs=[],
+                notes="invalid filename",
+                validate_staged=lambda _paths: None,
+            )
+        elif operation == "resolve":
+            resolve_artifact_release(
+                pointer,
+                kind=KIND,
+                schema_version=1,
+                filenames=selected,
+            )
+        else:
+            generation_paths(tmp_path / "release", "a" * 64, selected)
+    assert _tree_snapshot(tmp_path) == before
+
+
+@pytest.mark.parametrize("operation", ["publish", "resolve", "generation_paths"])
+def test_duplicate_normalized_filenames_are_rejected_without_mutation(
+    tmp_path: Path, operation: str
+) -> None:
+    pointer = tmp_path / "release" / "current.json"
+    selected = {"rows": "same.json", "certificate": Path("same.json")}
+    before = _tree_snapshot(tmp_path)
+    with pytest.raises(ValueError, match="not unique"):
+        if operation == "publish":
+            publish_artifact_release(
+                pointer_path=pointer,
+                kind=KIND,
+                schema_version=1,
+                filenames=selected,
+                writers={"rows": lambda _path: None, "certificate": lambda _path: None},
+                row_counts={"rows": 1, "certificate": 1},
+                code_sources=["src/ddvc/artifact_release.py"],
+                inputs=[],
+                notes="duplicate filenames",
+                validate_staged=lambda _paths: None,
+            )
+        elif operation == "resolve":
+            resolve_artifact_release(
+                pointer,
+                kind=KIND,
+                schema_version=1,
+                filenames=selected,
+            )
+        else:
+            generation_paths(tmp_path / "release", "a" * 64, selected)
+    assert _tree_snapshot(tmp_path) == before
 
 
 def _publish(
@@ -58,6 +178,28 @@ def _publish(
         notes="test bundle",
         validate_staged=validate,
         write_pointer=write_pointer,
+    )
+
+
+def _publish_large(pointer: Path) -> ArtifactRelease:
+    payloads = {
+        "rows": {"value": 7, "blob": "r" * 2_000_000},
+        "certificate": {"status": "pass", "value": 7, "blob": "c" * 1_500_000},
+    }
+    return publish_artifact_release(
+        pointer_path=pointer,
+        kind=KIND,
+        schema_version=1,
+        filenames=FILENAMES,
+        writers={
+            name: lambda path, payload=payload: write_json(path, payload)
+            for name, payload in payloads.items()
+        },
+        row_counts={"rows": 1, "certificate": 1},
+        code_sources=["src/ddvc/artifact_release.py"],
+        inputs=[],
+        notes="test bundle",
+        validate_staged=lambda paths: [json.loads(path.read_text()) for path in paths.values()],
     )
 
 
@@ -617,7 +759,10 @@ def kill_at(label):
         os.kill(os.getpid(), signal.SIGKILL)
 
 publication._publication_cut = kill_at
-payloads = {"rows": {"value": 7}, "certificate": {"status": "pass", "value": 7}}
+payloads = {
+    "rows": {"value": 7, "blob": "r" * 2_000_000},
+    "certificate": {"status": "pass", "value": 7, "blob": "c" * 1_500_000},
+}
 publish_artifact_release(
     pointer_path=pointer,
     kind="test_release",
@@ -640,11 +785,17 @@ publish_artifact_release(
         check=False,
     )
     assert killed.returncode == -signal.SIGKILL
-    resumed = _publish(pointer, 7)
-    assert json.loads(resumed.artifacts["rows"].read_text(encoding="utf-8")) == {
-        "value": 7
-    }
+    stale_outer_stages = list(pointer.parent.glob(".ddvc-artifact-stage-*"))
+    assert len(stale_outer_stages) == 1
+    resumed = _publish_large(pointer)
+    rows = json.loads(resumed.artifacts["rows"].read_text(encoding="utf-8"))
+    certificate = json.loads(
+        resumed.artifacts["certificate"].read_text(encoding="utf-8")
+    )
+    assert (rows["value"], len(rows["blob"])) == (7, 2_000_000)
+    assert (certificate["value"], len(certificate["blob"])) == (7, 1_500_000)
     assert not list(pointer.parent.rglob(".ddvc-publish-*"))
+    assert not list(pointer.parent.glob(".ddvc-artifact-stage-*"))
     selected_bytes = {
         name: (path.read_bytes(), sidecar_path(path).read_bytes())
         for name, path in resumed.artifacts.items()
@@ -665,3 +816,61 @@ publish_artifact_release(
         schema_version=1,
         filenames=FILENAMES,
     ).generation_id == resumed.generation_id
+
+
+def test_pointer_stage_recovery_does_not_delete_another_pointers_stage(
+    tmp_path: Path,
+) -> None:
+    first_pointer = tmp_path / "release" / "first.json"
+    other_pointer = tmp_path / "release" / "other.json"
+    other_stage = artifact_release._pointer_stage_root(other_pointer)
+    other_stage.mkdir(parents=True)
+    write_json(
+        other_stage / artifact_release._STAGE_OWNER,
+        artifact_release._stage_owner_payload(other_pointer),
+    )
+    sentinel = other_stage / "payload" / "unrelated.bin"
+    sentinel.parent.mkdir()
+    sentinel.write_bytes(b"unrelated")
+
+    _publish(first_pointer, 1)
+
+    assert sentinel.read_bytes() == b"unrelated"
+    assert other_stage.is_dir()
+
+
+def test_pointer_stage_recovery_rejects_unowned_stage_without_deleting_it(
+    tmp_path: Path,
+) -> None:
+    pointer = tmp_path / "release" / "current.json"
+    stage = artifact_release._pointer_stage_root(pointer)
+    stage.mkdir(parents=True)
+    write_json(
+        stage / artifact_release._STAGE_OWNER,
+        artifact_release._stage_owner_payload(tmp_path / "different.json"),
+    )
+    sentinel = stage / "payload" / "unrelated.bin"
+    sentinel.parent.mkdir()
+    sentinel.write_bytes(b"unrelated")
+
+    with pytest.raises(RuntimeError, match="another pointer"):
+        _publish(pointer, 1)
+
+    assert sentinel.read_bytes() == b"unrelated"
+
+
+def test_pointer_stage_setup_failure_removes_only_the_stage_it_created(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    pointer = tmp_path / "release" / "current.json"
+    pointer.parent.mkdir(parents=True)
+
+    def fail_owner_write(_path: Path, _payload: object) -> None:
+        raise OSError("simulated owner write failure")
+
+    monkeypatch.setattr(artifact_release, "write_json", fail_owner_write)
+    with pytest.raises(OSError, match="owner write failure"):
+        with artifact_release._pointer_stage(pointer):
+            raise AssertionError("stage setup unexpectedly completed")
+
+    assert not artifact_release._pointer_stage_root(pointer).exists()

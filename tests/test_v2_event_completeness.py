@@ -2654,8 +2654,9 @@ def test_v2_event_source_release_staging_failure_cleans_up_and_preserves_pointer
     real_write_json = completeness.write_json
 
     def fail_staged_certificate(path, payload):
-        if path.name == "certificate.json" and path.parent.name.startswith(
-            ".v2_event_source_release-"
+        if path.name == "certificate.json" and any(
+            parent.name.startswith(".ddvc-artifact-stage-")
+            for parent in path.parents
         ):
             raise RuntimeError("injected staged certificate failure")
         real_write_json(path, payload)
@@ -2672,7 +2673,7 @@ def test_v2_event_source_release_staging_failure_cleans_up_and_preserves_pointer
 
     assert pointer_path.read_bytes() == pointer_before
     assert resolve_v2_event_source_release(pointer_path).generation_id == first.generation_id
-    assert not list(pointer_path.parent.glob(".v2_event_source_release-*"))
+    assert not list(pointer_path.parent.glob(".ddvc-artifact-stage-*"))
 
 
 def test_v2_event_source_release_reader_rejects_missing_and_tampered_generation(tmp_path) -> None:

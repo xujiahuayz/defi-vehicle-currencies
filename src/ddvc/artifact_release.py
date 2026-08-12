@@ -8,7 +8,7 @@ import hashlib
 import json
 import os
 from pathlib import Path
-import tempfile
+import shutil
 from typing import Callable, Mapping
 
 from ddvc.fetch.raw import write_json
@@ -185,13 +185,113 @@ def generation_id(artifact_sha256: Mapping[str, str], build_identity_sha256: str
     )
 
 
+def _validated_filenames(filenames: Mapping[str, object]) -> dict[str, str]:
+    """Return unique simple basenames without touching the filesystem."""
+
+    selected: dict[str, str] = {}
+    seen: set[str] = set()
+    for raw_name, raw_filename in filenames.items():
+        name = str(raw_name)
+        if name in selected:
+            raise ValueError(f"artifact names are not unique after normalization: {name}")
+        try:
+            filename = os.fspath(raw_filename)
+        except TypeError as error:
+            raise ValueError(
+                f"artifact filename is not path-like: {raw_filename!r}"
+            ) from error
+        if not isinstance(filename, str):
+            raise ValueError(f"artifact filename is not text: {raw_filename!r}")
+        if (
+            not filename
+            or filename in {".", ".."}
+            or Path(filename).is_absolute()
+            or Path(filename).name != filename
+            or "/" in filename
+            or "\\" in filename
+        ):
+            raise ValueError(
+                f"artifact filename is not a simple basename: {filename!r}"
+            )
+        if filename in seen:
+            raise ValueError(f"artifact filenames are not unique: {filename}")
+        seen.add(filename)
+        selected[name] = filename
+    if not selected:
+        raise ValueError("artifact release requires at least one filename")
+    return selected
+
+
 def generation_paths(
     release_root: Path,
     generation: str,
     filenames: Mapping[str, str],
 ) -> dict[str, Path]:
+    selected = _validated_filenames(filenames)
     directory = release_root / "generations" / generation
-    return {name: directory / filename for name, filename in filenames.items()}
+    return {name: directory / filename for name, filename in selected.items()}
+
+
+_STAGE_POLICY = "ddvc-artifact-release-stage-v1"
+_STAGE_OWNER = "owner.json"
+
+
+def _pointer_stage_root(pointer_path: Path) -> Path:
+    identity = hashlib.sha256(
+        str(pointer_path.resolve(strict=False)).encode()
+    ).hexdigest()[:24]
+    return pointer_path.parent / f".ddvc-artifact-stage-{identity}"
+
+
+def _stage_owner_payload(pointer_path: Path) -> dict[str, object]:
+    return {
+        "policy": _STAGE_POLICY,
+        "pointer_path": str(pointer_path.resolve(strict=False)),
+    }
+
+
+def _recover_pointer_stage(pointer_path: Path) -> None:
+    """Remove only the stale outer stage owned by this exact pointer."""
+
+    root = _pointer_stage_root(pointer_path)
+    if not root.exists() and not root.is_symlink():
+        return
+    if root.is_symlink() or not root.is_dir():
+        raise RuntimeError(f"artifact release stage has an unsafe type: {root}")
+    try:
+        owner = json.loads((root / _STAGE_OWNER).read_text(encoding="utf-8"))
+    except (OSError, json.JSONDecodeError) as error:
+        raise RuntimeError(f"artifact release stage ownership is invalid: {root}") from error
+    if owner != _stage_owner_payload(pointer_path):
+        raise RuntimeError(f"artifact release stage belongs to another pointer: {root}")
+    shutil.rmtree(root)
+
+
+@contextmanager
+def _pointer_stage(pointer_path: Path):
+    """Own one crash-visible stage under the already-held pointer lock."""
+
+    _recover_pointer_stage(pointer_path)
+    root = _pointer_stage_root(pointer_path)
+    root.mkdir()
+    created_identity = (root.stat().st_dev, root.stat().st_ino)
+    owner_installed = False
+    try:
+        write_json(root / _STAGE_OWNER, _stage_owner_payload(pointer_path))
+        owner_installed = True
+        payload = root / "payload"
+        payload.mkdir()
+        yield payload
+    finally:
+        if owner_installed:
+            _recover_pointer_stage(pointer_path)
+        elif root.exists() and not root.is_symlink():
+            current_identity = (root.stat().st_dev, root.stat().st_ino)
+            if current_identity != created_identity:
+                raise RuntimeError(
+                    f"artifact release stage changed during setup: {root}"
+                )
+            shutil.rmtree(root)
 
 
 def _pointer_generation(pointer_path: Path) -> str | None:
@@ -443,6 +543,7 @@ def _resolve_artifact_release_unlocked(
     require_current_provenance: bool,
     expected_generation: str | None = None,
 ) -> ArtifactRelease:
+    filenames = _validated_filenames(filenames)
     if not pointer_path.is_file():
         raise FileNotFoundError(f"missing {kind} current pointer: {pointer_path}")
     try:
@@ -518,6 +619,7 @@ def resolve_artifact_release(
 ) -> ArtifactRelease:
     """Resolve one pointer and reopen every artifact and provenance digest."""
 
+    filenames = _validated_filenames(filenames)
     pointer_path = Path(pointer_path)
     with serialized_output_install(pointer_path):
         return _resolve_artifact_release_unlocked(
@@ -545,15 +647,16 @@ def publish_artifact_release(
 ) -> ArtifactRelease:
     """Stage, stamp, reopen, and marker-release one complete artifact bundle."""
 
+    filenames = _validated_filenames(filenames)
     if set(filenames) != set(writers) or set(filenames) != set(row_counts):
         raise ValueError("artifact release writers and row counts must match filenames")
     pointer_path = Path(pointer_path)
     release_root = pointer_path.parent
     release_root.mkdir(parents=True, exist_ok=True)
     with serialized_output_install(pointer_path):
-        with tempfile.TemporaryDirectory(prefix=f".{kind}-", dir=release_root) as directory:
+        with _pointer_stage(pointer_path) as directory:
             staged = {
-                name: Path(directory) / filename for name, filename in filenames.items()
+                name: directory / filename for name, filename in filenames.items()
             }
             for name, writer in writers.items():
                 writer(staged[name])
