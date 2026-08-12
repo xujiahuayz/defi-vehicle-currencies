@@ -20,6 +20,7 @@ from pathlib import Path
 import numpy as np
 import pandas as pd
 
+from ddvc.analysis.dynamics import aggregate_complete_day_bins
 from ddvc.asset_types import CURRENCY_TYPES, classify
 from ddvc.data_release import require_node_d_release
 from ddvc.paths import DATA_DIR, OUTPUT_DIR
@@ -34,6 +35,7 @@ OUT_EXHIBIT = OUTPUT_DIR / "exhibits" / "vehicle_swap_style.jsonl"
 LOCK = OUT_PANEL.with_suffix(".lock")
 CODE_SOURCES = [
     "scripts/build_vehicle_swap_style.py",
+    "src/ddvc/analysis/dynamics.py",
     "src/ddvc/asset_types.py",
     "src/ddvc/realised.py",
     "src/ddvc/route_roles.py",
@@ -122,8 +124,69 @@ def one_day(path: Path) -> pd.DataFrame:
     )
 
 
+def _period_shares(
+    period: pd.DataFrame,
+    dimension: str,
+    weight_columns: list[str],
+) -> pd.DataFrame:
+    """Construct native/stable shares only after aggregating raw quantities."""
+
+    time_columns = [
+        column for column in ("date", "period_start", "year") if column in period
+    ]
+    keys = [*time_columns, "asset_type"]
+    if dimension != "all":
+        keys.insert(len(time_columns), dimension)
+    values = period.groupby(keys, as_index=False)[weight_columns].sum()
+    denominator_keys = [column for column in keys if column != "asset_type"]
+    cells = values[denominator_keys].drop_duplicates().merge(
+        pd.DataFrame({"asset_type": ["native", "stable"]}),
+        how="cross",
+    )
+    values = cells.merge(values, on=keys, how="left", validate="one_to_one")
+    values[weight_columns] = values[weight_columns].fillna(0.0)
+    totals = values.groupby(denominator_keys)[weight_columns].transform("sum")
+    for column in weight_columns:
+        values[f"{column}_share"] = values[column] / totals[column].where(
+            totals[column].gt(0)
+        )
+    return values
+
+
+def _mean_period_shares(
+    period: pd.DataFrame,
+    dimension: str,
+    weight_columns: list[str],
+    *,
+    observation_clock: str,
+    anchor_offset_days: int,
+) -> pd.DataFrame:
+    """Average period shares within year while recording the exact clock."""
+
+    shares = _period_shares(period, dimension, weight_columns)
+    period_column = "date" if observation_clock == "daily" else "period_start"
+    annual_keys = (
+        ["year", "asset_type"]
+        if dimension == "all"
+        else ["year", dimension, "asset_type"]
+    )
+    share_columns = [f"{column}_share" for column in weight_columns]
+    summary = shares.groupby(annual_keys, as_index=False)[share_columns].mean()
+    counts = (
+        shares.groupby(annual_keys)[period_column]
+        .nunique()
+        .rename("periods")
+        .reset_index()
+    )
+    summary = summary.merge(counts, on=annual_keys, how="left", validate="one_to_one")
+    summary.insert(0, "dimension", dimension)
+    summary.insert(1, "observation_clock", observation_clock)
+    summary.insert(2, "anchor_offset_days", anchor_offset_days)
+    return summary
+
+
 def annual_summary(panel: pd.DataFrame) -> pd.DataFrame:
-    """Equal-weight daily stable/native shares for the main observable style cuts."""
+    """Daily and seven-anchor weekly stable/native shares for observable style cuts."""
 
     data = panel[panel["asset_type"].isin(["native", "stable"])].copy()
     data["year"] = pd.to_datetime(data["date"]).dt.year
@@ -135,25 +198,40 @@ def annual_summary(panel: pd.DataFrame) -> pd.DataFrame:
         "strict_value_capped_p95_usd",
         "strict_value_capped_p99_usd",
     ]
-    frames = []
+    frames: list[pd.DataFrame] = []
     for dimension in ("all", "morphology", "integration", "complexity"):
-        keys = ["date", "year", "asset_type"]
-        if dimension != "all":
-            keys.insert(2, dimension)
-        daily = data.groupby(keys, as_index=False)[weight_columns].sum()
-        denominators = [key for key in keys if key != "asset_type"]
-        totals = daily.groupby(denominators)[weight_columns].transform("sum")
-        share_columns = []
-        for column in weight_columns:
-            share = f"{column}_share"
-            daily[share] = daily[column] / totals[column].where(totals[column].gt(0))
-            share_columns.append(share)
-        annual_keys = ["year", "asset_type"]
-        if dimension != "all":
-            annual_keys.insert(1, dimension)
-        summary = daily.groupby(annual_keys, as_index=False)[share_columns].mean()
-        summary.insert(0, "dimension", dimension)
-        frames.append(summary)
+        frames.append(
+            _mean_period_shares(
+                data,
+                dimension,
+                weight_columns,
+                observation_clock="daily",
+                anchor_offset_days=-1,
+            )
+        )
+        group_columns = (
+            ["asset_type"] if dimension == "all" else [dimension, "asset_type"]
+        )
+        daily_raw = data.groupby(["date", *group_columns], as_index=False)[
+            weight_columns
+        ].sum()
+        for anchor_offset_days in range(7):
+            weekly_raw = aggregate_complete_day_bins(
+                daily_raw,
+                value_columns=weight_columns,
+                group_columns=group_columns,
+                anchor_offset_days=anchor_offset_days,
+            )
+            if not weekly_raw.empty:
+                frames.append(
+                    _mean_period_shares(
+                        weekly_raw,
+                        dimension,
+                        weight_columns,
+                        observation_clock="weekly",
+                        anchor_offset_days=anchor_offset_days,
+                    )
+                )
     return pd.concat(frames, ignore_index=True, sort=False)
 
 
@@ -161,6 +239,7 @@ def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--workers", type=int, default=4)
     parser.add_argument("--limit", type=int)
+    parser.add_argument("--panel-only", action="store_true")
     args = parser.parse_args()
     require_node_d_release(routes=True)
     paths = sorted(UNIFIED.glob("*.parquet"))
@@ -192,8 +271,15 @@ def main() -> int:
         OUT_PANEL,
         code_sources=CODE_SOURCES,
         inputs=[UNIFIED],
-        notes="route-intermediary episodes; matched within-20-percent count/value support; daily pooled value caps; observed on-chain morphology does not identify frontend or human authorship",
+        notes=(
+            "route-intermediary episodes; matched within-20-percent count/value support; "
+            "daily pooled value caps; observed on-chain morphology does not identify "
+            "frontend or human authorship"
+        ),
     )
+    if args.panel_only:
+        print(f"wrote analysis-ready panel {OUT_PANEL.relative_to(DATA_DIR.parent)}")
+        return 0
     write_exhibit(
         annual_summary(panel),
         OUT_EXHIBIT,

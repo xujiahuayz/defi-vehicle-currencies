@@ -22,6 +22,7 @@ from ddvc.analysis.regression import (
     holm_adjusted_pvalues,
     year_endpoint_change,
 )
+from ddvc.analysis.dynamics import aggregate_complete_day_bins
 from ddvc.asset_types import CURRENCY_TYPES, backing
 from ddvc.data_release import require_node_d_release
 from ddvc.paths import REPO_ROOT
@@ -44,9 +45,11 @@ CODE_SOURCES = [
     "src/ddvc/asset_types.py",
     "src/ddvc/vehicle_extent.py",
     "src/ddvc/route_roles.py",
+    "src/ddvc/analysis/dynamics.py",
     "src/ddvc/analysis/regression.py",
 ]
 HAC_LAG = 30
+WEEKLY_HAC_LAG_DAYS = 28
 
 
 def one_day(path: Path) -> pd.DataFrame:
@@ -86,20 +89,20 @@ def token_excess_use_transition_tests(
     comparison_year: int = 2026,
     hac_lag: int = HAC_LAG,
 ) -> pd.DataFrame:
-    """Test whether intermediary use rises beyond ordinary endpoint demand."""
+    """Test whether intermediary use rises beyond endpoint demand on daily and weekly clocks."""
 
     data = panel[panel["asset_type"].isin(CURRENCY_TYPES)].copy()
     data["year"] = pd.to_datetime(data["date"]).dt.year
     data = data[data["year"].between(baseline_year, comparison_year)]
-    data = data.loc[
+    daily = data.loc[
         common_calendar_day_mask(
             data["date"],
             data["year"],
             baseline_year=baseline_year,
             comparison_year=comparison_year,
         )
-    ]
-    if focal_symbol not in set(data["symbol"].dropna()):
+    ].copy()
+    if focal_symbol not in set(daily["symbol"].dropna()):
         raise ValueError(f"focal token {focal_symbol} is absent")
     specifications = (
         ("episode", "all_routes", "intermediate_routes", "endpoint_routes"),
@@ -110,61 +113,133 @@ def token_excess_use_transition_tests(
             "endpoint_usd_within_20pct",
         ),
     )
+    raw_columns = sorted(
+        {
+            field
+            for _weighting, _support, intermediate_field, endpoint_field in specifications
+            for field in (intermediate_field, endpoint_field)
+        }
+    )
+    group_columns = [
+        column
+        for column in ("token", "symbol", "asset_type")
+        if column in data.columns
+    ]
+    clocks: list[tuple[str, int, int, pd.DataFrame]] = [
+        ("daily", -1, hac_lag, daily)
+    ]
+    daily_raw = data.groupby(["date", *group_columns], as_index=False)[
+        raw_columns
+    ].sum()
+    for anchor_offset_days in range(7):
+        weekly = aggregate_complete_day_bins(
+            daily_raw,
+            value_columns=raw_columns,
+            group_columns=group_columns,
+            anchor_offset_days=anchor_offset_days,
+        )
+        if weekly.empty:
+            continue
+        endpoint = weekly[weekly["year"].isin([baseline_year, comparison_year])]
+        terminal_month_day = (
+            endpoint.groupby("year")["period_end"].max().dt.strftime("%m-%d")
+        )
+        if set(terminal_month_day.index) != {baseline_year, comparison_year}:
+            continue
+        common_terminal = min(
+            terminal_month_day.loc[baseline_year],
+            terminal_month_day.loc[comparison_year],
+        )
+        weekly = weekly[
+            weekly["period_end"].dt.strftime("%m-%d").le(common_terminal)
+        ].copy()
+        weekly = weekly.rename(columns={"period_start": "date"})
+        clocks.append(("weekly", anchor_offset_days, WEEKLY_HAC_LAG_DAYS, weekly))
     rows: list[dict[str, object]] = []
-    for weighting, value_support, intermediate_field, endpoint_field in specifications:
-        totals = data.groupby("date")[[intermediate_field, endpoint_field]].transform("sum")
-        focal = data[data["symbol"].eq(focal_symbol)].copy()
-        focal["intermediate_share"] = pd.to_numeric(
-            focal[intermediate_field], errors="coerce"
-        ) / totals.loc[focal.index, intermediate_field].where(
-            totals.loc[focal.index, intermediate_field].gt(0)
-        )
-        focal["endpoint_share"] = pd.to_numeric(
-            focal[endpoint_field], errors="coerce"
-        ) / totals.loc[focal.index, endpoint_field].where(
-            totals.loc[focal.index, endpoint_field].gt(0)
-        )
-        for transformation in ("share_gap", "log_excess_ratio"):
-            sample = focal[["date", "year", "intermediate_share", "endpoint_share"]].copy()
-            if transformation == "share_gap":
-                sample["estimand"] = sample["intermediate_share"] - sample["endpoint_share"]
-            else:
-                sample = sample[
-                    sample["intermediate_share"].gt(0) & sample["endpoint_share"].gt(0)
+    for observation_clock, anchor_offset_days, clock_hac_lag, clock_data in clocks:
+        for (
+            weighting,
+            value_support,
+            intermediate_field,
+            endpoint_field,
+        ) in specifications:
+            totals = clock_data.groupby(["date", "year"], as_index=False)[
+                [intermediate_field, endpoint_field]
+            ].sum()
+            focal = (
+                clock_data[clock_data["symbol"].eq(focal_symbol)]
+                .groupby(["date", "year"], as_index=False)[
+                    [intermediate_field, endpoint_field]
                 ]
-                sample["estimand"] = np.log(
-                    sample["intermediate_share"] / sample["endpoint_share"]
+                .sum()
+            )
+            focal = totals.merge(
+                focal,
+                on=["date", "year"],
+                how="left",
+                suffixes=("_total", ""),
+                validate="one_to_one",
+            )
+            focal[[intermediate_field, endpoint_field]] = focal[
+                [intermediate_field, endpoint_field]
+            ].fillna(0.0)
+            focal["intermediate_share"] = pd.to_numeric(
+                focal[intermediate_field], errors="coerce"
+            ) / focal[f"{intermediate_field}_total"].where(
+                focal[f"{intermediate_field}_total"].gt(0)
+            )
+            focal["endpoint_share"] = pd.to_numeric(
+                focal[endpoint_field], errors="coerce"
+            ) / focal[f"{endpoint_field}_total"].where(
+                focal[f"{endpoint_field}_total"].gt(0)
+            )
+            for transformation in ("share_gap", "log_excess_ratio"):
+                sample = focal[["date", "year", "intermediate_share", "endpoint_share"]].copy()
+                if transformation == "share_gap":
+                    sample["estimand"] = sample["intermediate_share"] - sample["endpoint_share"]
+                else:
+                    sample = sample[
+                        sample["intermediate_share"].gt(0)
+                        & sample["endpoint_share"].gt(0)
+                    ]
+                    sample["estimand"] = np.log(
+                        sample["intermediate_share"] / sample["endpoint_share"]
+                    )
+                sample = sample.dropna(subset=["estimand"])
+                estimate = year_endpoint_change(
+                    sample["estimand"],
+                    sample["year"],
+                    baseline_year=baseline_year,
+                    comparison_year=comparison_year,
+                    hac_lag=clock_hac_lag,
+                    dates=sample["date"],
                 )
-            sample = sample.dropna(subset=["estimand"])
-            estimate = year_endpoint_change(
-                sample["estimand"],
-                sample["year"],
-                baseline_year=baseline_year,
-                comparison_year=comparison_year,
-                hac_lag=hac_lag,
-                dates=sample["date"],
-            )
-            rows.append(
-                {
-                    "focal_symbol": focal_symbol,
-                    "weighting": weighting,
-                    "value_support": value_support,
-                    "transformation": transformation,
-                    "baseline_year": baseline_year,
-                    "comparison_year": comparison_year,
-                    "baseline_daily_mean": estimate.baseline_mean,
-                    "comparison_daily_mean": estimate.comparison_mean,
-                    "change": estimate.change,
-                    "hac_standard_error": estimate.standard_error,
-                    "t_statistic": estimate.t_statistic,
-                    "p_value": estimate.p_value,
-                    "days": estimate.n_observations,
-                    "hac_lag_days": hac_lag,
-                    "share_perimeter": "prespecified_currency_types",
-                }
-            )
+                rows.append(
+                    {
+                        "focal_symbol": focal_symbol,
+                        "observation_clock": observation_clock,
+                        "anchor_offset_days": anchor_offset_days,
+                        "weighting": weighting,
+                        "value_support": value_support,
+                        "transformation": transformation,
+                        "baseline_year": baseline_year,
+                        "comparison_year": comparison_year,
+                        "baseline_period_mean": estimate.baseline_mean,
+                        "comparison_period_mean": estimate.comparison_mean,
+                        "change": estimate.change,
+                        "hac_standard_error": estimate.standard_error,
+                        "t_statistic": estimate.t_statistic,
+                        "p_value": estimate.p_value,
+                        "periods": estimate.n_observations,
+                        "period_days": 1 if observation_clock == "daily" else 7,
+                        "hac_lag_days": clock_hac_lag,
+                        "share_perimeter": "prespecified_currency_types",
+                    }
+                )
     result = pd.DataFrame(rows)
-    result["p_value_holm"] = holm_adjusted_pvalues(result["p_value"])
+    result["p_value_holm"] = result.groupby(
+        ["observation_clock", "anchor_offset_days"]
+    )["p_value"].transform(holm_adjusted_pvalues)
     return result
 
 
@@ -221,7 +296,11 @@ def main() -> int:
         OUT_PANEL,
         code_sources=CODE_SOURCES,
         inputs=[UNIFIED],
-        notes="topology-valid cycles excluded; counts use full support; value fields retain all routes plus nested 2x and 20 percent source-intermediary-sink coherence bands",
+        notes=(
+            "topology-valid cycles excluded; counts use full support; value fields "
+            "retain all routes plus nested 2x and 20 percent "
+            "source-intermediary-sink coherence bands"
+        ),
     )
     if args.panel_only:
         print(f"wrote analysis-ready panel {OUT_PANEL.relative_to(REPO_ROOT)}")
@@ -298,7 +377,11 @@ def main() -> int:
         OUT_TRANSITION,
         code_sources=CODE_SOURCES,
         inputs=[OUT_PANEL],
-        notes="paired-date USDT intermediary-minus-endpoint use on the prespecified currency perimeter; Newey-West Bartlett covariance",
+        notes=(
+            "seasonally balanced daily and seven-anchor weekly USDT "
+            "intermediary-minus-endpoint use on the prespecified currency perimeter; "
+            "Newey-West Bartlett covariance"
+        ),
     )
     print(f"\n{panel.date.nunique():,} days, {len(panel):,} token-days")
     print("annual excess-use ratio by asset type, prespecified currencies only (20 percent value-coherence support)")

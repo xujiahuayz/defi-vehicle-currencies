@@ -40,9 +40,25 @@ class VehicleSwapStyleTests(unittest.TestCase):
             ]
         )
         result = annual_summary(panel)
-        stable = result[result["dimension"].eq("all") & result["asset_type"].eq("stable")].iloc[0]
+        stable = result[result["dimension"].eq("all") & result["observation_clock"].eq("daily") & result["asset_type"].eq("stable")].iloc[0]
         self.assertAlmostEqual(stable["episodes_strict_share"], 0.5)
         self.assertAlmostEqual(stable["strict_value_usd_share"], 0.5)
+
+    def test_weekly_summary_sums_raw_values_before_constructing_shares(self) -> None:
+        panel = pd.DataFrame(
+            [
+                {"date": date, "asset_type": asset_type, "morphology": "sequential", "integration": "single_venue", "complexity": "two_leg", "episodes_all": count, "episodes_strict": count, "strict_value_usd": count, "strict_value_capped_p90_usd": count, "strict_value_capped_p95_usd": count, "strict_value_capped_p99_usd": count}
+                for day in range(1, 8)
+                for date, asset_type, count in (
+                    (f"2024-01-{day:02d}", "native", 9 if day == 1 else 1),
+                    (f"2024-01-{day:02d}", "stable", 1),
+                )
+            ]
+        )
+        result = annual_summary(panel)
+        monday = result[result["dimension"].eq("all") & result["observation_clock"].eq("weekly") & result["anchor_offset_days"].eq(0) & result["asset_type"].eq("stable")].iloc[0]
+        self.assertAlmostEqual(monday["episodes_strict_share"], 7 / 22)
+        self.assertEqual(monday["periods"], 1)
 
 
 if __name__ == "__main__":

@@ -358,7 +358,8 @@ class VehicleExtentTests(unittest.TestCase):
             result["weighting"].eq("episode")
             & result["transformation"].eq("share_gap")
         ].iloc[0]
-        self.assertGreater(count_gap["comparison_daily_mean"], count_gap["baseline_daily_mean"])
+        self.assertEqual(count_gap["observation_clock"], "daily")
+        self.assertGreater(count_gap["comparison_period_mean"], count_gap["baseline_period_mean"])
         self.assertGreater(count_gap["change"], 0.15)
         value_log_ratio = result[
             result["weighting"].eq("value")
@@ -366,6 +367,32 @@ class VehicleExtentTests(unittest.TestCase):
         ].iloc[0]
         self.assertGreater(value_log_ratio["change"], 0.5)
         self.assertEqual(count_gap["share_perimeter"], "prespecified_currency_types")
+
+    def test_usdt_transition_runs_every_complete_week_anchor(self) -> None:
+        rows = []
+        for year, usdt_intermediate in ((2024, 20.0), (2025, 30.0), (2026, 40.0)):
+            for day in range(1, 29):
+                for symbol, asset_type, intermediate, endpoint in (
+                    ("USDT", "stable", usdt_intermediate, 10.0),
+                    ("USDC", "stable", 40.0, 45.0),
+                    ("WETH", "native", 40.0, 45.0),
+                ):
+                    rows.append(
+                        {
+                            "date": pd.Timestamp(year, 1, 1) + pd.Timedelta(days=day - 1),
+                            "symbol": symbol,
+                            "asset_type": asset_type,
+                            "intermediate_routes": intermediate,
+                            "endpoint_routes": endpoint,
+                            "intermediate_usd_within_20pct": intermediate,
+                            "endpoint_usd_within_20pct": endpoint,
+                        }
+                    )
+        result = token_excess_use_transition_tests(pd.DataFrame(rows), hac_lag=1)
+        weekly = result[result["observation_clock"].eq("weekly")]
+        self.assertEqual(set(weekly["anchor_offset_days"]), set(range(7)))
+        self.assertTrue(weekly["period_days"].eq(7).all())
+        self.assertEqual(weekly.groupby("anchor_offset_days").size().to_dict(), {anchor: 4 for anchor in range(7)})
 
 
 if __name__ == "__main__":
