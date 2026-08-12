@@ -1,27 +1,27 @@
 % Framing and institutional setting. Sources: Krugman (1980); Flandreau and Jobst (2009); project route-release audit.
 
-% Symbolic hashes distinguish the schematic route grammar from a live transaction.
+% Symbolic routes distinguish the measurement grammar from a live transaction.
 \begin{frame}{Transaction-level route structures}
 \begin{tikzpicture}[x=1cm,y=1cm]
 \node[softbox,text width=5.15cm,minimum height=2.05cm,anchor=north west] (direct) at (0,3.35) {};
 \node[anchor=north west,font=\bfseries] at (0.22,3.14) {Direct swap};
-\node[anchor=north west,font=\small,text=muted] at (0.22,2.72) {hash $h_D$; component 0};
+\node[anchor=north west,font=\small,text=muted] at (0.22,2.72) {one transaction};
 \node[nodepoint] (da) at (1.35,1.72) {A};
 \node[nodepoint] (db) at (3.80,1.72) {B};
 \draw[route,draw=native] (da)--(db);
 
 \node[softbox,text width=5.15cm,minimum height=2.05cm,anchor=north west] (vehicle) at (6.05,3.35) {};
 \node[anchor=north west,font=\bfseries] at (6.27,3.14) {Sequential vehicle route};
-\node[anchor=north west,font=\small,text=muted] at (6.27,2.72) {hash $h_V$; component 0};
+\node[anchor=north west,font=\small,text=muted] at (6.27,2.72) {one transaction};
 \node[nodepoint] (va) at (7.15,1.72) {A};
 \node[nodepoint,fill=ucldark,text=white,draw=ucldark] (vk) at (8.65,1.72) {$k$};
 \node[nodepoint] (vb) at (10.15,1.72) {B};
-\draw[route,draw=ucldark] (va)--node[above,font=\small] {log $\ell_1$} (vk);
-\draw[route,draw=ucldark] (vk)--node[above,font=\small] {log $\ell_2$} (vb);
+\draw[route,draw=ucldark] (va)--(vk);
+\draw[route,draw=ucldark] (vk)--(vb);
 
 \node[softbox,text width=5.15cm,minimum height=2.05cm,anchor=north west] (split) at (0,0.55) {};
 \node[anchor=north west,font=\bfseries] at (0.22,0.34) {Parallel split};
-\node[anchor=north west,font=\small,text=muted] at (0.22,-0.08) {hash $h_S$; component 0};
+\node[anchor=north west,font=\small,text=muted] at (0.22,-0.08) {one transaction};
 \node[nodepoint] (sa) at (1.35,-1.15) {A};
 \node[nodepoint] (sb) at (3.80,-1.15) {B};
 \draw[route,draw=stable] (sa) to[bend left=14] node[above,font=\small] {venue 1} (sb);
@@ -29,15 +29,15 @@
 
 \node[softbox,text width=5.15cm,minimum height=2.05cm,anchor=north west] (cycle) at (6.05,0.55) {};
 \node[anchor=north west,font=\bfseries] at (6.27,0.34) {Round trip};
-\node[anchor=north west,font=\small,text=muted] at (6.27,-0.08) {hash $h_R$; component 0};
+\node[anchor=north west,font=\small,text=muted] at (6.27,-0.08) {one transaction};
 \node[nodepoint] (ra) at (7.15,-1.25) {A};
 \node[nodepoint,fill=accent,text=white,draw=accent] (rk) at (8.65,-1.25) {$k$};
 \node[nodepoint] (rb) at (10.15,-1.25) {A};
-\draw[route,draw=accent] (ra)--node[above,font=\small] {log $\ell_1$} (rk);
-\draw[route,draw=accent] (rk)--node[above,font=\small] {log $\ell_2$} (rb);
+\draw[route,draw=accent] (ra)--(rk);
+\draw[route,draw=accent] (rk)--(rb);
 \end{tikzpicture}
 \par\vspace{0.1cm}
-{\small The hash groups swap events. Token connectivity assigns components, and log index orders legs within the transaction.\par}
+{\small Swap events in one transaction reveal sequential routes, parallel splits, and round trips.\par}
 \end{frame}
 
 \begin{frame}{Measuring vehicle dominance}
@@ -53,19 +53,15 @@
 \begin{column}{0.53\textwidth}
 \centering
 \begin{tikzpicture}[x=1cm,y=1cm]
-\node[nodepoint] (a) at (0,3.25) {$i$};
-\node[nodepoint,fill=ucldark,text=white,draw=ucldark] (k) at (2.0,3.25) {$k$};
-\node[nodepoint] (b) at (4.0,3.25) {$o$};
+\node[nodepoint] (a) at (0,3.45) {$i$};
+\node[nodepoint,fill=ucldark,text=white,draw=ucldark] (k) at (2.0,3.45) {$k$};
+\node[nodepoint] (b) at (4.0,3.45) {$o$};
 \draw[route] (a) -- (k);
 \draw[route] (k) -- (b);
-\node[anchor=west,font=\small] at (0,1.95) {route-count share};
-\fill[rule] (0,1.45) rectangle (6.2,1.72);
-\fill[ucldark] (0,1.45) rectangle (3.95,1.72);
-\node[anchor=west,font=\small] at (0,0.70) {value share (common support)};
-\fill[rule] (0,0.20) rectangle (6.2,0.47);
-\fill[stable] (0,0.20) rectangle (2.55,0.47);
-\draw[ink,line width=0.7pt] (0,0.05) -- (0,-0.12) node[below,font=\scriptsize] {0};
-\draw[ink,line width=0.7pt] (6.2,0.05) -- (6.2,-0.12) node[below,font=\scriptsize] {1};
+\node[anchor=west,font=\small\bfseries,text=ucldark] at (0,2.10) {Count-weighted dominance};
+\node[anchor=west,font=\small,align=left,text width=6.0cm] at (0,1.58) {Share of indirect routes that pass through $k$};
+\node[anchor=west,font=\small\bfseries,text=stable] at (0,0.78) {Value-weighted dominance};
+\node[anchor=west,font=\small,align=left,text width=6.0cm] at (0,0.26) {Share of comparable routed value that passes through $k$};
 \end{tikzpicture}
 \end{column}
 \end{columns}

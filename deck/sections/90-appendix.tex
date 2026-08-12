@@ -119,21 +119,14 @@
 \end{frame}
 
 \begin{frame}{A5. AMM designs require different state variables}
-\begin{columns}[T]
-\begin{column}{0.47\textwidth}
-\textbf{Constant product}\par Reserves, fee, invariant.
-\vspace{0.35cm}
-\textbf{Concentrated liquidity}\par Active liquidity, price, tick, and initialised-tick changes.
-\vspace{0.35cm}
-\textbf{StableSwap families}\par Balances, amplification, rates, and oracle state.
-\end{column}
-\begin{column}{0.47\textwidth}
-\textbf{Weighted pools}\par Vault balances, weights, scaling, and rate providers.
-\vspace{0.35cm}
-\textbf{V4 singleton}\par Pool key, tick state, and fee for standard pools without custom hooks.
-\end{column}
-\end{columns}
-\vspace{0.55cm}
+\begin{description}
+\item[Constant product] Reserves, fee, and invariant.
+\item[Concentrated liquidity] Active liquidity, price, tick, and initialised-tick changes.
+\item[StableSwap families] Balances, amplification, rates, and oracle state.
+\item[Weighted pools] Vault balances, weights, scaling, and rate providers.
+\item[V4 singleton] Pool key, tick state, and fee for standard pools without custom hooks.
+\end{description}
+\vspace{0.25cm}
 {\small Estimates include protocol families whose balances, fees, and pricing state can be independently validated.\par}
 \end{frame}
 
@@ -142,8 +135,7 @@
 \begin{column}{0.43\textwidth}
 \begin{itemize}
 \item Token-to-token execution emits two linked swaps through ETH.
-\item The paired legs report equal ETH quantities in 87.4\% of identified forced routes.
-\item This two-leg signature identifies protocol-imposed intermediation.
+\item Matching ETH quantities distinguish protocol-imposed intermediation from unrelated bundled swaps.
 \end{itemize}
 \end{column}
 \begin{column}{0.53\textwidth}
@@ -154,8 +146,7 @@
 \node[nodepoint] (b) at (5.0,0) {$o$};
 \draw[route,draw=accent] (a)--node[above,font=\small] {$x$ ETH} (e);
 \draw[route,draw=accent] (e)--node[above,font=\small] {$x$ ETH} (b);
-\node[font=\Large\bfseries,text=ucldark] at (2.5,-1.45) {217,003};
-\node[font=\small] at (2.5,-1.90) {forced routes};
+\node[font=\small\bfseries,text=ucldark,align=center] at (2.5,-1.55) {same transaction, matching ETH flow};
 \end{tikzpicture}
 \end{column}
 \end{columns}
@@ -193,29 +184,25 @@ Each route carries reliably priced dollar value on common support.
 {\small Differences between count and value shares may reflect trade size, route structure, or the mix of intermediary assets.\par}
 \end{frame}
 
-\begin{frame}{A9. USDT gains intermediary use beyond endpoint demand}
+\begin{frame}{A9. Endpoint demand and intermediary use are separate margins}
 \begin{columns}[T]
-\begin{column}{0.44\textwidth}
-\textbf{Route-count share}
-\vspace{0.25cm}
-\begin{itemize}
-\item Intermediary-minus-endpoint share rises by \textbf{2.39 pp}.
-\item HAC s.e.: 0.89 pp.
-\end{itemize}
+\begin{column}{0.46\textwidth}
+\textbf{Intermediary share}
+\[
+S^I_{k,t}=\frac{N^I_{k,t}}{\sum_j N^I_{j,t}}
+\]
+How often asset $k$ sits inside a route.
 \end{column}
-\begin{column}{0.50\textwidth}
-\textbf{Dollar-value share (common support)}
-\vspace{0.25cm}
-\begin{itemize}
-\item Gap moves from \textbf{$-7.13$ pp} to \textbf{$+8.14$ pp}.
-\item Change: 15.27 pp; HAC s.e.: 1.50 pp.
-\end{itemize}
+\begin{column}{0.46\textwidth}
+\textbf{Endpoint share}
+\[
+S^E_{k,t}=\frac{N^{\mathrm{in}}_{k,t}+N^{\mathrm{out}}_{k,t}}{\sum_j N^{\mathrm{in}}_{j,t}+N^{\mathrm{out}}_{j,t}}
+\]
+How often asset $k$ is what traders buy or sell.
 \end{column}
 \end{columns}
-\vspace{0.75cm}
-\begin{center}
-{\large\color{ucldark}\bfseries USDT's intermediary share rises above its endpoint share.\par}
-\end{center}
+\vspace{0.55cm}
+{\large\color{ucldark}\bfseries Excess use compares intermediation with endpoint demand on the same support.\par}
 \end{frame}
 
 \begin{frame}{A10. Capital, inventory, and depth are distinct quantities}

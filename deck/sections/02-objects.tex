@@ -1,14 +1,8 @@
 % Sample and empirical objects. Source: certified unified route release and docs/findings-freeze.md at the branch generation.
 
-\begin{frame}{The panel follows the market across six years}
+\begin{frame}{The panel follows the market from V1 through V4}
 \evidencekicker{Data}
-\vspace{0.25cm}
-\begin{center}
-\bigstat{2,332}{calendar days}\hfill
-\bigstat{471.6m}{swap legs in reconstructed routes}\hfill
-\bigstat{8}{DEX deployments}
-\end{center}
-\vspace{0.25cm}
+\vspace{0.45cm}
 \begin{tikzpicture}[x=0.98cm,y=0.80cm]
 \draw[rule,line width=2pt] (0,0) -- (11.9,0);
 \foreach \x/\year in {0/2020,2/2021,4/2022,6/2023,8/2024,10/2025,11.9/2026}{\fill[ucldark] (\x,0) circle (2.3pt); \node[below,font=\small] at (\x,-0.15) {\year};}
@@ -19,8 +13,8 @@
 \draw[stable,line width=1pt] (10.05,0.12)--(10.05,1.05);
 \node[above,align=center,font=\small] at (10.05,1.05) {V4: singleton};
 \end{tikzpicture}
-\vspace{0.12cm}
-{\small Routes are reconstructed transaction by transaction, then aggregated to daily and weekly observations.\par}
+\vspace{0.35cm}
+{\large Routes are reconstructed transaction by transaction across the routed venue perimeter. Daily and weekly panels are derived from the same route units.\par}
 \end{frame}
 
 \begin{frame}{Four measures capture use, scale, and network position}
