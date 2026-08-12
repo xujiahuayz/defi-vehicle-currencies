@@ -28,7 +28,13 @@ from ddvc.execution_contracts import (
     TICK_STATE_GENERATIONS,
     execution_semantics,
 )
-from ddvc.graph_event_order import CORE_STREAMS, EventOrderCorrections, load_event_order_corrections
+from ddvc.graph_event_order import (
+    CORE_STREAMS,
+    EventOrderCorrections,
+    correction_pointer_path,
+    correction_root_for_graph,
+    load_event_order_corrections,
+)
 from ddvc.paths import DATA_DIR
 from ddvc.provenance import cache_key
 from ddvc.runtime import atomic_output
@@ -482,18 +488,42 @@ def _state_partition_inputs(
     venue: str,
     day: str,
     correction_inputs: list[Path] | None = None,
+    include_absent: bool = False,
 ) -> list[Path]:
     if correction_inputs is None:
         _corrections, correction_inputs = load_event_order_corrections(
             raw_root, venue, day
         )
-    provider_inputs = [] if family == "tick" and venue == "uniswap_v4" else _stream_inputs(raw_root, family, venue, day)
+    provider_inputs = (
+        []
+        if family == "tick" and venue == "uniswap_v4"
+        else [
+            raw_stream_path(raw_root, venue, stream, day)
+            for stream, _kind, _sign in FAMILY_STREAMS[family][venue]
+            if include_absent
+            or raw_stream_path(raw_root, venue, stream, day).exists()
+        ]
+    )
     inputs = [*provider_inputs, *correction_inputs]
+    if include_absent:
+        inputs.append(
+            correction_pointer_path(
+                correction_root_for_graph(raw_root), venue, day
+            )
+        )
     if family == "tick":
-        inputs.extend(path for path in initialization_day_inputs(raw_root, venue, day) if path.exists())
+        inputs.extend(
+            path
+            for path in initialization_day_inputs(raw_root, venue, day)
+            if include_absent or path.exists()
+        )
         if venue == "uniswap_v4":
-            inputs.extend(path for path in v4_state_day_inputs(raw_root, day) if path.exists())
-    return inputs
+            inputs.extend(
+                path
+                for path in v4_state_day_inputs(raw_root, day)
+                if include_absent or path.exists()
+            )
+    return list(dict.fromkeys(inputs))
 
 
 def state_partition_inputs(
@@ -502,10 +532,18 @@ def state_partition_inputs(
     venue: str,
     day: str,
     correction_inputs: list[Path] | None = None,
+    include_absent: bool = False,
 ) -> list[Path]:
     """Expose the exact raw/correction perimeter used by one normalized day."""
 
-    return _state_partition_inputs(raw_root, family, venue, day, correction_inputs)
+    return _state_partition_inputs(
+        raw_root,
+        family,
+        venue,
+        day,
+        correction_inputs,
+        include_absent,
+    )
 
 
 def _reconciled_stream_rows(

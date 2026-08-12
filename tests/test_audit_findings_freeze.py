@@ -65,7 +65,7 @@ from ddvc.model_registry import (
     model_run_id,
 )
 from ddvc.provenance import portable_content_sha256, sidecar_path
-from scripts.refresh_panel_dependents import DAILY_FRONTIER_PREREQUISITES
+from ddvc.frontier_release import FRONTIER_RELEASE_MARKER
 
 
 def _bind_exploratory_plan(run: dict) -> None:
@@ -875,7 +875,7 @@ class FindingsFreezeAuditTest(unittest.TestCase):
         route_cost = by_path["data/empirical/route_cost_panel_v2.parquet"]
         self.assertEqual(route_cost.status, "external_prerequisite")
         self.assertEqual(route_cost.owner, "scripts/run_route_cost_panel.py")
-        self.assertEqual(len(DAILY_FRONTIER_PREREQUISITES), 3)
+        self.assertEqual(FRONTIER_RELEASE_MARKER.name, "current.json")
         self.assertFalse(any("run_" in stage.script for stage in D3_BUILD_STAGES))
 
     def test_claim_input_gate_rejects_raw_missing_and_stale_inputs(self) -> None:

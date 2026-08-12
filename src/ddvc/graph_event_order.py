@@ -2083,6 +2083,7 @@ def load_event_order_corrections(
             f"{mismatched_actions}"
         )
     return EventOrderCorrections(rows), [
+        correction_pointer_path(root, venue, day),
         data_path,
         meta_path,
         timestamp_path,

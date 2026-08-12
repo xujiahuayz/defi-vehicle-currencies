@@ -7,6 +7,7 @@ from __future__ import annotations
 
 import hashlib
 import json
+from contextlib import contextmanager
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Iterable, Mapping
@@ -26,7 +27,7 @@ from ddvc.ethereum_logs import (
 from ddvc.paths import DATA_DIR, REPO_ROOT
 from ddvc.provenance import code_fingerprint
 from ddvc.realised import LINEAR_REALISED_ROUTE_OUTPUT_COLUMNS, LINEAR_ROUTE_COLUMNS, extract_linear_realised_routes
-from ddvc.runtime import atomic_output, serialized_output_install
+from ddvc.runtime import atomic_output, serialized_output_install, serialized_read_installs
 from ddvc.source_records import timestamp_value, transaction_id, v4_quote_status
 from ddvc.v2_event_completeness import decode_v2_log
 from ddvc.v3_inventory import decode_inventory_log
@@ -145,6 +146,25 @@ class TargetRelease:
             raise TargetEvidenceError(
                 f"{self.scope} transaction-target release changed during consumption"
             )
+
+    @property
+    def lineage_paths(self) -> tuple[Path, ...]:
+        return (
+            self.pointer_path,
+            self.manifest_path,
+            self.day_markers[0].parents[1],
+            *self.day_markers,
+        )
+
+
+@contextmanager
+def current_target_release(release: TargetRelease):
+    """Lease one complete transaction-target generation during consumption."""
+
+    with serialized_read_installs(release.lineage_paths):
+        release.assert_current()
+        yield release
+        release.assert_current()
 
 
 def _sha256(path: Path) -> str:

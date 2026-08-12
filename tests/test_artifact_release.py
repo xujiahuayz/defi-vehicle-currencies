@@ -9,11 +9,14 @@ import pytest
 
 import ddvc.artifact_release as artifact_release
 from ddvc.artifact_release import (
+    bind_file_lineage,
     current_artifact_release,
+    current_file_lineage,
     file_sha256,
     publish_artifact_release,
     resolve_artifact_release,
 )
+from ddvc.runtime import atomic_output
 from ddvc.fetch.raw import write_json
 from ddvc.provenance import sidecar_path
 
@@ -95,6 +98,30 @@ def test_current_release_lease_blocks_pointer_switch_twenty_times(tmp_path: Path
             }
         thread.join(timeout=2)
         assert completed.is_set()
+
+
+def test_absent_file_lineage_lease_blocks_creation_until_reader_exits(
+    tmp_path: Path,
+) -> None:
+    target = tmp_path / "absent.json"
+    lease = bind_file_lineage([target], allow_missing=True)
+    entered = threading.Event()
+    completed = threading.Event()
+
+    def create() -> None:
+        entered.set()
+        with atomic_output(target) as temporary:
+            temporary.write_text("created\n", encoding="utf-8")
+        completed.set()
+
+    with current_file_lineage(lease):
+        thread = threading.Thread(target=create)
+        thread.start()
+        assert entered.wait(timeout=1)
+        assert not completed.wait(timeout=0.05)
+        assert not target.exists()
+    thread.join(timeout=2)
+    assert completed.is_set()
 
 
 def test_bundle_validation_finishes_before_pointer_publication(tmp_path: Path) -> None:

@@ -4,6 +4,7 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 from collections import Counter
+from contextlib import contextmanager
 import json
 from pathlib import Path
 from typing import Mapping
@@ -11,7 +12,7 @@ from typing import Mapping
 import pyarrow.parquet as pq
 import pyarrow as pa
 
-from ddvc.artifact_release import ArtifactRelease, canonical_json_sha256, file_sha256, file_stat_identity, is_sha256, resolve_artifact_release
+from ddvc.artifact_release import ArtifactRelease, canonical_json_sha256, current_artifact_release, file_sha256, file_stat_identity, is_sha256, resolve_artifact_release
 from ddvc.paths import DATA_DIR, REPO_ROOT
 from ddvc.provenance import code_fingerprint
 from ddvc.cp_state_stream import validate_certified_cp_stream_manifest
@@ -107,6 +108,19 @@ class CapitalRelease:
     @property
     def lineage_paths(self) -> tuple[Path, ...]:
         return self.bundle.lineage_paths
+
+
+@contextmanager
+def current_capital_release(release: CapitalRelease):
+    """Lease one selected capital pointer through its complete consumption."""
+
+    with current_artifact_release(release.bundle):
+        validate_capital_generation_manifest(
+            release.bundle,
+            release.manifest,
+            require_current_inputs=True,
+        )
+        yield release
 
 
 def validate_capital_generation_manifest(

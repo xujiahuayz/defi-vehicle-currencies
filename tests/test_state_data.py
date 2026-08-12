@@ -27,11 +27,13 @@ from ddvc.state_data import (
     read_multi_asset_quality,
     read_tick_partition,
     read_tick_quality,
+    state_partition_inputs,
     tick_scientific_support,
     write_cp_partition,
     write_multi_asset_partition,
     write_tick_partition,
 )
+from ddvc.graph_event_order import correction_pointer_path, correction_root_for_graph
 from ddvc.tick_state_events import TickInitialization, certificate_identity_sha256, state_event_generation, write_daily_initializations, write_daily_v4_state_events
 from day_cut_fixtures import certified_day_cuts
 
@@ -660,6 +662,28 @@ class StateDataTests(unittest.TestCase):
         self.assertEqual((swap_row["amount0"], swap_row["amount0_raw"]), ("0.000000000000000001", "1"))
         self.assertEqual(swap_row["sqrt_price_x96"], str(1 << 96))
         self.assertNotIn("uniswap_v4_swaps_20250101.jsonl.gz", [path.name for path in __import__("ddvc.state_data", fromlist=["state_partition_inputs"]).state_partition_inputs(raw, "tick", "uniswap_v4", "20250101")])
+
+    def test_absence_aware_tick_perimeter_includes_missing_mint_and_order_pointer(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            raw = Path(directory) / "raw" / "thegraph"
+            inputs = state_partition_inputs(
+                raw,
+                "tick",
+                "uniswap_v3",
+                "20250101",
+                correction_inputs=[],
+                include_absent=True,
+            )
+        self.assertIn(
+            raw / "uniswap_v3" / "uniswap_v3_mints_20250101.jsonl.gz",
+            inputs,
+        )
+        self.assertIn(
+            correction_pointer_path(
+                correction_root_for_graph(raw), "uniswap_v3", "20250101"
+            ),
+            inputs,
+        )
 
     def test_constant_product_quote_support_requires_usable_order(self) -> None:
         with tempfile.TemporaryDirectory() as directory:

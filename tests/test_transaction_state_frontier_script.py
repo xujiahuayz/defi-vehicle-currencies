@@ -4,7 +4,7 @@ import json
 import pickle
 import unittest
 from concurrent.futures import Future
-from contextlib import contextmanager
+from contextlib import contextmanager, nullcontext
 from pathlib import Path
 from tempfile import TemporaryDirectory
 from unittest.mock import PropertyMock, patch
@@ -122,7 +122,7 @@ class TransactionStateFrontierScriptTests(unittest.TestCase):
                 path.write_text("source\n", encoding="utf-8")
             with patch(
                 "scripts.build_transaction_state_frontier.state_partition_inputs",
-                side_effect=lambda _root, _family, venue, day: [paths[(venue, day)]],
+                side_effect=lambda _root, _family, venue, day, **_kwargs: [paths[(venue, day)]],
             ):
                 lease = sparse_replay_history_lease(["20210506"], raw_root=root)
             paths[("uniswap_v3", "20210505")].write_text(
@@ -131,7 +131,7 @@ class TransactionStateFrontierScriptTests(unittest.TestCase):
             with self.assertRaisesRegex(RuntimeError, "leased source file changed"):
                 lease.assert_current()
 
-    def test_full_daily_publication_withholds_marker_on_final_source_drift(self) -> None:
+    def test_full_daily_publication_uses_sealed_sources_and_generic_owner(self) -> None:
         support = [
             {
                 "day": "20250101",
@@ -142,29 +142,32 @@ class TransactionStateFrontierScriptTests(unittest.TestCase):
                 "rejected_routes": 0,
             }
         ]
-        target = DriftingTargetContext(fail_on=2)
+        target = DriftingTargetContext(fail_on=99)
         target.content_identity_sha256 = "a" * 64
+        replay = type("Replay", (), {"assert_current": lambda self: None})()
         with (
             patch(
                 "scripts.build_transaction_state_frontier.assemble_cached_output",
                 return_value=1,
             ),
-            patch("scripts.build_transaction_state_frontier.write_panel"),
-            patch("scripts.build_transaction_state_frontier.invalidate_frontier_release_marker"),
-            patch("scripts.build_transaction_state_frontier.publish_frontier_release_marker") as publish,
+            patch("scripts.build_transaction_state_frontier.current_target_release", return_value=nullcontext()) as target_lease,
+            patch("scripts.build_transaction_state_frontier.current_file_lineage", return_value=nullcontext()) as replay_lease,
+            patch("scripts.build_transaction_state_frontier.publish_frontier_release") as publish,
         ):
-            with self.assertRaisesRegex(RuntimeError, "exact-source drift"):
-                publish_full_daily_frontier(
-                    support,
-                    selected=["20250101"],
-                    day_cache=Path("cache"),
-                    inputs=[],
-                    engine_key="engine",
-                    input_key="input",
-                    target_release=target,
-                    source_identity="source",
-                )
-        publish.assert_not_called()
+            publish_full_daily_frontier(
+                support,
+                selected=["20250101"],
+                day_cache=Path("cache"),
+                inputs=[],
+                engine_key="engine",
+                input_key="input",
+                target_release=target,
+                replay_history=replay,
+                source_identity="a" * 64,
+            )
+        target_lease.assert_called_once_with(target)
+        replay_lease.assert_called_once_with(replay)
+        publish.assert_called_once()
     def test_full_daily_target_release_has_one_certified_resolver(self) -> None:
         released = object()
         with patch("scripts.build_transaction_state_frontier.resolve_target_release", return_value=released) as resolve:
@@ -249,8 +252,9 @@ class TransactionStateFrontierScriptTests(unittest.TestCase):
 
     def test_audit_and_daily_outputs_have_distinct_names(self) -> None:
         source = Path("scripts/build_transaction_state_frontier.py").read_text()
+        release_source = Path("src/ddvc/frontier_release.py").read_text()
         self.assertIn("transaction_state_frontier_audit.parquet", source)
-        self.assertIn("transaction_state_frontier_daily.parquet", source)
+        self.assertIn("transaction_state_frontier_daily.parquet", release_source)
         self.assertNotIn(
             '"transaction_state_frontier.parquet"',
             source,
@@ -797,6 +801,15 @@ class TransactionStateFrontierScriptTests(unittest.TestCase):
     def test_worker_failure_prevents_daily_publication(self) -> None:
         days = ["20210504", "20210505"]
         release = TargetRelease("daily", "1" * 64, Path("pointer"), Path("manifest"), tuple(Path("day_generation") / "days" / f"{day}.json" for day in days), tuple(days), {})
+        replay_lease = type(
+            "ReplayLease",
+            (),
+            {
+                "existing_paths": (),
+                "content_identity_sha256": "replay",
+                "assert_current": lambda self: None,
+            },
+        )()
         with (
             patch("sys.argv", ["build_transaction_state_frontier.py", "--daily-calendar", "--workers", "2"]),
             patch("scripts.build_transaction_state_frontier.require_node_d_release"),
@@ -807,6 +820,18 @@ class TransactionStateFrontierScriptTests(unittest.TestCase):
             patch.object(TargetRelease, "assert_current"),
             patch("scripts.build_transaction_state_frontier.transaction_frontier_audit_days", return_value=days),
             patch("scripts.build_transaction_state_frontier.require_frontier_audit_gate", return_value=(1.0, 1.0, 1.0)),
+            patch(
+                "scripts.build_transaction_state_frontier.sparse_replay_history_lease",
+                return_value=replay_lease,
+            ) as replay_history,
+            patch(
+                "scripts.build_transaction_state_frontier.current_target_release",
+                return_value=nullcontext(),
+            ),
+            patch(
+                "scripts.build_transaction_state_frontier.current_file_lineage",
+                return_value=nullcontext(),
+            ),
             patch("scripts.build_transaction_state_frontier.frontier_cache_identity", return_value=("frontier", "input", "generation")),
             patch("scripts.build_transaction_state_frontier.load_cached_day_support", return_value=None),
             patch("scripts.build_transaction_state_frontier.replay_checkpoint_engine_key", return_value="checkpoint"),
@@ -817,6 +842,7 @@ class TransactionStateFrontierScriptTests(unittest.TestCase):
         ):
             result = main()
         self.assertEqual(result, 1)
+        replay_history.assert_called_once_with(days)
         publish.assert_not_called()
 
     def test_frontier_dependency_groups_separate_scoring_from_publication(self) -> None:
@@ -1120,8 +1146,8 @@ class TransactionStateFrontierScriptTests(unittest.TestCase):
                 )
             output = root / "daily.parquet"
             canonical_input = root / "source.parquet"
-            with patch("scripts.build_transaction_state_frontier.stamp") as stamp_mock:
-                rows = assemble_cached_output(
+            inputs = [canonical_input]
+            rows = assemble_cached_output(
                     root,
                     [
                         {"day": "20250101", "scored_routes": 1},
@@ -1130,29 +1156,26 @@ class TransactionStateFrontierScriptTests(unittest.TestCase):
                     suffix=".parquet",
                     count_column="scored_routes",
                     output=output,
-                    inputs=[canonical_input],
+                    inputs=inputs,
                     notes="test",
                     engine_key="engine",
                     input_key="input",
                 )
-                assembled = pd.read_parquet(output)
-                stamped_inputs = stamp_mock.call_args.kwargs["inputs"]
-                manifest_path = stamped_inputs[1]
-                manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
+            assembled = pd.read_parquet(output)
+            manifest_path = inputs[1]
+            manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
         self.assertEqual(rows, 2)
         self.assertEqual(len(assembled), 2)
-        stamp_mock.assert_called_once()
-        self.assertEqual(stamped_inputs[0], canonical_input)
+        self.assertEqual(inputs[0], canonical_input)
         self.assertEqual(manifest_path.name, "daily.parquet.ordered-shards.json")
         self.assertEqual(
-            [path.name for path in stamped_inputs[2:]],
+            [path.name for path in inputs[2:]],
             ["20250101.support.json", "20250102.support.json"],
         )
-        self.assertIn("resumable day cache", stamp_mock.call_args.kwargs["notes"])
         self.assertEqual(len(manifest["ordered_shard_manifest_root"]), 64)
         self.assertEqual([entry["day"] for entry in manifest["entries"]], ["20250101", "20250102"])
 
-    def test_marker_mutation_makes_assembled_release_stale(self) -> None:
+    def test_assembly_exposes_every_marker_to_canonical_release_provenance(self) -> None:
         with TemporaryDirectory() as directory:
             root = Path(directory)
             day_cache = root / "cache"
@@ -1167,11 +1190,8 @@ class TransactionStateFrontierScriptTests(unittest.TestCase):
                     input_key="input",
                 )
             output = root / "daily.parquet"
-            with (
-                patch("ddvc.provenance.ROOT", root),
-                patch("ddvc.provenance.MANIFESTS", root / "manifests"),
-            ):
-                assemble_cached_output(
+            inputs = []
+            assemble_cached_output(
                     day_cache,
                     [
                         {"day": "20250101", "scored_routes": 1},
@@ -1180,24 +1200,14 @@ class TransactionStateFrontierScriptTests(unittest.TestCase):
                     suffix=".parquet",
                     count_column="scored_routes",
                     output=output,
-                    inputs=[],
+                    inputs=inputs,
                     notes="test",
                     engine_key="engine",
                     input_key="input",
                 )
-                self.assertEqual(verify(output)["status"], "ok")
-                record = json.loads(sidecar_path(output).read_text(encoding="utf-8"))
-                marker = day_cache / "20250101.support.json"
-                marker.write_text(marker.read_text(encoding="utf-8") + " ", encoding="utf-8")
-                verdict = verify(output)
-            self.assertTrue(
-                any(
-                    str(item["path"]).endswith("daily.parquet.ordered-shards.json")
-                    for item in record["inputs"]
-                )
-            )
-            self.assertEqual(verdict["status"], "stale")
-            self.assertIn("cache/20250101.support.json", verdict["changed_inputs"])
+            self.assertIn(day_cache / "daily.parquet.ordered-shards.json", inputs)
+            self.assertIn(day_cache / "20250101.support.json", inputs)
+            self.assertIn(day_cache / "20250102.support.json", inputs)
 
     def test_empty_day_preserves_calendar_support(self) -> None:
         empty_replay = V2ReplayDay({}, {}, {}, {}, {}, {})

@@ -3,6 +3,7 @@ from __future__ import annotations
 import importlib.util
 import json
 import tempfile
+from contextlib import contextmanager
 from pathlib import Path
 
 import pandas as pd
@@ -329,27 +330,38 @@ def test_cp_stream_semantics_change_invalidates_the_rent_shard_generation(monkey
         assert after != before
 
 
-def test_capital_pointer_flip_aborts_rent_publication(monkeypatch) -> None:
-    state = type("State", (), {"assert_current": lambda self: None})()
-    event = type(
-        "Event", (), {"pointer_path": Path("event.json"), "generation_id": "event-a"}
-    )()
-    capital = type(
-        "Capital", (), {"pointer_path": Path("capital.json"), "generation_id": "capital-a"}
-    )()
+def test_rent_build_seals_capital_and_event_pointers_through_publication(monkeypatch) -> None:
+    capital = object()
+    event = object()
+    entered = []
+
+    @contextmanager
+    def lease(label):
+        entered.append(f"enter-{label}")
+        yield
+        entered.append(f"exit-{label}")
+
+    monkeypatch.setattr(rent, "current_capital_release", lambda selected: lease("capital"))
+    monkeypatch.setattr(rent, "current_v2_event_source_release", lambda selected: lease("event"))
     monkeypatch.setattr(
         rent,
-        "resolve_v2_event_source_release",
-        lambda _path: type("Event", (), {"generation_id": "event-a"})(),
-    )
-    monkeypatch.setattr(
-        rent,
-        "resolve_capital_release",
-        lambda _path: type("Capital", (), {"generation_id": "capital-b"})(),
+        "_build_v2_current",
+        lambda **_kwargs: entered.append("publish"),
     )
 
-    with pytest.raises(RuntimeError, match="capital generation changed"):
-        rent.validate_v2_release_sources(state, event, capital)
+    rent.build_v2(
+        workers=1,
+        force=False,
+        capital_release=capital,
+        event_source_release=event,
+    )
+    assert entered == [
+        "enter-capital",
+        "enter-event",
+        "publish",
+        "exit-event",
+        "exit-capital",
+    ]
 
 
 def test_generation_change_aborts_before_publication(monkeypatch) -> None:

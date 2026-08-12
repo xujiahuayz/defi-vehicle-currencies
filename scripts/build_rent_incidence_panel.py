@@ -40,7 +40,11 @@ import pyarrow as pa
 import pyarrow.parquet as pq
 
 from ddvc.capital_contracts import CAPITAL_CURRENT_COLUMN, capital_contract
-from ddvc.capital_release import CapitalRelease, resolve_capital_release
+from ddvc.capital_release import (
+    CapitalRelease,
+    current_capital_release,
+    resolve_capital_release,
+)
 from ddvc.cp_state_stream import CPStateStreamSet, certified_cp_event_stream
 from ddvc.liquidity import CAPITAL_COLUMN
 from ddvc.panel_assembly import assemble_parquet_shards
@@ -56,7 +60,11 @@ from ddvc.state_data import (
 )
 from ddvc.tables import publish_staged_artifact
 from ddvc.work_partition import weighted_contiguous_chunks
-from ddvc.v2_event_completeness import V2EventSourceRelease, resolve_v2_event_source_release
+from ddvc.v2_event_completeness import (
+    V2EventSourceRelease,
+    current_v2_event_source_release,
+    resolve_v2_event_source_release,
+)
 
 PROC = DATA_DIR / "processed"
 LOCK = PROC / ".rent_incidence_panels.lock"
@@ -534,14 +542,8 @@ def validate_v2_release_sources(
     """Reopen every selected pointer and reject a cross-generation install."""
 
     state_release.assert_current()
-    reopened_event_source = resolve_v2_event_source_release(
-        event_source_release.pointer_path
-    )
-    if reopened_event_source.generation_id != event_source_release.generation_id:
-        raise RuntimeError("V2 event-source generation changed during rent build")
-    reopened_capital = resolve_capital_release(capital_release.pointer_path)
-    if reopened_capital.generation_id != capital_release.generation_id:
-        raise RuntimeError("capital generation changed during rent build")
+    event_source_release.assert_current()
+    capital_release.bundle.assert_current()
 
 
 def _assemble_family(
@@ -602,14 +604,14 @@ def _assemble_family(
     print(f"{venue} pool-days: {result.rows:,}", flush=True)
 
 
-def build_v2(
+def _build_v2_current(
     *,
     workers: int,
     force: bool,
-    capital_release: CapitalRelease | None = None,
-    event_source_release: V2EventSourceRelease | None = None,
+    capital_release: CapitalRelease,
+    event_source_release: V2EventSourceRelease,
 ) -> None:
-    selected_capital = capital_release or resolve_capital_release()
+    selected_capital = capital_release
     reserve_authority = selected_capital.manifest["certified_reserve_stream"]["uniswap_v2"]
     days = [str(partition["day"]) for partition in reserve_authority["partitions"]]
     state_release = certified_cp_event_stream(
@@ -617,7 +619,7 @@ def build_v2(
         days,
         raw_root=RAW_ROOT,
     )
-    selected_event_source = event_source_release or resolve_v2_event_source_release()
+    selected_event_source = event_source_release
     capital_path = selected_capital.artifacts["pool"]
     if not days:
         raise RuntimeError("no certified Uniswap V2 event days")
@@ -652,6 +654,30 @@ def build_v2(
         release_identity=state_release.content_identity_sha256,
         preinstall_validator=validate_sources,
     )
+
+
+def build_v2(
+    *,
+    workers: int,
+    force: bool,
+    capital_release: CapitalRelease | None = None,
+    event_source_release: V2EventSourceRelease | None = None,
+) -> None:
+    """Build the V2 rent panel while both selected pointers remain sealed."""
+
+    selected_capital = capital_release or resolve_capital_release()
+    selected_event_source = (
+        event_source_release or resolve_v2_event_source_release()
+    )
+    with current_capital_release(selected_capital), current_v2_event_source_release(
+        selected_event_source
+    ):
+        _build_v2_current(
+            workers=workers,
+            force=force,
+            capital_release=selected_capital,
+            event_source_release=selected_event_source,
+        )
 
 
 def main() -> None:

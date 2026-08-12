@@ -32,6 +32,7 @@ from ddvc.artifact_release import (
     FileLineageLease,
     bind_file_lineage,
     canonical_json_sha256,
+    current_file_lineage,
 )
 from ddvc.analysis.transaction_frontier import (
     CHOSEN_REPRODUCTION_DASHBOARD_REFERENCE,
@@ -55,8 +56,7 @@ from ddvc.asset_types import (
 )
 from ddvc.data_release import require_node_d_release
 from ddvc.frontier_release import (
-    invalidate_frontier_release_marker,
-    publish_frontier_release_marker,
+    publish_frontier_release,
 )
 from ddvc.paths import DATA_DIR, OUTPUT_DIR
 from ddvc.panel_assembly import assemble_parquet_shards
@@ -86,7 +86,13 @@ from ddvc.route_state import OrderedTickStateCursor, TickStateCut
 from ddvc.runtime import atomic_output, exclusive_job, interruptible_process_pool
 from ddvc.state_data import RAW_ROOT, state_partition_inputs, tick_partition_path
 from ddvc.tables import write_exhibit, write_panel
-from ddvc.transaction_targets import TargetRelease, read_target_day, resolve_target_release, strict_route_order
+from ddvc.transaction_targets import (
+    TargetRelease,
+    current_target_release,
+    read_target_day,
+    resolve_target_release,
+    strict_route_order,
+)
 from ddvc.v4_quarantine import (
     V4_STATIC_QUARANTINE_PANEL,
     load_v4_static_quarantine,
@@ -99,9 +105,6 @@ AUDIT_PANEL = DATA_DIR / "processed" / "transaction_state_frontier_audit.parquet
 AUDIT_REJECTIONS = DATA_DIR / "processed" / "transaction_state_frontier_audit_rejections.parquet"
 AUDIT_SUMMARY = OUTPUT_DIR / "exhibits" / "transaction_state_frontier_audit_summary.jsonl"
 AUDIT_SUPPORT = OUTPUT_DIR / "exhibits" / "transaction_state_frontier_audit_support.jsonl"
-DAILY_PANEL = DATA_DIR / "processed" / "transaction_state_frontier_daily.parquet"
-DAILY_REJECTIONS = DATA_DIR / "processed" / "transaction_state_frontier_daily_rejections.parquet"
-DAILY_SUPPORT = DATA_DIR / "processed" / "transaction_state_frontier_daily_support.parquet"
 LOCK = DATA_DIR / "processed" / ".transaction_state_frontier.lock"
 TICK_VENUES = ("uniswap_v3", "uniswap_v4")
 EXACT_VENUES = (*V2_VENUES, *TICK_VENUES)
@@ -286,7 +289,11 @@ def sparse_replay_history_lease(
         for observed in calendar
         for venue in TICK_VENUES
         for path in state_partition_inputs(
-            raw_root, "tick", venue, observed.strftime("%Y%m%d")
+            raw_root,
+            "tick",
+            venue,
+            observed.strftime("%Y%m%d"),
+            include_absent=True,
         )
     ]
     return bind_file_lineage(paths, allow_missing=True)
@@ -1939,6 +1946,11 @@ def assemble_cached_output(
         engine_key=engine_key,
         input_key=input_key,
     )
+    inputs.extend(
+        path
+        for path in (manifest_path, *marker_paths)
+        if path not in inputs
+    )
     expected = sum(int(row[count_column]) for row in support_rows)
     files = [
         day_cache / f"{row['day']}{suffix}"
@@ -1965,33 +1977,193 @@ def assemble_cached_output(
         raise RuntimeError(
             f"assembled {output.name} row mismatch: {result.rows:,} != {expected:,}"
         )
-    stamp(
-        output,
-        code_sources=OUTPUT_PROVENANCE_SOURCES,
-        inputs=[*inputs, manifest_path, *marker_paths],
-        rows=result.rows,
-        notes=(
-            f"{notes}; resumable day cache {day_cache.name}; "
-            f"ordered shard manifest {manifest_path.name}"
-        ),
-    )
     return result.rows
 
 
-def publish_full_daily_frontier(support_rows: list[dict[str, object]], *, selected: list[str], day_cache: Path, inputs: list[Path], engine_key: str, input_key: str, target_release: TargetRelease, source_identity: str) -> int:
-    """Validate complete worker closure before the existing ordered assembly publishes anything."""
-    assert_frontier_sources_current(target_release, None)
-    invalidate_frontier_release_marker()
+def publish_full_daily_frontier(support_rows: list[dict[str, object]], *, selected: list[str], day_cache: Path, inputs: list[Path], engine_key: str, input_key: str, target_release: TargetRelease, replay_history: FileLineageLease, source_identity: str) -> int:
+    """Publish the complete frontier under sealed source and marker-last leases."""
     support = pd.DataFrame(support_rows)
     daily_reproduction, daily_state_coverage, daily_verified_coverage = validate_daily_support(support, selected)
-    panel_rows = assemble_cached_output(day_cache, support_rows, suffix=".parquet", count_column="scored_routes", output=DAILY_PANEL, inputs=inputs, notes="full-daily strict pre-transaction V2/V3/V4 realised and public-path frontier; distinct from the construction audit", engine_key=engine_key, input_key=input_key)
-    rejection_rows = assemble_cached_output(day_cache, support_rows, suffix=".rejections.parquet", count_column="rejected_routes", output=DAILY_REJECTIONS, inputs=inputs, notes="full-daily route-level exclusion and chosen-route reproduction ledger", engine_key=engine_key, input_key=input_key)
-    write_panel(support, DAILY_SUPPORT, code_sources=OUTPUT_PROVENANCE_SOURCES, inputs=inputs, notes="daily V2/V3/V4 exact-state support funnel for the full estimation frontier")
-    assert_frontier_sources_current(target_release, None)
-    publish_frontier_release_marker(source_identity_sha256=source_identity)
-    assert_frontier_sources_current(target_release, None)
+    panel_rows = sum(int(row["scored_routes"]) for row in support_rows)
+    rejection_rows = sum(int(row["rejected_routes"]) for row in support_rows)
+
+    def assemble(path: Path, *, suffix: str, count_column: str, notes: str) -> None:
+        observed = assemble_cached_output(
+            day_cache,
+            support_rows,
+            suffix=suffix,
+            count_column=count_column,
+            output=path,
+            inputs=inputs,
+            notes=notes,
+            engine_key=engine_key,
+            input_key=input_key,
+        )
+        if observed != sum(int(row[count_column]) for row in support_rows):
+            raise RuntimeError("frontier staged row count changed during assembly")
+
+    def write_support(path: Path) -> None:
+        support.to_parquet(path, index=False)
+
+    def validate_staged(paths) -> None:
+        assert_frontier_sources_current(target_release, replay_history)
+        if pq.ParquetFile(paths["panel"]).metadata.num_rows != panel_rows:
+            raise RuntimeError("frontier staged panel row count changed")
+        if pq.ParquetFile(paths["rejections"]).metadata.num_rows != rejection_rows:
+            raise RuntimeError("frontier staged rejection row count changed")
+        if pq.ParquetFile(paths["support"]).metadata.num_rows != len(support):
+            raise RuntimeError("frontier staged support row count changed")
+
+    with current_target_release(target_release), current_file_lineage(replay_history):
+        publish_frontier_release(
+            writers={
+                "panel": lambda path: assemble(
+                    path,
+                    suffix=".parquet",
+                    count_column="scored_routes",
+                    notes="full-daily strict pre-transaction V2/V3/V4 realised and public-path frontier; distinct from the construction audit",
+                ),
+                "rejections": lambda path: assemble(
+                    path,
+                    suffix=".rejections.parquet",
+                    count_column="rejected_routes",
+                    notes="full-daily route-level exclusion and chosen-route reproduction ledger",
+                ),
+                "support": write_support,
+            },
+            row_counts={
+                "panel": panel_rows,
+                "rejections": rejection_rows,
+                "support": len(support),
+            },
+            code_sources=OUTPUT_PROVENANCE_SOURCES,
+            inputs=inputs,
+            notes="full-daily exact-state frontier bundle",
+            source_identity_sha256=source_identity,
+            validate_staged=validate_staged,
+        )
     print(f"wrote full-daily frontier on {len(selected):,} calendar days: {panel_rows:,} scored and {rejection_rows:,} rejected routes; chosen-route reproduction {daily_reproduction:.2%}; chosen-state coverage {daily_state_coverage:.2%}; verified coverage {daily_verified_coverage:.2%}")
     return 0
+
+
+def replay_sparse_calendar(
+    calendar,
+    *,
+    replay: TickReplayState,
+    selected_set: set[str],
+    cached_days,
+    frames: list[pd.DataFrame],
+    rejection_frames: list[pd.DataFrame],
+    support_rows: list[dict[str, object]],
+    checkpoint_dir: Path,
+    checkpoint_engine_key: str,
+    target_release: TargetRelease,
+    vehicles,
+    day_cache: Path,
+    frontier_engine_key: str,
+    frontier_input_key: str,
+) -> None:
+    """Replay one sparse calendar while its complete raw lineage is leased."""
+
+    for index, observed in enumerate(calendar, 1):
+        day = observed.strftime("%Y%m%d")
+        checkpoint = checkpoint_dir / f"pre_{day}.pkl"
+        if replay_checkpoint_due(index=index):
+            if not checkpoint.exists():
+                save_replay_checkpoint(
+                    checkpoint,
+                    replay,
+                    engine_key=checkpoint_engine_key,
+                    pre_day=day,
+                )
+                print(f"wrote replay checkpoint before {day}", flush=True)
+        if day in selected_set:
+            cached = cached_days[day]
+            if cached is not None:
+                frame, rejections, support = cached
+                warm_tick_day(None, day, replay)
+                cache_note = " [cached]"
+            else:
+                events = load_tick_day_events(None, day)
+                v2_replay = load_v2_replay_day(None, day)
+                frame, rejections, support = score_day(
+                    day, events, replay, v2_replay, vehicles, target_release
+                )
+                write_cached_day(
+                    day_cache,
+                    day,
+                    frame,
+                    rejections,
+                    support,
+                    engine_key=frontier_engine_key,
+                    input_key=frontier_input_key,
+                )
+                cache_note = ""
+            frames.append(frame)
+            rejection_frames.append(rejections)
+            support_rows.append(support)
+            print(
+                f"{day}: {support['all_exact_two_leg_routes']:,} exact two-leg; "
+                f"{support['exact_venue_two_leg_routes']:,} V2/V3/V4; "
+                f"{support['scored_routes']:,} exact-state scored{cache_note}",
+                flush=True,
+            )
+        else:
+            warm_tick_day(None, day, replay)
+        if index % 180 == 0:
+            print(f"replayed through {day} ({index:,}/{len(calendar):,} days)", flush=True)
+
+
+def publish_sparse_audit(
+    panel: pd.DataFrame,
+    rejections: pd.DataFrame,
+    support: pd.DataFrame,
+    *,
+    selected: list[str],
+    inputs: list[Path],
+    target_release: TargetRelease,
+    replay_history: FileLineageLease,
+) -> pd.DataFrame:
+    """Publish one coherent sparse audit while every replay source is leased."""
+
+    summary = summarise(panel)
+    validate_sources = lambda _path: assert_frontier_sources_current(
+        target_release, replay_history
+    )
+    write_panel(
+        panel,
+        AUDIT_PANEL,
+        code_sources=OUTPUT_PROVENANCE_SOURCES,
+        inputs=inputs,
+        notes=f"{len(selected)}-date construction audit of the strict pre-transaction V2/V3/V4 frontier",
+        preinstall_validator=validate_sources,
+    )
+    write_panel(
+        rejections,
+        AUDIT_REJECTIONS,
+        code_sources=OUTPUT_PROVENANCE_SOURCES,
+        inputs=inputs,
+        notes=f"{len(selected)}-date route-level exclusion and chosen-route reproduction ledger",
+        preinstall_validator=validate_sources,
+    )
+    write_exhibit(
+        summary,
+        AUDIT_SUMMARY,
+        code_sources=OUTPUT_PROVENANCE_SOURCES,
+        inputs=[AUDIT_PANEL],
+        notes="construction-audit route and dollar magnitudes; not an estimation sample",
+        preinstall_validator=validate_sources,
+    )
+    write_exhibit(
+        support,
+        AUDIT_SUPPORT,
+        code_sources=OUTPUT_PROVENANCE_SOURCES,
+        inputs=inputs,
+        notes=f"{len(selected)}-date V2/V3/V4 exact-state support and chosen-route reproduction diagnostics",
+        preinstall_validator=validate_sources,
+    )
+    assert_frontier_sources_current(target_release, replay_history)
+    return summary
 
 
 def main() -> int:
@@ -2072,13 +2244,8 @@ def main() -> int:
         target_release.day_markers[0].parents[1],
         *target_release.day_markers,
     ]
-    replay_history = (
-        None
-        if daily_mode
-        else sparse_replay_history_lease(selected)
-    )
-    if replay_history is not None:
-        inputs.extend(replay_history.existing_paths)
+    replay_history = sparse_replay_history_lease(selected)
+    inputs.extend(replay_history.existing_paths)
     source_identity = frontier_source_identity(target_release, replay_history)
     assert_frontier_sources_current(target_release, replay_history)
     frontier_engine_key, frontier_input_key, frontier_generation = (
@@ -2128,20 +2295,23 @@ def main() -> int:
     )
     if daily_mode:
         try:
-            workers = daily_worker_count(args.workers)
-            if args.workers is not None and workers != args.workers:
-                print(f"capped full-daily workers at {workers:,} for this host's CPU/memory budget", flush=True)
-            target_weights = target_day_scoring_weights(target_release)
-            scoring_weights = {day: 1 if cached_days[day] is not None else target_weights[day] for day in selected}
-            segments = plan_daily_segments(selected, workers=workers, checkpoint_dir=checkpoint_dir, scoring_weights=scoring_weights)
-            if uncached_days:
-                mapped_days, created_checkpoints = materialize_segment_checkpoints(segments, checkpoint_dir=checkpoint_dir, checkpoint_engine_key=checkpoint_engine_key, target_release=target_release, market_state=None, workers=workers)
-                print(f"full-daily checkpoint phase: {mapped_days:,} historical days mapped; {created_checkpoints:,} checkpoints created; {workers:,} bounded workers", flush=True)
-                print("full-daily segment loads: " + ", ".join(f"{segment.days[0]}..{segment.days[-1]}={segment.scoring_weight:,}" for segment in segments), flush=True)
-                support_rows = run_daily_segments(segments, workers=workers, checkpoint_engine_key=checkpoint_engine_key, day_cache=day_cache, frontier_engine_key=frontier_engine_key, frontier_input_key=frontier_input_key, vehicles=vehicles, target_release=target_release, market_state=None, cp_market_state=None)
-            else:
-                support_rows = [cached_days[day] for day in selected if cached_days[day] is not None]
-            return publish_full_daily_frontier(support_rows, selected=selected, day_cache=day_cache, inputs=inputs, engine_key=frontier_engine_key, input_key=frontier_input_key, target_release=target_release, source_identity=source_identity)
+            with current_target_release(target_release), current_file_lineage(
+                replay_history
+            ):
+                workers = daily_worker_count(args.workers)
+                if args.workers is not None and workers != args.workers:
+                    print(f"capped full-daily workers at {workers:,} for this host's CPU/memory budget", flush=True)
+                target_weights = target_day_scoring_weights(target_release)
+                scoring_weights = {day: 1 if cached_days[day] is not None else target_weights[day] for day in selected}
+                segments = plan_daily_segments(selected, workers=workers, checkpoint_dir=checkpoint_dir, scoring_weights=scoring_weights)
+                if uncached_days:
+                    mapped_days, created_checkpoints = materialize_segment_checkpoints(segments, checkpoint_dir=checkpoint_dir, checkpoint_engine_key=checkpoint_engine_key, target_release=target_release, market_state=None, workers=workers)
+                    print(f"full-daily checkpoint phase: {mapped_days:,} historical days mapped; {created_checkpoints:,} checkpoints created; {workers:,} bounded workers", flush=True)
+                    print("full-daily segment loads: " + ", ".join(f"{segment.days[0]}..{segment.days[-1]}={segment.scoring_weight:,}" for segment in segments), flush=True)
+                    support_rows = run_daily_segments(segments, workers=workers, checkpoint_engine_key=checkpoint_engine_key, day_cache=day_cache, frontier_engine_key=frontier_engine_key, frontier_input_key=frontier_input_key, vehicles=vehicles, target_release=target_release, market_state=None, cp_market_state=None)
+                else:
+                    support_rows = [cached_days[day] for day in selected if cached_days[day] is not None]
+                return publish_full_daily_frontier(support_rows, selected=selected, day_cache=day_cache, inputs=inputs, engine_key=frontier_engine_key, input_key=frontier_input_key, target_release=target_release, replay_history=replay_history, source_identity=source_identity)
         except (FileNotFoundError, RuntimeError, ValueError) as error:
             print(f"error: full-daily frontier scoring/release failed: {error}")
             return 1
@@ -2184,54 +2354,26 @@ def main() -> int:
         if replay_start is not None
         else []
     )
-    for index, observed in enumerate(calendar, 1):
-        assert replay is not None
-        day = observed.strftime("%Y%m%d")
-        checkpoint = checkpoint_dir / f"pre_{day}.pkl"
-        if replay_checkpoint_due(index=index):
-            if not checkpoint.exists():
-                save_replay_checkpoint(
-                    checkpoint,
-                    replay,
-                    engine_key=checkpoint_engine_key,
-                    pre_day=day,
-                )
-                print(f"wrote replay checkpoint before {day}", flush=True)
-        if day in selected_set:
-            cached = cached_days[day]
-            if cached is not None:
-                frame, rejections, support = cached
-                warm_tick_day(None, day, replay)
-                cache_note = " [cached]"
-            else:
-                events = load_tick_day_events(None, day)
-                v2_replay = load_v2_replay_day(None, day)
-                frame, rejections, support = score_day(
-                    day, events, replay, v2_replay, vehicles, target_release
-                )
-                write_cached_day(
-                    day_cache,
-                    day,
-                    frame,
-                    rejections,
-                    support,
-                    engine_key=frontier_engine_key,
-                    input_key=frontier_input_key,
-                )
-                cache_note = ""
-            frames.append(frame)
-            rejection_frames.append(rejections)
-            support_rows.append(support)
-            print(
-                f"{day}: {support['all_exact_two_leg_routes']:,} exact two-leg; "
-                f"{support['exact_venue_two_leg_routes']:,} V2/V3/V4; "
-                f"{support['scored_routes']:,} exact-state scored{cache_note}",
-                flush=True,
+    if replay is not None:
+        with current_target_release(target_release), current_file_lineage(
+            replay_history
+        ):
+            replay_sparse_calendar(
+                calendar,
+                replay=replay,
+                selected_set=selected_set,
+                cached_days=cached_days,
+                frames=frames,
+                rejection_frames=rejection_frames,
+                support_rows=support_rows,
+                checkpoint_dir=checkpoint_dir,
+                checkpoint_engine_key=checkpoint_engine_key,
+                target_release=target_release,
+                vehicles=vehicles,
+                day_cache=day_cache,
+                frontier_engine_key=frontier_engine_key,
+                frontier_input_key=frontier_input_key,
             )
-        else:
-            warm_tick_day(None, day, replay)
-        if index % 180 == 0:
-            print(f"replayed through {day} ({index:,}/{len(calendar):,} days)", flush=True)
     support = pd.DataFrame(support_rows)
     panel = pd.concat(frames, ignore_index=True) if frames else pd.DataFrame()
     rejections = (
@@ -2243,52 +2385,26 @@ def main() -> int:
         print("no transaction-state frontier routes survived validation")
         return 1
     if args.day:
-        assert_frontier_sources_current(target_release, replay_history)
-        print(
-            f"explicit diagnostic complete: {len(selected):,} day(s), "
-            f"{len(panel):,} scored and {len(rejections):,} rejected routes; "
-            "canonical outputs unchanged"
-        )
+        with current_target_release(target_release), current_file_lineage(
+            replay_history
+        ):
+            print(
+                f"explicit diagnostic complete: {len(selected):,} day(s), "
+                f"{len(panel):,} scored and {len(rejections):,} rejected routes; "
+                "canonical outputs unchanged"
+            )
         return 0
 
-    summary = summarise(panel)
-    assert_frontier_sources_current(target_release, replay_history)
-    validate_sources = lambda _path: assert_frontier_sources_current(
-        target_release, replay_history
-    )
-    write_panel(
-        panel,
-        AUDIT_PANEL,
-        code_sources=OUTPUT_PROVENANCE_SOURCES,
-        inputs=inputs,
-        notes=f"{len(selected)}-date construction audit of the strict pre-transaction V2/V3/V4 frontier",
-        preinstall_validator=validate_sources,
-    )
-    write_panel(
-        rejections,
-        AUDIT_REJECTIONS,
-        code_sources=OUTPUT_PROVENANCE_SOURCES,
-        inputs=inputs,
-        notes=f"{len(selected)}-date route-level exclusion and chosen-route reproduction ledger",
-        preinstall_validator=validate_sources,
-    )
-    write_exhibit(
-        summary,
-        AUDIT_SUMMARY,
-        code_sources=OUTPUT_PROVENANCE_SOURCES,
-        inputs=[AUDIT_PANEL],
-        notes="construction-audit route and dollar magnitudes; not an estimation sample",
-        preinstall_validator=validate_sources,
-    )
-    write_exhibit(
-        support,
-        AUDIT_SUPPORT,
-        code_sources=OUTPUT_PROVENANCE_SOURCES,
-        inputs=inputs,
-        notes=f"{len(selected)}-date V2/V3/V4 exact-state support and chosen-route reproduction diagnostics",
-        preinstall_validator=validate_sources,
-    )
-    assert_frontier_sources_current(target_release, replay_history)
+    with current_target_release(target_release), current_file_lineage(replay_history):
+        summary = publish_sparse_audit(
+            panel,
+            rejections,
+            support,
+            selected=selected,
+            inputs=inputs,
+            target_release=target_release,
+            replay_history=replay_history,
+        )
     coherent_available = int(support["within_20pct_chosen_quote_available"].sum())
     coherent_mismatches = int(
         support["within_20pct_chosen_output_mismatch"].sum()

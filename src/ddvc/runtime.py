@@ -66,12 +66,17 @@ def _lexical_path(path: Path) -> Path:
     return Path(os.path.abspath(os.path.normpath(os.fspath(path))))
 
 
-def _source_paths(paths: Iterable[Path]) -> tuple[Path, ...]:
+def _source_paths(
+    paths: Iterable[Path], *, allow_missing: bool = False
+) -> tuple[Path, ...]:
     selected: list[Path] = []
     for raw in paths:
         path = _lexical_path(Path(raw))
         selected.append(path)
-        selected.append(path.resolve(strict=True))
+        if path.exists() or path.is_symlink():
+            selected.append(path.resolve(strict=True))
+        elif not allow_missing:
+            raise FileNotFoundError(f"source lease path is missing: {path}")
     return tuple(dict.fromkeys(selected))
 
 
@@ -287,17 +292,19 @@ def serialized_output_install(target: Path) -> Iterator[None]:
 
 
 @contextmanager
-def serialized_read_installs(targets: Iterable[Path]) -> Iterator[None]:
-    """Lease source bytes, including a symlink's referent, through a complete read."""
+def serialized_read_installs(
+    targets: Iterable[Path], *, allow_missing: bool = False
+) -> Iterator[None]:
+    """Lease source identities, including declared absences, through a complete read."""
 
     requested = tuple(_lexical_path(Path(path)) for path in targets)
-    selected = _source_paths(requested)
+    selected = _source_paths(requested, allow_missing=allow_missing)
     if not selected:
         raise ValueError("source lease requires at least one path")
     with _serialized_artifact_locks(
         {path: fcntl.LOCK_SH for path in selected}
     ):
-        if _source_paths(requested) != selected:
+        if _source_paths(requested, allow_missing=allow_missing) != selected:
             raise RuntimeError("source symlink changed while its lease was acquired")
         token = _ACTIVE_READ_SOURCES.set(
             frozenset((*_ACTIVE_READ_SOURCES.get(), *selected))

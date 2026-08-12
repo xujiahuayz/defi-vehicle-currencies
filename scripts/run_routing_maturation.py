@@ -34,7 +34,7 @@ from ddvc.model_artifacts import (
     model_artifact_context,
     write_model_exhibit,
 )
-from ddvc.frontier_release import resolve_frontier_release
+from ddvc.frontier_release import current_frontier_release, resolve_frontier_release
 from ddvc.paths import DATA_DIR, OUTPUT_DIR
 from ddvc.provenance import require_current_artifacts
 from ddvc.runtime import exclusive_job
@@ -43,7 +43,6 @@ from ddvc.runtime import exclusive_job
 CELL_DAY = DATA_DIR / "processed" / "routing_maturation_cell_day.parquet"
 TRANSITION = DATA_DIR / "processed" / "routing_transition_cells.parquet"
 EXACT_HORIZONS = DATA_DIR / "processed" / "routing_maturation_exact_horizons.parquet"
-FRONTIER_SUPPORT = DATA_DIR / "processed" / "transaction_state_frontier_daily_support.parquet"
 ESTIMATE_OUTPUT = OUTPUT_DIR / "exhibits" / "e0_routing_maturation_estimates.jsonl"
 SUPPORT_OUTPUT = OUTPUT_DIR / "exhibits" / "e0_routing_maturation_support.jsonl"
 LOCK = DATA_DIR / "processed" / ".routing_maturation_estimates.lock"
@@ -77,9 +76,7 @@ def support_blocks_estimation(support_frames: list[pd.DataFrame]) -> bool:
     )
 
 
-def main() -> int:
-    context = model_artifact_context()
-    frontier_release = resolve_frontier_release()
+def _run(frontier_release, context) -> int:
     frontier_support_path = frontier_release.artifacts["support"]
     inputs = [*frontier_release.lineage_paths, CELL_DAY, TRANSITION, EXACT_HORIZONS]
     require_current_artifacts(
@@ -187,6 +184,13 @@ def main() -> int:
         f"{len(combined) - len(estimates):,} support rows"
     )
     return 0
+
+
+def main() -> int:
+    context = model_artifact_context()
+    frontier_release = resolve_frontier_release()
+    with current_frontier_release(frontier_release):
+        return _run(frontier_release, context)
 
 
 if __name__ == "__main__":

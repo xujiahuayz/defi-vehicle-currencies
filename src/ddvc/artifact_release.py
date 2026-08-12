@@ -125,6 +125,16 @@ class FileLineageLease:
                 raise RuntimeError(f"leased source file changed: {path}")
 
 
+@contextmanager
+def current_file_lineage(lease: FileLineageLease):
+    """Hold one absence-aware filesystem lease around a complete source read."""
+
+    with serialized_read_installs(lease.paths, allow_missing=True):
+        lease.assert_current()
+        yield lease
+        lease.assert_current()
+
+
 def bind_file_lineage(
     paths: list[Path] | tuple[Path, ...], *, allow_missing: bool = False
 ) -> FileLineageLease:
