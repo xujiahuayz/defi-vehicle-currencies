@@ -5,12 +5,16 @@ import hashlib
 import json
 from pathlib import Path
 import tempfile
+import threading
 import unittest
+from argparse import Namespace
 from unittest.mock import patch
 
 import duckdb
 import pandas as pd
 import scripts.fetch_pool_identity_registry as static_producer
+import scripts.audit_v3_graph_omission_materiality as omission_audit
+from ddvc.runtime import exclusive_job
 
 from ddvc.v3_graph_materiality import (
     GRAPH_STATIC_FIELDS,
@@ -45,6 +49,40 @@ def provider_row(
 
 
 class V3GraphOmissionMaterialityTests(unittest.TestCase):
+    def test_audit_holds_raw_mutation_lease_through_publication(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            lock = Path(directory) / "raw.lock"
+            entered = threading.Event()
+            release = threading.Event()
+            errors: list[BaseException] = []
+
+            def paused_audit(_args):
+                entered.set()
+                self.assertTrue(release.wait(timeout=10))
+                return 0
+
+            def audit() -> None:
+                try:
+                    omission_audit.main()
+                except BaseException as error:
+                    errors.append(error)
+
+            with (
+                patch.object(omission_audit, "RAW_MARKET_DATA_LOCK", lock),
+                patch.object(omission_audit, "_parse_args", return_value=Namespace()),
+                patch.object(omission_audit, "_audit_and_publish", side_effect=paused_audit),
+            ):
+                auditor = threading.Thread(target=audit)
+                auditor.start()
+                self.assertTrue(entered.wait(timeout=10))
+                with self.assertRaisesRegex(RuntimeError, "already running"):
+                    with exclusive_job(lock, job="synthetic raw writer"):
+                        self.fail("raw writer entered during omission-audit publication")
+                release.set()
+                auditor.join(timeout=10)
+            self.assertFalse(auditor.is_alive())
+            self.assertEqual(errors, [])
+
     def test_canonical_static_producer_recertifies_existing_bytes_with_bound_contract(self) -> None:
         with tempfile.TemporaryDirectory() as directory:
             root = Path(directory)

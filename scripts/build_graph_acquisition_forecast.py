@@ -17,8 +17,8 @@ from ddvc.calendar import RESEARCH_SAMPLE_END
 from ddvc.fetch.acquisition import GRAPH_ACQUISITION_FORECAST, GRAPH_ACQUISITION_FREEZE, GRAPH_BLOCK_FIELDS, GRAPH_CANARY_CURRENT, GRAPH_CANARY_FINAL, GRAPH_ROOT_POPULATION, GRAPH_THIN_CONSUMER_AUDIT, sha256_file
 from ddvc.fetch.sources import DEX_SOURCES
 from ddvc.fetch.thin_consumer_audit import validate_thin_consumer_audit_envelope
-from ddvc.paths import PRIMARY_REPO_ROOT
-from ddvc.runtime import atomic_output
+from ddvc.paths import PRIMARY_REPO_ROOT, RAW_MARKET_DATA_LOCK
+from ddvc.runtime import atomic_output, exclusive_job
 
 
 FINAL_CANARY = GRAPH_CANARY_FINAL
@@ -120,7 +120,7 @@ def _stream_map(payload: dict[str, Any], *, active_only: bool = False) -> dict[t
     }
 
 
-def main() -> int:
+def _parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--final-canary", type=Path, default=FINAL_CANARY)
     parser.add_argument("--current-canary", type=Path, default=CURRENT_CANARY)
@@ -133,7 +133,12 @@ def main() -> int:
     parser.add_argument("--available-disk-path", type=Path)
     parser.add_argument("--pagination-benchmark", type=Path, help="sustained multi-page/rate-limit benchmark evidence; without it runtime remains unbounded")
     parser.add_argument("--output", type=Path, default=DEFAULT_OUTPUT)
-    args = parser.parse_args()
+    return parser.parse_args()
+
+
+def _build_and_publish_forecast(args: argparse.Namespace) -> int:
+    """Read the installed raw inventory and publish its forecast under one lease."""
+
     if args.available_disk_bytes is not None and (
         not args.available_disk_host or args.available_disk_path is None
     ):
@@ -433,6 +438,15 @@ def main() -> int:
         temporary.write_text(json.dumps(payload, indent=2, sort_keys=True) + "\n", encoding="utf-8")
     print(json.dumps({**payload["forecast"], "launch_decision": payload["launch_decision"]}, sort_keys=True))
     return 0
+
+
+def main() -> int:
+    args = _parse_args()
+    with exclusive_job(
+        RAW_MARKET_DATA_LOCK,
+        job="Graph acquisition inventory forecast",
+    ):
+        return _build_and_publish_forecast(args)
 
 
 if __name__ == "__main__":

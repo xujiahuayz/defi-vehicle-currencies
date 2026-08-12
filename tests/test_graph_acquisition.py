@@ -3,6 +3,7 @@ from __future__ import annotations
 import hashlib
 import gzip
 import json
+import threading
 from pathlib import Path
 
 import pytest
@@ -15,6 +16,8 @@ from ddvc.fetch.material_consumers import GRAPH_MATERIAL_CONSUMER_INTENTS, Exist
 from ddvc.fetch.schemas import EntitySpec, acquisition_schema, get_schema
 from ddvc.fetch.graph import iter_paginate
 from ddvc.paths import REPO_ROOT
+from ddvc.runtime import exclusive_job
+from scripts import build_graph_acquisition_forecast
 
 
 def allow_intent(*streams: tuple[str, str]) -> dict[str, GraphMaterialConsumerIntent]:
@@ -69,6 +72,51 @@ def test_source_specific_schema_contracts_are_distinct() -> None:
     assert get_schema("curve").name == "curve"
     assert get_schema("sushiswap_v3").name == "sushiswap_v3"
     assert get_schema("sushiswap_v2").name == "sushiswap_v2"
+
+
+def test_forecast_holds_raw_mutation_lease_through_publication(tmp_path: Path, monkeypatch) -> None:
+    mutation_lock = tmp_path / "raw-mutation.lock"
+    entered = threading.Event()
+    release = threading.Event()
+    errors: list[BaseException] = []
+
+    def paused_build(_args):
+        entered.set()
+        assert release.wait(timeout=10)
+        return 0
+
+    monkeypatch.setattr(
+        build_graph_acquisition_forecast,
+        "RAW_MARKET_DATA_LOCK",
+        mutation_lock,
+    )
+    monkeypatch.setattr(
+        build_graph_acquisition_forecast,
+        "_parse_args",
+        lambda: object(),
+    )
+    monkeypatch.setattr(
+        build_graph_acquisition_forecast,
+        "_build_and_publish_forecast",
+        paused_build,
+    )
+
+    def build() -> None:
+        try:
+            build_graph_acquisition_forecast.main()
+        except BaseException as error:
+            errors.append(error)
+
+    builder = threading.Thread(target=build)
+    builder.start()
+    assert entered.wait(timeout=10)
+    with pytest.raises(RuntimeError, match="already running"):
+        with exclusive_job(mutation_lock, job="synthetic raw writer"):
+            raise AssertionError("raw writer entered during forecast publication")
+    release.set()
+    builder.join(timeout=10)
+    assert not builder.is_alive()
+    assert not errors
 
 
 def test_frozen_acquisition_schema_materialises_fetch_modes(tmp_path) -> None:

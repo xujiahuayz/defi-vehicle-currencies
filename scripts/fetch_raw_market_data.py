@@ -494,6 +494,11 @@ def coverage_has_gaps(report: dict[str, dict[str, object]]) -> bool:
 
 
 def cmd_coverage(args: argparse.Namespace) -> int:
+    with exclusive_job(RAW_MUTATION_LOCK, job="raw market-data coverage audit"):
+        return _cmd_coverage(args)
+
+
+def _cmd_coverage(args: argparse.Namespace) -> int:
     names = source_names(args.dex)
     end_by_source = {name: effective_range(name, "genesis", args.end)[1] for name in names}
     report = coverage_report(names, end_by_source, verify_content_hashes=bool(args.strict))
