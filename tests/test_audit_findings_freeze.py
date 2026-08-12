@@ -504,6 +504,44 @@ class FindingsFreezeAuditTest(unittest.TestCase):
         self.assertFalse(passed, detail)
         self.assertIn("confirmatory_context=invalid", detail)
 
+    def test_vehicle_transition_lock_requires_exact_e1_pair_design(self) -> None:
+        import copy
+
+        payload = json.loads(SPECIFICATION_LOCK.read_text())
+        mutations = {
+            "missing design": lambda claim: claim.pop("e1_design"),
+        }
+        for label, mutate in mutations.items():
+            with self.subTest(label=label):
+                candidate = copy.deepcopy(payload)
+                transition = next(claim for claim in candidate["claims"] if claim["id"] == "vehicle_transition")
+                mutate(transition)
+                candidate["lock_hash"] = canonical_hash({key: value for key, value in candidate.items() if key != "lock_hash"})
+                passed, detail = validate_specification_lock(candidate)
+                self.assertFalse(passed, detail)
+                self.assertNotIn("hash=mismatch", detail)
+                self.assertNotIn("transition_design_errors=none", detail)
+        semantic_mutations = {
+            "wrong strict-count source": lambda claim: claim["e1_design"]["pair_panel"]["primary_measures"][1].update({"source_column": "within_20pct_value_usd"}),
+            "wrong common-support keys": lambda claim: claim["e1_design"]["pair_panel"].update({"common_support_keys": ["src", "tgt", "month_day"]}),
+            "wrong coefficient": lambda claim: claim["e1_design"]["pair_panel"].update({"coefficient": "linear year trend"}),
+            "missing date cluster": lambda claim: claim["e1_design"]["pair_panel"].update({"clusters": ["ordered_endpoint_pair"]}),
+            "full-market value denominator": lambda claim: claim["e1_design"]["pair_decomposition"].update({"denominator_scope": "full-market strict-value mass"}),
+            "incomplete decomposition": lambda claim: claim["e1_design"]["pair_decomposition"].update({"components": ["within_common", "common_pair_reweighting"]}),
+            "arbitrary formula": lambda claim: claim["e1_design"]["pair_decomposition"].update({"formula": "within_common = 9; common_pair_reweighting = 8; common_support_mass = 7; exclusive_pair_contribution = 6"}),
+            "rogue field": lambda claim: claim["e1_design"]["pair_panel"].update({"rogue": "unreviewed"}),
+        }
+        for label, mutate in semantic_mutations.items():
+            with self.subTest(label=f"semantic {label}"):
+                candidate = copy.deepcopy(payload)
+                transition = next(claim for claim in candidate["claims"] if claim["id"] == "vehicle_transition")
+                mutate(transition)
+                transition["e1_design_hash"] = canonical_hash(transition["e1_design"])
+                candidate["lock_hash"] = canonical_hash({key: value for key, value in candidate.items() if key != "lock_hash"})
+                passed, detail = validate_specification_lock(candidate)
+                self.assertFalse(passed, detail)
+                self.assertNotIn("transition_design_errors=none", detail)
+
     def test_route_cost_gate_checks_cell_semantics_and_formula(self) -> None:
         with tempfile.TemporaryDirectory() as directory:
             path = Path(directory) / "route-cost.parquet"

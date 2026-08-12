@@ -338,11 +338,94 @@ CAPITAL_CONTRACT_COLUMNS = (
     "quantity_kind",
     "capital_source",
 )
+VEHICLE_TRANSITION_E1_COMPONENTS = (
+    "within_common",
+    "common_pair_reweighting",
+    "common_support_mass",
+    "exclusive_pair_contribution",
+)
+EXPECTED_VEHICLE_TRANSITION_E1_DESIGN_HASH = "6990b221624cb3fffd7d00fcdd07827c4966cfe4d92c24723209d1a278bf80d4"
 
 
 def _manifest(path: Path) -> dict:
     sidecar = sidecar_path(path)
     return json.loads(sidecar.read_text()) if sidecar.exists() else {}
+
+
+def vehicle_transition_e1_design_errors(claim: dict) -> list[str]:
+    """Validate the seeded pair-panel and exact-decomposition contract."""
+
+    errors: list[str] = []
+    design = claim.get("e1_design")
+    if not isinstance(design, dict) or set(design) != {"pair_panel", "pair_decomposition"}:
+        return ["e1_design must contain exactly pair_panel and pair_decomposition"]
+    actual_design_hash = canonical_hash(design)
+    if claim.get("e1_design_hash") != actual_design_hash:
+        errors.append("e1_design_hash")
+    if actual_design_hash != EXPECTED_VEHICLE_TRANSITION_E1_DESIGN_HASH:
+        errors.append("unreviewed e1_design_hash")
+    panel = design.get("pair_panel")
+    decomposition = design.get("pair_decomposition")
+    if not isinstance(panel, dict) or not isinstance(decomposition, dict):
+        return ["e1_design members must be objects"]
+    panel_required = {"id", "comparison_years", "cell_keys", "common_support_keys", "candidate_types", "primary_measures", "stable_share_formula", "estimator_id", "fixed_effects", "fixed_effect_cell_keys", "clusters", "coefficient", "effective_cell_weight", "multiplicity"}
+    decomposition_required = {"id", "target_id", "role_id", "comparison_years", "calendar_support", "calendar_aggregation_id", "integration_scope_aggregation_id", "pair_membership_id", "pair_universe", "common_pair_definition", "exclusive_pair_definition", "candidate_types", "measure_ids", "components", "identity", "formula_id", "formula", "identity_absolute_tolerance", "zero_exclusive_mass_rule", "denominator_scope", "forbidden_denominator", "reporting"}
+    missing_panel = sorted(panel_required - set(panel))
+    missing_decomposition = sorted(decomposition_required - set(decomposition))
+    if missing_panel:
+        errors.append(f"pair_panel missing={missing_panel}")
+    if missing_decomposition:
+        errors.append(f"pair_decomposition missing={missing_decomposition}")
+    if panel.get("candidate_types") != ["native", "stable"]:
+        errors.append("pair_panel candidate_types")
+    measures = panel.get("primary_measures")
+    measure_rows = measures if isinstance(measures, list) else []
+    measure_ids = [
+        str(row.get("id") or "")
+        for row in measure_rows
+        if isinstance(row, dict)
+    ]
+    incomplete_measures = [
+        str(row.get("id") or "missing")
+        for row in measure_rows
+        if not isinstance(row, dict)
+        or not {"id", "source_column", "support", "weight"}.issubset(row)
+        or any(not str(row.get(field) or "").strip() for field in ("id", "source_column", "support", "weight"))
+    ]
+    if len(measure_rows) != 3 or len(measure_ids) != 3 or len(set(measure_ids)) != 3 or incomplete_measures:
+        errors.append("pair_panel primary_measures")
+    if panel.get("fixed_effects") != ["ordered_endpoint_pair_x_month_day_x_integration_scope"]:
+        errors.append("pair_panel fixed_effects")
+    if panel.get("fixed_effect_cell_keys") != panel.get("common_support_keys"):
+        errors.append("pair_panel fixed_effect_cell_keys")
+    if panel.get("clusters") != ["ordered_endpoint_pair", "calendar_date"]:
+        errors.append("pair_panel clusters")
+    multiplicity = panel.get("multiplicity")
+    if not isinstance(multiplicity, dict) or multiplicity.get("method") != "Holm" or multiplicity.get("family") != measure_ids:
+        errors.append("pair_panel multiplicity")
+    if decomposition.get("comparison_years") != panel.get("comparison_years"):
+        errors.append("pair_decomposition comparison_years")
+    if decomposition.get("candidate_types") != panel.get("candidate_types"):
+        errors.append("pair_decomposition candidate_types")
+    if decomposition.get("measure_ids") != measure_ids:
+        errors.append("pair_decomposition measure_ids")
+    if tuple(decomposition.get("components") or ()) != VEHICLE_TRANSITION_E1_COMPONENTS:
+        errors.append("pair_decomposition components")
+    identity = str(decomposition.get("identity") or "")
+    identity_terms = [term.strip() for term in identity.partition("=")[2].split("+")]
+    if not identity.startswith("delta_total =") or identity_terms != list(VEHICLE_TRANSITION_E1_COMPONENTS):
+        errors.append("pair_decomposition identity")
+    tolerance = decomposition.get("identity_absolute_tolerance")
+    if not isinstance(tolerance, (float, int)) or not 0 < float(tolerance) <= 1e-6:
+        errors.append("pair_decomposition identity_absolute_tolerance")
+    denominator = str(decomposition.get("denominator_scope") or "")
+    forbidden_denominator = str(decomposition.get("forbidden_denominator") or "")
+    if not denominator or not forbidden_denominator or denominator == forbidden_denominator:
+        errors.append("pair_decomposition denominator boundary")
+    formula = str(decomposition.get("formula") or "")
+    if not all(f"{component} =" in formula for component in VEHICLE_TRANSITION_E1_COMPONENTS):
+        errors.append("pair_decomposition formula")
+    return errors
 
 
 def v3_inventory_calendar_checks(
@@ -2813,6 +2896,16 @@ def validate_specification_lock(
             plan_passed, plan_detail = validate_registered_plan(claim)
             if not plan_passed:
                 registered_plan_errors[claim_id] = plan_detail
+    transition_design_errors: list[str] = []
+    transition_claims = [
+        claim
+        for claim in claims
+        if isinstance(claim, dict) and claim.get("id") == "vehicle_transition"
+    ]
+    if transition_claims:
+        transition_design_errors.extend(
+            vehicle_transition_e1_design_errors(transition_claims[0])
+        )
     passed = bool(
         payload.get("schema_version") == 1
         and declared_hash == actual_hash
@@ -2830,6 +2923,7 @@ def validate_specification_lock(
         and stage_valid
         and choices_status_valid
         and not registered_plan_errors
+        and not transition_design_errors
         and (not require_confirmatory or confirmatory_ready)
     )
     detail = (
@@ -2850,7 +2944,8 @@ def validate_specification_lock(
         f"d3_certificate={d3_certificate or 'missing'}; "
         f"exploration_generation={exploration_generation or 'missing'}; "
         f"exploration_certificate={exploration_certificate or 'missing'}; "
-        f"registered_plan_errors={registered_plan_errors or 'none'}"
+        f"registered_plan_errors={registered_plan_errors or 'none'}; "
+        f"transition_design_errors={transition_design_errors or 'none'}"
     )
     return passed, detail
 

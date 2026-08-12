@@ -8,7 +8,7 @@
   "d3_certificate": null,
   "exploration_generation": null,
   "exploration_certificate": null,
-  "lock_hash": "67019a9f4be4e1d6de280fc6af51814795de0357357beea479fc1b713d0f056f",
+  "lock_hash": "391b8ab1117e4c0c5599a445cad2423f79ab5eb39088219ebfcc7a8350c5ef7f",
   "paper_scope": "The making and displacement of vehicle-currency roles in Ethereum decentralised exchange",
   "global_rules": {
     "asset_identity": "canonical contract address; symbols are labels only",
@@ -37,19 +37,135 @@
       "status": "candidate_primary",
       "execution_gate": "open",
       "role": "lead finding",
-      "estimand": "change in stable share of native-plus-stable exact two-leg intermediary routes between 2024 and 2026 on common calendar support",
-      "sample": "topology-valid clean-leg routes with exactly two pool legs and one intermediary; daily observations whose calendar month-and-day position is observed in both endpoint years; full venue perimeter",
-      "unit": "day by routing stratum",
-      "dependent_variable": "stable intermediary episode share within native plus stable",
+      "estimand": "2026-minus-2024 change in stable share within native-plus-stable exact two-leg intermediary choices inside ordered-endpoint-pair, common-month-day, and integration-scope cells, followed by an exact descriptive decomposition of the raw pooled aggregate change into within-common-pair, common-pair-reweighting, common-support-mass, and exclusive-pair-contribution terms",
+      "sample": "topology-valid clean-leg routes with exactly two sequential pool legs and one stable or native intermediary on the full venue perimeter. Each primary measure keeps ordered-endpoint-pair, month-day, and integration-scope cells with positive native-plus-stable conditional mass in both 2024 and 2026; unsupported strict-count or strict-value cells remain missing for that measure and never inherit count support",
+      "unit": "ordered endpoint pair by calendar date by integration scope",
+      "dependent_variable": "stable share of native-plus-stable conditional choice mass measured by route count, matched within-20-percent route count, and within-20-percent intermediation value",
       "transformation": "level share and percentage-point change",
       "outlier_treatment": "none for counts; canonical endpoint round trips excluded by route definition",
       "analysis_ready_panel": "D3 publishes one marker-last four-table endpoint-candidate composition generation over the exact released route calendar. The choices table has one ordered-endpoint, date, stable-or-native candidate, integration-scope, and ordered-venue-sequence cell with route counts plus raw, within-2x, and within-20-percent value support. The component-keyed choice-audit table independently reconciles every aggregate choice and its transaction multiplicity. The pair-support table reconciles source components to clean pair classifications and quarantined provider-coordinate collisions, carries unique-transaction and component-multiplicity diagnostics, and reports native and stable route counts plus matched within-20-percent counts and values within the conditional native-plus-stable choice set. These conditional native-plus-stable values are not a strict-value measure of the full market. The exclusions table records every route outside the primary choice object in mutually exclusive reason cells and retains component-keyed collision evidence with count, observed absolute leg-value, time, and venue bounds. The release pointer, not a loose Parquet filename, is the analysis input and must resolve all four provenance-bound tables before estimation.",
-      "inference": "difference in daily means with 30-day HAC standard error",
+      "inference": "weighted least squares on pair-date-integration-scope shares with saturated ordered-pair by month-day by integration-scope cell fixed effects; denominator mass is the observation weight; two-way CR1 clustering by ordered endpoint pair and calendar date; Holm adjustment across exactly the three primary 2026 coefficients",
       "primary_comparison": "2024 versus 2026",
+      "e1_design": {
+        "pair_panel": {
+          "id": "e1_1_pair_panel",
+          "comparison_years": [
+            2024,
+            2026
+          ],
+          "cell_keys": [
+            "src",
+            "tgt",
+            "date",
+            "integration_scope"
+          ],
+          "common_support_keys": [
+            "src",
+            "tgt",
+            "month_day",
+            "integration_scope"
+          ],
+          "candidate_types": [
+            "native",
+            "stable"
+          ],
+          "primary_measures": [
+            {
+              "id": "count_share",
+              "source_column": "route_count",
+              "support": "all included native-plus-stable choices",
+              "weight": "native-plus-stable route_count"
+            },
+            {
+              "id": "matched_strict_count_share",
+              "source_column": "within_20pct_routes",
+              "support": "included native-plus-stable choices with within-20-percent input-output valuation coherence",
+              "weight": "native-plus-stable within_20pct_routes"
+            },
+            {
+              "id": "strict_intermediation_value_share",
+              "source_column": "within_20pct_value_usd",
+              "support": "included native-plus-stable choices with within-20-percent input-output valuation coherence",
+              "weight": "native-plus-stable within_20pct_value_usd"
+            }
+          ],
+          "stable_share_formula": "stable measure mass divided by native-plus-stable measure mass within each cell",
+          "estimator_id": "weighted_stable_share_saturated_pair_month_day_scope_fe_v1",
+          "fixed_effects": [
+            "ordered_endpoint_pair_x_month_day_x_integration_scope"
+          ],
+          "fixed_effect_cell_keys": [
+            "src",
+            "tgt",
+            "month_day",
+            "integration_scope"
+          ],
+          "clusters": [
+            "ordered_endpoint_pair",
+            "calendar_date"
+          ],
+          "coefficient": "indicator for 2026 with 2024 omitted",
+          "effective_cell_weight": "with two endpoint-year observations per saturated cell, denominator-mass WLS weights the within-cell 2026-minus-2024 difference in proportion to w_2024 times w_2026 divided by (w_2024 plus w_2026)",
+          "multiplicity": {
+            "method": "Holm",
+            "family": [
+              "count_share",
+              "matched_strict_count_share",
+              "strict_intermediation_value_share"
+            ]
+          }
+        },
+        "pair_decomposition": {
+          "id": "e1_2_conditional_pair_decomposition",
+          "target_id": "raw_pooled_conditional_stable_share_change",
+          "role_id": "descriptive_companion_not_wls_coefficient_decomposition",
+          "comparison_years": [
+            2024,
+            2026
+          ],
+          "calendar_support": "month-days observed in both endpoint years",
+          "calendar_aggregation_id": "common_month_days",
+          "integration_scope_aggregation_id": "pooled_primary_split_secondary",
+          "pair_membership_id": "measure_specific; pooled reporting assigns membership after summing integration scopes and scope-specific reporting assigns membership within each scope",
+          "pair_universe": "union of ordered endpoint pairs with positive native-plus-stable conditional mass in either endpoint year on the common calendar",
+          "common_pair_definition": "an ordered endpoint pair with positive selected-measure native-plus-stable mass in both endpoint years after restricting to common month-days and pooling integration scopes",
+          "exclusive_pair_definition": "an ordered endpoint pair with positive selected-measure native-plus-stable mass in exactly one endpoint year after restricting to common month-days and pooling integration scopes",
+          "candidate_types": [
+            "native",
+            "stable"
+          ],
+          "measure_ids": [
+            "count_share",
+            "matched_strict_count_share",
+            "strict_intermediation_value_share"
+          ],
+          "components": [
+            "within_common",
+            "common_pair_reweighting",
+            "common_support_mass",
+            "exclusive_pair_contribution"
+          ],
+          "identity": "delta_total = within_common + common_pair_reweighting + common_support_mass + exclusive_pair_contribution",
+          "formula_id": "midpoint_common_exclusive_support_v1",
+          "formula": "For each measure, let W_y be common-pair mass as a share of total native-plus-stable conditional mass, E_y = 1 - W_y, q_p,y the weight of common pair p within common-pair mass, s_p,y its stable share, S_C,y = sum_p q_p,y s_p,y, and S_E,y the stable share within year-exclusive-pair mass. Using bars for endpoint-year midpoints: within_common = W_bar sum_p q_p_bar (s_p,2026 - s_p,2024); common_pair_reweighting = W_bar sum_p s_p_bar (q_p,2026 - q_p,2024); common_support_mass = (S_C_bar - S_E_bar) (W_2026 - W_2024); exclusive_pair_contribution = E_bar (S_E,2026 - S_E,2024)",
+          "identity_absolute_tolerance": 1e-12,
+          "zero_exclusive_mass_rule": "set S_E,y to zero when E_y is zero, retain the exact identity, and report common-support-mass and exclusive-contribution terms jointly because their separate values then depend on this normalization",
+          "denominator_scope": "native-plus-stable conditional choice mass for the selected measure",
+          "forbidden_denominator": "full-market strict-value mass",
+          "reporting": [
+            "pooled integration scopes",
+            "single-venue and cross-venue decomposition"
+          ]
+        }
+      },
+      "e1_design_hash": "6990b221624cb3fffd7d00fcdd07827c4966cfe4d92c24723209d1a278bf80d4",
       "mandatory_alternatives": {
         "dependent_variable": [
           "episode count share",
-          "within-20-percent value share",
+          "within-20-percent matched episode count share",
+          "within-20-percent intermediation-value share"
+        ],
+        "dominance_extension": [
           "vehicle excess-use ratio"
         ],
         "transformation": [
@@ -83,6 +199,9 @@
         "data/processed/vehicle_excess_use_daily.parquet"
       ],
       "outputs": [
+        "output/exhibits/vehicle_transition_pair_panel.jsonl",
+        "output/exhibits/vehicle_transition_pair_decomposition.jsonl",
+        "output/exhibits/vehicle_transition_pair_support.jsonl",
         "output/exhibits/intermediation_by_type.jsonl",
         "output/exhibits/intermediation_integration_rival.jsonl",
         "output/exhibits/intermediation_complexity_rival.jsonl",
