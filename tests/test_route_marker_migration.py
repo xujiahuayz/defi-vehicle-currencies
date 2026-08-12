@@ -34,6 +34,7 @@ from scripts.migrate_route_release_markers import (
 from ddvc.raw_certification import (
     RawPartition,
     local_scan_certificate_path,
+    raw_partition_relocation_identity,
     scan_installed_generation,
     write_local_scan_certificate,
 )
@@ -296,6 +297,24 @@ def test_storage_relocation_rejects_scientific_content_change(
     assert file_sha256(marker) == before
 
 
+def test_promoted_source_relocation_identity_reopens_live_payload(
+    tmp_path: Path,
+) -> None:
+    data_root = tmp_path / "data"
+    raw = write_v2_swap(data_root, "2020-05-05")
+    marker = raw.with_name("uniswap_v2_meta_20200505.json")
+    marker_bytes = marker.read_bytes()
+    raw_partition_relocation_identity(
+        "uniswap_v2", "swaps", "20200505", data_root=data_root
+    )
+    write_v2_swap(data_root, "2020-05-05", amount_in="999")
+    marker.write_bytes(marker_bytes)
+    with pytest.raises(ValueError, match="payload changed after its marker"):
+        raw_partition_relocation_identity(
+            "uniswap_v2", "swaps", "20200505", data_root=data_root
+        )
+
+
 def test_storage_relocation_rejects_foreign_or_mutated_snapshot(
     tmp_path: Path,
 ) -> None:
@@ -355,6 +374,70 @@ def test_storage_relocation_interruption_rolls_back_complete_bundle(
             side_effect=interrupt,
         ),
         pytest.raises(KeyboardInterrupt, match="injected interruption"),
+    ):
+        relocate(paths, days, snapshot, publish=True)
+    assert file_sha256(marker) == before_marker
+    assert file_sha256(paths["quality_panel"]) == before_ledger
+
+
+def test_storage_relocation_rechecks_route_partition_inside_journal(
+    tmp_path: Path,
+) -> None:
+    days = ["20200505"]
+    paths, snapshot, _outputs = prepare_relocation_release(tmp_path, days)
+    marker = unified_quality_path(days[0], root=paths["unified_root"])
+    before_marker = file_sha256(marker)
+    before_ledger = file_sha256(paths["quality_panel"])
+    output = unified_path(days[0], root=paths["unified_root"])
+    from scripts import migrate_route_release_markers as migration
+
+    original_publish = migration.publish_journaled_bundle
+
+    def mutate_then_publish(**kwargs):
+        payload = bytearray(output.read_bytes())
+        payload[-1] ^= 1
+        output.write_bytes(payload)
+        return original_publish(**kwargs)
+
+    with (
+        patch.object(
+            migration,
+            "publish_journaled_bundle",
+            side_effect=mutate_then_publish,
+        ),
+        pytest.raises(RuntimeError, match="partition changed before migration commit"),
+    ):
+        relocate(paths, days, snapshot, publish=True)
+    assert file_sha256(marker) == before_marker
+    assert file_sha256(paths["quality_panel"]) == before_ledger
+
+
+def test_storage_relocation_rechecks_raw_authority_inside_journal(
+    tmp_path: Path,
+) -> None:
+    days = ["20200505"]
+    paths, snapshot, _outputs = prepare_relocation_release(tmp_path, days)
+    marker = unified_quality_path(days[0], root=paths["unified_root"])
+    before_marker = file_sha256(marker)
+    before_ledger = file_sha256(paths["quality_panel"])
+    raw = route_input_paths(
+        "2020-05-05", ["uniswap_v2"], data_root=paths["data_root"]
+    )[0]
+    from scripts import migrate_route_release_markers as migration
+
+    original_publish = migration.publish_journaled_bundle
+
+    def mutate_then_publish(**kwargs):
+        raw.write_bytes(raw.read_bytes() + b"mutation")
+        return original_publish(**kwargs)
+
+    with (
+        patch.object(
+            migration,
+            "publish_journaled_bundle",
+            side_effect=mutate_then_publish,
+        ),
+        pytest.raises(ValueError, match="changed after scan"),
     ):
         relocate(paths, days, snapshot, publish=True)
     assert file_sha256(marker) == before_marker

@@ -459,6 +459,7 @@ def _publish_journaled_bundle_unlocked(
     staged: Mapping[str, Path],
     journal_root: Path,
     metadata: Mapping[str, object] | None = None,
+    validate_preconditions: Callable[[], None] | None = None,
     validate_live: Callable[[], None] | None = None,
 ) -> None:
     """Publish a complete fixed bundle and preserve recovery state on failure.
@@ -516,12 +517,16 @@ def _publish_journaled_bundle_unlocked(
         _write_journal(stage, journal)
         journal_written = True
         try:
+            if validate_preconditions is not None:
+                validate_preconditions()
             for name, target, new, backup in records:
                 if original[name]["kind"] != "absent":
                     _durable_replace(target, backup)
                 _durable_replace(new, target)
                 _publication_cut(f"installed:{name}")
             _require_live(records, published)
+            if validate_preconditions is not None:
+                validate_preconditions()
             if validate_live is not None:
                 validate_live()
             journal = {**journal, "state": COMMITTED}
@@ -551,6 +556,7 @@ def publish_journaled_bundle(
     staged: Mapping[str, Path],
     journal_root: Path,
     metadata: Mapping[str, object] | None = None,
+    validate_preconditions: Callable[[], None] | None = None,
     validate_live: Callable[[], None] | None = None,
 ) -> None:
     """Publish a fixed bundle under one exclusive target perimeter."""
@@ -567,5 +573,6 @@ def publish_journaled_bundle(
             staged=perimeter.staged,
             journal_root=perimeter.journal_root,
             metadata=metadata,
+            validate_preconditions=validate_preconditions,
             validate_live=validate_live,
         )

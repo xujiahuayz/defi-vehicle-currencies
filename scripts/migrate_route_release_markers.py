@@ -724,6 +724,67 @@ def plan_storage_authority_relocation(
     )
 
 
+def _validate_relocation_dependencies(
+    plan: MigrationPlan,
+    *,
+    authority_snapshot: Path,
+    data_root: Path,
+    unified_root: Path,
+    dexes: list[str],
+) -> None:
+    """Recheck read-only raw and route dependencies inside publication."""
+
+    old_authorities, _old_release, snapshot_sha256 = _load_authority_snapshot(
+        authority_snapshot, selected=plan.days, dexes=dexes
+    )
+    if snapshot_sha256 != plan.authority_snapshot_sha256:
+        raise RuntimeError("route authority snapshot changed before publication")
+    for day in plan.days:
+        output = unified_path(day, root=unified_root)
+        before = file_stat_identity(output)
+        digest = file_sha256(output)
+        after = file_stat_identity(output)
+        marker = plan.markers[day]
+        if (
+            before != after
+            or before[2] != int(marker["output_bytes"])
+            or before[3] != int(marker["output_mtime_ns"])
+            or digest != marker["output_sha256"]
+            or pq.ParquetFile(output).metadata.num_rows
+            != int(marker["output_rows"])
+        ):
+            raise RuntimeError(
+                f"route partition changed before migration commit: {day}"
+            )
+        generation_records: list[dict[str, str]] = []
+        for source in active_route_sources(_calendar_day(day), dexes):
+            stream = DEX_STREAM[source]
+            relocation = raw_partition_relocation_identity(
+                source, stream, day, data_root=data_root
+            )
+            if relocation["scientific_identity"] != old_authorities[
+                (source, stream, day)
+            ]["scientific_identity"]:
+                raise RuntimeError(
+                    "raw scientific identity changed before migration commit: "
+                    f"{source}/{stream}/{day}"
+                )
+            generation_records.append(
+                {
+                    "source": source,
+                    "stream": stream,
+                    "day": day,
+                    "generation_identity_sha256": str(
+                        relocation["generation_identity_sha256"]
+                    ),
+                }
+            )
+        if canonical_json_sha256(generation_records) != plan.current_input_fingerprints[day]:
+            raise RuntimeError(
+                f"raw authority generation changed before migration commit: {day}"
+            )
+
+
 def _quality_summary(quality: pd.DataFrame) -> pd.DataFrame:
     return pd.DataFrame(
         [{
@@ -986,6 +1047,15 @@ def publish_migration(
                 raise RuntimeError(
                     "route storage-authority relocation changed before publication"
                 )
+            validate_preconditions = lambda: _validate_relocation_dependencies(
+                plan,
+                authority_snapshot=authority_snapshot,
+                data_root=data_root,
+                unified_root=unified_root,
+                dexes=dexes,
+            )
+        else:
+            validate_preconditions = None
 
         publish_journaled_bundle(
             targets=targets,
@@ -998,6 +1068,7 @@ def publish_migration(
             },
             journal_root=journal_root,
             metadata=metadata,
+            validate_preconditions=validate_preconditions,
             validate_live=validate_live,
         )
 

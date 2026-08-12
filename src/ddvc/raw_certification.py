@@ -15,7 +15,12 @@ from dataclasses import dataclass, fields
 from functools import lru_cache
 from pathlib import Path
 
-from ddvc.artifact_release import canonical_json_sha256, file_sha256, is_sha256
+from ddvc.artifact_release import (
+    canonical_json_sha256,
+    file_sha256,
+    file_stat_identity,
+    is_sha256,
+)
 from ddvc.calendar import RESEARCH_SAMPLE_END
 from ddvc.fetch.sources import get_source, iter_days
 from ddvc.fetch.schemas import get_schema
@@ -34,6 +39,7 @@ from ddvc.fetch.raw import (
     query_chunk_policy,
 )
 from ddvc.paths import DATA_DIR
+from ddvc.provenance import portable_content_sha256
 from ddvc.raw_perimeter import consumer_required_streams
 from ddvc.runtime import atomic_output
 
@@ -1528,6 +1534,22 @@ def raw_partition_relocation_identity(
     authority = raw_partition_read_authority(
         source, stream, day, data_root=data_root
     )
+    if authority.get("authority_kind") == "promoted-source-day-v1":
+        path = authority.get("path")
+        if not isinstance(path, Path):
+            raise ValueError(
+                f"promoted raw partition lacks its payload path: {source}/{stream}/{day}"
+            )
+        before = file_stat_identity(path)
+        observed = portable_content_sha256(path)
+        if before != file_stat_identity(path):
+            raise RuntimeError(
+                f"promoted raw partition mutated during relocation proof: {source}/{stream}/{day}"
+            )
+        if observed != authority.get("logical_content_sha256"):
+            raise ValueError(
+                f"promoted raw payload changed after its marker: {source}/{stream}/{day}"
+            )
     generation = authority.get("generation_identity_sha256")
     if not is_sha256(generation):
         raise ValueError(
