@@ -30,8 +30,8 @@ Provider choice follows the evidence needed, not a universal ranking. Indexed so
 
 | Provider or route | Registered protocol coverage | Scientific layer | What it establishes | What it does not establish |
 |---|---|---|---|---|
-| The Graph | Curve, Uniswap V1, Uniswap V2, Balancer, Uniswap V3, SushiSwap V2, SushiSwap V3 and Uniswap V4 | Indexed raw protocol streams | Scalable swaps, pool-day records, and protocol-specific liquidity events used for route topology and selected state inputs | Independent chain truth, provider completeness by assertion, or exact transaction gas and receipt fields |
-| Dune | Fluid only | Indexed normalized trade records | Fluid route observations through `dex.trades` where no usable decentralized Graph subgraph exists | Exact pool-state replay or a substitute for transaction receipts and event-order verification |
+| The Graph | `balancer`, `curve`, `sushiswap_v2`, `sushiswap_v3`, `uniswap_v1`, `uniswap_v2`, `uniswap_v3`, `uniswap_v4` | Indexed raw protocol streams | Scalable swaps, pool-day records, and protocol-specific liquidity events used for route topology and selected state inputs | Independent chain truth, provider completeness by assertion, or exact transaction gas and receipt fields |
+| Dune | `fluid` | Indexed normalized trade records | Fluid route observations through `dex.trades` where no usable decentralized Graph subgraph exists | Exact pool-state replay or a substitute for transaction receipts and event-order verification |
 | Ethereum JSON-RPC | Chain-wide or explicitly registered protocol contracts | Direct chain evidence | Block headers, logs, receipts, token decimals, factory registries, UTC-day block bounds, exact event anchoring, gas fields and state checkpoints | A convenient bulk route-topology index; raw RPC evidence still requires protocol-aware decoding and release checks |
 | Named external acquisition | Coinbase ETH/USD minute observations currently registered | Independent off-chain reference | Intraday reference prices for audit and valuation support | On-chain execution state or route demand |
 
