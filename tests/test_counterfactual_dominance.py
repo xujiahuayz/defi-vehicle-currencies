@@ -19,6 +19,8 @@ from scripts.build_counterfactual_dominance import (
     dominance_level_summary,
     gross_panel_inputs,
     build_gross_publication,
+    build_final_exhibits,
+    build_final_panel,
     _release_sources,
     OUT_RECEIPT_ALLOCATION_SUPPORT,
     receipt_allocation_support,
@@ -41,6 +43,12 @@ class CounterfactualDominanceTests(unittest.TestCase):
         self.assertNotIn(
             "validate_release", inspect.signature(build_gross_publication).parameters
         )
+        self.assertEqual(
+            tuple(inspect.signature(build_gross_publication).parameters),
+            ("frame", "allocation_support", "route_release", "state_releases"),
+        )
+        self.assertEqual(tuple(inspect.signature(build_final_panel).parameters), ())
+        self.assertEqual(tuple(inspect.signature(build_final_exhibits).parameters), ())
 
     def test_receipt_allocation_support_exposes_multi_component_count_value_and_era(self) -> None:
         routes = pd.DataFrame({"tx_hash": ["0xsingle", "0xmulti", "0xmulti"], "input_usd": [100.0, 200.0, 300.0]})

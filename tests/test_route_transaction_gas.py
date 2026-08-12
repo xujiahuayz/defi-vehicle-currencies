@@ -1,8 +1,9 @@
 from __future__ import annotations
 
 import json
-from contextlib import nullcontext
+from contextlib import contextmanager, nullcontext
 from pathlib import Path
+from types import SimpleNamespace
 from unittest.mock import patch
 
 import pandas as pd
@@ -610,6 +611,16 @@ def test_acquisition_and_final_assembly_retain_at_most_one_batch(tmp_path: Path)
         patch.object(build_route_transaction_gas, "RECEIPT_EVIDENCE", receipt_evidence),
         patch.object(build_route_transaction_gas, "BLOCK_HEADER_EVIDENCE", block_evidence),
         patch.object(build_route_transaction_gas, "OUT_PANEL", output),
+        patch.object(
+            build_route_transaction_gas,
+            "gross_publication_lease",
+            return_value=nullcontext(),
+        ),
+        patch.object(
+            build_route_transaction_gas,
+            "route_receipt_requests",
+            return_value=requests,
+        ),
     ):
         support = assemble_exact_outputs(requests, batch_size=3)
     assert support == {
@@ -645,6 +656,16 @@ def test_route_gas_builder_preserves_prior_pair_when_exact_validation_fails(tmp_
         patch.object(build_route_transaction_gas, "OUT_PANEL", output),
         patch.object(build_route_transaction_gas, "RECEIPT_EVIDENCE", evidence),
         patch.object(build_route_transaction_gas, "BLOCK_HEADER_EVIDENCE", block_evidence),
+        patch.object(
+            build_route_transaction_gas,
+            "gross_publication_lease",
+            return_value=nullcontext(),
+        ),
+        patch.object(
+            build_route_transaction_gas,
+            "route_receipt_requests",
+            return_value=requests,
+        ),
         patch.object(build_route_transaction_gas, "write_receipt_snapshot", return_value=evidence),
         patch.object(build_route_transaction_gas, "write_block_header_snapshot", return_value=block_evidence),
         patch.object(build_route_transaction_gas, "cached_panel_batches", return_value=[pd.DataFrame({"candidate": [2]})]),
@@ -655,3 +676,114 @@ def test_route_gas_builder_preserves_prior_pair_when_exact_validation_fails(tmp_
     assert output.read_bytes() == prior
     assert sidecar.read_bytes() == b"prior-sidecar\n"
     assert list(tmp_path.glob(".*.tmp")) == []
+
+
+def test_gas_install_rejects_direct_private_or_mismatched_release_calls() -> None:
+    requests = pd.DataFrame({"tx_hash": ["0xabc"], "block_number": [10]})
+    with pytest.raises(RuntimeError, match="canonical release authority"):
+        build_route_transaction_gas._assemble_exact_outputs(requests, batch_size=1)
+    mismatched = pd.DataFrame({"tx_hash": ["0xdef"], "block_number": [11]})
+    with (
+        patch.object(
+            build_route_transaction_gas,
+            "gross_publication_lease",
+            return_value=nullcontext(),
+        ),
+        patch.object(
+            build_route_transaction_gas,
+            "route_receipt_requests",
+            return_value=requests,
+        ),
+        pytest.raises(RuntimeError, match="disagree with the current gross"),
+    ):
+        assemble_exact_outputs(mismatched, batch_size=1)
+
+
+def test_direct_gas_install_holds_lease_and_unforgeable_release_seal() -> None:
+    state = {"depth": 0}
+
+    @contextmanager
+    def lease():
+        state["depth"] += 1
+        try:
+            yield {}
+        finally:
+            state["depth"] -= 1
+
+    requests = pd.DataFrame({"tx_hash": ["0xabc"], "block_number": [10]})
+
+    def install(selected: pd.DataFrame, *, batch_size: int):
+        assert state["depth"] == 1
+        assert batch_size == 7
+        assert selected.equals(requests)
+        assert (
+            build_route_transaction_gas._ACTIVE_GAS_RELEASE.get()
+            is build_route_transaction_gas._GAS_RELEASE_SEAL
+        )
+        return {"rows": 1}
+
+    with (
+        patch.object(build_route_transaction_gas, "gross_publication_lease", lease),
+        patch.object(
+            build_route_transaction_gas,
+            "route_receipt_requests",
+            return_value=requests,
+        ),
+        patch.object(
+            build_route_transaction_gas,
+            "_assemble_exact_outputs",
+            side_effect=install,
+        ),
+    ):
+        assert assemble_exact_outputs(requests, batch_size=7) == {"rows": 1}
+    assert state["depth"] == 0
+    assert build_route_transaction_gas._ACTIVE_GAS_RELEASE.get() is None
+
+
+def test_direct_run_holds_gross_generation_lease_through_cache_work() -> None:
+    state = {"depth": 0}
+
+    @contextmanager
+    def lease():
+        state["depth"] += 1
+        try:
+            yield {}
+        finally:
+            state["depth"] -= 1
+
+    requests = pd.DataFrame({"tx_hash": ["0xabc"], "block_number": [10]})
+
+    def acquire(*_args, **_kwargs):
+        assert state["depth"] == 1
+        return 1, 1
+
+    args = SimpleNamespace(
+        batch_size=1,
+        limit=None,
+        shards=1,
+        cache_only=True,
+        shard_index=0,
+        workers=1,
+    )
+    with (
+        patch.object(build_route_transaction_gas, "gross_publication_lease", lease),
+        patch.object(build_route_transaction_gas, "require_node_d_release"),
+        patch.object(build_route_transaction_gas, "require_current_artifacts"),
+        patch.object(
+            build_route_transaction_gas,
+            "route_receipt_requests",
+            return_value=requests,
+        ),
+        patch.object(
+            build_route_transaction_gas,
+            "exclusive_job",
+            return_value=nullcontext(),
+        ),
+        patch.object(
+            build_route_transaction_gas,
+            "acquire_exact_cache",
+            side_effect=acquire,
+        ),
+    ):
+        assert build_route_transaction_gas._run(args, SimpleNamespace(error=pytest.fail)) == 0
+    assert state["depth"] == 0

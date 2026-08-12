@@ -441,6 +441,131 @@ def test_symlink_output_rollback_restores_referent_bytes() -> None:
         assert referent.read_text(encoding="utf-8") == "prior"
 
 
+def test_absent_output_under_symlink_ancestor_blocks_referent_writer() -> None:
+    root = Path(__file__).resolve().parents[1]
+    script = "from pathlib import Path; from ddvc.runtime import atomic_output; import sys; target=Path(sys.argv[1]); context=atomic_output(target); temporary=context.__enter__(); temporary.write_text('new'); context.__exit__(None,None,None)"
+    with tempfile.TemporaryDirectory() as directory:
+        work = Path(directory)
+        real = work / "real"
+        real.mkdir()
+        alias = work / "alias"
+        alias.symlink_to(real.name, target_is_directory=True)
+        output = alias / "new"
+        referent = real / "new"
+        with serialized_output_install(output):
+            process = subprocess.Popen(
+                [sys.executable, "-c", script, str(referent)],
+                cwd=root,
+                env={**os.environ, "PYTHONPATH": f"{root / 'src'}:{root}"},
+            )
+            time.sleep(0.05)
+            assert process.poll() is None
+            assert not referent.exists()
+        process.wait(timeout=2)
+        assert referent.read_text(encoding="utf-8") == "new"
+
+
+def test_dangling_symlink_output_has_a_stable_lock_identity() -> None:
+    with tempfile.TemporaryDirectory() as directory:
+        root = Path(directory)
+        output = root / "output"
+        output.symlink_to("missing")
+        with serialized_output_install(output):
+            assert output.is_symlink()
+
+
+def test_publication_aborts_if_output_ancestor_retargets_before_marker() -> None:
+    with tempfile.TemporaryDirectory() as directory:
+        root = Path(directory)
+        old = root / "old"
+        new = root / "new"
+        old.mkdir()
+        new.mkdir()
+        (old / "output").write_text("prior", encoding="utf-8")
+        alias = root / "alias"
+        alias.symlink_to(old.name, target_is_directory=True)
+        output = alias / "output"
+        marker = root / "marker.json"
+        capability_id = f"test.retarget-abort.{uuid.uuid4().hex}"
+        register_publication_capability(
+            capability_id, (output,), marker_path=marker
+        )
+
+        @publication_capability(
+            capability_id,
+            output_selector=lambda: (output,),
+            source_selector=lambda: (),
+        )
+        def owner():
+            alias.unlink()
+            alias.symlink_to(new.name, target_is_directory=True)
+            output.write_text("attacker-selected", encoding="utf-8")
+
+        with _install_for_test(owner), pytest.raises(
+            PublicationRecoveryRequired, match="recovery evidence retained"
+        ) as error:
+            owner()
+        assert not marker.exists()
+        assert (old / "output").read_text(encoding="utf-8") == "prior"
+        assert (new / "output").read_text(encoding="utf-8") == "attacker-selected"
+        recovery = Path(str(error.value).split(" at ", 1)[1])
+        shutil.rmtree(recovery)
+
+
+def test_empty_preparing_journal_is_ignored_before_next_publication() -> None:
+    with tempfile.TemporaryDirectory() as directory:
+        root = Path(directory)
+        output = root / "output"
+        marker = root / "marker.json"
+        capability_id = f"test.empty-journal.{uuid.uuid4().hex}"
+        register_publication_capability(
+            capability_id, (output,), marker_path=marker
+        )
+        empty = marker.parent / f".{marker.name}.transactions" / uuid.uuid4().hex
+        empty.mkdir(parents=True)
+
+        @publication_capability(
+            capability_id,
+            output_selector=lambda: (output,),
+            source_selector=lambda: (),
+        )
+        def owner():
+            output.write_text("published", encoding="utf-8")
+
+        with _install_for_test(owner):
+            owner()
+        assert output.read_text(encoding="utf-8") == "published"
+        require_current_publication(capability_id, marker_path=marker)
+        assert not empty.exists()
+
+
+def test_publication_fsyncs_outputs_and_marker_metadata() -> None:
+    with tempfile.TemporaryDirectory() as directory:
+        root = Path(directory)
+        output = root / "output"
+        marker = root / "marker.json"
+        capability_id = f"test.fsync.{uuid.uuid4().hex}"
+        register_publication_capability(
+            capability_id, (output,), marker_path=marker
+        )
+
+        @publication_capability(
+            capability_id,
+            output_selector=lambda: (output,),
+            source_selector=lambda: (),
+        )
+        def owner():
+            output.write_text("published", encoding="utf-8")
+
+        real_fsync = os.fsync
+        with _install_for_test(owner), patch.object(
+            publication.os, "fsync", wraps=real_fsync
+        ) as fsync:
+            owner()
+        assert fsync.call_count >= 6
+        require_current_publication(capability_id, marker_path=marker)
+
+
 def test_retained_recovery_backups_remain_independent_after_partial_restore() -> None:
     with tempfile.TemporaryDirectory() as directory:
         root = Path(directory)
