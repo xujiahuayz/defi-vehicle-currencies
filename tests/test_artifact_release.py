@@ -873,10 +873,11 @@ def test_pointer_stage_setup_failure_removes_only_the_stage_it_created(
     pointer = tmp_path / "release" / "current.json"
     pointer.parent.mkdir(parents=True)
 
-    def fail_owner_write(_path: Path, _payload: object) -> None:
-        raise OSError("simulated owner write failure")
+    def fail_owner_write(label: str) -> None:
+        if label == "seed_partial_fsynced":
+            raise OSError("simulated owner write failure")
 
-    monkeypatch.setattr(artifact_release, "write_json", fail_owner_write)
+    monkeypatch.setattr(artifact_release, "_artifact_stage_cut", fail_owner_write)
     with pytest.raises(OSError, match="owner write failure"):
         with artifact_release._pointer_stage(pointer):
             raise AssertionError("stage setup unexpectedly completed")
@@ -938,12 +939,20 @@ publish_artifact_release(
     assert not stage.exists()
 
 
-def test_real_sigkill_after_owner_temporary_fsync_is_recovered_by_ordinary_retry(
-    tmp_path: Path,
+@pytest.mark.parametrize(
+    "cut",
+    [
+        "seed_empty_fsynced",
+        "seed_partial_fsynced",
+        "seed_complete_fsynced",
+        "owner_installed",
+    ],
+)
+def test_real_sigkill_across_private_owner_seed_transitions_is_recoverable(
+    tmp_path: Path, cut: str
 ) -> None:
     pointer = tmp_path / "release" / "current.json"
     program = r'''
-import json
 import os
 from pathlib import Path
 import signal
@@ -952,23 +961,15 @@ import sys
 import ddvc.artifact_release as release
 from ddvc.artifact_release import publish_artifact_release
 from ddvc.fetch.raw import write_json
-from ddvc.runtime import staged_output
 
 pointer = Path(sys.argv[1])
+cut = sys.argv[2]
 
-def kill_after_owner_temporary_fsync(path, payload):
-    if path.name == "owner.json":
-        with staged_output(path) as temporary:
-            temporary.write_text(
-                json.dumps(payload, sort_keys=True) + "\n",
-                encoding="utf-8",
-            )
-            with temporary.open("rb") as handle:
-                os.fsync(handle.fileno())
-            os.kill(os.getpid(), signal.SIGKILL)
-    write_json(path, payload)
+def kill_at(label):
+    if label == cut:
+        os.kill(os.getpid(), signal.SIGKILL)
 
-release.write_json = kill_after_owner_temporary_fsync
+release._artifact_stage_cut = kill_at
 publish_artifact_release(
     pointer_path=pointer,
     kind="test_release",
@@ -981,27 +982,41 @@ publish_artifact_release(
     row_counts={"rows": 1, "certificate": 1},
     code_sources=["src/ddvc/artifact_release.py"],
     inputs=[],
-    notes="owner temporary process-death test",
+    notes="private owner seed process-death test",
     validate_staged=lambda _paths: None,
 )
 '''
     killed = subprocess.run(
-        [sys.executable, "-c", program, str(pointer)],
+        [sys.executable, "-c", program, str(pointer), cut],
         cwd=Path(__file__).resolve().parents[1],
         check=False,
     )
 
     assert killed.returncode == -signal.SIGKILL
     stage = artifact_release._pointer_stage_root(pointer)
-    entries = list(stage.iterdir())
-    assert len(entries) == 1
-    assert entries[0].name.startswith(".owner.json.")
-    assert entries[0].name.endswith(".tmp")
+    seeds = list(pointer.parent.glob(f"{artifact_release._pointer_seed_prefix(pointer)}*.tmp"))
+    if cut.startswith("seed_"):
+        assert not stage.exists()
+        assert len(seeds) == 1
+        if cut == "seed_empty_fsynced":
+            assert seeds[0].read_bytes() == b""
+        elif cut == "seed_partial_fsynced":
+            assert seeds[0].read_bytes() == b'{"policy":'
+        else:
+            assert seeds[0].read_bytes() == artifact_release._owner_seed_bytes(pointer)
+    else:
+        assert stage.joinpath(artifact_release._STAGE_OWNER).is_file()
+        assert seeds == []
 
     resumed = _publish(pointer, 7)
 
     assert json.loads(resumed.artifacts["rows"].read_text()) == {"value": 7}
     assert not stage.exists()
+    remaining = list(pointer.parent.glob(f"{artifact_release._pointer_seed_prefix(pointer)}*.tmp"))
+    if cut in {"seed_empty_fsynced", "seed_partial_fsynced"}:
+        assert remaining == seeds
+    else:
+        assert remaining == []
 
 
 @pytest.mark.parametrize("extra_content", [False, True])
@@ -1058,3 +1073,35 @@ def test_owner_temporary_symlink_is_rejected_and_preserved(tmp_path: Path) -> No
         _publish(pointer, 1)
 
     assert _tree_snapshot(tmp_path) == before
+
+
+@pytest.mark.parametrize("payload", [b"", b'{"policy":', b"foreign"])
+def test_partial_or_foreign_owner_seed_does_not_block_retry_and_is_preserved(
+    tmp_path: Path, payload: bytes
+) -> None:
+    pointer = tmp_path / "release" / "current.json"
+    pointer.parent.mkdir(parents=True)
+    seed = pointer.parent / f"{artifact_release._pointer_seed_prefix(pointer)}abc123_4.tmp"
+    seed.write_bytes(payload)
+
+    resumed = _publish(pointer, 1)
+
+    assert json.loads(resumed.artifacts["rows"].read_text()) == {"value": 1}
+    assert seed.read_bytes() == payload
+
+
+def test_foreign_owner_seed_symlink_does_not_block_retry_and_is_preserved(
+    tmp_path: Path,
+) -> None:
+    pointer = tmp_path / "release" / "current.json"
+    pointer.parent.mkdir(parents=True)
+    outside = tmp_path / "outside.json"
+    outside.write_bytes(artifact_release._owner_seed_bytes(pointer))
+    seed = pointer.parent / f"{artifact_release._pointer_seed_prefix(pointer)}abc123_4.tmp"
+    seed.symlink_to(outside)
+
+    resumed = _publish(pointer, 1)
+
+    assert json.loads(resumed.artifacts["rows"].read_text()) == {"value": 1}
+    assert seed.is_symlink()
+    assert outside.read_bytes() == artifact_release._owner_seed_bytes(pointer)

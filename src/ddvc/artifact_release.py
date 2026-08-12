@@ -9,6 +9,7 @@ import json
 import os
 from pathlib import Path
 import shutil
+import tempfile
 from typing import Callable, Mapping
 
 from ddvc.fetch.raw import write_json
@@ -235,6 +236,7 @@ def generation_paths(
 
 _STAGE_POLICY = "ddvc-artifact-release-stage-v1"
 _STAGE_OWNER = "owner.json"
+_SEED_RECOVERY_LIMIT = 64
 
 
 def _artifact_stage_cut(_label: str) -> None:
@@ -248,11 +250,53 @@ def _pointer_stage_root(pointer_path: Path) -> Path:
     return pointer_path.parent / f".ddvc-artifact-stage-{identity}"
 
 
+def _pointer_seed_prefix(pointer_path: Path) -> str:
+    identity = hashlib.sha256(
+        str(pointer_path.resolve(strict=False)).encode()
+    ).hexdigest()[:24]
+    return f".ddvc-artifact-owner-seed-{identity}."
+
+
 def _stage_owner_payload(pointer_path: Path) -> dict[str, object]:
     return {
         "policy": _STAGE_POLICY,
         "pointer_path": str(pointer_path.resolve(strict=False)),
     }
+
+
+def _owner_seed_bytes(pointer_path: Path) -> bytes:
+    return (json.dumps(_stage_owner_payload(pointer_path)) + "\n").encode()
+
+
+def _recover_pointer_owner_seeds(pointer_path: Path) -> None:
+    """Remove a bounded number of complete pointer-owned seeds only."""
+
+    prefix = _pointer_seed_prefix(pointer_path)
+    recovered = 0
+    for candidate in pointer_path.parent.iterdir():
+        name = candidate.name
+        token = name[len(prefix) : -len(".tmp")] if name.endswith(".tmp") else ""
+        if (
+            not name.startswith(prefix)
+            or not name.endswith(".tmp")
+            or len(token) != 8
+            or any(
+                character not in "abcdefghijklmnopqrstuvwxyz0123456789_"
+                for character in token
+            )
+        ):
+            continue
+        if recovered >= _SEED_RECOVERY_LIMIT:
+            break
+        recovered += 1
+        if candidate.is_symlink() or not candidate.is_file():
+            continue
+        try:
+            payload = candidate.read_bytes()
+        except OSError:
+            continue
+        if payload == _owner_seed_bytes(pointer_path):
+            candidate.unlink()
 
 
 def _recover_pointer_stage(pointer_path: Path) -> None:
@@ -265,28 +309,6 @@ def _recover_pointer_stage(pointer_path: Path) -> None:
         raise RuntimeError(f"artifact release stage has an unsafe type: {root}")
     owner_path = root / _STAGE_OWNER
     if not owner_path.exists() and not owner_path.is_symlink():
-        entries = list(root.iterdir())
-        if len(entries) == 1:
-            owner_temporary = entries[0]
-            prefix = f".{_STAGE_OWNER}."
-            name = owner_temporary.name
-            token = name[len(prefix) : -len(".tmp")] if name.endswith(".tmp") else ""
-            if (
-                not owner_temporary.is_symlink()
-                and owner_temporary.is_file()
-                and name.startswith(prefix)
-                and name.endswith(".tmp")
-                and len(token) == 8
-                and all(character in "abcdefghijklmnopqrstuvwxyz0123456789_" for character in token)
-            ):
-                try:
-                    temporary_owner = json.loads(
-                        owner_temporary.read_text(encoding="utf-8")
-                    )
-                except (OSError, json.JSONDecodeError):
-                    temporary_owner = None
-                if temporary_owner == _stage_owner_payload(pointer_path):
-                    owner_temporary.unlink()
         try:
             root.rmdir()
         except OSError as error:
@@ -309,22 +331,46 @@ def _recover_pointer_stage(pointer_path: Path) -> None:
 def _pointer_stage(pointer_path: Path):
     """Own one crash-visible stage under the already-held pointer lock."""
 
+    _recover_pointer_owner_seeds(pointer_path)
     _recover_pointer_stage(pointer_path)
     root = _pointer_stage_root(pointer_path)
-    root.mkdir()
-    created_identity = (root.stat().st_dev, root.stat().st_ino)
+    descriptor, seed_name = tempfile.mkstemp(
+        dir=pointer_path.parent,
+        prefix=_pointer_seed_prefix(pointer_path),
+        suffix=".tmp",
+    )
+    seed = Path(seed_name)
+    owner_bytes = _owner_seed_bytes(pointer_path)
+    prefix_end = min(len(owner_bytes), len(b'{"policy":'))
+    created_identity: tuple[int, int] | None = None
     owner_installed = False
     try:
+        with os.fdopen(descriptor, "wb") as handle:
+            handle.flush()
+            os.fsync(handle.fileno())
+            _artifact_stage_cut("seed_empty_fsynced")
+            handle.write(owner_bytes[:prefix_end])
+            handle.flush()
+            os.fsync(handle.fileno())
+            _artifact_stage_cut("seed_partial_fsynced")
+            handle.write(owner_bytes[prefix_end:])
+            handle.flush()
+            os.fsync(handle.fileno())
+            _artifact_stage_cut("seed_complete_fsynced")
+        root.mkdir()
+        created_identity = (root.stat().st_dev, root.stat().st_ino)
         _artifact_stage_cut("created")
-        write_json(root / _STAGE_OWNER, _stage_owner_payload(pointer_path))
+        seed.replace(root / _STAGE_OWNER)
         owner_installed = True
+        _artifact_stage_cut("owner_installed")
         payload = root / "payload"
         payload.mkdir()
         yield payload
     finally:
+        seed.unlink(missing_ok=True)
         if owner_installed:
             _recover_pointer_stage(pointer_path)
-        elif root.exists() and not root.is_symlink():
+        elif created_identity is not None and root.exists() and not root.is_symlink():
             current_identity = (root.stat().st_dev, root.stat().st_ino)
             if current_identity != created_identity:
                 raise RuntimeError(
