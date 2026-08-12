@@ -1,13 +1,14 @@
 #!/usr/bin/env python3
-"""Migrate one proven-equivalent route release to the current marker engine.
+"""Migrate one proven-equivalent route release without rebuilding partitions.
 
 This is a marker migration, not a route rebuild. It accepts only the named
 legacy and current engines, validates every legacy Parquet against its marker
 and ledger, resolves every current raw input through its installed authority,
 and requires exact fresh reconstruction on every released day.
-No live marker changes until the complete plan passes. Publication swaps the
-marker directory and writes the global quality ledger last; any ordinary
-publication failure restores the legacy release.
+The engine migration proves equivalence by exact fresh reconstruction. The
+storage-authority relocation mode instead requires a pre-relocation authority
+snapshot, exact scientific raw identities, and byte-identical released
+partitions. No live marker changes occur until the complete plan passes.
 """
 
 from __future__ import annotations
@@ -28,6 +29,7 @@ from ddvc.journaled_publication import publish_journaled_bundle, recover_journal
 from ddvc.provenance import current_artifacts, describe_input, prepare_stamp, sidecar_path
 from ddvc.reconstruct import (
     DEX_FAMILY,
+    DEX_STREAM,
     DUNE_SOURCES,
     RECONSTRUCT_CODE_SOURCES,
     RECONSTRUCTION_ENGINE,
@@ -41,7 +43,11 @@ from ddvc.reconstruct import (
     unified_path,
     unified_quality_path,
 )
+from ddvc.raw_certification import (
+    raw_partition_relocation_identity,
+)
 from ddvc.runtime import (
+    atomic_output,
     bounded_workers,
     exclusive_job,
     interruptible_process_pool,
@@ -54,6 +60,8 @@ from ddvc.tables import _stringify_big_ints
 LEGACY_ENGINE = "514160b28189"
 MIGRATION_TARGET_ENGINE = "d3f16e9c4da6"
 MIGRATION_POLICY = "route-release-marker-migration-v2"
+RELOCATION_POLICY = "route-release-storage-authority-relocation-v1"
+AUTHORITY_SNAPSHOT_POLICY = "route-raw-authority-snapshot-v1"
 JOURNAL_ROOT_NAME = ".route-marker-migration-journals"
 _OUTPUT_IDENTITY_FIELDS = {
     "output_bytes",
@@ -69,12 +77,14 @@ _MIGRATABLE_IDENTITY_FIELDS = {
 
 @dataclass(frozen=True)
 class MigrationPlan:
+    migration_policy: str
     days: tuple[str, ...]
     quality: pd.DataFrame
     markers: dict[str, dict[str, object]]
     legacy_marker_sha256: dict[str, str]
     current_input_fingerprints: dict[str, str]
     validation: pd.DataFrame
+    authority_snapshot_sha256: str | None = None
 
     @property
     def legacy_marker_set_sha256(self) -> str:
@@ -95,6 +105,153 @@ def _json_value(value: object) -> object:
     return value
 
 
+def _selected_days(dexes: list[str], days: list[str] | None) -> tuple[str, ...]:
+    selected = tuple(
+        _stamp(day) for day in (days if days is not None else _available_days(dexes))
+    )
+    if len(selected) != len(set(selected)) or tuple(sorted(selected)) != selected:
+        raise ValueError("route marker migration days must be unique and sorted")
+    return selected
+
+
+def _load_release_perimeter(
+    *,
+    selected: tuple[str, ...],
+    unified_root: Path,
+    quality_panel: Path,
+    expected_engine: str,
+) -> tuple[pd.DataFrame, dict[str, dict[str, object]], dict[str, str]]:
+    if not quality_panel.is_file():
+        raise FileNotFoundError("route quality ledger is missing")
+    ledger = pd.read_parquet(quality_panel)
+    ledger["day"] = ledger["day"].map(_stamp)
+    if tuple(ledger["day"].tolist()) != selected:
+        raise ValueError("route quality ledger perimeter is not exact")
+    observed_markers = {
+        path.stem for path in (unified_root / ".quality").glob("*.json")
+    }
+    if observed_markers != set(selected):
+        raise ValueError("route marker directory perimeter is not exact")
+    markers: dict[str, dict[str, object]] = {}
+    marker_hashes: dict[str, str] = {}
+    for day in selected:
+        marker, marker_hash = _validate_partition(
+            day, unified_root=unified_root, expected_engine=expected_engine
+        )
+        markers[day] = marker
+        marker_hashes[day] = marker_hash
+    _require_exact_ledger_rows(ledger, markers)
+    return ledger, markers, marker_hashes
+
+
+def _snapshot_digest(payload: dict[str, object]) -> str:
+    body = {key: value for key, value in payload.items() if key != "snapshot_sha256"}
+    return canonical_json_sha256(body)
+
+
+def route_authority_snapshot(
+    *,
+    data_root: Path,
+    unified_root: Path,
+    quality_panel: Path,
+    dexes: list[str],
+    days: list[str] | None = None,
+) -> dict[str, object]:
+    """Capture the raw authority evidence required before a storage relocation."""
+
+    selected = _selected_days(dexes, days)
+    ledger, markers, marker_hashes = _load_release_perimeter(
+        selected=selected,
+        unified_root=unified_root,
+        quality_panel=quality_panel,
+        expected_engine=RECONSTRUCTION_ENGINE,
+    )
+    entries: list[dict[str, object]] = []
+    for day in selected:
+        for source in active_route_sources(_calendar_day(day), dexes):
+            stream = DEX_STREAM[source]
+            relocation = raw_partition_relocation_identity(
+                source, stream, day, data_root=data_root
+            )
+            generation = relocation.get("generation_identity_sha256")
+            if not is_sha256(generation):
+                raise ValueError(
+                    f"raw authority lacks generation identity: {source}/{stream}/{day}"
+                )
+            scientific = relocation["scientific_identity"]
+            assert isinstance(scientific, dict)
+            entries.append(
+                {
+                    "source": source,
+                    "stream": stream,
+                    "day": day,
+                    "generation_identity_sha256": generation,
+                    "scientific_identity": scientific,
+                    "scientific_identity_sha256": canonical_json_sha256(scientific),
+                }
+            )
+    payload: dict[str, object] = {
+        "policy": AUTHORITY_SNAPSHOT_POLICY,
+        "route_engine": RECONSTRUCTION_ENGINE,
+        "days": list(selected),
+        "dexes": list(dexes),
+        "entries": entries,
+        "route_release": {
+            "quality_ledger_sha256": file_sha256(quality_panel),
+            "quality_ledger_rows": len(ledger),
+            "marker_sha256": marker_hashes,
+            "partitions": {
+                day: {
+                    "rows": int(markers[day]["output_rows"]),
+                    "bytes": int(markers[day]["output_bytes"]),
+                    "sha256": str(markers[day]["output_sha256"]),
+                }
+                for day in selected
+            },
+        },
+    }
+    payload["snapshot_sha256"] = _snapshot_digest(payload)
+    return payload
+
+
+def write_route_authority_snapshot(
+    path: Path,
+    *,
+    data_root: Path,
+    unified_root: Path,
+    quality_panel: Path,
+    dexes: list[str],
+    days: list[str] | None = None,
+    raw_lock: Path = RAW_MARKET_DATA_LOCK,
+) -> dict[str, object]:
+    """Write one immutable pre-relocation raw-authority snapshot atomically."""
+
+    with exclusive_job(
+        raw_lock,
+        job="raw market-data fetch, enrichment, or canonical materialisation",
+    ):
+        with serialized_output_installs((unified_root, quality_panel)):
+            if path.exists() or path.is_symlink():
+                raise FileExistsError(
+                    f"route authority snapshot already exists: {path}"
+                )
+            payload = route_authority_snapshot(
+                data_root=data_root,
+                unified_root=unified_root,
+                quality_panel=quality_panel,
+                dexes=dexes,
+                days=days,
+            )
+            with atomic_output(path) as temporary:
+                temporary.write_text(
+                    json.dumps(payload, indent=1, sort_keys=True) + "\n",
+                    encoding="utf-8",
+                )
+    if json.loads(path.read_text(encoding="utf-8")) != payload:
+        raise RuntimeError("route authority snapshot did not reopen exactly")
+    return payload
+
+
 def _require_exact_ledger_rows(
     ledger: pd.DataFrame,
     marker_by_day: dict[str, dict[str, object]],
@@ -113,40 +270,45 @@ def _require_exact_ledger_rows(
                 )
 
 
-def _validate_legacy_partition(
+def _validate_partition(
     day: str,
     *,
     unified_root: Path,
+    expected_engine: str,
 ) -> tuple[dict[str, object], str]:
     output = unified_path(day, root=unified_root)
     marker_path = unified_quality_path(day, root=unified_root)
     if not output.is_file() or not marker_path.is_file():
-        raise FileNotFoundError(f"legacy route partition is incomplete: {day}")
+        raise FileNotFoundError(f"route partition is incomplete: {day}")
     try:
         marker = json.loads(marker_path.read_text(encoding="utf-8"))
     except (OSError, json.JSONDecodeError) as error:
-        raise ValueError(f"legacy route marker is unreadable: {day}") from error
+        raise ValueError(f"route marker is unreadable: {day}") from error
     if not isinstance(marker, dict):
-        raise ValueError(f"legacy route marker is not an object: {day}")
-    if marker.get("engine") != LEGACY_ENGINE:
-        raise ValueError(f"route marker is not from the admitted legacy engine: {day}")
+        raise ValueError(f"route marker is not an object: {day}")
+    if marker.get("engine") != expected_engine:
+        raise ValueError(
+            f"route marker engine differs from the admitted migration source: {day}"
+        )
     if _stamp(marker.get("day")) != day or marker.get("passed") is not True:
-        raise ValueError(f"legacy route marker did not pass for its named day: {day}")
+        raise ValueError(f"route marker did not pass for its named day: {day}")
     before = file_stat_identity(output)
     digest = file_sha256(output)
     if before != file_stat_identity(output):
-        raise RuntimeError(f"legacy route partition mutated during hashing: {day}")
+        raise RuntimeError(f"route partition mutated during hashing: {day}")
     output_rows = int(marker.get("output_rows", -1))
+    output_stat = output.stat()
     if (
         output_rows < 0
-        or int(marker.get("output_bytes", -1)) != output.stat().st_size
+        or int(marker.get("output_bytes", -1)) != output_stat.st_size
+        or int(marker.get("output_mtime_ns", -1)) != output_stat.st_mtime_ns
         or marker.get("output_sha256") != digest
         or pq.ParquetFile(output).metadata.num_rows != output_rows
     ):
-        raise ValueError(f"legacy route partition disagrees with marker hash or rows: {day}")
+        raise ValueError(f"route partition disagrees with marker hash or rows: {day}")
     fingerprint = marker.get("input_fingerprint")
     if not is_sha256(fingerprint):
-        raise ValueError(f"legacy route marker lacks an input fingerprint: {day}")
+        raise ValueError(f"route marker lacks an input fingerprint: {day}")
     return marker, file_sha256(marker_path)
 
 
@@ -157,7 +319,9 @@ def _plan_day(
     unified_root: Path,
     dexes: list[str],
 ) -> tuple[str, dict[str, object], str, str]:
-    marker, marker_hash = _validate_legacy_partition(day, unified_root=unified_root)
+    marker, marker_hash = _validate_partition(
+        day, unified_root=unified_root, expected_engine=LEGACY_ENGINE
+    )
     current_fingerprint = route_input_fingerprint(
         _calendar_day(day), dexes, data_root=data_root
     )
@@ -277,27 +441,13 @@ def plan_migration(
             "route marker migration target is stale: "
             f"expected {MIGRATION_TARGET_ENGINE}, observed {RECONSTRUCTION_ENGINE}"
         )
-    selected = tuple(
-        _stamp(day)
-        for day in (
-            days
-            if days is not None
-            else _available_days(dexes)
-        )
+    selected = _selected_days(dexes, days)
+    ledger, legacy_markers, expected_marker_hashes = _load_release_perimeter(
+        selected=selected,
+        unified_root=unified_root,
+        quality_panel=quality_panel,
+        expected_engine=LEGACY_ENGINE,
     )
-    if len(selected) != len(set(selected)) or tuple(sorted(selected)) != selected:
-        raise ValueError("route marker migration days must be unique and sorted")
-    if not quality_panel.is_file():
-        raise FileNotFoundError("legacy route quality ledger is missing")
-    ledger = pd.read_parquet(quality_panel)
-    ledger["day"] = ledger["day"].map(_stamp)
-    if tuple(ledger["day"].tolist()) != selected:
-        raise ValueError("legacy route quality ledger perimeter is not exact")
-    observed_markers = {
-        path.stem for path in (unified_root / ".quality").glob("*.json")
-    }
-    if observed_markers != set(selected):
-        raise ValueError("legacy route marker directory perimeter is not exact")
     markers: dict[str, dict[str, object]] = {}
     marker_hashes: dict[str, str] = {}
     fingerprints: dict[str, str] = {}
@@ -318,12 +468,8 @@ def plan_migration(
             markers[day] = migrated
             marker_hashes[day] = marker_hash
             fingerprints[day] = current_fingerprint
-    _require_exact_ledger_rows(ledger, {
-        day: json.loads(
-            unified_quality_path(day, root=unified_root).read_text(encoding="utf-8")
-        )
-        for day in selected
-    })
+    if marker_hashes != expected_marker_hashes:
+        raise RuntimeError("route markers changed while planning the migration")
     with tempfile.TemporaryDirectory(prefix="ddvc-route-marker-validation-") as directory:
         scratch = Path(directory)
         jobs = [
@@ -332,7 +478,7 @@ def plan_migration(
                 dexes,
                 data_root,
                 unified_root,
-                markers[day] | {"engine": LEGACY_ENGINE},
+                legacy_markers[day],
                 fingerprints[day],
                 scratch,
             )
@@ -347,12 +493,234 @@ def plan_migration(
         [markers[day] for day in selected], columns=UNIFIED_QUALITY_COLUMNS
     )
     return MigrationPlan(
+        migration_policy=MIGRATION_POLICY,
         days=selected,
         quality=quality,
         markers=markers,
         legacy_marker_sha256=marker_hashes,
         current_input_fingerprints=fingerprints,
         validation=pd.DataFrame(validation_rows),
+    )
+
+
+def _load_authority_snapshot(
+    path: Path,
+    *,
+    selected: tuple[str, ...],
+    dexes: list[str],
+) -> tuple[
+    dict[tuple[str, str, str], dict[str, object]],
+    dict[str, object],
+    str,
+]:
+    try:
+        payload = json.loads(path.read_text(encoding="utf-8"))
+    except (OSError, json.JSONDecodeError) as error:
+        raise ValueError("route authority snapshot is unreadable") from error
+    if not isinstance(payload, dict):
+        raise ValueError("route authority snapshot must be an object")
+    snapshot_sha256 = payload.get("snapshot_sha256")
+    entries = payload.get("entries")
+    route_release = payload.get("route_release")
+    if (
+        payload.get("policy") != AUTHORITY_SNAPSHOT_POLICY
+        or payload.get("route_engine") != RECONSTRUCTION_ENGINE
+        or payload.get("days") != list(selected)
+        or payload.get("dexes") != dexes
+        or not is_sha256(snapshot_sha256)
+        or snapshot_sha256 != _snapshot_digest(payload)
+        or not isinstance(entries, list)
+        or not isinstance(route_release, dict)
+    ):
+        raise ValueError("route authority snapshot envelope mismatch")
+    indexed: dict[tuple[str, str, str], dict[str, object]] = {}
+    for raw_entry in entries:
+        if not isinstance(raw_entry, dict):
+            raise ValueError("route authority snapshot entry is not an object")
+        key = (
+            str(raw_entry.get("source")),
+            str(raw_entry.get("stream")),
+            str(raw_entry.get("day")),
+        )
+        scientific = raw_entry.get("scientific_identity")
+        generation = raw_entry.get("generation_identity_sha256")
+        if (
+            key in indexed
+            or not is_sha256(generation)
+            or not isinstance(scientific, dict)
+            or raw_entry.get("scientific_identity_sha256")
+            != canonical_json_sha256(scientific)
+            or (
+                str(scientific.get("source")),
+                str(scientific.get("stream")),
+                str(scientific.get("day")),
+            )
+            != key
+        ):
+            raise ValueError(f"route authority snapshot entry is invalid: {key}")
+        indexed[key] = raw_entry
+    expected = {
+        (source, DEX_STREAM[source], day)
+        for day in selected
+        for source in active_route_sources(_calendar_day(day), dexes)
+    }
+    if set(indexed) != expected:
+        raise ValueError("route authority snapshot partition perimeter is not exact")
+    marker_hashes = route_release.get("marker_sha256")
+    partitions = route_release.get("partitions")
+    if (
+        not is_sha256(route_release.get("quality_ledger_sha256"))
+        or route_release.get("quality_ledger_rows") != len(selected)
+        or not isinstance(marker_hashes, dict)
+        or set(marker_hashes) != set(selected)
+        or any(not is_sha256(marker_hashes[day]) for day in selected)
+        or not isinstance(partitions, dict)
+        or set(partitions) != set(selected)
+    ):
+        raise ValueError("route authority snapshot release identity is invalid")
+    for day in selected:
+        partition = partitions[day]
+        if (
+            not isinstance(partition, dict)
+            or isinstance(partition.get("rows"), bool)
+            or not isinstance(partition.get("rows"), int)
+            or int(partition["rows"]) < 0
+            or isinstance(partition.get("bytes"), bool)
+            or not isinstance(partition.get("bytes"), int)
+            or int(partition["bytes"]) < 0
+            or not is_sha256(partition.get("sha256"))
+        ):
+            raise ValueError(
+                f"route authority snapshot partition identity is invalid: {day}"
+            )
+    return indexed, route_release, str(snapshot_sha256)
+
+
+def plan_storage_authority_relocation(
+    *,
+    authority_snapshot: Path,
+    data_root: Path,
+    unified_root: Path,
+    quality_panel: Path,
+    dexes: list[str],
+    days: list[str] | None = None,
+) -> MigrationPlan:
+    """Rebind markers after a scientifically identical raw storage relocation."""
+
+    if RECONSTRUCTION_ENGINE != MIGRATION_TARGET_ENGINE:
+        raise RuntimeError(
+            "route storage-authority relocation target is stale: "
+            f"expected {MIGRATION_TARGET_ENGINE}, observed {RECONSTRUCTION_ENGINE}"
+        )
+    selected = _selected_days(dexes, days)
+    ledger, old_markers, marker_hashes = _load_release_perimeter(
+        selected=selected,
+        unified_root=unified_root,
+        quality_panel=quality_panel,
+        expected_engine=RECONSTRUCTION_ENGINE,
+    )
+    old_authorities, old_release, snapshot_sha256 = _load_authority_snapshot(
+        authority_snapshot, selected=selected, dexes=dexes
+    )
+    if (
+        file_sha256(quality_panel) != old_release["quality_ledger_sha256"]
+        or marker_hashes != old_release["marker_sha256"]
+    ):
+        raise ValueError(
+            "route release marker or ledger changed after authority snapshot"
+        )
+    old_partitions = old_release["partitions"]
+    assert isinstance(old_partitions, dict)
+    for day in selected:
+        marker = old_markers[day]
+        if old_partitions[day] != {
+            "rows": int(marker["output_rows"]),
+            "bytes": int(marker["output_bytes"]),
+            "sha256": str(marker["output_sha256"]),
+        }:
+            raise ValueError(
+                f"route partition changed after authority snapshot: {day}"
+            )
+    markers: dict[str, dict[str, object]] = {}
+    current_fingerprints: dict[str, str] = {}
+    validation_rows: list[dict[str, object]] = []
+    changed = 0
+    for day in selected:
+        old_generation_records: list[dict[str, str]] = []
+        current_generation_records: list[dict[str, str]] = []
+        for source in active_route_sources(_calendar_day(day), dexes):
+            stream = DEX_STREAM[source]
+            key = (source, stream, day)
+            old_entry = old_authorities[key]
+            old_generation_records.append(
+                {
+                    "source": source,
+                    "stream": stream,
+                    "day": day,
+                    "generation_identity_sha256": str(
+                        old_entry["generation_identity_sha256"]
+                    ),
+                }
+            )
+            current_relocation = raw_partition_relocation_identity(
+                source, stream, day, data_root=data_root
+            )
+            current_scientific = current_relocation["scientific_identity"]
+            if current_scientific != old_entry["scientific_identity"]:
+                raise ValueError(
+                    "raw scientific identity changed during storage relocation: "
+                    f"{source}/{stream}/{day}"
+                )
+            current_generation = current_relocation.get(
+                "generation_identity_sha256"
+            )
+            if not is_sha256(current_generation):
+                raise ValueError(
+                    f"current raw authority lacks generation identity: {source}/{stream}/{day}"
+                )
+            current_generation_records.append(
+                {
+                    "source": source,
+                    "stream": stream,
+                    "day": day,
+                    "generation_identity_sha256": str(current_generation),
+                }
+            )
+        old_fingerprint = canonical_json_sha256(old_generation_records)
+        if old_fingerprint != old_markers[day].get("input_fingerprint"):
+            raise ValueError(
+                f"pre-relocation authority snapshot does not bind route marker: {day}"
+            )
+        current_fingerprint = canonical_json_sha256(current_generation_records)
+        changed += int(current_fingerprint != old_fingerprint)
+        migrated = dict(old_markers[day])
+        migrated["input_fingerprint"] = current_fingerprint
+        markers[day] = migrated
+        current_fingerprints[day] = current_fingerprint
+        validation_rows.append(
+            {
+                "day": day,
+                "raw_partitions": len(current_generation_records),
+                "scientific_identity_equal": True,
+                "partition_bytes_rows_marker_ledger_equal": True,
+                "input_fingerprint_changed": current_fingerprint
+                != old_fingerprint,
+            }
+        )
+    if changed == 0:
+        raise ValueError("route storage-authority relocation would be a no-op")
+    quality = pd.DataFrame(
+        [markers[day] for day in selected], columns=UNIFIED_QUALITY_COLUMNS
+    )
+    return MigrationPlan(
+        migration_policy=RELOCATION_POLICY,
+        days=selected,
+        quality=quality,
+        markers=markers,
+        legacy_marker_sha256=marker_hashes,
+        current_input_fingerprints=current_fingerprints,
+        validation=pd.DataFrame(validation_rows),
+        authority_snapshot_sha256=snapshot_sha256,
     )
 
 
@@ -399,9 +767,12 @@ def _plan_from_committed_recovery(
     *,
     unified_root: Path,
     quality_panel: Path,
+    expected_policy: str,
 ) -> MigrationPlan:
     """Reopen the exact plan recorded by a durably committed publication."""
 
+    if journal.get("policy") != expected_policy:
+        raise RuntimeError("committed route migration belongs to a foreign policy")
     days_raw = journal.get("days")
     legacy_hashes = journal.get("legacy_marker_sha256")
     fingerprints = journal.get("current_input_fingerprints")
@@ -435,12 +806,18 @@ def _plan_from_committed_recovery(
     if any(marker.get("engine") != RECONSTRUCTION_ENGINE for marker in markers.values()):
         raise RuntimeError("committed route migration markers are not current")
     return MigrationPlan(
+        migration_policy=expected_policy,
         days=days,
         quality=quality,
         markers=markers,
         legacy_marker_sha256={day: str(legacy_hashes[day]) for day in days},
         current_input_fingerprints={day: str(fingerprints[day]) for day in days},
         validation=pd.DataFrame(validation_raw),
+        authority_snapshot_sha256=(
+            str(journal["authority_snapshot_sha256"])
+            if journal.get("authority_snapshot_sha256") is not None
+            else None
+        ),
     )
 
 
@@ -451,6 +828,8 @@ def publish_migration(
     unified_root: Path,
     quality_panel: Path,
     quality_exhibit: Path,
+    authority_snapshot: Path | None = None,
+    dexes: list[str] | None = None,
 ) -> None:
     """Stage and publish all five route-release outputs as one journaled bundle."""
 
@@ -483,11 +862,15 @@ def publish_migration(
             data_root / "raw" / ("dune" if dex in DUNE_SOURCES else "thegraph") / dex
             for dex in sorted(DEX_FAMILY)
         ]
+        validation_kind = (
+            "exact_fresh_validation_days"
+            if plan.migration_policy == MIGRATION_POLICY
+            else "exact_authority_relocation_days"
+        )
         notes = (
-            f"{MIGRATION_POLICY}; legacy_engine={LEGACY_ENGINE}; "
-            f"current_engine={RECONSTRUCTION_ENGINE}; "
-            f"legacy_marker_set_sha256={plan.legacy_marker_set_sha256}; "
-            f"exact_fresh_validation_days={len(plan.validation)}"
+            f"{plan.migration_policy}; current_engine={RECONSTRUCTION_ENGINE}; "
+            f"source_marker_set_sha256={plan.legacy_marker_set_sha256}; "
+            f"{validation_kind}={len(plan.validation)}"
         )
         staged_panel = stage / "panel.parquet"
         plan.quality.to_parquet(staged_panel, index=False)
@@ -501,7 +884,10 @@ def publish_migration(
                     *RECONSTRUCT_CODE_SOURCES,
                     "scripts/migrate_route_release_markers.py",
                 ],
-                inputs=raw_roots,
+                inputs=[
+                    *raw_roots,
+                    *([authority_snapshot] if authority_snapshot is not None else []),
+                ],
                 rows=len(plan.quality),
                 notes=notes,
             )
@@ -542,13 +928,16 @@ def publish_migration(
             encoding="utf-8",
         )
         metadata = {
-            "policy": MIGRATION_POLICY,
-            "legacy_engine": LEGACY_ENGINE,
+            "policy": plan.migration_policy,
+            "legacy_engine": (
+                LEGACY_ENGINE if plan.migration_policy == MIGRATION_POLICY else None
+            ),
             "current_engine": RECONSTRUCTION_ENGINE,
             "days": list(plan.days),
             "legacy_marker_sha256": plan.legacy_marker_sha256,
             "current_input_fingerprints": plan.current_input_fingerprints,
             "validation": plan.validation.to_dict("records"),
+            "authority_snapshot_sha256": plan.authority_snapshot_sha256,
         }
         def validate_live() -> None:
             observed = pd.read_parquet(quality_panel)
@@ -566,6 +955,37 @@ def publish_migration(
             for day, expected_hash in planned_marker_hashes.items():
                 if file_sha256(unified_quality_path(day, root=unified_root)) != expected_hash:
                     raise RuntimeError(f"published route marker changed: {day}")
+
+        if plan.migration_policy == RELOCATION_POLICY:
+            if authority_snapshot is None or dexes is None:
+                raise ValueError(
+                    "storage-authority publication requires its snapshot and source perimeter"
+                )
+            replanned = plan_storage_authority_relocation(
+                authority_snapshot=authority_snapshot,
+                data_root=data_root,
+                unified_root=unified_root,
+                quality_panel=quality_panel,
+                dexes=dexes,
+                days=list(plan.days),
+            )
+            pd.testing.assert_frame_equal(
+                replanned.quality,
+                plan.quality,
+                check_dtype=True,
+                check_exact=True,
+            )
+            if (
+                replanned.markers != plan.markers
+                or replanned.legacy_marker_sha256 != plan.legacy_marker_sha256
+                or replanned.current_input_fingerprints
+                != plan.current_input_fingerprints
+                or replanned.authority_snapshot_sha256
+                != plan.authority_snapshot_sha256
+            ):
+                raise RuntimeError(
+                    "route storage-authority relocation changed before publication"
+                )
 
         publish_journaled_bundle(
             targets=targets,
@@ -593,10 +1013,14 @@ def migrate_route_release_markers(
     workers: int = 4,
     publish: bool = False,
     raw_lock: Path = RAW_MARKET_DATA_LOCK,
+    authority_snapshot: Path | None = None,
 ) -> MigrationPlan:
-    """Plan, and optionally publish, the one admitted route marker migration."""
+    """Plan and optionally publish one admitted route marker migration."""
 
     dexes = dexes or list(DEX_FAMILY)
+    migration_policy = (
+        RELOCATION_POLICY if authority_snapshot is not None else MIGRATION_POLICY
+    )
     unified_root = unified_root or data_root / "unified"
     with exclusive_job(
         raw_lock,
@@ -619,15 +1043,26 @@ def migrate_route_release_markers(
                     recovery.committed_metadata[0],
                     unified_root=unified_root,
                     quality_panel=quality_panel,
+                    expected_policy=migration_policy,
                 )
-            plan = plan_migration(
-                data_root=data_root,
-                unified_root=unified_root,
-                quality_panel=quality_panel,
-                dexes=dexes,
-                days=days,
-                workers=workers,
-            )
+            if authority_snapshot is None:
+                plan = plan_migration(
+                    data_root=data_root,
+                    unified_root=unified_root,
+                    quality_panel=quality_panel,
+                    dexes=dexes,
+                    days=days,
+                    workers=workers,
+                )
+            else:
+                plan = plan_storage_authority_relocation(
+                    authority_snapshot=authority_snapshot,
+                    data_root=data_root,
+                    unified_root=unified_root,
+                    quality_panel=quality_panel,
+                    dexes=dexes,
+                    days=days,
+                )
             if publish:
                 publish_migration(
                     plan,
@@ -635,6 +1070,8 @@ def migrate_route_release_markers(
                     unified_root=unified_root,
                     quality_panel=quality_panel,
                     quality_exhibit=quality_exhibit,
+                    authority_snapshot=authority_snapshot,
+                    dexes=dexes,
                 )
             return plan
 
@@ -647,18 +1084,55 @@ def main() -> int:
         help="publish markers and the ledger after the complete dry-run gate passes",
     )
     parser.add_argument("--workers", type=int, default=4)
+    parser.add_argument(
+        "--authority-snapshot",
+        type=Path,
+        help="pre-relocation authority snapshot; selects relocation-only mode",
+    )
+    parser.add_argument(
+        "--write-authority-snapshot",
+        type=Path,
+        help="capture authority evidence before relocation, then exit",
+    )
     args = parser.parse_args()
+    if args.write_authority_snapshot is not None:
+        if args.publish or args.authority_snapshot is not None:
+            parser.error(
+                "--write-authority-snapshot cannot be combined with migration options"
+            )
+        snapshot = write_route_authority_snapshot(
+            args.write_authority_snapshot,
+            data_root=DATA_DIR,
+            unified_root=DATA_DIR / "unified",
+            quality_panel=UNIFIED_QUALITY_PANEL,
+            dexes=list(DEX_FAMILY),
+        )
+        print(
+            "route authority snapshot written: "
+            f"{len(snapshot['entries']):,} raw partitions",
+            flush=True,
+        )
+        return 0
     plan = migrate_route_release_markers(
         publish=args.publish,
         workers=args.workers,
+        authority_snapshot=args.authority_snapshot,
     )
-    byte_equal = int(
-        plan.validation["fresh_parquet_matches_legacy_bytes"].sum()
-    )
+    if plan.migration_policy == MIGRATION_POLICY:
+        detail = (
+            f"{len(plan.validation):,} exact fresh validation days; "
+            f"{int(plan.validation['fresh_parquet_matches_legacy_bytes'].sum()):,} "
+            "byte-identical fresh Parquets"
+        )
+    else:
+        detail = (
+            f"{len(plan.validation):,} exact authority-equivalent days; "
+            f"{int(plan.validation['input_fingerprint_changed'].sum()):,} "
+            "fingerprints changed"
+        )
     print(
         f"route marker migration gate passed: {len(plan.days):,} days; "
-        f"{len(plan.validation):,} exact fresh validation days; "
-        f"{byte_equal:,} byte-identical fresh Parquets; "
+        f"{detail}; "
         f"published={args.publish}",
         flush=True,
     )

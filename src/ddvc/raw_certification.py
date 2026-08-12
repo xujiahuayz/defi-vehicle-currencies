@@ -1378,7 +1378,8 @@ def raw_partition_read_authority(
             source, stream, parsed_day, data_root=data_root
         )
         marker_payload = json.loads(marker_path.read_text(encoding="utf-8"))
-        expected_hash = marker_payload["streams"][stream]["logical_content_sha256"]
+        stream_marker = marker_payload["streams"][stream]
+        expected_hash = stream_marker["logical_content_sha256"]
         registry_generation = source_registry_generation()
         generation_identity = canonical_json_sha256(
             {
@@ -1393,6 +1394,21 @@ def raw_partition_read_authority(
             "authority_generation": file_generation(marker_path),
             "source_registry_generation": registry_generation,
             "logical_content_sha256": expected_hash,
+            "contract_sha256": contract_identity(source, stream),
+            "metadata_present": True,
+            "metadata_sha256": file_sha256(marker_path),
+            "observed_query_contract_sha256": stream_marker.get(
+                "query_contract_sha256"
+            ),
+            "observed_head_block_at_fetch": stream_marker.get(
+                "head_block_at_fetch", marker_payload.get("head_block_at_fetch")
+            ),
+            "observed_query_start_date": stream_marker.get(
+                DUNE_QUERY_START_FIELD
+            ),
+            "observed_query_end_date_exclusive": stream_marker.get(
+                DUNE_QUERY_END_EXCLUSIVE_FIELD
+            ),
             "generation_identity_sha256": generation_identity,
         }
     partition = RawPartition(source, stream, day)
@@ -1440,8 +1456,105 @@ def raw_partition_read_authority(
         ),
         "source_registry_generation": registry_generation,
         "logical_content_sha256": row["logical_content_sha256"],
+        "contract_sha256": row["contract_sha256"],
+        "metadata_present": row.get("metadata_present"),
+        "metadata_sha256": row.get("metadata_sha256"),
+        "observed_query_contract_sha256": row.get(
+            "observed_query_contract_sha256"
+        ),
+        "observed_head_block_at_fetch": row.get("observed_head_block_at_fetch"),
+        "observed_query_start_date": row.get("observed_query_start_date"),
+        "observed_query_end_date_exclusive": row.get(
+            "observed_query_end_date_exclusive"
+        ),
         "generation_identity_sha256": generation_identity,
     }
+
+
+RAW_PARTITION_SCIENTIFIC_IDENTITY_FIELDS = (
+    "source_registry_generation",
+    "logical_content_sha256",
+    "contract_sha256",
+    "metadata_present",
+    "metadata_sha256",
+    "observed_query_contract_sha256",
+    "observed_head_block_at_fetch",
+    "observed_query_start_date",
+    "observed_query_end_date_exclusive",
+)
+
+
+def _raw_partition_scientific_identity(
+    source: str,
+    stream: str,
+    day: str,
+    *,
+    authority: Mapping[str, object],
+) -> dict[str, object]:
+    identity = {
+        "source": source,
+        "stream": stream,
+        "day": day,
+        **{
+            field: authority.get(field)
+            for field in RAW_PARTITION_SCIENTIFIC_IDENTITY_FIELDS
+        },
+    }
+    if (
+        not is_sha256(identity["source_registry_generation"])
+        or not is_sha256(identity["logical_content_sha256"])
+        or not is_sha256(identity["contract_sha256"])
+        or not isinstance(identity["metadata_present"], bool)
+        or (
+            identity["metadata_present"] is True
+            and not is_sha256(identity["metadata_sha256"])
+        )
+    ):
+        raise ValueError(
+            f"raw partition lacks relocation identity: {source}/{stream}/{day}"
+        )
+    return identity
+
+
+def raw_partition_relocation_identity(
+    source: str,
+    stream: str,
+    day: str,
+    *,
+    data_root: Path = DATA_DIR,
+) -> dict[str, object]:
+    """Bind one storage generation to its storage-independent scientific meaning."""
+
+    authority = raw_partition_read_authority(
+        source, stream, day, data_root=data_root
+    )
+    generation = authority.get("generation_identity_sha256")
+    if not is_sha256(generation):
+        raise ValueError(
+            f"raw partition lacks generation identity: {source}/{stream}/{day}"
+        )
+    return {
+        "generation_identity_sha256": generation,
+        "scientific_identity": _raw_partition_scientific_identity(
+            source, stream, day, authority=authority
+        ),
+    }
+
+
+def raw_partition_scientific_identity(
+    source: str,
+    stream: str,
+    day: str,
+    *,
+    data_root: Path = DATA_DIR,
+) -> dict[str, object]:
+    """Return raw meaning while excluding storage and certificate generations."""
+
+    identity = raw_partition_relocation_identity(
+        source, stream, day, data_root=data_root
+    )["scientific_identity"]
+    assert isinstance(identity, dict)
+    return dict(identity)
 
 
 def raw_partition_generation_identity(

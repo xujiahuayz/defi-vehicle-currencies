@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import json
+import os
 import subprocess
 import sys
 import threading
@@ -12,7 +13,7 @@ from unittest.mock import patch
 import pandas as pd
 import pytest
 
-from ddvc.artifact_release import file_sha256
+from ddvc.artifact_release import canonical_json_sha256, file_sha256
 from ddvc.fetch.raw import RawFetchInvariantError
 from ddvc.data_release import ReleasedPartition, ReleasedPartitionSet
 from ddvc.reconstruct import (
@@ -20,12 +21,21 @@ from ddvc.reconstruct import (
     UNIFIED_QUALITY_COLUMNS,
     _process_one,
     route_input_fingerprint,
+    route_input_paths,
     unified_path,
     unified_quality_path,
 )
 from scripts.migrate_route_release_markers import (
     LEGACY_ENGINE,
+    RELOCATION_POLICY,
     migrate_route_release_markers,
+    write_route_authority_snapshot,
+)
+from ddvc.raw_certification import (
+    RawPartition,
+    local_scan_certificate_path,
+    scan_installed_generation,
+    write_local_scan_certificate,
 )
 from tests.test_reconstruct_gate import write_v2_swap
 
@@ -84,6 +94,112 @@ def migrate(
     )
 
 
+def _certify_local_v2(
+    data_root: Path, days: list[str], *, work_name: str
+) -> None:
+    partitions = [RawPartition("uniswap_v2", "swaps", day) for day in days]
+    rows = scan_installed_generation(
+        data_root,
+        data_root / "interim" / work_name,
+        workers=1,
+        partitions=partitions,
+    )
+    write_local_scan_certificate(
+        local_scan_certificate_path("uniswap_v2", data_root=data_root),
+        rows,
+        expected_partitions=partitions,
+    )
+
+
+def prepare_relocation_release(
+    tmp_path: Path, days: list[str]
+) -> tuple[dict[str, Path], Path, dict[str, tuple[int, str]]]:
+    paths = {
+        "data_root": tmp_path / "data",
+        "unified_root": tmp_path / "data" / "unified",
+        "quality_panel": tmp_path / "data" / "processed" / "unified_route_quality.parquet",
+        "quality_exhibit": tmp_path / "output" / "unified_route_quality.jsonl",
+        "raw_lock": tmp_path / "raw.lock",
+    }
+    backing = tmp_path / "old-authority"
+    backing.mkdir()
+    for index, day in enumerate(days):
+        calendar_day = f"{day[:4]}-{day[4:6]}-{day[6:]}"
+        raw = write_v2_swap(
+            paths["data_root"], calendar_day, amount_in=str(100 + index)
+        )
+        raw.with_name(f"uniswap_v2_meta_{day}.json").unlink()
+        referent = backing / raw.name
+        raw.replace(referent)
+        raw.symlink_to(referent)
+    _certify_local_v2(paths["data_root"], days, work_name="old-scan")
+    quality_rows = []
+    for day in days:
+        quality, status = _process_one(
+            f"{day[:4]}-{day[4:6]}-{day[6:]}",
+            ["uniswap_v2"],
+            True,
+            paths["data_root"],
+            paths["unified_root"],
+        )
+        assert status == "written"
+        quality_rows.append(quality)
+    paths["quality_panel"].parent.mkdir(parents=True, exist_ok=True)
+    pd.DataFrame(quality_rows, columns=UNIFIED_QUALITY_COLUMNS).to_parquet(
+        paths["quality_panel"], index=False
+    )
+    snapshot = tmp_path / "route-authority-before-relocation.json"
+    write_route_authority_snapshot(
+        snapshot,
+        data_root=paths["data_root"],
+        unified_root=paths["unified_root"],
+        quality_panel=paths["quality_panel"],
+        dexes=["uniswap_v2"],
+        days=days,
+        raw_lock=paths["raw_lock"],
+    )
+    outputs = {
+        day: (
+            unified_path(day, root=paths["unified_root"]).stat().st_ino,
+            file_sha256(unified_path(day, root=paths["unified_root"])),
+        )
+        for day in days
+    }
+    for day in days:
+        raw = route_input_paths(
+            f"{day[:4]}-{day[4:6]}-{day[6:]}",
+            ["uniswap_v2"],
+            data_root=paths["data_root"],
+        )[0]
+        payload = raw.read_bytes()
+        raw.unlink()
+        raw.write_bytes(payload)
+        os.utime(raw, None)
+    _certify_local_v2(paths["data_root"], days, work_name="new-scan")
+    return paths, snapshot, outputs
+
+
+def relocate(
+    paths: dict[str, Path],
+    days: list[str],
+    snapshot: Path,
+    *,
+    publish: bool,
+):
+    return migrate_route_release_markers(
+        data_root=paths["data_root"],
+        unified_root=paths["unified_root"],
+        quality_panel=paths["quality_panel"],
+        quality_exhibit=paths["quality_exhibit"],
+        dexes=["uniswap_v2"],
+        days=days,
+        workers=1,
+        publish=publish,
+        raw_lock=paths["raw_lock"],
+        authority_snapshot=snapshot,
+    )
+
+
 def test_dry_run_proves_exact_semantics_without_mutating_release(tmp_path: Path) -> None:
     days = ["20200505", "20200506"]
     paths = prepare_legacy_release(tmp_path, days)
@@ -99,6 +215,149 @@ def test_dry_run_proves_exact_semantics_without_mutating_release(tmp_path: Path)
         day: file_sha256(unified_quality_path(day, root=paths["unified_root"]))
         for day in days
     } == before_markers
+    assert file_sha256(paths["quality_panel"]) == before_ledger
+
+
+def test_storage_relocation_dry_run_never_reconstructs_route_legs(
+    tmp_path: Path,
+) -> None:
+    days = ["20200505"]
+    paths, snapshot, _outputs = prepare_relocation_release(tmp_path, days)
+    marker_hashes = {
+        day: file_sha256(unified_quality_path(day, root=paths["unified_root"]))
+        for day in days
+    }
+    ledger_hash = file_sha256(paths["quality_panel"])
+    from scripts import migrate_route_release_markers as migration
+
+    with patch.object(
+        migration,
+        "reconstruct_day_with_quality",
+        side_effect=AssertionError("relocation must not reconstruct"),
+    ):
+        plan = relocate(paths, days, snapshot, publish=False)
+    assert plan.migration_policy == RELOCATION_POLICY
+    assert plan.validation["scientific_identity_equal"].all()
+    assert plan.validation["input_fingerprint_changed"].all()
+    assert {
+        day: file_sha256(unified_quality_path(day, root=paths["unified_root"]))
+        for day in days
+    } == marker_hashes
+    assert file_sha256(paths["quality_panel"]) == ledger_hash
+
+
+def test_storage_relocation_publishes_only_fingerprints_and_global_outputs(
+    tmp_path: Path,
+) -> None:
+    days = ["20200505"]
+    paths, snapshot, outputs = prepare_relocation_release(tmp_path, days)
+    old_markers = {
+        day: json.loads(
+            unified_quality_path(day, root=paths["unified_root"]).read_text()
+        )
+        for day in days
+    }
+    plan = relocate(paths, days, snapshot, publish=True)
+    for day in days:
+        output = unified_path(day, root=paths["unified_root"])
+        assert (output.stat().st_ino, file_sha256(output)) == outputs[day]
+        marker = json.loads(
+            unified_quality_path(day, root=paths["unified_root"]).read_text()
+        )
+        assert marker["engine"] == old_markers[day]["engine"] == RECONSTRUCTION_ENGINE
+        assert marker["input_fingerprint"] == plan.current_input_fingerprints[day]
+        assert marker["input_fingerprint"] != old_markers[day]["input_fingerprint"]
+        assert {
+            key: value
+            for key, value in marker.items()
+            if key != "input_fingerprint"
+        } == {
+            key: value
+            for key, value in old_markers[day].items()
+            if key != "input_fingerprint"
+        }
+
+
+def test_storage_relocation_rejects_scientific_content_change(
+    tmp_path: Path,
+) -> None:
+    days = ["20200505"]
+    paths, snapshot, _outputs = prepare_relocation_release(tmp_path, days)
+    raw = route_input_paths(
+        "2020-05-05", ["uniswap_v2"], data_root=paths["data_root"]
+    )[0]
+    write_v2_swap(paths["data_root"], "2020-05-05", amount_in="999")
+    raw.with_name("uniswap_v2_meta_20200505.json").unlink()
+    _certify_local_v2(paths["data_root"], days, work_name="mutated-scan")
+    marker = unified_quality_path(days[0], root=paths["unified_root"])
+    before = file_sha256(marker)
+    with pytest.raises(ValueError, match="scientific identity changed"):
+        relocate(paths, days, snapshot, publish=True)
+    assert file_sha256(marker) == before
+
+
+def test_storage_relocation_rejects_foreign_or_mutated_snapshot(
+    tmp_path: Path,
+) -> None:
+    days = ["20200505"]
+    paths, snapshot, _outputs = prepare_relocation_release(tmp_path, days)
+    from scripts import migrate_route_release_markers as migration
+
+    original = json.loads(snapshot.read_text())
+    payload = dict(original)
+    payload["policy"] = "foreign"
+    snapshot.write_text(json.dumps(payload))
+    with pytest.raises(ValueError, match="snapshot envelope mismatch"):
+        relocate(paths, days, snapshot, publish=False)
+    payload = original
+    payload["entries"][0]["scientific_identity"]["logical_content_sha256"] = "0" * 64
+    payload["entries"][0]["scientific_identity_sha256"] = canonical_json_sha256(
+        payload["entries"][0]["scientific_identity"]
+    )
+    payload["snapshot_sha256"] = migration._snapshot_digest(payload)
+    snapshot.write_text(json.dumps(payload))
+    with pytest.raises(ValueError, match="scientific identity changed"):
+        relocate(paths, days, snapshot, publish=False)
+
+
+def test_storage_relocation_rejects_release_changed_after_snapshot(
+    tmp_path: Path,
+) -> None:
+    days = ["20200505"]
+    paths, snapshot, _outputs = prepare_relocation_release(tmp_path, days)
+    marker_path = unified_quality_path(days[0], root=paths["unified_root"])
+    marker = json.loads(marker_path.read_text())
+    marker["raw_rows"] += 1
+    marker_path.write_text(json.dumps(marker, indent=1, sort_keys=True) + "\n")
+    pd.DataFrame([marker], columns=UNIFIED_QUALITY_COLUMNS).to_parquet(
+        paths["quality_panel"], index=False
+    )
+    with pytest.raises(ValueError, match="changed after authority snapshot"):
+        relocate(paths, days, snapshot, publish=False)
+
+
+def test_storage_relocation_interruption_rolls_back_complete_bundle(
+    tmp_path: Path,
+) -> None:
+    days = ["20200505"]
+    paths, snapshot, _outputs = prepare_relocation_release(tmp_path, days)
+    marker = unified_quality_path(days[0], root=paths["unified_root"])
+    before_marker = file_sha256(marker)
+    before_ledger = file_sha256(paths["quality_panel"])
+
+    def interrupt(label: str) -> None:
+        if label == "installed:panel":
+            raise KeyboardInterrupt("injected interruption")
+
+    with (
+        patch(
+            "ddvc.journaled_publication._publication_cut",
+            side_effect=interrupt,
+        ),
+        pytest.raises(KeyboardInterrupt, match="injected interruption"),
+    ):
+        relocate(paths, days, snapshot, publish=True)
+    assert file_sha256(marker) == before_marker
     assert file_sha256(paths["quality_panel"]) == before_ledger
 
 
