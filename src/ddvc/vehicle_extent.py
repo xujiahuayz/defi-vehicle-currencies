@@ -65,9 +65,10 @@ def aggregate_vehicle_extent(
     }
     for support in VALUE_SUPPORT_COLUMNS:
         for role in ("intermediate", "endpoint"):
-            column = f"{role}_usd_{support}"
-            if column in frame:
-                aggregations[column] = (column, "sum")
+            for quantity in ("usd", "routes"):
+                column = f"{role}_{quantity}_{support}"
+                if column in frame:
+                    aggregations[column] = (column, "sum")
     out = frame.groupby(keys, as_index=False).agg(**aggregations)
     by_period = out.groupby(period_keys)
     out["intermediate_share"] = (
@@ -98,6 +99,24 @@ def aggregate_vehicle_extent(
         out[f"vehicle_excess_use_ratio_{support}"] = (
             out[intermediate_share]
             / out[endpoint_share].where(out[endpoint_share].gt(0))
+        )
+        intermediate_count_column = f"intermediate_routes_{support}"
+        endpoint_count_column = f"endpoint_routes_{support}"
+        if intermediate_count_column not in out or endpoint_count_column not in out:
+            continue
+        intermediate_count_share = f"intermediate_count_share_{support}"
+        endpoint_count_share = f"endpoint_count_share_{support}"
+        out[intermediate_count_share] = (
+            out[intermediate_count_column]
+            / by_period[intermediate_count_column].transform("sum")
+        )
+        out[endpoint_count_share] = (
+            out[endpoint_count_column]
+            / by_period[endpoint_count_column].transform("sum")
+        )
+        out[f"vehicle_excess_use_count_ratio_{support}"] = (
+            out[intermediate_count_share]
+            / out[endpoint_count_share].where(out[endpoint_count_share].gt(0))
         )
     out["intermediate_count_share"] = (
         out["intermediate_routes"]
@@ -204,6 +223,22 @@ def compute_vehicle_extent(legs: pd.DataFrame) -> pd.DataFrame:
         out[f"endpoint_usd_{support}"] = supported_ev.reindex(
             tokens, fill_value=0.0
         ).to_numpy()
+        supported_ic = (
+            supported_intermediate.groupby("token").size()
+            if not supported_intermediate.empty
+            else pd.Series(dtype="int64")
+        )
+        supported_ec = (
+            supported_endpoints.groupby("token").size()
+            if not supported_endpoints.empty
+            else pd.Series(dtype="int64")
+        )
+        out[f"intermediate_routes_{support}"] = supported_ic.reindex(
+            tokens, fill_value=0
+        ).to_numpy(dtype="int64")
+        out[f"endpoint_routes_{support}"] = supported_ec.reindex(
+            tokens, fill_value=0
+        ).to_numpy(dtype="int64")
     total_i = float(out["intermediate_usd"].sum())
     total_e = float(out["endpoint_usd"].sum())
     total_ic = int(out["intermediate_routes"].sum())
@@ -224,6 +259,49 @@ def compute_vehicle_extent(legs: pd.DataFrame) -> pd.DataFrame:
         out["intermediate_count_share"] / out["endpoint_count_share"],
         np.nan,
     )
+    for support in VALUE_SUPPORT_COLUMNS:
+        intermediate_value_column = f"intermediate_usd_{support}"
+        endpoint_value_column = f"endpoint_usd_{support}"
+        total_intermediate_value = float(out[intermediate_value_column].sum())
+        total_endpoint_value = float(out[endpoint_value_column].sum())
+        intermediate_value_share = f"intermediate_share_{support}"
+        endpoint_value_share = f"endpoint_share_{support}"
+        out[intermediate_value_share] = (
+            out[intermediate_value_column] / total_intermediate_value
+            if total_intermediate_value
+            else 0.0
+        )
+        out[endpoint_value_share] = (
+            out[endpoint_value_column] / total_endpoint_value
+            if total_endpoint_value
+            else 0.0
+        )
+        out[f"vehicle_excess_use_ratio_{support}"] = np.where(
+            out[endpoint_value_share] > 0,
+            out[intermediate_value_share] / out[endpoint_value_share],
+            np.nan,
+        )
+        intermediate_count_column = f"intermediate_routes_{support}"
+        endpoint_count_column = f"endpoint_routes_{support}"
+        total_intermediate_count = int(out[intermediate_count_column].sum())
+        total_endpoint_count = int(out[endpoint_count_column].sum())
+        intermediate_count_share = f"intermediate_count_share_{support}"
+        endpoint_count_share = f"endpoint_count_share_{support}"
+        out[intermediate_count_share] = (
+            out[intermediate_count_column] / total_intermediate_count
+            if total_intermediate_count
+            else 0.0
+        )
+        out[endpoint_count_share] = (
+            out[endpoint_count_column] / total_endpoint_count
+            if total_endpoint_count
+            else 0.0
+        )
+        out[f"vehicle_excess_use_count_ratio_{support}"] = np.where(
+            out[endpoint_count_share] > 0,
+            out[intermediate_count_share] / out[endpoint_count_share],
+            np.nan,
+        )
     labels = out["token"].map(classify)
     out["symbol"] = labels.map(lambda item: item[0] or "")
     out["asset_type"] = labels.map(lambda item: item[1])

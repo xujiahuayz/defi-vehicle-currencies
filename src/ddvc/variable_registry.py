@@ -772,6 +772,99 @@ VARIABLE_SPECS: tuple[VariableSpec, ...] = (
     ),
     VariableSpec(
         group="Vehicle-use measures",
+        name="Strict-support intermediate-use count share",
+        column="intermediate_count_share_within_20pct",
+        notation=r"$\mathrm{IShare}^{N,20}_{k,t}$",
+        formula=(
+            r"$\displaystyle\frac{N^{I,20}_{k,t}}"
+            r"{\sum_{j:\mathrm{Type}(j)\ne\mathrm{other}}N^{I,20}_{j,t}}$"
+        ),
+        unit="Fraction (0--1)",
+        construction=(
+            r"Count share on the exact route components used by the strict-value measure: "
+            r"source, sink and every intermediary reconcile within 20 percent."
+        ),
+        source="data/processed/vehicle_excess_use_daily.parquet",
+        used_for="Separating value weighting from strict-support sample selection.",
+        in_observations_table=False,
+    ),
+    VariableSpec(
+        group="Vehicle-use measures",
+        name="Strict-support endpoint-demand count share",
+        column="endpoint_count_share_within_20pct",
+        notation=r"$\mathrm{EShare}^{N,20}_{k,t}$",
+        formula=(
+            r"$\displaystyle\frac{N^{E,20}_{k,t}}"
+            r"{\sum_{j:\mathrm{Type}(j)\ne\mathrm{other}}N^{E,20}_{j,t}}$"
+        ),
+        unit="Fraction (0--1)",
+        construction=r"Endpoint count share on the same 20-percent value-coherence support.",
+        source="data/processed/vehicle_excess_use_daily.parquet",
+        used_for="Matched-support endpoint-demand benchmark for count-versus-value decomposition.",
+        in_observations_table=False,
+    ),
+    VariableSpec(
+        group="Vehicle-use measures",
+        name="Strict-support vehicle excess-use count ratio",
+        column="vehicle_excess_use_count_ratio_within_20pct",
+        notation=r"$\mathrm{ExcessUse}^{N,20}_{k,t}$",
+        formula=(
+            r"$\displaystyle\frac{\mathrm{IShare}^{N,20}_{k,t}}"
+            r"{\mathrm{EShare}^{N,20}_{k,t}}$"
+        ),
+        unit="Ratio",
+        construction=r"Matched-support count excess use; undefined when strict-support endpoint count is zero.",
+        source="data/processed/vehicle_excess_use_daily.parquet",
+        used_for="Matched-support frequency benchmark for the strict-value dominance measure.",
+        in_observations_table=False,
+    ),
+    VariableSpec(
+        group="Vehicle-use measures",
+        name="Strict-value intermediate-use share",
+        column="intermediate_share_within_20pct",
+        notation=r"$\mathrm{IShare}^{V,20}_{k,t}$",
+        formula=(
+            r"$\displaystyle\frac{\mathrm{IVol}^{20}_{k,t}}"
+            r"{\sum_{j:\mathrm{Type}(j)\ne\mathrm{other}}\mathrm{IVol}^{20}_{j,t}}$"
+        ),
+        unit="Fraction (0--1)",
+        construction=r"Intermediary value share where source, sink and every intermediary reconcile within 20 percent.",
+        source="data/processed/vehicle_excess_use_daily.parquet",
+        used_for="Strict-value dimension of vehicle dominance.",
+        in_observations_table=False,
+    ),
+    VariableSpec(
+        group="Vehicle-use measures",
+        name="Strict-value endpoint-demand share",
+        column="endpoint_share_within_20pct",
+        notation=r"$\mathrm{EShare}^{V,20}_{k,t}$",
+        formula=(
+            r"$\displaystyle\frac{\mathrm{EVol}^{20}_{k,t}}"
+            r"{\sum_{j:\mathrm{Type}(j)\ne\mathrm{other}}\mathrm{EVol}^{20}_{j,t}}$"
+        ),
+        unit="Fraction (0--1)",
+        construction=r"Endpoint value share on the same 20-percent value-coherence support.",
+        source="data/processed/vehicle_excess_use_daily.parquet",
+        used_for="Strict-value endpoint-demand benchmark.",
+        in_observations_table=False,
+    ),
+    VariableSpec(
+        group="Vehicle-use measures",
+        name="Strict-value vehicle excess-use ratio",
+        column="vehicle_excess_use_ratio_within_20pct",
+        notation=r"$\mathrm{ExcessUse}^{V,20}_{k,t}$",
+        formula=(
+            r"$\displaystyle\frac{\mathrm{IShare}^{V,20}_{k,t}}"
+            r"{\mathrm{EShare}^{V,20}_{k,t}}$"
+        ),
+        unit="Ratio",
+        construction=r"Strict-value intermediary share divided by strict-value endpoint share on identical support.",
+        source="data/processed/vehicle_excess_use_daily.parquet",
+        used_for="Economic-value dimension of vehicle dominance.",
+        in_observations_table=False,
+    ),
+    VariableSpec(
+        group="Vehicle-use measures",
         name="Vehicle count share",
         column="bridge_count_share",
         notation=r"$\mathrm{VehicleCountShare}_{k,t}$",

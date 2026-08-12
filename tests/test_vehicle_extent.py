@@ -172,7 +172,26 @@ class VehicleExtentTests(unittest.TestCase):
         self.assertAlmostEqual(out.loc["k", "intermediate_usd"], 550.0)
         self.assertEqual(out.loc["k", "intermediate_usd_within_2x"], 0.0)
         self.assertEqual(out.loc["m", "intermediate_usd_within_20pct"], 0.0)
+        self.assertEqual(out.loc["k", "intermediate_routes_within_20pct"], 0)
+        self.assertEqual(out.loc["m", "intermediate_routes_within_20pct"], 0)
         self.assertAlmostEqual(out.loc["a", "endpoint_usd_within_20pct"], 100.0)
+        self.assertEqual(out.loc["a", "endpoint_routes_within_20pct"], 1)
+
+    def test_value_and_count_shares_can_be_compared_on_identical_support(self) -> None:
+        rows = [
+            leg("small", 0, "a", "k", "source", "intermediate", 10, log_index=0),
+            leg("small", 0, "k", "b", "intermediate", "sink", 10, log_index=1),
+            leg("large", 0, "a", "m", "source", "intermediate", 90, log_index=0),
+            leg("large", 0, "m", "b", "intermediate", "sink", 90, log_index=1),
+            leg("broken", 0, "a", "k", "source", "intermediate", 10, log_index=0),
+            leg("broken", 0, "k", "b", "intermediate", "sink", 100, log_index=1),
+        ]
+        out = compute_vehicle_extent(pd.DataFrame(rows)).set_index("token")
+        self.assertAlmostEqual(out.loc["k", "intermediate_count_share"], 2 / 3)
+        self.assertAlmostEqual(out.loc["k", "intermediate_count_share_within_20pct"], 0.5)
+        self.assertAlmostEqual(out.loc["k", "intermediate_share_within_20pct"], 0.1)
+        self.assertAlmostEqual(out.loc["m", "intermediate_count_share_within_20pct"], 0.5)
+        self.assertAlmostEqual(out.loc["m", "intermediate_share_within_20pct"], 0.9)
 
     def test_branched_dag_is_economic_not_cyclic(self) -> None:
         rows = [
