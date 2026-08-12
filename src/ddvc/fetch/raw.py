@@ -21,7 +21,7 @@ from pathlib import Path
 from collections.abc import Iterable, Mapping
 from typing import Any, Callable
 
-from ddvc.fetch.graph import GraphClient, graph_keys, head_block, paginate
+from ddvc.fetch.graph import GraphClient, graph_keys, head_block, iter_paginate, paginate
 from ddvc.fetch.schemas import EntitySpec, get_schema
 from ddvc.fetch.sources import DexSource, get_source
 from ddvc.paths import DATA_DIR
@@ -522,6 +522,10 @@ def write_json(path: Path, value: dict[str, Any]) -> None:
 
 
 def where_for_entity(entity: EntitySpec, day: dt.date) -> dict[str, str]:
+    if entity.fetch_mode != "day_partitioned":
+        raise ValueError(
+            f"{entity.stream} uses {entity.fetch_mode}; it cannot enter a day fetch"
+        )
     start = midnight_ts(day)
     end = start + 86_400
     if entity.date_field:
@@ -530,6 +534,10 @@ def where_for_entity(entity: EntitySpec, day: dt.date) -> dict[str, str]:
 
 
 def where_chunks_for_entity(entity: EntitySpec, day: dt.date) -> list[dict[str, str]]:
+    if entity.fetch_mode != "day_partitioned":
+        raise ValueError(
+            f"{entity.stream} uses {entity.fetch_mode}; it requires its dedicated acquisition runner"
+        )
     policy = query_chunk_policy(entity)
     if policy == "date_exact_hex_id_prefix_v1":
         prefixes = "0123456789abcdef"
@@ -562,6 +570,13 @@ def page_size_for_entity(entity: EntitySpec) -> int:
 def query_chunk_policy(entity: EntitySpec) -> str:
     """Return the canonical day-query partition policy for one Graph entity."""
 
+    if entity.fetch_mode != "day_partitioned":
+        return {
+            "global_historical": "global_id_ascending_v1",
+            "static_snapshot": "frozen_head_id_ascending_v1",
+            "block_pinned_configuration": "explicit_block_checkpoint_id_ascending_v1",
+            "head_validation_only": "canary_only_never_backfill",
+        }[entity.fetch_mode]
     if entity.date_field:
         return "date_exact_hex_id_prefix_v1"
     if entity.stream == "hourly_reserves" and entity.time_field == "hourStartUnix":
@@ -581,6 +596,8 @@ def graph_query_contract_sha256(entity: EntitySpec) -> str:
         "fields": " ".join(entity.fields.split()),
         "time_field": entity.time_field,
         "date_field": entity.date_field,
+        "fetch_mode": entity.fetch_mode,
+        "admission_mode": entity.admission_mode,
         "chunk_policy": query_chunk_policy(entity),
         "page_size": page_size_for_entity(entity),
     }
@@ -597,6 +614,54 @@ def graph_query_contracts_for_source(source_name: str) -> dict[str, str]:
         entity.stream: graph_query_contract_sha256(entity)
         for entity in get_schema(source.schema).entities
     }
+
+
+def fetch_graph_entity_rows(
+    client: GraphClient,
+    entity: EntitySpec,
+    *,
+    where_chunks: Iterable[dict[str, Any]],
+    block_number: int,
+    max_pages_per_chunk: int = 10_000,
+) -> list[dict[str, Any]]:
+    """Execute the one canonical Graph pagination path for any acquisition runner."""
+
+    rows: list[dict[str, Any]] = []
+    for where in where_chunks:
+        rows.extend(
+            paginate(
+                client,
+                entity=entity.entity,
+                fields=entity.fields,
+                base_where=where,
+                page_size=page_size_for_entity(entity),
+                block_number=block_number,
+                max_pages=max_pages_per_chunk,
+            )
+        )
+    return rows
+
+
+def iter_graph_entity_rows(
+    client: GraphClient,
+    entity: EntitySpec,
+    *,
+    where_chunks: Iterable[dict[str, Any]],
+    block_number: int,
+    max_pages_per_chunk: int = 10_000,
+) -> Iterable[dict[str, Any]]:
+    """Stream rows through the same canonical paginator without generation-sized RAM."""
+
+    for where in where_chunks:
+        yield from iter_paginate(
+            client,
+            entity=entity.entity,
+            fields=entity.fields,
+            base_where=where,
+            page_size=page_size_for_entity(entity),
+            block_number=block_number,
+            max_pages=max_pages_per_chunk,
+        )
 
 
 def _raw_stream_metadata_item_is_current(
@@ -1274,19 +1339,13 @@ def fetch_source_day(
             if skip_existing and out.exists() and raw_stream_metadata_is_current(existing_stream, entity, expected_path=out):
                 stream_meta[entity.stream] = {"path": raw_stream_identity(out), "status": "skipped"}
                 continue
-            rows: list[dict[str, Any]] = []
-            for where in where_chunks_for_entity(entity, day):
-                rows.extend(
-                    paginate(
-                        client,
-                        entity=entity.entity,
-                        fields=entity.fields,
-                        base_where=where,
-                        page_size=page_size_for_entity(entity),
-                        block_number=head,
-                        max_pages=max_pages_per_chunk,
-                    )
-                )
+            rows = fetch_graph_entity_rows(
+                client,
+                entity,
+                where_chunks=where_chunks_for_entity(entity, day),
+                block_number=head,
+                max_pages_per_chunk=max_pages_per_chunk,
+            )
             temporary = stack.enter_context(staged_output(out))
             _write_jsonl_gz_payload(temporary, rows)
             blocks = _block_values(rows)

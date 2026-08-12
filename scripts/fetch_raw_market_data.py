@@ -32,6 +32,7 @@ from ddvc.fetch.raw import (
     fetch_source_day,
     frozen_graph_head,
     graph_query_contracts_for_source,
+    graph_query_contract_sha256,
     indexed_metadata_streams,
     meta_path,
     midnight_ts,
@@ -42,7 +43,8 @@ from ddvc.fetch.raw import (
     write_json,
     write_jsonl_gz,
 )
-from ddvc.fetch.schemas import UNISWAP_V4_STATIC_FIELDS, get_schema
+from ddvc.fetch.acquisition import GRAPH_ACQUISITION_FREEZE, GRAPH_ACTIVE_MANIFEST, GRAPH_NEW_MANIFEST, GRAPH_SCHEMA_INVENTORY, frozen_provider_heads, validate_freeze
+from ddvc.fetch.schemas import UNISWAP_V4_STATIC_FIELDS, acquisition_schema, get_schema
 from ddvc.fetch.sources import (
     DEX_SOURCES,
     UNISWAP_V4_STATICS_SUBGRAPH_ID,
@@ -221,6 +223,52 @@ def cmd_plan(args: argparse.Namespace) -> int:
             }
         )
     print(json.dumps(rows, indent=2))
+    return 0
+
+
+def cmd_d1_plan(args: argparse.Namespace) -> int:
+    """Print the frozen D1 acquisition contract without launching it."""
+
+    inventory = GRAPH_SCHEMA_INVENTORY
+    active = GRAPH_ACTIVE_MANIFEST
+    new = GRAPH_NEW_MANIFEST
+    freeze_path = GRAPH_ACQUISITION_FREEZE
+    freeze = json.loads(freeze_path.read_text(encoding="utf-8"))
+    selected = {
+        name
+        for name in source_names(args.dex)
+        if DEX_SOURCES[name].backend == "thegraph"
+        and any(record["source"] == name for record in freeze["sources"])
+    }
+    heads = validate_freeze(
+        freeze,
+        inventory=inventory,
+        active_manifest=active,
+        new_manifest=new,
+        expected_sources={str(record["source"]) for record in freeze["sources"]},
+    )
+    provider_heads = frozen_provider_heads(freeze)
+    rows = []
+    for name in sorted(selected):
+        schema = acquisition_schema(name, active_manifest=active, new_manifest=new)
+        rows.append(
+            {
+                "source": name,
+                "sample_end_block": heads[name],
+                "provider_head_block": provider_heads[name],
+                "streams": [
+                    {
+                        "stream": entity.stream,
+                        "entity": entity.entity,
+                        "fetch_mode": entity.fetch_mode,
+                        "admission_mode": entity.admission_mode,
+                        "query_contract_sha256": graph_query_contract_sha256(entity),
+                    }
+                    for entity in schema.entities
+                ],
+            }
+        )
+    print(json.dumps(rows, indent=2, sort_keys=True))
     return 0
 
 
@@ -794,6 +842,12 @@ def build_parser() -> argparse.ArgumentParser:
         action="store_true",
         help="exit nonzero if any file, metadata sidecar, or exact stream ledger is missing",
     )
+    d1_plan = sub.add_parser(
+        "d1-plan",
+        help="print the frozen multi-mode D1 acquisition contract; never fetches",
+    )
+    d1_plan.add_argument("--dex", nargs="+", default=["all"], help="Source names or 'all'.")
+    d1_plan.set_defaults(func=cmd_d1_plan)
     enrich = sub.add_parser(
         "enrich-v4-statics",
         help="merge quote statics into canonical signed v4 swaps by exact record ID",

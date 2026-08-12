@@ -1,0 +1,113 @@
+{
+  "as_of": "2026-08-12",
+  "authorized_graph_acquisition": {
+    "bytes": 0,
+    "graph_calls": 0,
+    "streams": []
+  },
+  "consumers": [
+    {
+      "consumer": "v2_end_of_day_deposited_capital",
+      "existing_graph_streams": {
+        "sushiswap_v2": {
+          "burns": 2126,
+          "daily": 2126,
+          "hourly_reserves": 2126,
+          "mints": 2126,
+          "swaps": 2126
+        },
+        "uniswap_v2": {
+          "burns": 2248,
+          "daily": 2248,
+          "hourly_reserves": 2248,
+          "mints": 2248,
+          "swaps": 2248
+        }
+      },
+      "material_fields": [
+        "pool contract and ordered token addresses/decimals",
+        "end-of-day reserveUSD and dailyVolumeUSD",
+        "hourly reserve0 and reserve1",
+        "ordered Mint, Burn, and Swap amounts with block/transaction/log identity"
+      ],
+      "new_graph_acquisition_required": false,
+      "status": "raw_fields_present_full_sample_on_authoritative_host",
+      "unresolved_non_graph_work": "materialize and certify constant-product state and capital panels from the existing streams"
+    },
+    {
+      "consumer": "exact_transaction_target_and_quote_state_replay",
+      "existing_graph_streams": {
+        "uniswap_v2": {
+          "swaps": 2248
+        },
+        "uniswap_v3": {
+          "swaps": 1884
+        },
+        "uniswap_v4": {
+          "modify_liquidities": 523,
+          "swaps": 546
+        }
+      },
+      "material_fields": [
+        "pool and ordered token identity",
+        "exact transaction block and log order",
+        "signed swap amounts",
+        "exact pool state strictly before the target event"
+      ],
+      "new_graph_acquisition_required": false,
+      "status": "graph_target_fields_present_rpc_release_certification_still_required",
+      "unresolved_non_graph_work": "finish and certify the existing V2 and V4 exact-RPC sources before daily target promotion"
+    },
+    {
+      "consumer": "v3_pool_inventory_and_liquidity_supply",
+      "existing_graph_streams": {
+        "uniswap_v3": {
+          "burns": 1884,
+          "mints": 1884,
+          "swaps": 1884
+        }
+      },
+      "existing_rpc_release": {
+        "burns": 3263966,
+        "collect_protocol": 437880,
+        "collects": 3144537,
+        "flashes": 9493,
+        "mints": 2849664,
+        "status": "complete",
+        "swaps": 137671078,
+        "total_logs": 147376618
+      },
+      "material_fields": [
+        "certified factory pool identity and token decimals",
+        "exact Mint, Burn, Collect, CollectProtocol, Flash, and Swap events",
+        "initial price/tick and exact causal order"
+      ],
+      "new_graph_acquisition_required": false,
+      "status": "exact_inventory_event_release_present_initialization_and_balance_validation_pending",
+      "unsupported_extension": "provider-level position ownership or profitability remains outside the admitted claim set; positionSnapshots are not authorized without a promoted estimator and a separate validity audit"
+    }
+  ],
+  "evidence": {
+    "active_canary": {
+      "alignment_comparisons": 7800,
+      "alignment_failures": 0,
+      "streams": 24
+    },
+    "broad_schema_canary": {
+      "admitted_streams": 88,
+      "provider_archive_quarantined_streams": 2,
+      "row_quarantine_streams": 3,
+      "streams": 93
+    },
+    "existing_graph_corpus": {
+      "direct_storage_below_project_graph_root": "8.5 GiB",
+      "logical_bytes_following_reused_symlink_targets": 90079095549,
+      "resolved_disk_usage": "84 GiB",
+      "storage_note": "Most installed files are reused through 27287 symlinks to the legacy canonical raw store; copying those streams into a new universal generation would duplicate data without adding a consumer capability."
+    },
+    "measurement_host": "studio"
+  },
+  "kind": "graph_thin_consumer_materiality_audit",
+  "schema_version": 1,
+  "selection_rule": "A network fetch requires a named consumer, a material missing field, and an explicit frozen stream selection. Broad schema inventory is discovery evidence, not an acquisition perimeter."
+}

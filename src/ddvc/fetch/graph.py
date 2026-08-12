@@ -6,7 +6,7 @@ import json
 import os
 import re
 import time
-from collections.abc import Callable, Iterable
+from collections.abc import Callable, Iterable, Iterator
 import datetime as dt
 import threading
 from dataclasses import dataclass
@@ -299,7 +299,7 @@ def first_record(
     return rows[0] if rows else None
 
 
-def paginate(
+def iter_paginate(
     client: GraphClient,
     *,
     entity: str,
@@ -309,8 +309,8 @@ def paginate(
     block_number: int | None = None,
     progress: Callable[[int, str], None] | None = None,
     max_pages: int = 10_000,
-) -> list[dict[str, Any]]:
-    rows: list[dict[str, Any]] = []
+) -> Iterator[dict[str, Any]]:
+    row_count = 0
     last_id = ""
     pages = 0
     while True:
@@ -333,15 +333,43 @@ def paginate(
         page = data[entity]
         if not page:
             break
-        rows.extend(page)
+        for row in page:
+            yield row
+        row_count += len(page)
         last_id = page[-1]["id"]
         if progress is not None:
-            progress(len(rows), last_id)
+            progress(row_count, last_id)
         if len(page) < page_size:
             break
         if client.sleep_seconds:
             time.sleep(client.sleep_seconds)
-    return rows
+
+
+def paginate(
+    client: GraphClient,
+    *,
+    entity: str,
+    fields: str,
+    base_where: dict[str, Any],
+    page_size: int = PAGE_SIZE,
+    block_number: int | None = None,
+    progress: Callable[[int, str], None] | None = None,
+    max_pages: int = 10_000,
+) -> list[dict[str, Any]]:
+    """Compatibility collector over the canonical streaming paginator."""
+
+    return list(
+        iter_paginate(
+            client,
+            entity=entity,
+            fields=fields,
+            base_where=base_where,
+            page_size=page_size,
+            block_number=block_number,
+            progress=progress,
+            max_pages=max_pages,
+        )
+    )
 
 
 def head_block(client: GraphClient) -> int | None:

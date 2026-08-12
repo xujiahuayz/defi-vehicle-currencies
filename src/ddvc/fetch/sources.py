@@ -42,7 +42,7 @@ class DexSource:
 DEX_SOURCES: dict[str, DexSource] = {
     "curve": DexSource(
         name="curve",
-        schema="messari",
+        schema="curve",
         genesis_date_utc=dt.date(2020, 2, 11),
         subgraph_id="3fy93eAT56UJsRCEht8iFhfi6wjHWXtZ9dnnbQmvFopF",
         genesis_block=9_461_159,
@@ -88,7 +88,7 @@ DEX_SOURCES: dict[str, DexSource] = {
     ),
     "sushiswap_v2": DexSource(
         name="sushiswap_v2",
-        schema="uniswap_v2",
+        schema="sushiswap_v2",
         genesis_date_utc=dt.date(2020, 9, 4),
         subgraph_id="QmaR2nAMF6dCHBL1eFNQ4F5nGpJQs7V11PZobJB2FgQtbt",
         graph_path="deployments/id",
@@ -99,7 +99,7 @@ DEX_SOURCES: dict[str, DexSource] = {
     ),
     "sushiswap_v3": DexSource(
         name="sushiswap_v3",
-        schema="messari",
+        schema="sushiswap_v3",
         genesis_date_utc=dt.date(2023, 4, 5),
         subgraph_id="2tGWMrDha4164KkFAfkU3rDCtuxGb4q1emXmFdLLzJ8x",
         genesis_block=16_984_779,

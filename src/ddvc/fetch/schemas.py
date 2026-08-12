@@ -9,6 +9,20 @@ future robustness work without repeated network fetches.
 from __future__ import annotations
 
 from dataclasses import dataclass
+import json
+from pathlib import Path
+from typing import Literal
+
+from ddvc.fetch.acquisition import GRAPH_BLOCK_FIELDS, GRAPH_TIME_FIELDS
+
+
+FetchMode = Literal[
+    "day_partitioned",
+    "global_historical",
+    "static_snapshot",
+    "block_pinned_configuration",
+    "head_validation_only",
+]
 
 
 @dataclass(frozen=True)
@@ -18,6 +32,8 @@ class EntitySpec:
     fields: str
     time_field: str = "timestamp"
     date_field: str | None = None
+    fetch_mode: FetchMode = "day_partitioned"
+    admission_mode: str = "active_stream"
 
 
 @dataclass(frozen=True)
@@ -244,6 +260,106 @@ SCHEMAS: dict[str, SchemaSpec] = {
         ),
     ),
 }
+
+
+def _source_specific_schema(name: str, shared: SchemaSpec) -> SchemaSpec:
+    """Give one deployment an independent contract identity while sharing fragments."""
+
+    return SchemaSpec(name=name, entities=shared.entities)
+
+
+# These deployments happened to begin with the same schema family, but live
+# introspection now diverges.  Contract identity is therefore per source; immutable
+# field fragments remain shared until a source-specific field is frozen.
+SCHEMAS["curve"] = _source_specific_schema("curve", SCHEMAS["messari"])
+SCHEMAS["sushiswap_v3"] = _source_specific_schema(
+    "sushiswap_v3", SCHEMAS["messari"]
+)
+SCHEMAS["sushiswap_v2"] = _source_specific_schema(
+    "sushiswap_v2", SCHEMAS["uniswap_v2"]
+)
+
+
+def _manifest_entity(
+    source: str,
+    record: dict,
+    *,
+    active: bool,
+) -> EntitySpec:
+    paths = set(record["proposed_selected_paths"])
+    mode = "active_stream" if active else str(record["mode"])
+    if active:
+        current = next(
+            entity
+            for entity in get_schema(source).entities
+            if entity.entity == record["entity"]
+        )
+        return EntitySpec(
+            stream=str(record["stream"]),
+            entity=str(record["entity"]),
+            fields=str(record["proposed_selection"]),
+            time_field=current.time_field,
+            date_field=current.date_field,
+            fetch_mode="day_partitioned",
+            admission_mode=mode,
+        )
+    if mode in {"static_identity", "static_or_right_censored_auxiliary"}:
+        fetch_mode: FetchMode = "static_snapshot"
+    elif mode == "block_pinned_configuration":
+        fetch_mode = "block_pinned_configuration"
+    elif mode == "head_validation_only":
+        fetch_mode = "head_validation_only"
+    elif any(field in paths for field in GRAPH_TIME_FIELDS):
+        fetch_mode = "day_partitioned"
+    elif any(field in paths for field in GRAPH_BLOCK_FIELDS):
+        fetch_mode = "global_historical"
+    else:
+        fetch_mode = "global_historical"
+    date_field = "date" if "date" in paths else None
+    time_field = next((field for field in GRAPH_TIME_FIELDS if field in paths), "timestamp")
+    return EntitySpec(
+        stream=str(record["entity"]),
+        entity=str(record["entity"]),
+        fields=str(record["proposed_selection"]),
+        time_field=time_field,
+        date_field=date_field,
+        fetch_mode=fetch_mode,
+        admission_mode=mode,
+    )
+
+
+def acquisition_schema(
+    source: str,
+    *,
+    active_manifest: Path,
+    new_manifest: Path,
+) -> SchemaSpec:
+    """Materialise the frozen D1 contract without duplicating its selections."""
+
+    active = json.loads(active_manifest.read_text(encoding="utf-8"))
+    new = json.loads(new_manifest.read_text(encoding="utf-8"))
+    active_source = next(
+        record for record in active["sources"] if record["source"] == source
+    )
+    new_source = next(
+        record for record in new["sources"] if record["source"] == source
+    )
+    if active_source.get("status") != "available" or new_source.get("status") != "available":
+        raise ValueError(f"Graph acquisition schema is unavailable for {source}")
+    entities = [
+        *(
+            _manifest_entity(source, record, active=True)
+            for record in active_source["entities"]
+        ),
+        *(
+            _manifest_entity(source, record, active=False)
+            for record in new_source["entities"]
+        ),
+    ]
+    streams = [entity.stream for entity in entities]
+    if len(streams) != len(set(streams)):
+        raise ValueError(f"Graph acquisition schema has duplicate streams for {source}")
+    return SchemaSpec(name=f"{source}_d1", entities=tuple(entities))
 
 
 def get_schema(name: str) -> SchemaSpec:
