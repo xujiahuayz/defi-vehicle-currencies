@@ -14,6 +14,8 @@
 
 Never select an input because a filename sounds current. Use the executable owner registry, release pointer, provenance stamp, or explicit findings freeze. Do not overwrite a released generation in place, and do not remove a generation until its consumers and release references have been checked.
 
+Every newly stamped derived artifact binds its complete payload digest. Parquet panels additionally bind their physical row count, ordered columns and serialized Arrow schema; JSON Lines artifacts bind their physical row count. The declared row count must equal the physical payload before publication and again when read. Writers own the payload and sidecar as one exclusive perimeter, and verifiers hold a shared lease over that pair for the complete check. A mixed pair after a crash or manual edit fails closed. Legacy artifacts without a complete digest are not current and require a controlled rebuild or exact-payload restamp; never update only their code, input or row metadata.
+
 ## Acquisition
 
 Audit registered genesis boundaries before a full fetch:

@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import fcntl
+import hashlib
 import json
 import os
 import sys
@@ -11,6 +12,7 @@ import threading
 import time
 import uuid
 from concurrent.futures import ProcessPoolExecutor, ThreadPoolExecutor
+from collections import OrderedDict
 from collections.abc import Iterable, Mapping
 from contextlib import contextmanager
 from contextvars import ContextVar
@@ -19,6 +21,9 @@ from pathlib import Path
 from typing import Iterator
 
 DEFAULT_MAX_WORKERS = 8
+_FILE_DIGEST_CACHE_MAX = 128
+_FILE_DIGEST_CACHE: OrderedDict[tuple[int, int, int, int, int], str] = OrderedDict()
+_FILE_DIGEST_CACHE_LOCK = threading.Lock()
 _HELD_ARTIFACT_LOCKS = threading.local()
 _ACTIVE_READ_SOURCES: ContextVar[frozenset[Path]] = ContextVar(
     "ddvc_active_read_sources", default=frozenset()
@@ -30,6 +35,45 @@ def bounded_workers(requested: int, *, maximum: int = DEFAULT_MAX_WORKERS) -> in
     if maximum < 1:
         raise ValueError("maximum worker count must be positive")
     return min(maximum, max(1, requested))
+
+
+def file_sha256(path: Path) -> str:
+    """Hash exact file bytes once per unchanged filesystem identity."""
+
+    source = Path(path)
+    before = source.stat()
+    identity = (
+        before.st_dev,
+        before.st_ino,
+        before.st_size,
+        before.st_mtime_ns,
+        before.st_ctime_ns,
+    )
+    with _FILE_DIGEST_CACHE_LOCK:
+        cached = _FILE_DIGEST_CACHE.get(identity)
+        if cached is not None:
+            _FILE_DIGEST_CACHE.move_to_end(identity)
+            return cached
+    digest = hashlib.sha256()
+    with source.open("rb") as handle:
+        while chunk := handle.read(1024 * 1024):
+            digest.update(chunk)
+    after = source.stat()
+    if identity != (
+        after.st_dev,
+        after.st_ino,
+        after.st_size,
+        after.st_mtime_ns,
+        after.st_ctime_ns,
+    ):
+        raise RuntimeError(f"file changed while it was hashed: {source}")
+    value = digest.hexdigest()
+    with _FILE_DIGEST_CACHE_LOCK:
+        _FILE_DIGEST_CACHE[identity] = value
+        _FILE_DIGEST_CACHE.move_to_end(identity)
+        while len(_FILE_DIGEST_CACHE) > _FILE_DIGEST_CACHE_MAX:
+            _FILE_DIGEST_CACHE.popitem(last=False)
+    return value
 
 
 @contextmanager

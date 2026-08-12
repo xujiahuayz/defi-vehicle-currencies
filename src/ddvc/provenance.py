@@ -44,7 +44,13 @@ from datetime import datetime, timezone
 from pathlib import Path
 
 from ddvc.paths import REPO_ROOT
-from ddvc.runtime import atomic_output, serialized_output_install, staged_output
+from ddvc.runtime import (
+    atomic_output,
+    file_sha256,
+    serialized_output_installs,
+    serialized_read_installs,
+    staged_output,
+)
 
 ROOT = REPO_ROOT
 MANIFESTS = ROOT / "data" / "manifests"
@@ -71,9 +77,10 @@ def portable_content_sha256(path: str | Path, *, content_encoding: str | None = 
     encoding = content_encoding or ("gzip" if source.suffix == ".gz" else "identity")
     if encoding not in {"gzip", "identity"}:
         raise ValueError(f"unsupported portable-content encoding: {encoding}")
+    if encoding == "identity":
+        return file_sha256(source)
     digest = hashlib.sha256()
-    handle_context = gzip.open(source, "rb") if encoding == "gzip" else source.open("rb")
-    with handle_context as handle:
+    with gzip.open(source, "rb") as handle:
         while chunk := handle.read(1024 * 1024):
             digest.update(chunk)
     return digest.hexdigest()
@@ -376,6 +383,7 @@ class Provenance:
     artefact_bytes: int | None = None
     artefact_mtime_ns: int | None = None
     artefact_sha256: str | None = None
+    payload_identity: dict[str, object] | None = None
     inputs: list[dict[str, object]] = field(default_factory=list)
     rows: int | None = None
     notes: str | None = None
@@ -460,12 +468,50 @@ def ensure_released_directory_alias(
     return recorded
 
 
-def _content_sha256(path: Path) -> str:
-    digest = hashlib.sha256()
-    with path.open("rb") as handle:
-        while chunk := handle.read(1024 * 1024):
-            digest.update(chunk)
-    return digest.hexdigest()
+def describe_artifact_payload(
+    path: str | Path, *, artefact: str | Path | None = None
+) -> dict[str, object]:
+    """Bind exact bytes plus format-aware row and schema identity.
+
+    The target name selects the format because staged files intentionally end in ``.tmp``. Every payload gets a complete streaming digest regardless of size; Parquet and JSON Lines also expose the physical row count that a caller's declared ``rows`` must match.
+    """
+
+    source = Path(path)
+    if not source.is_file():
+        raise FileNotFoundError(f"artifact payload is absent: {source}")
+    logical = Path(artefact) if artefact is not None else source
+    identity: dict[str, object] = {
+        "schema_version": 1,
+        "bytes": source.stat().st_size,
+        "sha256": file_sha256(source),
+    }
+    lower_name = logical.name.lower()
+    if lower_name.endswith(".parquet"):
+        import pyarrow.parquet as pq
+
+        parquet = pq.ParquetFile(source)
+        schema = parquet.schema_arrow
+        identity.update(
+            {
+                "format": "parquet",
+                "rows": parquet.metadata.num_rows,
+                "columns": list(schema.names),
+                "schema_sha256": hashlib.sha256(
+                    schema.serialize().to_pybytes()
+                ).hexdigest(),
+            }
+        )
+    elif lower_name.endswith(".jsonl"):
+        with source.open("rb") as handle:
+            rows = sum(chunk.count(b"\n") for chunk in iter(lambda: handle.read(1024 * 1024), b""))
+        identity.update({"format": "jsonl", "rows": rows})
+    elif lower_name.endswith(".jsonl.gz"):
+        with gzip.open(source, "rb") as handle:
+            rows = sum(chunk.count(b"\n") for chunk in iter(lambda: handle.read(1024 * 1024), b""))
+        identity.update({"format": "jsonl", "rows": rows})
+    else:
+        identity["format"] = "binary"
+    return identity
 
 
 def prepare_stamp(artefact: str | Path, *, content_path: str | Path, code_sources: list[str], inputs: list[str | Path] | None = None, rows: int | None = None, notes: str | None = None, script: str | None = None) -> bytes:
@@ -476,6 +522,13 @@ def prepare_stamp(artefact: str | Path, *, content_path: str | Path, code_source
         raise FileNotFoundError(f"staged provenance content is absent: {content}")
     out = sidecar_path(artefact)
     content_stat = content.stat()
+    payload_identity = describe_artifact_payload(content, artefact=artefact)
+    physical_rows = payload_identity.get("rows")
+    if rows is not None and physical_rows is not None and rows != physical_rows:
+        raise ValueError(
+            f"declared row count {rows:,} disagrees with physical payload "
+            f"row count {physical_rows:,}: {artefact}"
+        )
     prov = Provenance(
         artefact=str(_rel(Path(artefact))),
         script=script or str(_rel(Path(sys.argv[0]))) if sys.argv and sys.argv[0] else "<unknown>",
@@ -489,7 +542,8 @@ def prepare_stamp(artefact: str | Path, *, content_path: str | Path, code_source
         code_sources=sorted(code_sources),
         artefact_bytes=content_stat.st_size,
         artefact_mtime_ns=content_stat.st_mtime_ns,
-        artefact_sha256=_content_sha256(content) if content_stat.st_size <= CONTENT_HASH_MAX_BYTES else None,
+        artefact_sha256=str(payload_identity["sha256"]),
+        payload_identity=payload_identity,
         inputs=[describe_input(i) for i in (inputs or [])],
         rows=rows,
         notes=notes,
@@ -509,10 +563,14 @@ def install_stamped_artifact(staged: str | Path, artefact: str | Path, prepared_
     except (TypeError, json.JSONDecodeError) as error:
         raise ValueError("prepared provenance is not valid JSON") from error
     staged_stat = staged_path.stat()
-    recorded_digest = record.get("artefact_sha256")
-    if record.get("artefact") != str(_rel(target)) or record.get("artefact_bytes") != staged_stat.st_size or record.get("artefact_mtime_ns") != staged_stat.st_mtime_ns or (recorded_digest is not None and recorded_digest != _content_sha256(staged_path)):
+    recorded_identity = record.get("payload_identity")
+    current_identity = describe_artifact_payload(staged_path, artefact=target)
+    recorded_rows = record.get("rows")
+    physical_rows = current_identity.get("rows")
+    rows_match = recorded_rows is None or physical_rows is None or recorded_rows == physical_rows
+    if record.get("artefact") != str(_rel(target)) or record.get("artefact_bytes") != staged_stat.st_size or record.get("artefact_mtime_ns") != staged_stat.st_mtime_ns or recorded_identity != current_identity or not rows_match:
         raise ValueError("prepared provenance does not identify the staged artefact")
-    with serialized_output_install(target):
+    with serialized_output_installs((target, sidecar)):
         with staged_output(sidecar) as staged_sidecar, staged_output(target) as target_backup, staged_output(sidecar) as sidecar_backup:
             staged_sidecar.write_bytes(prepared_stamp)
             target_backup.unlink(missing_ok=True)
@@ -546,7 +604,7 @@ def stamp(artefact: str | Path, *, code_sources: list[str], inputs: list[str | P
 
     target = Path(artefact)
     out = sidecar_path(target)
-    with serialized_output_install(target):
+    with serialized_output_installs((target, out)):
         payload = prepare_stamp(target, content_path=target, code_sources=code_sources, inputs=inputs, rows=rows, notes=notes, script=script)
         with atomic_output(out) as temporary:
             temporary.write_bytes(payload)
@@ -582,11 +640,11 @@ def released_input_binding_matches(binding: dict[str, object]) -> bool:
         isinstance(expected, str)
         and len(expected) == 64
         and path.is_file()
-        and _content_sha256(path) == expected
+        and file_sha256(path) == expected
     )
 
 
-def verify(artefact: str | Path) -> dict[str, object]:
+def _verify_unlocked(artefact: str | Path) -> dict[str, object]:
     """Is this artefact still the product of the code now in the tree?
 
     Returns a verdict of `ok`, `stale`, `unstamped`, or `missing_artefact`. `stale`
@@ -600,14 +658,36 @@ def verify(artefact: str | Path) -> dict[str, object]:
     if not side.exists():
         return {"artefact": str(_rel(p)), "status": "unstamped"}
     rec = json.loads(side.read_text())
-    recorded_bytes = rec.get("artefact_bytes")
-    recorded_mtime_ns = rec.get("artefact_mtime_ns")
-    recorded_digest = rec.get("artefact_sha256")
-    if recorded_bytes is None and recorded_mtime_ns is None and recorded_digest is None:
-        content_ok = True
+    recorded_identity = rec.get("payload_identity")
+    try:
+        current_identity = describe_artifact_payload(p, artefact=p)
+    except (OSError, TypeError, ValueError):
+        current_identity = None
+    if isinstance(recorded_identity, dict):
+        content_ok = recorded_identity == current_identity and (
+            rec.get("rows") is None
+            or current_identity is None
+            or current_identity.get("rows") is None
+            or rec.get("rows") == current_identity.get("rows")
+        )
+    elif current_identity is None:
+        content_ok = False
     else:
-        current_stat = p.stat()
-        content_ok = recorded_bytes == current_stat.st_size and (recorded_mtime_ns is None or recorded_mtime_ns == current_stat.st_mtime_ns) and (recorded_digest is None or recorded_digest == _content_sha256(p))
+        recorded_bytes = rec.get("artefact_bytes")
+        recorded_mtime_ns = rec.get("artefact_mtime_ns")
+        recorded_digest = rec.get("artefact_sha256")
+        physical_rows = current_identity.get("rows")
+        declared_rows = rec.get("rows")
+        rows_ok = (
+            declared_rows is None
+            or physical_rows is None
+            or declared_rows == physical_rows
+        )
+        if recorded_bytes is None and recorded_mtime_ns is None and recorded_digest is None:
+            content_ok = rows_ok
+        else:
+            current_stat = p.stat()
+            content_ok = rows_ok and recorded_bytes == current_stat.st_size and (recorded_mtime_ns is None or recorded_mtime_ns == current_stat.st_mtime_ns) and isinstance(recorded_digest, str) and len(recorded_digest) == 64 and recorded_digest == current_identity["sha256"]
     now = code_fingerprint(rec.get("code_sources") or [])
     byte_code_ok = now == rec.get("code_fingerprint")
     documentation_only_change = not byte_code_ok and _legacy_semantic_compatible(rec)
@@ -642,6 +722,18 @@ def verify(artefact: str | Path) -> dict[str, object]:
         "was_dirty": (rec.get("git") or {}).get("dirty"),
         "created_at": rec.get("created_at"),
     }
+
+
+def verify(artefact: str | Path) -> dict[str, object]:
+    """Verify one payload and sidecar under a shared pair lease.
+
+    Writers own the same two-path perimeter exclusively, so a reader observes the complete prior pair or the complete replacement pair. A crash between the two renames can still leave a mixed pair on disk; the payload identity makes that state fail closed on the next read.
+    """
+
+    target = Path(artefact)
+    sidecar = sidecar_path(target)
+    with serialized_read_installs((target, sidecar), allow_missing=True):
+        return _verify_unlocked(target)
 
 
 def require_current_artifacts(

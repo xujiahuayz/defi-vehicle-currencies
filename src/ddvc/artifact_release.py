@@ -22,19 +22,12 @@ from ddvc.provenance import (
 )
 from ddvc.runtime import (
     atomic_output,
+    file_sha256,
     serialized_output_install,
     serialized_read_installs,
     source_lock_paths,
     staged_output,
 )
-
-
-def file_sha256(path: Path) -> str:
-    digest = hashlib.sha256()
-    with path.open("rb") as handle:
-        for chunk in iter(lambda: handle.read(1024 * 1024), b""):
-            digest.update(chunk)
-    return digest.hexdigest()
 
 
 def file_stat_identity(path: Path) -> tuple[int, int, int, int, int]:

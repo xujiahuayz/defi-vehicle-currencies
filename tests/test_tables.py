@@ -13,7 +13,14 @@ from unittest.mock import patch
 import pandas as pd
 
 import ddvc.provenance as provenance
-from ddvc.provenance import CONTENT_HASH_MAX_BYTES, sidecar_path, stamp, verify
+from ddvc.provenance import (
+    CONTENT_HASH_MAX_BYTES,
+    install_stamped_artifact,
+    prepare_stamp,
+    sidecar_path,
+    stamp,
+    verify,
+)
 from ddvc.runtime import staged_output
 
 from ddvc.tables import write_exhibit, write_panel, write_panel_batches
@@ -199,18 +206,81 @@ class ExhibitWriterTests(unittest.TestCase):
                     self.assertTrue(second.exists())
             self.assertEqual(list(root.glob(".*.tmp")), [])
 
-    def test_large_stamp_and_verify_do_not_hash_artifact_bytes(self) -> None:
+    def test_large_stamp_and_verify_bind_complete_artifact_bytes(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:
-            output = Path(tmp) / "large.parquet"
+            output = Path(tmp) / "large.bin"
             with output.open("wb") as handle:
                 handle.truncate(CONTENT_HASH_MAX_BYTES + 1)
-            with patch("ddvc.provenance._content_sha256", side_effect=AssertionError("large artefact hashed")):
-                stamp(output, code_sources=["tests/test_tables.py"])
-                verdict = verify(output)
+            stamp(output, code_sources=["tests/test_tables.py"])
+            verdict = verify(output)
             record = json.loads(sidecar_path(output).read_text(encoding="utf-8"))
-            self.assertIsNone(record["artefact_sha256"])
+            self.assertEqual(
+                record["artefact_sha256"], hashlib.sha256(output.read_bytes()).hexdigest()
+            )
+            self.assertEqual(record["payload_identity"]["sha256"], record["artefact_sha256"])
             self.assertEqual(record["artefact_bytes"], CONTENT_HASH_MAX_BYTES + 1)
             self.assertTrue(verdict["content_current"])
+
+    def test_legacy_manifest_cannot_claim_2332_rows_for_a_2277_row_panel(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            output = Path(tmp) / "panel.parquet"
+            pd.DataFrame({"day": range(2_277)}).to_parquet(output, index=False)
+            with self.assertRaisesRegex(
+                ValueError, "declared row count 2,332.*physical payload row count 2,277"
+            ):
+                stamp(output, code_sources=["tests/test_tables.py"], rows=2_332)
+            stamp(output, code_sources=["tests/test_tables.py"], rows=2_277)
+            manifest = sidecar_path(output)
+            record = json.loads(manifest.read_text(encoding="utf-8"))
+            record["rows"] = 2_332
+            manifest.write_text(json.dumps(record), encoding="utf-8")
+
+            verdict = verify(output)
+
+            self.assertEqual(verdict["status"], "stale")
+            self.assertFalse(verdict["content_current"])
+
+    def test_legacy_manifest_without_a_digest_requires_migration(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            output = Path(tmp) / "panel.parquet"
+            pd.DataFrame({"day": range(3)}).to_parquet(output, index=False)
+            stamp(output, code_sources=["tests/test_tables.py"], rows=3)
+            manifest = sidecar_path(output)
+            record = json.loads(manifest.read_text(encoding="utf-8"))
+            record.pop("payload_identity")
+            record["artefact_sha256"] = None
+            manifest.write_text(json.dumps(record), encoding="utf-8")
+
+            verdict = verify(output)
+
+            self.assertEqual(verdict["status"], "stale")
+            self.assertFalse(verdict["content_current"])
+
+    def test_installer_rejects_a_prepared_stamp_with_a_false_row_count(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            staged = root / "staged.parquet"
+            output = root / "panel.parquet"
+            pd.DataFrame({"day": range(2_277)}).to_parquet(staged, index=False)
+            prepared = prepare_stamp(
+                output,
+                content_path=staged,
+                code_sources=["tests/test_tables.py"],
+                rows=2_277,
+            )
+            record = json.loads(prepared)
+            record["rows"] = 2_332
+
+            with self.assertRaisesRegex(
+                ValueError, "prepared provenance does not identify the staged artefact"
+            ):
+                install_stamped_artifact(
+                    staged,
+                    output,
+                    (json.dumps(record) + "\n").encode(),
+                )
+            self.assertFalse(output.exists())
+            self.assertFalse(sidecar_path(output).exists())
 
     def test_same_target_publications_serialize_and_leave_matching_last_writer_pair(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:
@@ -223,14 +293,14 @@ class ExhibitWriterTests(unittest.TestCase):
             second_acquired_lock = Event()
             errors: list[BaseException] = []
             real_staged_output = provenance.staged_output
-            real_install_lock = provenance.serialized_output_install
+            real_install_lock = provenance.serialized_output_installs
             first_sidecar_stage = True
 
             @contextmanager
-            def observed_install_lock(target: Path):
+            def observed_install_lock(targets):
                 if current_thread().name == "publisher-b":
                     second_attempted_lock.set()
-                with real_install_lock(target):
+                with real_install_lock(targets):
                     if current_thread().name == "publisher-b":
                         second_acquired_lock.set()
                     yield
@@ -252,7 +322,7 @@ class ExhibitWriterTests(unittest.TestCase):
                 except BaseException as error:
                     errors.append(error)
 
-            with patch("ddvc.provenance.serialized_output_install", new=observed_install_lock), patch("ddvc.provenance.staged_output", new=held_staged_output):
+            with patch("ddvc.provenance.serialized_output_installs", new=observed_install_lock), patch("ddvc.provenance.staged_output", new=held_staged_output):
                 first = Thread(target=publish, args=(1,), name="publisher-a")
                 second = Thread(target=publish, args=(2,), name="publisher-b")
                 first.start()
@@ -274,6 +344,81 @@ class ExhibitWriterTests(unittest.TestCase):
             self.assertEqual(record["artefact_sha256"], hashlib.sha256(output.read_bytes()).hexdigest())
             self.assertEqual(list(root.glob(".*.tmp")), [])
 
+    def test_verifier_never_observes_the_between_rename_pair(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            output = root / "panel.parquet"
+            write_panel(
+                pd.DataFrame({"value": [1]}),
+                output,
+                code_sources=["tests/test_tables.py"],
+            )
+            sidecar = sidecar_path(output)
+            sidecar_installed = Event()
+            release_publisher = Event()
+            verifier_started = Event()
+            verifier_done = Event()
+            verdicts: list[dict[str, object]] = []
+            errors: list[BaseException] = []
+            real_replace = Path.replace
+            held = False
+
+            def held_between_pair_renames(source: Path, target: Path, *args, **kwargs):
+                nonlocal held
+                result = real_replace(source, target, *args, **kwargs)
+                if (
+                    current_thread().name == "publisher"
+                    and Path(target) == sidecar
+                    and not held
+                    and sidecar.is_file()
+                ):
+                    try:
+                        installed = json.loads(sidecar.read_text(encoding="utf-8"))
+                    except (OSError, json.JSONDecodeError):
+                        installed = {}
+                    if isinstance(installed.get("payload_identity"), dict):
+                        held = True
+                        sidecar_installed.set()
+                        if not release_publisher.wait(timeout=5):
+                            raise TimeoutError("test did not release publisher")
+                return result
+
+            def publish() -> None:
+                try:
+                    write_panel(
+                        pd.DataFrame({"value": [2]}),
+                        output,
+                        code_sources=["tests/test_tables.py"],
+                    )
+                except BaseException as error:
+                    errors.append(error)
+
+            def inspect() -> None:
+                verifier_started.set()
+                try:
+                    verdicts.append(verify(output))
+                except BaseException as error:
+                    errors.append(error)
+                finally:
+                    verifier_done.set()
+
+            with patch.object(Path, "replace", new=held_between_pair_renames):
+                publisher = Thread(target=publish, name="publisher")
+                publisher.start()
+                self.assertTrue(sidecar_installed.wait(timeout=5))
+                verifier = Thread(target=inspect, name="verifier")
+                verifier.start()
+                self.assertTrue(verifier_started.wait(timeout=5))
+                self.assertFalse(verifier_done.wait(timeout=0.1))
+                release_publisher.set()
+                publisher.join(timeout=5)
+                verifier.join(timeout=5)
+            self.assertFalse(publisher.is_alive())
+            self.assertFalse(verifier.is_alive())
+            self.assertEqual(errors, [])
+            self.assertEqual([verdict["status"] for verdict in verdicts], ["ok"])
+            self.assertEqual(pd.read_parquet(output)["value"].tolist(), [2])
+
     def test_standalone_stamp_cannot_race_a_same_target_panel_publication(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:
             root = Path(tmp)
@@ -286,13 +431,13 @@ class ExhibitWriterTests(unittest.TestCase):
             writer_acquired_lock = Event()
             errors: list[BaseException] = []
             real_atomic_output = provenance.atomic_output
-            real_install_lock = provenance.serialized_output_install
+            real_install_lock = provenance.serialized_output_installs
 
             @contextmanager
-            def observed_install_lock(target: Path):
+            def observed_install_lock(targets):
                 if current_thread().name == "panel-writer":
                     writer_attempted_lock.set()
-                with real_install_lock(target):
+                with real_install_lock(targets):
                     if current_thread().name == "panel-writer":
                         writer_acquired_lock.set()
                     yield
@@ -318,7 +463,7 @@ class ExhibitWriterTests(unittest.TestCase):
                 except BaseException as error:
                     errors.append(error)
 
-            with patch("ddvc.provenance.serialized_output_install", new=observed_install_lock), patch("ddvc.provenance.atomic_output", new=held_stamp_sidecar):
+            with patch("ddvc.provenance.serialized_output_installs", new=observed_install_lock), patch("ddvc.provenance.atomic_output", new=held_stamp_sidecar):
                 stamper = Thread(target=restamp, name="standalone-stamp")
                 writer = Thread(target=publish, name="panel-writer")
                 stamper.start()
@@ -354,15 +499,15 @@ class ExhibitWriterTests(unittest.TestCase):
             second_attempted_lock = Event()
             second_acquired_lock = Event()
             errors: list[BaseException] = []
-            real_install_lock = provenance.serialized_output_install
+            real_install_lock = provenance.serialized_output_installs
             real_replace = Path.replace
             held_after_replace = False
 
             @contextmanager
-            def observed_install_lock(target: Path):
+            def observed_install_lock(targets):
                 if current_thread().name == "symlink-publisher-b":
                     second_attempted_lock.set()
-                with real_install_lock(target):
+                with real_install_lock(targets):
                     if current_thread().name == "symlink-publisher-b":
                         second_acquired_lock.set()
                     yield
@@ -383,7 +528,7 @@ class ExhibitWriterTests(unittest.TestCase):
                 except BaseException as error:
                     errors.append(error)
 
-            with patch("ddvc.provenance.serialized_output_install", new=observed_install_lock), patch.object(Path, "replace", new=held_replace):
+            with patch("ddvc.provenance.serialized_output_installs", new=observed_install_lock), patch.object(Path, "replace", new=held_replace):
                 first = Thread(target=publish, args=(1,), name="symlink-publisher-a")
                 second = Thread(target=publish, args=(2,), name="symlink-publisher-b")
                 first.start()
