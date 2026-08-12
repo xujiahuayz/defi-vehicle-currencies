@@ -73,6 +73,7 @@ from ddvc.venue_corpus import JFE_VENUE_CARDS, JFE_VENUE_SOURCE_KEYS
 from ddvc.release_calendar import transaction_frontier_audit_days
 from ddvc.v2_event_completeness import (
     read_v2_event_source_certificate,
+    read_v2_event_source_release,
     resolve_v2_event_source_release,
     validate_v2_event_source_certificate,
     validate_v2_event_source_evidence_bundle,
@@ -3411,10 +3412,9 @@ def v2_event_source_certificate_checks(
         if all(path is None for path in explicit):
             release = resolve_v2_event_source_release()
             artifacts = release.artifact_paths
-            read_args = artifacts
         else:
+            release = None
             artifacts = tuple(Path(path) for path in explicit if path is not None)
-            read_args = artifacts
     except (FileNotFoundError, OSError, RuntimeError, TypeError, ValueError) as error:
         return [("node D V2 event-source certificate exists", False, str(error))]
     missing = [path.name for path in artifacts if not path.is_file()]
@@ -3435,7 +3435,12 @@ def v2_event_source_certificate_checks(
     summary: pd.DataFrame | None = None
     try:
         expected_days = transaction_frontier_audit_days(quality_path)
-        summary, exceptions, certificate = read_v2_event_source_certificate(*read_args)
+        if release is not None:
+            summary, exceptions, certificate = read_v2_event_source_release(release)
+        else:
+            summary, exceptions, certificate = read_v2_event_source_certificate(
+                *artifacts
+            )
         days, raw_events = validate_v2_event_source_certificate(
             summary,
             exceptions,

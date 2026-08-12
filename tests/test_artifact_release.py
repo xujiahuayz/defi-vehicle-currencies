@@ -9,6 +9,7 @@ import pytest
 
 import ddvc.artifact_release as artifact_release
 from ddvc.artifact_release import (
+    current_artifact_release,
     file_sha256,
     publish_artifact_release,
     resolve_artifact_release,
@@ -70,6 +71,30 @@ def test_marker_last_interruption_preserves_the_prior_release(tmp_path: Path) ->
     )
     assert reopened.generation_id == first.generation_id
     assert json.loads(reopened.artifacts["rows"].read_text()) == {"value": 1}
+
+
+def test_current_release_lease_blocks_pointer_switch_twenty_times(tmp_path: Path) -> None:
+    pointer = tmp_path / "release" / "current.json"
+    for trial in range(20):
+        selected = _publish(pointer, trial)
+        entered = threading.Event()
+        completed = threading.Event()
+
+        def switch() -> None:
+            entered.set()
+            _publish(pointer, trial + 1000)
+            completed.set()
+
+        with current_artifact_release(selected):
+            thread = threading.Thread(target=switch)
+            thread.start()
+            assert entered.wait(timeout=1)
+            assert not completed.wait(timeout=0.02)
+            assert json.loads(selected.artifacts["rows"].read_text()) == {
+                "value": trial
+            }
+        thread.join(timeout=2)
+        assert completed.is_set()
 
 
 def test_bundle_validation_finishes_before_pointer_publication(tmp_path: Path) -> None:
