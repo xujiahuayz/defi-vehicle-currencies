@@ -512,6 +512,55 @@ def test_publication_aborts_if_output_ancestor_retargets_before_marker() -> None
         shutil.rmtree(recovery)
 
 
+def test_retarget_during_marker_install_cannot_select_attacker_output() -> None:
+    with tempfile.TemporaryDirectory() as directory:
+        root = Path(directory)
+        old = root / "old"
+        new = root / "new"
+        old.mkdir()
+        new.mkdir()
+        (old / "output").write_text("prior", encoding="utf-8")
+        alias = root / "alias"
+        alias.symlink_to(old.name, target_is_directory=True)
+        output = alias / "output"
+        marker = root / "marker.json"
+        capability_id = f"test.marker-retarget.{uuid.uuid4().hex}"
+        register_publication_capability(
+            capability_id, (output,), marker_path=marker
+        )
+
+        @publication_capability(
+            capability_id,
+            output_selector=lambda: (output,),
+            source_selector=lambda: (),
+        )
+        def owner():
+            output.write_text("published", encoding="utf-8")
+
+        real_atomic_json = publication._atomic_json
+
+        def retarget_before_marker(path: Path, payload: object) -> None:
+            if path == marker:
+                alias.unlink()
+                alias.symlink_to(new.name, target_is_directory=True)
+                output.write_text("attacker-selected", encoding="utf-8")
+            real_atomic_json(path, payload)
+
+        with (
+            _install_for_test(owner),
+            patch.object(
+                publication, "_atomic_json", side_effect=retarget_before_marker
+            ),
+            pytest.raises(PublicationRecoveryRequired) as error,
+        ):
+            owner()
+        assert not marker.exists()
+        with pytest.raises(RuntimeError, match="not current"):
+            require_current_publication(capability_id, marker_path=marker)
+        recovery = Path(str(error.value).split(" at ", 1)[1])
+        shutil.rmtree(recovery)
+
+
 def test_empty_preparing_journal_is_ignored_before_next_publication() -> None:
     with tempfile.TemporaryDirectory() as directory:
         root = Path(directory)

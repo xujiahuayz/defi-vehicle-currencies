@@ -323,9 +323,11 @@ def _describe_output(path: Path) -> dict[str, object]:
 
 
 def _marker_payload(
-    capability: _Capability, *, transaction_id: str
+    capability: _Capability,
+    *,
+    transaction_id: str,
+    outputs: list[dict[str, object]],
 ) -> dict[str, object]:
-    outputs = [_describe_output(path) for path in capability.outputs]
     generation_id = hashlib.sha256(
         json.dumps(outputs, sort_keys=True, separators=(",", ":")).encode()
     ).hexdigest()
@@ -658,10 +660,19 @@ def _publication_transaction(
                 transaction.assert_output_identities()
                 _sync_outputs(selected_outputs)
                 transaction.assert_output_identities()
+                output_descriptions = [
+                    _describe_output(path) for path in selected_outputs
+                ]
+                transaction.assert_output_identities()
                 _atomic_json(
                     capability.marker,
-                    _marker_payload(capability, transaction_id=transaction_id),
+                    _marker_payload(
+                        capability,
+                        transaction_id=transaction_id,
+                        outputs=output_descriptions,
+                    ),
                 )
+                transaction.assert_output_identities()
                 _write_status(
                     root,
                     capability=capability,
@@ -669,6 +680,7 @@ def _publication_transaction(
                     status="committed",
                     backups=backups,
                 )
+                transaction.assert_output_identities()
             except BaseException as original:
                 _rollback(root, capability, transaction_id, backups, original)
                 raise
