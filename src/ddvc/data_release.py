@@ -46,6 +46,7 @@ from ddvc.state_data import (
 from ddvc.paths import DATA_DIR, REPO_ROOT
 from ddvc.provenance import require_current_artifacts
 from ddvc.release_calendar import transaction_frontier_audit_days
+from ddvc.runtime import serialized_read_installs
 from ddvc.v2_event_completeness import (
     read_v2_event_source_release,
     resolve_v2_event_source_release,
@@ -156,7 +157,26 @@ class ReleasedPartitionSet:
             raise KeyError(f"day is outside the released {self.kind} perimeter: {normalized}")
         return matches[0]
 
-    def assert_current(self) -> None:
+    def _lease_paths(self, partition: ReleasedPartition | None = None) -> tuple[Path, ...]:
+        paths = [self.ledger_path]
+        if self.kind == "route":
+            route_root = (
+                partition.path.parent
+                if partition is not None
+                else (
+                    self.partitions[0].path.parent
+                    if self.partitions
+                    else self.ledger_path.parent
+                )
+            )
+            paths.append(route_root)
+        elif partition is not None:
+            paths.extend((partition.path, partition.marker_path))
+        if self.quarantine_path is not None:
+            paths.append(self.quarantine_path)
+        return tuple(dict.fromkeys(paths))
+
+    def _assert_current_unlocked(self) -> None:
         if not self.ledger_path.is_file() or file_sha256(self.ledger_path) != self.ledger_sha256:
             raise RuntimeError(f"released {self.kind} ledger changed: {self.ledger_path}")
         if self.quarantine_path is not None and (
@@ -166,6 +186,10 @@ class ReleasedPartitionSet:
             raise RuntimeError(f"released state quarantine changed: {self.quarantine_path}")
         for partition in self.partitions:
             partition.assert_current()
+
+    def assert_current(self) -> None:
+        with serialized_read_installs(self._lease_paths()):
+            self._assert_current_unlocked()
 
     def select_days(self, days: Iterable[str]) -> ReleasedPartitionSet:
         """Return a lightweight immutable subset while retaining the parent release identity."""
@@ -195,6 +219,10 @@ class ReleasedPartitionSet:
 
     def read_day(self, day: str) -> pd.DataFrame:
         partition = self._partition(day)
+        with serialized_read_installs(self._lease_paths(partition)):
+            return self._read_day_unlocked(partition)
+
+    def _read_day_unlocked(self, partition: ReleasedPartition) -> pd.DataFrame:
         if not self.ledger_path.is_file() or file_sha256(self.ledger_path) != self.ledger_sha256:
             raise RuntimeError(f"released {self.kind} ledger changed: {self.ledger_path}")
         before_quarantine = (
@@ -434,7 +462,7 @@ def expected_state_keys() -> list[tuple[str, str, str]]:
     return keys
 
 
-def _validated_release_ledger(kind: str) -> pd.DataFrame:
+def _validated_release_ledger_unlocked(kind: str) -> pd.DataFrame:
     """Read and fully validate the one canonical ledger for a node-D family."""
 
     if kind not in {"route", "state"}:
@@ -526,6 +554,20 @@ def _validated_release_ledger(kind: str) -> pd.DataFrame:
     ordered = quality.sort_values(["family", "venue", "day"], kind="stable").reset_index(drop=True)
     ordered.attrs["ledger_sha256"] = ledger_sha256
     return ordered
+
+
+def _validated_release_ledger(kind: str) -> pd.DataFrame:
+    """Validate one ledger while excluding a concurrent release publication."""
+
+    if kind not in {"route", "state"}:
+        raise ValueError(f"unsupported node-D ledger kind: {kind}")
+    path = UNIFIED_QUALITY_PANEL if kind == "route" else MARKET_STATE_QUALITY_PANEL
+    if kind == "route":
+        release_root = unified_path("sentinel").parent
+        with serialized_read_installs((path, release_root), allow_missing=True):
+            return _validated_release_ledger_unlocked(kind)
+    with serialized_read_installs((path,), allow_missing=True):
+        return _validated_release_ledger_unlocked(kind)
 
 
 def require_route_release() -> None:

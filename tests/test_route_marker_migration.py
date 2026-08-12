@@ -1,6 +1,8 @@
 from __future__ import annotations
 
 import json
+import threading
+from concurrent.futures import ThreadPoolExecutor
 from pathlib import Path
 from unittest.mock import patch
 
@@ -9,6 +11,7 @@ import pytest
 
 from ddvc.artifact_release import file_sha256
 from ddvc.fetch.raw import RawFetchInvariantError
+from ddvc.data_release import ReleasedPartition, ReleasedPartitionSet
 from ddvc.reconstruct import (
     RECONSTRUCTION_ENGINE,
     UNIFIED_QUALITY_COLUMNS,
@@ -250,7 +253,11 @@ def test_missing_current_raw_marker_fails_before_publication(tmp_path: Path) -> 
     assert file_sha256(marker_path) == before_marker
 
 
-def test_restart_recovers_an_interrupted_marker_and_ledger_swap(tmp_path: Path) -> None:
+@pytest.mark.parametrize("cut_point", ["marker_swap", "ledger_swap"])
+def test_restart_recovers_each_durable_publication_cut_point(
+    tmp_path: Path,
+    cut_point: str,
+) -> None:
     days = ["20200505"]
     paths = prepare_legacy_release(tmp_path, days)
     from scripts import migrate_route_release_markers as migration
@@ -266,14 +273,17 @@ def test_restart_recovers_an_interrupted_marker_and_ledger_swap(tmp_path: Path) 
         quality_panel=paths["quality_panel"],
         quality_exhibit=paths["quality_exhibit"],
     )
-    original = {label: path.exists() for label, path, _backup in targets}
+    original = {
+        label: migration._content_identity(path)
+        for label, path, _backup in targets
+    }
     (stage / migration._JOURNAL_NAME).write_text(
         json.dumps(
             {
                 "policy": migration.MIGRATION_POLICY,
                 "legacy_engine": migration.LEGACY_ENGINE,
                 "current_engine": migration.RECONSTRUCTION_ENGINE,
-                "original_existence": original,
+                "original_identities": original,
             }
         )
     )
@@ -286,9 +296,108 @@ def test_restart_recovers_an_interrupted_marker_and_ledger_swap(tmp_path: Path) 
     marker_target.replace(marker_backup)
     marker_target.mkdir()
     (marker_target / f"{days[0]}.json").write_text('{"partial": true}\n')
-    panel_target.replace(panel_backup)
-    panel_target.write_text("partial")
+    if cut_point == "ledger_swap":
+        panel_target.replace(panel_backup)
+        panel_target.write_text("partial")
     migrate(paths, days, publish=False)
     assert file_sha256(marker_path) == before_marker
     assert file_sha256(paths["quality_panel"]) == before_ledger
     assert not stage.exists()
+
+
+def test_rollback_failure_preserves_recovery_state_for_the_next_run(
+    tmp_path: Path,
+) -> None:
+    days = ["20200505"]
+    paths = prepare_legacy_release(tmp_path, days)
+    from scripts import migrate_route_release_markers as migration
+
+    marker_path = unified_quality_path(days[0], root=paths["unified_root"])
+    before_marker = file_sha256(marker_path)
+    before_ledger = file_sha256(paths["quality_panel"])
+    with (
+        patch.object(
+            migration,
+            "write_panel",
+            side_effect=RuntimeError("injected publication failure"),
+        ),
+        patch.object(
+            migration,
+            "_restore",
+            side_effect=RuntimeError("injected rollback failure"),
+        ),
+        pytest.raises(RuntimeError, match="injected rollback failure"),
+    ):
+        migrate(paths, days, publish=True)
+    stages = list(
+        paths["unified_root"].parent.glob(f"{migration._STAGE_PREFIX}*")
+    )
+    assert len(stages) == 1
+    assert (stages[0] / migration._JOURNAL_NAME).is_file()
+    assert (stages[0] / "legacy-quality").is_dir()
+    assert (stages[0] / "legacy-quality-panel").is_file()
+    migrate(paths, days, publish=False)
+    assert file_sha256(marker_path) == before_marker
+    assert file_sha256(paths["quality_panel"]) == before_ledger
+    assert not stages[0].exists()
+
+
+def test_route_reader_lease_blocks_marker_and_ledger_publication(
+    tmp_path: Path,
+) -> None:
+    days = ["20200505"]
+    paths = prepare_legacy_release(tmp_path, days)
+    from scripts import migrate_route_release_markers as migration
+
+    day = days[0]
+    panel = unified_path(day, root=paths["unified_root"])
+    marker = unified_quality_path(day, root=paths["unified_root"])
+    quality = json.loads(marker.read_text(encoding="utf-8"))
+    release = ReleasedPartitionSet(
+        kind="route",
+        columns=("tx_hash",),
+        ledger_path=paths["quality_panel"],
+        ledger_sha256=file_sha256(paths["quality_panel"]),
+        partitions=(
+            ReleasedPartition(
+                day=day,
+                path=panel,
+                marker_path=marker,
+                expected_rows=int(quality["output_rows"]),
+                expected_bytes=int(quality["output_bytes"]),
+                expected_sha256=str(quality["output_sha256"]),
+                marker_sha256=file_sha256(marker),
+                input_fingerprint=str(quality["input_fingerprint"]),
+            ),
+        ),
+        content_identity_sha256="a" * 64,
+        provenance_inputs=(paths["quality_panel"], panel, marker),
+    )
+    reader_entered = threading.Event()
+    release_reader = threading.Event()
+    publisher_entered = threading.Event()
+    original_read = ReleasedPartitionSet._read_day_unlocked
+    original_plan = migration.plan_migration
+
+    def blocked_read(selected, partition):
+        reader_entered.set()
+        assert release_reader.wait(timeout=5)
+        return original_read(selected, partition)
+
+    def observed_plan(*args, **kwargs):
+        publisher_entered.set()
+        return original_plan(*args, **kwargs)
+
+    with (
+        patch.object(ReleasedPartitionSet, "_read_day_unlocked", blocked_read),
+        patch.object(migration, "plan_migration", side_effect=observed_plan),
+        ThreadPoolExecutor(max_workers=2) as pool,
+    ):
+        reader = pool.submit(release.read_day, day)
+        assert reader_entered.wait(timeout=5)
+        publisher = pool.submit(migrate, paths, days, publish=True)
+        assert not publisher_entered.wait(timeout=0.2)
+        release_reader.set()
+        assert reader.result(timeout=5)["tx_hash"].tolist() == ["0xtx"]
+        publisher.result(timeout=10)
+    assert publisher_entered.is_set()

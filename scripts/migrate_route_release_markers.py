@@ -14,6 +14,7 @@ from __future__ import annotations
 
 import argparse
 import json
+import os
 import shutil
 import tempfile
 from concurrent.futures import as_completed
@@ -25,7 +26,7 @@ import pyarrow.parquet as pq
 
 from ddvc.artifact_release import canonical_json_sha256, file_sha256, file_stat_identity, is_sha256
 from ddvc.paths import DATA_DIR, RAW_MARKET_DATA_LOCK
-from ddvc.provenance import sidecar_path
+from ddvc.provenance import require_current_artifacts, sidecar_path
 from ddvc.reconstruct import (
     DEX_FAMILY,
     DUNE_SOURCES,
@@ -386,12 +387,62 @@ def _remove(path: Path) -> None:
         path.unlink(missing_ok=True)
 
 
-def _restore(path: Path, backup: Path, *, existed: bool) -> None:
+def _content_identity(path: Path) -> dict[str, object]:
+    if path.is_file():
+        return {"kind": "file", "sha256": file_sha256(path)}
+    if path.is_dir():
+        entries = []
+        for item in sorted(path.rglob("*")):
+            if item.is_symlink() or (not item.is_file() and not item.is_dir()):
+                raise ValueError(f"publication target has an unsupported entry: {item}")
+            if item.is_file():
+                entries.append(
+                    {
+                        "path": str(item.relative_to(path)),
+                        "sha256": file_sha256(item),
+                    }
+                )
+        return {"kind": "directory", "entries": entries}
+    if path.exists() or path.is_symlink():
+        raise ValueError(f"publication target has an unsupported type: {path}")
+    return {"kind": "absent"}
+
+
+def _fsync_file(path: Path) -> None:
+    with path.open("rb") as handle:
+        os.fsync(handle.fileno())
+
+
+def _fsync_directory(path: Path) -> None:
+    descriptor = os.open(path, os.O_RDONLY)
+    try:
+        os.fsync(descriptor)
+    finally:
+        os.close(descriptor)
+
+
+def _durable_replace(source: Path, target: Path) -> None:
+    source_parent = source.parent
+    target_parent = target.parent
+    source.replace(target)
+    _fsync_directory(target_parent)
+    if source_parent != target_parent:
+        _fsync_directory(source_parent)
+
+
+def _restore(
+    path: Path,
+    backup: Path,
+    *,
+    expected_identity: dict[str, object],
+) -> None:
     if backup.exists():
         _remove(path)
-        backup.replace(path)
-    elif not existed:
+        _durable_replace(backup, path)
+    elif expected_identity.get("kind") == "absent":
         _remove(path)
+    if _content_identity(path) != expected_identity:
+        raise RuntimeError(f"route migration rollback identity mismatch: {path}")
 
 
 def _publication_targets(
@@ -447,12 +498,12 @@ def recover_interrupted_publication(
                 f"interrupted route migration journal is unreadable: {stage}"
             ) from error
         if journal.get("policy") != MIGRATION_POLICY or not isinstance(
-            journal.get("original_existence"), dict
+            journal.get("original_identities"), dict
         ):
             raise RuntimeError(
                 f"interrupted route migration journal is invalid: {stage}"
             )
-        original = journal["original_existence"]
+        original = journal["original_identities"]
         targets = _publication_targets(
             stage,
             unified_root=unified_root,
@@ -464,7 +515,12 @@ def recover_interrupted_publication(
                 f"interrupted route migration journal perimeter changed: {stage}"
             )
         for label, path, backup in reversed(targets):
-            _restore(path, backup, existed=bool(original[label]))
+            expected_identity = original[label]
+            if not isinstance(expected_identity, dict):
+                raise RuntimeError(
+                    f"interrupted route migration journal identity is invalid: {label}"
+                )
+            _restore(path, backup, expected_identity=expected_identity)
         shutil.rmtree(stage)
         recovered += 1
     return recovered
@@ -488,6 +544,8 @@ def publish_migration(
     )
     staged_markers = stage / "quality"
     staged_markers.mkdir()
+    cleanup_stage = True
+    journal_published = False
     try:
         planned_marker_hashes: dict[str, str] = {}
         for day in plan.days:
@@ -500,38 +558,45 @@ def publish_migration(
             if reopened != plan.markers[day]:
                 raise RuntimeError(f"staged route marker did not reopen exactly: {day}")
             planned_marker_hashes[day] = file_sha256(path)
+            _fsync_file(path)
         if set(planned_marker_hashes) != set(plan.days):
             raise RuntimeError("staged route marker perimeter is incomplete")
+        _fsync_directory(staged_markers)
         targets = _publication_targets(
             stage,
             unified_root=unified_root,
             quality_panel=quality_panel,
             quality_exhibit=quality_exhibit,
         )
-        original_existence = {
-            label: path.exists() for label, path, _backup in targets
+        original_identities = {
+            label: _content_identity(path) for label, path, _backup in targets
         }
         journal = {
             "policy": MIGRATION_POLICY,
             "legacy_engine": LEGACY_ENGINE,
             "current_engine": RECONSTRUCTION_ENGINE,
-            "original_existence": original_existence,
+            "original_identities": original_identities,
         }
         with atomic_output(stage / _JOURNAL_NAME) as temporary:
             temporary.write_text(
                 json.dumps(journal, indent=2, sort_keys=True) + "\n",
                 encoding="utf-8",
             )
+        _fsync_file(stage / _JOURNAL_NAME)
+        _fsync_directory(stage)
+        _fsync_directory(stage.parent)
+        journal_published = True
+        cleanup_stage = False
         target_by_label = {
             label: (path, backup) for label, path, backup in targets
         }
         live_markers, marker_backup = target_by_label["markers"]
         try:
-            live_markers.replace(marker_backup)
-            staged_markers.replace(live_markers)
+            _durable_replace(live_markers, marker_backup)
+            _durable_replace(staged_markers, live_markers)
             for label, path, backup in targets[1:]:
-                if original_existence[label]:
-                    path.replace(backup)
+                if original_identities[label]["kind"] != "absent":
+                    _durable_replace(path, backup)
             raw_roots = [
                 data_root / "raw" / ("dune" if dex in DUNE_SOURCES else "thegraph") / dex
                 for dex in sorted(DEX_FAMILY)
@@ -562,6 +627,14 @@ def publish_migration(
                 inputs=[quality_panel],
                 notes=notes,
             )
+            for path in (
+                quality_panel,
+                sidecar_path(quality_panel),
+                quality_exhibit,
+                sidecar_path(quality_exhibit),
+            ):
+                _fsync_file(path)
+                _fsync_directory(path.parent)
             observed = pd.read_parquet(quality_panel)
             pd.testing.assert_frame_equal(
                 observed.reset_index(drop=True),
@@ -569,15 +642,30 @@ def publish_migration(
                 check_dtype=True,
                 check_exact=True,
             )
+            require_current_artifacts(
+                [quality_panel, quality_exhibit],
+                consumer="route marker migration publication",
+            )
             for day, expected_hash in planned_marker_hashes.items():
                 if file_sha256(unified_quality_path(day, root=unified_root)) != expected_hash:
                     raise RuntimeError(f"published route marker changed: {day}")
+            cleanup_stage = True
         except BaseException:
-            for label, path, backup in reversed(targets):
-                _restore(path, backup, existed=original_existence[label])
+            try:
+                for label, path, backup in reversed(targets):
+                    _restore(
+                        path,
+                        backup,
+                        expected_identity=original_identities[label],
+                    )
+            except BaseException:
+                cleanup_stage = False
+                raise
+            cleanup_stage = True
             raise
     finally:
-        shutil.rmtree(stage, ignore_errors=True)
+        if cleanup_stage or not journal_published:
+            shutil.rmtree(stage, ignore_errors=True)
 
 
 def migrate_route_release_markers(
