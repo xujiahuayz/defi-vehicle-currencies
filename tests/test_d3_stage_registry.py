@@ -5,6 +5,10 @@ import sys
 
 import pytest
 
+from ddvc.capital_release import (
+    CAPITAL_RELEASE_POINTER_RELATIVE,
+    resolve_capital_release,
+)
 from ddvc.d3_stage_registry import (
     D3_BUILD_STAGES,
     D3ReleasePostcondition,
@@ -122,4 +126,36 @@ def test_release_postcondition_must_name_an_owned_pointer() -> None:
             D3ReleasePostcondition(
                 "data/processed/release/current.json", lambda _path: object()
             ),
+        )
+
+
+def test_every_owned_current_pointer_has_one_typed_resolver() -> None:
+    current_pointer_stages = [
+        stage
+        for stage in D3_BUILD_STAGES
+        if any(output.endswith("/current.json") for output in stage.outputs)
+    ]
+    assert current_pointer_stages
+    for stage in current_pointer_stages:
+        assert stage.release_postcondition is not None
+        assert stage.release_postcondition.pointer in stage.outputs
+        assert callable(stage.release_postcondition.resolver)
+    capital = next(
+        stage
+        for stage in current_pointer_stages
+        if CAPITAL_RELEASE_POINTER_RELATIVE in stage.outputs
+    )
+    assert capital.release_postcondition == D3ReleasePostcondition(
+        CAPITAL_RELEASE_POINTER_RELATIVE,
+        resolve_capital_release,
+    )
+
+
+def test_current_pointer_without_typed_resolver_is_rejected() -> None:
+    with pytest.raises(ValueError, match="requires a typed resolver"):
+        D3BuildStage(
+            "invalid.py",
+            (),
+            "invalid unresolved pointer",
+            ("data/processed/invalid/current.json",),
         )

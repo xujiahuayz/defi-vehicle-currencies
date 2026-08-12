@@ -15,6 +15,13 @@ from ddvc.realised import ROUTE_COLUMNS as REALISED_ROUTE_COLUMNS, extract_reali
 from ddvc.route_roles import component_eligibility
 
 
+ENDPOINT_CANDIDATE_COMPOSITION_SCIENTIFIC_SOURCES = (
+    "src/ddvc/asset_types.py",
+    "src/ddvc/endpoint_candidate_composition.py",
+    "src/ddvc/fetch/sources.py",
+    "src/ddvc/realised.py",
+    "src/ddvc/route_roles.py",
+)
 ROUTE_KEYS = ["tx_hash", "component_id"]
 PAIR_KEYS = ["date", "src", "tgt"]
 CHOICE_KEYS = [

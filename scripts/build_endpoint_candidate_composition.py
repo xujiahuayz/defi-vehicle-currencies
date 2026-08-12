@@ -23,6 +23,7 @@ from ddvc.data_release import (
 from ddvc.endpoint_candidate_composition import (
     CHOICE_COLUMNS,
     CHOICE_KEYS,
+    ENDPOINT_CANDIDATE_COMPOSITION_SCIENTIFIC_SOURCES,
     EXCLUSION_COLUMNS,
     EXCLUSION_KEYS,
     MAGNITUDE_COLUMNS,
@@ -46,7 +47,7 @@ CODE_SOURCES = [
     "scripts/build_endpoint_candidate_composition.py",
     "src/ddvc/artifact_release.py",
     "src/ddvc/data_release.py",
-    "src/ddvc/endpoint_candidate_composition.py",
+    *ENDPOINT_CANDIDATE_COMPOSITION_SCIENTIFIC_SOURCES,
     "src/ddvc/endpoint_candidate_composition_release.py",
     "src/ddvc/provenance.py",
 ]

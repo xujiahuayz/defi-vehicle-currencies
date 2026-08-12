@@ -18,6 +18,9 @@ from ddvc.provenance import code_fingerprint
 from ddvc.cp_state_stream import validate_certified_cp_stream_manifest
 
 
+CAPITAL_RELEASE_POINTER_RELATIVE = (
+    "data/processed/pool_capital_release/current.json"
+)
 CAPITAL_RELEASE_POINTER = DATA_DIR / "processed" / "pool_capital_release" / "current.json"
 CAPITAL_RELEASE_KIND = "pool_capital"
 CAPITAL_RELEASE_SCHEMA_VERSION = 2

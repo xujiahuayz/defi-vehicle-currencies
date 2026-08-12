@@ -12,6 +12,10 @@ from ddvc.analysis.dominance_cost_release import (
     DOMINANCE_COST_RELEASE_RELATIVE,
     resolve_dominance_cost_release,
 )
+from ddvc.capital_release import (
+    CAPITAL_RELEASE_POINTER_RELATIVE,
+    resolve_capital_release,
+)
 from ddvc.endpoint_candidate_composition_release import (
     ENDPOINT_CANDIDATE_COMPOSITION_RELEASE_RELATIVE,
     resolve_endpoint_candidate_composition_release,
@@ -41,6 +45,23 @@ class D3BuildStage:
     release_postcondition: D3ReleasePostcondition | None = None
 
     def __post_init__(self) -> None:
+        current_pointers = tuple(
+            output for output in self.outputs if Path(output).name == "current.json"
+        )
+        if len(current_pointers) > 1:
+            raise ValueError("D3 stage may own at most one current.json pointer")
+        if current_pointers and self.release_postcondition is None:
+            raise ValueError("D3 current.json output requires a typed resolver")
+        if (
+            current_pointers
+            and self.release_postcondition is not None
+            and self.release_postcondition.pointer != current_pointers[0]
+        ):
+            raise ValueError("D3 typed resolver must own the stage current.json pointer")
+        if self.release_postcondition is not None and not callable(
+            self.release_postcondition.resolver
+        ):
+            raise ValueError("D3 release postcondition resolver must be callable")
         if (
             self.release_postcondition is not None
             and self.release_postcondition.pointer not in self.outputs
@@ -166,7 +187,11 @@ D3_BUILD_STAGES = (
         (),
         "only protocol-admitted deposited capital and exact candidate allocation; V3 provider TVL is excluded",
         (
-            "data/processed/pool_capital_release/current.json",
+            CAPITAL_RELEASE_POINTER_RELATIVE,
+        ),
+        D3ReleasePostcondition(
+            CAPITAL_RELEASE_POINTER_RELATIVE,
+            resolve_capital_release,
         ),
     ),
     D3BuildStage(

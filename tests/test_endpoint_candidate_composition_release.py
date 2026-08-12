@@ -6,10 +6,14 @@ from pathlib import Path
 import pandas as pd
 import pytest
 
+import ddvc.provenance as provenance
 from ddvc.artifact_release import file_sha256
 from ddvc.asset_types import NATIVE, STABLE
 from ddvc.data_release import ReleasedPartition, ReleasedPartitionSet
-from ddvc.endpoint_candidate_composition import ROUTE_INPUT_COLUMNS
+from ddvc.endpoint_candidate_composition import (
+    ENDPOINT_CANDIDATE_COMPOSITION_SCIENTIFIC_SOURCES,
+    ROUTE_INPUT_COLUMNS,
+)
 from ddvc.endpoint_candidate_composition_release import (
     publish_endpoint_candidate_composition_release,
     resolve_endpoint_candidate_composition_release,
@@ -216,3 +220,24 @@ def test_diagnostic_limit_validates_subset_without_creating_pointer(tmp_path: Pa
     assert outcome.release is None
     assert outcome.row_counts == {"choices": 2, "pair_support": 1, "exclusions": 0}
     assert not pointer.exists()
+
+
+def test_every_scientific_dependency_invalidates_the_release_fingerprint(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    assert set(ENDPOINT_CANDIDATE_COMPOSITION_SCIENTIFIC_SOURCES).issubset(
+        builder.CODE_SOURCES
+    )
+    for relative in builder.CODE_SOURCES:
+        source = provenance.ROOT / relative
+        target = tmp_path / relative
+        target.parent.mkdir(parents=True, exist_ok=True)
+        target.write_bytes(source.read_bytes())
+    monkeypatch.setattr(provenance, "ROOT", tmp_path)
+    expected = provenance.code_fingerprint(builder.CODE_SOURCES)
+    for relative in ENDPOINT_CANDIDATE_COMPOSITION_SCIENTIFIC_SOURCES:
+        target = tmp_path / relative
+        original = target.read_bytes()
+        target.write_bytes(original + b"\n# scientific mutation\n")
+        assert provenance.code_fingerprint(builder.CODE_SOURCES) != expected
+        target.write_bytes(original)
