@@ -1,641 +1,286 @@
-% Appendix, held for questions. Not presented. Reached by number when a question lands.
-% Same phrase discipline as the core deck. Every number carries a comment naming its source.
+% Curated Q&A appendix. Internal process, retired estimates, and open-test dashboards are intentionally excluded.
 
-\appendix
-
-\begin{frame}[plain,noframenumbering]
-\vspace{2.2cm}
-\centering
-{\Large\bfseries Appendix\par}
-\vspace{0.4em}
-{\color{cother}\small held for questions\par}
-\vspace{0.6em}
-\noindent{\color{cstable}\rule{3.2cm}{1.6pt}}\par
+\begin{frame}{Appendix map}
+\begin{columns}[T]
+\begin{column}{0.47\textwidth}
+\textbf{Definitions and data}
+\begin{itemize}
+\item A1 Route units and vehicle status
+\item A2 Candidate types and backing regimes
+\item A3 Sample integrity and exclusions
+\end{itemize}
+\vspace{0.45cm}
+\textbf{Reconstruction and validation}
+\begin{itemize}
+\item A4 Exact transaction state
+\item A5 Protocol-specific state
+\item A6 Forced routes in V1
+\end{itemize}
+\end{column}
+\begin{column}{0.47\textwidth}
+\textbf{Robustness}
+\begin{itemize}
+\item A7 Daily and weekly clocks
+\item A8 Count and value support
+\item A9 Endpoint demand
+\end{itemize}
+\vspace{0.45cm}
+\textbf{Mechanisms}
+\begin{itemize}
+\item A10 Capital, inventory, and depth
+\item A11 Coordination and integration
+\item A12--A13 References
+\end{itemize}
+\end{column}
+\end{columns}
 \end{frame}
 
-\begin{frame}{A1. Status is binary, dominance is a share}
+\begin{frame}{A1. One reconstructed route is one unit}
+\begin{columns}[T]
+\begin{column}{0.47\textwidth}
+\centering
+\begin{tikzpicture}
+\node[nodepoint] (a) at (0,1.6) {$i$};
+\node[nodepoint,fill=ucldark,text=white,draw=ucldark] (k) at (2.0,1.6) {$k$};
+\node[nodepoint] (b) at (4.0,1.6) {$o$};
+\draw[route] (a)--(k);
+\draw[route] (k)--(b);
+\node[font=\small\bfseries] at (2.0,0.55) {one route unit};
+\node[font=\small] at (2.0,0.05) {two swap legs};
+\end{tikzpicture}
+\end{column}
+\begin{column}{0.47\textwidth}
+\begin{itemize}
+\item A coherent $i\rightarrow k\rightarrow o$ component increments the route count once.
+\item Vehicle status turns on when $k$ appears as an intermediary.
+\item Dominance is the share of route units or supported value carried by $k$.
+\end{itemize}
+\end{column}
+\end{columns}
+\end{frame}
+
+\begin{frame}{A2. Backing regimes are dated, not permanent labels}
+\begin{columns}[T]
+\begin{column}{0.47\textwidth}
+\textbf{Native platform asset}\par ETH, WETH; volatile settlement asset and protocol-native demand.
+\vspace{0.45cm}
+\textbf{Fiat-reserve stablecoin}\par USDC, USDT; reserve and redemption design.
+\end{column}
+\begin{column}{0.47\textwidth}
+\textbf{On-chain collateralised}\par DAI, LUSD, crvUSD; collateral, liquidation, and backing changes.
+\vspace{0.45cm}
+\textbf{Imported store of value}\par WBTC, tokenised gold; wrapped claim on an external asset.
+\end{column}
+\end{columns}
+\vspace{0.75cm}
+{\small Dated backing classifications enter heterogeneity tests. Ticker categories do not substitute for backing evidence.\par}
+\end{frame}
+
+\begin{frame}{A3. Integrity screens protect the value denominator}
 \begin{columns}[T]
 \begin{column}{0.42\textwidth}
 \begin{itemize}
-\item One bridging swap confers vehicle status
-\item Extent of capture is what varies
-\item Two axes: whether an asset intermediates, and how much of the role it holds
-\item The continuous share is the object measured here
-\end{itemize}
-\end{column}
-\begin{column}{0.56\textwidth}
-\centering
-\begin{tikzpicture}[scale=0.92,transform shape]
-\draw[flow,draw=cink] (0,0) -- (7.4,0);
-\draw[flow,draw=cink] (0,0) -- (0,2.6);
-\node[font=\scriptsize,anchor=north] at (3.7,-0.35) {share of intermediation episodes carried};
-\node[font=\scriptsize,anchor=south,rotate=90] at (-0.5,1.3) {intermediates at all};
-\node[font=\tiny,anchor=east] at (-0.1,0.25) {no};
-\node[font=\tiny,anchor=east] at (-0.1,2.1) {yes};
-\draw[draw=crule,dashed] (0,2.1) -- (7.4,2.1);
-\filldraw[cother] (0.15,0.25) circle (2.6pt);
-\node[font=\tiny,anchor=north] at (0.15,0.05) {0\%};
-\filldraw[cnative] (1.4,2.1) circle (2.6pt);
-\node[font=\tiny,anchor=south] at (1.4,2.25) {2\%};
-\filldraw[cnative] (2.9,2.1) circle (2.6pt);
-\node[font=\tiny,anchor=south] at (2.9,2.25) {35\%};
-\filldraw[cnative] (6.1,2.1) circle (2.6pt);
-\node[font=\tiny,anchor=south] at (6.1,2.25) {80\%};
-\node[font=\tiny,text=caccent,anchor=west,align=left] at (6.5,1.0) {the binary axis\\saturates at once};
-\end{tikzpicture}
-\end{column}
-\end{columns}
-\end{frame}
-
-\begin{frame}{A2. Reconstructing the state, and its direction}
-\begin{columns}[T]
-\begin{column}{0.42\textwidth}
-\begin{itemize}
-\item State stored at period ends, so an earlier state is recovered by unwinding the intervening swaps backward
-\item Backward unwinding 0.0000\% median error
-\item Replaying forward 11.8\%, and silent
-\item Second venue family: flat within-period 1.7\%, opening state 2.8\%, backward 0.0000\%
-\end{itemize}
-\end{column}
-\begin{column}{0.56\textwidth}
-\centering
-\begin{tikzpicture}[scale=0.92,transform shape]
-\draw[draw=crule,line width=1pt] (0,1.0) -- (7.6,1.0);
-\foreach \x in {1.3,2.1,2.9,3.7,4.5,5.3,6.1}{\draw[draw=cink,line width=0.7pt] (\x,0.85) -- (\x,1.15);}
-\node[card,draw=cstable,fill=cstable!12,minimum width=1.5cm,align=center] (endst) at (7.0,2.1) {stored\\end of hour};
-\node[card,draw=cnative,fill=cnative!12,minimum width=1.5cm,align=center] (prest) at (0.7,2.1) {pre-trade\\state};
-\draw[flow,draw=cnative] (endst.west) -- node[above,font=\tiny]{unwind swaps} (prest.east);
-\node[font=\tiny,anchor=north] at (3.8,0.75) {one hour of swap events};
-\end{tikzpicture}
-\end{column}
-\end{columns}
-\end{frame}
-
-\begin{frame}{A3. Constant-product state, and the events inside an hour}
-\begin{columns}[T]
-\begin{column}{0.40\textwidth}
-\begin{itemize}
-\item v2-family pools priced from unwound hourly reserves
-\item Pool-hours failing reserve continuity flagged, 3.2\% to 11.8\% across five sampled days
-\item Most flagged hours recovered by reading the hour's own liquidity events
-\item Hours that stay unexplained are dropped
-\end{itemize}
-\end{column}
-\begin{column}{0.58\textwidth}
-\centering
-% output/exhibits/v2_liquidity_hour_recovery.jsonl
-\begin{tikzpicture}
-\begin{axis}[deckaxis,width=7.2cm,height=4.4cm,ybar,bar width=9pt,ymin=0,ymax=110,symbolic x coords={2021-06,2022-06,2023-06,2024-01,2025-06},xtick=data,xticklabel style={font=\tiny},ylabel={\%},legend style={at={(0.5,-0.24)},anchor=north,legend columns=2,draw=none},nodes near coords,every node near coord/.append style={font=\tiny,color=cink}]
-\addplot[fill=cimported!45,draw=cimported] coordinates {(2021-06,11.8) (2022-06,5.1) (2023-06,5.1) (2024-01,3.3) (2025-06,3.2)};
-\addlegendentry{pool-hours flagged}
-\addplot[fill=cstable!45,draw=cstable] coordinates {(2021-06,98.9) (2022-06,90.8) (2023-06,88.4) (2024-01,72.6) (2025-06,46.8)};
-\addlegendentry{flagged hours recovered}
-\end{axis}
-\end{tikzpicture}
-\end{column}
-\end{columns}
-\end{frame}
-
-\begin{frame}{A4. Concentrated liquidity, and why direction matters}
-\begin{columns}[T]
-\begin{column}{0.42\textwidth}
-\begin{itemize}
-\item Active liquidity accumulated from every mint and burn since pool inception
-\item Quote traverses initialized ticks, piecewise on price
-\item 0.0000\% median error in all four cells of direction by tick crossing
-\item A pooled error statistic hides a directional fault
-\end{itemize}
-\end{column}
-\begin{column}{0.56\textwidth}
-\centering
-\begin{tikzpicture}[scale=0.92,transform shape]
-\draw[draw=cink,line width=0.8pt] (0,0) -- (7.4,0);
-\node[font=\scriptsize,anchor=north] at (3.7,-0.3) {price};
-\foreach \x in {1.0,2.2,3.4,4.6,5.8}{\draw[draw=crule,line width=0.6pt,dashed] (\x,0) -- (\x,2.4);}
-\fill[cnative!25] (1.0,0) rectangle (2.2,0.8);
-\fill[cnative!35] (2.2,0) rectangle (3.4,1.7);
-\fill[cnative!45] (3.4,0) rectangle (4.6,2.2);
-\fill[cnative!35] (4.6,0) rectangle (5.8,1.2);
-\fill[cnative!20] (5.8,0) rectangle (6.9,0.5);
-\node[font=\scriptsize,anchor=west,rotate=90] at (-0.25,0.6) {depth};
-\draw[flow,draw=caccent] (1.6,2.75) -- (5.2,2.75);
-\draw[flow,draw=cstable] (5.2,3.15) -- (1.6,3.15);
-\node[font=\tiny,text=caccent,anchor=west] at (5.3,2.75) {up};
-\node[font=\tiny,text=cstable,anchor=west] at (5.3,3.15) {down};
-\node[font=\tiny,anchor=north] at (3.7,2.45) {three initialized ticks crossed};
-\end{tikzpicture}
-\end{column}
-\end{columns}
-\end{frame}
-
-\begin{frame}{A5. StableSwap and weighted-pool quoting}
-\begin{columns}[T]
-\begin{column}{0.40\textwidth}
-\begin{itemize}
-\item Curve on the StableSwap invariant, amplification fitted per pool-day on the first half of the day's trades
-\item Held-out median absolute error 0.029\% to 0.039\% on four days, 98.9\% to 100\% within 1\%
-\item Balancer on the weighted geometric mean, 12 days and 4,558 held-out trades
-\item A flat daily snapshot in place of hourly state costs a median 1.73\%
-\end{itemize}
-\end{column}
-\begin{column}{0.58\textwidth}
-\centering
-% output/exhibits/weighted_quoter_validation.jsonl, 12 sampled days
-\begin{tikzpicture}
-\begin{axis}[deckaxis,width=7.0cm,height=4.6cm,xmode=log,xmin=1e-11,xmax=1e2,ymin=-0.7,ymax=11.7,ytick={0,3,6,9,11},yticklabels={2021-04,2022-08,2023-12,2025-04,2026-02},yticklabel style={font=\tiny},xlabel={median absolute quote error, \%},legend style={at={(0.5,-0.26)},anchor=north,legend columns=2,draw=none},only marks]
-\addplot[mark=*,mark size=1.7pt,color=cstable] coordinates {(4.718e-09,0) (2.485e-08,1) (1.617e-04,2) (1.101e-09,3) (1.984e-10,4) (7.057e-10,5) (2.759e-09,6) (3.768e-10,7) (1.831e-10,8) (2.104e-10,9) (2.507e-04,10) (8.739e-09,11)};
-\addlegendentry{hourly state}
-\addplot[mark=square*,mark size=1.6pt,color=cimported] coordinates {(2.9974,0) (1.2401,1) (1.0519,2) (0.7484,3) (3.7264,4) (1.7848,5) (1.7736,6) (4.8111,7) (1.6820,8) (5.3204,9) (1.0914,10) (0.6760,11)};
-\addlegendentry{flat daily snapshot}
-\end{axis}
-\end{tikzpicture}
-\end{column}
-\end{columns}
-\end{frame}
-
-\begin{frame}{A6. Route gas uses the candidate's clock}
-\begin{columns}[T]
-\begin{column}{0.42\textwidth}
-\begin{itemize}
-\item Price gas at the realised transaction's effective gas price
-\item Calibrate units by year, topology, venue sequence and intermediary identity
-\item Missing or zero receipt prices fail closed
-\item Keep gross route comparisons separate until this join passes
-\end{itemize}
-\end{column}
-\begin{column}{0.56\textwidth}
-\centering
-\small
-\[
-\begin{aligned}
-\mathrm{GasCost}_{r}
-&= \mathrm{Units}_{r,y,v,k} \\
-&\quad\times \mathrm{EffectiveGasPrice}_{\mathrm{tx}(r)} \\
-&\quad\times P^{\mathrm{ETH}}_{\mathrm{block}(r)}
-\end{aligned}
-\]
-\end{column}
-\end{columns}
-\end{frame}
-
-\begin{frame}{A7. Gas price has two distinct clocks}
-\begin{columns}[T]
-\begin{column}{0.40\textwidth}
-\begin{itemize}
-\item Exact receipt price for an individual route comparison
-\item A separately rebuilt daily distribution for regime description
-\item Daily observations use fixed interior block quantiles inside exact UTC-day bounds
-\item A daily statistic never prices an individual route
-\end{itemize}
-\end{column}
-\begin{column}{0.58\textwidth}
-\centering
-\begin{tikzpicture}[scale=0.92,transform shape]
-\node[card,draw=cnative,fill=cnative!12,minimum width=2.2cm,align=center] (receipt) at (0,2.2) {transaction receipt\\effective gas price};
-\node[card,draw=cstable,fill=cstable!12,minimum width=2.2cm,align=center] (day) at (0,-0.2) {exact UTC day\\fixed block quantiles};
-\node[card,draw=crule,minimum width=2.2cm,align=center] (route) at (5.2,2.2) {all-in route\\comparison};
-\node[card,draw=crule,minimum width=2.2cm,align=center] (regime) at (5.2,-0.2) {descriptive\\gas regime};
-\draw[flow,draw=cnative] (receipt.east) -- (route.west);
-\draw[flow,draw=cstable] (day.east) -- (regime.west);
-\draw[ghost,draw=cother] (day.north east) to[out=35,in=225] node[above,font=\tiny,text=cother]{prohibited substitution} (route.south west);
-\end{tikzpicture}
-\end{column}
-\end{columns}
-\end{frame}
-
-\begin{frame}{A8. Where gas enters the eventual outcome}
-\begin{columns}[T]
-\begin{column}{0.42\textwidth}
-\begin{itemize}
-\item Exact-clock gas enters each route alternative directly
-\item Gas also drives liquidity-provider repositioning, which drives depth
-\item A variable on the causal path cannot be netted out by including it
-\item Measured in the outcome, absent from the right-hand side
-\end{itemize}
-\end{column}
-\begin{column}{0.56\textwidth}
-\centering
-\begin{tikzpicture}[scale=0.92,transform shape]
-\node[card,draw=cimported,fill=cimported!12,minimum width=1.7cm,align=center] (gas) at (0,1.4) {gas price};
-\node[card,draw=crule,minimum width=1.9cm,align=center] (rep) at (3.2,2.6) {repositioning};
-\node[card,draw=crule,minimum width=1.9cm,align=center] (dep) at (6.3,2.6) {pool depth};
-\node[card,draw=cnative,fill=cnative!12,minimum width=1.9cm,align=center] (rc) at (6.3,0.2) {route cost};
-\draw[flow] (gas.east) to[out=30,in=180] node[above,font=\tiny,pos=0.55]{shifts} (rep.west);
-\draw[flow] (rep.east) -- node[above,font=\tiny]{moves} (dep.west);
-\draw[flow] (dep.south) -- node[right,font=\tiny]{sets} (rc.north);
-\draw[flow] (gas.east) to[out=-20,in=180] node[below,font=\tiny,pos=0.6]{charges} (rc.west);
-\node[font=\tiny,text=cnative,anchor=north,align=center] at (6.3,-0.55) {outcome};
-\end{tikzpicture}
-\end{column}
-\end{columns}
-\end{frame}
-
-\begin{frame}{A9. Asset types and their traditional-finance counterparts}
-\centering
-\begin{tikzpicture}[scale=0.95,transform shape]
-\node[card,draw=cnative,fill=cnative!12,minimum width=4.4cm,anchor=north west] (n1) at (0,0) {\textbf{Native platform asset}\\{\ttfamily WETH, native ETH}};
-\node[card,draw=crule,minimum width=4.6cm,anchor=north west] (n2) at (6.6,0) {incumbent international currency on thick-market externalities};
-\draw[flow] (n1.east) -- (n2.west);
-\node[card,draw=cstable,fill=cstable!12,minimum width=4.4cm,anchor=north west] (s1) at (0,-1.4) {\textbf{Stablecoin}\\{\ttfamily USDC, USDT, DAI}};
-\node[card,draw=crule,minimum width=4.6cm,anchor=north west] (s2) at (6.6,-1.4) {the managed or pegged stable unit};
-\draw[flow] (s1.east) -- (s2.west);
-\node[card,draw=cimported,fill=cimported!12,minimum width=4.4cm,anchor=north west] (i1) at (0,-2.8) {\textbf{Imported store of value}\\{\ttfamily WBTC, tokenised gold}};
-\node[card,draw=crule,minimum width=4.6cm,anchor=north west] (i2) at (6.6,-2.8) {gold or a foreign reserve asset};
-\draw[flow] (i1.east) -- (i2.west);
-\node[card,draw=cstaked,fill=cstaked!18,minimum width=4.4cm,anchor=north west] (k1) at (0,-4.2) {\textbf{Staked native derivative}\\{\ttfamily stETH and equivalents}};
-\node[card,draw=crule,minimum width=4.6cm,anchor=north west] (k2) at (6.6,-4.2) {same exposure, different instrument};
-\draw[flow] (k1.east) -- (k2.west);
-\end{tikzpicture}
-\end{frame}
-
-\begin{frame}{A10. Coverage of the taxonomy, and the tail}
-\begin{itemize}
-\item Types selected by measuring intermediation over 57 stratified days
-\item 9,283 distinct intermediary tokens observed
-\item Other reaches 24.2\% of 2026 episodes, and no type claim extends past the classified set
-\item Corrected classification places native ETH at the zero address in the native type
-\item That single omission was 19.8\% of the 2026 other bucket and understated native by roughly 6 points
-\item Newer stables, staked-ETH derivatives and tokenised gold were misfiled in the same version
-\end{itemize}
-\vspace{0.4em}
-\srcnote{Coverage is good at the head and weak in the tail, and the tail is stated openly}
-\end{frame}
-
-\begin{frame}{A11. The specification alternative a referee will ask for}
-\begin{columns}[T]
-\begin{column}{0.42\textwidth}
-\begin{itemize}
-\item Staked native folded into native, the registered alternative
-\item 2026 count-weighted crossover holds under it
-\item Whether the derivative is the same currency is a choice
-\item Both readings reported
-\end{itemize}
-\end{column}
-\begin{column}{0.56\textwidth}
-\centering
-% docs/finding-intermediation-transition.md, count-weighted 2026 row and the registered alternative
-\begin{tikzpicture}
-\begin{axis}[deckaxis,width=7.0cm,height=4.4cm,ybar,bar width=26pt,bar shift=0pt,ymin=0,ymax=45,symbolic x coords={native,native plus staked,stable},xtick=data,xticklabel style={font=\tiny},ylabel={2026 share of episodes, \%},nodes near coords,every node near coord/.append style={font=\tiny,color=cink}]
-\addplot[fill=cnative!45,draw=cnative] coordinates {(native,32.9)};
-\addplot[fill=cstaked!55,draw=cstaked] coordinates {(native plus staked,33.7)};
-\addplot[fill=cstable!45,draw=cstable] coordinates {(stable,36.4)};
-\end{axis}
-\end{tikzpicture}
-\end{column}
-\end{columns}
-\end{frame}
-
-\begin{frame}{A12. How a realised route is matched to its counterfactual}
-\centering
-\begin{tikzpicture}[scale=0.95,transform shape]
-\node[card,draw=cnative,fill=cnative!12,minimum width=2.8cm,align=center] (r) at (0,1.3) {realised route\\endpoints, interior token\\hour, notional};
-\node[card,draw=crule,minimum width=2.2cm] (k1) at (4.6,3.1) {same ordered pair};
-\node[card,draw=crule,minimum width=2.2cm] (k2) at (4.6,2.1) {same interior token};
-\node[card,draw=crule,minimum width=2.2cm] (k3) at (4.6,1.1) {same hour state};
-\node[card,draw=cimported,fill=cimported!12,minimum width=2.2cm] (k4) at (4.6,0.1) {nearest quoted notional};
-\node[card,draw=cstable,fill=cstable!12,minimum width=2.6cm,align=center] (p) at (9.4,1.6) {panel row\\direct and vehicle\\outputs};
-\draw[flow] (r.east) to[out=25,in=180] (k1.west);
-\draw[flow] (r.east) to[out=12,in=180] (k2.west);
-\draw[flow] (r.east) to[out=-5,in=180] (k3.west);
-\draw[ghost,draw=cimported] (r.east) to[out=-25,in=180] (k4.west);
-\draw[flow] (k1.east) to[out=0,in=155] (p.west);
-\draw[flow] (k2.east) to[out=0,in=170] (p.west);
-\draw[flow] (k3.east) to[out=0,in=190] (p.west);
-\draw[ghost,draw=cimported] (k4.east) to[out=0,in=210] (p.west);
-\node[font=\tiny,text=cimported,anchor=north,align=center] at (4.6,-0.35) {the one approximate key, and the source of the selection};
-\end{tikzpicture}
-\vspace{0.5em}
-\begin{itemize}
-\item Interior token read from the reconstructed multi-leg route
-\item 1,762 of 90,705 realised multi-leg routes matched on the four priced days
-\end{itemize}
-\end{frame}
-
-\begin{frame}{A13. What matching measured costs}
-\begin{columns}[T]
-\begin{column}{0.38\textwidth}
-\begin{itemize}
-\item Matching retains 1.9\% of realised multi-leg routes
-\item 71 pairs covered against 17,851
-\item Median trade \$11,594 against \$866, 90th percentile \$208,204 against \$6,454
-\item Matched routing 64.1\% stable-intermediated, population 67.7\% native-intermediated
-\item The other category entirely absent
-\end{itemize}
-\end{column}
-\begin{column}{0.60\textwidth}
-\centering
-% output/exhibits/matched_sample_characterisation.jsonl, matched over unmatched ratios
-\begin{tikzpicture}
-\begin{axis}[deckaxis,width=7.0cm,height=4.8cm,xmode=log,xmin=0.2,xmax=100,ymin=-0.7,ymax=6.7,ytick={0,1,2,3,4,5,6},yticklabels={routes per pair,share native,share stable,share imported,median trade,mean trade,90th trade},yticklabel style={font=\tiny},xlabel={matched over unmatched},only marks]
-\addplot[mark=*,mark size=2.0pt,color=cnative] coordinates {(5.02,0) (0.39,1) (6.20,2) (17.23,3) (13.40,4) (19.29,5) (32.26,6)};
-\draw[draw=caccent,line width=1pt,dashed] (axis cs:1,-0.7) -- (axis cs:1,6.7);
-\node[font=\tiny,text=caccent,anchor=south west] at (axis cs:1.05,5.9) {parity};
-\end{axis}
-\end{tikzpicture}
-\end{column}
-\end{columns}
-\end{frame}
-
-\begin{frame}{A14. Round trips, excluded before anything is measured}
-\begin{columns}[T]
-\begin{column}{0.36\textwidth}
-\begin{itemize}
-\item A route whose first input equals its last output moved no value
-\item Median of 79 sampled days: 12.7\% of multi-leg routes by count, 21.7\% by value
-\item Floor 4.5\% and 7.4\%, and no sampled day without them
-\item 2025-12-06, the most extreme day observed, 25.9\% and 91.3\%
-\end{itemize}
-\end{column}
-\begin{column}{0.62\textwidth}
-\centering
-% output/exhibits/round_trip_share_by_day.jsonl, all 79 sampled days
-\begin{tikzpicture}
-\begin{axis}[deckaxis,width=7.6cm,height=4.6cm,xmin=2020.2,xmax=2026.5,ymin=0,ymax=100,xtick={2021,2022,2023,2024,2025,2026},xticklabel style={/pgf/number format/1000 sep=},ylabel={round-trip share, \%},legend style={at={(0.5,-0.24)},anchor=north,legend columns=2,draw=none},only marks]
-\addplot[mark=*,mark size=1.1pt,color=cnative] coordinates {(2020.416,4.45) (2020.493,8.49) (2020.57,9.83) (2020.647,9.41) (2020.723,13.7) (2020.8,14.72) (2020.877,16.42) (2020.953,15.81) (2021.027,17.48) (2021.104,11.64) (2021.181,11.77) (2021.258,10.76) (2021.334,11.07) (2021.411,13.21) (2021.488,15.79) (2021.564,16.84) (2021.641,14.08) (2021.718,16.98) (2021.795,11.57) (2021.871,11.19) (2021.948,16.75) (2022.025,17.82) (2022.101,10.33) (2022.178,15.72) (2022.255,10.13) (2022.332,12.96) (2022.408,18.46) (2022.485,19.69) (2022.562,17.53) (2022.638,16.72) (2022.715,18.8) (2022.792,9.71) (2022.868,19.18) (2022.945,11.17) (2023.022,8.89) (2023.099,8.82) (2023.175,6.6) (2023.252,8.18) (2023.329,8.09) (2023.405,13.02) (2023.482,11.4) (2023.559,6.94) (2023.636,5.88) (2023.712,8.51) (2023.789,12.33) (2023.866,11.64) (2023.942,7.7) (2024.019,8.89) (2024.096,9.0) (2024.173,5.47) (2024.249,6.44) (2024.326,9.6) (2024.403,8.45) (2024.479,11.29) (2024.556,11.53) (2024.633,18.46) (2024.71,19.17) (2024.786,12.7) (2024.863,9.58) (2024.94,9.92) (2025.014,8.85) (2025.09,16.5) (2025.167,17.04) (2025.244,17.0) (2025.321,16.29) (2025.397,14.59) (2025.474,12.06) (2025.551,11.94) (2025.627,16.09) (2025.704,18.79) (2025.781,21.91) (2025.858,22.56) (2025.929,25.93) (2025.934,23.44) (2026.011,19.58) (2026.088,23.65) (2026.164,25.55) (2026.241,20.03) (2026.318,20.8)};
-\addlegendentry{by count}
-\addplot[mark=square*,mark size=1.1pt,color=cimported] coordinates {(2020.416,11.54) (2020.493,11.17) (2020.57,10.12) (2020.647,12.63) (2020.723,19.62) (2020.8,15.52) (2020.877,20.01) (2020.953,22.8) (2021.027,34.15) (2021.104,27.91) (2021.181,26.67) (2021.258,27.94) (2021.334,20.43) (2021.411,18.29) (2021.488,71.24) (2021.564,46.11) (2021.641,21.64) (2021.718,25.35) (2021.795,20.09) (2021.871,19.68) (2021.948,25.18) (2022.025,28.33) (2022.101,17.92) (2022.178,21.79) (2022.255,18.23) (2022.332,32.62) (2022.408,25.4) (2022.485,17.46) (2022.562,17.57) (2022.638,26.1) (2022.715,23.11) (2022.792,21.72) (2022.868,28.88) (2022.945,21.89) (2023.022,24.93) (2023.099,32.43) (2023.175,29.56) (2023.252,7.4) (2023.329,15.3) (2023.405,18.7) (2023.482,16.53) (2023.559,14.4) (2023.636,16.37) (2023.712,13.02) (2023.789,41.78) (2023.866,20.14) (2023.942,17.71) (2024.019,17.73) (2024.096,18.82) (2024.173,18.63) (2024.249,13.2) (2024.326,28.25) (2024.403,41.03) (2024.479,18.05) (2024.556,48.16) (2024.633,30.62) (2024.71,19.25) (2024.786,21.13) (2024.863,26.1) (2024.94,25.16) (2025.014,17.86) (2025.09,29.68) (2025.167,16.14) (2025.244,10.08) (2025.321,13.06) (2025.397,40.91) (2025.474,37.54) (2025.551,26.28) (2025.627,64.39) (2025.704,35.52) (2025.781,81.75) (2025.858,61.61) (2025.929,91.31) (2025.934,36.64) (2026.011,28.65) (2026.088,20.32) (2026.164,20.06) (2026.241,15.06) (2026.318,63.7)};
-\addlegendentry{by value}
-\end{axis}
-\end{tikzpicture}
-\end{column}
-\end{columns}
-\end{frame}
-
-\begin{frame}{A15. The same-block capture test}
-\begin{itemize}
-\item The former fixed-clock threshold is excluded from the evidence set
-\item Each candidate gap must carry its exact transaction, block, receipt gas price and calibrated closing-route units
-\item A closing swap sequence in the same block is evidence that the gap existed and was captured
-\item Until that test passes, the deck reports no all-in threshold or tail share
-\end{itemize}
-\end{frame}
-
-\begin{frame}{A16. Block state against hour state, in full}
-\begin{columns}[T]
-\begin{column}{0.38\textwidth}
-\begin{itemize}
-\item 371 triangles, 189,857 route observations, seven days 2021-12-25 to 2025-11-04
-\item Verdict flips 38.0\% at zero size
-\item Median own-block gap 29.3 basis points, median change from repricing 26.6, 90th percentile 85.0
-\item Large gaps do not rescue it: 35.6\% on 32,090 observations above 100 basis points
-\item Time to the hour boundary raises the flip rate monotonically
-\end{itemize}
-\end{column}
-\begin{column}{0.60\textwidth}
-\centering
-% output/exhibits/block_vs_hour_verdict.jsonl, per-triangle flip_rate over 371 triangles
-\begin{tikzpicture}
-\begin{axis}[deckaxis,width=7.2cm,height=4.6cm,ybar,bar width=13pt,ymin=0,ymax=130,xmin=-5,xmax=75,xtick={5,15,25,35,45,55,65},xlabel={flip rate within a triangle, \%},ylabel={triangles}]
-\addplot[fill=caccent!35,draw=caccent] coordinates {(5,20) (15,37) (25,63) (35,113) (45,106) (55,27) (65,5)};
-\end{axis}
-\end{tikzpicture}
-\end{column}
-\end{columns}
-\end{frame}
-
-\begin{frame}{A17. Repricing at the block, pool by pool}
-\begin{itemize}
-\item 40 busiest pools, 30,768 swaps, each swap's own immediately prior state against the hour-boundary state
-\item Median pool's median deviation 1.166\%, with 86.2\% of its routes mispriced by more than 25 basis points
-\item Deepest stable against native pools close to unaffected: 0.085\% and 16.5\% on the 5-basis-point pool, 0.012\% and 13.5\% on the next
-\item Volatile pools 1.8\% to 4.9\% median deviation, 89\% to 97\% past the same threshold
-\item Quoters were validated on trades that happened, and trades happen in the deep pairs
-\end{itemize}
-\vspace{0.4em}
-\srcnote{A level statistic. The verdict is a difference, and A16 measures the difference on its own terms}
-\end{frame}
-
-\begin{frame}{A18. Signed venue coverage}
-\begin{columns}[T]
-\begin{column}{0.38\textwidth}
-\begin{itemize}
-\item Curve's calibration gate removes 65.2\% of its native-leg volume against 21.1\% of its stable-leg volume
-\item Tricrypto pools \$818m of the \$1.83bn excluded, 44.6\%
-\item Balancer 3.9\% of panel volume pooled, 8.8\% at its 2023 peak, validated with integration outstanding
-\item Sushiswap v3 at 0.016\% of priced volume
-\item Every remaining gap withholds depth from the native side
-\end{itemize}
-\end{column}
-\begin{column}{0.60\textwidth}
-\centering
-% output/exhibits/curve_excluded_by_year_leg.jsonl
-\begin{tikzpicture}
-\begin{axis}[deckaxis,width=7.2cm,height=4.6cm,ybar,bar width=7pt,ymin=0,ymax=100,symbolic x coords={2021,2022,2023,2024,2025,2026},xtick=data,xticklabel style={font=\tiny},ylabel={Curve volume excluded by the gate, \%},legend style={at={(0.5,-0.24)},anchor=north,legend columns=2,draw=none}]
-\addplot[fill=cnative!45,draw=cnative] coordinates {(2021,85.49) (2022,68.82) (2023,59.11) (2024,48.24) (2025,47.47) (2026,60.92)};
-\addlegendentry{native leg}
-\addplot[fill=cstable!45,draw=cstable] coordinates {(2021,46.91) (2022,30.21) (2023,5.51) (2024,0.94) (2025,13.96) (2026,9.04)};
-\addlegendentry{stable leg}
-\end{axis}
-\end{tikzpicture}
-\end{column}
-\end{columns}
-\end{frame}
-
-\begin{frame}{A19. The level comparison, kept as a validation exhibit}
-\begin{columns}[T]
-\begin{column}{0.38\textwidth}
-\begin{itemize}
-\item Native-intermediated routes about 25.3 basis points cheaper on the continuous gap (0.037)
-\item Pair by window by size cell effects, clustered by pair, 732 routes in 274 cells
-\item Binary form of the same comparison $-0.043$ (0.543)
-\item Native interacted with log size $+0.0023$ (0.914), which is why no size claim is made anywhere
-\end{itemize}
-\end{column}
-\begin{column}{0.60\textwidth}
-\centering
-% output/exhibits/dominance_specification_curve.jsonl, binary-outcome specifications with 95\% intervals
-\begin{tikzpicture}
-\begin{axis}[deckaxis,width=7.2cm,height=4.8cm,xmin=-0.5,xmax=6.5,ymin=-0.45,ymax=0.30,xtick={0,1,2,3,4,5,6},xticklabels={pooled,plus size,pair,cell,tick venue,two cands,three cands},xticklabel style={font=\tiny,rotate=35,anchor=east},ylabel={coefficient, binary outcome}]
-\addplot[only marks,mark=*,mark size=1.7pt,color=cnative,error bars/.cd,y dir=both,y explicit] coordinates {(0,-0.1009) +- (0,0.1364) (1,-0.1020) +- (0,0.1360) (2,-0.0629) +- (0,0.1378) (3,-0.0427) +- (0,0.1355) (4,-0.0466) +- (0,0.1363) (5,-0.0111) +- (0,0.2332) (6,-0.0543) +- (0,0.1297)};
-\draw[draw=caccent,line width=0.9pt,dashed] (axis cs:-0.5,0) -- (axis cs:6.5,0);
-\end{axis}
-\end{tikzpicture}
-\end{column}
-\end{columns}
-\end{frame}
-
-\begin{frame}{A20. Why realised trades cannot answer this}
-\begin{columns}[T]
-\begin{column}{0.40\textwidth}
-\begin{itemize}
-\item Daily-median comparison on realised rates, 16,586 cells across 5,656 pairs
-\item Median absolute gap 691 basis points, only 3.6\% of cells within 10 basis points
-\item Stable to stable 23 basis points on 445 cells, volatile 775 on 16,141
-\item Intraday price movement swamps execution cost 34 to 1 on 97\% of the sample
-\end{itemize}
-\end{column}
-\begin{column}{0.58\textwidth}
-\centering
-% docs/finding-cost-dominance-not-yet-established.md, the pair-type split
-\begin{tikzpicture}
-\begin{axis}[deckaxis,nearlabels,width=7.0cm,height=4.6cm,ybar,bar width=20pt,bar shift=0pt,ymode=log,ymin=1,ymax=5000,symbolic x coords={stable to stable,volatile},xtick={stable to stable,volatile},xticklabel style={font=\tiny},ylabel={median absolute gap, basis points}]
-\addplot[fill=cstable!45,draw=cstable] coordinates {(stable to stable,23) [23]};
-\addplot[fill=cimported!45,draw=cimported] coordinates {(volatile,775) [775]};
-\draw[draw=caccent,line width=1pt,dashed] (axis cs:stable to stable,10) -- (axis cs:volatile,10);
-\node[font=\tiny,text=caccent,anchor=south west,fill=white,inner sep=0.5pt] at (axis cs:stable to stable,11) {execution-cost band};
-\end{axis}
-\end{tikzpicture}
-\end{column}
-\end{columns}
-\end{frame}
-
-\begin{frame}{A21. Identifying a forced route in V1}
-\begin{columns}[T]
-\begin{column}{0.46\textwidth}
-\begin{itemize}
-\item The transaction entity is keyed on transaction hash plus exchange address
-\item A token-to-token trade lands as two rows sharing one hash
-\item One row carries the ETH-purchase array, the other the token-purchase array
-\item Rows carrying both are single-pool round trips, 14,641 of 2,816,199 entity rows
-\item A single-row test recovers none of the forced routes
-\end{itemize}
-\end{column}
-\begin{column}{0.52\textwidth}
-\centering
-\begin{tikzpicture}[scale=0.9,transform shape]
-\node[font=\tiny,anchor=south] (h) at (2.4,2.0) {one transaction hash};
-\draw[decorate,decoration={brace,amplitude=4pt},draw=cother] (0.2,1.85) -- (4.6,1.85);
-\node[card,draw=cnative,minimum width=1.7cm,align=center] (rowa) at (0.9,1.0) {exchange A\\{\ttfamily ethPurchase}};
-\node[card,draw=cnative,minimum width=1.7cm,align=center] (rowb) at (3.9,1.0) {exchange B\\{\ttfamily tokenPurchase}};
-\draw[flow,draw=caccent] (rowa.east) -- node[above,font=\tiny,text=caccent]{equal ETH} (rowb.west);
-\node[card,draw=cother,minimum width=2.0cm,align=center] (rt) at (7.0,1.0) {both arrays\\one exchange\\round trip};
-\end{tikzpicture}
-\vspace{0.4em}
-{\scriptsize
-\begin{tabular}{lrr}
-\toprule
-trade class & transactions & share \\
-\midrule
-ETH to token & 1,203,360 & 47.71\% \\
-token to ETH & 1,075,970 & 42.66\% \\
-forced via ETH & 217,003 & 8.60\% \\
-round trip & 12,051 & 0.48\% \\
-three or more & 13,736 & 0.54\% \\
-\bottomrule
-\end{tabular}}
-\end{column}
-\end{columns}
-\end{frame}
-
-\begin{frame}{A22. Why the V1 event study fails}
-\begin{columns}[T]
-\begin{column}{0.40\textwidth}
-\begin{itemize}
-\item Token to token needs two live exchanges, ETH-paired needs one
-\item Feasible pairs fall with the square of the live count
-\item Excess over the thinning benchmark between 0.83 and 1.07 throughout
-\item Treatment and confound are the same event
-\end{itemize}
-\end{column}
-\begin{column}{0.58\textwidth}
-\centering
-% docs/finding-v1-forced-vehicle.md section 2, thinning benchmark table, indexed to 2020-05
-\begin{tikzpicture}
-\begin{axis}[deckaxis,width=7.2cm,height=4.6cm,xmin=2.5,xmax=13.5,ymin=0,ymax=1.25,xtick={3,5,7,9,11,13},xticklabels={2020-03,2020-05,2020-07,2020-09,2020-11,2021-06},xticklabel style={font=\tiny,rotate=25,anchor=east},ylabel={indexed to 2020-05},legend style={at={(0.5,-0.32)},anchor=north,legend columns=2,draw=none}]
-\addplot[color=cnative,mark=*,mark size=1.4pt] coordinates {(3,1.04) (5,1.00) (6,0.77) (7,0.54) (8,0.41) (9,0.43) (10,0.43) (11,0.43) (12,0.18) (13,0.24)};
-\addlegendentry{forced over ETH-paired flow}
-\addplot[color=cother,mark=square*,mark size=1.3pt,dashed] coordinates {(3,0.97) (5,1.00) (6,0.77) (7,0.61) (8,0.50) (9,0.43) (10,0.45) (11,0.42) (12,0.41) (13,0.23)};
-\addlegendentry{live exchange count}
-\end{axis}
-\end{tikzpicture}
-\end{column}
-\end{columns}
-\end{frame}
-
-\begin{frame}{A23. The token-level test, and the bound it establishes}
-\begin{columns}[T]
-\begin{column}{0.40\textwidth}
-\begin{itemize}
-\item 247 V1 exchanges, outcome dated on the exchange's own ETH-paired flow
-\item Forced-route intensity $+0.276$, robust standard error 0.307
-\item Randomisation inference (0.355) over 5,000 draws, hazard ratio 1.004 per standard deviation
-\item Power 98.4\% against a halving of survival time, so a large effect would have been seen
-\item Power 42.2\% against a 25\% shortening, so that range is out of reach
-\end{itemize}
-\end{column}
-\begin{column}{0.58\textwidth}
-\centering
-% output/exhibits/v1_token_level_power.jsonl, via docs/finding-v1-forced-vehicle.md section 8
-\begin{tikzpicture}
-\begin{axis}[deckaxis,width=7.2cm,height=4.6cm,xmin=0.2,xmax=0.95,ymin=0,ymax=105,xlabel={true survival-time ratio, 95th against 5th percentile of intensity},ylabel={power at 5\% with the correct sign, \%}]
-\addplot[color=cnative,mark=*,mark size=1.8pt] coordinates {(0.25,100.0) (0.50,98.4) (0.75,42.2) (0.90,9.2)};
-\draw[draw=caccent,line width=1pt,dashed] (axis cs:0.2,80) -- (axis cs:0.95,80);
-\node[font=\tiny,text=caccent,anchor=south east] at (axis cs:0.94,81) {pre-stated criterion};
-\end{axis}
-\end{tikzpicture}
-\end{column}
-\end{columns}
-\end{frame}
-
-\begin{frame}{A24. Who pays for the depth the role runs on}
-\begin{itemize}
-\item The prior rent panel is withdrawn while exact-lag capital and reserve reconciliation are rebuilt
-\item Dollar LVR uses contemporaneous pool value; its return divides by exact prior-calendar capital
-\item Those scales do not cancel mechanically, so arithmetic cannot decide the centrality result
-\item V3 provider TVL failed the independent historical-balance audit
-\item Local virtual depth is neither deposited capital nor an LVR scale
-\item No V3 capital, fee-to-LVR, net-flow or return statistic is admitted
-\end{itemize}
-\vspace{0.3em}
-\srcnote{This frame reopens only after the replacement measurement and attack loop pass}
-\end{frame}
-
-\begin{frame}{A25. Defaults, and the cross-venue bound}
-\begin{itemize}
-\item Concentrated-liquidity launch of 2021-05-05 moves native-minus-stable betweenness on untreated venues by $+0.020$ (0.489)
-\item Minimum detectable effect 0.106 against a pre-event base of 0.689, so this is a ceiling
-\item Same specification at the midpoint of the pre-event window returns a pseudo-break of $+0.043$ (0.000), roughly twice the estimated jump
-\item Betweenness is the only outcome family whose placebo passes: $+0.006$ (0.787) and $+0.007$ (0.783)
-\item New-pair composition fails the same placebo at $+0.055$ (0.000) and $+0.062$ (0.000)
-\item At the 2025-01-31 launch the untreated-venue move recovers 85\% of a market-wide rotation, so no cross-venue contrast survives there
-\end{itemize}
-\end{frame}
-
-\begin{frame}{A26. Venue technology as a rival for the migration}
-\begin{columns}[T]
-\begin{column}{0.44\textwidth}
-\begin{itemize}
-\item StableSwap venues make stable-to-stable legs nearly free and exist for no other asset class
-\item Their rise coincides with stablecoin intermediation
-\item Recomputed on constant-product venues alone, keeping a route only when every leg settles there
-\item Stable share moves $+49.5$ points, native $-68.0$
-\item The transition is larger where the technology does not exist
+\item Round trips are excluded from intermediation measures.
+\item Token values require price consensus and explicit token identity.
+\item Strict-support value retains observations within the registered coherence band.
 \end{itemize}
 \end{column}
 \begin{column}{0.54\textwidth}
 \centering
-% output/exhibits/venue_technology_rival.jsonl, via paper section 5.3
-\begin{tikzpicture}
-\begin{axis}[deckaxis,width=6.6cm,height=4.4cm,ybar,bar width=24pt,ymin=0,ymax=70,symbolic x coords={all venues,constant product only},xtick=data,xticklabel style={font=\tiny},ylabel={2026 stable share of intermediation, \%},nodes near coords,every node near coord/.append style={font=\tiny,color=cink}]
-\addplot[fill=cstable!45,draw=cstable] coordinates {(all venues,51.1) (constant product only,59.5)};
-\end{axis}
+\begin{tikzpicture}[scale=1.05,transform shape]
+\node[nodepoint] (a) at (0,0) {$i$};
+\node[nodepoint,fill=accent,text=white,draw=accent] (x) at (2.1,1.35) {$x$};
+\node[nodepoint] (b) at (4.2,0) {$i$};
+\draw[route,draw=accent] (a)--(x);
+\draw[route,draw=accent] (x)--(b);
+\draw[accent,line width=1.6pt] (-0.25,-0.55)--(4.45,1.90);
+\node[font=\small,align=center] at (2.1,-1.1) {no endpoint exchange\\no vehicle-use value};
 \end{tikzpicture}
 \end{column}
 \end{columns}
 \end{frame}
 
-\begin{frame}{A27. Artefacts behind every number}
-\begin{columns}[T]
-\begin{column}{0.49\textwidth}
+\begin{frame}{A4. State is reconstructed immediately before execution}
+\begin{tikzpicture}[x=1cm,y=1cm]
+\node[softbox,text width=2.15cm,align=center] (checkpoint) at (0,0) {validated checkpoint};
+\node[softbox,text width=2.15cm,align=center] (events) at (3.25,0) {ordered pool events};
+\node[softbox,text width=2.15cm,align=center] (pre) at (6.50,0) {pre-transaction state};
+\node[softbox,text width=2.15cm,align=center,draw=ucldark] (quote) at (9.75,0) {direct and vehicle quotes};
+\draw[route] (checkpoint)--(events);
+\draw[route] (events)--(pre);
+\draw[route] (pre)--(quote);
+\node[above,font=\small] at (1.63,0.25) {replay};
+\node[above,font=\small] at (4.88,0.25) {strict order};
+\node[above,font=\small] at (8.13,0.25) {same input};
+\end{tikzpicture}
+\vspace{0.85cm}
 \begin{itemize}
-\item[] {\scriptsize\textbf{Panel and quoting}}
-\item[] {\scriptsize Route-cost panel, six venues, 2,238 quoted days at 24 hourly states}
-\item[] {\scriptsize Quoter validation, one exhibit per venue family}
-\item[] {\scriptsize Support bounds pooled over 932,270 validated swaps}
-\item[] {\scriptsize Candidate-clock gas contract and receipt joins}
+\item Checkpoints make replay parallel without changing event order within a partition.
+\item Quotes use the exact pool state visible before the focal transaction.
+\item Unsupported provider intervals remain explicit exclusions with economic-weight bounds.
+\end{itemize}
+\end{frame}
+
+\begin{frame}{A5. Each protocol family has its own state contract}
+\begin{columns}[T]
+\begin{column}{0.47\textwidth}
+\textbf{Constant product}\par Reserves, fee, invariant.
+\vspace{0.35cm}
+\textbf{Concentrated liquidity}\par Active liquidity, price, tick, and initialised-tick changes.
+\vspace{0.35cm}
+\textbf{StableSwap families}\par Balances, amplification, rates, and oracle state.
+\end{column}
+\begin{column}{0.47\textwidth}
+\textbf{Weighted pools}\par Vault balances, weights, scaling, and rate providers.
+\vspace{0.35cm}
+\textbf{V4 singleton}\par Pool key, exact vanilla tick state, fee, and validated hook behavior.
+\end{column}
+\end{columns}
+\vspace{0.55cm}
+{\small A venue enters an estimand only after its quantity and state contract pass validation.\par}
+\end{frame}
+
+\begin{frame}{A6. V1 forced routes have an on-chain signature}
+\begin{columns}[T]
+\begin{column}{0.43\textwidth}
+\begin{itemize}
+\item Token-to-token execution emits two linked swaps through ETH.
+\item The paired legs report equal ETH quantities in 87.4\% of identified forced routes.
+\item The signature identifies protocol-imposed intermediation, not user choice.
 \end{itemize}
 \end{column}
-\begin{column}{0.49\textwidth}
+\begin{column}{0.53\textwidth}
+\centering
+\begin{tikzpicture}[scale=1.0,transform shape]
+\node[nodepoint] (a) at (0,0) {$i$};
+\node[nodepoint,fill=ucldark,text=white,draw=ucldark,minimum size=30pt] (e) at (2.5,0) {ETH};
+\node[nodepoint] (b) at (5.0,0) {$o$};
+\draw[route,draw=accent] (a)--node[above,font=\small] {$x$ ETH} (e);
+\draw[route,draw=accent] (e)--node[above,font=\small] {$x$ ETH} (b);
+\node[font=\Large\bfseries,text=ucldark] at (2.5,-1.45) {217,003};
+\node[font=\small] at (2.5,-1.90) {forced routes};
+\end{tikzpicture}
+\end{column}
+\end{columns}
+\end{frame}
+
+\begin{frame}{A7. Daily and weekly clocks answer different questions}
+\begin{enumerate}
+\item \textbf{Primary panel}\hfill day observations; date fixed effects
+\item \textbf{Calendar sensitivity}\hfill day observations; week and weekday fixed effects
+\item \textbf{Aggregation robustness}\hfill complete weeks; week fixed effects
+\item \textbf{Transition series}\hfill exact calendar links; HAC at 1, 7, 30, and 120 days
+\end{enumerate}
+\vspace{0.65cm}
+{\small Weekly ratios aggregate raw numerators and denominators before division. All seven weekday anchors are reported.\par}
+\end{frame}
+
+\begin{frame}{A8. Count and value define separate dominance margins}
+\begin{columns}[T]
+\begin{column}{0.46\textwidth}
+\textbf{Count-weighted share}
+\[
+S^{N}_{k,t}=\frac{N^I_{k,t}}{\sum_j N^I_{j,t}}
+\]
+Each reconstructed route carries one unit of weight.
+\end{column}
+\begin{column}{0.46\textwidth}
+\textbf{Value-weighted share}
+\[
+S^{V}_{k,t}=\frac{\mathrm{Vol}^I_{k,t}}{\sum_j \mathrm{Vol}^I_{j,t}}
+\]
+Each route carries supported realised USD value.
+\end{column}
+\end{columns}
+\vspace{0.75cm}
+{\small A larger value shift can reflect route size, routing topology, or candidate composition. The decomposition tests these margins directly.\par}
+\end{frame}
+
+\begin{frame}{A9. USDT gains intermediary use beyond endpoint demand}
+\begin{columns}[T]
+\begin{column}{0.44\textwidth}
+\textbf{Count margin}
+\vspace{0.25cm}
 \begin{itemize}
-\item[] {\scriptsize\textbf{Estimands and defences}}
-\item[] {\scriptsize Realised dominance and matched-sample characterisation}
-\item[] {\scriptsize Exact-clock same-block capture design}
-\item[] {\scriptsize Block against hour verdict, 371 triangles on seven days}
-\item[] {\scriptsize Curve and Balancer signed exclusion by year and by leg}
-\item[] {\scriptsize V1 forced-vehicle classification and its token-level tests}
+\item Intermediary-minus-endpoint share rises by \textbf{2.39 pp}.
+\item Calendar-HAC SE: 0.89 pp.
+\end{itemize}
+\end{column}
+\begin{column}{0.50\textwidth}
+\textbf{Strict-value margin}
+\vspace{0.25cm}
+\begin{itemize}
+\item Gap moves from \textbf{$-7.13$ pp} to \textbf{$+8.14$ pp}.
+\item Change: 15.27 pp; calendar-HAC SE: 1.50 pp.
 \end{itemize}
 \end{column}
 \end{columns}
-\vspace{0.4em}
-\srcnote{Swap records for eight Ethereum automated market makers, 2020-02-11 to 2026-06-30}
+\vspace{0.75cm}
+\begin{center}
+{\large\color{ucldark}\bfseries USDT becomes an intermediary beyond what its endpoint demand predicts.\par}
+\end{center}
+\end{frame}
+
+\begin{frame}{A10. Capital, inventory, and depth are distinct quantities}
+\begin{columns}[T]
+\begin{column}{0.47\textwidth}
+\textbf{Deposited capital}\par Funds committed to a pool; reconciled balances or audited provider TVL.
+\vspace{0.45cm}
+\textbf{Inventory}\par Exact token amounts held by the pool.
+\end{column}
+\begin{column}{0.47\textwidth}
+\textbf{Executable depth}\par Output near a price under the invariant and exact quote state.
+\vspace{0.45cm}
+\textbf{Quote quality}\par Realised output for notional $q$ on executable paths.
+\end{column}
+\end{columns}
+\vspace{0.65cm}
+{\small TVL can measure capital. It is not automatically the denominator for executable depth.\par}
+\end{frame}
+
+\begin{frame}{A11. Integration changes both reach and route choice}
+\begin{columns}[T]
+\begin{column}{0.47\textwidth}
+\textbf{Opportunity reach}
+\begin{itemize}
+\item active venues
+\item feasible paths
+\item candidate vehicles
+\end{itemize}
+\end{column}
+\begin{column}{0.47\textwidth}
+\textbf{Choice within reach}
+\begin{itemize}
+\item direct versus intermediated
+\item single- versus cross-venue
+\item sequential versus split routing
+\end{itemize}
+\end{column}
+\end{columns}
+\vspace{0.7cm}
+\begin{center}
+{\large The interaction test asks whether vehicle rotation changes with integration while holding the opportunity cell fixed.\par}
+\end{center}
+\end{frame}
+
+\begin{frame}{A12. References: vehicle currencies and market structure}
+\begin{itemize}
+\item Amiti, Itskhoki and Konings (2022), \emph{Quarterly Journal of Economics}
+\item Dowd and Greenaway (1993), \emph{Economic Journal}
+\item Flandreau and Jobst (2009), \emph{Economic Journal}
+\item Gopinath and Stein (2021), \emph{Quarterly Journal of Economics}
+\item Krugman (1980), \emph{Journal of Money, Credit and Banking}
+\item Makarov and Schoar (2020), \emph{Journal of Financial Economics}
+\end{itemize}
+\end{frame}
+
+\begin{frame}{A13. References: decentralised exchange design}
+\begin{itemize}
+\item Adams et al. (2021), \emph{Uniswap v3 Core}
+\item Angeris, Chitra, Evans and Boyd, optimal routing in constant-function markets
+\item Barbon and Ranaldo, decentralised exchange costs and market structure
+\item Lehar and Parlour (2024), \emph{Journal of Finance}
+\item Milionis, Moallemi, Roughgarden and Zhang, loss versus rebalancing
+\item Xu, Paruch, Cousaert and Feng, AMM design and slippage
+\end{itemize}
 \end{frame}
