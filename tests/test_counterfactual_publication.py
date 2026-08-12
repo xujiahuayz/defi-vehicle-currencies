@@ -980,6 +980,7 @@ owner()
     "cut",
     [
         "retired_owner_installed",
+        "retired_indexed",
         "retired",
         "retired_removed:transaction.json",
         "retired_owner_removed",
@@ -1094,3 +1095,143 @@ def test_retired_cleanup_preserves_unowned_foreign_directories() -> None:
             owner()
         assert (foreign / "keep").read_text(encoding="utf-8") == "foreign"
         assert invalid_owner.is_dir()
+
+
+def test_foreign_tombstones_cannot_starve_indexed_owned_cleanup() -> None:
+    root = Path(__file__).resolve().parents[1]
+    with tempfile.TemporaryDirectory() as directory:
+        work = Path(directory)
+        output = work / "output"
+        marker = work / "marker.json"
+        output.write_text("prior", encoding="utf-8")
+        capability_id = f"test.foreign-starvation.{uuid.uuid4().hex}"
+        program = r'''
+import os
+from pathlib import Path
+import signal
+import sys
+
+import ddvc.journaled_capability as publication
+from ddvc.counterfactual_publication import publication_capability, register_publication_capability
+
+capability_id, output_raw, marker_raw = sys.argv[1:]
+output = Path(output_raw)
+marker = Path(marker_raw)
+register_publication_capability(capability_id, (output,), marker_path=marker)
+
+def kill_at(label):
+    if label == "retired":
+        os.kill(os.getpid(), signal.SIGKILL)
+
+publication._publication_cleanup_cut = kill_at
+
+@publication_capability(
+    capability_id,
+    output_selector=lambda: (output,),
+    source_selector=lambda: (),
+)
+def owner():
+    output.write_text("candidate", encoding="utf-8")
+
+owner()
+'''
+        killed = subprocess.run(
+            [
+                sys.executable,
+                "-c",
+                program,
+                capability_id,
+                str(output),
+                str(marker),
+            ],
+            cwd=root,
+            env={**os.environ, "PYTHONPATH": f"{root / 'src'}:{root}"},
+            check=False,
+        )
+        assert killed.returncode == -signal.SIGKILL
+        prefix = ".marker.json.transactions.retired."
+        for number in range(64):
+            foreign = work / f"{prefix}{number:032x}"
+            foreign.mkdir()
+            (foreign / "retired-owner.json").write_text(
+                '{"policy": "foreign"}\n', encoding="utf-8"
+            )
+        register_publication_capability(
+            capability_id, (output,), marker_path=marker
+        )
+
+        @publication_capability(
+            capability_id,
+            output_selector=lambda: (output,),
+            source_selector=lambda: (),
+        )
+        def owner():
+            output.write_text("recovered", encoding="utf-8")
+
+        with _install_for_test(owner):
+            owner()
+        assert output.read_text(encoding="utf-8") == "recovered"
+        require_current_publication(
+            capability_id,
+            marker_path=marker,
+            expected_outputs=(output,),
+        )
+        assert len(list(work.glob(f"{prefix}*"))) == 64
+        assert not (work / ".marker.json.transactions.retired-index.json").exists()
+
+
+def test_retired_cleanup_does_not_scan_the_marker_parent() -> None:
+    with tempfile.TemporaryDirectory() as directory:
+        root = Path(directory)
+        output = root / "output"
+        marker = root / "marker.json"
+        capability_id = f"test.no-parent-scan.{uuid.uuid4().hex}"
+        for number in range(2_000):
+            (root / f"foreign-{number:04d}").write_text("x", encoding="utf-8")
+        register_publication_capability(
+            capability_id, (output,), marker_path=marker
+        )
+        capability = publication._CAPABILITIES[capability_id]
+        real_iterdir = Path.iterdir
+
+        def reject_parent_scan(path: Path):
+            if path == root:
+                raise AssertionError("retired cleanup scanned the unbounded marker parent")
+            return real_iterdir(path)
+
+        with patch.object(Path, "iterdir", reject_parent_scan):
+            publication._cleanup_retired_transactions(capability)
+
+
+def test_retired_index_removes_at_most_sixty_four_owned_tombstones() -> None:
+    with tempfile.TemporaryDirectory() as directory:
+        root = Path(directory)
+        marker = root / "marker.json"
+        output = root / "output"
+        capability_id = f"test.retired-bound.{uuid.uuid4().hex}"
+        register_publication_capability(
+            capability_id, (output,), marker_path=marker
+        )
+        capability = publication._CAPABILITIES[capability_id]
+        transactions = [f"{number:032x}" for number in range(70)]
+        for transaction_id in transactions:
+            tombstone = root / (
+                f".marker.json.transactions.retired.{transaction_id}"
+            )
+            tombstone.mkdir()
+            (tombstone / "retired-owner.json").write_text(
+                json.dumps(
+                    publication._retired_owner_payload(
+                        capability, transaction_id
+                    )
+                )
+                + "\n",
+                encoding="utf-8",
+            )
+        publication._write_retired_index(capability, transactions)
+        publication._cleanup_retired_transactions(capability)
+        assert publication._load_retired_index(capability) == transactions[64:]
+        assert len(list(root.glob(".marker.json.transactions.retired.*"))) == 6
+        publication._cleanup_retired_transactions(capability)
+        assert publication._load_retired_index(capability) == []
+        assert not list(root.glob(".marker.json.transactions.retired.*"))

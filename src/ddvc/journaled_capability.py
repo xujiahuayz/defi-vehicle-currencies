@@ -111,6 +111,10 @@ _ACTIVE_CAPABILITY: ContextVar[object | None] = ContextVar(
 )
 _RETIRED_OWNER = "retired-owner.json"
 _RETIRED_CLEANUP_LIMIT = 64
+_RETIRED_INDEX_LIMIT = 1024
+_RETIRED_INDEX_MAX_BYTES = 128 * 1024
+_RETIRED_POLICY = "ddvc-journaled-capability-retired-transaction-v1"
+_RETIRED_LEGACY_POLICY = "ddvc-counterfactual-retired-transaction-v1"
 
 
 def _sha256(path: Path) -> str:
@@ -230,7 +234,7 @@ def _snapshot(target: Path, root: Path) -> _Backup:
             )
         if referent.exists():
             raise RuntimeError(
-                f"counterfactual publication symlink targets a non-file: {target}"
+                f"journaled capability symlink targets a non-file: {target}"
             )
         return _Backup(
             target,
@@ -250,7 +254,7 @@ def _snapshot(target: Path, root: Path) -> _Backup:
             sha256=_sha256(target),
         )
     if target.exists():
-        raise RuntimeError(f"counterfactual publication target is not a file: {target}")
+        raise RuntimeError(f"journaled capability target is not a file: {target}")
     return _Backup(target, "absent", resolved_parent)
 
 
@@ -370,11 +374,11 @@ def _require_marker_commit(
     try:
         installed = json.loads(capability.marker.read_text(encoding="utf-8"))
     except (OSError, json.JSONDecodeError) as error:
-        raise RuntimeError("counterfactual publication marker did not reopen") from error
+        raise RuntimeError("journaled capability marker did not reopen") from error
     if installed != expected_payload:
-        raise RuntimeError("counterfactual publication marker changed during commit")
+        raise RuntimeError("journaled capability marker changed during commit")
     if _seal_outputs(capability.outputs) != sealed_outputs:
-        raise RuntimeError("counterfactual publication output changed during commit")
+        raise RuntimeError("journaled capability output changed during commit")
     validated = _validate_marker_payload(
         capability.capability_id,
         capability.marker,
@@ -382,7 +386,7 @@ def _require_marker_commit(
         expected_outputs=capability.outputs,
     )
     if validated.get("transaction_id") != transaction_id:
-        raise RuntimeError("counterfactual publication marker selected another transaction")
+        raise RuntimeError("journaled capability marker selected another transaction")
 
 
 def _marker_payload(
@@ -432,12 +436,12 @@ def _validate_marker_payload(
         or not isinstance(payload.get("outputs"), list)
     ):
         raise RuntimeError(
-            f"counterfactual publication marker is invalid: {capability_id}"
+            f"journaled capability marker is invalid: {capability_id}"
         )
     observed = [_describe_output(Path(str(row.get("path", "")))) for row in payload["outputs"] if isinstance(row, dict)]
     if observed != payload["outputs"]:
         raise RuntimeError(
-            f"counterfactual publication outputs disagree with marker: {capability_id}"
+            f"journaled capability outputs disagree with marker: {capability_id}"
         )
     expected = (
         tuple(_lexical(Path(path)) for path in expected_outputs)
@@ -448,14 +452,14 @@ def _validate_marker_payload(
     )
     if expected is not None and tuple(Path(row["path"]) for row in observed) != expected:
         raise RuntimeError(
-            f"counterfactual publication marker has the wrong output perimeter: {capability_id}"
+            f"journaled capability marker has the wrong output perimeter: {capability_id}"
         )
     generation_id = hashlib.sha256(
         json.dumps(observed, sort_keys=True, separators=(",", ":")).encode()
     ).hexdigest()
     if payload.get("generation_id") != generation_id:
         raise RuntimeError(
-            f"counterfactual publication generation is invalid: {capability_id}"
+            f"journaled capability generation is invalid: {capability_id}"
         )
     return payload
 
@@ -473,7 +477,7 @@ def require_current_publication(
         payload = json.loads(marker.read_text(encoding="utf-8"))
     except (FileNotFoundError, json.JSONDecodeError, OSError) as error:
         raise RuntimeError(
-            f"counterfactual publication is not current: {capability_id}"
+            f"journaled capability is not current: {capability_id}"
         ) from error
     return _validate_marker_payload(
         capability_id,
@@ -507,7 +511,7 @@ def current_publication(
         )
         if current != initial:
             raise RuntimeError(
-                f"counterfactual publication changed while its lease was acquired: {capability_id}"
+                f"journaled capability changed while its lease was acquired: {capability_id}"
             )
         yield current
         if require_current_publication(
@@ -516,7 +520,7 @@ def current_publication(
             expected_outputs=expected_outputs,
         ) != current:
             raise RuntimeError(
-                f"counterfactual publication changed during read: {capability_id}"
+                f"journaled capability changed during read: {capability_id}"
             )
 
 
@@ -528,6 +532,10 @@ def _retired_prefix(capability: _Capability) -> str:
     return f"{_journal_root(capability).name}.retired."
 
 
+def _retired_index_path(capability: _Capability) -> Path:
+    return capability.marker.parent / f"{_journal_root(capability).name}.retired-index.json"
+
+
 def _retired_owner_payload(
     capability: _Capability, transaction_id: str
 ) -> dict[str, object]:
@@ -535,7 +543,7 @@ def _retired_owner_payload(
         "schema_version": 1,
         "capability_id": capability.capability_id,
         "transaction_id": transaction_id,
-        "policy": "ddvc-counterfactual-retired-transaction-v1",
+        "policy": _RETIRED_POLICY,
     }
 
 
@@ -545,40 +553,88 @@ def _valid_transaction_id(value: str) -> bool:
     )
 
 
+def _load_retired_index(capability: _Capability) -> list[str]:
+    """Read one bounded capability-owned list of exact tombstone identities."""
+
+    path = _retired_index_path(capability)
+    if not path.exists() and not path.is_symlink():
+        return []
+    if path.is_symlink() or not path.is_file() or path.stat().st_size > _RETIRED_INDEX_MAX_BYTES:
+        raise RuntimeError("journaled capability retirement index has an unsafe type or size")
+    try:
+        payload = json.loads(path.read_text(encoding="utf-8"))
+    except (OSError, json.JSONDecodeError) as error:
+        raise RuntimeError("journaled capability retirement index is invalid") from error
+    transactions = payload.get("transactions") if isinstance(payload, dict) else None
+    if (
+        not isinstance(payload, dict)
+        or payload.get("schema_version") != 1
+        or payload.get("capability_id") != capability.capability_id
+        or payload.get("policy") != _RETIRED_POLICY
+        or not isinstance(transactions, list)
+        or len(transactions) > _RETIRED_INDEX_LIMIT
+        or len(set(transactions)) != len(transactions)
+        or any(not isinstance(value, str) or not _valid_transaction_id(value) for value in transactions)
+    ):
+        raise RuntimeError("journaled capability retirement index is invalid")
+    return transactions
+
+
+def _write_retired_index(capability: _Capability, transactions: list[str]) -> None:
+    path = _retired_index_path(capability)
+    if not transactions:
+        existed = path.exists() or path.is_symlink()
+        path.unlink(missing_ok=True)
+        if existed:
+            _fsync_directory(path.parent)
+        return
+    if len(transactions) > _RETIRED_INDEX_LIMIT:
+        raise RuntimeError("journaled capability retirement index is full")
+    _atomic_json(
+        path,
+        {
+            "schema_version": 1,
+            "capability_id": capability.capability_id,
+            "policy": _RETIRED_POLICY,
+            "transactions": transactions,
+        },
+    )
+
+
 def _cleanup_retired_transactions(capability: _Capability) -> None:
-    """Boundedly remove only transaction tombstones owned by this capability."""
+    """Remove at most 64 indexed tombstones without scanning foreign siblings."""
 
     parent = capability.marker.parent
-    prefix = _retired_prefix(capability)
-    seen = 0
-    for candidate in sorted(parent.iterdir()):
-        if not candidate.name.startswith(prefix):
-            continue
-        transaction_id = candidate.name[len(prefix) :]
-        if not _valid_transaction_id(transaction_id):
-            continue
-        if seen >= _RETIRED_CLEANUP_LIMIT:
+    pending = _load_retired_index(capability)
+    retained: list[str] = []
+    for position, transaction_id in enumerate(pending):
+        if position >= _RETIRED_CLEANUP_LIMIT:
+            retained.extend(pending[position:])
             break
-        seen += 1
-        if candidate.is_symlink() or not candidate.is_dir():
+        candidate = parent / f"{_retired_prefix(capability)}{transaction_id}"
+        if not candidate.exists() and not candidate.is_symlink():
             continue
+        if candidate.is_symlink() or not candidate.is_dir():
+            raise RuntimeError("journaled capability tombstone has an unsafe type")
         owner = candidate / _RETIRED_OWNER
         if not owner.exists() and not owner.is_symlink():
             try:
                 candidate.rmdir()
             except OSError:
-                pass
+                raise RuntimeError("indexed journaled capability tombstone lacks ownership")
             else:
                 _fsync_directory(parent)
             continue
         if owner.is_symlink() or not owner.is_file():
-            continue
+            raise RuntimeError("journaled capability tombstone ownership is invalid")
         try:
             payload = json.loads(owner.read_text(encoding="utf-8"))
         except (OSError, json.JSONDecodeError):
-            continue
-        if payload != _retired_owner_payload(capability, transaction_id):
-            continue
+            raise RuntimeError("journaled capability tombstone ownership is invalid")
+        expected = _retired_owner_payload(capability, transaction_id)
+        legacy = {**expected, "policy": _RETIRED_LEGACY_POLICY}
+        if payload != expected and payload != legacy:
+            raise RuntimeError("journaled capability tombstone ownership is invalid")
         for child in sorted(candidate.iterdir()):
             if child == owner:
                 continue
@@ -594,6 +650,7 @@ def _cleanup_retired_transactions(capability: _Capability) -> None:
         candidate.rmdir()
         _fsync_directory(parent)
         _publication_cleanup_cut("retired_removed")
+    _write_retired_index(capability, retained)
 
 
 def _retire_transaction(
@@ -607,13 +664,17 @@ def _retire_transaction(
         or root.name != transaction_id
         or not _valid_transaction_id(transaction_id)
     ):
-        raise RuntimeError("counterfactual transaction retirement perimeter is invalid")
+        raise RuntimeError("journaled capability transaction retirement perimeter is invalid")
     owner = root / _RETIRED_OWNER
     _atomic_json(owner, _retired_owner_payload(capability, transaction_id))
     _publication_cleanup_cut("retired_owner_installed")
+    pending = _load_retired_index(capability)
+    if transaction_id not in pending:
+        _write_retired_index(capability, [*pending, transaction_id])
+    _publication_cleanup_cut("retired_indexed")
     retired = journal.parent / f"{_retired_prefix(capability)}{transaction_id}"
     if retired.exists() or retired.is_symlink():
-        raise RuntimeError("counterfactual transaction tombstone already exists")
+        raise RuntimeError("journaled capability transaction tombstone already exists")
     root.replace(retired)
     _fsync_directory(journal)
     _fsync_directory(journal.parent)
@@ -683,7 +744,7 @@ def _rollback(
                 f"; recovery manifest update failed: {type(error).__name__}: {error}"
             )
         raise JournaledCapabilityRecoveryRequired(
-            f"counterfactual publication rollback failed; recovery evidence retained at {root}{manifest_error}"
+            f"journaled capability rollback failed; recovery evidence retained at {root}{manifest_error}"
         ) from original
     _write_status(
         root,
@@ -753,12 +814,12 @@ def _recover_transactions(capability: _Capability) -> None:
             ]
         except (KeyError, OSError, TypeError, ValueError, json.JSONDecodeError) as error:
             raise JournaledCapabilityRecoveryRequired(
-                f"counterfactual publication has corrupt recovery evidence at {root}"
+                f"journaled capability has corrupt recovery evidence at {root}"
             ) from error
         expected_targets = (*capability.outputs, capability.marker)
         if status == "active" and tuple(backup.target for backup in backups) != expected_targets:
             raise JournaledCapabilityRecoveryRequired(
-                f"counterfactual publication has incomplete recovery evidence at {root}"
+                f"journaled capability has incomplete recovery evidence at {root}"
             )
         if status in {"preparing", "committed", "rolled_back"}:
             _retire_transaction(root, capability, transaction_id)
@@ -770,7 +831,7 @@ def _recover_transactions(capability: _Capability) -> None:
             _rollback(root, capability, transaction_id, backups, None)
         else:
             raise JournaledCapabilityRecoveryRequired(
-                f"counterfactual publication requires manual recovery at {root}"
+                f"journaled capability requires manual recovery at {root}"
             )
 
 
