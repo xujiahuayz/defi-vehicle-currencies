@@ -14,6 +14,7 @@ from ddvc.state_data import STATE_GENERATIONS
 from scripts import refresh_panel_dependents as refresher
 from scripts.audit_findings_freeze import (
     SPECIFICATION_LOCK,
+    active_claim_requires_any,
     active_claim_requires_wide_state,
     card_source_evidence_text,
     cex_reference_support_checks,
@@ -97,6 +98,21 @@ class FindingsFreezeAuditTest(unittest.TestCase):
         executable = claim_execution_perimeter(payload).executable_claims[0]
         executable["inputs"].append("data/processed/market_state/engine_x")
         self.assertTrue(active_claim_requires_wide_state(payload))
+
+    def test_optional_artifact_gates_follow_only_executable_claim_inputs(self) -> None:
+        payload = json.loads(SPECIFICATION_LOCK.read_text())
+        self.assertTrue(
+            active_claim_requires_any(
+                payload,
+                ("data/processed/pool_capital_release/current.json",),
+            )
+        )
+        self.assertFalse(
+            active_claim_requires_any(
+                payload,
+                ("data/processed/rent_incidence_v2_pool_day.parquet",),
+            )
+        )
 
     def test_retired_route_gas_gate_covers_code_refresh_publications_and_artifacts(self) -> None:
         with tempfile.TemporaryDirectory() as directory:

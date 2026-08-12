@@ -189,6 +189,19 @@ def _resolve_record_path(value: object) -> Path:
     return path if path.is_absolute() else REPO_ROOT / path
 
 
+def _certificate_data_root(certificate_path: Path) -> Path:
+    """Recover the canonical data root from a local raw certificate path."""
+
+    if (
+        certificate_path.parent.name != "raw_generation"
+        or certificate_path.parent.parent.name != "processed"
+    ):
+        raise ValueError(
+            "capital reserve authority certificate is outside processed/raw_generation"
+        )
+    return certificate_path.parent.parent.parent
+
+
 def _day_identity(rows: Iterable[Mapping[str, object]]) -> str:
     selected = list(rows)
     if len(selected) == 1:
@@ -260,7 +273,7 @@ def validate_certified_cp_stream_manifest(
     ):
         raise ValueError("capital reserve authority calendar is invalid")
     requested = [RawPartition(expected_venue, RESERVE_STREAM, str(day)) for day in days]
-    data_root = certificate_path.parents[1]
+    data_root = _certificate_data_root(certificate_path)
     rows, _authority = load_certified_partition_ledger(
         certificate_path,
         data_root=data_root,
@@ -418,7 +431,7 @@ def _certified_cp_streams(
         partitions=partitions,
         content_identity_sha256=canonical_json_sha256(
             {
-                "policy": f"certified-cp-{kind}-v1",
+                "policy": f"certified-cp-{kind.replace('_', '-')}-v1",
                 "schema_version": SCHEMA_VERSION,
                 "normalizer_engine": STATE_ENGINE,
                 "partitions": [

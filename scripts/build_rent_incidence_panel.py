@@ -69,6 +69,7 @@ UNIQUE_KEYS = ("venue", "day", "pool")
 COMMON_SHARD_CODE_SOURCES = [
     "scripts/build_rent_incidence_panel.py",
     "src/ddvc/capital_contracts.py",
+    "src/ddvc/cp_state_stream.py",
     "src/ddvc/liquidity.py",
     "src/ddvc/paths.py",
     "src/ddvc/state_data.py",
@@ -525,6 +526,24 @@ def _require_generation_current(
         )
 
 
+def validate_v2_release_sources(
+    state_release: CPStateStreamSet,
+    event_source_release: V2EventSourceRelease,
+    capital_release: CapitalRelease,
+) -> None:
+    """Reopen every selected pointer and reject a cross-generation install."""
+
+    state_release.assert_current()
+    reopened_event_source = resolve_v2_event_source_release(
+        event_source_release.pointer_path
+    )
+    if reopened_event_source.generation_id != event_source_release.generation_id:
+        raise RuntimeError("V2 event-source generation changed during rent build")
+    reopened_capital = resolve_capital_release(capital_release.pointer_path)
+    if reopened_capital.generation_id != capital_release.generation_id:
+        raise RuntimeError("capital generation changed during rent build")
+
+
 def _assemble_family(
     *,
     days: list[str],
@@ -617,13 +636,9 @@ def build_v2(
         inputs=inputs,
     )
     def validate_sources(_path: Path) -> None:
-        state_release.assert_current()
-        reopened_event_source = resolve_v2_event_source_release(
-            selected_event_source.pointer_path
+        validate_v2_release_sources(
+            state_release, selected_event_source, selected_capital
         )
-        if reopened_event_source.generation_id != selected_event_source.generation_id:
-            raise RuntimeError("V2 event-source generation changed during rent build")
-        resolve_capital_release(selected_capital.pointer_path)
 
     _assemble_family(
         days=days,

@@ -54,6 +54,8 @@ from scripts.build_transaction_state_frontier import (
     rejection_record,
     require_full_daily_target_release,
     replay_checkpoint_due,
+    sparse_replay_history_lease,
+    publish_full_daily_frontier,
     replay_ordered_event_shards,
     run_daily_segments,
     save_replay_checkpoint,
@@ -108,6 +110,61 @@ class DriftingTargetContext:
 
 
 class TransactionStateFrontierScriptTests(unittest.TestCase):
+    def test_sparse_replay_binds_intervening_tick_history(self) -> None:
+        with TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            paths = {
+                (venue, day): root / f"{venue}-{day}.json"
+                for venue in ("uniswap_v3", "uniswap_v4")
+                for day in ("20210504", "20210505", "20210506")
+            }
+            for path in paths.values():
+                path.write_text("source\n", encoding="utf-8")
+            with patch(
+                "scripts.build_transaction_state_frontier.state_partition_inputs",
+                side_effect=lambda _root, _family, venue, day: [paths[(venue, day)]],
+            ):
+                lease = sparse_replay_history_lease(["20210506"], raw_root=root)
+            paths[("uniswap_v3", "20210505")].write_text(
+                "changed\n", encoding="utf-8"
+            )
+            with self.assertRaisesRegex(RuntimeError, "leased source file changed"):
+                lease.assert_current()
+
+    def test_full_daily_publication_withholds_marker_on_final_source_drift(self) -> None:
+        support = [
+            {
+                "day": "20250101",
+                "within_20pct_chosen_quote_eligible_routes": 1,
+                "within_20pct_chosen_quote_available": 1,
+                "within_20pct_chosen_output_mismatch": 0,
+                "scored_routes": 1,
+                "rejected_routes": 0,
+            }
+        ]
+        target = DriftingTargetContext(fail_on=2)
+        target.content_identity_sha256 = "a" * 64
+        with (
+            patch(
+                "scripts.build_transaction_state_frontier.assemble_cached_output",
+                return_value=1,
+            ),
+            patch("scripts.build_transaction_state_frontier.write_panel"),
+            patch("scripts.build_transaction_state_frontier.invalidate_frontier_release_marker"),
+            patch("scripts.build_transaction_state_frontier.publish_frontier_release_marker") as publish,
+        ):
+            with self.assertRaisesRegex(RuntimeError, "exact-source drift"):
+                publish_full_daily_frontier(
+                    support,
+                    selected=["20250101"],
+                    day_cache=Path("cache"),
+                    inputs=[],
+                    engine_key="engine",
+                    input_key="input",
+                    target_release=target,
+                    source_identity="source",
+                )
+        publish.assert_not_called()
     def test_full_daily_target_release_has_one_certified_resolver(self) -> None:
         released = object()
         with patch("scripts.build_transaction_state_frontier.resolve_target_release", return_value=released) as resolve:
@@ -747,6 +804,7 @@ class TransactionStateFrontierScriptTests(unittest.TestCase):
             patch("scripts.build_transaction_state_frontier.available_days", return_value=days),
             patch("scripts.build_transaction_state_frontier.require_full_daily_target_release", return_value=release),
             patch.object(TargetRelease, "content_identity_sha256", new_callable=PropertyMock, return_value="source"),
+            patch.object(TargetRelease, "assert_current"),
             patch("scripts.build_transaction_state_frontier.transaction_frontier_audit_days", return_value=days),
             patch("scripts.build_transaction_state_frontier.require_frontier_audit_gate", return_value=(1.0, 1.0, 1.0)),
             patch("scripts.build_transaction_state_frontier.frontier_cache_identity", return_value=("frontier", "input", "generation")),

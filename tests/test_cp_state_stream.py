@@ -1,10 +1,13 @@
 from __future__ import annotations
 
+import gzip
+import json
 from pathlib import Path
 
 import pytest
 
-from ddvc.cp_state_stream import RESERVE_STREAM, certified_cp_event_stream, certified_cp_state_stream
+from ddvc.cp_state_stream import RESERVE_STREAM, certified_cp_event_stream, certified_cp_state_stream, validate_certified_cp_stream_manifest
+from raw_cert_fixtures import install_local_raw_certificate
 
 
 def reserve_row(day: str, stream: str = RESERVE_STREAM) -> dict[str, object]:
@@ -30,6 +33,40 @@ def authorities(tmp_path: Path) -> tuple[Path, Path]:
     certificate = root / "uniswap_v2_local_certificate.json"
     certificate.write_text('{"partition_ledger":"reserve.jsonl"}\n', encoding="utf-8")
     return certificate, ledger
+
+
+def test_capital_manifest_reopens_through_the_real_certified_ledger(tmp_path) -> None:
+    raw = tmp_path / "data" / "raw" / "thegraph"
+    path = raw / "uniswap_v2" / "uniswap_v2_hourly_reserves_20250101.jsonl.gz"
+    path.parent.mkdir(parents=True)
+    pair = {
+        "id": "0xpool",
+        "token0": {"id": "0xa", "symbol": "A", "decimals": "18"},
+        "token1": {"id": "0xb", "symbol": "B", "decimals": "6"},
+    }
+    with gzip.open(path, "wt", encoding="utf-8") as handle:
+        handle.write(
+            json.dumps(
+                {
+                    "id": "snapshot",
+                    "hourStartUnix": "1735689600",
+                    "reserve0": "10",
+                    "reserve1": "20",
+                    "pair": pair,
+                }
+            )
+            + "\n"
+        )
+    install_local_raw_certificate(
+        raw, "uniswap_v2", (RESERVE_STREAM,), "20250101"
+    )
+    release = certified_cp_state_stream(
+        "uniswap_v2", ("20250101",), raw_root=raw
+    )
+
+    validate_certified_cp_stream_manifest(
+        release.manifest_record(), expected_venue="uniswap_v2"
+    )
 
 
 def test_reserve_only_certificate_succeeds_without_event_authorities(tmp_path, monkeypatch) -> None:

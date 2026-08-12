@@ -35,6 +35,7 @@ from ddvc.analysis.transaction_frontier import (
     chosen_quote_coverage_share,
 )
 from ddvc.data_release import require_node_d_release
+from ddvc.frontier_release import resolve_frontier_release
 from ddvc.paths import DATA_DIR
 from ddvc.provenance import require_current_artifacts, stamp
 from ddvc.runtime import atomic_output, exclusive_job
@@ -51,6 +52,7 @@ CODE_SOURCES = [
     "src/ddvc/analysis/dynamics.py",
     "src/ddvc/analysis/routing_contract.py",
     "src/ddvc/analysis/transaction_frontier.py",
+    "src/ddvc/frontier_release.py",
 ]
 
 REQUIRED_COLUMNS = {
@@ -495,19 +497,24 @@ def main() -> int:
     parser.add_argument("--memory-limit", default="1GB")
     args = parser.parse_args()
     require_node_d_release(routes=True, market_state=True)
+    frontier_release = resolve_frontier_release()
+    source = frontier_release.artifacts["panel"]
+    support = frontier_release.artifacts["support"]
     require_current_artifacts(
-        [SOURCE, SUPPORT], consumer="routing-maturation D3 materializer"
+        frontier_release.artifacts.values(),
+        consumer="routing-maturation D3 materializer",
     )
     results = build_panels(
-        SOURCE,
-        SUPPORT,
+        source,
+        support,
         CELL_DAY,
         TRANSITION,
         EXACT_HORIZONS,
         memory_limit=args.memory_limit,
         threads=args.threads,
     )
-    inputs = [SOURCE, SUPPORT]
+    frontier_release.assert_current()
+    inputs = list(frontier_release.lineage_paths)
     stamp(
         CELL_DAY,
         code_sources=CODE_SOURCES,
@@ -533,6 +540,7 @@ def main() -> int:
         rows=int(results["horizon_rows"]),
         notes="exact 1/7/30/120-calendar-day links with missing targets retained as missing; no fitted models",
     )
+    frontier_release.assert_current()
     print(
         f"validated {int(results['source_rows']):,} route rows at "
         f"{float(results['chosen_reproduction']):.3%} chosen-route reproduction and "

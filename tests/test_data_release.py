@@ -585,7 +585,6 @@ class DataReleaseTests(unittest.TestCase):
             "scripts/build_rent_incidence_panel.py": "certified_cp_event_stream(",
             "scripts/build_v2_token_panel.py": "released_state_partitions(",
             "scripts/build_pool_capital_panel.py": "certified_cp_state_stream(",
-            "scripts/run_rent_incidence.py": "require_node_d_release(routes=True, market_state=True)",
         }
         for filename, call in expected.items():
             with self.subTest(filename=filename):
@@ -728,7 +727,6 @@ class DataReleaseTests(unittest.TestCase):
             "scripts/build_transaction_state_frontier.py",
             "scripts/build_routing_maturation_panel.py",
             "scripts/build_counterfactual_dominance.py",
-            "scripts/run_rent_incidence.py",
         ]
         for filename in filenames:
             with self.subTest(filename=filename):

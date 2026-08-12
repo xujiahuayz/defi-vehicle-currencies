@@ -32,6 +32,7 @@ from ddvc.capital_contracts import (
 from ddvc.capital_release import CapitalRelease, resolve_capital_release
 from ddvc.cp_state_stream import certified_cp_event_stream, certified_cp_state_stream
 from ddvc.fetch.sources import DEX_SOURCES, get_source
+from ddvc.frontier_release import resolve_frontier_release
 from ddvc.liquidity import (
     CAPITAL_COLUMN,
     LIQUIDITY_CONTRACTS,
@@ -1447,17 +1448,29 @@ def quote_state_artifact_check() -> tuple[bool, str]:
 def active_claim_requires_wide_state(payload: dict) -> bool:
     """Gate the optional wide state cache only when an executable claim names it."""
 
-    perimeter = claim_execution_perimeter(payload)
-    inputs = {
-        str(path)
-        for claim in perimeter.executable_claims
-        for path in claim.get("inputs", [])
-    }
+    inputs = executable_claim_inputs(payload)
     return any(
         path == "data/processed/market_state_quality.parquet"
         or path.startswith("data/processed/market_state/")
         for path in inputs
     )
+
+
+def executable_claim_inputs(payload: dict) -> frozenset[str]:
+    """Return the exact artifact perimeter of claims executable at this stage."""
+
+    perimeter = claim_execution_perimeter(payload)
+    return frozenset(
+        str(path)
+        for claim in perimeter.executable_claims
+        for path in claim.get("inputs", [])
+    )
+
+
+def active_claim_requires_any(payload: dict, paths: tuple[str, ...]) -> bool:
+    """Decide whether one diagnostic family can affect an executable claim."""
+
+    return bool(executable_claim_inputs(payload).intersection(paths))
 
 
 def validate_capital_contract_rows(rows: pd.DataFrame) -> tuple[bool, str]:
@@ -3841,6 +3854,11 @@ def main() -> int:
     def record(name: str, passed: bool, detail: str) -> None:
         checks.append((name, passed, detail))
 
+    def executable_inputs_require(paths: tuple[str, ...]) -> bool:
+        if not early_lock_payload:
+            return False
+        return active_claim_requires_any(early_lock_payload, paths)
+
     missing_graph_fields = [name for name in GRAPH_FIELDS if not state.get(name)]
     record(
         "workflow graph state",
@@ -3860,24 +3878,87 @@ def main() -> int:
             True,
             "not required by the executable claim-input perimeter",
         )
-    for name, passed, detail in capital_artifact_checks():
-        record(name, passed, detail)
-    for name, passed, detail in token_price_artifact_checks():
-        record(name, passed, detail)
-    for name, passed, detail in cex_reference_support_checks():
-        record(name, passed, detail)
-    for name, passed, detail in lp_liquidity_flow_artifact_checks():
-        record(name, passed, detail)
-    for name, passed, detail in rent_incidence_artifact_checks():
-        record(name, passed, detail)
-    for name, passed, detail in v3_inventory_calendar_checks():
-        record(name, passed, detail)
-    for name, passed, detail in v2_event_source_certificate_checks():
-        record(name, passed, detail)
-    for name, passed, detail in v3_event_source_certificate_checks():
-        record(name, passed, detail)
-    for name, passed, detail in retired_route_gas_release_checks():
-        record(name, passed, detail)
+
+    def run_claim_bound_checks(
+        label: str,
+        required_inputs: tuple[str, ...],
+        checker,
+    ) -> None:
+        if executable_inputs_require(required_inputs):
+            for name, passed, detail in checker():
+                record(name, passed, detail)
+        else:
+            record(label, True, "not required by the executable claim-input perimeter")
+
+    run_claim_bound_checks(
+        "capital release artifacts",
+        ("data/processed/pool_capital_release/current.json",),
+        capital_artifact_checks,
+    )
+    run_claim_bound_checks(
+        "token-price artifacts",
+        ("data/processed/token_price_daily.parquet",),
+        token_price_artifact_checks,
+    )
+    run_claim_bound_checks(
+        "CEX reference-support artifacts",
+        ("data/processed/cex_reference_support.parquet",),
+        cex_reference_support_checks,
+    )
+    lp_inputs = (
+        "data/processed/lp_liquidity_flow_events_v3.parquet",
+        "data/processed/lp_liquidity_flow_candidates_v3.parquet",
+        "data/processed/lp_liquidity_flow_daily_v3.parquet",
+        "data/processed/lp_liquidity_flow_rejections_v3.parquet",
+        "data/processed/liquidity_capital_flow_candidate_day.parquet",
+        "data/processed/liquidity_capital_flow_exact_horizons.parquet",
+    )
+    run_claim_bound_checks(
+        "LP liquidity-flow artifacts",
+        lp_inputs,
+        lp_liquidity_flow_artifact_checks,
+    )
+    run_claim_bound_checks(
+        "rent-incidence artifacts",
+        (
+            "data/processed/rent_incidence_v2_pool_day.parquet",
+            "data/processed/lp_transaction_gas.parquet",
+            "data/processed/external_reference_price_intraday.parquet",
+        ),
+        rent_incidence_artifact_checks,
+    )
+    run_claim_bound_checks(
+        "V3 inventory calendar",
+        lp_inputs,
+        v3_inventory_calendar_checks,
+    )
+    route_inputs = (
+        "data/processed/counterfactual_dominance.parquet",
+        "data/processed/counterfactual_dominance_gross.parquet",
+        "data/processed/route_gas_units.parquet",
+        "data/processed/route_transaction_gas.parquet",
+        "data/processed/routing_maturation_cell_day.parquet",
+        "data/processed/routing_transition_cells.parquet",
+        "data/processed/routing_maturation_exact_horizons.parquet",
+    )
+    run_claim_bound_checks(
+        "V2 event-source certificate",
+        route_inputs,
+        v2_event_source_certificate_checks,
+    )
+    run_claim_bound_checks(
+        "V3 event-source certificate",
+        (*route_inputs, *lp_inputs),
+        v3_event_source_certificate_checks,
+    )
+    run_claim_bound_checks(
+        "retired route-gas releases",
+        (
+            "data/processed/route_gas_units.parquet",
+            "data/processed/route_transaction_gas.parquet",
+        ),
+        retired_route_gas_release_checks,
+    )
 
     if wide_state_required and MARKET_STATE_QUALITY.exists():
         quality = pd.read_parquet(MARKET_STATE_QUALITY)
@@ -4093,29 +4174,47 @@ def main() -> int:
     else:
         record("route-cost panel exists", False, str(PANEL.relative_to(ROOT)))
 
-    for name, passed, detail in transaction_frontier_artifact_checks(
-        TRANSACTION_FRONTIER,
-        TRANSACTION_FRONTIER_REJECTIONS,
-        TRANSACTION_FRONTIER_SUPPORT,
-        prefix="transaction frontier",
-        coverage_label="audit-day",
-        expected_days=77,
-        first_day="20200214",
-        last_day="20260615",
-    ):
-        record(name, passed, detail)
+    if executable_inputs_require(route_inputs):
+        for name, passed, detail in transaction_frontier_artifact_checks(
+            TRANSACTION_FRONTIER,
+            TRANSACTION_FRONTIER_REJECTIONS,
+            TRANSACTION_FRONTIER_SUPPORT,
+            prefix="transaction frontier",
+            coverage_label="audit-day",
+            expected_days=77,
+            first_day="20200214",
+            last_day="20260615",
+        ):
+            record(name, passed, detail)
 
-    for name, passed, detail in transaction_frontier_artifact_checks(
-        TRANSACTION_FRONTIER_DAILY,
-        TRANSACTION_FRONTIER_DAILY_REJECTIONS,
-        TRANSACTION_FRONTIER_DAILY_SUPPORT,
-        prefix="transaction frontier daily",
-        coverage_label="calendar",
-        expected_days=len(calendar_days(RESEARCH_SAMPLE_START, RESEARCH_SAMPLE_END)),
-        first_day=RESEARCH_SAMPLE_START,
-        last_day=RESEARCH_SAMPLE_END,
-    ):
-        record(name, passed, detail)
+        try:
+            frontier_release = resolve_frontier_release()
+        except (FileNotFoundError, OSError, RuntimeError, ValueError) as error:
+            record("transaction frontier daily release", False, str(error))
+        else:
+            record(
+                "transaction frontier daily release",
+                True,
+                f"generation={frontier_release.generation_id}",
+            )
+            for name, passed, detail in transaction_frontier_artifact_checks(
+                frontier_release.artifacts["panel"],
+                frontier_release.artifacts["rejections"],
+                frontier_release.artifacts["support"],
+                prefix="transaction frontier daily",
+                coverage_label="calendar",
+                expected_days=len(calendar_days(RESEARCH_SAMPLE_START, RESEARCH_SAMPLE_END)),
+                first_day=RESEARCH_SAMPLE_START,
+                last_day=RESEARCH_SAMPLE_END,
+            ):
+                record(name, passed, detail)
+            frontier_release.assert_current()
+    else:
+        record(
+            "transaction frontier artifacts",
+            True,
+            "not required by the executable claim-input perimeter",
+        )
 
     if EXTENT.exists():
         con = duckdb.connect()

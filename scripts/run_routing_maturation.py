@@ -34,6 +34,7 @@ from ddvc.model_artifacts import (
     model_artifact_context,
     write_model_exhibit,
 )
+from ddvc.frontier_release import resolve_frontier_release
 from ddvc.paths import DATA_DIR, OUTPUT_DIR
 from ddvc.provenance import require_current_artifacts
 from ddvc.runtime import exclusive_job
@@ -52,6 +53,7 @@ CODE_SOURCES = [
     "src/ddvc/analysis/routing_contract.py",
     "src/ddvc/analysis/routing_maturation.py",
     "src/ddvc/analysis/regression.py",
+    "src/ddvc/frontier_release.py",
     "src/ddvc/model_artifacts.py",
 ]
 SPEC_ID_COLUMNS = (
@@ -77,10 +79,15 @@ def support_blocks_estimation(support_frames: list[pd.DataFrame]) -> bool:
 
 def main() -> int:
     context = model_artifact_context()
-    inputs = [FRONTIER_SUPPORT, CELL_DAY, TRANSITION, EXACT_HORIZONS]
-    require_current_artifacts(inputs, consumer="routing-maturation estimator")
+    frontier_release = resolve_frontier_release()
+    frontier_support_path = frontier_release.artifacts["support"]
+    inputs = [*frontier_release.lineage_paths, CELL_DAY, TRANSITION, EXACT_HORIZONS]
+    require_current_artifacts(
+        [*frontier_release.artifacts.values(), CELL_DAY, TRANSITION, EXACT_HORIZONS],
+        consumer="routing-maturation estimator",
+    )
     frontier_support = pd.read_parquet(
-        FRONTIER_SUPPORT,
+        frontier_support_path,
         columns=[
             "day",
             "within_20pct_chosen_quote_eligible_routes",
@@ -117,6 +124,7 @@ def main() -> int:
         del horizons
         gc.collect()
         combined = pd.concat(results, ignore_index=True, sort=False)
+        frontier_release.assert_current()
         write_model_exhibit(
             combined,
             SUPPORT_OUTPUT,
@@ -129,6 +137,7 @@ def main() -> int:
                 "no fitted specifications"
             ),
         )
+        frontier_release.assert_current()
         print(
             "BLOCKED: routing-maturation calibrated support contract failed; "
             "wrote 0 fitted specifications"
@@ -153,6 +162,7 @@ def main() -> int:
         prefix="routing_maturation_e0",
         columns=SPEC_ID_COLUMNS,
     )
+    frontier_release.assert_current()
     write_model_exhibit(
         estimates,
         ESTIMATE_OUTPUT,
@@ -171,6 +181,7 @@ def main() -> int:
         inputs=inputs,
         notes="pre-fit routing-maturation support geometry bound to the same D3 release",
     )
+    frontier_release.assert_current()
     print(
         f"wrote {len(estimates):,} fitted specifications and "
         f"{len(combined) - len(estimates):,} support rows"

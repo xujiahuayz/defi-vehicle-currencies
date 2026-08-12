@@ -312,6 +312,46 @@ def test_work_partition_changes_invalidate_the_shard_generation(monkeypatch) -> 
         assert after != before
 
 
+def test_cp_stream_semantics_change_invalidates_the_rent_shard_generation(monkeypatch) -> None:
+    with tempfile.TemporaryDirectory() as temporary:
+        root = Path(temporary)
+        for relative in rent.V2_SHARD_CODE_SOURCES:
+            path = root / relative
+            path.parent.mkdir(parents=True, exist_ok=True)
+            path.write_text(f"# {relative}\n")
+        monkeypatch.setattr(provenance, "ROOT", root)
+
+        before = rent.cache_key(rent.V2_SHARD_CODE_SOURCES)
+        (root / "src/ddvc/cp_state_stream.py").write_text("CHANGED = True\n")
+        after = rent.cache_key(rent.V2_SHARD_CODE_SOURCES)
+
+        assert "src/ddvc/cp_state_stream.py" in rent.V2_SHARD_CODE_SOURCES
+        assert after != before
+
+
+def test_capital_pointer_flip_aborts_rent_publication(monkeypatch) -> None:
+    state = type("State", (), {"assert_current": lambda self: None})()
+    event = type(
+        "Event", (), {"pointer_path": Path("event.json"), "generation_id": "event-a"}
+    )()
+    capital = type(
+        "Capital", (), {"pointer_path": Path("capital.json"), "generation_id": "capital-a"}
+    )()
+    monkeypatch.setattr(
+        rent,
+        "resolve_v2_event_source_release",
+        lambda _path: type("Event", (), {"generation_id": "event-a"})(),
+    )
+    monkeypatch.setattr(
+        rent,
+        "resolve_capital_release",
+        lambda _path: type("Capital", (), {"generation_id": "capital-b"})(),
+    )
+
+    with pytest.raises(RuntimeError, match="capital generation changed"):
+        rent.validate_v2_release_sources(state, event, capital)
+
+
 def test_generation_change_aborts_before_publication(monkeypatch) -> None:
     monkeypatch.setattr(rent, "cache_key", lambda *args, **kwargs: "new")
     with pytest.raises(RuntimeError, match="changed during the build"):

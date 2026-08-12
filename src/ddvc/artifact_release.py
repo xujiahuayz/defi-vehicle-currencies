@@ -72,6 +72,63 @@ class ArtifactRelease:
         return self.pointer_path, *self.artifact_paths, *self.provenance_paths
 
 
+@dataclass(frozen=True)
+class FileLineageLease:
+    """One immutable identity over an exact set of source files."""
+
+    bindings: tuple[tuple[Path, str | None], ...]
+
+    @property
+    def paths(self) -> tuple[Path, ...]:
+        return tuple(path for path, _digest in self.bindings)
+
+    @property
+    def existing_paths(self) -> tuple[Path, ...]:
+        return tuple(path for path, digest in self.bindings if digest is not None)
+
+    @property
+    def content_identity_sha256(self) -> str:
+        return canonical_json_sha256(
+            [(str(path), digest) for path, digest in self.bindings]
+        )
+
+    def assert_current(self) -> None:
+        for path, expected in self.bindings:
+            if expected is None:
+                if path.exists():
+                    raise RuntimeError(f"leased absent source file appeared: {path}")
+                continue
+            if not path.is_file():
+                raise RuntimeError(f"leased source file disappeared: {path}")
+            before = file_stat_identity(path)
+            observed = file_sha256(path)
+            if before != file_stat_identity(path) or observed != expected:
+                raise RuntimeError(f"leased source file changed: {path}")
+
+
+def bind_file_lineage(
+    paths: list[Path] | tuple[Path, ...], *, allow_missing: bool = False
+) -> FileLineageLease:
+    """Hash one duplicate-free file perimeter with mutation detection."""
+
+    selected = tuple(dict.fromkeys(Path(path) for path in paths))
+    if not selected:
+        raise ValueError("file-lineage lease requires at least one input")
+    bindings: list[tuple[Path, str | None]] = []
+    for path in selected:
+        if not path.is_file():
+            if allow_missing and not path.exists() and not path.is_symlink():
+                bindings.append((path, None))
+                continue
+            raise FileNotFoundError(f"leased source file is missing: {path}")
+        before = file_stat_identity(path)
+        digest = file_sha256(path)
+        if before != file_stat_identity(path):
+            raise RuntimeError(f"leased source file changed during hashing: {path}")
+        bindings.append((path, digest))
+    return FileLineageLease(tuple(bindings))
+
+
 def generation_id(artifact_sha256: Mapping[str, str], build_identity_sha256: str) -> str:
     return canonical_json_sha256(
         {
