@@ -16,6 +16,7 @@ from collections import OrderedDict
 from collections.abc import Iterable, Mapping
 from contextlib import contextmanager
 from contextvars import ContextVar
+from dataclasses import dataclass
 from datetime import datetime, timezone
 from pathlib import Path
 from typing import Iterator
@@ -148,6 +149,21 @@ def _output_lock_paths(paths: Iterable[Path]) -> tuple[Path, ...]:
         # ancestor the same lock identity as publication through its referent.
         selected.append(path.resolve(strict=False))
     return tuple(dict.fromkeys(selected))
+
+
+@dataclass(frozen=True)
+class ArtifactTransactionLease:
+    """The exact source and output identities owned by one transaction."""
+
+    sources: tuple[Path, ...]
+    outputs: tuple[Path, ...]
+    output_lock_paths: tuple[Path, ...]
+
+    def assert_output_identities(self) -> None:
+        """Reject a symlink or ancestor retarget before publication commits."""
+
+        if _output_lock_paths(self.outputs) != self.output_lock_paths:
+            raise RuntimeError("output symlink changed during artifact transaction")
 
 
 def source_lock_paths(
@@ -386,7 +402,7 @@ def serialized_read_installs(
 @contextmanager
 def serialized_artifact_transaction(
     *, sources: Iterable[Path], outputs: Iterable[Path]
-) -> Iterator[tuple[tuple[Path, ...], tuple[Path, ...]]]:
+) -> Iterator[ArtifactTransactionLease]:
     """Lease exact sources and own exact outputs under one ordered lock perimeter."""
 
     requested_sources = tuple(_lexical_path(Path(path)) for path in sources)
@@ -411,8 +427,14 @@ def serialized_artifact_transaction(
         token = _ACTIVE_READ_SOURCES.set(
             frozenset((*_ACTIVE_READ_SOURCES.get(), *selected_sources))
         )
+        lease = ArtifactTransactionLease(
+            selected_sources,
+            selected_outputs,
+            selected_output_locks,
+        )
         try:
-            yield selected_sources, selected_outputs
+            yield lease
+            lease.assert_output_identities()
         finally:
             _ACTIVE_READ_SOURCES.reset(token)
 

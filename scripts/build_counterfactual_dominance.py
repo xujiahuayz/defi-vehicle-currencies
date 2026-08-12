@@ -88,7 +88,7 @@ from ddvc.prices import (
 )
 from ddvc.realised import LINEAR_ROUTE_COLUMNS, extract_linear_realised_routes
 from ddvc.pricing.v2_replay import V2_VENUES, load_v2_replay_day
-from ddvc.provenance import current_artifacts, sidecar_path
+from ddvc.provenance import require_current_artifacts, sidecar_path
 from ddvc.route_gas import GAS_ESTIMATE_COLUMNS, estimate_route_gas
 from ddvc.runtime import bounded_workers, exclusive_job, interruptible_process_pool
 from ddvc.data_release import released_route_partitions, released_state_partitions
@@ -362,13 +362,10 @@ def _assert_final_inputs_current(_staged_path: Path | None = None) -> None:
             sidecar_path(OUT_RECEIPT_ALLOCATION_SUPPORT),
         ),
     )
-    # The capability transaction already leases every declared source through
-    # the callback; this nested lease performs the provenance validation.
-    with current_artifacts(
+    require_current_artifacts(
         list(FINAL_INPUTS),
         consumer="gas-adjusted counterfactual-dominance panel",
-    ):
-        pass
+    )
     validate_external_weth_usd_release(
         EXTERNAL_WETH_USD_INTRADAY_PANEL,
         EXTERNAL_WETH_USD_RAW_ROOT,
@@ -402,11 +399,9 @@ def _assert_final_panel_current(_staged_path: Path | None = None) -> None:
         "counterfactual.final_panel",
         expected_outputs=(OUT_PARQUET, sidecar_path(OUT_PARQUET)),
     )
-    # The capability transaction holds the panel and sidecar source lease.
-    with current_artifacts(
+    require_current_artifacts(
         [OUT_PARQUET], consumer="counterfactual-dominance exhibits"
-    ):
-        pass
+    )
 
 
 @publication_capability(

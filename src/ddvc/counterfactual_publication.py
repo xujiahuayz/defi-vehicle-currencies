@@ -7,6 +7,7 @@ from contextlib import contextmanager
 from contextvars import ContextVar
 from dataclasses import dataclass, field
 from datetime import datetime, timezone
+from functools import wraps
 import hashlib
 import json
 import os
@@ -128,22 +129,65 @@ def publication_marker_path(capability_id: str) -> Path:
 
 
 def _atomic_json(path: Path, payload: object) -> None:
-    path.parent.mkdir(parents=True, exist_ok=True)
+    _durable_mkdir(path.parent)
     temporary = path.with_name(f".{path.name}.{uuid.uuid4().hex}.tmp")
     try:
-        temporary.write_text(
-            json.dumps(payload, indent=1, sort_keys=True) + "\n", encoding="utf-8"
-        )
+        with temporary.open("w", encoding="utf-8") as handle:
+            handle.write(json.dumps(payload, indent=1, sort_keys=True) + "\n")
+            handle.flush()
+            os.fsync(handle.fileno())
         temporary.replace(path)
+        _fsync_directory(path.parent)
     finally:
         temporary.unlink(missing_ok=True)
 
 
+def _fsync_directory(path: Path) -> None:
+    descriptor = os.open(path, os.O_RDONLY)
+    try:
+        os.fsync(descriptor)
+    finally:
+        os.close(descriptor)
+
+
+def _fsync_file(path: Path) -> None:
+    with path.open("rb") as handle:
+        os.fsync(handle.fileno())
+
+
+def _durable_mkdir(path: Path) -> None:
+    """Create missing directories and persist every new directory entry."""
+
+    path = _lexical(path)
+    missing: list[Path] = []
+    current = path
+    while not current.exists():
+        missing.append(current)
+        current = current.parent
+    for directory in reversed(missing):
+        try:
+            directory.mkdir()
+        except FileExistsError:
+            if not directory.is_dir():
+                raise
+        else:
+            _fsync_directory(directory)
+            _fsync_directory(directory.parent)
+
+
+def _durable_rmtree(path: Path) -> None:
+    parent = path.parent
+    shutil.rmtree(path)
+    _fsync_directory(parent)
+
+
 def _independent_copy(source: Path, destination: Path) -> None:
-    destination.parent.mkdir(parents=True, exist_ok=True)
+    _durable_mkdir(destination.parent)
     shutil.copy2(source, destination)
     if source.stat().st_ino == destination.stat().st_ino:
         raise RuntimeError("publication backup is not independent")
+    _fsync_file(destination)
+    _fsync_directory(destination.parent)
 
 
 def _snapshot(target: Path, root: Path) -> _Backup:
@@ -201,11 +245,12 @@ def _restore_file(backup: Path | None, target: Path, digest: str | None) -> None
         or _sha256(backup) != digest
     ):
         raise RuntimeError("rollback backup is absent or corrupt")
-    target.parent.mkdir(parents=True, exist_ok=True)
+    _durable_mkdir(target.parent)
     temporary = target.with_name(f".{target.name}.{uuid.uuid4().hex}.restore")
     try:
         _independent_copy(backup, temporary)
         temporary.replace(target)
+        _fsync_directory(target.parent)
         if _sha256(target) != digest or target.stat().st_ino == backup.stat().st_ino:
             raise RuntimeError("restored output failed independent digest verification")
     finally:
@@ -217,7 +262,10 @@ def _restore(backup: _Backup) -> None:
     if target.parent.resolve(strict=False) != backup.resolved_parent:
         raise RuntimeError("publication output ancestor changed before rollback")
     if backup.kind == "absent":
+        existed = target.exists() or target.is_symlink()
         target.unlink(missing_ok=True)
+        if existed:
+            _fsync_directory(target.parent)
         if target.exists() or target.is_symlink():
             raise RuntimeError("new output survived rollback")
         return
@@ -235,12 +283,16 @@ def _restore(backup: _Backup) -> None:
             backup.referent_sha256,
         )
     else:
+        referent_existed = backup.referent.exists() or backup.referent.is_symlink()
         backup.referent.unlink(missing_ok=True)
-    target.parent.mkdir(parents=True, exist_ok=True)
+        if referent_existed:
+            _fsync_directory(backup.referent.parent)
+    _durable_mkdir(target.parent)
     temporary = target.with_name(f".{target.name}.{uuid.uuid4().hex}.restore")
     try:
         temporary.symlink_to(backup.link_target)
         temporary.replace(target)
+        _fsync_directory(target.parent)
         if not target.is_symlink() or os.readlink(target) != backup.link_target:
             raise RuntimeError("restored symlink failed verification")
     finally:
@@ -271,9 +323,11 @@ def _describe_output(path: Path) -> dict[str, object]:
 
 
 def _marker_payload(
-    capability: _Capability, *, transaction_id: str
+    capability: _Capability,
+    *,
+    transaction_id: str,
+    outputs: list[dict[str, object]],
 ) -> dict[str, object]:
-    outputs = [_describe_output(path) for path in capability.outputs]
     generation_id = hashlib.sha256(
         json.dumps(outputs, sort_keys=True, separators=(",", ":")).encode()
     ).hexdigest()
@@ -285,6 +339,20 @@ def _marker_payload(
         "committed_at_utc": datetime.now(timezone.utc).isoformat(),
         "outputs": outputs,
     }
+
+
+def _sync_outputs(outputs: Iterable[Path]) -> None:
+    """Persist every member before the marker that selects the generation."""
+
+    for raw in outputs:
+        path = _lexical(Path(raw))
+        durable_file = path.resolve(strict=True) if path.is_symlink() else path
+        if not durable_file.is_file():
+            raise RuntimeError(f"published output is not a file: {path}")
+        _fsync_file(durable_file)
+        _fsync_directory(durable_file.parent)
+        if path.is_symlink():
+            _fsync_directory(path.parent)
 
 
 def _validate_marker_payload(
@@ -469,7 +537,7 @@ def _rollback(
             else "process_exit_or_restart"
         ),
     )
-    shutil.rmtree(root, ignore_errors=True)
+    _durable_rmtree(root)
 
 
 def _marker_commits_transaction(
@@ -489,9 +557,20 @@ def _recover_transactions(capability: _Capability) -> None:
     if not journal.is_dir():
         return
     for root in sorted(path for path in journal.iterdir() if path.is_dir()):
+        transaction_path = root / "transaction.json"
+        if not transaction_path.exists():
+            entries = tuple(root.iterdir())
+            if not entries or all(
+                path.is_file()
+                and path.name.startswith(".transaction.json.")
+                and path.name.endswith(".tmp")
+                for path in entries
+            ):
+                _durable_rmtree(root)
+                continue
         try:
             record = json.loads(
-                (root / "transaction.json").read_text(encoding="utf-8")
+                transaction_path.read_text(encoding="utf-8")
             )
             if (
                 not isinstance(record, dict)
@@ -517,11 +596,11 @@ def _recover_transactions(capability: _Capability) -> None:
                 f"counterfactual publication has incomplete recovery evidence at {root}"
             )
         if status in {"preparing", "committed", "rolled_back"}:
-            shutil.rmtree(root)
+            _durable_rmtree(root)
         elif status == "active" and _marker_commits_transaction(
             capability, transaction_id
         ):
-            shutil.rmtree(root)
+            _durable_rmtree(root)
         elif status == "active":
             _rollback(root, capability, transaction_id, backups, None)
         else:
@@ -542,16 +621,16 @@ def _publication_transaction(
         raise RuntimeError(
             f"publication capability {capability.capability_id} declared the wrong output perimeter"
         )
-    capability.marker.parent.mkdir(parents=True, exist_ok=True)
+    _durable_mkdir(capability.marker.parent)
     with serialized_artifact_transaction(
         sources=sources, outputs=(*selected_outputs, capability.marker)
-    ):
+    ) as transaction:
         _recover_transactions(capability)
         journal = _journal_root(capability)
-        journal.mkdir(parents=True, exist_ok=True)
+        _durable_mkdir(journal)
         transaction_id = uuid.uuid4().hex
         root = journal / transaction_id
-        root.mkdir()
+        _durable_mkdir(root)
         backups: list[_Backup] = []
         _write_status(
             root,
@@ -572,16 +651,28 @@ def _publication_transaction(
                 backups=backups,
             )
         except BaseException:
-            shutil.rmtree(root, ignore_errors=True)
+            _durable_rmtree(root)
             raise
         token = _ACTIVE_CAPABILITY.set(capability.seal)
         try:
             try:
                 yield
+                transaction.assert_output_identities()
+                _sync_outputs(selected_outputs)
+                transaction.assert_output_identities()
+                output_descriptions = [
+                    _describe_output(path) for path in selected_outputs
+                ]
+                transaction.assert_output_identities()
                 _atomic_json(
                     capability.marker,
-                    _marker_payload(capability, transaction_id=transaction_id),
+                    _marker_payload(
+                        capability,
+                        transaction_id=transaction_id,
+                        outputs=output_descriptions,
+                    ),
                 )
+                transaction.assert_output_identities()
                 _write_status(
                     root,
                     capability=capability,
@@ -589,12 +680,13 @@ def _publication_transaction(
                     status="committed",
                     backups=backups,
                 )
+                transaction.assert_output_identities()
             except BaseException as original:
                 _rollback(root, capability, transaction_id, backups, original)
                 raise
         finally:
             _ACTIVE_CAPABILITY.reset(token)
-        shutil.rmtree(root, ignore_errors=True)
+        _durable_rmtree(root)
 
 
 def register_publication_capability(
@@ -629,6 +721,7 @@ def publication_capability(
         raise ValueError(f"unknown publication capability: {capability_id}") from error
 
     def decorate(function: Callable):
+        @wraps(function)
         def owner(*args, **kwargs):
             validate_publication_capability(owner)
             outputs = tuple(
@@ -645,10 +738,6 @@ def publication_capability(
                     assert_current(*args, **kwargs)
                 return result
 
-        owner.__name__ = function.__name__
-        owner.__qualname__ = function.__qualname__
-        owner.__doc__ = function.__doc__
-        owner.__module__ = function.__module__
         owner.__ddvc_publication_capability__ = capability_id
         if capability_id in _CAPABILITY_OWNERS:
             raise RuntimeError(f"publication capability {capability_id} has two owners")

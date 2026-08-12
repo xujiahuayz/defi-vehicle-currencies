@@ -6,6 +6,7 @@ from __future__ import annotations
 import argparse
 from concurrent.futures import as_completed
 from contextlib import nullcontext
+from contextvars import ContextVar
 from pathlib import Path
 from typing import Callable
 
@@ -31,7 +32,7 @@ from ddvc.ethereum_receipts import (
 )
 from ddvc.gas import validate_route_transaction_gas_release
 from ddvc.paths import DATA_DIR, OUTPUT_DIR, REPO_ROOT, SHARED_RUNTIME_DIR
-from ddvc.provenance import current_artifacts, sidecar_path
+from ddvc.provenance import require_current_artifacts, sidecar_path
 from ddvc.quoter import RPC_EVIDENCE_FIELDS, rpc_post
 from ddvc.runtime import bounded_workers, exclusive_job, interruptible_thread_pool
 from ddvc.tables import write_panel_batches
@@ -57,6 +58,25 @@ CODE_SOURCES = [
     "src/ddvc/runtime.py",
     "src/ddvc/tables.py",
 ]
+GROSS_OUTPUTS = (
+    GROSS_PANEL,
+    sidecar_path(GROSS_PANEL),
+    GROSS_SUPPORT,
+    sidecar_path(GROSS_SUPPORT),
+)
+_GAS_RELEASE_SEAL = object()
+_ACTIVE_GAS_RELEASE: ContextVar[object | None] = ContextVar(
+    "ddvc_route_transaction_gas_release", default=None
+)
+
+
+def gross_publication_lease():
+    """Lease the complete gross generation at every canonical job boundary."""
+
+    return current_publication(
+        "counterfactual.gross",
+        expected_outputs=GROSS_OUTPUTS,
+    )
 
 
 def route_receipt_requests(path: Path = GROSS_PANEL) -> pd.DataFrame:
@@ -65,12 +85,7 @@ def route_receipt_requests(path: Path = GROSS_PANEL) -> pd.DataFrame:
     publication = (
         current_publication(
             "counterfactual.gross",
-            expected_outputs=(
-                GROSS_PANEL,
-                sidecar_path(GROSS_PANEL),
-                GROSS_SUPPORT,
-                sidecar_path(GROSS_SUPPORT),
-            ),
+            expected_outputs=GROSS_OUTPUTS,
         )
         if Path(path) == GROSS_PANEL
         else nullcontext()
@@ -377,9 +392,11 @@ def cached_panel_batches(requests: pd.DataFrame, *, batch_size: int, support: di
         yield panel
 
 
-def assemble_exact_outputs(requests: pd.DataFrame, *, batch_size: int) -> dict[str, int]:
+def _assemble_exact_outputs(requests: pd.DataFrame, *, batch_size: int) -> dict[str, int]:
     """Validate staged Parquet against exact evidence before paired installation."""
 
+    if _ACTIVE_GAS_RELEASE.get() is not _GAS_RELEASE_SEAL:
+        raise RuntimeError("exact route-gas output requires canonical release authority")
     evidence = write_receipt_snapshot(cached_receipt_rows(requests, order_by_block=True), RECEIPT_EVIDENCE, require_evidence=True, presorted=True, order_by_block=True)
     block_evidence = write_block_header_snapshot(cached_header_rows(requests), BLOCK_HEADER_EVIDENCE, require_evidence=True, presorted=True)
     support = {"rows": 0, "gas_price_supported": 0}
@@ -396,8 +413,26 @@ def assemble_exact_outputs(requests: pd.DataFrame, *, batch_size: int) -> dict[s
     return {**support, "receipt_evidence_rows": receipt_rows, "block_evidence_rows": header_rows}
 
 
-def _run(args: argparse.Namespace, parser: argparse.ArgumentParser) -> int:
+def assemble_exact_outputs(requests: pd.DataFrame, *, batch_size: int) -> dict[str, int]:
+    """Install gas outputs only for the exact currently leased gross perimeter."""
+
+    with gross_publication_lease():
+        expected = route_receipt_requests()
+        requested = requests[["tx_hash", "block_number"]].reset_index(drop=True)
+        if not requested.equals(expected):
+            raise RuntimeError(
+                "exact route-gas requests disagree with the current gross publication"
+            )
+        token = _ACTIVE_GAS_RELEASE.set(_GAS_RELEASE_SEAL)
+        try:
+            return _assemble_exact_outputs(requested, batch_size=batch_size)
+        finally:
+            _ACTIVE_GAS_RELEASE.reset(token)
+
+
+def _run_leased(args: argparse.Namespace, parser: argparse.ArgumentParser) -> int:
     require_node_d_release(routes=True, market_state=True)
+    require_current_artifacts([GROSS_PANEL], consumer="exact route transaction gas")
     if args.batch_size < 1 or (args.limit is not None and args.limit < 1):
         parser.error("--batch-size and --limit must be positive")
     if args.shards != 1 and not args.cache_only:
@@ -445,6 +480,13 @@ def _run(args: argparse.Namespace, parser: argparse.ArgumentParser) -> int:
     return 0
 
 
+def _run(args: argparse.Namespace, parser: argparse.ArgumentParser) -> int:
+    """Run every read, cache fill, and install under one gross-generation lease."""
+
+    with gross_publication_lease():
+        return _run_leased(args, parser)
+
+
 def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--workers", type=int, default=8)
@@ -454,17 +496,7 @@ def main() -> int:
     parser.add_argument("--shard-index", type=int, default=0)
     parser.add_argument("--cache-only", action="store_true")
     args = parser.parse_args()
-    with current_publication(
-        "counterfactual.gross",
-        expected_outputs=(
-            GROSS_PANEL,
-            sidecar_path(GROSS_PANEL),
-            GROSS_SUPPORT,
-            sidecar_path(GROSS_SUPPORT),
-        ),
-    ):
-        with current_artifacts([GROSS_PANEL], consumer="exact route transaction gas"):
-            return _run(args, parser)
+    return _run(args, parser)
 
 
 if __name__ == "__main__":
