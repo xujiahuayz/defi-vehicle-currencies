@@ -618,6 +618,61 @@ def test_marker_install_cannot_commit_mutated_output_bytes(mutation: str) -> Non
         assert not journal.exists() or not tuple(journal.iterdir())
 
 
+def test_committed_status_cannot_finalize_a_mutated_marker() -> None:
+    with tempfile.TemporaryDirectory() as directory:
+        root = Path(directory)
+        output = root / "output"
+        output.write_text("prior", encoding="utf-8")
+        marker = root / "marker.json"
+        capability_id = f"test.committed-marker-mutation.{uuid.uuid4().hex}"
+        register_publication_capability(
+            capability_id, (output,), marker_path=marker
+        )
+
+        @publication_capability(
+            capability_id,
+            output_selector=lambda: (output,),
+            source_selector=lambda: (),
+        )
+        def owner():
+            output.write_text("published", encoding="utf-8")
+
+        real_atomic_json = publication._atomic_json
+        mutated = False
+
+        def mutate_during_committed_status(path: Path, payload: object) -> None:
+            nonlocal mutated
+            if (
+                not mutated
+                and path.name == "transaction.json"
+                and isinstance(payload, dict)
+                and payload.get("status") == "committed"
+            ):
+                marker.write_text('{"attacker": true}\n', encoding="utf-8")
+                mutated = True
+            real_atomic_json(path, payload)
+
+        with (
+            _install_for_test(owner),
+            patch.object(
+                publication,
+                "_atomic_json",
+                side_effect=mutate_during_committed_status,
+            ),
+            pytest.raises(
+                RuntimeError, match="marker changed during commit"
+            ),
+        ):
+            owner()
+        assert mutated
+        assert output.read_text(encoding="utf-8") == "prior"
+        assert not marker.exists()
+        with pytest.raises(RuntimeError, match="not current"):
+            require_current_publication(capability_id, marker_path=marker)
+        journal = marker.parent / f".{marker.name}.transactions"
+        assert not journal.exists() or not tuple(journal.iterdir())
+
+
 def test_empty_preparing_journal_is_ignored_before_next_publication() -> None:
     with tempfile.TemporaryDirectory() as directory:
         root = Path(directory)

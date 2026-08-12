@@ -755,10 +755,12 @@ def _publication_transaction(
                     backups=backups,
                 )
                 transaction.assert_output_identities()
-                if _seal_outputs(selected_outputs) != sealed_outputs:
-                    raise RuntimeError(
-                        "counterfactual publication output changed before cleanup"
-                    )
+                _require_marker_commit(
+                    capability,
+                    transaction_id=transaction_id,
+                    expected_payload=marker_payload,
+                    sealed_outputs=sealed_outputs,
+                )
             except BaseException as original:
                 _rollback(root, capability, transaction_id, backups, original)
                 raise
