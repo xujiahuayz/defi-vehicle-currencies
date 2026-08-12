@@ -55,8 +55,10 @@ choice changes the answer:
   because no direct edge exists. This is the feasible-set layer, the architectural
   question of what routes are possible at all.
 
-  VOLUME-WEIGHTED. Edges carry realised volume and are traversed in inverse proportion,
-  so heavily traded pairs are short. This measures where value flows.
+  VALUE-WEIGHTED. Edges carry realised USD value only from clean route components whose
+  source, every intermediary and sink reconcile within 20 percent. They are traversed in
+  inverse proportion, so heavily traded pairs are short. This measures where supported
+  economic value flows; raw value is retained only as a coverage diagnostic.
 
   COUNT-WEIGHTED. Edges carry the NUMBER of trades and are traversed in inverse
   proportion, so frequently used pairs are short. Java's addition, and it is arguably the
@@ -67,7 +69,16 @@ choice changes the answer:
   and on the worst day observed 25.9% against 91.3%, so contamination concentrates
   precisely where volume weighting puts its weight, and its dispersion across days is far
   wider on value than on count. A single large transfer
-  can make a pair look like a highway; a thousand small ones mean it is one.
+can make a pair look like a highway; a thousand small ones mean it is one.
+
+For each graph the panel separates direct connectivity from indirect path position.
+Topological degree, count strength and raw-USD strength measure the number or activity of
+the token's incident markets. Matching eigenvector centralities measure whether those
+direct neighbors are themselves important. Matching betweenness measures path position.
+All three are converted to within-day shares before constructing excess path position as
+betweenness share minus direct-connectivity share and betweenness share minus eigenvector
+share. The normalization makes the subtraction commensurable; subtracting raw centrality
+statistics with unrelated scales is not an admissible measure.
 
 Reads   data/unified/YYYYMMDD.parquet
 Writes  data/processed/vehicle_centrality.parquet
@@ -80,12 +91,14 @@ import argparse
 import sys
 from pathlib import Path
 
+import numpy as np
 import pandas as pd
 
-from ddvc.asset_types import classify
+from ddvc.asset_types import canonical_token, classify
 from ddvc.data_release import require_node_d_release
 from ddvc.paths import DATA_DIR, OUTPUT_DIR, REPO_ROOT, repo_path
 from ddvc.runtime import bounded_workers, exclusive_job, interruptible_process_pool
+from ddvc.route_roles import ROUTE_KEYS, component_eligibility, component_value_support
 from ddvc.tables import write_exhibit, write_panel
 
 UNIFIED = DATA_DIR / "unified"
@@ -98,43 +111,120 @@ CODE_SOURCES = [
 ]
 
 
-def day_edges(day: str, min_usd: float) -> pd.DataFrame:
+def aggregate_day_edges(frame: pd.DataFrame) -> pd.DataFrame:
+    """Build full-count and strict-value token-pair edges from clean route components."""
+
+    required = {
+        *ROUTE_KEYS,
+        "token_in",
+        "token_out",
+        "amount_usd",
+        "route_class",
+    }
+    missing = sorted(required - set(frame.columns))
+    if missing:
+        raise ValueError(f"centrality input is missing columns: {', '.join(missing)}")
+    data = frame[frame["route_class"].isin(["single", "coherent"])].copy()
+    data["token_in"] = data["token_in"].map(canonical_token)
+    data["token_out"] = data["token_out"].map(canonical_token)
+    data = data[
+        data["token_in"].notna()
+        & data["token_out"].notna()
+        & data["token_in"].ne(data["token_out"])
+    ]
+    if data.empty:
+        return pd.DataFrame(columns=["a", "b", "usd", "raw_usd", "legs"])
+    eligibility = component_eligibility(data)
+    clean = data.merge(eligibility.eligible[list(ROUTE_KEYS)], on=list(ROUTE_KEYS), how="inner")
+    if clean.empty:
+        return pd.DataFrame(columns=["a", "b", "usd", "raw_usd", "legs"])
+    support = component_value_support(clean)[[*ROUTE_KEYS, "within_20pct"]]
+    clean = clean.merge(support, on=list(ROUTE_KEYS), how="left")
+    values = pd.to_numeric(clean["amount_usd"], errors="coerce")
+    finite_value = values.gt(0) & values.lt(1e9) & np.isfinite(values)
+    clean["raw_usd"] = values.where(finite_value, 0.0)
+    clean["usd"] = values.where(finite_value & clean["within_20pct"].fillna(False), 0.0)
+    clean["a"] = clean[["token_in", "token_out"]].min(axis=1)
+    clean["b"] = clean[["token_in", "token_out"]].max(axis=1)
+    return clean.groupby(["a", "b"], as_index=False).agg(
+        usd=("usd", "sum"),
+        raw_usd=("raw_usd", "sum"),
+        legs=("amount_usd", "size"),
+    )
+
+
+def day_edges(day: str) -> pd.DataFrame:
     p = UNIFIED / f"{day}.parquet"
     if not p.exists():
         return pd.DataFrame()
-    d = pd.read_parquet(p, columns=["token_in", "token_out", "amount_usd", "route_class"])
-    d = d[d.route_class.isin(["single", "coherent"])]
-    if d.empty:
-        return pd.DataFrame()
-    d = d[(d.amount_usd > 0) & (d.amount_usd < 1e9)]
-    d["a"] = d[["token_in", "token_out"]].min(axis=1)
-    d["b"] = d[["token_in", "token_out"]].max(axis=1)
-    e = d.groupby(["a", "b"], as_index=False).agg(usd=("amount_usd", "sum"),
-                                                  legs=("amount_usd", "size"))
-    return e[e.usd >= min_usd]
+    return aggregate_day_edges(
+        pd.read_parquet(
+            p,
+            columns=[
+                *ROUTE_KEYS,
+                "token_in",
+                "token_out",
+                "amount_usd",
+                "route_class",
+            ],
+        )
+    )
 
 
-def centralities(e: pd.DataFrame, k: int | None) -> pd.DataFrame:
+def centralities(
+    e: pd.DataFrame,
+    k: int | None,
+    *,
+    min_usd: float = 0.0,
+) -> pd.DataFrame:
     import networkx as nx
 
     g = nx.Graph()
     for r in e.itertuples(index=False):
-        # Inverse volume as distance, so a heavily traded pair is a short hop and a
-        # shortest path is the path trade actually finds easy.
-        g.add_edge(r.a, r.b, usd=float(r.usd), legs=int(r.legs),
-                   inv=1.0 / max(float(r.usd), 1.0),
-                   inv_count=1.0 / max(float(r.legs), 1.0))
+        g.add_edge(
+            r.a,
+            r.b,
+            legs=int(r.legs),
+            inv_count=1.0 / max(float(r.legs), 1.0),
+        )
     if g.number_of_nodes() < 4:
         return pd.DataFrame()
+    value_edges = e[pd.to_numeric(e["usd"], errors="coerce").ge(min_usd)].copy()
+    gv = nx.Graph()
+    for r in value_edges.itertuples(index=False):
+        gv.add_edge(
+            r.a,
+            r.b,
+            usd=float(r.usd),
+            inv=1.0 / max(float(r.usd), 1.0),
+        )
     # k samples the source nodes; exact betweenness is O(nm) and these graphs run to
     # thousands of nodes, so sampling is the difference between minutes and hours. The
     # sample is reported so the estimate's noise is visible.
     kk = min(k or g.number_of_nodes(), g.number_of_nodes())
     topo = nx.betweenness_centrality(g, k=kk, normalized=True, seed=7)
-    vol = nx.betweenness_centrality(g, k=kk, weight="inv", normalized=True, seed=7)
     cnt = nx.betweenness_centrality(g, k=kk, weight="inv_count", normalized=True, seed=7)
+    if gv.number_of_nodes() >= 4:
+        value_k = min(k or gv.number_of_nodes(), gv.number_of_nodes())
+        vol = nx.betweenness_centrality(
+            gv, k=value_k, weight="inv", normalized=True, seed=7
+        )
+        eigen_value = nx.eigenvector_centrality(
+            gv, max_iter=2_000, tol=1e-10, weight="usd"
+        )
+        strength = {n: sum(gv[n][m]["usd"] for m in gv[n]) for n in gv}
+    else:
+        vol = {}
+        eigen_value = {}
+        strength = {}
     deg = dict(g.degree())
-    strength = {n: sum(g[n][m]["usd"] for m in g[n]) for n in g}
+    count_strength = {n: sum(g[n][m]["legs"] for m in g[n]) for n in g}
+    eigen_topological = nx.eigenvector_centrality(
+        g, max_iter=2_000, tol=1e-10, weight=None
+    )
+    eigen_count = nx.eigenvector_centrality(
+        g, max_iter=2_000, tol=1e-10, weight="legs"
+    )
     rows = []
     for n in g.nodes():
         sym, typ = classify(n)
@@ -142,15 +232,58 @@ def centralities(e: pd.DataFrame, k: int | None) -> pd.DataFrame:
                      "betweenness_topological": topo.get(n, 0.0),
                      "betweenness_volume": vol.get(n, 0.0),
                      "betweenness_count": cnt.get(n, 0.0),
-                     "degree": deg.get(n, 0), "strength_usd": strength.get(n, 0.0)})
-    return pd.DataFrame(rows)
+                     "degree": deg.get(n, 0),
+                     "degree_topological": deg.get(n, 0),
+                     "strength_count": count_strength.get(n, 0.0),
+                     "strength_usd": strength.get(n, 0.0),
+                     "eigenvector_topological": eigen_topological.get(n, 0.0),
+                     "eigenvector_count": eigen_count.get(n, 0.0),
+                     "eigenvector_value": eigen_value.get(n, 0.0)})
+    return add_network_position_shares(pd.DataFrame(rows))
+
+
+def _unit_share(values: pd.Series) -> pd.Series:
+    numeric = pd.to_numeric(values, errors="coerce").fillna(0.0).clip(lower=0.0)
+    total = float(numeric.sum())
+    if not np.isfinite(total) or total <= 0:
+        return pd.Series(0.0, index=values.index, dtype=float)
+    return numeric / total
+
+
+def add_network_position_shares(frame: pd.DataFrame) -> pd.DataFrame:
+    """Put direct, eigenvector and path positions on a common within-day scale."""
+
+    out = frame.copy()
+    dimensions = {
+        "topological": (
+            "degree_topological",
+            "eigenvector_topological",
+            "betweenness_topological",
+        ),
+        "count": ("strength_count", "eigenvector_count", "betweenness_count"),
+        "value": ("strength_usd", "eigenvector_value", "betweenness_volume"),
+    }
+    for dimension, (direct, eigenvector, betweenness) in dimensions.items():
+        direct_share = f"direct_{dimension}_share"
+        eigenvector_share = f"eigenvector_{dimension}_share"
+        betweenness_share = f"betweenness_{dimension}_share"
+        out[direct_share] = _unit_share(out[direct])
+        out[eigenvector_share] = _unit_share(out[eigenvector])
+        out[betweenness_share] = _unit_share(out[betweenness])
+        out[f"excess_betweenness_over_direct_{dimension}"] = (
+            out[betweenness_share] - out[direct_share]
+        )
+        out[f"excess_betweenness_over_eigenvector_{dimension}"] = (
+            out[betweenness_share] - out[eigenvector_share]
+        )
+    return out
 
 
 def _one_day(day: str, min_usd: float, k: int | None) -> pd.DataFrame | None:
-    e = day_edges(day, min_usd)
+    e = day_edges(day)
     if e.empty:
         return None
-    c = centralities(e, k)
+    c = centralities(e, k, min_usd=min_usd)
     if c.empty:
         return None
     c["day"] = day
@@ -251,7 +384,27 @@ def main() -> int:
                 "betweenness_count",
                 "betweenness_volume",
                 "degree",
+                "degree_topological",
+                "strength_count",
                 "strength_usd",
+                "eigenvector_topological",
+                "eigenvector_count",
+                "eigenvector_value",
+                "direct_topological_share",
+                "direct_count_share",
+                "direct_value_share",
+                "eigenvector_topological_share",
+                "eigenvector_count_share",
+                "eigenvector_value_share",
+                "betweenness_topological_share",
+                "betweenness_count_share",
+                "betweenness_value_share",
+                "excess_betweenness_over_direct_topological",
+                "excess_betweenness_over_direct_count",
+                "excess_betweenness_over_direct_value",
+                "excess_betweenness_over_eigenvector_topological",
+                "excess_betweenness_over_eigenvector_count",
+                "excess_betweenness_over_eigenvector_value",
             ]
         ].sum(),
         OUT_EXHIBIT,
