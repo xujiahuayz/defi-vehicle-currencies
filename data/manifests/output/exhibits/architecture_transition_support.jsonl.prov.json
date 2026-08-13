@@ -1,9 +1,9 @@
 {
  "argv": [],
- "artefact": "output/exhibits/architecture_transition_events.jsonl",
- "artefact_bytes": 118500,
- "artefact_mtime_ns": 1786613984029437905,
- "artefact_sha256": "fc2a9336de675921a8caec0969be36621a79e22bad38c2dc80f8e00cf78d0fac",
+ "artefact": "output/exhibits/architecture_transition_support.jsonl",
+ "artefact_bytes": 2091,
+ "artefact_mtime_ns": 1786613984205159218,
+ "artefact_sha256": "e24b7068d46d19e2454b273238cb37266795bdcd76a6a2abe11e18cc3f828816",
  "code_fingerprint": "c608ac9b5ac24021350677fc711917f4385c6b5f6448f3377552fe065968e477",
  "code_sources": [
   "scripts/run_architecture_state_transitions.py",
@@ -16,8 +16,12 @@
   "dirty": false,
   "dirty_generated_files": [
    "data/manifests/data/processed/architecture_state_weekly.parquet.prov.json",
+   "data/manifests/output/exhibits/architecture_transition_contrasts.jsonl.prov.json",
+   "data/manifests/output/exhibits/architecture_transition_events.jsonl.prov.json",
+   "output/exhibits/architecture_transition_contrasts.jsonl",
+   "output/exhibits/architecture_transition_events.jsonl",
    "data/manifests/data/processed/architecture_role_risk_weekly.parquet.prov.json",
-   "output/exhibits/.architecture_transition_events.jsonl.spx28yiz.tmp"
+   "output/exhibits/.architecture_transition_support.jsonl.fj3_e77e.tmp"
   ],
   "dirty_tracked_files": [],
   "dirty_untracked_files": []
@@ -36,15 +40,15 @@
   "pyarrow": "25.0.0",
   "scipy": "1.18.0"
  },
- "notes": null,
+ "notes": "Presentation-facing E0 support table. Mean changes are descriptive across usable events, not causal estimates.",
  "payload_identity": {
-  "bytes": 118500,
+  "bytes": 2091,
   "format": "jsonl",
-  "rows": 581,
+  "rows": 6,
   "schema_version": 1,
-  "sha256": "fc2a9336de675921a8caec0969be36621a79e22bad38c2dc80f8e00cf78d0fac"
+  "sha256": "e24b7068d46d19e2454b273238cb37266795bdcd76a6a2abe11e18cc3f828816"
  },
  "python": "3.14.6",
- "rows": 581,
+ "rows": 6,
  "script": "scripts/run_architecture_state_transitions.py"
 }
