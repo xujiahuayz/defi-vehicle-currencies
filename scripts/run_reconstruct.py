@@ -16,8 +16,8 @@ def main() -> None:
     ap = argparse.ArgumentParser(
         description="Reconstruct cross-DEX routes -> unified swap-events table."
     )
-    ap.add_argument("--start", default=None, help="YYYY-MM-DD (default: earliest available)")
-    ap.add_argument("--end", default=None, help="YYYY-MM-DD (default: latest available)")
+    ap.add_argument("--start", default=None, help="YYYY-MM-DD (default: locked research sample start)")
+    ap.add_argument("--end", default=None, help="YYYY-MM-DD inclusive (default: locked research sample end)")
     ap.add_argument("--day", default=None, help="single day YYYY-MM-DD (overrides start/end)")
     ap.add_argument("--dex", nargs="+", default=list(DEX_FAMILY), help="DEX sources to include")
     ap.add_argument("--concurrency", type=int, default=8)

@@ -43,6 +43,7 @@ from ddvc.fetch.raw import (
     write_json,
     write_jsonl_gz,
 )
+from ddvc.calendar import RESEARCH_SAMPLE_END
 from ddvc.fetch.acquisition import GRAPH_ACQUISITION_FREEZE, GRAPH_ACTIVE_MANIFEST, GRAPH_NEW_MANIFEST, GRAPH_SCHEMA_INVENTORY, frozen_provider_heads, validate_freeze
 from ddvc.fetch.schemas import UNISWAP_V4_STATIC_FIELDS, acquisition_schema, get_schema
 from ddvc.fetch.sources import (
@@ -50,7 +51,6 @@ from ddvc.fetch.sources import (
     UNISWAP_V4_STATICS_SUBGRAPH_ID,
     get_source,
     iter_days,
-    last_complete_month_exclusive,
     source_names,
 )
 from ddvc.paths import DATA_DIR, RAW_MARKET_DATA_LOCK
@@ -164,10 +164,14 @@ def parse_date(value: str) -> dt.date:
     return dt.date.fromisoformat(value)
 
 
+def research_sample_end_exclusive() -> dt.date:
+    return dt.datetime.strptime(RESEARCH_SAMPLE_END, "%Y%m%d").date() + dt.timedelta(days=1)
+
+
 def effective_range(source_name: str, start: str, end: str | None) -> tuple[dt.date, dt.date]:
     source = get_source(source_name)
     start_date = source.genesis if start == "genesis" else max(parse_date(start), source.genesis)
-    end_date = parse_date(end) if end else last_complete_month_exclusive()
+    end_date = parse_date(end) if end else research_sample_end_exclusive()
     if end_date <= start_date:
         raise ValueError(f"empty date range for {source_name}: {start_date} to {end_date}")
     return start_date, end_date
@@ -816,7 +820,7 @@ def build_parser() -> argparse.ArgumentParser:
                                 "number of live Graph keys and metadata repair caps at eight.")
         if name != "audit-genesis":
             p.add_argument("--start", default="genesis", help="'genesis' or YYYY-MM-DD.")
-            p.add_argument("--end", default=None, help="Exclusive YYYY-MM-DD; defaults to current month start.")
+            p.add_argument("--end", default=None, help="Exclusive YYYY-MM-DD; defaults to locked research sample end + 1 day.")
             if name != "coverage":
                 p.add_argument(
                     "--streams",

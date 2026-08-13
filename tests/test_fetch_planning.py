@@ -16,9 +16,11 @@ from scripts.fetch_raw_market_data import (
     cmd_repair_meta,
     coverage_report,
     coverage_has_gaps,
+    effective_range,
     fetch_gap_days,
     indexed_metadata_streams,
     missing_streams,
+    research_sample_end_exclusive,
     required_streams_by_source,
     sparse_days,
 )
@@ -360,6 +362,10 @@ class FetchPlanningTests(unittest.TestCase):
     def test_last_complete_month_exclusive(self) -> None:
         self.assertEqual(last_complete_month_exclusive(dt.date(2026, 7, 1)), dt.date(2026, 7, 1))
         self.assertEqual(last_complete_month_exclusive(dt.date(2026, 7, 31)), dt.date(2026, 7, 1))
+
+    def test_fetch_default_end_is_locked_research_sample_not_current_month(self) -> None:
+        self.assertEqual(research_sample_end_exclusive(), dt.date(2026, 7, 1))
+        self.assertEqual(effective_range("fluid", "genesis", None)[1], dt.date(2026, 7, 1))
 
     def test_genesis_sources_cover_core_dexes(self) -> None:
         self.assertEqual(get_source("curve").genesis, dt.date(2020, 2, 11))
