@@ -24,6 +24,8 @@ import re
 import unittest
 from pathlib import Path
 
+from ddvc.latex_text import included_section_files
+
 ROOT = Path(__file__).resolve().parents[1]
 
 SECTIONS_DIR = (ROOT / "paper" / "sections") if (ROOT / "paper" / "sections").is_dir() else (ROOT / "memo" / "sections")
@@ -78,7 +80,8 @@ class PaperProseTests(unittest.TestCase):
     existence of at least one source file is asserted separately below."""
 
     def all_sources(self) -> list[Path]:
-        return source_files(PAPER_DIR) + source_files(DECK_DIR)
+        paper = list(included_section_files(PAPER_DIR.parent / "main.tex", fallback_dir=PAPER_DIR))
+        return paper + source_files(DECK_DIR)
 
     def test_no_banned_stylistic_tells(self) -> None:
         for path in self.all_sources():

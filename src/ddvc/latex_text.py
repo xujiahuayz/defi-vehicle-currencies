@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import re
+from pathlib import Path
 
 
 NON_PROSE_ENVIRONMENTS = (
@@ -13,6 +14,28 @@ NON_PROSE_ENVIRONMENTS = (
     "tabular",
     "tikzpicture",
 )
+
+
+def included_section_files(main: Path, *, fallback_dir: Path | None = None) -> tuple[Path, ...]:
+    """Return section sources in the order the compiled document includes them.
+
+    Draft and retired design files can coexist under ``paper/sections``. Text diagnostics
+    must inspect the manuscript a reader receives, not every nearby ``.tex`` file. The
+    fallback preserves compatibility with a memo that has no explicit main-file inputs.
+    """
+    try:
+        source = main.read_text(encoding="utf-8")
+    except OSError:
+        source = ""
+    paths: list[Path] = []
+    for raw in re.findall(r"\\(?:input|include)\{(sections/[^}]+)\}", source):
+        path = main.parent / (raw if raw.endswith(".tex") else raw + ".tex")
+        if path.is_file():
+            paths.append(path)
+    if paths:
+        return tuple(paths)
+    directory = fallback_dir or main.parent / "sections"
+    return tuple(sorted(directory.rglob("*.tex"))) if directory.is_dir() else ()
 
 
 def strip_latex_markup(text: str) -> str:

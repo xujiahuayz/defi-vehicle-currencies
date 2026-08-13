@@ -1,0 +1,78 @@
+{
+  "schema_version": 1,
+  "purpose": "A freshness ledger for paragraph-level review against raw JFE passages. It records judgment; it does not automate or certify style.",
+  "sections": {
+    "paper/sections/abstract.tex": {
+      "sha256": "384ff65d6c051deaf8f324154a49a6cba1494833e900cf525a154a9290acd7e5",
+      "status": "rewritten",
+      "exemplars": [
+        "literature/text/2023-LiYeZheng2023Refusing-refusing-the-best-price.txt:26-34",
+        "literature/text/2020-MakarovSchoar2020Arbitrage-trading-and-arbitrage-in-cryptocurrency-markets.txt:29-38"
+      ],
+      "judgment": "Close on the strongest supported economic interpretation; do not end on a menu of unfinished tests."
+    },
+    "paper/sections/01-introduction.tex": {
+      "sha256": "e4ac41aae0a1ab206da5883f40b2bc3d7563e52510bb8919493fc238a76f390e",
+      "status": "rewritten",
+      "exemplars": [
+        "literature/text/2020-MakarovSchoar2020Arbitrage-trading-and-arbitrage-in-cryptocurrency-markets.txt:95-205",
+        "literature/text/2023-LiYeZheng2023Refusing-refusing-the-best-price.txt:96-214"
+      ],
+      "judgment": "State the economic possibilities and main magnitudes before the decomposition machinery; carry the surviving explanation into the contribution."
+    },
+    "paper/sections/02-setting.tex": {
+      "sha256": "cf3cd86099911eee4851b01f89597a8abd3f90b6208664d4ad8b3aacc9742644",
+      "status": "rewritten",
+      "exemplars": [
+        "literature/text/2020-MakarovSchoar2020Arbitrage-trading-and-arbitrage-in-cryptocurrency-markets.txt:421-520",
+        "literature/text/2023-LiYeZheng2023Refusing-refusing-the-best-price.txt:395-510"
+      ],
+      "judgment": "Lead with what the chain records, the economic route reconstructed from it, sample coverage, and the observed-versus-constructed distinction. The rewritten data and pricing paragraphs follow that economic sequence and leave implementation details to the appendix."
+    },
+    "paper/sections/03-dominance.tex": {
+      "sha256": "4da3c98c12f5027bcc31200fd088f642a860d3bed2aef8a88d53a52b10f5f8ec",
+      "status": "rewritten",
+      "exemplars": [
+        "literature/text/2020-MakarovSchoar2020Arbitrage-trading-and-arbitrage-in-cryptocurrency-markets.txt:886-991",
+        "literature/text/2021-BoltonKacperczyk2021CarbonRisk-do-investors-care-about-carbon-risk.txt:1221-1260"
+      ],
+      "judgment": "Let the aggregate fact raise the continuing-market question, report magnitudes, then identify the remaining economic explanation."
+    },
+    "paper/sections/06-executability.tex": {
+      "sha256": "d99022993303f28435a19bc2c04a1707ac06c4c27b98bbd5efc3f6001e04ed95",
+      "status": "rewritten",
+      "exemplars": [
+        "literature/text/2020-MakarovSchoar2020Arbitrage-trading-and-arbitrage-in-cryptocurrency-markets.txt:1923-2116",
+        "literature/text/2022-GrahamGrennanHarveyRajgopal-corporate-culture-evidence-field-jfe.txt:258-388"
+      ],
+      "judgment": "Make the instability of hour-end route rankings the result; organize validation limits around the concrete threat each one creates. The rewritten opening states the economic comparison, while the same-block and route-choice limits are consolidated around what the current evidence can show."
+    },
+    "paper/sections/05-rivals.tex": {
+      "sha256": "11263bcd7a745ec9431b0ef0b127c16aa4db39cfd1c84202c61118208faead67",
+      "status": "rewritten",
+      "exemplars": [
+        "literature/text/2022-ChangDuLouPolk2022Ripples-ripples-into-waves-trade-networks-economic-activity-and-asset-prices.txt:1321-1445",
+        "literature/text/2021-BoltonKacperczyk2021CarbonRisk-do-investors-care-about-carbon-risk.txt:1635-1702"
+      ],
+      "judgment": "Name each surviving economic alternative and the existing evidence bearing on it; keep unestimated specifications in the research spine."
+    },
+    "paper/sections/07-conclusion.tex": {
+      "sha256": "1b8c1dad9c45604acad34595cb52e2a287c25ec2f658c403ac64cdb2c8e6c5c4",
+      "status": "rewritten",
+      "exemplars": [
+        "literature/text/2023-LiYeZheng2023Refusing-refusing-the-best-price.txt:1848-1901",
+        "literature/text/2020-MakarovSchoar2020Arbitrage-trading-and-arbitrage-in-cryptocurrency-markets.txt:2134-2194"
+      ],
+      "judgment": "Return from the allocation result to its implication for vehicle-currency formation, with one consolidated scope boundary."
+    },
+    "paper/sections/08-appendix.tex": {
+      "sha256": "0631c15e3dc2638db56a20cbf88ddbddbcf75ca02d613ef1537475b2b9ecc439",
+      "status": "rewritten",
+      "exemplars": [
+        "literature/text/2023-LiYeZheng2023Refusing-refusing-the-best-price.txt:395-510",
+        "literature/text/2022-GrahamGrennanHarveyRajgopal-corporate-culture-evidence-field-jfe.txt:1967-2011"
+      ],
+      "judgment": "For each measurement: state the problem, estimator, validation sample, error or exclusion magnitude, and consequence for interpretation. The appendix now follows that sequence and removes development chronology and gatekeeping language."
+    }
+  }
+}

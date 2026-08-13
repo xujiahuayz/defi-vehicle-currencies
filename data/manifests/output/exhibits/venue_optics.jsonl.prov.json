@@ -1,27 +1,52 @@
 {
  "argv": [],
  "artefact": "output/exhibits/venue_optics.jsonl",
- "artefact_bytes": 1629,
- "artefact_mtime_ns": 1786661701205974357,
- "artefact_sha256": "cd4c3cb95a44e47d61859abc4049fdaa7bb9f425a7d33abec90097d57887f589",
- "code_fingerprint": "fd011139ca5bb4188653d8a89db3a34d49f28837c859207391f9390cec4aa66d",
+ "artefact_bytes": 1632,
+ "artefact_mtime_ns": 1786664604414304811,
+ "artefact_sha256": "406d3f87a8c28c9a2c43e03600c6db12f23e0f38e35bb4f5cf970eb22d7f151e",
+ "code_fingerprint": "6e663f5b459a47c64bab9c816ebef0cdad78f11b1f5d9e38327bdd0aca2641c9",
  "code_sources": [
   "scripts/measure_venue_optics.py",
   "src/ddvc/tables.py"
  ],
- "created_at": "2026-08-13T22:55:01+00:00",
+ "created_at": "2026-08-13T23:43:24+00:00",
  "git": {
   "branch": "main",
-  "commit": "797a5eb76dea2003deff45baf7fc29cae650eb08",
+  "commit": "f444acca0107402d1c036c716dd7d3f5dcce9d9f",
   "dirty": true,
   "dirty_generated_files": [
-   "output/exhibits/.venue_optics.jsonl.gettkoem.tmp"
+   "data/manifests/output/exhibits/prose_conventions.jsonl.prov.json",
+   "data/manifests/output/exhibits/prose_outliers.jsonl.prov.json",
+   "data/manifests/output/exhibits/venue_shape.jsonl.prov.json",
+   "output/exhibits/prose_conventions.jsonl",
+   "output/exhibits/prose_outliers.jsonl",
+   "output/exhibits/venue_shape.jsonl",
+   "output/exhibits/.venue_optics.jsonl.43_ptvub.tmp"
   ],
   "dirty_tracked_files": [
-   "deck/main.pdf",
-   "deck/sections/04-results.tex"
+   "docs/research-workflow.md",
+   "paper/main.tex",
+   "paper/sections/01-introduction.tex",
+   "paper/sections/02-setting.tex",
+   "paper/sections/03-dominance.tex",
+   "paper/sections/05-rivals.tex",
+   "paper/sections/06-executability.tex",
+   "paper/sections/07-conclusion.tex",
+   "paper/sections/08-appendix.tex",
+   "paper/sections/abstract.tex",
+   "scripts/check_deliverable_conformance.py",
+   "scripts/find_prose_outliers.py",
+   "scripts/measure_prose_conventions.py",
+   "scripts/measure_venue_optics.py",
+   "scripts/measure_venue_shape.py",
+   "src/ddvc/latex_text.py",
+   "tests/test_latex_text.py",
+   "tests/test_paper_prose.py"
   ],
-  "dirty_untracked_files": []
+  "dirty_untracked_files": [
+   "docs/reviews/paper-rhetoric.json",
+   "scripts/check_jfe_rhetoric_review.py"
+  ]
  },
  "inputs": [],
  "libraries": {
@@ -32,11 +57,11 @@
  },
  "notes": null,
  "payload_identity": {
-  "bytes": 1629,
+  "bytes": 1632,
   "format": "jsonl",
   "rows": 10,
   "schema_version": 1,
-  "sha256": "cd4c3cb95a44e47d61859abc4049fdaa7bb9f425a7d33abec90097d57887f589"
+  "sha256": "406d3f87a8c28c9a2c43e03600c6db12f23e0f38e35bb4f5cf970eb22d7f151e"
  },
  "python": "3.14.5",
  "rows": 10,

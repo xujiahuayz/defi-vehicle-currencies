@@ -46,11 +46,12 @@ ROOT = Path(__file__).resolve().parents[1]
 SECTIONS_DIR = (ROOT / "paper" / "sections") if (ROOT / "paper" / "sections").is_dir() else (ROOT / "memo" / "sections")
 
 from ddvc.tables import write_exhibit  # noqa: E402
-from ddvc.latex_text import strip_latex_markup  # noqa: E402
+from ddvc.latex_text import included_section_files, strip_latex_markup  # noqa: E402
 from ddvc.venue_corpus import resolve_venue_corpus  # noqa: E402
 
 OUT = ROOT / "output" / "exhibits" / "prose_outliers.jsonl"
 BREW_PY = "/opt/homebrew/bin/python3"
+DRAFT_FILES = included_section_files(SECTIONS_DIR.parent / "main.tex", fallback_dir=SECTIONS_DIR)
 
 EXTRACT = r"""
 import sys, fitz
@@ -129,19 +130,16 @@ def draft_parts() -> tuple[str, str]:
     # A slide is not a journal paragraph. Mixing the deck into this denominator caused
     # slide fragments and repeated visual labels to be diagnosed as paper prose. Deck
     # rhetoric belongs against the registered presentation corpus.
-    for d in (SECTIONS_DIR,):
-        if not d.exists():
-            continue
-        for p in sorted(d.rglob("*.tex")):
-            for ln in p.read_text(encoding="utf-8").splitlines():
-                if ln.lstrip().startswith("%"):
-                    continue
-                m = re.search(r"\\(?:sub)*section\*?\{([^}]*)\}|\\frametitle\{([^}]*)\}"
-                              r"|\\caption\{([^}]*)\}", ln)
-                if m:
-                    heads.append(next(g for g in m.groups() if g))
-                    continue
-                body.append(ln)
+    for p in DRAFT_FILES:
+        for ln in p.read_text(encoding="utf-8").splitlines():
+            if ln.lstrip().startswith("%"):
+                continue
+            m = re.search(r"\\(?:sub)*section\*?\{([^}]*)\}|\\frametitle\{([^}]*)\}"
+                          r"|\\caption\{([^}]*)\}", ln)
+            if m:
+                heads.append(next(g for g in m.groups() if g))
+                continue
+            body.append(ln)
     def clean(xs):
         return strip_latex_markup("\n".join(xs))
     return clean(body), clean(heads)
@@ -201,9 +199,8 @@ def sense_matches(term: str, min_overlap: float = 0.18) -> bool:
     if not corpus_bag:
         return False
     draft_bag: Counter = Counter()
-    for d in (SECTIONS_DIR,):
-        for p in sorted(d.rglob("*.tex")) if d.exists() else []:
-            draft_bag += bag(p.read_text(encoding="utf-8"))
+    for p in DRAFT_FILES:
+        draft_bag += bag(p.read_text(encoding="utf-8"))
     if not draft_bag:
         return False
     shared = set(corpus_bag) & set(draft_bag)
@@ -228,13 +225,10 @@ def formally_defined(term: str) -> bool:
             rf"\b(?:we\s+)?(?:define|denote|term)\s+(?:the\s+|a\s+)?[^.]{{0,30}}?"
             rf"\b{re.escape(term)}\b",
             rf"\b{re.escape(term)}\b\s*,\s*(?:meaning|namely)\b"]
-    for d in (SECTIONS_DIR,):
-        if not d.exists():
-            continue
-        for p in sorted(d.rglob("*.tex")):
-            raw = p.read_text(encoding="utf-8")
-            if any(re.search(x, raw, flags=re.I | re.S) for x in pats):
-                return True
+    for p in DRAFT_FILES:
+        raw = p.read_text(encoding="utf-8")
+        if any(re.search(x, raw, flags=re.I | re.S) for x in pats):
+            return True
     return False
 
 
@@ -252,19 +246,16 @@ def domain_terms() -> set[str]:
     reported as one.
     """
     terms: set[str] = set()
-    for d in (SECTIONS_DIR,):
-        if not d.exists():
-            continue
-        for p in sorted(d.rglob("*.tex")):
-            raw = p.read_text(encoding="utf-8")
-            for pat in (r"\\emph\{([^}]*)\}", r"\\textit\{([^}]*)\}",
-                        r"\\begin\{definition\}(.{0,120})",
-                        r"\\mathrm\{([^}]*)\}", r"\\texttt\{([^}]*)\}"):
-                for m in re.finditer(pat, raw, flags=re.S):
-                    terms |= set(WORD.findall(m.group(1).lower()))
-            # Capitalised names and code-like tokens are subject matter wherever they appear.
-            terms |= {w.lower() for w in re.findall(r"\b[A-Z][a-zA-Z]*[0-9A-Z][a-zA-Z0-9]*\b", raw)}
-            terms |= {w.lower() for w in re.findall(r"\b(?:Uniswap|Sushiswap|Curve|Balancer|Ethereum|StableSwap|WETH|USDC)\w*", raw)}
+    for p in DRAFT_FILES:
+        raw = p.read_text(encoding="utf-8")
+        for pat in (r"\\emph\{([^}]*)\}", r"\\textit\{([^}]*)\}",
+                    r"\\begin\{definition\}(.{0,120})",
+                    r"\\mathrm\{([^}]*)\}", r"\\texttt\{([^}]*)\}"):
+            for m in re.finditer(pat, raw, flags=re.S):
+                terms |= set(WORD.findall(m.group(1).lower()))
+        # Capitalised names and code-like tokens are subject matter wherever they appear.
+        terms |= {w.lower() for w in re.findall(r"\b[A-Z][a-zA-Z]*[0-9A-Z][a-zA-Z0-9]*\b", raw)}
+        terms |= {w.lower() for w in re.findall(r"\b(?:Uniswap|Sushiswap|Curve|Balancer|Ethereum|StableSwap|WETH|USDC)\w*", raw)}
     return terms
 
 
@@ -424,13 +415,14 @@ def main() -> int:
 
     style = [r for r in rows if material(r)]
     if style:
-        print(f"\n{len(style)} expression(s) fail the gate: at least {args.fail_count} uses "
-              f"and either undefined, a sense mismatch, or {args.fail_ratio:g} times the "
-              f"corpus ceiling.")
+        print(f"\n{len(style)} expression(s) trigger editorial review: at least "
+              f"{args.fail_count} uses and either classified as undefined, classified as "
+              f"a sense mismatch, or {args.fail_ratio:g} times the corpus ceiling. These "
+              "classifications are heuristic and may be wrong.")
     print(f"wrote {OUT.relative_to(ROOT)}")
-    print("\nEvery row is a construction the draft uses more often than any of the 14")
-    print("published papers. Nobody named them in advance, which is the point: the list")
-    print("is discovered from the corpus and does not depend on someone noticing a tell.")
+    print("\nEvery row is a lexical or masked-syntax difference discovered from the corpus.")
+    print("The report can locate passages for review; it cannot determine rhetorical")
+    print("function, certify word sense, or substitute for reading the raw analogues.")
     return 1 if style else 0
 
 

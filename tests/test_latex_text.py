@@ -1,11 +1,24 @@
 from __future__ import annotations
 
 import unittest
+from pathlib import Path
+from tempfile import TemporaryDirectory
 
-from ddvc.latex_text import strip_latex_markup
+from ddvc.latex_text import included_section_files, strip_latex_markup
 
 
 class LatexTextTest(unittest.TestCase):
+    def test_included_sections_follow_the_compiled_input_graph(self) -> None:
+        with TemporaryDirectory() as directory:
+            root = Path(directory)
+            sections = root / "sections"
+            sections.mkdir()
+            (sections / "kept.tex").write_text("kept")
+            (sections / "retired.tex").write_text("retired")
+            main = root / "main.tex"
+            main.write_text(r"\input{sections/kept}")
+            self.assertEqual(included_section_files(main), (sections / "kept.tex",))
+
     def test_environment_names_and_source_keys_do_not_become_prose(self) -> None:
         source = r"""
         \begin{frame}

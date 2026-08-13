@@ -1,25 +1,23 @@
 #!/usr/bin/env python3
-"""What a JFE paragraph IS, measured, so a rewrite has something to aim at.
+"""A diagnostic for suspicious regularity in paper prose, measured against JFE papers.
 
 WHY THIS EXISTS ALONGSIDE THE BLACKLIST. `measure_prose_conventions.py` and
 `find_prose_outliers.py` both answer one question: what does this draft over-use relative to
 the published corpus? That question is subtractive. It names constructions to remove and it
-never names a convention to acquire, so a draft can pass every deletion the two scripts ask
-for and still read nothing like the venue, because deleting a tell does not install a shape.
-Forty-two clean deletions moved the discovered-tell count by a third and moved both gates by
-nothing at all, which is the signature of a corrective loop with no target.
+never shows whether the draft has settled into a generated-looking cadence. A draft can pass
+every deletion those scripts ask for and still read as unnaturally regular.
 
-So this measures the corpus POSITIVELY and reports target bands. Sentence length, clause
-load, how many sentences carry no subordinate clause at all, paragraph length, and heading
-grammar. A rewrite can hit a distribution. It cannot hit one by subtracting from a document
-that never resembled it.
+This script therefore measures sentence length, clause load, paragraph dispersion, and
+heading grammar. The measurements are smoke alarms, not instructions for composition. The
+argument decides where a paragraph begins and ends; no sentence or paragraph should be
+changed merely to move a statistic toward the corpus.
 
-Both directions are needed and both are kept. The blacklist says which constructions are
-disqualifying; this says what to write instead. A draft is finished when it sits inside
-these bands AND clears the two discovery gates.
+Rhetorical quality still requires reading the complete passage against a close published
+analogue. Sitting inside the corpus distribution does not certify prose, and sitting outside
+it does not by itself establish a defect.
 
-  ./scripts/run scripts/measure_venue_shape.py                    corpus bands, and the whole draft
-  ./scripts/run scripts/measure_venue_shape.py --section 03       one section against the bands
+  ./scripts/run scripts/measure_venue_shape.py                    corpus diagnostics and draft
+  ./scripts/run scripts/measure_venue_shape.py --section 03       one-section diagnostic
 
 Reads   literature/pdf-sources.json and the registered JFE exemplar PDFs
         paper/sections/*.tex
@@ -33,12 +31,12 @@ import re
 import subprocess
 import sys
 from pathlib import Path
-from statistics import median
+from statistics import mean, median, pstdev
 
 ROOT = Path(__file__).resolve().parents[1]
 
 from ddvc.tables import write_exhibit  # noqa: E402
-from ddvc.latex_text import strip_latex_markup  # noqa: E402
+from ddvc.latex_text import included_section_files, strip_latex_markup  # noqa: E402
 from ddvc.venue_corpus import resolve_venue_corpus  # noqa: E402
 
 OUT = ROOT / "output" / "exhibits" / "venue_shape.jsonl"
@@ -137,6 +135,7 @@ def corpus_paragraphs(text: str) -> list[str]:
 
 
 SECTION_DIR = ROOT / "paper" / "sections"
+DRAFT_FILES = included_section_files(SECTION_DIR.parent / "main.tex", fallback_dir=SECTION_DIR)
 
 
 def draft_paragraphs(only: str | None = None) -> list[str]:
@@ -147,7 +146,7 @@ def draft_paragraphs(only: str | None = None) -> list[str]:
     inferred for the corpus.
     """
     out = []
-    for p in sorted(SECTION_DIR.rglob("*.tex")):
+    for p in DRAFT_FILES:
         if only and not p.name.startswith(only):
             continue
         for line in p.read_text(encoding="utf-8").splitlines():
@@ -226,12 +225,13 @@ def cohesion(paras: list[str]) -> float:
 
 
 def shape(paras: list[str]) -> dict:
-    sents, per_par = [], []
+    sents, per_par, words_per_par = [], [], []
     for p in paras:
         ss = sentences(p)
         if not ss:
             continue
         per_par.append(len(ss))
+        words_per_par.append(len(re.findall(r"[A-Za-z][A-Za-z'-]*", p)))
         sents.extend(ss)
     if not sents:
         return {}
@@ -249,8 +249,76 @@ def shape(paras: list[str]) -> dict:
         "plain_declarative_share": 100.0 * sum(plain) / len(sents),
         "over_40_words_share": 100.0 * sum(long40) / len(sents),
         "sentences_per_paragraph": sum(per_par) / len(per_par) if per_par else 0.0,
+        "paragraph_words_median": median(words_per_par),
+        "paragraph_words_sd": pstdev(words_per_par),
+        "paragraph_words_iqr": percentile(words_per_par, 0.75) - percentile(words_per_par, 0.25),
+        "paragraph_words_p10": percentile(words_per_par, 0.10),
+        "paragraph_words_p90": percentile(words_per_par, 0.90),
+        "paragraph_words_cv": pstdev(words_per_par) / mean(words_per_par),
+        "paragraph_sentences_sd": pstdev(per_par),
+        "paragraph_sentences_iqr": percentile(per_par, 0.75) - percentile(per_par, 0.25),
         "given_opening_share": cohesion(paras),
     }
+
+
+def percentile(values: list[int], fraction: float) -> float:
+    """Linearly interpolated percentile, stable for short subsection sequences."""
+    ordered = sorted(values)
+    if len(ordered) == 1:
+        return float(ordered[0])
+    position = (len(ordered) - 1) * fraction
+    lower = int(position)
+    upper = min(lower + 1, len(ordered) - 1)
+    weight = position - lower
+    return ordered[lower] * (1.0 - weight) + ordered[upper] * weight
+
+
+def draft_subsection_profiles(only: str | None = None) -> list[dict]:
+    """Return exact paragraph sequences by live section/subsection in source order.
+
+    Dispersion can be healthy overall while every individual subsection is forced into
+    equal-sized blocks. Keeping the actual sequence makes that artificial cadence visible.
+    """
+    profiles: list[dict] = []
+    for path in DRAFT_FILES:
+        if only and not path.name.startswith(only):
+            continue
+        section = path.stem
+        subsection = "opening"
+        buckets: dict[str, list[str]] = {subsection: []}
+        for line in path.read_text(encoding="utf-8").splitlines():
+            stripped = line.strip()
+            if stripped.startswith("%"):
+                continue
+            heading = re.search(r"\\(section|subsection)\*?\{([^}]*)\}", stripped)
+            if heading:
+                title = clean_tex(heading.group(2))
+                if heading.group(1) == "section":
+                    subsection = f"{title} — opening"
+                else:
+                    subsection = title
+                buckets.setdefault(subsection, [])
+                continue
+            if (not stripped or stripped.startswith("\\") or len(stripped) < 200
+                    or "&" in stripped or stripped.endswith("\\\\")):
+                continue
+            buckets.setdefault(subsection, []).append(clean_tex(stripped))
+        for title, paragraphs in buckets.items():
+            if not paragraphs:
+                continue
+            words = [len(re.findall(r"[A-Za-z][A-Za-z'-]*", p)) for p in paragraphs]
+            sent_counts = [len(sentences(p)) for p in paragraphs]
+            profiles.append({
+                "source": path.name,
+                "subsection": title,
+                "paragraphs": len(paragraphs),
+                "paragraph_word_sequence": words,
+                "paragraph_sentence_sequence": sent_counts,
+                "paragraph_words_mean": mean(words),
+                "paragraph_words_sd": pstdev(words),
+                "paragraph_words_cv": pstdev(words) / mean(words),
+            })
+    return profiles
 
 
 def corpus_headings(texts: list[str]) -> list[str]:
@@ -263,7 +331,7 @@ def corpus_headings(texts: list[str]) -> list[str]:
 
 def draft_headings(only: str | None = None) -> list[str]:
     out = []
-    for p in sorted(SECTION_DIR.rglob("*.tex")):
+    for p in DRAFT_FILES:
         if only and not p.name.startswith(only):
             continue
         for line in p.read_text(encoding="utf-8").splitlines():
@@ -359,6 +427,14 @@ FIELDS = [
     ("plain_declarative_share", "sentences with NO subordinate clause, %"),
     ("over_40_words_share", "sentences over 40 words, %"),
     ("sentences_per_paragraph", "sentences per paragraph"),
+    ("paragraph_words_median", "median paragraph, words"),
+    ("paragraph_words_sd", "paragraph length SD, words"),
+    ("paragraph_words_iqr", "paragraph length IQR, words"),
+    ("paragraph_words_p10", "10th pct paragraph, words"),
+    ("paragraph_words_p90", "90th pct paragraph, words"),
+    ("paragraph_words_cv", "paragraph length coefficient of variation"),
+    ("paragraph_sentences_sd", "paragraph sentence-count SD"),
+    ("paragraph_sentences_iqr", "paragraph sentence-count IQR"),
     ("given_opening_share", "sentences opening on given information, %"),   # corpus-side may be unusable
     ("heading_words_median", "median heading, words"),
     ("wh_opening_share", "headings opening on a wh-word, %"),
@@ -414,7 +490,7 @@ def main() -> int:
 
     print(f"  corpus: {len(per_paper)} papers, {sum(p['sentences'] for p in per_paper):,} "
           f"sentences; draft ({label}): {dshape['sentences']:,} sentences\n")
-    print(f"  {'target':<44}{'p25':>8}{'median':>9}{'p75':>8}{'draft':>9}   verdict")
+    print(f"  {'diagnostic':<44}{'p25':>8}{'median':>9}{'p75':>8}{'draft':>9}   flag")
 
     rows, out_of_band = [], []
     for key, desc in FIELDS:
@@ -444,30 +520,49 @@ def main() -> int:
                          "corpus_median": None, "corpus_p75": None, "draft": d,
                          "section": label, "verdict": "no corpus target"})
             continue
-        # The aim is the venue's interquartile range. Half the published papers sit inside
-        # it by construction, which is the right standard for something to write toward.
+        # The interquartile range is a compact anomaly reference. It is not an authoring aim.
         inside = lo <= d <= hi if hi > 0 else d <= 0.5
         if not inside:
             out_of_band.append((desc, d, lo, hi))
         print(f"  {desc:<44}{lo:>8.1f}{med:>9.1f}{hi:>8.1f}{d:>9.1f}   "
-              f"{'in band' if inside else 'OUT'}")
+              f"{'unflagged' if inside else 'REVIEW'}")
         rows.append({"metric": key, "description": desc, "corpus_p25": lo,
                      "corpus_median": med, "corpus_p75": hi, "draft": d,
-                     "section": label, "verdict": "in band" if inside else "out of band"})
+                     "section": label, "verdict": "unflagged" if inside else "review"})
 
     print()
     if out_of_band:
-        print(f"{len(out_of_band)} target(s) the draft misses:")
+        print(f"{len(out_of_band)} diagnostic(s) flag the draft for contextual review:")
         for desc, d, lo, hi in out_of_band:
-            print(f"  {desc}: draft {d:.1f}, venue writes between {lo:.1f} and {hi:.1f}")
-        print("\nThese are shapes to WRITE, and the discovery gates stay in force on top:")
+            print(f"  {desc}: draft {d:.1f}, corpus interquartile range {lo:.1f} to {hi:.1f}")
+        print("\nDo not edit toward these numbers. Read the flagged passage in full; the"
+              " argument alone decides its shape. The lexical alarms remain separate:")
         print("  scripts/measure_prose_conventions.py   constructions to avoid")
         print("  scripts/find_prose_outliers.py         tells nobody named in advance")
     else:
-        print("The draft sits inside every measured shape band of the venue.")
+        print("No shape diagnostic falls outside the corpus interquartile ranges.")
+
+    profiles = draft_subsection_profiles(args.section)
+    print("\nExact draft paragraph rhythm by subsection (words; sentences):")
+    for profile in profiles:
+        word_seq = ",".join(str(n) for n in profile["paragraph_word_sequence"])
+        sent_seq = ",".join(str(n) for n in profile["paragraph_sentence_sequence"])
+        print(f"  {profile['source']} :: {profile['subsection']}: "
+              f"words [{word_seq}]  sentences [{sent_seq}]  "
+              f"SD {profile['paragraph_words_sd']:.1f}, CV {profile['paragraph_words_cv']:.2f}")
+        rows.append({"metric": "subsection_paragraph_sequence",
+                     "description": "exact paragraph lengths within subsection",
+                     "section": label, "source": profile["source"],
+                     "subsection": profile["subsection"],
+                     "paragraph_word_sequence": profile["paragraph_word_sequence"],
+                     "paragraph_sentence_sequence": profile["paragraph_sentence_sequence"],
+                     "paragraph_words_mean": profile["paragraph_words_mean"],
+                     "paragraph_words_sd": profile["paragraph_words_sd"],
+                     "paragraph_words_cv": profile["paragraph_words_cv"],
+                     "verdict": "editorial profile"})
     write_exhibit(__import__("pandas").DataFrame(rows), OUT)
     print(f"\nwrote {OUT.relative_to(ROOT)}")
-    return 1 if out_of_band else 0
+    return 0
 
 
 if __name__ == "__main__":

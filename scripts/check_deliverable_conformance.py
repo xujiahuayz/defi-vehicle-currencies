@@ -33,18 +33,25 @@ ROOT = Path(__file__).resolve().parents[1]
 PY = ROOT / ".venv" / "bin" / "python"
 OPTICS = ROOT / "output" / "exhibits" / "venue_optics.jsonl"
 
-# Each stage is (label, argv, failure meaning, blocking). Venue-shape quartiles are
-# empirical rewrite guidance, not validity conditions. The unsupervised outlier classifier
-# is likewise a discovery device: domain vocabulary and sense classification require
-# editorial judgement. Keeping both in this loop makes departures visible after every edit
-# without turning a noisy stylistic proxy into admissibility.
+# Each stage is (label, argv, failure meaning, blocking). These automated stages are alarms,
+# not a JFE-authorship certificate. They can show that the draft uses a known construction
+# unusually often or has an unusual sentence distribution; they cannot judge whether an
+# economic argument is introduced, developed, qualified, and handed to the next paragraph
+# as published authors do. That judgment requires the raw-passage review registered below.
+# Venue-shape quartiles and the unsupervised outlier classifier remain advisory because
+# domain vocabulary and rhetorical function require editorial judgment.
 STAGES = [
-    ("venue optics, measured against the exemplars",
+    ("raw-passage JFE review is current for every compiled section",
+     [str(PY), "scripts/check_jfe_rhetoric_review.py"],
+     "a changed manuscript section has not been reread and recorded against raw JFE "
+     "analogues", True),
+    ("venue-structure alarm against the exemplars",
      [str(PY), "scripts/measure_venue_optics.py"],
      "could not measure the published papers, so the thresholds below are stale", True),
-    ("prose conventions, measured against the exemplars",
+    ("known-construction alarm against the exemplars",
      [str(PY), "scripts/measure_prose_conventions.py"],
-     "a construction is used at a rate no published paper in the corpus reaches", True),
+     "a known construction is used at a rate no published paper in the corpus reaches; "
+     "rewrite the complete thought, then inspect its surrounding paragraph", True),
     ("discovered over-used constructions, nobody naming them first",
      [str(PY), "scripts/find_prose_outliers.py"],
      "a word, phrase or syntactic template is used above every published paper's rate; "
@@ -64,7 +71,8 @@ STAGES = [
      "a measured number names no artefact, or names one that does not exist", True),
     ("structural resemblance to the venue",
      [str(PY), "-m", "pytest", "tests/test_venue_optics.py", "-q"],
-     "a structural feature is absent or the paper is short of the venue's first quartile", True),
+     "the paper is short of a venue quartile on a structural feature; investigate the "
+     "scientific reason, but never add equations, citations, or length as filler", False),
     ("the spine still matches the paper",
      [str(PY), "-m", "pytest", "tests/test_paper_spine.py", "-q"],
      "the blueprint and the deliverable have diverged", True),
@@ -130,7 +138,8 @@ def main() -> int:
             print(f"\nAll blocking conformance checks pass; {len(advisories)} {noun} "
                   f"{verb} visible for the next substantive rewrite.")
         else:
-            print("\nBoth deliverables conform on every checked dimension.")
+            print("\nAll automated alarms are clear. This does not certify JFE rhetoric; "
+                  "the raw-passage paragraph review remains a separate judgment.")
         return 0
 
     print(f"\n{len(failures)} check(s) failed:")

@@ -36,6 +36,7 @@ ROOT = Path(__file__).resolve().parents[1]
 SECTIONS_DIR = (ROOT / "paper" / "sections") if (ROOT / "paper" / "sections").is_dir() else (ROOT / "memo" / "sections")
 
 from ddvc.tables import write_exhibit  # noqa: E402
+from ddvc.latex_text import included_section_files  # noqa: E402
 from ddvc.venue_corpus import resolve_venue_corpus  # noqa: E402
 
 SECTIONS = SECTIONS_DIR
@@ -87,7 +88,8 @@ def measure_pdf(path: Path) -> dict | None:
 
 def measure_draft() -> dict:
     """The same features, read off the LaTeX source and the compiled PDF."""
-    tex = "\n".join(p.read_text(encoding="utf-8") for p in sorted(SECTIONS.glob("*.tex")))
+    files = included_section_files(SECTIONS_DIR.parent / "main.tex", fallback_dir=SECTIONS)
+    tex = "\n".join(p.read_text(encoding="utf-8") for p in files)
     body = "\n".join(ln for ln in tex.splitlines() if not ln.lstrip().startswith("%"))
     pdf = SECTIONS_DIR.parent / "main.pdf"
     pages = 0

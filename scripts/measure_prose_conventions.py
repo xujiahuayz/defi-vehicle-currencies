@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Which constructions does this draft use at rates published papers do not?
+"""Which KNOWN constructions does this draft use at rates published papers do not?
 
 WHY THIS IS NOT A BLACKLIST. Every stylistic tell caught so far was patched by hand: em
 dashes banned, then "rather than", then contrast-confirmation, then the trailing appositive
@@ -8,16 +8,16 @@ objection to that pattern of fixes is the right one, since a list maintained one
 a time only ever catches the tells someone already noticed, and the next one arrives
 unlabelled.
 
-The general method asks a different question. For any construction that can be expressed as
-a pattern, measure its rate per thousand words in the 14 published papers, and measure the
-same rate in the draft. A construction the corpus uses freely is a convention of the field.
-One the corpus almost never uses and the draft uses repeatedly is a tell, whoever wrote it.
-The judgement moves from a person's taste to a comparison, and a new construction can be
-added to the probe list without anyone deciding in advance whether it is bad.
+This script asks a deliberately narrower question. For any construction already expressed
+as a pattern, it measures the rate per thousand words in the 14 published papers and in the
+draft. A construction the corpus uses freely should not be banned merely because somebody
+dislikes it. One the corpus rarely uses and the draft repeats is an alarm. The result says
+nothing about an unregistered construction, a one-off use below the frequency threshold, or
+the rhetorical function a word performs in its paragraph.
 
-That also settles disputes in the other direction. Several constructions that read as
-"AI-ish" turn out to be entirely normal in this literature, and the corpus says so, which
-stops the house style from drifting into something no published paper resembles.
+The script is therefore a final diagnostic, not a writing method and not evidence that prose
+sounds like a JFE article. Paragraph organization must be reviewed against the raw passages
+named in `docs/research-workflow.md`; local substitutions do not close that review.
 
 Reads   literature/pdf-sources.json and the registered JFE exemplar PDFs
         paper/sections/*.tex, deck/**/*.tex
@@ -38,11 +38,12 @@ ROOT = Path(__file__).resolve().parents[1]
 SECTIONS_DIR = (ROOT / "paper" / "sections") if (ROOT / "paper" / "sections").is_dir() else (ROOT / "memo" / "sections")
 
 from ddvc.tables import write_exhibit  # noqa: E402
-from ddvc.latex_text import strip_latex_markup  # noqa: E402
+from ddvc.latex_text import included_section_files, strip_latex_markup  # noqa: E402
 from ddvc.venue_corpus import resolve_venue_corpus  # noqa: E402
 
 OUT = ROOT / "output" / "exhibits" / "prose_conventions.jsonl"
 BREW_PY = "/opt/homebrew/bin/python3"
+DRAFT_FILES = included_section_files(SECTIONS_DIR.parent / "main.tex", fallback_dir=SECTIONS_DIR)
 
 # Each probe is (name, pattern, what it looks like). Patterns run over plain prose, so they
 # must not depend on LaTeX markup. Adding a probe requires no judgement about whether the
@@ -99,11 +100,10 @@ def draft_text() -> str:
     # The reference corpus is journal articles. Deck prose is a different register and
     # must be judged against the registered presentation corpus, not mixed into a paper
     # denominator where short slide fragments distort every rate.
-    for d in (SECTIONS_DIR,):
-        for p in sorted(d.rglob("*.tex")) if d.exists() else []:
-            body = "\n".join(ln for ln in p.read_text(encoding="utf-8").splitlines()
-                             if not ln.lstrip().startswith("%"))
-            parts.append(body)
+    for p in DRAFT_FILES:
+        body = "\n".join(ln for ln in p.read_text(encoding="utf-8").splitlines()
+                         if not ln.lstrip().startswith("%"))
+        parts.append(body)
     return strip_latex_markup("\n".join(parts))
 
 
@@ -155,11 +155,11 @@ def main() -> int:
             desc = next(x[2] for x in PROBES if x[0] == name)
             print(f"  {name}: draft {d:.3f} per 1,000 words against a corpus maximum of "
                   f"{mx:.3f}  ({desc})")
-        print("\nThese are the tells. A construction the corpus uses freely is a convention")
-        print("of the field and is left alone whatever it sounds like.")
+        print("\nThese are alarms for whole-thought review. A construction the corpus uses")
+        print("freely is not banned by this test, but context and paragraph function still matter.")
     else:
-        print("No construction exceeds what the published corpus does. Constructions that")
-        print("read as artificial but sit inside the corpus range are conventions here.")
+        print("No REGISTERED construction exceeds the published-corpus range. This result")
+        print("does not assess unregistered phrasing, word sense, or paragraph organization.")
     write_exhibit(__import__("pandas").DataFrame(rows), OUT)
     print(f"\nwrote {OUT.relative_to(ROOT)}")
     return 1 if flagged else 0
