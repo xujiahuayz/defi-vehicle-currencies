@@ -64,6 +64,25 @@ ACTION_REGRESSION_CHECKS = {
 }
 
 
+def prose_gate(state: dict[str, str]) -> tuple[bool, str]:
+    """Return the live prose permission without collapsing evidence tiers."""
+    node = state.get("prose_node", "closed").lower()
+    if node == "open":
+        return True, "ALLOWED: prose node P is open"
+    if node == "tiered":
+        return True, (
+            "ALLOWED-TIERED: write publication-standard prose for the question, "
+            "setting, mechanisms, and certified route-only facts. Keep final cost, "
+            "turnover, persistence, LP-return, and other exact-state coefficient "
+            "sentences out until their own evidence locks."
+        )
+    return False, (
+        "BLOCKED: prose node P is closed. Develop the economic argument in "
+        "docs/paper-spine.md and leave paper/ unchanged. Do not perform term "
+        "substitution or create a second style memo."
+    )
+
+
 def regression_checks(action: str) -> tuple[str, ...]:
     return COMMON_REGRESSION_CHECKS + ACTION_REGRESSION_CHECKS[action]
 
@@ -81,9 +100,11 @@ def main() -> int:
     print("PRIOR-CORRECTION REGRESSION CHECK:")
     for check in regression_checks(args.action):
         print(f"- {check}")
-    if args.action == "prose" and state.get("prose_node", "closed").lower() != "open":
-        print("BLOCKED: prose node P is closed. Develop the economic argument in docs/paper-spine.md and leave paper/ unchanged. Do not perform term substitution or create a second style memo.")
-        return 2
+    if args.action == "prose":
+        allowed, message = prose_gate(state)
+        print(message)
+        if not allowed:
+            return 2
     print(f"ALLOWED: {args.action} action is inside the current graph boundary")
     return 0
 

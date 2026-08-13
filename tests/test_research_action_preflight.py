@@ -2,7 +2,7 @@ from pathlib import Path
 
 import pytest
 
-from scripts.research_action_preflight import frontmatter, regression_checks
+from scripts.research_action_preflight import frontmatter, prose_gate, regression_checks
 
 
 def test_frontmatter_reads_live_graph_fields(tmp_path: Path) -> None:
@@ -38,6 +38,19 @@ def test_prose_preflight_requires_raw_passages_not_term_replacement() -> None:
     checks = " ".join(regression_checks("prose")).lower()
     assert "raw published jfe passages" in checks
     assert "term replacement" in checks
+
+
+def test_tiered_prose_gate_preserves_blocked_coefficient_boundary() -> None:
+    allowed, message = prose_gate({"prose_node": "tiered"})
+    assert allowed
+    assert "certified route-only facts" in message
+    assert "exact-state coefficient" in message
+
+
+def test_closed_prose_gate_still_blocks_paper_mutation() -> None:
+    allowed, message = prose_gate({"prose_node": "closed"})
+    assert not allowed
+    assert "leave paper/ unchanged" in message
 
 
 def test_deck_preflight_recalls_persistent_visual_backlog() -> None:
