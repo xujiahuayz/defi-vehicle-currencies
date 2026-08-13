@@ -1,0 +1,64 @@
+{
+ "argv": [
+  "--force",
+  "--build-routes-only"
+ ],
+ "artefact": "data/empirical/v4_settlement_route_units.parquet",
+ "artefact_bytes": 272943666,
+ "artefact_mtime_ns": 1786613585256587694,
+ "artefact_sha256": "4fc206525d33efb507d700067b87e9a4c248c1a6038ad93a1d56a350f4746f10",
+ "code_fingerprint": "f0cb60b5e9b82e18fb91fd975281c6d9c447811b5d2d4c5f4150ebbd6a4827e6",
+ "code_sources": [
+  "scripts/run_v4_settlement_identification.py"
+ ],
+ "created_at": "2026-08-13T09:33:05+00:00",
+ "git": {
+  "branch": "main",
+  "commit": "d72f8c1068e78ca52ad6d6fca08fb7732c149a0e",
+  "dirty": true,
+  "dirty_generated_files": [],
+  "dirty_tracked_files": [
+   "logs/grind-queue.md"
+  ],
+  "dirty_untracked_files": []
+ },
+ "inputs": [
+  {
+   "entries": 4665,
+   "exists": true,
+   "kind": "directory",
+   "path": "data/unified",
+   "tree_fingerprint": "7baf1ade7ada8aac52efb4eb5f5a063de4fc0f72a455ad64e15e7ed1b7e8e54b"
+  }
+ ],
+ "libraries": {
+  "numpy": "2.5.1",
+  "pandas": "3.0.3",
+  "pyarrow": "25.0.0",
+  "scipy": "1.18.0"
+ },
+ "notes": "exclusive V3/V4 coherent route units; mixed-source components excluded",
+ "payload_identity": {
+  "bytes": 272943666,
+  "columns": [
+   "date",
+   "week",
+   "dex",
+   "tx_hash",
+   "component_id",
+   "src",
+   "sink",
+   "vehicle",
+   "vehicle_id",
+   "route_usd"
+  ],
+  "format": "parquet",
+  "rows": 3970589,
+  "schema_sha256": "4d756bd1d36a4f500fd21dd00977c528ce6db9518eb312b778fb3de18baff249",
+  "schema_version": 1,
+  "sha256": "4fc206525d33efb507d700067b87e9a4c248c1a6038ad93a1d56a350f4746f10"
+ },
+ "python": "3.14.6",
+ "rows": 3970589,
+ "script": "scripts/run_v4_settlement_identification.py"
+}

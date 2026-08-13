@@ -16,6 +16,47 @@ and pick a blocking check from the freeze gate.
 
 ## Queue
 
+
+
+
+
+
+
+
+
+
+- [ ] **JAVA INTERJECTION (browser, 2026-08-13T09:17:53+00:00):** Use science tip 377aa25 for the queued post-build integration. It fixes support attribution so a wholly missing pair-week is incomplete_window, not composition_shift. This supersedes the earlier tip pointer; keep the active route build untouched.
+
+- [ ] **JAVA INTERJECTION (browser, 2026-08-13T09:16:40+00:00):** Use origin/glotl/science-parallel through bef5b41 for the queued post-build integration; it is the tested tip and includes all earlier architecture/deck handoff commits. Preserve the active route build.
+
+- [ ] **JAVA INTERJECTION (browser, 2026-08-13T09:15:35+00:00):** FINAL SLIDE-PLUMBING POINTER: integrate science branch through 622758f after the active route build. This supersedes earlier science commit pointers, generates all provisional architecture slide cells from certified support exhibits, and prints the exact route-generation hash. Compile the deck after the single transition run; do not type numerical values into TeX and do not rerun the route build.
+
+- [ ] **JAVA INTERJECTION (browser, 2026-08-13T09:11:59+00:00):** EXTENSIVE-MARGIN ADDITION: after the active route build completes, integrate science branch through 0bc4725 (superseding the earlier 2ccc999 pointer). It preserves within-cell substitution events and adds a separate active-pair risk panel for V4-active vehicle-role appearance/disappearance, with zero-use weeks explicit and pair disappearance excluded. Run the transition script once to emit both support families. Both remain endogenous E0; neither is design removal. Do not interrupt or rerun the route materialization.
+
+- [ ] **JAVA INTERJECTION (browser, 2026-08-13T09:06:25+00:00):** SCIENCE CORRECTION TO THE DECK HANDOFF: integrate through origin/glotl/science-parallel commit 2ccc999, which includes 7da4a97. It makes the current estimand explicit: exit is within-observed-cell architecture substitution. Do not present it as reversal of the vehicle role, because complete cell disappearance is absent from this risk panel. Report that extensive-margin disappearance separately as an unresolved next estimand. Preserve the active route build and do not interrupt it.
+
+- [ ] **JAVA INTERJECTION (browser, 2026-08-13T09:00:37+00:00):** LIVE-SCIENCE DECK HANDOFF. Do not interrupt or repeat the active Studio-current route-only build. After it finishes durably, fetch origin/glotl/science-parallel and integrate tested commit 7da4a97. This opens only visibly labelled provisional deck work while paper prose remains gated, adds the presentation-facing architecture_transition_support.jsonl, and corrects E0 language: exposure entry/exit are endogenous associations; exit reverses architecture exposure, not necessarily vehicle role; hysteresis needs asymmetric retention versus displacement under cost-state reversal. Rerun only run_architecture_state_transitions.py against the just-built exact current route-unit input, report threshold-by-kind detected/usable/overlap/incomplete/composition support plus descriptive pretrend/immediate/persistent means, then populate the three provisional frames with the exact generation identity. This supersedes the two older duplicate route-only queue items once their requirements are verified; tick them together rather than rebuilding routes. Do not open paper prose.
+
+- [x] **JAVA INTERJECTION (browser, 2026-08-13T08:47:39+00:00):** SCIENCE-FIRST REDIRECTION. Preserve the two commits already made (1096d83 and 17eda66). The failed 62-date state build established a real exact-state D blocker: raw files exist but the current local-scan certificate does not authorize uniswap_v3/burns/20210515. Record that exact blocker; do not broaden this iteration into the dormant raw-cert feature or a full raw-certification redesign. Route-only D is already green and must proceed to E now. Fetch origin/glotl/science-parallel and integrate/test new commit 2d11836 before any architecture materialization; it computes the pair denominator before focal-cell filtering and rejects event windows with changing comparison sets as composition_shift. Then run the Studio-current route-only build and architecture transition audit, reporting entry/exit support by threshold and status. Only after that result is durable should a later iteration resume the minimal existing certification owner for the 62 exact-state audit dates. Calendar date is not treatment; do not make causal claims.
+  _Closed by integrating `2d11836` as `d72f8c1`, rebuilding the current
+  route-only architecture panel, and publishing the guarded transition support
+  audit. All 581 candidate events are excluded by composition, overlap, or one
+  incomplete window, so zero E0 contrasts are promoted. The exact V3 blocker is
+  recorded in the grind ledger for the later minimal certification-owner pass._
+
+- [x] **JAVA INTERJECTION (browser, 2026-08-13T08:37:10+00:00):** WORKFLOW CORRECTION AND DATA/SCIENCE MEET-IN-MIDDLE. The first three science commits are already integrated on main as dc7d613, 3ab708d, and 12edf63. Do not rerun audit_v3_graph_event_completeness.py from the old invocation: --help accidentally launched a 33 GB scan, and the audit-date canonical state inputs do not exist in this worktree, so that run was interrupted. Fetch origin/glotl/science-parallel, then integrate and test 66867bc (pair-week-adjusted architecture contrasts plus overlapping-transition exclusion) and b2a7cdc (side-effect-free help, cheap state preflight, explicit audit-calendar materialization, and progress reporting). Run the new V3 audit preflight first; it must fail quickly until state exists. Materialize only the shared V3 construction-audit dates with ./scripts/run scripts/build_market_state.py --family tick --venue uniswap_v3 --audit-calendar --workers 8; rerun the cheap preflight and only then launch the exact-event audit intentionally. This exact-state branch must not block route-only E. Independently build the architecture input from Studio current released unified data with ./scripts/run scripts/run_v4_settlement_identification.py --force --build-routes-only, then run ./scripts/run scripts/run_architecture_state_transitions.py. Report entry and exit support at 5%, 10%, and 25%, including usable versus overlapping/incomplete windows. Calendar date is not treatment; E0 is not causal. Commit certified small outputs or immutable pointers, record hashes/support in the ledger, continue remaining state-D work, and do not open prose.
+  _Closed by the already-landed main-line ports `1096d83` and `17eda66`, the
+  fail-fast 124-input V3 preflight verdict, and the completed independent
+  route-only E audit. The newer science-first direction superseded state
+  materialization in this iteration after the local-scan certificate rejected
+  `uniswap_v3/burns/20210515`; no raw scan or provider fetch was launched._
+
+- [x] **JAVA INTERJECTION (browser, 2026-08-13T07:58:14+00:00):** DATA/SCIENCE MEET-IN-MIDDLE — execute at the next clean iteration boundary after preserving the current V3 audit. M3 found its processed panel is stale (2,277 days) versus Studio current (2,332), so do not consume or copy the M3 route-unit file. Fetch origin/glotl/science-parallel at d2d9ca5 and integrate the three science commits into current main after tests/conflict review. Then materialize the architecture input from Studio current released unified layer with: ./scripts/run scripts/run_v4_settlement_identification.py --force --build-routes-only. This rebuild must use complete components, exclude mixed-source routes from pure V3/V4 states, and install the provenance sidecar. Next run: ./scripts/run scripts/run_architecture_state_transitions.py. Report entry AND exit support at 5%, 10%, and 25% V4-share thresholds; do not interpret calendar date as treatment and do not promote the E0 contrasts as causal. Commit the small certified panel/exhibits or an immutable release pointer as the repo contract permits, push main, and record exact hashes/support in the grind ledger. Continue the data freeze afterward; do not open prose yet.
+  _Closed with 3,970,589 current-release exclusive V3/V4 route units, a
+  63,193-row certified weekly panel, and tracked event/contrast exhibits plus
+  provenance manifests. Exact hashes and the threshold-by-status audit are in
+  the grind ledger; this remains an E0 support audit, not a causal estimate._
+
 - [x] **Repair the provenance staleness that `f6ca42b` introduced. Do this first.**
   Two checks regressed to `provenance=stale` immediately after the sample-end
   forward-port: `node D full-calendar directed-route gate` (which was
