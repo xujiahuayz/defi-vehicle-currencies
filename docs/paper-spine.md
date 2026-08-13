@@ -1,477 +1,229 @@
 # Paper spine: The Making of Dominant Vehicle Currencies: Evidence from DeFi
 
-**Opening contract, corrected 2026-08-07.** The paper asks what makes a vehicle currency dominant. Vehicle status is a binary route label; vehicle dominance is a continuous degree of intermediary use, with the excess-use ratio normalizing that share by endpoint demand. A route's disadvantage against an available alternative is cost domination or regret, a distinct object used to test mechanisms and persistence. The abstract may not open by asking what makes an asset a vehicle currency, and it may not use an unqualified `dominance` for a cost comparison.
+This file is the content memo for node G. It fixes the economic jobs, claim order, exhibit jobs, and open comparisons before publication prose is rewritten. It is not a draft to be polished sentence by sentence. The later rewrite reads the closest raw published JFE passages named in `docs/research-workflow.md`; corpus cards only locate those passages.
 
-**Architecture status after that correction.** This reopens node G. The hierarchy below was written with cost domination as the lead object; any sentence that treats it as the paper's definition or headline is withdrawn. Node G must rebuild the section order around continuous vehicle dominance after F freezes the cost and routing mechanisms. The prose files remain closed meanwhile.
+The current lead is the rotation of continuous vehicle use from the native platform asset toward stable numeraire assets. Cost dominance, liquidity allocation, routing search, persistence, and hysteresis are possible explanations or extensions. None defines the lead outcome. Calendar year locates the rotation in the sample. It does not identify the market design, technology, or balance-sheet feature that caused it.
 
-**Current G correction, 2026-08-13.** The best-supported candidate spine is the rotation of continuous vehicle dominance, not the still-unmeasured hysteresis result inherited below. Its primary outcome is the intermediary-minus-endpoint share gap, with the excess-use ratio as a supported relative-intensity translation. Current route-only evidence establishes a 2024–2026 USDT gap increase by count and value, a contemporaneous WETH decline, and contraction of true intermediation while cross-venue routing expands. It does not yet establish that calendar time caused the change, that a particular architecture or router caused it, or that the 2025 aggregate crossing is an event date. Node G therefore organises the next scientific comparison around fixed endpoint-pair, candidate, venue-reach, route-design, and notional support, with dated design changes tested as explanations rather than used as names for a time trend. The persistence/hysteresis material below remains a gated mechanism extension and cannot lead unless F produces both retention and reversal arms.
+## 1. Section architecture and argument order
 
-Node G output, rewritten 2026-08-06 after `docs/review-node-i-round1.md` withheld approval on the estimand and not on its execution. The previous version of this file was built around the level comparison, that native intermediation is harder to beat conditional on the trade. That estimand is retired as a lead result and survives only as a validation exhibit in section 2. What replaces it is the survival question: how long the vehicle role outlives the moment it stops being the cheapest route, priced in dollars foregone and days of delay, with the return-edge against displacement-edge asymmetry separating hysteresis from persistence.
-
-Three of this file's own errors were confirmed in that review and are corrected throughout, so a reader comparing versions can see what moved. The trade-size gradient that the old section 5.2 called "the hinge on which this section now turns" does not exist: the interaction of the native indicator with log size, formally tested for the first time in `output/exhibits/dominance_specification_curve.jsonl`, is +0.0023 with a standard error of 0.0209 (0.914), so the three-point profile the old file read as a monotone mechanism was three draws from a flat line. The old headline mixed two specifications, pairing the seven-day window's coefficient of -0.3834 and standard error of 0.0372 with the one-day window's identifying count of 177,106; the seven-day window identifies from 45,630 cells. And the old defence against quote collapse restricted the sample on absolute cost advantage, which is a monotone function of the binary outcome, so it selected on the dependent variable and cannot discharge anything.
-
-Two results landed from nodes D and E while this file was being written and both are folded in below. The realised cost-domination headline was reweighted from the raw matched mean of 41.3% to 27.2% on the population's candidate composition, because the matched sample is inverted on exactly the dimension that drives the rate, and 41.3% is retained only as the raw matched mean answering a narrower question. And `docs/node-e-screen-persistence.md` screened the persistence result for mechanicalness before it was written up, passing it on the definitional threat and naming hour-boundary pricing as the dangerous open one. Measuring that threat on actual routes confirms it: among 12,931 two-leg V3 routes on three dates, 62.8% move by more than 30 basis points between strict pre-transaction state and hour end. The persistence result is therefore WITHDRAWN pending transaction-state counterfactual pricing, and section 4 is written as an estimand with a specification and no admissible measurement.
-
-Lane, title, and the two-axis treatment of vehicle status are settled and are not reopened here. What this file decides is the section architecture, the claim inventory with its evidentiary status, the table shells, the definitions text, and the horse race. Everything marked PENDING names the specification that would produce it. Anything requiring the full-sample rebuild now running, 2,277 days across six venues, is marked PENDING even where a four-day or eight-day version of the number already exists, and the distinction is stated in the row.
-
----
-
-## 1. Section architecture, and the venue evidence for each choice
-
-### 1.1 How the invariants below were measured, and what changed in the measurement
-
-Nine published papers were read first-hand, selected by confirming the journal from the PDF's own first page instead of from any list in this repository. Eight carry a *Journal of Financial Economics* imprint on the article page (Chordia, Roll and Subrahmanyam 2000; Coughenour and Saad 2004; Hendershott and Menkveld 2014; Anand and Venkataraman 2016; Clark-Joseph, Ye and Zi 2017, published version; Makarov and Schoar 2020; Li, Wang and Ye 2021; Eren and Malamud 2022). Amihud and Mendelson 1980 carries the volume imprint for Journal of Financial Economics 8 (1980), pages 31 to 53, on its own first page. The Hendershott and Menkveld artifact previously labeled `accepted` is byte-identical to the Berkeley-hosted version of record and carries Elsevier production headers, volume and page imprints, DOI, article history and CrossMark metadata; it is now labeled `published`.
-
-The corpus is now extracted to plain text at `literature/text/*.txt`, 93 source artifacts over 3,104 pages, so every count below was re-derived by parsing numbered headings out of the text files instead of by opening PDFs. That re-derivation overturns two counts this file previously reported as zero, and Java's independent measurement was right in both cases.
-
-**A standalone identification section exists, 1 of 8.** Hendershott and Menkveld's section 2 is titled "Empirical identification of price pressure and inventory dynamics" at line 277 of the extract, and it is a top-level section carrying the word in its title. The previous version of this file recorded 0 of 7 and reached that count by reading the section as an empirics section, which it also is. A referee scanning a table of contents sees the word.
-
-**A standalone robustness heading exists, 1 of 8.** Clark-Joseph, Ye and Zi carry "4.2. Robustness checks" at line 819. The previous count of 0 of 9 was a count of top-level sections, where it is still correct, and the two counts describe different objects. The one that binds architecture is the heading count, because a dedicated numbered heading is what a reader navigates by. The correction narrows the invariant instead of overturning it: the robustness heading sits inside section 4, which is the section whose result it defends, so the defence still travels with the claim.
-
-**A top-level defence of the measured object exists, 1 of 8, and it decides the question Node I raised.** Makarov and Schoar's section 8, "Discussion of arbitrages and constraints", opens at line 1923 of a 2,134-line extract and is the penultimate section before their conclusion. Its content is why their measured price deviations are real given the frictions that sustain them, from bitcoin settlement latency and multi-day fiat transfer to the absence of short selling on the exchanges trading at the largest premium. It defends the object and not a result. Node I argued that this licenses a standalone executability section here and the evidence supports the argument, with one qualification the argument did not carry: the pattern is 1 of 8, so it is a licensed option and not a norm, and it earns its place only if the object is contested. This paper's object is a counterfactual quote for a route nobody executed, and the review established that a large fraction of the measured gaps were arbitrage that would have been taken. The object is contested. Section 6 exists, and it sits where Makarov and Schoar put theirs.
-
-### 1.2 The invariants, with counts
-
-| Invariant | Count in the nine papers read | Architectural consequence here |
-|---|---|---|
-| Conclusion is the last top-level section | 9 of 9 | Section 7 is the Conclusion |
-| No standalone literature-review section | 9 of 9 | Differentiation sits in the introduction, one closing sentence per strand |
-| Standalone identification section, top level | 1 of 8 with data (Hendershott and Menkveld section 2) | Corrected from 0. Not adopted here: our identification is an object problem and goes to section 6 |
-| Standalone robustness heading, any level | 1 of 8 with data (Clark-Joseph, Ye and Zi 4.2), 0 of 8 at top level | Robustness is a subsection of the result it defends (3.4, 4.4) and never a top-level section |
-| Standalone defence of the measured object, top level | 1 of 8 with data (Makarov and Schoar section 8) | Section 6, positioned before the conclusion as theirs is |
-| Institutional setting or data is the section immediately after the introduction | 5 of 7 papers with data | Section 2 |
-| Rival mechanism named in a section or subsection title | 3 of 7 papers with data, 4 titles | Section 5 and its subsections |
-| Top-level section count | 4, 5, 5, 6, 6, 7, 7, 8, 9; median 6 | Seven, matching Clark-Joseph and Li, Wang and Ye |
-| Subsection nesting depth | Two levels in 6 of 9; three levels in 3 of 9 | Two levels everywhere |
-| Abstract word count | 97, 99, 99, 102, 103, 103, 110; median 102 | Target 100, hard band 96 to 106 |
-| Abstract contains a quantitative result | 1 of 7 | At most one magnitude, and only if it carries the whole argument |
-| Abstract contains a t-statistic, sample size, or sample period | 0 of 7 | None |
-| Tables in a paper with data | 4, 6, 7, 8, 9, 10, 12; median 8 | Seven main tables, and the count is an output |
-| Figures in a paper with data | 0, 2, 2, 4, 5, 7, 11; median 4 | Four main figures |
-| Introduction as a share of body pages | 7%, 9%, 12%, 12%, 14%, 15%, 23%; median 12% | 12% of body, roughly 5.5 manuscript pages |
-
-Node I rejected the eight-table target as a design constraint, on the ground that shells whose cells read PENDING are a plan wearing the costume of an architecture, and the rejection is accepted. The table count below is seven because seven tables have a stated source specification, and it moves when the results move. The exhibit count stays in the invariant table as a calibration check on the finished paper and is no longer used to size the shell inventory.
-
-### 1.3 The architecture
+The architecture is fact first and mechanism second. Makarov and Schoar move from measured dispersion to the market segmentation that can sustain it. Huang et al. introduce their model after the empirical facts it rationalises. Bolton and Kacperczyk organise the interpretation around rival mechanisms whose predictions are tested in sequence. Those raw passages license the ordering below; they do not supply a verbal template.
 
 ```
-1. Introduction                                       ~5.5 manuscript pages, 12% of body
-2. Institutional setting, definitions, and data
-   2.1 What a route is, and who chooses it
+1. Introduction
+2. Institutional setting, measurement, and data
+   2.1 Decentralised exchange routes
    2.2 Definitions
-   2.3 The route panel and how it was reconstructed
-   2.4 The support screen, derived from where the quoters were validated
-   2.5 Validation: level costs across intermediary types
-3. Incumbents holding the role while dominated       LEAD RESULT
-   3.1 Cost domination on realised routes
-   3.2 Which asset type is dominated, and how that changed
-   3.3 The matched sample, and what matching costs
-   3.4 Measurement robustness
-4. How long the role survives                        THE ESTIMAND
-   4.1 Routing share retained under cost domination
-   4.2 The price of survival, in dollars and in days
-   4.3 Return edge against displacement edge
-   4.4 Robustness of the survival profile
-5. Rival accounts of survival                        THE HORSE RACE
-   5.1 Liquidity supply as the slow state variable
-   5.2 Aggregator integration scope
-   5.3 The cost of holding the intermediary
-   5.4 Software defaults and the road already taken
+   2.3 Route reconstruction and support
+   2.4 Sample and validation
+3. Rotation in vehicle use
+   3.1 Aggregate count and value paths
+   3.2 Endpoint demand and excess use
+   3.3 Candidate and backing-design decomposition
+4. Time, market design, and opportunity sets
+   4.1 Venue integration and route complexity
+   4.2 Protocol architecture entry, exit, and reversal
+   4.3 Fixed opportunity-cell comparisons
+5. Rival accounts of the rotation
+   5.1 Routing technology and fragmented reach
+   5.2 Liquidity placement
+   5.3 Holding costs and backing design
+   5.4 Software defaults and architectural mandates
    5.5 What survives
-6. Are the measured gaps real?                       DEFENCE OF THE OBJECT
-   6.1 Where the quoters are validated, and where they are not
-   6.2 Whether the router faced the state the panel prices
-   6.3 What an unexploited gap implies, and the same-block capture test
-   6.4 Venue coverage, signed
+6. Persistence and reversal
+   6.1 Incumbent retention after a state reversal
+   6.2 Challenger displacement after a favourable state arrives
+   6.3 Persistence, symmetric frictions, and hysteresis
 7. Conclusion
 ```
 
-**Withdrawn architecture rationale.** This version made section 3 lead with cost domination on realised routes and demoted the transition in which asset intermediates to setting. The 2026-08-07 correction rejects that hierarchy: continuous vehicle dominance is the paper's object, while cost domination is evidence about a mechanism or friction. Node G must decide the revised order after F freezes that evidence.
-
-Why section 4 gets the estimand and section 5 keeps the horse race. Section 4 measures the duration and its price. Section 5 asks what produces a duration of that length, and the four accounts are the ones that would each be economically interesting if true. Measurement rivals do not appear in section 5; they are dispatched at 2.4, 3.4, 4.4 and in section 6 alongside the numbers they threaten, per the invariant that survived the correction above.
-
-Why section 6 is top level and not a subsection. Per 1.1, because the object is contested and because Makarov and Schoar establish the position for exactly this case. Its content is the support screen's derivation, the block-against-hour timing question of whether the router faced the state the panel prices, the exact-clock same-block capture test, and the signed venue-coverage bound. None of that defends a coefficient. All of it defends whether the gap is a thing that existed.
-
----
+Section 3 establishes the economic fact before assigning a mechanism. Section 4 asks whether designs prevalent at a date account for that fact and whether the relation reverses when exposure or feasible states reverse. Section 5 runs the remaining explanations as a horse race. Section 6 enters the paper only with comparable retention and displacement arms on one fixed risk set. Until then it remains a registered extension with no headline estimate.
 
 ## 2. Claims by section, with evidentiary status
 
-Status is EXISTS when an exhibit in `output/exhibits/` or a `docs/finding-*.md` file reports the number, and PENDING otherwise. PENDING (rebuild) marks anything that exists at small sample today and needs the full-sample rebuild across 2,277 days and six venues before it can be reported, which is most of section 4. The mechanicalness column applies the workflow's section 4 screen: a claim is mechanical when its sign is fixed by construction, and a mechanical claim may support but may not lead.
+`EXISTS` means a current generated exhibit or finding packet reports the object. `PENDING` means the specification is fixed here but the result cannot enter prose. An existing descriptive result may remain pending for a causal interpretation.
 
 ### 2.1 Section 1, Introduction
 
-The introduction narrates the whole argument in prose carrying no notation and previews every finding. Each literature strand closes with one differentiation sentence. It states no numbered proposition and lists no hypotheses, per 0 of 9 in the read sample.
-
-| Claim the introduction must make | Supporting result | Status | Mechanical |
+| Claim job | Evidence | Status | Interpretation boundary |
 |---|---|---|---|
-| The FX inertia literature cannot observe an incumbent holding the vehicle role while strictly cost-dominated, because there an incumbent's cost advantage is a consequence of its incumbency | `docs/research-workflow.md` section 4.0, and the four-lane prior-art sweep returning zero | EXISTS | n/a |
-| On-chain that state is observable on routes that executed, and it is common: 27.2% of realised multi-leg routing was strictly dominated by an available direct pool at the state it executed in | `docs/finding-dominance-and-persistence.md` and `output/exhibits/realised_dominance.jsonl`, matched type-specific rates reweighted to the realised population's candidate composition, covering 79.0% of realised routing, from 1,762 matched routes of 90,705 across four days | EXISTS at four days; PENDING (rebuild) at full sample | No |
-| Cost-domination incidence differs sharply by intermediary type, at native 23.7%, stable 45.4% and imported 61.4% | Same; this is a measured ordering, not an implication of the asset taxonomy, and it remains descriptive until transaction-state repricing and the daily rebuild close | EXISTS at four days at hour-boundary state; PENDING recomputation at block-level state and PENDING (rebuild) | Partly |
-| The frequency is affected in magnitude by the timing correction and not in kind, because a frequency is a statement about a state and does not require the router to have had a choice | `docs/node-e-screen-persistence.md` and the commit that measured the threat | EXISTS as a design argument, and it is what keeps section 3 standing while section 4 does not | n/a |
-| The role survives cost domination instead of ending with it, keeping roughly half to two thirds of its routing share | `output/exhibits/survival_after_dominance.jsonl`, native mean share 68.6% not cost-dominated against 39.4% cost-dominated, stable 43.4% against 28.2%, imported 6.1% against 2.8% | WITHDRAWN. Measured at four days on 223 pair-candidate observations and not separable from hour-boundary staleness per 6.2. Reinstated by F1 | No |
-| Survival has a price, and it is money: 83.1 million dollars routed through dominated vehicles across four days | Same exhibit, summing the dominated rows at 4.18m imported, 9.13m native, 69.74m stable | WITHDRAWN with the retention ratios it is conditioned on; the dollar total is a sum over routes classified dominated at hour-boundary state | No |
-| Survival has a length in days, and the length is what the inertia literature has always wanted | `scripts/run_displacement_asymmetry.py` | PENDING. The script exists and refuses to report: 4 consecutive priced days available against 20 required | No |
-| Whether the incumbent holds on longer than a challenger takes to break in separates hysteresis from persistence | Same script, both arms defined on the same quantity | PENDING (rebuild) | No |
-| The vehicle role migrated from the native platform asset toward stablecoins inside six years, in both directions | `docs/finding-intermediation-transition.md`, native 73.0% to 14.8% value-weighted, stable 21.2% to 50.1% | EXISTS | No |
-| Removing a hard architectural mandate to use the native asset did not reduce native-asset pairing | `docs/finding-v1-forced-vehicle.md` section 3, new-pair WETH share 84.1% in 2020 rising to 97.9% in 2026 | EXISTS | No |
-| Studying one venue becomes progressively wrong while indirect routing contracts | `docs/router-identification-feasibility.md` clean canonical-endpoint series: cross-venue share rises 1.4% to 58.7% count-weighted and full-market incidence falls 19.5% to 16.6% from 2022 to 2026; inside the balanced five-venue perimeter cross-venue share rises 19.1% to 43.6% and incidence falls to 10.3%, but support coverage also falls to 69.8% | EXISTS; balanced decline is a support-exit decomposition | Partly |
+| Vehicle status is a route role, while dominance is the continuous extent of intermediary use. | Route definitions and vehicle-share exhibits. | EXISTS | The paper studies degree and composition, not the existence of one bridging route. |
+| The intermediating asset rotates from native toward stable assets over the sample. | Quarterly and annual vehicle-share exhibits. | EXISTS | Calendar time describes the path. |
+| The path contains an earlier stable-value lead, a reversal, and a renewed lead. | Quarterly strict-support value series. | EXISTS | A monotone trend is rejected descriptively. |
+| USDT supplies the main 2024 to 2026 candidate transition margin. | Candidate excess-use and share-gap exhibits. | EXISTS | USDC and stablecoin backing designs remain separate. |
+| Endpoint demand alone cannot account for the USDT movement. | Intermediary-minus-endpoint share-gap change, Holm value `(0.000)`, count `(0.015)`. | EXISTS | Endpoint netting removes proportional endpoint growth, not every composition change. |
+| The economic question is which coordination, market-design, and balance-sheet mechanisms can produce this rotation. | Rival map in Sections 4 and 5. | EXISTS | No mechanism is assigned in the opening paragraph. |
 
-The introduction may not lead with the native asset's level cost advantage. Native status is the exogenous platform identity, not a pairing-degree definition, and Krugman (1980) models transaction volume lowering proportional brokerage costs; pairing count does not determine vehicle status. The level comparison appears in section 2.5 as validation because it establishes neither persistence nor a transition mechanism. Pairing degree, volume, depth and route cost remain separately measured rival explanations.
+### 2.2 Section 2, Institutional setting, measurement, and data
 
-### 2.2 Section 2, Institutional setting, definitions, and data
-
-| Claim | Supporting result | Status | Mechanical |
+| Claim job | Evidence | Status | Interpretation boundary |
 |---|---|---|---|
-| A route unit is the economic object, and one coherent multi-leg component is one route unit regardless of leg count | Registry definition of $r$ | EXISTS | n/a |
-| Routing is executed by deterministic graph optimisers, which removes quote-time habit as a channel and relocates incumbency to state variables | `docs/research-workflow.md` section 4.0 | EXISTS | n/a |
-| Canonical endpoint round trips are outside the endpoint-conversion unit and are excluded before anything is measured; the excluded population can contain cyclic arbitrage and other self-returning activity | `docs/router-identification-feasibility.md`, 12.7% of multi-leg routes by count and 21.7% by value on the median of 79 sampled days, 25.9% and 91.3% on 2025-12-06, the worst | EXISTS | No |
-| Six venues are priced and each quoter was accepted against realised swaps | `docs/venue-coverage-bounds.md`, v2 and sushiswap_v2 on constant product, v3 and v4 on exact tick state, Curve on a per-pool-day calibrated amplification coefficient at 0.022% median error, Balancer on the weighted geometric mean at 0.0000% median error on backward-rolled balances | EXISTS for the quoters; PENDING for Balancer's integration into the route panel | n/a |
-| sushiswap_v3 is excluded and the exclusion is a decision with a number behind it | Same, 0.016% of priced-venue volume pooled and 4.1% of its volume on pairs no priced venue hosts | EXISTS | n/a |
-| The panel refuses to quote a leg whose own price impact exceeds 5% of the trade, and the threshold is derived from where the quoters were validated | `output/exhibits/quoter_support_bounds.jsonl`, 932,270 validated swaps across eight sampled days, pooled median size-to-depth 0.34%, p90 3.3%, p99 14.9% | EXISTS | n/a |
-| The support screen's current-generation coverage and gap distribution | Former fixed-clock diagnostic | WITHDRAWN pending exact-clock rebuild | n/a |
-| The executor is identifiable from the calling contract and the routing author is only partly recoverable | `docs/router-identification-feasibility.md`, 241 distinct senders on 74,323 swaps, executor population fragmenting to 397 senders by late 2025 with a hand registry covering 11.8% | EXISTS | No |
-| The reconstruction advantage is engineering difficulty and not private data | `docs/research-workflow.md` section 2, corrected from the retracted data-moat reading | EXISTS | n/a |
+| A coherent directed swap component is one route unit. | Certified directed-route release. | EXISTS | Multi-leg and intermediated are separate classifications. |
+| Sequential intermediation is separated from direct splitting and canonical endpoint round trips. | Route-quality and intermediation exhibits. | EXISTS | Round trips do not enter the endpoint-conversion denominator. |
+| Count and value measure frequency and economic size on parallel support perimeters. | Intermediation-by-type panel. | EXISTS | Value uses the stated source-intermediary-sink amount-coherence restriction. |
+| Endpoint use supplies the demand benchmark for excess vehicle use. | Vehicle excess-use producer. | EXISTS | The share gap is the primary inferential outcome. |
+| The route release spans 2,332 calendar partitions, including typed empty days. | Current route-quality ledger. | EXISTS | Nonempty-day counts describe activity, not missing calendar support. |
+| Eight routed venues enter topology, while exact counterfactual pricing has its own narrower state perimeter. | Release and state-support ledgers. | EXISTS | Topology coverage does not imply quote-state coverage. |
+| Missing support is reported by count, value, time, venue, entity, and mechanism cell. | Coverage and provenance exhibits. | EXISTS | An immaterial random gap does not stop an observational result. |
+| Exact-state panels admit a defect only after its economic exposure is bounded. | Materiality workflow and support ledger. | PENDING | Engineering completeness is not itself a paper result. |
 
-**2.5, the level comparison as validation.** This is where the retired estimand lives. On the screened panel with a pair-by-window-by-size fixed effect the native indicator on the continuous gap is -25.3 basis points with a standard error of 11.4 (0.037), on 732 routes in 274 cells. The binary version of the same specification is -0.043 (0.543) and is not reported as a result. The retired -0.383 on the unscreened binary does not appear in the paper at all, for the reason in Node I ground 1: a shift in the probability that one quoted number exceeds another, at a threshold the design absorbs, has no mapping to basis points without the density at the threshold, and this repository owns the continuous object. The level ordering is measured and not implied by native status; it remains validation because a static bounded comparison establishes neither persistence nor a transition mechanism.
+### 2.3 Section 3, Rotation in vehicle use
 
-### 2.3 Section 3, Incumbents holding the role while dominated
-
-| Claim | Supporting result | Status | Mechanical |
+| Claim job | Evidence | Status | Interpretation boundary |
 |---|---|---|---|
-| On routing that actually executed, 27.2% was strictly dominated by an available direct pool at the same reconstructed state, population-weighted and covering 79.0% of realised routing | `output/exhibits/realised_dominance.jsonl` REWEIGHTED row, from 1,762 matched routes over four days | EXISTS at four days; PENDING (rebuild) | No |
-| The raw matched mean is 41.3% and it is not the population figure, because matching is inverted on candidate type | Same, daily matched rates 49.5%, 38.0%, 39.2%, 37.9%, against a matched composition of 64.1% stable where the population is 67.7% native | EXISTS | n/a |
-| Weighted by value the matched incidence runs 33.5% to 46.7% across the four days | Same, `value_weighted` field, and no population reweighting of the value figure exists | EXISTS at four days; PENDING for the reweighted value figure | No |
-| The 27.2% realised-route incidence is gross of gas and has no admitted all-in comparator | `output/exhibits/realised_dominance.jsonl` | EXISTS at four days; exact-clock all-in incidence is PENDING | n/a |
-| Enumerated candidate cost comparison | Former pooled fixed-clock diagnostic | WITHDRAWN pending a separately registered gross or exact-clock all-in rebuild | Partly |
-| The realised figure and the enumerated figure differ because most enumerated two-hop routes are ones nobody took, and holding the role means being used | `scripts/measure_realised_dominance.py` header | EXISTS as a design statement | n/a |
-| The retired 17.9% was a v2-only, unscreened, enumerated figure and is superseded in all three respects | `docs/finding-cost-dominance-measured.md`, now superseded | EXISTS as a correction | n/a |
-| Post-screen enumerated cost domination by type | Former pooled fixed-clock diagnostic | WITHDRAWN | Partly |
-| Cost-domination incidence on realised routes by intermediary type, at native 23.7%, stable 45.4% and imported 61.4% | `scripts/characterise_matched_sample.py` and `scripts/measure_realised_dominance.py`, the same rates that carry the reweighting | EXISTS at four days; PENDING (rebuild) for the year dimension | Partly |
-| The vehicle role migrated from native to stable across the sample, and the migration is the time axis against which cost domination is read | `docs/finding-intermediation-transition.md`, 2,240 days | EXISTS | No |
-| The value-weighted crossover arrives 2022-Q1 and is sustained from 2022-Q4; the count-weighted crossover appears only in 2026-H1 | Same | EXISTS | No |
-| The matched sample is not the realised population, and the direction of the difference is measured | `output/exhibits/matched_sample_characterisation.jsonl`, matched median trade $11,594 against $866 unmatched, native share 26.5% against 67.7%, stable 64.1% against 10.3%, `other` 0.0% against 21.3% | EXISTS, and it is the paper's largest disclosed limitation | n/a |
-| The transition is present venue by venue and is not the death of one venue | Same series recomputed with a venue dimension | PENDING | No |
-| The transition survives the turnover-spike, volume-spike, arbitrage-cycle and organic-versus-MEV screens on top of the round-trip filter | `docs/research-workflow.md` section 4.2 names the screens as unapplied | PENDING | No |
+| Stable share rises sharply from 2024 to 2026 by count and strict-support value. | `intermediation_by_type.jsonl`. | EXISTS | This is an endpoint-year comparison on common calendar support. |
+| Native value share rebounds in 2023 and 2024 before falling again. | Quarterly vehicle-share figure. | EXISTS | The reversal is visible and remains part of the lead figure. |
+| Stable value leads from 2025-Q1, while count leadership is later and not yet sustained. | Quarterly vehicle-share figure. | EXISTS | Frequency and economic dominance are separate margins. |
+| Stable assets have excess intermediary use in 2026 while native assets fall below parity. | `vehicle_excess_use.jsonl`. | EXISTS | Ratios are reported only where endpoint support is positive. |
+| USDC begins above excess-use parity and changes little. | Candidate transition figure. | EXISTS | USDC does not explain the transition slope. |
+| USDT crosses parity on strict-support value and rises by count. | Candidate transition figure and transition inference. | EXISTS | The share gap carries inference; the ratio translates intensity. |
+| Fiat-reserve stables carry most supported stable intermediary value. | Backing decomposition. | EXISTS | Concentration identifies a mechanism candidate, not a balance-sheet effect. |
+| On-chain-collateralised and synthetic stables do not share the same magnitude. | Backing decomposition. | EXISTS | The paper avoids a homogeneous stablecoin mechanism. |
 
-The matched-sample row determines whether the 27.2% cost-domination diagnostic is admissible. Matching a realised route to a counterfactual quote requires the panel to carry that pair, that candidate and that state, and only 1.9% of realised multi-leg routes clear it, on 71 pairs against 17,851. The survivors are 13 times larger at the median and are 64.1% stable-intermediated where the realised population is 67.7% native-intermediated, with the entire `other` category absent. Because cost-domination rates differ by a factor of two and a half across candidate types, quoting the raw matched mean as a population figure would be a statement about large trades on busy pairs through stablecoins. Reweighting the matched type-specific rates to the population's composition gives 27.2% and covers 79.0% of realised routing, and the residual 21.0% is `other` and staked-native routing for which no matched rate exists. Section 3.3 reports the reweighting arithmetic in full so a reader can redo it, and states what the reweighting cannot fix: nothing conditional on trade size generalises, because the panel prices three fixed notionals and matched trades are an order of magnitude larger than the population's.
+### 2.4 Section 4, Time, market design, and opportunity sets
 
-### 2.4 Section 4, How long the role survives
-
-| Claim | Supporting result | Status | Mechanical |
+| Claim job | Evidence | Status | Interpretation boundary |
 |---|---|---|---|
-| A dominated vehicle keeps a large share of its routing instead of losing it | `output/exhibits/survival_after_dominance.jsonl` | WITHDRAWN pending F1, measured at four days | No |
-| Native retains 39.4% mean routing share while dominated against 68.6% while not, a retention ratio of 0.57 | Same, 25 dominated and 23 undominated pair-candidate observations | WITHDRAWN pending F1 | No |
-| Stable retains 28.2% against 43.4%, a ratio of 0.65 | Same, 98 dominated and 53 undominated observations | WITHDRAWN pending F1 | No |
-| Imported retains 2.8% against 6.1%, a ratio of 0.45, on 20 dominated observations | Same | WITHDRAWN pending F1, and too thin to report as a type contrast in any case | No |
-| The retention ratio does not order by incumbency, since stable retains more of its share than native does | Same | WITHDRAWN pending F1, and it is the finding that would falsify a simple incumbency story if it survives repricing | No |
-| 83.1 million dollars of routing passed through dominated vehicles across four days | Same, dominated USD rows | WITHDRAWN pending F1, because the classification it sums over is the one under repair | No |
-| Dollars foregone, meaning the money the dominated routing gave up against the direct alternative | Not the same object as dollars routed. Specification: the matched realised routes' USD notional multiplied by the realised gap in basis points, summed | PENDING. This is the Makarov and Schoar magnitude and nothing in the repository computes it yet | No |
-| Days a dominated incumbent holds the role before turnover | `scripts/run_displacement_asymmetry.py`, retention arm | PENDING. The script refuses at 4 consecutive priced days against 20 required, and the refusal is on record in `output/exhibits/displacement_asymmetry.jsonl` | No |
-| Days a challenger with an edge takes to become the incumbent | Same script, displacement arm | PENDING (rebuild) | No |
-| Retention duration exceeds displacement duration, which is hysteresis; equality is persistence under symmetric frictions | Same script, the two arms compared on the same pairs | PENDING (rebuild), and this is the single claim the paper is being written to make | No |
-| The survival profile is not an artefact of the fixed-size notional grid | Specification: re-run both arms at $1,000, $10,000 and $100,000 and report whether the duration ordering is common across the grid | PENDING (rebuild) | No |
-| The survival profile is not an artefact of the support screen | Specification: re-run at a 2% and a 10% price-impact ceiling and report the retention ratios at each | PENDING (rebuild) | No |
+| Stable share rises inside both single-venue and cross-venue route strata. | Integration rival exhibit. | EXISTS | Selected route strata are descriptive. |
+| The 2024 to 2026 rise is larger across venues than within one venue. | Integration interaction exhibit. | EXISTS | Venue mix is not a complete composition account. |
+| Stable rotation survives observed integration-by-complexity count cells. | Complexity rival exhibit. | EXISTS | Unobserved search quality and feasible paths remain open. |
+| Cross-venue reach expands while true intermediation contracts on balanced support. | Cross-venue routing exhibits. | EXISTS | The two margins move separately. |
+| Falling intermediation does not reject routing maturation. | Joint reading of reach and intermediation. | EXISTS | Better search can find direct routes and activate dispersed stable liquidity. |
+| Realised architecture entry and exit provide no isolated within-cell substitution event in the current audit. | Architecture transition support exhibit. | EXISTS | The null concerns support for the design, not the existence of architecture change. |
+| A design effect requires independently measured availability or exact cost and depth states. | Registered fixed-cell design. | PENDING | Realised use of a design is endogenous exposure. |
+| Time and design are separated within endpoint-pair, candidate, venue-reach, route-design, notional, and support cells. | Fixed-cell vehicle-rotation specification. | PENDING | Composition that enters or exits between years cannot identify the within-cell change. |
+| Reversal is tested when a design or economic state disappears, weakens, or returns. | Reversal specification. | PENDING | A launch date alone cannot identify persistence or hysteresis. |
 
-Section 4 currently has no admissible measurement and the reason is measured, not suspected. `output/exhibits/realised_route_timing_validation.jsonl` validates 12,931 actual routes and finds a 54.3-basis-point pooled median absolute movement between strict pre-transaction state and hour end, with 62.8% above 30 basis points. A route that was cheapest when the router quoted and dominated by the time the hour closed records as dominated when the router could not have avoided it, so a retention ratio computed on that classification cannot be separated from staleness. Every retention ratio in this section is WITHDRAWN until F1 reprices the counterfactual routes at transaction state.
+### 2.5 Section 5, Rival accounts of the rotation
 
-**The actual-route instrument validates causal order and amount orientation, not the unchosen path.** Across 12,931 realised two-leg V3 routes, the product of the two realised effective rates never exceeds the same pools' strict pre-transaction marginal-rate product. Hour-end movement remains material, but the direct and alternative-vehicle pools have not yet been repriced at transaction state. The separate triangle instrument uses the sign of the marginal residual $m = \log P(A\to B) - \log P(A\to K) - \log P(K\to B)$ on 371 triangles over 189,622 eligible V3 direct-pool opportunity snapshots. The corrected implementation orders pool states strictly before each target in block-log order; the old block-only lookup included the target swap's own post-state and the conditional denominator admitted observations from triangles that failed the sample screen. Under the corrected contract, the hour-boundary verdict flips 38.89% at zero wedge, 25.34% at a 30-basis-point wedge, 16.15% at 60 and 9.43% at 100. The time profile rises from 22.49% within one minute of the hour boundary to 45.55% at 30 to 60 minutes. These are opportunity snapshots at direct-pool swap times and omit depth. They bound the timing threat and cannot reinstate the persistence claim.
+| Account | Discriminating prediction | Evidence | Status |
+|---|---|---|---|
+| Routing technology and fragmented reach | Stable use rises within a fixed feasible set or after search efficiency is held fixed; direct-route discovery and stable-liquidity activation are reported separately. | Integration and complexity results; exact frontier pending. | PENDING |
+| Liquidity placement | Candidate depth or capital leads later vehicle use within a fixed endpoint opportunity set. | Capital and direction-specific depth panels. | PENDING |
+| Holding costs and backing design | The transition differs with volatility, depeg, redemption, or reserve design after opportunity is held fixed, with signs reversing under candidate-specific stress. | Backing decomposition exists; reversal tests pending. | PENDING |
+| Software defaults and mandates | Role changes align with software reach or mandate changes and remain local to the affected software population. | V1 mandate withdrawal and architecture support audits. | EXISTS |
+| Coordination persistence | Incumbent use responds less to an adverse state reversal than challenger use responds to a favourable state arrival. | Comparable retention and displacement arms. | PENDING |
+| Horse-race conclusion | Each surviving account has one magnitude, one uncertainty statement, and one remaining interpretation boundary. | Table 5. | PENDING |
 
-So the honest interim statement for section 4 is a misclassification rate of roughly 15% to 25% at the fee wedges these routes actually pay, not an unmeasurable classification. That is still too large to report a retention ratio whose type contrast turns on differences of a few percentage points, so the WITHDRAWN status stands and F1 remains required. What changes is that the paper can state the size of the problem it is fixing, and that the fix has a known target to beat.
+### 2.6 Section 6, Persistence and reversal
 
-One thing survives the withdrawal and it is the design argument, which is why section 4 keeps its place in the architecture. The comparison is against the same vehicle's share when not dominated and not against zero, so a story in which routing shares are merely sticky predicts no differential at all, and the definitional screen is the one screen the result passes on its own construction. Whether the differential is 68.6% against 39.4% or something else is what F1 decides.
-
-Even reinstated, the result will not license the word hysteresis, which needs the displacement arm, and will not license a causal reading, which needs the objective-mismatch bound of section 6.2.
-
-Every duration in this section is PENDING and the reason is stated so it is not mistaken for a gap in effort. A duration cannot be measured on a cross-section, both arms need runs of consecutive priced days, and the priced panel holds four. The rebuild across 2,277 days is what supplies them. What EXISTS today is the cross-sectional half of the estimand, that share survives cost domination, at four days and 223 pair-candidate observations, and that half is enough to establish the phenomenon and not enough to price it.
-
-### 2.5 Section 5, Rival accounts of survival
-
-Claims here are the horse race and are set out in full in section 5 of this file. All four are PENDING, and unlike the previous version of this spine that is now a schedule and not a structural problem, because the rebuild that produces section 4 produces the inputs to three of the four.
-
-### 2.6 Section 6, Are the measured gaps real?
-
-| Claim | Supporting result | Status |
-|---|---|---|
-| Each quoter was accepted against realised swaps, and every one of those validations draws from trades whose pool was deep enough to serve them | `scripts/measure_quoter_support.py` header, with the per-venue median errors in `docs/venue-coverage-bounds.md` | EXISTS |
-| The validation population's size-to-depth distribution is measured, and the panel's support bound is derived from it | `output/exhibits/quoter_support_bounds.jsonl`, pooled median 0.34%, p90 3.3%, p99 14.9%, on 932,270 swaps | EXISTS |
-| The screen is ex ante on the pool and not a filter on the gap, so it does not repeat the selection-on-the-dependent-variable error | Same header, and Node I objection 5 | EXISTS as a design property |
-| A router quotes at a block and the panel prices at an hour boundary, so a route cheapest at quote time and dominated by the hour's close records as dominated when the router could not have avoided it | `docs/node-e-screen-persistence.md` threat 1 | EXISTS as a stated threat, and the measurement below confirms it instead of bounding it |
-| The threat is live on actual realised routes: 62.8% move by more than 30 basis points and 36.4% by more than 100 between strict pre-transaction state and hour end; median absolute movement is 54.3 basis points | `output/exhibits/realised_route_timing_validation.jsonl`, 12,931 two-leg V3 routes on three dates | EXISTS, and it is why every retention ratio in section 4 is withdrawn |
-| The timing error declines across the three validation dates | Same. Median absolute movement is 140.3 basis points in 2022, 52.1 in 2024 and 31.7 in 2025 | EXISTS as a diagnostic; three dates do not identify a trend or an aggregator effect |
-| Repricing the direct and alternative-vehicle counterfactuals at transaction state closes the threat | The actual-route validator establishes strict causal order and amount orientation with zero negative own-state shortfalls; the counterfactual frontier still needs the same treatment | PENDING, and it is F1 |
-| The timing threat bears on persistence and not on the cost-domination frequency, because a frequency is a statement about a state and does not require the router to have had a choice | Same | EXISTS as a design argument |
-| The router optimises something other than quoted output, weighing MEV exposure, failure probability and private orderflow alongside gas | Same, threat 3. The registered exact-clock route comparison handles gas; the rest are not observable here | PENDING for a bound on what fraction of persisting volume each could explain, and it is the strongest referee objection to the persistence claim |
-| Post-screen gap distribution and arbitrage-cycle threshold | Former pooled fixed-clock diagnostic | WITHDRAWN pending exact transaction/block gas, receipt-calibrated cycle units and the same-block closing-cycle test |
-| Whether an atomic cycle appears in the same block for the gaps above threshold | Specification: join the flagged cells to same-block swap sequences and report the share with a closing cycle | PENDING, and it is what would split arbitrage that was taken from quoter error |
-| Venue coverage gaps push the native-versus-stable comparison against the native asset in every year, so the comparison is a floor | `docs/venue-coverage-bounds.md`, Curve's gate removing 65.2% of native-leg volume against 21.1% of stable-leg volume, the gap at least 33 percentage points in every year | EXISTS |
-| Balancer is the largest venue with a built quoter and no route-cost integration, at 3.9% of panel volume pooled and 8.8% at its 2023 peak | Same | EXISTS |
-| Closing the Curve gate by pricing crypto-pools on the CryptoSwap invariant widens the native advantage instead of narrowing it | Same, stated as a falsifiable prediction | PENDING |
+| Claim job | Evidence | Status | Interpretation boundary |
+|---|---|---|---|
+| Persistence is positive retention after the favourable state weakens or reverses. | Fixed pair-candidate retention arm. | PENDING | Duration alone is consistent with symmetric slow adjustment. |
+| Displacement measures challenger adoption after a favourable state arrives. | Fixed pair-candidate displacement arm. | PENDING | Entry and retention use the same state and risk set. |
+| Hysteresis is an asymmetry between the two response functions. | Joint retention-displacement test. | PENDING | No claim is made from one arm. |
+| Cost-state reversal is priced at exact transaction state and realised size. | Transaction-state frontier. | PENDING | Hour or day state cannot license a route-level mechanism claim. |
+| Architecture reversal distinguishes exposure loss from vehicle-role loss. | Availability and exact-state reversal panel. | PENDING | Design exit does not necessarily remove the vehicle role or feasible design. |
 
 ### 2.7 Section 7, Conclusion
 
-| Claim | Supporting result | Status |
-|---|---|---|
-| An incumbent vehicle keeps the role after it stops being the cheapest route, and the on-chain record prices what that costs | Sections 3 and 4 jointly | PENDING. Section 3 stands at hour-boundary state and section 4 is withdrawn pending F1, so the paper's own headline sentence is not currently supported |
-| Whether the persistence is hysteresis or symmetric friction, stated as a finding including the null | Section 4.3 | PENDING (rebuild) |
-| A vehicle-dominance transition that took the sterling-to-dollar literature decades is observable inside six years with the road not taken priced | Section 3 | EXISTS, subject to recomputation at block-level state |
-| Which rival account survives, stated as a finding including the null | Section 5.5 | PENDING |
-
-The conclusion reports the null on whichever rivals fail, per the standing rule that reporting a null is mandatory and belongs in results. It contains no limitations opener and no reconciliation against this repository's own earlier plans.
-
----
-
-## 3. Table shells
-
-Notation is the registry in `src/ddvc/variable_registry.py`. No number appears that is not already in an exhibit or a findings document. Seven shells, and the count is an output of what has a stated source specification.
-
-### Table 1. Sample construction and coverage
-
-Rows are filters in application order; columns record what each filter costs. Sample restriction: every priced venue in the unified layer, 2020-02-11 to 2026-06-30.
-
-| Filter | Route units $r$ | Share kept | $\mathrm{Vol}_t$ summed, USD | Share kept |
-|---|---|---|---|---|
-| All clean reconstructed route units | 358,027,668 | 1.000 | PENDING | 1.000 |
-| Route units with at least one intermediate, $N^I_t$ | PENDING | PENDING | PENDING | PENDING |
-| Economic intermediation, first input token differing from last output token | PENDING | PENDING | PENDING | PENDING |
-| Round trips excluded | PENDING | PENDING | PENDING | PENDING |
-| Turnover-spike and volume-spike screens applied | PENDING | PENDING | PENDING | PENDING |
-| Arbitrage-cycle detection applied | PENDING | PENDING | PENDING | PENDING |
-| Intermediary token classified into a type | PENDING | PENDING | PENDING | PENDING |
-| Support screen applied, price impact per leg at most 5% | PENDING | PENDING | PENDING | PENDING |
-| Matched to a counterfactual direct quote at the same state | PENDING | PENDING | PENDING | PENDING |
-
-The last two rows are new and they are the expensive ones. On the four measured days the support screen removes 70% to 86% of quotable routes and the counterfactual match retains 1,762 of 90,705 realised multi-leg routes, which is 1.9%. Those matching figures are withdrawn pending the exact-hour rebuild. Memo rows from `docs/router-identification-feasibility.md`: 461,041,454 clean swap legs reduce to 358,027,668 clean route units across 2,277 days, and venues active rise from 3 in 2020 to 8 in 2025 and 2026.
-
-### Table 2. The matched sample against the realised population
-
-The table that makes the paper's selection legible, and it exists in full today. Rows are attributes; columns are matched, unmatched, and the ratio. Source `output/exhibits/matched_sample_characterisation.jsonl`.
-
-| Attribute | Matched | Unmatched | Ratio |
+| Claim job | Evidence | Status | Interpretation boundary |
 |---|---|---|---|
-| Median trade, USD | 11,594 | 866 | 13.40 |
-| Mean trade, USD | 87,941 | 4,559 | 19.29 |
-| 90th percentile trade, USD | 208,204 | 6,454 | 32.26 |
-| Share native | 0.265 | 0.677 | 0.39 |
-| Share stable | 0.641 | 0.103 | 6.20 |
-| Share imported | 0.094 | 0.005 | 17.23 |
-| Share staked native | 0.000 | 0.002 | 0.00 |
-| Share other | 0.000 | 0.213 | 0.00 |
-| Routes per pair | 25.03 | 4.98 | 5.02 |
+| Restate the rotation, candidate margin, and non-monotone path. | Section 3 admitted exhibits. | EXISTS | No chronology-to-causality upgrade. |
+| State which composition accounts fail as complete explanations. | Section 4 admitted exhibits. | EXISTS | Partial mechanisms can remain viable. |
+| State which mechanism tests survive and report nulls. | Section 5 horse race. | PENDING | The conclusion follows the strength of each design. |
+| State persistence or hysteresis only if both arms clear. | Section 6 joint test. | PENDING | Otherwise the paper closes on rotation and its mechanism bounds. |
 
-The note states what the ratios do to the headline. Matching selects toward large stable-intermediated routing on well-covered pairs, and the `other` category, which carries 24.2% of 2026 intermediation episodes across 9,283 distinct tokens, is entirely absent. Every incidence and every retention ratio in sections 3 and 4 is conditional on this sample, and the rebuild is what widens it.
+## 3. Definitions for Section 2.2
 
-### Table 3. Cost domination on realised routes
+**Definition 1, route unit.** A route is one directed economic swap component within a transaction, from source token to sink token, after direct splits and sequential legs have been joined by causal order.
 
-The paper's former lead exhibit, now a mechanism diagnostic pending the node-G rebuild. Panel A rows are days in the current sample and will be years after the rebuild; columns are matched routes, cost-domination incidence by count, and by value. Source `output/exhibits/realised_dominance.jsonl`.
+**Definition 2, intermediary.** Token $k$ is an intermediary on route $r:i\rightarrow k\rightarrow o$ when $k$ is neither endpoint and the directed legs form a sequential conversion from $i$ to $o$.
 
-| Day | Realised multi-leg routes | Matched | Dominated, count | Dominated, value |
-|---|---|---|---|---|
-| 2023-06-01 | 24,847 | 475 | 49.5 | 46.7 |
-| 2023-06-02 | 23,959 | 598 | 38.0 | 33.5 |
-| 2023-06-03 | 21,108 | 306 | 39.2 | 37.9 |
-| 2023-06-04 | 20,791 | 383 | 37.9 | 38.6 |
-| Raw matched mean | 90,705 | 1,762 | 41.3 | PENDING |
-| **Population-weighted** | 90,705 | 1,762 | **27.2** | PENDING |
+**Definition 3, vehicle status.** Candidate $k$ has vehicle status on a route when it is the observed intermediary. Status is binary at route level.
 
-The headline row is the reweighted one and the table note says why in one sentence: the matched mean describes the sample that matched, the population weighting describes realised routing, and the two differ by 14 percentage points because matching is inverted on candidate type. Panel B is the type split that carries the reweighting.
+**Definition 4, vehicle dominance.** Vehicle dominance is a candidate's continuous share of intermediary use within a stated candidate and route perimeter.
 
-| Intermediary type | Cost-domination rate on realised routes | Share of realised routing |
-|---|---|---|
-| Native | 23.7 | 67.7 |
-| Stable | 45.4 | 10.3 |
-| Imported | 61.4 | 0.5 |
-| Other and staked native | no matched rate | 21.5 |
-| Covered, weighted | 27.2 | 79.0 |
+**Definition 5, count share.** Count share gives every admitted route one unit of weight and measures the frequency with which a candidate carries the intermediary role.
 
-The note on panel B carries the constraint from 2.5. Native routing is dominated least, a measured ordering that the taxonomy does not fix. The row remains descriptive until transaction-state repricing and full-calendar support close; the panel's current work is the reweighting and coverage figure. The former panel C enumeration is withdrawn because its all-in arm used pooled units, a sample-wide gas price and fixed native-asset conversion. A replacement must be registered as either gross output or exact-clock all-in cost before it enters this spine.
+**Definition 6, value share.** Value share weights admitted routes by comparable dollar value on the stated source-intermediary-sink support perimeter.
 
-### Table 4. Survival of the role under cost domination
+**Definition 7, endpoint demand.** Endpoint demand is a candidate's share of route endpoints on the same route, candidate, time, and support perimeter used for intermediary use.
 
-The estimand's exhibit, and every cell in it is WITHDRAWN pending F1. Panel A is the cross-sectional retention as measured at hour-boundary state, printed here so the reinstated version can be compared against it and clearly marked so no downstream document lifts it. Rows are intermediary types; columns are mean and median routing share when not dominated and when dominated, the retention ratio, observations, and dollars routed.
+**Definition 8, excess use.** The share gap is intermediary share minus endpoint share. The excess-use ratio is intermediary share divided by endpoint share when endpoint share is positive. The gap is primary for inference; the ratio reports relative intensity.
 
-| Type | Mean share, not dominated | Mean share, dominated | Retention ratio | Obs, not dominated | Obs, dominated | USD routed while dominated |
-|---|---|---|---|---|---|---|
-| Native | 0.686 | 0.394 | 0.57 | 23 | 25 | 9,132,313 |
-| Stable | 0.434 | 0.282 | 0.65 | 53 | 98 | 69,743,192 |
-| Imported | 0.061 | 0.028 | 0.45 | 4 | 20 | 4,181,839 |
-| All | PENDING | PENDING | PENDING | 80 | 143 | 83,057,344 |
+**Definition 9, integration scope.** A sequential route is single venue when both legs use the same venue and cross venue when the two legs use different venues.
 
-Panel B is the duration table and every cell is PENDING, from `scripts/run_displacement_asymmetry.py`. Rows are the retention arm and the displacement arm; columns are the median duration in days, the interquartile range, the number of spells, and the difference between arms with its standard error. The script currently writes a refusal, that 4 consecutive priced days are available against 20 required, and the refusal stands until the rebuild lands.
+**Definition 10, opportunity cell.** An opportunity cell fixes ordered endpoints, candidate identity, observed venue reach, route design, notional bin, value-support status, and the registered search-efficiency state.
 
-Panel C is the price of survival and is PENDING. Rows are intermediary types; columns are dollars routed while dominated, the median realised gap in basis points, and dollars foregone, meaning notional multiplied by gap summed over dominated realised routes. The middle and right columns are the Makarov and Schoar magnitude and nothing computes them yet. Dollars routed and dollars foregone are separate objects and the table note says so, because 83.1 million dollars passing through a dominated vehicle at a median gap of tens of basis points is a foregone figure in the low hundreds of thousands, and conflating them would overstate the result by three orders of magnitude.
+**Definition 11, rotation.** Rotation is a change in the degree or composition of vehicle use across comparable periods or states. It does not require permanent replacement.
 
-### Table 5. Rival accounts of survival
+**Definition 12, persistence.** Persistence is retention of vehicle use after the state that favoured the incumbent weakens or reverses, measured on a fixed risk set.
 
-Rows are the four accounts of section 5; columns are the discriminating prediction, the required sign, the estimate, and the verdict. Every estimate cell is PENDING and the schedule is the rebuild.
+**Definition 13, hysteresis.** Hysteresis is a weaker response to an adverse reversal for an incumbent than the response to a favourable state arrival for a challenger, measured with comparable retention and displacement arms.
 
-| Account | Discriminating prediction | Required sign | Estimate | Verdict |
-|---|---|---|---|---|
-| Liquidity supply as the slow state variable | Retention duration is increasing in $\mathrm{LPConc}_{k,t}$ after conditioning on the contemporaneous gap, and provider capital moves after routing does | $\gamma>0$ on duration; capital lags routing | PENDING | PENDING |
-| Aggregator integration scope | Retention duration is longer on pairs whose cheaper alternative sits on a venue fewer aggregators had integrated at the time | Duration decreasing in integration breadth | PENDING | PENDING |
-| Cost of holding the intermediary | Retention duration is shorter for a volatile incumbent under its own stress, and $\mathrm{CandidateStress}_{k,t}$ shortens native spells while lengthening stable ones | Sign flip by type; post-outcome placebo null | PENDING | PENDING |
-| Software defaults | Duration falls as a step at routing-software release dates, does not move on venues whose software did not change, and native pairing does not retreat when the V1 mandate is withdrawn | Step timing; no cross-venue spillover; V1-to-V2 null | V1-to-V2 null EXISTS and favours this account | Partly supported |
+## 4. Table and figure jobs
 
-The fourth account is the one this paper's own evidence currently favours and it is reported that way, following the practice of rejecting one's own preferred account first. Two accounts pointing in opposite directions is the reason the section exists.
+### Table 1. Sample, route classifications, and support
 
-### Table 6. Level costs across intermediary types, validation
+Rows report the route calendar, venue perimeter, route classes, candidate perimeter, count support, raw value, strict-support value, and exclusions by economic weight and concentration. It separates topology coverage from exact-state coverage.
 
-Demoted from the previous version's table 6, and it now reports the continuous object on the screened panel. Source `output/exhibits/dominance_specification_curve.jsonl`.
+### Table 2. Aggregate vehicle use
 
-| Specification | Native coefficient | Standard error | $p$ | Groups | N |
-|---|---|---|---|---|---|
-| Pooled, binary outcome | -0.101 | 0.070 | (0.150) | 0 | 1,839 |
-| Pooled, plus log size | -0.102 | 0.069 | (0.145) | 0 | 1,839 |
-| Pair fixed effect, binary | -0.063 | 0.070 | (0.381) | 23 | 812 |
-| Pair by window by size, binary | -0.043 | 0.069 | (0.543) | 274 | 732 |
-| Pair by window by size, gap in basis points | -25.26 | 11.38 | (0.037) | 274 | 732 |
-| Routes touching a tick venue, binary | -0.047 | 0.070 | (0.510) | 269 | 719 |
-| Native interacted with log size | +0.0023 | 0.0209 | (0.914) | 274 | 732 |
+Panels report annual and selected quarterly count and strict-support value shares by asset type, together with the native-minus-stable change, calendar-HAC uncertainty, and common-day support.
 
-The last row is the correction the previous version of this file most needed. The trade-size gradient it treated as the hinge of a mechanism is a flat line when the interaction is estimated instead of read off three separate subsamples, and no document in this repository may describe the native advantage as weakening with size. The basis-point row is the only line in the table with a $p$ below 0.05 and it is reported as validation, not as a finding, per 2.5.
+### Table 3. Endpoint-normalised candidate use
 
-### Table 7. Venue coverage and the signed bound
+Panels report intermediary share, endpoint share, share gap, and excess-use ratio for USDC and USDT in 2024 and 2026. The transition test is the change in the share gap. Ratios are translations and never replace the gap.
 
-Rows are the seven venues; columns are pooled volume share, priced or not, and the direction the omission pushes the native-versus-stable comparison. Every cell EXISTS in `docs/venue-coverage-bounds.md`. The table's note carries the sign in one sentence: every remaining gap understates the native side, so any native-versus-stable comparison in the paper is a floor and not a point.
+### Table 4. Time, design, and opportunity-set decomposition
+
+Rows move from calendar comparisons to fixed venue-reach and complexity strata, then to the full opportunity cell. Separate panels report composition entry and exit, architecture availability and realised exposure, and state reversals.
+
+### Table 5. Rival mechanisms
+
+Rows are routing technology, liquidity placement, holding and backing design, defaults and mandates, and coordination persistence. Columns are the separating prediction, estimate, economic magnitude, uncertainty, support, and conclusion.
+
+### Table 6. Persistence and reversal
+
+This table is absent until both retention and displacement arms are supported. If admitted, it reports response functions and a joint asymmetry test on one fixed pair-candidate risk set.
 
 ### Figures
 
-| Figure | Content | Status |
-|---|---|---|
-| 1 | $\mathrm{TypeCountShare}^{\theta}_t$ and $\mathrm{TypeShare}^{\theta}_t$ for the four classified types, monthly, 2020 to 2026, with both crossover dates marked | EXISTS as data, PENDING as an exhibit |
-| 2 | Cost-domination incidence on realised routes, monthly, by intermediary type, against the type share on the same axis | PENDING (rebuild), and this is the exhibit that joins the transition to the estimand |
-| 3 | The two survival curves, retention and displacement, on the same pairs, with the gap between them shaded as the incumbency premium in days | PENDING on F1 and then on the rebuild, and it is the paper's single most important figure |
-| 4 | Specification curve for the retention-duration estimate with the joint inference test | PENDING (rebuild) |
+1. One authentic directed transaction trace and the route unit it creates.
+2. Quarterly count and common-support value shares by asset type.
+3. USDC and USDT 2024 to 2026 excess-use dumbbells around parity.
+4. Single- and cross-venue stable-share slopes, with the descriptive interaction visible.
+5. Fixed-cell decomposition of within-cell rotation against pair entry, exit, and support composition.
+6. Retention and displacement response functions, included only when both are admissible.
 
-Figure 3 is what the paper is for. If the two curves lie on top of each other the finding is symmetric friction and the paper reports it as a null, which is publishable under this project's standing rule and is the honest outcome if that is what the data say.
+## 5. Named rival mechanisms
 
----
+### 5.1 Routing technology and fragmented reach
 
-## 4. Section 2.2, Definitions, written out
+Routing technology changes two margins with opposite predictions. It can discover direct liquidity and reduce intermediation, or connect fragmented spoke liquidity and make a stable intermediary more useful. The evidence therefore reports intermediation incidence separately from the composition of remaining intermediary routes. The mechanism survives only if stable use remains after feasible paths, observed reach, complexity, and search efficiency are held fixed.
 
-The paper's object is not whether an asset is used as an intermediary. Vehicle status in that sense is binary and one bridging swap satisfies it. The paper measures the degree of vehicleness: vehicle dominance is a continuous intermediary share, and normalized vehicle dominance is that share relative to endpoint demand. Cost domination is a different axis that records whether an available route would return more at the same reconstructed state.
+### 5.2 Liquidity placement
 
-**Definition 1, route unit.** A route unit $r$ is a reconstructed input-to-output execution inside one transaction. A coherent $i\to k\to o$ component contributes one route unit whatever its number of legs, and a split or a join contributes one route unit for each reconstructed input-output pair. Counting legs would weight a route by how many pools a router happened to touch, which is a property of the router.
+Vehicle use can follow capital and executable depth, while capital can also follow expected routing demand. The separating evidence is timing within a fixed endpoint opportunity set: independently valued deposited capital and direction-specific executable depth must lead later vehicle use for liquidity supply to explain the rotation. Contemporaneous capital is a mechanism outcome and cannot enter as a routine control.
 
-**Definition 2, direct and indirect routes.** For an ordered endpoint pair $(i,o)$, the direct route is the single-hop execution $i\to o$. An indirect route passes through at least one intermediate token. The indirect route through candidate $k$ is $i\to k\to o$ with $k\notin\{i,o\}$.
+### 5.3 Holding costs and backing design
 
-**Definition 3, vehicle status and vehicle dominance.** Token $k$ has vehicle status in route unit $r$ when $k$ is an intermediate of $r$; this indicator is binary. Its continuous dominance on day $t$ is $\mathrm{VehicleShare}_{k,t}=\mathrm{IVol}_{k,t}/\mathrm{IVol}_t$. The count-weighted counterpart is $\mathrm{VehicleCountShare}_{k,t}=N^I_{k,t}/N^I_t$, and the normalized dominance measure is $\mathrm{ExcessUse}_{k,t}=\mathrm{VehicleShare}_{k,t}/\mathrm{EndpointShare}_{k,t}$. The all-route counterpart $\mathrm{AllRouteVehicleShare}_{k,t}=\mathrm{IVol}_{k,t}/\mathrm{Vol}_t$ carries direct volume in the denominator so the economic scope of routed exchange stays visible.
+Lower volatility or redemption risk can make a stable intermediary attractive when it must be held between legs. A common stablecoin coefficient cannot test that account because fiat-reserve, on-chain-collateralised, and synthetic claims have different balance sheets. Candidate-specific stress and design changes supply the required sign reversals. Current fiat-reserve concentration motivates the test and does not identify it.
 
-**Definition 4, cost domination and route regret.** A realised route unit $r$ through candidate $k$ is *cost-dominated* when the best available direct route for the same ordered pair, priced at the same reconstructed pre-trade state, would have returned more than $r$ did. A candidate $k$ is *enumerably cost-dominated* for a cell $(i,o,q,t)$ when the best direct quote exceeds the best two-leg quote through $k$, whether or not anyone routed through $k$. The signed output or all-in cost gap is route regret. These are properties of routes and opportunity sets, not measures of vehicle dominance. The paper never substitutes realised cost domination for enumerable cost domination, and the previous 17.9% figure was the second measured on one venue family without a support screen.
+### 5.4 Software defaults and architectural mandates
 
-**Definition 5, asset types.** The claim is about currency types and tickers appear only as proxies. A *native platform asset* is the platform's own settlement asset; its pairing degree, transaction volume, depth, route cost and volatility are measured outcomes or covariates, not parts of the definition. A *stablecoin* targets a fixed value in a fiat currency; backing and peg-restoration mechanisms are dated crossing attributes, not the type definition. An *imported store of value* is a non-native asset brought on-platform in wrapped form, including tokenised gold. A *staked native derivative* holds the native asset's exposure in a different instrument, and it is held apart from the native type because whether it counts as the same currency is a specification choice; the paper reports both treatments. Every other intermediary token is *other*, which is a real category carrying 24.2% of 2026 intermediation episodes across 9,283 observed intermediary tokens, and which is entirely absent from the matched sample per table 2. The native asset's level cost advantage remains validation evidence because it does not identify persistence or a transition mechanism; it is not tautological under this taxonomy.
-
-**Definition 6, candidate set.** $\mathcal K=\{\mathrm{WETH},\mathrm{USDC},\mathrm{USDT},\mathrm{DAI},\mathrm{WBTC}\}$ is the prespecified set used wherever a counterfactual must be quoted for every candidate. The type shares of definition 5 are measured over the whole observed intermediary population and not over $\mathcal K$: $\mathcal K$ is the quoting universe and the taxonomy is the measurement universe.
-
-**Definition 7, all-in route cost.** For notional $q$ at reconstructed pre-trade state, the direct all-in cost is $C^{D}_{i,o,q,t}=1-O^{D}_{i,o,q,t}/q+G^{D}_{i,o,q,t}/q$ and the indirect all-in cost through $k$ is $C^{I}_{i,o,k,q,t}=1-O^{I}_{i,o,k,q,t}/q+G^{I}_{i,o,k,q,t}/q$, where $O$ is quoted output value and $G$ is route gas expenditure at the realised transaction's exact receipt gas price and the gas-token price. Quote-output cost and all-in cost are separate objects and are never substituted: $\Delta C^{D}_{i,o,k,q,t}=(O^D-O^I)/O^D$ excludes gas and $\Delta C^{D,\mathrm{all}}_{i,o,k,q,t}=C^{I}-C^{D}$ includes it. Positive values of either favour the direct route. The common transaction gas price is applied to candidate- and venue-specific gas-unit estimates; same-block base fee is the urgency-free sensitivity.
-
-**Definition 8, the support screen.** The panel declines to quote any leg whose own price impact at notional $q$ exceeds 5% of the trade. The threshold is derived and not chosen: the quoters were each accepted against realised swaps, and the size-to-depth distribution of that validation population has a pooled median of 0.34%, a 90th percentile of 3.3% and a 99th percentile of 14.9% across 932,270 swaps on eight sampled days, so 5% sits between the 90th and 99th percentiles of the region where the quoter has measured error. The screen is ex ante on the pool state, so it conditions on nothing downstream of the outcome. This is what replaces the retired trim on absolute cost advantage, which conditioned on a monotone function of the binary outcome and could not defend anything.
-
-**Definition 9, common support.** $\mathcal C_{k,t,q}=\mathcal D_{k,t,q}\cap\mathcal I_{k,t,q}$ is the set of pairs for which both routes execute at notional $q$ and both clear the support screen. Cost comparisons are made only on common support. Pairs off common support are retained as availability outcomes and are never deleted.
-
-**Definition 10, incumbent and challenger.** The incumbent vehicle $k^\star_{i,o,t}$ has the largest mean $\mathrm{VehicleShare}_{i,o,k,u}$ over the 30 calendar days ending at $t-1$, using only information dated before $t$. The challenger $h^\star_{i,o,q,t}$ is the executable non-incumbent candidate with the smallest $C^I_{i,o,h,q,t}$ on day $t$. The challenger's edge is $\mathrm{ChallengerCostEdge}_{i,o,q,t}=C^I_{i,o,k^\star,q,t}-C^I_{i,o,h^\star,q,t}$, positive when the challenger is cheaper.
-
-**Definition 11, retention and displacement spells.** A *retention spell* opens on the first day an incumbent becomes dominated on a pair and closes on the first day it is no longer the incumbent, and its length in days is the survival quantity. A *displacement spell* opens on the first day a non-incumbent candidate holds an edge, meaning routing through it beats the direct pool while the incumbent's route does not, and closes on the first day it becomes the incumbent. Both are defined on the same pairs and the same share quantity so the two durations are comparable. *Persistence* is the finding that retention spells have positive length. *Hysteresis* is the finding that retention spells exceed displacement spells, and the difference between the two medians is the incumbency premium measured in days. Neither duration is reported alone, because persistence on its own is consistent with slow information and with switching frictions that apply equally in both directions.
-
-**Definition 12, what routing agency is and is not.** Route selection is executed by smart-order routers that are deterministic graph optimisers over current pool state, which removes trader habit as a quote-time channel. Preferring an incumbent intermediary when a cheaper direct route exists therefore cannot be read as trader inertia, and the survival estimand is not a claim about habit. Incumbency in this paper operates through state variables that update slowly, including liquidity-provider capital allocation and aggregator integration scope. A router choosing the native asset because its pools are deepest is optimal at that instant, and the reason those pools are deepest may still be historical incumbency. This is why the survival estimand is the right one for this instrument: the duration of a dominated role measures how fast those state variables move, while a level fact about the incumbent network does not.
-
----
-
-## 5. Named rival mechanisms: the horse race on survival
-
-**The leading claim, stated in the form the rivals have to beat.** A vehicle that stops being the cheapest route keeps a substantial part of its routing share, and it keeps it for a measurable number of days. The magnitude in that sentence carries no number until F1 lands, because the four-day figures of roughly half to two thirds are withdrawn and the rivals have to beat whatever the repriced version says. Four accounts could produce a duration of that length, and each is stated with the empirical fact that separates it from the others. Following the practice of rejecting one of one's own first, the fourth account is the one this paper's own V1 evidence currently favours and it is reported that way.
-
-The horse race is now about duration and no longer about the level, and that is the substantive consequence of the estimand change. Krugman's volume-cost feedback is not excluded by the taxonomy: past vehicle use can concentrate liquidity in its two markets and lower current routing costs. It enters section 5.1 through the slow-capital state variable, while the static level comparison stays in section 2.5 as validation. What the four accounts have to explain is why routing does not leave the moment the cost advantage does.
-
-### 5.1 Liquidity supply as the slow state variable
-
-Routing follows depth instantaneously, and depth follows provider capital, which moves slowly because providers face switching costs and attention limits. The role survives cost domination for exactly as long as it takes capital to reallocate, and the duration is a measurement of provider stickiness with no behavioural content on the trading side at all.
-
-What separates it: the duration should be increasing in $\mathrm{LPConc}_{k,t}$ after conditioning on the contemporaneous gap, and provider capital should move after routing does and not before. If capital leads routing, the account is refuted and the causality runs the other way.
-
-What this account may not be tested with: a lagged dependent variable plus fundamentals controls. That is the specification the FX literature itself shows cannot separate switching costs from a serially correlated unobserved fundamental, and running it would reproduce the interpretive error this paper claims to overcome.
-
-Status: PENDING, and doubly so. $L_{k,t}$ and $\mathrm{LPConc}_{k,t}$ are Uniswap-V3-only quantities today and must be rebuilt on the unified layer before they enter any specification.
-
-### 5.2 Aggregator integration scope
-
-A cheaper route that no aggregator has integrated is a route no trader can take, so the role survives cost domination for as long as it takes the routing infrastructure to see the alternative. This is a supply-side friction on the routing layer and it is distinct from 5.1 because it involves no capital movement.
-
-What separates it: retention duration should be longer on pairs whose cheaper alternative sits on a venue that fewer aggregators had integrated at the time, and the duration should collapse at integration dates that are observable from calling-contract populations. `docs/router-identification-feasibility.md` records the executor population fragmenting from 241 to 397 senders with a hand registry covering 11.8%, which is the constraint on how sharply this can be measured.
-
-Status: PENDING, and it is the newest account in the race. It was implicit in the old file's definition 12 and was never given a discriminating test.
-
-### 5.3 The cost of holding the intermediary
-
-Because an intermediate asset is held for the duration of the hop, the cost of the intermediary's own volatility scales with the amount held, so a volatile incumbent should be abandoned faster under its own stress than a stable one is.
-
-What separates it: $\mathrm{CandidateStress}_{k,t}$ should shorten retention spells for the native candidate under its own drawdowns and lengthen them for stable candidates under a native drawdown, with the sign reversing for a stable candidate's own downward depeg, and a placebo assigning the shock after the outcome window must be null. The March 2023 depeg is the episode that identifies the reversal.
-
-What this account has lost since the previous version of this file. It rested on two supports there and one of them is void. The size gradient in the native cost advantage, which the old 5.2 called its hinge, does not exist: the interaction is +0.0023 (0.914) per table 6. The surviving support is the count-value ordering, that the value-weighted crossover arrives 2022-Q1 while the count-weighted crossover appears only in 2026-H1, and that ordering is what the mechanism predicts. One prediction on the record is a weaker position than the old file described, and the retention-duration test is now the account's main chance.
-
-Status: PENDING on all duration predictions. The count-value ordering EXISTS and is one prediction, not two.
-
-### 5.4 Software defaults and the road already taken
-
-Routing software and pool-creation templates default to the incumbent, and the survival duration is the release cadence of that software with no allocative content behind it.
-
-What separates it, in four ways. Timing: a default change is a step at a release date and an allocative reallocation is a drift. Venue scope: a default inside one venue's software cannot move routing on venues whose software did not change, which makes cross-venue spillover the discriminating design. Mandate withdrawal: when Uniswap V1's architectural requirement to route through the native asset was removed by V2, native-asset pairing did not retreat, and the share of newly created pairs including the native asset rose from 84.1% in 2020 to 99.0% in 2023 and 97.9% in 2026. Duration heterogeneity: if defaults drive survival, retention spells should be common across pairs served by the same software and should vary across software populations.
-
-This is the account the paper's own evidence currently favours. The V1 finding is a null on the architectural hypothesis measured over 477,633 pairs, of which 97.1% include the native asset. The token-level version reaches a bounded null: on 247 V1 exchanges, forced-routing intensity carries a coefficient of +0.276 on exit speed with a robust standard error of 0.307, randomisation inference at (0.355), a hazard-model coefficient of +0.026 with a cluster-robust standard error of 0.431, and measured power of 98.4% against a halving of survival time. An effect the mandate hypothesis needs would have been visible and it was not.
-
-Status: partly supported, and the support runs against the paper's more interesting reading. The step-timing test, the cross-venue spillover design and the duration-heterogeneity test are PENDING, and they are how this account is beaten if it can be beaten.
+Software reach and protocol architecture can coordinate routing without a change in monetary demand. The V1 to V2 mandate withdrawal provides one bounded null, while later architecture entry and exit remain selected exposure events. A convincing test holds the feasible set fixed, measures availability independently of realised use, and asks whether an effect is local to software populations whose reach changed.
 
 ### 5.5 What survives
 
-The section closes with a specification curve on the retention-duration estimate, curated to defensible specifications with a joint inference test, and a dashboard showing which analytical choices move the result. The mandatory-to-vary choices are the support-screen threshold, the incumbency window, the notional grid point, and the outlier treatment, following the measured result that discretion over ten routine choices lets a researcher report over 70% of randomly generated variables as significant.
-
-The verdict paragraph states which accounts survive and which do not, including the nulls, and it states them as findings. A horse race that ends in a tie between two mechanisms is a result, and a race in which the retention and displacement curves coincide is a null on hysteresis that the paper reports in the abstract.
-
----
+The section closes by ranking accounts on completed separating tests. A null is reported with the same prominence as a positive result. A partial account may remain viable after it fails as a complete explanation. The final paragraph states the narrowest economic conclusion licensed by the strongest surviving comparison and names the next unresolved mechanism only when it motivates Section 6.
 
 ## What G needs from F
 
-Ordered by how much narrative weight is blocked, with the specification that would produce each. The list is shorter than the previous version's and it is shorter because the estimand change retired six items outright.
-
-**RETIRED, and F should stop work on them if any is in flight.** The old size-profile item, framing the size profile as the hinge of a mechanism, is void: the interaction is +0.0023 (0.914). The old pair-date route-choice coefficient on the multi-venue panel is demoted to table 6 and needs no further work beyond what `dominance_specification_curve.jsonl` already carries. The old V3 extension settling the 2021-Q3 collapse in the native routing advantage is retired with the level estimand it served. The old item explaining the above-$100k cost-domination anomaly was measured on the unscreened v2-only panel and does not survive the screen. The old non-mechanicalness screen and the old headline both rest on a specification the paper no longer reports.
-
-**F1. Reprice the counterfactual routes at transaction state, which is the only item that reinstates section 4.** The strict actual-route validator has completed the first half: it matches both legs by transaction and log, reads each pool before the transaction's first V3 swap, resolves decimals through the shared canonical owner and produces zero negative own-state shortfalls across 12,931 routes. The second half is still open. Reconstruct the direct and alternative-vehicle pools at the same state, including finite-size depth, and report the verdict-flip rate against hour pricing. Until that lands, table 4 is withdrawn and section 4 has a specification and no measurement.
-
-**F2. The full-sample rebuild, and the two arms it unblocks.** This is the only item that matters and it is running. 2,277 days across six priced venues with the support screen applied. What G needs out of it, in order: `measure_realised_dominance.py` run across the full panel with the `mid_type` split retained, which fills table 3 panels A and B and figure 2; `run_survival_after_dominance.py` on the same, which fills table 4 panel A with a sample larger than 223 pair-candidate observations; and `run_displacement_asymmetry.py`, which currently refuses at 4 consecutive priced days against 20 required and which fills table 4 panel B and figure 3. Nothing in section 4 leaves PENDING without this.
-
-**F3. Dollars foregone, which is not dollars routed.** The repository has 83.1 million dollars routed through dominated vehicles across four days and nothing that multiplies a dominated realised route's notional by its realised gap. Specification: on the matched realised routes, compute $q_r \times \Delta C^{D}_{r}$ for every dominated $r$, sum by intermediary type and by year, and report the median gap alongside so a reader can reconstruct the arithmetic. This is the Makarov and Schoar magnitude and it is what an editor recognises as a number. Table 4 panel C is the shell and it is the highest-value hour of work on this list once F1 and F2 have landed.
-
-**F4. Balancer integrated into the route-cost panel.** The quoter is built and validated at 0.0000% median error on backward-rolled balances, and Balancer is 3.9% of panel volume pooled and 8.8% at its 2023 peak, which makes it the largest coverage gain available. `docs/venue-coverage-bounds.md` records the integration as pending and the venue as absent from both sides of the comparison.
-
-**F5. The exact-clock same-block cycle check.** Construct candidate-specific capture costs only after joining each gap to its transaction and block, receipt gas price and calibrated route units. Then report the share with a closing swap sequence in the same block. A cycle is evidence that the gap existed and was captured; no cycle leaves quoter error or an unmodelled constraint unresolved. The former pooled fixed-clock threshold and its tail shares are not inputs to this test.
-
-**F6. Exact transaction gas price and candidate-specific route gas units.** Join every realised route to its receipt by exact transaction hash and block number, retain `gasUsed × effectiveGasPrice` as the realised paid cost, use `effectiveGasPrice` as the primary counterfactual price, and exclude exact-zero prices because private or bundle payment may be unobserved. Apply that one observed price to both route alternatives, whose gas units remain conditioned on year, topology, exact venue sequence and intermediary identity. Report same-block base fee as the urgency-free sensitivity. No daily gas object enters or survives the analytical pipeline.
-
-**F7. The matched-sample bound, narrowed.** Table 2 shows matching retains 1.9% of realised multi-leg routes and selects hard toward large stable-intermediated routing. Report what the rebuild does to that ratio, and if it stays near 2%, report cost-domination incidence separately for the pairs the panel covers well and the pairs it barely covers, so a reader can see whether the 27.2% moves with coverage. Coverage is 79.0% of realised routing today and the uncovered 21.0% is `other` and staked-native routing, for which no matched rate exists at all. This is the paper's largest hole on the frequency side, as F1 is on the persistence side.
-
-**F8. Registry symbols for asset-type shares and for the survival quantities.** Add $\mathcal K^{\theta}$, $\mathrm{TypeShare}^{\theta}_t$ and $\mathrm{TypeCountShare}^{\theta}_t$ over the five types in `src/ddvc/asset_types.py`, and add the retention-spell and displacement-spell durations of definition 11 with the incumbency window as a parameter. Table 4 currently uses quantities with no registered notation, which breaks the registry's role as single source.
-
-**F9. Value-weighted type shares for the missing years, with quarterly crossover dates.** Table 3's setting panel reports 2020, 2022, 2024 and 2026 and omits 2021, 2023 and 2025. Fill them and report the quarterly crossover dates for both weightings.
-
-**F10. The transition recomputed venue by venue and after the wash screens.** The turnover-spike, volume-spike, arbitrage-cycle and organic-versus-MEV screens named in workflow section 4.2 are unapplied and the venue dimension is absent. Both are needed for 3.4.
-
-**F11. Liquidity measures rebuilt on the unified layer.** $L_{k,t}$, $\mathrm{LPConc}_{k,t}$ and $\mathrm{LogVehicleLiquidity}_{k,t}$ are Uniswap-V3-only today. Account 5.1 cannot be tested until they are rebuilt.
-
-**F12. Aggregator integration dates, as far as the executor registry supports.** Account 5.2 needs the date each venue became reachable through each major aggregator. The hand registry covers 11.8% of the executor population, so F should report what fraction of routing volume the covered executors carry before anyone builds a test on it, because a design resting on 11.8% of contracts and 80% of volume is viable and one resting on 11.8% of both is not.
-
-**F13. Cleanup that the gates require.** `output/empirical/` still holds roughly fifty pickled result objects and `output/tables/` roughly twenty exhibits from the round retired in `docs/retired-single-venue-round.md`, which states that every scripted output from that round is deleted and not archived. They are not deleted. Anything F promotes must be regenerated on the unified layer with the support screen applied; everything else goes, in the same commit.
+1. Publish the current intermediation panel and support ledger from the certified route generation, with exact route, episode, count-value, and common-day reconciliation.
+2. Run the fixed opportunity-cell rotation decomposition on ordered endpoint, candidate, venue reach, route design, notional, support, and search-efficiency state.
+3. Report within-cell change separately from candidate, pair, venue, and support entry and exit.
+4. Test dated architecture and software changes as measured exposures, with independent availability and reversal where the data support it.
+5. Complete the exact transaction-state frontier before any cost-dominance or routing-efficiency mechanism enters the paper.
+6. Build independently valued capital and direction-specific executable depth before testing the liquidity-placement sequence.
+7. Produce retention and displacement on one risk set, or keep Section 6 free of an estimated hysteresis claim.
+8. Rerun every promoted exhibit on one generation and complete two unchanged F-G passes before prose node P opens.
 
 ## What G needs from H
 
-`docs/deck-outline.md` targets the Nanyang Blockchain Conference on 21 to 22 August 2026 with 18 main slides and 23 appendix slides, and it was built against the retired estimand. The rewrite below is not optional, because four of its slides now advertise a result the paper does not report.
-
-**H1. Slide 13 is cut and not built.** The previous version of this file told H that slide 13 was buildable because the sign of the native-type effect was resolved. That instruction is withdrawn. The coefficient it named, -0.3834 with a standard error of 0.0372 on 177,106 identifying cells, is the mixed-specification number: the seven-day window gives -0.3834 and 0.0372 on 45,630 identifying cells, and 177,106 belongs to the one-day window whose coefficient is -0.3837. The slide's own cut rule fires for a different reason than it anticipated, which is that the estimand is retired and not that the sign is unresolved. What replaces it is one validation slide carrying the -25.3 basis points (0.037), clearly labelled as a measured level ordering that establishes neither persistence nor a transition mechanism.
-
-**H2. Slide 12's size story is cut.** The old H5 asked H for a slide splitting the coefficient by notional with the crossover dates annotated, on the ground that the size profile was the hinge joining the paper's two halves. The gradient does not exist. Any slide whose read is "the signature of a fixed cost" from a three-point profile has to go, and the deck should carry the interaction estimate of +0.0023 (0.914) in the appendix as the reason it went, because a speaker who has quietly dropped a claim will be asked about it.
-
-**H3. The deck's centre is reopened with node G.** The old instruction made the survival curve the spine and used realised cost-domination incidence as a temporary centre. Neither can now displace the paper's continuous vehicle-dominance question. The four-day retention ratios remain withdrawn because 62.8% of validated actual routes move by more than 30 basis points between strict pre-transaction state and hour end. If the 27.2% population-weighted cost-domination incidence survives F, the deck must show the matched-sample ratios and 1.9% coverage beside it; it cannot become the paper headline.
-
-**H4. Slide 11's gas arrow is wrong in a way the rewrite makes worse.** The slide attaches one pooled extra-hop constant to the vehicle lane. A per-hop constant common to every candidate is absorbed by the group fixed effect in any within-cell design and moves nothing, per Node I objection 6 and definition 7 above. The arrow should carry a candidate-specific and venue-specific gas term or it should be removed, and F5 is what supplies it.
-
-**H5. Slide 14's cut rule is adopted and generalised.** Slide 14 will be cut unless cost-domination windows are dated on an all-in basis, on the stated ground that a window dated on gross quotes is not a window a trader faced. G adopts it and extends it: no cost-domination incidence enters the deck or the paper without the support screen applied, because the pre-screen figures carried median gaps of thousands of basis points and the retired 17.9% is the example of what that produces.
-
-**H6. A16's disclosed-and-unbounded filter now has a bound and the slide should carry it.** A16 discloses that the notional band removes 36.9% of pair-days and correlates with the outcome, then stops. Table 2 of this file is the bound, and it is a harder number than the disclosure: matching selects 13 times larger at the median with the entire `other` category absent. Disclosing a filter and then reporting its selection is a stronger position than disclosing it and stopping.
+1. Keep pages 10 to 12 generated from the current route exhibits: quarterly paths, candidate dumbbells, and integration-regime slopes.
+2. Build the authentic transaction trace and its local replay from one admitted transaction, with a complete static PDF state.
+3. Replace the two-architecture sketch with a V1 to V4 architecture sequence using verified institutional facts.
+4. Add the sample funnel, protocol-state matrix, opportunity-set network, capital-depth cross-section, and exact-horizon diagram as their inputs become admissible.
+5. Keep evidence status, source paths, and commit identities in comments and manifests; the rendered deck remains ready to present.
+6. After every touch, run the semantic diff, focused producer tests, local compile, audience-language audit, full contact sheet, and changed-page inspection.

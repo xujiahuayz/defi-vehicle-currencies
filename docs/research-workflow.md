@@ -36,13 +36,16 @@ The meeting edge is `Studio D3 publish -> M3 analytics/figure refresh -> E1
 claim lock`. M3 never estimates on an older derived generation while waiting.
 
 **Persistent M3 visual workstream.** The deck backlog is not recalled from chat.
-It remains open here and in `docs/reviews/deck-visual-composition.md`: authentic
-transaction trace plus local replay/static still; V1-to-V4 architecture morph;
-quarterly non-monotone paths; candidate dumbbells and interaction/difference
-plots; regime and excess-use heatmaps; sample funnel; protocol/state matrix;
-capital/inventory/depth cross-section; multiplex opportunity-set network; and
-exact-horizon diagram. A chart type is used only when it expresses the economic
-comparison, never to create decorative variety.
+The current route generation has closed three core items: quarterly non-monotone
+paths on page 10, USDC/USDT excess-use dumbbells on page 11, and single- versus
+cross-venue interaction slopes on page 12. Their producers, manifests and source
+comments remain part of every later refresh. The open workstream remains here and
+in `docs/reviews/deck-visual-composition.md`: authentic transaction trace plus
+local replay/static still; V1-to-V4 architecture morph; regime and excess-use
+heatmaps; sample funnel; protocol/state matrix; capital/inventory/depth
+cross-section; multiplex opportunity-set network; and exact-horizon diagram. A
+chart type is used only when it expresses the economic comparison, never to
+create decorative variety.
 
 **Every deck touch runs the same deliverable loop.** Review the source diff and
 its scientific consequence; run focused producer/unit tests; compile
