@@ -5,7 +5,7 @@
 
 If an incumbent remains in use after another feasible intermediary becomes cheaper, four frictions could account for the delay. Liquidity providers may move capital slowly across pools; routers may not yet reach the venue carrying the cheaper route; holding risk may make some intermediaries more costly to support; or routing software and pool-creation templates may continue to favour the incumbent. These mechanisms can generate similar persistence in aggregate, but they make different predictions within an ordered endpoint pair.
 
-The classical volume-cost feedback provides the starting point. In \citet{Krugman1980VehicleCurrencies}, current transaction volume lowers proportional brokerage cost. The mechanism does not specify provider capital, liquidity reallocation, or router access. In this setting those quantities can in principle be measured separately, allowing the persistence of a vehicle role to be related to the state variable that may sustain it.
+The classical volume-cost feedback provides the starting point. In \citet{Krugman1980VehicleCurrencies}, current transaction volume lowers proportional brokerage cost. Provider capital, liquidity reallocation and router access are empirical extensions to that mechanism. In this setting those quantities can in principle be measured separately, allowing the persistence of a vehicle role to be related to the state variable that may sustain it.
 
 \subsection{Liquidity reallocation}
 \label{sec:rivals:capital}
@@ -28,12 +28,12 @@ Timing distinguishes this mechanism from liquidity that merely follows routing. 
 \label{eq:leadlag}
 \end{equation}
 
-Capital moving before depth and routing is consistent with slow reallocation; routing moving first is not. A change in executable depth at fixed capital instead points to range placement or market design. The test requires candidate-linked deposited capital and executable depth across the venues available to routers. Venue-level depth alone is insufficient when orders split across exchanges \citep{ChenDuffie2021Fragmentation}. Because the historical V3 balance series does not measure deposited capital, we do not estimate this mechanism with that series.
+Capital moving before depth and routing is consistent with slow reallocation; routing moving first points to liquidity following order flow. A change in executable depth at fixed capital instead points to range placement or market design. The test requires candidate-linked deposited capital and executable depth across the venues available to routers. Venue-level depth alone is insufficient when orders split across exchanges \citep{ChenDuffie2021Fragmentation}. The historical V3 balance series measures virtual depth, leaving deposited capital and this mechanism unestimated.
 
 \subsection{Router access}
 \label{sec:rivals:integration}
 
-A cheaper route that a router cannot reach is not an available alternative. Router access therefore predicts a discrete increase in turnover when the venue carrying the cheaper route becomes reachable. Let $t^*_{ab}$ denote that date and $R_{abt}$ the share of routing volume served by systems that can reach the venue:
+The router's opportunity set excludes cheaper routes outside its reach. Router access therefore predicts a discrete increase in turnover when the venue carrying the cheaper route becomes reachable. Let $t^*_{ab}$ denote that date and $R_{abt}$ the share of routing volume served by systems that can reach the venue:
 
 \begin{equation}
 \log \lambda_{abt}=\alpha_{ab}+\gamma d_{ab\ell t}+\kappa R_{abt}
@@ -53,7 +53,7 @@ Inventory models motivate a third mechanism \citep{HoStoll1981OptimalDealer,Come
 \label{eq:stress}
 \end{equation}
 
-The sign depends on the asset. A native-asset drawdown raises the cost of bearing volatile inventory, while a stablecoin depeg changes the safety of an asset whose usual attraction is low volatility. Candidate-specific episodes can test this prediction, but the aggregate rotation between native and stable vehicles cannot: the value-weighted leadership changes more than once over the sample, and calendar ordering alone does not identify a holding-cost mechanism.
+The sign depends on the asset. A native-asset drawdown raises the cost of bearing volatile inventory, while a stablecoin depeg changes the safety of an asset whose usual attraction is low volatility. Candidate-specific episodes can test this prediction. Repeated changes in value-weighted leadership and calendar ordering leave the holding-cost mechanism unidentified in the aggregate rotation.
 
 \subsection{Software defaults}
 \label{sec:rivals:defaults}
@@ -66,9 +66,9 @@ X_{vt}=\alpha_v+\pi\mathbf{1}\{t\geq t^*\}+\varrho t+\varepsilon_{vt},
 \label{eq:break}
 \end{equation}
 
-The transition from mandatory native-asset routing in the first protocol version to arbitrary token pairs in the second shows that architecture can remove a routing mandate. Continued native-asset pairing after that change is consistent both with software templates and with a thick-market externality. Pairing counts alone cannot distinguish them. The defaults mechanism therefore requires dated software changes and turnover measured among pairs whose feasible route set is otherwise unchanged.
+The transition from mandatory native-asset routing in the first protocol version to arbitrary token pairs in the second shows that architecture can remove a routing mandate. Continued native-asset pairing after that change is consistent both with software templates and with a thick-market externality. Discrimination between them requires dated software changes and turnover measured among pairs whose feasible route set is otherwise unchanged.
 
 \subsection{Empirical scope}
 \label{sec:rivals:scope}
 
-These mechanisms generate distinct predictions, but the current evidence does not rank them. Liquidity reallocation requires validated capital and depth; router access requires route authorship and venue reach; holding risk requires candidate-specific stress; and software defaults require dated, local changes in routing behaviour. Each test is applied to the exact-state turnover hazard of Section~\ref{sec:survival}. Until that hazard is estimated on the common ordered-pair opportunity set, the aggregate facts motivate these mechanisms but do not select among them.
+These mechanisms generate distinct predictions, while the current evidence leaves their ranking open. Liquidity reallocation requires validated capital and depth; router access requires route authorship and venue reach; holding risk requires candidate-specific stress; and software defaults require dated, local changes in routing behaviour. Each test is applied to the exact-state turnover hazard of Section~\ref{sec:survival}. Until that hazard is estimated on the common ordered-pair opportunity set, the aggregate facts motivate the mechanisms without selecting among them.

@@ -177,7 +177,7 @@ D^{\mathrm{g}}_{ab,k}(s,t) &\;=\; \mathbf{1}\!\left\{ G^{k}_{ab}(s,t) > 0 \right
 D^{\mathrm{a}}_{ab,k}(s,t) &\;=\; \mathbf{1}\!\left\{ G^{k}_{ab}(s,t) > -\gamma(s,t) \right\}, \qquad
 \gamma(s,t) \;=\; \frac{\mathcal G^{I}_{ab,k}(s,t)-\mathcal G^{D}_{ab}(s,t)}{Q^{\ast}_{ab}(s,t)}.
 \end{align}
-Each $\mathcal G$ combines gas units calibrated by year, topology, venue sequence and intermediary identity with the transaction's effective gas price and the native asset's dollar price at settlement. The maximisations in \eqref{eq:direct} and \eqref{eq:vehicle} cover the priced venue set. Neither indicator establishes that the router faced the benchmark when it chose the route: quote time is latent, venue access may differ from the priced perimeter, and the router may price costs not observed here. Section~\ref{sec:executability} evaluates those conditions before the counterfactual is used to interpret route choice.
+Each $\mathcal G$ combines gas units calibrated by year, topology, venue sequence and intermediary identity with the transaction's effective gas price and the native asset's dollar price at settlement. The maximisations in \eqref{eq:direct} and \eqref{eq:vehicle} cover the priced venue set. These indicators measure costs at settlement. An interpretation about route choice additionally requires the router's quote time, venue access and any costs outside the observed perimeter. Section~\ref{sec:executability} evaluates those conditions before using the counterfactual to interpret route choice.
 
 Six venues are priced with their own invariants, and each pricing routine is validated against realised swaps. Four functional forms cover the six venues. Table~\ref{tab:venues} reports the invariant, the parameter identified from trades, the achieved validation error and the share of panel volume each venue carries.
 
@@ -292,7 +292,7 @@ where $\bar{t}(t)$ is the end of the period containing $t$, $\mathcal{E}_{p}$ th
 
 Each pricing routine is validated on realised swaps, which necessarily lie within the pool's executable depth. A hypothetical route can extend the same routine beyond the region in which its error has been measured. Smart-contract proxy execution can bundle trades across exchanges into one all-or-nothing transaction and revert the batch when one leg fails \citep{DaianEtAl2020FlashBoys}. Atomic execution removes unmatched-leg risk but not financing, gas, competition, state latency or builder frictions. I therefore derive counterfactual support from the price impact observed on realised trades and do not interpret coarser-time cost gaps as executable arbitrage.
 
-The restriction is applied before comparing routes. Filtering on the measured cost gap would condition on a monotone function of the outcome in \eqref{eq:gap} and would not address extrapolation. I instead screen each leg by its own price impact relative to its own marginal price, with the threshold calibrated to realised trades,
+The restriction is applied before comparing routes. Filtering on the measured cost gap would condition on a monotone function of the outcome in \eqref{eq:gap} and would leave extrapolation unresolved. I instead retain each leg according to its own price impact relative to its own marginal price, with the threshold calibrated to realised trades,
 \begin{equation}
 \label{eq:support}
 \pi_{\ell}(x,t) \;=\; \frac{\tilde{q}_{\ell}(x,t) - q_{\ell}(x,t)}{\tilde{q}_{\ell}(x,t)} \;\leq\; \bar{\pi},
@@ -300,10 +300,10 @@ The restriction is applied before comparing routes. Filtering on the measured co
 \frac{x}{R_{a,p,t}} \;\leq\; \bar{\pi},
 \qquad \bar{\pi} = 0.05,
 \end{equation}
-where $\tilde{q}_{\ell}$ prices leg $\ell$ at the pool's marginal rate and the second form is the constant-product special case. Because the screen uses only the leg's own impact, it does not condition on which competing route has the higher output. Pooled over 932,270 validated swaps across eight sampled days, the median trade moves 0.34\% of the pool's input-side reserve, the 90th percentile 3.3\%, and the 99th 14.9\%, which places $\bar{\pi}$ between the 95th and the 99th percentile of realised behaviour.
+where $\tilde{q}_{\ell}$ prices leg $\ell$ at the pool's marginal rate and the second form is the constant-product special case. Eligibility therefore depends on the state and size of the hypothetical leg before the outputs of competing routes are compared. Pooled over 932,270 validated swaps across eight sampled days, the median trade moves 0.34\% of the pool's input-side reserve, the 90th percentile 3.3\%, and the 99th 14.9\%, which places $\bar{\pi}$ between the 95th and the 99th percentile of realised behaviour.
 % output/exhibits/quoter_support_bounds.jsonl
 
-The restriction is applied across every venue-specific quoter. A reserve-ratio screen alone is insufficient because most counterfactual quotes come from concentrated-liquidity pools, where executable depth depends on the active tick map. The price-impact condition in \eqref{eq:support} provides the common screen across pool families.
+The restriction is applied across every venue-specific quoter. A reserve ratio alone is insufficient because most counterfactual quotes come from concentrated-liquidity pools, where executable depth depends on the active tick map. The price-impact condition in \eqref{eq:support} supplies one comparable support criterion across pool families.
 % scripts/run_route_cost_panel.py, MAX_INPUT_TO_RESERVE and MAX_PRICE_IMPACT
 
 \subsection{Interpreting counterfactual costs}

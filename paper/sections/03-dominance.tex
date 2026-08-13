@@ -34,16 +34,16 @@ Routed value (20\% agreement) & \StableValueBase & \StableValueEnd & \StableValu
 \end{minipage}
 \end{table}
 
-The shift has progressed further in routed value than in route counts. Stablecoins lead by supported value before they sustain a lead in the number of routes, which is consistent with the change being concentrated in larger trades. The ordering does not reveal why those routes moved; liquidity placement, venue reach, router search, and the holding properties of the intermediary can all produce it.
+The shift has progressed further in routed value than in route counts. Stablecoins lead by supported value before they sustain a lead in the number of routes, which is consistent with the change being concentrated in larger trades. The ordering is silent on mechanism; liquidity placement, venue reach, router search, and the holding properties of the intermediary can all produce it.
 
-Native intermediation rebounds during 2023 and 2024. Stablecoins regain the value lead in 2025, whereas their count lead does not persist over a long post-transition window. I therefore describe a \emph{rotation}; persistent replacement would require a longer post-change lead.
+Native intermediation rebounds during 2023 and 2024. Stablecoins regain the value lead in 2025, whereas their count lead remains short-lived. I therefore describe a \emph{rotation}; persistent replacement would require a longer post-change lead.
 
 \subsection{Intermediation and endpoint demand}
 \label{sec:dominance:excess}
 
 A stable asset can become common because traders want to acquire or sell it, without becoming a vehicle between other assets. The excess-use ratio separates the two margins. It divides the asset's share of intermediary positions by its share of route endpoints on the same perimeter. A ratio above one means that its intermediary share exceeds its endpoint share.
 
-The aggregate shift is not common to all stablecoin designs. USDC and USDT jointly account for \JointStableContribution{} of the increase in stable count share. USDC already has excess vehicle use at the start of the comparison and changes little. USDT drives the shift within the stablecoin category. Its count excess-use ratio rises from \USDTCountExcessBase{} to \USDTCountExcessEnd{}, while its strict-value ratio moves from \USDTValueExcessBase{} to \USDTValueExcessEnd{}. The strict-value intermediary-minus-endpoint gap moves from \USDTEndpointGapBase{} to \USDTEndpointGapEnd{}, a \USDTEndpointGapChange{} change with a \USDTEndpointGapSE{} standard error.
+The aggregate shift is concentrated in one stablecoin design. USDC and USDT jointly account for \JointStableContribution{} of the increase in stable count share. USDC already has excess vehicle use at the start of the comparison and changes little. USDT drives the shift within the stablecoin category. Its count excess-use ratio rises from \USDTCountExcessBase{} to \USDTCountExcessEnd{}, while its strict-value ratio moves from \USDTValueExcessBase{} to \USDTValueExcessEnd{}. The strict-value intermediary-minus-endpoint gap moves from \USDTEndpointGapBase{} to \USDTEndpointGapEnd{}, a \USDTEndpointGapChange{} change with a \USDTEndpointGapSE{} standard error.
 
 \begin{table}[tbp]
 \centering
@@ -65,7 +65,7 @@ Value-weighted intermediary minus endpoint share & \USDTEndpointGapBase & \USDTE
 \end{minipage}
 \end{table}
 
-The result is specific to USDT, not to a representative stablecoin. USDT becomes disproportionately more common in the intermediary position after accounting for its endpoint use. The result does not identify which feature of USDT caused the change.
+The result is specific to USDT. It becomes disproportionately more common in the intermediary position after accounting for its endpoint use. The available contrast leaves the relevant feature of USDT unidentified.
 
 \subsection{The integration rival}
 \label{sec:dominance:integration}
@@ -74,14 +74,14 @@ The strongest mechanical rival is the expansion of the trading network. As route
 
 The data show both forces. Cross-venue routes grow from \CrossVenueCountStart{} to \CrossVenueCountEnd{} of route count, reaching \CrossVenueValueEnd{} of value. Yet the share of economic routes that use a true intermediary falls from \FullIntermediationBase{} in 2022 to \FullIntermediationEnd{} in 2026. On a balanced five-venue perimeter it falls to \BalancedIntermediationEnd{}. The declines are \FullIntermediationChange{} and \BalancedIntermediationChange{}, with standard errors of \FullIntermediationSE{} and \BalancedIntermediationSE{}. Integration expands while intermediation contracts.
 
-Within the routes that remain indirect, the stable rotation survives every observed integration-by-complexity count cell. It is also \CrossVenueRotationPremium{} larger across venues than within one venue, with a \CrossVenueRotationSE{} standard error. Thus, the changing mix of single- and cross-venue routes, or of two- and multi-leg routes, cannot by itself account for the stablecoin shift.
+Within the routes that remain indirect, the stable rotation survives every observed integration-by-complexity count cell. It is also \CrossVenueRotationPremium{} larger across venues than within one venue, with a \CrossVenueRotationSE{} standard error. The within-cell results rule out the changing mix of venue span and route length as a sufficient explanation for the stablecoin shift.
 
 Better search may still activate dispersed stablecoin liquidity within the observed venue and complexity strata. Distinguishing that channel requires a fixed-opportunity comparison; the cross-venue interaction alone describes where the rotation is strongest.
 
 \subsection{Time, architecture, and reversal}
 \label{sec:dominance:architecture}
 
-Protocol architecture changes during the same period, but protocol launches coincide with other market changes. The observed entry and exit windows also fail to hold the comparison set fixed. Entry often coincides with role appearance and exit with role disappearance, so part of the measured change follows mechanically from crossing zero. These windows therefore do not identify an architecture effect.
+Protocol architecture changes during the same period, but protocol launches coincide with other market changes. The observed entry and exit windows also vary the comparison set. Entry often coincides with role appearance and exit with role disappearance, so part of the measured change follows mechanically from crossing zero. Their estimand combines architecture and composition, leaving an architecture effect unidentified.
 
 \subsection{Summary}
 \label{sec:dominance:robustness}
