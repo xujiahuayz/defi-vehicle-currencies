@@ -1,58 +1,132 @@
-% Live scientific-feedback slides. Numerical cells remain explicitly provisional
-% until they bind the Studio-current route release and pass the findings freeze.
+% Live scientific-feedback slides. Every numerical cell is bound through an
+% exhibit macro file and remains explicitly provisional until findings freeze.
+\IfFileExists{../output/exhibits/provisional_results_deck_values.tex}{%
+\input{../output/exhibits/provisional_results_deck_values.tex}%
+}{}
 
-\begin{frame}{Architecture exposure changes within cells}
+\begin{frame}{Vehicle dominance rotates toward stable num\'eraires}
 \provisionalbadge
-\vspace{0.35cm}
-\begin{tikzpicture}[x=1cm,y=1cm]
-\node[softbox,minimum width=2.55cm,minimum height=1.18cm,align=center] (v3a) at (0,0) {\textbf{Below threshold}\\$s^{V4}_{iok,t}<c$};
-\node[softbox,minimum width=2.55cm,minimum height=1.18cm,align=center,draw=ucldark] (v4) at (4.35,0) {\textbf{V4-active state}\\$s^{V4}_{iok,t}\geq c$};
-\node[softbox,minimum width=2.55cm,minimum height=1.18cm,align=center] (v3b) at (8.70,0) {\textbf{Below threshold}\\$s^{V4}_{iok,t}<c$};
-\draw[route,draw=stable,line width=1.7pt] (v3a)--node[above,font=\small\bfseries] {entry} (v4);
-\draw[route,draw=accent,line width=1.7pt] (v4)--node[above,font=\small\bfseries] {exit} (v3b);
-\node[font=\small,text=muted,align=center,text width=11.4cm] at (4.35,-1.35) {State changes require three consecutive weeks and are detected within the same ordered endpoint pair and candidate vehicle. Thresholds $c\in\{5\%,10\%,25\%\}$.};
-\end{tikzpicture}
-\vspace{0.24cm}
+\vspace{0.28cm}
 \begin{columns}[T,totalwidth=\textwidth]
 \begin{column}{0.47\textwidth}
-\textbf{Measured architecture exposure}
-\begin{itemize}
-\item realised V4 share in the cell
-\item may enter, exit, or re-enter
-\end{itemize}
+\evidencekicker{Exact two-leg routes: equal-weighted days}
+{\Large\bfseries\color{native}\StableCountBase}
+{\large\color{muted}\ $\longrightarrow$\ }
+{\Large\bfseries\color{stable}\StableCountEnd}
+\vspace{0.18cm}
+
+{\large\bfseries\StableCountChange\quad {\small (SE \StableCountSE)}}
+\vspace{0.10cm}
+
+{\scriptsize Holm $p=\StableCountP$; stable share within native + stable, 2024 to 2026.}
 \end{column}
 \begin{column}{0.47\textwidth}
-\textbf{Outcome}
-\begin{itemize}
-\item overall V3+V4 vehicle-route share
-\item adjusted within endpoint-pair $\times$ week
-\end{itemize}
+\evidencekicker{Strict-support value}
+{\Large\bfseries\color{native}\StableValueBase}
+{\large\color{muted}\ $\longrightarrow$\ }
+{\Large\bfseries\color{stable}\StableValueEnd}
+\vspace{0.18cm}
+
+{\large\bfseries\StableValueChange\quad {\small (SE \StableValueSE)}}
+\vspace{0.10cm}
+
+{\scriptsize Holm $p=\StableValueP$; value supported within 20\%.}
 \end{column}
 \end{columns}
-\vspace{-0.02cm}
-{\footnotesize\color{muted}Calendar date is not treatment. V4 remains available after launch; ``exit'' is endogenous substitution, not removal of the design.\par}
+\vspace{0.48cm}
+\begin{beamercolorbox}[sep=0.22cm,wd=\textwidth]{block body}
+\textbf{Reading:} a large late rotation, not a monotone time trend. Native use rebounds in 2023--24; stable value leads again from 2025-Q1, while count leadership is not yet sustained.
+\end{beamercolorbox}
 \end{frame}
 
-\begin{frame}{Entry, exit, and persistence are distinct objects}
+\begin{frame}{USDT is the transition margin}
 \provisionalbadge
-\vspace{0.18cm}
+\vspace{0.12cm}
 {\small
-\begin{tabular}{@{}p{0.23\textwidth}p{0.28\textwidth}p{0.38\textwidth}@{}}
+\begin{tabular}{@{}p{0.35\textwidth}ccc@{}}
 \toprule
-\textbf{Observed pattern} & \textbf{Reading} & \textbf{Identification warning} \\
+\textbf{Object} & \textbf{2024} & \textbf{2026} & \textbf{Change} \\
 \midrule
-Rise on entry; fall on exit & Association consistent with an architecture channel & Adoption can still respond to expected demand \\
-\addlinespace[0.18em]
-Rise on entry; persists after exit & Persistence in vehicle use & Hysteresis needs asymmetric retention versus displacement under cost-state reversal \\
-\addlinespace[0.18em]
-Movement before entry & Anticipation or endogenous adoption & A launch-date design would misattribute movement \\
-\addlinespace[0.18em]
-No response to state changes & Architecture is not the operative margin & Report support and power before reading the null \\
+USDT count excess use & \USDTCountExcessBase & \USDTCountExcessEnd & \textemdash \\
+USDT strict-value excess use & \USDTValueExcessBase & \USDTValueExcessEnd & \textemdash \\
+Cross-venue count premium & \multicolumn{2}{c}{paired-date change} & \USDTCrossCountChange\ (\USDTCrossCountSE) \\
+Cross-venue strict-value premium & \multicolumn{2}{c}{paired-date change} & \USDTCrossValueChange\ (\USDTCrossValueSE) \\
+Intermediary $-$ endpoint, strict value & \USDTEndpointGapBase & \USDTEndpointGapEnd & \USDTEndpointGapChange\ (\USDTEndpointGapSE) \\
 \bottomrule
 \end{tabular}
 }
-\vspace{0.22cm}
-{\footnotesize\color{muted}Exit reverses measured architecture exposure, not necessarily the vehicle role. Primary contrasts use isolated $\pm8$-week windows; contaminated events remain visible in the support audit.\par}
+\vspace{0.34cm}
+\begin{columns}[T,totalwidth=\textwidth]
+\begin{column}{0.24\textwidth}
+{\fontsize{24}{26}\selectfont\bfseries\color{ucldark}\JointStableContribution}\par
+{\small of the stable count-share increase comes from USDC + USDT.}
+\end{column}
+\begin{column}{0.70\textwidth}
+\textbf{Not a pooled ``stablecoin'' effect.} USDC is already an excess-use vehicle and moves little; USDT crosses from below to above one on strict value. Backing designs remain separate mechanisms.
+\end{column}
+\end{columns}
+\end{frame}
+
+\begin{frame}{Integration expands; intermediation does not}
+\provisionalbadge
+\vspace{0.15cm}
+\begin{columns}[T,totalwidth=\textwidth]
+\begin{column}{0.46\textwidth}
+\evidencekicker{Cross-venue execution}
+{\Large\bfseries\color{native}\CrossVenueCountStart}
+{\large\color{muted}\ $\longrightarrow$\ }
+{\Large\bfseries\color{stable}\CrossVenueCountEnd}
+
+{\small true intermediary routes, 2020 to 2026; 2026 strict-value share is \CrossVenueValueEnd.}
+\vspace{0.38cm}
+
+\evidencekicker{Stable rotation is stronger across venues}
+{\Large\bfseries\color{ucldark}\CrossVenueRotationPremium}
+{\small\quad (SE \CrossVenueRotationSE)}
+\end{column}
+\begin{column}{0.48\textwidth}
+\evidencekicker{True intermediation share}
+{\small
+\begin{tabular}{@{}lccc@{}}
+\toprule
+ & 2022 & 2026 & $\Delta$ \\
+\midrule
+Full & \FullIntermediationBase & \FullIntermediationEnd & \FullIntermediationChange \\
+Balanced & \FullIntermediationBase & \BalancedIntermediationEnd & \BalancedIntermediationChange \\
+\bottomrule
+\end{tabular}}
+\vspace{0.20cm}
+
+{\scriptsize Calendar-HAC SEs: \FullIntermediationSE\ (full), \BalancedIntermediationSE\ (balanced).}
+\end{column}
+\end{columns}
+\vspace{0.36cm}
+\begin{beamercolorbox}[sep=0.20cm,wd=\textwidth]{block body}
+Routing maturation changes reach, but it does not mechanically create more indirect trade. It remains a live rival: the final test conditions vehicle choice on fixed opportunity and search-efficiency cells.
+\end{beamercolorbox}
+\end{frame}
+
+\begin{frame}{The current regression is diagnostic, not final}
+\provisionalbadge
+\vspace{0.18cm}
+{\small
+\begin{tabular}{@{}p{0.43\textwidth}rrr@{}}
+\toprule
+\textbf{30-day outcome} & $\hat\beta$ & \textbf{SE} & $t$ \\
+\midrule
+Challenger vehicle-share response & \ChallengerCoef & \ChallengerSE & \ChallengerT \\
+Incumbent vehicle-share response & \IncumbentCoef & \IncumbentSE & \IncumbentT \\
+Challenger overtakes incumbent & \OvertakeCoef & \OvertakeSE & \OvertakeT \\
+\bottomrule
+\end{tabular}}
+\vspace{0.25cm}
+
+{\small $N=\DiagnosticN$ pair-candidate observations; \DiagnosticClusters\ date clusters. Exact alternating-projection absorption and CR1 rank correction.}
+\vspace{0.36cm}
+\begin{beamercolorbox}[sep=0.22cm,wd=\textwidth]{block body}
+\textbf{What it says:} the sparse challenger panel contains strong displacement gradients.\\[0.08cm]
+\textbf{What it does not say:} no transition, routing-efficiency, or persistence estimator has yet run on the final locked route-cost inputs. These coefficients cannot lead the paper.
+\end{beamercolorbox}
 \end{frame}
 
 \begin{frame}{Live architecture audit: support, not an effect}
@@ -61,49 +135,24 @@ No response to state changes & Architecture is not the operative margin & Report
 \IfFileExists{../output/exhibits/architecture_transition_deck_values.tex}{%
 \input{../output/exhibits/architecture_transition_deck_values.tex}%
 }{}
-{\small
+{\footnotesize
 \begin{tabular}{@{}p{0.28\textwidth}ccc@{}}
 \toprule
 & \textbf{5\%} & \textbf{10\%} & \textbf{25\%} \\
 \midrule
-\IfFileExists{../output/exhibits/architecture_transition_deck_values.tex}{%
 Sustained entries & \ArchEntrySupportFive & \ArchEntrySupportTen & \ArchEntrySupportTwentyFive \\
 Substitution exits & \ArchExitSupportFive & \ArchExitSupportTen & \ArchExitSupportTwentyFive \\
 Role disappearances & \ArchDisappearSupportFive & \ArchDisappearSupportTen & \ArchDisappearSupportTwentyFive \\
 Immediate entry contrast & \ArchEntryImmediateFive & \ArchEntryImmediateTen & \ArchEntryImmediateTwentyFive \\
 Immediate exit contrast & \ArchExitImmediateFive & \ArchExitImmediateTen & \ArchExitImmediateTwentyFive \\
-}{%
-Sustained entries & \multicolumn{3}{c}{\color{muted}awaiting Studio-current certified generation} \\
-Substitution exits & \multicolumn{3}{c}{\color{muted}awaiting Studio-current certified generation} \\
-Role disappearances & \multicolumn{3}{c}{\color{muted}awaiting extensive-margin support} \\
-Clean isolated windows & \multicolumn{3}{c}{\color{muted}to be established from certified support} \\
-Entry contrast & \multicolumn{3}{c}{\color{muted}to be estimated with pair-week adjustment} \\
-Exit contrast & \multicolumn{3}{c}{\color{muted}to be estimated with pair-week adjustment} \\
-}%
 \bottomrule
-\end{tabular}
-}
-\IfFileExists{../output/exhibits/architecture_transition_deck_values.tex}{%
-\vspace{0.05cm}{\footnotesize\color{muted}Route generation: \ArchRouteGeneration\par}%
-}{}
+\end{tabular}}
+\par\vspace{0.06cm}
+{\footnotesize\color{muted}Route generation: \ArchRouteGeneration\par}
 \vspace{0.10cm}
-\evidencekicker{Feedback now}
-{\small
-\begin{columns}[T,totalwidth=\textwidth]
-\begin{column}{0.48\textwidth}
-\begin{itemize}
-\item Is three-week confirmation substantive or only denoising?
-\item Should raw focal share replace mechanical pair-week centering?
-\end{itemize}
-\end{column}
-\begin{column}{0.48\textwidth}
-\begin{itemize}
-\item Which ex ante feasibility state defines the risk set?
-\item What exact-state reversal would count as a design response?
-\end{itemize}
-\end{column}
-\end{columns}
-}
-\vspace{-0.02cm}
-{\footnotesize\color{muted}Cells report detected (usable) events. Zero clean substitution windows; role appearance/disappearance magnitudes are mechanical. No coefficient enters the paper.\par}
+\evidencekicker{Scientific verdict}
+{\small Zero clean substitution windows. Realised V4 share is endogenous, the pair-week centering is mechanical when shares sum to one, and role appearance/disappearance magnitudes are selected lifecycle endpoints. The design blocks an effect rather than manufacturing one.}
+\vspace{0.10cm}
+
+{\footnotesize\color{muted}Next estimand: raw focal share on an ex ante feasible risk set, with exact-state reversals separating design response from calendar coincidence. No coefficient enters the paper.\par}
 \end{frame}
