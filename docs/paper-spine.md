@@ -64,6 +64,7 @@ Section 3 establishes the economic fact before assigning a mechanism. Section 4 
 | Count and value measure frequency and economic size on parallel support perimeters. | Intermediation-by-type panel. | EXISTS | Value uses the stated source-intermediary-sink amount-coherence restriction. |
 | Endpoint use supplies the demand benchmark for excess vehicle use. | Vehicle excess-use producer. | EXISTS | The share gap is the primary inferential outcome. |
 | The route release spans 2,332 calendar partitions, including typed empty days. | Current route-quality ledger. | EXISTS | Nonempty-day counts describe activity, not missing calendar support. |
+| The current release contains 472,254,909 raw swap rows and 471,616,269 usable directed legs. | Current route-quality ledger and Table 1. | EXISTS | These counts describe the admitted multi-venue source perimeter, not all Ethereum trading. |
 | Eight routed venues enter topology, while exact counterfactual pricing has its own narrower state perimeter. | Release and state-support ledgers. | EXISTS | Topology coverage does not imply quote-state coverage. |
 | Missing support is reported by count, value, time, venue, entity, and mechanism cell. | Coverage and provenance exhibits. | EXISTS | An immaterial random gap does not stop an observational result. |
 | Exact-state panels admit a defect only after its economic exposure is bounded. | Materiality workflow and support ledger. | PENDING | Engineering completeness is not itself a paper result. |

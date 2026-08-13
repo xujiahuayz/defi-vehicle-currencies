@@ -10,9 +10,10 @@ Section~\ref{sec:dominance} documents rotation in aggregate vehicle use. Aggrega
 
 Slow turnover is not by itself hysteresis. Symmetric switching frictions can slow gains and losses alike, while the incumbent's relative cost still affects the probability of turnover. Hysteresis makes the stronger prediction that vehicle use responds asymmetrically when the same candidate first gains and later loses a cost advantage. We use duration to describe persistence and reserve hysteresis for this candidate-level response to a reversal in relative cost.
 
+This distinction separates three economic propositions. Persistence says that leadership changes slowly. Cost discipline says that an incumbent is more likely to lose when a feasible challenger offers better execution. Hysteresis says that the same cost difference has a different effect after a candidate has acquired the role. A market can be persistent and cost disciplined when all candidates adjust slowly but adverse cost states still accelerate turnover. It can also display weak cost discipline without hysteresis if an omitted common state moves both the incumbent and its challengers. Only the within-candidate reversal comparison distinguishes state dependence from slow common adjustment, which is why a one-way calendar trend cannot answer the question \citep{DowdGreenaway1993CurrencyCompetition}.
+
 Historical studies infer a currency's role from the number of markets quoting it \,\citep{FlandreauJobst2009Empirics}. Here, realised routes identify the incumbent on each endpoint pair, and exact-state counterfactual quotes reveal whether that incumbent remains cost competitive. Duration alone measures persistence in use; hysteresis requires the role to survive a reversal in relative cost.
 
-\subsection{Incumbency and the cost state}
 \label{sec:survival:notation}
 
 Fix an ordered endpoint pair $(i,o)$ and date $t$. Let $K_{iot}$ be the set of feasible intermediaries and let $s_{iokt}$ be candidate $k$'s share of exact two-leg routes. The incumbent is
@@ -63,6 +64,8 @@ The regression form absorbs endpoint-pair and calendar effects and conditions on
 
 More candidates create more ways for any incumbent to lose, so omitting $|K_{iot}|$ mechanically raises turnover in richer markets. Identification requires within-pair observations in both cost states, and inference is clustered at the level at which cost-state shocks are shared.
 
+Candidate count, pair activity, and routed value play different roles in this design. Candidate count changes the probability that some challenger displaces the incumbent even when challenger quality is unchanged. Pair activity changes how precisely the incumbent share and its turnover date are measured. Routed value changes economic exposure: a rare switch in a large market can matter more for users than frequent switches among small routes. The output gap supplies a fourth quantity, the loss relative to the best supported alternative. Turnover frequency, exposure, and output forgone are therefore reported separately; no duration coefficient can stand in for all three.
+
 \subsection{Retention, displacement, and reversal}
 \label{sec:survival:reversal}
 
@@ -72,9 +75,8 @@ The hysteresis test instead follows the same pair-candidate unit through a cost-
 
 The reversal design also separates state dependence from calendar trend. If vehicle use rises when a candidate's cost position improves and falls when it deteriorates, current relative cost helps explain route choice. If use remains after the advantage disappears, the asymmetric retention response is consistent with hysteresis. A one-way late-sample rise is uninformative about both patterns.
 
-\subsection{The pair-candidate opportunity set}
 \label{sec:survival:obstacle}
 
 Turnover is identified only when every feasible intermediary for an ordered endpoint pair is quoted at the same fixed notional immediately before execution. The panel must also carry exact calendar lags, record unsupported alternatives, and define the candidate set independently of the realised winner. The earlier block-level diagnostic instead used marginal prices, an assumed fee wedge, incomplete candidate support, and an unconditional rate ratio, so it cannot estimate the turnover hazard in \eqref{eq:hazard}. We report no persistence estimate from that diagnostic.
 
-Turnover and economic magnitude are separate outcomes. Flow through a cost-disadvantaged incumbent measures exposure, while output forgone relative to the best feasible route measures loss. Spell length identifies no such magnitude; both outcomes require the exact-state comparison used to measure persistence.
+Turnover and economic magnitude are separate outcomes. Flow through a cost-disadvantaged incumbent measures exposure, while output forgone relative to the best feasible route measures loss. Spell length identifies no such magnitude; both outcomes require the exact-state comparison used to measure persistence. This separation also disciplines the interpretation of a null. A weak cost-state coefficient may coexist with economically important exposure if large routes remain with the incumbent, while rapid turnover may have little welfare relevance when the alternatives are nearly tied. The paper therefore asks first whether relative cost predicts a change in leadership, then how much routed activity and output are attached to that state.

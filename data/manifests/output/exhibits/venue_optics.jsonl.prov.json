@@ -1,41 +1,42 @@
 {
  "argv": [],
  "artefact": "output/exhibits/venue_optics.jsonl",
- "artefact_bytes": 1630,
- "artefact_mtime_ns": 1786659366037326388,
- "artefact_sha256": "4a8c99842dfa22eac89e9e91efb682ced9ed776008ef47d451cbe40c9a716b9d",
+ "artefact_bytes": 1629,
+ "artefact_mtime_ns": 1786660895370202489,
+ "artefact_sha256": "cd4c3cb95a44e47d61859abc4049fdaa7bb9f425a7d33abec90097d57887f589",
  "code_fingerprint": "fd011139ca5bb4188653d8a89db3a34d49f28837c859207391f9390cec4aa66d",
  "code_sources": [
   "scripts/measure_venue_optics.py",
   "src/ddvc/tables.py"
  ],
- "created_at": "2026-08-13T22:16:06+00:00",
+ "created_at": "2026-08-13T22:41:35+00:00",
  "git": {
   "branch": "main",
-  "commit": "ddff5f66250ec51aadf9b0d330cf667080e66934",
+  "commit": "97b8ca977ad4484e52014c881e650b346069dd74",
   "dirty": true,
   "dirty_generated_files": [
    "data/manifests/output/exhibits/prose_conventions.jsonl.prov.json",
    "data/manifests/output/exhibits/prose_outliers.jsonl.prov.json",
-   "data/manifests/output/exhibits/vehicle_transition_pair_decomposition_deck_values.tex.prov.json",
    "data/manifests/output/exhibits/venue_shape.jsonl.prov.json",
    "output/exhibits/prose_conventions.jsonl",
    "output/exhibits/prose_outliers.jsonl",
-   "output/exhibits/vehicle_transition_pair_decomposition_deck_values.tex",
    "output/exhibits/venue_shape.jsonl",
-   "output/exhibits/.venue_optics.jsonl.u9_jr8f3.tmp"
+   "output/exhibits/.venue_optics.jsonl.b_z72mas.tmp"
   ],
   "dirty_tracked_files": [
-   "deck/assets/vehicle-transition-pair-decomposition.tex",
-   "deck/main.pdf",
-   "deck/sections/04-results.tex",
-   "deck/sections/05-close.tex",
-   "docs/paper-spine.md",
-   "docs/reviews/deck-visual-composition.md",
+   "docs/research-workflow.md",
    "paper/sections/01-introduction.tex",
+   "paper/sections/02-setting.tex",
    "paper/sections/03-dominance.tex",
-   "scripts/build_vehicle_transition_pair_deck_values.py",
-   "tests/test_vehicle_transition_pair_deck_values.py"
+   "paper/sections/04-survival.tex",
+   "paper/sections/05-liquidity.tex",
+   "paper/sections/05-rivals.tex",
+   "paper/sections/06-executability.tex",
+   "paper/sections/07-conclusion.tex",
+   "paper/sections/08-appendix.tex",
+   "scripts/check_deliverable_conformance.py",
+   "scripts/find_prose_outliers.py",
+   "scripts/measure_prose_conventions.py"
   ],
   "dirty_untracked_files": []
  },
@@ -48,11 +49,11 @@
  },
  "notes": null,
  "payload_identity": {
-  "bytes": 1630,
+  "bytes": 1629,
   "format": "jsonl",
   "rows": 10,
   "schema_version": 1,
-  "sha256": "4a8c99842dfa22eac89e9e91efb682ced9ed776008ef47d451cbe40c9a716b9d"
+  "sha256": "cd4c3cb95a44e47d61859abc4049fdaa7bb9f425a7d33abec90097d57887f589"
  },
  "python": "3.14.5",
  "rows": 10,

@@ -316,7 +316,7 @@ The panel's threshold of 5\% sits between the 90th percentile of 3.29\% and the 
 \end{figure}
 % output/exhibits/quoter_support_bounds.jsonl, per-day and pooled 90th and 99th percentiles, 932,270 validated swaps on eight sampled days
 
-This restriction removes economically relevant observations, and the body reports that loss of support. It cannot measure quote error for retained hypothetical routes because those routes were never executed and have no realised output for comparison. Section~\ref{sec:executability:arbitrage} instead develops an indirect check based on same-block arbitrage.
+This restriction removes economically relevant observations, and the body reports that loss of support. It cannot measure quote error for retained hypothetical routes because those routes were never executed and have no realised output for comparison. Same-block capture motivates a possible indirect check, but the required transaction-level closing-cycle test has not yet been completed.
 
 \section{Signed venue coverage}
 \label{app:coverage}
@@ -412,6 +412,9 @@ Balancer is 3.9\% of measured venue volume pooled and 8.8\% at its 2023 peak. Th
 \label{app:timing}
 
 The counterfactual panel prices at the close of an hour, whereas the route-selection state is latent and may precede the observed settlement block. Section~\ref{sec:executability:timing} first measures how much prices move between the pre-settlement and hour-end states. Because both alternatives are priced at the same state, their ranking changes only with relative price movement. A closed triangle isolates that relative component.
+
+The realised-route validation matches each leg of a two-leg V3 route to its pool and transaction log, reads both pools strictly before the transaction's first V3 swap, and compares that state with the hour-end state used by the panel. Across 12,931 routes on three dates, the median absolute movement in the two-leg marginal rate is 54.3 basis points; 62.8\% move by more than 30 basis points and 36.4\% by more than 100. The median is 140.3 basis points on 2022-06-15, 52.1 on 2024-06-15, and 31.7 on 2025-09-14. These dates reveal heterogeneity but do not establish a trend or an aggregator effect.
+% output/exhibits/realised_route_timing_validation.jsonl, 12,931 routes on three dates
 
 For endpoints $a$ and $b$ and intermediary $k$, with a direct pool $ab$ and legs $ak$ and $kb$, the residual
 \[
@@ -560,9 +563,6 @@ A route whose first input token equals its last output token,
 \]
 does not represent endpoint-to-endpoint conversion under the paper's route unit. Such routes are removed everywhere before anything is measured because they would otherwise enter a routing statistic as though a trader had chosen an intermediary between distinct endpoints. The excluded population can contain cyclic arbitrage and other self-returning activity; the endpoint rule does not label every route as arbitrage or wash trading. Multi-trade arbitrage can be bundled atomically \citep{DaianEtAl2020FlashBoys}, which supports the mechanism but not an exhaustive behavioural classification.
 
-The magnitude of the contamination governs how much weight the exclusion argument can carry, and it drifted once in this project's own records. A single day, 2025-12-06, was measured at 25.9\% of multi-leg routes by count and 91.3\% by value, and that pair propagated into eleven places before anyone noticed it was the most extreme day in the sample. The figure was never arithmetically wrong, which is what made it durable, since anyone re-checking it against its stated source reproduced it exactly.
-% output/exhibits/round_trip_share_by_day.jsonl; scripts/measure_round_trip_share.py, 2025-12-06 as the extreme day of 79
-
 \begin{table}[t]
 \centering
 \caption{Round-trip share of multi-leg routing, across 79 sampled days}
@@ -604,7 +604,7 @@ Maximum & 25.93\% & 91.31\% \\
 \footnotesize Round trips as a share of multi-leg routes. 79 sampled days from 2020-06-01 to 2026-04-27 covering 13,160,047 routes, of which 2,488,399 are multi-leg and 351,553 are round trips. Days carrying fewer than 200 multi-leg routes are omitted, since a share formed on a handful of routes is sampling noise.
 \end{table}
 
-The value-weighted share exceeds the count-weighted share at every quantile, by a factor between 1.7 and 3.5, which is the signature of a population of large atomic cycles sitting inside a much larger population of small ordinary routes. No sampled day is free of them, and the floor of 4.45\% by count falls on 2020-06-01, the earliest day sampled. Count-weighting is used throughout the body for exactly this reason, since a value-weighted routing statistic on an unscreened panel would be reporting the arbitrage population. Figure~\ref{fig:app:roundtrip} plots both shares for every sampled day, with the two medians and the extreme day marked.
+The value-weighted share exceeds the count-weighted share at every quantile, by a factor between 1.7 and 3.5, which is consistent with large atomic cycles sitting inside a much larger population of smaller routes. No sampled day is free of them, and the floor of 4.45\% by count falls on 2020-06-01, the earliest day sampled. Count-weighting is used throughout the body because a value-weighted routing statistic on an unscreened panel would give disproportionate influence to this self-returning population. Figure~\ref{fig:app:roundtrip} plots both shares for every sampled day, with the two medians and the extreme day marked.
 % output/exhibits/round_trip_share_by_day.jsonl, 79 sampled days from 2020-06-01 to 2026-04-27
 
 \begin{figure}[tbp]

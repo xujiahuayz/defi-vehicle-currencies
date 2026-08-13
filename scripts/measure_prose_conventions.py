@@ -96,7 +96,10 @@ def exemplar_text(path: Path) -> str:
 
 def draft_text() -> str:
     parts = []
-    for d in (SECTIONS_DIR, ROOT / "deck"):
+    # The reference corpus is journal articles. Deck prose is a different register and
+    # must be judged against the registered presentation corpus, not mixed into a paper
+    # denominator where short slide fragments distort every rate.
+    for d in (SECTIONS_DIR,):
         for p in sorted(d.rglob("*.tex")) if d.exists() else []:
             body = "\n".join(ln for ln in p.read_text(encoding="utf-8").splitlines()
                              if not ln.lstrip().startswith("%"))

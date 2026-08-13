@@ -8,9 +8,10 @@ because every rewrite for content can break language, structure and resemblance 
 a check that depends on someone remembering to dispatch it is not a check.
 
 So this is the whole conformance surface behind one command, in the order a reviewer would
-apply it, and it exits non-zero when any part fails. It measures first and asserts second,
-so the venue thresholds are always the current empirical quantiles of the exemplars and
-never a number frozen into a test.
+apply it. It exits non-zero when a validity or declared house-style check fails and reports
+distributional or classifier-based departures as advisories. It measures first and asserts
+second, so the venue thresholds are always the current empirical quantiles of the exemplars
+and never a number frozen into a test.
 
 Run it after ANY content change to the paper or the deck, and before calling either one
 done. `docs/research-workflow.md` names it as the gate that closes the writing loop.
@@ -32,36 +33,41 @@ ROOT = Path(__file__).resolve().parents[1]
 PY = ROOT / ".venv" / "bin" / "python"
 OPTICS = ROOT / "output" / "exhibits" / "venue_optics.jsonl"
 
-# Each stage: (label, argv, what a failure means)
+# Each stage is (label, argv, failure meaning, blocking). Venue-shape quartiles are
+# empirical rewrite guidance, not validity conditions. The unsupervised outlier classifier
+# is likewise a discovery device: domain vocabulary and sense classification require
+# editorial judgement. Keeping both in this loop makes departures visible after every edit
+# without turning a noisy stylistic proxy into admissibility.
 STAGES = [
     ("venue optics, measured against the exemplars",
      [str(PY), "scripts/measure_venue_optics.py"],
-     "could not measure the published papers, so the thresholds below are stale"),
+     "could not measure the published papers, so the thresholds below are stale", True),
     ("prose conventions, measured against the exemplars",
      [str(PY), "scripts/measure_prose_conventions.py"],
-     "a construction is used at a rate no published paper in the corpus reaches"),
+     "a construction is used at a rate no published paper in the corpus reaches", True),
     ("discovered over-used constructions, nobody naming them first",
      [str(PY), "scripts/find_prose_outliers.py"],
-     "a word, phrase or syntactic template is used above every published paper's rate"),
+     "a word, phrase or syntactic template is used above every published paper's rate; "
+     "inspect whether this is rhetoric, subject matter, or a classifier error", False),
     ("prose shape against the venue's own distributions",
      [str(PY), "scripts/measure_venue_shape.py"],
      "sentence length or clause count sits outside the venue's range, which no amount of "
-     "word-level correction can fix"),
+     "word-level correction can fix", False),
     ("house voice and register",
      [str(PY), "-m", "pytest", "tests/test_paper_prose.py", "-q"],
-     "banned register, em dashes, hard-wrapped prose, or process language in a deliverable"),
+     "banned register, em dashes, hard-wrapped prose, or process language in a deliverable", True),
     ("generated evidence in the deck",
      [str(PY), "scripts/audit_deck_evidence.py"],
-     "a scientific plot or measured value is typed into slide source instead of generated through output/"),
+     "a scientific plot or measured value is typed into slide source instead of generated through output/", True),
     ("provenance of every number",
      [str(PY), "-m", "pytest", "tests/test_paper_provenance.py", "-q"],
-     "a measured number names no artefact, or names one that does not exist"),
+     "a measured number names no artefact, or names one that does not exist", True),
     ("structural resemblance to the venue",
      [str(PY), "-m", "pytest", "tests/test_venue_optics.py", "-q"],
-     "a structural feature is absent or the paper is short of the venue's first quartile"),
+     "a structural feature is absent or the paper is short of the venue's first quartile", True),
     ("the spine still matches the paper",
      [str(PY), "-m", "pytest", "tests/test_paper_spine.py", "-q"],
-     "the blueprint and the deliverable have diverged"),
+     "the blueprint and the deliverable have diverged", True),
 ]
 
 
@@ -90,12 +96,14 @@ def main() -> int:
     args = ap.parse_args()
 
     failures: list[tuple[str, str]] = []
-    for label, argv, meaning in STAGES:
+    advisories: list[tuple[str, str]] = []
+    for label, argv, meaning, blocking in STAGES:
         r = subprocess.run(argv, cwd=ROOT, capture_output=True, text=True)
         ok = r.returncode == 0
-        print(f"  {'ok  ' if ok else 'FAIL'}  {label}")
+        status = "ok  " if ok else ("FAIL" if blocking else "WARN")
+        print(f"  {status}  {label}")
         if not ok:
-            failures.append((label, meaning))
+            (failures if blocking else advisories).append((label, meaning))
 
     doc = ROOT / "paper" if (ROOT / "paper" / "main.tex").exists() else ROOT / "memo"
     for name, path in ((doc.name, doc), ("deck", ROOT / "deck")):
@@ -116,7 +124,13 @@ def main() -> int:
                       f"median {r['exemplar_median']:>6,}   [{r['verdict']}]")
 
     if not failures:
-        print("\nBoth deliverables conform on every checked dimension.")
+        if advisories:
+            noun = "advisory" if len(advisories) == 1 else "advisories"
+            verb = "remains" if len(advisories) == 1 else "remain"
+            print(f"\nAll blocking conformance checks pass; {len(advisories)} {noun} "
+                  f"{verb} visible for the next substantive rewrite.")
+        else:
+            print("\nBoth deliverables conform on every checked dimension.")
         return 0
 
     print(f"\n{len(failures)} check(s) failed:")
@@ -130,6 +144,8 @@ def main() -> int:
         print("Bring the paper and deck back into conformance. Failing checks:\n")
         for label, meaning in failures:
             print(f"  - {label}: {meaning}")
+        for label, meaning in advisories:
+            print(f"  - advisory, {label}: {meaning}")
         if OPTICS.exists():
             for r in (json.loads(l) for l in OPTICS.read_text().splitlines() if l.strip()):
                 if r["verdict"] != "in range":

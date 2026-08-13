@@ -28,7 +28,7 @@ whether the expression's words appear in the corpus at all: a term the corpus ne
 this paper's topic, while a term the corpus uses at a lower rate is a stylistic difference.
 
 Reads   literature/pdf-sources.json and the registered JFE exemplar PDFs
-        paper/sections/*.tex, deck/**/*.tex
+        paper/sections/*.tex
 Writes  output/exhibits/prose_outliers.jsonl
 """
 
@@ -126,7 +126,10 @@ def corpus_texts() -> list[str]:
 def draft_parts() -> tuple[str, str]:
     """(body prose, headings) from the LaTeX sources, markup stripped."""
     body, heads = [], []
-    for d in (SECTIONS_DIR, ROOT / "deck"):
+    # A slide is not a journal paragraph. Mixing the deck into this denominator caused
+    # slide fragments and repeated visual labels to be diagnosed as paper prose. Deck
+    # rhetoric belongs against the registered presentation corpus.
+    for d in (SECTIONS_DIR,):
         if not d.exists():
             continue
         for p in sorted(d.rglob("*.tex")):
@@ -249,7 +252,7 @@ def domain_terms() -> set[str]:
     reported as one.
     """
     terms: set[str] = set()
-    for d in (SECTIONS_DIR, ROOT / "deck"):
+    for d in (SECTIONS_DIR,):
         if not d.exists():
             continue
         for p in sorted(d.rglob("*.tex")):
