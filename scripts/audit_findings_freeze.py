@@ -64,7 +64,7 @@ from ddvc.model_registry import (
     validate_registered_plan,
 )
 from ddvc.reconstruct import DEX_FAMILY, UNIFIED_QUALITY_PANEL
-from ddvc.data_release import released_state_partitions
+from ddvc.data_release import require_route_release, released_state_partitions
 from ddvc.route_cost import MAIN_ROUTE_COST_SPEC, QUOTE_CELL_KEYS
 from ddvc.route_roles import VALUE_SUPPORT_COLUMNS
 from ddvc.state_data import (
@@ -2761,6 +2761,18 @@ def validate_unified_route_layer(
     )
 
 
+def validate_released_route_partitions(
+    release_validator=require_route_release,
+) -> tuple[bool, str]:
+    """Run the same exact partition contract required by route-panel owners."""
+
+    try:
+        release_validator()
+    except (FileNotFoundError, OSError, RuntimeError, TypeError, ValueError) as error:
+        return False, str(error)
+    return True, "ok"
+
+
 def validate_specification_lock(
     payload: dict,
     *,
@@ -4132,7 +4144,12 @@ def main() -> int:
             route_quality,
             provenance_status=route_provenance,
         )
-        record("node D full-calendar directed-route gate", route_passed, route_detail)
+        partition_passed, partition_detail = validate_released_route_partitions()
+        record(
+            "node D full-calendar directed-route gate",
+            route_passed and partition_passed,
+            f"{route_detail}; partition_release={partition_detail}",
+        )
     else:
         record(
             "node D full-calendar directed-route gate",

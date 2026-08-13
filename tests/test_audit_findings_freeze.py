@@ -51,6 +51,7 @@ from scripts.audit_findings_freeze import (
     validate_canonical_consumer_boundary,
     validate_claim_input_layer,
     validate_model_ledger,
+    validate_released_route_partitions,
     validate_specification_lock,
     validate_unified_route_layer,
     v3_inventory_calendar_checks,
@@ -1003,6 +1004,20 @@ class FindingsFreezeAuditTest(unittest.TestCase):
         quality = quality.iloc[1:].copy()
         passed, _detail = validate_unified_route_layer(quality, provenance_status="ok")
         self.assertFalse(passed)
+
+    def test_directed_route_partition_contract_propagates_owner_rejection(self) -> None:
+        def stale_release() -> None:
+            raise RuntimeError(
+                "node D directed-route release has 1884 stale day(s), first=20210504"
+            )
+
+        passed, detail = validate_released_route_partitions(stale_release)
+        self.assertFalse(passed)
+        self.assertIn("1884 stale day(s)", detail)
+
+        passed, detail = validate_released_route_partitions(lambda: None)
+        self.assertTrue(passed)
+        self.assertEqual(detail, "ok")
 
     def test_active_empirical_consumers_cannot_parse_raw_provider_files(self) -> None:
         import tempfile
