@@ -2,41 +2,26 @@
  "argv": [],
  "artefact": "output/exhibits/prose_outliers.jsonl",
  "artefact_bytes": 133773,
- "artefact_mtime_ns": 1786660926006176733,
+ "artefact_mtime_ns": 1786661731800737968,
  "artefact_sha256": "c93d8a9d6dffe86090b30f26ae112ed108dede5c3f2c741a73ba5e41710de7a0",
  "code_fingerprint": "6545afb1b5250791ee4e0e80c0c1c4d619144718fc178037d83378a02bcfb243",
  "code_sources": [
   "scripts/find_prose_outliers.py",
   "src/ddvc/tables.py"
  ],
- "created_at": "2026-08-13T22:42:06+00:00",
+ "created_at": "2026-08-13T22:55:31+00:00",
  "git": {
   "branch": "main",
-  "commit": "97b8ca977ad4484e52014c881e650b346069dd74",
+  "commit": "797a5eb76dea2003deff45baf7fc29cae650eb08",
   "dirty": true,
   "dirty_generated_files": [
    "data/manifests/output/exhibits/prose_conventions.jsonl.prov.json",
    "data/manifests/output/exhibits/venue_optics.jsonl.prov.json",
-   "data/manifests/output/exhibits/venue_shape.jsonl.prov.json",
-   "output/exhibits/prose_conventions.jsonl",
-   "output/exhibits/venue_optics.jsonl",
-   "output/exhibits/venue_shape.jsonl",
-   "output/exhibits/.prose_outliers.jsonl.99qob4qd.tmp"
+   "output/exhibits/.prose_outliers.jsonl.qdtnntlx.tmp"
   ],
   "dirty_tracked_files": [
-   "docs/research-workflow.md",
-   "paper/sections/01-introduction.tex",
-   "paper/sections/02-setting.tex",
-   "paper/sections/03-dominance.tex",
-   "paper/sections/04-survival.tex",
-   "paper/sections/05-liquidity.tex",
-   "paper/sections/05-rivals.tex",
-   "paper/sections/06-executability.tex",
-   "paper/sections/07-conclusion.tex",
-   "paper/sections/08-appendix.tex",
-   "scripts/check_deliverable_conformance.py",
-   "scripts/find_prose_outliers.py",
-   "scripts/measure_prose_conventions.py"
+   "deck/main.pdf",
+   "deck/sections/04-results.tex"
   ],
   "dirty_untracked_files": []
  },
