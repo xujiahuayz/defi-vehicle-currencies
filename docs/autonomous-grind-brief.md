@@ -20,15 +20,16 @@ through" — not your judgement of it.
 
 ## What to do this iteration
 
-1. Read `logs/grind-ledger.md` (create it if absent). It is the handoff between
+1. Read `AGENTS.md`, then run `./scripts/run scripts/research_action_preflight.py data` before selecting or mutating a blocker. This loads the live node boundary and prior-correction route before a plausible fresh plan can bypass them.
+2. Read `logs/grind-ledger.md` (create it if absent). It is the handoff between
    iterations: what the previous workers did, decided, and hit. Read the last
    ~40 lines before anything else.
-2. Read `logs/grind-queue.md`. That is the supervisor's channel into this loop.
+3. Read `logs/grind-queue.md`. That is the supervisor's channel into this loop.
    Any unchecked item there **outranks the gate's own blocking list** and is
    done first, oldest first. Tick it off (`- [x]`) in the same commit that
    closes it. If the queue is empty, go to step 3.
-3. Run `uv run python scripts/audit_findings_freeze.py`. Read the blocking list.
-4. Classify each live blocker by scientific consequence before choosing work.
+4. Run `uv run python scripts/audit_findings_freeze.py`. Read the blocking list.
+5. Classify each live blocker by scientific consequence before choosing work.
    Report whether the defect is concentrated by time, protocol/design, venue,
    pool, vehicle candidate, trade size, or stress state; bound its economic
    weight; and ask whether it can change the estimand, sample composition,
@@ -38,14 +39,14 @@ through" — not your judgement of it.
    data. Route-only estimators continue while unrelated exact-state branches are
    red. If the ledger shows the previous iteration was mid-way through a unit,
    continue only when that unit still passes this materiality test.
-5. Do the work properly and finish it. Build the real artifact, from real data,
+6. Do the work properly and finish it. Build the real artifact, from real data,
    through the project's own owners and scripts.
-6. Run the relevant tests plus the freeze audit again. Commit with a real
+7. Run the relevant tests plus the freeze audit again. Commit with a real
    message describing what closed.
-7. Append one entry to `logs/grind-ledger.md`: date, the check you targeted, what
+8. Append one entry to `logs/grind-ledger.md`: date, the check you targeted, what
    you did, the commit hash, the new blocking count, and anything the next
    iteration must know. Commit that too.
-8. Leave the repo publishable (see **Git hygiene** below), then exit.
+9. Leave the repo publishable (see **Git hygiene** below), then exit.
 
 If a unit is genuinely too large for one iteration, split it, land the first
 part in a committed and tested state, and record the exact resumption point in
@@ -103,11 +104,7 @@ only thing you owe is a clean, small, honest history:
 - **Respect the project's locked decisions and notation.** They are in the glotl
   brain at `~/glotl/projects/defi-vehicle-currencies.md` under "Locked decisions"
   and "Learnings". Read them before touching prose, notation, or estimands.
-- **Writing is tiered.** Publication-standard prose for the question, setting,
-  mechanism, specification, and evidence already admitted at its purpose-bound
-  gate evolves continuously. Numerical sentences stay out when their own input
-  tier is red. Unresolved alternatives live in the claim register, not in rough
-  prose awaiting a later style rescue.
+- **Writing follows the live prose gate.** While node P is closed, develop the economic argument, admitted evidence, unresolved alternatives, and section logic in `docs/paper-spine.md`; leave `paper/` unchanged. Once P opens, rewrite affected sections from that input at sentence and paragraph level against the stored JFE corpus evidence. Word substitution and vocabulary lint never count as a prose pass.
 - **The deck is always a deliverable.** It remains presentation-ready after
   every iteration even while estimates evolve. Scientific status, evidence
   commit, generation identity, and repository paths live in audited source
