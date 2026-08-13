@@ -34,9 +34,12 @@ ROUTES = {
 
 
 COMMON_REGRESSION_CHECKS = (
+    "Search the canonical workflow, claim registry, recent ledger, and repository for an existing owner before adding anything. Reuse or amend that owner, reconcile and remove superseded duplicates, and create a new artifact only when no existing object can carry the work.",
     "Name the lane, graph node, purpose-bound estimand, and exact evidence generation.",
     "Compare the planned action with the current claim registry and the last 40 ledger lines; a red global gate is not authority to reopen an immaterial branch.",
     "State which prior scientific correction the action could accidentally reverse, and change the plan before mutation if it would.",
+    "Classify the issue before acting: hard validity, potentially claim-changing scientific risk, interpretation or scope, or engineering and presentation. Only the first two can block or reopen a scientific node; bound the second before repair, disclose the third, and backlog the fourth.",
+    "Use one builder pass, one independent challenge, and—when rhetoric or venue ambition is at issue—one direct published-paper calibration before the integrator decides promote, narrow, park, or reject. Repeat review only for a new material contradiction, not a restatement of uncertainty.",
 )
 
 

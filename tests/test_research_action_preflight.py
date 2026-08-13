@@ -25,6 +25,15 @@ def test_analysis_preflight_preserves_prior_scientific_corrections() -> None:
     assert "hysteresis" in checks
 
 
+def test_preflight_consolidates_before_adding_and_bounds_review() -> None:
+    checks = " ".join(regression_checks("analysis")).lower()
+    assert "existing owner before adding" in checks
+    assert "remove superseded duplicates" in checks
+    assert "only the first two can block" in checks
+    assert "one independent challenge" in checks
+    assert "new material contradiction" in checks
+
+
 def test_prose_preflight_requires_raw_passages_not_term_replacement() -> None:
     checks = " ".join(regression_checks("prose")).lower()
     assert "raw published jfe passages" in checks

@@ -60,8 +60,11 @@ not in rendered slides. Page count is diagnostic, not a success criterion.
 Before data, analysis, deck, or prose work, run
 `./scripts/run scripts/research_action_preflight.py <action>` and state the
 purpose-bound estimand, exact evidence generation, and prior correction the
-planned action could reverse. The printed checks cover economic materiality
-before remediation, calendar time versus design, fixed comparison sets,
+planned action could reverse. Search the canonical workflow, claim registry,
+recent ledger and repository before adding an object: amend the existing owner,
+merge the useful content, remove or explicitly supersede stale duplicates, and
+create something new only when no current object can carry the work. The printed
+checks cover economic materiality before remediation, calendar time versus design, fixed comparison sets,
 distinct appearance/substitution/persistence/hysteresis objects, the persistent
 visual backlog, and direct raw-passage prose imitation. A fresh worker changes
 its plan when it conflicts with one of those checks; it does not rely on Java to
@@ -69,6 +72,23 @@ notice the regression later. Interjections that establish a reusable correction
 are promoted into this preflight or the relevant canonical node before the
 current iteration closes. New scientific discoveries and genuinely unresolved
 choices remain conversational so Java can debate them live.
+
+**High effort is bounded scientific judgement, not perfection chasing.** Classify
+an objection before spending on it. Wrong identity or arithmetic, impossible
+timing, an undefined estimand, and invalid inference are hard failures. A data or
+design concern blocks only when a purpose-bound bound shows it can plausibly
+change the sample, sign, economic magnitude, mechanism or inference. A residual
+alternative that changes interpretation but not validity travels beside the
+strongest published-field-calibrated claim as scope or caveat. Engineering and
+presentation debt stays in its own backlog and never rewinds a scientific node.
+One builder pass, one independent challenge and, when claim ambition is at
+issue, one direct comparison with raw published-paper passages complete a normal
+review round; the integrator must then promote, narrow, park or reject. Another
+round requires a new material contradiction, not a more elaborate restatement
+of uncertainty. No second consecutive iteration may deliver only a certificate
+or workflow refinement unless the first exposed a claim-changing defect or a
+hard failure. Every other iteration advances a scientific object—claim,
+estimand, exhibit, rival test, interpretation, deck frame or paper section.
 
 **A no-fetch result is a certification, not an inventory status.** The executable stage must reopen the current thin-consumer audit, every cited certificate and every installed raw stat identity under the canonical raw-generation mutation lease, bind both the audit digest and the closed consumer-registry identity into its prelaunch forecast, and return a distinct inventory-only status when that certification is unavailable. The forecast carries the exact registry-derived acquisition perimeter and budget. When that perimeter is empty, the stage exposes no acquisition command; adding a stream requires a reviewed executor and measured budget in the same generation. A whole-schema engineering scenario remains diagnostic and must never be reported as installed storage or an authorized project requirement.
 
