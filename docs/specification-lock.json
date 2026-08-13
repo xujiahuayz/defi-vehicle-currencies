@@ -8,7 +8,7 @@
   "d3_certificate": null,
   "exploration_generation": null,
   "exploration_certificate": null,
-  "lock_hash": "385e2eee64732bd9bf6f2d6b681246acf1109b11c72d625fd070d361cf9a64b5",
+  "lock_hash": "49b643f239bb9cffed0d5331ec75e3e00f30332541b9a48fd0e808930d93d301",
   "paper_scope": "The making and displacement of vehicle-currency roles in Ethereum decentralised exchange",
   "global_rules": {
     "asset_identity": "canonical contract address; symbols are labels only",
@@ -156,9 +156,49 @@
             "pooled integration scopes",
             "single-venue and cross-venue decomposition"
           ]
+        },
+        "market_incidence_decomposition": {
+          "id": "e1_3_market_incidence_bridge",
+          "target_id": "raw_pooled_count_share_change",
+          "role_id": "descriptive_observed_activity_and_realised_incidence_companion",
+          "comparison_years": [
+            2024,
+            2026
+          ],
+          "calendar_support": "month-days observed in both endpoint years",
+          "pair_universe": "union of ordered endpoint pairs with positive native-plus-stable primary-choice mass in either endpoint year",
+          "market_activity": "M_p,y equals released market_route_count aggregated over the common calendar and measures observed market-route activity, not availability or a feasible opportunity set",
+          "vehicle_incidence": "I_p,y equals primary_choice_route_count divided by M_p,y and measures realised native-or-stable vehicle-route incidence, not adoption, preference or search",
+          "stable_share": "s_p,y equals stable_choice_route_count divided by primary_choice_route_count conditional on a positive realised vehicle role",
+          "support_classification": [
+            "market_pair_support_turnover when the other endpoint year has zero M",
+            "vehicle_role_support_turnover_established_market when the other endpoint year has positive M and zero primary-choice mass",
+            "common_vehicle_role when primary-choice mass is positive in both endpoint years"
+          ],
+          "common_role_definition": "an ordered endpoint pair with positive primary-choice mass in both endpoint years",
+          "components": [
+            "market_pair_support_bridge",
+            "vehicle_role_support_bridge",
+            "market_activity_reweighting",
+            "vehicle_incidence_reweighting",
+            "within_pair_stable_share"
+          ],
+          "identity": "delta_total = market_pair_support_bridge + vehicle_role_support_bridge + market_activity_reweighting + vehicle_incidence_reweighting + within_pair_stable_share",
+          "formula_id": "shapley_market_incidence_stable_bridge_v1",
+          "formula": "First bridge the all-pair stable-share change to pairs with positive M in both years and then to pairs with positive primary-choice mass in both years; these two differences are market_pair_support_bridge and vehicle_role_support_bridge. On common-role pairs define F(M,I,s)=sum_p M_p I_p s_p / sum_p M_p I_p. market_activity_reweighting, vehicle_incidence_reweighting and within_pair_stable_share are each factor's average marginal contribution across all six permutations taking F from the 2024 factor vector to the 2026 factor vector.",
+          "identity_absolute_tolerance": 1e-12,
+          "measure_ids": [
+            "count_share"
+          ],
+          "forbidden_interpretations": "architecture availability, opportunity-set change, demand, adoption, preference, routing-search efficiency or causal treatment",
+          "reporting": [
+            "year-specific support mass and stable share by support class",
+            "established-market stable-share change",
+            "common-role Shapley components and exact bridge identity"
+          ]
         }
       },
-      "e1_design_hash": "6990b221624cb3fffd7d00fcdd07827c4966cfe4d92c24723209d1a278bf80d4",
+      "e1_design_hash": "d4f9215fdda57f70d6cf5924a844bc77d420bcf99675888d578f23c4ff6c0cda",
       "mandatory_alternatives": {
         "dependent_variable": [
           "episode count share",

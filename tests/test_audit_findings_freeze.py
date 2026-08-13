@@ -530,6 +530,8 @@ class FindingsFreezeAuditTest(unittest.TestCase):
             "full-market value denominator": lambda claim: claim["e1_design"]["pair_decomposition"].update({"denominator_scope": "full-market strict-value mass"}),
             "incomplete decomposition": lambda claim: claim["e1_design"]["pair_decomposition"].update({"components": ["within_common", "common_pair_reweighting"]}),
             "arbitrary formula": lambda claim: claim["e1_design"]["pair_decomposition"].update({"formula": "within_common = 9; common_pair_reweighting = 8; common_support_mass = 7; exclusive_pair_contribution = 6"}),
+            "causal market interpretation": lambda claim: claim["e1_design"]["market_incidence_decomposition"].update({"forbidden_interpretations": "none"}),
+            "incomplete market bridge": lambda claim: claim["e1_design"]["market_incidence_decomposition"].update({"components": ["market_pair_support_bridge", "within_pair_stable_share"]}),
             "rogue field": lambda claim: claim["e1_design"]["pair_panel"].update({"rogue": "unreviewed"}),
         }
         for label, mutate in semantic_mutations.items():
