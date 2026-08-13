@@ -77,6 +77,23 @@ and pick a blocking check from the freeze gate.
   `~/projects/defi-vehicle-currencies`, which was clean, so that worktree was
   detached in place at `9bd8ce4` with zero file changes._
 
+- [x] **NEEDS-JAVA resolved (ledger line 109): `/private/tmp` worktree disposal is authorized and already done.**
+  Java authorized worktree cleanup on 2026-08-13. The supervisor removed all 13
+  registered `/private/tmp` worktrees plus 5 orphan scratch dirs git had already
+  lost track of, then ran `git worktree prune`. Three worktrees remain and are
+  the only ones that should exist: `~/projects/defi-vehicle-currencies`,
+  `~/projects/defi-vehicle-currencies-d3` (this one), and
+  `~/projects/defi-vehicle-currencies-raw-cert`.
+  The dirt was not work: every "modified" file was a deleted `data/` placeholder.
+  Nothing was lost. Preserved under
+  `~/projects/defi-vehicle-currencies-backups/worktree-cleanup-20260813/`:
+  the pre-repair Fluid/Uniswap/Balancer certificates (all five hash differently
+  from the live store, so they are the superseded generation), and `raw-cert`'s
+  uncommitted raw-certification feature.
+  **Do not delete `-raw-cert`:** it holds unlanded work (72 new lines in
+  `scripts/fetch_raw_market_data.py` plus four untracked sources) pending a
+  land-or-bin decision from Java. Do not re-raise this escalation.
+
 ## Closed
 
 _(items are ticked in place above)_
