@@ -12,8 +12,8 @@ from scripts.run_v4_settlement_identification import _exclusive_architecture
 
 def _routes() -> pd.DataFrame:
     rows = []
-    for week_index, week in enumerate(pd.date_range("2025-01-06", periods=32, freq="7D")):
-        v4 = 0 if week_index < 10 or week_index >= 22 else 4
+    for week_index, week in enumerate(pd.date_range("2025-01-06", periods=44, freq="7D")):
+        v4 = 0 if week_index < 10 or week_index >= 30 else 4
         v3 = 4 if v4 == 0 else 0
         for dex, count in (("uniswap_v3", v3), ("uniswap_v4", v4)):
             rows.extend(
@@ -46,8 +46,8 @@ def test_full_risk_panel_keeps_one_architecture_cells_and_fills_other_side_zero(
     panel = build_full_risk_panel(_routes(), min_total_routes=1)
     usdc = panel[panel.vehicle.eq("USDC")]
     assert (usdc.routes_uniswap_v4.iloc[:10] == 0).all()
-    assert (usdc.routes_uniswap_v3.iloc[10:22] == 0).all()
-    assert len(usdc) == 32
+    assert (usdc.routes_uniswap_v3.iloc[10:30] == 0).all()
+    assert len(usdc) == 44
 
 
 def test_mixed_route_is_not_relabelled_as_a_pure_architecture() -> None:
@@ -62,7 +62,7 @@ def test_sustained_entry_and_exit_are_both_detected() -> None:
     events = transition_events(panel, threshold=0.10, confirmation_weeks=3)
     usdc = events[events.vehicle.eq("USDC")]
     assert usdc.kind.tolist() == ["entry", "exit"]
-    assert usdc.event_week.dt.strftime("%Y-%m-%d").tolist() == ["2025-03-17", "2025-06-09"]
+    assert usdc.event_week.dt.strftime("%Y-%m-%d").tolist() == ["2025-03-17", "2025-08-04"]
 
 
 def test_calendar_gap_does_not_create_a_transition() -> None:
@@ -76,5 +76,26 @@ def test_event_outcome_is_overall_vehicle_use_not_architecture_share() -> None:
     panel = build_full_risk_panel(_routes(), min_total_routes=1)
     events = transition_events(panel, threshold=0.10, confirmation_weeks=3)
     contrasts = event_contrasts(panel, events)
-    assert set(contrasts.outcome) == {"overall V3+V4 vehicle route share"}
+    assert set(contrasts.outcome) == {
+        "pair-week-adjusted overall V3+V4 vehicle route share"
+    }
+    assert set(contrasts.status) == {"usable"}
     assert (contrasts.immediate_change == 0).all()
+
+
+def test_pair_week_adjustment_removes_common_pair_week_change() -> None:
+    panel = build_full_risk_panel(_routes(), min_total_routes=1)
+    assert panel.groupby(["week", "src", "sink"])[
+        "pair_week_adjusted_vehicle_share"
+    ].sum().abs().lt(1e-12).all()
+
+
+def test_nearby_reversal_marks_event_windows_as_contaminated() -> None:
+    panel = build_full_risk_panel(_routes(), min_total_routes=1)
+    usdc = panel[panel.vehicle.eq("USDC")].copy()
+    usdc.loc[usdc.week.ge(pd.Timestamp("2025-05-12")), "v4_route_share"] = 0.0
+    events = transition_events(usdc, threshold=0.10, confirmation_weeks=3)
+    contrasts = event_contrasts(usdc, events)
+    assert events.kind.tolist() == ["entry", "exit"]
+    assert set(contrasts.status) == {"overlapping_transition"}
+    assert contrasts.immediate_change.isna().all()
