@@ -16,7 +16,7 @@ and pick a blocking check from the freeze gate.
 
 ## Queue
 
-- [ ] **Repair the provenance staleness that `f6ca42b` introduced. Do this first.**
+- [x] **Repair the provenance staleness that `f6ca42b` introduced. Do this first.**
   Two checks regressed to `provenance=stale` immediately after the sample-end
   forward-port: `node D full-calendar directed-route gate` (which was
   `provenance=ok` an hour earlier, and is the gate last night's Fluid repair was
@@ -47,6 +47,11 @@ and pick a blocking check from the freeze gate.
   Acceptance: both checks back to `provenance=ok`; the directed-route gate still
   reporting 2,332/2,332 and 12,802/12,802 with zero failures; blocking count 14
   or lower; `require_route_release()` still passing.
+  _Closed by an exact-payload provenance restamp of the V3 inventory calendar:
+  all 1,884 raw cuts reproduce the unchanged panel byte-for-byte, its SHA-256 and
+  mtime were unchanged, and both inputs remain current. The route ledger was
+  already republished by `672fb3d`; both provenance checks now pass, the route
+  release validator passes, and the freeze audit is back to 14 blockers._
 
 - [x] **Forward-port the sample-end single-source hardening onto `main`.**
   Commit `9bd8ce4` ("Derive the sample end from one constant") exists only on the

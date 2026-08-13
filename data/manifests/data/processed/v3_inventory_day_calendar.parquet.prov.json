@@ -1,14 +1,10 @@
 {
- "argv": [
-  "--calendar-only",
-  "--workers",
-  "4"
- ],
+ "argv": [],
  "artefact": "data/processed/v3_inventory_day_calendar.parquet",
  "artefact_bytes": 105647,
  "artefact_mtime_ns": 1786593705298045802,
  "artefact_sha256": "af9bfa4ca6a9df570d7fadd261370d638dbecad23085f93df2de349b6929d4cb",
- "code_fingerprint": "2686c7d265e4c583f62fe756ca81bae107d286c1b04e985216e1fc798746f7d8",
+ "code_fingerprint": "80e859f4379acb90725f5c86220d001f31a2bfe8d8bff16a3aca96d3375198b6",
  "code_sources": [
   "src/ddvc/calendar.py",
   "src/ddvc/ethereum_blocks.py",
@@ -21,16 +17,14 @@
   "src/ddvc/runtime.py",
   "src/ddvc/v3_inventory_calendar.py"
  ],
- "created_at": "2026-08-13T04:01:45+00:00",
+ "created_at": "2026-08-13T05:46:49+00:00",
  "git": {
   "branch": "main",
-  "commit": "1f7baaa0cf64e906cb80042f194ab7c08db1aace",
-  "dirty": true,
+  "commit": "371b1d80e3f35668f0054c43ffc207e8a0a0a693",
+  "dirty": false,
   "dirty_generated_files": [],
   "dirty_tracked_files": [],
-  "dirty_untracked_files": [
-   ".dvc-resume-brief.md"
-  ]
+  "dirty_untracked_files": []
  },
  "inputs": [
   {
@@ -54,7 +48,7 @@
   "pyarrow": "25.0.0",
   "scipy": "1.18.0"
  },
- "notes": "exact UTC day-end Ethereum block calendar; raw RPC evidence persisted per cut",
+ "notes": "exact UTC day-end Ethereum block calendar; raw RPC evidence persisted per cut; exact-payload provenance restamp after sample-end single-sourcing refactor",
  "payload_identity": {
   "bytes": 105647,
   "columns": [
