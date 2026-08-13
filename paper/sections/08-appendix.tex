@@ -61,7 +61,7 @@ with the sign set by the direction of travel. The quoter carries the contract's 
 The active tick map is accumulated from every mint and burn strictly before the validation day, then same-day liquidity changes and swaps are replayed together by block and log index. Consecutive swaps in one pool supply the price state: the earlier event leaves \texttt{sqrtPriceX96} and \texttt{tick} immediately before the later swap, while the interleaved event stream supplies the active liquidity it actually faced. Errors are reported by trade direction crossed with whether the quote traversed an initialised tick, because a traversal fault is directional by construction and a pooled error statistic averages a broken direction against a working one. That is not a hypothetical: an upward search that returned the tick just crossed produced a zero-width step and under-quoted upward tick-crossing swaps by a median 62.6\%, while every non-crossing quote read exact and the downward direction validated at $-0.0006\%$.
 % src/ddvc/pricing/v3quote.py, _next_init_tick measured docstring against realised swaps
 
-Table~\ref{tab:app:cl} reports the four cells on Uniswap v4, whose supported pools exercise the same code path on static fee tiers v3 never carried, including 0, 7, 8 and 20,000 hundredths of a basis point. Hook-bearing and dynamic-fee pools are excluded because their per-swap hook cash flows and realised fee are not present in the raw rows; Appendix~\ref{app:coverage} measures that support boundary.
+Table~\ref{tab:app:cl} reports four validation groups on Uniswap v4, whose supported pools exercise the same code path on static fee tiers v3 never carried, including 0, 7, 8 and 20,000 hundredths of a basis point. Hook-bearing and dynamic-fee pools are excluded because their per-swap hook cash flows and realised fee are not present in the raw rows; Appendix~\ref{app:coverage} measures that support boundary.
 % output/exhibits/v4_quoter_validation.jsonl, observed static fee tiers; output/exhibits/v4_quote_support.jsonl, support statuses
 
 \begin{table}[t]
@@ -70,7 +70,7 @@ Table~\ref{tab:app:cl} reports the four cells on Uniswap v4, whose supported poo
 \label{tab:app:cl}
 \begin{tabular}{lrrrrr}
 \toprule
-Cell & Swaps & Median & 90th pct. & Maximum & Within 1\% \\
+Validation group & Swaps & Median & 90th pct. & Maximum & Within 1\% \\
 % output/exhibits/v4_quoter_validation.jsonl, column headings for 4,218 validated v4 swaps
 \midrule
 token0 in, no tick crossed & 2{,}290 & $0$ & $0$ & $9.98\times10^{-4}$ & 100.0\% \\
@@ -90,7 +90,7 @@ Pooled & 4{,}218 & $0$ & $1.15\times10^{-14}$ & $9.98\times10^{-4}$ & 100.0\% \\
 \footnotesize Absolute quote error in percent of realised output. 4,218 realised Uniswap v4 swaps on three dates across 13 pools and nine pairs, at static fee tiers 0, 7, 8, 100, 500, 10,000 and 20,000. Each quote uses liquidity events ordered strictly before the swap and the price state left by the preceding swap in the same pool.
 \end{table}
 
-The four cells sit at the same location, which is what splitting them is for. Every cell reproduces realised output within 0.001\% at the worst observed swap, against route-cost differences the body measures in tens of basis points.
+The four validation groups sit at the same location because the split isolates direction and tick crossing. Every group reproduces realised output within 0.001\% at the worst observed swap, against route-cost differences the body measures in tens of basis points.
 % output/exhibits/v4_quoter_validation.jsonl, maximum absolute error 0.000998 percent over 4,218 swaps
 
 \subsection{StableSwap pools}
