@@ -276,11 +276,6 @@ def lens3_event_studies(out: list[dict], df: pd.DataFrame) -> None:
     mat = mat[np.isfinite(mat.vehicle_excess_use_ratio) & (mat.vehicle_excess_use_ratio > 0)]
     mat["y"] = np.log(mat.vehicle_excess_use_ratio)
     mat["treated"] = mat.symbol.isin(FIAT_STABLE).astype(int)
-    try:
-        import pyfixest as pf
-    except ImportError:
-        out.append({"lens": "event_study", "error": "pyfixest unavailable"})
-        return
     for date_str, (name, kind) in EVENTS.items():
         overlaps = _overlapping_events(date_str)
         if overlaps:
@@ -312,6 +307,11 @@ def lens3_event_studies(out: list[dict], df: pd.DataFrame) -> None:
                 "minimum_clusters": MIN_EVENT_CLUSTERS,
             })
             continue
+        try:
+            import pyfixest as pf
+        except ImportError:
+            out.append({"lens": "event_study", "error": "pyfixest unavailable"})
+            return
         win["rel_week"] = ((win.date - t0).dt.days // 7).clip(-8, 7)
         try:
             m = pf.feols("y ~ i(rel_week, treated, ref=-1) | symbol + date", data=win,
