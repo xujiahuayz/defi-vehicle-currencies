@@ -6,7 +6,10 @@ from types import SimpleNamespace
 import pandas as pd
 import pytest
 
-from ddvc.analysis.vehicle_rotation_composition import vehicle_rotation_composition
+from ddvc.analysis.vehicle_rotation_composition import (
+    vehicle_rotation_composition,
+    vehicle_rotation_market_incidence_decomposition,
+)
 from scripts import run_vehicle_rotation_composition_e0 as runner
 
 
@@ -325,3 +328,77 @@ def test_runner_requires_exact_d3_bound_endpoint_generation_and_receipt(
     context.d3_input_records[relative]["release_generation"] = "c" * 64
     with pytest.raises(ValueError, match="generation and receipt disagree"):
         runner._expected_release_in_d3(context, pointer, root=tmp_path)
+
+
+def test_market_incidence_bridge_is_exact_and_support_is_classified() -> None:
+    annual = pd.DataFrame(
+        [
+            (2024, "a", "b", 100, 50, 40, 10),
+            (2026, "a", "b", 300, 100, 60, 40),
+            (2024, "c", "d", 50, 40, 10, 30),
+            (2026, "c", "d", 100, 20, 10, 10),
+            (2024, "e", "f", 100, 20, 10, 10),
+            (2026, "e", "f", 50, 0, 0, 0),
+            (2026, "g", "h", 100, 20, 2, 18),
+            (2024, "i", "j", 100, 0, 0, 0),
+            (2026, "i", "j", 100, 10, 8, 2),
+        ],
+        columns=[
+            "year",
+            "src",
+            "tgt",
+            "market_route_count",
+            "primary_choice_route_count",
+            "native_choice_route_count",
+            "stable_choice_route_count",
+        ],
+    )
+    summary, support = vehicle_rotation_market_incidence_decomposition(annual)
+    row = summary.iloc[0]
+    assert row["identity_error"] == pytest.approx(0.0, abs=1e-12)
+    assert row["total_change"] == pytest.approx(
+        row["market_pair_support_bridge"]
+        + row["vehicle_role_support_bridge"]
+        + row["market_activity_reweighting"]
+        + row["vehicle_incidence_reweighting"]
+        + row["within_pair_stable_share"]
+    )
+    for term in (
+        "market_pair_support_bridge",
+        "vehicle_role_support_bridge",
+        "market_activity_reweighting",
+        "vehicle_incidence_reweighting",
+        "within_pair_stable_share",
+    ):
+        assert abs(row[term]) > 1e-6
+    comparison = support[support["endpoint_year"].eq(2026)].set_index(
+        "support_status"
+    )
+    assert comparison.loc["market_pair_support_turnover", "primary_choice_mass"] == 20
+    assert (
+        comparison.loc[
+            "vehicle_role_support_turnover_established_market", "primary_choice_mass"
+        ]
+        == 10
+    )
+    assert comparison.loc["common_vehicle_role", "primary_choice_mass"] == 120
+
+    scaled = annual.sample(frac=1, random_state=14).reset_index(drop=True)
+    for column in (
+        "market_route_count",
+        "primary_choice_route_count",
+        "native_choice_route_count",
+        "stable_choice_route_count",
+    ):
+        scaled[column] *= 9
+    scaled_summary, scaled_support = vehicle_rotation_market_incidence_decomposition(
+        scaled
+    )
+    pd.testing.assert_frame_equal(summary, scaled_summary, atol=1e-12, rtol=1e-12)
+    pd.testing.assert_series_equal(
+        support["primary_choice_mass_share"],
+        scaled_support["primary_choice_mass_share"],
+        check_names=False,
+        atol=1e-12,
+        rtol=1e-12,
+    )
