@@ -586,3 +586,58 @@ suite also passed 36 tests. Freeze audit: RED, 12 blocking, unchanged.
   search-efficiency cells exist.
 - Preserve the 13-token bounded exclusion, do not reopen exact-decimals
   acquisition for this route-only estimand, and leave `paper/` unchanged.
+
+## 2026-08-13 — vehicle rotation estimator reconciled to the locked design
+
+**Targeted check:** the queued science gate on `af097db`: make the route-only
+vehicle-rotation owner implement the exact E1 seed before publishing its
+missing D3 input or generating an exploratory result.
+
+**Economic scope.** The corrected descriptive estimand is the 2026-minus-2024
+change in realised stable share within native-plus-stable exact two-leg
+intermediation on month-days observed in both endpoint years. The pair panel
+uses measure-specific common ordered-pair by month-day by integration-scope
+support. The companion aggregate decomposition assigns common versus exclusive
+pair membership after pooling scopes for the primary result and separately
+inside single- and cross-venue scopes. It does not fix notional, observed
+opportunity, or exact search-efficiency state; it identifies neither adoption,
+preference, architecture treatment, nor a mechanism.
+
+**Work completed.** Replaced the finer annual endpoint/reach/protocol-cell
+accounting with the locked three-measure panel (`count_share`,
+`matched_strict_count_share`, and `strict_intermediation_value_share`) and the
+exact four-term midpoint identity: `within_common`,
+`common_pair_reweighting`, `common_support_mass`, and
+`exclusive_pair_contribution`. Zero exclusive mass now receives the lock's
+explicit zero normalization and the two support/exclusive terms are also
+reported jointly. The release runner's spec IDs distinguish pooled and split
+scopes, and its provenance notes preserve descriptive realised-composition
+language. Added direct tests for the identity, zero-exclusive normalization,
+common month-days, measure-specific support, scope pooling, and row-order/common-
+scale invariance. Closed the supervisor queue item in the same commit. No
+release, result, deck, or paper artifact was written.
+
+**Validation.** Focused composition, runner, D3, release, workflow, freeze-audit,
+and paper-spine suite: 112 passed plus 14 subtests. The complete suite reached
+1,793 passed plus 524 subtests; its three failures are unrelated installed-state
+residuals already outside this unit: absent withdrawn rent artifacts cited by
+the closed paper, installed raw files entering one transaction-target fixture,
+and the stale generated summary-statistics notation table. Compileall and
+`git diff --check` passed. Freeze audit: RED, 12 blocking, unchanged.
+
+**Commit:** `97b4b94` (`Match vehicle rotation to locked decomposition`).
+
+**Blocking count:** 12.
+
+**For the next iteration:**
+- Queue is empty at this commit. Rerun the data preflight, then publish the full
+  current route-derived input with
+  `./scripts/run scripts/build_endpoint_candidate_composition.py --workers 8`;
+  never publish a diagnostic subset or rebuild the certified route release.
+- After the pointer is current and bound into the D3 analysis certificate, run
+  `./scripts/run scripts/run_vehicle_rotation_composition_e0.py`. Inspect all
+  four terms, the joint support/exclusive term, measure-specific common support,
+  and pooled versus single/cross concentration before any claim or figure.
+- Preserve the accepted 13-token bounded exclusion. Keep notional and fixed-
+  opportunity claims gated, treat route-use margins as endogenous realised
+  composition, and leave `paper/` unchanged while prose node P is closed.
