@@ -94,7 +94,13 @@ def transition_events(
     threshold: float = 0.10,
     confirmation_weeks: int = 3,
 ) -> pd.DataFrame:
-    """Find sustained 0->1 entries and 1->0 exits without a calendar-time dummy."""
+    """Find sustained 0->1 entries and 1->0 exits among observed route cells.
+
+    Because the input panel contains positive-use cells, an exit here is
+    architecture substitution within a surviving vehicle cell.  Exit through
+    disappearance of the vehicle role is a separate extensive-margin estimand,
+    not silently coded as a below-threshold week.
+    """
     if not 0 < threshold < 1:
         raise ValueError("architecture-state threshold must lie strictly between zero and one")
     if confirmation_weeks < 2:
@@ -121,11 +127,19 @@ def transition_events(
                         **dict(zip(KEYS, key, strict=True)),
                         "event_week": group.loc[position, "week"],
                         "kind": kind,
+                        "transition_margin": "within_observed_vehicle_cell",
                         "threshold": threshold,
                         "confirmation_weeks": run,
                     }
                 )
-    columns = [*KEYS, "event_week", "kind", "threshold", "confirmation_weeks"]
+    columns = [
+        *KEYS,
+        "event_week",
+        "kind",
+        "transition_margin",
+        "threshold",
+        "confirmation_weeks",
+    ]
     return pd.DataFrame(rows, columns=columns)
 
 
@@ -243,6 +257,7 @@ def summarize_transition_support(
             row = {
                 "threshold": threshold,
                 "kind": kind,
+                "transition_margin": "within_observed_vehicle_cell",
                 "detected_events": int(len(group)),
                 "distinct_cells": (
                     int(group[KEYS].drop_duplicates().shape[0]) if not group.empty else 0

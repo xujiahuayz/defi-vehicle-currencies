@@ -63,6 +63,7 @@ def test_sustained_entry_and_exit_are_both_detected() -> None:
     events = transition_events(panel, threshold=0.10, confirmation_weeks=3)
     usdc = events[events.vehicle.eq("USDC")]
     assert usdc.kind.tolist() == ["entry", "exit"]
+    assert set(usdc.transition_margin) == {"within_observed_vehicle_cell"}
     assert usdc.event_week.dt.strftime("%Y-%m-%d").tolist() == ["2025-03-17", "2025-08-04"]
 
 
@@ -149,6 +150,7 @@ def test_support_summary_keeps_zero_event_threshold_kind_cells() -> None:
         (0.25, "exit"),
     ]
     assert support.detected_events.tolist() == [1, 1, 0, 0]
+    assert set(support.transition_margin) == {"within_observed_vehicle_cell"}
     assert support.usable_events.tolist() == [1, 1, 0, 0]
     assert support.mean_immediate_change.iloc[:2].eq(0).all()
     assert support.mean_immediate_change.iloc[2:].isna().all()
