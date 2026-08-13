@@ -11,6 +11,7 @@ from pathlib import Path
 import pandas as pd
 
 from ddvc.analysis.vehicle_rotation_composition import (
+    estimate_pair_fixed_effect_rotation,
     load_market_incidence_annual_pairs,
     vehicle_rotation_composition,
     vehicle_rotation_market_incidence_decomposition,
@@ -33,10 +34,14 @@ from ddvc.runtime import exclusive_job
 PAIR_PANEL = OUTPUT_DIR / "exhibits" / "vehicle_transition_pair_panel.parquet"
 DECOMPOSITION = OUTPUT_DIR / "exhibits" / "vehicle_transition_pair_decomposition.jsonl"
 SUPPORT = OUTPUT_DIR / "exhibits" / "vehicle_transition_pair_support.jsonl"
+FIXED_EFFECT_RESULTS = (
+    OUTPUT_DIR / "exhibits" / "vehicle_transition_pair_fixed_effects.jsonl"
+)
 LOCK = DATA_DIR / "processed" / ".vehicle-rotation-composition-e0.lock"
 CODE_SOURCES = [
     "scripts/run_vehicle_rotation_composition_e0.py",
     "src/ddvc/analysis/vehicle_rotation_composition.py",
+    "src/ddvc/analysis/regression.py",
     "src/ddvc/calendar.py",
     "src/ddvc/endpoint_candidate_composition.py",
     "src/ddvc/endpoint_candidate_composition_release.py",
@@ -72,6 +77,7 @@ def run(
     pair_panel_output: Path = PAIR_PANEL,
     decomposition_output: Path = DECOMPOSITION,
     support_output: Path = SUPPORT,
+    fixed_effect_output: Path = FIXED_EFFECT_RESULTS,
 ) -> int:
     context = model_artifact_context(root=root, environment=environment)
     expected_receipt = _expected_release_in_d3(context, pointer_path, root=root)
@@ -83,6 +89,7 @@ def run(
             raise ValueError("endpoint release differs from the D3-bound generation")
         choices = pd.read_parquet(release.artifacts["choices"])
         detail, decomposition, support = vehicle_rotation_composition(choices)
+        fixed_effect_results = estimate_pair_fixed_effect_rotation(detail)
         annual_market_pairs = load_market_incidence_annual_pairs(
             release.artifacts["pair_support"], release.artifacts["choices"]
         )
@@ -118,6 +125,24 @@ def run(
                 "search-efficiency state remain unobserved"
             ),
         )
+        fixed_effect_results = attach_spec_ids(
+            fixed_effect_results,
+            prefix="vehicle_transition_pair_fixed_effects",
+            columns=("metric", "baseline_year", "comparison_year", "estimator_id"),
+        )
+        write_model_exhibit(
+            fixed_effect_results,
+            fixed_effect_output,
+            role="result",
+            context=context,
+            code_sources=CODE_SOURCES,
+            inputs=[pair_panel_output, *inputs],
+            notes=(
+                "locked denominator-mass WLS estimate of the 2026-minus-2024 stable-share "
+                "change inside ordered-pair by month-day by realised-integration-scope "
+                "cells, with two-way ordered-pair and calendar-date CR1 inference"
+            ),
+        )
         write_model_exhibit(
             decomposition,
             decomposition_output,
@@ -145,8 +170,9 @@ def run(
         )
         release.bundle.assert_current()
     print(
-        f"wrote {len(detail):,} cell rows, {len(decomposition):,} decomposition rows, "
-        f"and {len(support):,} support rows"
+        f"wrote {len(detail):,} cell rows, {len(fixed_effect_results):,} fixed-effect "
+        f"results, {len(decomposition):,} decomposition rows, and {len(support):,} "
+        "support rows"
     )
     return 0
 

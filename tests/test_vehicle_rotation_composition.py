@@ -3,10 +3,13 @@ from __future__ import annotations
 from pathlib import Path
 from types import SimpleNamespace
 
+import numpy as np
 import pandas as pd
 import pytest
 
 from ddvc.analysis.vehicle_rotation_composition import (
+    METRICS,
+    estimate_pair_fixed_effect_rotation,
     vehicle_rotation_composition,
     vehicle_rotation_market_incidence_decomposition,
 )
@@ -292,6 +295,46 @@ def test_decomposition_is_row_order_and_common_scale_invariant() -> None:
     pd.testing.assert_frame_equal(
         baseline[columns], observed[columns], check_exact=False, atol=1e-12, rtol=1e-12
     )
+
+
+def test_locked_pair_fixed_effect_estimate_matches_harmonic_weight_identity() -> None:
+    choices = pd.DataFrame(
+        [
+            _choice("2024-01-01", "a", "b", "native", 90),
+            _choice("2024-01-01", "a", "b", "stable", 10),
+            _choice("2026-01-01", "a", "b", "native", 50),
+            _choice("2026-01-01", "a", "b", "stable", 50),
+            _choice("2024-01-02", "c", "d", "native", 20),
+            _choice("2024-01-02", "c", "d", "stable", 20),
+            _choice("2026-01-02", "c", "d", "native", 30),
+            _choice("2026-01-02", "c", "d", "stable", 10),
+            _choice("2024-01-01", "e", "f", "native", 24, scope="cross_venue"),
+            _choice("2024-01-01", "e", "f", "stable", 6, scope="cross_venue"),
+            _choice("2026-01-01", "e", "f", "native", 14, scope="cross_venue"),
+            _choice("2026-01-01", "e", "f", "stable", 16, scope="cross_venue"),
+        ]
+    )
+    panel, _decomposition, _support = vehicle_rotation_composition(choices)
+    result = estimate_pair_fixed_effect_rotation(panel)
+    count = result[result["metric"].eq("count_share")].iloc[0]
+    changes = np.array([0.4, -0.25, 10 / 30])
+    effective_weights = np.array([50.0, 20.0, 15.0])
+    assert count["coefficient"] == pytest.approx(
+        np.average(changes, weights=effective_weights), abs=1e-12
+    )
+    assert count["fixed_effect_cells"] == 3
+    assert count["observations"] == 6
+    assert count["ordered_pair_clusters"] == 3
+    assert count["calendar_date_clusters"] == 4
+    assert set(result["metric"]) == set(METRICS)
+    assert result["p_value_holm"].notna().all()
+
+
+def test_pair_fixed_effect_estimate_rejects_missing_endpoint_cell() -> None:
+    panel, _decomposition, _support = vehicle_rotation_composition(_four_term_choices())
+    missing = panel.drop(panel.index[0])
+    with pytest.raises(ValueError, match="require both endpoint years"):
+        estimate_pair_fixed_effect_rotation(missing)
 
 
 def test_rejects_duplicate_release_keys_and_nonprimary_candidates() -> None:

@@ -8,7 +8,13 @@ from pathlib import Path
 import duckdb
 import numpy as np
 import pandas as pd
+from scipy import stats
 
+from ddvc.analysis.regression import (
+    absorb_fixed_effects,
+    holm_adjusted_pvalues,
+    ols_clustered,
+)
 from ddvc.calendar import RESEARCH_SAMPLE_END
 
 
@@ -32,6 +38,157 @@ REQUIRED_CHOICE_COLUMNS = {
     *METRICS.values(),
 }
 PAIR_MEMBERSHIP_ORDER = ("common", "baseline_exclusive", "comparison_exclusive")
+
+
+def estimate_pair_fixed_effect_rotation(pair_panel: pd.DataFrame) -> pd.DataFrame:
+    """Fit the locked 2026 coefficient inside pair-month-day-scope cells.
+
+    This is the inferential companion to the descriptive decomposition. It asks
+    whether stable share changes inside cells that hold the ordered endpoint
+    pair, calendar position, and realised integration scope fixed. It does not
+    hold the feasible route set, notional, or router decision state fixed.
+    """
+
+    required = {
+        "metric",
+        "source_column",
+        "year",
+        "date",
+        *PAIR_PANEL_KEYS,
+        "denominator",
+        "stable_share",
+    }
+    missing = sorted(required - set(pair_panel.columns))
+    if missing:
+        raise ValueError(f"vehicle-rotation pair panel lacks columns: {missing}")
+    data = pair_panel.copy()
+    data["date"] = pd.to_datetime(data["date"], errors="raise").dt.normalize()
+    data["year"] = pd.to_numeric(data["year"], errors="raise").astype(int)
+    if not data["year"].isin((BASELINE_YEAR, COMPARISON_YEAR)).all():
+        raise ValueError("vehicle-rotation pair panel has an unexpected endpoint year")
+    if not data["date"].dt.year.eq(data["year"]).all():
+        raise ValueError("vehicle-rotation pair-panel dates disagree with endpoint years")
+    for column in ("denominator", "stable_share"):
+        data[column] = pd.to_numeric(data[column], errors="raise")
+        if not np.isfinite(data[column]).all():
+            raise ValueError(f"vehicle-rotation pair panel has nonfinite {column}")
+    if data["denominator"].le(0).any():
+        raise ValueError("vehicle-rotation pair panel requires positive denominator mass")
+    if not data["stable_share"].between(0.0, 1.0).all():
+        raise ValueError("vehicle-rotation pair panel has a share outside zero and one")
+    if data.duplicated(["metric", "year", *PAIR_PANEL_KEYS]).any():
+        raise ValueError("vehicle-rotation pair panel contains duplicate endpoint cells")
+
+    rows: list[dict[str, object]] = []
+    for metric in METRICS:
+        selected = data[data["metric"].eq(metric)].copy()
+        if selected.empty:
+            raise ValueError(f"vehicle-rotation pair panel lacks metric {metric}")
+        source_columns = selected["source_column"].drop_duplicates()
+        if len(source_columns) != 1 or source_columns.iloc[0] != METRICS[metric]:
+            raise ValueError(f"vehicle-rotation {metric} source column disagrees")
+        endpoint_counts = selected.groupby(list(PAIR_PANEL_KEYS))["year"].agg(
+            ["size", "nunique"]
+        )
+        if not endpoint_counts.eq(2).all().all():
+            raise ValueError(
+                f"vehicle-rotation {metric} fixed-effect cells require both endpoint years"
+            )
+
+        fixed_effect = pd.Series(
+            list(selected[list(PAIR_PANEL_KEYS)].itertuples(index=False, name=None)),
+            index=selected.index,
+            name="pair_month_day_scope",
+        )
+        pair_cluster = pd.Series(
+            list(selected[list(PAIR_KEYS)].itertuples(index=False, name=None)),
+            index=selected.index,
+            name="ordered_endpoint_pair",
+        )
+        year_indicator = selected["year"].eq(COMPARISON_YEAR).astype(float)
+        weights = selected["denominator"].astype(float)
+        absorbed = absorb_fixed_effects(
+            selected[["stable_share"]].assign(year_indicator=year_indicator),
+            fixed_effect,
+            weights=weights,
+        )
+        fit = ols_clustered(
+            absorbed["stable_share"],
+            absorbed[["year_indicator"]],
+            pair_cluster,
+            add_constant=False,
+            absorbed_groups=(fixed_effect,),
+            additional_clusters=(selected["date"],),
+            weights=weights,
+            min_observations=4,
+            min_clusters=2,
+        )
+
+        endpoints = selected.pivot(
+            index=list(PAIR_PANEL_KEYS),
+            columns="year",
+            values=["stable_share", "denominator"],
+        )
+        baseline_weight = endpoints[("denominator", BASELINE_YEAR)].to_numpy(float)
+        comparison_weight = endpoints[("denominator", COMPARISON_YEAR)].to_numpy(float)
+        effective_weight = (
+            baseline_weight
+            * comparison_weight
+            / (baseline_weight + comparison_weight)
+        )
+        cell_change = (
+            endpoints[("stable_share", COMPARISON_YEAR)].to_numpy(float)
+            - endpoints[("stable_share", BASELINE_YEAR)].to_numpy(float)
+        )
+        direct_coefficient = float(np.average(cell_change, weights=effective_weight))
+        coefficient = float(fit.beta[0])
+        if not np.isclose(coefficient, direct_coefficient, atol=1e-12, rtol=1e-10):
+            raise RuntimeError(
+                f"vehicle-rotation {metric} WLS coefficient disagrees with paired identity"
+            )
+        standard_error = float(fit.standard_errors[0])
+        t_statistic = float(fit.t_statistics[0])
+        p_value = float(fit.p_values[0])
+        degrees_freedom = fit.n_clusters - 1
+        critical = (
+            float(stats.t.ppf(0.975, degrees_freedom))
+            if degrees_freedom > 0 and np.isfinite(standard_error)
+            else float("nan")
+        )
+        cluster_counts = fit.cluster_counts or (fit.n_clusters, fit.n_clusters)
+        rows.append(
+            {
+                "metric": metric,
+                "source_column": str(source_columns.iloc[0]),
+                "baseline_year": BASELINE_YEAR,
+                "comparison_year": COMPARISON_YEAR,
+                "coefficient": coefficient,
+                "coefficient_pp": 100.0 * coefficient,
+                "standard_error": standard_error,
+                "standard_error_pp": 100.0 * standard_error,
+                "t_statistic": t_statistic,
+                "p_value": p_value,
+                "confidence_interval_lower": coefficient - critical * standard_error,
+                "confidence_interval_upper": coefficient + critical * standard_error,
+                "observations": fit.n_observations,
+                "fixed_effect_cells": int(len(endpoints)),
+                "ordered_pair_clusters": int(cluster_counts[0]),
+                "calendar_date_clusters": int(cluster_counts[1]),
+                "absorbed_degrees_of_freedom": fit.absorbed_degrees_of_freedom,
+                "baseline_denominator_mass": float(baseline_weight.sum()),
+                "comparison_denominator_mass": float(comparison_weight.sum()),
+                "effective_weight_mass": float(effective_weight.sum()),
+                "estimator_id": "weighted_stable_share_saturated_pair_month_day_scope_fe_v1",
+                "covariance_id": "two_way_ordered_pair_calendar_date_cr1",
+                "fixed_effects": "ordered_endpoint_pair_x_month_day_x_integration_scope",
+                "estimand_scope": "common_pair_month_day_realised_integration_scope",
+                "mechanism_status": "descriptive_fixed_realised_scope_noncausal",
+                "omitted_dimensions": "feasible_routes|notional|router_state|search_efficiency",
+            }
+        )
+    result = pd.DataFrame(rows)
+    result["p_value_holm"] = holm_adjusted_pvalues(result["p_value"])
+    return result
 
 
 def load_market_incidence_annual_pairs(
