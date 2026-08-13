@@ -20,7 +20,7 @@ through" — not your judgement of it.
 
 ## What to do this iteration
 
-1. Read `AGENTS.md`, then run `./scripts/run scripts/research_action_preflight.py data` before selecting or mutating a blocker. This loads the live node boundary and prior-correction route before a plausible fresh plan can bypass them.
+1. Read `AGENTS.md`, then run `./scripts/run scripts/research_action_preflight.py data` before selecting or mutating a blocker. This loads the live node boundary and prior-correction route before a plausible fresh plan can bypass them. Before mutation, write a short `REGRESSION-CHECK:` line in the iteration output naming the purpose-bound estimand, evidence generation, and prior correction most at risk from the planned action. If the action contradicts a printed check, revise the plan rather than explaining the contradiction away.
 2. Read `logs/grind-ledger.md` (create it if absent). It is the handoff between
    iterations: what the previous workers did, decided, and hit. Read the last
    ~40 lines before anything else.
@@ -104,7 +104,7 @@ only thing you owe is a clean, small, honest history:
 - **Respect the project's locked decisions and notation.** They are in the glotl
   brain at `~/glotl/projects/defi-vehicle-currencies.md` under "Locked decisions"
   and "Learnings". Read them before touching prose, notation, or estimands.
-- **Writing follows the live prose gate.** While node P is closed, develop the economic argument, admitted evidence, unresolved alternatives, and section logic in `docs/paper-spine.md`; leave `paper/` unchanged. Once P opens, rewrite affected sections from that input at sentence and paragraph level against the stored JFE corpus evidence. Word substitution and vocabulary lint never count as a prose pass.
+- **Writing follows the live prose gate.** While node P is closed, develop the economic argument, admitted evidence, unresolved alternatives, and section logic in `docs/paper-spine.md`; leave `paper/` unchanged. Once P opens, use cards only to locate the closest analogues, reread the named raw published JFE passages, and rewrite affected sections from the spine at the level of economic argument, paragraph sequence, transitions, and sentence function. Word substitution, vocabulary lint, stored-card synthesis, and a generic rhetorical stencil never count as a prose pass.
 - **The deck is always a deliverable.** It remains presentation-ready after
   every iteration even while estimates evolve. Scientific status, evidence
   commit, generation identity, and repository paths live in audited source

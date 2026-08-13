@@ -33,6 +33,38 @@ ROUTES = {
 }
 
 
+COMMON_REGRESSION_CHECKS = (
+    "Name the lane, graph node, purpose-bound estimand, and exact evidence generation.",
+    "Compare the planned action with the current claim registry and the last 40 ledger lines; a red global gate is not authority to reopen an immaterial branch.",
+    "State which prior scientific correction the action could accidentally reverse, and change the plan before mutation if it would.",
+)
+
+
+ACTION_REGRESSION_CHECKS = {
+    "data": (
+        "Bound missingness by economic weight and concentration in outcome/mechanism cells before acquisition or rebuild; metadata completeness is not the objective.",
+        "Repair only if identity, sample, estimate, or inference can materially change; otherwise preserve a disclosed bounded exclusion.",
+    ),
+    "analysis": (
+        "Treat calendar time as a description unless a design supplies treatment; separate design availability from realised adoption, exit, and reversal.",
+        "Hold the relevant endpoint, candidate, reach, venue/design, notional, support, and comparison set fixed before assigning a vehicle-rotation mechanism.",
+        "Distinguish vehicle-role appearance/disappearance, within-cell substitution, persistence, and hysteresis; none licenses another.",
+    ),
+    "deck": (
+        "Consult the persistent visual backlog so prior requests do not depend on chat recall; select the visual form by the economic comparison.",
+        "Keep the deck presentable after the touch; status, generation, paths, and commit hashes stay in source comments/manifests, not the rendered PDF.",
+    ),
+    "prose": (
+        "Cards are locators only. Reread the closest raw published JFE passages before drafting and record those passage locations.",
+        "Rewrite the economic argument, paragraph sequence, transitions, and sentence functions; never infer style from term replacement or a generic template.",
+    ),
+}
+
+
+def regression_checks(action: str) -> tuple[str, ...]:
+    return COMMON_REGRESSION_CHECKS + ACTION_REGRESSION_CHECKS[action]
+
+
 def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("action", choices=sorted(ROUTES))
@@ -43,6 +75,9 @@ def main() -> int:
     print(f"m3={state.get('m3_node', '?')}")
     print(f"meeting={state.get('meeting_edge', '?')}")
     print(ROUTES[args.action])
+    print("PRIOR-CORRECTION REGRESSION CHECK:")
+    for check in regression_checks(args.action):
+        print(f"- {check}")
     if args.action == "prose" and state.get("prose_node", "closed").lower() != "open":
         print("BLOCKED: prose node P is closed. Develop the economic argument in docs/paper-spine.md and leave paper/ unchanged. Do not perform term substitution or create a second style memo.")
         return 2

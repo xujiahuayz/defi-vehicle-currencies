@@ -2,7 +2,7 @@ from pathlib import Path
 
 import pytest
 
-from scripts.research_action_preflight import frontmatter
+from scripts.research_action_preflight import frontmatter, regression_checks
 
 
 def test_frontmatter_reads_live_graph_fields(tmp_path: Path) -> None:
@@ -16,3 +16,22 @@ def test_frontmatter_requires_closed_header(tmp_path: Path) -> None:
     path.write_text("---\nfreeze_status: red\n")
     with pytest.raises(ValueError, match="unterminated"):
         frontmatter(path)
+
+
+def test_analysis_preflight_preserves_prior_scientific_corrections() -> None:
+    checks = " ".join(regression_checks("analysis")).lower()
+    assert "calendar time" in checks
+    assert "comparison set fixed" in checks
+    assert "hysteresis" in checks
+
+
+def test_prose_preflight_requires_raw_passages_not_term_replacement() -> None:
+    checks = " ".join(regression_checks("prose")).lower()
+    assert "raw published jfe passages" in checks
+    assert "term replacement" in checks
+
+
+def test_deck_preflight_recalls_persistent_visual_backlog() -> None:
+    checks = " ".join(regression_checks("deck")).lower()
+    assert "persistent visual backlog" in checks
+    assert "source comments" in checks
