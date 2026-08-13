@@ -369,3 +369,101 @@ and cannot be admitted while the exact route owner rejects its inputs.
   `build_cross_venue_routing_series.py --workers 8 --panel-only` and
   `build_vehicle_excess_use.py --workers 8 --panel-only` through `./scripts/run`;
   do not copy the old ignored panels into this worktree.
+
+## 2026-08-13 — V3-era route authority rebound and route panels refreshed
+
+**Targeted check:** `node D full-calendar directed-route gate`, followed by the
+supervisor's economic-materiality redirection to rebuild only the two required
+route panels and compact exhibits.
+
+**Economic result.** The rejection covered all 1,884 days from V3 genesis, so it
+could have selected the complete V3/V4 architecture era and changed every
+downstream route estimand. The exact migration proof instead finds zero
+scientific-identity differences across all 12,802 venue-day inputs and preserves
+the rows, bytes, SHA-256, and mtime of every one of 2,332 route partitions. The
+partition identity set remains
+`49d831f13c8fe0958776b0f4e59aa6411c34315d562127c19ddff9e39cf24f59`.
+This bounds the defect as authority bookkeeping rather than a change in period,
+protocol/design, venue, pool, vehicle candidate, trade-size, or stress-state
+composition; it cannot change an estimand, coefficient, or inference.
+
+**Work completed.** Built a new immutable pre-V3-recertification authority
+snapshot from the canonical swaps-only Uniswap V3 certificate and proved its
+12,802 scientific identities equal to the earlier relocation snapshot. The
+project's journaled migration owner then rebound exactly 1,884 marker
+fingerprints and the global quality outputs without rebuilding a route parquet.
+`require_route_release()` passes all 2,332 days. Rebuilt only
+`cross_venue_routing_daily.parquet` and `vehicle_excess_use_daily.parquet`
+through their owners, then refreshed their six compact exhibits. All eight
+panel/exhibit provenance verdicts are `ok`; route calendars reconcile at 2,332
+days with 55 structurally empty vehicle days, and 43,705,695 intermediated routes
+reconcile exactly. The cross-venue panel retains 358,027,668 routes over the
+full 2020-02-11..2026-06-30 calendar; the vehicle panel has 2,277 nonempty days
+and 8,112,479 token-days. Focused validation: 103 tests and 70 subtests passed.
+Freeze audit: RED, 13 blocking, down from 15; the directed-route and vehicle-
+dominance checks now pass.
+
+**Commit:** `99e26ab` (`Rebind route release and refresh route panels`).
+
+**Blocking count:** 13.
+
+**DECISION:** stopped certification engineering once exact equality bounded the
+defect as economically immaterial. Kept calendar release windows descriptive,
+not treatments, and did not open another data family or estimator. The remaining
+route-measurement blocker is solely the stale
+`intermediation_by_type_daily.parquet`; evaluate its economic support and refresh
+through its owner only if it is still required for fixed-opportunity routing.
+
+**For the next iteration:**
+- Queue is empty at this commit. Return immediately to science, starting with
+  the stale intermediation-by-type panel only if the fixed-opportunity routing
+  design still consumes it. State its economic weight and concentration before
+  rebuilding; do not resume marker or raw-certificate engineering.
+- Keep persistence distinct from hysteresis: the latter needs asymmetric
+  retention versus displacement under independently measured cost-state
+  reversal. Realised architecture use remains endogenous E0 exposure.
+- Paper prose remains closed because the freeze gate is red. Presentation-ready
+  provisional deck updates may use only the newly current compact exhibits and
+  must retain support and identification labels.
+
+## 2026-08-13 — route measurement provenance current
+
+**Economic scope.** The stale intermediation provenance covered the complete
+2,332-day route calendar rather than a selected venue, pool, design, candidate,
+trade-size, or stress slice. The installed panel spans 43,705,695 intermediated
+routes and 47,606,817 episodes; 72.3% of episodes are single-venue, 27.7% are
+cross-venue, 78.4% are exact two-leg, and strict 20% value support retains 82.5%
+of raw intermediary value. Its claim use remains necessary: the specification
+lock names it as a vehicle-rotation input and uses its integration/complexity
+strata before the later fixed-opportunity conditioning.
+
+**Work completed.** Rebuilt `intermediation_by_type_daily.parquet` and all five
+owned compact exhibits through `build_intermediation_by_type.py` against the
+certified 2,332-partition route release. A preserved pre-build copy and the
+owner-built result are byte-identical at SHA-256
+`8db2065d8f14b8a3d7b34b6cc2057823a6d74ecc5fc8f8b6beaef33c7afc780b`
+and exactly equal in every cell across 2,332 rows and 253 columns. The defect
+therefore has zero economic weight and cannot change the estimand, sample,
+coefficient, or inference. The current manifest now binds every released route
+partition; the panel and all five regenerated exhibits verify `ok` with current
+content, inputs, and code. Focused validation: 89 tests and 70 subtests passed.
+Freeze audit: RED, 12 blocking, down from 13; route-measurement provenance now
+passes and the claim-input gate reports three current inputs with no stale ones.
+
+**Commit:** `111230a` (`Refresh certified intermediation evidence`).
+
+**Blocking count:** 12.
+
+**DECISION:** retained the panel because it is an explicit locked claim input,
+but bounded the provenance defect before publication and found exact zero
+scientific change. No provider data, certified route partition, paper prose, or
+state-dependent estimator was opened.
+
+**For the next iteration:**
+- Queue is empty at this commit. Resume upstream D2 data contracts, preferring
+  the V2 token-decimals registry and V2 event-source certificate identified in
+  the glotl next-actions list; check the certified sibling store and existing
+  release pointers before any acquisition.
+- Do not rebuild the intermediation panel or route release again. All route-only
+  measurement provenance and reconciliation checks are green.
+- Paper prose remains closed; the gate still has 12 blockers.

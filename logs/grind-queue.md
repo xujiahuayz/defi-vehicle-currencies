@@ -26,6 +26,13 @@ and pick a blocking check from the freeze gate.
 
 
 
+
+- [x] **JAVA INTERJECTION (browser, 2026-08-13T10:41:22+00:00):** ECONOMIC-MATERIALITY REDIRECTION. Finish the currently running one-time route-marker publication because the dry run has already proved zero scientific-identity differences and byte/row/hash/mtime equality for every one of 2,332 route partitions. After the owner confirms the release, do not continue metadata or certification engineering merely to approach perfection. For every remaining defect, first report its economic weight and concentration by calendar period, protocol/design, venue, pool, vehicle candidate, trade size, and stress state; ask whether it can change the estimand, sample composition, coefficient, or inference. Random or economically bounded dirt should be disclosed, bounded with a sensitivity where useful, and allowed to proceed. Hard failure is reserved for wrong identity, systematic selection correlated with treatment/outcome, data corruption, invalid causal timing, or invalid inference. The 1,884-day route rejection initially mattered because it coincided exactly with the V3 era, but the completed equality proof makes the remaining repair bookkeeping, not new science. Once closed, rebuild only the two required route panels, refresh their compact exhibits, and return immediately to science: fixed-opportunity routing versus monetary coordination, persistence versus hysteresis under cost-state reversal, and presentation-ready deck/paper updates. Explain each iteration first in economic terms, with engineering details subordinate.
+  _Closed with the journaled 2,332-day marker migration, unchanged partition
+  identity set `49d831f13c8fe0958776b0f4e59aa6411c34315d562127c19ddff9e39cf24f59`,
+  and owner-built cross-venue and vehicle-extent panels plus compact exhibits.
+  The freeze gate fell from 15 to 13 blockers; no other data family was opened._
+
 - [x] **JAVA INTERJECTION (browser, 2026-08-13T09:51:06+00:00):** DECK OVERFLOW/INTERPRETATION FIX: at the next clean boundary integrate science commit 3d8f36b only (its predecessors are already present). It removes the populated slide overflow and changes the live questions to the actual findings: raw focal share versus mechanical pair-week centering, ex ante feasibility risk set, and exact-state reversal. It explicitly says zero clean substitution windows and that appearance/disappearance magnitudes are mechanical. Recompile from the existing generated macros; do not rerun data.
   _Closed by integrating `3d8f36b` as `a587f8b` and rebuilding the deck from
   the existing generated macros. The populated audit frame has no vertical
