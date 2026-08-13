@@ -4,7 +4,9 @@ import pandas as pd
 
 from scripts.run_architecture_state_transitions import (
     build_full_risk_panel,
+    build_role_risk_panel,
     event_contrasts,
+    role_margin_events,
     summarize_transition_support,
     transition_events,
 )
@@ -154,3 +156,31 @@ def test_support_summary_keeps_zero_event_threshold_kind_cells() -> None:
     assert support.usable_events.tolist() == [1, 1, 0, 0]
     assert support.mean_immediate_change.iloc[:2].eq(0).all()
     assert support.mean_immediate_change.iloc[2:].isna().all()
+
+
+def test_role_risk_panel_detects_appearance_and_disappearance_separately() -> None:
+    routes = _routes()
+    weeks = sorted(routes.week.unique())
+    routes = routes[
+        ~(
+            routes.vehicle.eq("USDC")
+            & (routes.week.lt(weeks[10]) | routes.week.ge(weeks[30]))
+        )
+    ]
+    panel = build_role_risk_panel(routes, min_state_routes=1)
+    usdc = panel[panel.vehicle.eq("USDC")]
+    assert usdc.cell_support_state.iloc[:10].eq("absent").all()
+    assert usdc.cell_support_state.iloc[10:30].eq("supported").all()
+    assert usdc.cell_support_state.iloc[30:].eq("absent").all()
+
+    events = role_margin_events(panel, threshold=0.10, confirmation_weeks=3)
+    usdc_events = events[events.vehicle.eq("USDC")]
+    assert usdc_events.kind.tolist() == ["entry", "exit"]
+    assert usdc_events.transition_margin.tolist() == [
+        "vehicle_role_appearance",
+        "vehicle_role_disappearance",
+    ]
+    contrasts = event_contrasts(panel, usdc_events)
+    assert set(contrasts.status) == {"usable"}
+    assert contrasts.immediate_change.iloc[0] > 0
+    assert contrasts.immediate_change.iloc[1] < 0

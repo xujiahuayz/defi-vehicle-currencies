@@ -92,6 +92,14 @@ only thing you owe is a clean, small, honest history:
   challenge the design while data work continues. Every provisional result
   frame names its data generation and support status, states the unresolved
   identification objection, and is never treated as admitted paper evidence.
+- **Do not turn realised architecture use into a design shock.** V4 route-share
+  entry and exit are endogenous E0 exposure transitions. V4 remains available
+  after launch, and the current positive-use risk panel measures within-cell
+  substitution exits, not removal of the protocol design or disappearance of
+  the vehicle role. The separate active-pair risk panel reports vehicle-role
+  appearance and disappearance, but these margins remain endogenous too. A
+  design-reversal claim needs independently measured availability or exact
+  cost/depth state.
 - **Decisions:** when a judgement call blocks you, take the conservative option
   (the one that preserves the estimand and fails closed), record it in the ledger
   under `DECISION:`, and keep going. Do not stop to ask.

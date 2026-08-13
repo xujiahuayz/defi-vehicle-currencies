@@ -30,6 +30,7 @@ from ddvc.tables import write_exhibit
 ROOT = Path(__file__).resolve().parents[1]
 ROUTES = DATA_DIR / "empirical" / "v4_settlement_route_units.parquet"
 PANEL = DATA_DIR / "processed" / "architecture_state_weekly.parquet"
+ROLE_PANEL = DATA_DIR / "processed" / "architecture_role_risk_weekly.parquet"
 EXHIBITS = OUTPUT_DIR / "exhibits"
 DEXES = ("uniswap_v3", "uniswap_v4")
 KEYS = ["src", "sink", "vehicle"]
@@ -82,6 +83,81 @@ def build_full_risk_panel(routes: pd.DataFrame, *, min_total_routes: int = 10) -
     ).where(wide["pair_week_candidate_count"].ge(2))
     wide = wide[wide["total_routes"] >= min_total_routes].copy()
     return wide.sort_values([*KEYS, "week"], kind="stable").reset_index(drop=True)
+
+
+def build_role_risk_panel(
+    routes: pd.DataFrame,
+    *,
+    min_state_routes: int = 10,
+) -> pd.DataFrame:
+    """Fill zero-use candidate weeks while the ordered pair remains active.
+
+    A candidate enters the risk set if it is observed at least once for an
+    ordered pair.  It then receives an explicit zero in every active pair-week,
+    including before first use and after last use.  A week in which the ordered
+    pair itself is absent remains outside the risk set; it is not evidence that
+    the candidate vehicle disappeared.
+    """
+    observed = build_full_risk_panel(routes, min_total_routes=0)
+    if observed.empty:
+        return observed
+    pair_weeks = observed[["week", "src", "sink"]].drop_duplicates()
+    pair_vehicles = observed[["src", "sink", "vehicle"]].drop_duplicates()
+    grid = pair_weeks.merge(pair_vehicles, on=["src", "sink"], how="inner")
+    value_columns = [
+        f"{measure}_{dex}"
+        for measure in ("routes", "route_usd")
+        for dex in DEXES
+    ]
+    balanced = grid.merge(
+        observed[["week", *KEYS, *value_columns]],
+        on=["week", *KEYS],
+        how="left",
+        validate="one_to_one",
+    )
+    balanced[value_columns] = balanced[value_columns].fillna(0.0)
+    balanced["total_routes"] = (
+        balanced["routes_uniswap_v3"] + balanced["routes_uniswap_v4"]
+    )
+    balanced["total_route_usd"] = (
+        balanced["route_usd_uniswap_v3"] + balanced["route_usd_uniswap_v4"]
+    )
+    balanced["v4_route_share"] = np.divide(
+        balanced["routes_uniswap_v4"],
+        balanced["total_routes"],
+        out=np.full(len(balanced), np.nan),
+        where=balanced["total_routes"].to_numpy() > 0,
+    )
+    balanced["v4_value_share"] = np.divide(
+        balanced["route_usd_uniswap_v4"],
+        balanced["total_route_usd"],
+        out=np.full(len(balanced), np.nan),
+        where=balanced["total_route_usd"].to_numpy() > 0,
+    )
+    pair_keys = ["week", "src", "sink"]
+    pair_totals = balanced.groupby(pair_keys)["total_routes"].transform("sum")
+    balanced["vehicle_route_share"] = balanced["total_routes"] / pair_totals
+    pair_week = balanced.groupby(pair_keys)["vehicle_route_share"]
+    balanced["pair_week_candidate_count"] = pair_week.transform("size")
+    balanced["pair_week_vehicle_set_sha256"] = balanced.groupby(pair_keys)[
+        "vehicle"
+    ].transform(
+        lambda values: hashlib.sha256(
+            "\n".join(sorted(map(str, values))).encode()
+        ).hexdigest()
+    )
+    balanced["pair_week_adjusted_vehicle_share"] = (
+        balanced["vehicle_route_share"] - pair_week.transform("mean")
+    ).where(balanced["pair_week_candidate_count"].ge(2))
+    balanced["cell_support_state"] = np.select(
+        [
+            balanced["total_routes"].eq(0),
+            balanced["total_routes"].ge(min_state_routes),
+        ],
+        ["absent", "supported"],
+        default="low_support",
+    )
+    return balanced.sort_values([*KEYS, "week"], kind="stable").reset_index(drop=True)
 
 
 def _consecutive(weeks: pd.Series) -> bool:
@@ -143,6 +219,63 @@ def transition_events(
     return pd.DataFrame(rows, columns=columns)
 
 
+def role_margin_events(
+    panel: pd.DataFrame,
+    *,
+    threshold: float = 0.10,
+    confirmation_weeks: int = 3,
+) -> pd.DataFrame:
+    """Find V4-active vehicle-role appearance and disappearance events."""
+    if not 0 < threshold < 1:
+        raise ValueError("architecture-state threshold must lie strictly between zero and one")
+    if confirmation_weeks < 2:
+        raise ValueError("confirmation_weeks must be at least two")
+    rows: list[dict] = []
+    run = confirmation_weeks
+    for key, group in panel.groupby(KEYS, sort=False, observed=True):
+        group = group.sort_values("week", kind="stable").reset_index(drop=True)
+        active = (
+            group["cell_support_state"].eq("supported")
+            & group["v4_route_share"].ge(threshold)
+        ).to_numpy()
+        absent = group["cell_support_state"].eq("absent").to_numpy()
+        for position in range(run, len(group) - run + 1):
+            window = group.iloc[position - run : position + run]
+            if not _consecutive(window["week"]):
+                continue
+            before_active = bool(active[position - run : position].all())
+            after_active = bool(active[position : position + run].all())
+            before_absent = bool(absent[position - run : position].all())
+            after_absent = bool(absent[position : position + run].all())
+            if before_absent and after_active:
+                kind = "entry"
+                margin = "vehicle_role_appearance"
+            elif before_active and after_absent:
+                kind = "exit"
+                margin = "vehicle_role_disappearance"
+            else:
+                continue
+            rows.append(
+                {
+                    **dict(zip(KEYS, key, strict=True)),
+                    "event_week": group.loc[position, "week"],
+                    "kind": kind,
+                    "transition_margin": margin,
+                    "threshold": threshold,
+                    "confirmation_weeks": run,
+                }
+            )
+    columns = [
+        *KEYS,
+        "event_week",
+        "kind",
+        "transition_margin",
+        "threshold",
+        "confirmation_weeks",
+    ]
+    return pd.DataFrame(rows, columns=columns)
+
+
 def event_contrasts(panel: pd.DataFrame, events: pd.DataFrame) -> pd.DataFrame:
     """Pair-week-adjusted vehicle-use dynamics around isolated entry and exit."""
     rows: list[dict] = []
@@ -167,6 +300,7 @@ def event_contrasts(panel: pd.DataFrame, events: pd.DataFrame) -> pd.DataFrame:
             **dict(zip(KEYS, key, strict=True)),
             "event_week": event_week,
             "kind": event.kind,
+            "transition_margin": event.transition_margin,
             "threshold": event.threshold,
             "confirmation_weeks": event.confirmation_weeks,
             "outcome": "pair-week-adjusted overall V3+V4 vehicle route share",
@@ -231,6 +365,10 @@ def summarize_transition_support(
     contrasts: pd.DataFrame,
     *,
     thresholds: Iterable[float],
+    transition_kinds: Iterable[tuple[str, str]] = (
+        ("entry", "within_observed_vehicle_cell"),
+        ("exit", "within_observed_vehicle_cell"),
+    ),
 ) -> pd.DataFrame:
     """Build the presentation-facing support and E0 contrast table.
 
@@ -246,18 +384,20 @@ def summarize_transition_support(
         "composition_shift",
     )
     for threshold in thresholds:
-        for kind in ("entry", "exit"):
+        for kind, transition_margin in transition_kinds:
             if contrasts.empty:
                 group = contrasts
             else:
                 group = contrasts[
-                    contrasts["threshold"].eq(threshold) & contrasts["kind"].eq(kind)
+                    contrasts["threshold"].eq(threshold)
+                    & contrasts["kind"].eq(kind)
+                    & contrasts["transition_margin"].eq(transition_margin)
                 ]
             usable = group[group["status"].eq("usable")] if not group.empty else group
             row = {
                 "threshold": threshold,
                 "kind": kind,
-                "transition_margin": "within_observed_vehicle_cell",
+                "transition_margin": transition_margin,
                 "detected_events": int(len(group)),
                 "distinct_cells": (
                     int(group[KEYS].drop_duplicates().shape[0]) if not group.empty else 0
@@ -289,9 +429,16 @@ def main() -> int:
     with current_artifacts([args.routes], consumer="architecture-state transition audit"):
         routes = pd.read_parquet(args.routes)
         panel = build_full_risk_panel(routes, min_total_routes=args.min_total_routes)
+        role_panel = build_role_risk_panel(
+            routes,
+            min_state_routes=args.min_total_routes,
+        )
     PANEL.parent.mkdir(parents=True, exist_ok=True)
     panel.to_parquet(PANEL, index=False)
     stamp(PANEL, code_sources=CODE, inputs=[args.routes], rows=len(panel))
+    ROLE_PANEL.parent.mkdir(parents=True, exist_ok=True)
+    role_panel.to_parquet(ROLE_PANEL, index=False)
+    stamp(ROLE_PANEL, code_sources=CODE, inputs=[args.routes], rows=len(role_panel))
 
     all_events = []
     for threshold in thresholds:
@@ -317,7 +464,50 @@ def main() -> int:
             "across usable events, not causal estimates."
         ),
     )
+    role_events = pd.concat(
+        [
+            role_margin_events(
+                role_panel,
+                threshold=threshold,
+                confirmation_weeks=args.confirmation_weeks,
+            )
+            for threshold in thresholds
+        ],
+        ignore_index=True,
+    )
+    role_contrasts = event_contrasts(role_panel, role_events)
+    role_support = summarize_transition_support(
+        role_contrasts,
+        thresholds=thresholds,
+        transition_kinds=(
+            ("entry", "vehicle_role_appearance"),
+            ("exit", "vehicle_role_disappearance"),
+        ),
+    )
+    write_exhibit(
+        role_events,
+        EXHIBITS / "architecture_role_margin_events.jsonl",
+        code_sources=CODE,
+        inputs=[ROLE_PANEL],
+    )
+    write_exhibit(
+        role_contrasts,
+        EXHIBITS / "architecture_role_margin_contrasts.jsonl",
+        code_sources=CODE,
+        inputs=[ROLE_PANEL],
+    )
+    write_exhibit(
+        role_support,
+        EXHIBITS / "architecture_role_margin_support.jsonl",
+        code_sources=CODE,
+        inputs=[ROLE_PANEL],
+        notes=(
+            "E0 extensive-margin support among active ordered-pair weeks. "
+            "Pair disappearance is not coded as vehicle-role disappearance."
+        ),
+    )
     print(support.to_string(index=False))
+    print(role_support.to_string(index=False))
     print("E0 support audit only: calendar time is not treatment; no causal claim promoted")
     return 0
 
