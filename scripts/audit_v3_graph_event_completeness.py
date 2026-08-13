@@ -20,6 +20,7 @@ from ddvc.state_data import (
     RAW_ROOT,
     STATE_ROOT,
     read_tick_partition,
+    read_tick_quality,
     tick_partition_path,
     tick_quality_path,
 )
@@ -182,6 +183,23 @@ def require_audit_state_inputs(
             f"input(s); first={sample}. Materialize them with "
             "`./scripts/run scripts/build_market_state.py --family tick "
             "--venue uniswap_v3 --audit-calendar` before launching this audit."
+        )
+    failed: list[str] = []
+    stale: list[str] = []
+    for day in audit_days:
+        quality = read_tick_quality(
+            RAW_ROOT, "uniswap_v3", day, root=state_root
+        )
+        if quality is None:
+            stale.append(day)
+        elif not quality.passed:
+            failed.append(day)
+    if stale or failed:
+        raise ValueError(
+            "V3 event-source preflight rejects non-current or failed market-state "
+            f"inputs: stale={len(stale):,}, failed={len(failed):,}; "
+            f"first_stale={stale[:3]}, first_failed={failed[:3]}. Resolve the "
+            "upstream state data contract before launching this audit."
         )
 
 

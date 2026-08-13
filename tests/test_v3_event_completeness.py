@@ -4,6 +4,7 @@ from collections import Counter
 from contextlib import contextmanager
 from dataclasses import replace
 from pathlib import Path
+from types import SimpleNamespace
 import sys
 
 import pandas as pd
@@ -83,6 +84,24 @@ def test_auditor_help_never_starts_the_expensive_build(monkeypatch) -> None:
 
 def test_auditor_preflight_reports_missing_state_before_raw_scan(tmp_path: Path) -> None:
     with pytest.raises(FileNotFoundError, match="build_market_state.py.*--audit-calendar"):
+        auditor.require_audit_state_inputs([DAY], state_root=tmp_path)
+
+
+def test_auditor_preflight_rejects_failed_state_before_raw_scan(
+    tmp_path: Path, monkeypatch
+) -> None:
+    auditor.tick_partition_path("uniswap_v3", DAY, root=tmp_path).parent.mkdir(
+        parents=True
+    )
+    auditor.tick_partition_path("uniswap_v3", DAY, root=tmp_path).touch()
+    auditor.tick_quality_path("uniswap_v3", DAY, root=tmp_path).touch()
+    monkeypatch.setattr(
+        auditor,
+        "read_tick_quality",
+        lambda *_args, **_kwargs: SimpleNamespace(passed=False),
+    )
+
+    with pytest.raises(ValueError, match=r"stale=0, failed=1.*upstream state data contract"):
         auditor.require_audit_state_inputs([DAY], state_root=tmp_path)
 
 
