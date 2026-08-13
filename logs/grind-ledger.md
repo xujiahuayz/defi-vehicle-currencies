@@ -527,3 +527,62 @@ exact D2 certificate, and it does not license a fabricated registry row.
   reversal still requires independently measured availability or cost/depth
   state; do not interpret route-use disappearance as a design reversal.
 - Paper prose remains closed; the freeze gate still has 12 blockers.
+
+## 2026-08-13 — fixed-cell rotation decomposition made executable
+
+**Targeted check:** queued sync/science handoff through `45573a9`, followed by
+the fixed-opportunity vehicle-rotation input named in the refreshed paper
+spine and `within_pair_composition_decomposition` literature attack.
+
+**Economic scope.** The new decomposition fixes ordered endpoints, observed
+venue reach, single- versus cross-venue routing, and protocol sequence before
+splitting the 2024-to-2026 stable-share change into within-cell movement,
+common-cell reweighting, cell entry, and cell exit. It reports pair, candidate,
+and venue-reach/design support entry and exit separately for route counts and
+strict-support value. It is explicitly a pre-frontier descriptive estimand:
+notional bins and exact search-efficiency state are still absent, calendar time
+is not treatment, and the output cannot identify a routing, architecture, or
+coordination mechanism.
+
+**Work completed.** Fast-forwarded the requested science/deck series through
+`45573a9`, integrated the subsequent executable-preflight correction, and
+closed the queue item in `20de4e1`. Added
+`vehicle_rotation_composition.py`, its D3-bound E0 runner, and exact arithmetic,
+calendar-support, zero-value-support, and entry/exit tests in `af097db`. The
+runner owns the three already-registered outputs
+`vehicle_transition_pair_{panel,decomposition,support}.jsonl` and refuses to
+run unless the typed endpoint-candidate release pointer belongs to the injected
+D3 certificate. A two-day real-data smoke check wrote no artifact and closed
+both count and strict-value accounting identities within
+`5.56e-17`; its low common-cell support was treated only as evidence that the
+complete release is necessary, not as a finding.
+
+The designated Studio alias was unavailable from the M3
+(`Could not resolve hostname studio`), so no remote job was launched. The
+purpose-bound scale pilot covered early, stress, architecture, late, and the
+largest route day. A typical 18--20 MB day took 22--23 seconds and 1.0--1.3 GB
+peak process memory; the 50 MB maximum day took 40 seconds and 3.1 GB. The full
+source is 38.2 GB over 2,332 partitions. No full M3 scan, provider acquisition,
+release publication, paper edit, or provisional result occurred.
+
+**Validation.** Focused workflow, D3, release, exploration, paper-spine, and
+composition tests: 94 passed plus five subtests. The narrower implementation
+suite also passed 36 tests. Freeze audit: RED, 12 blocking, unchanged.
+
+**Commit:** `af097db` (`Add fixed-cell vehicle rotation decomposition`).
+
+**Blocking count:** 12.
+
+**For the next iteration:**
+- Queue is empty at this commit. On Studio, fast-forward `main`, rerun the data
+  preflight, and publish the complete purpose-bound input with
+  `./scripts/run scripts/build_endpoint_candidate_composition.py --workers 8`.
+  Do not publish a diagnostic subset or weaken the full-calendar contract.
+- After the endpoint-candidate pointer is current and included in the D3
+  analysis certificate, run
+  `./scripts/run scripts/run_vehicle_rotation_composition_e0.py`; inspect the
+  count/value decomposition and common-support concentration before any claim
+  update or figure. The result remains pre-frontier until notional and exact
+  search-efficiency cells exist.
+- Preserve the 13-token bounded exclusion, do not reopen exact-decimals
+  acquisition for this route-only estimand, and leave `paper/` unchanged.
