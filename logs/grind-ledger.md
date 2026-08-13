@@ -147,3 +147,61 @@ resolution), `22e3f37` (exact-payload V3 calendar restamp + queue tick).
   --workers 6`; use cached RPC chunks only and do not reacquire provider data.
 - The freeze audit's V3 calendar and full-calendar directed-route checks are
   both current; do not rebuild either release.
+
+## 2026-08-13 — iteration 4: route-only architecture transition support
+
+**Targeted check:** the three overlapping supervisor queue directives to move
+the already-green route-only D contract into E0 after integrating the science
+branch's denominator, overlap, preflight, and composition-set guards.
+
+**Work completed.** Confirmed the prior science ports were already on `main` as
+`dc7d613`, `3ab708d`, `12edf63`, `1096d83`, and `17eda66`, then integrated
+upstream `2d11836` as `d72f8c1`. The V3 exact-event preflight failed quickly and
+as designed on 124 absent current state inputs; no raw scan or provider fetch
+ran. The earlier 62-date state attempt's exact blocker remains: raw files exist,
+but the installed local-scan certificate does not authorize
+`uniswap_v3/burns/20210515`.
+
+Rebuilt the architecture input from the current released unified layer, not the
+stale M3 route panel. The certified route-only payload contains 3,970,589
+exclusive coherent route units: 3,063,723 V3 rows over 523 days and 906,866 V4
+rows over 518 days. Mixed-source components remain excluded. Its SHA-256 is
+`4fc206525d33efb507d700067b87e9a4c248c1a6038ad93a1d56a350f4746f10`.
+The 63,193-row weekly architecture panel has SHA-256
+`0430e794c49d0ab4930b88973103de6bce7dd3edc9cc864f0e818e0e1a265646`.
+All four route/panel/event/contrast provenance verdicts are current with
+`code_current=true`, `content_current=true`, `inputs_current=true`, and no
+changed inputs.
+
+**E0 support verdict.** The event exhibit has 581 candidates (SHA-256
+`18d751eae81a85e57301f96a752398369a27549942d9710bd1dba9ec0f6cbb1c`);
+the contrast exhibit SHA-256 is
+`03c5f922c4a988e05d017e8b0e25ad708476a4cdfbdf8812843f7b2f5fd1263f`.
+At 5%, entry support is 0 usable / 59 overlapping / 0 incomplete / 103
+composition-shift and exit support is 0 / 46 / 0 / 33. At 10%, entry is 0 /
+50 / 1 / 88 and exit is 0 / 40 / 0 / 29. At 25%, entry is 0 / 34 / 0 / 44
+and exit is 0 / 34 / 0 / 20. Thus every candidate fails the isolated,
+complete, fixed-comparison-set contract. This is a durable E0 support result,
+not a causal estimate; calendar time is not treatment and no contrast is
+promoted.
+
+**Validation.** `./scripts/run -m pytest -q
+tests/test_architecture_state_transitions.py tests/test_v3_event_completeness.py`:
+33 passed. The side-effect-free `--help` path exited 0; `--preflight-only`
+failed closed on the expected missing state inputs. Freeze audit: RED, 14
+blocking (unchanged; route-only E0 is exploratory and adds no false gate pass).
+
+**Commits:** `d72f8c1` (comparison-set guard) and `76d6c16` (certified small
+outputs, immutable payload manifests, and queue closure).
+
+**Blocking count:** 14.
+
+**For the next iteration:**
+- Queue is empty. Resume node D at the minimal existing local-scan certification
+  owner for the 62 V3 construction-audit dates, beginning with authorization of
+  `uniswap_v3/burns/20210515`; do not launch market-state materialization until
+  that exact partition is admitted. Do not broaden into the dormant raw-cert
+  feature or redesign certification, and do not fetch provider data.
+- Route-only E0 is closed as a support audit with zero usable event windows.
+  Do not weaken the composition/overlap contract, interpret date as treatment,
+  or promote these contrasts. Prose remains closed.
