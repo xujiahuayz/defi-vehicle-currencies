@@ -2,17 +2,17 @@
  "argv": [],
  "artefact": "output/exhibits/venue_optics.jsonl",
  "artefact_bytes": 1629,
- "artefact_mtime_ns": 1786528358294186721,
- "artefact_sha256": "6d45421a2fe9d066bc902d730abcf01fdc955fc32377cb71d3d9e048d7d9d136",
- "code_fingerprint": "4fc9733d157b54f2947a1f6ba76e0c158d5a9081965bfaeb35440675388c113b",
+ "artefact_mtime_ns": 1786627511260577881,
+ "artefact_sha256": "af6bf950980bbb3549ae5765900dd24897d83fe5f66c2b1e1aba2b9de653fd1b",
+ "code_fingerprint": "fd011139ca5bb4188653d8a89db3a34d49f28837c859207391f9390cec4aa66d",
  "code_sources": [
   "scripts/measure_venue_optics.py",
   "src/ddvc/tables.py"
  ],
- "created_at": "2026-08-12T09:52:38+00:00",
+ "created_at": "2026-08-13T13:25:11+00:00",
  "git": {
   "branch": "main",
-  "commit": "556f5fe5c35317be83fe6663b7a74c826b1dba59",
+  "commit": "a0c54e927178ff64e79e17124238f52c5cbe6d10",
   "dirty": true,
   "dirty_generated_files": [
    "data/manifests/output/exhibits/prose_conventions.jsonl.prov.json",
@@ -21,10 +21,21 @@
    "output/exhibits/prose_conventions.jsonl",
    "output/exhibits/prose_outliers.jsonl",
    "output/exhibits/venue_shape.jsonl",
-   "output/exhibits/.venue_optics.jsonl.fetm15yg.tmp"
+   "data/manifests/output/figures/integration_rotation_slopes.pdf.prov.json",
+   "data/manifests/output/figures/vehicle_excess_use_transition.pdf.prov.json",
+   "data/manifests/output/figures/vehicle_type_shares_quarterly.pdf.prov.json",
+   "output/exhibits/.venue_optics.jsonl.zs1jvd1g.tmp",
+   "output/figures/integration_rotation_slopes.pdf",
+   "output/figures/vehicle_excess_use_transition.pdf",
+   "output/figures/vehicle_type_shares_quarterly.pdf"
   ],
   "dirty_tracked_files": [
-   "deck/main.pdf"
+   "deck/main.pdf",
+   "deck/sections/04-results.tex",
+   "docs/paper-spine.md",
+   "docs/research-workflow.md",
+   "docs/reviews/deck-visual-composition.md",
+   "tests/test_paper_spine.py"
   ],
   "dirty_untracked_files": []
  },
@@ -36,6 +47,13 @@
   "scipy": "1.18.0"
  },
  "notes": null,
+ "payload_identity": {
+  "bytes": 1629,
+  "format": "jsonl",
+  "rows": 10,
+  "schema_version": 1,
+  "sha256": "af6bf950980bbb3549ae5765900dd24897d83fe5f66c2b1e1aba2b9de653fd1b"
+ },
  "python": "3.14.5",
  "rows": 10,
  "script": "scripts/measure_venue_optics.py"

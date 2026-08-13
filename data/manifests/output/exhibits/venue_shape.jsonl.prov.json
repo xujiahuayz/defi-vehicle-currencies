@@ -1,18 +1,18 @@
 {
  "argv": [],
  "artefact": "output/exhibits/venue_shape.jsonl",
- "artefact_bytes": 3846,
- "artefact_mtime_ns": 1786528427368490059,
- "artefact_sha256": "f50a3ead2a3c76bf7896577961a63865b7818185efec11f6a87f1937ff73ffe7",
- "code_fingerprint": "7172ee20652674a5da3d076bc187f3dd725d34da1b9ff06df667f8db09fde622",
+ "artefact_bytes": 3801,
+ "artefact_mtime_ns": 1786627563040683820,
+ "artefact_sha256": "1014d16db4eb879b8ac5b623495b503567a6483d5a6aae73a80ef7ebb9bf5edc",
+ "code_fingerprint": "d916ac0f14e15984beefae7f4b915bc38c43c9d392107304f484a9aa22aa4c61",
  "code_sources": [
   "scripts/measure_venue_shape.py",
   "src/ddvc/tables.py"
  ],
- "created_at": "2026-08-12T09:53:47+00:00",
+ "created_at": "2026-08-13T13:26:03+00:00",
  "git": {
   "branch": "main",
-  "commit": "556f5fe5c35317be83fe6663b7a74c826b1dba59",
+  "commit": "a0c54e927178ff64e79e17124238f52c5cbe6d10",
   "dirty": true,
   "dirty_generated_files": [
    "data/manifests/output/exhibits/prose_conventions.jsonl.prov.json",
@@ -21,10 +21,21 @@
    "output/exhibits/prose_conventions.jsonl",
    "output/exhibits/prose_outliers.jsonl",
    "output/exhibits/venue_optics.jsonl",
-   "output/exhibits/.venue_shape.jsonl.wxhgg62i.tmp"
+   "data/manifests/output/figures/integration_rotation_slopes.pdf.prov.json",
+   "data/manifests/output/figures/vehicle_excess_use_transition.pdf.prov.json",
+   "data/manifests/output/figures/vehicle_type_shares_quarterly.pdf.prov.json",
+   "output/exhibits/.venue_shape.jsonl.lajxnvf6.tmp",
+   "output/figures/integration_rotation_slopes.pdf",
+   "output/figures/vehicle_excess_use_transition.pdf",
+   "output/figures/vehicle_type_shares_quarterly.pdf"
   ],
   "dirty_tracked_files": [
-   "deck/main.pdf"
+   "deck/main.pdf",
+   "deck/sections/04-results.tex",
+   "docs/paper-spine.md",
+   "docs/research-workflow.md",
+   "docs/reviews/deck-visual-composition.md",
+   "tests/test_paper_spine.py"
   ],
   "dirty_untracked_files": []
  },
@@ -36,6 +47,13 @@
   "scipy": "1.18.0"
  },
  "notes": null,
+ "payload_identity": {
+  "bytes": 3801,
+  "format": "jsonl",
+  "rows": 16,
+  "schema_version": 1,
+  "sha256": "1014d16db4eb879b8ac5b623495b503567a6483d5a6aae73a80ef7ebb9bf5edc"
+ },
  "python": "3.14.5",
  "rows": 16,
  "script": "scripts/measure_venue_shape.py"
