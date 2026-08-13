@@ -205,3 +205,56 @@ outputs, immutable payload manifests, and queue closure).
 - Route-only E0 is closed as a support audit with zero usable event windows.
   Do not weaken the composition/overlap contract, interpret date as treatment,
   or promote these contrasts. Prose remains closed.
+
+## 2026-08-13 — queued architecture support and provisional-deck handoff
+
+**Targeted check:** the seven queued science/deck integration interjections,
+through support-classification tip `377aa25` and the deck-only interpretation
+fix `3d8f36b`. These outranked the freeze blocking list.
+
+**Work completed.** Integrated the six science commits after the already-landed
+comparison-set guard, without restarting the certified route materialization.
+Ran `run_architecture_state_transitions.py` exactly once against route generation
+`4fc206525d33`, producing the corrected within-cell support exhibit (SHA-256
+`e24b7068d46d19e2454b273238cb37266795bdcd76a6a2abe11e18cc3f828816`),
+the separate active-pair role-margin support exhibit (SHA-256
+`f99d35ade1527d77fe0eb4b64f264f86793fc6028b8f190d001b255b07096dad`),
+and generated slide macros (SHA-256
+`c4e2a134f35fcddb349110b9e8ef2a5f476c15e3485316290bdab5fb3feb33dd`).
+The new role-risk panel has SHA-256
+`025cf04506e00575c5402cf3bea84b0bb6be00a9bb1254392e89c50f77177b7f`.
+
+The corrected within-observed-cell audit has zero usable windows at every
+threshold. At 5%/10%/25%, entry detected (usable) is 162 (0), 139 (0), 78 (0),
+and substitution exit is 79 (0), 69 (0), 54 (0). Missing pair-weeks are now
+`incomplete_window`, not `composition_shift`. In the separate active-pair risk
+set, vehicle-role appearance is 9 detected / 4 usable and disappearance is 7 / 3
+at every threshold; its reported magnitudes are mechanical descriptive changes,
+not causal effects or design removal.
+
+Integrated the tested deck follow-up as `a587f8b`, rebuilt only the deck from the
+existing generated macros with Tectonic, and visually checked the three
+provisional frames. The populated audit frame has no overflow and explicitly
+states the zero substitution support and mechanical extensive-margin magnitudes.
+`deck/main.pdf` SHA-256 is
+`10f19a7549cb55ab43aad7890d59c7772b2d6b4de5ca7d6f933f9327593f39d0`.
+Paper prose remains closed.
+
+**Validation.** Focused architecture/V3 tests: 37 passed. Tectonic deck build:
+exit 0, no overfull boxes (one non-blocking underfull paragraph warning on the
+interpretation table). Freeze audit: RED, 14 blocking, unchanged.
+
+**Commits:** `25c3bd2`..`cefee55` (science series), `4d8a2b6` (certified
+support outputs and first six queue closures), `a587f8b` (tested deck
+interpretation fix), and `7f3c8b4` (clean deck build and final queue closure).
+
+**Blocking count:** 14.
+
+**For the next iteration:**
+- Queue is empty. Resume node D at the minimal existing local-scan certification
+  owner for the 62 V3 construction-audit dates, beginning with authorization of
+  `uniswap_v3/burns/20210515`. Do not launch exact-state materialization until
+  that partition is admitted; do not fetch provider data or broaden into the
+  dormant raw-cert feature.
+- Do not rerun the route build or architecture transition owner. Their current
+  outputs are durable E0 support audits, not paper evidence or causal estimates.
