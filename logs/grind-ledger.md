@@ -369,3 +369,59 @@ and cannot be admitted while the exact route owner rejects its inputs.
   `build_cross_venue_routing_series.py --workers 8 --panel-only` and
   `build_vehicle_excess_use.py --workers 8 --panel-only` through `./scripts/run`;
   do not copy the old ignored panels into this worktree.
+
+## 2026-08-13 — V3-era route authority rebound and route panels refreshed
+
+**Targeted check:** `node D full-calendar directed-route gate`, followed by the
+supervisor's economic-materiality redirection to rebuild only the two required
+route panels and compact exhibits.
+
+**Economic result.** The rejection covered all 1,884 days from V3 genesis, so it
+could have selected the complete V3/V4 architecture era and changed every
+downstream route estimand. The exact migration proof instead finds zero
+scientific-identity differences across all 12,802 venue-day inputs and preserves
+the rows, bytes, SHA-256, and mtime of every one of 2,332 route partitions. The
+partition identity set remains
+`49d831f13c8fe0958776b0f4e59aa6411c34315d562127c19ddff9e39cf24f59`.
+This bounds the defect as authority bookkeeping rather than a change in period,
+protocol/design, venue, pool, vehicle candidate, trade-size, or stress-state
+composition; it cannot change an estimand, coefficient, or inference.
+
+**Work completed.** Built a new immutable pre-V3-recertification authority
+snapshot from the canonical swaps-only Uniswap V3 certificate and proved its
+12,802 scientific identities equal to the earlier relocation snapshot. The
+project's journaled migration owner then rebound exactly 1,884 marker
+fingerprints and the global quality outputs without rebuilding a route parquet.
+`require_route_release()` passes all 2,332 days. Rebuilt only
+`cross_venue_routing_daily.parquet` and `vehicle_excess_use_daily.parquet`
+through their owners, then refreshed their six compact exhibits. All eight
+panel/exhibit provenance verdicts are `ok`; route calendars reconcile at 2,332
+days with 55 structurally empty vehicle days, and 43,705,695 intermediated routes
+reconcile exactly. The cross-venue panel retains 358,027,668 routes over the
+full 2020-02-11..2026-06-30 calendar; the vehicle panel has 2,277 nonempty days
+and 8,112,479 token-days. Focused validation: 103 tests and 70 subtests passed.
+Freeze audit: RED, 13 blocking, down from 15; the directed-route and vehicle-
+dominance checks now pass.
+
+**Commit:** `99e26ab` (`Rebind route release and refresh route panels`).
+
+**Blocking count:** 13.
+
+**DECISION:** stopped certification engineering once exact equality bounded the
+defect as economically immaterial. Kept calendar release windows descriptive,
+not treatments, and did not open another data family or estimator. The remaining
+route-measurement blocker is solely the stale
+`intermediation_by_type_daily.parquet`; evaluate its economic support and refresh
+through its owner only if it is still required for fixed-opportunity routing.
+
+**For the next iteration:**
+- Queue is empty at this commit. Return immediately to science, starting with
+  the stale intermediation-by-type panel only if the fixed-opportunity routing
+  design still consumes it. State its economic weight and concentration before
+  rebuilding; do not resume marker or raw-certificate engineering.
+- Keep persistence distinct from hysteresis: the latter needs asymmetric
+  retention versus displacement under independently measured cost-state
+  reversal. Realised architecture use remains endogenous E0 exposure.
+- Paper prose remains closed because the freeze gate is red. Presentation-ready
+  provisional deck updates may use only the newly current compact exhibits and
+  must retain support and identification labels.
