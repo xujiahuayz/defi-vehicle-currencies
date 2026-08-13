@@ -5,13 +5,10 @@ PROVISIONAL (workflow §41): reads released route-only D3 exhibits, is a segrega
 plausibility check, and promotes nothing until rerun on the released D generation and
 passed through E1 and F. Rerun this script after any data refresh.
 
-SNAPSHOT AND DELTA, why the numbers are kept not discarded. The exhibit this writes is a
-provenance-stamped snapshot. Running it now on the provisional route-only inputs records a
-dated baseline; when node D releases the healed generation, rerunning writes a new stamped
-exhibit and the git diff of the two measures how far the finding moved and where. That delta
-is the whole point of running the experiment ahead of the data, so the provisional numbers
-are stamped and committed, not thrown away. The exhibit is the diffable record; prose stays
-thin because prose does not diff, an exhibit does.
+SNAPSHOT AND DELTA. The exhibit is a provenance-stamped snapshot, but the runner refuses
+stale or unstamped inputs. A pre-release fit may guide design privately; it is not committed
+as evidence. Once node D publishes the healed generation, rerunning writes the first
+admissible baseline, and later generation changes are reviewed as an exact git diff.
 
 THE OBJECT. The vehicle role is intermediary use net of endpoint demand. The excess-use
 ratio is an asset's share of intermediary legs over its share of endpoint legs. Above one
@@ -35,22 +32,40 @@ flaw that retired the earlier betweenness measure. The direct-share measure remo
 circularity but not the aggregation, so genuine-versus-mosaic is a per-cell question for the
 state-dependent layer, not a settled finding here.
 
-LENS 3, EVENT STUDIES AROUND MECHANISM INTRODUCTIONS, the identified use of time. DeFi is
-rich in discrete events: concentrated liquidity at Uniswap v3 in May 2021, hooks at v4, the
-USDC depeg of March 2023, the Terra collapse of May 2022, router and aggregator releases,
-and whatever sits under the sustained value crossing dated to 2025Q1. Monotone chronology is
-never the finding. Leads and lags around a dated event, with the untreated set as control,
-are. These run on the daily panel and are guarded below until node D releases it.
+LENS 3, EVENT STUDIES AROUND MECHANISM INTRODUCTIONS, the identified use of time. Monotone
+chronology is never the finding; a dated event with leads, lags and an untreated comparison
+is. Two designs run on the daily token panel. First, a difference-in-differences event study
+around each named mechanism or stress event: treated tokens are the fiat-reserve stables,
+controls are the other material tokens, outcome is log value excess-use, weekly bins over
+eight weeks either side with the week before the event as reference, token and calendar-day
+fixed effects, standard errors clustered by token. Fewer than twelve token clusters fail
+closed instead of manufacturing cluster-robust inference. Named events with overlapping
+windows are reported as not separately identified. The post-window mean and an explicit
+joint Wald test of all pre-event coefficients are recorded per admissible event. Second, an
+agnostic break-date search: the daily log differential between fiat-reserve stablecoins and
+native currency excess-use is fit with a single mean
+shift over a grid of candidate days, the argmin-SSR day is the estimated break, a level-set
+band reports the days whose SSR is within five percent of the minimum, and the distance
+from the estimated break to each named event says which introduction, if any, sits under
+the sustained 2025Q1 crossing. Proximity remains descriptive and never identifies the
+nearby event. The named events, all inside the 2020-05 to 2026-06 sample:
+Uniswap v3 concentrated liquidity 2021-05-05, Terra collapse 2022-05-09, the Merge
+2022-09-15, FTX failure 2022-11-08, USDC depeg 2023-03-11, UniswapX intent aggregation
+2023-07-17, Dencun blobs 2024-03-13, the EU MiCA stablecoin deadline 2024-12-30, Uniswap v4
+2025-01-31. Stress events (Terra, FTX, depeg) are expected to show sharp reversible
+responses, mechanism introductions persistent ones; the 2022-versus-2025 contrast in lens
+2's transient logic is the same test stated eventwise.
 
 A HONEST NULL WORTH KEEPING. The rotation is strong descriptively and on the daily calendar
 panel with HAC standard errors, but a two-way fixed-effect difference-in-differences of the
 fiat-stable treatment interacted with a post-2024 indicator on the annual token panel is
-underpowered, 18 tokens over 7 years, and returns an insignificant coefficient. The powered
-inference is the daily disaggregated panel, not the annual aggregate. The annual DiD is
-reported here so its power limit is on the record and not rediscovered later.
+underpowered, 18 tokens over 7 years, and returns an insignificant coefficient. The daily
+disaggregated panel is the intended improvement, but it must still pass the cluster-count,
+pre-trend and event-collision gates above. The annual DiD is reported so its power limit is
+on the record and not rediscovered later.
 
-Reads   output/exhibits/vehicle_excess_use.jsonl, vehicle_concentration.jsonl
-        (guarded) the released daily vehicle panel, when node D publishes it
+Reads   output/exhibits/vehicle_excess_use.jsonl, vehicle_concentration.jsonl,
+        data/processed/vehicle_excess_use_daily.parquet (only when provenance-current)
 Writes  output/exhibits/e0_vehicle_rotation_analysis.jsonl
 """
 
@@ -60,15 +75,26 @@ import json
 import sys
 from pathlib import Path
 
+import numpy as np
 import pandas as pd
 
+from ddvc.asset_types import STABLE_BACKING
+from ddvc.provenance import current_artifacts
 from ddvc.tables import write_exhibit
 
 ROOT = Path(__file__).resolve().parents[1]
 EX = ROOT / "output" / "exhibits"
 OUT = EX / "e0_vehicle_rotation_analysis.jsonl"
-FIAT_STABLE = {"USDT", "USDC", "USD1", "USDS", "PYUSD", "TUSD", "FDUSD", "USDP", "GUSD"}
+FIAT_STABLE = frozenset(
+    symbol for symbol, regime in STABLE_BACKING.items() if regime == "fiat_reserve"
+)
 MATERIAL_USD = 1e8  # ignore sub-$100M-intermediary tokens as cross-sectional noise
+SCRIPT_VERSION = "vehicle_rotation_e0.v2"
+EVENT_WINDOW_DAYS = 56
+MIN_EVENT_CLUSTERS = 12
+ANNUAL_INPUT = EX / "vehicle_excess_use.jsonl"
+CONCENTRATION_INPUT = EX / "vehicle_concentration.jsonl"
+DAILY_PANEL = ROOT / "data" / "processed" / "vehicle_excess_use_daily.parquet"
 
 
 def _rows(name: str) -> list[dict]:
@@ -133,32 +159,210 @@ def lens_did_annual(out: list[dict]) -> None:
         out.append({"lens": "did_annual_UNDERPOWERED", "error": f"{type(exc).__name__}: {str(exc)[:120]}"})
 
 
-def lens3_event_studies(out: list[dict]) -> None:
-    """Guarded: run leads/lags around dated mechanism events on the released daily panel."""
+EVENTS = {  # date: (name, kind) — kind separates stress (reversible) from mechanism (persistent)
+    "2021-05-05": ("uniswap_v3_concentrated_liquidity", "mechanism"),
+    "2022-05-09": ("terra_collapse", "stress"),
+    "2022-09-15": ("ethereum_merge", "mechanism"),
+    "2022-11-08": ("ftx_failure", "stress"),
+    "2023-03-11": ("usdc_depeg", "stress"),
+    "2023-07-17": ("uniswapx_intent_aggregation", "mechanism"),
+    "2024-03-13": ("dencun_blobs", "mechanism"),
+    "2024-12-30": ("mica_stablecoin_deadline", "mechanism"),
+    "2025-01-31": ("uniswap_v4", "mechanism"),
+}
+def _daily_panel() -> tuple[pd.DataFrame | None, str | None]:
+    if not DAILY_PANEL.exists():
+        return None, "daily panel absent on disk"
+    cols = ["date", "symbol", "asset_type", "intermediate_usd", "endpoint_usd",
+            "vehicle_excess_use_ratio"]
     try:
-        from ddvc.data_release import require_node_d_release
-        require_node_d_release(routes=True)
-    except Exception as exc:
-        out.append({"lens": "event_studies", "status": "deferred",
-                    "reason": f"daily panel not released ({str(exc)[:80]})",
-                    "planned_events": ["uniswap_v3_2021-05-05", "terra_2022-05", "usdc_depeg_2023-03-11",
-                                       "uniswap_v4_launch", "router_aggregator_releases", "eth_vehicle_crossing_2025Q1"],
-                    "design": "daily leads/lags of stable excess-use around each event, untreated pairs as control, "
-                              "cluster-robust; identify the event under the sustained 2025Q1 value crossing"})
+        with current_artifacts((DAILY_PANEL,), consumer="vehicle-rotation E0"):
+            df = pd.read_parquet(DAILY_PANEL, columns=cols)
+            df["date"] = pd.to_datetime(df.date)
+    except (OSError, RuntimeError, ValueError) as exc:
+        return None, f"daily panel is not a current released artifact ({exc})"
+    return df, None
+
+
+def _fiat_native_differential(df: pd.DataFrame) -> pd.Series:
+    """Daily log excess-use gap for fiat-reserve stablecoins versus native money."""
+    classified = df.copy()
+    classified["comparison_class"] = np.select(
+        [classified.symbol.isin(FIAT_STABLE), classified.asset_type.eq("native")],
+        ["fiat_reserve", "native"],
+        default=None,
+    )
+    classified = classified[classified.comparison_class.notna()]
+    day = classified.groupby(["date", "comparison_class"])[
+        ["intermediate_usd", "endpoint_usd"]
+    ].sum().reset_index()
+    totals = df.groupby("date")[["intermediate_usd", "endpoint_usd"]].sum()
+    day = day.join(totals, on="date", rsuffix="_total")
+    day["ratio"] = (day.intermediate_usd / day.intermediate_usd_total) / (
+        day.endpoint_usd / day.endpoint_usd_total
+    )
+    wide = day.pivot(index="date", columns="comparison_class", values="ratio")
+    required = {"fiat_reserve", "native"}
+    if not required.issubset(wide.columns):
+        return pd.Series(dtype=float)
+    return (
+        np.log(wide["fiat_reserve"]) - np.log(wide["native"])
+    ).replace([np.inf, -np.inf], np.nan).dropna()
+
+
+def _break_search(differential: pd.Series) -> dict | None:
+    """One-break descriptive diagnostic; it is not causal event attribution."""
+    grid = differential.loc["2024-01-01":"2026-03-31"]
+    if len(grid) <= 60:
+        return None
+    values = differential.to_numpy()
+    dates = differential.index
+    candidates: list[tuple[pd.Timestamp, float]] = []
+    for candidate in grid.index[30:-30]:
+        cut = dates.searchsorted(candidate)
+        ssr = ((values[:cut] - values[:cut].mean()) ** 2).sum()
+        ssr += ((values[cut:] - values[cut:].mean()) ** 2).sum()
+        candidates.append((candidate, float(ssr)))
+    best_date, best_ssr = min(candidates, key=lambda item: item[1])
+    null_ssr = float(((values - values.mean()) ** 2).sum())
+    band = [date for date, ssr in candidates if ssr <= best_ssr * 1.05]
+    cut = dates.searchsorted(best_date)
+    return {
+        "lens": "break_search_descriptive",
+        "series": "log fiat-reserve stable minus log native class excess-use",
+        "break_date": str(best_date.date()),
+        "pre_mean": round(float(values[:cut].mean()), 3),
+        "post_mean": round(float(values[cut:].mean()), 3),
+        "ssr_reduction_pct": round(100 * (1 - best_ssr / null_ssr), 1),
+        "band_5pct": f"{band[0].date()}..{band[-1].date()}",
+        "nearest_events_days": {
+            value[0]: int((best_date - pd.Timestamp(date)).days)
+            for date, value in EVENTS.items()
+            if abs((best_date - pd.Timestamp(date)).days) <= 120
+        },
+        "interpretation": "descriptive break only; proximity does not identify an event",
+    }
+
+
+def _overlapping_events(date_str: str) -> list[str]:
+    focal = pd.Timestamp(date_str)
+    return [
+        name
+        for other_date, (name, _kind) in EVENTS.items()
+        if other_date != date_str
+        and abs((focal - pd.Timestamp(other_date)).days) < 2 * EVENT_WINDOW_DAYS
+    ]
+
+
+def _joint_pretrend_p(model, coefficient_names: list[str], pre_terms: list[str]) -> float:
+    if not pre_terms:
+        raise ValueError("event study has no pre-event coefficients to test")
+    restriction = np.zeros((len(pre_terms), len(coefficient_names)))
+    for row, term in enumerate(pre_terms):
+        restriction[row, coefficient_names.index(term)] = 1.0
+    result = model.wald_test(R=restriction, distribution="chi2")
+    return float(result["pvalue"])
+
+
+def lens3_event_studies(out: list[dict], df: pd.DataFrame) -> None:
+    """DiD leads/lags per named event, plus an agnostic break-date search."""
+    break_record = _break_search(_fiat_native_differential(df))
+    if break_record is not None:
+        out.append(break_record)
+
+    # ---- DiD event studies, treated = fiat-reserve stables, control = other material tokens ----
+    keep = df.groupby("symbol").intermediate_usd.max()
+    mat = df[df.symbol.isin(keep[keep > MATERIAL_USD].index)].copy()
+    mat = mat[np.isfinite(mat.vehicle_excess_use_ratio) & (mat.vehicle_excess_use_ratio > 0)]
+    mat["y"] = np.log(mat.vehicle_excess_use_ratio)
+    mat["treated"] = mat.symbol.isin(FIAT_STABLE).astype(int)
+    try:
+        import pyfixest as pf
+    except ImportError:
+        out.append({"lens": "event_study", "error": "pyfixest unavailable"})
         return
-    out.append({"lens": "event_studies", "status": "TODO_on_released_daily_panel"})
+    for date_str, (name, kind) in EVENTS.items():
+        overlaps = _overlapping_events(date_str)
+        if overlaps:
+            out.append({
+                "lens": "event_study",
+                "event": name,
+                "kind": kind,
+                "date": date_str,
+                "status": "not_separately_identified",
+                "reason": f"symmetric event window overlaps: {', '.join(overlaps)}",
+            })
+            continue
+        t0 = pd.Timestamp(date_str)
+        win = mat[
+            (mat.date >= t0 - pd.Timedelta(days=EVENT_WINDOW_DAYS))
+            & (mat.date < t0 + pd.Timedelta(days=EVENT_WINDOW_DAYS))
+        ].copy()
+        if win.empty or win.treated.nunique() < 2:
+            continue
+        clusters = int(win.symbol.nunique())
+        if clusters < MIN_EVENT_CLUSTERS:
+            out.append({
+                "lens": "event_study",
+                "event": name,
+                "kind": kind,
+                "date": date_str,
+                "status": "underidentified_few_clusters",
+                "clusters": clusters,
+                "minimum_clusters": MIN_EVENT_CLUSTERS,
+            })
+            continue
+        win["rel_week"] = ((win.date - t0).dt.days // 7).clip(-8, 7)
+        try:
+            m = pf.feols("y ~ i(rel_week, treated, ref=-1) | symbol + date", data=win,
+                         vcov={"CRV1": "symbol"})
+            tidy = m.tidy()
+            post = tidy[tidy.index.str.contains(r"rel_week::[0-7]\b", regex=True)]
+            pre = tidy[tidy.index.str.contains(r"rel_week::-[2-8]", regex=True)]
+            coefficient_names = list(m.coef().index)
+            pre_joint_p = _joint_pretrend_p(m, coefficient_names, list(pre.index))
+            out.append({"lens": "event_study", "event": name, "kind": kind, "date": date_str,
+                        "status": "exploratory_crv1",
+                        "post_mean_coef": round(float(post["Estimate"].mean()), 4),
+                        "post_weeks_sig_5pct": int((post["Pr(>|t|)"] < 0.05).sum()),
+                        "pre_mean_coef": round(float(pre["Estimate"].mean()), 4),
+                        "pre_joint_p": round(pre_joint_p, 3),
+                        "pretrend_pass_10pct": bool(pre_joint_p >= 0.10),
+                        "n": int(len(win)), "tokens": int(win.symbol.nunique()),
+                        "treated_tokens": int(win[win.treated == 1].symbol.nunique())})
+        except Exception as exc:
+            out.append({"lens": "event_study", "event": name, "date": date_str,
+                        "error": f"{type(exc).__name__}: {str(exc)[:100]}"})
 
 
 def main() -> int:
     out: list[dict] = []
-    lens1_cross_section(out)
-    lens2_fragmentation(out)
-    lens_did_annual(out)
-    lens3_event_studies(out)
+    base_inputs = (ANNUAL_INPUT, CONCENTRATION_INPUT)
+    try:
+        with current_artifacts(base_inputs, consumer="vehicle-rotation E0"):
+            lens1_cross_section(out)
+            lens2_fragmentation(out)
+            lens_did_annual(out)
+    except RuntimeError as exc:
+        print(f"refusing stale E0 inputs: {exc}", file=sys.stderr)
+        return 2
+    daily, daily_reason = _daily_panel()
+    inputs = list(base_inputs)
+    if daily is None:
+        out.append({"lens": "event_studies", "status": "deferred", "reason": daily_reason})
+    else:
+        inputs.append(DAILY_PANEL)
+        lens3_event_studies(out, daily)
     if not out:
         print("no released exhibits to read")
         return 1
-    write_exhibit(pd.DataFrame(out), OUT)
+    write_exhibit(
+        pd.DataFrame(out),
+        OUT,
+        code_sources=["scripts/run_vehicle_rotation_e0.py"],
+        inputs=inputs,
+        notes=f"{SCRIPT_VERSION}; E0 only; no claim promotion before D3/E1/F",
+    )
     vehicles = [r for r in out if r.get("lens") == "cross_section" and r.get("is_vehicle")]
     print(f"cross-section vehicles (latest year): {[r['token'] for r in vehicles]}")
     frag = [r for r in out if r.get("lens") == "fragmentation" and r.get("basis") == "share_volume"]
