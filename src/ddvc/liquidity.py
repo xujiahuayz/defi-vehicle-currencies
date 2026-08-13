@@ -10,6 +10,8 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 from importlib import import_module
+from importlib.util import module_from_spec, spec_from_file_location
+import sys
 from typing import Callable
 
 import numpy as np
@@ -27,6 +29,7 @@ from ddvc.execution_contracts import (
     TICK_STATE_GENERATIONS,
     execution_contract,
 )
+from ddvc.paths import REPO_ROOT
 
 
 LOCAL_DEPTH_COLUMN = "local_depth_usd"
@@ -122,13 +125,44 @@ def _capability(
     )
 
 
+def _import_from_repository(module_name: str):
+    """Import one in-repository module by file location, without touching sys.path.
+
+    A materializer may name an entrypoint module such as
+    ``scripts.build_pool_capital_panel``.  Those modules are importable by name
+    only when the repository root is on the import path, which the project runner
+    arranges but a bare ``python scripts/x.py`` invocation does not.  A contract
+    validator whose verdict depends on how the interpreter was launched is not a
+    gate, so resolve the module from its own location instead.
+    """
+
+    location = REPO_ROOT.joinpath(*module_name.split(".")).with_suffix(".py")
+    if not location.is_file():
+        raise ImportError(f"no module named {module_name!r} and no file at {location}")
+    spec = spec_from_file_location(module_name, location)
+    if spec is None or spec.loader is None:
+        raise ImportError(f"{location} is not an importable module")
+    module = module_from_spec(spec)
+    sys.modules[module_name] = module
+    try:
+        spec.loader.exec_module(module)
+    except BaseException:
+        del sys.modules[module_name]
+        raise
+    return module
+
+
 def resolve_materializer(reference: str) -> Callable[..., object]:
     """Resolve one exact ``module:callable`` implementation reference."""
 
     module_name, separator, attribute = reference.partition(":")
     if not separator or not module_name or not attribute:
         raise ValueError(f"materializer is not an exact module:callable reference: {reference!r}")
-    implementation = getattr(import_module(module_name), attribute, None)
+    try:
+        module = import_module(module_name)
+    except ModuleNotFoundError:
+        module = _import_from_repository(module_name)
+    implementation = getattr(module, attribute, None)
     if not callable(implementation):
         raise ValueError(f"materializer is not callable: {reference!r}")
     return implementation
