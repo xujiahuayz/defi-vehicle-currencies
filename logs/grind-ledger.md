@@ -425,3 +425,45 @@ through its owner only if it is still required for fixed-opportunity routing.
 - Paper prose remains closed because the freeze gate is red. Presentation-ready
   provisional deck updates may use only the newly current compact exhibits and
   must retain support and identification labels.
+
+## 2026-08-13 — route measurement provenance current
+
+**Economic scope.** The stale intermediation provenance covered the complete
+2,332-day route calendar rather than a selected venue, pool, design, candidate,
+trade-size, or stress slice. The installed panel spans 43,705,695 intermediated
+routes and 47,606,817 episodes; 72.3% of episodes are single-venue, 27.7% are
+cross-venue, 78.4% are exact two-leg, and strict 20% value support retains 82.5%
+of raw intermediary value. Its claim use remains necessary: the specification
+lock names it as a vehicle-rotation input and uses its integration/complexity
+strata before the later fixed-opportunity conditioning.
+
+**Work completed.** Rebuilt `intermediation_by_type_daily.parquet` and all five
+owned compact exhibits through `build_intermediation_by_type.py` against the
+certified 2,332-partition route release. A preserved pre-build copy and the
+owner-built result are byte-identical at SHA-256
+`8db2065d8f14b8a3d7b34b6cc2057823a6d74ecc5fc8f8b6beaef33c7afc780b`
+and exactly equal in every cell across 2,332 rows and 253 columns. The defect
+therefore has zero economic weight and cannot change the estimand, sample,
+coefficient, or inference. The current manifest now binds every released route
+partition; the panel and all five regenerated exhibits verify `ok` with current
+content, inputs, and code. Focused validation: 89 tests and 70 subtests passed.
+Freeze audit: RED, 12 blocking, down from 13; route-measurement provenance now
+passes and the claim-input gate reports three current inputs with no stale ones.
+
+**Commit:** `111230a` (`Refresh certified intermediation evidence`).
+
+**Blocking count:** 12.
+
+**DECISION:** retained the panel because it is an explicit locked claim input,
+but bounded the provenance defect before publication and found exact zero
+scientific change. No provider data, certified route partition, paper prose, or
+state-dependent estimator was opened.
+
+**For the next iteration:**
+- Queue is empty at this commit. Resume upstream D2 data contracts, preferring
+  the V2 token-decimals registry and V2 event-source certificate identified in
+  the glotl next-actions list; check the certified sibling store and existing
+  release pointers before any acquisition.
+- Do not rebuild the intermediation panel or route release again. All route-only
+  measurement provenance and reconciliation checks are green.
+- Paper prose remains closed; the gate still has 12 blockers.
