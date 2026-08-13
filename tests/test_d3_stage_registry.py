@@ -16,6 +16,9 @@ from ddvc.d3_stage_registry import (
     d3_input_ownership,
     executable_claim_inputs,
 )
+from ddvc.endpoint_candidate_composition_release import (
+    ENDPOINT_CANDIDATE_COMPOSITION_RELEASE_RELATIVE,
+)
 from ddvc.paths import REPO_ROOT
 from scripts import refresh_panel_dependents
 
@@ -35,20 +38,25 @@ def test_real_d3_registry_equals_the_executable_specification_perimeter() -> Non
         specification
     )
     by_path = {record.path: record for record in ownership}
-    route_cost = by_path["data/empirical/route_cost_panel_v2.parquet"]
-    assert route_cost.status == "external_prerequisite"
-    assert route_cost.owner == "scripts/run_route_cost_panel.py"
-    for path in (
-        "data/processed/liquidity_capital_flow_candidate_day.parquet",
-        "data/processed/liquidity_capital_flow_exact_horizons.parquet",
-    ):
-        assert by_path[path].status == "built"
-        assert by_path[path].owner == "build_liquidity_capital_flow_panels.py"
+    assert set(by_path) == {
+        "data/processed/cross_venue_routing_daily.parquet",
+        "data/processed/endpoint_candidate_composition_release/current.json",
+        "data/processed/intermediation_by_type_daily.parquet",
+        "data/processed/vehicle_excess_use_daily.parquet",
+    }
     endpoint = by_path[
         "data/processed/endpoint_candidate_composition_release/current.json"
     ]
     assert endpoint.status == "built"
     assert endpoint.owner == "build_endpoint_candidate_composition.py"
+
+
+def test_blocked_external_owner_remains_registered_but_not_executable() -> None:
+    specification = _specification()
+    ownership = d3_input_ownership(specification)
+    assert "data/empirical/route_cost_panel_v2.parquet" not in {
+        record.path for record in ownership
+    }
 
 
 def test_refresh_consumes_typed_registry_without_a_compatibility_view(
@@ -149,6 +157,14 @@ def test_every_owned_current_pointer_has_one_typed_resolver() -> None:
         CAPITAL_RELEASE_POINTER_RELATIVE,
         resolve_capital_release,
     )
+    endpoint = next(
+        stage
+        for stage in current_pointer_stages
+        if ENDPOINT_CANDIDATE_COMPOSITION_RELEASE_RELATIVE in stage.outputs
+    )
+    assert endpoint.release_postcondition is not None
+    assert endpoint.release_postcondition.receipt_backed_lease is not None
+    assert capital.release_postcondition.receipt_backed_lease is None
 
 
 def test_current_pointer_without_typed_resolver_is_rejected() -> None:

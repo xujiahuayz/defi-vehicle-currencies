@@ -102,7 +102,7 @@ class FindingsFreezeAuditTest(unittest.TestCase):
 
     def test_optional_artifact_gates_follow_only_executable_claim_inputs(self) -> None:
         payload = json.loads(SPECIFICATION_LOCK.read_text())
-        self.assertTrue(
+        self.assertFalse(
             active_claim_requires_any(
                 payload,
                 ("data/processed/pool_capital_release/current.json",),
@@ -905,15 +905,13 @@ class FindingsFreezeAuditTest(unittest.TestCase):
             for path in claim["inputs"]
         }
         self.assertEqual(set(by_path), expected)
-        for path in (
-            "data/processed/liquidity_capital_flow_candidate_day.parquet",
-            "data/processed/liquidity_capital_flow_exact_horizons.parquet",
-        ):
-            self.assertEqual(by_path[path].status, "built")
-            self.assertEqual(by_path[path].owner, "build_liquidity_capital_flow_panels.py")
-        route_cost = by_path["data/empirical/route_cost_panel_v2.parquet"]
-        self.assertEqual(route_cost.status, "external_prerequisite")
-        self.assertEqual(route_cost.owner, "scripts/run_route_cost_panel.py")
+        self.assertNotIn(
+            "data/processed/liquidity_capital_flow_candidate_day.parquet", by_path
+        )
+        self.assertNotIn(
+            "data/processed/liquidity_capital_flow_exact_horizons.parquet", by_path
+        )
+        self.assertNotIn("data/empirical/route_cost_panel_v2.parquet", by_path)
         self.assertEqual(FRONTIER_RELEASE_MARKER.name, "current.json")
         self.assertFalse(any("run_" in stage.script for stage in D3_BUILD_STAGES))
 

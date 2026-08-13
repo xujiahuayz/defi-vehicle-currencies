@@ -260,11 +260,16 @@ def test_real_specification_excludes_closed_and_non_stage_claims_from_d3() -> No
         sorted(claim["id"] for claim in stage_claims if claim["execution_gate"] == "open")
     )
     assert perimeter.executable_claim_ids == expected_executable
-    assert {
-        "direct_cost_dominance",
-        "routing_maturation_rival",
-        "vehicle_transition",
-    }.issubset(perimeter.executable_claim_ids)
+    assert perimeter.executable_claim_ids == ("vehicle_transition",)
+    blocked = {
+        record["claim_id"]: record["execution_gate"]
+        for record in perimeter.excluded_claims
+    }
+    assert blocked["routing_maturation_rival"] == "blocked_transaction_state_frontier"
+    assert blocked["direct_cost_dominance"] == "blocked_exact_state_release"
+    assert blocked["liquidity_capital_flow_predictability"] == (
+        "blocked_capital_and_lp_flow_releases"
+    )
     expected_excluded = {
         claim["id"]: {
             "claim_id": claim["id"],
@@ -281,9 +286,9 @@ def test_real_specification_excludes_closed_and_non_stage_claims_from_d3() -> No
     }
     assert {record["claim_id"]: record for record in perimeter.excluded_claims} == expected_excluded
     executable_paths = set(perimeter.paths)
-    for claim in specification["claims"]:
-        if claim["id"] in expected_excluded:
-            assert executable_paths.isdisjoint(claim.get("inputs", []))
+    assert "data/empirical/route_cost_panel_v2.parquet" not in executable_paths
+    assert "data/processed/counterfactual_dominance.parquet" not in executable_paths
+    assert "data/processed/pool_capital_release/current.json" not in executable_paths
 
 
 def test_d3_release_rejects_raw_missing_and_stale_claim_inputs() -> None:

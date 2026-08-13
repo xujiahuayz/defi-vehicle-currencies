@@ -311,7 +311,13 @@ def d3_input_ownership(
     required = executable_claim_inputs(specification)
     missing = [path for path in required if path not in candidates]
     duplicates = [path for path in required if len(candidates[path]) != 1]
-    stale_external = sorted(external_paths - set(required))
+    declared_inputs = {
+        str(path)
+        for claim in specification.get("claims", [])
+        if isinstance(claim, Mapping)
+        for path in claim.get("inputs", [])
+    }
+    stale_external = sorted(external_paths - declared_inputs)
     if missing or duplicates or stale_external:
         raise ValueError(
             "D3 input ownership does not equal the executable specification perimeter: "

@@ -8,7 +8,7 @@
   "d3_certificate": null,
   "exploration_generation": null,
   "exploration_certificate": null,
-  "lock_hash": "391b8ab1117e4c0c5599a445cad2423f79ab5eb39088219ebfcc7a8350c5ef7f",
+  "lock_hash": "2c69c7cca0a3e9a4fdc9fa58996677cd0cb43636aa190ddb4896abe790759527",
   "paper_scope": "The making and displacement of vehicle-currency roles in Ethereum decentralised exchange",
   "global_rules": {
     "asset_identity": "canonical contract address; symbols are labels only",
@@ -211,7 +211,7 @@
     {
       "id": "routing_maturation_rival",
       "status": "candidate_mechanism",
-      "execution_gate": "open",
+      "execution_gate": "blocked_transaction_state_frontier",
       "role": "first rival mechanism",
       "estimand": "changes in opportunity-set integration, direct splitting, true intermediation, path complexity, and realised routing regret",
       "sample": "economic routes on full and balanced venue perimeters; topology uses the full daily calendar; the fixed-notional cost landscape uses the 200 most heavily intermediated directed endpoint pairs per day at all 24 UTC hours as a selected descriptive panel, a cohort fixed from the first 365 released days for within-established-market changes, and a persistent common-support cohort; exact-state regret uses the full daily realised-route frontier after a separate 77-day estimator-validation audit passes",
@@ -297,7 +297,7 @@
     {
       "id": "direct_cost_dominance",
       "status": "candidate_foundation",
-      "execution_gate": "open",
+      "execution_gate": "blocked_exact_state_release",
       "role": "necessary state for persistence, not a persistence estimate",
       "estimand": "share of realised V2-family two-leg routes for which an available direct pool returns more or costs less all-in at strict pre-transaction state",
       "sample": "realised Uniswap V2 and SushiSwap V2 two-leg routes with input notional at least 100 dollars and an exact-state direct alternative on the full daily calendar spanning 74 calendar months",
@@ -345,7 +345,7 @@
     {
       "id": "liquidity_capital_flow_predictability",
       "status": "candidate_mechanism",
-      "execution_gate": "open",
+      "execution_gate": "blocked_capital_and_lp_flow_releases",
       "role": "liquidity-provision mechanism candidate based on bidirectional predictability, not causal feedback",
       "estimand": "whether candidate-level vehicle dominance predicts subsequent liquidity allocation and whether candidate-level liquidity allocation predicts subsequent vehicle dominance, adjudicated separately for V2-family deposited-capital stocks and Uniswap V3 LP flows",
       "sample": "the fixed intersection of WETH, WBTC, DAI, USDC, and USDT identified by canonical token address; topology-valid clean non-round-trip routes joined by exact calendar date to candidate-attributed Uniswap V2 and SushiSwap V2 deposited-capital stocks and Uniswap V3 LP dollar flows. The stock and flow samples retain their own start dates and support and are never pooled or normalized by one another",
