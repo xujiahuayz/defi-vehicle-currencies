@@ -7,7 +7,6 @@ from ddvc.route_replay import (
     build_route_replay_manifest,
     render_route_replay_html,
     render_route_replay_pdf,
-    render_route_replay_video,
 )
 
 
@@ -95,11 +94,3 @@ def test_static_replay_is_a_vector_pdf(tmp_path) -> None:
     render_route_replay_pdf(manifest, output)
     assert output.read_bytes().startswith(b"%PDF")
     assert output.stat().st_size > 1_000
-
-
-def test_video_rejects_invalid_duration(tmp_path) -> None:
-    manifest = build_route_replay_manifest(
-        _legs(), day="20260110", tx_hash="0xabc", component_id=0, partition_sha256="f" * 64
-    )
-    with pytest.raises(ValueError, match="duration and frame rate"):
-        render_route_replay_video(manifest, tmp_path / "route.mp4", seconds=0)

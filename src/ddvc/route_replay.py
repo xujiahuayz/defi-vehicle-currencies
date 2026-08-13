@@ -16,7 +16,6 @@ from ddvc.runtime import atomic_output, file_sha256
 
 matplotlib.use("Agg")
 import matplotlib.pyplot as plt  # noqa: E402
-from matplotlib.animation import FFMpegWriter, FuncAnimation  # noqa: E402
 from matplotlib.patches import Circle, FancyArrowPatch, FancyBboxPatch  # noqa: E402
 
 
@@ -282,51 +281,6 @@ def render_route_replay_pdf(manifest: dict[str, object], output: Path) -> None:
             )
         finally:
             plt.close(figure)
-
-
-def render_route_replay_video(
-    manifest: dict[str, object], output: Path, *, seconds: float = 6.0, fps: int = 30
-) -> None:
-    """Render a short deterministic reveal from the same manifest as the PDF."""
-
-    _validated_route(manifest)
-    if seconds <= 0 or fps <= 0:
-        raise ValueError("route replay video duration and frame rate must be positive")
-    figure, axis = plt.subplots(figsize=(11.0, 4.4), dpi=140)
-    total_frames = max(3, int(seconds * fps))
-
-    def ramp(frame: int, start: float, end: float) -> float:
-        position = frame / max(total_frames - 1, 1)
-        return min(1.0, max(0.0, (position - start) / (end - start)))
-
-    def update(frame: int) -> tuple[object, ...]:
-        axis.clear()
-        _draw_route_replay(
-            axis,
-            manifest,
-            first_alpha=ramp(frame, 0.12, 0.28),
-            second_alpha=ramp(frame, 0.48, 0.64),
-            summary_alpha=ramp(frame, 0.72, 0.86),
-        )
-        return tuple(axis.get_children())
-
-    try:
-        animation = FuncAnimation(
-            figure,
-            update,
-            frames=total_frames,
-            interval=1000 / fps,
-            blit=False,
-        )
-        writer = FFMpegWriter(
-            fps=fps,
-            codec="libx264",
-            bitrate=2600,
-            extra_args=["-pix_fmt", "yuv420p", "-movflags", "+faststart"],
-        )
-        animation.save(output, writer=writer, dpi=140)
-    finally:
-        plt.close(figure)
 
 
 def render_route_replay_html(manifest: dict[str, object]) -> str:

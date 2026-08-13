@@ -13,9 +13,9 @@ from ddvc.visual_experiments import (
     daily_vehicle_shares,
     integration_change_cells,
     latest_token_excess_use,
+    render_annual_composition_bands,
     render_excess_use_heatmap,
     render_stable_share_ridgeline,
-    render_vehicle_composition_bands,
 )
 
 
@@ -95,8 +95,8 @@ class VisualExperimentTests(unittest.TestCase):
             root = Path(temporary)
             outputs = [root / f"figure-{index}.pdf" for index in range(3)]
             render_stable_share_ridgeline(daily_fixture(), outputs[0])
-            render_vehicle_composition_bands(daily_fixture(), outputs[1])
-            render_excess_use_heatmap(token_fixture(), outputs[2])
+            render_excess_use_heatmap(token_fixture(), outputs[1])
+            render_annual_composition_bands(annual_fixture(), outputs[2])
             self.assertTrue(all(path.exists() and path.stat().st_size > 1_000 for path in outputs))
 
 

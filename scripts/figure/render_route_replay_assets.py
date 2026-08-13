@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Render static and animated companions from an admitted route-replay manifest."""
+"""Render static PDF and native-browser companions from one admitted route manifest."""
 
 from __future__ import annotations
 
@@ -12,7 +12,6 @@ from ddvc.provenance import describe_input, install_stamped_artifact, prepare_st
 from ddvc.route_replay import (
     render_route_replay_html,
     render_route_replay_pdf,
-    render_route_replay_video,
 )
 from ddvc.runtime import staged_output
 
@@ -20,7 +19,6 @@ from ddvc.runtime import staged_output
 DEFAULT_INPUT = OUTPUT_DIR / "exhibits" / "route_replay.json"
 DEFAULT_PDF = OUTPUT_DIR / "figures" / "route_replay.pdf"
 DEFAULT_HTML = OUTPUT_DIR / "live" / "route_replay.html"
-DEFAULT_VIDEO = OUTPUT_DIR / "live" / "route_replay.mp4"
 CODE_SOURCES = [
     "scripts/figure/render_route_replay_assets.py",
     "src/ddvc/route_replay.py",
@@ -58,9 +56,6 @@ def main() -> int:
     parser.add_argument("--input", type=Path, default=DEFAULT_INPUT)
     parser.add_argument("--pdf", type=Path, default=DEFAULT_PDF)
     parser.add_argument("--html", type=Path, default=DEFAULT_HTML)
-    parser.add_argument("--video", type=Path, default=DEFAULT_VIDEO)
-    parser.add_argument("--seconds", type=float, default=6.0)
-    parser.add_argument("--fps", type=int, default=30)
     args = parser.parse_args()
 
     manifest_bytes = args.input.read_bytes()
@@ -84,16 +79,7 @@ def main() -> int:
         ),
         notes="Selectable progressive local replay of the same admitted route used by the static frame",
     )
-    _publish(
-        args.video,
-        input_path=args.input,
-        input_identity=input_identity,
-        renderer=lambda path: render_route_replay_video(
-            manifest, path, seconds=args.seconds, fps=args.fps
-        ),
-        notes="Progressive local reveal of the same admitted route used by the static frame",
-    )
-    print(f"wrote {args.pdf}, {args.html}, and {args.video}")
+    print(f"wrote {args.pdf} and {args.html}")
     return 0
 
 

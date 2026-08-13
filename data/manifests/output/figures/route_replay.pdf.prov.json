@@ -1,41 +1,52 @@
 {
- "argv": [
-  "--seconds",
-  "4",
-  "--fps",
-  "24"
- ],
+ "argv": [],
  "artefact": "output/figures/route_replay.pdf",
  "artefact_bytes": 41900,
- "artefact_mtime_ns": 1786629618768342753,
+ "artefact_mtime_ns": 1786633400241156010,
  "artefact_sha256": "da9605fd30b446d0fe2dcc818d6b99e4988750b372db207916a023aa883f2735",
- "code_fingerprint": "4d8df6b8c20b2b0fd3f27ef9ac8da07cfce1a2238cc78a16e3b16e8d8156775e",
+ "code_fingerprint": "4cd873a0e8625fc60738101fc41326edf69fe20898c5a42da1dd37fce95b67a4",
  "code_sources": [
   "scripts/figure/render_route_replay_assets.py",
   "src/ddvc/route_replay.py"
  ],
- "created_at": "2026-08-13T14:00:18+00:00",
+ "created_at": "2026-08-13T15:03:20+00:00",
  "git": {
   "branch": "main",
-  "commit": "525c67a7f672593fe07e54cf5ccb6d08910e9b04",
+  "commit": "f71c1422768cea387fe94ff8600fa323a53d9190",
   "dirty": true,
   "dirty_generated_files": [
-   "data/manifests/output/live/",
-   "output/exhibits/route_replay.json",
-   "output/figures/.route_replay.pdf.04389t5t.pdf",
-   "output/figures/.route_replay.pdf.04389t5t.tmp",
-   "output/live/"
+   "data/manifests/output/exhibits/prose_conventions.jsonl.prov.json",
+   "data/manifests/output/exhibits/prose_outliers.jsonl.prov.json",
+   "data/manifests/output/exhibits/venue_optics.jsonl.prov.json",
+   "data/manifests/output/exhibits/venue_shape.jsonl.prov.json",
+   "data/manifests/output/figures/experiments/annual_vehicle_composition_bands.pdf.prov.json",
+   "data/manifests/output/figures/experiments/annual_vehicle_rank_bump.pdf.prov.json",
+   "data/manifests/output/figures/experiments/annual_vehicle_share_heatmap.pdf.prov.json",
+   "data/manifests/output/figures/experiments/integration_change_forest.pdf.prov.json",
+   "data/manifests/output/figures/experiments/integration_vehicle_alluvial.pdf.prov.json",
+   "data/manifests/output/live/route_replay.mp4.prov.json",
+   "output/exhibits/prose_conventions.jsonl",
+   "output/exhibits/prose_outliers.jsonl",
+   "output/figures/experiments/annual_vehicle_composition_bands.pdf",
+   "output/live/route_replay.mp4",
+   "output/figures/.route_replay.pdf.t3tvc103.pdf",
+   "output/figures/.route_replay.pdf.t3tvc103.tmp"
   ],
   "dirty_tracked_files": [
    "deck/main.pdf",
    "deck/sections/01-identification.tex",
-   "deck/sections/90-appendix.tex",
+   "deck/sections/04-results.tex",
    "docs/reviews/deck-visual-composition.md",
+   "docs/reviews/deck-visual-experiments.md",
+   "scripts/figure/build_visual_experiments.py",
+   "scripts/figure/render_route_replay_assets.py",
    "src/ddvc/route_replay.py",
-   "tests/test_route_replay.py"
+   "src/ddvc/visual_experiments.py",
+   "tests/test_route_replay.py",
+   "tests/test_visual_experiments.py"
   ],
   "dirty_untracked_files": [
-   "scripts/figure/render_route_replay_assets.py"
+   "deck/main.synctex.gz"
   ]
  },
  "inputs": [

@@ -20,7 +20,6 @@ from ddvc.figure_outputs import (
     ASSET_LABELS,
     ASSET_TYPES,
     PALETTE,
-    quarterly_vehicle_type_shares,
     validate_daily_calendar,
 )
 
@@ -31,7 +30,7 @@ import matplotlib.pyplot as plt  # noqa: E402
 
 WEIGHTINGS = (
     ("count", "Route count"),
-    ("value", "Common-support value"),
+    ("value", "Route value"),
 )
 
 
@@ -234,7 +233,7 @@ def render_excess_use_heatmap(frame: pd.DataFrame, output: Path) -> None:
     data = latest_token_excess_use(frame)
     columns = (
         ("vehicle_excess_use_count_ratio", "Route count"),
-        ("vehicle_excess_use_ratio_within_20pct", "Common-support value"),
+        ("vehicle_excess_use_ratio_within_20pct", "Route value"),
     )
     matrix = np.log2(data[[column for column, _ in columns]].to_numpy(dtype=float))
     bound = max(1.0, float(np.nanmax(np.abs(matrix))))
@@ -317,39 +316,6 @@ def render_stable_share_ridgeline(frame: pd.DataFrame, output: Path) -> None:
             plt.close(figure)
 
 
-def render_vehicle_composition_bands(frame: pd.DataFrame, output: Path) -> None:
-    """Render exhaustive quarterly vehicle composition as 100-percent bands."""
-
-    data = quarterly_vehicle_type_shares(frame)
-    with plt.rc_context({"font.family": "DejaVu Sans", "pdf.fonttype": 42}):
-        figure, axes = plt.subplots(1, 2, figsize=(11.2, 4.5), sharey=True)
-        try:
-            for axis, (prefix, title) in zip(axes, WEIGHTINGS, strict=True):
-                columns = [f"{prefix}_share_{asset_type}" for asset_type in ASSET_TYPES]
-                axis.stackplot(
-                    data["date"],
-                    *[data[column] for column in columns],
-                    colors=[PALETTE[asset_type] for asset_type in ASSET_TYPES],
-                    labels=[ASSET_LABELS[asset_type] for asset_type in ASSET_TYPES],
-                    alpha=0.94,
-                )
-                axis.set_title(title, loc="left", fontsize=12, fontweight="bold")
-                axis.set_ylim(0, 1)
-                axis.yaxis.set_major_formatter(PercentFormatter(1.0, decimals=0))
-                axis.xaxis.set_major_locator(mdates.YearLocator())
-                axis.xaxis.set_major_formatter(mdates.DateFormatter("%Y"))
-                axis.spines[["top", "right"]].set_visible(False)
-            axes[0].set_ylabel("Share of intermediation")
-            handles, labels = axes[0].get_legend_handles_labels()
-            figure.legend(handles, labels, frameon=False, ncol=5, loc="lower center", bbox_to_anchor=(0.5, 0.015))
-            figure.suptitle("Vehicle composition rotates across several margins", x=0.06, ha="left", fontsize=14, fontweight="bold")
-            figure.text(0.995, 0.012, "Quarterly ratios of totals; bands sum to 100% within each weighting.", ha="right", fontsize=8, color="#4B5563")
-            figure.tight_layout(rect=(0, 0.14, 1, 0.94))
-            _save(figure, output)
-        finally:
-            plt.close(figure)
-
-
 def _ribbon(axis: plt.Axes, left: tuple[float, float], right: tuple[float, float], *, color: str) -> None:
     x0, x1 = 0.14, 0.86
     l0, l1 = left
@@ -385,7 +351,7 @@ def render_annual_share_heatmap(frame: pd.DataFrame, output: Path) -> None:
     data = annual_vehicle_composition(frame)
     data = data.loc[data["integration_scope"].eq("all")]
     years = sorted(data["year"].unique())
-    panels = (("episode_share", "Route count"), ("usd_share_within_20pct", "Common-support value"))
+    panels = (("episode_share", "Route count"), ("usd_share_within_20pct", "Route value"))
     with plt.rc_context({"font.family": "DejaVu Sans", "pdf.fonttype": 42}):
         figure, axes = plt.subplots(1, 2, figsize=(10.5, 4.5), sharey=True)
         try:
@@ -418,29 +384,187 @@ def render_annual_share_heatmap(frame: pd.DataFrame, output: Path) -> None:
 
 
 def render_annual_composition_bands(frame: pd.DataFrame, output: Path) -> None:
-    """Render exhaustive annual vehicle shares as 100-percent bands."""
+    """Render the annual native-versus-stable lead path by count and value."""
 
     data = annual_vehicle_composition(frame)
     data = data.loc[data["integration_scope"].eq("all")]
     years = sorted(data["year"].unique())
-    panels = (("episode_share", "Route count"), ("usd_share_within_20pct", "Common-support value"))
+    panels = (
+        ("episode_share", "Route count"),
+        ("usd_share_within_20pct", "Route value"),
+    )
+
+    def _leader_runs(pivot: pd.DataFrame) -> list[tuple[str, int, int]]:
+        leaders = np.where(
+            pivot["stable"].gt(pivot["native"]),
+            "stable",
+            np.where(pivot["native"].gt(pivot["stable"]), "native", "tie"),
+        )
+        runs: list[tuple[str, int, int]] = []
+        for year, leader in zip(pivot.index.astype(int), leaders, strict=True):
+            if runs and runs[-1][0] == leader and runs[-1][2] + 1 == year:
+                runs[-1] = (leader, runs[-1][1], year)
+            else:
+                runs.append((leader, year, year))
+        return runs
+
     with plt.rc_context({"font.family": "DejaVu Sans", "pdf.fonttype": 42}):
         figure, axes = plt.subplots(1, 2, figsize=(10.8, 4.4), sharey=True)
         try:
             for axis, (column, title) in zip(axes, panels, strict=True):
-                pivot = data.pivot(index="year", columns="asset_type", values=column).reindex(index=years, columns=ASSET_TYPES)
-                axis.stackplot(years, *[pivot[item] for item in ASSET_TYPES], colors=[PALETTE[item] for item in ASSET_TYPES], labels=[ASSET_LABELS[item] for item in ASSET_TYPES])
+                pivot = (
+                    data.pivot(index="year", columns="asset_type", values=column)
+                    .reindex(index=years, columns=ASSET_TYPES)
+                )
+                other = pivot[
+                    [item for item in ASSET_TYPES if item not in {"native", "stable"}]
+                ].sum(axis=1)
+                axis.plot(
+                    years,
+                    pivot["native"],
+                    color=PALETTE["native"],
+                    linewidth=3.0,
+                    marker="o",
+                    markersize=5.0,
+                    label="Native",
+                    zorder=3,
+                )
+                axis.plot(
+                    years,
+                    pivot["stable"],
+                    color=PALETTE["stable"],
+                    linewidth=3.0,
+                    marker="o",
+                    markersize=5.0,
+                    label="Stable",
+                    zorder=3,
+                )
+                axis.plot(
+                    years,
+                    other,
+                    color="#9CA3AF",
+                    linewidth=1.6,
+                    linestyle="--",
+                    marker="o",
+                    markersize=3.5,
+                    label="Other types combined",
+                    zorder=2,
+                )
+                axis.fill_between(
+                    years,
+                    pivot["native"],
+                    pivot["stable"],
+                    where=pivot["stable"].gt(pivot["native"]),
+                    color=PALETTE["stable"],
+                    alpha=0.12,
+                    interpolate=True,
+                    zorder=1,
+                )
+                axis.fill_between(
+                    years,
+                    pivot["native"],
+                    pivot["stable"],
+                    where=pivot["native"].gt(pivot["stable"]),
+                    color=PALETTE["native"],
+                    alpha=0.08,
+                    interpolate=True,
+                    zorder=1,
+                )
                 axis.set_title(title, loc="left", fontsize=12, fontweight="bold")
                 axis.set_xticks(years)
-                axis.set_ylim(0, 1)
+                axis.set_xlim(min(years) - 0.25, max(years) + 0.25)
+                axis.set_ylim(0, 0.9)
                 axis.yaxis.set_major_formatter(PercentFormatter(1.0, decimals=0))
+                axis.grid(axis="y", color="#D1D5DB", linewidth=0.6, alpha=0.75)
                 axis.spines[["top", "right"]].set_visible(False)
+
+                if column == "episode_share":
+                    latest_year = int(pivot.index.max())
+                    latest_gap = abs(
+                        float(
+                            pivot.loc[latest_year, "native"]
+                            - pivot.loc[latest_year, "stable"]
+                        )
+                    )
+                    stable_runs = [
+                        run for run in _leader_runs(pivot) if run[0] == "stable"
+                    ]
+                    sustained_stable_lead = any(
+                        end - start >= 1 for _, start, end in stable_runs
+                    )
+                    if latest_gap <= 0.02 and not sustained_stable_lead:
+                        label = (
+                            f"Near parity by {latest_year}\n"
+                            "no sustained stable lead"
+                        )
+                    elif sustained_stable_lead:
+                        label = "Stable leads in consecutive years"
+                    else:
+                        label = "Native remains the annual leader"
+                    axis.text(
+                        0.98,
+                        0.97,
+                        label,
+                        transform=axis.transAxes,
+                        ha="right",
+                        va="top",
+                        fontsize=8.5,
+                        color="#374151",
+                    )
+                else:
+                    runs = [
+                        run for run in _leader_runs(pivot) if run[0] != "tie"
+                    ][-3:]
+                    labels = (
+                        "Earlier stable\nlead",
+                        "Native retakes\nlead",
+                        "Stable regains\nlead",
+                    )
+                    if [leader for leader, _, _ in runs] == [
+                        "stable",
+                        "native",
+                        "stable",
+                    ]:
+                        for (leader, start, end), label in zip(
+                            runs, labels, strict=True
+                        ):
+                            colour = PALETTE[leader]
+                            axis.axvspan(
+                                start - 0.35,
+                                end + 0.35,
+                                color=colour,
+                                alpha=0.045,
+                                zorder=0,
+                            )
+                            axis.text(
+                                (start + end) / 2,
+                                0.875,
+                                label,
+                                ha="center",
+                                va="top",
+                                fontsize=8.2,
+                                fontweight="bold",
+                                color=colour,
+                            )
             axes[0].set_ylabel("Share of intermediation")
             handles, labels = axes[0].get_legend_handles_labels()
-            figure.legend(handles, labels, frameon=False, ncol=5, loc="lower center", bbox_to_anchor=(0.5, 0.015))
-            figure.suptitle("The intermediary mix rotates across several asset types", x=0.06, ha="left", fontsize=14, fontweight="bold")
-            figure.text(0.995, 0.012, "Annual ratios of totals; bands exhaust the route-count or strict-value denominator.", ha="right", fontsize=8, color="#4B5563")
-            figure.tight_layout(rect=(0, 0.14, 1, 0.94))
+            figure.legend(
+                handles,
+                labels,
+                frameon=False,
+                ncol=3,
+                loc="lower center",
+                bbox_to_anchor=(0.5, 0.02),
+            )
+            figure.text(
+                0.995,
+                0.012,
+                "For value-weighted shares, source, intermediary, and destination dollar amounts must agree within 20%.",
+                ha="right",
+                fontsize=8,
+                color="#4B5563",
+            )
+            figure.tight_layout(rect=(0, 0.14, 1, 0.99))
             _save(figure, output)
         finally:
             plt.close(figure)
@@ -503,7 +627,7 @@ def render_annual_rank_bump(frame: pd.DataFrame, output: Path) -> None:
     data = annual_vehicle_composition(frame)
     data = data.loc[data["integration_scope"].eq("all")]
     years = sorted(data["year"].unique())
-    panels = (("episode_share", "Route count"), ("usd_share_within_20pct", "Common-support value"))
+    panels = (("episode_share", "Route count"), ("usd_share_within_20pct", "Route value"))
     with plt.rc_context({"font.family": "DejaVu Sans", "pdf.fonttype": 42}):
         figure, axes = plt.subplots(1, 2, figsize=(10.8, 4.4), sharey=True)
         try:
@@ -540,7 +664,7 @@ def render_integration_change_forest(frame: pd.DataFrame, output: Path) -> None:
         try:
             for axis, (weighting, support, title) in zip(
                 axes,
-                (("episode", "all_routes", "Route count"), ("value", "within_20pct", "Common-support value")),
+                (("episode", "all_routes", "Route count"), ("value", "within_20pct", "Route value")),
                 strict=True,
             ):
                 sample = data.loc[data["weighting"].eq(weighting) & data["value_support"].eq(support)].set_index("integration_scope")
