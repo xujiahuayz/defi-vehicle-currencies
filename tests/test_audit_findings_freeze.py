@@ -966,6 +966,47 @@ class FindingsFreezeAuditTest(unittest.TestCase):
             passed, _detail = validate_claim_input_layer(payload, root=root)
             self.assertFalse(passed)
 
+    def test_claim_input_gate_uses_registered_typed_release_contract(self) -> None:
+        import tempfile
+        from contextlib import contextmanager
+        from pathlib import Path
+
+        payload = {
+            "stage": "design_seed",
+            "claims": [
+                {
+                    "id": "live",
+                    "status": "candidate_primary",
+                    "execution_gate": "open",
+                    "inputs": [
+                        "data/processed/endpoint_candidate_composition_release/current.json"
+                    ],
+                }
+            ],
+        }
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            pointer = root / payload["claims"][0]["inputs"][0]
+            pointer.parent.mkdir(parents=True)
+            pointer.write_text("{}\n", encoding="utf-8")
+
+            @contextmanager
+            def lease(path: Path):
+                self.assertEqual(path, pointer)
+                yield object()
+
+            postcondition = Mock(receipt_backed_lease=lease)
+            with patch(
+                "scripts.audit_findings_freeze.d3_release_postcondition",
+                return_value=postcondition,
+            ):
+                passed, detail = validate_claim_input_layer(
+                    payload,
+                    root=root,
+                    verifier=lambda _path: {"status": "unstamped"},
+                )
+            self.assertTrue(passed, detail)
+
     def test_registered_consumers_cover_active_claim_and_model_producers(self) -> None:
         consumers = set(registered_empirical_consumers())
         self.assertIn("scripts/build_intermediation_by_type.py", consumers)

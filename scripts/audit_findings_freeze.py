@@ -65,6 +65,7 @@ from ddvc.model_registry import (
 )
 from ddvc.reconstruct import DEX_FAMILY, UNIFIED_QUALITY_PANEL
 from ddvc.data_release import require_route_release, released_state_partitions
+from ddvc.d3_stage_registry import d3_release_postcondition
 from ddvc.route_cost import MAIN_ROUTE_COST_SPEC, QUOTE_CELL_KEYS
 from ddvc.route_roles import VALUE_SUPPORT_COLUMNS
 from ddvc.state_data import (
@@ -3001,11 +3002,23 @@ def validate_claim_input_layer(
     )
     raw_inputs = [relative for relative in inputs if relative.startswith("data/raw/")]
     missing = [relative for relative in inputs if not (root / relative).exists()]
-    statuses = {
-        relative: verifier(root / relative).get("status")
-        for relative in inputs
-        if relative not in missing and relative not in raw_inputs
-    }
+    statuses: dict[str, object] = {}
+    for relative in inputs:
+        if relative in missing or relative in raw_inputs:
+            continue
+        postcondition = d3_release_postcondition(relative)
+        if postcondition is None:
+            statuses[relative] = verifier(root / relative).get("status")
+            continue
+        try:
+            if postcondition.receipt_backed_lease is not None:
+                with postcondition.receipt_backed_lease(root / relative):
+                    pass
+            else:
+                postcondition.resolver(root / relative)
+            statuses[relative] = "ok"
+        except (FileNotFoundError, OSError, RuntimeError, TypeError, ValueError) as error:
+            statuses[relative] = f"typed_release_{type(error).__name__}"
     stale = {relative: status for relative, status in statuses.items() if status != "ok"}
     passed = bool(inputs and not raw_inputs and not missing and not stale)
     return passed, (
