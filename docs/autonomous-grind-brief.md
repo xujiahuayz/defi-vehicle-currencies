@@ -54,6 +54,13 @@ only thing you owe is a clean, small, honest history:
 - **Commit in units that build.** Never leave the tree dirty at exit, and never
   commit a half-migration. If you must stop mid-unit, land the working part and
   record the resumption point.
+- **Never exit while your own background work is still running.** Nothing will
+  notify you: your turn is the last thing in this process, and the loop starts a
+  fresh worker that inherits your uncommitted files with no idea what state they
+  are in. If you launched a test suite or a long build in the background, wait
+  for it, act on the result, and commit. If you genuinely cannot wait, commit the
+  work first with the suite's status stated in the message, so the next iteration
+  inherits a clean tree and a known question rather than a mystery diff.
 - **Push-safe commits only.** Assume every commit you make is public within
   seconds, because it is. No secrets, no absolute paths in tracked files, no
   large derived artifacts that belong in the data store rather than git.
