@@ -8,7 +8,7 @@
   "d3_certificate": null,
   "exploration_generation": null,
   "exploration_certificate": null,
-  "lock_hash": "2c69c7cca0a3e9a4fdc9fa58996677cd0cb43636aa190ddb4896abe790759527",
+  "lock_hash": "385e2eee64732bd9bf6f2d6b681246acf1109b11c72d625fd070d361cf9a64b5",
   "paper_scope": "The making and displacement of vehicle-currency roles in Ethereum decentralised exchange",
   "global_rules": {
     "asset_identity": "canonical contract address; symbols are labels only",
@@ -199,7 +199,7 @@
         "data/processed/vehicle_excess_use_daily.parquet"
       ],
       "outputs": [
-        "output/exhibits/vehicle_transition_pair_panel.jsonl",
+        "output/exhibits/vehicle_transition_pair_panel.parquet",
         "output/exhibits/vehicle_transition_pair_decomposition.jsonl",
         "output/exhibits/vehicle_transition_pair_support.jsonl",
         "output/exhibits/intermediation_by_type.jsonl",

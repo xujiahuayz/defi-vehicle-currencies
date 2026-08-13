@@ -15,7 +15,7 @@ from ddvc.analysis_release import resolve_analysis_release, resolve_repo_path
 from ddvc.model_registry import FITTED_MODEL_ARTIFACT_ROLES, MODEL_RUN_ARTIFACT_ROLES
 from ddvc.paths import REPO_ROOT
 from ddvc.provenance import current_artifacts
-from ddvc.tables import write_exhibit
+from ddvc.tables import write_exhibit, write_panel
 
 
 _SPEC_TOKEN = re.compile(r"[^a-z0-9]+")
@@ -174,6 +174,31 @@ def write_model_exhibit(
     d3_input = context.d3_certificate_path
     bound_inputs = [d3_input, *[value for value in inputs if Path(value) != d3_input]]
     return write_exhibit(
+        frame,
+        path,
+        code_sources=["src/ddvc/model_artifacts.py", *code_sources],
+        inputs=bound_inputs,
+        notes=notes,
+        preinstall_validator=lambda _path: _validate_model_frame(frame, role=role),
+    )
+
+
+def write_model_panel(
+    frame: pd.DataFrame,
+    path: str | Path,
+    *,
+    role: str,
+    context: ModelArtifactContext,
+    code_sources: list[str],
+    inputs: list[str | Path],
+    notes: str,
+) -> Path:
+    """Write a large validated model panel with the exact D3 certificate bound."""
+
+    _validate_model_frame(frame, role=role)
+    d3_input = context.d3_certificate_path
+    bound_inputs = [d3_input, *[value for value in inputs if Path(value) != d3_input]]
+    return write_panel(
         frame,
         path,
         code_sources=["src/ddvc/model_artifacts.py", *code_sources],

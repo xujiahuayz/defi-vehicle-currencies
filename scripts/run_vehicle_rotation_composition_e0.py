@@ -20,12 +20,13 @@ from ddvc.model_artifacts import (
     attach_spec_ids,
     model_artifact_context,
     write_model_exhibit,
+    write_model_panel,
 )
 from ddvc.paths import DATA_DIR, OUTPUT_DIR, REPO_ROOT
 from ddvc.runtime import exclusive_job
 
 
-PAIR_PANEL = OUTPUT_DIR / "exhibits" / "vehicle_transition_pair_panel.jsonl"
+PAIR_PANEL = OUTPUT_DIR / "exhibits" / "vehicle_transition_pair_panel.parquet"
 DECOMPOSITION = OUTPUT_DIR / "exhibits" / "vehicle_transition_pair_decomposition.jsonl"
 SUPPORT = OUTPUT_DIR / "exhibits" / "vehicle_transition_pair_support.jsonl"
 LOCK = DATA_DIR / "processed" / ".vehicle-rotation-composition-e0.lock"
@@ -90,7 +91,7 @@ def run(
             ),
         )
         inputs = list(release.bundle.lineage_paths)
-        write_model_exhibit(
+        write_model_panel(
             detail,
             pair_panel_output,
             role="support",
