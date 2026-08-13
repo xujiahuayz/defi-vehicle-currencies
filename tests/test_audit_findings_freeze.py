@@ -1597,6 +1597,10 @@ class FindingsFreezeAuditTest(unittest.TestCase):
 status: complete
 ---
 
+## Finding-selling calibration
+
+Literal evidence/design; Strongest headline; Adjacent qualification; Auxiliary evidence; Residual stretch; Reusable move.
+
 ### PaperA
 - Status: claim-verified
 - Roles: central, mechanism
@@ -1650,6 +1654,16 @@ status: complete
             working_only, {"PaperA"}, {"venue:one"}
         )
         self.assertFalse(passed, detail)
+        missing_finding_selling = text.replace(
+            "## Finding-selling calibration",
+            "## Claim notes",
+            1,
+        )
+        passed, detail = validate_literature_audit(
+            missing_finding_selling, {"PaperA"}, {"venue:one"}
+        )
+        self.assertFalse(passed, detail)
+        self.assertIn("finding-selling=incomplete", detail)
         missing_optics = text.replace(
             "- Optics: Calibrated title, early result preview, and a compact exhibit hierarchy\n",
             "",
