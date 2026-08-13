@@ -30,7 +30,7 @@ The visual and language benchmark is the five saved full finance/economics prese
 10. Promoted result blocks in contribution order.
 11. Close containing only results already shown.
 
-The result block is generated from the current admitted evidence set. A result that fails E1 disappears with its setup; blocked, retired, preliminary or internally rejected estimates appear in neither the core deck nor the conference appendix. Updating an admitted estimate does not authorize a parallel deck or a stale slide: the relevant frame is regenerated in place.
+The final result block is generated from the current admitted evidence set. A result that fails E1 disappears with its setup; blocked, retired, or internally rejected estimates appear in neither the final core deck nor the conference appendix. Before the freeze, visibly labelled provisional frames may occupy the same in-place result seam solely for live scientific feedback under the delivery gate below. Updating an estimate never authorizes a parallel deck or a stale slide: the relevant frame is regenerated in place.
 
 ## Visual grammar
 
@@ -48,7 +48,7 @@ The appendix contains only defensible material likely to answer a conference que
 
 ## Delivery gate
 
-The deck is not delivered from source alone. Every edit requires a clean compile, a full-page visual contact sheet, individual inspection of any dense frame, no overfull boxes, no clipped content, and the repository conformance checks. Final result slides are rebuilt from the frozen evidence manifest after two unchanged F–G passes; the deck design and stable background slides may develop earlier, but they cannot promote provisional estimates.
+The deck is not delivered from source alone. Every edit requires a clean compile, a full-page visual contact sheet, individual inspection of any dense frame, no overfull boxes, no clipped content, and the repository conformance checks. Final result slides are rebuilt from the frozen evidence manifest after two unchanged F–G passes. Before then, visibly labelled provisional slides may expose exact-generation estimates, support failures, competing interpretations, and open design choices for Java's live feedback; they do not promote a paper claim or count toward the freeze.
 
 ## Legacy pre-E1 outline
 

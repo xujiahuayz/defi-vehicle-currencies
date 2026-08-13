@@ -17,6 +17,7 @@ from __future__ import annotations
 import argparse
 import hashlib
 from pathlib import Path
+from typing import Iterable
 
 import numpy as np
 import pandas as pd
@@ -212,6 +213,55 @@ def event_contrasts(panel: pd.DataFrame, events: pd.DataFrame) -> pd.DataFrame:
     return pd.DataFrame(rows)
 
 
+def summarize_transition_support(
+    contrasts: pd.DataFrame,
+    *,
+    thresholds: Iterable[float],
+) -> pd.DataFrame:
+    """Build the presentation-facing support and E0 contrast table.
+
+    The full threshold-by-kind grid is retained, including zero-event cells.
+    Means are descriptive across usable events; they are not causal estimates
+    and deliberately carry no model-based significance stars.
+    """
+    rows: list[dict] = []
+    statuses = (
+        "usable",
+        "overlapping_transition",
+        "incomplete_window",
+        "composition_shift",
+    )
+    for threshold in thresholds:
+        for kind in ("entry", "exit"):
+            if contrasts.empty:
+                group = contrasts
+            else:
+                group = contrasts[
+                    contrasts["threshold"].eq(threshold) & contrasts["kind"].eq(kind)
+                ]
+            usable = group[group["status"].eq("usable")] if not group.empty else group
+            row = {
+                "threshold": threshold,
+                "kind": kind,
+                "detected_events": int(len(group)),
+                "distinct_cells": (
+                    int(group[KEYS].drop_duplicates().shape[0]) if not group.empty else 0
+                ),
+                **{
+                    f"{status}_events": int(group["status"].eq(status).sum())
+                    if not group.empty
+                    else 0
+                    for status in statuses
+                },
+            }
+            for column in ("pretrend_change", "immediate_change", "persistent_change"):
+                row[f"mean_{column}"] = (
+                    float(usable[column].mean()) if not usable.empty else np.nan
+                )
+            rows.append(row)
+    return pd.DataFrame(rows)
+
+
 def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--routes", type=Path, default=ROUTES)
@@ -241,10 +291,16 @@ def main() -> int:
     contrasts = event_contrasts(panel, events)
     write_exhibit(events, EXHIBITS / "architecture_transition_events.jsonl", code_sources=CODE, inputs=[PANEL])
     write_exhibit(contrasts, EXHIBITS / "architecture_transition_contrasts.jsonl", code_sources=CODE, inputs=[PANEL])
-    support = (
-        events.groupby(["threshold", "kind"], as_index=False).size()
-        if not events.empty
-        else pd.DataFrame(columns=["threshold", "kind", "size"])
+    support = summarize_transition_support(contrasts, thresholds=thresholds)
+    write_exhibit(
+        support,
+        EXHIBITS / "architecture_transition_support.jsonl",
+        code_sources=CODE,
+        inputs=[PANEL],
+        notes=(
+            "Presentation-facing E0 support table. Mean changes are descriptive "
+            "across usable events, not causal estimates."
+        ),
     )
     print(support.to_string(index=False))
     print("E0 support audit only: calendar time is not treatment; no causal claim promoted")

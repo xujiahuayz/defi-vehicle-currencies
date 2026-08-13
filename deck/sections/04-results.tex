@@ -1,1 +1,94 @@
-% Empirical slides are generated from admitted output artefacts after the findings freeze opens prose and presentation work. Provisional E0 results never enter this file.
+% Live scientific-feedback slides. Numerical cells remain explicitly provisional
+% until they bind the Studio-current route release and pass the findings freeze.
+
+\begin{frame}{Architecture exposure changes within cells}
+\provisionalbadge
+\vspace{0.35cm}
+\begin{tikzpicture}[x=1cm,y=1cm]
+\node[softbox,minimum width=2.55cm,minimum height=1.18cm,align=center] (v3a) at (0,0) {\textbf{Below threshold}\\$s^{V4}_{iok,t}<c$};
+\node[softbox,minimum width=2.55cm,minimum height=1.18cm,align=center,draw=ucldark] (v4) at (4.35,0) {\textbf{V4-active state}\\$s^{V4}_{iok,t}\geq c$};
+\node[softbox,minimum width=2.55cm,minimum height=1.18cm,align=center] (v3b) at (8.70,0) {\textbf{Below threshold}\\$s^{V4}_{iok,t}<c$};
+\draw[route,draw=stable,line width=1.7pt] (v3a)--node[above,font=\small\bfseries] {entry} (v4);
+\draw[route,draw=accent,line width=1.7pt] (v4)--node[above,font=\small\bfseries] {exit} (v3b);
+\node[font=\small,text=muted,align=center,text width=11.4cm] at (4.35,-1.35) {State changes require three consecutive weeks and are detected within the same ordered endpoint pair and candidate vehicle. Thresholds $c\in\{5\%,10\%,25\%\}$.};
+\end{tikzpicture}
+\vspace{0.24cm}
+\begin{columns}[T,totalwidth=\textwidth]
+\begin{column}{0.47\textwidth}
+\textbf{Measured architecture exposure}
+\begin{itemize}
+\item realised V4 share in the cell
+\item may enter, exit, or re-enter
+\end{itemize}
+\end{column}
+\begin{column}{0.47\textwidth}
+\textbf{Outcome}
+\begin{itemize}
+\item overall V3+V4 vehicle-route share
+\item adjusted within endpoint-pair $\times$ week
+\end{itemize}
+\end{column}
+\end{columns}
+\vspace{-0.02cm}
+{\footnotesize\color{muted}Calendar date is not treatment. Exposure is endogenous at E0; re-entry is a new entry after exit.\par}
+\end{frame}
+
+\begin{frame}{Entry, exit, and persistence are distinct objects}
+\provisionalbadge
+\vspace{0.18cm}
+{\small
+\begin{tabular}{@{}p{0.23\textwidth}p{0.28\textwidth}p{0.38\textwidth}@{}}
+\toprule
+\textbf{Observed pattern} & \textbf{Reading} & \textbf{Identification warning} \\
+\midrule
+Rise on entry; fall on exit & Association consistent with an architecture channel & Adoption can still respond to expected demand \\
+\addlinespace[0.18em]
+Rise on entry; persists after exit & Persistence in vehicle use & Hysteresis needs asymmetric retention versus displacement under cost-state reversal \\
+\addlinespace[0.18em]
+Movement before entry & Anticipation or endogenous adoption & A launch-date design would misattribute movement \\
+\addlinespace[0.18em]
+No response to state changes & Architecture is not the operative margin & Report support and power before reading the null \\
+\bottomrule
+\end{tabular}
+}
+\vspace{0.22cm}
+{\footnotesize\color{muted}Exit reverses measured architecture exposure, not necessarily the vehicle role. Primary contrasts use isolated $\pm8$-week windows; contaminated events remain visible in the support audit.\par}
+\end{frame}
+
+\begin{frame}{Live architecture audit: what the current run must establish}
+\provisionalbadge
+\vspace{0.15cm}
+{\small
+\begin{tabular}{@{}p{0.28\textwidth}ccc@{}}
+\toprule
+& \textbf{5\%} & \textbf{10\%} & \textbf{25\%} \\
+\midrule
+Sustained entries & \multicolumn{3}{c}{\color{muted}awaiting Studio-current certified generation} \\
+Sustained exits & \multicolumn{3}{c}{\color{muted}awaiting Studio-current certified generation} \\
+Clean isolated windows & \multicolumn{3}{c}{\color{muted}to be established from certified support} \\
+Entry contrast & \multicolumn{3}{c}{\color{muted}to be estimated with pair-week adjustment} \\
+Exit contrast & \multicolumn{3}{c}{\color{muted}to be estimated with pair-week adjustment} \\
+\bottomrule
+\end{tabular}
+}
+\vspace{0.30cm}
+\evidencekicker{Feedback now}
+{\small
+\begin{columns}[T,totalwidth=\textwidth]
+\begin{column}{0.48\textwidth}
+\begin{itemize}
+\item Is three-week confirmation economically sensible?
+\item Which threshold should be primary?
+\end{itemize}
+\end{column}
+\begin{column}{0.48\textwidth}
+\begin{itemize}
+\item Exit or continuous abandonment intensity?
+\item What separates persistence from delayed adjustment?
+\end{itemize}
+\end{column}
+\end{columns}
+}
+\vspace{0.08cm}
+{\footnotesize\color{muted}No coefficient enters the paper from this slide. Each populated result will name its exact Studio data generation.\par}
+\end{frame}

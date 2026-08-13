@@ -87,8 +87,11 @@ only thing you owe is a clean, small, honest history:
 - **Respect the project's locked decisions and notation.** They are in the glotl
   brain at `~/glotl/projects/defi-vehicle-currencies.md` under "Locked decisions"
   and "Learnings". Read them before touching prose, notation, or estimands.
-- **Prose and slides stay closed** until the freeze gate is green with two
-  unchanged passes. Do not "get a head start" on the paper text.
+- **Paper prose stays closed** until the freeze gate is green with two unchanged
+  passes. The deck may carry visibly labelled provisional science so Java can
+  challenge the design while data work continues. Every provisional result
+  frame names its data generation and support status, states the unresolved
+  identification objection, and is never treated as admitted paper evidence.
 - **Decisions:** when a judgement call blocks you, take the conservative option
   (the one that preserves the estimand and fails closed), record it in the ledger
   under `DECISION:`, and keep going. Do not stop to ask.

@@ -5,6 +5,7 @@ import pandas as pd
 from scripts.run_architecture_state_transitions import (
     build_full_risk_panel,
     event_contrasts,
+    summarize_transition_support,
     transition_events,
 )
 from scripts.run_v4_settlement_identification import _exclusive_architecture
@@ -133,3 +134,21 @@ def test_changing_peer_set_marks_only_affected_event_window_as_contaminated() ->
     contrasts = event_contrasts(panel, events)
     usdc = contrasts[contrasts.vehicle.eq("USDC")]
     assert usdc.status.tolist() == ["composition_shift", "usable"]
+
+
+def test_support_summary_keeps_zero_event_threshold_kind_cells() -> None:
+    panel = build_full_risk_panel(_routes(), min_total_routes=1)
+    events = transition_events(panel, threshold=0.10, confirmation_weeks=3)
+    contrasts = event_contrasts(panel, events)
+    support = summarize_transition_support(contrasts, thresholds=[0.10, 0.25])
+
+    assert support[["threshold", "kind"]].to_records(index=False).tolist() == [
+        (0.10, "entry"),
+        (0.10, "exit"),
+        (0.25, "entry"),
+        (0.25, "exit"),
+    ]
+    assert support.detected_events.tolist() == [1, 1, 0, 0]
+    assert support.usable_events.tolist() == [1, 1, 0, 0]
+    assert support.mean_immediate_change.iloc[:2].eq(0).all()
+    assert support.mean_immediate_change.iloc[2:].isna().all()
