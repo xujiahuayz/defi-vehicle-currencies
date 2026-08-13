@@ -16,7 +16,11 @@ and pick a blocking check from the freeze gate.
 
 ## Queue
 
-- [ ] **JAVA INTERJECTION (M3 science gate, 2026-08-13):** Do not promote or write from `af097db` yet. Independent clean-room review and M3 inspection find that it is not the locked four-term decomposition in `docs/specification-lock.json`: it aggregates annual cells containing observed reach and protocol sequence, omits month-day from the cells, and reports within/reweighting/entry/exit rather than `within_common`, `common_pair_reweighting`, `common_support_mass`, and `exclusive_pair_contribution`. Treat the current output only as exploratory finer-cell accounting. Reconcile the registered producer exactly to the locked formula and common-month-day/pair/scope definitions; preserve realised-composition language rather than choice/adoption/preference; keep notional and fixed-opportunity claims gated. Add tests for the four-term identity, zero-exclusive normalization, common month-days, measure-specific support, and row-order/scaling invariance. An independent evidence verifier is running on M3. Do not open paper prose.
+- [x] **JAVA INTERJECTION (M3 science gate, 2026-08-13):** Do not promote or write from `af097db` yet. Independent clean-room review and M3 inspection find that it is not the locked four-term decomposition in `docs/specification-lock.json`: it aggregates annual cells containing observed reach and protocol sequence, omits month-day from the cells, and reports within/reweighting/entry/exit rather than `within_common`, `common_pair_reweighting`, `common_support_mass`, and `exclusive_pair_contribution`. Treat the current output only as exploratory finer-cell accounting. Reconcile the registered producer exactly to the locked formula and common-month-day/pair/scope definitions; preserve realised-composition language rather than choice/adoption/preference; keep notional and fixed-opportunity claims gated. Add tests for the four-term identity, zero-exclusive normalization, common month-days, measure-specific support, and row-order/scaling invariance. An independent evidence verifier is running on M3. Do not open paper prose.
+  _Closed as a duplicate supervisor record after verifying the substantive
+  correction in `97b4b94`: the registered owner and focused tests implement
+  the locked common-month-day, measure-specific pooled/split-scope four-term
+  decomposition. No data result or prose was opened._
 
 
 
