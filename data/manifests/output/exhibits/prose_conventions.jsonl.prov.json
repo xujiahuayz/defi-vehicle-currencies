@@ -1,19 +1,19 @@
 {
  "argv": [],
  "artefact": "output/exhibits/prose_conventions.jsonl",
- "artefact_bytes": 3082,
- "artefact_mtime_ns": 1786627514998997782,
- "artefact_sha256": "cabbf7913ddeb45910f623882cd73a4675abb21eee6bf921a1e9c191fcdd1d44",
+ "artefact_bytes": 3054,
+ "artefact_mtime_ns": 1786639730675654007,
+ "artefact_sha256": "ae24157ec1d21b613233103a6bfbefec948fdffd04603d5ca6374ee206977226",
  "code_fingerprint": "3d08c1fba322e426809816ca8d59043ea94da87e7a15a2ba418b17da137a31c1",
  "code_sources": [
   "scripts/measure_prose_conventions.py",
   "src/ddvc/tables.py"
  ],
- "created_at": "2026-08-13T13:25:15+00:00",
+ "created_at": "2026-08-13T16:48:50+00:00",
  "git": {
   "branch": "main",
-  "commit": "a0c54e927178ff64e79e17124238f52c5cbe6d10",
-  "dirty": true,
+  "commit": "981108ffb6b7d1494ad7e25f9c194a4ec25a8e98",
+  "dirty": false,
   "dirty_generated_files": [
    "data/manifests/output/exhibits/prose_outliers.jsonl.prov.json",
    "data/manifests/output/exhibits/venue_optics.jsonl.prov.json",
@@ -21,22 +21,9 @@
    "output/exhibits/prose_outliers.jsonl",
    "output/exhibits/venue_optics.jsonl",
    "output/exhibits/venue_shape.jsonl",
-   "data/manifests/output/figures/integration_rotation_slopes.pdf.prov.json",
-   "data/manifests/output/figures/vehicle_excess_use_transition.pdf.prov.json",
-   "data/manifests/output/figures/vehicle_type_shares_quarterly.pdf.prov.json",
-   "output/exhibits/.prose_conventions.jsonl.dcfo6z2_.tmp",
-   "output/figures/integration_rotation_slopes.pdf",
-   "output/figures/vehicle_excess_use_transition.pdf",
-   "output/figures/vehicle_type_shares_quarterly.pdf"
+   "output/exhibits/.prose_conventions.jsonl.w54ggz_e.tmp"
   ],
-  "dirty_tracked_files": [
-   "deck/main.pdf",
-   "deck/sections/04-results.tex",
-   "docs/paper-spine.md",
-   "docs/research-workflow.md",
-   "docs/reviews/deck-visual-composition.md",
-   "tests/test_paper_spine.py"
-  ],
+  "dirty_tracked_files": [],
   "dirty_untracked_files": []
  },
  "inputs": [],
@@ -48,11 +35,11 @@
  },
  "notes": null,
  "payload_identity": {
-  "bytes": 3082,
+  "bytes": 3054,
   "format": "jsonl",
   "rows": 19,
   "schema_version": 1,
-  "sha256": "cabbf7913ddeb45910f623882cd73a4675abb21eee6bf921a1e9c191fcdd1d44"
+  "sha256": "ae24157ec1d21b613233103a6bfbefec948fdffd04603d5ca6374ee206977226"
  },
  "python": "3.14.5",
  "rows": 19,
