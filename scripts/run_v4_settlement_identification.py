@@ -26,6 +26,7 @@ from scipy import stats
 
 ROOT = Path(__file__).resolve().parents[1]
 
+from ddvc.calendar import sample_end_iso  # noqa: E402
 from ddvc.paths import DATA_DIR, OUTPUT_DIR  # noqa: E402
 
 
@@ -431,7 +432,7 @@ def run(args: argparse.Namespace) -> None:
 def main() -> int:
     ap = argparse.ArgumentParser(description=__doc__)
     ap.add_argument("--start", default="2025-01-24")
-    ap.add_argument("--end", default="2026-06-30")
+    ap.add_argument("--end", default=sample_end_iso())
     ap.add_argument("--cells", type=int, default=500)
     ap.add_argument("--per-dex-cell", type=int, default=1)
     ap.add_argument("--min-routes", type=int, default=5)

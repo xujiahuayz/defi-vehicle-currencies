@@ -34,6 +34,7 @@ from scipy import stats
 ROOT = Path(__file__).resolve().parents[1]
 
 from ddvc.analysis.dynamics import exact_daily_log_return, value_at_day_offset
+from ddvc.calendar import sample_end_iso
 from ddvc.analysis.regression import absorb_fixed_effects
 from ddvc.metrics import CLEAN_ROUTE_CLASSES, _routes
 from ddvc.paths import DATA_DIR, LP_CAPITAL_CONCENTRATION_PANEL, OUTPUT_DIR
@@ -545,7 +546,7 @@ def write_memo(
     v4_text = fmt_v4_settlement()
     text = f"""# First-pass empirical proposition tests
 
-Generated from the rebuilt DVC data layer through 2026-06-30.
+Generated from the rebuilt DVC data layer through {sample_end_iso()}.
 
 ## Measurement
 

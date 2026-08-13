@@ -17,13 +17,14 @@ from ddvc.fetch.graph import GraphClient, graph_keys, head_block, paginate
 from ddvc.fetch.pool_daily import daily_pool_identity_perimeter, pool_identity_values
 from ddvc.fetch.raw import write_json, write_jsonl_gz
 from ddvc.fetch.sources import get_source
+from ddvc.calendar import RESEARCH_SAMPLE_END
 from ddvc.paths import DATA_DIR, RAW_MARKET_DATA_LOCK
 from ddvc.pricing.v3pools import derive_fee_tier
 from ddvc.runtime import exclusive_job
 
 
 VENUE = "uniswap_v3"
-SAMPLE_DAY = "20260630"
+SAMPLE_DAY = RESEARCH_SAMPLE_END
 SAMPLE_BLOCK = 25_433_938
 FIELDS = "id feeTier token0 { id symbol decimals } token1 { id symbol decimals }"
 RAW_DIRECTORY = DATA_DIR / "raw" / "thegraph"

@@ -23,7 +23,12 @@ from ddvc.analysis.transaction_frontier import (
     chosen_reproduction_share,
 )
 from ddvc.analysis.dynamics import CANONICAL_RESPONSE_HORIZONS
-from ddvc.calendar import RESEARCH_SAMPLE_END, RESEARCH_SAMPLE_START, calendar_days
+from ddvc.calendar import (
+    RESEARCH_SAMPLE_END,
+    RESEARCH_SAMPLE_START,
+    calendar_days,
+    sample_end_iso,
+)
 from ddvc.capital_contracts import (
     CAPITAL_CURRENT_COLUMN,
     CAPITAL_SOURCE,
@@ -4006,7 +4011,7 @@ def main() -> int:
         record(
             "panel time coverage",
             int(summary[0]) >= 2_238
-            and str(summary[2]) == "2026-06-30"
+            and str(summary[2]) == sample_end_iso()
             and int(summary[3]) == 24
             and int(summary[4]) == 0
             and int(summary[5]) == 23,
