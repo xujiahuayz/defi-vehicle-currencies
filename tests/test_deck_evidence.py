@@ -1,6 +1,6 @@
 from pathlib import Path
 
-from ddvc.deck_evidence import audit_deck_sources
+from ddvc.deck_evidence import audit_audience_text, audit_deck_sources
 
 
 def write_section(root: Path, source: str) -> None:
@@ -77,3 +77,25 @@ def test_evidence_managed_frames_require_source_only_status_commit_and_sources(t
         "missing_evidence_commit",
         "missing_evidence_sources",
     }
+
+
+def test_field_language_gate_rejects_visible_workflow_jargon_but_allows_comments(
+    tmp_path: Path,
+) -> None:
+    write_section(
+        tmp_path,
+        "% EVIDENCE-STATUS: internal scientific verdict\n"
+        r"\begin{frame}{Result}\evidencekicker{Scientific verdict}\end{frame}",
+    )
+    defects = audit_deck_sources(tmp_path)
+    assert [defect.kind for defect in defects] == ["audience_workflow_jargon"]
+    assert "verdict" in defects[0].detail
+
+
+def test_rendered_text_language_gate_catches_generated_backstage_labels(tmp_path: Path) -> None:
+    defects = audit_audience_text(
+        "Economic result\nProvenance status: current",
+        path=tmp_path / "main.pdf",
+    )
+    assert [defect.kind for defect in defects] == ["audience_workflow_jargon"]
+    assert defects[0].line == 2

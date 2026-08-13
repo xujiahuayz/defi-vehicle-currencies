@@ -28,6 +28,22 @@ EVIDENCE_STATUS = re.compile(r"(?m)^% EVIDENCE-STATUS:\s*\S.+$")
 EVIDENCE_COMMIT = re.compile(r"(?m)^% EVIDENCE-COMMIT:\s*[0-9a-f]{7,40}\s*$")
 EVIDENCE_SOURCES = re.compile(r"(?m)^% EVIDENCE-SOURCES:\s*\S.+$")
 
+# Audience language is checked separately from scientific validity.  These are
+# research-management or software expressions that are absent from, or used in
+# a different sense by, the saved finance/economics presentation and paper
+# corpus.  The internal evidence metadata is deliberately stripped before this
+# check, so the workflow can stay precise without making the audience listen to
+# its machinery.
+AUDIENCE_JARGON = {
+    "verdict": re.compile(r"\bverdicts?\b", flags=re.IGNORECASE),
+    "findings_freeze": re.compile(r"\bfindings?[- ]freeze\b", flags=re.IGNORECASE),
+    "evidence_gate": re.compile(r"\bevidence[- ]gate\b", flags=re.IGNORECASE),
+    "data_pipeline": re.compile(r"\bdata[- ]pipeline\b", flags=re.IGNORECASE),
+    "workflow_status": re.compile(r"\bworkflow[- ]status\b", flags=re.IGNORECASE),
+    "provenance_status": re.compile(r"\bprovenance[- ]status\b", flags=re.IGNORECASE),
+    "scientific_certificate": re.compile(r"\bscientific[- ]certificate\b", flags=re.IGNORECASE),
+}
+
 
 @dataclass(frozen=True)
 class DeckEvidenceDefect:
@@ -51,6 +67,48 @@ def _without_comments(text: str) -> str:
                 break
         visible.append(line[:end])
     return "\n".join(visible)
+
+
+def audit_audience_text(text: str, *, path: Path, unit: int = 1) -> list[DeckEvidenceDefect]:
+    """Find backstage vocabulary in one audience-visible source or PDF unit."""
+
+    defects: list[DeckEvidenceDefect] = []
+    for label, pattern in AUDIENCE_JARGON.items():
+        for match in pattern.finditer(text):
+            defects.append(
+                DeckEvidenceDefect(
+                    path=path,
+                    line=_line_number(text, match.start()) if "\n" in text else unit,
+                    kind="audience_workflow_jargon",
+                    detail=(
+                        f"{match.group(0)!r} is internal workflow language "
+                        f"({label}); use the field-facing scientific statement"
+                    ),
+                )
+            )
+    return defects
+
+
+def audit_rendered_deck(pdf_path: Path) -> list[DeckEvidenceDefect]:
+    """Repeat the field-language check on extracted PDF text, page by page."""
+
+    if not pdf_path.is_file():
+        return []
+    from pypdf import PdfReader
+
+    defects: list[DeckEvidenceDefect] = []
+    for page_number, page in enumerate(PdfReader(pdf_path).pages, start=1):
+        text = page.extract_text() or ""
+        for defect in audit_audience_text(text, path=pdf_path, unit=page_number):
+            defects.append(
+                DeckEvidenceDefect(
+                    path=defect.path,
+                    line=page_number,
+                    kind=defect.kind,
+                    detail=f"rendered page {page_number}: {defect.detail}",
+                )
+            )
+    return defects
 
 
 def audit_deck_sources(deck_root: Path) -> list[DeckEvidenceDefect]:
@@ -79,6 +137,7 @@ def audit_deck_sources(deck_root: Path) -> list[DeckEvidenceDefect]:
                     detail=f"measured value is typed into slide source: {match.group(0)!r}",
                 )
             )
+        defects.extend(audit_audience_text(source, path=path))
         for match in re.finditer(r"\\addplot\s+table[^\n]*", source):
             if not OUTPUT_REFERENCE.search(match.group(0)):
                 defects.append(
