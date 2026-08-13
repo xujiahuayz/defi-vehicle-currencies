@@ -19,25 +19,14 @@
 {\large Routes are reconstructed transaction by transaction across the routed venue perimeter. Daily and weekly panels are derived from the same route units.\par}
 \end{frame}
 
-% VISUAL-FUNCTION: measurement taxonomy | two-by-two conceptual grid | separate route status, continuous dominance, graph position, and counterfactual cost
-\begin{frame}{Vehicle status, dominance, graph position, and cost are different objects}
-\begin{columns}[T]
-\begin{column}{0.48\textwidth}
-\begin{enumerate}
-\item \textbf{Vehicle status}\par Asset $k$ is or is not the intermediary on one observed route.
-\vspace{0.35em}
-\item \textbf{Vehicle dominance}\par Count and value shares of observed routes carried by asset $k$.
-\end{enumerate}
-\end{column}
-\begin{column}{0.48\textwidth}
-\begin{enumerate}
-\setcounter{enumi}{2}
-\item \textbf{Network position}\par Degree, strength, and betweenness on the trading graph.
-\vspace{0.35em}
-\item \textbf{Counterfactual cost}\par Output gap between direct and vehicle routes at the same reconstructed state.
-\end{enumerate}
-\end{column}
-\end{columns}
-\vspace{0.50cm}
-{\small Excess use compares vehicle dominance with endpoint demand on the same route perimeter.\par}
+% VISUAL-FUNCTION: measurement taxonomy | two-by-two visual grid | separate route status, continuous dominance, graph position, and counterfactual cost
+% EVIDENCE-STATUS: conceptual measurement map; no empirical estimate.
+% EVIDENCE-COMMIT: e1513051da9f3c33fc69a05d063541e2ef96954a
+% EVIDENCE-SOURCES: deck/assets/measurement-taxonomy-grid.tex;
+% docs/specification-lock.json; docs/paper-spine.md; docs/research-workflow.md.
+\begin{frame}{Four measures answer different questions}
+\centering
+\resizebox{0.94\textwidth}{!}{\input{assets/measurement-taxonomy-grid.tex}}\par
+\vspace{0.10cm}
+{\small Excess use asks whether an asset appears inside routes more often than at their endpoints.\par}
 \end{frame}

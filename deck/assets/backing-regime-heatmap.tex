@@ -1,0 +1,39 @@
+% VISUAL-MANAGED-ASSET
+% VISUAL-FUNCTION: dated stablecoin backing | token-by-period regime heatmap | make changing classification rules visible without implying measured portfolio weights
+% EVIDENCE-STATUS: dated classification contract; cells encode rules, not empirical shares or token availability.
+% EVIDENCE-COMMIT: e1513051da9f3c33fc69a05d063541e2ef96954a
+% EVIDENCE-SOURCES: src/ddvc/asset_types.py; tests/test_asset_types.py;
+% docs/node-c-definitions-round2.md section 3.
+% Dates mark changes in admissible backing or a voted transition target, not instantaneous portfolio replacement.
+\tikzset{brrow/.style={font=\scriptsize\bfseries,text=ink,anchor=east}}
+\tikzset{brcell/.style={rounded corners=1.5pt,minimum height=0.62cm,inner sep=3pt,font=\tiny,align=center,text=ink}}
+\begin{tikzpicture}[x=1cm,y=1cm]
+
+% Period headers are aligned to the three classification changes encoded in asset_types.py.
+\node[font=\tiny\bfseries,text=muted,align=center] at (3.10,2.04) {before\\17 Mar 2020};
+\node[font=\tiny\bfseries,text=muted,align=center] at (5.35,2.04) {17 Mar 2020--\\15 Apr 2021};
+\node[font=\tiny\bfseries,text=muted,align=center] at (7.65,2.04) {16 Apr 2021--\\22 Feb 2023};
+\node[font=\tiny\bfseries,text=muted,align=center] at (9.90,2.04) {from\\23 Feb 2023};
+
+\node[brrow] at (1.72,1.24) {USDC, USDT};
+\node[brcell,draw=stable,fill=stable!14,minimum width=8.92cm] at (6.48,1.24) {fiat reserves};
+
+\node[brrow] at (1.72,0.38) {DAI};
+\node[brcell,draw=native,fill=native!13,minimum width=2.10cm] at (3.10,0.38) {on-chain collateral};
+\node[brcell,draw=imported,fill=imported!14,minimum width=2.22cm] at (5.35,0.38) {mixed with\\fiat stablecoin};
+\node[brcell,draw=uclbright,fill=uclbright!9,minimum width=4.48cm] at (8.78,0.38) {mixed, including real-world assets};
+
+\node[brrow] at (1.72,-0.48) {FRAX};
+\node[brcell,draw=accent,fill=accent!10,minimum width=6.68cm] at (5.35,-0.48) {fractional algorithmic};
+\node[brcell,draw=ucldark,fill=ucldark!9,minimum width=2.20cm] at (9.90,-0.48) {transition target:\\full exogenous collateral};
+
+\node[brrow] at (1.72,-1.34) {LUSD, crvUSD};
+\node[brcell,draw=native,fill=native!13,minimum width=8.92cm] at (6.48,-1.34) {on-chain collateral};
+
+\node[brrow] at (1.72,-2.20) {sUSD, USDe};
+\node[brcell,draw=accent,fill=accent!10,minimum width=8.92cm] at (6.48,-2.20) {synthetic};
+
+\node[font=\tiny,text=muted,anchor=west] at (2.03,-2.87)
+  {Only dates on which a token is observed enter the analysis; the map does not show market availability.};
+
+\end{tikzpicture}
