@@ -27,6 +27,8 @@ EVIDENCE_MANAGED_FILE = "EVIDENCE-MANAGED-FILE"
 EVIDENCE_STATUS = re.compile(r"(?m)^% EVIDENCE-STATUS:\s*\S.+$")
 EVIDENCE_COMMIT = re.compile(r"(?m)^% EVIDENCE-COMMIT:\s*[0-9a-f]{7,40}\s*$")
 EVIDENCE_SOURCES = re.compile(r"(?m)^% EVIDENCE-SOURCES:\s*\S.+$")
+VISUAL_MANAGED_FILE = "VISUAL-MANAGED-FILE"
+VISUAL_FUNCTION = re.compile(r"(?m)^% VISUAL-FUNCTION:\s*\S.+\|\s*\S.+\|\s*\S.+$")
 
 # Audience language is checked separately from scientific validity.  These are
 # research-management or software expressions that are absent from, or used in
@@ -116,10 +118,14 @@ def audit_deck_sources(deck_root: Path) -> list[DeckEvidenceDefect]:
 
     defects: list[DeckEvidenceDefect] = []
     sections = deck_root / "sections"
-    for path in sorted(sections.glob("*.tex")) if sections.is_dir() else ():
+    paths = sorted(sections.glob("*.tex")) if sections.is_dir() else []
+    if (deck_root / "main.tex").is_file():
+        paths.insert(0, deck_root / "main.tex")
+    for path in paths:
         authored = path.read_text(encoding="utf-8")
         source = _without_comments(authored)
-        for match in MANUAL_PLOT_DATA.finditer(source):
+        scientific_section = path.parent == sections
+        for match in MANUAL_PLOT_DATA.finditer(source) if scientific_section else ():
             defects.append(
                 DeckEvidenceDefect(
                     path=path,
@@ -128,7 +134,7 @@ def audit_deck_sources(deck_root: Path) -> list[DeckEvidenceDefect]:
                     detail="empirical plot coordinates must be generated under output/",
                 )
             )
-        for match in MEASURED_LITERAL.finditer(source):
+        for match in MEASURED_LITERAL.finditer(source) if scientific_section else ():
             defects.append(
                 DeckEvidenceDefect(
                     path=path,
@@ -138,7 +144,7 @@ def audit_deck_sources(deck_root: Path) -> list[DeckEvidenceDefect]:
                 )
             )
         defects.extend(audit_audience_text(source, path=path))
-        for match in re.finditer(r"\\addplot\s+table[^\n]*", source):
+        for match in re.finditer(r"\\addplot\s+table[^\n]*", source) if scientific_section else ():
             if not OUTPUT_REFERENCE.search(match.group(0)):
                 defects.append(
                     DeckEvidenceDefect(
@@ -147,6 +153,23 @@ def audit_deck_sources(deck_root: Path) -> list[DeckEvidenceDefect]:
                         kind="unowned_plot_table",
                         detail="plot tables must be read from ../output/",
                     )
+                    )
+        if VISUAL_MANAGED_FILE in authored:
+            frame_starts = list(re.finditer(r"(?m)^\\begin\{frame\}", authored))
+            for index, frame in enumerate(frame_starts):
+                prior = frame_starts[index - 1].end() if index else 0
+                metadata = authored[prior:frame.start()]
+                if not VISUAL_FUNCTION.search(metadata):
+                    defects.append(
+                        DeckEvidenceDefect(
+                            path=path,
+                            line=_line_number(authored, frame.start()),
+                            kind="missing_visual_function",
+                            detail=(
+                                "frame needs a VISUAL-FUNCTION source comment with "
+                                "economic object | visual form | presentation job"
+                            ),
+                        )
                     )
         if EVIDENCE_MANAGED_FILE in authored:
             frame_starts = list(re.finditer(r"(?m)^\\begin\{frame\}", authored))

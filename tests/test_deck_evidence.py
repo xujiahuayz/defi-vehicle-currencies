@@ -99,3 +99,19 @@ def test_rendered_text_language_gate_catches_generated_backstage_labels(tmp_path
     )
     assert [defect.kind for defect in defects] == ["audience_workflow_jargon"]
     assert defects[0].line == 2
+
+
+def test_visual_managed_frames_require_object_form_and_job(tmp_path: Path) -> None:
+    write_section(
+        tmp_path,
+        r"""% VISUAL-MANAGED-FILE
+% VISUAL-FUNCTION: vehicle path | transaction trace | reveal observable mechanics
+\begin{frame}{Real route}
+\end{frame}
+
+\begin{frame}{Unspecified visual}
+\end{frame}
+""",
+    )
+    defects = audit_deck_sources(tmp_path)
+    assert [defect.kind for defect in defects] == ["missing_visual_function"]
