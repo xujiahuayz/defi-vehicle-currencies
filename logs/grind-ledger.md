@@ -641,3 +641,75 @@ and the stale generated summary-statistics notation table. Compileall and
 - Preserve the accepted 13-token bounded exclusion. Keep notional and fixed-
   opportunity claims gated, treat route-use margins as endogenous realised
   composition, and leave `paper/` unchanged while prose node P is closed.
+
+## 2026-08-13 — endpoint evidence bound and vehicle rotation bridge published
+
+**Targeted check:** the oldest supervisor queue unit: bind the purpose-built
+endpoint-candidate release into D3 without rescanning unchanged bytes, then run
+the registered E0 vehicle-rotation exploration and determine whether its
+extensive margin survives separation into market support and realised vehicle
+incidence.
+
+**REGRESSION-CHECK:** the purpose-bound estimand remains the 2026-minus-2024
+change in stable-route share within native-plus-stable exact two-leg
+intermediation, using endpoint generation
+`5fb7cbf36508f168055492d246302331052760a470464ac666816379c05335ee` and
+current D3 certificate generation
+`9aa4e1d3ecbc9fb899bf70ba70fc18cf1d621003162218e755fd8ecc4cbb3580`.
+The correction most at risk was treating endogenous route use as architecture
+availability or a design shock; the new bridge therefore remains descriptive
+and does not identify demand, preference, opportunity, or search efficiency.
+
+**Economic scope and concentration.** The pooled count-share estimand rises
+from 16.87% to 42.54%, a 25.68 percentage-point change. Exact accounting assigns
+9.83 points to market-pair support turnover, -0.39 to vehicle-role support
+turnover within established markets, 7.90 to market-activity reweighting, 7.03
+to realised vehicle-incidence reweighting, and 1.31 to within-pair stable share;
+the identity error is zero. Market-turnover pairs carry 41.52% of 2024 and
+50.38% of 2026 primary mass. Among established markets, role-turnover mass is
+only 3.01% and 1.03%, while established-market stable share rises 15.84 points.
+Thus the defect was concentrated in market and vehicle-candidate support, was
+large enough to change interpretation, and cannot be dismissed as metadata.
+
+**Work completed.** Added opt-in semantic receipts, leased pointer/member/
+sidecar/source identities, and an in-place legacy attestation path to the
+canonical release owner; attested the existing endpoint generation without
+changing its bytes or pointer generation; routed the 554,188-row support panel
+to Parquet; made the freeze provenance gate read typed release inputs; and kept
+legacy capital releases receipt-free. Published the first real E0 panel and
+then extended its existing owner with exact market-versus-role turnover and a
+six-order Shapley bridge over market activity, realised vehicle incidence, and
+stable share. Registered the bridge in the specification lock, findings freeze,
+workflow, tests, provenance, and current D3 analysis certificate. The first
+real run exposed the JSONL exhibit row cap rather than a scientific failure;
+the format correction was landed before rerunning. All supervisor queue items
+were closed in their owning commits.
+
+**DECISION:** `promote` the extensive-margin result as descriptive evidence
+that market composition is quantitatively central; `narrow` the mechanism to
+observed market activity and realised vehicle incidence; do not attribute the
+terms to architecture, availability, demand, preference, or search efficiency.
+
+**Validation.** The focused release, D3, workflow, composition, provenance,
+and freeze-audit suite passed 86 tests plus 11 subtests; earlier release suites
+in this unit passed up to 119 focused tests. The complete endpoint exploration
+wrote 554,188 cell rows, 10 decomposition rows, and 42 support rows. Provenance
+verification passed, `git diff --check` passed, and the final current-identity
+freeze audit is RED with five blockers.
+
+**Commits:** `4223a2d`, `0da2c27`, `3b93df8`, `5788056`, `628388d`,
+`6f06464`, `ce2cbb0`, `e16796c`, and `23ee3a2`.
+
+**Blocking count:** 5.
+
+**For the next iteration:**
+- The queue is empty (apart from its literal template placeholder). The five
+  live blockers are E1 specification locking, the empirical model ledger, the
+  incomplete full-text literature ledger, the absent route-cost panel, and two
+  unchanged findings passes.
+- The highest-value next scientific unit is the fixed-opportunity route-cost
+  construction required by D3/E1. Preserve the released route and endpoint
+  generations, use the registered owner, and do not reinterpret realised use
+  as an exogenous opportunity change.
+- Leave exact-state coefficient prose outside the paper until its evidence
+  locks. The published rotation bridge supports descriptive composition only.
