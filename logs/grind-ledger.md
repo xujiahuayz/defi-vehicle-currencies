@@ -110,3 +110,40 @@ check).
 - The 3 failing tests above are real gate debt (stale
   `output/tables/summary_statistics.tex` notation among them); they overlap
   the freeze gate's blocking list rather than adding new work.
+
+## 2026-08-13 — iteration 3: repair sample-end provenance regressions
+
+**Targeted check:** supervisor queue item `Repair the provenance staleness that
+f6ca42b introduced` (`node D full-calendar directed-route gate` and `node D V3
+inventory calendar provenance`).
+
+**Work completed.** Printed the required full provenance verdict for both
+artefacts before mutation. The route ledger was already repaired by `672fb3d`
+and was fully current. The V3 inventory calendar was the permitted
+fingerprint-only case: `content_current=true`, `inputs_current=true`,
+`changed_inputs=[]`, and only `byte_code_current=false`. Revalidated the full
+calendar contract (1,884/1,884 cuts, exact raw-to-panel identity, valid UTC
+cuts, 2–16 persisted RPC calls per cut, zero bad evidence), then re-stamped the
+sidecar through `ddvc.provenance.stamp` without rebuilding or fetching. The
+payload SHA-256 remained
+`af9bfa4ca6a9df570d7fadd261370d638dbecad23085f93df2de349b6929d4cb` and
+its mtime was unchanged. `require_route_release()` passes; the route gate still
+reports 2,332/2,332 days and 12,802/12,802 venue-days with zero failures.
+
+**Validation.** `./scripts/run -m pytest -q tests/test_provenance_inputs.py
+tests/test_data_release.py tests/test_audit_findings_freeze.py`: 95 passed plus
+70 subtests. Freeze audit: RED, 14 blocking (down from 16 before the queued
+repair; both provenance regressions are now PASS).
+
+**Commits:** `371b1d8` (record the supervisor's inherited worktree-cleanup
+resolution), `22e3f37` (exact-payload V3 calendar restamp + queue tick).
+
+**Blocking count:** 14.
+
+**For the next iteration:**
+- Queue is empty. Resume the V2 token-decimals registry toward `node D V2
+  event-source certificate exists` with `./scripts/run
+  scripts/audit_v2_event_completeness.py --token-registry-only --no-fetch
+  --workers 6`; use cached RPC chunks only and do not reacquire provider data.
+- The freeze audit's V3 calendar and full-calendar directed-route checks are
+  both current; do not rebuild either release.
