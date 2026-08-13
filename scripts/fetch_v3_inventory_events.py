@@ -22,6 +22,7 @@ from ddvc.ethereum_logs import (
     file_sha256,
     write_exact_log_chunk,
 )
+from ddvc.calendar import RESEARCH_SAMPLE_END
 from ddvc.fetch.raw import write_json
 from ddvc.paths import (
     DATA_DIR,
@@ -54,7 +55,7 @@ from ddvc.v3_pool_registry import V3_FACTORY_DEPLOYMENT_BLOCK, load_certified_fr
 
 RAW_ROOT = V3_INVENTORY_RAW_ROOT
 V3_GRAPH_ROOT = DATA_DIR / "raw" / "thegraph" / "uniswap_v3"
-END_META_PATH = V3_GRAPH_ROOT / "uniswap_v3_meta_20260630.json"
+END_META_PATH = V3_GRAPH_ROOT / f"uniswap_v3_meta_{RESEARCH_SAMPLE_END}.json"
 MAX_JOB_ATTEMPTS = 12
 _URL = re.compile(r"https?://[^\s,)]+", flags=re.IGNORECASE)
 

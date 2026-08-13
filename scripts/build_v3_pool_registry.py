@@ -6,6 +6,7 @@ from __future__ import annotations
 import argparse
 import json
 
+from ddvc.calendar import RESEARCH_SAMPLE_END
 from ddvc.ethereum_logs import fetch_exact_logs_with_evidence
 from ddvc.paths import DATA_DIR, RAW_MARKET_DATA_LOCK
 from ddvc.runtime import exclusive_job
@@ -21,8 +22,8 @@ from ddvc.v3_pool_registry import (
 
 
 GRAPH_ROOT = DATA_DIR / "raw" / "thegraph" / "uniswap_v3"
-GRAPH_STATIC_PATH = GRAPH_ROOT / "uniswap_v3_pool_statics_20260630.jsonl.gz"
-END_META_PATH = GRAPH_ROOT / "uniswap_v3_meta_20260630.json"
+GRAPH_STATIC_PATH = GRAPH_ROOT / f"uniswap_v3_pool_statics_{RESEARCH_SAMPLE_END}.jsonl.gz"
+END_META_PATH = GRAPH_ROOT / f"uniswap_v3_meta_{RESEARCH_SAMPLE_END}.json"
 
 
 def metadata_blocks() -> tuple[int, int]:

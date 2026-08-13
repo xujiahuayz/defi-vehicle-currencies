@@ -38,6 +38,7 @@ from ddvc.v3_inventory import (
     pool_statics_from_factory,
     validate_inventory_ordered_manifest,
 )
+from ddvc.calendar import RESEARCH_SAMPLE_END
 from ddvc.v3_inventory_calendar import (
     CALENDAR,
     CALENDAR_LOCK,
@@ -57,7 +58,7 @@ from ddvc.v3_pool_registry import (
 
 
 RAW_INVENTORY_ROOT = V3_INVENTORY_RAW_ROOT
-GRAPH_STATIC_PATH = V3_GRAPH_ROOT / "uniswap_v3_pool_statics_20260630.jsonl.gz"
+GRAPH_STATIC_PATH = V3_GRAPH_ROOT / f"uniswap_v3_pool_statics_{RESEARCH_SAMPLE_END}.jsonl.gz"
 CACHE_ROOT = DATA_DIR / "processed" / "_v3_pool_inventory_day_cache"
 OUT = DATA_DIR / "processed" / "v3_pool_inventory_daily.parquet"
 CODE_SOURCES = [

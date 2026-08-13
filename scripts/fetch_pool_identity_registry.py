@@ -22,6 +22,7 @@ from ddvc.fetch.pool_daily import (
     daily_pool_identity_perimeter,
     pool_identity_values,
 )
+from ddvc.calendar import RESEARCH_SAMPLE_END
 from ddvc.fetch.raw import write_json, write_jsonl_gz
 from ddvc.fetch.sources import get_source
 from ddvc.paths import DATA_DIR, RAW_MARKET_DATA_LOCK
@@ -33,7 +34,7 @@ from ddvc.runtime import exclusive_job
 
 
 VENUE = "uniswap_v3"
-SAMPLE_DAY = "20260630"
+SAMPLE_DAY = RESEARCH_SAMPLE_END
 SAMPLE_BLOCK = 25_433_938
 FIELDS = UNISWAP_V3_STATIC_FIELDS
 RAW_DIRECTORY = DATA_DIR / "raw" / "thegraph"

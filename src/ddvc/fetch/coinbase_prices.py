@@ -23,6 +23,7 @@ import numpy as np
 import pandas as pd
 import requests
 
+from ddvc.calendar import sample_end_utc_exclusive
 from ddvc.fetch.raw import repair_torn_jsonl_journal, write_jsonl_gz
 from ddvc.http import DEFAULT_USER_AGENT
 from ddvc.runtime import atomic_output, interruptible_thread_pool
@@ -37,7 +38,7 @@ MAX_CANDLES_PER_REQUEST = 300
 MAX_FETCH_WORKERS = 3
 PARALLEL_WORKER_MIN_INTERVAL_SECONDS = 0.35
 SAMPLE_START_UTC = int(pd.Timestamp("2020-05-05T00:00:00Z").timestamp())
-SAMPLE_END_UTC_EXCLUSIVE = int(pd.Timestamp("2026-07-01T00:00:00Z").timestamp())
+SAMPLE_END_UTC_EXCLUSIVE = sample_end_utc_exclusive()
 RAW_SCHEMA_VERSION = 1
 RAW_RECORD_KEYS = frozenset({"schema_version", "source_id", "request_identity", "request", "fetched_at_utc", "response_headers", "response_body", "response_sha256", "attempt_history"})
 RAW_REQUEST_KEYS = frozenset({"method", "url", "product_id", "granularity_seconds", "start_utc", "end_utc_exclusive"})

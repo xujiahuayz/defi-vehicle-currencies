@@ -5,7 +5,7 @@ Examples:
 
   ./scripts/run scripts/fetch_raw_market_data.py plan --dex all
   ./scripts/run scripts/fetch_raw_market_data.py audit-genesis --dex all
-  ./scripts/run scripts/fetch_raw_market_data.py fetch --dex uniswap_v3 --start genesis --end 2026-07-01
+  ./scripts/run scripts/fetch_raw_market_data.py fetch --dex uniswap_v3 --start genesis --end <exclusive-end>
   GRAPH_API_KEYS=... ./scripts/run scripts/fetch_raw_market_data.py fetch --dex all --streams swaps daily mints burns modify_liquidities hourly_reserves
 
 The script is raw-first and intentionally over-fetches fields. Outputs are
@@ -43,7 +43,7 @@ from ddvc.fetch.raw import (
     write_json,
     write_jsonl_gz,
 )
-from ddvc.calendar import RESEARCH_SAMPLE_END
+from ddvc.calendar import sample_end_exclusive_date
 from ddvc.fetch.acquisition import GRAPH_ACQUISITION_FREEZE, GRAPH_ACTIVE_MANIFEST, GRAPH_NEW_MANIFEST, GRAPH_SCHEMA_INVENTORY, frozen_provider_heads, validate_freeze
 from ddvc.fetch.schemas import UNISWAP_V4_STATIC_FIELDS, acquisition_schema, get_schema
 from ddvc.fetch.sources import (
@@ -165,7 +165,7 @@ def parse_date(value: str) -> dt.date:
 
 
 def research_sample_end_exclusive() -> dt.date:
-    return dt.datetime.strptime(RESEARCH_SAMPLE_END, "%Y%m%d").date() + dt.timedelta(days=1)
+    return sample_end_exclusive_date()
 
 
 def effective_range(source_name: str, start: str, end: str | None) -> tuple[dt.date, dt.date]:

@@ -33,7 +33,7 @@ import gzip
 import json
 import sys
 from collections import defaultdict
-from datetime import date, timedelta
+from datetime import timedelta
 from pathlib import Path
 
 import pandas as pd
@@ -41,6 +41,7 @@ import pandas as pd
 ROOT = Path(__file__).resolve().parents[1]
 
 from ddvc.asset_types import asset_type  # noqa: E402
+from ddvc.calendar import V1_GENESIS_START, day_date, sample_end_date  # noqa: E402
 from ddvc.pricing.stableswap import calibrate_amp  # noqa: E402
 from ddvc.tables import write_exhibit  # noqa: E402
 
@@ -245,7 +246,7 @@ def day_volume(venue: str, day: str) -> tuple[float, int, int] | None:
 
 
 def sampled_days(step: int) -> list[str]:
-    start, end = date(2018, 11, 2), date(2026, 6, 30)
+    start, end = day_date(V1_GENESIS_START), sample_end_date()
     out, d = [], start
     while d <= end:
         out.append(d.strftime("%Y%m%d"))

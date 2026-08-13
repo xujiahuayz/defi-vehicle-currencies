@@ -51,7 +51,7 @@ POOL_IDENTITY_STREAMS: Mapping[str, str] = {
 }
 
 POOL_IDENTITY_STATIC_SNAPSHOTS: Mapping[str, str] = {
-    "uniswap_v3": "uniswap_v3_pool_statics_20260630.jsonl.gz",
+    "uniswap_v3": f"uniswap_v3_pool_statics_{RESEARCH_SAMPLE_END}.jsonl.gz",
 }
 UNISWAP_V3_STATIC_FIELDS = "id feeTier token0 { id symbol decimals } token1 { id symbol decimals }"
 UNISWAP_V3_STATIC_VALIDATION = "ordered token identities plus canonical V3 CREATE2 fee match"

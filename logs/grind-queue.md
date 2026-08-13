@@ -16,7 +16,7 @@ and pick a blocking check from the freeze gate.
 
 ## Queue
 
-- [ ] **Forward-port the sample-end single-source hardening onto `main`.**
+- [x] **Forward-port the sample-end single-source hardening onto `main`.**
   Commit `9bd8ce4` ("Derive the sample end from one constant") exists only on the
   local branch `glotl/fgh-evidence`, which is 187 commits behind `main` and whose
   upstream is gone. `main` already has `RESEARCH_SAMPLE_END = "20260630"` as the
@@ -35,7 +35,16 @@ and pick a blocking check from the freeze gate.
   blocking count not increased. Then delete the stale local branch
   `glotl/fgh-evidence` and note that in the ledger.
   Land the guard test first if this needs more than one iteration.
+  _Closed in this commit: `ddvc.calendar` now owns the derived spellings
+  (`V1_GENESIS_START`, day normalisers, `sample_end_*`), all twelve consumer
+  sites import instead of restating (including the known residual in
+  `src/ddvc/fetch/pool_daily.py`), and
+  `tests/test_sample_end_single_source.py` guards against new hardcoded
+  spellings and pins that one edit moves every consumer. Stale branch
+  `glotl/fgh-evidence` deleted; it was checked out in the primary worktree
+  `~/projects/defi-vehicle-currencies`, which was clean, so that worktree was
+  detached in place at `9bd8ce4` with zero file changes._
 
 ## Closed
 
-_(nothing yet)_
+_(items are ticked in place above)_
