@@ -1,19 +1,19 @@
 {
  "argv": [],
  "artefact": "output/exhibits/venue_shape.jsonl",
- "artefact_bytes": 3808,
- "artefact_mtime_ns": 1786639758569336797,
- "artefact_sha256": "fb0298f2f8b5b05ec708c900ac444169f3c0b8feb19dba8aef45f1e6206b5fd8",
+ "artefact_bytes": 3785,
+ "artefact_mtime_ns": 1786657093983209049,
+ "artefact_sha256": "3c95bb9a7f4f0166fd0199e064b94a2a55085fdd2df1d45c7a1412fc16cd14b0",
  "code_fingerprint": "d916ac0f14e15984beefae7f4b915bc38c43c9d392107304f484a9aa22aa4c61",
  "code_sources": [
   "scripts/measure_venue_shape.py",
   "src/ddvc/tables.py"
  ],
- "created_at": "2026-08-13T16:49:18+00:00",
+ "created_at": "2026-08-13T21:38:13+00:00",
  "git": {
   "branch": "main",
-  "commit": "981108ffb6b7d1494ad7e25f9c194a4ec25a8e98",
-  "dirty": false,
+  "commit": "734e5bdd286ec885f60f9147c701837d93082373",
+  "dirty": true,
   "dirty_generated_files": [
    "data/manifests/output/exhibits/prose_conventions.jsonl.prov.json",
    "data/manifests/output/exhibits/prose_outliers.jsonl.prov.json",
@@ -21,10 +21,29 @@
    "output/exhibits/prose_conventions.jsonl",
    "output/exhibits/prose_outliers.jsonl",
    "output/exhibits/venue_optics.jsonl",
-   "output/exhibits/.venue_shape.jsonl.dqz6n7sc.tmp"
+   "data/manifests/output/exhibits/vehicle_transition_pair_decomposition_deck_values.tex.prov.json",
+   "output/exhibits/.venue_shape.jsonl.gycngafs.tmp",
+   "output/exhibits/vehicle_transition_pair_decomposition_deck_values.tex"
   ],
-  "dirty_tracked_files": [],
-  "dirty_untracked_files": []
+  "dirty_tracked_files": [
+   "deck/main.pdf",
+   "deck/sections/04-results.tex",
+   "deck/sections/05-close.tex",
+   "docs/findings-freeze.md",
+   "docs/paper-spine.md",
+   "docs/research-workflow.md",
+   "docs/reviews/deck-visual-composition.md",
+   "paper/main.tex",
+   "paper/sections/01-introduction.tex",
+   "paper/sections/03-dominance.tex",
+   "paper/sections/07-conclusion.tex",
+   "paper/sections/abstract.tex"
+  ],
+  "dirty_untracked_files": [
+   "deck/assets/vehicle-transition-pair-decomposition.tex",
+   "scripts/build_vehicle_transition_pair_deck_values.py",
+   "tests/test_vehicle_transition_pair_deck_values.py"
+  ]
  },
  "inputs": [],
  "libraries": {
@@ -35,11 +54,11 @@
  },
  "notes": null,
  "payload_identity": {
-  "bytes": 3808,
+  "bytes": 3785,
   "format": "jsonl",
   "rows": 16,
   "schema_version": 1,
-  "sha256": "fb0298f2f8b5b05ec708c900ac444169f3c0b8feb19dba8aef45f1e6206b5fd8"
+  "sha256": "3c95bb9a7f4f0166fd0199e064b94a2a55085fdd2df1d45c7a1412fc16cd14b0"
  },
  "python": "3.14.5",
  "rows": 16,

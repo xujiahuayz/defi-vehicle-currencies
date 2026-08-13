@@ -4,6 +4,9 @@
 \IfFileExists{../output/exhibits/provisional_results_deck_values.tex}{%
 \input{../output/exhibits/provisional_results_deck_values.tex}%
 }{}
+\IfFileExists{../output/exhibits/vehicle_transition_pair_decomposition_deck_values.tex}{%
+\input{../output/exhibits/vehicle_transition_pair_decomposition_deck_values.tex}%
+}{\PackageError{dvc-deck}{Missing generated vehicle-pair decomposition values}{Run scripts/build_vehicle_transition_pair_deck_values.py.}}
 
 % EVIDENCE-STATUS: evolving route result; current certified route release
 % EVIDENCE-COMMIT: 2ffbce0
@@ -31,17 +34,21 @@
 {\scriptsize The value panel retains routes whose source, intermediary, and destination dollar values agree within 20\%. Parity means that intermediary and endpoint shares are equal. USDT crosses parity by routed value; USDC remains above it in both years.}
 \end{frame}
 
-% EVIDENCE-STATUS: evolving route result; integration remains a selected, descriptive stratum
-% EVIDENCE-COMMIT: 6dd7897
-% EVIDENCE-SOURCES: output/figures/integration_rotation_slopes.pdf; output/exhibits/intermediation_integration_rival.jsonl; output/exhibits/intermediation_integration_interaction.jsonl; docs/finding-intermediation-transition.md
-% VISUAL-FUNCTION: integration-stratified vehicle rotation | paired interaction slopes | test whether venue reach absorbs the stable-share change
-\begin{frame}{Stable share rises within both single- and cross-venue routes}
-\vspace{-0.08cm}
+% EVIDENCE-STATUS: evolving exact descriptive route accounting; mechanism remains open
+% EVIDENCE-COMMIT: 6f06464
+% EVIDENCE-PRODUCER-COMMIT: 3b93df8
+% EVIDENCE-SOURCES: output/exhibits/vehicle_transition_pair_decomposition.jsonl; output/exhibits/vehicle_transition_pair_support.jsonl; output/exhibits/vehicle_transition_pair_decomposition_deck_values.tex
+% VISUAL-FUNCTION: endpoint-pair composition of vehicle rotation | native TikZ waterfall | distinguish within-pair substitution from pair turnover and activity reweighting
+\begin{frame}{The stablecoin gain comes from a changing pair mix}
+\vspace{-0.22cm}
 \begin{center}
-\includegraphics[width=0.93\textwidth,height=0.67\textheight,keepaspectratio]{../output/figures/integration_rotation_slopes.pdf}
+\resizebox{0.93\textwidth}{!}{\input{assets/vehicle-transition-pair-decomposition.tex}}
 \end{center}
-\vspace{-0.16cm}
-{\scriptsize Stablecoin intermediation rises in both groups, and more in cross-venue routes. Changing venue mix alone cannot explain the aggregate increase. Because route type is chosen, this comparison is descriptive.}
+\vspace{-0.24cm}
+{\fontsize{8.4}{9.3}\selectfont\textbf{The same pattern appears in both route types.} Single venue: \PairSingleTotal\ overall and \PairSingleWithin\ within continuing pairs. Cross venue: \PairCrossTotal\ overall and \PairCrossWithin\ within continuing pairs.}
+
+\vspace{0.06cm}
+{\fontsize{6.8}{7.5}\selectfont\color{muted}Stable share among native- or stable-asset intermediaries on exact two-leg routes; common month-days through 30 June. Continuing pairs carry these vehicle routes in both endpoint years. The accounting describes where the shift occurs, not why pairs or activity change.}
 \end{frame}
 
 % EVIDENCE-STATUS: diagnostic displacement gradient; not a persistence estimate

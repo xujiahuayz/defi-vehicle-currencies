@@ -1,0 +1,67 @@
+{
+ "argv": [],
+ "artefact": "output/exhibits/vehicle_transition_pair_decomposition_deck_values.tex",
+ "artefact_bytes": 1050,
+ "artefact_mtime_ns": 1786656645190171606,
+ "artefact_sha256": "ee72aa8361dcb470859506421da415ccf18904d51cf224f4f869ea2c9720098d",
+ "code_fingerprint": "c79fbea1ab558869ce0df10ab303fb6ee592149e27c85e9ce8572076516ba3da",
+ "code_sources": [
+  "scripts/build_vehicle_transition_pair_deck_values.py"
+ ],
+ "created_at": "2026-08-13T21:30:45+00:00",
+ "git": {
+  "branch": "main",
+  "commit": "734e5bdd286ec885f60f9147c701837d93082373",
+  "dirty": true,
+  "dirty_generated_files": [],
+  "dirty_tracked_files": [
+   "deck/main.pdf",
+   "deck/sections/04-results.tex",
+   "deck/sections/05-close.tex",
+   "docs/findings-freeze.md",
+   "docs/paper-spine.md",
+   "docs/research-workflow.md",
+   "docs/reviews/deck-visual-composition.md",
+   "paper/main.tex",
+   "paper/sections/01-introduction.tex",
+   "paper/sections/03-dominance.tex",
+   "paper/sections/07-conclusion.tex",
+   "paper/sections/abstract.tex"
+  ],
+  "dirty_untracked_files": [
+   "deck/assets/vehicle-transition-pair-decomposition.tex",
+   "scripts/build_vehicle_transition_pair_deck_values.py",
+   "tests/test_vehicle_transition_pair_deck_values.py"
+  ]
+ },
+ "inputs": [
+  {
+   "bytes": 12549,
+   "exists": true,
+   "path": "output/exhibits/vehicle_transition_pair_decomposition.jsonl",
+   "sha256": "e0f5328338c758dbfbc8bbea204dc24c900c755d72c8805834fcf55ca8d8b776"
+  },
+  {
+   "bytes": 818451,
+   "exists": true,
+   "path": "data/manifests/output/exhibits/vehicle_transition_pair_decomposition.jsonl.prov.json",
+   "sha256": "e06d9e3224043e11ee9c4c49ff8dcd55b8ddbaabcae35c9f635cc4ab404706ee"
+  }
+ ],
+ "libraries": {
+  "numpy": "2.5.1",
+  "pandas": "3.0.3",
+  "pyarrow": "25.0.0",
+  "scipy": "1.18.0"
+ },
+ "notes": "Presentation macros for the exact descriptive pair-composition accounting; evidence status and identities remain source-only.",
+ "payload_identity": {
+  "bytes": 1050,
+  "format": "binary",
+  "schema_version": 1,
+  "sha256": "ee72aa8361dcb470859506421da415ccf18904d51cf224f4f869ea2c9720098d"
+ },
+ "python": "3.14.5",
+ "rows": 9,
+ "script": "scripts/build_vehicle_transition_pair_deck_values.py"
+}

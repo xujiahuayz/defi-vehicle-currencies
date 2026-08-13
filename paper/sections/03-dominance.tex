@@ -1,5 +1,6 @@
 % Section 3. Route-only evidence admitted by docs/findings-freeze.md.
-% All displayed quantities bind to output/exhibits/provisional_results_deck_values.tex.
+% Displayed quantities bind to output/exhibits/provisional_results_deck_values.tex
+% and vehicle_transition_pair_decomposition_deck_values.tex.
 % Cost dominance, persistence, and exact-state mechanisms remain outside this section.
 
 \section{Rotation in the vehicle role}
@@ -34,9 +35,44 @@ Routed value (20\% agreement) & \StableValueBase & \StableValueEnd & \StableValu
 \end{minipage}
 \end{table}
 
-The shift has progressed further in routed value than in route counts. Stablecoins lead by supported value before they sustain a lead in the number of routes, which is consistent with the change being concentrated in larger trades. The ordering is silent on mechanism; liquidity placement, venue reach, router search, and the holding properties of the intermediary can all produce it.
+The shift has progressed further in routed value than in route counts. Stablecoins lead by supported value before they sustain a lead in the number of routes. This difference does not imply a common switch within larger individual trades; the endpoint-pair results below show that shifts in activity across markets are central. The ordering remains silent on mechanism.
 
 Native intermediation rebounds during 2023 and 2024. Stablecoins regain the value lead in 2025, whereas their count lead remains short-lived. I therefore describe a \emph{rotation}; persistent replacement would require a longer post-change lead.
+
+\subsection{The cross-section of endpoint pairs}
+\label{sec:dominance:pairs}
+
+The aggregate stable share can rise in two ways. Stable vehicles can gain share within an endpoint pair that carries vehicle routes in both years, or aggregate activity can move toward pairs on which stable vehicles are already prevalent. I separate pairs with native-or-stable vehicle activity in both endpoint years from those with activity in only one. Among the continuing pairs, I further separate changes in stable share within a pair from changes in the pair's weight in total vehicle activity. The four terms add to the aggregate change by construction. They describe where the change occurs, not why it occurs.
+
+By route count, the pooled stable share rises from \PairPooledBase{} in 2024 to \PairPooledEnd{} in 2026. Year-specific endpoint pairs account for \PairPooledExclusive{} of the \PairPooledTotal{} increase, and changing activity weights among continuing pairs account for \PairPooledReweight{}. Within-pair changes contribute \PairPooledWithin{}, while the changing share of activity carried by the two pair sets contributes \PairPooledSupportMass{}. The count rotation is therefore a change in the cross-section of endpoint markets carrying vehicle routes, not a common switch from the native asset to a stablecoin within the same market.
+
+Supported value has a different allocation. Its stable share rises by \PairValueTotal{}. Changes in activity weights among continuing pairs account for \PairValueReweight{}, while year-specific pairs account for \PairValueExclusive{}; changes in the relative mass of the two pair sets contribute \PairValueSupportMass{}. Changes within continuing pairs again contribute only \PairValueWithin{}. Across venues, year-specific pairs account for more of the value change; within a single venue, changes in continuing-pair weights are the larger component. This difference is useful descriptively, but it does not identify a routing-technology effect.
+
+\begin{table}[tbp]
+\centering
+\caption{Where the stablecoin rotation occurs}
+\label{tab:pair-composition}
+\small
+\begin{tabular}{lrr}
+\toprule
+Component of the 2024--2026 stable-share change & Route count & Supported value \\
+\midrule
+Stable share within continuing pairs & \PairPooledWithin & \PairValueWithin \\
+Activity weights among continuing pairs & \PairPooledReweight & \PairValueReweight \\
+Share carried by continuing versus year-specific pairs & \PairPooledSupportMass & \PairValueSupportMass \\
+Year-specific endpoint pairs & \PairPooledExclusive & \PairValueExclusive \\
+\midrule
+Total change & \PairPooledTotal & \PairValueTotal \\
+\bottomrule
+\end{tabular}
+\par\vspace{6pt}
+\begin{minipage}{0.90\textwidth}
+\footnotesize\raggedright \emph{Notes.} The entries are percentage-point contributions to the pooled ratio-of-totals change among native-or-stable intermediaries on exact two-leg routes. Continuing pairs carry these vehicle routes in both endpoint years; year-specific pairs carry them in only one. The value column uses routes whose source, intermediary, and destination values agree within 20\%. The accounting is descriptive.
+% output/exhibits/vehicle_transition_pair_decomposition.jsonl; producer 3b93df8; evidence commit 6f06464
+\end{minipage}
+\end{table}
+
+Pair turnover and changing activity weights are accounting terms, not mechanisms. Endpoint demand, route feasibility, liquidity placement, venue reach, and router search can all alter which pairs carry vehicle routes and how heavily those pairs are used. A fixed-opportunity test must separate these possibilities.
 
 \subsection{Intermediation and endpoint demand}
 \label{sec:dominance:excess}
@@ -74,7 +110,7 @@ The strongest mechanical rival is the expansion of the trading network. As route
 
 The data show both forces. Cross-venue routes grow from \CrossVenueCountStart{} to \CrossVenueCountEnd{} of route count, reaching \CrossVenueValueEnd{} of value. Yet the share of economic routes that use a true intermediary falls from \FullIntermediationBase{} in 2022 to \FullIntermediationEnd{} in 2026. On a balanced five-venue perimeter it falls to \BalancedIntermediationEnd{}. The declines are \FullIntermediationChange{} and \BalancedIntermediationChange{}, with standard errors of \FullIntermediationSE{} and \BalancedIntermediationSE{}. Integration expands while intermediation contracts.
 
-Within the routes that remain indirect, the stable rotation survives every observed integration-by-complexity count cell. It is also \CrossVenueRotationPremium{} larger across venues than within one venue, with a \CrossVenueRotationSE{} standard error. The within-cell results rule out the changing mix of venue span and route length as a sufficient explanation for the stablecoin shift.
+Within the routes that remain indirect, stable share rises in every observed integration-by-complexity count cell. The increase is \CrossVenueRotationPremium{} larger across venues than within one venue, with a \CrossVenueRotationSE{} standard error. Thus, the changing mix of observed venue span and route length does not account for the result. Endpoint-pair composition nevertheless changes sharply inside those broad strata. The comparison shows where the rotation is larger; it does not hold the route opportunity set fixed.
 
 Better search may still activate dispersed stablecoin liquidity within the observed venue and complexity strata. Distinguishing that channel requires a fixed-opportunity comparison; the cross-venue interaction alone describes where the rotation is strongest.
 
@@ -83,4 +119,4 @@ Better search may still activate dispersed stablecoin liquidity within the obser
 
 Protocol architecture changes during the same period, but protocol launches coincide with other market changes. The observed entry and exit windows also vary the comparison set. Entry often coincides with role appearance and exit with role disappearance, so part of the measured change follows mechanically from crossing zero. Their estimand combines architecture and composition, leaving an architecture effect unidentified.
 
-Stablecoin vehicle dominance therefore rises sharply but non-monotonically, with a larger shift in routed value than in route counts and USDT accounting for the principal change within the stablecoin category. The shift appears within both single- and cross-venue routes, but its cause remains open. The next sections examine whether route costs, incumbent persistence, or liquidity placement can account for it.
+Stablecoin vehicle dominance therefore rises sharply but non-monotonically. USDT accounts for the principal change within the stablecoin category, but the market-wide increase does not take the form of stablecoins repeatedly displacing the native asset within a fixed endpoint pair. It occurs mainly because the set and weight of endpoint markets carrying vehicle activity change. The rotation appears among both single- and cross-venue routes; its cause remains open.

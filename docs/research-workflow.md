@@ -37,8 +37,8 @@ claim lock`. M3 never estimates on an older derived generation while waiting.
 
 **Persistent M3 visual workstream.** The deck backlog is not recalled from chat.
 The current route generation has closed three core items: quarterly non-monotone
-paths on page 10, USDC/USDT excess-use dumbbells on page 11, and single- versus
-cross-venue interaction slopes on page 12. Their producers, manifests and source
+paths on page 10, USDC/USDT excess-use dumbbells on page 11, and the endpoint-pair
+composition waterfall on page 12. Their producers, manifests and source
 comments remain part of every later refresh. The open workstream remains here and
 in `docs/reviews/deck-visual-composition.md`: authentic transaction trace plus
 local replay/static still; V1-to-V4 architecture morph; regime and excess-use
