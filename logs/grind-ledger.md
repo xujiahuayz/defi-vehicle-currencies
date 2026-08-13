@@ -313,3 +313,59 @@ ledger is exact and complete; no provider-reported decimals were substituted.
   already-local exact-state chunks and publish daily Initialize inputs. Then
   rerun the 62-date market-state owner; do not launch the V3 event audit until
   its cheap preflight is green.
+
+## 2026-08-13 — Exact route-release contract exposed at the freeze gate
+
+**Targeted check:** `route measurement panels exist`, beginning with the missing
+`cross_venue_routing_daily.parquet` route-only owner after D2 was confirmed
+blocked on the 13 exact token-decimals evidence gaps.
+
+**Work completed.** Checked the certified sibling store, both other DVC
+worktrees, and the configured local execution environment before acquisition.
+None contains the 13 exact token-decimals records, and no local archival RPC is
+configured or listening. No provider request was made. The capital owner is
+blocked by the same missing audited registry.
+
+The current cross-venue owner was then opened against the certified directed-
+route release. Its mandatory `released_route_partitions()` contract rejected
+1,884 stale days, beginning exactly at Uniswap V3 genesis on 2021-05-04. The
+aggregate freeze check had nevertheless reported the directed-route gate green
+because it checked only the 2,332-row ledger and its provenance, not the exact
+day-marker contract used by every downstream owner. Fixed that false pass:
+`audit_findings_freeze.py` now invokes `require_route_release()` and propagates
+its partition-level rejection into the existing full-calendar route gate.
+
+The preserved pre-relocation authority snapshot cannot be reused directly: its
+recorded quality-ledger and marker hashes were superseded before the later V3
+raw-authority change. No marker, route parquet, route panel, or certified raw
+release was rewritten or copied. Focused validation: 48 tests and 9 subtests
+passed. Freeze audit: RED, 15 blocking; the new blocker is
+`node D full-calendar directed-route gate` with `1,884 stale day(s),
+first=20210504`.
+
+**Commit:** `4faa446` (`Gate route panels on exact released partitions`).
+
+**Blocking count:** 15.
+
+**NEEDS-JAVA:** the 13 exact historical decimals RPC records still require
+authorization for new provider acquisition unless a certified local copy
+appears. Do not substitute Graph-reported decimals.
+
+**DECISION:** failed closed on the route panels instead of copying the ignored
+primary-worktree parquets or widening the old relocation escape hatch. The
+existing cross-venue and vehicle-extent files have old directory-level stamps
+and cannot be admitted while the exact route owner rejects its inputs.
+
+**For the next iteration:**
+- Queue is empty. Repair the route-marker authority transition before running
+  any route-only D3 panel owner. First identify the exact V3 certificate change
+  after `672fb3d`; use the preserved pre-repair certificate bundle and the
+  existing authority snapshot only as read-only evidence. Extend the migration
+  owner only if it can bind the live marker fingerprints to the prior authority,
+  prove every old/current scientific raw identity equal, and preserve every
+  route partition's rows, bytes, hash, and mtime. Do not run the old snapshot
+  through `--publish`: its ledger/marker bindings are no longer current.
+- After `require_route_release()` passes, run
+  `build_cross_venue_routing_series.py --workers 8 --panel-only` and
+  `build_vehicle_excess_use.py --workers 8 --panel-only` through `./scripts/run`;
+  do not copy the old ignored panels into this worktree.
