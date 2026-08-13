@@ -1,76 +1,26 @@
-% Section 5. Mechanisms that may account for persistence in vehicle use.
+% Current evidence can narrow, but not rank, the mechanisms behind the rotation.
+% Unestimated turnover, liquidity-return, and architecture designs remain in
+% docs/paper-spine.md rather than appearing as paper results.
 
-\section{Mechanisms behind incumbency}
+\section{Interpreting the rotation}
 \label{sec:rivals}
 
-If an incumbent remains in use after another feasible intermediary becomes cheaper, four frictions could account for the delay. Liquidity providers may move capital slowly across pools; routers may not yet reach the venue carrying the cheaper route; holding risk may make some intermediaries more costly to support; or routing software and pool-creation templates may continue to favour the incumbent. These mechanisms can generate similar persistence in aggregate, but they make different predictions within an ordered endpoint pair.
+The results point to a reallocation across endpoint markets; repeated stable-for-native substitution within a typical market contributes little. Several economic forces could produce that pattern. Liquidity may move slowly toward the pools used by an incumbent; routers may differ in the exchanges and paths they can reach; changes in backing or redemption risk may alter the appeal of an intermediary; and software or protocol architecture may direct trading toward particular routes. These forces can reinforce one another, so their implications must be read against the variation observed in the route data.
 
-The classical volume-cost feedback provides the starting point. In \citet{Krugman1980VehicleCurrencies}, current transaction volume lowers proportional brokerage cost. Provider capital, liquidity reallocation and router access are empirical extensions to that mechanism. In this setting those quantities can in principle be measured separately, allowing the persistence of a vehicle role to be related to the state variable that may sustain it.
-
-\subsection{Liquidity and routing frictions}
+\subsection{Liquidity and router reach}
 \label{sec:rivals:capital}
 
-Past vehicle use may concentrate liquidity in the two pools that connect an incumbent to an endpoint pair. If reallocating that liquidity is costly or infrequent, a cost-disadvantaged incumbent should lose its role more slowly where incumbent-linked depth remains concentrated. Let $C_{abt}$ measure that concentration and add it to the turnover hazard:
+The classical vehicle-currency mechanism links trading volume to lower transaction cost \citep{Krugman1980VehicleCurrencies}. In a decentralised exchange, that feedback operates through the pools joining an intermediary to other assets. Trading through those pools can attract provider capital; deeper pools can then make the same intermediary cheaper to use. If providers move capital slowly, an established vehicle may retain deep routes after another intermediary becomes competitive.
 
-\begin{equation}
-\Pr\bigl(y_{ab,\,t+1}=1 \mid \cdot\bigr)
-=1-\exp\!\left[-\exp\!\left(\alpha_{ab}+\gamma d_{ab\ell t}
-+\beta C_{abt}+\zeta d_{ab\ell t}C_{abt}+\eta g_{abt}\right)\right],
-\label{eq:capital}
-\end{equation}
-where $g_{abt}$ is the incumbent's cost gap. Slow liquidity reallocation predicts $\zeta<0$.
+The direction of timing is central to this explanation. Capital moving before vehicle use would support liquidity supply as a source of the change, whereas capital following route use would suggest that trading draws liquidity to the pools it already uses. The two quantities also differ. Provider capital is the amount invested in the relevant pools; executable liquidity is the amount those pools can trade at a given order size and price impact. Concentrated-liquidity providers can change the latter by moving positions within a pool without changing total invested capital. The historical V3 series observes liquidity near the current price but omits invested capital, leaving these possibilities unresolved.
 
-Timing distinguishes this mechanism from liquidity that merely follows routing. For horizon $h$,
+Router reach supplies a related explanation. A cheaper path affects route choice only if the trading system can use the exchange that offers it. Cross-exchange routing becomes much more common during the sample, but stablecoin use rises among both single-exchange and cross-exchange routes. The changing mix of these broad route types therefore does not account for the aggregate rotation. Because exchange span is chosen jointly with the route, this comparison does not estimate the effect of broader router access. It shows only that the stablecoin gain is not confined to the part of the sample that crosses exchanges \citep{ChenDuffie2021Fragmentation}.
 
-\begin{equation}
-\Delta s_{ab\ell,t+h}=a_h+b_h\Delta C_{abt}+\varphi_h'x_{abt}+\epsilon_{ab,t+h},
-\qquad h=-H,\ldots,H .
-\label{eq:leadlag}
-\end{equation}
-
-Capital moving before depth and routing is consistent with slow reallocation; routing moving first points to liquidity following order flow. A change in executable depth at fixed capital instead points to range placement or market design. The test requires candidate-linked deposited capital and executable depth across the venues available to routers. Venue-level depth alone is insufficient when orders split across exchanges \citep{ChenDuffie2021Fragmentation}. The historical V3 balance series measures virtual depth, leaving deposited capital and this mechanism unestimated.
-
-\label{sec:rivals:integration}
-
-The router's opportunity set excludes cheaper routes outside its reach. Router access therefore predicts a discrete increase in turnover when the venue carrying the cheaper route becomes reachable. Let $t^*_{ab}$ denote that date and $R_{abt}$ the share of routing volume served by systems that can reach the venue:
-
-\begin{equation}
-\log \lambda_{abt}=\alpha_{ab}+\gamma d_{ab\ell t}+\kappa R_{abt}
-+\sum_{h=-H}^{H}\pi_h\mathbf{1}\{t-t^*_{ab}=h\}+\epsilon_{abt}.
-\label{eq:integration}
-\end{equation}
-
-This mechanism predicts $\kappa>0$, no differential movement before integration, and a change at $h=0$. The public chain identifies the contract that executes a route but not necessarily the off-chain system that selected the path. Request-for-quote responses, solver alternatives, and private order flow are also unobserved. Estimating \eqref{eq:integration} therefore requires versioned documentation or implementation evidence that identifies route authorship and a reported measure of the routing volume those systems represent.
-
-\subsection{Asset risk and software persistence}
+\subsection{Asset risk and software architecture}
 \label{sec:rivals:holding}
 
-Inventory models motivate a third mechanism \citep{HoStoll1981OptimalDealer,ComertonFordeEtAl2010Inventories}. If supporting a route through an intermediary ties up risk-bearing capacity, deterioration in that asset should make a cost-disadvantaged incumbent turn over faster. Let $z_{kt}$ denote candidate $k$'s own drawdown over the preceding week:
+USDT's rise relative to USDC makes differences within the stablecoin category economically relevant. The two assets differ in issuance, redemption access, the distribution of liquidity across exchanges, and the risks borne by holders and liquidity providers. Inventory models imply that a deterioration in an intermediary can raise the cost of supporting routes through it \citep{HoStoll1981OptimalDealer,ComertonFordeEtAl2010Inventories}. A native-asset drawdown exposes providers to volatile inventory, while a stablecoin depeg changes the perceived safety of an asset valued for stability. The current route shares identify which stablecoin gains the vehicle role, but they do not isolate which of these attributes is responsible.
 
-\begin{equation}
-\theta_{kt}=\exp\bigl(\gamma+\xi z_{kt}\bigr).
-\label{eq:stress}
-\end{equation}
+Software can preserve the same market allocation for a different reason. Routing systems search only the pools and exchanges they integrate, and pool-creation templates can make one intermediary the default path for new markets. The move from mandatory native-asset routing in the first protocol generation to arbitrary token pairs in the next shows that architecture can remove a routing requirement. Continued native-asset use after that change is compatible with both inherited software paths and the thick-market feedback described above. Protocol launches coincide with changes in users, liquidity, and available pairs, so their dates describe the market's chronology but do not identify an architecture effect.
 
-The sign depends on the asset. A native-asset drawdown raises the cost of bearing volatile inventory, while a stablecoin depeg changes the safety of an asset whose usual attraction is low volatility. Candidate-specific episodes can test this prediction. Repeated changes in value-weighted leadership and calendar ordering leave the holding-cost mechanism unidentified in the aggregate rotation.
-
-\label{sec:rivals:defaults}
-
-Routing software and pool-creation templates may continue to point toward an incumbent after cheaper alternatives appear. Unlike gradual liquidity reallocation, a software default predicts a change at a release date, concentration among pairs served by the same software, and little response on venues whose software did not change. For an outcome $X_{vt}$ on venues outside the changed architecture, the corresponding locality test is
-
-\begin{equation}
-X_{vt}=\alpha_v+\pi\mathbf{1}\{t\geq t^*\}+\varrho t+\varepsilon_{vt},
-\qquad v\notin\mathcal{V}^{\mathrm{treated}}.
-\label{eq:break}
-\end{equation}
-
-The transition from mandatory native-asset routing in the first protocol version to arbitrary token pairs in the second shows that architecture can remove a routing mandate. Continued native-asset pairing after that change is consistent both with software templates and with a thick-market externality. Discrimination between them requires dated software changes and turnover measured among pairs whose feasible route set is otherwise unchanged.
-
-The four mechanisms need not be mutually exclusive. A software integration can make a venue reachable, order flow can then attract liquidity, and deeper pools can reinforce the route selected by the software. Holding risk can affect the same sequence by changing which assets liquidity providers are willing to warehouse. This joint determination is why contemporaneous depth is not a clean control for the effect of vehicle use: it may be part of the feedback being studied. The empirical task is to use timing and cross-sectional restrictions that differ across mechanisms, while allowing more than one channel to operate.
-
-Those restrictions are economically distinct. Liquidity reallocation predicts gradual adjustment tied to candidate-specific capital and executable depth. Router access predicts a discrete expansion of the feasible set for systems that adopt the venue. Holding risk predicts faster turnover during candidate-specific stress even when the trading graph is unchanged. A software default predicts local changes around a dated release and persistence on pairs served by unchanged code. Common calendar maturation can move all four observables together, so a pooled time coefficient cannot discriminate among them.
-
-\subsection{Separating the mechanisms}
-\label{sec:rivals:scope}
-
-Each mechanism maps to a different observable within the same ordered-pair opportunity set. Liquidity reallocation is evaluated with validated capital and depth; router access with route authorship and venue reach; holding risk with candidate-specific stress; and software defaults with dated, local changes in routing behaviour. The clean comparison holds the endpoint pair, notional, and feasible candidate set fixed, then asks whether the predicted state variable moves before turnover and whether the response is concentrated where the mechanism should operate. These variables enter the exact-state turnover hazard of Section~\ref{sec:survival}. Until that hazard is estimated on the common opportunity set, the aggregate facts motivate the mechanisms without ranking them.
+The route evidence narrows these explanations without ranking them. A changing balance between single-exchange and cross-exchange routes is insufficient, and stablecoin adoption as an endpoint cannot explain USDT's increased intermediary use relative to its endpoint use. Liquidity, router reach, asset risk, and software can nevertheless move together within the same endpoint market. Separating them requires comparisons of the same ordered pair and trade size when the router can reach the same alternatives, together with capital and liquidity measured independently of realised route choice. Until those comparisons are available, the reallocation across markets is the finding; its cause remains open.

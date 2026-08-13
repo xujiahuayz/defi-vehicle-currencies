@@ -40,11 +40,11 @@ Stablecoins gain more by supported value than by route count, and the annual ser
 \subsection{Endpoint-pair composition}
 \label{sec:dominance:pairs}
 
-The aggregate share can rise when stablecoins gain within the same endpoint pairs, but it can also rise when the pairs represented in the data, their activity, or their use of an intermediary changes. Panel A of Table~\ref{tab:pair-composition} separates these margins for pooled route count. The first two factors record whether a pair appears in the admitted route-component ledger and, for pairs observed in both endpoint years, whether it carries a native-or-stable vehicle route. For pairs carrying those routes in both years, the remaining factors record admitted route-component activity, realised vehicle incidence, and stable share among vehicle routes. A Shapley allocation distributes interaction terms across the five factors, so their contributions add exactly to the aggregate change.
+Stablecoin dominance can rise in several ways. New endpoint pairs may enter with stablecoin routes. Trading may shift toward continuing pairs where stablecoins are already important, or those pairs may route through an intermediary more often. Stablecoins may also replace the native asset within the same continuing market. Table~\ref{tab:pair-composition} separates these changes and avoids attributing the aggregate share to the choice of one representative pair.
 
-The pooled stable share rises from \MarketBridgeBase{} in 2024 to \MarketBridgeEnd{} in 2026. Pairs observed in only one endpoint year contribute \MarketSupportBridge{}, and differences in vehicle-role support contribute \VehicleRoleSupportBridge{}. Among pairs carrying native-or-stable vehicle routes in both years, activity reweighting contributes \MarketActivityReweight{}, realised vehicle incidence contributes \VehicleIncidenceReweight{}, and stable share within the pair contributes \WithinPairStableShare{}. The final term is small relative to the \MarketBridgeTotal{} aggregate increase. The count rotation is therefore spread across changes in observed pair representation, activity, and vehicle use, with little stable-for-native substitution on common-role pairs.
+By route count, stablecoin share rises from \MarketBridgeBase{} in 2024 to \MarketBridgeEnd{} in 2026. Pairs entering or leaving the sample account for \MarketSupportBridge{} of the increase. Shifts in trading across continuing pairs account for \MarketActivityReweight{}, and changes in how often those pairs use a vehicle account for \VehicleIncidenceReweight{}. The appearance or disappearance of a native-or-stable vehicle route contributes \VehicleRoleSupportBridge{}. Direct stable-for-native substitution within pairs that use a vehicle in both years contributes only \WithinPairStableShare{}. Stablecoin share still rises from \ObservedBothYearsBase{} to \ObservedBothYearsEnd{} among pairs traded in both endpoint years, so changes in the set of pairs matter but do not explain the entire result.
 
-Panel B gives the complementary accounting for supported value. Stable share rises by \PairValueTotal{}. Changing activity weights among continuing vehicle-role pairs contribute \PairValueReweight{}, and pairs carrying native-or-stable vehicle routes in only one endpoint year contribute \PairValueExclusive{}. Changes in the relative mass of the two pair sets contribute \PairValueSupportMass{}, while stable share within continuing pairs contributes \PairValueWithin{}. Activity reallocation among continuing pairs is the largest value component, and within-pair substitution again contributes little.
+The value-weighted results tell a similar story. Stablecoin share rises by \PairValueTotal{}, of which \PairValueReweight{} comes from trading shifting across continuing pairs and \PairValueExclusive{} from pairs that carry a native-or-stable vehicle route in only one endpoint year. Stablecoin substitution within continuing pairs contributes \PairValueWithin{}. Reallocation across markets is therefore the largest value margin, while repeated currency substitution inside a typical continuing market contributes little.
 
 \begin{table}[tbp]
 \centering
@@ -56,19 +56,19 @@ Panel B gives the complementary accounting for supported value. Stable share ris
 Component of the 2024--2026 stable-share change & Contribution \\
 \midrule
 \multicolumn{2}{l}{\emph{Panel A. Route-count share: five-factor allocation}} \\
-Pair observed in only one endpoint year & \MarketSupportBridge \\
-Native-or-stable vehicle-role support & \VehicleRoleSupportBridge \\
-Admitted route-component activity & \MarketActivityReweight \\
-Realised vehicle incidence & \VehicleIncidenceReweight \\
-Stable share among common-role pairs & \WithinPairStableShare \\
+Pairs entering or leaving the sample & \MarketSupportBridge \\
+Pairs gaining or losing a vehicle route & \VehicleRoleSupportBridge \\
+Trading shifts across continuing pairs & \MarketActivityReweight \\
+Change in how often continuing pairs use a vehicle & \VehicleIncidenceReweight \\
+Stablecoin share within continuing vehicle-using pairs & \WithinPairStableShare \\
 \midrule
 Total route-count change & \MarketBridgeTotal \\
 \addlinespace
 \multicolumn{2}{l}{\emph{Panel B. Supported-value share: pair accounting}} \\
-Stable share within continuing pairs & \PairValueWithin \\
-Activity weights among continuing pairs & \PairValueReweight \\
-Mass of continuing versus year-specific pairs & \PairValueSupportMass \\
-Pair observed in only one endpoint year & \PairValueExclusive \\
+Stablecoin share within continuing pairs & \PairValueWithin \\
+Trading shifts across continuing pairs & \PairValueReweight \\
+Weight of continuing versus year-specific pairs & \PairValueSupportMass \\
+Pairs entering or leaving the sample & \PairValueExclusive \\
 \midrule
 Total supported-value change & \PairValueTotal \\
 \bottomrule
@@ -80,11 +80,9 @@ Total supported-value change & \PairValueTotal \\
 \end{minipage}
 \end{table}
 
-The decomposition treats dominance as an allocation across markets, not as the choice of one representative endpoint pair. Pair representation is an extensive margin: it determines which markets enter the aggregate at all. Activity is an intensive margin: it determines how heavily the observed markets are weighted. Vehicle incidence then records whether those routes use an intermediary, and the final share records which currency fills that role. Conflating these margins would make a change in the set of traded pairs look like stable-for-native substitution even if no continuing pair changed its preferred vehicle.
+The distinction matters for interpretation. New pairs can reflect listings or endpoint demand; trading can move across continuing pairs as demand or liquidity changes; and the use of an intermediary can respond to direct-market depth or to the routes a trading system can reach. Only the final component compares native and stable intermediaries within continuing vehicle-using pairs. Pooling these margins would make a changing mix of markets look like currency substitution even when no continuing pair changes its vehicle.
 
-The observed-both-year comparison shows that pair turnover is important but not the whole result. Stable share rises from \ObservedBothYearsBase{} to \ObservedBothYearsEnd{} among pairs represented in both endpoint years, a change of \ObservedBothYearsTotal{}. Within that comparison, admitted activity and realised vehicle incidence account for much more of the aggregate rise than stable share conditional on a common vehicle role. The economic change is therefore not confined to the arrival of new endpoint markets. Existing markets also become differently weighted and route indirectly at different rates, even though direct stable-for-native replacement within common-role pairs remains small.
-
-These margins describe different equilibrium objects. Pair representation can respond to listing and endpoint demand; activity weights can respond to trading demand or liquidity; vehicle incidence can respond to direct-market depth and router reach; conditional stable share can respond to the relative attractiveness of the intermediary currencies themselves. The decomposition shows where the aggregate movement enters, but it does not show why a pair appears in the ledger, why its activity changes, or why an observed route uses an intermediary. Distinguishing among those explanations requires a comparison that holds the available route opportunity fixed.
+The allocation exactly divides the panel's change across the reported components, including their interactions. Its population is the route components admitted to the panel, a subset of all trading activity. Explaining the reallocation requires comparisons that follow the same endpoint market while holding trade size and available routes alike.
 
 \label{sec:dominance:excess}
 

@@ -11,7 +11,7 @@
 \section{Quoter construction and validation}
 \label{app:quoters}
 
-The constructed side of every comparison in the body is an exact-input quote: given a pool's state and an input amount, what the pool would have paid out. Each venue family is priced on its own invariant in the venue's own arithmetic, and each quoter was accepted only after reproducing swaps that executed. Acceptance is decided by achieved error relative to realised output, because a type string is a label and an error is a measurement. The two families that need a parameter the subgraph does not serve, Curve's amplification coefficient and Balancer's weight ratio, identify that parameter by fitting realised trades, which turns an assumption into a testable restriction on data the panel already carries.
+The constructed side of every comparison in the body is an exact-input quote: given a pool's state and an input amount, what would the pool have paid out? Each venue family is priced with its own invariant and arithmetic. I assess each implementation by reconstructing the state immediately before executed swaps and comparing predicted with realised output. Curve's amplification coefficient and Balancer's weight ratio are not available in the historical subgraph records, so I estimate them from realised trades and evaluate the resulting quotes on separate trades.
 
 \subsection{Constant-product pools}
 \label{app:quoters:cp}
@@ -33,7 +33,7 @@ g \;=\; 10^{4}\,\frac{q_{\mathrm{direct}} - q_{\mathrm{via}}}{q_{\mathrm{via}}}.
 \]
 Both sides of $g$ are computed from one reconstructed state, which is the property the realised-trade comparison lacked and the reason the counterfactual exists at all.
 
-Validation is direct: quote each executed swap's own input against the state standing immediately before it and compare with what the swap paid. Across 8,024 executed swaps the median absolute error is 0.0000\%, with 96.7\% of quotes inside 1\% and 95.2\% inside 0.01\% of realised output. The archive-node quoter this replaces reached 93.7\% inside 1\% on the same class of comparison.
+Quoting each executed swap against the state immediately before it gives a median absolute error of 0.0000\% across 8,024 swaps; 96.7\% of quotes are within 1\% and 95.2\% are within 0.01\% of realised output.
 % src/ddvc/cpquote.py module docstring, 8,024 executed swaps
 
 \subsection{Concentrated liquidity}
@@ -115,10 +115,10 @@ $A$ is Curve-specific and the standardised subgraph schema drops it, so it is id
 \[
 \widehat{A} \;=\; \arg\min_{A} \; Q_{0.90}\!\left\{ \frac{|q(A; x, f, \Delta_{\mathrm{in}}) - \Delta_{\mathrm{out}}|}{\Delta_{\mathrm{out}}} \right\},
 \]
-fitted on the first half of a pool-day's trades over a logarithmic grid with a ternary refinement, then scored on the trades the fit never saw. The gate reads the 90th percentile of fitting error and demands it clear 1\%. A median gate is gameable and was measured to be gamed: a pool cleared a 0.1\% median fit gate on alternate trades and then returned 34\% median error on the trades in between, because half a fitting sample can sit inside a median gate while the other half is arbitrarily bad.
+fitted on the first half of a pool-day's trades over a logarithmic grid with a ternary refinement, then evaluated on the trades not used for estimation. A pool-day is retained when the 90th percentile of fitting error is below 1\%. Using the upper tail prevents a partial fit from passing: one misspecified pool produced a median fitting error below 0.1\% but a 34\% median error on the other trades because the invariant fit only part of its activity.
 % src/ddvc/pricing/stableswap.py, FIT_QUANTILE 0.90 and MAX_CALIBRATION_ERROR 0.01
 
-Rejection is the honest outcome for a pool running a different curve. Curve has launched crypto-pools since 2021 which price the CryptoSwap invariant, and an early version of the gate that bounded $A$ to a plausible-looking range let them through to be fitted with the wrong invariant, returning a best-fit $A$ of 3 and a 36\% median quote error instead of an exclusion.
+Curve has also operated crypto-pools since 2021 that follow the CryptoSwap invariant. Applying StableSwap to these pools yields a best-fit $A$ of 3 and a 36\% median quote error. I therefore exclude pool-days whose observed trades are inconsistent with the StableSwap pricing rule.
 % src/ddvc/pricing/stableswap.py, A_MIN comment recording the measured failure
 
 \begin{table}[t]
@@ -145,7 +145,7 @@ Day & Pools fitted & Pools excluded & Held-out trades & Median $\widehat{A}$ & M
 \footnotesize four sampled days. $\widehat{A}$ is reported in the module's convention, which carries the on-chain precision factor of 100. Median error is the median absolute deviation of the quote from realised output on trades the calibration never saw.
 \end{table}
 
-Four independent days land at the same held-out median, between 0.029\% and 0.039\%, with the acceptance threshold two orders of magnitude to the right of that mass, and the fitted coefficient rises across the sample as the Curve pool population the gate admits shifts toward tighter stable baskets.
+Across four validation days, held-out median errors range from 0.029\% to 0.039\%. The fitted amplification coefficient rises over the sample as the composition of retained Curve pools shifts toward tighter stablecoin baskets.
 % output/exhibits/curve_quoter_validation.jsonl, four sampled days from 2021-05-28 to 2025-04-13
 
 \subsection{Weighted pools}
@@ -165,7 +165,7 @@ Only the ratio $W_{\mathrm{in}}/W_{\mathrm{out}}$ enters, so an equal-weight Bal
 The weight ratio and the swap fee are both reported by the subgraph and both can be stale, since the schema serves them at the head block while balances come from a historical snapshot. Liquidity-bootstrapping pools move weights on a schedule and any weighted pool's owner can reset the fee, and the fee case showed up in validation before it was diagnosed: read parameters reproduced 2024 trades to $10^{-9}$ percent and 2022 trades only to 0.19\%, a fee-sized gap, since the fee enters through $\phi$ and a fee wrong by a basis point moves a quote by about a basis point. Both parameters are therefore identified the way Curve's $A$ is, with reading tried first and each fit introducing exactly one free scalar over at least four observations on the pair.
 % src/ddvc/pricing/weighted.py, parameter identification docstring and MIN_PAIR_OBSERVATIONS
 
-The acceptance gate sits at 0.1\% on the 90th percentile of fitting error, ten times tighter than Curve's, because the achieved errors separate cleanly there. At a 1\% gate the stable, composable-stable and elliptic-curve families clear on a fitted weight ratio and then score between 0.05\% and 1.08\% on held-out trades with a 99th percentile of 12\%, while pools that really are weighted score between $10^{-9}$ and 0.004\%. Two populations two orders of magnitude apart put 1\% inside the gap instead of below it.
+I retain a Balancer pool-day when the 90th percentile fitting error is below 0.1\%. The threshold separates weighted pools, whose held-out errors range from $10^{-9}$ to 0.004\%, from stable, composable-stable, and elliptic-curve pools, whose held-out errors range from 0.05\% to 1.08\% and have a 99th percentile of 12\%.
 % src/ddvc/pricing/weighted.py, MAX_CALIBRATION_ERROR at 0.001 with the measured separation
 
 \begin{table}[t]
@@ -206,7 +206,7 @@ Day & Held-out trades & Backward & Flat & Opening & Pools priced / excluded \\
 \footnotesize Median absolute quote error in percent of realised output, on trades no fit ever saw. \emph{Backward} reconstructs per-swap balances by rolling the day's event sequence back from the closing snapshot, \emph{Flat} keeps the snapshot balances constant across the day, and \emph{Opening} treats the snapshot as the day's opening state and rolls forward. The sample contains twelve days from 2021-04 to 2026-02.
 \end{table}
 
-Across the twelve days the backward reading returns a median of 0.0000\% and prices 256 of 473 testable pool-days, and the pools the gate declines carry a median 91.8\% of tested swap volume, which is the coverage bound this venue arrives with.
+Across the twelve days, backward reconstruction returns a median error of 0.0000\% and identifies 256 of 473 testable pool-days as weighted pools. The excluded pool-days carry a median 91.8\% of tested swap volume, which materially limits the venue coverage of the counterfactual comparison.
 % output/exhibits/weighted_quoter_validation.jsonl, 12 days, 256 priced and 217 excluded pool-days
 
 \section{Backward state reconstruction}
@@ -241,7 +241,7 @@ Two features of that replication make it informative about the constant-product 
 \section{Common support for hypothetical routes}
 \label{app:support}
 
-Each quoter above was accepted against swaps that executed, so its validation sample necessarily contains pools deep enough to serve the observed trade. A hypothetical route can demand much more output relative to a pool's depth and thereby move the calculation beyond any region in which quote error has been measured. I retain a hypothetical leg only when its own price impact lies within a range represented among the realised validation trades. The cutoff is calibrated from that population.
+The validation samples contain executed swaps and therefore pools deep enough to serve the observed trade. A hypothetical route may demand much more output relative to pool depth, where the observed errors no longer describe pricing accuracy. I retain a hypothetical leg only when its own price impact lies within the range represented among the realised validation trades. The cutoff is calibrated from that population.
 
 For a hypothetical leg, the relevant statistic is its own price impact in the pool it would traverse,
 \[
@@ -283,7 +283,7 @@ Pooled & 932{,}270 & 0.34\% & 3.29\% & 14.86\% & 78.33\% & 100.00\% \\
 \footnotesize Trade size as a percentage of the input-side reserve of the pool traversed, over the constant-product swaps the quoters were validated against. eight sampled days from 2020-05-05 to 2025-09-23.
 \end{table}
 
-The panel's threshold of 5\% sits between the 90th percentile of 3.29\% and the 99th of 14.86\% of the pooled distribution, and it sits in that same interval on seven of the eight days taken separately. Figure~\ref{fig:app:support} draws that interval day by day with the threshold across it. The tail beyond the 99.9th percentile is trades that consume most of a pool, which is the shape of the distribution the quoters were never asked to price and the region the panel now declines.
+The panel's threshold of 5\% sits between the 90th percentile of 3.29\% and the 99th of 14.86\% of the pooled distribution, and it lies in the same interval on seven of the eight days taken separately. Figure~\ref{fig:app:support} shows the daily distributions. Trades beyond the 99.9th percentile consume most of a pool; counterfactual legs in that region are excluded because no comparable executed trades discipline their pricing error.
 % output/exhibits/quoter_support_bounds.jsonl, pooled over 932,270 validated swaps on eight sampled days
 
 \begin{figure}[tbp]
@@ -321,7 +321,7 @@ This restriction removes economically relevant observations, and the body report
 \section{Signed venue coverage}
 \label{app:coverage}
 
-A counterfactual is only as good as the graph it prices over, and a panel that omits a venue understates the best available alternative on every leg that venue could have served. This is the project's set-inclusion argument, not a claim inherited from the institutional DeFi literature. Coverage is therefore measured in volume. Comparing volume across seven subgraphs required rebuilding the two Messari-schema venues from their own swaps on the smaller-leg basis, because their daily streams count both legs of a trade where the Uniswap family counts one, and because the subgraph oracles fail on thin exotic pools and fail large: one Curve pool reports a \$456m day whose own swaps sum to \$8, and a constant-product pair with \$255 of reserves reports \$1.36bn. Every pool-day must clear three physical bounds before it enters the base, and those bounds remove between 0.10\% and 0.24\% of pool-days a year.
+An omitted venue can improve the best direct route, the best intermediated route, or both. I therefore measure coverage using each venue's share of trading volume and report the composition of the excluded volume. To make volume comparable across the seven data sources, I compute it from individual swaps using the smaller dollar value of the two legs. This avoids double counting in two sources and removes implausible oracle values in thin pools: one Curve pool reports a \$456m day whose swaps sum to \$8, and a constant-product pair with \$255 of reserves reports \$1.36bn. Physical bounds on volume relative to reserves exclude between 0.10\% and 0.24\% of pool-days per year.
 % docs/venue-coverage-bounds.md, volume reconstruction, 400 sampled days
 
 \begin{table}[t]
@@ -358,12 +358,12 @@ Pooled & 56.02 & 14.98 & 13.73 & 5.45 & 3.92 & 5.88 & 0.02 \\
 Uniswap v4 carries its own within-venue support boundary. Exact-ID enrichment leaves zero swaps with incomplete or invalid immutable statics across 29,005,863 rows. Vanilla static-fee pools account for 84.02\% of swaps and 99.05\% of reported value pooled; the corresponding 2026 shares are 79.89\% and 95.57\%. The excluded remainder is hook-bearing or dynamic-fee-plus-hook activity, whose per-swap cash-flow rule is not identified from the raw event.
 % output/exhibits/v4_quote_support.jsonl, ALL and 2026 rows by support status
 
-Curve carries between 11\% and 19\% of panel volume in every year it existed and ranks second in four of those years, which makes its internal calibration gate the largest coverage question the panel has. The gate declines a pool-day whose amplification fit misses by more than 1\%, and measured on 28 pool-days from 2020-02-11 to 2026-04-28 it accepts 621 pools and rejects 588, removing 34.2\% of the Curve volume it rules on, \$1.83bn of \$5.36bn. A further 2.75\% of Curve volume sits in pool-days with too few trades to fit and score apart, and halving the fit threshold from eight trades to four moves the yearly excluded shares by at most 1.3 percentage points.
+Curve carries between 11\% and 19\% of panel volume in every year it exists and ranks second in four years, making its coverage economically important. The StableSwap model fits 621 pool-days and excludes 588 whose 90th-percentile fitting error exceeds 1\%. Across 28 sampled dates from 2020-02-11 to 2026-04-28, these exclusions account for 34.2\% of the Curve volume assessed, or \$1.83bn of \$5.36bn. Another 2.75\% of Curve volume occurs in pool-days with too few trades to estimate and evaluate the amplification coefficient separately. Lowering the minimum from eight trades to four changes annual excluded shares by at most 1.3 percentage points.
 % docs/venue-coverage-bounds.md, 28 measured pool-days from 2020-02-11 to 2026-04-28
 
 \begin{table}[t]
 \centering
-\caption{What the Curve calibration gate removes, by leg and by year}
+\caption{Curve volume outside the StableSwap comparison}
 \label{tab:app:curveleg}
 \small
 \begin{tabular}{lrrrrr}
@@ -399,13 +399,13 @@ Year & \multicolumn{2}{r}{Native leg} & \multicolumn{2}{r}{Stable leg} & Other v
 \footnotesize A pool serves the \emph{native} leg when it contains ETH or a staking derivative, the \emph{stable} leg when every token is stable including baskets and interest-bearing wrappers, and the \emph{other volatile} leg otherwise., 28 measured Curve pool-days from 2020-02-11 to 2026-04-28. Pool leg is assigned by a token registry pass followed by a symbol pass over stable derivatives, which is required because the registry alone labels metapools pairing a stablecoin against the three-token base-pool claim as volatile pairs.
 \end{table}
 
-The last column of Panel A is the sign of the bound and Panel B shows it repeating in every year of the sample, with the native-against-stable gap never below 33 percentage points and reaching 54 in 2023. The mechanism is identifiable and specific. The tricrypto pools pairing WBTC and WETH against a stablecoin are \$818m of the \$1.83bn excluded on their own, 44.6\%, and they account for seven of the twelve largest excluded pool-days including the top two. They price CryptoSwap by construction, and they are where Curve's ETH-leg depth lived.
+The exclusions are concentrated in routes involving the native asset. The excluded share of native-leg volume exceeds the stable-leg share by at least 33 percentage points in every sample year and by 54 points in 2023. Tricrypto pools pairing WBTC and WETH with a stablecoin account for \$818m, or 44.6\%, of the \$1.83bn excluded, including seven of the twelve largest excluded pool-days. These pools use CryptoSwap, so the missing coverage is concentrated where Curve supplies depth between ETH and stablecoins.
 % docs/venue-coverage-bounds.md, curve_excluded_composition.jsonl, 28 measured pool-days
 
-One venue in the top eight is excluded outright. Sushiswap's concentrated-liquidity deployment presents as a balance-and-weights venue by field inventory, and its weight vector takes exactly one value across every sampled day, the default a two-token schema writes when no weights exist, so a weighted-product quoter has nothing to read. Correct weights would price the wrong invariant because the venue's reserves sit across ticks. The available schema also omits \texttt{sqrtPriceX96}, in-range liquidity and tick spacing, leaving the tick quoter without its state variables. The exclusion costs almost nothing: the venue is 0.016\% of the five priced venues' volume pooled, peaking at 0.176\% in 2026, and across fourteen sampled days only 4.1\% of its volume sits on token pairs no priced venue hosts that day, never exceeding \$37,609 of unique-pair volume on any sampled day.
+SushiSwap v3 cannot be priced from the available historical records. Its reserves are distributed across ticks, but the source omits \texttt{sqrtPriceX96}, in-range liquidity, and tick spacing. The balance and weight fields exposed by the common schema do not describe its concentrated-liquidity invariant. This omission is quantitatively small: the venue accounts for 0.016\% of priced-venue volume over the full sample and 0.176\% in 2026. Across fourteen sampled days, only 4.1\% of its volume occurs on token pairs unavailable on another priced venue, never more than \$37,609 on one day.
 % docs/venue-coverage-bounds.md, sushiswap_v3_schema_probe.jsonl and sushiswap_v3_pair_overlap.jsonl, 14 sampled days
 
-Balancer is 3.9\% of measured venue volume pooled and 8.8\% at its 2023 peak. The weighted-family quoter clears the validation bar of Table~\ref{tab:app:weighted} and is integrated into the corrected route-cost rebuild. The remaining omission is signed but narrower: linear and boosted families are still excluded, while 23 of 29 sampled composable-stable pools reduce to two real tokens after their own BPT is removed and remain a feasible extension once historical rate-provider state is recovered.
+Balancer accounts for 3.9\% of measured venue volume over the full sample and 8.8\% at its 2023 peak. Weighted pools are included with the validation errors in Table~\ref{tab:app:weighted}. Linear and boosted pools remain outside the comparison. Of 29 sampled composable-stable pools, 23 reduce to two external tokens after removing the pool's own share token, but pricing them also requires historical rate-provider states that are not available in the current source.
 % docs/venue-coverage-bounds.md, venue_volume_by_year.jsonl, 400 sampled days; docs/research-workflow.md, Balancer family audit
 
 \section{Block-level pricing and the triangle residual}
