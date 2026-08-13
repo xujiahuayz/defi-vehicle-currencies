@@ -10,7 +10,11 @@ from pathlib import Path
 
 import pandas as pd
 
-from ddvc.analysis.vehicle_rotation_composition import vehicle_rotation_composition
+from ddvc.analysis.vehicle_rotation_composition import (
+    load_market_incidence_annual_pairs,
+    vehicle_rotation_composition,
+    vehicle_rotation_market_incidence_decomposition,
+)
 from ddvc.artifact_release import SemanticValidationReceipt
 from ddvc.endpoint_candidate_composition_release import (
     ENDPOINT_CANDIDATE_COMPOSITION_RELEASE,
@@ -79,6 +83,16 @@ def run(
             raise ValueError("endpoint release differs from the D3-bound generation")
         choices = pd.read_parquet(release.artifacts["choices"])
         detail, decomposition, support = vehicle_rotation_composition(choices)
+        annual_market_pairs = load_market_incidence_annual_pairs(
+            release.artifacts["pair_support"], release.artifacts["choices"]
+        )
+        market_decomposition, market_support = (
+            vehicle_rotation_market_incidence_decomposition(annual_market_pairs)
+        )
+        decomposition = pd.concat(
+            [decomposition, market_decomposition], ignore_index=True, sort=False
+        )
+        support = pd.concat([support, market_support], ignore_index=True, sort=False)
         decomposition = attach_spec_ids(
             decomposition,
             prefix="vehicle_transition_pair_decomposition",

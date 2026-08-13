@@ -2,6 +2,10 @@
 
 from __future__ import annotations
 
+from itertools import permutations
+from pathlib import Path
+
+import duckdb
 import numpy as np
 import pandas as pd
 
@@ -28,6 +32,284 @@ REQUIRED_CHOICE_COLUMNS = {
     *METRICS.values(),
 }
 PAIR_MEMBERSHIP_ORDER = ("common", "baseline_exclusive", "comparison_exclusive")
+
+
+def load_market_incidence_annual_pairs(
+    pair_support_path: Path,
+    choices_path: Path,
+    *,
+    baseline_year: int = BASELINE_YEAR,
+    comparison_year: int = COMPARISON_YEAR,
+) -> pd.DataFrame:
+    """Aggregate the released pair ledger on the decomposition's common calendar."""
+
+    connection = duckdb.connect()
+    try:
+        return connection.execute(
+            """
+            WITH common_days AS (
+                SELECT strftime(date, '%m-%d') AS month_day
+                FROM read_parquet(?)
+                WHERE year(date) IN (?, ?)
+                GROUP BY 1
+                HAVING count(DISTINCT year(date)) = 2
+            )
+            SELECT
+                year(date)::INTEGER AS year,
+                src,
+                tgt,
+                sum(market_route_count)::DOUBLE AS market_route_count,
+                sum(primary_choice_route_count)::DOUBLE AS primary_choice_route_count,
+                sum(native_choice_route_count)::DOUBLE AS native_choice_route_count,
+                sum(stable_choice_route_count)::DOUBLE AS stable_choice_route_count
+            FROM read_parquet(?)
+            WHERE year(date) IN (?, ?)
+              AND strftime(date, '%m-%d') IN (SELECT month_day FROM common_days)
+            GROUP BY 1, 2, 3
+            ORDER BY 2, 3, 1
+            """,
+            [
+                str(choices_path),
+                baseline_year,
+                comparison_year,
+                str(pair_support_path),
+                baseline_year,
+                comparison_year,
+            ],
+        ).fetchdf()
+    finally:
+        connection.close()
+
+
+def _weighted_stable_share(frame: pd.DataFrame, suffix: str) -> float:
+    denominator = float(frame[f"primary_{suffix}"].sum())
+    if denominator <= 0:
+        raise ValueError("market-incidence decomposition lacks positive primary mass")
+    return float(frame[f"stable_{suffix}"].sum() / denominator)
+
+
+def _factor_share(market: np.ndarray, incidence: np.ndarray, stable_share: np.ndarray) -> float:
+    mass = market * incidence
+    denominator = float(mass.sum())
+    if denominator <= 0:
+        raise ValueError("market-incidence factor state has zero primary mass")
+    return float(np.dot(mass, stable_share) / denominator)
+
+
+def vehicle_rotation_market_incidence_decomposition(
+    annual_pairs: pd.DataFrame,
+    *,
+    baseline_year: int = BASELINE_YEAR,
+    comparison_year: int = COMPARISON_YEAR,
+) -> tuple[pd.DataFrame, pd.DataFrame]:
+    """Bridge support turnover and Shapley M/I/s terms for count rotation.
+
+    M is observed market-route activity, I is realised primary vehicle-route
+    incidence, and s is stable share conditional on that realised vehicle role.
+    None is interpreted as availability, demand, preference, or treatment.
+    """
+
+    required = {
+        "year",
+        *PAIR_KEYS,
+        "market_route_count",
+        "primary_choice_route_count",
+        "native_choice_route_count",
+        "stable_choice_route_count",
+    }
+    missing = sorted(required - set(annual_pairs.columns))
+    if missing:
+        raise ValueError(f"market-incidence annual pairs lack columns: {missing}")
+    data = annual_pairs.copy()
+    if data.duplicated(["year", *PAIR_KEYS]).any():
+        raise ValueError("market-incidence annual pairs contain duplicate year-pair keys")
+    if set(data["year"].unique()) != {baseline_year, comparison_year}:
+        raise ValueError("market-incidence decomposition requires both endpoint years")
+    quantities = [
+        "market_route_count",
+        "primary_choice_route_count",
+        "native_choice_route_count",
+        "stable_choice_route_count",
+    ]
+    for column in quantities:
+        data[column] = pd.to_numeric(data[column], errors="raise")
+        if not np.isfinite(data[column]).all() or data[column].lt(0).any():
+            raise ValueError(f"market-incidence pairs contain invalid {column}")
+    if not data["primary_choice_route_count"].eq(
+        data["native_choice_route_count"] + data["stable_choice_route_count"]
+    ).all():
+        raise ValueError("market-incidence primary mass does not reconcile by type")
+    if not data["primary_choice_route_count"].le(data["market_route_count"]).all():
+        raise ValueError("market-incidence primary mass exceeds observed market activity")
+
+    renamed = data.rename(
+        columns={
+            "market_route_count": "market",
+            "primary_choice_route_count": "primary",
+            "stable_choice_route_count": "stable",
+        }
+    )
+    baseline = renamed[renamed["year"].eq(baseline_year)].drop(
+        columns=["year", "native_choice_route_count"]
+    )
+    comparison = renamed[renamed["year"].eq(comparison_year)].drop(
+        columns=["year", "native_choice_route_count"]
+    )
+    merged = baseline.merge(
+        comparison,
+        on=list(PAIR_KEYS),
+        how="outer",
+        suffixes=("_baseline", "_comparison"),
+        validate="one_to_one",
+    ).fillna(0.0)
+    for suffix in ("baseline", "comparison"):
+        merged[f"incidence_{suffix}"] = np.divide(
+            merged[f"primary_{suffix}"],
+            merged[f"market_{suffix}"],
+            out=np.zeros(len(merged), dtype=float),
+            where=merged[f"market_{suffix}"].to_numpy() > 0,
+        )
+        merged[f"stable_share_{suffix}"] = np.divide(
+            merged[f"stable_{suffix}"],
+            merged[f"primary_{suffix}"],
+            out=np.zeros(len(merged), dtype=float),
+            where=merged[f"primary_{suffix}"].to_numpy() > 0,
+        )
+
+    established = merged["market_baseline"].gt(0) & merged["market_comparison"].gt(0)
+    common_role = merged["primary_baseline"].gt(0) & merged["primary_comparison"].gt(0)
+    if not common_role.any():
+        raise ValueError("market-incidence decomposition has no common vehicle-role pairs")
+    common = merged[common_role].copy()
+
+    all_shares = {
+        suffix: _weighted_stable_share(merged, suffix)
+        for suffix in ("baseline", "comparison")
+    }
+    established_shares = {
+        suffix: _weighted_stable_share(merged[established], suffix)
+        for suffix in ("baseline", "comparison")
+    }
+    common_shares = {
+        suffix: _weighted_stable_share(common, suffix)
+        for suffix in ("baseline", "comparison")
+    }
+
+    factors = ("market", "incidence", "stable_share")
+    endpoint = {
+        factor: {
+            "baseline": common[f"{factor}_baseline"].to_numpy(dtype=float),
+            "comparison": common[f"{factor}_comparison"].to_numpy(dtype=float),
+        }
+        for factor in factors
+    }
+    shapley = dict.fromkeys(factors, 0.0)
+    orders = tuple(permutations(factors))
+    for order in orders:
+        state = {factor: endpoint[factor]["baseline"] for factor in factors}
+        prior = _factor_share(state["market"], state["incidence"], state["stable_share"])
+        for factor in order:
+            state[factor] = endpoint[factor]["comparison"]
+            current = _factor_share(
+                state["market"], state["incidence"], state["stable_share"]
+            )
+            shapley[factor] += (current - prior) / len(orders)
+            prior = current
+
+    market_support_bridge = (
+        all_shares["comparison"] - established_shares["comparison"]
+    ) - (all_shares["baseline"] - established_shares["baseline"])
+    vehicle_role_support_bridge = (
+        established_shares["comparison"] - common_shares["comparison"]
+    ) - (established_shares["baseline"] - common_shares["baseline"])
+    total_change = all_shares["comparison"] - all_shares["baseline"]
+    identity_error = total_change - (
+        market_support_bridge
+        + vehicle_role_support_bridge
+        + shapley["market"]
+        + shapley["incidence"]
+        + shapley["stable_share"]
+    )
+    if not np.isclose(identity_error, 0.0, atol=1e-12, rtol=0.0):
+        raise RuntimeError(f"market-incidence identity failed: {identity_error}")
+
+    summary = pd.DataFrame(
+        [
+            {
+                "metric": "count_share",
+                "source_column": "pair_support_count_accounting",
+                "reporting_scope": "pooled",
+                "baseline_year": baseline_year,
+                "comparison_year": comparison_year,
+                "baseline_stable_share": all_shares["baseline"],
+                "comparison_stable_share": all_shares["comparison"],
+                "total_change": total_change,
+                "established_market_baseline_stable_share": established_shares["baseline"],
+                "established_market_comparison_stable_share": established_shares["comparison"],
+                "established_market_total_change": established_shares["comparison"]
+                - established_shares["baseline"],
+                "common_role_baseline_stable_share": common_shares["baseline"],
+                "common_role_comparison_stable_share": common_shares["comparison"],
+                "common_role_total_change": common_shares["comparison"]
+                - common_shares["baseline"],
+                "market_pair_support_bridge": market_support_bridge,
+                "vehicle_role_support_bridge": vehicle_role_support_bridge,
+                "market_activity_reweighting": shapley["market"],
+                "vehicle_incidence_reweighting": shapley["incidence"],
+                "within_pair_stable_share": shapley["stable_share"],
+                "identity_error": identity_error,
+                "formula_id": "shapley_market_incidence_stable_bridge_v1",
+                "estimand_scope": "raw_pooled_count_share_market_incidence_bridge",
+                "mechanism_status": "descriptive_observed_activity_and_realised_incidence_noncausal",
+                "omitted_dimensions": "architecture|opportunity_set|demand|preference|search_efficiency",
+            }
+        ]
+    )
+
+    support_rows: list[dict[str, object]] = []
+    year_specs = (
+        (baseline_year, "baseline", "comparison"),
+        (comparison_year, "comparison", "baseline"),
+    )
+    for year, suffix, other in year_specs:
+        positive = merged[f"primary_{suffix}"].gt(0)
+        statuses = np.select(
+            [
+                merged[f"market_{other}"].eq(0),
+                merged[f"primary_{other}"].eq(0),
+            ],
+            [
+                "market_pair_support_turnover",
+                "vehicle_role_support_turnover_established_market",
+            ],
+            default="common_vehicle_role",
+        )
+        total_primary = float(merged.loc[positive, f"primary_{suffix}"].sum())
+        for status in (
+            "market_pair_support_turnover",
+            "vehicle_role_support_turnover_established_market",
+            "common_vehicle_role",
+        ):
+            selected = positive & pd.Series(statuses, index=merged.index).eq(status)
+            primary_mass = float(merged.loc[selected, f"primary_{suffix}"].sum())
+            stable_mass = float(merged.loc[selected, f"stable_{suffix}"].sum())
+            support_rows.append(
+                {
+                    "record_type": "market_incidence_support",
+                    "metric": "count_share",
+                    "reporting_scope": "pooled",
+                    "endpoint_year": year,
+                    "support_status": status,
+                    "unit": "ordered_endpoint_pair",
+                    "units": int(selected.sum()),
+                    "primary_choice_mass": primary_mass,
+                    "primary_choice_mass_share": primary_mass / total_primary,
+                    "stable_choice_mass": stable_mass,
+                    "stable_share": stable_mass / primary_mass if primary_mass > 0 else 0.0,
+                }
+            )
+    support = pd.DataFrame(support_rows)
+    return summary, support
 
 
 def _common_calendar_choices(

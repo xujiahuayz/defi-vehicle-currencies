@@ -1,9 +1,9 @@
 {
  "argv": [],
- "artefact": "data/processed/d3_analysis_release/generations/cacdfddc0761101096ab65e25a42157dd15f1cb0a67dac0c0334643951ff557f/certificate.json",
+ "artefact": "data/processed/d3_analysis_release/generations/25c755ae635d90846fb754e5cb58caa7f377787daba0743d95667b8c29ed9e6c/certificate.json",
  "artefact_bytes": 22368,
- "artefact_mtime_ns": 1786655126393438295,
- "artefact_sha256": "976ed2d6005db4edddb5c8936485c01203ecdefa3b05e2c61c64894dec286cad",
+ "artefact_mtime_ns": 1786657304737399473,
+ "artefact_sha256": "359eb8685990f9712fe1b775d5bb275a3cf786078bc2193d4a7ba5deb480f4f8",
  "code_fingerprint": "8dcf83371f509786db1b4f2c3a6c7e98d9467a2205f41bc198f36aee62e06a4e",
  "code_sources": [
   "scripts/publish_analysis_release.py",
@@ -13,20 +13,16 @@
   "src/ddvc/model_registry.py",
   "src/ddvc/provenance.py"
  ],
- "created_at": "2026-08-13T21:05:40+00:00",
+ "created_at": "2026-08-13T21:41:58+00:00",
  "git": {
   "branch": "main",
-  "commit": "628388d6105bf3df8d0c25dce79659e860031ee7",
+  "commit": "e16796c9c04c8bf55eb653671af7c1b3c9458de7",
   "dirty": false,
   "dirty_generated_files": [
-   "data/manifests/data/processed/d3_analysis_release/",
-   "data/manifests/output/exhibits/e0_vehicle_rotation_analysis.jsonl.prov.json",
    "data/manifests/output/exhibits/vehicle_transition_pair_decomposition.jsonl.prov.json",
    "data/manifests/output/exhibits/vehicle_transition_pair_panel.parquet.prov.json",
    "data/manifests/output/exhibits/vehicle_transition_pair_support.jsonl.prov.json",
-   "output/exhibits/e0_vehicle_rotation_analysis.jsonl",
    "output/exhibits/vehicle_transition_pair_decomposition.jsonl",
-   "output/exhibits/vehicle_transition_pair_panel.parquet",
    "output/exhibits/vehicle_transition_pair_support.jsonl"
   ],
   "dirty_tracked_files": [],
@@ -12167,12 +12163,6 @@
    "sha256": "fb1c9a0cf1580db2d89853bd840d29994f926c516339e2a26008b34a1d5fa888"
   },
   {
-   "bytes": 41013,
-   "exists": true,
-   "path": "docs/specification-lock.json",
-   "sha256": "ef187f3617fcb1dc1f3422483d4057652dd4f5b7a3ed30b01377007ee8f84276"
-  },
-  {
    "bytes": 41376304,
    "exists": true,
    "path": "data/unified/20260419.parquet",
@@ -12220,6 +12210,12 @@
    "exists": true,
    "path": "data/unified/20200522.parquet",
    "sha256": "687adee70643b68df8a0c75c7f1bf7340b03343dfebc7fd72cf03c2521da0ee3"
+  },
+  {
+   "bytes": 44174,
+   "exists": true,
+   "path": "docs/specification-lock.json",
+   "sha256": "337cca6653022029692553bc1bb5ed98d7b17aed135db8f8ff33551b3842b44d"
   },
   {
    "bytes": 4436127,
@@ -28131,12 +28127,12 @@
   "pyarrow": "25.0.0",
   "scipy": "1.18.0"
  },
- "notes": "D3 analysis release de49187b17e4458cbc1676e47aaf5a1e96164d4f227e473adb42917f19a3d59d",
+ "notes": "D3 analysis release 9aa4e1d3ecbc9fb899bf70ba70fc18cf1d621003162218e755fd8ecc4cbb3580",
  "payload_identity": {
   "bytes": 22368,
   "format": "binary",
   "schema_version": 1,
-  "sha256": "976ed2d6005db4edddb5c8936485c01203ecdefa3b05e2c61c64894dec286cad"
+  "sha256": "359eb8685990f9712fe1b775d5bb275a3cf786078bc2193d4a7ba5deb480f4f8"
  },
  "python": "3.14.6",
  "rows": 4,

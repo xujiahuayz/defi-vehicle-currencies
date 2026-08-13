@@ -359,7 +359,14 @@ VEHICLE_TRANSITION_E1_COMPONENTS = (
     "common_support_mass",
     "exclusive_pair_contribution",
 )
-EXPECTED_VEHICLE_TRANSITION_E1_DESIGN_HASH = "6990b221624cb3fffd7d00fcdd07827c4966cfe4d92c24723209d1a278bf80d4"
+VEHICLE_TRANSITION_MARKET_INCIDENCE_COMPONENTS = (
+    "market_pair_support_bridge",
+    "vehicle_role_support_bridge",
+    "market_activity_reweighting",
+    "vehicle_incidence_reweighting",
+    "within_pair_stable_share",
+)
+EXPECTED_VEHICLE_TRANSITION_E1_DESIGN_HASH = "d4f9215fdda57f70d6cf5924a844bc77d420bcf99675888d578f23c4ff6c0cda"
 
 
 def _manifest(path: Path) -> dict:
@@ -372,8 +379,16 @@ def vehicle_transition_e1_design_errors(claim: dict) -> list[str]:
 
     errors: list[str] = []
     design = claim.get("e1_design")
-    if not isinstance(design, dict) or set(design) != {"pair_panel", "pair_decomposition"}:
-        return ["e1_design must contain exactly pair_panel and pair_decomposition"]
+    expected_members = {
+        "pair_panel",
+        "pair_decomposition",
+        "market_incidence_decomposition",
+    }
+    if not isinstance(design, dict) or set(design) != expected_members:
+        return [
+            "e1_design must contain exactly pair_panel, pair_decomposition, "
+            "and market_incidence_decomposition"
+        ]
     actual_design_hash = canonical_hash(design)
     if claim.get("e1_design_hash") != actual_design_hash:
         errors.append("e1_design_hash")
@@ -381,7 +396,12 @@ def vehicle_transition_e1_design_errors(claim: dict) -> list[str]:
         errors.append("unreviewed e1_design_hash")
     panel = design.get("pair_panel")
     decomposition = design.get("pair_decomposition")
-    if not isinstance(panel, dict) or not isinstance(decomposition, dict):
+    market_incidence = design.get("market_incidence_decomposition")
+    if (
+        not isinstance(panel, dict)
+        or not isinstance(decomposition, dict)
+        or not isinstance(market_incidence, dict)
+    ):
         return ["e1_design members must be objects"]
     panel_required = {"id", "comparison_years", "cell_keys", "common_support_keys", "candidate_types", "primary_measures", "stable_share_formula", "estimator_id", "fixed_effects", "fixed_effect_cell_keys", "clusters", "coefficient", "effective_cell_weight", "multiplicity"}
     decomposition_required = {"id", "target_id", "role_id", "comparison_years", "calendar_support", "calendar_aggregation_id", "integration_scope_aggregation_id", "pair_membership_id", "pair_universe", "common_pair_definition", "exclusive_pair_definition", "candidate_types", "measure_ids", "components", "identity", "formula_id", "formula", "identity_absolute_tolerance", "zero_exclusive_mass_rule", "denominator_scope", "forbidden_denominator", "reporting"}
@@ -440,6 +460,60 @@ def vehicle_transition_e1_design_errors(claim: dict) -> list[str]:
     formula = str(decomposition.get("formula") or "")
     if not all(f"{component} =" in formula for component in VEHICLE_TRANSITION_E1_COMPONENTS):
         errors.append("pair_decomposition formula")
+    market_required = {
+        "id",
+        "target_id",
+        "role_id",
+        "comparison_years",
+        "calendar_support",
+        "pair_universe",
+        "market_activity",
+        "vehicle_incidence",
+        "stable_share",
+        "support_classification",
+        "common_role_definition",
+        "components",
+        "identity",
+        "formula_id",
+        "formula",
+        "identity_absolute_tolerance",
+        "measure_ids",
+        "forbidden_interpretations",
+        "reporting",
+    }
+    missing_market = sorted(market_required - set(market_incidence))
+    if missing_market:
+        errors.append(f"market_incidence_decomposition missing={missing_market}")
+    if market_incidence.get("comparison_years") != panel.get("comparison_years"):
+        errors.append("market_incidence_decomposition comparison_years")
+    if market_incidence.get("measure_ids") != ["count_share"]:
+        errors.append("market_incidence_decomposition measure_ids")
+    if tuple(market_incidence.get("components") or ()) != (
+        VEHICLE_TRANSITION_MARKET_INCIDENCE_COMPONENTS
+    ):
+        errors.append("market_incidence_decomposition components")
+    market_identity = str(market_incidence.get("identity") or "")
+    market_identity_terms = [
+        term.strip() for term in market_identity.partition("=")[2].split("+")
+    ]
+    if (
+        not market_identity.startswith("delta_total =")
+        or market_identity_terms
+        != list(VEHICLE_TRANSITION_MARKET_INCIDENCE_COMPONENTS)
+    ):
+        errors.append("market_incidence_decomposition identity")
+    market_formula = str(market_incidence.get("formula") or "")
+    if not all(
+        term in market_formula
+        for term in ("all six permutations", "F(M,I,s)", "positive M")
+    ):
+        errors.append("market_incidence_decomposition formula")
+    market_forbidden = str(market_incidence.get("forbidden_interpretations") or "")
+    if not all(
+        term in market_forbidden
+        for term in ("architecture", "opportunity", "demand", "preference", "search")
+    ):
+        errors.append("market_incidence_decomposition interpretation boundary")
     return errors
 
 

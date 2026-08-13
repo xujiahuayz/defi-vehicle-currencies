@@ -1,10 +1,10 @@
 {
  "argv": [],
  "artefact": "output/exhibits/vehicle_transition_pair_support.jsonl",
- "artefact_bytes": 14537,
- "artefact_mtime_ns": 1786655780748007335,
- "artefact_sha256": "f0e73269f8785836fed6f01b012c43aa699f899b05740ae574d211200d19b27a",
- "code_fingerprint": "b9e4e8af17117ffb47e77d9d7c000f6b1b9431828c889cefda9c904429a09b7e",
+ "artefact_bytes": 22842,
+ "artefact_mtime_ns": 1786657954614642575,
+ "artefact_sha256": "5184ffb8d9c35be143a3b0822e698cf2e5a4e7762bb7211cd8016b2bf73040ff",
+ "code_fingerprint": "c3b433d79a38584c88543c7f046cbc2edde1a11e7b971e0cb6d0f7f9f3b86de2",
  "code_sources": [
   "scripts/run_vehicle_rotation_composition_e0.py",
   "src/ddvc/analysis/vehicle_rotation_composition.py",
@@ -14,32 +14,27 @@
   "src/ddvc/model_artifacts.py",
   "src/ddvc/tables.py"
  ],
- "created_at": "2026-08-13T21:16:34+00:00",
+ "created_at": "2026-08-13T21:52:48+00:00",
  "git": {
   "branch": "main",
-  "commit": "628388d6105bf3df8d0c25dce79659e860031ee7",
-  "dirty": true,
+  "commit": "e16796c9c04c8bf55eb653671af7c1b3c9458de7",
+  "dirty": false,
   "dirty_generated_files": [
-   "data/manifests/data/processed/d3_analysis_release/",
-   "data/manifests/output/exhibits/e0_vehicle_rotation_analysis.jsonl.prov.json",
    "data/manifests/output/exhibits/vehicle_transition_pair_decomposition.jsonl.prov.json",
    "data/manifests/output/exhibits/vehicle_transition_pair_panel.parquet.prov.json",
-   "output/exhibits/.vehicle_transition_pair_support.jsonl.e19p8_ia.tmp",
-   "output/exhibits/e0_vehicle_rotation_analysis.jsonl",
    "output/exhibits/vehicle_transition_pair_decomposition.jsonl",
-   "output/exhibits/vehicle_transition_pair_panel.parquet"
+   "data/manifests/data/processed/d3_analysis_release/generations/25c755ae635d90846fb754e5cb58caa7f377787daba0743d95667b8c29ed9e6c/",
+   "output/exhibits/.vehicle_transition_pair_support.jsonl.kwzjqc55.tmp"
   ],
-  "dirty_tracked_files": [
-   "logs/grind-queue.md"
-  ],
+  "dirty_tracked_files": [],
   "dirty_untracked_files": []
  },
  "inputs": [
   {
    "bytes": 22368,
    "exists": true,
-   "path": "data/processed/d3_analysis_release/generations/cacdfddc0761101096ab65e25a42157dd15f1cb0a67dac0c0334643951ff557f/certificate.json",
-   "sha256": "976ed2d6005db4edddb5c8936485c01203ecdefa3b05e2c61c64894dec286cad"
+   "path": "data/processed/d3_analysis_release/generations/25c755ae635d90846fb754e5cb58caa7f377787daba0743d95667b8c29ed9e6c/certificate.json",
+   "sha256": "359eb8685990f9712fe1b775d5bb275a3cf786078bc2193d4a7ba5deb480f4f8"
   },
   {
    "bytes": 1548,
@@ -28098,13 +28093,13 @@
  },
  "notes": "measure-specific common month-day, pair-membership, and integration-scope support for the descriptive realised-composition decomposition",
  "payload_identity": {
-  "bytes": 14537,
+  "bytes": 22842,
   "format": "jsonl",
-  "rows": 36,
+  "rows": 42,
   "schema_version": 1,
-  "sha256": "f0e73269f8785836fed6f01b012c43aa699f899b05740ae574d211200d19b27a"
+  "sha256": "5184ffb8d9c35be143a3b0822e698cf2e5a4e7762bb7211cd8016b2bf73040ff"
  },
  "python": "3.14.6",
- "rows": 36,
+ "rows": 42,
  "script": "scripts/run_vehicle_rotation_composition_e0.py"
 }
