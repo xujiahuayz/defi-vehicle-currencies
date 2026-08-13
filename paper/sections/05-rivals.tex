@@ -1,191 +1,74 @@
-% Section 5. The horse race on the turnover hazard.
-%
-% Four named accounts run as italicised labels through the subsections and are the
-% organising device for the whole section, following the practice of the no-model empirical
-% JFE papers read for this project. The table labelled tab:rivals collects them against the
-% fact that separates each from the other three. Every number carries a comment naming the
-% the findings document it was read from, and nothing here is typed from memory.
-%
-% Measurement rivals are not in this race. They sit with the numbers they threaten, in
-% Sections 3.4 and 6, per the invariant that a defence travels with the claim it defends.
+% Section 5. Mechanisms that may account for persistence in vehicle use.
 
 \section{Mechanisms behind incumbency}
 \label{sec:rivals}
 
-A vehicle that stops being the cheapest route keeps the largest share of routing on its pair for some number of days, and the hazard ratio $\theta$ of \eqref{eq:hazard} measures how weakly the incumbent's cost position governs that. Four accounts each generate a $\theta$ near one and each names a different state variable as the thing moving too slowly for cost to bind. They are \emph{slow capital}, \emph{integration scope}, \emph{holding cost} and \emph{defaults}. Table~\ref{tab:rivals} states the fact that separates each from the other three and the evidence standing behind it today.
+If an incumbent remains in use after another feasible intermediary becomes cheaper, four frictions could account for the delay. Liquidity providers may move capital slowly across pools; routers may not yet reach the venue carrying the cheaper route; holding risk may make some intermediaries more costly to support; or routing software and pool-creation templates may continue to favour the incumbent. These mechanisms can generate similar persistence in aggregate, but they make different predictions within an ordered endpoint pair.
 
-The classical volume-cost feedback is not excluded by the asset taxonomy. Native status is a platform identity, while pairing degree, transaction volume, depth and route cost are measured properties. \citet{Krugman1980VehicleCurrencies}'s primitive is current transaction volume lowering proportional brokerage cost; his model contains neither provider capital nor liquidity reallocation. The \emph{slow capital} account is this paper's extension: past vehicle use may concentrate liquidity in the two markets through the vehicle and lower their current costs. What the four accounts have to explain is why routing does not leave at the moment that cost advantage does.
+The classical volume-cost feedback provides the starting point. In \citet{Krugman1980VehicleCurrencies}, current transaction volume lowers proportional brokerage cost. The mechanism does not specify provider capital, liquidity reallocation, or router access. In this setting those quantities can in principle be measured separately, allowing the persistence of a vehicle role to be related to the state variable that may sustain it.
 
-The determinism of the counterfactual route search narrows the field in a way the currency literature cannot. It is recomputed at every quote and contains no lagged-choice state, which removes habit from the benchmark and leaves none of the four accounts resting on it. Each instead names a state variable that updates slowly, and $\theta$ near one is a measurement of how fast that variable moves. The race is therefore about a speed. A level fact about the incumbent pairing network says nothing about the rate at which that network can be rebuilt around a different asset.
-
-\begin{table}[t]
-\centering
-\caption{Four accounts of a hazard ratio near one, and what separates them}
-\label{tab:rivals}
-\footnotesize
-\begin{tabular}{@{}p{0.13\textwidth}p{0.17\textwidth}p{0.32\textwidth}p{0.30\textwidth}@{}}
-\toprule
-Account & Slow state variable & Fact that separates it from the other three & Evidentiary status \\
-\midrule
-\emph{Slow capital} & Committed provider depth on the pair & $\theta$ falls in candidate-linked capital concentration, and depth moves before routing does, as in \eqref{eq:capital} & Premise established: median net yield $-5.96\%$ annualised on 100,639 pools. Discriminating test blocked by a single-venue depth measure \\
-% docs/finding-rent-incidence.md; docs/retired-single-venue-round.md
-\emph{Integration scope} & Aggregator reachability of the cheaper venue & $\theta$ steps up at the date the cheaper venue becomes reachable, and is lower where integration breadth is narrower, as in \eqref{eq:integration} & No completed test. The labelled executor registry reaches 11.8\% of swaps and routing authorship is off-chain \\
-% docs/router-identification-feasibility.md
-\emph{Holding cost} & Volatility of the intermediary itself & $\theta$ responds to the candidate's own drawdown, with the sign reversing between a native drawdown and a stable depeg, as in \eqref{eq:stress} & Size gradient rejected: the native-by-size interaction is $+0.0023$ (0.914). Crossover ordering stands, and is larger where stableswap never existed \\
-% output/exhibits/dominance_specification_curve.jsonl; output/exhibits/venue_technology_rival.jsonl
-\emph{Defaults} & Release cadence of routing and pool-creation software & $\theta$ steps at release dates, clusters by the software serving a pair, and stays local to the venue whose software changed, as in \eqref{eq:break} & Leading. Bounded null on the mandate withdrawal, at power 98.4\% against a halving of lifetime; cross-venue reach capped at $+0.020$ \\
-% docs/finding-v1-forced-vehicle.md; output/exhibits/v1_token_level_power.jsonl; output/exhibits/cross_venue_spillover_estimates.jsonl
-\bottomrule
-\end{tabular}
-
-\vspace{0.6em}
-\begin{minipage}{0.94\textwidth}
-\footnotesize
-The estimand is the hazard ratio $\theta = \lambda_1/\lambda_0$ of \eqref{eq:hazard}, the daily chance that leadership on a pair changes hands when the incumbent is losing on cost against the chance when it is the cheapest available. Each account predicts a distinct covariate that moves $\theta$, given as the displayed specification in the third column. Status is as of the evidence reported in this section, and the two blocked accounts name the measure that blocks them.
-\end{minipage}
-\end{table}
-
-\subsection{Slow capital}
+\subsection{Liquidity reallocation}
 \label{sec:rivals:capital}
 
-Routing follows depth within a block, and depth follows the capital that liquidity providers have committed. The \emph{slow capital} account hypothesises that reallocating this capital across routes is infrequent or costly; neither the cadence nor its cause is supplied by the finite-risk-bearing model of \citet{GrossmanMiller1988Liquidity}. Under this account the role outlasts dominance for exactly as long as reallocation takes, and $\theta$ near one is a statement about provider stickiness carrying no behavioural content on the trading side.
+Past vehicle use may concentrate liquidity in the two pools that connect an incumbent to an endpoint pair. If reallocating that liquidity is costly or infrequent, a cost-disadvantaged incumbent should lose its role more slowly where incumbent-linked depth remains concentrated. Let $C_{abt}$ measure that concentration and add it to the turnover hazard:
 
-The prediction that separates \emph{slow capital} from the other three is a lead-lag between depth and routing. Write $C_{abt}$ for the concentration of provider capital in the pools linking the incumbent to the pair, and extend \eqref{eq:turnover-regression} with it:
 \begin{equation}
-\Pr\bigl(y_{ab,\,t+1}=1 \mid \cdot\bigr) \;=\; 1 - \exp\Bigl(-\exp\bigl(\alpha_{ab} + \gamma\, d_{ab\ell t} + \beta\, C_{abt} + \zeta\, d_{ab\ell t} C_{abt} + \eta\, g_{abt}\bigr)\Bigr),
+\Pr\bigl(y_{ab,\,t+1}=1 \mid \cdot\bigr)
+=1-\exp\!\left[-\exp\!\left(\alpha_{ab}+\gamma d_{ab\ell t}
++\beta C_{abt}+\zeta d_{ab\ell t}C_{abt}+\eta g_{abt}\right)\right],
 \label{eq:capital}
 \end{equation}
-with $g_{abt}$ the contemporaneous cost gap in basis points and the account requiring $\zeta < 0$, meaning a dominated incumbent backed by more concentrated capital loses the role more slowly. The sharp half is the timing, estimated as a local projection of the incumbent's share on capital at leads and lags:
+where $g_{abt}$ is the incumbent's cost gap. Slow liquidity reallocation predicts $\zeta<0$.
+
+Timing distinguishes this mechanism from liquidity that merely follows routing. For horizon $h$,
+
 \begin{equation}
-\Delta s_{ab\,\ell,\,t+h} \;=\; a_h \;+\; b_h\, \Delta C_{abt} \;+\; \varphi_h' x_{abt} \;+\; \epsilon_{ab,t+h}, \qquad h = -H,\dots,H .
+\Delta s_{ab\ell,t+h}=a_h+b_h\Delta C_{abt}+\varphi_h'x_{abt}+\epsilon_{ab,t+h},
+\qquad h=-H,\ldots,H .
 \label{eq:leadlag}
 \end{equation}
-The mechanism has two ordered margins: deposited capital $C$ changes, protocol-state capital efficiency maps it into executable depth $D$, and routing responds to $D$. The design must therefore estimate $C\rightarrow D$ and $D\rightarrow s$ separately. Capital leading depth and routing supports the slow-capital account; routing leading capital refutes it. A change in depth at fixed capital is an architecture or range-placement channel, not capital reallocation.
 
-A lagged dependent variable with observed-fundamentals controls is retained as diagnostic, not discriminating evidence. A serially persistent unobserved fundamental can generate the same pattern as a switching cost, so that regression cannot identify the slow-capital account even if its lag is large.
+Capital moving before depth and routing is consistent with slow reallocation; routing moving first is not. A change in executable depth at fixed capital instead points to range placement or market design. The test requires candidate-linked deposited capital and executable depth across the venues available to routers. Venue-level depth alone is insufficient when orders split across exchanges \citep{ChenDuffie2021Fragmentation}. Because the historical V3 balance series does not measure deposited capital, we do not estimate this mechanism with that series.
 
-The premise is currently untested. The prior rent panel is withdrawn while V2 is regenerated with contemporaneous pool value as the LVR scale and exact prior-calendar deposited capital as the return denominator. Uniswap V3 provider TVL failed the historical-balance audit, and local virtual depth is neither capital nor an LVR scale. No earlier V2 magnitude or V3 sign is admitted here. Token-denominated subsidies also sit outside the accounting, so even a validated trading-revenue loss would not by itself distinguish subsidy-supported participation from provider stickiness.
-% docs/findings-freeze.md; docs/finding-rent-incidence.md
-
-The duration test itself is blocked by a measure. Candidate-linked liquidity and provider concentration are currently reconstructed from one venue's data alone, while routers split a single trade across venues. \citet{ChenDuffie2021Fragmentation} establish the narrower point that venue-level depth and aggregate allocation can diverge when orders in one asset split across exchanges. The cross-pool liquidity aggregate to which an on-chain router responds is this paper's measurement object. Rebuilding $C_{abt}$ on that layer is what puts \emph{slow capital} into the race, and it enters with \eqref{eq:capital} and \eqref{eq:leadlag} as stated.
-% docs/retired-single-venue-round.md
-
-\subsection{Integration scope}
+\subsection{Router access}
 \label{sec:rivals:integration}
 
-A cheaper route no aggregator has integrated is a route no trader can take. Under \emph{integration scope} the role outlasts dominance for as long as the routing layer takes to see the alternative, and $\theta$ near one measures the cadence of a business decision taken at the aggregators. This is a supply-side friction on the routing layer, and it is distinct from \emph{slow capital} because no capital has to move for the role to end.
+A cheaper route that a router cannot reach is not an available alternative. Router access therefore predicts a discrete increase in turnover when the venue carrying the cheaper route becomes reachable. Let $t^*_{ab}$ denote that date and $R_{abt}$ the share of routing volume served by systems that can reach the venue:
 
-The prediction that separates it is a step at integration dates crossed with a cross-section in breadth. Write $t^{*}_{ab}$ for the date the venue carrying the pair's cheaper alternative became reachable through the aggregators serving it, and $R_{abt}$ for the share of routing volume whose aggregator had integrated that venue by $t$:
 \begin{equation}
-\log \lambda_{abt} \;=\; \alpha_{ab} + \gamma\, d_{ab\ell t} + \kappa\, R_{abt} + \sum_{h=-H}^{H} \pi_h \, \mathbf{1}\{t - t^{*}_{ab} = h\} + \epsilon_{abt},
+\log \lambda_{abt}=\alpha_{ab}+\gamma d_{ab\ell t}+\kappa R_{abt}
++\sum_{h=-H}^{H}\pi_h\mathbf{1}\{t-t^*_{ab}=h\}+\epsilon_{abt}.
 \label{eq:integration}
 \end{equation}
-with the account requiring $\kappa > 0$ and a step in $\pi_h$ at $h = 0$ against a flat profile before it. Both halves need the same input.
 
-The obstacle is quote authorship and it has been measured. The calling contract identifies the executor of a route but does not necessarily identify the system that selected its path. Authorship is classified only where versioned protocol documentation or implementation evidence establishes that an off-chain service or solver produced the route and any split proportions. An executor's share of swaps is therefore not the routing system's share of decisions, and the verified systems are not interchangeable: two run off-chain routing services that emit executable calldata, while a third is a batch auction in which competing solvers submit solutions. The executor population also fragments across the sample, from 171 distinct senders on 62,657 swaps in mid-2022 to 241 on 74,323 in early 2024 and 397 on 130,282 in late 2025, while the share captured by the ten largest labelled executors falls from 67.7\% to 11.8\% between the last two of those snapshots.
-% docs/router-identification-feasibility.md
+This mechanism predicts $\kappa>0$, no differential movement before integration, and a change at $h=0$. The public chain identifies the contract that executes a route but not necessarily the off-chain system that selected the path. Request-for-quote responses, solver alternatives, and private order flow are also unobserved. Estimating \eqref{eq:integration} therefore requires versioned documentation or implementation evidence that identifies route authorship and a reported measure of the routing volume those systems represent.
 
-Parts of an aggregator's opportunity set are private and stay private. Losing request-for-quote responses, market-maker inventory, the full set of solutions submitted to a batch auction, and the ex ante value of private transaction inclusion are all absent from the public record, and a route declined for any of them is indistinguishable here from a route the routing layer could not see. That is a ceiling on how sharply this account can ever be tested, and it is a property of the data.
-% docs/router-identification-feasibility.md
-
-Two inputs make \eqref{eq:integration} admissible. The first is the date each venue became reachable through each major aggregator, constructed from contract-creation traces and function selectors instead of hand curation, since hand curation is what fell from 67.7\% coverage to 11.8\% as the executor population grew. The second is the share of routing volume the labelled executors carry, which has to be reported before any design is built on those labels, because a design resting on 11.8\% of contracts and most of the volume is viable and one resting on 11.8\% of both is not.
-% docs/router-identification-feasibility.md
-
-\subsection{Holding cost}
+\subsection{Holding risk}
 \label{sec:rivals:holding}
 
-Risk-bearing dealer theory and inventory evidence motivate, but do not identify, a holding-cost rival in this setting \citep{HoStoll1981OptimalDealer,ComertonFordeEtAl2010Inventories}. If supplying pools that carry an intermediate asset ties up more risk-bearing capacity when its price is volatile, a volatile incumbent should be abandoned faster under its own stress than a stable one is, and $\theta$ should move with what the role costs to occupy.
+Inventory models motivate a third mechanism \citep{HoStoll1981OptimalDealer,ComertonFordeEtAl2010Inventories}. If supporting a route through an intermediary ties up risk-bearing capacity, deterioration in that asset should make a cost-disadvantaged incumbent turn over faster. Let $z_{kt}$ denote candidate $k$'s own drawdown over the preceding week:
 
-A second signature of this account is rejected on the record. If warehousing the intermediary costs something that scales with notional, the native asset's cost advantage weakens as trade size rises, and a profile read off three separate notional subsamples looks exactly like that. Estimated as an interaction on the same screened panel,
 \begin{equation}
-g_{rc} \;=\; \alpha_c \;+\; \beta_1 \, \mathrm{NATIVE}_r \;+\; \beta_2 \, \mathrm{NATIVE}_r \log V_r \;+\; \epsilon_{rc},
-\label{eq:size}
-\end{equation}
-with $g_{rc}$ the route's cost gap in basis points, $V_r$ its notional and $\alpha_c$ a fixed effect for pair by time window by trade size, the estimate is $\hat{\beta}_2 = +0.0023$ with a standard error of $0.0209$ (0.914), on 732 routes in 274 cells. The apparent gradient is three draws from a flat line. No comparison anywhere in this paper describes the native cost advantage as weakening with size, and the fixed-cost reading it invited is withdrawn.
-% output/exhibits/dominance_specification_curve.jsonl
-
-One prediction stands on the record and it is the ordering of the two crossover dates. Value-weighted, stablecoins first exceed the native asset as intermediaries in 2022-Q1 and lead from 2022-Q4 onward. Count-weighted, the crossover appears only in 2026-H1, at the very end of the sample and with no four-quarter run available to call it sustained. Large trades moved to fiat-pegged assets roughly four years before small trades did, which is the ordering a cost scaling in notional implies and an ordering the mechanism predicted before it was observed.
-% docs/finding-intermediation-transition.md
-
-One competing explanation of that ordering is rejected here. Venues running a stableswap invariant make stable-to-stable legs nearly free and exist for no other asset class, and their rise coincides in time with stablecoin intermediation, which would make the whole transition an automated market maker technology fact wearing a monetary label. Recomputing intermediation shares on the constant-product subset alone, keeping a route only when every one of its legs settles on that subset so that a single stableswap leg cannot readmit the explanation, the stable share of intermediation moves by $+49.5$ percentage points across the sample while the native share moves by $-68.0$. Stable intermediation reaches 59.5\% on constant-product venues alone in 2026 against 51.1\% across all venues on the same days. The transition is larger where the technology does not exist. Those figures come from a fifteen-day sampled panel whose endpoints are one day in 2020 and two in 2026, and the comparison between the two subsets is the informative part where the endpoint levels are not the full-sample series of Section~\ref{sec:dominance:transition}, which puts the stable share at 50.1\% over 2,240 days.
-% output/exhibits/venue_technology_rival.jsonl
-
-What remains for \emph{holding cost} is a stress test on the hazard, and its specification is fixed here. Write $z_{kt}$ for candidate $k$'s own drawdown over the preceding week and interact it with the dominance indicator in \eqref{eq:turnover-regression}:
-\begin{equation}
-\theta_{kt} \;=\; \exp\bigl(\gamma + \xi\, z_{kt}\bigr), \qquad \xi > 0 \;\; \text{for the native asset}, \qquad \xi < 0 \;\; \text{for a stable candidate}.
+\theta_{kt}=\exp\bigl(\gamma+\xi z_{kt}\bigr).
 \label{eq:stress}
 \end{equation}
-A stable candidate's own downward depeg reverses the sign a second time, and a placebo assigning the shock after the outcome window closes has to return $\xi$ indistinguishable from zero. March 2023 is the candidate-specific episode in this sample: exposure of USDC reserves to Silicon Valley Bank produced a sharp depeg and reversed the contemporaneous direction of stablecoin circulation flows \citep{AnaduEtAl2023StablecoinRuns}. We use that episode to test whether deterioration in one candidate's safety predicts lower subsequent vehicle use; the comparison with the native asset is this project's design, not a result supplied by the source. The May 2022 UST collapse is a separate algorithmic failure in which reflexive conversion into LUNA propagated a run across on-chain and off-chain venues \citep{LiuMakarovSchoar2023Terra}. One prediction on the record is a thinner position than this account began with, and \eqref{eq:stress} is its remaining chance.
 
-\subsection{Defaults}
+The sign depends on the asset. A native-asset drawdown raises the cost of bearing volatile inventory, while a stablecoin depeg changes the safety of an asset whose usual attraction is low volatility. Candidate-specific episodes can test this prediction, but the aggregate rotation between native and stable vehicles cannot: the value-weighted leadership changes more than once over the sample, and calendar ordering alone does not identify a holding-cost mechanism.
+
+\subsection{Software defaults}
 \label{sec:rivals:defaults}
 
-Routing software and pool-creation templates may point at the incumbent. Under \emph{defaults} $\theta$ near one is the release cadence of that software and carries no allocative content, which makes it the least interesting of the four accounts and the one the evidence currently favours. This is a project hypothesis pending protocol-code and release-record evidence, not an implication of the institutional DeFi literature.
+Routing software and pool-creation templates may continue to point toward an incumbent after cheaper alternatives appear. Unlike gradual liquidity reallocation, a software default predicts a change at a release date, concentration among pairs served by the same software, and little response on venues whose software did not change. For an outcome $X_{vt}$ on venues outside the changed architecture, the corresponding locality test is
 
-Four features separate it. A default change is a step at a release date while an allocative reallocation is a drift. A default inside one venue's software cannot move routing on venues whose software did not change, which makes cross-venue scope the discriminating design. Withdrawing an architectural mandate to route through the incumbent lets pairing retreat if optimisation had been propping it up. And turnover should cluster by the software serving a pair while differing across software populations.
-
-The mandate withdrawal has already happened, and it favours this account. The first version of the venue studied here gave every token exactly one exchange contract paired against the native asset, and a token-to-token trade had no direct pool anywhere, which routed it through the native asset. The vehicle was mandated and traders never chose it. The second version, live 2020-05-05, allowed arbitrary token pairs and withdrew the mandate. Pairing did not retreat. Of 477,633 pairs that ever traded on the second version, 463,548, or 97.1\%, include the wrapped native asset, and the share of newly created pairs including it rose from 84.1\% in 2020 to 99.0\% in 2023 and stands at 97.9\% in 2026.
-% docs/finding-v1-forced-vehicle.md
-
-The token-level version of that event reaches a bounded null. Exit speed is regressed on forced-routing intensity across the first-version exchanges,
 \begin{equation}
-\log \bigl(\text{lifetime}_j\bigr) \;=\; a \;+\; b\, F_j \;+\; x_j' c \;+\; u_j,
-\label{eq:exit}
-\end{equation}
-where $F_j$ is the share of token $j$'s early volume that the mandate forced through the native asset. On the 247 exchanges clearing the identifying filters $\hat{b} = +0.276$ log-months with a heteroskedasticity-robust standard error of $0.307$, and randomisation inference over 5,000 reshuffles of $F_j$ across exchanges returns (0.355). The mandate hypothesis requires a negative coefficient. The grouped-time proportional hazard of the same event,
-% output/exhibits/v1_token_level_ols.jsonl, v1_token_level_permutation.jsonl; 247 first-version exchanges clearing the identifying filters
-\begin{equation}
-\Pr\bigl(\text{exit}_{jm} = 1 \mid \text{alive at } m\bigr) \;=\; 1 - \exp\bigl(-\exp(\phi_m + \beta\, F_j)\bigr),
-\label{eq:v1hazard}
-\end{equation}
-on 2,457 exchange-months in 247 clusters with 216 failures, puts $\hat{\beta} = +0.026$ with a cluster-robust standard error of $0.431$, a hazard ratio of 1.004 for a one standard deviation move in intensity.
-% docs/finding-v1-forced-vehicle.md; output/exhibits/v1_token_level_ols.jsonl, v1_token_level_hazard.jsonl, v1_token_level_permutation.jsonl
-
-That null is bounded, and the bound was fixed before it was measured. Refitting \eqref{eq:exit} on outcomes rebuilt with a known coefficient, the design recovers a halving of exchange lifetime between the 5th and 95th percentiles of intensity in 98.4\% of samples, against a pre-stated threshold of 80\%. An effect of the size the mandate hypothesis needs would have been visible and it was not detected. The edge of the bound is reported alongside it: power against a 25\% shortening is 42.2\%, and effects in that range are out of reach here and nothing is claimed against them.
-% output/exhibits/v1_token_level_power.jsonl
-
-One placebo on that design failed its own pre-stated rule and the failure is reported as a failure. Shifting the event six months earlier and truncating follow-up so the placebo window closes before the real date, the placebo coefficient is $+0.0333$ against a real six-month estimate of $+0.0311$ on the same horizon, and the rule required the placebo to be insignificant and smaller in absolute value. It is insignificant and it is larger, by 0.0022 log-months. A rule comparing magnitudes cannot discriminate when both magnitudes sit within a quarter of a standard error of zero, and the earlier window carries a seventh of the exits, which leaves the failure bounding nothing and reading as evidence neither way.
-% docs/finding-v1-forced-vehicle.md
-
-The cross-venue scope test has been run and it yields one usable reading. The outcome is measured only on venues whose architecture did not change, and the break at the concentrated-liquidity launch of 2021-05-05 is estimated as
-\begin{equation}
-X_{vt} \;=\; \alpha_v \;+\; \pi\, \mathbf{1}\{t \geq t^{*}\} \;+\; \varrho\, t \;+\; \varepsilon_{vt}, \qquad v \notin \mathcal{V}^{\text{treated}},
+X_{vt}=\alpha_v+\pi\mathbf{1}\{t\geq t^*\}+\varrho t+\varepsilon_{vt},
+\qquad v\notin\mathcal{V}^{\mathrm{treated}}.
 \label{eq:break}
 \end{equation}
-with $X_{vt}$ the native-minus-stable share of topological betweenness and inference by randomisation over event dates. The estimate is $\hat{\pi} = +0.020$, with randomisation inference at (0.489) against a minimum detectable effect of 0.106 and a pre-event base of 0.689 \citep{AdamsZinsmeisterRobinson2021UniswapV3}. An architecture change on one venue shifted the structural indispensability of the native asset on venues that did not adopt it by under 11 percentage points, and locality of that kind is what \emph{defaults} implies and what an allocative account does not.
-% docs/finding-cross-venue-spillover.md; output/exhibits/cross_venue_spillover_estimates.jsonl
 
-That reading is a bound, and the reason is in the same exhibit. Fitting \eqref{eq:break} at the midpoint of the pre-event window using pre-event data alone returns a pseudo-break of $+0.043$ (0.000) in the same series, roughly twice the estimated jump. The series was already producing steps of that size at dates where nothing happened. What stands is the ceiling on the effect.
-% output/exhibits/cross_venue_spillover_estimates.jsonl
+The transition from mandatory native-asset routing in the first protocol version to arbitrary token pairs in the second shows that architecture can remove a routing mandate. Continued native-asset pairing after that change is consistent both with software templates and with a thick-market externality. Pairing counts alone cannot distinguish them. The defaults mechanism therefore requires dated software changes and turnover measured among pairs whose feasible route set is otherwise unchanged.
 
-The same design does not deliver a second reading, and the reason is a design lesson. At the 2025-01-31 launch the untreated-venue move in native-minus-stable route share is $-0.293$ (0.000) while the move across all venues including the treated one is $-0.346$ (0.000), and restricting to untreated venues recovers 85\% of a market-wide move and differences out almost nothing. Untreated venues are most of this market, and a market-wide compositional rotation passes straight through them. Early 2025 contains such a rotation, and no contrast across venues can separate it from an architecture effect.
-% docs/finding-cross-venue-spillover.md; output/exhibits/cross_venue_spillover_selection.jsonl
+\subsection{Empirical scope}
+\label{sec:rivals:scope}
 
-Betweenness is the outcome carrying the verdict because it is the only outcome family whose placebo passes cleanly. A date on which block time and gas dynamics changed while no market maker architecture did moves betweenness by $+0.006$ (0.787) on one untreated set and $+0.007$ (0.783) on the other. The same date moves the new-pair composition of venues that did not change by $+0.055$ (0.000) and $+0.062$ (0.000), and the new-pair family cannot support a spillover reading at any event date.
-% output/exhibits/cross_venue_spillover_estimates.jsonl
-
-Two of the four separating features are still owed and both wait on the hazard itself. Step timing asks whether $\theta$ falls discontinuously at routing-software release dates and drifts everywhere else, and heterogeneity asks whether turnover clusters by the software serving a pair. There is also a limit on how far the pairing evidence carries this account on its own, and it cuts against reading the mandate null too hard: a token launching against the native asset because the native asset is the default in every launch template is a thick-market externality operating through a state variable, and pairing counts cannot separate that from a template.
-% docs/finding-v1-forced-vehicle.md
-
-\subsection{What the race has settled}
-\label{sec:rivals:verdict}
-
-The race has produced one rejection and one leader, and the two remaining accounts carry specified tests that are not yet admissible. The rejection and the leader are both reported against this project's own interest, which is the order in which they are taken here.
-
-The rejection removes the more interesting half of \emph{holding cost}. A cost of warehousing the intermediary that scales with notional leaves a size gradient in the native cost advantage, that gradient was the signature joining the paper's two halves, and $\hat{\beta}_2 = +0.0023$ (0.914) in \eqref{eq:size} removes it. \emph{Holding cost} stays in the race on the ordering of the crossover dates alone, and that ordering does stand against its sharpest competing explanation, since the migration toward stablecoins is larger on venues where stableswap technology never existed.
-% output/exhibits/dominance_specification_curve.jsonl; output/exhibits/venue_technology_rival.jsonl
-
-\emph{Defaults} leads on the evidence available. It is the only account with a completed test that came out its way, and the test is a bounded null: withdrawing an architectural mandate to route through the native asset left pairing where it was, at a resolution that would have caught a halving of exchange lifetime in 98.4\% of samples. The cross-venue bound points the same way, capping the reach of an architecture change onto venues that did not adopt it at under 11 percentage points of betweenness share. An account under which $\theta$ near one is a software release cadence with no allocative content is the dullest of the four, and it is reported as leading anyway.
-% output/exhibits/v1_token_level_power.jsonl; output/exhibits/cross_venue_spillover_estimates.jsonl
-
-\emph{Slow capital} has neither its premise nor its discriminating sequence established. The replacement panel separates deposited capital, protocol-specific executable depth and routing, while the current V3 flow panel remains unnormalized. The account re-enters only after validated capital stocks and direction-specific depth allow the $C\rightarrow D\rightarrow s$ sequence to be estimated on the cross-venue opportunity set routers search over.
-% docs/finding-rent-incidence.md
-
-\emph{Integration scope} is the newest account in the race and has no completed test at all. What stands between it and one is quote authorship: the calling contract names the executor while the routing decision is authored off-chain, and the labelled share of that population fell to 11.8\% as it fragmented. The account is retained because the friction it names is the one friction consistent with a role outlasting its cost advantage on a pair where nothing about liquidity, volatility or software changed.
-% docs/router-identification-feasibility.md
-
-The verdict on $\theta$, when it can be given across the six-venue panel, is given on a curated specification curve with a joint inference test across the whole curve. Four choices are mandatory to vary: the support-screen threshold, the exact cost-state rule of \eqref{eq:incumbent-gap}, the notional grid point at which routes are priced, and the treatment of outliers. Discretion over ten routine choices of that kind is enough to report over 70\% of randomly generated variables as significant, so the curve and its joint test are part of the result.
-% docs/paper-spine.md section 5.5, specification-curve requirement
-
-Two outcomes of this race are findings and both will be reported as such. A tie in which two accounts stand with the same discriminating sign is a statement about which state variables move slowly and which do not. And a hazard ratio far above one, where the role tracks cost from one day to the next, is a rejection of hysteresis that belongs in the abstract. The block-level window of Section~\ref{sec:survival} puts $\theta$ at 1.17 on sixty days of one venue family, which is the first reading the four accounts are ranked against, and the ranking here moves when the six-venue panel returns its own.
-% output/exhibits/survival_at_block.jsonl, arm turnover_hazard_ratio, 60 days at a 30 bps wedge
+These mechanisms generate distinct predictions, but the current evidence does not rank them. Liquidity reallocation requires validated capital and depth; router access requires route authorship and venue reach; holding risk requires candidate-specific stress; and software defaults require dated, local changes in routing behaviour. Each test is applied to the exact-state turnover hazard of Section~\ref{sec:survival}. Until that hazard is estimated on the common ordered-pair opportunity set, the aggregate facts motivate these mechanisms but do not select among them.

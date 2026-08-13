@@ -411,13 +411,13 @@ Balancer is 3.9\% of measured venue volume pooled and 8.8\% at its 2023 peak. Th
 \section{Block-level pricing and the triangle residual}
 \label{app:timing}
 
-The counterfactual panel prices at the close of an hour and a router quotes at a block, and Section~\ref{sec:executability:timing} reports the level deviation between those two states. A dominance verdict is a comparison in which both sides are priced at the same state, so a level deviation common to both sides cancels and only the relative part can flip a sign. The test that isolates the relative part is the triangle.
+The counterfactual panel prices at the close of an hour, whereas the route-selection state is latent and may precede the observed settlement block. Section~\ref{sec:executability:timing} first measures how much prices move between the pre-settlement and hour-end states. Because both alternatives are priced at the same state, their ranking changes only with relative price movement. A closed triangle isolates that relative component.
 
 For endpoints $a$ and $b$ and intermediary $k$, with a direct pool $ab$ and legs $ak$ and $kb$, the residual
 \[
 m_{a,k,b} \;=\; \log P(a \to b) - \log P(a \to k) - \log P(k \to b)
 \]
-is positive exactly when the direct pool returns more of $b$ per unit of $a$ than the two-leg route does, in the zero-size limit where the marginal price is the pool price. The sign of $m$ is the dominance verdict at that limit.
+is positive exactly when the direct pool returns more of $b$ per unit of $a$ than the two-leg route does, in the zero-size limit where the marginal price is the pool price. The sign of $m$ gives the direct-versus-vehicle ranking at that limit.
 
 Two properties make the test exact. A raw pool price $\widetilde{P}$ and the human-units price $P$ differ by the token decimals of the pair,
 \[
@@ -438,7 +438,7 @@ Computing $m$ at each realised swap's own block and again at its hour-boundary s
 
 \begin{table}[t]
 \centering
-\caption{Verdict flips between block state and hour-boundary state, by day}
+\caption{Route-ranking changes between pre-event and hour-end states, by day}
 \label{tab:app:verdictday}
 \begin{tabular}{lrrrrr}
 \toprule
@@ -472,7 +472,7 @@ The flip rate varies between 30.1\% and 43.4\% across four years and two market 
 
 \begin{table}[t]
 \centering
-\caption{Verdict instability, conditional}
+\caption{Route-ranking disagreement, conditional}
 \label{tab:app:conditional}
 \begin{tabular}{lrr}
 \toprule
@@ -529,16 +529,16 @@ above 250 bps & 9{,}637 & 36.2\% \\
 \footnotesize 189,622 opportunity snapshots across 371 triangles on seven sampled days. Panel A applies the wedge to all observations, so its denominator is constant across rows. \emph{Dominated share} is the share of observations the strict pre-event residual classifies as dominated at that wedge.
 \end{table}
 
-Panel C is the diagnostic that rules out a size threshold as a remedy: the flip rate stays inside a range of 34.1\% to 44.5\% across every bucket of the pre-event residual, reading 36.2\% in the top bucket against 41.0\% in the bottom one, which follows from what $m$ is at zero size.
+Panel C shows that restricting the sample to large residuals does not remove the timing problem: the disagreement rate remains between 34.1\% and 44.5\% across the pre-event residual buckets and is 36.2\% in the top bucket against 41.0\% in the bottom one.
 % output/exhibits/block_vs_hour_conditional.jsonl, gap_at_own_event rows over 189,622 opportunity snapshots
-A triangular-arbitrage residual is a quantity searchers keep oscillating around zero within blocks, and a large value of it is transient wherever it appears in the distribution. Panel B validates the test on a dimension a coding error would not reproduce, since a route executing seconds before its hour closes is priced at nearly the state the panel used and cannot flip, while one executing early in an hour has a full hour of drift ahead of it. A flat profile there would have indicated a defect, and Figure~\ref{fig:app:boundary} shows the profile the test returns.
+A triangular-arbitrage residual can oscillate around zero within a block, so even a large observed value may be short lived. Panel B provides an independent timing check: rankings disagree less often when an opportunity occurs close to the hour end and more often when prices have longer to move. Figure~\ref{fig:app:boundary} shows this relationship.
 
 \begin{figure}[tbp]
 \centering
-\caption{Verdict instability by time remaining to the hour boundary}
+\caption{Route-ranking disagreement by time remaining to the hour boundary}
 \label{fig:app:boundary}
 \begin{tikzpicture}
-\begin{axis}[ybar, width=0.85\textwidth, height=6.4cm, bar width=0.9cm, symbolic x coords={under 1,1 to 5,5 to 15,15 to 30,30 to 60}, xtick=data, xlabel={Minutes remaining to the close of the route's hour}, ylabel={Verdict flip rate, percent}, ymin=0, ymax=54, ytick={0,10,20,30,40,50}, tick align=outside, tick label style={font=\footnotesize}, label style={font=\footnotesize}, nodes near coords, nodes near coords style={font=\footnotesize}, point meta=explicit symbolic, grid=major, grid style={black!10}, axis line style={black!70}, enlarge x limits=0.12]
+\begin{axis}[ybar, width=0.85\textwidth, height=6.4cm, bar width=0.9cm, symbolic x coords={under 1,1 to 5,5 to 15,15 to 30,30 to 60}, xtick=data, xlabel={Minutes remaining to the close of the route's hour}, ylabel={Ranking disagreement, percent}, ymin=0, ymax=54, ytick={0,10,20,30,40,50}, tick align=outside, tick label style={font=\footnotesize}, label style={font=\footnotesize}, nodes near coords, nodes near coords style={font=\footnotesize}, point meta=explicit symbolic, grid=major, grid style={black!10}, axis line style={black!70}, enlarge x limits=0.12]
 \addplot[draw=black, fill=black!20] coordinates {(under 1,22.49) [22.5] (1 to 5,22.31) [22.3] (5 to 15,32.79) [32.8] (15 to 30,39.13) [39.1] (30 to 60,45.55) [45.5]};
 \end{axis}
 \end{tikzpicture}
@@ -549,7 +549,7 @@ A triangular-arbitrage residual is a quantity searchers keep oscillating around 
 \end{figure}
 % output/exhibits/block_vs_hour_conditional.jsonl, cut=time_to_hour_boundary rows, 189,622 opportunity snapshots on seven sampled days
 
-Panel A carries the result. A two-leg route pays two pool fees where a direct route pays one, and that offset is a property of the venues traversed and does not move with the market, so it displaces the verdict boundary away from the region where the residual oscillates. The timing threat is therefore a function of trade economics and has no single number attached to it.
+Panel A shows why the timing error varies across routes. A two-leg route pays two pool fees where a direct route pays one. This relatively fixed wedge moves the comparison boundary away from the region in which market prices fluctuate, so route rankings are more stable when the wedge is larger.
 
 \section{Round-trip exclusion}
 \label{app:roundtrip}
