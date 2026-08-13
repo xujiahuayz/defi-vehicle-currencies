@@ -42,7 +42,13 @@ output/provisional/
 /output/exhibits/.*.lock
 
 # Logs and scratch
-logs/
+# logs/* rather than logs/: git does not descend into an excluded directory, so
+# a negation inside logs/ would never be reconsidered. The grind ledger is the
+# handoff between autonomous iterations and the queue is the supervisor's channel
+# into the loop; both have to be versioned. Run logs stay ignored via *.log.
+logs/*
+!logs/grind-ledger.md
+!logs/grind-queue.md
 *.log
 .DS_Store
 

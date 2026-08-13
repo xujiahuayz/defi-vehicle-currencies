@@ -23,24 +23,47 @@ through" — not your judgement of it.
 1. Read `logs/grind-ledger.md` (create it if absent). It is the handoff between
    iterations: what the previous workers did, decided, and hit. Read the last
    ~40 lines before anything else.
-2. Run `uv run python scripts/audit_findings_freeze.py`. Read the blocking list.
-3. Pick ONE blocking check — the one that unblocks the most others, preferring
+2. Read `logs/grind-queue.md`. That is the supervisor's channel into this loop.
+   Any unchecked item there **outranks the gate's own blocking list** and is
+   done first, oldest first. Tick it off (`- [x]`) in the same commit that
+   closes it. If the queue is empty, go to step 3.
+3. Run `uv run python scripts/audit_findings_freeze.py`. Read the blocking list.
+4. Pick ONE blocking check — the one that unblocks the most others, preferring
    node D data contracts over node E estimators over node B literature, since
    downstream checks depend on upstream ones. If the ledger shows the previous
    iteration was mid-way through a unit, continue that unit instead.
-4. Do the work properly and finish it. Build the real artifact, from real data,
+5. Do the work properly and finish it. Build the real artifact, from real data,
    through the project's own owners and scripts.
-5. Run the relevant tests plus the freeze audit again. Commit with a real
+6. Run the relevant tests plus the freeze audit again. Commit with a real
    message describing what closed.
-6. Append one entry to `logs/grind-ledger.md`: date, the check you targeted, what
+7. Append one entry to `logs/grind-ledger.md`: date, the check you targeted, what
    you did, the commit hash, the new blocking count, and anything the next
    iteration must know. Commit that too.
-7. Exit.
+8. Leave the repo publishable (see **Git hygiene** below), then exit.
 
 If a unit is genuinely too large for one iteration, split it, land the first
 part in a committed and tested state, and record the exact resumption point in
 the ledger. Leaving a working tree broken is the one unforgivable outcome: the
 next iteration inherits it.
+
+## Git hygiene (every iteration, not "eventually")
+
+Work on `main` in this worktree. The loop pushes for you after you exit, so the
+only thing you owe is a clean, small, honest history:
+
+- **Commit in units that build.** Never leave the tree dirty at exit, and never
+  commit a half-migration. If you must stop mid-unit, land the working part and
+  record the resumption point.
+- **Push-safe commits only.** Assume every commit you make is public within
+  seconds, because it is. No secrets, no absolute paths in tracked files, no
+  large derived artifacts that belong in the data store rather than git.
+- **Clean up after yourself.** Delete scratch files, probe scripts, and one-off
+  outputs you created, or move them under `scratchpad/`. Untracked debris at exit
+  is a defect: the next iteration cannot tell your leftovers from real state.
+- **Prune your own worktrees.** If you create a `/private/tmp` worktree, remove
+  it before exiting (`git worktree remove`), then `git worktree prune`.
+- **Never rewrite published history.** No force-push, no rebase of anything that
+  has been pushed, no amend of a pushed commit. Fix forward with a new commit.
 
 ## Hard rules
 
