@@ -1,14 +1,14 @@
 ---
 freeze_status: red
 stable_passes: 0
-active_node: D2-token-and-exact-state + D3-route-only-panels
-studio_node: D2-exact-state-evidence + D3-route-panel-refresh
-m3_node: E0-science-review + G/H-live-deck-and-paper-spine
-meeting_edge: Studio-D3-publish -> M3-analytics-and-figures -> E1-lock
+active_node: D2-purpose-bound-exact-state + D3-fixed-opportunity-inputs + E0-vehicle-rotation
+studio_node: D2-purpose-bound-exact-state + D3-fixed-opportunity-inputs
+m3_node: E0-fixed-opportunity-vehicle-rotation + G/H-live-deck-and-paper-spine
+meeting_edge: Studio-fixed-opportunity-publish -> M3-estimator-and-figure-refresh -> E1-lock
 parent_loop: C -> D1/D2/D3 -> E0-exploration -> repair loop -> E1-lock -> F <-> G <-> H -> I
 next_edge: D2-release -> D3-construction-audit -> D3-full-daily-frontier -> E0-exploration -> E1-lock -> F <-> G <-> H -> I
 prose_node: closed
-updated: 2026-08-11
+updated: 2026-08-13
 ---
 
 # Findings freeze
@@ -53,4 +53,4 @@ This is the live handoff between the research graph and prose node P. A recent p
 
 ## Loop position
 
-The graph has two concurrent machine lanes. Studio owns D2 exact-state evidence and the D3 route-panel refresh; the current route-only build advances independently while the 13 historical V2 token-decimal records remain an explicit D2 blocker. The M3 owns E0 scientific review plus the always-ready G/H deck and the paper spine: it can build visual forms, transaction-replay presentation assets, terminology diagnostics and section logic in `docs/paper-spine.md`, but it leaves `paper/` unchanged while node P is closed and cannot estimate from stale local panels or promote a numerical claim. The lanes meet when Studio publishes the exact current D3 artifacts, the M3 refreshes analytics and figures from that identity, and E1 locks only the results that survive the recorded attacks. State-dependent D3 construction, the current transaction frontier and exact 1-, 7-, 30- and 120-day links remain closed. Stable passes remain zero, and node P is closed.
+The graph has two concurrent machine lanes. Studio owns purpose-bound D2 exact-state evidence and the smallest D3 inputs needed for the fixed-opportunity vehicle-rotation test. The 13 unresolved V2 token anchors remain an exact-registry limitation, but their worst-case deletion bound is 5,950 routes and $10.91m of strict route value, with only 1,036 prespecified-candidate intermediary episodes and $1.284m (0.00043%) of strict intermediary value; all are residual `other` assets and none enters the V4 fixed-cell panel. That bounded exclusion does not block the route-only vehicle-rotation estimand and is not a reason to resume acquisition. M3 owns the E0 fixed-opportunity design and the always-ready G/H deck and paper spine: it can specify estimators, build visual forms, transaction-replay presentation assets, terminology diagnostics, and section logic in `docs/paper-spine.md`, but it leaves `paper/` unchanged while node P is closed and cannot estimate from stale local panels or promote a numerical claim. The lanes meet when Studio publishes the exact fixed-opportunity input generation, M3 refreshes analytics and figures from that identity, and E1 locks only results that survive the recorded attacks. Other state-dependent D3 construction, the current transaction frontier, and exact 1-, 7-, 30-, and 120-day links remain closed. Stable passes remain zero, and node P is closed.

@@ -56,6 +56,20 @@ scientific change also reruns every dependent figure/table owner. Provisional
 status, source paths and commit identities live in source comments or manifests,
 not in rendered slides. Page count is diagnostic, not a success criterion.
 
+**Prior corrections are an executable preflight, not conversational memory.**
+Before data, analysis, deck, or prose work, run
+`./scripts/run scripts/research_action_preflight.py <action>` and state the
+purpose-bound estimand, exact evidence generation, and prior correction the
+planned action could reverse. The printed checks cover economic materiality
+before remediation, calendar time versus design, fixed comparison sets,
+distinct appearance/substitution/persistence/hysteresis objects, the persistent
+visual backlog, and direct raw-passage prose imitation. A fresh worker changes
+its plan when it conflicts with one of those checks; it does not rely on Java to
+notice the regression later. Interjections that establish a reusable correction
+are promoted into this preflight or the relevant canonical node before the
+current iteration closes. New scientific discoveries and genuinely unresolved
+choices remain conversational so Java can debate them live.
+
 **A no-fetch result is a certification, not an inventory status.** The executable stage must reopen the current thin-consumer audit, every cited certificate and every installed raw stat identity under the canonical raw-generation mutation lease, bind both the audit digest and the closed consumer-registry identity into its prelaunch forecast, and return a distinct inventory-only status when that certification is unavailable. The forecast carries the exact registry-derived acquisition perimeter and budget. When that perimeter is empty, the stage exposes no acquisition command; adding a stream requires a reviewed executor and measured budget in the same generation. A whole-schema engineering scenario remains diagnostic and must never be reported as installed storage or an authorized project requirement.
 
 **Portability.** This file and every node's output is a plain tracked file in this repo. No node's real state may live only inside one model's session. Whatever executes a node reads this file plus the previous node's committed output and continues.
