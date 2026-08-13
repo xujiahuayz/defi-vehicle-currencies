@@ -467,3 +467,63 @@ state-dependent estimator was opened.
 - Do not rebuild the intermediation panel or route release again. All route-only
   measurement provenance and reconciliation checks are green.
 - Paper prose remains closed; the gate still has 12 blockers.
+
+## 2026-08-13 — unresolved V2 token-anchor exposure bounded
+
+**Targeted check:** supervisor queue science/materiality redirection for the 13
+unresolved exact V2 token-decimals anchors, ahead of any further acquisition or
+registry rebuild.
+
+**Economic scope.** The exact factory perimeters contain 22 pairs touching the
+13 tokens (11 anchors in Uniswap V2 and two in SushiSwap V2). The selected
+10,235-chunk exact-candidate perimeter contains 229 affected events: 204
+Uniswap swaps, seven mints, three burns, and 15 SushiSwap swaps. On the complete
+released route graph, deleting every route touching an unresolved token removes
+5,950 of 358,027,668 routes (0.00166%) and $10.907m of strict-support route
+value, 0.000346% of total released route value. Exposure is temporally
+concentrated in 2021 ($7.617m, 69.8% of the strict deletion bound) and primarily
+in Uniswap-only routes ($10.378m, 95.1%).
+
+The relevant vehicle-estimand bound is smaller. All 13 tokens are residual
+`other`, none clears the $100m rotation materiality screen, and none appears in
+the V4 fixed-cell architecture route-unit panel. Their endpoint routes can
+carry a prespecified vehicle in the middle, so the audit deletes those too:
+1,036 candidate intermediary episodes and $1.284m, only 0.00229% of strict
+candidate episodes and 0.000433% of strict intermediary value. WETH accounts
+for $1.236m of that conservative deletion. Thus the unresolved set cannot
+materially change the promoted vehicle-rotation or current V4 fixed-cell
+support, although it still blocks an exact V2 event-source certificate.
+
+**Work completed.** Added `audit_v2_token_anchor_materiality.py`, which
+revalidates every consumed selected-anchor lineage file, reopens both exact
+factory registries, counts installed exact-candidate events, validates the
+certified route release, reconstructs topology and strict 20% value support,
+and measures the complete deletion sensitivity for prespecified vehicle
+candidates and the V4 architecture panel. Published a compact 71-record,
+provenance-current exhibit with token, pool, event-kind, year, venue-set, and
+candidate detail. The decimals uncertainty is not filled or guessed: nine
+tokens have provider reports of zero, two of 18, two have no usable report, and
+the exact quantity scale remains bounded only by the project's fail-closed
+0..36 policy. No RPC call, provider scan, raw mutation, certified-release
+rewrite, estimator, paper prose, or data acquisition occurred. Focused
+validation: 74 tests and 61 subtests passed. Freeze audit: RED, 12 blocking,
+unchanged.
+
+**Commit:** `932e18f` (`Bound unresolved V2 token exposure`).
+
+**Blocking count:** 12.
+
+**DECISION:** treat the 13 tokens and all 22 exact V2 factory pairs containing
+them as a bounded exclusion in any future exact event/state generation until
+historical decimals evidence exists. Do not resume acquisition merely to make
+the registry exact. This clears fixed-cell vehicle-rotation science, not the
+exact D2 certificate, and it does not license a fabricated registry row.
+
+**For the next iteration:**
+- Queue is empty at this commit. Return to fixed-opportunity vehicle-rotation
+  science using the deletion bound as a sensitivity; do not reacquire these 13
+  decimals records or rebuild the certified route release.
+- Keep architecture-use entry and exit endogenous E0 exposure. Exact-state
+  reversal still requires independently measured availability or cost/depth
+  state; do not interpret route-use disappearance as a design reversal.
+- Paper prose remains closed; the freeze gate still has 12 blockers.
