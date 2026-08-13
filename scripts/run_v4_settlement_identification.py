@@ -28,6 +28,7 @@ ROOT = Path(__file__).resolve().parents[1]
 
 from ddvc.calendar import sample_end_iso  # noqa: E402
 from ddvc.paths import DATA_DIR, OUTPUT_DIR  # noqa: E402
+from ddvc.provenance import current_artifacts, stamp  # noqa: E402
 
 
 DEXES = ("uniswap_v3", "uniswap_v4")
@@ -70,6 +71,15 @@ def _vehicle_family(sym: object) -> str:
     if s.upper() == "XAUT":
         return "XAUt"
     return s
+
+
+def _exclusive_architecture(group: pd.DataFrame) -> str | None:
+    """Return one admitted architecture only when the complete route is pure."""
+    sources = set(group["source"].astype(str))
+    if len(sources) != 1:
+        return None
+    source = next(iter(sources))
+    return source if source in DEXES else None
 
 
 def _rpc_urls() -> list[str]:
@@ -158,11 +168,15 @@ def build_route_units(start: str, end: str) -> pd.DataFrame:
     for i, path in enumerate(files, 1):
         day = _stamp_to_date(path.stem)
         df = pd.read_parquet(path, columns=cols)
-        df = df[df["source"].isin(DEXES) & df["route_class"].eq("coherent")]
+        # Keep the complete reconstructed component until architecture purity is
+        # known. Filtering to V3/V4 first can turn one mixed route into a false
+        # single-architecture route.
+        df = df[df["route_class"].eq("coherent")]
         if df.empty:
             continue
-        for (tx, component, dex), g in df.groupby(["tx_hash", "component_id", "source"], sort=False):
-            if len(g) < 2:
+        for (tx, component), g in df.groupby(["tx_hash", "component_id"], sort=False):
+            dex = _exclusive_architecture(g)
+            if len(g) < 2 or dex is None:
                 continue
             role: dict[tuple[str, str], str] = {}
             for r in g.itertuples(index=False):
@@ -213,7 +227,15 @@ def build_route_units(start: str, end: str) -> pd.DataFrame:
         return out
     out = out.drop_duplicates(["dex", "tx_hash", "component_id", "src", "sink", "vehicle", "vehicle_id"])
     out["week"] = pd.to_datetime(out["week"])
-    _write(out, OUT_DATA / "v4_settlement_route_units.parquet")
+    route_path = OUT_DATA / "v4_settlement_route_units.parquet"
+    _write(out, route_path)
+    stamp(
+        route_path,
+        code_sources=["scripts/run_v4_settlement_identification.py"],
+        inputs=[DATA_DIR / "unified"],
+        rows=len(out),
+        notes="exclusive V3/V4 coherent route units; mixed-source components excluded",
+    )
     return out
 
 
@@ -417,8 +439,9 @@ def _write(df: pd.DataFrame, path: Path) -> None:
 def run(args: argparse.Namespace) -> None:
     route_path = OUT_DATA / "v4_settlement_route_units.parquet"
     if route_path.exists() and not args.force:
-        routes = pd.read_parquet(route_path)
-        routes["week"] = pd.to_datetime(routes["week"])
+        with current_artifacts([route_path], consumer="V3/V4 settlement identification"):
+            routes = pd.read_parquet(route_path)
+            routes["week"] = pd.to_datetime(routes["week"])
     else:
         routes = build_route_units(args.start, args.end)
     cells = eligible_cells(routes, args.min_routes)
