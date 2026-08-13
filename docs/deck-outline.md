@@ -30,7 +30,23 @@ The visual and language benchmark is the five saved full finance/economics prese
 10. Promoted result blocks in contribution order.
 11. Close containing only results already shown.
 
-The final result block is generated from the current admitted evidence set. A result that fails E1 disappears with its setup; blocked, retired, or internally rejected estimates appear in neither the final core deck nor the conference appendix. Before the freeze, visibly labelled provisional frames may occupy the same in-place result seam solely for live scientific feedback under the delivery gate below. Updating an estimate never authorizes a parallel deck or a stale slide: the relevant frame is regenerated in place.
+The result block is generated from the best current evidence set. A result that fails its scientific gate disappears with its setup; retired or internally rejected estimates appear in neither the core deck nor the conference appendix. Evidence may evolve, but the deck is always a deliverable: updating an estimate regenerates the relevant frame in place and never authorizes a parallel deck or a stale slide. Evidence status, commit identity, generation identity, and repository paths remain machine-checkable source comments rather than audience-facing labels.
+
+## Always-ready evolution loop
+
+The canonical loop is claim register $\rightarrow$ generated evidence binding $\rightarrow$ slide and paper consumers $\rightarrow$ compile and visual review $\rightarrow$ source audit $\rightarrow$ commit. `docs/findings-freeze.md` is the durable claim and objection register. A scientific interjection changes the relevant claim row, estimand, or blocking attack there; it does not survive only in chat or in a parallel memo. A delivery-only correction changes the canonical slide and its source metadata directly.
+
+Every frame carries a non-rendered `VISUAL-FUNCTION` comment naming its economic object, visual form, and presentation job. Every evidence-managed frame also carries three non-rendered comments immediately above it: `EVIDENCE-STATUS`, `EVIDENCE-COMMIT`, and `EVIDENCE-SOURCES`. The first records the scientific state, including a live support objection. The second identifies the commit that owns the displayed evidence. The third names the generated exhibit and claim-register entry. These comments are audited, but no provisional badge, repository hash, path, or workflow state is shown to the audience.
+
+Each loop iteration has seven closure checks:
+
+1. Scientific: the claim, estimand, strongest rival, support loss, and falsifier agree across the register, deck, and paper.
+2. Data: every measured cell is generated from the latest admitted artefact or explicitly recorded as evolving evidence; no number is typed into slide source.
+3. Narrative: titles and takeaways remain substantive even when estimates update, and the close contains only results already shown.
+4. Visual: every frame declares its economic object, form and job in `VISUAL-FUNCTION`; compile cleanly, inspect a full contact sheet, inspect changed or dense frames individually, and reject clipping or overflow.
+5. Provenance: source comments identify status, evidence commit, and sources; audience-facing source lines contain only citations or sample information useful in the room.
+6. Continuity: commit the single deck and PDF on `main`; future data refreshes replace the same generated binding and frames.
+7. Field language: scan audience-visible source against the saved finance/economics corpus and the executable backstage-language blocklist, then repeat on extracted PDF text after compilation. Terms such as `verdict`, `findings freeze`, `evidence gate`, `data pipeline`, `workflow status`, `provenance status`, and `scientific certificate` remain in comments or logs; the slide states the economic result, identifying comparison, limitation, or interpretation directly.
 
 ## Visual grammar
 
@@ -48,7 +64,7 @@ The appendix contains only defensible material likely to answer a conference que
 
 ## Delivery gate
 
-The deck is not delivered from source alone. Every edit requires a clean compile, a full-page visual contact sheet, individual inspection of any dense frame, no overfull boxes, no clipped content, and the repository conformance checks. Final result slides are rebuilt from the frozen evidence manifest after two unchanged F–G passes. Before then, visibly labelled provisional slides may expose exact-generation estimates, support failures, competing interpretations, and open design choices for Java's live feedback; they do not promote a paper claim or count toward the freeze.
+The deck is not delivered from source alone. Every edit requires a clean compile, a full-page visual contact sheet, individual inspection of any dense frame, no overfull boxes, no clipped content, and the repository conformance checks. The current PDF must be presentation-ready after every iteration. Evidence status can change without changing that delivery standard; the source register and comments carry the distinction between evolving, admitted, diagnostic, and support-failure evidence.
 
 ## Legacy pre-E1 outline
 

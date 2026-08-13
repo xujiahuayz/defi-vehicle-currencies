@@ -1,6 +1,6 @@
 from pathlib import Path
 
-from ddvc.deck_evidence import audit_deck_sources
+from ddvc.deck_evidence import audit_audience_text, audit_deck_sources
 
 
 def write_section(root: Path, source: str) -> None:
@@ -55,3 +55,63 @@ def test_plot_table_must_come_from_output(tmp_path: Path) -> None:
 def test_plot_table_under_output_is_allowed(tmp_path: Path) -> None:
     write_section(tmp_path, r"\addplot table {../output/figures/result.csv};")
     assert audit_deck_sources(tmp_path) == []
+
+
+def test_evidence_managed_frames_require_source_only_status_commit_and_sources(tmp_path: Path) -> None:
+    write_section(
+        tmp_path,
+        r"""% EVIDENCE-MANAGED-FILE
+% EVIDENCE-STATUS: evolving route result
+% EVIDENCE-COMMIT: 3873fca
+% EVIDENCE-SOURCES: output/exhibits/result.tex; docs/findings-freeze.md
+\begin{frame}{Result}
+\end{frame}
+
+\begin{frame}{Unbound result}
+\end{frame}
+""",
+    )
+    defects = audit_deck_sources(tmp_path)
+    assert {defect.kind for defect in defects} == {
+        "missing_evidence_status",
+        "missing_evidence_commit",
+        "missing_evidence_sources",
+    }
+
+
+def test_field_language_gate_rejects_visible_workflow_jargon_but_allows_comments(
+    tmp_path: Path,
+) -> None:
+    write_section(
+        tmp_path,
+        "% EVIDENCE-STATUS: internal scientific verdict\n"
+        r"\begin{frame}{Result}\evidencekicker{Scientific verdict}\end{frame}",
+    )
+    defects = audit_deck_sources(tmp_path)
+    assert [defect.kind for defect in defects] == ["audience_workflow_jargon"]
+    assert "verdict" in defects[0].detail
+
+
+def test_rendered_text_language_gate_catches_generated_backstage_labels(tmp_path: Path) -> None:
+    defects = audit_audience_text(
+        "Economic result\nProvenance status: current",
+        path=tmp_path / "main.pdf",
+    )
+    assert [defect.kind for defect in defects] == ["audience_workflow_jargon"]
+    assert defects[0].line == 2
+
+
+def test_visual_managed_frames_require_object_form_and_job(tmp_path: Path) -> None:
+    write_section(
+        tmp_path,
+        r"""% VISUAL-MANAGED-FILE
+% VISUAL-FUNCTION: vehicle path | transaction trace | reveal observable mechanics
+\begin{frame}{Real route}
+\end{frame}
+
+\begin{frame}{Unspecified visual}
+\end{frame}
+""",
+    )
+    defects = audit_deck_sources(tmp_path)
+    assert [defect.kind for defect in defects] == ["missing_visual_function"]

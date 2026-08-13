@@ -10,14 +10,14 @@ stale or unstamped inputs. A pre-release fit may guide design privately; it is n
 as evidence. Once node D publishes the healed generation, rerunning writes the first
 admissible baseline, and later generation changes are reviewed as an exact git diff.
 
-THE OBJECT. The vehicle role is intermediary use net of endpoint demand. The excess-use
-ratio is an asset's share of intermediary legs over its share of endpoint legs. Above one
-means routed through more than held, the signature of a vehicle. The ratio is a quotient of
-a routing share over a holding share, so common volume growth, which is what market
-maturation and venue migration produce, cancels. Composition is differenced out before any
-control is added.
+THE OBJECT. The vehicle role is intermediary use relative to endpoint demand. The
+intermediary-minus-endpoint share gap is the primary inferential outcome; the excess-use
+ratio is its relative-intensity translation when endpoint support is positive. Proportional
+growth cancels, but changing pair, venue, notional, design, and token-support composition
+does not. Zero-endpoint token-days remain unsupported diagnostics rather than extreme
+vehicle observations.
 
-LENS 1, CROSS-SECTION, NOT TIME. In the latest full year the genuine value-vehicles, meaning
+LENS 1, CROSS-SECTION, NOT TIME. In the latest full year the supported value-vehicles, meaning
 excess-use above one on material intermediary dollars, are USDT and USDC. The native asset
 sits below one on large dollar volume, so it is held more than routed. High-ratio staking
 derivatives and niche units sit on trivial dollars and are noise. Read this as the standing
@@ -32,9 +32,10 @@ flaw that retired the earlier betweenness measure. The direct-share measure remo
 circularity but not the aggregation, so genuine-versus-mosaic is a per-cell question for the
 state-dependent layer, not a settled finding here.
 
-LENS 3, EVENT STUDIES AROUND MECHANISM INTRODUCTIONS, the identified use of time. Monotone
-chronology is never the finding; a dated event with leads, lags and an untreated comparison
-is. Two designs run on the daily token panel. First, a difference-in-differences event study
+LENS 3, EVENT STUDIES AROUND MECHANISM INTRODUCTIONS, a disciplined use of time. Monotone
+chronology is never the finding; even a dated event with leads, lags and an untreated
+comparison remains conditional on parallel trends and the exclusion of coincident design
+and composition changes. Two designs run on the daily token panel. First, a difference-in-differences event study
 around each named mechanism or stress event: treated tokens are the fiat-reserve stables,
 controls are the other material tokens, outcome is log value excess-use, weekly bins over
 eight weeks either side with the week before the event as reference, token and calendar-day

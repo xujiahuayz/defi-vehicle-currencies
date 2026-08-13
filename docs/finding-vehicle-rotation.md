@@ -9,12 +9,12 @@ PROVISIONAL (workflow §41). Numbers are never copied here; rerun the script to 
 
 ## One-line takeaways (verify against the exhibit, do not treat as canonical numbers)
 
-- Excess-use = routing share ÷ holding share, so composition/volume growth cancels by construction. This pre-empts the maturation rival before any control.
+- The excess-use share gap nets intermediary use against endpoint demand; the ratio is its relative-intensity translation on positive endpoint support. Proportional growth cancels, but pair, venue, notional, design, and support composition do not.
 - Cross-section (latest year): the value-vehicles are the fiat stables; the native asset is below one (held, not routed). Small-dollar high-ratio tokens are noise.
 - Fragmentation: value concentration of the vehicle role collapses; native single-dominance ends into a stable-led plurality. Per-cell genuine-vs-mosaic still open (aggregate HHI cannot separate them).
-- Rival rejected for the core: rotation holds inside the single-venue cell, and true intermediation fell as cross-venue share rose, which is the wrong sign for a maturation-composition story. Residual cross-venue amplification (~a quarter) is open pending forced-vs-chosen.
+- Rival narrowed, not rejected: rotation holds inside single-venue topology cells and true intermediation falls while cross-venue incidence rises. Venue entry and route-topology migration are not the whole arithmetic explanation; calendar time versus prevalent design and fixed-opportunity composition remain open.
 - USDT's exact-two-leg rise is mostly within integration cells, not migration into cross-venue routes: the midpoint decomposition assigns 93.7% of the count-share change and 85.6% of the strict-value change to within-cell movement.
-- Mechanism: the role sits only in fiat-reserve stables (peg + depth); crypto-collateralized and synthetic are held, not routed. Krugman thick-market plus numéraire stability, made visible.
+- Mechanism candidate: material stable vehicle use is concentrated in fiat-reserve tokens, a pattern consistent with joint peg credibility and depth but also with age, reach, pair coverage, and issuer/user differences that the mechanism tests must separate.
 - Honest null on record: the annual token DiD is underpowered; powered inference is the daily calendar panel.
 
 ## Next (gated on the released daily panel)
