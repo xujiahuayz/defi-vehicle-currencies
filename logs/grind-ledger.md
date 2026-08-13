@@ -258,3 +258,58 @@ interpretation fix), and `7f3c8b4` (clean deck build and final queue closure).
   dormant raw-cert feature.
 - Do not rerun the route build or architecture transition owner. Their current
   outputs are durable E0 support audits, not paper evidence or causal estimates.
+
+## 2026-08-13 — V3 raw-stream admission and failed-state preflight
+
+**Targeted check:** `node D V3 event-source certificate exists`, continuing the
+62-date exact-state prerequisite at the installed local-scan rejection for
+`uniswap_v3/burns/20210515`.
+
+**Work completed.** Ran the project's local certification owner against the
+already-installed Uniswap V3 raw generation, with no provider acquisition. The
+new exact four-stream perimeter passes 7,536/7,536 partitions (1,884 dates each
+for burns, daily, mints, and swaps), with certificate identity
+`7d729098cf4490933cb4b420c7c3683caecc844c9093f36b59a0aaf8c556fa51`
+and ledger SHA-256
+`660400e8fb17ae67dcb92e040059878909de733d43c8664c40b02dff905bd3d5`.
+The exact burn, mint, swap, and daily partitions on 2021-05-15 all reopen through
+`raw_partition_read_authority`; the earlier burn-partition rejection is closed.
+
+The prescribed 62-date market-state build then ran and installed 62 state and
+62 quality files, but correctly published no global ledger: every partition has
+`missing_required_streams=1` because the exact V3 Initialize daily release and
+certificate do not yet exist. Its owner in turn requires the exact-anchor V2
+token-decimals registry. The cached no-fetch registry pass reopened 9,624,212
+Graph rows and resumed a 65,095-anchor manifest, then failed closed on 13 missing
+cached RPC evidence records. The durable unresolved ledger has 65,082 resolved,
+13 unresolved, and unresolved-set SHA-256
+`6d0f4447fc977e267fc8bb0429fa5a1e61458ebede8fea14bdbfb662cd334953`
+(`data/raw/ethereum/token_decimals/v2_unresolved_tokens.json`, file SHA-256
+`26e26437ec5410f08e410b7ee47ed66767fbd53e9c48f32a7403d8e844b32de6`).
+The certified sibling store has no copy of those 13 records. No RPC fetch was
+made.
+
+Fixed the V3 audit preflight so present-but-stale or failed-quality state files
+cannot trigger the expensive raw-inventory audit. The live preflight now reports
+`stale=0, failed=62` and stops before scanning. Focused validation: 94 tests and
+10 subtests passed. Freeze audit: RED, 14 blocking, unchanged.
+
+**Commit:** `af85d46` (`Reject failed V3 audit state inputs`).
+
+**Blocking count:** 14.
+
+**DECISION:** treated acquisition of the 13 absent historical RPC responses as
+new outward provider work and did not authorize it autonomously. The failure
+ledger is exact and complete; no provider-reported decimals were substituted.
+
+**For the next iteration:**
+- Queue is empty. Continue node D through the 13 exact token-decimals evidence
+  gaps listed in `data/raw/ethereum/token_decimals/v2_unresolved_tokens.json`.
+  Check for newly installed/certified local evidence first. Do not rerun the
+  65,095-anchor selection with `--force`; its manifest SHA-256 is
+  `258afe5902e399b99f4abe9dc4bfa16cb03316a38cf8f33c863c761856efc0c6`.
+- Once the exact decimals registry passes, run
+  `fetch_tick_state_events.py uniswap_v3` without `--fetch` to certify the 1,311
+  already-local exact-state chunks and publish daily Initialize inputs. Then
+  rerun the 62-date market-state owner; do not launch the V3 event audit until
+  its cheap preflight is green.
