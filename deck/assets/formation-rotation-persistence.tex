@@ -1,56 +1,56 @@
 % VISUAL-MANAGED-ASSET
-% VISUAL-FUNCTION: formation, rotation, and persistence | three estimand miniatures | show that the three questions require different comparisons
-% EVIDENCE-STATUS: conceptual research-design map; paths contain no empirical estimate.
+% VISUAL-FUNCTION: opportunity to use to persistence | restrained conceptual sequence | distinguish architecture, realised composition, and post-reversal persistence
+% EVIDENCE-STATUS: conceptual research-design map; no path or magnitude is an empirical estimate.
 % EVIDENCE-COMMIT: e1513051da9f3c33fc69a05d063541e2ef96954a
 % EVIDENCE-SOURCES: docs/specification-lock.json; docs/paper-spine.md;
 % docs/research-workflow.md (architecture, rotation, and fixed-risk-set persistence).
-% Line paths are schematic and deliberately non-monotone.
-\tikzset{frpcard/.style={rounded corners=3pt,draw=rule,fill=panel,minimum width=3.56cm,minimum height=4.15cm}}
-\tikzset{frpasset/.style={circle,draw=ink,fill=white,minimum size=15pt,inner sep=0pt,font=\tiny}}
+\tikzset{frpasset/.style={circle,draw=ink,fill=white,minimum size=16pt,inner sep=0pt,font=\scriptsize}}
 \tikzset{frpvehicle/.style={frpasset,draw=ucldark,fill=ucldark,text=white}}
 \begin{tikzpicture}[x=1cm,y=1cm]
 
-% Formation: the feasible route set changes with the market design.
-\node[frpcard] at (1.86,0) {};
-\node[font=\small\bfseries,text=ucldark] at (1.86,1.66) {Formation};
-\node[frpasset] (fai) at (0.56,0.68) {$i$};
-\node[frpvehicle] (fak) at (1.38,0.68) {$k$};
-\node[frpasset] (fao) at (2.20,0.68) {$o$};
-\draw[route,draw=accent] (fai)--(fak);
-\draw[route,draw=accent] (fak)--(fao);
-\node[font=\tiny,text=muted] at (1.38,0.20) {only path};
-\node[frpasset] (fbi) at (0.72,-0.52) {$i$};
-\node[frpvehicle] (fbk) at (1.76,-0.98) {$k$};
-\node[frpasset] (fbo) at (3.00,-0.52) {$o$};
-\draw[route,draw=native] (fbi)--(fbk);
-\draw[route,draw=native] (fbk)--(fbo);
-\draw[route,draw=stable] (fbi)--(fbo);
-\node[font=\tiny,text=muted] at (1.86,-1.48) {direct and vehicle paths};
-\node[font=\scriptsize,align=center] at (1.86,-2.38) {What changes when the\\routing rules change?};
+% One visual argument rather than three interchangeable cards.
+\draw[draw=rule,line width=1.1pt] (0.45,-0.02)--(11.45,-0.02);
+\fill[ucldark] (1.65,-0.02) circle (3pt);
+\fill[stable] (5.75,-0.02) circle (3pt);
+\fill[accent] (9.95,-0.02) circle (3pt);
 
-% Rotation: shares can move and reverse; calendar time is only the horizontal axis.
-\node[frpcard] at (5.78,0) {};
-\node[font=\small\bfseries,text=ucldark] at (5.78,1.66) {Rotation};
-\draw[-{Stealth[length=4pt]},draw=ink,line width=0.8pt] (4.38,-1.24)--(7.22,-1.24) node[below left,font=\tiny] {time};
-\draw[-{Stealth[length=4pt]},draw=ink,line width=0.8pt] (4.38,-1.24)--(4.38,1.08) node[above right,font=\tiny] {share};
-\draw[draw=native,line width=1.55pt] (4.55,0.74) .. controls (5.05,0.70) and (5.18,-0.26) .. (5.68,-0.20) .. controls (6.15,-0.12) and (6.44,0.48) .. (7.02,0.20);
-\draw[draw=stable,line width=1.55pt] (4.55,-0.72) .. controls (5.10,-0.62) and (5.28,0.48) .. (5.84,0.42) .. controls (6.35,0.34) and (6.46,-0.24) .. (7.02,-0.08);
-\node[font=\tiny,text=native,anchor=east] at (7.18,0.48) {incumbent};
-\node[font=\tiny,text=stable,anchor=east] at (7.18,-0.46) {challenger};
-\node[font=\scriptsize,align=center] at (5.78,-2.38) {Whose share changes within\\the same comparison set?};
+% Architecture changes the feasible set.
+\node[font=\small\bfseries,text=ucldark] at (1.65,1.52) {Architecture};
+\node[frpasset] (a1i) at (0.58,0.84) {$i$};
+\node[frpvehicle] (a1k) at (1.45,0.84) {$k$};
+\node[frpasset] (a1o) at (2.32,0.84) {$o$};
+\draw[route,draw=accent] (a1i)--(a1k);
+\draw[route,draw=accent] (a1k)--(a1o);
+\node[font=\scriptsize,text=muted] at (1.45,0.43) {vehicle path required};
+\node[frpasset] (a2i) at (0.58,-0.72) {$i$};
+\node[frpvehicle] (a2k) at (1.45,-1.04) {$k$};
+\node[frpasset] (a2o) at (2.52,-0.72) {$o$};
+\draw[route,draw=native] (a2i)--(a2k);
+\draw[route,draw=native] (a2k)--(a2o);
+\draw[route,draw=stable] (a2i)--(a2o);
+\node[font=\scriptsize,text=muted] at (1.55,-1.48) {direct and vehicle paths feasible};
 
-% Persistence: follow both sides after the state changes.
-\node[frpcard] at (9.70,0) {};
-\node[font=\small\bfseries,text=ucldark] at (9.70,1.66) {Persistence};
-\draw[-{Stealth[length=4pt]},draw=ink,line width=0.8pt] (8.28,-1.24)--(11.12,-1.24) node[below left,font=\tiny] {time};
-\draw[draw=rule,densely dashed,line width=1pt] (9.34,-1.08)--(9.34,1.02);
-\node[font=\tiny,text=muted,align=center] at (9.34,1.20) {state\\reverses};
-\draw[draw=native,line width=1.55pt]
-  (8.46,0.70)--(9.34,0.70) .. controls (9.82,0.64) and (10.22,0.28) .. (10.94,0.20);
-\draw[draw=stable,line width=1.55pt]
-  (8.46,-0.64)--(9.34,-0.64) .. controls (9.82,-0.54) and (10.25,-0.06) .. (10.94,0.06);
-\node[font=\tiny,text=native,anchor=west] at (10.02,0.54) {incumbent};
-\node[font=\tiny,text=stable,anchor=west] at (10.02,-0.34) {challenger};
-\node[font=\scriptsize,align=center] at (9.70,-2.38) {Does the incumbent remain\\after its advantage weakens?};
+% Realised routes reveal composition on a fixed comparison set.
+\node[font=\small\bfseries,text=ucldark] at (5.75,1.74) {Realised composition};
+\node[softbox,minimum width=3.28cm,minimum height=1.42cm,align=center] at (5.75,0.72)
+  {same ordered pair\\same month--day\\same integration scope};
+\draw[route,draw=native,line width=1.8pt] (4.25,-0.72)--(5.35,-0.72);
+\draw[route,draw=stable,line width=1.8pt] (6.15,-0.72)--(7.25,-0.72);
+\node[font=\scriptsize,text=native] at (4.80,-1.14) {incumbent use};
+\node[font=\scriptsize,text=stable] at (6.70,-1.14) {challenger use};
+
+% A reversal creates the persistence comparison.
+\node[font=\small\bfseries,text=ucldark] at (9.95,1.52) {After the advantage reverses};
+\draw[-{Stealth[length=4pt]},draw=ink,line width=0.8pt] (8.35,0.68)--(11.55,0.68);
+\draw[draw=rule,densely dashed,line width=1.1pt] (9.40,0.20)--(9.40,1.12);
+\node[font=\scriptsize,text=muted,align=center] at (9.40,1.34) {reversal date};
+\node[font=\scriptsize] at (9.95,-0.42) {same assets and risk set};
+\draw[draw=native,line width=1.6pt] (8.40,-0.84)--(11.45,-0.84);
+\draw[draw=stable,line width=1.6pt] (8.40,-1.30)--(11.45,-1.30);
+\node[font=\scriptsize,text=native,anchor=west,fill=white,inner sep=1pt] at (9.42,-0.84) {incumbent retained};
+\node[font=\scriptsize,text=stable,anchor=west,fill=white,inner sep=1pt] at (9.42,-1.30) {or displaced};
+
+\node[font=\scriptsize\bfseries,text=muted] at (5.92,-2.08)
+  {Conceptual design sequence --- no estimates shown};
 
 \end{tikzpicture}

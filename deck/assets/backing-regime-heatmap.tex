@@ -1,39 +1,51 @@
 % VISUAL-MANAGED-ASSET
-% VISUAL-FUNCTION: dated stablecoin backing | token-by-period regime heatmap | make changing classification rules visible without implying measured portfolio weights
-% EVIDENCE-STATUS: dated classification contract; cells encode rules, not empirical shares or token availability.
+% VISUAL-FUNCTION: dated stablecoin backing | launch-cropped regime timeline | make changing classification rules visible without implying measured portfolio weights
+% EVIDENCE-STATUS: dated classification contract; cells encode rules, not empirical shares.
 % EVIDENCE-COMMIT: e1513051da9f3c33fc69a05d063541e2ef96954a
 % EVIDENCE-SOURCES: src/ddvc/asset_types.py; tests/test_asset_types.py;
-% docs/node-c-definitions-round2.md section 3.
-% Dates mark changes in admissible backing or a voted transition target, not instantaneous portfolio replacement.
+% docs/node-c-definitions-round2.md section 3; src/ddvc/calendar.py.
+% PUBLIC-LAUNCH-SOURCES: Frax docs (20 Dec 2020); Liquity launch announcement
+% (5 Apr 2021); Curve, "crvUSD: 2 Years On" (14 May 2023); Ethena public
+% launch (Feb 2024). Dates bound market existence, not first use in this sample.
+% DAI dates mark changes in admissible backing. FRAX after 23 Feb 2023 is a
+% governance transition target, not an observed collateral composition.
 \tikzset{brrow/.style={font=\scriptsize\bfseries,text=ink,anchor=east}}
-\tikzset{brcell/.style={rounded corners=1.5pt,minimum height=0.62cm,inner sep=3pt,font=\tiny,align=center,text=ink}}
+\tikzset{brcell/.style={rounded corners=1.5pt,minimum height=0.48cm,inner sep=2.5pt,font=\scriptsize,align=center,text=ink}}
 \begin{tikzpicture}[x=1cm,y=1cm]
 
-% Period headers are aligned to the three classification changes encoded in asset_types.py.
-\node[font=\tiny\bfseries,text=muted,align=center] at (3.10,2.04) {before\\17 Mar 2020};
-\node[font=\tiny\bfseries,text=muted,align=center] at (5.35,2.04) {17 Mar 2020--\\15 Apr 2021};
-\node[font=\tiny\bfseries,text=muted,align=center] at (7.65,2.04) {16 Apr 2021--\\22 Feb 2023};
-\node[font=\tiny\bfseries,text=muted,align=center] at (9.90,2.04) {from\\23 Feb 2023};
+% Sample-time axis: x=2.20 is 11 Feb 2020 and x=11.35 is 30 Jun 2026.
+\draw[draw=rule,line width=0.9pt] (2.20,2.28)--(11.35,2.28);
+\foreach \x/\year in {2.20/2020,3.47/2021,4.90/2022,6.32/2023,7.75/2024,9.18/2025,10.61/2026} {
+  \draw[draw=rule,line width=0.8pt] (\x,2.20)--(\x,2.36);
+  \node[font=\scriptsize\bfseries,text=muted] at (\x,2.55) {\year};
+}
 
-\node[brrow] at (1.72,1.24) {USDC, USDT};
-\node[brcell,draw=stable,fill=stable!14,minimum width=8.92cm] at (6.48,1.24) {fiat reserves};
+\node[brrow] at (1.86,1.74) {USDC, USDT};
+\node[brcell,draw=stable,fill=stable!14,minimum width=9.15cm,anchor=west] at (2.20,1.74) {fiat reserves};
 
-\node[brrow] at (1.72,0.38) {DAI};
-\node[brcell,draw=native,fill=native!13,minimum width=2.10cm] at (3.10,0.38) {on-chain collateral};
-\node[brcell,draw=imported,fill=imported!14,minimum width=2.22cm] at (5.35,0.38) {mixed with\\fiat stablecoin};
-\node[brcell,draw=uclbright,fill=uclbright!9,minimum width=4.48cm] at (8.78,0.38) {mixed, including real-world assets};
+\node[brrow] at (1.86,1.05) {DAI};
+\node[brcell,draw=native,fill=native!13,minimum width=0.13cm,anchor=west] at (2.20,1.05) {};
+\node[brcell,draw=imported,fill=imported!14,minimum width=1.55cm,anchor=west] at (2.33,1.05) {mixed with fiat stablecoin};
+\node[brcell,draw=uclbright,fill=uclbright!9,minimum width=7.47cm,anchor=west] at (3.88,1.05) {mixed, including real-world assets};
+\node[font=\scriptsize,text=muted,anchor=west] at (2.20,0.70) {on-chain collateral before 17 Mar 2020};
 
-\node[brrow] at (1.72,-0.48) {FRAX};
-\node[brcell,draw=accent,fill=accent!10,minimum width=6.68cm] at (5.35,-0.48) {fractional algorithmic};
-\node[brcell,draw=ucldark,fill=ucldark!9,minimum width=2.20cm] at (9.90,-0.48) {transition target:\\full exogenous collateral};
+\node[brrow] at (1.86,0.18) {FRAX (Dec 2020)};
+\node[brcell,draw=accent,fill=accent!10,minimum width=3.06cm,minimum height=0.58cm,anchor=west,font=\fontsize{6.8}{7.2}\selectfont] at (3.33,0.18) {fractional\\algorithmic};
+\draw[draw=ucldark,dashed,rounded corners=1.5pt,line width=1.0pt] (6.39,-0.06) rectangle (11.35,0.42);
+\draw[-{Stealth[length=4pt]},draw=ucldark,line width=0.9pt] (6.65,0.18)--(11.06,0.18);
+\node[font=\scriptsize,text=ucldark,fill=white,inner sep=1.5pt] at (8.85,0.18)
+  {transition target: full exogenous collateral};
 
-\node[brrow] at (1.72,-1.34) {LUSD, crvUSD};
-\node[brcell,draw=native,fill=native!13,minimum width=8.92cm] at (6.48,-1.34) {on-chain collateral};
+\node[brrow] at (1.86,-0.51) {LUSD (Apr 2021)};
+\node[brcell,draw=native,fill=native!13,minimum width=7.93cm,anchor=west] at (3.42,-0.51) {on-chain collateral};
 
-\node[brrow] at (1.72,-2.20) {sUSD, USDe};
-\node[brcell,draw=accent,fill=accent!10,minimum width=8.92cm] at (6.48,-2.20) {synthetic};
+\node[brrow] at (1.86,-1.20) {crvUSD (May 2023)};
+\node[brcell,draw=native,fill=native!13,minimum width=4.95cm,anchor=west] at (6.40,-1.20) {on-chain collateral};
 
-\node[font=\tiny,text=muted,anchor=west] at (2.03,-2.87)
-  {Only dates on which a token is observed enter the analysis; the map does not show market availability.};
+\node[brrow] at (1.86,-1.89) {sUSD};
+\node[brcell,draw=accent,fill=accent!10,minimum width=9.15cm,anchor=west] at (2.20,-1.89) {synthetic};
+
+\node[brrow] at (1.86,-2.58) {USDe (Feb 2024)};
+\node[brcell,draw=accent,fill=accent!10,minimum width=3.48cm,anchor=west] at (7.87,-2.58) {synthetic};
 
 \end{tikzpicture}
