@@ -1,39 +1,40 @@
 {
  "argv": [
-  "--concurrency",
-  "10"
+  "--authority-snapshot",
+  "data/manifests/route_release_pre_relocation_authority.json",
+  "--workers",
+  "8",
+  "--publish"
  ],
  "artefact": "output/exhibits/unified_route_quality.jsonl",
  "artefact_bytes": 343,
- "artefact_mtime_ns": 1786534132063443393,
+ "artefact_mtime_ns": 1786592042081016123,
  "artefact_sha256": "010984cb3d4c14ddb29ed3fcccd84dc94a94fc00082b4d48555585c56ef3fa22",
- "code_fingerprint": "8cdb3ee4b4856918428f98bb8d324a6f05a9f79855b2d9340441270098900d5a",
+ "code_fingerprint": "57b79ae60cd22431eee0e82e8bbd7823b0ba87d49c5eca6c640bff22368ed51b",
  "code_sources": [
-  "scripts/run_reconstruct.py",
+  "scripts/migrate_route_release_markers.py",
   "src/ddvc/calendar.py",
   "src/ddvc/fetch/sources.py",
   "src/ddvc/reconstruct/__init__.py",
-  "src/ddvc/source_records.py",
-  "src/ddvc/tables.py"
+  "src/ddvc/source_records.py"
  ],
- "created_at": "2026-08-12T11:28:52+00:00",
+ "created_at": "2026-08-13T03:34:02+00:00",
  "git": {
   "branch": "main",
-  "commit": "1e61cf8c2a17290b11a9bd8ebae954c380ea8b60",
-  "dirty": false,
-  "dirty_generated_files": [
-   "data/manifests/data/processed/unified_route_quality.parquet.prov.json",
-   "output/exhibits/.unified_route_quality.jsonl.8x0gugmn.tmp"
-  ],
+  "commit": "efd9d782291f4f15dd64190e3405440e1bda4ddb",
+  "dirty": true,
+  "dirty_generated_files": [],
   "dirty_tracked_files": [],
-  "dirty_untracked_files": []
+  "dirty_untracked_files": [
+   "data/.route-marker-stage-m00rqc9i/"
+  ]
  },
  "inputs": [
   {
-   "bytes": 457240,
+   "bytes": 456455,
    "exists": true,
    "path": "data/processed/unified_route_quality.parquet",
-   "sha256": "5f45d527c9067295ce77f800b9210d14efaef05e51431468122730f052943c16"
+   "sha256": "fcfc51e922e072f68a02b0fa4ad2e376ee6d4d3f9f7f890e8581fa18f5040228"
   }
  ],
  "libraries": {
@@ -42,7 +43,7 @@
   "pyarrow": "25.0.0",
   "scipy": "1.18.0"
  },
- "notes": "canonical directed-route coverage and integrity summary",
+ "notes": "route-release-storage-authority-relocation-v1; current_engine=d3f16e9c4da6; source_marker_set_sha256=f5d980c568ec5d46a123c8d0862316915ee82fa66b43c5f63a1016b844d7d4e8; exact_authority_relocation_days=2332",
  "payload_identity": {
   "bytes": 343,
   "format": "jsonl",
@@ -52,5 +53,5 @@
  },
  "python": "3.14.6",
  "rows": 1,
- "script": "scripts/run_reconstruct.py"
+ "script": "scripts/migrate_route_release_markers.py"
 }
