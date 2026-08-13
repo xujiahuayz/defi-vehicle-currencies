@@ -1,18 +1,18 @@
 {
  "argv": [],
  "artefact": "output/exhibits/prose_outliers.jsonl",
- "artefact_bytes": 120822,
- "artefact_mtime_ns": 1786664629385664007,
- "artefact_sha256": "b3cef32873abbc0948058f7f0de25176e04d6ac7b7a9a4c0f663b4b75f45706f",
+ "artefact_bytes": 116608,
+ "artefact_mtime_ns": 1786665419326952703,
+ "artefact_sha256": "6a400ef7fccc195c29e6c8b21e87ce1d799dd06ab148432053c19da412218a58",
  "code_fingerprint": "4d6c3aa5e5b632317b923d4c498ebaf8a988e6f1d35f09ef659fc910be391909",
  "code_sources": [
   "scripts/find_prose_outliers.py",
   "src/ddvc/tables.py"
  ],
- "created_at": "2026-08-13T23:43:49+00:00",
+ "created_at": "2026-08-13T23:56:59+00:00",
  "git": {
   "branch": "main",
-  "commit": "f444acca0107402d1c036c716dd7d3f5dcce9d9f",
+  "commit": "13e35a136ddd36212cb13a690f5e37f729ab812a",
   "dirty": true,
   "dirty_generated_files": [
    "data/manifests/output/exhibits/prose_conventions.jsonl.prov.json",
@@ -21,32 +21,20 @@
    "output/exhibits/prose_conventions.jsonl",
    "output/exhibits/venue_optics.jsonl",
    "output/exhibits/venue_shape.jsonl",
-   "output/exhibits/.prose_outliers.jsonl.hn6pz5ro.tmp"
+   "output/exhibits/.prose_outliers.jsonl.4pw15i8s.tmp"
   ],
   "dirty_tracked_files": [
-   "docs/research-workflow.md",
+   "docs/reviews/paper-rhetoric.json",
    "paper/main.tex",
    "paper/sections/01-introduction.tex",
    "paper/sections/02-setting.tex",
    "paper/sections/03-dominance.tex",
    "paper/sections/05-rivals.tex",
    "paper/sections/06-executability.tex",
-   "paper/sections/07-conclusion.tex",
    "paper/sections/08-appendix.tex",
-   "paper/sections/abstract.tex",
-   "scripts/check_deliverable_conformance.py",
-   "scripts/find_prose_outliers.py",
-   "scripts/measure_prose_conventions.py",
-   "scripts/measure_venue_optics.py",
-   "scripts/measure_venue_shape.py",
-   "src/ddvc/latex_text.py",
-   "tests/test_latex_text.py",
-   "tests/test_paper_prose.py"
+   "paper/sections/abstract.tex"
   ],
-  "dirty_untracked_files": [
-   "docs/reviews/paper-rhetoric.json",
-   "scripts/check_jfe_rhetoric_review.py"
-  ]
+  "dirty_untracked_files": []
  },
  "inputs": [],
  "libraries": {
@@ -57,13 +45,13 @@
  },
  "notes": null,
  "payload_identity": {
-  "bytes": 120822,
+  "bytes": 116608,
   "format": "jsonl",
-  "rows": 555,
+  "rows": 535,
   "schema_version": 1,
-  "sha256": "b3cef32873abbc0948058f7f0de25176e04d6ac7b7a9a4c0f663b4b75f45706f"
+  "sha256": "6a400ef7fccc195c29e6c8b21e87ce1d799dd06ab148432053c19da412218a58"
  },
  "python": "3.14.5",
- "rows": 555,
+ "rows": 535,
  "script": "scripts/find_prose_outliers.py"
 }

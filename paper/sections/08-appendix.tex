@@ -11,7 +11,7 @@
 \section{Quoter construction and validation}
 \label{app:quoters}
 
-The constructed side of every comparison in the body is an exact-input quote: given a pool's state and an input amount, what would the pool have paid out? Each venue family is priced with its own invariant and arithmetic. I assess each implementation by reconstructing the state immediately before executed swaps and comparing predicted with realised output. Curve's amplification coefficient and Balancer's weight ratio are not available in the historical subgraph records, so I estimate them from realised trades and evaluate the resulting quotes on separate trades.
+The constructed side of every comparison in the body is an exact-input quote: given a pool's state and an input amount, what would the pool have paid out? Each venue family is priced with its own invariant and arithmetic. We assess each implementation by reconstructing the state immediately before executed swaps and comparing predicted with realised output. Curve's amplification coefficient and Balancer's weight ratio are not available in the historical subgraph records, so we estimate them from realised trades and evaluate the resulting quotes on separate trades.
 
 \subsection{Constant-product pools}
 \label{app:quoters:cp}
@@ -118,7 +118,7 @@ $A$ is Curve-specific and the standardised subgraph schema drops it, so it is id
 fitted on the first half of a pool-day's trades over a logarithmic grid with a ternary refinement, then evaluated on the trades not used for estimation. A pool-day is retained when the 90th percentile of fitting error is below 1\%. Using the upper tail prevents a partial fit from passing: one misspecified pool produced a median fitting error below 0.1\% but a 34\% median error on the other trades because the invariant fit only part of its activity.
 % src/ddvc/pricing/stableswap.py, FIT_QUANTILE 0.90 and MAX_CALIBRATION_ERROR 0.01
 
-Curve has also operated crypto-pools since 2021 that follow the CryptoSwap invariant. Applying StableSwap to these pools yields a best-fit $A$ of 3 and a 36\% median quote error. I therefore exclude pool-days whose observed trades are inconsistent with the StableSwap pricing rule.
+Curve has also operated crypto-pools since 2021 that follow the CryptoSwap invariant. Applying StableSwap to these pools yields a best-fit $A$ of 3 and a 36\% median quote error. We therefore exclude pool-days whose observed trades are inconsistent with the StableSwap pricing rule.
 % src/ddvc/pricing/stableswap.py, A_MIN comment recording the measured failure
 
 \begin{table}[t]
@@ -165,7 +165,7 @@ Only the ratio $W_{\mathrm{in}}/W_{\mathrm{out}}$ enters, so an equal-weight Bal
 The weight ratio and the swap fee are both reported by the subgraph and both can be stale, since the schema serves them at the head block while balances come from a historical snapshot. Liquidity-bootstrapping pools move weights on a schedule and any weighted pool's owner can reset the fee, and the fee case showed up in validation before it was diagnosed: read parameters reproduced 2024 trades to $10^{-9}$ percent and 2022 trades only to 0.19\%, a fee-sized gap, since the fee enters through $\phi$ and a fee wrong by a basis point moves a quote by about a basis point. Both parameters are therefore identified the way Curve's $A$ is, with reading tried first and each fit introducing exactly one free scalar over at least four observations on the pair.
 % src/ddvc/pricing/weighted.py, parameter identification docstring and MIN_PAIR_OBSERVATIONS
 
-I retain a Balancer pool-day when the 90th percentile fitting error is below 0.1\%. The threshold separates weighted pools, whose held-out errors range from $10^{-9}$ to 0.004\%, from stable, composable-stable, and elliptic-curve pools, whose held-out errors range from 0.05\% to 1.08\% and have a 99th percentile of 12\%.
+We retain a Balancer pool-day when the 90th percentile fitting error is below 0.1\%. The threshold separates weighted pools, whose held-out errors range from $10^{-9}$ to 0.004\%, from stable, composable-stable, and elliptic-curve pools, whose held-out errors range from 0.05\% to 1.08\% and have a 99th percentile of 12\%.
 % src/ddvc/pricing/weighted.py, MAX_CALIBRATION_ERROR at 0.001 with the measured separation
 
 \begin{table}[t]
@@ -241,7 +241,7 @@ Two features of that replication make it informative about the constant-product 
 \section{Common support for hypothetical routes}
 \label{app:support}
 
-The validation samples contain executed swaps and therefore pools deep enough to serve the observed trade. A hypothetical route may demand much more output relative to pool depth, where the observed errors no longer describe pricing accuracy. I retain a hypothetical leg only when its own price impact lies within the range represented among the realised validation trades. The cutoff is calibrated from that population.
+The validation samples contain executed swaps and therefore pools deep enough to serve the observed trade. A hypothetical route may demand much more output relative to pool depth, where the observed errors no longer describe pricing accuracy. We retain a hypothetical leg only when its own price impact lies within the range represented among the realised validation trades. The cutoff is calibrated from that population.
 
 For a hypothetical leg, the relevant statistic is its own price impact in the pool it would traverse,
 \[
@@ -321,7 +321,7 @@ This restriction removes economically relevant observations, and the body report
 \section{Signed venue coverage}
 \label{app:coverage}
 
-An omitted venue can improve the best direct route, the best intermediated route, or both. I therefore measure coverage using each venue's share of trading volume and report the composition of the excluded volume. To make volume comparable across the seven data sources, I compute it from individual swaps using the smaller dollar value of the two legs. This avoids double counting in two sources and removes implausible oracle values in thin pools: one Curve pool reports a \$456m day whose swaps sum to \$8, and a constant-product pair with \$255 of reserves reports \$1.36bn. Physical bounds on volume relative to reserves exclude between 0.10\% and 0.24\% of pool-days per year.
+An omitted venue can improve the best direct route, the best intermediated route, or both. We therefore measure coverage using each venue's share of trading volume and report the composition of the excluded volume. To make volume comparable across the seven data sources, we compute it from individual swaps using the smaller dollar value of the two legs. This avoids double counting in two sources and removes implausible oracle values in thin pools: one Curve pool reports a \$456m day whose swaps sum to \$8, and a constant-product pair with \$255 of reserves reports \$1.36bn. Physical bounds on volume relative to reserves exclude between 0.10\% and 0.24\% of pool-days per year.
 % docs/venue-coverage-bounds.md, volume reconstruction, 400 sampled days
 
 \begin{table}[t]
