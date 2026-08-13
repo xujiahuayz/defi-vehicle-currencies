@@ -1,4 +1,6 @@
-# Empirical-First RQ Design Memo
+# Retired RQ1–7 empirical-design memo
+
+**Status:** Retired design record. This July RQ1–7 experiment menu is preserved for history, but it is not a current agent route, estimator specification, findings record, or deliverable source. Current execution follows `docs/specification-lock.json`, `docs/findings-freeze.md`, and `docs/research-workflow.md`.
 
 Generated 2026-07-08. Purpose: redesign the DVC workflow around empirical experiments first. A theory section is optional and should be added only after the empirical design is coherent.
 

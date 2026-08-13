@@ -15,7 +15,7 @@ This repository contains the acquisition, reconstruction, analysis, literature, 
 - [`scripts/`](scripts/README.md) contains thin, directly runnable acquisition, processing, analysis, and rendering entry points.
 - `data/` contains local evidence, canonical derived panels, runtime intermediates, and tracked provenance manifests; payloads are not committed.
 - `output/` contains code-generated tables, figures, exhibits, and inspection artifacts consumed by the paper and deck.
-- `literature/` contains the bibliography, admission records, full-text audit material, and retrieval metadata.
+- `literature/` contains local source payloads, searchable extracts, bibliography and admission records, source-family notes, and clearly marked historical digests; current specialist cards and the reconciled audit live under `docs/reviews/` and `docs/literature-audit.md`.
 - [`paper/`](paper/README.md) and [`deck/`](deck/README.md) contain the two authored deliverables and their review builds.
 - `docs/` contains research design, audit, findings, certification, and workflow records.
 - [`tests/`](tests/README.md) verifies acquisition contracts, reconstruction, pricing, releases, metrics, and analysis behavior.

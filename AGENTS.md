@@ -23,4 +23,11 @@ Standing correction rules:
 - Calendar time is not treatment. Separate adoption, use, exit, availability reversal, opportunity-set change, and cost-state reversal.
 - The deck is always presentation-ready. Every touch follows: semantic/source diff, focused tests, compile, evidence/language/status audits, changed-page inspection, then commit.
 
+Knowledge and consumer routing:
+
+- A consumer is an executable caller, a paper/deck include, a canonical workflow or agent route, or a current index/review that requires the artifact. A search hit, self-reference, generic directory mention, or the possibility that an agent may discover a file is not a consumer.
+- Current literature claims route through `literature/source-admission.json`, `literature/vehicle-currencies.bib`, `docs/reviews/README.md`, and `docs/literature-audit.md`. Files under `literature/reviews/` are historical discovery aids only.
+- Deck-craft calibration routes through `docs/reviews/deck-venue-exemplars.md`; current visual inspections route through the named ledgers indexed in `docs/reviews/README.md`.
+- `output/` is reserved for command-generated handoff artifacts. Do not add authored memos, literature digests, or agent handoffs there.
+
 Java's interjections are for new discoveries, scientific choices, and redirection. Recovering an existing instruction is the executor's responsibility.

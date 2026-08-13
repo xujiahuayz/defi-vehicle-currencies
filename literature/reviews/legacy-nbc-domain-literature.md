@@ -1,4 +1,6 @@
-# Node B — domain literature closed, with a prior-art verdict that changed the plan
+# Historical Nanyang domain-literature synthesis
+
+**Status:** Historical supporting digest from the 2026-08-05 pipeline. It records useful discovery trails and the prior-art verdict that redirected that round, but it predates the current admitted corpus, literature audit, specification lock, and findings freeze. It is not authority for a live claim or estimator. Re-verify any reusable point through [`literature/source-admission.json`](../source-admission.json), [`literature/vehicle-currencies.bib`](../vehicle-currencies.bib), and [`docs/literature-audit.md`](../../docs/literature-audit.md).
 
 Four independent lanes (prior art on the cross-aggregator test; inertia and hysteresis in currency dominance; LVR and rent incidence; router and aggregator microstructure), then a reconciliation pass that was asked to flag contradictions with the workflow. It found seven.
 
@@ -145,7 +147,7 @@ Four things, in descending order of defensibility:
 1. **The intermediary-asset margin itself.** No paper found compares *which token a route hops through* across aggregators. Xi & Moallemi exclude it by assumption. Zhavoronkov and Execution Welfare are single-pair. The network papers that do study intermediary tokens — [Network Analysis of Uniswap: Centralization and Fragility in the Decentralized Exchange Market](https://arxiv.org/abs/2503.07834) (Yan & Tessone, Mar 2025), which identifies important tokens and pools by betweenness, and [A Social Network Approach to Analyzing Token Properties and Abnormal Events in Decentralized Exchanges](https://arxiv.org/abs/2309.02579) (Mohammadi et al., 2023) — measure token centrality in the liquidity graph and never connect it to router choice. **The join between "which tokens are graph hubs" and "which routers select them" is empty.**
 2. **Long-tail and cross-pair scope.** Every empirical paper found runs on WETH-USDC, WETH-USDT, or PEPE-WETH. Vehicle choice is mechanically uncontested on WETH-USDC; it is contested precisely on the pairs nobody has studied. Your comparable-pair design has real value only if it spans pairs where the intermediary is genuinely ambiguous.
 3. **Matched-trade, same-block head-to-head.** Xi & Moallemi measure each router against a counterfactual optimum; nobody matches router A's trade to router B's comparable trade in the same block. This is a methodological contribution — but a modest one, and it needs the ClearTrace attribution caveats handled or it is fragile.
-4. **The economic framing, which is your real differentiator.** Nothing found connects DEX routing-intermediary choice to the vehicle-currency literature. Searches for "vehicle currency" / "vehicle asset" plus DeFi routing returned zero. Somogyi (2026)'s price-impact-minimisation mechanism for vehicle-currency selection in FX has never been tested on DEX routing, and Krugman (1980)'s cost-driven vehicle selection has an exact on-chain analogue that is unexploited. Your `01_source_fidelity.md` already establishes that Somogyi explicitly disclaims crypto/DeFi and that Krugman's endogenous-cost loop is a static multiple-equilibrium result — that is a stated gap you are positioned to fill and the CS measurement literature has no interest in.
+4. **The economic framing, which is your real differentiator.** Nothing found in this historical pass connected DEX routing-intermediary choice to the vehicle-currency literature. Searches for "vehicle currency" / "vehicle asset" plus DeFi routing returned zero. Somogyi (2026)'s price-impact-minimisation mechanism for vehicle-currency selection in FX had not been tested on DEX routing, and Krugman (1980)'s cost-driven vehicle selection had an unexploited on-chain analogue. The historical [`legacy-nbc-source-fidelity.md`](legacy-nbc-source-fidelity.md) records the source boundaries used for that verdict; current novelty requires a new search through the live literature gate.
 
 ## (4) The paper that would make your version redundant
 
@@ -164,7 +166,7 @@ Secondary redundancy: **Bachu, Wan & Moallemi (2024)** owns the interface-level 
 - ACM DL blocked fetching for **ORDER: Optimal Routing with Path Indexing in Exchange Graph** ([doi 10.1145/3802097](https://dl.acm.org/doi/10.1145/3802097), Proc. ACM Management of Data). From its title and venue it is a database/indexing systems paper, not an economic comparison, but I could not read the abstract to confirm.
 - Two arXiv IDs above (Zhang & Tessone Sept 2025; Janicot & Vinyas May 2025) are inferred from listing metadata rather than read off the abstract pages — verify before they enter a reference list.
 
-Relevant local files: `/Users/dsf-pro16-m3/projects/defi-vehicle-currencies/output/nbc_pipeline/00_manifest.md`, `/Users/dsf-pro16-m3/projects/defi-vehicle-currencies/output/nbc_pipeline/01_source_fidelity.md`. Neither contains any of the routing/aggregator literature above — this is a wholly new branch relative to the existing corpus, which is FX/microstructure/LP-side and has no aggregator coverage at all.
+Relevant historical files: [`legacy-nbc-corpus-manifest.md`](legacy-nbc-corpus-manifest.md) and [`legacy-nbc-source-fidelity.md`](legacy-nbc-source-fidelity.md). Neither contained any of the routing/aggregator literature above at the time of this review.
 
 ---
 
@@ -172,7 +174,7 @@ Relevant local files: `/Users/dsf-pro16-m3/projects/defi-vehicle-currencies/outp
 
 ## Literature review: inertia and hysteresis in international currency dominance
 
-**Scope note.** The repo's `01_source_fidelity.md` already carries cross-checked reads of Krugman (1980), Dowd & Greenaway (1993), and Gopinath & Stein (2021). I do not re-derive those; I extend them only where the *identification* question is concerned. Everything else below is new to the corpus — I confirmed none of Eichengreen, Flandreau, Chinn/Frankel, Rey, Devereux/Shi, Goldberg/Tille, or Ilzetzki/Reinhart/Rogoff is present in `literature/papers/` or `00_manifest.md`. A verification ledger (what I read in full vs. abstract-only) is at the end; please read it before quoting anything.
+**Scope note.** The historical [`legacy-nbc-source-fidelity.md`](legacy-nbc-source-fidelity.md) already carried cross-checked reads of Krugman (1980), Dowd & Greenaway (1993), and Gopinath & Stein (2021). This section extended them only for the identification question. Its statements about what was absent describe the corpus at that time, not the current corpus. A verification ledger is at the end; current quotation still requires the live source-set audit.
 
 ---
 
@@ -292,7 +294,7 @@ Their response is to disaggregate to individual central banks (Ito-McCauley data
 
 ### Gopinath & Stein (2021), *QJE* — extension only
 
-`01_source_fidelity.md` already establishes the mechanism, the multiplicity/stability result, and the citation boundaries (reserves → 2018b; invoicing facts → Gopinath 2015; vehicle/medium-of-exchange role explicitly set aside). Two points to add, both bearing only on identification:
+The historical [`legacy-nbc-source-fidelity.md`](legacy-nbc-source-fidelity.md) records the mechanism, multiplicity/stability result and citation boundaries used in this pass. Two points were added, both bearing only on identification:
 
 1. The existing note that "the model is symmetric between US and Europe by construction, so it cannot pin down *which* currency wins on fundamentals; the paper's history/incumbency argument is a verbal/heuristic selection device, not a proven result" **is the identification limitation**, stated at the level of theory. A model that is symmetric in fundamentals and resolves selection by appeal to history has, by construction, no fundamentals-based prediction to test persistence against.
 2. Because the paper explicitly sets aside the medium-of-exchange/vehicle role (footnote 5), **it is not a competitor to your paper's object** and should not be framed as one. It is the strongest available statement of *why* the confound in §3 layer (4) exists — invoicing dominance and safe-asset/banking dominance are mutually reinforcing, so the incumbent's cost advantage is an equilibrium output of its incumbency.
@@ -378,7 +380,7 @@ One scope discipline, from Devereux & Shi's warning: your setting speaks to the 
 
 **Read in full text (PDF extracted, quotes above are verbatim from the source):** Eichengreen & Flandreau (2009, NBER w14154, 31pp) · Eichengreen & Flandreau (2010 BIS conference version of the 2012 *OER* paper, 31pp) · Chiţu, Eichengreen & Mehl (NBER w18097, 42pp) · Chinn & Frankel (NBER w11510, 41pp) · Chinn, Frankel & Ito (2024 *JIMF* published version, 18pp) · Devereux & Shi (Toronto WP tecipa-315) · Goldberg & Tille (FRBNY Staff Report 200, the 2008 *JIE* precursor) · Goldberg & Tille (2014 revision = 2016 *JIE*, 60pp) · Ilzetzki, Reinhart & Rogoff (NBER w23134, 86pp).
 
-Extracted text cached at `/private/tmp/claude-502/-Users-dsf-pro16-m3-glotl/d8c24615-d661-4ac9-899f-20596ce63759/scratchpad/lit/` — session-scoped, so copy anything you want to keep into the project repo.
+The extracted text cache used in the original pass was session-scoped and was not retained in the project. Re-read the admitted source before reuse.
 
 **Abstract-verified only, NOT read in full — do not quote specifics:** Rey (2001) · Flandreau & Jobst (2009) ← *highest-priority gap; the paper closest to claiming resolution* · Bahaj & Reis (2020) · Coppola, Krishnamurthy & Xu (2023) · Eichengreen, Mehl & Chiţu (2017/2019).
 
@@ -392,7 +394,7 @@ Extracted text cached at `/private/tmp/claude-502/-Users-dsf-pro16-m3-glotl/d8c2
 
 ## Literature review: AMM liquidity-provider economics
 
-Scope note: this extends `output/nbc_pipeline/01_source_fidelity.md`, which already cross-checks Lehar & Parlour (JoF 2025), Klein/Kozhan/Viswanath-Natraj/Wang (2026), Caparros/Chaudhary/Klein (2024), Somogyi (2026) and Yuan (2005). None of the LVR / impermanent-loss / JIT / realised-LP-return literature appears in those notes, so this is new ground rather than a re-derivation. Where I read the actual PDF I say so; where I could only reach an abstract or a search summary I flag it.
+Scope note: this extends [`legacy-nbc-source-fidelity.md`](legacy-nbc-source-fidelity.md), which cross-checked Lehar & Parlour (JoF 2025), Klein/Kozhan/Viswanath-Natraj/Wang (2026), Caparros/Chaudhary/Klein (2024), Somogyi (2026) and Yuan (2005). Where the original reviewer read the actual PDF it says so; abstract-only or search-summary evidence remains flagged and is not live claim support.
 
 ---
 
@@ -472,7 +474,7 @@ Note also that your own existing corpus already holds the two halves your questi
 
 **Bottom line for the paper.** The claim "LPs in hub-asset pools earn higher gross fees but no higher net return" is currently *suggested* by Fritsch & Canidio and Heimbach et al., *predicted* by the LVR formula and by Yuan (2005), and *tested by nobody*. The contribution is available. The two things that will be attacked are the CEX-listing confound and the absence of gas in every prior net-return number — and on the second point you have a genuine advantage, because only Cartea/Drissi/Monga have priced gas at all, and only for a single pool.
 
-**Files consulted locally:** `/Users/dsf-pro16-m3/projects/defi-vehicle-currencies/output/nbc_pipeline/00_manifest.md`, `00_exemplars.md`, `01_source_fidelity.md`. Extracted paper texts cached at `/private/tmp/claude-502/-Users-dsf-pro16-m3-glotl/d8c24615-d661-4ac9-899f-20596ce63759/scratchpad/{lvr,fritsch_canidio,fritsch_cl,heimbach_risks,heimbach_behavior,cartea}.txt`.
+**Files consulted locally in the original pass:** the historical corpus manifest, deck-exemplar notes and source-fidelity digest. Transient extracted texts were not retained. Any claim reused now must be checked against the admitted local corpus and current source-set audit.
 
 ---
 
@@ -480,7 +482,7 @@ Note also that your own existing corpus already holds the two halves your questi
 
 ## Scope check
 
-Your existing notes (`00_manifest.md`, `01_source_fidelity.md`) cover the vehicle-currency theory chain, AMM microstructure (Lehar–Parlour, Klein et al., Caparros et al.), and the venue comparators. They contain **nothing** on routers, aggregators, solvers, order-flow auctions, or MEV measurement — the only MEV item in `literature/vehicle-currencies.bib` is Daian et al. (2020). Everything below is new. Two notes flag MEV as *out of scope by construction* for Caparros et al. and Lehar–Parlour; that exclusion is exactly what a routing-cost paper cannot inherit.
+The historical corpus manifest and source-fidelity digest covered the vehicle-currency theory chain, AMM microstructure and venue comparators but not routers, aggregators, solvers, order-flow auctions or MEV measurement. That is a statement about the 2026-08-05 corpus; consult the current bibliography and audit before treating it as a present-day gap.
 
 ---
 

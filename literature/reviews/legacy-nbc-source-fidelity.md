@@ -1,4 +1,6 @@
-# Phase 1 — source-fidelity cross-check
+# Historical Nanyang source-fidelity cross-check
+
+**Status:** Historical supporting digest from the 2026-08-04 pipeline. Later source-set repair and five-axis cards supersede it as authority. Use [`docs/literature-audit.md`](../../docs/literature-audit.md) and its indexed specialist cards for any live citation, mechanism, or venue claim.
 
 Two independent reads per paper, reconciled by a third agent that surfaces disagreement rather than averaging it. All 12 papers below cleared full-text access on both independent reads (no INCOMPLETE flags) — none of this is resting on an abstract-only read. Every "safe-to-cite-as" statement is the narrowest, most defensible claim each paper actually licenses; anything flagged as unresolved is a genuine disagreement between two independent readers, not a stylistic difference, and should be independently re-verified before a framing-drafting agent (Phase 2) relies on it.
 
