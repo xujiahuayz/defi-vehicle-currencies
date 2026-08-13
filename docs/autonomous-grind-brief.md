@@ -28,10 +28,16 @@ through" — not your judgement of it.
    done first, oldest first. Tick it off (`- [x]`) in the same commit that
    closes it. If the queue is empty, go to step 3.
 3. Run `uv run python scripts/audit_findings_freeze.py`. Read the blocking list.
-4. Pick ONE blocking check — the one that unblocks the most others, preferring
-   node D data contracts over node E estimators over node B literature, since
-   downstream checks depend on upstream ones. If the ledger shows the previous
-   iteration was mid-way through a unit, continue that unit instead.
+4. Classify each live blocker by scientific consequence before choosing work.
+   Report whether the defect is concentrated by time, protocol/design, venue,
+   pool, vehicle candidate, trade size, or stress state; bound its economic
+   weight; and ask whether it can change the estimand, sample composition,
+   coefficient, or inference. Pick the unit with the highest scientific value
+   among blockers that can change a claim. Metadata-only hygiene comes after
+   valid estimators unless it prevents every consumer from reading unchanged
+   data. Route-only estimators continue while unrelated exact-state branches are
+   red. If the ledger shows the previous iteration was mid-way through a unit,
+   continue only when that unit still passes this materiality test.
 5. Do the work properly and finish it. Build the real artifact, from real data,
    through the project's own owners and scripts.
 6. Run the relevant tests plus the freeze audit again. Commit with a real
@@ -84,14 +90,30 @@ only thing you owe is a clean, small, honest history:
   Fluid incident was manufactured.
 - **Never rewrite a certified release to get cleaner architecture.** Bound the
   defect's materiality first; defer architecture to the next planned generation.
+- **Social-science materiality comes before data perfection.** Random or
+  economically bounded missingness is disclosed, bounded with a sensitivity
+  where useful, and allowed to proceed. A hard failure is reserved for wrong
+  identity, corruption, systematic selection correlated with the treatment or
+  outcome, invalid causal timing, or inference invalid for the stated claim. A
+  certificate or provenance mismatch is not itself scientific evidence: once
+  scientific identity and the relevant rows/bytes are proved unchanged, close
+  the bookkeeping through the existing owner and return to estimation. Never
+  turn a demand for 100 percent metadata cleanliness into an implicit research
+  objective.
 - **Respect the project's locked decisions and notation.** They are in the glotl
   brain at `~/glotl/projects/defi-vehicle-currencies.md` under "Locked decisions"
   and "Learnings". Read them before touching prose, notation, or estimands.
-- **Paper prose stays closed** until the freeze gate is green with two unchanged
-  passes. The deck may carry visibly labelled provisional science so Java can
-  challenge the design while data work continues. Every provisional result
-  frame names its data generation and support status, states the unresolved
-  identification objection, and is never treated as admitted paper evidence.
+- **Writing is tiered.** Publication-standard prose for the question, setting,
+  mechanism, specification, and evidence already admitted at its purpose-bound
+  gate evolves continuously. Numerical sentences stay out when their own input
+  tier is red. Unresolved alternatives live in the claim register, not in rough
+  prose awaiting a later style rescue.
+- **The deck is always a deliverable.** It remains presentation-ready after
+  every iteration even while estimates evolve. Scientific status, evidence
+  commit, generation identity, and repository paths live in audited source
+  comments, never in audience-facing provisional badges or hash labels. Update
+  the single frame in place, compile, visually inspect, run the source audit,
+  and commit the canonical PDF.
 - **Do not turn realised architecture use into a design shock.** V4 route-share
   entry and exit are endogenous E0 exposure transitions. V4 remains available
   after launch, and the current positive-use risk panel measures within-cell
@@ -109,6 +131,6 @@ only thing you owe is a clean, small, honest history:
 
 ## When the gate goes green
 
-Regenerate the JFE paper and the Nanyang deck from frozen evidence, then close
-both through the content, venue-shape, provenance, and clean-build loops. Only
-when all three conditions at the top hold does the loop end by itself.
+Refresh the already-live JFE paper and Nanyang deck from frozen evidence, then
+close both through the content, venue-shape, provenance, and clean-build loops.
+Only when all three conditions at the top hold does the loop end by itself.

@@ -23,6 +23,10 @@ OUTPUT_REFERENCE = re.compile(
     r"(?:\\input|\\includegraphics(?:\[[^\]]*\])?|\\addplot\s+table(?:\[[^\]]*\])?)"
     r"\s*\{?\.\./output/",
 )
+EVIDENCE_MANAGED_FILE = "EVIDENCE-MANAGED-FILE"
+EVIDENCE_STATUS = re.compile(r"(?m)^% EVIDENCE-STATUS:\s*\S.+$")
+EVIDENCE_COMMIT = re.compile(r"(?m)^% EVIDENCE-COMMIT:\s*[0-9a-f]{7,40}\s*$")
+EVIDENCE_SOURCES = re.compile(r"(?m)^% EVIDENCE-SOURCES:\s*\S.+$")
 
 
 @dataclass(frozen=True)
@@ -55,7 +59,8 @@ def audit_deck_sources(deck_root: Path) -> list[DeckEvidenceDefect]:
     defects: list[DeckEvidenceDefect] = []
     sections = deck_root / "sections"
     for path in sorted(sections.glob("*.tex")) if sections.is_dir() else ():
-        source = _without_comments(path.read_text(encoding="utf-8"))
+        authored = path.read_text(encoding="utf-8")
+        source = _without_comments(authored)
         for match in MANUAL_PLOT_DATA.finditer(source):
             defects.append(
                 DeckEvidenceDefect(
@@ -83,5 +88,24 @@ def audit_deck_sources(deck_root: Path) -> list[DeckEvidenceDefect]:
                         kind="unowned_plot_table",
                         detail="plot tables must be read from ../output/",
                     )
-                )
+                    )
+        if EVIDENCE_MANAGED_FILE in authored:
+            frame_starts = list(re.finditer(r"(?m)^\\begin\{frame\}", authored))
+            for index, frame in enumerate(frame_starts):
+                prior = frame_starts[index - 1].end() if index else 0
+                metadata = authored[prior:frame.start()]
+                for pattern, kind, detail in (
+                    (EVIDENCE_STATUS, "missing_evidence_status", "frame needs an EVIDENCE-STATUS source comment"),
+                    (EVIDENCE_COMMIT, "missing_evidence_commit", "frame needs an EVIDENCE-COMMIT source comment"),
+                    (EVIDENCE_SOURCES, "missing_evidence_sources", "frame needs an EVIDENCE-SOURCES source comment"),
+                ):
+                    if not pattern.search(metadata):
+                        defects.append(
+                            DeckEvidenceDefect(
+                                path=path,
+                                line=_line_number(authored, frame.start()),
+                                kind=kind,
+                                detail=detail,
+                            )
+                        )
     return defects

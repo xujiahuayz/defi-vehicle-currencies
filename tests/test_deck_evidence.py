@@ -55,3 +55,25 @@ def test_plot_table_must_come_from_output(tmp_path: Path) -> None:
 def test_plot_table_under_output_is_allowed(tmp_path: Path) -> None:
     write_section(tmp_path, r"\addplot table {../output/figures/result.csv};")
     assert audit_deck_sources(tmp_path) == []
+
+
+def test_evidence_managed_frames_require_source_only_status_commit_and_sources(tmp_path: Path) -> None:
+    write_section(
+        tmp_path,
+        r"""% EVIDENCE-MANAGED-FILE
+% EVIDENCE-STATUS: evolving route result
+% EVIDENCE-COMMIT: 3873fca
+% EVIDENCE-SOURCES: output/exhibits/result.tex; docs/findings-freeze.md
+\begin{frame}{Result}
+\end{frame}
+
+\begin{frame}{Unbound result}
+\end{frame}
+""",
+    )
+    defects = audit_deck_sources(tmp_path)
+    assert {defect.kind for defect in defects} == {
+        "missing_evidence_status",
+        "missing_evidence_commit",
+        "missing_evidence_sources",
+    }

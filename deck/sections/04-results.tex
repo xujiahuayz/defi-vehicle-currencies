@@ -1,11 +1,13 @@
-% Live scientific-feedback slides. Every numerical cell is bound through an
-% exhibit macro file and remains explicitly provisional until findings freeze.
+% EVIDENCE-MANAGED-FILE
+% Numerical cells are generated; evidence status and identities stay in comments.
 \IfFileExists{../output/exhibits/provisional_results_deck_values.tex}{%
 \input{../output/exhibits/provisional_results_deck_values.tex}%
 }{}
 
+% EVIDENCE-STATUS: evolving route result; exact partition authority is being rebound
+% EVIDENCE-COMMIT: 3873fca
+% EVIDENCE-SOURCES: output/exhibits/provisional_results_deck_values.tex; docs/findings-freeze.md
 \begin{frame}{Vehicle dominance rotates toward stable num\'eraires}
-\provisionalbadge
 \vspace{0.28cm}
 \begin{columns}[T,totalwidth=\textwidth]
 \begin{column}{0.47\textwidth}
@@ -39,8 +41,10 @@
 \end{beamercolorbox}
 \end{frame}
 
+% EVIDENCE-STATUS: evolving route decomposition
+% EVIDENCE-COMMIT: 3873fca
+% EVIDENCE-SOURCES: output/exhibits/provisional_results_deck_values.tex; docs/findings-freeze.md
 \begin{frame}{USDT is the transition margin}
-\provisionalbadge
 \vspace{0.12cm}
 {\small
 \begin{tabular}{@{}p{0.35\textwidth}ccc@{}}
@@ -67,8 +71,10 @@ Intermediary $-$ endpoint, strict value & \USDTEndpointGapBase & \USDTEndpointGa
 \end{columns}
 \end{frame}
 
+% EVIDENCE-STATUS: evolving route result; integration remains a live mechanism
+% EVIDENCE-COMMIT: 3873fca
+% EVIDENCE-SOURCES: output/exhibits/provisional_results_deck_values.tex; docs/findings-freeze.md
 \begin{frame}{Integration expands; intermediation does not}
-\provisionalbadge
 \vspace{0.15cm}
 \begin{columns}[T,totalwidth=\textwidth]
 \begin{column}{0.46\textwidth}
@@ -106,8 +112,10 @@ Routing maturation changes reach, but it does not mechanically create more indir
 \end{beamercolorbox}
 \end{frame}
 
-\begin{frame}{The current regression is diagnostic, not final}
-\provisionalbadge
+% EVIDENCE-STATUS: diagnostic displacement gradient; not a persistence estimate
+% EVIDENCE-COMMIT: 3873fca
+% EVIDENCE-SOURCES: output/exhibits/provisional_results_deck_values.tex; docs/findings-freeze.md
+\begin{frame}{Challenger displacement gradients are strong}
 \vspace{0.18cm}
 {\small
 \begin{tabular}{@{}p{0.43\textwidth}rrr@{}}
@@ -125,12 +133,14 @@ Challenger overtakes incumbent & \OvertakeCoef & \OvertakeSE & \OvertakeT \\
 \vspace{0.36cm}
 \begin{beamercolorbox}[sep=0.22cm,wd=\textwidth]{block body}
 \textbf{What it says:} the sparse challenger panel contains strong displacement gradients.\\[0.08cm]
-\textbf{What it does not say:} no transition, routing-efficiency, or persistence estimator has yet run on the final locked route-cost inputs. These coefficients cannot lead the paper.
+\textbf{What it does not say:} these gradients do not identify transition, routing efficiency, or persistence because the risk set does not yet condition on fixed feasible alternatives.
 \end{beamercolorbox}
 \end{frame}
 
-\begin{frame}{Live architecture audit: support, not an effect}
-\provisionalbadge
+% EVIDENCE-STATUS: support failure; no isolated within-cell substitution event
+% EVIDENCE-COMMIT: a587f8b
+% EVIDENCE-SOURCES: output/exhibits/architecture_transition_support.jsonl; output/exhibits/architecture_transition_deck_values.tex
+\begin{frame}{Architecture exposure lacks isolated substitution events}
 \vspace{0.05cm}
 \IfFileExists{../output/exhibits/architecture_transition_deck_values.tex}{%
 \input{../output/exhibits/architecture_transition_deck_values.tex}%
@@ -147,12 +157,10 @@ Immediate entry contrast & \ArchEntryImmediateFive & \ArchEntryImmediateTen & \A
 Immediate exit contrast & \ArchExitImmediateFive & \ArchExitImmediateTen & \ArchExitImmediateTwentyFive \\
 \bottomrule
 \end{tabular}}
-\par\vspace{0.06cm}
-{\footnotesize\color{muted}Route generation: \ArchRouteGeneration\par}
-\vspace{0.10cm}
+\par\vspace{0.10cm}
 \evidencekicker{Scientific verdict}
 {\small Zero clean substitution windows. Realised V4 share is endogenous, the pair-week centering is mechanical when shares sum to one, and role appearance/disappearance magnitudes are selected lifecycle endpoints. The design blocks an effect instead of manufacturing one.}
 \vspace{0.10cm}
 
-{\footnotesize\color{muted}Next estimand: raw focal share on an ex ante feasible risk set, with exact-state reversals separating design response from calendar coincidence. No coefficient enters the paper.\par}
+{\footnotesize\color{muted}The identifying comparison requires raw focal share on an ex ante feasible risk set, with exact-state reversals separating design response from calendar coincidence.\par}
 \end{frame}
