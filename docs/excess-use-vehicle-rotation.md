@@ -46,7 +46,7 @@ The economics is exactly the vehicle-currency theory made visible. A vehicle nee
 
 ## The maturation rival is rejected for the core, and the residual is the mechanism
 
-The strongest rival, that market maturation and aggregator routing manufacture the apparent rotation by composition, is tested in `docs/provisional-rotation-robustness.md` and does not hold for the core of the effect. Three results.
+The strongest rival, that market maturation and aggregator routing manufacture the apparent rotation by composition, is tested in the reproducible E0 rotation snapshot (`docs/finding-vehicle-rotation.md`, `scripts/run_vehicle_rotation_e0.py`, and `output/exhibits/e0_vehicle_rotation_analysis.jsonl`) and does not hold for the core of the effect. Three results.
 
 First, the rebound survives inside a fixed opportunity set. Within the single-venue cell the stable share still rises by 22.97 points on episodes and 35.03 points on strict-support value from 2024 to 2026, with Holm p from about 1e-41 to 1e-73, which is roughly four fifths of the marginal magnitude. Holding both margins the rival names fixed, in the single-venue two-leg cell, it is still 20.67 and 38.09 points. Composition inside one venue cannot be the whole story when the effect is nearly intact inside one venue.
 
