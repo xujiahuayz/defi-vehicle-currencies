@@ -1,604 +1,92 @@
-% Section 3. Incumbents retain the vehicle role while dominated.
-%
-% Every numeric claim carries a trailing comment naming the exhibit it was read from and
-% the sample that exhibit covers. The matched-sample limitation is disclosed in the body
-% and not in a footnote, because it is the reason the headline is the reweighted figure
-% and not the raw matched mean.
-%
-% Figures are drawn in kernel picture mode, since main.tex loads no drawing package. The
-% coordinates in the picture environments are geometry and carry no claim; the plotted
-% values are the ones tabulated beneath each figure, from the exhibits named there.
+% Section 3. Route-only evidence admitted by docs/findings-freeze.md.
+% All displayed quantities bind to output/exhibits/provisional_results_deck_values.tex.
+% Cost dominance, persistence, and exact-state mechanisms remain outside this section.
 
-\section{The vehicle role under cost dominance}
+\section{Rotation in the vehicle role}
 \label{sec:dominance}
 
-\subsection{Dominance on realised routing}
-\label{sec:dominance:realised}
-
-An asset occupies the vehicle role for the trades between other assets that route through it. The classical account of that role turns on proportional brokerage costs falling with transaction volume in the bilateral markets using the asset \citep{Krugman1980VehicleCurrencies}. A separate monetary-search mechanism makes willingness to accept an intermediary object depend on beliefs that others will accept it later \citep{KiyotakiWright1989MoneyMedium}. Krugman's equilibrium compares bilateral-market brokerage costs and lets exchange rates restore indifference; it neither defines nor tests a realised route chosen while strictly dominated. This paper adds that configuration. The available foreign-exchange evidence does not pair a realised trade with every exact executable alternative at the same state and size: indicative direct and indirect quote comparisons exist, but not the matched counterfactual network needed here \citep{GopinathStein2021Making,Somogyi2026DollarDominanceFX}. On an automated market maker the counterfactual is a pool that existed at the block of the realised trade, priceable at the state it executed in \citep{AdamsZinsmeisterRobinson2021UniswapV3,LeharParlour2024Uniswap}, and the configuration is common.
-
-Of realised multi-leg routing, 27.2\% was strictly dominated by a direct pool available at the same reconstructed state and size. The figure is population-weighted, it covers 79.0\% of realised routing, and it rests on 1,762 routes matched to a counterfactual, out of 90,705 realised multi-leg routes over four consecutively priced days, 2023-06-01 to 2023-06-04, a sample that binds the estimate and leaves its construction intact. This is a gross quote-output comparison. The paper reports no all-in incidence until each matched route carries its exact receipt gas price and candidate-specific direct and indirect route units.
-% output/exhibits/realised_dominance.jsonl, REWEIGHTED row; sample 1,762 matched of 90,705 realised multi-leg routes on the four priced days 20230601 to 20230604
-
-\subsection{Selection and reweighting}
-\label{sec:dominance:matching}
-
-The raw mean over matched routes is 41.3\%, and matched routes, by construction, are not a random draw on routing. Matching a realised route to a counterfactual quote requires the panel to carry that pair and that candidate at that state, and only 1.9\% of realised multi-leg routes clear that requirement, on 71 pairs of 17,851. Table~\ref{tab:matched} measures the direction of the selection. Matched routes carry a median trade of \$11,594, compared with \$866 for unmatched routes, and they are 64.1\% stable-intermediated, where the realised population is 67.7\% native-intermediated, while the \emph{other} category is absent from them entirely.
-% output/exhibits/matched_sample_characterisation.jsonl; sample 1,762 matched against 88,943 unmatched realised multi-leg routes, four priced days 20230601 to 20230604
-
-\begin{table}[tbp]
-\centering
-\caption{The matched sample and the realised population}
-\label{tab:matched}
-\small
-\begin{tabular}{lrrr}
-\toprule
-& Matched & Unmatched & Ratio \\
-\midrule
-Median trade (USD) & 11,594 & 866 & 13.4 \\
-% output/exhibits/matched_sample_characterisation.jsonl, attribute "median trade USD"; four priced days 20230601 to 20230604
-Mean trade (USD) & 87,941 & 4,559 & 19.3 \\
-% output/exhibits/matched_sample_characterisation.jsonl, attribute "mean trade USD"; same four days
-Trade at the 90th percentile (USD) & 208,204 & 6,454 & 32.3 \\
-% output/exhibits/matched_sample_characterisation.jsonl, attribute "p90 trade USD"; same four days
-Routes per pair & 25.0 & 5.0 & 5.0 \\
-% output/exhibits/matched_sample_characterisation.jsonl, attribute "routes per pair"; 71 matched pairs against 17,851
-\midrule
-Native-intermediated (\%) & 26.5 & 67.7 & 0.39 \\
-% output/exhibits/matched_sample_characterisation.jsonl, attribute "share native"; same four days
-Stable-intermediated (\%) & 64.1 & 10.3 & 6.20 \\
-% output/exhibits/matched_sample_characterisation.jsonl, attribute "share stable"; same four days
-Imported-intermediated (\%) & 9.4 & 0.5 & 17.2 \\
-% output/exhibits/matched_sample_characterisation.jsonl, attribute "share imported"; same four days
-Other (\%) & 0.0 & 21.3 & 0.00 \\
-% output/exhibits/matched_sample_characterisation.jsonl, attribute "share other"; same four days
-Staked native (\%) & 0.0 & 0.2 & 0.00 \\
-% output/exhibits/matched_sample_characterisation.jsonl, attribute "share staked_native"; same four days
-\bottomrule
-\end{tabular}
-\par\vspace{6pt}
-\begin{minipage}{0.92\textwidth}
-\footnotesize\raggedright \emph{Notes.} Realised multi-leg routes on the four consecutively priced days 2023-06-01 to 2023-06-04, split by whether the route could be matched to a counterfactual quote for the same pair, candidate and state. Matched routes number 1,762 on 71 pairs; the realised population is 90,705 routes on 17,851 pairs. Shares are of routes, and the type of a route is the type of the asset it was intermediated through.
-\end{minipage}
-\end{table}
-
-Dominance incidence differs by a factor of two and a half across candidate types. The matched mean, read as a population figure, would describe large trades on busy pairs through stablecoins. Reweighting the matched type-specific rates to the population's candidate composition returns 27.2\%, covering 79.0\% of realised routing, with the residual 21.0\% \emph{other} and staked-native routing, for which no matched rate exists. Table~\ref{tab:reweighting} carries the arithmetic, one line per candidate type.
-% output/exhibits/realised_dominance.jsonl, REWEIGHTED row, and docs/finding-dominance-and-persistence.md per-type panel; four priced days 20230601 to 20230604
-
-\begin{table}[tbp]
-\centering
-\caption{Reweighting the matched dominance rates to the population}
-\label{tab:reweighting}
-\small
-\begin{tabular}{lrrr}
-\toprule
-Candidate type & Matched rate & Population weight & Contribution \\
-\midrule
-Native & 0.237 & 0.669 & 0.159 \\
-% docs/finding-dominance-and-persistence.md per-type panel; matched rate 23.7% and 66.9% of realised routing, four priced days 20230601 to 20230604
-Stablecoin & 0.454 & 0.114 & 0.052 \\
-% docs/finding-dominance-and-persistence.md per-type panel; matched rate 45.4% and 11.4% of realised routing, same four days
-Imported & 0.614 & 0.007 & 0.004 \\
-% docs/finding-dominance-and-persistence.md per-type panel; matched rate 61.4% and 0.7% of realised routing, same four days
-\midrule
-Covered types & & 0.790 & 0.215 \\
-% docs/finding-dominance-and-persistence.md, coverage 79.0% of realised routing; contribution is the sum of the three rows above
-Reweighted incidence & & & 0.272 \\
-% output/exhibits/realised_dominance.jsonl, REWEIGHTED row, dominated 0.27209 on 1,762 matched of 90,705 realised routes
-Raw matched mean & 0.413 & & \\
-% docs/finding-dominance-and-persistence.md, raw mean over the 1,762 matched routes, four priced days
-\bottomrule
-\end{tabular}
-\par\vspace{6pt}
-\begin{minipage}{0.92\textwidth}
-\footnotesize\raggedright \emph{Notes.} The matched rate is the share of matched realised routes through a candidate of that type that a direct pool would have beaten at the same state and size. The population weight is the type's share of the 90,705 realised multi-leg routes on the four priced days 2023-06-01 to 2023-06-04. Contribution is the product of the two, and the reweighted incidence is the summed contribution divided by the covered weight, 0.215 over 0.790. Types carrying no matched rate, \emph{other} and staked native, make up the uncovered 0.210. Rows are rounded for display.
-\end{minipage}
-\end{table}
-
-Nothing conditional on trade size generalises from the matched sample. The panel prices three fixed trade sizes, and matched trades run an order of magnitude larger than the population's. Any size gradient below is a property of the matched sample.
-
-\subsection{Dominance by type}
-\label{sec:dominance:types}
-
-Dominance incidence on realised routes runs from 23.7\% for the native asset to 61.4\% for imported assets, with stablecoins at 45.4\%. Figure~\ref{fig:incidence} and Table~\ref{tab:incidence} report the realised-route comparison and the weights it rests on. The former enumerated all-in comparison is withdrawn because it used a pooled fixed gas clock.
-% docs/finding-dominance-and-persistence.md per-type realised-route panel, 1,762 matched routes over four priced days 20230601 to 20230604
-
-\begin{figure}[tbp]
-\centering
-\caption{Dominance incidence by intermediary type}
-\label{fig:incidence}
-\setlength{\unitlength}{1bp}
-\begin{picture}(430,160)
-\put(52.0,26.0){\rule{350.0bp}{0.6bp}}
-\put(46.0,26.0){\makebox(0,0)[r]{\scriptsize 0}}
-\put(52.0,47.6){\rule{350.0bp}{0.3bp}}
-\put(46.0,47.6){\makebox(0,0)[r]{\scriptsize 20}}
-\put(52.0,69.2){\rule{350.0bp}{0.3bp}}
-\put(46.0,69.2){\makebox(0,0)[r]{\scriptsize 40}}
-\put(52.0,90.8){\rule{350.0bp}{0.3bp}}
-\put(46.0,90.8){\makebox(0,0)[r]{\scriptsize 60}}
-\put(52.0,112.4){\rule{350.0bp}{0.3bp}}
-\put(46.0,112.4){\makebox(0,0)[r]{\scriptsize 80}}
-\put(52.0,134.0){\rule{350.0bp}{0.3bp}}
-\put(46.0,134.0){\makebox(0,0)[r]{\scriptsize 100}}
-\put(52.0,26.0){\rule{0.6bp}{108.0bp}}
-\put(76.3,26.0){\rule{30.0bp}{25.6bp}}
-\put(91.3,58.6){\makebox(0,0){\scriptsize 23.7}}
-\put(110.3,14.0){\makebox(0,0){\footnotesize native}}
-\put(193.0,26.0){\rule{30.0bp}{49.0bp}}
-\put(208.0,82.0){\makebox(0,0){\scriptsize 45.4}}
-\put(227.0,14.0){\makebox(0,0){\footnotesize stablecoin}}
-\put(309.7,26.0){\rule{30.0bp}{66.3bp}}
-\put(324.7,99.3){\makebox(0,0){\scriptsize 61.4}}
-\put(343.7,14.0){\makebox(0,0){\footnotesize imported}}
-\put(46.0,146.0){\makebox(0,0)[l]{\footnotesize percent of routes dominated}}
-\put(252.0,143.0){\rule{12.0bp}{7.0bp}}
-\put(268.0,146.0){\makebox(0,0)[l]{\scriptsize realised routing}}
-\end{picture}
-\par\vspace{6pt}
-\begin{minipage}{0.92\textwidth}
-\footnotesize\raggedright \emph{Notes.} The bars report the share of matched realised multi-leg routes through a candidate of each type that a direct pool would have beaten at that state and size, on 1,762 matched routes over the four consecutively priced days 2023-06-01 to 2023-06-04.
-\end{minipage}
-\end{figure}
-% docs/finding-dominance-and-persistence.md per-type panel, 23.7 / 45.4 / 61.4 on 1,762 matched routes
-
-\begin{table}[tbp]
-\centering
-\caption{Dominance incidence by intermediary type}
-\label{tab:incidence}
-\small
-\begin{tabular}{lrr}
-\toprule
-Intermediary type & Dominated (\%) & Weight (\%) \\
-\midrule
-Native & 23.7 & 66.9 \\
-% docs/finding-dominance-and-persistence.md per-type panel
-Stablecoin & 45.4 & 11.4 \\
-% docs/finding-dominance-and-persistence.md per-type panel
-Imported & 61.4 & 0.7 \\
-% docs/finding-dominance-and-persistence.md per-type panel
-\midrule
-All covered types & 27.2 & 79.0 \\
-% output/exhibits/realised_dominance.jsonl REWEIGHTED row
-\bottomrule
-\end{tabular}
-\par\vspace{6pt}
-\begin{minipage}{0.92\textwidth}
-\footnotesize\raggedright \emph{Notes.} Dominated is the share of matched realised multi-leg routes through a candidate of each type that a direct pool would have beaten at the same state and size, with the type's weight in the 90,705 realised routes of the four priced days 2023-06-01 to 2023-06-04. The all-covered-types row is the reweighted incidence of Table~\ref{tab:reweighting}.
-\end{minipage}
-\end{table}
-
-That level ordering is a measured property, not an implication of the native label. It remains validation evidence because it does not establish how routing responds when the cost ranking changes. The retired enumeration mixed gross quotes with a pooled fixed-clock all-in adjustment and supplies no current paper result. Occupying the vehicle role means being used, and the realised figure is the one that speaks to the role.
-
-\subsection{Migration of the role}
+\subsection{A route-level transition}
 \label{sec:dominance:transition}
 
-Dominance incidence, read at one state, is a statement about a moment. The moments in this sample are not exchangeable: the vehicle role itself moves across the period. Value-weighted, the native asset's share of intermediation falls from 73.0\% to 14.8\% over 2,240 days, while the stablecoin share rises from 21.2\% to 50.1\%, and the value-weighted crossover arrives in 2022-Q1, sustained from 2022-Q4. The count-weighted crossover appears only in 2026-H1, in the last two quarters of the sample, so the count series is described as crossing, and Figure~\ref{fig:transition} plots both series. Section~\ref{sec:rivals} takes up the gap between the two crossover dates, where value moves to stablecoins years before the count of routes does, the signature of a transition led by large trades. An intermediary asset is held for the duration of the hop, the cost of its volatility scales with trade size, and a unit pegged to the dollar removes that cost where it is largest.
-% docs/finding-intermediation-transition.md; 2,240 days with intermediated routing, 2020-05-06 to 2026-06-30
+The first object is the choice made inside an observed route. For every exact two-leg route $i\rightarrow k\rightarrow o$, the intermediary $k$ receives one vote. Aggregating those votes gives a count measure that does not allow a few large transactions to define the monetary role. A parallel value measure asks whether the same ordering survives when economic size matters. Because route values are not equally well supported, the main value series retains only routes whose intermediary flow is within 20\% of the route's input value. The count and value measures answer different questions and are reported together.
+% docs/findings-freeze.md, vehicle-dominance claim and strict-support value contract
 
-\begin{figure}[tbp]
-\centering
-\caption{The intermediation transition, by weighting}
-\label{fig:transition}
-\setlength{\unitlength}{1bp}
-\begin{picture}(440,182)
-\put(40.0,34.0){\rule{168.0bp}{0.6bp}}
-\put(35.0,34.0){\makebox(0,0)[r]{\scriptsize 0}}
-\put(40.0,63.5){\rule{168.0bp}{0.3bp}}
-\put(35.0,63.5){\makebox(0,0)[r]{\scriptsize 20}}
-\put(40.0,93.0){\rule{168.0bp}{0.3bp}}
-\put(35.0,93.0){\makebox(0,0)[r]{\scriptsize 40}}
-\put(40.0,122.5){\rule{168.0bp}{0.3bp}}
-\put(35.0,122.5){\makebox(0,0)[r]{\scriptsize 60}}
-\put(40.0,152.0){\rule{168.0bp}{0.3bp}}
-\put(35.0,152.0){\makebox(0,0)[r]{\scriptsize 80}}
-\put(40.0,34.0){\rule{0.6bp}{118.0bp}}
-\put(40.0,30.0){\rule{0.6bp}{4.0bp}}
-\put(40.0,21.0){\makebox(0,0){\scriptsize 2020}}
-\put(96.0,30.0){\rule{0.6bp}{4.0bp}}
-\put(96.0,21.0){\makebox(0,0){\scriptsize 2022}}
-\put(152.0,30.0){\rule{0.6bp}{4.0bp}}
-\put(152.0,21.0){\makebox(0,0){\scriptsize 2024}}
-\put(208.0,30.0){\rule{0.6bp}{4.0bp}}
-\put(208.0,21.0){\makebox(0,0){\scriptsize 2026}}
-\put(40.0,135.3){\rotatebox[origin=lb]{11.03}{\rule{28.5bp}{1.0bp}}}
-\put(40.0,73.5){\rotatebox[origin=lb]{-16.16}{\rule{4.5bp}{0.9bp}}}
-\put(47.4,71.4){\rotatebox[origin=lb]{-16.16}{\rule{4.5bp}{0.9bp}}}
-\put(54.8,69.2){\rotatebox[origin=lb]{-16.16}{\rule{4.5bp}{0.9bp}}}
-\put(62.2,67.1){\rotatebox[origin=lb]{-16.16}{\rule{4.5bp}{0.9bp}}}
-\put(68.0,140.8){\rotatebox[origin=lb]{-26.59}{\rule{31.3bp}{1.0bp}}}
-\put(68.0,65.4){\rotatebox[origin=lb]{12.76}{\rule{4.5bp}{0.9bp}}}
-\put(75.5,67.1){\rotatebox[origin=lb]{12.76}{\rule{4.5bp}{0.9bp}}}
-\put(83.0,68.8){\rotatebox[origin=lb]{12.76}{\rule{4.5bp}{0.9bp}}}
-\put(90.5,70.5){\rotatebox[origin=lb]{12.76}{\rule{4.5bp}{0.9bp}}}
-\put(96.0,126.8){\rotatebox[origin=lb]{23.87}{\rule{30.6bp}{1.0bp}}}
-\put(96.0,71.8){\rotatebox[origin=lb]{-31.65}{\rule{4.5bp}{0.9bp}}}
-\put(102.6,67.7){\rotatebox[origin=lb]{-31.65}{\rule{4.5bp}{0.9bp}}}
-\put(109.1,63.7){\rotatebox[origin=lb]{-31.65}{\rule{4.5bp}{0.9bp}}}
-\put(115.7,59.6){\rotatebox[origin=lb]{-31.65}{\rule{4.5bp}{0.9bp}}}
-\put(122.2,55.6){\rotatebox[origin=lb]{-31.65}{\rule{2.1bp}{0.9bp}}}
-\put(124.0,139.2){\rotatebox[origin=lb]{-15.60}{\rule{29.1bp}{1.0bp}}}
-\put(124.0,54.5){\rotatebox[origin=lb]{0.60}{\rule{4.5bp}{0.9bp}}}
-\put(131.7,54.6){\rotatebox[origin=lb]{0.60}{\rule{4.5bp}{0.9bp}}}
-\put(139.4,54.7){\rotatebox[origin=lb]{0.60}{\rule{4.5bp}{0.9bp}}}
-\put(147.1,54.7){\rotatebox[origin=lb]{0.60}{\rule{4.5bp}{0.9bp}}}
-\put(152.0,131.3){\rotatebox[origin=lb]{-47.75}{\rule{41.6bp}{1.0bp}}}
-\put(152.0,54.8){\rotatebox[origin=lb]{37.94}{\rule{4.5bp}{0.9bp}}}
-\put(158.1,59.5){\rotatebox[origin=lb]{37.94}{\rule{4.5bp}{0.9bp}}}
-\put(164.1,64.3){\rotatebox[origin=lb]{37.94}{\rule{4.5bp}{0.9bp}}}
-\put(170.2,69.0){\rotatebox[origin=lb]{37.94}{\rule{4.5bp}{0.9bp}}}
-\put(176.3,73.7){\rotatebox[origin=lb]{37.94}{\rule{4.5bp}{0.9bp}}}
-\put(180.0,100.5){\rotatebox[origin=lb]{-32.73}{\rule{33.3bp}{1.0bp}}}
-\put(180.0,76.6){\rotatebox[origin=lb]{21.56}{\rule{4.5bp}{0.9bp}}}
-\put(187.2,79.5){\rotatebox[origin=lb]{21.56}{\rule{4.5bp}{0.9bp}}}
-\put(194.3,82.3){\rotatebox[origin=lb]{21.56}{\rule{4.5bp}{0.9bp}}}
-\put(201.5,85.1){\rotatebox[origin=lb]{21.56}{\rule{4.5bp}{0.9bp}}}
-\put(40.0,135.3){\circle*{3.6}}
-\put(38.0,71.5){\rule{4.0bp}{0.7bp}}
-\put(38.0,74.8){\rule{4.0bp}{0.7bp}}
-\put(38.0,71.5){\rule{0.7bp}{4.0bp}}
-\put(41.3,71.5){\rule{0.7bp}{4.0bp}}
-\put(68.0,140.8){\circle*{3.6}}
-\put(66.0,63.4){\rule{4.0bp}{0.7bp}}
-\put(66.0,66.7){\rule{4.0bp}{0.7bp}}
-\put(66.0,63.4){\rule{0.7bp}{4.0bp}}
-\put(69.3,63.4){\rule{0.7bp}{4.0bp}}
-\put(96.0,126.8){\circle*{3.6}}
-\put(94.0,69.8){\rule{4.0bp}{0.7bp}}
-\put(94.0,73.1){\rule{4.0bp}{0.7bp}}
-\put(94.0,69.8){\rule{0.7bp}{4.0bp}}
-\put(97.3,69.8){\rule{0.7bp}{4.0bp}}
-\put(124.0,139.2){\circle*{3.6}}
-\put(122.0,52.5){\rule{4.0bp}{0.7bp}}
-\put(122.0,55.8){\rule{4.0bp}{0.7bp}}
-\put(122.0,52.5){\rule{0.7bp}{4.0bp}}
-\put(125.3,52.5){\rule{0.7bp}{4.0bp}}
-\put(152.0,131.3){\circle*{3.6}}
-\put(150.0,52.8){\rule{4.0bp}{0.7bp}}
-\put(150.0,56.1){\rule{4.0bp}{0.7bp}}
-\put(150.0,52.8){\rule{0.7bp}{4.0bp}}
-\put(153.3,52.8){\rule{0.7bp}{4.0bp}}
-\put(180.0,100.5){\circle*{3.6}}
-\put(178.0,74.6){\rule{4.0bp}{0.7bp}}
-\put(178.0,77.9){\rule{4.0bp}{0.7bp}}
-\put(178.0,74.6){\rule{0.7bp}{4.0bp}}
-\put(181.3,74.6){\rule{0.7bp}{4.0bp}}
-\put(208.0,82.5){\circle*{3.6}}
-\put(206.0,85.7){\rule{4.0bp}{0.7bp}}
-\put(206.0,89.0){\rule{4.0bp}{0.7bp}}
-\put(206.0,85.7){\rule{0.7bp}{4.0bp}}
-\put(209.3,85.7){\rule{0.7bp}{4.0bp}}
-\put(35.0,168.0){\makebox(0,0)[l]{\footnotesize Count-weighted, percent of episodes}}
-\put(66.0,146.8){\makebox(0,0)[l]{\scriptsize native}}
-\put(79.2,41.4){\makebox(0,0)[l]{\scriptsize stablecoin}}
-\put(272.0,34.0){\rule{168.0bp}{0.6bp}}
-\put(267.0,34.0){\makebox(0,0)[r]{\scriptsize 0}}
-\put(272.0,63.5){\rule{168.0bp}{0.3bp}}
-\put(267.0,63.5){\makebox(0,0)[r]{\scriptsize 20}}
-\put(272.0,93.0){\rule{168.0bp}{0.3bp}}
-\put(267.0,93.0){\makebox(0,0)[r]{\scriptsize 40}}
-\put(272.0,122.5){\rule{168.0bp}{0.3bp}}
-\put(267.0,122.5){\makebox(0,0)[r]{\scriptsize 60}}
-\put(272.0,152.0){\rule{168.0bp}{0.3bp}}
-\put(267.0,152.0){\makebox(0,0)[r]{\scriptsize 80}}
-\put(272.0,34.0){\rule{0.6bp}{118.0bp}}
-\put(272.0,30.0){\rule{0.6bp}{4.0bp}}
-\put(272.0,21.0){\makebox(0,0){\scriptsize 2020}}
-\put(328.0,30.0){\rule{0.6bp}{4.0bp}}
-\put(328.0,21.0){\makebox(0,0){\scriptsize 2022}}
-\put(384.0,30.0){\rule{0.6bp}{4.0bp}}
-\put(384.0,21.0){\makebox(0,0){\scriptsize 2024}}
-\put(440.0,30.0){\rule{0.6bp}{4.0bp}}
-\put(440.0,21.0){\makebox(0,0){\scriptsize 2026}}
-\put(272.0,141.7){\rotatebox[origin=lb]{-52.06}{\rule{91.1bp}{1.0bp}}}
-\put(272.0,65.3){\rotatebox[origin=lb]{33.36}{\rule{4.5bp}{0.9bp}}}
-\put(278.4,69.5){\rotatebox[origin=lb]{33.36}{\rule{4.5bp}{0.9bp}}}
-\put(284.9,73.7){\rotatebox[origin=lb]{33.36}{\rule{4.5bp}{0.9bp}}}
-\put(291.3,78.0){\rotatebox[origin=lb]{33.36}{\rule{4.5bp}{0.9bp}}}
-\put(297.7,82.2){\rotatebox[origin=lb]{33.36}{\rule{4.5bp}{0.9bp}}}
-\put(304.2,86.4){\rotatebox[origin=lb]{33.36}{\rule{4.5bp}{0.9bp}}}
-\put(310.6,90.7){\rotatebox[origin=lb]{33.36}{\rule{4.5bp}{0.9bp}}}
-\put(317.0,94.9){\rotatebox[origin=lb]{33.36}{\rule{4.5bp}{0.9bp}}}
-\put(323.4,99.1){\rotatebox[origin=lb]{33.36}{\rule{4.5bp}{0.9bp}}}
-\put(328.0,69.8){\rotatebox[origin=lb]{17.13}{\rule{58.6bp}{1.0bp}}}
-\put(328.0,102.1){\rotatebox[origin=lb]{-23.74}{\rule{4.5bp}{0.9bp}}}
-\put(335.0,99.0){\rotatebox[origin=lb]{-23.74}{\rule{4.5bp}{0.9bp}}}
-\put(342.1,95.9){\rotatebox[origin=lb]{-23.74}{\rule{4.5bp}{0.9bp}}}
-\put(349.1,92.8){\rotatebox[origin=lb]{-23.74}{\rule{4.5bp}{0.9bp}}}
-\put(356.2,89.7){\rotatebox[origin=lb]{-23.74}{\rule{4.5bp}{0.9bp}}}
-\put(363.2,86.6){\rotatebox[origin=lb]{-23.74}{\rule{4.5bp}{0.9bp}}}
-\put(370.3,83.5){\rotatebox[origin=lb]{-23.74}{\rule{4.5bp}{0.9bp}}}
-\put(377.3,80.4){\rotatebox[origin=lb]{-23.74}{\rule{4.5bp}{0.9bp}}}
-\put(384.0,87.1){\rotatebox[origin=lb]{-29.18}{\rule{64.1bp}{1.0bp}}}
-\put(384.0,77.5){\rotatebox[origin=lb]{28.48}{\rule{4.5bp}{0.9bp}}}
-\put(390.8,81.2){\rotatebox[origin=lb]{28.48}{\rule{4.5bp}{0.9bp}}}
-\put(397.5,84.9){\rotatebox[origin=lb]{28.48}{\rule{4.5bp}{0.9bp}}}
-\put(404.3,88.5){\rotatebox[origin=lb]{28.48}{\rule{4.5bp}{0.9bp}}}
-\put(411.1,92.2){\rotatebox[origin=lb]{28.48}{\rule{4.5bp}{0.9bp}}}
-\put(417.8,95.9){\rotatebox[origin=lb]{28.48}{\rule{4.5bp}{0.9bp}}}
-\put(424.6,99.5){\rotatebox[origin=lb]{28.48}{\rule{4.5bp}{0.9bp}}}
-\put(431.4,103.2){\rotatebox[origin=lb]{28.48}{\rule{4.5bp}{0.9bp}}}
-\put(438.1,106.9){\rotatebox[origin=lb]{28.48}{\rule{2.1bp}{0.9bp}}}
-\put(272.0,141.7){\circle*{3.6}}
-\put(270.0,63.3){\rule{4.0bp}{0.7bp}}
-\put(270.0,66.6){\rule{4.0bp}{0.7bp}}
-\put(270.0,63.3){\rule{0.7bp}{4.0bp}}
-\put(273.3,63.3){\rule{0.7bp}{4.0bp}}
-\put(328.0,69.8){\circle*{3.6}}
-\put(326.0,100.1){\rule{4.0bp}{0.7bp}}
-\put(326.0,103.4){\rule{4.0bp}{0.7bp}}
-\put(326.0,100.1){\rule{0.7bp}{4.0bp}}
-\put(329.3,100.1){\rule{0.7bp}{4.0bp}}
-\put(384.0,87.1){\circle*{3.6}}
-\put(382.0,75.5){\rule{4.0bp}{0.7bp}}
-\put(382.0,78.8){\rule{4.0bp}{0.7bp}}
-\put(382.0,75.5){\rule{0.7bp}{4.0bp}}
-\put(385.3,75.5){\rule{0.7bp}{4.0bp}}
-\put(440.0,55.8){\circle*{3.6}}
-\put(438.0,105.9){\rule{4.0bp}{0.7bp}}
-\put(438.0,109.2){\rule{4.0bp}{0.7bp}}
-\put(438.0,105.9){\rule{0.7bp}{4.0bp}}
-\put(441.3,105.9){\rule{0.7bp}{4.0bp}}
-\put(267.0,168.0){\makebox(0,0)[l]{\footnotesize Value-weighted, percent of episodes}}
-\put(302.8,131.3){\makebox(0,0)[l]{\scriptsize native}}
-\put(314.0,115.1){\makebox(0,0)[l]{\scriptsize stablecoin}}
-\end{picture}
-\par\vspace{6pt}
-\begin{minipage}{0.92\textwidth}
-\footnotesize\raggedright \emph{Notes.} Share of intermediation episodes passing through the native asset (filled circles, solid) and through stablecoins (open squares, dashed), by year. Left panel weights each episode equally; right panel weights it by the value routed. Round trips are excluded. Sample: 2,240 days with intermediated routing, 2020-05-06 to 2026-06-30; the value-weighted series is reported for 2020, 2022, 2024 and 2026.
-\end{minipage}
-\end{figure}
-% docs/finding-intermediation-transition.md, count-weighted and value-weighted panels; 2,240 days with intermediated routing, 2020-05-06 to 2026-06-30
-
-\subsection{Fragmentation and succession}
-\label{sec:dominance:concentration}
-
-Concentration falls throughout the period on both bases: when intermediation is weighted by value, the effective number of vehicles rises from 1.42 to 8.43, while the leading asset's share falls from 83.7\% to 25.5\%. Weighting by transaction count, those quantities move from 1.86 to 7.31 and from 71.5\% to 27.9\%, so fragmentation is not an artefact of the weighting. Figure~\ref{fig:concentration} and Table~\ref{tab:concentration} report both bases year by year.
-% output/exhibits/vehicle_concentration.jsonl, share_volume and share_count bases, 2020 and 2026; effective vehicles is the inverse of the year's mean HHI over 15 sampled days
-
-\begin{figure}[tbp]
-\centering
-\caption{Concentration and leadership of the vehicle role}
-\label{fig:concentration}
-\setlength{\unitlength}{1bp}
-\begin{picture}(440,182)
-\put(40.0,34.0){\rule{168.0bp}{0.6bp}}
-\put(35.0,34.0){\makebox(0,0)[r]{\scriptsize 0}}
-\put(40.0,60.2){\rule{168.0bp}{0.3bp}}
-\put(35.0,60.2){\makebox(0,0)[r]{\scriptsize 2}}
-\put(40.0,86.4){\rule{168.0bp}{0.3bp}}
-\put(35.0,86.4){\makebox(0,0)[r]{\scriptsize 4}}
-\put(40.0,112.7){\rule{168.0bp}{0.3bp}}
-\put(35.0,112.7){\makebox(0,0)[r]{\scriptsize 6}}
-\put(40.0,138.9){\rule{168.0bp}{0.3bp}}
-\put(35.0,138.9){\makebox(0,0)[r]{\scriptsize 8}}
-\put(40.0,34.0){\rule{0.6bp}{118.0bp}}
-\put(40.0,30.0){\rule{0.6bp}{4.0bp}}
-\put(40.0,21.0){\makebox(0,0){\scriptsize 2020}}
-\put(96.0,30.0){\rule{0.6bp}{4.0bp}}
-\put(96.0,21.0){\makebox(0,0){\scriptsize 2022}}
-\put(152.0,30.0){\rule{0.6bp}{4.0bp}}
-\put(152.0,21.0){\makebox(0,0){\scriptsize 2024}}
-\put(208.0,30.0){\rule{0.6bp}{4.0bp}}
-\put(208.0,21.0){\makebox(0,0){\scriptsize 2026}}
-\put(40.0,52.6){\rotatebox[origin=lb]{40.59}{\rule{36.9bp}{1.0bp}}}
-\put(40.0,58.4){\rotatebox[origin=lb]{-1.34}{\rule{4.5bp}{0.9bp}}}
-\put(47.7,58.2){\rotatebox[origin=lb]{-1.34}{\rule{4.5bp}{0.9bp}}}
-\put(55.4,58.0){\rotatebox[origin=lb]{-1.34}{\rule{4.5bp}{0.9bp}}}
-\put(63.1,57.8){\rotatebox[origin=lb]{-1.34}{\rule{4.5bp}{0.9bp}}}
-\put(68.0,76.6){\rotatebox[origin=lb]{51.97}{\rule{45.4bp}{1.0bp}}}
-\put(68.0,57.7){\rotatebox[origin=lb]{20.54}{\rule{4.5bp}{0.9bp}}}
-\put(75.2,60.4){\rotatebox[origin=lb]{20.54}{\rule{4.5bp}{0.9bp}}}
-\put(82.4,63.1){\rotatebox[origin=lb]{20.54}{\rule{4.5bp}{0.9bp}}}
-\put(89.6,65.8){\rotatebox[origin=lb]{20.54}{\rule{4.5bp}{0.9bp}}}
-\put(96.0,112.4){\rotatebox[origin=lb]{-16.93}{\rule{29.3bp}{1.0bp}}}
-\put(96.0,68.2){\rotatebox[origin=lb]{-19.35}{\rule{4.5bp}{0.9bp}}}
-\put(103.3,65.7){\rotatebox[origin=lb]{-19.35}{\rule{4.5bp}{0.9bp}}}
-\put(110.5,63.1){\rotatebox[origin=lb]{-19.35}{\rule{4.5bp}{0.9bp}}}
-\put(117.8,60.6){\rotatebox[origin=lb]{-19.35}{\rule{4.5bp}{0.9bp}}}
-\put(124.0,103.9){\rotatebox[origin=lb]{6.15}{\rule{28.2bp}{1.0bp}}}
-\put(124.0,58.4){\rotatebox[origin=lb]{7.73}{\rule{4.5bp}{0.9bp}}}
-\put(131.6,59.4){\rotatebox[origin=lb]{7.73}{\rule{4.5bp}{0.9bp}}}
-\put(139.3,60.5){\rotatebox[origin=lb]{7.73}{\rule{4.5bp}{0.9bp}}}
-\put(146.9,61.5){\rotatebox[origin=lb]{7.73}{\rule{4.5bp}{0.9bp}}}
-\put(152.0,106.9){\rotatebox[origin=lb]{15.94}{\rule{29.1bp}{1.0bp}}}
-\put(152.0,62.2){\rotatebox[origin=lb]{46.49}{\rule{4.5bp}{0.9bp}}}
-\put(157.3,67.8){\rotatebox[origin=lb]{46.49}{\rule{4.5bp}{0.9bp}}}
-\put(162.6,73.4){\rotatebox[origin=lb]{46.49}{\rule{4.5bp}{0.9bp}}}
-\put(167.9,78.9){\rotatebox[origin=lb]{46.49}{\rule{4.5bp}{0.9bp}}}
-\put(173.2,84.5){\rotatebox[origin=lb]{46.49}{\rule{4.5bp}{0.9bp}}}
-\put(178.5,90.1){\rotatebox[origin=lb]{46.49}{\rule{2.2bp}{0.9bp}}}
-\put(180.0,114.9){\rotatebox[origin=lb]{46.62}{\rule{40.8bp}{1.0bp}}}
-\put(180.0,91.7){\rotatebox[origin=lb]{53.73}{\rule{4.5bp}{0.9bp}}}
-\put(184.6,97.9){\rotatebox[origin=lb]{53.73}{\rule{4.5bp}{0.9bp}}}
-\put(189.1,104.1){\rotatebox[origin=lb]{53.73}{\rule{4.5bp}{0.9bp}}}
-\put(193.7,110.3){\rotatebox[origin=lb]{53.73}{\rule{4.5bp}{0.9bp}}}
-\put(198.2,116.5){\rotatebox[origin=lb]{53.73}{\rule{4.5bp}{0.9bp}}}
-\put(202.8,122.7){\rotatebox[origin=lb]{53.73}{\rule{4.5bp}{0.9bp}}}
-\put(207.3,128.9){\rotatebox[origin=lb]{53.73}{\rule{1.1bp}{0.9bp}}}
-\put(40.0,52.6){\circle*{3.6}}
-\put(38.0,56.4){\rule{4.0bp}{0.7bp}}
-\put(38.0,59.7){\rule{4.0bp}{0.7bp}}
-\put(38.0,56.4){\rule{0.7bp}{4.0bp}}
-\put(41.3,56.4){\rule{0.7bp}{4.0bp}}
-\put(68.0,76.6){\circle*{3.6}}
-\put(66.0,55.7){\rule{4.0bp}{0.7bp}}
-\put(66.0,59.0){\rule{4.0bp}{0.7bp}}
-\put(66.0,55.7){\rule{0.7bp}{4.0bp}}
-\put(69.3,55.7){\rule{0.7bp}{4.0bp}}
-\put(96.0,112.4){\circle*{3.6}}
-\put(94.0,66.2){\rule{4.0bp}{0.7bp}}
-\put(94.0,69.5){\rule{4.0bp}{0.7bp}}
-\put(94.0,66.2){\rule{0.7bp}{4.0bp}}
-\put(97.3,66.2){\rule{0.7bp}{4.0bp}}
-\put(124.0,103.9){\circle*{3.6}}
-\put(122.0,56.4){\rule{4.0bp}{0.7bp}}
-\put(122.0,59.7){\rule{4.0bp}{0.7bp}}
-\put(122.0,56.4){\rule{0.7bp}{4.0bp}}
-\put(125.3,56.4){\rule{0.7bp}{4.0bp}}
-\put(152.0,106.9){\circle*{3.6}}
-\put(150.0,60.2){\rule{4.0bp}{0.7bp}}
-\put(150.0,63.5){\rule{4.0bp}{0.7bp}}
-\put(150.0,60.2){\rule{0.7bp}{4.0bp}}
-\put(153.3,60.2){\rule{0.7bp}{4.0bp}}
-\put(180.0,114.9){\circle*{3.6}}
-\put(178.0,89.7){\rule{4.0bp}{0.7bp}}
-\put(178.0,93.0){\rule{4.0bp}{0.7bp}}
-\put(178.0,89.7){\rule{0.7bp}{4.0bp}}
-\put(181.3,89.7){\rule{0.7bp}{4.0bp}}
-\put(208.0,144.5){\circle*{3.6}}
-\put(206.0,127.8){\rule{4.0bp}{0.7bp}}
-\put(206.0,131.1){\rule{4.0bp}{0.7bp}}
-\put(206.0,127.8){\rule{0.7bp}{4.0bp}}
-\put(209.3,127.8){\rule{0.7bp}{4.0bp}}
-\put(35.0,168.0){\makebox(0,0)[l]{\footnotesize Effective number of vehicles}}
-\put(135.2,120.5){\makebox(0,0)[l]{\scriptsize value}}
-\put(112.8,45.8){\makebox(0,0)[l]{\scriptsize count}}
-\put(272.0,34.0){\rule{168.0bp}{0.6bp}}
-\put(267.0,34.0){\makebox(0,0)[r]{\scriptsize 0}}
-\put(272.0,57.6){\rule{168.0bp}{0.3bp}}
-\put(267.0,57.6){\makebox(0,0)[r]{\scriptsize 20}}
-\put(272.0,81.2){\rule{168.0bp}{0.3bp}}
-\put(267.0,81.2){\makebox(0,0)[r]{\scriptsize 40}}
-\put(272.0,104.8){\rule{168.0bp}{0.3bp}}
-\put(267.0,104.8){\makebox(0,0)[r]{\scriptsize 60}}
-\put(272.0,128.4){\rule{168.0bp}{0.3bp}}
-\put(267.0,128.4){\makebox(0,0)[r]{\scriptsize 80}}
-\put(272.0,152.0){\rule{168.0bp}{0.3bp}}
-\put(267.0,152.0){\makebox(0,0)[r]{\scriptsize 100}}
-\put(272.0,34.0){\rule{0.6bp}{118.0bp}}
-\put(272.0,30.0){\rule{0.6bp}{4.0bp}}
-\put(272.0,21.0){\makebox(0,0){\scriptsize 2020}}
-\put(328.0,30.0){\rule{0.6bp}{4.0bp}}
-\put(328.0,21.0){\makebox(0,0){\scriptsize 2022}}
-\put(384.0,30.0){\rule{0.6bp}{4.0bp}}
-\put(384.0,21.0){\makebox(0,0){\scriptsize 2024}}
-\put(440.0,30.0){\rule{0.6bp}{4.0bp}}
-\put(440.0,21.0){\makebox(0,0){\scriptsize 2026}}
-\put(272.0,132.8){\rotatebox[origin=lb]{-54.69}{\rule{48.4bp}{1.0bp}}}
-\put(272.0,118.4){\rotatebox[origin=lb]{4.34}{\rule{4.5bp}{0.9bp}}}
-\put(279.7,119.0){\rotatebox[origin=lb]{4.34}{\rule{4.5bp}{0.9bp}}}
-\put(287.4,119.5){\rotatebox[origin=lb]{4.34}{\rule{4.5bp}{0.9bp}}}
-\put(295.0,120.1){\rotatebox[origin=lb]{4.34}{\rule{4.5bp}{0.9bp}}}
-\put(300.0,93.2){\rotatebox[origin=lb]{-44.97}{\rule{39.6bp}{1.0bp}}}
-\put(300.0,120.5){\rotatebox[origin=lb]{-34.81}{\rule{4.5bp}{0.9bp}}}
-\put(306.3,116.1){\rotatebox[origin=lb]{-34.81}{\rule{4.5bp}{0.9bp}}}
-\put(312.6,111.7){\rotatebox[origin=lb]{-34.81}{\rule{4.5bp}{0.9bp}}}
-\put(319.0,107.3){\rotatebox[origin=lb]{-34.81}{\rule{4.5bp}{0.9bp}}}
-\put(325.3,102.9){\rotatebox[origin=lb]{-34.81}{\rule{3.3bp}{0.9bp}}}
-\put(328.0,65.3){\rotatebox[origin=lb]{23.06}{\rule{30.4bp}{1.0bp}}}
-\put(328.0,101.0){\rotatebox[origin=lb]{32.64}{\rule{4.5bp}{0.9bp}}}
-\put(334.5,105.2){\rotatebox[origin=lb]{32.64}{\rule{4.5bp}{0.9bp}}}
-\put(341.0,109.3){\rotatebox[origin=lb]{32.64}{\rule{4.5bp}{0.9bp}}}
-\put(347.5,113.5){\rotatebox[origin=lb]{32.64}{\rule{4.5bp}{0.9bp}}}
-\put(353.9,117.6){\rotatebox[origin=lb]{32.64}{\rule{2.5bp}{0.9bp}}}
-\put(356.0,77.2){\rotatebox[origin=lb]{0.97}{\rule{28.0bp}{1.0bp}}}
-\put(356.0,119.0){\rotatebox[origin=lb]{-9.80}{\rule{4.5bp}{0.9bp}}}
-\put(363.6,117.6){\rotatebox[origin=lb]{-9.80}{\rule{4.5bp}{0.9bp}}}
-\put(371.2,116.3){\rotatebox[origin=lb]{-9.80}{\rule{4.5bp}{0.9bp}}}
-\put(378.8,115.0){\rotatebox[origin=lb]{-9.80}{\rule{4.5bp}{0.9bp}}}
-\put(384.0,77.7){\rotatebox[origin=lb]{-25.27}{\rule{31.0bp}{1.0bp}}}
-\put(384.0,114.1){\rotatebox[origin=lb]{-45.56}{\rule{4.5bp}{0.9bp}}}
-\put(389.4,108.6){\rotatebox[origin=lb]{-45.56}{\rule{4.5bp}{0.9bp}}}
-\put(394.8,103.1){\rotatebox[origin=lb]{-45.56}{\rule{4.5bp}{0.9bp}}}
-\put(400.2,97.6){\rotatebox[origin=lb]{-45.56}{\rule{4.5bp}{0.9bp}}}
-\put(405.6,92.1){\rotatebox[origin=lb]{-45.56}{\rule{4.5bp}{0.9bp}}}
-\put(411.0,86.6){\rotatebox[origin=lb]{-45.56}{\rule{1.5bp}{0.9bp}}}
-\put(412.0,64.4){\rotatebox[origin=lb]{-0.72}{\rule{28.0bp}{1.0bp}}}
-\put(412.0,85.6){\rotatebox[origin=lb]{-33.66}{\rule{4.5bp}{0.9bp}}}
-\put(418.4,81.3){\rotatebox[origin=lb]{-33.66}{\rule{4.5bp}{0.9bp}}}
-\put(424.8,77.0){\rotatebox[origin=lb]{-33.66}{\rule{4.5bp}{0.9bp}}}
-\put(431.2,72.8){\rotatebox[origin=lb]{-33.66}{\rule{4.5bp}{0.9bp}}}
-\put(437.6,68.5){\rotatebox[origin=lb]{-33.66}{\rule{2.8bp}{0.9bp}}}
-\put(272.0,132.8){\circle*{3.6}}
-\put(270.0,116.4){\rule{4.0bp}{0.7bp}}
-\put(270.0,119.7){\rule{4.0bp}{0.7bp}}
-\put(270.0,116.4){\rule{0.7bp}{4.0bp}}
-\put(273.3,116.4){\rule{0.7bp}{4.0bp}}
-\put(300.0,93.2){\circle*{3.6}}
-\put(298.0,118.5){\rule{4.0bp}{0.7bp}}
-\put(298.0,121.8){\rule{4.0bp}{0.7bp}}
-\put(298.0,118.5){\rule{0.7bp}{4.0bp}}
-\put(301.3,118.5){\rule{0.7bp}{4.0bp}}
-\put(328.0,65.3){\circle*{3.6}}
-\put(326.0,99.0){\rule{4.0bp}{0.7bp}}
-\put(326.0,102.3){\rule{4.0bp}{0.7bp}}
-\put(326.0,99.0){\rule{0.7bp}{4.0bp}}
-\put(329.3,99.0){\rule{0.7bp}{4.0bp}}
-\put(356.0,77.2){\circle*{3.6}}
-\put(354.0,117.0){\rule{4.0bp}{0.7bp}}
-\put(354.0,120.3){\rule{4.0bp}{0.7bp}}
-\put(354.0,117.0){\rule{0.7bp}{4.0bp}}
-\put(357.3,117.0){\rule{0.7bp}{4.0bp}}
-\put(384.0,77.7){\circle*{3.6}}
-\put(382.0,112.1){\rule{4.0bp}{0.7bp}}
-\put(382.0,115.4){\rule{4.0bp}{0.7bp}}
-\put(382.0,112.1){\rule{0.7bp}{4.0bp}}
-\put(385.3,112.1){\rule{0.7bp}{4.0bp}}
-\put(412.0,64.4){\circle*{3.6}}
-\put(410.0,83.6){\rule{4.0bp}{0.7bp}}
-\put(410.0,86.9){\rule{4.0bp}{0.7bp}}
-\put(410.0,83.6){\rule{0.7bp}{4.0bp}}
-\put(413.3,83.6){\rule{0.7bp}{4.0bp}}
-\put(440.0,64.1){\circle*{3.6}}
-\put(438.0,64.9){\rule{4.0bp}{0.7bp}}
-\put(438.0,68.2){\rule{4.0bp}{0.7bp}}
-\put(438.0,64.9){\rule{0.7bp}{4.0bp}}
-\put(441.3,64.9){\rule{0.7bp}{4.0bp}}
-\put(267.0,168.0){\makebox(0,0)[l]{\footnotesize Leading asset's share, percent}}
-\put(339.2,133.1){\makebox(0,0)[l]{\scriptsize count}}
-\put(344.8,50.5){\makebox(0,0)[l]{\scriptsize value}}
-\end{picture}
-\par\vspace{6pt}
-\begin{minipage}{0.92\textwidth}
-\footnotesize\raggedright \emph{Notes.} Effective number of vehicles, the inverse of the year's mean Herfindahl index over intermediation shares (left), and the leading asset's share of intermediation (right), value-weighted (filled circles, solid) and count-weighted (open squares, dashed). Sample: 15 days sampled at a 30-day stride, 2020-09-03 to 2026-06-04, round trips excluded.
-\end{minipage}
-\end{figure}
-% output/exhibits/vehicle_concentration.jsonl, hhi and cr1 by year on bases share_volume and share_count; 15 sampled days 20200903 to 20260604
+Table~\ref{tab:rotation} compares 2024 and 2026 on calendar dates common to both endpoint years. Among native and stable vehicles, the stable share rises from \StableCountBase{} to \StableCountEnd{} by route count. The paired-date change is \StableCountChange{}, with a calendar-HAC standard error of \StableCountSE{}. On strict value support, the corresponding share rises from \StableValueBase{} to \StableValueEnd{}, a \StableValueChange{} change with a \StableValueSE{} standard error.
 
 \begin{table}[tbp]
 \centering
-\caption{Concentration and leadership of the vehicle role, by year}
-\label{tab:concentration}
-\footnotesize
-\setlength{\tabcolsep}{5pt}
-\begin{tabular}{lrrrrrrrrr}
+\caption{Rotation from the native asset toward stable vehicles}
+\label{tab:rotation}
+\small
+\begin{tabular}{lrrr}
 \toprule
-& & \multicolumn{4}{c}{Value-weighted} & \multicolumn{4}{c}{Count-weighted} \\
-\cmidrule(lr){3-6} \cmidrule(lr){7-10}
-Year & Days & HHI & $1/\text{HHI}$ & CR1 (\%) & Native & HHI & $1/\text{HHI}$ & CR1 (\%) & Native \\
+Stable share among native and stable vehicles & 2024 & 2026 & Change (s.e.) \\
 \midrule
-2020 & 1 & 0.706 & 1.42 & 83.7 & 1 & 0.538 & 1.86 & 71.5 & 1 \\
-% output/exhibits/vehicle_concentration.jsonl year 2020, bases share_volume and share_count; leader from data/processed/vehicle_concentration.parquet, 1 sampled day
-2021 & 3 & 0.308 & 3.25 & 50.2 & 3 & 0.553 & 1.81 & 73.3 & 3 \\
-% output/exhibits/vehicle_concentration.jsonl year 2021; leader from data/processed/vehicle_concentration.parquet, 3 sampled days
-2022 & 2 & 0.167 & 5.98 & 26.5 & 1 & 0.384 & 2.61 & 56.8 & 2 \\
-% output/exhibits/vehicle_concentration.jsonl year 2022; leader from data/processed/vehicle_concentration.parquet, 2 sampled days
-2023 & 3 & 0.188 & 5.33 & 36.6 & 3 & 0.538 & 1.86 & 72.0 & 3 \\
-% output/exhibits/vehicle_concentration.jsonl year 2023; leader from data/processed/vehicle_concentration.parquet, 3 sampled days
-2024 & 2 & 0.180 & 5.56 & 37.0 & 2 & 0.466 & 2.15 & 67.9 & 2 \\
-% output/exhibits/vehicle_concentration.jsonl year 2024; leader from data/processed/vehicle_concentration.parquet, 2 sampled days
-2025 & 2 & 0.162 & 6.17 & 25.8 & 1 & 0.227 & 4.40 & 43.7 & 2 \\
-% output/exhibits/vehicle_concentration.jsonl year 2025; leader from data/processed/vehicle_concentration.parquet, 2 sampled days
-2026 & 2 & 0.119 & 8.43 & 25.5 & 0 & 0.137 & 7.31 & 27.9 & 2 \\
-% output/exhibits/vehicle_concentration.jsonl year 2026; leader from data/processed/vehicle_concentration.parquet, 2 sampled days
+Route count & \StableCountBase & \StableCountEnd & \StableCountChange\ (\StableCountSE) \\
+Strict-support value & \StableValueBase & \StableValueEnd & \StableValueChange\ (\StableValueSE) \\
 \bottomrule
 \end{tabular}
 \par\vspace{6pt}
-\begin{minipage}{0.92\textwidth}
-\footnotesize\raggedright \emph{Notes.} Shares of intermediation across interior assets on 15 days sampled at a 30-day stride, 2020-09-03 to 2026-06-04, with round trips excluded. Days is the number of sampled days in the year. HHI is the year's mean Herfindahl index over vehicle shares and $1/\text{HHI}$ is its inverse, the effective number of vehicles. CR1 is the leading asset's share. Native is the number of sampled days on which the native asset led.
+\begin{minipage}{0.90\textwidth}
+\footnotesize\raggedright \emph{Notes.} The unit is an exact two-leg route with one observed intermediary. Daily shares are equally weighted on common endpoint-year calendar support. Strict-support value requires the intermediary flow to be within 20\% of route input value. Standard errors are calendar-HAC. The table is descriptive: calendar time is not a treatment.
+% docs/findings-freeze.md, vehicle-dominance claim
 \end{minipage}
 \end{table}
 
-The two bases separate on whether the role also changes hands: on the value basis, leadership alternates between the native asset and a stablecoin from 2022 onward, and the native asset leads on neither sampled day of 2026. On the count basis it leads on all sampled days in all seven years. A consistent weighting of the share and the concentration measures leaves a change of hands visible on one basis of the two. The succession claim is made on the value basis alone.
-% data/processed/vehicle_concentration.parquet, leader_symbol by basis and year; output/exhibits/vehicle_concentration.jsonl; 15 sampled days 20200903 to 20260604
+The value margin has moved further than the count margin. Stable vehicles lead by supported value before they sustain leadership by number of routes. That ordering is consistent with a transition led by economically large routes, but it does not identify why those routes moved. A larger value change can reflect liquidity placement, venue reach, router search, or the holding properties of the intermediary. The evidence establishes rotation; the mechanism remains a separate estimand.
 
-Two worlds the international currency literature separates in principle are separated here in the data. Under succession one vehicle replaces another and concentration persists, the sterling to dollar transition, and the pre-1914 record of that transition shows persistence in a currency's position without lock-in \citep{FlandreauJobst2009Empirics}. Under fragmentation the role spreads across several assets and concentration falls, while the incumbent may still lead. Those are definitions from the joint movement of leader identity and concentration in this paper. A unilateral adopter of a new currency bears both the fixed switching cost and the lost benefit of the incumbent network \citep{DowdGreenaway1993CurrencyCompetition}; the model's choices are simultaneous and do not identify a literal first mover. The value basis here shows both worlds together. The related international-currency evidence compares dollar and euro shares in invoicing \citep{GopinathEtAl2020DCP} and currency shares in debt issuance \citep{ErenMalamud2022DominantDebt}, while the network of quotes that was available is not observed \citep{Mukhin2022InternationalPriceSystem,AmitiItskhokiKonings2022Dominant}.
+Nor is this a monotone displacement. Native intermediation rebounds during 2023 and 2024. Stable value regains the lead from 2025-Q1, whereas count leadership does not persist over a long post-transition window. I therefore use \emph{rotation}, not succession. A date trend would average over the reversal and confound time with the market designs and liquidity states that happened to arrive at particular dates.
 
-\subsection{Robustness}
+\subsection{Intermediation and endpoint demand}
+\label{sec:dominance:excess}
+
+A stable asset can become common because traders want to acquire or sell it, without becoming a vehicle between other assets. The excess-use ratio separates the two margins. It divides the asset's share of intermediary positions by its share of route endpoints on the same perimeter. A ratio above one means that the asset appears in the middle more often than endpoint demand alone would imply.
+
+The aggregate shift is not common to all stablecoin designs. USDC and USDT jointly account for \JointStableContribution{} of the increase in stable count share. USDC already has excess vehicle use at the start of the comparison and changes little. USDT supplies the transition margin. Its count excess-use ratio rises from \USDTCountExcessBase{} to \USDTCountExcessEnd{}, while its strict-value ratio moves from \USDTValueExcessBase{} to \USDTValueExcessEnd{}. The strict-value intermediary-minus-endpoint gap moves from \USDTEndpointGapBase{} to \USDTEndpointGapEnd{}, a \USDTEndpointGapChange{} change with a \USDTEndpointGapSE{} standard error.
+
+\begin{table}[tbp]
+\centering
+\caption{USDT is the margin of stable-vehicle rotation}
+\label{tab:usdt-transition}
+\small
+\begin{tabular}{lrrr}
+\toprule
+ & 2024 & 2026 & Change (s.e.) \\
+\midrule
+Count excess use & \USDTCountExcessBase & \USDTCountExcessEnd & --- \\
+Strict-value excess use & \USDTValueExcessBase & \USDTValueExcessEnd & --- \\
+Strict-value intermediary minus endpoint share & \USDTEndpointGapBase & \USDTEndpointGapEnd & \USDTEndpointGapChange\ (\USDTEndpointGapSE) \\
+\bottomrule
+\end{tabular}
+\par\vspace{6pt}
+\begin{minipage}{0.90\textwidth}
+\footnotesize\raggedright \emph{Notes.} Excess use is intermediary share divided by endpoint share on the same route perimeter. The gap is intermediary share minus endpoint share. Stablecoins with different backing and redemption designs are not pooled when assigning a mechanism.
+\end{minipage}
+\end{table}
+
+This decomposition rejects an interpretation based only on growing stablecoin payments. It also rules out language in which ``the stablecoin'' becomes the new vehicle. Fiat-reserve, on-chain-collateralised, and synthetic claims have different balance sheets and redemption technologies. The present result says which token moved into the intermediary position; it does not yet say which of those institutional attributes caused the move.
+
+\subsection{The integration rival}
+\label{sec:dominance:integration}
+
+The strongest mechanical rival is the expansion of the trading network. As routers span more venues, they can reach liquidity that was previously fragmented. A stable intermediary might then gain share because its pools become reachable, not because monetary coordination has strengthened. Conversely, the same integration can make direct paths easier to find and reduce the need for an intermediary altogether.
+
+The data show both forces. Cross-venue routes grow from \CrossVenueCountStart{} to \CrossVenueCountEnd{} of route count, reaching \CrossVenueValueEnd{} of value. Yet the share of economic routes that use a true intermediary falls from \FullIntermediationBase{} in 2022 to \FullIntermediationEnd{} in 2026. On a balanced five-venue perimeter it falls to \BalancedIntermediationEnd{}. The declines are \FullIntermediationChange{} and \BalancedIntermediationChange{}, with standard errors of \FullIntermediationSE{} and \BalancedIntermediationSE{}. Integration expands while intermediation contracts.
+
+Within the routes that remain indirect, the stable rotation survives every observed integration-by-complexity count cell. It is also \CrossVenueRotationPremium{} larger across venues than within one venue, with a \CrossVenueRotationSE{} standard error. The evidence therefore rejects two simple accounts: rising stable share merely reflects more multi-venue routes, or a changing number of legs mechanically reclassifies the intermediary.
+
+It does not reject routing technology as a mechanism. Search can activate dispersed stable liquidity even after conditioning on observed venue span and route complexity. The discriminating exercise compares vehicle choice within a fixed endpoint pair, notional, feasible opportunity set, and search-efficiency cell. Until the transaction-state frontier fixes that opportunity set, the cross-venue interaction is descriptive evidence about where the rotation is strongest, not a technology coefficient.
+
+\subsection{Time, architecture, and reversal}
+\label{sec:dominance:architecture}
+
+Protocol architecture changes during the same period, but protocol chronology does not convert date into treatment. The current event audit defines entry and exit by realised use of the newest architecture and asks for isolated windows, complete panels, and an unchanged comparison set. Every candidate within-cell substitution event fails at least one of those requirements. Role appearances and disappearances offer some usable observations, but their magnitude is partly mechanical because the event itself is a crossing of zero.
+
+This support failure is informative. Entry into realised architecture exposure is endogenous, and exit reverses exposure without removing the design from the feasible set. A design-reversal claim would require independently measured availability or exact cost and depth states that can move in both directions. Hysteresis would then be an asymmetry: vehicle use retained after the favourable state disappears relative to vehicle use displaced when the state arrives. The present data do not supply that contrast, so no architecture coefficient is promoted.
+
+\subsection{What the route evidence establishes}
 \label{sec:dominance:robustness}
 
-The incidence figure is a frequency, a count over states. A frequency is a statement about a state, and it does not require the router to have had a choice. An error in the state at which a route is priced changes the magnitude of the frequency and leaves its kind intact. That property separates this measurement from the retention estimand of Section~\ref{sec:survival}. Section~\ref{sec:executability} measures the error and reports its effect on the classification.
+The route-only evidence establishes three facts. Vehicle use rotates sharply from the native asset toward stable num\'eraires; the change is stronger by supported value than by route count; and USDT, instead of a pooled stablecoin category, is the principal transition margin. The rotation is not monotone, and it survives observed stratification by venue integration and complexity.
 
-Two restrictions apply throughout. Round trips are excluded before anything is measured because a route whose first input equals its last output is outside endpoint-to-endpoint conversion. The excluded population can contain cyclic arbitrage and other self-returning activity, but the endpoint rule does not classify each route. The support bound of Section~\ref{sec:setting:support} declines to quote any leg whose price impact would exceed 5\%. The former fixed-clock diagnostic does not supply a current removal share or gap distribution.
-% docs/finding-cost-dominance-measured.md, superseded: 17.9% gross on one venue over 186 days
+These facts leave the paper's central mechanism contest open. Cost dominance requires exact transaction-state counterfactuals. Persistence requires a final pair-candidate risk set and fixed-effect design. Liquidity provision requires independent external reference prices and validated capital quantities. Those objects are evaluated in the following sections but do not enter the rotation claim before their own evidence gates pass.
