@@ -8,7 +8,7 @@
 \subsection{A route-level transition}
 \label{sec:dominance:transition}
 
-The first object is the choice made inside an observed route. For every exact two-leg route $i\rightarrow k\rightarrow o$, the intermediary $k$ receives one vote. Aggregating those votes gives a count measure that does not allow a few large transactions to define the monetary role. A parallel value measure asks whether the same ordering survives when economic size matters. Because route values are not equally well supported, the main value series retains only routes whose intermediary flow is within 20\% of the route's input value. The count and value measures answer different questions and are reported together.
+Each exact two-leg route $i\rightarrow k\rightarrow o$ contributes one observed intermediary. Count-weighted shares give every route equal weight. Value-weighted shares instead capture economic size and use the subset for which source, intermediary, and destination dollar values agree within 20\%. I report both because route frequency and routed value need not rank vehicle currencies in the same way.
 % docs/findings-freeze.md, vehicle-dominance claim and strict-support value contract
 
 Table~\ref{tab:rotation} compares 2024 and 2026 on calendar dates common to both endpoint years. Among native and stable vehicles, the stable share rises from \StableCountBase{} to \StableCountEnd{} by route count. The paired-date change is \StableCountChange{}, with a calendar-HAC standard error of \StableCountSE{}. On strict value support, the corresponding share rises from \StableValueBase{} to \StableValueEnd{}, a \StableValueChange{} change with a \StableValueSE{} standard error.
@@ -23,24 +23,24 @@ Table~\ref{tab:rotation} compares 2024 and 2026 on calendar dates common to both
 Stable share among native and stable vehicles & 2024 & 2026 & Change (s.e.) \\
 \midrule
 Route count & \StableCountBase & \StableCountEnd & \StableCountChange\ (\StableCountSE) \\
-Strict-support value & \StableValueBase & \StableValueEnd & \StableValueChange\ (\StableValueSE) \\
+Routed value (20\% agreement) & \StableValueBase & \StableValueEnd & \StableValueChange\ (\StableValueSE) \\
 \bottomrule
 \end{tabular}
 \par\vspace{6pt}
 \begin{minipage}{0.90\textwidth}
-\footnotesize\raggedright \emph{Notes.} The unit is an exact two-leg route with one observed intermediary. Daily shares are equally weighted on common endpoint-year calendar support. Strict-support value requires the intermediary flow to be within 20\% of route input value. Standard errors are calendar-HAC. The table is descriptive: calendar time is not a treatment.
+\footnotesize\raggedright \emph{Notes.} The unit is an exact two-leg route with one observed intermediary. Daily shares are equally weighted across calendar dates observed in both years. Routed value requires source, intermediary, and destination dollar values to agree within 20\%. Standard errors are calendar-HAC. The table describes changes between the two years.
 % docs/findings-freeze.md, vehicle-dominance claim
 \end{minipage}
 \end{table}
 
-The value margin has moved further than the count margin. Stable vehicles lead by supported value before they sustain leadership by number of routes. That ordering is consistent with a transition led by economically large routes, but it does not identify why those routes moved. A larger value change can reflect liquidity placement, venue reach, router search, or the holding properties of the intermediary. The evidence establishes rotation; the mechanism remains a separate estimand.
+The shift has progressed further in routed value than in route counts. Stablecoins lead by supported value before they sustain a lead in the number of routes, which is consistent with the change being concentrated in larger trades. The ordering does not reveal why those routes moved; liquidity placement, venue reach, router search, and the holding properties of the intermediary can all produce it.
 
-Nor is this a monotone displacement. Native intermediation rebounds during 2023 and 2024. Stable value regains the lead from 2025-Q1, whereas count leadership does not persist over a long post-transition window. I therefore use \emph{rotation}, not succession. A date trend would average over the reversal and confound time with the market designs and liquidity states that happened to arrive at particular dates.
+Native intermediation rebounds during 2023 and 2024. Stablecoins regain the value lead in 2025, whereas their count lead does not persist over a long post-transition window. I therefore describe a \emph{rotation}, not a completed succession.
 
 \subsection{Intermediation and endpoint demand}
 \label{sec:dominance:excess}
 
-A stable asset can become common because traders want to acquire or sell it, without becoming a vehicle between other assets. The excess-use ratio separates the two margins. It divides the asset's share of intermediary positions by its share of route endpoints on the same perimeter. A ratio above one means that the asset appears in the middle more often than endpoint demand alone would imply.
+A stable asset can become common because traders want to acquire or sell it, without becoming a vehicle between other assets. The excess-use ratio separates the two margins. It divides the asset's share of intermediary positions by its share of route endpoints on the same perimeter. A ratio above one means that its intermediary share exceeds its endpoint share.
 
 The aggregate shift is not common to all stablecoin designs. USDC and USDT jointly account for \JointStableContribution{} of the increase in stable count share. USDC already has excess vehicle use at the start of the comparison and changes little. USDT drives the shift within the stablecoin category. Its count excess-use ratio rises from \USDTCountExcessBase{} to \USDTCountExcessEnd{}, while its strict-value ratio moves from \USDTValueExcessBase{} to \USDTValueExcessEnd{}. The strict-value intermediary-minus-endpoint gap moves from \USDTEndpointGapBase{} to \USDTEndpointGapEnd{}, a \USDTEndpointGapChange{} change with a \USDTEndpointGapSE{} standard error.
 
@@ -49,22 +49,22 @@ The aggregate shift is not common to all stablecoin designs. USDC and USDT joint
 \caption{USDT drives the rise in stablecoin vehicle dominance}
 \label{tab:usdt-transition}
 \small
-\begin{tabular}{lrrr}
+\begin{tabular}{lrr}
 \toprule
- & 2024 & 2026 & Change (s.e.) \\
+ & 2024 & 2026 \\
 \midrule
-Count excess use & \USDTCountExcessBase & \USDTCountExcessEnd & --- \\
-Strict-value excess use & \USDTValueExcessBase & \USDTValueExcessEnd & --- \\
-Strict-value intermediary minus endpoint share & \USDTEndpointGapBase & \USDTEndpointGapEnd & \USDTEndpointGapChange\ (\USDTEndpointGapSE) \\
+Count excess use & \USDTCountExcessBase & \USDTCountExcessEnd \\
+Value-weighted excess use & \USDTValueExcessBase & \USDTValueExcessEnd \\
+Value-weighted intermediary minus endpoint share & \USDTEndpointGapBase & \USDTEndpointGapEnd \\
 \bottomrule
 \end{tabular}
 \par\vspace{6pt}
 \begin{minipage}{0.90\textwidth}
-\footnotesize\raggedright \emph{Notes.} Excess use is intermediary share divided by endpoint share on the same route perimeter. The gap is intermediary share minus endpoint share. Stablecoins with different backing and redemption designs are not pooled when assigning a mechanism.
+\footnotesize\raggedright \emph{Notes.} Excess use is intermediary share divided by endpoint share on the same route perimeter. The gap is intermediary share minus endpoint share. Its change is \USDTEndpointGapChange{} with a \USDTEndpointGapSE{} standard error. Backing and redemption designs are reported separately.
 \end{minipage}
 \end{table}
 
-This decomposition rejects an interpretation based only on growing stablecoin payments. It also rules out language in which ``the stablecoin'' becomes the new vehicle. Fiat-reserve, on-chain-collateralised, and synthetic claims have different balance sheets and redemption technologies. The present result says which token moved into the intermediary position; it does not yet say which of those institutional attributes caused the move.
+The result is specific to USDT, not to a representative stablecoin. USDT becomes disproportionately more common in the intermediary position after accounting for its endpoint use. The result does not identify which feature of USDT caused the change.
 
 \subsection{The integration rival}
 \label{sec:dominance:integration}
@@ -73,20 +73,16 @@ The strongest mechanical rival is the expansion of the trading network. As route
 
 The data show both forces. Cross-venue routes grow from \CrossVenueCountStart{} to \CrossVenueCountEnd{} of route count, reaching \CrossVenueValueEnd{} of value. Yet the share of economic routes that use a true intermediary falls from \FullIntermediationBase{} in 2022 to \FullIntermediationEnd{} in 2026. On a balanced five-venue perimeter it falls to \BalancedIntermediationEnd{}. The declines are \FullIntermediationChange{} and \BalancedIntermediationChange{}, with standard errors of \FullIntermediationSE{} and \BalancedIntermediationSE{}. Integration expands while intermediation contracts.
 
-Within the routes that remain indirect, the stable rotation survives every observed integration-by-complexity count cell. It is also \CrossVenueRotationPremium{} larger across venues than within one venue, with a \CrossVenueRotationSE{} standard error. The evidence therefore rejects two simple accounts: rising stable share merely reflects more multi-venue routes, or a changing number of legs mechanically reclassifies the intermediary.
+Within the routes that remain indirect, the stable rotation survives every observed integration-by-complexity count cell. It is also \CrossVenueRotationPremium{} larger across venues than within one venue, with a \CrossVenueRotationSE{} standard error. Thus, the changing mix of single- and cross-venue routes, or of two- and multi-leg routes, cannot by itself account for the stablecoin shift.
 
-It does not reject routing technology as a mechanism. Search can activate dispersed stable liquidity even after conditioning on observed venue span and route complexity. The discriminating exercise compares vehicle choice within a fixed endpoint pair, notional, feasible opportunity set, and search-efficiency cell. Until the transaction-state frontier fixes that opportunity set, the cross-venue interaction is descriptive evidence about where the rotation is strongest, not a technology coefficient.
+Better search may still activate dispersed stablecoin liquidity within the observed venue and complexity strata. Distinguishing that channel requires a fixed-opportunity comparison; the cross-venue interaction alone describes where the rotation is strongest.
 
 \subsection{Time, architecture, and reversal}
 \label{sec:dominance:architecture}
 
-Protocol architecture changes during the same period, but protocol chronology does not convert date into treatment. The current event audit defines entry and exit by realised use of the newest architecture and asks for isolated windows, complete panels, and an unchanged comparison set. Every candidate within-cell substitution event fails at least one of those requirements. Role appearances and disappearances offer some usable observations, but their magnitude is partly mechanical because the event itself is a crossing of zero.
+Protocol architecture changes during the same period, but protocol launches coincide with other market changes. The observed entry and exit windows also fail to hold the comparison set fixed. Entry often coincides with role appearance and exit with role disappearance, so part of the measured change follows mechanically from crossing zero. These windows therefore do not identify an architecture effect.
 
-This support failure is informative. Entry into realised architecture exposure is endogenous, and exit reverses exposure without removing the design from the feasible set. A design-reversal claim would require independently measured availability or exact cost and depth states that can move in both directions. Hysteresis would then be an asymmetry: vehicle use retained after the favourable state disappears relative to vehicle use displaced when the state arrives. The present data do not supply that contrast, so no architecture coefficient is promoted.
-
-\subsection{What the route evidence establishes}
+\subsection{Summary}
 \label{sec:dominance:robustness}
 
-The route-only evidence establishes three facts. Vehicle use rotates sharply from the native asset toward stable num\'eraires; the change is stronger by supported value than by route count; and USDT drives the shift within the stablecoin category. The rotation is not monotone, and it survives observed stratification by venue integration and complexity.
-
-These facts leave the paper's central mechanism contest open. Cost dominance requires exact transaction-state counterfactuals. Persistence requires a final pair-candidate risk set and fixed-effect design. Liquidity provision requires independent external reference prices and validated capital quantities. Those objects are evaluated in the following sections but do not enter the rotation claim before their own evidence gates pass.
+The route data establish a sharp, non-monotonic rotation from the native asset toward stablecoins, with a larger shift in routed value than in route counts and USDT accounting for the principal change within the stablecoin category. The shift appears within both single- and cross-venue routes, but its cause remains open. The next sections examine whether route costs, incumbent persistence, or liquidity placement can account for it.
