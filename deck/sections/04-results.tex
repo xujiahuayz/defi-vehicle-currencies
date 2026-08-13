@@ -58,13 +58,15 @@ No response to state changes & Architecture is not the operative margin & Report
 \begin{frame}{Live architecture audit: what the current run must establish}
 \provisionalbadge
 \vspace{0.15cm}
+\IfFileExists{../output/exhibits/architecture_transition_deck_values.tex}{%
+\input{../output/exhibits/architecture_transition_deck_values.tex}%
+}{}
 {\small
 \begin{tabular}{@{}p{0.28\textwidth}ccc@{}}
 \toprule
 & \textbf{5\%} & \textbf{10\%} & \textbf{25\%} \\
 \midrule
 \IfFileExists{../output/exhibits/architecture_transition_deck_values.tex}{%
-\input{../output/exhibits/architecture_transition_deck_values.tex}%
 Sustained entries & \ArchEntrySupportFive & \ArchEntrySupportTen & \ArchEntrySupportTwentyFive \\
 Substitution exits & \ArchExitSupportFive & \ArchExitSupportTen & \ArchExitSupportTwentyFive \\
 Role-disappearance exits & \ArchDisappearSupportFive & \ArchDisappearSupportTen & \ArchDisappearSupportTwentyFive \\
