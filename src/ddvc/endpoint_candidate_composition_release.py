@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+from contextlib import contextmanager
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Callable, Mapping
@@ -10,17 +11,23 @@ import pandas as pd
 
 from ddvc.artifact_release import (
     ArtifactRelease,
+    SemanticValidationReceipt,
+    attest_artifact_release_semantics,
+    current_resolved_artifact_release,
     publish_artifact_release,
     resolve_artifact_release,
 )
 from ddvc.endpoint_candidate_composition import (
     CHOICE_COLUMNS,
+    ENDPOINT_CANDIDATE_COMPOSITION_SCIENTIFIC_SOURCES,
     EXCLUSION_COLUMNS,
     PAIR_SUPPORT_COLUMNS,
     EndpointCandidateComposition,
     validate_endpoint_candidate_composition,
 )
 from ddvc.paths import DATA_DIR
+from ddvc.fetch.raw import write_json
+from ddvc.provenance import semantic_code_fingerprint
 
 
 ENDPOINT_CANDIDATE_COMPOSITION_RELEASE_RELATIVE = (
@@ -37,6 +44,18 @@ ENDPOINT_CANDIDATE_COMPOSITION_RELEASE_FILENAMES = {
     "pair_support": "endpoint_candidate_pair_support.parquet",
     "exclusions": "endpoint_candidate_exclusions.parquet",
 }
+ENDPOINT_CANDIDATE_COMPOSITION_VALIDATOR_SOURCES = (
+    *ENDPOINT_CANDIDATE_COMPOSITION_SCIENTIFIC_SOURCES,
+    "src/ddvc/endpoint_candidate_composition_release.py",
+)
+
+
+def endpoint_candidate_composition_validator_fingerprint() -> str:
+    """Fingerprint the scientific and semantic-validation contract only."""
+
+    return semantic_code_fingerprint(
+        list(ENDPOINT_CANDIDATE_COMPOSITION_VALIDATOR_SOURCES)
+    )
 
 
 @dataclass(frozen=True)
@@ -136,6 +155,9 @@ def publish_endpoint_candidate_composition_release(
         inputs=inputs,
         notes=notes,
         validate_staged=validate,
+        semantic_validator_fingerprint=(
+            endpoint_candidate_composition_validator_fingerprint()
+        ),
         preinstall_validator=preinstall_validator,
     )
     return EndpointCandidateCompositionRelease(bundle)
@@ -143,15 +165,70 @@ def publish_endpoint_candidate_composition_release(
 
 def resolve_endpoint_candidate_composition_release(
     pointer_path: Path = ENDPOINT_CANDIDATE_COMPOSITION_RELEASE,
+    *,
+    semantic: bool = True,
+    expected_semantic_receipt: SemanticValidationReceipt | None = None,
 ) -> EndpointCandidateCompositionRelease:
-    """Resolve one current generation and validate its complete accounting contract."""
+    """Resolve one generation, optionally rerunning its semantic accounting audit."""
 
     bundle = resolve_artifact_release(
         pointer_path,
         kind=ENDPOINT_CANDIDATE_COMPOSITION_RELEASE_KIND,
         schema_version=ENDPOINT_CANDIDATE_COMPOSITION_RELEASE_SCHEMA_VERSION,
         filenames=ENDPOINT_CANDIDATE_COMPOSITION_RELEASE_FILENAMES,
-        require_current_provenance=True,
+        require_current_provenance=False,
+        semantic_validator=(
+            validate_endpoint_candidate_composition_paths if semantic else None
+        ),
+        semantic_validator_fingerprint=(
+            endpoint_candidate_composition_validator_fingerprint()
+        ),
+        semantic=semantic,
+        expected_semantic_receipt=expected_semantic_receipt,
     )
-    validate_endpoint_candidate_composition_paths(bundle.artifacts)
     return EndpointCandidateCompositionRelease(bundle)
+
+
+def attest_endpoint_candidate_composition_release(
+    pointer_path: Path = ENDPOINT_CANDIDATE_COMPOSITION_RELEASE,
+    *,
+    write_pointer: Callable[[Path, dict[str, object]], None] = write_json,
+) -> EndpointCandidateCompositionRelease:
+    """Attest one receipt-less current generation without rewriting its members."""
+
+    bundle = attest_artifact_release_semantics(
+        pointer_path,
+        kind=ENDPOINT_CANDIDATE_COMPOSITION_RELEASE_KIND,
+        schema_version=ENDPOINT_CANDIDATE_COMPOSITION_RELEASE_SCHEMA_VERSION,
+        filenames=ENDPOINT_CANDIDATE_COMPOSITION_RELEASE_FILENAMES,
+        require_current_provenance=False,
+        semantic_validator=validate_endpoint_candidate_composition_paths,
+        semantic_validator_fingerprint=(
+            endpoint_candidate_composition_validator_fingerprint()
+        ),
+        write_pointer=write_pointer,
+    )
+    return EndpointCandidateCompositionRelease(bundle)
+
+
+@contextmanager
+def current_endpoint_candidate_composition_release(
+    pointer_path: Path = ENDPOINT_CANDIDATE_COMPOSITION_RELEASE,
+    *,
+    expected_semantic_receipt: SemanticValidationReceipt | None = None,
+) -> object:
+    """Lease the receipt-backed endpoint release without rerunning semantics."""
+
+    with current_resolved_artifact_release(
+        pointer_path,
+        kind=ENDPOINT_CANDIDATE_COMPOSITION_RELEASE_KIND,
+        schema_version=ENDPOINT_CANDIDATE_COMPOSITION_RELEASE_SCHEMA_VERSION,
+        filenames=ENDPOINT_CANDIDATE_COMPOSITION_RELEASE_FILENAMES,
+        require_current_provenance=False,
+        semantic_validator_fingerprint=(
+            endpoint_candidate_composition_validator_fingerprint()
+        ),
+        semantic=False,
+        expected_semantic_receipt=expected_semantic_receipt,
+    ) as bundle:
+        yield EndpointCandidateCompositionRelease(bundle)

@@ -18,6 +18,7 @@ from ddvc.capital_release import (
 )
 from ddvc.endpoint_candidate_composition_release import (
     ENDPOINT_CANDIDATE_COMPOSITION_RELEASE_RELATIVE,
+    current_endpoint_candidate_composition_release,
     resolve_endpoint_candidate_composition_release,
 )
 from ddvc.model_registry import claim_execution_perimeter
@@ -32,6 +33,7 @@ class D3ReleasePostcondition:
 
     pointer: str
     resolver: Callable[[Path], object]
+    receipt_backed_lease: Callable[..., object] | None = None
 
 
 @dataclass(frozen=True)
@@ -142,6 +144,7 @@ D3_BUILD_STAGES = (
         D3ReleasePostcondition(
             ENDPOINT_CANDIDATE_COMPOSITION_RELEASE_RELATIVE,
             resolve_endpoint_candidate_composition_release,
+            receipt_backed_lease=current_endpoint_candidate_composition_release,
         ),
     ),
     D3BuildStage(
@@ -260,6 +263,20 @@ def executable_claim_inputs(specification: Mapping[str, Any]) -> tuple[str, ...]
         for path in claim.get("inputs", [])
     }
     return tuple(sorted(paths))
+
+
+def d3_release_postcondition(path: str) -> D3ReleasePostcondition | None:
+    """Return the unique typed release contract for a registered D3 pointer."""
+
+    matches = tuple(
+        stage.release_postcondition
+        for stage in D3_BUILD_STAGES
+        if stage.release_postcondition is not None
+        and stage.release_postcondition.pointer == path
+    )
+    if len(matches) > 1:
+        raise ValueError(f"D3 release pointer has multiple typed resolvers: {path}")
+    return matches[0] if matches else None
 
 
 def d3_input_ownership(

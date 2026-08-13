@@ -1,5 +1,8 @@
 #!/usr/bin/env python3
-"""Run the pre-frontier within-cell vehicle-rotation decomposition."""
+"""Run the pre-frontier raw aggregate descriptive companion.
+
+This four-term accounting is not a decomposition of a fixed-effects coefficient.
+"""
 
 from __future__ import annotations
 
@@ -8,10 +11,10 @@ from pathlib import Path
 import pandas as pd
 
 from ddvc.analysis.vehicle_rotation_composition import vehicle_rotation_composition
-from ddvc.artifact_release import current_artifact_release
+from ddvc.artifact_release import SemanticValidationReceipt
 from ddvc.endpoint_candidate_composition_release import (
     ENDPOINT_CANDIDATE_COMPOSITION_RELEASE,
-    resolve_endpoint_candidate_composition_release,
+    current_endpoint_candidate_composition_release,
 )
 from ddvc.model_artifacts import (
     attach_spec_ids,
@@ -36,13 +39,24 @@ CODE_SOURCES = [
 ]
 
 
-def _require_release_in_d3(context, pointer_path: Path, *, root: Path) -> None:
+def _expected_release_in_d3(context, pointer_path: Path, *, root: Path):
     relative = pointer_path.resolve().relative_to(root.resolve()).as_posix()
-    if relative not in context.d3_input_relatives:
+    record = context.d3_input_records.get(relative)
+    if record is None:
         raise ValueError(
             "vehicle-rotation composition release is outside the bound D3 release: "
             f"{relative}"
         )
+    receipt = record.get("semantic_validation")
+    if not isinstance(receipt, dict):
+        raise ValueError("bound endpoint release lacks a semantic receipt")
+    expected = SemanticValidationReceipt(
+        str(receipt.get("generation_id") or ""),
+        str(receipt.get("validator_fingerprint") or ""),
+    )
+    if record.get("release_generation") != expected.generation_id:
+        raise ValueError("bound endpoint release generation and receipt disagree")
+    return expected
 
 
 def run(
@@ -55,9 +69,13 @@ def run(
     support_output: Path = SUPPORT,
 ) -> int:
     context = model_artifact_context(root=root, environment=environment)
-    release = resolve_endpoint_candidate_composition_release(pointer_path)
-    _require_release_in_d3(context, release.pointer_path, root=root)
-    with current_artifact_release(release.bundle):
+    expected_receipt = _expected_release_in_d3(context, pointer_path, root=root)
+    with current_endpoint_candidate_composition_release(
+        pointer_path,
+        expected_semantic_receipt=expected_receipt,
+    ) as release:
+        if release.generation_id != expected_receipt.generation_id:
+            raise ValueError("endpoint release differs from the D3-bound generation")
         choices = pd.read_parquet(release.artifacts["choices"])
         detail, decomposition, support = vehicle_rotation_composition(choices)
         decomposition = attach_spec_ids(

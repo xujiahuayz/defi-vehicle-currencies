@@ -29,6 +29,7 @@ class ModelArtifactContext:
     d3_certificate_relative: str
     d3_certificate_path: Path
     d3_input_relatives: frozenset[str]
+    d3_input_records: Mapping[str, Mapping[str, object]]
 
 
 def model_artifact_context(
@@ -64,6 +65,10 @@ def model_artifact_context(
         d3_input_relatives=frozenset(
             path.relative_to(root).as_posix() for path in release.input_paths
         ),
+        d3_input_records={
+            str(record["path"]): record
+            for record in release.certificate["claim_inputs"]
+        },
     )
 
 

@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from contextlib import contextmanager
+from contextlib import contextmanager, nullcontext
 from dataclasses import dataclass
 import hashlib
 import json
@@ -14,11 +14,13 @@ from typing import Callable, Mapping
 
 from ddvc.fetch.raw import write_json
 from ddvc.journaled_publication import recover_journaled_publications
+from ddvc.paths import REPO_ROOT
 from ddvc.provenance import (
     code_fingerprint,
     describe_input,
     install_stamped_artifact,
     prepare_stamp,
+    input_matches,
     sidecar_path,
     verify,
 )
@@ -55,6 +57,20 @@ def is_sha256(value: object) -> bool:
 
 
 @dataclass(frozen=True)
+class SemanticValidationReceipt:
+    """A semantic validator's approval of one exact release generation."""
+
+    generation_id: str
+    validator_fingerprint: str
+
+    def as_record(self) -> dict[str, str]:
+        return {
+            "generation_id": self.generation_id,
+            "validator_fingerprint": self.validator_fingerprint,
+        }
+
+
+@dataclass(frozen=True)
 class ArtifactRelease:
     """One hash-verified immutable bundle selected by a marker-last pointer."""
 
@@ -62,6 +78,14 @@ class ArtifactRelease:
     pointer_path: Path
     artifacts: Mapping[str, Path]
     pointer_sha256: str
+    artifact_sha256: Mapping[str, str]
+    provenance_sha256: Mapping[str, str]
+    source_bindings: tuple[tuple[Path, str], ...] = ()
+    input_paths: tuple[Path, ...] = ()
+    semantic_receipt: SemanticValidationReceipt | None = None
+    lineage_stat_identities: tuple[
+        tuple[Path, tuple[int, int, int, int, int]], ...
+    ] = ()
 
     @property
     def artifact_paths(self) -> tuple[Path, ...]:
@@ -73,7 +97,17 @@ class ArtifactRelease:
 
     @property
     def lineage_paths(self) -> tuple[Path, ...]:
-        return self.pointer_path, *self.artifact_paths, *self.provenance_paths
+        return tuple(
+            dict.fromkeys(
+                (
+                    self.pointer_path,
+                    *self.artifact_paths,
+                    *self.provenance_paths,
+                    *self.input_paths,
+                    *(path for path, _digest in self.source_bindings),
+                )
+            )
+        )
 
     def assert_current(self) -> None:
         if (
@@ -81,6 +115,9 @@ class ArtifactRelease:
             or file_sha256(self.pointer_path) != self.pointer_sha256
         ):
             raise RuntimeError("artifact release pointer changed after resolution")
+        for path, expected in self.lineage_stat_identities:
+            if not path.is_file() or file_stat_identity(path) != expected:
+                raise RuntimeError(f"artifact release lineage changed after resolution: {path}")
 
 
 @contextmanager
@@ -393,7 +430,6 @@ def _pointer_generation(pointer_path: Path) -> str | None:
 def _reopen_existing_generation(
     targets: Mapping[str, Path],
     artifact_hashes: Mapping[str, str],
-    validate: Callable[[Mapping[str, Path]], None],
 ) -> None:
     missing = [name for name, path in targets.items() if not path.is_file()]
     if missing:
@@ -401,9 +437,8 @@ def _reopen_existing_generation(
     for name, path in targets.items():
         if file_sha256(path) != artifact_hashes[name]:
             raise ValueError(f"existing artifact generation has different content: {name}")
-        if not sidecar_path(path).is_file() or verify(path).get("status") != "ok":
-            raise ValueError(f"existing artifact generation is not current: {name}")
-    validate(targets)
+        if not sidecar_path(path).is_file():
+            raise ValueError(f"existing artifact generation lacks provenance: {name}")
 
 
 _UNSTABLE_PROVENANCE_FIELDS = frozenset(
@@ -554,7 +589,7 @@ def _publish_generation_under_lock(
     row_counts: Mapping[str, int],
     notes: str | None,
     preinstall_validator: Callable[[Path], object] | None,
-    validate_staged: Callable[[Mapping[str, Path]], None],
+    semantic_receipt: SemanticValidationReceipt,
     write_pointer: Callable[[Path, dict[str, object]], None],
 ) -> ArtifactRelease:
     """Recover, resume, validate and select one generation under its full lock."""
@@ -564,7 +599,7 @@ def _publish_generation_under_lock(
     selected = _pointer_generation(pointer_path) == generation
     if selected:
         try:
-            _reopen_existing_generation(targets, artifact_hashes, validate_staged)
+            _reopen_existing_generation(targets, artifact_hashes)
         except (FileNotFoundError, OSError, RuntimeError, TypeError, ValueError) as error:
             raise RuntimeError(
                 f"selected {kind} generation is incomplete or invalid"
@@ -586,20 +621,13 @@ def _publish_generation_under_lock(
             raise RuntimeError(
                 f"unselected {kind} generation is incomplete or invalid"
             ) from error
-    validate_staged(targets)
-    stale = {
-        name: verdict.get("status")
-        for name, path in targets.items()
-        if (verdict := verify(path)).get("status") != "ok"
-    }
-    if stale:
-        raise RuntimeError(f"{kind} generation is not current before release: {stale}")
     _recover_generation_publications(targets)
     pointer = {
         "schema_version": schema_version,
         "kind": kind,
         "generation_id": generation,
         "build_identity_sha256": build_identity,
+        "semantic_validation": semantic_receipt.as_record(),
         "artifacts": {
             name: {
                 "filename": filenames[name],
@@ -618,6 +646,8 @@ def _publish_generation_under_lock(
             filenames=filenames,
             require_current_provenance=True,
             expected_generation=generation,
+            semantic_validator_fingerprint=semantic_receipt.validator_fingerprint,
+            semantic=False,
         )
     except BaseException:
         if prior_pointer is None:
@@ -629,7 +659,8 @@ def _publish_generation_under_lock(
         raise
 
 
-def _resolve_artifact_release_unlocked(
+@contextmanager
+def _open_artifact_release_unlocked(
     pointer_path: Path,
     *,
     kind: str,
@@ -637,7 +668,12 @@ def _resolve_artifact_release_unlocked(
     filenames: Mapping[str, str],
     require_current_provenance: bool,
     expected_generation: str | None = None,
-) -> ArtifactRelease:
+    semantic_validator: Callable[[Mapping[str, Path]], object] | None = None,
+    semantic_validator_fingerprint: str | None = None,
+    semantic: bool = False,
+    expected_semantic_receipt: SemanticValidationReceipt | None = None,
+    recheck_on_exit: bool = True,
+) -> object:
     filenames = _validated_filenames(filenames)
     if not pointer_path.is_file():
         raise FileNotFoundError(f"missing {kind} current pointer: {pointer_path}")
@@ -675,33 +711,201 @@ def _resolve_artifact_release_unlocked(
         provenance_hashes[name] = str(record["provenance_sha256"])
     if generation_id(artifact_hashes, str(build_identity)) != generation:
         raise ValueError(f"{kind} generation identity disagrees with its pointer")
+    receipt_record = pointer.get("semantic_validation")
+    pointer_receipt = None
+    if receipt_record is not None:
+        if (
+            not isinstance(receipt_record, dict)
+            or receipt_record.get("generation_id") != generation
+            or not is_sha256(receipt_record.get("validator_fingerprint"))
+        ):
+            raise ValueError(f"invalid {kind} semantic-validation receipt")
+        pointer_receipt = SemanticValidationReceipt(
+            str(generation), str(receipt_record["validator_fingerprint"])
+        )
+    if expected_semantic_receipt is not None:
+        if (
+            expected_semantic_receipt.generation_id != generation
+            or pointer_receipt != expected_semantic_receipt
+            or (
+                semantic_validator_fingerprint is not None
+                and expected_semantic_receipt.validator_fingerprint
+                != semantic_validator_fingerprint
+            )
+        ):
+            raise ValueError(f"{kind} semantic-validation receipt is stale")
+    authorized_receipt = pointer_receipt
+    if semantic_validator_fingerprint is not None and not semantic:
+        if (
+            authorized_receipt is None
+            or authorized_receipt.validator_fingerprint
+            != semantic_validator_fingerprint
+        ):
+            raise ValueError(f"{kind} lacks the required semantic-validation receipt")
+    if semantic and (
+        semantic_validator is None or not is_sha256(semantic_validator_fingerprint)
+    ):
+        raise ValueError(f"{kind} semantic validation requires a fingerprinted validator")
+
     paths = generation_paths(pointer_path.parent, str(generation), filenames)
     missing = [name for name, path in paths.items() if not path.is_file()]
     if missing:
         raise FileNotFoundError(f"partial {kind} generation: missing={missing}")
-    for name, path in paths.items():
-        if file_sha256(path) != artifact_hashes[name]:
-            raise ValueError(f"{kind} artifact digest disagrees: {name}")
-        provenance_path = sidecar_path(path)
-        if not provenance_path.is_file():
-            raise FileNotFoundError(f"{kind} artifact lacks provenance: {name}")
-        if file_sha256(provenance_path) != provenance_hashes[name]:
-            raise ValueError(f"{kind} provenance digest disagrees: {name}")
-        try:
-            provenance = json.loads(provenance_path.read_text(encoding="utf-8"))
-        except (OSError, json.JSONDecodeError) as error:
-            raise ValueError(f"{kind} provenance is invalid: {name}") from error
-        if (
-            not isinstance(provenance, dict)
-            or provenance.get("artefact") != describe_input(path).get("path")
-            or provenance.get("artefact_sha256") not in {None, artifact_hashes[name]}
-        ):
-            raise ValueError(f"{kind} provenance identifies different content: {name}")
-        if require_current_provenance and verify(path).get("status") != "ok":
-            raise ValueError(f"{kind} provenance is not current: {name}")
-    return ArtifactRelease(
-        str(generation), pointer_path, paths, file_sha256(pointer_path)
-    )
+    provenance_paths = {name: sidecar_path(path) for name, path in paths.items()}
+    missing_provenance = [
+        name for name, path in provenance_paths.items() if not path.is_file()
+    ]
+    if missing_provenance:
+        raise FileNotFoundError(
+            f"{kind} artifact lacks provenance: {missing_provenance[0]}"
+        )
+    with serialized_read_installs((*paths.values(), *provenance_paths.values())):
+        pointer_sha256 = file_sha256(pointer_path)
+        for name, path in paths.items():
+            if file_sha256(path) != artifact_hashes[name]:
+                raise ValueError(f"{kind} artifact digest disagrees: {name}")
+            if file_sha256(provenance_paths[name]) != provenance_hashes[name]:
+                raise ValueError(f"{kind} provenance digest disagrees: {name}")
+        provenance_records: dict[str, dict[str, object]] = {}
+        for name, provenance_path in provenance_paths.items():
+            try:
+                record = json.loads(provenance_path.read_text(encoding="utf-8"))
+            except (OSError, json.JSONDecodeError) as error:
+                raise ValueError(f"{kind} provenance is invalid: {name}") from error
+            if not isinstance(record, dict):
+                raise ValueError(f"{kind} provenance is invalid: {name}")
+            provenance_records[name] = record
+
+        source_bindings: dict[Path, str] = {}
+        input_records: dict[Path, dict[str, object]] = {}
+        for name, record in provenance_records.items():
+            recorded_artifact = Path(str(record.get("artefact") or ""))
+            recorded_artifact = (
+                recorded_artifact
+                if recorded_artifact.is_absolute()
+                else REPO_ROOT / recorded_artifact
+            )
+            payload_identity = record.get("payload_identity")
+            if (
+                recorded_artifact.resolve() != paths[name].resolve()
+                or record.get("artefact_sha256") not in {None, artifact_hashes[name]}
+                or (
+                    isinstance(payload_identity, dict)
+                    and payload_identity.get("sha256") != artifact_hashes[name]
+                )
+            ):
+                raise ValueError(
+                    f"{kind} provenance identifies different content: {name}"
+                )
+            if require_current_provenance:
+                sources = record.get("code_sources") or []
+                if not isinstance(sources, list):
+                    raise ValueError(f"{kind} provenance is not current: {name}")
+                if (
+                    code_fingerprint([str(source) for source in sources])
+                    != record.get("code_fingerprint")
+                    and verify(paths[name]).get("status") != "ok"
+                ):
+                    raise ValueError(f"{kind} provenance is not current: {name}")
+            for raw in record.get("inputs") or []:
+                if not isinstance(raw, dict):
+                    raise ValueError(f"{kind} provenance has an invalid input: {name}")
+                raw_path = Path(str(raw.get("path") or ""))
+                input_path = raw_path if raw_path.is_absolute() else REPO_ROOT / raw_path
+                prior = input_records.setdefault(input_path.resolve(), raw)
+                if prior != raw:
+                    raise ValueError(f"{kind} provenance input identities disagree")
+            for raw in record.get("released_input_bindings") or []:
+                if not isinstance(raw, dict) or not is_sha256(raw.get("sha256")):
+                    raise ValueError(f"{kind} provenance has an invalid release binding")
+                raw_path = Path(str(raw.get("path") or ""))
+                binding_path = raw_path if raw_path.is_absolute() else REPO_ROOT / raw_path
+                resolved = binding_path.resolve()
+                expected = str(raw["sha256"])
+                prior = source_bindings.setdefault(resolved, expected)
+                if prior != expected:
+                    raise ValueError(f"{kind} released-input bindings disagree")
+
+        leased_sources = tuple(dict.fromkeys((*input_records, *source_bindings)))
+        if leased_sources:
+            source_context = serialized_read_installs(leased_sources)
+        else:
+            source_context = nullcontext()
+        with source_context:
+            for path, expected in source_bindings.items():
+                if not path.is_file() or file_sha256(path) != expected:
+                    raise ValueError(f"{kind} released-input binding changed: {path}")
+            for path, record in input_records.items():
+                if path in source_bindings:
+                    recorded_sha = record.get("sha256")
+                    if recorded_sha is not None and recorded_sha != source_bindings[path]:
+                        raise ValueError(f"{kind} provenance input disagrees with release binding")
+                    continue
+                if require_current_provenance and not input_matches(record):
+                    raise ValueError(f"{kind} provenance input changed: {path}")
+            if file_sha256(pointer_path) != pointer_sha256:
+                raise RuntimeError(f"{kind} pointer changed during resolution")
+            if semantic:
+                assert semantic_validator is not None
+                semantic_validator(paths)
+                authorized_receipt = SemanticValidationReceipt(
+                    str(generation), str(semantic_validator_fingerprint)
+                )
+            release = ArtifactRelease(
+                str(generation),
+                pointer_path,
+                paths,
+                pointer_sha256,
+                artifact_hashes,
+                provenance_hashes,
+                tuple(sorted(source_bindings.items(), key=lambda item: str(item[0]))),
+                tuple(sorted(input_records, key=str)),
+                authorized_receipt,
+                tuple(
+                    (path, file_stat_identity(path))
+                    for path in dict.fromkeys(
+                        (
+                            pointer_path,
+                            *paths.values(),
+                            *provenance_paths.values(),
+                            *leased_sources,
+                        )
+                    )
+                ),
+            )
+            yield release
+            if recheck_on_exit:
+                release.assert_current()
+
+
+def _resolve_artifact_release_unlocked(
+    pointer_path: Path,
+    *,
+    kind: str,
+    schema_version: int,
+    filenames: Mapping[str, str],
+    require_current_provenance: bool,
+    expected_generation: str | None = None,
+    semantic_validator: Callable[[Mapping[str, Path]], object] | None = None,
+    semantic_validator_fingerprint: str | None = None,
+    semantic: bool = False,
+    expected_semantic_receipt: SemanticValidationReceipt | None = None,
+) -> ArtifactRelease:
+    """Resolve one release for callers that do not consume it under a lease."""
+
+    with _open_artifact_release_unlocked(
+        pointer_path,
+        kind=kind,
+        schema_version=schema_version,
+        filenames=filenames,
+        require_current_provenance=require_current_provenance,
+        expected_generation=expected_generation,
+        semantic_validator=semantic_validator,
+        semantic_validator_fingerprint=semantic_validator_fingerprint,
+        semantic=semantic,
+        expected_semantic_receipt=expected_semantic_receipt,
+    ) as release:
+        return release
 
 
 def resolve_artifact_release(
@@ -711,19 +915,172 @@ def resolve_artifact_release(
     schema_version: int,
     filenames: Mapping[str, str],
     require_current_provenance: bool = True,
+    semantic_validator: Callable[[Mapping[str, Path]], object] | None = None,
+    semantic_validator_fingerprint: str | None = None,
+    semantic: bool = False,
+    expected_semantic_receipt: SemanticValidationReceipt | None = None,
 ) -> ArtifactRelease:
-    """Resolve one pointer and reopen every artifact and provenance digest."""
+    """Resolve one leased pointer boundary and deduplicate upstream verification."""
 
     filenames = _validated_filenames(filenames)
     pointer_path = Path(pointer_path)
-    with serialized_output_install(pointer_path):
+    with serialized_read_installs((pointer_path,)):
         return _resolve_artifact_release_unlocked(
             pointer_path,
             kind=kind,
             schema_version=schema_version,
             filenames=filenames,
             require_current_provenance=require_current_provenance,
+            semantic_validator=semantic_validator,
+            semantic_validator_fingerprint=semantic_validator_fingerprint,
+            semantic=semantic,
+            expected_semantic_receipt=expected_semantic_receipt,
         )
+
+
+@contextmanager
+def current_resolved_artifact_release(
+    pointer_path: Path,
+    *,
+    kind: str,
+    schema_version: int,
+    filenames: Mapping[str, str],
+    require_current_provenance: bool = True,
+    semantic_validator: Callable[[Mapping[str, Path]], object] | None = None,
+    semantic_validator_fingerprint: str | None = None,
+    semantic: bool = False,
+    expected_semantic_receipt: SemanticValidationReceipt | None = None,
+) -> object:
+    """Resolve and lease one exact release boundary through its complete use."""
+
+    filenames = _validated_filenames(filenames)
+    pointer_path = Path(pointer_path)
+    with serialized_read_installs((pointer_path,)):
+        with _open_artifact_release_unlocked(
+            pointer_path,
+            kind=kind,
+            schema_version=schema_version,
+            filenames=filenames,
+            require_current_provenance=require_current_provenance,
+            semantic_validator=semantic_validator,
+            semantic_validator_fingerprint=semantic_validator_fingerprint,
+            semantic=semantic,
+            expected_semantic_receipt=expected_semantic_receipt,
+        ) as release:
+            yield release
+
+
+def attest_artifact_release_semantics(
+    pointer_path: Path,
+    *,
+    kind: str,
+    schema_version: int,
+    filenames: Mapping[str, str],
+    semantic_validator: Callable[[Mapping[str, Path]], object],
+    semantic_validator_fingerprint: str,
+    require_current_provenance: bool = True,
+    write_pointer: Callable[[Path, dict[str, object]], None] = write_json,
+) -> ArtifactRelease:
+    """Add a semantic receipt to one legacy pointer without rewriting its generation."""
+
+    filenames = _validated_filenames(filenames)
+    pointer_path = Path(pointer_path)
+    if not is_sha256(semantic_validator_fingerprint):
+        raise ValueError("semantic validator fingerprint must be sha256")
+    with serialized_output_install(pointer_path):
+        if not pointer_path.is_file():
+            raise FileNotFoundError(f"missing {kind} current pointer: {pointer_path}")
+        prior_pointer = pointer_path.read_bytes()
+        try:
+            pointer = json.loads(prior_pointer)
+        except (UnicodeDecodeError, json.JSONDecodeError) as error:
+            raise ValueError(f"{kind} current pointer is not valid JSON") from error
+        if not isinstance(pointer, dict):
+            raise ValueError(f"invalid {kind} current pointer")
+        existing_receipt = pointer.get("semantic_validation")
+        if existing_receipt is not None:
+            return _resolve_artifact_release_unlocked(
+                pointer_path,
+                kind=kind,
+                schema_version=schema_version,
+                filenames=filenames,
+                require_current_provenance=require_current_provenance,
+                semantic_validator_fingerprint=semantic_validator_fingerprint,
+                semantic=False,
+            )
+
+        generation = pointer.get("generation_id")
+        if not is_sha256(generation):
+            raise ValueError(f"invalid {kind} current pointer")
+        try:
+            with _open_artifact_release_unlocked(
+                pointer_path,
+                kind=kind,
+                schema_version=schema_version,
+                filenames=filenames,
+                require_current_provenance=require_current_provenance,
+                expected_generation=str(generation),
+                semantic_validator=semantic_validator,
+                semantic_validator_fingerprint=semantic_validator_fingerprint,
+                semantic=True,
+                recheck_on_exit=False,
+            ) as release:
+                receipt = release.semantic_receipt
+                if receipt is None:
+                    raise RuntimeError(f"{kind} semantic validation produced no receipt")
+                if pointer_path.read_bytes() != prior_pointer:
+                    raise RuntimeError(f"{kind} pointer changed during attestation")
+                attested = dict(pointer)
+                attested["semantic_validation"] = receipt.as_record()
+                write_pointer(pointer_path, attested)
+                installed_pointer_stat = file_stat_identity(pointer_path)
+                installed_pointer_bytes = pointer_path.read_bytes()
+                try:
+                    installed_pointer = json.loads(installed_pointer_bytes)
+                except (UnicodeDecodeError, json.JSONDecodeError) as error:
+                    raise RuntimeError(
+                        f"{kind} attested pointer did not round-trip"
+                    ) from error
+                if (
+                    installed_pointer != attested
+                    or file_stat_identity(pointer_path) != installed_pointer_stat
+                ):
+                    raise RuntimeError(f"{kind} attested pointer did not round-trip")
+                for path, expected in release.lineage_stat_identities:
+                    if path == pointer_path:
+                        continue
+                    if not path.is_file() or file_stat_identity(path) != expected:
+                        raise RuntimeError(
+                            f"{kind} lineage changed during attestation: {path}"
+                        )
+                refreshed_stats = tuple(
+                    (
+                        path,
+                        installed_pointer_stat if path == pointer_path else expected,
+                    )
+                    for path, expected in release.lineage_stat_identities
+                )
+                return ArtifactRelease(
+                    release.generation_id,
+                    release.pointer_path,
+                    release.artifacts,
+                    hashlib.sha256(installed_pointer_bytes).hexdigest(),
+                    release.artifact_sha256,
+                    release.provenance_sha256,
+                    release.source_bindings,
+                    release.input_paths,
+                    receipt,
+                    refreshed_stats,
+                )
+        except BaseException:
+            if (
+                not pointer_path.is_file()
+                or pointer_path.read_bytes() != prior_pointer
+            ):
+                with staged_output(pointer_path) as rollback:
+                    rollback.write_bytes(prior_pointer)
+                    rollback.replace(pointer_path)
+            raise
 
 
 def publish_artifact_release(
@@ -738,6 +1095,7 @@ def publish_artifact_release(
     inputs: list[str | Path],
     notes: str | None,
     validate_staged: Callable[[Mapping[str, Path]], None],
+    semantic_validator_fingerprint: str | None = None,
     preinstall_validator: Callable[[Path], object] | None = None,
     write_pointer: Callable[[Path, dict[str, object]], None] = write_json,
 ) -> ArtifactRelease:
@@ -776,6 +1134,19 @@ def publish_artifact_release(
                 }
             )
             generation = generation_id(artifact_hashes, build_identity)
+            validator_fingerprint = semantic_validator_fingerprint or canonical_json_sha256(
+                {
+                    "code_fingerprint": code_fingerprint(code_sources),
+                    "kind": kind,
+                    "schema_version": schema_version,
+                    "validator": "validate_staged",
+                }
+            )
+            if not is_sha256(validator_fingerprint):
+                raise ValueError("semantic validator fingerprint must be sha256")
+            semantic_receipt = SemanticValidationReceipt(
+                generation, validator_fingerprint
+            )
             targets = generation_paths(release_root, generation, filenames)
             prepared_stamps: dict[str, bytes] = {}
             prepared_validator = getattr(
@@ -817,6 +1188,6 @@ def publish_artifact_release(
                     row_counts=row_counts,
                     notes=notes,
                     preinstall_validator=preinstall_validator,
-                    validate_staged=validate_staged,
+                    semantic_receipt=semantic_receipt,
                     write_pointer=write_pointer,
                 )

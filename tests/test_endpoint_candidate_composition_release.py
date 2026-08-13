@@ -6,6 +6,7 @@ from pathlib import Path
 import pandas as pd
 import pytest
 
+import ddvc.artifact_release as artifact_release
 import ddvc.provenance as provenance
 from ddvc.artifact_release import file_sha256
 from ddvc.asset_types import NATIVE, STABLE
@@ -16,10 +17,12 @@ from ddvc.endpoint_candidate_composition import (
     endpoint_candidate_composition_for_day,
 )
 from ddvc.endpoint_candidate_composition_release import (
+    attest_endpoint_candidate_composition_release,
     publish_endpoint_candidate_composition_release,
     resolve_endpoint_candidate_composition_release,
     validate_endpoint_candidate_composition_paths,
 )
+from ddvc.fetch.raw import write_json
 from ddvc.provenance import sidecar_path
 from scripts import build_endpoint_candidate_composition as builder
 
@@ -158,6 +161,136 @@ def test_full_perimeter_publishes_one_resolvable_bound_generation(tmp_path: Path
         assert [record["path"] for record in provenance["inputs"]] == [
             str(release.ledger_path.resolve())
         ]
+
+
+def test_legacy_pointer_attestation_preserves_generation_members_and_mtimes(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    release = _route_release(tmp_path / "source")
+    pointer = tmp_path / "release" / "current.json"
+    outcome = _build(tmp_path, release, pointer)
+    assert outcome.release is not None
+    legacy = json.loads(pointer.read_text(encoding="utf-8"))
+    legacy.pop("semantic_validation")
+    pointer.write_text(json.dumps(legacy, sort_keys=True) + "\n", encoding="utf-8")
+    paths = tuple(
+        path
+        for artifact in outcome.release.artifacts.values()
+        for path in (artifact, sidecar_path(artifact))
+    )
+    identities = {
+        path: (file_sha256(path), path.stat().st_mtime_ns) for path in paths
+    }
+    calls = 0
+    real_validator = validate_endpoint_candidate_composition_paths
+
+    def counted_validator(paths):
+        nonlocal calls
+        calls += 1
+        return real_validator(paths)
+
+    monkeypatch.setattr(
+        "ddvc.endpoint_candidate_composition_release.validate_endpoint_candidate_composition_paths",
+        counted_validator,
+    )
+    attested = attest_endpoint_candidate_composition_release(pointer)
+    assert attested.generation_id == outcome.release.generation_id
+    assert calls == 1
+    assert {
+        path: (file_sha256(path), path.stat().st_mtime_ns) for path in paths
+    } == identities
+    resolved = resolve_endpoint_candidate_composition_release(pointer, semantic=False)
+    assert resolved.generation_id == outcome.release.generation_id
+    assert calls == 1
+
+
+def test_legacy_pointer_attestation_rejects_tamper_and_restores_on_crash(
+    tmp_path: Path,
+) -> None:
+    release = _route_release(tmp_path / "source")
+    pointer = tmp_path / "release" / "current.json"
+    outcome = _build(tmp_path, release, pointer)
+    assert outcome.release is not None
+    legacy = json.loads(pointer.read_text(encoding="utf-8"))
+    legacy.pop("semantic_validation")
+    pointer.write_text(json.dumps(legacy, sort_keys=True) + "\n", encoding="utf-8")
+    legacy_bytes = pointer.read_bytes()
+    member = outcome.release.artifacts["choices"]
+    original_member = member.read_bytes()
+    member.write_bytes(original_member + b"tamper")
+    with pytest.raises(ValueError, match="digest"):
+        attest_endpoint_candidate_composition_release(pointer)
+    assert pointer.read_bytes() == legacy_bytes
+    member.write_bytes(original_member)
+
+    def crash_after_pointer_write(path: Path, payload: dict[str, object]) -> None:
+        path.write_text(json.dumps(payload) + "\n", encoding="utf-8")
+        raise RuntimeError("injected attestation crash")
+
+    with pytest.raises(RuntimeError, match="injected attestation crash"):
+        attest_endpoint_candidate_composition_release(
+            pointer, write_pointer=crash_after_pointer_write
+        )
+    assert pointer.read_bytes() == legacy_bytes
+    assert json.loads(pointer.read_text()).get("semantic_validation") is None
+
+
+def test_legacy_attestation_hashes_each_member_and_source_once(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    release = _route_release(tmp_path / "source")
+    pointer = tmp_path / "release" / "current.json"
+    outcome = _build(tmp_path, release, pointer)
+    assert outcome.release is not None
+    legacy = json.loads(pointer.read_text(encoding="utf-8"))
+    legacy.pop("semantic_validation")
+    pointer.write_text(json.dumps(legacy, sort_keys=True) + "\n", encoding="utf-8")
+
+    real_hash = artifact_release.file_sha256
+    counts: dict[Path, int] = {}
+
+    def counted_hash(path: Path) -> str:
+        resolved = Path(path).resolve()
+        counts[resolved] = counts.get(resolved, 0) + 1
+        return real_hash(Path(path))
+
+    monkeypatch.setattr(artifact_release, "file_sha256", counted_hash)
+    attested = attest_endpoint_candidate_composition_release(pointer)
+    expected_once = {
+        *(path.resolve() for path in release.provenance_inputs),
+        *(path.resolve() for path in attested.artifacts.values()),
+        *(sidecar_path(path).resolve() for path in attested.artifacts.values()),
+    }
+    assert expected_once
+    assert {path: counts.get(path, 0) for path in expected_once} == {
+        path: 1 for path in expected_once
+    }
+
+
+def test_post_write_lineage_change_rolls_back_attested_pointer(tmp_path: Path) -> None:
+    release = _route_release(tmp_path / "source")
+    pointer = tmp_path / "release" / "current.json"
+    outcome = _build(tmp_path, release, pointer)
+    assert outcome.release is not None
+    legacy = json.loads(pointer.read_text(encoding="utf-8"))
+    legacy.pop("semantic_validation")
+    pointer.write_text(json.dumps(legacy, sort_keys=True) + "\n", encoding="utf-8")
+    legacy_bytes = pointer.read_bytes()
+    source = release.provenance_inputs[0]
+    source_bytes = source.read_bytes()
+
+    def mutate_lineage_after_write(path: Path, payload: dict[str, object]) -> None:
+        write_json(path, payload)
+        source.write_bytes(source_bytes + b"changed after validation")
+
+    try:
+        with pytest.raises(RuntimeError, match="lineage changed during attestation"):
+            attest_endpoint_candidate_composition_release(
+                pointer, write_pointer=mutate_lineage_after_write
+            )
+    finally:
+        source.write_bytes(source_bytes)
+    assert pointer.read_bytes() == legacy_bytes
 
 
 def test_staged_accounting_failure_cannot_replace_prior_release(tmp_path: Path) -> None:

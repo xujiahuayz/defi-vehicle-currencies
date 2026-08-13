@@ -1,9 +1,13 @@
 from __future__ import annotations
 
+from pathlib import Path
+from types import SimpleNamespace
+
 import pandas as pd
 import pytest
 
 from ddvc.analysis.vehicle_rotation_composition import vehicle_rotation_composition
+from scripts import run_vehicle_rotation_composition_e0 as runner
 
 
 NATIVE = "0x0000000000000000000000000000000000000001"
@@ -104,6 +108,58 @@ def test_locked_four_term_identity_and_realised_composition_labels() -> None:
         "common": 1,
         "comparison_exclusive": 1,
     }
+
+
+def test_hand_calculated_fixture_activates_all_four_identity_terms() -> None:
+    choices = pd.DataFrame(
+        [
+            _choice("2024-01-01", "a", "b", "native", 48),
+            _choice("2024-01-01", "a", "b", "stable", 12),
+            _choice("2024-01-01", "c", "d", "native", 16),
+            _choice("2024-01-01", "c", "d", "stable", 24),
+            _choice("2024-01-01", "e", "f", "native", 90),
+            _choice("2024-01-01", "e", "f", "stable", 10),
+            _choice("2026-01-01", "a", "b", "native", 15),
+            _choice("2026-01-01", "a", "b", "stable", 15),
+            _choice("2026-01-01", "c", "d", "native", 18),
+            _choice("2026-01-01", "c", "d", "stable", 72),
+            _choice("2026-01-01", "g", "h", "native", 3),
+            _choice("2026-01-01", "g", "h", "stable", 27),
+            *_cross_controls(),
+        ]
+    )
+    _panel, decomposition, _support = vehicle_rotation_composition(choices)
+    expected = {
+        "baseline_stable_share": 0.23,
+        "comparison_stable_share": 0.76,
+        "total_change": 0.53,
+        "within_common": 0.157625,
+        "common_pair_reweighting": 0.079625,
+        "common_support_mass": 0.01275,
+        "exclusive_pair_contribution": 0.28,
+        "identity_error": 0.0,
+    }
+    for metric in (
+        "count_share",
+        "matched_strict_count_share",
+        "strict_intermediation_value_share",
+    ):
+        observed = _summary(decomposition, metric)
+        for field, value in expected.items():
+            assert observed[field] == pytest.approx(value, abs=1e-12)
+
+    scaled = choices.sample(frac=1, random_state=9).reset_index(drop=True)
+    for column in ("route_count", "within_20pct_routes", "within_20pct_value_usd"):
+        scaled[column] *= 7
+    _panel, scaled_decomposition, _support = vehicle_rotation_composition(scaled)
+    for metric in (
+        "count_share",
+        "matched_strict_count_share",
+        "strict_intermediation_value_share",
+    ):
+        observed = _summary(scaled_decomposition, metric)
+        for field, value in expected.items():
+            assert observed[field] == pytest.approx(value, abs=1e-12)
 
 
 def test_zero_exclusive_normalization_retains_identity() -> None:
@@ -244,3 +300,28 @@ def test_rejects_duplicate_release_keys_and_nonprimary_candidates() -> None:
     invalid["candidate_type"] = "other"
     with pytest.raises(ValueError, match="non-primary"):
         vehicle_rotation_composition(pd.DataFrame([row, invalid]))
+
+
+def test_runner_requires_exact_d3_bound_endpoint_generation_and_receipt(
+    tmp_path: Path,
+) -> None:
+    pointer = tmp_path / "data/processed/endpoint/current.json"
+    relative = pointer.relative_to(tmp_path).as_posix()
+    context = SimpleNamespace(
+        d3_input_records={
+            relative: {
+                "path": relative,
+                "release_generation": "a" * 64,
+                "semantic_validation": {
+                    "generation_id": "a" * 64,
+                    "validator_fingerprint": "b" * 64,
+                },
+            }
+        }
+    )
+    receipt = runner._expected_release_in_d3(context, pointer, root=tmp_path)
+    assert receipt.generation_id == "a" * 64
+    assert receipt.validator_fingerprint == "b" * 64
+    context.d3_input_records[relative]["release_generation"] = "c" * 64
+    with pytest.raises(ValueError, match="generation and receipt disagree"):
+        runner._expected_release_in_d3(context, pointer, root=tmp_path)

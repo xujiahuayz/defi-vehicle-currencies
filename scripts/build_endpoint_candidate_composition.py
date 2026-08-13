@@ -41,6 +41,7 @@ from ddvc.endpoint_candidate_composition import (
     endpoint_candidate_composition_for_day,
 )
 from ddvc.endpoint_candidate_composition_release import (
+    attest_endpoint_candidate_composition_release,
     ENDPOINT_CANDIDATE_COMPOSITION_RELEASE,
     EndpointCandidateCompositionRelease,
     publish_endpoint_candidate_composition_release,
@@ -331,7 +332,21 @@ def main() -> int:
         type=int,
         help="diagnostic day limit; validates a temporary subset and cannot update current.json",
     )
+    parser.add_argument(
+        "--attest-existing",
+        action="store_true",
+        help="validate and add a receipt to the existing pointer without rebuilding tables",
+    )
     args = parser.parse_args()
+    if args.attest_existing:
+        if args.limit is not None:
+            parser.error("--attest-existing cannot be combined with --limit")
+        release = attest_endpoint_candidate_composition_release()
+        print(
+            f"attested endpoint-candidate generation {release.generation_id}; "
+            "artifact members unchanged"
+        )
+        return 0
     route_release = released_route_partitions(ROUTE_INPUT_COLUMNS, nonempty=False)
     print(
         f"reducing {len(route_release.days):,} released route days with "

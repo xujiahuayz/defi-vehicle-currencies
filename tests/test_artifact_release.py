@@ -379,7 +379,9 @@ def test_absent_alias_lease_blocks_publication_through_its_referent(
     assert alias_target.read_text(encoding="utf-8") == "published\n"
 
 
-def test_bundle_validation_finishes_before_pointer_publication(tmp_path: Path) -> None:
+def test_semantic_bundle_validation_runs_once_before_pointer_publication(
+    tmp_path: Path,
+) -> None:
     pointer = tmp_path / "release" / "current.json"
     first = _publish(pointer, 1)
     validation_calls = 0
@@ -388,19 +390,68 @@ def test_bundle_validation_finishes_before_pointer_publication(tmp_path: Path) -
         nonlocal validation_calls
         validation_calls += 1
         [json.loads(path.read_text()) for path in paths.values()]
-        if validation_calls == 2:
-            raise ValueError("simulated installed-bundle rejection")
+    second = _publish(pointer, 2, validate_staged=reject_installed_bundle)
 
-    with pytest.raises(ValueError, match="installed-bundle rejection"):
-        _publish(pointer, 2, validate_staged=reject_installed_bundle)
+    assert validation_calls == 1
+    assert resolve_artifact_release(
+        pointer,
+        kind=KIND,
+        schema_version=1,
+        filenames=FILENAMES,
+    ).generation_id == second.generation_id
+    assert second.generation_id != first.generation_id
 
-    assert validation_calls == 2
+
+def test_invalid_semantics_cannot_install_a_pointer_or_receipt(tmp_path: Path) -> None:
+    pointer = tmp_path / "release" / "current.json"
+    first = _publish(pointer, 1)
+    pointer_before = pointer.read_bytes()
+    validation_calls = 0
+
+    def reject_staged(_paths: dict[str, Path]) -> None:
+        nonlocal validation_calls
+        validation_calls += 1
+        raise ValueError("invalid bundle semantics")
+
+    with pytest.raises(ValueError, match="invalid bundle semantics"):
+        _publish(pointer, 2, validate_staged=reject_staged)
+
+    assert validation_calls == 1
+    assert pointer.read_bytes() == pointer_before
     assert resolve_artifact_release(
         pointer,
         kind=KIND,
         schema_version=1,
         filenames=FILENAMES,
     ).generation_id == first.generation_id
+
+
+@pytest.mark.parametrize("tamper", ["alternate", "missing"])
+def test_expected_receipt_must_equal_the_pointer_receipt(
+    tmp_path: Path, tamper: str
+) -> None:
+    pointer = tmp_path / "release" / "current.json"
+    release = _publish(pointer, 1)
+    assert release.semantic_receipt is not None
+    payload = json.loads(pointer.read_text(encoding="utf-8"))
+    if tamper == "alternate":
+        payload["semantic_validation"]["validator_fingerprint"] = "f" * 64
+    else:
+        payload.pop("semantic_validation")
+    write_json(pointer, payload)
+
+    with pytest.raises(ValueError, match="receipt"):
+        resolve_artifact_release(
+            pointer,
+            kind=KIND,
+            schema_version=1,
+            filenames=FILENAMES,
+            semantic_validator_fingerprint=(
+                release.semantic_receipt.validator_fingerprint
+            ),
+            semantic=False,
+            expected_semantic_receipt=release.semantic_receipt,
+        )
 
 
 def test_post_pointer_validation_failure_rolls_back_visibility(
@@ -658,6 +709,24 @@ def test_resolver_rejects_stale_provenance_even_when_pointer_digest_agrees(
             schema_version=1,
             filenames=FILENAMES,
         )
+
+
+def test_resolver_preserves_semantically_compatible_source_provenance(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    pointer = tmp_path / "release" / "current.json"
+    release = _publish(pointer, 1)
+    expected = release.generation_id
+    monkeypatch.setattr(artifact_release, "code_fingerprint", lambda _sources: "0" * 64)
+
+    reopened = resolve_artifact_release(
+        pointer,
+        kind=KIND,
+        schema_version=1,
+        filenames=FILENAMES,
+    )
+
+    assert reopened.generation_id == expected
 
 
 def test_concurrent_publishers_each_return_the_generation_they_published(
