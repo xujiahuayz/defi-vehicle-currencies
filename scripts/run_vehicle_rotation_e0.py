@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""E0 exploration of the vehicle-currency rotation, three lenses, reproducible.
+"""E0 exploration of the vehicle-currency rotation, one reproducible owner.
 
 PROVISIONAL (workflow §41): reads released route-only D3 exhibits, is a segregated
 plausibility check, and promotes nothing until rerun on the released D generation and
@@ -23,16 +23,19 @@ sits below one on large dollar volume, so it is held more than routed. High-rati
 derivatives and niche units sit on trivial dollars and are noise. Read this as the standing
 field of vehicles, not as a trend.
 
-LENS 2, FRAGMENTATION, A DISTRIBUTION FACT. On direct value intermediation share the leader
-of the vehicle role loses most of it and the effective number of vehicles rises several
-fold. The native asset's single dominance ends and the successor is a stable-led plurality,
-not a new hegemon. Caveat kept load-bearing: a falling aggregate Herfindahl cannot by itself
-separate genuine per-pair fragmentation from a mosaic of pair-level monopolies, which is the
-flaw that retired the earlier betweenness measure. The direct-share measure removes the
-circularity but not the aggregation, so genuine-versus-mosaic is a per-cell question for the
-state-dependent layer, not a settled finding here.
+LENS 2, TEMPORAL SHAPE AND PERSISTENCE, NOT A MONOTONE CLOCK. Annual and quarterly
+asset-type aggregates show the earlier stable lead, reversal, and renewed lead. The
+post-2024 change is pooled over complete 2025Q1--2026Q2 quarters and recomputed after
+omitting every one and every two quarters. This tests whether an isolated quarter carries
+the descriptive rebound; it does not assign the rebound to calendar time.
 
-LENS 3, EVENT STUDIES AROUND MECHANISM INTRODUCTIONS, a disciplined use of time. Monotone
+LENS 3, WITHIN-STABLE CONCENTRATION. Annual token rows measure how much of stable
+intermediary value is carried by USDT and USDC, and decompose the 2024--2025 and
+2024--2026 stable intermediary-share and endpoint-netted share-gap changes into USDT,
+USDC, and all other stablecoins. This distinguishes a broad stable-category movement from
+a two-token margin without treating token identity as a mechanism.
+
+LENS 4, EVENT STUDIES AROUND MECHANISM INTRODUCTIONS, a disciplined use of time. Monotone
 chronology is never the finding; even a dated event with leads, lags and an untreated
 comparison remains conditional on parallel trends and the exclusion of coincident design
 and composition changes. Two designs run on the daily token panel. First, a difference-in-differences event study
@@ -65,7 +68,8 @@ disaggregated panel is the intended improvement, but it must still pass the clus
 pre-trend and event-collision gates above. The annual DiD is reported so its power limit is
 on the record and not rediscovered later.
 
-Reads   output/exhibits/vehicle_excess_use.jsonl, vehicle_concentration.jsonl,
+Reads   output/exhibits/vehicle_excess_use.jsonl,
+        output/exhibits/vehicle_excess_use_quarterly.jsonl,
         data/processed/vehicle_excess_use_daily.parquet (only when provenance-current)
 Writes  output/exhibits/e0_vehicle_rotation_analysis.jsonl
 """
@@ -73,7 +77,9 @@ Writes  output/exhibits/e0_vehicle_rotation_analysis.jsonl
 from __future__ import annotations
 
 import json
+import math
 import sys
+from itertools import combinations
 from pathlib import Path
 
 import numpy as np
@@ -90,11 +96,11 @@ FIAT_STABLE = frozenset(
     symbol for symbol, regime in STABLE_BACKING.items() if regime == "fiat_reserve"
 )
 MATERIAL_USD = 1e8  # ignore sub-$100M-intermediary tokens as cross-sectional noise
-SCRIPT_VERSION = "vehicle_rotation_e0.v2"
+SCRIPT_VERSION = "vehicle_rotation_e0.v3"
 EVENT_WINDOW_DAYS = 56
 MIN_EVENT_CLUSTERS = 12
 ANNUAL_INPUT = EX / "vehicle_excess_use.jsonl"
-CONCENTRATION_INPUT = EX / "vehicle_concentration.jsonl"
+QUARTERLY_INPUT = EX / "vehicle_excess_use_quarterly.jsonl"
 DAILY_PANEL = ROOT / "data" / "processed" / "vehicle_excess_use_daily.parquet"
 
 
@@ -123,16 +129,145 @@ def lens1_cross_section(out: list[dict]) -> None:
                     "is_vehicle": bool(r.vehicle_excess_use_ratio > 1)})
 
 
-def lens2_fragmentation(out: list[dict]) -> None:
-    rows = _rows("vehicle_concentration.jsonl")
-    for r in rows:
-        if str(r.get("basis")) not in ("share_volume", "share_count"):
+def _asset_type_rows(rows: list[dict]) -> pd.DataFrame:
+    return pd.DataFrame([
+        row for row in rows
+        if row.get("level") == "asset_type"
+        and row.get("scope") == "candidate_currencies"
+        and row.get("asset_type") in {"native", "stable"}
+    ])
+
+
+def _log_relative_excess_use(rows: pd.DataFrame, suffix: str = "") -> float:
+    by_type = rows.groupby("asset_type")[[
+        f"intermediate_usd{suffix}", f"endpoint_usd{suffix}"
+    ]].sum()
+    if not {"native", "stable"}.issubset(by_type.index):
+        raise ValueError("native and stable rows are both required")
+    intermediate = by_type[f"intermediate_usd{suffix}"]
+    endpoint = by_type[f"endpoint_usd{suffix}"]
+    intermediate_share = intermediate / intermediate.sum()
+    endpoint_share = endpoint / endpoint.sum()
+    ratios = intermediate_share / endpoint_share
+    if not (ratios > 0).all():
+        raise ValueError("positive native and stable support is required")
+    return float(math.log(ratios["stable"] / ratios["native"]))
+
+
+def lens2_temporal_persistence(out: list[dict]) -> None:
+    annual = _asset_type_rows(_rows("vehicle_excess_use.jsonl"))
+    quarterly = _asset_type_rows(_rows("vehicle_excess_use_quarterly.jsonl"))
+    if annual.empty or quarterly.empty:
+        return
+    baseline = annual[annual["year"].eq(2024)]
+    complete = quarterly[
+        quarterly["quarter"].between("2025Q1", "2026Q2")
+        & quarterly["days"].ge(80)
+    ]
+    quarters = sorted(complete["quarter"].unique())
+    if len(baseline) != 2 or len(quarters) < 3:
+        return
+    for support, suffix in (
+        ("all_routes", ""),
+        ("within_2x", "_within_2x"),
+        ("within_20pct", "_within_20pct"),
+    ):
+        baseline_log_relative = _log_relative_excess_use(baseline, suffix)
+
+        def delta(omitted: tuple[str, ...]) -> float:
+            kept = complete[~complete["quarter"].isin(omitted)]
+            return _log_relative_excess_use(kept, suffix) - baseline_log_relative
+
+        leave_one = min((delta(omitted), omitted) for omitted in combinations(quarters, 1))
+        leave_two = min((delta(omitted), omitted) for omitted in combinations(quarters, 2))
+        out.append({
+            "lens": "temporal_persistence",
+            "support": support,
+            "baseline": "2024 annual aggregate",
+            "post_window": f"{quarters[0]}..{quarters[-1]}",
+            "post_quarters": len(quarters),
+            "full_log_relative_delta": round(delta(()), 6),
+            "leave_one_min_delta": round(leave_one[0], 6),
+            "leave_one_omitted": list(leave_one[1]),
+            "leave_one_all_positive": bool(leave_one[0] > 0),
+            "leave_two_min_delta": round(leave_two[0], 6),
+            "leave_two_omitted": list(leave_two[1]),
+            "leave_two_all_positive": bool(leave_two[0] > 0),
+            "interpretation": "isolated-quarter stress test; calendar time is not treatment",
+        })
+
+
+def lens3_stable_concentration(out: list[dict]) -> None:
+    rows = pd.DataFrame([
+        row for row in _rows("vehicle_excess_use.jsonl")
+        if row.get("level") == "token"
+        and row.get("scope") == "candidate_currencies"
+        and row.get("asset_type") == "stable"
+    ])
+    if rows.empty:
+        return
+    for year, group in rows.groupby("year", sort=True):
+        weights = group.set_index("symbol")["intermediate_usd"].groupby(level=0).sum()
+        weights = weights[weights > 0] / weights[weights > 0].sum()
+        if weights.empty:
             continue
-        h = r.get("hhi")
-        out.append({"lens": "fragmentation", "basis": r.get("basis"), "year": r.get("year"),
-                    "hhi": round(h, 4) if h else None,
-                    "effective_vehicles": round(1 / h, 2) if h else None,
-                    "cr1": round(r.get("cr1"), 4) if r.get("cr1") is not None else None})
+        usdt = float(weights.get("USDT", 0.0))
+        usdc = float(weights.get("USDC", 0.0))
+        out.append({
+            "lens": "stable_concentration",
+            "year": int(year),
+            "usdt_share": round(usdt, 6),
+            "usdc_share": round(usdc, 6),
+            "usdt_usdc_cr2": round(usdt + usdc, 6),
+            "other_stable_share": round(1 - usdt - usdc, 6),
+            "hhi": round(float((weights ** 2).sum()), 6),
+            "effective_stable_vehicles": round(float(1 / (weights ** 2).sum()), 3),
+            "admitted_tokens": int(len(weights)),
+        })
+
+    indexed = rows.set_index(["year", "symbol"])
+    for comparison_year in (2025, 2026):
+        if not {2024, comparison_year}.issubset(set(rows["year"])):
+            continue
+        changes: dict[str, tuple[float, float]] = {}
+        symbols = sorted(set(rows.loc[rows["year"].isin([2024, comparison_year]), "symbol"]))
+        for symbol in symbols:
+            values = []
+            for year in (2024, comparison_year):
+                try:
+                    record = indexed.loc[(year, symbol)]
+                    if isinstance(record, pd.DataFrame):
+                        record = record.sum(numeric_only=True)
+                    intermediate = float(record["intermediate_share"])
+                    gap = intermediate - float(record["endpoint_share"])
+                except KeyError:
+                    intermediate = gap = 0.0
+                values.append((intermediate, gap))
+            changes[symbol] = (
+                values[1][0] - values[0][0],
+                values[1][1] - values[0][1],
+            )
+        total_intermediate = sum(value[0] for value in changes.values())
+        total_gap = sum(value[1] for value in changes.values())
+        for bucket in ("USDT", "USDC", "other"):
+            selected = (
+                [changes.get(bucket, (0.0, 0.0))]
+                if bucket != "other"
+                else [value for symbol, value in changes.items() if symbol not in {"USDT", "USDC"}]
+            )
+            delta_intermediate = sum(value[0] for value in selected)
+            delta_gap = sum(value[1] for value in selected)
+            out.append({
+                "lens": "stable_duopoly_decomposition",
+                "baseline_year": 2024,
+                "comparison_year": comparison_year,
+                "bucket": bucket,
+                "delta_intermediate_share": round(delta_intermediate, 6),
+                "share_of_stable_intermediate_change": round(delta_intermediate / total_intermediate, 6),
+                "delta_share_gap": round(delta_gap, 6),
+                "share_of_stable_gap_change": round(delta_gap / total_gap, 6),
+                "interpretation": "token contribution, not a token-design mechanism",
+            })
 
 
 def lens_did_annual(out: list[dict]) -> None:
@@ -338,11 +473,12 @@ def lens3_event_studies(out: list[dict], df: pd.DataFrame) -> None:
 
 def main() -> int:
     out: list[dict] = []
-    base_inputs = (ANNUAL_INPUT, CONCENTRATION_INPUT)
+    base_inputs = (ANNUAL_INPUT, QUARTERLY_INPUT)
     try:
         with current_artifacts(base_inputs, consumer="vehicle-rotation E0"):
             lens1_cross_section(out)
-            lens2_fragmentation(out)
+            lens2_temporal_persistence(out)
+            lens3_stable_concentration(out)
             lens_did_annual(out)
     except RuntimeError as exc:
         print(f"refusing stale E0 inputs: {exc}", file=sys.stderr)
@@ -366,11 +502,16 @@ def main() -> int:
     )
     vehicles = [r for r in out if r.get("lens") == "cross_section" and r.get("is_vehicle")]
     print(f"cross-section vehicles (latest year): {[r['token'] for r in vehicles]}")
-    frag = [r for r in out if r.get("lens") == "fragmentation" and r.get("basis") == "share_volume"]
-    if frag:
-        f0, f1 = frag[0], frag[-1]
-        print(f"value fragmentation: effective vehicles {f0['effective_vehicles']} -> {f1['effective_vehicles']}, "
-              f"CR1 {f0['cr1']:.1%} -> {f1['cr1']:.1%}")
+    persistence = [
+        r for r in out
+        if r.get("lens") == "temporal_persistence" and r.get("support") == "within_20pct"
+    ]
+    if persistence:
+        record = persistence[0]
+        print(
+            "strict-value persistence: worst leave-two log-relative delta "
+            f"{record['leave_two_min_delta']:+.3f}"
+        )
     print(f"wrote {OUT.relative_to(ROOT)}")
     return 0
 
