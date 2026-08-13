@@ -26,7 +26,11 @@ and pick a blocking check from the freeze gate.
 
 
 
-- [ ] **JAVA INTERJECTION (browser, 2026-08-13T09:51:06+00:00):** DECK OVERFLOW/INTERPRETATION FIX: at the next clean boundary integrate science commit 3d8f36b only (its predecessors are already present). It removes the populated slide overflow and changes the live questions to the actual findings: raw focal share versus mechanical pair-week centering, ex ante feasibility risk set, and exact-state reversal. It explicitly says zero clean substitution windows and that appearance/disappearance magnitudes are mechanical. Recompile from the existing generated macros; do not rerun data.
+- [x] **JAVA INTERJECTION (browser, 2026-08-13T09:51:06+00:00):** DECK OVERFLOW/INTERPRETATION FIX: at the next clean boundary integrate science commit 3d8f36b only (its predecessors are already present). It removes the populated slide overflow and changes the live questions to the actual findings: raw focal share versus mechanical pair-week centering, ex ante feasibility risk set, and exact-state reversal. It explicitly says zero clean substitution windows and that appearance/disappearance magnitudes are mechanical. Recompile from the existing generated macros; do not rerun data.
+  _Closed by integrating `3d8f36b` as `a587f8b` and rebuilding the deck from
+  the existing generated macros. The populated audit frame has no vertical
+  overflow and makes the zero-support/mechanical-magnitude limits explicit;
+  no data owner was rerun._
 
 - [x] **JAVA INTERJECTION (browser, 2026-08-13T09:17:53+00:00):** Use science tip 377aa25 for the queued post-build integration. It fixes support attribution so a wholly missing pair-week is incomplete_window, not composition_shift. This supersedes the earlier tip pointer; keep the active route build untouched.
   _Closed by integrating the complete six-commit science series through
