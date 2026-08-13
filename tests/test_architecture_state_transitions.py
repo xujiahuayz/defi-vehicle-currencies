@@ -140,6 +140,15 @@ def test_changing_peer_set_marks_only_affected_event_window_as_contaminated() ->
     assert usdc.status.tolist() == ["composition_shift", "usable"]
 
 
+def test_missing_pair_week_is_incomplete_not_a_composition_shift() -> None:
+    panel = build_full_risk_panel(_routes(), min_total_routes=1)
+    events = transition_events(panel, threshold=0.10, confirmation_weeks=3)
+    panel = panel[~panel.week.eq(pd.Timestamp("2025-02-17"))]
+    contrasts = event_contrasts(panel, events)
+    usdc = contrasts[contrasts.vehicle.eq("USDC")]
+    assert usdc.status.tolist() == ["incomplete_window", "usable"]
+
+
 def test_support_summary_keeps_zero_event_threshold_kind_cells() -> None:
     panel = build_full_risk_panel(_routes(), min_total_routes=1)
     events = transition_events(panel, threshold=0.10, confirmation_weeks=3)

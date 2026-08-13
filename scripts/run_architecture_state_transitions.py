@@ -321,6 +321,9 @@ def event_contrasts(panel: pd.DataFrame, events: pd.DataFrame) -> pd.DataFrame:
             continue
         wanted = pd.date_range(event_week - pd.Timedelta(weeks=8), event_week + pd.Timedelta(weeks=7), freq="7D")
         window = group.reindex(wanted)
+        if window["pair_week_vehicle_set_sha256"].isna().any():
+            rows.append({**base, "status": "incomplete_window"})
+            continue
         if window["pair_week_vehicle_set_sha256"].nunique(dropna=False) != 1:
             rows.append({**base, "status": "composition_shift"})
             continue
