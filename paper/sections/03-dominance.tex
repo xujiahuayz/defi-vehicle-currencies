@@ -42,11 +42,11 @@ Nor is this a monotone displacement. Native intermediation rebounds during 2023 
 
 A stable asset can become common because traders want to acquire or sell it, without becoming a vehicle between other assets. The excess-use ratio separates the two margins. It divides the asset's share of intermediary positions by its share of route endpoints on the same perimeter. A ratio above one means that the asset appears in the middle more often than endpoint demand alone would imply.
 
-The aggregate shift is not common to all stablecoin designs. USDC and USDT jointly account for \JointStableContribution{} of the increase in stable count share. USDC already has excess vehicle use at the start of the comparison and changes little. USDT supplies the transition margin. Its count excess-use ratio rises from \USDTCountExcessBase{} to \USDTCountExcessEnd{}, while its strict-value ratio moves from \USDTValueExcessBase{} to \USDTValueExcessEnd{}. The strict-value intermediary-minus-endpoint gap moves from \USDTEndpointGapBase{} to \USDTEndpointGapEnd{}, a \USDTEndpointGapChange{} change with a \USDTEndpointGapSE{} standard error.
+The aggregate shift is not common to all stablecoin designs. USDC and USDT jointly account for \JointStableContribution{} of the increase in stable count share. USDC already has excess vehicle use at the start of the comparison and changes little. USDT drives the shift within the stablecoin category. Its count excess-use ratio rises from \USDTCountExcessBase{} to \USDTCountExcessEnd{}, while its strict-value ratio moves from \USDTValueExcessBase{} to \USDTValueExcessEnd{}. The strict-value intermediary-minus-endpoint gap moves from \USDTEndpointGapBase{} to \USDTEndpointGapEnd{}, a \USDTEndpointGapChange{} change with a \USDTEndpointGapSE{} standard error.
 
 \begin{table}[tbp]
 \centering
-\caption{USDT is the margin of stable-vehicle rotation}
+\caption{USDT drives the rise in stablecoin vehicle dominance}
 \label{tab:usdt-transition}
 \small
 \begin{tabular}{lrrr}
@@ -87,6 +87,6 @@ This support failure is informative. Entry into realised architecture exposure i
 \subsection{What the route evidence establishes}
 \label{sec:dominance:robustness}
 
-The route-only evidence establishes three facts. Vehicle use rotates sharply from the native asset toward stable num\'eraires; the change is stronger by supported value than by route count; and USDT, instead of a pooled stablecoin category, is the principal transition margin. The rotation is not monotone, and it survives observed stratification by venue integration and complexity.
+The route-only evidence establishes three facts. Vehicle use rotates sharply from the native asset toward stable num\'eraires; the change is stronger by supported value than by route count; and USDT drives the shift within the stablecoin category. The rotation is not monotone, and it survives observed stratification by venue integration and complexity.
 
 These facts leave the paper's central mechanism contest open. Cost dominance requires exact transaction-state counterfactuals. Persistence requires a final pair-candidate risk set and fixed-effect design. Liquidity provision requires independent external reference prices and validated capital quantities. Those objects are evaluated in the following sections but do not enter the rotation claim before their own evidence gates pass.
