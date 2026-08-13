@@ -37,20 +37,20 @@ Against route-cost differences measured in tens of basis points, that error is o
 The error declines across the three validation dates. Median absolute movement is 140.3 basis points on 2022-06-15, 52.1 on 2024-06-15 and 31.7 on 2025-09-14. Three dates do not identify a trend or an aggregator effect, but they prevent a single pooled number from hiding time heterogeneity.
 % output/exhibits/realised_route_timing_validation.jsonl, per-day rows
 
-That measurement is a level, and a dominance verdict is a comparison in which both sides are priced at the same state. When the market moves between a route's block and the close of its hour, the direct pool and both vehicle legs move together, and a common component does nothing to the difference between the two routes. Discarding a classification on the strength of a level statistic when the estimand is a difference risks discarding a true result. The comparison is therefore measured on its own terms. For endpoints $a$ and $b$ and intermediary $k$, with a direct pool $ab$ and legs $ak$ and $kb$, define
+That measurement is a level, and a dominance classification is a comparison in which both sides are priced at the same state. When the market moves between a route's block and the close of its hour, the direct pool and both vehicle legs move together, and a common component does nothing to the difference between the two routes. Discarding a classification on the strength of a level statistic when the estimand is a difference risks discarding a true result. The comparison is therefore measured on its own terms. For endpoints $a$ and $b$ and intermediary $k$, with a direct pool $ab$ and legs $ak$ and $kb$, define
 \[
 m_{a,k,b} \;=\; \log P(a \to b) \;-\; \log P(a \to k) \;-\; \log P(k \to b),
 \]
-which is positive exactly when the direct pool returns more of $b$ per unit of $a$ than the two-leg route does, in the zero-size limit where the marginal price is the pool price. The sign of $m$ is the dominance verdict, and the quantity the exercise reports is the sign disagreement between the two states,
+which is positive exactly when the direct pool returns more of $b$ per unit of $a$ than the two-leg route does, in the zero-size limit where the marginal price is the pool price. The sign of $m$ determines the dominance classification, and the quantity the exercise reports is the sign disagreement between the two states,
 \[
 \Phi \;=\; \Pr\!\left[\operatorname{sign} m^{\mathrm{block}}_{a,k,b} \neq \operatorname{sign} m^{\mathrm{hour}}_{a,k,b}\right].
 \]
 Two properties make the test exact, and Appendix~\ref{app:timing} derives both. Token decimals enter each leg as a constant and cancel around a closed triangle, which lets the residual be formed in raw price units with no decimals-resolution error carried into it. And the concentrated-liquidity venues carry \texttt{sqrtPriceX96} on the swap event itself, so the state immediately after any swap is observed directly.
 
-Computing $m$ strictly before each direct-pool opportunity event and again at its hour-boundary state, over 371 triangles and 189,622 opportunity snapshots on seven sampled days spanning 2021-12-25 to 2025-11-04, the verdict flips 38.9\% of the time. The median triangle gap at pre-event state is 38.3 basis points and the median absolute change in that gap is 35.5 basis points, with a 90th percentile of 104.5.
+Computing $m$ strictly before each direct-pool opportunity event and again at its hour-boundary state, over 371 triangles and 189,622 opportunity snapshots on seven sampled days spanning 2021-12-25 to 2025-11-04, the dominance classification changes 38.9\% of the time. The median triangle gap at pre-event state is 38.3 basis points and the median absolute change in that gap is 35.5 basis points, with a 90th percentile of 104.5.
 % output/exhibits/block_vs_hour_verdict.jsonl; scripts/test_block_vs_hour_verdict.py, 371 triangles, 189,622 opportunity snapshots
 
-Restricting to large gaps does not rescue the verdict. On the 31,860 opportunity snapshots whose pre-event gap exceeds 100 basis points, the flip rate is 36.3\%, against 38.9\% pooled.
+Restricting to large gaps does not stabilise the classification. On the 31,860 opportunity snapshots whose pre-event gap exceeds 100 basis points, the change rate is 36.3\%, against 38.9\% pooled.
 % output/exhibits/block_vs_hour_conditional.jsonl, gap_at_own_event rows above 100 basis points
 The reason is visible in what $m$ is at zero size: a triangular-arbitrage residual, which searchers keep oscillating around zero within blocks, so a large value of it is transient wherever it appears in the distribution.
 
@@ -58,25 +58,25 @@ What does move the flip rate is the fee wedge, and this is the result of the exe
 \[
 m^{w}_{a,k,b} \;=\; m_{a,k,b} - w, \qquad w \;=\; f_{ak} + f_{kb} - f_{ab},
 \]
-and displacing the verdict boundary by $w$ carries it out of the region where the residual oscillates. At a net wedge of 30 basis points, the fee difference between a two-leg route on two 30-basis-point pools and one direct pool of the same tier, the flip rate falls to 25.3\%. At 60 basis points it is 16.1\% and at 100 basis points 9.4\%. Figure~\ref{fig:exec:wedge} plots the whole sweep against the share of observations the pre-event residual classifies as dominated at the same wedge.
+and displacing the classification threshold by $w$ carries it out of the region where the residual oscillates. At a net wedge of 30 basis points, the fee difference between a two-leg route on two 30-basis-point pools and one direct pool of the same tier, the classification-change rate falls to 25.3\%. At 60 basis points it is 16.1\% and at 100 basis points 9.4\%. Figure~\ref{fig:exec:wedge} plots the whole sweep against the share of observations the pre-event residual classifies as dominated at the same wedge.
 % output/exhibits/block_vs_hour_verdict.jsonl, fee-wedge sweep in scripts/test_block_vs_hour_verdict.py; output/exhibits/block_vs_hour_conditional.jsonl, fee_wedge_bps rows
-The timing threat is therefore a function of trade economics and has no single number. A retail-sized route across two thin pools carries a large wedge and a verdict that is stable under repricing; a large route across two deep pools of the cheapest tier carries almost none and a verdict that is not.
+The timing threat is therefore a function of trade economics and has no single number. A retail-sized route across two thin pools carries a large wedge and a classification that is stable under repricing; a large route across two deep pools of the cheapest tier carries almost none and a classification that is not.
 
 \begin{figure}[tbp]
 \centering
-\caption{Verdict instability against the net fee wedge a two-leg route pays}
+\caption{Dominance-classification instability against the net fee wedge a two-leg route pays}
 \label{fig:exec:wedge}
 \begin{tikzpicture}
 \begin{axis}[width=0.85\textwidth, height=6.4cm, xlabel={Net fee wedge $w$, basis points}, ylabel={Percent of route observations}, xmin=-5, xmax=105, ymin=0, ymax=55, xtick={0,5,10,30,60,100}, ytick={0,10,20,30,40,50}, tick align=outside, tick label style={font=\footnotesize}, label style={font=\footnotesize}, legend style={font=\footnotesize, draw=black!35, fill=white, at={(0.97,0.96)}, anchor=north east}, legend cell align=left, grid=major, grid style={black!10}, axis line style={black!70}]
 \addplot[black, thick, mark=*, mark size=1.9pt] coordinates {(0,38.89) (5,37.63) (10,35.48) (30,25.34) (60,16.15) (100,9.43)};
-\addlegendentry{verdict flip rate}
+\addlegendentry{classification-change rate}
 \addplot[black!55, thick, dashed, mark=square*, mark size=1.9pt, mark options={solid, fill=white, draw=black!55}] coordinates {(0,49.57) (5,43.09) (10,38.32) (30,24.15) (60,13.61) (100,7.86)};
 \addlegendentry{dominated share}
 \end{axis}
 \end{tikzpicture}
 \par\vspace{6pt}
 \begin{minipage}{0.92\textwidth}
-\footnotesize\raggedright \emph{Notes.} The verdict boundary is displaced by the net fee wedge $w = f_{ak} + f_{kb} - f_{ab}$ and the triangle residual is recomputed strictly before each direct-pool opportunity event and again at its hour-boundary state. \emph{Verdict flip rate} is the share of opportunity snapshots whose dominance sign disagrees between the two states at that wedge, and \emph{dominated share} is the share the pre-event residual classifies as dominated at the same wedge. The wedge applies to every observation, which keeps the denominator constant across the sweep. There are 189,622 opportunity snapshots across 371 triangles on seven sampled days from 2021-12-25 to 2025-11-04.
+\footnotesize\raggedright \emph{Notes.} The classification threshold is displaced by the net fee wedge $w = f_{ak} + f_{kb} - f_{ab}$ and the triangle residual is recomputed strictly before each direct-pool opportunity event and again at its hour-boundary state. \emph{Classification-change rate} is the share of opportunity snapshots whose dominance sign disagrees between the two states at that wedge, and \emph{dominated share} is the share the pre-event residual classifies as dominated at the same wedge. The wedge applies to every observation, which keeps the denominator constant across the sweep. There are 189,622 opportunity snapshots across 371 triangles on seven sampled days from 2021-12-25 to 2025-11-04.
 \end{minipage}
 \end{figure}
 % output/exhibits/block_vs_hour_conditional.jsonl, cut=fee_wedge_bps rows, 189,622 opportunity snapshots on seven sampled days
@@ -90,7 +90,7 @@ Two consequences follow, and they differ across the paper's two estimands. The d
 
 The correction is a separation, and its specification is settled. The counterfactual panel remains an hourly cost surface for enumeration. The matched realised-route analysis moves to transaction state, ordered strictly by block and log index. The concentrated-liquidity validator already matches both actual route legs to their pools and reads the last state before the transaction's first V3 swap; the direct and alternative-vehicle pools must now be reconstructed under the same timing contract, including finite-size depth.
 % output/exhibits/realised_route_timing_validation.jsonl; scripts/validate_realised_route_timing.py
-Appendix~\ref{app:state} states that reconstruction and the continuity test that audits it, together with the independent replication on a second venue family. The quantity that reports the size of the correction is the verdict-flip rate between hour pricing and block pricing on the matched realised routes themselves, and the wedge sweep above is the target it has to beat.
+Appendix~\ref{app:state} states that reconstruction and the continuity test that audits it, together with the independent replication on a second venue family. The quantity that reports the size of the correction is the classification-change rate between hour pricing and block pricing on the matched realised routes themselves, and the wedge sweep above is the target it has to beat.
 
 One further gap between what the panel prices and what the router optimised is stated as a limit and is not controlled. Quoted output is not the router's whole objective: it also weighs gas, exposure to sandwiching, the probability that a path reverts and, for aggregators, access to private orderflow. Gas remains unresolved until every candidate comparison is joined to the realised transaction's effective gas price and to route units calibrated for its year, topology, venue sequence and intermediary identity. The other components are not recoverable from the swap record, which retains executed swaps and their receipts and carries nothing about the arrangements between searchers and block builders under which a route was submitted. The estimand is the share of routing classified as dominated for which the measured gap is smaller than a plausible charge for one of those considerations, which would make the routing choice optimal on an objective the panel cannot see, and it is the strongest objection a referee can raise against any behavioural reading of the classification.
 
@@ -124,9 +124,9 @@ The direction is the point of this subsection. Every remaining gap withholds dep
 Coverage bears differently on the paper's two estimands, and the difference runs against the intuition that a floor is always the safe reading. For the dominance frequency the sign is clean: a cheaper direct route the panel cannot see would raise measured dominance, so the reported incidence is a lower bound. For survival the same gap cuts the other way, because a router that could not reach the cheaper direct pool is a router that had no choice to forgo, and a coverage gap that raises measured dominance also raises the share of dominated routes nobody could have avoided.
 
 \subsection{What this section settles}
-\label{sec:executability:verdict}
+\label{sec:executability:assessment}
 
-Three of the four questions have answers with numbers attached. The gaps carrying this paper's frequency sit below the level at which anyone could remove them at a profit, at every notional the panel prices, and the share that does not is bounded and counted. The timing error has a measured size that depends on the fee wedge a route pays, running from 38.0\% verdict instability at zero size to 8.9\% at a 100-basis-point wedge, and the correction that closes it has a specification and a target to beat. The venue gaps are signed, and they are signed against the direction that would flatter the paper's comparisons.
+Three of the four questions have answers with numbers attached. The gaps carrying this paper's frequency sit below the level at which anyone could remove them at a profit, at every notional the panel prices, and the share that does not is bounded and counted. The timing error has a measured size that depends on the fee wedge a route pays, with classification instability falling from 38.0\% at zero size to 8.9\% at a 100-basis-point wedge, and the correction that closes it has a specification and a target to beat. The venue gaps are signed, and they are signed against the direction that would flatter the paper's comparisons.
 % output/exhibits/block_vs_hour_conditional.jsonl, fee_wedge_bps rows
 
 Two things are open and are carried openly. The share of above-threshold gaps that were arbitrage taken, as against quoter error, is unresolved, and the same-block cycle test named in Section~\ref{sec:executability:arbitrage} is what resolves it. The share of dominated routing that a router preferred on an objective the panel cannot observe is unbounded, and nothing in the swap record bounds it. The first governs how much of the measured distribution is real. The second governs whether a real dominated route was a choice, and it is the reason this paper reports a frequency and a duration and stops short of a claim about why a router did what it did.
