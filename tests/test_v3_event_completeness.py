@@ -4,11 +4,13 @@ from collections import Counter
 from contextlib import contextmanager
 from dataclasses import replace
 from pathlib import Path
+import sys
 
 import pandas as pd
 import pytest
 
 import ddvc.v3_event_completeness as contract
+import scripts.audit_v3_graph_event_completeness as auditor
 from ddvc.artifact_release import file_sha256
 from ddvc.v3_event_completeness import (
     COUNT_FIELDS,
@@ -65,6 +67,23 @@ def payload() -> V3EventPayload:
         None,
         None,
     )
+
+
+def test_auditor_help_never_starts_the_expensive_build(monkeypatch) -> None:
+    monkeypatch.setattr(sys, "argv", ["audit_v3_graph_event_completeness.py", "--help"])
+    monkeypatch.setattr(
+        auditor,
+        "build",
+        lambda **_kwargs: pytest.fail("--help started the expensive audit"),
+    )
+    with pytest.raises(SystemExit) as stopped:
+        auditor.main()
+    assert stopped.value.code == 0
+
+
+def test_auditor_preflight_reports_missing_state_before_raw_scan(tmp_path: Path) -> None:
+    with pytest.raises(FileNotFoundError, match="build_market_state.py.*--audit-calendar"):
+        auditor.require_audit_state_inputs([DAY], state_root=tmp_path)
 
 
 @pytest.mark.parametrize(

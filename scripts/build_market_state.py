@@ -22,6 +22,8 @@ from ddvc.fetch.sources import get_source
 from ddvc.graph_event_order import SUPPORTED_VENUES, load_event_order_generation_metadata
 from ddvc.paths import DATA_DIR, OUTPUT_DIR, RAW_MARKET_DATA_LOCK
 from ddvc.provenance import stamp
+from ddvc.reconstruct import UNIFIED_QUALITY_PANEL
+from ddvc.release_calendar import transaction_frontier_audit_days
 from ddvc.runtime import (
     atomic_output,
     bounded_workers,
@@ -394,6 +396,7 @@ def build_family(
     force: bool,
     migrate_from: Path | None,
     rekey_from: Path | None = None,
+    explicit_days: list[str] | None = None,
 ) -> list[dict[str, object]]:
     readers = {
         "tick": read_tick_quality,
@@ -409,7 +412,13 @@ def build_family(
     qualities: list[dict[str, object]] = []
     selected: list[tuple[str, str]] = []
     for venue in venues:
-        for day in selected_days(venue, start, end):
+        genesis = get_source(venue).genesis.strftime("%Y%m%d")
+        days = (
+            [day for day in explicit_days if genesis <= day <= RESEARCH_SAMPLE_END]
+            if explicit_days is not None
+            else selected_days(venue, start, end)
+        )
+        for day in days:
             selected.append((venue, day))
             cached = None if force else readers[family](RAW, venue, day)
             if cached is None:
@@ -538,6 +547,11 @@ def main() -> int:
     parser.add_argument("--workers", type=int, default=8)
     parser.add_argument("--force", action="store_true")
     parser.add_argument(
+        "--audit-calendar",
+        action="store_true",
+        help="materialize only the shared transaction-frontier construction-audit dates",
+    )
+    parser.add_argument(
         "--migrate-from",
         type=Path,
         help="schema-v1 state root for exact additive CP/multi-asset migration",
@@ -559,16 +573,32 @@ def main() -> int:
         if unknown:
             parser.error(f"unsupported venue(s) for {args.family}: {', '.join(unknown)}")
     full_run = (
-        args.family == "all"
+        not args.audit_calendar
+        and args.family == "all"
         and args.start.replace("-", "") == RESEARCH_SAMPLE_START
         and args.end.replace("-", "") == RESEARCH_SAMPLE_END
+    )
+    explicit_days = (
+        transaction_frontier_audit_days(UNIFIED_QUALITY_PANEL)
+        if args.audit_calendar
+        else None
     )
     venue_days = sorted(
         {
             (venue, day)
             for family in families
             for venue in (args.venue or list(FAMILY_STREAMS[family]))
-            for day in selected_days(venue, args.start, args.end)
+            for day in (
+                [
+                    day
+                    for day in explicit_days
+                    if get_source(venue).genesis.strftime("%Y%m%d")
+                    <= day
+                    <= RESEARCH_SAMPLE_END
+                ]
+                if explicit_days is not None
+                else selected_days(venue, args.start, args.end)
+            )
         }
     )
     preflight_event_order_generations(venue_days)
@@ -590,6 +620,7 @@ def main() -> int:
                         force=args.force,
                         migrate_from=args.migrate_from,
                         rekey_from=args.rekey_from,
+                        explicit_days=explicit_days,
                     )
                 )
             quality = market_state_quality_frame(rows)

@@ -5,6 +5,7 @@ from __future__ import annotations
 
 import argparse
 from bisect import bisect_left
+from collections.abc import Callable
 from contextlib import ExitStack
 import json
 from pathlib import Path
@@ -211,6 +212,8 @@ def inventory_perimeter(_days: list[str], end_blocks: list[int]) -> tuple[int, i
 def require_complete_raw_chunks(
     start: int,
     end: int,
+    *,
+    progress: Callable[[int, int], None] | None = None,
 ) -> tuple[list[tuple[int, int]], dict[str, object]]:
     last_day = inventory_calendar_days()[-1]
     terminal = int(raw_day_metadata(last_day)["head_block_at_fetch"])
@@ -238,6 +241,7 @@ def require_complete_raw_chunks(
         RAW_INVENTORY_ROOT,
         pool_creation_blocks=pool_creation_blocks,
         frozen_upper=frozen_upper,
+        progress=progress,
     )
     print(
         f"PASS: V3 raw inventory chunks={totals['chunks']:,}; "

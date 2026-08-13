@@ -10,7 +10,7 @@ import hashlib
 import json
 from pathlib import Path
 import re
-from typing import Iterable, Iterator
+from typing import Callable, Iterable, Iterator
 
 from eth_abi import decode as abi_decode
 from eth_utils import keccak
@@ -843,8 +843,10 @@ def audit_inventory_chunks(
     *,
     pool_creation_blocks: dict[str, int],
     frozen_upper: dict[str, object],
+    progress: Callable[[int, int], None] | None = None,
 ) -> dict[str, object]:
     """Read every raw log and classify it against the factory-created perimeter."""
+    ordered_ranges = list(ranges)
 
     expected_topics = set(EVENT_TOPICS.values())
     canonical_by_event = {name: 0 for name in EVENT_TOPICS}
@@ -861,7 +863,7 @@ def audit_inventory_chunks(
         "canonical_pool_logs": 0,
         "quarantined_logs": 0,
     }
-    for lower, upper in ranges:
+    for index, (lower, upper) in enumerate(ordered_ranges, 1):
         try:
             records, metadata, _schema = load_inventory_chunk_records(
                 lower,
@@ -941,6 +943,10 @@ def audit_inventory_chunks(
                 raise ValueError(f"V3 inventory chunk {lower}-{upper} event counts differ")
         totals["chunks"] = int(totals["chunks"]) + 1
         totals["raw_logs"] = int(totals["raw_logs"]) + raw_logs
+        if progress is not None and (
+            index % 250 == 0 or index == len(ordered_ranges)
+        ):
+            progress(index, len(ordered_ranges))
     temporaries = list(root.glob(".*.tmp"))
     if temporaries:
         raise RuntimeError(f"V3 inventory raw perimeter contains {len(temporaries):,} temporaries")
