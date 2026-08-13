@@ -8,6 +8,51 @@ Every claim in the "grounding" column below was measured or read in this project
 
 ## 0. Standing rules
 
+### Live two-lane operator view
+
+The graph has one scientific order but two concurrent execution lanes. The
+Studio data lane and the M3 science/deliverable lane must be shown separately in
+the live sidecar; a single `NOW` label is incomplete whenever both are active.
+The lanes meet only at a published, tested generation.
+
+| Node | Work inside the node | Edge evidence |
+|---|---|---|
+| C | State the estimand, unit, comparison set, timing, rival mechanisms, inference and materiality sensitivities. | Registered design with no unresolved semantic ambiguity. |
+| D1 | Inventory the required fields and support perimeter; classify gaps by systematic bias, economic weight and concentration rather than demanding perfect coverage. | Frozen purpose-bound input contract and bounded exclusions. |
+| D2 | Validate identities, ordering and current lineage; repair only defects that can change sample, estimates or inference. | Current certified release plus coverage/materiality ledger. |
+| D3 | Build the smallest analysis panels; reconcile denominators, support and missingness; publish generation identity. | Tested panel and support exhibits consumable without raw access. |
+| E0 | Explore distributions, non-monotone paths and competing mechanisms. Separate calendar time from architecture adoption, exit and reversal; label associations descriptive. | Candidate finding packet with its strongest objection visible. |
+| E1 | Fix the surviving claim, sample, estimand, specification family, inference and planned heterogeneity. | Claim lock whose descendants all cite the same generation. |
+| F | Run the registered descriptive and inferential specifications on exact common support; report sensitivity and nulls. | Reproducible tables/figures with economic magnitudes and inference. |
+| G | Interpret against the mechanism and literature; test rivals, support changes and reversals; retire unsupported claims. | Adversarial review that adds no hidden conditioning or causal language. |
+| H | Update the paper and the always-presentable deck from the same admitted exhibits. Use established finance vocabulary and the visual form suited to each comparison. | Clean source diff, tests, compiled PDFs and visual inspection. |
+| I | Repeat F–G until two passes add no claim and retire none, then rebuild and inspect both deliverables from the green freeze. | Executable done gate passes. |
+
+**Current concurrency.** Studio owns D2 exact-state materiality and the D3
+route-panel refresh. M3 owns E0 mechanism review and G/H work that does not
+promote stale numbers: figure producers, authentic transaction replay and
+screenshots, vocabulary checks, tier-safe paper prose and the evolving deck.
+The meeting edge is `Studio D3 publish -> M3 analytics/figure refresh -> E1
+claim lock`. M3 never estimates on an older derived generation while waiting.
+
+**Persistent M3 visual workstream.** The deck backlog is not recalled from chat.
+It remains open here and in `docs/reviews/deck-visual-composition.md`: authentic
+transaction trace plus local replay/static still; V1-to-V4 architecture morph;
+quarterly non-monotone paths; candidate dumbbells and interaction/difference
+plots; regime and excess-use heatmaps; sample funnel; protocol/state matrix;
+capital/inventory/depth cross-section; multiplex opportunity-set network; and
+exact-horizon diagram. A chart type is used only when it expresses the economic
+comparison, never to create decorative variety.
+
+**Every deck touch runs the same deliverable loop.** Review the source diff and
+its scientific consequence; run focused producer/unit tests; compile
+`deck/main.pdf` locally on `main`; run evidence, vocabulary and source-only
+status/provenance audits; render and inspect every changed page against the prior
+PDF; then commit only if the whole deck remains ready to present. A large
+scientific change also reruns every dependent figure/table owner. Provisional
+status, source paths and commit identities live in source comments or manifests,
+not in rendered slides. Page count is diagnostic, not a success criterion.
+
 **A no-fetch result is a certification, not an inventory status.** The executable stage must reopen the current thin-consumer audit, every cited certificate and every installed raw stat identity under the canonical raw-generation mutation lease, bind both the audit digest and the closed consumer-registry identity into its prelaunch forecast, and return a distinct inventory-only status when that certification is unavailable. The forecast carries the exact registry-derived acquisition perimeter and budget. When that perimeter is empty, the stage exposes no acquisition command; adding a stream requires a reviewed executor and measured budget in the same generation. A whole-schema engineering scenario remains diagnostic and must never be reported as installed storage or an authorized project requirement.
 
 **Portability.** This file and every node's output is a plain tracked file in this repo. No node's real state may live only inside one model's session. Whatever executes a node reads this file plus the previous node's committed output and continues.

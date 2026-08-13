@@ -1,12 +1,12 @@
 # Deck visual composition audit
 
-Status: temporary rebuild ledger. This file maps the current 27-page deck to the visual form best suited to each economic comparison. It does not admit evidence or authorize use of retired estimates.
+Status: living visual plan. This file maps the presentation-ready deck to the visual form best suited to each economic comparison. It does not admit evidence or authorize use of retired estimates.
 
 ## Governing rule
 
 Visual variety follows the intellectual object. Use line charts for paths, bars for isolated levels or endpoint contrasts, slope or dumbbell charts for paired changes, difference or forest plots for estimates, heatmaps for matrices and regimes, histograms or densities for distributions, scatterplots for relationships, network diagrams for topology, transaction traces for observable mechanics, and finance-style tables for coefficient patterns. Icons identify concepts; screenshots establish institutional facts; photos belong only where a person, event, or institution is part of the argument. Do not add generic crypto imagery.
 
-No current estimand warrants a surface or three-dimensional chart. Three-dimensional rendering would introduce occlusion and perspective distortion without encoding a necessary third continuous dimension. The explicit verdict for this deck is no 3D.
+No current estimand warrants a surface or three-dimensional chart. Three-dimensional rendering would introduce occlusion and perspective distortion without encoding a necessary third continuous dimension. The current visual plan therefore uses no 3D.
 
 ## Current core map
 

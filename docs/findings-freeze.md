@@ -2,6 +2,9 @@
 freeze_status: red
 stable_passes: 0
 active_node: D2-token-and-exact-state + D3-route-only-panels
+studio_node: D2-exact-state-evidence + D3-route-panel-refresh
+m3_node: E0-science-review + G/H-live-deck-and-tier-safe-paper
+meeting_edge: Studio-D3-publish -> M3-analytics-and-figures -> E1-lock
 parent_loop: C -> D1/D2/D3 -> E0-exploration -> repair loop -> E1-lock -> F <-> G <-> H -> I
 next_edge: D2-release -> D3-construction-audit -> D3-full-daily-frontier -> E0-exploration -> E1-lock -> F <-> G <-> H -> I
 prose_node: closed
@@ -50,4 +53,4 @@ This is the live handoff between the research graph and prose node P. A recent p
 
 ## Loop position
 
-Active execution straddles the remaining D2 token/exact-state boundary and route-only D3. Directed routes and four route-only D3 panels are current; audited V2 token decimals and V3/V4 exact-state materialization remain open. The literature inventory is complete; live-use, vocabulary and appendix enforcement are executable but red where artefacts or manuscript usage violate the recorded contracts. State-dependent D3 construction, the current transaction frontier and exact 1-, 7-, 30- and 120-day links remain closed. E0 control and heterogeneity fits are provisional only, stable passes remain zero, and node P is closed.
+The graph has two concurrent machine lanes. Studio owns D2 exact-state evidence and the D3 route-panel refresh; the current route-only build advances independently while the 13 historical V2 token-decimal records remain an explicit D2 blocker. The M3 owns E0 scientific review plus the always-ready G/H deck and tier-safe paper surfaces: it can build visual forms, transaction-replay presentation assets, terminology checks and nonnumerical prose, but it cannot estimate from stale local panels or promote a numerical claim. The lanes meet when Studio publishes the exact current D3 artifacts, the M3 refreshes analytics and figures from that identity, and E1 locks only the results that survive the recorded attacks. State-dependent D3 construction, the current transaction frontier and exact 1-, 7-, 30- and 120-day links remain closed. Stable passes remain zero, and node P is closed.
