@@ -15,10 +15,12 @@ from ddvc.figure_outputs import (
     quarterly_vehicle_type_shares,
     render_round_trip_shares,
     render_vehicle_excess_use_heatmap,
+    render_vehicle_excess_use_transition,
     render_vehicle_type_shares,
     round_trip_daily_and_quarterly,
     validate_daily_calendar,
     vehicle_excess_use_cross_section,
+    vehicle_excess_use_transition,
 )
 
 
@@ -62,6 +64,28 @@ def excess_use_fixture() -> pd.DataFrame:
             {"lens": "fragmentation", "year": 2026, "token": None, "count_excess_use": None, "value_excess_use": None, "is_vehicle": None},
         ]
     )
+
+
+def excess_use_transition_fixture() -> pd.DataFrame:
+    rows = []
+    for symbol, count_start, count_end, value_start, value_end in (
+        ("USDC", 1.4, 1.5, 1.1, 1.15),
+        ("USDT", 1.05, 1.23, 0.59, 1.42),
+    ):
+        for year, count, value in (
+            (2024, count_start, value_start),
+            (2026, count_end, value_end),
+        ):
+            rows.append(
+                {
+                    "level": "token",
+                    "year": year,
+                    "symbol": symbol,
+                    "vehicle_excess_use_count_ratio": count,
+                    "vehicle_excess_use_ratio_within_20pct": value,
+                }
+            )
+    return pd.DataFrame(rows)
 
 
 def architecture_fixture() -> pd.DataFrame:
@@ -122,6 +146,16 @@ class FigureOutputTests(unittest.TestCase):
         self.assertEqual(result["token"].tolist(), ["USDC", "WETH"])
         self.assertEqual(result["year"].unique().tolist(), [2026])
 
+    def test_excess_use_transition_requires_both_candidates_and_years(self) -> None:
+        result = vehicle_excess_use_transition(excess_use_transition_fixture())
+        self.assertEqual(len(result), 4)
+        self.assertEqual(
+            result[["symbol", "year"]].values.tolist(),
+            [["USDC", 2024], ["USDC", 2026], ["USDT", 2024], ["USDT", 2026]],
+        )
+        with self.assertRaisesRegex(ValueError, "one unique cell"):
+            vehicle_excess_use_transition(excess_use_transition_fixture().iloc[:-1])
+
     def test_architecture_support_must_reconcile_to_detected_events(self) -> None:
         result = architecture_support_composition(architecture_fixture())
         self.assertEqual(len(result), 6)
@@ -138,12 +172,14 @@ class FigureOutputTests(unittest.TestCase):
             integration = root / "integration.pdf"
             heatmap = root / "heatmap.pdf"
             architecture = root / "architecture.pdf"
+            transition = root / "transition.pdf"
             render_vehicle_type_shares(vehicle_fixture(), vehicle)
             render_round_trip_shares(route_fixture(), round_trip)
             render_integration_intermediation(integration_fixture(), integration)
             render_vehicle_excess_use_heatmap(excess_use_fixture(), heatmap)
             render_architecture_support(architecture_fixture(), architecture)
-            for path in (vehicle, round_trip, integration, heatmap, architecture):
+            render_vehicle_excess_use_transition(excess_use_transition_fixture(), transition)
+            for path in (vehicle, round_trip, integration, heatmap, architecture, transition):
                 self.assertGreater(path.stat().st_size, 1_000)
                 self.assertEqual(path.read_bytes()[:4], b"%PDF")
                 self.assertNotIn(b"/Subtype /Image", path.read_bytes())

@@ -224,6 +224,57 @@ def vehicle_excess_use_cross_section(frame: pd.DataFrame) -> pd.DataFrame:
     ).reset_index(drop=True)
 
 
+def vehicle_excess_use_transition(
+    frame: pd.DataFrame,
+    *,
+    baseline_year: int = 2024,
+    comparison_year: int = 2026,
+    symbols: tuple[str, ...] = ("USDC", "USDT"),
+) -> pd.DataFrame:
+    """Select supported candidate-level count and value ratios for a paired-year plot."""
+
+    required = {
+        "level",
+        "year",
+        "symbol",
+        "vehicle_excess_use_count_ratio",
+        "vehicle_excess_use_ratio_within_20pct",
+    }
+    _require_columns(frame, required, name="vehicle excess-use exhibit")
+    data = frame.loc[
+        frame["level"].eq("token")
+        & frame["symbol"].isin(symbols)
+        & frame["year"].isin([baseline_year, comparison_year]),
+        list(required),
+    ].copy()
+    data["year"] = pd.to_numeric(data["year"], errors="raise").astype(int)
+    for column in (
+        "vehicle_excess_use_count_ratio",
+        "vehicle_excess_use_ratio_within_20pct",
+    ):
+        data[column] = pd.to_numeric(data[column], errors="coerce")
+    data = data.dropna(
+        subset=[
+            "symbol",
+            "vehicle_excess_use_count_ratio",
+            "vehicle_excess_use_ratio_within_20pct",
+        ]
+    )
+    expected = pd.MultiIndex.from_product(
+        [symbols, (baseline_year, comparison_year)], names=["symbol", "year"]
+    )
+    observed = pd.MultiIndex.from_frame(data[["symbol", "year"]])
+    if data.duplicated(["symbol", "year"]).any() or set(observed) != set(expected):
+        raise ValueError("vehicle excess-use exhibit lacks one unique cell per candidate-year")
+    if data[
+        ["vehicle_excess_use_count_ratio", "vehicle_excess_use_ratio_within_20pct"]
+    ].lt(0).any().any():
+        raise ValueError("vehicle excess-use exhibit has negative excess-use ratios")
+    order = {symbol: index for index, symbol in enumerate(symbols)}
+    data["symbol_order"] = data["symbol"].map(order)
+    return data.sort_values(["symbol_order", "year"], kind="stable").reset_index(drop=True)
+
+
 def architecture_support_composition(frame: pd.DataFrame) -> pd.DataFrame:
     """Validate and order architecture-event support attrition."""
 
@@ -450,6 +501,78 @@ def render_vehicle_excess_use_heatmap(frame: pd.DataFrame, output: Path) -> None
             )
             figure.tight_layout(rect=(0, 0.06, 1, 1))
             figure.savefig(output, format="pdf", bbox_inches="tight", metadata={"Creator": "ddvc", "CreationDate": None, "ModDate": None})
+        finally:
+            plt.close(figure)
+
+
+def render_vehicle_excess_use_transition(frame: pd.DataFrame, output: Path) -> None:
+    """Render 2024-to-2026 candidate movements with parity visible in both panels."""
+
+    data = vehicle_excess_use_transition(frame)
+    panels = (
+        ("vehicle_excess_use_count_ratio", "Route count"),
+        ("vehicle_excess_use_ratio_within_20pct", "Common-support value"),
+    )
+    symbols = data.sort_values("symbol_order")["symbol"].drop_duplicates().tolist()
+    years = sorted(data["year"].unique())
+    colours = {years[0]: "#6B7280", years[-1]: PALETTE["stable"]}
+    with plt.rc_context(
+        {
+            "font.family": "DejaVu Sans",
+            "pdf.fonttype": 42,
+            "axes.labelcolor": "#111827",
+            "text.color": "#111827",
+        }
+    ):
+        figure, axes = plt.subplots(1, 2, figsize=(10.2, 3.9), sharey=True)
+        try:
+            for axis, (column, title) in zip(axes, panels, strict=True):
+                for row, symbol in enumerate(symbols):
+                    cells = data.loc[data["symbol"].eq(symbol)].set_index("year")
+                    start = float(cells.loc[years[0], column])
+                    end = float(cells.loc[years[-1], column])
+                    axis.plot([start, end], [row, row], color="#9CA3AF", linewidth=2.0, zorder=1)
+                    for year, value in ((years[0], start), (years[-1], end)):
+                        axis.scatter(value, row, s=58, color=colours[year], zorder=2)
+                        axis.annotate(
+                            f"{value:.2f}",
+                            (value, row),
+                            xytext=(0, 9 if year == years[-1] else -13),
+                            textcoords="offset points",
+                            ha="center",
+                            va="center",
+                            fontsize=8,
+                            color=colours[year],
+                        )
+                axis.axvline(1, color="#111827", linewidth=1.0, linestyle="--", alpha=0.8)
+                axis.set_title(title, loc="left", fontsize=12, fontweight="bold", pad=8)
+                axis.set_xlabel("Intermediary share / endpoint share")
+                axis.set_yticks(range(len(symbols)), symbols)
+                axis.set_ylim(-0.55, len(symbols) - 0.45)
+                axis.grid(axis="x", color="#D1D5DB", linewidth=0.6, alpha=0.75)
+                axis.spines[["top", "right", "left"]].set_visible(False)
+                axis.tick_params(axis="y", length=0)
+            handles = [
+                plt.Line2D([], [], marker="o", linestyle="", color=colours[year], label=str(year))
+                for year in years
+            ]
+            figure.legend(handles=handles, loc="lower center", ncol=2, frameon=False, bbox_to_anchor=(0.5, 0.01))
+            figure.text(
+                0.995,
+                0.015,
+                "Dashed line is parity. Value requires source–intermediary–sink amounts within 20%.",
+                ha="right",
+                va="bottom",
+                fontsize=8,
+                color="#4B5563",
+            )
+            figure.tight_layout(rect=(0, 0.13, 1, 1))
+            figure.savefig(
+                output,
+                format="pdf",
+                bbox_inches="tight",
+                metadata={"Creator": "ddvc", "CreationDate": None, "ModDate": None},
+            )
         finally:
             plt.close(figure)
 
