@@ -4,7 +4,7 @@ PROVISIONAL (workflow §41). Numbers are never copied here; rerun the script to 
 
 - **Computation + method + interpretation:** `scripts/run_vehicle_rotation_e0.py` (docstring carries the science; three lenses: cross-section, fragmentation, event studies).
 - **Numbers (regenerate by rerunning):** `output/exhibits/e0_vehicle_rotation_analysis.jsonl`.
-- **Rival test (maturation/aggregator):** `output/exhibits/intermediation_integration_rival.jsonl`, `intermediation_complexity_rival.jsonl`, `cross_venue_routing_inference.jsonl`.
+- **Rival test (maturation/aggregator):** `output/exhibits/intermediation_integration_rival.jsonl`, `intermediation_complexity_rival.jsonl`, `intermediation_token_integration_interaction.jsonl`, `e0_usdt_integration_decomposition.jsonl`, `cross_venue_routing_inference.jsonl`.
 - **Argument (literature, contribution, rivals) — prose is correct here, it cites quotes not data:** `docs/contribution-framing.md`.
 
 ## One-line takeaways (verify against the exhibit, do not treat as canonical numbers)
@@ -13,6 +13,7 @@ PROVISIONAL (workflow §41). Numbers are never copied here; rerun the script to 
 - Cross-section (latest year): the value-vehicles are the fiat stables; the native asset is below one (held, not routed). Small-dollar high-ratio tokens are noise.
 - Fragmentation: value concentration of the vehicle role collapses; native single-dominance ends into a stable-led plurality. Per-cell genuine-vs-mosaic still open (aggregate HHI cannot separate them).
 - Rival rejected for the core: rotation holds inside the single-venue cell, and true intermediation fell as cross-venue share rose, which is the wrong sign for a maturation-composition story. Residual cross-venue amplification (~a quarter) is open pending forced-vs-chosen.
+- USDT's exact-two-leg rise is mostly within integration cells, not migration into cross-venue routes: the midpoint decomposition assigns 93.7% of the count-share change and 85.6% of the strict-value change to within-cell movement.
 - Mechanism: the role sits only in fiat-reserve stables (peg + depth); crypto-collateralized and synthetic are held, not routed. Krugman thick-market plus numéraire stability, made visible.
 - Honest null on record: the annual token DiD is underpowered; powered inference is the daily calendar panel.
 
