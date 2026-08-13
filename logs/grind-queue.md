@@ -28,6 +28,12 @@ and pick a blocking check from the freeze gate.
 
 
 
+
+- [x] **JAVA INTERJECTION (browser, 2026-08-13T13:30:36+00:00):** SYNC/SCIENCE HANDOFF. At the next safe boundary, fetch and integrate origin/main through 45573a9 before choosing the next node. M3 has replaced the stale cost-dominance/hysteresis spine with the current vehicle-rotation science memo, published the three current empirical deck figures, and refreshed conformance diagnostics. Continue fixed-opportunity vehicle-rotation science from the new What G needs from F list. Preserve the accepted 13-token bounded exclusion. Do not edit paper prose or revive calendar time as treatment.
+  _Closed by fast-forwarding `main` through `45573a9`; the current paper spine,
+  three empirical deck figures, and refreshed conformance diagnostics are now
+  local. Paper prose and the accepted 13-token bounded exclusion are unchanged._
+
 - [x] **JAVA INTERJECTION (browser, 2026-08-13T12:51:24+00:00):** SCIENCE/MATERIALITY REDIRECTION. Stop the current token-decimals acquisition/rebuild at the next safe boundary. Before any further acquisition or rebuild, measure the 13 unresolved token-anchor records economic exposure: affected pools/events/routes, route count and strict-support USD, year and venue concentration, whether any enters a promoted or required D2/D3 estimand, and a worst-case decimals-scale bound. Token-count share 13/65,095 is not materiality. If exposure is zero or negligible and non-systematic, record a bounded exclusion and return to fixed-cell vehicle-rotation science; if material or systematic, complete only the minimum exact evidence and state the scientific consequence. Do not treat a clean exact registry as itself a paper result. Preserve completed work and the supervising loop.
   _Closed with a lineage-revalidated deletion bound over 22 factory pairs, 229
   installed exact-candidate events, and the complete released route graph. The
