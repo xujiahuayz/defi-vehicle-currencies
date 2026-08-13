@@ -1,0 +1,56 @@
+% VISUAL-MANAGED-ASSET
+% VISUAL-FUNCTION: opportunity to use to persistence | restrained conceptual sequence | distinguish architecture, realised composition, and post-reversal persistence
+% EVIDENCE-STATUS: conceptual research-design map; no path or magnitude is an empirical estimate.
+% EVIDENCE-COMMIT: e1513051da9f3c33fc69a05d063541e2ef96954a
+% EVIDENCE-SOURCES: docs/specification-lock.json; docs/paper-spine.md;
+% docs/research-workflow.md (architecture, rotation, and fixed-risk-set persistence).
+\tikzset{frpasset/.style={circle,draw=ink,fill=white,minimum size=16pt,inner sep=0pt,font=\scriptsize}}
+\tikzset{frpvehicle/.style={frpasset,draw=ucldark,fill=ucldark,text=white}}
+\begin{tikzpicture}[x=1cm,y=1cm]
+
+% One visual argument rather than three interchangeable cards.
+\draw[draw=rule,line width=1.1pt] (0.45,-0.02)--(11.45,-0.02);
+\fill[ucldark] (1.65,-0.02) circle (3pt);
+\fill[stable] (5.75,-0.02) circle (3pt);
+\fill[accent] (9.95,-0.02) circle (3pt);
+
+% Architecture changes the feasible set.
+\node[font=\small\bfseries,text=ucldark] at (1.65,1.52) {Architecture};
+\node[frpasset] (a1i) at (0.58,0.84) {$i$};
+\node[frpvehicle] (a1k) at (1.45,0.84) {$k$};
+\node[frpasset] (a1o) at (2.32,0.84) {$o$};
+\draw[route,draw=accent] (a1i)--(a1k);
+\draw[route,draw=accent] (a1k)--(a1o);
+\node[font=\scriptsize,text=muted] at (1.45,0.43) {vehicle path required};
+\node[frpasset] (a2i) at (0.58,-0.72) {$i$};
+\node[frpvehicle] (a2k) at (1.45,-1.04) {$k$};
+\node[frpasset] (a2o) at (2.52,-0.72) {$o$};
+\draw[route,draw=native] (a2i)--(a2k);
+\draw[route,draw=native] (a2k)--(a2o);
+\draw[route,draw=stable] (a2i)--(a2o);
+\node[font=\scriptsize,text=muted] at (1.55,-1.48) {direct and vehicle paths feasible};
+
+% Realised routes reveal composition on a fixed comparison set.
+\node[font=\small\bfseries,text=ucldark] at (5.75,1.74) {Realised composition};
+\node[softbox,minimum width=3.28cm,minimum height=1.42cm,align=center] at (5.75,0.72)
+  {same ordered pair\\same month--day\\same integration scope};
+\draw[route,draw=native,line width=1.8pt] (4.25,-0.72)--(5.35,-0.72);
+\draw[route,draw=stable,line width=1.8pt] (6.15,-0.72)--(7.25,-0.72);
+\node[font=\scriptsize,text=native] at (4.80,-1.14) {incumbent use};
+\node[font=\scriptsize,text=stable] at (6.70,-1.14) {challenger use};
+
+% A reversal creates the persistence comparison.
+\node[font=\small\bfseries,text=ucldark] at (9.95,1.52) {After the advantage reverses};
+\draw[-{Stealth[length=4pt]},draw=ink,line width=0.8pt] (8.35,0.68)--(11.55,0.68);
+\draw[draw=rule,densely dashed,line width=1.1pt] (9.40,0.20)--(9.40,1.12);
+\node[font=\scriptsize,text=muted,align=center] at (9.40,1.34) {reversal date};
+\node[font=\scriptsize] at (9.95,-0.42) {same assets and risk set};
+\draw[draw=native,line width=1.6pt] (8.40,-0.84)--(11.45,-0.84);
+\draw[draw=stable,line width=1.6pt] (8.40,-1.30)--(11.45,-1.30);
+\node[font=\scriptsize,text=native,anchor=west,fill=white,inner sep=1pt] at (9.42,-0.84) {incumbent retained};
+\node[font=\scriptsize,text=stable,anchor=west,fill=white,inner sep=1pt] at (9.42,-1.30) {or displaced};
+
+\node[font=\scriptsize\bfseries,text=muted] at (5.92,-2.08)
+  {Conceptual design sequence --- no estimates shown};
+
+\end{tikzpicture}

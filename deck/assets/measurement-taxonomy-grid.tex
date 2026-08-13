@@ -1,0 +1,62 @@
+% VISUAL-MANAGED-ASSET
+% VISUAL-FUNCTION: realised route to dominance | hierarchical measurement map | derive dominance and excess use while holding network position and execution cost apart
+% EVIDENCE-STATUS: conceptual measurement map; diagrams contain no empirical estimate.
+% EVIDENCE-COMMIT: e1513051da9f3c33fc69a05d063541e2ef96954a
+% EVIDENCE-SOURCES: docs/specification-lock.json; docs/paper-spine.md;
+% docs/research-workflow.md (separation of neighbouring constructs).
+\tikzset{mtasset/.style={circle,draw=ink,fill=white,minimum size=17pt,inner sep=0pt,font=\scriptsize}}
+\tikzset{mtvehicle/.style={mtasset,draw=ucldark,fill=ucldark,text=white}}
+\begin{tikzpicture}[x=1cm,y=1cm]
+
+% The primary measurement chain: route observation, aggregation, endpoint benchmark.
+\node[softbox,minimum width=2.55cm,minimum height=2.25cm] (routebox) at (1.48,0.82) {};
+\node[font=\small\bfseries,text=ucldark] at (1.48,1.58) {One realised route};
+\node[mtasset] (si) at (0.68,0.86) {$i$};
+\node[mtvehicle] (sk) at (1.48,0.86) {$k$};
+\node[mtasset] (so) at (2.28,0.86) {$o$};
+\draw[route,draw=native] (si)--(sk);
+\draw[route,draw=native] (sk)--(so);
+\node[font=\scriptsize,align=center] at (1.48,0.08) {$k$ occupies the\\intermediary position};
+
+\node[softbox,minimum width=3.75cm,minimum height=2.25cm] (dominancebox) at (5.06,0.82) {};
+\node[font=\small\bfseries,text=ucldark] at (5.06,1.58) {Vehicle dominance};
+\node[font=\scriptsize,align=center,text width=3.15cm] at (5.06,0.78)
+  {$D_k$ = use through $k$\\$\div$ total intermediary use};
+\node[font=\scriptsize,text=muted,align=center] at (5.06,0.06)
+  {Count or value weighting};
+
+\node[softbox,minimum width=3.75cm,minimum height=2.25cm,draw=stable] (excessbox) at (9.75,0.82) {};
+\node[font=\small\bfseries,text=ucldark] at (9.75,1.58) {Excess vehicle use};
+\node[font=\scriptsize,align=center,text width=3.15cm] at (9.75,0.78)
+  {$X_k=D_k\div E_k$\\$E_k$: endpoint share of $k$};
+\node[font=\scriptsize,text=muted,align=center] at (9.75,0.06)
+  {$X_k>1$: intermediary use exceeds\\the endpoint benchmark};
+
+\draw[route,draw=rule] (routebox)--(dominancebox);
+\draw[route,draw=rule] (dominancebox)--(excessbox);
+
+% Neighbouring objects are characteristics, not alternative definitions of dominance.
+\node[anchor=west,font=\scriptsize\bfseries,text=muted] at (0.20,-0.82)
+  {Separate characteristics of the asset and route set};
+\draw[draw=rule,line width=0.7pt] (0.20,-1.00)--(11.55,-1.00);
+
+\node[mtvehicle,minimum size=19pt] (gk) at (1.20,-1.82) {$k$};
+\foreach \name/\x/\y in {ga/0.38/-1.48,gb/0.38/-2.16,gc/2.02/-1.48,gd/2.02/-2.16} {
+  \node[mtasset] (\name) at (\x,\y) {};
+  \draw[draw=rule,line width=0.9pt] (gk)--(\name);
+}
+\node[font=\small\bfseries,text=ucldark,anchor=west] at (2.46,-1.52) {Network position};
+\node[font=\scriptsize,anchor=west,align=left,text width=3.20cm] at (2.46,-2.02)
+  {position of $k$ in the\\feasible graph};
+
+\node[mtasset] (qi) at (6.78,-1.82) {$i$};
+\node[mtasset] (qo) at (8.92,-1.82) {$o$};
+\node[mtvehicle] (qk) at (7.85,-2.18) {$k$};
+\draw[route,draw=stable] (qi) to[bend left=18] (qo);
+\draw[route,draw=native] (qi)--(qk);
+\draw[route,draw=native] (qk)--(qo);
+\node[font=\small\bfseries,text=ucldark,anchor=west] at (9.28,-1.52) {Execution cost};
+\node[font=\scriptsize,anchor=west,align=left] at (9.28,-2.02)
+  {which route returns more\\at the same state};
+
+\end{tikzpicture}

@@ -62,22 +62,16 @@
 \end{columns}
 \end{frame}
 
-% VISUAL-FUNCTION: time-varying asset types | regime taxonomy pending token-period heatmap | make heterogeneity contemporaneous rather than fixed
-\begin{frame}{A2. Backing regimes vary over time}
-\begin{columns}[T]
-\begin{column}{0.47\textwidth}
-\textbf{Native platform asset}\par ETH, WETH; volatile settlement asset and protocol-native demand.
-\vspace{0.45cm}
-\textbf{Fiat-reserve stablecoin}\par USDC, USDT; reserve and redemption design.
-\end{column}
-\begin{column}{0.47\textwidth}
-\textbf{On-chain collateralised}\par DAI, LUSD, crvUSD; collateral, liquidation, and backing changes.
-\vspace{0.45cm}
-\textbf{Tokenised external asset}\par WBTC, tokenised gold; wrapped claim on an external asset.
-\end{column}
-\end{columns}
-\vspace{0.75cm}
-{\small Heterogeneity tests use each asset's contemporaneous backing regime.\par}
+% VISUAL-FUNCTION: time-varying backing | token-by-period regime heatmap | show why stablecoin backing cannot be treated as fixed
+% EVIDENCE-STATUS: dated classification contract; cells encode rules, not empirical shares or token availability.
+% EVIDENCE-COMMIT: e1513051da9f3c33fc69a05d063541e2ef96954a
+% EVIDENCE-SOURCES: deck/assets/backing-regime-heatmap.tex; src/ddvc/asset_types.py;
+% tests/test_asset_types.py; docs/node-c-definitions-round2.md section 3.
+\begin{frame}{A2. Stablecoin backing cannot be treated as fixed}
+\centering
+\resizebox{0.90\textwidth}{!}{\input{assets/backing-regime-heatmap.tex}}\par
+\vspace{0.04cm}
+{\small Bars begin at public launch or the sample start for older tokens. DAI cells mark admissible backing; the dashed FRAX arrow is a governance target, not an observed collateral share.\par}
 \end{frame}
 
 % VISUAL-FUNCTION: primary measurement funnel | staged route-object and two-support split | separate topology support from dollar-value support

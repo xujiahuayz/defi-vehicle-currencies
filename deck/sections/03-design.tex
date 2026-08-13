@@ -19,33 +19,12 @@
 \vspace{0.2cm}
 \end{frame}
 
-% VISUAL-FUNCTION: research estimands | three-part estimand timeline | separate formation, rotation, and persistence questions
-\begin{frame}{We study how vehicle currencies emerge, gain share, and persist}
-\begin{columns}[T]
-\begin{column}{0.30\textwidth}
-\evidencekicker{Formation}
-\textbf{Which rules make intermediation necessary or feasible?}\par
-Imposed intermediation, arbitrary pairing, concentrated liquidity, and singleton settlement.
-\end{column}
-\begin{column}{0.30\textwidth}
-\evidencekicker{Rotation}
-\textbf{Which assets gain share within comparable routes?}\par
-Count dominance, value dominance, and excess use over time.
-\end{column}
-\begin{column}{0.30\textwidth}
-\evidencekicker{Persistence}
-\textbf{Does an incumbent remain when a cheaper route is feasible?}\par
-Compare the incumbent with contemporaneous alternatives.
-\end{column}
-\end{columns}
-\vspace{0.75cm}
-\begin{tikzpicture}
-\draw[route,draw=rule,line width=2pt] (0,0) -- (11.8,0);
-\fill[ucldark] (0.7,0) circle (3pt);
-\fill[stable] (5.9,0) circle (3pt);
-\fill[accent] (11.1,0) circle (3pt);
-\node[below,font=\small] at (0.7,-0.15) {how the role begins};
-\node[below,font=\small] at (5.9,-0.15) {how its share moves};
-\node[below,font=\small] at (11.1,-0.15) {how long it survives};
-\end{tikzpicture}
+% VISUAL-FUNCTION: research estimands | three estimand miniatures | separate formation, rotation, and persistence questions
+% EVIDENCE-STATUS: conceptual research-design map; no empirical estimate.
+% EVIDENCE-COMMIT: e1513051da9f3c33fc69a05d063541e2ef96954a
+% EVIDENCE-SOURCES: deck/assets/formation-rotation-persistence.tex;
+% docs/specification-lock.json; docs/paper-spine.md; docs/research-workflow.md.
+\begin{frame}{Architecture opens routes; realised trades reveal which vehicle is used}
+\centering
+\resizebox{0.93\textwidth}{!}{\input{assets/formation-rotation-persistence.tex}}\par
 \end{frame}
