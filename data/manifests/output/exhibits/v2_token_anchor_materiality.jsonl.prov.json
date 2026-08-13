@@ -1,0 +1,84 @@
+{
+ "argv": [],
+ "artefact": "output/exhibits/v2_token_anchor_materiality.jsonl",
+ "artefact_bytes": 20735,
+ "artefact_mtime_ns": 1786627019219618951,
+ "artefact_sha256": "be555ba2941ba3faffe5788a21078e4d6fb162f3a87eac2e9d05d54c734ed016",
+ "code_fingerprint": "d2e7fe08d81490c2f985686a836a7466ed00a2e4600bde25634d35cebd239dcb",
+ "code_sources": [
+  "scripts/audit_v2_token_anchor_materiality.py",
+  "src/ddvc/asset_types.py",
+  "src/ddvc/data_release.py",
+  "src/ddvc/route_roles.py",
+  "src/ddvc/tables.py",
+  "src/ddvc/token_decimals.py",
+  "src/ddvc/v2_event_contract.py"
+ ],
+ "created_at": "2026-08-13T13:16:59+00:00",
+ "git": {
+  "branch": "main",
+  "commit": "6dd7897ee4158cbad583c6d5a77ed98190f97787",
+  "dirty": true,
+  "dirty_generated_files": [
+   "output/exhibits/.v2_token_anchor_materiality.jsonl.dwjyw9fs.tmp"
+  ],
+  "dirty_tracked_files": [
+   "logs/grind-queue.md"
+  ],
+  "dirty_untracked_files": [
+   "scripts/audit_v2_token_anchor_materiality.py",
+   "tests/test_v2_token_anchor_materiality.py"
+  ]
+ },
+ "inputs": [
+  {
+   "bytes": 44568825,
+   "exists": true,
+   "path": "data/raw/ethereum/token_decimals/v2_selected_anchors.json",
+   "sha256": "b9c042510addf9bad0302d4503e687bc9876444e58a7213f1782d279277cbc10"
+  },
+  {
+   "bytes": 22401067,
+   "exists": true,
+   "path": "data/raw/ethereum/token_decimals/v2_unresolved_tokens.json",
+   "sha256": "746a4443be51c02a5bb131b3d4dca18cf877058fab0034e0dd13fd76d01ce9fb"
+  },
+  {
+   "bytes": 816608817,
+   "exists": true,
+   "hashed": false,
+   "mtime_ns": 1786620770690741142,
+   "path": "data/processed/vehicle_excess_use_daily.parquet"
+  },
+  {
+   "bytes": 1257321,
+   "exists": true,
+   "path": "data/processed/cross_venue_routing_daily.parquet",
+   "sha256": "5b4b48fdcbce8360dde45e2685c7dfe4afacf0b62ff521198776118ecd224edf"
+  },
+  {
+   "bytes": 272943666,
+   "exists": true,
+   "hashed": false,
+   "mtime_ns": 1786613585256587694,
+   "path": "data/empirical/v4_settlement_route_units.parquet"
+  }
+ ],
+ "libraries": {
+  "numpy": "2.5.1",
+  "pandas": "3.0.3",
+  "pyarrow": "25.0.0",
+  "scipy": "1.18.0"
+ },
+ "notes": "read-only deletion bound for unresolved exact V2 token-decimals anchors; no provider acquisition and no certified release rewrite",
+ "payload_identity": {
+  "bytes": 20735,
+  "format": "jsonl",
+  "rows": 71,
+  "schema_version": 1,
+  "sha256": "be555ba2941ba3faffe5788a21078e4d6fb162f3a87eac2e9d05d54c734ed016"
+ },
+ "python": "3.14.6",
+ "rows": 71,
+ "script": "scripts/audit_v2_token_anchor_materiality.py"
+}

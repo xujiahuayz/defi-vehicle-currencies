@@ -27,6 +27,17 @@ and pick a blocking check from the freeze gate.
 
 
 
+
+- [x] **JAVA INTERJECTION (browser, 2026-08-13T12:51:24+00:00):** SCIENCE/MATERIALITY REDIRECTION. Stop the current token-decimals acquisition/rebuild at the next safe boundary. Before any further acquisition or rebuild, measure the 13 unresolved token-anchor records economic exposure: affected pools/events/routes, route count and strict-support USD, year and venue concentration, whether any enters a promoted or required D2/D3 estimand, and a worst-case decimals-scale bound. Token-count share 13/65,095 is not materiality. If exposure is zero or negligible and non-systematic, record a bounded exclusion and return to fixed-cell vehicle-rotation science; if material or systematic, complete only the minimum exact evidence and state the scientific consequence. Do not treat a clean exact registry as itself a paper result. Preserve completed work and the supervising loop.
+  _Closed with a lineage-revalidated deletion bound over 22 factory pairs, 229
+  installed exact-candidate events, and the complete released route graph. The
+  worst case removes 5,950 routes and $10.91m of strict route value, but only
+  1,036 prespecified-candidate intermediary episodes and $1.284m (0.00043%) of
+  strict intermediary value; every unresolved token is residual `other`, none
+  crosses the rotation materiality screen, and none enters the V4 fixed-cell
+  panel. The exact 0..36 scale uncertainty remains explicit, and the 13-token/
+  22-pair exclusion stays closed until exact evidence exists._
+
 - [x] **JAVA INTERJECTION (browser, 2026-08-13T10:41:22+00:00):** ECONOMIC-MATERIALITY REDIRECTION. Finish the currently running one-time route-marker publication because the dry run has already proved zero scientific-identity differences and byte/row/hash/mtime equality for every one of 2,332 route partitions. After the owner confirms the release, do not continue metadata or certification engineering merely to approach perfection. For every remaining defect, first report its economic weight and concentration by calendar period, protocol/design, venue, pool, vehicle candidate, trade size, and stress state; ask whether it can change the estimand, sample composition, coefficient, or inference. Random or economically bounded dirt should be disclosed, bounded with a sensitivity where useful, and allowed to proceed. Hard failure is reserved for wrong identity, systematic selection correlated with treatment/outcome, data corruption, invalid causal timing, or invalid inference. The 1,884-day route rejection initially mattered because it coincided exactly with the V3 era, but the completed equality proof makes the remaining repair bookkeeping, not new science. Once closed, rebuild only the two required route panels, refresh their compact exhibits, and return immediately to science: fixed-opportunity routing versus monetary coordination, persistence versus hysteresis under cost-state reversal, and presentation-ready deck/paper updates. Explain each iteration first in economic terms, with engineering details subordinate.
   _Closed with the journaled 2,332-day marker migration, unchanged partition
   identity set `49d831f13c8fe0958776b0f4e59aa6411c34315d562127c19ddff9e39cf24f59`,
