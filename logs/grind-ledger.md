@@ -50,3 +50,63 @@ inserted `<root>/src` into `sys.path`. Removed the mutation and hoisted the
 provider acquisition.
 
 _(outcome appended below before commit)_
+
+_Iteration 2 closing note: no outcome was ever appended and no commit followed.
+`data/processed/v2_audit_token_decimals.parquet` does not exist, so the
+registry run did not complete. What the tree held instead at iteration 2's
+start was the finished-but-uncommitted sample-end queue work below. The V2
+token-decimals registry remains open and is the natural next target._
+
+---
+
+## 2026-08-13 — iteration 2
+
+**Targeted:** queue item 1 (sample-end single-source hardening), inherited from
+a previous worker as a complete but **uncommitted** working tree — the exact
+dirty-exit failure the brief forbids. This iteration verified the work instead
+of redoing it, finished the one unclosed sub-task, and landed everything.
+
+**Verification, not trust.** Reviewed the full diff (12 consumer sites now
+import the boundary from `ddvc.calendar`; new derived forms
+`sample_end_{iso,date,exclusive_*,utc_exclusive}`, day normalisers,
+`V1_GENESIS_START`). Guard suite `tests/test_sample_end_single_source.py`:
+4/4 passed, including the probe that moves `RESEARCH_SAMPLE_END` and asserts
+all six consumer modules follow. Full suite: 1,743 passed, 3 failed
+(`test_paper_provenance`, `test_transaction_targets`,
+`test_variable_registry`); all 3 reproduce byte-identically on the clean
+parent commit via stash, so they are pre-existing gate debt, not this change.
+Freeze audit: RED, 16 blocking — unchanged from iteration 1's start.
+
+**Branch deletion.** `glotl/fgh-evidence` was checked out in the primary
+worktree `~/projects/defi-vehicle-currencies`, which is why a plain delete
+would have failed. That worktree was clean, so it was detached in place at
+`9bd8ce4` (zero file changes) and the branch deleted. `9bd8ce4` stays
+reachable through that detached HEAD and the reflog.
+
+**DECISION:** detaching the primary worktree's HEAD was judged in-scope: the
+queue explicitly ordered the branch deletion, the worktree was clean, and the
+detach changes no bytes on disk.
+
+**DECISION:** committed `.dvc-resume-brief.md` (until now untracked) because
+this ledger already cites it; home-relative `~/projects` paths in it follow
+the precedent this ledger set. If java wants it untracked, say so in the queue.
+
+**Commits:** `f6ca42b` (hardening + queue tick), `852cc78` (supervisor's new
+no-background-work-at-exit rule — found as an uncommitted edit to the brief),
+`07e0419` (track the resume brief).
+
+**Blocking count:** 16 (unchanged; this was hygiene + hardening, not a gate
+check).
+
+**For the next iteration:**
+- Queue is empty. Resume iteration 1's target: the V2 token-decimals registry
+  (`./scripts/run scripts/audit_v2_event_completeness.py --token-registry-only
+  --no-fetch --workers 6`, cached RPC chunks only) toward `node D V2
+  event-source certificate exists`. No artifact exists yet; assume it starts
+  from scratch.
+- All 13 registered `/private/tmp` worktrees are dirty (1–345 modified files
+  each; surveyed 2026-08-13), so none can be pruned blindly.
+  NEEDS-JAVA: authorize disposal per worktree, or tell us which are dead.
+- The 3 failing tests above are real gate debt (stale
+  `output/tables/summary_statistics.tex` notation among them); they overlap
+  the freeze gate's blocking list rather than adding new work.
