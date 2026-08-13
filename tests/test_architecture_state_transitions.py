@@ -7,6 +7,7 @@ from scripts.run_architecture_state_transitions import (
     build_role_risk_panel,
     event_contrasts,
     role_margin_events,
+    render_transition_deck_values,
     summarize_transition_support,
     transition_events,
 )
@@ -184,3 +185,27 @@ def test_role_risk_panel_detects_appearance_and_disappearance_separately() -> No
     assert set(contrasts.status) == {"usable"}
     assert contrasts.immediate_change.iloc[0] > 0
     assert contrasts.immediate_change.iloc[1] < 0
+
+
+def test_deck_values_are_generated_from_support_and_name_generation() -> None:
+    panel = build_full_risk_panel(_routes(), min_total_routes=1)
+    events = transition_events(panel, threshold=0.10, confirmation_weeks=3)
+    contrasts = event_contrasts(panel, events)
+    support = summarize_transition_support(contrasts, thresholds=[0.05, 0.10, 0.25])
+    role_support = summarize_transition_support(
+        pd.DataFrame(),
+        thresholds=[0.05, 0.10, 0.25],
+        transition_kinds=(
+            ("entry", "vehicle_role_appearance"),
+            ("exit", "vehicle_role_disappearance"),
+        ),
+    )
+    rendered = render_transition_deck_values(
+        support,
+        role_support,
+        generation="a" * 64,
+    )
+    assert r"\newcommand{\ArchRouteGeneration}{\texttt{aaaaaaaaaaaa}}" in rendered
+    assert r"\newcommand{\ArchEntrySupportTen}{1 (1)}" in rendered
+    assert r"\newcommand{\ArchExitImmediateTen}{+0.00\,pp}" in rendered
+    assert r"\newcommand{\ArchDisappearSupportTen}{0 (0)}" in rendered

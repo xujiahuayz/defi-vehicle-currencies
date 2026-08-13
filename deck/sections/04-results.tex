@@ -63,15 +63,27 @@ No response to state changes & Architecture is not the operative margin & Report
 \toprule
 & \textbf{5\%} & \textbf{10\%} & \textbf{25\%} \\
 \midrule
+\IfFileExists{../output/exhibits/architecture_transition_deck_values.tex}{%
+\input{../output/exhibits/architecture_transition_deck_values.tex}%
+Sustained entries & \ArchEntrySupportFive & \ArchEntrySupportTen & \ArchEntrySupportTwentyFive \\
+Substitution exits & \ArchExitSupportFive & \ArchExitSupportTen & \ArchExitSupportTwentyFive \\
+Role-disappearance exits & \ArchDisappearSupportFive & \ArchDisappearSupportTen & \ArchDisappearSupportTwentyFive \\
+Immediate entry contrast & \ArchEntryImmediateFive & \ArchEntryImmediateTen & \ArchEntryImmediateTwentyFive \\
+Immediate exit contrast & \ArchExitImmediateFive & \ArchExitImmediateTen & \ArchExitImmediateTwentyFive \\
+}{%
 Sustained entries & \multicolumn{3}{c}{\color{muted}awaiting Studio-current certified generation} \\
 Substitution exits & \multicolumn{3}{c}{\color{muted}awaiting Studio-current certified generation} \\
 Role-disappearance exits & \multicolumn{3}{c}{\color{muted}awaiting extensive-margin support} \\
 Clean isolated windows & \multicolumn{3}{c}{\color{muted}to be established from certified support} \\
 Entry contrast & \multicolumn{3}{c}{\color{muted}to be estimated with pair-week adjustment} \\
 Exit contrast & \multicolumn{3}{c}{\color{muted}to be estimated with pair-week adjustment} \\
+}%
 \bottomrule
 \end{tabular}
 }
+\IfFileExists{../output/exhibits/architecture_transition_deck_values.tex}{%
+\vspace{0.05cm}{\footnotesize\color{muted}Route generation: \ArchRouteGeneration\par}%
+}{}
 \vspace{0.15cm}
 \evidencekicker{Feedback now}
 {\small
@@ -91,5 +103,5 @@ Exit contrast & \multicolumn{3}{c}{\color{muted}to be estimated with pair-week a
 \end{columns}
 }
 \vspace{0.08cm}
-{\footnotesize\color{muted}No coefficient enters the paper from this slide. Each populated result will name its exact Studio data generation.\par}
+{\footnotesize\color{muted}Support cells report detected (usable) events. No coefficient enters the paper. A populated slide prints its exact Studio route generation.\par}
 \end{frame}
