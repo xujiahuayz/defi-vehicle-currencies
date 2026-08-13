@@ -1,0 +1,41 @@
+{
+ "argv": [],
+ "artefact": "output/exhibits/e0_vehicle_rotation_analysis.jsonl",
+ "artefact_bytes": 11016,
+ "artefact_mtime_ns": 1786579837521435258,
+ "artefact_sha256": "b7301dd42b77233d54c6bf9b44f4b8a8a83279c801b6dca0755947e381b838b3",
+ "code_fingerprint": "f5bb22802a8800ad0bc1753d96c69366dc9b8aebcb2e997914ca3fef81b04398",
+ "code_sources": [
+  "scripts/run_vehicle_rotation_e0.py",
+  "src/ddvc/tables.py"
+ ],
+ "created_at": "2026-08-13T00:10:37+00:00",
+ "git": {
+  "branch": "main",
+  "commit": "8f66413a79da6a4de14d53ac146af762af70afb4",
+  "dirty": false,
+  "dirty_generated_files": [
+   "output/exhibits/.e0_vehicle_rotation_analysis.jsonl.sz_3n6r3.tmp"
+  ],
+  "dirty_tracked_files": [],
+  "dirty_untracked_files": []
+ },
+ "inputs": [],
+ "libraries": {
+  "numpy": "2.5.1",
+  "pandas": "3.0.3",
+  "pyarrow": "25.0.0",
+  "scipy": "1.18.0"
+ },
+ "notes": null,
+ "payload_identity": {
+  "bytes": 11016,
+  "format": "jsonl",
+  "rows": 25,
+  "schema_version": 1,
+  "sha256": "b7301dd42b77233d54c6bf9b44f4b8a8a83279c801b6dca0755947e381b838b3"
+ },
+ "python": "3.14.5",
+ "rows": 25,
+ "script": "scripts/run_vehicle_rotation_e0.py"
+}
