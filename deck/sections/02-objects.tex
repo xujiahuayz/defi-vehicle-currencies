@@ -19,14 +19,14 @@
 {\large Routes are reconstructed transaction by transaction across the routed venue perimeter. Daily and weekly panels are derived from the same route units.\par}
 \end{frame}
 
-% VISUAL-FUNCTION: measurement taxonomy | two-by-two conceptual grid | prevent vehicle use, excess use, topology, and cost from collapsing
-\begin{frame}{We measure vehicle dominance and distinguish it from demand, network position, and execution cost}
+% VISUAL-FUNCTION: measurement taxonomy | two-by-two conceptual grid | separate route status, continuous dominance, graph position, and counterfactual cost
+\begin{frame}{Vehicle status, dominance, graph position, and cost are different objects}
 \begin{columns}[T]
 \begin{column}{0.48\textwidth}
 \begin{enumerate}
-\item \textbf{Vehicle share}\par Fraction of route units intermediated by asset $k$.
+\item \textbf{Vehicle status}\par Asset $k$ is or is not the intermediary on one observed route.
 \vspace{0.35em}
-\item \textbf{Excess use}\par Intermediary share relative to endpoint demand.
+\item \textbf{Vehicle dominance}\par Count and value shares of observed routes carried by asset $k$.
 \end{enumerate}
 \end{column}
 \begin{column}{0.48\textwidth}
@@ -34,9 +34,10 @@
 \setcounter{enumi}{2}
 \item \textbf{Network position}\par Degree, strength, and betweenness on the trading graph.
 \vspace{0.35em}
-\item \textbf{Execution advantage}\par Direct-route output relative to a feasible vehicle route at the same pre-trade state.
+\item \textbf{Counterfactual cost}\par Output gap between direct and vehicle routes at the same reconstructed state.
 \end{enumerate}
 \end{column}
 \end{columns}
-\vspace{0.75cm}
+\vspace{0.50cm}
+{\small Excess use compares vehicle dominance with endpoint demand on the same route perimeter.\par}
 \end{frame}
