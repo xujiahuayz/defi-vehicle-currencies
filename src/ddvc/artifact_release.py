@@ -589,7 +589,7 @@ def _publish_generation_under_lock(
     row_counts: Mapping[str, int],
     notes: str | None,
     preinstall_validator: Callable[[Path], object] | None,
-    semantic_receipt: SemanticValidationReceipt,
+    semantic_receipt: SemanticValidationReceipt | None,
     write_pointer: Callable[[Path, dict[str, object]], None],
 ) -> ArtifactRelease:
     """Recover, resume, validate and select one generation under its full lock."""
@@ -627,7 +627,6 @@ def _publish_generation_under_lock(
         "kind": kind,
         "generation_id": generation,
         "build_identity_sha256": build_identity,
-        "semantic_validation": semantic_receipt.as_record(),
         "artifacts": {
             name: {
                 "filename": filenames[name],
@@ -637,6 +636,8 @@ def _publish_generation_under_lock(
             for name in filenames
         },
     }
+    if semantic_receipt is not None:
+        pointer["semantic_validation"] = semantic_receipt.as_record()
     try:
         write_pointer(pointer_path, pointer)
         return _resolve_artifact_release_unlocked(
@@ -646,7 +647,11 @@ def _publish_generation_under_lock(
             filenames=filenames,
             require_current_provenance=True,
             expected_generation=generation,
-            semantic_validator_fingerprint=semantic_receipt.validator_fingerprint,
+            semantic_validator_fingerprint=(
+                semantic_receipt.validator_fingerprint
+                if semantic_receipt is not None
+                else None
+            ),
             semantic=False,
         )
     except BaseException:
@@ -842,7 +847,9 @@ def _open_artifact_release_unlocked(
                         raise ValueError(f"{kind} provenance input disagrees with release binding")
                     continue
                 if require_current_provenance and not input_matches(record):
-                    raise ValueError(f"{kind} provenance input changed: {path}")
+                    raise ValueError(
+                        f"{kind} provenance is not current: input changed: {path}"
+                    )
             if file_sha256(pointer_path) != pointer_sha256:
                 raise RuntimeError(f"{kind} pointer changed during resolution")
             if semantic:
@@ -1134,18 +1141,15 @@ def publish_artifact_release(
                 }
             )
             generation = generation_id(artifact_hashes, build_identity)
-            validator_fingerprint = semantic_validator_fingerprint or canonical_json_sha256(
-                {
-                    "code_fingerprint": code_fingerprint(code_sources),
-                    "kind": kind,
-                    "schema_version": schema_version,
-                    "validator": "validate_staged",
-                }
-            )
-            if not is_sha256(validator_fingerprint):
+            if (
+                semantic_validator_fingerprint is not None
+                and not is_sha256(semantic_validator_fingerprint)
+            ):
                 raise ValueError("semantic validator fingerprint must be sha256")
-            semantic_receipt = SemanticValidationReceipt(
-                generation, validator_fingerprint
+            semantic_receipt = (
+                SemanticValidationReceipt(generation, semantic_validator_fingerprint)
+                if semantic_validator_fingerprint is not None
+                else None
             )
             targets = generation_paths(release_root, generation, filenames)
             prepared_stamps: dict[str, bytes] = {}

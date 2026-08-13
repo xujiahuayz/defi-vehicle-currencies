@@ -166,6 +166,7 @@ def _publish(
     row_count: int = 1,
     write_pointer=write_json,
     validate_staged=None,
+    semantic_validator_fingerprint=None,
 ):
     payloads = {"rows": {"value": value}, "certificate": {"status": "pass", "value": value}}
     validate = validate_staged or (
@@ -185,6 +186,7 @@ def _publish(
         inputs=inputs or [],
         notes="test bundle",
         validate_staged=validate,
+        semantic_validator_fingerprint=semantic_validator_fingerprint,
         write_pointer=write_pointer,
     )
 
@@ -402,6 +404,15 @@ def test_semantic_bundle_validation_runs_once_before_pointer_publication(
     assert second.generation_id != first.generation_id
 
 
+def test_legacy_publication_does_not_synthesize_a_semantic_receipt(
+    tmp_path: Path,
+) -> None:
+    pointer = tmp_path / "release" / "current.json"
+    release = _publish(pointer, 1)
+    assert release.semantic_receipt is None
+    assert "semantic_validation" not in json.loads(pointer.read_text(encoding="utf-8"))
+
+
 def test_invalid_semantics_cannot_install_a_pointer_or_receipt(tmp_path: Path) -> None:
     pointer = tmp_path / "release" / "current.json"
     first = _publish(pointer, 1)
@@ -431,7 +442,7 @@ def test_expected_receipt_must_equal_the_pointer_receipt(
     tmp_path: Path, tamper: str
 ) -> None:
     pointer = tmp_path / "release" / "current.json"
-    release = _publish(pointer, 1)
+    release = _publish(pointer, 1, semantic_validator_fingerprint="e" * 64)
     assert release.semantic_receipt is not None
     payload = json.loads(pointer.read_text(encoding="utf-8"))
     if tamper == "alternate":
