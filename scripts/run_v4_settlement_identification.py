@@ -444,6 +444,9 @@ def run(args: argparse.Namespace) -> None:
             routes["week"] = pd.to_datetime(routes["week"])
     else:
         routes = build_route_units(args.start, args.end)
+    if args.build_routes_only:
+        print(f"wrote current exclusive-architecture route units: {route_path}")
+        return
     cells = eligible_cells(routes, args.min_routes)
     sample = sample_routes(routes, cells, args.cells, args.per_dex_cell, args.seed)
     detail = transfer_detail(sample)
@@ -461,6 +464,11 @@ def main() -> int:
     ap.add_argument("--min-routes", type=int, default=5)
     ap.add_argument("--seed", type=int, default=20260624)
     ap.add_argument("--force", action="store_true")
+    ap.add_argument(
+        "--build-routes-only",
+        action="store_true",
+        help="materialize and provenance-stamp route units without receipt sampling",
+    )
     args = ap.parse_args()
     run(args)
     return 0
