@@ -9,20 +9,16 @@
 Every cost comparison has one observed side and one constructed side. The record shows what the trader received; the quote engine computes what an alternative route would have returned at the same size and reconstructed state. \citet{MakarovSchoar2020Arbitrage} show why a large measured price gap can persist when arbitrage requires slow transfers, short selling, and cross-border capital. Here, the direct and two-leg routes sit on the same chain and can be joined inside one atomic transaction that reverts as a unit \citep{DaianEtAl2020FlashBoys}. Atomic execution removes unmatched-leg risk; financing, gas, competition, reversion, state latency and builder costs remain. The constructed quote is therefore informative only within the quoter's validated range, when the reconstructed state approximates the router's latent decision state, when execution costs preserve the gap, and when the comparison covers the relevant venues on both sides.
 % literature/text/2020-MakarovSchoar2020Arbitrage-*.txt, section 8
 
-We examine these four conditions in turn. Appendices~\ref{app:quoters} to~\ref{app:roundtrip} report the pricing rules, per-venue validation errors, and conditional samples.
+Appendices~\ref{app:quoters} to~\ref{app:roundtrip} report the pricing rules, per-venue validation errors, and conditional samples behind these four conditions.
 
-\subsection{The validation range of the quotes}
+\subsection{Extrapolation beyond realised trades}
 \label{sec:executability:support}
 
-Each venue quoter is validated by reproducing realised swaps. Applying it to a hypothetical route can extend the calculation beyond the trade-size and depth combinations observed in that validation sample. We therefore retain hypothetical routes only when trade size relative to pool depth lies within the realised range described in Section~\ref{sec:setting:support}. Appendix~\ref{app:quoters} gives each venue's invariant and validation errors, including concentrated-liquidity results by trade direction and tick crossing \citep{AdamsZinsmeisterRobinson2021UniswapV3}.
+Reproducing realised swaps does not establish a quoter's accuracy at trade-size and depth combinations absent from its validation sample. The support rule in Section~\ref{sec:setting:support} therefore retains a hypothetical leg only when its price impact lies within the range observed on realised trades. Because eligibility is determined from pool state and trade size before the route-cost gap is computed, the restriction limits extrapolation without selecting on the measured outcome. Appendix~\ref{app:support} reports its daily distribution, and Appendix~\ref{app:quoters} gives each venue's invariant and validation errors, including concentrated-liquidity results by trade direction and tick crossing \citep{AdamsZinsmeisterRobinson2021UniswapV3}.
 
-The restriction is defined using the trade's price impact in the pool it would traverse, before the route-cost gap is computed. Its threshold is read from the size-to-depth distribution of the swaps used to validate the quoters and lies between the 90th and 99th percentiles of that distribution.
-% output/exhibits/quoter_support_bounds.jsonl, pooled over 932,270 validated swaps on eight sampled days
-A restriction based on the measured gap would select observations on the outcome. The retained restriction conditions on pool state instead; Appendix~\ref{app:support} reports its daily distribution.
+Realised-swap support still does not measure error for a hypothetical route, because no realised output exists for an unexecuted alternative. Section~\ref{sec:executability:arbitrage} develops a same-block capture test that can provide an indirect bound; an empirical upper bound on hypothetical-route quote error remains open.
 
-This restriction limits extrapolation. Direct error remains unmeasured for a hypothetical route because realised output exists only for executed routes. Section~\ref{sec:executability:arbitrage} describes a same-block capture test that can provide an indirect bound; an empirical upper bound on hypothetical-route quote error remains open.
-
-\subsection{Whether the router faced the state the panel prices}
+\subsection{Decision-state timing}
 \label{sec:executability:timing}
 
 The settlement block is observed, while the state at which the router formed its quote and chose the route is latent. The counterfactual panel prices at the close of an hour. A route may have been cheapest at the latent decision state but appear dominated at the hour close, so a behavioural interpretation of that classification may instead reflect stale prices.
@@ -91,10 +87,10 @@ Appendix~\ref{app:state} describes this reconstruction and its continuity check.
 
 Quoted output is one component of the router's objective. Gas, exposure to sandwiching, reversion risk, and access to private order flow may also affect route choice. Gas can be included when candidate routes are joined to the realised transaction's effective gas price and to route units calibrated for their topology and venue sequence; swap records leave the remaining components unobserved. The measured comparison therefore concerns observable execution output and costs and carries no claim of irrational route choice.
 
-\subsection{What an unexploited gap implies, and the same-block capture test}
+\subsection{Same-block capture of route-cost gaps}
 \label{sec:executability:arbitrage}
 
-The sharpest form of the objection to the constructed side is that an executable gap invites capture. If a direct pool and a two-leg route disagree by hundreds of basis points at the same state, a cycle out through the expensive route and back through the cheap one can convert the disagreement into profit inside one block after its own costs. Round-trip routes run 12.7\% of multi-leg routes by count and 21.7\% by value at the median of 79 sampled days, and the floor across those days is 4.5\% by count and 7.4\% by value. Every sampled day contains self-returning activity, and Appendix~\ref{app:roundtrip} reports the whole daily distribution. These counts describe activity; its classification as arbitrage and the continuity of capture capacity remain open.
+An executable gap invites capture. If a direct pool and a two-leg route disagree by hundreds of basis points at the same state, a cycle out through the expensive route and back through the cheap one can convert the disagreement into profit inside one block after its own costs. Round-trip routes run 12.7\% of multi-leg routes by count and 21.7\% by value at the median of 79 sampled days, and the floor across those days is 4.5\% by count and 7.4\% by value. Every sampled day contains self-returning activity, and Appendix~\ref{app:roundtrip} reports the whole daily distribution. These counts describe activity; its classification as arbitrage and the continuity of capture capacity remain open.
 % output/exhibits/round_trip_share_by_day.jsonl, 79 sampled days
 
 The present analysis reports no quantitative same-block arbitrage threshold. Such a test must join each candidate gap to the realised transaction and block, price the cycle using that receipt's effective gas price and route-specific gas units, and search for a closing swap sequence in the same block. A closing cycle would show that the gap was both real and captured; its absence would leave quote error or an unmodelled execution constraint unresolved.
@@ -118,10 +114,7 @@ The composition of the Curve omission provides a directional diagnostic, not a b
 
 Coverage affects cost classification and persistence differently. An omitted direct route can make more realised vehicle routes appear cost-disadvantaged, while an omitted vehicle route can move the comparison in the opposite direction. Pool existence establishes technical feasibility; an interpretation about retaining the incumbent additionally requires evidence of router access.
 
-\subsection{Implications for the route comparison}
-\label{sec:executability:implications}
-
-The validation evidence establishes three points. The support restriction limits hypothetical routes to trade-size and depth combinations represented among realised swaps, while quote error inside that region remains unbounded. Hour-end pricing changes the direct-versus-vehicle ranking at a rate that depends strongly on the fee wedge, which makes pre-trade state essential for persistence. The concentration of missing Curve volume on the native side supplies a directional prediction whose sign awaits integration.
+Observed-swap validation does not bound quote error for unexecuted routes, even after the support restriction limits hypothetical legs to trade-size and depth combinations represented among realised swaps. Hour-end pricing also changes the direct-versus-vehicle ranking at a rate that depends strongly on the fee wedge, which makes pre-trade state essential for persistence. The concentration of missing Curve volume on the native side supplies a directional prediction whose sign awaits integration.
 % output/exhibits/block_vs_hour_conditional.jsonl, fee_wedge_bps rows
 
 Two limits remain. The same-block cycle test is required to distinguish captured opportunities from quote error throughout the measured tail. Swap records are also silent on whether private order flow, reversion risk or another unobserved cost led a router to prefer a lower-output route. These limits separate the measured frequency of a route-cost gap from an explanation of route choice.
