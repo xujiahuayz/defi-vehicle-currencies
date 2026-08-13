@@ -5,18 +5,13 @@
 % EVIDENCE-SOURCES: docs/specification-lock.json; docs/research-workflow.md;
 % src/ddvc/analysis/dynamics.py; src/ddvc/analysis/routing_maturation.py.
 % Horizontal spacing in the exact-link row is schematic rather than proportional to elapsed time.
-\begin{tikzpicture}[
-  x=1cm,
-  y=1cm,
-  clocklabel/.style={font=\scriptsize\bfseries,text=ucldark,anchor=east,align=right},
-  day/.style={rounded corners=1.5pt,draw=rule,fill=white,minimum width=0.68cm,
-    minimum height=0.55cm,inner sep=2pt,font=\tiny},
-  origin/.style={day,draw=ucldark,fill=ucldark,text=white,line width=1pt},
-  target/.style={day,draw=stable,fill=stable!8,line width=1pt},
-  model/.style={rounded corners=2pt,draw=rule,fill=panel,text width=2.48cm,
-    minimum height=0.72cm,inner sep=4pt,font=\tiny,align=left},
-  link/.style={-{Stealth[length=4.5pt]},draw=stable,line width=1.05pt}
-]
+\tikzset{clocklabel/.style={font=\scriptsize\bfseries,text=ucldark,anchor=east,align=right}}
+\tikzset{day/.style={rounded corners=1.5pt,draw=rule,fill=white,minimum width=0.68cm,minimum height=0.55cm,inner sep=2pt,font=\tiny}}
+\tikzset{origin/.style={day,draw=ucldark,fill=ucldark,text=white,line width=1pt}}
+\tikzset{target/.style={day,draw=stable,fill=stable!8,line width=1pt}}
+\tikzset{model/.style={rounded corners=2pt,draw=rule,fill=panel,text width=2.48cm,minimum height=0.72cm,inner sep=4pt,font=\tiny,align=left}}
+\tikzset{link/.style={-{Stealth[length=4.5pt]},draw=stable,line width=1.05pt}}
+\begin{tikzpicture}[x=1cm,y=1cm]
 
 % Daily observations retain the calendar date as the unit.
 \node[clocklabel] at (1.32,2.45) {Daily panel};

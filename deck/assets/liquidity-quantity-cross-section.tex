@@ -3,10 +3,10 @@
 % EVIDENCE-SOURCES: src/ddvc/liquidity.py; src/ddvc/capital_contracts.py;
 % docs/research-workflow.md (capital, inventory, depth, and quote semantics).
 % The generic price-response curve deliberately avoids imposing one AMM invariant.
-\begin{tikzpicture}[x=1cm,y=1cm,
-  callout/.style={rounded corners=2pt,draw=rule,fill=panel,inner sep=5pt,align=center,font=\scriptsize},
-  poolbin/.style={rounded corners=3pt,draw=ucldark,line width=1.1pt,fill=white,minimum width=2.10cm,minimum height=1.18cm,align=center},
-  guide/.style={draw=muted,densely dashed,line width=0.8pt}]
+\tikzset{callout/.style={rounded corners=2pt,draw=rule,fill=panel,inner sep=5pt,align=center,font=\scriptsize}}
+\tikzset{poolbin/.style={rounded corners=3pt,draw=ucldark,line width=1.1pt,fill=white,minimum width=2.10cm,minimum height=1.18cm,align=center}}
+\tikzset{guide/.style={draw=muted,densely dashed,line width=0.8pt}}
+\begin{tikzpicture}[x=1cm,y=1cm]
 
 % Balance-sheet view: claims and token holdings are different objects.
 \node[font=\small\bfseries,text=ucldark,anchor=west] at (0.0,3.18) {Pool balance sheet at time $t$};
@@ -36,10 +36,7 @@
 \draw[guide] (9.92,0.48) -- (9.92,1.76);
 \draw[<->,draw=stable,line width=1.2pt] (7.12,0.27) -- node[below,font=\scriptsize,text=stable] {$q$} (9.92,0.27);
 \draw[<->,draw=accent,line width=1.2pt] (10.17,0.87) -- (10.17,1.76);
-\path[fill=stable,opacity=0.12]
-  (7.12,0.48) -- (7.12,0.87)
-  .. controls (8.30,1.00) and (9.08,1.34) .. (9.92,1.76)
-  -- (9.92,0.48) -- cycle;
+\path[fill=stable,opacity=0.12] (7.12,0.48) -- (7.12,0.87) .. controls (8.30,1.00) and (9.08,1.34) .. (9.92,1.76) -- (9.92,0.48) -- cycle;
 \node[callout,draw=stable,anchor=north,minimum width=3.25cm] at (8.46,-0.02)
   {executable depth: quantity available\\within a stated price-impact band};
 \node[callout,draw=accent,anchor=west,minimum width=1.58cm] at (10.40,1.58)

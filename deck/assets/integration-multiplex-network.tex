@@ -3,12 +3,12 @@
 % EVIDENCE-SOURCES: docs/research-workflow.md (integration and route-class semantics);
 % docs/specification-lock.json (routing_maturation_e0 and vehicle_transition_e0).
 % Venue names and route classes are generic; the diagram makes no adoption or causal claim.
-\begin{tikzpicture}[x=1cm,y=1cm,
-  asset/.style={circle,draw=ink,fill=white,minimum size=19pt,inner sep=0pt,font=\scriptsize},
-  venue/.style={rounded corners=4pt,draw=rule,fill=panel,minimum width=4.55cm,minimum height=1.36cm},
-  routecard/.style={rounded corners=3pt,draw=rule,fill=white,minimum width=4.15cm,minimum height=1.08cm},
-  faintpath/.style={-{Stealth[length=4pt]},draw=muted,line width=0.85pt},
-  chosenpath/.style={-{Stealth[length=4pt]},draw=ucldark,line width=1.5pt}]
+\tikzset{asset/.style={circle,draw=ink,fill=white,minimum size=19pt,inner sep=0pt,font=\scriptsize}}
+\tikzset{venue/.style={rounded corners=4pt,draw=rule,fill=panel,minimum width=4.55cm,minimum height=1.36cm}}
+\tikzset{routecard/.style={rounded corners=3pt,draw=rule,fill=white,minimum width=4.15cm,minimum height=1.08cm}}
+\tikzset{faintpath/.style={-{Stealth[length=4pt]},draw=muted,line width=0.85pt}}
+\tikzset{chosenpath/.style={-{Stealth[length=4pt]},draw=ucldark,line width=1.5pt}}
+\begin{tikzpicture}[x=1cm,y=1cm]
 
 \node[font=\small\bfseries,text=ucldark,anchor=west] at (0.0,3.25) {Feasible venue layers};
 

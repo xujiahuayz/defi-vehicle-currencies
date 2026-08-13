@@ -5,18 +5,14 @@
 % EVIDENCE-SOURCES: docs/specification-lock.json; docs/paper-spine.md;
 % docs/finding-intermediation-transition.md; src/ddvc/variable_registry.py.
 % Both panels contain the same stylised route set; only the weighting rule changes.
-\begin{tikzpicture}[
-  x=1cm,
-  y=1cm,
-  panelbox/.style={rounded corners=3pt,draw=rule,fill=panel,minimum width=5.22cm,
-    minimum height=3.35cm},
-  asset/.style={circle,draw=ink,fill=white,minimum size=18pt,inner sep=0pt,font=\tiny},
-  vehicle/.style={asset,draw=ucldark,fill=ucldark,text=white},
-  equalroute/.style={-{Stealth[length=4.5pt]},draw=native,line width=1.55pt},
-  thinroute/.style={-{Stealth[length=4.5pt]},draw=stable,line width=0.80pt},
-  mediumroute/.style={-{Stealth[length=4.5pt]},draw=stable,line width=1.55pt},
-  thickroute/.style={-{Stealth[length=5pt]},draw=stable,line width=3.05pt}
-]
+\tikzset{panelbox/.style={rounded corners=3pt,draw=rule,fill=panel,minimum width=5.22cm,minimum height=3.35cm}}
+\tikzset{asset/.style={circle,draw=ink,fill=white,minimum size=18pt,inner sep=0pt,font=\tiny}}
+\tikzset{vehicle/.style={asset,draw=ucldark,fill=ucldark,text=white}}
+\tikzset{equalroute/.style={-{Stealth[length=4.5pt]},draw=native,line width=1.55pt}}
+\tikzset{thinroute/.style={-{Stealth[length=4.5pt]},draw=stable,line width=0.80pt}}
+\tikzset{mediumroute/.style={-{Stealth[length=4.5pt]},draw=stable,line width=1.55pt}}
+\tikzset{thickroute/.style={-{Stealth[length=5pt]},draw=stable,line width=3.05pt}}
+\begin{tikzpicture}[x=1cm,y=1cm]
 
 \node[panelbox] at (2.78,0.38) {};
 \node[panelbox] at (8.82,0.38) {};

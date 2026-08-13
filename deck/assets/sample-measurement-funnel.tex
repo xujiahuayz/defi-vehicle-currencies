@@ -5,16 +5,10 @@
 % EVIDENCE-SOURCES: docs/specification-lock.json; docs/findings-freeze.md;
 % data/manifests/data/processed/intermediation_by_type_daily.parquet.prov.json.
 % INPUT-SHA256: 8db2065d8f14b8a3d7b34b6cc2057823a6d74ecc5fc8f8b6beaef33c7afc780b
-\begin{tikzpicture}[
-  x=1cm,
-  y=1cm,
-  stage/.style={rounded corners=2pt,draw=rule,fill=panel,minimum width=2.18cm,
-    minimum height=1.18cm,text width=1.88cm,align=center,inner sep=4pt,font=\scriptsize},
-  countlane/.style={rounded corners=2pt,draw=native,fill=native!7,minimum width=4.10cm,
-    minimum height=0.94cm,text width=3.72cm,align=center,inner sep=4pt,font=\scriptsize},
-  valuelane/.style={rounded corners=2pt,draw=stable,fill=stable!7,minimum width=4.10cm,
-    minimum height=0.94cm,text width=3.72cm,align=center,inner sep=4pt,font=\scriptsize}
-]
+\tikzset{stage/.style={rounded corners=2pt,draw=rule,fill=panel,minimum width=2.18cm,minimum height=1.18cm,text width=1.88cm,align=center,inner sep=4pt,font=\scriptsize}}
+\tikzset{countlane/.style={rounded corners=2pt,draw=native,fill=native!7,minimum width=4.10cm,minimum height=0.94cm,text width=3.72cm,align=center,inner sep=4pt,font=\scriptsize}}
+\tikzset{valuelane/.style={rounded corners=2pt,draw=stable,fill=stable!7,minimum width=4.10cm,minimum height=0.94cm,text width=3.72cm,align=center,inner sep=4pt,font=\scriptsize}}
+\begin{tikzpicture}[x=1cm,y=1cm]
 \node[stage] (legs) at (0,0) {released\\swap legs};
 \node[stage] (routes) at (2.75,0) {reconstructed\\economic routes};
 \node[stage] (twoleg) at (5.50,0) {exact two-leg\\intermediary routes};
