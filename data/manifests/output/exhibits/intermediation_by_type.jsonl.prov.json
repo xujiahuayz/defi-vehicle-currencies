@@ -1,7 +1,13 @@
 {
- "argv": [],
+ "argv": [
+  "--workers",
+  "8"
+ ],
  "artefact": "output/exhibits/intermediation_by_type.jsonl",
- "code_fingerprint": "702eb35d1848cc44b7f249c35b3e6b800fdbc755fea9f867d8fbe65ce56b7185",
+ "artefact_bytes": 37266,
+ "artefact_mtime_ns": 1786622299632427420,
+ "artefact_sha256": "539a9feb5712a899cc901023eea8e62f56bf6015a23af8c6e735e981b874e12a",
+ "code_fingerprint": "f4f220ea03812f9099b9a5ffa4822c04bf4cf59945c3cf1208d85050b64e5267",
  "code_sources": [
   "scripts/build_intermediation_by_type.py",
   "src/ddvc/analysis/regression.py",
@@ -10,23 +16,24 @@
   "src/ddvc/route_roles.py",
   "src/ddvc/tables.py"
  ],
- "created_at": "2026-08-06T23:48:56+00:00",
+ "created_at": "2026-08-13T11:58:19+00:00",
  "git": {
-  "branch": "glotl/fgh-evidence",
-  "commit": "d0c0dbf0fd35b7eccf50d954379bf74a114f7a6f",
+  "branch": "main",
+  "commit": "2ffbce06302468b5ee6cb6537989c28078a88603",
   "dirty": false,
   "dirty_generated_files": [
-   "data/manifests/data/processed/intermediation_by_type_daily.parquet.prov.json"
+   "data/manifests/data/processed/intermediation_by_type_daily.parquet.prov.json",
+   "output/exhibits/.intermediation_by_type.jsonl.luztgq4m.tmp"
   ],
   "dirty_tracked_files": [],
   "dirty_untracked_files": []
  },
  "inputs": [
   {
-   "bytes": 3396732,
+   "bytes": 4436127,
    "exists": true,
    "path": "data/processed/intermediation_by_type_daily.parquet",
-   "sha256": "81610e56d0b39ee6a7e590430dfcd2e54062704b9d53bcce761a377843d09900"
+   "sha256": "8db2065d8f14b8a3d7b34b6cc2057823a6d74ecc5fc8f8b6beaef33c7afc780b"
   }
  ],
  "libraries": {
@@ -36,7 +43,14 @@
   "scipy": "1.18.0"
  },
  "notes": null,
- "python": "3.14.5",
+ "payload_identity": {
+  "bytes": 37266,
+  "format": "jsonl",
+  "rows": 105,
+  "schema_version": 1,
+  "sha256": "539a9feb5712a899cc901023eea8e62f56bf6015a23af8c6e735e981b874e12a"
+ },
+ "python": "3.14.6",
  "rows": 105,
  "script": "scripts/build_intermediation_by_type.py"
 }

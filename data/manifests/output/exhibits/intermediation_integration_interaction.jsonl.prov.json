@@ -1,12 +1,14 @@
 {
- "argv": [],
+ "argv": [
+  "--workers",
+  "8"
+ ],
  "artefact": "output/exhibits/intermediation_integration_interaction.jsonl",
- "artefact_bytes": 10852,
- "artefact_mtime_ns": 1786500046950925000,
- "artefact_sha256": "703c3928864d1cb7bd1124acfabcdc57413e8f9024db25302c04781ec4ce9a82",
- "code_fingerprint": "23194d5bff12a97fd99226b267fe26b83852a62e679a433ffd244857a81ae3a0",
+ "artefact_bytes": 10849,
+ "artefact_mtime_ns": 1786622299782722800,
+ "artefact_sha256": "2a34e5c267b600a9380dc44d56741a325b049fe686e2a725f9aac8211440d020",
+ "code_fingerprint": "f4f220ea03812f9099b9a5ffa4822c04bf4cf59945c3cf1208d85050b64e5267",
  "code_sources": [
-  "<stdin>",
   "scripts/build_intermediation_by_type.py",
   "src/ddvc/analysis/regression.py",
   "src/ddvc/asset_types.py",
@@ -14,26 +16,28 @@
   "src/ddvc/route_roles.py",
   "src/ddvc/tables.py"
  ],
- "created_at": "2026-08-12T02:00:46+00:00",
+ "created_at": "2026-08-13T11:58:19+00:00",
  "git": {
-  "branch": "glotl/dominance-cost-temporal-match",
-  "commit": "7905d725464a51136d8b3e902eb27768025bfdba",
-  "dirty": true,
+  "branch": "main",
+  "commit": "2ffbce06302468b5ee6cb6537989c28078a88603",
+  "dirty": false,
   "dirty_generated_files": [
-   "output/exhibits/.intermediation_integration_interaction.jsonl.81rexcoa.tmp"
+   "data/manifests/data/processed/intermediation_by_type_daily.parquet.prov.json",
+   "data/manifests/output/exhibits/intermediation_by_type.jsonl.prov.json",
+   "data/manifests/output/exhibits/intermediation_integration_rival.jsonl.prov.json",
+   "output/exhibits/intermediation_by_type.jsonl",
+   "output/exhibits/intermediation_integration_rival.jsonl",
+   "output/exhibits/.intermediation_integration_interaction.jsonl.ono5s5j_.tmp"
   ],
-  "dirty_tracked_files": [
-   "scripts/build_intermediation_by_type.py",
-   "tests/test_intermediation_by_type.py"
-  ],
+  "dirty_tracked_files": [],
   "dirty_untracked_files": []
  },
  "inputs": [
   {
-   "bytes": 3396732,
+   "bytes": 4436127,
    "exists": true,
    "path": "data/processed/intermediation_by_type_daily.parquet",
-   "sha256": "81610e56d0b39ee6a7e590430dfcd2e54062704b9d53bcce761a377843d09900"
+   "sha256": "8db2065d8f14b8a3d7b34b6cc2057823a6d74ecc5fc8f8b6beaef33c7afc780b"
   }
  ],
  "libraries": {
@@ -43,7 +47,14 @@
   "scipy": "1.18.0"
  },
  "notes": "paired-date cross-venue minus single-venue stable-share interaction; Newey-West Bartlett covariance; descriptive because integration regime is selected",
- "python": "3.14.5",
+ "payload_identity": {
+  "bytes": 10849,
+  "format": "jsonl",
+  "rows": 16,
+  "schema_version": 1,
+  "sha256": "2a34e5c267b600a9380dc44d56741a325b049fe686e2a725f9aac8211440d020"
+ },
+ "python": "3.14.6",
  "rows": 16,
- "script": "-"
+ "script": "scripts/build_intermediation_by_type.py"
 }
