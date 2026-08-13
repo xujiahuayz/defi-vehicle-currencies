@@ -5,115 +5,43 @@
 \input{../output/exhibits/provisional_results_deck_values.tex}%
 }{}
 
-% EVIDENCE-STATUS: evolving route result; exact partition authority is being rebound
-% EVIDENCE-COMMIT: 3873fca
-% EVIDENCE-SOURCES: output/exhibits/provisional_results_deck_values.tex; docs/findings-freeze.md
-% VISUAL-FUNCTION: non-monotone vehicle rotation | endpoint comparison pending quarterly line replacement | establish timing without treating calendar time as treatment
-\begin{frame}{Vehicle dominance rotates toward stable num\'eraires}
-\vspace{0.28cm}
-\begin{columns}[T,totalwidth=\textwidth]
-\begin{column}{0.47\textwidth}
-\evidencekicker{Exact two-leg routes: equal-weighted days}
-{\Large\bfseries\color{native}\StableCountBase}
-{\large\color{muted}\ $\longrightarrow$\ }
-{\Large\bfseries\color{stable}\StableCountEnd}
-\vspace{0.18cm}
-
-{\large\bfseries\StableCountChange\quad {\small (SE \StableCountSE)}}
-\vspace{0.10cm}
-
-{\scriptsize Holm $p=\StableCountP$; stable share within native + stable, 2024 to 2026.}
-\end{column}
-\begin{column}{0.47\textwidth}
-\evidencekicker{Strict-support value}
-{\Large\bfseries\color{native}\StableValueBase}
-{\large\color{muted}\ $\longrightarrow$\ }
-{\Large\bfseries\color{stable}\StableValueEnd}
-\vspace{0.18cm}
-
-{\large\bfseries\StableValueChange\quad {\small (SE \StableValueSE)}}
-\vspace{0.10cm}
-
-{\scriptsize Holm $p=\StableValueP$; value supported within 20\%.}
-\end{column}
-\end{columns}
-\vspace{0.48cm}
-\begin{beamercolorbox}[sep=0.22cm,wd=\textwidth]{block body}
-\textbf{Reading:} a large late rotation, not a monotone time trend. Native use rebounds in 2023--24; stable value leads again from 2025-Q1, while count leadership is not yet sustained.
-\end{beamercolorbox}
+% EVIDENCE-STATUS: evolving route result; current certified route release
+% EVIDENCE-COMMIT: 6dd7897
+% EVIDENCE-SOURCES: output/figures/vehicle_type_shares_quarterly.pdf; output/exhibits/intermediation_by_type.jsonl; docs/findings-freeze.md
+% VISUAL-FUNCTION: non-monotone vehicle rotation | quarterly count/value line panels | establish the path while separating calendar description from design attribution
+\begin{frame}{The vehicle mix rotates; it does not trend monotonically}
+\vspace{-0.05cm}
+\begin{center}
+\includegraphics[width=0.94\textwidth,height=0.69\textheight,keepaspectratio]{../output/figures/vehicle_type_shares_quarterly.pdf}
+\end{center}
+\vspace{-0.18cm}
+{\scriptsize\color{muted}Calendar quarter describes when the mix changes; it does not identify which contemporaneous routing design caused the change.}
 \end{frame}
 
 % EVIDENCE-STATUS: evolving route decomposition
-% EVIDENCE-COMMIT: 3873fca
-% EVIDENCE-SOURCES: output/exhibits/provisional_results_deck_values.tex; docs/findings-freeze.md
-% VISUAL-FUNCTION: candidate-level excess-use change | table pending count/value dumbbells | identify USDT rather than a pooled stablecoin effect
-\begin{frame}{USDT is the transition margin}
-\vspace{0.12cm}
-{\small
-\begin{tabular}{@{}p{0.35\textwidth}ccc@{}}
-\toprule
-\textbf{Object} & \textbf{2024} & \textbf{2026} & \textbf{Change} \\
-\midrule
-USDT count excess use & \USDTCountExcessBase & \USDTCountExcessEnd & \textemdash \\
-USDT strict-value excess use & \USDTValueExcessBase & \USDTValueExcessEnd & \textemdash \\
-Cross-venue count premium & \multicolumn{2}{c}{paired-date change} & \USDTCrossCountChange\ (\USDTCrossCountSE) \\
-Cross-venue strict-value premium & \multicolumn{2}{c}{paired-date change} & \USDTCrossValueChange\ (\USDTCrossValueSE) \\
-Intermediary $-$ endpoint, strict value & \USDTEndpointGapBase & \USDTEndpointGapEnd & \USDTEndpointGapChange\ (\USDTEndpointGapSE) \\
-\bottomrule
-\end{tabular}
-}
-\vspace{0.34cm}
-\begin{columns}[T,totalwidth=\textwidth]
-\begin{column}{0.24\textwidth}
-{\fontsize{24}{26}\selectfont\bfseries\color{ucldark}\JointStableContribution}\par
-{\small of the stable count-share increase comes from USDC + USDT.}
-\end{column}
-\begin{column}{0.70\textwidth}
-\textbf{Not a pooled ``stablecoin'' effect.} USDC is already an excess-use vehicle and moves little; USDT crosses from below to above one on strict value. Backing designs remain separate mechanisms.
-\end{column}
-\end{columns}
+% EVIDENCE-COMMIT: 6dd7897
+% EVIDENCE-SOURCES: output/figures/vehicle_excess_use_transition.pdf; output/exhibits/vehicle_excess_use.jsonl; output/exhibits/vehicle_excess_use_transition.jsonl; docs/findings-freeze.md
+% VISUAL-FUNCTION: candidate-level excess-use change | paired count/value dumbbells | identify USDT rather than a pooled stablecoin effect
+\begin{frame}{USDT is the 2024--2026 transition margin}
+\vspace{-0.08cm}
+\begin{center}
+\includegraphics[width=0.93\textwidth,height=0.67\textheight,keepaspectratio]{../output/figures/vehicle_excess_use_transition.pdf}
+\end{center}
+\vspace{-0.16cm}
+{\scriptsize USDC begins above parity and moves little. USDT crosses parity on common-support value; the intermediary-minus-endpoint share gap is the inferential outcome, while the ratio is its relative-intensity translation.}
 \end{frame}
 
-% EVIDENCE-STATUS: evolving route result; integration remains a live mechanism
-% EVIDENCE-COMMIT: 3873fca
-% EVIDENCE-SOURCES: output/exhibits/provisional_results_deck_values.tex; docs/findings-freeze.md
-% VISUAL-FUNCTION: integration versus intermediation | paired binned association and time evidence | test whether expanded reach mechanically raises indirect routing
-\begin{frame}{Integration expands; intermediation does not}
-\vspace{0.15cm}
-\begin{columns}[T,totalwidth=\textwidth]
-\begin{column}{0.46\textwidth}
-\evidencekicker{Cross-venue execution}
-{\Large\bfseries\color{native}\CrossVenueCountStart}
-{\large\color{muted}\ $\longrightarrow$\ }
-{\Large\bfseries\color{stable}\CrossVenueCountEnd}
-
-{\small true intermediary routes, 2020 to 2026; 2026 strict-value share is \CrossVenueValueEnd.}
-\vspace{0.38cm}
-
-\evidencekicker{Stable rotation is stronger across venues}
-{\Large\bfseries\color{ucldark}\CrossVenueRotationPremium}
-{\small\quad (SE \CrossVenueRotationSE)}
-\end{column}
-\begin{column}{0.48\textwidth}
-\evidencekicker{True intermediation share}
-{\small
-\begin{tabular}{@{}lccc@{}}
-\toprule
- & 2022 & 2026 & $\Delta$ \\
-\midrule
-Full & \FullIntermediationBase & \FullIntermediationEnd & \FullIntermediationChange \\
-Balanced & \FullIntermediationBase & \BalancedIntermediationEnd & \BalancedIntermediationChange \\
-\bottomrule
-\end{tabular}}
-\vspace{0.20cm}
-
-{\scriptsize Calendar-HAC SEs: \FullIntermediationSE\ (full), \BalancedIntermediationSE\ (balanced).}
-\end{column}
-\end{columns}
-\vspace{0.36cm}
-\begin{beamercolorbox}[sep=0.20cm,wd=\textwidth]{block body}
-Routing maturation changes reach, but it does not mechanically create more indirect trade. It remains a live rival: the final test conditions vehicle choice on fixed opportunity and search-efficiency cells.
-\end{beamercolorbox}
+% EVIDENCE-STATUS: evolving route result; integration remains a selected, descriptive stratum
+% EVIDENCE-COMMIT: 6dd7897
+% EVIDENCE-SOURCES: output/figures/integration_rotation_slopes.pdf; output/exhibits/intermediation_integration_rival.jsonl; output/exhibits/intermediation_integration_interaction.jsonl; docs/finding-intermediation-transition.md
+% VISUAL-FUNCTION: integration-stratified vehicle rotation | paired interaction slopes | test whether venue reach absorbs the stable-share change
+\begin{frame}{Stable share rises within both single- and cross-venue routes}
+\vspace{-0.08cm}
+\begin{center}
+\includegraphics[width=0.93\textwidth,height=0.67\textheight,keepaspectratio]{../output/figures/integration_rotation_slopes.pdf}
+\end{center}
+\vspace{-0.16cm}
+{\scriptsize The stable share rises within both route strata. The larger cross-venue change rejects venue mix as a complete composition account, but selected route strata do not identify a causal effect of integration.}
 \end{frame}
 
 % EVIDENCE-STATUS: diagnostic displacement gradient; not a persistence estimate
