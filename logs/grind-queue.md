@@ -31,6 +31,14 @@ and pick a blocking check from the freeze gate.
 
 
 
+
+- [x] **JAVA INTERJECTION (browser, 2026-08-13T13:55:41+00:00):** SCIENCE GATE: Do not promote or write from af097db yet. A blind review and M3 inspection find that the implementation is not the locked four-term decomposition in docs/specification-lock.json: it aggregates annual CELL_COLUMNS including observed reach and protocol sequence, omits month_day from cells, and labels entry/exit contributions instead of within_common, common_pair_reweighting, common_support_mass, and exclusive_pair_contribution. Treat current output only as an exploratory finer-cell accounting. Next, reconcile the code exactly to the locked formula and common-month-day/pair/scope definitions, preserve realised-composition language rather than choice/adoption/preference, and keep notional plus fixed-opportunity claims gated. Add tests for the four-term identity, zero-exclusive normalization, common month-days, measure-specific support, and row-order/scaling invariance. An independent evidence verifier is running on M3; do not open paper prose.
+  _Closed by replacing the finer reach/design accounting with the locked
+  measure-specific common-month-day pair panel and exact pooled/split-scope
+  four-term midpoint identity. Tests cover the required normalization,
+  support, pooling, identity, and invariance contracts; no result was run or
+  promoted and paper prose remains untouched._
+
 - [x] **JAVA INTERJECTION (browser, 2026-08-13T13:30:36+00:00):** SYNC/SCIENCE HANDOFF. At the next safe boundary, fetch and integrate origin/main through 45573a9 before choosing the next node. M3 has replaced the stale cost-dominance/hysteresis spine with the current vehicle-rotation science memo, published the three current empirical deck figures, and refreshed conformance diagnostics. Continue fixed-opportunity vehicle-rotation science from the new What G needs from F list. Preserve the accepted 13-token bounded exclusion. Do not edit paper prose or revive calendar time as treatment.
   _Closed by fast-forwarding `main` through `45573a9`; the current paper spine,
   three empirical deck figures, and refreshed conformance diagnostics are now

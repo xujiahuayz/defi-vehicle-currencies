@@ -17,26 +17,40 @@ def _choice(
     candidate_type: str,
     route_count: float,
     *,
+    strict_count: float | None = None,
     value: float | None = None,
-    reach: str = "uniswap_v3>uniswap_v3",
-    protocol: str = "uniswap>uniswap",
+    scope: str = "single_venue",
+    venue: str | None = None,
 ) -> dict[str, object]:
+    if venue is None:
+        venue = (
+            "uniswap_v3>uniswap_v3"
+            if scope == "single_venue"
+            else "uniswap_v3>sushiswap_v2"
+        )
     return {
         "date": pd.Timestamp(date),
         "src": src,
         "tgt": tgt,
         "candidate_address": NATIVE if candidate_type == "native" else STABLE,
         "candidate_type": candidate_type,
-        "venue_sequence": reach,
-        "integration_scope": "single_venue" if reach.split(">", 1)[0] == reach.split(">", 1)[1] else "cross_venue",
-        "protocol_sequence": protocol,
+        "venue_sequence": venue,
+        "integration_scope": scope,
         "route_count": route_count,
+        "within_20pct_routes": route_count if strict_count is None else strict_count,
         "within_20pct_value_usd": route_count if value is None else value,
     }
 
 
-def test_exactly_decomposes_within_cell_entry_and_exit() -> None:
-    choices = pd.DataFrame(
+def _cross_controls() -> list[dict[str, object]]:
+    return [
+        _choice("2024-01-01", "x", "y", "native", 10, scope="cross_venue"),
+        _choice("2026-01-01", "x", "y", "native", 10, scope="cross_venue"),
+    ]
+
+
+def _four_term_choices() -> pd.DataFrame:
+    return pd.DataFrame(
         [
             _choice("2024-01-01", "a", "b", "native", 80),
             _choice("2024-01-01", "a", "b", "stable", 20),
@@ -44,99 +58,181 @@ def test_exactly_decomposes_within_cell_entry_and_exit() -> None:
             _choice("2026-01-01", "a", "b", "native", 50),
             _choice("2026-01-01", "a", "b", "stable", 50),
             _choice("2026-01-01", "c", "d", "stable", 100),
+            *_cross_controls(),
         ]
     )
-    detail, decomposition, support = vehicle_rotation_composition(choices)
-    count = decomposition[decomposition["metric"].eq("route_count")].iloc[0]
+
+
+def _summary(
+    decomposition: pd.DataFrame,
+    metric: str,
+    scope: str = "single_venue",
+) -> pd.Series:
+    return decomposition[
+        decomposition["metric"].eq(metric)
+        & decomposition["reporting_scope"].eq(scope)
+    ].iloc[0]
+
+
+def test_locked_four_term_identity_and_realised_composition_labels() -> None:
+    pair_panel, decomposition, support = vehicle_rotation_composition(
+        _four_term_choices()
+    )
+    count = _summary(decomposition, "count_share")
     assert count["baseline_stable_share"] == pytest.approx(0.1)
     assert count["comparison_stable_share"] == pytest.approx(0.75)
     assert count["total_change"] == pytest.approx(0.65)
-    assert count["within_cell_contribution"] == pytest.approx(0.15)
-    assert count["common_cell_reweighting_contribution"] == pytest.approx(0.0)
-    assert count["entry_contribution"] == pytest.approx(0.5)
-    assert count["exit_contribution"] == pytest.approx(0.0)
-    assert count["identity_error"] == pytest.approx(0.0)
-    assert count["estimand_scope"] == "fixed_pair_reach_design_pre_frontier"
-    assert count["omitted_dimensions"] == "notional_bin|exact_search_efficiency_state"
-    count_detail = detail[detail["metric"].eq("route_count")]
-    assert set(count_detail["support_status"]) == {"common", "entry", "exit"}
-    opportunity = support[
-        support["record_type"].eq("opportunity_cell_support")
-        & support["metric"].eq("route_count")
+    assert count["within_common"] == pytest.approx(0.15)
+    assert count["common_pair_reweighting"] == pytest.approx(0.0)
+    assert count["common_support_mass"] == pytest.approx(0.0)
+    assert count["exclusive_pair_contribution"] == pytest.approx(0.5)
+    assert count["identity_error"] == pytest.approx(0.0, abs=1e-12)
+    assert count["formula_id"] == "midpoint_common_exclusive_support_v1"
+    assert count["mechanism_status"] == "descriptive_realised_composition_noncausal"
+    assert set(pair_panel["metric"]) == {
+        "count_share",
+        "matched_strict_count_share",
+        "strict_intermediation_value_share",
+    }
+    membership = support[
+        support["record_type"].eq("decomposition_pair_support")
+        & support["metric"].eq("count_share")
+        & support["reporting_scope"].eq("single_venue")
     ]
-    assert dict(zip(opportunity["support_status"], opportunity["units"], strict=True)) == {
+    assert dict(zip(membership["support_status"], membership["units"], strict=True)) == {
+        "baseline_exclusive": 1,
         "common": 1,
-        "entry": 1,
-        "exit": 1,
+        "comparison_exclusive": 1,
     }
 
 
-def test_uses_comparison_year_calendar_support_and_excludes_leap_day() -> None:
+def test_zero_exclusive_normalization_retains_identity() -> None:
+    choices = pd.DataFrame(
+        [
+            _choice("2024-01-01", "a", "b", "native", 8),
+            _choice("2024-01-01", "a", "b", "stable", 2),
+            _choice("2026-01-01", "a", "b", "native", 5),
+            _choice("2026-01-01", "a", "b", "stable", 5),
+            *_cross_controls(),
+        ]
+    )
+    _panel, decomposition, _support = vehicle_rotation_composition(choices)
+    count = _summary(decomposition, "count_share")
+    assert count["E_baseline"] == pytest.approx(0.0)
+    assert count["E_comparison"] == pytest.approx(0.0)
+    assert count["S_E_baseline"] == pytest.approx(0.0)
+    assert count["S_E_comparison"] == pytest.approx(0.0)
+    assert bool(count["zero_exclusive_baseline_normalized"])
+    assert bool(count["zero_exclusive_comparison_normalized"])
+    assert count["support_and_exclusive_joint"] == pytest.approx(0.0)
+    assert count["identity_error"] == pytest.approx(0.0, abs=1e-12)
+
+
+def test_uses_only_month_days_observed_in_both_endpoint_years() -> None:
     choices = pd.DataFrame(
         [
             _choice("2024-01-01", "a", "b", "native", 1),
-            _choice("2024-02-29", "a", "b", "stable", 1000),
+            _choice("2024-01-02", "a", "b", "stable", 1000),
             _choice("2024-07-01", "a", "b", "stable", 1000),
             _choice("2026-01-01", "a", "b", "stable", 1),
-            _choice("2026-06-30", "a", "b", "stable", 1),
+            _choice("2026-06-30", "a", "b", "native", 1000),
+            *_cross_controls(),
         ]
     )
-    _detail, decomposition, _support = vehicle_rotation_composition(choices)
-    count = decomposition[decomposition["metric"].eq("route_count")].iloc[0]
-    assert count["common_calendar_end"] == "06-30"
+    pair_panel, decomposition, _support = vehicle_rotation_composition(choices)
+    count = _summary(decomposition, "count_share")
+    assert count["common_month_days"] == 1
+    assert count["common_calendar_end"] == "01-01"
     assert count["baseline_stable_share"] == 0
     assert count["comparison_stable_share"] == 1
+    assert set(pair_panel["month_day"]) == {"01-01"}
 
 
-def test_reports_pair_candidate_and_reach_design_support_separately() -> None:
+def test_support_is_measure_specific_and_never_inherits_count_mass() -> None:
     choices = pd.DataFrame(
         [
-            _choice("2024-01-01", "a", "b", "native", 2),
+            _choice("2024-01-01", "a", "b", "native", 10, strict_count=0, value=0),
+            _choice("2026-01-01", "a", "b", "stable", 10, strict_count=5, value=50),
+            _choice("2024-01-01", "c", "d", "native", 4, strict_count=4, value=40),
+            _choice("2026-01-01", "c", "d", "native", 4, strict_count=4, value=40),
+            *_cross_controls(),
+        ]
+    )
+    pair_panel, decomposition, support = vehicle_rotation_composition(choices)
+    count_pairs = set(
+        pair_panel.loc[pair_panel["metric"].eq("count_share"), ["src", "tgt"]]
+        .itertuples(index=False, name=None)
+    )
+    strict_pairs = set(
+        pair_panel.loc[
+            pair_panel["metric"].eq("matched_strict_count_share"), ["src", "tgt"]
+        ].itertuples(index=False, name=None)
+    )
+    assert ("a", "b") in count_pairs
+    assert ("a", "b") not in strict_pairs
+    strict_membership = support[
+        support["record_type"].eq("decomposition_pair_support")
+        & support["metric"].eq("matched_strict_count_share")
+        & support["reporting_scope"].eq("single_venue")
+    ]
+    assert int(
+        strict_membership.loc[
+            strict_membership["support_status"].eq("comparison_exclusive"), "units"
+        ].iloc[0]
+    ) == 1
+    strict = _summary(decomposition, "matched_strict_count_share")
+    assert strict["source_column"] == "within_20pct_routes"
+
+
+def test_pair_membership_is_assigned_after_scope_pooling() -> None:
+    choices = pd.DataFrame(
+        [
+            _choice("2024-01-01", "a", "b", "native", 5),
             _choice(
-                "2026-01-01",
-                "a",
-                "b",
-                "stable",
-                3,
-                reach="uniswap_v3>sushiswap_v2",
-                protocol="uniswap>sushiswap",
+                "2026-01-01", "a", "b", "stable", 5, scope="cross_venue"
             ),
+            _choice("2024-01-01", "c", "d", "native", 2),
+            _choice("2026-01-01", "c", "d", "native", 2),
+            _choice("2024-01-01", "e", "f", "native", 2, scope="cross_venue"),
+            _choice("2026-01-01", "e", "f", "native", 2, scope="cross_venue"),
         ]
     )
-    _detail, _decomposition, support = vehicle_rotation_composition(choices)
-    assert set(support["unit"]) == {
-        "ordered_endpoint_reach_design_cell",
-        "ordered_endpoint_reach_design_cell_year",
-        "ordered_endpoint_pair",
-        "candidate_address",
-        "venue_reach_design",
-    }
-    pair = support[support["unit"].eq("ordered_endpoint_pair")]
-    assert int(pair.loc[pair["support_status"].eq("common"), "units"].iloc[0]) == 1
-    candidates = support[support["unit"].eq("candidate_address")]
-    assert int(candidates.loc[candidates["support_status"].eq("entry"), "units"].iloc[0]) == 1
-    assert int(candidates.loc[candidates["support_status"].eq("exit"), "units"].iloc[0]) == 1
+    _panel, _decomposition, support = vehicle_rotation_composition(choices)
 
-
-def test_strict_value_decomposition_excludes_and_reports_zero_support_cells() -> None:
-    choices = pd.DataFrame(
-        [
-            _choice("2024-01-01", "a", "b", "native", 2, value=0),
-            _choice("2024-01-01", "c", "d", "stable", 2, value=4),
-            _choice("2026-01-01", "a", "b", "stable", 2, value=0),
-            _choice("2026-01-01", "c", "d", "stable", 2, value=6),
+    def membership(scope: str, status: str) -> int:
+        row = support[
+            support["record_type"].eq("decomposition_pair_support")
+            & support["metric"].eq("count_share")
+            & support["reporting_scope"].eq(scope)
+            & support["support_status"].eq(status)
         ]
+        return int(row["units"].iloc[0])
+
+    assert membership("pooled", "common") == 3
+    assert membership("single_venue", "baseline_exclusive") == 1
+    assert membership("cross_venue", "comparison_exclusive") == 1
+
+
+def test_decomposition_is_row_order_and_common_scale_invariant() -> None:
+    choices = _four_term_choices()
+    _panel, baseline, _support = vehicle_rotation_composition(choices)
+    scaled = choices.sample(frac=1, random_state=19).reset_index(drop=True)
+    for column in ("route_count", "within_20pct_routes", "within_20pct_value_usd"):
+        scaled[column] *= 17
+    _scaled_panel, observed, _scaled_support = vehicle_rotation_composition(scaled)
+    columns = [
+        "metric",
+        "reporting_scope",
+        "total_change",
+        "within_common",
+        "common_pair_reweighting",
+        "common_support_mass",
+        "exclusive_pair_contribution",
+        "identity_error",
+    ]
+    pd.testing.assert_frame_equal(
+        baseline[columns], observed[columns], check_exact=False, atol=1e-12, rtol=1e-12
     )
-    _detail, decomposition, support = vehicle_rotation_composition(choices)
-    strict = decomposition[decomposition["metric"].eq("strict_value")].iloc[0]
-    assert strict["zero_denominator_cell_years"] == 2
-    assert strict["baseline_stable_share"] == 1
-    assert strict["comparison_stable_share"] == 1
-    zero = support[
-        support["record_type"].eq("metric_zero_denominator_support")
-        & support["metric"].eq("strict_value")
-    ].iloc[0]
-    assert zero["units"] == 2
 
 
 def test_rejects_duplicate_release_keys_and_nonprimary_candidates() -> None:

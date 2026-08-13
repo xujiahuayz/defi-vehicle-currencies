@@ -63,7 +63,13 @@ def run(
         decomposition = attach_spec_ids(
             decomposition,
             prefix="vehicle_transition_pair_decomposition",
-            columns=("metric", "baseline_year", "comparison_year", "estimand_scope"),
+            columns=(
+                "metric",
+                "reporting_scope",
+                "baseline_year",
+                "comparison_year",
+                "estimand_scope",
+            ),
         )
         inputs = list(release.bundle.lineage_paths)
         write_model_exhibit(
@@ -74,8 +80,9 @@ def run(
             code_sources=CODE_SOURCES,
             inputs=inputs,
             notes=(
-                "pre-frontier fixed endpoint/reach/design cell accounting; notional "
-                "and exact search-efficiency state remain unobserved"
+                "locked pair-date-integration-scope panel on measure-specific common "
+                "month-day support; notional, observed opportunity, and exact "
+                "search-efficiency state remain unobserved"
             ),
         )
         write_model_exhibit(
@@ -86,8 +93,9 @@ def run(
             code_sources=CODE_SOURCES,
             inputs=inputs,
             notes=(
-                "exact midpoint decomposition of 2024-to-2026 stable vehicle-share "
-                "change into within-cell, common-cell reweighting, entry, and exit"
+                "exact locked midpoint decomposition of the realised 2024-to-2026 "
+                "stable-share change into within-common-pair, common-pair reweighting, "
+                "common-support-mass, and exclusive-pair terms"
             ),
         )
         write_model_exhibit(
@@ -98,8 +106,8 @@ def run(
             code_sources=CODE_SOURCES,
             inputs=inputs,
             notes=(
-                "pair, candidate, venue-reach/design, and count/value support geometry "
-                "for the pre-frontier composition decomposition"
+                "measure-specific common month-day, pair-membership, and integration-"
+                "scope support for the descriptive realised-composition decomposition"
             ),
         )
         release.bundle.assert_current()
