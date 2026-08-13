@@ -203,6 +203,55 @@ def integration_intermediation_bins(frame: pd.DataFrame, *, bins: int = 10) -> p
     return pd.concat(results, ignore_index=True)
 
 
+def integration_rotation_slopes(
+    frame: pd.DataFrame,
+    *,
+    baseline_year: int = 2024,
+    comparison_year: int = 2026,
+) -> pd.DataFrame:
+    """Select stable-share levels for the integration-regime rotation comparison."""
+
+    required = {
+        "integration_scope",
+        "weighting",
+        "value_support",
+        "transformation",
+        "baseline_year",
+        "comparison_year",
+        "baseline_daily_mean",
+        "comparison_daily_mean",
+    }
+    _require_columns(frame, required, name="integration rival exhibit")
+    data = frame.loc[
+        frame["integration_scope"].isin(["single_venue", "cross_venue"])
+        & frame["transformation"].eq("share_level")
+        & pd.to_numeric(frame["baseline_year"], errors="coerce").eq(baseline_year)
+        & pd.to_numeric(frame["comparison_year"], errors="coerce").eq(comparison_year)
+        & (
+            (frame["weighting"].eq("episode") & frame["value_support"].eq("all_routes"))
+            | (frame["weighting"].eq("value") & frame["value_support"].eq("within_20pct"))
+        ),
+        list(required),
+    ].copy()
+    for column in ("baseline_daily_mean", "comparison_daily_mean"):
+        data[column] = pd.to_numeric(data[column], errors="coerce")
+    data = data.dropna(subset=["baseline_daily_mean", "comparison_daily_mean"])
+    expected = {
+        ("single_venue", "episode", "all_routes"),
+        ("cross_venue", "episode", "all_routes"),
+        ("single_venue", "value", "within_20pct"),
+        ("cross_venue", "value", "within_20pct"),
+    }
+    keys = set(data[["integration_scope", "weighting", "value_support"]].itertuples(index=False, name=None))
+    if data.duplicated(["integration_scope", "weighting", "value_support"]).any() or keys != expected:
+        raise ValueError("integration rival exhibit lacks one unique cell per regime and weighting")
+    if not data[["baseline_daily_mean", "comparison_daily_mean"]].apply(
+        lambda column: column.between(0, 1)
+    ).all().all():
+        raise ValueError("integration rival exhibit has invalid stable-share levels")
+    return data.sort_values(["weighting", "integration_scope"], kind="stable").reset_index(drop=True)
+
+
 def vehicle_excess_use_cross_section(frame: pd.DataFrame) -> pd.DataFrame:
     """Select the latest candidate cross-section for a count/value heatmap."""
 
@@ -433,6 +482,101 @@ def render_integration_intermediation(frame: pd.DataFrame, output: Path) -> None
             )
             figure.tight_layout(rect=(0, 0.06, 1, 1))
             figure.savefig(output, format="pdf", bbox_inches="tight", metadata={"Creator": "ddvc", "CreationDate": None, "ModDate": None})
+        finally:
+            plt.close(figure)
+
+
+def render_integration_rotation_slopes(frame: pd.DataFrame, output: Path) -> None:
+    """Render stable-share changes within single- and cross-venue route strata."""
+
+    data = integration_rotation_slopes(frame)
+    panels = (
+        ("episode", "all_routes", "Route count"),
+        ("value", "within_20pct", "Common-support value"),
+    )
+    colours = {"single_venue": PALETTE["count"], "cross_venue": PALETTE["stable"]}
+    labels = {"single_venue": "Single venue", "cross_venue": "Cross venue"}
+    years = [int(data["baseline_year"].iloc[0]), int(data["comparison_year"].iloc[0])]
+    with plt.rc_context(
+        {
+            "font.family": "DejaVu Sans",
+            "pdf.fonttype": 42,
+            "axes.labelcolor": "#111827",
+            "text.color": "#111827",
+        }
+    ):
+        figure, axes = plt.subplots(1, 2, figsize=(10.2, 4.1), sharey=True)
+        try:
+            for axis, (weighting, support, title) in zip(axes, panels, strict=True):
+                sample = data.loc[
+                    data["weighting"].eq(weighting) & data["value_support"].eq(support)
+                ]
+                changes: dict[str, float] = {}
+                for scope in ("single_venue", "cross_venue"):
+                    row = sample.loc[sample["integration_scope"].eq(scope)].iloc[0]
+                    values = [float(row["baseline_daily_mean"]), float(row["comparison_daily_mean"])]
+                    changes[scope] = values[1] - values[0]
+                    axis.plot(
+                        years,
+                        values,
+                        marker="o" if scope == "single_venue" else "s",
+                        color=colours[scope],
+                        linewidth=2.4,
+                        markersize=6.5,
+                        label=labels[scope],
+                    )
+                    for year, value in zip(years, values, strict=True):
+                        axis.annotate(
+                            f"{value:.0%}",
+                            (year, value),
+                            xytext=(0, 9 if scope == "cross_venue" else -14),
+                            textcoords="offset points",
+                            ha="center",
+                            fontsize=8,
+                            color=colours[scope],
+                        )
+                differential = changes["cross_venue"] - changes["single_venue"]
+                axis.text(
+                    0.02,
+                    0.97,
+                    f"Cross-venue minus single-venue change: {differential:+.1%}",
+                    transform=axis.transAxes,
+                    ha="left",
+                    va="top",
+                    fontsize=8.5,
+                    color="#374151",
+                )
+                axis.set_title(title, loc="left", fontsize=12, fontweight="bold", pad=8)
+                axis.set_xticks(years, [str(year) for year in years])
+                axis.yaxis.set_major_formatter(PercentFormatter(1.0, decimals=0))
+                axis.grid(axis="y", color="#D1D5DB", linewidth=0.6, alpha=0.75)
+                axis.spines[["top", "right"]].set_visible(False)
+            axes[0].set_ylabel("Stable share within native + stable")
+            handles, legend_labels = axes[0].get_legend_handles_labels()
+            figure.legend(
+                handles,
+                legend_labels,
+                loc="lower center",
+                ncol=2,
+                frameon=False,
+                bbox_to_anchor=(0.5, 0.015),
+            )
+            figure.text(
+                0.995,
+                0.015,
+                "Paired calendar-day means; route strata are selected, so the interaction is descriptive.",
+                ha="right",
+                va="bottom",
+                fontsize=8,
+                color="#4B5563",
+            )
+            figure.tight_layout(rect=(0, 0.12, 1, 1))
+            figure.savefig(
+                output,
+                format="pdf",
+                bbox_inches="tight",
+                metadata={"Creator": "ddvc", "CreationDate": None, "ModDate": None},
+            )
         finally:
             plt.close(figure)
 

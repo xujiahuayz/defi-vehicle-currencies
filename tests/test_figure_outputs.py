@@ -10,8 +10,10 @@ from ddvc.figure_outputs import (
     ASSET_TYPES,
     architecture_support_composition,
     integration_intermediation_bins,
+    integration_rotation_slopes,
     render_architecture_support,
     render_integration_intermediation,
+    render_integration_rotation_slopes,
     quarterly_vehicle_type_shares,
     render_round_trip_shares,
     render_vehicle_excess_use_heatmap,
@@ -54,6 +56,31 @@ def integration_fixture() -> pd.DataFrame:
     frame["balanced_cross_venue_share"] = [index / 25 for index in range(20)]
     frame["balanced_intermediated_share"] = [0.35 - index / 120 for index in range(20)]
     return frame
+
+
+def integration_rotation_fixture() -> pd.DataFrame:
+    rows = []
+    for weighting, support, single_start, single_end, cross_start, cross_end in (
+        ("episode", "all_routes", 0.20, 0.43, 0.23, 0.54),
+        ("value", "within_20pct", 0.36, 0.71, 0.40, 0.83),
+    ):
+        for scope, start, end in (
+            ("single_venue", single_start, single_end),
+            ("cross_venue", cross_start, cross_end),
+        ):
+            rows.append(
+                {
+                    "integration_scope": scope,
+                    "weighting": weighting,
+                    "value_support": support,
+                    "transformation": "share_level",
+                    "baseline_year": 2024,
+                    "comparison_year": 2026,
+                    "baseline_daily_mean": start,
+                    "comparison_daily_mean": end,
+                }
+            )
+    return pd.DataFrame(rows)
 
 
 def excess_use_fixture() -> pd.DataFrame:
@@ -141,6 +168,12 @@ class FigureOutputTests(unittest.TestCase):
         self.assertEqual(len(result), 10)
         self.assertTrue((result.groupby("cohort")["days"].sum() == 20).all())
 
+    def test_integration_rotation_requires_each_regime_and_weighting(self) -> None:
+        result = integration_rotation_slopes(integration_rotation_fixture())
+        self.assertEqual(len(result), 4)
+        with self.assertRaisesRegex(ValueError, "one unique cell"):
+            integration_rotation_slopes(integration_rotation_fixture().iloc[:-1])
+
     def test_excess_use_cross_section_selects_latest_and_orders_candidates(self) -> None:
         result = vehicle_excess_use_cross_section(excess_use_fixture())
         self.assertEqual(result["token"].tolist(), ["USDC", "WETH"])
@@ -170,16 +203,28 @@ class FigureOutputTests(unittest.TestCase):
             vehicle = root / "vehicle.pdf"
             round_trip = root / "round-trip.pdf"
             integration = root / "integration.pdf"
+            integration_rotation = root / "integration-rotation.pdf"
             heatmap = root / "heatmap.pdf"
             architecture = root / "architecture.pdf"
             transition = root / "transition.pdf"
             render_vehicle_type_shares(vehicle_fixture(), vehicle)
             render_round_trip_shares(route_fixture(), round_trip)
             render_integration_intermediation(integration_fixture(), integration)
+            render_integration_rotation_slopes(
+                integration_rotation_fixture(), integration_rotation
+            )
             render_vehicle_excess_use_heatmap(excess_use_fixture(), heatmap)
             render_architecture_support(architecture_fixture(), architecture)
             render_vehicle_excess_use_transition(excess_use_transition_fixture(), transition)
-            for path in (vehicle, round_trip, integration, heatmap, architecture, transition):
+            for path in (
+                vehicle,
+                round_trip,
+                integration,
+                integration_rotation,
+                heatmap,
+                architecture,
+                transition,
+            ):
                 self.assertGreater(path.stat().st_size, 1_000)
                 self.assertEqual(path.read_bytes()[:4], b"%PDF")
                 self.assertNotIn(b"/Subtype /Image", path.read_bytes())
