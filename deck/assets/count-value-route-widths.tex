@@ -1,0 +1,59 @@
+% VISUAL-MANAGED-ASSET
+% VISUAL-FUNCTION: route weights | paired route-width small multiples | distinguish frequency from supported economic scale
+% EVIDENCE-STATUS: conceptual measurement contract; route widths are illustrative and encode no empirical value.
+% EVIDENCE-COMMIT: 11a03f5dac033751742a24ca5fdf61e444c5853d
+% EVIDENCE-SOURCES: docs/specification-lock.json; docs/paper-spine.md;
+% docs/finding-intermediation-transition.md; src/ddvc/variable_registry.py.
+% Both panels contain the same stylised route set; only the weighting rule changes.
+\begin{tikzpicture}[
+  x=1cm,
+  y=1cm,
+  panelbox/.style={rounded corners=3pt,draw=rule,fill=panel,minimum width=5.22cm,
+    minimum height=3.35cm},
+  asset/.style={circle,draw=ink,fill=white,minimum size=18pt,inner sep=0pt,font=\tiny},
+  vehicle/.style={asset,draw=ucldark,fill=ucldark,text=white},
+  equalroute/.style={-{Stealth[length=4.5pt]},draw=native,line width=1.55pt},
+  thinroute/.style={-{Stealth[length=4.5pt]},draw=stable,line width=0.80pt},
+  mediumroute/.style={-{Stealth[length=4.5pt]},draw=stable,line width=1.55pt},
+  thickroute/.style={-{Stealth[length=5pt]},draw=stable,line width=3.05pt}
+]
+
+\node[panelbox] at (2.78,0.38) {};
+\node[panelbox] at (8.82,0.38) {};
+\node[font=\small\bfseries,text=native] at (2.78,1.76) {Count weighting};
+\node[font=\small\bfseries,text=stable] at (8.82,1.76) {Value weighting};
+
+% Count panel: every reconstructed route has the same visual weight.
+\foreach \y/\lab [count=\routeindex] in {1.05/{$k_1$},0.35/{$k_2$},-0.35/{$k_3$}} {
+  \node[asset] (ci\routeindex) at (1.28,\y) {$i$};
+  \node[vehicle] (ck\routeindex) at (2.78,\y) {\lab};
+  \node[asset] (co\routeindex) at (4.28,\y) {$o$};
+  \draw[equalroute] (ci\routeindex)--(ck\routeindex);
+  \draw[equalroute] (ck\routeindex)--(co\routeindex);
+}
+\node[rounded corners=2pt,draw=native,fill=native!7,font=\scriptsize,inner sep=5pt]
+  at (2.78,-1.06) {one qualifying route $=$ one unit};
+
+% Value panel: the same routes receive schematic widths from supported dollar value.
+\node[asset] (vi1) at (7.32,1.05) {$i$};
+\node[vehicle] (vk1) at (8.82,1.05) {$k_1$};
+\node[asset] (vo1) at (10.32,1.05) {$o$};
+\draw[thinroute] (vi1)--(vk1);
+\draw[thinroute] (vk1)--(vo1);
+
+\node[asset] (vi2) at (7.32,0.35) {$i$};
+\node[vehicle] (vk2) at (8.82,0.35) {$k_2$};
+\node[asset] (vo2) at (10.32,0.35) {$o$};
+\draw[mediumroute] (vi2)--(vk2);
+\draw[mediumroute] (vk2)--(vo2);
+
+\node[asset] (vi3) at (7.32,-0.35) {$i$};
+\node[vehicle] (vk3) at (8.82,-0.35) {$k_3$};
+\node[asset] (vo3) at (10.32,-0.35) {$o$};
+\draw[thickroute] (vi3)--(vk3);
+\draw[thickroute] (vk3)--(vo3);
+
+\node[rounded corners=2pt,draw=stable,fill=stable!7,font=\scriptsize,inner sep=5pt]
+  at (8.82,-1.06) {supported dollar value sets the weight};
+
+\end{tikzpicture}

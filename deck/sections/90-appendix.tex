@@ -179,38 +179,29 @@ V4 singleton
 \end{columns}
 \end{frame}
 
-% VISUAL-FUNCTION: observation and response clocks | list pending exact-horizon diagram | separate aggregation from elapsed-time links
+% VISUAL-FUNCTION: observation and response clocks | daily-weekly-exact horizon diagram | separate aggregation from elapsed-time links
+% EVIDENCE-STATUS: conceptual design contract; no empirical estimate or fitted horizon result.
+% EVIDENCE-COMMIT: 11a03f5dac033751742a24ca5fdf61e444c5853d
+% EVIDENCE-SOURCES: deck/assets/exact-horizon-diagram.tex;
+% docs/specification-lock.json; docs/research-workflow.md.
 \begin{frame}{A7. Daily and weekly frequencies answer different questions}
-\begin{enumerate}
-\item \textbf{Primary panel}\hfill day observations; date fixed effects
-\item \textbf{Calendar sensitivity}\hfill day observations; week and weekday fixed effects
-\item \textbf{Aggregation robustness}\hfill complete weeks; week fixed effects
-\item \textbf{Transition series}\hfill exact 1-, 7-, 30-, and 120-day links; HAC inference
-\end{enumerate}
-\vspace{0.65cm}
-{\small Weekly ratios are formed from weekly sums; results are reported for weeks ending on each day of the week.\par}
+\centering
+\resizebox{0.965\textwidth}{!}{\input{assets/exact-horizon-diagram.tex}}\par
+\vspace{0.10cm}
+{\small Missing target dates remain missing: row shifts and calendar months do not substitute for exact calendar links.\par}
 \end{frame}
 
-% VISUAL-FUNCTION: route weights | paired formulas pending equal-versus-value-width routes | distinguish frequency from economic scale
+% VISUAL-FUNCTION: route weights | paired route-width small multiples | distinguish frequency from supported economic scale
+% EVIDENCE-STATUS: conceptual measurement contract; route widths encode no empirical value.
+% EVIDENCE-COMMIT: 11a03f5dac033751742a24ca5fdf61e444c5853d
+% EVIDENCE-SOURCES: deck/assets/count-value-route-widths.tex;
+% docs/specification-lock.json; docs/paper-spine.md;
+% docs/finding-intermediation-transition.md.
 \begin{frame}{A8. Count and value define separate dominance margins}
-\begin{columns}[T]
-\begin{column}{0.46\textwidth}
-\textbf{Count-weighted share}
-\[
-S^{N}_{k,t}=\frac{N^I_{k,t}}{\sum_j N^I_{j,t}}
-\]
-Each reconstructed route carries one unit of weight.
-\end{column}
-\begin{column}{0.46\textwidth}
-\textbf{Value-weighted share}
-\[
-S^{V}_{k,t}=\frac{\mathrm{Vol}^I_{k,t}}{\sum_j \mathrm{Vol}^I_{j,t}}
-\]
-Each route is weighted by dollar value when the input, output, and intermediary valuations agree within 20\%.
-\end{column}
-\end{columns}
-\vspace{0.75cm}
-{\small Differences between count and value shares may reflect trade size, route structure, or the mix of intermediary assets.\par}
+\centering
+\resizebox{0.965\textwidth}{!}{\input{assets/count-value-route-widths.tex}}\par
+\vspace{0.16cm}
+{\small Both panels contain the same routes. Line widths are illustrative, and value weighting applies only on the stated valuation-support band.\par}
 \end{frame}
 
 % VISUAL-FUNCTION: intermediary excess use | paired margin formulas pending zero-centered difference plot | separate vehicle demand from endpoint demand
