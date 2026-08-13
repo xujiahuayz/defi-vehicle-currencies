@@ -1,0 +1,67 @@
+% EVIDENCE-STATUS: conceptual institutional diagram; contains no empirical estimate.
+% EVIDENCE-COMMIT: 525c67a7f672593fe07e54cf5ccb6d08910e9b04
+% EVIDENCE-SOURCES: docs/research-workflow.md (integration and route-class semantics);
+% docs/specification-lock.json (routing_maturation_e0 and vehicle_transition_e0).
+% Venue names and route classes are generic; the diagram makes no adoption or causal claim.
+\begin{tikzpicture}[x=1cm,y=1cm,
+  asset/.style={circle,draw=ink,fill=white,minimum size=19pt,inner sep=0pt,font=\scriptsize},
+  venue/.style={rounded corners=4pt,draw=rule,fill=panel,minimum width=4.55cm,minimum height=1.36cm},
+  routecard/.style={rounded corners=3pt,draw=rule,fill=white,minimum width=4.15cm,minimum height=1.08cm},
+  faintpath/.style={-{Stealth[length=4pt]},draw=muted,line width=0.85pt},
+  chosenpath/.style={-{Stealth[length=4pt]},draw=ucldark,line width=1.5pt}]
+
+\node[font=\small\bfseries,text=ucldark,anchor=west] at (0.0,3.25) {Feasible venue layers};
+
+% Two venue layers form the opportunity set.
+\node[venue] (va) at (2.32,2.20) {};
+\node[font=\scriptsize\bfseries,text=native,anchor=west] at (0.18,2.70) {venue $a$};
+\node[asset] (ia) at (0.78,2.15) {$i$};
+\node[asset,fill=ucldark,text=white,draw=ucldark] (ka) at (2.32,2.15) {$k$};
+\node[asset] (oa) at (3.86,2.15) {$o$};
+\draw[faintpath] (ia)--(ka);
+\draw[faintpath] (ka)--(oa);
+\draw[faintpath,draw=stable] (ia) to[bend left=28] (oa);
+
+\node[venue] (vb) at (2.32,0.54) {};
+\node[font=\scriptsize\bfseries,text=uclbright,anchor=west] at (0.18,1.04) {venue $b$};
+\node[asset] (ib) at (0.78,0.49) {$i$};
+\node[asset,fill=ucldark,text=white,draw=ucldark] (kb) at (2.32,0.49) {$k$};
+\node[asset] (ob) at (3.86,0.49) {$o$};
+\draw[faintpath] (ib)--(kb);
+\draw[faintpath] (kb)--(ob);
+\draw[faintpath,draw=stable] (ib) to[bend right=28] (ob);
+
+\draw[draw=rule,densely dashed] (ia)--(ib);
+\draw[draw=rule,densely dashed] (ka)--(kb);
+\draw[draw=rule,densely dashed] (oa)--(ob);
+\node[font=\scriptsize,text=muted,align=center] at (2.32,-0.38) {venue layers share assets;\\available links define reach};
+
+% Conditioning arrow, deliberately not a causal arrow.
+\draw[-{Stealth[length=6pt]},draw=uclbright,line width=1.4pt] (4.92,1.35) -- (6.15,1.35);
+\node[font=\scriptsize,text=muted,align=center] at (5.54,1.82) {realised\\execution};
+
+% Route-class outcomes on the right.
+\node[font=\small\bfseries,text=ucldark,anchor=west] at (6.35,3.25) {Realised route topology};
+
+\node[routecard] at (8.55,2.46) {};
+\node[font=\scriptsize\bfseries,anchor=west] at (6.62,2.82) {direct};
+\node[asset] (d1) at (7.75,2.26) {$i$};
+\node[asset] (d2) at (9.56,2.26) {$o$};
+\draw[chosenpath,draw=stable] (d1)--(d2);
+
+\node[routecard] at (8.55,1.22) {};
+\node[font=\scriptsize\bfseries,anchor=west] at (6.62,1.58) {sequential intermediary};
+\node[asset] (s1) at (7.70,0.99) {$i$};
+\node[asset,fill=ucldark,text=white,draw=ucldark] (sk) at (8.76,0.99) {$k$};
+\node[asset] (s2) at (9.82,0.99) {$o$};
+\draw[chosenpath,draw=native] (s1)--node[above,font=\tiny] {$a$} (sk);
+\draw[chosenpath,draw=uclbright] (sk)--node[above,font=\tiny] {$b$} (s2);
+
+\node[routecard] at (8.55,-0.02) {};
+\node[font=\scriptsize\bfseries,anchor=west] at (6.62,0.34) {split direct};
+\node[asset] (p1) at (7.75,-0.25) {$i$};
+\node[asset] (p2) at (9.56,-0.25) {$o$};
+\draw[chosenpath,draw=native] (p1) to[bend left=24] node[above,font=\tiny] {$a$} (p2);
+\draw[chosenpath,draw=uclbright] (p1) to[bend right=24] node[below,font=\tiny] {$b$} (p2);
+
+\end{tikzpicture}

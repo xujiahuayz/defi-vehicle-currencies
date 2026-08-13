@@ -1,0 +1,65 @@
+{
+ "argv": [
+  "--seconds",
+  "4",
+  "--fps",
+  "24"
+ ],
+ "artefact": "output/figures/route_replay.pdf",
+ "artefact_bytes": 41900,
+ "artefact_mtime_ns": 1786629618768342753,
+ "artefact_sha256": "da9605fd30b446d0fe2dcc818d6b99e4988750b372db207916a023aa883f2735",
+ "code_fingerprint": "4d8df6b8c20b2b0fd3f27ef9ac8da07cfce1a2238cc78a16e3b16e8d8156775e",
+ "code_sources": [
+  "scripts/figure/render_route_replay_assets.py",
+  "src/ddvc/route_replay.py"
+ ],
+ "created_at": "2026-08-13T14:00:18+00:00",
+ "git": {
+  "branch": "main",
+  "commit": "525c67a7f672593fe07e54cf5ccb6d08910e9b04",
+  "dirty": true,
+  "dirty_generated_files": [
+   "data/manifests/output/live/",
+   "output/exhibits/route_replay.json",
+   "output/figures/.route_replay.pdf.04389t5t.pdf",
+   "output/figures/.route_replay.pdf.04389t5t.tmp",
+   "output/live/"
+  ],
+  "dirty_tracked_files": [
+   "deck/main.pdf",
+   "deck/sections/01-identification.tex",
+   "deck/sections/90-appendix.tex",
+   "docs/reviews/deck-visual-composition.md",
+   "src/ddvc/route_replay.py",
+   "tests/test_route_replay.py"
+  ],
+  "dirty_untracked_files": [
+   "scripts/figure/render_route_replay_assets.py"
+  ]
+ },
+ "inputs": [
+  {
+   "bytes": 1094,
+   "exists": true,
+   "path": "output/exhibits/route_replay.json",
+   "sha256": "5a52dc8749412605cb95b507ceab2d8045ef0ad20dce2bff3936ca16064d5b55"
+  }
+ ],
+ "libraries": {
+  "numpy": "2.5.1",
+  "pandas": "3.0.3",
+  "pyarrow": "25.0.0",
+  "scipy": "1.18.0"
+ },
+ "notes": "Complete static frame for one admitted two-leg cross-venue transaction trace",
+ "payload_identity": {
+  "bytes": 41900,
+  "format": "binary",
+  "schema_version": 1,
+  "sha256": "da9605fd30b446d0fe2dcc818d6b99e4988750b372db207916a023aa883f2735"
+ },
+ "python": "3.14.5",
+ "rows": null,
+ "script": "scripts/figure/render_route_replay_assets.py"
+}

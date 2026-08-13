@@ -1,0 +1,37 @@
+% VISUAL-MANAGED-ASSET
+% VISUAL-FUNCTION: primary measurement funnel | staged route-object and two-support split | separate topology support from dollar-value support
+% EVIDENCE-STATUS: qualitative measurement contract; box widths do not encode sample size.
+% EVIDENCE-COMMIT: 2ffbce06302468b5ee6cb6537989c28078a88603
+% EVIDENCE-SOURCES: docs/specification-lock.json; docs/findings-freeze.md;
+% data/manifests/data/processed/intermediation_by_type_daily.parquet.prov.json.
+% INPUT-SHA256: 8db2065d8f14b8a3d7b34b6cc2057823a6d74ecc5fc8f8b6beaef33c7afc780b
+\begin{tikzpicture}[
+  x=1cm,
+  y=1cm,
+  stage/.style={rounded corners=2pt,draw=rule,fill=panel,minimum width=2.18cm,
+    minimum height=1.18cm,text width=1.88cm,align=center,inner sep=4pt,font=\scriptsize},
+  countlane/.style={rounded corners=2pt,draw=native,fill=native!7,minimum width=4.10cm,
+    minimum height=0.94cm,text width=3.72cm,align=center,inner sep=4pt,font=\scriptsize},
+  valuelane/.style={rounded corners=2pt,draw=stable,fill=stable!7,minimum width=4.10cm,
+    minimum height=0.94cm,text width=3.72cm,align=center,inner sep=4pt,font=\scriptsize}
+]
+\node[stage] (legs) at (0,0) {released\\swap legs};
+\node[stage] (routes) at (2.75,0) {reconstructed\\economic routes};
+\node[stage] (twoleg) at (5.50,0) {exact two-leg\\intermediary routes};
+\node[stage,draw=ucldark,line width=1pt] (choice) at (8.25,0) {native--stable\\choice set};
+
+\draw[route,draw=muted] (legs)--node[above=17pt,font=\tiny,text=muted,align=center] {link legs into\\one route} (routes);
+\draw[route,draw=muted] (routes)--node[above=17pt,font=\tiny,text=muted,align=center] {remove endpoint\\round trips} (twoleg);
+\draw[route,draw=muted] (twoleg)--node[above=17pt,font=\tiny,text=muted,align=center] {classify the\\intermediary} (choice);
+
+\node[countlane] (count) at (3.40,-2.03) {\textbf{Route-count evidence}\quad one qualifying route, one vote};
+\node[valuelane] (value) at (7.93,-2.03) {\textbf{Strict-value evidence}\quad both leg values agree within 20\%};
+
+\draw[-{Stealth[length=5pt]},line width=1.25pt,draw=native]
+  (choice.south west) .. controls (7.30,-0.88) and (5.20,-1.00) .. (count.north);
+\draw[-{Stealth[length=5pt]},line width=1.25pt,draw=stable]
+  (choice.south east) .. controls (8.86,-0.88) and (8.35,-1.08) .. (value.north);
+
+\node[font=\tiny,text=muted,align=center] at (5.50,-3.04)
+  {Topology-valid routes remain in count evidence when dollar support is unavailable.\\Box widths do not represent attrition.};
+\end{tikzpicture}

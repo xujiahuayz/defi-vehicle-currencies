@@ -1,0 +1,76 @@
+{
+ "argv": [],
+ "artefact": "output/figures/experiments/annual_vehicle_composition_bands.pdf",
+ "artefact_bytes": 44300,
+ "artefact_mtime_ns": 1786630715973405356,
+ "artefact_sha256": "e3fe235a44bc3572aee6f14941c5e435d358399b864d7d88c8b2c47d7bc485ad",
+ "code_fingerprint": "2a085a60f12fd05c8a29a17c489a5c1777afc42acd389af91ca15c208ae8c5d3",
+ "code_sources": [
+  "scripts/figure/build_visual_experiments.py",
+  "src/ddvc/figure_outputs.py",
+  "src/ddvc/visual_experiments.py"
+ ],
+ "created_at": "2026-08-13T14:18:35+00:00",
+ "git": {
+  "branch": "main",
+  "commit": "74be680a4e6d1c811e406ccfb093977f52ec54e2",
+  "dirty": true,
+  "dirty_generated_files": [
+   "data/manifests/output/exhibits/prose_conventions.jsonl.prov.json",
+   "data/manifests/output/exhibits/prose_outliers.jsonl.prov.json",
+   "data/manifests/output/exhibits/venue_optics.jsonl.prov.json",
+   "data/manifests/output/exhibits/venue_shape.jsonl.prov.json",
+   "output/exhibits/prose_conventions.jsonl",
+   "output/exhibits/prose_outliers.jsonl",
+   "data/manifests/output/figures/experiments/",
+   "data/manifests/output/figures/route_replay.pdf.prov.json",
+   "data/manifests/output/live/",
+   "output/exhibits/route_replay.json",
+   "output/figures/experiments/",
+   "output/figures/route_replay.pdf",
+   "output/live/"
+  ],
+  "dirty_tracked_files": [
+   "deck/main.pdf",
+   "deck/sections/01-identification.tex",
+   "deck/sections/90-appendix.tex",
+   "docs/reviews/deck-visual-composition.md",
+   "src/ddvc/route_replay.py",
+   "tests/test_route_replay.py"
+  ],
+  "dirty_untracked_files": [
+   "deck/assets/integration-multiplex-network.tex",
+   "deck/assets/liquidity-quantity-cross-section.tex",
+   "deck/assets/sample-measurement-funnel.tex",
+   "docs/reviews/deck-visual-experiments.md",
+   "scripts/figure/build_visual_experiments.py",
+   "scripts/figure/render_route_replay_assets.py",
+   "src/ddvc/visual_experiments.py",
+   "tests/test_visual_experiments.py"
+  ]
+ },
+ "inputs": [
+  {
+   "bytes": 37266,
+   "exists": true,
+   "path": "output/exhibits/intermediation_by_type.jsonl",
+   "sha256": "539a9feb5712a899cc901023eea8e62f56bf6015a23af8c6e735e981b874e12a"
+  }
+ ],
+ "libraries": {
+  "numpy": "2.5.1",
+  "pandas": "3.0.3",
+  "pyarrow": "25.0.0",
+  "scipy": "1.18.0"
+ },
+ "notes": "exhaustive annual count and strict-value vehicle composition; descriptive calendar path",
+ "payload_identity": {
+  "bytes": 44300,
+  "format": "binary",
+  "schema_version": 1,
+  "sha256": "e3fe235a44bc3572aee6f14941c5e435d358399b864d7d88c8b2c47d7bc485ad"
+ },
+ "python": "3.14.5",
+ "rows": null,
+ "script": "scripts/figure/build_visual_experiments.py"
+}

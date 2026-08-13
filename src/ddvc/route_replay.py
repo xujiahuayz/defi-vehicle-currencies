@@ -7,11 +7,17 @@ import json
 from datetime import datetime, timezone
 from pathlib import Path
 
+import matplotlib
 import pandas as pd
 
 from ddvc.asset_types import canonical_token
 from ddvc.realised import LINEAR_ROUTE_COLUMNS, extract_linear_realised_routes
 from ddvc.runtime import atomic_output, file_sha256
+
+matplotlib.use("Agg")
+import matplotlib.pyplot as plt  # noqa: E402
+from matplotlib.animation import FFMpegWriter, FuncAnimation  # noqa: E402
+from matplotlib.patches import Circle, FancyArrowPatch, FancyBboxPatch  # noqa: E402
 
 
 SCHEMA_VERSION = "dvc-route-replay-v1"
@@ -124,18 +130,210 @@ def _amount(value: object) -> str:
     return f"{number:,.4f}".rstrip("0").rstrip(".")
 
 
-def render_route_replay_html(manifest: dict[str, object]) -> str:
-    """Return a self-contained progressive replay with a complete print frame."""
+def _venue_label(value: object) -> str:
+    return str(value).replace("_", " ").title()
 
+
+def _validated_route(
+    manifest: dict[str, object],
+) -> tuple[dict[str, object], list[dict[str, object]]]:
     if manifest.get("schema_version") != SCHEMA_VERSION:
         raise ValueError("route replay manifest schema is unsupported")
     route = manifest.get("route")
     if not isinstance(route, dict) or not isinstance(route.get("legs"), list) or len(route["legs"]) != 2:
         raise ValueError("route replay manifest must contain two legs")
     legs = route["legs"]
-    first, second = legs
-    if not isinstance(first, dict) or not isinstance(second, dict):
+    if not all(isinstance(leg, dict) for leg in legs):
         raise ValueError("route replay legs must be objects")
+    return route, legs
+
+
+def _draw_route_replay(
+    axis: object,
+    manifest: dict[str, object],
+    *,
+    first_alpha: float = 1.0,
+    second_alpha: float = 1.0,
+    summary_alpha: float = 1.0,
+) -> None:
+    """Draw the shared static/live route composition on one Matplotlib axis."""
+
+    route, legs = _validated_route(manifest)
+    first, second = legs
+    axis.set_xlim(-0.55, 10.55)
+    axis.set_ylim(-2.25, 2.05)
+    axis.axis("off")
+
+    token_x = (0.65, 5.0, 9.35)
+    labels = (route["source"], route["vehicle"], route["target"])
+    for index, (x, label) in enumerate(zip(token_x, labels, strict=True)):
+        vehicle = index == 1
+        axis.add_patch(
+            Circle(
+                (x, 0.45),
+                0.72,
+                facecolor="#F4EDFF" if vehicle else "#FFFFFF",
+                edgecolor="#9132FF" if vehicle else "#C7CDD6",
+                linewidth=2.8 if vehicle else 1.8,
+                zorder=3,
+            )
+        )
+        axis.text(
+            x,
+            0.48,
+            str(label),
+            ha="center",
+            va="center",
+            fontsize=16,
+            fontweight="bold",
+            color="#1C1F24",
+            zorder=4,
+        )
+        if vehicle:
+            axis.text(
+                x,
+                -0.02,
+                "vehicle",
+                ha="center",
+                va="center",
+                fontsize=8.5,
+                color="#626871",
+                zorder=4,
+            )
+
+    for left, right, leg, alpha in (
+        (1.42, 4.20, first, first_alpha),
+        (5.78, 8.58, second, second_alpha),
+    ):
+        axis.add_patch(
+            FancyArrowPatch(
+                (left, 0.45),
+                (right, 0.45),
+                arrowstyle="-|>",
+                mutation_scale=18,
+                linewidth=2.6,
+                color="#371C5C",
+                alpha=alpha,
+                zorder=2,
+            )
+        )
+        midpoint = (left + right) / 2
+        axis.text(
+            midpoint,
+            1.18,
+            _venue_label(leg["venue"]),
+            ha="center",
+            va="center",
+            fontsize=10.5,
+            fontweight="bold",
+            color="#371C5C",
+            alpha=alpha,
+        )
+        axis.text(
+            midpoint,
+            -0.52,
+            f"{_amount(leg['amount_in'])} {leg['token_in']}\n→ {_amount(leg['amount_out'])} {leg['token_out']}",
+            ha="center",
+            va="center",
+            fontsize=9,
+            color="#40454D",
+            alpha=alpha,
+            linespacing=1.35,
+        )
+
+    axis.add_patch(
+        FancyBboxPatch(
+            (1.05, -2.0),
+            7.9,
+            0.62,
+            boxstyle="round,pad=0.12,rounding_size=0.08",
+            facecolor="#EEF8F5",
+            edgecolor="none",
+            alpha=summary_alpha,
+        )
+    )
+    axis.text(
+        5.0,
+        -1.69,
+        f"${_amount(route['value_usd'])} observed route value · two venues · one transaction",
+        ha="center",
+        va="center",
+        fontsize=10.5,
+        fontweight="bold",
+        color="#007D6C",
+        alpha=summary_alpha,
+    )
+
+
+def render_route_replay_pdf(manifest: dict[str, object], output: Path) -> None:
+    """Render the complete transaction trace as a presentation-ready vector PDF."""
+
+    _validated_route(manifest)
+    with plt.rc_context({"font.family": "DejaVu Sans", "pdf.fonttype": 42}):
+        figure, axis = plt.subplots(figsize=(11.0, 4.35))
+        try:
+            _draw_route_replay(axis, manifest)
+            figure.tight_layout(pad=0.15)
+            figure.savefig(
+                output,
+                format="pdf",
+                bbox_inches="tight",
+                metadata={"Creator": "ddvc", "CreationDate": None, "ModDate": None},
+            )
+        finally:
+            plt.close(figure)
+
+
+def render_route_replay_video(
+    manifest: dict[str, object], output: Path, *, seconds: float = 6.0, fps: int = 30
+) -> None:
+    """Render a short deterministic reveal from the same manifest as the PDF."""
+
+    _validated_route(manifest)
+    if seconds <= 0 or fps <= 0:
+        raise ValueError("route replay video duration and frame rate must be positive")
+    figure, axis = plt.subplots(figsize=(11.0, 4.4), dpi=140)
+    total_frames = max(3, int(seconds * fps))
+
+    def ramp(frame: int, start: float, end: float) -> float:
+        position = frame / max(total_frames - 1, 1)
+        return min(1.0, max(0.0, (position - start) / (end - start)))
+
+    def update(frame: int) -> tuple[object, ...]:
+        axis.clear()
+        _draw_route_replay(
+            axis,
+            manifest,
+            first_alpha=ramp(frame, 0.12, 0.28),
+            second_alpha=ramp(frame, 0.48, 0.64),
+            summary_alpha=ramp(frame, 0.72, 0.86),
+        )
+        return tuple(axis.get_children())
+
+    try:
+        animation = FuncAnimation(
+            figure,
+            update,
+            frames=total_frames,
+            interval=1000 / fps,
+            blit=False,
+        )
+        writer = FFMpegWriter(
+            fps=fps,
+            codec="libx264",
+            bitrate=2600,
+            extra_args=["-pix_fmt", "yuv420p", "-movflags", "+faststart"],
+        )
+        animation.save(output, writer=writer, dpi=140)
+    finally:
+        plt.close(figure)
+
+
+def render_route_replay_html(manifest: dict[str, object]) -> str:
+    """Return a self-contained progressive replay with a complete print frame."""
+
+    route, legs = _validated_route(manifest)
+    first, second = legs
     esc = lambda value: html.escape(str(value), quote=True)
     transaction = str(manifest.get("tx_hash") or "")
     short_tx = f"{transaction[:10]}…{transaction[-8:]}"
@@ -162,9 +360,9 @@ main{{max-width:1180px;margin:auto;padding:44px 54px}} h1{{margin:0 0 6px;font-s
 <div class="meta"><span>{esc(manifest.get('timestamp_iso'))}</span><span>component {esc(manifest.get('component_id'))}</span><code title="{esc(transaction)}">{esc(short_tx)}</code></div>
 <div class="route">
   <div class="token">{esc(route.get('source'))}</div>
-  <div class="leg" data-step="1"><div class="arrow"></div><span class="venue">{esc(first.get('venue'))}</span><div class="amount">{esc(_amount(first.get('amount_in')))} {esc(first.get('token_in'))} → {esc(_amount(first.get('amount_out')))} {esc(first.get('token_out'))}</div></div>
+  <div class="leg" data-step="1"><div class="arrow"></div><span class="venue">{esc(_venue_label(first.get('venue')))}</span><div class="amount">{esc(_amount(first.get('amount_in')))} {esc(first.get('token_in'))} → {esc(_amount(first.get('amount_out')))} {esc(first.get('token_out'))}</div></div>
   <div class="token vehicle">{esc(route.get('vehicle'))}<small style="display:block;font-size:13px;color:var(--muted)">vehicle</small></div>
-  <div class="leg" data-step="2"><div class="arrow"></div><span class="venue">{esc(second.get('venue'))}</span><div class="amount">{esc(_amount(second.get('amount_in')))} {esc(second.get('token_in'))} → {esc(_amount(second.get('amount_out')))} {esc(second.get('token_out'))}</div></div>
+  <div class="leg" data-step="2"><div class="arrow"></div><span class="venue">{esc(_venue_label(second.get('venue')))}</span><div class="amount">{esc(_amount(second.get('amount_in')))} {esc(second.get('token_in'))} → {esc(_amount(second.get('amount_out')))} {esc(second.get('token_out'))}</div></div>
   <div class="token">{esc(route.get('target'))}</div>
 </div>
 <div class="summary"><strong>{esc(_amount(route.get('value_usd')))} USD</strong> crossed {esc(len(set(route.get('venues') or [])))} venues in one coherent route.</div>

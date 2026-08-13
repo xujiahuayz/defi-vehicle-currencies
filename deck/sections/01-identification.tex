@@ -70,65 +70,128 @@
 \end{columns}
 \end{frame}
 
-% VISUAL-FUNCTION: executed versus feasible routing | paired same-state route diagram | motivate transaction-level identification
-\begin{frame}{The blockchain reveals chosen routes and contemporaneous alternatives}
-\begin{columns}[T,totalwidth=\textwidth]
-\begin{column}{0.36\textwidth}
-\evidencekicker{Research design}
-\begin{itemize}
-\item FX data typically reveal executed trades.
-\item On-chain reserves and fees also let us price feasible alternatives.
-\item The comparison holds market conditions fixed at execution.
-\end{itemize}
-\end{column}
-\begin{column}{0.60\textwidth}
-\centering
-\begin{tikzpicture}[scale=0.69,transform shape]
-\node[softbox,minimum width=2.2cm,align=center] (state) at (0,1.5) {pre-trade state\\reserves, ticks, fees};
-\node[nodepoint] (i) at (3.0,2.45) {$i$};
-\node[nodepoint] (o1) at (6.8,2.45) {$o$};
-\node[nodepoint] (i2) at (3.0,0.55) {$i$};
-\node[nodepoint,fill=ucldark,text=white,draw=ucldark] (k) at (4.9,0.55) {$k$};
-\node[nodepoint] (o2) at (6.8,0.55) {$o$};
-\draw[route,draw=stable] (state) -- (i);
-\draw[route,draw=stable] (i) -- node[above,font=\small] {direct quote} (o1);
-\draw[route,draw=ucldark] (state) -- (i2);
-\draw[route,draw=ucldark] (i2) -- (k);
-\draw[route,draw=ucldark] (k) -- node[below,font=\small] {vehicle quote} (o2);
-\draw[decorate,decoration={brace,amplitude=5pt},draw=accent] (7.45,2.45) -- (7.45,0.55);
-\node[anchor=west,font=\small,text=accent,align=left] at (7.65,1.5) {execution-cost\\difference};
-\end{tikzpicture}
-\end{column}
-\end{columns}
+% EVIDENCE-STATUS: authentic route trace; exact same-state alternative remains outside this exhibit
+% EVIDENCE-COMMIT: 0c9ccc9
+% EVIDENCE-SOURCES: output/exhibits/route_replay.json; output/figures/route_replay.pdf; data/unified/20260110.parquet
+% EVIDENCE-GENERATION: transaction 0xbda1d07f17c503b5a9c8117c5d1383472006af8a9e22aa4e5e30804b9bf67ad9 component 0; partition sha256 a6870bc64badeecf030a1096e69b2ddfc9202e5c4ef99a8c5237d4d458033c6d
+% LIVE-COMPANIONS: output/live/route_replay.html; output/live/route_replay.mp4
+% VISUAL-FUNCTION: observable vehicle use | authentic transaction trace | reveal route ordering, amounts, and venues without imputing an alternative
+\begin{frame}{One transaction reveals cross-venue vehicle use}
+\evidencekicker{Observed route}
+\vspace{0.08cm}
+\begin{center}
+\includegraphics[width=0.79\textwidth]{../output/figures/route_replay.pdf}
+\end{center}
+\vspace{-0.10cm}
+\begin{beamercolorbox}[wd=\textwidth,sep=0.28cm]{soft panel}
+{\small USDT is observed in the middle of this route. Whether the chosen route beat a direct alternative requires the exact pre-trade opportunity set and is not inferred from this transaction trace.\par}
+\end{beamercolorbox}
 \end{frame}
 
-% VISUAL-FUNCTION: imposed versus optional hub use | architecture network comparison | show why persistence after V1 is economically meaningful
-\begin{frame}{Protocol design first imposed ETH intermediation}
-\begin{columns}[T]
-\begin{column}{0.44\textwidth}
-\evidencekicker{Institutional fact}
-\begin{itemize}
-\item Uniswap V1 created one exchange contract per token, paired with ETH.
-\item Token-to-token swaps therefore moved through ETH by construction.
-\item V2 allowed arbitrary pairs; the ETH-centred pairing network persisted.
-\end{itemize}
-\end{column}
-\begin{column}{0.52\textwidth}
+% EVIDENCE-STATUS: verified institutional mechanism; no empirical estimate is displayed.
+% SOURCE-GENERATION: repository HEAD eac25258ea36.
+% SOURCE: docs/finding-v1-forced-vehicle.md sha256=650004eafae8864fe13b3d90ab59daefd77b342e33510f3d5db03b3e28ed2c68 (V1/V2 pairing contract).
+% SOURCE: literature/text/2021-AdamsZinsmeisterRobinson2021UniswapV3-whitepaper-uniswap-v3-core.txt sha256=599a20254f8d5f1d6e771d2899bf16e4a921c5bc3a9cb82e58c97d7791411567 (V3 ranges, ticks, and fee tiers).
+% SOURCE: docs/research-questions-and-empirical-design.md sha256=b56cb5e98d93d0968306fc2dd36edb323d83519daab17b5c7b39587d49506c8b (V4 settlement boundary).
+% SOURCE: src/ddvc/execution_contracts.py sha256=67b28ca58519cf9cef80314211f168989b60502c5a3fb8792ad8814613ddae00 (supported V4 vanilla concentrated-liquidity contract).
+% SCIENTIFIC-BOUNDARY: architecture changes feasible pair formation, liquidity placement, or settlement. Pool adoption and realised route use are endogenous exposure, and calendar date alone is not treatment.
+% VISUAL-FUNCTION: V1-to-V4 architecture morph | four-panel mechanism strip | separate design, realised exposure, and calendar time
+\begin{frame}{Architecture changes routing opportunities}
+\setlength{\fboxsep}{5pt}
+\setlength{\fboxrule}{0.45pt}
+\begin{columns}[T,totalwidth=\textwidth]
+
+% V1: the pairing contract makes ETH the only token-to-token path.
+\begin{column}{0.238\textwidth}
+\fcolorbox{rule}{panel}{\begin{minipage}[t][3.95cm][t]{0.88\linewidth}
+{\small\bfseries\color{ucldark}V1}\hfill{\scriptsize\color{muted}mandatory hub}\par
+\vspace{0.18cm}
 \centering
-\begin{tikzpicture}[scale=0.80,transform shape]
-\node[font=\small\bfseries] at (0,3.25) {V1: imposed};
-\node[nodepoint,fill=ucldark,text=white,draw=ucldark,minimum size=27pt] (eth1) at (0,1.55) {ETH};
-\foreach \a in {0,60,...,300}{\node[nodepoint,minimum size=12pt] (v\a) at ($(eth1)+(\a:1.32)$) {}; \draw[rule,line width=1pt] (eth1)--(v\a);}
-\draw[route,draw=accent] (v180) -- (eth1);
-\draw[route,draw=accent] (eth1) -- (v0);
-\node[font=\small\bfseries] at (5.2,3.25) {V2 onward: optional};
-\node[nodepoint,fill=ucldark,text=white,draw=ucldark,minimum size=30pt] (eth2) at (5.2,1.55) {WETH};
-\foreach \a in {0,60,...,300}{\node[nodepoint,minimum size=12pt] (w\a) at ($(eth2)+(\a:1.32)$) {}; \draw[ucldark,line width=1.6pt] (eth2)--(w\a);}
-\draw[rule,line width=0.9pt] (w0)--(w60);
-\draw[rule,line width=0.9pt] (w120)--(w180);
-\draw[rule,line width=0.9pt] (w240)--(w300);
-\node[font=\small,text=muted,align=center,text width=6.1cm] at (2.6,-0.25) {ETH remained central after arbitrary pairs became possible.};
+\begin{tikzpicture}[tinyasset/.style={circle,draw=ink,fill=white,minimum size=14pt,inner sep=0pt,font=\tiny},routearrow/.style={-{Stealth[length=4pt]},line width=1.15pt}]
+\node[tinyasset] (a) at (0,0) {A};
+\node[tinyasset,fill=ucldark,text=white,draw=ucldark,minimum size=23pt] (k) at (1.05,0) {ETH};
+\node[tinyasset] (b) at (2.10,0) {B};
+\draw[routearrow,draw=accent] (a)--(k);
+\draw[routearrow,draw=accent] (k)--(b);
+\draw[rule,densely dashed] (a) to[bend left=35] node[above,font=\tiny,text=muted] {no direct pool} (b);
 \end{tikzpicture}
+\par\vspace{0.22cm}
+\raggedright\scriptsize Only ETH--token pools: token-to-token execution must pass through ETH.\par
+\vfill
+{\scriptsize\bfseries\color{accent}Hub use is imposed}\par
+\end{minipage}}
+\end{column}
+
+% V2: arbitrary pairs add a direct opportunity while leaving vehicle routes feasible.
+\begin{column}{0.238\textwidth}
+\fcolorbox{rule}{panel}{\begin{minipage}[t][3.95cm][t]{0.88\linewidth}
+{\small\bfseries\color{ucldark}V2}\hfill{\scriptsize\color{muted}pair choice}\par
+\vspace{0.18cm}
+\centering
+\begin{tikzpicture}[tinyasset/.style={circle,draw=ink,fill=white,minimum size=14pt,inner sep=0pt,font=\tiny},routearrow/.style={-{Stealth[length=4pt]},line width=1.15pt}]
+\node[tinyasset] (a) at (0,0) {A};
+\node[tinyasset,fill=ucldark,text=white,draw=ucldark,minimum size=23pt] (k) at (1.05,0) {$k$};
+\node[tinyasset] (b) at (2.10,0) {B};
+\draw[routearrow,draw=ucldark] (a)--(k);
+\draw[routearrow,draw=ucldark] (k)--(b);
+\draw[routearrow,draw=stable] (a) to[bend left=35] node[above,font=\tiny,text=stable] {direct} (b);
+\end{tikzpicture}
+\par\vspace{0.22cm}
+\raggedright\scriptsize Arbitrary pairs add a direct route; vehicle routes remain feasible.\par
+\vfill
+{\scriptsize\bfseries\color{stable}Hub use becomes a choice}\par
+\end{minipage}}
+\end{column}
+
+% V3: bounded ranges make active depth depend on where liquidity is placed.
+\begin{column}{0.238\textwidth}
+\fcolorbox{rule}{panel}{\begin{minipage}[t][3.95cm][t]{0.88\linewidth}
+{\small\bfseries\color{ucldark}V3}\hfill{\scriptsize\color{muted}range choice}\par
+\vspace{0.25cm}
+\centering
+\begin{tikzpicture}[x=1cm,y=1cm]
+\node[anchor=east,font=\tiny] at (0.28,0.27) {A/B};
+\draw[rule,line width=0.85pt] (0.38,0.27)--(2.18,0.27);
+\draw[stable,line width=3pt] (0.83,0.27)--(1.35,0.27);
+\node[anchor=east,font=\tiny] at (0.28,-0.20) {via $k$};
+\draw[rule,line width=0.85pt] (0.38,-0.20)--(2.18,-0.20);
+\draw[ucldark,line width=3pt] (0.58,-0.20)--(1.08,-0.20);
+\draw[uclbright,line width=3pt] (1.48,-0.20)--(2.02,-0.20);
+\end{tikzpicture}
+\par\vspace{0.28cm}
+\raggedright\scriptsize LPs choose ranges and fees; active depth can favor direct pairs or vehicle spokes.\par
+\vfill
+{\scriptsize\bfseries\color{uclbright}Opportunity shifts by pair}\par
+\end{minipage}}
+\end{column}
+
+% V4: settlement can net movement without erasing the economic route or its pools.
+\begin{column}{0.238\textwidth}
+\fcolorbox{rule}{panel}{\begin{minipage}[t][3.95cm][t]{0.88\linewidth}
+{\small\bfseries\color{ucldark}V4}\hfill{\scriptsize\color{muted}net settlement}\par
+\vspace{0.18cm}
+\centering
+\begin{tikzpicture}[tinyasset/.style={circle,draw=ink,fill=white,minimum size=14pt,inner sep=0pt,font=\tiny},routearrow/.style={-{Stealth[length=4pt]},line width=1.15pt}]
+\node[rounded corners=2pt,draw=uclbright,densely dashed,minimum width=2.45cm,minimum height=0.92cm] at (1.05,0) {};
+\node[tinyasset] (a) at (0,0) {A};
+\node[tinyasset,fill=ucldark,text=white,draw=ucldark,minimum size=21pt] (k) at (1.05,0) {$k$};
+\node[tinyasset] (b) at (2.10,0) {B};
+\draw[routearrow,draw=ucldark] (a)--(k);
+\draw[routearrow,draw=ucldark] (k)--(b);
+\node[anchor=north,font=\tiny,text=uclbright] at (1.05,-0.50) {shared accounting};
+\end{tikzpicture}
+\par\vspace{0.22cm}
+\raggedright\scriptsize Two pools still execute; intermediate token movement may be netted.\par
+\vfill
+{\scriptsize\bfseries\color{ucldark}Settlement and vehicle use can diverge}\par
+\end{minipage}}
 \end{column}
 \end{columns}
+
+% The empirical design must not substitute the version date for exposure to its mechanism.
+\vspace{0.25cm}
+\colorbox{panel}{\parbox[c][0.72cm][c]{0.965\textwidth}{\hspace{0.15cm}\scriptsize
+\textbf{Architecture}\; feasible rules\hfill
+\textbf{Exposure}\; realised pool and route use\hfill
+\textbf{Calendar date}\; timing only\hspace{0.15cm}}}
 \end{frame}
