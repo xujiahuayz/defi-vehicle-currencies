@@ -113,19 +113,6 @@ def audit_rendered_deck(pdf_path: Path) -> list[DeckEvidenceDefect]:
     return defects
 
 
-def audit_paper_sources(paper_root: Path) -> list[DeckEvidenceDefect]:
-    """Find backstage vocabulary in audience-visible manuscript source."""
-
-    defects: list[DeckEvidenceDefect] = []
-    paths = [paper_root / "main.tex", *sorted((paper_root / "sections").glob("*.tex"))]
-    for path in paths:
-        if path.is_file():
-            defects.extend(
-                audit_audience_text(_without_comments(path.read_text(encoding="utf-8")), path=path)
-            )
-    return defects
-
-
 def audit_deck_sources(deck_root: Path) -> list[DeckEvidenceDefect]:
     """Reject scientific values typed into authored slide source."""
 

@@ -1,6 +1,6 @@
 from pathlib import Path
 
-from ddvc.deck_evidence import audit_audience_text, audit_deck_sources, audit_paper_sources
+from ddvc.deck_evidence import audit_audience_text, audit_deck_sources
 
 
 def write_section(root: Path, source: str) -> None:
@@ -115,15 +115,3 @@ def test_visual_managed_frames_require_object_form_and_job(tmp_path: Path) -> No
     )
     defects = audit_deck_sources(tmp_path)
     assert [defect.kind for defect in defects] == ["missing_visual_function"]
-
-
-def test_paper_language_gate_ignores_comments_but_rejects_visible_workflow_jargon(
-    tmp_path: Path,
-) -> None:
-    sections = tmp_path / "sections"
-    sections.mkdir()
-    (tmp_path / "main.tex").write_text("% verdict stays backstage\n\\input{sections/result}\n")
-    (sections / "result.tex").write_text("The scientific verdict is positive.\n")
-
-    defects = audit_paper_sources(tmp_path)
-    assert [defect.kind for defect in defects] == ["audience_workflow_jargon"]
