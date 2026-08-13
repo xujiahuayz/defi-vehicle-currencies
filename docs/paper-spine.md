@@ -17,7 +17,7 @@ The architecture is fact first and mechanism second. Makarov and Schoar move fro
    2.4 Sample and validation
 3. Rotation in vehicle use
    3.1 Aggregate count and value paths
-   3.2 The cross-section of endpoint pairs
+   3.2 Endpoint-pair composition
    3.3 Endpoint demand and excess use
    3.4 Candidate and backing-design decomposition
 4. Time, market design, and opportunity sets
@@ -50,7 +50,7 @@ Section 3 establishes the economic fact before assigning a mechanism. Section 4 
 | Vehicle status is a route role, while dominance is the continuous extent of intermediary use. | Route definitions and vehicle-share exhibits. | EXISTS | The paper studies degree and composition, not the existence of one bridging route. |
 | The intermediating asset rotates from native toward stable assets over the sample. | Quarterly and annual vehicle-share exhibits. | EXISTS | Calendar time describes the path. |
 | The path contains an earlier stable-value lead, a reversal, and a renewed lead. | Quarterly strict-support value series. | EXISTS | A monotone trend is rejected descriptively. |
-| The 2024 to 2026 aggregate rotation comes from changes in which endpoint pairs carry vehicle routes and changes in activity weights among continuing pairs, not stable-for-native substitution within a representative pair. | `vehicle_transition_pair_decomposition.jsonl`. | EXISTS | Pair support and realised activity are descriptive margins, not architecture, demand, preference, or opportunity. |
+| The 2024 to 2026 aggregate rotation is allocated mainly to pair representation, admitted route-component activity, and realised vehicle incidence; stable-for-native substitution on common-role pairs is small. | `vehicle_transition_pair_decomposition.jsonl`. | EXISTS | The five factors form an exact descriptive Shapley allocation, not architecture, demand, preference, or opportunity effects. |
 | USDT accounts for most of the 2024 to 2026 change within the stablecoin category. | Candidate excess-use and share-gap exhibits. | EXISTS | USDC and stablecoin backing designs remain separate. |
 | Endpoint demand alone cannot account for the USDT movement. | Intermediary-minus-endpoint share-gap change, Holm value `(0.000)`, count `(0.015)`. | EXISTS | Endpoint netting removes proportional endpoint growth, not every composition change. |
 | The economic question is which coordination, market-design, and balance-sheet mechanisms can produce this rotation. | Rival map in Sections 4 and 5. | EXISTS | No mechanism is assigned in the opening paragraph. |
@@ -75,8 +75,8 @@ Section 3 establishes the economic fact before assigning a mechanism. Section 4 
 | Stable share rises sharply from 2024 to 2026 by count and strict-support value. | `intermediation_by_type.jsonl`. | EXISTS | This is an endpoint-year comparison on common calendar support. |
 | Native value share rebounds in 2023 and 2024 before falling again. | Quarterly vehicle-share figure. | EXISTS | The reversal is visible and remains part of the lead figure. |
 | Stable value leads from 2025-Q1, while count leadership is later and not yet sustained. | Quarterly vehicle-share figure. | EXISTS | Frequency and economic dominance are separate margins. |
-| Year-specific endpoint pairs and changes in activity weights among continuing pairs explain almost all of the pooled count increase. | Pair-composition decomposition, support, and panel. | EXISTS | A year-specific vehicle-route pair is not necessarily a newly created market. |
-| Stable share within continuing endpoint pairs barely changes by count or supported value. | Pair-composition decomposition. | EXISTS | The result is exact descriptive accounting, not a fixed-opportunity causal estimate. |
+| Pair representation, admitted route-component activity, and realised vehicle incidence account for 94.9% of the pooled count increase. | Pair-composition decomposition, support, and panel. | EXISTS | A pair observed in one endpoint year is not necessarily a newly created or exited market. |
+| The stable-share factor on common-role pairs is small by count, and stable share within continuing pairs barely changes in the separate supported-value identity. | Pair-composition decomposition. | EXISTS | Both results are exact descriptive accounting, not fixed-opportunity causal estimates. |
 | Value rotation is driven primarily by changes in activity weights among continuing pairs, with a material year-specific-pair contribution. | Pair-composition decomposition. | EXISTS | Supported value is conditional on the 20% value-coherence perimeter. |
 | Stable assets have excess intermediary use in 2026 while native assets fall below parity. | `vehicle_excess_use.jsonl`. | EXISTS | Ratios are reported only where endpoint support is positive. |
 | USDC begins above excess-use parity and changes little. | Candidate transition figure. | EXISTS | USDC does not explain the transition slope. |
@@ -172,7 +172,7 @@ Panels report intermediary share, endpoint share, share gap, and excess-use rati
 
 ### Table 4. Endpoint-pair accounting and opportunity-set tests
 
-The first panel reports the exact four-term 2024--2026 count and supported-value accounting across continuing and year-specific endpoint pairs. Later panels move from broad venue-reach and complexity strata to the full opportunity cell, separating market support, realised vehicle incidence, architecture availability, exposure, and state reversals.
+The first panel reports the exact five-factor 2024--2026 count allocation across pair representation, vehicle-role support, admitted route-component activity, realised vehicle incidence, and the stable-share factor. The second retains the separate four-term supported-value accounting across continuing and year-specific endpoint pairs. Later panels move from broad venue-reach and complexity strata to the full opportunity cell, separating observed activity from architecture availability, exposure, and state reversals.
 
 ### Table 5. Rival mechanisms
 
@@ -187,8 +187,8 @@ This table is absent until both retention and displacement arms are supported. I
 1. One authentic directed transaction trace and the route unit it creates.
 2. Quarterly count and value shares by asset type on common calendar support.
 3. USDC and USDT 2024 to 2026 excess-use dumbbells around parity.
-4. Endpoint-pair waterfall showing within-pair change, changes in activity weights, relative pair-set mass, and year-specific-pair contribution.
-5. Fixed-opportunity decomposition of market activity, realised vehicle incidence, and stable share when the required cells are released.
+4. Endpoint-pair ribbon showing pair representation, admitted route-component activity, realised vehicle incidence, vehicle-role support, and the stable-share factor.
+5. Fixed-opportunity decomposition of feasible activity, realised vehicle incidence, and stable share when the required cells are released.
 6. Retention and displacement response functions, included only when both are admissible.
 
 ## 5. Named rival mechanisms
@@ -216,7 +216,7 @@ The section closes by ranking accounts on completed separating tests. A null is 
 ## What G needs from F
 
 1. Preserve the current certified endpoint-pair accounting and its exact count/value identities in every downstream refresh.
-2. Separate observed market activity, realised vehicle-route incidence, and stable choice on established endpoint markets before attributing pair turnover to opportunity or demand.
+2. Separate admitted pair-ledger activity, realised vehicle-route incidence, and stable choice on pairs observed in both endpoint years before attributing pair representation to opportunity or demand.
 3. Run the full fixed-opportunity rotation design on ordered endpoint, candidate, venue reach, route design, notional, support, and search-efficiency state when those inputs are released.
 4. Test dated architecture and software changes as measured exposures, with independent availability and reversal where the data support it.
 5. Complete the exact transaction-state frontier before any cost-dominance or routing-efficiency mechanism enters the paper.
@@ -226,7 +226,7 @@ The section closes by ranking accounts on completed separating tests. A null is 
 
 ## What G needs from H
 
-1. Keep pages 10 to 12 generated from the current route exhibits: quarterly paths, candidate dumbbells, and integration-regime slopes.
+1. Keep pages 10 to 12 generated from the current route exhibits: annual paths, candidate dumbbells, and the endpoint-pair accounting ribbon.
 2. Build the authentic transaction trace and its local replay from one admitted transaction, with a complete static PDF state.
 3. Replace the two-architecture sketch with a V1 to V4 architecture sequence using verified institutional facts.
 4. Add the sample funnel, protocol-state matrix, opportunity-set network, capital-depth cross-section, and exact-horizon diagram as their inputs become admissible.

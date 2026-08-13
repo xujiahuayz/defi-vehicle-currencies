@@ -1,49 +1,43 @@
 {
  "argv": [],
  "artefact": "output/exhibits/prose_outliers.jsonl",
- "artefact_bytes": 121888,
- "artefact_mtime_ns": 1786657087598684114,
- "artefact_sha256": "7776d4aa2a3a8ff76e1bdc770999a95938a216e3be4ace4df034a0113b40a4a4",
+ "artefact_bytes": 121726,
+ "artefact_mtime_ns": 1786659393559603390,
+ "artefact_sha256": "78ac8fefd9b4aa1b8e11f8d74b149350eca4b59e6d92c978eb7515a89f96aa64",
  "code_fingerprint": "a90574396b1916cff2c310024b72e6c77bc9cf40c1b6d094c3dd2b23d5f61834",
  "code_sources": [
   "scripts/find_prose_outliers.py",
   "src/ddvc/tables.py"
  ],
- "created_at": "2026-08-13T21:38:07+00:00",
+ "created_at": "2026-08-13T22:16:33+00:00",
  "git": {
   "branch": "main",
-  "commit": "734e5bdd286ec885f60f9147c701837d93082373",
+  "commit": "ddff5f66250ec51aadf9b0d330cf667080e66934",
   "dirty": true,
   "dirty_generated_files": [
    "data/manifests/output/exhibits/prose_conventions.jsonl.prov.json",
+   "data/manifests/output/exhibits/vehicle_transition_pair_decomposition_deck_values.tex.prov.json",
    "data/manifests/output/exhibits/venue_optics.jsonl.prov.json",
    "data/manifests/output/exhibits/venue_shape.jsonl.prov.json",
    "output/exhibits/prose_conventions.jsonl",
+   "output/exhibits/vehicle_transition_pair_decomposition_deck_values.tex",
    "output/exhibits/venue_optics.jsonl",
    "output/exhibits/venue_shape.jsonl",
-   "data/manifests/output/exhibits/vehicle_transition_pair_decomposition_deck_values.tex.prov.json",
-   "output/exhibits/.prose_outliers.jsonl.3b1jsmut.tmp",
-   "output/exhibits/vehicle_transition_pair_decomposition_deck_values.tex"
+   "output/exhibits/.prose_outliers.jsonl.1vymztey.tmp"
   ],
   "dirty_tracked_files": [
+   "deck/assets/vehicle-transition-pair-decomposition.tex",
    "deck/main.pdf",
    "deck/sections/04-results.tex",
    "deck/sections/05-close.tex",
-   "docs/findings-freeze.md",
    "docs/paper-spine.md",
-   "docs/research-workflow.md",
    "docs/reviews/deck-visual-composition.md",
-   "paper/main.tex",
    "paper/sections/01-introduction.tex",
    "paper/sections/03-dominance.tex",
-   "paper/sections/07-conclusion.tex",
-   "paper/sections/abstract.tex"
-  ],
-  "dirty_untracked_files": [
-   "deck/assets/vehicle-transition-pair-decomposition.tex",
    "scripts/build_vehicle_transition_pair_deck_values.py",
    "tests/test_vehicle_transition_pair_deck_values.py"
-  ]
+  ],
+  "dirty_untracked_files": []
  },
  "inputs": [],
  "libraries": {
@@ -54,13 +48,13 @@
  },
  "notes": null,
  "payload_identity": {
-  "bytes": 121888,
+  "bytes": 121726,
   "format": "jsonl",
-  "rows": 564,
+  "rows": 563,
   "schema_version": 1,
-  "sha256": "7776d4aa2a3a8ff76e1bdc770999a95938a216e3be4ace4df034a0113b40a4a4"
+  "sha256": "78ac8fefd9b4aa1b8e11f8d74b149350eca4b59e6d92c978eb7515a89f96aa64"
  },
  "python": "3.14.5",
- "rows": 564,
+ "rows": 563,
  "script": "scripts/find_prose_outliers.py"
 }

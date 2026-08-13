@@ -1,53 +1,63 @@
-% Empirical coordinates and labels are generated in vehicle_transition_pair_decomposition_deck_values.tex.
-\pgfmathsetmacro{\PairAfterReweight}{\PairPooledBaseRawPct+\PairPooledReweightRawPP}
-\pgfmathsetmacro{\PairAfterSupport}{\PairAfterReweight+\PairPooledSupportMassRawPP}
-\pgfmathsetmacro{\PairAfterExclusive}{\PairAfterSupport+\PairPooledExclusiveRawPP}
-\pgfmathsetmacro{\PairAfterWithin}{\PairAfterExclusive+\PairPooledWithinRawPP}
+% Empirical coordinates and labels are generated in
+% vehicle_transition_pair_decomposition_deck_values.tex.
+% The five factors form an exact Shapley accounting identity; they are not
+% independently identified mechanisms.
+\pgfmathsetmacro{\RibbonAfterMarketSupport}{\MarketSupportBridgeRawPP}
+\pgfmathsetmacro{\RibbonAfterPairActivity}{\PairActivityTotalRawPP}
+\pgfmathsetmacro{\RibbonAfterIncidence}{\PairActivityTotalRawPP+\VehicleIncidenceReweightRawPP}
+\pgfmathsetmacro{\RibbonAfterVehicleUse}{\PairAndVehicleTotalRawPP}
+\pgfmathsetmacro{\RibbonTotal}{\PairAndVehicleTotalRawPP+\WithinPairStableShareRawPP}
 
-\begin{tikzpicture}[x=1.90cm,y=0.075cm]
-\tikzset{stepnote/.style={font=\fontsize{6.8}{7.4}\selectfont,align=center,text=ink}}
-\tikzset{steplabel/.style={font=\fontsize{7.2}{7.8}\selectfont\bfseries,align=center,text=ink}}
-\tikzset{connector/.style={draw=muted,densely dashed,line width=0.65pt}}
+\begin{tikzpicture}[x=0.315cm,y=1cm]
+\tikzset{segmentlabel/.style={font=\fontsize{7.1}{7.7}\selectfont\bfseries,align=center,text=white}}
+\tikzset{notelabel/.style={font=\fontsize{6.7}{7.3}\selectfont,align=center,text=ink}}
 
-% Light guide lines give scale without turning the accounting into an axis-heavy chart.
-\foreach \y in {10,20,30,40}{
-  \draw[draw=rule,line width=0.45pt] (-0.56,\y) -- (7.56,\y);
-}
-\node[font=\tiny,text=muted,anchor=east] at (-0.64,40) {stable share};
+% Headline endpoints.
+\node[anchor=west,font=\fontsize{10.2}{11.2}\selectfont\bfseries,text=ink]
+  at (0,2.24) {Stable share: \MarketBridgeBase{} $\longrightarrow$ \MarketBridgeEnd{} \quad \textcolor{stable}{\MarketBridgeTotal{}}};
 
-% Endpoint levels.
-\fill[stable!78] (-0.42,0) rectangle (0.42,\PairPooledBaseRawPct);
-\node[steplabel,above=2pt] at (0,\PairPooledBaseRawPct) {\PairPooledBase};
-\node[stepnote,anchor=north] at (0,-2.5) {2024};
+% One continuous accounting ribbon. Related hues group the five exact terms
+% into pair activity, vehicle use, and within-pair stable share.
+\fill[ucldark!88] (0,0.96) rectangle (\RibbonAfterMarketSupport,1.64);
+\node[segmentlabel] at ({0.5*\RibbonAfterMarketSupport},1.30)
+  {pairs observed in one\\endpoint year only\\\MarketSupportBridge};
 
-% Activity reweighting among continuing pairs.
-\draw[connector] (0.42,\PairPooledBaseRawPct) -- (0.94,\PairPooledBaseRawPct);
-\fill[uclbright!78] (0.94,\PairPooledBaseRawPct) rectangle (1.78,\PairAfterReweight);
-\node[steplabel,above=2pt] at (1.36,\PairAfterReweight) {\PairPooledReweight};
-\node[stepnote,anchor=north] at (1.36,-2.5) {activity weights\\among continuing pairs};
+\fill[uclbright!88] (\RibbonAfterMarketSupport,0.96) rectangle (\RibbonAfterPairActivity,1.64);
+\node[segmentlabel] at ({0.5*(\RibbonAfterMarketSupport+\RibbonAfterPairActivity)},1.30)
+  {activity shifts across\\common-role pairs\\\MarketActivityReweight};
 
-% The negative support-mass term is shown at its true height and labelled with a leader.
-\draw[connector] (1.78,\PairAfterReweight) -- (2.30,\PairAfterReweight);
-\fill[accent!78] (2.30,\PairAfterSupport) rectangle (3.14,\PairAfterReweight);
-\draw[draw=accent,line width=0.75pt] (2.72,\PairAfterSupport) -- (2.72,\PairAfterSupport-3.2);
-\node[steplabel,below=1pt] at (2.72,\PairAfterSupport-3.2) {\PairPooledSupportMass};
-\node[stepnote,anchor=north] at (2.72,-2.5) {continuing versus\\year-specific mass};
+\fill[native!82] (\RibbonAfterPairActivity,0.96) rectangle (\RibbonAfterIncidence,1.64);
+\node[segmentlabel] at ({0.5*(\RibbonAfterPairActivity+\RibbonAfterIncidence)},1.30)
+  {vehicle use across\\common-role pairs\\\VehicleIncidenceReweight};
 
-% Contribution from pairs carrying native-or-stable vehicle routes in only one endpoint year.
-\draw[connector] (3.14,\PairAfterSupport) -- (3.66,\PairAfterSupport);
-\fill[stable!62] (3.66,\PairAfterSupport) rectangle (4.50,\PairAfterExclusive);
-\node[steplabel,above=2pt] at (4.08,\PairAfterExclusive) {\PairPooledExclusive};
-\node[stepnote,anchor=north] at (4.08,-2.5) {vehicle-route pairs in\\one endpoint year only};
+% Show the negative role-support term at its true width as a backward notch.
+\fill[accent!82] (\RibbonAfterVehicleUse,0.96) rectangle (\RibbonAfterIncidence,1.64);
+\draw[accent,very thick,->] (\RibbonAfterIncidence,1.70) -- (\RibbonAfterVehicleUse,1.70);
+\draw[accent,line width=0.8pt] (\RibbonAfterIncidence,1.55) -- (\RibbonTotal+0.42,1.55);
+\node[notelabel,text=accent,anchor=west] at (\RibbonTotal+0.52,1.55)
+  {role appears/disappears \VehicleRoleSupportBridge};
 
-% Within-pair substitution is near zero; retain the true height and use a leader.
-\draw[connector] (4.50,\PairAfterExclusive) -- (5.02,\PairAfterExclusive);
-\fill[accent!78] (5.02,\PairAfterWithin) rectangle (5.86,\PairAfterExclusive);
-\draw[draw=accent,line width=0.75pt] (5.44,\PairAfterWithin) -- (5.44,\PairAfterWithin-3.2);
-\node[steplabel,below=1pt] at (5.44,\PairAfterWithin-3.2) {\PairPooledWithin};
-\node[stepnote,anchor=north] at (5.44,-2.5) {stable share within\\continuing pairs};
+\fill[stable!90] (\RibbonAfterVehicleUse,0.96) rectangle (\RibbonTotal,1.64);
+\draw[stable,line width=0.8pt] (\RibbonTotal,1.30) -- (\RibbonTotal+0.42,1.30);
+\node[notelabel,anchor=west] at (\RibbonTotal+0.52,1.13)
+  {stable versus native\\within common-role pairs \WithinPairStableShare};
 
-\draw[connector] (5.86,\PairAfterWithin) -- (6.38,\PairAfterWithin);
-\fill[stable] (6.38,0) rectangle (7.22,\PairPooledEndRawPct);
-\node[steplabel,above=2pt] at (6.80,\PairPooledEndRawPct) {\PairPooledEnd};
-\node[stepnote,anchor=north] at (6.80,-2.5) {2026\\(\PairPooledTotal)};
+% Three audience-facing groups. Values are generated from the five certified
+% terms and tested to reconcile to the total.
+\draw[decorate,decoration={brace,mirror,amplitude=4pt},ucldark,line width=0.8pt]
+  (0,0.86) -- (\RibbonAfterPairActivity,0.86);
+\node[notelabel,anchor=north] at ({0.5*\RibbonAfterPairActivity},0.62)
+  {\textbf{Pair activity \PairActivityTotal}};
+
+\draw[decorate,decoration={brace,mirror,amplitude=4pt},native,line width=0.8pt]
+  (\RibbonAfterPairActivity,0.86) -- (\RibbonAfterVehicleUse,0.86);
+\node[notelabel,anchor=north] at ({0.5*(\RibbonAfterPairActivity+\RibbonAfterVehicleUse)},0.62)
+  {\textbf{Vehicle use \VehicleUseNet}};
+
+% Supporting comparison: pair turnover is important, but does not explain the
+% entire rise.
+\node[draw=rule,fill=white,rounded corners=2pt,inner sep=5pt,
+      font=\fontsize{7.2}{8.0}\selectfont,align=left,text=ink,anchor=west]
+  at (0,-0.12) {Among pairs observed in both endpoint years, stable share still rises\\
+  \textbf{\ObservedBothYearsBase{} $\longrightarrow$ \ObservedBothYearsEnd{} \quad \textcolor{stable}{\ObservedBothYearsTotal{}}}};
 \end{tikzpicture}

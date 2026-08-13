@@ -35,20 +35,20 @@
 \end{frame}
 
 % EVIDENCE-STATUS: evolving exact descriptive route accounting; mechanism remains open
-% EVIDENCE-COMMIT: 6f06464
-% EVIDENCE-PRODUCER-COMMIT: 3b93df8
+% EVIDENCE-COMMIT: 23ee3a2
+% EVIDENCE-PRODUCER-COMMIT: e16796c
 % EVIDENCE-SOURCES: output/exhibits/vehicle_transition_pair_decomposition.jsonl; output/exhibits/vehicle_transition_pair_support.jsonl; output/exhibits/vehicle_transition_pair_decomposition_deck_values.tex
-% VISUAL-FUNCTION: endpoint-pair composition of vehicle rotation | native TikZ waterfall | distinguish within-pair substitution from pair turnover and activity reweighting
-\begin{frame}{The stablecoin gain comes from a changing pair mix}
-\vspace{-0.22cm}
+% VISUAL-FUNCTION: five-factor composition of vehicle rotation | native TikZ waterfall | distinguish observed pair support, activity, vehicle incidence, and within-pair stable share
+\begin{frame}{Pair activity and vehicle use: \PairAndVehicleShare{} of the gain}
+\vspace{-0.34cm}
 \begin{center}
 \resizebox{0.93\textwidth}{!}{\input{assets/vehicle-transition-pair-decomposition.tex}}
 \end{center}
-\vspace{-0.24cm}
-{\fontsize{8.4}{9.3}\selectfont\textbf{The same pattern appears in both route types.} Single venue: \PairSingleTotal\ overall and \PairSingleWithin\ within continuing pairs. Cross venue: \PairCrossTotal\ overall and \PairCrossWithin\ within continuing pairs.}
+\vspace{-0.38cm}
+{\fontsize{8.2}{9.1}\selectfont\textbf{Supported value tells the same broad story.} Stable share rises \PairValueTotal, with \PairValueReweight\ from activity weights among continuing pairs and only \PairValueWithin\ from stable-for-native substitution within them.}
 
-\vspace{0.06cm}
-{\fontsize{6.8}{7.5}\selectfont\color{muted}Stable share among native- or stable-asset intermediaries on exact two-leg routes; common month-days through 30 June. Continuing pairs carry these vehicle routes in both endpoint years. The accounting describes where the shift occurs, not why pairs or activity change.}
+\vspace{0.02cm}
+{\fontsize{6.2}{6.8}\selectfont\color{muted}Route-count accounting for ordered endpoint pairs, pooling single- and cross-venue routes on month-days observed in both endpoint years through 30 June. Pair activity is eligible activity admitted to the route-component ledger; vehicle use is an exact two-leg route with a native or stable intermediary. The terms describe observed routing, not feasible routes or causal effects.}
 \end{frame}
 
 % EVIDENCE-STATUS: diagnostic displacement gradient; not a persistence estimate

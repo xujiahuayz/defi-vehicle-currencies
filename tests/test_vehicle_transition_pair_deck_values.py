@@ -121,16 +121,27 @@ def test_renderer_emits_complete_display_and_coordinate_macros() -> None:
         "ObservedBothYearsEnd",
         "ObservedBothYearsTotal",
         "CommonRoleTotal",
+        "PairActivityTotal",
+        "VehicleUseNet",
+        "PairAndVehicleTotal",
+        "PairAndVehicleShare",
         "MarketBridgeBaseRawPct",
         "MarketSupportBridgeRawPP",
         "VehicleRoleSupportBridgeRawPP",
         "MarketActivityReweightRawPP",
         "VehicleIncidenceReweightRawPP",
         "WithinPairStableShareRawPP",
+        "PairActivityTotalRawPP",
+        "VehicleUseNetRawPP",
+        "PairAndVehicleTotalRawPP",
     ):
         assert f"\\newcommand{{\\{macro}}}" in rendered
     assert "\\newcommand{\\PairPooledWithin}{-0.1\\,pp}" in rendered
     assert "\\newcommand{\\PairPooledExclusive}{+17.6\\,pp}" in rendered
+    assert "\\newcommand{\\PairActivityTotal}{+18.0\\,pp}" in rendered
+    assert "\\newcommand{\\VehicleUseNet}{+6.6\\,pp}" in rendered
+    assert "\\newcommand{\\PairAndVehicleTotal}{+24.6\\,pp}" in rendered
+    assert "\\newcommand{\\PairAndVehicleShare}{94.6\\%}" in rendered
     assert "generation" not in rendered.lower()
 
 
