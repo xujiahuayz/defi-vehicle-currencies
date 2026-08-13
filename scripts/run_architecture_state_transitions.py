@@ -15,6 +15,7 @@ requires cost/depth first stages and non-adopter/placebo validation.
 from __future__ import annotations
 
 import argparse
+import hashlib
 from pathlib import Path
 
 import numpy as np
@@ -57,7 +58,6 @@ def build_full_risk_panel(routes: pd.DataFrame, *, min_total_routes: int = 10) -
             wide[column] = wide[column].fillna(0.0)
     wide["total_routes"] = wide["routes_uniswap_v3"] + wide["routes_uniswap_v4"]
     wide["total_route_usd"] = wide["route_usd_uniswap_v3"] + wide["route_usd_uniswap_v4"]
-    wide = wide[wide["total_routes"] >= min_total_routes].copy()
     wide["v4_route_share"] = wide["routes_uniswap_v4"] / wide["total_routes"]
     wide["v4_value_share"] = np.divide(
         wide["route_usd_uniswap_v4"],
@@ -65,13 +65,21 @@ def build_full_risk_panel(routes: pd.DataFrame, *, min_total_routes: int = 10) -
         out=np.full(len(wide), np.nan),
         where=wide["total_route_usd"].to_numpy() > 0,
     )
-    pair_totals = wide.groupby(["week", "src", "sink"])["total_routes"].transform("sum")
+    pair_keys = ["week", "src", "sink"]
+    pair_totals = wide.groupby(pair_keys)["total_routes"].transform("sum")
     wide["vehicle_route_share"] = wide["total_routes"] / pair_totals
-    pair_week = wide.groupby(["week", "src", "sink"])["vehicle_route_share"]
+    pair_week = wide.groupby(pair_keys)["vehicle_route_share"]
     wide["pair_week_candidate_count"] = pair_week.transform("size")
+    vehicle_sets = wide.groupby(pair_keys)["vehicle"].transform(
+        lambda values: hashlib.sha256(
+            "\n".join(sorted(map(str, values))).encode()
+        ).hexdigest()
+    )
+    wide["pair_week_vehicle_set_sha256"] = vehicle_sets
     wide["pair_week_adjusted_vehicle_share"] = (
         wide["vehicle_route_share"] - pair_week.transform("mean")
     ).where(wide["pair_week_candidate_count"].ge(2))
+    wide = wide[wide["total_routes"] >= min_total_routes].copy()
     return wide.sort_values([*KEYS, "week"], kind="stable").reset_index(drop=True)
 
 
@@ -162,6 +170,9 @@ def event_contrasts(panel: pd.DataFrame, events: pd.DataFrame) -> pd.DataFrame:
             continue
         wanted = pd.date_range(event_week - pd.Timedelta(weeks=8), event_week + pd.Timedelta(weeks=7), freq="7D")
         window = group.reindex(wanted)
+        if window["pair_week_vehicle_set_sha256"].nunique(dropna=False) != 1:
+            rows.append({**base, "status": "composition_shift"})
+            continue
         if window["pair_week_adjusted_vehicle_share"].isna().any():
             rows.append({**base, "status": "incomplete_window"})
             continue

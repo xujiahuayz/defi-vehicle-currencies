@@ -90,6 +90,28 @@ def test_pair_week_adjustment_removes_common_pair_week_change() -> None:
     ].sum().abs().lt(1e-12).all()
 
 
+def test_low_support_peer_remains_in_pair_week_denominator_before_filtering() -> None:
+    routes = _routes()
+    extra = pd.DataFrame(
+        [
+            {
+                "week": week,
+                "src": "A",
+                "sink": "B",
+                "vehicle": "DAI",
+                "dex": "uniswap_v3",
+                "route_usd": 100.0,
+            }
+            for week in routes.week.unique()
+        ]
+    )
+    panel = build_full_risk_panel(pd.concat([routes, extra]), min_total_routes=2)
+    first = panel[(panel.week.eq(panel.week.min())) & panel.vehicle.eq("USDC")].iloc[0]
+    assert first.vehicle_route_share == 4 / 9
+    assert first.pair_week_candidate_count == 3
+    assert not (panel.vehicle == "DAI").any()
+
+
 def test_nearby_reversal_marks_event_windows_as_contaminated() -> None:
     panel = build_full_risk_panel(_routes(), min_total_routes=1)
     usdc = panel[panel.vehicle.eq("USDC")].copy()
@@ -99,3 +121,15 @@ def test_nearby_reversal_marks_event_windows_as_contaminated() -> None:
     assert events.kind.tolist() == ["entry", "exit"]
     assert set(contrasts.status) == {"overlapping_transition"}
     assert contrasts.immediate_change.isna().all()
+
+
+def test_changing_peer_set_marks_only_affected_event_window_as_contaminated() -> None:
+    panel = build_full_risk_panel(_routes(), min_total_routes=1)
+    events = transition_events(panel, threshold=0.10, confirmation_weeks=3)
+    changed_week = pd.Timestamp("2025-02-17")
+    panel.loc[
+        panel.week.eq(changed_week), "pair_week_vehicle_set_sha256"
+    ] = "changed"
+    contrasts = event_contrasts(panel, events)
+    usdc = contrasts[contrasts.vehicle.eq("USDC")]
+    assert usdc.status.tolist() == ["composition_shift", "usable"]
