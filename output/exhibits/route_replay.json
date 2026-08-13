@@ -1,0 +1,42 @@
+{
+  "component_id": 0,
+  "day": "20260110",
+  "partition_sha256": "a6870bc64badeecf030a1096e69b2ddfc9202e5c4ef99a8c5237d4d458033c6d",
+  "route": {
+    "endpoint_value_ratio": 1.0008724038027168,
+    "input_amount": 459929.80974,
+    "legs": [
+      {
+        "amount_in": 459929.80974,
+        "amount_out": 460331.054255,
+        "log_index": 26,
+        "step": 1,
+        "token_in": "USDC",
+        "token_out": "USDT",
+        "venue": "fluid"
+      },
+      {
+        "amount_in": 460331.054255,
+        "amount_out": 460104.2848923897,
+        "log_index": 27,
+        "step": 2,
+        "token_in": "USDT",
+        "token_out": "USDe",
+        "venue": "uniswap_v4"
+      }
+    ],
+    "output_amount": 460104.2848923897,
+    "source": "USDC",
+    "target": "USDe",
+    "value_usd": 459929.80974,
+    "vehicle": "USDT",
+    "venues": [
+      "fluid",
+      "uniswap_v4"
+    ]
+  },
+  "schema_version": "dvc-route-replay-v1",
+  "timestamp_iso": "2026-01-10T01:58:23+00:00",
+  "timestamp_utc": 1768010303,
+  "tx_hash": "0xbda1d07f17c503b5a9c8117c5d1383472006af8a9e22aa4e5e30804b9bf67ad9"
+}

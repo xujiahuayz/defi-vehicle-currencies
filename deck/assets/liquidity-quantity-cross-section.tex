@@ -1,0 +1,45 @@
+% EVIDENCE-STATUS: conceptual institutional diagram; contains no empirical estimate.
+% EVIDENCE-COMMIT: 525c67a7f672593fe07e54cf5ccb6d08910e9b04
+% EVIDENCE-SOURCES: src/ddvc/liquidity.py; src/ddvc/capital_contracts.py;
+% docs/research-workflow.md (capital, inventory, depth, and quote semantics).
+% The generic price-response curve deliberately avoids imposing one AMM invariant.
+\tikzset{callout/.style={rounded corners=2pt,draw=rule,fill=panel,inner sep=5pt,align=center,font=\scriptsize}}
+\tikzset{poolbin/.style={rounded corners=3pt,draw=ucldark,line width=1.1pt,fill=white,minimum width=2.10cm,minimum height=1.18cm,align=center}}
+\tikzset{guide/.style={draw=muted,densely dashed,line width=0.8pt}}
+\begin{tikzpicture}[x=1cm,y=1cm]
+
+% Balance-sheet view: claims and token holdings are different objects.
+\node[font=\small\bfseries,text=ucldark,anchor=west] at (0.0,3.18) {Pool balance sheet at time $t$};
+\node[callout,minimum width=2.05cm] (lp) at (0.90,2.48) {LP positions\\or audited claims};
+\node[poolbin] (x) at (0.95,0.95) {$x_t$ units\\of token $X$};
+\node[poolbin] (y) at (3.42,0.95) {$y_t$ units\\of token $Y$};
+\draw[route,draw=uclbright] (lp.south) -- ++(0,-0.40) -| (x.north);
+\draw[route,draw=uclbright] (lp.south) -- ++(0,-0.40) -| (y.north);
+\node[font=\scriptsize\bfseries,text=ink] at (2.18,-0.04) {inventory: exact token holdings};
+\draw[decorate,decoration={brace,mirror,amplitude=5pt},draw=stable,line width=1pt]
+  (-0.14,0.26) -- (4.52,0.26);
+\node[callout,minimum width=3.40cm,anchor=north] at (2.18,-0.24)
+  {deposited capital: independently valued holdings\\or validated ownership claims};
+
+% Execution view: a trade size maps through current state into depth and a quote.
+\draw[rule,line width=0.8pt] (5.35,0.10) -- (5.35,3.05);
+\node[font=\small\bfseries,text=ucldark,anchor=west] at (5.85,3.18) {Execution from that state};
+\draw[-{Stealth[length=4pt]},draw=ink,line width=0.9pt] (6.05,0.48) -- (11.45,0.48)
+  node[below left,font=\scriptsize] {input size};
+\draw[-{Stealth[length=4pt]},draw=ink,line width=0.9pt] (6.05,0.48) -- (6.05,2.82);
+\node[font=\scriptsize,rotate=90] at (5.72,1.66) {price impact};
+\draw[draw=ucldark,line width=1.7pt]
+  (6.15,0.68) .. controls (8.05,0.82) and (9.50,1.42) .. (11.15,2.65);
+\fill[native] (7.12,0.87) circle (2.6pt);
+\fill[accent] (9.92,1.76) circle (2.6pt);
+\draw[guide] (7.12,0.48) -- (7.12,0.87);
+\draw[guide] (9.92,0.48) -- (9.92,1.76);
+\draw[<->,draw=stable,line width=1.2pt] (7.12,0.27) -- node[below,font=\scriptsize,text=stable] {$q$} (9.92,0.27);
+\draw[<->,draw=accent,line width=1.2pt] (10.17,0.87) -- (10.17,1.76);
+\path[fill=stable,opacity=0.12] (7.12,0.48) -- (7.12,0.87) .. controls (8.30,1.00) and (9.08,1.34) .. (9.92,1.76) -- (9.92,0.48) -- cycle;
+\node[callout,draw=stable,anchor=north,minimum width=3.25cm] at (8.46,-0.02)
+  {executable depth: quantity available\\within a stated price-impact band};
+\node[callout,draw=accent,anchor=west,minimum width=1.58cm] at (10.40,1.58)
+  {quote quality\\at size $q$};
+
+\end{tikzpicture}

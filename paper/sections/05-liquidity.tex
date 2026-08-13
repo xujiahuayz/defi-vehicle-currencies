@@ -1,13 +1,5 @@
-% Section 5. What the providers of the depth behind the vehicle role earn.
-%
-% The finding is docs/finding-rent-incidence.md, built by scripts/build_rent_incidence_panel.py
-% and scripts/run_rent_incidence.py. Every number carries a trailing comment naming the
-% artefact it was read from and the sample that artefact covers, and nothing here is typed
-% from memory.
-%
-% Two medians are easy to confuse and are kept apart on purpose. The pair -5.29% / 22.3% is
-% the whole v2 panel; the pair -5.96% / 21.6% is the native-other bucket alone. The
-% de-biasing bound moves the first pair and is never quoted against the second.
+% Provider returns require deposited capital measured on a consistent calendar.
+% Numerical estimates remain omitted until that input is available.
 
 \section{The returns to liquidity provision behind the vehicle role}
 \label{sec:liquidity}
@@ -15,214 +7,37 @@
 \subsection{Fee revenue against the loss to arbitrageurs}
 \label{sec:liquidity:accounting}
 
-Depth on a pair exists because somebody committed capital to it, and the vehicle role of Definition~\ref{def:role} is a property of where routes go while routes go where the pool graph is deep. The private return earned by the providers of that depth is part of the incumbency question. \citet{GrossmanMiller1988Liquidity} set the price of immediacy against the inventory risk a market maker carries. \citet{AmihudMendelson1980Dealership} make quotes respond to current bounded inventory, while \citet{HoStoll1981OptimalDealer} place return risk in the spread and current inventory in the quote-midpoint adjustment. \citet{Nagel2012EvaporatingLiquidity} uses short-horizon reversal returns as a proxy for gross returns to liquidity provision and shows that the proxy moves with VIX. An automated market maker replaces the quote with an invariant and leaves both forces in place, which is the provider-side setting \citet{LeharParlour2024Uniswap} study.
+Vehicle routes concentrate in deep pools, but those pools exist only because liquidity providers commit capital. If providers move capital slowly away from the incumbent's two legs, liquidity can preserve a vehicle role after its relative cost changes. The return to supplying this depth is therefore part of the persistence question. \citet{GrossmanMiller1988Liquidity} set the price of immediacy against the inventory risk a market maker carries. \citet{AmihudMendelson1980Dealership} and \citet{HoStoll1981OptimalDealer} show how inventory and return risk enter dealer quotes, while \citet{Nagel2012EvaporatingLiquidity} uses short-horizon reversals as a proxy for gross returns to liquidity provision. An automated market maker replaces the dealer quote with an invariant but leaves liquidity providers exposed to fees, price risk, and the cost of adjusting their positions \citep{LeharParlour2024Uniswap}.
 
-The accounting has one revenue term and two cost terms. Write $W_{p,t}$ for the contemporaneous dollar value of pool $p$ on day $t$, $C_{p,t-1}$ for its validated deposited capital on the exact prior calendar day, $V_{p,t}$ for the dollar volume it cleared, $\phi_{p}$ for the swap fee of \eqref{eq:cp}, and $n_{p,t}$ for the count of mints and burns the pool recorded. Fee revenue is the fee rate on volume. A liquidity event is a transaction whose gas the pool's providers as a group paid; without a controller-level burn--mint link it is not called repositioning. The charge enters at pool level against pool-level revenue with $g$ the gas of one liquidity event and $\varpi_{t}$, $P_{t}$ the gas price and the native asset's dollar price already carried by \eqref{eq:domallin}. The loss to arbitrageurs is what a rebalancing portfolio would have earned over the same price path. The day's rent to the pool's providers is
+Providers earn swap fees and bear two costs: loss-versus-rebalancing and the gas paid to add or remove liquidity. Write $W_{p,t}$ for the contemporaneous dollar value of pool $p$ on day $t$, $C_{p,t-1}$ for deposited capital on the prior calendar day, $V_{p,t}$ for dollar volume, $\phi_p$ for the swap fee of \eqref{eq:cp}, and $n_{p,t}$ for the number of mints and burns. With $g$ denoting the gas used by one liquidity event and $\varpi_tP_t$ its dollar price, the daily return before scaling by capital is
 \begin{equation}
-\Pi_{p,t} \;=\; \phi_{p}\, V_{p,t} \;-\; \mathrm{LVR}_{p,t} \;-\; n_{p,t}\, g\, \varpi_{t}\, P_{t} .
+\Pi_{p,t}=\phi_pV_{p,t}-\mathrm{LVR}_{p,t}-n_{p,t}g\varpi_tP_t.
 \label{eq:rent}
 \end{equation}
 
-The middle term has a closed form on the constant-product invariant. \citet{MilionisMoallemiRoughgardenZhang2022LVR} give the instantaneous loss-versus-rebalancing rate as one eighth of the price's variance rate times pool value, which integrates across a day into realised variance over eight,
+For a constant-product pool, \citet{MilionisMoallemiRoughgardenZhang2022LVR} show that the instantaneous loss-versus-rebalancing rate equals one eighth of the external reference price's variance rate times pool value. Over a day,
 \begin{equation}
-\mathrm{LVR}_{p,t} \;=\; \frac{W_{p,t}}{8} \int_{t}^{t+1} \sigma^{2}_{p,u} \, du \;=\; \frac{W_{p,t}}{8}\, \mathrm{RV}_{p,t},
+\mathrm{LVR}_{p,t}=\frac{W_{p,t}}{8}\int_t^{t+1}\sigma^2_{p,u}\,du
+=\frac{W_{p,t}}{8}\mathrm{RV}_{p,t},
 \qquad
-\mathrm{RV}_{p,t} \;=\; \sum_{h} \bigl( \Delta \log P_{p,h} \bigr)^{2},
+\mathrm{RV}_{p,t}=\sum_h\bigl(\Delta\log P^{\mathrm{ext}}_{p,h}\bigr)^2,
 \label{eq:lvr}
 \end{equation}
-with $P_{p,h}$ the pool's own marginal price at hour $h$ and the sum taken over the day's hourly log returns. Realised variance is invariant to which leg is the numeraire, since inverting a price flips the sign of every log return and leaves its square alone. The connection to classical adverse selection is analogical: \citet{GlostenMilgrom1985BidAsk} price private-information order flow into a spread, while loss-versus-rebalancing captures arbitrage against a stale pool price under its own external-price and frictionless-arbitrage assumptions. Glosten and Milgrom do not derive the realised-variance loss used here. \citet{KleinKozhanViswanathNatrajWang2026InformedLP} separately document that signed liquidity additions and withdrawals predict short-horizon returns, consistent with information in provider timing but not a measure of providers' adverse-selection losses.
+where $P^{\mathrm{ext}}_{p,h}$ is an external reference price. Inverting the price changes the sign of each log return but not its square. This loss is related to, but distinct from, classical adverse selection: \citet{GlostenMilgrom1985BidAsk} price private-information order flow into a spread, whereas loss-versus-rebalancing measures arbitrage against a stale pool price under its own external-price and frictionless-arbitrage assumptions. \citet{KleinKozhanViswanathNatrajWang2026InformedLP} document that signed liquidity additions and withdrawals predict short-horizon returns. Their result describes provider timing but does not measure providers' losses.
 
-Dividing \eqref{eq:lvr} by exact-lag capital does not cancel the contemporaneous pool-value scale,
+Dividing by lagged capital does not eliminate the contemporaneous pool-value scale:
 \begin{equation}
-\lambda_{p,t} \;\equiv\; \frac{\mathrm{LVR}_{p,t}}{C_{p,t-1}} \;=\; \frac{W_{p,t}}{C_{p,t-1}}\frac{\mathrm{RV}_{p,t}}{8},
+\lambda_{p,t}\equiv\frac{\mathrm{LVR}_{p,t}}{C_{p,t-1}}
+=\frac{W_{p,t}}{C_{p,t-1}}\frac{\mathrm{RV}_{p,t}}{8}.
 \label{eq:lvrrate}
 \end{equation}
-and the ratio $W_{p,t}/C_{p,t-1}$ is an empirical object. Arithmetic therefore neither proves nor rules out a centrality effect. The net yield the providers earn per lagged dollar supplied is then
+The ratio $W_{p,t}/C_{p,t-1}$ must therefore be measured directly. Net yield per lagged dollar supplied is
 \begin{equation}
-y_{p,t} \;=\; \frac{\Pi_{p,t}}{C_{p,t-1}} \;=\; \frac{\phi_{p}\, V_{p,t}}{C_{p,t-1}} \;-\; \frac{W_{p,t}}{C_{p,t-1}}\frac{\mathrm{RV}_{p,t}}{8} \;-\; \frac{n_{p,t}\, g\, \varpi_{t}\, P_{t}}{C_{p,t-1}} .
+y_{p,t}=\frac{\Pi_{p,t}}{C_{p,t-1}}
+=\frac{\phi_pV_{p,t}}{C_{p,t-1}}
+-\frac{W_{p,t}}{C_{p,t-1}}\frac{\mathrm{RV}_{p,t}}{8}
+-\frac{n_{p,t}g\varpi_tP_t}{C_{p,t-1}}.
 \label{eq:netyield}
 \end{equation}
 
-The current findings freeze admits no estimate from this section. The V2 panel is being regenerated under the exact-lag and reserve-reconciliation contract above. Uniswap V3 provider TVL failed the independent historical-balance audit, while local virtual depth is neither deposited capital nor an LVR scale; every prior V3 capital, fee-to-LVR, net-flow and return estimate is retired. The numerical draft below remains disabled as source material until the replacement evidence passes the F--G--H attack loop twice.
-
-\iffalse
-
-The panel evaluating \eqref{eq:netyield} covers Uniswap v2 over 2,235 days from 2020-05-05 to 2026-06-30, with 3,358,539 screened pool-days across 113,895 pools. Pools are valued off an externally anchored leg at twice that leg's value, using the constant-product identity that both legs carry equal value, since the repository's token price panel is itself derived from pool prices and multiplying a thin pool's implied price by its own reserves manufactures capital from nothing. A price is accepted when it sits within a factor of four of the token's centred 91-day rolling median, and a dollar stablecoin additionally has to price between fifty cents and two dollars. The screen removing pool-days in which the price moved more than a hundredfold inside one hour takes out 2.2\% of pool-days and 24\% of the v2 pool cross-section, and its direction is worth stating: those are the largest loss observations in the sample, and removing them works against the unprofitability result below. The v3 companion covers 1,884 days and 366,876 pool-days across 392 pools, but it evaluates dollar net-flow signs and fee-to-LVR ratios against local virtual depth, not \eqref{eq:netyield} as a return on capital.
-% docs/finding-rent-incidence.md; output/empirical/rent_incidence/summary.json and screens.jsonl, v2 rows 3 to 4 of 4,321,736 pool-days on 312,578 pools falling to 4,227,098 on 237,570
-
-\subsection{Returns by asset role}
-\label{sec:liquidity:roles}
-
-Table~\ref{tab:rent:roles} reports \eqref{eq:netyield} by the role the pool's two legs play under Definition~\ref{def:types}. The pattern is a partition. Where both legs are already major assets the intermediation business pays: stable against stable pays on 89.6\% of pool-days at a median net yield of $+0.24\%$ annualised, native against staked native on 89.3\% at $+3.58\%$, imported against native on 75.4\% at $+0.47\%$, native against stable on 58.0\% at $+0.36\%$. Where one leg is a long-tail token it does not. Pools joining the native asset to the long tail earn a median fee yield of 0.60\% annualised against a loss-versus-rebalancing rate of 10.23\%, a median net yield of $-5.96\%$, and pay on 21.6\% of pool-days. That bucket collects 13.4\% of its aggregate loss back in aggregate fees and gives up 5.22 billion dollars over the sample on 1.92 trillion dollars of capital-days, and it is 100,639 of the pools and 80\% of the pool-days.
-% output/empirical/rent_incidence/rent_by_asset_role.jsonl, venue uniswap_v2; 3,358,539 screened pool-days on 113,895 pools, 2020-05-05 to 2026-06-30
-
-\begin{table}[tbp]
-\centering
-\caption{The rent to liquidity provision on Uniswap v2, by the role of the pool's legs}
-\label{tab:rent:roles}
-\footnotesize
-\setlength{\tabcolsep}{4pt}
-\begin{tabular}{@{}lrrrrrrrrr@{}}
-\toprule
-\multicolumn{4}{c}{} & \multicolumn{4}{c}{Annualised rate (\%)} & \multicolumn{2}{c}{} \\
-\cmidrule(lr){5-8}
-Pool role & Pools & Pool-days & Capital (\$bn) & Fee & LVR & Gas & Net & Pays (\%) & Net, cw (\%) \\
-\midrule
-native / other & 100,639 & 2,699,499 & 1,920.3 & 0.60 & 10.23 & 3.55 & $-5.96$ & 21.6 & $-0.99$ \\
-% output/empirical/rent_incidence/rent_by_asset_role.jsonl, venue uniswap_v2, pool_role native / other
-native / stable & 12 & 14,929 & 408.9 & 4.46 & 3.87 & 0.18 & $+0.36$ & 58.0 & $+7.56$ \\
-% output/empirical/rent_incidence/rent_by_asset_role.jsonl, venue uniswap_v2, pool_role native / stable
-other / stable & 1,817 & 274,256 & 278.8 & 1.68 & 7.18 & 0.68 & $-3.55$ & 23.1 & $-0.21$ \\
-% output/empirical/rent_incidence/rent_by_asset_role.jsonl, venue uniswap_v2, pool_role other / stable
-stable / stable & 13 & 8,828 & 107.5 & 0.57 & 0.09 & 0.18 & $+0.24$ & 89.6 & $+1.53$ \\
-% output/empirical/rent_incidence/rent_by_asset_role.jsonl, venue uniswap_v2, pool_role stable / stable
-imported / native & 4 & 3,932 & 92.3 & 2.34 & 1.42 & 0.09 & $+0.47$ & 75.4 & $+1.18$ \\
-% output/empirical/rent_incidence/rent_by_asset_role.jsonl, venue uniswap_v2, pool_role imported / native
-native / staked native & 3 & 1,987 & 7.1 & 4.71 & 0.37 & 0.21 & $+3.58$ & 89.3 & $+6.57$ \\
-% output/empirical/rent_incidence/rent_by_asset_role.jsonl, venue uniswap_v2, pool_role native / staked_native
-imported / other & 82 & 12,854 & 6.8 & 0.55 & 2.26 & 1.09 & $-1.14$ & 27.2 & $-1.53$ \\
-% output/empirical/rent_incidence/rent_by_asset_role.jsonl, venue uniswap_v2, pool_role imported / other
-imported / stable & 8 & 4,732 & 4.5 & 1.60 & 1.51 & 0.72 & $+0.04$ & 52.3 & $+0.83$ \\
-% output/empirical/rent_incidence/rent_by_asset_role.jsonl, venue uniswap_v2, pool_role imported / stable
-other / staked native & 5 & 737 & 0.9 & 0.00 & 0.81 & 0.28 & $-0.82$ & 0.0 & $-5.48$ \\
-% output/empirical/rent_incidence/rent_by_asset_role.jsonl, venue uniswap_v2, pool_role other / staked_native
-\bottomrule
-\end{tabular}
-\par\vspace{6pt}
-\begin{minipage}{0.94\textwidth}
-\footnotesize\raggedright \emph{Notes.} Uniswap v2, 3,358,539 screened pool-days across 113,895 pools over 2,235 days, 2020-05-05 to 2026-06-30. Rows are ordered by capital-days. Fee, LVR and Net are pool-day medians of the corresponding term of \eqref{eq:netyield}, annualised at 365 days. Gas is a mean because its median is zero, since only 13.1\% of native-other pool-days carry any liquidity event. Pays is the share of pool-days on which $y_{p,t} > 0$. Net, cw is the capital-weighted net yield, aggregate net dollars over aggregate capital-days. In v2 the pool is the pair, and the Pools column therefore also counts distinct token pairs. Source: \texttt{output/empirical/rent\_incidence/rent\_by\_asset\_role.jsonl}.
-\end{minipage}
-\end{table}
-
-Role differences are tested and no difference is read off the table alone. Aggregating \eqref{eq:netyield} to the pool-month and writing $S_{pm}$ for the pool-month risk-adjusted net return, the mean of the month's daily net yields over their standard deviation, the test carries month effects and clusters by pool,
-\begin{equation}
-S_{pm} \;=\; \alpha_{m} \;+\; \sum_{j \neq 0} \rho_{j}\, \mathbf{1}\{\varrho(p) = j\} \;+\; u_{pm},
-\qquad
-H_{0}: \; \rho_{j} = 0 \;\; \text{for every } j,
-\label{eq:roletest}
-\end{equation}
-with $\varrho(p)$ the role of pool $p$ and the native-other bucket the omitted base. On 88,684 pool-months over 12,925 pools the null is rejected at $\chi^{2}(6) = 101.59$ (0.000), and on the probability that a pool-month pays at $\chi^{2}(6) = 504.89$ (0.000). Against a base whose own paying probability is 4.2\%, stable-stable adds 0.818 (0.000), imported-native 0.621 (0.000), native-stable 0.475 (0.000) and imported-stable 0.375 (0.011). Other-stable adds $-0.016$ (0.118) against a minimum detectable effect of 0.029, which bounds the long-tail pools quoted against a stablecoin to within three percentage points of the long-tail pools quoted against the native asset.
-% output/empirical/rent_incidence/centrality_curse_regressions.jsonl, specs "uniswap_v2 role differences in risk-adjusted net return" and "... in the chance a pool-month pays"; 88,684 pool-months on 12,925 pools
-
-The v3 arm can carry only objects that do not require an invested-capital denominator. Constant-product-equivalent virtual reserves measure local curvature and depth, not deposited capital \citep{AdamsZinsmeisterRobinson2021UniswapV3}. Fee-to-LVR ratios, dollar net-flow signs and the share of pool-days with positive net flow remain defined; yields, capital shares, capital screens and return regressions do not. The median pool-day fee-to-LVR ratio is 10.92 for stable-stable, 4.93 for native-staked-native, 2.30 for imported-imported, 1.36 for native-other, 1.24 for native-stable and 1.02 for other-stable, with between 49.4\% and 81.8\% of pool-days carrying positive net flow across those roles. The zero-role-effect hypothesis is rejected at $\chi^{2}(7) = 17.50$ (0.014) on that binary outcome over 12,160 pool-months and 380 pools, with other-stable at $-0.135$ (0.007) and stable-stable at $+0.238$ (0.008) against the same base. The two venues disagree on the native-other bucket, which is positive on 60.9\% of v3 pool-days against 21.6\% on v2, and that disagreement is sample selection: the v3 universe is the 400 most traded pools, whose native-other row is the head of the distribution, while v2's is the whole of it including the hundred thousand pools in the tail.
-% output/empirical/rent_incidence/rent_by_asset_role.jsonl, venue uniswap_v3, med_pool_day_fee_over_lvr and share_net_positive on 366,876 pool-days across 392 pools; centrality_curse_regressions.jsonl, spec "uniswap_v3 role differences in the chance a pool-month pays"
-
-\subsection{Gas incidence and the break-even size}
-\label{sec:liquidity:size}
-
-Gas is a fixed charge per operation, and its incidence falls with the capital base it is spread over. Rearranging \eqref{eq:netyield} gives the condition for a pool-day to pay,
-\begin{equation}
-y_{p,t} \;>\; 0
-\quad \Longleftrightarrow \quad
-\phi_{p}\, V_{p,t} \;-\; \tfrac{1}{8}\, \mathrm{RV}_{p,t}\, W_{p,t} \;>\; n_{p,t}\, g\, \varpi_{t}\, P_{t},
-\label{eq:breakeven}
-\end{equation}
-whose right side is invariant to $W_{p,t}$ while both terms on the left scale with it. A pool below the size at which the left side clears the right cannot pay however well it is run, and the data trace that size out. Across v2 capital deciles the median gas rate on the pool-days carrying a liquidity event falls from 18.96\% annualised in the smallest decile, median capital 12,998 dollars, to 0.30\% in the largest, median capital 2.39 million dollars, a factor of 63.
-% output/empirical/rent_incidence/rent_by_capital_decile.jsonl, gas_rate_apr_given_event and median_tvl_usd, deciles 1 and 10 of 302,190 pool-days each
-
-Gas is not what makes intermediation unprofitable. Quadrupling the per-operation gas assumption moves the median v2 net yield from $-5.29\%$ to $-5.81\%$ annualised and the paying share from 22.3\% to 21.9\%, and halving it moves them to $-5.11\%$ and 22.5\%. Those figures are whole-panel medians over 3,021,897 pool-days and are not the native-other bucket of Table~\ref{tab:rent:roles}. Restricting the panel by capital moves them much further, to $-2.29\%$ and 30.3\% at a hundred thousand dollars and to $-0.32\%$ and 44.8\% at a million. The size gradient in net yield therefore runs through the balance of fee revenue and arbitrage loss modelled by \citet{LeharParlour2024Uniswap} and measured as loss-versus-rebalancing by \citet{MilionisMoallemiRoughgardenZhang2022LVR}.
-% output/empirical/rent_incidence/robustness.jsonl, venue uniswap_v2, arms "gas units x4", "gas units x0.5", "capital >= $100k" and "capital >= $1m"; whole-panel arms rest on 3,021,897 pool-days across 102,591 pools
-
-\subsection{Centrality and the return to intermediating}
-\label{sec:liquidity:centrality}
-
-The natural prediction about the vehicle role is a curse. If the loss to arbitrageurs scales with return variance times marginal depth, it is largest where depth is largest, which is the most central asset's pools. An informational version requires an additional sorting hypothesis: if more central assets attract a larger informed-flow share, \citet{GlostenMilgrom1985BidAsk} predict wider contemporaneous informational spreads conditional on the same trading history. Their model does not derive centrality-to-informed-flow sorting, and faster informed trading also accelerates information revelation and can reduce later spreads. The first half of the prediction fails before any data arrive. In \eqref{eq:lvrrate} the loss rate is realised variance over eight and carries no depth term, since depth enters the loss in dollars and cancels against the capital it is charged on. Largest where depth is largest is a statement about dollar losses that says nothing about the return earned per dollar supplied. A curse in rate terms needs central assets to carry higher return variance, and they carry lower. The empirical test is run at the pool-month level with month effects and clustering by pool, taking the volume-weighted betweenness $\beta_{k,t}$ of \eqref{eq:role} on the pool's more central leg,
-\begin{equation}
-S_{pm} \;=\; \alpha_{m} \;+\; \psi \log \beta_{k(p),m} \;+\; \varphi_{1} \log W_{pm} \;+\; \varphi_{2} \log \mathrm{RV}_{pm} \;+\; u_{pm},
-\label{eq:centrality}
-\end{equation}
-with the depth and volatility controls entered only where Table~\ref{tab:rent:centrality} says so.
-
-\begin{table}[tbp]
-\centering
-\caption{Centrality and the return to liquidity provision, pool-month panels}
-\label{tab:rent:centrality}
-\footnotesize
-\setlength{\tabcolsep}{5pt}
-\begin{tabular}{@{}p{0.34\textwidth}rrrrrr@{}}
-\toprule
-& \multicolumn{3}{c}{Uniswap v2} & \multicolumn{3}{c}{Uniswap v3} \\
-\cmidrule(lr){2-4} \cmidrule(lr){5-7}
-Outcome & $\hat{\psi}$ & $(p)$ & MDE & $\hat{\psi}$ & $(p)$ & MDE \\
-\midrule
-Risk-adjusted net return, month effects only & 0.0082 & (0.309) & 0.0226 & -- & -- & -- \\
-% output/empirical/rent_incidence/centrality_curse_regressions.jsonl, spec "uniswap_v2 (1)", term log_c; v3 unsupported for capital-return inference because local virtual depth is not capital
-Risk-adjusted net return, plus depth and volatility & 0.0355 & (0.000) & 0.0173 & -- & -- & -- \\
-% output/empirical/rent_incidence/centrality_curse_regressions.jsonl, spec "uniswap_v2 (2)", term log_c; v3 unsupported for capital-return inference because local virtual depth is not capital
-Probability the pool-month pays & 0.0151 & (0.000) & 0.0114 & 0.0708 & (0.000) & 0.0503 \\
-% output/empirical/rent_incidence/centrality_curse_regressions.jsonl, specs "uniswap_v2 (6)" and "uniswap_v3 (6)", term log_c
-Log fee revenue over LVR & 0.2019 & (0.034) & 0.2667 & 0.2850 & (0.001) & 0.2346 \\
-% output/empirical/rent_incidence/centrality_curse_regressions.jsonl, specs "uniswap_v2 (5)" and "uniswap_v3 (5)", term log_c
-Fee yield, annualised & 0.0564 & (0.161) & 0.1128 & -- & -- & -- \\
-% output/empirical/rent_incidence/centrality_curse_regressions.jsonl, spec "uniswap_v2 (4)", term log_c; v3 unsupported for capital-return inference because local virtual depth is not capital
-Degree in place of betweenness & 0.0346 & (0.000) & 0.0182 & -- & -- & -- \\
-% output/empirical/rent_incidence/centrality_curse_regressions.jsonl, spec "uniswap_v2 (7) degree instead of betweenness", term log_deg; v3 unsupported because the current denominator is not a validated capital measure
-\bottomrule
-\end{tabular}
-\par\vspace{6pt}
-\begin{minipage}{0.94\textwidth}
-\footnotesize\raggedright \emph{Notes.} Estimates of $\psi$ in \eqref{eq:centrality}. Centrality is the volume-weighted betweenness $\beta_{k,t}$ of \eqref{eq:role} on the pool's more central leg, in logs. Every reported row carries month fixed effects and standard errors clustered by pool; the depth and volatility controls $\log W_{pm}$ and $\log \mathrm{RV}_{pm}$ enter every row except the first. The risk-adjusted net return is the pool-month mean of the daily net yield $y_{p,t}$ over its standard deviation. V3 cells are reported only for the binary net-flow sign and fee-to-LVR ratio because its local virtual depth is not invested capital. MDE is the effect size the row detects with 80\% power. Uniswap v2 rests on 78,649 pool-months over 11,877 pools and 62 months; Uniswap v3 on 11,905 pool-months over 385 pools and 62 months. Source: \texttt{output/empirical/rent\_incidence/centrality\_curse\_regressions.jsonl}.
-\end{minipage}
-\end{table}
-
-On v2, the unconditional coefficient is a bounded null: a curse would have to be smaller than 0.023 standard-deviation units of monthly risk-adjusted return per log unit of centrality to hide inside the standard error. Conditional on depth and volatility the sign turns positive and significant, at 0.0355 (0.000), and the probability that a pool-month pays moves the same way on both venues. Replacing betweenness with degree on v2 gives 0.0346 (0.000). V3 return and degree specifications are withdrawn because the outcome used local virtual depth as if it were capital.
-% output/exhibits/vehicle_centrality.jsonl; output/empirical/rent_incidence/centrality_curse_regressions.jsonl, v2 specs "(1)", "(2)", "(6)", "(7)" and v3 spec "(6)"
-
-The informational version fails in the same direction and the failure is legible in the ratio. Fee revenue per dollar of estimated arbitrage loss rises with centrality, at 0.202 (0.034) on v2 and 0.285 (0.001) on v3. The v2 fee-yield row is a bounded null, 0.056 (0.161) against a minimum detectable effect of 0.113; no fee yield is reported for v3. The ratio does not identify informed and uninformed flow separately.
-% output/empirical/rent_incidence/centrality_curse_regressions.jsonl, specs "uniswap_v2 (5)", "uniswap_v3 (5)" and "uniswap_v2 (4)"
-
-Fixing the quote leg sharpens this on v2. Within pools quoted against the native asset, where the remaining variation is the hub status of the other leg, the coefficient is 0.171 (0.000) over 58,709 pool-months and 9,923 pools. Interacting centrality with the other leg's role on that subsample, the interactions are jointly non-zero at $\chi^{2}(2) = 14.86$ (0.001), driven by imported legs at $-0.070$ (0.001), with stable legs at $-0.003$ (0.905) against a minimum detectable effect of 0.074. The v3 counterpart is withdrawn because it used a virtual-depth-normalized return.
-% output/empirical/rent_incidence/centrality_curse_regressions.jsonl, v2 specs "(7) native-quoted pools", "(8) centrality x other-leg role" and "(9) interaction Wald"
-
-\subsection{The subsidy behind the incumbency}
-\label{sec:liquidity:subsidy}
-
-The native asset occupies the vehicle role through its pairing network with the long tail, and Table~\ref{tab:rent:roles} prices exactly those pairings at a loss. Providers of the native-other pools supplied 1.92 trillion dollars of capital-days, earned 0.60\% annualised in fees at the median pool-day against a 10.23\% loss rate, and gave up 5.22 billion dollars over the sample. The classical vehicle-currency account links current volume to brokerage cost but does not model liquidity suppliers, deposited capital or provider returns \citep{Krugman1980VehicleCurrencies}. The AMM implementation studied here finds the low-cost exchange network supplied at a loss by the providers who make it thick, while the profitable half of the intermediation business sits in pools joining two assets that are already major. Whatever sustains the role, the private profitability of supplying the depth it runs on is not it. An institutional analogue is the NYSE DMM: removing the NYSE, and therefore its designated supply, widened spreads even with voluntary suppliers and ten other exchanges operating, while pre-halt DMM participation predicted the cross-sectional spread change \citep{ClarkJosephYeZi2017DMM}. Clark-Joseph, Ye, and Zi rule out the direct rebate differential as a mechanical explanation and only conjecture that competition for future stock allocations may make broadly worded obligations bite; their evidence does not identify a subsidy, provider losses, or incumbency. A separate TSX study documents affirmative obligations compensated through execution privileges and fee advantages, not a cash transfer or a causal obligation effect \citep{AnandVenkataraman2016MarketMaking}.
-% output/empirical/rent_incidence/rent_by_asset_role.jsonl, venue uniswap_v2, pool_role native / other on 2,699,499 pool-days across 100,639 pools
-
-The absent centrality curse sharpens the reading and points it away from the hub. Hub status is not what makes intermediation unprofitable; pairing with the long tail is, and conditional on depth and volatility hub status helps. Section~\ref{sec:dominance} measures an asset keeping the role at moments when routing through it was the more expensive way to trade, Section~\ref{sec:survival} measures how slowly that role changes hands, and the price of the depth underneath both is settled here. The \emph{slow capital} account of Section~\ref{sec:rivals} needs precisely this premise, that capital stays where the returns do not justify staying, and the premise is established in a strong form on 113,895 pools while its discriminating lead-lag test waits on a cross-venue measure of depth.
-% docs/finding-rent-incidence.md; output/empirical/rent_incidence/summary.json, venue uniswap_v2, 113,895 pools
-
-\subsection{Bounds on the measurement}
-\label{sec:liquidity:bounds}
-
-The largest threat is the loss measurement itself. Realised variance in \eqref{eq:lvr} comes from the pool's own hourly marginal price, and in a constant-product pool that price only moves when somebody trades, which means a round trip through the fee band and back through price impact registers as variance no arbitrageur harvested. The bias inflates the loss term and is largest in thin pools, which is the bucket carrying the headline. Table~\ref{tab:rent:bounds} bounds it by sampling the price more coarsely, since coarser sampling shrinks the microstructure component while leaving the fundamental part alone. Sampling every four hours moves the median v2 net yield from $-5.29\%$ to $-2.63\%$ annualised and the paying share from 22.3\% to 28.3\%, and the open-to-close move alone, the most conservative estimator this data supports, gives $-1.80\%$ and 32.1\%. Those four figures are whole-panel medians and are not the native-other bucket's $-5.96\%$ and 21.6\%. The sign is unchanged under the most aggressive de-biasing available here while the magnitude falls by a factor of three, which makes the direction safe and the level unsettled until an external reference price at higher frequency is available.
-% output/empirical/rent_incidence/robustness.jsonl, venue uniswap_v2, arms "gas units x1", "LVR from 4-hour sampled variance" and "LVR from the open-to-close move only"; 3,021,897 pool-days on 102,591 pools
-
-\begin{table}[tbp]
-\centering
-\caption{The net yield and the paying share across the assumptions they rest on}
-\label{tab:rent:bounds}
-\small
-\begin{tabular}{@{}lrrr@{}}
-\toprule
-& \multicolumn{2}{c}{Uniswap v2} & Uniswap v3 \\
-\cmidrule(lr){2-3} \cmidrule(lr){4-4}
-Arm & Median net (\%) & Pays (\%) & Pays (\%) \\
-\midrule
-Reported specification & $-5.29$ & 22.3 & 61.0 \\
-% output/empirical/rent_incidence/robustness.jsonl, arm "gas units x1", both venues
-LVR from four-hour sampled variance & $-2.63$ & 28.3 & 70.2 \\
-% output/empirical/rent_incidence/robustness.jsonl, arm "LVR from 4-hour sampled variance", both venues
-LVR from the open-to-close move only & $-1.80$ & 32.1 & 72.9 \\
-% output/empirical/rent_incidence/robustness.jsonl, arm "LVR from the open-to-close move only", both venues
-Capital / local virtual depth at least \$100,000 & $-2.29$ & 30.3 & 64.2 \\
-% output/empirical/rent_incidence/robustness.jsonl, v2 arm "capital >= $100k" and v3 arm "local virtual depth >= $100k"
-Capital / local virtual depth at least \$1,000,000 & $-0.32$ & 44.8 & 69.4 \\
-% output/empirical/rent_incidence/robustness.jsonl, v2 arm "capital >= $1m" and v3 arm "local virtual depth >= $1m"
-Daily turnover at most ten times the venue scale & $-5.30$ & 22.2 & 60.9 \\
-% output/empirical/rent_incidence/robustness.jsonl, v2 arm "daily turnover <= 10x capital" and v3 arm "daily turnover <= 10x local virtual depth"
-\bottomrule
-\end{tabular}
-\par\vspace{6pt}
-\begin{minipage}{0.94\textwidth}
-\footnotesize\raggedright \emph{Notes.} V2 reports whole-panel pool-day medians of $y_{p,t}$ from \eqref{eq:netyield}, annualised at 365 days, and the share of pool-days with positive net flow. V3 reports only the latter because its denominator is local virtual depth, not deposited capital. The unrestricted v2 arms rest on 3,021,897 pool-days across 102,591 pools and the unrestricted v3 arms on 366,874 pool-days across 392 pools. The threshold and turnover rows use reserve capital on v2 and local virtual depth on v3; the two are not compared as levels. Source: \texttt{output/empirical/rent\_incidence/robustness.jsonl}.
-\end{minipage}
-\end{table}
-
-Four further threats are named and none is closed. Liquidity mining sits outside \eqref{eq:rent}, and a pool that loses money on trading revenue may have paid its providers in tokens, which means the finding is that the business does not pay out of trading revenue, and an unmeasured token subsidy would produce the same picture as provider stickiness \citep{GriffinShams2020Untethered}. The profitable role buckets rest on a thin cross-section, with native-stable at 12 token pairs on v2 and 5 on v3, imported-native at 4 and 2, and native-staked-native at 3 and 4. The joint tests clear because the pool-month panel is long, and the cross-sectional cover is what a referee will press on. Hub status is close to collinear with carrying a deep centralised reference market, and the reference-price filter that would address the confound deletes exactly the long-tail tokens identifying the effect. The former pooled swap-gas proxy is not a measurement of mint or burn gas and is retired. Net-of-gas provider returns remain unavailable until liquidity events are joined to their own transaction receipts under a predeclared allocation rule.
-% docs/finding-rent-incidence.md, threats 2 to 5; output/empirical/rent_incidence/rent_by_asset_role.jsonl for the token_pairs counts on both venues
-
-One further caveat belongs with the v3 arm and travels with every v3 number above. Active liquidity is reconstructed by replaying every mint and burn into a per-pool indexed tree over initialised ticks, and the reconstruction validates against pools whose local depth is independently known, returning virtual reserves of 1.24 billion USDC against 664,500 WETH for the five basis point USDC-WETH pool on 2023-06-01, two sides agreeing on value to three figures at a concentration factor near ten, and 583 billion dollars on each side of the one basis point USDC-USDT pool at a concentration factor near ten thousand. Within a fully reconstructed tick path, v3 is piecewise constant product and range crossing is part of the exact mechanics \citep{AdamsZinsmeisterRobinson2021UniswapV3}. The approximation here comes from collapsing the day's state path to a volume-weighted tick before applying the local LVR formula. Large-move pool-days are where that aggregation is least credible, so v3 dollar totals do not lead.
-% docs/finding-rent-incidence.md, the v3 reconstruction validation; scripts/build_rent_incidence_panel.py, the tick-tree replay and its stated approximation
-\fi
+Estimating \eqref{eq:netyield} requires deposited capital and an external reference price measured on a consistent calendar. The historical Uniswap V3 balance series does not meet that requirement because local virtual depth is not invested capital and cannot scale provider returns. We therefore report no provider-return estimate from that series. The Uniswap V2 estimates are also withheld while deposited capital and contemporaneous pool value are reconstructed on the calendar used in \eqref{eq:netyield}.

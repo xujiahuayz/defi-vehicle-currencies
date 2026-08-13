@@ -203,7 +203,7 @@ Day & Held-out trades & Backward & Flat & Opening & Pools priced / excluded \\
 \bottomrule
 \end{tabular}
 \\[4pt]
-\footnotesize Median absolute quote error in percent of realised output, on trades no fit ever saw. \emph{Backward} reconstructs per-swap balances by rolling the day's event sequence back from the closing snapshot, \emph{Flat} keeps the snapshot balances constant across the day, and \emph{Opening} treats the snapshot as the day's opening state and rolls forward. twelve sampled days from 2021-04 to 2026-02.
+\footnotesize Median absolute quote error in percent of realised output, on trades no fit ever saw. \emph{Backward} reconstructs per-swap balances by rolling the day's event sequence back from the closing snapshot, \emph{Flat} keeps the snapshot balances constant across the day, and \emph{Opening} treats the snapshot as the day's opening state and rolls forward. The sample contains twelve days from 2021-04 to 2026-02.
 \end{table}
 
 Across the twelve days the backward reading returns a median of 0.0000\% and prices 256 of 473 testable pool-days, and the pools the gate declines carry a median 91.8\% of tested swap volume, which is the coverage bound this venue arrives with.
@@ -238,16 +238,16 @@ The same result appeared independently on the weighted-pool family, where the re
 Two features of that replication make it informative about the constant-product result as well as about Balancer. The venues share no code, no schema and no event stream, so a common bug is not available as an explanation. And the weighted-pool walk had to merge joins and exits into the same ordered sequence as swaps, because a swap-only walk charges every liquidity event to the invariant and reads exactly like a pool running different mathematics, which collapsed coverage from 87 of 105 testable pool-days to 177 of 367 and left 96.9\% of tested volume excluded. The correction there was a second event stream.
 % src/ddvc/pricing/weighted.py, balance-reconstruction measured docstring on the same twelve days
 
-\section{The support screen}
+\section{Common support for hypothetical routes}
 \label{app:support}
 
-Each quoter above was accepted against swaps that executed, and a swap that executed is a trade whose pool was deep enough to serve it. The panel then applies those quoters to hypothetical routes, including routes through pools no router would touch, and in that region a quote extrapolates beyond any measured error. The screen bounds that region, and its threshold is read off the validation population instead of chosen.
+Each quoter above was accepted against swaps that executed, so its validation sample necessarily contains pools deep enough to serve the observed trade. A hypothetical route can demand much more output relative to a pool's depth and thereby move the calculation beyond any region in which quote error has been measured. I retain a hypothetical leg only when its own price impact lies within a range represented among the realised validation trades. The cutoff is calibrated from that population.
 
-The screening statistic is the leg's own price impact in the pool it would traverse,
+For a hypothetical leg, the relevant statistic is its own price impact in the pool it would traverse,
 \[
 \iota \;=\; \frac{x_{\mathrm{in}}}{R_{\mathrm{in}}},
 \]
-the input amount as a fraction of the input-side reserve, which is known before any quote is formed. A screen stated in the size of the measured gap would condition on a monotone function of the outcome, which is selection on the dependent variable. This one conditions on pool state and on nothing downstream of it.
+the input amount as a fraction of the input-side reserve, which is known before any quote is formed. A restriction stated in the size of the measured gap would condition on a monotone function of the outcome. This criterion instead uses pool state and trade size before competing outputs are compared.
 
 \begin{table}[t]
 \centering
@@ -288,7 +288,7 @@ The panel's threshold of 5\% sits between the 90th percentile of 3.29\% and the 
 
 \begin{figure}[tbp]
 \centering
-\caption{Where the 5\% support screen sits in the validation population}
+\caption{Calibration of the 5\% price-impact restriction}
 \label{fig:app:support}
 \begin{tikzpicture}
 \begin{axis}[width=0.85\textwidth, height=6.6cm, xlabel={Validation day}, ylabel={Trade size as percent of input reserve}, xmin=0.4, xmax=9.6, ymin=0, ymax=22, ytick={0,5,10,15,20}, xtick={1,2,3,4,5,6,7,8,9}, xticklabels={2020-05-05,2021-02-10,2021-11-18,2022-08-26,2023-06-03,2024-03-10,2024-12-16,2025-09-23,Pooled}, x tick label style={rotate=45, anchor=east, font=\scriptsize}, tick align=outside, tick label style={font=\footnotesize}, label style={font=\footnotesize}, legend style={font=\footnotesize, draw=black!35, fill=white, at={(0.03,0.96)}, anchor=north west}, legend cell align=left, grid=major, grid style={black!10}, axis line style={black!70}]
@@ -306,17 +306,17 @@ The panel's threshold of 5\% sits between the 90th percentile of 3.29\% and the 
 \addplot[only marks, black, mark=o, mark size=2.2pt] coordinates {(1,1.00) (2,8.68) (3,13.15) (4,18.44) (5,19.36) (6,15.11) (7,13.25) (8,19.92) (9,14.86)};
 \addlegendentry{99th percentile}
 \addplot[black, thick, dashed, no marks] coordinates {(0.4,5) (9.6,5)};
-\addlegendentry{panel screen at 5\%}
+\addlegendentry{5\% cutoff}
 \end{axis}
 \end{tikzpicture}
 \par\vspace{6pt}
 \begin{minipage}{0.92\textwidth}
-\footnotesize\raggedright \emph{Notes.} The screening statistic is a leg's input amount as a fraction of the input-side reserve of the pool it would measured traverse over the constant-product swaps the quoters were validated against. The screen at 5\% falls between the 90th and the 99th percentile on the pooled distribution and on seven of the eight days taken separately, the exception being 2020-05-05, which carries two validated swaps at an identical size-to-depth ratio., 932,270 validated swaps on eight sampled days from 2020-05-05 to 2025-09-23.
+\footnotesize\raggedright \emph{Notes.} The statistic is a leg's input amount as a fraction of the input-side reserve in the pool it would traverse. The 5\% cutoff falls between the 90th and the 99th percentile in the pooled distribution and on seven of the eight days separately. The exception is 2020-05-05, which contains two validated swaps at the same size-to-depth ratio. The sample contains 932,270 validated swaps on eight days from 2020-05-05 to 2025-09-23.
 \end{minipage}
 \end{figure}
 % output/exhibits/quoter_support_bounds.jsonl, per-day and pooled 90th and 99th percentiles, 932,270 validated swaps on eight sampled days
 
-The screen is expensive and its cost is reported in the body. What it cannot do is measure the engine's error inside the region it defines, because the routes in question were never executed and have no realised output to compare against. The bound on that error is the arbitrage argument of Section~\ref{sec:executability:arbitrage} and is indirect.
+This restriction removes economically relevant observations, and the body reports that loss of support. It cannot measure quote error for retained hypothetical routes because those routes were never executed and have no realised output for comparison. Section~\ref{sec:executability:arbitrage} instead develops an indirect check based on same-block arbitrage.
 
 \section{Signed venue coverage}
 \label{app:coverage}
@@ -402,7 +402,7 @@ Year & \multicolumn{2}{r}{Native leg} & \multicolumn{2}{r}{Stable leg} & Other v
 The last column of Panel A is the sign of the bound and Panel B shows it repeating in every year of the sample, with the native-against-stable gap never below 33 percentage points and reaching 54 in 2023. The mechanism is identifiable and specific. The tricrypto pools pairing WBTC and WETH against a stablecoin are \$818m of the \$1.83bn excluded on their own, 44.6\%, and they account for seven of the twelve largest excluded pool-days including the top two. They price CryptoSwap by construction, and they are where Curve's ETH-leg depth lived.
 % docs/venue-coverage-bounds.md, curve_excluded_composition.jsonl, 28 measured pool-days
 
-One venue in the top eight is excluded outright. Sushiswap's concentrated-liquidity deployment presents as a balance-and-weights venue by field inventory, and its weight vector takes exactly one value across every sampled day, the default a two-token schema writes when no weights exist, so a weighted-product quoter has nothing to read. Correct weights would not help, because the venue is a concentrated-liquidity fork whose reserves sit across ticks and a geometric mean over total balances prices a pool that does not exist. The tick quoter cannot be pointed at it either, since the schema serves neither \texttt{sqrtPriceX96} nor in-range liquidity nor the tick spacing at any date. The exclusion costs almost nothing: the venue is 0.016\% of the five priced venues' volume pooled, peaking at 0.176\% in 2026, and across fourteen sampled days only 4.1\% of its volume sits on token pairs no priced venue hosts that day, never exceeding \$37,609 of unique-pair volume on any sampled day.
+One venue in the top eight is excluded outright. Sushiswap's concentrated-liquidity deployment presents as a balance-and-weights venue by field inventory, and its weight vector takes exactly one value across every sampled day, the default a two-token schema writes when no weights exist, so a weighted-product quoter has nothing to read. Correct weights would price the wrong invariant because the venue's reserves sit across ticks. The available schema also omits \texttt{sqrtPriceX96}, in-range liquidity and tick spacing, leaving the tick quoter without its state variables. The exclusion costs almost nothing: the venue is 0.016\% of the five priced venues' volume pooled, peaking at 0.176\% in 2026, and across fourteen sampled days only 4.1\% of its volume sits on token pairs no priced venue hosts that day, never exceeding \$37,609 of unique-pair volume on any sampled day.
 % docs/venue-coverage-bounds.md, sushiswap_v3_schema_probe.jsonl and sushiswap_v3_pair_overlap.jsonl, 14 sampled days
 
 Balancer is 3.9\% of measured venue volume pooled and 8.8\% at its 2023 peak. The weighted-family quoter clears the validation bar of Table~\ref{tab:app:weighted} and is integrated into the corrected route-cost rebuild. The remaining omission is signed but narrower: linear and boosted families are still excluded, while 23 of 29 sampled composable-stable pools reduce to two real tokens after their own BPT is removed and remain a feasible extension once historical rate-provider state is recovered.
@@ -411,13 +411,13 @@ Balancer is 3.9\% of measured venue volume pooled and 8.8\% at its 2023 peak. Th
 \section{Block-level pricing and the triangle residual}
 \label{app:timing}
 
-The counterfactual panel prices at the close of an hour and a router quotes at a block, and Section~\ref{sec:executability:timing} reports the level deviation between those two states. A dominance verdict is a comparison in which both sides are priced at the same state, so a level deviation common to both sides cancels and only the relative part can flip a sign. The test that isolates the relative part is the triangle.
+The counterfactual panel prices at the close of an hour, whereas the route-selection state is latent and may precede the observed settlement block. Section~\ref{sec:executability:timing} first measures how much prices move between the pre-settlement and hour-end states. Because both alternatives are priced at the same state, their ranking changes only with relative price movement. A closed triangle isolates that relative component.
 
 For endpoints $a$ and $b$ and intermediary $k$, with a direct pool $ab$ and legs $ak$ and $kb$, the residual
 \[
 m_{a,k,b} \;=\; \log P(a \to b) - \log P(a \to k) - \log P(k \to b)
 \]
-is positive exactly when the direct pool returns more of $b$ per unit of $a$ than the two-leg route does, in the zero-size limit where the marginal price is the pool price. The sign of $m$ is the dominance verdict at that limit.
+is positive exactly when the direct pool returns more of $b$ per unit of $a$ than the two-leg route does, in the zero-size limit where the marginal price is the pool price. The sign of $m$ gives the direct-versus-vehicle ranking at that limit.
 
 Two properties make the test exact. A raw pool price $\widetilde{P}$ and the human-units price $P$ differ by the token decimals of the pair,
 \[
@@ -438,7 +438,7 @@ Computing $m$ at each realised swap's own block and again at its hour-boundary s
 
 \begin{table}[t]
 \centering
-\caption{Verdict flips between block state and hour-boundary state, by day}
+\caption{Route-ranking changes between pre-event and hour-end states, by day}
 \label{tab:app:verdictday}
 \begin{tabular}{lrrrrr}
 \toprule
@@ -472,7 +472,7 @@ The flip rate varies between 30.1\% and 43.4\% across four years and two market 
 
 \begin{table}[t]
 \centering
-\caption{Verdict instability, conditional}
+\caption{Route-ranking disagreement, conditional}
 \label{tab:app:conditional}
 \begin{tabular}{lrr}
 \toprule
@@ -529,16 +529,16 @@ above 250 bps & 9{,}637 & 36.2\% \\
 \footnotesize 189,622 opportunity snapshots across 371 triangles on seven sampled days. Panel A applies the wedge to all observations, so its denominator is constant across rows. \emph{Dominated share} is the share of observations the strict pre-event residual classifies as dominated at that wedge.
 \end{table}
 
-Panel C is the diagnostic that rules out a size threshold as a remedy: the flip rate stays inside a range of 34.1\% to 44.5\% across every bucket of the pre-event residual, reading 36.2\% in the top bucket against 41.0\% in the bottom one, which follows from what $m$ is at zero size.
+Panel C shows that restricting the sample to large residuals does not remove the timing problem: the disagreement rate remains between 34.1\% and 44.5\% across the pre-event residual buckets and is 36.2\% in the top bucket against 41.0\% in the bottom one.
 % output/exhibits/block_vs_hour_conditional.jsonl, gap_at_own_event rows over 189,622 opportunity snapshots
-A triangular-arbitrage residual is a quantity searchers keep oscillating around zero within blocks, and a large value of it is transient wherever it appears in the distribution. Panel B validates the test on a dimension a coding error would not reproduce, since a route executing seconds before its hour closes is priced at nearly the state the panel used and cannot flip, while one executing early in an hour has a full hour of drift ahead of it. A flat profile there would have indicated a defect, and Figure~\ref{fig:app:boundary} shows the profile the test returns.
+A triangular-arbitrage residual can oscillate around zero within a block, so even a large observed value may be short lived. Panel B provides an independent timing check: rankings disagree less often when an opportunity occurs close to the hour end and more often when prices have longer to move. Figure~\ref{fig:app:boundary} shows this relationship.
 
 \begin{figure}[tbp]
 \centering
-\caption{Verdict instability by time remaining to the hour boundary}
+\caption{Route-ranking disagreement by time remaining to the hour boundary}
 \label{fig:app:boundary}
 \begin{tikzpicture}
-\begin{axis}[ybar, width=0.85\textwidth, height=6.4cm, bar width=0.9cm, symbolic x coords={under 1,1 to 5,5 to 15,15 to 30,30 to 60}, xtick=data, xlabel={Minutes remaining to the close of the route's hour}, ylabel={Verdict flip rate, percent}, ymin=0, ymax=54, ytick={0,10,20,30,40,50}, tick align=outside, tick label style={font=\footnotesize}, label style={font=\footnotesize}, nodes near coords, nodes near coords style={font=\footnotesize}, point meta=explicit symbolic, grid=major, grid style={black!10}, axis line style={black!70}, enlarge x limits=0.12]
+\begin{axis}[ybar, width=0.85\textwidth, height=6.4cm, bar width=0.9cm, symbolic x coords={under 1,1 to 5,5 to 15,15 to 30,30 to 60}, xtick=data, xlabel={Minutes remaining to the close of the route's hour}, ylabel={Ranking disagreement, percent}, ymin=0, ymax=54, ytick={0,10,20,30,40,50}, tick align=outside, tick label style={font=\footnotesize}, label style={font=\footnotesize}, nodes near coords, nodes near coords style={font=\footnotesize}, point meta=explicit symbolic, grid=major, grid style={black!10}, axis line style={black!70}, enlarge x limits=0.12]
 \addplot[draw=black, fill=black!20] coordinates {(under 1,22.49) [22.5] (1 to 5,22.31) [22.3] (5 to 15,32.79) [32.8] (15 to 30,39.13) [39.1] (30 to 60,45.55) [45.5]};
 \end{axis}
 \end{tikzpicture}
@@ -549,7 +549,7 @@ A triangular-arbitrage residual is a quantity searchers keep oscillating around 
 \end{figure}
 % output/exhibits/block_vs_hour_conditional.jsonl, cut=time_to_hour_boundary rows, 189,622 opportunity snapshots on seven sampled days
 
-Panel A carries the result. A two-leg route pays two pool fees where a direct route pays one, and that offset is a property of the venues traversed and does not move with the market, so it displaces the verdict boundary away from the region where the residual oscillates. The timing threat is therefore a function of trade economics and has no single number attached to it.
+Panel A shows why the timing error varies across routes. A two-leg route pays two pool fees where a direct route pays one. This relatively fixed wedge moves the comparison boundary away from the region in which market prices fluctuate, so route rankings are more stable when the wedge is larger.
 
 \section{Round-trip exclusion}
 \label{app:roundtrip}

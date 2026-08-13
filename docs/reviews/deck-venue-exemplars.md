@@ -1,6 +1,14 @@
-# Phase 0-prime — AFA/WFA/NBER exemplar decks and talks
+# Finance-talk venue and deck exemplars
 
-For pacing/motivation/layout calibration only (see the pipeline spec's calibration-standard split). Feeds Phase 6 drafting; never Phase 0/3/5 scope-and-depth scoring.
+**Status:** Current deck-craft review guide. This record is a canonical agent route for presentation structure and pacing, not scientific evidence and not a source for empirical values. The external deck PDFs read in the original pass were not retained in this repository, so the observations below are durable review notes but are not independently re-verifiable from the current checkout. Any new claim about a source deck must record and retain its source route before this guide is amended.
+
+Use only for pacing, motivation, layout and appendix calibration. Scientific claims and paper-level venue calibration remain governed by [`docs/literature-audit.md`](../literature-audit.md).
+
+## Rhetorical grammar
+
+The audience-facing unit is a complete claim, not an approved vocabulary item. A strong finance slide normally makes the economic actor, quantity or event the subject, states the relationship with an active verb, and places a substantive condition beside the result when it changes interpretation. Provenance, workflow and review status remain in source comments. Titles and body text should say what happened economically; phrases that make `the evidence`, `the comparison`, `the design` or `the framework` narrate the presentation require a whole-thought rewrite.
+
+Review each changed slide for subject, verb, result, condition and handoff to the next slide. Abstract-noun stacks, mechanically balanced taxonomies and meta-signposting can pass a word list while still sounding synthetic. Use this structural review first and the executable vocabulary scan only as a final alarm.
 
 ## Real decks actually retrieved and read
 
@@ -18,11 +26,11 @@ For pacing/motivation/layout calibration only (see the pipeline spec's calibrati
 
 - WFA does not appear to post a public video archive the way AFA does.
 - NBER conference pages link to papers, not presenter slide decks, as a rule (confirmed via a 2013 NBER Market Microstructure program negative-control check).
-- No recording could actually be listened to (no audio-playback capability in this pass) — pacing conclusions above are inferred from program structure and session timing, not from watching a talk. **The Microstructure Exchange** (microstructure.exchange, YouTube channel with individual market-microstructure seminar talks) is flagged as the best remaining source if verified minute-by-minute delivery pacing is wanted before Phase 6 drafting — format is a ~45-60 min open-floor seminar, not a 20-minute slot, so useful for verbal register more than compressed pacing.
+- No recording could actually be listened to in the original pass — pacing conclusions above are inferred from program structure and session timing, not from watching a talk. **The Microstructure Exchange** (microstructure.exchange, YouTube channel with individual market-microstructure seminar talks) was flagged as a possible source if verified minute-by-minute delivery pacing is needed — its ~45–60 minute open-floor format is more useful for verbal register than compressed pacing.
 
-## Takeaways for Phase 6 drafting
+## Takeaways for deck drafting
 
-1. Two legitimate house styles coexist even within AFA/NBER-caliber talks: a dense, mostly-visual, minimal-text style (crypto/microstructure-adjacent) and a classical Beamer style (verbatim tables/equations, heavy appendix). Given the target deck sits at the intersection (DeFi data, finance-microstructure audience aspiration), either is defensible — lean toward the classical Beamer style given the JFE/Management Science target and NTU's mixed audience, but keep the visual discipline (one idea dominating each slide) from the crypto-talk example.
-2. Appendix-as-defense is a real, load-bearing structural pattern, not a nice-to-have — budget roughly as much appendix material as core content, consistent with the spec's "large backup/appendix sized for Q&A."
+1. Two legitimate house styles coexist even within AFA/NBER-caliber talks: a dense, mostly-visual, minimal-text style (crypto/microstructure-adjacent) and a classical Beamer style (verbatim tables/equations, heavy appendix). Given the target deck sits at the intersection (DeFi data, finance-microstructure audience aspiration), either is defensible — lean toward the classical Beamer style given the finance-journal target and Nanyang's mixed audience, but keep the visual discipline (one idea dominating each slide) from the crypto-talk example.
+2. Appendix-as-defense is a real, load-bearing structural pattern, not a nice-to-have — budget roughly as much appendix material as core content when the question set warrants it.
 3. Section-break pacing markers between the 4-5 major parts of a ~20-minute talk are standard, not filler.
 4. References get their own dense slide(s) at the very end — the one place these decks abandon low density, since it's reference material, not spoken content.

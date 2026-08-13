@@ -1,5 +1,11 @@
 # Review ledger
 
+Current review routes:
+
+- [`deck-venue-exemplars.md`](deck-venue-exemplars.md) is the deck-craft calibration guide consumed by the deck workflow. Its original external deck files are not present in the checkout, so new source-specific observations require a retained source route.
+- `deck-visual-composition.md`, `deck-visual-experiments.md`, and `deck-visual-salvage.md` are named deck inspection ledgers, not generated output artifacts.
+- The dated files below are individual specialist cards indexed for the literature audit. `docs/literature-audit.md`, not any single card, owns the reconciled current claim boundary.
+
 Independent specialist reviews, newest first.
 
 - 2026-08-09T13:32:01+08:00 — **full-text-reader** · jfe (independent source reader) on `1979-Krugman1979VehicleCurrenciesWorkingPaper-working-paper-vehicle-currencies-and-the-structure-of-international-exchange.pdf` → `1979-Krugman1979VehicleCurrenciesWorkingPaper-working-paper-vehicle-currencies-and-the-structure-of-international-exchange--full-text-reader--jfe--20260809133201.md`

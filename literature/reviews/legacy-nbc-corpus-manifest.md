@@ -1,4 +1,6 @@
-# Phase 0 manifest — corpus, comparators, repo inventory
+# Historical Nanyang pipeline corpus manifest
+
+**Status:** Historical supporting digest from the 2026-08-04 Nanyang pipeline. It is retained beside the literature corpus for provenance and possible source discovery, but it is not current citation, claim, venue, or workflow authority. Use [`literature/source-admission.json`](../source-admission.json), [`literature/vehicle-currencies.bib`](../vehicle-currencies.bib), and [`docs/literature-audit.md`](../../docs/literature-audit.md) for current decisions.
 
 Pointers only. No interpretive synthesis here — Phase 1 does the independent-read source-fidelity work on whichever of these a candidate framing actually leans on.
 
@@ -47,10 +49,11 @@ All confirmed published (DOI resolves to a firm publisher record, not a working 
 
 ## Repo inventory (what already exists)
 
-- `slides/nanyang_vehicle_currencies.tex` — stale Beamer deck (26 frames, Propositions 1-4b), built entirely on the pre-redesign RQ1-7 empirical results, last touched 2026-07-15. Not binding on Phase 6; may be discarded if the winning framing doesn't fit it.
+- Historical `slides/nanyang_vehicle_currencies.tex` — deleted after the live deck replaced it; recoverable from git history only and not binding on current deck work.
 - `docs/research-questions-and-empirical-design.md` — the RQ1-5 redesign doc (2026-07-17), execution hold never lifted. Its literature classification (above) is reused; its RQ-numbered structure is explicitly not binding per Java's instruction.
-- `output/tables/*.pdf`, `output/core_empirical_rq_results.md`, `output/rq_memo.md` — pre-redesign RQ1-7 artifacts (dated 2026-07-17, before the redesign commit). Valid as re-derivable data inputs for Phase 4, not as trusted final numbers — Phase 4's reuse rule requires independently re-checking any of these against the underlying data/scripts before trusting the old caption.
+- `output/core_empirical_rq_results.md` and the retired RQ1-7 memos now under `docs/retired-rq1-7-*.md` are pre-redesign artifacts. They are not current findings or execution authority; current claims come only through the findings freeze and registered evidence chain.
 - Reference repo `defi-dominant-currency` (ddc) — deeper historical data engine and 115G raw data layer; frozen, reference/data-engine only per the project's locked decisions.
 
-## Next
-Phase 1 (source-fidelity cross-check) can now proceed on whichever of the above a candidate framing leans on.
+## Historical next step
+
+The original Phase 1 source-fidelity cross-check is preserved in [`legacy-nbc-source-fidelity.md`](legacy-nbc-source-fidelity.md). Current work follows the live literature gate instead.

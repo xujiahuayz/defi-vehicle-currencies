@@ -80,29 +80,17 @@
 {\small Heterogeneity tests use each asset's contemporaneous backing regime.\par}
 \end{frame}
 
-% VISUAL-FUNCTION: sample attrition | exclusion diagram pending certified funnel | show round-trip and value-support restrictions
-\begin{frame}{A3. Sample restrictions preserve value measurement}
-\begin{columns}[T]
-\begin{column}{0.42\textwidth}
-\begin{itemize}
-\item Round trips are excluded from intermediation measures.
-\item Dollar values require consistent prices and verified token identities.
-\item We retain routes whose two legs imply dollar values within the pre-specified tolerance.
-\end{itemize}
-\end{column}
-\begin{column}{0.54\textwidth}
+% VISUAL-FUNCTION: primary measurement funnel | staged route-object and two-support split | separate topology support from dollar-value support
+% EVIDENCE-STATUS: qualitative measurement contract; no attrition quantities shown.
+% EVIDENCE-COMMIT: 2ffbce06302468b5ee6cb6537989c28078a88603
+% EVIDENCE-SOURCES: deck/assets/sample-measurement-funnel.tex;
+% docs/specification-lock.json; docs/findings-freeze.md;
+% data/manifests/data/processed/intermediation_by_type_daily.parquet.prov.json.
+\begin{frame}{A3. One route universe supports two measurements}
 \centering
-\begin{tikzpicture}[scale=1.05,transform shape]
-\node[nodepoint] (a) at (0,0) {$i$};
-\node[nodepoint,fill=accent,text=white,draw=accent] (x) at (2.1,1.35) {$x$};
-\node[nodepoint] (b) at (4.2,0) {$i$};
-\draw[route,draw=accent] (a)--(x);
-\draw[route,draw=accent] (x)--(b);
-\draw[accent,line width=1.6pt] (-0.25,-0.55)--(4.45,1.90);
-\node[font=\small,align=center] at (2.1,-1.1) {round trip: excluded from\\value-weighted vehicle measures};
-\end{tikzpicture}
-\end{column}
-\end{columns}
+\resizebox{0.96\textwidth}{!}{\input{assets/sample-measurement-funnel.tex}}\par
+\vspace{0.12cm}
+{\small Missing dollar support narrows value-weighted evidence; it does not erase a topology-valid route from the count evidence.\par}
 \end{frame}
 
 % VISUAL-FUNCTION: causal event ordering | numbered replay sequence | explain same-state counterfactual timing
@@ -124,17 +112,48 @@
 \end{itemize}
 \end{frame}
 
-% VISUAL-FUNCTION: protocol-specific state requirements | list pending protocol-variable matrix | prevent false comparability across AMM families
-\begin{frame}{A5. AMM designs require different state variables}
-\begin{description}
-\item[Constant product] Reserves, fee, and invariant.
-\item[Concentrated liquidity] Active liquidity, price, tick, and initialised-tick changes.
-\item[StableSwap families] Balances, amplification, rates, and oracle state.
-\item[Weighted pools] Vault balances, weights, scaling, and rate providers.
-\item[V4 singleton] Pool key, tick state, and fee for standard pools without custom hooks.
-\end{description}
+% VISUAL-FUNCTION: protocol-specific state requirements | protocol-by-state matrix | prevent false comparability across AMM families
+% Source contract: docs/research-workflow.md lines 161--163 and 382--384;
+% src/ddvc/execution_contracts.py and src/ddvc/liquidity.py at f16d5f074fac73011dce1c609d80146ec3fd3bec.
+% Filled squares mean that the field enters the family-specific pre-trade state;
+% the outlined V4 hook square records an explicit perimeter restriction, not measured hook state.
+\begin{frame}{A5. Each AMM family has a different state vector}
+\begin{center}
+\setlength{\tabcolsep}{4.7pt}
+\renewcommand{\arraystretch}{1.55}
+\scriptsize
+\begin{tabular}{@{}p{2.80cm}ccccccc@{}}
+\toprule
+& \shortstack{reserves or\\active liquidity}
+& ticks
+& amplification
+& \shortstack{weights or\\scaling}
+& \shortstack{rates or\\oracles}
+& fees
+& hooks \\
+\midrule
+Constant product
+& {\color{native}$\blacksquare$} & -- & -- & -- & -- & {\color{native}$\blacksquare$} & -- \\
+Concentrated liquidity
+& {\color{uclbright}$\blacksquare$} & {\color{uclbright}$\blacksquare$} & -- & -- & -- & {\color{uclbright}$\blacksquare$} & -- \\
+StableSwap families
+& {\color{stable}$\blacksquare$} & -- & {\color{stable}$\blacksquare$} & -- & {\color{stable}$\blacksquare$} & {\color{stable}$\blacksquare$} & -- \\
+Weighted pools
+& {\color{imported}$\blacksquare$} & -- & -- & {\color{imported}$\blacksquare$} & {\color{imported}$\blacksquare$} & {\color{imported}$\blacksquare$} & -- \\
+V4 singleton
+& {\color{accent}$\blacksquare$} & {\color{accent}$\blacksquare$} & -- & -- & -- & {\color{accent}$\blacksquare$} & {\color{accent}$\square$} \\
+\bottomrule
+\end{tabular}
+\end{center}
 \vspace{0.25cm}
-{\small Estimates include protocol families whose balances, fees, and pricing state can be independently validated.\par}
+\begin{columns}[T]
+\begin{column}{0.68\textwidth}
+{\small The common object is the state immediately before execution. The fields required to recover that state vary with the pricing rule.\par}
+\end{column}
+\begin{column}{0.27\textwidth}
+{\scriptsize\color{muted}{\color{ink}$\blacksquare$} required state\\[0.25em]{\color{accent}$\square$} hooks outside comparison\par}
+\end{column}
+\end{columns}
 \end{frame}
 
 % VISUAL-FUNCTION: compulsory V1 intermediation | two-leg trace pending authentic transaction rows | establish imposed ETH routing from observables
@@ -160,38 +179,29 @@
 \end{columns}
 \end{frame}
 
-% VISUAL-FUNCTION: observation and response clocks | list pending exact-horizon diagram | separate aggregation from elapsed-time links
+% VISUAL-FUNCTION: observation and response clocks | daily-weekly-exact horizon diagram | separate aggregation from elapsed-time links
+% EVIDENCE-STATUS: conceptual design contract; no empirical estimate or fitted horizon result.
+% EVIDENCE-COMMIT: 11a03f5dac033751742a24ca5fdf61e444c5853d
+% EVIDENCE-SOURCES: deck/assets/exact-horizon-diagram.tex;
+% docs/specification-lock.json; docs/research-workflow.md.
 \begin{frame}{A7. Daily and weekly frequencies answer different questions}
-\begin{enumerate}
-\item \textbf{Primary panel}\hfill day observations; date fixed effects
-\item \textbf{Calendar sensitivity}\hfill day observations; week and weekday fixed effects
-\item \textbf{Aggregation robustness}\hfill complete weeks; week fixed effects
-\item \textbf{Transition series}\hfill exact 1-, 7-, 30-, and 120-day links; HAC inference
-\end{enumerate}
-\vspace{0.65cm}
-{\small Weekly ratios are formed from weekly sums; results are reported for weeks ending on each day of the week.\par}
+\centering
+\resizebox{0.965\textwidth}{!}{\input{assets/exact-horizon-diagram.tex}}\par
+\vspace{0.10cm}
+{\small Missing target dates remain missing: row shifts and calendar months do not substitute for exact calendar links.\par}
 \end{frame}
 
-% VISUAL-FUNCTION: route weights | paired formulas pending equal-versus-value-width routes | distinguish frequency from economic scale
+% VISUAL-FUNCTION: route weights | paired route-width small multiples | distinguish frequency from supported economic scale
+% EVIDENCE-STATUS: conceptual measurement contract; route widths encode no empirical value.
+% EVIDENCE-COMMIT: 11a03f5dac033751742a24ca5fdf61e444c5853d
+% EVIDENCE-SOURCES: deck/assets/count-value-route-widths.tex;
+% docs/specification-lock.json; docs/paper-spine.md;
+% docs/finding-intermediation-transition.md.
 \begin{frame}{A8. Count and value define separate dominance margins}
-\begin{columns}[T]
-\begin{column}{0.46\textwidth}
-\textbf{Count-weighted share}
-\[
-S^{N}_{k,t}=\frac{N^I_{k,t}}{\sum_j N^I_{j,t}}
-\]
-Each reconstructed route carries one unit of weight.
-\end{column}
-\begin{column}{0.46\textwidth}
-\textbf{Value-weighted share}
-\[
-S^{V}_{k,t}=\frac{\mathrm{Vol}^I_{k,t}}{\sum_j \mathrm{Vol}^I_{j,t}}
-\]
-Each route carries reliably priced dollar value on common support.
-\end{column}
-\end{columns}
-\vspace{0.75cm}
-{\small Differences between count and value shares may reflect trade size, route structure, or the mix of intermediary assets.\par}
+\centering
+\resizebox{0.965\textwidth}{!}{\input{assets/count-value-route-widths.tex}}\par
+\vspace{0.16cm}
+{\small Both panels contain the same routes. Line widths are illustrative, and value weighting applies only on the stated valuation-support band.\par}
 \end{frame}
 
 % VISUAL-FUNCTION: intermediary excess use | paired margin formulas pending zero-centered difference plot | separate vehicle demand from endpoint demand
@@ -216,48 +226,44 @@ How often asset $k$ is what traders buy or sell.
 {\large\color{ucldark}\bfseries Excess use compares intermediation with endpoint demand on the same support.\par}
 \end{frame}
 
-% VISUAL-FUNCTION: liquidity quantities | definitions pending labelled pool cross-section | prevent capital, inventory, depth, and quote quality from collapsing
-\begin{frame}{A10. Capital, inventory, and depth are distinct quantities}
-\begin{columns}[T]
-\begin{column}{0.47\textwidth}
-\textbf{Deposited capital}\par Funds committed by liquidity providers, established from independently valued holdings or audited claims.
-\vspace{0.45cm}
-\textbf{Inventory}\par Exact token amounts held by the pool.
-\end{column}
-\begin{column}{0.47\textwidth}
-\textbf{Executable depth}\par Amount that can be traded for a given price impact under current pool state.
-\vspace{0.45cm}
-\textbf{Quote quality}\par Execution price for trade size $q$ along feasible routes.
-\end{column}
-\end{columns}
-\vspace{0.65cm}
-{\small Capital enters only where holdings and ownership are independently validated; execution depth comes from the pool's pricing function.\par}
+% VISUAL-FUNCTION: liquidity quantities | labelled pool-state and price-response cross-section | prevent capital, inventory, depth, and quote quality from collapsing
+% EVIDENCE-STATUS: conceptual institutional background; no empirical estimate.
+% EVIDENCE-COMMIT: 525c67a7f672593fe07e54cf5ccb6d08910e9b04
+% EVIDENCE-SOURCES: deck/assets/liquidity-quantity-cross-section.tex;
+% src/ddvc/liquidity.py; src/ddvc/capital_contracts.py.
+\begin{frame}{A10. Capital, inventory, and depth are different objects}
+\centering
+\resizebox{0.965\textwidth}{!}{\input{assets/liquidity-quantity-cross-section.tex}}\par
+\vspace{0.12cm}
+{\small Capital is a stock. Depth and quotes depend on trade size and current pool state.\par}
 \end{frame}
 
-% VISUAL-FUNCTION: opportunity set versus conditional choice | concepts pending multiplex network | separate feasible paths from selected routes
-\begin{frame}{A11. Integration changes both reach and route choice}
-\begin{columns}[T]
-\begin{column}{0.47\textwidth}
-\textbf{Available trading opportunities}
-\begin{itemize}
-\item active venues
-\item feasible paths
-\item available intermediary assets
-\end{itemize}
-\end{column}
-\begin{column}{0.47\textwidth}
-\textbf{Route choice conditional on availability}
-\begin{itemize}
-\item direct versus intermediated
-\item single- versus cross-venue
-\item sequential versus split routing
-\end{itemize}
-\end{column}
-\end{columns}
-\vspace{0.7cm}
+% VISUAL-FUNCTION: opportunity set versus realised composition | multiplex network and route-class small multiples | separate feasible paths from selected routes
+% EVIDENCE-STATUS: conceptual institutional background; no empirical estimate.
+% EVIDENCE-COMMIT: 525c67a7f672593fe07e54cf5ccb6d08910e9b04
+% EVIDENCE-SOURCES: deck/assets/integration-multiplex-network.tex;
+% docs/research-workflow.md; docs/specification-lock.json.
+\begin{frame}{A11. Integration changes the routes that can be chosen}
+\centering
+\resizebox{0.94\textwidth}{!}{\input{assets/integration-multiplex-network.tex}}\par
+\vspace{0.10cm}
+{\small The analysis therefore separates opportunity-set reach from the composition of realised routes.\par}
+\end{frame}
+
+% VISUAL-FUNCTION: realised venue scope by intermediary type | count/value alluvial | show that integration and vehicle composition are distinct observed margins
+% EVIDENCE-STATUS: evolving route composition; descriptive selected-route cross-section.
+% EVIDENCE-COMMIT: 2ffbce06302468b5ee6cb6537989c28078a88603
+% EVIDENCE-SOURCES: output/figures/experiments/integration_vehicle_alluvial.pdf;
+% output/exhibits/intermediation_by_type.jsonl; docs/reviews/deck-visual-experiments.md.
+% INPUT-SHA256: 539a9feb5712a899cc901023eea8e62f56bf6015a23af8c6e735e981b874e12a
+\begin{frame}{A11b. Venue scope and vehicle type differ in 2026}
+\vfill
 \begin{center}
-{\large We test whether stablecoin intermediation rises more when additional venues and routes are available, conditional on endpoint pair and date.\par}
+\includegraphics[width=0.93\textwidth,height=0.66\textheight,keepaspectratio]{../output/figures/experiments/integration_vehicle_alluvial.pdf}
 \end{center}
+\vspace{-0.12cm}
+{\scriptsize The ribbons classify realised intermediation jointly by venue scope and intermediary type. They describe selected routes; they do not identify an effect of integration or the unchosen opportunity set.\par}
+\vfill
 \end{frame}
 
 % VISUAL-FUNCTION: intellectual provenance | grouped reference list | support vehicle-currency and market-structure framing

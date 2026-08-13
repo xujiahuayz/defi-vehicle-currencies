@@ -2,6 +2,8 @@
 
 The Nanyang Blockchain Conference slot is 30 minutes including questions. The canonical deck therefore targets 12–13 core slides and a curated appendix of 13–17 slides. The deck is one live source tree under `deck/`; git history is the archive, and no second deck survives after replacement.
 
+Deck-craft calibration comes from the current review guide at `docs/reviews/deck-venue-exemplars.md`; paper-level scientific and venue claims remain governed by `docs/literature-audit.md`.
+
 ## Venue benchmark
 
 The visual and language benchmark is the five saved full finance/economics presentations in the literature corpus. The modern Terra author deck and the Bouvard and Liao discussions use a median of roughly 40–55 visible words per page; the old Brunnermeier–Pedersen deck is useful for intellectual sequencing but is a negative density benchmark. The live deck uses 11-point Beamer, no exhibit text below 10–11 points, one empirical object per slide, and at most three short explanatory bullets around a chart or diagram. Functional titles state a topic or result directly. Poetic titles, symmetric status dashboards, visible workflow labels, grey italic exhibit notes and full-slide reference lists are not part of the design.

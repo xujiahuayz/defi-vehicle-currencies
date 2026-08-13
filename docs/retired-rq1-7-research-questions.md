@@ -1,8 +1,10 @@
-# Research Questions Memo
+# Retired RQ1–7 research-questions memo
+
+**Status:** Retired design record. This July RQ1–7 framing is preserved for history, but it is not a current agent route, estimator specification, findings record, or deliverable source. Current execution follows `docs/specification-lock.json`, `docs/findings-freeze.md`, and `docs/research-workflow.md`.
 
 Generated 2026-07-08. Purpose: settle research questions before model, propositions, outline, or evidence hierarchy.
 
-Update 2026-07-08: the workflow is now empirical-first. Use `output/empirical_rq_design_memo.md` as the companion registry for empirical experiments, regression families, and empirical-finance style templates. Theory is optional and should be added only after the empirical design is coherent.
+Update 2026-07-08: the workflow moved to empirical-first. The companion historical design is preserved in [`docs/retired-rq1-7-empirical-design.md`](retired-rq1-7-empirical-design.md).
 
 ## Ground Rule
 

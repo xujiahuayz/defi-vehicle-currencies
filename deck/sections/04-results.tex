@@ -6,29 +6,29 @@
 }{}
 
 % EVIDENCE-STATUS: evolving route result; current certified route release
-% EVIDENCE-COMMIT: 6dd7897
-% EVIDENCE-SOURCES: output/figures/vehicle_type_shares_quarterly.pdf; output/exhibits/intermediation_by_type.jsonl; docs/findings-freeze.md
-% VISUAL-FUNCTION: non-monotone vehicle rotation | quarterly count/value line panels | establish the path while separating calendar description from design attribution
-\begin{frame}{The vehicle mix rotates; it does not trend monotonically}
+% EVIDENCE-COMMIT: 2ffbce0
+% EVIDENCE-SOURCES: output/figures/experiments/annual_vehicle_composition_bands.pdf; output/exhibits/intermediation_by_type.jsonl; docs/findings-freeze.md
+% VISUAL-FUNCTION: non-monotone realised vehicle rotation | annual native/stable lead comparison separated by count/value | expose the value lead-loss-retake path without implying treatment
+\begin{frame}{Stablecoins regain the lead in routed value}
 \vspace{-0.05cm}
 \begin{center}
-\includegraphics[width=0.94\textwidth,height=0.69\textheight,keepaspectratio]{../output/figures/vehicle_type_shares_quarterly.pdf}
+\includegraphics[width=0.94\textwidth,height=0.69\textheight,keepaspectratio]{../output/figures/experiments/annual_vehicle_composition_bands.pdf}
 \end{center}
 \vspace{-0.18cm}
-{\scriptsize\color{muted}Calendar quarter describes when the mix changes; it does not identify which contemporaneous routing design caused the change.}
+{\scriptsize\color{muted}Annual shares of observed vehicle routes; the figure does not attribute the changes to protocol design.}
 \end{frame}
 
 % EVIDENCE-STATUS: evolving route decomposition
 % EVIDENCE-COMMIT: 6dd7897
 % EVIDENCE-SOURCES: output/figures/vehicle_excess_use_transition.pdf; output/exhibits/vehicle_excess_use.jsonl; output/exhibits/vehicle_excess_use_transition.jsonl; docs/findings-freeze.md
 % VISUAL-FUNCTION: candidate-level excess-use change | paired count/value dumbbells | identify USDT rather than a pooled stablecoin effect
-\begin{frame}{USDT is the 2024--2026 transition margin}
+\begin{frame}{USDT drives the post-2024 rise in stablecoin intermediation}
 \vspace{-0.08cm}
 \begin{center}
 \includegraphics[width=0.93\textwidth,height=0.67\textheight,keepaspectratio]{../output/figures/vehicle_excess_use_transition.pdf}
 \end{center}
 \vspace{-0.16cm}
-{\scriptsize USDC begins above parity and moves little. USDT crosses parity on common-support value; the intermediary-minus-endpoint share gap is the inferential outcome, while the ratio is its relative-intensity translation.}
+{\scriptsize The value panel retains routes whose source, intermediary, and destination dollar values agree within 20\%. Parity means that intermediary and endpoint shares are equal. USDT crosses parity by routed value; USDC remains above it in both years.}
 \end{frame}
 
 % EVIDENCE-STATUS: evolving route result; integration remains a selected, descriptive stratum
@@ -41,14 +41,14 @@
 \includegraphics[width=0.93\textwidth,height=0.67\textheight,keepaspectratio]{../output/figures/integration_rotation_slopes.pdf}
 \end{center}
 \vspace{-0.16cm}
-{\scriptsize The stable share rises within both route strata. The larger cross-venue change rejects venue mix as a complete composition account, but selected route strata do not identify a causal effect of integration.}
+{\scriptsize Stablecoin intermediation rises in both groups, and more in cross-venue routes. Changing venue mix alone cannot explain the aggregate increase. Because route type is chosen, this comparison is descriptive.}
 \end{frame}
 
 % EVIDENCE-STATUS: diagnostic displacement gradient; not a persistence estimate
 % EVIDENCE-COMMIT: 3873fca
 % EVIDENCE-SOURCES: output/exhibits/provisional_results_deck_values.tex; docs/findings-freeze.md
 % VISUAL-FUNCTION: challenger and incumbent response | coefficient table pending difference plot | expose direction, uncertainty, and risk-set limitation
-\begin{frame}{Challenger displacement gradients are strong}
+\begin{frame}{Cheaper challengers gain share as incumbents lose it}
 \vspace{0.18cm}
 {\small
 \begin{tabular}{@{}p{0.43\textwidth}rrr@{}}
@@ -65,8 +65,7 @@ Challenger overtakes incumbent & \OvertakeCoef & \OvertakeSE & \OvertakeT \\
 {\small $N=\DiagnosticN$ pair-candidate observations; \DiagnosticClusters\ date clusters. Exact alternating-projection absorption and CR1 rank correction.}
 \vspace{0.36cm}
 \begin{beamercolorbox}[sep=0.22cm,wd=\textwidth]{block body}
-\textbf{What it says:} the sparse challenger panel contains strong displacement gradients.\\[0.08cm]
-\textbf{What it does not say:} these gradients do not identify transition, routing efficiency, or persistence because the risk set does not yet condition on fixed feasible alternatives.
+The estimates are large in the small set of pair-candidate observations we can follow. They remain descriptive because the panel does not compare each pair against a fixed set of feasible routes.
 \end{beamercolorbox}
 \end{frame}
 
@@ -74,7 +73,7 @@ Challenger overtakes incumbent & \OvertakeCoef & \OvertakeSE & \OvertakeT \\
 % EVIDENCE-COMMIT: a587f8b
 % EVIDENCE-SOURCES: output/exhibits/architecture_transition_support.jsonl; output/exhibits/architecture_transition_deck_values.tex
 % VISUAL-FUNCTION: transition-window support | threshold-by-status composition bars | show why the architecture contrast is not identified
-\begin{frame}{Architecture exposure lacks isolated substitution events}
+\begin{frame}{Current architecture changes do not provide a clean before--after comparison}
 \vspace{0.05cm}
 \IfFileExists{../output/exhibits/architecture_transition_deck_values.tex}{%
 \input{../output/exhibits/architecture_transition_deck_values.tex}%
@@ -92,9 +91,8 @@ Immediate exit contrast & \ArchExitImmediateFive & \ArchExitImmediateTen & \Arch
 \bottomrule
 \end{tabular}}
 \par\vspace{0.10cm}
-\evidencekicker{What the comparison establishes}
-{\small Zero clean substitution windows. Realised V4 share is endogenous, the pair-week centering is mechanical when shares sum to one, and role appearance/disappearance magnitudes are selected lifecycle endpoints. The design blocks an effect instead of manufacturing one.}
+{\small At every threshold, entries and exits coincide with changes in the comparison set or with the appearance and disappearance of vehicle roles. These windows therefore cannot separate an architecture effect from changes in which pairs and vehicles remain active.}
 \vspace{0.10cm}
 
-{\footnotesize\color{muted}The identifying comparison requires raw focal share on an ex ante feasible risk set, with exact-state reversals separating design response from calendar coincidence.\par}
+{\footnotesize\color{muted}A before--after estimate requires the same feasible alternatives before and after the architecture change.\par}
 \end{frame}

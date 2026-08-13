@@ -3,7 +3,11 @@ from __future__ import annotations
 import pandas as pd
 import pytest
 
-from ddvc.route_replay import build_route_replay_manifest, render_route_replay_html
+from ddvc.route_replay import (
+    build_route_replay_manifest,
+    render_route_replay_html,
+    render_route_replay_pdf,
+)
 
 
 def _legs() -> pd.DataFrame:
@@ -68,7 +72,7 @@ def test_replay_is_selectable_progressive_and_print_complete() -> None:
     assert "Reveal next leg" in page
     assert "@media print" in page
     assert "partition_sha256" not in page
-    assert "fluid" in page and "uniswap_v4" in page
+    assert "Fluid" in page and "Uniswap V4" in page
 
 
 def test_manifest_rejects_a_missing_second_leg() -> None:
@@ -80,3 +84,13 @@ def test_manifest_rejects_a_missing_second_leg() -> None:
             component_id=0,
             partition_sha256="f" * 64,
         )
+
+
+def test_static_replay_is_a_vector_pdf(tmp_path) -> None:
+    manifest = build_route_replay_manifest(
+        _legs(), day="20260110", tx_hash="0xabc", component_id=0, partition_sha256="f" * 64
+    )
+    output = tmp_path / "route.pdf"
+    render_route_replay_pdf(manifest, output)
+    assert output.read_bytes().startswith(b"%PDF")
+    assert output.stat().st_size > 1_000

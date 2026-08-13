@@ -1,12 +1,12 @@
 # Literature Workspace
 
-This folder is intentionally flat. Keep the durable literature record in BibTeX so the paper can compile from a small curated bibliography rather than a large omnibus file.
+Keep the curated citation record compact, while separating source payloads from review authority. `papers/` holds local, gitignored source PDFs and inspected non-text companions; `text/` holds tracked searchable extracts plus the checksum index; `source-notes/` records source-family dispositions; `reviews/` holds explicitly historical synthesis digests. Current individual specialist cards and their index live in `docs/reviews/`, and the reconciled current ledger lives in `docs/literature-audit.md`.
 
 Use `source-admission.json` as the source of truth for what may enter the curated corpus. Every source needs an explicit decision before acquisition, including peer-reviewed articles; a BibTeX entry type is metadata, not evidence of publication quality. Use `vehicle-currencies.bib` as the source of truth for citation metadata after admission, and `pdf-sources.json` only as the fetch manifest for admitted BibTeX keys: publisher PDF endpoints, public manuscript PDFs, authentication labels, and fallback routes for `scripts/fetch_literature.py`.
 
 Use `use-contracts.json` as the executable bridge from completed evidence cards to live manuscript language. A claim-use contract records one adjudicated source boundary and the prohibited manuscript pattern that would violate it. A vocabulary contract applies only to a named term and a configured finance/economics publication class. Methodological silence never becomes a prohibition: a method is barred only by an explicit source prohibition recorded in a claim-use contract. Vocabulary silence may bar a configured term once the declared corpus-coverage floor is met.
 
-Do not commit copyrighted PDFs or other files that cannot be redistributed. Keep private PDFs local and ignored; cite papers through DOI, URL, journal metadata, or BibTeX notes instead.
+Do not commit copyrighted PDFs or other files that cannot be redistributed. Keep private PDFs local and ignored; cite papers through DOI, URL, journal metadata, or BibTeX notes instead. Do not place review cards or digests inside `papers/`: that subtree is the source-payload boundary, not an agent-memory store.
 
 Suggested filename pattern:
 

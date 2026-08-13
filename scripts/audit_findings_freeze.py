@@ -333,6 +333,15 @@ LITERATURE_CARD_EVIDENCE_FIELDS = frozenset(
         "first reader",
     }
 )
+LITERATURE_FINDING_SELLING_MARKERS = (
+    "## Finding-selling calibration",
+    "Literal evidence/design",
+    "Strongest headline",
+    "Adjacent qualification",
+    "Auxiliary evidence",
+    "Residual stretch",
+    "Reusable move",
+)
 RENT_V2_PANEL = ROOT / "data" / "processed" / "rent_incidence_v2_pool_day.parquet"
 GRAPH_FIELDS = ("active_node", "parent_loop", "next_edge", "prose_node")
 CAPITAL_CONTRACT_COLUMNS = (
@@ -1309,6 +1318,9 @@ def validate_literature_audit(
     }
     claim_violations: list[str] = []
     vocabulary_violations: list[str] = []
+    finding_selling_complete = all(
+        marker in text for marker in LITERATURE_FINDING_SELLING_MARKERS
+    )
     policy_valid = True
     policy_detail = "not-configured"
     if use_contracts is not None:
@@ -1350,6 +1362,7 @@ def validate_literature_audit(
         and verified_citations == cited_keys
         and read_venues == venue_cards
         and independent == central
+        and finding_selling_complete
         and policy_valid
         and not claim_violations
         and not vocabulary_violations
@@ -1361,6 +1374,7 @@ def validate_literature_audit(
         f"cited={len(verified_citations)}/{len(cited_keys)}; "
         f"venue={len(read_venues)}/{len(venue_cards)}; "
         f"independent={len(independent)}/{len(central)}; "
+        f"finding-selling={'complete' if finding_selling_complete else 'incomplete'}; "
         f"policy={policy_detail if not policy_valid else 'valid'}; "
         f"claim-use={claim_violations or 'none'}; "
         f"vocabulary={vocabulary_violations or 'none'}; "

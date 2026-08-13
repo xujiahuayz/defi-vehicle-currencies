@@ -39,14 +39,21 @@ through" — not your judgement of it.
    data. Route-only estimators continue while unrelated exact-state branches are
    red. If the ledger shows the previous iteration was mid-way through a unit,
    continue only when that unit still passes this materiality test.
-6. Do the work properly and finish it. Build the real artifact, from real data,
+6. Before adding a script, artifact, rule, test, memo, or queue item, search for
+   its existing canonical owner. Amend and consolidate there, remove or mark
+   superseded duplicates, and add a new object only if the existing one cannot
+   carry the work. Do not make a second consecutive engineering-only iteration
+   unless the first exposed a hard failure or a defect that can change a claim.
+   Otherwise this iteration must advance a claim, estimand, exhibit, rival test,
+   interpretation, deck frame, or paper section.
+7. Do the work properly and finish it. Build the real artifact, from real data,
    through the project's own owners and scripts.
-7. Run the relevant tests plus the freeze audit again. Commit with a real
+8. Run the relevant tests plus the freeze audit again. Commit with a real
    message describing what closed.
-8. Append one entry to `logs/grind-ledger.md`: date, the check you targeted, what
+9. Append one entry to `logs/grind-ledger.md`: date, the check you targeted, what
    you did, the commit hash, the new blocking count, and anything the next
    iteration must know. Commit that too.
-9. Leave the repo publishable (see **Git hygiene** below), then exit.
+10. Leave the repo publishable (see **Git hygiene** below), then exit.
 
 If a unit is genuinely too large for one iteration, split it, land the first
 part in a committed and tested state, and record the exact resumption point in
@@ -104,7 +111,7 @@ only thing you owe is a clean, small, honest history:
 - **Respect the project's locked decisions and notation.** They are in the glotl
   brain at `~/glotl/projects/defi-vehicle-currencies.md` under "Locked decisions"
   and "Learnings". Read them before touching prose, notation, or estimands.
-- **Writing follows the live prose gate.** While node P is closed, develop the economic argument, admitted evidence, unresolved alternatives, and section logic in `docs/paper-spine.md`; leave `paper/` unchanged. Once P opens, use cards only to locate the closest analogues, reread the named raw published JFE passages, and rewrite affected sections from the spine at the level of economic argument, paragraph sequence, transitions, and sentence function. Word substitution, vocabulary lint, stored-card synthesis, and a generic rhetorical stencil never count as a prose pass.
+- **Writing follows the live tiered prose gate.** Before the full node P opens, write publication-standard manuscript prose for the question, setting, mechanisms, and certified route-only facts; keep final cost, turnover, persistence, LP-return, and other exact-state coefficient sentences outside the paper until their own evidence locks. Use `docs/paper-spine.md` for unresolved alternatives and data-dependent claims. At every tier, cards only locate the closest analogues: reread the named raw published JFE passages and rewrite the economic argument, paragraph sequence, transitions, and sentence functions. Word substitution, vocabulary lint, stored-card synthesis, and a generic rhetorical stencil never count as a prose pass.
 - **The deck is always a deliverable.** It remains presentation-ready after
   every iteration even while estimates evolve. Scientific status, evidence
   commit, generation identity, and repository paths live in audited source
@@ -119,9 +126,12 @@ only thing you owe is a clean, small, honest history:
   appearance and disappearance, but these margins remain endogenous too. A
   design-reversal claim needs independently measured availability or exact
   cost/depth state.
-- **Decisions:** when a judgement call blocks you, take the conservative option
-  (the one that preserves the estimand and fails closed), record it in the ledger
-  under `DECISION:`, and keep going. Do not stop to ask.
+- **Decisions:** when a judgement call blocks you, preserve mathematical and
+  inferential validity but do not default to the weakest claim. Calibrate the
+  claim and its adjacent caveat directly against the closest published finance
+  papers, then record `promote`, `narrow`, `park`, or `reject` under `DECISION:`
+  and keep going. A further critic round requires a new objection that can
+  materially change that decision; generic residual uncertainty does not.
 - **Escalation:** if something is genuinely unsafe to decide alone — deleting
   data, spending money, anything outward-facing — do NOT do it. Record it in the
   ledger under `NEEDS-JAVA:` and work on a different blocking check instead.
