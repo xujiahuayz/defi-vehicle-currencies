@@ -18,19 +18,24 @@
 
 An automated market maker replaces a limit order book with a pool of tokens supplied by liquidity providers. A smart contract maps the pool's current state and the trader's input into an output, charging a fee according to the protocol's rule. Several pools may trade the same pair on different protocols or at different fee tiers, and pools that share a token can form an indirect path. A trader can exchange one asset for another in a single pool, split the order across direct pools, or pass through an intermediary when the indirect path offers better execution. \citet{LeharParlour2024Uniswap} describe the constant-product form and the economics of liquidity supply in this market.
 
-Routers make these alternatives usable in one transaction. For an exchange from asset $a$ to asset $b$, a router can call a direct pool, divide the order among direct pools, or execute $a\rightarrow k\rightarrow b$ through an intermediary $k$. The calls settle atomically: all legs succeed or the transaction reverts. Atomic settlement removes unmatched-leg risk, but fees, price impact, gas, available pools, and the state seen by the router still vary across paths.
+Routers make these alternatives usable in one transaction. For an exchange from input asset $i$ to output asset $o$, a router can call a direct pool, divide the order among direct pools, or execute $i\rightarrow k\rightarrow o$ through an intermediary $k$. The calls settle atomically: all legs succeed or the transaction reverts. Atomic settlement removes unmatched-leg risk, but fees, price impact, gas, available pools, and the state seen by the router still vary across paths.
 
 Blockchain records provide pool-level calls. Recovering an economic route requires joining them by directed token flow because one transaction can contain unrelated conversions and one conversion can contain parallel legs or a sequential path spanning several venues. A leg joins another when its output supplies the next leg's input, and each connected source-to-destination component forms one route. Parallel calls from the same source to the same destination form a direct split. A sequential route instead receives and pays out an internal token before reaching the destination.
 
 One transaction on January 10, 2026 illustrates the difference between a transaction instruction and its component trades. A public explorer summarizes the instruction as a 460,000 PYUSD--USDe swap executed through 0x.\footnote{Transaction \texttt{0xbda1d07f17c503b5a9c8117c5d1383472006af8a9e22aa4e5e30804b9bf67ad9}.} Within that transaction, PYUSD is transferred to the market maker and USDC enters a connected sequence of pool swaps. The sequence sends 459,929.81 USDC to a Fluid pool, receives 460,331.05 USDT, and exchanges the USDT through Uniswap v4 for 460,104.28 USDe. Thus, the transaction begins with PYUSD, while the component observed in the pool events exchanges USDC for USDe through USDT. Our route measure treats USDC and USDe as the endpoints of this component and USDT as its vehicle. We apply the same flow decomposition to every transaction. The notation below formalizes this observed component; evaluating the availability and cost of a direct USDC--USDe route additionally requires pre-transaction market state.
 % output/exhibits/route_replay.json; data/unified/20260110.parquet; Blockscout transaction page retrieved 2026-08-14
 
-Write $t$ for a state index, $\mathcal{A}_{t}$ for the assets tradable at $t$, $\mathcal{P}_{t}$ for the pools live at $t$, and $\mathcal{V}$ for the priced venues, with $v(p) \in \mathcal{V}$ the venue of pool $p$ and $S_{p,t}$ the reconstructed state of $p$ at $t$. A route $r$ carries an ordered pool sequence $(p_{1},\ldots,p_{L})$ of length $L(r)$, an endpoint pair $(a,b)$ with $a$ paid in and $b$ received, an intermediary set $\mathcal{M}(r) = \{k_{1},\ldots,k_{L-1}\}$, and a size $s$ measured in dollars at the input token's price. Let $q_{p}(a \to b,\, x;\, S_{p,t})$ denote the venue's own exact-input quote, the units of $b$ paid out for $x$ units of $a$ at pool $p$ in state $S_{p,t}$. The quoted output of the route composes its legs,
+Write $\mathcal{A}_{t}$ for the assets tradable on day $t$, $\mathcal{P}_{t}$ for the pools live on that day, and $\mathcal{V}$ for the priced venues, with $v(p) \in \mathcal{V}$ the venue of pool $p$ and $\chi_{p,t}$ its reconstructed pre-transaction state. A route $r$ carries an ordered pool sequence $(p_{1},\ldots,p_{m(r)})$ and token sequence $(k_0,\ldots,k_{m(r)})$, where $k_0=i$ is the input and $k_{m(r)}=o$ is the output. The dollar input notional $q$ corresponds to $\Delta_i(q,t)=q/P_{i,t}$ units of the input token. Let $Q_p(i\to j,\Delta_i;\chi_{p,t})$ denote the units of token $j$ returned by pool $p$ for an exact input of $\Delta_i$ units of token $i$. Composing the pool quotes recursively gives the route's token output and its dollar value,
 \begin{equation}
 \label{eq:route}
-Q_{r}(s,t) \;=\; q_{p_{L}}\!\left(k_{L-1} \to b,\; \cdots\, q_{p_{1}}\!\left(a \to k_{1},\, s;\, S_{p_{1},t}\right) \cdots;\; S_{p_{L},t}\right),
+\begin{aligned}
+\Delta_{k_h}&=Q_{p_h}\!\left(k_{h-1}\to k_h,\Delta_{k_{h-1}};\chi_{p_h,t}\right),
+&&h=1,\ldots,m(r),\\
+Q_r(q,t)&=\Delta_o,
+&O_r(q,t)&=P_{o,t}Q_r(q,t).
+\end{aligned}
 \end{equation}
-and Section~\ref{sec:setting:pricing} gives the four functional forms $q_{p}$ takes across the priced venues. This notation describes both the route that executed and the hypothetical routes introduced below. Only the executed route is observed without reconstructing market state.
+and Section~\ref{sec:setting:pricing} gives the four functional forms $Q_p$ takes across the priced venues. Keeping $q$ in dollars while $Q_p$ accepts token units prevents a dollar notional from being passed directly into a pool invariant. This notation describes both the route that executed and the hypothetical routes introduced below. Only the executed route is observed without reconstructing market state.
 
 The observed route in \eqref{eq:route} maps the classical volume--cost mechanism into an automated market. Using a vehicle expands its two bilateral markets, lowers their costs, and can validate the original choice \citep{Krugman1980VehicleCurrencies}. \citet{KiyotakiWright1989MoneyMedium} make acceptability an equilibrium object: an agent accepts a good for indirect exchange when its marketability, generated by others' trading strategies and inventories, compensates for its storage cost. \citet{DowdGreenaway1993CurrencyCompetition} introduce fixed user-side costs of learning, reckoning, requoting prices and accounting in a new currency. On-chain route selection can likewise reflect persistent software defaults, venue access, and liquidity placement. Automated execution removes human dealer relationships but leaves both volume--cost feedback and software-mediated coordination available.
 
@@ -70,14 +75,14 @@ where $\mathcal{R}^{(2)}_{t}$ contains exact two-leg routes, each with one obser
 Graph position describes the paths available through an asset; vehicle dominance describes the realised routes that use it. Betweenness centrality is
 \begin{equation}
 \label{eq:role}
-\beta_{k,t} \;=\; \sum_{a \neq k \neq b} \frac{\sigma_{ab,t}(k)}{\sigma_{ab,t}},
+\beta_{k,t} \;=\; \sum_{i \neq k \neq o} \frac{\sigma_{io,t}(k)}{\sigma_{io,t}},
 \end{equation}
-where $\sigma_{ab,t}(k)$ of the $\sigma_{ab,t}$ shortest paths joining $a$ and $b$ pass through $k$.
+where $\sigma_{io,t}(k)$ of the $\sigma_{io,t}$ shortest paths joining $i$ and $o$ pass through $k$.
 \end{definition}
 
 \begin{definition}[Round trip]
 \label{def:roundtrip}
-A route is a \emph{round trip} when its first input token equals its last output token, $a = b$, so that the route returns the trader to the asset it started from.
+A route is a \emph{round trip} when its first input token equals its last output token, $i=o$, so that the route returns the trader to the asset it started from.
 \end{definition}
 
 \begin{definition}[Asset types]
@@ -151,10 +156,7 @@ Round trips, share of multi-leg routes by value & 21.7\% \\
 % output/exhibits/round_trip_share_by_day.jsonl, median of 79 sampled days
 \bottomrule
 \end{tabular}
-\par\vspace{6pt}
-\begin{minipage}{0.90\textwidth}
-\footnotesize\raggedright \emph{Notes.} Calendar partitions are UTC dates in the full eight-deployment panel from 11 February 2020 through 30 June 2026. Raw swaps and usable legs use the full panel. Daily route statistics and round-trip shares use 79 sampled dates from 1 June 2020 through 27 April 2026. A multi-leg route traverses more than one pool; a round trip ends in the token with which it began. Round-trip shares are formed among multi-leg routes.
-\end{minipage}
+\exhibitnote{Calendar partitions are UTC dates in the full eight-deployment panel from 11 February 2020 through 30 June 2026. Raw swaps and usable legs use the full panel. Daily route statistics and round-trip shares use 79 sampled dates from 1 June 2020 through 27 April 2026. A multi-leg route traverses more than one pool; a round trip ends in the token with which it began. Round-trip shares are formed among multi-leg routes.}
 \end{table}
 
 Transactions and contract-state changes are publicly observable \citep{Schar2021DeFi}, but an economic route must still be reconstructed across pool events, venues, and token units. The reconstruction identifies the executed route and its calling contract, while generally leaving the route-selecting party or software anonymous. On a 2024 snapshot of 74,323 swaps, 241 distinct senders appear, and a registry of the ten largest accounts for 67.7\% of those swaps. By a 2025 snapshot, 397 senders appear across 130,282 swaps and the same registry covers 11.8\%. We therefore report route-level results without attributing them to routers.
@@ -163,34 +165,34 @@ Transactions and contract-state changes are publicly observable \citep{Schar2021
 \subsection{Pricing the counterfactual}
 \label{sec:setting:pricing}
 
-We construct two counterfactual benchmarks at a common reconstructed settlement state and trade size. The direct benchmark is the best single-hop execution between the observed endpoints. The vehicle benchmark is the best two-hop execution through intermediary $k$, allowing each leg to use its best priced venue,
+We construct two counterfactual benchmarks at a common reconstructed settlement state and dollar input notional $q$. The direct benchmark is the best single-hop execution between the observed endpoints. The vehicle benchmark is the best two-hop execution through intermediary $k$, allowing each leg to use its best priced venue,
 \begin{equation}
 \label{eq:direct}
-Q^{\ast}_{ab}(s,t) \;=\; \max_{p \,\in\, \mathcal{P}_{ab,t}} \; q_{p}\!\left(a \to b,\, s;\, S_{p,t}\right),
+O^{D}_{i,o,q,t} \;=\; P_{o,t}\max_{p\in\mathcal P_{i,o,t}}Q_p\!\left(i\to o,\Delta_i(q,t);\chi_{p,t}\right),
 \end{equation}
 \begin{equation}
 \label{eq:vehicle}
-Q^{k}_{ab}(s,t) \;=\; \max_{p' \,\in\, \mathcal{P}_{kb,t}} \; q_{p'}\!\left(k \to b,\; \max_{p \,\in\, \mathcal{P}_{ak,t}} q_{p}\!\left(a \to k,\, s;\, S_{p,t}\right);\; S_{p',t}\right).
+O^{I}_{i,o,k,q,t} \;=\; P_{o,t}\max_{p'\in\mathcal P_{k,o,t}}Q_{p'}\!\left(k\to o,\max_{p\in\mathcal P_{i,k,t}}Q_p\!\left(i\to k,\Delta_i(q,t);\chi_{p,t}\right);\chi_{p',t}\right).
 \end{equation}
 The vehicle-route shortfall relative to direct execution is
 \begin{equation}
 \label{eq:gap}
-G^{k}_{ab}(s,t) \;=\; \frac{Q^{\ast}_{ab}(s,t) - Q^{k}_{ab}(s,t)}{Q^{\ast}_{ab}(s,t)},
+\Delta C^{D}_{i,o,k,q,t} \;=\; \frac{O^{D}_{i,o,q,t}-O^{I}_{i,o,k,q,t}}{O^{D}_{i,o,q,t}},
 \end{equation}
-reported in basis points as $10^{4}G^{k}_{ab}(s,t)$.
+reported in basis points as $10^{4}\Delta C^{D}_{i,o,k,q,t}$.
 
 \begin{definition}[Cost-dominated route]
 \label{def:dominated}
-A route with endpoints $(a,b)$, intermediary $k$ and size $s$ is \emph{cost dominated} at reconstructed state $t$ when $G^{k}_{ab}(s,t)>0$: the direct benchmark returns more output than the vehicle benchmark before gas.
+A route with endpoints $(i,o)$, intermediary $k$ and dollar input $q$ is \emph{cost dominated} at reconstructed state $t$ when $\Delta C^{D}_{i,o,k,q,t}>0$: the direct benchmark returns more output than the vehicle benchmark before gas.
 \end{definition}
 
-Let $\mathcal G^{D}_{ab}(s,t)$ and $\mathcal G^{I}_{ab,k}(s,t)$ denote the direct and indirect routes' dollar gas expenditures evaluated at the realised transaction's settlement block. Gross and all-in cost-dominance indicators are
+Let $\mathcal G^{D}_{i,o,q,t}$ and $\mathcal G^{I}_{i,o,k,q,t}$ denote the direct and indirect routes' dollar gas expenditures evaluated at the realised transaction's settlement block. Gross and all-in cost-dominance indicators are
 \begin{align}
 \label{eq:dom}
-D^{\mathrm{g}}_{ab,k}(s,t) &\;=\; \mathbf{1}\!\left\{ G^{k}_{ab}(s,t) > 0 \right\}, \\
+D^{\mathrm{g}}_{i,o,k,q,t} &\;=\; \mathbf{1}\!\left\{ \Delta C^{D}_{i,o,k,q,t} > 0 \right\}, \\
 \label{eq:domallin}
-D^{\mathrm{a}}_{ab,k}(s,t) &\;=\; \mathbf{1}\!\left\{ G^{k}_{ab}(s,t) > -\gamma(s,t) \right\}, \qquad
-\gamma(s,t) \;=\; \frac{\mathcal G^{I}_{ab,k}(s,t)-\mathcal G^{D}_{ab}(s,t)}{Q^{\ast}_{ab}(s,t)}.
+D^{\mathrm{a}}_{i,o,k,q,t} &\;=\; \mathbf{1}\!\left\{ \Delta C^{D}_{i,o,k,q,t} > -\gamma_{i,o,k,q,t} \right\}, \qquad
+\gamma_{i,o,k,q,t} \;=\; \frac{\mathcal G^{I}_{i,o,k,q,t}-\mathcal G^{D}_{i,o,q,t}}{O^{D}_{i,o,q,t}}.
 \end{align}
 Each $\mathcal G$ combines gas units calibrated by year, topology, venue sequence and intermediary identity with the transaction's effective gas price and the native asset's dollar price at settlement. The maximisations in \eqref{eq:direct} and \eqref{eq:vehicle} cover the priced venue set. These indicators measure costs at settlement. An interpretation about route choice additionally requires the router's quote time, venue access and any costs outside the observed perimeter. Section~\ref{sec:executability} evaluates those conditions before using the counterfactual to interpret route choice.
 
@@ -213,19 +215,16 @@ Uniswap v3 & concentrated liquidity & none & 0.0000 & 56.02 \\
 % error: docs/venue-coverage-bounds.md, all four direction-by-crossing cells; volume: same file, pooled
 Uniswap v4 & concentrated liquidity & none & 0.0000 & 5.45 \\
 % error: output/exhibits/v4_quoter_validation.jsonl; volume: docs/venue-coverage-bounds.md, pooled
-Curve & StableSwap & $A$, per pool-day & 0.033 & 13.73 \\
+Curve & StableSwap & $A_p$, per pool-day & 0.033 & 13.73 \\
 % error: output/exhibits/curve_quoter_validation.jsonl, median of day medians; volume: docs/venue-coverage-bounds.md
-Balancer & weighted geometric mean & $w_{a}/w_{b}$, $\phi$ & 0.0000 & 3.92 \\
+Balancer & weighted geometric mean & $w_i/w_o$, $f_p$ & 0.0000 & 3.92 \\
 % error: output/exhibits/weighted_quoter_validation.jsonl; volume: docs/venue-coverage-bounds.md, pooled
 \midrule
 SushiSwap v3 & concentrated liquidity & state not served & \multicolumn{1}{c}{n.a.} & 0.02 \\
 % docs/venue-coverage-bounds.md, sushiswap_v3 section and the pooled share table
 \bottomrule
 \end{tabular}
-\par\vspace{6pt}
-\begin{minipage}{0.90\textwidth}
-\footnotesize\raggedright \emph{Notes.} Error is the median absolute quote error as a percentage of realised output in the venue-specific validation samples described in Appendix~\ref{app:quoters}. Volume is each venue's share of the seven-venue panel, pooled over 400 dates sampled every seventh calendar day from 2 November 2018 through 30 June 2026. SushiSwap v3 is included in volume but has no quote error because the historical tick state needed for pricing is unavailable.
-\end{minipage}
+\exhibitnote{Error is the median absolute quote error as a percentage of realised output in the venue-specific validation samples described in Appendix~\ref{app:quoters}. Volume is each venue's share of the seven-venue panel, pooled over 400 dates sampled every seventh calendar day from 2 November 2018 through 30 June 2026. SushiSwap v3 is included in volume but has no quote error because the historical tick state needed for pricing is unavailable.}
 \end{table}
 
 Pool design determines how much liquidity is available to a route of a given size. Constant-product pools spread liquidity over the price curve, so price impact rises smoothly as a trade consumes reserves. Concentrated-liquidity pools place capital inside chosen price ranges; a trade that crosses a range boundary encounters a different amount of available depth. StableSwap flattens the curve near parity and is used disproportionately for stable assets, while weighted pools permit asymmetric and multi-asset portfolios. These differences make a common marginal price insufficient. The benchmark must quote the full trade through each pool's own state transition.
@@ -242,12 +241,12 @@ Each pricing routine is validated on realised swaps, which necessarily lie withi
 The restriction is applied before comparing routes. Filtering on the measured cost gap would condition on a monotone function of the outcome in \eqref{eq:gap} and would leave extrapolation unresolved. We instead retain each leg according to its own price impact relative to its own marginal price, with the threshold calibrated to realised trades,
 \begin{equation}
 \label{eq:support}
-\pi_{\ell}(x,t) \;=\; \frac{\tilde{q}_{\ell}(x,t) - q_{\ell}(x,t)}{\tilde{q}_{\ell}(x,t)} \;\leq\; \bar{\pi},
+\pi_{\ell}(\Delta_i,t) \;=\; \frac{\widetilde Q_{\ell}(\Delta_i,t)-Q_{\ell}(\Delta_i,t)}{\widetilde Q_{\ell}(\Delta_i,t)} \;\leq\; \bar{\pi},
 \qquad
-\frac{x}{R_{a,p,t}} \;\leq\; \bar{\pi},
+\frac{\Delta_i}{R_{i,p,t}} \;\leq\; \bar{\pi},
 \qquad \bar{\pi} = 0.05,
 \end{equation}
-where $\tilde{q}_{\ell}$ prices leg $\ell$ at the pool's marginal rate and the second form is the constant-product special case. Eligibility therefore depends on the state and size of the hypothetical leg before the outputs of competing routes are compared. Pooled over 932,270 validated swaps across eight sampled days, the median trade moves 0.34\% of the pool's input-side reserve, the 90th percentile 3.3\%, and the 99th 14.9\%, which places $\bar{\pi}$ between the 95th and the 99th percentile of realised behaviour.
+where $\widetilde Q_{\ell}$ prices leg $\ell$ at the pool's marginal rate and the second form is the constant-product special case. Eligibility therefore depends on the state and size of the hypothetical leg before the outputs of competing routes are compared. Pooled over 932,270 validated swaps across eight sampled days, the median trade moves 0.34\% of the pool's input-side reserve, the 90th percentile 3.3\%, and the 99th 14.9\%, which places $\bar{\pi}$ between the 95th and the 99th percentile of realised behaviour.
 % output/exhibits/quoter_support_bounds.jsonl
 
 The restriction is applied across every venue-specific quoter. A reserve ratio alone is insufficient because most counterfactual quotes come from concentrated-liquidity pools, where executable depth depends on the active tick map. The price-impact condition in \eqref{eq:support} supplies one comparable support criterion across pool families.
@@ -255,4 +254,4 @@ The restriction is applied across every venue-specific quoter. A reserve ratio a
 
 \label{sec:setting:validation}
 
-Counterfactual costs are distinct from vehicle dominance. Equations~\eqref{eq:dominance} measure observed intermediary use; Equation~\eqref{eq:gap} compares hypothetical outputs at a reconstructed state. A cost gap does not identify the route available when the decision was made unless quote-time state and venue access are also established. For that reason, Section~\ref{sec:executability} states the additional conditions required before the comparison can be used to interpret route choice. Reported magnitudes use the continuous gap $G^{k}_{ab}$; a coefficient on the threshold indicator $D^{\mathrm{g}}$ has no basis-point interpretation without the density at the threshold.
+Counterfactual costs are distinct from vehicle dominance. Equations~\eqref{eq:dominance} measure observed intermediary use; Equation~\eqref{eq:gap} compares hypothetical outputs at a reconstructed state. A cost gap does not identify the route available when the decision was made unless quote-time state and venue access are also established. For that reason, Section~\ref{sec:executability} states the additional conditions required before the comparison can be used to interpret route choice. Reported magnitudes use the continuous gap $\Delta C^{D}_{i,o,k,q,t}$; a coefficient on the threshold indicator $D^{\mathrm{g}}$ has no basis-point interpretation without the density at the threshold.

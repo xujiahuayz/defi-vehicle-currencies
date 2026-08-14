@@ -55,11 +55,23 @@ def test_prose_preflight_requires_raw_passages_not_term_replacement() -> None:
     assert "interpret results in the paper" in checks
 
 
+def test_prose_preflight_requires_complete_opening_flow_and_conclusion_reviews() -> None:
+    checks = " ".join(regression_checks("prose")).lower()
+    assert "every current section and subsection" in checks
+    assert "every substantive prose paragraph" in checks
+    assert "record every jump and its resolution" in checks
+    assert "one repaired transition cannot close" in checks
+    assert "review conclusions separately" in checks
+    assert "final sentence" in checks
+
+
 def test_deck_preflight_separates_exhibit_notes_from_interpretation() -> None:
     checks = " ".join(regression_checks("deck")).lower()
     assert "keep exhibit notes to the unit" in checks
     assert "interpretation in visible slide prose" in checks
     assert "one owner within an exhibit" in checks
+    assert "shared note: block for every empirical exhibit" in checks
+    assert "fully labelled explanatory schematic" in checks
 
 
 def test_tiered_prose_gate_preserves_blocked_coefficient_boundary() -> None:

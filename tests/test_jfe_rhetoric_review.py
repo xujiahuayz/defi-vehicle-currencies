@@ -90,5 +90,113 @@ class TransitionReviewTests(unittest.TestCase):
         self.assertNotIn("therefore", source)
 
 
+class OpeningReviewTests(unittest.TestCase):
+    def opening(self, heading: str) -> dict:
+        return {
+            "heading": heading,
+            "classification": "direct",
+            "incoming_object": "The observed route from the preceding section.",
+            "opening_function": "Defines the next economic quantity.",
+            "judgment": "The opening begins with the object rather than the document.",
+            "raw_exemplar": "source.txt:1-2",
+        }
+
+    def test_every_heading_must_be_enumerated_in_source_order(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            path = root / "section.tex"
+            path.write_text(
+                "\\section{Main}\nText.\n\\subsection{Next}\nText.\n",
+                encoding="utf-8",
+            )
+            (ROOT / "source.txt").write_text("raw\npassage\n", encoding="utf-8")
+            try:
+                row = {"openings": [self.opening("Main")]}
+                errors = CHECKER.opening_review_errors("section.tex", row, path)
+                self.assertTrue(any("coverage differs" in error for error in errors))
+
+                row["openings"].append(self.opening("Next"))
+                self.assertEqual(CHECKER.opening_review_errors("section.tex", row, path), [])
+            finally:
+                (ROOT / "source.txt").unlink(missing_ok=True)
+
+    def test_opening_review_records_function_not_stock_wording(self) -> None:
+        source = CHECKER.opening_review_errors.__doc__.lower()
+        self.assertIn("enumeration", source)
+        self.assertNotIn("section 2 describes", source)
+
+
+class ConclusionReviewTests(unittest.TestCase):
+    def test_conclusion_must_record_economic_ending(self) -> None:
+        row = {
+            "conclusion_review": {
+                "synthesis": "Moves from the route result to market formation.",
+                "economic_consequence": "Fixed-market models explain only one margin.",
+                "scope_condition": "Routes alone do not distinguish the mechanisms.",
+                "final_sentence_function": "Ends on the economic contribution.",
+                "raw_exemplars": [
+                    "literature/text/2023-LiYeZheng2023Refusing-refusing-the-best-price.txt:1848-1924"
+                ],
+            }
+        }
+        self.assertEqual(CHECKER.conclusion_review_errors("07-conclusion.tex", row), [])
+        del row["conclusion_review"]["final_sentence_function"]
+        errors = CHECKER.conclusion_review_errors("07-conclusion.tex", row)
+        self.assertEqual(errors, ["missing conclusion final sentence function: 07-conclusion.tex"])
+
+
+class ParagraphFlowReviewTests(unittest.TestCase):
+    def test_review_must_cover_every_substantive_handoff(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            path = root / "section.tex"
+            path.write_text(
+                "First paragraph carries enough words to count as substantive prose and ends "
+                "with a complete sentence for the reader who follows the full economic argument.\n\n"
+                "Second paragraph carries the first object into a new economic comparison and "
+                "also ends with a complete sentence for the reader who follows the full argument.\n\n"
+                "Third paragraph states the implication of that comparison in enough words to "
+                "remain part of the reviewed manuscript prose and its complete economic argument.\n",
+                encoding="utf-8",
+            )
+            row = {
+                "paragraph_flow_review": {
+                    "transition_lines": [3],
+                    "judgment": "Every handoff was read in sequence.",
+                    "raw_exemplars": [
+                        "literature/text/2023-LiYeZheng2023Refusing-refusing-the-best-price.txt:980-990"
+                    ],
+                    "jumps": [],
+                }
+            }
+            errors = CHECKER.paragraph_flow_errors("section.tex", row, path)
+            self.assertTrue(any("coverage differs" in error for error in errors))
+            row["paragraph_flow_review"]["transition_lines"] = [3, 5]
+            self.assertEqual(CHECKER.paragraph_flow_errors("section.tex", row, path), [])
+
+    def test_jump_inventory_requires_issue_and_resolution(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            path = Path(directory) / "section.tex"
+            path.write_text(
+                "First paragraph carries enough words to count as substantive prose and ends "
+                "with a complete sentence for the reader who follows the full economic argument.\n"
+                "Second paragraph carries the first object into a new economic comparison and "
+                "also ends with a complete sentence for the reader who follows the full argument.\n",
+                encoding="utf-8",
+            )
+            row = {
+                "paragraph_flow_review": {
+                    "transition_lines": [2],
+                    "judgment": "The handoff was reviewed.",
+                    "raw_exemplars": [
+                        "literature/text/2023-LiYeZheng2023Refusing-refusing-the-best-price.txt:980-990"
+                    ],
+                    "jumps": [{"line": 2, "issue": "The inherited object was absent."}],
+                }
+            }
+            errors = CHECKER.paragraph_flow_errors("section.tex", row, path)
+            self.assertEqual(errors, ["missing resolution: section.tex jumps[1]"])
+
+
 if __name__ == "__main__":
     unittest.main()

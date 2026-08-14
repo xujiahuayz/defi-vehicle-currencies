@@ -2,41 +2,58 @@
  "argv": [],
  "artefact": "output/exhibits/venue_optics.jsonl",
  "artefact_bytes": 1632,
- "artefact_mtime_ns": 1786683871371826869,
- "artefact_sha256": "c0afb646ef84fcf39924d080341ab6be84f4edcbd4f5b6f2133388acc6daaa27",
+ "artefact_mtime_ns": 1786689533751134439,
+ "artefact_sha256": "015d9350c166c833226b2c59fa1099bedeb43c10021034eec83f8c7079acfe4d",
  "code_fingerprint": "6e663f5b459a47c64bab9c816ebef0cdad78f11b1f5d9e38327bdd0aca2641c9",
  "code_sources": [
   "scripts/measure_venue_optics.py",
   "src/ddvc/tables.py"
  ],
- "created_at": "2026-08-14T05:04:31+00:00",
+ "created_at": "2026-08-14T06:38:53+00:00",
  "git": {
   "branch": "main",
-  "commit": "af0eb07b6e8c74092f1c27c02835b597feb3293d",
+  "commit": "66c70b64f36907ab974cc10d2ecbf95846ca2899",
   "dirty": true,
   "dirty_generated_files": [
-   "data/manifests/output/figures/experiments/annual_vehicle_composition_bands.pdf.prov.json",
-   "data/manifests/output/figures/experiments/annual_vehicle_rank_bump.pdf.prov.json",
-   "data/manifests/output/figures/experiments/annual_vehicle_share_heatmap.pdf.prov.json",
-   "data/manifests/output/figures/experiments/integration_change_forest.pdf.prov.json",
-   "data/manifests/output/figures/experiments/integration_vehicle_alluvial.pdf.prov.json",
-   "output/figures/experiments/integration_change_forest.pdf",
-   "output/exhibits/.venue_optics.jsonl.ek1te9u0.tmp"
+   "data/manifests/output/exhibits/prose_conventions.jsonl.prov.json",
+   "data/manifests/output/exhibits/prose_outliers.jsonl.prov.json",
+   "data/manifests/output/exhibits/venue_shape.jsonl.prov.json",
+   "output/exhibits/prose_conventions.jsonl",
+   "output/exhibits/prose_outliers.jsonl",
+   "output/exhibits/venue_shape.jsonl",
+   "output/tables/variable_notation.pdf",
+   "output/tables/variable_notation.tex",
+   "output/exhibits/.venue_optics.jsonl.ikwotd_4.tmp"
   ],
   "dirty_tracked_files": [
+   "deck/assets/liquidity-quantity-cross-section.tex",
    "deck/main.pdf",
+   "deck/main.tex",
+   "deck/sections/01-identification.tex",
    "deck/sections/04-results.tex",
+   "deck/sections/05-close.tex",
+   "deck/sections/90-appendix.tex",
    "docs/research-workflow.md",
+   "docs/reviews/deck-venue-exemplars.md",
    "docs/reviews/paper-rhetoric.json",
+   "paper/main.tex",
    "paper/sections/01-introduction.tex",
    "paper/sections/02-setting.tex",
    "paper/sections/03-dominance.tex",
+   "paper/sections/06-executability.tex",
+   "paper/sections/07-conclusion.tex",
    "paper/sections/08-appendix.tex",
+   "scripts/check_deliverable_conformance.py",
+   "scripts/check_jfe_rhetoric_review.py",
    "scripts/research_action_preflight.py",
-   "src/ddvc/visual_experiments.py",
-   "tests/test_research_action_preflight.py"
+   "src/ddvc/variable_registry.py",
+   "tests/test_jfe_rhetoric_review.py",
+   "tests/test_research_action_preflight.py",
+   "tests/test_variable_registry.py"
   ],
-  "dirty_untracked_files": []
+  "dirty_untracked_files": [
+   "tests/test_exhibit_notes.py"
+  ]
  },
  "inputs": [],
  "libraries": {
@@ -51,7 +68,7 @@
   "format": "jsonl",
   "rows": 10,
   "schema_version": 1,
-  "sha256": "c0afb646ef84fcf39924d080341ab6be84f4edcbd4f5b6f2133388acc6daaa27"
+  "sha256": "015d9350c166c833226b2c59fa1099bedeb43c10021034eec83f8c7079acfe4d"
  },
  "python": "3.14.5",
  "rows": 10,

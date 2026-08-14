@@ -25,6 +25,17 @@
 \bibliographystyle{chicago}
 \onehalfspacing
 
+% JFE-style exhibit treatment. Captions sit above the exhibit; notes use the full
+% available line width and the surrounding prose alignment, with the journal's
+% singular ``Note:'' label even when the note contains several sentences.
+\setlength{\belowcaptionskip}{8pt}
+\newcommand{\exhibitnote}[1]{%
+  \par\vspace{6pt}%
+  \noindent\begin{minipage}{\linewidth}%
+    \footnotesize\emph{Note:} #1\par
+  \end{minipage}%
+}
+
 % Certified route-only quantities shared with the live deck. The source file is
 % regenerated from the findings registry; exact-state results remain excluded.
 \input{../output/exhibits/provisional_results_deck_values.tex}

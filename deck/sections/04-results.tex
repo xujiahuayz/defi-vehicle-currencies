@@ -17,25 +17,26 @@
 \begin{center}
 \includegraphics[width=0.94\textwidth,height=0.69\textheight,keepaspectratio]{../output/figures/experiments/annual_vehicle_composition_bands.pdf}
 \end{center}
-\vspace{-0.18cm}
-{\scriptsize\color{muted}Annual shares of observed vehicle routes. The 2026 observation covers January--June; Other combines imported, liquid-staking, and residual assets.}
+\vspace{-0.14cm}
+\decknote{Annual shares of observed vehicle routes. The 2026 observation covers January--June; Other combines imported, liquid-staking, and residual assets.}
 \end{frame}
 
 % EVIDENCE-STATUS: evolving route decomposition; venue-scope reweighting is a route-only descriptive identity
 % EVIDENCE-COMMIT: 6dd7897
 % EVIDENCE-SOURCES: output/figures/vehicle_excess_use_transition.pdf; output/exhibits/vehicle_excess_use.jsonl; output/exhibits/vehicle_excess_use_transition.jsonl; output/exhibits/e0_usdt_integration_decomposition.jsonl; docs/findings-freeze.md
 % VISUAL-FUNCTION: candidate-level excess-use change | paired count/value dumbbells | identify the distinct USDT contribution
-\begin{frame}{USDT drives the post-2024 rise in stablecoin intermediation}
+\begin{frame}{USDT drives the rise in stablecoin intermediation}
 \vspace{-0.08cm}
 \begin{center}
-\includegraphics[width=0.93\textwidth,height=0.56\textheight,keepaspectratio]{../output/figures/vehicle_excess_use_transition.pdf}
+\includegraphics[width=0.93\textwidth,height=0.44\textheight,keepaspectratio]{../output/figures/vehicle_excess_use_transition.pdf}
 \end{center}
-\vspace{-0.11cm}
-{\fontsize{7.0}{7.7}\selectfont USDT crosses parity by routed value and extends its count advantage; USDC changes little.}
-\vspace{0.07cm}
-\begin{beamercolorbox}[sep=0.10cm,wd=\textwidth]{block body}
-{\fontsize{7.2}{8.0}\selectfont\bfseries \USDTVenueWithinCountShare{} of the count-share change and \USDTVenueWithinValueShare{} of the routed-value change occur within the single- and cross-venue categories.}
+\vspace{-0.16cm}
+{\fontsize{6.8}{7.5}\selectfont USDT crosses parity by routed value and extends its count advantage; USDC changes little.}
+\vspace{0.04cm}
+\begin{beamercolorbox}[sep=0.08cm,wd=\textwidth]{block body}
+{\fontsize{7.0}{7.7}\selectfont\bfseries \USDTVenueWithinCountShare{} of the count-share change and \USDTVenueWithinValueShare{} of the routed-value change occur within the single- and cross-venue categories.}
 \end{beamercolorbox}
+\decknote{Excess use is intermediary share divided by endpoint share on the same route perimeter. The comparison uses the same January--June dates in 2024 and 2026.}
 \end{frame}
 
 % EVIDENCE-STATUS: certified descriptive route accounting and matched-market estimate; mechanism remains open
@@ -52,7 +53,7 @@
 {\fontsize{8.2}{9.1}\selectfont\textbf{Dollar-weighted routes show the same broad allocation.} Stable share rises \PairValueTotal, with \PairValueReweight\ from activity weights among continuing pairs and only \PairValueWithin\ from stable-for-native substitution within them.}
 
 \vspace{0.02cm}
-{\fontsize{6.2}{6.8}\selectfont\color{muted}Route-count accounting for ordered endpoint pairs in 2024 and January--June 2026. Matched markets hold the ordered endpoint pair, calendar date, and single- versus cross-venue route category fixed. Dollar weighting requires source, intermediary, and destination values to agree within 20\%.}
+\decknote{The sample contains exact two-leg routes observed in 2024 and January--June 2026. Matched estimates compare the same ordered endpoint pair, calendar date, and single- versus cross-venue route category. Dollar-weighted calculations retain routes for which the source, intermediary, and destination dollar amounts agree within 20\%.}
 \end{frame}
 
 % EVIDENCE-STATUS: certified descriptive result; integration remains a selected route stratum
@@ -62,10 +63,11 @@
 \begin{frame}{Stablecoin use rises within each venue scope}
 \vspace{-0.08cm}
 \begin{center}
-\includegraphics[width=0.89\textwidth,height=0.54\textheight,keepaspectratio]{../output/figures/experiments/integration_change_forest.pdf}
+\includegraphics[width=0.89\textwidth,height=0.46\textheight,keepaspectratio]{../output/figures/experiments/integration_change_forest.pdf}
 \end{center}
-\vspace{-0.10cm}
-{\fontsize{7.0}{7.7}\selectfont The increase appears within both realised route scopes, so a change in the single- versus cross-venue mix cannot account for the aggregate rotation. Cross-venue status remains selected; the comparison does not identify an effect of integration, routing software, or protocol architecture.}
+\vspace{-0.15cm}
+{\fontsize{6.8}{7.5}\selectfont The increase appears within both realised route scopes, so a change in the single- versus cross-venue mix cannot account for the aggregate rotation. Cross-venue status remains selected; the comparison does not identify an effect of integration, routing software, or protocol architecture.}
+\decknote{Changes compare the same January--June dates in 2024 and 2026. Bars show 95\% calendar-HAC confidence intervals.}
 \end{frame}
 
 % EVIDENCE-STATUS: registered mechanism design; no current LP estimate is displayed
@@ -114,7 +116,7 @@
 \begin{columns}[T,totalwidth=\textwidth]
 \begin{column}{0.53\textwidth}
 \evidencekicker{Economic route}
-\vspace{0.25cm}
+\vspace{0.12cm}
 \centering
 \begin{tikzpicture}[x=1cm,y=1cm,tinyasset/.style={circle,draw=ink,fill=white,minimum size=23pt,inner sep=0pt,font=\small},routearrow/.style={-{Stealth[length=5pt]},line width=1.4pt}]
 \node[tinyasset] (a) at (0,2.45) {A};
@@ -128,37 +130,39 @@
 \end{column}
 \begin{column}{0.43\textwidth}
 \evidencekicker{Comparison}
-\vspace{0.25cm}
+\vspace{0.12cm}
+{\footnotesize
 \begin{itemize}
-\item Compare routes in the same week with the same endpoints, intermediary, direction, and trade-size group.
-\item Record route use and physical token transfers separately.
-\item Compare feasible alternatives before drawing conclusions about vehicle choice.
+\item Compare routes in the same week, endpoint pair, intermediary, direction, and trade-size group.
+\item Record route use and token transfers separately.
+\item Compare feasible alternatives before interpreting vehicle choice.
 \end{itemize}
+}
 \end{column}
 \end{columns}
-\vspace{0.18cm}
+\vspace{0.05cm}
 {\scriptsize The architecture can make a physical transfer unnecessary. The empirical test asks whether transfers fall among otherwise comparable routes.}
 \end{frame}
 
 % EVIDENCE-STATUS: diagnostic displacement gradient; not a persistence estimate
 % EVIDENCE-COMMIT: 3873fca
 % EVIDENCE-SOURCES: output/exhibits/provisional_results_deck_values.tex; docs/findings-freeze.md
-% VISUAL-FUNCTION: challenger and incumbent response | coefficient table pending difference plot | expose direction, uncertainty, and risk-set limitation
-\begin{frame}{Cheaper challengers gain share as incumbents lose it}
+% VISUAL-FUNCTION: 30-day challenger and incumbent share changes | coefficient table pending difference plot | expose direction, uncertainty, and risk-set limitation
+\begin{frame}{Challenger cost advantage predicts subsequent vehicle share}
 \vspace{0.18cm}
 {\small
 \begin{tabular}{@{}p{0.43\textwidth}rrr@{}}
 \toprule
 \textbf{30-day outcome} & $\hat\beta$ & \textbf{SE} & $t$ \\
 \midrule
-Challenger vehicle-share response & \ChallengerCoef & \ChallengerSE & \ChallengerT \\
-Incumbent vehicle-share response & \IncumbentCoef & \IncumbentSE & \IncumbentT \\
-Challenger overtakes incumbent & \OvertakeCoef & \OvertakeSE & \OvertakeT \\
+Change in challenger vehicle share & \ChallengerCoef & \ChallengerSE & \ChallengerT \\
+Change in incumbent vehicle share & \IncumbentCoef & \IncumbentSE & \IncumbentT \\
+Challenger leads after 30 days & \OvertakeCoef & \OvertakeSE & \OvertakeT \\
 \bottomrule
 \end{tabular}}
 \vspace{0.25cm}
 
-{\small $N=\DiagnosticN$ endpoint-pair--intermediary observations; \DiagnosticClusters\ date clusters. Exact alternating-projection absorption and CR1 rank correction.}
+\decknote{$\hat\beta$ is the coefficient on the challenger's cost advantage. Outcomes are measured 30 days later. The sample contains $N=\DiagnosticN$ endpoint-pair--intermediary observations and \DiagnosticClusters\ date clusters; standard errors are clustered by date and use the CR1 rank correction.}
 \vspace{0.36cm}
 \begin{beamercolorbox}[sep=0.22cm,wd=\textwidth]{block body}
 The estimates are large in the small set of endpoint markets and intermediary assets we can follow. They remain descriptive because the panel does not compare each market against a fixed set of feasible routes.
@@ -169,8 +173,8 @@ The estimates are large in the small set of endpoint markets and intermediary as
 % EVIDENCE-COMMIT: a587f8b
 % EVIDENCE-SOURCES: output/exhibits/architecture_transition_support.jsonl; output/exhibits/architecture_transition_deck_values.tex
 % VISUAL-FUNCTION: transition-window support | threshold-by-status composition bars | show why the architecture contrast is not identified
-\begin{frame}{Current architecture changes do not provide a clean before--after comparison}
-\vspace{0.05cm}
+\begin{frame}{Architecture changes lack comparable route windows}
+\vspace{-0.02cm}
 \IfFileExists{../output/exhibits/architecture_transition_deck_values.tex}{%
 \input{../output/exhibits/architecture_transition_deck_values.tex}%
 }{}
@@ -186,9 +190,9 @@ Immediate entry contrast & \ArchEntryImmediateFive & \ArchEntryImmediateTen & \A
 Immediate exit contrast & \ArchExitImmediateFive & \ArchExitImmediateTen & \ArchExitImmediateTwentyFive \\
 \bottomrule
 \end{tabular}}
-\par\vspace{0.10cm}
-{\small At every threshold, entries and exits coincide with changes in the comparison set or with the appearance and disappearance of vehicle roles. These windows therefore cannot separate an architecture effect from changes in which pairs and vehicles remain active.}
-\vspace{0.10cm}
+\par\vspace{0.04cm}
+{\small Every entry and exit coincides with a change in the comparison set or in whether the vehicle role exists. These windows cannot separate architecture from changes in active pairs and vehicles.}
+\vspace{-0.06cm}
 
-{\footnotesize\color{muted}A before--after estimate requires the same feasible alternatives before and after the architecture change.\par}
+\decknote{Entries and substitution exits require the V4 share of an ordered endpoint-pair--intermediary series to cross the column threshold for three consecutive weeks on each side. Each entry and exit cell reports detected events, with usable non-overlapping 16-week windows in parentheses; role disappearances require the intermediary to be absent after the event.}
 \end{frame}

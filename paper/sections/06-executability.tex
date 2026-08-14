@@ -3,7 +3,7 @@
 \section{What the price comparison can identify}
 \label{sec:executability}
 
-The realised routes identify which assets carried trades. Explaining route choice requires the alternatives available immediately before execution, their output at the same trade size, and the costs of reaching them. We therefore keep the vehicle-dominance results in Section~\ref{sec:dominance} separate from the counterfactual price comparison.
+Realised routes identify which assets carried trades, but they do not reveal the alternatives available when a route was chosen. A relative-price comparison is informative only when competing paths can be quoted immediately before execution at the same trade size and with the same access costs. Route composition therefore requires observed token flows; tests of relative execution cost additionally require a reconstructed opportunity set.
 
 The comparison in Section~\ref{sec:setting:pricing} holds the endpoints, input amount, and pool state fixed. For each trade, it asks how much the best direct path and the best two-leg path through a particular intermediary would have returned. A quote difference describes the reconstructed opportunity set. Interpreting it as route choice additionally requires the router's quote time, searched exchanges, access to private order flow, and financing and reversion costs, which the public record generally leaves latent.
 

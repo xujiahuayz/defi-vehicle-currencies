@@ -97,7 +97,7 @@ class VariableRegistryTests(unittest.TestCase):
             "$\\ell,\\ p,\\ p'$",
             "$t,\\ u,\\ w$",
             "$d,\\ \\mu$",
-            "$g$",
+            "$c$",
             "$q$",
             "$r$",
         ]:
@@ -275,7 +275,7 @@ class VariableRegistryTests(unittest.TestCase):
                 r"$\mathrm{AllInDirectCostAdvantage}_{k,t,q}$"
             ),
             "v4_route": r"$\mathrm{V4}_{r}$",
-            "v4_route_share": r"$\mathrm{V4RouteShare}_{g}$",
+            "v4_route_share": r"$\mathrm{V4RouteShare}_{c}$",
             "pre_v4_pair_indirect_route_share": r"$\mathrm{PreV4IndirectShare}_{i,o}$",
             "post_v4": r"$\mathrm{PostV4}_{t}$",
             "pre_v3_pair_volatility": r"$\sigma^{\mathrm{pre}}_{i,o}$",
@@ -443,8 +443,8 @@ class VariableRegistryTests(unittest.TestCase):
         self.assertIn("positive realized route volume on at least 30 days", architecture.definition)
         self.assertIn("independent of post-V3 activity", architecture.definition)
 
-        settlement = by_notation[r"$\mathcal R^3_g,\ \mathcal R^4_g$"]
-        self.assertIn("A matched cell has both sets nonempty", settlement.definition)
+        settlement = by_notation[r"$\mathcal R^3_c,\ \mathcal R^4_c$"]
+        self.assertIn("A matched stratum has both sets nonempty", settlement.definition)
 
     def test_quote_universe_has_an_explicit_sample_rule(self) -> None:
         by_notation = {item.notation: item for item in NOTATION_DEFINITIONS}
@@ -642,7 +642,7 @@ class VariableRegistryTests(unittest.TestCase):
                 r"\mathcal P^{\mathrm{V3}}_q$"
             ),
             r"\mathcal L_t": r"$\mathcal L_t,\ \mathcal L_{k,t},\ m_p$",
-            r"\mathcal R^4_g": r"$\mathcal R^3_g,\ \mathcal R^4_g$",
+            r"\mathcal R^4_c": r"$\mathcal R^3_c,\ \mathcal R^4_c$",
         }
         for formula_symbol, key_symbol in required.items():
             with self.subTest(symbol=formula_symbol):

@@ -1,6 +1,6 @@
 {
-  "schema_version": 3,
-  "purpose": "A freshness ledger for paragraph-level and section-transition review against raw JFE passages. It records judgment; it does not automate or certify style.",
+  "schema_version": 4,
+  "purpose": "A freshness ledger for paragraph-level, enumerated opening, conclusion, and section-transition review against raw JFE passages. It records judgment; it does not automate or certify style.",
   "anecdote_analogy_review": {
     "purpose": "A freshness record for direct readings of named cases, events, analogies, and transaction examples. It records each passage's rhetorical job and handoff to evidence. It imposes no anecdote count, paragraph length, placement, or prose template.",
     "precedents": [
@@ -110,54 +110,228 @@
         "literature/text/2023-LiYeZheng2023Refusing-refusing-the-best-price.txt:26-34",
         "literature/text/2020-MakarovSchoar2020Arbitrage-trading-and-arbitrage-in-cryptocurrency-markets.txt:29-38"
       ],
+      "openings": [
+        {
+          "heading": "Abstract",
+          "classification": "direct",
+          "incoming_object": "The title's vehicle-currency question.",
+          "opening_function": "Names the observable trading-path data and the intermediary role they identify.",
+          "judgment": "The abstract begins with the paper's measurement opportunity rather than a document announcement.",
+          "raw_exemplar": "literature/text/2023-LiYeZheng2023Refusing-refusing-the-best-price.txt:26-34"
+        }
+      ],
+      "paragraph_flow_review": {
+        "transition_lines": [],
+        "judgment": "The abstract is one paragraph, so it has no paragraph-to-paragraph handoff.",
+        "raw_exemplars": [
+          "literature/text/2023-LiYeZheng2023Refusing-refusing-the-best-price.txt:26-34"
+        ],
+        "jumps": []
+      },
       "judgment": "The abstract stays within the 100-word submission ceiling. It names the transaction-level route measure, reports the count and routed-value magnitudes at a high level, states the non-monotone path, locates the increase across endpoint markets and intermediation incidence, and identifies USDT. Sample-construction details and open mechanism tests remain in the body.",
       "entry_handoff": "The opening sentence names the observed trading-path data and the vehicle role they reveal.",
       "internal_progression": "The abstract moves from the count and routed-value changes to non-monotonicity, the endpoint-market margins, and USDT's contribution.",
       "exit_handoff": "The last sentence closes on USDT's intermediary use relative to its endpoint use, the most specific current route finding."
     },
     "paper/sections/01-introduction.tex": {
-      "sha256": "61065eb7eba94f0de39ea80cb5e9833bbcbbcfc45349c5fe9301efd018452c89",
+      "sha256": "1515f242b0b69e459dcad67a9bcb48f149c5179b411a6f1783bb96846e4f8806",
       "status": "rewritten",
       "exemplars": [
         "literature/text/2020-MakarovSchoar2020Arbitrage-trading-and-arbitrage-in-cryptocurrency-markets.txt:95-205",
         "literature/text/2023-LiYeZheng2023Refusing-refusing-the-best-price.txt:96-214"
       ],
+      "openings": [
+        {
+          "heading": "Introduction",
+          "classification": "direct",
+          "incoming_object": "The title's question about dominant vehicle currencies.",
+          "opening_function": "Begins with the concentration of foreign-exchange trading and the persistent international role of the dollar.",
+          "judgment": "The concrete dollar example gives the reader the finance object before the paper turns to the missing path data.",
+          "raw_exemplar": "literature/text/2020-MakarovSchoar2020Arbitrage-trading-and-arbitrage-in-cryptocurrency-markets.txt:95-205"
+        }
+      ],
+      "paragraph_flow_review": {
+        "transition_lines": [10, 12, 14, 17, 20, 23, 27, 29],
+        "judgment": "The sequence moves from the missing route information to the measure, feasible market architecture, aggregate rotation, endpoint-market allocation, USDT, venue span, mechanisms, and the roadmap. Each paragraph now names the object inherited from the preceding result before changing level.",
+        "raw_exemplars": [
+          "literature/text/2023-LiYeZheng2023Refusing-refusing-the-best-price.txt:96-214",
+          "literature/text/2020-MakarovSchoar2020Arbitrage-trading-and-arbitrage-in-cryptocurrency-markets.txt:400-420"
+        ],
+        "jumps": [
+          {
+            "line": 12,
+            "issue": "The architecture paragraph previously arrived as an unexplained calendar fact after measurement.",
+            "resolution": "The opening now states that feasible vehicle use depends on permitted pools and settlement before introducing protocol changes."
+          },
+          {
+            "line": 27,
+            "issue": "The mechanism paragraph previously switched from venue-span evidence directly into literature and planned tests.",
+            "resolution": "The opening now carries forward the endpoint-market and venue-span results and states that their underlying forces remain unresolved."
+          },
+          {
+            "line": 29,
+            "issue": "The roadmap previously began bluntly with Section 2 and expanded into a redundant five-sentence inventory.",
+            "resolution": "A conventional JFE roadmap bridge now precedes a compressed and accurate account of the remaining sections."
+          }
+        ]
+      },
       "judgment": "The section opens with the general concentration of foreign-exchange trading and uses the BIS pair-level records as supporting evidence rather than allowing one dataset to stand for the entire class. The yen--euro example then explains what pair records omit before the route data and sample are introduced. The next paragraph states positively what quoting degree, invoicing and funding shares, and vehicle dominance each measure. Each later transition names the object carried forward: exact two-leg routes define the denominator; the five-part accounting precedes the matched comparison; and the USDT and venue-span results follow from that allocation. The matched estimates appear with their standard errors and confidence intervals, so the claim rests on the economically bounded interval rather than on insignificance alone. Liquidity allocation is a possible explanation for the reallocation, whereas V4 is a separate settlement question.",
       "entry_handoff": "Dollar intermediation supplies the familiar finance object before the paragraph states why pair-level turnover cannot reveal the complete path.",
       "internal_progression": "The section moves from measurement and sample scope to aggregate rotation, endpoint-market reallocation, USDT, and venue span.",
       "exit_handoff": "The final roadmap sends route construction to Section 2, route evidence to Section 3, and the still-open price and mechanism questions to later sections."
     },
     "paper/sections/02-setting.tex": {
-      "sha256": "52216cb262790331f08e8e49ca7872ead0d4125b83798c4f57bd1506bef5fe45",
+      "sha256": "2fda371c5ecfc6dfcfeea54d6d65fd5590ce45f48318884150db1e23159ed215",
       "status": "rewritten",
       "exemplars": [
         "literature/text/2020-MakarovSchoar2020Arbitrage-trading-and-arbitrage-in-cryptocurrency-markets.txt:421-520",
         "literature/text/2023-LiYeZheng2023Refusing-refusing-the-best-price.txt:395-510"
       ],
+      "openings": [
+        {
+          "heading": "Setting and data",
+          "classification": "direct",
+          "incoming_object": "The transaction logs introduced in the paper.",
+          "opening_function": "Delegates immediately to the route institution and notation that the data section first requires.",
+          "judgment": "A section heading followed directly by its first substantive subsection is conventional and does not need a duplicate overview paragraph.",
+          "raw_exemplar": "literature/text/2025-HuangRanaldoSchrimpfSomogyi-constrained-liquidity-provision-currency-markets-jfe.txt:710-718"
+        },
+        {
+          "heading": "Routes and notation",
+          "classification": "direct",
+          "incoming_object": "Ordered pool calls within one transaction.",
+          "opening_function": "Defines pools, routers, and the transaction-level route before introducing notation.",
+          "judgment": "The opening begins with the market institution needed to understand the observed path.",
+          "raw_exemplar": "literature/text/2023-LiYeZheng2023Refusing-refusing-the-best-price.txt:395-405"
+        },
+        {
+          "heading": "Measuring vehicle dominance",
+          "classification": "direct",
+          "incoming_object": "The ordered route and intermediary defined in the preceding subsection.",
+          "opening_function": "Defines the denominator and dominance measure from the observed route object.",
+          "judgment": "The definition follows its primitive without announcing a new document step.",
+          "raw_exemplar": "literature/text/2023-LiYeZheng2023Refusing-refusing-the-best-price.txt:395-510"
+        },
+        {
+          "heading": "The route panel",
+          "classification": "direct",
+          "incoming_object": "The route and vehicle measures just defined.",
+          "opening_function": "Names the source records, sample dates, and assembly of the analysis panel.",
+          "judgment": "The opening identifies the population and construction before reporting coverage.",
+          "raw_exemplar": "literature/text/2021-CarlettiDeMarcoIoannidouSette2021PatientLenders-banks-as-patient-lenders-evidence-from-a-tax-reform.txt:514-522"
+        },
+        {
+          "heading": "Pricing the counterfactual",
+          "classification": "substantive_bridge",
+          "incoming_object": "The realised route panel.",
+          "opening_function": "Separates observed route incidence from the hypothetical alternatives needed for a price comparison.",
+          "judgment": "The bridge states the additional economic object rather than treating another calculation as a routine extension.",
+          "raw_exemplar": "literature/text/2023-LiYeZheng2023Refusing-refusing-the-best-price.txt:980-990"
+        }
+      ],
+      "paragraph_flow_review": {
+        "transition_lines": [21, 23, 25, 28, 38, 40, 42, 59, 70, 75, 85, 90, 93, 95, 109, 111, 113, 116, 118, 123, 126, 128, 162, 168, 175, 186, 189, 197, 199, 230, 232, 234, 239, 241, 249, 252, 257],
+        "judgment": "The prose moves from AMM institutions to router paths, a concrete transaction, notation, dominance and adjacent constructs, sample construction, the counterfactual benchmarks, venue-specific pricing, support, and the final separation of realised use from hypothetical cost. Definitions follow the primitive they use, and each new empirical requirement is introduced through the additional object it needs.",
+        "raw_exemplars": [
+          "literature/text/2023-LiYeZheng2023Refusing-refusing-the-best-price.txt:395-510",
+          "literature/text/2021-CarlettiDeMarcoIoannidouSette2021PatientLenders-banks-as-patient-lenders-evidence-from-a-tax-reform.txt:514-522"
+        ],
+        "jumps": []
+      },
       "judgment": "Like the registered data sections, the current section moves from the observed record to the reconstructed economic object, names the sample and its coverage, and distinguishes realised routes from constructed counterfactual prices. The January 10 transaction gives the reconstruction a concrete public-record handoff before notation. The route-panel passage makes protocol-specific identity, unit conversion, event ordering, and route assembly visible as measurement work, then sends implementation detail and quantified token-unit exclusions to the appendix. The two main tables now carry self-contained notes that identify their distinct samples, denominators, validation statistic, and the reason SushiSwap v3 has no quote error; they do not interpret the results.",
       "entry_handoff": "The section begins with AMM pools and routers, the institutions needed to understand the ordered route introduced in the paper.",
       "internal_progression": "A public transaction leads to notation, the vehicle-dominance measure, asset taxonomy, panel construction, and finally the stricter counterfactual price object.",
       "exit_handoff": "The section closes by distinguishing observed route incidence from hypothetical outputs, which prepares the route evidence before the price-comparison limitations."
     },
     "paper/sections/03-dominance.tex": {
-      "sha256": "8cbb46a2c8988cbe8346a6463205014bc3f994e36203741debaae62ec29912d3",
+      "sha256": "4e735eb2701366a729cb34ca315aa74f955b6b7b0ce061b1087a53198bdc66e0",
       "status": "rewritten",
       "exemplars": [
         "literature/text/2020-MakarovSchoar2020Arbitrage-trading-and-arbitrage-in-cryptocurrency-markets.txt:886-991",
         "literature/text/2021-BoltonKacperczyk2021CarbonRisk-do-investors-care-about-carbon-risk.txt:1221-1260"
       ],
+      "openings": [
+        {
+          "heading": "Rotation in the vehicle role",
+          "classification": "direct",
+          "incoming_object": "Vehicle dominance measured from exact routes.",
+          "opening_function": "Delegates immediately to the aggregate transition that begins the empirical sequence.",
+          "judgment": "The section does not need a second roadmap before its first result subsection.",
+          "raw_exemplar": "literature/text/2025-HuangRanaldoSchrimpfSomogyi-constrained-liquidity-provision-currency-markets-jfe.txt:710-718"
+        },
+        {
+          "heading": "A route-level transition",
+          "classification": "direct",
+          "incoming_object": "The exact two-leg route and its count and value weights.",
+          "opening_function": "States the stablecoin-share change before explaining the two weights and their support.",
+          "judgment": "The result, not the table, is the grammatical subject; construction details then make the comparison readable.",
+          "raw_exemplar": "literature/text/2020-MakarovSchoar2020Arbitrage-trading-and-arbitrage-in-cryptocurrency-markets.txt:886-991"
+        },
+        {
+          "heading": "Endpoint-pair composition",
+          "classification": "substantive_bridge",
+          "incoming_object": "The aggregate rise in stablecoin vehicle share.",
+          "opening_function": "Asks whether the change occurred within continuing endpoint markets or through their composition and activity.",
+          "judgment": "The opening converts the aggregate result into the next economic decomposition.",
+          "raw_exemplar": "literature/text/2022-ChangDuLouPolk2022Ripples-ripples-into-waves-trade-networks-economic-activity-and-asset-prices.txt:1369-1380"
+        },
+        {
+          "heading": "USDT and USDC",
+          "classification": "substantive_bridge",
+          "incoming_object": "The increase assigned to stablecoin intermediation.",
+          "opening_function": "Separates which stablecoin accounts for the category-level movement.",
+          "judgment": "The opening narrows the aggregate category to the named currencies that could carry it.",
+          "raw_exemplar": "literature/text/2021-BoltonKacperczyk2021CarbonRisk-do-investors-care-about-carbon-risk.txt:1221-1260"
+        },
+        {
+          "heading": "Venue span and route complexity",
+          "classification": "substantive_bridge",
+          "incoming_object": "The USDT-centred rotation across endpoint markets.",
+          "opening_function": "Examines whether observed venue span and route length account for the aggregate shift.",
+          "judgment": "The opening names a specific rival margin and the comparison used to assess it.",
+          "raw_exemplar": "literature/text/2022-ChangDuLouPolk2022Ripples-ripples-into-waves-trade-networks-economic-activity-and-asset-prices.txt:1369-1380"
+        }
+      ],
+      "paragraph_flow_review": {
+        "transition_lines": [34, 49, 51, 53, 92, 97, 99, 101, 103, 106, 128, 130, 132, 134],
+        "judgment": "The result sequence moves from aggregate rotation to its non-monotone path, endpoint-pair margins, the like-for-like comparison, the economic meaning of the components, token attribution, endpoint demand, venue composition, institutional differences, route complexity, and the limits of protocol chronology. Each transition states which unresolved part of the preceding result it addresses.",
+        "raw_exemplars": [
+          "literature/text/2020-MakarovSchoar2020Arbitrage-trading-and-arbitrage-in-cryptocurrency-markets.txt:886-991",
+          "literature/text/2022-ChangDuLouPolk2022Ripples-ripples-into-waves-trade-networks-economic-activity-and-asset-prices.txt:1369-1380"
+        ],
+        "jumps": []
+      },
       "judgment": "The section uses the same scientific dependency as the raw passages: route counting first establishes frequency, the value-support rule then explains which routes can receive reliable dollar weights, the aggregate change raises the question of where it occurs, and the allocation accounting separates margins. The like-for-like estimates are interpreted through their confidence intervals: the intervals include zero but exclude increases large enough to explain the aggregate transition. The discussion then turns to USDT, endpoint demand, and observed venue span. Following the raw JFE exhibits, notes now define samples, weights, measures, panels, and uncertainty without restating visible estimates, carrying roadmaps, or repeating the identification discussion from the body.",
       "entry_handoff": "The first paragraph takes the exact two-leg route defined in Section 2 and explains the count and value denominators before reporting a change.",
       "internal_progression": "Aggregate rotation motivates the endpoint-pair decomposition, which motivates the matched comparison, USDT attribution, and venue-span analysis.",
       "exit_handoff": "The section ends by stating the transaction-state comparison needed to distinguish architecture from changing endpoint pairs and market conditions."
     },
     "paper/sections/06-executability.tex": {
-      "sha256": "28131a8e93be16f11175ed00efabc7fd8f8ee2593aeb92b59c8a2e21a886d9bb",
+      "sha256": "0c1a1a9f0c3850e6d6fa0c1c42691c8f291d6ef74d4471d8657defc53336b410",
       "status": "rewritten",
       "exemplars": [
         "literature/text/2020-MakarovSchoar2020Arbitrage-trading-and-arbitrage-in-cryptocurrency-markets.txt:1923-2116",
         "literature/text/2022-GrahamGrennanHarveyRajgopal-corporate-culture-evidence-field-jfe.txt:258-388"
       ],
+      "openings": [
+        {
+          "heading": "What the price comparison can identify",
+          "classification": "substantive_bridge",
+          "incoming_object": "The realised route-composition findings.",
+          "opening_function": "Separates the observed path from the unobserved alternatives required to interpret relative execution cost.",
+          "judgment": "The opening states the additional inferential requirement without narrating what the authors keep in separate sections.",
+          "raw_exemplar": "literature/text/2023-LiYeZheng2023Refusing-refusing-the-best-price.txt:980-990"
+        }
+      ],
+      "paragraph_flow_review": {
+        "transition_lines": [8, 10, 12, 14, 17],
+        "judgment": "The section first defines the opportunity set and then adds pre-transaction state, observed size-depth support, and market coverage one at a time before returning to the evidence each requirement governs.",
+        "raw_exemplars": [
+          "literature/text/2023-LiYeZheng2023Refusing-refusing-the-best-price.txt:980-990",
+          "literature/text/2020-MakarovSchoar2020Arbitrage-trading-and-arbitrage-in-cryptocurrency-markets.txt:1923-2116"
+        ],
+        "jumps": []
+      },
       "judgment": "The section no longer promotes the withdrawn hour-end comparison. It separates the observed route fact from the additional information needed to interpret route choice: a contemporaneous opportunity set, exact pre-transaction state, comparable trade-size and depth, and measured venue coverage. The Curve exclusion is quantified where it first affects interpretation. The section closes by preserving the route-composition result rather than narrating an abandoned implementation.",
       "entry_handoff": "The opening names the realised-route result and then states the additional alternatives and costs required to explain route choice.",
       "internal_progression": "The section moves through pre-transaction state, trade-size support, and venue coverage as three distinct requirements.",
@@ -170,30 +344,185 @@
         "literature/text/2022-ChangDuLouPolk2022Ripples-ripples-into-waves-trade-networks-economic-activity-and-asset-prices.txt:1321-1445",
         "literature/text/2021-BoltonKacperczyk2021CarbonRisk-do-investors-care-about-carbon-risk.txt:1635-1702"
       ],
+      "openings": [
+        {
+          "heading": "Interpreting the rotation",
+          "classification": "direct",
+          "incoming_object": "The endpoint-market decomposition established in the preceding empirical section.",
+          "opening_function": "Returns directly to the fact that the candidate mechanisms must explain.",
+          "judgment": "The section begins with its inherited empirical object rather than a generic mechanism inventory.",
+          "raw_exemplar": "literature/text/2022-ChangDuLouPolk2022Ripples-ripples-into-waves-trade-networks-economic-activity-and-asset-prices.txt:1369-1380"
+        },
+        {
+          "heading": "Liquidity and router reach",
+          "classification": "direct",
+          "incoming_object": "The reallocation of routed activity across endpoint markets.",
+          "opening_function": "States the liquidity feedback and the independent timing evidence needed to assess it.",
+          "judgment": "The opening connects the mechanism to a named empirical implication.",
+          "raw_exemplar": "literature/text/2022-ChangDuLouPolk2022Ripples-ripples-into-waves-trade-networks-economic-activity-and-asset-prices.txt:1369-1380"
+        },
+        {
+          "heading": "Asset risk and software architecture",
+          "classification": "substantive_bridge",
+          "incoming_object": "The liquidity and router-reach explanations.",
+          "opening_function": "Introduces distinct asset-risk and settlement mechanisms that predict different comparisons.",
+          "judgment": "The opening broadens the mechanism set while keeping the predicted evidence attached to each explanation.",
+          "raw_exemplar": "literature/text/2021-BoltonKacperczyk2021CarbonRisk-do-investors-care-about-carbon-risk.txt:1635-1702"
+        }
+      ],
+      "paragraph_flow_review": {
+        "transition_lines": [13, 15, 17, 19, 24, 26, 28, 30],
+        "judgment": "The mechanism discussion inherits the endpoint-market reallocation, develops liquidity and its timing implication, adds router access, then turns to asset risk, software persistence, and V4 settlement before closing on the comparisons that distinguish them.",
+        "raw_exemplars": [
+          "literature/text/2022-ChangDuLouPolk2022Ripples-ripples-into-waves-trade-networks-economic-activity-and-asset-prices.txt:1369-1445",
+          "literature/text/2021-BoltonKacperczyk2021CarbonRisk-do-investors-care-about-carbon-risk.txt:1635-1702"
+        ],
+        "jumps": []
+      },
       "judgment": "The section performs a design rather than results function. It inherits the endpoint-market reallocation, names the live liquidity, router-reach, asset-risk, and architecture explanations, and states the comparison each would require. It names the Uniswap v1-to-v2 institutional change while keeping the separate v1 comparison outside the route panel. The closing paragraph is explicit that route evidence narrows but does not rank the mechanisms.",
       "entry_handoff": "The endpoint-pair decomposition, rather than an unnamed set of results, supplies the fact that the mechanisms must explain.",
       "internal_progression": "Liquidity timing and executable depth lead to router reach, asset risk, software persistence, and the separate V4 settlement question.",
       "exit_handoff": "The last paragraph lists the matched alternatives and independently measured capital flows needed to rank the explanations."
     },
     "paper/sections/07-conclusion.tex": {
-      "sha256": "bd26d008c63c6d357be1e980f78cd555a9ee7a5978c9ea4767becaebbf2f896b",
+      "sha256": "deaa6e0d05dfa23ecb45279d445ce025e23b6fc1e0970dea6c2b98413a9eeb17",
       "status": "rewritten",
       "exemplars": [
         "literature/text/2023-LiYeZheng2023Refusing-refusing-the-best-price.txt:1848-1901",
         "literature/text/2020-MakarovSchoar2020Arbitrage-trading-and-arbitrage-in-cryptocurrency-markets.txt:2134-2194"
       ],
+      "openings": [
+        {
+          "heading": "Conclusion",
+          "classification": "direct",
+          "incoming_object": "The complete sequence of route findings and their mechanism limits.",
+          "opening_function": "Returns to the measurement contribution and immediately states the concentration result it makes visible.",
+          "judgment": "The opening lifts from route construction to the paper's answer instead of replaying the empirical procedure.",
+          "raw_exemplar": "literature/text/2023-LiYeZheng2023Refusing-refusing-the-best-price.txt:1848-1864"
+        }
+      ],
+      "conclusion_review": {
+        "synthesis": "The conclusion moves from directly observed vehicle use to the stablecoin rotation, then identifies market formation and route incidence as the central margins.",
+        "economic_consequence": "A fixed set of endpoint markets captures only the within-market part of vehicle-dominance formation.",
+        "scope_condition": "Realised paths alone cannot separate liquidity provision, venue reach, endpoint demand, and routing software as explanations for the USDT-centred movement.",
+        "final_sentence_function": "The last sentence closes on the durable implication that vehicle dominance reflects market formation as well as intermediary choice within established markets.",
+        "raw_exemplars": [
+          "literature/text/2023-LiYeZheng2023Refusing-refusing-the-best-price.txt:1848-1924",
+          "literature/text/2025-HuangRanaldoSchrimpfSomogyi-constrained-liquidity-provision-currency-markets-jfe.txt:1588-1660"
+        ]
+      },
+      "paragraph_flow_review": {
+        "transition_lines": [8, 10, 12],
+        "judgment": "The conclusion moves from the directly observed role to where the transition occurs, then to the market-formation extension of the liquidity feedback, and finally to a bounded mechanism caveat followed by the durable implication.",
+        "raw_exemplars": [
+          "literature/text/2023-LiYeZheng2023Refusing-refusing-the-best-price.txt:1848-1924",
+          "literature/text/2025-HuangRanaldoSchrimpfSomogyi-constrained-liquidity-provision-currency-markets-jfe.txt:1588-1660"
+        ],
+        "jumps": []
+      },
       "judgment": "The conclusion returns from route measurement to the non-monotone rotation, the endpoint-market allocation, the near-zero matched-market contrast, the concentration in USDT, and the implications for vehicle-currency formation, while keeping liquidity and settlement as open tests. It describes entry and exit of observed endpoint pairs rather than treating sample entry as market creation.",
       "entry_handoff": "The section begins with what complete routes reveal beyond turnover, returning directly to the paper's measurement contribution.",
       "internal_progression": "It summarizes rotation, endpoint-market reallocation, and the implications for theories of vehicle formation in the order established by the results.",
       "exit_handoff": "The final paragraph names the still-competing explanations and the additional evidence required to distinguish them."
     },
     "paper/sections/08-appendix.tex": {
-      "sha256": "fd4a6c7fcb834284d0db2dbda3a8b5354190f57672b948b2809f5aca2baaec56",
+      "sha256": "e5ee00a173eaaf64cb05479f329e1203da2c870de6c3474d0c68dcaeb9d75aca",
       "status": "rewritten",
       "exemplars": [
         "literature/text/2023-LiYeZheng2023Refusing-refusing-the-best-price.txt:395-510",
         "literature/text/2022-GrahamGrennanHarveyRajgopal-corporate-culture-evidence-field-jfe.txt:1967-2011"
       ],
+      "openings": [
+        {
+          "heading": "From contract events to economic routes",
+          "classification": "direct",
+          "incoming_object": "The transaction-level route used throughout the paper.",
+          "opening_function": "Begins with protocol-specific records and the operations needed to recover a common economic route.",
+          "judgment": "The appendix opens on the measurement dependency it documents.",
+          "raw_exemplar": "literature/text/2023-LiYeZheng2023Refusing-refusing-the-best-price.txt:395-510"
+        },
+        {
+          "heading": "Quoter construction and validation",
+          "classification": "direct",
+          "incoming_object": "The counterfactual outputs used in the price comparison.",
+          "opening_function": "Defines the exact-input question common to every venue-specific quoter.",
+          "judgment": "The common pricing object precedes the individual bonding curves.",
+          "raw_exemplar": "literature/text/2022-GrahamGrennanHarveyRajgopal-corporate-culture-evidence-field-jfe.txt:1967-2011"
+        },
+        {
+          "heading": "Constant-product pools",
+          "classification": "direct",
+          "incoming_object": "The common exact-input quote.",
+          "opening_function": "Specializes the common state and trade notation to constant-product pools.",
+          "judgment": "The pool family is introduced through the same paper-wide primitives used by the other quoters.",
+          "raw_exemplar": "literature/text/2023-LiYeZheng2023Refusing-refusing-the-best-price.txt:395-510"
+        },
+        {
+          "heading": "Concentrated liquidity",
+          "classification": "substantive_bridge",
+          "incoming_object": "The reserve-pair representation of constant-product pools.",
+          "opening_function": "Explains why concentrated liquidity requires range state in addition to the common trade primitives.",
+          "judgment": "The opening states the economic difference before the formulas.",
+          "raw_exemplar": "literature/text/2023-LiYeZheng2023Refusing-refusing-the-best-price.txt:395-510"
+        },
+        {
+          "heading": "StableSwap pools",
+          "classification": "substantive_bridge",
+          "incoming_object": "The common exact-input quote and constant-product benchmark.",
+          "opening_function": "Introduces the interpolation between constant sum and constant product.",
+          "judgment": "The limiting cases give the new invariant an immediate economic interpretation.",
+          "raw_exemplar": "literature/text/2023-LiYeZheng2023Refusing-refusing-the-best-price.txt:395-510"
+        },
+        {
+          "heading": "Weighted pools",
+          "classification": "direct",
+          "incoming_object": "The common exact-input quote across pool families.",
+          "opening_function": "Introduces the balance and weight inputs that distinguish the weighted invariant.",
+          "judgment": "The opening reuses the common primitives and adds only the family-specific weights.",
+          "raw_exemplar": "literature/text/2023-LiYeZheng2023Refusing-refusing-the-best-price.txt:395-510"
+        },
+        {
+          "heading": "Reconstructing pool balances before each trade",
+          "classification": "substantive_bridge",
+          "incoming_object": "The state required by every counterfactual quoter.",
+          "opening_function": "Explains why period-end records must be replayed to recover pre-trade state.",
+          "judgment": "The technical reconstruction is motivated by the timing object it identifies.",
+          "raw_exemplar": "literature/text/2022-GrahamGrennanHarveyRajgopal-corporate-culture-evidence-field-jfe.txt:1967-2011"
+        },
+        {
+          "heading": "Restricting hypothetical trades to observed size--depth combinations",
+          "classification": "substantive_bridge",
+          "incoming_object": "Validated quoters evaluated on hypothetical paths.",
+          "opening_function": "Separates validation on realised swaps from support for counterfactual trade sizes.",
+          "judgment": "The support rule follows from the extrapolation problem rather than appearing as an arbitrary filter.",
+          "raw_exemplar": "literature/text/2022-GrahamGrennanHarveyRajgopal-corporate-culture-evidence-field-jfe.txt:1967-2011"
+        },
+        {
+          "heading": "Markets omitted from the price comparison",
+          "classification": "substantive_bridge",
+          "incoming_object": "The supported counterfactual sample.",
+          "opening_function": "States how omitted venues can affect either side of the direct-versus-intermediated comparison.",
+          "judgment": "Coverage is introduced through its consequence for the estimand.",
+          "raw_exemplar": "literature/text/2022-GrahamGrennanHarveyRajgopal-corporate-culture-evidence-field-jfe.txt:1967-2011"
+        },
+        {
+          "heading": "Round-trip exclusion",
+          "classification": "direct",
+          "incoming_object": "The route population used by every preceding construction.",
+          "opening_function": "Defines the excluded path geometry and why it does not represent endpoint conversion.",
+          "judgment": "The exclusion is tied to the paper's economic route unit before its incidence is reported.",
+          "raw_exemplar": "literature/text/2023-LiYeZheng2023Refusing-refusing-the-best-price.txt:395-510"
+        }
+      ],
+      "paragraph_flow_review": {
+        "transition_lines": [16, 18, 20, 23, 28, 33, 45, 50, 52, 58, 70, 81, 84, 87, 115, 121, 126, 132, 139, 145, 148, 174, 191, 194, 197, 237, 243, 245, 251, 256, 259, 264, 266, 269, 275, 281, 316, 346, 351, 384, 387, 427, 430, 433, 443, 485],
+        "judgment": "The appendix follows the dependency chain from event identity to routes, common quote objects, pool-family invariants and validation, pre-trade state, counterfactual support, venue coverage, and the route-population exclusion. Within each block, formulas are preceded by the economic object they compute and followed by the validation or coverage implication used in the paper.",
+        "raw_exemplars": [
+          "literature/text/2023-LiYeZheng2023Refusing-refusing-the-best-price.txt:395-510",
+          "literature/text/2022-GrahamGrennanHarveyRajgopal-corporate-culture-evidence-field-jfe.txt:1967-2011"
+        ],
+        "jumps": []
+      },
       "judgment": "The appendix begins with the economically relevant construction from contract events to routes: address-level identity, unit conversion, transaction ordering, route assembly, valuation, and quantified exclusions. The state-reconstruction discussion reports the final event-replay rule and why liquidity events matter without preserving repair chronology. Withdrawn hour-end estimates are gone. Exhibit notes define plotted marks, denominators, sample dates, and filters; duplicated percentile, median, maximum, and sampling-noise interpretation remains in the surrounding prose rather than the note.",
       "entry_handoff": "The appendix opens with route reconstruction, the first dependency behind the main measurement.",
       "internal_progression": "It proceeds from route identity and validation to quote functions, state reconstruction, support, venue coverage, and round-trip exclusions.",

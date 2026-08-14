@@ -70,8 +70,7 @@
 \begin{frame}{A2. Stablecoin backing cannot be treated as fixed}
 \centering
 \resizebox{0.90\textwidth}{!}{\input{assets/backing-regime-heatmap.tex}}\par
-\vspace{0.04cm}
-{\small Bars begin at public launch or the sample start for older tokens. DAI's segments mark the backing regimes admitted by the classification; the dashed FRAX arrow is a governance target, not an observed collateral share.\par}
+\decknote{Bars begin at public launch or the sample start for older tokens. DAI's segments mark the backing regimes admitted by the classification; the dashed FRAX arrow is a governance target, not an observed collateral share.}
 \end{frame}
 
 % VISUAL-FUNCTION: primary measurement funnel | staged route-object and two-support split | separate topology support from dollar-value support
@@ -165,8 +164,8 @@ V4 singleton
 \node[nodepoint] (a) at (0,0) {$i$};
 \node[nodepoint,fill=ucldark,text=white,draw=ucldark,minimum size=30pt] (e) at (2.5,0) {ETH};
 \node[nodepoint] (b) at (5.0,0) {$o$};
-\draw[route,draw=accent] (a)--node[above,font=\small] {$x$ ETH} (e);
-\draw[route,draw=accent] (e)--node[above,font=\small] {$x$ ETH} (b);
+\draw[route,draw=accent] (a)--node[above,font=\small] {$\Delta_{\mathrm{ETH}}$} (e);
+\draw[route,draw=accent] (e)--node[above,font=\small] {$\Delta_{\mathrm{ETH}}$} (b);
 \node[font=\small\bfseries,text=ucldark,align=center] at (2.5,-1.55) {same transaction, matching ETH flow};
 \end{tikzpicture}
 \end{column}
@@ -191,11 +190,11 @@ V4 singleton
 % EVIDENCE-SOURCES: deck/assets/count-value-route-widths.tex;
 % docs/specification-lock.json; docs/paper-spine.md;
 % docs/finding-intermediation-transition.md.
-\begin{frame}{A8. Count and value define separate dominance margins}
+\begin{frame}{A8. Count versus value weighting}
 \centering
-\resizebox{0.965\textwidth}{!}{\input{assets/count-value-route-widths.tex}}\par
-\vspace{0.16cm}
-{\small Both panels contain the same routes. Line widths are illustrative, and value weighting applies only on the stated valuation-support band.\par}
+\resizebox{0.94\textwidth}{!}{\input{assets/count-value-route-widths.tex}}\par
+\vspace{-0.02cm}
+{\raggedright\decknote{Both panels contain the same routes. Line widths are illustrative, and value weighting applies only on the stated valuation-support band.}}
 \end{frame}
 
 % VISUAL-FUNCTION: intermediary excess use | paired margin formulas pending zero-centered difference plot | separate vehicle demand from endpoint demand
@@ -204,14 +203,14 @@ V4 singleton
 \begin{column}{0.46\textwidth}
 \textbf{Intermediary share}
 \[
-S^I_{k,t}=\frac{N^I_{k,t}}{\sum_j N^I_{j,t}}
+I^N_{k,t}=\frac{n^I_{k,t}}{\sum_j n^I_{j,t}}
 \]
 How often asset $k$ sits inside a route.
 \end{column}
 \begin{column}{0.46\textwidth}
 \textbf{Endpoint share}
 \[
-S^E_{k,t}=\frac{N^{\mathrm{in}}_{k,t}+N^{\mathrm{out}}_{k,t}}{\sum_j N^{\mathrm{in}}_{j,t}+N^{\mathrm{out}}_{j,t}}
+E^N_{k,t}=\frac{n^E_{k,t}}{\sum_j n^E_{j,t}}
 \]
 How often asset $k$ is what traders buy or sell.
 \end{column}
@@ -256,7 +255,7 @@ How often asset $k$ is what traders buy or sell.
 \includegraphics[width=0.93\textwidth,height=0.66\textheight,keepaspectratio]{../output/figures/experiments/integration_vehicle_alluvial.pdf}
 \end{center}
 \vspace{-0.12cm}
-{\scriptsize The ribbons classify realised intermediation jointly by venue scope and intermediary type. They describe selected routes; they do not identify an effect of integration or the unchosen opportunity set.\par}
+\decknote{Ribbon width is the share of 2026 intermediation jointly classified by venue scope and intermediary type.}
 \vfill
 \end{frame}
 

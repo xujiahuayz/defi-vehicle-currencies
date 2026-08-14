@@ -131,10 +131,10 @@ NOTATION_DEFINITIONS: tuple[NotationDefinition, ...] = (
     ),
     NotationDefinition(
         group="Indices",
-        notation=r"$g$",
-        unit="Settlement comparison cell",
+        notation=r"$c$",
+        unit="Matched settlement stratum",
         definition=(
-            r"Settlement comparison cell defined by ordered pair $(i,o)$, vehicle $k$, "
+            r"Matched settlement stratum defined by ordered pair $(i,o)$, vehicle $k$, "
             r"UTC week $w$, and a prespecified route-size bin."
         ),
     ),
@@ -153,6 +153,66 @@ NOTATION_DEFINITIONS: tuple[NotationDefinition, ...] = (
             r"contributes one $r$ regardless of its number of legs; a split or join contributes "
             r"one $r$ per reconstructed input--output pair."
         ),
+    ),
+    NotationDefinition(
+        group="Quote primitives",
+        notation=r"$\chi_{p,t}$",
+        unit="Pool state",
+        definition=r"Reconstructed state of pool $p$ immediately before the quoted transaction on day $t$.",
+    ),
+    NotationDefinition(
+        group="Quote primitives",
+        notation=r"$\Delta_i(q,t)=q/P_{i,t}$",
+        unit="Units of token $i$",
+        definition=r"Token input corresponding to dollar notional $q$ at the day-$t$ USD price of input token $i$.",
+    ),
+    NotationDefinition(
+        group="Quote primitives",
+        notation=r"$Q_p(i\to o,\Delta_i;\chi_{p,t})$",
+        unit="Units of token $o$",
+        definition=r"Exact-input output of pool $p$ for token input $\Delta_i$ at reconstructed state $\chi_{p,t}$.",
+    ),
+    NotationDefinition(
+        group="Quote primitives",
+        notation=r"$O_r(q,t)$",
+        unit="USD",
+        definition=r"Dollar value of route $r$'s quoted output: its token output multiplied by $P_{o,t}$.",
+    ),
+    NotationDefinition(
+        group="Pool-state primitives",
+        notation=r"$R_{j,p,t},\ \mathbf R_{p,t}$",
+        unit="Token units / reserve vector",
+        definition=r"Actual reserve of token $j$ in pool $p$, and the vector collecting all of pool $p$'s token reserves.",
+    ),
+    NotationDefinition(
+        group="Pool-state primitives",
+        notation=r"$f_p,\ \varphi_p=1-f_p$",
+        unit="Fraction",
+        definition=r"Pool $p$'s swap-fee rate and the fraction of token input retained in the pricing invariant.",
+    ),
+    NotationDefinition(
+        group="Pool-state primitives",
+        notation=r"$L_{p,t},\ \widetilde R_{0,p,t},\ \widetilde R_{1,p,t}$",
+        unit="Liquidity / virtual token units",
+        definition=r"Active concentrated liquidity and its token0 and token1 virtual reserves at the current price.",
+    ),
+    NotationDefinition(
+        group="Pool-state primitives",
+        notation=r"$A_p,\ D_p$",
+        unit="Amplification / normalized token units",
+        definition=r"StableSwap amplification coefficient and invariant for pool $p$.",
+    ),
+    NotationDefinition(
+        group="Pool-state primitives",
+        notation=r"$w_{j,p},\ K_{w,p}$",
+        unit="Fraction / invariant",
+        definition=r"Token $j$'s Balancer weight and pool $p$'s weighted-geometric-mean invariant.",
+    ),
+    NotationDefinition(
+        group="Pool-state primitives",
+        notation=r"$\boldsymbol\Delta_{p,e}$",
+        unit="Vector of signed token units",
+        definition=r"Net reserve change caused by event $e$ in pool $p$, ordered by blockchain execution position.",
     ),
     NotationDefinition(
         group="Route and liquidity aggregates",
@@ -586,11 +646,11 @@ NOTATION_DEFINITIONS: tuple[NotationDefinition, ...] = (
     ),
     NotationDefinition(
         group="Settlement objects and operators",
-        notation=r"$\mathcal R^3_g,\ \mathcal R^4_g$",
+        notation=r"$\mathcal R^3_c,\ \mathcal R^4_c$",
         unit="Sets of route units",
         definition=(
-            r"Receipt-audited route units in settlement comparison cell $g$ executed on "
-            r"Uniswap V3 and V4, respectively. A matched cell has both sets nonempty."
+            r"Receipt-audited route units in matched settlement stratum $c$ executed on "
+            r"Uniswap V3 and V4, respectively. A matched stratum has both sets nonempty."
         ),
     ),
     NotationDefinition(
@@ -2013,7 +2073,7 @@ VARIABLE_SPECS: tuple[VariableSpec, ...] = (
         name="V4 route indicator",
         column="v4_route",
         notation=r"$\mathrm{V4}_{r}$",
-        formula=r"$\mathbf{1}_{\{r\in\mathcal R^4_g\}}$",
+        formula=r"$\mathbf{1}_{\{r\in\mathcal R^4_c\}}$",
         unit="Indicator (0/1)",
         construction=r"Equals one when matched route unit $r$ executes on Uniswap V4.",
         source="data/empirical/v4_settlement_route_units.parquet",
@@ -2024,12 +2084,12 @@ VARIABLE_SPECS: tuple[VariableSpec, ...] = (
         group="Execution-architecture measures",
         name="V4 route share",
         column="v4_route_share",
-        notation=r"$\mathrm{V4RouteShare}_{g}$",
-        formula=r"$\displaystyle\frac{|\mathcal R^4_g|}{|\mathcal R^3_g|+|\mathcal R^4_g|}$",
+        notation=r"$\mathrm{V4RouteShare}_{c}$",
+        formula=r"$\displaystyle\frac{|\mathcal R^4_c|}{|\mathcal R^3_c|+|\mathcal R^4_c|}$",
         unit="Fraction (0--1)",
         construction=(
             r"Fraction of pure V3/V4 route units in ordered endpoint-pair, vehicle and week "
-            r"cell $g$ that execute on V4. Mixed-source components are excluded before assignment."
+            r"matched stratum $c$ that execute on V4. Mixed-source components are excluded before assignment."
         ),
         source="data/processed/architecture_state_weekly.parquet",
         used_for="Architecture-state adoption, exit and reversal diagnostics.",
