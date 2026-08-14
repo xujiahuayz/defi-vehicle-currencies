@@ -16,6 +16,7 @@ import numpy as np
 import pandas as pd
 from scipy import stats
 
+from ddvc.analysis.vehicle_role_risk import add_transition_taxonomy
 from ddvc.asset_types import classify
 from ddvc.model_artifacts import (
     attach_spec_ids,
@@ -84,12 +85,11 @@ def build_transition_risk(source: pd.DataFrame) -> pd.DataFrame:
     data["duration_weeks"] = (
         data.groupby([*KEYS, "spell_number"], observed=True).cumcount() + 1
     )
-    data["next_week"] = data.groupby(list(KEYS), observed=True)["week"].shift(-1)
-    data["next_used"] = data.groupby(list(KEYS), observed=True)["used"].shift(-1)
-    data["consecutive_next"] = data["next_week"].sub(data["week"]).dt.days.eq(7)
+    data["pair_candidate_routes"] = data.groupby(
+        ["week", "src", "sink"], observed=True
+    )["total_routes"].transform("sum")
+    data = add_transition_taxonomy(data)
     data = data[data["consecutive_next"]].copy()
-    data["formation_event"] = ((data["used"] == 0) & (data["next_used"] == 1)).astype(np.int8)
-    data["loss_event"] = ((data["used"] == 1) & (data["next_used"] == 0)).astype(np.int8)
     data["duration_2"] = data["duration_weeks"].eq(2).astype(np.int8)
     data["duration_3_4"] = data["duration_weeks"].between(3, 4).astype(np.int8)
     data["duration_5_8"] = data["duration_weeks"].between(5, 8).astype(np.int8)
@@ -98,10 +98,10 @@ def build_transition_risk(source: pd.DataFrame) -> pd.DataFrame:
 
 
 def fit_discrete_logit(risk: pd.DataFrame, transition: str) -> dict[str, object]:
+    if transition not in {"formation", "substitution_exit"}:
+        raise ValueError(f"unknown vehicle-role transition: {transition}")
     import pyfixest as pf
 
-    if transition not in {"formation", "loss"}:
-        raise ValueError(f"unknown vehicle-role transition: {transition}")
     state = 0 if transition == "formation" else 1
     outcome = f"{transition}_event"
     sample = risk[risk["used"].eq(state)].copy()
@@ -177,6 +177,11 @@ def fit_ppml_utilisation(candidate_panel: pd.DataFrame) -> dict[str, object]:
 
 
 def _spell_table(risk: pd.DataFrame, transition: str) -> pd.DataFrame:
+    if transition not in {"formation", "substitution_exit"}:
+        raise ValueError(
+            "candidate-level Cox sensitivity is defined only for formation "
+            "and substitution exit"
+        )
     state = 0 if transition == "formation" else 1
     outcome = f"{transition}_event"
     sample = risk[risk["used"].eq(state)].copy()
@@ -256,6 +261,68 @@ def fit_stratified_cox_sensitivity(risk: pd.DataFrame, transition: str) -> dict[
     }
 
 
+def summarize_transition_support(
+    source: pd.DataFrame,
+    candidate_panel: pd.DataFrame,
+    risk: pd.DataFrame,
+) -> pd.DataFrame:
+    """Count candidate transitions and pair-level role disappearance distinctly."""
+
+    pair_keys = ["week", "src", "sink"]
+    observed = risk[risk["transition_observed"]].copy()
+    pair_consistency = observed.groupby(pair_keys, observed=True).agg(
+        current_route_values=("pair_candidate_routes", "nunique"),
+        next_route_values=("next_pair_candidate_routes", "nunique"),
+    )
+    if pair_consistency.gt(1).any().any():
+        raise ValueError("pair-level route totals are not pair-week common")
+    disappearance_consistency = (
+        observed[observed["used"].eq(1)]
+        .groupby(pair_keys, observed=True)["role_disappearance_event"]
+        .nunique()
+    )
+    if disappearance_consistency.gt(1).any():
+        raise ValueError("role-disappearance outcome differs across at-risk candidates")
+    pair_risk = (
+        observed.groupby(pair_keys, observed=True, as_index=False)
+        .agg(
+            pair_candidate_routes=("pair_candidate_routes", "first"),
+            next_pair_candidate_routes=("next_pair_candidate_routes", "first"),
+        )
+    )
+    pair_risk = pair_risk[pair_risk["pair_candidate_routes"].gt(0)].copy()
+    pair_risk["role_disappearance_event"] = pair_risk[
+        "next_pair_candidate_routes"
+    ].eq(0)
+    return pd.DataFrame(
+        [
+            {
+                "source_rows": len(source),
+                "stable_native_candidate_rows": len(candidate_panel),
+                "zero_use_rows": int(candidate_panel["total_routes"].eq(0).sum()),
+                "ordered_pairs": int(candidate_panel["pair"].nunique()),
+                "pair_candidates": int(candidate_panel["owner"].nunique()),
+                "weeks": int(candidate_panel["week"].nunique()),
+                "formation_risk_rows": int(observed["used"].eq(0).sum()),
+                "formation_events": int(observed["formation_event"].sum()),
+                "continuing_use_events": int(observed["continuing_use_event"].sum()),
+                "substitution_exit_risk_rows": int(observed["used"].eq(1).sum()),
+                "substitution_exit_events": int(
+                    observed["substitution_exit_event"].sum()
+                ),
+                "role_disappearance_risk_pair_weeks": int(len(pair_risk)),
+                "role_disappearance_event_pair_weeks": int(
+                    pair_risk["role_disappearance_event"].sum()
+                ),
+                "role_disappearance_analysis": "descriptive_ordered_pair_week_outcome",
+                "candidate_set": "stable_or_native_candidates_ever_observed_for_pair",
+                "zero_definition": "no_realised_use_while_ordered_pair_active",
+                "opportunity_set_status": "unobserved_and_not_imputed",
+            }
+        ]
+    )
+
+
 def run(
     *,
     source_path: Path = SOURCE_PANEL,
@@ -269,31 +336,13 @@ def run(
     candidate_panel = prepare_candidate_panel(source)
     risk = build_transition_risk(source)
     rows = [fit_ppml_utilisation(candidate_panel)]
-    for transition in ("formation", "loss"):
+    for transition in ("formation", "substitution_exit"):
         rows.append(fit_discrete_logit(risk, transition))
         rows.append(fit_stratified_cox_sensitivity(risk, transition))
     results = attach_spec_ids(
         pd.DataFrame(rows), prefix="vehicle_role_methodology", columns=("method", "transition")
     )
-    support = pd.DataFrame(
-        [
-            {
-                "source_rows": len(source),
-                "stable_native_candidate_rows": len(candidate_panel),
-                "zero_use_rows": int(candidate_panel["total_routes"].eq(0).sum()),
-                "ordered_pairs": int(candidate_panel["pair"].nunique()),
-                "pair_candidates": int(candidate_panel["owner"].nunique()),
-                "weeks": int(candidate_panel["week"].nunique()),
-                "formation_risk_rows": int(risk["used"].eq(0).sum()),
-                "formation_events": int(risk["formation_event"].sum()),
-                "loss_risk_rows": int(risk["used"].eq(1).sum()),
-                "loss_events": int(risk["loss_event"].sum()),
-                "candidate_set": "stable_or_native_candidates_ever_observed_for_pair",
-                "zero_definition": "no_realised_use_while_ordered_pair_active",
-                "opportunity_set_status": "unobserved_and_not_imputed",
-            }
-        ]
-    )
+    support = summarize_transition_support(source, candidate_panel, risk)
     context = model_artifact_context(root=root, environment=environment)
     write_model_panel(
         risk,

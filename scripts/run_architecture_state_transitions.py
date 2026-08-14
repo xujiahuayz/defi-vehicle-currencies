@@ -31,7 +31,7 @@ from ddvc.tables import write_exhibit
 ROOT = Path(__file__).resolve().parents[1]
 ROUTES = DATA_DIR / "empirical" / "v4_settlement_route_units.parquet"
 PANEL = DATA_DIR / "processed" / "architecture_state_weekly.parquet"
-ROLE_PANEL = DATA_DIR / "processed" / "architecture_role_risk_weekly.parquet"
+ROLE_PANEL = DATA_DIR / "processed" / "architecture_v3_v4_role_risk_weekly.parquet"
 EXHIBITS = OUTPUT_DIR / "exhibits"
 DECK_VALUES = EXHIBITS / "architecture_transition_deck_values.tex"
 DEXES = ("uniswap_v3", "uniswap_v4")
