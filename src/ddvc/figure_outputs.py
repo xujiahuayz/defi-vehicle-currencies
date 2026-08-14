@@ -655,7 +655,7 @@ def render_vehicle_excess_use_transition(frame: pd.DataFrame, output: Path) -> N
     data = vehicle_excess_use_transition(frame)
     panels = (
         ("vehicle_excess_use_count_ratio", "Route count"),
-        ("vehicle_excess_use_ratio_within_20pct", "Common-support value"),
+        ("vehicle_excess_use_ratio_within_20pct", "Routed value"),
     )
     symbols = data.sort_values("symbol_order")["symbol"].drop_duplicates().tolist()
     years = sorted(data["year"].unique())
@@ -690,7 +690,7 @@ def render_vehicle_excess_use_transition(frame: pd.DataFrame, output: Path) -> N
                         )
                 axis.axvline(1, color="#111827", linewidth=1.0, linestyle="--", alpha=0.8)
                 axis.set_title(title, loc="left", fontsize=12, fontweight="bold", pad=8)
-                axis.set_xlabel("Intermediary share / endpoint share")
+                axis.set_xlabel("Intermediary use relative to endpoint use")
                 axis.set_yticks(range(len(symbols)), symbols)
                 axis.set_ylim(-0.55, len(symbols) - 0.45)
                 axis.grid(axis="x", color="#D1D5DB", linewidth=0.6, alpha=0.75)
@@ -704,7 +704,7 @@ def render_vehicle_excess_use_transition(frame: pd.DataFrame, output: Path) -> N
             figure.text(
                 0.995,
                 0.015,
-                "Dashed line is parity. Value requires source–intermediary–sink amounts within 20%.",
+                "Dashed line is parity. Routed value is shown only when all three dollar amounts agree within 20%.",
                 ha="right",
                 va="bottom",
                 fontsize=8,

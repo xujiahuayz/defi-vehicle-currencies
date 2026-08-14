@@ -70,22 +70,46 @@
 \end{columns}
 \end{frame}
 
-% EVIDENCE-STATUS: authentic route trace; exact same-state alternative remains outside this exhibit
+% EVIDENCE-STATUS: authentic transaction and route-component trace; exact same-state alternative remains outside this exhibit
 % EVIDENCE-COMMIT: 0c9ccc9
-% EVIDENCE-SOURCES: output/exhibits/route_replay.json; output/figures/route_replay.pdf; data/unified/20260110.parquet
+% EVIDENCE-SOURCES: output/exhibits/route_replay.json; data/unified/20260110.parquet; https://eth.blockscout.com/tx/0xbda1d07f17c503b5a9c8117c5d1383472006af8a9e22aa4e5e30804b9bf67ad9?tab=token_transfers (retrieved 2026-08-14)
 % EVIDENCE-GENERATION: transaction 0xbda1d07f17c503b5a9c8117c5d1383472006af8a9e22aa4e5e30804b9bf67ad9 component 0; partition sha256 a6870bc64badeecf030a1096e69b2ddfc9202e5c4ef99a8c5237d4d458033c6d
 % LIVE-COMPANION: output/live/route_replay.html (native HTML/CSS/JS reveal; no embedded video)
-% VISUAL-FUNCTION: observable vehicle use | authentic transaction trace | reveal route ordering, amounts, and venues without imputing an alternative
-\begin{frame}{This transaction routes USDC into USDe through USDT}
-\evidencekicker{Observed route}
+% LITERATURE-PRECEDENT: Lehar and Parlour (2025), Appendix B, pairs one named explorer transaction with decoded logs before handing off to the population reconstruction.
+% VISUAL-FUNCTION: observable vehicle use | authentic explorer screenshot plus native decoded component | show why the transaction headline is not itself an economic route
+\input{../output/exhibits/route_replay_deck_values.tex}
+\begin{frame}{The transaction headline omits the intermediary route}
+\begin{columns}[T,totalwidth=\textwidth]
+\begin{column}{0.57\textwidth}
+\evidencekicker{What the explorer shows}
 \vspace{0.08cm}
-\begin{center}
-\includegraphics[width=0.79\textwidth]{../output/figures/route_replay.pdf}
-\end{center}
+\centering
+\includegraphics[width=\linewidth,height=3.55cm,keepaspectratio,trim=250 150 20 170,clip]{assets/observed_route_blockscout.png}
+\par\vspace{0.04cm}
+\raggedright
+{\scriptsize The interface summarizes a PYUSD--USDe swap executed through 0x.\par}
+\end{column}
+\begin{column}{0.40\textwidth}
+\evidencekicker{What the ordered logs reveal}
+\vspace{0.18cm}
+\begin{tikzpicture}[x=1cm,y=1cm,scale=0.88,transform shape]
+\node[nodepoint] (a) at (0.35,2.75) {USDC};
+\node[nodepoint,fill=ucldark,text=white,draw=ucldark] (k) at (2.20,2.75) {USDT};
+\node[nodepoint] (b) at (4.05,2.75) {USDe};
+\draw[route,draw=ucldark] (a)--(k);
+\draw[route,draw=ucldark] (k)--(b);
+\node[font=\scriptsize\bfseries,text=ucldark,align=center] at (1.28,3.45) {Fluid};
+\node[font=\scriptsize\bfseries,text=ucldark,align=center] at (3.13,3.45) {Uniswap V4};
+\node[font=\scriptsize,text=muted,align=center] at (1.28,1.85) {\RouteReplayInputAmount{} USDC\\$\rightarrow$ \RouteReplayVehicleAmount{} USDT};
+\node[font=\scriptsize,text=muted,align=center] at (3.13,1.85) {\RouteReplayVehicleAmount{} USDT\\$\rightarrow$ \RouteReplayOutputAmount{} USDe};
+\node[softbox,text width=4.25cm,minimum height=1.05cm,align=left,anchor=north] at (2.20,1.08) {\scriptsize Within the same transaction, one connected component routes \textbf{\$\RouteReplayValue} through USDT across two venues.};
+\end{tikzpicture}
 \vspace{-0.10cm}
-\begin{beamercolorbox}[wd=\textwidth,sep=0.28cm]{soft panel}
-{\small The trace shows that USDT was used. It cannot tell us whether a direct USDC--USDe route was available or cheaper at that moment.\par}
-\end{beamercolorbox}
+{\scriptsize\color{muted}\texttt{0xbda1d07f\ldots bf67ad9}, 10 January 2026\par}
+\end{column}
+\end{columns}
+\vspace{0.05cm}
+{\scriptsize Ordered pool events identify the route component and its intermediary. The example shows what we observe; it does not show that the route was optimal or representative.\par}
 \end{frame}
 
 % EVIDENCE-STATUS: verified institutional mechanism; no empirical estimate is displayed.

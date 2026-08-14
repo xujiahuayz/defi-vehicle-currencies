@@ -1,9 +1,9 @@
 {
  "argv": [],
- "artefact": "output/figures/route_replay.pdf",
- "artefact_bytes": 41900,
- "artefact_mtime_ns": 1786669773008054733,
- "artefact_sha256": "da9605fd30b446d0fe2dcc818d6b99e4988750b372db207916a023aa883f2735",
+ "artefact": "output/exhibits/route_replay_deck_values.tex",
+ "artefact_bytes": 254,
+ "artefact_mtime_ns": 1786669773117495421,
+ "artefact_sha256": "17aae678e20a841f2c1d133fd1b378c9f719b888073ef532de7272be9c893c72",
  "code_fingerprint": "ad51030ef2996bed8e013269969ceb3a89a4337e51409bc7756988de06b7b640",
  "code_sources": [
   "scripts/figure/render_route_replay_assets.py",
@@ -15,9 +15,11 @@
   "commit": "a2eb63e7da07f7469d068ae2e8726063ebfbe34c",
   "dirty": true,
   "dirty_generated_files": [
+   "data/manifests/output/figures/route_replay.pdf.prov.json",
+   "data/manifests/output/live/route_replay.html.prov.json",
    "output/figures/vehicle_excess_use_transition.pdf",
-   "output/figures/.route_replay.pdf.p_spr3wb.pdf",
-   "output/figures/.route_replay.pdf.p_spr3wb.tmp"
+   "output/exhibits/.route_replay_deck_values.tex.ueajcsuy.tex",
+   "output/exhibits/.route_replay_deck_values.tex.ueajcsuy.tmp"
   ],
   "dirty_tracked_files": [
    "deck/main.pdf",
@@ -46,12 +48,12 @@
   "pyarrow": "25.0.0",
   "scipy": "1.18.0"
  },
- "notes": "Complete static frame for one admitted two-leg cross-venue transaction trace",
+ "notes": "Presentation labels for the same admitted route used by the static and live traces",
  "payload_identity": {
-  "bytes": 41900,
+  "bytes": 254,
   "format": "binary",
   "schema_version": 1,
-  "sha256": "da9605fd30b446d0fe2dcc818d6b99e4988750b372db207916a023aa883f2735"
+  "sha256": "17aae678e20a841f2c1d133fd1b378c9f719b888073ef532de7272be9c893c72"
  },
  "python": "3.14.5",
  "rows": null,

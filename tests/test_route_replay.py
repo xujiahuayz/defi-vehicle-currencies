@@ -8,6 +8,7 @@ from ddvc.route_replay import (
     render_route_replay_html,
     render_route_replay_pdf,
 )
+from scripts.figure.render_route_replay_assets import _deck_values_tex
 
 
 def _legs() -> pd.DataFrame:
@@ -94,3 +95,16 @@ def test_static_replay_is_a_vector_pdf(tmp_path) -> None:
     render_route_replay_pdf(manifest, output)
     assert output.read_bytes().startswith(b"%PDF")
     assert output.stat().st_size > 1_000
+
+
+def test_deck_labels_are_generated_from_the_route_manifest() -> None:
+    manifest = build_route_replay_manifest(
+        _legs(), day="20260110", tx_hash="0xabc", component_id=0, partition_sha256="f" * 64
+    )
+
+    values = _deck_values_tex(manifest)
+
+    assert r"\RouteReplayInputAmount}{100,000}" in values
+    assert r"\RouteReplayVehicleAmount}{99,990}" in values
+    assert r"\RouteReplayOutputAmount}{100,040}" in values
+    assert r"\RouteReplayValue}{100,000}" in values
