@@ -57,10 +57,13 @@ ACTION_REGRESSION_CHECKS = {
     "deck": (
         "Consult the persistent visual backlog so prior requests do not depend on chat recall; select the visual form by the economic comparison.",
         "Keep the deck presentable after the touch; status, generation, paths, and commit hashes stay in source comments/manifests, not the rendered PDF.",
+        "Keep exhibit notes to the unit, construction, encodings, sample, weighting, and inference needed to read the exhibit. Put interpretation in visible slide prose, and give each definition one owner within an exhibit.",
     ),
     "prose": (
         "Cards are locators only. Reread the closest raw published JFE passages before drafting and record those passage locations.",
         "Rewrite the economic argument, paragraph sequence, transitions, and sentence functions; never infer style from term replacement or a generic template.",
+        "Keep a class-level statement general and use a named institution, dataset, episode, or magnitude as its supporting example, not as its replacement. Distinguish constructs by stating positively what each one measures and why the comparison matters; do not hide an exclusion behind different, distinct, or a list of adjacent roles.",
+        "Make every exhibit independently readable, but keep its note to construction, encodings, sample, weighting, and inference. Interpret results in the paper, and search the exhibit before repeating a definition in its note.",
     ),
 }
 

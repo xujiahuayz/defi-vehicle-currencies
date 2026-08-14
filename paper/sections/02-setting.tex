@@ -151,6 +151,10 @@ Round trips, share of multi-leg routes by value & 21.7\% \\
 % output/exhibits/round_trip_share_by_day.jsonl, median of 79 sampled days
 \bottomrule
 \end{tabular}
+\par\vspace{6pt}
+\begin{minipage}{0.90\textwidth}
+\footnotesize\raggedright \emph{Notes.} Calendar partitions are UTC dates in the full eight-deployment panel from 11 February 2020 through 30 June 2026. Raw swaps and usable legs use the full panel. Daily route statistics and round-trip shares use 79 sampled dates from 1 June 2020 through 27 April 2026. A multi-leg route traverses more than one pool; a round trip ends in the token with which it began. Round-trip shares are formed among multi-leg routes.
+\end{minipage}
 \end{table}
 
 Transactions and contract-state changes are publicly observable \citep{Schar2021DeFi}, but an economic route must still be reconstructed across pool events, venues, and token units. The reconstruction identifies the executed route and its calling contract, while generally leaving the route-selecting party or software anonymous. On a 2024 snapshot of 74,323 swaps, 241 distinct senders appear, and a registry of the ten largest accounts for 67.7\% of those swaps. By a 2025 snapshot, 397 senders appear across 130,282 swaps and the same registry covers 11.8\%. We therefore report route-level results without attributing them to routers.
@@ -218,6 +222,10 @@ SushiSwap v3 & concentrated liquidity & state not served & \multicolumn{1}{c}{n.
 % docs/venue-coverage-bounds.md, sushiswap_v3 section and the pooled share table
 \bottomrule
 \end{tabular}
+\par\vspace{6pt}
+\begin{minipage}{0.90\textwidth}
+\footnotesize\raggedright \emph{Notes.} Error is the median absolute quote error as a percentage of realised output in the venue-specific validation samples described in Appendix~\ref{app:quoters}. Volume is each venue's share of the seven-venue panel, pooled over 400 dates sampled every seventh calendar day from 2 November 2018 through 30 June 2026. SushiSwap v3 is included in volume but has no quote error because the historical tick state needed for pricing is unavailable.
+\end{minipage}
 \end{table}
 
 Pool design determines how much liquidity is available to a route of a given size. Constant-product pools spread liquidity over the price curve, so price impact rises smoothly as a trade consumes reserves. Concentrated-liquidity pools place capital inside chosen price ranges; a trade that crosses a range boundary encounters a different amount of available depth. StableSwap flattens the curve near parity and is used disproportionately for stable assets, while weighted pools permit asymmetric and multi-asset portfolios. These differences make a common marginal price insufficient. The benchmark must quote the full trade through each pool's own state transition.

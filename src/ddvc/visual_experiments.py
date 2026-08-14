@@ -680,7 +680,7 @@ def render_integration_change_forest(frame: pd.DataFrame, output: Path) -> None:
                 axis.tick_params(axis="y", length=0)
             axes[0].set_yticks(range(len(scopes)), [labels[scope] for scope in scopes])
             figure.suptitle("Stable share rises within realised route scopes", x=0.06, ha="left", fontsize=14, fontweight="bold")
-            figure.text(0.995, 0.012, "Points are 2024-to-2026 changes; bars are 95% HAC intervals. Scope is selected, so comparisons are descriptive.", ha="right", fontsize=8, color="#4B5563")
+            figure.text(0.995, 0.012, "Points are 2024-to-2026 changes; bars are 95% HAC intervals.", ha="right", fontsize=8, color="#4B5563")
             figure.tight_layout(rect=(0, 0.06, 1, 0.93))
             _save(figure, output)
         finally:

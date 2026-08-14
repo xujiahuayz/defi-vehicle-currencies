@@ -47,6 +47,19 @@ def test_prose_preflight_requires_raw_passages_not_term_replacement() -> None:
     checks = " ".join(regression_checks("prose")).lower()
     assert "raw published jfe passages" in checks
     assert "term replacement" in checks
+    assert "class-level statement general" in checks
+    assert "supporting example, not as its replacement" in checks
+    assert "stating positively what each one measures" in checks
+    assert "hide an exclusion" in checks
+    assert "keep its note to construction" in checks
+    assert "interpret results in the paper" in checks
+
+
+def test_deck_preflight_separates_exhibit_notes_from_interpretation() -> None:
+    checks = " ".join(regression_checks("deck")).lower()
+    assert "keep exhibit notes to the unit" in checks
+    assert "interpretation in visible slide prose" in checks
+    assert "one owner within an exhibit" in checks
 
 
 def test_tiered_prose_gate_preserves_blocked_coefficient_boundary() -> None:

@@ -116,37 +116,37 @@
       "exit_handoff": "The last sentence closes on USDT's intermediary use relative to its endpoint use, the most specific current route finding."
     },
     "paper/sections/01-introduction.tex": {
-      "sha256": "ea79b073532a9844cde896eeaac9991e974fffef8b9b549013722b1bdf4431fb",
+      "sha256": "61065eb7eba94f0de39ea80cb5e9833bbcbbcfc45349c5fe9301efd018452c89",
       "status": "rewritten",
       "exemplars": [
         "literature/text/2020-MakarovSchoar2020Arbitrage-trading-and-arbitrage-in-cryptocurrency-markets.txt:95-205",
         "literature/text/2023-LiYeZheng2023Refusing-refusing-the-best-price.txt:96-214"
       ],
-      "judgment": "The section opens with the dollar as the concrete foreign-exchange vehicle, then reaches the route data and separates the eight-venue panel from the Uniswap v1 institutional comparison. Each transition names the object carried forward: complete paths identify intermediary use; exact two-leg routes define the denominator; the five-part accounting precedes the matched comparison; and the USDT and venue-span results follow from that allocation. The matched estimates appear with their standard errors and confidence intervals, so the claim rests on the economically bounded interval rather than on insignificance alone. Liquidity allocation is a possible explanation for the reallocation, whereas V4 is explicitly a separate settlement question.",
+      "judgment": "The section opens with the general concentration of foreign-exchange trading and uses the BIS pair-level records as supporting evidence rather than allowing one dataset to stand for the entire class. The yen--euro example then explains what pair records omit before the route data and sample are introduced. The next paragraph states positively what quoting degree, invoicing and funding shares, and vehicle dominance each measure. Each later transition names the object carried forward: exact two-leg routes define the denominator; the five-part accounting precedes the matched comparison; and the USDT and venue-span results follow from that allocation. The matched estimates appear with their standard errors and confidence intervals, so the claim rests on the economically bounded interval rather than on insignificance alone. Liquidity allocation is a possible explanation for the reallocation, whereas V4 is a separate settlement question.",
       "entry_handoff": "Dollar intermediation supplies the familiar finance object before the paragraph states why pair-level turnover cannot reveal the complete path.",
       "internal_progression": "The section moves from measurement and sample scope to aggregate rotation, endpoint-market reallocation, USDT, and venue span.",
       "exit_handoff": "The final roadmap sends route construction to Section 2, route evidence to Section 3, and the still-open price and mechanism questions to later sections."
     },
     "paper/sections/02-setting.tex": {
-      "sha256": "93d286189a90005e408744b85272dceba4d9bf1c8072cdfdcc2c795fe5b1257d",
+      "sha256": "52216cb262790331f08e8e49ca7872ead0d4125b83798c4f57bd1506bef5fe45",
       "status": "rewritten",
       "exemplars": [
         "literature/text/2020-MakarovSchoar2020Arbitrage-trading-and-arbitrage-in-cryptocurrency-markets.txt:421-520",
         "literature/text/2023-LiYeZheng2023Refusing-refusing-the-best-price.txt:395-510"
       ],
-      "judgment": "Like the registered data sections, the current section moves from the observed record to the reconstructed economic object, names the sample and its coverage, and distinguishes realised routes from constructed counterfactual prices. The January 10 transaction gives the reconstruction a concrete public-record handoff before notation. The route-panel passage makes protocol-specific identity, unit conversion, event ordering, and route assembly visible as measurement work, then sends the implementation detail and quantified token-unit exclusion to the appendix.",
+      "judgment": "Like the registered data sections, the current section moves from the observed record to the reconstructed economic object, names the sample and its coverage, and distinguishes realised routes from constructed counterfactual prices. The January 10 transaction gives the reconstruction a concrete public-record handoff before notation. The route-panel passage makes protocol-specific identity, unit conversion, event ordering, and route assembly visible as measurement work, then sends implementation detail and quantified token-unit exclusions to the appendix. The two main tables now carry self-contained notes that identify their distinct samples, denominators, validation statistic, and the reason SushiSwap v3 has no quote error; they do not interpret the results.",
       "entry_handoff": "The section begins with AMM pools and routers, the institutions needed to understand the ordered route introduced in the paper.",
       "internal_progression": "A public transaction leads to notation, the vehicle-dominance measure, asset taxonomy, panel construction, and finally the stricter counterfactual price object.",
       "exit_handoff": "The section closes by distinguishing observed route incidence from hypothetical outputs, which prepares the route evidence before the price-comparison limitations."
     },
     "paper/sections/03-dominance.tex": {
-      "sha256": "5eed6dd99186c07750068c0fc085df58b4ac76279e1ab98bbf692678f0da5e0d",
+      "sha256": "8cbb46a2c8988cbe8346a6463205014bc3f994e36203741debaae62ec29912d3",
       "status": "rewritten",
       "exemplars": [
         "literature/text/2020-MakarovSchoar2020Arbitrage-trading-and-arbitrage-in-cryptocurrency-markets.txt:886-991",
         "literature/text/2021-BoltonKacperczyk2021CarbonRisk-do-investors-care-about-carbon-risk.txt:1221-1260"
       ],
-      "judgment": "The section uses the same scientific dependency as the raw passages: route counting first establishes frequency, the value-support rule then explains which routes can receive reliable dollar weights, the aggregate change raises the question of where it occurs, and the allocation accounting separates margins. The like-for-like estimates are interpreted through their confidence intervals: the intervals include zero but exclude increases large enough to explain the aggregate transition. The discussion then turns to USDT, endpoint demand, and observed venue span. The two main-text figures expose the non-monotone time path and the single- versus cross-exchange comparison instead of leaving those results in tables alone.",
+      "judgment": "The section uses the same scientific dependency as the raw passages: route counting first establishes frequency, the value-support rule then explains which routes can receive reliable dollar weights, the aggregate change raises the question of where it occurs, and the allocation accounting separates margins. The like-for-like estimates are interpreted through their confidence intervals: the intervals include zero but exclude increases large enough to explain the aggregate transition. The discussion then turns to USDT, endpoint demand, and observed venue span. Following the raw JFE exhibits, notes now define samples, weights, measures, panels, and uncertainty without restating visible estimates, carrying roadmaps, or repeating the identification discussion from the body.",
       "entry_handoff": "The first paragraph takes the exact two-leg route defined in Section 2 and explains the count and value denominators before reporting a change.",
       "internal_progression": "Aggregate rotation motivates the endpoint-pair decomposition, which motivates the matched comparison, USDT attribution, and venue-span analysis.",
       "exit_handoff": "The section ends by stating the transaction-state comparison needed to distinguish architecture from changing endpoint pairs and market conditions."
@@ -188,13 +188,13 @@
       "exit_handoff": "The final paragraph names the still-competing explanations and the additional evidence required to distinguish them."
     },
     "paper/sections/08-appendix.tex": {
-      "sha256": "c0b550a29d729f81da3eed01e9d51124a4f610ee65c2173da01347dc0d4627bd",
+      "sha256": "fd4a6c7fcb834284d0db2dbda3a8b5354190f57672b948b2809f5aca2baaec56",
       "status": "rewritten",
       "exemplars": [
         "literature/text/2023-LiYeZheng2023Refusing-refusing-the-best-price.txt:395-510",
         "literature/text/2022-GrahamGrennanHarveyRajgopal-corporate-culture-evidence-field-jfe.txt:1967-2011"
       ],
-      "judgment": "The appendix begins with the economically relevant construction from contract events to routes: address-level identity, unit conversion, transaction ordering, route assembly, valuation, and quantified exclusions. The state-reconstruction discussion reports the final event-replay rule and why liquidity events matter without preserving repair chronology. Withdrawn hour-end estimates are gone. The remaining pricing sections state the problem, method, validation sample, exclusion magnitude, and consequence for interpretation.",
+      "judgment": "The appendix begins with the economically relevant construction from contract events to routes: address-level identity, unit conversion, transaction ordering, route assembly, valuation, and quantified exclusions. The state-reconstruction discussion reports the final event-replay rule and why liquidity events matter without preserving repair chronology. Withdrawn hour-end estimates are gone. Exhibit notes define plotted marks, denominators, sample dates, and filters; duplicated percentile, median, maximum, and sampling-noise interpretation remains in the surrounding prose rather than the note.",
       "entry_handoff": "The appendix opens with route reconstruction, the first dependency behind the main measurement.",
       "internal_progression": "It proceeds from route identity and validation to quote functions, state reconstruction, support, venue coverage, and round-trip exclusions.",
       "exit_handoff": "Each appendix block returns its technical detail to the main-text inference it qualifies; no workflow chronology is carried into the reader-facing account."

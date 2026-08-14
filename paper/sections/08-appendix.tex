@@ -293,7 +293,7 @@ Pooled & 932{,}270 & 0.34\% & 3.29\% & 14.86\% & 78.33\% & 100.00\% \\
 \bottomrule
 \end{tabular}
 \\[4pt]
-\footnotesize Trade size as a percentage of the input-side reserve of the pool traversed, over the constant-product swaps the quoters were validated against. eight sampled days from 2020-05-05 to 2025-09-23.
+\footnotesize Trade size as a percentage of the input-side reserve of the pool traversed, over the constant-product swaps the quoters were validated against. Eight sampled days from 2020-05-05 to 2025-09-23.
 \end{table}
 
 The panel's threshold of 5\% sits between the 90th percentile of 3.29\% and the 99th of 14.86\% of the pooled distribution, and it lies in the same interval on seven of the eight days taken separately. Figure~\ref{fig:app:support} shows the daily distributions. Trades beyond the 99.9th percentile consume most of a pool; counterfactual legs in that region are excluded because no comparable executed trades discipline their pricing error.
@@ -324,7 +324,7 @@ The panel's threshold of 5\% sits between the 90th percentile of 3.29\% and the 
 \end{tikzpicture}
 \par\vspace{6pt}
 \begin{minipage}{0.92\textwidth}
-\footnotesize\raggedright \emph{Notes.} The statistic is a leg's input amount as a fraction of the input-side reserve in the pool it would traverse. The 5\% cutoff falls between the 90th and the 99th percentile in the pooled distribution and on seven of the eight days separately. The exception is 2020-05-05, which contains two validated swaps at the same size-to-depth ratio. The sample contains 932,270 validated swaps on eight days from 2020-05-05 to 2025-09-23.
+\footnotesize\raggedright \emph{Notes.} The statistic is a leg's input amount as a fraction of the input-side reserve in the pool it would traverse. Points mark the 90th and 99th percentiles; the dashed line marks the 5\% cutoff. The two percentiles coincide on 2020-05-05. The sample contains 932,270 validated swaps on eight dates from 2020-05-05 through 2025-09-23.
 \end{minipage}
 \end{figure}
 % output/exhibits/quoter_support_bounds.jsonl, per-day and pooled 90th and 99th percentiles, 932,270 validated swaps on eight sampled days
@@ -365,7 +365,7 @@ Pooled & 56.02 & 14.98 & 13.73 & 5.45 & 3.92 & 5.88 & 0.02 \\
 \bottomrule
 \end{tabular}
 \\[4pt]
-\footnotesize Percentage shares within the seven-venue panel. every seventh calendar day from 2018-11-02 to 2026-06-30, 400 sampled days.
+\footnotesize Percentage shares within the seven-venue panel. Every seventh calendar day from 2018-11-02 to 2026-06-30, 400 sampled days.
 \end{table}
 
 Uniswap v4 carries its own within-venue limitation. Pool-identity reconstruction leaves zero swaps with incomplete or invalid immutable pool attributes across 29,005,863 rows. Static-fee pools without hooks account for 84.02\% of swaps and 99.05\% of reported value; the corresponding 2026 shares are 79.89\% and 95.57\%. The excluded remainder uses hooks, dynamic fees, or both, whose transaction-level cash-flow rule is not identified from the raw event.
@@ -468,7 +468,7 @@ Maximum & 25.93\% & 91.31\% \\
 \bottomrule
 \end{tabular}
 \\[4pt]
-\footnotesize Round trips as a share of multi-leg routes. 79 sampled days from 2020-06-01 to 2026-04-27 covering 13,160,047 routes, of which 2,488,399 are multi-leg and 351,553 are round trips. Days carrying fewer than 200 multi-leg routes are omitted, since a share formed on a handful of routes is sampling noise.
+\footnotesize Round trips as a share of multi-leg routes. The sample contains 79 dates from 2020-06-01 through 2026-04-27 and 13,160,047 routes, of which 2,488,399 are multi-leg and 351,553 are round trips. Dates with fewer than 200 multi-leg routes are omitted.
 \end{table}
 
 The value-weighted share exceeds the count-weighted share at every quantile, by a factor between 1.7 and 3.5, which is consistent with large atomic cycles sitting inside a much larger population of smaller routes. No sampled day is free of them, and the floor of 4.45\% by count falls on 2020-06-01, the earliest day sampled. Count-weighting is used throughout the body because a value-weighted routing statistic on an unscreened panel would give disproportionate influence to this self-returning population. Figure~\ref{fig:app:roundtrip} plots both shares for every sampled day, with the two medians and the extreme day marked.
@@ -493,7 +493,7 @@ The value-weighted share exceeds the count-weighted share at every quantile, by 
 \end{tikzpicture}
 \par\vspace{6pt}
 \begin{minipage}{0.92\textwidth}
-\footnotesize\raggedright \emph{Notes.} Each mark is one sampled day. \emph{Share by value} is round-trip routes as a share of the notional traded through multi-leg routes that day, and \emph{share by count} is the same share formed on route counts. The dashed and dotted lines are the medians across the 79 days, 21.72\% by value and 12.70\% by count. The labelled day 2025-12-06 is the maximum on both measures, at 25.93\% by count and 91.31\% by value. Days carrying fewer than 200 multi-leg routes are omitted. The sample contains 79 days from 2020-06-01 to 2026-04-27 and 2,488,399 multi-leg routes.
+\footnotesize\raggedright \emph{Notes.} Each mark is one sampled date. \emph{Share by value} weights round-trip routes by their notional; \emph{share by count} gives each route equal weight. Both shares use multi-leg routes as the denominator. Dashed and dotted lines mark the respective medians, and the highest point is labelled. Dates with fewer than 200 multi-leg routes are omitted. The sample contains 79 dates from 2020-06-01 through 2026-04-27 and 2,488,399 multi-leg routes.
 \end{minipage}
 \end{figure}
 % output/exhibits/round_trip_share_by_day.jsonl, share_by_count and share_by_value on 79 sampled days from 2020-06-01 to 2026-04-27

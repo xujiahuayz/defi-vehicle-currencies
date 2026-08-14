@@ -28,7 +28,7 @@ Routed value (20\% agreement) & \StableValueBase & \StableValueEnd & \StableValu
 \end{tabular}
 \par\vspace{6pt}
 \begin{minipage}{0.90\textwidth}
-\footnotesize\raggedright \emph{Notes.} The unit is an exact two-leg route with one observed intermediary. Daily shares receive equal weight over the days of the calendar year observed in both years. Routed value requires source, intermediary, and destination dollar values to agree within 20\%. Standard errors are calendar-HAC. The table describes changes between the two years.
+\footnotesize\raggedright \emph{Notes.} The unit is an exact two-leg route with one observed intermediary. Daily shares receive equal weight over the days of the calendar year observed in both years. For routed value, source, intermediary, and destination dollar values must agree within 20\%. Standard errors are calendar-HAC.
 % docs/findings-freeze.md, vehicle-dominance claim
 \end{minipage}
 \end{table}
@@ -41,7 +41,7 @@ Stablecoins gain more by supported value than by route count, and the annual ser
 \caption{The composition of vehicle use changes non-monotonically}
 \label{fig:vehicle-composition}
 \begin{minipage}{0.92\textwidth}
-\footnotesize\raggedright \emph{Notes.} Annual shares are formed among realised intermediary positions. Route count gives each route equal weight. Routed value requires the source, intermediary, and destination amounts to agree within 20\%. The 2026 observation covers January through June. Other types combine imported, liquid-staking, and residual assets.
+\footnotesize\raggedright \emph{Notes.} The 2026 observation covers January through June. Other types combine imported, liquid-staking, and residual assets.
 % output/figures/experiments/annual_vehicle_composition_bands.pdf; producer commit 2ffbce0
 \end{minipage}
 \end{figure}
@@ -89,7 +89,7 @@ Supported-value share & \MatchedMarketValueChange{} (\MatchedMarketValueSE{}) \\
 \end{tabular}
 \par\vspace{6pt}
 \begin{minipage}{0.90\textwidth}
-\footnotesize\raggedright \emph{Notes.} Panel A decomposes the pooled count-share change between 2024 and 2026. An endpoint pair is observed when eligible route-component activity for that pair appears in the admitted ledger; this is not the universe of market activity. Common-role pairs carry native-or-stable vehicle routes in both endpoint years. The Shapley allocation distributes interactions across the five reported factors. Panel B reports the separate common/exclusive-pair accounting for routes whose source, intermediary, and destination values agree within 20\%. Panels A and B are exact descriptive identities. Panel C compares the two years within the same ordered endpoint pair, day of the calendar year, and single- versus cross-exchange route category. Each matched difference is weighted by the product of the two years' denominator masses divided by their sum. Parentheses contain standard errors clustered by ordered pair and date. The comparisons are descriptive.
+\footnotesize\raggedright \emph{Notes.} Panel A decomposes the route-count share change between 2024 and 2026. Common-role pairs carry native-or-stable vehicle routes in both years. The Shapley allocation distributes interactions across the five reported components. Panel B repeats the accounting for routed value, for which source, intermediary, and destination dollar values must agree within 20\%. Panel C compares the two years within the same ordered endpoint pair, day of the calendar year, and single- versus cross-exchange route category. Each matched difference is weighted by the product of the two years' denominator masses divided by their sum. Parentheses contain standard errors clustered by ordered pair and date.
     % output/exhibits/vehicle_transition_pair_decomposition.jsonl; producer e16796c; evidence commit 23ee3a2
 \end{minipage}
 \end{table}
@@ -126,7 +126,7 @@ Value-weighted intermediary minus endpoint share & \USDTEndpointGapBase & \USDTE
 \end{tabular}
 \par\vspace{6pt}
 \begin{minipage}{0.90\textwidth}
-\footnotesize\raggedright \emph{Notes.} Excess use is intermediary share divided by endpoint share on the same route perimeter. The gap is intermediary share minus endpoint share. Its change is \USDTEndpointGapChange{} with a \USDTEndpointGapSE{} standard error. Backing and redemption designs are reported separately.
+\footnotesize\raggedright \emph{Notes.} Excess use is intermediary share divided by endpoint share on the same route perimeter. The gap is intermediary share minus endpoint share. Value-weighted measures require source, intermediary, and destination dollar values to agree within 20\%. The table compares the same January-through-June calendar dates in 2024 and 2026.
 \end{minipage}
 \end{table}
 
@@ -147,7 +147,7 @@ Protocol dates establish chronology because entry and exit also change the compa
 \caption{Stablecoin use rises within single- and cross-exchange routes}
 \label{fig:integration-change}
 \begin{minipage}{0.92\textwidth}
-\footnotesize\raggedright \emph{Notes.} Points are changes in stablecoin share from 2024 to 2026; bars are 95\% calendar-HAC confidence intervals. The samples are realised route categories. Exchange span is jointly chosen with the route, so differences across rows are descriptive and do not identify an effect of integration.
+\footnotesize\raggedright \emph{Notes.} The comparison uses the same January-through-June calendar dates in 2024 and 2026. Value-weighted measures require source, intermediary, and destination dollar values to agree within 20\%.
 % output/figures/experiments/integration_change_forest.pdf; producer commit 2ffbce0
 \end{minipage}
 \end{figure}
