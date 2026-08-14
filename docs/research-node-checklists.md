@@ -141,18 +141,25 @@ Every package records this envelope once and points to the node-specific evidenc
 ## P0. Working-paper prose
 
 - Entry uses current G and J1 packets or a clearly marked reproducible provisional packet; status and generation live in source comments, not rendered prose.
+- Before adding prose, inspect the current section, rhetoric ledger and existing literature/optics work. Amend the canonical owner, incorporate durable material and remove superseded text instead of piling on another version or casually relabelling useful work as legacy.
 - Write in the JFE register from the start. Do not create a generic AI draft for later synonym or term replacement.
 - Reread the closest raw JFE passage for each section's function. Literature work must appear across motivation, design, interpretation, citations, anecdotes, analogies, paragraph movement and claim calibration.
 - Run a whole-paper venue-optics review against raw JFE comparators: motivation before results, contribution positioning, evidence sequence and section balance, sentence- and paragraph-length level and dispersion, citation/equation/exhibit density, and visible page texture. Treat the comparison as a diagnostic; never close a gap with term substitution or filler.
 - Review the complete manuscript: every section and subsection opening, substantive paragraph, handoff, referent, connective and close. A local repair never closes P0.
+- Audit logical continuity sentence by sentence: demonstratives and definite articles have immediate antecedents; causal connectives follow an explicit premise; section roadmaps, samples and design changes receive the bridge a finance reader needs without explaining basic finance.
 - Make actors, quantities and institutions the subjects; avoid backstage workflow language, abstract triads, meta-signposting and repeated contrast-confirmation.
+- Use audience-facing finance and economics language. Internal labels such as `candidate`, `cell`, `verdict`, `evidence gate` or `transition margin` do not enter the manuscript unless the field uses them in the same sense or the construct is economically defined where it first appears.
 - Use natural sentence and paragraph-length variation driven by the economics, not a statistical mold.
 - Use finance-calibrated analogies for a finance audience; DeFi-to-TradFi comparisons clarify an unfamiliar institution without explaining basic finance.
 - Sell supported magnitude, novelty, breadth and mechanism affirmatively; place scope nearby without letting caveats replace the result.
-- Keep general claims general and source non-obvious facts at the field-appropriate threshold; named examples support rather than replace the class.
+- Keep general claims general and source non-obvious facts at the field-appropriate threshold; named examples support rather than replace the class. Protocol and institutional facts use primary sources where available, while common field knowledge is not cited pedantically.
+- Make the title, abstract, introduction, evidence sequence and conclusion promise the same contribution. A working paper may report reproducible provisional results, but a target design, validated component and estimated result are described as different evidence states.
+- Match every definition and equation to the empirical unit, category aggregation, denominator, perimeter and time index actually used. Harmonize notation across protocol families instead of inheriting each cited paper's symbols.
+- Match every table and figure label, caption and note to its producer's unit, sample, denominator and evidence generation. A route, intermediary episode, transaction, pool and pair-day are never renamed for presentation convenience.
+- Remove a superseded or withdrawn claim completely from current prose, equations, exhibits and notes; Git history retains it. Preserve only a durable scientific lesson rewritten under its current owner.
 - Enforce the 100-word abstract, `we`, commented undecided authors, first-use acronyms, harmonized AMM notation, transaction links and mathematical minus signs.
 - Generate tables from mapped producers and use estimate plus one conventional inference statistic by default.
-- Exhibit notes are singular, full-width and limited to construction, sample, encodings, weighting and inference; interpretation stays in the text.
+- Exhibit notes are singular, full-width and limited to construction, sample, encodings, weighting and inference; interpretation stays in the text. Captions and notes use consistent alignment and enough separation from the exhibit.
 - The conclusion synthesizes the answer, economic consequence and scope and ends with the durable implication.
 - Exit requires the raw-passage ledger, all compatible prose/evidence tests, clean compile, complete rendered review and comparison with the last accepted manuscript.
 
