@@ -76,13 +76,14 @@
 \begin{columns}[T,totalwidth=\textwidth]
 \begin{column}{0.48\textwidth}
 {\small\bfseries\color{ucldark}Liquidity allocation and route use}\par
-\vspace{0.12cm}
+{\tiny\color{muted}Each predicts the other at 1, 7, 14, and 30 days}\par
+\vspace{0.06cm}
 \begin{tikzpicture}[x=1cm,y=1cm]
-\node[softbox,text width=3.35cm,minimum height=0.72cm,align=center] (lp) at (0,2.78) {Share of LP capital in\\vehicle-linked pools};
-\node[softbox,text width=3.35cm,minimum height=0.72cm,align=center] (use) at (0,0.52) {Vehicle share of\\indirect routes};
-\draw[-{Stealth[length=5pt]},line width=1.6pt,draw=stable] ([xshift=0.34cm]lp.south) to[bend left=18] node[right,font=\scriptsize,align=left,text=stable] {positive after\\1, 7, 14, 30 days} ([xshift=0.34cm]use.north);
-\draw[-{Stealth[length=5pt]},line width=1.6pt,draw=ucldark] ([xshift=-0.34cm]use.north) to[bend left=18] node[left,font=\scriptsize,align=right,text=ucldark] {positive after\\1, 7, 14, 30 days} ([xshift=-0.34cm]lp.south);
-\node[anchor=north,align=center,font=\scriptsize,text=muted,text width=4.95cm] at (0,-0.08) {Vehicle use also predicts more total LP capital after 14 and 30 days, but not at the shorter horizons.};
+\node[softbox,text width=3.35cm,minimum height=0.72cm,align=center] (lp) at (0,2.55) {Share of LP capital in\\vehicle-linked pools};
+\node[softbox,text width=3.35cm,minimum height=0.72cm,align=center] (use) at (0,0.45) {Vehicle share of\\indirect routes};
+\draw[-{Stealth[length=5pt]},line width=1.6pt,draw=stable] ([xshift=0.28cm]lp.south) -- ([xshift=0.28cm]use.north);
+\draw[-{Stealth[length=5pt]},line width=1.6pt,draw=ucldark] ([xshift=-0.28cm]use.north) -- ([xshift=-0.28cm]lp.south);
+\node[anchor=north,align=center,font=\scriptsize,text=muted,text width=4.95cm] at (0,-0.02) {Vehicle use also predicts more total LP capital after 14 and 30 days, but not at the shorter horizons.};
 \end{tikzpicture}
 \end{column}
 \begin{column}{0.48\textwidth}
@@ -96,7 +97,7 @@
 \node[tinyasset] (v3b) at (3.75,2.88) {B};
 \draw[routearrow,draw=ucldark] (v3a)--(v3k);
 \draw[routearrow,draw=ucldark] (v3k)--(v3b);
-\node[anchor=north,align=center,font=\scriptsize,text width=4.35cm] at (2.05,2.52) {intermediary transfer appears in \textbf{\VThreeTransferIncidence} of receipts};
+\node[anchor=north,align=center,font=\scriptsize,text width=4.35cm] at (2.05,2.52) {$k$ is transferred in \textbf{\VThreeTransferIncidence} of receipts};
 
 \node[anchor=east,font=\small\bfseries,text=uclbright] at (-0.25,1.18) {V4};
 \node[rounded corners=3pt,draw=uclbright,densely dashed,minimum width=4.15cm,minimum height=0.95cm] at (2.05,1.18) {};
@@ -105,12 +106,12 @@
 \node[tinyasset] (v4b) at (3.75,1.18) {B};
 \draw[routearrow,draw=ucldark] (v4a)--(v4k);
 \draw[routearrow,draw=ucldark] (v4k)--(v4b);
-\node[anchor=north,align=center,font=\scriptsize,text width=4.55cm] at (2.05,0.70) {the same economic route is visible, but the intermediary transfer appears in \textbf{\VFourTransferIncidence} of receipts};
+\node[anchor=north,align=center,font=\scriptsize,text width=4.55cm] at (2.05,0.70) {the economic route remains; $k$ is transferred in \textbf{\VFourTransferIncidence} of receipts};
 \end{tikzpicture}
 \end{column}
 \end{columns}
 \vspace{0.02cm}
-{\fontsize{7.2}{8.0}\selectfont\color{muted}Liquidity regressions include asset and date effects and the lagged outcome. The receipt comparison matches \VThreeReceiptRoutes{} V3 and \VFourReceiptRoutes{} V4 routes by week, ordered endpoint pair, and intermediary; V4 routes are smaller on average, so the \VFourTransferDifference-point difference is descriptive and does not estimate a causal V4 effect.}
+{\fontsize{7.2}{8.0}\selectfont\color{muted}Liquidity regressions include asset and date effects and the lagged outcome. The receipt comparison matches \VThreeReceiptRoutes{} V3 routes and \VFourReceiptRoutes{} V4 routes by week, ordered endpoint pair, and intermediary; V4 routes are smaller on average, so the \VFourTransferDifference-point difference is descriptive and does not estimate a causal V4 effect.}
 \end{frame}
 
 % EVIDENCE-STATUS: diagnostic displacement gradient; not a persistence estimate
