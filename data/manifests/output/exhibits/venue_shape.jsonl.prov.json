@@ -1,18 +1,18 @@
 {
  "argv": [],
  "artefact": "output/exhibits/venue_shape.jsonl",
- "artefact_bytes": 24428,
- "artefact_mtime_ns": 1786666328938470153,
- "artefact_sha256": "4ea01e3be6574e089c06036d73e2407ddb3400cff597390eae64af2a81effc15",
+ "artefact_bytes": 24427,
+ "artefact_mtime_ns": 1786667601386561619,
+ "artefact_sha256": "e6fd60d94e03cddc8488d2e48e9afa44505ff2873d14fb00b68b7aa39e37f3eb",
  "code_fingerprint": "5db477e56e3a43f11450dc0d2ffa3c75a96a002e93c6e865f32de0bc864f086c",
  "code_sources": [
   "scripts/measure_venue_shape.py",
   "src/ddvc/tables.py"
  ],
- "created_at": "2026-08-14T00:12:08+00:00",
+ "created_at": "2026-08-14T00:33:21+00:00",
  "git": {
   "branch": "main",
-  "commit": "664e0afb2437f99f3808a6d5096227c6ab2640e8",
+  "commit": "cd26a757859fefda5296d299c3f6c8a87bf4bf1e",
   "dirty": true,
   "dirty_generated_files": [
    "data/manifests/output/exhibits/prose_conventions.jsonl.prov.json",
@@ -20,16 +20,13 @@
    "data/manifests/output/exhibits/venue_optics.jsonl.prov.json",
    "output/exhibits/prose_conventions.jsonl",
    "output/exhibits/prose_outliers.jsonl",
+   "output/exhibits/provisional_results_deck_values.tex",
    "output/exhibits/venue_optics.jsonl",
-   "output/exhibits/.venue_shape.jsonl.8pty6ks8.tmp"
+   "output/exhibits/.venue_shape.jsonl.cp9p_t10.tmp"
   ],
   "dirty_tracked_files": [
-   "docs/findings-freeze.md",
-   "docs/reviews/paper-rhetoric.json",
-   "paper/sections/01-introduction.tex",
-   "paper/sections/03-dominance.tex",
-   "paper/sections/05-rivals.tex",
-   "paper/sections/07-conclusion.tex",
+   "deck/main.pdf",
+   "deck/sections/04-results.tex",
    "paper/sections/abstract.tex"
   ],
   "dirty_untracked_files": []
@@ -43,11 +40,11 @@
  },
  "notes": null,
  "payload_identity": {
-  "bytes": 24428,
+  "bytes": 24427,
   "format": "jsonl",
   "rows": 51,
   "schema_version": 1,
-  "sha256": "4ea01e3be6574e089c06036d73e2407ddb3400cff597390eae64af2a81effc15"
+  "sha256": "e6fd60d94e03cddc8488d2e48e9afa44505ff2873d14fb00b68b7aa39e37f3eb"
  },
  "python": "3.14.5",
  "rows": 51,
