@@ -189,6 +189,12 @@ def test_deck_mechanism_sequence_separates_route_settlement_and_capital() -> Non
     results = (ROOT / "deck" / "sections" / "04-results.tex").read_text(
         encoding="utf-8"
     )
+    identification = (ROOT / "deck" / "sections" / "01-identification.tex").read_text(
+        encoding="utf-8"
+    )
+    design = (ROOT / "deck" / "sections" / "03-design.tex").read_text(
+        encoding="utf-8"
+    )
 
     assert "Route use, token movement, and LP capital are different objects" in results
     assert "Route intermediation" in results
@@ -203,18 +209,12 @@ def test_deck_mechanism_sequence_separates_route_settlement_and_capital() -> Non
     assert "V2 stocks and V3 flows are estimated separately" in results
     assert "depth is not LP capital" in results
 
-    assert "V4 can net settlement without removing the vehicle route" in results
-    assert "Separate pool contracts" in results
-    assert "V4 singleton and flash accounting" in results
-    assert "External settlement." in results
-    assert "Route choice." in results
-    assert "LP timing." in results
-    assert "same source, intermediary, destination, direction, and week" in results
-    assert "direct and indirect alternatives are both feasible" in results
-    assert "Each object is tested separately" in results
-    assert "uncommitted design-only edits atop 8e7bb28" in results
-    assert "https://app.uniswap.org/whitepaper-v3.pdf" in results
-    assert "https://app.uniswap.org/whitepaper-v4.pdf" in results
+    assert "V4 can net settlement without removing the vehicle route" not in results
+    assert "https://app.uniswap.org/whitepaper-v4.pdf" in identification
+    assert "calendar date alone is not treatment" in identification
+    assert "V4: shared accounting" in design
+    assert "one PoolManager" in design
+    assert "the singleton changes the settlement boundary" in design
     assert ".mp4" not in results
 
 

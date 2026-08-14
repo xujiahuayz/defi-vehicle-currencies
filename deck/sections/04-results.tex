@@ -147,58 +147,6 @@
 \end{beamercolorbox}
 \end{frame}
 
-% EVIDENCE-STATUS: registered V4 extension design; current estimate pending
-% EVIDENCE-COMMIT: 8e7bb28
-% EVIDENCE-WORKTREE: uncommitted design-only edits atop 8e7bb28; no numerical estimate is displayed
-% EVIDENCE-SOURCES: https://app.uniswap.org/whitepaper-v3.pdf; https://app.uniswap.org/whitepaper-v4.pdf; docs/research-questions-and-empirical-design.md; docs/findings-freeze.md
-% SCIENTIFIC-BOUNDARY: settlement mechanics and route choice are distinct outcomes; V4 launch date is not treatment, and comparison requires like-for-like routes and feasible alternatives
-% VISUAL-FUNCTION: separate-pool versus singleton settlement | paired native transfer diagrams and estimable comparisons | show how flash accounting can reduce external movement without removing economic intermediation
-\begin{frame}{V4 can net settlement without removing the vehicle route}
-\vspace{-0.08cm}
-\begin{columns}[T,totalwidth=\textwidth]
-\begin{column}{0.485\textwidth}
-\evidencekicker{Separate pool contracts}
-\centering
-\begin{tikzpicture}[x=0.88cm,y=1cm]
-\node[nodepoint] (a) at (-0.25,2.15) {A};
-\node[softbox,inner sep=5pt,minimum width=1.52cm,minimum height=0.78cm,align=center] (p1) at (1.35,2.15) {pool 1\\$A/k$};
-\node[softbox,inner sep=5pt,minimum width=1.52cm,minimum height=0.78cm,align=center] (p2) at (4.05,2.15) {pool 2\\$k/B$};
-\node[nodepoint] (b) at (5.65,2.15) {B};
-\draw[-{Stealth[length=5pt]},draw=native,line width=1.4pt] (a)--(p1);
-\draw[-{Stealth[length=5pt]},draw=accent,line width=1.7pt] (p1)--node[midway,above=14pt,font=\scriptsize\bfseries,text=accent] {external $k$ transfer} (p2);
-\draw[-{Stealth[length=5pt]},draw=stable,line width=1.4pt] (p2)--(b);
-\node[font=\scriptsize,align=center,text width=5.7cm] at (2.70,0.94) {The economic route and the intermediary-token movement are both visible in external transfers.};
-\end{tikzpicture}
-\end{column}
-\begin{column}{0.485\textwidth}
-\evidencekicker{V4 singleton and flash accounting}
-\centering
-\begin{tikzpicture}[x=0.88cm,y=1cm]
-\node[nodepoint] (a) at (-0.25,2.15) {A};
-\draw[rounded corners=4pt,draw=ucldark,fill=ucldark!4,line width=1.0pt] (0.58,1.30) rectangle (4.82,3.20);
-\node[font=\scriptsize\bfseries,text=ucldark,anchor=south west] at (0.72,3.24) {singleton};
-\node[softbox,inner sep=4pt,minimum width=1.35cm,align=center] (p1) at (1.62,1.95) {pool 1\\$A/k$};
-\node[softbox,inner sep=4pt,minimum width=1.35cm,align=center] (p2) at (3.78,1.95) {pool 2\\$k/B$};
-\draw[-{Stealth[length=5pt]},draw=ucldark,line width=1.5pt] (p1)--(p2);
-\node[font=\scriptsize\bfseries,text=ucldark] at (2.70,2.72) {internal $k$ balance};
-\node[nodepoint] (b) at (5.65,2.15) {B};
-\draw[-{Stealth[length=5pt]},draw=native,line width=1.4pt] (a)--(0.58,2.15);
-\draw[-{Stealth[length=5pt]},draw=stable,line width=1.4pt] (4.82,2.15)--(b);
-\node[font=\scriptsize,align=center,text width=5.7cm] at (2.70,0.54) {The $A\rightarrow k\rightarrow B$ route remains observable in pool actions while the intermediary balance is netted internally.};
-\end{tikzpicture}
-\end{column}
-\end{columns}
-\vspace{-0.06cm}
-\begin{beamercolorbox}[sep=0.14cm,wd=\textwidth]{block body}
-{\fontsize{6.8}{7.6}\selectfont
-\textbf{External settlement.} Compare like-sized two-pool routes with the same source, intermediary, destination, direction, and week; measure external intermediary-token transfers and value.\\
-\textbf{Route choice.} Compare ordered endpoint-pair--intermediary weeks only when direct and indirect alternatives are both feasible.\\
-\textbf{LP timing.} On pool--intermediary days, relate route use to deposited capital and provider flows at exact 1-, 7-, 30-, and 120-day horizons. Each object is tested separately.}
-\end{beamercolorbox}
-\vspace{0.05cm}
-{\fontsize{6.4}{7.0}\selectfont\color{muted}Primary sources: \href{https://app.uniswap.org/whitepaper-v3.pdf}{Adams et al. (2021), \emph{Uniswap v3 Core}}; \href{https://app.uniswap.org/whitepaper-v4.pdf}{Adams et al. (2024), \emph{Uniswap v4 Core}}, Sections 1 and 3.}
-\end{frame}
-
 % EVIDENCE-STATUS: admitted V1 mandate and V2 pair-formation result
 % EVIDENCE-COMMIT: ebeb23c
 % EVIDENCE-SOURCES: docs/finding-v1-forced-vehicle.md; output/exhibits/v1_forced_vehicle_report.md; output/exhibits/v1_architecture_deck_values.tex
