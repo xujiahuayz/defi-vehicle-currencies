@@ -10,9 +10,6 @@
 \IfFileExists{../output/provisional/route_methodology_heterogeneity_deck_values.tex}{%
 \input{../output/provisional/route_methodology_heterogeneity_deck_values.tex}%
 }{\PackageError{dvc-deck}{Missing provisional WETH allocation values}{Run scripts/run_route_methodology_robustness.py --provisional-snapshot.}}
-\IfFileExists{../output/exhibits/v1_architecture_deck_values.tex}{%
-\input{../output/exhibits/v1_architecture_deck_values.tex}%
-}{\PackageError{dvc-deck}{Missing generated V1/V2 architecture values}{Rebuild the admitted V1/V2 presentation binding.}}
 
 % EVIDENCE-STATUS: evolving route result; current certified route release
 % EVIDENCE-COMMIT: 2ffbce0
@@ -126,48 +123,4 @@
 {\small Providers may follow routed demand.\par}
 \end{column}
 \end{columns}
-\end{frame}
-
-% EVIDENCE-STATUS: admitted V1 mandate and V2 pair-formation result
-% EVIDENCE-COMMIT: ebeb23c
-% EVIDENCE-SOURCES: docs/finding-v1-forced-vehicle.md; output/exhibits/v1_forced_vehicle_report.md; output/exhibits/v1_architecture_deck_values.tex
-% VISUAL-FUNCTION: architecture and persistence | V1-to-V2 mechanism comparison | show how imposed intermediation becomes endogenous pair formation
-\begin{frame}{Native-asset pairing persists after it becomes optional}
-\begin{columns}[T,totalwidth=\textwidth]
-\begin{column}{0.43\textwidth}
-\evidencekicker{V1: protocol rule}
-\vspace{0.16cm}
-\begin{tikzpicture}[x=1cm,y=1cm]
-\node[nodepoint] (a) at (0.35,2.45) {A};
-\node[nodepoint,fill=ucldark,text=white,draw=ucldark,minimum size=38pt] (eth) at (2.55,2.45) {ETH};
-\node[nodepoint] (b) at (4.75,2.45) {B};
-\draw[route,draw=accent,line width=1.7pt] (a)--(eth);
-\draw[route,draw=accent,line width=1.7pt] (eth)--(b);
-\node[font=\small\bfseries,text=ucldark,align=center] at (2.55,0.95) {\VOneForcedRoutes{} token-to-token trades\\pass through ETH};
-\end{tikzpicture}
-\vspace{0.10cm}
-{\small Every token pool pairs with ETH, so the architecture imposes the vehicle.\par}
-\end{column}
-\begin{column}{0.08\textwidth}
-\centering
-\vspace{2.05cm}
-{\Large$\Longrightarrow$}
-\end{column}
-\begin{column}{0.45\textwidth}
-\evidencekicker{V2: market choice}
-\vspace{0.20cm}
-\begin{beamercolorbox}[sep=0.28cm,wd=\textwidth]{block body}
-{\fontsize{24}{26}\selectfont\bfseries\color{ucldark}\VTwoWethTradeShare}\par
-{\small of single-leg V2 trades use a WETH pool in 2026}
-\end{beamercolorbox}
-\vspace{0.26cm}
-\begin{beamercolorbox}[sep=0.28cm,wd=\textwidth]{block body}
-{\fontsize{24}{26}\selectfont\bfseries\color{stable}\VTwoWethNewPairShare}\par
-{\small of pairs first traded in 2026 include WETH}
-\end{beamercolorbox}
-\end{column}
-\end{columns}
-\vspace{0.10cm}
-{\small V2 converted ETH pairing from a protocol rule into a market choice. Native-asset concentration remained high through pair formation and realised trading.\par}
-\decknote{V1 counts linked token-to-ETH and ETH-to-token swaps with matching ETH quantities in one transaction. V2 shares use single-leg Uniswap V2 trades and newly traded pairs; they describe that venue rather than market-wide vehicle dominance.}
 \end{frame}
