@@ -1,25 +1,28 @@
 {
  "argv": [],
- "artefact": "output/exhibits/vehicle_transition_pair_decomposition_deck_values.tex",
- "artefact_bytes": 3004,
- "artefact_mtime_ns": 1786692248579578468,
- "artefact_sha256": "4a962001e4657be17c8e90abd650bba2e0cee96fcd3fb7f2cb23f2e68fc3906e",
- "code_fingerprint": "d0da561e6eddaa01e7438e1ee53fb2ddfa146b871a41b837c27a2c9826c09baf",
+ "artefact": "output/tables/pair_composition.tex",
+ "artefact_bytes": 1347,
+ "artefact_mtime_ns": 1786692248823703548,
+ "artefact_sha256": "3971d1af88cf46f0976ea1f0155cf5927aa3e3ff1d7cbf76527e726cf1ad0648",
+ "code_fingerprint": "a2433681e2c72bf8b7abe19e036636f141003c5d01c931c1c93831645628d02e",
  "code_sources": [
-  "scripts/build_vehicle_transition_pair_deck_values.py"
+  "scripts/tabulate/render_pair_composition.py",
+  "src/ddvc/dominance_tables.py",
+  "src/ddvc/paper_tables.py",
+  "src/ddvc/presentation.py"
  ],
- "created_at": "2026-08-14T07:24:08+00:00",
+ "created_at": "2026-08-14T07:24:09+00:00",
  "git": {
   "branch": "main",
   "commit": "ead5c72f0232b27c0bc94b7d0ad6e9ff2d02ba7d",
   "dirty": true,
   "dirty_generated_files": [
+   "data/manifests/output/exhibits/vehicle_transition_pair_decomposition_deck_values.tex.prov.json",
    "output/tables/README.md",
    "data/manifests/output/tables/",
    "output/tables/dominance_rotation.pdf",
    "output/tables/dominance_rotation.tex",
    "output/tables/pair_composition.pdf",
-   "output/tables/pair_composition.tex",
    "output/tables/usdt_transition.pdf",
    "output/tables/usdt_transition.tex"
   ],
@@ -45,16 +48,16 @@
  },
  "inputs": [
   {
-   "bytes": 18433,
+   "bytes": 3004,
    "exists": true,
-   "path": "output/exhibits/vehicle_transition_pair_decomposition.jsonl",
-   "sha256": "c14a536b2ff5c5dcd55812b97797ceacfe903c666678b271ea4ebaab30fb6f59"
+   "path": "output/exhibits/vehicle_transition_pair_decomposition_deck_values.tex",
+   "sha256": "4a962001e4657be17c8e90abd650bba2e0cee96fcd3fb7f2cb23f2e68fc3906e"
   },
   {
-   "bytes": 818219,
+   "bytes": 3405,
    "exists": true,
-   "path": "data/manifests/output/exhibits/vehicle_transition_pair_decomposition.jsonl.prov.json",
-   "sha256": "9c128470cd664902cca2e3df7a52c748bb07b790acf5c6dc90ab352f4f61e1ce"
+   "path": "data/manifests/output/exhibits/vehicle_transition_pair_decomposition_deck_values.tex.prov.json",
+   "sha256": "57e535026c018dbbbb999d39a13741b1a2e3a57d5e688bbd813b8712943b93c3"
   },
   {
    "bytes": 3987,
@@ -67,18 +70,6 @@
    "exists": true,
    "path": "data/manifests/output/exhibits/vehicle_transition_pair_fixed_effects.jsonl.prov.json",
    "sha256": "d1737c2d090c515ee639c7019d3cfdd578382a613af6c6fb25eb8e8d24df65e0"
-  },
-  {
-   "bytes": 20732,
-   "exists": true,
-   "path": "output/exhibits/e0_usdt_integration_decomposition.jsonl",
-   "sha256": "8a00e49ea6e7988f4b405b9754da8ff3cd59faece6535d7e1015606b5b8a0bbf"
-  },
-  {
-   "bytes": 1714,
-   "exists": true,
-   "path": "data/manifests/output/exhibits/e0_usdt_integration_decomposition.jsonl.prov.json",
-   "sha256": "225ef12c261b00df2f3a408917f14ca6ba30115ce4cee82623f575ddf7c3b37a"
   }
  ],
  "libraries": {
@@ -87,14 +78,14 @@
   "pyarrow": "25.0.0",
   "scipy": "1.18.0"
  },
- "notes": "Presentation macros for the exact descriptive pair-composition accounting and matched-market estimate; evidence status and identities remain source-only.",
+ "notes": "certified route-count and supported-value accounting plus three descriptive saturated pair-by-month-day-by-realised-scope fixed-effect regressions; two-way ordered-pair and calendar-date CR1 inference; the bound fixed-effect payload preserves exact confidence intervals, raw and Holm-adjusted p-values, cluster counts, and specification metadata",
  "payload_identity": {
-  "bytes": 3004,
+  "bytes": 1347,
   "format": "binary",
   "schema_version": 1,
-  "sha256": "4a962001e4657be17c8e90abd650bba2e0cee96fcd3fb7f2cb23f2e68fc3906e"
+  "sha256": "3971d1af88cf46f0976ea1f0155cf5927aa3e3ff1d7cbf76527e726cf1ad0648"
  },
  "python": "3.14.5",
- "rows": 35,
- "script": "scripts/build_vehicle_transition_pair_deck_values.py"
+ "rows": null,
+ "script": "scripts/tabulate/render_pair_composition.py"
 }

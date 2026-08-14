@@ -1,0 +1,78 @@
+{
+ "argv": [],
+ "artefact": "output/tables/dominance_rotation.tex",
+ "artefact_bytes": 329,
+ "artefact_mtime_ns": 1786692205396554190,
+ "artefact_sha256": "010f6ddf0cc6f81b439a1955004a99d73667abe3f23f6d714c50ff6151f2c32c",
+ "code_fingerprint": "e44a1c9f3e19e2774e23a708d80dc58c0b300ef97f8845ce68ac7f59e252c3d7",
+ "code_sources": [
+  "scripts/tabulate/render_dominance_rotation.py",
+  "src/ddvc/dominance_tables.py",
+  "src/ddvc/paper_tables.py"
+ ],
+ "created_at": "2026-08-14T07:23:25+00:00",
+ "git": {
+  "branch": "main",
+  "commit": "ead5c72f0232b27c0bc94b7d0ad6e9ff2d02ba7d",
+  "dirty": true,
+  "dirty_generated_files": [
+   "data/manifests/output/exhibits/vehicle_transition_pair_decomposition_deck_values.tex.prov.json",
+   "output/tables/README.md",
+   "data/manifests/output/tables/",
+   "output/tables/dominance_rotation.pdf",
+   "output/tables/pair_composition.pdf",
+   "output/tables/pair_composition.tex",
+   "output/tables/usdt_transition.pdf",
+   "output/tables/usdt_transition.tex"
+  ],
+  "dirty_tracked_files": [
+   "docs/repository-data-map.md",
+   "paper/main.tex",
+   "paper/sections/01-introduction.tex",
+   "paper/sections/02-setting.tex",
+   "paper/sections/03-dominance.tex",
+   "scripts/build_vehicle_transition_pair_deck_values.py",
+   "scripts/tabulate/README.md",
+   "tests/test_exhibit_notes.py",
+   "tests/test_variable_registry.py"
+  ],
+  "dirty_untracked_files": [
+   "scripts/tabulate/render_dominance_rotation.py",
+   "scripts/tabulate/render_pair_composition.py",
+   "scripts/tabulate/render_usdt_transition.py",
+   "src/ddvc/dominance_tables.py",
+   "src/ddvc/presentation.py",
+   "tests/test_dominance_tables.py"
+  ]
+ },
+ "inputs": [
+  {
+   "bytes": 32485,
+   "exists": true,
+   "path": "output/exhibits/intermediation_complexity_rival.jsonl",
+   "sha256": "855c8a4d81a8a38f7ea46cadd5dcfacdf5e727ec1158d7662aa0a174d3f9d6d5"
+  },
+  {
+   "bytes": 2363,
+   "exists": true,
+   "path": "data/manifests/output/exhibits/intermediation_complexity_rival.jsonl.prov.json",
+   "sha256": "1a9f3dde5cf73509d8d87150175ef55cc8d4deba755f2f02c0b2385c8ef8bbb7"
+  }
+ ],
+ "libraries": {
+  "numpy": "2.5.1",
+  "pandas": "3.0.3",
+  "pyarrow": "25.0.0",
+  "scipy": "1.18.0"
+ },
+ "notes": "current two-leg endpoint-year stable-share estimates on common calendar support; count and within-20-percent supported-value specifications",
+ "payload_identity": {
+  "bytes": 329,
+  "format": "binary",
+  "schema_version": 1,
+  "sha256": "010f6ddf0cc6f81b439a1955004a99d73667abe3f23f6d714c50ff6151f2c32c"
+ },
+ "python": "3.14.5",
+ "rows": null,
+ "script": "scripts/tabulate/render_dominance_rotation.py"
+}

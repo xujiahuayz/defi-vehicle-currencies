@@ -732,10 +732,7 @@ class VariableRegistryTests(unittest.TestCase):
             root / "scripts" / "process" / "build_observations_table.py",
             root / "scripts" / "process" / "build_raw_data_inventory.py",
             root / "scripts" / "process" / "build_cex_reference_support.py",
-            root / "scripts" / "tabulate" / "render_data_coverage.py",
-            root / "scripts" / "tabulate" / "render_sample_coverage.py",
-            root / "scripts" / "tabulate" / "render_variable_notation.py",
-            root / "scripts" / "tabulate" / "render_summary_statistics.py",
+            *sorted((root / "scripts" / "tabulate").glob("render_*.py")),
         ]
         for script in scripts:
             text = script.read_text(encoding="utf-8")
@@ -743,12 +740,7 @@ class VariableRegistryTests(unittest.TestCase):
 
     def test_tabulate_scripts_write_tabular_fragments_only(self) -> None:
         root = Path(__file__).resolve().parents[1]
-        scripts = [
-            root / "scripts" / "tabulate" / "render_data_coverage.py",
-            root / "scripts" / "tabulate" / "render_sample_coverage.py",
-            root / "scripts" / "tabulate" / "render_variable_notation.py",
-            root / "scripts" / "tabulate" / "render_summary_statistics.py",
-        ]
+        scripts = sorted((root / "scripts" / "tabulate").glob("render_*.py"))
         for script in scripts:
             text = script.read_text(encoding="utf-8")
             self.assertNotIn(r"\begin{table}", text)
@@ -775,12 +767,7 @@ class VariableRegistryTests(unittest.TestCase):
 
     def test_tabulate_outputs_are_tex_pdf_only_and_unnumbered(self) -> None:
         root = Path(__file__).resolve().parents[1]
-        scripts = [
-            root / "scripts" / "tabulate" / "render_data_coverage.py",
-            root / "scripts" / "tabulate" / "render_sample_coverage.py",
-            root / "scripts" / "tabulate" / "render_variable_notation.py",
-            root / "scripts" / "tabulate" / "render_summary_statistics.py",
-        ]
+        scripts = sorted((root / "scripts" / "tabulate").glob("render_*.py"))
         for script in scripts:
             text = script.read_text(encoding="utf-8")
             self.assertNotIn(".to_csv(", text)

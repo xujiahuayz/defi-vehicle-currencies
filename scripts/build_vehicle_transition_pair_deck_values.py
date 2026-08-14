@@ -4,19 +4,14 @@
 from __future__ import annotations
 
 import argparse
-import json
 import math
 from pathlib import Path
 
 import pandas as pd
 
-from ddvc.paths import OUTPUT_DIR, REPO_ROOT
-from ddvc.provenance import (
-    code_fingerprint,
-    describe_artifact_payload,
-    sidecar_path,
-    stamp,
-)
+from ddvc.paths import OUTPUT_DIR
+from ddvc.presentation import require_certified_presentation_source
+from ddvc.provenance import stamp
 from ddvc.runtime import atomic_output
 
 
@@ -479,34 +474,6 @@ def render_pair_decomposition_deck_values(
     return "\n".join(lines) + "\n"
 
 
-def _require_certified_presentation_source(path: Path) -> Path:
-    """Verify the committed exhibit boundary without reopening Studio's inputs.
-
-    The data-owning checkout certifies the full upstream perimeter before it
-    commits the exhibit and sidecar.  A presentation checkout verifies that
-    committed payload/sidecar pair and the producer code, rather than trying to
-    rehash the data host's 39 GB lineage.
-    """
-    provenance_path = sidecar_path(path)
-    if not path.is_file() or not provenance_path.is_file():
-        raise FileNotFoundError("pair decomposition payload or provenance is missing")
-    record = json.loads(provenance_path.read_text(encoding="utf-8"))
-    relative = path.resolve().relative_to(REPO_ROOT.resolve()).as_posix()
-    if record.get("artefact") != relative:
-        raise ValueError("pair decomposition provenance names a different artifact")
-    observed_identity = describe_artifact_payload(path, artefact=path)
-    if record.get("payload_identity") != observed_identity:
-        raise ValueError("pair decomposition payload differs from its certified identity")
-    sources = record.get("code_sources")
-    if not isinstance(sources, list) or code_fingerprint(sources) != record.get(
-        "code_fingerprint"
-    ):
-        raise ValueError("pair decomposition producer code differs from its certificate")
-    if record.get("rows") != observed_identity.get("rows"):
-        raise ValueError("pair decomposition row count differs from its certificate")
-    return provenance_path
-
-
 def run(
     *,
     decomposition_path: Path = DECOMPOSITION,
@@ -514,11 +481,11 @@ def run(
     usdt_integration_path: Path = USDT_INTEGRATION,
     output_path: Path = DECK_VALUES,
 ) -> int:
-    provenance_path = _require_certified_presentation_source(decomposition_path)
-    fixed_effects_provenance = _require_certified_presentation_source(
+    provenance_path = require_certified_presentation_source(decomposition_path)
+    fixed_effects_provenance = require_certified_presentation_source(
         fixed_effects_path
     )
-    usdt_integration_provenance = _require_certified_presentation_source(
+    usdt_integration_provenance = require_certified_presentation_source(
         usdt_integration_path
     )
     decomposition = pd.read_json(decomposition_path, lines=True)

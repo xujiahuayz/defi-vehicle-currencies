@@ -17,15 +17,7 @@ Stablecoins carry a larger share of exact two-leg routes in 2026 than in 2024, w
 \caption{Rotation from the native asset toward stable vehicles}
 \label{tab:rotation}
 \small
-\begin{tabular}{lrrr}
-\toprule
-Stable share among native and stable vehicles & 2024 & 2026 & Change (s.e.) \\
-\midrule
-Route count & \StableCountBase & \StableCountEnd & \StableCountChange\ (\StableCountSE) \\
-Routed value (20\% agreement) & \StableValueBase & \StableValueEnd & \StableValueChange\ (\StableValueSE) \\
-% docs/findings-freeze.md, vehicle-dominance claim and 20-percent value-support contract
-\bottomrule
-\end{tabular}
+\input{../output/tables/dominance_rotation.tex}
 \exhibitnote{The unit is an exact two-leg route with one observed intermediary. Daily shares receive equal weight over the days of the calendar year observed in both years. For routed value, source, intermediary, and destination dollar values must agree within 20\%. Standard errors are calendar-HAC.
 % docs/findings-freeze.md, vehicle-dominance claim
 }
@@ -58,34 +50,9 @@ The pooled increase is nearly absent in a stricter comparison of like-for-like o
 \caption{Where the stablecoin rotation occurs}
 \label{tab:pair-composition}
 \small
-\begin{tabular}{lr}
-\toprule
-Component of the 2024--2026 stable-share change & Contribution \\
-\midrule
-\multicolumn{2}{l}{\emph{Panel A. Route-count share: five-factor allocation}} \\
-Pairs entering or leaving the sample & \MarketSupportBridge \\
-Pairs gaining or losing a vehicle route & \VehicleRoleSupportBridge \\
-Trading shifts across continuing pairs & \MarketActivityReweight \\
-Change in how often continuing pairs use a vehicle & \VehicleIncidenceReweight \\
-Stablecoin share within continuing vehicle-using pairs & \WithinPairStableShare \\
-\midrule
-Total route-count change & \MarketBridgeTotal \\
-\addlinespace
-\multicolumn{2}{l}{\emph{Panel B. Supported-value share: pair accounting}} \\
-Stablecoin share within continuing pairs & \PairValueWithin \\
-Trading shifts across continuing pairs & \PairValueReweight \\
-Weight of continuing versus year-specific pairs & \PairValueSupportMass \\
-Pairs entering or leaving the sample & \PairValueExclusive \\
-\midrule
-Total supported-value change & \PairValueTotal \\
-\addlinespace
-\multicolumn{2}{l}{\emph{Panel C. Changes within matched observations}} \\
-Route-count share & \MatchedMarketCountChange{} (\MatchedMarketCountSE{}) \\
-Supported-value share & \MatchedMarketValueChange{} (\MatchedMarketValueSE{}) \\
-\bottomrule
-\end{tabular}
-\exhibitnote{Panel A decomposes the route-count share change between 2024 and 2026. Common-role pairs carry native-or-stable vehicle routes in both years. The Shapley allocation distributes interactions across the five reported components. Panel B repeats the accounting for routed value, for which source, intermediary, and destination dollar values must agree within 20\%. Panel C compares the two years within the same ordered endpoint pair, day of the calendar year, and single- versus cross-exchange route category. Each matched difference is weighted by the product of the two years' denominator masses divided by their sum. Parentheses contain standard errors clustered by ordered pair and date.
-    % output/exhibits/vehicle_transition_pair_decomposition.jsonl; producer e16796c; evidence commit 23ee3a2
+\input{../output/tables/pair_composition.tex}
+\exhibitnote{Panel A decomposes the route-count share change between 2024 and 2026. Common-role pairs carry native-or-stable vehicle routes in both years. The Shapley allocation distributes interactions across the five reported components. Panel B repeats the accounting for routed value, for which source, intermediary, and destination dollar values must agree within 20\%. Panel C reports descriptive, noncausal regressions that absorb ordered-pair $\times$ month-day $\times$ realised-scope fixed effects. Standard errors use two-way ordered-pair and calendar-date clustered CR1 inference.
+    % output/exhibits/vehicle_transition_pair_decomposition.jsonl and vehicle_transition_pair_fixed_effects.jsonl
 }
 \end{table}
 
@@ -110,15 +77,7 @@ The concentration of stablecoin rotation in USDT makes institutional differences
 \caption{USDT drives the rise in stablecoin vehicle dominance}
 \label{tab:usdt-transition}
 \small
-\begin{tabular}{lrr}
-\toprule
- & 2024 & 2026 \\
-\midrule
-Count excess use & \USDTCountExcessBase & \USDTCountExcessEnd \\
-Value-weighted excess use & \USDTValueExcessBase & \USDTValueExcessEnd \\
-Value-weighted intermediary minus endpoint share & \USDTEndpointGapBase & \USDTEndpointGapEnd \\
-\bottomrule
-\end{tabular}
+\input{../output/tables/usdt_transition.tex}
 \exhibitnote{Excess use is intermediary share divided by endpoint share on the same route perimeter. The gap is intermediary share minus endpoint share. Value-weighted measures require source, intermediary, and destination dollar values to agree within 20\%. The table compares the same January-through-June calendar dates in 2024 and 2026.}
 \end{table}
 

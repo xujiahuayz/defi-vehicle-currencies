@@ -37,7 +37,12 @@ def test_paper_uses_one_shared_note_for_every_empirical_exhibit() -> None:
         assert block.count(r"\exhibitnote{") == 1
         assert block.index(r"\caption{") < min(
             position
-            for marker in (r"\begin{tabular}", r"\includegraphics", r"\begin{tikzpicture}")
+            for marker in (
+                r"\begin{tabular}",
+                r"\input{../output/tables/",
+                r"\includegraphics",
+                r"\begin{tikzpicture}",
+            )
             if (position := block.find(marker)) >= 0
         )
 
