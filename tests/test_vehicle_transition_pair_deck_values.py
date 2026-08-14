@@ -84,8 +84,37 @@ def _decomposition() -> pd.DataFrame:
     return pd.DataFrame(rows)
 
 
+def _fixed_effects() -> pd.DataFrame:
+    return pd.DataFrame(
+        [
+            {
+                "metric": "count_share",
+                "baseline_year": 2024,
+                "comparison_year": 2026,
+                "estimator_id": (
+                    "weighted_stable_share_saturated_pair_month_day_scope_fe_v1"
+                ),
+                "covariance_id": "two_way_ordered_pair_calendar_date_cr1",
+                "mechanism_status": "descriptive_fixed_realised_scope_noncausal",
+                "estimand_scope": "common_pair_month_day_realised_integration_scope",
+                "coefficient": 0.00224,
+                "standard_error": 0.00764,
+                "confidence_interval_lower": -0.01278,
+                "confidence_interval_upper": 0.01726,
+                "p_value_holm": 1.0,
+                "observations": 188_520,
+                "fixed_effect_cells": 94_260,
+                "ordered_pair_clusters": 5_432,
+                "calendar_date_clusters": 362,
+            }
+        ]
+    )
+
+
 def test_renderer_emits_complete_display_and_coordinate_macros() -> None:
-    rendered = render_pair_decomposition_deck_values(_decomposition())
+    rendered = render_pair_decomposition_deck_values(
+        _decomposition(), _fixed_effects()
+    )
     for macro in (
         "PairPooledBase",
         "PairPooledEnd",
@@ -134,6 +163,13 @@ def test_renderer_emits_complete_display_and_coordinate_macros() -> None:
         "PairActivityTotalRawPP",
         "VehicleUseNetRawPP",
         "PairAndVehicleTotalRawPP",
+        "MatchedMarketCountChange",
+        "MatchedMarketCountSE",
+        "MatchedMarketCountCILower",
+        "MatchedMarketCountCIUpper",
+        "MatchedMarketCountChangeRawPP",
+        "MatchedMarketCountCILowerRawPP",
+        "MatchedMarketCountCIUpperRawPP",
     ):
         assert f"\\newcommand{{\\{macro}}}" in rendered
     assert "\\newcommand{\\PairPooledWithin}{-0.1\\,pp}" in rendered
@@ -142,6 +178,10 @@ def test_renderer_emits_complete_display_and_coordinate_macros() -> None:
     assert "\\newcommand{\\VehicleUseNet}{+6.6\\,pp}" in rendered
     assert "\\newcommand{\\PairAndVehicleTotal}{+24.6\\,pp}" in rendered
     assert "\\newcommand{\\PairAndVehicleShare}{94.6\\%}" in rendered
+    assert "\\newcommand{\\MatchedMarketCountChange}{+0.2\\,pp}" in rendered
+    assert "\\newcommand{\\MatchedMarketCountSE}{0.8\\,pp}" in rendered
+    assert "\\newcommand{\\MatchedMarketCountCILower}{-1.3\\,pp}" in rendered
+    assert "\\newcommand{\\MatchedMarketCountCIUpper}{+1.7\\,pp}" in rendered
     assert "generation" not in rendered.lower()
 
 
@@ -173,7 +213,9 @@ def test_renderer_fails_closed_on_incomplete_or_inconsistent_accounting(
     mutation, message: str
 ) -> None:
     with pytest.raises(ValueError, match=message):
-        render_pair_decomposition_deck_values(mutation(_decomposition()))
+        render_pair_decomposition_deck_values(
+            mutation(_decomposition()), _fixed_effects()
+        )
 
 
 def test_renderer_fails_closed_when_market_incidence_bridge_is_inconsistent() -> None:
@@ -181,4 +223,11 @@ def test_renderer_fails_closed_when_market_incidence_bridge_is_inconsistent() ->
     market = frame["formula_id"].eq("shapley_market_incidence_stable_bridge_v1")
     frame.loc[market, "market_activity_reweighting"] += 0.01
     with pytest.raises(ValueError, match="total change"):
-        render_pair_decomposition_deck_values(frame)
+        render_pair_decomposition_deck_values(frame, _fixed_effects())
+
+
+def test_renderer_fails_closed_on_wrong_matched_market_scope() -> None:
+    fixed_effects = _fixed_effects()
+    fixed_effects.loc[0, "estimand_scope"] = "wrong_scope"
+    with pytest.raises(ValueError, match="comparison set"):
+        render_pair_decomposition_deck_values(_decomposition(), fixed_effects)

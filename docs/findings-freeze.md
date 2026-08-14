@@ -34,6 +34,21 @@ This is the live handoff between the research graph and prose node P. The manusc
 | The transition is fragmentation without persistent replacement | retired | betweenness is nearly degree and HHI plus leader cannot distinguish split cells from separate monopolies | rebuild on per-cell regimes and switching order; direction is open |
 | Cross-venue spillovers identify the mechanism | retired | the untreated restriction recovers most of the all-venue estimate and Merge placebos fire | no control group is identified; retain only bounded descriptive facts |
 
+### Matched-market rotation attack
+
+The current D3 lease sharpens where the 2024--26 stablecoin rotation occurs.
+Within matched markets that hold the ordered endpoint pair, calendar position,
+and broad realised route scope alike, the denominator-weighted count-share
+change is only +0.224 percentage points (two-way ordered-pair and calendar-date
+CR1 SE 0.764 points; Holm-adjusted p=1). The matched strict-count estimate is
++0.323 points (SE 0.749; Holm p=1), while strict supported value is -1.346
+points (SE 2.188; Holm p=1). These like-for-like market comparisons are
+distinct from the annual five-factor accounting. They show that the 25.68-point
+pooled count rotation is not pervasive within comparable realised markets, but
+they do not hold venue sequence, feasible alternatives, notional, liquidity,
+cost, or router state fixed and cannot identify architecture, demand,
+preference, search, or another mechanism.
+
 ## Data and execution gates
 
 | gate | live state |

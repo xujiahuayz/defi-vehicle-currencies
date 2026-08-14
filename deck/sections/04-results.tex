@@ -34,11 +34,11 @@
 {\scriptsize The value panel retains routes whose source, intermediary, and destination dollar values agree within 20\%. Parity means that intermediary and endpoint shares are equal. USDT crosses parity by routed value; USDC remains above it in both years.}
 \end{frame}
 
-% EVIDENCE-STATUS: evolving exact descriptive route accounting; mechanism remains open
-% EVIDENCE-COMMIT: 23ee3a2
-% EVIDENCE-PRODUCER-COMMIT: e16796c
-% EVIDENCE-SOURCES: output/exhibits/vehicle_transition_pair_decomposition.jsonl; output/exhibits/vehicle_transition_pair_support.jsonl; output/exhibits/vehicle_transition_pair_decomposition_deck_values.tex
-% VISUAL-FUNCTION: five-factor composition of vehicle rotation | native TikZ waterfall | distinguish observed pair support, activity, vehicle incidence, and within-pair stable share
+% EVIDENCE-STATUS: certified descriptive route accounting and matched-market estimate; mechanism remains open
+% EVIDENCE-COMMIT: b21ed0a
+% EVIDENCE-PRODUCER-COMMIT: 0f90441
+% EVIDENCE-SOURCES: output/exhibits/vehicle_transition_pair_decomposition.jsonl; output/exhibits/vehicle_transition_pair_support.jsonl; output/exhibits/vehicle_transition_pair_fixed_effects.jsonl; output/exhibits/vehicle_transition_pair_decomposition_deck_values.tex
+% VISUAL-FUNCTION: five-factor composition plus matched-market confidence interval | native TikZ accounting ribbon and interval | distinguish observed pair support, activity, vehicle incidence, and within-market stable-share change
 \begin{frame}{Pair activity and vehicle use: \PairAndVehicleShare{} of the gain}
 \vspace{-0.34cm}
 \begin{center}
@@ -48,7 +48,7 @@
 {\fontsize{8.2}{9.1}\selectfont\textbf{Supported value tells the same broad story.} Stable share rises \PairValueTotal, with \PairValueReweight\ from activity weights among continuing pairs and only \PairValueWithin\ from stable-for-native substitution within them.}
 
 \vspace{0.02cm}
-{\fontsize{6.2}{6.8}\selectfont\color{muted}Route-count accounting for ordered endpoint pairs, pooling single- and cross-venue routes on month-days observed in both endpoint years through 30 June. Pair activity is eligible activity admitted to the route-component ledger; vehicle use is an exact two-leg route with a native or stable intermediary. The terms describe observed routing, not feasible routes or causal effects.}
+{\fontsize{6.2}{6.8}\selectfont\color{muted}Route-count accounting for ordered endpoint pairs, pooling single- and cross-venue routes on month-days observed in both endpoint years through 30 June. Matched markets also hold the calendar position and broad realised route scope alike. Neither comparison holds venue sequence, feasible alternatives, notional, liquidity, cost, or router state fixed.}
 \end{frame}
 
 % EVIDENCE-STATUS: certified descriptive result; integration remains a selected route stratum

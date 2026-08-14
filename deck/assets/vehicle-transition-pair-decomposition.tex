@@ -60,4 +60,19 @@
       font=\fontsize{7.2}{8.0}\selectfont,align=left,text=ink,anchor=west]
   at (0,-0.12) {Among pairs observed in both endpoint years, stable share still rises\\
   \textbf{\ObservedBothYearsBase{} $\longrightarrow$ \ObservedBothYearsEnd{} \quad \textcolor{stable}{\ObservedBothYearsTotal{}}}};
+
+% The like-for-like inferential companion holds the ordered endpoint market,
+% calendar position, and broad realised route scope alike. Coordinates are
+% generated from the certified estimate rather than transcribed here.
+\begin{scope}[shift={(3.25cm,-1.18cm)},x=1.12cm]
+\draw[rule,line width=1.0pt] (-2.0,0) -- (2.0,0);
+\draw[muted,line width=0.7pt] (0,-0.15) -- (0,0.15);
+\draw[ucldark,line width=1.8pt]
+  (\MatchedMarketCountCILowerRawPP,0) -- (\MatchedMarketCountCIUpperRawPP,0);
+\fill[ucldark] (\MatchedMarketCountChangeRawPP,0) circle[radius=2.2pt];
+\node[font=\fontsize{6.6}{7.2}\selectfont,align=right,text=ink,anchor=east]
+  at (-2.18,0) {Matched markets\\count share};
+\node[font=\fontsize{6.6}{7.2}\selectfont,align=left,text=ink,anchor=west]
+  at (2.18,0) {\textbf{\MatchedMarketCountChange}\\95\% CI [\MatchedMarketCountCILower, \MatchedMarketCountCIUpper]};
+\end{scope}
 \end{tikzpicture}

@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Build presentation macros from the current vehicle-pair decomposition."""
+"""Build presentation macros from the current vehicle-pair evidence."""
 
 from __future__ import annotations
 
@@ -21,6 +21,7 @@ from ddvc.runtime import atomic_output
 
 
 DECOMPOSITION = OUTPUT_DIR / "exhibits" / "vehicle_transition_pair_decomposition.jsonl"
+FIXED_EFFECTS = OUTPUT_DIR / "exhibits" / "vehicle_transition_pair_fixed_effects.jsonl"
 DECK_VALUES = OUTPUT_DIR / "exhibits" / "vehicle_transition_pair_decomposition_deck_values.tex"
 CODE_SOURCES = ["scripts/build_vehicle_transition_pair_deck_values.py"]
 SCOPES = ("pooled", "single_venue", "cross_venue")
@@ -48,6 +49,10 @@ def _signed_pp(value: float) -> str:
 
 def _share(value: float) -> str:
     return f"{100 * value:.1f}\\%"
+
+
+def _unsigned_pp(value: float) -> str:
+    return f"{100 * value:.1f}\\,pp"
 
 
 def _raw_pp(value: float) -> str:
@@ -224,11 +229,82 @@ def _market_incidence_row(decomposition: pd.DataFrame) -> pd.Series:
     return row
 
 
-def render_pair_decomposition_deck_values(decomposition: pd.DataFrame) -> str:
+def _matched_market_count_row(fixed_effects: pd.DataFrame) -> pd.Series:
+    required = {
+        "metric",
+        "baseline_year",
+        "comparison_year",
+        "estimator_id",
+        "covariance_id",
+        "mechanism_status",
+        "estimand_scope",
+        "coefficient",
+        "standard_error",
+        "confidence_interval_lower",
+        "confidence_interval_upper",
+        "p_value_holm",
+        "observations",
+        "fixed_effect_cells",
+        "ordered_pair_clusters",
+        "calendar_date_clusters",
+    }
+    missing = sorted(required - set(fixed_effects.columns))
+    if missing:
+        raise ValueError(f"pair fixed effects missing columns: {', '.join(missing)}")
+    selected = fixed_effects[fixed_effects["metric"].eq("count_share")]
+    if len(selected) != 1:
+        raise ValueError(
+            "pair fixed effects require exactly one count-share row; "
+            f"found {len(selected)}"
+        )
+    row = selected.iloc[0]
+    if int(row["baseline_year"]) != 2024 or int(row["comparison_year"]) != 2026:
+        raise ValueError("pair fixed effects must compare 2024 with 2026")
+    if (
+        row["estimator_id"]
+        != "weighted_stable_share_saturated_pair_month_day_scope_fe_v1"
+    ):
+        raise ValueError("pair fixed effects use an unexpected estimator")
+    if row["covariance_id"] != "two_way_ordered_pair_calendar_date_cr1":
+        raise ValueError("pair fixed effects use unexpected inference")
+    if row["mechanism_status"] != "descriptive_fixed_realised_scope_noncausal":
+        raise ValueError("pair fixed effects carry a causal mechanism label")
+    if row["estimand_scope"] != "common_pair_month_day_realised_integration_scope":
+        raise ValueError("pair fixed effects use an unexpected comparison set")
+    numeric = (
+        "coefficient",
+        "standard_error",
+        "confidence_interval_lower",
+        "confidence_interval_upper",
+        "p_value_holm",
+        "observations",
+        "fixed_effect_cells",
+        "ordered_pair_clusters",
+        "calendar_date_clusters",
+    )
+    if not all(math.isfinite(float(row[column])) for column in numeric):
+        raise ValueError("pair fixed effects contain a non-finite result")
+    if float(row["standard_error"]) <= 0:
+        raise ValueError("pair fixed effects require a positive standard error")
+    if not (
+        float(row["confidence_interval_lower"])
+        <= float(row["coefficient"])
+        <= float(row["confidence_interval_upper"])
+    ):
+        raise ValueError("pair fixed-effects interval excludes its estimate")
+    if not 0 <= float(row["p_value_holm"]) <= 1:
+        raise ValueError("pair fixed effects contain an invalid adjusted p-value")
+    return row
+
+
+def render_pair_decomposition_deck_values(
+    decomposition: pd.DataFrame, fixed_effects: pd.DataFrame
+) -> str:
     """Render empirical cells while keeping evidence identity out of the PDF."""
     count = _scope_rows(decomposition, "count_share")
     value = _scope_rows(decomposition, "strict_intermediation_value_share")
     market = _market_incidence_row(decomposition)
+    matched = _matched_market_count_row(fixed_effects)
     pair_activity_total = float(market["market_pair_support_bridge"]) + float(
         market["market_activity_reweighting"]
     )
@@ -305,6 +381,13 @@ def render_pair_decomposition_deck_values(decomposition: pd.DataFrame) -> str:
             f"\\newcommand{{\\PairActivityTotalRawPP}}{{{_raw_pp(pair_activity_total)}}}",
             f"\\newcommand{{\\VehicleUseNetRawPP}}{{{_raw_pp(vehicle_use_net)}}}",
             f"\\newcommand{{\\PairAndVehicleTotalRawPP}}{{{_raw_pp(pair_and_vehicle_total)}}}",
+            f"\\newcommand{{\\MatchedMarketCountChange}}{{{_signed_pp(float(matched['coefficient']))}}}",
+            f"\\newcommand{{\\MatchedMarketCountSE}}{{{_unsigned_pp(float(matched['standard_error']))}}}",
+            f"\\newcommand{{\\MatchedMarketCountCILower}}{{{_signed_pp(float(matched['confidence_interval_lower']))}}}",
+            f"\\newcommand{{\\MatchedMarketCountCIUpper}}{{{_signed_pp(float(matched['confidence_interval_upper']))}}}",
+            f"\\newcommand{{\\MatchedMarketCountChangeRawPP}}{{{_raw_pp(float(matched['coefficient']))}}}",
+            f"\\newcommand{{\\MatchedMarketCountCILowerRawPP}}{{{_raw_pp(float(matched['confidence_interval_lower']))}}}",
+            f"\\newcommand{{\\MatchedMarketCountCIUpperRawPP}}{{{_raw_pp(float(matched['confidence_interval_upper']))}}}",
         ]
     )
     return "\n".join(lines) + "\n"
@@ -338,20 +421,35 @@ def _require_certified_presentation_source(path: Path) -> Path:
     return provenance_path
 
 
-def run(*, decomposition_path: Path = DECOMPOSITION, output_path: Path = DECK_VALUES) -> int:
+def run(
+    *,
+    decomposition_path: Path = DECOMPOSITION,
+    fixed_effects_path: Path = FIXED_EFFECTS,
+    output_path: Path = DECK_VALUES,
+) -> int:
     provenance_path = _require_certified_presentation_source(decomposition_path)
+    fixed_effects_provenance = _require_certified_presentation_source(
+        fixed_effects_path
+    )
     decomposition = pd.read_json(decomposition_path, lines=True)
-    rendered = render_pair_decomposition_deck_values(decomposition)
+    fixed_effects = pd.read_json(fixed_effects_path, lines=True)
+    rendered = render_pair_decomposition_deck_values(decomposition, fixed_effects)
     with atomic_output(output_path) as temporary:
         temporary.write_text(rendered, encoding="utf-8")
     stamp(
         output_path,
         code_sources=CODE_SOURCES,
-        inputs=[decomposition_path, provenance_path],
-        rows=len(decomposition),
+        inputs=[
+            decomposition_path,
+            provenance_path,
+            fixed_effects_path,
+            fixed_effects_provenance,
+        ],
+        rows=len(decomposition) + len(fixed_effects),
         notes=(
             "Presentation macros for the exact descriptive pair-composition "
-            "accounting; evidence status and identities remain source-only."
+            "accounting and matched-market estimate; evidence status and "
+            "identities remain source-only."
         ),
     )
     print(f"wrote {output_path}")
@@ -361,9 +459,14 @@ def run(*, decomposition_path: Path = DECOMPOSITION, output_path: Path = DECK_VA
 def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--decomposition", type=Path, default=DECOMPOSITION)
+    parser.add_argument("--fixed-effects", type=Path, default=FIXED_EFFECTS)
     parser.add_argument("--output", type=Path, default=DECK_VALUES)
     args = parser.parse_args()
-    return run(decomposition_path=args.decomposition, output_path=args.output)
+    return run(
+        decomposition_path=args.decomposition,
+        fixed_effects_path=args.fixed_effects,
+        output_path=args.output,
+    )
 
 
 if __name__ == "__main__":
