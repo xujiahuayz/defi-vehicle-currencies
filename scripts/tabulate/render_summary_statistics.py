@@ -145,4 +145,10 @@ write_table_artifacts(
     "summary_statistics",
     "\n".join(lines) + "\n",
     preview_width="9in",
+    inputs=[DEFAULT_OBSERVATIONS_TABLE],
+    code_sources=[
+        "src/ddvc/analysis/observations.py",
+        "src/ddvc/variable_registry.py",
+    ],
+    notes="Summary-statistics inspection table; not an active manuscript input.",
 )
