@@ -10,32 +10,18 @@
 % VISUAL-FUNCTION: source-versus-pool-route handoff | authentic explorer screenshot plus settlement trace | separate the user's PYUSD instruction from the USDC-funded pool component
 \input{../output/exhibits/route_replay_deck_values.tex}
 \begin{frame}{The PYUSD swap reaches a USDC-funded pool route}
-\begin{columns}[T,totalwidth=\textwidth]
-\begin{column}{0.65\textwidth}
-\evidencekicker{Explorer record}
-\vspace{0.06cm}
+\evidencekicker{User instruction recorded by the explorer}
+\vspace{0.02cm}
 \centering
-\fcolorbox{rule}{white}{\includegraphics[width=0.96\linewidth,height=1.18cm,keepaspectratio,trim=270 820 430 170,clip]{assets/observed_route_blockscout.png}}
-\par\vspace{0.10cm}
-\fcolorbox{rule}{white}{\includegraphics[width=0.96\linewidth,height=1.18cm,keepaspectratio,trim=280 415 324 615,clip]{assets/observed_route_blockscout.png}}
-\par\vspace{0.10cm}
-\fcolorbox{rule}{white}{\includegraphics[width=0.96\linewidth,height=1.18cm,keepaspectratio,trim=280 320 324 700,clip]{assets/observed_route_blockscout.png}}
-\end{column}
-\begin{column}{0.31\textwidth}
-\evidencekicker{What reaches the pools}
-\vspace{0.08cm}
-\centering
-\begin{tikzpicture}[x=1cm,y=1cm]
-\node[softbox,inner sep=5pt,text width=2.55cm,minimum height=0.68cm,align=center] (instruction) at (2.10,4.18) {\scriptsize\bfseries User instruction\\[-0.02cm]\scriptsize PYUSD $\rightarrow$ USDe};
-\node[softbox,inner sep=5pt,text width=2.55cm,minimum height=0.68cm,align=center] (maker) at (2.10,2.68) {\scriptsize\bfseries Settlement handoff\\[-0.02cm]\scriptsize PYUSD reaches the maker};
-\node[softbox,inner sep=5pt,draw=stable,text width=2.55cm,minimum height=0.68cm,align=center] (fluid) at (2.10,1.18) {\scriptsize\bfseries Pool-route source\\[-0.02cm]\scriptsize USDC enters Fluid};
-\draw[route,draw=ucldark,line width=1.5pt] (instruction)--(maker);
-\draw[route,draw=stable,line width=1.5pt] (maker)--node[right,font=\scriptsize\bfseries,text=stable]{USDC}(fluid);
-\end{tikzpicture}
-\end{column}
-\end{columns}
-\vspace{0.08cm}
-{\small The explorer reports the PYUSD--USDe instruction. The ordered transfers show that the maker supplies the USDC used by the Fluid leg.\par}
+\fcolorbox{rule}{white}{\includegraphics[width=0.88\textwidth,height=1.38cm,keepaspectratio,trim=270 820 430 170,clip]{assets/observed_route_blockscout.png}}
+\par\vspace{0.15cm}
+\evidencekicker{The decisive settlement transfers}
+\vspace{0.02cm}
+\fcolorbox{rule}{white}{\includegraphics[width=0.94\textwidth,height=1.04cm,keepaspectratio,trim=280 415 324 615,clip]{assets/observed_route_blockscout.png}}
+\par\vspace{0.08cm}
+\fcolorbox{rule}{white}{\includegraphics[width=0.94\textwidth,height=1.04cm,keepaspectratio,trim=280 320 324 700,clip]{assets/observed_route_blockscout.png}}
+\par\vspace{0.14cm}
+{\normalsize\raggedright The instruction is PYUSD $\rightarrow$ USDe. The maker supplies the USDC used by the Fluid leg, which begins the connected pool route.\par}
 \decknote{The explorer screenshot and transfer trace refer to transaction \ethtx{0xbda1d07f17c503b5a9c8117c5d1383472006af8a9e22aa4e5e30804b9bf67ad9}{0xbda1d07f\ldots 9bf67ad9} on 10 January 2026.}
 \end{frame}
 

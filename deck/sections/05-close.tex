@@ -5,62 +5,50 @@
 % EVIDENCE-STATUS: evolving route result; current generated presentation bindings
 % EVIDENCE-COMMIT: e43323dd2eb986e4d627823da3586bdc2a00c813
 % EVIDENCE-SOURCES: output/figures/experiments/annual_vehicle_composition_bands.pdf; output/exhibits/intermediation_by_type.jsonl; output/exhibits/vehicle_excess_use.jsonl; output/exhibits/vehicle_excess_use_transition.jsonl; output/exhibits/provisional_results_deck_values.tex; output/provisional/route_methodology_heterogeneity.jsonl; output/provisional/route_methodology_heterogeneity_deck_values.tex
-% VISUAL-FUNCTION: substantive conclusion | native callbacks to timing, leading asset, and routed-market composition | end on the observed indirect-trade object
+% VISUAL-FUNCTION: substantive conclusion | one visual sequence from timing to leading asset to routed-market composition | end on the economic allocation result
 \begin{frame}{Stablecoins regained the routed-value lead as trading shifted}
-\vspace{-0.10cm}
+\vspace{-0.06cm}
 \centering
-\resizebox{\textwidth}{!}{%
+\resizebox{0.98\textwidth}{!}{%
 \begin{tikzpicture}[x=1cm,y=1cm]
-\tikzset{closepanel/.style={draw=rule,fill=white,rounded corners=3pt,line width=0.8pt}}
-\tikzset{closelabel/.style={font=\fontsize{6.7}{7.4}\selectfont,text=muted,align=center}}
+\tikzset{closelabel/.style={font=\scriptsize,text=muted,align=center}}
 
-% When the composition changed.
-\draw[closepanel] (0,1.42) rectangle (4.12,5.12);
-\node[anchor=west,font=\fontsize{7.4}{8.1}\selectfont\bfseries,text=ucldark] at (0.28,4.78) {WHEN};
-\node[anchor=west,font=\fontsize{8.3}{9.1}\selectfont\bfseries,text=ink] at (0.28,4.40) {The value lead changed twice};
-\draw[-{Stealth[length=4pt]},draw=rule,line width=1.1pt] (0.57,3.15)--(3.55,3.15);
-\fill[stable] (0.72,3.15) circle (3.5pt);
-\fill[native] (2.02,3.15) circle (3.5pt);
-\fill[stable] (3.40,3.15) circle (3.5pt);
-\node[closelabel,text=stable] at (0.72,3.65) {stablecoin\\lead};
-\node[closelabel,text=native] at (2.02,3.65) {native-asset\\lead};
-\node[closelabel,text=stable] at (3.40,3.65) {stablecoin\\lead};
-\node[closelabel] at (0.72,2.72) {2022};
-\node[closelabel] at (2.02,2.72) {2023--24};
-\node[closelabel] at (3.40,2.72) {2025--26};
-\node[font=\fontsize{7.0}{7.8}\selectfont,text=ink,align=left,text width=3.55cm,anchor=north west]
-  at (0.28,2.28) {Stablecoins led routed value, lost the lead, and regained it.};
+% Finding 1: the value lead changes non-monotonically.
+\node[font=\small\bfseries,text=ucldark,align=center,text width=4.0cm] at (1.98,4.62) {1\quad THE LEAD\\CHANGED};
+\draw[-{Stealth[length=5pt]},draw=rule,line width=1.25pt] (0.22,3.18)--(3.78,3.18);
+\fill[stable] (0.38,3.18) circle (4.2pt);
+\fill[native] (1.98,3.18) circle (4.2pt);
+\fill[stable] (3.58,3.18) circle (4.2pt);
+\node[closelabel,text=stable] at (0.38,3.78) {stablecoin\\lead};
+\node[closelabel,text=native] at (1.98,3.78) {native-asset\\lead};
+\node[closelabel,text=stable] at (3.58,3.78) {stablecoin\\lead};
+\node[closelabel] at (0.38,2.77) {2022};
+\node[closelabel] at (1.98,2.77) {2023--24};
+\node[closelabel] at (3.58,2.77) {2025--26};
 
-% Which asset led on the applicable denominator.
-\draw[closepanel] (4.45,1.42) rectangle (8.57,5.12);
-\node[anchor=west,font=\fontsize{7.4}{8.1}\selectfont\bfseries,text=ucldark] at (4.73,4.78) {WHICH ASSET};
-\node[anchor=west,font=\fontsize{8.3}{9.1}\selectfont\bfseries,text=ink] at (4.73,4.40) {USDT's relative use rose};
-\node[anchor=east,font=\fontsize{18}{19}\selectfont\bfseries,text=muted] at (6.08,3.52) {\USDTValueExcessBase};
-\draw[-{Stealth[length=5pt]},draw=stable,line width=1.6pt] (6.27,3.52)--(7.15,3.52);
-\node[anchor=west,font=\fontsize{18}{19}\selectfont\bfseries,text=stable] at (7.34,3.52) {\USDTValueExcessEnd};
-\node[closelabel] at (6.51,2.95) {2024};
-\node[closelabel] at (7.68,2.95) {2026};
-\node[font=\fontsize{6.8}{7.5}\selectfont,text=ink,align=left,text width=3.55cm,anchor=north west]
-  at (4.73,2.50) {Excess use $=$ intermediary share $\div$ endpoint share.};
+\draw[-{Stealth[length=7pt]},draw=uclbright,line width=2.0pt] (4.10,3.34)--(4.92,3.34);
 
-% How routed-market composition changed.
-\draw[closepanel] (8.90,1.42) rectangle (13.20,5.12);
-\node[anchor=west,font=\fontsize{7.4}{8.1}\selectfont\bfseries,text=ucldark] at (9.18,4.78) {HOW ROUTED MARKETS CHANGED};
-\node[anchor=west,font=\fontsize{8.3}{9.1}\selectfont\bfseries,text=ink] at (9.18,4.40) {Value shifted across pair groups};
-\node[font=\fontsize{16}{17}\selectfont\bfseries,text=stable] at (11.05,3.58) {\WethValueNoEndpointChange{} net};
-\node[font=\fontsize{6.8}{7.5}\selectfont,text=ink,align=center] at (11.05,3.10)
-  {\WethValueActivityChange{} across groups\\\WethValueWithinChange{} within groups};
-\node[font=\fontsize{6.7}{7.4}\selectfont,text=ink,align=left,text width=3.72cm,anchor=north west]
-  at (9.18,2.53) {Outside WETH endpoint pairs, stablecoins gained share as value shifted across trading-pair and route-scope groups.};
+% Finding 2: USDT accounts for the candidate-level change.
+\node[font=\small\bfseries,text=ucldark,align=center,text width=4.05cm] at (7.18,4.62) {2\quad USDT'S RELATIVE\\USE ROSE};
+\node[anchor=east,font=\fontsize{23}{24}\selectfont\bfseries,text=muted] at (6.45,3.30) {\USDTValueExcessBase};
+\draw[-{Stealth[length=6pt]},draw=stable,line width=2.0pt] (6.65,3.30)--(7.65,3.30);
+\node[anchor=west,font=\fontsize{23}{24}\selectfont\bfseries,text=stable] at (7.86,3.30) {\USDTValueExcessEnd};
+\node[closelabel] at (6.10,2.73) {2024};
+\node[closelabel] at (8.23,2.73) {2026};
+\node[font=\scriptsize,text=ink,align=center] at (7.22,2.24) {intermediary share $\div$ endpoint share};
 
-% The common economic object behind all three findings.
-\node[nodepoint] (i) at (4.87,0.62) {$i$};
-\node[nodepoint,fill=ucldark,text=white,draw=ucldark] (k) at (6.22,0.62) {$k$};
-\node[nodepoint] (o) at (7.57,0.62) {$o$};
-\draw[route,draw=ucldark] (i)--(k);
-\draw[route,draw=ucldark] (k)--(o);
-\node[anchor=west,font=\fontsize{8.2}{9.0}\selectfont\bfseries,text=ink,align=left,text width=4.95cm]
-  at (8.10,0.62) {The intermediary links the pools that carry each observed indirect trade.};
+\draw[-{Stealth[length=7pt]},draw=uclbright,line width=2.0pt] (9.18,3.34)--(10.00,3.34);
+
+% Finding 3: most of the strict-value change is across groups.
+\node[font=\small\bfseries,text=ucldark,align=center,text width=3.55cm] at (11.92,4.62) {3\quad VALUE SHIFTED\\ACROSS GROUPS};
+\node[font=\fontsize{23}{24}\selectfont\bfseries,text=stable] at (11.98,3.48) {\WethValueNoEndpointChange{}};
+\node[font=\scriptsize,text=ink,align=center,text width=3.35cm] at (11.98,2.45)
+  {outside WETH endpoint pairs; mostly across trading-pair and route-scope groups};
+
+% Economic conclusion.
+\fill[ucldark,rounded corners=4pt] (0.15,0.42) rectangle (13.65,1.72);
+\node[font=\large\bfseries,text=white,align=center,text width=12.55cm] at (6.90,1.07)
+  {Most of the stablecoin gain comes from shifts in activity toward trading-pair groups in which stablecoins carried the route.};
 \end{tikzpicture}
 }
 \end{frame}

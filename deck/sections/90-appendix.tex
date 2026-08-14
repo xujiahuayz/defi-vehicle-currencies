@@ -346,8 +346,10 @@ V4 singleton
 {\small Observed route-endpoint use supplies the benchmark; network position and same-state route costs remain separate characteristics.\par}
 \end{frame}
 
-% VISUAL-FUNCTION: intermediary excess use | paired margin formulas pending zero-centered difference plot | separate intermediary use from observed pool-route endpoints
-\begin{frame}{A9. Route-endpoint and intermediary use are separate margins}
+% EVIDENCE-STATUS: evolving route decomposition; venue-scope reweighting is a route-only descriptive identity
+% EVIDENCE-SOURCES: output/exhibits/vehicle_excess_use.jsonl; output/exhibits/vehicle_excess_use_transition.jsonl; output/exhibits/e0_usdt_integration_decomposition.jsonl; output/exhibits/provisional_results_deck_values.tex
+% VISUAL-FUNCTION: intermediary excess use | paired margin formulas and venue-scope accounting note | separate intermediary use from observed pool-route endpoints
+\begin{frame}{A9. Intermediary and route-endpoint use are separate}
 \begin{columns}[T]
 \begin{column}{0.46\textwidth}
 \textbf{Intermediary share}
@@ -364,10 +366,11 @@ E^N_{k,t}=\frac{n^E_{k,t}}{\sum_j n^E_{j,t}}
 How often asset $k$ appears at either end of the observed pool route.
 \end{column}
 \end{columns}
-\vspace{0.32cm}
+\vspace{0.16cm}
 {\small The benchmark describes reconstructed pool routes; an aggregator instruction can begin or end outside the connected component.\par}
-\vspace{0.30cm}
-{\large\color{ucldark}\bfseries Excess use compares intermediation with observed route-endpoint use on the same support.\par}
+\vspace{0.16cm}
+{\normalsize\color{ucldark}\bfseries Excess use compares intermediation with observed route-endpoint use on the same support.\par}
+\decknote{For USDT in 2024--26, within-category changes account for \USDTVenueWithinCountShare{} of the count change and \USDTVenueWithinValueShare{} of the routed-value change; reweighting between single- and cross-venue categories accounts for \USDTVenueMixCountShare{} and \USDTVenueMixValueShare{}. The identity carries no sampling interval.}
 \end{frame}
 
 % VISUAL-FUNCTION: liquidity quantities | labelled pool-state and price-response cross-section | prevent capital, inventory, depth, and quote quality from collapsing
