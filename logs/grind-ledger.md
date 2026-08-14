@@ -847,3 +847,66 @@ status).
 - The remaining executable freeze blockers are E1 lock, the empirical model
   ledger, the full-text literature ledger, the absent route-cost panel, and two
   unchanged findings passes.
+
+## 2026-08-14 — Full-calendar V2 token-anchor boundary measured
+
+**Targeted check:** the absent release-grade `main_v1` route-cost panel through
+its full-calendar market-state prerequisite, continuing at the first legacy
+V2 correction generation exposed by the prior iteration.
+
+**REGRESSION-CHECK:** the purpose-bound estimand remains the best direct route
+versus the best two-hop route for the same endpoints, UTC hour and USD 1,000,
+10,000 and 100,000 notionals under `main_v1`, using quote-engine generation
+`e4ff06ed46ff` and V2 event release
+`09335f9551339e45b19734f9513511beca4a11bcc82b47adfa3947509a17b5e0`.
+The correction most at risk was treating audit-calendar token-decimals evidence
+as authority for non-audit dates, or admitting provider-reported decimals in
+place of exact chain anchors. No provider data was fetched or overwritten, no
+legacy pointer was rewritten, and the 77-date certificate remained current.
+
+**Scientific consequence and concentration.** The 35 flat V2 correction days
+have complete cached UTC bounds and shared 50-block exact-log evidence, but the
+active admitted provider perimeter contains 12,654 unaudited tokens across
+12,702 pools and 567,043 Mint/Burn/Swap rows. The gap is concentrated in 34
+distinct Uniswap-heavy late-sample dates rather than the certified monthly
+construction calendar. It is not metadata hygiene: 199 missing tokens enter
+382 of the 6,800 `main_v1` top-200 ordered-pair day rows, carrying $280.831
+million of $48.470 billion realised bridge volume, or 0.5794%. Excluding or
+mis-scaling them can change endpoint sample composition and route-cost support.
+
+**Work completed.** Added a cached-only audit mode to the existing canonical
+market-state owner. It reopens the current event certificate, factory registry,
+bounded exclusions and all 65,082 token proofs; identifies every complete flat
+generation; content-validates the exact full-day chunk perimeter; and fails
+closed with the complete active missing-decimals count before any correction
+write. Added focused regressions for complete legacy-generation discovery and
+active-pool missing-decimals concentration. Updated the findings guard from the
+misleading first-file failure to the actual purpose-bound scientific boundary.
+
+**DECISION:** `promote` the full-calendar token-anchor gap as the next D2 input
+boundary; `park` correction refresh until exact anchors cover the 199 tokens
+that can enter `main_v1`, and explicitly adjudicate the remaining irrelevant
+pools rather than inheriting all 12,654 tokens or trusting provider decimals.
+
+**Validation.** The focused and integrated suites passed 164 tests plus 72
+subtests; the final focused rerun passed 38 tests plus 61 subtests. The canonical
+cached input audit verified zero missing exact chunks and failed at the expected
+12,654-token boundary. The final findings-freeze audit remains RED with five
+blockers.
+
+**Commit:** `c14517d` (cached correction-input audit, materiality boundary and
+findings status).
+
+**Blocking count:** 5.
+
+**For the next iteration:**
+- Resume in the existing token-anchor/materiality owners: derive the exact 199
+  `main_v1` endpoint tokens from the top-200 daily pair selector, choose their
+  deterministic event anchors, and extend exact evidence without refetching the
+  already-complete event-log or provider partitions.
+- Register a purpose-bound admitted pool perimeter for those endpoints plus the
+  five locked vehicle candidates before regenerating the 35 V2 correction days;
+  do not label the other active provider pools exact or silently decode them.
+- After V2 corrections are current, rerun the full market-state preflight to
+  expose and then address the five legacy V3 correction days. No market-state or
+  route-cost shard was published in this iteration.
