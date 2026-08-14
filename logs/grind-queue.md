@@ -301,6 +301,36 @@ and pick a blocking check from the freeze gate.
   `scripts/fetch_raw_market_data.py` plus four untracked sources) pending a
   land-or-bin decision from Java. Do not re-raise this escalation.
 
+- [x] **M3 SUPERVISOR (2026-08-14T21:55Z): recovery churn cleared; leaked test scratch is not work.**
+  Iterations 9–14 were bounded recovery workers re-dispatched against the same
+  untracked `e0-release-test-kvipg68h/` + `data/manifests/e0-release-test-kvipg68h/`
+  pair — scratch leaked by a killed `tests/test_exploration.py` run (its fixture
+  builds `tempfile.TemporaryDirectory(prefix="e0-release-test-", dir=REPO_ROOT)`,
+  so a worker killed mid-test leaves the directory behind). Iteration 9's worker
+  already diagnosed the pair as inert byproducts but recovery constraints forbade
+  deletion, which re-triggered recovery every boundary. The M3 supervisor archived
+  the pair to `~/projects/defi-vehicle-currencies-backups/e0-test-leak-20260814/leaked-dirs.tar.gz`
+  on Studio, removed it from the d3 worktree, and landed a `.gitignore` guard
+  (`e0-release-test-*/`, `data/manifests/e0-release-test-*/`) so leaked fixture
+  scratch can never read as worktree dirt again. A live `e0-release-test-k08_pzi7/`
+  belonging to the then-running iteration-14 worker was deliberately left alone;
+  if it remains after that worker exits, it is ignored dirt and safe to delete.
+  Proceed with the open queue items above.
+
+- [ ] **M3 SUPERVISOR (2026-08-14T21:58Z): parked table-header refinement — apply only AFTER the queued composition E0 refresh regenerates `output/exhibits/vehicle_transition_pair_fixed_effects.jsonl` on the current certified release.**
+  Change the `pair_composition` column header from `Estimate in pp (clustered s.e.)`
+  to `Estimate in pp` in `src/ddvc/dominance_tables.py::render_pair_composition`
+  (the `\exhibitnote` in `paper/sections/03-dominance.tex` already states the
+  two-way clustering, so the header annotation is redundant and off JFE register);
+  update the matching assertion in `tests/test_dominance_tables.py` to
+  `"Margin or estimate & Estimate in pp & Obs."`. Because the fixed-effects
+  exhibit's certificate pins the presentation producer, editing the renderer
+  before the exhibit refresh makes `render_pair_composition` refuse to restamp
+  (verified on M3, 2026-08-14): so after the exhibit refresh, apply the edit,
+  rerun `scripts/tabulate/render_pair_composition.py`,
+  `render_dominance_rotation.py` and `render_usdt_transition.py` to restamp all
+  three tables, and confirm `tests/test_dominance_tables.py` is green.
+
 ## Closed
 
 _(items are ticked in place above)_

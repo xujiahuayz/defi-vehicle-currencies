@@ -74,6 +74,12 @@ paper/*.synctex.gz
 # is not provenance. They are small JSON sidecars.
 !data/manifests/
 
+# e0 exploration test workspaces must live inside the repo root because
+# provenance keys are repo-relative. A killed test run leaves them behind, and
+# leftover scratch must never read as worktree dirt to the grind supervisor.
+e0-release-test-*/
+data/manifests/e0-release-test-*/
+
 # LaTeX build artefacts. The PDF is regenerable from the sources with one latexmk call.
 paper/*.aux
 paper/*.bbl
