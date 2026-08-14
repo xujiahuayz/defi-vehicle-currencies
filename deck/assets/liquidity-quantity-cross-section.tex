@@ -11,8 +11,8 @@
 % Balance-sheet view: claims and token holdings are different objects.
 \node[font=\small\bfseries,text=ucldark,anchor=west] at (0.0,3.18) {Pool balance sheet at time $t$};
 \node[callout,minimum width=2.05cm] (lp) at (0.90,2.48) {LP positions\\or audited claims};
-\node[poolbin] (x) at (0.95,0.95) {$x_t$ units\\of token $X$};
-\node[poolbin] (y) at (3.42,0.95) {$y_t$ units\\of token $Y$};
+\node[poolbin] (x) at (0.95,0.95) {$R_{X,p,t}$ units\\of token $X$};
+\node[poolbin] (y) at (3.42,0.95) {$R_{Y,p,t}$ units\\of token $Y$};
 \draw[route,draw=uclbright] (lp.south) -- ++(0,-0.40) -| (x.north);
 \draw[route,draw=uclbright] (lp.south) -- ++(0,-0.40) -| (y.north);
 \node[font=\scriptsize\bfseries,text=ink] at (2.18,-0.04) {inventory: exact token holdings};

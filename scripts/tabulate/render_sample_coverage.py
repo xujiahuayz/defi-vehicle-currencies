@@ -9,6 +9,11 @@ from ddvc.paths import DATA_DIR, LP_CAPITAL_CONCENTRATION_PANEL
 from ddvc.paper_tables import write_table_artifacts
 
 
+BRIDGE_PANEL = DATA_DIR / "empirical" / "bridge_daily.parquet"
+ROUTE_COST_PANEL = DATA_DIR / "empirical" / "route_cost_panel_v2.parquet"
+V4_ROUTE_UNITS = DATA_DIR / "empirical" / "v4_settlement_route_units.parquet"
+
+
 def count(value: int | float) -> str:
     return f"{int(round(float(value))):,}"
 
@@ -21,14 +26,14 @@ def row(*cells: str) -> str:
     return " & ".join(cells) + r" \\"
 
 
-bridge = pd.read_parquet(DATA_DIR / "empirical" / "bridge_daily.parquet")
+bridge = pd.read_parquet(BRIDGE_PANEL)
 route = pd.read_parquet(
-    DATA_DIR / "empirical" / "route_cost_panel_v2.parquet",
+    ROUTE_COST_PANEL,
     columns=["date", "direct_available", "vehicle_available", "direct_cost_advantage"],
 )
 lp = pd.read_parquet(LP_CAPITAL_CONCENTRATION_PANEL)
 units = pd.read_parquet(
-    DATA_DIR / "empirical" / "v4_settlement_route_units.parquet",
+    V4_ROUTE_UNITS,
     columns=["date"],
 )
 
@@ -97,4 +102,9 @@ write_table_artifacts(
     "sample_coverage",
     "\n".join(lines) + "\n",
     preview_width="9in",
+    inputs=[BRIDGE_PANEL, ROUTE_COST_PANEL, LP_CAPITAL_CONCENTRATION_PANEL, V4_ROUTE_UNITS],
+    notes=(
+        "Legacy sample-coverage inspection table; route_cost_panel_v2 is withdrawn "
+        "pending its registered rebuild and this renderer must not be used meanwhile."
+    ),
 )

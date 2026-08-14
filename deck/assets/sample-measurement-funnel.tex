@@ -9,7 +9,7 @@
 \tikzset{countlane/.style={rounded corners=2pt,draw=native,fill=native!7,minimum width=4.10cm,minimum height=0.94cm,text width=3.72cm,align=center,inner sep=4pt,font=\scriptsize}}
 \tikzset{valuelane/.style={rounded corners=2pt,draw=stable,fill=stable!7,minimum width=4.10cm,minimum height=0.94cm,text width=3.72cm,align=center,inner sep=4pt,font=\scriptsize}}
 \begin{tikzpicture}[x=1cm,y=1cm]
-\node[stage] (legs) at (0,0) {released\\swap legs};
+\node[stage] (legs) at (0,0) {multi-protocol\\swap legs};
 \node[stage] (routes) at (2.75,0) {reconstructed\\economic routes};
 \node[stage] (twoleg) at (5.50,0) {exact two-leg\\intermediary routes};
 \node[stage,draw=ucldark,line width=1pt] (choice) at (8.25,0) {native--stable\\choice set};
@@ -26,6 +26,6 @@
 \draw[-{Stealth[length=5pt]},line width=1.25pt,draw=stable]
   (choice.south east) .. controls (8.86,-0.88) and (8.35,-1.08) .. (value.north);
 
-\node[font=\tiny,text=muted,align=center] at (5.50,-3.04)
-  {Topology-valid routes remain in count evidence when dollar support is unavailable.\\Box widths do not represent attrition.};
+\node[font=\tiny,text=muted,align=center] at (5.50,-2.92)
+  {Box widths do not represent attrition.};
 \end{tikzpicture}

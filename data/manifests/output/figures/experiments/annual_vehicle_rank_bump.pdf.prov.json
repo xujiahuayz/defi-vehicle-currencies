@@ -1,39 +1,61 @@
 {
  "argv": [],
  "artefact": "output/figures/experiments/annual_vehicle_rank_bump.pdf",
- "artefact_bytes": 24010,
- "artefact_mtime_ns": 1786683775450867163,
- "artefact_sha256": "467b1855f3592664e7e827e86c809b09b34e11f3eeeb3dd11dec9cca828570f6",
- "code_fingerprint": "a88489854dd761c433a945a6e141db606be2e8152e0e41654802ed28386c0196",
+ "artefact_bytes": 24464,
+ "artefact_mtime_ns": 1786699644742137027,
+ "artefact_sha256": "18d7ee334089c0b20cc37d0d53b0b84c69de3f8515fc15086fe75d7f2f85b1bf",
+ "code_fingerprint": "365918e76b6b69e1462f3f892f2ca4cf0d27365f67dfd3ca914c6f159dd2798f",
  "code_sources": [
   "scripts/figure/build_visual_experiments.py",
   "src/ddvc/figure_outputs.py",
   "src/ddvc/visual_experiments.py"
  ],
- "created_at": "2026-08-14T05:02:55+00:00",
+ "created_at": "2026-08-14T09:27:24+00:00",
  "git": {
   "branch": "main",
-  "commit": "af0eb07b6e8c74092f1c27c02835b597feb3293d",
+  "commit": "8e7bb2800fdaec55a3b41e2becbc479e0a7023b5",
   "dirty": true,
   "dirty_generated_files": [
+   "data/manifests/output/exhibits/prose_conventions.jsonl.prov.json",
+   "data/manifests/output/exhibits/venue_optics.jsonl.prov.json",
+   "data/manifests/output/exhibits/venue_shape.jsonl.prov.json",
    "data/manifests/output/figures/experiments/annual_vehicle_composition_bands.pdf.prov.json",
    "data/manifests/output/figures/experiments/annual_vehicle_share_heatmap.pdf.prov.json",
    "data/manifests/output/figures/experiments/integration_vehicle_alluvial.pdf.prov.json",
-   "output/figures/experiments/.annual_vehicle_rank_bump.pdf.6lildr34.tmp"
+   "data/manifests/output/tables/usdt_transition.pdf.prov.json",
+   "data/manifests/output/tables/usdt_transition.tex.prov.json",
+   "output/exhibits/prose_conventions.jsonl",
+   "output/exhibits/provisional_results_deck_values.tex",
+   "output/exhibits/venue_optics.jsonl",
+   "output/exhibits/venue_shape.jsonl",
+   "output/figures/experiments/annual_vehicle_composition_bands.pdf",
+   "output/figures/experiments/annual_vehicle_share_heatmap.pdf",
+   "output/figures/experiments/integration_vehicle_alluvial.pdf",
+   "output/tables/usdt_transition.pdf",
+   "data/manifests/output/exhibits/provisional_results_deck_values.tex.prov.json",
+   "output/exhibits/provisional_challenger_deck_values.tex",
+   "output/figures/experiments/.annual_vehicle_rank_bump.pdf.7g9m46ux.tmp"
   ],
   "dirty_tracked_files": [
-   "deck/main.pdf",
    "deck/sections/04-results.tex",
-   "docs/research-workflow.md",
+   "paper/main.tex",
    "paper/sections/01-introduction.tex",
    "paper/sections/02-setting.tex",
    "paper/sections/03-dominance.tex",
+   "paper/sections/05-rivals.tex",
+   "paper/sections/06-executability.tex",
+   "paper/sections/07-conclusion.tex",
    "paper/sections/08-appendix.tex",
-   "scripts/research_action_preflight.py",
+   "scripts/figure/build_visual_experiments.py",
+   "scripts/tabulate/README.md",
+   "scripts/tabulate/render_usdt_transition.py",
    "src/ddvc/visual_experiments.py",
-   "tests/test_research_action_preflight.py"
+   "tests/test_dominance_tables.py"
   ],
-  "dirty_untracked_files": []
+  "dirty_untracked_files": [
+   "scripts/tabulate/render_provisional_results_deck_values.py",
+   "tests/test_provisional_results_deck_values.py"
+  ]
  },
  "inputs": [
   {
@@ -51,10 +73,10 @@
  },
  "notes": "annual vehicle-type rank diagnostic; rank intentionally suppresses share magnitudes and is not a headline result",
  "payload_identity": {
-  "bytes": 24010,
+  "bytes": 24464,
   "format": "binary",
   "schema_version": 1,
-  "sha256": "467b1855f3592664e7e827e86c809b09b34e11f3eeeb3dd11dec9cca828570f6"
+  "sha256": "18d7ee334089c0b20cc37d0d53b0b84c69de3f8515fc15086fe75d7f2f85b1bf"
  },
  "python": "3.14.5",
  "rows": null,

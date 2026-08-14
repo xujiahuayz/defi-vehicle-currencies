@@ -1,0 +1,110 @@
+{
+ "argv": [],
+ "artefact": "output/tables/usdt_transition.tex",
+ "artefact_bytes": 386,
+ "artefact_mtime_ns": 1786722448305154659,
+ "artefact_sha256": "136748fe41e13b90da60862ee634da54c74156782764102940543b0810070712",
+ "code_fingerprint": "5a4135eba99ec355a1ddd98c3f971c0c2a64a0115e92633a608bed334b7e9fde",
+ "code_sources": [
+  "scripts/tabulate/render_usdt_transition.py",
+  "src/ddvc/dominance_tables.py",
+  "src/ddvc/paper_tables.py"
+ ],
+ "created_at": "2026-08-14T15:47:28+00:00",
+ "git": {
+  "branch": "main",
+  "commit": "10b07523378b0179ba77cd5458a2f35789fb5d09",
+  "dirty": true,
+  "dirty_generated_files": [
+   "data/manifests/output/exhibits/prose_conventions.jsonl.prov.json",
+   "data/manifests/output/exhibits/prose_outliers.jsonl.prov.json",
+   "data/manifests/output/exhibits/venue_optics.jsonl.prov.json",
+   "data/manifests/output/exhibits/venue_shape.jsonl.prov.json",
+   "data/manifests/output/exhibits/venue_volume_by_year.jsonl.prov.json",
+   "data/manifests/output/tables/dominance_rotation.pdf.prov.json",
+   "data/manifests/output/tables/dominance_rotation.tex.prov.json",
+   "data/manifests/output/tables/pair_composition.pdf.prov.json",
+   "data/manifests/output/tables/pair_composition.tex.prov.json",
+   "data/manifests/output/tables/usdt_transition.pdf.prov.json",
+   "data/manifests/output/tables/venue_coverage.pdf.prov.json",
+   "data/manifests/output/tables/venue_coverage.tex.prov.json",
+   "output/exhibits/prose_conventions.jsonl",
+   "output/exhibits/prose_outliers.jsonl",
+   "output/exhibits/venue_optics.jsonl",
+   "output/exhibits/venue_shape.jsonl",
+   "output/exhibits/venue_volume_by_year.jsonl",
+   "output/tables/dominance_rotation.pdf",
+   "output/tables/dominance_rotation.tex",
+   "output/tables/pair_composition.pdf",
+   "output/tables/pair_composition.tex",
+   "output/tables/usdt_transition.pdf",
+   "output/tables/venue_coverage.pdf",
+   "output/tables/venue_coverage.tex",
+   "data/manifests/output/provisional/depeg_substitution_e0.jsonl.prov.json",
+   "data/manifests/output/provisional/depeg_substitution_e0_hourly.parquet.prov.json",
+   "data/manifests/output/provisional/depeg_substitution_e0_input_receipt.jsonl.prov.json",
+   "data/manifests/output/provisional/depeg_substitution_e0_manifest.jsonl.prov.json"
+  ],
+  "dirty_tracked_files": [
+   "deck/main.pdf",
+   "deck/main.tex",
+   "literature/vehicle-currencies.bib",
+   "paper/main.tex",
+   "paper/sections/01-introduction.tex",
+   "paper/sections/02-setting.tex",
+   "paper/sections/03-dominance.tex",
+   "paper/sections/05-rivals.tex",
+   "paper/sections/06-executability.tex",
+   "paper/sections/07-conclusion.tex",
+   "paper/sections/08-appendix.tex",
+   "paper/sections/abstract.tex",
+   "scripts/run_venue_coverage_bounds.py",
+   "scripts/tabulate/README.md",
+   "scripts/tabulate/render_dominance_rotation.py",
+   "scripts/tabulate/render_pair_composition.py",
+   "scripts/tabulate/render_venue_coverage.py",
+   "src/ddvc/dominance_tables.py",
+   "src/ddvc/venue_tables.py",
+   "tests/test_dominance_tables.py",
+   "tests/test_venue_tables.py"
+  ],
+  "dirty_untracked_files": [
+   "scripts/run_depeg_substitution_e0.py",
+   "scripts/run_stress_reallocation_e0.py",
+   "src/ddvc/analysis/depeg_substitution_e0.py",
+   "src/ddvc/analysis/stress_reallocation_e0.py",
+   "tests/test_depeg_substitution_e0.py",
+   "tests/test_stress_reallocation_e0.py"
+  ]
+ },
+ "inputs": [
+  {
+   "bytes": 1697,
+   "exists": true,
+   "path": "output/exhibits/provisional_results_deck_values.tex",
+   "sha256": "55dc4b50899bf69f7e469ea5d34b7f06d9bfc72f2fd2382bbaec502044e7a03b"
+  },
+  {
+   "bytes": 4140,
+   "exists": true,
+   "path": "data/manifests/output/exhibits/provisional_results_deck_values.tex.prov.json",
+   "sha256": "b583fb000217e1894119a3a28273ff1f8476776b5c12ebca76b2ac1ef00863b2"
+  }
+ ],
+ "libraries": {
+  "numpy": "2.5.1",
+  "pandas": "3.0.3",
+  "pyarrow": "25.0.0",
+  "scipy": "1.18.0"
+ },
+ "notes": "generated presentation binding for current certified USDT annual excess-use and endpoint-gap values; provisional status concerns scientific scope, not lineage",
+ "payload_identity": {
+  "bytes": 386,
+  "format": "binary",
+  "schema_version": 1,
+  "sha256": "136748fe41e13b90da60862ee634da54c74156782764102940543b0810070712"
+ },
+ "python": "3.14.5",
+ "rows": null,
+ "script": "scripts/tabulate/render_usdt_transition.py"
+}

@@ -837,6 +837,16 @@
       ],
       "status": "complete"
     },
+    "XiMoallemi2026Routing": {
+      "checks": {
+        "article": "literature/text/2026-XiMoallemi2026Routing-preprint-quantifying-sub-optimality-in-routing-for-automated-market-makers.txt",
+        "author_or_repository": "https://business.columbia.edu/faculty/people/ciamac-moallemi",
+        "publisher_or_doi": "https://doi.org/10.48550/arXiv.2607.20762"
+      },
+      "companions": [],
+      "main": "XiMoallemi2026Routing",
+      "status": "complete"
+    },
     "PastorStambaughTaylor2021SustainableInvesting": {
       "checks": {
         "article": "literature/text/2021-PastorStambaughTaylor2021SustainableInvesting-sustainable-investing-in-equilibrium.txt",
@@ -2094,6 +2104,14 @@
         "label": "NBER Working Paper 30256",
         "url": "https://www.nber.org/system/files/working_papers/w30256/w30256.pdf",
         "version": "working-paper"
+      }
+    ],
+    "XiMoallemi2026Routing": [
+      {
+        "access": "public",
+        "label": "arXiv v1 PDF",
+        "url": "https://arxiv.org/pdf/2607.20762",
+        "version": "preprint"
       }
     ]
   }

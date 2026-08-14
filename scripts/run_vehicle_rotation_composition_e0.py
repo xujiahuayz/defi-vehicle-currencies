@@ -32,6 +32,9 @@ from ddvc.runtime import exclusive_job
 
 
 PAIR_PANEL = OUTPUT_DIR / "exhibits" / "vehicle_transition_pair_panel.parquet"
+PAIR_CONTRIBUTIONS = (
+    OUTPUT_DIR / "exhibits" / "vehicle_transition_pair_contributions.parquet"
+)
 DECOMPOSITION = OUTPUT_DIR / "exhibits" / "vehicle_transition_pair_decomposition.jsonl"
 SUPPORT = OUTPUT_DIR / "exhibits" / "vehicle_transition_pair_support.jsonl"
 FIXED_EFFECT_RESULTS = (
@@ -75,6 +78,7 @@ def run(
     environment=None,
     pointer_path: Path = ENDPOINT_CANDIDATE_COMPOSITION_RELEASE,
     pair_panel_output: Path = PAIR_PANEL,
+    pair_contribution_output: Path = PAIR_CONTRIBUTIONS,
     decomposition_output: Path = DECOMPOSITION,
     support_output: Path = SUPPORT,
     fixed_effect_output: Path = FIXED_EFFECT_RESULTS,
@@ -88,7 +92,9 @@ def run(
         if release.generation_id != expected_receipt.generation_id:
             raise ValueError("endpoint release differs from the D3-bound generation")
         choices = pd.read_parquet(release.artifacts["choices"])
-        detail, decomposition, support = vehicle_rotation_composition(choices)
+        detail, decomposition, support, pair_contributions = (
+            vehicle_rotation_composition(choices)
+        )
         fixed_effect_results = estimate_pair_fixed_effect_rotation(detail)
         annual_market_pairs = load_market_incidence_annual_pairs(
             release.artifacts["pair_support"], release.artifacts["choices"]
@@ -123,6 +129,20 @@ def run(
                 "locked pair-date-integration-scope panel on measure-specific common "
                 "month-day support; notional, observed opportunity, and exact "
                 "search-efficiency state remain unobserved"
+            ),
+        )
+        write_model_panel(
+            pair_contributions,
+            pair_contribution_output,
+            role="support",
+            context=context,
+            code_sources=CODE_SOURCES,
+            inputs=inputs,
+            notes=(
+                "ranked descriptive ordered-pair contributions to within-pair choice, "
+                "pair reweighting, and baseline- or comparison-exclusive composition; "
+                "each row carries the intentionally unallocated aggregate common-support "
+                "bridge and the aggregate total change"
             ),
         )
         fixed_effect_results = attach_spec_ids(
@@ -170,9 +190,9 @@ def run(
         )
         release.bundle.assert_current()
     print(
-        f"wrote {len(detail):,} cell rows, {len(fixed_effect_results):,} fixed-effect "
-        f"results, {len(decomposition):,} decomposition rows, and {len(support):,} "
-        "support rows"
+        f"wrote {len(detail):,} cell rows, {len(pair_contributions):,} ranked pair "
+        f"contributions, {len(fixed_effect_results):,} fixed-effect results, "
+        f"{len(decomposition):,} decomposition rows, and {len(support):,} support rows"
     )
     return 0
 

@@ -8,6 +8,7 @@ import pandas as pd
 
 from ddvc.figure_outputs import ASSET_TYPES
 from ddvc.visual_experiments import (
+    WEIGHTINGS,
     annual_integration_flows,
     annual_vehicle_composition,
     daily_vehicle_shares,
@@ -67,6 +68,14 @@ def rival_fixture() -> pd.DataFrame:
 
 
 class VisualExperimentTests(unittest.TestCase):
+    def test_episode_weighting_is_labelled_as_intermediary_episodes(self) -> None:
+        self.assertEqual(WEIGHTINGS[0], ("count", "Intermediary episodes"))
+        source = (Path(__file__).parents[1] / "src" / "ddvc" / "visual_experiments.py").read_text(
+            encoding="utf-8"
+        )
+        self.assertNotIn('(\"episode_share\", \"Route count\")', source)
+        self.assertNotIn('(\"episode\", \"all_routes\", \"Route count\")', source)
+
     def test_annual_composition_and_flows_are_exhaustive(self) -> None:
         result = annual_vehicle_composition(annual_fixture())
         self.assertEqual(len(result), 30)

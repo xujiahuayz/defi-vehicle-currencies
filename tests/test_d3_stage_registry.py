@@ -175,3 +175,19 @@ def test_current_pointer_without_typed_resolver_is_rejected() -> None:
             "invalid unresolved pointer",
             ("data/processed/invalid/current.json",),
         )
+
+
+def test_liquidity_sequence_runs_v2_before_v3_and_keeps_rent_out() -> None:
+    scripts = [stage.script for stage in D3_BUILD_STAGES]
+    assert "build_rent_incidence_panel.py" not in scripts
+    assert "process/build_cex_reference_support.py" not in scripts
+    liquidity = [
+        (index, stage.arguments)
+        for index, stage in enumerate(D3_BUILD_STAGES)
+        if stage.script == "build_liquidity_capital_flow_panels.py"
+    ]
+    assert len(liquidity) == 2
+    v2_index = next(index for index, arguments in liquidity if ("--family", "v2") == arguments[:2])
+    joint_index = next(index for index, arguments in liquidity if ("--family", "joint") == arguments[:2])
+    flow_index = scripts.index("build_lp_liquidity_flow_panel.py")
+    assert v2_index < flow_index < joint_index

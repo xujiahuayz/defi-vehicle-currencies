@@ -70,6 +70,9 @@ STAGES = [
     ("house voice and register",
      [str(PY), "-m", "pytest", "tests/test_paper_prose.py", "-q"],
      "banned register, em dashes, hard-wrapped prose, or process language in a deliverable", True),
+    ("exhibit note presence and typography",
+     [str(PY), "-m", "pytest", "tests/test_exhibit_notes.py", "-q"],
+     "an empirical exhibit is missing its note or bypasses the shared label, width, alignment, and spacing", True),
     ("generated evidence in the deck",
      [str(PY), "scripts/audit_deck_evidence.py"],
      "a scientific plot or measured value is typed into slide source instead of generated through output/", True),
@@ -115,6 +118,12 @@ def main() -> int:
     for label, argv, meaning, blocking in STAGES:
         r = subprocess.run(argv, cwd=ROOT, capture_output=True, text=True)
         ok = r.returncode == 0
+        # The shape runner deliberately exits zero after producing diagnostics: its
+        # quartiles are editorial alarms, not authoring targets.  Surface a REVIEW as a
+        # warning here so the whole-paper summary cannot call an unusually mechanical
+        # sentence or paragraph distribution green.
+        if label == "prose shape against the venue's own distributions" and "REVIEW" in r.stdout:
+            ok = False
         status = "ok  " if ok else ("FAIL" if blocking else "WARN")
         print(f"  {status}  {label}")
         if not ok:
@@ -169,10 +178,11 @@ def main() -> int:
                           f"quartile is {r['exemplar_p25']} and the median is "
                           f"{r['exemplar_median']}")
         print("\nEvery number must come from a real artefact and carry a trailing comment "
-              "naming it and its sample. Banned register: hold, survive, matters, rather "
-              "than, genuinely, deliberate. No em dashes, no contrast-confirmation, no "
-              "hard-wrapped prose, no process language describing the document itself. "
-              "Re-run this script until it exits zero.")
+              "naming it and its sample. Treat vocabulary and construction alarms as "
+              "diagnostics, not term-replacement instructions: reread the closest raw "
+              "published passages and revise the economic argument, transitions, sentence "
+              "functions, and paragraph rhythm. Remove hard-wrapped prose and backstage "
+              "process language. Re-run this script until it exits zero.")
     return 1
 
 

@@ -638,6 +638,196 @@ def _annual_pair_mass(
     )
 
 
+def _ranked_pair_contributions(
+    merged: pd.DataFrame,
+    *,
+    metric: str,
+    metric_column: str,
+    reporting_scope: str,
+    baseline_year: int,
+    comparison_year: int,
+    W_bar: float,
+    E_bar: float,
+    within_common: float,
+    common_pair_reweighting: float,
+    common_support_mass: float,
+    exclusive_pair_contribution: float,
+    total_change: float,
+) -> pd.DataFrame:
+    """Allocate pair-level composition terms and disclose the unallocated bridge."""
+
+    data = merged.copy()
+    common = data["pair_membership"].eq("common")
+    baseline_exclusive = data["pair_membership"].eq("baseline_exclusive")
+    comparison_exclusive = data["pair_membership"].eq("comparison_exclusive")
+    baseline_exclusive_mass = float(
+        data.loc[baseline_exclusive, "denominator_baseline"].sum()
+    )
+    comparison_exclusive_mass = float(
+        data.loc[comparison_exclusive, "denominator_comparison"].sum()
+    )
+    data["pair_weight_baseline"] = 0.0
+    data["pair_weight_comparison"] = 0.0
+    data.loc[common, "pair_weight_baseline"] = data.loc[common, "q_baseline"]
+    data.loc[common, "pair_weight_comparison"] = data.loc[common, "q_comparison"]
+    if baseline_exclusive_mass > 0:
+        data.loc[baseline_exclusive, "pair_weight_baseline"] = (
+            data.loc[baseline_exclusive, "denominator_baseline"]
+            / baseline_exclusive_mass
+        )
+    if comparison_exclusive_mass > 0:
+        data.loc[comparison_exclusive, "pair_weight_comparison"] = (
+            data.loc[comparison_exclusive, "denominator_comparison"]
+            / comparison_exclusive_mass
+        )
+    data["pair_weight_midpoint"] = 0.5 * (
+        data["pair_weight_baseline"] + data["pair_weight_comparison"]
+    )
+    data["stable_share_midpoint"] = 0.5 * (
+        data["stable_share_baseline"] + data["stable_share_comparison"]
+    )
+
+    audit_columns = [
+        *PAIR_KEYS,
+        "native_baseline",
+        "native_comparison",
+        "stable_baseline",
+        "stable_comparison",
+        "denominator_baseline",
+        "denominator_comparison",
+        "stable_share_baseline",
+        "stable_share_comparison",
+        "pair_weight_baseline",
+        "pair_weight_comparison",
+        "pair_weight_midpoint",
+        "stable_share_midpoint",
+    ]
+
+    def frame_for(
+        selector: pd.Series,
+        *,
+        support_status: str,
+        component: str,
+        contribution: pd.Series,
+        aggregate_mass_share_midpoint: float,
+    ) -> pd.DataFrame:
+        frame = data.loc[selector, audit_columns].copy()
+        frame["support_status"] = support_status
+        frame["contribution_component"] = component
+        frame["aggregate_mass_share_midpoint"] = aggregate_mass_share_midpoint
+        frame["contribution_share"] = contribution.loc[selector].astype(float)
+        return frame
+
+    within_values = W_bar * data["pair_weight_midpoint"] * (
+        data["stable_share_comparison"] - data["stable_share_baseline"]
+    )
+    reweighting_values = W_bar * data["stable_share_midpoint"] * (
+        data["pair_weight_comparison"] - data["pair_weight_baseline"]
+    )
+    exiting_values = -E_bar * data["pair_weight_baseline"] * data["stable_share_baseline"]
+    entering_values = (
+        E_bar
+        * data["pair_weight_comparison"]
+        * data["stable_share_comparison"]
+    )
+    ledger = pd.concat(
+        [
+            frame_for(
+                common,
+                support_status="common",
+                component="within_pair_choice",
+                contribution=within_values,
+                aggregate_mass_share_midpoint=W_bar,
+            ),
+            frame_for(
+                common,
+                support_status="common",
+                component="pair_composition_reweighting",
+                contribution=reweighting_values,
+                aggregate_mass_share_midpoint=W_bar,
+            ),
+            frame_for(
+                baseline_exclusive,
+                support_status="baseline_exclusive",
+                component="baseline_exclusive_composition",
+                contribution=exiting_values,
+                aggregate_mass_share_midpoint=E_bar,
+            ),
+            frame_for(
+                comparison_exclusive,
+                support_status="comparison_exclusive",
+                component="comparison_exclusive_composition",
+                contribution=entering_values,
+                aggregate_mass_share_midpoint=E_bar,
+            ),
+        ],
+        ignore_index=True,
+        sort=False,
+    )
+    expected = {
+        "within_pair_choice": within_common,
+        "pair_composition_reweighting": common_pair_reweighting,
+        "exclusive_pair_composition": exclusive_pair_contribution,
+    }
+    observed = {
+        "within_pair_choice": float(
+            ledger.loc[
+                ledger["contribution_component"].eq("within_pair_choice"),
+                "contribution_share",
+            ].sum()
+        ),
+        "pair_composition_reweighting": float(
+            ledger.loc[
+                ledger["contribution_component"].eq(
+                    "pair_composition_reweighting"
+                ),
+                "contribution_share",
+            ].sum()
+        ),
+        "exclusive_pair_composition": float(
+            ledger.loc[
+                ledger["contribution_component"].isin(
+                    (
+                        "baseline_exclusive_composition",
+                        "comparison_exclusive_composition",
+                    )
+                ),
+                "contribution_share",
+            ].sum()
+        ),
+    }
+    for component, expected_value in expected.items():
+        if not np.isclose(observed[component], expected_value, atol=1e-12, rtol=0.0):
+            raise RuntimeError(
+                f"vehicle-rotation pair ledger does not reconcile {component}: "
+                f"{observed[component] - expected_value}"
+            )
+
+    ledger.insert(0, "metric", metric)
+    ledger.insert(1, "source_column", metric_column)
+    ledger.insert(2, "reporting_scope", reporting_scope)
+    ledger.insert(3, "baseline_year", baseline_year)
+    ledger.insert(4, "comparison_year", comparison_year)
+    ledger["contribution_pp"] = 100.0 * ledger["contribution_share"]
+    ledger["absolute_contribution_pp"] = ledger["contribution_pp"].abs()
+    ledger["unallocated_common_support_mass_share"] = common_support_mass
+    ledger["aggregate_total_change"] = total_change
+    ledger["allocation_scope"] = "pair_level_excludes_common_support_mass"
+    ledger["mechanism_status"] = "descriptive_pair_contribution_noncausal"
+    ledger = ledger.sort_values(
+        [
+            "absolute_contribution_pp",
+            "src",
+            "tgt",
+            "contribution_component",
+        ],
+        ascending=[False, True, True, True],
+        kind="stable",
+    ).reset_index(drop=True)
+    ledger["absolute_rank"] = np.arange(1, len(ledger) + 1, dtype=int)
+    return ledger
+
+
 def _decompose_metric_scope(
     annual: pd.DataFrame,
     *,
@@ -647,7 +837,7 @@ def _decompose_metric_scope(
     baseline_year: int,
     comparison_year: int,
     common_month_days: tuple[str, ...],
-) -> tuple[pd.DataFrame, pd.DataFrame]:
+) -> tuple[pd.DataFrame, pd.DataFrame, pd.DataFrame]:
     baseline = annual[annual["year"].eq(baseline_year)].drop(columns="year")
     comparison = annual[annual["year"].eq(comparison_year)].drop(columns="year")
     merged = baseline.merge(
@@ -835,7 +1025,22 @@ def _decompose_metric_scope(
                 "zero_denominator_cell_years": 0,
             }
         )
-    return summary, pd.DataFrame(support_rows)
+    pair_contributions = _ranked_pair_contributions(
+        merged,
+        metric=metric,
+        metric_column=metric_column,
+        reporting_scope=reporting_scope,
+        baseline_year=baseline_year,
+        comparison_year=comparison_year,
+        W_bar=W_bar,
+        E_bar=E_bar,
+        within_common=within_common,
+        common_pair_reweighting=common_pair_reweighting,
+        common_support_mass=common_support_mass,
+        exclusive_pair_contribution=exclusive_pair_contribution,
+        total_change=total_change,
+    )
+    return summary, pd.DataFrame(support_rows), pair_contributions
 
 
 def vehicle_rotation_composition(
@@ -843,8 +1048,8 @@ def vehicle_rotation_composition(
     *,
     baseline_year: int = BASELINE_YEAR,
     comparison_year: int = COMPARISON_YEAR,
-) -> tuple[pd.DataFrame, pd.DataFrame, pd.DataFrame]:
-    """Return the locked common-support pair panel and four-term decomposition.
+) -> tuple[pd.DataFrame, pd.DataFrame, pd.DataFrame, pd.DataFrame]:
+    """Return the pair panel, decomposition, support, and ranked pair ledger.
 
     The decomposition describes realised native-versus-stable composition. It
     does not identify adoption, preference, or an exogenous opportunity change;
@@ -859,6 +1064,7 @@ def vehicle_rotation_composition(
     panels: list[pd.DataFrame] = []
     summaries: list[pd.DataFrame] = []
     support_frames: list[pd.DataFrame] = []
+    pair_contribution_frames: list[pd.DataFrame] = []
     for metric, metric_column in METRICS.items():
         panel, panel_support = _pair_panel_for_metric(
             data,
@@ -875,17 +1081,20 @@ def vehicle_rotation_composition(
                 metric_column=metric_column,
                 reporting_scope=reporting_scope,
             )
-            summary, decomposition_support = _decompose_metric_scope(
-                annual,
-                metric=metric,
-                metric_column=metric_column,
-                reporting_scope=reporting_scope,
-                baseline_year=baseline_year,
-                comparison_year=comparison_year,
-                common_month_days=common_month_days,
+            summary, decomposition_support, pair_contributions = (
+                _decompose_metric_scope(
+                    annual,
+                    metric=metric,
+                    metric_column=metric_column,
+                    reporting_scope=reporting_scope,
+                    baseline_year=baseline_year,
+                    comparison_year=comparison_year,
+                    common_month_days=common_month_days,
+                )
             )
             summaries.append(summary)
             support_frames.append(decomposition_support)
+            pair_contribution_frames.append(pair_contributions)
     pair_panel = pd.concat(panels, ignore_index=True, sort=False)
     decomposition = pd.concat(summaries, ignore_index=True, sort=False).sort_values(
         ["metric", "reporting_scope"], kind="stable"
@@ -893,4 +1102,9 @@ def vehicle_rotation_composition(
     support = pd.concat(support_frames, ignore_index=True, sort=False).sort_values(
         ["record_type", "metric", "reporting_scope", "support_status"], kind="stable"
     ).reset_index(drop=True)
-    return pair_panel, decomposition, support
+    pair_contributions = pd.concat(
+        pair_contribution_frames, ignore_index=True, sort=False
+    ).sort_values(
+        ["metric", "reporting_scope", "absolute_rank"], kind="stable"
+    ).reset_index(drop=True)
+    return pair_panel, decomposition, support, pair_contributions

@@ -838,6 +838,24 @@
       "finance_native": true
     },
     {
+      "key": "XiMoallemi2026Routing",
+      "title": "Quantifying Sub-Optimality in Routing for Automated Market Makers",
+      "decision": "include_exception",
+      "publication_status": "Accepted at the 5th Workshop on Decentralized Finance; arXiv v1 posted 2026-07-22; not journal peer reviewed",
+      "author_field_credibility": "Columbia Business School financial-engineering and market-design research team",
+      "scholarly_uptake": "Too recent for meaningful citation-based assessment",
+      "finance_relevance": "Direct large-sample evidence on realized versus optimized routing across parallel AMM pools",
+      "evidence_role": "Exact-state, gas-aware routing counterfactuals, state-timing sensitivity and route-shortfall decomposition",
+      "boundary": "One WETH-USDC token pair across four Uniswap pools; explicitly excludes intermediate-token routes, so it does not measure vehicle choice, route composition or front-end attribution",
+      "technical_integrity": "Pass for bounded prior-art and design claims; carry its one-pair, labeled-router, fixed gas and heavy-tail limits",
+      "rationale": "Admit as a recent workshop-paper exception because it is the closest empirical routing design and defines the boundary that this project's intermediate-asset analysis crosses",
+      "reviewed_at": "2026-08-14",
+      "supporting_source_version": "arXiv:2607.20762v1, accepted at the 5th Workshop on Decentralized Finance",
+      "publication_class": "working_paper",
+      "live_citation": true,
+      "finance_native": true
+    },
+    {
       "key": "Somogyi2026DollarDominanceFX",
       "title": "Dollar Dominance in FX Trading",
       "decision": "include_scholarly",

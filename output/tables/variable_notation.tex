@@ -16,9 +16,23 @@ $b$ & Fraction & Symmetric price-band half-width used to measure concentrated li
 $t,\ u,\ w$ & UTC day / UTC week & $t$ indexes a focal calendar day; $u$ indexes another calendar day in a time-window sum; $w$ indexes calendar weeks in settlement variables. \\
 $\tau$ & Days & Positive calendar-day horizon selected ex ante for each dynamic specification. \\
 $d,\ \mu$ & Calendar days / calendar months & $d$ is calendar-day event time relative to a candidate-specific shock; $\mu$ is calendar-month event time relative to an architecture activation date. Event time zero contains the event or activation date. \\
-$g$ & Settlement comparison cell & Settlement comparison cell defined by ordered pair $(i,o)$, vehicle $k$, UTC week $w$, and a prespecified route-size bin. \\
+$c$ & Matched settlement stratum & Matched settlement stratum defined by ordered pair $(i,o)$, vehicle $k$, UTC week $w$, and a prespecified route-size bin. \\
 $q$ & USD & Input quote notional. Un-suffixed route-cost columns use $q=\$10{,}000$. \\
 $r$ & Route unit & Reconstructed input-to-output route unit. A coherent $i\to k\to o$ component contributes one $r$ regardless of its number of legs; a split or join contributes one $r$ per reconstructed input--output pair. \\
+\addlinespace
+\multicolumn{3}{@{}l}{\textit{Quote primitives}} \\
+$\chi_{p,t}$ & Pool state & Reconstructed state of pool $p$ immediately before the quoted transaction on day $t$. \\
+$\Delta_i(q,t)=q/P_{i,t}$ & Units of token \$i\$ & Token input corresponding to dollar notional $q$ at the day-$t$ USD price of input token $i$. \\
+$Q_p(i\to o,\Delta_i;\chi_{p,t})$ & Units of token \$o\$ & Exact-input output of pool $p$ for token input $\Delta_i$ at reconstructed state $\chi_{p,t}$. \\
+$O_r(q,t)$ & USD & Dollar value of route $r$'s quoted output: its token output multiplied by $P_{o,t}$. \\
+\addlinespace
+\multicolumn{3}{@{}l}{\textit{Pool-state primitives}} \\
+$R_{j,p,t},\ \mathbf R_{p,t}$ & Token units / reserve vector & Actual reserve of token $j$ in pool $p$, and the vector collecting all of pool $p$'s token reserves. \\
+$f_p,\ \varphi_p=1-f_p$ & Fraction & Pool $p$'s swap-fee rate and the fraction of token input retained in the pricing invariant. \\
+$L_{p,t},\ \widetilde R_{0,p,t},\ \widetilde R_{1,p,t}$ & Liquidity / virtual token units & Active concentrated liquidity and its token0 and token1 virtual reserves at the current price. \\
+$A_p,\ D_p$ & Amplification / normalized token units & StableSwap amplification coefficient and invariant for pool $p$. \\
+$w_{j,p},\ K_{w,p}$ & Fraction / invariant & Token $j$'s Balancer weight and pool $p$'s weighted-geometric-mean invariant. \\
+$\boldsymbol\Delta_{p,e}$ & Vector of signed token units & Net reserve change caused by event $e$ in pool $p$, ordered by blockchain execution position. \\
 \addlinespace
 \multicolumn{3}{@{}l}{\textit{Route and liquidity aggregates}} \\
 $\mathrm{Vol}_t,\ \mathrm{DVol}_t$ & USD & $\mathrm{Vol}_t$ is total realized USD volume across all direct and indirect route units on day $t$. $\mathrm{DVol}_t$ restricts it to direct routes, so $0\le\mathrm{DVol}_t\le\mathrm{Vol}_t$. \\
@@ -78,7 +92,7 @@ $\Delta C^{D,\mathrm{all}}_{i,o,k,q,t}$ & Fraction & All-in direct cost advantag
 \multicolumn{3}{@{}l}{\textit{Settlement objects and operators}} \\
 $\mathcal{R}_{k,w}$ & Set of route units & Receipt-audited matched route units using vehicle $k$ in UTC week $w$. \\
 $\mathcal{R}^{\mathrm{transfer}}_{k,w}$ & Set of route units & Members whose receipt logs a transfer of vehicle $k$; $\mathcal R^{\mathrm{transfer}}_{k,w}\subseteq\mathcal R_{k,w}$. \\
-$\mathcal R^3_g,\ \mathcal R^4_g$ & Sets of route units & Receipt-audited route units in settlement comparison cell $g$ executed on Uniswap V3 and V4, respectively. A matched cell has both sets nonempty. \\
+$\mathcal R^3_c,\ \mathcal R^4_c$ & Sets of route units & Receipt-audited route units in matched settlement stratum $c$ executed on Uniswap V3 and V4, respectively. A matched stratum has both sets nonempty. \\
 $M_{r,k},\ \mathrm{GrossLegVol}_{r,k}$ & USD & $M_{r,k}$ is the sum of absolute, route-attributed ERC-20 transfers of intermediate $k$ between distinct nonzero addresses in route unit $r$, valued in USD. $\mathrm{GrossLegVol}_{r,k}$ is the corresponding gross USD notional of $k$ entering or leaving the route's pools across both vehicle legs. \\
 $|\mathcal{S}|,\ \mathbf{1}_{\{\cdot\}}$ & Count / indicator (0/1) & Cardinality of any finite set $\mathcal S$ and an indicator equal to one when its subscripted condition is true. \\
 \addlinespace
@@ -200,8 +214,8 @@ $\mathrm{DirectConstraint}^{\mathrm{pre}}_{i,o,q}$ & $\displaystyle 1-\frac{\sum
 $\sigma^{\mathrm{pre}}_{i,o}$ & $\displaystyle\mathrm{sd}_{u\in\mathcal T^{\mathrm{V3}}_{\mathrm{pre}}}(R_{i,o,u})$ & Daily log-return standard deviation & \texttt{pre\_\allowbreak{}v3\_\allowbreak{}pair\_\allowbreak{}volatility} & Sample standard deviation of the ordered endpoint-pair log return over the fixed 180-day pre-V3 window; computed only from information dated before V3 activation. \\
 $\eta^{\mathrm{Band}}_{p,t,b,d}$ & $\displaystyle\frac{\mathrm{BandDepth}_{p,t,b,d}}{C_{p,t}}$ & USD directional band depth per USD validated deposited capital & \texttt{pool\_\allowbreak{}band\_\allowbreak{}depth\_\allowbreak{}capital\_\allowbreak{}efficiency} & Fee-inclusive executable dollar depth in direction $d$ inside the symmetric $b$ price band divided by contemporaneous validated deposited capital. The primary band is $b=0.02$; $b\in\{0.01,0.10\}$ is retained for robustness. The row retains direction, band, invariant family and state generation. \\
 $\mathrm{PostV3}_{t}$ & $\mathbf{1}_{\{t\ge t^{\mathrm{V3}}_0\}}$ & Indicator (0/1) & \texttt{post\_\allowbreak{}v3} & Equals one on and after the Uniswap V3 activation date. \\
-$\mathrm{V4}_{r}$ & $\mathbf{1}_{\{r\in\mathcal R^4_g\}}$ & Indicator (0/1) & \texttt{v4\_\allowbreak{}route} & Equals one when matched route unit $r$ executes on Uniswap V4. \\
-$\mathrm{V4RouteShare}_{g}$ & $\displaystyle\frac{|\mathcal R^4_g|}{|\mathcal R^3_g|+|\mathcal R^4_g|}$ & Fraction (0--1) & \texttt{v4\_\allowbreak{}route\_\allowbreak{}share} & Fraction of pure V3/V4 route units in ordered endpoint-pair, vehicle and week cell $g$ that execute on V4. Mixed-source components are excluded before assignment. \\
+$\mathrm{V4}_{r}$ & $\mathbf{1}_{\{r\in\mathcal R^4_c\}}$ & Indicator (0/1) & \texttt{v4\_\allowbreak{}route} & Equals one when matched route unit $r$ executes on Uniswap V4. \\
+$\mathrm{V4RouteShare}_{c}$ & $\displaystyle\frac{|\mathcal R^4_c|}{|\mathcal R^3_c|+|\mathcal R^4_c|}$ & Fraction (0--1) & \texttt{v4\_\allowbreak{}route\_\allowbreak{}share} & Fraction of pure V3/V4 route units in ordered endpoint-pair, vehicle and week matched stratum $c$ that execute on V4. Mixed-source components are excluded before assignment. \\
 \addlinespace
 \multicolumn{5}{@{}l}{\textit{V4 settlement implementation measures}} \\
 $\mathrm{PreV4IndirectShare}_{i,o}$ & $\displaystyle\frac{\sum_{u\in\mathcal T^{\mathrm{V4}}_{i,o,\mathrm{pre}}}\mathrm{IndirectRouteShare}_{i,o,u}}{|\mathcal T^{\mathrm{V4}}_{i,o,\mathrm{pre}}|}$ & Fraction (0--1) & \texttt{pre\_\allowbreak{}v4\_\allowbreak{}pair\_\allowbreak{}indirect\_\allowbreak{}route\_\allowbreak{}share} & Mean pair-level indirect-route share over pair $(i,o)$'s positive-volume days in the fixed 180-day pre-V4 window, requiring at least 30 such days. \\

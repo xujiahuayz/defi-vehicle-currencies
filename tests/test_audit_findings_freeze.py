@@ -9,7 +9,7 @@ from unittest.mock import Mock, call, patch
 
 import pandas as pd
 
-from ddvc.asset_types import TYPES
+from ddvc.asset_types import TYPES, VEHICLE_CANDIDATES
 from ddvc.state_data import STATE_GENERATIONS
 from scripts import refresh_panel_dependents as refresher
 from scripts.audit_findings_freeze import (
@@ -597,8 +597,49 @@ class FindingsFreezeAuditTest(unittest.TestCase):
             with patch("scripts.audit_findings_freeze.verify", return_value={"status": "ok"}):
                 checks = route_cost_panel_checks(path)
             self.assertTrue(all(passed for _name, passed, _detail in checks), checks)
+            self.assertIn(
+                "node D route-cost unique economic cells",
+                {name for name, _passed, _detail in checks},
+            )
+            self.assertIn(
+                "node D route-cost repeated-input invariance",
+                {name for name, _passed, _detail in checks},
+            )
 
             frame = pd.read_parquet(path)
+            pd.concat([frame, frame.iloc[[0]]], ignore_index=True).to_parquet(
+                path, index=False, row_group_size=len(frame)
+            )
+            with patch("scripts.audit_findings_freeze.verify", return_value={"status": "ok"}):
+                checks = route_cost_panel_checks(path)
+            unique_check = next(
+                check for check in checks if check[0].endswith("unique economic cells")
+            )
+            self.assertFalse(unique_check[1], checks)
+
+            variant = frame.iloc[0].copy()
+            variant["vehicle"] = next(
+                address
+                for address in VEHICLE_CANDIDATES
+                if address not in {src, tgt, vehicle}
+            )
+            variant["direct_output_usd"] *= 0.999
+            variant["direct_cost_advantage"] = (
+                variant["direct_output_usd"] - variant["vehicle_output_usd"]
+            ) / variant["direct_output_usd"]
+            variant["realized_bridge_volume_usd"] *= 0.999
+            pd.concat([frame, variant.to_frame().T], ignore_index=True).to_parquet(
+                path, index=False, row_group_size=len(frame)
+            )
+            with patch("scripts.audit_findings_freeze.verify", return_value={"status": "ok"}):
+                checks = route_cost_panel_checks(path)
+            invariance_check = next(
+                check for check in checks if check[0].endswith("repeated-input invariance")
+            )
+            self.assertFalse(invariance_check[1], checks)
+            self.assertIn("direct_cells=1", invariance_check[2])
+            self.assertIn("realized_cells=1", invariance_check[2])
+
             frame.loc[0, "direct_cost_advantage"] = -0.5
             frame.to_parquet(path, index=False)
             with patch("scripts.audit_findings_freeze.verify", return_value={"status": "ok"}):

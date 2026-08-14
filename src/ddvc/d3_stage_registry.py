@@ -89,6 +89,9 @@ class D3InputOwnership:
     owner: str
 
 
+# Rent and its CEX support are retired only from the active D3 refresh sequence.
+# Their owners and historical artifacts remain in the repository until the final
+# receipt-to-return contract makes that scientific family executable again.
 D3_BUILD_STAGES = (
     D3BuildStage(
         "build_dominance_cost_panel.py",
@@ -111,12 +114,6 @@ D3_BUILD_STAGES = (
             "data/processed/routing_transition_cells.parquet",
             "data/processed/routing_maturation_exact_horizons.parquet",
         ),
-    ),
-    D3BuildStage(
-        "process/build_cex_reference_support.py",
-        (),
-        "published exact-address positive CEX-reference support for the rent bound",
-        ("data/processed/cex_reference_support.parquet",),
     ),
     D3BuildStage(
         "build_ethereum_day_calendar.py",
@@ -198,15 +195,18 @@ D3_BUILD_STAGES = (
         ),
     ),
     D3BuildStage(
-        "build_rent_incidence_panel.py",
-        ("v2",),
-        "constant-product liquidity-provider rent inputs; V3 is withheld pending custody, ownership, and path-LVR reconciliation",
-        ("data/processed/rent_incidence_v2_pool_day.parquet",),
+        "build_liquidity_capital_flow_panels.py",
+        ("--family", "v2", "--threads", "1", "--memory-limit", "1GB"),
+        "independently publishable V2 deposited-capital candidate-day and exact-calendar-horizon inputs",
+        (
+            "data/processed/liquidity_capital_v2_candidate_day.parquet",
+            "data/processed/liquidity_capital_v2_exact_horizons.parquet",
+        ),
     ),
     D3BuildStage(
         "build_lp_liquidity_flow_panel.py",
         (),
-        "causal V3 LP dollar-flow inputs without an unvalidated capital-stock proxy",
+        "V3 LP dollar-flow inputs without an unvalidated capital-stock proxy",
         (
             "data/processed/lp_liquidity_flow_events_v3.parquet",
             "data/processed/lp_liquidity_flow_candidates_v3.parquet",
@@ -216,8 +216,8 @@ D3_BUILD_STAGES = (
     ),
     D3BuildStage(
         "build_liquidity_capital_flow_panels.py",
-        ("--threads", "1", "--memory-limit", "1GB"),
-        "candidate-day and exact-calendar-horizon liquidity-allocation inputs",
+        ("--family", "joint", "--threads", "1", "--memory-limit", "1GB"),
+        "optional joint-family candidate-day and exact-calendar-horizon inputs after both separate releases exist",
         (
             "data/processed/liquidity_capital_flow_candidate_day.parquet",
             "data/processed/liquidity_capital_flow_exact_horizons.parquet",

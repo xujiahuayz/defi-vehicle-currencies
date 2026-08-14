@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import inspect
 import logging
 import re
 import shutil
@@ -12,6 +13,7 @@ from pathlib import Path
 import pandas as pd
 
 from ddvc.paths import REPO_ROOT
+from ddvc.provenance import stamp
 
 
 TABLES_DIR = REPO_ROOT / "output" / "tables"
@@ -19,6 +21,24 @@ NUMBERED_ARTIFACT_RE = re.compile(
     r"^(?:table|figure)_(?:[a-z]\d+|\d+)(?:_|$)", re.IGNORECASE
 )
 LOGGER = logging.getLogger(__name__)
+
+
+def _table_code_sources(extra: list[str] | None = None) -> list[str]:
+    """Fingerprint the renderer, this helper, and declared scientific logic."""
+
+    sources = {"src/ddvc/paper_tables.py", *(extra or [])}
+    try:
+        for frame in inspect.stack()[1:]:
+            source = Path(frame.filename).resolve()
+            if not source.is_relative_to(REPO_ROOT):
+                continue
+            relative = source.relative_to(REPO_ROOT).as_posix()
+            if relative != "src/ddvc/paper_tables.py":
+                sources.add(relative)
+                break
+    except (OSError, ValueError):
+        pass
+    return sorted(sources)
 
 
 def _pct(value: float, digits: int = 1) -> str:
@@ -205,16 +225,37 @@ def write_table_artifacts(
     table_latex: str,
     *,
     preview_width: str | None = None,
+    inputs: list[str | Path] | None = None,
+    code_sources: list[str] | None = None,
+    notes: str | None = None,
 ) -> tuple[Path, Path]:
-    """Write a paper-input TeX fragment and matching standalone PDF."""
+    """Write and stamp a TeX fragment and its standalone inspection PDF."""
     stem = validate_output_stem(stem)
     TABLES_DIR.mkdir(parents=True, exist_ok=True)
     tex_path = TABLES_DIR / f"{stem}.tex"
     pdf_path = TABLES_DIR / f"{stem}.pdf"
     tex_path.write_text(table_latex, encoding="utf-8")
     render_standalone_pdf(table_latex, pdf_path, preview_width=preview_width)
-    LOGGER.info("wrote %s", tex_path.relative_to(REPO_ROOT))
-    LOGGER.info("wrote %s", pdf_path.relative_to(REPO_ROOT))
+    sources = _table_code_sources(code_sources)
+    for path in (tex_path, pdf_path):
+        stamp(
+            path,
+            code_sources=sources,
+            inputs=inputs,
+            notes=notes,
+        )
+    tex_display = (
+        tex_path.relative_to(REPO_ROOT)
+        if tex_path.is_relative_to(REPO_ROOT)
+        else tex_path
+    )
+    pdf_display = (
+        pdf_path.relative_to(REPO_ROOT)
+        if pdf_path.is_relative_to(REPO_ROOT)
+        else pdf_path
+    )
+    LOGGER.info("wrote %s", tex_display)
+    LOGGER.info("wrote %s", pdf_display)
     return tex_path, pdf_path
 
 

@@ -97,7 +97,7 @@ class VariableRegistryTests(unittest.TestCase):
             "$\\ell,\\ p,\\ p'$",
             "$t,\\ u,\\ w$",
             "$d,\\ \\mu$",
-            "$g$",
+            "$c$",
             "$q$",
             "$r$",
         ]:
@@ -275,7 +275,7 @@ class VariableRegistryTests(unittest.TestCase):
                 r"$\mathrm{AllInDirectCostAdvantage}_{k,t,q}$"
             ),
             "v4_route": r"$\mathrm{V4}_{r}$",
-            "v4_route_share": r"$\mathrm{V4RouteShare}_{g}$",
+            "v4_route_share": r"$\mathrm{V4RouteShare}_{c}$",
             "pre_v4_pair_indirect_route_share": r"$\mathrm{PreV4IndirectShare}_{i,o}$",
             "post_v4": r"$\mathrm{PostV4}_{t}$",
             "pre_v3_pair_volatility": r"$\sigma^{\mathrm{pre}}_{i,o}$",
@@ -443,8 +443,8 @@ class VariableRegistryTests(unittest.TestCase):
         self.assertIn("positive realized route volume on at least 30 days", architecture.definition)
         self.assertIn("independent of post-V3 activity", architecture.definition)
 
-        settlement = by_notation[r"$\mathcal R^3_g,\ \mathcal R^4_g$"]
-        self.assertIn("A matched cell has both sets nonempty", settlement.definition)
+        settlement = by_notation[r"$\mathcal R^3_c,\ \mathcal R^4_c$"]
+        self.assertIn("A matched stratum has both sets nonempty", settlement.definition)
 
     def test_quote_universe_has_an_explicit_sample_rule(self) -> None:
         by_notation = {item.notation: item for item in NOTATION_DEFINITIONS}
@@ -642,7 +642,7 @@ class VariableRegistryTests(unittest.TestCase):
                 r"\mathcal P^{\mathrm{V3}}_q$"
             ),
             r"\mathcal L_t": r"$\mathcal L_t,\ \mathcal L_{k,t},\ m_p$",
-            r"\mathcal R^4_g": r"$\mathcal R^3_g,\ \mathcal R^4_g$",
+            r"\mathcal R^4_c": r"$\mathcal R^3_c,\ \mathcal R^4_c$",
         }
         for formula_symbol, key_symbol in required.items():
             with self.subTest(symbol=formula_symbol):
@@ -732,10 +732,7 @@ class VariableRegistryTests(unittest.TestCase):
             root / "scripts" / "process" / "build_observations_table.py",
             root / "scripts" / "process" / "build_raw_data_inventory.py",
             root / "scripts" / "process" / "build_cex_reference_support.py",
-            root / "scripts" / "tabulate" / "render_data_coverage.py",
-            root / "scripts" / "tabulate" / "render_sample_coverage.py",
-            root / "scripts" / "tabulate" / "render_variable_notation.py",
-            root / "scripts" / "tabulate" / "render_summary_statistics.py",
+            *sorted((root / "scripts" / "tabulate").glob("render_*.py")),
         ]
         for script in scripts:
             text = script.read_text(encoding="utf-8")
@@ -743,12 +740,7 @@ class VariableRegistryTests(unittest.TestCase):
 
     def test_tabulate_scripts_write_tabular_fragments_only(self) -> None:
         root = Path(__file__).resolve().parents[1]
-        scripts = [
-            root / "scripts" / "tabulate" / "render_data_coverage.py",
-            root / "scripts" / "tabulate" / "render_sample_coverage.py",
-            root / "scripts" / "tabulate" / "render_variable_notation.py",
-            root / "scripts" / "tabulate" / "render_summary_statistics.py",
-        ]
+        scripts = sorted((root / "scripts" / "tabulate").glob("render_*.py"))
         for script in scripts:
             text = script.read_text(encoding="utf-8")
             self.assertNotIn(r"\begin{table}", text)
@@ -775,12 +767,7 @@ class VariableRegistryTests(unittest.TestCase):
 
     def test_tabulate_outputs_are_tex_pdf_only_and_unnumbered(self) -> None:
         root = Path(__file__).resolve().parents[1]
-        scripts = [
-            root / "scripts" / "tabulate" / "render_data_coverage.py",
-            root / "scripts" / "tabulate" / "render_sample_coverage.py",
-            root / "scripts" / "tabulate" / "render_variable_notation.py",
-            root / "scripts" / "tabulate" / "render_summary_statistics.py",
-        ]
+        scripts = sorted((root / "scripts" / "tabulate").glob("render_*.py"))
         for script in scripts:
             text = script.read_text(encoding="utf-8")
             self.assertNotIn(".to_csv(", text)

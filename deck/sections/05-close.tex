@@ -1,13 +1,54 @@
 % VISUAL-MANAGED-FILE
-% Research-stage close. Replace with admitted positive findings after the findings freeze opens the presentation node.
+% EVIDENCE-MANAGED-FILE
+% Working-paper close. Refresh the findings when their admitted generation changes.
 
-% VISUAL-FUNCTION: substantive conclusion | three findings already shown | close without introducing new evidence
-\begin{frame}{Stablecoins regain the value lead as route counts approach parity}
-\begin{itemize}
-\item Stablecoins lead routed value in 2022 and again in 2025--2026, but fall behind native assets in 2023--2024.
-\vspace{0.30em}
-\item USDT drives the post-2024 rise in excess stablecoin intermediation; USDC changes little.
-\vspace{0.30em}
-\item Pair activity and vehicle use account for almost all of the aggregate stablecoin gain. Their economic cause remains open.
-\end{itemize}
+% EVIDENCE-STATUS: evolving route result; current generated presentation bindings
+% EVIDENCE-COMMIT: e43323dd2eb986e4d627823da3586bdc2a00c813
+% EVIDENCE-SOURCES: output/figures/experiments/annual_vehicle_composition_bands.pdf; output/exhibits/intermediation_by_type.jsonl; output/exhibits/vehicle_excess_use.jsonl; output/exhibits/vehicle_excess_use_transition.jsonl; output/exhibits/provisional_results_deck_values.tex; output/provisional/route_methodology_heterogeneity.jsonl; output/provisional/route_methodology_heterogeneity_deck_values.tex
+% VISUAL-FUNCTION: substantive conclusion | one visual sequence from timing to leading asset to routed-market composition | end on the economic allocation result
+\begin{frame}{Stablecoins regained the routed-value lead as trading shifted}
+\vspace{-0.06cm}
+\centering
+\resizebox{0.98\textwidth}{!}{%
+\begin{tikzpicture}[x=1cm,y=1cm]
+\tikzset{closelabel/.style={font=\scriptsize,text=muted,align=center}}
+
+% Finding 1: the value lead changes non-monotonically.
+\node[font=\small\bfseries,text=ucldark,align=center,text width=4.0cm] at (1.98,4.62) {1\quad THE LEAD\\CHANGED};
+\draw[-{Stealth[length=5pt]},draw=rule,line width=1.25pt] (0.22,3.18)--(3.78,3.18);
+\fill[stable] (0.38,3.18) circle (4.2pt);
+\fill[native] (1.98,3.18) circle (4.2pt);
+\fill[stable] (3.58,3.18) circle (4.2pt);
+\node[closelabel,text=stable] at (0.38,3.78) {stablecoin\\lead};
+\node[closelabel,text=native] at (1.98,3.78) {native-asset\\lead};
+\node[closelabel,text=stable] at (3.58,3.78) {stablecoin\\lead};
+\node[closelabel] at (0.38,2.77) {2022};
+\node[closelabel] at (1.98,2.77) {2023--24};
+\node[closelabel] at (3.58,2.77) {2025--26};
+
+\draw[-{Stealth[length=7pt]},draw=uclbright,line width=2.0pt] (4.10,3.34)--(4.92,3.34);
+
+% Finding 2: USDT accounts for the candidate-level change.
+\node[font=\small\bfseries,text=ucldark,align=center,text width=4.05cm] at (7.18,4.62) {2\quad USDT'S RELATIVE\\USE ROSE};
+\node[anchor=east,font=\fontsize{23}{24}\selectfont\bfseries,text=muted] at (6.45,3.30) {\USDTValueExcessBase};
+\draw[-{Stealth[length=6pt]},draw=stable,line width=2.0pt] (6.65,3.30)--(7.65,3.30);
+\node[anchor=west,font=\fontsize{23}{24}\selectfont\bfseries,text=stable] at (7.86,3.30) {\USDTValueExcessEnd};
+\node[closelabel] at (6.10,2.73) {2024};
+\node[closelabel] at (8.23,2.73) {2026};
+\node[font=\scriptsize,text=ink,align=center] at (7.22,2.24) {intermediary share $\div$ endpoint share};
+
+\draw[-{Stealth[length=7pt]},draw=uclbright,line width=2.0pt] (9.18,3.34)--(10.00,3.34);
+
+% Finding 3: most of the strict-value change is across groups.
+\node[font=\small\bfseries,text=ucldark,align=center,text width=3.55cm] at (11.92,4.62) {3\quad VALUE SHIFTED\\ACROSS GROUPS};
+\node[font=\fontsize{23}{24}\selectfont\bfseries,text=stable] at (11.98,3.48) {\WethValueNoEndpointChange{}};
+\node[font=\scriptsize,text=ink,align=center,text width=3.35cm] at (11.98,2.45)
+  {outside WETH endpoint pairs; mostly across trading-pair and route-scope groups};
+
+% Economic conclusion.
+\fill[ucldark,rounded corners=4pt] (0.15,0.42) rectangle (13.65,1.72);
+\node[font=\large\bfseries,text=white,align=center,text width=12.55cm] at (6.90,1.07)
+  {Most of the stablecoin gain comes from shifts in activity toward trading-pair groups in which stablecoins carried the route.};
+\end{tikzpicture}
+}
 \end{frame}

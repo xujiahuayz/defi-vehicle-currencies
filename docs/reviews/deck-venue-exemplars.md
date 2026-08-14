@@ -34,3 +34,9 @@ Review each changed slide for subject, verb, result, condition and handoff to th
 2. Appendix-as-defense is a real, load-bearing structural pattern, not a nice-to-have — budget roughly as much appendix material as core content when the question set warrants it.
 3. Section-break pacing markers between the 4-5 major parts of a ~20-minute talk are standard, not filler.
 4. References get their own dense slide(s) at the very end — the one place these decks abandon low density, since it's reference material, not spoken content.
+
+## Conclusion slides: retained raw evidence
+
+The final slide is reviewed as an economic ending, separately from the deck's result slides. Two source decks are retained as raw text in this checkout. Brunnermeier and Pedersen close by compressing each empirical result into its mechanism and end with the joint movement of market liquidity and funding conditions (`literature/text/2009-BrunnermeierPedersen2009LiquiditySlides-supplement-market-liquidity-and-funding-liquidity-slides.txt`, lines 1828--1865). Liu, Makarov, and Schoar move from Terra's subsidy and fragility to run amplification and investor losses, then end on the distributional implication that open access does not put investors on equal footing (`literature/text/2023-LiuMakarovSchoar2023TerraPresentation-supplement-riksbank-presentation.txt`, lines 217--230). Both endings state what the evidence changes economically. Neither ends on an unresolved test, data requirement, or workflow status.
+
+For this deck, the last slide must synthesize the route findings at their admitted strength, lift them to the paper's market-formation implication, and finish on that implication. A bounded unresolved mechanism belongs before the final line or on the preceding slide. Whenever the findings change, review the close again against these retained passages; do not inherit approval from an older result generation.

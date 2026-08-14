@@ -1,14 +1,20 @@
 ---
 freeze_status: red
 stable_passes: 0
-active_node: D2-purpose-bound-exact-state + D3-fixed-opportunity-inputs + E0-vehicle-rotation
-studio_node: D2-purpose-bound-exact-state + D3-fixed-opportunity-inputs
-m3_node: E0-fixed-opportunity-vehicle-rotation + G/H-live-deck-and-paper-spine
-meeting_edge: Studio-fixed-opportunity-publish -> M3-estimator-and-figure-refresh -> E1-lock
-parent_loop: C -> D1/D2/D3 -> E0-exploration -> repair loop -> E1-lock -> F <-> G <-> H -> I
-next_edge: D2-release -> D3-construction-audit -> D3-full-daily-frontier -> E0-exploration -> E1-lock -> F <-> G <-> H -> I
+active_node: D2-V3-exact-state-audit + E0/F-route-methods + G/P0/H-live-deliverables
+studio_node: D2-V3-exact-state-audit
+m3_node: E0/F-route-methods + G/P0/H-live-deliverables
+operations_stream: monitor-Studio + transfer-J0 + reconcile-clean-boundary
+data_stream: compare-62-date-V3-exact-state-source
+methods_stream: matched-panel-method-audit + prepare-purpose-bound-state-models
+paper_stream: whole-manuscript-JFE-language-and-argument
+deck_stream: presentable-current-evidence + open-visual-case-study-backlog
+review_stream: read-only-requirements-and-literature-benchmark
+meeting_edge: Studio-J0-publish -> methods-J1-packet -> paper/deck-J2-refresh
+parent_loop: A/B -> C/K -> D1/D2/D3 -> J0 -> E0/E1/F -> J1 -> G/P0/H -> J2 -> I -> J3-or-return
+next_edge: V3-audit-boundary -> purpose-bound-J0-release -> state-methods-J1 -> deliverable-J2
 prose_node: tiered
-updated: 2026-08-13
+updated: 2026-08-14
 ---
 
 # Findings freeze
@@ -48,6 +54,48 @@ pooled count rotation is not pervasive within comparable realised markets, but
 they do not hold venue sequence, feasible alternatives, notional, liquidity,
 cost, or router state fixed and cannot identify architecture, demand,
 preference, search, or another mechanism.
+
+### Method and scientific-package audit, 2026-08-14
+
+The method sweep is question-led, not a request to accumulate regressions. The
+current matched pair panel is byte- and code-identical to the panel built from
+endpoint release `5fb7cbf36508d10a5bdafe2ebfb5ccb6266696be38e192eb38be11c3942916e9`,
+but its D3 certificate is temporarily stale while the released source members
+are being transferred or re-stamped. The following new estimates therefore live
+only in `output/provisional/route_methodology_robustness.jsonl`, bind D3
+generation `9aa4e1d3ecbc9fb899bf70ba70fc18cf1d621003162218e755fd8ecc4cbb3580`,
+and require an exact clean-J0 rerun before admission.
+
+| scientific question | method family | state and result |
+|---|---|---|
+| Does the stable rotation occur within otherwise matched realised markets? | Denominator-mass WLS with ordered-pair by month-day by integration-scope fixed effects | Executed on the matched panel. Count, matched-count and supported-value changes are respectively +0.224, +0.323 and -1.346 percentage points; all three are null with Holm-adjusted p-values of one. |
+| Is that null an artefact of a linear share model? | Grouped-binomial fixed effects with ordered-pair and calendar-date score clustering | Provisional execution. The 2026 stable odds ratio is 1.135 for route counts (coefficient SE 0.307, p=0.682) and 1.202 for matched counts (SE 0.305, p=0.547). The nonlinear model confirms the within-market null. |
+| Does aggregate realised activity nevertheless rotate? | Paired common-calendar mean with 30-calendar-day HAC | Provisional execution. The matched-cell aggregate stable share rises 21.09 percentage points by count (HAC SE 1.53 points) and 19.91 points on matched counts (SE 1.45 points). This estimand allows activity to move across markets and therefore does not contradict the fixed-market null. |
+| Is the change broad in the distribution of matched markets? | Paired ECDF with ordered-pair by month-day cluster-sign randomisation; 999 draws | Provisional execution. The maximum equal-cell ECDF gaps are only 1.33 percentage points for both count measures; denominator-mass gaps are 0.71 and 0.66 points. The randomisation p-values are 0.001--0.002, so the shape change is detectable but economically small and concentrated at zero or near-zero stable shares. |
+| Would an ordinary t-test or KS test add evidence? | iid assignment-level t or two-sample KS | Rejected. Repeated routes share transactions, pairs and dates. The conventional KS statistic is retained only to show that its iid p-value is inadmissible; the dependence-aware paired-calendar and cluster-randomised procedures above replace it. |
+| Does stable-relative realised utilisation rise after filling explicit zero-use rows? | PPML with pair-period and pair-candidate fixed effects | Estimator code exists, but the explicit-zero weekly candidate panel is absent locally and the endpoint-release member transfer is incomplete. Do not infer unchosen feasible alternatives or manufacture zeros from the current partial source file. |
+| Do stable and native vehicle roles form or disappear at different rates? | Discrete-time logit or complementary-log-log, with Cox as a sensitivity | Estimator code exists; no current exact-calendar role-risk panel is available. Cox is not primary because weekly ties, time-varying candidate sets and calendar shocks violate its convenient continuous-time comparison. The separate admissible V1 forced-vehicle duration result does not identify the 2024--26 rotation. |
+| Did V3 or V4 cause the rotation? | DiD or exposure event study | Not identified by the global launch date or endogenous architecture adoption. A future design needs predetermined exposure, an admissible comparison group, pretrends, balance, coincident-event exclusions and placebos. Current architecture chronology remains descriptive. |
+| Do liquidity allocation, executable depth, route cost or V4 settlement explain the rotation? | Panel FE, distributed leads/lags and matched receipt/state comparisons | Blocked by their purpose-bound J0 inputs, not by an insignificant result. V3 LP dollar flows can run after daily state releases; V2 LP returns additionally require independent intraday reference prices; V4 gross-to-net settlement requires a receipt-level transaction panel; fixed-opportunity route cost and hysteresis require the current exact-state frontier. |
+| Would IV or Fama--MacBeth repair any current question? | IV or cross-sectional risk-premium regression | No current estimand supplies a credible excluded instrument or an asset-pricing expected-return target. These families are rejected rather than fitted for method count. |
+
+The closest published empirical packages set a higher scientific breadth target
+than a regression battery. Chang, Du, Lou and Polk (JFE 2022) carry one network
+measure from descriptive construction through salient events, broad prediction,
+rival networks, timing, another asset market and real outcomes. Huang, Ranaldo,
+Schrimpf and Somogyi (JFE 2025) move from motivating volume--cost facts to
+state-dependent liquidity-supply regressions, demand-versus-supply separation,
+market-state placebos, alternative constraint measures, counterparties,
+subperiods and instruments. Lehar and Parlour (JF 2025) pair AMM pool-day fixed
+effects and two-way clustered inference with liquidity stability, a crisis case
+and cross-venue price-impact comparisons, while keeping the empirical claims
+associative. Against these packages, this project is already strong on route
+measurement, sample reconciliation, descriptive magnitudes and the
+within-market-versus-reallocation distinction. It remains materially thin on a
+current liquidity-supply result, a V4 settlement result, mechanism-versus-rival
+discrimination, predetermined exposure, economically interpretable
+heterogeneity and cross-outcome validation. Those are the next scientific jobs;
+additional linear specifications of the same realised-share contrast are not.
 
 ## Data and execution gates
 

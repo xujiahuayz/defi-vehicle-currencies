@@ -1,8 +1,11 @@
-% The Making of Dominant Vehicle Currencies: Evidence from DeFi
+% Vehicle Currency Rotation in Decentralised Exchanges
+% Working-title contract: the current title states the route-composition finding that the
+% manuscript actually establishes. A mechanism title requires completed cost, liquidity,
+% risk, and architecture tests and must not be restored on the strength of designs alone.
 %
-% Architecture follows docs/paper-spine.md, which derives it from nine JFE papers read
-% first-hand. Seven top-level sections ending in the conclusion, two levels of nesting
-% everywhere, no standalone literature review, and no proof in the body.
+% Architecture draws on docs/paper-spine.md, which derives the eventual full manuscript
+% from nine JFE papers read first-hand. This working version contains the six sections
+% supported by current evidence; it retains no standalone literature review or body proof.
 %
 % Section files are separate so they can be written and reviewed independently. Numbers
 % come from output/exhibits/ and are never typed from memory; every one carries a comment
@@ -12,6 +15,7 @@
 \usepackage[margin=1in]{geometry}
 \usepackage{amsmath,amssymb}
 \usepackage{booktabs}
+\usepackage{array,tabularx}
 \usepackage{graphicx}
 \usepackage{tikz}
 \usepackage{pgfplots}
@@ -19,18 +23,33 @@
 \usepackage{natbib}
 \usepackage{setspace}
 \usepackage{hyperref}
+\usepackage{acro}
+\usepackage[section]{placeins}
 \hypersetup{colorlinks=true, linkcolor=[rgb]{0.05,0.25,0.65}, citecolor=[rgb]{0.05,0.25,0.65},
             urlcolor=[rgb]{0.05,0.25,0.65}, filecolor=[rgb]{0.05,0.25,0.65}}
+\newcommand{\ethtx}[2]{\href{https://etherscan.io/tx/#1}{\texttt{#2}}}
+\DeclareAcronym{amm}{short=AMM,long=automated market maker}
 
 \bibliographystyle{chicago}
 \onehalfspacing
+
+% JFE-style exhibit treatment. Captions sit above the exhibit; notes use the full
+% available line width and the surrounding prose alignment, with the journal's
+% singular ``Note:'' label even when the note contains several sentences.
+\setlength{\belowcaptionskip}{8pt}
+\newcommand{\exhibitnote}[1]{%
+  \par\vspace{6pt}%
+  \noindent\begin{minipage}{\linewidth}%
+    \footnotesize\emph{Note:} #1\par
+  \end{minipage}%
+}
 
 % Certified route-only quantities shared with the live deck. The source file is
 % regenerated from the findings registry; exact-state results remain excluded.
 \input{../output/exhibits/provisional_results_deck_values.tex}
 \input{../output/exhibits/vehicle_transition_pair_decomposition_deck_values.tex}
 
-\title{The Making of Dominant Vehicle Currencies:\\ Evidence from DeFi}
+\title{Vehicle Currency Rotation in Decentralised Exchanges}
 % Author list intentionally withheld until coauthorship is settled.
 % \author{Jiahua Xu\thanks{University College London, Centre for Blockchain Technologies.}}
 \author{}
@@ -50,7 +69,10 @@
 \input{sections/06-executability}
 \input{sections/05-rivals}
 \input{sections/07-conclusion}
+\clearpage
 \input{sections/08-appendix}
+
+\clearpage
 
 \bibliography{../literature/vehicle-currencies}
 

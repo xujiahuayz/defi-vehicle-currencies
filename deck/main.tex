@@ -11,6 +11,7 @@
 \usepackage{pgfplots}
 \pgfplotsset{compat=1.18}
 \usetikzlibrary{arrows.meta,calc,decorations.pathreplacing,positioning}
+\newcommand{\ethtx}[2]{\href{https://etherscan.io/tx/#1}{\texttt{#2}}}
 
 \usetheme{default}
 \usefonttheme{professionalfonts}
@@ -41,19 +42,28 @@
 \setbeamertemplate{itemize subitem}{\raisebox{0.2ex}{\color{ucldark}\rule{0.32em}{0.32em}}}
 
 \setbeamertemplate{frametitle}{\vspace{0.72em}\insertframetitle\par\vspace{0.18em}{\color{uclbright}\rule{1.35cm}{1.5pt}}\vspace{-0.25em}}
-\setbeamertemplate{footline}{\leavevmode\hbox{\begin{beamercolorbox}[wd=.94\paperwidth,ht=2.7ex,dp=1.1ex,leftskip=.055\paperwidth]{normal text}\color{muted}\scriptsize The Making of Dominant Vehicle Currencies\hfill\insertframenumber\end{beamercolorbox}}}
+\setbeamertemplate{footline}{\leavevmode\hbox{\begin{beamercolorbox}[wd=.94\paperwidth,ht=2.7ex,dp=1.1ex,leftskip=.055\paperwidth]{normal text}\color{muted}\scriptsize Vehicle Currency Rotation\hfill\insertframenumber\end{beamercolorbox}}}
 
 \newcommand{\bigstat}[2]{\begin{minipage}[t]{0.29\textwidth}{\fontsize{26}{28}\selectfont\bfseries\color{ucldark}#1}\par\vspace{0.15em}{\small #2}\end{minipage}}
 \newcommand{\evidencekicker}[1]{\vspace{-0.35em}{\color{ucldark}\bfseries\scriptsize\MakeUppercase{#1}}\par\vspace{0.25em}}
 \newcommand{\axislabel}[1]{{\color{muted}\scriptsize #1}}
+% Empirical-exhibit notes use the full available line width and inherit the
+% surrounding slide alignment. Explanatory schematics whose labels are complete
+% do not require a note.
+\newcommand{\decknote}[1]{%
+  \par\vspace{0.10cm}%
+  \noindent\begin{minipage}{\linewidth}%
+    \fontsize{6.6}{7.3}\selectfont\color{muted}\emph{Note:} #1\par
+  \end{minipage}%
+}
 
 \pgfplotsset{deckaxis/.style={font=\small,axis line style={rule},tick style={rule},grid=major,grid style={rule,very thin},xlabel style={font=\small},ylabel style={font=\small},title style={font=\small\bfseries},legend style={font=\small,draw=none,fill=none},every axis plot/.append style={line width=1.6pt}}}
 \tikzset{nodepoint/.style={circle,draw=ink,fill=white,minimum size=18pt,inner sep=0pt,font=\scriptsize}}
 \tikzset{route/.style={-{Stealth[length=5pt]},line width=1.2pt}}
 \tikzset{softbox/.style={rounded corners=2pt,draw=rule,fill=panel,inner sep=7pt,align=left}}
 
-\title{The Making of Dominant Vehicle Currencies}
-\subtitle{Evidence from DeFi}
+\title{Vehicle Currency Rotation in Decentralised Exchanges}
+\subtitle{}
 \author{Jiahua Xu}
 \institute{UCL Centre for Blockchain Technologies}
 \date{}
@@ -69,16 +79,16 @@
 \begin{columns}[T,totalwidth=\textwidth]
 \begin{column}{0.30\textwidth}
 \vspace{1.35cm}
-{\color{white}\Large\bfseries What makes an asset the dominant intermediary?\par}
+{\color{white}\Large\bfseries How does vehicle dominance change?\par}
 \end{column}
 \begin{column}{0.63\textwidth}
 \raggedleft
 \includegraphics[width=4.45cm]{assets/ucl-cbt-logo-light.png}
 \vspace{0.65cm}
 \raggedright
-{\fontsize{23}{27}\selectfont\bfseries\begin{tabular}{@{}l@{}}The Making of\\[-0.08em]Dominant Vehicle\\[-0.08em]Currencies\end{tabular}\par}
+{\fontsize{21}{25}\selectfont\bfseries\begin{tabular}{@{}l@{}}Vehicle Currency\\[-0.08em]Rotation in Decentralised\\[-0.08em]Exchanges\end{tabular}\par}
 \vspace{0.35cm}
-{\large Evidence from DeFi\par}
+{\large Evidence from Ethereum routes\par}
 \vfill
 {\normalsize Jiahua Xu\par}
 \end{column}

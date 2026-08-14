@@ -1,9 +1,10 @@
 from __future__ import annotations
 
 import importlib.util
-from contextlib import nullcontext
+from contextlib import contextmanager, nullcontext
 from pathlib import Path
 import sys
+from types import SimpleNamespace
 
 import numpy as np
 import pandas as pd
@@ -17,8 +18,12 @@ from ddvc.liquidity_predictability import (
     attach_lookahead_safe_daily_covariates,
     build_candidate_day_panel,
     build_exact_horizon_panel,
+    build_v2_candidate_day_panel,
+    build_v2_exact_horizon_panel,
     validate_exact_horizon_covariates,
     validate_lookahead_safe_daily_covariates,
+    validate_v2_candidate_day_panel,
+    validate_v2_exact_horizon_panel,
 )
 
 
@@ -31,19 +36,32 @@ def _write_inputs(root: Path) -> tuple[Path, Path, Path]:
     for index, day in enumerate(days):
         if day == pd.Timestamp("2020-02-15"):
             continue
+        day_counts = [index + candidate_index for candidate_index in range(5)]
+        day_endpoints = [0 if candidate_index == 0 else index + 1 for candidate_index in range(5)]
+        if day == pd.Timestamp("2020-02-10"):
+            day_counts[0] = 0
+            day_endpoints[0] = 0
+        intermediate_total = sum(day_counts)
+        endpoint_total = sum(day_endpoints)
         for candidate_index, (address, symbol) in enumerate(CANDIDATES):
             if day == pd.Timestamp("2020-02-10") and candidate_index == 0:
                 continue
-            endpoint = candidate_index != 0
+            intermediate_count = day_counts[candidate_index]
+            endpoint_count = day_endpoints[candidate_index]
+            intermediate_share = (
+                intermediate_count / intermediate_total if intermediate_total else 0.0
+            )
+            endpoint_share = endpoint_count / endpoint_total if endpoint_total else 0.0
+            endpoint = endpoint_count > 0
             route_rows.append(
                 {
                     "date": day,
                     "token": address,
                     "symbol": symbol,
-                    "intermediate_routes": index + candidate_index,
-                    "endpoint_routes": index + 1 if endpoint else 0,
-                    "intermediate_count_share": (candidate_index + 1) / 20,
-                    "vehicle_excess_use_count_ratio": (candidate_index + 1) / 2 if endpoint else np.nan,
+                    "intermediate_routes": intermediate_count,
+                    "endpoint_routes": endpoint_count,
+                    "intermediate_count_share": intermediate_share,
+                    "vehicle_excess_use_count_ratio": intermediate_share / endpoint_share if endpoint else np.nan,
                     "endpoint_supported": endpoint,
                 }
             )
@@ -101,6 +119,37 @@ def _write_inputs(root: Path) -> tuple[Path, Path, Path]:
     return paths
 
 
+def _add_non_candidate_route_rows(route_path: Path, *, tokens_per_day: int = 8) -> None:
+    """Give the route fixture the all-token denominator shape of the real input."""
+
+    frame = pd.read_parquet(route_path)
+    extras = []
+    for day_index, day in enumerate(sorted(frame["date"].unique())):
+        for token_index in range(tokens_per_day):
+            extras.append(
+                {
+                    "date": day,
+                    "token": f"0x{90_000 + token_index:040x}",
+                    "symbol": f"OTHER{token_index}",
+                    "intermediate_routes": 20 + day_index + token_index,
+                    "endpoint_routes": 10 + day_index + token_index,
+                    "intermediate_count_share": 0.0,
+                    "vehicle_excess_use_count_ratio": 0.0,
+                    "endpoint_supported": True,
+                }
+            )
+    frame = pd.concat([frame, pd.DataFrame(extras)], ignore_index=True)
+    intermediate_total = frame.groupby("date")["intermediate_routes"].transform("sum")
+    endpoint_total = frame.groupby("date")["endpoint_routes"].transform("sum")
+    frame["intermediate_count_share"] = frame["intermediate_routes"] / intermediate_total
+    endpoint_share = frame["endpoint_routes"] / endpoint_total
+    frame["vehicle_excess_use_count_ratio"] = (
+        frame["intermediate_count_share"] / endpoint_share.where(endpoint_share.gt(0))
+    )
+    frame["endpoint_supported"] = frame["endpoint_routes"].gt(0)
+    frame.to_parquet(route_path, index=False)
+
+
 def _build(root: Path) -> pd.DataFrame:
     return build_candidate_day_panel(*_write_inputs(root), verify_inputs=False, memory_limit="256MB", threads=1, temp_directory=root / "tmp")
 
@@ -142,6 +191,204 @@ def test_candidate_day_keeps_stock_and_flow_families_separate(tmp_path: Path) ->
     assert not any("flow" in column for column in panel if column.startswith("v2_"))
     assert panel["v2_quantity_kind"].eq("deposited_capital").all()
     assert panel.loc[panel["v3_flow_day_supported"], "v3_flow_normalization_status"].eq("dollar_flow_and_within_flow_shares_no_capital_stock").all()
+
+
+def test_v2_family_builds_without_opening_or_zero_filling_v3(tmp_path: Path) -> None:
+    route, capital, _flow = _write_inputs(tmp_path)
+    panel = build_v2_candidate_day_panel(
+        route, capital, verify_inputs=False, memory_limit="256MB", threads=1,
+        temp_directory=tmp_path / "v2-tmp",
+    )
+    assert not any(column.startswith("v3_") for column in panel)
+    exact = build_v2_exact_horizon_panel(panel)
+    assert not any(column.startswith("v3_") for column in exact)
+    assert set(exact["horizon_days"]) == {1, 7, 30, 120}
+    assert exact["target_date"].eq(
+        exact["origin_date"] + pd.to_timedelta(exact["horizon_days"], unit="D")
+    ).all()
+
+
+def test_v2_route_measures_retain_all_token_denominators(
+    tmp_path: Path,
+) -> None:
+    route, capital, _flow = _write_inputs(tmp_path)
+    _add_non_candidate_route_rows(route)
+    panel = build_v2_candidate_day_panel(
+        route, capital, verify_inputs=False, memory_limit="256MB", threads=1,
+        temp_directory=tmp_path / "v2-all-token-tmp",
+    )
+    supported = panel[panel["route_day_supported"]]
+    candidate_sums = supported.groupby("origin_date")[
+        "intermediary_episode_share"
+    ].sum()
+    assert candidate_sums.lt(1).all()
+    assert supported["route_share_denominator"].eq(
+        "all_routed_tokens_on_origin_date"
+    ).all()
+    assert (
+        supported.groupby("origin_date")["intermediate_route_count"].sum()
+        < supported.groupby("origin_date")["route_all_token_intermediate_count"].first()
+    ).all()
+    assert (
+        supported.groupby("origin_date")["endpoint_route_count"].sum()
+        < supported.groupby("origin_date")["route_all_token_endpoint_count"].first()
+    ).all()
+    np.testing.assert_allclose(
+        supported["intermediary_episode_share"],
+        supported["intermediate_route_count"]
+        / supported["route_all_token_intermediate_count"],
+    )
+    endpoint_supported = supported[supported["route_endpoint_supported"]]
+    np.testing.assert_allclose(
+        endpoint_supported["vehicle_excess_use_count_ratio"],
+        (
+            endpoint_supported["intermediate_route_count"]
+            / endpoint_supported["route_all_token_intermediate_count"]
+        )
+        / (
+            endpoint_supported["endpoint_route_count"]
+            / endpoint_supported["route_all_token_endpoint_count"]
+        ),
+    )
+    validate_v2_candidate_day_panel(panel)
+
+
+def test_v2_preflight_scopes_identity_and_measurement_checks_to_candidates(
+    tmp_path: Path,
+) -> None:
+    route, capital, _flow = _write_inputs(tmp_path)
+    _add_non_candidate_route_rows(route)
+    frame = pd.read_parquet(route)
+    noncandidate = ~frame["token"].isin(dict(CANDIDATES))
+    index = frame.index[noncandidate][0]
+    frame.loc[index, "symbol"] = None
+    frame.loc[index, "intermediate_count_share"] = -1.0
+    frame.loc[index, "vehicle_excess_use_count_ratio"] = -1.0
+    frame["endpoint_supported"] = frame["endpoint_supported"].astype(object)
+    frame.loc[index, "endpoint_supported"] = None
+    frame.to_parquet(route, index=False)
+    panel = build_v2_candidate_day_panel(
+        route, capital, verify_inputs=False, memory_limit="256MB", threads=1,
+        temp_directory=tmp_path / "v2-noncandidate-scope-tmp",
+    )
+    validate_v2_candidate_day_panel(panel)
+
+
+@pytest.mark.parametrize("defect", ["malformed", "duplicate"])
+def test_v2_actual_shape_still_rejects_bad_selected_candidate_rows(
+    tmp_path: Path, defect: str
+) -> None:
+    route, capital, _flow = _write_inputs(tmp_path)
+    _add_non_candidate_route_rows(route)
+    frame = pd.read_parquet(route)
+    selected = frame["token"].isin(dict(CANDIDATES))
+    index = frame.index[selected][0]
+    if defect == "malformed":
+        frame.loc[index, "intermediate_count_share"] = -0.1
+    else:
+        frame = pd.concat([frame, frame.loc[[index]]], ignore_index=True)
+    frame.to_parquet(route, index=False)
+    with pytest.raises(ValueError):
+        build_v2_candidate_day_panel(
+            route, capital, verify_inputs=False, memory_limit="256MB", threads=1,
+            temp_directory=tmp_path / f"v2-selected-{defect}-tmp",
+        )
+
+
+@pytest.mark.parametrize(
+    ("column", "mutation"),
+    [
+        ("v2_log1p_deposited_capital_usd", "increment"),
+        ("v2_five_candidate_capital_share", "increment"),
+        ("intermediate_route_count", "fractional"),
+        ("vehicle_excess_use_count_ratio", "increment"),
+        ("route_all_token_intermediate_count", "increment"),
+        ("route_all_token_endpoint_count", "increment"),
+        ("route_share_denominator", "replace"),
+        ("route_endpoint_supported", "flip"),
+        ("v2_candidate_pool_observed", "flip"),
+        ("v2_capital_support_status", "replace"),
+    ],
+)
+def test_v2_candidate_validator_rejects_semantic_corruption(
+    tmp_path: Path, column: str, mutation: str
+) -> None:
+    route, capital, _flow = _write_inputs(tmp_path)
+    candidate = build_v2_candidate_day_panel(
+        route, capital, verify_inputs=False, memory_limit="256MB", threads=1,
+        temp_directory=tmp_path / "v2-corruption-tmp",
+    )
+    corrupted = candidate.copy()
+    index = corrupted.index[corrupted[column].notna()][-1]
+    if mutation == "increment":
+        corrupted.loc[index, column] += 1
+    elif mutation == "fractional":
+        corrupted[column] = corrupted[column].astype(float)
+        corrupted.loc[index, column] += 0.5
+    elif mutation == "flip":
+        corrupted.loc[index, column] = not bool(corrupted.loc[index, column])
+    else:
+        corrupted.loc[index, column] = "corrupted"
+    with pytest.raises(ValueError):
+        validate_v2_candidate_day_panel(corrupted)
+
+
+def test_v2_candidate_validator_rejects_incomplete_five_by_day_grid(
+    tmp_path: Path,
+) -> None:
+    route, capital, _flow = _write_inputs(tmp_path)
+    candidate = build_v2_candidate_day_panel(
+        route, capital, verify_inputs=False, memory_limit="256MB", threads=1,
+        temp_directory=tmp_path / "v2-grid-tmp",
+    )
+    with pytest.raises(ValueError, match="exact five"):
+        validate_v2_candidate_day_panel(candidate.iloc[1:].copy())
+
+
+@pytest.mark.parametrize(
+    "column",
+    [
+        "target_date",
+        "target_intermediary_episode_share",
+        "route_exact_target_supported",
+        "future_intermediary_episode_share_change",
+        "future_vehicle_excess_use_count_ratio_change",
+        "future_v2_log1p_deposited_capital_usd_change",
+        "future_v2_five_candidate_capital_share_change",
+    ],
+)
+def test_v2_exact_horizon_validator_rejects_target_corruption(
+    tmp_path: Path, column: str
+) -> None:
+    route, capital, _flow = _write_inputs(tmp_path)
+    candidate = build_v2_candidate_day_panel(
+        route, capital, verify_inputs=False, memory_limit="256MB", threads=1,
+        temp_directory=tmp_path / "v2-exact-corruption-tmp",
+    )
+    exact = build_v2_exact_horizon_panel(candidate)
+    corrupted = exact.copy()
+    index = corrupted.index[corrupted[column].notna()][0]
+    if column == "target_date":
+        corrupted.loc[index, column] += pd.Timedelta(days=1)
+    elif column == "route_exact_target_supported":
+        corrupted.loc[index, column] = not bool(corrupted.loc[index, column])
+    else:
+        corrupted.loc[index, column] += 1
+    with pytest.raises(ValueError, match="recomputation"):
+        validate_v2_exact_horizon_panel(corrupted)
+
+
+def test_v2_exact_horizon_validator_rejects_incomplete_horizon_grid(
+    tmp_path: Path,
+) -> None:
+    route, capital, _flow = _write_inputs(tmp_path)
+    candidate = build_v2_candidate_day_panel(
+        route, capital, verify_inputs=False, memory_limit="256MB", threads=1,
+        temp_directory=tmp_path / "v2-exact-grid-tmp",
+    )
+    exact = build_v2_exact_horizon_panel(candidate)
+    with pytest.raises(ValueError):
+        validate_v2_exact_horizon_panel(exact.iloc[1:].copy())
 
 
 def test_exact_calendar_links_cross_leap_day_and_month_boundary(tmp_path: Path) -> None:
@@ -200,15 +447,20 @@ def test_fixed_five_address_identity_fails_closed_on_symbol(tmp_path: Path) -> N
         build_candidate_day_panel(route, capital, flow, verify_inputs=False, memory_limit="256MB", threads=1, temp_directory=tmp_path / "tmp")
 
 
-def test_fixed_five_address_identity_fails_closed_on_extra_token(tmp_path: Path) -> None:
+def test_non_candidate_route_token_does_not_violate_candidate_identity(
+    tmp_path: Path,
+) -> None:
     route, capital, flow = _write_inputs(tmp_path)
     frame = pd.read_parquet(route)
     extra = frame.iloc[0].copy()
     extra["token"] = "0x0000000000000000000000000000000000000001"
     extra["symbol"] = "EXTRA"
     pd.concat([frame, pd.DataFrame([extra])], ignore_index=True).to_parquet(route, index=False)
-    with pytest.raises(ValueError, match="identity"):
-        build_candidate_day_panel(route, capital, flow, verify_inputs=False, memory_limit="256MB", threads=1, temp_directory=tmp_path / "tmp")
+    panel = build_candidate_day_panel(
+        route, capital, flow, verify_inputs=False, memory_limit="256MB", threads=1,
+        temp_directory=tmp_path / "tmp",
+    )
+    assert set(panel["candidate_address"]) == set(dict(CANDIDATES))
 
 
 def test_exact_windows_require_every_calendar_day_and_do_not_row_shift(tmp_path: Path) -> None:
@@ -540,16 +792,35 @@ def test_registered_builder_wires_price_input_provenance_and_validators(
     horizon_output = tmp_path / "horizons.parquet"
     capital_input = tmp_path / "capital.parquet"
     capital_pointer = tmp_path / "capital-current.json"
+    v2_candidate_output = tmp_path / "v2-candidate.parquet"
+    v2_horizon_output = tmp_path / "v2-horizons.parquet"
+    v2_candidate = build_v2_candidate_day_panel(
+        tmp_path / "route.parquet",
+        capital_input,
+        verify_inputs=False,
+        memory_limit="256MB",
+        threads=1,
+        temp_directory=tmp_path / "v2-registered-tmp",
+    )
+    v2_candidate.to_parquet(v2_candidate_output, index=False)
+    build_v2_exact_horizon_panel(v2_candidate).to_parquet(
+        v2_horizon_output, index=False
+    )
     monkeypatch.setattr(module, "ROUTE_INPUT", tmp_path / "route.parquet")
     monkeypatch.setattr(module, "FLOW_INPUT", tmp_path / "flow.parquet")
     monkeypatch.setattr(module, "PRICE_INPUT", price_path)
     monkeypatch.setattr(module, "CANDIDATE_DAY_OUTPUT", candidate_output)
     monkeypatch.setattr(module, "EXACT_HORIZON_OUTPUT", horizon_output)
+    monkeypatch.setattr(module, "V2_CANDIDATE_DAY_OUTPUT", v2_candidate_output)
+    monkeypatch.setattr(module, "V2_EXACT_HORIZON_OUTPUT", v2_horizon_output)
     class CapitalRelease:
         artifacts = {"candidate": capital_input}
         lineage_paths = (capital_pointer, capital_input)
 
     monkeypatch.setattr(module, "resolve_capital_release", lambda: CapitalRelease())
+    monkeypatch.setattr(
+        module, "current_capital_release", lambda release: nullcontext(release)
+    )
     monkeypatch.setattr(module, "build_candidate_day_panel", lambda *args, **kwargs: base)
     required = []
     def current_artifacts(paths: list[Path], **kwargs: object):
@@ -565,9 +836,14 @@ def test_registered_builder_wires_price_input_provenance_and_validators(
         writes.append((path, tuple(kwargs["inputs"])))
 
     monkeypatch.setattr(module, "write_panel", write_panel)
-    monkeypatch.setattr(sys, "argv", [str(script)])
+    monkeypatch.setattr(sys, "argv", [str(script), "--family", "joint"])
     assert module.main() == 0
-    assert required == [price_path]
+    assert required == [
+        v2_candidate_output,
+        v2_horizon_output,
+        tmp_path / "flow.parquet",
+        price_path,
+    ]
     assert "src/ddvc/analysis/dynamics.py" in module.CODE_SOURCES
     assert len(writes) == 2
     assert all(price_path in inputs for _path, inputs in writes)
@@ -576,6 +852,121 @@ def test_registered_builder_wires_price_input_provenance_and_validators(
     written_horizons = pd.read_parquet(horizon_output)
     assert set(LOOKAHEAD_SAFE_COVARIATE_COLUMNS).issubset(written_candidate)
     assert set(written_horizons["horizon_days"]) == {1, 7, 30, 120}
+
+
+def test_registered_builder_defaults_to_v2_without_v3_or_price(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    script = Path(__file__).parents[1] / "scripts" / "build_liquidity_capital_flow_panels.py"
+    spec = importlib.util.spec_from_file_location("build_liquidity_capital_v2_test", script)
+    assert spec is not None and spec.loader is not None
+    module = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(module)
+    route, capital, _flow = _write_inputs(tmp_path)
+    candidate = build_v2_candidate_day_panel(
+        route, capital, verify_inputs=False, memory_limit="256MB", threads=1,
+        temp_directory=tmp_path / "v2-default-tmp",
+    )
+    exact = build_v2_exact_horizon_panel(candidate)
+
+    class CapitalRelease:
+        artifacts = {"candidate": capital}
+        lineage_paths = (tmp_path / "capital-current.json", capital)
+
+    monkeypatch.setattr(module, "ROUTE_INPUT", route)
+    monkeypatch.setattr(module, "FLOW_INPUT", tmp_path / "absent-v3.parquet")
+    monkeypatch.setattr(module, "PRICE_INPUT", tmp_path / "absent-price.parquet")
+    monkeypatch.setattr(module, "V2_CANDIDATE_DAY_OUTPUT", tmp_path / "v2-output.parquet")
+    monkeypatch.setattr(module, "V2_EXACT_HORIZON_OUTPUT", tmp_path / "v2-exact.parquet")
+    monkeypatch.setattr(module, "resolve_capital_release", lambda: CapitalRelease())
+    monkeypatch.setattr(
+        module, "current_capital_release", lambda release: nullcontext(release)
+    )
+    monkeypatch.setattr(module, "build_v2_candidate_day_panel", lambda *args, **kwargs: candidate)
+    monkeypatch.setattr(module, "build_v2_exact_horizon_panel", lambda *args, **kwargs: exact)
+    monkeypatch.setattr(
+        module,
+        "build_candidate_day_panel",
+        lambda *args, **kwargs: pytest.fail("default V2 build opened the joint-family owner"),
+    )
+    leases = []
+
+    def current_artifacts(paths: list[Path], **kwargs: object):
+        leases.append((tuple(paths), kwargs.get("consumer")))
+        return nullcontext()
+
+    monkeypatch.setattr(module, "current_artifacts", current_artifacts)
+    writes = []
+
+    def write_panel(frame: pd.DataFrame, path: Path, **kwargs: object) -> None:
+        frame.to_parquet(path, index=False)
+        kwargs["preinstall_validator"](path)
+        writes.append(path)
+
+    monkeypatch.setattr(module, "write_panel", write_panel)
+    monkeypatch.setattr(sys, "argv", [str(script)])
+    assert module.main() == 0
+    assert writes == [module.V2_CANDIDATE_DAY_OUTPUT, module.V2_EXACT_HORIZON_OUTPUT]
+    assert leases == [
+        ((route,), "V2 liquidity panel publication"),
+        ((module.V2_CANDIDATE_DAY_OUTPUT,), "V2 exact-horizon publication"),
+    ]
+
+
+@pytest.mark.parametrize("replaced", ["route", "candidate"])
+def test_v2_builder_holds_route_and_candidate_leases_through_publication(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch, replaced: str
+) -> None:
+    script = Path(__file__).parents[1] / "scripts" / "build_liquidity_capital_flow_panels.py"
+    spec = importlib.util.spec_from_file_location(
+        f"build_liquidity_capital_v2_replacement_{replaced}", script
+    )
+    assert spec is not None and spec.loader is not None
+    module = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(module)
+    route, capital, _flow = _write_inputs(tmp_path)
+    candidate = build_v2_candidate_day_panel(
+        route, capital, verify_inputs=False, memory_limit="256MB", threads=1,
+        temp_directory=tmp_path / "v2-lease-tmp",
+    )
+    exact = build_v2_exact_horizon_panel(candidate)
+    candidate_output = tmp_path / "v2-output.parquet"
+    exact_output = tmp_path / "v2-exact.parquet"
+    monkeypatch.setattr(module, "ROUTE_INPUT", route)
+    monkeypatch.setattr(module, "V2_CANDIDATE_DAY_OUTPUT", candidate_output)
+    monkeypatch.setattr(module, "V2_EXACT_HORIZON_OUTPUT", exact_output)
+    monkeypatch.setattr(
+        module, "build_v2_candidate_day_panel", lambda *args, **kwargs: candidate
+    )
+    monkeypatch.setattr(
+        module, "build_v2_exact_horizon_panel", lambda *args, **kwargs: exact
+    )
+
+    @contextmanager
+    def current_artifacts(paths: list[Path], **_kwargs: object):
+        snapshots = {path: path.read_bytes() for path in paths}
+        yield
+        if any(path.read_bytes() != contents for path, contents in snapshots.items()):
+            raise RuntimeError("leased artifact was replaced during publication")
+
+    monkeypatch.setattr(module, "current_artifacts", current_artifacts)
+
+    def write_panel(frame: pd.DataFrame, path: Path, **kwargs: object) -> None:
+        frame.to_parquet(path, index=False)
+        kwargs["preinstall_validator"](path)
+        if path == exact_output:
+            target = route if replaced == "route" else candidate_output
+            target.write_bytes(target.read_bytes() + b"replacement")
+
+    monkeypatch.setattr(module, "write_panel", write_panel)
+
+    class CapitalRelease:
+        artifacts = {"candidate": capital}
+        lineage_paths = (tmp_path / "capital-current.json", capital)
+
+    args = SimpleNamespace(family="v2", memory_limit="256MB", threads=1)
+    with pytest.raises(RuntimeError, match="replaced during publication"):
+        module._build(args, CapitalRelease())
 
 
 def test_construction_module_contains_no_estimator_or_fit_call() -> None:

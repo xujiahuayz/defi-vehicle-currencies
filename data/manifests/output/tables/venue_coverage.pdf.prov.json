@@ -1,0 +1,108 @@
+{
+ "argv": [],
+ "artefact": "output/tables/venue_coverage.pdf",
+ "artefact_bytes": 15358,
+ "artefact_mtime_ns": 1786722299534982467,
+ "artefact_sha256": "049bf6ad1feaef0da21bc3a15f4f5e116ee676176bfc448a3bcd5b6599a9c577",
+ "code_fingerprint": "ff7b0a07949329200d917ca9d5d949699c8b78b3ebef6accb6bbfa83a4998fa1",
+ "code_sources": [
+  "scripts/tabulate/render_venue_coverage.py",
+  "src/ddvc/paper_tables.py",
+  "src/ddvc/venue_tables.py"
+ ],
+ "created_at": "2026-08-14T15:44:59+00:00",
+ "git": {
+  "branch": "main",
+  "commit": "10b07523378b0179ba77cd5458a2f35789fb5d09",
+  "dirty": true,
+  "dirty_generated_files": [
+   "data/manifests/output/exhibits/prose_conventions.jsonl.prov.json",
+   "data/manifests/output/exhibits/prose_outliers.jsonl.prov.json",
+   "data/manifests/output/exhibits/venue_optics.jsonl.prov.json",
+   "data/manifests/output/exhibits/venue_shape.jsonl.prov.json",
+   "data/manifests/output/exhibits/venue_volume_by_year.jsonl.prov.json",
+   "data/manifests/output/tables/dominance_rotation.pdf.prov.json",
+   "data/manifests/output/tables/dominance_rotation.tex.prov.json",
+   "data/manifests/output/tables/pair_composition.pdf.prov.json",
+   "data/manifests/output/tables/pair_composition.tex.prov.json",
+   "data/manifests/output/tables/usdt_transition.pdf.prov.json",
+   "data/manifests/output/tables/usdt_transition.tex.prov.json",
+   "data/manifests/output/tables/venue_coverage.tex.prov.json",
+   "output/exhibits/prose_conventions.jsonl",
+   "output/exhibits/prose_outliers.jsonl",
+   "output/exhibits/venue_optics.jsonl",
+   "output/exhibits/venue_shape.jsonl",
+   "output/exhibits/venue_volume_by_year.jsonl",
+   "output/tables/dominance_rotation.pdf",
+   "output/tables/dominance_rotation.tex",
+   "output/tables/pair_composition.pdf",
+   "output/tables/pair_composition.tex",
+   "output/tables/usdt_transition.pdf",
+   "output/tables/venue_coverage.tex",
+   "data/manifests/output/provisional/depeg_substitution_e0.jsonl.prov.json",
+   "data/manifests/output/provisional/depeg_substitution_e0_hourly.parquet.prov.json",
+   "data/manifests/output/provisional/depeg_substitution_e0_input_receipt.jsonl.prov.json",
+   "data/manifests/output/provisional/depeg_substitution_e0_manifest.jsonl.prov.json"
+  ],
+  "dirty_tracked_files": [
+   "deck/main.pdf",
+   "deck/main.tex",
+   "literature/vehicle-currencies.bib",
+   "paper/main.tex",
+   "paper/sections/01-introduction.tex",
+   "paper/sections/02-setting.tex",
+   "paper/sections/03-dominance.tex",
+   "paper/sections/05-rivals.tex",
+   "paper/sections/06-executability.tex",
+   "paper/sections/07-conclusion.tex",
+   "paper/sections/08-appendix.tex",
+   "paper/sections/abstract.tex",
+   "scripts/run_venue_coverage_bounds.py",
+   "scripts/tabulate/render_dominance_rotation.py",
+   "scripts/tabulate/render_pair_composition.py",
+   "scripts/tabulate/render_venue_coverage.py",
+   "src/ddvc/dominance_tables.py",
+   "src/ddvc/venue_tables.py",
+   "tests/test_dominance_tables.py",
+   "tests/test_venue_tables.py"
+  ],
+  "dirty_untracked_files": [
+   "scripts/run_depeg_substitution_e0.py",
+   "scripts/run_stress_reallocation_e0.py",
+   "src/ddvc/analysis/depeg_substitution_e0.py",
+   "src/ddvc/analysis/stress_reallocation_e0.py",
+   "tests/test_depeg_substitution_e0.py",
+   "tests/test_stress_reallocation_e0.py"
+  ]
+ },
+ "inputs": [
+  {
+   "bytes": 13476,
+   "exists": true,
+   "path": "output/exhibits/venue_volume_by_year.jsonl",
+   "sha256": "9e0998c4931f4d96e650c2a73a6ccf8be6cf1f0ceb4016b7e2ad3b7977eab283"
+  },
+  {
+   "bytes": 3952,
+   "exists": true,
+   "path": "data/manifests/output/exhibits/venue_volume_by_year.jsonl.prov.json",
+   "sha256": "0deb3122b6b1272eda26f1d4e9afbcc103ee536ff24c6e51d61d8bafce442623"
+  }
+ ],
+ "libraries": {
+  "numpy": "2.5.1",
+  "pandas": "3.0.3",
+  "pyarrow": "25.0.0",
+  "scipy": "1.18.0"
+ },
+ "notes": "nine-source observed-volume comparison for 2020--2026; Fluid uses partial locally available dates and has no TVL field; annual shares use observed USD volume and pooled shares sum displayed-year volume",
+ "payload_identity": {
+  "bytes": 15358,
+  "format": "binary",
+  "schema_version": 1,
+  "sha256": "049bf6ad1feaef0da21bc3a15f4f5e116ee676176bfc448a3bcd5b6599a9c577"
+ },
+ "python": "3.14.5",
+ "rows": null,
+ "script": "scripts/tabulate/render_venue_coverage.py"
+}

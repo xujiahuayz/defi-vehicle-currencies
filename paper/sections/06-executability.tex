@@ -1,17 +1,34 @@
-% Section 6. What the counterfactual price comparison can and cannot identify.
+% The route-cost benchmark is defined here; no route-cost estimate enters the paper.
 
-\section{What the price comparison can identify}
+\section{Comparing direct and intermediated execution}
 \label{sec:executability}
 
-The realised routes identify which assets carried trades. Explaining route choice requires the alternatives available immediately before execution, their output at the same trade size, and the costs of reaching them. We therefore keep the vehicle-dominance results in Section~\ref{sec:dominance} separate from the counterfactual price comparison.
+Realised routes identify the assets that carried each trade. Execution cost is a separate object: it compares those routes with alternatives available immediately beforehand, quoted at the same trade size and over a common set of exchanges. We hold the source $i$, destination $o$, dollar input $q$, and pre-transaction pool state $e^-$ fixed. The best direct and two-leg outputs through intermediary $k$ are
+\begin{equation}
+\label{eq:direct}
+O^{D}_{i,o,q,e}=P_{o,e}\max_{p\in\mathcal P_{i,o,e^-}}Q_p\!\left(i\to o,\Delta_i(q,e);\chi_{p,e^-}\right),
+\end{equation}
+\begin{equation}
+\label{eq:vehicle}
+O^{I}_{i,o,k,q,e}=P_{o,e}\max_{p'\in\mathcal P_{k,o,e^-}}Q_{p'}\!\left(k\to o,\max_{p\in\mathcal P_{i,k,e^-}}Q_p\!\left(i\to k,\Delta_i(q,e);\chi_{p,e^-}\right);\chi_{p',e^-}\right)
+\end{equation}
+This comparison extends the realised-versus-optimised allocation benchmark of \citet{XiMoallemi2026Routing} from parallel pools for one asset pair to sequential routes through an intermediary.
 
-The comparison in Section~\ref{sec:setting:pricing} holds the endpoints, input amount, and pool state fixed. For each trade, it asks how much the best direct path and the best two-leg path through a particular intermediary would have returned. A quote difference describes the reconstructed opportunity set. Interpreting it as route choice additionally requires the router's quote time, searched exchanges, access to private order flow, and financing and reversion costs, which the public record generally leaves latent.
+The vehicle-route shortfall relative to direct execution is
+\begin{equation}
+\label{eq:gap}
+\Delta C^{D}_{i,o,k,q,e}=\frac{O^{D}_{i,o,q,e}-O^{I}_{i,o,k,q,e}}{O^{D}_{i,o,q,e}},
+\end{equation}
+reported in basis points as $10^{4}\Delta C^{D}_{i,o,k,q,e}$. Positive values mean that the direct route returns more output before gas. Swaps and liquidity changes are replayed in on-chain order because a daily or hourly closing state incorporates events that occurred after the trade. The observed event marks settlement; a quote formed earlier can reflect a different opportunity set.
 
-Two implementation conditions are essential. First, pool balances and liquidity must be measured immediately before the transaction. A closing hourly or daily state can incorporate trades and liquidity changes that occurred after the route was chosen. We reconstruct constant-product balances by replaying swaps, liquidity additions, and withdrawals in transaction order. For concentrated-liquidity pools, we replay initialization, liquidity changes, and swaps in block and log order. A pool-period enters the comparison only when the required event history is complete and the reconstructed state reproduces the realised trade. Appendix~\ref{app:state} describes these checks.
+We compare hypothetical legs only within a common executable range. Let $\widetilde Q_{\ell}$ denote leg $\ell$'s output at the pool's marginal rate. Each leg satisfies
+\begin{equation}
+\label{eq:support}
+\pi_{\ell}(\Delta_i,e^-)=\frac{\widetilde Q_{\ell}(\Delta_i,e^-)-Q_{\ell}(\Delta_i,e^-)}{\widetilde Q_{\ell}(\Delta_i,e^-)}\leq \bar\pi,
+\qquad \bar\pi=0.05.
+\end{equation}
+The 5\% own-price-impact ceiling applies across pool families; contract-specific limits add further restrictions. Appendix~\ref{app:quoters} gives the pricing equations and Appendix~\ref{app:support} calibrates the support rule.
+% output/exhibits/quoter_support_bounds.jsonl; common 5 percent target support rule
 
-Second, a hypothetical trade should resemble the trades on which the pricing rule has been evaluated. We retain a leg only when its size relative to available depth lies within the range represented among realised swaps. Because the support restriction is set from trade size and pool state before outputs are compared, selection is independent of the measured price difference. Appendix~\ref{app:support} reports the calibration.
-
-A third condition is market coverage. The price comparison covers a narrower market than the realised-route panel. The largest omission is concentrated in Curve pools that connect native assets and stablecoins but use a different invariant from the StableSwap pools we can price. These exclusions account for 34.2\% of assessed Curve volume and are concentrated in native-asset depth: 65.2\% of native-leg volume is excluded, compared with 21.1\% of stable-leg volume. Hook-bearing and dynamic-fee Uniswap v4 pools are omitted because their transaction-level cash-flow rules cannot be recovered from the available records. Historical state is also unavailable for SushiSwap v3 and for several Balancer pool families. These omissions can improve either the direct or the intermediated alternative, so their effect on the difference between the two is not known in advance. Appendix~\ref{app:coverage} reports their magnitude and composition.
+The benchmark represents public on-chain liquidity in the declared exchange set. Private order flow, financing costs, losses from reverted transactions, and pools outside that set can alter a router's choice. Pool-family coverage is economically material. In the sampled Curve exercise, pools outside the StableSwap model carry 34.2\% of assessed volume, including 65.2\% of native-leg volume and 21.1\% of stablecoin-leg volume. Hook-bearing or dynamic-fee Uniswap v4 pools, SushiSwap v3, and several Balancer families also use pricing states outside the benchmark. Appendix~\ref{app:coverage} quantifies these boundaries.
 % docs/venue-coverage-bounds.md; output/exhibits/curve_excluded_composition.jsonl
-
-Pre-transaction state, trade-size support, and market coverage leave a sharp division in the evidence. Route incidence and vehicle dominance use observed token flows and remain measurable whenever the route itself is recovered. Tests that connect vehicle use to relative execution cost require the stricter pre-transaction state and market-coverage conditions. Route-composition results do not depend on the counterfactual price comparison; relative-cost tests use only observations with complete pre-transaction state and market coverage.

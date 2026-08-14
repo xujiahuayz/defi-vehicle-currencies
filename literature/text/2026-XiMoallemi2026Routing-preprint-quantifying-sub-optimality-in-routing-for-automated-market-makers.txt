@@ -1,0 +1,1133 @@
+
+
+===== PAGE 1 =====
+
+Quantifying Sub-Optimality in Routing for
+Automated Market Makers
+Weiye Xi1 and Ciamac C. Moallemi 1
+1 Decision, Risk, and Operations Division,
+Graduate School of Business, Columbia University
+Abstract.We provide a large-scale empirical audit of DEX routing us-
+ing 2.98 million WETH–USDC swaps on Ethereum. Comparing real-
+ized routes with optimized benchmarks, we measure an average shortfall
+of 2.02 bps per trade or$24 million. To attribute losses, we introduce
+three reproducible optimal benchmarks: a Support-Constrained Opti-
+mum (SCO) that evaluates split quality conditional on the pools ac-
+tually used; a Full-Venue Optimum (FVO) that considers all available
+pools to quantify the value of broader pool access; and a Gas-Aware
+FVO (G-FVO) that augments FVO with gas costs to capture the trade-
+off between additional pool usage and gas expenditure. Computing these
+benchmarks at scale is enabled by a bisection-based algorithm for op-
+timal routing across multiple pools for the same token pair. Two reg-
+ularities emerge. First, information timeliness is crucial: moving from
+execution-time state to one-block lagged state optimization significantly
+raises mean shortfall and additional delays further degrade performance,
+albeit with diminishing increments; evaluated on the same stale snap-
+shots, realized routes lie closer to optimal, indicating timing-mismatch as
+a key component. Second, inefficiency is heterogeneous and heavy-tailed:
+small trades suffer higher percentage losses, while a few extreme outliers
+dominate the aggregate dollar shortfalls. Finally, we demonstrate that
+sandwiching attacks drive a significant fraction of routing sub-optimality.
+Our benchmark protocol and algorithm offer a rigorous, reproducible ba-
+sis for evaluating and improving information-timely, gas-aware routing.
+1 Introduction
+Decentralized exchange (DEX) aggregators rely on smart routers to split trades
+among multiple automated market maker (AMM) pools for the best execution.
+Today’s routers must decide where to split flow across many concurrent pools
+and when to execute under gas costs and rapidly changing pool states. Despite
+an active design space, the field lacks a careful, large-scale measurement of a
+basic question:How optimal are current routing decisions in practice, relative to
+economically motivated objectives?
+We address this question by conducting a comprehensive empirical audit
+of on-chain routing performance, using 2.98 million WETH–USDC swaps on
+Ethereum mainnet. We quantify the output value lost due to suboptimal routing
+by comparing each realized trade to optimized benchmarks. On average, current
+routing strategies sacrifice approximately 2.02 bps of potential output per trade,
+arXiv:2607.20762v1  [q-fin.TR]  22 Jul 2026
+
+===== PAGE 2 =====
+
+2 Weiye Xi and Ciamac C. Moallemi
+which aggregates to$24 million of forgone value across roughly$120 billion of
+volume.
+To rigorously evaluate routing suboptimality, we design three optimal rout-
+ing benchmarks to assess each trade’s potential performance. First, theSupport-
+Constrained Optimum(SCO) benchmark restricts the pool set to only those
+actually used by the trade, measuring the quality of the volume split across
+those pools. Second, the Full-Venue Optimum (FVO) benchmark considers all
+available pools without accounting for gas costs, revealing the potential gain
+from accessing a broader liquidity pool set. Finally, the Gas-Aware Full-Venue
+Optimum (G-FVO) benchmark extends FVO by accounting for gas costs, cap-
+turing the trade-off between using additional pools and incurring extra gas fees.
+This suite of benchmarks allows us not only to measure the suboptimality of
+current routing decisions but also to decompose these inefficiencies and measure
+boththe shortfall from failing to utilize the optimal subset of poolsandthe cost
+of imperfect flow-splitting across the pools that were utilized.
+In order to efficiently compute our benchmarks, we describe an efficient algo-
+rithm for optimally routing across multiple pools for the same token pair based
+on bisection. Our method also accounts for discrete gas costs when selecting
+pools. Our method finds the exact maximum-output allocation, and we prove
+its correctness and characterize its complexity. We use this routine to construct
+our optimized benchmarks.
+We investigate the value of timeliness of information in routing. Using a con-
+trolled experiment on information staleness, we isolate the effect of pool-state
+freshness on routing outcomes. Optimizing trades on slightly stale information
+significantly worsens outcomes compared to optimizing using up-to-date informa-
+tion, by about 1.29 bps under FVO (approximately$15.5 million in our sample)
+and 1.78 bps under G-FVO ($21.4 million). Further delays continue to erode
+performance, albeit by diminishing increments. Conversely, when we evaluate
+the realized routes using earlier (pre-execution) snapshots, they appear less sub-
+optimal. This indicates that a sizeable portion of suboptimality is due to timing
+mismatch:Routes are planned using outdated information relative to execution.
+We further observe significant heterogeneity in routing inefficiency across
+trades, with a heavy-tailed loss distribution. Small swaps (<$1,000) tend to
+incur disproportionately larger relative losses (in bps) than larger trades (>
+$10,000). Large trades, while nearly optimal in percentage terms, can still suffer
+greater absolute slippage. Moreover, the suboptimality distribution has a long
+right tail driven by a few extreme outliers, consistent with potential adversarial
+execution (e.g., sandwich attacks) or transient liquidity shocks. These findings
+underscore the presence of heavy-tailed risk: most trades incur minimal loss, but
+rare worst-case events can result in much larger inefficiencies.
+Finally, we quantify the contribution of sandwich attacks to measured routing
+inefficiency. We tag victim transactions whenever at least one of the four WETH-
+USDC pools is sandwiched and compare realized routes to theSCO/FVO/G-
+FVOoptima at execution-time snapshots. Sandwiched trades exhibit a pro-
+nounced upward shift in both the level and dispersion of suboptimality, with
+
+===== PAGE 3 =====
+
+Quantifying Sub-Optimality in Routing for Automated Market Makers 3
+heavier right tails that persist even under gas-aware evaluation. Cross-router
+differences are consistent with execution context: exposure concentrates in pub-
+licly submitted flow (e.g., Universal Router), whereas solver-mediated batch auc-
+tions and private order flow (e.g., CoWSwap) show negligible incidence. These
+patterns reinforce our timing results: when planning on stale state and facing
+reordering, timing mismatch widens the execution-time gap. They also provide
+a concrete channel through which information staleness and pool activation in-
+teract to generate heavy-tailed losses.
+In summary, our study provides a detailed empirical assessment of DEX
+aggregator routing quality and pinpoints multiple sources of suboptimality in
+current practice. Together, these contributions demonstrate economically signif-
+icant inefficiencies in existing router outcomes and offer new tools and insights
+to guide the design of more optimal, timing-aware aggregation strategies.
+2 Related Literature
+Our work relates to several strands of research: (1)Routing and aggregation.
+Routers and aggregators split flow across venues facing curved liquidity and
+heterogeneous fees. On the theory side, our work builds on the formulation of
+optimal routing problems as convex programs [1,6]. Recent work extends these
+formulations to richer execution environments (e.g., hooks) and studies their
+implications for route design [2]. On the empirical side, early evidence docu-
+ments routing suboptimality and its drivers [9,7]. Relative to this literature,
+we introduce a gas-aware activation layer and algorithms with guarantees, and
+deliver an implementable benchmark suite (SCO/FVO/G-FVO). (2)Execution
+frictions, MEV, and order-submission context.The sensitivity of realized out-
+comes to timely state connects to the literature on mempools, reordering, and
+extractable value [5,8]. Differences across routers in our staleness experiments
+are consistent with institutional features, e.g., solver-mediated batch auctions
+and private order flow in CoW Protocol [4,3] that can mitigate within-block
+state sensitivity.
+3 Optimal Routing Methodology
+3.1 Routing Problem F ormulation
+Consider the following setup. An agent seeks tospend a fixed total amount of
+the input tokenand receive as much of the output token as possible by splitting
+order flow across a collection of AMM pools indexed byj∈ J={0,1, . . . , n−1}.
+Each AMM pooljis a two–asset pool that supports swaps betweentoken 0and
+token 1(e.g., WETH and USDC). Letq j ≥0 denote the input routed to pool
+j, and letQ >0 be thetotal input budget.
+Note that here we are focusing on a simplified version of the full routing
+problem: we restrict attention to a setting in which all pools under consideration
+are for the same token pair, although they may belong to different protocols or
+
+===== PAGE 4 =====
+
+4 Weiye Xi and Ciamac C. Moallemi
+have different fee tiers. In full generality, one might also allow trading through
+other intermediate tokens when routing. This raises additional challenges, such
+as determining the full universe of intermediate tokens. For this study, we restrict
+attention to the simplified same-token setting, which is nevertheless empirically
+relevant.
+Output functions.For poolj, we write the (fee–inclusive)output function
+oj(qj, ωj, z)
+for the quantity of the output token obtained when supplying inputq j ≥0 to
+pooljin stateω j and swap directionz∈ {0,1}. We take
+z=
+(
+1,swap token 0 for token 1,
+0,swap token 1 for token 0,
+so that each pool possessestwooutput mappings, one per direction. The pool
+stateω j captures all variables that influence execution on the pool, including,
+for example, the spot price on the pool, available liquidity and its distribution
+across prices, protocol fees, and any state variables used by hooks (e.g., recent
+volatility for dynamic fees).
+We make several assumptions on these output functions to ensure well-
+posedness of the routing problem and to capture structural features of AMM
+liquidity curves observed in practice.
+Assumption 1 (Output–function regularity)For every pooljand direc-
+tionz∈ {0,1}, the mappingq7→o j(q, ωj, z)satisfies:
+1.Nonnegativity:o j(0, ωj, z) = 0ando j(q, ωj, z)≥0for allq≥0.
+2.Continuity and monotonicity:o j(·, ωj, z)is continuous and strictly in-
+creasing almost everywhere.1
+3.Differentiability:o j(·, ωj, z)is continuously differentiable except at finitely
+many points.
+4.Strict concavity (diminishing returns):o j(·, ωj, z)is strictly concave.
+Economically, execution deteriorates with size: each additional unit of input
+yields strictly less output than the previous unit.
+Gas cost.For pooljin stateω j and inputq j ≥0, letg j(qj, ωj) denote the gas
+expenditure required to execute the swap. Without loss of generality, we treat gas
+as paid and measured in a fixed type of token used for swapping in this pool (e.g.,
+token 1). Its effect on the routing problem is asymmetric across swap directions:
+(i) In a token 0→token 1 swap, gas reduces net token 1 output (output-side
+deduction). (ii) In a token 1→token 0 swap, gas reduces the effective input
+budget in token 1 (input-side adjustment).
+1 In practice, some pools have no available liquidity in certain price ranges, at which
+pointo j can become locally constant. Such edge cases can be easily handled and for
+clarity of exposition we will not consider them here.
+
+===== PAGE 5 =====
+
+Quantifying Sub-Optimality in Routing for Automated Market Makers 5
+Deterministic routing formulation.Given the most recently observed pool
+states{ω j}n−1
+j=0 , we allocate a fixed input budgetQ >0 across the candidate
+poolsJ={0,1, . . . , n−1}to maximize total outputnet of gas:
+max
+q∈R n
++
+n−1X
+j=0
+h
+oj(qj, ωj, z)−(1−z)g j(qj, ωj)1{q j >0}
+i
+s.t.
+n−1X
+j=0
+h
+qj +z gj(qj, ωj)1{q j >0}
+i
+≤Q.
+(1)
+Herez∈ {0,1}encodes the swap direction for pooljand determines where gas
+enters: whenz= 1, gas is paid in theinputtoken and therefore appears in the
+resource constraint; whenz= 0, gas is paid in theoutputtoken and therefore
+deducts from the objective.
+3.2 Optimal Routing Solution without Gas Adjustment
+We begin with the routing problemwithoutgas costs, i.e.g j(·,·)≡0:
+max
+q∈R n
++
+n−1X
+j=0
+oj(qj, ωj, z) s.t.
+n−1X
+j=0
+qj ≤Q.(2)
+At a fixed snapshot we treat pool states as given and suppress them, writing
+oj(qj)≡o j(qj, ωj, z). By Assumption 1 (strict monotonicity), any unallocated
+budget can always increase output, so the resource constraint binds at the op-
+timum. The inequality constraint in (2) can be replaced by Pn−1
+j=0 qj =Q. This
+model provides the deterministic benchmark and serves as the inner optimizer
+used later when we incorporate gas adjustments.
+Lagrangian and optimality conditions.Introducing a multiplierλfor the
+budget constraint andµ j ≥0 for non-negativity, the Lagrangian equation is
+L(q, λ, µ) =
+n−1X
+j=0
+oj(qj) +λ
+
+Q−
+n−1X
+j=0
+qj
+
+ +
+n−1X
+j=0
+µjqj.(3)
+By concavity of the objective and convexity of the feasible set, first-order KKT
+conditions are necessary and sufficient for optimality.
+We next define themarginal outputm j(q)≡∂o j(q)/∂qand the associated
+marginal pricemp j(q)≡1/m j(q), which could be interpreted as the instanta-
+neous input required to obtain one additional unit of output from pooljwhen
+the allocation isq. The KKT conditions imply
+mpj(q∗
+j )−λ ∗ +µ ∗
+j = 0, q ∗
+j ≥0, µ ∗
+j ≥0, µ ∗
+j q∗
+j = 0,
+n−1X
+j=0
+q∗
+j =Q,(4)
+
+===== PAGE 6 =====
+
+6 Weiye Xi and Ciamac C. Moallemi
+which is equivalent to thismarginal equalizationrule
+mpj(q∗
+j ) =λ ∗ ifq ∗
+j >0,≤λ ∗ ifq ∗
+j = 0.(5)
+Thus all active pools share a common marginal priceλ ∗, while inactive pools
+have weakly higher marginal costs. In other words, input is allocated so that
+shifting a marginal unit across pools cannot increase total output.
+Inverse marginal price formulation.It is convenient to encode non-negativity
+directly via theclipped inverse marginal cost function
+mp−1
+j (λ)≡inf{q≥0 : mp j(q)≥λ}(6)
+where mp −1
+j (λ) = 0 whenλis less than current spot price mp −1
+j (0). The KKT
+system (4) is equivalent to the fixed point
+q∗
+j = mp−1
+j (λ∗) (j= 0, . . . , n−1),
+n−1X
+j=0
+mp−1
+j (λ∗) =Q.(7)
+LetS(λ)≡ Pn−1
+j=0 mp−1
+j (λ). By Assumption 1, each mp −1
+j (·) is strictly in-
+creasing and right–continuous, andSinherits these properties wheneverλis
+higher than the current price. Therefore, for any feasible budget 0< Q <
+supλ S(λ) 2, there exists a uniqueλ ⋆ withS(λ ⋆) =Q, yielding a unique op-
+timal allocation via (7).
+Searching for the solution 3 SinceSis monotone,λ ⋆ can be computed effi-
+ciently by bisection on [λlow, λhigh] withS(λ low)≤Q≤S(λ high). At termination
+we obtain bλwith allocationq ⋆ = mp−1(bλ), which satisfies the marginal equaliza-
+tion condition (5). Pseudocode (bracketing, stopping rules, and the evaluation
+oracle for mp −1
+j ) is given in Appendix A, Algorithm 1. Formal guarantees, in-
+cluding existence, uniqueness and convergence, are stated in Theorem 1, with
+full statements and proofs deferred to Appendix A.
+3.3 Optimal Routing with Gas Adjustment
+We extend the deterministic routing problem to incorporate gas under anactiva-
+tionmodel. Unlike the previous subsection (whereg j ≡0), we assume: (i) gas is
+paid in token 1; (ii) gas is incurred only when a pool isactivated, i.e.,q j >0; and
+(iii) conditional on activation, the gas cost is quantity–independent 4. Formally,
+2 Here sup λ S(λ) denotes the maximum total input that can be absorbed across all
+pools, i.e., the aggregate capacity of the system.
+3 The only oracle required is evaluation of mp −1
+j (λ). In both CPMMs and
+concentrated-liquidity AMMs this can be computed to machine precision.
+4 In practice, some AMMs exhibit size-dependent gas. In concentrated-liquidity de-
+signs (e.g., Uniswap v3), gas usage increases with the number of ticks crossed, making
+gj(q, ωj) piecewise constant and weakly increasing inq. For tractability, we abstract
+to a fixed per-activation cost, which captures the dominant overhead costs while
+preserving concavity of the inner allocation problem.
+
+===== PAGE 7 =====
+
+Quantifying Sub-Optimality in Routing for Automated Market Makers 7
+for pooljin stateω j,
+gj(qj, ωj) =
+(
+0, q j = 0,
+¯gj(ωj), q j >0 (8)
+This activation specification captures the fixed EVM overhead of calling a pool
+and cleanly separates the binary activation decision (qj >0) from the continuous
+allocation across activated pools, preserving concavity of the inner allocation.
+Gas–aware Program.We define the gas-aware routing problem as below:
+max
+q∈R n
++
+n−1X
+j=0
+oj(qj, ωj, z)−
+n−1X
+j=0
+z¯gj(ωj)1{q j >0}
+s.t.
+n−1X
+j=0
+
+qj + (1−z) ¯gj(ωj)1{q j >0}
+
+=Q.
+(9)
+The equality budget is without loss: under Assumption 1 the planner exhausts
+the available input. Problem (9) is a mixed–integer program due to the activation
+terms1{q j >0}and such problems are, in general, NP-hard.
+Exact solution by subset enumeration.LetS⊆ Jdenote the active set of
+pools, i.e., those withq j >0. For any fixedS̸=∅, the gas terms are constants,
+and the problem reduces to a concave inner allocation:
+Y(S) = max
+{qj }j∈S
+X
+j∈S
+
+oj(qj, ωj, z)−z¯g j(ωj)
+
+s.t.
+X
+j∈S
+qj =Q swap(S), q j ≥0 (j∈S),
+(10)
+where the effective swap budget isQ swap(S) =Q− P
+j∈S (1−z) ¯gj(ωj).Fea-
+sibility requiresQ swap(S)>0. For any feasibleS, the optimizer of (10) is char-
+acterized bymarginal price equalizationacrossj∈Sand can be computed via
+the bisection procedure in Algorithm 1 (Section 3.2). The outer problem then
+selects
+S⋆ ∈arg max
+S⊆J, S̸=∅, Qswap(S)>0
+Y(S), q ⋆ ={q ⋆
+j (S⋆)}j∈S ⋆ .
+Complete pseudocode for the outer enumeration is provided in Appendix A,
+Algorithm 2. Correctness and complexity are established in Theorem 2 (Ap-
+pendix A).
+4 Suboptimality Benchmarks
+In this section, we formalize the best–in–class benchmarks used to evaluate a
+realized route observed in an on-chain transaction. All evaluations are taken at
+
+===== PAGE 8 =====
+
+8 Weiye Xi and Ciamac C. Moallemi
+a fixed pool stateω={ω j}j∈J . In the subsequent analysis, we allow this state
+to vary in order to compare allocations under different market conditions. Let
+the realized allocation beq r = (q r
+0, . . . , qr
+n−1) with total inputQ= Pn−1
+j=0 qr
+j .
+Theactivated setof pools is denotedA≜{j∈ J:q r
+j >0}.
+Optimized route benchmarks.We construct three benchmarks that differ
+only inscope(eligible pools) andgas treatment. In each case, the corresponding
+program is solved at stateωto obtain a best–in–class allocation (S ⋆, q⋆), which is
+then compared against the realized route under identical modeling assumptions.
+(i) Support–Constrained Optimum (SCO; activated set, no gas).SCO evaluates
+split qualityconditional on the realized activated setAand ignores gas:
+max
+{qj }j∈A
+X
+j∈A
+oj(qj, ωj, z)
+s.t.
+X
+j∈A
+qj =Q, q j ≥0.
+(11)
+(ii) Full–Venue Optimum (FVO; all pools, no gas).FVO expands the scope to
+all candidate poolsJwhile still ignoring gas. The program is identical to (2).
+(iii) Gas–Aware Full–Venue Optimum (G–FVO; all pools, gas–adjusted).G–FVO
+augments FVO by incorporating gas costs via model (9) in Section 3.3.
+5 Empirical Results
+This section evaluates realized router performance relative to the optimal pro-
+grams defined in Section 3 and the benchmarks in Section 4. The analysis ad-
+dresses three questions:(i)How do realized routes compare to the best alloca-
+tions under alternative assumptions about the pool universe and gas costs?(ii)
+How valuable is it to use the most recent pool state for routing?(iii)Do certain
+routers appear to route in advance of on-chain state updates?
+Data descriptionOur baseline sample comprises 2.98 million WETH-
+USDC swaps on Ethereum mainnet (blocks 19,500,000 to 23,000,000), total-
+ing$120.42 billion in USDC-equivalent input. Transactions are reconstructed
+by aggregating swaps across pools at the transaction level and filtered to drop
+counterflow (both directions on the same pair) and trades with less than$100
+on the USDC side. We evaluate routes across four Uniswap L1 pools (v2: 30 bps;
+v3: 1, 5, and 30 bps) and, for benchmarking, label five routers (Universal Router,
+CoWSwap, 1inch v4, 1inch v5, Odos v2), which together account for about 21%
+of transactions and 5.6% of volume. Routes are highly concentrated: on average,
+fewer than one-third of the four pools are activated per transaction and flow
+shares are extremely uneven (low entropy, HHI≈1), suggesting potential under-
+activation of venues that we quantify in the FVO/G-FVO comparisons below.
+Full data construction details and summary tables appear in Appendix B.
+
+===== PAGE 9 =====
+
+Quantifying Sub-Optimality in Routing for Automated Market Makers 9
+5.1 Performance Relative to Optimal Benchmarks
+We first compare realized routes with the three benchmarks developed in Sec-
+tion 4, all optimized and evaluated at execution states. Figure 1 reports router–level
+box plots of suboptimality, defined as the proportional shortfall of the realized
+route relative to the benchmark (positive values indicate underperformance of
+the realized route):
+Economic magnitudes.Although Figure 1 shows bp-level gaps, the im-
+plied dollar amounts are non-trivial, indicating the practical value of better
+activation and splitting across pools. Across all trades in our sample ($120.42
+billion; Table 2), the losses of realized routes amount to$6.58 million relative
+to the SCO benchmark,$21.39 million relative to theFVObenchmark, and
+$24.20 million relative to theG-FVObenchmark. For the five labeled routers
+as a group, the same conversion yields losses of about$0.77 million relative to
+SCO,$1.77 million relative to FVO, and$1.89 million relative toG-FVO.
+Overall
+Universal router
+CoWSwap 1inch v4 1inch v5 Odos v2
+0
+1
+2
+3
+4Suboptimality (bps)
+SCO (active-set, no gas)
+Overall
+Universal router
+CoWSwap  1inch v4 1inch v5  Odos v2
+0
+1
+2
+3
+4
+FVO (all pools, no gas)
+Overall
+Universal router
+CoWSwap 1inch v4 1inch v5 Odos v2
+0
+1
+2
+3
+4Suboptimality (bps)
+G-FVO (all pools, gas-aware)
+Fig. 1.Suboptimality relative to different optima. The box plot indicates the 25th,
+50th, and 75th percentiles, while the triangle indicates the mean of each sample.
+To put these magnitudes in perspective, one naturally asks:Where do such
+losses originate?
+Losses from mis–splitting within the activated set.Even conditional
+on the set of pools that were actually activated, realized splits are not fully
+
+===== PAGE 10 =====
+
+10 Weiye Xi and Ciamac C. Moallemi
+efficient. Relative toSCO, the mean shortfall is 0.05467 bps, which aggregates
+to approximately$6.58 million across all trades in our sample. This reflects pure
+within–set inefficiency: the router touched the right pools but did not allocate
+across them optimally.
+Losses from not activating additional pools.The scope for improve-
+ment through activating additional pools is also significant. As shown in Fig-
+ure 1, moving fromSCOtoFVOshifts the suboptimality distributions upward
+markedly, and althoughG–FVOattenuates the improvement once per–pool gas
+is charged, the effect remains large. Failure to activate additional pools accounts
+for the dominant share of inefficiency: even after incorporating per–pool gas, the
+aggregate loss is about$24.27 million. Hence, while mis–splitting is economically
+meaningful, the overwhelming driver of suboptimality is limited pool activation.
+100-1K 1K-10K 10K-100K >100K
+Trade Size Bin (USDC-equivalent)
+0
+2
+4
+6
+8
+10Suboptimality (basis points, bps)
+Suboptimality by Trade Size Compared with FVO
+100-1K 1K-10K 10K-100K >100K
+Trade Size Bin (USDC-equivalent)
+0
+20
+40
+60
+80
+100Suboptimality (basis points, bps)
+Suboptimality by Trade Size Compared with G-FVO
+Fig. 2.Suboptimality vs. trade size (relative to FVO).
+Heterogeneity by trade size.Suboptimality is size–dependent. Figure 2
+displays the suboptimality of realized routes relative to FVO and G–FVO.
+In the FVO panel, the smallest bins (100–1K and 1K–10K USDC) have the
+widest interquartile ranges and visibly higher medians, whereas distributions
+tighten and center near zero for 10K–100K and>100K. Under G–FVO (right),
+small orders are even more dispersed with higher centers—consistent with fixed
+per–activation gas costs biting when notional is small—while large orders remain
+close to zero. Economically, although small trades are bps–inefficient, they con-
+tribute modestly to aggregate dollar loss, while large trades, despite low median
+bps, account for a meaningful share of total dollars forfeited due to their high
+notional.
+Impact of outliers.A final observation is that suboptimality is heavily
+influenced by outliers. In both Figures 1 and 2, the triangle mean markers lie
+well above the medians and often even exceed the upper quartile, while most
+boxes concentrate near zero. This pattern indicates long right tails: a small
+set of transactions contributes disproportionately to average losses, whereas the
+typical trade incurs little or no shortfall. Economically, these outliers account for
+
+===== PAGE 11 =====
+
+Quantifying Sub-Optimality in Routing for Automated Market Makers 11
+much of the aggregate dollar gap reported above. Potential mechanisms include
+adversarial execution (e.g., sandwiching) or transient liquidity shocks, both of
+which can depress realized output relative to benchmark routes.
+5.2 Impact of Information Staleness
+We measure the value of timely pool information via a controlled staleness design.
+ForN∈ {0,1, . . . ,10}, letωN ={ω N
+j }j∈J be the state usedbothto compute
+the benchmark and to evaluate outcomes:
+(i)N= 0 (oracle):ω 0 is the transaction’s execution-time state (the state at
+the trade’s actual execution position within its block).
+(ii)N≥1 (implementable):ω N is the bottom-of-block stateNblocks before
+execution—the freshest on-chain state a planner can deterministically observe
+before building the next block.
+For eachN, we solve the optimized benchmark 5 atω N and evaluate at the
+sameω N . Suboptimality measures the proportional shortfall of the optimized
+route using potentially outdated information atω N , relative to the optimized
+route using up-to-date information available at execution. Figure 3 plots subop-
+timality versusN(router-level means as lines; overall interquartile box plots).
+One block of information is economically material.Moving fromN=
+0 toN= 1 (losing one block of state) almost doubles the aggregate loss. Using
+FVO, the mean shortfall rises from the oracle bound atN= 0 toN= 1 by
+1.28739 bps, which amounts to about$15.5 million. Under G–FVO, theN=
+0→1 jump is 1.77525 bps, roughly$21.4 million. Thus, timely visibility of
+pool states delivers material value: even a single–block delay moves aggregate
+performance by eight figures, and additional delay continues to erode outcomes.
+Additional delay worsens performance, but with diminishing in-
+crements.FromN= 1 toN= 2, the incremental losses are much smaller, yet
+mean lines and interquartile ranges continue to drift upward withN, indicating
+cumulative degradation as information ages.
+Router heterogeneity and execution context.The mean curves for
+Universal Router and Odos v2 steepen more than those for CoWSwap, consistent
+with greater sensitivity to the most recent pool state. A plausible interpretation
+is execution context: users of Uniswap’s universal router often submit via public
+mempools, exposing them to reordering and sandwich risk [5,8]. By contrast,
+CoWSwap’s flatter profile is consistent with solver-mediated batch auctions and
+private order flow handling that mitigate within-block state sensitivity [4,3].
+5.3 Realized Routes vs. Planning-State Optima
+In this section we compare the realized routes to planning-state optima. We reuse
+the staleness design of Section 5.2 but consider two complementary evaluations.
+5 We do not use the on-chain routes here; we consider only timing and total input
+quantity in Section 5.2.
+
+===== PAGE 12 =====
+
+12 Weiye Xi and Ciamac C. Moallemi
+0 1 2 3 4 5 6 7 8 9 10
+0
+1
+2
+3
+4Mean suboptimality (bps)
+FVO (all pools, no gas)
+1inch v4
+1inch v5
+CoWSwap
+Odos v2
+Universal router
+0 1 2 3 4 5 6 7 8 9 10
+0
+1
+2
+3
+4Mean suboptimality (bps)
+G-FVO (all pools, gas-aware)
+1inch v4
+1inch v5
+CoWSwap
+Odos v2
+Universal router
+0 1 2 3 4 5 6 7 8 9 10
+Planning N blocks ahead
+0.0
+0.1
+0.2
+0.3
+0.4
+0.5
+0.6Suboptimality (bps)
+Overall Distribution (FVO)
+0 1 2 3 4 5 6 7 8 9 10
+Planning N blocks ahead
+0.0
+0.1
+0.2
+0.3
+0.4
+0.5
+0.6Suboptimality (bps)
+Overall Distribution (G-FVO)
+Fig. 3.Effect of delayed state on performance (relative to FVO and G-FVO). The
+gap betweenN= 0 andN= 1 quantifies the cost of one-block staleness (oracle vs.
+implementable planning), while the monotone drift asNincreases captures the growing
+loss from routing on progressively older snapshots.
+(A) Evaluation at the planning stateω N .This isolates the role of tim-
+ing mismatch versus allocation inefficiency and the measured gap answers:how
+much of the suboptimality reflects using pre-execution information, as opposed
+to suboptimal activation/splitting?
+Evaluated earlier, realized routes are less suboptimal.Suboptimality
+declines monotonically withN: mean gaps fall as the benchmark is pushed fur-
+ther back in time. This pattern indicates that a material share of execution-time
+gaps stems fromtiming mismatch(decisions keyed to pre-execution information),
+rather than purely to allocation inefficiency (suboptimal activation/splitting).
+(B) Implementableω 1 router vs. current routersWe operationalize
+an implementable router thatoptimizes at the bottom of the previous block, i.e.,
+computes the FVO/G–FVO allocation atω 1 and submits the transaction in the
+next block. This uses the freshest on-chain state a planner can deterministically
+observe before building the next block. We then ask:at execution, how would an
+implementable router based on our algorithm perform relative to current routers?
+The execution–time comparisons indicate sizable gains. Figure 5 shows that,
+when evaluated at execution, theseω 1-based optima outperform realized routes
+across routers. Aggregating over the labeled routers’ total trade amount (Ta-
+ble 2), the implied gains amount to$0.77 million for FVO 1 and$0.66 million for
+G–FVO1.
+
+===== PAGE 13 =====
+
+Quantifying Sub-Optimality in Routing for Automated Market Makers 13
+0 1 2 3 4
+0
+1
+2
+3
+4Mean suboptimality (bps)
+FVO (all pools, no gas)
+1inch v4
+1inch v5
+CoWSwap
+Odos v2
+Universal router
+0 1 2 3 4
+0
+1
+2
+3
+4Mean suboptimality (bps)
+G-FVO (all pools, gas-aware)
+1inch v4
+1inch v5
+CoWSwap
+Odos v2
+Universal router
+Fig. 4.Suboptimality of realized routes against optima atω N , evaluated also atω N .
+0 1 2
+0.0
+0.5
+1.0
+1.5
+2.0Mean suboptimality (bps)
+FVO (all pools, no gas)
+1inch v4
+1inch v5
+CoWSwap
+Odos v2
+Universal router
+0 1 2
+0.0
+0.5
+1.0
+1.5
+2.0Mean suboptimality (bps)
+G-FVO (all pools, gas-aware)
+1inch v4
+1inch v5
+CoWSwap
+Odos v2
+Universa
+Fig. 5.Suboptimality of realized routes against optima atω N , evaluated at execution.
+5.4 Sandwiching Effect
+We assess how sandwich attacks shift routing shortfalls at therouterlevel, keep-
+ing the evaluation identical to Section 5.1. For each pool in our universe (Sec-
+tion B), we tagsandwichedvictim swaps using a within-block heuristic: a swap
+is labeled sandwiched on a pool if it is bracketed in the same block by two
+opposite-direction swaps attributable to the same counterparty cluster (front-
+run then back-run). A transaction (its multi-pool combined route) is labeled
+sandwiched if at least one of the four pools flags as sandwiched. We then re-
+compute suboptimality relative to the benchmarks in Section 4, optimizing and
+evaluating atexecution-timesnapshots.
+Summary statistics.The table summarizes the incidence of sandwiching by
+count and by USDC-equivalent volume across routers. It highlights pronounced
+cross-router heterogeneity: dollar exposure concentrates in Universal, 1inch v4,
+and Odos v2, whereas CoWSwap is negligible and 1inch v5 remains modest.
+This pattern aligns with the execution-context interpretation in Section 5.2:
+publicly submitted flow (e.g., Universal/Odos) is more exposed to reordering
+and sandwich risk, while solver-mediated batch auctions and private order flow
+(CoWSwap) mitigate within-block state sensitivity.
+
+===== PAGE 14 =====
+
+14 Weiye Xi and Ciamac C. Moallemi
+Router Count Dollar value
+total sandwiched percentage total sandwiched percentage
+Overall 3.36×10 6 1.03×104 0.308% 1.21×1011 1.35×109 1.12%
+Universal router 5.85×105 1.26×103 0.215% 3.37×10 9 2.06×108 6.12%
+CoWSwap 4.29×10 4 1.00×100 0.00233% 9.90×108 4.53×104 0.00458%
+1inch v4 5.10×10 4 7.97×102 1.56% 1.83×10 9 1.45×108 7.93%
+1inch v5 8.73×10 4 4.60×101 0.0527% 3.84×10 8 2.61×106 0.680%
+Odos v2 3.39×10 3 1.20×102 3.54% 1.28×10 8 8.14×106 6.34%
+T able 1.Sandwiched transactions summary by router
+Overall
+Universal router
+CoWSwap 1inch v4 1inch v5 Odos v2
+0
+0.5
+1
+1.5
+2
+2.5
+3
+3.5
+4
+Suboptimality (bps)
+Full sample  SCO (active-set, no gas)
+Overall
+Universal router
+CoWSwap 1inch v4 1inch v5 Odos v2
+0
+0.5
+1
+1.5
+2
+2.5
+3
+3.5
+4
+Full sample  FVO (all pools, no gas)
+Overall
+Universal router
+CoWSwap 1inch v4 1inch v5 Odos v2
+0
+0.5
+1
+1.5
+2
+2.5
+3
+3.5
+4
+Full sample  G-FVO (all pools, gas-aware)
+Overall
+Universal router
+CoWSwap 1inch v4 1inch v5 Odos v2
+0
+0.5
+1
+1.5
+2
+2.5
+3
+3.5
+4
+Suboptimality (bps)
+Not sandwiched  SCO (active-set, no gas)
+Overall
+Universal router
+CoWSwap 1inch v4 1inch v5 Odos v2
+0
+0.5
+1
+1.5
+2
+2.5
+3
+3.5
+4
+Not sandwiched  FVO (all pools, no gas)
+Overall
+Universal router
+CoWSwap 1inch v4 1inch v5 Odos v2
+0
+0.5
+1
+1.5
+2
+2.5
+3
+3.5
+4
+Not sandwiched  G-FVO (all pools, gas-aware)
+Overall UniversalCoWSwap 1inch v4 1inch v5 Odos v2
+0
+10
+20
+30
+40
+50
+Suboptimality (bps)
+Sandwiched  SCO (active-set, no gas)
+Overall
+Universal router
+CoWSwap 1inch v4 1inch v5 Odos v2
+0
+10
+20
+30
+40
+50
+Sandwiched  FVO (all pools, no gas)
+Overall
+Universal router
+CoWSwap 1inch v4 1inch v5 Odos v2
+0
+10
+20
+30
+40
+50
+Sandwiched  G-FVO (all pools, gas-aware)
+Router Suboptimality Across Benchmarks
+Fig. 6.Router-level suboptimality relative toSCO/FVO/G-FVO, evaluated at exe-
+cution snapshots. Rows show the full sample (top), non-sandwiched subset (middle),
+and sandwiched subset (bottom). Boxes indicate the 25th/50th/75th percentiles; tri-
+angles indicate means.
+Level shift and dispersion under sandwiching.Comparing the middle and
+bottom rows of Figure 6 reveals a clear upward shift in both levels and dispersion
+once we restrict to sandwiched transactions. Non-sandwiched distributions clus-
+
+===== PAGE 15 =====
+
+Quantifying Sub-Optimality in Routing for Automated Market Makers 15
+ter near zero in the low single-digit bps range, whereas the sandwiched panels
+expand to tens of bps with heavier right tails. This echoes Section 5.1: average
+shortfalls are driven by a minority of extreme observations, which are concen-
+trated in the sandwiched set.
+Router-level comparisons.In the non-sandwiched subset, CoWSwap exhibits
+the lowest medians and tightest IQRs across panels; Universal Router and Odos
+v2 show higher baselines; 1inch v4/v5 lie in between (with v5 modestly tighter
+than v4). Restricting to sandwiched transactions (bottom row) preserves this
+ordering but amplifies gaps: Universal and Odos experience the largest up-
+ward shifts and the heaviest right tails, 1inch rises moderately, and CoWSwap
+shifts the least. These cross-router patterns align with execution context: solver-
+mediated batch auctions and private order flow (e.g., CoWSwap) reduce within-
+block state sensitivity, while publicly submitted flow faces greater exposure to
+adversarial ordering.
+6 Conclusion
+We conduct a large-scale empirical audit of on-chain routing for AMMs, pair-
+ing a reproducible benchmark suite—SCO(within-activation split quality),FVO
+(full-venue access without gas), andG-FVO(gas-aware activation)—with an ex-
+act and scalable optimizer. This framework provides a unified and implementable
+yardstick for evaluating realized routes.
+Three findings emerge.First, realized routes leave meaningful value on the
+table: average shortfalls are on the order of a few bps per trade and aggregate to
+tens of millions of dollars in our sample. Decomposition shows that insufficient
+pool activation dominates mis-splitting within the activated set, even after charg-
+ing per-pool gas.Second, information timeliness is crucial: moving from oracle
+execution snapshots to one-block stale planning materially worsens outcomes.
+Third, losses are heterogeneous and heavy-tailed: most trades are near-optimal
+in bps, but a small set of extreme errors drives mean shortfalls. These tails are
+amplified in transactions flagged as sandwiched and differ systematically across
+routers, consistent with execution-context exposure to reordering and MEV.
+Taken together, the results motivate router designs that (i) expand pool
+access while explicitly pricing activation gas, (ii) minimize timing mismatch
+via planning on the freshest implementable state, and (iii) reduce within-block
+state sensitivity through solver-mediated batch auctions, private order flow, or
+other MEV-mitigation mechanisms. Our benchmarks offer a practical harness for
+benchmarking such designs and for A/B testing policy choices (e.g., activation
+thresholds, venue whitelists, and timing rules) under identical market states.
+Our study has limitations that point to fruitful extensions. We restrict atten-
+tion to a single token pair on L1 and to same-pair pools, abstract from multi-hop
+routes and cross-domain execution, and model gas activation as a fixed per-call
+cost (ignoring tick-cross variability). Extending the benchmarks to multi-hop
+routing, richer gas models, additional venues and chains, and end-to-end mem-
+pool interactions (including private relay selection) is a natural next step. Dis-
+
+===== PAGE 16 =====
+
+16 Weiye Xi and Ciamac C. Moallemi
+tinguishing causal impacts of adversarial execution from confounding volatility,
+and stress-testing robustness to rapidly evolving AMM features (e.g., hooks),
+are additional directions.
+Disclosure
+The second author is a research advisor for Paradigm and for Uniswap Labs.
+This research was supported by a grant from the Columbia Center for Digital
+Finance and Technologies.
+
+===== PAGE 17 =====
+
+Quantifying Sub-Optimality in Routing for Automated Market Makers 17
+References
+1. Angeris, G., Evans, A., Chitra, T., Boyd, S.: Optimal routing for constant function
+market makers. In: Proceedings of the 23rd ACM Conference on Economics and
+Computation (EC ’22). pp. 115–128 (2022).https://doi.org/10.1145/3490486.
+3538336
+2. Chitra, T., Kulkarni, K., Srinivasan, K.: Optimal routing in the presence of hooks:
+Three case studies. arXiv preprint (2025),https://arxiv.org/abs/2502.02059
+3. CoW Protocol: CoW protocol documentation: Batch auctions, solvers, and archi-
+tecture.https://docs.cow.fi/(2023)
+4. CoW Protocol Team: CoW protocol: A trustless meta-DEX aggregator using batch
+auctions and ring trades.https://docs.cow.fi/(2023)
+5. Daian, P., Goldfeder, S., Kell, T., Li, Y., Zhao, X., Eyal, I., Juels, A., Tram` er, F.,
+Breidenbach, L.: Flash boys 2.0: Frontrunning, transaction reordering, and consen-
+sus instability in decentralized exchanges. In: Proceedings of the 2020 IEEE Sym-
+posium on Security and Privacy (S&P). pp. 910–927 (2020).https://doi.org/10.
+1109/SP40000.2020.00040
+6. Diamandis, T., Resnick, M., Chitra, T., Angeris, G.: An efficient algorithm for opti-
+mal routing through constant function market makers. In: International Conference
+on Financial Cryptography and Data Security. pp. 128–145. Springer (2023)
+7. Kulkarni, K., Diamandis, T., Chitra, T.: Routing mev in constant function market
+makers. In: International Conference on Web and Internet Economics. pp. 456–473.
+Springer (2023)
+8. Qin, K., Zhou, L., Gervais, A.: Quantifying blockchain extractable value: How dark
+is the forest? In: Proceedings of the 2022 IEEE Symposium on Security and Privacy
+(S&P). pp. 198–214 (2022).https://doi.org/10.1109/SP46214.2022.9833734
+9. Yaish, A., Dotan, M., Qin, K., Zohar, A., Gervais, A.: Suboptimality in defi.https:
+//eprint.iacr.org/2023/892(2023)
+
+===== PAGE 18 =====
+
+18 Weiye Xi and Ciamac C. Moallemi
+A Algorithms and Implementation Details
+A.1 Bisection for the Lagrange Multiplier
+Algorithm 1Bisection for the Lagrange Multiplierλ ⋆ (SupportJ, BudgetQ)
+Require:Monotone maps{mp −1
+j }n−1
+j=0 ; budgetQ >0; bracket [λ low, λhigh] with
+S(λlow)≤Q≤S(λ high); tolerancesε λ, εS >0; maximum iterationsK.
+Ensure:Approximate multiplier bλand allocationq ⋆.
+1:k←0
+2:whilek < Kdo
+3:λ←(λ low +λhigh)/2;S(λ)← P
+j mp−1
+j (λ)
+4:if|S(λ)−Q| ≤ε S orλ high −λlow ≤ε λ then
+5:break
+6:else ifS(λ)< Qthen
+7:λ low ←λ
+8:else
+9:λ high ←λ
+10:end if
+11:k←k+ 1
+12:end while
+13: bλ←(λ low +λhigh)/2;q ⋆
+j ←mp −1
+j (bλ)
+14:return bλ, q⋆
+Theorem 1 (Correctness and Complexity of Bisection).
+1. (Existence and uniqueness) There exists a uniqueλ ⋆ ∈[λ low, λhigh]such
+thatS(λ ⋆) =Q, and the allocationq ⋆
+j = mp −1
+j (λ⋆)is the unique optimizer
+of(7).
+2. (Convergence inλ) Afterkiterations of Algorithm 1, the current bracket
+containsλ ⋆ and has widthλ (k)
+high −λ (k)
+low ≤(λ (0)
+high −λ (0)
+low)/2k. Hence to achieve
+|bλ−λ ⋆| ≤ελ it suffices to take
+k≥
+l
+log2
+
+(λ(0)
+high −λ (0)
+low)/ελ
+m
+.
+3. (Convergence in output space) If, in addition,SisL-Lipschitz on the
+bracket, then|S( bλ)−Q| ≤L(λ(0)
+high−λ(0)
+low)/2k. Therefore to reach|S( bλ)−Q| ≤
+εS it suffices that
+k≥
+l
+log2
+
+L(λ (0)
+high −λ (0)
+low)/εS
+m
+.
+Proof sketch.SinceSis continuous and increasing with opposite-sign deviations
+at the bracket endpoints, the intermediate value theorem yields a unique root of
+S(λ)−Q. Each bisection step halves the bracket, establishing convergence inλ.
+Convergence in output space follows by Lipschitz continuity ofS. The resulting
+q⋆ satisfies the resource constraint and the marginal price equalization(5).
+
+===== PAGE 19 =====
+
+Quantifying Sub-Optimality in Routing for Automated Market Makers 19
+A.2 Subset Enumeration for Gas–Aware Routing
+Algorithm 2Subset Enumeration for Gas–Aware Routing
+Require:Pool setJ, budgetQ, states{ω j}, directions{z}, gas{¯g j(ωj)}.
+Ensure:Optimal active setS ⋆ and allocationq ⋆ for (9).
+1: InitializeY ⋆ ← −∞,S⋆ ←∅,q ⋆ ←0.
+2:for allS⊆ J, S̸=∅do
+3:Q swap(S)←Q− P
+j∈S (1−z) ¯gj(ωj).
+4:ifQ swap(S)≤0then
+5:continue
+6:end if
+7: Solve (10) onSusing Algorithm 1, obtaining{q ⋆
+j (S)}j∈S and objectiveY(S).
+8:ifY(S)> Y ⋆ then
+9: (Y ⋆, S⋆, q⋆)←(Y(S), S,{q ⋆
+j (S)}j∈S )
+10:end if
+11:end for
+12:return(S ⋆, q⋆).
+Theorem 2 (Correctness and Complexity of Subset Enumeration).
+Under Assumption 1, Algorithm 2 returns a global maximizer of(9). LetT inner(ε)
+denote the time to solve a single inner allocation(10)to toleranceεvia bisection
+(Theorem 1), i.e.
+Tinner(ε) =O
+
+log λhigh −λ low
+ε
+
+.
+Then the worst–case runtime isO
+
+2|J |Tinner(ε)
+
+,which is exponential in the
+number of candidate pools due to subset enumeration.
+Proof sketch.For fixedS, Theorem 1 ensures a unique optimizer, attained
+via Algorithm 2. Exhaustive search across feasibleSthen delivers the global op-
+timum.
+B Data Description
+This section documents the dataset used in our empirical analysis: the universe
+of pools and routers, the sample period, transaction construction and filters, and
+descriptive statistics relevant for the gas–aware routing problem.
+Block range.The baseline sample covers Ethereum mainnet blocks 19,500,000
+(Mar-23-2024 09:34:59 PM +UTC) to block 23,000,000 (Jul-26-2025 01:22:11
+AM +UTC).
+Pools.We study four Ethereum L1 Uniswap pools for the WETH–USDC pair:
+(i) the Uniswap v2 pool with a 30 bps fee and (ii) three Uniswap v3 pools at fee
+tiers of 1 bp, 5 bps, and 30 bps. Each pool is treated as a distinct elementj∈
+J={0,1, . . . , n−1}with its own output functionoj(·, ωj, z) as in Section 3.1.
+
+===== PAGE 20 =====
+
+20 Weiye Xi and Ciamac C. Moallemi
+Transaction construction and filters.Transactions are reconstructed at
+the transaction level by parsing AMM swap events from individual pools and
+aggregating them by transaction hash. We apply the following filters to obtain
+a clean routing sample:
+(i) Counterflow exclusion. We drop transactions containing swaps inboth
+directions on the same pair (e.g., USDC→WETH and WETH→USDC). This is
+because the desired direction of trade is ambiguous.
+(ii) Minimum trade amount. We drop transactions where the USDC side,
+summed across all pools used in the transaction, is less than $100.
+Routers.The sample includesalltransactions subject to the filters above. For
+benchmarking purposes, we also label trades executed by five widely used routing
+contracts: UniswapUniversal Router,CoWSwap,1inch v4,1inch v5, andOdos
+v2. Labels are assigned by destination contract address in transaction logs.
+Transaction counts and sizes.Table 2 summarizes transaction counts, trade
+amount and average trade size. The core sample contains 2.98 million transac-
+tions totaling$120.42 billion in USDC–equivalent input. The five labeled routers
+jointly account for about 21% of transactions and 5.6% of trade amount.
+Router Count T rade Amount (USDC) Avg. T rade Size (USDC)
+Overall 2,978,019 1.2042×10 11 40,437
+Universal 456,046 3.3653×10 9 7,379
+CoWSwap 41,901 9.8510×10 8 23,510
+1inch v4 47,812 1.8241×10 9 38,151
+1inch v5 77,769 3.8342×10 8 4,930
+Odos v2 3,332 1.2841×10 8 38,540
+T able 2.Transaction counts and trade size for WETH–USDC swaps across the four
+Uniswap pools (blocks 19,500,000 to 23,000,000).
+Transaction concentration.Since the gas model (Section 3.3) imposes a
+per–pool activation cost, the degree to which order flow is concentrated across
+pools is empirically relevant. For transactiont, letq j,t ≥0 be the input allocated
+to pooljand define the normalized sharex j,t ≡q j,t / P
+k∈J qk,t. We measure
+concentration using three complementary statistics:
+(i)F raction of pools activated:κ t = P
+j∈J 1{xj,t >0}/|J |.
+(ii)Entropy (dispersion):H t ≡ −P
+j∈J xj,t logx j,t (with 0 log 0≡0).
+(iii)Herfindahl–Hirschman Index (HHI):HHI t = P
+j∈J x2
+j,t ∈[1/|J |,1].
+We report transaction–weighted means of these statistics by router and provide
+trade-size–weighted means:
+
+===== PAGE 21 =====
+
+Quantifying Sub-Optimality in Routing for Automated Market Makers 21
+Metric Overall Universal CoWSwap 1inch v4 1inch v5 Odos v2
+Activation Rate 0.283 0.296 0.324 0.380 0.250 0.355
+Entropy 0.048 0.090 0.123 0.195 0.0004 0.175
+HHI 0.971 0.942 0.923 0.882 0.9997 0.892
+T able 3.Execution concentration metrics by router. Values are transaction–weighted
+means. Lower entropy and higher HHI indicate more concentrated execution.
+On average, fewer than one–third of the four pools are activated per trans-
+action. Entropy is close to zero, indicating that flow shares are highly unevenly
+distributed rather than split evenly across pools. Consistently, the Herfind-
+ahl–Hirschman Index (HHI) is near one, confirming that realized routes are
+almost always dominated by a single pool.
