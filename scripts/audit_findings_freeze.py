@@ -2152,6 +2152,125 @@ def cex_reference_support_checks(
     return results
 
 
+def _route_cost_partition_invariants(path: Path) -> tuple[int, int, int, int]:
+    """Check date-separable panel invariants without grouping the full release."""
+
+    parquet = pq.ParquetFile(path)
+    date_index = parquet.schema_arrow.names.index("date")
+    intervals: list[tuple[object, object, int, int]] = []
+    for row_group in range(parquet.num_row_groups):
+        metadata = parquet.metadata.row_group(row_group)
+        statistics = metadata.column(date_index).statistics
+        if statistics is None or not statistics.has_min_max:
+            raise ValueError(
+                "route-cost date statistics are required for the exact bounded-memory audit"
+            )
+        minimum = statistics.min
+        maximum = statistics.max
+        if isinstance(minimum, bytes):
+            minimum = minimum.decode()
+        if isinstance(maximum, bytes):
+            maximum = maximum.decode()
+        intervals.append((minimum, maximum, row_group, metadata.num_rows))
+
+    # Any row groups whose date ranges overlap must be checked together.  The
+    # resulting components are independent because date belongs to every key
+    # used below.  Adjacent components may therefore be batched for I/O without
+    # changing the full-panel GROUP BY result.
+    components: list[list[tuple[int, int]]] = []
+    component_maximum: object | None = None
+    for minimum, maximum, row_group, rows in sorted(intervals):
+        if components and component_maximum is not None and minimum <= component_maximum:
+            components[-1].append((row_group, rows))
+            component_maximum = max(component_maximum, maximum)
+        else:
+            components.append([(row_group, rows)])
+            component_maximum = maximum
+
+    batches: list[list[int]] = []
+    batch_rows = 0
+    for component in components:
+        component_rows = sum(rows for _row_group, rows in component)
+        if batches and batch_rows + component_rows > 100_000:
+            batch_rows = 0
+        if not batches or batch_rows == 0:
+            batches.append([])
+        batches[-1].extend(row_group for row_group, _rows in component)
+        batch_rows += component_rows
+
+    audit_columns = list(
+        dict.fromkeys(
+            [
+                *QUOTE_CELL_KEYS,
+                "direct_output_usd",
+                "direct_source",
+                "direct_pool",
+                "realized_bridge_volume_usd",
+                "n_realized_routes",
+            ]
+        )
+    )
+    totals = [0, 0, 0, 0]
+    con = duckdb.connect()
+    con.execute("SET memory_limit='256MB'")
+    con.execute("SET threads=1")
+    con.execute("SET preserve_insertion_order=false")
+    con.execute(
+        f"SET temp_directory='{(ROOT / 'data' / 'processed' / '_duckdb_tmp').as_posix()}'"
+    )
+    try:
+        for row_groups in batches:
+            table = parquet.read_row_groups(row_groups, columns=audit_columns)
+            con.register("route_cost_partition", table)
+            duplicates = con.execute(
+                """
+                WITH by_date AS (
+                    SELECT date, count(*) AS rows,
+                        count(DISTINCT (
+                            reserve_hour_utc, src, tgt, vehicle, trade_size_usd
+                        )) AS unique_rows
+                    FROM route_cost_partition
+                    GROUP BY date
+                )
+                SELECT coalesce(sum(rows - unique_rows), 0),
+                    count(*) FILTER (WHERE rows!=unique_rows)
+                FROM by_date
+                """
+            ).fetchone()
+            direct_cells = con.execute(
+                """
+                WITH direct_cells AS (
+                    SELECT date, reserve_hour_utc, src, tgt, trade_size_usd,
+                        count(DISTINCT direct_output_usd) AS outputs,
+                        count(DISTINCT direct_source) AS sources,
+                        count(DISTINCT direct_pool) AS pools
+                    FROM route_cost_partition
+                    GROUP BY date, reserve_hour_utc, src, tgt, trade_size_usd
+                )
+                SELECT count(*) FROM direct_cells
+                WHERE outputs>1 OR sources>1 OR pools>1
+                """
+            ).fetchone()
+            realized_cells = con.execute(
+                """
+                WITH realized_cells AS (
+                    SELECT date, reserve_hour_utc, src, tgt,
+                        count(DISTINCT realized_bridge_volume_usd) AS volumes,
+                        count(DISTINCT n_realized_routes) AS routes
+                    FROM route_cost_partition
+                    GROUP BY date, reserve_hour_utc, src, tgt
+                )
+                SELECT count(*) FROM realized_cells WHERE volumes>1 OR routes>1
+                """
+            ).fetchone()
+            values = (*duplicates, direct_cells[0], realized_cells[0])
+            totals = [total + int(value) for total, value in zip(totals, values)]
+            con.unregister("route_cost_partition")
+    finally:
+        con.close()
+    return totals[0], totals[1], totals[2], totals[3]
+
+
 def route_cost_panel_checks(
     path: Path = PANEL,
 ) -> list[tuple[str, bool, str]]:
@@ -2201,8 +2320,15 @@ def route_cost_panel_checks(
     expected_hours = list(MAIN_ROUTE_COST_SPEC.hours_utc)
     expected_sizes = list(MAIN_ROUTE_COST_SPEC.trade_sizes_usd)
     con = duckdb.connect()
-    con.execute("SET memory_limit='1500MB'")
-    con.execute("SET threads=2")
+    # Keep the full-panel read-only scans below the grind executor's resident-
+    # memory ceiling.  The higher setting exceeded the process allowance before
+    # the bounded uniqueness and invariance checks could run.
+    con.execute("SET memory_limit='512MB'")
+    con.execute("SET threads=1")
+    con.execute("SET preserve_insertion_order=false")
+    con.execute(
+        f"SET temp_directory='{(ROOT / 'data' / 'processed' / '_duckdb_tmp').as_posix()}'"
+    )
     try:
         core = con.execute(
             """
@@ -2288,22 +2414,10 @@ def route_cost_panel_checks(
             )
         )
 
-        duplicates = con.execute(
-            """
-            WITH by_date AS (
-                SELECT date, count(*) AS rows,
-                    count(DISTINCT (
-                        reserve_hour_utc, src, tgt, vehicle, trade_size_usd
-                    )) AS unique_rows
-                FROM read_parquet(?)
-                GROUP BY date
-            )
-            SELECT coalesce(sum(rows - unique_rows), 0),
-                count(*) FILTER (WHERE rows!=unique_rows)
-            FROM by_date
-            """,
-            [str(path)],
-        ).fetchone()
+        con.close()
+        con = None
+        duplicates_and_invariance = _route_cost_partition_invariants(path)
+        duplicates = duplicates_and_invariance[:2]
         results.append(
             (
                 "node D route-cost unique economic cells",
@@ -2312,29 +2426,7 @@ def route_cost_panel_checks(
             )
         )
 
-        invariance = con.execute(
-            """
-            WITH direct_cells AS (
-                SELECT date, reserve_hour_utc, src, tgt, trade_size_usd,
-                    count(DISTINCT direct_output_usd) AS outputs,
-                    count(DISTINCT direct_source) AS sources,
-                    count(DISTINCT direct_pool) AS pools
-                FROM read_parquet(?)
-                GROUP BY date, reserve_hour_utc, src, tgt, trade_size_usd
-            ), realized_cells AS (
-                SELECT date, reserve_hour_utc, src, tgt,
-                    count(DISTINCT realized_bridge_volume_usd) AS volumes,
-                    count(DISTINCT n_realized_routes) AS routes
-                FROM read_parquet(?)
-                GROUP BY date, reserve_hour_utc, src, tgt
-            )
-            SELECT
-                (SELECT count(*) FROM direct_cells
-                    WHERE outputs>1 OR sources>1 OR pools>1),
-                (SELECT count(*) FROM realized_cells WHERE volumes>1 OR routes>1)
-            """,
-            [str(path), str(path)],
-        ).fetchone()
+        invariance = duplicates_and_invariance[2:]
         results.append(
             (
                 "node D route-cost repeated-input invariance",
@@ -2345,7 +2437,8 @@ def route_cost_panel_checks(
     except (duckdb.Error, OSError, ValueError) as exc:
         results.append(("node D route-cost semantic audit", False, f"{type(exc).__name__}: {exc}"))
     finally:
-        con.close()
+        if con is not None:
+            con.close()
     return results
 
 
