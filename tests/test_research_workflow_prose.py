@@ -37,6 +37,34 @@ class ResearchWorkflowProseTests(unittest.TestCase):
                 continue
             self.fail(f"hard-wrapped Markdown prose at lines {number}-{number + 1}")
 
+    def test_method_selection_contract_names_every_required_dimension_and_family(self) -> None:
+        text = WORKFLOW.read_text(encoding="utf-8")
+        start = text.index("- **Method selection follows the estimand, never a battery.**")
+        end = text.index("- **One economic choice gets one primary vote.**", start)
+        contract = text[start:end]
+        required_dimensions = (
+            "Estimand",
+            "Unit or risk set and identifying variation",
+            "Dependence and inference",
+            "Falsifier",
+            "Current support state",
+            "Presentation destination",
+        )
+        required_families = (
+            "Paired daily change with calendar HAC",
+            "Denominator-mass WLS with matched fixed effects",
+            "Grouped-binomial share model",
+            "PPML utilisation model",
+            "Block-bootstrap ECDF and quantile comparison",
+            "Discrete-time logit or complementary-log-log hazard",
+            "Cox is not primary",
+            "DiD or exposure event study",
+            "iid t-test, textbook KS, or route-level binary logit",
+        )
+        for phrase in (*required_dimensions, *required_families):
+            with self.subTest(phrase=phrase):
+                self.assertIn(phrase, contract)
+
 
 if __name__ == "__main__":
     unittest.main()
