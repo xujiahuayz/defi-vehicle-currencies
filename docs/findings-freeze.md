@@ -1,14 +1,20 @@
 ---
 freeze_status: red
 stable_passes: 0
-active_node: D2-purpose-bound-exact-state + D3-fixed-opportunity-inputs + E0-vehicle-rotation
-studio_node: D2-purpose-bound-exact-state + D3-fixed-opportunity-inputs
-m3_node: E0-fixed-opportunity-vehicle-rotation + G/H-live-deck-and-paper-spine
-meeting_edge: Studio-fixed-opportunity-publish -> M3-estimator-and-figure-refresh -> E1-lock
-parent_loop: C -> D1/D2/D3 -> E0-exploration -> repair loop -> E1-lock -> F <-> G <-> H -> I
-next_edge: D2-release -> D3-construction-audit -> D3-full-daily-frontier -> E0-exploration -> E1-lock -> F <-> G <-> H -> I
+active_node: D2-V3-exact-state-audit + E0/F-route-methods + G/P0/H-live-deliverables
+studio_node: D2-V3-exact-state-audit
+m3_node: E0/F-route-methods + G/P0/H-live-deliverables
+operations_stream: monitor-Studio + transfer-J0 + reconcile-clean-boundary
+data_stream: compare-62-date-V3-exact-state-source
+methods_stream: matched-panel-method-audit + prepare-purpose-bound-state-models
+paper_stream: whole-manuscript-JFE-language-and-argument
+deck_stream: presentable-current-evidence + open-visual-case-study-backlog
+review_stream: read-only-requirements-and-literature-benchmark
+meeting_edge: Studio-J0-publish -> methods-J1-packet -> paper/deck-J2-refresh
+parent_loop: A/B -> C/K -> D1/D2/D3 -> J0 -> E0/E1/F -> J1 -> G/P0/H -> J2 -> I -> J3-or-return
+next_edge: V3-audit-boundary -> purpose-bound-J0-release -> state-methods-J1 -> deliverable-J2
 prose_node: tiered
-updated: 2026-08-13
+updated: 2026-08-14
 ---
 
 # Findings freeze

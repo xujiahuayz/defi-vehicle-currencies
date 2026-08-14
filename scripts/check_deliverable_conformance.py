@@ -172,10 +172,11 @@ def main() -> int:
                           f"quartile is {r['exemplar_p25']} and the median is "
                           f"{r['exemplar_median']}")
         print("\nEvery number must come from a real artefact and carry a trailing comment "
-              "naming it and its sample. Banned register: hold, survive, matters, rather "
-              "than, genuinely, deliberate. No em dashes, no contrast-confirmation, no "
-              "hard-wrapped prose, no process language describing the document itself. "
-              "Re-run this script until it exits zero.")
+              "naming it and its sample. Treat vocabulary and construction alarms as "
+              "diagnostics, not term-replacement instructions: reread the closest raw "
+              "published passages and revise the economic argument, transitions, sentence "
+              "functions, and paragraph rhythm. Remove hard-wrapped prose and backstage "
+              "process language. Re-run this script until it exits zero.")
     return 1
 
 
