@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Does dominance raise the hazard of losing the vehicle role, conditional on everything?
+"""Does observed cost disadvantage predict next-day vehicle-role turnover within pairs?
 
 `scripts/measure_survival_at_block.py` reports an unconditional comparison: the role turns
 over on 12.9% of pair-days when its holder is beaten on cost against 11.0% when it is the
@@ -10,8 +10,8 @@ conditions move both the dominance state and the turnover rate together, and the
 of pairs changes across six years. Any of those produces a ratio above one with no
 incumbency story behind it.
 
-So the estimand is estimated here as a conditional hazard on a discrete-time panel of
-pair-days, with the turnover event as the outcome:
+So the estimand is estimated here as a conditional change in the next-day turnover
+probability on a discrete-time panel of pair-days, with the turnover event as the outcome:
 
     y_{ab,t+1} = 1{ the asset holding the largest routing share on (a,b) changes at t+1 }
 
@@ -20,17 +20,17 @@ fixed effect, with the candidate count entered as a control because it changes t
 ways the event can occur without changing anyone's incentive. Standard errors cluster on the
 pair, since spells within a pair are the repeated observations.
 
-The complementary log-log link is the discrete-time proportional-hazard form, so its
-coefficient on the dominance indicator exponentiates to a hazard ratio directly comparable
-to the raw 1.17. A linear probability model with the same absorption is reported beside it,
-because the cloglog cannot absorb high-dimensional effects the way the linear estimator can
-and the two failing to agree is itself informative.
+The implemented estimator is a linear probability model with high-dimensional absorption.
+Its coefficient is a probability change, not a complementary-log-log coefficient, and the
+reported ratio is only that probability change divided by the undominated baseline rate.
+It must not be described as a fitted proportional-hazard ratio. A grouped-time logit or
+complementary-log-log model belongs in a separate runner with the identical risk set.
 
-What would falsify the incumbency reading. A hazard ratio at or below one after conditioning
-says cost has no grip on who intermediates, which is stronger hysteresis than the raw
-comparison suggests. A ratio far above one says the role follows cost closely and there is
-little incumbency premium to explain. The raw 1.17 sits close enough to one that the
-conditional estimate can land either side, which is why it has to be run.
+What would falsify the incumbency reading. A conditional probability change at or below zero
+says the observed cost comparison does not predict who intermediates next. A large positive
+change says turnover follows the observed comparison more closely. The raw 1.17 sits close
+enough to one that the conditional estimate can land either side, which is why it has to be
+run.
 
 Reads   output/exhibits/survival_at_block_panel.jsonl   (written by measure_survival_at_block.py)
 Writes  output/exhibits/turnover_hazard_regression.jsonl
@@ -88,14 +88,19 @@ def fit(d: pd.DataFrame, fe: str | None, controls: list[str], label: str) -> dic
         return None
     base = float(sub[sub.holder_dominated == 0].turned_over.mean())
     coef = float(row["Estimate"])
+    standard_error = float(row["Std. Error"])
     return {"spec": label, "n": int(len(sub)),
             "groups": int(sub[fe.split("+")[0].strip()].nunique()) if fe else 0,
-            "coef": coef, "se": float(row["Std. Error"]),
+            "coef": coef, "se": standard_error,
+            "confidence_interval_lower": coef - 1.96 * standard_error,
+            "confidence_interval_upper": coef + 1.96 * standard_error,
             "p": float(row["Pr(>|t|)"]),
             "baseline_rate": base,
-            # A linear-probability coefficient is a change in the daily probability, so the
-            # implied hazard ratio is that change relative to the undominated baseline.
-            "implied_ratio": (base + coef) / base if base > 0 else float("nan")}
+            # Scale the linear-probability change by the undominated baseline for a
+            # descriptive ratio. This is not a fitted proportional-hazard ratio.
+            "baseline_scaled_probability_ratio": (
+                (base + coef) / base if base > 0 else float("nan")
+            )}
 
 
 def main() -> int:
@@ -127,7 +132,7 @@ def main() -> int:
             continue
         rows.append(r)
         print(f"  {label:<44}{r['n']:>9,}{r['coef']:>10.4f}{r['se']:>9.4f}"
-              f"{r['p']:>8.3f}{r['implied_ratio']:>8.2f}")
+              f"{r['p']:>8.3f}{r['baseline_scaled_probability_ratio']:>8.2f}")
 
     if not rows:
         print("\nNothing identified. With a pair fixed effect the treatment has to vary")
@@ -140,13 +145,13 @@ def main() -> int:
         r = tight[-1]
         print(f"\nUnder the tightest absorption the dominance indicator moves the daily "
               f"turnover probability by {r['coef']:+.4f} ({r['p']:.3f}) on {r['n']:,} "
-              f"pair-days in {r['groups']:,} groups, an implied hazard ratio of "
-              f"{r['implied_ratio']:.2f} against an undominated baseline of "
+              f"pair-days in {r['groups']:,} groups, a baseline-scaled probability ratio of "
+              f"{r['baseline_scaled_probability_ratio']:.2f} against an undominated baseline of "
               f"{r['baseline_rate']:.2%}.")
         if r["p"] > 0.10:
-            print("The conditional effect is not distinguishable from zero, so cost losing")
-            print("its grip on who intermediates is what the panel supports, and the raw")
-            print("ratio above one was composition.")
+            print("The estimate is imprecise at conventional levels. It does not establish")
+            print("either a cost response or its absence; the coefficient and interval bound")
+            print("what this realised-route panel can resolve.")
         else:
             print("The conditional effect survives absorption, so turnover does respond to")
             print("cost within a pair, and the incumbency premium is the residual.")
