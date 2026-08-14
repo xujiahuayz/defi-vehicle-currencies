@@ -2,18 +2,21 @@
 """Estimate V4 intermediary-token transfer incidence on matched route units.
 
 The current route-unit builder and this receipt estimator are separate owners.
-This script first matches pure Uniswap V3 and V4 routes on ordered endpoints,
-vehicle address, UTC week, and fixed dollar-size bin.  It selects transactions
-without consulting receipt availability.  Estimation then requires a complete,
-current receipt cache and compares intermediary-token ERC-20 Transfer incidence
-within the matched route cells.
+This script first matches pure Uniswap V3 and V4 routes on ordered endpoint
+contract addresses, vehicle contract address, UTC week, and fixed dollar-size
+bin. Token symbols are presentation fields only. It selects transactions without
+consulting receipt availability. Estimation then requires a complete, current
+receipt cache and compares intermediary-token ERC-20 Transfer incidence within
+the matched route cells.
 
-The result is an architecture first stage, not a causal V4-adoption estimate.
-It establishes whether a token that appears between the route endpoints also
-emits an ERC-20 Transfer somewhere in the same transaction.  Route units do not
-contain sufficient intermediate-token quantities to identify physical movement
-in dollars or settlement intensity; those outcomes require a separate decoded
-transfer/PoolManager-delta owner.
+The primary result is an architecture first stage, not a causal V4-adoption
+estimate.  It is restricted to one-component transactions with an ERC-20
+intermediary, so a token that appears between the route endpoints can be linked
+to the receipt perimeter without another reconstructed component.  Native-token
+movement requires transaction traces and is outside this ERC-20 outcome. Route
+units do not contain sufficient intermediate-token quantities to identify
+physical movement in dollars or settlement intensity; those outcomes require a
+separate decoded transfer/PoolManager-delta owner.
 """
 
 from __future__ import annotations
@@ -21,6 +24,7 @@ from __future__ import annotations
 import argparse
 import hashlib
 import json
+import re
 from pathlib import Path
 from typing import Any
 
@@ -31,6 +35,7 @@ from scipy import stats
 from ddvc.analysis.regression import holm_adjusted_pvalues, ols_clustered
 from ddvc.paths import DATA_DIR, OUTPUT_DIR
 from ddvc.provenance import current_artifacts
+from ddvc.runtime import exclusive_job
 from ddvc.tables import write_exhibit, write_panel
 
 
@@ -39,11 +44,13 @@ RECEIPTS = DATA_DIR / "empirical" / "v4_settlement_receipts.jsonl"
 SELECTION = DATA_DIR / "empirical" / "v4_settlement_receipt_selection.parquet"
 RESULTS = OUTPUT_DIR / "exhibits" / "v4_settlement_receipt_probe_results.jsonl"
 SUPPORT = OUTPUT_DIR / "exhibits" / "v4_settlement_receipt_probe_support.jsonl"
+LOCK = DATA_DIR / "empirical" / ".v4-settlement-receipt-probe.lock"
 DEXES = ("uniswap_v3", "uniswap_v4")
 TRANSFER_TOPIC = "0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef"
+ZERO_ADDRESS = "0x0000000000000000000000000000000000000000"
 SIZE_BIN_EDGES = (0.0, 100.0, 1_000.0, 10_000.0, 100_000.0, 1_000_000.0, np.inf)
 SIZE_BIN_LABELS = ("lt_100", "100_1k", "1k_10k", "10k_100k", "100k_1m", "ge_1m")
-CELL_KEYS = ("week", "src", "sink", "vehicle_id", "size_bin")
+CELL_KEYS = ("week", "src_id", "sink_id", "vehicle_id", "size_bin")
 CODE_SOURCES = [
     "scripts/run_v4_settlement_receipt_probe.py",
     "src/ddvc/analysis/regression.py",
@@ -53,8 +60,10 @@ CODE_SOURCES = [
 
 def attach_size_bins(routes: pd.DataFrame) -> pd.DataFrame:
     required = {
-        "week", "src", "sink", "vehicle", "vehicle_id", "dex", "tx_hash",
-        "component_id", "route_usd",
+        "week", "src", "src_id", "src_settlement_kind", "sink", "sink_id",
+        "sink_settlement_kind", "vehicle", "vehicle_id",
+        "vehicle_settlement_kind", "dex", "tx_hash", "block_number",
+        "component_id", "n_components", "component_is_unique", "route_usd",
     }
     missing = sorted(required - set(routes.columns))
     if missing:
@@ -64,8 +73,52 @@ def attach_size_bins(routes: pd.DataFrame) -> pd.DataFrame:
     data["route_usd"] = pd.to_numeric(data["route_usd"], errors="raise")
     if data["route_usd"].le(0).any() or not np.isfinite(data["route_usd"]).all():
         raise ValueError("V4 settlement routes require positive finite route values")
-    data["vehicle_id"] = data["vehicle_id"].astype(str).str.lower()
+    for column in ("src_id", "sink_id", "vehicle_id"):
+        data[column] = data[column].astype(str).str.lower()
+        if not data[column].str.fullmatch(r"0x[0-9a-f]{40}").all():
+            raise ValueError(f"V4 settlement routes contain an invalid {column}")
     data["tx_hash"] = data["tx_hash"].astype(str).str.lower()
+    if not data["tx_hash"].str.fullmatch(r"0x[0-9a-f]{64}").all():
+        raise ValueError("V4 settlement routes contain an invalid transaction hash")
+    for column in ("block_number", "component_id", "n_components"):
+        values = pd.to_numeric(data[column], errors="coerce")
+        if values.isna().any() or values.mod(1).ne(0).any():
+            raise ValueError(f"V4 settlement routes contain a non-integer {column}")
+        data[column] = values.astype("int64")
+    if data["block_number"].lt(0).any() or data["component_id"].lt(0).any():
+        raise ValueError("V4 settlement routes contain an invalid block or component identity")
+    if data["n_components"].lt(1).any():
+        raise ValueError("V4 settlement routes contain an invalid component count")
+    if not data["component_is_unique"].map(
+        lambda value: isinstance(value, (bool, np.bool_))
+    ).all():
+        raise ValueError("V4 settlement routes require a Boolean component uniqueness marker")
+    if not data["component_is_unique"].eq(data["n_components"].eq(1)).all():
+        raise ValueError("V4 settlement component count disagrees with its uniqueness marker")
+    expected_kinds = {
+        "src_settlement_kind": data["src_id"].map(
+            lambda value: "native" if value == ZERO_ADDRESS else "erc20"
+        ),
+        "sink_settlement_kind": data["sink_id"].map(
+            lambda value: "native" if value == ZERO_ADDRESS else "erc20"
+        ),
+        "vehicle_settlement_kind": data["vehicle_id"].map(
+            lambda value: "native" if value == ZERO_ADDRESS else "erc20"
+        ),
+    }
+    for column, expected in expected_kinds.items():
+        if not data[column].astype(str).eq(expected).all():
+            raise ValueError(f"V4 settlement routes misclassify {column}")
+    if data.groupby("tx_hash", observed=True)["block_number"].nunique().gt(1).any():
+        raise ValueError("V4 settlement routes map one transaction to multiple blocks")
+    # Receipt logs are transaction-wide. Restricting the primary design to one
+    # reconstructed component prevents a transfer in a different component from
+    # being attributed to the selected intermediary. Native movement has no
+    # ERC-20 Transfer event and therefore belongs to a trace-based outcome.
+    data = data[
+        data["component_is_unique"]
+        & data["vehicle_settlement_kind"].eq("erc20")
+    ].copy()
     data["size_bin"] = pd.cut(
         data["route_usd"],
         bins=SIZE_BIN_EDGES,
@@ -75,7 +128,10 @@ def attach_size_bins(routes: pd.DataFrame) -> pd.DataFrame:
     ).astype(str)
     if data["size_bin"].isna().any():
         raise ValueError("V4 settlement routes contain unassigned size bins")
-    duplicate_keys = ["dex", "tx_hash", "component_id", "src", "sink", "vehicle_id"]
+    duplicate_keys = [
+        "dex", "tx_hash", "block_number", "component_id", "src_id", "sink_id",
+        "vehicle_id",
+    ]
     if data.duplicated(duplicate_keys).any():
         raise ValueError("V4 settlement routes repeat an architecture-route unit")
     return data
@@ -84,7 +140,7 @@ def attach_size_bins(routes: pd.DataFrame) -> pd.DataFrame:
 def _selection_score(row: pd.Series, seed: int) -> str:
     payload = "|".join(
         str(row[column])
-        for column in (*CELL_KEYS, "dex", "tx_hash", "component_id")
+        for column in (*CELL_KEYS, "dex", "tx_hash", "block_number", "component_id")
     )
     return hashlib.sha256(f"{seed}|{payload}".encode()).hexdigest()
 
@@ -135,8 +191,9 @@ def select_matched_routes(
         # prevents this, but this assertion keeps the balance explicit.
         raise RuntimeError("V4 receipt selection is not balanced within route cells")
     columns = [
-        *CELL_KEYS, "cell_id", "dex", "vehicle", "tx_hash", "component_id",
-        "route_usd", "selection_score",
+        *CELL_KEYS, "cell_id", "dex", "src", "sink", "vehicle", "tx_hash",
+        "block_number", "component_id", "n_components", "component_is_unique",
+        "vehicle_settlement_kind", "route_usd", "selection_score",
     ]
     return selected[columns].sort_values(["cell_id", "dex", "selection_score"], kind="stable").reset_index(drop=True)
 
@@ -154,15 +211,25 @@ def load_receipt_cache(path: Path) -> dict[str, dict[str, Any]]:
             # canonical direct row; wrapper support exists only to make an
             # explicit old-cache audit possible.
             receipt = record.get("receipt") if "receipt" in record else record
-            if not tx_hash.startswith("0x") or len(tx_hash) != 66:
+            if re.fullmatch(r"0x[0-9a-f]{64}", tx_hash) is None:
                 raise ValueError(f"V4 receipt cache has an invalid transaction at line {line_number}")
             if tx_hash in receipts:
                 raise ValueError(f"V4 receipt cache repeats transaction {tx_hash}")
             if not isinstance(receipt, dict) or not isinstance(receipt.get("logs"), list):
                 raise ValueError(f"V4 receipt cache lacks a decoded receipt at line {line_number}")
-            receipt_hash = str(
-                receipt.get("transactionHash") or receipt.get("tx_hash") or tx_hash
-            ).lower()
+            if "transactionHash" in receipt:
+                receipt_hash_value = receipt["transactionHash"]
+            elif "tx_hash" in receipt:
+                receipt_hash_value = receipt["tx_hash"]
+            else:
+                raise ValueError(
+                    f"V4 receipt lacks its own transaction identity at line {line_number}"
+                )
+            receipt_hash = str(receipt_hash_value).lower()
+            if re.fullmatch(r"0x[0-9a-f]{64}", receipt_hash) is None:
+                raise ValueError(
+                    f"V4 receipt has an invalid transaction identity at line {line_number}"
+                )
             if receipt_hash != tx_hash:
                 raise ValueError(f"V4 receipt transaction hash disagrees at line {line_number}")
             receipts[tx_hash] = receipt
@@ -181,13 +248,78 @@ def matching_transfer_count(receipt: dict[str, Any], vehicle_id: str) -> int:
     )
 
 
+def _exact_block_number(value: object, *, source: str) -> int:
+    """Parse a nonnegative integer block identity without lossy coercion."""
+
+    if isinstance(value, (bool, np.bool_)):
+        raise ValueError(f"{source} lacks an exact block identity")
+    if isinstance(value, str):
+        if re.fullmatch(r"0[xX][0-9a-fA-F]+", value):
+            block_number = int(value, 16)
+        elif re.fullmatch(r"[0-9]+", value):
+            block_number = int(value, 10)
+        else:
+            raise ValueError(f"{source} lacks an exact block identity")
+    elif isinstance(value, (int, np.integer)):
+        block_number = int(value)
+    elif isinstance(value, (float, np.floating)):
+        numeric = float(value)
+        if not np.isfinite(numeric) or not numeric.is_integer():
+            raise ValueError(f"{source} lacks an exact block identity")
+        block_number = int(numeric)
+    else:
+        raise ValueError(f"{source} lacks an exact block identity")
+    if block_number < 0:
+        raise ValueError(f"{source} has an invalid block identity")
+    return block_number
+
+
+def _receipt_block_number(receipt: dict[str, Any]) -> int:
+    value = receipt.get("block_number", receipt.get("blockNumber"))
+    return _exact_block_number(value, source="V4 receipt")
+
+
 def attach_receipts(selection: pd.DataFrame, receipts: dict[str, dict[str, Any]]) -> pd.DataFrame:
+    required_columns = {"tx_hash", "block_number", "vehicle_id"}
+    missing_columns = sorted(required_columns - set(selection.columns))
+    if missing_columns:
+        raise ValueError(
+            "V4 receipt selection lacks exact identity columns: "
+            + ", ".join(missing_columns)
+        )
+    selected_blocks = selection[["tx_hash", "block_number"]].copy()
+    selected_blocks["tx_hash"] = selected_blocks["tx_hash"].astype(str).str.lower()
+    if not selected_blocks["tx_hash"].str.fullmatch(r"0x[0-9a-f]{64}").all():
+        raise ValueError("V4 receipt selection contains an invalid transaction identity")
+    selected_blocks["block_number"] = selected_blocks["block_number"].map(
+        lambda value: _exact_block_number(value, source="V4 receipt selection")
+    )
+    if (
+        selected_blocks.groupby("tx_hash", observed=True)["block_number"]
+        .nunique()
+        .gt(1)
+        .any()
+    ):
+        raise ValueError("V4 receipt selection maps one transaction to multiple blocks")
     required = set(selection["tx_hash"].astype(str).str.lower())
     missing = sorted(required - set(receipts))
     if missing:
         raise ValueError(
             f"V4 receipt cache misses {len(missing):,} of {len(required):,} selected transactions; "
             "selection is fixed before receipt acquisition"
+        )
+    expected_blocks = selected_blocks.drop_duplicates("tx_hash").set_index("tx_hash")[
+        "block_number"
+    ]
+    mismatched = [
+        tx_hash
+        for tx_hash, expected_block in expected_blocks.items()
+        if _receipt_block_number(receipts[tx_hash]) != int(expected_block)
+    ]
+    if mismatched:
+        raise ValueError(
+            f"V4 receipt cache disagrees with selected block identity for "
+            f"{len(mismatched):,} transactions"
         )
     detail = selection.copy()
     detail["matching_transfer_logs"] = [
@@ -199,6 +331,26 @@ def attach_receipts(selection: pd.DataFrame, receipts: dict[str, dict[str, Any]]
         len(receipts[str(tx_hash).lower()]["logs"]) for tx_hash in detail["tx_hash"]
     ]
     return detail
+
+
+def _load_exact_leased_selection(
+    path: Path, expected: pd.DataFrame
+) -> pd.DataFrame:
+    """Read the leased selection and reject replacement after publication."""
+
+    observed = pd.read_parquet(path)
+    try:
+        pd.testing.assert_frame_equal(
+            expected.reset_index(drop=True),
+            observed.reset_index(drop=True),
+            check_dtype=False,
+            check_categorical=False,
+        )
+    except AssertionError as error:
+        raise RuntimeError(
+            "V4 receipt selection changed between publication and estimation"
+        ) from error
+    return observed
 
 
 def _paired_cells(detail: pd.DataFrame) -> pd.DataFrame:
@@ -224,7 +376,9 @@ def _paired_cells(detail: pd.DataFrame) -> pd.DataFrame:
         column if isinstance(column, str) else "_".join(part for part in column if part)
         for column in wide.columns
     ]
-    wide["ordered_pair"] = wide["src"].astype(str) + "|" + wide["sink"].astype(str)
+    wide["ordered_pair"] = (
+        wide["src_id"].astype(str) + "|" + wide["sink_id"].astype(str)
+    )
     wide["transfer_difference"] = (
         wide["transfer_share_uniswap_v4"] - wide["transfer_share_uniswap_v3"]
     )
@@ -311,11 +465,13 @@ def support_record(
                 "maximum_cells": max_cells,
                 "selected_rows_per_architecture_cell": per_architecture,
                 "seed": seed,
-                "matching_dimensions": "ordered_endpoints|vehicle_address|calendar_week|fixed_route_size_bin|direction",
+                "matching_dimensions": "ordered_endpoint_contracts|vehicle_contract|calendar_week|fixed_route_size_bin|direction",
                 "size_bins_usd": "[0,100)|[100,1000)|[1000,10000)|[10000,100000)|[100000,1000000)|[1000000,inf)",
                 "selection_uses_receipt_availability": False,
+                "transaction_component_scope": "single_reconstructed_component",
+                "intermediary_settlement_scope": "erc20_only",
                 "identified_outcome": "same_transaction_intermediary_token_erc20_transfer_incidence",
-                "unidentified_outcomes": "physical_transfer_value_usd|settlement_intensity|poolmanager_net_delta|causal_route_adoption",
+                "unidentified_outcomes": "native_intermediary_movement_requires_trace|physical_transfer_value_usd|settlement_intensity|poolmanager_net_delta|causal_route_adoption",
             }
         ]
     )
@@ -361,6 +517,7 @@ def run(
         [routes_path, selection_output, receipt_path],
         consumer="V4 settlement receipt estimator",
     ):
+        selection = _load_exact_leased_selection(selection_output, selection)
         receipts = load_receipt_cache(receipt_path)
         detail = attach_receipts(selection, receipts)
         results, paired = estimate_receipt_probe(detail)
@@ -407,18 +564,19 @@ def main() -> int:
     parser.add_argument("--seed", type=int, default=20260814)
     parser.add_argument("--select-only", action="store_true")
     args = parser.parse_args()
-    results = run(
-        routes_path=args.routes,
-        receipt_path=args.receipts,
-        selection_output=args.selection_output,
-        results_output=args.results_output,
-        support_output=args.support_output,
-        min_routes=args.min_routes,
-        max_cells=args.max_cells,
-        per_architecture=args.per_architecture,
-        seed=args.seed,
-        select_only=args.select_only,
-    )
+    with exclusive_job(LOCK, job="V4 settlement receipt probe"):
+        results = run(
+            routes_path=args.routes,
+            receipt_path=args.receipts,
+            selection_output=args.selection_output,
+            results_output=args.results_output,
+            support_output=args.support_output,
+            min_routes=args.min_routes,
+            max_cells=args.max_cells,
+            per_architecture=args.per_architecture,
+            seed=args.seed,
+            select_only=args.select_only,
+        )
     if results is not None:
         for row in results.itertuples(index=False):
             print(

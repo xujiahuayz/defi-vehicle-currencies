@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import pandas as pd
+import pytest
 
 from scripts.run_architecture_state_transitions import (
     build_full_risk_panel,
@@ -11,7 +12,56 @@ from scripts.run_architecture_state_transitions import (
     summarize_transition_support,
     transition_events,
 )
-from scripts.run_v4_settlement_identification import _exclusive_architecture
+from scripts.run_v4_settlement_identification import (
+    _exclusive_architecture,
+    _read_unified_route_partition,
+    _route_units_for_day,
+)
+
+
+TOKEN_A = "0x" + "11" * 20
+TOKEN_B = "0x" + "22" * 20
+NATIVE = "0x" + "00" * 20
+
+
+def _unified_component(*, component_id: int = 0, n_components: int = 1) -> pd.DataFrame:
+    tx_hash = "0x" + "ab" * 32
+    return pd.DataFrame(
+        [
+            {
+                "tx_hash": tx_hash,
+                "block_number": 21_000_000,
+                "log_index": 2 * component_id,
+                "source": "uniswap_v4",
+                "token_in": TOKEN_A,
+                "token_out": NATIVE,
+                "token_in_sym": "AAA",
+                "token_out_sym": "ETH",
+                "amount_usd": 100.0,
+                "component_id": component_id,
+                "n_components": n_components,
+                "route_class": "coherent",
+                "tin_role": "source",
+                "tout_role": "intermediate",
+            },
+            {
+                "tx_hash": tx_hash,
+                "block_number": 21_000_000,
+                "log_index": 2 * component_id + 1,
+                "source": "uniswap_v4",
+                "token_in": NATIVE,
+                "token_out": TOKEN_B,
+                "token_in_sym": "ETH",
+                "token_out_sym": "BBB",
+                "amount_usd": 100.0,
+                "component_id": component_id,
+                "n_components": n_components,
+                "route_class": "coherent",
+                "tin_role": "intermediate",
+                "tout_role": "sink",
+            },
+        ]
+    )
 
 
 def _routes() -> pd.DataFrame:
@@ -59,6 +109,43 @@ def test_mixed_route_is_not_relabelled_as_a_pure_architecture() -> None:
     pure = pd.DataFrame({"source": ["uniswap_v4", "uniswap_v4"]})
     assert _exclusive_architecture(mixed) is None
     assert _exclusive_architecture(pure) == "uniswap_v4"
+
+
+def test_route_unit_retains_exact_endpoint_block_component_and_native_identity() -> None:
+    units = _route_units_for_day(_unified_component(), "2025-01-31")
+    assert len(units) == 1
+    row = units.iloc[0]
+    assert row["src_id"] == TOKEN_A
+    assert row["sink_id"] == TOKEN_B
+    assert row["block_number"] == 21_000_000
+    assert row["n_components"] == 1
+    assert bool(row["component_is_unique"])
+    assert row["vehicle"] == "ETH/WETH"
+    assert row["vehicle_id"] == NATIVE
+    assert row["vehicle_settlement_kind"] == "native"
+
+
+def test_route_unit_marks_each_component_of_multi_component_transaction_nonunique() -> None:
+    frame = pd.concat(
+        [
+            _unified_component(component_id=0, n_components=2),
+            _unified_component(component_id=1, n_components=2),
+        ],
+        ignore_index=True,
+    )
+    units = _route_units_for_day(frame, "2025-01-31")
+    assert len(units) == 2
+    assert set(units["component_id"]) == {0, 1}
+    assert not units["component_is_unique"].any()
+
+
+def test_route_unit_refuses_to_infer_block_identity_from_timestamp(tmp_path) -> None:
+    frame = _unified_component().drop(columns="block_number")
+    frame["timestamp_utc"] = pd.Timestamp("2025-01-31T00:00:00Z")
+    path = tmp_path / "20250131.parquet"
+    frame.to_parquet(path, index=False)
+    with pytest.raises(ValueError, match="rather than inferring block identity"):
+        _read_unified_route_partition(path)
 
 
 def test_sustained_entry_and_exit_are_both_detected() -> None:

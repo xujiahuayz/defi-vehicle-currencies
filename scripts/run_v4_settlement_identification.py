@@ -13,6 +13,7 @@ from pathlib import Path
 from typing import Any
 
 import pandas as pd
+import pyarrow.parquet as pq
 
 ROOT = Path(__file__).resolve().parents[1]
 
@@ -23,9 +24,13 @@ from ddvc.provenance import current_artifacts, stamp  # noqa: E402
 
 DEXES = ("uniswap_v3", "uniswap_v4")
 ZERO_ADDR = "0x0000000000000000000000000000000000000000"
-WETH_ADDR = "0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2"
 PRIMARY_VEHICLES = {"WETH", "ETH", "USDC", "USDT", "DAI", "WBTC", "XAUt", "XAUT"}
 OUT_DATA = DATA_DIR / "empirical"
+UNIFIED_ROUTE_COLUMNS = [
+    "tx_hash", "block_number", "log_index", "source", "token_in", "token_out",
+    "token_in_sym", "token_out_sym", "amount_usd", "component_id",
+    "n_components", "route_class", "tin_role", "tout_role",
+]
 
 
 def _stamp_to_date(stamp: str) -> str:
@@ -41,6 +46,69 @@ def _vehicle_family(sym: object) -> str:
     return s
 
 
+PRIMARY_VEHICLE_FAMILIES = {_vehicle_family(value) for value in PRIMARY_VEHICLES}
+
+
+def _read_unified_route_partition(path: Path) -> pd.DataFrame:
+    """Read the exact route identity contract or report the upstream blocker."""
+
+    available = set(pq.read_schema(path).names)
+    missing = sorted(set(UNIFIED_ROUTE_COLUMNS) - available)
+    if missing:
+        detail = ", ".join(missing)
+        raise ValueError(
+            f"canonical unified route partition {path} lacks required identity columns: "
+            f"{detail}; extend the canonical unified owner rather than inferring block "
+            "identity from timestamp_utc"
+        )
+    return pd.read_parquet(path, columns=UNIFIED_ROUTE_COLUMNS)
+
+
+def _normalize_identity_columns(frame: pd.DataFrame) -> pd.DataFrame:
+    """Validate immutable transaction, block, component and token identities."""
+
+    missing = sorted(set(UNIFIED_ROUTE_COLUMNS) - set(frame.columns))
+    if missing:
+        raise ValueError(
+            "V4 route-unit source lacks required identity columns: " + ", ".join(missing)
+        )
+    data = frame.copy()
+    data["tx_hash"] = data["tx_hash"].astype(str).str.lower()
+    if not data["tx_hash"].str.fullmatch(r"0x[0-9a-f]{64}").all():
+        raise ValueError("V4 route-unit source contains an invalid transaction hash")
+    for column in ("token_in", "token_out"):
+        data[column] = data[column].astype(str).str.lower()
+        if not data[column].str.fullmatch(r"0x[0-9a-f]{40}").all():
+            raise ValueError(f"V4 route-unit source contains an invalid {column} identity")
+    for column in ("block_number", "log_index", "component_id", "n_components"):
+        values = pd.to_numeric(data[column], errors="coerce")
+        if values.isna().any() or values.mod(1).ne(0).any():
+            raise ValueError(f"V4 route-unit source contains a non-integer {column}")
+        data[column] = values.astype("int64")
+    if data["block_number"].lt(0).any() or data["log_index"].lt(0).any():
+        raise ValueError("V4 route-unit source contains a negative causal-order identity")
+    if data["component_id"].lt(0).any() or data["n_components"].lt(1).any():
+        raise ValueError("V4 route-unit source contains an invalid component identity")
+    if data.duplicated(["tx_hash", "log_index"]).any():
+        raise ValueError("V4 route-unit source repeats a transaction-log identity")
+
+    transaction_identity = data.groupby("tx_hash", sort=False).agg(
+        block_count=("block_number", "nunique"),
+        declared_component_counts=("n_components", "nunique"),
+        declared_components=("n_components", "first"),
+        observed_components=("component_id", "nunique"),
+    )
+    if transaction_identity["block_count"].ne(1).any():
+        raise ValueError("V4 route-unit source maps one transaction to multiple blocks")
+    if transaction_identity["declared_component_counts"].ne(1).any():
+        raise ValueError("V4 route-unit source disagrees on a transaction's component count")
+    if transaction_identity["declared_components"].ne(
+        transaction_identity["observed_components"]
+    ).any():
+        raise ValueError("V4 route-unit source omits or invents a transaction component")
+    return data
+
+
 def _exclusive_architecture(group: pd.DataFrame) -> str | None:
     """Return one admitted architecture only when the complete route is pure."""
     sources = set(group["source"].astype(str))
@@ -50,78 +118,126 @@ def _exclusive_architecture(group: pd.DataFrame) -> str | None:
     return source if source in DEXES else None
 
 
-def build_route_units(start: str, end: str) -> pd.DataFrame:
+def _route_units_for_day(frame: pd.DataFrame, day: str) -> pd.DataFrame:
+    """Construct exact-identity route units for one canonical daily partition."""
+
+    data = _normalize_identity_columns(frame)
+    data = data[data["route_class"].eq("coherent")]
     rows: list[dict[str, Any]] = []
+    for (tx, component), group in data.groupby(["tx_hash", "component_id"], sort=False):
+        dex = _exclusive_architecture(group)
+        if len(group) < 2 or dex is None:
+            continue
+        blocks = group["block_number"].unique()
+        component_counts = group["n_components"].unique()
+        if len(blocks) != 1 or len(component_counts) != 1:
+            raise ValueError("V4 route component has inconsistent transaction identity")
+        token_roles: dict[str, str] = {}
+        token_symbols: dict[str, str] = {}
+        for row in group.sort_values("log_index", kind="stable").itertuples(index=False):
+            for address, symbol, route_role in (
+                (row.token_in, row.token_in_sym, row.tin_role),
+                (row.token_out, row.token_out_sym, row.tout_role),
+            ):
+                token_id = str(address).lower()
+                token_symbols.setdefault(token_id, str(symbol))
+                if token_roles.get(token_id) == "intermediate":
+                    continue
+                if route_role == "intermediate" or token_id not in token_roles:
+                    token_roles[token_id] = str(route_role)
+        sources = [
+            (token_id, token_symbols[token_id])
+            for token_id, route_role in token_roles.items()
+            if route_role == "source"
+        ]
+        sinks = [
+            (token_id, token_symbols[token_id])
+            for token_id, route_role in token_roles.items()
+            if route_role == "sink"
+        ]
+        intermediaries = [
+            (token_id, token_symbols[token_id])
+            for token_id, route_role in token_roles.items()
+            if route_role == "intermediate"
+        ]
+        if not sources or not sinks or not intermediaries:
+            continue
+        route_usd = float(pd.to_numeric(group["amount_usd"], errors="coerce").mean())
+        if not math.isfinite(route_usd) or route_usd <= 0:
+            continue
+        n_components = int(component_counts[0])
+        for src_id, src_symbol in sources:
+            for sink_id, sink_symbol in sinks:
+                if src_id == sink_id:
+                    continue
+                for vehicle_id, vehicle_symbol in intermediaries:
+                    family = _vehicle_family(vehicle_symbol)
+                    if family not in PRIMARY_VEHICLE_FAMILIES:
+                        continue
+                    rows.append(
+                        {
+                            "date": day,
+                            "week": pd.Timestamp(day)
+                            - pd.Timedelta(days=pd.Timestamp(day).weekday()),
+                            "dex": dex,
+                            "tx_hash": str(tx).lower(),
+                            "block_number": int(blocks[0]),
+                            "component_id": int(component),
+                            "n_components": n_components,
+                            "component_is_unique": n_components == 1,
+                            "src": src_symbol,
+                            "src_id": src_id,
+                            "src_settlement_kind": (
+                                "native" if src_id == ZERO_ADDR else "erc20"
+                            ),
+                            "sink": sink_symbol,
+                            "sink_id": sink_id,
+                            "sink_settlement_kind": (
+                                "native" if sink_id == ZERO_ADDR else "erc20"
+                            ),
+                            "vehicle": family,
+                            "vehicle_id": vehicle_id,
+                            "vehicle_settlement_kind": (
+                                "native" if vehicle_id == ZERO_ADDR else "erc20"
+                            ),
+                            "route_usd": route_usd,
+                        }
+                    )
+    columns = [
+        "date", "week", "dex", "tx_hash", "block_number", "component_id",
+        "n_components", "component_is_unique", "src", "src_id",
+        "src_settlement_kind", "sink", "sink_id", "sink_settlement_kind",
+        "vehicle", "vehicle_id", "vehicle_settlement_kind", "route_usd",
+    ]
+    return pd.DataFrame(rows, columns=columns)
+
+
+def build_route_units(start: str, end: str) -> pd.DataFrame:
+    parts: list[pd.DataFrame] = []
     files = sorted((DATA_DIR / "unified").glob("[0-9]" * 8 + ".parquet"))
     s = start.replace("-", "")
     e = end.replace("-", "")
     files = [p for p in files if s <= p.stem <= e]
-    cols = [
-        "tx_hash", "log_index", "source", "token_in", "token_out",
-        "token_in_sym", "token_out_sym", "amount_usd", "component_id",
-        "route_class", "tin_role", "tout_role",
-    ]
     for i, path in enumerate(files, 1):
         day = _stamp_to_date(path.stem)
-        df = pd.read_parquet(path, columns=cols)
+        df = _read_unified_route_partition(path)
         # Keep the complete reconstructed component until architecture purity is
         # known. Filtering to V3/V4 first can turn one mixed route into a false
         # single-architecture route.
-        df = df[df["route_class"].eq("coherent")]
-        if df.empty:
-            continue
-        for (tx, component), g in df.groupby(["tx_hash", "component_id"], sort=False):
-            dex = _exclusive_architecture(g)
-            if len(g) < 2 or dex is None:
-                continue
-            role: dict[tuple[str, str], str] = {}
-            for r in g.itertuples(index=False):
-                for addr, sym, rl in (
-                    (r.token_in, r.token_in_sym, r.tin_role),
-                    (r.token_out, r.token_out_sym, r.tout_role),
-                ):
-                    key = (str(addr).lower(), str(sym))
-                    if role.get(key) == "intermediate":
-                        continue
-                    if rl == "intermediate" or key not in role:
-                        role[key] = str(rl)
-            sources = [k for k, rl in role.items() if rl == "source"]
-            sinks = [k for k, rl in role.items() if rl == "sink"]
-            inter = [k for k, rl in role.items() if rl == "intermediate"]
-            if not sources or not sinks or not inter:
-                continue
-            vol = float(pd.to_numeric(g["amount_usd"], errors="coerce").mean())
-            if not math.isfinite(vol) or vol <= 0:
-                continue
-            for src_addr, src_sym in sources:
-                for sink_addr, sink_sym in sinks:
-                    if src_addr == sink_addr:
-                        continue
-                    for veh_addr, veh_sym in inter:
-                        family = _vehicle_family(veh_sym)
-                        if family not in {_vehicle_family(x) for x in PRIMARY_VEHICLES}:
-                            continue
-                        vehicle_id = WETH_ADDR if veh_addr == ZERO_ADDR and family == "ETH/WETH" else veh_addr
-                        if vehicle_id == ZERO_ADDR:
-                            continue
-                        rows.append({
-                            "date": day,
-                            "week": pd.Timestamp(day) - pd.Timedelta(days=pd.Timestamp(day).weekday()),
-                            "dex": dex,
-                            "tx_hash": str(tx).lower(),
-                            "component_id": int(component),
-                            "src": src_sym,
-                            "sink": sink_sym,
-                            "vehicle": family,
-                            "vehicle_id": vehicle_id,
-                            "route_usd": vol,
-                        })
+        part = _route_units_for_day(df, day)
+        if not part.empty:
+            parts.append(part)
         if i % 50 == 0 or i == len(files):
             print(f"  v4 route units [{i}/{len(files)}] {day}", flush=True)
-    out = pd.DataFrame(rows)
+    out = pd.concat(parts, ignore_index=True) if parts else pd.DataFrame()
     if out.empty:
         return out
-    out = out.drop_duplicates(["dex", "tx_hash", "component_id", "src", "sink", "vehicle", "vehicle_id"])
+    out = out.drop_duplicates(
+        [
+            "dex", "tx_hash", "block_number", "component_id", "src_id", "sink_id",
+            "vehicle_id",
+        ]
+    )
     out["week"] = pd.to_datetime(out["week"])
     route_path = OUT_DATA / "v4_settlement_route_units.parquet"
     _write(out, route_path)
@@ -130,7 +246,10 @@ def build_route_units(start: str, end: str) -> pd.DataFrame:
         code_sources=["scripts/run_v4_settlement_identification.py"],
         inputs=[DATA_DIR / "unified"],
         rows=len(out),
-        notes="exclusive V3/V4 coherent route units; mixed-source components excluded",
+        notes=(
+            "exclusive V3/V4 coherent route units with exact block, endpoint, component "
+            "and native-token identities; mixed-source components excluded"
+        ),
     )
     return out
 
@@ -147,7 +266,15 @@ def run(args: argparse.Namespace) -> None:
     route_path = OUT_DATA / "v4_settlement_route_units.parquet"
     if route_path.exists() and not args.force:
         with current_artifacts([route_path], consumer="V3/V4 architecture-state analysis"):
-            pd.read_parquet(route_path, columns=["week", "src", "sink", "vehicle", "dex", "route_usd"])
+            pd.read_parquet(
+                route_path,
+                columns=[
+                    "week", "src", "src_id", "sink", "sink_id", "vehicle",
+                    "vehicle_id", "vehicle_settlement_kind", "dex", "tx_hash",
+                    "block_number", "component_id", "n_components",
+                    "component_is_unique", "route_usd",
+                ],
+            )
     else:
         build_route_units(args.start, args.end)
     print(f"current exclusive-architecture route units: {route_path}")
