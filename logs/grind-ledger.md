@@ -910,3 +910,70 @@ findings status).
 - After V2 corrections are current, rerun the full market-state preflight to
   expose and then address the five legacy V3 correction days. No market-state or
   route-cost shard was published in this iteration.
+
+## 2026-08-14 — Purpose-bound full-calendar V2 corrections current
+
+**Targeted check:** the absent release-grade `main_v1` route-cost panel through
+its first full-calendar market-state prerequisite: exact token scale and current
+event order for the 35 flat legacy V2 correction generations.
+
+**REGRESSION-CHECK:** lane `D2-purpose-bound-exact-state`, graph edge
+`D2-release -> D3-construction-audit`, and estimand best direct versus best
+two-hop route for identical endpoints, UTC hour and USD 1,000, 10,000 and
+100,000 notionals under `main_v1`. The base evidence remains V2 event release
+`09335f9551339e45b19734f9513511beca4a11bcc82b47adfa3947509a17b5e0`;
+the correction most at risk was treating audit-calendar or provider-reported
+decimals as exact authority outside their certified perimeter. No provider
+partition or certified 77-date release byte was fetched or rewritten.
+
+**Scientific consequence and concentration.** The prior bound put 199
+unaudited endpoint tokens in 382 of 6,800 selected pair-days and $280.831
+million, or 0.5794%, of realised bridge volume, so the gap could change route
+support and sample composition. The executable full-calendar union indeed
+requires 199 exact endpoint proofs; 197 enter the active admitted V2 quote-pool
+decoder, covering 137,535 formerly blocked provider event rows in 691 pools and
+2,948 pool-days. The other two endpoint proofs do not justify admitting their
+unrelated counterparties. Day-specific admission excludes 154,994 unrelated
+pool-days and 3,167,393 provider rows, plus 12 rows already covered by the
+certified bounded exclusion.
+
+**Work completed.** Extended the existing market-state prerequisite owner to
+reuse the canonical top-200 `main_v1` pair selector, separate the full-calendar
+endpoint-anchor perimeter from day-specific active pool admission, select exact
+PairCreated anchors, retain bounded RPC evidence, stamp a separate
+purpose-bound registry, and publish through the existing marker-last correction
+writer. All 35 generations are current. They reconcile 1,493,953 provider rows
+to 1,493,978 exact events with 1,115 explicit corrections, 34 supplements and
+nine receipt-proved exclusions; duplicate provider rows and remaining missing
+token, pool and event rows are all zero. The full 11,009-target market-state
+preflight now advances to `uniswap_v3/20230221` and identifies five flat V3
+generations: 2023-02-21, 2024-12-06, 2024-12-20, 2025-01-13 and 2025-03-10.
+
+**DECISION:** `promote` the purpose-bound V2 correction family as the current
+full-calendar input; `park` market-state materialisation at the newly exposed V3
+generation boundary. The broader 12,654-token provider perimeter remains an
+explicit nonconsumer, not a data-acquisition objective.
+
+**Validation.** Focused market-state, V2 evidence, route-cost, event-order,
+token-decimals and findings-freeze suites passed 183 tests plus 11 subtests.
+The live resolver completed all 199 anchors, every refreshed generation passed
+its exact reconciliation, and the final findings-freeze audit completed RED
+with five blockers.
+
+**Commits:** `af951e2` (purpose-bound evidence and correction owner), `e7f6525`
+(full-calendar endpoint perimeter), `bcfa73b` (findings boundary), and `08442ee`
+(registry provenance).
+
+**Blocking count:** 5.
+
+**For the next iteration:**
+- Resume at the five existing flat V3 correction generations, beginning
+  `uniswap_v3/20230221`. Reopen their current raw/provider/exact inputs and
+  bound identity, state-support and route-cost materiality before regeneration;
+  do not fetch a new provider partition or assume the V2 purpose-bound decimals
+  registry is a V3 state certificate.
+- Amend the existing event-order/correction owner rather than adding another
+  script. After all five V3 generations are current, rerun the full market-state
+  preflight before any daily materialisation.
+- No market-state ledger or `main_v1` route-cost shard was published in this
+  iteration; the freeze audit's five blockers therefore remain honest.
