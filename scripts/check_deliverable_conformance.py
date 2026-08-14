@@ -118,6 +118,12 @@ def main() -> int:
     for label, argv, meaning, blocking in STAGES:
         r = subprocess.run(argv, cwd=ROOT, capture_output=True, text=True)
         ok = r.returncode == 0
+        # The shape runner deliberately exits zero after producing diagnostics: its
+        # quartiles are editorial alarms, not authoring targets.  Surface a REVIEW as a
+        # warning here so the whole-paper summary cannot call an unusually mechanical
+        # sentence or paragraph distribution green.
+        if label == "prose shape against the venue's own distributions" and "REVIEW" in r.stdout:
+            ok = False
         status = "ok  " if ok else ("FAIL" if blocking else "WARN")
         print(f"  {status}  {label}")
         if not ok:
