@@ -29,6 +29,8 @@ Logical workstreams may share a host, and not every workstream needs a live agen
 
 The priority order for a newly free lane is: (1) a scientific probe, rival test or methodology sweep that can change the paper's answer; (2) a paper or deck change consuming an existing finding; (3) repository or workflow maintenance required by an active package. A new interjection reroutes only the affected package, while compatible work continues. Two writers never share a mutable file or generated artifact. Heavy scans remain limited by the host's measured CPU, memory and I/O preflight; reasoning, writing and small-panel estimation may continue while one heavy Studio build runs. A departure from this allocation is recorded before execution with the reason, displaced package and condition for restoring the default. This makes serial execution a justified exception rather than the silent fallback.
 
+**Long-job progress is measured, not inferred from CPU use.** A data or estimation task expected to run longer than ten minutes publishes its completed and total work units, recent throughput, estimated completion time and latest restartable boundary in the live heartbeat. Two successive heartbeats with unchanged work units trigger a bounded diagnosis before the task consumes another interval. High CPU, an alive process and a growing elapsed time are resource observations, not evidence that the scientific object is advancing. A diagnosed task continues only when its counter moves or the owner can name the finite uninstrumented phase and its stop rule.
+
 | Node | Work inside the node | Edge evidence |
 |---|---|---|
 | A | Recover the target venue and talk conventions needed for the final deliverable. | Retained raw source and a named design, rhetoric or visual use. |
