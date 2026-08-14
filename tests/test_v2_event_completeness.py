@@ -94,6 +94,7 @@ from ddvc.v2_event_completeness import (
     validate_factory_state_proof,
     validate_v2_event_source_certificate,
     validate_v2_event_source_evidence_bundle,
+    admitted_reconciled_v2_rows,
     v2_exact_log_chunk_complete,
     v2_exact_log_chunk_paths,
     v2_exact_log_ranges,
@@ -1726,6 +1727,39 @@ def test_graph_event_reader_filters_excluded_pool_before_decimals_decode(tmp_pat
     ) == []
 
 
+def test_reconciled_event_reader_consumes_bounded_excluded_pool(tmp_path) -> None:
+    venue = "uniswap_v2"
+    day = "20250115"
+    directory = tmp_path / venue
+    directory.mkdir()
+    write_jsonl_gz(
+        directory / f"{venue}_mints_{day}.jsonl.gz",
+        [graph_event("mint")],
+    )
+
+    class Reconciliation:
+        consumed = 0
+
+        def reconciled_rows(self, _venue, _stream, rows):
+            for row in rows:
+                self.consumed += 1
+                yield row
+
+    reconciliation = Reconciliation()
+    admitted = {"0x" + "f" * 40}
+    assert list(
+        admitted_reconciled_v2_rows(
+            reconciliation,
+            tmp_path,
+            venue,
+            "mints",
+            day,
+            admitted,
+        )
+    ) == []
+    assert reconciliation.consumed == 1
+
+
 def test_graph_only_identity_remains_explicit_without_token_decimals(tmp_path) -> None:
     venue = "uniswap_v2"
     day = "20250115"
@@ -1889,6 +1923,39 @@ def test_exact_rpc_chunk_remains_reusable_when_the_sample_upper_block_advances(
         frozen_upper=current,
         root=tmp_path,
     ) == []
+
+
+def test_exact_rpc_chunk_resolves_old_anchor_from_separate_evidence_root(
+    tmp_path,
+) -> None:
+    exact_root = tmp_path / "exact"
+    evidence_root = tmp_path / "factory"
+    anchored = frozen_upper(149)
+    current = frozen_upper(199)
+
+    def rpc_response(payload, **_kwargs):
+        return anchored_rpc_batch(payload, [], anchored)
+
+    fetch_v2_exact_log_chunk(
+        100,
+        149,
+        frozen_upper=anchored,
+        root=exact_root,
+        rpc_request=rpc_response,
+    )
+    old_anchor_path = frozen_upper_block_path(149, root=evidence_root)
+    old_anchor_path.parent.mkdir(parents=True, exist_ok=True)
+    old_anchor_path.write_text(json.dumps(anchored), encoding="utf-8")
+
+    records, inputs = read_v2_exact_logs(
+        100,
+        110,
+        frozen_upper=current,
+        root=exact_root,
+        frozen_upper_root=evidence_root,
+    )
+    assert records == []
+    assert all(path.parent == exact_root for path in inputs)
 
 
 def test_factory_leaf_remains_reusable_when_the_sample_upper_block_advances(

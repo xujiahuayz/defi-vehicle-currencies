@@ -53,7 +53,7 @@ from ddvc.transaction_targets import (
     validation_contract,
     write_target_day,
 )
-from ddvc.v2_event_completeness import V2EventSourceRelease, V2_EXACT_LOG_CACHE_ROOT, frozen_upper_block_path, read_v2_event_source_release, read_v2_exact_logs, resolve_v2_event_source_release
+from ddvc.v2_event_completeness import RAW_V2_FACTORY_ROOT, V2EventSourceRelease, V2_EXACT_LOG_CACHE_ROOT, frozen_upper_block_path, read_v2_event_source_release, read_v2_exact_logs, resolve_v2_event_source_release
 from ddvc.v3_event_completeness import block_perimeter_sha256, certified_header_snapshot_path, read_v3_event_source_release, resolve_v3_event_source_release
 from ddvc.v3_inventory import EVENT_TOPICS as V3_EVENT_TOPICS, inventory_chunk_triplet, load_inventory_chunk_records
 from ddvc.v3_pool_registry import load_certified_frozen_upper
@@ -325,7 +325,13 @@ def exact_chain_events_for_day(day: str, providers: Mapping[tuple[str, str, int]
 
     v2_expected = {key: event for key, event in supported.items() if key[0] in V2_VENUES}
     if v2_expected:
-        records, paths = read_v2_exact_logs(lower, upper, frozen_upper=dict(frozen_v2), root=V2_EXACT_LOG_CACHE_ROOT)
+        records, paths = read_v2_exact_logs(
+            lower,
+            upper,
+            frozen_upper=dict(frozen_v2),
+            root=V2_EXACT_LOG_CACHE_ROOT,
+            frozen_upper_root=RAW_V2_FACTORY_ROOT,
+        )
         raw = {(str(record["transaction_hash"]).lower(), int(record["log_index"]), str(record["address"]).lower()): record for record in records}
         for key, provider in v2_expected.items():
             record = raw.get((provider.tx_hash, provider.log_index, provider.pool))

@@ -340,6 +340,7 @@ def v2_exact_log_chunk_complete(
     *,
     frozen_upper: dict[str, object],
     root: Path | None = None,
+    frozen_upper_root: Path | None = None,
 ) -> bool:
     """Accept a shared chunk only after its exact marker and Parquet agree."""
 
@@ -349,6 +350,7 @@ def v2_exact_log_chunk_complete(
             end_block,
             frozen_upper=frozen_upper,
             root=root,
+            frozen_upper_root=frozen_upper_root,
         )
     except (ExactLogRpcError, IndexError, KeyError, OSError, TypeError, ValueError, json.JSONDecodeError):
         return False
@@ -361,6 +363,7 @@ def _read_complete_v2_exact_log_chunk(
     *,
     frozen_upper: dict[str, object],
     root: Path | None = None,
+    frozen_upper_root: Path | None = None,
 ) -> list[dict[str, object]]:
     """Validate one immutable chunk and return the rows already opened for validation."""
 
@@ -381,7 +384,7 @@ def _read_complete_v2_exact_log_chunk(
         marker,
         current_frozen_upper=frozen_upper,
         end_block=end_block,
-        root=root,
+        root=frozen_upper_root if frozen_upper_root is not None else root,
     )
     validate_anchored_log_evidence(marker, records, validation_upper)
     complete = bool(
@@ -505,6 +508,7 @@ def read_v2_exact_logs(
     *,
     frozen_upper: dict[str, object],
     root: Path | None = None,
+    frozen_upper_root: Path | None = None,
 ) -> tuple[list[dict[str, object]], list[Path]]:
     """Read shared chunks and return only records inside the consumer's perimeter."""
 
@@ -517,6 +521,7 @@ def read_v2_exact_logs(
                 upper,
                 frozen_upper=frozen_upper,
                 root=root,
+                frozen_upper_root=frozen_upper_root,
             )
         except (ExactLogRpcError, IndexError, KeyError, OSError, TypeError, ValueError, json.JSONDecodeError) as error:
             raise RuntimeError(f"shared V2 exact-log chunk is incomplete: {lower}:{upper}") from error
@@ -1881,6 +1886,27 @@ def graph_core_event_rows(
     )
 
 
+def admitted_reconciled_v2_rows(
+    reconciliation,
+    graph_root: Path,
+    venue: str,
+    stream: str,
+    day: str,
+    admitted_pools: set[str],
+) -> Iterator[dict[str, object]]:
+    """Consume every correction action while yielding only admitted factory pools."""
+
+    for row in reconciliation.reconciled_rows(
+        venue,
+        stream,
+        iter_graph_rows(graph_stream_path(graph_root, venue, stream, day)),
+    ):
+        pair = row.get("pair") if isinstance(row, dict) else None
+        pool = str(pair.get("id", "")).lower() if isinstance(pair, dict) else ""
+        if pool in admitted_pools:
+            yield row
+
+
 def provider_core_event_rows(
     rows_by_stream: Mapping[str, Iterable[dict[str, object]]],
     venue: str,
@@ -2779,6 +2805,7 @@ def validate_v2_event_source_evidence_bundle(
             end_block,
             frozen_upper=frozen_upper,
             root=raw_exact_root,
+            frozen_upper_root=evidence_root,
         )
         expected_exact_inputs = {
             portable_evidence_path(path, correction_root): _file_sha256(path)
@@ -2813,10 +2840,13 @@ def validate_v2_event_source_evidence_bundle(
         if reconciliation is None:
             raise ValueError(f"V2 correction generation is absent after validation: {key}")
         rows_by_stream = {
-            stream: reconciliation.reconciled_rows(
+            stream: admitted_reconciled_v2_rows(
+                reconciliation,
+                provider_root,
                 venue,
                 stream,
-                iter_graph_rows(graph_stream_path(provider_root, venue, stream, day)),
+                day,
+                set(statics),
             )
             for stream in ("mints", "burns", "swaps")
         }

@@ -72,6 +72,7 @@ from ddvc.v2_event_completeness import (
     V2_TOKEN_DECIMALS_SCOPE,
     V2_BOUNDED_EXCLUSION_CONTRACT,
     V2_TOKEN_ANCHOR_MATERIALITY,
+    admitted_reconciled_v2_rows,
     audit_calendar_sha256,
     canonical_v2_reconciliation_counts,
     canonical_v2_pool_templates,
@@ -656,23 +657,15 @@ def corrected_v2_event_map(
     )
     if reconciliation is None:
         raise RuntimeError(f"V2 corrected event ledger is absent for {venue}/{day}")
-    def stream_rows(stream: str):
-        return (
-            row
-            for row in reconciliation.reconciled_rows(
-                venue,
-                stream,
-                iter_graph_rows(
-                    GRAPH_ROOT / venue / f"{venue}_{stream}_{day}.jsonl.gz"
-                ),
-            )
-            if row is not None
-            and isinstance(row.get("pair"), dict)
-            and str(row["pair"].get("id", "")).lower() in statics
-        )
-
     rows_by_stream = {
-        stream: stream_rows(stream)
+        stream: admitted_reconciled_v2_rows(
+            reconciliation,
+            GRAPH_ROOT,
+            venue,
+            stream,
+            day,
+            set(statics),
+        )
         for stream in ("mints", "burns", "swaps")
     }
     events, duplicates = provider_core_events(rows_by_stream, venue, statics)
