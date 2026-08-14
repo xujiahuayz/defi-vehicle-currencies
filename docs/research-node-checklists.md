@@ -143,6 +143,7 @@ Every package records this envelope once and points to the node-specific evidenc
 - Entry uses current G and J1 packets or a clearly marked reproducible provisional packet; status and generation live in source comments, not rendered prose.
 - Write in the JFE register from the start. Do not create a generic AI draft for later synonym or term replacement.
 - Reread the closest raw JFE passage for each section's function. Literature work must appear across motivation, design, interpretation, citations, anecdotes, analogies, paragraph movement and claim calibration.
+- Run a whole-paper venue-optics review against raw JFE comparators: motivation before results, contribution positioning, evidence sequence and section balance, sentence- and paragraph-length level and dispersion, citation/equation/exhibit density, and visible page texture. Treat the comparison as a diagnostic; never close a gap with term substitution or filler.
 - Review the complete manuscript: every section and subsection opening, substantive paragraph, handoff, referent, connective and close. A local repair never closes P0.
 - Make actors, quantities and institutions the subjects; avoid backstage workflow language, abstract triads, meta-signposting and repeated contrast-confirmation.
 - Use natural sentence and paragraph-length variation driven by the economics, not a statistical mold.
