@@ -1043,3 +1043,63 @@ and two unchanged findings passes.
   its existing certificate boundary; do not restamp stale state partitions.
 - No market-state ledger or `main_v1` route-cost shard was published here, so
   the freeze audit's five blockers remain the correct live count.
+
+## 2026-08-14 — V3 event-source repeat-scan boundary corrected
+
+**Targeted check:** the queued V3 event-source publication boundary preceding
+the full-calendar market-state ledger and `main_v1` route-cost panel.
+
+**REGRESSION-CHECK:** lane `D2-purpose-bound-exact-state`, edge `D2-release ->
+D3-construction-audit`, and estimand best direct versus best two-hop route for
+identical endpoints, UTC hour and USD 1,000, 10,000 and 100,000 notionals.
+Evidence was the 13,093-chunk ordered V3 inventory and the 62-date corrected
+canonical state. The correction most at risk was treating a manifest or
+provider-reported statics as transaction-state authority.
+
+**Scientific consequence and concentration.** The event-source boundary is
+potentially claim-changing because V3 is concentrated in comparable route
+opportunities and changed event order or payload can alter availability and
+route winners. The completed global classification covered 147,376,618 logs:
+144,879,555 factory-canonical and 2,497,063 quarantined. The later failure was
+not missing economic evidence: nullable provider decimals occur systemically
+across the audit calendar, including 29,320 rows and 495 pools on the first V3
+audit date. Exact factory/token authorities already certify the pool statics.
+
+**Work completed.** Amended only the existing event-source owner. Construction
+now retains one hashed classification record binding ranges, event totals,
+canonical/quarantine splits, reasons and quarantine-ledger identity. Ordinary
+reopening binds the ordered manifest, frozen header, pool registry, correction
+generations and released quarantine, then decompresses only audit-date chunks.
+Focused tests prove manifest drift and changed audit-date events fail and that
+out-of-audit-day payloads are not opened. Canonical comparison now accepts
+absent provider token/decimal fields only when the certified pool authority
+supplies them, while rejecting every present contradiction.
+
+**Run result.** The authorized run completed its sole global classification
+and installed the 410,526-block exact header snapshot, then stopped before the
+first exact-versus-canonical comparison on the nullable-provider-static bug.
+Elapsed time was 20,125.05 seconds; exact comparisons completed: 0/62. No V3
+event-source release, market-state ledger or route-cost shard was published.
+
+**DECISION:** `promote` the bounded reopen contract and exact-authority fallback;
+`park` publication until one corrected attached run completes all 62 comparisons.
+
+**Validation.** V3 event-source, data-release and freeze suites pass 106 tests
+plus 72 subtests. The final findings audit remains honestly RED with five
+blockers: E1 lock, model ledger, full-text literature ledger, route-cost panel
+and two unchanged findings passes.
+
+**Commit:** `c3a308b` (bounded V3 reopening and nullable-static correction).
+
+**Blocking count:** 5.
+
+**For the next iteration:**
+- Resume the same event-source owner. The exact header snapshot is now complete;
+  do not fetch it again. The prior full classification passed, but its in-memory
+  quarantine ledger was lost when phase 3 failed, so a corrected construction
+  run must reconstruct that ledger once before atomic publication.
+- Confirm the run performs one global classification, 62 construction
+  comparisons and one 62-date post-publication reopen; ordinary freeze must not
+  open an out-of-audit-day payload. Report elapsed time and exact comparisons.
+- Leave both queued Java interjections unchecked until publication and the
+  immediate handoff to the existing full-calendar market-state builder occur.
