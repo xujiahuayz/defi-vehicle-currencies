@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+from pathlib import Path
+
 import pandas as pd
 import pytest
 
@@ -9,6 +11,10 @@ from ddvc.route_replay import (
     render_route_replay_pdf,
 )
 from scripts.figure.render_route_replay_assets import _deck_values_tex
+
+
+ROOT = Path(__file__).resolve().parents[1]
+ROUTE_CASE_PACKAGE_COMMIT = "ab2c76231653b447c7b151b8d9b4a3fdd7b413e8"
 
 
 def _legs() -> pd.DataFrame:
@@ -108,3 +114,14 @@ def test_deck_labels_are_generated_from_the_route_manifest() -> None:
     assert r"\RouteReplayVehicleAmount}{99,990}" in values
     assert r"\RouteReplayOutputAmount}{100,040}" in values
     assert r"\RouteReplayValue}{100,000}" in values
+
+
+def test_deck_route_case_binds_the_authentic_visual_package() -> None:
+    source = (ROOT / "deck" / "sections" / "01-identification.tex").read_text(
+        encoding="utf-8"
+    )
+
+    assert source.count(f"% EVIDENCE-COMMIT: {ROUTE_CASE_PACKAGE_COMMIT}") == 2
+    assert "0c9ccc9" not in source
+    assert source.count("assets/observed_route_blockscout.png") == 3
+    assert "maker supplies the USDC used by the Fluid leg" in source

@@ -2,57 +2,58 @@
 % Framing and institutional setting. Sources: Krugman (1980); Flandreau and Jobst (2009); project route-release audit.
 
 % EVIDENCE-STATUS: authentic transaction and route-component trace; exact same-state alternative remains outside this exhibit
-% EVIDENCE-COMMIT: 0c9ccc9
+% EVIDENCE-COMMIT: ab2c76231653b447c7b151b8d9b4a3fdd7b413e8
 % EVIDENCE-SOURCES: output/exhibits/route_replay.json; data/unified/20260110.parquet; https://eth.blockscout.com/tx/0xbda1d07f17c503b5a9c8117c5d1383472006af8a9e22aa4e5e30804b9bf67ad9?tab=token_transfers (retrieved 2026-08-14)
 % EVIDENCE-GENERATION: transaction 0xbda1d07f17c503b5a9c8117c5d1383472006af8a9e22aa4e5e30804b9bf67ad9 component 0; partition sha256 a6870bc64badeecf030a1096e69b2ddfc9202e5c4ef99a8c5237d4d458033c6d
 % LIVE-COMPANION: output/live/route_replay.html (native HTML/CSS/JS reveal; no embedded video)
 % LITERATURE-PRECEDENT: Lehar and Parlour (2025), Appendix B, pairs one named explorer transaction with decoded logs before handing off to the population reconstruction.
-% VISUAL-FUNCTION: settlement handoff | authentic explorer screenshot plus native transfer diagram | separate the user's PYUSD instruction from the USDC-funded pool component
+% VISUAL-FUNCTION: source-versus-pool-route handoff | authentic explorer screenshot plus settlement trace | separate the user's PYUSD instruction from the USDC-funded pool component
 \input{../output/exhibits/route_replay_deck_values.tex}
-\begin{frame}{The transaction starts with PYUSD}
+\begin{frame}{The PYUSD swap reaches a USDC-funded pool route}
 \begin{columns}[T,totalwidth=\textwidth]
-\begin{column}{0.58\textwidth}
+\begin{column}{0.65\textwidth}
 \evidencekicker{Explorer record}
 \vspace{0.06cm}
 \centering
-\fcolorbox{rule}{white}{\includegraphics[width=0.96\linewidth,height=1.25cm,keepaspectratio,trim=250 760 25 140,clip]{assets/observed_route_blockscout.png}}
-\par\vspace{0.14cm}
-\fcolorbox{rule}{white}{\includegraphics[width=0.96\linewidth,height=3.75cm,keepaspectratio,trim=270 365 25 430,clip]{assets/observed_route_blockscout.png}}
+\fcolorbox{rule}{white}{\includegraphics[width=0.96\linewidth,height=1.18cm,keepaspectratio,trim=270 820 430 170,clip]{assets/observed_route_blockscout.png}}
+\par\vspace{0.10cm}
+\fcolorbox{rule}{white}{\includegraphics[width=0.96\linewidth,height=1.18cm,keepaspectratio,trim=280 415 324 615,clip]{assets/observed_route_blockscout.png}}
+\par\vspace{0.10cm}
+\fcolorbox{rule}{white}{\includegraphics[width=0.96\linewidth,height=1.18cm,keepaspectratio,trim=280 320 324 700,clip]{assets/observed_route_blockscout.png}}
 \end{column}
-\begin{column}{0.38\textwidth}
-\evidencekicker{Settlement handoff}
+\begin{column}{0.31\textwidth}
+\evidencekicker{What reaches the pools}
 \vspace{0.08cm}
 \centering
 \begin{tikzpicture}[x=1cm,y=1cm]
-\node[nodepoint,fill=ucldark,text=white,draw=ucldark,minimum size=31pt] (pyusd) at (2.25,4.28) {PYUSD};
-\node[softbox,inner sep=3pt,text width=1.60cm,minimum height=0.52cm,align=center] (settler1) at (2.25,3.20) {\scriptsize 0x settlement};
-\node[softbox,inner sep=3pt,text width=1.60cm,minimum height=0.52cm,align=center] (maker) at (2.25,2.18) {\scriptsize Market maker};
-\node[softbox,inner sep=3pt,text width=1.60cm,minimum height=0.52cm,align=center] (settler2) at (2.25,1.16) {\scriptsize 0x settlement};
-\node[softbox,inner sep=3pt,draw=stable,text width=1.60cm,minimum height=0.52cm,align=center] (fluid) at (2.25,0.14) {\scriptsize Fluid pool};
-\draw[route,draw=ucldark] (pyusd)--(settler1);
-\draw[route,draw=ucldark] (settler1)--node[right,font=\scriptsize,text=ucldark]{PYUSD}(maker);
-\draw[route,draw=stable] (maker)--node[right,font=\scriptsize\bfseries,text=stable]{USDC}(settler2);
-\draw[route,draw=stable] (settler2)--(fluid);
-\node[font=\scriptsize\bfseries,text=stable,align=left,anchor=west] at (3.42,0.14) {pool swaps\\begin here};
+\node[softbox,inner sep=5pt,text width=2.55cm,minimum height=0.68cm,align=center] (instruction) at (2.10,4.18) {\scriptsize\bfseries User instruction\\[-0.02cm]\scriptsize PYUSD $\rightarrow$ USDe};
+\node[softbox,inner sep=5pt,text width=2.55cm,minimum height=0.68cm,align=center] (maker) at (2.10,2.68) {\scriptsize\bfseries Settlement handoff\\[-0.02cm]\scriptsize PYUSD reaches the maker};
+\node[softbox,inner sep=5pt,draw=stable,text width=2.55cm,minimum height=0.68cm,align=center] (fluid) at (2.10,1.18) {\scriptsize\bfseries Pool-route source\\[-0.02cm]\scriptsize USDC enters Fluid};
+\draw[route,draw=ucldark,line width=1.5pt] (instruction)--(maker);
+\draw[route,draw=stable,line width=1.5pt] (maker)--node[right,font=\scriptsize\bfseries,text=stable]{USDC}(fluid);
 \end{tikzpicture}
 \end{column}
 \end{columns}
-\vspace{0.13cm}
-{\small PYUSD reaches 0x settlement; the market maker supplies USDC for execution in the pools.\par}
+\vspace{0.08cm}
+{\small The explorer reports the PYUSD--USDe instruction. The ordered transfers show that the maker supplies the USDC used by the Fluid leg.\par}
 \decknote{The explorer screenshot and transfer trace refer to transaction \ethtx{0xbda1d07f17c503b5a9c8117c5d1383472006af8a9e22aa4e5e30804b9bf67ad9}{0xbda1d07f\ldots 9bf67ad9} on 10 January 2026.}
 \end{frame}
 
 % EVIDENCE-STATUS: authentic connected pool-swap component from the same transaction; exact same-state alternative remains outside this exhibit
-% EVIDENCE-COMMIT: 0c9ccc9
+% EVIDENCE-COMMIT: ab2c76231653b447c7b151b8d9b4a3fdd7b413e8
 % EVIDENCE-SOURCES: output/exhibits/route_replay.json; data/unified/20260110.parquet
 % EVIDENCE-GENERATION: transaction 0xbda1d07f17c503b5a9c8117c5d1383472006af8a9e22aa4e5e30804b9bf67ad9 component 0; partition sha256 a6870bc64badeecf030a1096e69b2ddfc9202e5c4ef99a8c5237d4d458033c6d
-% VISUAL-FUNCTION: observed vehicle use | native connected-route diagram | define the component endpoints and intermediary used in the vehicle-dominance measure
-\begin{frame}{USDT links the two pool swaps}
+% VISUAL-FUNCTION: observed vehicle use | source-versus-pool-route breadcrumb plus native connected-route diagram | define the component endpoints and intermediary used in the vehicle-dominance measure
+\begin{frame}{Inside the pools, USDT links USDC to USDe}
 \centering
 \vspace{-0.05cm}
 \evidencekicker{Ordered transfers and route reconstruction}
 \vspace{0.06cm}
-{\small\color{muted}PYUSD settlement $\longrightarrow$ \textbf{USDC $\longrightarrow$ USDT $\longrightarrow$ USDe}\par}
+\begin{tikzpicture}[x=1cm,y=1cm]
+\node[softbox,inner sep=4pt,text width=3.35cm,minimum height=0.58cm,align=center] (user) at (2.75,0) {\scriptsize User instruction: PYUSD $\rightarrow$ USDe};
+\node[font=\small\bfseries,text=muted] at (5.20,0) {$\Longrightarrow$};
+\node[softbox,inner sep=4pt,draw=stable,text width=4.15cm,minimum height=0.58cm,align=center] (pools) at (8.30,0) {\scriptsize Pool route: USDC $\rightarrow$ USDT $\rightarrow$ USDe};
+\end{tikzpicture}
 \vspace{0.20cm}
 \begin{tikzpicture}[x=1cm,y=1cm]
 \node[nodepoint,minimum size=46pt,font=\small\bfseries] (a) at (1.30,3.25) {USDC};
@@ -69,7 +70,7 @@
 \vspace{0.15cm}
 \begin{minipage}{0.78\textwidth}
 \centering
-{\small The connected component converts USDC into USDe across two pools. USDT is the vehicle because it links the two legs.\par}
+{\small Our route sample begins with USDC, the source asset of the connected pool-swap component. USDT is the vehicle because it links the two legs.\par}
 \end{minipage}
 \par\vspace{0.04cm}
 {\raggedright\decknote{The route is the connected pool-swap component of transaction \ethtx{0xbda1d07f17c503b5a9c8117c5d1383472006af8a9e22aa4e5e30804b9bf67ad9}{0xbda1d07f\ldots 9bf67ad9} on 10 January 2026.}}
