@@ -238,9 +238,17 @@ def render_usdt_transition(macros: Mapping[str, str]) -> str:
         r"\toprule",
         r" & 2024 & 2026 \\",
         r"\midrule",
-        f"Count excess use & {macros['USDTCountExcessBase']} & {macros['USDTCountExcessEnd']} \\\\",
-        f"Value-weighted excess use & {macros['USDTValueExcessBase']} & {macros['USDTValueExcessEnd']} \\\\",
-        "Value-weighted intermediary minus endpoint share & "
+        "Count excess-use ratio (2024 full year; 2026 January--June) & "
+        + macros["USDTCountExcessBase"]
+        + " & "
+        + macros["USDTCountExcessEnd"]
+        + r" \\",
+        "Value-weighted excess-use ratio (2024 full year; 2026 January--June) & "
+        + macros["USDTValueExcessBase"]
+        + " & "
+        + macros["USDTValueExcessEnd"]
+        + r" \\",
+        "Paired January--June intermediary minus endpoint share & "
         + macros["USDTEndpointGapBase"]
         + " & "
         + macros["USDTEndpointGapEnd"]

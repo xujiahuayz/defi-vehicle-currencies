@@ -55,8 +55,15 @@ def test_rotation_and_usdt_values_are_exact() -> None:
     assert "32.7\\% & 76.5\\% & $+43.9$ pp ($2.02$ pp)" in rotation
 
     usdt = (TABLES / "usdt_transition.tex").read_text(encoding="utf-8")
-    assert "Count excess use & 1.06 & 1.23" in usdt
-    assert "Value-weighted excess use & 0.59 & 1.42" in usdt
+    assert (
+        "Count excess-use ratio (2024 full year; 2026 January--June) & 1.06 & 1.23"
+        in usdt
+    )
+    assert (
+        "Value-weighted excess-use ratio (2024 full year; 2026 January--June) & 0.59 & 1.42"
+        in usdt
+    )
+    assert "Paired January--June intermediary minus endpoint share" in usdt
     assert "$-7.13$ pp & $+8.14$ pp" in usdt
 
 
@@ -107,10 +114,10 @@ def test_paper_has_one_consumer_and_no_duplicate_inline_body() -> None:
     assert r"\begin{tabularx}" not in section
     assert r"s^{(m)}_{c,y}=\alpha^{(m)}_{c}+\beta^{(m)}\mathbf{1}\{y=2026\}" in section
     assert "2024 is the omitted year" in section
-    assert "94,260 fixed-effect cells" in section
+    assert "94,260 fixed-effect groups" in section
     assert "5,432 ordered-pair clusters" in section
     assert "two-way ordered-pair and calendar-date clustered CR1 inference" in section
-    assert "descriptive, noncausal regressions" in section
+    assert "These regressions are descriptive" in section
 
 
 @pytest.mark.parametrize(

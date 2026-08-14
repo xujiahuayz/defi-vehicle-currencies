@@ -1,12 +1,14 @@
 from __future__ import annotations
 
+import importlib
 import json
 from pathlib import Path
 
 import pandas as pd
 
 from ddvc.provenance import sidecar_path, verify
-from scripts.tabulate.render_provisional_results_deck_values import (
+import ddvc.provisional_results as renderer_module
+from ddvc.provisional_results import (
     INPUTS,
     OUTPUT,
     render_provisional_results_deck_values,
@@ -14,6 +16,14 @@ from scripts.tabulate.render_provisional_results_deck_values import (
 
 
 ROOT = Path(__file__).resolve().parents[1]
+
+
+def test_import_is_side_effect_free() -> None:
+    artefact_before = OUTPUT.read_bytes()
+    sidecar_before = sidecar_path(OUTPUT).read_bytes()
+    importlib.reload(renderer_module)
+    assert OUTPUT.read_bytes() == artefact_before
+    assert sidecar_path(OUTPUT).read_bytes() == sidecar_before
 
 
 def test_checked_in_route_binding_equals_its_renderer() -> None:

@@ -81,15 +81,7 @@ The rise in USDT's intermediary use relative to its endpoint use could reflect i
 \caption{USDT intermediary use relative to endpoint use}
 \label{tab:usdt-transition}
 \small
-\begin{tabularx}{\linewidth}{@{}>{\raggedright\arraybackslash}Xrr@{}}
-\toprule
- & 2024 & 2026 \\
-\midrule
-Count excess-use ratio (2024 full year; 2026 January--June) & \USDTCountExcessBase{} & \USDTCountExcessEnd{} \\
-Value-weighted excess-use ratio (2024 full year; 2026 January--June) & \USDTValueExcessBase{} & \USDTValueExcessEnd{} \\
-Paired January--June intermediary minus endpoint share & \USDTEndpointGapBase{} & \USDTEndpointGapEnd{} \\
-\bottomrule
-\end{tabularx}
+\input{../output/tables/usdt_transition.tex}
 \exhibitnote{Intermediary and endpoint shares are each formed across native, staked-native, stable, and imported currencies on complete, non-cyclic admitted pool-call components; direct components enter the endpoint denominator. Excess use is intermediary share divided by endpoint share, and the gap is their difference. The two excess-use ratios use the full 2024 calendar year and January--June 2026; the share gap uses the same January--June dates in both years. Value-weighted measures require source, intermediary, and destination dollar values to agree within 20\%.}
 \end{table}
 

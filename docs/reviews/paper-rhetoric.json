@@ -545,7 +545,7 @@
       "exit_handoff": "The final paragraph separates observed intermediary incidence from hypothetical route costs and their fixed-opportunity interpretation."
     },
     "paper/sections/03-dominance.tex": {
-      "sha256": "7f372a83e147cec7b2f3aef4ac2dd386096553a93118c339df1bdd6b8c05ae21",
+      "sha256": "428456463051ac02aa67072b81d8400ffa379e172a93471abc7497dde7c95465",
       "status": "rewritten",
       "exemplars": [
         "literature/text/2020-MakarovSchoar2020Arbitrage-trading-and-arbitrage-in-cryptocurrency-markets.txt:886-991",
@@ -604,8 +604,8 @@
           72,
           74,
           77,
-          99,
-          101
+          91,
+          93
         ],
         "judgment": "Every substantive paragraph handoff was reread in source order against the registered raw passages; the economic subject, logical relation, framing, and placement of qualifications are recorded individually above.",
         "raw_exemplars": [
@@ -705,7 +705,7 @@
             "judgment": "The paragraph states the mechanisms that can explain the gain and hands the token finding to the mechanism section."
           },
           {
-            "line": 99,
+            "line": 91,
             "inherited_object": "the USDT-centred market allocation",
             "paragraph_function": "introduces broader venue access and reports route span, intermediation, and intermediary composition on their stated clocks and weights",
             "relation_to_previous": "moves from token attribution to route architecture and quantifies the observed routing margins",
@@ -715,7 +715,7 @@
             "judgment": "The paragraph introduces venue access and reports cross-exchange growth, falling count-based intermediation, and stablecoin gains in separately labelled count and supported-value comparisons."
           },
           {
-            "line": 101,
+            "line": 93,
             "inherited_object": "the three observed routing margins",
             "paragraph_function": "interprets their joint pattern and states the comparison required to estimate router access",
             "relation_to_previous": "moves from descriptive breadth to the fixed-opportunity mechanism test",
