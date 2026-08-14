@@ -12,9 +12,9 @@ import shutil
 import tempfile
 from typing import Callable, Mapping
 
+import ddvc.provenance as provenance
 from ddvc.fetch.raw import write_json
 from ddvc.journaled_publication import recover_journaled_publications
-from ddvc.paths import REPO_ROOT
 from ddvc.provenance import (
     code_fingerprint,
     describe_input,
@@ -54,6 +54,13 @@ def is_sha256(value: object) -> bool:
         and len(value) == 64
         and all(character in "0123456789abcdef" for character in value)
     )
+
+
+def _provenance_record_path(value: object) -> Path:
+    """Resolve a path using the same root that serialized its provenance record."""
+
+    path = Path(str(value or ""))
+    return path if path.is_absolute() else provenance.ROOT / path
 
 
 @dataclass(frozen=True)
@@ -784,12 +791,7 @@ def _open_artifact_release_unlocked(
         source_bindings: dict[Path, str] = {}
         input_records: dict[Path, dict[str, object]] = {}
         for name, record in provenance_records.items():
-            recorded_artifact = Path(str(record.get("artefact") or ""))
-            recorded_artifact = (
-                recorded_artifact
-                if recorded_artifact.is_absolute()
-                else REPO_ROOT / recorded_artifact
-            )
+            recorded_artifact = _provenance_record_path(record.get("artefact"))
             payload_identity = record.get("payload_identity")
             if (
                 recorded_artifact.resolve() != paths[name].resolve()
@@ -815,16 +817,14 @@ def _open_artifact_release_unlocked(
             for raw in record.get("inputs") or []:
                 if not isinstance(raw, dict):
                     raise ValueError(f"{kind} provenance has an invalid input: {name}")
-                raw_path = Path(str(raw.get("path") or ""))
-                input_path = raw_path if raw_path.is_absolute() else REPO_ROOT / raw_path
+                input_path = _provenance_record_path(raw.get("path"))
                 prior = input_records.setdefault(input_path.resolve(), raw)
                 if prior != raw:
                     raise ValueError(f"{kind} provenance input identities disagree")
             for raw in record.get("released_input_bindings") or []:
                 if not isinstance(raw, dict) or not is_sha256(raw.get("sha256")):
                     raise ValueError(f"{kind} provenance has an invalid release binding")
-                raw_path = Path(str(raw.get("path") or ""))
-                binding_path = raw_path if raw_path.is_absolute() else REPO_ROOT / raw_path
+                binding_path = _provenance_record_path(raw.get("path"))
                 resolved = binding_path.resolve()
                 expected = str(raw["sha256"])
                 prior = source_bindings.setdefault(resolved, expected)

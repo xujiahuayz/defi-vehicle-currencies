@@ -202,16 +202,20 @@ class TransactionTargetTests(unittest.TestCase):
         ])
         with TemporaryDirectory() as directory:
             root = Path(directory)
+            unified = root / "unified" / "20250101.parquet"
+            unified.parent.mkdir()
+            unified.write_text("route source", encoding="utf-8")
             support_paths = tuple(root / name for name in ("state.jsonl.gz", "state.meta.json", "certificate.json"))
             for path in support_paths:
                 path.write_text("support", encoding="utf-8")
-            with patch("scripts.build_transaction_target_release.pd.read_parquet", return_value=legs), patch("scripts.build_transaction_target_release.v4_state_day_inputs", return_value=support_paths), patch("scripts.build_transaction_target_release.validate_v4_state_day", return_value=support_paths), patch("scripts.build_transaction_target_release.tick_scientific_support", return_value=False), patch("scripts.build_transaction_target_release.state_partition_inputs", return_value=[]), patch("scripts.build_transaction_target_release.load_v2_replay_day", return_value=SimpleNamespace(swaps_by_identity={})), patch("scripts.build_transaction_target_release.load_tick_day_events", return_value=[]) as load_tick:
+            with patch("scripts.build_transaction_target_release.UNIFIED", unified.parent), patch("scripts.build_transaction_target_release.pd.read_parquet", return_value=legs), patch("scripts.build_transaction_target_release.v4_state_day_inputs", return_value=support_paths), patch("scripts.build_transaction_target_release.validate_v4_state_day", return_value=support_paths), patch("scripts.build_transaction_target_release.tick_scientific_support", return_value=False), patch("scripts.build_transaction_target_release.state_partition_inputs", return_value=[]), patch("scripts.build_transaction_target_release.load_v2_replay_day") as load_v2, patch("scripts.build_transaction_target_release.load_tick_day_events") as load_tick:
                 filtered, v2_events, tick_events, inputs, support = load_provider_day("20250101", set())
         self.assertTrue(filtered.empty)
         self.assertEqual((v2_events, tick_events), ({}, {}))
-        self.assertEqual(set(inputs), set(support_paths))
+        self.assertEqual(set(inputs), {unified, *support_paths})
         self.assertEqual(support["post_support_v4_routes_excluded"], 1)
-        self.assertEqual(load_tick.call_args.kwargs["venues"], ("uniswap_v3",))
+        load_v2.assert_not_called()
+        load_tick.assert_not_called()
 
     def test_exact_frontier_still_rejects_a_missing_certified_event(self) -> None:
         legs = pd.DataFrame([

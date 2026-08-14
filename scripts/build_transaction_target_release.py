@@ -178,28 +178,32 @@ def load_provider_day(day: str, quarantined_v4_pools: set[str]) -> tuple[pd.Data
         support_inputs = []
     legs, support_boundary = exclude_post_support_v4_routes(day, legs, v4_support)
     identities = exact_target_leg_identities(legs)
-    v2_replay = load_v2_replay_day(None, day, venues=V2_VENUES)
-    tick_venues = ("uniswap_v3", "uniswap_v4") if v4_support is True else ("uniswap_v3",)
-    tick_events = load_tick_day_events(None, day, venues=tick_venues)
+    v2_identities = {identity for identity in identities if identity[0] in V2_VENUES}
+    v2_venues = tuple(venue for venue in V2_VENUES if any(identity[0] == venue for identity in v2_identities))
+    tick_identities = {identity for identity in identities if identity[0] in ("uniswap_v3", "uniswap_v4")}
+    tick_venues = tuple(venue for venue in ("uniswap_v3", "uniswap_v4") if any(identity[0] == venue for identity in tick_identities))
     v2_events: dict[tuple[str, str, int], ProviderSwapEvent] = {}
-    for key in sorted(identity for identity in identities if identity[0] in V2_VENUES):
-        source = v2_replay.swaps_by_identity.get(key)
-        if source is None:
-            raise TargetEvidenceError(f"canonical V2 state lacks target swap identity: {key}")
-        v2_events[key] = provider_event_from_v2(source)
+    if v2_identities:
+        v2_replay = load_v2_replay_day(None, day, venues=v2_venues)
+        for key in sorted(v2_identities):
+            source = v2_replay.swaps_by_identity.get(key)
+            if source is None:
+                raise TargetEvidenceError(f"canonical V2 state lacks target swap identity: {key}")
+            v2_events[key] = provider_event_from_v2(source)
     tick_by_identity: dict[tuple[str, str, int], TickReplayEvent] = {}
-    for event in tick_events:
-        if event.kind != "swap":
-            continue
-        tx_hash = transaction_id(event.row)
-        if not tx_hash:
-            continue
-        key = (event.venue, str(tx_hash).lower(), int(event.order[1]))
-        if key in identities:
-            prior = tick_by_identity.get(key)
-            if prior is not None and prior.row != event.row:
-                raise TargetEvidenceError(f"canonical tick state has conflicting target identity: {key}")
-            tick_by_identity[key] = event
+    if tick_identities:
+        for event in load_tick_day_events(None, day, venues=tick_venues):
+            if event.kind != "swap":
+                continue
+            tx_hash = transaction_id(event.row)
+            if not tx_hash:
+                continue
+            key = (event.venue, str(tx_hash).lower(), int(event.order[1]))
+            if key in tick_identities:
+                prior = tick_by_identity.get(key)
+                if prior is not None and prior.row != event.row:
+                    raise TargetEvidenceError(f"canonical tick state has conflicting target identity: {key}")
+                tick_by_identity[key] = event
     tick_provider = {
         key: provider_event_from_tick(event, v4_quarantined_pools=quarantined_v4_pools)
         for key, event in tick_by_identity.items()
@@ -209,7 +213,7 @@ def load_provider_day(day: str, quarantined_v4_pools: set[str]) -> tuple[pd.Data
         raise TargetEvidenceError(f"provider target perimeter is incomplete on {day}: missing={sorted(identities - observed)[:3]}, extra={sorted(observed - identities)[:3]}")
     inputs = [
         unified,
-        *v2_replay_day_inputs(RAW_ROOT, day, venues=V2_VENUES),
+        *v2_replay_day_inputs(RAW_ROOT, day, venues=v2_venues),
         *(path for venue in tick_venues for path in state_partition_inputs(RAW_ROOT, "tick", venue, day)),
     ]
     return legs, v2_events, tick_provider, [path for path in [*inputs, *support_inputs] if path.is_file()], support_boundary

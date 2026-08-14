@@ -11,6 +11,7 @@ import threading
 import pytest
 
 import ddvc.artifact_release as artifact_release
+import ddvc.provenance as provenance
 from ddvc.artifact_release import (
     ArtifactRelease,
     bind_file_lineage,
@@ -211,6 +212,29 @@ def _publish_large(pointer: Path) -> ArtifactRelease:
         notes="test bundle",
         validate_staged=lambda paths: [json.loads(path.read_text()) for path in paths.values()],
     )
+
+
+def test_relative_records_reopen_against_the_provenance_root(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    root = tmp_path / "workspace"
+    root.mkdir()
+    source = root / "source.json"
+    source.write_text('{"value": 1}\n', encoding="utf-8")
+    pointer = root / "release" / "current.json"
+    monkeypatch.setattr(provenance, "ROOT", root)
+    monkeypatch.setattr(provenance, "MANIFESTS", root / "manifests")
+
+    published = _publish(pointer, 1, inputs=[source])
+    reopened = resolve_artifact_release(
+        pointer,
+        kind=KIND,
+        schema_version=1,
+        filenames=FILENAMES,
+    )
+
+    assert reopened.generation_id == published.generation_id
+    assert reopened.input_paths == (source.resolve(),)
 
 
 def test_marker_last_interruption_preserves_the_prior_release(tmp_path: Path) -> None:
