@@ -8,7 +8,7 @@
   "d3_certificate": null,
   "exploration_generation": null,
   "exploration_certificate": null,
-  "lock_hash": "49b643f239bb9cffed0d5331ec75e3e00f30332541b9a48fd0e808930d93d301",
+  "lock_hash": "af94ef8ed5ac9a693f58b3b058ca20fb70b8b50dc9ded44d042004fec3fa60bf",
   "paper_scope": "The making and displacement of vehicle-currency roles in Ethereum decentralised exchange",
   "global_rules": {
     "asset_identity": "canonical contract address; symbols are labels only",
@@ -242,6 +242,7 @@
         "output/exhibits/vehicle_transition_pair_panel.parquet",
         "output/exhibits/vehicle_transition_pair_decomposition.jsonl",
         "output/exhibits/vehicle_transition_pair_support.jsonl",
+        "output/exhibits/vehicle_transition_pair_contributions.parquet",
         "output/exhibits/intermediation_by_type.jsonl",
         "output/exhibits/intermediation_integration_rival.jsonl",
         "output/exhibits/intermediation_complexity_rival.jsonl",
@@ -383,6 +384,56 @@
       ]
     },
     {
+      "id": "liquidity_capital_v2_predictability",
+      "status": "candidate_mechanism",
+      "execution_gate": "blocked_v2_capital_release",
+      "role": "independently executable V2-family liquidity-provision mechanism candidate",
+      "estimand": "whether candidate-level vehicle dominance predicts subsequent V2-family deposited-capital allocation and whether candidate-level V2-family deposited capital predicts subsequent vehicle dominance",
+      "sample": "WETH, WBTC, DAI, USDC, and USDT identified by canonical token address; topology-valid clean non-round-trip routes joined by exact calendar date to candidate-attributed Uniswap V2 and SushiSwap V2 deposited-capital stocks. The panel retains only these five candidate rows, while intermediary episode shares and vehicle excess-use count ratios preserve their upstream daily denominator over all routed tokens",
+      "unit": "candidate token address by origin calendar day",
+      "dependent_variable": "in the route-to-capital direction, exact-horizon change in candidate-attributed deposited capital or its five-candidate share; in the capital-to-route direction, exact-horizon change in intermediary episode share or the endpoint-supported vehicle excess-use count ratio",
+      "transformation": "changes in log one plus candidate-attributed deposited-capital dollars, five-candidate capital share, all-routed-token intermediary episode-count share, and the corresponding vehicle excess-use count ratio formed from all-routed-token intermediary and endpoint shares",
+      "outlier_treatment": "no quantile trimming; exact calendar links only; supported zero capital remains zero and missing dates remain missing",
+      "response_horizon_days": [1, 7, 30, 120],
+      "primary_horizons": [1, 7, 30],
+      "long_horizon_sensitivity": 120,
+      "estimators": {
+        "route_to_v2_stock": "future stock change on origin vehicle share with candidate and origin-date fixed effects",
+        "v2_stock_to_route": "future vehicle-share change on origin log capital or capital share with candidate and origin-date fixed effects"
+      },
+      "calendar_perimeters": [
+        "full V2-family measurement calendar as the sole primary adjudication sample",
+        "pre-Uniswap-V3-launch V2-family subsample as heterogeneity only",
+        "post-Uniswap-V3-launch V2-family subsample as heterogeneity only"
+      ],
+      "inference": "two-sided 95-percent intervals from candidate-date score HAC with Bartlett weights over 30 exact calendar days; scores are aggregated across candidates by date and unsupported dates inside the sample span are retained as zero-score dates. Calendar-month moving-block bootstrap and two-way candidate and origin-date clustering are sensitivities, with the five-candidate limitation stated. Holm adjustment is within perimeter and direction across the twelve primary-horizon route-measure by capital-measure coefficients",
+      "reciprocal_measure_pairs": [
+        "intermediary episode share with log one plus deposited capital",
+        "intermediary episode share with five-candidate capital share",
+        "vehicle excess-use count ratio with log one plus deposited capital",
+        "vehicle excess-use count ratio with five-candidate capital share"
+      ],
+      "decision_rule": "Only the full V2-family calendar adjudicates the claim; pre- and post-Uniswap-V3 estimates are heterogeneity and cannot rescue it. An exact reciprocal route/capital measure pair passes when both route-to-capital and capital-to-route coefficients are positive with Holm q below 0.05 at the same at least two of 1, 7, and 30 days and neither direction is significantly negative at 120 days. The claim passes when at least one exact pair passes and, for that route measure, both the log-dollar and five-candidate-share capital alternatives have positive median coefficients in each direction across the three primary horizons with no significantly negative primary coefficient",
+      "admissible_interpretation": "vehicle use and V2-family deposited capital exhibit temporally ordered bidirectional predictability",
+      "forbidden_interpretation": "causal liquidity-provider feedback, V3 capital, liquidity-provider profitability, or rent incidence",
+      "runner": "scripts/run_liquidity_capital_v2_predictability.py",
+      "inputs": [
+        "data/processed/vehicle_excess_use_daily.parquet",
+        "data/processed/pool_capital_release/current.json",
+        "data/processed/liquidity_capital_v2_candidate_day.parquet",
+        "data/processed/liquidity_capital_v2_exact_horizons.parquet"
+      ],
+      "analysis_ready_outputs": [
+        "data/processed/liquidity_capital_v2_candidate_day.parquet",
+        "data/processed/liquidity_capital_v2_exact_horizons.parquet"
+      ],
+      "outputs": [
+        "output/exhibits/liquidity_capital_v2_predictability.jsonl",
+        "output/exhibits/liquidity_capital_v2_support.jsonl",
+        "output/tables/liquidity_capital_v2_predictability.tex"
+      ]
+    },
+    {
       "id": "liquidity_capital_flow_predictability",
       "status": "candidate_mechanism",
       "execution_gate": "blocked_capital_and_lp_flow_releases",
@@ -429,10 +480,9 @@
           "near-range gross flow share"
         ],
         "v2_calendar_perimeter": [
-          "full V2-family measurement calendar",
-          "pre-Uniswap-V3-launch V2-family subsample using the canonical protocol launch clock",
-          "balanced V2 pool and venue perimeter observed before and after the Uniswap V3 launch",
-          "post-Uniswap-V3-launch V2-family comparison"
+          "full V2-family measurement calendar as the sole primary adjudication sample",
+          "pre-Uniswap-V3-launch V2-family subsample using the canonical protocol launch clock as heterogeneity only",
+          "post-Uniswap-V3-launch V2-family comparison as heterogeneity only"
         ],
         "response_horizon_days": [
           1,
@@ -441,13 +491,12 @@
           120
         ],
         "covariance": [
-          "Driscoll-Kraay with 30-day bandwidth",
+          "candidate-date score HAC with Bartlett weights over 30 exact calendar days and zero scores on unsupported dates inside the sample span",
           "calendar-month moving-block bootstrap",
-          "two-way candidate and origin-date clustered",
-          "origin-date clustered with 30-day score HAC"
+          "two-way candidate and origin-date clustered"
         ]
       },
-      "decision_rule": "a measurement family supports a bidirectional predictive liquidity-allocation loop only if at least one predeclared route-to-liquidity coefficient and its reciprocal liquidity-to-route coefficient are positive with Holm q below 0.05 at at least two of the three primary horizons 1, 7, and 30 days, retain their signs under the absolute-versus-share alternatives, and do not reverse significantly at 120 days. One direction alone is one-way predictability, not feedback. V2 stock and V3 flow are adjudicated separately; success in one cannot rescue failure in the other. Call the mechanism cross-family corroborated only if both pass. An economically large opposite-signed result returns to E for an explicitly re-registered claim; it is not silently discarded or promoted from exploration",
+      "decision_rule": "V2 stock uses its full measurement calendar as the sole primary adjudication sample; its pre- and post-Uniswap-V3 subsamples are heterogeneity only and cannot rescue the primary result. Within a measurement family, an exact reciprocal route/liquidity measure pair must be positive with Holm q below 0.05 in both directions at the same at least two of the three primary horizons 1, 7, and 30 days, preserve the predeclared alternative-measure sign contract, and have no significantly negative 120-day reversal. One direction alone is one-way predictability, not feedback. V2 stock and V3 flow are adjudicated separately; success in one cannot rescue failure in the other. Call the mechanism cross-family corroborated only if both pass. An economically large opposite-signed result returns to E for an explicitly re-registered claim; it is not silently discarded or promoted from exploration",
       "falsifier": "vehicle-use coefficients do not predict later liquidity allocation, liquidity coefficients do not predict later vehicle use, signs reverse across primary horizons, or results arise only after mixing V2 stocks with V3 flows",
       "admissible_interpretation": "vehicle use and liquidity provision exhibit temporally ordered bidirectional predictability within an explicitly supported protocol-family measurement contract",
       "forbidden_interpretation": "causal LP feedback, common capital levels across V2 and V3, V3 flow normalized by V2 capital, LP profitability, or rent incidence",
