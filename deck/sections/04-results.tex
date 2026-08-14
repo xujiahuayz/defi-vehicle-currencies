@@ -93,58 +93,39 @@
 \decknote{Changes compare the same January--June dates in 2024 and 2026. Bars show 95\% calendar-HAC confidence intervals.}
 \end{frame}
 
-% EVIDENCE-STATUS: registered mechanism design; no current LP or settlement estimate is displayed
-% EVIDENCE-COMMIT: 8e7bb28
-% EVIDENCE-WORKTREE: uncommitted design-only edits atop 8e7bb28; no numerical estimate is displayed
-% EVIDENCE-SOURCES: docs/specification-lock.json; docs/findings-freeze.md; docs/research-questions-and-empirical-design.md
-% SCIENTIFIC-BOUNDARY: route intermediation, external token movement, and LP capital are distinct outcomes; temporal ordering alone is not causal feedback
-% VISUAL-FUNCTION: three mechanism margins | route, transfer, and capital cards | keep economic intermediation separate from settlement and liquidity supply
-\begin{frame}{Route use, token movement, and LP capital are different objects}
-\vspace{-0.05cm}
+% EVIDENCE-STATUS: registered liquidity-allocation question; no estimate is displayed
+% EVIDENCE-COMMIT: 37852d81d08eca7fd1ef1caa5d3ef4c36448050b
+% EVIDENCE-SOURCES: paper/sections/05-rivals.tex; docs/research-questions-and-empirical-design.md
+% SCIENTIFIC-BOUNDARY: temporal ordering can distinguish two predictive patterns but does not by itself identify causal feedback
+% VISUAL-FUNCTION: liquidity-allocation question | opposed timing diagrams | distinguish liquidity-leading-use from use-leading-liquidity without displaying pending estimates
+\begin{frame}{Does liquidity lead vehicle use---or follow it?}
+\vspace{0.02cm}
 \begin{columns}[T,totalwidth=\textwidth]
-\begin{column}{0.315\textwidth}
-\evidencekicker{Route intermediation}
+\begin{column}{0.48\textwidth}
+\evidencekicker{Liquidity first}
+\vspace{0.25cm}
 \centering
-\begin{tikzpicture}[x=0.88cm,y=1cm]
-\node[nodepoint] (a) at (0,1.55) {A};
-\node[nodepoint,fill=ucldark,text=white,draw=ucldark] (k) at (1.75,1.55) {$k$};
-\node[nodepoint] (b) at (3.50,1.55) {B};
-\draw[route,draw=ucldark] (a)--(k);
-\draw[route,draw=ucldark] (k)--(b);
-\node[font=\scriptsize,align=center,text width=3.7cm] at (1.75,0.45) {How much indirect trade passes through asset $k$?};
+\begin{tikzpicture}[x=1cm,y=1cm]
+\node[softbox,text width=4.35cm,minimum height=0.82cm,align=center] (capital) at (0,2.60) {Capital or provider inflow in\\vehicle-linked pools at $t$};
+\node[softbox,text width=4.35cm,minimum height=0.82cm,align=center] (route) at (0,0.68) {Vehicle share at $t+\tau$};
+\draw[-{Stealth[length=6pt]},line width=1.7pt,draw=stable] (capital)--(route);
 \end{tikzpicture}
-\raggedright{\fontsize{7.2}{8.0}\selectfont \textbf{Measure:} route or routed-value share.\par}
+\par\vspace{0.10cm}\raggedright
+{\small Liquidity supply may attract later routes.\par}
 \end{column}
-\begin{column}{0.315\textwidth}
-\evidencekicker{External token movement}
+\begin{column}{0.48\textwidth}
+\evidencekicker{Vehicle use first}
+\vspace{0.25cm}
 \centering
-\begin{tikzpicture}[x=0.88cm,y=1cm]
-\node[softbox,inner sep=4pt,minimum width=1.32cm,align=center] (p1) at (0.38,1.55) {pool 1};
-\node[softbox,inner sep=4pt,minimum width=1.32cm,align=center] (p2) at (3.10,1.55) {pool 2};
-\draw[-{Stealth[length=5pt]},draw=accent,line width=1.5pt] (p1)--node[midway,above=10pt,font=\scriptsize\bfseries,text=accent] {$k$ transfer} (p2);
-\node[font=\scriptsize,align=center,text width=3.7cm] at (1.75,0.45) {How much intermediary token moves between contracts?};
+\begin{tikzpicture}[x=1cm,y=1cm]
+\node[softbox,text width=4.35cm,minimum height=0.82cm,align=center] (route) at (0,2.60) {Vehicle share at $t$};
+\node[softbox,text width=4.35cm,minimum height=0.82cm,align=center] (capital) at (0,0.68) {Capital or provider inflow in\\vehicle-linked pools at $t+\tau$};
+\draw[-{Stealth[length=6pt]},line width=1.7pt,draw=ucldark] (route)--(capital);
 \end{tikzpicture}
-\raggedright{\fontsize{7.2}{8.0}\selectfont \textbf{Measure:} external transfers and transferred value per route.\par}
-\end{column}
-\begin{column}{0.315\textwidth}
-\evidencekicker{Liquidity-provider capital}
-\centering
-\begin{tikzpicture}[x=0.88cm,y=1cm]
-\node[softbox,inner sep=4pt,minimum width=1.45cm,align=center] (lp) at (0.28,1.55) {LP};
-\node[softbox,inner sep=4pt,minimum width=1.72cm,align=center,draw=stable] (pool) at (3.00,1.55) {$A/k$ and $k/B$\\pools};
-\draw[-{Stealth[length=5pt]},draw=stable,line width=1.5pt] (lp)--node[midway,above=6pt,font=\scriptsize\bfseries,text=stable] {capital} (pool);
-\node[font=\scriptsize,align=center,text width=3.7cm] at (1.75,0.45) {How do liquidity stocks, executable depth, and LP reallocations relate to vehicle use?};
-\end{tikzpicture}
-\raggedright{\fontsize{6.7}{7.5}\selectfont
-\textbf{Deposited capital:} end-of-day V2 pool reserves in USD.\\
-\textbf{Executable depth:} output at fixed trade sizes and directions.\\
-\textbf{Provider flows:} signed and gross V3 LP dollars over the response window.\par}
+\par\vspace{0.10cm}\raggedright
+{\small Providers may follow routed demand.\par}
 \end{column}
 \end{columns}
-\vspace{0.05cm}
-\begin{beamercolorbox}[sep=0.12cm,wd=\textwidth]{block body}
-{\fontsize{7.0}{7.7}\selectfont\textbf{Question frame.} At the candidate-day level, compare route use with each measure at exact 1-, 7-, 30-, and 120-day horizons. V2 stocks and V3 flows are estimated separately; depth is not LP capital. Timing alone is not causal.}
-\end{beamercolorbox}
 \end{frame}
 
 % EVIDENCE-STATUS: admitted V1 mandate and V2 pair-formation result

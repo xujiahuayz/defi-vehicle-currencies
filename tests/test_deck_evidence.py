@@ -195,19 +195,21 @@ def test_deck_mechanism_sequence_separates_route_settlement_and_capital() -> Non
     design = (ROOT / "deck" / "sections" / "03-design.tex").read_text(
         encoding="utf-8"
     )
+    liquidity_asset = (
+        ROOT / "deck" / "assets" / "liquidity-quantity-cross-section.tex"
+    ).read_text(encoding="utf-8")
 
-    assert "Route use, token movement, and LP capital are different objects" in results
-    assert "Route intermediation" in results
-    assert "External token movement" in results
-    assert "Liquidity-provider capital" in results
-    assert "route or routed-value share" in results
-    assert "external transfers and transferred value per route" in results
-    assert "Deposited capital:" in results
-    assert "Executable depth:" in results
-    assert "Provider flows:" in results
-    assert "exact 1-, 7-, 30-, and 120-day horizons" in results
-    assert "V2 stocks and V3 flows are estimated separately" in results
-    assert "depth is not LP capital" in results
+    assert "Does liquidity lead vehicle use---or follow it?" in results
+    assert "Capital or provider inflow" in results
+    assert "Liquidity supply may attract later routes" in results
+    assert "Providers may follow routed demand" in results
+    assert "candidate-day" not in results
+    assert "exact 1-, 7-, 30-, and 120-day horizons" not in results
+
+    assert "inventory: exact token holdings" in liquidity_asset
+    assert "deposited capital: independently valued holdings" in liquidity_asset
+    assert "executable depth: quantity available" in liquidity_asset
+    assert "quote quality" in liquidity_asset
 
     assert "V4 can net settlement without removing the vehicle route" not in results
     assert "https://app.uniswap.org/whitepaper-v4.pdf" in identification
