@@ -5,6 +5,7 @@ from __future__ import annotations
 
 import argparse
 import gzip
+import hashlib
 import json
 import os
 from concurrent.futures import as_completed
@@ -12,6 +13,7 @@ from dataclasses import asdict
 from pathlib import Path
 
 import pandas as pd
+import pyarrow.parquet as pq
 
 from ddvc.calendar import RESEARCH_SAMPLE_END, RESEARCH_SAMPLE_START, calendar_days
 from ddvc.data_release import (
@@ -75,6 +77,30 @@ RAW = DATA_DIR / "raw" / "thegraph"
 QUALITY_PANEL = DATA_DIR / "processed" / "market_state_quality.parquet"
 QUALITY_EXHIBIT = OUTPUT_DIR / "exhibits" / "market_state_quality.jsonl"
 LOCK = DATA_DIR / "processed" / ".market_state.lock"
+LEGACY_V2_ROUTE_COST_ANCHOR_MANIFEST = (
+    DATA_DIR
+    / "raw"
+    / "ethereum"
+    / "token_decimals"
+    / "v2_main_route_cost_selected_anchors.json"
+)
+LEGACY_V2_ROUTE_COST_UNRESOLVED = (
+    DATA_DIR
+    / "raw"
+    / "ethereum"
+    / "token_decimals"
+    / "v2_main_route_cost_unresolved_tokens.json"
+)
+LEGACY_V2_ROUTE_COST_TOKEN_REGISTRY = (
+    DATA_DIR / "processed" / "v2_main_route_cost_token_decimals.parquet"
+)
+LEGACY_V2_ROUTE_COST_CODE_SOURCES = [
+    "scripts/build_market_state.py",
+    "scripts/run_route_cost_panel.py",
+    "src/ddvc/asset_types.py",
+    "src/ddvc/token_decimals.py",
+    "src/ddvc/v2_event_completeness.py",
+]
 
 
 def market_state_quality_frame(rows: list[dict[str, object]]) -> pd.DataFrame:
@@ -423,6 +449,8 @@ def legacy_v2_missing_decimals(
     raw_root: Path,
     targets: list[tuple[str, str]],
     statics: dict[str, dict[str, object]],
+    *,
+    admitted_pools_by_target: dict[tuple[str, str], set[str]] | None = None,
 ) -> tuple[set[str], set[tuple[str, str]], int]:
     """Bound active legacy-day pools whose exact token decimals are not certified."""
 
@@ -443,6 +471,11 @@ def legacy_v2_missing_decimals(
                         if isinstance(pair, dict)
                         else ""
                     )
+                    if (
+                        admitted_pools_by_target is not None
+                        and pool not in admitted_pools_by_target.get((venue, day), set())
+                    ):
+                        continue
                     static = statics[venue].get(pool)
                     if static is None:
                         continue
@@ -462,20 +495,231 @@ def legacy_v2_missing_decimals(
     return tokens, pools, event_rows
 
 
-def audit_legacy_v2_correction_inputs() -> dict[str, int]:
-    """Reopen the cached full-day inputs needed to replace flat V2 corrections."""
+def legacy_v2_route_cost_endpoints(
+    days: list[str],
+) -> tuple[dict[str, set[str]], dict[str, dict[str, object]], list[Path]]:
+    """Reuse the canonical main-spec selector without retaining full route days."""
+
+    from scripts.run_route_cost_panel import (
+        VEHICLE_ADDRESSES,
+        _routes_by_pair,
+    )
+
+    columns = [
+        "tx_hash",
+        "component_id",
+        "route_class",
+        "token_in",
+        "token_out",
+        "token_in_sym",
+        "token_out_sym",
+        "amount_usd",
+        "tin_role",
+        "tout_role",
+    ]
+    endpoints_by_day: dict[str, set[str]] = {}
+    statistics: dict[str, dict[str, object]] = {}
+    inputs: list[Path] = []
+    for day in sorted(set(days)):
+        path = DATA_DIR / "unified" / f"{day}.parquet"
+        pairs = _routes_by_pair(pd.read_parquet(path, columns=columns), top_pairs=200)
+        if pairs.empty:
+            raise RuntimeError(f"main_v1 route-pair selector is empty for {day}")
+        endpoints = set(pairs["src"]) | set(pairs["tgt"]) | set(VEHICLE_ADDRESSES)
+        endpoints_by_day[day] = endpoints
+        statistics[day] = {
+            "selected_pairs": int(len(pairs)),
+            "endpoint_tokens_including_candidates": int(len(endpoints)),
+            "realized_bridge_volume_usd": float(pairs["realized_bridge_volume_usd"].sum()),
+        }
+        inputs.append(path)
+    return endpoints_by_day, statistics, inputs
+
+
+def legacy_v2_route_cost_activity_perimeter(
+    raw_root: Path,
+    targets: list[tuple[str, str]],
+    pairs_by_venue: dict[str, list[object]],
+    endpoints_by_day: dict[str, set[str]],
+    *,
+    excluded_pools_by_venue: dict[str, set[str]] | None = None,
+) -> tuple[
+    dict[tuple[str, str], set[str]],
+    dict[tuple[str, str], set[str]],
+    dict[str, list[object]],
+    dict[str, int],
+    list[Path],
+]:
+    """Admit only active pools joining main-spec endpoints or locked candidates."""
+
+    by_pool = {
+        venue: {str(pair.pool): pair for pair in pairs}
+        for venue, pairs in pairs_by_venue.items()
+    }
+    admitted: dict[tuple[str, str], set[str]] = {}
+    anchor_support: dict[tuple[str, str], set[str]] = {}
+    provider_observations: dict[str, list[object]] = {}
+    active_pool_days: set[tuple[str, str, str]] = set()
+    irrelevant_pool_days: set[tuple[str, str, str]] = set()
+    admitted_event_rows = 0
+    irrelevant_event_rows = 0
+    bounded_exclusion_event_rows = 0
+    inputs: list[Path] = []
+    for venue, day in targets:
+        allowed_tokens = endpoints_by_day[day]
+        target = (venue, day)
+        admitted[target] = set()
+        anchor_support[target] = set()
+        for stream in ("mints", "burns", "swaps"):
+            path = raw_root / venue / f"{venue}_{stream}_{day}.jsonl.gz"
+            inputs.append(path)
+            with gzip.open(path, "rt") as handle:
+                for line in handle:
+                    if not line.strip():
+                        continue
+                    row = json.loads(line)
+                    raw_pair = row.get("pair")
+                    pool = (
+                        str(raw_pair.get("id") or "").lower()
+                        if isinstance(raw_pair, dict)
+                        else ""
+                    )
+                    if pool in (excluded_pools_by_venue or {}).get(venue, set()):
+                        bounded_exclusion_event_rows += 1
+                        continue
+                    pair = by_pool[venue].get(pool)
+                    if pair is None:
+                        raise ValueError(
+                            f"legacy V2 provider pool is outside the certified factory registry: {venue}/{day}/{pool}"
+                        )
+                    pool_day = (venue, day, pool)
+                    endpoint_tokens = {
+                        token
+                        for token in (pair.token0, pair.token1)
+                        if token in allowed_tokens
+                    }
+                    if endpoint_tokens:
+                        anchor_support[target].add(pool)
+                        for name, token in (
+                            ("token0", pair.token0),
+                            ("token1", pair.token1),
+                        ):
+                            if token not in endpoint_tokens:
+                                continue
+                            value = raw_pair[name].get("decimals")
+                            observations = provider_observations.setdefault(token, [])
+                            if value not in observations:
+                                observations.append(value)
+                    if pair.token0 not in allowed_tokens or pair.token1 not in allowed_tokens:
+                        irrelevant_pool_days.add(pool_day)
+                        irrelevant_event_rows += 1
+                        continue
+                    admitted[target].add(pool)
+                    active_pool_days.add(pool_day)
+                    admitted_event_rows += 1
+        if not admitted[target]:
+            raise RuntimeError(f"main_v1 V2 activity perimeter is empty for {venue}/{day}")
+    counters = {
+        "admitted_pool_days": len(active_pool_days),
+        "admitted_unique_pools": len({item[2] for item in active_pool_days}),
+        "admitted_event_rows": admitted_event_rows,
+        "anchor_support_pool_days": sum(len(pools) for pools in anchor_support.values()),
+        "irrelevant_pool_days": len(irrelevant_pool_days),
+        "irrelevant_event_rows": irrelevant_event_rows,
+        "bounded_exclusion_event_rows": bounded_exclusion_event_rows,
+    }
+    return admitted, anchor_support, provider_observations, counters, inputs
+
+
+def legacy_v2_factory_token_anchors(
+    tokens: set[str],
+    anchor_pools_by_target: dict[tuple[str, str], set[str]],
+    factory_inputs: list[Path],
+) -> tuple[dict[str, object], list[Path]]:
+    """Select deterministic PairCreated anchors from the certified factory leaves."""
+
+    from ddvc.token_decimals import TokenDecimalsAnchor, retain_token_decimals_anchor
+    from ddvc.v2_event_completeness import decode_pair_created_log
+
+    admitted_by_venue: dict[str, set[str]] = {}
+    for (venue, _day), pools in anchor_pools_by_target.items():
+        admitted_by_venue.setdefault(venue, set()).update(pools)
+    anchors: dict[str, TokenDecimalsAnchor] = {}
+    used_inputs: set[Path] = set()
+    leaf_paths = sorted(
+        path
+        for path in factory_inputs
+        if path.suffix == ".parquet" and path.parent.name == "leaves"
+    )
+    for path in leaf_paths:
+        venue = path.parent.parent.name
+        if venue not in admitted_by_venue:
+            continue
+        used = False
+        for record in pq.read_table(path).to_pylist():
+            pair = decode_pair_created_log(venue, record)
+            if pair.pool not in admitted_by_venue[venue]:
+                continue
+            for token in (pair.token0, pair.token1):
+                if token not in tokens:
+                    continue
+                retain_token_decimals_anchor(
+                    anchors,
+                    TokenDecimalsAnchor(
+                        token=token,
+                        block_number=int(record["block_number"]),
+                        block_hash=str(record["block_hash"]).lower(),
+                        priority=2,
+                        proof_kind="factory_pair_created",
+                        venue=venue,
+                        pool=pair.pool,
+                        event_type="pair_created",
+                        transaction_hash=str(record["transaction_hash"]).lower(),
+                        transaction_index=int(record["transaction_index"]),
+                        log_index=int(record["log_index"]),
+                    ),
+                )
+                used = True
+        if used:
+            used_inputs.add(path)
+            marker = path.with_suffix(".meta.json")
+            if not marker.is_file():
+                raise FileNotFoundError(marker)
+            used_inputs.add(marker)
+    if set(anchors) != tokens:
+        missing = sorted(tokens - set(anchors))
+        raise RuntimeError(
+            f"purpose-bound V2 tokens lack certified factory anchors: count={len(missing):,}; first={missing[:3]}"
+        )
+    return dict(sorted(anchors.items())), sorted(used_inputs)
+
+
+def audit_legacy_v2_correction_inputs(
+    *,
+    fetch_token_decimals: bool = False,
+    refresh: bool = False,
+    workers: int = 4,
+) -> dict[str, int]:
+    """Certify and optionally refresh the purpose-bound legacy V2 corrections."""
 
     from ddvc.ethereum_logs import file_sha256
     from ddvc.graph_event_order import correction_root_for_graph
-    from ddvc.provenance import current_artifacts
+    from ddvc.provenance import code_fingerprint, current_artifacts
     from ddvc.token_decimals import (
+        build_token_decimals_anchor_manifest,
+        build_token_decimals_registry,
+        load_token_decimals_anchor_manifest,
+        resolve_token_decimals_evidence,
         token_decimals_registry_sha256,
         validate_token_decimals_registry,
+        write_token_decimals_anchor_manifest,
+        write_token_decimals_registry,
     )
     from ddvc.v2_event_completeness import (
         PoolStatic,
         V2_EVENT_SOURCE_CURRENT,
         V2_TOKEN_DECIMALS_REGISTRY,
+        canonical_v2_pool_templates,
         frozen_upper_block_path,
         load_v2_bounded_token_exclusion,
         missing_v2_exact_log_ranges,
@@ -483,8 +727,9 @@ def audit_legacy_v2_correction_inputs() -> dict[str, int]:
         reopen_v2_factory_pool_registry,
         validate_v2_event_source_certificate,
     )
-    from ddvc.v2_event_contract import V2_EVENT_VENUES
+    from ddvc.v2_event_contract import V2_EVENT_VENUES, V2_RECONCILIATION_SCOPE
     from scripts.audit_v2_event_completeness import load_or_resolve_day_bounds
+    from scripts.reconcile_graph_event_order import reconcile_day
 
     correction_root = correction_root_for_graph(RAW)
     targets = legacy_v2_correction_days(correction_root)
@@ -511,7 +756,7 @@ def audit_legacy_v2_correction_inputs() -> dict[str, int]:
         certificate,
         audit_days,
     )
-    _pools_by_venue, pairs_by_venue, _factory_inputs, _leaf_count = (
+    _pools_by_venue, pairs_by_venue, factory_inputs, _leaf_count = (
         reopen_v2_factory_pool_registry(certificate)
     )
     bounded_exclusion = load_v2_bounded_token_exclusion()
@@ -570,7 +815,23 @@ def audit_legacy_v2_correction_inputs() -> dict[str, int]:
             f"count={len(missing_exact_chunks):,}; first={missing_exact_chunks[0]}"
         )
 
-    statics = {
+    endpoints_by_day, endpoint_statistics, route_inputs = legacy_v2_route_cost_endpoints(
+        [day for _venue, day in targets]
+    )
+    (
+        admitted_pools_by_target,
+        anchor_pools_by_target,
+        provider_observations,
+        perimeter_counts,
+        activity_inputs,
+    ) = legacy_v2_route_cost_activity_perimeter(
+        RAW,
+        targets,
+        pairs_by_venue,
+        endpoints_by_day,
+        excluded_pools_by_venue=excluded_pools,
+    )
+    base_statics = {
         venue: {
             pair.pool: PoolStatic(
                 pair.pool,
@@ -586,21 +847,243 @@ def audit_legacy_v2_correction_inputs() -> dict[str, int]:
     missing_tokens, missing_pools, missing_event_rows = legacy_v2_missing_decimals(
         RAW,
         targets,
-        statics,
+        base_statics,
+        admitted_pools_by_target=admitted_pools_by_target,
     )
+    missing_endpoint_tokens = set(provider_observations) - set(token_decimals)
+    anchors, anchor_inputs = legacy_v2_factory_token_anchors(
+        missing_endpoint_tokens,
+        anchor_pools_by_target,
+        factory_inputs,
+    )
+    event_release_pointer = json.loads(
+        V2_EVENT_SOURCE_CURRENT.read_text(encoding="utf-8")
+    )
+    context = {
+        "scope": "main_v1",
+        "top_pairs": 200,
+        "trade_sizes_usd": [1000, 10000, 100000],
+        "hours_utc": list(range(24)),
+        "unify_wrapped": True,
+        "selection_code_sha256": code_fingerprint(
+            LEGACY_V2_ROUTE_COST_CODE_SOURCES
+        ),
+        "base_event_release_generation": str(event_release_pointer["generation_id"]),
+        "base_token_registry_sha256": hashlib.sha256(
+            V2_TOKEN_DECIMALS_REGISTRY.read_bytes()
+        ).hexdigest(),
+        "targets": [
+            {
+                "venue": venue,
+                "day": day,
+                "endpoints_including_candidates": sorted(endpoints_by_day[day]),
+                "admitted_active_pools": sorted(admitted_pools_by_target[(venue, day)]),
+                "endpoint_anchor_support_pool_count": len(
+                    anchor_pools_by_target[(venue, day)]
+                ),
+                "endpoint_anchor_support_pools_sha256": hashlib.sha256(
+                    json.dumps(
+                        sorted(anchor_pools_by_target[(venue, day)]),
+                        separators=(",", ":"),
+                    ).encode()
+                ).hexdigest(),
+            }
+            for venue, day in targets
+        ],
+    }
+    selection_inputs = sorted(
+        {
+            UNIFIED_QUALITY_PANEL,
+            V2_EVENT_SOURCE_CURRENT,
+            V2_TOKEN_DECIMALS_REGISTRY,
+            *route_inputs,
+            *activity_inputs,
+            *anchor_inputs,
+        },
+        key=str,
+    )
+    manifest_statistics = {
+        "legacy_days": len(targets),
+        "distinct_route_days": len(endpoints_by_day),
+        "selected_pair_days": sum(
+            int(record["selected_pairs"]) for record in endpoint_statistics.values()
+        ),
+        "admitted_pool_days": perimeter_counts["admitted_pool_days"],
+        "admitted_unique_pools": perimeter_counts["admitted_unique_pools"],
+        "missing_base_registry_tokens": len(missing_endpoint_tokens),
+        "missing_base_registry_pools": len(missing_pools),
+    }
+    if LEGACY_V2_ROUTE_COST_ANCHOR_MANIFEST.is_file():
+        (
+            persisted_anchors,
+            persisted_observations,
+            _persisted_inputs,
+            persisted_statistics,
+        ) = load_token_decimals_anchor_manifest(
+            LEGACY_V2_ROUTE_COST_ANCHOR_MANIFEST,
+            expected_context=context,
+        )
+        if (
+            persisted_anchors != anchors
+            or persisted_observations
+            != {
+                token: provider_observations.get(token, [])
+                for token in sorted(anchors)
+            }
+            or persisted_statistics != manifest_statistics
+        ):
+            raise ValueError("purpose-bound V2 anchor manifest selection changed")
+    else:
+        manifest = build_token_decimals_anchor_manifest(
+            anchors,
+            {
+                token: provider_observations.get(token, [])
+                for token in sorted(anchors)
+            },
+            context=context,
+            lineage_inputs=selection_inputs,
+            statistics=manifest_statistics,
+        )
+        write_token_decimals_anchor_manifest(
+            manifest,
+            LEGACY_V2_ROUTE_COST_ANCHOR_MANIFEST,
+        )
+
+    extension_observations = {
+        token: provider_observations.get(token, []) for token in sorted(anchors)
+    }
+    if LEGACY_V2_ROUTE_COST_TOKEN_REGISTRY.is_file():
+        extension_decimals, extension_registry = validate_token_decimals_registry(
+            LEGACY_V2_ROUTE_COST_TOKEN_REGISTRY,
+            expected_anchors=anchors,
+            provider_observations=extension_observations,
+        )
+    else:
+        if not fetch_token_decimals:
+            raise RuntimeError(
+                "legacy V2 correction-input audit requires cached exact evidence for the "
+                f"purpose-bound extension: tokens={len(anchors):,}; pools={len(missing_pools):,}"
+            )
+        evidence, evidence_paths = resolve_token_decimals_evidence(
+            anchors,
+            fetch=True,
+            workers=workers,
+            unresolved_ledger_path=LEGACY_V2_ROUTE_COST_UNRESOLVED,
+            anchor_manifest_path=LEGACY_V2_ROUTE_COST_ANCHOR_MANIFEST,
+        )
+        extension_registry = build_token_decimals_registry(
+            anchors,
+            evidence,
+            evidence_paths,
+            extension_observations,
+        )
+        write_token_decimals_registry(
+            extension_registry,
+            LEGACY_V2_ROUTE_COST_TOKEN_REGISTRY,
+        )
+        stamp(
+            LEGACY_V2_ROUTE_COST_TOKEN_REGISTRY,
+            code_sources=LEGACY_V2_ROUTE_COST_CODE_SOURCES,
+            inputs=[
+                LEGACY_V2_ROUTE_COST_ANCHOR_MANIFEST,
+                *selection_inputs,
+                *evidence_paths.values(),
+            ],
+            rows=len(extension_registry),
+            notes=(
+                "exact historical ERC-20 decimals for active V2 pools joining "
+                "main_v1 endpoints and locked vehicle candidates on legacy correction days"
+            ),
+        )
+        extension_decimals, extension_registry = validate_token_decimals_registry(
+            LEGACY_V2_ROUTE_COST_TOKEN_REGISTRY,
+            expected_anchors=anchors,
+            provider_observations=extension_observations,
+        )
+
+    overlap = set(token_decimals).intersection(extension_decimals)
+    if overlap:
+        raise ValueError(
+            f"purpose-bound V2 decimals extension overlaps the certified base registry: {sorted(overlap)[:3]}"
+        )
+    merged_decimals = {**token_decimals, **extension_decimals}
+    statics = {
+        venue: {
+            pair.pool: PoolStatic(
+                pair.pool,
+                pair.token0,
+                pair.token1,
+                merged_decimals.get(pair.token0),
+                merged_decimals.get(pair.token1),
+            )
+            for pair in pairs
+        }
+        for venue, pairs in pairs_by_venue.items()
+    }
+    unresolved_tokens, unresolved_pools, unresolved_event_rows = legacy_v2_missing_decimals(
+        RAW,
+        targets,
+        statics,
+        admitted_pools_by_target=admitted_pools_by_target,
+    )
+    if unresolved_tokens:
+        raise RuntimeError(
+            "purpose-bound V2 token-decimals extension is incomplete: "
+            f"tokens={len(unresolved_tokens):,}; pools={len(unresolved_pools):,}; "
+            f"event_rows={unresolved_event_rows:,}"
+        )
+
+    refreshed = 0
+    if refresh:
+        for venue, day in targets:
+            expected_pools = admitted_pools_by_target[(venue, day)]
+            templates = canonical_v2_pool_templates(
+                {pool: statics[venue][pool] for pool in expected_pools}
+            )
+            bounds = load_or_resolve_day_bounds(day, fetch=False)
+            reconcile_day(
+                venue,
+                day,
+                frozen_upper=frozen_upper,
+                workers=workers,
+                chunk_size=50,
+                force=False,
+                start_block=int(bounds["start_block"]),
+                end_block=int(bounds["end_block"]),
+                expected_pools=expected_pools,
+                audited_token_decimals=merged_decimals,
+                pool_templates=templates,
+                raw_root=RAW,
+                reconciliation_scope=V2_RECONCILIATION_SCOPE,
+                authority_inputs=[
+                    V2_EVENT_SOURCE_CURRENT,
+                    V2_TOKEN_DECIMALS_REGISTRY,
+                    LEGACY_V2_ROUTE_COST_ANCHOR_MANIFEST,
+                    LEGACY_V2_ROUTE_COST_TOKEN_REGISTRY,
+                ],
+            )
+            refreshed += 1
+
     result = {
         "legacy_days": len(targets),
         "missing_exact_chunks": 0,
-        "missing_tokens": len(missing_tokens),
-        "missing_pools": len(missing_pools),
-        "missing_event_rows": missing_event_rows,
+        "selected_pair_days": manifest_statistics["selected_pair_days"],
+        "admitted_pool_days": perimeter_counts["admitted_pool_days"],
+        "admitted_unique_pools": perimeter_counts["admitted_unique_pools"],
+        "anchor_support_pool_days": perimeter_counts["anchor_support_pool_days"],
+        "irrelevant_pool_days": perimeter_counts["irrelevant_pool_days"],
+        "irrelevant_event_rows": perimeter_counts["irrelevant_event_rows"],
+        "bounded_exclusion_event_rows": perimeter_counts[
+            "bounded_exclusion_event_rows"
+        ],
+        "extension_tokens": len(extension_registry),
+        "extension_pools": len(missing_pools),
+        "extension_event_rows": missing_event_rows,
+        "missing_tokens": 0,
+        "missing_pools": 0,
+        "missing_event_rows": 0,
+        "refreshed_generations": refreshed,
     }
-    if missing_tokens:
-        raise RuntimeError(
-            "legacy V2 correction-input audit requires a purpose-bound exact token-decimals "
-            f"extension: tokens={result['missing_tokens']:,}; pools={result['missing_pools']:,}; "
-            f"event_rows={result['missing_event_rows']:,}"
-        )
     return result
 
 
@@ -784,11 +1267,28 @@ def main() -> int:
         action="store_true",
         help="reopen the cached full-day inputs needed to replace flat V2 correction days, then stop",
     )
+    parser.add_argument(
+        "--fetch-token-decimals",
+        action="store_true",
+        help="resolve missing exact token anchors while preparing legacy V2 corrections",
+    )
+    parser.add_argument(
+        "--refresh-legacy-v2-corrections",
+        action="store_true",
+        help="publish purpose-bound current correction generations after their inputs pass",
+    )
     args = parser.parse_args()
     if args.migrate_from and args.rekey_from:
         parser.error("--migrate-from and --rekey-from are mutually exclusive")
     if args.family == "all" and args.venue:
         parser.error("--venue requires one explicit --family")
+    if (
+        args.fetch_token_decimals or args.refresh_legacy_v2_corrections
+    ) and not args.audit_legacy_v2_corrections:
+        parser.error(
+            "--fetch-token-decimals and --refresh-legacy-v2-corrections require "
+            "--audit-legacy-v2-corrections"
+        )
     if args.audit_legacy_v2_corrections:
         if (
             args.audit_calendar
@@ -808,7 +1308,11 @@ def main() -> int:
             job="raw market-data fetch, enrichment, or canonical materialisation",
         ):
             with exclusive_job(LOCK, job="canonical market-state build"):
-                result = audit_legacy_v2_correction_inputs()
+                result = audit_legacy_v2_correction_inputs(
+                    fetch_token_decimals=args.fetch_token_decimals,
+                    refresh=args.refresh_legacy_v2_corrections,
+                    workers=bounded_workers(args.workers, maximum=4),
+                )
         print(f"COMPLETE: legacy V2 correction inputs={result}")
         return 0
     families = list(FAMILY_STREAMS) if args.family == "all" else [args.family]

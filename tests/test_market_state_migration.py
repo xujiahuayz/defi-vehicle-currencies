@@ -20,7 +20,9 @@ from ddvc.state_data import (
 from scripts.build_market_state import (
     build_family,
     legacy_v2_correction_days,
+    legacy_v2_factory_token_anchors,
     legacy_v2_missing_decimals,
+    legacy_v2_route_cost_activity_perimeter,
     migrate_v1_partition,
     preflight_event_order_generations,
     rekey_current_partition,
@@ -81,6 +83,12 @@ def test_legacy_v2_missing_decimals_counts_only_active_uncertified_pools(tmp_pat
                 decimals0=6,
                 decimals1=18,
             ),
+            "outside": SimpleNamespace(
+                token0="0xe",
+                token1="0xf",
+                decimals0=None,
+                decimals1=None,
+            ),
         }
     }
 
@@ -88,7 +96,106 @@ def test_legacy_v2_missing_decimals_counts_only_active_uncertified_pools(tmp_pat
         tmp_path,
         [(venue, day)],
         statics,
+        admitted_pools_by_target={(venue, day): {"missing", "complete"}},
     ) == ({"0xb"}, {(venue, "missing")}, 1)
+
+
+def test_legacy_v2_route_cost_activity_perimeter_is_day_and_pool_specific(tmp_path) -> None:
+    venue = "uniswap_v2"
+    day = "20250101"
+    write_streams(
+        tmp_path,
+        "constant_product",
+        venue,
+        day,
+        {
+            "mints": [
+                {
+                    "pair": {
+                        "id": "admitted",
+                        "token0": {"decimals": "18"},
+                        "token1": {"decimals": "6"},
+                    }
+                },
+                {
+                    "pair": {
+                        "id": "irrelevant",
+                        "token0": {"decimals": "18"},
+                        "token1": {"decimals": "8"},
+                    }
+                },
+            ],
+            "burns": [],
+            "swaps": [],
+        },
+    )
+    pairs = {
+        venue: [
+            SimpleNamespace(pool="admitted", token0="0xa", token1="0xb"),
+            SimpleNamespace(pool="irrelevant", token0="0xa", token1="0xc"),
+        ]
+    }
+
+    admitted, anchor_support, observations, counts, inputs = (
+        legacy_v2_route_cost_activity_perimeter(
+            tmp_path,
+            [(venue, day)],
+            pairs,
+            {day: {"0xa", "0xb"}},
+        )
+    )
+
+    assert admitted == {(venue, day): {"admitted"}}
+    assert anchor_support == {(venue, day): {"admitted", "irrelevant"}}
+    assert observations == {"0xa": ["18"], "0xb": ["6"]}
+    assert counts == {
+        "admitted_pool_days": 1,
+        "admitted_unique_pools": 1,
+        "admitted_event_rows": 1,
+        "anchor_support_pool_days": 2,
+        "irrelevant_pool_days": 1,
+        "irrelevant_event_rows": 1,
+        "bounded_exclusion_event_rows": 0,
+    }
+    assert len(inputs) == 3
+
+
+def test_legacy_v2_factory_token_anchors_use_certified_admitted_pair(tmp_path) -> None:
+    venue = "uniswap_v2"
+    token0 = "0x" + "a" * 40
+    token1 = "0x" + "b" * 40
+    pool = "0x" + "c" * 40
+    leaf = tmp_path / venue / "leaves" / "blocks_00000001_00000002.parquet"
+    leaf.parent.mkdir(parents=True)
+    leaf.touch()
+    leaf.with_suffix(".meta.json").touch()
+    record = {
+        "block_number": 2,
+        "block_hash": "0x" + "1" * 64,
+        "transaction_hash": "0x" + "2" * 64,
+        "transaction_index": 3,
+        "log_index": 4,
+    }
+    table = SimpleNamespace(to_pylist=lambda: [record])
+    pair = SimpleNamespace(pool=pool, token0=token0, token1=token1)
+
+    with patch(
+        "scripts.build_market_state.pq.read_table",
+        return_value=table,
+    ), patch(
+        "ddvc.v2_event_completeness.decode_pair_created_log",
+        return_value=pair,
+    ):
+        anchors, inputs = legacy_v2_factory_token_anchors(
+            {token1},
+            {(venue, "20250101"): {pool}},
+            [leaf],
+        )
+
+    assert list(anchors) == [token1]
+    assert anchors[token1].pool == pool
+    assert anchors[token1].proof_kind == "factory_pair_created"
+    assert set(inputs) == {leaf, leaf.with_suffix(".meta.json")}
 
 
 def test_event_order_preflight_reports_every_stale_generation() -> None:
