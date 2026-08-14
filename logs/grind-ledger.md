@@ -713,3 +713,73 @@ freeze audit is RED with five blockers.
   as an exogenous opportunity change.
 - Leave exact-state coefficient prose outside the paper until its evidence
   locks. The published rotation bridge supports descriptive composition only.
+
+## 2026-08-14 — matched-market vehicle-rotation attack published
+
+**Targeted check:** the oldest supervisor queue unit: execute the registered
+`e1_1_pair_panel` estimator once against Studio's current leased D3 release,
+independently reconcile its algebra, update the findings record, and surface
+the result in the existing pair-composition deck frame.
+
+**REGRESSION-CHECK:** the purpose-bound estimand is the 2026-minus-2024 stable
+route-share contrast within the same ordered endpoint pair, calendar position,
+and broad realised route scope, using endpoint generation
+`5fb7cbf36508f168055492d246302331052760a470464ac666816379c05335ee` and
+D3 certificate generation
+`9aa4e1d3ecbc9fb899bf70ba70fc18cf1d621003162218e755fd8ecc4cbb3580`.
+The correction most at risk was treating endogenous realised route use as
+fixed architecture, opportunity, cost, or design treatment. The findings and
+deck therefore call these matched markets or like-for-like market comparisons
+and state the omitted venue sequence, feasible alternatives, notional,
+liquidity, cost, and router state.
+
+**Scientific consequence and concentration.** The pooled count rotation is
++25.68 percentage points, but the denominator-weighted count-share change is
+only +0.224 points inside matched markets (two-way ordered-pair and
+calendar-date CR1 SE 0.764 points; Holm p=1). Matched strict count is +0.323
+points (SE 0.749; Holm p=1), and strict supported value is -1.346 points (SE
+2.188; Holm p=1). All three exactly reproduce the independent benchmark. The
+aggregate result is therefore concentrated in market support/activity and
+realised vehicle-incidence margins rather than pervasive within-market
+switching. It materially narrows interpretation but does not identify the
+mechanism.
+
+**Work completed.** Preserved the committed bounded V2 exclusion, used the
+already-landed canonical estimator and runner, and published the three-row
+fixed-effects exhibit plus current provenance from the leased 554,188-cell
+panel. Extended the existing deck-value owner to validate and consume that
+exhibit, generate coefficient and confidence-interval macros, and fail closed
+on the comparison-set and inference contracts. Added the interval to the
+existing pair-composition ribbon, updated the findings freeze, and closed the
+supervisor queue item without creating another script or diagnostic panel.
+
+**DECISION:** `promote` the matched-market null as a descriptive rival test that
+locates the aggregate rotation; `narrow` the economic interpretation to market
+composition and realised use; do not claim architecture, opportunity, demand,
+preference, search, or cost effects.
+
+**Validation.** The estimator/runner and deck-owner tests passed 29 focused
+tests; the final integration/freeze suite passed 78 tests plus 11 subtests. All
+four E0 artifacts and the generated deck macros verify against current
+provenance. The deck compiled to 31 pages with Tectonic, the deck evidence and
+field-language audit passed, the changed frame passed prior-PDF comparison,
+and the complete contact sheet showed no clipping or layout regression. The
+broader conformance wrapper retained its pre-existing venue-structure alarm and
+could not invoke its hardcoded `latexmk` because local TinyTeX lacks Beamer; its
+deck-specific evidence, language, and numeric-provenance checks passed. The
+final freeze audit remains RED with five blockers.
+
+**Commits:** `b21ed0a` (current-lease evidence) and `dedc7bb` (findings, deck,
+and queue closure).
+
+**Blocking count:** 5.
+
+**For the next iteration:**
+- The queue is empty apart from its literal template placeholder. Resume the
+  highest-value live scientific blocker, currently the fixed-opportunity
+  route-cost construction required by D3/E1.
+- Treat this result as evidence that the aggregate rotation is not pervasive
+  inside comparable realised markets. Do not translate the null into proof
+  that pair type causes vehicle choice.
+- The paper and exact-state coefficient prose remain outside this unit; node P
+  and E1 remain closed.
