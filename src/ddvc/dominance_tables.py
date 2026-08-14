@@ -115,7 +115,7 @@ def render_dominance_rotation(rows: Iterable[Mapping[str, object]]) -> str:
         + r" pp ("
         + _unsigned_pp(_number(count, "hac_standard_error"))
         + r" pp) \\",
-        r"Routed value (20\% agreement) & "
+        r"Supported routed value (20\% agreement) & "
         + _pct(_number(value, "baseline_daily_mean"))
         + " & "
         + _pct(_number(value, "comparison_daily_mean"))
@@ -176,7 +176,7 @@ def render_pair_composition(
             ),
         ),
         (
-            r"20\% agreement sample, routed-value share",
+            r"20\% agreement sample, supported-value share",
             _unique(
                 records,
                 name="supported value fixed effect",

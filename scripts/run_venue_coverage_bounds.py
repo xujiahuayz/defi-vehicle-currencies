@@ -3,7 +3,7 @@
 
 Three measurements that turn coverage statements into signed bounds.
 
-First, the volume share of each of the seven venues by year, so a missing venue can be
+First, the volume share of each of eight data sources by year, so a missing venue can be
 read as a fraction of the market instead of as a name on a list.
 
 Second, the share of Curve's own USD swap volume that sits in pools failing the
@@ -48,10 +48,9 @@ from ddvc.tables import write_exhibit  # noqa: E402
 RAW = ROOT / "data" / "raw" / "thegraph"
 EX = ROOT / "output" / "exhibits"
 
-# The seven venues of the route-cost panel. uniswap_v1 is carried because it is the
-# forced-vehicle laboratory of the v1 study and because its volume share is part of the
-# bound: a venue too small to move a route cost is a different kind of gap from a venue
-# that is merely unpriced.
+# Eight sources enter the market-coverage comparison. Seven enter the route-cost design;
+# uniswap_v1 is carried as the forced-routing architecture sample and because its volume
+# share is part of the coverage bound. It is not a priced route-cost venue.
 VENUES = ("uniswap_v1", "uniswap_v2", "uniswap_v3", "uniswap_v4",
           "sushiswap_v2", "sushiswap_v3", "balancer", "curve")
 

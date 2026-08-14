@@ -50,6 +50,7 @@ def test_checked_in_fragments_equal_their_named_renderers() -> None:
 
 def test_rotation_and_usdt_values_are_exact() -> None:
     rotation = (TABLES / "dominance_rotation.tex").read_text(encoding="utf-8")
+    assert "Supported routed value (20\\% agreement)" in rotation
     assert "16.9\\% & 42.3\\% & $+25.4$ pp ($1.05$ pp)" in rotation
     assert "32.7\\% & 76.5\\% & $+43.9$ pp ($2.02$ pp)" in rotation
 
@@ -70,7 +71,7 @@ def test_pair_panel_c_contains_all_three_fixed_effect_rows() -> None:
         in pair
     )
     assert (
-        "20\\% agreement sample, routed-value share & $-1.35\\ (2.19)$ & 182,834"
+        "20\\% agreement sample, supported-value share & $-1.35\\ (2.19)$ & 182,834"
         in pair
     )
     assert "95\\% CI" not in pair
@@ -104,7 +105,10 @@ def test_paper_has_one_consumer_and_no_duplicate_inline_body() -> None:
         assert section.count(rf"\input{{../output/tables/{stem}.tex}}") == 1
     assert r"\begin{tabular}" not in section
     assert r"\begin{tabularx}" not in section
-    assert "ordered-pair $\\times$ month-day $\\times$ realised-scope fixed effects" in section
+    assert r"s^{(m)}_{c,y}=\alpha^{(m)}_{c}+\beta^{(m)}\mathbf{1}\{y=2026\}" in section
+    assert "2024 is the omitted year" in section
+    assert "94,260 fixed-effect cells" in section
+    assert "5,432 ordered-pair clusters" in section
     assert "two-way ordered-pair and calendar-date clustered CR1 inference" in section
     assert "descriptive, noncausal regressions" in section
 
@@ -128,7 +132,13 @@ def test_paper_has_one_consumer_and_no_duplicate_inline_body() -> None:
                 "data/manifests/output/exhibits/vehicle_transition_pair_fixed_effects.jsonl.prov.json",
             },
         ),
-        ("usdt_transition", {"output/exhibits/provisional_results_deck_values.tex"}),
+        (
+            "usdt_transition",
+            {
+                "output/exhibits/provisional_results_deck_values.tex",
+                "data/manifests/output/exhibits/provisional_results_deck_values.tex.prov.json",
+            },
+        ),
     ],
 )
 def test_generated_table_lineage_is_current(
@@ -142,7 +152,7 @@ def test_generated_table_lineage_is_current(
         assert record["payload_identity"]["sha256"]
         if stem == "usdt_transition":
             assert "provisional" in record["notes"]
-            assert "unstamped" in record["notes"]
+            assert "lineage" in record["notes"]
 
 
 def test_renderers_reject_missing_or_ambiguous_cells() -> None:

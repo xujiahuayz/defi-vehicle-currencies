@@ -9,43 +9,51 @@
 \subsection{A route-level transition}
 \label{sec:dominance:transition}
 
-Stablecoins carry a much larger share of vehicle activity in 2026 than in 2024. Comparing the same days of the calendar year, their share among native and stable vehicles rises from \StableCountBase{} to \StableCountEnd{} by route count. The paired-day change is \StableCountChange{}, with a calendar-HAC standard error of \StableCountSE{}. Their value-weighted share rises from \StableValueBase{} to \StableValueEnd{}, an increase of \StableValueChange{} with a standard error of \StableValueSE{}. The count measure gives equal weight to each exact two-leg route. The value measure weights routes by dollar size when the values recorded along the route agree within 20\%. Table~\ref{tab:rotation} reports both because frequent intermediation and intermediation of large trades need not move together.
+Stablecoins carry a much larger share of vehicle activity in 2026 than in 2024. Comparing the same days of the calendar year, their share among native and stable vehicles rises from \StableCountBase{} to \StableCountEnd{} by route count. The paired-day change is \StableCountChange{}, with a calendar-HAC standard error of \StableCountSE{}. Their share of supported routed value rises from \StableValueBase{} to \StableValueEnd{}, an increase of \StableValueChange{} with a standard error of \StableValueSE{}. The count measure gives equal weight to each exact two-leg route and uses full route-topology support. The value measure weights routes by dollar size when the values recorded along the route agree within 20\%. Table~\ref{tab:rotation} reports frequency and supported value separately because they describe different dimensions of intermediation.
 % docs/findings-freeze.md, vehicle-dominance claim and strict-support value contract
 
 \begin{table}[tbp]
 \centering
-\caption{Rotation from the native asset toward stable vehicles}
+\caption{Stablecoin share among native and stable intermediaries}
 \label{tab:rotation}
 \small
 \input{../output/tables/dominance_rotation.tex}
-\exhibitnote{The unit is an exact two-leg route with one observed intermediary. Daily shares receive equal weight over the days of the calendar year observed in both years. For routed value, source, intermediary, and destination dollar values must agree within 20\%. Standard errors are calendar-HAC.
+\exhibitnote{The denominator contains exact two-leg routes whose sole intermediary is native or stable; the reported share aggregates all stablecoins in that denominator. Daily shares receive equal weight over the days of the calendar year observed in both years. For supported routed value, source, intermediary, and destination dollar values must agree within 20\%. Standard errors are calendar-HAC.
 % docs/findings-freeze.md, vehicle-dominance claim
 }
 \end{table}
 
-The annual path shows two reversals. Native assets regain share in 2023 and 2024, and stablecoins recover the value lead in 2025. Their lead by route count is shorter lived.
+Table~\ref{tab:rotation} uses the primary exact two-leg comparison and conditions on the intermediary being native or stable. Figures~\ref{fig:vehicle-composition} and~\ref{fig:integration-change} then broaden the view to complete, non-cyclic routes of any length and to all intermediary types, recording one episode for each intermediary on a route. In 2026, the within-20\% band in this broader series covers 71.6\% of native raw intermediary value and 55.1\% of stable raw intermediary value; the frequency series continues to use full route-topology support. The annual path shows two reversals. Native assets regain share in 2023 and 2024, and stablecoins recover the supported-value lead in 2025. Their lead by route count is shorter lived.
+% docs/finding-intermediation-transition.md, support-bounded value result; output/exhibits/intermediation_by_type.jsonl
 
 \begin{figure}[tbp]
 \centering
-\caption{Vehicle use rotates between native assets and stablecoins}
+\caption{Intermediary activity rotates between native assets and stablecoins}
 \label{fig:vehicle-composition}
 \includegraphics[width=0.98\textwidth]{../output/figures/experiments/annual_vehicle_composition_bands.pdf}
-\exhibitnote{The 2026 observation covers January through June. Other types combine imported, liquid-staking, and residual assets.
+\exhibitnote{The unit is an intermediary episode in the broader sample of complete, non-cyclic routes: a route contributes once for each intermediary it uses, so routes with more than two legs can contribute several episodes. Shares are formed across all intermediary types; Table~\ref{tab:rotation} uses the narrower native-or-stable denominator. The 2026 observation covers January through June.
 % output/figures/experiments/annual_vehicle_composition_bands.pdf; producer commit 2ffbce0
 }
 \end{figure}
 
-\subsection{Endpoint-pair composition}
+\subsection{Composition of source--destination pairs}
 \label{sec:dominance:pairs}
 
-The aggregate rise can come from substitution within an established endpoint market or from changes in the markets in which routed trading takes place. Table~\ref{tab:pair-composition} separates changes in the set of endpoint pairs, shifts in activity across continuing pairs, changes in the use of indirect execution, and replacement of the native asset within continuing vehicle-using pairs.
+The aggregate rise can come from substitution within an established ordered source--destination pair or from changes in the pairs across which routed trading takes place. Table~\ref{tab:pair-composition} separates changes in the set of source--destination pairs, shifts in activity across continuing pairs, changes in the use of indirect execution, and replacement of the native asset within continuing vehicle-using pairs.
 
-By route count, endpoint pairs entering or leaving the sample contribute \MarketSupportBridge{} of the increase, activity shifting across continuing pairs contributes \MarketActivityReweight{}, and changes in how often those pairs use an intermediary contribute \VehicleIncidenceReweight{}. The appearance or disappearance of a native-or-stable intermediary contributes \VehicleRoleSupportBridge{}. Direct stable-for-native substitution within pairs that use a vehicle in both years contributes only \WithinPairStableShare{}. Among pairs observed in both endpoint years, stablecoin share still rises from \ObservedBothYearsBase{} to \ObservedBothYearsEnd{}.
+By route count, source--destination pairs entering or leaving the sample contribute \MarketSupportBridge{} of the increase, activity shifting across continuing pairs contributes \MarketActivityReweight{}, and changes in how often those pairs use an intermediary contribute \VehicleIncidenceReweight{}. The appearance or disappearance of a native-or-stable intermediary contributes \VehicleRoleSupportBridge{}. Direct stable-for-native substitution within pairs that use a vehicle in both years contributes only \WithinPairStableShare{}, even though stablecoin share rises from \ObservedBothYearsBase{} to \ObservedBothYearsEnd{} among pairs observed in both comparison years. The value-weighted decomposition sharpens this result: of the \PairValueTotal{} increase, \PairValueReweight{} comes from activity shifting across continuing pairs and \PairValueExclusive{} from pairs that carry a native-or-stable vehicle route in only one comparison year, while within-pair substitution contributes \PairValueWithin{}.
 
-The value-weighted decomposition gives a sharper version of the same result. Of the \PairValueTotal{} increase, \PairValueReweight{} comes from activity shifting across continuing pairs and \PairValueExclusive{} from pairs that carry a native-or-stable vehicle route in only one endpoint year. Within-pair substitution contributes \PairValueWithin{}. The increase in stablecoin vehicle value is thus concentrated in the allocation of routed trading across markets; repeated replacement of the intermediary within a typical continuing market contributes little.
-
-The matched-market estimates are tightly bounded relative to the aggregate rotation. Matching the ordered endpoint pair, day of the calendar year, and single- or cross-exchange route scope gives a count-share change of \MatchedMarketCountChange{} with a standard error of \MatchedMarketCountSE{} and a value-share change of \MatchedMarketValueChange{} with a standard error of \MatchedMarketValueSE{}. The corresponding upper confidence bounds are \MatchedMarketCountCIUpper{} and \MatchedMarketValueCIUpper{}. These intervals allow modest substitution inside continuing markets and exclude a change large enough to account for the aggregate increase.
+A matched comparison reaches the same conclusion. Matching the ordered source--destination asset pair, day of the calendar year, and single- or cross-exchange route type gives a count-share change of \MatchedMarketCountChange{} with a standard error of \MatchedMarketCountSE{} and a value-share change of \MatchedMarketValueChange{} with a standard error of \MatchedMarketValueSE{}. The corresponding upper confidence bounds, \MatchedMarketCountCIUpper{} and \MatchedMarketValueCIUpper{}, allow modest substitution inside continuing pairs but exclude a change large enough to account for the aggregate increase.
 % output/exhibits/vehicle_transition_pair_fixed_effects.jsonl; evidence commit 87c182e; current D3 generation 25c755ae; endpoint-composition generation 5fb7cbf
+
+Panel C estimates the 2024--2026 difference after absorbing variation specific to an ordered source--destination pair, calendar date within the year, and observed single- or cross-exchange route type. Index these comparison groups by $c$ and the outcome by $m$. The regression is
+\begin{equation}
+\label{eq:pair-fe}
+s^{(m)}_{c,y}=\alpha^{(m)}_{c}+\beta^{(m)}\mathbf{1}\{y=2026\}+\varepsilon^{(m)}_{c,y},
+\qquad y\in\{2024,2026\}.
+\end{equation}
+An observation is one comparison group in one year. Weighted least squares uses the native-plus-stable denominator for metric $m$; 2024 is the omitted year. The full count specification contains 188,520 observations, 94,260 fixed-effect groups, 5,432 ordered-pair clusters, and 362 calendar-date clusters. The two supported-value specifications each contain 182,834 observations, 91,417 fixed-effect groups, 5,278 ordered-pair clusters, and 362 calendar-date clusters. These regressions are descriptive because the observed route type and the pairs traded can respond to the same forces as intermediary use.
+% output/exhibits/vehicle_transition_pair_fixed_effects.jsonl
 
 \begin{table}[tbp]
 \centering
@@ -53,17 +61,17 @@ The matched-market estimates are tightly bounded relative to the aggregate rotat
 \label{tab:pair-composition}
 \small
 \input{../output/tables/pair_composition.tex}
-\exhibitnote{Panel A decomposes the route-count share change between 2024 and 2026. Common-role pairs carry native-or-stable vehicle routes in both years. The Shapley allocation distributes interactions across the five reported components. Panel B repeats the accounting for routed value, for which source, intermediary, and destination dollar values must agree within 20\%. Panel C reports descriptive, noncausal regressions that absorb ordered-pair $\times$ month-day $\times$ realised-scope fixed effects. Standard errors use two-way ordered-pair and calendar-date clustered CR1 inference.
+\exhibitnote{Panel A decomposes the route-count share change between 2024 and 2026. Common-role pairs carry native-or-stable vehicle routes in both years. The Shapley allocation distributes interactions across the five reported components. Panel B repeats the accounting for supported routed value, for which source, intermediary, and destination dollar values must agree within 20\%. Panel C estimates Equation~\eqref{eq:pair-fe}; standard errors use two-way ordered-pair and calendar-date clustered CR1 inference.
     % output/exhibits/vehicle_transition_pair_decomposition.jsonl and vehicle_transition_pair_fixed_effects.jsonl
 }
 \end{table}
 
-Pair entry can reflect new listings or endpoint demand; activity can move across continuing pairs with demand or liquidity; and indirect execution can respond to direct-market depth or router access. Together, these margins assign most of the stablecoin increase to a reallocation of routed activity across endpoint markets. Native-for-stable substitution within continuing vehicle-using pairs contributes little.
+Pair entry can reflect new listings or endpoint demand; activity can move across continuing pairs with demand or liquidity; and indirect execution can respond to direct-market depth or router access. Together, these margins assign most of the stablecoin increase to a reallocation of routed activity across source--destination pairs. Native-for-stable substitution within continuing vehicle-using pairs contributes little.
 
 \subsection{USDT and USDC}
 \label{sec:dominance:excess}
 
-The category-level increase is concentrated in USDT. To distinguish vehicle use from ordinary demand for the token, we compare each stablecoin's intermediary share with its share of route endpoints. The excess-use ratio exceeds one when a token appears between other assets more often than it appears as the asset bought or sold.
+The category-level increase is concentrated in USDT. To distinguish vehicle use from ordinary demand for the token, we compare each stablecoin's share of intermediary episodes with its share of endpoint appearances on the prespecified currency perimeter. Direct routes contribute to the endpoint denominator, and routes with several intermediaries contribute one episode for each intermediary. The excess-use ratio exceeds one when the token's intermediary share is larger than its endpoint share.
 
 USDC and USDT together account for \JointStableContribution{} of the increase in stablecoin count share, but their paths differ. USDC begins the comparison with excess vehicle use and changes little. USDT's count ratio rises from \USDTCountExcessBase{} to \USDTCountExcessEnd{}, while its value ratio moves from \USDTValueExcessBase{} to \USDTValueExcessEnd{}. The value-weighted difference between USDT's intermediary and endpoint shares rises from \USDTEndpointGapBase{} to \USDTEndpointGapEnd{}, a change of \USDTEndpointGapChange{} with a standard error of \USDTEndpointGapSE{}. USDT therefore becomes more prevalent as an intermediary even after accounting for its growing use as an endpoint.
 
@@ -74,11 +82,11 @@ The comparison places USDT at the centre of the rotation. Explaining its gain re
 
 \begin{table}[tbp]
 \centering
-\caption{USDT drives the rise in stablecoin vehicle dominance}
+\caption{USDT intermediary use relative to endpoint use}
 \label{tab:usdt-transition}
 \small
 \input{../output/tables/usdt_transition.tex}
-\exhibitnote{Excess use is intermediary share divided by endpoint share on the same route perimeter. The gap is intermediary share minus endpoint share. Value-weighted measures require source, intermediary, and destination dollar values to agree within 20\%. The table compares the same January-through-June calendar dates in 2024 and 2026.}
+\exhibitnote{Intermediary and endpoint shares are each formed across native, staked-native, stable, and imported currencies on complete, non-cyclic routes; direct routes enter the endpoint denominator. Excess use is intermediary share divided by endpoint share, and the gap is their difference. Value-weighted measures require source, intermediary, and destination dollar values to agree within 20\%. The table compares the same January-through-June calendar dates in 2024 and 2026.}
 \end{table}
 
 \subsection{Venue span and route complexity}
@@ -86,16 +94,16 @@ The comparison places USDT at the centre of the rotation. Explaining its gain re
 
 Cross-exchange routing expands sharply during the sample, raising the possibility that broader venue access contributed to the rotation. Access to previously fragmented pools can favour an intermediary with liquidity on several venues. It can also reveal a direct path and reduce the need for any intermediary.
 
-Cross-exchange routes grow from \CrossVenueCountStart{} of route count in 2022 to \CrossVenueCountEnd{} in 2026 and account for \CrossVenueValueEnd{} of supported value in 2026. Over the same period, intermediation becomes less common: its share falls from \FullIntermediationBase{} to \FullIntermediationEnd{} across the full venue set and to \BalancedIntermediationEnd{} on the balanced five-venue perimeter. The changes are \FullIntermediationChange{} and \BalancedIntermediationChange{}, with standard errors of \FullIntermediationSE{} and \BalancedIntermediationSE{}. Cross-exchange trading and the use of an intermediary thus move in opposite directions.
+Cross-exchange routes grow from \CrossVenueCountStart{} of route count in 2022 to \CrossVenueCountEnd{} in 2026 and account for \CrossVenueValueEnd{} of supported value in 2026. Over the same period, intermediation becomes less common: its share falls from \FullIntermediationBase{} to \FullIntermediationEnd{} across the full venue set and to \BalancedIntermediationEnd{} on the balanced five-venue perimeter, changes of \FullIntermediationChange{} and \BalancedIntermediationChange{} with standard errors of \FullIntermediationSE{} and \BalancedIntermediationSE{}. Among routes that remain indirect, stablecoin share rises in every observed category defined by venue span and route complexity. The increase is \CrossVenueRotationPremium{} larger across exchanges than within one exchange, with a standard error of \CrossVenueRotationSE{}.
 
-Among routes that remain indirect, stablecoin share rises in every observed category defined by venue span and route complexity. The increase is \CrossVenueRotationPremium{} larger across exchanges than within one exchange, with a standard error of \CrossVenueRotationSE{}. Changes in the mix of these broad route categories therefore explain little of the rotation: the stablecoin gain extends to both single- and cross-exchange routes. Isolating an effect of router access would additionally require comparable endpoint pairs, trade sizes, and feasible paths within each category.
+These estimates separate three observed margins: cross-exchange trading, the incidence of intermediation, and the composition of intermediaries. Wider venue span coincides with less intermediation overall, while the stablecoin gain extends to the indirect routes that remain in both single- and cross-exchange groups. Estimating the effect of router access requires comparable ordered source--destination asset pairs, trade sizes, and feasible paths within each category.
 
 \begin{figure}[tbp]
 \centering
-\caption{Stablecoin use rises within single- and cross-exchange routes}
+\caption{Stablecoin intermediary share rises within single- and cross-exchange routes}
 \label{fig:integration-change}
 \includegraphics[width=0.92\textwidth]{../output/figures/experiments/integration_change_forest.pdf}
-\exhibitnote{The comparison uses the same January-through-June calendar dates in 2024 and 2026. Value-weighted measures require source, intermediary, and destination dollar values to agree within 20\%.
+\exhibitnote{The unit is an intermediary episode in the broader sample of complete, non-cyclic routes, including routes with more than two legs. Stablecoin shares use all intermediary types as the denominator. The comparison uses the same January-through-June calendar dates in 2024 and 2026. Value-weighted measures require source, intermediary, and destination dollar values to agree within 20\%.
 % output/figures/experiments/integration_change_forest.pdf; producer commit 2ffbce0
 }
 \end{figure}

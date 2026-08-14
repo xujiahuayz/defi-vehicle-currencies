@@ -1,5 +1,6 @@
 from pathlib import Path
 import re
+import subprocess
 
 from ddvc.deck_evidence import audit_audience_text, audit_deck_sources
 
@@ -149,3 +150,131 @@ def test_v1_architecture_deck_values_match_the_admitted_source_tables() -> None:
     assert rf"\newcommand{{\VOneForcedRoutes}}{{{forced.group(1)}}}" in binding
     assert rf"\newcommand{{\VTwoWethTradeShare}}{{{trade_share.group(1)}\%}}" in binding
     assert rf"\newcommand{{\VTwoWethNewPairShare}}{{{pair_share.group(1)}\%}}" in binding
+
+
+def test_deck_states_units_scopes_and_primary_protocol_sources() -> None:
+    results = (ROOT / "deck" / "sections" / "04-results.tex").read_text(
+        encoding="utf-8"
+    )
+    objects = (ROOT / "deck" / "sections" / "02-objects.tex").read_text(
+        encoding="utf-8"
+    )
+    appendix = (ROOT / "deck" / "sections" / "90-appendix.tex").read_text(
+        encoding="utf-8"
+    )
+    decomposition = (
+        ROOT / "deck" / "assets" / "vehicle-transition-pair-decomposition.tex"
+    ).read_text(encoding="utf-8")
+
+    assert "one intermediary episode per route" in results
+    assert "total routed value among routes whose source" in results
+    assert "Descriptive accounting:" in results
+    assert "carries no sampling interval" in results
+    assert "native-WETH-versus-stablecoin routes" in results
+    assert "on 181 common month-days" in results
+    assert "Matched markets" not in decomposition
+    assert "Within the same trading pair" in decomposition
+
+    assert "Main route sample" in objects
+    assert "V1/V2 architecture supplement" in objects
+    assert "multi-asset Curve or Balancer pool" in objects
+
+    assert "https://app.uniswap.org/whitepaper-v4.pdf" in appendix
+    assert "add-usdc-as-a-collateral-type-2020-03-17" in appendix
+    assert "activate-rwa001-a" in appendix
+    assert "fip-188-increase-cr-to-100" in appendix
+
+
+def test_deck_mechanism_sequence_separates_route_settlement_and_capital() -> None:
+    results = (ROOT / "deck" / "sections" / "04-results.tex").read_text(
+        encoding="utf-8"
+    )
+
+    assert "Route use, token movement, and LP capital are different objects" in results
+    assert "Route intermediation" in results
+    assert "External token movement" in results
+    assert "Liquidity-provider capital" in results
+    assert "route or routed-value share" in results
+    assert "external transfers and transferred value per route" in results
+    assert "Deposited capital:" in results
+    assert "Executable depth:" in results
+    assert "Provider flows:" in results
+    assert "exact 1-, 7-, 30-, and 120-day horizons" in results
+    assert "V2 stocks and V3 flows are estimated separately" in results
+    assert "depth is not LP capital" in results
+
+    assert "V4 can net settlement without removing the vehicle route" in results
+    assert "Separate pool contracts" in results
+    assert "V4 singleton and flash accounting" in results
+    assert "External settlement." in results
+    assert "Route choice." in results
+    assert "LP timing." in results
+    assert "same source, intermediary, destination, direction, and week" in results
+    assert "direct and indirect alternatives are both feasible" in results
+    assert "Each object is tested separately" in results
+    assert "uncommitted design-only edits atop 8e7bb28" in results
+    assert "https://app.uniswap.org/whitepaper-v3.pdf" in results
+    assert "https://app.uniswap.org/whitepaper-v4.pdf" in results
+    assert ".mp4" not in results
+
+
+def test_deck_separates_weth_eligibility_from_value_composition() -> None:
+    results = (ROOT / "deck" / "sections" / "04-results.tex").read_text(
+        encoding="utf-8"
+    )
+    asset = (
+        ROOT / "deck" / "assets" / "vehicle-transition-pair-decomposition.tex"
+    ).read_text(encoding="utf-8")
+    value_asset = (
+        ROOT / "deck" / "assets" / "non-weth-value-composition.tex"
+    ).read_text(encoding="utf-8")
+
+    title = "WETH-linked trading pairs account for most of the count rotation"
+    assert title in results
+    assert "output/provisional/route_methodology_heterogeneity.jsonl" in results
+    assert "internal_generation=9aa4e1d3" in results
+    assert "grouped-binomial" not in results
+    assert "Challenger cost advantage predicts subsequent vehicle share" not in results
+    assert "The routed-value rotation extends beyond WETH-linked trading pairs" in results
+
+    frame_start = results.index(rf"\begin{{frame}}{{{title}}}")
+    frame_end = results.index(r"\end{frame}", frame_start)
+    rendered_frame = results[frame_start:frame_end]
+    assert "provisional" not in rendered_frame.lower()
+
+    assert "WETH cannot also be the intermediary" in asset
+    assert "All matched trading-pair groups" in asset
+    assert "Trading-pair groups without WETH endpoints" in asset
+    assert "cells" not in asset.lower()
+    assert r"\WethCountFullChange" in asset
+    assert r"\WethCountNoEndpointChange" in asset
+    assert "Exact midpoint identity" in value_asset
+    assert r"\WethValueNoEndpointChange" in value_asset
+    assert r"\WethValueActivityChange" in value_asset
+    assert r"\WethValueWithinChange" in value_asset
+
+
+def test_page_13_evidence_status_and_binding_commit_do_not_drift() -> None:
+    results = (ROOT / "deck" / "sections" / "04-results.tex").read_text(
+        encoding="utf-8"
+    )
+    title = "WETH-linked trading pairs account for most of the count rotation"
+    frame_start = results.index(rf"\begin{{frame}}{{{title}}}")
+    metadata = results[results.rfind("% EVIDENCE-STATUS:", 0, frame_start):frame_start]
+
+    status = re.search(r"^% EVIDENCE-STATUS: (.+)$", metadata, flags=re.MULTILINE)
+    evidence_commit = re.search(
+        r"^% EVIDENCE-COMMIT: ([0-9a-f]{40})$",
+        metadata,
+        flags=re.MULTILINE,
+    )
+    assert status and status.group(1).startswith("E0 pending clean J0")
+    assert "certified" not in status.group(1).lower()
+    assert "b21ed0a" not in metadata
+    assert evidence_commit
+    subprocess.run(
+        ["git", "cat-file", "-e", f"{evidence_commit.group(1)}^{{commit}}"],
+        cwd=ROOT,
+        check=True,
+        capture_output=True,
+    )

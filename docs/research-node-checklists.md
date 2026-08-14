@@ -15,6 +15,9 @@ Every package records this envelope once and points to the node-specific evidenc
 - Review: builder and reviewer are distinct for a closure review; the reviewer is read-only and ranks fatal, major and minor objections.
 - Invalidation: an upstream generation, requirement, source, estimand or output hash change reopens the package automatically.
 - Scheduling: compatible interjections fork to the affected package without cancelling unrelated work. A completed package publishes a boundary; the durable queue launches the next ready package or records why none is ready.
+- Capacity: on the current four-slot interactive executor, reserve one coordinator and fill science/methods, paper and deck workers by default; Studio data is a separate fifth lane. Monitoring stays with the coordinator unless a bounded diagnosis requires a worker.
+- Idle exception: every unused slot names its file conflict, invalid input, measured resource limit or dependency. Serial execution is never the unrecorded default.
+- Deviation: change the recorded allocation before departing from it, naming the displaced package and the condition that restores the default.
 
 ## O. Operations and supervision
 
@@ -42,6 +45,7 @@ Every package records this envelope once and points to the node-specific evidenc
 - Read the closest raw paper passages, appendices, supplements and corrections; cards and digests are locators only.
 - Record the precedent's estimand, comparison set, inference, rival mechanism, claim strength and exact passage.
 - Use JFE and top finance practice to calibrate rigor, caveats and finding-selling; do not impose a stricter bar without a design-specific reason.
+- Compare scientific scope, depth and breadth with the closest empirical papers: question hierarchy, descriptive foundation, identification, mechanism and rival tests, heterogeneity, robustness, economic magnitude and appendix support. Language resemblance alone is insufficient.
 - Output changes C, E, F, G, P0, H or a citation. A literature note with no final use does not close B.
 
 ## C. Estimand and measurement
@@ -104,6 +108,7 @@ Every package records this envelope once and points to the node-specific evidenc
 - Preserve all fits, nulls, numerical failures and rejected families. Do not fit a method merely to obtain significance.
 - Surface scientific choices, anomalies and interpretation conflicts for live debate.
 - Exit sends one candidate finding and its strongest objection to E1; it does not admit a paper claim.
+- Keep a method-by-question matrix showing which feasible OLS/WLS, fixed-effect, grouped binary, PPML, duration, event and distributional families were run, rejected or blocked, and why. Method breadth is assessed by distinct economic content rather than specification count.
 
 ## E1. Claim-specific lock
 
@@ -125,6 +130,7 @@ Every package records this envelope once and points to the node-specific evidenc
 
 - Reconcile C, J0, E1 and F identities.
 - Record magnitude, primary inference, sensitivity results, nulls, strongest rival, literature calibration, scope condition and audience-ready claim.
+- Benchmark the full evidence packet against the closest published empirical papers for scientific scope, depth and breadth; schedule a missing scientific comparison or narrow the paper's ambition before admission.
 - Distinguish fixed-market substitution, across-market activity reallocation and aggregate share change.
 - Lead with the strongest supported affirmative finding while keeping the decisive scope condition nearby.
 - Remove superseded claims from current owners and deliverables; provisional historical comparisons remain only in provenance-stamped snapshots.
@@ -195,6 +201,7 @@ Every package records this envelope once and points to the node-specific evidenc
 
 - Rebuild from current J1 packets and run every compatible paper requirement, not only the newest fix.
 - Verify argument, rhetoric ledger, citations, notation, links, table ownership, exhibit notes, compilation and complete rendered manuscript.
+- Verify that JFE calibration reaches the scientific package—question hierarchy, identification, mechanism, rivals, heterogeneity, robustness and economic magnitude—not only vocabulary, paragraph rhythm or page texture.
 - Provisional packets cannot pass J2-paper.
 - Exit records source/output hashes, upstream generations, checklist evidence and independent reviewer.
 

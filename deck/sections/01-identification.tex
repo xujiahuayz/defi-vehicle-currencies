@@ -39,7 +39,7 @@
 \draw[route,draw=accent] (rk)--(rb);
 \end{tikzpicture}
 \par\vspace{0.1cm}
-{\small Swap events in one transaction reveal sequential routes, parallel splits, and round trips.\par}
+{\small Vehicle choice directs indirect order flow toward particular assets and pools. Transaction-level paths reveal that choice rather than leaving it inside aggregate turnover.\par}
 \end{frame}
 
 % VISUAL-FUNCTION: dominance denominator | route glyph plus paired measure definitions | separate count, value, and network position
@@ -146,6 +146,7 @@
 % SOURCE-GENERATION: repository HEAD eac25258ea36.
 % SOURCE: docs/finding-v1-forced-vehicle.md sha256=650004eafae8864fe13b3d90ab59daefd77b342e33510f3d5db03b3e28ed2c68 (V1/V2 pairing contract).
 % SOURCE: literature/text/2021-AdamsZinsmeisterRobinson2021UniswapV3-whitepaper-uniswap-v3-core.txt sha256=599a20254f8d5f1d6e771d2899bf16e4a921c5bc3a9cb82e58c97d7791411567 (V3 ranges, ticks, and fee tiers).
+% SOURCE: https://app.uniswap.org/whitepaper-v4.pdf, Adams et al. (2024), Uniswap v4 Core, Sections 1 and 3 (singleton, hooks, and flash accounting).
 % SOURCE: docs/research-questions-and-empirical-design.md sha256=b56cb5e98d93d0968306fc2dd36edb323d83519daab17b5c7b39587d49506c8b (V4 settlement boundary).
 % SOURCE: src/ddvc/execution_contracts.py sha256=67b28ca58519cf9cef80314211f168989b60502c5a3fb8792ad8814613ddae00 (supported V4 vanilla concentrated-liquidity contract).
 % SCIENTIFIC-BOUNDARY: architecture changes feasible pair formation, liquidity placement, or settlement. Pool adoption and realised route use are endogenous exposure, and calendar date alone is not treatment.

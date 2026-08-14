@@ -66,11 +66,14 @@
 % EVIDENCE-STATUS: dated classification contract; cells encode rules, not empirical shares or token availability.
 % EVIDENCE-COMMIT: e1513051da9f3c33fc69a05d063541e2ef96954a
 % EVIDENCE-SOURCES: deck/assets/backing-regime-heatmap.tex; src/ddvc/asset_types.py;
-% tests/test_asset_types.py; docs/node-c-definitions-round2.md section 3.
+% tests/test_asset_types.py; docs/node-c-definitions-round2.md section 3;
+% https://vote.makerdao.com/executive/add-usdc-as-a-collateral-type-2020-03-17;
+% https://vote.makerdao.com/executive/template-executive-vote-activate-rwa001-a-add-psm-usdc-a-momc-changes-april-16-2021;
+% https://gov.frax.finance/t/fip-188-increase-cr-to-100/2147.
 \begin{frame}{A2. Stablecoin backing cannot be treated as fixed}
 \centering
 \resizebox{0.90\textwidth}{!}{\input{assets/backing-regime-heatmap.tex}}\par
-\decknote{Bars begin at public launch or the sample start for older tokens. DAI's segments mark the backing regimes admitted by the classification; the dashed FRAX arrow is a governance target, not an observed collateral share.}
+\decknote{Bars begin at public launch or the sample start for older tokens. DAI's dated regimes follow the Maker Governance actions that \href{https://vote.makerdao.com/executive/add-usdc-as-a-collateral-type-2020-03-17}{added USDC-A} and \href{https://vote.makerdao.com/executive/template-executive-vote-activate-rwa001-a-add-psm-usdc-a-momc-changes-april-16-2021}{activated RWA001-A}. FRAX's dashed arrow follows \href{https://gov.frax.finance/t/fip-188-increase-cr-to-100/2147}{FIP-188} and denotes a target, not observed collateral.}
 \end{frame}
 
 % VISUAL-FUNCTION: primary measurement funnel | staged route-object and two-support split | separate topology support from dollar-value support
@@ -81,9 +84,9 @@
 % data/manifests/data/processed/intermediation_by_type_daily.parquet.prov.json.
 \begin{frame}{A3. One route universe supports two measurements}
 \centering
-\resizebox{0.96\textwidth}{!}{\input{assets/sample-measurement-funnel.tex}}\par
-\vspace{0.12cm}
-{\small Missing dollar support narrows value-weighted evidence; it does not erase a topology-valid route from the count evidence.\par}
+\resizebox{0.92\textwidth}{!}{\input{assets/sample-measurement-funnel.tex}}\par
+\vspace{0.05cm}
+{\fontsize{8.0}{8.8}\selectfont The route sample links legs across protocols; one asset pair inside a multi-asset Curve or Balancer pool may supply a leg. The V1/V2 architecture evidence is separate. Dollar support affects value weighting, not route inclusion.\par}
 \end{frame}
 
 % VISUAL-FUNCTION: causal event ordering | numbered replay sequence | explain same-state counterfactual timing
@@ -236,11 +239,10 @@ How often asset $k$ is what traders buy or sell.
 % EVIDENCE-COMMIT: 525c67a7f672593fe07e54cf5ccb6d08910e9b04
 % EVIDENCE-SOURCES: deck/assets/integration-multiplex-network.tex;
 % docs/research-workflow.md; docs/specification-lock.json.
-\begin{frame}{A11. Integration changes the routes that can be chosen}
+\begin{frame}{A11. Additional venues expand the feasible route set}
 \centering
-\resizebox{0.94\textwidth}{!}{\input{assets/integration-multiplex-network.tex}}\par
-\vspace{0.10cm}
-{\small The analysis therefore separates opportunity-set reach from the composition of realised routes.\par}
+\vspace{0.06cm}
+\resizebox{\textwidth}{!}{\input{assets/integration-multiplex-network.tex}}\par
 \end{frame}
 
 % VISUAL-FUNCTION: realised venue scope by intermediary type | count/value alluvial | show that integration and vehicle composition are distinct observed margins
@@ -275,6 +277,7 @@ How often asset $k$ is what traders buy or sell.
 \begin{frame}{A13. References: decentralised exchange design}
 \begin{itemize}
 \item Adams et al. (2021), \emph{Uniswap v3 Core}
+\item \href{https://app.uniswap.org/whitepaper-v4.pdf}{Adams et al. (2024), \emph{Uniswap v4 Core}}
 \item Angeris, Chitra, Evans and Boyd, optimal routing in constant-function markets
 \item Barbon and Ranaldo, decentralised exchange costs and market structure
 \item Lehar and Parlour (2024), \emph{Journal of Finance}

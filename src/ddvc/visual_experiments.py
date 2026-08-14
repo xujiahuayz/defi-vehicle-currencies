@@ -29,7 +29,7 @@ import matplotlib.pyplot as plt  # noqa: E402
 
 
 WEIGHTINGS = (
-    ("count", "Route count"),
+    ("count", "Intermediary episodes"),
     ("value", "Routed value"),
 )
 
@@ -351,7 +351,7 @@ def render_annual_share_heatmap(frame: pd.DataFrame, output: Path) -> None:
     data = annual_vehicle_composition(frame)
     data = data.loc[data["integration_scope"].eq("all")]
     years = sorted(data["year"].unique())
-    panels = (("episode_share", "Route count"), ("usd_share_within_20pct", "Routed value"))
+    panels = (("episode_share", "Intermediary episodes"), ("usd_share_within_20pct", "Routed value"))
     with plt.rc_context({"font.family": "DejaVu Sans", "pdf.fonttype": 42}):
         figure, axes = plt.subplots(1, 2, figsize=(10.5, 4.5), sharey=True)
         try:
@@ -390,7 +390,7 @@ def render_annual_composition_bands(frame: pd.DataFrame, output: Path) -> None:
     data = data.loc[data["integration_scope"].eq("all")]
     years = sorted(data["year"].unique())
     panels = (
-        ("episode_share", "Route count"),
+        ("episode_share", "Intermediary episodes"),
         ("usd_share_within_20pct", "Routed value"),
     )
 
@@ -627,7 +627,7 @@ def render_annual_rank_bump(frame: pd.DataFrame, output: Path) -> None:
     data = annual_vehicle_composition(frame)
     data = data.loc[data["integration_scope"].eq("all")]
     years = sorted(data["year"].unique())
-    panels = (("episode_share", "Route count"), ("usd_share_within_20pct", "Routed value"))
+    panels = (("episode_share", "Intermediary episodes"), ("usd_share_within_20pct", "Routed value"))
     with plt.rc_context({"font.family": "DejaVu Sans", "pdf.fonttype": 42}):
         figure, axes = plt.subplots(1, 2, figsize=(10.8, 4.4), sharey=True)
         try:
@@ -664,7 +664,7 @@ def render_integration_change_forest(frame: pd.DataFrame, output: Path) -> None:
         try:
             for axis, (weighting, support, title) in zip(
                 axes,
-                (("episode", "all_routes", "Route count"), ("value", "within_20pct", "Routed value")),
+                (("episode", "all_routes", "Intermediary episodes"), ("value", "within_20pct", "Routed value")),
                 strict=True,
             ):
                 sample = data.loc[data["weighting"].eq(weighting) & data["value_support"].eq(support)].set_index("integration_scope")

@@ -1,78 +1,41 @@
-% Empirical coordinates and labels are generated in
-% vehicle_transition_pair_decomposition_deck_values.tex.
-% The five factors form an exact Shapley accounting identity; they are not
-% independently identified mechanisms.
-\pgfmathsetmacro{\RibbonAfterMarketSupport}{\MarketSupportBridgeRawPP}
-\pgfmathsetmacro{\RibbonAfterPairActivity}{\PairActivityTotalRawPP}
-\pgfmathsetmacro{\RibbonAfterIncidence}{\PairActivityTotalRawPP+\VehicleIncidenceReweightRawPP}
-\pgfmathsetmacro{\RibbonAfterVehicleUse}{\PairAndVehicleTotalRawPP}
-\pgfmathsetmacro{\RibbonTotal}{\PairAndVehicleTotalRawPP+\WithinPairStableShareRawPP}
+% Presentation geometry only. Numerical labels are generated in
+% output/provisional/route_methodology_heterogeneity_deck_values.tex.
+% WETH is the native intermediary in this comparison. If WETH is an endpoint,
+% it cannot also be the intermediary; every such row therefore has stable_share=1.
+\begin{tikzpicture}[x=1cm,y=1cm]
+\tikzset{panel/.style={draw=rule,fill=white,rounded corners=3pt,line width=0.8pt}}
+\tikzset{small/.style={font=\fontsize{6.8}{7.5}\selectfont,text=muted,align=center}}
 
-\begin{tikzpicture}[x=0.315cm,y=1cm]
-\tikzset{segmentlabel/.style={font=\fontsize{7.1}{7.7}\selectfont\bfseries,align=center,text=white}}
-\tikzset{notelabel/.style={font=\fontsize{6.7}{7.3}\selectfont,align=center,text=ink}}
+\node[draw=stable,line width=1.1pt,circle,minimum size=1.05cm,
+  font=\fontsize{8.2}{8.8}\selectfont\bfseries,text=ucldark] at (1.05,3.45) {WETH};
+\node[anchor=west,font=\fontsize{8.2}{9.0}\selectfont\bfseries,text=ucldark]
+  at (1.82,3.62) {WETH is the source or destination};
+\node[anchor=west,font=\fontsize{7.2}{8.0}\selectfont,text=ink]
+  at (1.82,3.25) {WETH cannot also be the intermediary; stable share is mechanically 100\%.};
 
-% Headline endpoints.
-\node[anchor=west,font=\fontsize{10.2}{11.2}\selectfont\bfseries,text=ink]
-  at (0,2.24) {Stable share: \MarketBridgeBase{} $\longrightarrow$ \MarketBridgeEnd{} \quad \textcolor{stable}{\MarketBridgeTotal{}}};
+\draw[panel] (0,0.48) rectangle (5.45,2.68);
+\node[anchor=west,font=\fontsize{8.1}{8.8}\selectfont\bfseries,text=ucldark]
+  at (0.35,2.32) {All matched trading-pair groups};
+\node[anchor=west,font=\fontsize{23}{24}\selectfont\bfseries,text=stable]
+  at (0.35,1.48) {\WethCountFullChange};
+\node[anchor=west,font=\fontsize{6.9}{7.6}\selectfont,text=muted]
+  at (0.35,1.05) {95\% CI [\WethCountFullCILower, \WethCountFullCIUpper]};
+\node[anchor=west,font=\fontsize{7.0}{7.7}\selectfont,text=ink]
+  at (0.35,0.72) {WETH-linked route-count mass: \WethCountMassBase{} $\rightarrow$ \WethCountMassEnd};
 
-% One continuous accounting ribbon. Related hues group the five exact terms
-% into pair activity, vehicle use, and within-pair stable share.
-\fill[ucldark!88] (0,0.96) rectangle (\RibbonAfterMarketSupport,1.64);
-\node[segmentlabel] at ({0.5*\RibbonAfterMarketSupport},1.30)
-  {pairs observed in one\\endpoint year only\\\MarketSupportBridge};
+\draw[->,accent,line width=1.5pt] (5.72,1.58) -- (6.72,1.58);
+\node[small,text width=1.55cm] at (6.22,1.05) {exclude WETH\ endpoints};
 
-\fill[uclbright!88] (\RibbonAfterMarketSupport,0.96) rectangle (\RibbonAfterPairActivity,1.64);
-\node[segmentlabel] at ({0.5*(\RibbonAfterMarketSupport+\RibbonAfterPairActivity)},1.30)
-  {activity shifts across\\common-role pairs\\\MarketActivityReweight};
+\draw[panel] (7.00,0.48) rectangle (12.45,2.68);
+\node[anchor=west,font=\fontsize{8.1}{8.8}\selectfont\bfseries,text=ucldark]
+  at (7.35,2.32) {Trading-pair groups without WETH endpoints};
+\node[anchor=west,font=\fontsize{23}{24}\selectfont\bfseries,text=accent]
+  at (7.35,1.48) {\WethCountNoEndpointChange};
+\node[anchor=west,font=\fontsize{6.9}{7.6}\selectfont,text=muted]
+  at (7.35,1.05) {95\% CI [\WethCountNoEndpointCILower, \WethCountNoEndpointCIUpper]};
+\node[anchor=west,font=\fontsize{7.0}{7.7}\selectfont,text=ink]
+  at (7.35,0.72) {\WethCountNoEndpointGroups{} matched groups};
 
-\fill[native!82] (\RibbonAfterPairActivity,0.96) rectangle (\RibbonAfterIncidence,1.64);
-\node[segmentlabel] at ({0.5*(\RibbonAfterPairActivity+\RibbonAfterIncidence)},1.30)
-  {vehicle use across\\common-role pairs\\\VehicleIncidenceReweight};
-
-% Show the negative role-support term at its true width as a backward notch.
-\fill[accent!82] (\RibbonAfterVehicleUse,0.96) rectangle (\RibbonAfterIncidence,1.64);
-\draw[accent,very thick,->] (\RibbonAfterIncidence,1.70) -- (\RibbonAfterVehicleUse,1.70);
-\draw[accent,line width=0.8pt] (\RibbonAfterIncidence,1.55) -- (\RibbonTotal+0.42,1.55);
-\node[notelabel,text=accent,anchor=west] at (\RibbonTotal+0.52,1.55)
-  {role appears/disappears \VehicleRoleSupportBridge};
-
-\fill[stable!90] (\RibbonAfterVehicleUse,0.96) rectangle (\RibbonTotal,1.64);
-\draw[stable,line width=0.8pt] (\RibbonTotal,1.30) -- (\RibbonTotal+0.42,1.30);
-\node[notelabel,anchor=west] at (\RibbonTotal+0.52,1.13)
-  {stable versus native\\within common-role pairs \WithinPairStableShare};
-
-% Three audience-facing groups. Values are generated from the five certified
-% terms and tested to reconcile to the total.
-\draw[decorate,decoration={brace,mirror,amplitude=4pt},ucldark,line width=0.8pt]
-  (0,0.86) -- (\RibbonAfterPairActivity,0.86);
-\node[notelabel,anchor=north] at ({0.5*\RibbonAfterPairActivity},0.62)
-  {\textbf{Pair activity \PairActivityTotal}};
-
-\draw[decorate,decoration={brace,mirror,amplitude=4pt},native,line width=0.8pt]
-  (\RibbonAfterPairActivity,0.86) -- (\RibbonAfterVehicleUse,0.86);
-\node[notelabel,anchor=north] at ({0.5*(\RibbonAfterPairActivity+\RibbonAfterVehicleUse)},0.62)
-  {\textbf{Vehicle use \VehicleUseNet}};
-
-% Supporting comparison: pair turnover is important, but does not explain the
-% entire rise.
-\node[draw=rule,fill=white,rounded corners=2pt,inner sep=5pt,
-      font=\fontsize{7.2}{8.0}\selectfont,align=left,text=ink,anchor=west]
-  at (0,-0.12) {Among pairs observed in both endpoint years, stable share still rises\\
-  \textbf{\ObservedBothYearsBase{} $\longrightarrow$ \ObservedBothYearsEnd{} \quad \textcolor{stable}{\ObservedBothYearsTotal{}}}};
-
-% The like-for-like inferential companion holds the ordered endpoint market,
-% calendar position, and broad realised route scope alike. Coordinates are
-% generated from the certified estimate rather than transcribed here.
-\begin{scope}[shift={(3.25cm,-1.18cm)},x=1.12cm]
-\draw[rule,line width=1.0pt] (-2.0,0) -- (2.0,0);
-\draw[muted,line width=0.7pt] (0,-0.15) -- (0,0.15);
-\draw[ucldark,line width=1.8pt]
-  (\MatchedMarketCountCILowerRawPP,0) -- (\MatchedMarketCountCIUpperRawPP,0);
-\fill[ucldark] (\MatchedMarketCountChangeRawPP,0) circle[radius=2.2pt];
-\node[font=\fontsize{6.6}{7.2}\selectfont,align=right,text=ink,anchor=east]
-  at (-2.18,0) {Matched markets\\count share};
-\node[font=\fontsize{6.6}{7.2}\selectfont,align=left,text=ink,anchor=west]
-  at (2.18,0) {\textbf{\MatchedMarketCountChange}\\95\% CI [\MatchedMarketCountCILower, \MatchedMarketCountCIUpper]};
-\end{scope}
+\node[small,text width=12.0cm] at (6.23,0.10)
+  {Within the same trading pair, calendar position, and route scope: all groups \WethCountWithinFullChange{} [\WethCountWithinFullCILower, \WethCountWithinFullCIUpper]; without WETH endpoints \WethCountWithinNoEndpointChange{} [\WethCountWithinNoEndpointCILower, \WethCountWithinNoEndpointCIUpper].};
 \end{tikzpicture}

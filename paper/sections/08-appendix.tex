@@ -20,69 +20,65 @@ The route-count sample requires a complete token sequence but not a dollar price
 Historical token precision cannot be verified for 13 tokens traded in 22 constant-product pools. Reserve-reconstruction analyses omit those pools. An upper-bound check removes every route involving any of the 13 tokens: the resulting bound is 5,950 routes and \$10.91 million of route value. Only 1,036 of those routes use one of the affected tokens as an intermediary, representing \$1.284 million, or 0.00043\% of value on routes whose legs can all be valued. All 13 tokens lie outside the native and stablecoin groups used in the main comparison. The exclusion affects exact reserve reconstruction; the route-composition result is unchanged.
 % docs/findings-freeze.md, 13 unresolved V2 token-precision records and worst-case route deletion bound
 
-\section{Quoter construction and validation}
+\section{Quoter design and component validation}
 \label{app:quoters}
 
-Each counterfactual comparison requires an exact-input quote: given a pool's state and an input amount, what would the pool have paid out? Each venue family is priced with its own invariant and arithmetic. We assess each implementation by reconstructing the state immediately before executed swaps and comparing predicted with realised output. Curve's amplification coefficient and Balancer's weight ratio are unavailable in the historical subgraph records, so we estimate them from realised trades and evaluate the resulting quotes on separate trades.
+The counterfactual comparison requires an exact-input quote: given a pool's state and an input amount, what would the pool have paid out? Each venue family has its own invariant and arithmetic. The exercises below assess individual implementations by reconstructing state immediately before selected executed swaps and comparing predicted with realised output. Curve's amplification coefficient and Balancer's weight ratio are unavailable in the historical subgraph records, so the component exercises estimate them from one set of realised trades and evaluate quotes on separate trades. These exercises establish feasibility for particular pool families and dates. A cost comparison additionally requires complete pre-transaction states for every included family and date.
 
 \subsection{Constant-product pools}
 \label{app:quoters:cp}
 
-Uniswap v2 and SushiSwap v2 price the product of reserves \citep{LeharParlour2024Uniswap}. Let $R_{i,p,t}$ and $R_{o,p,t}$ denote pool $p$'s input- and output-token reserves, $\Delta_i$ the token input, $f_p$ the fee rate, and $\varphi_p=1-f_p$ the fraction of input retained for pricing. An exact-input swap moves the pool along
+Uniswap v2 and SushiSwap v2 price the product of reserves \citep{LeharParlour2024Uniswap}. Let $R_{i,p,e^-}$ and $R_{o,p,e^-}$ denote pool $p$'s input- and output-token reserves immediately before transaction $e$, $\Delta_i$ the token input, $f_p$ the fee rate, and $\varphi_p=1-f_p$ the fraction of input retained for pricing. An exact-input swap moves the pool along
 \[
-(R_{i,p,t}+\varphi_p\Delta_i)(R_{o,p,t}-\Delta_o)=R_{i,p,t}R_{o,p,t},
+(R_{i,p,e^-}+\varphi_p\Delta_i)(R_{o,p,e^-}-\Delta_o)=R_{i,p,e^-}R_{o,p,e^-},
 \]
 which inverts in closed form to
 \[
-\Delta_o=\frac{\varphi_p\Delta_iR_{o,p,t}}{R_{i,p,t}+\varphi_p\Delta_i},
+\Delta_o=\frac{\varphi_p\Delta_iR_{o,p,e^-}}{R_{i,p,e^-}+\varphi_p\Delta_i},
 \qquad \varphi_p=\tfrac{997}{1000},
 \]
 the 30 basis point fee both venues charge, applied on chain as the integer ratio above.
 % src/ddvc/cpquote.py, FEE_NUM and FEE_DEN, Uniswap v2 and SushiSwap v2
 
-A multi-leg route composes these one hop at a time, threading the output token of one pool into the next. The body compares the dollar outputs of the best direct and intermediated routes at the same state and dollar input notional,
+A multi-leg route composes these one hop at a time, threading the output token of one pool into the next. The cost comparison evaluates the dollar outputs of the best direct and intermediated routes at the same state and dollar input notional,
 \[
-10^4\Delta C^D_{i,o,k,q,t}
-=10^4\frac{O^D_{i,o,q,t}-O^I_{i,o,k,q,t}}{O^D_{i,o,q,t}}.
+10^4\Delta C^D_{i,o,k,q,e}
+=10^4\frac{O^D_{i,o,q,e}-O^I_{i,o,k,q,e}}{O^D_{i,o,q,e}}.
 \]
-Both outputs are computed from one reconstructed state. A realised trade supplies the output of the chosen route alone; the reconstructed state makes the direct and intermediary alternatives comparable.
-
-Quoting each executed swap against the state immediately before it gives a median absolute error of 0.0000\% across 8,024 swaps; 96.7\% of quotes are within 1\% and 95.2\% are within 0.01\% of realised output.
+Both outputs must be computed from one reconstructed pre-transaction state. A realised trade supplies the output of the chosen route alone; the direct and intermediary alternatives require reconstructed states for every pool in the comparison. As a component check, quoting each executed constant-product swap against the state immediately before it gives a median absolute error of 0.0000\% across 8,024 swaps; 96.7\% of quotes are within 1\% and 95.2\% are within 0.01\% of realised output.
 % src/ddvc/cpquote.py module docstring, 8,024 executed swaps
 
 \subsection{Concentrated liquidity}
 \label{app:quoters:cl}
 
-Uniswap v3 and v4 distribute reserves across price ranges, so a pool has no single actual reserve pair and a quote has to walk the price axis \citep{AdamsZinsmeisterRobinson2021UniswapV3}. Inside one range the pool behaves as a constant-product pool with virtual reserves $\widetilde R_{0,p,t}$ and $\widetilde R_{1,p,t}$. Liquidity $L_{p,t}$ and price $P_t$ satisfy
+Uniswap v3 and v4 distribute reserves across price ranges, so a pool has no single actual reserve pair and a quote has to walk the price axis \citep{AdamsZinsmeisterRobinson2021UniswapV3}. Inside one range the pool behaves as a constant-product pool with virtual reserves $\widetilde R_{0,p,e^-}$ and $\widetilde R_{1,p,e^-}$. Liquidity $L_{p,e^-}$ and price $P_{p,e^-}$ satisfy
 \[
-\widetilde R_{0,p,t}=\frac{L_{p,t}}{\sqrt{P_t}},
+\widetilde R_{0,p,e^-}=\frac{L_{p,e^-}}{\sqrt{P_{p,e^-}}},
 \qquad
-\widetilde R_{1,p,t}=L_{p,t}\sqrt{P_t},
+\widetilde R_{1,p,e^-}=L_{p,e^-}\sqrt{P_{p,e^-}},
 \]
 so the token amounts exchanged over a price move from $\sqrt{P_a}$ to $\sqrt{P_b}$ are
 \[
-\Delta_0=L_{p,t}\left(\frac{1}{\sqrt{P_a}}-\frac{1}{\sqrt{P_b}}\right),
+\Delta_0=L_{p,e^-}\left(\frac{1}{\sqrt{P_a}}-\frac{1}{\sqrt{P_b}}\right),
 \qquad
-\Delta_1=L_{p,t}\left(\sqrt{P_b}-\sqrt{P_a}\right).
+\Delta_1=L_{p,e^-}\left(\sqrt{P_b}-\sqrt{P_a}\right).
 \]
 An exact-input step inverts those. Paying in token1 raises the price by a linear increment in root price, and paying in token0 lowers it through a reciprocal update,
 \[
-\sqrt{P'}=\sqrt{P}+\frac{\Delta_1}{L_{p,t}},
+\sqrt{P'}=\sqrt{P}+\frac{\Delta_1}{L_{p,e^-}},
 \qquad
-\sqrt{P'}=\frac{L_{p,t}\sqrt{P}}{L_{p,t}+\Delta_0\sqrt{P}}.
+\sqrt{P'}=\frac{L_{p,e^-}\sqrt{P}}{L_{p,e^-}+\Delta_0\sqrt{P}}.
 \]
 Range boundaries sit on a geometric tick grid and each initialised tick carries a signed liquidity delta applied on crossing,
 \[
 \sqrt{P(j)}=1.0001^{j/2},
-\qquad L_{p,t}\mapsto L_{p,t}\pm\Delta L_j,
+\qquad L_{p,e^-}\mapsto L_{p,e^-}\pm\Delta L_j,
 \]
 with the sign set by the direction of travel. The quoter carries the contract's own integer Q96 arithmetic, including the round-up conventions on the input side and the round-down conventions on the output side, so a quote is exact given the state.
 % src/ddvc/pricing/v3quote.py, integer port of SwapMath.computeSwapStep and TickMath
 
-The active tick map is accumulated from every mint and burn strictly before the validation day, after which same-day liquidity changes and swaps are replayed together by block and log index. Consecutive swaps in one pool supply the price state: the earlier event leaves \texttt{sqrtPriceX96} and \texttt{tick} immediately before the later swap, while the interleaved event stream supplies the active liquidity. We report errors separately by trade direction and tick crossing because these cases exercise different branches of the quoting rule.
+The active tick map is accumulated from every mint and burn strictly before the validation day, after which same-day liquidity changes and swaps are replayed together by block and log index. Consecutive swaps in one pool supply the price state: the earlier event leaves \texttt{sqrtPriceX96} and \texttt{tick} immediately before the later swap, while the interleaved event stream supplies the active liquidity. We report errors separately by trade direction and tick crossing because these cases exercise different branches of the quoting rule. Table~\ref{tab:app:cl} applies this test to four validation groups on Uniswap v4. The supported pools follow the same code path at static fee tiers absent from v3, including 0, 7, 8, and 20,000 hundredths of a basis point. Hook-bearing and dynamic-fee pools are excluded because the raw records do not identify their transaction-level cash flows and realised fees; Appendix~\ref{app:coverage} reports their share of v4 trading.
 % src/ddvc/pricing/v3quote.py, _next_init_tick measured docstring against realised swaps
-
-Table~\ref{tab:app:cl} reports four validation groups on Uniswap v4, whose supported pools exercise the same code path on static fee tiers v3 never carried, including 0, 7, 8 and 20,000 hundredths of a basis point. Hook-bearing and dynamic-fee pools are excluded because their transaction-level cash flows and realised fee are not present in the raw records; Appendix~\ref{app:coverage} reports their share of v4 trading.
 % output/exhibits/v4_quoter_validation.jsonl, observed static fee tiers; output/exhibits/v4_quote_support.jsonl, support statuses
 
 \begin{table}[t]
@@ -116,19 +112,19 @@ Every direction and tick-crossing group reproduces realised output within 0.001\
 \subsection{StableSwap pools}
 \label{app:quoters:stable}
 
-Curve interpolates between a constant-sum curve, which is flat and charges no slippage, and the constant-product curve of Section~\ref{app:quoters:cp}. For $n$ tokens with normalized balances $R_{j,p,t}$, amplification $A_p$, and invariant $D_p$,
+Curve interpolates between a constant-sum curve, which is flat and charges no slippage, and the constant-product curve of Section~\ref{app:quoters:cp}.\footnote{See Egorov, \href{https://docs.curve.finance/assets/pdf/whitepaper_stableswap.pdf}{\emph{StableSwap---Efficient Mechanism for Stablecoin Liquidity}}.} For $n$ tokens with normalized pre-transaction balances $R_{j,p,e^-}$, amplification $A_p$, and invariant $D_p$,
 \[
-A_p n^{n}\sum_jR_{j,p,t}+D_p=A_pD_pn^{n}+\frac{D_p^{n+1}}{n^{n}\prod_jR_{j,p,t}},
+A_p n^{n}\sum_jR_{j,p,e^-}+D_p=A_pD_pn^{n}+\frac{D_p^{n+1}}{n^{n}\prod_jR_{j,p,e^-}},
 \]
-where $A_p\to0$ recovers the constant product and $A_p\to\infty$ recovers the constant sum. The contract solves $D_p$ by Newton iteration and then solves the same invariant for the post-trade output balance $R'_{o,p,t}$ after $R_{i,p,t}$ is increased by $\Delta_i$. Defining $D_{\Pi}=D_p\prod_jD_p/(nR_{j,p,t})$, the two loops are
+where $A_p\to0$ recovers the constant product and $A_p\to\infty$ recovers the constant sum. The contract solves $D_p$ by Newton iteration and then solves the same invariant for the post-trade output balance $R'_{o,p,e}$ after $R_{i,p,e^-}$ is increased by $\Delta_i$. Defining $D_{\Pi}=D_p\prod_jD_p/(nR_{j,p,e^-})$, the two loops are
 \[
-D_p\leftarrow\frac{(A_pn\sum_jR_{j,p,t}+nD_{\Pi})D_p}{(A_pn-1)D_p+(n+1)D_{\Pi}},
+D_p\leftarrow\frac{(A_pn\sum_jR_{j,p,e^-}+nD_{\Pi})D_p}{(A_pn-1)D_p+(n+1)D_{\Pi}},
 \qquad
-R'_{o,p,t}\leftarrow\frac{(R'_{o,p,t})^2+c}{2R'_{o,p,t}+b-D_p},
+R'_{o,p,e}\leftarrow\frac{(R'_{o,p,e})^2+c}{2R'_{o,p,e}+b-D_p},
 \]
 with $b$ and $c$ formed from the balances of the tokens the swap does not touch. Balances are rescaled to eighteen decimals before either loop runs, because the invariant treats its tokens as interchangeable at par and a six-decimal stablecoin read on an eighteen-decimal scale is off by a factor of $10^{12}$. Output is net of the pool fee,
 \[
-\Delta_o=(R_{o,p,t}-R'_{o,p,t}-1)\varphi_p,
+\Delta_o=(R_{o,p,e^-}-R'_{o,p,e}-1)\varphi_p,
 \]
 carrying the contract's own off-by-one guard on the raw difference.
 % src/ddvc/pricing/stableswap.py, get_d, get_y and quote_exact_input
@@ -136,13 +132,11 @@ carrying the contract's own off-by-one guard on the raw difference.
 $A_p$ is Curve-specific and the standardised subgraph schema drops it, so it is identified from data instead of fetched. Every other quantity in the invariant is observed and every Curve swap reports both amounts, which leaves $A_p$ as the only unknown,
 \[
 \widehat A_p=\arg\min_{A_p}Q_{0.90}\!\left\{
-\frac{|Q_p(i\to o,\Delta_i;\chi_{p,t}(A_p))-\Delta_o|}{\Delta_o}
+\frac{|Q_p(i\to o,\Delta_i;\chi_{p,e^-}(A_p))-\Delta_o|}{\Delta_o}
 \right\},
 \]
-fitted on the first half of a pool-day's trades over a logarithmic grid with a ternary refinement, then evaluated on the trades not used for estimation. A pool-day is retained when the 90th percentile of fitting error is below 1\%. Using the upper tail prevents a partial fit from passing: one misspecified pool produced a median fitting error below 0.1\% but a 34\% median error on the other trades because the invariant fit only part of its activity.
+fitted on the first half of a pool-day's trades over a logarithmic grid with a ternary refinement, then evaluated on the trades not used for estimation. A pool-day is retained when the 90th percentile of fitting error is below 1\%. Using the upper tail prevents a partial fit from passing: one misspecified pool produced a median fitting error below 0.1\% but a 34\% median error on the other trades because the invariant fit only part of its activity. Curve has also operated crypto-pools since 2021 that follow the CryptoSwap invariant. Applying StableSwap to these pools yields a best-fit $A_p$ of 3 and a 36\% median quote error, so pool-days whose observed trades are inconsistent with StableSwap remain outside this component exercise.
 % src/ddvc/pricing/stableswap.py, FIT_QUANTILE 0.90 and MAX_CALIBRATION_ERROR 0.01
-
-Curve has also operated crypto-pools since 2021 that follow the CryptoSwap invariant. Applying StableSwap to these pools yields a best-fit $A_p$ of 3 and a 36\% median quote error. We therefore exclude pool-days whose observed trades are inconsistent with the StableSwap pricing rule.
 % src/ddvc/pricing/stableswap.py, A_MIN comment recording the measured failure
 
 \begin{table}[t]
@@ -174,21 +168,19 @@ Across four validation days, held-out median errors range from 0.029\% to 0.039\
 \subsection{Weighted pools}
 \label{app:quoters:weighted}
 
-Balancer weighted pools keep a weighted geometric mean of reserves constant,
+Balancer weighted pools use a weighted geometric-mean invariant,\footnote{See Martinelli and Mushegian, \href{https://docs.balancer.fi/whitepaper.pdf}{\emph{A Non-Custodial Portfolio Manager, Liquidity Provider, and Price Sensor}}.}
 \[
-K_{w,p}=\prod_jR_{j,p,t}^{w_{j,p}},
+K_{w,p}=\prod_jR_{j,p,e^-}^{w_{j,p}},
 \qquad \sum_jw_{j,p}=1,
 \]
 which gives the two-token exact-input form
 \[
-\Delta_o=R_{o,p,t}\left[1-\left(
-\frac{R_{i,p,t}}{R_{i,p,t}+\varphi_p\Delta_i}
+\Delta_o=R_{o,p,e^-}\left[1-\left(
+\frac{R_{i,p,e^-}}{R_{i,p,e^-}+\varphi_p\Delta_i}
 \right)^{w_{i,p}/w_{o,p}}\right].
 \]
-Only the ratio $w_{i,p}/w_{o,p}$ enters. An equal-weight Balancer pool and a constant-product pair with the same reserves therefore return the same quote. We restrict the input to 30\% of the input-token reserve, the maximum accepted by the Balancer Vault.
+Only the ratio $w_{i,p}/w_{o,p}$ enters. An equal-weight Balancer pool and a constant-product pair with the same reserves therefore return the same quote. The Balancer Vault accepts inputs up to 30\% of the input-token reserve; that contract limit governs whether a quote can execute, but it is not the empirical support rule. The counterfactual design applies the common 5\% own-price-impact cutoff in Equation~\eqref{eq:support} to Balancer and every other pool family. The subgraph reports the weight ratio and swap fee at its head block, not at each historical trade. Because liquidity-bootstrapping pools change weights on a schedule and pool owners can reset fees, we estimate the historical parameter when the reported value does not reproduce realised trades. Each fit introduces one scalar parameter and requires at least four observations for the token pair.
 % src/ddvc/pricing/weighted.py, MAX_IN_RATIO at 30% of the input balance
-
-The subgraph reports the weight ratio and swap fee at its head block rather than at each historical trade. Because liquidity-bootstrapping pools change weights on a schedule and pool owners can reset fees, we estimate the historical parameter when the reported value does not reproduce realised trades. Each fit introduces one scalar parameter and requires at least four observations for the token pair.
 % src/ddvc/pricing/weighted.py, parameter identification docstring and MIN_PAIR_OBSERVATIONS
 
 We retain a Balancer pool-day when the 90th percentile fitting error is below 0.1\%. The threshold separates weighted pools, whose held-out errors range from $10^{-9}$ to 0.004\%, from stable, composable-stable, and elliptic-curve pools, whose held-out errors range from 0.05\% to 1.08\% and have a 99th percentile of 12\%.
@@ -231,13 +223,13 @@ Day & Held-out trades & Backward & Flat & Opening & Pools priced / excluded \\
 \exhibitnote{Median absolute quote error in percent of realised output, on trades no fit ever saw. \emph{Backward} reconstructs per-swap balances by rolling the day's event sequence back from the closing snapshot, \emph{Flat} keeps the snapshot balances constant across the day, and \emph{Opening} treats the snapshot as the day's opening state and rolls forward. The sample contains twelve days from 2021-04 to 2026-02.}
 \end{table}
 
-Across the twelve days, backward reconstruction returns a median error of 0.0000\% and identifies 256 of 473 testable pool-days as weighted pools. The excluded pool-days carry a median 91.8\% of tested swap volume, which materially limits the venue coverage of the counterfactual comparison.
+Across the twelve component-validation days, backward reconstruction returns a median error of 0.0000\% and identifies 256 of 473 testable pool-days as weighted pools. The excluded pool-days carry a median 91.8\% of tested swap volume. Complete Balancer family coverage is therefore necessary before interpreting route-cost estimates; the twelve-day exercise measures quoter accuracy for the tested pool-days.
 % output/exhibits/weighted_quoter_validation.jsonl, 12 days, 256 priced and 217 excluded pool-days
 
 \section{Reconstructing pool balances before each trade}
 \label{app:state}
 
-Every counterfactual quote needs the pool state immediately before the trade. The historical records instead store balances at the end of an hour or day. We recover the earlier state by ordering every balance-changing event within the period and unwinding the sequence from the recorded closing balance.
+Every counterfactual quote needs the pool state immediately before the trade. Some historical records instead store balances at the end of an hour or day. We recover the earlier state by ordering every balance-changing event within the period and unwinding the sequence from the recorded closing balance. The exercises below validate that procedure on selected constant-product and weighted-pool observations. The complete all-family calendar is not yet available.
 
 Let $\mathbf R_p^{\mathrm{end}}$ be pool $p$'s stored period-end reserve vector and $\boldsymbol\Delta_{p,e}$ the vector of net signed token amounts in event $e$. The state before event $e$ is the stored value with every later event removed,
 \[
@@ -258,7 +250,7 @@ Liquidity additions and withdrawals also move constant-product pool balances, so
 \left\|\left(\mathbf R^{\mathrm{pre}}_{p,1}-\mathbf R^{\mathrm{end}}_{p,\mathrm{prev}}\right)
 \oslash\mathbf R^{\mathrm{end}}_{p,\mathrm{prev}}\right\|_{\infty}<\tau,
 \]
-Agreement establishes that the event history reproduces the observed reserves. A period is omitted from a state-dependent analysis when a required event family is incomplete or the balances do not reconcile. We report the resulting coverage by exchange and year because missing state can be concentrated in actively managed or newly launched pools and therefore need not be random.
+Agreement establishes that the event history reproduces the observed reserves for the tested period. The state-dependent sample omits a period when a required event family is incomplete or the balances do not reconcile. Coverage is reported by exchange and year because missing state can be concentrated in actively managed or newly launched pools.
 
 The same logic applies to weighted pools. We treat \texttt{poolSnapshots.amounts} as the closing balance and unwind joins, exits, and swaps in their recorded order. Table~\ref{tab:app:weighted} compares this reconstruction with two alternatives that either hold the closing balance fixed or treat it as the opening state.
 % output/exhibits/weighted_quoter_validation.jsonl, medians across 12 sampled days
@@ -269,13 +261,14 @@ The Balancer replay includes joins and exits as well as swaps. Omitting those ev
 \section{Restricting hypothetical trades to observed size--depth combinations}
 \label{app:support}
 
-The validation samples contain executed swaps and therefore pools deep enough to serve the observed trade. A hypothetical route may demand much more output relative to pool depth, where the observed errors no longer describe pricing accuracy. We retain a hypothetical leg only when its own price impact lies within the range represented among the realised validation trades. The cutoff is calibrated from that population.
+The component-validation samples contain executed swaps and therefore pools deep enough to serve the observed trade. A hypothetical route may demand much more output relative to pool depth, where the observed errors no longer describe pricing accuracy. A hypothetical leg enters the cost comparison only when its own price impact is at most 5\%, calculated under the pricing rule of the pool family it would traverse.
+% output/exhibits/quoter_support_bounds.jsonl; planned common 5 percent own-price-impact rule
 
-For a hypothetical leg, the relevant statistic is its own price impact in the pool it would traverse,
+For constant-product swaps, input relative to reserves provides a transparent size--depth diagnostic,
 \[
-\iota_{i,p,t}=\frac{\Delta_i}{R_{i,p,t}},
+\iota_{i,p,e^-}=\frac{\Delta_i}{R_{i,p,e^-}},
 \]
-the input amount as a fraction of the input-side reserve, which is known before any quote is formed. A restriction stated in the size of the measured gap would condition on a monotone function of the outcome. This criterion instead uses pool state and trade size before competing outputs are compared.
+the input amount as a fraction of the input-side reserve. Table~\ref{tab:app:support} reports its distribution in the historical validation sample. The statistic helps calibrate what constitutes a large trade in a constant-product pool, but it does not replace the common own-price-impact rule for concentrated-liquidity, StableSwap, or weighted pools.
 
 \begin{table}[t]
 \centering
@@ -310,12 +303,12 @@ Pooled & 932{,}270 & 0.34\% & 3.29\% & 14.86\% & 78.33\% & 100.00\% \\
 \exhibitnote{Trade size as a percentage of the input-side reserve of the pool traversed, over the constant-product swaps the quoters were validated against. The sample contains eight dates from 2020-05-05 through 2025-09-23.}
 \end{table}
 
-The panel's threshold of 5\% sits between the 90th percentile of 3.29\% and the 99th of 14.86\% of the pooled distribution, and it lies in the same interval on seven of the eight days taken separately. Figure~\ref{fig:app:support} shows the daily distributions. Trades beyond the 99.9th percentile consume most of a pool; counterfactual legs in that region are excluded because no comparable executed trades discipline their pricing error.
+Five per cent of input reserves sits between the 90th percentile of 3.29\% and the 99th of 14.86\% of the pooled constant-product distribution, and it lies in the same interval on seven of the eight days taken separately. Figure~\ref{fig:app:support} shows the daily distributions. This calculation is a depth diagnostic. The empirical rule remains a 5\% own-price-impact cutoff computed separately under each pool family's pricing function.
 % output/exhibits/quoter_support_bounds.jsonl, pooled over 932,270 validated swaps on eight sampled days
 
 \begin{figure}[tbp]
 \centering
-\caption{Calibration of the 5\% price-impact restriction}
+\caption{Constant-product trade size relative to reserves}
 \label{fig:app:support}
 \begin{tikzpicture}
 \begin{axis}[width=0.85\textwidth, height=6.6cm, xlabel={Validation day}, ylabel={Trade size as percent of input reserve}, xmin=0.4, xmax=9.6, ymin=0, ymax=22, ytick={0,5,10,15,20}, xtick={1,2,3,4,5,6,7,8,9}, xticklabels={2020-05-05,2021-02-10,2021-11-18,2022-08-26,2023-06-03,2024-03-10,2024-12-16,2025-09-23,Pooled}, x tick label style={rotate=45, anchor=east, font=\scriptsize}, tick align=outside, tick label style={font=\footnotesize}, label style={font=\footnotesize}, legend style={font=\footnotesize, draw=black!35, fill=white, at={(0.03,0.96)}, anchor=north west}, legend cell align=left, grid=major, grid style={black!10}, axis line style={black!70}]
@@ -336,50 +329,30 @@ The panel's threshold of 5\% sits between the 90th percentile of 3.29\% and the 
 \addlegendentry{5\% cutoff}
 \end{axis}
 \end{tikzpicture}
-\exhibitnote{The statistic is a leg's input amount as a fraction of the input-side reserve in the pool it would traverse. Points mark the 90th and 99th percentiles; the dashed line marks the 5\% cutoff. The two percentiles coincide on 2020-05-05. The sample contains 932,270 validated swaps on eight dates from 2020-05-05 through 2025-09-23.}
+\exhibitnote{The statistic is a leg's input amount as a fraction of the input-side reserve in the constant-product pool it traverses. Points mark the 90th and 99th percentiles; the dashed line marks 5\% of reserves. The two percentiles coincide on 2020-05-05. The sample contains 932,270 realised swaps on eight dates from 2020-05-05 through 2025-09-23.}
 \end{figure}
 % output/exhibits/quoter_support_bounds.jsonl, per-day and pooled 90th and 99th percentiles, 932,270 validated swaps on eight sampled days
 
-The 5\% cutoff defines a support-restricted price comparison, and the body reports the resulting coverage. Calibration on executed trades establishes the range of represented trade sizes; quote error remains unobserved for hypothetical routes.
+The counterfactual comparison applies the 5\% own-price-impact rule in Equation~\eqref{eq:support} to each family. We do not report its retained sample or venue coverage without complete exact pre-transaction states across the included families; quote error remains unobserved for hypothetical routes.
 % output/exhibits/quoter_support_bounds.jsonl; 932,270 validated swaps on eight sampled dates
 
-\section{Markets omitted from the price comparison}
+\section{Coverage risks for the price comparison}
 \label{app:coverage}
 
-An omitted venue can improve the best direct route, the best intermediated route, or both. We therefore measure coverage using each venue's share of trading volume and report the composition of the excluded volume. To make volume comparable across the seven data sources, we compute it from individual swaps using the smaller dollar value of the two legs. This avoids double counting in two sources and removes implausible oracle values in thin pools: one Curve pool reports a \$456m day whose swaps sum to \$8, and a constant-product pair with \$255 of reserves reports \$1.36bn. Physical bounds on volume relative to reserves exclude between 0.10\% and 0.24\% of pool-days per year.
-% docs/venue-coverage-bounds.md, volume reconstruction, 400 sampled days
+An omitted venue can improve the best direct route, the best intermediated route, or both. The audits in this section locate economically important coverage risks for the counterfactual comparison. We first compare market coverage across eight data sources, including Uniswap v1 as a separate architecture sample. Volume is reconstructed from individual swaps using the smaller dollar value of the two legs. This avoids double counting in two sources and removes implausible oracle values in thin pools: one Curve pool reports a \$456m day whose swaps sum to \$8, and a constant-product pair with \$255 of reserves reports \$1.36bn. Physical bounds on volume relative to reserves exclude between 0.10\% and 0.24\% of pool-days per year. The subsequent route-cost opportunity set excludes Uniswap v1 because its forced-routing architecture is studied separately; the eight-venue coverage comparison should not be read as an eight-venue priced opportunity set.
+% output/exhibits/venue_volume_by_year.jsonl; docs/venue-coverage-bounds.md, volume reconstruction, 400 sampled days
 
 \begin{table}[t]
 \centering
-\caption{Venue shares of panel volume, by year}
+\caption{Share of sampled decentralised-exchange volume, by venue and year}
 \label{tab:app:venues}
-\begin{tabular}{lrrrrrrr}
-\toprule
-Year & Uni v3 & Uni v2 & Curve & Uni v4 & Balancer & Sushi v2 & Sushi v3 \\
-\midrule
-2020 & 0.00 & 77.51 & 11.36 & 0.00 & 0.00 & 11.13 & 0.00 \\
-% docs/venue-coverage-bounds.md, seven-venue shares, sampled days in 2020
-2021 & 37.97 & 31.28 & 12.25 & 0.00 & 1.18 & 17.32 & 0.00 \\
-% docs/venue-coverage-bounds.md, seven-venue shares, sampled days in 2021
-2022 & 64.08 & 7.01 & 18.70 & 0.00 & 5.87 & 4.35 & 0.00 \\
-% docs/venue-coverage-bounds.md, seven-venue shares, sampled days in 2022
-2023 & 66.81 & 9.26 & 13.88 & 0.00 & 8.80 & 1.22 & 0.03 \\
-% docs/venue-coverage-bounds.md, seven-venue shares, sampled days in 2023
-2024 & 69.32 & 11.67 & 12.62 & 0.00 & 5.89 & 0.49 & 0.01 \\
-% docs/venue-coverage-bounds.md, seven-venue shares, sampled days in 2024
-2025 & 60.14 & 4.77 & 10.96 & 22.12 & 1.69 & 0.31 & 0.01 \\
-% docs/venue-coverage-bounds.md, seven-venue shares, sampled days in 2025
-2026 & 49.35 & 2.43 & 13.52 & 34.24 & 0.16 & 0.12 & 0.18 \\
-% docs/venue-coverage-bounds.md, seven-venue shares, sampled days in 2026
-\midrule
-Pooled & 56.02 & 14.98 & 13.73 & 5.45 & 3.92 & 5.88 & 0.02 \\
-% docs/venue-coverage-bounds.md, pooled over all 400 sampled days
-\bottomrule
-\end{tabular}
-\exhibitnote{Percentage shares within the seven-venue panel. The sample contains 400 dates, taken every seventh calendar day from 2 November 2018 through 30 June 2026.}
+\scriptsize
+\input{../output/tables/venue_coverage.tex}
+\exhibitnote{Percentage shares within the eight-venue market-coverage comparison. The sample contains 400 dates, taken every seventh calendar day from 2 November 2018 through 30 June 2026; the table displays 2020--2026 and pools USD volume over those displayed years. Uniswap v1 is shown for market coverage but excluded from the route-cost opportunity set because it is the separate forced-routing architecture sample.}
+% output/exhibits/venue_volume_by_year.jsonl; generated by scripts/tabulate/render_venue_coverage.py
 \end{table}
 
-The Uniswap v4 price comparison covers static-fee pools without hooks. Pool-identity reconstruction leaves zero swaps with incomplete or invalid immutable pool attributes across 29,005,863 rows. Covered pools account for 84.02\% of swaps and 99.05\% of reported value; the corresponding 2026 shares are 79.89\% and 95.57\%. The remaining pools use hooks, dynamic fees, or both, whose transaction-level cash-flow rule is not identified from the raw event.
+The Uniswap v4 component audit supports static-fee pools without hooks. Pool-identity reconstruction leaves zero swaps with incomplete or invalid immutable pool attributes across 29,005,863 rows. Pools meeting that component definition account for 84.02\% of swaps and 99.05\% of reported value; the corresponding 2026 shares are 79.89\% and 95.57\%. The remaining pools use hooks, dynamic fees, or both, whose transaction-level cash-flow rule is not identified from the raw event. These shares describe quoter eligibility, not complete pre-transaction state coverage.
 % output/exhibits/v4_quote_support.jsonl, ALL and 2026 rows by support status
 
 Curve carries between 11\% and 19\% of panel volume in every year it exists and ranks second in four years, making its coverage economically important. The StableSwap model fits 621 pool-days and excludes 588 whose 90th-percentile fitting error exceeds 1\%. Across 28 sampled dates from 2020-02-11 to 2026-04-28, these exclusions account for 34.2\% of the Curve volume assessed, or \$1.83bn of \$5.36bn. Another 2.75\% of Curve volume occurs in pool-days with too few trades to estimate and evaluate the amplification coefficient separately. Lowering the minimum from eight trades to four changes annual excluded shares by at most 1.3 percentage points.
@@ -425,10 +398,10 @@ Year & \multicolumn{2}{r}{Native leg} & \multicolumn{2}{r}{Stable leg} & Other v
 The exclusions are concentrated in routes involving the native asset. The excluded share of native-leg volume exceeds the stable-leg share by at least 33 percentage points in every sample year and by 54 points in 2023. Tricrypto pools pairing WBTC and WETH with a stablecoin account for \$818m, or 44.6\%, of the \$1.83bn excluded, including seven of the twelve largest excluded pool-days. These pools use CryptoSwap, so the missing coverage is concentrated where Curve supplies depth between ETH and stablecoins.
 % docs/venue-coverage-bounds.md, curve_excluded_composition.jsonl, 28 measured pool-days
 
-The priced perimeter omits SushiSwap v3. The available historical records lack the pool's root price, in-range liquidity, and tick spacing. Its reserves are distributed across ticks, and the balance and weight fields exposed by the common schema do not describe that invariant. The venue accounts for 0.016\% of priced-venue volume over the full sample and 0.176\% in 2026. Across fourteen sampled days, only 4.1\% of its volume occurs on token pairs unavailable on another priced venue, never more than \$37,609 on one day.
+SushiSwap v3 is omitted from the priced perimeter because its historical records lack the pool's root price, in-range liquidity, and tick spacing. Its reserves are distributed across ticks, and the balance and weight fields exposed by the common schema do not describe that invariant. The venue accounts for 0.016\% of volume in the seven-venue route-cost audit over the full sample and 0.176\% in 2026. Across fourteen sampled days, only 4.1\% of its volume occurs on token pairs unavailable on another audited venue, never more than \$37,609 on one day.
 % docs/venue-coverage-bounds.md, sushiswap_v3_schema_probe.jsonl and sushiswap_v3_pair_overlap.jsonl, 14 sampled days
 
-Balancer accounts for 3.9\% of measured venue volume over the full sample and 8.8\% at its 2023 peak. Weighted pools are included with the validation errors in Table~\ref{tab:app:weighted}. Linear and boosted pools remain outside the comparison. Of 29 sampled composable-stable pools, 23 reduce to two external tokens after removing the pool's own share token, but pricing them also requires historical rate-provider states that are not available in the current source.
+Balancer accounts for 3.9\% of measured venue volume over the full sample and 8.8\% at its 2023 peak. Table~\ref{tab:app:weighted} validates selected weighted pools. Linear and boosted pools remain outside the quoter. Of 29 sampled composable-stable pools, 23 reduce to two external tokens after removing the pool's own share token, but pricing them also requires historical rate-provider states absent from the source. The priced Balancer sample is therefore confined to weighted pools whose historical state can be reconstructed.
 % docs/venue-coverage-bounds.md, venue_volume_by_year.jsonl, 400 sampled days; docs/research-workflow.md, Balancer family audit
 
 \section{Round-trip exclusion}

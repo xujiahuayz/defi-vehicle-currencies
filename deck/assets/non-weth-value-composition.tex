@@ -1,0 +1,46 @@
+% Presentation geometry only. Numerical labels are generated in
+% output/provisional/route_methodology_heterogeneity_deck_values.tex.
+% The midpoint identity is exact day by day: total = activity weights + within group.
+\begin{tikzpicture}[x=1cm,y=1cm]
+\tikzset{panel/.style={draw=rule,fill=white,rounded corners=3pt,line width=0.8pt}}
+\tikzset{small/.style={font=\fontsize{6.8}{7.5}\selectfont,text=muted,align=center}}
+
+\draw[panel] (0,0.52) rectangle (3.70,3.82);
+\node[anchor=west,font=\fontsize{8.0}{8.7}\selectfont\bfseries,text=ucldark]
+  at (0.32,3.46) {Without WETH endpoints};
+\node[anchor=west,font=\fontsize{22}{23}\selectfont\bfseries,text=stable]
+  at (0.32,2.54) {\WethValueNoEndpointChange};
+\node[anchor=west,font=\fontsize{6.7}{7.4}\selectfont,text=muted]
+  at (0.32,2.10) {95\% CI [\WethValueNoEndpointCILower, \WethValueNoEndpointCIUpper]};
+\node[anchor=west,font=\fontsize{7.0}{7.7}\selectfont,text=ink,align=left,text width=3.05cm]
+  at (0.32,1.63) {strict-support stablecoin share of routed value};
+\node[anchor=west,font=\fontsize{6.8}{7.5}\selectfont,text=muted,align=left,text width=3.05cm]
+  at (0.32,0.95) {Full matched sample: \WethValueFullChange{} [\WethValueFullCILower, \WethValueFullCIUpper]};
+
+\node[font=\fontsize{18}{18}\selectfont\bfseries,text=ucldark] at (4.20,2.18) {$=$};
+
+\draw[panel,fill=stable!7] (4.65,0.52) rectangle (8.35,3.82);
+\node[anchor=west,font=\fontsize{8.0}{8.7}\selectfont\bfseries,text=ucldark]
+  at (4.97,3.46) {Routed-value reallocation};
+\node[anchor=west,font=\fontsize{22}{23}\selectfont\bfseries,text=stable]
+  at (4.97,2.54) {\WethValueActivityChange};
+\node[anchor=west,font=\fontsize{6.7}{7.4}\selectfont,text=muted]
+  at (4.97,2.10) {95\% CI [\WethValueActivityCILower, \WethValueActivityCIUpper]};
+\node[anchor=west,font=\fontsize{7.0}{7.7}\selectfont,text=ink,align=left,text width=3.05cm]
+  at (4.97,1.35) {Value shifts toward trading-pair and route-scope groups with higher stablecoin shares.};
+
+\node[font=\fontsize{18}{18}\selectfont\bfseries,text=ucldark] at (8.85,2.18) {$+$};
+
+\draw[panel] (9.30,0.52) rectangle (13.00,3.82);
+\node[anchor=west,font=\fontsize{8.0}{8.7}\selectfont\bfseries,text=ucldark]
+  at (9.62,3.46) {Change within groups};
+\node[anchor=west,font=\fontsize{22}{23}\selectfont\bfseries,text=accent]
+  at (9.62,2.54) {\WethValueWithinChange};
+\node[anchor=west,font=\fontsize{6.7}{7.4}\selectfont,text=muted]
+  at (9.62,2.10) {95\% CI [\WethValueWithinCILower, \WethValueWithinCIUpper]};
+\node[anchor=west,font=\fontsize{7.0}{7.7}\selectfont,text=ink,align=left,text width=3.05cm]
+  at (9.62,1.35) {Stablecoin share changes within the same trading-pair and route-scope group.};
+
+\node[small,text width=12.5cm] at (6.50,0.15)
+  {Exact midpoint identity on each of 181 common calendar days; 2024 versus January--June 2026.};
+\end{tikzpicture}

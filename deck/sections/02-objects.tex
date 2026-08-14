@@ -1,10 +1,10 @@
 % VISUAL-MANAGED-FILE
 % Sample and empirical objects. Source: certified unified route release and docs/findings-freeze.md at the branch generation.
 
-% VISUAL-FUNCTION: protocol coverage through time | deployment timeline | establish changing architecture across the sample
-\begin{frame}{The sample spans Uniswap V1 through V4}
+% VISUAL-FUNCTION: route sample versus architecture supplement | deployment timeline plus two scope boxes | prevent the route perimeter from being conflated with the V1/V2 design evidence
+\begin{frame}{The route sample and architecture supplement answer different questions}
 \evidencekicker{Data}
-\vspace{0.45cm}
+\vspace{0.18cm}
 \begin{tikzpicture}[x=0.98cm,y=0.80cm]
 \draw[rule,line width=2pt] (0,0) -- (11.9,0);
 \foreach \x/\year in {0/2020,2/2021,4/2022,6/2023,8/2024,10/2025,11.9/2026}{\fill[ucldark] (\x,0) circle (2.3pt); \node[below,font=\small] at (\x,-0.15) {\year};}
@@ -15,8 +15,21 @@
 \draw[stable,line width=1pt] (10.05,0.12)--(10.05,1.05);
 \node[above,align=center,font=\small] at (10.05,1.05) {V4: singleton};
 \end{tikzpicture}
-\vspace{0.35cm}
-{\large Routes are reconstructed transaction by transaction across the routed venue perimeter. Daily and weekly panels are derived from the same route units.\par}
+\vspace{0.12cm}
+\begin{columns}[T,totalwidth=\textwidth]
+\begin{column}{0.49\textwidth}
+\begin{beamercolorbox}[sep=0.15cm,wd=\textwidth]{block body}
+{\small\bfseries Main route sample}\par\vspace{0.08cm}
+{\scriptsize Swap legs from multiple protocols are linked within each transaction. A leg may come from a two-asset pool or from one asset pair inside a multi-asset Curve or Balancer pool.}
+\end{beamercolorbox}
+\end{column}
+\begin{column}{0.49\textwidth}
+\begin{beamercolorbox}[sep=0.15cm,wd=\textwidth]{block body}
+{\small\bfseries V1/V2 architecture supplement}\par\vspace{0.08cm}
+{\scriptsize Uniswap V1 forced-ETH paths and V2 pair formation are analysed separately. They answer protocol-design questions and do not define the main route perimeter.}
+\end{beamercolorbox}
+\end{column}
+\end{columns}
 \end{frame}
 
 % VISUAL-FUNCTION: measurement taxonomy | two-by-two visual grid | separate route status, continuous dominance, graph position, and counterfactual cost

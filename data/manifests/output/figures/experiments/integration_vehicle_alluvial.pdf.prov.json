@@ -1,38 +1,59 @@
 {
  "argv": [],
  "artefact": "output/figures/experiments/integration_vehicle_alluvial.pdf",
- "artefact_bytes": 70065,
- "artefact_mtime_ns": 1786683775277676106,
- "artefact_sha256": "8e728b0476d1bd7b518979080bf21f0fcd67878c1a8ce8f6dad4aba304a3c3c1",
- "code_fingerprint": "a88489854dd761c433a945a6e141db606be2e8152e0e41654802ed28386c0196",
+ "artefact_bytes": 70433,
+ "artefact_mtime_ns": 1786699644544421683,
+ "artefact_sha256": "9ee5610ae53d5676d6a17f34f4fbd7f489fd7ceebb6cc7bc31898730e3a5e29c",
+ "code_fingerprint": "365918e76b6b69e1462f3f892f2ca4cf0d27365f67dfd3ca914c6f159dd2798f",
  "code_sources": [
   "scripts/figure/build_visual_experiments.py",
   "src/ddvc/figure_outputs.py",
   "src/ddvc/visual_experiments.py"
  ],
- "created_at": "2026-08-14T05:02:55+00:00",
+ "created_at": "2026-08-14T09:27:24+00:00",
  "git": {
   "branch": "main",
-  "commit": "af0eb07b6e8c74092f1c27c02835b597feb3293d",
+  "commit": "8e7bb2800fdaec55a3b41e2becbc479e0a7023b5",
   "dirty": true,
   "dirty_generated_files": [
+   "data/manifests/output/exhibits/prose_conventions.jsonl.prov.json",
+   "data/manifests/output/exhibits/venue_optics.jsonl.prov.json",
+   "data/manifests/output/exhibits/venue_shape.jsonl.prov.json",
    "data/manifests/output/figures/experiments/annual_vehicle_composition_bands.pdf.prov.json",
    "data/manifests/output/figures/experiments/annual_vehicle_share_heatmap.pdf.prov.json",
-   "output/figures/experiments/.integration_vehicle_alluvial.pdf.tldbpi39.tmp"
+   "data/manifests/output/tables/usdt_transition.pdf.prov.json",
+   "data/manifests/output/tables/usdt_transition.tex.prov.json",
+   "output/exhibits/prose_conventions.jsonl",
+   "output/exhibits/provisional_results_deck_values.tex",
+   "output/exhibits/venue_optics.jsonl",
+   "output/exhibits/venue_shape.jsonl",
+   "output/figures/experiments/annual_vehicle_composition_bands.pdf",
+   "output/figures/experiments/annual_vehicle_share_heatmap.pdf",
+   "output/tables/usdt_transition.pdf",
+   "data/manifests/output/exhibits/provisional_results_deck_values.tex.prov.json",
+   "output/exhibits/provisional_challenger_deck_values.tex",
+   "output/figures/experiments/.integration_vehicle_alluvial.pdf.1zc5_oqp.tmp"
   ],
   "dirty_tracked_files": [
-   "deck/main.pdf",
    "deck/sections/04-results.tex",
-   "docs/research-workflow.md",
+   "paper/main.tex",
    "paper/sections/01-introduction.tex",
    "paper/sections/02-setting.tex",
    "paper/sections/03-dominance.tex",
+   "paper/sections/05-rivals.tex",
+   "paper/sections/06-executability.tex",
+   "paper/sections/07-conclusion.tex",
    "paper/sections/08-appendix.tex",
-   "scripts/research_action_preflight.py",
+   "scripts/figure/build_visual_experiments.py",
+   "scripts/tabulate/README.md",
+   "scripts/tabulate/render_usdt_transition.py",
    "src/ddvc/visual_experiments.py",
-   "tests/test_research_action_preflight.py"
+   "tests/test_dominance_tables.py"
   ],
-  "dirty_untracked_files": []
+  "dirty_untracked_files": [
+   "scripts/tabulate/render_provisional_results_deck_values.py",
+   "tests/test_provisional_results_deck_values.py"
+  ]
  },
  "inputs": [
   {
@@ -50,10 +71,10 @@
  },
  "notes": "latest-year joint composition by integration scope and intermediary type; selected realised routes, not an integration effect",
  "payload_identity": {
-  "bytes": 70065,
+  "bytes": 70433,
   "format": "binary",
   "schema_version": 1,
-  "sha256": "8e728b0476d1bd7b518979080bf21f0fcd67878c1a8ce8f6dad4aba304a3c3c1"
+  "sha256": "9ee5610ae53d5676d6a17f34f4fbd7f489fd7ceebb6cc7bc31898730e3a5e29c"
  },
  "python": "3.14.5",
  "rows": null,
