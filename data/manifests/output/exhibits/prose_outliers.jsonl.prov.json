@@ -1,18 +1,18 @@
 {
  "argv": [],
  "artefact": "output/exhibits/prose_outliers.jsonl",
- "artefact_bytes": 116608,
- "artefact_mtime_ns": 1786665419326952703,
- "artefact_sha256": "6a400ef7fccc195c29e6c8b21e87ce1d799dd06ab148432053c19da412218a58",
+ "artefact_bytes": 119024,
+ "artefact_mtime_ns": 1786666322475518268,
+ "artefact_sha256": "522443aa56dce41803c32f64c17b6334b8519d1c4cf0f1d35027448757264a60",
  "code_fingerprint": "4d6c3aa5e5b632317b923d4c498ebaf8a988e6f1d35f09ef659fc910be391909",
  "code_sources": [
   "scripts/find_prose_outliers.py",
   "src/ddvc/tables.py"
  ],
- "created_at": "2026-08-13T23:56:59+00:00",
+ "created_at": "2026-08-14T00:12:02+00:00",
  "git": {
   "branch": "main",
-  "commit": "13e35a136ddd36212cb13a690f5e37f729ab812a",
+  "commit": "664e0afb2437f99f3808a6d5096227c6ab2640e8",
   "dirty": true,
   "dirty_generated_files": [
    "data/manifests/output/exhibits/prose_conventions.jsonl.prov.json",
@@ -21,17 +21,15 @@
    "output/exhibits/prose_conventions.jsonl",
    "output/exhibits/venue_optics.jsonl",
    "output/exhibits/venue_shape.jsonl",
-   "output/exhibits/.prose_outliers.jsonl.4pw15i8s.tmp"
+   "output/exhibits/.prose_outliers.jsonl.syod_tgw.tmp"
   ],
   "dirty_tracked_files": [
+   "docs/findings-freeze.md",
    "docs/reviews/paper-rhetoric.json",
-   "paper/main.tex",
    "paper/sections/01-introduction.tex",
-   "paper/sections/02-setting.tex",
    "paper/sections/03-dominance.tex",
    "paper/sections/05-rivals.tex",
-   "paper/sections/06-executability.tex",
-   "paper/sections/08-appendix.tex",
+   "paper/sections/07-conclusion.tex",
    "paper/sections/abstract.tex"
   ],
   "dirty_untracked_files": []
@@ -45,13 +43,13 @@
  },
  "notes": null,
  "payload_identity": {
-  "bytes": 116608,
+  "bytes": 119024,
   "format": "jsonl",
-  "rows": 535,
+  "rows": 546,
   "schema_version": 1,
-  "sha256": "6a400ef7fccc195c29e6c8b21e87ce1d799dd06ab148432053c19da412218a58"
+  "sha256": "522443aa56dce41803c32f64c17b6334b8519d1c4cf0f1d35027448757264a60"
  },
  "python": "3.14.5",
- "rows": 535,
+ "rows": 546,
  "script": "scripts/find_prose_outliers.py"
 }

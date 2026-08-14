@@ -1,8 +1,7 @@
 % Section 1. Introduction.
-% Status: first publication-standard rewrite against docs/findings-freeze.md.
-% Admitted here: route-only vehicle rotation, excess use, and integration strata.
-% Excluded: retired direct-route incidence, preliminary 1.17 hazard, LP returns,
-% cross-venue spillover interpretation, and all final cost/persistence inference.
+% Status: working-paper prose. Route-only results use the current 2026-08-13
+% generation. LP lead-lag and V4 receipt results are provisional and refresh in
+% place when their replacement inputs arrive; see source comments in Section 5.
 
 \section{Introduction}
 \label{sec:intro}
@@ -26,6 +25,6 @@ Expanding access across exchanges can help a widely available intermediary, but 
 % output/exhibits/cross_venue_routing_inference.jsonl;
 % docs/findings-freeze.md, integration-by-complexity and paired-date interaction
 
-These results connect the international-currency literature's emphasis on coordination, liquidity, and persistence with research on fragmented trading and automated execution \citep{Krugman1980VehicleCurrencies,FlandreauJobst2009Empirics,GopinathStein2021Making,LeharParlour2024Uniswap,ChenDuffie2021Fragmentation}. The economic choices behind vehicle formation remain: liquidity providers decide where capital sits, protocols determine which paths exist, and routing systems choose among the paths they can reach. Automation changes their observability because the realised path shows when an asset actually connects two other markets. In this setting, stablecoin dominance grows mainly because routed activity moves toward markets in which stable intermediation is present, and because one stablecoin increasingly occupies the middle of routes relative to its own endpoint use.
+These results connect the international-currency literature's emphasis on coordination, liquidity, and persistence with research on fragmented trading and automated execution \citep{Krugman1980VehicleCurrencies,FlandreauJobst2009Empirics,GopinathStein2021Making,LeharParlour2024Uniswap,ChenDuffie2021Fragmentation}. The economic choices behind vehicle formation remain: liquidity providers decide where capital sits, protocols determine which paths exist, and routing systems choose among the paths they can reach. In the existing panel, liquidity concentration predicts subsequent vehicle use, and vehicle use predicts subsequent liquidity concentration. This lead--lag relationship is not causal evidence. It does place liquidity allocation inside the empirical account instead of leaving it as motivation. V4 exposes a different margin. Matched receipts show that a route can continue to use an intermediary even when the singleton's settlement system records no transfer of that token. Automation therefore makes the vehicle role observable while allowing its physical implementation to change.
 
 Section~\ref{sec:setting} describes the market, route reconstruction, and counterfactual prices. Section~\ref{sec:dominance} presents the rotation across endpoint markets and assets. Section~\ref{sec:executability} examines whether reconstructed costs preserve the route ordering at the relevant decision state. Section~\ref{sec:rivals} considers the explanations consistent with the observed reallocation, and Section~\ref{sec:conclusion} concludes.

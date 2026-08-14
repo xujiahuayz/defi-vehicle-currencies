@@ -3,22 +3,22 @@
   "purpose": "A freshness ledger for paragraph-level review against raw JFE passages. It records judgment; it does not automate or certify style.",
   "sections": {
     "paper/sections/abstract.tex": {
-      "sha256": "a30e0ac574b103a43efc8771ad051d17995ba4b3647c8a82fdac9562f1cde3e2",
+      "sha256": "1879014d6648a24d4a18c5081be5d907eec5b337fe96b88a52413620ab044aec",
       "status": "rewritten",
       "exemplars": [
         "literature/text/2023-LiYeZheng2023Refusing-refusing-the-best-price.txt:26-34",
         "literature/text/2020-MakarovSchoar2020Arbitrage-trading-and-arbitrage-in-cryptocurrency-markets.txt:29-38"
       ],
-      "judgment": "Close on the strongest supported economic interpretation; do not end on a menu of unfinished tests."
+      "judgment": "State the route-composition result first, then add the two mechanism facts that alter its interpretation: bidirectional liquidity predictability and V4 settlement without a recorded intermediary transfer. Keep their noncausal scope in the claim itself rather than ending on a menu of unfinished tests."
     },
     "paper/sections/01-introduction.tex": {
-      "sha256": "f257b5ef487cb9b1c3f2b3b1f27650f4ea61c7e30f1a9791651f9c0659b2a940",
+      "sha256": "dd3a01b61c7f4842d57be7683a1aaf0bcf3d8e91efa98c93e523f7ce9a50a51c",
       "status": "rewritten",
       "exemplars": [
         "literature/text/2020-MakarovSchoar2020Arbitrage-trading-and-arbitrage-in-cryptocurrency-markets.txt:95-205",
         "literature/text/2023-LiYeZheng2023Refusing-refusing-the-best-price.txt:96-214"
       ],
-      "judgment": "State the latent economic role, explain why routes reveal it, and let the results unfold as a cumulative argument. The rewrite integrates contribution and literature into that argument instead of preserving balanced contribution blocks."
+      "judgment": "State the latent economic role, explain why routes reveal it, and let the results unfold as a cumulative argument. The mechanism preview now distinguishes liquidity predictability from causal feedback and physical V4 settlement from the economic route instead of adding a generic contribution block."
     },
     "paper/sections/02-setting.tex": {
       "sha256": "bba99b55aefbfb452605931f9a68392d83db662854ef3da0baf48e62afb6bd24",
@@ -30,7 +30,7 @@
       "judgment": "Lead with what the chain records, the economic route reconstructed from it, sample coverage, and the observed-versus-constructed distinction. The rewritten data and pricing paragraphs follow that economic sequence and leave implementation details to the appendix."
     },
     "paper/sections/03-dominance.tex": {
-      "sha256": "7c1871256bc1416d6df224a4eba67fe27dfd1d178fc9a08a92bcda74dfe11e03",
+      "sha256": "eaca74d64f414830d119de3b2f633d98d21d57abe154dba65bd644eb7c53ae26",
       "status": "rewritten",
       "exemplars": [
         "literature/text/2020-MakarovSchoar2020Arbitrage-trading-and-arbitrage-in-cryptocurrency-markets.txt:886-991",
@@ -48,22 +48,22 @@
       "judgment": "Make the instability of hour-end route rankings the result; organize validation limits around the concrete threat each one creates. The rewritten opening states the economic comparison, while the same-block and route-choice limits are consolidated around what the current evidence can show."
     },
     "paper/sections/05-rivals.tex": {
-      "sha256": "bb4ba519ec5a1a7b714dde9993bb8c95314f8686863dcd01242062e1bc450391",
+      "sha256": "40353324d6358bdb875ec655f953e6eeb02d58996891e3442ea2ad3f54283476",
       "status": "rewritten",
       "exemplars": [
         "literature/text/2022-ChangDuLouPolk2022Ripples-ripples-into-waves-trade-networks-economic-activity-and-asset-prices.txt:1321-1445",
         "literature/text/2021-BoltonKacperczyk2021CarbonRisk-do-investors-care-about-carbon-risk.txt:1635-1702"
       ],
-      "judgment": "Name each surviving economic alternative and the existing evidence bearing on it; keep unestimated specifications in the research spine."
+      "judgment": "Lead each mechanism with the economic prediction and then report the evidence that bears on it. The liquidity passage describes both temporal directions before stating the common-shock limitation; the V4 passage explains net settlement before reporting the matched receipt contrast and its route-size limitation."
     },
     "paper/sections/07-conclusion.tex": {
-      "sha256": "1b8c1dad9c45604acad34595cb52e2a287c25ec2f658c403ac64cdb2c8e6c5c4",
+      "sha256": "7a4f1c9b3eaa269087da4150c78fbca9cd22407a5f4b2b25ca27cb6fb9bef54a",
       "status": "rewritten",
       "exemplars": [
         "literature/text/2023-LiYeZheng2023Refusing-refusing-the-best-price.txt:1848-1901",
         "literature/text/2020-MakarovSchoar2020Arbitrage-trading-and-arbitrage-in-cryptocurrency-markets.txt:2134-2194"
       ],
-      "judgment": "Return from the allocation result to its implication for vehicle-currency formation, with one consolidated scope boundary."
+      "judgment": "Return from the allocation result to its implication for vehicle-currency formation, then use liquidity predictability and V4 net settlement to show what the mechanism evidence adds without assigning the transition to one cause."
     },
     "paper/sections/08-appendix.tex": {
       "sha256": "65267eb710959ba73cd3047d9d30bb077c9408d21311793ec84f5e276ac44b8c",

@@ -223,7 +223,7 @@ The section closes by ranking accounts on completed separating tests. A null is 
 5. Complete the exact transaction-state frontier before any cost-dominance or routing-efficiency mechanism enters the paper.
 6. Build independently valued capital and direction-specific executable depth before testing the liquidity-placement sequence.
 7. Produce retention and displacement on one risk set, or keep Section 6 free of an estimated hysteresis claim.
-8. Rerun every promoted exhibit on one generation and complete two unchanged F-G passes before prose node P opens.
+8. Rerun every submission-promoted exhibit on one generation and complete two unchanged F-G passes before node P gains submission authority; the working paper continues to report reproducible provisional results before that point.
 
 ## What G needs from H
 
