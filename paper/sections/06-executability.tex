@@ -1,12 +1,34 @@
-% Counterfactual prices are discussed only to bound the route evidence.
+% The route-cost benchmark is defined here; no route-cost estimate enters the paper.
 
-\section{A counterfactual execution-cost benchmark}
+\section{Comparing direct and intermediated execution}
 \label{sec:executability}
 
-Realised routes identify the assets that carried each trade. Relating that choice to execution costs requires the alternatives available immediately beforehand, quoted at the same trade size and over the exchanges the trader or router could reach. The route-composition results use observed paths directly; the cost comparison adds this counterfactual set.
+Realised routes identify the assets that carried each trade. Execution cost is a separate object: it compares those routes with alternatives available immediately beforehand, quoted at the same trade size and over a common set of exchanges. We hold the source $i$, destination $o$, dollar input $q$, and pre-transaction pool state $e^-$ fixed. The best direct and two-leg outputs through intermediary $k$ are
+\begin{equation}
+\label{eq:direct}
+O^{D}_{i,o,q,e}=P_{o,e}\max_{p\in\mathcal P_{i,o,e^-}}Q_p\!\left(i\to o,\Delta_i(q,e);\chi_{p,e^-}\right),
+\end{equation}
+\begin{equation}
+\label{eq:vehicle}
+O^{I}_{i,o,k,q,e}=P_{o,e}\max_{p'\in\mathcal P_{k,o,e^-}}Q_{p'}\!\left(k\to o,\max_{p\in\mathcal P_{i,k,e^-}}Q_p\!\left(i\to k,\Delta_i(q,e);\chi_{p,e^-}\right);\chi_{p',e^-}\right)
+\end{equation}
+This comparison extends the realised-versus-optimised allocation benchmark of \citet{XiMoallemi2026Routing} from parallel pools for one asset pair to sequential routes through an intermediary.
 
-We hold the source, destination, input amount, and pre-transaction pool state fixed, then compare the output of the best direct path with the best two-leg path through a specified intermediary. This extends the realised-versus-optimised benchmark for allocations among parallel pools \citep{XiMoallemi2026Routing} to sequential routes. Swaps and liquidity changes are replayed in their on-chain order because a daily or hourly closing state may contain information that arrived after the route was chosen. Hypothetical trades must also remain within a 5\% own-price-impact limit in every pool. Appendices~\ref{app:state} and~\ref{app:support} give the state reconstruction, pricing equations, and validation exercises.
+The vehicle-route shortfall relative to direct execution is
+\begin{equation}
+\label{eq:gap}
+\Delta C^{D}_{i,o,k,q,e}=\frac{O^{D}_{i,o,q,e}-O^{I}_{i,o,k,q,e}}{O^{D}_{i,o,q,e}},
+\end{equation}
+reported in basis points as $10^{4}\Delta C^{D}_{i,o,k,q,e}$. Positive values mean that the direct route returns more output before gas. Swaps and liquidity changes are replayed in on-chain order because a daily or hourly closing state incorporates events that occurred after the trade. The observed event marks settlement; a quote formed earlier can reflect a different opportunity set.
+
+We compare hypothetical legs only within a common executable range. Let $\widetilde Q_{\ell}$ denote leg $\ell$'s output at the pool's marginal rate. Each leg satisfies
+\begin{equation}
+\label{eq:support}
+\pi_{\ell}(\Delta_i,e^-)=\frac{\widetilde Q_{\ell}(\Delta_i,e^-)-Q_{\ell}(\Delta_i,e^-)}{\widetilde Q_{\ell}(\Delta_i,e^-)}\leq \bar\pi,
+\qquad \bar\pi=0.05.
+\end{equation}
+The 5\% own-price-impact ceiling applies across pool families; contract-specific limits add further restrictions. Appendix~\ref{app:quoters} gives the pricing equations and Appendix~\ref{app:support} calibrates the support rule.
 % output/exhibits/quoter_support_bounds.jsonl; common 5 percent target support rule
 
-The comparison is defined over public on-chain liquidity. A router may search a narrower set, and private order flow, financing costs, or losses from reverted transactions may affect its decision. Historical state also differs in quality across pool designs. In a sampled Curve exercise, pools that cannot be represented by the StableSwap model account for 34.2\% of assessed volume and are concentrated in native-asset markets: 65.2\% of native-leg volume, compared with 21.1\% of stablecoin-leg volume. Hook-bearing or dynamic-fee Uniswap v4 pools, SushiSwap v3 pools without historical state, and several Balancer families require separate pricing models. Appendix~\ref{app:coverage} reports these coverage comparisons.
+The benchmark represents public on-chain liquidity in the declared exchange set. Private order flow, financing costs, losses from reverted transactions, and pools outside that set can alter a router's choice. Pool-family coverage is economically material. In the sampled Curve exercise, pools outside the StableSwap model carry 34.2\% of assessed volume, including 65.2\% of native-leg volume and 21.1\% of stablecoin-leg volume. Hook-bearing or dynamic-fee Uniswap v4 pools, SushiSwap v3, and several Balancer families also use pricing states outside the benchmark. Appendix~\ref{app:coverage} quantifies these boundaries.
 % docs/venue-coverage-bounds.md; output/exhibits/curve_excluded_composition.jsonl

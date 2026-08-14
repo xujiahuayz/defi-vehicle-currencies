@@ -92,19 +92,19 @@
     "draft_uses": [
       {
         "source": "paper/sections/02-setting.tex",
-        "line_start": 21,
-        "line_end": 21,
+        "line_start": 19,
+        "line_end": 19,
         "sha256": "e5a7e7dcfd8540832779611b54115499a4f3160128672632632e0dc9572733ca",
         "kind": "named observed transaction",
         "rhetorical_job": "The explorer's 460,000 PYUSD--USDe instruction is set beside the connected USDC--USDT--USDe pool sequence, making the boundary between a user's instruction and the exchange route observable.",
         "handoff": "The example identifies USDT as the vehicle in the connected pool route, explains why the off-pool PYUSD--USDC conversion is excluded, and returns to the sample-wide flow rule.",
-        "judgment": "The transaction exposes a consequential measurement boundary and returns immediately to the population construction; it is neither decorative nor presented as representative."
+        "judgment": "The transaction exposes a consequential measurement boundary between the user instruction and the connected pool route, then hands directly to the general route notation."
       }
     ]
   },
   "sections": {
     "paper/sections/abstract.tex": {
-      "sha256": "f830f76036c86e1f988fa8937d63f588376cb6c5fa7445d9e6009dbd961e5f80",
+      "sha256": "34d1906985cb766822839d2ccfe8a9c61f34261dbebc99a72a44ef2dd19cb6be",
       "status": "rewritten",
       "exemplars": [
         "literature/text/2023-LiYeZheng2023Refusing-refusing-the-best-price.txt:26-34",
@@ -122,21 +122,21 @@
       ],
       "paragraph_flow_review": {
         "transition_lines": [],
-        "judgment": "The single paragraph moves from measurement to magnitude, reversals, USDT's role comparison, and the across-pair allocation result.",
+        "judgment": "The single paragraph moves from measurement to magnitude, a dated reversal, USDT's role comparison, and the across-pair allocation result.",
         "raw_exemplars": [
           "literature/text/2023-LiYeZheng2023Refusing-refusing-the-best-price.txt:26-34"
         ],
         "jumps": [],
         "handoffs": []
       },
-      "judgment": "At 86 words, the abstract identifies observable transaction routes, reports the count- and dollar-weighted rotation on matched first-half dates, notes reversals, and closes by contrasting reallocation across source--destination pairs with substitution within matched pairs. It claims no completed cost, liquidity, or protocol mechanism.",
+      "judgment": "The abstract identifies transaction routes, reports the matched first-half count and value rotation, names the 2023--2025 reversal directly, and closes on the precisely named stable-for-native substitution estimate. It claims no completed cost or liquidity mechanism.",
       "entry_handoff": "The title's rotation question leads directly to route data that reveal intermediary use.",
-      "internal_progression": "Measurement leads to magnitude, reversals, USDT's role-specific change, and the allocation margin.",
+      "internal_progression": "Measurement leads to magnitude, the dated reversal, USDT's role comparison, and the allocation margin.",
       "exit_handoff": "The final sentence makes the small matched-pair substitution estimate sharpen the preceding across-pair result.",
       "terminology_judgment": "Reader-facing prose names the measured object as the source and destination assets or their ordered asset pair. It reserves pool for a liquidity contract, venue for an exchange or protocol, and route for the ordered execution sequence; these objects are not used interchangeably."
     },
     "paper/sections/01-introduction.tex": {
-      "sha256": "352e57fe7b7b7babf6b61a296eb2355938fe8b2a13644f7c8c338c7ce18c5dcf",
+      "sha256": "1f91d0a4b7e1609f68c323cda451901bed349498bf30415ef49e830f9656fa61",
       "status": "rewritten",
       "exemplars": [
         "literature/text/2020-MakarovSchoar2020Arbitrage-trading-and-arbitrage-in-cryptocurrency-markets.txt:95-205",
@@ -148,7 +148,7 @@
           "classification": "direct",
           "incoming_object": "The title's question about changing vehicle dominance.",
           "opening_function": "Uses the dollar's disproportionate FX presence to introduce vehicle feedback and the unresolved question of change.",
-          "judgment": "A familiar finance fact supplies the object, mechanism, and change question without overexplaining the dollar.",
+          "judgment": "The opening supplies a familiar fact, economic mechanism, and unresolved question without pre-announcing a result list.",
           "raw_exemplar": "literature/text/2020-MakarovSchoar2020Arbitrage-trading-and-arbitrage-in-cryptocurrency-markets.txt:95-205"
         }
       ],
@@ -157,174 +157,134 @@
           11,
           13,
           15,
-          17,
+          20,
           22,
-          24,
-          26,
-          28,
-          30
+          24
         ],
-        "judgment": "Persistence motivates linked-path data; route measurement yields the rotation; the decomposition reveals the across-pair margin; that margin governs contributions and mechanism tests.",
+        "judgment": "The argument moves from persistence to missing path data, route measurement, a developed rotation-and-allocation result, theoretical implication, two contributions, and a compact roadmap. A short observability pivot and a longer results paragraph vary the rhythm for substantive reasons.",
         "raw_exemplars": [
-          "literature/text/2023-LiYeZheng2023Refusing-refusing-the-best-price.txt:96-214",
-          "literature/text/2020-MakarovSchoar2020Arbitrage-trading-and-arbitrage-in-cryptocurrency-markets.txt:95-205"
+          "literature/text/2020-MakarovSchoar2020Arbitrage-trading-and-arbitrage-in-cryptocurrency-markets.txt:95-205",
+          "literature/text/2023-LiYeZheng2023Refusing-refusing-the-best-price.txt:96-214"
         ],
         "jumps": [],
         "handoffs": [
           {
             "line": 11,
-            "inherited_object": "persistent dollar intermediation",
-            "paragraph_function": "turns persistence into a missing-path measurement problem",
-            "relation_to_previous": "asks what data are required to study change",
-            "economic_subject": "linked legs of one exchange",
-            "framing_judgment": "The BIS example supports the general observability claim and Somogyi supplies the closest alternative design",
+            "inherited_object": "the persistence question",
+            "paragraph_function": "turns changing dominance into a linked-path measurement problem",
+            "relation_to_previous": "asks what the conventional pair records cannot reveal",
+            "economic_subject": "the two legs of an indirect exchange",
+            "framing_judgment": "The BIS example supports the general observability claim; Somogyi supplies the closest alternative design",
             "qualification_leads": false,
-            "judgment": "The paragraph turns persistence into a missing-path measurement problem and asks what data are required to study change."
+            "judgment": "Turns changing dominance into a linked-path measurement problem and asks what the conventional pair records cannot reveal."
           },
           {
             "line": 13,
             "inherited_object": "the need for linked legs",
-            "paragraph_function": "introduces the DEX route data, sample, and role-specific measure",
-            "relation_to_previous": "supplies transaction records unavailable in standard pair data",
+            "paragraph_function": "introduces DEX route data, sample, and the role-specific measure",
+            "relation_to_previous": "supplies transaction records that preserve pool order",
             "economic_subject": "pool sequences, intermediaries, and observed route endpoints",
-            "framing_judgment": "The user's instruction, pool-route endpoints, and adjacent currency roles are explicitly separated",
+            "framing_judgment": "The user's instruction and observed pool-route endpoints remain separate",
             "qualification_leads": false,
-            "judgment": "The paragraph introduces the DEX route data, sample, and role-specific measure and supplies transaction records unavailable in standard pair data."
+            "judgment": "Introduces DEX route data, sample, and the role-specific measure and supplies transaction records that preserve pool order."
           },
           {
             "line": 15,
             "inherited_object": "the route-based measure",
-            "paragraph_function": "reports the aggregate stablecoin rotation and reversals",
-            "relation_to_previous": "moves from measurement to the first stylised fact",
+            "paragraph_function": "reports the stablecoin rotation, reversals, USDT role change, and the across-pair allocation result",
+            "relation_to_previous": "moves from measurement to the first empirical result",
             "economic_subject": "native and stable intermediaries, especially USDT",
-            "framing_judgment": "Magnitude leads and the non-monotone path is stated nearby",
+            "framing_judgment": "Magnitude leads and the reversal is dated rather than labelled vaguely",
             "qualification_leads": false,
-            "judgment": "The paragraph reports the aggregate stablecoin rotation and reversals and moves from measurement to the first stylised fact."
+            "judgment": "Reports the headline rotation and its allocation source in one developed result paragraph rather than dividing one finding mechanically."
           },
           {
-            "line": 17,
-            "inherited_object": "the aggregate rotation",
-            "paragraph_function": "locates most change in activity across source--destination pairs",
-            "relation_to_previous": "decomposes the headline before mechanism interpretation",
-            "economic_subject": "continuing pairs, one-year pairs, and venue spans",
-            "framing_judgment": "The large across-pair result leads; the small matched-pair result and breadth follow",
+            "line": 20,
+            "inherited_object": "the allocation result",
+            "paragraph_function": "relates the new margin to vehicle feedback and mechanism classes",
+            "relation_to_previous": "extracts the economic question from the decomposition",
+            "economic_subject": "within-pair choice and activity across pairs",
+            "framing_judgment": "The paragraph earns the mechanism discussion from the observed allocation",
             "qualification_leads": false,
-            "judgment": "The paragraph locates most change in activity across source--destination pairs and decomposes the headline before mechanism interpretation."
+            "judgment": "Relates the new margin to vehicle feedback and mechanism classes and extracts the economic question from the decomposition."
           },
           {
             "line": 22,
-            "inherited_object": "the across-pair allocation result",
-            "paragraph_function": "extends theory from choice within a pair to activity across pairs",
-            "relation_to_previous": "extracts the decomposition's economic implication",
-            "economic_subject": "vehicle feedback and routed-activity allocation",
-            "framing_judgment": "The prose broadens the empirical object without calling descriptive reallocation market formation",
+            "inherited_object": "the measurement and allocation results",
+            "paragraph_function": "states two contributions in one developed paragraph",
+            "relation_to_previous": "positions the findings against vehicle, fragmentation, and AMM research",
+            "economic_subject": "linked transaction legs and routed-activity allocation",
+            "framing_judgment": "Contribution language names what the paper establishes and avoids a second result summary",
             "qualification_leads": false,
-            "judgment": "The paragraph extends theory from choice within a pair to activity across pairs and extracts the decomposition's economic implication."
+            "judgment": "States two contributions in one developed paragraph and positions the findings against vehicle, fragmentation, and AMM research."
           },
           {
             "line": 24,
-            "inherited_object": "the two allocation margins",
-            "paragraph_function": "assigns mechanisms to the comparisons they can affect",
-            "relation_to_previous": "disciplines the move from facts to explanation",
-            "economic_subject": "cost, reach, liquidity, risk, and design",
-            "framing_judgment": "Mechanisms remain tests that must explain the supported allocation",
+            "inherited_object": "the two contributions",
+            "paragraph_function": "maps the remaining sections to their economic jobs",
+            "relation_to_previous": "closes the introduction with a conventional compact roadmap",
+            "economic_subject": "route construction, rotation, cost benchmark, and explanations",
+            "framing_judgment": "The roadmap follows the contribution and describes the benchmark without internal status language",
             "qualification_leads": false,
-            "judgment": "The paragraph assigns mechanisms to the comparisons they can affect and disciplines the move from facts to explanation."
-          },
-          {
-            "line": 26,
-            "inherited_object": "the route measure and mechanism boundary",
-            "paragraph_function": "states the first contribution against turnover-based inference",
-            "relation_to_previous": "positions direct transaction-path measurement",
-            "economic_subject": "intermediary versus observed route-endpoint use",
-            "framing_judgment": "The contribution specifies what path linkage adds without overstating endpoint interpretation",
-            "qualification_leads": false,
-            "judgment": "The paragraph states the first contribution against turnover-based inference and positions direct transaction-path measurement."
-          },
-          {
-            "line": 28,
-            "inherited_object": "the direct-measurement contribution",
-            "paragraph_function": "states the second contribution and links it to fragmentation and AMM research",
-            "relation_to_previous": "shows what the decomposition adds to vehicle theory",
-            "economic_subject": "within-pair choice and across-pair activity",
-            "framing_judgment": "The allocation result is sold while formation and liquidity remain prospective tests",
-            "qualification_leads": false,
-            "judgment": "The paragraph states the second contribution and links it to fragmentation and AMM research and shows what the decomposition adds to vehicle theory."
-          },
-          {
-            "line": 30,
-            "inherited_object": "the contributions and empirical sequence",
-            "paragraph_function": "maps remaining sections to their objects",
-            "relation_to_previous": "closes after substantive contributions",
-            "economic_subject": "construction, rotation, benchmark, and mechanism designs",
-            "framing_judgment": "The roadmap is compact and accurately labels the benchmark's coverage boundary",
-            "qualification_leads": false,
-            "judgment": "The paragraph maps remaining sections to their objects and closes after substantive contributions."
+            "judgment": "Maps the remaining sections to their economic jobs and closes the introduction with a conventional compact roadmap."
           }
         ]
       },
-      "judgment": "The introduction begins from the dollar's established vehicle role, explains why linked paths are needed, and introduces DEX data before results. It sells direct role measurement and the across-pair allocation margin while withholding market-formation and cost-mechanism claims.",
-      "entry_handoff": "The familiar dollar feedback turns the title's rotation question into a problem of persistence and change.",
-      "internal_progression": "Persistence leads to observability, route data, rotation, decomposition, implication, mechanism discipline, and two contributions.",
-      "exit_handoff": "The roadmap sends the route object to descriptive results, a counterfactual benchmark, and prospective mechanism tests.",
+      "judgment": "The introduction motivates changing vehicle dominance before results, then reports one empirical ladder and consolidates the allocation implication with the paper's contributions. It follows the result-led but mechanism-connected movement in Li--Ye--Zheng and Makarov--Schoar without copying their numbered-fact template.",
+      "entry_handoff": "The dollar's persistent vehicle role turns the title into a question about how dominance changes.",
+      "internal_progression": "Persistence leads to observability, route data, the rotation and its decomposition, implication, contributions, and roadmap.",
+      "exit_handoff": "The roadmap sends the observed route object to the descriptive evidence, cost benchmark, and mechanism discussion.",
       "terminology_judgment": "Reader-facing prose names the measured object as the source and destination assets or their ordered asset pair. It reserves pool for a liquidity contract, venue for an exchange or protocol, and route for the ordered execution sequence; these objects are not used interchangeably."
     },
     "paper/sections/02-setting.tex": {
-      "sha256": "d1860019cfbcb5a2e0a11e03d3a152deda3ca1c56daedb456a45ae67b8372b79",
+      "sha256": "3c7e42c47b54ed2812e501ca2de61742437f58800476523c9e6043454dc956e6",
       "status": "rewritten",
       "exemplars": [
-        "literature/text/2020-MakarovSchoar2020Arbitrage-trading-and-arbitrage-in-cryptocurrency-markets.txt:421-520",
-        "literature/text/2023-LiYeZheng2023Refusing-refusing-the-best-price.txt:395-510"
+        "literature/text/2024-LeharParlour2024Uniswap-decentralized-exchange-the-uniswap-automated-market-maker.txt:18-93",
+        "literature/text/2023-LiYeZheng2023Refusing-refusing-the-best-price.txt:395-510",
+        "literature/text/2021-CarlettiDeMarcoIoannidouSette2021PatientLenders-banks-as-patient-lenders-evidence-from-a-tax-reform.txt:514-522"
       ],
       "openings": [
         {
           "heading": "Setting and data",
           "classification": "direct",
           "incoming_object": "The transaction-path measure introduced in the introduction.",
-          "opening_function": "Delegates to the market institution and notation needed to construct it.",
-          "judgment": "The heading does not repeat a roadmap before the first substantive subsection.",
-          "raw_exemplar": "literature/text/2025-HuangRanaldoSchrimpfSomogyi-constrained-liquidity-provision-currency-markets-jfe.txt:710-718"
+          "opening_function": "Delegates immediately to the institution and flow rule that make routes observable.",
+          "judgment": "The section starts with the trading institution, as Lehar--Parlour do before introducing data and analytical objects.",
+          "raw_exemplar": "literature/text/2024-LeharParlour2024Uniswap-decentralized-exchange-the-uniswap-automated-market-maker.txt:18-93"
         },
         {
           "heading": "Routes and notation",
           "classification": "direct",
-          "incoming_object": "Pool calls combined in one transaction.",
-          "opening_function": "Defines atomic routing and why it reveals intermediary sequences.",
-          "judgment": "The trading institution precedes notation.",
-          "raw_exemplar": "literature/text/2023-LiYeZheng2023Refusing-refusing-the-best-price.txt:395-405"
+          "incoming_object": "Pool calls combined atomically in one transaction.",
+          "opening_function": "Defines atomic routing before reconstruction, the transaction example, and notation.",
+          "judgment": "Institution precedes flow rule; the flow rule precedes the example; notation follows the observed object.",
+          "raw_exemplar": "literature/text/2024-LeharParlour2024Uniswap-decentralized-exchange-the-uniswap-automated-market-maker.txt:18-93"
         },
         {
           "heading": "Measuring vehicle dominance",
           "classification": "direct",
-          "incoming_object": "The ordered route and intermediaries.",
+          "incoming_object": "The ordered route and its intermediary assets.",
           "opening_function": "Defines the exact-two-leg observation before indicators and denominators.",
-          "judgment": "Measurement begins with a simple economic unit.",
+          "judgment": "The primary unit is stated in economic language, and longer routes enter a separately named supplementary measure.",
           "raw_exemplar": "literature/text/2023-LiYeZheng2023Refusing-refusing-the-best-price.txt:395-510"
         },
         {
           "heading": "The route panel",
           "classification": "direct",
           "incoming_object": "The route and role measures.",
-          "opening_function": "Names exchanges, dates, and availability before raw records.",
+          "opening_function": "Names exchanges, dates, and availability before source records and reconstruction.",
           "judgment": "Population and coverage lead construction detail.",
           "raw_exemplar": "literature/text/2021-CarlettiDeMarcoIoannidouSette2021PatientLenders-banks-as-patient-lenders-evidence-from-a-tax-reform.txt:514-522"
-        },
-        {
-          "heading": "Pricing the counterfactual",
-          "classification": "substantive_bridge",
-          "incoming_object": "Observed routes and pool-state notation.",
-          "opening_function": "Adds best direct and two-hop outputs at common state and size.",
-          "judgment": "A distinct estimand is related to the closest routing benchmark.",
-          "raw_exemplar": "literature/text/2023-LiYeZheng2023Refusing-refusing-the-best-price.txt:980-990"
         }
       ],
       "paragraph_flow_review": {
         "transition_lines": [
           17,
           19,
-          21,
+          22,
           24,
-          26,
+          34,
           36,
           38,
           43,
@@ -338,17 +298,11 @@
           90,
           93,
           96,
-          99,
-          137,
-          144,
-          155,
-          163,
-          167,
-          174,
-          180
+          99
         ],
-        "judgment": "Atomic routing leads to reconstruction, a transaction-level boundary, notation, dominance and endpoint-role measures, the panel, and a separately supported counterfactual-cost estimand.",
+        "judgment": "The section now follows institution, transaction-flow rule, named transaction, notation, currency-role position, theory, dominance measures, and panel construction. The counterfactual equations move to their own section.",
         "raw_exemplars": [
+          "literature/text/2024-LeharParlour2024Uniswap-decentralized-exchange-the-uniswap-automated-market-maker.txt:18-93",
           "literature/text/2023-LiYeZheng2023Refusing-refusing-the-best-price.txt:395-510",
           "literature/text/2021-CarlettiDeMarcoIoannidouSette2021PatientLenders-banks-as-patient-lenders-evidence-from-a-tax-reform.txt:514-522"
         ],
@@ -356,273 +310,203 @@
         "handoffs": [
           {
             "line": 17,
-            "inherited_object": "atomic routing",
-            "paragraph_function": "places DEX routes inside classical vehicle feedback",
-            "relation_to_previous": "connects the institution to theory",
-            "economic_subject": "vehicle use, depth, adoption costs, and software",
-            "framing_judgment": "The analogy names coordination margins and ends on the observed intermediary",
+            "inherited_object": "atomic pool combinations",
+            "paragraph_function": "states the flow rule that joins, splits, or separates calls",
+            "relation_to_previous": "moves from institution to construction",
+            "economic_subject": "directed token flows within one transaction",
+            "framing_judgment": "The observable rule precedes the named example",
             "qualification_leads": false,
-            "judgment": "The paragraph places DEX routes inside classical vehicle feedback and connects the institution to theory."
+            "judgment": "States the flow rule that joins, splits, or separates calls and moves from institution to construction."
           },
           {
             "line": 19,
-            "inherited_object": "observable sequences",
-            "paragraph_function": "states the flow rule joining, splitting, or separating calls",
-            "relation_to_previous": "moves from institution to construction",
-            "economic_subject": "directed transaction-level token flows",
-            "framing_judgment": "Economic path logic precedes the numerical example",
-            "qualification_leads": false,
-            "judgment": "The paragraph states the flow rule joining, splitting, or separating calls and moves from institution to construction."
-          },
-          {
-            "line": 21,
             "inherited_object": "the flow rule",
-            "paragraph_function": "uses a named transaction to distinguish a user instruction from the connected pool route",
+            "paragraph_function": "uses one transaction to distinguish the user instruction from the connected pool route",
             "relation_to_previous": "makes the measurement boundary concrete",
             "economic_subject": "PYUSD instruction and USDC--USDT--USDe pool sequence",
-            "framing_judgment": "The case identifies what is observed, excluded, and generalized",
+            "framing_judgment": "The example identifies what the logs reveal and what remains outside the observed pool sequence",
             "qualification_leads": false,
-            "judgment": "The paragraph uses a named transaction to distinguish a user instruction from the connected pool route and makes the measurement boundary concrete."
+            "judgment": "Uses one transaction to distinguish the user instruction from the connected pool route and makes the measurement boundary concrete."
+          },
+          {
+            "line": 22,
+            "inherited_object": "the observed sequence",
+            "paragraph_function": "extracts intermediary use and a conditional cost comparison",
+            "relation_to_previous": "bridges the example to notation",
+            "economic_subject": "intermediary incidence and pre-state alternatives",
+            "framing_judgment": "The route identifies intermediary use directly; cost is conditional on reconstructed state",
+            "qualification_leads": false,
+            "judgment": "Extracts intermediary use and a conditional cost comparison and bridges the example to notation."
           },
           {
             "line": 24,
-            "inherited_object": "the observed route",
-            "paragraph_function": "extracts dominance and cost measurements",
-            "relation_to_previous": "bridges the example to notation",
-            "economic_subject": "intermediary incidence and same-size alternatives",
-            "framing_judgment": "The anecdote yields empirical objects rather than decoration",
-            "qualification_leads": false,
-            "judgment": "The paragraph extracts dominance and cost measurements and bridges the example to notation."
-          },
-          {
-            "line": 26,
-            "inherited_object": "the two measurements",
+            "inherited_object": "the two empirical objects",
             "paragraph_function": "defines route, event-time, pool-state, token, notional, and output notation",
-            "relation_to_previous": "generalises the case",
+            "relation_to_previous": "generalises the transaction example",
             "economic_subject": "a composed exact-input route",
-            "framing_judgment": "Notation follows the institution and separates dollars from token units",
+            "framing_judgment": "Notation follows the institution and keeps dollars separate from token units",
             "qualification_leads": false,
-            "judgment": "The paragraph defines route, event-time, pool-state, token, notional, and output notation and generalises the case."
+            "judgment": "Defines route, event-time, pool-state, token, notional, and output notation and generalises the transaction example."
           },
           {
-            "line": 36,
+            "line": 34,
             "inherited_object": "the route equation",
             "paragraph_function": "interprets executed and hypothetical outputs",
-            "relation_to_previous": "closes the equation's economic use",
+            "relation_to_previous": "closes the equation on its economic use",
             "economic_subject": "venue quotes and reconstructed state",
             "framing_judgment": "Interpretation does not repeat the algebra",
             "qualification_leads": false,
-            "judgment": "The paragraph interprets executed and hypothetical outputs and closes the equation's economic use."
+            "judgment": "Interprets executed and hypothetical outputs and closes the equation on its economic use."
+          },
+          {
+            "line": 36,
+            "inherited_object": "the route-output object",
+            "paragraph_function": "positions intermediary use among other currency roles",
+            "relation_to_previous": "locates the measure in adjacent literatures",
+            "economic_subject": "intermediation, invoicing, funding, and turnover",
+            "framing_judgment": "Each role is defined affirmatively and the paragraph stays on classification",
+            "qualification_leads": false,
+            "judgment": "Positions intermediary use among other currency roles and locates the measure in adjacent literatures."
           },
           {
             "line": 38,
-            "inherited_object": "the route-output object",
-            "paragraph_function": "separates intermediary use from invoicing, funding, and turnover and states quote timing",
-            "relation_to_previous": "locates the measure in adjacent literatures",
-            "economic_subject": "currency roles and quote timing",
-            "framing_judgment": "Different choices are defined affirmatively",
+            "inherited_object": "observable intermediary use",
+            "paragraph_function": "connects the DEX route to classical vehicle feedback",
+            "relation_to_previous": "moves theory after the institution and measured object are clear",
+            "economic_subject": "volume, depth, adoption costs, liquidity placement, and reach",
+            "framing_judgment": "The analogy follows rather than interrupts the institution-to-flow sequence",
             "qualification_leads": false,
-            "judgment": "The paragraph separates intermediary use from invoicing, funding, and turnover and states quote timing and locates the measure in adjacent literatures."
+            "judgment": "Connects the DEX route to classical vehicle feedback and moves theory after the institution and measured object are clear."
           },
           {
             "line": 43,
             "inherited_object": "the ordered route",
-            "paragraph_function": "defines exact-two-leg and longer-route observations",
-            "relation_to_previous": "moves to the primary vehicle measure",
+            "paragraph_function": "defines the primary two-leg observation and supplementary multiple-intermediary measure",
+            "relation_to_previous": "moves from route notation to the dominance unit",
             "economic_subject": "unique and multiple intermediaries",
-            "framing_judgment": "A simple unit leads; network reach stays separate",
+            "framing_judgment": "The supplementary measure is explicit; the undefined network-reach shorthand is removed",
             "qualification_leads": false,
-            "judgment": "The paragraph defines exact-two-leg and longer-route observations and moves to the primary vehicle measure."
+            "judgment": "Defines the primary two-leg observation and supplementary multiple-intermediary measure and moves from route notation to the dominance unit."
           },
           {
             "line": 48,
             "inherited_object": "the intermediary indicator",
             "paragraph_function": "groups tokens by economic asset type",
-            "relation_to_previous": "creates headline categories",
+            "relation_to_previous": "creates the headline native and stable categories",
             "economic_subject": "native and stable assets",
-            "framing_judgment": "Economic grouping accompanies the aggregation",
+            "framing_judgment": "Economic grouping accompanies aggregation",
             "qualification_leads": false,
-            "judgment": "The paragraph groups tokens by economic asset type and creates headline categories."
+            "judgment": "Groups tokens by economic asset type and creates the headline native and stable categories."
           },
           {
             "line": 50,
             "inherited_object": "native and stable groups",
-            "paragraph_function": "defines count and supported-value denominators",
-            "relation_to_previous": "introduces primary estimands",
+            "paragraph_function": "defines count and value denominators",
+            "relation_to_previous": "introduces the primary dominance estimands",
             "economic_subject": "exact two-leg native-or-stable routes",
             "framing_judgment": "Perimeter and value consistency precede results",
             "qualification_leads": false,
-            "judgment": "The paragraph defines count and supported-value denominators and introduces primary estimands."
+            "judgment": "Defines count and value denominators and introduces the primary dominance estimands."
           },
           {
             "line": 62,
-            "inherited_object": "dominance equations",
-            "paragraph_function": "defines route value and interprets the denominator",
+            "inherited_object": "the dominance equations",
+            "paragraph_function": "defines route value and interprets both denominators",
             "relation_to_previous": "translates formulas into shares",
-            "economic_subject": "source, intermediary, and destination values",
-            "framing_judgment": "Weights and consistency are reproducible",
+            "economic_subject": "source, intermediary, destination values, and group shares",
+            "framing_judgment": "Weights and the value-agreement rule are reproducible",
             "qualification_leads": false,
-            "judgment": "The paragraph defines route value and interprets the denominator and translates formulas into shares."
+            "judgment": "Defines route value and interprets both denominators and translates formulas into shares."
           },
           {
             "line": 65,
-            "inherited_object": "the headline share",
-            "paragraph_function": "introduces route-endpoint frequency on a broader currency set",
-            "relation_to_previous": "creates the USDT role benchmark",
-            "economic_subject": "intermediary uses and route endpoints",
-            "framing_judgment": "Endpoints are observed route objects, not user demand",
+            "inherited_object": "the primary native-or-stable share",
+            "paragraph_function": "defines the endpoint-role benchmark",
+            "relation_to_previous": "adds a broader currency-role comparison",
+            "economic_subject": "intermediary and observed route-endpoint appearances",
+            "framing_judgment": "The broader denominator is named before the excess-use formulas",
             "qualification_leads": false,
-            "judgment": "The paragraph introduces route-endpoint frequency on a broader currency set and creates the USDT role benchmark."
+            "judgment": "Defines the endpoint-role benchmark and adds a broader currency-role comparison."
           },
           {
             "line": 79,
-            "inherited_object": "role-share equations",
-            "paragraph_function": "interprets gap and ratio and distinguishes their denominator",
-            "relation_to_previous": "closes the role comparison",
-            "economic_subject": "role-specific currency shares",
-            "framing_judgment": "Two denominators and claims cannot be conflated",
+            "inherited_object": "the role-share equations",
+            "paragraph_function": "interprets the gap and ratio and distinguishes denominators",
+            "relation_to_previous": "closes the benchmark on its economic meaning",
+            "economic_subject": "intermediary share, route-endpoint share, and headline dominance",
+            "framing_judgment": "The comparison does not rename observed route endpoints as demand",
             "qualification_leads": false,
-            "judgment": "The paragraph interprets gap and ratio and distinguishes their denominator and closes the role comparison."
+            "judgment": "Interprets the gap and ratio and distinguishes denominators and closes the benchmark on its economic meaning."
           },
           {
             "line": 82,
-            "inherited_object": "the route population",
-            "paragraph_function": "defines and quantifies round-trip exclusion",
-            "relation_to_previous": "separates conversions from self-returning paths",
-            "economic_subject": "round-trip geometry",
-            "framing_judgment": "Geometry leads and intent remains unobserved",
+            "inherited_object": "complete nonreturning routes",
+            "paragraph_function": "defines and sizes the round-trip exclusion",
+            "relation_to_previous": "separates path geometry from trader intent",
+            "economic_subject": "self-returning routes",
+            "framing_judgment": "The observable cycle leads and intent remains an interpretive boundary",
             "qualification_leads": false,
-            "judgment": "The paragraph defines and quantifies round-trip exclusion and separates conversions from self-returning paths."
+            "judgment": "Defines and sizes the round-trip exclusion and separates path geometry from trader intent."
           },
           {
             "line": 85,
-            "inherited_object": "economic asset groups",
-            "paragraph_function": "explains classification by claims and stablecoin heterogeneity",
-            "relation_to_previous": "motivates token and risk analysis",
-            "economic_subject": "native, staked, stable, imported, residual claims",
-            "framing_judgment": "Economic reasons replace token-label shorthand",
+            "inherited_object": "the route sample",
+            "paragraph_function": "defines economic asset categories and stablecoin heterogeneity",
+            "relation_to_previous": "completes measurement before the panel",
+            "economic_subject": "native, staked-native, stable, imported, and residual assets",
+            "framing_judgment": "Economic claims determine categories; the stablecoin grouping is not treated as homogeneous",
             "qualification_leads": false,
-            "judgment": "The paragraph explains classification by claims and stablecoin heterogeneity and motivates token and risk analysis."
+            "judgment": "Defines economic asset categories and stablecoin heterogeneity and completes measurement before the panel."
           },
           {
             "line": 90,
-            "inherited_object": "route and asset definitions",
-            "paragraph_function": "states deployments, dates, and changing availability",
-            "relation_to_previous": "moves to population coverage",
-            "economic_subject": "covered DEX deployments",
-            "framing_judgment": "Scale and launch timing precede construction",
+            "inherited_object": "the completed route measures",
+            "paragraph_function": "states the exchange perimeter and sample calendar",
+            "relation_to_previous": "moves from definitions to the observed panel",
+            "economic_subject": "eight Ethereum deployments and 2,332 dates",
+            "framing_judgment": "Panel scope and changing venue availability lead",
             "qualification_leads": false,
-            "judgment": "The paragraph states deployments, dates, and changing availability and moves to population coverage."
+            "judgment": "States the exchange perimeter and sample calendar and moves from definitions to the observed panel."
           },
           {
             "line": 93,
-            "inherited_object": "covered deployments",
-            "paragraph_function": "traces raw records through providers, harmonisation, and reconstruction",
-            "relation_to_previous": "supports the economic route object",
-            "economic_subject": "swaps, directed legs, ordered calls",
-            "framing_judgment": "Providers are not confused with venues",
+            "inherited_object": "the panel perimeter",
+            "paragraph_function": "reports raw sources, harmonisation, and route reconstruction",
+            "relation_to_previous": "explains how the panel is built",
+            "economic_subject": "pool-level swaps, directed legs, and transaction ordering",
+            "framing_judgment": "Source scale accompanies the construction rule",
             "qualification_leads": false,
-            "judgment": "The paragraph traces raw records through providers, harmonisation, and reconstruction and supports the economic route object."
+            "judgment": "Reports raw sources, harmonisation, and route reconstruction and explains how the panel is built."
           },
           {
             "line": 96,
-            "inherited_object": "the route population",
-            "paragraph_function": "explains different count and dollar samples",
-            "relation_to_previous": "justifies the value rule scientifically",
-            "economic_subject": "counts, supported values, order splitting",
-            "framing_judgment": "The broad count sample preserves observed choice",
+            "inherited_object": "the reconstructed sequences",
+            "paragraph_function": "distinguishes the count and dollar samples",
+            "relation_to_previous": "connects reconstruction to the two headline weightings",
+            "economic_subject": "all routes and value-consistent routes",
+            "framing_judgment": "The unrelated order-splitting citation is removed",
             "qualification_leads": false,
-            "judgment": "The paragraph explains different count and dollar samples and justifies the value rule scientifically."
+            "judgment": "Distinguishes the count and dollar samples and connects reconstruction to the two headline weightings."
           },
           {
             "line": 99,
-            "inherited_object": "public routes and callers",
-            "paragraph_function": "bounds router attribution while reporting concentration",
-            "relation_to_previous": "separates execution from quote authorship",
-            "economic_subject": "executor addresses and routing software",
-            "framing_judgment": "Observed attribution leads and the boundary is precise",
+            "inherited_object": "the route records",
+            "paragraph_function": "bounds attribution to router software or quote authors",
+            "relation_to_previous": "closes the data section on an identification boundary",
+            "economic_subject": "executor addresses and partial router labels",
+            "framing_judgment": "The concrete coverage decline explains why results remain route-level",
             "qualification_leads": false,
-            "judgment": "The paragraph bounds router attribution while reporting concentration and separates execution from quote authorship."
-          },
-          {
-            "line": 137,
-            "inherited_object": "the realised panel",
-            "paragraph_function": "defines best direct and sequential outputs at common state and size",
-            "relation_to_previous": "adds the cost opportunity set",
-            "economic_subject": "direct and two-hop routes",
-            "framing_judgment": "Prior routing work and the sequential extension are explicit",
-            "qualification_leads": false,
-            "judgment": "The paragraph defines best direct and sequential outputs at common state and size and adds the cost opportunity set."
-          },
-          {
-            "line": 144,
-            "inherited_object": "the direct benchmark",
-            "paragraph_function": "completes the vehicle benchmark through k",
-            "relation_to_previous": "pairs symmetric outputs",
-            "economic_subject": "best pools on both legs",
-            "framing_judgment": "Endpoints, state, and input remain common",
-            "qualification_leads": false,
-            "judgment": "The paragraph completes the vehicle benchmark through k and pairs symmetric outputs."
-          },
-          {
-            "line": 155,
-            "inherited_object": "the pre-gas gap",
-            "paragraph_function": "adds gas and gross/all-in indicators",
-            "relation_to_previous": "extends outputs to transaction costs",
-            "economic_subject": "direct and indirect gas",
-            "framing_judgment": "Definitions precede interpretation",
-            "qualification_leads": false,
-            "judgment": "The paragraph adds gas and gross/all-in indicators and extends outputs to transaction costs."
-          },
-          {
-            "line": 163,
-            "inherited_object": "the gas comparison",
-            "paragraph_function": "states state, access, family, and validation requirements",
-            "relation_to_previous": "separates a defined estimand from a result",
-            "economic_subject": "router opportunity sets and pool arithmetic",
-            "framing_judgment": "A completed comparison's requirements are positive and explicit",
-            "qualification_leads": false,
-            "judgment": "The paragraph states state, access, family, and validation requirements and separates a defined estimand from a result."
-          },
-          {
-            "line": 167,
-            "inherited_object": "the cost estimand",
-            "paragraph_function": "introduces a common own-price-impact support rule",
-            "relation_to_previous": "moves to empirical comparability",
-            "economic_subject": "hypothetical size and executable liquidity",
-            "framing_judgment": "The all-family rule leads because it determines support",
-            "qualification_leads": false,
-            "judgment": "The paragraph introduces a common own-price-impact support rule and moves to empirical comparability."
-          },
-          {
-            "line": 174,
-            "inherited_object": "the support inequality",
-            "paragraph_function": "interprets impact across families and reserves as a diagnostic",
-            "relation_to_previous": "connects formula to implementation",
-            "economic_subject": "family-specific depth",
-            "framing_judgment": "Common impact, protocol limits, and reserve diagnostics remain separate",
-            "qualification_leads": false,
-            "judgment": "The paragraph interprets impact across families and reserves as a diagnostic and connects formula to implementation."
-          },
-          {
-            "line": 180,
-            "inherited_object": "dominance and cost definitions",
-            "paragraph_function": "separates observed allocation from hypothetical gaps and incidence",
-            "relation_to_previous": "hands results to the benchmark without mixing coefficients",
-            "economic_subject": "route shares, cost gaps, dominance indicators",
-            "framing_judgment": "No cost coefficient enters route-composition findings",
-            "qualification_leads": false,
-            "judgment": "The paragraph separates observed allocation from hypothetical gaps and incidence and hands results to the benchmark without mixing coefficients."
+            "judgment": "Bounds attribution to router software or quote authors and closes the data section on an identification boundary."
           }
         ]
       },
-      "judgment": "The section makes the route institution and user-instruction boundary concrete before notation, defines all denominators, and distinguishes route endpoints from demand. It reports the eight-deployment panel and defines cost as a separate state-dependent estimand requiring common support and coverage.",
-      "entry_handoff": "Atomic pool routing supplies the observable path needed for the role measure.",
-      "internal_progression": "Institution and a public transaction lead to notation, dominance, role benchmarks, sample construction, and a distinct price design.",
-      "exit_handoff": "The section leaves two non-interchangeable objects: observed intermediary allocation and hypothetical route output."
+      "judgment": "Section 2 follows the institutional progression of Lehar--Parlour: explain how trading works, show what the records reveal, then define the analytical object. It defines every route denominator and separates direct intermediary measurement from state-dependent cost comparison.",
+      "entry_handoff": "The introduction’s claim of linked transaction paths enters through atomic pool execution.",
+      "internal_progression": "Institution leads to the flow rule, transaction, notation, theory, dominance measures, and the route panel.",
+      "exit_handoff": "The panel closes by retaining route-level attribution and sends the separate cost object to Section 4."
     },
     "paper/sections/03-dominance.tex": {
-      "sha256": "f27098254722aa6c0d1517dbdf95dcfe8a28b5de4868d0f6bee75607b242f919",
+      "sha256": "1d346e09abbb0ab10d9243feda576b6d7608e57ac7ff2b552d6beb22bf3e36aa",
       "status": "rewritten",
       "exemplars": [
         "literature/text/2020-MakarovSchoar2020Arbitrage-trading-and-arbitrage-in-cryptocurrency-markets.txt:886-991",
@@ -737,13 +621,13 @@
           },
           {
             "line": 48,
-            "inherited_object": "accounting decomposition",
-            "paragraph_function": "reports matched estimates and confidence bounds",
-            "relation_to_previous": "tests like-for-like substitution",
-            "economic_subject": "pair-date-route-type shares",
-            "framing_judgment": "Bounds are interpreted economically",
+            "inherited_object": "the count and value decompositions",
+            "paragraph_function": "reports conditional matched-pair estimates and economically interprets their confidence intervals",
+            "relation_to_previous": "tests how much change remains within the same pair, calendar date, and exchange-span group",
+            "economic_subject": "matched stablecoin-share changes by count and value",
+            "framing_judgment": "The conditional estimate leads; interval endpoints are used to rule out aggregate-sized substitution rather than presented defensively",
             "qualification_leads": false,
-            "judgment": "The paragraph reports matched estimates and confidence bounds and tests like-for-like substitution."
+            "judgment": "The paragraph reports conditional matched-pair estimates and uses their confidence intervals to show that within-pair changes are small relative to the aggregate rotation."
           },
           {
             "line": 51,
@@ -847,282 +731,277 @@
           }
         ]
       },
-      "judgment": "The section sells a large non-monotone rotation, reconciles weighting conventions, and shows across-pair activity carries most change. Matched bounds make substitution economically small. USDT and venue-span evidence narrows mechanisms without treating time, pair appearance, or cross-exchange status as exogenous.",
+      "judgment": "The section sells a large non-monotone rotation, reconciles weighting conventions, and assigns most change to activity across pairs. Matched estimates state the conditioning set directly and interpret confidence bounds against the economic magnitude.",
       "entry_handoff": "The Section 2 denominator supplies the matched-day transition.",
       "internal_progression": "Rotation and reversals lead to decomposition, matched estimates, USDT attribution, and route-architecture margins.",
       "exit_handoff": "The final synthesis defines the fixed-pair, size, and path set needed to test router access.",
       "terminology_judgment": "Reader-facing prose names the measured object as the source and destination assets or their ordered asset pair. It reserves pool for a liquidity contract, venue for an exchange or protocol, and route for the ordered execution sequence; these objects are not used interchangeably."
     },
     "paper/sections/06-executability.tex": {
-      "sha256": "dd9981316cd4add6114aa9b0de145aefe8fe6654a5a769e1cc7764d89f0532ff",
+      "sha256": "040450ef8bb314a35214297e536279eebd7bb6c87b0c845e5ca9850bf99181b7",
       "status": "rewritten",
       "exemplars": [
-        "literature/text/2020-MakarovSchoar2020Arbitrage-trading-and-arbitrage-in-cryptocurrency-markets.txt:1923-2116",
-        "literature/text/2022-GrahamGrennanHarveyRajgopal-corporate-culture-evidence-field-jfe.txt:258-388"
+        "literature/text/2023-LiYeZheng2023Refusing-refusing-the-best-price.txt:395-510",
+        "literature/text/2024-LeharParlour2024Uniswap-decentralized-exchange-the-uniswap-automated-market-maker.txt:972-1090"
       ],
       "openings": [
         {
-          "heading": "A counterfactual execution-cost benchmark",
+          "heading": "Comparing direct and intermediated execution",
           "classification": "substantive_bridge",
-          "incoming_object": "Observed route composition.",
-          "opening_function": "Adds feasible alternatives needed to relate choice to cost.",
-          "judgment": "The observed result is preserved and the additional object is defined positively.",
-          "raw_exemplar": "literature/text/2020-MakarovSchoar2020Arbitrage-trading-and-arbitrage-in-cryptocurrency-markets.txt:1923-2116"
+          "incoming_object": "Observed route choice from Section 3.",
+          "opening_function": "Defines a same-state, same-size cost comparison as a separate empirical object.",
+          "judgment": "The section states the estimand and its public-liquidity perimeter without reader-facing project status.",
+          "raw_exemplar": "literature/text/2023-LiYeZheng2023Refusing-refusing-the-best-price.txt:395-510"
         }
       ],
       "paragraph_flow_review": {
         "transition_lines": [
-          8,
-          11
+          15,
+          22,
+          24,
+          30,
+          33
         ],
-        "judgment": "The section moves from the chosen route to a common-state public opportunity set and its economically material boundaries.",
+        "judgment": "The section defines the direct and intermediated outputs, interprets their gap, imposes common price-impact support, and quantifies the public-liquidity perimeter.",
         "raw_exemplars": [
-          "literature/text/2023-LiYeZheng2023Refusing-refusing-the-best-price.txt:980-990",
-          "literature/text/2020-MakarovSchoar2020Arbitrage-trading-and-arbitrage-in-cryptocurrency-markets.txt:1923-2116"
+          "literature/text/2023-LiYeZheng2023Refusing-refusing-the-best-price.txt:395-510",
+          "literature/text/2024-LeharParlour2024Uniswap-decentralized-exchange-the-uniswap-automated-market-maker.txt:972-1090"
         ],
         "jumps": [],
         "handoffs": [
           {
-            "line": 8,
-            "inherited_object": "public alternatives needed for cost comparison",
-            "paragraph_function": "defines common-state direct-versus-two-leg benchmark, replay, and support",
-            "relation_to_previous": "turns the conceptual requirement into a design",
-            "economic_subject": "endpoints, size, pre-state, feasible pools",
-            "framing_judgment": "Design and prior parallel-pool work lead; appendices hold detail",
+            "line": 15,
+            "inherited_object": "the direct and two-leg output equations",
+            "paragraph_function": "places the benchmark relative to optimal allocation across parallel pools",
+            "relation_to_previous": "clarifies the contribution of the cost object",
+            "economic_subject": "parallel-pool and sequential-route outputs",
+            "framing_judgment": "The literature comparison follows the defined estimand",
             "qualification_leads": false,
-            "judgment": "The paragraph defines common-state direct-versus-two-leg benchmark, replay, and support and turns the conceptual requirement into a design."
+            "judgment": "Places the benchmark relative to optimal allocation across parallel pools and clarifies the contribution of the cost object."
           },
           {
-            "line": 11,
+            "line": 22,
+            "inherited_object": "the two route outputs",
+            "paragraph_function": "defines and interprets the output shortfall and event timing",
+            "relation_to_previous": "turns levels into an economically legible basis-point gap",
+            "economic_subject": "direct output, intermediary output, and settlement time",
+            "framing_judgment": "Interpretation is affirmative; earlier quote formation is a timing boundary",
+            "qualification_leads": false,
+            "judgment": "Defines and interprets the output shortfall and event timing and turns levels into an economically legible basis-point gap."
+          },
+          {
+            "line": 24,
+            "inherited_object": "the cost gap",
+            "paragraph_function": "introduces a common executable-range rule",
+            "relation_to_previous": "moves from prices to common support",
+            "economic_subject": "marginal and finite-size leg outputs",
+            "framing_judgment": "Support is an economic price-impact restriction rather than a process gate",
+            "qualification_leads": false,
+            "judgment": "Introduces a common executable-range rule and moves from prices to common support."
+          },
+          {
+            "line": 30,
+            "inherited_object": "the support equation",
+            "paragraph_function": "states cross-family and contract-specific restrictions",
+            "relation_to_previous": "interprets the common ceiling",
+            "economic_subject": "own-price impact and protocol execution limits",
+            "framing_judgment": "The appendix references document construction without announcing pending work",
+            "qualification_leads": false,
+            "judgment": "States cross-family and contract-specific restrictions and interprets the common ceiling."
+          },
+          {
+            "line": 33,
             "inherited_object": "the public-liquidity benchmark",
-            "paragraph_function": "states private-choice and family-coverage boundaries with Curve magnitudes",
-            "relation_to_previous": "shows where the benchmark is selective",
-            "economic_subject": "reach, private costs, Curve, v4, Sushi v3, Balancer",
-            "framing_judgment": "The public estimand comes first and material limits follow",
-            "qualification_leads": true,
-            "judgment": "The paragraph states private-choice and family-coverage boundaries with Curve magnitudes and shows where the benchmark is selective.",
-            "qualification_leads_justification": "Omitted native-asset depth can alter which route is best"
+            "paragraph_function": "quantifies economically material family coverage",
+            "relation_to_previous": "closes on what the benchmark represents",
+            "economic_subject": "Curve native and stable legs plus omitted pool families",
+            "framing_judgment": "Measured Curve asymmetry leads and unmeasured private costs remain a scope condition",
+            "qualification_leads": false,
+            "judgment": "Quantifies economically material family coverage and closes on what the benchmark represents."
           }
         ]
       },
-      "judgment": "The section defines an interpretable public-liquidity benchmark but reports no cost coefficient. It states exact state, ordering, size support, router reach, and family coverage, including material Curve omissions.",
-      "entry_handoff": "Observed paths identify chosen intermediaries; the benchmark adds public alternatives at the same state and size.",
-      "internal_progression": "Endpoints, notional, and state are fixed before support and coverage are bounded.",
-      "exit_handoff": "The coverage boundary sends the design to appendix validation without promoting component accuracy."
+      "judgment": "The counterfactual section is now a compact empirical definition rather than a reader-facing status report. It states no route-cost coefficient and preserves the material Curve coverage asymmetry.",
+      "entry_handoff": "Observed intermediary allocation creates a separate question about execution cost.",
+      "internal_progression": "Common-state outputs lead to the basis-point gap, timing, executable support, and venue-family scope.",
+      "exit_handoff": "The section closes by stating the public-liquidity object and quantified coverage boundary."
     },
     "paper/sections/05-rivals.tex": {
-      "sha256": "9a0c18ba67b4dab6781d6408c435404b10e840b7dbd2106bca195026eab356aa",
+      "sha256": "ac6d5dd0955441b5c107ffb3f2c31c171d4b2fbcdbdd31b5cb6d299c1cbde33c",
       "status": "rewritten",
       "exemplars": [
-        "literature/text/2022-ChangDuLouPolk2022Ripples-ripples-into-waves-trade-networks-economic-activity-and-asset-prices.txt:1321-1445",
-        "literature/text/2021-BoltonKacperczyk2021CarbonRisk-do-investors-care-about-carbon-risk.txt:1635-1702"
+        "literature/text/2024-LeharParlour2024Uniswap-decentralized-exchange-the-uniswap-automated-market-maker.txt:321-353"
       ],
       "openings": [
         {
-          "heading": "Mechanisms suggested by the route evidence",
+          "heading": "What can account for the rotation?",
+          "classification": "substantive_bridge",
+          "incoming_object": "The across-pair rotation and venue-span evidence.",
+          "opening_function": "Uses those results to restrict the explanations that follow.",
+          "judgment": "The section opens on supported findings rather than a list of unfinished tests.",
+          "raw_exemplar": "literature/text/2024-LeharParlour2024Uniswap-decentralized-exchange-the-uniswap-automated-market-maker.txt:321-353"
+        },
+        {
+          "heading": "Liquidity and exchange reach",
           "classification": "direct",
-          "incoming_object": "Across-pair allocation and changing intermediation.",
-          "opening_function": "States facts every mechanism must explain.",
-          "judgment": "Supported findings discipline the mechanism set.",
-          "raw_exemplar": "literature/text/2022-ChangDuLouPolk2022Ripples-ripples-into-waves-trade-networks-economic-activity-and-asset-prices.txt:1369-1380"
+          "incoming_object": "The need to explain both exchanged assets and the intermediary.",
+          "opening_function": "Separates deposited capital from executable liquidity before reporting the supported route-span accounting result.",
+          "judgment": "The subsection defines economically distinct liquidity quantities and states the within-group route-span result without proposing an unestimated lead--lag test.",
+          "raw_exemplar": "literature/text/2024-LeharParlour2024Uniswap-decentralized-exchange-the-uniswap-automated-market-maker.txt:321-353"
         },
         {
-          "heading": "Liquidity supply",
-          "classification": "direct",
-          "incoming_object": "Reallocation across source--destination pairs.",
-          "opening_function": "Develops volume-liquidity feedback and timing using capital and executable depth.",
-          "judgment": "Theory is tied to observable timing and depth.",
-          "raw_exemplar": "literature/text/2025-HuangRanaldoSchrimpfSomogyi-constrained-liquidity-provision-currency-markets-jfe.txt:710-718"
-        },
-        {
-          "heading": "Router reach",
+          "heading": "Protocol architecture",
           "classification": "substantive_bridge",
-          "incoming_object": "Liquidity dispersed across pools and exchanges.",
-          "opening_function": "Explains software access and a fixed-opportunity comparison.",
-          "judgment": "Reach is distinct from liquidity but connected to fragmented routing.",
-          "raw_exemplar": "literature/text/2022-ChangDuLouPolk2022Ripples-ripples-into-waves-trade-networks-economic-activity-and-asset-prices.txt:1369-1445"
-        },
-        {
-          "heading": "Asset risk",
-          "classification": "substantive_bridge",
-          "incoming_object": "USDT's role-specific increase.",
-          "opening_function": "Links holding and provider risk to subsequent use.",
-          "judgment": "A named currency comparison motivates the temporal prediction.",
-          "raw_exemplar": "literature/text/2021-BoltonKacperczyk2021CarbonRisk-do-investors-care-about-carbon-risk.txt:1635-1702"
-        },
-        {
-          "heading": "Protocol design",
-          "classification": "substantive_bridge",
-          "incoming_object": "Liquidity, reach, and risk explanations.",
-          "opening_function": "Introduces feasible routes and settlement under v1, v2, and v4.",
-          "judgment": "Institutional changes are sourced and separated from causal estimates.",
-          "raw_exemplar": "literature/text/2024-LeharParlour2024Uniswap-decentralized-exchange-the-uniswap-automated-market-maker.txt:10-21"
+          "incoming_object": "Opportunity sets that differ across assets and exchanges.",
+          "opening_function": "Uses v1--v2 pairing evidence and v4 settlement rules to show how architecture enters.",
+          "judgment": "The subsection contains supported institutional facts and the measured persistence of WETH pairing.",
+          "raw_exemplar": "literature/text/2024-LeharParlour2024Uniswap-decentralized-exchange-the-uniswap-automated-market-maker.txt:321-353"
         }
       ],
       "paragraph_flow_review": {
         "transition_lines": [
           9,
-          13,
+          11,
+          15,
           18,
-          22,
-          25,
-          27
+          20
         ],
-        "judgment": "Supported allocation facts lead to liquidity, reach, risk, and design mechanisms, each ending in a distinct test.",
+        "judgment": "The section begins from supported route results, distinguishes deposited capital from executable liquidity, reports the route-span accounting implication, and then turns to measured WETH-pairing persistence and factual v4 settlement architecture.",
         "raw_exemplars": [
-          "literature/text/2022-ChangDuLouPolk2022Ripples-ripples-into-waves-trade-networks-economic-activity-and-asset-prices.txt:1369-1445",
-          "literature/text/2021-BoltonKacperczyk2021CarbonRisk-do-investors-care-about-carbon-risk.txt:1635-1702"
+          "literature/text/2024-LeharParlour2024Uniswap-decentralized-exchange-the-uniswap-automated-market-maker.txt:321-353"
         ],
         "jumps": [],
         "handoffs": [
           {
             "line": 9,
-            "inherited_object": "allocation facts",
-            "paragraph_function": "develops two directions of liquidity feedback and separates capital from depth",
-            "relation_to_previous": "turns theory into timing predictions",
-            "economic_subject": "capital, depth, price impact, provider risk",
-            "framing_judgment": "The mechanism is developed but not established",
+            "inherited_object": "the across-pair result",
+            "paragraph_function": "separates deposited capital from size-specific executable liquidity",
+            "relation_to_previous": "develops the volume--cost mechanism in AMM markets",
+            "economic_subject": "provider capital, executable depth, and route share",
+            "framing_judgment": "Capital is not called intermediation capacity, and concentrated liquidity motivates the distinction",
             "qualification_leads": false,
-            "judgment": "The paragraph develops two directions of liquidity feedback and separates capital from depth and turns theory into timing predictions."
+            "judgment": "Develops the volume--cost mechanism in AMM markets while separating deposited capital from size-specific executable liquidity."
           },
           {
-            "line": 13,
-            "inherited_object": "liquidity and depth",
-            "paragraph_function": "adds router reach and a fixed search-set comparison",
-            "relation_to_previous": "explains why software must find liquidity",
-            "economic_subject": "fragmented pools and venue spans",
-            "framing_judgment": "Cross-exchange facts motivate but do not exhaust reach",
+            "line": 11,
+            "inherited_object": "the distinction between deposited and executable liquidity",
+            "paragraph_function": "reports the cross-exchange pattern and its within-group accounting implication",
+            "relation_to_previous": "moves from depth to which exchanges a router searches",
+            "economic_subject": "single-exchange and cross-exchange routes",
+            "framing_judgment": "The within-group result establishes that route-span reweighting is a minority accounting component without assigning causality",
             "qualification_leads": false,
-            "judgment": "The paragraph adds router reach and a fixed search-set comparison and explains why software must find liquidity."
+            "judgment": "Reports the cross-exchange pattern and its accounting implication, moving from liquidity depth to the exchanges spanned by a route."
+          },
+          {
+            "line": 15,
+            "inherited_object": "the liquidity and route-span evidence",
+            "paragraph_function": "uses v1 and v2 to show architecture change and persistent WETH pairing",
+            "relation_to_previous": "moves from route-span allocation to feasible route design",
+            "economic_subject": "forced ETH routing and post-v1 WETH pools",
+            "framing_judgment": "The institutional change leads into measured pairing persistence",
+            "qualification_leads": false,
+            "judgment": "Uses v1 and v2 to show architecture change and persistent WETH pairing and moves from asset attributes to feasible route design."
           },
           {
             "line": 18,
-            "inherited_object": "liquidity and reach",
-            "paragraph_function": "introduces stablecoin risk and timing",
-            "relation_to_previous": "uses USDT to motivate a balance-sheet channel",
-            "economic_subject": "issuance, redemption, inventory, drawdowns, depegs",
-            "framing_judgment": "Risk becomes a sequence, not a current finding",
+            "inherited_object": "v1--v2 architecture",
+            "paragraph_function": "describes v4 singleton settlement and decoded route observability",
+            "relation_to_previous": "adds an architecture in which route and external transfers differ",
+            "economic_subject": "v4 pools, flash accounting, and net settlement",
+            "framing_judgment": "Protocol rules are sourced and no settlement effect is estimated",
             "qualification_leads": false,
-            "judgment": "The paragraph introduces stablecoin risk and timing and uses USDT to motivate a balance-sheet channel."
+            "judgment": "Describes v4 singleton settlement and decoded route observability and adds an architecture in which route and external transfers differ."
           },
           {
-            "line": 22,
-            "inherited_object": "risk timing",
-            "paragraph_function": "uses v1 and v2 to show feasible-route change and persistent WETH pairing",
-            "relation_to_previous": "moves from balance sheets to architecture",
-            "economic_subject": "forced ETH routing and arbitrary pairs",
-            "framing_judgment": "Persistence is sold; causal comparison remains open",
+            "line": 20,
+            "inherited_object": "the architecture evidence",
+            "paragraph_function": "synthesises the route restrictions and measured persistence",
+            "relation_to_previous": "closes on supported economic features",
+            "economic_subject": "across-pair reallocation, within-span stablecoin gains, and WETH-pairing persistence",
+            "framing_judgment": "The close contains only admitted route evidence, measured pairing persistence, and their implication for route opportunities",
             "qualification_leads": false,
-            "judgment": "The paragraph uses v1 and v2 to show feasible-route change and persistent WETH pairing and moves from balance sheets to architecture."
-          },
-          {
-            "line": 25,
-            "inherited_object": "v1-v2 architecture",
-            "paragraph_function": "explains v4 singleton/net settlement and decoded actions",
-            "relation_to_previous": "moves from route formation to settlement representation",
-            "economic_subject": "v4 fees, liquidity, settlement, decoded paths",
-            "framing_judgment": "The sourced fact clarifies measurement without treating launch as treatment",
-            "qualification_leads": false,
-            "judgment": "The paragraph explains v4 singleton/net settlement and decoded actions and moves from route formation to settlement representation."
-          },
-          {
-            "line": 27,
-            "inherited_object": "four mechanisms",
-            "paragraph_function": "collects distinct timing and opportunity predictions",
-            "relation_to_previous": "closes with a test program",
-            "economic_subject": "capital, depth, inventory risk, available routes",
-            "framing_judgment": "Predictions are expressly separated from findings",
-            "qualification_leads": false,
-            "judgment": "The paragraph collects distinct timing and opportunity predictions and closes with a test program."
+            "judgment": "Synthesises the supported route restrictions and measured WETH-pairing persistence."
           }
         ]
       },
-      "judgment": "The section is anchored in the route decomposition. Liquidity distinguishes capital from executable depth; reach requires fixed feasible paths; risk generates timing predictions; and v1--v2 and v4 supply sourced architecture. All remain explanations to test.",
-      "entry_handoff": "Across-pair reallocation and changing intermediation define what explanations must match.",
-      "internal_progression": "Liquidity leads to reach, stablecoin risk, feasible-route architecture, v4 settlement, and distinct tests.",
-      "exit_handoff": "The final paragraph turns four channels into separate empirical comparisons.",
+      "judgment": "Section 5 contains supported route restrictions, the within-route-span accounting implication, measured WETH-pairing persistence, and factual v4 measurement architecture. It distinguishes deposited capital from executable liquidity but makes no lead--lag, liquidity, reach, or asset-risk estimate.",
+      "entry_handoff": "The route decomposition and venue-span estimates determine what an explanation must fit.",
+      "internal_progression": "Supported restrictions lead to the liquidity distinction, route-span accounting, measured pairing persistence, and v4 route observability.",
+      "exit_handoff": "The close combines the observed allocation restrictions with the measured persistence of route opportunities.",
       "terminology_judgment": "Reader-facing prose names the measured object as the source and destination assets or their ordered asset pair. It reserves pool for a liquidity contract, venue for an exchange or protocol, and route for the ordered execution sequence; these objects are not used interchangeably."
     },
     "paper/sections/07-conclusion.tex": {
-      "sha256": "21f1ee47614e2709e76e35145c1338fb7c4f59376dbbcd595a817b9a285e2c41",
+      "sha256": "c0d7331d5d6ff88d7dc1e7767f45ad0f71844d0a1f5a81a83068c79deb0674a0",
       "status": "rewritten",
       "exemplars": [
+        "literature/text/2025-HuangRanaldoSchrimpfSomogyi-constrained-liquidity-provision-currency-markets-jfe.txt:1588-1660",
         "literature/text/2023-LiYeZheng2023Refusing-refusing-the-best-price.txt:1848-1901",
-        "literature/text/2020-MakarovSchoar2020Arbitrage-trading-and-arbitrage-in-cryptocurrency-markets.txt:2134-2194"
+        "literature/text/2022-ChangDuLouPolk2022Ripples-ripples-into-waves-trade-networks-economic-activity-and-asset-prices.txt:1883-1935"
       ],
       "openings": [
         {
           "heading": "Conclusion",
           "classification": "direct",
-          "incoming_object": "Completed route-composition evidence and its mechanism boundary.",
-          "opening_function": "Synthesises rotation, reversals, USDT, and across-pair allocation.",
-          "judgment": "It answers what changed and where without replaying construction.",
-          "raw_exemplar": "literature/text/2023-LiYeZheng2023Refusing-refusing-the-best-price.txt:1848-1864"
+          "incoming_object": "The paper’s route measurement, rotation, and pair decomposition.",
+          "opening_function": "Synthesises the answer before drawing its interpretation for vehicle-currency evidence.",
+          "judgment": "Like the raw JFE conclusions, the opening recalls the central result rather than the research process.",
+          "raw_exemplar": "literature/text/2025-HuangRanaldoSchrimpfSomogyi-constrained-liquidity-provision-currency-markets-jfe.txt:1588-1660"
         }
       ],
       "conclusion_review": {
-        "synthesis": "The conclusion combines the native-to-stable rotation, reversals, USDT's intermediary-versus-route-endpoint change, and the dominant across-pair margin.",
-        "economic_consequence": "Aggregate dominance can move through activity across source--destination pairs even when intermediary choice barely moves within matched pairs.",
-        "scope_condition": "Path data establish allocation and define tests; they do not identify cost, liquidity, reach, risk, or architecture as causal.",
-        "final_sentence_function": "The final sentence states the strongest supported answer: the rotation runs primarily through the across-pair margin.",
+        "synthesis": "The conclusion combines the native-to-stable rotation, its reversals, USDT role change, and the dominant across-pair allocation margin.",
+        "economic_consequence": "Aggregate vehicle shares combine intermediary choice within a pair with the distribution of routed activity across pairs; interpreting the share as within-pair replacement alone is incomplete.",
+        "scope_condition": "The conclusion attributes no causal mechanism and does not claim an estimated cost, liquidity, risk, reach, or architecture effect.",
+        "final_sentence_function": "The final sentence states the durable implication that vehicle dominance is jointly determined by pair-level intermediary choice and network trading weights.",
         "raw_exemplars": [
-          "literature/text/2020-MakarovSchoar2020Arbitrage-trading-and-arbitrage-in-cryptocurrency-markets.txt:2134-2194",
+          "literature/text/2025-HuangRanaldoSchrimpfSomogyi-constrained-liquidity-provision-currency-markets-jfe.txt:1588-1660",
+          "literature/text/2023-LiYeZheng2023Refusing-refusing-the-best-price.txt:1848-1901",
           "literature/text/2022-ChangDuLouPolk2022Ripples-ripples-into-waves-trade-networks-economic-activity-and-asset-prices.txt:1883-1935"
         ]
       },
       "paragraph_flow_review": {
         "transition_lines": [
-          6,
-          8,
-          10
+          7,
+          9
         ],
-        "judgment": "The conclusion synthesises facts, draws the theoretical implication, bounds mechanisms, and ends on the supported across-pair answer.",
+        "judgment": "The conclusion moves from the answer to one developed paragraph that joins the within-pair/across-pair framework to its interpretation, then closes with a short economic implication.",
         "raw_exemplars": [
-          "literature/text/2023-LiYeZheng2023Refusing-refusing-the-best-price.txt:1848-1924",
-          "literature/text/2025-HuangRanaldoSchrimpfSomogyi-constrained-liquidity-provision-currency-markets-jfe.txt:1588-1660"
+          "literature/text/2025-HuangRanaldoSchrimpfSomogyi-constrained-liquidity-provision-currency-markets-jfe.txt:1588-1660",
+          "literature/text/2023-LiYeZheng2023Refusing-refusing-the-best-price.txt:1848-1901",
+          "literature/text/2022-ChangDuLouPolk2022Ripples-ripples-into-waves-trade-networks-economic-activity-and-asset-prices.txt:1883-1935"
         ],
         "jumps": [],
         "handoffs": [
           {
-            "line": 6,
-            "inherited_object": "rotation and across-pair result",
-            "paragraph_function": "draws the implication for within-pair vehicle theories",
-            "relation_to_previous": "moves from synthesis to theory",
-            "economic_subject": "feedback within pairs and activity across pairs",
-            "framing_judgment": "The consequence comes from the decomposition",
+            "line": 7,
+            "inherited_object": "the measured rotation and decomposition",
+            "paragraph_function": "adds the distribution of trading across pairs to within-pair vehicle feedback and draws the interpretation for aggregate shares",
+            "relation_to_previous": "moves from findings to the paper’s conceptual implication",
+            "economic_subject": "within-pair vehicle choice and network trading weights",
+            "framing_judgment": "Three distinct accounting margins are stated before identifying which dominate",
             "qualification_leads": false,
-            "judgment": "The paragraph draws the implication for within-pair vehicle theories and moves from synthesis to theory."
+            "judgment": "Develops the conceptual margin and its aggregate-share interpretation in one argument rather than mechanically separating them."
           },
           {
-            "line": 8,
-            "inherited_object": "within-pair versus across-pair distinction",
-            "paragraph_function": "sets requirements for mechanism explanations",
-            "relation_to_previous": "turns implication into a bounded agenda",
-            "economic_subject": "opportunity sets and subsequent use",
-            "framing_judgment": "Path data enable tests but do not identify mechanisms",
+            "line": 9,
+            "inherited_object": "the measurement consequence",
+            "paragraph_function": "closes on the economic source of a vehicle’s importance",
+            "relation_to_previous": "moves from interpretation to a durable final implication",
+            "economic_subject": "intermediary choice and network distribution of routed activity",
+            "framing_judgment": "The final sentence generalises the supported decomposition without listing future tests",
             "qualification_leads": false,
-            "judgment": "The paragraph sets requirements for mechanism explanations and turns implication into a bounded agenda."
-          },
-          {
-            "line": 10,
-            "inherited_object": "synthesis and mechanism boundary",
-            "paragraph_function": "ends with two observed allocations and the primary margin",
-            "relation_to_previous": "compresses the answer",
-            "economic_subject": "within-pair choice and across-pair activity",
-            "framing_judgment": "The ending is affirmative and introduces nothing new",
-            "qualification_leads": false,
-            "judgment": "The paragraph ends with two observed allocations and the primary margin and compresses the answer."
+            "judgment": "Closes on the economic source of a vehicle’s importance and moves from interpretation to a durable final implication."
           }
         ]
       },
-      "judgment": "The conclusion rises above methodology while remaining exact. It answers what changed, explains why aggregate dominance need not mean within-pair replacement, and states what mechanism tests require. The ending is economic rather than procedural.",
-      "entry_handoff": "Complete paths return the paper to its answer about changing vehicle dominance.",
-      "internal_progression": "Synthesis leads to theoretical consequence, mechanism requirements, and the two-allocation ending.",
-      "exit_handoff": "The paper ends by identifying across-pair activity as the primary margin.",
+      "judgment": "The conclusion follows the consequence-led JFE examples: it synthesises the result, states how the decomposition changes interpretation, and ends on the joint determination of vehicle dominance by route choice and network activity.",
+      "entry_handoff": "The final empirical section returns the paper to its central question about changing vehicle dominance.",
+      "internal_progression": "Rotation and decomposition lead to a measurement implication and then to the economic source of aggregate vehicle importance.",
+      "exit_handoff": "The final sentence states the broadest supported implication without process language or an unresolved-test list.",
       "terminology_judgment": "Reader-facing prose names the measured object as the source and destination assets or their ordered asset pair. It reserves pool for a liquidity contract, venue for an exchange or protocol, and route for the ordered execution sequence; these objects are not used interchangeably."
     },
     "paper/sections/08-appendix.tex": {
-      "sha256": "0250d4f6a1dc319e1bc2286d4d6dcc4c3bf131a1d524bf9c871d26335524af68",
+      "sha256": "2e2fafa96222ba886a3b273a750f9a465967d9e851fae1de0264a059c67f01e1",
       "status": "rewritten",
       "exemplars": [
         "literature/text/2023-LiYeZheng2023Refusing-refusing-the-best-price.txt:395-510",
@@ -1221,39 +1100,39 @@
           46,
           52,
           64,
-          75,
-          78,
-          113,
+          69,
+          72,
+          107,
+          111,
           117,
-          123,
+          124,
           130,
-          136,
-          171,
-          182,
-          186,
+          165,
+          176,
+          180,
+          220,
           226,
-          232,
+          228,
           234,
-          240,
-          245,
-          248,
-          253,
-          255,
+          239,
+          242,
+          247,
+          249,
+          252,
           258,
-          264,
-          271,
-          306,
+          265,
+          300,
+          330,
           336,
-          342,
-          355,
-          358,
+          349,
+          352,
+          392,
+          395,
           398,
-          401,
-          404,
-          414,
-          458
+          408,
+          452
         ],
-        "judgment": "Economic objects lead implementation from route reconstruction through harmonised quoters, exact state, common impact support, nine-source partial coverage, and round-trip exclusion.",
+        "judgment": "The appendix moves from route construction to harmonised pricing equations, ordered state reconstruction, common support, coverage, and round trips. The concentrated-liquidity subsection now uses input/output notation, includes fees, and sources v4 separately.",
         "raw_exemplars": [
           "literature/text/2023-LiYeZheng2023Refusing-refusing-the-best-price.txt:395-510",
           "literature/text/2022-GrahamGrennanHarveyRajgopal-corporate-culture-evidence-field-jfe.txt:1967-2011"
@@ -1333,46 +1212,46 @@
           },
           {
             "line": 52,
-            "inherited_object": "constant-product validation",
-            "paragraph_function": "introduces concentrated-liquidity state",
-            "relation_to_previous": "moves to a pool family whose depth varies by price range",
-            "economic_subject": "virtual reserves and active liquidity",
-            "framing_judgment": "The economic difference in liquidity allocation motivates new notation",
+            "inherited_object": "the constant-product benchmark",
+            "paragraph_function": "introduces range-specific virtual reserves using the paper’s input/output notation",
+            "relation_to_previous": "moves to liquidity whose executable depth varies by active range",
+            "economic_subject": "input and output virtual reserves, active liquidity, and marginal price",
+            "framing_judgment": "The notation is harmonised with the rest of the paper rather than inherited from token0/token1 conventions",
             "qualification_leads": false,
-            "judgment": "The paragraph introduces concentrated-liquidity state and moves to a pool family whose depth varies by price range."
+            "judgment": "The paragraph introduces range-specific virtual reserves in the paper’s input/output notation and explains why active ranges determine executable depth."
           },
           {
             "line": 64,
-            "inherited_object": "range-specific reserve equations",
-            "paragraph_function": "gives the exact-input price updates",
-            "relation_to_previous": "turns the invariant into executable quote steps",
-            "economic_subject": "token inputs and root price",
-            "framing_judgment": "The arithmetic follows the liquidity representation",
+            "inherited_object": "range-specific virtual reserves",
+            "paragraph_function": "defines the fee-inclusive exact-input step and tick crossing",
+            "relation_to_previous": "turns active-range liquidity into an executable quote",
+            "economic_subject": "fee-adjusted input, output, and initialized ticks",
+            "framing_judgment": "The fee enters the displayed step and the direction-neutral notation matches the route equations",
             "qualification_leads": false,
-            "judgment": "The paragraph gives the exact-input price updates and turns the invariant into executable quote steps."
+            "judgment": "The paragraph defines the fee-inclusive exact-input step and updates active liquidity when a trade crosses a tick."
           },
           {
-            "line": 75,
-            "inherited_object": "price movement across ticks",
-            "paragraph_function": "states exact integer arithmetic and rounding",
-            "relation_to_previous": "completes the contract-faithful quoter",
-            "economic_subject": "Uniswap v3 and v4 quote arithmetic",
-            "framing_judgment": "Implementation detail is included because it affects reproduction accuracy",
+            "line": 69,
+            "inherited_object": "the tick-crossing step",
+            "paragraph_function": "states continuation across ranges and contract rounding",
+            "relation_to_previous": "completes the concentrated-liquidity quote",
+            "economic_subject": "remaining input and Q96 arithmetic",
+            "framing_judgment": "Implementation precision is retained only where it changes reproduced output",
             "qualification_leads": false,
-            "judgment": "The paragraph states exact integer arithmetic and rounding and completes the contract-faithful quoter."
+            "judgment": "The paragraph completes the quote by carrying remaining input across ranges under contract rounding."
           },
           {
-            "line": 78,
-            "inherited_object": "the concentrated-liquidity quoter",
-            "paragraph_function": "explains event replay and the v4 validation groups",
-            "relation_to_previous": "connects state construction directly to the branches and pool rules tested",
-            "economic_subject": "active ticks, static fees, hooks, and dynamic fees",
-            "framing_judgment": "Supported and unsupported v4 rules are separated before the table",
+            "line": 72,
+            "inherited_object": "the concentrated-liquidity quote",
+            "paragraph_function": "explains event replay and separately sources the v4 pricing architecture",
+            "relation_to_previous": "connects state construction to the validation groups",
+            "economic_subject": "active ticks, static fees, singleton settlement, hooks, and dynamic fees",
+            "framing_judgment": "V4 is cited separately and no same-code-path shorthand substitutes for its distinct contract design",
             "qualification_leads": false,
-            "judgment": "The paragraph explains event replay and the v4 validation groups and connects state construction directly to the branches and pool rules tested."
+            "judgment": "The paragraph explains ordered event replay, identifies the v4 architecture separately, and states the validated static-fee perimeter."
           },
           {
-            "line": 113,
+            "line": 107,
             "inherited_object": "concentrated-liquidity validation",
             "paragraph_function": "introduces StableSwap's invariant",
             "relation_to_previous": "moves to pools designed for near-parity exchange",
@@ -1382,7 +1261,7 @@
             "judgment": "The paragraph introduces StableSwap's invariant and moves to pools designed for near-parity exchange."
           },
           {
-            "line": 117,
+            "line": 111,
             "inherited_object": "the StableSwap invariant",
             "paragraph_function": "describes on-chain solution for invariant and output balance",
             "relation_to_previous": "turns the invariant into quote computation",
@@ -1392,7 +1271,7 @@
             "judgment": "The paragraph describes on-chain solution for invariant and output balance and turns the invariant into quote computation."
           },
           {
-            "line": 123,
+            "line": 117,
             "inherited_object": "the two Newton loops",
             "paragraph_function": "states scaling, fee, and off-by-one arithmetic",
             "relation_to_previous": "completes contract-faithful output construction",
@@ -1402,7 +1281,7 @@
             "judgment": "The paragraph states scaling, fee, and off-by-one arithmetic and completes contract-faithful output construction."
           },
           {
-            "line": 130,
+            "line": 124,
             "inherited_object": "the StableSwap quote",
             "paragraph_function": "identifies amplification, defines held-out admission, and detects CryptoSwap misspecification",
             "relation_to_previous": "moves from the missing parameter to the evidence that distinguishes pricing families",
@@ -1412,7 +1291,7 @@
             "judgment": "The paragraph identifies amplification, defines held-out admission, and detects CryptoSwap misspecification and moves from the missing parameter to the evidence that distinguishes pricing families."
           },
           {
-            "line": 136,
+            "line": 130,
             "inherited_object": "the StableSwap validation table",
             "paragraph_function": "summarises held-out quote accuracy",
             "relation_to_previous": "closes the component exercise on the observed error range",
@@ -1422,7 +1301,7 @@
             "judgment": "The paragraph summarises held-out quote accuracy and closes the component exercise on the observed error range."
           },
           {
-            "line": 171,
+            "line": 165,
             "inherited_object": "the Curve validation",
             "paragraph_function": "introduces weighted pools and their invariant",
             "relation_to_previous": "moves from near-parity to weighted pricing",
@@ -1432,7 +1311,7 @@
             "judgment": "The paragraph introduces weighted pools and their invariant and moves from near-parity to weighted pricing."
           },
           {
-            "line": 182,
+            "line": 176,
             "inherited_object": "the weighted quote",
             "paragraph_function": "separates contract limits, common support, and historical parameters",
             "relation_to_previous": "moves from invariant to required inputs",
@@ -1442,7 +1321,7 @@
             "judgment": "The paragraph separates contract limits, common support, and historical parameters and moves from invariant to required inputs."
           },
           {
-            "line": 186,
+            "line": 180,
             "inherited_object": "historical weighted parameters",
             "paragraph_function": "defines held-out family admission",
             "relation_to_previous": "turns recovery into a family-validation rule",
@@ -1452,7 +1331,7 @@
             "judgment": "The paragraph defines held-out family admission and turns recovery into a family-validation rule."
           },
           {
-            "line": 226,
+            "line": 220,
             "inherited_object": "the Balancer table",
             "paragraph_function": "summarises replay accuracy and omitted-family volume",
             "relation_to_previous": "closes validation on its perimeter",
@@ -1462,7 +1341,7 @@
             "judgment": "The paragraph summarises replay accuracy and omitted-family volume and closes validation on its perimeter."
           },
           {
-            "line": 232,
+            "line": 226,
             "inherited_object": "venue-specific component validation",
             "paragraph_function": "introduces pre-trade balance reconstruction",
             "relation_to_previous": "moves from price rules to the exact historical state each rule requires",
@@ -1472,7 +1351,7 @@
             "judgment": "The paragraph introduces pre-trade balance reconstruction and moves from price rules to the exact historical state each rule requires."
           },
           {
-            "line": 234,
+            "line": 228,
             "inherited_object": "the pre-trade state requirement",
             "paragraph_function": "derives backward event unwinding",
             "relation_to_previous": "formalises reconstruction from period-end balances",
@@ -1482,7 +1361,7 @@
             "judgment": "The paragraph derives backward event unwinding and formalises reconstruction from period-end balances."
           },
           {
-            "line": 240,
+            "line": 234,
             "inherited_object": "backward unwinding",
             "paragraph_function": "defines the forward alternative",
             "relation_to_previous": "creates a validation comparison for state timing",
@@ -1492,7 +1371,7 @@
             "judgment": "The paragraph defines the forward alternative and creates a validation comparison for state timing."
           },
           {
-            "line": 245,
+            "line": 239,
             "inherited_object": "the two replay directions",
             "paragraph_function": "reports their quote-error comparison",
             "relation_to_previous": "uses realised outputs to choose the correct state reconstruction",
@@ -1502,7 +1381,7 @@
             "judgment": "The paragraph reports their quote-error comparison and uses realised outputs to choose the correct state reconstruction."
           },
           {
-            "line": 248,
+            "line": 242,
             "inherited_object": "the validated backward replay",
             "paragraph_function": "adds liquidity events and a reserve reconciliation",
             "relation_to_previous": "extends state recovery beyond swaps",
@@ -1512,7 +1391,7 @@
             "judgment": "The paragraph adds liquidity events and a reserve reconciliation and extends state recovery beyond swaps."
           },
           {
-            "line": 253,
+            "line": 247,
             "inherited_object": "the reserve-reconciliation equation",
             "paragraph_function": "states the future admission and coverage consequence",
             "relation_to_previous": "turns tested reconciliation into an empirical support boundary for the eventual panel",
@@ -1523,7 +1402,7 @@
             "qualification_leads_justification": "State-dependent analyses require reconciled histories, so this admission condition must precede any use of reconstructed state"
           },
           {
-            "line": 255,
+            "line": 249,
             "inherited_object": "the constant-product state logic",
             "paragraph_function": "extends balance unwinding to weighted pools",
             "relation_to_previous": "shows the same timing test under Balancer records",
@@ -1533,7 +1412,7 @@
             "judgment": "The paragraph extends balance unwinding to weighted pools and shows the same timing test under Balancer records."
           },
           {
-            "line": 258,
+            "line": 252,
             "inherited_object": "the Balancer replay comparison",
             "paragraph_function": "states why joins and exits are required",
             "relation_to_previous": "closes state reconstruction on the complete balance-changing event set",
@@ -1543,7 +1422,7 @@
             "judgment": "The paragraph states why joins and exits are required and closes state reconstruction on the complete balance-changing event set."
           },
           {
-            "line": 264,
+            "line": 258,
             "inherited_object": "component-level pre-trade tests",
             "paragraph_function": "introduces the common own-price-impact support rule",
             "relation_to_previous": "moves from executed-swap accuracy to extrapolation control",
@@ -1553,7 +1432,7 @@
             "judgment": "The paragraph introduces the common own-price-impact support rule and moves from executed-swap accuracy to extrapolation control."
           },
           {
-            "line": 271,
+            "line": 265,
             "inherited_object": "the need for a support restriction",
             "paragraph_function": "defines size relative to reserves as a constant-product diagnostic",
             "relation_to_previous": "avoids presenting that diagnostic as the cross-family rule",
@@ -1563,7 +1442,7 @@
             "judgment": "The paragraph defines size relative to reserves as a constant-product diagnostic and avoids presenting that diagnostic as the cross-family rule."
           },
           {
-            "line": 306,
+            "line": 300,
             "inherited_object": "the size distribution",
             "paragraph_function": "locates five percent of reserves among realised percentiles",
             "relation_to_previous": "uses reserves only as a diagnostic",
@@ -1573,18 +1452,18 @@
             "judgment": "The paragraph locates five percent of reserves among realised percentiles and uses reserves only as a diagnostic."
           },
           {
-            "line": 336,
-            "inherited_object": "the reserve diagnostic",
-            "paragraph_function": "returns to own-price-impact support and the unreleased sample",
-            "relation_to_previous": "closes without claiming coverage",
-            "economic_subject": "the all-family comparison",
-            "framing_judgment": "The missing sample governs interpretation",
-            "qualification_leads": true,
-            "judgment": "The paragraph returns to own-price-impact support and the unreleased sample and closes without claiming coverage.",
+            "line": 330,
+            "inherited_object": "the reserve-size diagnostic",
+            "paragraph_function": "returns to the common own-price-impact rule and bounds what component validation establishes",
+            "relation_to_previous": "closes the support section on an observable limitation",
+            "economic_subject": "realised-swap quote accuracy and unexecuted routes",
+            "framing_judgment": "The paragraph states the evidentiary boundary without reader-facing release status",
+            "qualification_leads": false,
+            "judgment": "The paragraph distinguishes realised-swap component accuracy from unobserved quote error on hypothetical routes.",
             "qualification_leads_justification": "Complete pre-state is required before retained-sample claims"
           },
           {
-            "line": 342,
+            "line": 336,
             "inherited_object": "support-restricted pricing",
             "paragraph_function": "defines nine-source observed volume and partial Fluid/v1 coverage",
             "relation_to_previous": "moves to the source perimeter",
@@ -1594,7 +1473,7 @@
             "judgment": "The paragraph defines nine-source observed volume and partial Fluid/v1 coverage and moves to the source perimeter."
           },
           {
-            "line": 355,
+            "line": 349,
             "inherited_object": "the nine-source diagnostic",
             "paragraph_function": "quantifies static-fee hookless v4 reach",
             "relation_to_previous": "moves within v4 pricing eligibility",
@@ -1604,7 +1483,7 @@
             "judgment": "The paragraph quantifies static-fee hookless v4 reach and moves within v4 pricing eligibility."
           },
           {
-            "line": 358,
+            "line": 352,
             "inherited_object": "the v4 perimeter",
             "paragraph_function": "quantifies Curve importance and exclusions",
             "relation_to_previous": "moves to material omitted depth",
@@ -1614,7 +1493,7 @@
             "judgment": "The paragraph quantifies Curve importance and exclusions and moves to material omitted depth."
           },
           {
-            "line": 398,
+            "line": 392,
             "inherited_object": "Curve exclusions",
             "paragraph_function": "shows concentration in native routes and Tricrypto",
             "relation_to_previous": "interprets asymmetry for the comparison",
@@ -1624,7 +1503,7 @@
             "judgment": "The paragraph shows concentration in native routes and Tricrypto and interprets asymmetry for the comparison."
           },
           {
-            "line": 401,
+            "line": 395,
             "inherited_object": "Curve asymmetry",
             "paragraph_function": "bounds Sushi v3 omission by volume and pair overlap",
             "relation_to_previous": "moves to a small venue lacking state",
@@ -1635,7 +1514,7 @@
             "qualification_leads_justification": "Historical tick state is required for pricing"
           },
           {
-            "line": 404,
+            "line": 398,
             "inherited_object": "the Sushi bound",
             "paragraph_function": "describes Balancer support and absent rate-provider state",
             "relation_to_previous": "closes the venue audit",
@@ -1645,7 +1524,7 @@
             "judgment": "The paragraph describes Balancer support and absent rate-provider state and closes the venue audit."
           },
           {
-            "line": 414,
+            "line": 408,
             "inherited_object": "the round-trip endpoint definition",
             "paragraph_function": "states its classification consequence",
             "relation_to_previous": "translates path geometry into sample exclusion",
@@ -1655,7 +1534,7 @@
             "judgment": "The paragraph states its classification consequence and translates path geometry into sample exclusion."
           },
           {
-            "line": 458,
+            "line": 452,
             "inherited_object": "the round-trip distribution table",
             "paragraph_function": "interprets count and value incidence",
             "relation_to_previous": "closes the appendix on the economic size of the excluded population",
@@ -1666,9 +1545,9 @@
           }
         ]
       },
-      "judgment": "The appendix maps events to routes, harmonises notation across pricing families, and labels held-out exercises as component validation. Own-price-impact support stays distinct from contract limits and reserve diagnostics. Nine local source series include partial Fluid and are not complete market shares.",
+      "judgment": "The appendix maps events to routes and harmonises notation across pricing families. Concentrated-liquidity steps are fee-inclusive and direction-neutral; v4’s singleton architecture is separately sourced. Component validation remains distinct from unexecuted-route accuracy.",
       "entry_handoff": "Address-resolved events supply route and state primitives.",
-      "internal_progression": "Route reconstruction leads to pricing, replay, support, source and family coverage, and round trips.",
+      "internal_progression": "Route reconstruction leads to harmonised pricing, replay, support, source and family coverage, and round trips.",
       "exit_handoff": "Round-trip evidence returns construction to the main count and value denominators."
     }
   }

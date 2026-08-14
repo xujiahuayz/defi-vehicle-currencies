@@ -1,44 +1,27 @@
 {
  "argv": [],
  "artefact": "output/exhibits/prose_conventions.jsonl",
- "artefact_bytes": 3056,
- "artefact_mtime_ns": 1786723851973635679,
- "artefact_sha256": "f98e18f74666957d0ca2b7f28bced8d3c1813f05bde2eb034c7591f16a7c4b26",
+ "artefact_bytes": 3053,
+ "artefact_mtime_ns": 1786737665586549887,
+ "artefact_sha256": "a0769db57c1da7c61b800383d8ab0ecc2823578cf37eff5ed08e69fb74326db0",
  "code_fingerprint": "855e4cea8ba498e8bb720f072b29f9645df3c0bee4fbe4c26dbd5cb903686b44",
  "code_sources": [
   "scripts/measure_prose_conventions.py",
   "src/ddvc/tables.py"
  ],
- "created_at": "2026-08-14T16:10:51+00:00",
+ "created_at": "2026-08-14T20:01:05+00:00",
  "git": {
   "branch": "main",
-  "commit": "10b07523378b0179ba77cd5458a2f35789fb5d09",
+  "commit": "225d37eca0ad1b444e7480e6a9d3b50003f74839",
   "dirty": true,
   "dirty_generated_files": [
    "data/manifests/output/exhibits/prose_outliers.jsonl.prov.json",
    "data/manifests/output/exhibits/venue_optics.jsonl.prov.json",
    "data/manifests/output/exhibits/venue_shape.jsonl.prov.json",
-   "data/manifests/output/exhibits/venue_volume_by_year.jsonl.prov.json",
-   "data/manifests/output/tables/dominance_rotation.pdf.prov.json",
-   "data/manifests/output/tables/dominance_rotation.tex.prov.json",
-   "data/manifests/output/tables/pair_composition.pdf.prov.json",
-   "data/manifests/output/tables/pair_composition.tex.prov.json",
-   "data/manifests/output/tables/usdt_transition.pdf.prov.json",
-   "data/manifests/output/tables/usdt_transition.tex.prov.json",
-   "data/manifests/output/tables/venue_coverage.pdf.prov.json",
-   "data/manifests/output/tables/venue_coverage.tex.prov.json",
    "output/exhibits/prose_outliers.jsonl",
    "output/exhibits/venue_optics.jsonl",
    "output/exhibits/venue_shape.jsonl",
-   "output/exhibits/venue_volume_by_year.jsonl",
-   "output/tables/dominance_rotation.pdf",
-   "output/tables/dominance_rotation.tex",
-   "output/tables/pair_composition.pdf",
    "output/tables/pair_composition.tex",
-   "output/tables/usdt_transition.pdf",
-   "output/tables/usdt_transition.tex",
-   "output/tables/venue_coverage.pdf",
-   "output/tables/venue_coverage.tex",
    "data/manifests/output/provisional/depeg_substitution_e0.jsonl.prov.json",
    "data/manifests/output/provisional/depeg_substitution_e0_hourly.parquet.prov.json",
    "data/manifests/output/provisional/depeg_substitution_e0_input_receipt.jsonl.prov.json",
@@ -49,15 +32,10 @@
    "data/manifests/output/provisional/stress_reallocation_e0_hourly.parquet.prov.json",
    "data/manifests/output/provisional/stress_reallocation_e0_manifest.json.prov.json",
    "data/manifests/output/provisional/stress_reallocation_e0_source_audit.jsonl.prov.json",
-   "output/exhibits/.prose_conventions.jsonl.dl6he2q_.tmp"
+   "output/exhibits/.prose_conventions.jsonl.4ohx1ueg.tmp"
   ],
   "dirty_tracked_files": [
-   "deck/main.pdf",
-   "deck/main.tex",
-   "docs/research-workflow.md",
    "docs/reviews/paper-rhetoric.json",
-   "literature/vehicle-currencies.bib",
-   "paper/main.tex",
    "paper/sections/01-introduction.tex",
    "paper/sections/02-setting.tex",
    "paper/sections/03-dominance.tex",
@@ -66,24 +44,10 @@
    "paper/sections/07-conclusion.tex",
    "paper/sections/08-appendix.tex",
    "paper/sections/abstract.tex",
-   "scripts/run_venue_coverage_bounds.py",
-   "scripts/tabulate/README.md",
-   "scripts/tabulate/render_dominance_rotation.py",
-   "scripts/tabulate/render_pair_composition.py",
-   "scripts/tabulate/render_venue_coverage.py",
    "src/ddvc/dominance_tables.py",
-   "src/ddvc/venue_tables.py",
-   "tests/test_dominance_tables.py",
-   "tests/test_venue_tables.py"
+   "tests/test_dominance_tables.py"
   ],
-  "dirty_untracked_files": [
-   "scripts/run_depeg_substitution_e0.py",
-   "scripts/run_stress_reallocation_e0.py",
-   "src/ddvc/analysis/depeg_substitution_e0.py",
-   "src/ddvc/analysis/stress_reallocation_e0.py",
-   "tests/test_depeg_substitution_e0.py",
-   "tests/test_stress_reallocation_e0.py"
-  ]
+  "dirty_untracked_files": []
  },
  "inputs": [],
  "libraries": {
@@ -94,11 +58,11 @@
  },
  "notes": null,
  "payload_identity": {
-  "bytes": 3056,
+  "bytes": 3053,
   "format": "jsonl",
   "rows": 19,
   "schema_version": 1,
-  "sha256": "f98e18f74666957d0ca2b7f28bced8d3c1813f05bde2eb034c7591f16a7c4b26"
+  "sha256": "a0769db57c1da7c61b800383d8ab0ecc2823578cf37eff5ed08e69fb74326db0"
  },
  "python": "3.14.5",
  "rows": 19,

@@ -1,44 +1,27 @@
 {
  "argv": [],
  "artefact": "output/exhibits/prose_outliers.jsonl",
- "artefact_bytes": 83413,
- "artefact_mtime_ns": 1786723866891043027,
- "artefact_sha256": "29f813c25cbee825f921e478bf6d1ce641d4e66af844e51c4d2ad6af722a2eaf",
+ "artefact_bytes": 77991,
+ "artefact_mtime_ns": 1786737679497601703,
+ "artefact_sha256": "3f33813b1afae6ab9e94916fce5ecf0b03bb2e314e9424b2bcb04d3da87c459b",
  "code_fingerprint": "4d6c3aa5e5b632317b923d4c498ebaf8a988e6f1d35f09ef659fc910be391909",
  "code_sources": [
   "scripts/find_prose_outliers.py",
   "src/ddvc/tables.py"
  ],
- "created_at": "2026-08-14T16:11:06+00:00",
+ "created_at": "2026-08-14T20:01:19+00:00",
  "git": {
   "branch": "main",
-  "commit": "10b07523378b0179ba77cd5458a2f35789fb5d09",
+  "commit": "225d37eca0ad1b444e7480e6a9d3b50003f74839",
   "dirty": true,
   "dirty_generated_files": [
    "data/manifests/output/exhibits/prose_conventions.jsonl.prov.json",
    "data/manifests/output/exhibits/venue_optics.jsonl.prov.json",
    "data/manifests/output/exhibits/venue_shape.jsonl.prov.json",
-   "data/manifests/output/exhibits/venue_volume_by_year.jsonl.prov.json",
-   "data/manifests/output/tables/dominance_rotation.pdf.prov.json",
-   "data/manifests/output/tables/dominance_rotation.tex.prov.json",
-   "data/manifests/output/tables/pair_composition.pdf.prov.json",
-   "data/manifests/output/tables/pair_composition.tex.prov.json",
-   "data/manifests/output/tables/usdt_transition.pdf.prov.json",
-   "data/manifests/output/tables/usdt_transition.tex.prov.json",
-   "data/manifests/output/tables/venue_coverage.pdf.prov.json",
-   "data/manifests/output/tables/venue_coverage.tex.prov.json",
    "output/exhibits/prose_conventions.jsonl",
    "output/exhibits/venue_optics.jsonl",
    "output/exhibits/venue_shape.jsonl",
-   "output/exhibits/venue_volume_by_year.jsonl",
-   "output/tables/dominance_rotation.pdf",
-   "output/tables/dominance_rotation.tex",
-   "output/tables/pair_composition.pdf",
    "output/tables/pair_composition.tex",
-   "output/tables/usdt_transition.pdf",
-   "output/tables/usdt_transition.tex",
-   "output/tables/venue_coverage.pdf",
-   "output/tables/venue_coverage.tex",
    "data/manifests/output/provisional/depeg_substitution_e0.jsonl.prov.json",
    "data/manifests/output/provisional/depeg_substitution_e0_hourly.parquet.prov.json",
    "data/manifests/output/provisional/depeg_substitution_e0_input_receipt.jsonl.prov.json",
@@ -49,15 +32,10 @@
    "data/manifests/output/provisional/stress_reallocation_e0_hourly.parquet.prov.json",
    "data/manifests/output/provisional/stress_reallocation_e0_manifest.json.prov.json",
    "data/manifests/output/provisional/stress_reallocation_e0_source_audit.jsonl.prov.json",
-   "output/exhibits/.prose_outliers.jsonl.66cbfvw7.tmp"
+   "output/exhibits/.prose_outliers.jsonl.7j15zoo4.tmp"
   ],
   "dirty_tracked_files": [
-   "deck/main.pdf",
-   "deck/main.tex",
-   "docs/research-workflow.md",
    "docs/reviews/paper-rhetoric.json",
-   "literature/vehicle-currencies.bib",
-   "paper/main.tex",
    "paper/sections/01-introduction.tex",
    "paper/sections/02-setting.tex",
    "paper/sections/03-dominance.tex",
@@ -66,24 +44,10 @@
    "paper/sections/07-conclusion.tex",
    "paper/sections/08-appendix.tex",
    "paper/sections/abstract.tex",
-   "scripts/run_venue_coverage_bounds.py",
-   "scripts/tabulate/README.md",
-   "scripts/tabulate/render_dominance_rotation.py",
-   "scripts/tabulate/render_pair_composition.py",
-   "scripts/tabulate/render_venue_coverage.py",
    "src/ddvc/dominance_tables.py",
-   "src/ddvc/venue_tables.py",
-   "tests/test_dominance_tables.py",
-   "tests/test_venue_tables.py"
+   "tests/test_dominance_tables.py"
   ],
-  "dirty_untracked_files": [
-   "scripts/run_depeg_substitution_e0.py",
-   "scripts/run_stress_reallocation_e0.py",
-   "src/ddvc/analysis/depeg_substitution_e0.py",
-   "src/ddvc/analysis/stress_reallocation_e0.py",
-   "tests/test_depeg_substitution_e0.py",
-   "tests/test_stress_reallocation_e0.py"
-  ]
+  "dirty_untracked_files": []
  },
  "inputs": [],
  "libraries": {
@@ -94,13 +58,13 @@
  },
  "notes": null,
  "payload_identity": {
-  "bytes": 83413,
+  "bytes": 77991,
   "format": "jsonl",
-  "rows": 380,
+  "rows": 355,
   "schema_version": 1,
-  "sha256": "29f813c25cbee825f921e478bf6d1ce641d4e66af844e51c4d2ad6af722a2eaf"
+  "sha256": "3f33813b1afae6ab9e94916fce5ecf0b03bb2e314e9424b2bcb04d3da87c459b"
  },
  "python": "3.14.5",
- "rows": 380,
+ "rows": 355,
  "script": "scripts/find_prose_outliers.py"
 }

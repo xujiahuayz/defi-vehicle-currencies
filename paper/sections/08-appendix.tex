@@ -49,33 +49,27 @@ Both outputs must be computed from one reconstructed pre-transaction state. A re
 \subsection{Concentrated liquidity}
 \label{app:quoters:cl}
 
-Uniswap v3 and v4 distribute reserves across price ranges, so a pool has no single actual reserve pair and a quote has to walk the price axis \citep{AdamsZinsmeisterRobinson2021UniswapV3}. Inside one range the pool behaves as a constant-product pool with virtual reserves $\widetilde R_{0,p,e^-}$ and $\widetilde R_{1,p,e^-}$. Liquidity $L_{p,e^-}$ and the token1-per-token0 pool price $\rho_{p,e^-}$ satisfy
+Uniswap v3 distributes liquidity across price ranges, so executable depth depends on the active range and on the initialized ticks reached by a trade \citep{AdamsZinsmeisterRobinson2021UniswapV3}. Within one active range, let $\widetilde R_{i,p,e^-}$ and $\widetilde R_{o,p,e^-}$ denote the virtual reserves of the input and output assets. Liquidity $L_{p,e^-}$ and the output-per-input marginal price $\rho_{p,e^-}$ satisfy
 \[
-\widetilde R_{0,p,e^-}=\frac{L_{p,e^-}}{\sqrt{\rho_{p,e^-}}},
+\widetilde R_{i,p,e^-}=\frac{L_{p,e^-}}{\sqrt{\rho_{p,e^-}}},
 \qquad
-\widetilde R_{1,p,e^-}=L_{p,e^-}\sqrt{\rho_{p,e^-}},
+\widetilde R_{o,p,e^-}=L_{p,e^-}\sqrt{\rho_{p,e^-}}.
 \]
-so the token amounts exchanged over a price move from $\sqrt{\rho_a}$ to $\sqrt{\rho_b}$ are
+If $f_p$ is the pool fee and $\varphi_p=1-f_p$, an exact input $\Delta_i$ returns
 \[
-\Delta_0=L_{p,e^-}\left(\frac{1}{\sqrt{\rho_a}}-\frac{1}{\sqrt{\rho_b}}\right),
-\qquad
-\Delta_1=L_{p,e^-}\left(\sqrt{\rho_b}-\sqrt{\rho_a}\right).
+\Delta_o=
+\frac{\varphi_p\Delta_i\widetilde R_{o,p,e^-}}
+     {\widetilde R_{i,p,e^-}+\varphi_p\Delta_i}
 \]
-An exact-input step inverts those. Paying in token1 raises the price by a linear increment in root price, and paying in token0 lowers it through a reciprocal update,
-\[
-\sqrt{\rho'}=\sqrt{\rho}+\frac{\Delta_1}{L_{p,e^-}},
-\qquad
-\sqrt{\rho'}=\frac{L_{p,e^-}\sqrt{\rho}}{L_{p,e^-}+\Delta_0\sqrt{\rho}}.
-\]
-Range boundaries sit on a geometric tick grid and each initialised tick carries a signed liquidity delta applied on crossing,
+until the trade reaches the next initialized tick. Range boundaries lie on a geometric grid, and crossing tick $j$ updates active liquidity by its signed change,
 \[
 \sqrt{\rho(j)}=1.0001^{j/2},
 \qquad L_{p,e^-}\mapsto L_{p,e^-}\pm\Delta L_j,
 \]
-with the sign set by the direction of travel. The quoter carries the contract's own integer Q96 arithmetic, including the round-up conventions on the input side and the round-down conventions on the output side, so a quote is exact given the state.
+with the sign determined by the direction of the trade. The calculation then continues from the new active range until the input is exhausted. The quoter uses the contract's integer Q96 arithmetic, rounding input amounts up and output amounts down.
 % src/ddvc/pricing/v3quote.py, integer port of SwapMath.computeSwapStep and TickMath
 
-The active tick map is accumulated from every mint and burn strictly before the validation day, after which same-day liquidity changes and swaps are replayed together by block and log index. Consecutive swaps in one pool supply the price state: the earlier event leaves \texttt{sqrtPriceX96} and \texttt{tick} immediately before the later swap, while the interleaved event stream supplies the active liquidity. We report errors separately by trade direction and tick crossing because these cases exercise different branches of the quoting rule. Table~\ref{tab:app:cl} applies this test to four validation groups on Uniswap v4. The supported pools follow the same code path at static fee tiers absent from v3, including 0, 7, 8, and 20,000 hundredths of a basis point. Hook-bearing and dynamic-fee pools are excluded because the raw records do not identify their transaction-level cash flows and realised fees; Appendix~\ref{app:coverage} reports their share of v4 trading.
+The active tick map is accumulated from every mint and burn strictly before the validation day, after which same-day liquidity changes and swaps are replayed together by block and log index. Consecutive swaps in one pool supply the price state: the earlier event leaves \texttt{sqrtPriceX96} and \texttt{tick} immediately before the later swap, while the interleaved event stream supplies active liquidity. We report errors separately by input direction and tick crossing because those cases use different arithmetic branches. Table~\ref{tab:app:cl} applies this validation to Uniswap v4. V4 retains concentrated-liquidity pricing for static-fee pools but implements it through a singleton and flash accounting.\footnote{See Adams et al., \href{https://app.uniswap.org/whitepaper-v4.pdf}{\emph{Uniswap v4 Core}}, Sections 1 and 3.} The validated static fee tiers include 0, 7, 8, and 20,000 hundredths of a basis point. Hook-bearing and dynamic-fee pools are excluded because the raw records do not identify their transaction-level cash flows and realised fees; Appendix~\ref{app:coverage} reports their share of v4 trading.
 % src/ddvc/pricing/v3quote.py, _next_init_tick measured docstring against realised swaps
 % output/exhibits/v4_quoter_validation.jsonl, observed static fee tiers; output/exhibits/v4_quote_support.jsonl, support statuses
 
@@ -333,7 +327,7 @@ Five per cent of input reserves sits between the 90th percentile of 3.29\% and t
 \end{figure}
 % output/exhibits/quoter_support_bounds.jsonl, per-day and pooled 90th and 99th percentiles, 932,270 validated swaps on eight sampled days
 
-The counterfactual comparison applies the 5\% own-price-impact rule in Equation~\eqref{eq:support} to each family. We do not report its retained sample or venue coverage without complete exact pre-transaction states across the included families; quote error remains unobserved for hypothetical routes.
+Equation~\eqref{eq:support} applies the same 5\% own-price-impact ceiling to every family. The component exercises establish pricing accuracy for realised swaps within their stated samples; they do not measure quote error on unexecuted routes.
 % output/exhibits/quoter_support_bounds.jsonl; 932,270 validated swaps on eight sampled dates
 
 \section{Coverage of the price comparison}
