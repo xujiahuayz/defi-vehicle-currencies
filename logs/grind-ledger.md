@@ -977,3 +977,69 @@ with five blockers.
   preflight before any daily materialisation.
 - No market-state ledger or `main_v1` route-cost shard was published in this
   iteration; the freeze audit's five blockers therefore remain honest.
+
+## 2026-08-14 — Legacy V3 correction boundary current
+
+**Targeted check:** the five flat Uniswap V3 event-order generations blocking
+the full-calendar market-state prerequisite for release-grade `main_v1` route
+costs and the stricter transaction-state frontier.
+
+**REGRESSION-CHECK:** lane `D2-purpose-bound-exact-state`, graph edge
+`D2-release -> D3-construction-audit`, and estimand best direct versus best
+two-hop route for identical endpoints, UTC hour and USD 1,000, 10,000 and
+100,000 notionals under `main_v1`. Evidence is the existing provider capture
+and all 719 cached exact-log chunks for 2023-02-21, 2024-12-06, 2024-12-20,
+2025-01-13 and 2025-03-10. The correction most at risk was treating provider
+order, or a flat audit-span generation, as current exact-state authority. No
+provider partition, exact-log chunk or RPC evidence was fetched.
+
+**Scientific consequence and concentration.** This is a potentially
+claim-changing state-identity defect, not metadata hygiene. It is concentrated
+in Uniswap V3 and five isolated dates. The pre-regeneration bound found 13,062
+of the 18,658 actions on 2023-02-21 intersecting the day-specific `main_v1`
+pool perimeter; the later flat ledgers had zero, three, one and six intersecting
+actions. Across the five dates, 342,679 of 545,172 provider events (62.86%)
+lie in active pools joining selected endpoints and locked candidates. The
+1,000 selected pair-days carry $9.587 billion of realised bridge volume. The
+Nearly all legacy actions touch a candidate-linked pool, and a changed replay
+state can alter availability or winners at any of the three notionals and later
+hours. Stress-state concentration remains to be measured from corrected quotes;
+its absence from the raw action ledger was not treated as evidence of
+immateriality.
+
+**Work completed.** Reused the existing
+`scripts/reconcile_graph_event_order.py` and marker-last correction owner to
+publish five current generations from cached exact evidence. They reconcile
+545,172 provider events to 545,178 exact events through 18,671 order or payload
+corrections, 18 supplements and 13 receipt-proved exclusions. Ten duplicate
+provider rows are explicit, and unmatched provider and exact events are zero
+on every date. Full reopening validates every generation and the complete
+11,009-target market-state correction preflight now passes. Updated the live
+findings boundary in place; no market-state partition, route-cost shard or
+state-dependent estimate was published.
+
+**DECISION:** `promote` all five current V3 correction generations as daily
+materialization inputs; `park` state-dependent findings at the still-absent
+full-calendar market-state ledger. Route-only findings remain closed and were
+not reopened.
+
+**Validation.** Graph event-order, V3 event-source, market-state migration,
+state-data and findings-freeze suites pass 136 tests plus 11 subtests. The exact
+full market-state correction preflight passes 11,009/11,009 targets. The final
+`uv run python scripts/audit_findings_freeze.py` completed RED with five honest
+blockers: E1 lock, model ledger, full-text literature ledger, route-cost panel
+and two unchanged findings passes.
+
+**Commit:** `7e7a31a` (V3 correction boundary and findings state).
+
+**Blocking count:** 5.
+
+**For the next iteration:**
+- Resume through the existing full-calendar market-state builder now that its
+  correction preflight passes. Use its storage forecast and release owner; do
+  not add another correction path or refetch provider/exact inputs.
+- Materialize and certify the daily ledger before launching `main_v1` quotes.
+  Reopen the V3 event-source release against the new correction identities at
+  its existing certificate boundary; do not restamp stale state partitions.
+- No market-state ledger or `main_v1` route-cost shard was published here, so
+  the freeze audit's five blockers remain the correct live count.
