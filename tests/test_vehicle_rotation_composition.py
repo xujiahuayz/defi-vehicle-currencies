@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+from contextlib import contextmanager
 from pathlib import Path
 from types import SimpleNamespace
 
@@ -85,8 +86,8 @@ def _summary(
 
 
 def test_locked_four_term_identity_and_realised_composition_labels() -> None:
-    pair_panel, decomposition, support = vehicle_rotation_composition(
-        _four_term_choices()
+    pair_panel, decomposition, support, pair_contributions = (
+        vehicle_rotation_composition(_four_term_choices())
     )
     count = _summary(decomposition, "count_share")
     assert count["baseline_stable_share"] == pytest.approx(0.1)
@@ -104,6 +105,7 @@ def test_locked_four_term_identity_and_realised_composition_labels() -> None:
         "matched_strict_count_share",
         "strict_intermediation_value_share",
     }
+    assert not pair_contributions.empty
     membership = support[
         support["record_type"].eq("decomposition_pair_support")
         & support["metric"].eq("count_share")
@@ -134,7 +136,9 @@ def test_hand_calculated_fixture_activates_all_four_identity_terms() -> None:
             *_cross_controls(),
         ]
     )
-    _panel, decomposition, _support = vehicle_rotation_composition(choices)
+    _panel, decomposition, _support, _contributions = vehicle_rotation_composition(
+        choices
+    )
     expected = {
         "baseline_stable_share": 0.23,
         "comparison_stable_share": 0.76,
@@ -157,7 +161,9 @@ def test_hand_calculated_fixture_activates_all_four_identity_terms() -> None:
     scaled = choices.sample(frac=1, random_state=9).reset_index(drop=True)
     for column in ("route_count", "within_20pct_routes", "within_20pct_value_usd"):
         scaled[column] *= 7
-    _panel, scaled_decomposition, _support = vehicle_rotation_composition(scaled)
+    _panel, scaled_decomposition, _support, _contributions = (
+        vehicle_rotation_composition(scaled)
+    )
     for metric in (
         "count_share",
         "matched_strict_count_share",
@@ -166,6 +172,114 @@ def test_hand_calculated_fixture_activates_all_four_identity_terms() -> None:
         observed = _summary(scaled_decomposition, metric)
         for field, value in expected.items():
             assert observed[field] == pytest.approx(value, abs=1e-12)
+
+
+def test_ranked_pair_ledger_reconciles_exact_terms_and_audit_formulas() -> None:
+    choices = pd.DataFrame(
+        [
+            _choice("2024-01-01", "a", "b", "native", 48),
+            _choice("2024-01-01", "a", "b", "stable", 12),
+            _choice("2024-01-01", "c", "d", "native", 16),
+            _choice("2024-01-01", "c", "d", "stable", 24),
+            _choice("2024-01-01", "e", "f", "native", 90),
+            _choice("2024-01-01", "e", "f", "stable", 10),
+            _choice("2026-01-01", "a", "b", "native", 15),
+            _choice("2026-01-01", "a", "b", "stable", 15),
+            _choice("2026-01-01", "c", "d", "native", 18),
+            _choice("2026-01-01", "c", "d", "stable", 72),
+            _choice("2026-01-01", "g", "h", "native", 3),
+            _choice("2026-01-01", "g", "h", "stable", 27),
+            *_cross_controls(),
+        ]
+    )
+    _panel, decomposition, _support, contributions = (
+        vehicle_rotation_composition(choices)
+    )
+    assert not any("p_value" in column for column in contributions.columns)
+    for metric in METRICS:
+        summary = _summary(decomposition, metric)
+        ledger = contributions[
+            contributions["metric"].eq(metric)
+            & contributions["reporting_scope"].eq("single_venue")
+        ].copy()
+        component_sums = ledger.groupby("contribution_component")[
+            "contribution_share"
+        ].sum()
+        assert component_sums["within_pair_choice"] == pytest.approx(
+            summary["within_common"], abs=1e-12
+        )
+        assert component_sums["pair_composition_reweighting"] == pytest.approx(
+            summary["common_pair_reweighting"], abs=1e-12
+        )
+        assert (
+            component_sums["comparison_exclusive_composition"]
+            + component_sums["baseline_exclusive_composition"]
+        ) == pytest.approx(summary["exclusive_pair_contribution"], abs=1e-12)
+        assert ledger["unallocated_common_support_mass_share"].unique().tolist() == (
+            pytest.approx([summary["common_support_mass"]], abs=1e-12)
+        )
+        assert ledger["aggregate_total_change"].unique().tolist() == pytest.approx(
+            [summary["total_change"]], abs=1e-12
+        )
+        assert ledger["contribution_share"].sum() + summary[
+            "common_support_mass"
+        ] == pytest.approx(summary["total_change"], abs=1e-12)
+        statuses = (
+            ledger.groupby("contribution_component")["support_status"]
+            .unique()
+            .map(tuple)
+        )
+        assert set(statuses) == {
+            ("common",),
+            ("baseline_exclusive",),
+            ("comparison_exclusive",),
+        }
+        expected_order = ledger.sort_values(
+            [
+                "absolute_contribution_pp",
+                "src",
+                "tgt",
+                "contribution_component",
+            ],
+            ascending=[False, True, True, True],
+            kind="stable",
+        )
+        assert ledger["absolute_rank"].tolist() == list(range(1, len(ledger) + 1))
+        assert ledger[["src", "tgt", "contribution_component"]].values.tolist() == (
+            expected_order[["src", "tgt", "contribution_component"]].values.tolist()
+        )
+        assert ledger["contribution_pp"].to_numpy() == pytest.approx(
+            100.0 * ledger["contribution_share"].to_numpy(), abs=1e-12
+        )
+        for row in ledger.itertuples(index=False):
+            if row.contribution_component == "within_pair_choice":
+                expected_contribution = (
+                    row.aggregate_mass_share_midpoint
+                    * row.pair_weight_midpoint
+                    * (row.stable_share_comparison - row.stable_share_baseline)
+                )
+            elif row.contribution_component == "pair_composition_reweighting":
+                expected_contribution = (
+                    row.aggregate_mass_share_midpoint
+                    * row.stable_share_midpoint
+                    * (row.pair_weight_comparison - row.pair_weight_baseline)
+                )
+            elif row.contribution_component == "comparison_exclusive_composition":
+                expected_contribution = (
+                    row.aggregate_mass_share_midpoint
+                    * row.pair_weight_comparison
+                    * row.stable_share_comparison
+                )
+            else:
+                assert row.contribution_component == "baseline_exclusive_composition"
+                expected_contribution = (
+                    -row.aggregate_mass_share_midpoint
+                    * row.pair_weight_baseline
+                    * row.stable_share_baseline
+                )
+            assert row.contribution_share == pytest.approx(
+                expected_contribution, abs=1e-12
+            )
 
 
 def test_zero_exclusive_normalization_retains_identity() -> None:
@@ -178,7 +292,9 @@ def test_zero_exclusive_normalization_retains_identity() -> None:
             *_cross_controls(),
         ]
     )
-    _panel, decomposition, _support = vehicle_rotation_composition(choices)
+    _panel, decomposition, _support, _contributions = vehicle_rotation_composition(
+        choices
+    )
     count = _summary(decomposition, "count_share")
     assert count["E_baseline"] == pytest.approx(0.0)
     assert count["E_comparison"] == pytest.approx(0.0)
@@ -201,7 +317,9 @@ def test_uses_only_month_days_observed_in_both_endpoint_years() -> None:
             *_cross_controls(),
         ]
     )
-    pair_panel, decomposition, _support = vehicle_rotation_composition(choices)
+    pair_panel, decomposition, _support, _contributions = (
+        vehicle_rotation_composition(choices)
+    )
     count = _summary(decomposition, "count_share")
     assert count["common_month_days"] == 1
     assert count["common_calendar_end"] == "01-01"
@@ -220,7 +338,9 @@ def test_support_is_measure_specific_and_never_inherits_count_mass() -> None:
             *_cross_controls(),
         ]
     )
-    pair_panel, decomposition, support = vehicle_rotation_composition(choices)
+    pair_panel, decomposition, support, _contributions = vehicle_rotation_composition(
+        choices
+    )
     count_pairs = set(
         pair_panel.loc[pair_panel["metric"].eq("count_share"), ["src", "tgt"]]
         .itertuples(index=False, name=None)
@@ -259,7 +379,9 @@ def test_pair_membership_is_assigned_after_scope_pooling() -> None:
             _choice("2026-01-01", "e", "f", "native", 2, scope="cross_venue"),
         ]
     )
-    _panel, _decomposition, support = vehicle_rotation_composition(choices)
+    _panel, _decomposition, support, _contributions = vehicle_rotation_composition(
+        choices
+    )
 
     def membership(scope: str, status: str) -> int:
         row = support[
@@ -277,11 +399,15 @@ def test_pair_membership_is_assigned_after_scope_pooling() -> None:
 
 def test_decomposition_is_row_order_and_common_scale_invariant() -> None:
     choices = _four_term_choices()
-    _panel, baseline, _support = vehicle_rotation_composition(choices)
+    _panel, baseline, _support, baseline_contributions = (
+        vehicle_rotation_composition(choices)
+    )
     scaled = choices.sample(frac=1, random_state=19).reset_index(drop=True)
     for column in ("route_count", "within_20pct_routes", "within_20pct_value_usd"):
         scaled[column] *= 17
-    _scaled_panel, observed, _scaled_support = vehicle_rotation_composition(scaled)
+    _scaled_panel, observed, _scaled_support, observed_contributions = (
+        vehicle_rotation_composition(scaled)
+    )
     columns = [
         "metric",
         "reporting_scope",
@@ -294,6 +420,23 @@ def test_decomposition_is_row_order_and_common_scale_invariant() -> None:
     ]
     pd.testing.assert_frame_equal(
         baseline[columns], observed[columns], check_exact=False, atol=1e-12, rtol=1e-12
+    )
+    contribution_columns = [
+        "metric",
+        "reporting_scope",
+        "src",
+        "tgt",
+        "support_status",
+        "contribution_component",
+        "contribution_share",
+        "absolute_rank",
+    ]
+    pd.testing.assert_frame_equal(
+        baseline_contributions[contribution_columns],
+        observed_contributions[contribution_columns],
+        check_exact=False,
+        atol=1e-12,
+        rtol=1e-12,
     )
 
 
@@ -314,7 +457,9 @@ def test_locked_pair_fixed_effect_estimate_matches_harmonic_weight_identity() ->
             _choice("2026-01-01", "e", "f", "stable", 16, scope="cross_venue"),
         ]
     )
-    panel, _decomposition, _support = vehicle_rotation_composition(choices)
+    panel, _decomposition, _support, _contributions = vehicle_rotation_composition(
+        choices
+    )
     result = estimate_pair_fixed_effect_rotation(panel)
     count = result[result["metric"].eq("count_share")].iloc[0]
     changes = np.array([0.4, -0.25, 10 / 30])
@@ -331,7 +476,9 @@ def test_locked_pair_fixed_effect_estimate_matches_harmonic_weight_identity() ->
 
 
 def test_pair_fixed_effect_estimate_rejects_missing_endpoint_cell() -> None:
-    panel, _decomposition, _support = vehicle_rotation_composition(_four_term_choices())
+    panel, _decomposition, _support, _contributions = vehicle_rotation_composition(
+        _four_term_choices()
+    )
     missing = panel.drop(panel.index[0])
     with pytest.raises(ValueError, match="require both endpoint years"):
         estimate_pair_fixed_effect_rotation(missing)
@@ -371,6 +518,101 @@ def test_runner_requires_exact_d3_bound_endpoint_generation_and_receipt(
     context.d3_input_records[relative]["release_generation"] = "c" * 64
     with pytest.raises(ValueError, match="generation and receipt disagree"):
         runner._expected_release_in_d3(context, pointer, root=tmp_path)
+
+
+def test_runner_writes_ranked_pair_contributions_as_one_support_panel(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    pointer = tmp_path / "endpoint/current.json"
+    receipt = runner.SemanticValidationReceipt("a" * 64, "b" * 64)
+    bundle = SimpleNamespace(
+        lineage_paths=(tmp_path / "endpoint/current.json",),
+        assert_current=lambda: None,
+    )
+    release = SimpleNamespace(
+        generation_id=receipt.generation_id,
+        artifacts={
+            "choices": tmp_path / "choices.parquet",
+            "pair_support": tmp_path / "pair-support.parquet",
+        },
+        bundle=bundle,
+    )
+
+    @contextmanager
+    def current_release(_pointer, *, expected_semantic_receipt):
+        assert expected_semantic_receipt == receipt
+        yield release
+
+    detail = pd.DataFrame({"kind": ["detail"]})
+    decomposition = pd.DataFrame({"kind": ["decomposition"]})
+    support = pd.DataFrame({"kind": ["support"]})
+    contributions = pd.DataFrame(
+        {
+            "src": ["a"],
+            "tgt": ["b"],
+            "contribution_component": ["within_pair_choice"],
+        }
+    )
+    fixed_effects = pd.DataFrame({"kind": ["fixed"]})
+    market_decomposition = pd.DataFrame({"kind": ["market"]})
+    market_support = pd.DataFrame({"kind": ["market_support"]})
+    panel_writes: list[tuple[pd.DataFrame, Path, dict[str, object]]] = []
+    exhibit_writes: list[tuple[pd.DataFrame, Path, dict[str, object]]] = []
+
+    monkeypatch.setattr(runner, "model_artifact_context", lambda **_kwargs: object())
+    monkeypatch.setattr(runner, "_expected_release_in_d3", lambda *_args, **_kwargs: receipt)
+    monkeypatch.setattr(
+        runner, "current_endpoint_candidate_composition_release", current_release
+    )
+    monkeypatch.setattr(runner.pd, "read_parquet", lambda _path: pd.DataFrame())
+    monkeypatch.setattr(
+        runner,
+        "vehicle_rotation_composition",
+        lambda _choices: (detail, decomposition, support, contributions),
+    )
+    monkeypatch.setattr(
+        runner, "estimate_pair_fixed_effect_rotation", lambda _detail: fixed_effects
+    )
+    monkeypatch.setattr(
+        runner, "load_market_incidence_annual_pairs", lambda *_args: pd.DataFrame()
+    )
+    monkeypatch.setattr(
+        runner,
+        "vehicle_rotation_market_incidence_decomposition",
+        lambda _annual: (market_decomposition, market_support),
+    )
+    monkeypatch.setattr(runner, "attach_spec_ids", lambda frame, **_kwargs: frame)
+    monkeypatch.setattr(
+        runner,
+        "write_model_panel",
+        lambda frame, path, **kwargs: panel_writes.append((frame, path, kwargs)),
+    )
+    monkeypatch.setattr(
+        runner,
+        "write_model_exhibit",
+        lambda frame, path, **kwargs: exhibit_writes.append((frame, path, kwargs)),
+    )
+
+    pair_contribution_output = tmp_path / "pair-contributions.parquet"
+    assert (
+        runner.run(
+            root=tmp_path,
+            pointer_path=pointer,
+            pair_panel_output=tmp_path / "panel.parquet",
+            pair_contribution_output=pair_contribution_output,
+            decomposition_output=tmp_path / "decomposition.jsonl",
+            support_output=tmp_path / "support.jsonl",
+            fixed_effect_output=tmp_path / "fixed.jsonl",
+        )
+        == 0
+    )
+    assert len(panel_writes) == 2
+    written_frame, written_path, written_options = panel_writes[1]
+    assert written_frame is contributions
+    assert written_path == pair_contribution_output
+    assert written_options["role"] == "support"
+    assert "intentionally unallocated" in str(written_options["notes"])
+    assert len(exhibit_writes) == 3
 
 
 def test_market_incidence_bridge_is_exact_and_support_is_classified() -> None:
