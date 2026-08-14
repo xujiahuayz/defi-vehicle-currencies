@@ -11,10 +11,11 @@ from pathlib import Path
 
 import pandas as pd
 
+from ddvc.artifact_release import file_sha256
 from ddvc.analysis_release import resolve_analysis_release, resolve_repo_path
 from ddvc.model_registry import FITTED_MODEL_ARTIFACT_ROLES, MODEL_RUN_ARTIFACT_ROLES
 from ddvc.paths import REPO_ROOT
-from ddvc.provenance import current_artifacts
+from ddvc.provenance import current_artifacts, portable_content_sha256, sidecar_path
 from ddvc.tables import write_exhibit, write_panel
 
 
@@ -28,6 +29,10 @@ class ModelArtifactContext:
     d3_generation: str
     d3_certificate_relative: str
     d3_certificate_path: Path
+    d3_certificate_bytes: int
+    d3_certificate_sha256: str
+    d3_certificate_provenance_path: Path
+    d3_certificate_provenance_sha256: str
     d3_input_relatives: frozenset[str]
     d3_input_records: Mapping[str, Mapping[str, object]]
 
@@ -44,32 +49,72 @@ def model_artifact_context(
     generation = str(env.get("DDVC_D3_GENERATION") or "")
     if not certificate_value or not generation:
         raise RuntimeError("model runner lacks its DDVC_D3_CERTIFICATE/DDVC_D3_GENERATION binding")
-    certificate_relative, _certificate_path = resolve_repo_path(
+    certificate_relative, certificate_path = resolve_repo_path(
         certificate_value,
         root=root,
         label="model-run D3 certificate",
     )
-    release = resolve_analysis_release(
-        certificate_path=certificate_relative,
-        root=root,
-    )
-    if release.generation != generation:
-        raise ValueError(
-            "model-run D3 generation disagrees with its certificate: "
-            f"{generation} != {release.generation}"
+    with current_artifacts(
+        [certificate_path], consumer="model-run D3 certificate context"
+    ):
+        release = resolve_analysis_release(
+            certificate_path=certificate_relative,
+            root=root,
         )
-    return ModelArtifactContext(
-        d3_generation=release.generation,
-        d3_certificate_relative=certificate_relative,
-        d3_certificate_path=release.certificate_path,
-        d3_input_relatives=frozenset(
-            path.relative_to(root).as_posix() for path in release.input_paths
-        ),
-        d3_input_records={
-            str(record["path"]): record
-            for record in release.certificate["claim_inputs"]
-        },
+        if release.generation != generation:
+            raise ValueError(
+                "model-run D3 generation disagrees with its certificate: "
+                f"{generation} != {release.generation}"
+            )
+        provenance = sidecar_path(release.certificate_path)
+        return ModelArtifactContext(
+            d3_generation=release.generation,
+            d3_certificate_relative=certificate_relative,
+            d3_certificate_path=release.certificate_path,
+            d3_certificate_bytes=release.certificate_path.stat().st_size,
+            d3_certificate_sha256=file_sha256(release.certificate_path),
+            d3_certificate_provenance_path=provenance,
+            d3_certificate_provenance_sha256=file_sha256(provenance),
+            d3_input_relatives=frozenset(
+                path.relative_to(root).as_posix() for path in release.input_paths
+            ),
+            d3_input_records={
+                str(record["path"]): record
+                for record in release.certificate["claim_inputs"]
+            },
+        )
+
+
+def assert_model_artifact_certificate_identity(
+    context: ModelArtifactContext,
+    certificate_path: str | Path,
+) -> None:
+    """Require a leased certificate pair to equal the context's verified identity."""
+
+    certificate = Path(certificate_path)
+    provenance = sidecar_path(certificate)
+    observed = {
+        "path": certificate.resolve(),
+        "bytes": certificate.stat().st_size,
+        "sha256": file_sha256(certificate),
+        "provenance_path": provenance.resolve(),
+        "provenance_sha256": file_sha256(provenance),
+    }
+    expected = {
+        "path": context.d3_certificate_path.resolve(),
+        "bytes": context.d3_certificate_bytes,
+        "sha256": context.d3_certificate_sha256,
+        "provenance_path": context.d3_certificate_provenance_path.resolve(),
+        "provenance_sha256": context.d3_certificate_provenance_sha256,
+    }
+    mismatched = sorted(
+        field for field, value in observed.items() if value != expected[field]
     )
+    if mismatched:
+        raise ValueError(
+            "model-run D3 certificate changed between verification and lease admission: "
+            f"fields={mismatched}"
+        )
 
 
 @contextmanager
@@ -104,6 +149,44 @@ def require_released_model_inputs(
     if missing:
         raise ValueError(f"{consumer} input is outside the bound D3 release: {missing}")
     with current_artifacts(resolved_inputs, consumer=consumer):
+        for relative, resolved in zip(
+            relative_inputs, resolved_inputs, strict=True
+        ):
+            record = context.d3_input_records.get(relative)
+            if not isinstance(record, Mapping):
+                raise ValueError(
+                    f"{consumer} input lacks an exact D3 identity record: {relative}"
+                )
+            if record.get("input_kind") == "release_pointer":
+                raise ValueError(
+                    f"{consumer} typed release requires its canonical typed lease: "
+                    f"{relative}"
+                )
+            provenance = sidecar_path(resolved)
+            try:
+                provenance_relative = provenance.resolve().relative_to(
+                    resolved_root
+                ).as_posix()
+            except ValueError as error:
+                raise ValueError(
+                    f"{consumer} provenance escapes the repository: {relative}"
+                ) from error
+            observed = {
+                "bytes": resolved.stat().st_size,
+                "content_sha256": portable_content_sha256(resolved),
+                "provenance_path": provenance_relative,
+                "provenance_sha256": file_sha256(provenance),
+            }
+            mismatched = sorted(
+                field
+                for field, value in observed.items()
+                if record.get(field) != value
+            )
+            if mismatched:
+                raise ValueError(
+                    f"{consumer} input differs from its bound D3 identity: "
+                    f"{relative}; fields={mismatched}"
+                )
         yield resolved_inputs
 
 

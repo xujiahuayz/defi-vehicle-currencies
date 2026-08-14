@@ -8,6 +8,7 @@ import pandas as pd
 import pytest
 
 import ddvc.analysis.vehicle_role_risk as role_risk
+from ddvc.asset_types import NATIVE as NATIVE_ASSETS, STABLE as STABLE_ASSETS
 from ddvc.analysis.vehicle_role_risk import (
     assert_complete_endpoint_release,
     build_vehicle_role_risk_panel,
@@ -16,13 +17,15 @@ from ddvc.endpoint_candidate_composition_release import (
     ENDPOINT_CANDIDATE_COMPOSITION_RELEASE_FILENAMES,
     ENDPOINT_CANDIDATE_COMPOSITION_RELEASE_KIND,
     ENDPOINT_CANDIDATE_COMPOSITION_RELEASE_SCHEMA_VERSION,
+    ENDPOINT_CANDIDATE_COMPOSITION_VALIDATOR_SOURCES,
 )
 from ddvc.provenance import sidecar_path
+from scripts.build_architecture_role_risk_panel import CODE_SOURCES
 
 
 PAIR = {"src": "source", "tgt": "destination"}
-NATIVE = "0x0000000000000000000000000000000000000001"
-STABLE = "0x0000000000000000000000000000000000000002"
+NATIVE = next(address for address, symbol in NATIVE_ASSETS.items() if symbol == "WETH")
+STABLE = next(address for address, symbol in STABLE_ASSETS.items() if symbol == "USDC")
 
 
 def _choice(date: str, candidate: str, symbol: str, candidate_type: str) -> dict[str, object]:
@@ -65,24 +68,47 @@ def synthetic_inputs() -> tuple[pd.DataFrame, pd.DataFrame]:
 def test_builds_genuine_zero_rows_and_separates_transition_taxonomy() -> None:
     choices, support = synthetic_inputs()
     panel = build_vehicle_role_risk_panel(choices, support)
-    assert len(panel) == 8
-    assert panel["total_routes"].eq(0).sum() == 5
-    assert panel["candidate_set_definition"].str.contains("ever_realised").all()
+    assert len(panel) == 6
+    assert panel["total_routes"].eq(0).sum() == 3
+    assert panel["candidate_set_definition"].str.contains("first_realised_week").all()
+    assert {"candidate_type", "pair_observed_days", "candidate_first_observed_week"}.issubset(
+        panel.columns
+    )
     assert panel["opportunity_set_status"].eq(
         "economic_route_feasibility_not_observed_or_imputed"
     ).all()
     observed = panel[panel["transition_observed"]]
-    assert observed["formation_event"].sum() == 1
+    assert observed["reentry_event"].sum() == 0
     assert observed["continuing_use_event"].sum() == 1
     assert observed["substitution_exit_event"].sum() == 1
-    assert observed["role_disappearance_event"].sum() == 1
+    assert observed[
+        "selected_stable_native_primary_route_cessation_event"
+    ].sum() == 1
     assert set(observed["transition_kind"]) == {
-        "formation",
         "continuing_use",
         "substitution_exit",
-        "role_disappearance",
+        "selected_stable_native_primary_route_cessation",
         "continuing_nonuse",
     }
+
+
+def test_builder_code_perimeter_contains_endpoint_validator_dependencies() -> None:
+    assert set(ENDPOINT_CANDIDATE_COMPOSITION_VALIDATOR_SOURCES).issubset(CODE_SOURCES)
+
+
+def test_candidate_has_no_rows_before_first_observed_week() -> None:
+    choices, support = synthetic_inputs()
+    panel = build_vehicle_role_risk_panel(choices, support)
+    stable = panel[panel["vehicle_id"].eq(STABLE)]
+    assert stable["week"].min() == pd.Timestamp("2025-01-20")
+    assert stable.iloc[0]["total_routes"] == 1
+
+
+def test_candidate_type_metadata_mismatch_fails_closed() -> None:
+    choices, support = synthetic_inputs()
+    choices.loc[choices["candidate_address"].eq(STABLE), "candidate_type"] = "native"
+    with pytest.raises(ValueError, match="canonical classification"):
+        build_vehicle_role_risk_panel(choices, support)
 
 
 def test_calendar_gap_does_not_create_a_transition() -> None:
@@ -92,7 +118,7 @@ def test_calendar_gap_does_not_create_a_transition() -> None:
     panel = build_vehicle_role_risk_panel(choices, support)
     before_gap = panel[panel["week"].eq(pd.Timestamp("2025-01-13"))]
     assert not before_gap["transition_observed"].any()
-    assert before_gap["formation_event"].isna().all()
+    assert before_gap["reentry_event"].isna().all()
     assert before_gap["transition_kind"].eq(
         "not_observed_across_consecutive_calendar_weeks"
     ).all()

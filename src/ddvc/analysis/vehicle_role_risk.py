@@ -1,10 +1,11 @@
 """Observed-support risk sets for realised vehicle-role models.
 
 The candidate set is deliberately narrow: for an ordered source-destination
-pair, it contains each stable/native intermediary that is realised at least
-once during the endpoint-composition release's support window.  Crossing that
-set with active pair-weeks creates genuine zero-use observations.  It does not
-create or impute an economically feasible route opportunity set.
+pair, a stable/native intermediary enters when it is first realised.  Crossing
+that candidate with later active pair-weeks creates genuine zero-use
+observations after first use.  Formation before first use remains unobserved.
+The construction does not create or impute an economically feasible route
+opportunity set.
 """
 
 from __future__ import annotations
@@ -18,6 +19,7 @@ import numpy as np
 import pandas as pd
 
 from ddvc.artifact_release import file_sha256, is_sha256
+from ddvc.asset_types import classify
 from ddvc.endpoint_candidate_composition import CHOICE_KEYS, PAIR_KEYS
 from ddvc.endpoint_candidate_composition_release import (
     ENDPOINT_CANDIDATE_COMPOSITION_RELEASE_FILENAMES,
@@ -31,8 +33,8 @@ PANEL_KEYS = ["week", "src", "sink", "vehicle_id"]
 OWNER_KEYS = ["src", "sink", "vehicle_id"]
 PAIR_WEEK_KEYS = ["week", "src", "sink"]
 CANDIDATE_SET_DEFINITION = (
-    "stable_or_native_candidate_ever_realised_for_ordered_pair_"
-    "within_release_support_window"
+    "stable_or_native_candidate_from_first_realised_week_through_"
+    "later_active_ordered_pair_weeks"
 )
 OPPORTUNITY_SET_STATUS = "economic_route_feasibility_not_observed_or_imputed"
 
@@ -181,7 +183,7 @@ def _candidate_metadata(choices: pd.DataFrame) -> pd.DataFrame:
 def add_transition_taxonomy(panel: pd.DataFrame) -> pd.DataFrame:
     """Attach mutually exclusive next-week outcomes without bridging gaps."""
 
-    required = {*PANEL_KEYS, "used", "pair_candidate_routes"}
+    required = {*PANEL_KEYS, "used", "selected_pair_routes"}
     missing = sorted(required - set(panel.columns))
     if missing:
         raise ValueError(f"vehicle-role panel lacks transition columns: {missing}")
@@ -196,18 +198,21 @@ def add_transition_taxonomy(panel: pd.DataFrame) -> pd.DataFrame:
     data["consecutive_previous"] = data["week"].sub(data["previous_week"]).dt.days.eq(7)
     data["consecutive_next"] = data["next_week"].sub(data["week"]).dt.days.eq(7)
     data["transition_observed"] = data["consecutive_next"]
+    data["prior_use_observed"] = grouped["used"].cumsum().sub(data["used"]).gt(0)
 
-    next_pair_routes = grouped["pair_candidate_routes"].shift(-1)
-    data["next_pair_candidate_routes"] = next_pair_routes.where(data["consecutive_next"])
+    next_pair_routes = grouped["selected_pair_routes"].shift(-1)
+    data["next_selected_pair_routes"] = next_pair_routes.where(data["consecutive_next"])
     observed = data["consecutive_next"]
     current_used = data["used"].eq(1)
     next_used = data["next_used"].eq(1)
     loss = observed & current_used & ~next_used
     outcomes = {
-        "formation_event": observed & ~current_used & next_used,
+        "reentry_event": observed & ~current_used & next_used & data["prior_use_observed"],
         "continuing_use_event": observed & current_used & next_used,
-        "substitution_exit_event": loss & data["next_pair_candidate_routes"].gt(0),
-        "role_disappearance_event": loss & data["next_pair_candidate_routes"].eq(0),
+        "substitution_exit_event": loss & data["next_selected_pair_routes"].gt(0),
+        "selected_stable_native_primary_route_cessation_event": (
+            loss & data["next_selected_pair_routes"].eq(0)
+        ),
         "continuing_nonuse_event": observed & ~current_used & ~next_used,
     }
     for column, values in outcomes.items():
@@ -215,17 +220,17 @@ def add_transition_taxonomy(panel: pd.DataFrame) -> pd.DataFrame:
 
     labels = np.select(
         [
-            outcomes["formation_event"],
+            outcomes["reentry_event"],
             outcomes["continuing_use_event"],
             outcomes["substitution_exit_event"],
-            outcomes["role_disappearance_event"],
+            outcomes["selected_stable_native_primary_route_cessation_event"],
             outcomes["continuing_nonuse_event"],
         ],
         [
-            "formation",
+            "reentry_after_prior_realised_use",
             "continuing_use",
             "substitution_exit",
-            "role_disappearance",
+            "selected_stable_native_primary_route_cessation",
             "continuing_nonuse",
         ],
         default="not_observed_across_consecutive_calendar_weeks",
@@ -260,6 +265,18 @@ def build_vehicle_role_risk_panel(
 
     selected = _normalise_dates(choices, label="endpoint choices")
     support = _normalise_dates(pair_support, label="endpoint pair support")
+    canonical_type = selected["candidate_address"].map(lambda value: classify(value)[1])
+    supplied_type = selected["candidate_type"].astype(str).str.lower()
+    mismatch = supplied_type.ne(canonical_type)
+    if mismatch.any():
+        examples = selected.loc[
+            mismatch, ["candidate_address", "candidate_type"]
+        ].head(3).to_dict("records")
+        raise ValueError(
+            "endpoint candidate_type metadata disagrees with canonical classification: "
+            f"{examples}"
+        )
+    selected["candidate_type"] = canonical_type
     selected = selected[selected["candidate_type"].isin(("stable", "native"))].copy()
     if selected.empty:
         raise ValueError("endpoint choices contain no realised stable/native candidate")
@@ -338,6 +355,13 @@ def build_vehicle_role_risk_panel(
         how="left",
         validate="many_to_one",
     )
+    grid["candidate_first_observed_week"] = (
+        grid["candidate_first_observed_date"]
+        - pd.to_timedelta(grid["candidate_first_observed_date"].dt.weekday, unit="D")
+    )
+    grid = grid[
+        grid["week"].ge(grid["candidate_first_observed_week"])
+    ].copy()
     grid = grid.merge(
         candidate_weeks,
         on=["week", "src", "tgt", "candidate_address"],
@@ -347,7 +371,7 @@ def build_vehicle_role_risk_panel(
     grid["total_routes"] = grid["total_routes"].fillna(0).astype("int64")
     grid = grid.rename(columns={"tgt": "sink", "candidate_address": "vehicle_id"})
     grid["used"] = grid["total_routes"].gt(0).astype("int8")
-    grid["pair_candidate_routes"] = grid.groupby(
+    grid["selected_pair_routes"] = grid.groupby(
         PAIR_WEEK_KEYS, observed=True
     )["total_routes"].transform("sum")
     grid["observed_support_status"] = np.where(
@@ -358,3 +382,38 @@ def build_vehicle_role_risk_panel(
     if grid.duplicated(PANEL_KEYS).any():
         raise ValueError("vehicle-role risk construction repeats a pair-candidate-week")
     return add_transition_taxonomy(grid)
+
+
+def build_vehicle_role_risk_panel_from_release(
+    artifacts: Mapping[str, Path],
+) -> pd.DataFrame:
+    """Build the risk panel from the canonical endpoint release perimeter."""
+
+    required = set(ENDPOINT_CANDIDATE_COMPOSITION_RELEASE_FILENAMES)
+    if set(artifacts) != required:
+        raise ValueError("endpoint release has an invalid artifact perimeter")
+    choices = pd.read_parquet(
+        artifacts["choices"],
+        columns=[
+            "date",
+            "src",
+            "tgt",
+            "candidate_address",
+            "integration_scope",
+            "venue_sequence",
+            "candidate_symbol",
+            "candidate_type",
+            "route_count",
+        ],
+    )
+    pair_support = pd.read_parquet(
+        artifacts["pair_support"],
+        columns=[
+            "date",
+            "src",
+            "tgt",
+            "market_route_count",
+            "primary_choice_route_count",
+        ],
+    )
+    return build_vehicle_role_risk_panel(choices, pair_support)

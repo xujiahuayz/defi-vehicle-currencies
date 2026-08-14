@@ -10,15 +10,14 @@ from __future__ import annotations
 import argparse
 from pathlib import Path
 
-import pandas as pd
-
 from ddvc.analysis.vehicle_role_risk import (
     assert_endpoint_release_sizes_complete,
-    build_vehicle_role_risk_panel,
+    build_vehicle_role_risk_panel_from_release,
 )
 from ddvc.artifact_release import SemanticValidationReceipt
 from ddvc.endpoint_candidate_composition_release import (
     ENDPOINT_CANDIDATE_COMPOSITION_RELEASE,
+    ENDPOINT_CANDIDATE_COMPOSITION_VALIDATOR_SOURCES,
     current_endpoint_candidate_composition_release,
     endpoint_candidate_composition_validator_fingerprint,
 )
@@ -26,10 +25,13 @@ from ddvc.paths import DATA_DIR
 from ddvc.tables import write_panel
 
 
-OUTPUT = DATA_DIR / "processed" / "architecture_role_risk_weekly.parquet"
+OUTPUT = (
+    DATA_DIR / "processed" / "endpoint_observed_vehicle_role_risk_weekly.parquet"
+)
 CODE_SOURCES = [
     "scripts/build_architecture_role_risk_panel.py",
     "src/ddvc/analysis/vehicle_role_risk.py",
+    *ENDPOINT_CANDIDATE_COMPOSITION_VALIDATOR_SOURCES,
 ]
 
 
@@ -47,39 +49,17 @@ def run(*, pointer_path: Path, output_path: Path) -> Path:
     ) as release:
         if release.generation_id != complete.generation_id:
             raise RuntimeError("endpoint release changed after completeness preflight")
-        choices = pd.read_parquet(
-            release.artifacts["choices"],
-            columns=[
-                "date",
-                "src",
-                "tgt",
-                "candidate_address",
-                "integration_scope",
-                "venue_sequence",
-                "candidate_symbol",
-                "candidate_type",
-                "route_count",
-            ],
-        )
-        pair_support = pd.read_parquet(
-            release.artifacts["pair_support"],
-            columns=[
-                "date",
-                "src",
-                "tgt",
-                "market_route_count",
-                "primary_choice_route_count",
-            ],
-        )
-        panel = build_vehicle_role_risk_panel(choices, pair_support)
+        panel = build_vehicle_role_risk_panel_from_release(release.artifacts)
         return write_panel(
             panel,
             output_path,
             code_sources=CODE_SOURCES,
             inputs=list(release.bundle.lineage_paths),
             notes=(
-                "pair x ever-realised stable/native candidate x active calendar week; "
-                "zeros are realised non-use, not economically feasible alternatives; "
+                "pair x stable/native candidate from its first-observed week through "
+                "later active pair-weeks; zeros are post-first-use realised non-use, "
+                "not economically feasible alternatives; pair_observed_days records "
+                "the release's sampled-date cadence within each calendar week; "
                 f"endpoint generation={release.generation_id}"
             ),
         )

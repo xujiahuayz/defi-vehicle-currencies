@@ -32,9 +32,14 @@ from ddvc.endpoint_candidate_composition_release import (
     publish_endpoint_candidate_composition_release,
 )
 from ddvc.model_registry import canonical_hash, generation_id
+from ddvc.model_artifacts import model_artifact_context
 from ddvc.paths import REPO_ROOT
 from ddvc.provenance import sidecar_path, stamp
 from ddvc.runtime import atomic_output
+from scripts.run_vehicle_role_models import (
+    _assert_endpoint_release_matches_d3,
+    _d3_endpoint_release_record,
+)
 
 
 SRC = "0x1111111111111111111111111111111111111111"
@@ -163,6 +168,40 @@ def _publish_typed_analysis_release(directory: Path):
         pointer_path=pointer.relative_to(directory),
     )
     return endpoint, upstream, specification, pointer, release
+
+
+def test_role_runner_uses_exact_typed_d3_endpoint_identity_under_lease() -> None:
+    with _workspace() as raw_directory:
+        directory = Path(raw_directory)
+        try:
+            endpoint, _upstream, _specification, _pointer, d3 = (
+                _publish_typed_analysis_release(directory)
+            )
+            context = model_artifact_context(
+                root=directory,
+                environment={
+                    "DDVC_D3_CERTIFICATE": d3.certificate_path.relative_to(
+                        directory
+                    ).as_posix(),
+                    "DDVC_D3_GENERATION": d3.generation,
+                },
+            )
+            record, receipt = _d3_endpoint_release_record(
+                context, endpoint.pointer_path, root=directory
+            )
+            with current_endpoint_candidate_composition_release(
+                endpoint.pointer_path,
+                expected_semantic_receipt=receipt,
+            ) as leased:
+                _assert_endpoint_release_matches_d3(record, leased, root=directory)
+                corrupted = json.loads(json.dumps(record))
+                corrupted["release_artifacts"][0]["content_sha256"] = "0" * 64
+                with pytest.raises(ValueError, match="release_artifacts"):
+                    _assert_endpoint_release_matches_d3(
+                        corrupted, leased, root=directory
+                    )
+        finally:
+            _cleanup_manifest_mirror(directory)
 
 
 def test_d3_release_reopens_exact_union_and_publishes_pointer_last() -> None:
