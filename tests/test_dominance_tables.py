@@ -50,7 +50,7 @@ def test_checked_in_fragments_equal_their_named_renderers() -> None:
 
 def test_rotation_and_usdt_values_are_exact() -> None:
     rotation = (TABLES / "dominance_rotation.tex").read_text(encoding="utf-8")
-    assert "Supported routed value (20\\% agreement)" in rotation
+    assert "Dollar-weighted routes (20\\% agreement)" in rotation
     assert "16.9\\% & 42.3\\% & $+25.4$ pp ($1.05$ pp)" in rotation
     assert "32.7\\% & 76.5\\% & $+43.9$ pp ($2.02$ pp)" in rotation
 
@@ -63,7 +63,7 @@ def test_rotation_and_usdt_values_are_exact() -> None:
         "Value-weighted excess-use ratio (2024 full year; 2026 January--June) & 0.59 & 1.42"
         in usdt
     )
-    assert "Paired January--June intermediary minus endpoint share" in usdt
+    assert "Paired January--June intermediary minus route-endpoint share" in usdt
     assert "$-7.13$ pp & $+8.14$ pp" in usdt
 
 
@@ -73,12 +73,13 @@ def test_pair_panel_c_contains_all_three_fixed_effect_rows() -> None:
         "All two-leg routes, count share & $+0.22\\ (0.76)$ & 188,520"
         in pair
     )
+    assert "Estimate in pp (clustered s.e.)" in pair
     assert (
         "20\\% agreement sample, count share & $+0.32\\ (0.75)$ & 182,834"
         in pair
     )
     assert (
-        "20\\% agreement sample, supported-value share & $-1.35\\ (2.19)$ & 182,834"
+        "20\\% agreement sample, dollar-weighted share & $-1.35\\ (2.19)$ & 182,834"
         in pair
     )
     assert "95\\% CI" not in pair
@@ -114,10 +115,10 @@ def test_paper_has_one_consumer_and_no_duplicate_inline_body() -> None:
     assert r"\begin{tabularx}" not in section
     assert r"s^{(m)}_{c,y}=\alpha^{(m)}_{c}+\beta^{(m)}\mathbf{1}\{y=2026\}" in section
     assert "2024 is the omitted year" in section
-    assert "94,260 fixed-effect groups" in section
-    assert "5,432 ordered-pair clusters" in section
-    assert "two-way ordered-pair and calendar-date clustered CR1 inference" in section
-    assert "These regressions are descriptive" in section
+    assert "pair--calendar-date--route-type combination" in section
+    assert "number or dollar value of native-plus-stable routes as weights" in section
+    assert "clustered by ordered pair and calendar date" in section
+    assert "comparison remains descriptive" in section
 
 
 @pytest.mark.parametrize(

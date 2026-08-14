@@ -3,8 +3,11 @@
 
 Three measurements that turn coverage statements into signed bounds.
 
-First, the volume share of each of eight data sources by year, so a missing venue can be
-read as a fraction of the market instead of as a name on a list.
+First, the volume share of each of nine locally observed data sources by year, so an
+omitted venue can be compared with the sources represented in the route-cost design.
+Fluid has a separate Dune-derived daily series with partial calendar support and no TVL,
+so its row is an observed-volume contribution rather than a complete market-share or
+turnover estimate.
 
 Second, the share of Curve's own USD swap volume that sits in pools failing the
 StableSwap calibration gate. The count of excluded pools rises across the sample, but a
@@ -46,13 +49,15 @@ from ddvc.pricing.stableswap import calibrate_amp  # noqa: E402
 from ddvc.tables import write_exhibit  # noqa: E402
 
 RAW = ROOT / "data" / "raw" / "thegraph"
+RAW_FLUID = ROOT / "data" / "raw" / "dune" / "fluid"
 EX = ROOT / "output" / "exhibits"
 
-# Eight sources enter the market-coverage comparison. Seven enter the route-cost design;
-# uniswap_v1 is carried as the forced-routing architecture sample and because its volume
-# share is part of the coverage bound. It is not a priced route-cost venue.
+# Nine sources enter the observed-volume comparison. uniswap_v1 is carried as the
+# forced-routing architecture sample. Fluid is carried from its separate local daily
+# series, whose partial date support and absent TVL prevent this artifact from claiming
+# complete market coverage or a volume-to-liquidity turnover measure.
 VENUES = ("uniswap_v1", "uniswap_v2", "uniswap_v3", "uniswap_v4",
-          "sushiswap_v2", "sushiswap_v3", "balancer", "curve")
+          "sushiswap_v2", "sushiswap_v3", "curve", "balancer", "fluid")
 
 # Field carrying a pool-day's USD swap volume, and the field carrying that pool-day's
 # USD value locked, per subgraph schema. The second one is not decoration: it is what
@@ -172,13 +177,33 @@ def day_volume(venue: str, day: str) -> tuple[float, int, int] | None:
     into 99.9% of the 2020 market; its day flow is that field's within-day range.
     Balancer's `poolSnapshots.swapVolume` is lifetime cumulative too. Curve's and
     sushiswap_v3's `dailyVolumeUSD` is a daily flow but counts both legs, so it is rebuilt
-    from swaps. Only the four Uniswap-family streams can be read as they stand.
+    from swaps. Only the four Uniswap-family streams can be read as they stand. Fluid's
+    local Dune-derived file reports pool-day volume directly but no TVL. Files through
+    1 June 2026 use `volumeUSD`; the installed aggregate from 2 June onward uses
+    `amount_usd`. Both are screened only by the common absolute volume ceiling, and date
+    availability is retained.
     """
-    p = RAW / venue / f"{venue}_daily_{day}.jsonl.gz"
+    p = ((RAW_FLUID / f"fluid_daily_{day}.jsonl.gz") if venue == "fluid"
+         else (RAW / venue / f"{venue}_daily_{day}.jsonl.gz"))
     if not p.exists():
         return None
     kept = 0.0
     n_kept = n_screened = 0
+    if venue == "fluid":
+        for r in rows(p):
+            raw_volume = (r.get("volumeUSD") if "volumeUSD" in r
+                          else r.get("amount_usd"))
+            try:
+                v = float(raw_volume)
+            except (TypeError, ValueError):
+                n_screened += 1
+                continue
+            if v == v and abs(v) != float("inf") and 0.0 <= v <= MAX_POOL_DAY_USD:
+                kept += v
+                n_kept += 1
+            else:
+                n_screened += 1
+        return kept, n_kept, n_screened
     if venue in MESSARI_VENUES:
         tvl_by_pool: dict[str, float] = {}
         for r in rows(p):
@@ -605,6 +630,8 @@ def main() -> int:
     ap.add_argument("--curve-days", type=int, default=16)
     ap.add_argument("--min-swaps", type=int, default=8)
     ap.add_argument("--skip-volume", action="store_true")
+    ap.add_argument("--volume-only", action="store_true",
+                    help="write the observed-volume exhibit and skip other probes")
     ap.add_argument("--overlap-days", type=int, default=12,
                     help="days on which to test sushiswap_v3 pair uniqueness; 0 skips")
     ap.add_argument("--tag", default="",
@@ -614,9 +641,20 @@ def main() -> int:
 
     if not args.skip_volume:
         vol = job_volume_shares(args.volume_step)
-        write_exhibit(vol, EX / f"venue_volume_by_year{tag}.jsonl")
+        write_exhibit(
+            vol,
+            EX / f"venue_volume_by_year{tag}.jsonl",
+            notes=(
+                "nine-source observed-volume comparison; Fluid uses the locally "
+                "available Dune-derived pool-day volumeUSD or amount_usd files, has "
+                "no TVL field, and has partial calendar support recorded in sampled_days"
+            ),
+        )
         print("\n" + vol.pivot(index="year", columns="venue",
                                values="share_pct").round(2).to_string())
+
+    if args.volume_only:
+        return 0
 
     probe = job_sushiswap_v3()
     write_exhibit(probe, EX / f"sushiswap_v3_schema_probe{tag}.jsonl")

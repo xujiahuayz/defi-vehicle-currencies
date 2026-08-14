@@ -77,7 +77,7 @@ def _estimate_se_pp(row: Mapping[str, object]) -> str:
 
 
 def render_dominance_rotation(rows: Iterable[Mapping[str, object]]) -> str:
-    """Render the two-leg count and supported-value endpoint-year estimates."""
+    """Render the two-leg count and dollar-weighted endpoint-year estimates."""
 
     records = list(rows)
     common = {
@@ -104,7 +104,7 @@ def render_dominance_rotation(rows: Iterable[Mapping[str, object]]) -> str:
     lines = [
         r"\begin{tabularx}{\linewidth}{@{}>{\raggedright\arraybackslash}Xrrr@{}}",
         r"\toprule",
-        r"Stable share among native and stable vehicles & 2024 & 2026 & Change (s.e.) \\",
+        r"Stablecoin share among native and stable intermediaries & 2024 & 2026 & Change (s.e.) \\",
         r"\midrule",
         "Route count & "
         + _pct(_number(count, "baseline_daily_mean"))
@@ -115,7 +115,7 @@ def render_dominance_rotation(rows: Iterable[Mapping[str, object]]) -> str:
         + r" pp ("
         + _unsigned_pp(_number(count, "hac_standard_error"))
         + r" pp) \\",
-        r"Supported routed value (20\% agreement) & "
+        r"Dollar-weighted routes (20\% agreement) & "
         + _pct(_number(value, "baseline_daily_mean"))
         + " & "
         + _pct(_number(value, "comparison_daily_mean"))
@@ -176,7 +176,7 @@ def render_pair_composition(
             ),
         ),
         (
-            r"20\% agreement sample, supported-value share",
+            r"20\% agreement sample, dollar-weighted share",
             _unique(
                 records,
                 name="supported value fixed effect",
@@ -188,9 +188,9 @@ def render_pair_composition(
     lines = [
         r"\begin{tabularx}{\linewidth}{@{}>{\raggedright\arraybackslash}Xrr@{}}",
         r"\toprule",
-        r"Component or specification & Estimate (clustered s.e.) & Obs. \\",
+        r"Margin or estimate & Estimate in pp (clustered s.e.) & Obs. \\",
         r"\midrule",
-        r"\multicolumn{3}{l}{\emph{Panel A. Route-count share: five-factor allocation}} \\",
+        r"\multicolumn{3}{l}{\emph{Panel A. Route-count share: decomposition}} \\",
         f"Pairs entering or leaving the sample & {macros['MarketSupportBridge']} & \\\\",
         f"Pairs gaining or losing a vehicle route & {macros['VehicleRoleSupportBridge']} & \\\\",
         f"Trading shifts across continuing pairs & {macros['MarketActivityReweight']} & \\\\",
@@ -199,15 +199,15 @@ def render_pair_composition(
         r"\midrule",
         f"Total route-count change & {macros['MarketBridgeTotal']} & \\\\",
         r"\addlinespace",
-        r"\multicolumn{3}{l}{\emph{Panel B. Supported-value share: pair accounting}} \\",
+        r"\multicolumn{3}{l}{\emph{Panel B. Dollar-weighted share: decomposition}} \\",
         f"Stablecoin share within continuing pairs & {macros['PairValueWithin']} & \\\\",
         f"Trading shifts across continuing pairs & {macros['PairValueReweight']} & \\\\",
         f"Weight of continuing versus year-specific pairs & {macros['PairValueSupportMass']} & \\\\",
         f"Pairs entering or leaving the sample & {macros['PairValueExclusive']} & \\\\",
         r"\midrule",
-        f"Total supported-value change & {macros['PairValueTotal']} & \\\\",
+        f"Total change in dollar-weighted share & {macros['PairValueTotal']} & \\\\",
         r"\addlinespace",
-        r"\multicolumn{3}{l}{\emph{Panel C. Ordered-pair $\times$ month-day $\times$ realised-scope fixed-effect regressions}} \\",
+        r"\multicolumn{3}{l}{\emph{Panel C. Matched ordered-pair estimates}} \\",
         r"\midrule",
     ]
     for label, row in regressions:
@@ -230,7 +230,7 @@ USDT_TABLE_MACROS = (
 
 
 def render_usdt_transition(macros: Mapping[str, str]) -> str:
-    """Render the provisional USDT endpoint-year presentation binding."""
+    """Render the provisional USDT route-endpoint presentation binding."""
 
     _require_macros(macros, USDT_TABLE_MACROS)
     lines = [
@@ -248,7 +248,7 @@ def render_usdt_transition(macros: Mapping[str, str]) -> str:
         + " & "
         + macros["USDTValueExcessEnd"]
         + r" \\",
-        "Paired January--June intermediary minus endpoint share & "
+        "Paired January--June intermediary minus route-endpoint share & "
         + macros["USDTEndpointGapBase"]
         + " & "
         + macros["USDTEndpointGapEnd"]

@@ -16,7 +16,7 @@ The paper owns captions, labels, notes, placement, and numbering. A table become
 | `render_pair_composition.py` | Certified pair-decomposition presentation binding and fixed-effect exhibit, with both sidecars | Current paper body for `tab:pair-composition`; Panels A--B are the certified accounting and Panel C contains all three descriptive fixed-effect rows. |
 | `render_provisional_results_deck_values.py` | Seven certified route-composition, excess-use, integration, and routing JSONL exhibits, with their sidecars | Current shared paper/deck binding. The values remain provisional in scientific scope, but the generated TeX is reproducible and provenance-stamped. |
 | `render_usdt_transition.py` | Certified `provisional_results_deck_values.tex` and sidecar | Current paper body for `tab:usdt-transition`; both the table and its upstream macro binding are generated and provenance-stamped. |
-| `render_venue_coverage.py` | Certified `venue_volume_by_year.jsonl` and sidecar | Current paper body for `tab:app:venues`; validates the eight-venue denominator, fixes the venue order, and computes the pooled row from 2020--2026 USD volume. |
+| `render_venue_coverage.py` | Certified `venue_volume_by_year.jsonl` and sidecar | Current paper body for `tab:app:venues`; validates the nine-source observed-volume denominator, fixes the venue order, discloses Fluid's partial dates, and computes the pooled row from 2020--2026 USD volume. |
 
 ## Tables in the current manuscript
 
@@ -32,7 +32,7 @@ Four of the manuscript's eleven tables have one-to-one `scripts/tabulate/` rende
 | `tab:app:curve` | `paper/sections/08-appendix.tex` | `curve_quoter_validation.jsonl` | Active, inline, hand-transcribed from a stamped exhibit. |
 | `tab:app:weighted` | `paper/sections/08-appendix.tex` | `weighted_quoter_validation.jsonl` | Active, inline, hand-transcribed from a stamped exhibit. |
 | `tab:app:support` | `paper/sections/08-appendix.tex` | `quoter_support_bounds.jsonl` | Active, inline, hand-transcribed from a stamped exhibit. |
-| `tab:app:venues` | `paper/sections/08-appendix.tex` inputs `output/tables/venue_coverage.tex` | Certified `venue_volume_by_year.jsonl` | Active generated body with a one-to-one renderer, eight-venue annual sum checks, fixed venue order, pooled-volume calculation, and provenance-stamped TeX/PDF outputs. |
+| `tab:app:venues` | `paper/sections/08-appendix.tex` inputs `output/tables/venue_coverage.tex` | Certified `venue_volume_by_year.jsonl` | Active generated body with a one-to-one renderer, nine-source annual sum checks, fixed venue order, Fluid partial-date disclosure, pooled-volume calculation, and provenance-stamped TeX/PDF outputs. |
 | `tab:app:curveleg` | `paper/sections/08-appendix.tex` | `docs/venue-coverage-bounds.md` and its named Curve-exclusion exhibits | Active, inline, hand-transcribed from the review record. |
 | `tab:app:roundtrip` | `paper/sections/08-appendix.tex` | `round_trip_share_by_day.jsonl` | Active, inline, hand-transcribed from a stamped exhibit. |
 

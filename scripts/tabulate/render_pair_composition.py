@@ -37,7 +37,7 @@ write_table_artifacts(
     ],
     notes=(
         "certified route-count and supported-value accounting plus three descriptive "
-        "saturated pair-by-month-day-by-realised-scope fixed-effect regressions; "
+        "matched ordered-pair, calendar-date, and observed exchange-span regressions; "
         "two-way ordered-pair and calendar-date CR1 inference; the bound fixed-effect "
         "payload preserves exact confidence intervals, raw and Holm-adjusted p-values, "
         "cluster counts, and specification metadata"

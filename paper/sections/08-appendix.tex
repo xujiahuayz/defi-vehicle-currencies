@@ -11,17 +11,17 @@
 \section{From contract events to economic routes}
 \label{app:route-construction}
 
-Route construction begins with the contract and event format of each exchange. We identify pools from the protocol's factory or registry, map contract addresses to tokens, and convert raw integer amounts using the token precision that applied at the time of the trade. Contract addresses define token identity because unrelated tokens can share a symbol and the same economic asset can appear in native and wrapped form. ETH and WETH are consolidated only after this address-level reconstruction; every other token remains distinct unless a stated economic classification combines it. Within each transaction, swap events are ordered by block, transaction, and log position. The resulting token flows reveal the exchange that occurred. A single connected chain gives one route, parallel chains identify an order split, and disconnected event groups remain separate. Because one transaction can contain unrelated calls as well as trades across several exchanges, this procedure also prevents two simultaneous routes from being mistaken for one longer route. The output is the sequence of assets and pools traversed, rather than an inference from the transaction sender or router label.
+Route construction begins with the contract and event format of each exchange. We identify pools from the protocol's factory or registry, map contract addresses to tokens, and convert raw integer amounts using the token precision that applied at the time of the trade. Contract addresses define token identity because unrelated tokens can share a symbol and the same economic asset can appear in native and wrapped form. ETH and WETH are consolidated only after this address-level reconstruction; every other token remains distinct unless a stated economic classification combines it. Within each transaction, swap events are ordered by block, transaction, and log position. The resulting token flows reveal the exchange that occurred. A single connected chain gives one route, parallel chains identify an order split, and disconnected event groups remain separate. Because one transaction can contain unrelated calls as well as trades across several exchanges, this procedure also prevents two simultaneous routes from being mistaken for one longer route. The output records the sequence of assets and pools traversed. It does not infer that sequence from the transaction sender or router label.
 
 A complete token sequence is sufficient for the route-count sample. Value weighting additionally requires coherent amounts on every leg and a common dollar valuation. A failed valuation removes the observation from the value calculation while preserving the observed route. Appendix~\ref{app:roundtrip} gives the separate exclusion for self-returning paths.
 
 Historical token precision cannot be verified for 13 tokens traded in 22 constant-product pools. Reserve-reconstruction analyses omit those pools. An upper-bound check removes every route involving any of the 13 tokens: the resulting bound is 5,950 routes and \$10.91 million of route value. Only 1,036 of those routes use one of the affected tokens as an intermediary, representing \$1.284 million, or 0.00043\% of value on routes whose legs can all be valued. All 13 tokens lie outside the native and stablecoin groups used in the main comparison. The exclusion affects exact reserve reconstruction; the route-composition result is unchanged.
 % docs/findings-freeze.md, 13 unresolved V2 token-precision records and worst-case route deletion bound
 
-\section{Quoter design and component validation}
+\section{Pricing models and validation}
 \label{app:quoters}
 
-The counterfactual comparison requires an exact-input quote from each pool's state and the proposed input amount. Because venue families use different invariants and arithmetic, we validate their implementations separately. For selected executed swaps, we reconstruct the state immediately beforehand and compare predicted with realised output. Curve's amplification coefficient and Balancer's weight ratio are unavailable in the historical subgraph records; the component exercises estimate them from one set of realised trades and evaluate quotes on separate trades. These exercises establish feasibility for particular pool families and dates. The cost comparison additionally requires complete pre-transaction states for every included family and date.
+The counterfactual comparison requires an exact-input quote from each pool's state and the proposed input amount. Because pool families use different invariants and arithmetic, we validate their pricing models separately. For selected executed swaps, we reconstruct the state immediately beforehand and compare predicted with realised output. Curve's amplification coefficient and Balancer's weight ratio are unavailable in the historical subgraph records, so we estimate them on one set of trades and evaluate the resulting quotes on held-out trades. A route enters the cost comparison only when the relevant pool states and pricing models are available before the transaction.
 
 \subsection{Constant-product pools}
 \label{app:quoters:cp}
@@ -43,33 +43,33 @@ A multi-leg route composes these one hop at a time, threading the output token o
 10^4\Delta C^D_{i,o,k,q,e}
 =10^4\frac{O^D_{i,o,q,e}-O^I_{i,o,k,q,e}}{O^D_{i,o,q,e}}.
 \]
-Both outputs must be computed from one reconstructed pre-transaction state. A realised trade supplies the output of the chosen route alone; the direct and intermediary alternatives require reconstructed states for every pool in the comparison. As a component check, quoting each executed constant-product swap against the state immediately before it gives a median absolute error of 0.0000\% across 8,024 swaps; 96.7\% of quotes are within 1\% and 95.2\% are within 0.01\% of realised output.
+Both outputs must be computed from one reconstructed pre-transaction state. A realised trade supplies the output of the chosen route alone; the direct and intermediary alternatives require reconstructed states for every pool in the comparison. Quoting each executed constant-product swap against the state immediately before it gives a median absolute error of 0.0000\% across 8,024 swaps; 96.7\% of quotes are within 1\% and 95.2\% are within 0.01\% of realised output.
 % src/ddvc/cpquote.py module docstring, 8,024 executed swaps
 
 \subsection{Concentrated liquidity}
 \label{app:quoters:cl}
 
-Uniswap v3 and v4 distribute reserves across price ranges, so a pool has no single actual reserve pair and a quote has to walk the price axis \citep{AdamsZinsmeisterRobinson2021UniswapV3}. Inside one range the pool behaves as a constant-product pool with virtual reserves $\widetilde R_{0,p,e^-}$ and $\widetilde R_{1,p,e^-}$. Liquidity $L_{p,e^-}$ and price $P_{p,e^-}$ satisfy
+Uniswap v3 and v4 distribute reserves across price ranges, so a pool has no single actual reserve pair and a quote has to walk the price axis \citep{AdamsZinsmeisterRobinson2021UniswapV3}. Inside one range the pool behaves as a constant-product pool with virtual reserves $\widetilde R_{0,p,e^-}$ and $\widetilde R_{1,p,e^-}$. Liquidity $L_{p,e^-}$ and the token1-per-token0 pool price $\rho_{p,e^-}$ satisfy
 \[
-\widetilde R_{0,p,e^-}=\frac{L_{p,e^-}}{\sqrt{P_{p,e^-}}},
+\widetilde R_{0,p,e^-}=\frac{L_{p,e^-}}{\sqrt{\rho_{p,e^-}}},
 \qquad
-\widetilde R_{1,p,e^-}=L_{p,e^-}\sqrt{P_{p,e^-}},
+\widetilde R_{1,p,e^-}=L_{p,e^-}\sqrt{\rho_{p,e^-}},
 \]
-so the token amounts exchanged over a price move from $\sqrt{P_a}$ to $\sqrt{P_b}$ are
+so the token amounts exchanged over a price move from $\sqrt{\rho_a}$ to $\sqrt{\rho_b}$ are
 \[
-\Delta_0=L_{p,e^-}\left(\frac{1}{\sqrt{P_a}}-\frac{1}{\sqrt{P_b}}\right),
+\Delta_0=L_{p,e^-}\left(\frac{1}{\sqrt{\rho_a}}-\frac{1}{\sqrt{\rho_b}}\right),
 \qquad
-\Delta_1=L_{p,e^-}\left(\sqrt{P_b}-\sqrt{P_a}\right).
+\Delta_1=L_{p,e^-}\left(\sqrt{\rho_b}-\sqrt{\rho_a}\right).
 \]
 An exact-input step inverts those. Paying in token1 raises the price by a linear increment in root price, and paying in token0 lowers it through a reciprocal update,
 \[
-\sqrt{P'}=\sqrt{P}+\frac{\Delta_1}{L_{p,e^-}},
+\sqrt{\rho'}=\sqrt{\rho}+\frac{\Delta_1}{L_{p,e^-}},
 \qquad
-\sqrt{P'}=\frac{L_{p,e^-}\sqrt{P}}{L_{p,e^-}+\Delta_0\sqrt{P}}.
+\sqrt{\rho'}=\frac{L_{p,e^-}\sqrt{\rho}}{L_{p,e^-}+\Delta_0\sqrt{\rho}}.
 \]
 Range boundaries sit on a geometric tick grid and each initialised tick carries a signed liquidity delta applied on crossing,
 \[
-\sqrt{P(j)}=1.0001^{j/2},
+\sqrt{\rho(j)}=1.0001^{j/2},
 \qquad L_{p,e^-}\mapsto L_{p,e^-}\pm\Delta L_j,
 \]
 with the sign set by the direction of travel. The quoter carries the contract's own integer Q96 arithmetic, including the round-up conventions on the input side and the round-down conventions on the output side, so a quote is exact given the state.
@@ -136,6 +136,8 @@ $A_p$ is Curve-specific and the standardised subgraph schema drops it, so it is 
 fitted on the first half of a pool-day's trades over a logarithmic grid with a ternary refinement, then evaluated on the trades not used for estimation. A pool-day is retained when the 90th percentile of fitting error is below 1\%. Using the upper tail prevents a partial fit from passing: one misspecified pool produced a median fitting error below 0.1\% but a 34\% median error on the other trades because the invariant fit only part of its activity. Curve has also operated crypto-pools since 2021 that follow the CryptoSwap invariant. Applying StableSwap to these pools yields a best-fit $A_p$ of 3 and a 36\% median quote error, so pool-days whose observed trades are inconsistent with StableSwap remain outside this component exercise.
 % src/ddvc/pricing/stableswap.py, FIT_QUANTILE 0.90 and MAX_CALIBRATION_ERROR 0.01
 % src/ddvc/pricing/stableswap.py, A_MIN comment recording the measured failure
+
+Table~\ref{tab:app:curve} reports the held-out fit by validation day.
 
 \begin{table}[t]
 \centering
@@ -221,13 +223,13 @@ Day & Held-out trades & Backward & Flat & Opening & Pools priced / excluded \\
 \exhibitnote{Median absolute quote error in percent of realised output, on trades no fit ever saw. \emph{Backward} reconstructs per-swap balances by rolling the day's event sequence back from the closing snapshot, \emph{Flat} keeps the snapshot balances constant across the day, and \emph{Opening} treats the snapshot as the day's opening state and rolls forward. The sample contains twelve days from 2021-04 to 2026-02.}
 \end{table}
 
-Across the twelve component-validation days, backward reconstruction returns a median error of 0.0000\% and identifies 256 of 473 testable pool-days as weighted pools. The excluded pool-days carry a median 91.8\% of tested swap volume. Complete Balancer family coverage is therefore necessary before interpreting route-cost estimates; the twelve-day exercise measures quoter accuracy for the tested pool-days.
+Across the twelve validation days, backward reconstruction returns a median error of 0.0000\% and identifies 256 of 473 testable pool-days as weighted pools. The other pool-days carry a median 91.8\% of tested swap volume and follow different Balancer pricing rules. The exercise therefore validates the model for identified weighted pools, not for Balancer as a whole.
 % output/exhibits/weighted_quoter_validation.jsonl, 12 days, 256 priced and 217 excluded pool-days
 
 \section{Reconstructing pool balances before each trade}
 \label{app:state}
 
-Every counterfactual quote uses the pool state immediately before the trade, whereas some historical records store balances only at the end of an hour or day. We recover the earlier state by ordering every balance-changing event within the period and unwinding the sequence from the recorded closing balance. The exercises below validate that procedure on selected constant-product and weighted-pool observations. Complete reconstruction across all families and dates is required before the cost comparison can be estimated.
+Every counterfactual quote uses the pool state immediately before the trade, whereas some historical records store balances only at the end of an hour or day. We recover the earlier state by ordering every balance-changing event within the period and unwinding the sequence from the recorded closing balance. The exercises below validate that procedure on selected constant-product and weighted-pool observations. The cost comparison retains only routes whose pools can be reconstructed in this way.
 
 Let $\mathbf R_p^{\mathrm{end}}$ be pool $p$'s stored period-end reserve vector and $\boldsymbol\Delta_{p,e}$ the vector of net signed token amounts in event $e$. The state before event $e$ is the stored value with every later event removed,
 \[
@@ -324,7 +326,7 @@ Five per cent of input reserves sits between the 90th percentile of 3.29\% and t
 \addplot[only marks, black, mark=o, mark size=2.2pt] coordinates {(1,1.00) (2,8.68) (3,13.15) (4,18.44) (5,19.36) (6,15.11) (7,13.25) (8,19.92) (9,14.86)};
 \addlegendentry{99th percentile}
 \addplot[black, thick, dashed, no marks] coordinates {(0.4,5) (9.6,5)};
-\addlegendentry{5\% cutoff}
+\addlegendentry{5\% of input reserves}
 \end{axis}
 \end{tikzpicture}
 \exhibitnote{The statistic is a leg's input amount as a fraction of the input-side reserve in the constant-product pool it traverses. Points mark the 90th and 99th percentiles; the dashed line marks 5\% of reserves. The two percentiles coincide on 2020-05-05. The sample contains 932,270 realised swaps on eight dates from 2020-05-05 through 2025-09-23.}
@@ -334,26 +336,26 @@ Five per cent of input reserves sits between the 90th percentile of 3.29\% and t
 The counterfactual comparison applies the 5\% own-price-impact rule in Equation~\eqref{eq:support} to each family. We do not report its retained sample or venue coverage without complete exact pre-transaction states across the included families; quote error remains unobserved for hypothetical routes.
 % output/exhibits/quoter_support_bounds.jsonl; 932,270 validated swaps on eight sampled dates
 
-\section{Coverage risks for the price comparison}
+\section{Coverage of the price comparison}
 \label{app:coverage}
 
-Omitting a venue can change the best direct route, the best intermediated route, or both. We therefore begin the coverage audit with eight venue series, including Uniswap v1 as a separate architecture sample. Volume is reconstructed from individual swaps using the smaller dollar value of the two legs. This avoids double counting in two venue series and removes implausible oracle values in thin pools: one Curve pool reports a \$456m day whose swaps sum to \$8, and a constant-product pair with \$255 of reserves reports \$1.36bn. Physical bounds on volume relative to reserves exclude between 0.10\% and 0.24\% of pool-days per year. The route-cost opportunity set subsequently excludes Uniswap v1 because its forced-routing architecture is studied separately; the eight-series coverage audit is broader than the priced opportunity set.
+Omitting an exchange can change the best direct route, the best intermediated route, or both. Table~\ref{tab:app:venues} first describes the volume recorded in nine local source series, including Uniswap v1 as a separate architecture sample and the available Fluid extracts. Volume in the Graph-indexed series is reconstructed from individual swaps using the smaller dollar value of the two legs. This avoids double counting in two series and removes implausible oracle values in thin pools: one Curve pool reports a \$456m day whose swaps sum to \$8, and a constant-product pair with \$255 of reserves reports \$1.36bn. Physical bounds on volume relative to reserves exclude between 0.10\% and 0.24\% of Graph-indexed pool-days per year. Uniswap v1 is excluded from the route-cost comparison because its forced-routing architecture is studied separately. Fluid supplies volume on only 40 of the 400 sampled dates and no historical TVL field. The table is consequently a source-coverage diagnostic, not an estimate of complete market shares.
 % output/exhibits/venue_volume_by_year.jsonl; docs/venue-coverage-bounds.md, volume reconstruction, 400 sampled days
 
 \begin{table}[t]
 \centering
-\caption{Share of sampled decentralised-exchange volume, by venue and year}
+\caption{Share of observed decentralised-exchange volume, by source and year}
 \label{tab:app:venues}
 \scriptsize
 \input{../output/tables/venue_coverage.tex}
-\exhibitnote{Percentage shares within the eight-venue market-coverage comparison. The sample contains 400 dates, taken every seventh calendar day from 2 November 2018 through 30 June 2026; the table displays 2020--2026 and pools USD volume over those displayed years. Uniswap v1 is shown for market coverage but excluded from the route-cost opportunity set because it is the separate forced-routing architecture sample.}
+\exhibitnote{Percentage shares of volume recorded in nine local source series. The weekly calendar contains 400 dates; Fluid is observed on 40 (6 in 2024, 25 in 2025, and 9 in 2026) and supplies no TVL field. Its entries are partial observed-volume contributions, not complete market shares or turnover estimates. The table displays 2020--2026 and pools volume over those years. Uniswap v1 is shown as the separate forced-routing architecture sample and is excluded from the route-cost opportunity set.}
 % output/exhibits/venue_volume_by_year.jsonl; generated by scripts/tabulate/render_venue_coverage.py
 \end{table}
 
-The Uniswap v4 component audit supports static-fee pools without hooks. Pool-identity reconstruction leaves zero swaps with incomplete or invalid immutable pool attributes across 29,005,863 rows. Pools meeting that component definition account for 84.02\% of swaps and 99.05\% of reported value; the corresponding 2026 shares are 79.89\% and 95.57\%. The remaining pools use hooks, dynamic fees, or both, whose transaction-level cash-flow rule is not identified from the raw event. These shares describe quoter eligibility, not complete pre-transaction state coverage.
+The Uniswap v4 pricing model covers static-fee pools without hooks. Pool-identity reconstruction leaves zero swaps with incomplete or invalid immutable pool attributes across 29,005,863 rows. Pools in this group account for 84.02\% of swaps and 99.05\% of reported value; the corresponding 2026 shares are 79.89\% and 95.57\%. Other pools use hooks, dynamic fees, or both, whose transaction-level cash flows are not identified from the raw event. These shares describe the reach of the pricing model. They do not establish the availability of every pre-transaction state.
 % output/exhibits/v4_quote_support.jsonl, ALL and 2026 rows by support status
 
-Curve carries between 11\% and 19\% of panel volume in every year it exists and ranks second in four years, making its coverage economically important. The StableSwap model fits 621 pool-days and excludes 588 whose 90th-percentile fitting error exceeds 1\%. Across 28 sampled dates from 2020-02-11 to 2026-04-28, these exclusions account for 34.2\% of the Curve volume assessed, or \$1.83bn of \$5.36bn. Another 2.75\% of Curve volume occurs in pool-days with too few trades to estimate and evaluate the amplification coefficient separately. Lowering the minimum from eight trades to four changes annual excluded shares by at most 1.3 percentage points.
+Curve carries between 9.68\% and 18.70\% of observed source volume in every year it exists and ranks second in four years, making its coverage economically important. The StableSwap model fits 621 pool-days and excludes 588 whose 90th-percentile fitting error exceeds 1\%. Across 28 sampled dates from 2020-02-11 to 2026-04-28, these exclusions account for 34.2\% of the Curve volume assessed, or \$1.83bn of \$5.36bn. Another 2.75\% of Curve volume occurs in pool-days with too few trades to estimate and evaluate the amplification coefficient separately. Lowering the minimum from eight trades to four changes annual excluded shares by at most 1.3 percentage points. Table~\ref{tab:app:curveleg} shows where these exclusions occur.
 % docs/venue-coverage-bounds.md, 28 measured pool-days from 2020-02-11 to 2026-04-28
 
 \begin{table}[t]
@@ -396,7 +398,7 @@ Year & \multicolumn{2}{r}{Native leg} & \multicolumn{2}{r}{Stable leg} & Other v
 The exclusions are concentrated in routes involving the native asset. The excluded share of native-leg volume exceeds the stable-leg share by at least 33 percentage points in every sample year and by 54 points in 2023. Tricrypto pools pairing WBTC and WETH with a stablecoin account for \$818m, or 44.6\%, of the \$1.83bn excluded, including seven of the twelve largest excluded pool-days. These pools use CryptoSwap, so the missing coverage is concentrated where Curve supplies depth between ETH and stablecoins.
 % docs/venue-coverage-bounds.md, curve_excluded_composition.jsonl, 28 measured pool-days
 
-SushiSwap v3 is omitted from the priced perimeter because its historical records lack the pool's root price, in-range liquidity, and tick spacing. Its reserves are distributed across ticks, and the balance and weight fields exposed by the common schema do not describe that invariant. The venue accounts for 0.016\% of volume in the seven-venue route-cost audit over the full sample and 0.176\% in 2026. Across fourteen sampled days, only 4.1\% of its volume occurs on token pairs unavailable on another audited venue, never more than \$37,609 on one day.
+SushiSwap v3 is omitted from the route-cost comparison because its historical records lack the pool's root price, in-range liquidity, and tick spacing. Its reserves are distributed across ticks, and the balance and weight fields exposed by the common schema do not describe that invariant. The exchange accounts for 0.016\% of volume among the seven exchanges used for route costs over the full sample and 0.176\% in 2026. Across fourteen sampled days, only 4.1\% of its volume occurs on token pairs unavailable on another included exchange, never more than \$37,609 on one day.
 % docs/venue-coverage-bounds.md, sushiswap_v3_schema_probe.jsonl and sushiswap_v3_pair_overlap.jsonl, 14 sampled days
 
 Balancer accounts for 3.9\% of measured venue volume over the full sample and 8.8\% at its 2023 peak. Table~\ref{tab:app:weighted} validates selected weighted pools. Linear and boosted pools remain outside the quoter. Of 29 sampled composable-stable pools, 23 reduce to two external tokens after removing the pool's own share token, but pricing them also requires historical rate-provider states absent from the source. The priced Balancer sample is therefore confined to weighted pools whose historical state can be reconstructed.
@@ -407,9 +409,11 @@ Balancer accounts for 3.9\% of measured venue volume over the full sample and 8.
 
 A route whose first input token equals its last output token,
 \[
-\mathbf{1}\{\,a_{\mathrm{first}} = b_{\mathrm{last}}\,\},
+\mathbf{1}\{\,k_0 = k_{m(r)}\,\},
 \]
 does not represent a conversion between distinct endpoint assets. We exclude these routes from the dominance measures. The excluded population can contain cyclic arbitrage and other self-returning activity; the endpoint rule does not classify every route as arbitrage or wash trading. Multi-trade arbitrage can be bundled atomically \citep{DaianEtAl2020FlashBoys}, but identifying trader intent would require additional evidence.
+
+Table~\ref{tab:app:roundtrip} reports the distribution across sampled days; Figure~\ref{fig:app:roundtrip} shows the day-level observations.
 
 \begin{table}[t]
 \centering

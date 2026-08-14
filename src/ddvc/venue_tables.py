@@ -14,6 +14,7 @@ VENUE_ORDER = (
     "sushiswap_v3",
     "curve",
     "balancer",
+    "fluid",
 )
 VENUE_HEADERS = (
     "Uni V1",
@@ -24,6 +25,7 @@ VENUE_HEADERS = (
     "Sushi V3",
     "Curve",
     "Balancer",
+    "Fluid",
 )
 DISPLAY_YEARS = tuple(str(year) for year in range(2020, 2027))
 
@@ -41,7 +43,7 @@ def _number(row: Mapping[str, object], field: str) -> float:
 def venue_coverage_values(
     rows: Iterable[Mapping[str, object]],
 ) -> list[tuple[str, list[float]]]:
-    """Validate eight-venue annual rows and return annual plus pooled shares."""
+    """Validate nine-source annual rows and return annual plus pooled shares."""
 
     selected: dict[tuple[str, str], Mapping[str, object]] = {}
     for row in rows:
@@ -80,10 +82,10 @@ def venue_coverage_values(
 
 
 def render_venue_coverage(rows: Iterable[Mapping[str, object]]) -> str:
-    """Render the 2020--2026 eight-venue market-coverage comparison."""
+    """Render the 2020--2026 nine-source observed-volume comparison."""
 
     lines = [
-        r"\begin{tabular*}{\linewidth}{@{\extracolsep{\fill}}lrrrrrrrr@{}}",
+        r"\begin{tabular*}{\linewidth}{@{\extracolsep{\fill}}lrrrrrrrrr@{}}",
         r"\toprule",
         "Year & " + " & ".join(VENUE_HEADERS) + r" \\",
         r"\midrule",

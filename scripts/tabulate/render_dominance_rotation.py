@@ -23,6 +23,6 @@ with current_artifacts([INPUT], consumer="dominance rotation table"):
         code_sources=["src/ddvc/dominance_tables.py"],
         notes=(
             "current two-leg endpoint-year stable-share estimates on common calendar "
-            "support; count and within-20-percent supported-value specifications"
+            "support; count and within-20-percent dollar-weighted specifications"
         ),
     )
