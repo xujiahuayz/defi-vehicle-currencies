@@ -116,10 +116,12 @@
 % EVIDENCE-SOURCES: output/exhibits/route_replay.json; data/unified/20260110.parquet
 % EVIDENCE-GENERATION: transaction 0xbda1d07f17c503b5a9c8117c5d1383472006af8a9e22aa4e5e30804b9bf67ad9 component 0; partition sha256 a6870bc64badeecf030a1096e69b2ddfc9202e5c4ef99a8c5237d4d458033c6d
 % VISUAL-FUNCTION: observed vehicle use | native connected-route diagram | define the component endpoints and intermediary used in the vehicle-dominance measure
-\begin{frame}{The pool route continues through USDT}
+\begin{frame}{USDT links the two pool swaps}
 \centering
 \vspace{-0.05cm}
-{\small\color{muted}Full transaction path: PYUSD settlement $\longrightarrow$ \textbf{USDC $\longrightarrow$ USDT $\longrightarrow$ USDe}\par}
+\evidencekicker{Ordered transfers and route reconstruction}
+\vspace{0.06cm}
+{\small\color{muted}PYUSD settlement $\longrightarrow$ \textbf{USDC $\longrightarrow$ USDT $\longrightarrow$ USDe}\par}
 \vspace{0.20cm}
 \begin{tikzpicture}[x=1cm,y=1cm]
 \node[nodepoint,minimum size=46pt,font=\small\bfseries] (a) at (1.30,3.25) {USDC};
