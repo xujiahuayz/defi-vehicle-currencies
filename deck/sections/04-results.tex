@@ -7,6 +7,9 @@
 \IfFileExists{../output/exhibits/vehicle_transition_pair_decomposition_deck_values.tex}{%
 \input{../output/exhibits/vehicle_transition_pair_decomposition_deck_values.tex}%
 }{\PackageError{dvc-deck}{Missing generated vehicle-pair decomposition values}{Run scripts/build_vehicle_transition_pair_deck_values.py.}}
+\IfFileExists{../output/exhibits/v1_architecture_deck_values.tex}{%
+\input{../output/exhibits/v1_architecture_deck_values.tex}%
+}{\PackageError{dvc-deck}{Missing generated V1/V2 architecture values}{Rebuild the admitted V1/V2 presentation binding.}}
 
 % EVIDENCE-STATUS: evolving route result; current certified route release
 % EVIDENCE-COMMIT: 2ffbce0
@@ -103,8 +106,8 @@
 {\small Providers may instead follow routed demand.\par}
 \end{column}
 \end{columns}
-\vspace{0.24cm}
-{\scriptsize V2 reserve-based capital and V3 mint/burn flows are measured separately at exact calendar lags. Either direction may also reflect common demand, volatility, or routing shocks.}
+\vspace{0.10cm}
+{\fontsize{7.2}{8.0}\selectfont V2 capital stocks and V3 provider flows are tested separately at fixed lags; either ordering may reflect common demand or routing shocks.}
 \end{frame}
 
 % EVIDENCE-STATUS: registered V4 extension design; current estimate pending
@@ -114,7 +117,7 @@
 % VISUAL-FUNCTION: V4 settlement estimand | economic route versus physical transfer layers | show the matched comparison required to separate them
 \begin{frame}{V4 separates the economic route from physical settlement}
 \begin{columns}[T,totalwidth=\textwidth]
-\begin{column}{0.53\textwidth}
+\begin{column}{0.48\textwidth}
 \evidencekicker{Economic route}
 \vspace{0.12cm}
 \centering
@@ -125,14 +128,18 @@
 \draw[routearrow,draw=ucldark] (a)--(k);
 \draw[routearrow,draw=ucldark] (k)--(b);
 \node[anchor=north,align=center,font=\small,text width=5.2cm] at (2.05,1.82) {Pool calls route through intermediary $k$.};
-\node[rounded corners=3pt,draw=uclbright,densely dashed,minimum width=5.0cm,minimum height=0.82cm,align=center,font=\scriptsize] at (2.05,0.45) {V4 may net the token movements\\used to settle those calls.};
+\node[rounded corners=3pt,draw=uclbright,densely dashed,minimum width=5.0cm,minimum height=0.82cm,align=center,font=\scriptsize] at (2.05,0.45) {Prediction: fewer token transfers\\for comparable two-pool routes.};
 \end{tikzpicture}
 \end{column}
-\begin{column}{0.43\textwidth}
-\evidencekicker{Comparison}
+\begin{column}{0.05\textwidth}
+\mbox{}
+\end{column}
+\begin{column}{0.44\textwidth}
+\evidencekicker{Matched comparison}
 \vspace{0.12cm}
-{\footnotesize
+{\scriptsize
 \begin{itemize}
+\setlength{\itemsep}{0.25em}
 \item Compare routes in the same week, endpoint pair, intermediary, direction, and trade-size group.
 \item Record route use and token transfers separately.
 \item Compare feasible alternatives before interpreting vehicle choice.
@@ -140,8 +147,6 @@
 }
 \end{column}
 \end{columns}
-\vspace{0.05cm}
-{\scriptsize The architecture can make a physical transfer unnecessary. The empirical test asks whether transfers fall among otherwise comparable routes.}
 \end{frame}
 
 % EVIDENCE-STATUS: diagnostic displacement gradient; not a persistence estimate
@@ -169,30 +174,46 @@ The estimates are large in the small set of endpoint markets and intermediary as
 \end{beamercolorbox}
 \end{frame}
 
-% EVIDENCE-STATUS: support failure; no isolated within-cell substitution event
-% EVIDENCE-COMMIT: a587f8b
-% EVIDENCE-SOURCES: output/exhibits/architecture_transition_support.jsonl; output/exhibits/architecture_transition_deck_values.tex
-% VISUAL-FUNCTION: transition-window support | threshold-by-status composition bars | show why the architecture contrast is not identified
-\begin{frame}{Architecture changes lack comparable route windows}
-\vspace{-0.02cm}
-\IfFileExists{../output/exhibits/architecture_transition_deck_values.tex}{%
-\input{../output/exhibits/architecture_transition_deck_values.tex}%
-}{}
-{\footnotesize
-\begin{tabular}{@{}p{0.28\textwidth}ccc@{}}
-\toprule
-& \textbf{5\%} & \textbf{10\%} & \textbf{25\%} \\
-\midrule
-Sustained entries & \ArchEntrySupportFive & \ArchEntrySupportTen & \ArchEntrySupportTwentyFive \\
-Substitution exits & \ArchExitSupportFive & \ArchExitSupportTen & \ArchExitSupportTwentyFive \\
-Role disappearances & \ArchDisappearSupportFive & \ArchDisappearSupportTen & \ArchDisappearSupportTwentyFive \\
-Immediate entry contrast & \ArchEntryImmediateFive & \ArchEntryImmediateTen & \ArchEntryImmediateTwentyFive \\
-Immediate exit contrast & \ArchExitImmediateFive & \ArchExitImmediateTen & \ArchExitImmediateTwentyFive \\
-\bottomrule
-\end{tabular}}
-\par\vspace{0.04cm}
-{\small Every entry and exit coincides with a change in the comparison set or in whether the vehicle role exists. These windows cannot separate architecture from changes in active pairs and vehicles.}
-\vspace{-0.06cm}
-
-\decknote{Entries and substitution exits require the V4 share of an ordered endpoint-pair--intermediary series to cross the column threshold for three consecutive weeks on each side. Each entry and exit cell reports detected events, with usable non-overlapping 16-week windows in parentheses; role disappearances require the intermediary to be absent after the event.}
+% EVIDENCE-STATUS: admitted V1 mandate and V2 pair-formation result
+% EVIDENCE-COMMIT: ebeb23c
+% EVIDENCE-SOURCES: docs/finding-v1-forced-vehicle.md; output/exhibits/v1_forced_vehicle_report.md; output/exhibits/v1_architecture_deck_values.tex
+% VISUAL-FUNCTION: architecture and persistence | V1-to-V2 mechanism comparison | show how imposed intermediation becomes endogenous pair formation
+\begin{frame}{Native-asset pairing persists after it becomes optional}
+\begin{columns}[T,totalwidth=\textwidth]
+\begin{column}{0.43\textwidth}
+\evidencekicker{V1: protocol rule}
+\vspace{0.16cm}
+\begin{tikzpicture}[x=1cm,y=1cm]
+\node[nodepoint] (a) at (0.35,2.45) {A};
+\node[nodepoint,fill=ucldark,text=white,draw=ucldark,minimum size=38pt] (eth) at (2.55,2.45) {ETH};
+\node[nodepoint] (b) at (4.75,2.45) {B};
+\draw[route,draw=accent,line width=1.7pt] (a)--(eth);
+\draw[route,draw=accent,line width=1.7pt] (eth)--(b);
+\node[font=\small\bfseries,text=ucldark,align=center] at (2.55,0.95) {\VOneForcedRoutes{} token-to-token trades\\pass through ETH};
+\end{tikzpicture}
+\vspace{0.10cm}
+{\small Every token pool pairs with ETH, so the architecture imposes the vehicle.\par}
+\end{column}
+\begin{column}{0.08\textwidth}
+\centering
+\vspace{2.05cm}
+{\Large$\Longrightarrow$}
+\end{column}
+\begin{column}{0.45\textwidth}
+\evidencekicker{V2: market choice}
+\vspace{0.20cm}
+\begin{beamercolorbox}[sep=0.28cm,wd=\textwidth]{block body}
+{\fontsize{24}{26}\selectfont\bfseries\color{ucldark}\VTwoWethTradeShare}\par
+{\small of single-leg V2 trades use a WETH pool in 2026}
+\end{beamercolorbox}
+\vspace{0.26cm}
+\begin{beamercolorbox}[sep=0.28cm,wd=\textwidth]{block body}
+{\fontsize{24}{26}\selectfont\bfseries\color{stable}\VTwoWethNewPairShare}\par
+{\small of pairs first traded in 2026 include WETH}
+\end{beamercolorbox}
+\end{column}
+\end{columns}
+\vspace{0.10cm}
+{\small V2 converted ETH pairing from a protocol rule into a market choice. Native-asset concentration remained high through pair formation and realised trading.\par}
+\decknote{V1 counts linked token-to-ETH and ETH-to-token swaps with matching ETH quantities in one transaction. V2 shares use single-leg Uniswap V2 trades and newly traded pairs; they describe that venue rather than market-wide vehicle dominance.}
 \end{frame}

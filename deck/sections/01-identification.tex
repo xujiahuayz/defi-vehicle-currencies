@@ -108,7 +108,7 @@
 \end{columns}
 \vspace{0.13cm}
 {\small PYUSD reaches 0x settlement; the market maker supplies USDC for execution in the pools.\par}
-\decknote{The explorer screenshot and transfer trace refer to transaction \texttt{0xbda1d07f\ldots bf67ad9} on 10 January 2026.}
+\decknote{The explorer screenshot and transfer trace refer to transaction \ethtx{0xbda1d07f17c503b5a9c8117c5d1383472006af8a9e22aa4e5e30804b9bf67ad9}{0xbda1d07f\ldots 9bf67ad9} on 10 January 2026.}
 \end{frame}
 
 % EVIDENCE-STATUS: authentic connected pool-swap component from the same transaction; exact same-state alternative remains outside this exhibit
@@ -116,8 +116,10 @@
 % EVIDENCE-SOURCES: output/exhibits/route_replay.json; data/unified/20260110.parquet
 % EVIDENCE-GENERATION: transaction 0xbda1d07f17c503b5a9c8117c5d1383472006af8a9e22aa4e5e30804b9bf67ad9 component 0; partition sha256 a6870bc64badeecf030a1096e69b2ddfc9202e5c4ef99a8c5237d4d458033c6d
 % VISUAL-FUNCTION: observed vehicle use | native connected-route diagram | define the component endpoints and intermediary used in the vehicle-dominance measure
-\begin{frame}{USDT is the intermediary in the connected pool route}
+\begin{frame}{The pool route continues through USDT}
 \centering
+\vspace{-0.05cm}
+{\small\color{muted}Full transaction path: PYUSD settlement $\longrightarrow$ \textbf{USDC $\longrightarrow$ USDT $\longrightarrow$ USDe}\par}
 \vspace{0.20cm}
 \begin{tikzpicture}[x=1cm,y=1cm]
 \node[nodepoint,minimum size=46pt,font=\small\bfseries] (a) at (1.30,3.25) {USDC};
@@ -137,7 +139,7 @@
 {\small The connected component converts USDC into USDe across two pools. USDT is the vehicle because it links the two legs.\par}
 \end{minipage}
 \par\vspace{0.04cm}
-{\raggedright\decknote{The route is the connected pool-swap component of transaction \texttt{0xbda1d07f\ldots bf67ad9} on 10 January 2026.}}
+{\raggedright\decknote{The route is the connected pool-swap component of transaction \ethtx{0xbda1d07f17c503b5a9c8117c5d1383472006af8a9e22aa4e5e30804b9bf67ad9}{0xbda1d07f\ldots 9bf67ad9} on 10 January 2026.}}
 \end{frame}
 
 % EVIDENCE-STATUS: verified institutional mechanism; no empirical estimate is displayed.
@@ -235,7 +237,7 @@
 \par\vspace{0.22cm}
 \raggedright\scriptsize Two pools still execute; intermediate token movement may be netted.\par
 \vfill
-{\scriptsize\bfseries\color{ucldark}Settlement and vehicle use can diverge}\par
+{\scriptsize\bfseries\color{ucldark}Settlement can diverge from route use}\par
 \end{minipage}}
 \end{column}
 \end{columns}

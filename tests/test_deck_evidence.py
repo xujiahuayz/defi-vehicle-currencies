@@ -1,6 +1,10 @@
 from pathlib import Path
+import re
 
 from ddvc.deck_evidence import audit_audience_text, audit_deck_sources
+
+
+ROOT = Path(__file__).resolve().parents[1]
 
 
 def write_section(root: Path, source: str) -> None:
@@ -124,3 +128,24 @@ def test_visual_managed_frames_require_object_form_and_job(tmp_path: Path) -> No
     )
     defects = audit_deck_sources(tmp_path)
     assert [defect.kind for defect in defects] == ["missing_visual_function"]
+
+
+def test_v1_architecture_deck_values_match_the_admitted_source_tables() -> None:
+    source = (ROOT / "docs" / "finding-v1-forced-vehicle.md").read_text(encoding="utf-8")
+    binding = (
+        ROOT / "output" / "exhibits" / "v1_architecture_deck_values.tex"
+    ).read_text(encoding="utf-8")
+
+    forced = re.search(
+        r"\| \*\*token to token, forced via ETH\*\* \| \*\*([\d,]+)\*\*",
+        source,
+    )
+    trade_share = re.search(
+        r"\| 2026 \| 13,862,895 \| ([\d.]+)% \| 84\.6% \|",
+        source,
+    )
+    pair_share = re.search(r"\| 2026 \| 34,700 \| ([\d.]+)% \|", source)
+    assert forced and trade_share and pair_share
+    assert rf"\newcommand{{\VOneForcedRoutes}}{{{forced.group(1)}}}" in binding
+    assert rf"\newcommand{{\VTwoWethTradeShare}}{{{trade_share.group(1)}\%}}" in binding
+    assert rf"\newcommand{{\VTwoWethNewPairShare}}{{{pair_share.group(1)}\%}}" in binding
