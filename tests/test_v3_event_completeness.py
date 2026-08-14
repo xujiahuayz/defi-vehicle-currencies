@@ -105,6 +105,118 @@ def test_auditor_preflight_rejects_failed_state_before_raw_scan(
         auditor.require_audit_state_inputs([DAY], state_root=tmp_path)
 
 
+def test_inventory_correction_reader_is_bounded_to_day_pool_and_core_events(
+    tmp_path: Path, monkeypatch
+) -> None:
+    root = tmp_path / "inventory"
+    root.mkdir()
+    manifest = root / "ordered_chunks.complete.json"
+    manifest.touch()
+    raw = root / "blocks_00000001_00000200.parquet"
+    marker = root / "blocks_00000001_00000200.meta.json"
+    evidence = root / "blocks_00000001_00000200.rpc.json.gz"
+    for path in (raw, marker, evidence):
+        path.touch()
+    rows = [
+        {
+            "block_number": block,
+            "address": pool,
+            "topics": [topic],
+        }
+        for block, pool, topic in (
+            (100, POOL, contract.EVENT_TOPICS["swap"]),
+            (101, POOL, contract.EVENT_TOPICS["swap"]),
+            (200, POOL, contract.EVENT_TOPICS["mint"]),
+            (201, POOL, contract.EVENT_TOPICS["burn"]),
+            (150, "0xoutside", contract.EVENT_TOPICS["swap"]),
+            (160, POOL, contract.EVENT_TOPICS["collect"]),
+        )
+    ]
+
+    class Batch:
+        def to_pylist(self):
+            return rows
+
+    class Parquet:
+        def __init__(self, path: Path):
+            assert path == raw
+
+        def iter_batches(self, *, batch_size: int):
+            assert batch_size == 50_000
+            return [Batch()]
+
+    monkeypatch.setattr(auditor, "V3_INVENTORY_RAW_ROOT", root)
+    monkeypatch.setattr(auditor.pq, "ParquetFile", Parquet)
+    observed, inputs = auditor._raw_inventory_records_for_day(
+        "20250102",
+        start=1,
+        days=["20250101", "20250102"],
+        end_blocks=[100, 200],
+        day_ranges={"20250102": [(1, 200)]},
+        pools={POOL},
+    )
+    assert [row["block_number"] for row in observed] == [101, 200]
+    assert inputs == sorted((manifest, marker, raw), key=str)
+
+
+def test_correction_timestamp_evidence_selects_only_required_blocks(
+    tmp_path: Path, monkeypatch
+) -> None:
+    rows = [
+        {
+            "block_number": block,
+            "rpc_request": {"method": "eth_getBlockByNumber", "params": [hex(block), False]},
+            "rpc_response": {
+                "result": {
+                    "number": hex(block),
+                    "hash": f"0x{block:064x}",
+                    "parentHash": f"0x{block - 1:064x}",
+                    "timestamp": hex(1_700_000_000 + block),
+                }
+            },
+        }
+        for block in (10, 20)
+    ]
+    monkeypatch.setattr(
+        auditor, "iter_block_header_snapshot", lambda *_args, **_kwargs: iter(rows)
+    )
+    observed = auditor._block_timestamp_evidence(tmp_path / "headers.jsonl", {20})
+    assert set(observed) == {20}
+    assert observed[20]["response"]["timestamp"] == hex(1_700_000_020)
+    with pytest.raises(ValueError, match="lacks 1 supplement block"):
+        auditor._block_timestamp_evidence(tmp_path / "headers.jsonl", {30})
+
+
+def test_correction_repair_mode_never_enters_the_certificate_build(
+    monkeypatch, capsys
+) -> None:
+    monkeypatch.setattr(
+        sys,
+        "argv",
+        ["audit_v3_graph_event_completeness.py", "--repair-corrections-from-inventory"],
+    )
+    monkeypatch.setattr(auditor, "v3_audit_days", lambda _path: [DAY])
+    monkeypatch.setattr(auditor, "require_audit_state_inputs", lambda _days: None)
+
+    @contextmanager
+    def unlocked(*_args, **_kwargs):
+        yield
+
+    monkeypatch.setattr(auditor, "exclusive_job", unlocked)
+    monkeypatch.setattr(
+        auditor,
+        "repair_audit_calendar_corrections",
+        lambda: (1, 2, 3),
+    )
+    monkeypatch.setattr(
+        auditor,
+        "build",
+        lambda **_kwargs: pytest.fail("correction repair entered certificate build"),
+    )
+    assert auditor.main() == 0
+    assert "dates=1; corrections=2; supplements=3" in capsys.readouterr().out
+
+
 @pytest.mark.parametrize(
     ("field", "value"),
     [
