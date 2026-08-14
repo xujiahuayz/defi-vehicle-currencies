@@ -4,6 +4,7 @@
 from __future__ import annotations
 
 import argparse
+import gzip
 import json
 import os
 from concurrent.futures import as_completed
@@ -386,6 +387,223 @@ def preflight_event_order_generations(
         )
 
 
+def legacy_v2_correction_days(
+    correction_root: Path,
+) -> list[tuple[str, str]]:
+    """Return complete flat V2 correction generations lacking a current pointer."""
+
+    from ddvc.graph_event_order import correction_pointer_path
+    from ddvc.v2_event_contract import V2_EVENT_VENUES
+
+    legacy: list[tuple[str, str]] = []
+    for venue in V2_EVENT_VENUES:
+        venue_root = correction_root / venue
+        for metadata_path in sorted(venue_root.glob("????????.meta.json")):
+            day = metadata_path.name[:8]
+            if not day.isdigit() or correction_pointer_path(
+                correction_root, venue, day
+            ).exists():
+                continue
+            members = (
+                venue_root / f"{day}.jsonl.gz",
+                metadata_path,
+                venue_root / f"{day}.block_timestamps.jsonl.gz",
+                venue_root / f"{day}.transaction_receipts.jsonl.gz",
+            )
+            missing = [path.name for path in members if not path.is_file()]
+            if missing:
+                raise RuntimeError(
+                    f"partial legacy V2 correction generation for {venue}/{day}: {missing}"
+                )
+            legacy.append((venue, day))
+    return legacy
+
+
+def legacy_v2_missing_decimals(
+    raw_root: Path,
+    targets: list[tuple[str, str]],
+    statics: dict[str, dict[str, object]],
+) -> tuple[set[str], set[tuple[str, str]], int]:
+    """Bound active legacy-day pools whose exact token decimals are not certified."""
+
+    tokens: set[str] = set()
+    pools: set[tuple[str, str]] = set()
+    event_rows = 0
+    for venue, day in targets:
+        for stream in ("mints", "burns", "swaps"):
+            path = raw_root / venue / f"{venue}_{stream}_{day}.jsonl.gz"
+            with gzip.open(path, "rt") as handle:
+                for line in handle:
+                    if not line.strip():
+                        continue
+                    row = json.loads(line)
+                    pair = row.get("pair")
+                    pool = (
+                        str(pair.get("id") or "").lower()
+                        if isinstance(pair, dict)
+                        else ""
+                    )
+                    static = statics[venue].get(pool)
+                    if static is None:
+                        continue
+                    missing = {
+                        str(token).lower()
+                        for token, decimals in (
+                            (getattr(static, "token0"), getattr(static, "decimals0")),
+                            (getattr(static, "token1"), getattr(static, "decimals1")),
+                        )
+                        if decimals is None
+                    }
+                    if not missing:
+                        continue
+                    tokens.update(missing)
+                    pools.add((venue, pool))
+                    event_rows += 1
+    return tokens, pools, event_rows
+
+
+def audit_legacy_v2_correction_inputs() -> dict[str, int]:
+    """Reopen the cached full-day inputs needed to replace flat V2 corrections."""
+
+    from ddvc.ethereum_logs import file_sha256
+    from ddvc.graph_event_order import correction_root_for_graph
+    from ddvc.provenance import current_artifacts
+    from ddvc.token_decimals import (
+        token_decimals_registry_sha256,
+        validate_token_decimals_registry,
+    )
+    from ddvc.v2_event_completeness import (
+        PoolStatic,
+        V2_EVENT_SOURCE_CURRENT,
+        V2_TOKEN_DECIMALS_REGISTRY,
+        frozen_upper_block_path,
+        load_v2_bounded_token_exclusion,
+        missing_v2_exact_log_ranges,
+        read_v2_event_source_certificate,
+        reopen_v2_factory_pool_registry,
+        validate_v2_event_source_certificate,
+    )
+    from ddvc.v2_event_contract import V2_EVENT_VENUES
+    from scripts.audit_v2_event_completeness import load_or_resolve_day_bounds
+
+    correction_root = correction_root_for_graph(RAW)
+    targets = legacy_v2_correction_days(correction_root)
+    if not targets:
+        return {
+            "legacy_days": 0,
+            "missing_exact_chunks": 0,
+            "missing_tokens": 0,
+            "missing_pools": 0,
+            "missing_event_rows": 0,
+        }
+
+    summary, exceptions, certificate = read_v2_event_source_certificate(
+        pointer_path=V2_EVENT_SOURCE_CURRENT
+    )
+    with current_artifacts(
+        [UNIFIED_QUALITY_PANEL],
+        consumer="legacy V2 correction-input audit",
+    ):
+        audit_days = transaction_frontier_audit_days(UNIFIED_QUALITY_PANEL)
+    validate_v2_event_source_certificate(
+        summary,
+        exceptions,
+        certificate,
+        audit_days,
+    )
+    _pools_by_venue, pairs_by_venue, _factory_inputs, _leaf_count = (
+        reopen_v2_factory_pool_registry(certificate)
+    )
+    bounded_exclusion = load_v2_bounded_token_exclusion()
+    if (
+        certificate.get("excluded_tokens") != bounded_exclusion["tokens"]
+        or certificate.get("excluded_factory_pairs") != bounded_exclusion["pairs"]
+        or certificate.get("excluded_factory_pairs_sha256")
+        != bounded_exclusion["pairs_sha256"]
+    ):
+        raise ValueError("V2 bounded exclusion disagrees with the current event certificate")
+    excluded_pools = {
+        venue: {
+            str(row["pool"])
+            for row in bounded_exclusion["pairs"]
+            if row["venue"] == venue
+        }
+        for venue in V2_EVENT_VENUES
+    }
+    pairs_by_venue = {
+        venue: [
+            pair
+            for pair in pairs_by_venue[venue]
+            if pair.pool not in excluded_pools[venue]
+        ]
+        for venue in V2_EVENT_VENUES
+    }
+    token_decimals, token_registry = validate_token_decimals_registry(
+        V2_TOKEN_DECIMALS_REGISTRY
+    )
+    if (
+        len(token_registry) != certificate.get("token_decimals_registry_rows")
+        or token_decimals_registry_sha256(token_registry)
+        != certificate.get("token_decimals_registry_sha256")
+        or file_sha256(V2_TOKEN_DECIMALS_REGISTRY)
+        != certificate.get("token_decimals_registry_file_sha256")
+    ):
+        raise ValueError("V2 token-decimals registry disagrees with the current event certificate")
+
+    maximum_block = int(certificate["factory_registry_upper_block"])
+    frozen_upper = json.loads(
+        frozen_upper_block_path(maximum_block).read_text(encoding="utf-8")
+    )
+    missing_exact_chunks = []
+    for venue, day in targets:
+        bounds = load_or_resolve_day_bounds(day, fetch=False)
+        missing_exact_chunks.extend(
+            (venue, day, start, end)
+            for start, end in missing_v2_exact_log_ranges(
+                [(int(bounds["start_block"]), int(bounds["end_block"]))],
+                frozen_upper=frozen_upper,
+            )
+        )
+    if missing_exact_chunks:
+        raise RuntimeError(
+            "legacy V2 correction-input audit lacks cached exact chunks: "
+            f"count={len(missing_exact_chunks):,}; first={missing_exact_chunks[0]}"
+        )
+
+    statics = {
+        venue: {
+            pair.pool: PoolStatic(
+                pair.pool,
+                pair.token0,
+                pair.token1,
+                token_decimals.get(pair.token0),
+                token_decimals.get(pair.token1),
+            )
+            for pair in pairs
+        }
+        for venue, pairs in pairs_by_venue.items()
+    }
+    missing_tokens, missing_pools, missing_event_rows = legacy_v2_missing_decimals(
+        RAW,
+        targets,
+        statics,
+    )
+    result = {
+        "legacy_days": len(targets),
+        "missing_exact_chunks": 0,
+        "missing_tokens": len(missing_tokens),
+        "missing_pools": len(missing_pools),
+        "missing_event_rows": missing_event_rows,
+    }
+    if missing_tokens:
+        raise RuntimeError(
+            "legacy V2 correction-input audit requires a purpose-bound exact token-decimals "
+            f"extension: tokens={result['missing_tokens']:,}; pools={result['missing_pools']:,}; "
+            f"event_rows={result['missing_event_rows']:,}"
+        )
+    return result
+
+
 def build_family(
     family: str,
     venues: list[str],
@@ -561,11 +779,38 @@ def main() -> int:
         type=Path,
         help="schema-current state root whose exact partitions may be hardlinked under the new engine key",
     )
+    parser.add_argument(
+        "--audit-legacy-v2-corrections",
+        action="store_true",
+        help="reopen the cached full-day inputs needed to replace flat V2 correction days, then stop",
+    )
     args = parser.parse_args()
     if args.migrate_from and args.rekey_from:
         parser.error("--migrate-from and --rekey-from are mutually exclusive")
     if args.family == "all" and args.venue:
         parser.error("--venue requires one explicit --family")
+    if args.audit_legacy_v2_corrections:
+        if (
+            args.audit_calendar
+            or args.force
+            or args.migrate_from
+            or args.rekey_from
+            or args.family != "all"
+            or args.venue
+            or args.start.replace("-", "") != RESEARCH_SAMPLE_START
+            or args.end.replace("-", "") != RESEARCH_SAMPLE_END
+        ):
+            parser.error(
+                "--audit-legacy-v2-corrections is a standalone full-calendar prerequisite action"
+            )
+        with exclusive_job(
+            RAW_MARKET_DATA_LOCK,
+            job="raw market-data fetch, enrichment, or canonical materialisation",
+        ):
+            with exclusive_job(LOCK, job="canonical market-state build"):
+                result = audit_legacy_v2_correction_inputs()
+        print(f"COMPLETE: legacy V2 correction inputs={result}")
+        return 0
     families = list(FAMILY_STREAMS) if args.family == "all" else [args.family]
     if args.family != "all":
         allowed_venues = FAMILY_STREAMS[args.family]

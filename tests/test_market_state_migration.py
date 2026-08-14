@@ -4,6 +4,7 @@ import gzip
 import json
 from dataclasses import asdict
 from pathlib import Path
+from types import SimpleNamespace
 from unittest.mock import patch
 
 import pytest
@@ -18,6 +19,8 @@ from ddvc.state_data import (
 )
 from scripts.build_market_state import (
     build_family,
+    legacy_v2_correction_days,
+    legacy_v2_missing_decimals,
     migrate_v1_partition,
     preflight_event_order_generations,
     rekey_current_partition,
@@ -25,6 +28,67 @@ from scripts.build_market_state import (
     validate_migration_sample,
     validate_rekey_sample,
 )
+
+
+def test_legacy_v2_correction_days_requires_complete_flat_generation(tmp_path) -> None:
+    venue = "uniswap_v2"
+    day = "20250101"
+    venue_root = tmp_path / venue
+    venue_root.mkdir()
+    members = (
+        venue_root / f"{day}.jsonl.gz",
+        venue_root / f"{day}.meta.json",
+        venue_root / f"{day}.block_timestamps.jsonl.gz",
+        venue_root / f"{day}.transaction_receipts.jsonl.gz",
+    )
+    for path in members:
+        path.touch()
+    assert legacy_v2_correction_days(tmp_path) == [(venue, day)]
+
+    members[-1].unlink()
+    with pytest.raises(RuntimeError, match="partial legacy V2 correction generation"):
+        legacy_v2_correction_days(tmp_path)
+
+
+def test_legacy_v2_missing_decimals_counts_only_active_uncertified_pools(tmp_path) -> None:
+    venue = "uniswap_v2"
+    day = "20250101"
+    write_streams(
+        tmp_path,
+        "constant_product",
+        venue,
+        day,
+        {
+            "mints": [
+                {"pair": {"id": "missing"}},
+                {"pair": {"id": "complete"}},
+            ],
+            "burns": [],
+            "swaps": [{"pair": {"id": "outside"}}],
+        },
+    )
+    statics = {
+        venue: {
+            "missing": SimpleNamespace(
+                token0="0xa",
+                token1="0xb",
+                decimals0=18,
+                decimals1=None,
+            ),
+            "complete": SimpleNamespace(
+                token0="0xc",
+                token1="0xd",
+                decimals0=6,
+                decimals1=18,
+            ),
+        }
+    }
+
+    assert legacy_v2_missing_decimals(
+        tmp_path,
+        [(venue, day)],
+        statics,
+    ) == ({"0xb"}, {(venue, "missing")}, 1)
 
 
 def test_event_order_preflight_reports_every_stale_generation() -> None:
