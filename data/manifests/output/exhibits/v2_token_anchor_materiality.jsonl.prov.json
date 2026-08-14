@@ -4,7 +4,7 @@
  "artefact_bytes": 20735,
  "artefact_mtime_ns": 1786627019219618951,
  "artefact_sha256": "be555ba2941ba3faffe5788a21078e4d6fb162f3a87eac2e9d05d54c734ed016",
- "code_fingerprint": "d2e7fe08d81490c2f985686a836a7466ed00a2e4600bde25634d35cebd239dcb",
+ "code_fingerprint": "00248cb02d149c5a573eb87c8a924251a3b16672886baf44738c0afdcae112ac",
  "code_sources": [
   "scripts/audit_v2_token_anchor_materiality.py",
   "src/ddvc/asset_types.py",
@@ -14,21 +14,20 @@
   "src/ddvc/token_decimals.py",
   "src/ddvc/v2_event_contract.py"
  ],
- "created_at": "2026-08-13T13:16:59+00:00",
+ "created_at": "2026-08-13T22:28:32+00:00",
  "git": {
   "branch": "main",
-  "commit": "6dd7897ee4158cbad583c6d5a77ed98190f97787",
+  "commit": "ddff5f66250ec51aadf9b0d330cf667080e66934",
   "dirty": true,
-  "dirty_generated_files": [
-   "output/exhibits/.v2_token_anchor_materiality.jsonl.dwjyw9fs.tmp"
-  ],
+  "dirty_generated_files": [],
   "dirty_tracked_files": [
-   "logs/grind-queue.md"
+   "scripts/audit_v2_event_completeness.py",
+   "src/ddvc/v2_event_completeness.py",
+   "src/ddvc/v2_event_contract.py",
+   "tests/test_audit_findings_freeze.py",
+   "tests/test_v2_event_completeness.py"
   ],
-  "dirty_untracked_files": [
-   "scripts/audit_v2_token_anchor_materiality.py",
-   "tests/test_v2_token_anchor_materiality.py"
-  ]
+  "dirty_untracked_files": []
  },
  "inputs": [
   {

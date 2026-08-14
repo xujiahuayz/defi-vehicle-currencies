@@ -17,9 +17,9 @@ V2_EVENT_TOPICS = {
     for name, signature in V2_EVENT_SIGNATURES.items()
 }
 V2_EVENT_BY_TOPIC = {topic: name for name, topic in V2_EVENT_TOPICS.items()}
-V2_EVENT_SOURCE_SCHEMA_VERSION = 6
-V2_POOL_PERIMETER = "all_paircreated_pools_from_registered_mainnet_factories"
-V2_RECONCILIATION_SCOPE = "full_utc_day_factory_pool_perimeter"
+V2_EVENT_SOURCE_SCHEMA_VERSION = 7
+V2_POOL_PERIMETER = "all_paircreated_pools_from_registered_mainnet_factories_net_of_materiality_audited_token_pair_exclusions"
+V2_RECONCILIATION_SCOPE = "full_utc_day_materiality_admitted_factory_pool_perimeter"
 V2_COMPARISON_LEDGER = "released_corrected_provider_ledger"
 V2_RECONCILIATION_COUNT_FIELDS = (
     "provider_rows",

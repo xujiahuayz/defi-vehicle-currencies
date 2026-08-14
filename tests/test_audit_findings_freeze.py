@@ -231,6 +231,7 @@ class FindingsFreezeAuditTest(unittest.TestCase):
             V2_RECONCILIATION_SCOPE,
             V2_TOKEN_DECIMALS_CONTRACT,
             V2_TOKEN_DECIMALS_SCOPE,
+            V2_BOUNDED_EXCLUSION_CONTRACT,
             audit_calendar_sha256,
             compare_event_maps,
         )
@@ -326,6 +327,18 @@ class FindingsFreezeAuditTest(unittest.TestCase):
                         "factory_pairs_by_venue": {
                             venue: 1 for venue in V2_EVENT_VENUES
                         },
+                        "admitted_factory_pairs": 2,
+                        "admitted_factory_pairs_by_venue": {
+                            venue: 1 for venue in V2_EVENT_VENUES
+                        },
+                        "bounded_exclusion_contract": V2_BOUNDED_EXCLUSION_CONTRACT,
+                        "excluded_tokens": [],
+                        "excluded_factory_pairs": [],
+                        "excluded_factory_pairs_sha256": canonical_hash([]),
+                        "exclusion_materiality_sha256": "2" * 64,
+                        "exclusion_unresolved_ledger_sha256": "3" * 64,
+                        "exclusion_strict_route_usd_share": 0.0,
+                        "exclusion_candidate_intermediary_usd_share": 0.0,
                         "factory_registry_sha256": "a" * 64,
                         "token_decimals_registry_rows": 2,
                         "token_decimals_registry_sha256": "f" * 64,

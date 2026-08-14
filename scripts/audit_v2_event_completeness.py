@@ -70,6 +70,8 @@ from ddvc.v2_event_completeness import (
     V2_TOKEN_DECIMALS_REGISTRY,
     V2_TOKEN_DECIMALS_CONTRACT,
     V2_TOKEN_DECIMALS_SCOPE,
+    V2_BOUNDED_EXCLUSION_CONTRACT,
+    V2_TOKEN_ANCHOR_MATERIALITY,
     audit_calendar_sha256,
     canonical_v2_reconciliation_counts,
     canonical_v2_pool_templates,
@@ -88,6 +90,7 @@ from ddvc.v2_event_completeness import (
     iter_graph_rows,
     load_or_build_factory_state_proof,
     load_or_resolve_frozen_upper_block,
+    load_v2_bounded_token_exclusion,
     missing_v2_exact_log_ranges,
     provider_core_events,
     publish_v2_event_source_release,
@@ -626,7 +629,7 @@ def publish_token_decimals_registry_release(
         code_sources=TOKEN_REGISTRY_CODE_SOURCES,
         inputs=inputs,
         rows=len(token_registry),
-        notes="exact historical ERC-20 decimals for the V2 event-audit token perimeter",
+        notes="exact historical ERC-20 decimals for the materiality-admitted V2 event-audit token perimeter",
     )
     with current_artifacts(
         [V2_TOKEN_DECIMALS_REGISTRY],
@@ -664,6 +667,8 @@ def corrected_v2_event_map(
                 ),
             )
             if row is not None
+            and isinstance(row.get("pair"), dict)
+            and str(row["pair"].get("id", "")).lower() in statics
         )
 
     rows_by_stream = {
@@ -935,23 +940,58 @@ def build(
             expected_context=anchor_context,
         )
         raw_global_logs = int(selection_statistics["raw_global_event_logs"])
+    with current_artifacts(
+        [V2_TOKEN_ANCHOR_MATERIALITY],
+        consumer="V2 bounded token-pair exclusion",
+    ):
+        bounded_exclusion = load_v2_bounded_token_exclusion()
+    excluded_tokens = set(bounded_exclusion["tokens"])
+    excluded_pools_by_venue = {
+        venue: {
+            row["pool"]
+            for row in bounded_exclusion["pairs"]
+            if row["venue"] == venue
+        }
+        for venue in V2_EVENT_VENUES
+    }
+    for row in bounded_exclusion["pairs"]:
+        pair = next(
+            (
+                candidate
+                for candidate in pairs_by_venue[row["venue"]]
+                if candidate.pool == row["pool"]
+            ),
+            None,
+        )
+        if pair is None or {pair.token0, pair.token1} != {
+            row["affected_token"], row["paired_token"]
+        }:
+            raise ValueError("bounded V2 token exclusion disagrees with the current factory registry")
+    admitted_anchors = {
+        token: anchor for token, anchor in anchors.items() if token not in excluded_tokens
+    }
+    admitted_provider_observations = {
+        token: values
+        for token, values in provider_observations.items()
+        if token in admitted_anchors
+    }
     token_evidence, token_evidence_paths = resolve_token_decimals_evidence(
-        anchors,
+        admitted_anchors,
         fetch=fetch,
         workers=workers,
-        unresolved_ledger_path=UNRESOLVED_TOKEN_DECIMALS_LEDGER,
-        anchor_manifest_path=TOKEN_DECIMALS_ANCHOR_MANIFEST,
     )
     token_registry = build_token_decimals_registry(
-        anchors,
+        admitted_anchors,
         token_evidence,
         token_evidence_paths,
-        provider_observations,
+        admitted_provider_observations,
     )
     token_registry_inputs = sorted(
         {
             TOKEN_DECIMALS_ANCHOR_MANIFEST,
             UNRESOLVED_TOKEN_DECIMALS_LEDGER,
+            V2_TOKEN_ANCHOR_MATERIALITY,
+            sidecar_path(V2_TOKEN_ANCHOR_MATERIALITY),
             *selection_inputs,
             *token_evidence_paths.values(),
         },
@@ -959,24 +999,36 @@ def build(
     )
     token_decimals, token_registry = publish_token_decimals_registry_release(
         token_registry,
-        anchors=anchors,
-        provider_observations=provider_observations,
+        anchors=admitted_anchors,
+        provider_observations=admitted_provider_observations,
         inputs=token_registry_inputs,
     )
     print(
-        f"  exact token decimals: tokens={len(token_registry):,}; "
-        f"matched-event anchors={sum(anchor.priority == 0 for anchor in anchors.values()):,}; "
-        f"provider distinct reports={sum(len(values) for values in provider_observations.values()):,}",
+        f"  exact token decimals: admitted_tokens={len(token_registry):,}; "
+        f"excluded_tokens={len(excluded_tokens):,}; excluded_factory_pairs={sum(len(value) for value in excluded_pools_by_venue.values()):,}; "
+        f"matched-event anchors={sum(anchor.priority == 0 for anchor in admitted_anchors.values()):,}; "
+        f"provider distinct reports={sum(len(values) for values in admitted_provider_observations.values()):,}",
         flush=True,
     )
     if token_registry_only:
         return len(token_registry), 0
     statics = {
-        venue: factory_pair_registry(
+        venue: {
+            pool: static
+            for pool, static in factory_pair_registry(
             venue,
             factory_records_by_venue[venue],
             token_decimals,
-        )[0]
+            )[0].items()
+            if pool not in excluded_pools_by_venue[venue]
+        }
+        for venue in V2_EVENT_VENUES
+    }
+    admitted_pairs_by_venue = {
+        venue: [
+            pair for pair in pairs_by_venue[venue]
+            if pair.pool not in excluded_pools_by_venue[venue]
+        ]
         for venue in V2_EVENT_VENUES
     }
     reconciliation_authorities = {
@@ -1023,7 +1075,7 @@ def build(
                     records,
                     expected_pools=set(statics[venue]),
                     expected_creation_blocks={
-                        pair.pool: pair.creation_block for pair in pairs_by_venue[venue]
+                        pair.pool: pair.creation_block for pair in admitted_pairs_by_venue[venue]
                     },
                     ignore_unregistered=True,
                 )
@@ -1122,6 +1174,18 @@ def build(
         "factory_pairs_by_venue": {
             venue: len(pairs_by_venue[venue]) for venue in V2_EVENT_VENUES
         },
+        "admitted_factory_pairs": sum(len(rows) for rows in admitted_pairs_by_venue.values()),
+        "admitted_factory_pairs_by_venue": {
+            venue: len(admitted_pairs_by_venue[venue]) for venue in V2_EVENT_VENUES
+        },
+        "bounded_exclusion_contract": V2_BOUNDED_EXCLUSION_CONTRACT,
+        "excluded_tokens": bounded_exclusion["tokens"],
+        "excluded_factory_pairs": bounded_exclusion["pairs"],
+        "excluded_factory_pairs_sha256": bounded_exclusion["pairs_sha256"],
+        "exclusion_materiality_sha256": bounded_exclusion["materiality_sha256"],
+        "exclusion_unresolved_ledger_sha256": bounded_exclusion["unresolved_ledger_sha256"],
+        "exclusion_strict_route_usd_share": bounded_exclusion["strict_route_usd_share"],
+        "exclusion_candidate_intermediary_usd_share": bounded_exclusion["candidate_intermediary_usd_share"],
         "factory_registry_sha256": factory_registry_sha256(all_pairs),
         "factory_registry_upper_block": maximum_block,
         "factory_registry_upper_block_hash": frozen_upper["block_hash"],
@@ -1173,7 +1237,8 @@ def build(
         "interpretation": (
             "The released corrected provider ledger matches every exact global Ethereum Mint, "
             "Burn, and Swap identity and raw token amount on the construction-audit calendar "
-            "across every pair emitted by the two registered factories; these dates are not "
+            "across every decimals-supported pair emitted by the two registered factories after "
+            "the materiality-audited 22-pair exclusion; these dates are not "
             "an estimation sample."
         ),
     }

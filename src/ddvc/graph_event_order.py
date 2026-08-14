@@ -809,6 +809,7 @@ def load_graph_events(
     day: str,
     *,
     audited_token_decimals: Mapping[str, int] | None = None,
+    expected_pools: Iterable[str] | None = None,
     allow_empty: bool = False,
 ) -> list[GraphEvent]:
     if venue not in SUPPORTED_VENUES:
@@ -819,6 +820,11 @@ def load_graph_events(
     }:
         raise ValueError("audited token decimals are only supported for V2 venues")
     audited_decimals: dict[str, int] | None = None
+    admitted_pools = (
+        normalize_pool_perimeter(expected_pools)
+        if expected_pools is not None
+        else None
+    )
     if audited_token_decimals is not None:
         audited_decimals = {}
         for raw_token, raw_decimals in audited_token_decimals.items():
@@ -846,8 +852,14 @@ def load_graph_events(
             for line in handle:
                 if not line.strip():
                     continue
+                row = json.loads(line)
+                if admitted_pools is not None:
+                    pair = row.get("pair")
+                    pool = str(pair.get("id", "")).lower() if isinstance(pair, dict) else ""
+                    if pool not in admitted_pools:
+                        continue
                 event = graph_event(
-                    json.loads(line),
+                    row,
                     venue,
                     stream,
                     pool_decimals,

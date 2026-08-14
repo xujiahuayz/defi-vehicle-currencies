@@ -117,8 +117,11 @@ V2_EVENT_SOURCE_RELEASE_FILENAMES = {
     "certificate": "certificate.json",
 }
 V2_TOKEN_DECIMALS_REGISTRY = V2_AUDITED_TOKEN_DECIMALS_REGISTRY
+V2_TOKEN_ANCHOR_MATERIALITY = OUTPUT_DIR / "exhibits" / "v2_token_anchor_materiality.jsonl"
+V2_UNRESOLVED_TOKEN_DECIMALS = DATA_DIR / "raw" / "ethereum" / "token_decimals" / "v2_unresolved_tokens.json"
 V2_TOKEN_DECIMALS_CONTRACT = "one_exact_erc20_decimals_call_per_token_at_deterministic_canonical_event_anchor"
 V2_TOKEN_DECIMALS_SCOPE = "provider_decimals_observed_on_every_graph_event_must_be_constant_and_match_exact_anchor; exact_proxy_history_between_anchor_and_other_event_blocks_is_not_proven"
+V2_BOUNDED_EXCLUSION_CONTRACT = "omit_every_factory_pair_touching_the_materiality_audited_unresolved_token_perimeter"
 
 EventKey = tuple[str, str, int, str, int, str]
 ALL_PAIRS_LENGTH_SELECTOR = "0x" + keccak(text="allPairsLength()")[:4].hex()
@@ -133,6 +136,74 @@ class PoolStatic:
     token1: str
     decimals0: int | None
     decimals1: int | None
+
+
+def load_v2_bounded_token_exclusion(
+    materiality_path: Path = V2_TOKEN_ANCHOR_MATERIALITY,
+    unresolved_path: Path = V2_UNRESOLVED_TOKEN_DECIMALS,
+) -> dict[str, object]:
+    """Reopen the accepted unresolved-token pair exclusion without guessing decimals."""
+
+    ledger = json.loads(unresolved_path.read_text(encoding="utf-8"))
+    unresolved = ledger.get("unresolved")
+    if (
+        ledger.get("kind") != "unresolved_token_decimals"
+        or ledger.get("status") != "complete"
+        or not isinstance(unresolved, list)
+        or ledger.get("unresolved_sha256") != _canonical_json_sha256(unresolved)
+    ):
+        raise ValueError("bounded V2 token exclusion has a stale unresolved ledger")
+    tokens = sorted(str(row.get("token")) for row in unresolved if isinstance(row, dict))
+    if len(tokens) != int(ledger.get("unresolved_count", -1)) or len(set(tokens)) != len(tokens):
+        raise ValueError("bounded V2 token exclusion has a malformed token perimeter")
+
+    records = [json.loads(line) for line in materiality_path.read_text(encoding="utf-8").splitlines() if line.strip()]
+    summaries = [row.get("metrics") for row in records if row.get("record_type") == "summary"]
+    if len(summaries) != 1 or not isinstance(summaries[0], dict):
+        raise ValueError("bounded V2 token exclusion lacks one materiality summary")
+    summary = summaries[0]
+    if (
+        int(summary.get("unresolved_tokens", -1)) != len(tokens)
+        or int(summary.get("affected_tokens_above_rotation_materiality_threshold", -1)) != 0
+        or int(summary.get("affected_tokens_outside_residual_other_type", -1)) != 0
+        or int(summary.get("v4_fixed_cell_architecture_rows", -1)) != 0
+        or "future exact V2 event/state generations omit" not in str(summary.get("exclusion_contract", ""))
+    ):
+        raise ValueError("bounded V2 token exclusion no longer clears its scientific materiality contract")
+
+    token_rows = {
+        str(row.get("key")): row.get("metrics")
+        for row in records
+        if row.get("record_type") == "token"
+    }
+    if set(token_rows) != set(tokens):
+        raise ValueError("bounded V2 token exclusion materiality rows disagree with unresolved tokens")
+    pairs: list[dict[str, str]] = []
+    for row in records:
+        if row.get("record_type") != "factory_pair":
+            continue
+        key = str(row.get("key", ""))
+        parts = key.split("|")
+        metrics = row.get("metrics")
+        if len(parts) != 3 or parts[0] not in V2_EVENT_VENUES or not isinstance(metrics, dict):
+            raise ValueError("bounded V2 token exclusion contains a malformed factory pair")
+        venue, token, pool = parts
+        paired_token = str(metrics.get("paired_token", ""))
+        if token not in tokens or paired_token in tokens or pool in {item["pool"] for item in pairs}:
+            raise ValueError("bounded V2 token exclusion factory-pair identity disagrees")
+        pairs.append({"venue": venue, "pool": pool, "affected_token": token, "paired_token": paired_token})
+    pairs.sort(key=lambda row: (row["venue"], row["pool"]))
+    if len(pairs) != int(summary.get("factory_pairs_excluded", -1)) or not pairs:
+        raise ValueError("bounded V2 token exclusion factory-pair count disagrees")
+    return {
+        "tokens": tokens,
+        "pairs": pairs,
+        "pairs_sha256": _canonical_json_sha256(pairs),
+        "materiality_sha256": _file_sha256(materiality_path),
+        "unresolved_ledger_sha256": _file_sha256(unresolved_path),
+        "strict_route_usd_share": float(summary["strict_route_usd_share_of_all_released_route_usd"]),
+        "candidate_intermediary_usd_share": float(summary["candidate_intermediary_usd_share"]),
+    }
 
 
 @dataclass(frozen=True)
@@ -2276,6 +2347,7 @@ def validate_v2_event_source_certificate(
         "quantity_contract": "exact_raw_token_deltas_and_swap_in_out_fields",
         "token_decimals_contract": V2_TOKEN_DECIMALS_CONTRACT,
         "token_decimals_scope": V2_TOKEN_DECIMALS_SCOPE,
+        "bounded_exclusion_contract": V2_BOUNDED_EXCLUSION_CONTRACT,
     }
     mismatched = {
         key: (certificate.get(key), value)
@@ -2399,6 +2471,40 @@ def validate_v2_event_source_certificate(
         int(pair_counts[venue]) for venue in V2_EVENT_VENUES
     ):
         raise ValueError("V2 event-source certificate factory pair totals disagree")
+    admitted_pair_counts = certificate.get("admitted_factory_pairs_by_venue")
+    excluded_pairs = certificate.get("excluded_factory_pairs")
+    excluded_tokens = certificate.get("excluded_tokens")
+    if (
+        not isinstance(admitted_pair_counts, dict)
+        or set(admitted_pair_counts) != set(V2_EVENT_VENUES)
+        or not isinstance(excluded_pairs, list)
+        or not isinstance(excluded_tokens, list)
+        or len(set(excluded_tokens)) != len(excluded_tokens)
+        or any(not isinstance(row, dict) for row in excluded_pairs)
+    ):
+        raise ValueError("V2 event-source certificate lacks its bounded exclusion perimeter")
+    excluded_by_venue = Counter(str(row.get("venue")) for row in excluded_pairs)
+    if any(
+        type(admitted_pair_counts[venue]) is not int
+        or admitted_pair_counts[venue] < 0
+        or admitted_pair_counts[venue] + excluded_by_venue[venue] != int(pair_counts[venue])
+        for venue in V2_EVENT_VENUES
+    ):
+        raise ValueError("V2 event-source admitted and excluded factory-pair counts do not balance")
+    admitted_pairs = sum(int(admitted_pair_counts[venue]) for venue in V2_EVENT_VENUES)
+    if certificate.get("admitted_factory_pairs") != admitted_pairs:
+        raise ValueError("V2 event-source admitted factory-pair total disagrees")
+    if certificate.get("excluded_factory_pairs_sha256") != _canonical_json_sha256(excluded_pairs):
+        raise ValueError("V2 event-source excluded factory-pair digest disagrees")
+    if any(not _is_sha256(certificate.get(field)) for field in (
+        "exclusion_materiality_sha256",
+        "exclusion_unresolved_ledger_sha256",
+    )):
+        raise ValueError("V2 event-source certificate lacks exclusion evidence digests")
+    for field in ("exclusion_strict_route_usd_share", "exclusion_candidate_intermediary_usd_share"):
+        value = certificate.get(field)
+        if not isinstance(value, (int, float)) or isinstance(value, bool) or not 0 <= float(value) < 1:
+            raise ValueError("V2 event-source certificate has an invalid exclusion materiality bound")
     registry_hash = str(certificate.get("factory_registry_sha256") or "")
     if not _is_sha256(registry_hash):
         raise ValueError("V2 event-source certificate lacks a factory-registry digest")
@@ -2541,6 +2647,8 @@ def validate_v2_event_source_evidence_bundle(
     graph_root: Path | None = None,
     day_bound_root: Path | None = None,
     exact_root: Path | None = None,
+    materiality_path: Path = V2_TOKEN_ANCHOR_MATERIALITY,
+    unresolved_path: Path = V2_UNRESOLVED_TOKEN_DECIMALS,
 ) -> tuple[int, int]:
     """Reopen every cited input and reproduce the released corrected-ledger audit."""
 
@@ -2549,6 +2657,45 @@ def validate_v2_event_source_evidence_bundle(
         certificate,
         root=root,
     )
+    exclusion = load_v2_bounded_token_exclusion(materiality_path, unresolved_path)
+    expected_exclusion = {
+        "excluded_tokens": exclusion["tokens"],
+        "excluded_factory_pairs": exclusion["pairs"],
+        "excluded_factory_pairs_sha256": exclusion["pairs_sha256"],
+        "exclusion_materiality_sha256": exclusion["materiality_sha256"],
+        "exclusion_unresolved_ledger_sha256": exclusion["unresolved_ledger_sha256"],
+        "exclusion_strict_route_usd_share": exclusion["strict_route_usd_share"],
+        "exclusion_candidate_intermediary_usd_share": exclusion["candidate_intermediary_usd_share"],
+    }
+    mismatch = {
+        field: (certificate.get(field), value)
+        for field, value in expected_exclusion.items()
+        if certificate.get(field) != value
+    }
+    if mismatch:
+        raise ValueError(f"V2 bounded exclusion evidence disagrees with the certificate: {mismatch}")
+    excluded_by_venue = {
+        venue: {row["pool"] for row in exclusion["pairs"] if row["venue"] == venue}
+        for venue in V2_EVENT_VENUES
+    }
+    pair_lookup = {
+        (pair.venue, pair.pool): {pair.token0, pair.token1}
+        for pairs in pairs_by_venue.values()
+        for pair in pairs
+    }
+    for row in exclusion["pairs"]:
+        if pair_lookup.get((row["venue"], row["pool"])) != {
+            row["affected_token"], row["paired_token"]
+        }:
+            raise ValueError("V2 bounded exclusion disagrees with reopened factory identity")
+    pools_by_venue = {
+        venue: pools - excluded_by_venue[venue]
+        for venue, pools in pools_by_venue.items()
+    }
+    pairs_by_venue = {
+        venue: [pair for pair in pairs if pair.pool not in excluded_by_venue[venue]]
+        for venue, pairs in pairs_by_venue.items()
+    }
     registry_path = token_registry_path or V2_TOKEN_DECIMALS_REGISTRY
     if _file_sha256(registry_path) != certificate.get("token_decimals_registry_file_sha256"):
         raise ValueError("V2 token-decimals registry file digest disagrees")
@@ -2807,9 +2954,12 @@ def read_v2_event_source_certificate(
     if any(path is not None for path in explicit) and not all(path is not None for path in explicit):
         raise ValueError("explicit V2 event-source reads require all three artifact paths")
     if all(path is None for path in explicit):
-        return read_v2_event_source_release(
-            resolve_v2_event_source_release(pointer_path)
-        )
+        if not pointer_path.is_file():
+            raise FileNotFoundError(
+                f"V2 event-source current pointer is missing: {pointer_path}"
+            )
+        release = resolve_v2_event_source_release(pointer_path)
+        return read_v2_event_source_release(release)
     resolved = tuple(Path(path) for path in (summary_path, exceptions_path, certificate_path) if path is not None)
     if len(resolved) != 3:
         raise AssertionError("V2 event-source artifact resolution is incomplete")

@@ -60,6 +60,7 @@ from ddvc.v2_event_completeness import (
     V2_RECONCILIATION_SCOPE,
     V2_TOKEN_DECIMALS_CONTRACT,
     V2_TOKEN_DECIMALS_SCOPE,
+    V2_BOUNDED_EXCLUSION_CONTRACT,
     audit_calendar_sha256,
     build_factory_state_proof,
     canonical_v2_pool_templates,
@@ -258,6 +259,70 @@ def test_token_registry_provenance_binds_released_calendar(tmp_path, monkeypatch
     assert set(inputs) == {quality, auditor.sidecar_path(quality), evidence, factory, exact, provider}
     assert "src/ddvc/release_calendar.py" in auditor.TOKEN_REGISTRY_CODE_SOURCES
     assert "src/ddvc/fetch/sources.py" in auditor.TOKEN_REGISTRY_CODE_SOURCES
+
+
+def test_bounded_token_exclusion_reopens_exact_tokens_pairs_and_materiality(tmp_path) -> None:
+    import ddvc.v2_event_completeness as completeness
+
+    token = TOKEN0
+    paired = TOKEN1
+    unresolved = [{"token": token}]
+    ledger = {
+        "kind": "unresolved_token_decimals",
+        "status": "complete",
+        "unresolved_count": 1,
+        "unresolved": unresolved,
+        "unresolved_sha256": canonical_json_sha256(unresolved),
+    }
+    unresolved_path = tmp_path / "unresolved.json"
+    unresolved_path.write_text(json.dumps(ledger), encoding="utf-8")
+    records = [
+        {
+            "record_type": "summary",
+            "key": "all",
+            "metrics": {
+                "unresolved_tokens": 1,
+                "affected_tokens_above_rotation_materiality_threshold": 0,
+                "affected_tokens_outside_residual_other_type": 0,
+                "v4_fixed_cell_architecture_rows": 0,
+                "factory_pairs_excluded": 1,
+                "strict_route_usd_share_of_all_released_route_usd": 1e-6,
+                "candidate_intermediary_usd_share": 2e-6,
+                "exclusion_contract": "future exact V2 event/state generations omit these tokens and every factory pair containing them until exact historical decimals evidence exists",
+            },
+        },
+        {"record_type": "token", "key": token, "metrics": {}},
+        {
+            "record_type": "factory_pair",
+            "key": f"uniswap_v2|{token}|{POOL}",
+            "metrics": {"paired_token": paired},
+        },
+    ]
+    materiality_path = tmp_path / "materiality.jsonl"
+    materiality_path.write_text(
+        "".join(json.dumps(row) + "\n" for row in records),
+        encoding="utf-8",
+    )
+    result = completeness.load_v2_bounded_token_exclusion(
+        materiality_path,
+        unresolved_path,
+    )
+    assert result["tokens"] == [token]
+    assert result["pairs"] == [{
+        "venue": "uniswap_v2",
+        "pool": POOL,
+        "affected_token": token,
+        "paired_token": paired,
+    }]
+    assert result["pairs_sha256"] == canonical_json_sha256(result["pairs"])
+
+    records[0]["metrics"]["affected_tokens_outside_residual_other_type"] = 1
+    materiality_path.write_text(
+        "".join(json.dumps(row) + "\n" for row in records),
+        encoding="utf-8",
+    )
+    with pytest.raises(ValueError, match="scientific materiality"):
+        completeness.load_v2_bounded_token_exclusion(materiality_path, unresolved_path)
 
 
 def test_token_registry_release_reopens_only_after_install_and_freshness_check(tmp_path, monkeypatch) -> None:
@@ -721,8 +786,8 @@ def test_reconciler_uses_explicit_full_day_and_factory_perimeter(
         "supplement_rows": 0,
     }
 
-    def load_graph(_root, venue, day, *, audited_token_decimals=None, allow_empty=False):
-        observed["graph"] = (venue, day, audited_token_decimals, allow_empty)
+    def load_graph(_root, venue, day, *, audited_token_decimals=None, expected_pools=None, allow_empty=False):
+        observed["graph"] = (venue, day, audited_token_decimals, expected_pools, allow_empty)
         return []
 
     def fetch_chunks(venue, day, ranges, **_kwargs):
@@ -765,6 +830,7 @@ def test_reconciler_uses_explicit_full_day_and_factory_perimeter(
         "uniswap_v2",
         "20250115",
         {TOKEN0: 6, TOKEN1: 18},
+        {POOL},
         True,
     )
     assert observed["fetch"] == (
@@ -1010,6 +1076,19 @@ def test_token_registry_build_resume_uses_anchor_manifest_without_perimeter_resc
         lambda venue, _maximum: proof_paths[venue],
     )
     monkeypatch.setattr(auditor, "factory_registry_sha256", lambda _pairs: registry_hash)
+    monkeypatch.setattr(
+        auditor,
+        "load_v2_bounded_token_exclusion",
+        lambda: {
+            "tokens": [],
+            "pairs": [],
+            "pairs_sha256": canonical_json_sha256([]),
+            "materiality_sha256": "1" * 64,
+            "unresolved_ledger_sha256": "2" * 64,
+            "strict_route_usd_share": 0.0,
+            "candidate_intermediary_usd_share": 0.0,
+        },
+    )
     monkeypatch.setattr(
         auditor,
         "load_token_decimals_anchor_manifest",
@@ -1623,6 +1702,30 @@ def test_graph_event_fails_when_amount_token_lacks_audited_decimals(tmp_path) ->
         graph_core_events(tmp_path, venue, day, statics)
 
 
+def test_graph_event_reader_filters_excluded_pool_before_decimals_decode(tmp_path) -> None:
+    import ddvc.graph_event_order as event_order
+
+    venue = "uniswap_v2"
+    day = "20250115"
+    directory = tmp_path / venue
+    directory.mkdir()
+    write_jsonl_gz(
+        directory / f"{venue}_mints_{day}.jsonl.gz",
+        [graph_event("mint")],
+    )
+    for stream in ("burns", "swaps"):
+        write_jsonl_gz(directory / f"{venue}_{stream}_{day}.jsonl.gz", [])
+    admitted_pool = "0x" + "f" * 40
+    assert event_order.load_graph_events(
+        tmp_path,
+        venue,
+        day,
+        audited_token_decimals={},
+        expected_pools={admitted_pool},
+        allow_empty=True,
+    ) == []
+
+
 def test_graph_only_identity_remains_explicit_without_token_decimals(tmp_path) -> None:
     venue = "uniswap_v2"
     day = "20250115"
@@ -2023,6 +2126,16 @@ def test_release_certificate_requires_exact_calendar_and_zero_exceptions() -> No
         "amount_mismatches": 0,
         "factory_pairs": 2,
         "factory_pairs_by_venue": {venue: 1 for venue in V2_EVENT_VENUES},
+        "admitted_factory_pairs": 2,
+        "admitted_factory_pairs_by_venue": {venue: 1 for venue in V2_EVENT_VENUES},
+        "bounded_exclusion_contract": V2_BOUNDED_EXCLUSION_CONTRACT,
+        "excluded_tokens": [],
+        "excluded_factory_pairs": [],
+        "excluded_factory_pairs_sha256": canonical_json_sha256([]),
+        "exclusion_materiality_sha256": "2" * 64,
+        "exclusion_unresolved_ledger_sha256": "3" * 64,
+        "exclusion_strict_route_usd_share": 0.0,
+        "exclusion_candidate_intermediary_usd_share": 0.0,
         "factory_registry_sha256": "a" * 64,
         "token_decimals_registry_rows": 2,
         "token_decimals_registry_sha256": "f" * 64,
@@ -2151,6 +2264,15 @@ def test_release_certificate_requires_exact_calendar_and_zero_exceptions() -> No
         "token_decimals_registry_sha256",
         "token_decimals_registry_file_sha256",
         "token_decimals_evidence_files",
+        "admitted_factory_pairs",
+        "admitted_factory_pairs_by_venue",
+        "excluded_tokens",
+        "excluded_factory_pairs",
+        "excluded_factory_pairs_sha256",
+        "exclusion_materiality_sha256",
+        "exclusion_unresolved_ledger_sha256",
+        "exclusion_strict_route_usd_share",
+        "exclusion_candidate_intermediary_usd_share",
     }
     accepted_missing = []
     for field in sorted(proof_fields):
@@ -2183,6 +2305,15 @@ def test_release_certificate_requires_exact_calendar_and_zero_exceptions() -> No
         "token_decimals_registry_sha256": "f" * 63,
         "token_decimals_registry_file_sha256": "bad",
         "token_decimals_evidence_files": 1,
+        "admitted_factory_pairs": 1,
+        "admitted_factory_pairs_by_venue": {venue: 0 for venue in V2_EVENT_VENUES},
+        "excluded_tokens": [TOKEN0, TOKEN0],
+        "excluded_factory_pairs": [{"venue": "unknown"}],
+        "excluded_factory_pairs_sha256": "f" * 64,
+        "exclusion_materiality_sha256": "bad",
+        "exclusion_unresolved_ledger_sha256": "bad",
+        "exclusion_strict_route_usd_share": -1.0,
+        "exclusion_candidate_intermediary_usd_share": 1.0,
     }
     accepted_mutations = []
     for field, value in mutations.items():
@@ -2446,6 +2577,13 @@ def test_release_evidence_bundle_reopens_each_corrected_generation(
         "token_decimals_registry_sha256": "f" * 64,
         "correction_generations": {f"{venue}/{day}": generation_record},
         "reconciliation_totals": reconciliation_counts,
+        "excluded_tokens": [],
+        "excluded_factory_pairs": [],
+        "excluded_factory_pairs_sha256": canonical_json_sha256([]),
+        "exclusion_materiality_sha256": "2" * 64,
+        "exclusion_unresolved_ledger_sha256": "3" * 64,
+        "exclusion_strict_route_usd_share": 0.0,
+        "exclusion_candidate_intermediary_usd_share": 0.0,
     }
 
     class Reconciliation:
@@ -2464,6 +2602,19 @@ def test_release_evidence_bundle_reopens_each_corrected_generation(
             [],
             1,
         ),
+    )
+    monkeypatch.setattr(
+        completeness,
+        "load_v2_bounded_token_exclusion",
+        lambda *_args, **_kwargs: {
+            "tokens": [],
+            "pairs": [],
+            "pairs_sha256": canonical_json_sha256([]),
+            "materiality_sha256": "2" * 64,
+            "unresolved_ledger_sha256": "3" * 64,
+            "strict_route_usd_share": 0.0,
+            "candidate_intermediary_usd_share": 0.0,
+        },
     )
     monkeypatch.setattr(
         completeness,

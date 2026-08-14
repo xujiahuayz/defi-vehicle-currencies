@@ -207,6 +207,7 @@ def reconcile_day(
         venue,
         day,
         audited_token_decimals=audited_token_decimals,
+        expected_pools=expected_pools,
         allow_empty=start_block is not None,
     )
     if not graph_events and not expected_pools:
