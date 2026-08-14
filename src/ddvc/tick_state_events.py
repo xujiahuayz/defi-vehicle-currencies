@@ -774,15 +774,88 @@ def certify_materialization_support(
     return result
 
 
+def _validate_genesis_clamped_day_cut(
+    record: Mapping[str, object],
+    day: str,
+    *,
+    generation_start_block: int | None,
+) -> None:
+    """Validate a venue's first partial UTC day from deployment to the exact close."""
+
+    from ddvc.ethereum_day_cuts import utc_day_timestamps
+
+    start_timestamp, end_timestamp = utc_day_timestamps(day)
+    start_block = int(record.get("start_block", -1))
+    end_block = int(record.get("end_block", -1))
+    after_end_block = int(record.get("after_end_block", -1))
+    if (
+        record.get("protocol_genesis_clamped") is not True
+        or record.get("day") != day
+        or int(record.get("start_timestamp", -1)) != start_timestamp
+        or int(record.get("end_timestamp", -1)) != end_timestamp
+        or generation_start_block is None
+        or start_block != int(generation_start_block)
+        or int(record.get("protocol_genesis_block", -1)) != start_block
+        or not start_block <= end_block
+        or after_end_block != end_block + 1
+        or not int(record.get("end_block_timestamp", end_timestamp)) < end_timestamp
+        <= int(record.get("after_end_block_timestamp", -1))
+    ):
+        raise ValueError(f"invalid protocol-genesis-clamped day cut for {day}")
+    evidence = record.get("rpc_evidence")
+    if not isinstance(evidence, list):
+        raise ValueError(f"protocol-genesis-clamped day cut lacks RPC evidence for {day}")
+    observed: dict[int, tuple[int, str, str]] = {}
+    for item in evidence:
+        request = item.get("request") if isinstance(item, dict) else None
+        response = item.get("response") if isinstance(item, dict) else None
+        if not isinstance(request, dict) or not isinstance(response, dict):
+            continue
+        params = request.get("params")
+        if request.get("method") != "eth_getBlockByNumber" or not isinstance(params, list) or not params:
+            continue
+        requested = int(str(params[0]), 16)
+        returned = int(str(response.get("number")), 16)
+        if returned != requested:
+            raise ValueError(f"protocol-genesis day evidence has mismatched block identity for {day}")
+        observed[returned] = (
+            int(str(response.get("timestamp")), 16),
+            str(response.get("hash") or "").lower(),
+            str(response.get("parentHash") or "").lower(),
+        )
+    end_evidence = observed.get(end_block)
+    after_evidence = observed.get(after_end_block)
+    if (
+        end_evidence is None
+        or after_evidence is None
+        or end_evidence[0] != int(record["end_block_timestamp"])
+        or after_evidence[0] != int(record["after_end_block_timestamp"])
+        or not end_evidence[1].startswith("0x")
+        or after_evidence[2] != end_evidence[1]
+    ):
+        raise ValueError(f"protocol-genesis day closing boundary is not exactly proved for {day}")
+
+
 def _validated_day_cuts(
     day_cuts: Mapping[str, Mapping[str, object]],
+    *,
+    generation_start_block: int | None = None,
 ) -> list[tuple[str, Mapping[str, object]]]:
     ordered = sorted((str(day), record) for day, record in day_cuts.items())
     if not ordered:
         raise ValueError("daily tick-state release requires a nonempty UTC-day calendar")
     prior_upper: int | None = None
-    for day, record in ordered:
-        validate_utc_day_block_bounds(dict(record), day)
+    for index, (day, record) in enumerate(ordered):
+        if record.get("protocol_genesis_clamped") is True:
+            if index != 0:
+                raise ValueError("protocol-genesis-clamped cut is not the first release day")
+            _validate_genesis_clamped_day_cut(
+                record,
+                day,
+                generation_start_block=generation_start_block,
+            )
+        else:
+            validate_utc_day_block_bounds(dict(record), day)
         lower, upper = int(record["start_block"]), int(record["end_block"])
         if prior_upper is not None and lower != prior_upper + 1:
             raise ValueError("daily tick-state release block cuts are not contiguous")
@@ -991,7 +1064,10 @@ def write_daily_initializations(
     certificate_path.parent.mkdir(parents=True, exist_ok=True)
     write_json(certificate_path, dict(generation_certificate))
     certificate_sha256 = file_sha256(certificate_path)
-    cuts = _validated_day_cuts(day_cuts)
+    cuts = _validated_day_cuts(
+        day_cuts,
+        generation_start_block=int(generation_certificate.get("start_block", -1)),
+    )
     for day, cut in cuts:
         lower, upper = int(cut["start_block"]), int(cut["end_block"])
         if current is not None and current.block_number < lower:
@@ -1132,7 +1208,10 @@ def write_daily_v4_state_events(
     last_order: tuple[int, int] | None = None
     output: list[Path] = []
     emitted = 0
-    cuts = _validated_day_cuts(day_cuts)
+    cuts = _validated_day_cuts(
+        day_cuts,
+        generation_start_block=int(generation_certificate.get("start_block", -1)),
+    )
     support_end_day = str(generation_certificate.get("support_end_day") or cuts[-1][0])
     support_end_block = int(generation_certificate.get("support_end_block", cuts[-1][1]["end_block"]))
     support_matches = [

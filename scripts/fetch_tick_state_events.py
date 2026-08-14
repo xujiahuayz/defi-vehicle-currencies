@@ -11,8 +11,9 @@ import json
 from pathlib import Path
 
 from ddvc.calendar import RESEARCH_SAMPLE_END, RESEARCH_SAMPLE_START, calendar_days
-from ddvc.ethereum_day_cuts import load_utc_day_block_bounds
+from ddvc.ethereum_day_cuts import load_utc_day_block_bounds, utc_day_timestamps
 from ddvc.ethereum_logs import block_ranges, fetch_exact_logs_with_capacity_bisection
+from ddvc.fetch.sources import get_source
 from ddvc.graph_event_order import v3_pool_static_path
 from ddvc.paths import V2_AUDITED_TOKEN_DECIMALS_REGISTRY, DATA_DIR, REPO_ROOT, TICK_STATE_EVENT_RAW_ROOT, V3_INVENTORY_RAW_ROOT
 from ddvc.provenance import portable_content_manifest_for_paths, portable_manifest_sha256, sidecar_path
@@ -36,6 +37,7 @@ from ddvc.tick_state_events import (
 from ddvc.token_decimals import validate_token_decimals_registry
 from ddvc.v3_inventory import inventory_first_consuming_event_paths, validate_inventory_ordered_manifest
 from ddvc.v3_inventory_assembly import load_v3_first_consuming_events
+from ddvc.v3_inventory_calendar import RAW_DAY_CUT_ROOT
 from ddvc.v3_pool_registry import (
     V3_FACTORY_DEPLOYMENT_BLOCK,
     V3_POOL_REGISTRY,
@@ -49,6 +51,56 @@ from ddvc.v4_contract import UNISWAP_V4_POOL_MANAGER_ADDRESS, UNISWAP_V4_POOL_MA
 LOCK = DATA_DIR / "raw" / "ethereum" / ".tick-state-events.lock"
 GRAPH_ROOT = DATA_DIR / "raw" / "thegraph"
 DEFAULT_CHUNK_SIZE = V4_EXACT_STATE_CHUNK_SIZE
+
+
+def _v3_genesis_clamped_day_cut(day: str) -> dict[str, object]:
+    """Bind V3's deployment-to-UTC-close first day to cached exact evidence."""
+
+    path = RAW_DAY_CUT_ROOT / f"{day}.json"
+    record = json.loads(path.read_text(encoding="utf-8"))
+    start_timestamp, end_timestamp = utc_day_timestamps(day)
+    if (
+        record.get("status") != "complete"
+        or record.get("day") != day
+        or int(record.get("target_timestamp", -1)) != end_timestamp
+    ):
+        raise ValueError(f"V3 genesis day lacks a current exact UTC closing cut: {day}")
+    return {
+        "status": "complete",
+        "day": day,
+        "start_timestamp": start_timestamp,
+        "end_timestamp": end_timestamp,
+        "start_block": V3_FACTORY_DEPLOYMENT_BLOCK,
+        "end_block": int(record["day_end_block"]),
+        "end_block_timestamp": int(record["day_end_block_timestamp"]),
+        "after_end_block": int(record["next_block"]),
+        "after_end_block_timestamp": int(record["next_block_timestamp"]),
+        "initial_lower_bracket": int(record["initial_lower_bracket"]),
+        "initial_upper_bracket": int(record["resolved_upper_bracket"]),
+        "protocol_genesis_clamped": True,
+        "protocol_genesis_block": V3_FACTORY_DEPLOYMENT_BLOCK,
+        "rpc_evidence": record["rpc_evidence"],
+    }
+
+
+def _venue_days(venue: str, requested_start: str, requested_end: str) -> list[str]:
+    genesis = get_source(venue).genesis.strftime("%Y%m%d")
+    start = max(genesis, requested_start.replace("-", ""))
+    end = requested_end.replace("-", "")
+    return calendar_days(start, end) if start <= end else []
+
+
+def _venue_day_cuts(venue: str, days: list[str]) -> dict[str, dict[str, object]]:
+    cuts: dict[str, dict[str, object]] = {}
+    genesis = get_source(venue).genesis.strftime("%Y%m%d")
+    for day in days:
+        try:
+            cuts[day] = load_utc_day_block_bounds(day)
+        except RuntimeError:
+            if venue != "uniswap_v3" or day != genesis:
+                raise
+            cuts[day] = _v3_genesis_clamped_day_cut(day)
+    return cuts
 
 
 def _ranges(start: int, end: int, chunk_size: int) -> list[tuple[int, int]]:
@@ -221,8 +273,8 @@ def _run_owned(args: argparse.Namespace) -> int:
         metadata, metadata_inputs = _v2_scoped_token_metadata()
     if args.fetch:
         _fetch_ranges(venue, ranges, frozen_upper=frozen_upper, root=root, workers=args.workers)
-    days = calendar_days(args.start_day, args.end_day)
-    day_cuts = {day: load_utc_day_block_bounds(day) for day in days}
+    days = _venue_days(venue, args.start_day, args.end_day)
+    day_cuts = _venue_day_cuts(venue, days)
     support_end_day: str | None = None
     support_end_block: int | None = None
     generation_ranges = ranges

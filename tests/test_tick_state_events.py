@@ -51,7 +51,7 @@ from ddvc.v4_contract import (
     decode_v4_state_event_identity,
     validate_v4_provider_event_identity,
 )
-from scripts.fetch_tick_state_events import _canonical_fetch_ranges, _fetch_ranges, _run_owned, _targeted_range, _v2_scoped_token_metadata, _v3_inputs
+from scripts.fetch_tick_state_events import _canonical_fetch_ranges, _fetch_ranges, _run_owned, _targeted_range, _v2_scoped_token_metadata, _v3_genesis_clamped_day_cut, _v3_inputs, _venue_days
 from day_cut_fixtures import certified_day_cuts
 
 
@@ -335,6 +335,55 @@ class TickStateEventTests(unittest.TestCase):
             paths[1].with_suffix(".meta.json").unlink()
             with self.assertRaisesRegex(ValueError, "incomplete set"):
                 validate_initialization_day(root, "uniswap_v4", "20250101")
+
+    def test_v3_genesis_day_uses_deployment_and_exact_utc_close(self) -> None:
+        day = "20210504"
+        start, end = 12369621, 12370862
+        end_timestamp = 1620172800
+        end_hash = "0x" + "a" * 64
+        evidence = [
+            {
+                "request": {"method": "eth_getBlockByNumber", "params": [hex(end), False]},
+                "response": {"number": hex(end), "hash": end_hash, "parentHash": "0x" + "b" * 64, "timestamp": hex(end_timestamp - 10)},
+            },
+            {
+                "request": {"method": "eth_getBlockByNumber", "params": [hex(end + 1), False]},
+                "response": {"number": hex(end + 1), "hash": "0x" + "c" * 64, "parentHash": end_hash, "timestamp": hex(end_timestamp + 5)},
+            },
+        ]
+        with tempfile.TemporaryDirectory() as directory:
+            cut_root = Path(directory)
+            cut_root.joinpath(f"{day}.json").write_text(json.dumps({
+                "status": "complete",
+                "day": day,
+                "target_timestamp": end_timestamp,
+                "day_end_block": end,
+                "day_end_block_timestamp": end_timestamp - 10,
+                "next_block": end + 1,
+                "next_block_timestamp": end_timestamp + 5,
+                "initial_lower_bracket": end - 100,
+                "resolved_upper_bracket": end + 100,
+                "rpc_evidence": evidence,
+            }))
+            with patch("scripts.fetch_tick_state_events.RAW_DAY_CUT_ROOT", cut_root), patch("scripts.fetch_tick_state_events.V3_FACTORY_DEPLOYMENT_BLOCK", start):
+                cut = _v3_genesis_clamped_day_cut(day)
+            initialization = TickInitialization("uniswap_v3", "pool", A, B, 500, 10, "0x" + "0" * 40, 2**96, 0, start + 1, BLOCK_HASH, TX, 1, 1, True, None)
+            release = certificate("uniswap_v3")
+            release["start_block"] = start
+            release["certificate_identity_sha256"] = certificate_identity_sha256(release)
+            root = Path(directory) / "thegraph"
+            write_daily_initializations("uniswap_v3", [initialization], day_cuts={day: cut}, token_metadata={A: ("A", 18), B: ("B", 6)}, raw_root=root, generation_certificate=release)
+            validate_initialization_day(root, "uniswap_v3", day)
+            wrong = dict(release, start_block=start + 1)
+            wrong["certificate_identity_sha256"] = certificate_identity_sha256(wrong)
+            with self.assertRaisesRegex(ValueError, "genesis-clamped"):
+                write_daily_initializations("uniswap_v3", [initialization], day_cuts={day: cut}, token_metadata={A: ("A", 18), B: ("B", 6)}, raw_root=Path(directory) / "wrong", generation_certificate=wrong)
+
+    def test_tick_state_calendar_starts_at_venue_genesis(self) -> None:
+        self.assertEqual(
+            _venue_days("uniswap_v3", "20200211", "20210505"),
+            ["20210504", "20210505"],
+        )
 
     def test_daily_release_final_marker_is_absent_after_publication_failure(self) -> None:
         initialization = TickInitialization("uniswap_v4", "pool", A, B, 500, 10, "0x" + "0" * 40, 2**96, 0, 5, BLOCK_HASH, TX, 1, 1, True, None)
