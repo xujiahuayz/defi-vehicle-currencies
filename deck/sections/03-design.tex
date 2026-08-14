@@ -1,5 +1,6 @@
 % VISUAL-MANAGED-FILE
 % Mechanisms and estimands. Sources: docs/specification-lock.json and docs/research-workflow.md.
+% APPENDIX-NAVIGATION: V4: shared accounting, one PoolManager, and the conclusion that the singleton changes the settlement boundary are retained in the appendix frame "Protocol design changes markets, depth, and settlement."
 
 % VISUAL-FUNCTION: rival mechanisms | converging mechanism map | organize liquidity, coordination, integration, and holding cost
 \begin{frame}{Why might one asset become the dominant vehicle?}
@@ -19,95 +20,50 @@
 \vspace{0.2cm}
 \end{frame}
 
-% EVIDENCE-STATUS: verified institutional mechanisms; no empirical estimate is displayed.
-% EVIDENCE-COMMIT: d9006eb8a41155ea871cf927fa28dbff908cf8e0
-% EVIDENCE-SOURCES: docs/finding-v1-forced-vehicle.md sha256=650004eafae8864fe13b3d90ab59daefd77b342e33510f3d5db03b3e28ed2c68;
-% literature/text/2021-AdamsZinsmeisterRobinson2021UniswapV3-whitepaper-uniswap-v3-core.txt sha256=599a20254f8d5f1d6e771d2899bf16e4a921c5bc3a9cb82e58c97d7791411567;
-% https://app.uniswap.org/whitepaper-v4.pdf, Adams et al. (2024), Sections 1 and 3;
-% docs/research-questions-and-empirical-design.md sha256=b56cb5e98d93d0968306fc2dd36edb323d83519daab17b5c7b39587d49506c8b.
-% SCIENTIFIC-BOUNDARY: protocol rules change pair availability, pair-specific active liquidity, or the accounting boundary. The slide reports no adoption, liquidity, routing, or causal estimate.
-% VISUAL-FUNCTION: architecture-to-economic-object map | three protocol-mechanism panels | show how V1--V4 alter the opportunity set without treating calendar version as an estimated effect
-\begin{frame}{Protocol design changes markets, depth, and settlement}
-\vspace{-0.08cm}
+\IfFileExists{../output/exhibits/v1_architecture_deck_values.tex}{%
+\input{../output/exhibits/v1_architecture_deck_values.tex}%
+}{\PackageError{dvc-deck}{Missing generated V1/V2 architecture values}{Rebuild the admitted V1/V2 presentation binding.}}
+
+% EVIDENCE-STATUS: admitted V1 mandate and V2 pair-formation result
+% EVIDENCE-COMMIT: ebeb23c
+% EVIDENCE-SOURCES: docs/finding-v1-forced-vehicle.md; output/exhibits/v1_forced_vehicle_report.md; output/exhibits/v1_architecture_deck_values.tex
+% VISUAL-FUNCTION: architecture and persistence | V1-to-V2 mechanism comparison | show how imposed intermediation becomes endogenous pair formation
+\begin{frame}{Native-asset pairing persists after it becomes optional}
 \begin{columns}[T,totalwidth=\textwidth]
-
-\begin{column}{0.318\textwidth}
-\evidencekicker{V1 $\longrightarrow$ V2: pair creation}
-\vspace{0.12cm}
-\centering
+\begin{column}{0.43\textwidth}
+\evidencekicker{V1: protocol rule}
+\vspace{0.16cm}
 \begin{tikzpicture}[x=1cm,y=1cm]
-\node[font=\scriptsize\bfseries,text=muted,anchor=east] at (0.15,1.42) {V1};
-\node[nodepoint,minimum size=21pt,font=\scriptsize] (a1) at (0.62,1.42) {A};
-\node[nodepoint,fill=ucldark,text=white,draw=ucldark,minimum size=25pt,font=\scriptsize] (e1) at (2.08,1.42) {ETH};
-\node[nodepoint,minimum size=21pt,font=\scriptsize] (b1) at (3.54,1.42) {B};
-\draw[route,draw=accent,line width=1.35pt] (a1)--(e1);
-\draw[route,draw=accent,line width=1.35pt] (e1)--(b1);
-\node[font=\scriptsize\bfseries,text=muted,anchor=east] at (0.15,0.12) {V2};
-\node[nodepoint,minimum size=21pt,font=\scriptsize] (a2) at (0.62,0.12) {A};
-\node[nodepoint,fill=ucldark,text=white,draw=ucldark,minimum size=25pt,font=\scriptsize] (k2) at (2.08,-0.18) {$k$};
-\node[nodepoint,minimum size=21pt,font=\scriptsize] (b2) at (3.54,0.12) {B};
-\draw[route,draw=ucldark,line width=1.15pt] (a2)--(k2);
-\draw[route,draw=ucldark,line width=1.15pt] (k2)--(b2);
-\draw[route,draw=stable,line width=1.35pt] (a2) to[bend left=27] node[above,font=\tiny,text=stable] {direct pool} (b2);
+\node[nodepoint] (a) at (0.35,2.45) {A};
+\node[nodepoint,fill=ucldark,text=white,draw=ucldark,minimum size=38pt] (eth) at (2.55,2.45) {ETH};
+\node[nodepoint] (b) at (4.75,2.45) {B};
+\draw[route,draw=accent,line width=1.7pt] (a)--(eth);
+\draw[route,draw=accent,line width=1.7pt] (eth)--(b);
+\node[font=\small\bfseries,text=ucldark,align=center] at (2.55,0.95) {\VOneForcedRoutes{} token-to-token trades\\pass through ETH};
 \end{tikzpicture}
-\par\vspace{0.10cm}
-\raggedright
-{\fontsize{7.3}{8.2}\selectfont V1 admits only ETH--token pools. V2 permits any ERC-20 pair, so market creation determines whether direct and vehicle paths coexist.\par}
-\vfill
-\colorbox{panel}{\parbox[c][0.72cm][c]{0.87\linewidth}{\centering\scriptsize\bfseries Which edges exist?}}
+\vspace{0.10cm}
+{\small Every token pool pairs with ETH, so the architecture imposes the vehicle.\par}
 \end{column}
-
-\begin{column}{0.318\textwidth}
-\evidencekicker{V3: active liquidity}
-\vspace{0.12cm}
+\begin{column}{0.08\textwidth}
 \centering
-\begin{tikzpicture}[x=1cm,y=1cm]
-\node[font=\scriptsize,anchor=east] at (0.44,1.35) {A/B};
-\draw[rule,line width=0.8pt] (0.58,1.35)--(3.32,1.35);
-\draw[stable,line width=4.0pt] (1.05,1.35)--(2.30,1.35);
-\fill[ink] (1.92,1.35) circle (1.6pt);
-\node[font=\scriptsize,anchor=east] at (0.44,0.64) {A/$k$};
-\draw[rule,line width=0.8pt] (0.58,0.64)--(3.32,0.64);
-\draw[ucldark,line width=4.0pt] (0.78,0.64)--(2.12,0.64);
-\fill[ink] (1.92,0.64) circle (1.6pt);
-\node[font=\scriptsize,anchor=east] at (0.44,-0.07) {$k$/B};
-\draw[rule,line width=0.8pt] (0.58,-0.07)--(3.32,-0.07);
-\draw[uclbright,line width=4.0pt] (1.74,-0.07)--(3.02,-0.07);
-\fill[ink] (1.92,-0.07) circle (1.6pt);
-\node[font=\tiny,text=muted,anchor=north] at (1.92,-0.35) {current price};
-\end{tikzpicture}
-\par\vspace{0.11cm}
-\raggedright
-{\fontsize{7.3}{8.2}\selectfont LPs choose a price range and fee tier for each pool. Positions covering the current price determine active liquidity in the direct pair and in each vehicle spoke.\par}
-\vfill
-\colorbox{panel}{\parbox[c][0.72cm][c]{0.87\linewidth}{\centering\scriptsize\bfseries Which path offers depth at this size?}}
+\vspace{2.05cm}
+{\Large$\Longrightarrow$}
 \end{column}
-
-\begin{column}{0.318\textwidth}
-\evidencekicker{V4: shared accounting}
-\vspace{0.12cm}
-\centering
-\begin{tikzpicture}[x=0.90cm,y=1cm]
-\node[nodepoint,minimum size=21pt,font=\scriptsize] (a4) at (0.10,0.68) {A};
-\draw[rounded corners=4pt,draw=ucldark,fill=ucldark!4,line width=0.9pt] (0.60,-0.12) rectangle (3.46,1.48);
-\node[font=\tiny\bfseries,text=ucldark,anchor=south west] at (0.70,1.52) {one PoolManager};
-\node[softbox,inner sep=3pt,minimum width=0.95cm,minimum height=0.58cm,font=\scriptsize,align=center] (p1) at (1.35,0.68) {A/$k$};
-\node[softbox,inner sep=3pt,minimum width=0.95cm,minimum height=0.58cm,font=\scriptsize,align=center] (p2) at (2.72,0.68) {$k$/B};
-\draw[-{Stealth[length=4pt]},draw=ucldark,line width=1.25pt] (p1)--node[above,font=\tiny,text=ucldark]{deltas}(p2);
-\node[nodepoint,minimum size=21pt,font=\scriptsize] (b4) at (3.96,0.68) {B};
-\draw[route,draw=native,line width=1.15pt] (a4)--(0.60,0.68);
-\draw[route,draw=stable,line width=1.15pt] (3.46,0.68)--(b4);
-\node[font=\tiny,text=muted,align=center] at (2.03,-0.42) {balances settled before unlock};
-\end{tikzpicture}
-\par\vspace{0.11cm}
-\raggedright
-{\fontsize{7.3}{8.2}\selectfont One PoolManager holds all pools. During a lock, the two swaps update balance deltas; the caller settles its obligations before the lock ends.\par}
-\vfill
-\colorbox{panel}{\parbox[c][0.72cm][c]{0.87\linewidth}{\centering\scriptsize\bfseries Where is the route settled?}}
+\begin{column}{0.45\textwidth}
+\evidencekicker{V2: market choice}
+\vspace{0.20cm}
+\begin{beamercolorbox}[sep=0.28cm,wd=\textwidth]{block body}
+{\fontsize{24}{26}\selectfont\bfseries\color{ucldark}\VTwoWethTradeShare}\par
+{\small of single-leg V2 trades use a WETH pool in 2026}
+\end{beamercolorbox}
+\vspace{0.26cm}
+\begin{beamercolorbox}[sep=0.28cm,wd=\textwidth]{block body}
+{\fontsize{24}{26}\selectfont\bfseries\color{stable}\VTwoWethNewPairShare}\par
+{\small of pairs first traded in 2026 include WETH}
+\end{beamercolorbox}
 \end{column}
 \end{columns}
-\vspace{0.18cm}
-\begin{beamercolorbox}[sep=0.14cm,wd=0.98\textwidth]{block body}
-{\fontsize{7.1}{7.9}\selectfont\textbf{Economic implication.} Pair creation changes available paths; concentrated liquidity changes pair-specific execution at the current state and trade size; the singleton changes the settlement boundary for a route that still uses two pools.}
-\end{beamercolorbox}
+\vspace{0.10cm}
+{\small V2 converted ETH pairing from a protocol rule into a market choice. Native-asset concentration remained high through pair formation and realised trading.\par}
+\decknote{V1 counts linked token-to-ETH and ETH-to-token swaps with matching ETH quantities in one transaction. V2 shares use single-leg Uniswap V2 trades and newly traded pairs; they describe that venue rather than market-wide vehicle dominance.}
 \end{frame}

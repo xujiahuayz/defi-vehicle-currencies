@@ -62,6 +62,47 @@
 \end{columns}
 \end{frame}
 
+% Symbolic routes distinguish the measurement grammar from a live transaction.
+% VISUAL-FUNCTION: route taxonomy | four-panel topology diagram | distinguish sequential routes, splits, and excluded cycles
+\begin{frame}{How we reconstruct a route from one transaction}
+\begin{tikzpicture}[x=1cm,y=1cm]
+\node[softbox,text width=5.15cm,minimum height=2.05cm,anchor=north west] (direct) at (0,3.35) {};
+\node[anchor=north west,font=\bfseries] at (0.22,3.14) {Direct swap};
+\node[anchor=north west,font=\small,text=muted] at (0.22,2.72) {one transaction};
+\node[nodepoint] (da) at (1.35,1.72) {A};
+\node[nodepoint] (db) at (3.80,1.72) {B};
+\draw[route,draw=native] (da)--(db);
+
+\node[softbox,text width=5.15cm,minimum height=2.05cm,anchor=north west] (vehicle) at (6.05,3.35) {};
+\node[anchor=north west,font=\bfseries] at (6.27,3.14) {Sequential vehicle route};
+\node[anchor=north west,font=\small,text=muted] at (6.27,2.72) {one transaction};
+\node[nodepoint] (va) at (7.15,1.72) {A};
+\node[nodepoint,fill=ucldark,text=white,draw=ucldark] (vk) at (8.65,1.72) {$k$};
+\node[nodepoint] (vb) at (10.15,1.72) {B};
+\draw[route,draw=ucldark] (va)--(vk);
+\draw[route,draw=ucldark] (vk)--(vb);
+
+\node[softbox,text width=5.15cm,minimum height=2.05cm,anchor=north west] (split) at (0,0.55) {};
+\node[anchor=north west,font=\bfseries] at (0.22,0.34) {Parallel split};
+\node[anchor=north west,font=\small,text=muted] at (0.22,-0.08) {one transaction};
+\node[nodepoint] (sa) at (1.35,-1.15) {A};
+\node[nodepoint] (sb) at (3.80,-1.15) {B};
+\draw[route,draw=stable] (sa) to[bend left=14] node[above,font=\small] {venue 1} (sb);
+\draw[route,draw=imported] (sa) to[bend right=14] node[below,font=\small] {venue 2} (sb);
+
+\node[softbox,text width=5.15cm,minimum height=2.05cm,anchor=north west] (cycle) at (6.05,0.55) {};
+\node[anchor=north west,font=\bfseries] at (6.27,0.34) {Round trip};
+\node[anchor=north west,font=\small,text=muted] at (6.27,-0.08) {one transaction};
+\node[nodepoint] (ra) at (7.15,-1.25) {A};
+\node[nodepoint,fill=accent,text=white,draw=accent] (rk) at (8.65,-1.25) {$k$};
+\node[nodepoint] (rb) at (10.15,-1.25) {A};
+\draw[route,draw=accent] (ra)--(rk);
+\draw[route,draw=accent] (rk)--(rb);
+\end{tikzpicture}
+\par\vspace{0.1cm}
+{\small Vehicle choice directs indirect order flow toward particular assets and pools. Transaction-level paths reveal that choice rather than leaving it inside aggregate turnover.\par}
+\end{frame}
+
 % VISUAL-FUNCTION: time-varying backing | token-by-period regime heatmap | show why stablecoin backing cannot be treated as fixed
 % EVIDENCE-STATUS: dated classification contract; cells encode rules, not empirical shares or token availability.
 % EVIDENCE-COMMIT: e1513051da9f3c33fc69a05d063541e2ef96954a
@@ -152,6 +193,99 @@ V4 singleton
 \end{columns}
 \end{frame}
 
+% EVIDENCE-STATUS: verified institutional mechanisms; no empirical estimate is displayed.
+% EVIDENCE-COMMIT: d9006eb8a41155ea871cf927fa28dbff908cf8e0
+% EVIDENCE-SOURCES: docs/finding-v1-forced-vehicle.md sha256=650004eafae8864fe13b3d90ab59daefd77b342e33510f3d5db03b3e28ed2c68;
+% literature/text/2021-AdamsZinsmeisterRobinson2021UniswapV3-whitepaper-uniswap-v3-core.txt sha256=599a20254f8d5f1d6e771d2899bf16e4a921c5bc3a9cb82e58c97d7791411567;
+% https://app.uniswap.org/whitepaper-v4.pdf, Adams et al. (2024), Sections 1 and 3;
+% docs/research-questions-and-empirical-design.md sha256=b56cb5e98d93d0968306fc2dd36edb323d83519daab17b5c7b39587d49506c8b.
+% SCIENTIFIC-BOUNDARY: protocol rules change pair availability, pair-specific active liquidity, or the accounting boundary. The slide reports no adoption, liquidity, routing, or causal estimate.
+% VISUAL-FUNCTION: architecture-to-economic-object map | three protocol-mechanism panels | show how V1--V4 alter the opportunity set without treating calendar version as an estimated effect
+\begin{frame}{Protocol design changes markets, depth, and settlement}
+\vspace{-0.08cm}
+\begin{columns}[T,totalwidth=\textwidth]
+
+\begin{column}{0.318\textwidth}
+\evidencekicker{V1 $\longrightarrow$ V2: pair creation}
+\vspace{0.12cm}
+\centering
+\begin{tikzpicture}[x=1cm,y=1cm]
+\node[font=\scriptsize\bfseries,text=muted,anchor=east] at (0.15,1.42) {V1};
+\node[nodepoint,minimum size=21pt,font=\scriptsize] (a1) at (0.62,1.42) {A};
+\node[nodepoint,fill=ucldark,text=white,draw=ucldark,minimum size=25pt,font=\scriptsize] (e1) at (2.08,1.42) {ETH};
+\node[nodepoint,minimum size=21pt,font=\scriptsize] (b1) at (3.54,1.42) {B};
+\draw[route,draw=accent,line width=1.35pt] (a1)--(e1);
+\draw[route,draw=accent,line width=1.35pt] (e1)--(b1);
+\node[font=\scriptsize\bfseries,text=muted,anchor=east] at (0.15,0.12) {V2};
+\node[nodepoint,minimum size=21pt,font=\scriptsize] (a2) at (0.62,0.12) {A};
+\node[nodepoint,fill=ucldark,text=white,draw=ucldark,minimum size=25pt,font=\scriptsize] (k2) at (2.08,-0.18) {$k$};
+\node[nodepoint,minimum size=21pt,font=\scriptsize] (b2) at (3.54,0.12) {B};
+\draw[route,draw=ucldark,line width=1.15pt] (a2)--(k2);
+\draw[route,draw=ucldark,line width=1.15pt] (k2)--(b2);
+\draw[route,draw=stable,line width=1.35pt] (a2) to[bend left=27] node[above,font=\tiny,text=stable] {direct pool} (b2);
+\end{tikzpicture}
+\par\vspace{0.10cm}
+\raggedright
+{\fontsize{7.3}{8.2}\selectfont V1 admits only ETH--token pools. V2 permits any ERC-20 pair, so market creation determines whether direct and vehicle paths coexist.\par}
+\vfill
+\colorbox{panel}{\parbox[c][0.72cm][c]{0.87\linewidth}{\centering\scriptsize\bfseries Which edges exist?}}
+\end{column}
+
+\begin{column}{0.318\textwidth}
+\evidencekicker{V3: active liquidity}
+\vspace{0.12cm}
+\centering
+\begin{tikzpicture}[x=1cm,y=1cm]
+\node[font=\scriptsize,anchor=east] at (0.44,1.35) {A/B};
+\draw[rule,line width=0.8pt] (0.58,1.35)--(3.32,1.35);
+\draw[stable,line width=4.0pt] (1.05,1.35)--(2.30,1.35);
+\fill[ink] (1.92,1.35) circle (1.6pt);
+\node[font=\scriptsize,anchor=east] at (0.44,0.64) {A/$k$};
+\draw[rule,line width=0.8pt] (0.58,0.64)--(3.32,0.64);
+\draw[ucldark,line width=4.0pt] (0.78,0.64)--(2.12,0.64);
+\fill[ink] (1.92,0.64) circle (1.6pt);
+\node[font=\scriptsize,anchor=east] at (0.44,-0.07) {$k$/B};
+\draw[rule,line width=0.8pt] (0.58,-0.07)--(3.32,-0.07);
+\draw[uclbright,line width=4.0pt] (1.74,-0.07)--(3.02,-0.07);
+\fill[ink] (1.92,-0.07) circle (1.6pt);
+\node[font=\tiny,text=muted,anchor=north] at (1.92,-0.35) {current price};
+\end{tikzpicture}
+\par\vspace{0.11cm}
+\raggedright
+{\fontsize{7.3}{8.2}\selectfont LPs choose a price range and fee tier for each pool. Positions covering the current price determine active liquidity in the direct pair and in each vehicle spoke.\par}
+\vfill
+\colorbox{panel}{\parbox[c][0.72cm][c]{0.87\linewidth}{\centering\scriptsize\bfseries Which path offers depth at this size?}}
+\end{column}
+
+\begin{column}{0.318\textwidth}
+\evidencekicker{V4: shared accounting}
+\vspace{0.12cm}
+\centering
+\begin{tikzpicture}[x=0.90cm,y=1cm]
+\node[nodepoint,minimum size=21pt,font=\scriptsize] (a4) at (0.10,0.68) {A};
+\draw[rounded corners=4pt,draw=ucldark,fill=ucldark!4,line width=0.9pt] (0.60,-0.12) rectangle (3.46,1.48);
+\node[font=\tiny\bfseries,text=ucldark,anchor=south west] at (0.70,1.52) {one PoolManager};
+\node[softbox,inner sep=3pt,minimum width=0.95cm,minimum height=0.58cm,font=\scriptsize,align=center] (p1) at (1.35,0.68) {A/$k$};
+\node[softbox,inner sep=3pt,minimum width=0.95cm,minimum height=0.58cm,font=\scriptsize,align=center] (p2) at (2.72,0.68) {$k$/B};
+\draw[-{Stealth[length=4pt]},draw=ucldark,line width=1.25pt] (p1)--node[above,font=\tiny,text=ucldark]{deltas}(p2);
+\node[nodepoint,minimum size=21pt,font=\scriptsize] (b4) at (3.96,0.68) {B};
+\draw[route,draw=native,line width=1.15pt] (a4)--(0.60,0.68);
+\draw[route,draw=stable,line width=1.15pt] (3.46,0.68)--(b4);
+\node[font=\tiny,text=muted,align=center] at (2.03,-0.42) {balances settled before unlock};
+\end{tikzpicture}
+\par\vspace{0.11cm}
+\raggedright
+{\fontsize{7.3}{8.2}\selectfont One PoolManager holds all pools. During a lock, the two swaps update balance deltas; the caller settles its obligations before the lock ends.\par}
+\vfill
+\colorbox{panel}{\parbox[c][0.72cm][c]{0.87\linewidth}{\centering\scriptsize\bfseries Where is the route settled?}}
+\end{column}
+\end{columns}
+\vspace{0.18cm}
+\begin{beamercolorbox}[sep=0.14cm,wd=0.98\textwidth]{block body}
+{\fontsize{7.1}{7.9}\selectfont\textbf{Economic implication.} Pair creation changes available paths; concentrated liquidity changes pair-specific execution at the current state and trade size; the singleton changes the settlement boundary for a route that still uses two pools.}
+\end{beamercolorbox}
+\end{frame}
+
 % VISUAL-FUNCTION: compulsory V1 intermediation | two-leg trace pending authentic transaction rows | establish imposed ETH routing from observables
 \begin{frame}{A6. V1 forced routes have an on-chain signature}
 \begin{columns}[T]
@@ -198,6 +332,18 @@ V4 singleton
 \resizebox{0.94\textwidth}{!}{\input{assets/count-value-route-widths.tex}}\par
 \vspace{-0.02cm}
 {\raggedright\decknote{Both panels contain the same routes. Line widths are illustrative, and value weighting applies only on the stated valuation-support band.}}
+\end{frame}
+
+% VISUAL-FUNCTION: measurement taxonomy | two-by-two visual grid | separate route status, continuous dominance, graph position, and counterfactual cost
+% EVIDENCE-STATUS: conceptual measurement map; no empirical estimate.
+% EVIDENCE-COMMIT: e1513051da9f3c33fc69a05d063541e2ef96954a
+% EVIDENCE-SOURCES: deck/assets/measurement-taxonomy-grid.tex;
+% docs/specification-lock.json; docs/paper-spine.md; docs/research-workflow.md.
+\begin{frame}{Vehicle dominance aggregates realised intermediary choices}
+\centering
+\resizebox{0.94\textwidth}{!}{\input{assets/measurement-taxonomy-grid.tex}}\par
+\vspace{0.06cm}
+{\small Endpoint demand supplies the benchmark; network position and same-state route costs remain separate characteristics.\par}
 \end{frame}
 
 % VISUAL-FUNCTION: intermediary excess use | paired margin formulas pending zero-centered difference plot | separate vehicle demand from endpoint demand
