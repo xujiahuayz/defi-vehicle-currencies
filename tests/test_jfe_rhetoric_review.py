@@ -146,6 +146,19 @@ class ConclusionReviewTests(unittest.TestCase):
 
 
 class ParagraphFlowReviewTests(unittest.TestCase):
+    @staticmethod
+    def handoff(line: int) -> dict:
+        return {
+            "line": line,
+            "inherited_object": "The economic object established in the preceding paragraph.",
+            "paragraph_function": "Develops the next comparison using that object.",
+            "relation_to_previous": "Narrows the preceding claim to the relevant comparison.",
+            "economic_subject": "Trading reallocates across endpoint markets.",
+            "framing_judgment": "The supported economic result leads and its scope follows.",
+            "qualification_leads": False,
+            "judgment": "The transition is explicit and economically continuous.",
+        }
+
     def test_review_must_cover_every_substantive_handoff(self) -> None:
         with tempfile.TemporaryDirectory() as directory:
             root = Path(directory)
@@ -162,6 +175,7 @@ class ParagraphFlowReviewTests(unittest.TestCase):
             row = {
                 "paragraph_flow_review": {
                     "transition_lines": [3],
+                    "handoffs": [self.handoff(3)],
                     "judgment": "Every handoff was read in sequence.",
                     "raw_exemplars": [
                         "literature/text/2023-LiYeZheng2023Refusing-refusing-the-best-price.txt:980-990"
@@ -172,6 +186,7 @@ class ParagraphFlowReviewTests(unittest.TestCase):
             errors = CHECKER.paragraph_flow_errors("section.tex", row, path)
             self.assertTrue(any("coverage differs" in error for error in errors))
             row["paragraph_flow_review"]["transition_lines"] = [3, 5]
+            row["paragraph_flow_review"]["handoffs"] = [self.handoff(3), self.handoff(5)]
             self.assertEqual(CHECKER.paragraph_flow_errors("section.tex", row, path), [])
 
     def test_jump_inventory_requires_issue_and_resolution(self) -> None:
@@ -187,6 +202,7 @@ class ParagraphFlowReviewTests(unittest.TestCase):
             row = {
                 "paragraph_flow_review": {
                     "transition_lines": [2],
+                    "handoffs": [self.handoff(2)],
                     "judgment": "The handoff was reviewed.",
                     "raw_exemplars": [
                         "literature/text/2023-LiYeZheng2023Refusing-refusing-the-best-price.txt:980-990"
@@ -196,6 +212,68 @@ class ParagraphFlowReviewTests(unittest.TestCase):
             }
             errors = CHECKER.paragraph_flow_errors("section.tex", row, path)
             self.assertEqual(errors, ["missing resolution: section.tex jumps[1]"])
+
+    def test_each_handoff_requires_its_own_economic_judgment(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            path = Path(directory) / "section.tex"
+            path.write_text(
+                "First paragraph establishes the economic object in enough words to count as "
+                "substantive prose and ends with a complete sentence for the reader.\n"
+                "Second paragraph changes the argument in enough words to count as substantive "
+                "prose and ends with a complete sentence for the reader.\n",
+                encoding="utf-8",
+            )
+            handoff = self.handoff(2)
+            del handoff["relation_to_previous"]
+            row = {
+                "paragraph_flow_review": {
+                    "transition_lines": [2],
+                    "handoffs": [handoff],
+                    "judgment": "The section was read.",
+                    "raw_exemplars": [
+                        "literature/text/2023-LiYeZheng2023Refusing-refusing-the-best-price.txt:980-990"
+                    ],
+                    "jumps": [],
+                }
+            }
+            errors = CHECKER.paragraph_flow_errors("section.tex", row, path)
+            self.assertEqual(
+                errors,
+                ["missing relation to previous: section.tex handoffs[1]"],
+            )
+
+    def test_qualification_may_lead_only_with_editorial_justification(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            path = Path(directory) / "section.tex"
+            path.write_text(
+                "First paragraph establishes the economic result in enough words to count as "
+                "substantive prose and ends with a complete sentence for the reader.\n"
+                "Second paragraph explains the design boundary in enough words to count as "
+                "substantive prose and ends with a complete sentence for the reader.\n",
+                encoding="utf-8",
+            )
+            handoff = self.handoff(2)
+            handoff["qualification_leads"] = True
+            row = {
+                "paragraph_flow_review": {
+                    "transition_lines": [2],
+                    "handoffs": [handoff],
+                    "judgment": "The section was read.",
+                    "raw_exemplars": [
+                        "literature/text/2023-LiYeZheng2023Refusing-refusing-the-best-price.txt:980-990"
+                    ],
+                    "jumps": [],
+                }
+            }
+            errors = CHECKER.paragraph_flow_errors("section.tex", row, path)
+            self.assertEqual(
+                errors,
+                ["qualification leads without justification: section.tex handoffs[1]"],
+            )
+            handoff["qualification_leads_justification"] = (
+                "The paragraph defines the support on which the following estimate exists."
+            )
+            self.assertEqual(CHECKER.paragraph_flow_errors("section.tex", row, path), [])
 
 
 if __name__ == "__main__":

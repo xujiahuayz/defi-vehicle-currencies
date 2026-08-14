@@ -210,6 +210,43 @@ def paragraph_flow_errors(relative: str, row: dict, path: Path) -> list[str]:
             f"paragraph-flow coverage differs: {relative}; "
             f"expected={expected!r}; reviewed={review.get('transition_lines')!r}"
         )
+    handoffs = review.get("handoffs")
+    if not isinstance(handoffs, list):
+        errors.append(f"missing paragraph-by-paragraph handoff review: {relative}")
+    else:
+        reviewed_lines: list[int] = []
+        for index, handoff in enumerate(handoffs, start=1):
+            label = f"{relative} handoffs[{index}]"
+            if not isinstance(handoff, dict):
+                errors.append(f"invalid paragraph handoff: {label}")
+                continue
+            line = handoff.get("line")
+            reviewed_lines.append(line)
+            if line not in expected:
+                errors.append(f"invalid paragraph handoff line: {label}")
+            for field in (
+                "inherited_object",
+                "paragraph_function",
+                "relation_to_previous",
+                "economic_subject",
+                "framing_judgment",
+                "judgment",
+            ):
+                if not str(handoff.get(field, "")).strip():
+                    errors.append(f"missing {field.replace('_', ' ')}: {label}")
+            if handoff.get("qualification_leads") not in (True, False):
+                errors.append(f"missing qualification-leads judgment: {label}")
+            elif handoff.get("qualification_leads") is True:
+                justification = str(handoff.get("qualification_leads_justification", "")).strip()
+                if not justification:
+                    errors.append(
+                        f"qualification leads without justification: {label}"
+                    )
+        if reviewed_lines != expected:
+            errors.append(
+                f"paragraph handoff coverage differs: {relative}; "
+                f"expected={expected!r}; reviewed={reviewed_lines!r}"
+            )
     if not str(review.get("judgment", "")).strip():
         errors.append(f"missing paragraph-flow judgment: {relative}")
     exemplars = review.get("raw_exemplars")

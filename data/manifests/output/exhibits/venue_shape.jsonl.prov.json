@@ -1,18 +1,18 @@
 {
  "argv": [],
  "artefact": "output/exhibits/venue_shape.jsonl",
- "artefact_bytes": 23465,
- "artefact_mtime_ns": 1786689562022127546,
- "artefact_sha256": "b3b5c664e0a60f2bc02c45894732a421714fe6d8dc881736ecd13745cd4ce263",
+ "artefact_bytes": 23318,
+ "artefact_mtime_ns": 1786697590100974776,
+ "artefact_sha256": "c119199a8afeadf2928d6a5c2e3cc9fec02c15616b57d634104843d906912f09",
  "code_fingerprint": "5db477e56e3a43f11450dc0d2ffa3c75a96a002e93c6e865f32de0bc864f086c",
  "code_sources": [
   "scripts/measure_venue_shape.py",
   "src/ddvc/tables.py"
  ],
- "created_at": "2026-08-14T06:39:22+00:00",
+ "created_at": "2026-08-14T08:53:10+00:00",
  "git": {
   "branch": "main",
-  "commit": "66c70b64f36907ab974cc10d2ecbf95846ca2899",
+  "commit": "f6e06dc1535fb5d53f6a321397ab8a94833ce7b4",
   "dirty": true,
   "dirty_generated_files": [
    "data/manifests/output/exhibits/prose_conventions.jsonl.prov.json",
@@ -21,38 +21,35 @@
    "output/exhibits/prose_conventions.jsonl",
    "output/exhibits/prose_outliers.jsonl",
    "output/exhibits/venue_optics.jsonl",
-   "output/tables/variable_notation.pdf",
-   "output/tables/variable_notation.tex",
-   "output/exhibits/.venue_shape.jsonl.xobgfzc3.tmp"
+   "output/exhibits/.venue_shape.jsonl.bgasb_gl.tmp",
+   "output/exhibits/v1_architecture_deck_values.tex"
   ],
   "dirty_tracked_files": [
-   "deck/assets/liquidity-quantity-cross-section.tex",
    "deck/main.pdf",
    "deck/main.tex",
    "deck/sections/01-identification.tex",
    "deck/sections/04-results.tex",
-   "deck/sections/05-close.tex",
-   "deck/sections/90-appendix.tex",
-   "docs/research-workflow.md",
-   "docs/reviews/deck-venue-exemplars.md",
+   "docs/literature-audit.md",
    "docs/reviews/paper-rhetoric.json",
    "paper/main.tex",
    "paper/sections/01-introduction.tex",
    "paper/sections/02-setting.tex",
    "paper/sections/03-dominance.tex",
+   "paper/sections/04-survival.tex",
+   "paper/sections/05-liquidity.tex",
+   "paper/sections/05-rivals.tex",
    "paper/sections/06-executability.tex",
    "paper/sections/07-conclusion.tex",
    "paper/sections/08-appendix.tex",
-   "scripts/check_deliverable_conformance.py",
+   "paper/sections/abstract.tex",
    "scripts/check_jfe_rhetoric_review.py",
-   "scripts/research_action_preflight.py",
-   "src/ddvc/variable_registry.py",
-   "tests/test_jfe_rhetoric_review.py",
-   "tests/test_research_action_preflight.py",
-   "tests/test_variable_registry.py"
+   "tests/test_deck_evidence.py",
+   "tests/test_exhibit_notes.py",
+   "tests/test_jfe_rhetoric_review.py"
   ],
   "dirty_untracked_files": [
-   "tests/test_exhibit_notes.py"
+   "tests/test_paper_acronyms.py",
+   "tests/test_transaction_links.py"
   ]
  },
  "inputs": [],
@@ -64,11 +61,11 @@
  },
  "notes": null,
  "payload_identity": {
-  "bytes": 23465,
+  "bytes": 23318,
   "format": "jsonl",
   "rows": 49,
   "schema_version": 1,
-  "sha256": "b3b5c664e0a60f2bc02c45894732a421714fe6d8dc881736ecd13745cd4ce263"
+  "sha256": "c119199a8afeadf2928d6a5c2e3cc9fec02c15616b57d634104843d906912f09"
  },
  "python": "3.14.5",
  "rows": 49,

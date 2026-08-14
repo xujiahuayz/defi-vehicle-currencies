@@ -20,8 +20,11 @@
 \usepackage{natbib}
 \usepackage{setspace}
 \usepackage{hyperref}
+\usepackage{acro}
 \hypersetup{colorlinks=true, linkcolor=[rgb]{0.05,0.25,0.65}, citecolor=[rgb]{0.05,0.25,0.65},
             urlcolor=[rgb]{0.05,0.25,0.65}, filecolor=[rgb]{0.05,0.25,0.65}}
+\newcommand{\ethtx}[2]{\href{https://etherscan.io/tx/#1}{\texttt{#2}}}
+\DeclareAcronym{amm}{short=AMM,long=automated market maker}
 
 \bibliographystyle{chicago}
 \onehalfspacing
