@@ -53,6 +53,7 @@ Every package records this envelope once and points to the node-specific evidenc
 - State the economic question, unit, denominator, comparison set, timing, exposure, outcome, inference target and strongest rival in finance language.
 - Separate calendar time, architecture availability, adoption, market formation, role entry, within-market substitution, persistence, exit, reversal and hysteresis.
 - Distinguish vehicle status, dominance, network reach, endpoint demand, routed value, route cost, deposited capital, local depth, executable depth, inventory and LVR scale.
+- For liquidity and V4, distinguish V2 deposited-capital stocks, V3 signed liquidity-supply flows, V4 intermediary-token transfer incidence, hook exposure, physical settlement quantities and provider returns; none substitutes for another.
 - Use exact two-leg routes for one-intermediary dominance and treat longer routes as a separate network-reach object.
 - Hold endpoints, intermediary set, venue or architecture, notional, support and comparison set fixed before assigning a mechanism.
 - Exit is a claim-specific definition certificate; it does not freeze unrelated questions.
@@ -72,6 +73,7 @@ Every package records this envelope once and points to the node-specific evidenc
 - Classify missingness by economic weight and concentration across time, venues, assets, treatment groups and stress states.
 - Forecast calls, bytes, wall time, memory, disk, locks, host split and a materiality stop rule before scale work.
 - Search current data owners and consumers first; reuse the owner and remove superseded duplicates instead of adding a compatibility layer.
+- Follow the fixed liquidity/V4 order: V2 deposited capital, V3 signed flow, V4 receipt incidence, route-to-pool hook heterogeneity, then rent after the return contract. Record an absent pointer, missing receipt, stale identity or unavailable quantity as the exact blocker instead of opening a proxy lane.
 - Exit freezes only the fields, dates, identities and support perimeter required by the named estimand.
 
 ## D2. Certification and material repair
@@ -104,6 +106,7 @@ Every package records this envelope once and points to the node-specific evidenc
 - Inspect levels, changes, non-monotone paths, distributions, tails, concentration, heterogeneity and economically meaningful cases.
 - Decompose aggregate change into within-market substitution, market formation/disappearance and activity reallocation.
 - Explore liquidity provision, capital, executable depth, venue integration and V4 mechanisms when current J0 data identify them.
+- Keep raw hook counts or values outside the paper and deck until their query contract, route-to-pool identity and support pass J0; a count/value contrast alone does not identify hook effects, net settlement or LP supply.
 - Evaluate explicitly: OLS/WLS, panel fixed effects, grouped logit/binomial, PPML, discrete-time logit/cloglog, Cox sensitivity, DiD/event study, assignment-level t comparisons and KS/distribution analogues with dependence-aware resampling.
 - Preserve all fits, nulls, numerical failures and rejected families. Do not fit a method merely to obtain significance.
 - Surface scientific choices, anomalies and interpretation conflicts for live debate.
@@ -115,6 +118,7 @@ Every package records this envelope once and points to the node-specific evidenc
 - Freeze one claim's estimand, sample, unit, comparison set, primary specification, fixed effects, uncertainty convention, clustering, heterogeneity and falsifiers.
 - State which E0 methods are primary, sensitivity, descriptive or rejected and why.
 - A causal architecture claim requires a defensible comparison group, predetermined exposure, pretrends, balance and placebos; a global launch or endogenous adoption alone remains descriptive.
+- Hold the ordered source-destination pair, intermediary asset, calendar week and trade-size range fixed for V3/V4 route comparisons; add architecture availability, pool formation and hook use separately so calendar time never stands in for design.
 - Exit hashes the lock before confirmatory F. Changing the claim reopens E1.
 
 ## F. Registered empirics

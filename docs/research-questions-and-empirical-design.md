@@ -290,18 +290,24 @@ RQ4 is answered by the joint execution-quality and topology response, not by a p
 
 V4 flash accounting can reduce intermediate ERC-20 transfers and route gas, but it does not automatically lower the swap fee charged by either pool. An economic \(i\to k\to o\) route still executes both pool swaps, and both LP sets earn their applicable swap fees unless a particular pool or hook changes that rule. Netted intermediate balances therefore motivate an empirical test of physical movement and LP supply; they do not imply that the intermediate LP earns nothing.
 
+### Current evidence boundary and execution order
+
+The current sequence is V2 deposited capital, V3 signed liquidity supply, V4 transfer incidence, V4 hook heterogeneity, and only then provider rent. The first two are separate tests of stocks and flows; they are never pooled. The V4 comparison begins with the narrower quantity that transaction receipts can establish: whether the intermediary token emits an ERC-20 transfer in the same transaction. Physical transfer value and PoolManager net settlement require decoded token quantities and currency deltas and are not inferred from transfer incidence. Hook heterogeneity requires an exact route-to-pool join because a V4 label alone does not reveal whether a hook changed cash flows or fees. Provider rent remains unavailable until independently measured prices, exact prior-day capital, provider transaction costs and protocol-specific LVR all pass.
+
+None of these estimates is currently admissible in the local evidence. The V2 capital-release pointer, V3 daily flow panel, combined liquidity panels and V4 receipt sample are absent, the directed-route release rejects a stale quality record, and the installed V4 route file does not match its provenance receipt. A read-only source diagnostic nevertheless identifies a question worth retaining: hooks account for 0% of V4 swaps on 28 February and 31 December 2025, but 32.15% of swaps and 4.08% of absolute swap value on 30 June 2026. On the last date, hooked swaps have median value $134 and 90th percentile $881, compared with $147 and $2,602 for swaps without hooks. Exact inputs are `data/raw/thegraph/uniswap_v4/uniswap_v4_swaps_20250228.jsonl.gz` (`32ce2a379fc823848d97696169e5b107116d60af88448c42d35323b9490f0a4a`), `data/raw/thegraph/uniswap_v4/uniswap_v4_swaps_20251231.jsonl.gz` (`bad0625aa1c6a277e42b2677ba2c65114cb2dfd0bb92229ab5afa4464acf5ba2`) and `data/raw/thegraph/uniswap_v4/uniswap_v4_swaps_20260630.jsonl.gz` (`e9993809ed8c3b129cf36d9216cbb3eb64378c3a4dcd80fbabd24f35b6a7ed4d`). Their metadata records are `data/raw/thegraph/uniswap_v4/uniswap_v4_meta_20250228.json` (`053166c57a1f07b3542fb005689f402234c76c7b999f8527f62222a080c83b39`), `data/raw/thegraph/uniswap_v4/uniswap_v4_meta_20251231.json` (`b3227903b4f2bf98c0ef80ab0e4ee682a9b15faa268b96e4da51e372299ca848`) and `data/raw/thegraph/uniswap_v4/uniswap_v4_meta_20260630.json` (`61cf31d43ca3749b9bfa4825addb3b9e76ba49a11218a4d15368095b130ac0b3`). Each describes an unverified query contract. The pattern is therefore a provisional measurement lead about the distribution of V4 activity, not evidence that hooks cause vehicle use, liquidity supply or lower settlement costs, and it cannot enter the paper or deck.
+
 ### Experiment A: receipt-audited V3/V4 gross-to-net comparison
 
 - **Classification order:** identify ordered endpoints, intermediate \(k\), both swap legs, and protocol version from calls and swap events before reading transfer logs.
-- **Sample:** route units in cells \(g\) matched on ordered pair, vehicle, UTC week, fixed route-size bin, and route direction; show full V3/V4 coverage before restricting to cells with both versions.
-- **Outcomes:** \(\mathrm{Transfer}_{r,k}\), \(M_{r,k}\), \(\mathrm{SettlementIntensity}_{r,k}\), indirect gas contribution \(C^{I,\mathrm{gas}}_{i,o,k,q,t}\), and all-in indirect cost \(C^I_{i,o,k,q,t}\).
+- **Sample:** route units in matched groups \(g\) that hold the ordered source-destination pair, intermediary asset, UTC week, route direction and fixed dollar-size range constant; show full V3/V4 coverage before restricting to groups with both versions.
+- **First-stage outcome:** \(\mathrm{Transfer}_{r,k}\), an indicator for an intermediary-token ERC-20 transfer in the same transaction. Physical movement \(M_{r,k}\), settlement intensity, indirect gas contribution \(C^{I,\mathrm{gas}}_{i,o,k,q,t}\), and all-in indirect cost \(C^I_{i,o,k,q,t}\) are later outcomes and require their own decoded quantities and support.
 
 \[Y_{r,k}=\alpha_g+\beta_{\mathrm{V4}}\mathrm{V4}_r+\varepsilon_{r,k}.\]
 
-- **Primary signs:** \(\beta_{\mathrm{V4}}<0\) for transfer incidence, physical movement, settlement intensity, and gas contribution; the sign for all-in indirect cost should be negative if the settlement saving reaches users.
+- **Primary sign:** \(\beta_{\mathrm{V4}}<0\) for transfer incidence. No sign for physical movement, settlement intensity, gas or all-in cost is tested until the corresponding quantity exists.
 - **Validation:** exact token contracts rather than tickers; wrapped/proxy resolution; exclusion of mint/burn addresses; route-attributed transfer matching; reconciliation of \(M_{r,k}\) to \(\mathrm{GrossLegVol}_{r,k}\); stratified manual receipt audit; one-route-per-transaction robustness.
 - **Hook separation:** the primary accounting sample separates pools whose hooks or dynamic fees alter swap cash flows from vanilla swap accounting; hook-bearing routes are reported by economic function rather than pooled into the V4 coefficient.
-- **Inference:** two-way clustering by comparison cell and week; report raw matched means and the fixed-effect coefficient.
+- **Inference:** two-way clustering by matched group and week; report raw matched means and the fixed-effect coefficient.
 
 ### Experiment B: does netting expand economic vehicle use?
 
@@ -310,6 +316,7 @@ Use a fixed pair universe and predetermined \(\mathrm{PreV4IndirectShare}_{i,o}\
 \[Y_{i,o,t}=\alpha_{i,o}+\delta_t+\sum_{\mu\ne-1}\beta_\mu\mathrm{PreV4IndirectShare}_{i,o}\mathbf{1}_{\{t\in\mu\}}+\varepsilon_{i,o,t}.\]
 
 - **Heterogeneity:** estimate separately by fixed route-size bin because gas savings are a larger fraction of small trades; show V4 availability and \(\mathrm{V4RouteShare}_g\) so treatment intensity is not inferred from the calendar alone.
+- **Architecture versus calendar:** distinguish protocol availability, pool formation, realised V4 use and hook exposure. Hold the trading-pair universe and pre-event exposure fixed, include date effects, and report within-pair comparisons; a global launch or monotone time trend cannot identify the design effect.
 - **Expansion channel:** physical settlement and gas fall while indirect share or vehicle HHI rises, especially for smaller routes.
 - **Pure virtualization:** physical settlement falls but route shares and all-in cost do not move.
 - **Contraction channel:** physical settlement falls and indirect route use also falls, consistent with V4 making direct pools relatively more attractive or changing LP allocation.
@@ -317,7 +324,7 @@ Use a fixed pair universe and predetermined \(\mathrm{PreV4IndirectShare}_{i,o}\
 
 ### Experiment C: does netting encourage or discourage liquidity provision?
 
-The unit is pool-candidate-day. Treatment intensity is predetermined \(\mathrm{VehicleRouteExposure}^{\mathrm{pre}}_{p,k}\), and the event coefficient is its interaction with \(\mathrm{PostV4}_t\). Estimate separate outcomes for total active capital \(\sum_aL_{a,p,t}\), net LP flow \(\sum_aF^{\mathrm{LP}}_{a,p,t}\), \(\mathrm{LPFeeYield}_{a,p,t}\), \(\mathrm{LVR}_{a,p,t}\), \(\mathrm{LPNetReturn}_{a,p,t}\), and \(\mathrm{VehicleTurnover}_{k,t}\), with pool and date fixed effects and event-time leads.
+The unit is pool-intermediary-day. Treatment intensity is predetermined \(\mathrm{VehicleRouteExposure}^{\mathrm{pre}}_{p,k}\), and the event coefficient is its interaction with \(\mathrm{PostV4}_t\). Estimate deposited capital and signed liquidity supply first. Fee yield, LVR and net provider return remain a separate later family and cannot be filled with TVL, virtual depth or unverified pool prices. Specifications use pool and date fixed effects and event-time leads.
 
 \[Y_{p,k,t}=\alpha_{p,k}+\delta_t+\beta_{\mathrm{LP}}\bigl(\mathrm{VehicleRouteExposure}^{\mathrm{pre}}_{p,k}\times\mathrm{PostV4}_t\bigr)+\varepsilon_{p,k,t}.\]
 
@@ -344,7 +351,7 @@ RQ5 has three separable answers. Experiment A establishes whether economic vehic
 
 ## Review decisions before execution
 
-- [x] **LOCKED BY NODE E, 2026-08-07** — the five-RQ menu is narrowed for the current paper: vehicle transition leads, rent incidence is the mechanism, exact-state direct dominance is the foundation, routing maturation is the first rival, persistence/hysteresis is withheld, and V4 settlement remains an extension.
+- [x] **LOCKED BY NODE E, updated 2026-08-14** — the five-RQ menu is narrowed for the current paper: vehicle transition leads, liquidity allocation is a companion mechanism family, exact-state direct dominance is the foundation, routing maturation is the first rival, persistence/hysteresis is withheld, and V4 settlement remains an extension. Rent incidence is not the liquidity mechanism by default and re-enters only after its return contract passes.
 - [x] **DELEGATED, decided 2026-08-06, Java may veto** — approve the distinction between quote-output cost and all-in route cost, including the fee/price-impact/gas audit decomposition.
 - [x] **DELEGATED, decided 2026-08-06, Java may veto** — approve the RQ1 fixed notionals and use of observed transaction size for route-level validation.
 - [x] **DELEGATED, decided 2026-08-06, Java may veto** — approve the RQ2 provider-controller look-through rule, outside-token shift-share shock, and fee/LVR/net-return decomposition.
