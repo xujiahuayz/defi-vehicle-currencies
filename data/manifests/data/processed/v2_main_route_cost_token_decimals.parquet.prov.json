@@ -1,0 +1,2737 @@
+{
+ "argv": [
+  "--audit-legacy-v2-corrections",
+  "--fetch-token-decimals",
+  "--refresh-legacy-v2-corrections",
+  "--workers",
+  "4"
+ ],
+ "artefact": "data/processed/v2_main_route_cost_token_decimals.parquet",
+ "artefact_bytes": 110703,
+ "artefact_mtime_ns": 1786688564609977069,
+ "artefact_sha256": "e0103383ad9d19dbb8a893e43580a30fab4a834e9272b9ade70fbbadaeece8f4",
+ "code_fingerprint": "ab1f4f8bd0fadfe15be7f0dd0198089d7fcf7212e9255d77379822f0ef2680f4",
+ "code_sources": [
+  "scripts/build_market_state.py",
+  "scripts/run_route_cost_panel.py",
+  "src/ddvc/asset_types.py",
+  "src/ddvc/token_decimals.py",
+  "src/ddvc/v2_event_completeness.py"
+ ],
+ "created_at": "2026-08-14T06:22:45+00:00",
+ "git": {
+  "branch": "main",
+  "commit": "e7f65254e048dea083212b765cec79985f6cbc14",
+  "dirty": false,
+  "dirty_generated_files": [],
+  "dirty_tracked_files": [],
+  "dirty_untracked_files": []
+ },
+ "inputs": [
+  {
+   "bytes": 539455,
+   "exists": true,
+   "path": "data/raw/ethereum/token_decimals/v2_main_route_cost_selected_anchors.json",
+   "sha256": "957ca2441c6fa4a537c85daaff6132c0f42e73b50abdb8e41e4058ff84e3e81f"
+  },
+  {
+   "bytes": 456408,
+   "exists": true,
+   "path": "data/processed/unified_route_quality.parquet",
+   "sha256": "7baa00fde6a445beaa9867a936754be921303aa39c7de757217838f294b55625"
+  },
+  {
+   "bytes": 29924272,
+   "exists": true,
+   "path": "data/processed/v2_audit_token_decimals.parquet",
+   "sha256": "8c3a57ff10ec0dc61f50458f52e483567ee294b790f10692bb4b2813a70b20a5"
+  },
+  {
+   "bytes": 994,
+   "exists": true,
+   "path": "data/processed/v2_core_event_source_release/current.json",
+   "sha256": "237a5f9b4307c29f1fc7039c6302c6eb167e267ad0f196d825d353dd526c4303"
+  },
+  {
+   "bytes": 299442,
+   "exists": true,
+   "path": "data/raw/ethereum/v2_factory_pair_registry/uniswap_v2/leaves/blocks_19180000_19189999.meta.json",
+   "sha256": "32f4b57334c9028627dc390d41f4e7895cc4dafd9eafe4595c616b7a47ab4f99"
+  },
+  {
+   "bytes": 42466,
+   "exists": true,
+   "path": "data/raw/ethereum/v2_factory_pair_registry/uniswap_v2/leaves/blocks_19180000_19189999.parquet",
+   "sha256": "f834d4ab143544d1e2ab45aa4f6fe88956ac1891f33d34f58325377f86bfb871"
+  },
+  {
+   "bytes": 328229,
+   "exists": true,
+   "path": "data/raw/ethereum/v2_factory_pair_registry/uniswap_v2/leaves/blocks_19710000_19719999.meta.json",
+   "sha256": "676b556f91ac745dc7354639118e9a6d1d6b5dcc020a4386ca39d4e8bad30fd0"
+  },
+  {
+   "bytes": 46771,
+   "exists": true,
+   "path": "data/raw/ethereum/v2_factory_pair_registry/uniswap_v2/leaves/blocks_19710000_19719999.parquet",
+   "sha256": "312ab38d132a80e0211cb29026d67cd956d5ab83476d1913a4a30df631fb9fd6"
+  },
+  {
+   "bytes": 420948,
+   "exists": true,
+   "path": "data/raw/ethereum/v2_factory_pair_registry/uniswap_v2/leaves/blocks_21030000_21039999.meta.json",
+   "sha256": "95a6632af42563bec98b4a37d956db61ad780d74258358f2dd583a810df3821e"
+  },
+  {
+   "bytes": 59707,
+   "exists": true,
+   "path": "data/raw/ethereum/v2_factory_pair_registry/uniswap_v2/leaves/blocks_21030000_21039999.parquet",
+   "sha256": "79c67c4f3d235ad41a014f6bfd43984708bed0f810503f3482ffd6fa4452fd2a"
+  },
+  {
+   "bytes": 490151,
+   "exists": true,
+   "path": "data/raw/ethereum/v2_factory_pair_registry/uniswap_v2/leaves/blocks_21110000_21119999.meta.json",
+   "sha256": "5b31c567b9f74260199141280488080fe4651adbb8683e9f8958d410a6afbf12"
+  },
+  {
+   "bytes": 69884,
+   "exists": true,
+   "path": "data/raw/ethereum/v2_factory_pair_registry/uniswap_v2/leaves/blocks_21110000_21119999.parquet",
+   "sha256": "05e4d9753ad4f32eea9086ac928f1eae336a383b5ba3802012afa4885aeea30c"
+  },
+  {
+   "bytes": 350830,
+   "exists": true,
+   "path": "data/raw/ethereum/v2_factory_pair_registry/uniswap_v2/leaves/blocks_21120000_21129999.meta.json",
+   "sha256": "d46dfd5dcac52768c2ba5022fdbd0e8291150fc15e9200bee6e297257ff4e55f"
+  },
+  {
+   "bytes": 49749,
+   "exists": true,
+   "path": "data/raw/ethereum/v2_factory_pair_registry/uniswap_v2/leaves/blocks_21120000_21129999.parquet",
+   "sha256": "5b1532d2cd158ded8d90fce068f27ec3f10aa03392237fc74d1547b366868f95"
+  },
+  {
+   "bytes": 292543,
+   "exists": true,
+   "path": "data/raw/ethereum/v2_factory_pair_registry/uniswap_v2/leaves/blocks_21150000_21159999.meta.json",
+   "sha256": "a3df6324eacbd4b7dce1c142d37cd8f4d5f289388642f1bcf197a7e707a45cb3"
+  },
+  {
+   "bytes": 41125,
+   "exists": true,
+   "path": "data/raw/ethereum/v2_factory_pair_registry/uniswap_v2/leaves/blocks_21150000_21159999.parquet",
+   "sha256": "288c72c1d33b4d011cf8b84db44790448d044bcf2a32e0d7517bd9e9f4e5e377"
+  },
+  {
+   "bytes": 268057,
+   "exists": true,
+   "path": "data/raw/ethereum/v2_factory_pair_registry/uniswap_v2/leaves/blocks_21160000_21169999.meta.json",
+   "sha256": "fafb18dfefbdd4d4aa6ed1a13ec36e7024c58a384bf4976b52357dfcef92dc79"
+  },
+  {
+   "bytes": 37869,
+   "exists": true,
+   "path": "data/raw/ethereum/v2_factory_pair_registry/uniswap_v2/leaves/blocks_21160000_21169999.parquet",
+   "sha256": "db601a697cab135414aa91261747ab187e4dd45a75ccf4e27aa34e48ee12ca2a"
+  },
+  {
+   "bytes": 239378,
+   "exists": true,
+   "path": "data/raw/ethereum/v2_factory_pair_registry/uniswap_v2/leaves/blocks_21240000_21249999.meta.json",
+   "sha256": "23792fb2321f892c9c0ab83eb9f1ef303bbdbf878051743b209e49b705fe25ee"
+  },
+  {
+   "bytes": 33536,
+   "exists": true,
+   "path": "data/raw/ethereum/v2_factory_pair_registry/uniswap_v2/leaves/blocks_21240000_21249999.parquet",
+   "sha256": "c250806c76cc21c0662a80aa722d0c000c7ec563cd171070f07e54a168ba2644"
+  },
+  {
+   "bytes": 185348,
+   "exists": true,
+   "path": "data/raw/ethereum/v2_factory_pair_registry/uniswap_v2/leaves/blocks_21330000_21339999.meta.json",
+   "sha256": "343e7449d55986311d6ea029f9efe5c34818cceab25a18673acd0258ea217961"
+  },
+  {
+   "bytes": 25977,
+   "exists": true,
+   "path": "data/raw/ethereum/v2_factory_pair_registry/uniswap_v2/leaves/blocks_21330000_21339999.parquet",
+   "sha256": "4a3cfa1f5b171f1e4d72244d6c4eb847075734b88d94d0dbec8f73cabc5f1a66"
+  },
+  {
+   "bytes": 160884,
+   "exists": true,
+   "path": "data/raw/ethereum/v2_factory_pair_registry/uniswap_v2/leaves/blocks_21420000_21429999.meta.json",
+   "sha256": "53ba6283cdcf2c1a35f4eaa3b47b3b26727c3efb67bbb9b13e34cf41391d145e"
+  },
+  {
+   "bytes": 22606,
+   "exists": true,
+   "path": "data/raw/ethereum/v2_factory_pair_registry/uniswap_v2/leaves/blocks_21420000_21429999.parquet",
+   "sha256": "a2b2835a5235628df66685d89ba10789643c12debc20e978943628d32843ae77"
+  },
+  {
+   "bytes": 144829,
+   "exists": true,
+   "path": "data/raw/ethereum/v2_factory_pair_registry/uniswap_v2/leaves/blocks_21430000_21439999.meta.json",
+   "sha256": "b47b792d97430e44150259f9df54526691f311724d43ca4c95d04b29b6aadb1b"
+  },
+  {
+   "bytes": 20226,
+   "exists": true,
+   "path": "data/raw/ethereum/v2_factory_pair_registry/uniswap_v2/leaves/blocks_21430000_21439999.parquet",
+   "sha256": "904964912673a81480d4cea7d5e01e768f3fb71ccfcc4c49f92fd1fc0642a10c"
+  },
+  {
+   "bytes": 216581,
+   "exists": true,
+   "path": "data/raw/ethereum/v2_factory_pair_registry/uniswap_v2/leaves/blocks_21640000_21649999.meta.json",
+   "sha256": "b5f25c4469ea865ca8eb5b6b449255dffd94b1230865fd2d1f8e4b38c76718b9"
+  },
+  {
+   "bytes": 30605,
+   "exists": true,
+   "path": "data/raw/ethereum/v2_factory_pair_registry/uniswap_v2/leaves/blocks_21640000_21649999.parquet",
+   "sha256": "ff02e4993c9c88cc2782867f49cdc5686abf413798dcfeef702be7c7caa942b2"
+  },
+  {
+   "bytes": 156624,
+   "exists": true,
+   "path": "data/raw/ethereum/v2_factory_pair_registry/uniswap_v2/leaves/blocks_21650000_21659999.meta.json",
+   "sha256": "be2fd7cef51b7af9b324950872c6fd2a9e79c7babbbe9a5358e30e7567cd5776"
+  },
+  {
+   "bytes": 21717,
+   "exists": true,
+   "path": "data/raw/ethereum/v2_factory_pair_registry/uniswap_v2/leaves/blocks_21650000_21659999.parquet",
+   "sha256": "178bb282cceeff5233ecfe8a80c4e187d09539aaf02947c1ef07fbd609d3515d"
+  },
+  {
+   "bytes": 194629,
+   "exists": true,
+   "path": "data/raw/ethereum/v2_factory_pair_registry/uniswap_v2/leaves/blocks_21660000_21669999.meta.json",
+   "sha256": "f4bb001b3ade1c9ba4b6ee14453da6640ad06b004e87dc75be83cc3ef91c23e9"
+  },
+  {
+   "bytes": 27345,
+   "exists": true,
+   "path": "data/raw/ethereum/v2_factory_pair_registry/uniswap_v2/leaves/blocks_21660000_21669999.parquet",
+   "sha256": "9852412c020bc0a189fe92faa43ba84f0de31ecfb9ecea70276ac53ff1fe126e"
+  },
+  {
+   "bytes": 268100,
+   "exists": true,
+   "path": "data/raw/ethereum/v2_factory_pair_registry/uniswap_v2/leaves/blocks_21670000_21679999.meta.json",
+   "sha256": "8790de22d0814f12dc1bfec294265c553f50121e34eaa65076928559aea17355"
+  },
+  {
+   "bytes": 37692,
+   "exists": true,
+   "path": "data/raw/ethereum/v2_factory_pair_registry/uniswap_v2/leaves/blocks_21670000_21679999.parquet",
+   "sha256": "40c960fc7fae391306ff5115f3feba7f70ede1937868c5c82b656a0d3d6533e4"
+  },
+  {
+   "bytes": 224219,
+   "exists": true,
+   "path": "data/raw/ethereum/v2_factory_pair_registry/uniswap_v2/leaves/blocks_21860000_21869999.meta.json",
+   "sha256": "4cfeb6b6de409320b601a737805f0dd7899eae9abd339c6e0616c03cbcb19fd6"
+  },
+  {
+   "bytes": 31846,
+   "exists": true,
+   "path": "data/raw/ethereum/v2_factory_pair_registry/uniswap_v2/leaves/blocks_21860000_21869999.parquet",
+   "sha256": "4e41ecf48b6ab75e37c0949e974e88c5bd983699315bae6022099d4b3bf3d84c"
+  },
+  {
+   "bytes": 270696,
+   "exists": true,
+   "path": "data/raw/ethereum/v2_factory_pair_registry/uniswap_v2/leaves/blocks_21870000_21879999.meta.json",
+   "sha256": "5a392660e7dd5748553a309c42f1aaafced8d5d5eecba20d10b79e07e25e4914"
+  },
+  {
+   "bytes": 38318,
+   "exists": true,
+   "path": "data/raw/ethereum/v2_factory_pair_registry/uniswap_v2/leaves/blocks_21870000_21879999.parquet",
+   "sha256": "9f3915a693f205db726e23ba0af632a8447e3097ed13f1a720ed28ea62b908ca"
+  },
+  {
+   "bytes": 239450,
+   "exists": true,
+   "path": "data/raw/ethereum/v2_factory_pair_registry/uniswap_v2/leaves/blocks_21910000_21919999.meta.json",
+   "sha256": "4165a6264d5592baf6e47414fa79b3dbda2f4b42c8d79f7ca46729cd0a80f959"
+  },
+  {
+   "bytes": 33631,
+   "exists": true,
+   "path": "data/raw/ethereum/v2_factory_pair_registry/uniswap_v2/leaves/blocks_21910000_21919999.parquet",
+   "sha256": "d0b1190698e6f944313c2a7f4a10651bd7e0396c21ed3a78a3ada592bbd83e7f"
+  },
+  {
+   "bytes": 198062,
+   "exists": true,
+   "path": "data/raw/ethereum/v2_factory_pair_registry/uniswap_v2/leaves/blocks_21920000_21929999.meta.json",
+   "sha256": "4fb1b5b91dae7b3e53f5edc96616c8270d30ba6b336270e52edb354530881004"
+  },
+  {
+   "bytes": 27977,
+   "exists": true,
+   "path": "data/raw/ethereum/v2_factory_pair_registry/uniswap_v2/leaves/blocks_21920000_21929999.parquet",
+   "sha256": "ef1b9990fc6cfc5a1a72d71e8fcbb57f69bc132e22c600aea38481a2db2cd471"
+  },
+  {
+   "bytes": 173540,
+   "exists": true,
+   "path": "data/raw/ethereum/v2_factory_pair_registry/uniswap_v2/leaves/blocks_21940000_21949999.meta.json",
+   "sha256": "cc5a4fa899ce3e646f628660f15a474b74d55bb6576961ba9c02bdc0d0485a1d"
+  },
+  {
+   "bytes": 24381,
+   "exists": true,
+   "path": "data/raw/ethereum/v2_factory_pair_registry/uniswap_v2/leaves/blocks_21940000_21949999.parquet",
+   "sha256": "b3e0f790e5a4a778a82d9805f9008772a167119c6f701b4cf6de0ee1de2dec9c"
+  },
+  {
+   "bytes": 209818,
+   "exists": true,
+   "path": "data/raw/ethereum/v2_factory_pair_registry/uniswap_v2/leaves/blocks_21950000_21959999.meta.json",
+   "sha256": "7307b1bb09cc6274675a63375a3de7ac4d67bf99f5916234ef36e95153d6efb9"
+  },
+  {
+   "bytes": 29526,
+   "exists": true,
+   "path": "data/raw/ethereum/v2_factory_pair_registry/uniswap_v2/leaves/blocks_21950000_21959999.parquet",
+   "sha256": "d69531518b6f4966f817a9549d55582037d0ba06b2ad890975cd34a36292dde4"
+  },
+  {
+   "bytes": 201441,
+   "exists": true,
+   "path": "data/raw/ethereum/v2_factory_pair_registry/uniswap_v2/leaves/blocks_21960000_21969999.meta.json",
+   "sha256": "189890968a6259157dfb18921b0cdda5dab06c4f8ed1a79a0400bbc3be09c5a7"
+  },
+  {
+   "bytes": 28566,
+   "exists": true,
+   "path": "data/raw/ethereum/v2_factory_pair_registry/uniswap_v2/leaves/blocks_21960000_21969999.parquet",
+   "sha256": "8427c3fff8d853572e666aa7ccc46ea7b09eb742e3fd73fffafab7abf5bbbf1d"
+  },
+  {
+   "bytes": 178640,
+   "exists": true,
+   "path": "data/raw/ethereum/v2_factory_pair_registry/uniswap_v2/leaves/blocks_21970000_21979999.meta.json",
+   "sha256": "89e77f93e0bc90a3ddc7230f42256056a5e16c3e56b4e2fd97fae826741db583"
+  },
+  {
+   "bytes": 25107,
+   "exists": true,
+   "path": "data/raw/ethereum/v2_factory_pair_registry/uniswap_v2/leaves/blocks_21970000_21979999.parquet",
+   "sha256": "1635a21f7e5512da33ddc508a7f478ecd0ec0c22ad58fd3a3ee120b11829cfa5"
+  },
+  {
+   "bytes": 274041,
+   "exists": true,
+   "path": "data/raw/ethereum/v2_factory_pair_registry/uniswap_v2/leaves/blocks_21980000_21989999.meta.json",
+   "sha256": "a7a4c20a3406c1d5a1811c3be557c85d468e48ce9b0355c37d6ee737f1dad9a4"
+  },
+  {
+   "bytes": 38825,
+   "exists": true,
+   "path": "data/raw/ethereum/v2_factory_pair_registry/uniswap_v2/leaves/blocks_21980000_21989999.parquet",
+   "sha256": "e85f3e45b04ed88b5578785fb95bcd62fdb33eda6d521d5744c31b07d05c5fa8"
+  },
+  {
+   "bytes": 260532,
+   "exists": true,
+   "path": "data/raw/ethereum/v2_factory_pair_registry/uniswap_v2/leaves/blocks_21990000_21999999.meta.json",
+   "sha256": "1f925a0e10734eb28fcaf5f0d3ecbc40a46ee5baee1334fd6272f54342dbf425"
+  },
+  {
+   "bytes": 36752,
+   "exists": true,
+   "path": "data/raw/ethereum/v2_factory_pair_registry/uniswap_v2/leaves/blocks_21990000_21999999.parquet",
+   "sha256": "e022df10244b28ab766412c3c5a70fb98999968e614f8eff545e45844d3ba81b"
+  },
+  {
+   "bytes": 176119,
+   "exists": true,
+   "path": "data/raw/ethereum/v2_factory_pair_registry/uniswap_v2/leaves/blocks_22010000_22019999.meta.json",
+   "sha256": "718d0e838dc040700f95260c94a92f2e01f3391e132ec03ee58f0605337b354a"
+  },
+  {
+   "bytes": 24660,
+   "exists": true,
+   "path": "data/raw/ethereum/v2_factory_pair_registry/uniswap_v2/leaves/blocks_22010000_22019999.parquet",
+   "sha256": "7da210d7c8d0de70f71a53bb23f4307dd60b9b25235ca7d08dc6a48b88cc8a05"
+  },
+  {
+   "bytes": 242817,
+   "exists": true,
+   "path": "data/raw/ethereum/v2_factory_pair_registry/uniswap_v2/leaves/blocks_22040000_22049999.meta.json",
+   "sha256": "68369d7734e0d56a77e702ed23249a7579608991bfeced7b15e82b6565ae8a43"
+  },
+  {
+   "bytes": 33924,
+   "exists": true,
+   "path": "data/raw/ethereum/v2_factory_pair_registry/uniswap_v2/leaves/blocks_22040000_22049999.parquet",
+   "sha256": "7ca8fdea81f870c46761bfac57eff1f58e0aa7e8ee3ba02ab86cf281a91caf8c"
+  },
+  {
+   "bytes": 285985,
+   "exists": true,
+   "path": "data/raw/ethereum/v2_factory_pair_registry/uniswap_v2/leaves/blocks_22070000_22079999.meta.json",
+   "sha256": "f638a5d46190f2643a862224f3f7fdb1cc497070dfdee038dbbdde1f7521402b"
+  },
+  {
+   "bytes": 40627,
+   "exists": true,
+   "path": "data/raw/ethereum/v2_factory_pair_registry/uniswap_v2/leaves/blocks_22070000_22079999.parquet",
+   "sha256": "e67c721b66d1d4c239640e052619a6640580feb7b1a2ef285c6ed8669f1bd8b4"
+  },
+  {
+   "bytes": 385639,
+   "exists": true,
+   "path": "data/raw/ethereum/v2_factory_pair_registry/uniswap_v2/leaves/blocks_22080000_22089999.meta.json",
+   "sha256": "2f29ba2341a5fec4800686aa8efcd6426925a192b01772f48452037cc33c3310"
+  },
+  {
+   "bytes": 54820,
+   "exists": true,
+   "path": "data/raw/ethereum/v2_factory_pair_registry/uniswap_v2/leaves/blocks_22080000_22089999.parquet",
+   "sha256": "7592853b10ee44a17537a234c71896e80a81f2faec7923aca4fac3143e7e70d7"
+  },
+  {
+   "bytes": 318946,
+   "exists": true,
+   "path": "data/raw/ethereum/v2_factory_pair_registry/uniswap_v2/leaves/blocks_22100000_22109999.meta.json",
+   "sha256": "546f4ee3c17b93c025a0043982402a1c7866611f7a8f666e5d84c7eb7259fd41"
+  },
+  {
+   "bytes": 45268,
+   "exists": true,
+   "path": "data/raw/ethereum/v2_factory_pair_registry/uniswap_v2/leaves/blocks_22100000_22109999.parquet",
+   "sha256": "d28ea6bd51bf3791ab0a92d0b4100d2d8e61f7130c9b565f26ccf2a5f5618467"
+  },
+  {
+   "bytes": 354376,
+   "exists": true,
+   "path": "data/raw/ethereum/v2_factory_pair_registry/uniswap_v2/leaves/blocks_22110000_22119999.meta.json",
+   "sha256": "dff3a0460e48420f0b6457029f9c8186a67de63140799a604a88ec2e2bd9e887"
+  },
+  {
+   "bytes": 50491,
+   "exists": true,
+   "path": "data/raw/ethereum/v2_factory_pair_registry/uniswap_v2/leaves/blocks_22110000_22119999.parquet",
+   "sha256": "9983048b2afa415002d52e43bf957ea428d69b58f527857beaff3a2273dd572c"
+  },
+  {
+   "bytes": 340092,
+   "exists": true,
+   "path": "data/raw/ethereum/v2_factory_pair_registry/uniswap_v2/leaves/blocks_22130000_22139999.meta.json",
+   "sha256": "27ceff6a3eb9745ab1f6fdf3c23d78adc8d96117b4b69c908d618855949c7087"
+  },
+  {
+   "bytes": 48276,
+   "exists": true,
+   "path": "data/raw/ethereum/v2_factory_pair_registry/uniswap_v2/leaves/blocks_22130000_22139999.parquet",
+   "sha256": "3c599ac31a92540cec2de29bf8fa4becb704d55a0be0573dc89510a368be1315"
+  },
+  {
+   "bytes": 255562,
+   "exists": true,
+   "path": "data/raw/ethereum/v2_factory_pair_registry/uniswap_v2/leaves/blocks_22220000_22229999.meta.json",
+   "sha256": "992ec4969f66e1deca14ee53c9d8be0fa46b81b569f6ecd661b6e8dc5fca0840"
+  },
+  {
+   "bytes": 36270,
+   "exists": true,
+   "path": "data/raw/ethereum/v2_factory_pair_registry/uniswap_v2/leaves/blocks_22220000_22229999.parquet",
+   "sha256": "cb3674c7d9a213da063ccbc9c0e4e6506c8b7a039aaf4f6e7ab147e8aa74f652"
+  },
+  {
+   "bytes": 300320,
+   "exists": true,
+   "path": "data/raw/ethereum/v2_factory_pair_registry/uniswap_v2/leaves/blocks_22230000_22239999.meta.json",
+   "sha256": "26cc34e2d293c9c464426b7d778b8746be7b126cd6742132971b6bbf671fd22c"
+  },
+  {
+   "bytes": 42397,
+   "exists": true,
+   "path": "data/raw/ethereum/v2_factory_pair_registry/uniswap_v2/leaves/blocks_22230000_22239999.parquet",
+   "sha256": "5bbea6fa5abbf30feff9d526272bd90a04686f540f4776b475c3903a975eb79d"
+  },
+  {
+   "bytes": 318829,
+   "exists": true,
+   "path": "data/raw/ethereum/v2_factory_pair_registry/uniswap_v2/leaves/blocks_22240000_22249999.meta.json",
+   "sha256": "3b1f4cba1c2cefe2e224156195a4a698ac31c3b2a373a0993652a6197031dcf8"
+  },
+  {
+   "bytes": 45296,
+   "exists": true,
+   "path": "data/raw/ethereum/v2_factory_pair_registry/uniswap_v2/leaves/blocks_22240000_22249999.parquet",
+   "sha256": "5bf16d71a4c790aa1cfc944654b1cd63ddc050615f12029a88a17b71e7e68558"
+  },
+  {
+   "bytes": 279210,
+   "exists": true,
+   "path": "data/raw/ethereum/v2_factory_pair_registry/uniswap_v2/leaves/blocks_22250000_22259999.meta.json",
+   "sha256": "0ff564b80c5741c51aca12fad9fdfa338edbc98a02c90348f7bfeafa05e69de1"
+  },
+  {
+   "bytes": 39720,
+   "exists": true,
+   "path": "data/raw/ethereum/v2_factory_pair_registry/uniswap_v2/leaves/blocks_22250000_22259999.parquet",
+   "sha256": "c3eece2f1a48a6b064964147abde65826a2bc7e693b34afaf65db4ea7c843a87"
+  },
+  {
+   "bytes": 338359,
+   "exists": true,
+   "path": "data/raw/ethereum/v2_factory_pair_registry/uniswap_v2/leaves/blocks_22260000_22269999.meta.json",
+   "sha256": "ab93f2f9f0e2a5d56456c36304ad2b5eb1f2f542a0ba0fc4938a949cae8dbe16"
+  },
+  {
+   "bytes": 48181,
+   "exists": true,
+   "path": "data/raw/ethereum/v2_factory_pair_registry/uniswap_v2/leaves/blocks_22260000_22269999.parquet",
+   "sha256": "1c6dce2eee7ae0b508ad71f7e9a7f353743c2e5ec5e5bb6b668da35a86ff524c"
+  },
+  {
+   "bytes": 314666,
+   "exists": true,
+   "path": "data/raw/ethereum/v2_factory_pair_registry/uniswap_v2/leaves/blocks_22270000_22279999.meta.json",
+   "sha256": "eec5aa45260218a47b785b2525394a908ac1c07bbea8b53725fdb1b6cebd3cb9"
+  },
+  {
+   "bytes": 44667,
+   "exists": true,
+   "path": "data/raw/ethereum/v2_factory_pair_registry/uniswap_v2/leaves/blocks_22270000_22279999.parquet",
+   "sha256": "2b63bc4884d5ca0ea45497d42b8d0a175358dc863f4ebf635e06832edf486088"
+  },
+  {
+   "bytes": 288461,
+   "exists": true,
+   "path": "data/raw/ethereum/v2_factory_pair_registry/uniswap_v2/leaves/blocks_22280000_22289999.meta.json",
+   "sha256": "2fda66623f872c5e6225b3bca7396157dffc1ecbe6835fd0334c4b6f7927ba93"
+  },
+  {
+   "bytes": 40932,
+   "exists": true,
+   "path": "data/raw/ethereum/v2_factory_pair_registry/uniswap_v2/leaves/blocks_22280000_22289999.parquet",
+   "sha256": "35de7c6f3755bb10a34b9a8afd50f0a69cf0545a220f7fcb8d2eca92d438d428"
+  },
+  {
+   "bytes": 267324,
+   "exists": true,
+   "path": "data/raw/ethereum/v2_factory_pair_registry/uniswap_v2/leaves/blocks_22290000_22299999.meta.json",
+   "sha256": "496e9e17a9cd421d594ced88b78532c92a0d8d73799b617b18339af8e93ca963"
+  },
+  {
+   "bytes": 37717,
+   "exists": true,
+   "path": "data/raw/ethereum/v2_factory_pair_registry/uniswap_v2/leaves/blocks_22290000_22299999.parquet",
+   "sha256": "de2973f43da52c7ee91c177db8e0ef1f37a25b224dfac59d447de47256a81d32"
+  },
+  {
+   "bytes": 235235,
+   "exists": true,
+   "path": "data/raw/ethereum/v2_factory_pair_registry/uniswap_v2/leaves/blocks_22300000_22309999.meta.json",
+   "sha256": "c78cf3193fea1ec61eab417e28170551af53cdea507d3fc5e07700137a94ca7c"
+  },
+  {
+   "bytes": 33217,
+   "exists": true,
+   "path": "data/raw/ethereum/v2_factory_pair_registry/uniswap_v2/leaves/blocks_22300000_22309999.parquet",
+   "sha256": "bfc52e6e3b60f6fd1ed56bcfc2cecb11ed8e708eeac9eea8dedf057775f43bb0"
+  },
+  {
+   "bytes": 328133,
+   "exists": true,
+   "path": "data/raw/ethereum/v2_factory_pair_registry/uniswap_v2/leaves/blocks_22310000_22319999.meta.json",
+   "sha256": "8adcb48bad8d121fd062d1924c30644cec25d3a579bd702e49a0a2b978b22e75"
+  },
+  {
+   "bytes": 46455,
+   "exists": true,
+   "path": "data/raw/ethereum/v2_factory_pair_registry/uniswap_v2/leaves/blocks_22310000_22319999.parquet",
+   "sha256": "8a1d057233f483e216a8f3feb8bfd766c120924687472e2a4c8547533dc4a703"
+  },
+  {
+   "bytes": 380454,
+   "exists": true,
+   "path": "data/raw/ethereum/v2_factory_pair_registry/uniswap_v2/leaves/blocks_22370000_22379999.meta.json",
+   "sha256": "20ff95982dda47925933abd2bee84fd6983104a00334db1e5ce95b0d4a4edff3"
+  },
+  {
+   "bytes": 53578,
+   "exists": true,
+   "path": "data/raw/ethereum/v2_factory_pair_registry/uniswap_v2/leaves/blocks_22370000_22379999.parquet",
+   "sha256": "bb5787952b32220c9bfade622e77799af8450656fe2fc80d1026174c09964632"
+  },
+  {
+   "bytes": 321335,
+   "exists": true,
+   "path": "data/raw/ethereum/v2_factory_pair_registry/uniswap_v2/leaves/blocks_22380000_22389999.meta.json",
+   "sha256": "de647d1d4a761fb7b182e3b965faffeea30e67920b194b220762e99c74307c87"
+  },
+  {
+   "bytes": 45342,
+   "exists": true,
+   "path": "data/raw/ethereum/v2_factory_pair_registry/uniswap_v2/leaves/blocks_22380000_22389999.parquet",
+   "sha256": "a4420b54d31810f12fc37d73589ebde5ee51cc55e5abc78011efd43edc06cd58"
+  },
+  {
+   "bytes": 271421,
+   "exists": true,
+   "path": "data/raw/ethereum/v2_factory_pair_registry/uniswap_v2/leaves/blocks_22440000_22449999.meta.json",
+   "sha256": "abc451a2edc85848a3c4c3863cc7643e004d023d39d6727885f5f328ebf1a303"
+  },
+  {
+   "bytes": 37897,
+   "exists": true,
+   "path": "data/raw/ethereum/v2_factory_pair_registry/uniswap_v2/leaves/blocks_22440000_22449999.parquet",
+   "sha256": "0ff3a57e7a8577e0f8c82046d314f751cc1f3ce969914af6038a524e5a81da37"
+  },
+  {
+   "bytes": 363543,
+   "exists": true,
+   "path": "data/raw/ethereum/v2_factory_pair_registry/uniswap_v2/leaves/blocks_22450000_22459999.meta.json",
+   "sha256": "24a6ddd04568f909e4c9a26e109470101c81128650a7766cd216accf784cce2e"
+  },
+  {
+   "bytes": 51400,
+   "exists": true,
+   "path": "data/raw/ethereum/v2_factory_pair_registry/uniswap_v2/leaves/blocks_22450000_22459999.parquet",
+   "sha256": "a192d88477b9e10fa28ccabde9067ea89b43a574426644cba479f4ebacbb9a48"
+  },
+  {
+   "bytes": 443790,
+   "exists": true,
+   "path": "data/raw/ethereum/v2_factory_pair_registry/uniswap_v2/leaves/blocks_22460000_22469999.meta.json",
+   "sha256": "8833627e54d016a893cedeb64b5c70fe19dc75a4076f304336dd794fbf3a0508"
+  },
+  {
+   "bytes": 62706,
+   "exists": true,
+   "path": "data/raw/ethereum/v2_factory_pair_registry/uniswap_v2/leaves/blocks_22460000_22469999.parquet",
+   "sha256": "b8f0f2dbcae102261dd33a6d9e66452bc9a806c4254c6ea4cc56c4c6cd05add6"
+  },
+  {
+   "bytes": 282663,
+   "exists": true,
+   "path": "data/raw/ethereum/v2_factory_pair_registry/uniswap_v2/leaves/blocks_23230000_23239999.meta.json",
+   "sha256": "26a75c5f6372295e9d08a734e365af7ff33b30822ffa1dc2faab9287c1d0b817"
+  },
+  {
+   "bytes": 40112,
+   "exists": true,
+   "path": "data/raw/ethereum/v2_factory_pair_registry/uniswap_v2/leaves/blocks_23230000_23239999.parquet",
+   "sha256": "95db652db4d84d16a5d6a7a84e44ceed5333db02315dcdaa02699243188c3ccf"
+  },
+  {
+   "bytes": 348569,
+   "exists": true,
+   "path": "data/raw/ethereum/v2_factory_pair_registry/uniswap_v2/leaves/blocks_23240000_23249999.meta.json",
+   "sha256": "bc8d00f8b4925dd9328e461aedf38a08401fa486e3e87d493a477dd650eba235"
+  },
+  {
+   "bytes": 49218,
+   "exists": true,
+   "path": "data/raw/ethereum/v2_factory_pair_registry/uniswap_v2/leaves/blocks_23240000_23249999.parquet",
+   "sha256": "1ba1bf05742cf8e178f422d0a0e0ccec9bca1b0c31f39ac0ae9c874247e2ca3e"
+  },
+  {
+   "bytes": 293919,
+   "exists": true,
+   "path": "data/raw/ethereum/v2_factory_pair_registry/uniswap_v2/leaves/blocks_23340000_23349999.meta.json",
+   "sha256": "e768be9faef599da9a98232579a7a84926274b49b8f880a9c17806b73278b083"
+  },
+  {
+   "bytes": 40184,
+   "exists": true,
+   "path": "data/raw/ethereum/v2_factory_pair_registry/uniswap_v2/leaves/blocks_23340000_23349999.parquet",
+   "sha256": "77bb13303ee2fa673ea07a0ae655b349f67ac2ec25fd5fa2dd8da9fb94c098f0"
+  },
+  {
+   "bytes": 366779,
+   "exists": true,
+   "path": "data/raw/ethereum/v2_factory_pair_registry/uniswap_v2/leaves/blocks_23350000_23359999.meta.json",
+   "sha256": "1740d6c618131e052dee2e1963f1ee89ec64aa9fc4f173d6793858c11bf42fb7"
+  },
+  {
+   "bytes": 50081,
+   "exists": true,
+   "path": "data/raw/ethereum/v2_factory_pair_registry/uniswap_v2/leaves/blocks_23350000_23359999.parquet",
+   "sha256": "0e27e38b4118ffdd60aff3ae107da406624ee266a4cddbe3e6549ae579de4e27"
+  },
+  {
+   "bytes": 2335,
+   "exists": true,
+   "path": "data/raw/thegraph/sushiswap_v2/sushiswap_v2_burns_20241025.jsonl.gz",
+   "sha256": "6fc959c1bd5c83ad6535d555420b6ef4e6e2513b68f4d9e4cddddec092b22ee3"
+  },
+  {
+   "bytes": 436,
+   "exists": true,
+   "path": "data/raw/thegraph/sushiswap_v2/sushiswap_v2_mints_20241025.jsonl.gz",
+   "sha256": "949a346bb9f631ae3989479a49a5999ffa5196d4c665ac4af91c887b099dfc6d"
+  },
+  {
+   "bytes": 567401,
+   "exists": true,
+   "path": "data/raw/thegraph/sushiswap_v2/sushiswap_v2_swaps_20241025.jsonl.gz",
+   "sha256": "daab473f996c49580e75a4be69a3cabf4b345b67a73d9d032f5bf363bff692d1"
+  },
+  {
+   "bytes": 62452,
+   "exists": true,
+   "path": "data/raw/thegraph/uniswap_v2/uniswap_v2_burns_20241025.jsonl.gz",
+   "sha256": "0f89a2847f1ec7208af391e38bb0a76bdc0e498916a7d3ba3d2f5cc0ea036fae"
+  },
+  {
+   "bytes": 69769,
+   "exists": true,
+   "path": "data/raw/thegraph/uniswap_v2/uniswap_v2_burns_20241105.jsonl.gz",
+   "sha256": "38dad6311a1f73222e5c18febb5c1d228848433cba5f0b7c952d9b27f9234a58"
+  },
+  {
+   "bytes": 44039,
+   "exists": true,
+   "path": "data/raw/thegraph/uniswap_v2/uniswap_v2_burns_20241106.jsonl.gz",
+   "sha256": "823bb93b0ee89d490ec0757a041f67753144eb1f206c9517fc148237cd88942d"
+  },
+  {
+   "bytes": 42287,
+   "exists": true,
+   "path": "data/raw/thegraph/uniswap_v2/uniswap_v2_burns_20241110.jsonl.gz",
+   "sha256": "6bf54ee6c59473fd2c5c0f94ffd9d15d7f6e4850a7509760b7f56b80cc59c6e5"
+  },
+  {
+   "bytes": 54082,
+   "exists": true,
+   "path": "data/raw/thegraph/uniswap_v2/uniswap_v2_burns_20241112.jsonl.gz",
+   "sha256": "83e303f750a95825c09f320a09eccf69dd8bbb5d525ee7e19f8315afe09e5164"
+  },
+  {
+   "bytes": 46490,
+   "exists": true,
+   "path": "data/raw/thegraph/uniswap_v2/uniswap_v2_burns_20241121.jsonl.gz",
+   "sha256": "0634416ef6699fe58bbea260cca0ca2a0f4e9462e0b6535ae1e7d2d8ce465b4a"
+  },
+  {
+   "bytes": 45852,
+   "exists": true,
+   "path": "data/raw/thegraph/uniswap_v2/uniswap_v2_burns_20241122.jsonl.gz",
+   "sha256": "98a64a78c34c74bc9d685584535310a6d939acb5a934c1cc74b2cf9d4c9ddbd6"
+  },
+  {
+   "bytes": 36438,
+   "exists": true,
+   "path": "data/raw/thegraph/uniswap_v2/uniswap_v2_burns_20241123.jsonl.gz",
+   "sha256": "2f19702ef1b45745fd427705bec3497bea0e57d1a21f9eee84927c950b5a16b9"
+  },
+  {
+   "bytes": 41871,
+   "exists": true,
+   "path": "data/raw/thegraph/uniswap_v2/uniswap_v2_burns_20241125.jsonl.gz",
+   "sha256": "0609a7d55460f538ffa2d4d12b68fc9b4962df5a147b9583ed9fc929f254518d"
+  },
+  {
+   "bytes": 55609,
+   "exists": true,
+   "path": "data/raw/thegraph/uniswap_v2/uniswap_v2_burns_20241205.jsonl.gz",
+   "sha256": "978726f6005ed5dd769980d1c0d7a911118caacb77626cfc32b6ac9eaf83c638"
+  },
+  {
+   "bytes": 35853,
+   "exists": true,
+   "path": "data/raw/thegraph/uniswap_v2/uniswap_v2_burns_20241218.jsonl.gz",
+   "sha256": "3a6cd78327e4c63c6c3288f3d8252fd7ba3e21963a29a065ff5f88ac5a51499e"
+  },
+  {
+   "bytes": 28915,
+   "exists": true,
+   "path": "data/raw/thegraph/uniswap_v2/uniswap_v2_burns_20250118.jsonl.gz",
+   "sha256": "b01c36b39907bbdf2ddb8bbd47fbe70ffa5573483165bb11f5193f60c9e575bf"
+  },
+  {
+   "bytes": 36474,
+   "exists": true,
+   "path": "data/raw/thegraph/uniswap_v2/uniswap_v2_burns_20250120.jsonl.gz",
+   "sha256": "c7cfd3a633108eb683025ee48986b6631ad60b9ef5776b21fd290f8f5b5d1730"
+  },
+  {
+   "bytes": 52741,
+   "exists": true,
+   "path": "data/raw/thegraph/uniswap_v2/uniswap_v2_burns_20250218.jsonl.gz",
+   "sha256": "894da1c1cdfc2e100354ca2ca9666b2fe8050e907f1d85512b2023b1b7e7cfb9"
+  },
+  {
+   "bytes": 30517,
+   "exists": true,
+   "path": "data/raw/thegraph/uniswap_v2/uniswap_v2_burns_20250225.jsonl.gz",
+   "sha256": "0795de78b7770b0746dcba2b3d25dbd5569a83bd2139380b786c02f59c9ee2f4"
+  },
+  {
+   "bytes": 41821,
+   "exists": true,
+   "path": "data/raw/thegraph/uniswap_v2/uniswap_v2_burns_20250301.jsonl.gz",
+   "sha256": "e63fb86fb86abb2518174f4d5d82ab07cc9df1b1fc335a99cb06fe8dff61f6f9"
+  },
+  {
+   "bytes": 31657,
+   "exists": true,
+   "path": "data/raw/thegraph/uniswap_v2/uniswap_v2_burns_20250302.jsonl.gz",
+   "sha256": "b48cec29a05207ae649dbe9340208baf707b4bbf6eb6a10f46454297561883d8"
+  },
+  {
+   "bytes": 34891,
+   "exists": true,
+   "path": "data/raw/thegraph/uniswap_v2/uniswap_v2_burns_20250304.jsonl.gz",
+   "sha256": "a215221c5f9afa7d36eaa7abeffc2b0e5c90f98183dde1df26b1179753da3875"
+  },
+  {
+   "bytes": 55403,
+   "exists": true,
+   "path": "data/raw/thegraph/uniswap_v2/uniswap_v2_burns_20250306.jsonl.gz",
+   "sha256": "34453c6d5fa81ef8b7732fb69a8d712c11bee65a530b4edbe6185f882dcc2c15"
+  },
+  {
+   "bytes": 34053,
+   "exists": true,
+   "path": "data/raw/thegraph/uniswap_v2/uniswap_v2_burns_20250310.jsonl.gz",
+   "sha256": "d466c635f30738779f3adb8e90825c7d8c367cc9e106e2cdd977de7e89b90c7b"
+  },
+  {
+   "bytes": 71818,
+   "exists": true,
+   "path": "data/raw/thegraph/uniswap_v2/uniswap_v2_burns_20250314.jsonl.gz",
+   "sha256": "1702b3f96e3816aea78c6129c7f108411c94a7a2e28ab0b0ff82e19f6ccd9a9f"
+  },
+  {
+   "bytes": 80147,
+   "exists": true,
+   "path": "data/raw/thegraph/uniswap_v2/uniswap_v2_burns_20250319.jsonl.gz",
+   "sha256": "ca623b0d5b8296a8a128ce3aab1ba7514f13c4564c7adbd0a74c683249af9a30"
+  },
+  {
+   "bytes": 76138,
+   "exists": true,
+   "path": "data/raw/thegraph/uniswap_v2/uniswap_v2_burns_20250323.jsonl.gz",
+   "sha256": "2877e7ebb73166af0b44bb0c4e2b6fa3f51e918b49305f4745e237c028050b84"
+  },
+  {
+   "bytes": 54825,
+   "exists": true,
+   "path": "data/raw/thegraph/uniswap_v2/uniswap_v2_burns_20250327.jsonl.gz",
+   "sha256": "71141b2776f6e7adca534936c4c0b934a2a6341bc2b273de77b6237336b94c13"
+  },
+  {
+   "bytes": 42118,
+   "exists": true,
+   "path": "data/raw/thegraph/uniswap_v2/uniswap_v2_burns_20250409.jsonl.gz",
+   "sha256": "aceacc08babda2641fded28a6b76e9050804b81d815fee5e431dfc860ae2c648"
+  },
+  {
+   "bytes": 57539,
+   "exists": true,
+   "path": "data/raw/thegraph/uniswap_v2/uniswap_v2_burns_20250411.jsonl.gz",
+   "sha256": "834f76e7a180004508557eaef535ebe6159c20c1de62d173ea05b3e370b99710"
+  },
+  {
+   "bytes": 78817,
+   "exists": true,
+   "path": "data/raw/thegraph/uniswap_v2/uniswap_v2_burns_20250413.jsonl.gz",
+   "sha256": "6637254613c86c3378fb259a841ded8ebe0848924c9b99d9e835fbccb8f5b4ff"
+  },
+  {
+   "bytes": 56240,
+   "exists": true,
+   "path": "data/raw/thegraph/uniswap_v2/uniswap_v2_burns_20250417.jsonl.gz",
+   "sha256": "516da317f80a72262b834ba61771cd485d52d1faf7e39a61a9246550981e4ea8"
+  },
+  {
+   "bytes": 71635,
+   "exists": true,
+   "path": "data/raw/thegraph/uniswap_v2/uniswap_v2_burns_20250421.jsonl.gz",
+   "sha256": "f0012fed7d916baacdd06c7eb43ecfd614164b958f3c09e3b57d2ed2affc9c7d"
+  },
+  {
+   "bytes": 69875,
+   "exists": true,
+   "path": "data/raw/thegraph/uniswap_v2/uniswap_v2_burns_20250430.jsonl.gz",
+   "sha256": "f2523411265cba3a8cbeb6e48f19edba3aabfe2d1b0eb44c9efa80ca133eafd5"
+  },
+  {
+   "bytes": 52933,
+   "exists": true,
+   "path": "data/raw/thegraph/uniswap_v2/uniswap_v2_burns_20250510.jsonl.gz",
+   "sha256": "0c2e4ca7ddf7e7202843a01c73fa14fa922d5ccd101e90ee9e63f7a61d0ff333"
+  },
+  {
+   "bytes": 65666,
+   "exists": true,
+   "path": "data/raw/thegraph/uniswap_v2/uniswap_v2_burns_20250511.jsonl.gz",
+   "sha256": "1b039ab84c9f1913b8af61af87c09a64a09224f39cc4f7f43b5db2ddab776371"
+  },
+  {
+   "bytes": 52611,
+   "exists": true,
+   "path": "data/raw/thegraph/uniswap_v2/uniswap_v2_burns_20250829.jsonl.gz",
+   "sha256": "edcf6aa3a8bcbf4e452e46dfd63134970c5a9eca5a6dfe2741db2e69fcfe428b"
+  },
+  {
+   "bytes": 70266,
+   "exists": true,
+   "path": "data/raw/thegraph/uniswap_v2/uniswap_v2_burns_20250913.jsonl.gz",
+   "sha256": "b2ebb5d99d47da6e8304f0e058fb210be8d44429cb72345fe150286fc7807811"
+  },
+  {
+   "bytes": 115852,
+   "exists": true,
+   "path": "data/raw/thegraph/uniswap_v2/uniswap_v2_mints_20241025.jsonl.gz",
+   "sha256": "1bc905c96a626ae33d2b814ae499526d9d162b94a89dd843f5f57f204e02290e"
+  },
+  {
+   "bytes": 107561,
+   "exists": true,
+   "path": "data/raw/thegraph/uniswap_v2/uniswap_v2_mints_20241105.jsonl.gz",
+   "sha256": "871360a34c875f0d941661fd68df81c4ac5b33eaf4de9d7940e8e5c6c4fe28d6"
+  },
+  {
+   "bytes": 89430,
+   "exists": true,
+   "path": "data/raw/thegraph/uniswap_v2/uniswap_v2_mints_20241106.jsonl.gz",
+   "sha256": "75b8f17bd0c913fe2714389c42365d4c1256b380e5f67da405ebec9a984371ce"
+  },
+  {
+   "bytes": 105675,
+   "exists": true,
+   "path": "data/raw/thegraph/uniswap_v2/uniswap_v2_mints_20241110.jsonl.gz",
+   "sha256": "b5026bb90f2bf9182697b31be3874285d4624c6387ba1c0bea58e248c8765eb0"
+  },
+  {
+   "bytes": 117807,
+   "exists": true,
+   "path": "data/raw/thegraph/uniswap_v2/uniswap_v2_mints_20241112.jsonl.gz",
+   "sha256": "b32275afdec6f6aa3c8d4ae197c45072f54f81cf5bd8dbb40ba0aeabea0bcb33"
+  },
+  {
+   "bytes": 133572,
+   "exists": true,
+   "path": "data/raw/thegraph/uniswap_v2/uniswap_v2_mints_20241121.jsonl.gz",
+   "sha256": "c0a8eb8c2ca5b4c4d95efda9cb5afdb29e51c8780cf979d9b1bc643c50338eba"
+  },
+  {
+   "bytes": 98833,
+   "exists": true,
+   "path": "data/raw/thegraph/uniswap_v2/uniswap_v2_mints_20241122.jsonl.gz",
+   "sha256": "99af248c801dda507d0668e2c4af5d7e8787c63c71c399df147d8e6a280e6b45"
+  },
+  {
+   "bytes": 91163,
+   "exists": true,
+   "path": "data/raw/thegraph/uniswap_v2/uniswap_v2_mints_20241123.jsonl.gz",
+   "sha256": "6371319e88e39a8c163213e8a13436afd17866076ab506ac141ba4e799bf537e"
+  },
+  {
+   "bytes": 87344,
+   "exists": true,
+   "path": "data/raw/thegraph/uniswap_v2/uniswap_v2_mints_20241125.jsonl.gz",
+   "sha256": "d49eebc0bc3264aac940bf6a336c1ee7c31189527ff3e2e2b973d188574666a7"
+  },
+  {
+   "bytes": 68003,
+   "exists": true,
+   "path": "data/raw/thegraph/uniswap_v2/uniswap_v2_mints_20241205.jsonl.gz",
+   "sha256": "71f0596b92cfd56093ea2a31879bd421cac959004f6a1198d965c4f474efde3d"
+  },
+  {
+   "bytes": 67103,
+   "exists": true,
+   "path": "data/raw/thegraph/uniswap_v2/uniswap_v2_mints_20241218.jsonl.gz",
+   "sha256": "4fbf797f26545af6af750e1e3472c2244aecfd9fbce794622c4aa1e5e4b45fd4"
+  },
+  {
+   "bytes": 63975,
+   "exists": true,
+   "path": "data/raw/thegraph/uniswap_v2/uniswap_v2_mints_20250118.jsonl.gz",
+   "sha256": "aba776ba3fdbd3dd9daa7ff7507a8b218692b33aedb69eac54527a55d0f1bb47"
+  },
+  {
+   "bytes": 63962,
+   "exists": true,
+   "path": "data/raw/thegraph/uniswap_v2/uniswap_v2_mints_20250120.jsonl.gz",
+   "sha256": "01a341b9485a64a31f709fdf8817424818623f8a2101958f3306ab51033e6565"
+  },
+  {
+   "bytes": 85499,
+   "exists": true,
+   "path": "data/raw/thegraph/uniswap_v2/uniswap_v2_mints_20250218.jsonl.gz",
+   "sha256": "11bb7bf2058c859989f68f5629c72d6e7c78998d0cda3efed61b377f8cdcfbed"
+  },
+  {
+   "bytes": 52490,
+   "exists": true,
+   "path": "data/raw/thegraph/uniswap_v2/uniswap_v2_mints_20250225.jsonl.gz",
+   "sha256": "bdd5dc916b9377508e98c598363e304c9b8a95aacf65b52c53cd17c43223990f"
+  },
+  {
+   "bytes": 72265,
+   "exists": true,
+   "path": "data/raw/thegraph/uniswap_v2/uniswap_v2_mints_20250301.jsonl.gz",
+   "sha256": "a5f516bb9025db05c36c4c881ce2a3b458b21a55bff62c5490a2b34b2b4a1fd5"
+  },
+  {
+   "bytes": 68571,
+   "exists": true,
+   "path": "data/raw/thegraph/uniswap_v2/uniswap_v2_mints_20250302.jsonl.gz",
+   "sha256": "e9d4cee7b80955390751199948d50db387b511be57edfbdf93183f863c303066"
+  },
+  {
+   "bytes": 61263,
+   "exists": true,
+   "path": "data/raw/thegraph/uniswap_v2/uniswap_v2_mints_20250304.jsonl.gz",
+   "sha256": "0d21428a81bbcefcc244a133b91b5a4486d0cc05aa4f35d5ab743d1ccd287c20"
+  },
+  {
+   "bytes": 65122,
+   "exists": true,
+   "path": "data/raw/thegraph/uniswap_v2/uniswap_v2_mints_20250306.jsonl.gz",
+   "sha256": "aadfcf1b1d9eba3e2fda69b3100bb280798b33e20b8bca68533696a8bc020bfe"
+  },
+  {
+   "bytes": 59155,
+   "exists": true,
+   "path": "data/raw/thegraph/uniswap_v2/uniswap_v2_mints_20250310.jsonl.gz",
+   "sha256": "ab786f2b07a61318fb4a2ccd3a5bcd5e721d9f779706adc7df9f24c7ce99edc5"
+  },
+  {
+   "bytes": 89938,
+   "exists": true,
+   "path": "data/raw/thegraph/uniswap_v2/uniswap_v2_mints_20250314.jsonl.gz",
+   "sha256": "6be083e5a2800e3636dc1b56679aae9d9f1fdb316ea02bab7e911dae7ac5ea44"
+  },
+  {
+   "bytes": 111502,
+   "exists": true,
+   "path": "data/raw/thegraph/uniswap_v2/uniswap_v2_mints_20250319.jsonl.gz",
+   "sha256": "c31acd9662da0adde71f6f0ec665675b48abdeb10cc1c5de6d84df5a4175cff2"
+  },
+  {
+   "bytes": 103327,
+   "exists": true,
+   "path": "data/raw/thegraph/uniswap_v2/uniswap_v2_mints_20250323.jsonl.gz",
+   "sha256": "f1f0a38aa6917a61cf83828823bbb23c517a4f87061448304aca02cebe8a72c5"
+  },
+  {
+   "bytes": 72692,
+   "exists": true,
+   "path": "data/raw/thegraph/uniswap_v2/uniswap_v2_mints_20250327.jsonl.gz",
+   "sha256": "c7ec167431d60b6ca134a8cc2c0614b49a011c28dffce775ac61579f452baa6a"
+  },
+  {
+   "bytes": 59842,
+   "exists": true,
+   "path": "data/raw/thegraph/uniswap_v2/uniswap_v2_mints_20250409.jsonl.gz",
+   "sha256": "622306c4de5012e414e6ea97fa9f6e8d5c048868f2e99fb674fd9e9f5e61cac1"
+  },
+  {
+   "bytes": 79785,
+   "exists": true,
+   "path": "data/raw/thegraph/uniswap_v2/uniswap_v2_mints_20250411.jsonl.gz",
+   "sha256": "ade55a6f094f2b7b19ac2864d2ac5a9f370dfee5a2284f9ecd87d1aab616ed9e"
+  },
+  {
+   "bytes": 81831,
+   "exists": true,
+   "path": "data/raw/thegraph/uniswap_v2/uniswap_v2_mints_20250413.jsonl.gz",
+   "sha256": "392823f6431b6b42d9a5c8ac386e0b480bbe3976e743da30bda06165bb623221"
+  },
+  {
+   "bytes": 66882,
+   "exists": true,
+   "path": "data/raw/thegraph/uniswap_v2/uniswap_v2_mints_20250417.jsonl.gz",
+   "sha256": "e5f0f5cbe7c7ce25b3895e9247ba64d88b93c9c09061761bd00edafed49b7bf8"
+  },
+  {
+   "bytes": 81975,
+   "exists": true,
+   "path": "data/raw/thegraph/uniswap_v2/uniswap_v2_mints_20250421.jsonl.gz",
+   "sha256": "b5f25f06f332a1bc7ac690d480d76f2db6afb854c7c28bff87cf2941de2c12f0"
+  },
+  {
+   "bytes": 103060,
+   "exists": true,
+   "path": "data/raw/thegraph/uniswap_v2/uniswap_v2_mints_20250430.jsonl.gz",
+   "sha256": "63607e92ac457727c5e046abf03f439a3d8d70fe86cf445a2fbe987027476582"
+  },
+  {
+   "bytes": 173406,
+   "exists": true,
+   "path": "data/raw/thegraph/uniswap_v2/uniswap_v2_mints_20250510.jsonl.gz",
+   "sha256": "27c18d6efd2dff73786cd0c13fd41b158c229fd073fd78b09b0aece58d206fa5"
+  },
+  {
+   "bytes": 176588,
+   "exists": true,
+   "path": "data/raw/thegraph/uniswap_v2/uniswap_v2_mints_20250511.jsonl.gz",
+   "sha256": "b5a6ba722ec5dd62597cde5537c1eb2b401fdc1efc8ac68940241a7008a90fa5"
+  },
+  {
+   "bytes": 84280,
+   "exists": true,
+   "path": "data/raw/thegraph/uniswap_v2/uniswap_v2_mints_20250829.jsonl.gz",
+   "sha256": "a552437b43ef6af73edfe19e679dc43e545358251ec48f34bb69bc0b77289b77"
+  },
+  {
+   "bytes": 81585,
+   "exists": true,
+   "path": "data/raw/thegraph/uniswap_v2/uniswap_v2_mints_20250913.jsonl.gz",
+   "sha256": "0e0e21188eb75ce681521d961054bd583f4fe530e0bd9c593971607414c7b6a9"
+  },
+  {
+   "bytes": 35117706,
+   "exists": true,
+   "path": "data/raw/thegraph/uniswap_v2/uniswap_v2_swaps_20241025.jsonl.gz",
+   "sha256": "b7e32827b105556dcef0d6a040ff3df934264e10afdd251c4099710cafe9c9a3"
+  },
+  {
+   "bytes": 35840138,
+   "exists": true,
+   "path": "data/raw/thegraph/uniswap_v2/uniswap_v2_swaps_20241105.jsonl.gz",
+   "sha256": "8f91ea94951b5edbe83cd5144df740b3181e9942f43325428d386f6a19c1f5ea"
+  },
+  {
+   "bytes": 39440477,
+   "exists": true,
+   "path": "data/raw/thegraph/uniswap_v2/uniswap_v2_swaps_20241106.jsonl.gz",
+   "sha256": "5456a59fedcac474d89b2c59a86973cf66d9258cb7caf7e76725d3f564daa76a"
+  },
+  {
+   "bytes": 38199578,
+   "exists": true,
+   "path": "data/raw/thegraph/uniswap_v2/uniswap_v2_swaps_20241110.jsonl.gz",
+   "sha256": "81902b9fd0e3b7549cf717cab0b940e0d446f288cf5aadb5a6e6b5ce8c1dc9b8"
+  },
+  {
+   "bytes": 35147436,
+   "exists": true,
+   "path": "data/raw/thegraph/uniswap_v2/uniswap_v2_swaps_20241112.jsonl.gz",
+   "sha256": "29399a10bb3d6e97115c1f597469b5abddcd30d270adb885472c6658b22839eb"
+  },
+  {
+   "bytes": 29809741,
+   "exists": true,
+   "path": "data/raw/thegraph/uniswap_v2/uniswap_v2_swaps_20241121.jsonl.gz",
+   "sha256": "d4aa3d155fac2614f2b257048d441b776b88cb69de4e363dc1d07c0338a6ddb8"
+  },
+  {
+   "bytes": 28205681,
+   "exists": true,
+   "path": "data/raw/thegraph/uniswap_v2/uniswap_v2_swaps_20241122.jsonl.gz",
+   "sha256": "ffc025b856596f7041910c1e34e996eee8e83a065b6cb56d451c764f5ef210a4"
+  },
+  {
+   "bytes": 27957723,
+   "exists": true,
+   "path": "data/raw/thegraph/uniswap_v2/uniswap_v2_swaps_20241123.jsonl.gz",
+   "sha256": "616112a10254a58273a012d46a0800c026927e4cfcefb729c20d94c37d1a4816"
+  },
+  {
+   "bytes": 28718847,
+   "exists": true,
+   "path": "data/raw/thegraph/uniswap_v2/uniswap_v2_swaps_20241125.jsonl.gz",
+   "sha256": "42f82cfa3f8cac04d1e7d0fb6870abcf276dbd945c8378830f695b591f135e55"
+  },
+  {
+   "bytes": 25295101,
+   "exists": true,
+   "path": "data/raw/thegraph/uniswap_v2/uniswap_v2_swaps_20241205.jsonl.gz",
+   "sha256": "edff7f4804977b33932a3a757ca7783bcdb415621507ae8b69b83a3753d94671"
+  },
+  {
+   "bytes": 21724394,
+   "exists": true,
+   "path": "data/raw/thegraph/uniswap_v2/uniswap_v2_swaps_20241218.jsonl.gz",
+   "sha256": "0511bfb39fd541f0c67c4e5fe055862e8151cdd531d926f544b5890076031bca"
+  },
+  {
+   "bytes": 30549043,
+   "exists": true,
+   "path": "data/raw/thegraph/uniswap_v2/uniswap_v2_swaps_20250118.jsonl.gz",
+   "sha256": "31e2122aa9b195c6b3c8f86eb50a5f533e73e28053fca8666cc4672f85fc09d5"
+  },
+  {
+   "bytes": 23109365,
+   "exists": true,
+   "path": "data/raw/thegraph/uniswap_v2/uniswap_v2_swaps_20250120.jsonl.gz",
+   "sha256": "9aec3e6d5fdddd3b35b245ee691937494744f2644f34ee62562a4660b87690a1"
+  },
+  {
+   "bytes": 22886950,
+   "exists": true,
+   "path": "data/raw/thegraph/uniswap_v2/uniswap_v2_swaps_20250218.jsonl.gz",
+   "sha256": "510ffd352b6a58de3d41cd2ea4367debd73c66f25f71451523103422584a7705"
+  },
+  {
+   "bytes": 20485760,
+   "exists": true,
+   "path": "data/raw/thegraph/uniswap_v2/uniswap_v2_swaps_20250225.jsonl.gz",
+   "sha256": "333a32d34661fdec35832e132cc1ec9b09a20cb23003b38e3799241bc844ff44"
+  },
+  {
+   "bytes": 16940723,
+   "exists": true,
+   "path": "data/raw/thegraph/uniswap_v2/uniswap_v2_swaps_20250301.jsonl.gz",
+   "sha256": "b6c1fccf6648629959eb6c477d33852d59f38673c320dafbf65f20a76091882e"
+  },
+  {
+   "bytes": 18437529,
+   "exists": true,
+   "path": "data/raw/thegraph/uniswap_v2/uniswap_v2_swaps_20250302.jsonl.gz",
+   "sha256": "34b983c625a0a4c12ef274566b7fbf0618a6e135b6a946841bb147931a431a1c"
+  },
+  {
+   "bytes": 20027735,
+   "exists": true,
+   "path": "data/raw/thegraph/uniswap_v2/uniswap_v2_swaps_20250304.jsonl.gz",
+   "sha256": "ec8fc271386674ebdebdffc6c53d3f42ced55a2dad81e0185fb4ba51f1519730"
+  },
+  {
+   "bytes": 18788661,
+   "exists": true,
+   "path": "data/raw/thegraph/uniswap_v2/uniswap_v2_swaps_20250306.jsonl.gz",
+   "sha256": "409568569b8151b0b9dfc9f0bf4a21bb9905f07f357c0f34ed236ed6afcd4b99"
+  },
+  {
+   "bytes": 18870959,
+   "exists": true,
+   "path": "data/raw/thegraph/uniswap_v2/uniswap_v2_swaps_20250310.jsonl.gz",
+   "sha256": "ecd331d7e88ab81291494686e4fe858f28c8b2f308897724dd335f0e1ac37a9a"
+  },
+  {
+   "bytes": 16370083,
+   "exists": true,
+   "path": "data/raw/thegraph/uniswap_v2/uniswap_v2_swaps_20250314.jsonl.gz",
+   "sha256": "978c207bcb24933d2af00446b7030c300d8b20cfcaa3a386a599b877a213ca22"
+  },
+  {
+   "bytes": 19887172,
+   "exists": true,
+   "path": "data/raw/thegraph/uniswap_v2/uniswap_v2_swaps_20250319.jsonl.gz",
+   "sha256": "7f9d99be8d5fff2abe017ff8b405117e58ef7ba0baaf683f30ac5a2ff1d2915a"
+  },
+  {
+   "bytes": 17182638,
+   "exists": true,
+   "path": "data/raw/thegraph/uniswap_v2/uniswap_v2_swaps_20250323.jsonl.gz",
+   "sha256": "45abd3d38a7a6ec8b6e3f85f4360316d9b4b49ae0ecaf7d3a2de4be8ca1a6ba1"
+  },
+  {
+   "bytes": 16444971,
+   "exists": true,
+   "path": "data/raw/thegraph/uniswap_v2/uniswap_v2_swaps_20250327.jsonl.gz",
+   "sha256": "1c92798994bb73d5a39fc08532d08a7486b8828c4ce712b62a6bb1a933e624d4"
+  },
+  {
+   "bytes": 20411182,
+   "exists": true,
+   "path": "data/raw/thegraph/uniswap_v2/uniswap_v2_swaps_20250409.jsonl.gz",
+   "sha256": "25457d8f9f91c32964053097912b5790c8fe740a73ddfd400dcd366b96d4df5d"
+  },
+  {
+   "bytes": 20461103,
+   "exists": true,
+   "path": "data/raw/thegraph/uniswap_v2/uniswap_v2_swaps_20250411.jsonl.gz",
+   "sha256": "f03804dddee36fbb5899110ca0029af93aed8c14f59fd6ef0e1714a2cd8caf5b"
+  },
+  {
+   "bytes": 20534547,
+   "exists": true,
+   "path": "data/raw/thegraph/uniswap_v2/uniswap_v2_swaps_20250413.jsonl.gz",
+   "sha256": "d56ac38a7f9ac8e11e1e6233dc125d8819a464e4ce188e69f83fc0efd77f7b52"
+  },
+  {
+   "bytes": 17322812,
+   "exists": true,
+   "path": "data/raw/thegraph/uniswap_v2/uniswap_v2_swaps_20250417.jsonl.gz",
+   "sha256": "50dc60dd812d73c937ba2c1557275fbfaaa147b0fe1f340ef99fd3654ab68cc5"
+  },
+  {
+   "bytes": 20077934,
+   "exists": true,
+   "path": "data/raw/thegraph/uniswap_v2/uniswap_v2_swaps_20250421.jsonl.gz",
+   "sha256": "f2def6df137590ce8aeec1250676d24a4d95d649f3831f90d4aeec8a21198a56"
+  },
+  {
+   "bytes": 20310233,
+   "exists": true,
+   "path": "data/raw/thegraph/uniswap_v2/uniswap_v2_swaps_20250430.jsonl.gz",
+   "sha256": "b81caffc1ebc8f260468f60841f6d61004c35860382223956ce5f5f1a80ce9e0"
+  },
+  {
+   "bytes": 41564377,
+   "exists": true,
+   "path": "data/raw/thegraph/uniswap_v2/uniswap_v2_swaps_20250510.jsonl.gz",
+   "sha256": "0fcbb53e8c63e17d756223b01de56f69d8f1a864e27ca5cebb21f9c6438b625c"
+  },
+  {
+   "bytes": 44694906,
+   "exists": true,
+   "path": "data/raw/thegraph/uniswap_v2/uniswap_v2_swaps_20250511.jsonl.gz",
+   "sha256": "606d68290f845cb264386fb68645f079628fe29f70056e30ee7ca67105737f3f"
+  },
+  {
+   "bytes": 26737536,
+   "exists": true,
+   "path": "data/raw/thegraph/uniswap_v2/uniswap_v2_swaps_20250829.jsonl.gz",
+   "sha256": "87fea15b181f2146dbeb8a725c0c59a9123bf80ca386a6019f5b5dc3b8399754"
+  },
+  {
+   "bytes": 28476281,
+   "exists": true,
+   "path": "data/raw/thegraph/uniswap_v2/uniswap_v2_swaps_20250913.jsonl.gz",
+   "sha256": "04b61ed196bce20c90e0a12b212257fcbbde2e05c1673b86d89ba4ebcd6ad57b"
+  },
+  {
+   "bytes": 24736238,
+   "exists": true,
+   "path": "data/unified/20241025.parquet",
+   "sha256": "0be70762f28d3aa3089b3e0eca70e5003560257b5c5a7a536236283668309f76"
+  },
+  {
+   "bytes": 24004556,
+   "exists": true,
+   "path": "data/unified/20241105.parquet",
+   "sha256": "c3ab24b12f6be92e0f71db56939a83e4dfb7980757ee08adedbf81035fe04c68"
+  },
+  {
+   "bytes": 27177398,
+   "exists": true,
+   "path": "data/unified/20241106.parquet",
+   "sha256": "ed61f80504b72cb48a6e0bc34669ef6b715c768c44961f411b6d4d3b010e4fb9"
+  },
+  {
+   "bytes": 26612212,
+   "exists": true,
+   "path": "data/unified/20241110.parquet",
+   "sha256": "43b30ca66e5cc70d869a5b0a1d01d7fa5b3efcaa74520a58e3c7e72c106cdafe"
+  },
+  {
+   "bytes": 25156633,
+   "exists": true,
+   "path": "data/unified/20241112.parquet",
+   "sha256": "c5eb89b86492b20604e24826d59878f782466ec528907307fbe76debd30dcc96"
+  },
+  {
+   "bytes": 22788937,
+   "exists": true,
+   "path": "data/unified/20241121.parquet",
+   "sha256": "2060f6882158af3536eedf467246f5fce8a365447e56192d49035a190be34239"
+  },
+  {
+   "bytes": 21536474,
+   "exists": true,
+   "path": "data/unified/20241122.parquet",
+   "sha256": "04ff21ac3d1527b8159b2f1252b5ad32c94cc76b3a99b1eb16f9ff554b15c0be"
+  },
+  {
+   "bytes": 22344193,
+   "exists": true,
+   "path": "data/unified/20241123.parquet",
+   "sha256": "2538fb60c1640cb4fc5a1d6755846f23b7a8e2b694bb4f0a7e47957fbc7dfccd"
+  },
+  {
+   "bytes": 23114162,
+   "exists": true,
+   "path": "data/unified/20241125.parquet",
+   "sha256": "69a2f0d14fa81ddcb52724348c0b345446a6d2f82515481fca2150686c854f94"
+  },
+  {
+   "bytes": 21565258,
+   "exists": true,
+   "path": "data/unified/20241205.parquet",
+   "sha256": "196cd2bb761ec84cf9f9834bda512836005ffce29311c9fca165c2b3c78caf53"
+  },
+  {
+   "bytes": 19631948,
+   "exists": true,
+   "path": "data/unified/20241218.parquet",
+   "sha256": "2b03b1bbddc5b1d85bc461dcd6872dcb3f02ff912b32f22934b0d4e1fb605af5"
+  },
+  {
+   "bytes": 23652693,
+   "exists": true,
+   "path": "data/unified/20250118.parquet",
+   "sha256": "7652980ad8aca7605551388d89d9e85e951a8cb9539084c5fc19933506378a94"
+  },
+  {
+   "bytes": 19800407,
+   "exists": true,
+   "path": "data/unified/20250120.parquet",
+   "sha256": "7d0bd513faac49b4b0f49c0343c4cb01b863abe0bd09a9dace200ab82b92bbce"
+  },
+  {
+   "bytes": 24301872,
+   "exists": true,
+   "path": "data/unified/20250218.parquet",
+   "sha256": "9a166a2bb19cd5efb341cc85da73c33d234b2b3e63f0a2f859bb2c0bedaa6466"
+  },
+  {
+   "bytes": 25339952,
+   "exists": true,
+   "path": "data/unified/20250225.parquet",
+   "sha256": "4f29c174c0887ee9fc7b3d3602b47d9fb567e22d90f5ab1402663e0b4e100a6b"
+  },
+  {
+   "bytes": 18483226,
+   "exists": true,
+   "path": "data/unified/20250301.parquet",
+   "sha256": "507dcd3d4c374b7ab9c31600cac7b9144f4bc0c2abad11435eed63ef933445bd"
+  },
+  {
+   "bytes": 20621469,
+   "exists": true,
+   "path": "data/unified/20250302.parquet",
+   "sha256": "64a9a6845883bdd5c16d717976b120ada29e236c64e430f744bca6adfa5d50c2"
+  },
+  {
+   "bytes": 24797311,
+   "exists": true,
+   "path": "data/unified/20250304.parquet",
+   "sha256": "622113745f6781012b72fc8563bfd1370293b1f5efe4972c3d3133a85bb5a575"
+  },
+  {
+   "bytes": 21483082,
+   "exists": true,
+   "path": "data/unified/20250306.parquet",
+   "sha256": "fec2ea5596721a0bfbe7d6d5cfe4df11644ba8cffa028204ffc2591807e04e83"
+  },
+  {
+   "bytes": 22981424,
+   "exists": true,
+   "path": "data/unified/20250310.parquet",
+   "sha256": "1945edb41cf74248b34d60086b5debc4a609f89c12d1d71aca1d04fdcdc03af0"
+  },
+  {
+   "bytes": 18135022,
+   "exists": true,
+   "path": "data/unified/20250314.parquet",
+   "sha256": "f32731d10bd1b8b03b9960568777e0bc888ed5b9e9000b842a09481c834d1445"
+  },
+  {
+   "bytes": 21090312,
+   "exists": true,
+   "path": "data/unified/20250319.parquet",
+   "sha256": "df49663ccc09d59998e31cd4a38814f96cf382830964d8c014c53754c2b15a1a"
+  },
+  {
+   "bytes": 16538799,
+   "exists": true,
+   "path": "data/unified/20250323.parquet",
+   "sha256": "a462fd2caade6eec6dfd32792ab4e867507cafbdf293d9f2792d8a488eb8f3d0"
+  },
+  {
+   "bytes": 17971069,
+   "exists": true,
+   "path": "data/unified/20250327.parquet",
+   "sha256": "0e17c94c25c0fb49a3d76e8d34ee4d086084c50bc2beb6674404fd841c502ab2"
+  },
+  {
+   "bytes": 23189993,
+   "exists": true,
+   "path": "data/unified/20250409.parquet",
+   "sha256": "d68a510bc6a729310ca539ac003e6fbdc067593d0003074c374e7e83751eb088"
+  },
+  {
+   "bytes": 22549018,
+   "exists": true,
+   "path": "data/unified/20250411.parquet",
+   "sha256": "f48acce3a99efb16b3c1a3d75a20af692cfefbcd66a58663c18aab976186efac"
+  },
+  {
+   "bytes": 21463017,
+   "exists": true,
+   "path": "data/unified/20250413.parquet",
+   "sha256": "772b075be8a2afdbc938bbd0107ca0ce939757bfb1e7f60c1b5d23082c85f57a"
+  },
+  {
+   "bytes": 18810607,
+   "exists": true,
+   "path": "data/unified/20250417.parquet",
+   "sha256": "1f0950341cd039e7f6362b39853b65e4ad90df1ba266fab341fd2e4f0de8229a"
+  },
+  {
+   "bytes": 21599268,
+   "exists": true,
+   "path": "data/unified/20250421.parquet",
+   "sha256": "c305c6e12217adef3c5719a90dca72aeb40d26fd6438c542decd72d6d6a67d6f"
+  },
+  {
+   "bytes": 20442012,
+   "exists": true,
+   "path": "data/unified/20250430.parquet",
+   "sha256": "25290272cf9b77cf1b61a358927083bc15b311c78a7c334c2b5450f2ebe597fc"
+  },
+  {
+   "bytes": 30586061,
+   "exists": true,
+   "path": "data/unified/20250510.parquet",
+   "sha256": "671ee2c6c14d6f7b40672a6c0d24218f3f53d5f83a914325d495014572a68168"
+  },
+  {
+   "bytes": 31984462,
+   "exists": true,
+   "path": "data/unified/20250511.parquet",
+   "sha256": "670ad17953674c788bc04890e5988269bbf9a2f9a3751a26d09a9566afc8623b"
+  },
+  {
+   "bytes": 26617105,
+   "exists": true,
+   "path": "data/unified/20250829.parquet",
+   "sha256": "4479a1dbe8c0eca8e46527694c4050375b2ea03a5b5722c7e74f20b5ee2f23f8"
+  },
+  {
+   "bytes": 27534530,
+   "exists": true,
+   "path": "data/unified/20250913.parquet",
+   "sha256": "30bb14add8c746c13cca60a9821ccc9457115e05b2b984afc1697b742fcca260"
+  },
+  {
+   "bytes": 2022,
+   "exists": true,
+   "path": "data/raw/ethereum/token_decimals/decimals/0x00f397dc2b53f32f2f1df71cabae6fecbe3fbfb8/block_22045009_70a7d7fb177ad1219ed04cd1230e2f3f0bfc5c9f00aeffb2cf6d6179341b5edc.json",
+   "sha256": "aad13e81491c8663301701d67b52ddf0d206694665c59a4594e89fe2bd7c9cd0"
+  },
+  {
+   "bytes": 2024,
+   "exists": true,
+   "path": "data/raw/ethereum/token_decimals/decimals/0x0375a6696db916fdab0e7512dc6552bac6a41ec2/block_21119460_5ace362fa83df453ca4c450db88830885634985a04a984cdfd97f5d810c05c2e.json",
+   "sha256": "7eab83e6fd6d86bb72cc1b254f31a98a19c5f2aa035a92fa7758a5d607f72d4e"
+  },
+  {
+   "bytes": 2024,
+   "exists": true,
+   "path": "data/raw/ethereum/token_decimals/decimals/0x04224a26b9d11ad45e20d4fc470dfbc9cc3cd4e8/block_23350110_b0d29650d32e66a6771e9acce6261f23119464f30a94c2400c7401f975b81fab.json",
+   "sha256": "1ba4b021c7a5c87880fb55a98558a7ed59c48bce32a4ada78db8ea82656be144"
+  },
+  {
+   "bytes": 2024,
+   "exists": true,
+   "path": "data/raw/ethereum/token_decimals/decimals/0x06d878b8d67d7f3ef1f8b9e90d47c75c1b0c9070/block_21953186_fa2fe5fc9a5b05aacaf138c875aa36511619d7d3f305ecf777a20db3311f9d0a.json",
+   "sha256": "6d7013ee266378cc63b22dee673f29639fc4d64dc08100215244b8c6c3fc27ff"
+  },
+  {
+   "bytes": 2025,
+   "exists": true,
+   "path": "data/raw/ethereum/token_decimals/decimals/0x071ff7720a105bda015095a268ffcfdc20b21985/block_23246617_103d5988264ecb9166a31d12ddb1680a316aadf5dec1a609086ff6117ee1e718.json",
+   "sha256": "b4e21fe97e5645d935a345ef8d096b9f08ddf860b662898e09f2b22893170153"
+  },
+  {
+   "bytes": 2025,
+   "exists": true,
+   "path": "data/raw/ethereum/token_decimals/decimals/0x08b19c7a31ecc4ca2f397bc278adc6133a9f7018/block_23246661_b154d07662f4aced1fcc6aadc0d584b301a8e47c59854285f6337d723aa7bf0d.json",
+   "sha256": "8b82bf240334c050614aafc80918dc1f1c557138acda8d852ba901e9f7f16e96"
+  },
+  {
+   "bytes": 2022,
+   "exists": true,
+   "path": "data/raw/ethereum/token_decimals/decimals/0x08e3be8d369161e87f996631f464dea9b1830d37/block_22287730_7decd8ca3fcf74a60e4f177fc4f25fc80afaa035b36e3f8b48415851b45b36db.json",
+   "sha256": "433ace1e549324eb775637b88b2615e97f6ac53156d2e37067ab720f7ac87e97"
+  },
+  {
+   "bytes": 2026,
+   "exists": true,
+   "path": "data/raw/ethereum/token_decimals/decimals/0x0921799cb1d702148131024d18fcde022129dc73/block_19717531_c2092246885b32b2f72b085a5d46bc266dd201fc125ede8fcd6d55eacec83bb8.json",
+   "sha256": "8edf5dca51860cee16169297c45bfaf1963929a4e9a5e066c8d3898acae9a4b8"
+  },
+  {
+   "bytes": 2025,
+   "exists": true,
+   "path": "data/raw/ethereum/token_decimals/decimals/0x0a9051942c9013e01f7a46f8e9052be0cdc43d59/block_22319043_a07827288107a716dbb149e5af88effada2381ed859d8ca89fb405d46716ef08.json",
+   "sha256": "c3c73fc15aa0cd16167317c56aad24bc6feee9c67f4ef0aa8cd4f4f0df31d175"
+  },
+  {
+   "bytes": 2024,
+   "exists": true,
+   "path": "data/raw/ethereum/token_decimals/decimals/0x0c702f806c149fcee4973dc76b2d40be18611d1e/block_22457565_2d160bb314e97e76027b3369ef99ae21c035e428db1907f01ab34b71f2c0e8ae.json",
+   "sha256": "98e7d05fd3e83623da545912da48a0df653d422ad9c90a6918f7be55bdb4183b"
+  },
+  {
+   "bytes": 2024,
+   "exists": true,
+   "path": "data/raw/ethereum/token_decimals/decimals/0x117cb0fb4e49ddd274bcdb65f4bb026af3ed8814/block_22081565_e8ff49aeed3924209bf406bb00f144e0f1374853fc913be0a39daa1f6f913a3e.json",
+   "sha256": "1e3636a84191d50ee42670c0de5368e94be1423fe355fdc7b694b5e3d2863e87"
+  },
+  {
+   "bytes": 2022,
+   "exists": true,
+   "path": "data/raw/ethereum/token_decimals/decimals/0x12a14510220d8a9b9e79f8370199e303e94a26d8/block_21914597_ecabc77de9089433d4a705529aaa1210e0e909bdcf7c53465d2727980d7b37ac.json",
+   "sha256": "004983813e8125ca1a16bd3aa514f824200c56bfcd3da5331d412cfa82f84e79"
+  },
+  {
+   "bytes": 2025,
+   "exists": true,
+   "path": "data/raw/ethereum/token_decimals/decimals/0x12f90cd5f39ea92bce4d65da9df44eadcf234f4c/block_21953200_02db11dd0553de7d8975b40042d59c1e30a8586cbbcf0c94c82af5fdb7f72255.json",
+   "sha256": "1283676d84e6a4e74da3795f0678ede611adf5ee63bf811e9021d1411870b83a"
+  },
+  {
+   "bytes": 2021,
+   "exists": true,
+   "path": "data/raw/ethereum/token_decimals/decimals/0x144bc5c7aac3f589f530b8215502f95369775bd7/block_21990103_d445cbd0d31879ba059dcb3ec97bd27a375bec60e452f327d67e42c5bcb46806.json",
+   "sha256": "254ac894902b905f64c7cdc4d6b62c2eca33a89869400d61134ba7af3b008010"
+  },
+  {
+   "bytes": 2024,
+   "exists": true,
+   "path": "data/raw/ethereum/token_decimals/decimals/0x144e905b93aa207d600b756c3649fcb2c8a5a5db/block_22455280_c9e99105489ae4eabf57e61f5fa85eb3d70adfb4c489b1d11ff916c5346b7e53.json",
+   "sha256": "37d1329f4acc7f0007a43b57e26656ef982e4c3293730d959a1486a0d1b46df4"
+  },
+  {
+   "bytes": 2024,
+   "exists": true,
+   "path": "data/raw/ethereum/token_decimals/decimals/0x1465216f68c4cb9712535183a2d4c3659d7aa6d4/block_23341384_2f9d29922fff4507ef6e07355df23ddc0fbab67210342c2dd2c765a8be04e41a.json",
+   "sha256": "26b7d6ddc33e74aaa0f2015797fb1e7162e9982185f924db7c9bfb14a620297b"
+  },
+  {
+   "bytes": 2021,
+   "exists": true,
+   "path": "data/raw/ethereum/token_decimals/decimals/0x166a7acfc9fc521243225df764a23af6afbb220e/block_21953431_6e9d0df8262222e82a4b0a28472f0e7f4f286ed60fca6ba1b5b0bf5c1d492168.json",
+   "sha256": "1a4af17465eb2a2953c4e08b5ba7ca7a7a0c4842afcc706f2e2064a677e5ebb1"
+  },
+  {
+   "bytes": 2021,
+   "exists": true,
+   "path": "data/raw/ethereum/token_decimals/decimals/0x1902baa80e5a00220ae2fd70ae824e3e977aa8f0/block_21869662_562beb12d55986d981480182294d377b79ff4830b4c16079076710dc2496f27e.json",
+   "sha256": "5548ff0aa1418d325a9039e0dc79ee66a360e583e266d86957f6d23538a30faa"
+  },
+  {
+   "bytes": 2026,
+   "exists": true,
+   "path": "data/raw/ethereum/token_decimals/decimals/0x192c54a83a362215580384203c3e730aafa9173d/block_21333174_71910dc726302af7800792b2c438202fa13b8e2ca15de03f9cc5c8e2c4b0bce9.json",
+   "sha256": "c92f3b448658323cca64324e8e7ce667b668ae0b56c598eea4b5b94eec6573b8"
+  },
+  {
+   "bytes": 2024,
+   "exists": true,
+   "path": "data/raw/ethereum/token_decimals/decimals/0x1a4c0bd17812c6de8b15ce059b241f48c0ac44d8/block_21871147_71f0b10bb1de1ddbbb050348ad73c8304f7b9bbed4e697065a69f8db717e0128.json",
+   "sha256": "41a0db0a8cb91e23bdf4b4bcea2668244de40c52306241ac5dd0fc1b06d51a8f"
+  },
+  {
+   "bytes": 2021,
+   "exists": true,
+   "path": "data/raw/ethereum/token_decimals/decimals/0x1a503fccfcf7975c4daef401571d6c432502cfba/block_22012852_1a6bcf964481bd485a887745481aa8d08935657c0463282eff07b9e3bb161c11.json",
+   "sha256": "aa3cfa519a228ae229ad5b7bc5e6b12e669243bacc8d5f8efb528223248df92c"
+  },
+  {
+   "bytes": 2021,
+   "exists": true,
+   "path": "data/raw/ethereum/token_decimals/decimals/0x1a788cfdc8c1c8c49215f971cdf59099830fc7af/block_21876317_7a0ba957dd17182b48da0afb9102b6396cecea9c74e4a8eb668fc5ec0c0903f7.json",
+   "sha256": "77738028091ccb7807408f2daad96f03bb43d6f2e57ad573a2e7463deaca340a"
+  },
+  {
+   "bytes": 2021,
+   "exists": true,
+   "path": "data/raw/ethereum/token_decimals/decimals/0x1eb7804381f3f97264a009889d8bb28d25fa0f32/block_22110327_eda3e6a6a049c413496c89f34c92b79c64714535930601dcd5904c2e50836637.json",
+   "sha256": "5822f2db576c13be711f7287d71973014d9cabc42a0d04e68d941fe48ea88622"
+  },
+  {
+   "bytes": 2022,
+   "exists": true,
+   "path": "data/raw/ethereum/token_decimals/decimals/0x1f5e7df044de5b70cb8ee3130773897205fe9d0d/block_21129851_305cb46a36b1a588beccf46a3c2614e7db26a02bf647bce91f9ecdaacd9ca44a.json",
+   "sha256": "77ed7c63036bbc55cc8e09abc7a7e6b6003c65297fe160992561ad039fcf19fe"
+  },
+  {
+   "bytes": 2022,
+   "exists": true,
+   "path": "data/raw/ethereum/token_decimals/decimals/0x2181008448f48bd3b5d35ecc86ed497e883e4b6b/block_22081563_60059e77182a162a8f2a63603ba14efc62078bda030176da4e64791816463db5.json",
+   "sha256": "f2b8e869ace17d94c6b801fa2d1e12a8c4624e5ffb3c550eb855b56d4196c46b"
+  },
+  {
+   "bytes": 2024,
+   "exists": true,
+   "path": "data/raw/ethereum/token_decimals/decimals/0x21fb6404bc24e23328947aeec48e2053d41dd65e/block_22309949_04d29c53526f3e48e4a1e8c5cd4a64bf922ae245042ad62a3a9f5de81a4d33fb.json",
+   "sha256": "7e2b5dba13b97df128fb6e03562ecd83cc768d1937705999a20e793834c0a326"
+  },
+  {
+   "bytes": 2022,
+   "exists": true,
+   "path": "data/raw/ethereum/token_decimals/decimals/0x2352fd72c02588fbde7d0bbe8b0ac07f1d24a82c/block_21960090_fb8d91f3383d4b9cde814f66a8d4d746919acc0704bee5a5b60e07a9f2e8c2bb.json",
+   "sha256": "131c757e6595830d722adb54d8ca94a2a85c81bd7f8deb11621ab792411a5b61"
+  },
+  {
+   "bytes": 2345,
+   "exists": true,
+   "path": "data/raw/ethereum/token_decimals/decimals/0x2369abc498b7c3fec398c15b9fa0c9e763c5076c/block_22462642_2bad7dd2c8dcbd456388f4c5bfc22f02a1602de225b1de50d71b164ee91b334f.json",
+   "sha256": "16ea78e8a53e3fafdb05e8ff8c4439af56e752b7c24afd9afb58760234e3adbe"
+  },
+  {
+   "bytes": 2024,
+   "exists": true,
+   "path": "data/raw/ethereum/token_decimals/decimals/0x24444811886d4e402ea69e834d6bac0cc56691c7/block_21953312_47365bb2e8c1cfff5fddb5b471dd7f649aa97c902ad83c3fc0cf80517ae30a1b.json",
+   "sha256": "876721a47061ea8e8f39cd6dee747f815b88540986c4a89f74ed6a2379d42b3f"
+  },
+  {
+   "bytes": 2344,
+   "exists": true,
+   "path": "data/raw/ethereum/token_decimals/decimals/0x24c8fc299f2b74da9e29864697f0780d29e63189/block_21169772_d4ac8305216595339d74b472482fd19a0b4e02cc97f387565329c228e1634655.json",
+   "sha256": "05199cd46668be7bf2728faa92c4da8f2cb656046cf1ecaa0af447e4b223fd17"
+  },
+  {
+   "bytes": 2343,
+   "exists": true,
+   "path": "data/raw/ethereum/token_decimals/decimals/0x24fba766f608971deb41a2503a7dc15944d53cc3/block_22045028_dd4080d1ef9ff83b79d3a0efdc16d27b7b876e8f270d251c93696b7b98976aae.json",
+   "sha256": "90dea6017f1e8016eab8e37339ba9c5a75b18b5ee7a0facd3469c523ebfb0bf9"
+  },
+  {
+   "bytes": 2346,
+   "exists": true,
+   "path": "data/raw/ethereum/token_decimals/decimals/0x25c0ab443ae0ac58b18b45d275a4d3f7eef2e636/block_21871522_157c0c1e55cf1b4b7308c5f5ae5f0dfe1a00fa5791a6768b31a553568dcd2395.json",
+   "sha256": "b03686b3d895b430e3fb9aae41d5eb7684b60087ec3a0a2465d104ce99dc1278"
+  },
+  {
+   "bytes": 2022,
+   "exists": true,
+   "path": "data/raw/ethereum/token_decimals/decimals/0x281f35f507635d9e8a478afaf01df488978cc638/block_22373979_455e497eda16fa1b6a3baf89d3636590594eea929a060242908141e8ed94d002.json",
+   "sha256": "f7a1bcfc092036aa2367aa06ca608d2f708fe1338e09704a8878be2d62762400"
+  },
+  {
+   "bytes": 2025,
+   "exists": true,
+   "path": "data/raw/ethereum/token_decimals/decimals/0x28d6549677ad56da462eba7e892c781f805d274e/block_22046633_7ae0a9e425fb70830d499fcd7db6f8355a1478106dadada26705a77cbca65883.json",
+   "sha256": "2e5ce751692f2ed222f166b29c146468763507f7f2761ef1e397779805983bc0"
+  },
+  {
+   "bytes": 2021,
+   "exists": true,
+   "path": "data/raw/ethereum/token_decimals/decimals/0x2a3d6c3970d0cc765b29297daf4f980b7cc1322a/block_21955095_72c488dc4cd8c253b9377d6f6bc481a2fba7dc4f7ff1f2a87386052a99f09b45.json",
+   "sha256": "a0c7bbc4f43f08dcc32e5e72d8278d5cbe51ac9dc597a848c998a7e5b70c7236"
+  },
+  {
+   "bytes": 2025,
+   "exists": true,
+   "path": "data/raw/ethereum/token_decimals/decimals/0x2ad799239cda1b105d1acc846e769b347f7a697a/block_21120214_0199e730ef64da532035af51f663c085fb9ac5628ef1e0ba7c770019016d6a96.json",
+   "sha256": "0eed65fb3a9cb97be3436d0c86bb5b033b500ab29fceae29d1658a04be923871"
+  },
+  {
+   "bytes": 2026,
+   "exists": true,
+   "path": "data/raw/ethereum/token_decimals/decimals/0x2b6148d7c4e788d14182140e18a174a73bc8bdc5/block_21666475_acb7253cb4ea7458eafe90adb5dc73047f32572fae9256e60e036c7b1a3cab23.json",
+   "sha256": "c241b1e18220b3775a1de23a1572c46d8e8bab3552d1299be6fdaa8cbf35392a"
+  },
+  {
+   "bytes": 2023,
+   "exists": true,
+   "path": "data/raw/ethereum/token_decimals/decimals/0x2c3fb68f9c5f1e2debf1e9a85bd4c75af078e4c2/block_22380211_31767e7e0d37c5ad2cab96378c7f43cde2c3b99b83d382388589d72d07e4e330.json",
+   "sha256": "957abf6bb133b8950bbcf1f8949cdb0b3d1a121315bfcd289782c12c60df962e"
+  },
+  {
+   "bytes": 2021,
+   "exists": true,
+   "path": "data/raw/ethereum/token_decimals/decimals/0x2f69dc2d366f32920ce9cbc4856fa1b1d6dbd21f/block_22047716_50bf125103b0f78ec07031575325df64c65f48c3a3d4a765e1d35ad89aa9a390.json",
+   "sha256": "b582dfd20eaebbc210fc21506f43915bd7a3a2d8ef8321fee317d69ef3723119"
+  },
+  {
+   "bytes": 2021,
+   "exists": true,
+   "path": "data/raw/ethereum/token_decimals/decimals/0x2fc8cab3e6804e36f3ebb303effde06ebd9b4391/block_21875735_16405b8d7a3a1ed19a7909042cd869ab709a2bc1722dce3c57652c98148043c1.json",
+   "sha256": "26e046a61368ffb170f37ca33acc2a8331928a96559ee211a68ec9684df64261"
+  },
+  {
+   "bytes": 2023,
+   "exists": true,
+   "path": "data/raw/ethereum/token_decimals/decimals/0x30b00ef65091b44474491f7b85bfb76895e6d9c5/block_22382023_ed3ffb147bdcfb84ba3b14286975e92a157382e81600365c91136a8e569ab4e8.json",
+   "sha256": "8926afd9a89457d02c49498c199091c9934ce565083678438d4a66c108a68135"
+  },
+  {
+   "bytes": 2022,
+   "exists": true,
+   "path": "data/raw/ethereum/token_decimals/decimals/0x32121832c193bb4da50722a8f57666978bc2ff47/block_21122499_face7355c12506f824c7102209a8492cc5cad26b79856962e4958cbe76193215.json",
+   "sha256": "2972c53c84562cb3d8e3130402932c8dbca11ca8d4f2ed6526952c254d9f7866"
+  },
+  {
+   "bytes": 2022,
+   "exists": true,
+   "path": "data/raw/ethereum/token_decimals/decimals/0x3695f78765185badb273dbb1bb4f671fe997f806/block_22107245_8a437bd2d0667fb314146f29b313ce84389901ef44800e81f04a7f8e93ceca8f.json",
+   "sha256": "c63c39634c148095b7d710c81ced12abab47633dcbcf3b55002aa11516d3bf14"
+  },
+  {
+   "bytes": 2023,
+   "exists": true,
+   "path": "data/raw/ethereum/token_decimals/decimals/0x379dd226231c22a8c5fa96911460b562de0fa27a/block_22314623_d94f68d7ec9c3314946c99e68354196286db87ce7b958b9f896291aca8e902cb.json",
+   "sha256": "8f2dd622b69fcb8c0ac2af4317c270ada49583924d17d4fc115fc0a0285295ef"
+  },
+  {
+   "bytes": 2025,
+   "exists": true,
+   "path": "data/raw/ethereum/token_decimals/decimals/0x380bfb9d43ad0d62235d41467ebd517eb823bb04/block_23244946_59455667bcb168f361ad09e9628cd7bd0e0f18591abf9cd104de4c2a156fbfdf.json",
+   "sha256": "ce924b61f029c77b5ee957e5883470dbc30912db911b0bbf6ab68f15c82bf32c"
+  },
+  {
+   "bytes": 2022,
+   "exists": true,
+   "path": "data/raw/ethereum/token_decimals/decimals/0x3aa6ea3f9b8778582f9d31bca188dbd6c2bcc1fc/block_21650282_2990da849e67061de90e372ddfbc8ee0e9da72d015b852b6aec7bf8eef140d56.json",
+   "sha256": "55f2def8406055397a8a94467cee07a2d5cc3e6300572865d45a269a717c7c91"
+  },
+  {
+   "bytes": 2023,
+   "exists": true,
+   "path": "data/raw/ethereum/token_decimals/decimals/0x3bfc52eb971f32b5c78783ac0e01aeb9b105abb0/block_22261688_63a9217cdaeb9d7058e053ff10adf552ed89e368a87e228db0f113ea6c4322e6.json",
+   "sha256": "34101528e13e6e82db71a4fe0a43a9dc7445f7e0295469ded181aee09b28d15d"
+  },
+  {
+   "bytes": 2021,
+   "exists": true,
+   "path": "data/raw/ethereum/token_decimals/decimals/0x3d3d56bca90fd54eaa0041d368c6f01e55323128/block_22110057_33ead2f6e5918589e936713e8eff8a03a74c328036d1f2544ec46e89a6df1f4b.json",
+   "sha256": "4d68f4938f2c69831695446556127481df2308e37900754cb6da46e84e8541af"
+  },
+  {
+   "bytes": 2023,
+   "exists": true,
+   "path": "data/raw/ethereum/token_decimals/decimals/0x3d5d5767950aa8f91a10f3d4ec183e41b82a64c1/block_21952524_ff3e85d568492e031eba3960a53910096aac09047852d27a96ae59beb74f4dd2.json",
+   "sha256": "35377936bf8e408bfae84e159bbb2e0a6cd97e02604a6c24d97cdc9347981834"
+  },
+  {
+   "bytes": 2343,
+   "exists": true,
+   "path": "data/raw/ethereum/token_decimals/decimals/0x3d9ede7d8cace3da91278a2fe821534622d17eaa/block_21875979_41876cc7410e08ad3c2effe082778bc1e1cdbd8d3616d38da4f9dbc233d6151b.json",
+   "sha256": "80857cee84996862c7dd2175fa20a5099376c0da5e5c6b382e15be3945872ecd"
+  },
+  {
+   "bytes": 2025,
+   "exists": true,
+   "path": "data/raw/ethereum/token_decimals/decimals/0x3f3e0ba3a2ba16732b42ba69393a15308d853db5/block_21951239_1c5664ac572087ba26d4a1238b2b6b9d50d7af36896f937178119bfd5e749541.json",
+   "sha256": "aa860834e5ac2fed3c9794f6d904f46b2606851a3bab08654ccc0c72f17d9f6a"
+  },
+  {
+   "bytes": 2021,
+   "exists": true,
+   "path": "data/raw/ethereum/token_decimals/decimals/0x4090b2d253c4e9e3965e95e7ee622215a90d8faf/block_21426988_db9cf1d22306084c0e87273d23bc2ebb2c0ad0d0de82ed26eb634bdf84fb59e0.json",
+   "sha256": "3c15cdb463fec075562ae5b2c868710a9ef0b8f807d6305865508135c644161b"
+  },
+  {
+   "bytes": 2343,
+   "exists": true,
+   "path": "data/raw/ethereum/token_decimals/decimals/0x44bd8796bca351f9a02aeedb1bf3d32ff2d637db/block_21953241_c36f6291cf17d51ce0b6b2e74550c71096458d452682ee2824a10ed26a791a5a.json",
+   "sha256": "5e5dd48914f41a95365fab186b14f48c4e247176d858739b96a83147ffa1137f"
+  },
+  {
+   "bytes": 2346,
+   "exists": true,
+   "path": "data/raw/ethereum/token_decimals/decimals/0x45b57dc20639921df496e6639c41fdffd8c5d87d/block_21950766_5db8d77a139b7aba241fc8aa2e1b57177f82db73fa88477cd9dc0834a8141780.json",
+   "sha256": "1e2a450661cf4329c3510dc103b223928b295d9895c0afdf0552fd98d58964f3"
+  },
+  {
+   "bytes": 2344,
+   "exists": true,
+   "path": "data/raw/ethereum/token_decimals/decimals/0x45c0abe9975f870dfd80ebb13596e4dc5eb7ac8d/block_23247768_bc8a14ee50dd83eb71775fb4ad44bbcb7738157f11b70ec1c486fc3f259ffd26.json",
+   "sha256": "f33cc50771aa69fe30691f933ce861e664c4c00587537ca2bf6a5a8dcf1cdb8b"
+  },
+  {
+   "bytes": 2023,
+   "exists": true,
+   "path": "data/raw/ethereum/token_decimals/decimals/0x475ede03c831a4fe8da2323a00ce6ba369085163/block_21987559_cff15a4d6bb6f9ccf8111cd7bf5d9123b5e8edbbf3f21b968488f2aa35259e35.json",
+   "sha256": "bf14d5eab424665df355615248e01b05f119623f853fc7fc1d1d8af5bca26f68"
+  },
+  {
+   "bytes": 2343,
+   "exists": true,
+   "path": "data/raw/ethereum/token_decimals/decimals/0x49e8f9f095bdd9a6de63e875a20bb451083f370a/block_22247065_f80d65ea3a167e2023caf6b5d1b61a5c92a0e43df918d3dae7d412f4d9341b73.json",
+   "sha256": "610448acbfba1ce3edc0d4973776f0a7d902761ac0bac6c99a7d30c68207a15e"
+  },
+  {
+   "bytes": 2023,
+   "exists": true,
+   "path": "data/raw/ethereum/token_decimals/decimals/0x4b0c90c0c110fca354901c7150fdaf3475dd43c3/block_21950826_8fb067b4e93bef1b27088648cacc4c7c4a95b57c2d7277a1e17bc11e661af319.json",
+   "sha256": "d6743d372dff5debbb3d9ab9929d5f1b937e1ca3e9ace051f34d2cb7cb6a4d87"
+  },
+  {
+   "bytes": 2021,
+   "exists": true,
+   "path": "data/raw/ethereum/token_decimals/decimals/0x4b1797dfd4d74be744e0af8fac6877a65bb877e2/block_22110062_8a48b2819f89b0db98dcdd987308838b9bd02f7f9e1161990dcecbb840739d4d.json",
+   "sha256": "656c624ea1fa195e43999b2dd330d005286a589ef33b8255bc1e6f97fc36fc98"
+  },
+  {
+   "bytes": 2025,
+   "exists": true,
+   "path": "data/raw/ethereum/token_decimals/decimals/0x4bace88436e05818f82f735aac3f598d0fa384f9/block_21430343_50ca937880c3fab7265520790b225467e95125bdb0c63f76286225fdcf6a34d9.json",
+   "sha256": "23ed3656f73e10e95fd6a1a0e7dcf0cd6c6bb0ea34860fca78e3b047d38d427d"
+  },
+  {
+   "bytes": 2024,
+   "exists": true,
+   "path": "data/raw/ethereum/token_decimals/decimals/0x4baec4b3796fe7259c155ed902b668d3b9e0a9a6/block_22231377_f44f49f54f9090f6611f632c1d57610b476e294b47db4b2f08517b17fb444e71.json",
+   "sha256": "c0c91e326a759c0c317e11261e4b57000575232bd4e1f9cd3422119202b45c41"
+  },
+  {
+   "bytes": 2021,
+   "exists": true,
+   "path": "data/raw/ethereum/token_decimals/decimals/0x514a5014a39ce81eb76ff87c401cff056e96f32c/block_22111186_d35f364b83c393d94f2a5803a2ff5e65a90beeef7e47420a7aa579a7f10ecc02.json",
+   "sha256": "51a1c5c512ba615e8c436d72da64cf65eb527de6b61d161145e82ab46c6d85dd"
+  },
+  {
+   "bytes": 2023,
+   "exists": true,
+   "path": "data/raw/ethereum/token_decimals/decimals/0x51c5e527b48b34b276b698376e310dc97bf1033d/block_22013297_c28e6ad1fd073a4812dbd03acc78ffe7511f243830eb9caf1f016be0e5293585.json",
+   "sha256": "182cfeef21e2d5742eceb7c6ec699ff19030f6a9bd193faf4a6aad1aa8670d73"
+  },
+  {
+   "bytes": 2021,
+   "exists": true,
+   "path": "data/raw/ethereum/token_decimals/decimals/0x51e8b6330f09805582097b2e6763a7cf4954abd1/block_21986068_b5b1752d60d0c2467b11d22548dcf89a9ea33f7113b324462929e48620adec44.json",
+   "sha256": "9767960e84af3546a8f248dad7a16a4e08c7ac30229a082345c3b699d37bc608"
+  },
+  {
+   "bytes": 2022,
+   "exists": true,
+   "path": "data/raw/ethereum/token_decimals/decimals/0x55d1a0ca34581aaf6815ff354739f89fe7afe6f4/block_21981996_c1ed76af461f7fbd107dbdcb6e342caf83fee77813c2371d432b80856309a724.json",
+   "sha256": "a48ea69fa7b2f929ac1910aa0fd68aee79b1b2905ddf8fe191a322b14808a0e1"
+  },
+  {
+   "bytes": 2021,
+   "exists": true,
+   "path": "data/raw/ethereum/token_decimals/decimals/0x58fcd31034c6464138cd50d22c2a646f81c40b4e/block_22042606_82d299a8a45d4c2eabc00b462f01af36de1077bf70de9d8dd299cf337c517a26.json",
+   "sha256": "bf0ea38b753c12e2e510f7718b950628c33094f5b7b90660ce4da5ff80ce4de7"
+  },
+  {
+   "bytes": 2025,
+   "exists": true,
+   "path": "data/raw/ethereum/token_decimals/decimals/0x59abb380288065e21d9094ea196d78b10c344177/block_23354419_1b993fcac67a9a8c8cf21840a3a9369f77b09e4f81998004c11a20d00e5285e6.json",
+   "sha256": "71ff6897d7efaaab61e9a2b201f80dbc3200c301f521e66b022a402604561456"
+  },
+  {
+   "bytes": 2021,
+   "exists": true,
+   "path": "data/raw/ethereum/token_decimals/decimals/0x5c155038cb60da0e7d514f0c6d8e299c0d89a6c8/block_21869746_4440ec3ad5f2d5ed612498cdc7a0b80c6656bf8eb79cc145e4da20e29cfc2563.json",
+   "sha256": "1da4785d901722f47f117cafcff9c2596cade55b0d9bdd325e8054b4a76695d4"
+  },
+  {
+   "bytes": 2021,
+   "exists": true,
+   "path": "data/raw/ethereum/token_decimals/decimals/0x5c6d54a16f4bcc5765574d55dd75f92accced70b/block_21969638_b98103827a75f769a554a980a80a38282a13fa90a3fb474d6a48d59134f29335.json",
+   "sha256": "8b3d6d13cd501f6d6eaabd98f2dd042f6389eae06c41b3a853af05811156e683"
+  },
+  {
+   "bytes": 2023,
+   "exists": true,
+   "path": "data/raw/ethereum/token_decimals/decimals/0x5ed9bfff9c3d1b96c7fe862e5fe900cf8ec3e67f/block_22257625_982fc011248cfc1579c1a5df71942018e20f972010f7de13c990acd354a71cba.json",
+   "sha256": "91765503e9939b70baad96bb3ee036f8bfc393dcb55755a2a27b60a8cf114eab"
+  },
+  {
+   "bytes": 2022,
+   "exists": true,
+   "path": "data/raw/ethereum/token_decimals/decimals/0x6177d9528a22e09a356e7770f7e5d4ae70602fd4/block_22249686_efb36a96393954f222cd2e6082d01c5c5785d14efcb7d454337b489e131f67c3.json",
+   "sha256": "1bf3d1d1fd79c9bd7cd30665bca4a58f5912c0a237c692afb15db8a26f832cdf"
+  },
+  {
+   "bytes": 2024,
+   "exists": true,
+   "path": "data/raw/ethereum/token_decimals/decimals/0x6222b14ab11380e3d36222568193d5ea6eb56cc3/block_22372787_ffb1770f4179146826ee48d401ff80eb49404faa6a52c5eb661b50c18ebf8519.json",
+   "sha256": "015ac85532bb73e24a1ccb4856a562e2028d5b1bd37a5ace5f321f8cc8fa6d43"
+  },
+  {
+   "bytes": 2024,
+   "exists": true,
+   "path": "data/raw/ethereum/token_decimals/decimals/0x623217599c23ef8c2c2a85ed5285208103add307/block_23243636_b64d45e7583830d18d88352f726fad4de111f69d743a1f760ee0306fe26b81b5.json",
+   "sha256": "566bec5a0ed095054df52fdf88514d04eddff0202d6926fec67a25f898ee1a3d"
+  },
+  {
+   "bytes": 2024,
+   "exists": true,
+   "path": "data/raw/ethereum/token_decimals/decimals/0x62bf763a92a6468e151a0ae0b99b178870aa8996/block_21873490_401f1d7fa553ab6c2a4c970ce0a2d5359df67326ba3d3f34a71c90fa1bdd7d1d.json",
+   "sha256": "17ffd286ec79d26162dfa055c8fa4aa9ba858bbd8163d3c2dfcde51b9f9d26ba"
+  },
+  {
+   "bytes": 2021,
+   "exists": true,
+   "path": "data/raw/ethereum/token_decimals/decimals/0x68633a1c8827b7d6abdf2eea60c36773e1460c37/block_22046981_d63f9710b1c08e377106c377cb1c0567411f6237068d68b9b970063d4b3ffcbf.json",
+   "sha256": "79e352e4c5225961f265cbb7966377824439cebf0e6afa36979c1ea3d9e13c3a"
+  },
+  {
+   "bytes": 2022,
+   "exists": true,
+   "path": "data/raw/ethereum/token_decimals/decimals/0x6877fb5021232f1b80df6ccfdd22c4c932e8bf94/block_22288261_6aa109f4441ab46765587062996de15b4a50739cf136d7e0224c20c6965aed67.json",
+   "sha256": "b8b00b91fe69a4bbd18662d072c6f5d1fdfba6641a032eb687f6fe9c7f44c322"
+  },
+  {
+   "bytes": 2023,
+   "exists": true,
+   "path": "data/raw/ethereum/token_decimals/decimals/0x6a5fc1403b55039c8e6cc158c7420a0f2960efa9/block_23349180_e79580eb82bfab62d386904dcfb42e2a2de7fd5966a9ec7275c9eba19c66be79.json",
+   "sha256": "d4ae27bffdc0d380cda65458bd4b4c8c78f55985240fe6c8fbc5ca52c8941263"
+  },
+  {
+   "bytes": 2666,
+   "exists": true,
+   "path": "data/raw/ethereum/token_decimals/decimals/0x6b99dfffea3131ff63a155c1fcfecbc2c7583d9d/block_21949046_dd42100273b05d5b9b174eb176cda56962a8db86b16df6ef2dad87a20c43d340.json",
+   "sha256": "71bd0f44e13f947a98594696f44bc836f45d5e3108ff79c6f282bca99265eda9"
+  },
+  {
+   "bytes": 2343,
+   "exists": true,
+   "path": "data/raw/ethereum/token_decimals/decimals/0x6c2828c67e0227f06c6a4b82fb3d2a32f65da1a9/block_22261631_8b9f0595535699e8044f6eef33ec9d9b65506181faf0bb78b10723795cdc4ea7.json",
+   "sha256": "1d863467d086e2c49e316c34bc2bd93e8609dee2a63415c184599d419ac4c4c3"
+  },
+  {
+   "bytes": 2022,
+   "exists": true,
+   "path": "data/raw/ethereum/token_decimals/decimals/0x6c86e01a7d7c2fe3180e37fce91742e6785f7e4c/block_21976148_fefa834ac92f38944bd1187c541c03f08aaab27d2aa474496a0a214f4fd78c79.json",
+   "sha256": "d2ecd88d62450cdf5790ab9b2253f1c5e00b122af96af7529687f664f48043e2"
+  },
+  {
+   "bytes": 2346,
+   "exists": true,
+   "path": "data/raw/ethereum/token_decimals/decimals/0x6d7456b89248692f88e4c261370933c92a3893ac/block_22462575_3fb5027d85102a2d24e6e44d65b2a13bab3075eacb1bed0a7fe57a88cf9e93e9.json",
+   "sha256": "ee9fa9b7dc20b0dd8e2ea37ed55fef3f05189077dc79a690cdaed9924a25d76e"
+  },
+  {
+   "bytes": 2021,
+   "exists": true,
+   "path": "data/raw/ethereum/token_decimals/decimals/0x70307b3e785f80445288a91d191f6bb55ee55210/block_21957302_1acb5023421cff43a06ce4c880ddec6303589ed32a74e32c266cca6798a7b95f.json",
+   "sha256": "2498e7e132050eb7c54ea2f288a1d19bb81cba0f98973ad38753671ed6bb128b"
+  },
+  {
+   "bytes": 2021,
+   "exists": true,
+   "path": "data/raw/ethereum/token_decimals/decimals/0x7169dfb03b1185bd2431b1c567fef47b2fafaa64/block_22458770_8c7120f618f3e209032b63010864cda2aafa50379fa56dbd297364f27162d046.json",
+   "sha256": "30b2293035aa75aa3d46c83f2529bc3ecac326c84d834c9e23d4c97e2c1e01ee"
+  },
+  {
+   "bytes": 2347,
+   "exists": true,
+   "path": "data/raw/ethereum/token_decimals/decimals/0x7470718e3bcc57139c27fb4a8c136f2ff0fbae75/block_22105808_0d700879935cd304fe0eb775c742c640dfd06724ab2673663fd344e7033f22d5.json",
+   "sha256": "dabf043b47e47be1ee0b55725420969addea79f0e278f22e466831b77a84d26c"
+  },
+  {
+   "bytes": 2026,
+   "exists": true,
+   "path": "data/raw/ethereum/token_decimals/decimals/0x74e34b36063951decc64b88d73a0c5c4cb0bb7be/block_22235421_839449201bb21208c16169013adf39ef72296459dbd436b46ae79560259ada16.json",
+   "sha256": "4378d7ab422098643f0d70c20068c6d7bde0ecf808f3501e11a4bd7f4e9b5c10"
+  },
+  {
+   "bytes": 2021,
+   "exists": true,
+   "path": "data/raw/ethereum/token_decimals/decimals/0x750b9d58a7d3e1dda185b32f5466e95bdd54ed27/block_23243964_f4b2d3db4d28fbc00acaf600d590260bc6a501d48e5b465b16d6f60f825f29f6.json",
+   "sha256": "567d9b17649d0829ecc38ddfda33fea078926e2a0be541d480256aa43c644b64"
+  },
+  {
+   "bytes": 2025,
+   "exists": true,
+   "path": "data/raw/ethereum/token_decimals/decimals/0x7521f57c2fdb2a8d64373e54051501d0f4c54547/block_21119774_cc3cbc3472985911682cd0fc9a1c6ff79a58619ac8f045c0713f68c111827fd0.json",
+   "sha256": "be916afd4756692a3ba1bde86478a45ea13a90a04d81840d9c34fc4411a07f9d"
+  },
+  {
+   "bytes": 2024,
+   "exists": true,
+   "path": "data/raw/ethereum/token_decimals/decimals/0x755a06b3516d59d9b5ee09ab3baf3993605fd157/block_22134115_19cdc261363c26955dbb5dd759faf65dcd8d2195c20bb29b436e3b22df3046bd.json",
+   "sha256": "8db3411cce2ea5c9c9da50e269160d2d84d46989c47ed14e180ddd33a0a2d501"
+  },
+  {
+   "bytes": 2023,
+   "exists": true,
+   "path": "data/raw/ethereum/token_decimals/decimals/0x76f83c2b088fd6a4b3e4492268502b64f9a04109/block_22314123_40435bad9b1bacdcbff47b2fb4fdc54c62544159c6af448f4d3e0fccd63a64c8.json",
+   "sha256": "7b09c84c192924006680cb531febe8580653d84702af9ae4bcc7a46cd1d2adca"
+  },
+  {
+   "bytes": 2025,
+   "exists": true,
+   "path": "data/raw/ethereum/token_decimals/decimals/0x78203429443193414e1a60953e1ffaa56b111f03/block_23248577_175ccac5615ec48c917400fe0c9d93985d59a437870e9627cb78a03883b928b4.json",
+   "sha256": "e17ca0cb4ec9bae4944db539619b4a8aa5942a5bc3bfc6497de66c9c436d3f15"
+  },
+  {
+   "bytes": 2025,
+   "exists": true,
+   "path": "data/raw/ethereum/token_decimals/decimals/0x784d300f8d49342856d930216ceaec1e24b2e79c/block_22283177_4419767b33d92c9975f0d48e957ab11a841ebc1fb3823525ad43ab69e00904de.json",
+   "sha256": "d896ef473710b56f914cacd9ef1f167c8b040fb2bd05a5396932074e9fd8eb97"
+  },
+  {
+   "bytes": 2021,
+   "exists": true,
+   "path": "data/raw/ethereum/token_decimals/decimals/0x7a782961b0c48f53aa0ded9e321eb2e13f0bfb50/block_23345298_a54d73ffedf7d01b4d4a14886e3a8470dfe5a29442d1ced762289a4a714b3cd5.json",
+   "sha256": "997e9d7af750b836ec3964b07085e7ca5f216ac1f6378023b58fd65662a1158d"
+  },
+  {
+   "bytes": 2022,
+   "exists": true,
+   "path": "data/raw/ethereum/token_decimals/decimals/0x7c1194fe40050d01a3fd455758dcac3386079e48/block_21158555_cc977526f6c1a9071f61d944eb9f61b080629514dc6abf241056c77314d77951.json",
+   "sha256": "b5da09e360de06290e0e0320a6ba3c2974a3360f2379c02b5e4a54f5a638be23"
+  },
+  {
+   "bytes": 2024,
+   "exists": true,
+   "path": "data/raw/ethereum/token_decimals/decimals/0x7cd90f55425e853c47da82eafd0c6c2d3e33ae1e/block_22312488_62f802c507536292560f3466e2ca8931fa36d206ef797d24abe2346c950f9e18.json",
+   "sha256": "edd9c94182e34646ea5686991401d73cc1987f01a1cc4c411cc214da953cb28c"
+  },
+  {
+   "bytes": 2021,
+   "exists": true,
+   "path": "data/raw/ethereum/token_decimals/decimals/0x7f632be8aa34fe3116e8b2d2f6e847697b2aca1f/block_23243330_c991b8a17ae15badcd1dcbe9825335bc8991fad150ba8515f1c2e46ccea53ed6.json",
+   "sha256": "2064166663a099ac7da697879755e0f5ab00fe818804b4ae91ed3eaa0e544de1"
+  },
+  {
+   "bytes": 2022,
+   "exists": true,
+   "path": "data/raw/ethereum/token_decimals/decimals/0x801f4af2722f519f86777a6a785369bd1d10f50d/block_21873324_d24a88e075c4eacdd130d99903494c992c3f679329be28133826a59d465930f7.json",
+   "sha256": "f4d053e9775f198d48daf1cd1261334f98b127b55fc86ba6b69f741166ff095a"
+  },
+  {
+   "bytes": 2022,
+   "exists": true,
+   "path": "data/raw/ethereum/token_decimals/decimals/0x805b11ee214ec0084c68a4b06e30b6ae1e59722e/block_21249179_e26886e8e1fb11f60c473d5462c5c6f2e202346d1e2b58c3c6e8eaa5be6084d1.json",
+   "sha256": "999615824c27aa8851aed52bb2689a0de4aac456cc07539123bd4aa833367b54"
+  },
+  {
+   "bytes": 2024,
+   "exists": true,
+   "path": "data/raw/ethereum/token_decimals/decimals/0x82a216896a2f8893c5d204cab6a6c1218ef374ce/block_22221065_2b5b6a6e2edd579f052fab07076fe7ae1b40478f53ceb9d4cdd21e5454316481.json",
+   "sha256": "b053bb56e698500942df447187a74b4c4a8cc5275af8c4ccf6505614da0cf9fb"
+  },
+  {
+   "bytes": 2023,
+   "exists": true,
+   "path": "data/raw/ethereum/token_decimals/decimals/0x847fd09719b334c5778dbfad6ba0d4f2f8e1cc17/block_22132044_ce21f7b44dd1559d135a5c105b6d07d2ebf303a80a08efbeee4eb6bbd83a4a09.json",
+   "sha256": "d6a86621b4175a613a9bef7bdf52135cd9077f320be43efd5cf222d4e2402f29"
+  },
+  {
+   "bytes": 2021,
+   "exists": true,
+   "path": "data/raw/ethereum/token_decimals/decimals/0x88314650b6921569107d88182bca711b463b5e2b/block_22111561_565aa02068092adcbd68a20899f375b44bbe2f9ecdd6872016e275c43a757a8b.json",
+   "sha256": "8f544dcfea6a12da729319e017b3a483289770ebc25afef63c38225b92bca691"
+  },
+  {
+   "bytes": 2025,
+   "exists": true,
+   "path": "data/raw/ethereum/token_decimals/decimals/0x8a3b41ad5ad18c1b24441c73bb189bfdca99a507/block_21039839_7d772f8a7a0daf25a527feef8961680e9f283331b2aad55043d11e505d907bea.json",
+   "sha256": "66731484535de9048aeb6f987ff85b1a786492b3b53bdaf1856c0262e0938462"
+  },
+  {
+   "bytes": 2021,
+   "exists": true,
+   "path": "data/raw/ethereum/token_decimals/decimals/0x8a5fef0b28f54f70df7150159bf093922426e24c/block_23248948_8a12c931d6ec551ecc6a8fa83e9d9be22e40c5d02b052b06f918f6e328b9d44c.json",
+   "sha256": "8b875f82b75c389cd60906abde24699de8100ed5e565d8ab3301c3f3e6f793cb"
+  },
+  {
+   "bytes": 2021,
+   "exists": true,
+   "path": "data/raw/ethereum/token_decimals/decimals/0x8b231396433435eb197a400eb503a842f86551e1/block_21648278_4109e12dfd9cd59f6c5d9a51955b7612a137d6c53d547dd9a867e55762e660c7.json",
+   "sha256": "888d24b8e3954eaa963ba5f76fca3f004fe9e56bf985bb1ade32f2b6600571cf"
+  },
+  {
+   "bytes": 2025,
+   "exists": true,
+   "path": "data/raw/ethereum/token_decimals/decimals/0x8cb24a1abef8f79daa2f51024167ee9c888b7524/block_22383800_d33785fb929018411fa4d7b41e98bb663d06183b5ab3aab1bdef78621e4f7978.json",
+   "sha256": "1013bf02edf22b113f9d6445bd10ba06fc8b985e1ecc94bf4905d079717b1dcc"
+  },
+  {
+   "bytes": 2346,
+   "exists": true,
+   "path": "data/raw/ethereum/token_decimals/decimals/0x8d05a80cfee8761decd97b24f61a9f784d1aec18/block_21989656_88902e5b9c56e1d5fdab6708b63dc370835146ff4862757fad69fa9a8d49ee78.json",
+   "sha256": "cbcd697ce6362519f35861240a33fdefb55e8d2112c235b8f1eed7d60ca5c717"
+  },
+  {
+   "bytes": 2024,
+   "exists": true,
+   "path": "data/raw/ethereum/token_decimals/decimals/0x8fd590e34f3cd8241c215f2b3db761ea08d163f9/block_22077400_45e0039dee9f9944bebf99103ef4f408cd270890a6002cc3dff37ad0cece3a62.json",
+   "sha256": "67ba4414d3c74e6b304d1958b53a83c75ca6b00a37dcffc6ea4a467bca891b60"
+  },
+  {
+   "bytes": 2025,
+   "exists": true,
+   "path": "data/raw/ethereum/token_decimals/decimals/0x90d4c935dfa8ec2ffd187d664b9d4101281d0126/block_21971014_647e35bc738059e8cb56c6acf873072282a50e3a40d454490c19a077c518af99.json",
+   "sha256": "381999b5792bce119947c6ca7db6069047675225901e08b7652ba8dbf2f9e3c3"
+  },
+  {
+   "bytes": 2346,
+   "exists": true,
+   "path": "data/raw/ethereum/token_decimals/decimals/0x90fb2ed0150cefc92a08a980ef2ca42fcf0fa77b/block_23247766_e862dc4202ba49c364df654b641036cd35167d43e210716fdca852c80e18a50d.json",
+   "sha256": "fa46c7896b144473c3b8cafdeec1bf93b4dbe2d58c1a20bbde63f53f7c986b76"
+  },
+  {
+   "bytes": 2024,
+   "exists": true,
+   "path": "data/raw/ethereum/token_decimals/decimals/0x911a890310a65a902a3b5ead5f1a3c9849f0d37e/block_21952097_b4a1a3ec8d3742d971fcd180d91ebac7ba7d7178d3b190982b44377adb22a4f7.json",
+   "sha256": "f12198d550e256f5ea605bc8343a84159adb38bd1465755568dce5d4906a96e2"
+  },
+  {
+   "bytes": 2343,
+   "exists": true,
+   "path": "data/raw/ethereum/token_decimals/decimals/0x9232b4a245541422e81de7d3c4acebb8d9dfcb7d/block_22106596_0652af34fb1acbee529e24b22f3e7e17fbda2333d80d2f13ba6f1f7844c23632.json",
+   "sha256": "15f35b57431e28630ca2d1fff0224921de70bd51ff10c25708ba26306283c13f"
+  },
+  {
+   "bytes": 2023,
+   "exists": true,
+   "path": "data/raw/ethereum/token_decimals/decimals/0x94a06c212643bbca23a5ef97539ebe542da0ce66/block_22224401_4e8e8755cd54e1f8f67163f79c2924e3d9775c7d1d5ca7793da7591d4476a69f.json",
+   "sha256": "e6deaf5b7bf0c8ebea3b869383ecf5d5f4eb4106581f146c988f96791af5a098"
+  },
+  {
+   "bytes": 2022,
+   "exists": true,
+   "path": "data/raw/ethereum/token_decimals/decimals/0x94f18e0fc047e00ba47bafa7beddf4bd11280ab8/block_23249419_4bb47117396df3397eb85a1c69476c23b6b4b7f85fc6c5e6b05867934a463196.json",
+   "sha256": "071f3dabfb87f7f9bb432767e805918b9aef53d39a93fe79bb1822144b25583e"
+  },
+  {
+   "bytes": 2023,
+   "exists": true,
+   "path": "data/raw/ethereum/token_decimals/decimals/0x9762b705af1e8ddf89542cd6dd001c1543934e12/block_21873156_ddf5cdb2a9048c8dc87d901bf7ac657b1d504515676fbb850f3888aa118edab9.json",
+   "sha256": "3f2e20644995b64d8fbb1bc455c8350cd7d774a5f3370576bac386272f976d54"
+  },
+  {
+   "bytes": 2021,
+   "exists": true,
+   "path": "data/raw/ethereum/token_decimals/decimals/0x976967d23b2ce9af3bef65346bcd33de41cda0f1/block_23242837_65a7ac2db0e7ddbbfe46e323c4d82014b93f7d958317169f0e39575cc0460d97.json",
+   "sha256": "ca8e11f976800d9468384ebd55e1bb246a62d9311cdb99f8922d5cf3dd8c3ead"
+  },
+  {
+   "bytes": 2021,
+   "exists": true,
+   "path": "data/raw/ethereum/token_decimals/decimals/0x9a6a9f92835eecc8431eff2806e0fa475523d266/block_22457200_b9f6dcd7097c4fa925c2893eaa5ce8b0eec636c834c05f3bab2a55553dd7c262.json",
+   "sha256": "d4a1cc60c465475ef457e3c059fc34f2176bd1fe1479ffe7a694797d7245db51"
+  },
+  {
+   "bytes": 2021,
+   "exists": true,
+   "path": "data/raw/ethereum/token_decimals/decimals/0x9a6f6e0758c464ed1dcbe565255119b8de0d478c/block_21876350_7b0b8c209c7e22c4884de2a53d1938a8f8a4c5dd4a0bcf36989c58311f892147.json",
+   "sha256": "aaac1cb0634d63a8db4776428042fec6d84eddd5c64618d0361a12823d8a5f56"
+  },
+  {
+   "bytes": 2023,
+   "exists": true,
+   "path": "data/raw/ethereum/token_decimals/decimals/0x9b092d66a13fa4fc5eeb6730718f38af4299e84b/block_21952337_ff4f8e7c376df0f90fe3367d602682fe720669e5e12099cdfcbf5b7e27ba918a.json",
+   "sha256": "37838f1d510c910ad4efe88d8bcf6770ab2a9c0f03fb1d9107c7c5ac60ec7c19"
+  },
+  {
+   "bytes": 2023,
+   "exists": true,
+   "path": "data/raw/ethereum/token_decimals/decimals/0x9df977b97409521c502781b92d206e30d9eea796/block_22380447_f919ebf7d488074cde06abcc75d26a13c2f878b0128856d38798c3e2e695adc0.json",
+   "sha256": "d2ed5b9f2995708659a88c2e8a4218f104214921bc09862a3c0fd2d44471abe4"
+  },
+  {
+   "bytes": 2024,
+   "exists": true,
+   "path": "data/raw/ethereum/token_decimals/decimals/0x9efcbd7d75f6f26328cc1f8e3f928b3d06dc1766/block_22384268_fef8736c8356efff2b0915e2df546e59b12b0e85b01db90a3e32b98aa6a56c36.json",
+   "sha256": "46dd152ae1deeedb60708f1b80a5cbe92406b1713eb56e73d3a2a0c56f9e7355"
+  },
+  {
+   "bytes": 2021,
+   "exists": true,
+   "path": "data/raw/ethereum/token_decimals/decimals/0xa167aa948428b2fbde26c0f2334be5f6d089973e/block_23351611_13205b3a3324028107ec09c62c3e129817e79368bb748b6068aa689387b7fd4a.json",
+   "sha256": "fe68516c7973b478ac84d511133da0dda98682e08b55db2f3b35641050f3f09b"
+  },
+  {
+   "bytes": 2021,
+   "exists": true,
+   "path": "data/raw/ethereum/token_decimals/decimals/0xa1e33749ebf98a478196f61514f735c8b952d20f/block_23242021_c671be37221459ed677b9bced2bf64f9b1074e7f27838092014c436cc58d353c.json",
+   "sha256": "6a422908baa9c45c341ea161549dae7c03ca1a909aa0e7daca7c79214deb6270"
+  },
+  {
+   "bytes": 2024,
+   "exists": true,
+   "path": "data/raw/ethereum/token_decimals/decimals/0xa4c11ecff1fe34c28bf69bfab4f46c3c1c42928e/block_22317961_f4b075e93da1fcfd5da3d5473c6e6238ffd4cf52b1e8aa6957f039c666a3532f.json",
+   "sha256": "c6423d719dfc326a0788df483b5abbe5809b308cbb24993f72b4849574641e85"
+  },
+  {
+   "bytes": 2021,
+   "exists": true,
+   "path": "data/raw/ethereum/token_decimals/decimals/0xa527c482c024cde67e185b26b73525c87f47fc11/block_21869401_c814020cc9f5997b5d5ff6aad010f2775585383f9e5c8811287811a35d9b1f47.json",
+   "sha256": "0fbd952bc199baad0a760d0166e2e9aead7d1150604ea41e99ab9a74593df168"
+  },
+  {
+   "bytes": 2023,
+   "exists": true,
+   "path": "data/raw/ethereum/token_decimals/decimals/0xa66eee1fb08f3a618e2c226232eb93a7640d571f/block_21875182_6ebb99ac310f766e425acde8aefa328e47f504add01976e3ad3fb081b45ffb81.json",
+   "sha256": "0e3e5c71ea1eace9b930b42e657abbd9df87a1d6988c1a010112b27d33e151ad"
+  },
+  {
+   "bytes": 2024,
+   "exists": true,
+   "path": "data/raw/ethereum/token_decimals/decimals/0xa6d945f187bf202581d0512c291669698e402ab3/block_21117856_138fa49e02163d45c4f4ff496f74825d60dcc08fc0380c82b8ad1bff1ff92795.json",
+   "sha256": "e6c47c7cc77fccd35669a7f8a393f76cc7a8fef92e6f401a713dc4ff7cea903c"
+  },
+  {
+   "bytes": 2023,
+   "exists": true,
+   "path": "data/raw/ethereum/token_decimals/decimals/0xa71b71a7c0e39f3de96f28fc48713014c19892e4/block_22380167_f073dc0946964044a3d2a925e162f34370cbcb877619ffa468fd269d449ad162.json",
+   "sha256": "294ec37494c36f6233d5bf9df38b93adab652d481e7caa7e2fbdcd199e33f5f9"
+  },
+  {
+   "bytes": 2022,
+   "exists": true,
+   "path": "data/raw/ethereum/token_decimals/decimals/0xa7d08bc669cf6aecccbd9a9eb10eec905359b7c8/block_21920719_fdbe3324c89588405998da6b3072e977bbaffd37116bd3bc98d5c492d2761050.json",
+   "sha256": "7728b861350f3183f93be709ffd21f994eb2e586c33305e85bcf37d75c04a394"
+  },
+  {
+   "bytes": 2022,
+   "exists": true,
+   "path": "data/raw/ethereum/token_decimals/decimals/0xa826ffea615da6683a0b1b794a5b02d6db203062/block_21653973_3f25f41a796ae52c62d1d2afc9ba1734e433088932ce974d94baaa468f9a125a.json",
+   "sha256": "63f1188ab7710b57423c189a7ecd5fb147243d0962034d356a46f496ea313bb1"
+  },
+  {
+   "bytes": 2024,
+   "exists": true,
+   "path": "data/raw/ethereum/token_decimals/decimals/0xaad4b5811ae226a8c06b3bfce9d997b1b2186499/block_22316537_ea4ac2535503b64ae2d88605a650c9f042a0a949de38e74d40f83f92c69f3f9e.json",
+   "sha256": "d0deefbe0103f6d7c1e8a865d1a0127ef6ef3af9aede946622db7b055118fff8"
+  },
+  {
+   "bytes": 2666,
+   "exists": true,
+   "path": "data/raw/ethereum/token_decimals/decimals/0xaee0059e14d46af98897b326f38a68a5b40912bd/block_23353362_6205554b6ee2f8df2d4340f2f769669befffc9501bf1007f222b24c883f7d90a.json",
+   "sha256": "6c2d43af646c455115235dece15cc7691db9879ba54cd4769fe385bea2539d02"
+  },
+  {
+   "bytes": 2021,
+   "exists": true,
+   "path": "data/raw/ethereum/token_decimals/decimals/0xb2aceea9d25b7b5e16774634e5c04d6f4e924337/block_23248490_6c5020ba82b84367db63c234c99691900181bca7e9a2ff3038d8951fc9ceefce.json",
+   "sha256": "64bd0c168ac77b77e0a0e0de1ca4561fffd27c0890941fe63ea66755d8962915"
+  },
+  {
+   "bytes": 2022,
+   "exists": true,
+   "path": "data/raw/ethereum/token_decimals/decimals/0xb4bc7ea95604ef0af4f0679811dd63a6298843b4/block_22045183_4d9d2ceb80d1ea7d8e1f420f63c7f8f82a70e21438b2f5d482463c0d58864ca5.json",
+   "sha256": "1ff8d6e9320300254a4965df22026dd65e78f17c71047c894d1a0934bd7d9ef7"
+  },
+  {
+   "bytes": 2022,
+   "exists": true,
+   "path": "data/raw/ethereum/token_decimals/decimals/0xb6403c4f20027f3c5203e3bad31af51237934619/block_22384262_8988737ac20b16ae5834c40e065d8b4919b82ca5fe66ac095bf9578bd2897058.json",
+   "sha256": "7ac3ff3f381e359527459ef6f64ec9e9427e87a437736daf5a3f315873c9ef21"
+  },
+  {
+   "bytes": 2024,
+   "exists": true,
+   "path": "data/raw/ethereum/token_decimals/decimals/0xb7496717f829f8844550b6ce06305f72b0f1d898/block_22461832_225775d0edc0236253fde460db898d7e903af54902c11604d87d758dd553dac4.json",
+   "sha256": "34fd13613480baeaf7e1d8cd109a114105cb017dc1e70554e6e968c6388729af"
+  },
+  {
+   "bytes": 2024,
+   "exists": true,
+   "path": "data/raw/ethereum/token_decimals/decimals/0xb87cb4066b91556f3a50c5a0025898520291c4cb/block_22449771_c994bd574cdd8545e0e705e084c792dc9bef3ed8143e495ee87444f8b9a4795c.json",
+   "sha256": "824c5cfaf710c7de2f6f122377990f3f047e1cf1f3b5b89c9a78ed84e2eebbbe"
+  },
+  {
+   "bytes": 2345,
+   "exists": true,
+   "path": "data/raw/ethereum/token_decimals/decimals/0xb9f4c5dcd01f0da65819dfd607556f4185b58a52/block_22374529_83d422548572847baf4d0b30a31b46637d014b2eb46444e64bd3b5b824636707.json",
+   "sha256": "44d86a3bec3e68071e5b05d491210052cd4fae2a92e75891ce330a6e1d44828a"
+  },
+  {
+   "bytes": 2024,
+   "exists": true,
+   "path": "data/raw/ethereum/token_decimals/decimals/0xba4d5e953bba97160bb83e35fe8a3dcc40b73f7c/block_21871107_568d629dafe81d932f7136153dcffce9aaa8bd713db70d2971a3f94acdcbf744.json",
+   "sha256": "375239bb2d7173243f3bde590a1578d1319f80a8a6cc7a9688e0638a7272c6b5"
+  },
+  {
+   "bytes": 2021,
+   "exists": true,
+   "path": "data/raw/ethereum/token_decimals/decimals/0xbcca7c25e338d039499d51d384feaa62e456e301/block_21954175_2074b9aa3735a90bc97ac7a40a863945b9bdf317443c770d656e83bd48fd21f4.json",
+   "sha256": "0ea7cd0c5aa239abbb39bc86c236a175fb597e0f00adade1b478027bb2aa8afe"
+  },
+  {
+   "bytes": 2024,
+   "exists": true,
+   "path": "data/raw/ethereum/token_decimals/decimals/0xbdafd3dd79c60860285b424299f8bbb3fa038a5a/block_23243641_49b815dbd94d57f2ea6584512cbab6df23f4d2b6ef383dd5c35942bf72e68caa.json",
+   "sha256": "19d0e49fd4fd79be6d16fc989d714168dbd64f2dd1edbf3d8be329cdb780ee4a"
+  },
+  {
+   "bytes": 2343,
+   "exists": true,
+   "path": "data/raw/ethereum/token_decimals/decimals/0xbe3703ffee6289531bf7df65bbb21a3ecc07ea66/block_22102876_489a3d3d7eaeaebc473d1938ec7e1dca322782784bccd163cc74d9f9a14874ca.json",
+   "sha256": "cdb583ba63a9e78ac361d513c48da4c0599a6abed9b8465d7c685aa0bfbd99f5"
+  },
+  {
+   "bytes": 2022,
+   "exists": true,
+   "path": "data/raw/ethereum/token_decimals/decimals/0xbee93eb4cc6f7e523fde55d1e65778a3266d6031/block_21869589_8cfa55a7417a5d35ec92b3b56c12470f468943096e1c9de7addd753ba203b5de.json",
+   "sha256": "508cafcadce40a78dc652d4cf7e15a76aaacc49a7c4329eae7e8c6b62b185180"
+  },
+  {
+   "bytes": 2021,
+   "exists": true,
+   "path": "data/raw/ethereum/token_decimals/decimals/0xc0855121659f1957a859617a698871832696b542/block_23246573_c3617642df335adbad2cae2c9110b327945ddb6c06669c00a88cc2e8f4189c63.json",
+   "sha256": "72be3a128078f946eebe60405b54627e7931b81eaa57242926084e42f152beb9"
+  },
+  {
+   "bytes": 2343,
+   "exists": true,
+   "path": "data/raw/ethereum/token_decimals/decimals/0xc1951b879d1fd379220f3898e784eca05c30ae49/block_23245085_bd8e8129676775abc026a484d2c17da6f0030c5c4e7ea66568454454d907075a.json",
+   "sha256": "da8df47c6795d1e9df0cec84936606bdfe6dad3ba349ebc2381b6cc6ddaf9ed9"
+  },
+  {
+   "bytes": 2023,
+   "exists": true,
+   "path": "data/raw/ethereum/token_decimals/decimals/0xc1c0ff7df5c0be08ece1930091acf80716bdf329/block_22079357_723b72c10ddc3954c94e84170cd09a9d580bacd0d1730f8656062fb14f288a08.json",
+   "sha256": "051ddf68c401dcd30c286e61885336b1ec667f86b86d1fa1ee46cdf46194e123"
+  },
+  {
+   "bytes": 2021,
+   "exists": true,
+   "path": "data/raw/ethereum/token_decimals/decimals/0xc210260b553d43011d9499838cab1aa1c3184187/block_21959205_9e82a6c0864e8efe49da7e87a7f4e175a40c9395b851d2a973c97fbb9b0c11d8.json",
+   "sha256": "3651c7ecab1030908d451178efb9174fa193cf610d0946f893f2899278eff513"
+  },
+  {
+   "bytes": 2021,
+   "exists": true,
+   "path": "data/raw/ethereum/token_decimals/decimals/0xc336f8408557272646d192628dc3f554b654b21a/block_21952026_da8e1e990e9d9942c35bc7094db962ce3601d7562f63a9477b1548b2f162eab0.json",
+   "sha256": "cba632530e0f499f428fb33ba1c8f67c87ea568529dbbfce0fef43edc03f5bd8"
+  },
+  {
+   "bytes": 2025,
+   "exists": true,
+   "path": "data/raw/ethereum/token_decimals/decimals/0xc51ed8c465c517423188ebb5286b3ccd16ed777b/block_22110200_e96b7a80c22d8cd969dc36473a4eab415972d05708bf7a067d36c6f15295e5bf.json",
+   "sha256": "dc524d5e48b064617bee9961bb6e4d6a12b5164c293f58361545cf81074093f6"
+  },
+  {
+   "bytes": 2025,
+   "exists": true,
+   "path": "data/raw/ethereum/token_decimals/decimals/0xc6422c997ef1add812f5d0ba8d68e97426e5bd7a/block_22318770_4807abe746800890b5501e1f3cbd1380dc62aa38beb678712ecc41ebf3d8d67b.json",
+   "sha256": "c11cc47c2480e49597fd816929e6bda7a22cd0b8c3c5afd92045bec82066bb4e"
+  },
+  {
+   "bytes": 2022,
+   "exists": true,
+   "path": "data/raw/ethereum/token_decimals/decimals/0xc6a25f0511ffba90dbf314081f4ae74ca5504747/block_21121033_60c263d3925f8a1d9a50393d1c074f11087296df9a1acc3342bd268fd8a1f57f.json",
+   "sha256": "11ee533bd5e59b5e6174aeaee78c5bc90bbe24478f1c2ca2f0cecb4fa8187b46"
+  },
+  {
+   "bytes": 2021,
+   "exists": true,
+   "path": "data/raw/ethereum/token_decimals/decimals/0xc852a91b81561347f657b8b524b2c1bfaf745188/block_22316126_ac126edbb9bd9d50be0c0a303d4ccc10c1775c50ba66c9a3bdb237f4874df4b5.json",
+   "sha256": "bfec305a987ada1db7fd43420c4e950194dc086ebae03188ab36dd7a40544b48"
+  },
+  {
+   "bytes": 2021,
+   "exists": true,
+   "path": "data/raw/ethereum/token_decimals/decimals/0xca15e898151f5fcdfcde207af55eaf3e91a53dc2/block_22041830_b7727639d4cc986d59ad2ab7afe5ecfe649fbc79c88bb43e9839a7e83195d0bd.json",
+   "sha256": "eacdc13d60abb94dee93c06c65d212c70d80db4bcfe2196557f68ab07735b375"
+  },
+  {
+   "bytes": 2023,
+   "exists": true,
+   "path": "data/raw/ethereum/token_decimals/decimals/0xcc5324ffa8195b211ad2a07bc1c97665c60030f4/block_21958455_d29bb13104ad7da705d997c1287f3ec1411de3ef2c95bd3dcd8fb555b646a89f.json",
+   "sha256": "1204ea0b46f626a60edc233cd9e35940686c2f3dd497991bf1a54dd4dda062f4"
+  },
+  {
+   "bytes": 2021,
+   "exists": true,
+   "path": "data/raw/ethereum/token_decimals/decimals/0xccff3f262104c2dbc7656256ac5e571b66854fba/block_22111716_5ee5b05f3706a2cebdefd0bf0c030b77f34759308ae8359e235969e667efe814.json",
+   "sha256": "e1fede95d2cd8612dd03233b32253e881f9aecf78c0ed8d6f46f2dfefa8da531"
+  },
+  {
+   "bytes": 2021,
+   "exists": true,
+   "path": "data/raw/ethereum/token_decimals/decimals/0xcdfebf17102ebff2f2aa875e6c19019b3b63d45d/block_21953715_9fa284d329b461b2472cc73d5db670d4cf2ca7b3bbf8fbb5843eb41e0e9cc54e.json",
+   "sha256": "ed2615aa55099efac7e19e510ab6ee94899242dcc6663e690c9200b3f084b458"
+  },
+  {
+   "bytes": 2024,
+   "exists": true,
+   "path": "data/raw/ethereum/token_decimals/decimals/0xceee09a668e2305450dcb9a0ac117d00b57893a5/block_22105810_506a2b5224bb1fb3322027df10c33423352d759cfe4287b6b42dfc1c68df798a.json",
+   "sha256": "df3a229400602589bf5c9b5812d1af98aad81c9805eaebf11db5d4e23999d054"
+  },
+  {
+   "bytes": 2021,
+   "exists": true,
+   "path": "data/raw/ethereum/token_decimals/decimals/0xd001ca1697b9468140423b33d8ed1170ee034340/block_22111877_6d348f3e2b8ad2f529dc396ec005e1531da99d87db911e552438b1d69c6f113c.json",
+   "sha256": "bc15bdb819cddb020d0dd465793e8be187a9cf4106590ffee24c1b679f975d81"
+  },
+  {
+   "bytes": 2343,
+   "exists": true,
+   "path": "data/raw/ethereum/token_decimals/decimals/0xd17406a8544c06f6ad8e0de89dad1695e7d5e546/block_21984252_0896a27fe29d5b12036e668d9ec4b725f7fdc123263c712a1600617d7203599b.json",
+   "sha256": "a83b58c5eb64bcbb8cbcf597ead45d034eed9bdae71cf064c814ac4c2da57042"
+  },
+  {
+   "bytes": 2023,
+   "exists": true,
+   "path": "data/raw/ethereum/token_decimals/decimals/0xd1a6efda4607daa187a40bc669bc1acb9c2a5234/block_23231598_cdc69c727239b7d4ffd794560ed99dbd074e5c576f9f528a919b89d1320a9ec2.json",
+   "sha256": "6864b40c0bcae0cec02f74b7ab65b932f784f7d905bc41443c2c502306bca4fc"
+  },
+  {
+   "bytes": 2022,
+   "exists": true,
+   "path": "data/raw/ethereum/token_decimals/decimals/0xd1a7270ebbb3cdea0619bbde4cafd84fbf99192b/block_22376252_1065b34fdf987534fe0785596f2caedd4497243b968de954dd83d88f361ab70d.json",
+   "sha256": "dab3f0c182156dffc75586adda504b613e0f4b0aae7a7fad8f3289360ba8fa7d"
+  },
+  {
+   "bytes": 2023,
+   "exists": true,
+   "path": "data/raw/ethereum/token_decimals/decimals/0xd37490975bd65e67c58062b63b727bd2215abecb/block_21874173_78fc1032cff3448b96000c61babfdebdd30dd6e95445f48b0170cf899f6ae8d7.json",
+   "sha256": "4820803655ab84dfbf38531448b7d8cdbb593af8842c56174e94968d861a5665"
+  },
+  {
+   "bytes": 2023,
+   "exists": true,
+   "path": "data/raw/ethereum/token_decimals/decimals/0xd5e9a7a628f54d8701f1bcf8a0156724b0d20bc7/block_22110894_9a2162fb2a1772717d934d3c62b1d73299b0d0638c3b9c99a7721904807b9e7c.json",
+   "sha256": "dff10ec55acc197d3769c2e262213e8f86bcc3f2f28c5977ae727af097d20181"
+  },
+  {
+   "bytes": 2022,
+   "exists": true,
+   "path": "data/raw/ethereum/token_decimals/decimals/0xd64ee41aa6ceef2db29ae3053758dc4a2aad451e/block_22278511_ddd486230b5779b9ea66d5cfcbdde199ecdb68de91ac1786d6c08be1dcbc8039.json",
+   "sha256": "76d289d7442a1a89cec2d77ff39f00c3fd6cd529d50c5a02e9eec66c0aaab6a6"
+  },
+  {
+   "bytes": 2023,
+   "exists": true,
+   "path": "data/raw/ethereum/token_decimals/decimals/0xd70fae87f320dedd814cae0d8350c5f50999947d/block_21654064_2eed0912a283f412a04717d3f51de1031c72980eb152cf955d4b200c75367c13.json",
+   "sha256": "888cbe889bfab6f7f5a49e3b750b3cb64ea5d644e9fb20686eb99f28839947c4"
+  },
+  {
+   "bytes": 2022,
+   "exists": true,
+   "path": "data/raw/ethereum/token_decimals/decimals/0xd7220499f6f5e8fb34a6942ee6770866c28678a7/block_22110076_266988bee111fa4393fd987e0887becc8e7885406a90bcf81716d124bd58e390.json",
+   "sha256": "42d2995516be895f40174db28d36d24a9ccb793c8d4e5aa9f8fe9bbf64afdf48"
+  },
+  {
+   "bytes": 2022,
+   "exists": true,
+   "path": "data/raw/ethereum/token_decimals/decimals/0xd918efdc2e9771ccde46a376e34c25b3f55bbf2e/block_22318444_36e1bb968eccda355bcebc3ffbf4d48d609fc5265bf1c11ecb3e41c81e72fab0.json",
+   "sha256": "139259012d87a64c2e76c9087450a9d8dbfddbd41f7f1050ffd1ed6ee7fbba43"
+  },
+  {
+   "bytes": 2024,
+   "exists": true,
+   "path": "data/raw/ethereum/token_decimals/decimals/0xd96ab8104097ebd9a61bcda61d191544d8f19ed6/block_22289374_c60c2d2d102bd77cbf8f8f3c985068f484af7a6b0fd34c7cefe69add07d93f51.json",
+   "sha256": "149de575071f3eb85001bb316e58650e04e2802d06660307530050b38b5ddc68"
+  },
+  {
+   "bytes": 2023,
+   "exists": true,
+   "path": "data/raw/ethereum/token_decimals/decimals/0xd97726fa9d73e0b9129b1865ccb6a4541cd53dde/block_23352043_58e422a80c961f7acd31ec2fc778e528c77bc5a2900248b5b28c2b92c5cccf23.json",
+   "sha256": "39557413174d1fdec9d15416e37124011bc1d9d82845126b7f45f729aca7cedd"
+  },
+  {
+   "bytes": 2343,
+   "exists": true,
+   "path": "data/raw/ethereum/token_decimals/decimals/0xd97e52fb79d93f9a26aca4c986d243e3b2f4cc07/block_22258486_ab2db7328f6493a83f0d5f6aacc7ab17d181e6606e82d4c8ddd7303621d6e4c8.json",
+   "sha256": "e7a5ec4d54ab1fd12e2320745239952901555a347f28e8f5979f03e16835d0de"
+  },
+  {
+   "bytes": 2345,
+   "exists": true,
+   "path": "data/raw/ethereum/token_decimals/decimals/0xdc53ae026ee097887ec25c44d60c22f094f409b8/block_21952511_cda2d3933b5c26766c5643be81a7f3a6b40de7704795d42c846f8b775f79d8ed.json",
+   "sha256": "ad1b24375e37ebdefaa565ef46fa3585f8c71026d6896533350f92a6b5b49df3"
+  },
+  {
+   "bytes": 2023,
+   "exists": true,
+   "path": "data/raw/ethereum/token_decimals/decimals/0xde37402e47c8ddf0f8728ff9e015a44d279b31db/block_23248124_f2517678a508b76d0c86b98201301fa8081f13a974502c784c39431f3b85e4f0.json",
+   "sha256": "10c26123365a997c201ea59ccd9b0a863b8dac3024e83c59115852559516c991"
+  },
+  {
+   "bytes": 2347,
+   "exists": true,
+   "path": "data/raw/ethereum/token_decimals/decimals/0xdea20fbf6c4830f921405f83149e44c8da59431c/block_22081567_21015d6369f948e49e350e5d70317c8efb5778d3548b1f9eb67a90cadfb62d69.json",
+   "sha256": "25cb39d4096f1d746ad1606563f87d27c6ade01f1846648241fc0684158e69f4"
+  },
+  {
+   "bytes": 2024,
+   "exists": true,
+   "path": "data/raw/ethereum/token_decimals/decimals/0xdf98abe1eb7bee616d537aa014cf0f5eb9f21163/block_23247157_6dd925546b5ea5dd6f1d9dcf05828bd44ecf5fd47eb9a4515217ce6aa3caee1d.json",
+   "sha256": "2fc5b95dc773f6849eae5f00c901cfb715e1a7487b009b28c6b54f86ca60dfdf"
+  },
+  {
+   "bytes": 2343,
+   "exists": true,
+   "path": "data/raw/ethereum/token_decimals/decimals/0xe11bfb6d039aff04c63408631899e829fe11fe89/block_22262764_de3fa611023ed37e3fd0d7adb23d0d4faaf0b5c96c3c2458eb3b71096e53260e.json",
+   "sha256": "55e140654ed008b1aaea5b0e94114e1bfe5b075fac931eff228e4e4f2e127cb0"
+  },
+  {
+   "bytes": 2022,
+   "exists": true,
+   "path": "data/raw/ethereum/token_decimals/decimals/0xe3271ed6b28d3235d13a6ce0de71442ae44c19ed/block_22076329_0c05da3c3cc773f2abd90565d70cbdf37aa46975fe6a6ca735ff7fba4572d67f.json",
+   "sha256": "33ce306bbe050285febcf6751181f262251c2ab4a19c52d4bb50f8095d5a08cc"
+  },
+  {
+   "bytes": 2026,
+   "exists": true,
+   "path": "data/raw/ethereum/token_decimals/decimals/0xe4b10ee245dbd098c55c347d8c2023ad224565bf/block_22137280_f5ceebd6b2849e4faed33716bfa5484c0bd91720231c58c7fcf6817b1731d970.json",
+   "sha256": "a032a5fc1099f90a1592b1e9d0c834e94bd38d6a36a0f27ee849bdc79a15e9c0"
+  },
+  {
+   "bytes": 2021,
+   "exists": true,
+   "path": "data/raw/ethereum/token_decimals/decimals/0xe6656a0846b6eae029e31c7c7b10100792f0015c/block_23239973_7106a94ea3b38133b95c6d90373be7caf3f36ea4346462f2fa4c921ea077ca07.json",
+   "sha256": "2b72f488c3722cb726cdccaa2e6f9753bf2ff2007391d3638f245dc4e59559b3"
+  },
+  {
+   "bytes": 2021,
+   "exists": true,
+   "path": "data/raw/ethereum/token_decimals/decimals/0xe6a64bb781be69422d5a5397476d02324ef4eada/block_21984244_44eed37338f956fe7d47070d6f0a6f1c72515c2c064c27e9780f0d658aff837d.json",
+   "sha256": "b90e5ba29b7fb50d4a5a0c01eac9ad7b3b77be00d03394037b333b7342893724"
+  },
+  {
+   "bytes": 2022,
+   "exists": true,
+   "path": "data/raw/ethereum/token_decimals/decimals/0xe6c00bc771fd837c3cd224a1b7a4f68ef71a8bd1/block_21430410_0e49a90d275a318f59e415f8c5b614c27f64c76548a1370b4711c24027068f73.json",
+   "sha256": "77b7231d98fdeb8b398bb05f861892ef11826b58c15018d36db0eeb2c7411eda"
+  },
+  {
+   "bytes": 2024,
+   "exists": true,
+   "path": "data/raw/ethereum/token_decimals/decimals/0xe90a953cc93ee1769d7cdd9ab79f591bdd5233a5/block_22245297_5d0a286bf237b9393749eba673bca3e92634e6cbacd984741c55f25d063a577e.json",
+   "sha256": "b01c14093951b5f5a1dcdfefcda23da454c22f470ecd8ac640c12e440d2b1e81"
+  },
+  {
+   "bytes": 2022,
+   "exists": true,
+   "path": "data/raw/ethereum/token_decimals/decimals/0xe9e85706aaa24e9236f7a4d922fabd5a1dde4406/block_22381379_ee1f7413cfcd97f8285560ff2ac6dd4286f15c0b301675bd4f091ed47139e6b9.json",
+   "sha256": "3d31750ae99e7d27a4ba041b4170fe73df29bcd8bf7eec2bf94366dc91ad2829"
+  },
+  {
+   "bytes": 2022,
+   "exists": true,
+   "path": "data/raw/ethereum/token_decimals/decimals/0xea7a9506da65c73eb9a00a6edbada493a937a0ae/block_21926051_b39c738f166f2157347ef5b446441f49baa765996160aa4f0fd811588d4f76bb.json",
+   "sha256": "3d102276425e27ef5f4c2deeb52bd919e5a51993006e85c26fda0278c2eb7865"
+  },
+  {
+   "bytes": 2022,
+   "exists": true,
+   "path": "data/raw/ethereum/token_decimals/decimals/0xecc8ee33ec1a2ad8f7e70f0628448653f65f3449/block_22454862_0c209420ad5a966935a3936ac316c41abaa521bed4bf2f1c48137b1517344a85.json",
+   "sha256": "aa199500a54ab72da61896f7eb02ae2539f6760b93ee872cdf0b1a096965c587"
+  },
+  {
+   "bytes": 2025,
+   "exists": true,
+   "path": "data/raw/ethereum/token_decimals/decimals/0xee5deb19010191067502a9fa9f599ec1a62fbd92/block_22380397_49f3ff7b50d91f91f1c3223b17dd4852dbad778a8bbc83d0cda6e863bb024a96.json",
+   "sha256": "577310343ca2bd60751ce9cdb2475ecab766cf55f48a8eee836156c3a4df369b"
+  },
+  {
+   "bytes": 2026,
+   "exists": true,
+   "path": "data/raw/ethereum/token_decimals/decimals/0xf1c9acdc66974dfb6decb12aa385b9cd01190e38/block_19180459_2bb1a9d4cedff2506dec1c445dd7a5d431a5e01e8fa57bee653d3a627ee2ca20.json",
+   "sha256": "d2616f611ca0081dface22b924791345b9ac9f30fd9effda65d245c21bf40a56"
+  },
+  {
+   "bytes": 2023,
+   "exists": true,
+   "path": "data/raw/ethereum/token_decimals/decimals/0xf21f5fbec3af722491720cca550173be1fe139bb/block_21653965_80db91fdea5d4e60d4328213070ef0755569743a29142479c06b4721918cb04d.json",
+   "sha256": "8cb8f35fd6f63f155843a561b9f79d985be63d1939c7a9d10c4b38ceaf98a84b"
+  },
+  {
+   "bytes": 2343,
+   "exists": true,
+   "path": "data/raw/ethereum/token_decimals/decimals/0xf2715b8efa9ec62ea8b39a16ab600859e800cbc7/block_22109504_3e5715fa7fea5a148cd514b4f5d8f895d09c3d8915e3d62cafa488fbdd726c17.json",
+   "sha256": "10930099ece9aaf4bb8ff2a2fd225162a1ff27872cfdeed7cb8cc96cfe13859d"
+  },
+  {
+   "bytes": 2025,
+   "exists": true,
+   "path": "data/raw/ethereum/token_decimals/decimals/0xf3375f0ed129484bd6e3375360b0e9f00abe496a/block_22290767_84996e720ac4c72cb7500f7c8ad46a27ec92c6cc9d2d9be827146473da183f9e.json",
+   "sha256": "5de92218783df2b5b3573467f4287f0725459437c50f4bf15ba634af94a06a07"
+  },
+  {
+   "bytes": 2024,
+   "exists": true,
+   "path": "data/raw/ethereum/token_decimals/decimals/0xf41ee935a0980dee2b6fe249447c7d879bd81f5b/block_22263083_87895b507b7046ec32df2f3520bae527e3fb3a43b2fe4989fa2e46b29f3f0185.json",
+   "sha256": "78bbf4829b2f56b4bf1c146daf6f9e546274c81053f5c76ce8c67c022c42d3f7"
+  },
+  {
+   "bytes": 2025,
+   "exists": true,
+   "path": "data/raw/ethereum/token_decimals/decimals/0xf5e023f9805eafcb50404bd5a76753469ac84c6a/block_21873834_df5925921e41dcb4c326cd8f59c1b7aaadd6d59d1bdd8cac488bd2459b4c70f2.json",
+   "sha256": "816e7351a876f3e14fbfbc99d65eb49c3d7de658dacad69222513fd6cc821cd0"
+  },
+  {
+   "bytes": 2025,
+   "exists": true,
+   "path": "data/raw/ethereum/token_decimals/decimals/0xf6718b2701d4a6498ef77d7c152b2137ab28b8a3/block_21673494_0da3f631491fd2011ad226b1f630175f3e7a3ae608d17a02e6e948e6d1c1cfcf.json",
+   "sha256": "c6645f185a14d8d8241e1e747475e4d553f7f5fb68ac09db0a5c83d7e81db6cc"
+  },
+  {
+   "bytes": 2021,
+   "exists": true,
+   "path": "data/raw/ethereum/token_decimals/decimals/0xf8bf412a0ffb66ddcf3c599494c808276c335462/block_21950068_be313ed2bf8b9ff31d8a216696704a0ab6b3f54b017a276094dea6c544698f87.json",
+   "sha256": "fc0a3783ed448ed3a0800281240ab41f5be03bb1ee59d8ff68e1671a7b8b27cb"
+  },
+  {
+   "bytes": 2022,
+   "exists": true,
+   "path": "data/raw/ethereum/token_decimals/decimals/0xf8d1d977e25d82976c4bb6b19c591c76498576bd/block_22110079_3c282d7c3412c7304ea5803829f79dce84f628aed1c7b1bbd6a7077f62aefc90.json",
+   "sha256": "db724db62a2fa928c0887f306cb3bcc14859d6c02c8dd9322a9991819853fce9"
+  },
+  {
+   "bytes": 2021,
+   "exists": true,
+   "path": "data/raw/ethereum/token_decimals/decimals/0xf8d3ef5a2d9efdb9b8157e6c5a54b1d64737aa69/block_21872813_c2de567543c3768b004e578f5e3d9f23b330dd4ebdcdad0f628f0462e1665231.json",
+   "sha256": "d4cb95eabd6e8735298f72ff777464d9bd289715b31521f30c844a1e4f491693"
+  },
+  {
+   "bytes": 2021,
+   "exists": true,
+   "path": "data/raw/ethereum/token_decimals/decimals/0xf9ba5da1b5e6f20b84645ed220bb43bc1c2e97bd/block_21653971_22f0f3d811c9bc51a50189523b23fd91614c7425427bb572dd2114fdc72d659d.json",
+   "sha256": "14276dfef278bdbbf24fc82018fdde1d270a0b8a72b4651c70a5d5bca97fa5a5"
+  },
+  {
+   "bytes": 2344,
+   "exists": true,
+   "path": "data/raw/ethereum/token_decimals/decimals/0xfa3fb9140ac16fffddd8a37e87842afc294e018c/block_22081565_e8ff49aeed3924209bf406bb00f144e0f1374853fc913be0a39daa1f6f913a3e.json",
+   "sha256": "12b93133e6d619c6d88e79615222f5700d857d542a29fea942be1d0da107b0e5"
+  },
+  {
+   "bytes": 2024,
+   "exists": true,
+   "path": "data/raw/ethereum/token_decimals/decimals/0xfaaec6baeff093875e89e3652b5f89155489bb94/block_23238832_211ef554cb4117a11441782970f562b69857bcd4a1250549c08d5cf28b7c5e80.json",
+   "sha256": "2d0e63724a59bcf9d62d06aaeb39bb1abb2d2349fb6c0465aa88419b5f08cc43"
+  },
+  {
+   "bytes": 2022,
+   "exists": true,
+   "path": "data/raw/ethereum/token_decimals/decimals/0xfc2ee7dbee2e9e044cea69f356ed7d1dcd9bc1f6/block_22015121_dba7551f7f785c46f4bc9b7ec90953438470a802cedbdc9d1f9682514522d83c.json",
+   "sha256": "29969aee57d2ba74f578dfe907b7580686d03dfd973a409f656427fffb28607c"
+  },
+  {
+   "bytes": 2021,
+   "exists": true,
+   "path": "data/raw/ethereum/token_decimals/decimals/0xfc8d13cea92ea6bc825f6f195d4dee9aa76511c8/block_22080126_4c779cc78cd635ff5331a33e0bed68e1b34ef02e54452f138ae0e4e352a6ebe1.json",
+   "sha256": "e6c125b94000e37914d168b8e55d91d7785187c55214ee203471c10ccecdcbfd"
+  },
+  {
+   "bytes": 2021,
+   "exists": true,
+   "path": "data/raw/ethereum/token_decimals/decimals/0xfe9fa5a35fdf247f0d5dd3540cde8366122fab36/block_21948091_015092e622ee8fbf3b4f9e474c5b0e284fcd38f244ad26d97671c064b68693f4.json",
+   "sha256": "d7d07c58ce98e0924db7d6794821a918e92b014bd5394797287630cbb334b1a4"
+  }
+ ],
+ "libraries": {
+  "numpy": "2.5.1",
+  "pandas": "3.0.3",
+  "pyarrow": "25.0.0",
+  "scipy": "1.18.0"
+ },
+ "notes": "exact historical ERC-20 decimals for active V2 pools joining main_v1 endpoints and locked vehicle candidates on legacy correction days",
+ "payload_identity": {
+  "bytes": 110703,
+  "columns": [
+   "schema_version",
+   "token",
+   "status",
+   "decimals",
+   "anchor_priority",
+   "anchor_block_number",
+   "anchor_block_hash",
+   "anchor_proof_kind",
+   "anchor_venue",
+   "anchor_pool",
+   "anchor_event_type",
+   "anchor_transaction_hash",
+   "anchor_transaction_index",
+   "anchor_log_index",
+   "anchor_identity_sha256",
+   "provider_decimals_json",
+   "provider_invalid_json",
+   "provider_distinct_reports",
+   "provider_status",
+   "evidence_path",
+   "evidence_sha256"
+  ],
+  "format": "parquet",
+  "rows": 199,
+  "schema_sha256": "ec0a70cb768cafa88e2c82eddb2a4ecfadc78a0991bf059f438586e83b5b0168",
+  "schema_version": 1,
+  "sha256": "e0103383ad9d19dbb8a893e43580a30fab4a834e9272b9ade70fbbadaeece8f4"
+ },
+ "python": "3.14.6",
+ "rows": 199,
+ "script": "scripts/build_market_state.py"
+}
