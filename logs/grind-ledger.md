@@ -1103,3 +1103,71 @@ and two unchanged findings passes.
   open an out-of-audit-day payload. Report elapsed time and exact comparisons.
 - Leave both queued Java interjections unchecked until publication and the
   immediate handoff to the existing full-calendar market-state builder occur.
+
+## 2026-08-14 — V3 audit event source corrected and certified
+
+**Targeted check:** the queued V3 event-source publication boundary preceding
+the full-calendar market-state ledger and `main_v1` route-cost panel.
+
+**REGRESSION-CHECK:** lane `D2-purpose-bound-exact-state`, edge `D2-release ->
+D3-construction-audit`, and estimand best direct versus best two-hop route for
+identical endpoints, UTC hour and USD 1,000, 10,000 and 100,000 notionals.
+Evidence was the 13,093-chunk ordered V3 inventory and 62-date corrected
+canonical state. The correction most at risk was treating provider statics or
+a manifest as transaction-state authority.
+
+**Scientific consequence and concentration.** The first corrected construction
+run completed the single global classification, then found 8,183 discrepancies
+among 4,640,561 audit-date core events (0.176%): 2,958 omitted identities and
+5,225 payload/order mismatches. The payload defect was highly pool-concentrated:
+5,118 swap mismatches sat in two pools, while omissions increased in the 2026
+tail. This was potentially claim-changing for exact state and route availability,
+so it could not be waived as metadata hygiene. The earliest two human-amount
+rounding discrepancies were only 19--20 base units on roughly 5.95e35 raw units,
+but the omitted identities and later exact-state mismatches required repair.
+
+**Work completed.** Amended the existing V3 event-source owner with a no-network
+correction mode. It reads only certified inventory Parquets in the full UTC-day
+factory-consumer perimeter, validates all 62 plans before pointer publication,
+reuses the installed exact header snapshot for 461 distinct supplement-block
+proofs, and writes the existing correction-generation schema. The 62 generations
+contain exactly 5,225 corrections and 2,958 supplements. The existing
+audit-calendar builder then rematerialized all 62 canonical V3 partitions. A
+publication-only directory-lineage failure occurred after every construction
+comparison passed; file-level release inputs and bounded resume now reopen the
+unselected bytes against current manifests, headers, registry, corrections,
+quarantine and audit-date payloads without another global scan. The unreachable
+failed generation was removed after the current pointer selected generation
+`921dce9cacbc5c1b08592bd2713e6cef50efd723c4c2e65eab69e6d98e1d5e02`.
+
+**Run result.** The post-repair attached construction run took 2:37:34.40. Its
+one classification covered 147,376,618 logs: 144,879,555 factory-canonical and
+2,497,063 quarantined. All 62 construction comparisons then passed over
+4,640,561 core events. Bounded publication resume took 7:25.36 and independently
+validated the staged generation before publication, then reopened the published
+artifact and reran only the 62 audit-date comparisons. Ordinary reopening did
+not decompress out-of-audit-day payloads. No provider or RPC acquisition ran.
+
+**DECISION:** `promote` the V3 construction-audit event-source certificate;
+`narrow` it explicitly to the 62-date audit calendar and keep full-calendar
+daily V3/V4 state plus every state-dependent descendant red.
+
+**Validation.** V3 event-source, Graph correction, data-release, findings-freeze
+and market-state migration suites pass 144 tests plus 72 subtests. The final
+findings audit remains honestly RED with five blockers: E1 lock, model ledger,
+full-text literature ledger, route-cost panel and two unchanged findings passes.
+
+**Commit:** `3561ae5` (corrected V3 audit event source and release evidence).
+
+**Blocking count:** 5.
+
+**For the next iteration:**
+- Proceed immediately to the existing full-calendar market-state builder and
+  then `main_v1`; the V3 audit source is now a current prerequisite, not a
+  reason to rerun or beautify the certificate.
+- A later supervisor interjection requests three M3 commits and one composition
+  refresh only after this V3 unit is durably committed. This worker was under an
+  explicit no-fetch/no-pull/no-rebase/no-push continuity notice, so it preserved
+  the interjection untouched for supervisor reconciliation rather than syncing.
+- `logs/grind-queue.md` changed externally during the run and remains the named
+  unresolved synchronization-conflict path; do not edit it in this worktree.
