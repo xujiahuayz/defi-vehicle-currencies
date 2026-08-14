@@ -141,13 +141,13 @@ def test_legacy_v2_route_cost_activity_perimeter_is_day_and_pool_specific(tmp_pa
             tmp_path,
             [(venue, day)],
             pairs,
-            {day: {"0xa", "0xb"}},
+            {day: {"0xa", "0xb"}, "20250102": {"0xc"}},
         )
     )
 
     assert admitted == {(venue, day): {"admitted"}}
     assert anchor_support == {(venue, day): {"admitted", "irrelevant"}}
-    assert observations == {"0xa": ["18"], "0xb": ["6"]}
+    assert observations == {"0xa": ["18"], "0xb": ["6"], "0xc": ["8"]}
     assert counts == {
         "admitted_pool_days": 1,
         "admitted_unique_pools": 1,

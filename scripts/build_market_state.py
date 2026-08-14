@@ -565,6 +565,7 @@ def legacy_v2_route_cost_activity_perimeter(
     irrelevant_event_rows = 0
     bounded_exclusion_event_rows = 0
     inputs: list[Path] = []
+    anchor_tokens = set().union(*endpoints_by_day.values())
     for venue, day in targets:
         allowed_tokens = endpoints_by_day[day]
         target = (venue, day)
@@ -596,7 +597,7 @@ def legacy_v2_route_cost_activity_perimeter(
                     endpoint_tokens = {
                         token
                         for token in (pair.token0, pair.token1)
-                        if token in allowed_tokens
+                        if token in anchor_tokens
                     }
                     if endpoint_tokens:
                         anchor_support[target].add(pool)
