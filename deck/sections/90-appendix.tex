@@ -24,7 +24,7 @@
 \begin{itemize}
 \item A7 Daily and weekly frequencies
 \item A8 Count and value weighting
-\item A9 Endpoint demand
+\item A9 Observed route endpoints
 \end{itemize}
 \vspace{0.45cm}
 \textbf{Mechanisms}
@@ -343,11 +343,11 @@ V4 singleton
 \centering
 \resizebox{0.94\textwidth}{!}{\input{assets/measurement-taxonomy-grid.tex}}\par
 \vspace{0.06cm}
-{\small Endpoint demand supplies the benchmark; network position and same-state route costs remain separate characteristics.\par}
+{\small Observed route-endpoint use supplies the benchmark; network position and same-state route costs remain separate characteristics.\par}
 \end{frame}
 
-% VISUAL-FUNCTION: intermediary excess use | paired margin formulas pending zero-centered difference plot | separate vehicle demand from endpoint demand
-\begin{frame}{A9. Endpoint demand and intermediary use are separate margins}
+% VISUAL-FUNCTION: intermediary excess use | paired margin formulas pending zero-centered difference plot | separate intermediary use from observed pool-route endpoints
+\begin{frame}{A9. Route-endpoint and intermediary use are separate margins}
 \begin{columns}[T]
 \begin{column}{0.46\textwidth}
 \textbf{Intermediary share}
@@ -361,11 +361,13 @@ How often asset $k$ sits inside a route.
 \[
 E^N_{k,t}=\frac{n^E_{k,t}}{\sum_j n^E_{j,t}}
 \]
-How often asset $k$ is what traders buy or sell.
+How often asset $k$ appears at either end of the observed pool route.
 \end{column}
 \end{columns}
-\vspace{0.55cm}
-{\large\color{ucldark}\bfseries Excess use compares intermediation with endpoint demand on the same support.\par}
+\vspace{0.32cm}
+{\small The benchmark describes reconstructed pool routes; an aggregator instruction can begin or end outside the connected component.\par}
+\vspace{0.30cm}
+{\large\color{ucldark}\bfseries Excess use compares intermediation with observed route-endpoint use on the same support.\par}
 \end{frame}
 
 % VISUAL-FUNCTION: liquidity quantities | labelled pool-state and price-response cross-section | prevent capital, inventory, depth, and quote quality from collapsing
