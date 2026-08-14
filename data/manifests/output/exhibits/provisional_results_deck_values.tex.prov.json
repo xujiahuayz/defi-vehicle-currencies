@@ -1,28 +1,27 @@
 {
- "argv": [
-  "discover",
-  "-s",
-  "tests"
- ],
+ "argv": [],
  "artefact": "output/exhibits/provisional_results_deck_values.tex",
  "artefact_bytes": 1697,
- "artefact_mtime_ns": 1786708576247801567,
+ "artefact_mtime_ns": 1786713119577998090,
  "artefact_sha256": "55dc4b50899bf69f7e469ea5d34b7f06d9bfc72f2fd2382bbaec502044e7a03b",
  "code_fingerprint": "ab4d43537528623462b75b8e89caeb42f6c6b2e5485a72def13d8e45f3c55c23",
  "code_sources": [
   "scripts/tabulate/render_provisional_results_deck_values.py"
  ],
- "created_at": "2026-08-14T11:56:16+00:00",
+ "created_at": "2026-08-14T13:11:59+00:00",
  "git": {
   "branch": "main",
-  "commit": "2da4a97aa32618b40bc86d4bd69cd96337b1c906",
+  "commit": "848ca9d6c2de5cd3162e06b8217992be8ae68e4a",
   "dirty": false,
   "dirty_generated_files": [
-   "data/manifests/output/provisional/route_methodology_distribution_resampling.jsonl.prov.json",
-   "data/manifests/output/provisional/route_methodology_heterogeneity.jsonl.prov.json",
-   "data/manifests/output/provisional/route_methodology_heterogeneity_deck_values.tex.prov.json",
-   "data/manifests/output/provisional/route_methodology_robustness.jsonl.prov.json",
-   "data/manifests/output/provisional/stable_vehicle_concentration_e0.jsonl.prov.json"
+   "data/manifests/output/exhibits/prose_conventions.jsonl.prov.json",
+   "data/manifests/output/exhibits/prose_outliers.jsonl.prov.json",
+   "data/manifests/output/exhibits/venue_optics.jsonl.prov.json",
+   "data/manifests/output/exhibits/venue_shape.jsonl.prov.json",
+   "output/exhibits/prose_conventions.jsonl",
+   "output/exhibits/prose_outliers.jsonl",
+   "output/exhibits/venue_optics.jsonl",
+   "output/exhibits/venue_shape.jsonl"
   ],
   "dirty_tracked_files": [],
   "dirty_untracked_files": []
@@ -128,5 +127,5 @@
  },
  "python": "3.14.5",
  "rows": 2650,
- "script": "python -m unittest"
+ "script": "scripts/tabulate/render_provisional_results_deck_values.py"
 }

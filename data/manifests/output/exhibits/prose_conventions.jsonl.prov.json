@@ -1,28 +1,28 @@
 {
  "argv": [],
  "artefact": "output/exhibits/prose_conventions.jsonl",
- "artefact_bytes": 3066,
- "artefact_mtime_ns": 1786708582565353088,
- "artefact_sha256": "bb4d67af56bb7a9af066266a2b0a8caa3332b673666af81fa2460fd971f50dd6",
+ "artefact_bytes": 3054,
+ "artefact_mtime_ns": 1786713082601798077,
+ "artefact_sha256": "22abf1b0639796c72eae2f7603e3871fa6349f93b463294f726bcd24c2b501a7",
  "code_fingerprint": "855e4cea8ba498e8bb720f072b29f9645df3c0bee4fbe4c26dbd5cb903686b44",
  "code_sources": [
   "scripts/measure_prose_conventions.py",
   "src/ddvc/tables.py"
  ],
- "created_at": "2026-08-14T11:56:22+00:00",
+ "created_at": "2026-08-14T13:11:22+00:00",
  "git": {
   "branch": "main",
-  "commit": "2da4a97aa32618b40bc86d4bd69cd96337b1c906",
+  "commit": "848ca9d6c2de5cd3162e06b8217992be8ae68e4a",
   "dirty": false,
   "dirty_generated_files": [
+   "data/manifests/output/exhibits/prose_outliers.jsonl.prov.json",
    "data/manifests/output/exhibits/provisional_results_deck_values.tex.prov.json",
    "data/manifests/output/exhibits/venue_optics.jsonl.prov.json",
-   "data/manifests/output/provisional/route_methodology_distribution_resampling.jsonl.prov.json",
-   "data/manifests/output/provisional/route_methodology_heterogeneity.jsonl.prov.json",
-   "data/manifests/output/provisional/route_methodology_heterogeneity_deck_values.tex.prov.json",
-   "data/manifests/output/provisional/route_methodology_robustness.jsonl.prov.json",
-   "data/manifests/output/provisional/stable_vehicle_concentration_e0.jsonl.prov.json",
-   "output/exhibits/.prose_conventions.jsonl.aum0a403.tmp"
+   "data/manifests/output/exhibits/venue_shape.jsonl.prov.json",
+   "output/exhibits/prose_outliers.jsonl",
+   "output/exhibits/venue_optics.jsonl",
+   "output/exhibits/venue_shape.jsonl",
+   "output/exhibits/.prose_conventions.jsonl.rjz7ld0h.tmp"
   ],
   "dirty_tracked_files": [],
   "dirty_untracked_files": []
@@ -36,11 +36,11 @@
  },
  "notes": null,
  "payload_identity": {
-  "bytes": 3066,
+  "bytes": 3054,
   "format": "jsonl",
   "rows": 19,
   "schema_version": 1,
-  "sha256": "bb4d67af56bb7a9af066266a2b0a8caa3332b673666af81fa2460fd971f50dd6"
+  "sha256": "22abf1b0639796c72eae2f7603e3871fa6349f93b463294f726bcd24c2b501a7"
  },
  "python": "3.14.5",
  "rows": 19,
