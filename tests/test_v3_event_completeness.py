@@ -206,6 +206,40 @@ def test_exact_and_canonical_maps_retain_swap_and_liquidity_state() -> None:
     assert observed[key].amount0_raw == 2_500_000
 
 
+def test_canonical_map_uses_authority_for_absent_provider_statics() -> None:
+    frame = pd.DataFrame(
+        [
+            {
+                "pool": POOL,
+                "record_type": "swap",
+                "source_stream": "swaps",
+                "block_number": 101,
+                "tx_hash": "0xswap",
+                "log_index": 2,
+                "timestamp": 11,
+                "token0_raw": None,
+                "token1_raw": None,
+                "decimals0": None,
+                "decimals1": None,
+                "amount0": "-1",
+                "amount1": "1",
+                "sqrt_price_x96": str(2**96),
+                "tick": -7,
+                "liquidity_delta": None,
+                "tick_lower": None,
+                "tick_upper": None,
+            }
+        ]
+    )
+    observed, _occurrences = canonical_event_map(frame, {POOL: authority()})
+    key = ("swap", 101, "0xswap", 2, POOL)
+    assert observed[key].decimals0 == 6
+    assert observed[key].decimals1 == 18
+    frame.loc[0, "token0_raw"] = TOKEN1
+    with pytest.raises(ValueError, match="wrong factory/token statics"):
+        canonical_event_map(frame, {POOL: authority()})
+
+
 def test_duplicate_multiplicity_counts_every_extra_row() -> None:
     key = ("mint", 100, "0xtx", 1, POOL)
     summaries, exceptions = compare_event_maps(
@@ -311,6 +345,18 @@ def _summary() -> pd.DataFrame:
 
 def _certificate(summary: pd.DataFrame) -> dict[str, object]:
     corrections: dict[str, object] = {}
+    raw_by_event = {
+        event_type: int(
+            summary.loc[summary["event_type"] == event_type, "exact_events"].sum()
+        )
+        for event_type in contract.EVENT_TOPICS
+    }
+    classification = contract.inventory_classification_record(
+        [(1, 200)],
+        raw_logs=sum(raw_by_event.values()),
+        raw_by_event=raw_by_event,
+        quarantine_rows=[],
+    )
     return {
         "schema_version": V3_EVENT_SOURCE_SCHEMA_VERSION,
         "status": "pass",
@@ -334,6 +380,10 @@ def _certificate(summary: pd.DataFrame) -> dict[str, object]:
         "correction_generations": corrections,
         "correction_generations_sha256": contract.correction_generation_sha256(
             corrections
+        ),
+        "inventory_classification": classification,
+        "inventory_classification_sha256": contract.canonical_json_sha256(
+            classification
         ),
         "pool_count": 1,
         "quarantine_rows": 0,
@@ -465,9 +515,59 @@ def test_independent_reopener_rederives_state_and_rejects_payload_drift(
     summary["passed"] = summary["passed"].astype(bool)
 
     manifest = tmp_path / "ordered.json"
-    manifest.write_text("{}\n", encoding="utf-8")
     monkeypatch.setattr(contract, "V3_EVENT_HEADER_ROOT", tmp_path / "headers")
     certificate = _certificate(summary)
+    frozen_upper = {
+        "block_number": 2_000,
+        "block_hash": "0xblock",
+        "header_identity_sha256": "6" * 64,
+    }
+    factory_certificate = {
+        "registry_sha256": registry_sha256([factory]),
+        "registry_snapshot_upper_block": 2_000,
+        "registry_snapshot_upper_block_hash": "0xblock",
+    }
+    classification = contract.inventory_classification_record(
+        [(1, 999), (1_000, 1_999), (2_000, 2_000)],
+        raw_logs=1,
+        raw_by_event={
+            name: int(name == "swap") for name in contract.EVENT_TOPICS
+        },
+        quarantine_rows=[],
+    )
+    certificate["inventory_classification"] = classification
+    certificate["inventory_classification_sha256"] = (
+        contract.canonical_json_sha256(classification)
+    )
+    manifest.write_text(
+        contract.json.dumps(
+            {
+                "status": "complete",
+                "start_block": 1,
+                "end_block": 2_000,
+                "chunk_size": 1_000,
+                "chunk_count": 3,
+                "raw_logs": 1,
+                "raw_by_event": {
+                    name: int(name == "swap") for name in contract.EVENT_TOPICS
+                },
+                "factory_identity": {
+                    "registry_sha256": registry_sha256([factory]),
+                    "registry_snapshot_upper_block": 2_000,
+                    "registry_snapshot_upper_block_hash": "0xblock",
+                    "frozen_upper_identity_sha256": "6" * 64,
+                },
+                "chunks": [
+                    {"lower": 1, "upper": 999},
+                    {"lower": 1_000, "upper": 1_999},
+                    {"lower": 2_000, "upper": 2_000},
+                ],
+            },
+            sort_keys=True,
+        )
+        + "\n",
+        encoding="utf-8",
+    )
     certificate.update(
         {
             "factory_registry_sha256": registry_sha256([factory]),
@@ -492,27 +592,45 @@ def test_independent_reopener_rederives_state_and_rejects_payload_drift(
     monkeypatch.setattr(contract, "v3_audit_days", lambda _path: [DAY])
     monkeypatch.setattr(contract, "load_block_timestamps", lambda _path: {100: 1_700_000_000})
     monkeypatch.setattr(contract, "correction_generation_records", lambda *_args: {})
-    monkeypatch.setattr(registry, "reopen_registry_evidence", lambda: ([factory], {}))
+    monkeypatch.setattr(
+        registry,
+        "reopen_registry_evidence",
+        lambda: ([factory], factory_certificate),
+    )
     monkeypatch.setattr(registry, "load_registry", lambda: [factory])
+    monkeypatch.setattr(
+        registry,
+        "load_certified_frozen_upper",
+        lambda: (frozen_upper, factory_certificate),
+    )
     monkeypatch.setattr(panel, "load_full_consumer_statics", lambda: {POOL: static})
-    monkeypatch.setattr(calendar, "load_day_calendar", lambda: ([DAY], [200]))
-    monkeypatch.setattr(panel, "inventory_perimeter", lambda _days, _ends: (1, 200))
+    monkeypatch.setattr(
+        calendar,
+        "load_day_calendar",
+        lambda: ([DAY, "20250116"], [999, 2_000]),
+    )
+    monkeypatch.setattr(panel, "inventory_perimeter", lambda _days, _ends: (1, 2_000))
     monkeypatch.setattr(
         panel,
-        "require_complete_raw_chunks",
-        lambda _start, _end: (
-            [(1, 200)],
-            {"raw_logs": 1, "quarantine_pool_ledger": []},
-        ),
-    )
-    monkeypatch.setattr(
-        panel, "ranges_by_day", lambda _ranges, _days, _ends: {DAY: [(1, 200)]}
+        "ranges_by_day",
+        lambda _ranges, _days, _ends: {
+            DAY: [(1, 999)],
+            "20250116": [(1_000, 1_999), (2_000, 2_000)],
+        },
     )
     monkeypatch.setattr(inventory, "inventory_ordered_manifest_path", lambda _root: manifest)
+    opened: list[str] = []
+
+    def decoded(path: Path, *_args, **_kwargs):
+        opened.append(path.name)
+        if "00001000" in path.name or "00002000" in path.name:
+            pytest.fail("ordinary reopening decompressed an out-of-audit-day payload")
+        return iter([raw_event])
+
     monkeypatch.setattr(
         inventory,
         "iter_decoded_inventory_logs",
-        lambda *_args, **_kwargs: iter([raw_event]),
+        decoded,
     )
     monkeypatch.setattr(state_data, "read_tick_partition", lambda *_args: state)
 
@@ -520,6 +638,25 @@ def test_independent_reopener_rederives_state_and_rejects_payload_drift(
     assert validate_v3_event_source_evidence_bundle(
         certificate, summary=summary, quarantine=quarantine
     ) == (1, 1)
+    assert opened == ["blocks_00000001_00000999.parquet"]
+    original_manifest = manifest.read_bytes()
+    manifest.write_text("{}\n", encoding="utf-8")
+    with pytest.raises(ValueError, match="manifest digest"):
+        validate_v3_event_source_evidence_bundle(
+            certificate, summary=summary, quarantine=quarantine
+        )
+    manifest.write_bytes(original_manifest)
+    drifted_raw = dict(raw_event, amount0_delta_raw=-1_000_001)
+    monkeypatch.setattr(
+        inventory,
+        "iter_decoded_inventory_logs",
+        lambda *_args, **_kwargs: iter([drifted_raw]),
+    )
+    with pytest.raises(ValueError, match="exceptions on"):
+        validate_v3_event_source_evidence_bundle(
+            certificate, summary=summary, quarantine=quarantine
+        )
+    monkeypatch.setattr(inventory, "iter_decoded_inventory_logs", decoded)
     drifted = state.copy()
     drifted.loc[0, "sqrt_price_x96"] = str(2**96 + 1)
     monkeypatch.setattr(state_data, "read_tick_partition", lambda *_args: drifted)

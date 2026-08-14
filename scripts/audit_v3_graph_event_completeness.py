@@ -12,7 +12,7 @@ from pathlib import Path
 import pandas as pd
 import pyarrow as pa
 
-from ddvc.artifact_release import file_sha256
+from ddvc.artifact_release import canonical_json_sha256, file_sha256
 from ddvc.paths import MARKET_STATE_LOCK, RAW_MARKET_DATA_LOCK, V3_INVENTORY_RAW_ROOT
 from ddvc.reconstruct import UNIFIED_QUALITY_PANEL
 from ddvc.runtime import exclusive_job
@@ -43,6 +43,7 @@ from ddvc.v3_event_completeness import (
     ensure_block_header_snapshot,
     exact_event_map,
     header_snapshot_path,
+    inventory_classification_record,
     load_block_timestamps,
     pool_authorities,
     pool_perimeter_sha256,
@@ -51,6 +52,7 @@ from ddvc.v3_event_completeness import (
     resolve_v3_event_source_release,
     validate_v3_event_source_certificate,
     validate_v3_event_source_evidence_bundle,
+    validate_inventory_classification,
     v3_audit_days,
 )
 from ddvc.v3_inventory import (
@@ -293,6 +295,18 @@ def build(*, header_workers: int = 4) -> tuple[int, int]:
     summary = _frame(summaries, SUMMARY_SCHEMA)
     exceptions = _frame([], EXCEPTION_SCHEMA)
     quarantine = _frame(quarantine_rows, PERIMETER_QUARANTINE_SCHEMA)
+    raw_by_event = {
+        name: int(perimeter["canonical_by_event"][name])
+        + int(perimeter["quarantined_by_event"][name])
+        for name in EVENT_TOPICS
+    }
+    classification = inventory_classification_record(
+        ranges,
+        raw_logs=int(perimeter["raw_logs"]),
+        raw_by_event=raw_by_event,
+        quarantine_rows=quarantine_rows,
+    )
+    validate_inventory_classification(classification, perimeter)
     corrections = correction_generation_records(RAW_ROOT, audit_days)
     certificate: dict[str, object] = {
         "schema_version": V3_EVENT_SOURCE_SCHEMA_VERSION,
@@ -316,6 +330,8 @@ def build(*, header_workers: int = 4) -> tuple[int, int]:
             inventory_ordered_manifest_path(V3_INVENTORY_RAW_ROOT)
         ),
         "raw_inventory_logs": int(perimeter["raw_logs"]),
+        "inventory_classification": classification,
+        "inventory_classification_sha256": canonical_json_sha256(classification),
         "quarantine_rows": len(quarantine),
         "block_perimeter_sha256": block_perimeter_sha256(event_blocks),
         "block_header_snapshot_sha256": file_sha256(snapshot),
@@ -325,9 +341,6 @@ def build(*, header_workers: int = 4) -> tuple[int, int]:
     }
     validate_v3_event_source_certificate(
         summary, exceptions, quarantine, certificate, audit_days
-    )
-    validate_v3_event_source_evidence_bundle(
-        certificate, summary=summary, quarantine=quarantine
     )
     inputs: list[str | Path] = [
         V3_INVENTORY_RAW_ROOT,

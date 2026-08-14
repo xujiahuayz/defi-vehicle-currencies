@@ -113,6 +113,126 @@ V3_QUARANTINE_FIELDS = (
 EventKey = tuple[str, int, str, int, str]
 
 
+def _normalized_quarantine_records(
+    rows: Iterable[Mapping[str, object]],
+) -> list[dict[str, object]]:
+    normalized: list[dict[str, object]] = []
+    integer_fields = {
+        "first_block",
+        "last_block",
+        "logs",
+        *(f"{event_type}_logs" for event_type in EVENT_TOPICS),
+    }
+    for row in rows:
+        record = {
+            field: int(row[field]) if field in integer_fields else str(row[field])
+            for field in V3_QUARANTINE_FIELDS
+        }
+        if (
+            not record["pool"]
+            or not record["reason"]
+            or int(record["first_block"]) > int(record["last_block"])
+            or int(record["logs"]) < 1
+            or sum(int(record[f"{name}_logs"]) for name in EVENT_TOPICS)
+            != int(record["logs"])
+        ):
+            raise ValueError("V3 inventory quarantine row is malformed")
+        normalized.append(record)
+    keys = [(str(row["pool"]), str(row["reason"])) for row in normalized]
+    if len(keys) != len(set(keys)):
+        raise ValueError("V3 inventory quarantine contains duplicate pool reasons")
+    return sorted(normalized, key=lambda row: (str(row["pool"]), str(row["reason"])))
+
+
+def inventory_classification_record(
+    ranges: Iterable[tuple[int, int]],
+    *,
+    raw_logs: int,
+    raw_by_event: Mapping[str, object],
+    quarantine_rows: Iterable[Mapping[str, object]],
+) -> dict[str, object]:
+    """Describe one full raw classification without retaining raw payloads."""
+
+    ordered_ranges = [(int(lower), int(upper)) for lower, upper in ranges]
+    if (
+        not ordered_ranges
+        or any(lower > upper for lower, upper in ordered_ranges)
+        or any(
+            current[0] != prior[1] + 1
+            for prior, current in zip(ordered_ranges, ordered_ranges[1:])
+        )
+    ):
+        raise ValueError("V3 inventory classification ranges are empty or discontinuous")
+    event_totals = {name: int(raw_by_event[name]) for name in EVENT_TOPICS}
+    if any(value < 0 for value in event_totals.values()) or sum(
+        event_totals.values()
+    ) != int(raw_logs):
+        raise ValueError("V3 inventory classification raw totals do not balance")
+    quarantine = _normalized_quarantine_records(quarantine_rows)
+    quarantined_by_event = {
+        name: sum(int(row[f"{name}_logs"]) for row in quarantine)
+        for name in EVENT_TOPICS
+    }
+    canonical_by_event = {
+        name: event_totals[name] - quarantined_by_event[name]
+        for name in EVENT_TOPICS
+    }
+    if any(value < 0 for value in canonical_by_event.values()):
+        raise ValueError("V3 inventory quarantine exceeds raw event totals")
+    quarantine_reasons = {
+        "absent_from_canonical_poolcreated_registry": 0,
+        "predates_canonical_pool_creation": 0,
+    }
+    for row in quarantine:
+        reason = str(row["reason"])
+        quarantine_reasons[reason] = quarantine_reasons.get(reason, 0) + int(
+            row["logs"]
+        )
+    quarantine_reasons = dict(sorted(quarantine_reasons.items()))
+    quarantined_logs = sum(quarantined_by_event.values())
+    return {
+        "chunks": len(ordered_ranges),
+        "start_block": ordered_ranges[0][0],
+        "end_block": ordered_ranges[-1][1],
+        "ranges_sha256": canonical_json_sha256(ordered_ranges),
+        "raw_logs": int(raw_logs),
+        "canonical_pool_logs": int(raw_logs) - quarantined_logs,
+        "quarantined_logs": quarantined_logs,
+        "raw_by_event": event_totals,
+        "canonical_by_event": canonical_by_event,
+        "quarantined_by_event": quarantined_by_event,
+        "quarantine_reasons": quarantine_reasons,
+        "quarantined_pools": len({str(row["pool"]) for row in quarantine}),
+        "quarantine_rows": len(quarantine),
+        "quarantine_ledger_sha256": canonical_json_sha256(quarantine),
+    }
+
+
+def validate_inventory_classification(
+    classification: Mapping[str, object],
+    perimeter: Mapping[str, object],
+) -> None:
+    """Prove that the retained identity came from the full construction scan."""
+
+    fields = (
+        "chunks",
+        "raw_logs",
+        "canonical_pool_logs",
+        "quarantined_logs",
+        "canonical_by_event",
+        "quarantined_by_event",
+        "quarantine_reasons",
+        "quarantined_pools",
+    )
+    stale = {
+        field: (classification.get(field), perimeter.get(field))
+        for field in fields
+        if classification.get(field) != perimeter.get(field)
+    }
+    if stale:
+        raise ValueError(f"V3 retained inventory classification disagrees: {stale}")
+
+
 @dataclass(frozen=True)
 class V3PoolAuthority:
     pool: str
@@ -396,10 +516,10 @@ def canonical_event_map(
             continue
         authority = authorities[pool]
         observed_static = (
-            str(row.token0_raw).lower(),
-            str(row.token1_raw).lower(),
-            int(row.decimals0),
-            int(row.decimals1),
+            row.token0_raw,
+            row.token1_raw,
+            row.decimals0,
+            row.decimals1,
         )
         expected_static = (
             authority.token0,
@@ -407,7 +527,16 @@ def canonical_event_map(
             authority.decimals0,
             authority.decimals1,
         )
-        if observed_static != expected_static:
+        normalized_static = (
+            None if pd.isna(observed_static[0]) else str(observed_static[0]).lower(),
+            None if pd.isna(observed_static[1]) else str(observed_static[1]).lower(),
+            None if pd.isna(observed_static[2]) else int(observed_static[2]),
+            None if pd.isna(observed_static[3]) else int(observed_static[3]),
+        )
+        if any(
+            observed is not None and observed != expected
+            for observed, expected in zip(normalized_static, expected_static, strict=True)
+        ):
             raise ValueError(f"canonical V3 event has wrong factory/token statics: {pool}")
         amount0 = human_to_raw(row.amount0, authority.decimals0)
         amount1 = human_to_raw(row.amount1, authority.decimals1)
@@ -606,6 +735,7 @@ def validate_v3_event_source_certificate(
         "block_header_snapshot_sha256",
         "block_perimeter_sha256",
         "correction_generations_sha256",
+        "inventory_classification_sha256",
     ):
         if not is_sha256(certificate.get(field)):
             raise ValueError(f"V3 event-source certificate lacks {field}")
@@ -635,10 +765,26 @@ def validate_v3_event_source_certificate(
         certificate["quarantine_rows"]
     ) != len(quarantine):
         raise ValueError("V3 event-source quarantine count disagrees")
+    classification = certificate.get("inventory_classification")
+    if (
+        not isinstance(classification, dict)
+        or canonical_json_sha256(classification)
+        != certificate.get("inventory_classification_sha256")
+        or classification.get("quarantine_ledger_sha256")
+        != canonical_json_sha256(
+            _normalized_quarantine_records(quarantine.to_dict("records"))
+        )
+        or int(classification.get("quarantine_rows", -1)) != len(quarantine)
+    ):
+        raise ValueError("V3 event-source inventory classification identity disagrees")
     if type(certificate.get("raw_inventory_logs")) is not int or int(
         certificate["raw_inventory_logs"]
     ) < int(summary["exact_events"].sum()):
         raise ValueError("V3 raw inventory log total is impossible")
+    if int(classification.get("raw_logs", -1)) != int(
+        certificate["raw_inventory_logs"]
+    ):
+        raise ValueError("V3 inventory classification raw total disagrees")
     return len(expected_days), int(summary["exact_events"].sum())
 
 
@@ -778,22 +924,28 @@ def validate_v3_event_source_evidence_bundle(
     from ddvc.paths import V3_INVENTORY_RAW_ROOT
     from ddvc.state_data import RAW_ROOT, read_tick_partition
     from ddvc.v3_inventory import (
+        EVENT_TOPICS,
+        INVENTORY_CHUNK_SIZE,
+        block_ranges,
         inventory_chunk_paths,
         inventory_ordered_manifest_path,
         iter_decoded_inventory_logs,
     )
     from ddvc.v3_inventory_calendar import load_day_calendar
-    from ddvc.v3_pool_registry import load_registry, reopen_registry_evidence
+    from ddvc.v3_pool_registry import (
+        load_certified_frozen_upper,
+        load_registry,
+        reopen_registry_evidence,
+    )
     from scripts.build_v3_inventory_panel import (
         load_full_consumer_statics,
         inventory_perimeter,
         ranges_by_day,
-        require_complete_raw_chunks,
     )
     from ddvc.reconstruct import UNIFIED_QUALITY_PANEL
 
     expected_days = v3_audit_days(UNIFIED_QUALITY_PANEL)
-    factory_all, _factory_certificate = reopen_registry_evidence()
+    factory_all, factory_certificate = reopen_registry_evidence()
     factory_pools = load_registry()
     if registry_sha256(factory_all) != certificate.get("factory_registry_sha256"):
         raise ValueError("V3 reopened factory registry digest disagrees")
@@ -804,31 +956,65 @@ def validate_v3_event_source_evidence_bundle(
     ):
         raise ValueError("V3 reopened full consumer pool perimeter disagrees")
     days, end_blocks = load_day_calendar()
-    start, end = inventory_perimeter(days, end_blocks)
-    ranges, perimeter = require_complete_raw_chunks(start, end)
-    quarantine_rows = perimeter.get("quarantine_pool_ledger")
-    if not isinstance(quarantine_rows, list):
-        raise ValueError("V3 reopened perimeter quarantine ledger is malformed")
-    reopened_quarantine = pd.DataFrame(
-        quarantine_rows, columns=list(V3_QUARANTINE_FIELDS)
-    )
-    for field in quarantine.columns:
-        reopened_quarantine[field] = reopened_quarantine[field].astype(
-            quarantine[field].dtype
-        )
-    try:
-        pd.testing.assert_frame_equal(
-            reopened_quarantine.reset_index(drop=True),
-            quarantine.reset_index(drop=True),
-            check_dtype=True,
-        )
-    except AssertionError as error:
-        raise ValueError("V3 released quarantine disagrees with reopened perimeter") from error
+    start, _end = inventory_perimeter(days, end_blocks)
     ordered_manifest = inventory_ordered_manifest_path(V3_INVENTORY_RAW_ROOT)
     if file_sha256(ordered_manifest) != certificate.get("ordered_raw_manifest_sha256"):
         raise ValueError("V3 ordered raw manifest digest disagrees")
-    if int(perimeter["raw_logs"]) != int(certificate.get("raw_inventory_logs", -1)):
-        raise ValueError("V3 raw inventory total disagrees")
+    try:
+        manifest = json.loads(ordered_manifest.read_text(encoding="utf-8"))
+    except (OSError, json.JSONDecodeError) as error:
+        raise ValueError("V3 ordered raw manifest is malformed") from error
+    frozen_upper = load_certified_frozen_upper()[0]
+    terminal = int(frozen_upper["block_number"])
+    ranges = block_ranges(start, terminal, INVENTORY_CHUNK_SIZE)
+    chunks = manifest.get("chunks") if isinstance(manifest, dict) else None
+    observed_ranges = (
+        [
+            (int(chunk.get("lower", -1)), int(chunk.get("upper", -1)))
+            for chunk in chunks
+            if isinstance(chunk, dict)
+        ]
+        if isinstance(chunks, list)
+        else []
+    )
+    raw_by_event = {
+        name: int((manifest.get("raw_by_event") or {}).get(name, -1))
+        for name in EVENT_TOPICS
+    }
+    expected_factory_identity = {
+        "registry_sha256": factory_certificate.get("registry_sha256"),
+        "registry_snapshot_upper_block": int(
+            factory_certificate.get("registry_snapshot_upper_block", -1)
+        ),
+        "registry_snapshot_upper_block_hash": factory_certificate.get(
+            "registry_snapshot_upper_block_hash"
+        ),
+        "frozen_upper_identity_sha256": frozen_upper.get("header_identity_sha256"),
+    }
+    if (
+        manifest.get("status") != "complete"
+        or observed_ranges != ranges
+        or int(manifest.get("start_block", -1)) != start
+        or int(manifest.get("end_block", -1)) != terminal
+        or int(manifest.get("chunk_size", -1)) != INVENTORY_CHUNK_SIZE
+        or int(manifest.get("chunk_count", -1)) != len(ranges)
+        or int(manifest.get("raw_logs", -1)) != sum(raw_by_event.values())
+        or manifest.get("factory_identity") != expected_factory_identity
+    ):
+        raise ValueError("V3 ordered raw manifest perimeter identity disagrees")
+    quarantine_rows = _normalized_quarantine_records(quarantine.to_dict("records"))
+    classification = inventory_classification_record(
+        ranges,
+        raw_logs=int(manifest["raw_logs"]),
+        raw_by_event=raw_by_event,
+        quarantine_rows=quarantine_rows,
+    )
+    if (
+        classification != certificate.get("inventory_classification")
+        or canonical_json_sha256(classification)
+        != certificate.get("inventory_classification_sha256")
+    ):
+        raise ValueError("V3 reopened inventory classification identity disagrees")
     snapshot = certified_header_snapshot_path(expected_days, certificate)
     if file_sha256(snapshot) != certificate.get("block_header_snapshot_sha256"):
         raise ValueError("V3 block-header snapshot digest disagrees")
