@@ -29,11 +29,14 @@ class VariableRegistryTests(unittest.TestCase):
         renderer = (
             root / "scripts" / "tabulate" / "render_summary_statistics.py"
         ).read_text(encoding="utf-8")
-        rendered = (root / "output" / "tables" / "summary_statistics.tex").read_text(
-            encoding="utf-8"
-        )
         self.assertIn("spec.notation", renderer)
         self.assertNotIn("summary_label", renderer)
+        rendered_path = root / "output" / "tables" / "summary_statistics.tex"
+        preview_path = root / "output" / "tables" / "summary_statistics.pdf"
+        self.assertEqual(rendered_path.exists(), preview_path.exists())
+        if not rendered_path.exists():
+            return
+        rendered = rendered_path.read_text(encoding="utf-8")
         for spec in SUMMARY_SPECS:
             self.assertIn(spec.notation, rendered, spec.column)
 
@@ -49,7 +52,6 @@ class VariableRegistryTests(unittest.TestCase):
                 "direct_quote_quality_median",
                 "no_direct_vehicle_available_share",
                 "direct_cost_advantage_median",
-                "settlement_transfer_incidence",
             },
             columns,
         )
@@ -272,7 +274,6 @@ class VariableRegistryTests(unittest.TestCase):
             "all_in_direct_cost_advantage_median": (
                 r"$\mathrm{AllInDirectCostAdvantage}_{k,t,q}$"
             ),
-            "has_matching_transfer": r"$\mathrm{Transfer}_{r,k}$",
             "v4_route": r"$\mathrm{V4}_{r}$",
             "v4_route_share": r"$\mathrm{V4RouteShare}_{g}$",
             "pre_v4_pair_indirect_route_share": r"$\mathrm{PreV4IndirectShare}_{i,o}$",
@@ -605,8 +606,6 @@ class VariableRegistryTests(unittest.TestCase):
             r"O^D_{i,o,q,t}": r"O^{D}_{i,o,q,t}",
             r"\Delta C^D_{i,o,k,q,t}": r"\Delta C^D_{i,o,k,q,t}",
             r"R^{\mathrm{WETH}}_t": r"R^{\mathrm{WETH}}_t",
-            r"\mathcal R^{\mathrm{transfer}}_{k,w}": r"\mathcal{R}^{\mathrm{transfer}}_{k,w}",
-            r"\mathcal R_{k,w}": r"\mathcal{R}_{k,w}",
         }
         for formula_symbol, key_symbol in required_symbols.items():
             with self.subTest(symbol=formula_symbol):
@@ -702,7 +701,6 @@ class VariableRegistryTests(unittest.TestCase):
             "no_direct_vehicle_available_share",
             "vehicle_beats_direct_share",
             "thin_direct_share",
-            "settlement_transfer_incidence",
         ]:
             self.assertIn(r"\frac", by_column[column].formula)
 
@@ -761,13 +759,19 @@ class VariableRegistryTests(unittest.TestCase):
         for stem in [
             "data_coverage",
             "sample_coverage",
-            "summary_statistics",
             "variable_notation",
         ]:
             rendered = (root / "output" / "tables" / f"{stem}.tex").read_text(
                 encoding="utf-8"
             )
             self.assertNotIn("Notes:", rendered, stem)
+
+        # The summary table is intentionally absent when its current observation
+        # input is unavailable; a stale generated fragment must not satisfy this
+        # structural check.
+        summary = root / "output" / "tables" / "summary_statistics.tex"
+        if summary.exists():
+            self.assertNotIn("Notes:", summary.read_text(encoding="utf-8"))
 
     def test_tabulate_outputs_are_tex_pdf_only_and_unnumbered(self) -> None:
         root = Path(__file__).resolve().parents[1]
@@ -832,36 +836,44 @@ class VariableRegistryTests(unittest.TestCase):
         self.assertNotIn(".to_pickle(", writer)
         self.assertNotIn(".to_parquet(", writer)
 
-    def test_variable_construction_uses_flexible_columns(self) -> None:
+    def test_obsolete_variable_construction_table_has_no_live_owner(self) -> None:
         root = Path(__file__).resolve().parents[1]
         text = (root / "scripts" / "run_core_rq_experiments.py").read_text(
             encoding="utf-8"
         )
-        block = text.split("def variable_construction_table()", 1)[1].split(
-            "\ndef route_cost_daily", 1
-        )[0]
-        self.assertIn(r">{\raggedright\arraybackslash}X", block)
-        self.assertNotIn(r"\linewidth}", block)
-        self.assertNotIn("p{0.", block)
+        self.assertNotIn("def variable_construction_table()", text)
+        self.assertFalse((root / "output" / "tables" / "variable_construction.tex").exists())
+        self.assertFalse((root / "output" / "tables" / "variable_construction.pdf").exists())
+        self.assertTrue((root / "output" / "tables" / "variable_notation.tex").exists())
 
-    def test_p2_registries_read_current_results(self) -> None:
+    def test_obsolete_p2_results_have_no_live_producer(self) -> None:
         root = Path(__file__).resolve().parents[1]
-        remaining = (
-            root / "scripts" / "run_jfe_remaining_blocker_fixes.py"
-        ).read_text(encoding="utf-8")
-        main_tables = (root / "scripts" / "build_jfe_main_tables.py").read_text(
-            encoding="utf-8"
+        producers = (
+            "scripts/run_core_rq_experiments.py",
+            "scripts/run_empirical_proposition_tests.py",
+            "scripts/run_robustness_tests.py",
+            "scripts/build_jfe_main_tables.py",
+            "scripts/run_jfe_remaining_blocker_fixes.py",
+            "scripts/build_paper_exhibits.py",
         )
-        pipeline = (
-            root / "scripts" / "build_results_evidence_outputs.py"
-        ).read_text(encoding="utf-8")
-
-        self.assertIn("p2_liquidity_route_feedback.pkl", remaining)
-        self.assertIn("p2_dynamic_predictability.pkl", main_tables)
-        self.assertNotIn("0.2817", remaining + main_tables)
-        self.assertLess(
-            pipeline.index('"run_feedback_proposition_tests.py"'),
-            pipeline.index('"run_jfe_remaining_blocker_fixes.py"'),
+        source = "\n".join(
+            (root / relative).read_text(encoding="utf-8") for relative in producers
+        )
+        for obsolete in (
+            "p2_liquidity_route_feedback",
+            "p2_dynamic_predictability",
+            "p2_dynamic_persistence",
+            "lp_allocation_feedback",
+            "liquidity_stickiness",
+            "liquidity_robustness",
+            "liquidity_formation_tests",
+            "bridge_stickiness_tests",
+        ):
+            self.assertNotIn(obsolete, source)
+        self.assertFalse((root / "scripts" / "run_p2_dynamic_persistence.py").exists())
+        self.assertFalse((root / "scripts" / "run_lp_supply_flow_tests.py").exists())
+        self.assertTrue(
+            (root / "scripts" / "build_liquidity_capital_flow_panels.py").exists()
         )
 
     def test_output_artifact_stems_must_not_encode_table_or_figure_numbers(self) -> None:

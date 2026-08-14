@@ -11,13 +11,8 @@ import numpy as np
 import pandas as pd
 from scipy import stats
 
-from ddvc.analysis.dynamics import (
-    CANONICAL_RESPONSE_HORIZONS,
-    exact_daily_log_return,
-    value_at_day_offset,
-)
+from ddvc.analysis.dynamics import exact_daily_log_return
 from ddvc.analysis.regression import absorb_fixed_effects, ols_clustered
-from ddvc.paths import LP_CAPITAL_CONCENTRATION_PANEL
 
 ROOT = Path(__file__).resolve().parents[1]
 SCRIPTS = ROOT / "scripts"
@@ -90,61 +85,6 @@ def measurement_robustness(bridge: pd.DataFrame) -> pd.DataFrame:
         note=(
             "The table compares volume-weighted BridgeShare with count-weighted bridge use, "
             "endpoint-pair coverage, and the main-vehicle share of endpoint pairs."
-        ),
-    )
-    return out
-
-
-def liquidity_robustness(bridge: pd.DataFrame) -> pd.DataFrame:
-    lp = pd.read_parquet(LP_CAPITAL_CONCENTRATION_PANEL)
-    lp = lp.rename(columns={"token_symbol": "token"})
-    b = bridge[["date", "token", "BridgeShare"]].copy()
-    b["date"] = pd.to_datetime(b["date"])
-    b = b.sort_values(["token", "date"])
-    lp["date"] = pd.to_datetime(lp["date"])
-    base = b.merge(lp[["date", "token", "lp_capital_share"]], on=["date", "token"], how="inner")
-    rows = []
-    for horizon in CANONICAL_RESPONSE_HORIZONS:
-        d = base.sort_values(["token", "date"]).copy()
-        d["y"] = value_at_day_offset(d, "BridgeShare", horizon)
-        d = d.dropna(subset=["y", "lp_capital_share"])
-        specs = {
-            "No FE": (d["y"], d["lp_capital_share"], ()),
-            "Token FE": (absorb_fixed_effects(d["y"], d["token"]), absorb_fixed_effects(d["lp_capital_share"], d["token"]), (d["token"],)),
-            "Token + date FE": (
-                absorb_fixed_effects(d["y"], d["token"], d["date"]),
-                absorb_fixed_effects(d["lp_capital_share"], d["token"], d["date"]),
-                (d["token"], d["date"]),
-            ),
-        }
-        for spec, (y, x, absorbed_groups) in specs.items():
-            fit = ols_clustered(y, x, d["date"], absorbed_groups=absorbed_groups, min_observations=4)
-            n, clusters = fit.n_observations, fit.n_clusters
-            beta, se, t, p = (
-                fit.beta[1],
-                fit.standard_errors[1],
-                fit.t_statistics[1],
-                fit.p_values[1],
-            )
-            rows.append({
-                "Horizon (days)": horizon,
-                "Specification": spec,
-                "N": _int(n),
-                "Clusters": _int(clusters),
-                "Beta": _num(beta, 3),
-                "Date-cluster SE": _num(se, 3),
-                "t": _num(t, 2),
-                "p": _p(p),
-            })
-    out = pd.DataFrame(rows)
-    _write_table(
-        out,
-        "table_r02_liquidity_robustness",
-        "Liquidity-feedback robustness across horizons and fixed effects.",
-        "tab:liquidity-robustness",
-        note=(
-            "Outcome is VehicleShare. The regressor is lagged vehicle-linked LP concentration. "
-            "Inference is clustered by date."
         ),
     )
     return out
@@ -285,80 +225,6 @@ def route_cost_robustness() -> pd.DataFrame:
     return out
 
 
-def v4_robustness() -> pd.DataFrame:
-    detail = pd.read_parquet(DATA / "empirical" / "v4_settlement_transfer_detail.parquet")
-    detail["size_bin"] = pd.qcut(detail["route_usd"], 3, labels=["Small", "Medium", "Large"], duplicates="drop")
-    rows = []
-    for key, g0 in [("All", detail), *[(f"Route size: {k}", g) for k, g in detail.groupby("size_bin", observed=True)]]:
-        wide = g0.pivot_table(
-            index="cell_id",
-            columns="dex",
-            values="has_matching_transfer",
-            aggfunc="mean",
-        ).dropna()
-        if {"uniswap_v3", "uniswap_v4"} - set(wide.columns):
-            continue
-        diff = wide["uniswap_v4"] - wide["uniswap_v3"]
-        if len(diff) > 1:
-            t, p = stats.ttest_1samp(diff, 0.0)
-        else:
-            t = p = math.nan
-        rows.append({
-            "Sample": key,
-            "Cells": _int(len(diff)),
-            "V3 transfer (%)": _pct(wide["uniswap_v3"].mean()),
-            "V4 transfer (%)": _pct(wide["uniswap_v4"].mean()),
-            "V4 - V3 (pp)": _num(100 * diff.mean(), 1),
-            "t": _num(t, 2),
-            "p": _p(p),
-        })
-    out = pd.DataFrame(rows)
-    out.to_pickle(EMP / "v4_robustness.pkl")
-    _write_table(
-        out,
-        "table_r05_v4_robustness",
-        "V4 settlement-transfer robustness by route size.",
-        "tab:v4-robustness",
-        note="The outcome is whether the receipt contains an ERC-20 Transfer log for the route intermediary.",
-    )
-    return out
-
-
-def v4_match_balance() -> pd.DataFrame:
-    detail = pd.read_parquet(DATA / "empirical" / "v4_settlement_transfer_detail.parquet")
-    cell = (
-        detail.groupby(["cell_id", "dex"], as_index=False)
-        .agg(route_usd=("route_usd", "median"), logs=("total_logs", "median"))
-        .pivot(index="cell_id", columns="dex", values=["route_usd", "logs"])
-    )
-    cell.columns = [f"{a}_{b}" for a, b in cell.columns]
-    cell = cell.dropna().copy()
-    cell["log_route_ratio"] = np.log(cell["route_usd_uniswap_v4"] / cell["route_usd_uniswap_v3"])
-    t, p = stats.ttest_1samp(cell["log_route_ratio"], 0.0)
-    rows = [{
-        "Cells": _int(len(cell)),
-        "V3 median route": f"${_int(cell['route_usd_uniswap_v3'].median())}",
-        "V4 median route": f"${_int(cell['route_usd_uniswap_v4'].median())}",
-        "Mean log V4/V3": _num(cell["log_route_ratio"].mean(), 3),
-        "t": _num(t, 2),
-        "p": _p(p),
-        "V3 median logs": _num(cell["logs_uniswap_v3"].median(), 1),
-        "V4 median logs": _num(cell["logs_uniswap_v4"].median(), 1),
-    }]
-    out = pd.DataFrame(rows)
-    _write_table(
-        out,
-        "table_r06_v4_match_balance",
-        "V4 matched-cell balance diagnostics.",
-        "tab:v4-match-balance",
-        note=(
-            "The matched design holds week, endpoint pair, and intermediate vehicle token fixed. "
-            "This table reports remaining route-size and receipt-log balance across sampled V3/V4 observations."
-        ),
-    )
-    return out
-
-
 def write_memo(tables: dict[str, pd.DataFrame]) -> None:
     ROB.mkdir(parents=True, exist_ok=True)
     lines = [
@@ -379,7 +245,6 @@ def write_memo(tables: dict[str, pd.DataFrame]) -> None:
         "- Liquidity robustness varies forecast horizons and fixed effects.",
         "- Stress robustness varies event weighting and event subsamples.",
         "- Route-cost robustness removes low-quality direct-route comparisons.",
-        "- V4 robustness checks whether settlement virtualization is concentrated in small routes.",
         "",
     ]
     (ROB / "robustness_summary.md").write_text("\n".join(lines), encoding="utf-8")
@@ -390,11 +255,8 @@ def main() -> int:
     bridge = pd.read_parquet(DATA / "empirical" / "bridge_daily.parquet")
     tables = {
         "table_r01_measurement_robustness": measurement_robustness(bridge),
-        "table_r02_liquidity_robustness": liquidity_robustness(bridge),
         "table_r03_stress_robustness": stress_robustness(bridge),
         "table_r04_route_cost_robustness": route_cost_robustness(),
-        "table_r05_v4_robustness": v4_robustness(),
-        "table_r06_v4_match_balance": v4_match_balance(),
     }
     write_memo(tables)
     print(f"wrote robustness tables -> {OUT / 'tables'}")

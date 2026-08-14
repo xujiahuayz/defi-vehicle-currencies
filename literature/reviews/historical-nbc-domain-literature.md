@@ -1,6 +1,6 @@
 # Historical Nanyang domain-literature synthesis
 
-**Status:** Historical supporting digest from the 2026-08-05 pipeline. It records useful discovery trails and the prior-art verdict that redirected that round, but it predates the current admitted corpus, literature audit, specification lock, and findings freeze. It is not authority for a live claim or estimator. Re-verify any reusable point through [`literature/source-admission.json`](../source-admission.json), [`literature/vehicle-currencies.bib`](../vehicle-currencies.bib), and [`docs/literature-audit.md`](../../docs/literature-audit.md).
+**Status:** Historical supporting digest from the 2026-08-05 search pass. It records useful discovery trails and judgments that redirected that round, but it predates the current admitted corpus, literature audit, specification lock, and workflow. It is not authority for a live claim, estimator, priority, or instruction. Throughout this file, words such as “verdict,” “fatal,” “mandatory,” “adopt,” and “highest priority” report dated search-pass judgments rather than current project status. Current authority rests with [`literature/source-admission.json`](../source-admission.json), [`literature/vehicle-currencies.bib`](../vehicle-currencies.bib), [`docs/literature-audit.md`](../../docs/literature-audit.md), [`docs/specification-lock.json`](../../docs/specification-lock.json), and [`docs/research-workflow.md`](../../docs/research-workflow.md).
 
 Four independent lanes (prior art on the cross-aggregator test; inertia and hysteresis in currency dominance; LVR and rent incidence; router and aggregator microstructure), then a reconciliation pass that was asked to flag contradictions with the workflow. It found seven.
 
@@ -8,7 +8,7 @@ Four independent lanes (prior art on the cross-aggregator test; inertia and hyst
 
 ## Reconciled synthesis
 
-## 1. NOVELTY VERDICT — cross-aggregator routing test
+## 1. Dated search-pass novelty judgment — cross-aggregator routing test
 
 **Already done, as written. The planned second headline result does not survive in its stated form.**
 
@@ -22,7 +22,7 @@ That is §4.1(1) verbatim, on a larger sample, with benchmarks we would have to 
 
 **What is left, and it is the actual topic.** Xi & Moallemi exclude by assumption exactly our object: "we restrict attention to a simplified same-token setting … we do not allow trading through other intermediate tokens when routing," single pair, L1 only, no multi-hop — and they name multi-hop extension as future work. Also untouched: matched-trade same-block head-to-head between two routers (they measure each router against a counterfactual optimum, never against another router), long-tail pairs where the intermediary is genuinely contested, and the join between token centrality in the liquidity graph (Yan & Tessone 2503.07834) and router intermediary selection. Nothing anywhere connects DEX routing to the vehicle-currency literature; searches for "vehicle currency" + DeFi routing return zero.
 
-**Survivable reframing (adopt this):** *given* that routers differ (cite Xi & Moallemi as established fact, do not re-establish it), does the divergence appear in **vehicle-asset selection on pairs where the intermediary is contested**, and does the pattern match each router's integrated venue set as the vehicle-currency mechanism predicts? Our `data/unified/` layer — `route_class`, `tin_role`, `tout_role`, multi-leg routes reconstructed across eight venues — is precisely the asset their stated limitation lacks. This is a promotion of the multi-hop margin from incidental to headline.
+**Reframing proposed by the 2026-08-05 search pass:** *given* that routers differ (cite Xi & Moallemi as established fact, do not re-establish it), does the divergence appear in **vehicle-asset selection on pairs where the intermediary is contested**, and does the pattern match each router's integrated venue set as the vehicle-currency mechanism predicts? Our `data/unified/` layer — `route_class`, `tin_role`, `tout_role`, multi-leg routes reconstructed across eight venues — is precisely the asset their stated limitation lacks. This is a promotion of the multi-hop margin from incidental to headline.
 
 **Residual risk:** SSRN was unsearchable in the prior-art pass (403), so finance-side working papers are unchecked; and an untraced MetaMask multi-aggregator study (554k swaps, "Vaish") is the structurally cleanest natural experiment for this question in existence. Both need chasing before the framing locks.
 
@@ -62,7 +62,7 @@ That is §4.1(1) verbatim, on a larger sample, with benchmarks we would have to 
 
 **Highest-value follow-up in the whole review:** Chu, Dowling & Li, "Impermanent loss in cryptocurrency," *JIMF* 160 (2026), DOI 10.1016/j.jimonfin.2025.103476 — secondary sources describe Fama-MacBeth regressions pricing IL risk in LP returns with pool-level controls. This is the paper most likely to already contain a pool-characteristic cross-section of LP returns. Needs a first-hand read; do not cite from summary.
 
-## 4. Mandatory measurement requirements
+## 4. Measurement recommendations from the 2026-08-05 search pass
 
 **Route cost — adopt the Xi & Moallemi (arXiv 2607.20762) three-benchmark ladder, by name.** Suboptimality as proportional shortfall of the realised route against benchmarks solved at fixed pool state: **SCO** (reoptimise splits only across pools the trade touched — isolates mis-splitting), **FVO** (reoptimise across all pools, no gas — adds venue omission), **G-FVO** (gas-aware, fixed per-pool activation cost, mixed-integer). Also adopt their **direction-asymmetric gas model** (token0→1 deducts from output; token1→0 shrinks the input budget) and their **state-staleness experiment**: one block of staleness costs +1.29 bps (FVO) / +1.78 bps (G-FVO). Report medians alongside means — 2–3% of trades drive the entire mean. Justify the exercise with Angeris-Chitra-Evans-Boyd (EC 2022): gas-aware optimal routing is mixed-integer convex, hence production routers are necessarily heuristic and a shortfall exists to measure.
 
@@ -78,11 +78,11 @@ That is §4.1(1) verbatim, on a larger sample, with benchmarks we would have to 
 
 **Intent venues need separate treatment.** CoW/UniswapX/1inch Fusion settlements may be **internalised against solver inventory or filled via RFQ**, in which case no AMM counterfactual describes the user's alternative. Cite Canidio & Fritsch (AFT 2023) for why batch venues are a structurally different cost regime, and Chitra-Kulkarni-Pai-Diamandis (arXiv 2403.02525) to block the assumption that solver competition passes value through — more solver entry can *reduce* welfare.
 
-## 5. Contradictions with `docs/research-workflow.md` §4.0–4.2
+## 5. Dated comparison with the 2026-08-05 workflow state
 
 Seven, ordered by how much they change the plan.
 
-**C1 — §4.0 final bullet and §4.1(1) are published prior art (fatal to the result as stated).** "The entry contract in each transaction identifies the aggregator, so routing decisions can be compared across aggregators for comparable pair, size, and block … the residual is integration scope and heuristics. That is … the sharpest available answer to the objection." This is Xi & Moallemi (2607.20762), including the architectural attribution. It is no longer a finding to establish; it is a fact to cite. **Fix:** rewrite §4.1(1) as the intermediary-asset / multi-hop margin on contested pairs, and cite the prior art as foundation.
+**C1 — dated judgment: §4.0 final bullet and §4.1(1) overlapped published prior art and was treated as fatal to the result then stated.** "The entry contract in each transaction identifies the aggregator, so routing decisions can be compared across aggregators for comparable pair, size, and block … the residual is integration scope and heuristics. That is … the sharpest available answer to the objection." This is Xi & Moallemi (2607.20762), including the architectural attribution. It is no longer a finding to establish; it is a fact to cite. **Historical proposed fix:** rewrite §4.1(1) as the intermediary-asset / multi-hop margin on contested pairs, and cite the prior art as foundation.
 
 **C2 — §4.0 "the entry contract … identifies the aggregator" is false, and contradicts our own sibling doc.** `docs/router-identification-feasibility.md` already establishes that `sender` identifies the **executor, not the author of the routing decision** (Universal Router executes off-chain-computed calldata; any wallet or meta-aggregator can call it), and that the executor population fragments to 397 distinct senders by Oct 2025 with a hand registry capturing 11.8%. The literature corroborates independently: Maury/ClearTrace (Zenodo 21513263) argues no standard on-chain mechanism announces frontend identity and offers four recovery heuristics (calldata-suffix trapper, proxy-router mismatch detector, multi-hop origin tracer, fee-recipient clustering); Xi & Moallemi's own labelling reaches only ~21% of transactions / 5.6% of volume on a single pair. **§4.0 is stale relative to §feasibility and must be brought into line before it propagates into the paper.**
 
@@ -147,7 +147,7 @@ Four things, in descending order of defensibility:
 1. **The intermediary-asset margin itself.** No paper found compares *which token a route hops through* across aggregators. Xi & Moallemi exclude it by assumption. Zhavoronkov and Execution Welfare are single-pair. The network papers that do study intermediary tokens — [Network Analysis of Uniswap: Centralization and Fragility in the Decentralized Exchange Market](https://arxiv.org/abs/2503.07834) (Yan & Tessone, Mar 2025), which identifies important tokens and pools by betweenness, and [A Social Network Approach to Analyzing Token Properties and Abnormal Events in Decentralized Exchanges](https://arxiv.org/abs/2309.02579) (Mohammadi et al., 2023) — measure token centrality in the liquidity graph and never connect it to router choice. **The join between "which tokens are graph hubs" and "which routers select them" is empty.**
 2. **Long-tail and cross-pair scope.** Every empirical paper found runs on WETH-USDC, WETH-USDT, or PEPE-WETH. Vehicle choice is mechanically uncontested on WETH-USDC; it is contested precisely on the pairs nobody has studied. Your comparable-pair design has real value only if it spans pairs where the intermediary is genuinely ambiguous.
 3. **Matched-trade, same-block head-to-head.** Xi & Moallemi measure each router against a counterfactual optimum; nobody matches router A's trade to router B's comparable trade in the same block. This is a methodological contribution — but a modest one, and it needs the ClearTrace attribution caveats handled or it is fragile.
-4. **The economic framing, which is your real differentiator.** Nothing found in this historical pass connected DEX routing-intermediary choice to the vehicle-currency literature. Searches for "vehicle currency" / "vehicle asset" plus DeFi routing returned zero. Somogyi (2026)'s price-impact-minimisation mechanism for vehicle-currency selection in FX had not been tested on DEX routing, and Krugman (1980)'s cost-driven vehicle selection had an unexploited on-chain analogue. The historical [`legacy-nbc-source-fidelity.md`](legacy-nbc-source-fidelity.md) records the source boundaries used for that verdict; current novelty requires a new search through the live literature gate.
+4. **The economic framing, which is your real differentiator.** Nothing found in this historical pass connected DEX routing-intermediary choice to the vehicle-currency literature. Searches for "vehicle currency" / "vehicle asset" plus DeFi routing returned zero. Somogyi (2026)'s price-impact-minimisation mechanism for vehicle-currency selection in FX had not been tested on DEX routing, and Krugman (1980)'s cost-driven vehicle selection had an unexploited on-chain analogue. The historical [`historical-nbc-source-fidelity.md`](historical-nbc-source-fidelity.md) records the source boundaries used for that verdict; current novelty requires a new search through the live literature gate.
 
 ## (4) The paper that would make your version redundant
 
@@ -166,7 +166,7 @@ Secondary redundancy: **Bachu, Wan & Moallemi (2024)** owns the interface-level 
 - ACM DL blocked fetching for **ORDER: Optimal Routing with Path Indexing in Exchange Graph** ([doi 10.1145/3802097](https://dl.acm.org/doi/10.1145/3802097), Proc. ACM Management of Data). From its title and venue it is a database/indexing systems paper, not an economic comparison, but I could not read the abstract to confirm.
 - Two arXiv IDs above (Zhang & Tessone Sept 2025; Janicot & Vinyas May 2025) are inferred from listing metadata rather than read off the abstract pages — verify before they enter a reference list.
 
-Relevant historical files: [`legacy-nbc-corpus-manifest.md`](legacy-nbc-corpus-manifest.md) and [`legacy-nbc-source-fidelity.md`](legacy-nbc-source-fidelity.md). Neither contained any of the routing/aggregator literature above at the time of this review.
+Relevant historical files: [`historical-nbc-corpus-manifest.md`](historical-nbc-corpus-manifest.md) and [`historical-nbc-source-fidelity.md`](historical-nbc-source-fidelity.md). Neither contained any of the routing/aggregator literature above at the time of this review.
 
 ---
 
@@ -174,7 +174,7 @@ Relevant historical files: [`legacy-nbc-corpus-manifest.md`](legacy-nbc-corpus-m
 
 ## Literature review: inertia and hysteresis in international currency dominance
 
-**Scope note.** The historical [`legacy-nbc-source-fidelity.md`](legacy-nbc-source-fidelity.md) already carried cross-checked reads of Krugman (1980), Dowd & Greenaway (1993), and Gopinath & Stein (2021). This section extended them only for the identification question. Its statements about what was absent describe the corpus at that time, not the current corpus. A verification ledger is at the end; current quotation still requires the live source-set audit.
+**Scope note.** The historical [`historical-nbc-source-fidelity.md`](historical-nbc-source-fidelity.md) already carried cross-checked reads of Krugman (1980), Dowd & Greenaway (1993), and Gopinath & Stein (2021). This section extended them only for the identification question. Its statements about what was absent describe the corpus at that time, not the current corpus. A verification ledger is at the end; current quotation still requires the live source-set audit.
 
 ---
 
@@ -294,7 +294,7 @@ Their response is to disaggregate to individual central banks (Ito-McCauley data
 
 ### Gopinath & Stein (2021), *QJE* — extension only
 
-The historical [`legacy-nbc-source-fidelity.md`](legacy-nbc-source-fidelity.md) records the mechanism, multiplicity/stability result and citation boundaries used in this pass. Two points were added, both bearing only on identification:
+The historical [`historical-nbc-source-fidelity.md`](historical-nbc-source-fidelity.md) records the mechanism, multiplicity/stability result and citation boundaries used in this pass. Two points were added, both bearing only on identification:
 
 1. The existing note that "the model is symmetric between US and Europe by construction, so it cannot pin down *which* currency wins on fundamentals; the paper's history/incumbency argument is a verbal/heuristic selection device, not a proven result" **is the identification limitation**, stated at the level of theory. A model that is symmetric in fundamentals and resolves selection by appeal to history has, by construction, no fundamentals-based prediction to test persistence against.
 2. Because the paper explicitly sets aside the medium-of-exchange/vehicle role (footnote 5), **it is not a competitor to your paper's object** and should not be framed as one. It is the strongest available statement of *why* the confound in §3 layer (4) exists — invoicing dominance and safe-asset/banking dominance are mutually reinforcing, so the incumbent's cost advantage is an equilibrium output of its incumbency.
@@ -394,7 +394,7 @@ The extracted text cache used in the original pass was session-scoped and was no
 
 ## Literature review: AMM liquidity-provider economics
 
-Scope note: this extends [`legacy-nbc-source-fidelity.md`](legacy-nbc-source-fidelity.md), which cross-checked Lehar & Parlour (JoF 2025), Klein/Kozhan/Viswanath-Natraj/Wang (2026), Caparros/Chaudhary/Klein (2024), Somogyi (2026) and Yuan (2005). Where the original reviewer read the actual PDF it says so; abstract-only or search-summary evidence remains flagged and is not live claim support.
+Scope note: this extends [`historical-nbc-source-fidelity.md`](historical-nbc-source-fidelity.md), which cross-checked Lehar & Parlour (JoF 2025), Klein/Kozhan/Viswanath-Natraj/Wang (2026), Caparros/Chaudhary/Klein (2024), Somogyi (2026) and Yuan (2005). Where the original reviewer read the actual PDF it says so; abstract-only or search-summary evidence remains flagged and is not live claim support.
 
 ---
 

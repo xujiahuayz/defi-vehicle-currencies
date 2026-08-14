@@ -138,14 +138,8 @@
       "diagnostic_specifications": 0,
       "resampling_refits": 0,
       "status": "retired",
-      "artifacts": [
-        "output/tables/core_panel_regressions.tex",
-        "output/tables/p2_liquidity_route_feedback.tex",
-        "output/tables/lp_repositioning.tex",
-        "output/tables/v3_event_time_pretrends.tex",
-        "output/tables/v4_route_use_persistence.tex"
-      ],
-      "note": "Conservative lower bound for the superseded broad RQ battery after deduplicating coefficients from the same multivariate fit and tables that merely reprint another runner's estimates. These models are not authority for the hashed claim family."
+      "artifacts": [],
+      "note": "The superseded broad RQ battery was removed from the current tree. Git history retains the old generation. Its durable lesson is that exploratory fits cannot become authority after the quantity contract or matching design changes. The replacement liquidity-allocation design is registered as liquidity_capital_flow_predictability and has no admitted model run until its purpose-bound inputs release."
     }
   ],
   "runs": []

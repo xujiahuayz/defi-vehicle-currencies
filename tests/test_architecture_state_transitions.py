@@ -216,5 +216,5 @@ def test_deck_values_are_generated_from_support_and_name_generation() -> None:
     )
     assert r"\newcommand{\ArchRouteGeneration}{\texttt{aaaaaaaaaaaa}}" in rendered
     assert r"\newcommand{\ArchEntrySupportTen}{1 (1)}" in rendered
-    assert r"\newcommand{\ArchExitImmediateTen}{+0.00\,pp}" in rendered
+    assert r"\newcommand{\ArchExitImmediateTen}{$+0.00$ pp}" in rendered
     assert r"\newcommand{\ArchDisappearSupportTen}{0 (0)}" in rendered

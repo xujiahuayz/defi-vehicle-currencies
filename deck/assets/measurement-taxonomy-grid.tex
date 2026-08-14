@@ -4,6 +4,9 @@
 % EVIDENCE-COMMIT: e1513051da9f3c33fc69a05d063541e2ef96954a
 % EVIDENCE-SOURCES: docs/specification-lock.json; docs/paper-spine.md;
 % docs/research-workflow.md (separation of neighbouring constructs).
+% VALUE-SUPPORT-RULE: routed value requires source, intermediary, and destination
+% dollar amounts to agree within 20 percent; the rendered first use explains the
+% economic object, while later figures use the short label "Routed value".
 \tikzset{mtasset/.style={circle,draw=ink,fill=white,minimum size=17pt,inner sep=0pt,font=\scriptsize}}
 \tikzset{mtvehicle/.style={mtasset,draw=ucldark,fill=ucldark,text=white}}
 \begin{tikzpicture}[x=1cm,y=1cm]
@@ -22,8 +25,8 @@
 \node[font=\small\bfseries,text=ucldark] at (5.06,1.58) {Vehicle dominance};
 \node[font=\scriptsize,align=center,text width=3.15cm] at (5.06,0.78)
   {$D_k$ = use through $k$\\$\div$ total intermediary use};
-\node[font=\scriptsize,text=muted,align=center] at (5.06,0.06)
-  {Count or value weighting};
+\node[font=\tiny,text=muted,align=center] at (5.06,-0.04)
+  {Value-weighted routes use\\comparable dollar amounts};
 
 \node[softbox,minimum width=3.75cm,minimum height=2.25cm,draw=stable] (excessbox) at (9.75,0.82) {};
 \node[font=\small\bfseries,text=ucldark] at (9.75,1.58) {Excess vehicle use};

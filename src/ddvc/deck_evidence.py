@@ -44,6 +44,10 @@ AUDIENCE_JARGON = {
     "workflow_status": re.compile(r"\bworkflow[- ]status\b", flags=re.IGNORECASE),
     "provenance_status": re.compile(r"\bprovenance[- ]status\b", flags=re.IGNORECASE),
     "scientific_certificate": re.compile(r"\bscientific[- ]certificate\b", flags=re.IGNORECASE),
+    "common_support_value": re.compile(
+        r"\bcommon(?:[-\s]+)support(?:[-\s]+)value\b",
+        flags=re.IGNORECASE,
+    ),
 }
 
 

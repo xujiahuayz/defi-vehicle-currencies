@@ -8,46 +8,54 @@ Visual variety follows the intellectual object. Use line charts for paths, bars 
 
 No current estimand warrants a surface or three-dimensional chart. Three-dimensional rendering would introduce occlusion and perspective distortion without encoding a necessary third continuous dimension. The current visual plan therefore uses no 3D.
 
-## Current core map
+## Current core map (18 frames)
 
-| Page | Current form | Intellectual comparison | Best form and exact action |
-|---|---|---|---|
-| 1 | Branded cover | Question and identity | Keep the asymmetrical UCL CBT cover. Do not add a stock photograph. |
-| 2 | Numbered list and small route diagram | Four rival explanations for dominance | Replace the list with one economic mechanism map only if the visual clarifies how the mechanisms differ. Do not force an audience poll or another participation device when it adds no intellectual value. |
-| 3 | Route glyph and two share bars | Frequency, value and network breadth | Animate repeated routes accumulating into count and value shares and add a compact network-breadth glyph. The static fallback shows three aligned measures with an explicit common denominator. |
-| 4 | Authentic transaction trace | Observable cross-venue vehicle use in one executed route | Current for the execution object. The static PDF frame and native HTML/CSS/JS replay share one manifest from an admitted Studio-current partition. They show ordered legs, venues, amounts and value. A direct alternative is deliberately absent until exact pre-trade state supports that separate comparison. |
-| 5 | V1-to-V4 architecture strip | How pair formation, liquidity placement and settlement alter routing opportunity | Current. Four panels move from V1's mandatory ETH hub to V2 pair choice, V3 range choice and V4 net settlement. The bottom band keeps architecture, realised exposure and calendar date distinct; the frame makes no adoption effect claim. |
-| 6 | Three statistics and protocol timeline | Sample scale, span and changing market composition | Keep the statistics and timeline. Add a narrow venue-composition strip only if regenerated from the current release; otherwise show deployment-specific coverage bands. |
-| 7 | Four text definitions | Use, excess use, topology and execution cost | Replace with a two-by-two visual taxonomy: share bar, intermediary-minus-endpoint balance, network graph and paired quote arrows, each with one sentence. |
-| 8 | Four-node mechanism map | Four forces converging on dominance | Keep. Add empirical predictions beside links when support is admitted; icons may distinguish mechanisms but must not become decoration. |
-| 9 | Three prose columns and timeline | Formation, rotation and persistence | Keep the triptych but give each column a small estimand diagram: architecture change, share path and incumbent-challenger duration. |
-| 10 | Annual native-versus-stable lead panels | Rotation by count and value through time | Current. Native, stable and all other intermediary types combined share a common baseline in separate route-count and route-value panels. The value panel marks the 2022 stable lead, 2023 to 2024 native reversal and renewed 2025 to 2026 stable lead; the count panel shows convergence without a sustained stable lead. The slide states plainly that annual realised shares are not causal estimates of routing-design changes. |
-| 11 | Candidate dumbbells | Which token moved and whether it crossed excess-use parity | Current. Count and common-support-value panels link 2024 to 2026 for USDC and USDT, with parity fixed at one. The source comment binds the relative-intensity ratios to the intermediary-minus-endpoint share-gap estimand. |
-| 12 | Pair-activity ribbon | Whether the aggregate rotation comes from pair representation, activity, vehicle incidence, or stable-for-native substitution within common-role pairs | Current. One native ribbon groups the exact five-factor 2024--2026 count accounting into pair activity, vehicle use, and within-pair stable share. The negative role-support term is shown as a true-width backward notch. A separate box reports the change among pairs observed in both endpoint years, and one sentence retains the distinct four-term supported-value result. The slide does not attribute the allocation to architecture, demand, preference, or search. |
-| 13 | Three text takeaways | Evidence mapped back to the question | Use three short claims with miniature visuals recalled from pages 5, 10 and 11 or 12. Introduce no new evidence. |
+Frame titles are the stable keys. Page numbers describe the 33-page PDF compiled on 2026-08-14 and may move when a frame is inserted.
 
-## Current appendix map
+| Page | Frame title | Current or adopted visual form | Unresolved visual debt |
+|---:|---|---|---|
+| 1 | The Making of Dominant Vehicle Currencies | Asymmetrical UCL CBT cover | None. |
+| 2 | How we reconstruct a route from one transaction | Four-panel route taxonomy | None. |
+| 3 | Vehicle dominance is the share of indirect trade carried by an asset | Route glyph with count-, value-, and network-measure definitions | A native accumulation reveal remains optional for a live talk; the static frame must remain complete. |
+| 4 | The transaction headline omits the intermediary route | Authentic explorer crop paired with decoded ordered transfers | Current. Maintain the local HTML/CSS/JS reveal from the same manifest; do not create a video surrogate. |
+| 5 | Architecture changes routing opportunities | V1-to-V4 architecture strip | None; preserve the separation between architecture, realised exposure, and calendar time. |
+| 6 | The sample spans Uniswap V1 through V4 | Protocol timeline | Add a venue-composition strip only when it can be regenerated from the current release. |
+| 7 | Vehicle dominance aggregates realised intermediary choices | Two-by-two measurement-taxonomy grid | None. |
+| 8 | Why might one asset become the dominant vehicle? | Four-node mechanism map | Add link-specific empirical predictions only when corresponding evidence is admitted. |
+| 9 | Architecture opens routes; realised trades reveal which vehicle is used | Formation-, rotation-, and persistence-estimand miniatures | None. |
+| 10 | Stablecoins regain the lead in routed value | Annual native-versus-stable lead panels | Quarterly timing remains outside this annual visual. |
+| 11 | USDT drives the post-2024 rise in stablecoin intermediation | Count- and routed-value dumbbells around parity | None. |
+| 12 | Pair activity and vehicle use: `\PairAndVehicleShare{}` of the gain | Native accounting ribbon plus matched-market interval | None; keep the distinct supported-value accounting in text rather than forcing it into the ribbon. |
+| 13 | Stablecoin use rises within each venue scope | HAC interval forest plot | None; keep realised venue scope descriptive rather than treating it as integration. |
+| 14 | Does liquidity move before vehicle use or follow it? | Opposed timing diagrams for liquidity-leading-use and use-leading-liquidity | Replace with estimates only after the registered LP tests produce admissible results. |
+| 15 | V4 separates the economic route from physical settlement | Economic-route and settlement-layer diagram | Add a result panel only after the registered V4 comparison produces admissible estimates. |
+| 16 | Cheaper challengers gain share as incumbents lose it | Compact coefficient table and scope warning | Replace the table with a zero-centred difference or forest plot when the comparison-set support is repaired. |
+| 17 | Current architecture changes do not provide a clean before--after comparison | Threshold-by-status support table | A compact support composition graphic may replace the table if it preserves every status and threshold. |
+| 18 | Stablecoins regain the value lead as route counts approach parity | Three finding statements | Reuse small visual callbacks only if they improve recall without adding a second claim to the frame. |
 
-| Page | Current form | Intellectual comparison | Best form and exact action |
-|---|---|---|---|
-| 14 | Appendix map | Navigation | Keep as a compact index or clickable tiles. |
-| 15 | Route diagram and prose | Definition of one route unit | Keep the route grammar but reuse the authentic transaction style from page 4; a small route strip is clearer than another abstract node chain. |
-| 16 | Four prose categories | Backing regimes through time | Replace with a token-by-period regime heatmap. This makes the claimed time variation visible. |
-| 17 | Bullets and crossed round-trip glyph | Attrition and value-support restrictions | Replace with a certified sample-construction funnel: reconstructed routes, topology-valid routes, non-round-trips, price-supported routes and common-support value. Show round trips as one branch. |
-| 18 | Four-box process diagram | Exact event ordering from starting state to quote | Keep. Animate event application along a block and transaction strip live; retain the numbered final state in the PDF. |
-| 19 | Protocol-by-state matrix | State variables required by each AMM family | Current. The matrix distinguishes reserves or active liquidity, ticks, amplification, weights or scaling, rates or oracles, fees and hooks. The outlined hook mark records the V4 perimeter restriction rather than implying measured hook state. |
-| 20 | V1 route diagram and large count | On-chain signature of compulsory intermediation | Replace the abstract route with an authentic two-row transaction trace showing the shared hash and equal ETH legs, with the certified route count beside it. |
-| 21 | Four-row list | Daily observations, weekly aggregation and exact horizons | Replace with a horizon diagram showing daily observations aggregated into complete weeks and exact 1-, 7-, 30- and 120-day links. Keep model labels in a small adjacent table. |
-| 22 | Two formulas | Equal route weights against dollar weights | Keep the formulas and add two identical route sets, one equally weighted and one with width proportional to value. |
-| 23 | Text-only estimates | USDT intermediary share relative to endpoint demand | Replace with a two-panel difference plot centred on zero, showing 2024 and 2026 gaps with intervals. The value panel must visibly cross from negative to positive. |
-| 24 | Four prose definitions | Capital, inventory, executable depth and quote quality | Replace with a labelled pool cross-section showing deposited capital, token inventories, executable quantity at a stated price impact and resulting quote. |
-| 25 | Two prose columns | Opportunity set against route choice conditional on availability | Replace with a multiplex network: venue layers and feasible paths on the left, direct, intermediated and split chosen routes on the right. |
-| 26 | Reference list | Vehicle-currency and market-structure provenance | Keep plain and grouped; hyperlink where practical. |
-| 27 | Reference list | DEX-design provenance | Keep plain and grouped; hyperlink where practical. |
+## Current appendix map (15 frames)
+
+| Page | Frame title | Current or adopted visual form | Unresolved visual debt |
+|---:|---|---|---|
+| 19 | Appendix map | Categorised navigation map | None. |
+| 20 | A1. One reconstructed route is one unit | Route-unit glyph | Reuse the authentic transaction visual only if the extra institutional detail helps answer the audience question. |
+| 21 | A2. Stablecoin backing cannot be treated as fixed | Token-by-period backing-regime heatmap | None. |
+| 22 | A3. One route universe supports two measurements | Route-object and count/value-support funnel | Add attrition quantities only when generated from the current certified release. |
+| 23 | A4. State is reconstructed immediately before execution | Numbered event-ordering sequence | A native live reveal is optional; the PDF remains the complete fallback. |
+| 24 | A5. Each AMM family has a different state vector | Protocol-by-state matrix | None. |
+| 25 | A6. V1 forced routes have an on-chain signature | Matching-ETH-leg route glyph | Replace with an authentic two-row transaction trace when a current verified example is registered. |
+| 26 | A7. Daily and weekly frequencies answer different questions | Daily/weekly exact-horizon diagram | None. |
+| 27 | A8. Count and value define separate dominance margins | Paired route-width small multiples | None. |
+| 28 | A9. Endpoint demand and intermediary use are separate margins | Paired formulas | A zero-centred empirical difference plot belongs here only if it adds evidence not already legible on frame 11. |
+| 29 | A10. Capital, inventory, and depth are different objects | Labelled pool-state and price-response cross-section | None. |
+| 30 | A11. Integration changes the routes that can be chosen | Multiplex opportunity-set and realised-route diagram | None. |
+| 31 | A11b. Venue scope and vehicle type differ in 2026 | Count/value alluvial | Current only when its source manifest passes the release check; otherwise omit this frame rather than display stale output. |
+| 32 | A12. References: vehicle currencies and market structure | Grouped reference list | Hyperlink stable source routes where practical. |
+| 33 | A13. References: decentralised exchange design | Grouped reference list | Hyperlink stable source routes where practical. |
 
 ## Whole-deck diagnosis
 
-The empirical block now uses three different visual forms because it asks three different questions: annual paths for when leadership moved, candidate dumbbells for which stablecoin moved, and a decomposition ribbon for whether the aggregate shift travels through pair activity, vehicle use, or within-pair substitution. The mechanism network, authentic transaction replay, V1-to-V4 architecture strip, exact-state reconstruction sequence and protocol-by-state matrix also use appropriate forms. Remaining visual debt is concentrated in the appendix, where several slides still use prose grids or abstract diagrams. The highest-value remaining recovery is, conditional on current evidence, the venue-composition area strip. Retired numeric graphics remain retired even when their visual design was strong.
+The empirical block uses annual paths for when leadership moved, candidate dumbbells for which stablecoin moved, an accounting ribbon for how the aggregate shift is composed, and a forest plot for whether it appears within each realised venue scope. The mechanism network, authentic transaction trace, V1-to-V4 architecture strip, measurement taxonomy, exact-state sequence, and protocol-by-state matrix are adopted forms. The unresolved work is now specific rather than deck-wide: a current-release venue-composition strip; result visuals for the registered LP and V4 designs when admissible estimates exist; a supported replacement for the challenger coefficient table; an authentic V1 transaction trace; and optional native reveals whose static frames already stand alone. Retired numeric graphics remain retired even when their visual design was strong.
 
 The saved finance and economics presentations support one economic comparison per slide, restrained annotations and real plots, tables or institutional evidence. They use photographs and screenshots when those items document the episode or institution. They do not support an icon buffet or chart-type variation for its own sake. The older Brunnermeier and Pedersen deck is useful for intellectual sequencing but is a negative density benchmark. The Terra author deck is the stronger benchmark for combining mechanism diagrams, event images, empirical paths and conventional tables.
 

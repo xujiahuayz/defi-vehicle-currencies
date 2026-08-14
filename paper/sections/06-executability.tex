@@ -1,93 +1,17 @@
-% Section 6. Validation of the constructed route comparison.
-%
-% Counterfactual route quotes are assessed against realised swaps, timing, costs, and
-% venue coverage. Source comments identify the sample behind each reported statistic.
+% Section 6. What the counterfactual price comparison can and cannot identify.
 
-\section{Executability of the measured gaps}
+\section{What the price comparison can identify}
 \label{sec:executability}
 
-The cost comparison asks whether the observed intermediary route returned less than a direct trade of the same size. The transaction records what the trader received; the direct alternative must be reconstructed. Unlike the cross-market arbitrages studied by \citet{MakarovSchoar2020Arbitrage}, both routes here can execute on the same chain inside one transaction that reverts as a unit \citep{DaianEtAl2020FlashBoys}. Atomic execution removes the risk that only one leg settles, but it does not remove gas costs, competition for block space, reversion risk, financing needs, or latency between a router's decision and settlement. The economic comparison therefore depends on three empirical questions: whether the alternative route lies within observed pool depth, whether the reconstructed state is close enough to the router's decision state, and whether the relevant venues were available to the router.
-% literature/text/2020-MakarovSchoar2020Arbitrage-*.txt, section 8
+The realised routes identify which assets carried trades. Explaining route choice requires the alternatives available immediately before execution, their output at the same trade size, and the costs of reaching them. We therefore keep the vehicle-dominance results in Section~\ref{sec:dominance} separate from the counterfactual price comparison.
 
-Appendices~\ref{app:quoters} to~\ref{app:roundtrip} report the pricing rules, per-venue validation errors, and conditional samples behind these conditions.
+The comparison in Section~\ref{sec:setting:pricing} holds the endpoints, input amount, and pool state fixed. For each trade, it asks how much the best direct path and the best two-leg path through a particular intermediary would have returned. A quote difference describes the reconstructed opportunity set. Interpreting it as route choice additionally requires the router's quote time, searched exchanges, access to private order flow, and financing and reversion costs, which the public record generally leaves latent.
 
-\subsection{Extrapolation beyond realised trades}
-\label{sec:executability:support}
+Two implementation conditions are essential. First, pool balances and liquidity must be measured immediately before the transaction. A closing hourly or daily state can incorporate trades and liquidity changes that occurred after the route was chosen. We reconstruct constant-product balances by replaying swaps, liquidity additions, and withdrawals in transaction order. For concentrated-liquidity pools, we replay initialization, liquidity changes, and swaps in block and log order. A pool-period enters the comparison only when the required event history is complete and the reconstructed state reproduces the realised trade. Appendix~\ref{app:state} describes these checks.
 
-Reproducing realised swaps does not establish a quoter's accuracy at trade-size and depth combinations absent from its validation sample. The support rule in Section~\ref{sec:setting:support} therefore retains a hypothetical leg only when its price impact lies within the range observed on realised trades. Because eligibility is determined from pool state and trade size before the route-cost gap is computed, the restriction limits extrapolation without selecting on the measured outcome. Appendix~\ref{app:support} reports its daily distribution, and Appendix~\ref{app:quoters} gives each venue's invariant and validation errors, including concentrated-liquidity results by trade direction and tick crossing \citep{AdamsZinsmeisterRobinson2021UniswapV3}.
+Second, a hypothetical trade should resemble the trades on which the pricing rule has been evaluated. We retain a leg only when its size relative to available depth lies within the range represented among realised swaps. Because the support restriction is set from trade size and pool state before outputs are compared, selection is independent of the measured price difference. Appendix~\ref{app:support} reports the calibration.
 
-Realised-swap support cannot reveal the error on an alternative that was never used. A second check would ask whether an apparently profitable direct-versus-vehicle difference closes within the same block after gas and route-specific costs. Round trips account for 12.7\% of multi-leg routes by count and 21.7\% by value at the median of 79 sampled days, and every sampled day contains some self-returning activity. Atomic cycles therefore occur regularly, but the present data do not link a measured price difference to the transaction that closes it. The round-trip evidence cannot yet establish that the reconstructed alternative was executable at the quoted price.
-% output/exhibits/round_trip_share_by_day.jsonl, 79 sampled days
+A third condition is market coverage. The price comparison covers a narrower market than the realised-route panel. The largest omission is concentrated in Curve pools that connect native assets and stablecoins but use a different invariant from the StableSwap pools we can price. These exclusions account for 34.2\% of assessed Curve volume and are concentrated in native-asset depth: 65.2\% of native-leg volume is excluded, compared with 21.1\% of stable-leg volume. Hook-bearing and dynamic-fee Uniswap v4 pools are omitted because their transaction-level cash-flow rules cannot be recovered from the available records. Historical state is also unavailable for SushiSwap v3 and for several Balancer pool families. These omissions can improve either the direct or the intermediated alternative, so their effect on the difference between the two is not known in advance. Appendix~\ref{app:coverage} reports their magnitude and composition.
+% docs/venue-coverage-bounds.md; output/exhibits/curve_excluded_composition.jsonl
 
-\subsection{Decision-state timing}
-\label{sec:executability:timing}
-
-The settlement block is observed, while the state at which the router formed its quote and chose the route is latent. The counterfactual panel prices at the close of an hour, so a route that was cheapest at the latent decision state may appear dominated at the hour close. Across 12,931 realised two-leg V3 routes on three dates, the median absolute movement between the pre-transaction and hour-end marginal rates is 54.3 basis points; 62.8\% move by more than 30 basis points and 36.4\% by more than 100. Against route-cost differences measured in tens of basis points, the timing error is of the same order as the signal. It also differs across the three dates, and Appendix~\ref{app:timing} reports those estimates. The limited date support can reveal heterogeneity, but it cannot establish a trend or an aggregator effect.
-% output/exhibits/realised_route_timing_validation.jsonl, pooled row, 12,931 routes on three dates
-
-Absolute quotes can move between the route's block and the close of its hour without changing which route is cheaper. We therefore measure the direct-minus-vehicle comparison itself at both states. For endpoints $a$ and $b$ and intermediary $k$, with a direct pool $ab$ and legs $ak$ and $kb$, define
-\[
-m_{a,k,b} \;=\; \log P(a \to b) \;-\; \log P(a \to k) \;-\; \log P(k \to b),
-\]
-which is positive exactly when the direct pool returns more of $b$ per unit of $a$ than the two-leg route does, in the zero-size limit where the marginal price is the pool price. We measure the probability that the route ranking differs between pre-event and hour-end states,
-\[
-\Phi \;=\; \Pr\!\left[\operatorname{sign} m^{\mathrm{block}}_{a,k,b} \neq \operatorname{sign} m^{\mathrm{hour}}_{a,k,b}\right].
-\]
-Appendix~\ref{app:timing} derives the residual and shows how it is measured from event-level prices without decimals-resolution error.
-
-Computing $m$ strictly before each direct-pool opportunity event and again at its hour-boundary state, over 371 triangles and 189,622 opportunity snapshots on seven sampled days spanning 2021-12-25 to 2025-11-04, the route ranking differs 38.9\% of the time. The median triangle gap at pre-event state is 38.3 basis points and the median absolute change in that gap is 35.5 basis points, with a 90th percentile of 104.5. Large gaps are about as unstable as the pooled sample: among the 31,860 snapshots whose pre-event gap exceeds 100 basis points, the disagreement rate is 36.3\%. At zero size, $m$ is a triangular-arbitrage residual, so searchers can push it repeatedly across zero within a block; the location of a gap in the unconditional distribution need not measure its persistence.
-% output/exhibits/block_vs_hour_verdict.jsonl; scripts/test_block_vs_hour_verdict.py, 371 triangles, 189,622 opportunity snapshots
-% output/exhibits/block_vs_hour_conditional.jsonl, gap_at_own_event rows above 100 basis points
-
-The fee wedge does change the disagreement rate. A two-leg route pays two pool fees where the direct route pays one, and that offset is determined by the venues traversed and is fixed relative to contemporaneous price movements. The residual net of it is
-\[
-m^{w}_{a,k,b} \;=\; m_{a,k,b} - w, \qquad w \;=\; f_{ak} + f_{kb} - f_{ab},
-\]
-and shifting the comparison by $w$ moves its boundary away from the region where the residual oscillates. At a net wedge of 30 basis points, the fee difference between a two-leg route on two 30-basis-point pools and one direct pool of the same tier, the disagreement rate falls to 25.3\%. At 60 basis points it is 16.1\% and at 100 basis points 9.4\%. Figure~\ref{fig:exec:wedge} plots the full sweep against the share of observations classified as dominated at the same wedge. Timing error therefore depends on trade economics. A retail-sized route across two thin pools carries a large wedge and is relatively stable under repricing; a large route across two deep pools of the cheapest tier carries almost none and is less stable.
-% output/exhibits/block_vs_hour_verdict.jsonl, fee-wedge sweep in scripts/test_block_vs_hour_verdict.py; output/exhibits/block_vs_hour_conditional.jsonl, fee_wedge_bps rows
-
-\begin{figure}[tbp]
-\centering
-\caption{Route-ranking disagreement and the net fee wedge}
-\label{fig:exec:wedge}
-\begin{tikzpicture}
-\begin{axis}[width=0.85\textwidth, height=6.4cm, xlabel={Net fee wedge $w$, basis points}, ylabel={Percent of route observations}, xmin=-5, xmax=105, ymin=0, ymax=55, xtick={0,5,10,30,60,100}, ytick={0,10,20,30,40,50}, tick align=outside, tick label style={font=\footnotesize}, label style={font=\footnotesize}, legend style={font=\footnotesize, draw=black!35, fill=white, at={(0.97,0.96)}, anchor=north east}, legend cell align=left, grid=major, grid style={black!10}, axis line style={black!70}]
-\addplot[black, thick, mark=*, mark size=1.9pt] coordinates {(0,38.89) (5,37.63) (10,35.48) (30,25.34) (60,16.15) (100,9.43)};
-\addlegendentry{ranking disagreement}
-\addplot[black!55, thick, dashed, mark=square*, mark size=1.9pt, mark options={solid, fill=white, draw=black!55}] coordinates {(0,49.57) (5,43.09) (10,38.32) (30,24.15) (60,13.61) (100,7.86)};
-\addlegendentry{dominated share}
-\end{axis}
-\end{tikzpicture}
-\par\vspace{6pt}
-\begin{minipage}{0.92\textwidth}
-\footnotesize\raggedright \emph{Notes.} The comparison boundary is shifted by the net fee wedge $w = f_{ak} + f_{kb} - f_{ab}$ and the triangle residual is recomputed strictly before each direct-pool opportunity event and again at its hour-boundary state. \emph{Ranking disagreement} is the share of opportunity snapshots whose direct-versus-vehicle ordering differs between the two states, and \emph{dominated share} is the share the pre-event residual classifies as dominated at the same wedge. The wedge applies to every observation, which keeps the denominator constant across the sweep. There are 189,622 opportunity snapshots across 371 triangles on seven sampled days from 2021-12-25 to 2025-11-04.
-\end{minipage}
-\end{figure}
-% output/exhibits/block_vs_hour_conditional.jsonl, cut=fee_wedge_bps rows, 189,622 opportunity snapshots on seven sampled days
-
-As expected under within-hour price drift, an opportunity observed seconds before the hour closes is less likely to change rank than one observed early in the hour. The disagreement rate rises from 22.5\% within a minute of the close to 45.5\% at 30 to 60 minutes. Appendix~\ref{app:timing} reports the disagreement rate by day and the conditional tables in full. This timing problem does not affect the vehicle-use shares in Section~\ref{sec:dominance}, which depend only on realised routes. It does prevent hour-end quotes from showing whether relative cost predicts a later change in vehicle leadership. At the relevant fee wedges, ranking disagreement of 15\% to 25\% is larger than the differences in turnover that such a test would seek to explain. We therefore draw no persistence inference from hour-end states.
-% output/exhibits/block_vs_hour_verdict.jsonl, time-to-boundary check in scripts/test_block_vs_hour_verdict.py
-% output/exhibits/block_vs_hour_conditional.jsonl, fee_wedge_bps rows
-
-Hourly states enumerate routes that could have been available, but they do not recover the alternatives facing a router immediately before execution. Quoted output is also only one component of route choice. Gas, exposure to sandwiching, reversion risk, and access to private order flow may matter even when another path appears to pay more. The evidence here therefore shows that hour-end prices often misclassify the contemporaneous route ordering; it does not imply that traders chose an inferior route.
-% output/exhibits/realised_route_timing_validation.jsonl; scripts/validate_realised_route_timing.py
-
-\subsection{Signed venue coverage}
-\label{sec:executability:coverage}
-
-A counterfactual is only as good as the graph it prices over. An omitted venue can improve the best direct route, the best vehicle route, or both, so its effect on their difference has no universal sign. Six venues are priced on the terms set out in Section~\ref{sec:setting:pricing}. Two material coverage gaps remain.
-
-The larger omission is within Curve. The stableswap calibration excludes pool-days it cannot fit, removing 65.2\% of Curve's native-leg volume against 21.1\% of its stable-leg volume. The difference is at least 33 percentage points in every sample year and reaches 54 in 2023. Tricrypto pools, which pair WBTC and WETH against a stablecoin and use a different invariant, account for most of the native-side omission. Among retained observations, the panel covers 79.9\% of priced Curve volume on the stable side and 15.7\% on the native side. Appendix~\ref{app:coverage} reports these exclusions by leg and year.
-% docs/venue-coverage-bounds.md; output/exhibits/curve_excluded_by_year_leg.jsonl, curve_excluded_composition.jsonl
-
-Balancer represents 3.9\% of measured volume over the full sample and 8.8\% at its 2023 peak. Weighted pools are included, and their reconstructed quotes reproduce realised output with 0.0000\% median error when balances are measured immediately before each swap. Linear and boosted pools remain outside the price comparison, as do composable-stable pools for which historical rate-provider states are unavailable.
-% docs/venue-coverage-bounds.md; output/exhibits/weighted_quoter_validation.jsonl, venue_volume_by_year.jsonl
-
-Pool-days too thin to fit any invariant account for a further 2.75\% of Curve volume. This residual omission is an order of magnitude smaller than the native-leg exclusion, but its effect on the direct-versus-vehicle comparison is not signed.
-% docs/venue-coverage-bounds.md
-
-The composition of the Curve omission provides a directional diagnostic, not a bound. Because the excluded volume is concentrated in crypto pools joining native assets to stablecoins, adding those pools with the appropriate CryptoSwap invariant should improve native-side alternatives more than stable-side alternatives when both are available to the same endpoint pair. The result could differ if the new pools also improve the comparison route or serve different pairs, which is why the sign must be estimated after integration. Coverage affects cost classification and persistence differently. An omitted direct route can make more realised vehicle routes appear cost-disadvantaged, while an omitted vehicle route can move the comparison in the opposite direction. Pool existence establishes technical feasibility; an interpretation about retaining the incumbent additionally requires evidence of router access.
-% docs/venue-coverage-bounds.md, stated as a prediction
-
-Observed-swap validation therefore supports the quote engine on realised trades but does not bound error for unexecuted routes. Hour-end pricing changes route rankings at a rate governed by the fee wedge, which makes pre-trade state essential for persistence, while missing Curve families leave a directional prediction whose sign awaits integration. Same-block capture and unobserved router costs remain separate questions. These limits preserve the measured frequency of a route-cost gap as evidence about observable alternatives without turning it into an explanation of route choice.
-% output/exhibits/block_vs_hour_conditional.jsonl, fee_wedge_bps rows
+Pre-transaction state, trade-size support, and market coverage leave a sharp division in the evidence. Route incidence and vehicle dominance use observed token flows and remain measurable whenever the route itself is recovered. Tests that connect vehicle use to relative execution cost require the stricter pre-transaction state and market-coverage conditions. Route-composition results do not depend on the counterfactual price comparison; relative-cost tests use only observations with complete pre-transaction state and market coverage.

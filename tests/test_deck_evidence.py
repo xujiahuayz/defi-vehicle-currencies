@@ -101,6 +101,15 @@ def test_rendered_text_language_gate_catches_generated_backstage_labels(tmp_path
     assert defects[0].line == 2
 
 
+def test_common_support_value_is_not_an_audience_measure_name(tmp_path: Path) -> None:
+    defects = audit_audience_text(
+        "The right panel reports common-support value.",
+        path=tmp_path / "main.pdf",
+    )
+    assert [defect.kind for defect in defects] == ["audience_workflow_jargon"]
+    assert "common_support_value" in defects[0].detail
+
+
 def test_visual_managed_frames_require_object_form_and_job(tmp_path: Path) -> None:
     write_section(
         tmp_path,

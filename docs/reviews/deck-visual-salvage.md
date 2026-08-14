@@ -1,12 +1,14 @@
-# Superseded deck visual-salvage ledger
+# Deck visual migration audit
 
-This ledger audits all 45 rendered pages of the deck at commit `394b036` against the current findings freeze and integration generation. It inventories every plot, diagram, table and slide sequence; the old deck contains no overlays, staged builds, screenshots, video or external graphics. Saved top-tier finance and economics decks govern argument order, exhibit density, table treatment and appendix depth. GBA material may supply live-performance devices only.
+**Status:** Frozen migration audit performed on 2026-08-12 against the 45 rendered pages at commit `394b036`. Every U/R/X disposition below records the judgment at that audit date; it is not current evidence or a current build instruction. The record is retained because it explains which visual ideas appeared reusable, which scientific objects required rebuilding, and which old claims could not survive. The living visual owner is `deck-visual-composition.md`; this audit remains its decision-history input rather than a competing deck plan.
 
-## Classes and current source owners
+It inventories every plot, diagram, table and slide sequence; the old deck contains no overlays, staged builds, screenshots, video or external graphics. Saved top-tier finance and economics decks govern argument order, exhibit density, table treatment and appendix depth. GBA material may supply live-performance devices only.
 
-- **U, reusable unchanged:** the visual logic and scientific object remain valid; only house styling or ordinary copy-editing may be needed.
-- **R, regenerate or reword:** preserve the visual design or sequence, but rebuild its numbers, definitions or labels from current evidence before use.
-- **X, scientifically retired:** do not reuse the claim or numeric exhibit. Geometry may inspire a new slide only after a current estimand is established.
+## Audit classes and source owners named on 2026-08-12
+
+- **U, reusable unchanged at the audit date:** the visual logic and scientific object appeared valid; live reuse still follows the living visual owner and current evidence gate.
+- **R, regenerate or reword at the audit date:** the visual design or sequence appeared worth preserving, but its numbers, definitions or labels required rebuilding from then-current evidence before use.
+- **X, scientifically retired at the audit date:** the claim or numeric exhibit was excluded from reuse. Geometry could inspire a new slide only after a current estimand was established.
 - **D3 dominance and transition:** `scripts/build_intermediation_by_type.py`, `scripts/build_vehicle_excess_use.py`, and `scripts/run_vehicle_transition_e0.py`.
 - **V1 forced-route evidence:** `scripts/build_v1_forced_vehicle.py`, `scripts/build_v2_token_panel.py`, `scripts/run_v1_forced_vehicle_tests.py`, `scripts/process/build_v1_exchange_class_panel.py`, and `scripts/run_v1_forced_vehicle_token_level.py`.
 - **Transaction-state frontier:** `scripts/build_transaction_state_frontier.py`.

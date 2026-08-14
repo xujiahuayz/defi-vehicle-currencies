@@ -287,30 +287,6 @@ def _read_route_cost(data: Path, trade_sizes: tuple[float, ...], main_trade_size
     return out.sort_values(["token", "date"])
 
 
-def _read_settlement(data: Path) -> pd.DataFrame:
-    path = data / "empirical" / "v4_settlement_transfer_detail.parquet"
-    if not path.exists():
-        return pd.DataFrame(columns=["date", "token", "settlement_transfer_incidence", "settlement_receipt_count"])
-    detail = pd.read_parquet(path)
-    detail["date"] = _as_date(detail["week"])
-    detail["token"] = detail["vehicle"].replace({"ETH/WETH": "WETH"})
-    detail["receipt_found"] = detail["receipt_found"].astype(bool)
-    detail["has_matching_transfer"] = detail["has_matching_transfer"].astype(bool)
-    out = (
-        detail.groupby(["date", "token"], as_index=False)
-        .agg(
-            settlement_transfer_incidence=("has_matching_transfer", "mean"),
-            settlement_receipt_count=("tx_hash", "count"),
-            settlement_receipt_found_share=("receipt_found", "mean"),
-            settlement_mean_route_usd=("route_usd", "mean"),
-            settlement_mean_log_count=("total_logs", "mean"),
-            settlement_mean_matching_transfer_logs=("matching_transfer_logs", "mean"),
-        )
-        .sort_values(["token", "date"])
-    )
-    return out
-
-
 def _add_stress(panel: pd.DataFrame) -> pd.DataFrame:
     weth = (
         panel.loc[panel["token"].eq("WETH"), ["date", "weth_price"]]
@@ -362,14 +338,11 @@ def build_observations_table(
     metrics = _read_metrics(data, vehicles)
     lp = _read_lp_capital(data, vehicles)
     route_cost = _read_route_cost(data, trade_sizes, main_trade_size)
-    settlement = _read_settlement(data)
-
     panel = (
         bridge.merge(route, on="date", how="left")
         .merge(metrics, on=["date", "token"], how="left")
         .merge(lp, on=["date", "token"], how="left")
         .merge(route_cost, on=["date", "token"], how="left")
-        .merge(settlement, on=["date", "token"], how="left")
     )
     panel["all_route_bridge_share"] = panel["bridge_volume_usd"] / panel["daily_all_route_volume_usd"]
     panel["token_is_weth"] = panel["token"].eq("WETH").astype(float)
@@ -379,7 +352,6 @@ def build_observations_table(
     panel["has_indirect_routes"] = panel["daily_indirect_route_count"].fillna(0).gt(0).astype(float)
     panel["has_lp_observation"] = panel["lp_capital_share"].notna().astype(float)
     panel["has_route_cost_observation"] = panel["quote_rows"].fillna(0).gt(0).astype(float)
-    panel["has_settlement_observation"] = panel["settlement_receipt_count"].fillna(0).gt(0).astype(float)
     panel = _add_stress(panel)
     panel = _add_dynamics(panel)
 

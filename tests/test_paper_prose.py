@@ -24,7 +24,7 @@ import re
 import unittest
 from pathlib import Path
 
-from ddvc.latex_text import included_section_files
+from ddvc.latex_text import included_section_files, strip_latex_markup
 
 ROOT = Path(__file__).resolve().parents[1]
 
@@ -32,11 +32,17 @@ SECTIONS_DIR = (ROOT / "paper" / "sections") if (ROOT / "paper" / "sections").is
 PAPER_DIR = SECTIONS_DIR
 DECK_DIR = ROOT / "deck"
 
-BANNED_SUBSTRINGS = ("—", "–", "rather than", "genuinely", "deliberate")
+# Keep only unmistakable house-style tells here. Ordinary contrast and intent
+# phrases cannot be rejected lexically: both "rather than" and "deliberate"
+# occur in the raw JFE exemplars, and their quality depends on the surrounding
+# sentence. Paragraph-level rhetoric is reviewed in paper-rhetoric.json.
+BANNED_SUBSTRINGS = ("—", "–", "genuinely")
 
 CONTRAST_CONFIRMATION = re.compile(
     r"\bnot\b[^.;]{2,40},\s*(but|it'?s|it is|this is)\b", flags=re.IGNORECASE)
 LOOSE_P_VALUE = re.compile(r"\bp\s*[<>=]", flags=re.IGNORECASE)
+ABSTRACT_WORD = re.compile(r"[A-Za-z0-9]+(?:[.'’%-][A-Za-z0-9]+)*")
+JFE_ABSTRACT_WORD_LIMIT = 100
 
 # Words that only appear when a deliverable is talking about its own construction. A
 # reader at a conference does not care which node produced a slide.
@@ -127,6 +133,16 @@ class PaperProseTests(unittest.TestCase):
             for marker in ("PENDING", "WITHDRAWN", "TODO", "placeholder", "XXX"):
                 with self.subTest(file=path.name, marker=marker):
                     self.assertNotIn(marker, body)
+
+    def test_abstract_respects_jfe_submission_ceiling(self) -> None:
+        abstract = PAPER_DIR / "abstract.tex"
+        visible = strip_latex_markup(abstract.read_text(encoding="utf-8"))
+        words = ABSTRACT_WORD.findall(visible)
+        self.assertLessEqual(
+            len(words),
+            JFE_ABSTRACT_WORD_LIMIT,
+            f"abstract has {len(words)} words; limit is {JFE_ABSTRACT_WORD_LIMIT}",
+        )
 
 
 if __name__ == "__main__":

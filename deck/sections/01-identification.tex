@@ -76,40 +76,67 @@
 % EVIDENCE-GENERATION: transaction 0xbda1d07f17c503b5a9c8117c5d1383472006af8a9e22aa4e5e30804b9bf67ad9 component 0; partition sha256 a6870bc64badeecf030a1096e69b2ddfc9202e5c4ef99a8c5237d4d458033c6d
 % LIVE-COMPANION: output/live/route_replay.html (native HTML/CSS/JS reveal; no embedded video)
 % LITERATURE-PRECEDENT: Lehar and Parlour (2025), Appendix B, pairs one named explorer transaction with decoded logs before handing off to the population reconstruction.
-% VISUAL-FUNCTION: observable vehicle use | authentic explorer screenshot plus native decoded component | show why the transaction headline is not itself an economic route
+% VISUAL-FUNCTION: settlement handoff | authentic explorer screenshot plus native transfer diagram | separate the user's PYUSD instruction from the USDC-funded pool component
 \input{../output/exhibits/route_replay_deck_values.tex}
-\begin{frame}{The transaction headline omits the intermediary route}
+\begin{frame}{The transaction starts with PYUSD}
 \begin{columns}[T,totalwidth=\textwidth]
-\begin{column}{0.57\textwidth}
-\evidencekicker{What the explorer shows}
+\begin{column}{0.58\textwidth}
+\evidencekicker{Explorer record}
+\vspace{0.06cm}
+\centering
+\fcolorbox{rule}{white}{\includegraphics[width=0.96\linewidth,height=1.25cm,keepaspectratio,trim=250 760 25 140,clip]{assets/observed_route_blockscout.png}}
+\par\vspace{0.14cm}
+\fcolorbox{rule}{white}{\includegraphics[width=0.96\linewidth,height=3.75cm,keepaspectratio,trim=270 365 25 430,clip]{assets/observed_route_blockscout.png}}
+\end{column}
+\begin{column}{0.38\textwidth}
+\evidencekicker{Settlement handoff}
 \vspace{0.08cm}
 \centering
-\includegraphics[width=\linewidth,height=3.55cm,keepaspectratio,trim=250 150 20 170,clip]{assets/observed_route_blockscout.png}
-\par\vspace{0.04cm}
-\raggedright
-{\scriptsize The interface summarizes a PYUSD--USDe swap executed through 0x.\par}
-\end{column}
-\begin{column}{0.40\textwidth}
-\evidencekicker{What the ordered logs reveal}
-\vspace{0.18cm}
-\begin{tikzpicture}[x=1cm,y=1cm,scale=0.88,transform shape]
-\node[nodepoint] (a) at (0.35,2.75) {USDC};
-\node[nodepoint,fill=ucldark,text=white,draw=ucldark] (k) at (2.20,2.75) {USDT};
-\node[nodepoint] (b) at (4.05,2.75) {USDe};
-\draw[route,draw=ucldark] (a)--(k);
-\draw[route,draw=ucldark] (k)--(b);
-\node[font=\scriptsize\bfseries,text=ucldark,align=center] at (1.28,3.45) {Fluid};
-\node[font=\scriptsize\bfseries,text=ucldark,align=center] at (3.13,3.45) {Uniswap V4};
-\node[font=\scriptsize,text=muted,align=center] at (1.28,1.85) {\RouteReplayInputAmount{} USDC\\$\rightarrow$ \RouteReplayVehicleAmount{} USDT};
-\node[font=\scriptsize,text=muted,align=center] at (3.13,1.85) {\RouteReplayVehicleAmount{} USDT\\$\rightarrow$ \RouteReplayOutputAmount{} USDe};
-\node[softbox,text width=4.25cm,minimum height=1.05cm,align=left,anchor=north] at (2.20,1.08) {\scriptsize Within the same transaction, one connected component routes \textbf{\$\RouteReplayValue} through USDT across two venues.};
+\begin{tikzpicture}[x=1cm,y=1cm]
+\node[nodepoint,fill=ucldark,text=white,draw=ucldark,minimum size=31pt] (pyusd) at (2.25,4.28) {PYUSD};
+\node[softbox,inner sep=3pt,text width=1.60cm,minimum height=0.52cm,align=center] (settler1) at (2.25,3.20) {\scriptsize 0x settlement};
+\node[softbox,inner sep=3pt,text width=1.60cm,minimum height=0.52cm,align=center] (maker) at (2.25,2.18) {\scriptsize Market maker};
+\node[softbox,inner sep=3pt,text width=1.60cm,minimum height=0.52cm,align=center] (settler2) at (2.25,1.16) {\scriptsize 0x settlement};
+\node[softbox,inner sep=3pt,draw=stable,text width=1.60cm,minimum height=0.52cm,align=center] (fluid) at (2.25,0.14) {\scriptsize Fluid pool};
+\draw[route,draw=ucldark] (pyusd)--(settler1);
+\draw[route,draw=ucldark] (settler1)--node[right,font=\scriptsize,text=ucldark]{PYUSD}(maker);
+\draw[route,draw=stable] (maker)--node[right,font=\scriptsize\bfseries,text=stable]{USDC}(settler2);
+\draw[route,draw=stable] (settler2)--(fluid);
+\node[font=\scriptsize\bfseries,text=stable,align=left,anchor=west] at (3.42,0.14) {pool swaps\\begin here};
 \end{tikzpicture}
-\vspace{-0.10cm}
-{\scriptsize\color{muted}\texttt{0xbda1d07f\ldots bf67ad9}, 10 January 2026\par}
 \end{column}
 \end{columns}
-\vspace{0.05cm}
-{\scriptsize Ordered pool events identify the route component and its intermediary. The example shows what we observe; it does not show that the route was optimal or representative.\par}
+\vspace{0.13cm}
+{\small PYUSD reaches 0x settlement; the market maker supplies USDC for execution in the pools.\par}
+\end{frame}
+
+% EVIDENCE-STATUS: authentic connected pool-swap component from the same transaction; exact same-state alternative remains outside this exhibit
+% EVIDENCE-COMMIT: 0c9ccc9
+% EVIDENCE-SOURCES: output/exhibits/route_replay.json; data/unified/20260110.parquet
+% EVIDENCE-GENERATION: transaction 0xbda1d07f17c503b5a9c8117c5d1383472006af8a9e22aa4e5e30804b9bf67ad9 component 0; partition sha256 a6870bc64badeecf030a1096e69b2ddfc9202e5c4ef99a8c5237d4d458033c6d
+% VISUAL-FUNCTION: observed vehicle use | native connected-route diagram | define the component endpoints and intermediary used in the vehicle-dominance measure
+\begin{frame}{USDT is the intermediary in the connected pool route}
+\centering
+\vspace{0.20cm}
+\begin{tikzpicture}[x=1cm,y=1cm]
+\node[nodepoint,minimum size=46pt,font=\small\bfseries] (a) at (1.30,3.25) {USDC};
+\node[nodepoint,fill=ucldark,text=white,draw=ucldark,minimum size=46pt,font=\small\bfseries] (k) at (6.15,3.25) {USDT};
+\node[nodepoint,minimum size=46pt,font=\small\bfseries] (b) at (11.00,3.25) {USDe};
+\draw[route,draw=ucldark,line width=1.8pt] (a)--(k);
+\draw[route,draw=ucldark,line width=1.8pt] (k)--(b);
+\node[font=\normalsize\bfseries,text=ucldark,align=center] at (3.72,4.18) {Fluid};
+\node[font=\normalsize\bfseries,text=ucldark,align=center] at (8.57,4.18) {Uniswap V4};
+\node[font=\small,text=muted,align=center] at (3.72,2.31) {\RouteReplayInputAmount{} USDC\\$\rightarrow$ \RouteReplayVehicleAmount{} USDT};
+\node[font=\small,text=muted,align=center] at (8.57,2.31) {\RouteReplayVehicleAmount{} USDT\\$\rightarrow$ \RouteReplayOutputAmount{} USDe};
+\node[font=\scriptsize\bfseries,text=white,fill=ucldark,rounded corners=2pt,inner sep=4pt] at (6.15,1.15) {vehicle};
+\end{tikzpicture}
+\vspace{0.15cm}
+\begin{minipage}{0.78\textwidth}
+\centering
+{\small The connected component converts USDC into USDe across two pools. USDT is the vehicle because it links the two legs.\par}
+\vspace{0.22cm}
+{\scriptsize\color{muted}\texttt{0xbda1d07f\ldots bf67ad9}, 10 January 2026\par}
+\end{minipage}
 \end{frame}
 
 % EVIDENCE-STATUS: verified institutional mechanism; no empirical estimate is displayed.

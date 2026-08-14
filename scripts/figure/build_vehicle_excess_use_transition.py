@@ -37,8 +37,9 @@ def main() -> int:
         input_identity=identity,
         code_sources=CODE_SOURCES,
         notes=(
-            "USDC and USDT candidate-level 2024-to-2026 count and within-20-percent "
-            "common-support value excess-use ratios; parity shown at one"
+            "USDC and USDT candidate-level 2024-to-2026 route-count and routed-value "
+            "excess-use ratios; routed value requires source, intermediary, and destination "
+            "dollar amounts to agree within 20 percent; parity shown at one"
         ),
         script=str(Path(__file__).resolve().relative_to(REPO_ROOT)),
     )

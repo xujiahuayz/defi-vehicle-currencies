@@ -1,11 +1,29 @@
 from __future__ import annotations
 
+import re
+from pathlib import Path
+
 import pandas as pd
 import pytest
 
 from scripts.build_vehicle_transition_pair_deck_values import (
     render_pair_decomposition_deck_values,
 )
+
+
+ROOT = Path(__file__).resolve().parents[1]
+SIGNED_TEXT_MACRO = re.compile(
+    r"\\newcommand\{\\(?P<name>[^}]+)\}\{(?P<value>[+-]\d)"
+)
+
+
+def test_audience_facing_deck_macros_use_math_signs() -> None:
+    defects: list[str] = []
+    for path in sorted((ROOT / "output" / "exhibits").glob("*_deck_values.tex")):
+        for match in SIGNED_TEXT_MACRO.finditer(path.read_text(encoding="utf-8")):
+            if "Raw" not in match.group("name"):
+                defects.append(f"{path.name}:{match.group('name')}")
+    assert defects == []
 
 
 def _row(metric: str, scope: str, scale: float = 1.0) -> dict[str, object]:
@@ -106,14 +124,60 @@ def _fixed_effects() -> pd.DataFrame:
                 "fixed_effect_cells": 94_260,
                 "ordered_pair_clusters": 5_432,
                 "calendar_date_clusters": 362,
-            }
+            },
+            {
+                "metric": "strict_intermediation_value_share",
+                "baseline_year": 2024,
+                "comparison_year": 2026,
+                "estimator_id": (
+                    "weighted_stable_share_saturated_pair_month_day_scope_fe_v1"
+                ),
+                "covariance_id": "two_way_ordered_pair_calendar_date_cr1",
+                "mechanism_status": "descriptive_fixed_realised_scope_noncausal",
+                "estimand_scope": "common_pair_month_day_realised_integration_scope",
+                "coefficient": -0.01346,
+                "standard_error": 0.02188,
+                "confidence_interval_lower": -0.05649,
+                "confidence_interval_upper": 0.02957,
+                "p_value_holm": 1.0,
+                "observations": 182_834,
+                "fixed_effect_cells": 91_417,
+                "ordered_pair_clusters": 5_278,
+                "calendar_date_clusters": 362,
+            },
         ]
     )
 
 
+def _usdt_integration() -> pd.DataFrame:
+    rows = []
+    for weighting, support, total, within, between in (
+        ("episode", "all_routes", 0.095, 0.089, 0.006),
+        ("value", "within_20pct", 0.313, 0.268, 0.045),
+    ):
+        rows.append(
+            {
+                "record_type": "midpoint_decomposition",
+                "focal_symbol": "USDT",
+                "comparison_components": "native+USDC+USDT",
+                "baseline_year": 2024,
+                "comparison_year": 2026,
+                "weighting": weighting,
+                "value_support": support,
+                "total_usdt_share_change": total,
+                "within_scope_change": within,
+                "between_scope_composition_change": between,
+                "within_scope_share_of_change": within / total,
+                "between_scope_share_of_change": between / total,
+                "identity_residual": 0.0,
+            }
+        )
+    return pd.DataFrame(rows)
+
+
 def test_renderer_emits_complete_display_and_coordinate_macros() -> None:
     rendered = render_pair_decomposition_deck_values(
-        _decomposition(), _fixed_effects()
+        _decomposition(), _fixed_effects(), _usdt_integration()
     )
     for macro in (
         "PairPooledBase",
@@ -170,18 +234,34 @@ def test_renderer_emits_complete_display_and_coordinate_macros() -> None:
         "MatchedMarketCountChangeRawPP",
         "MatchedMarketCountCILowerRawPP",
         "MatchedMarketCountCIUpperRawPP",
+        "MatchedMarketValueChange",
+        "MatchedMarketValueSE",
+        "MatchedMarketValueCILower",
+        "MatchedMarketValueCIUpper",
+        "USDTVenueMixCountShare",
+        "USDTVenueWithinCountShare",
+        "USDTVenueMixValueShare",
+        "USDTVenueWithinValueShare",
     ):
         assert f"\\newcommand{{\\{macro}}}" in rendered
-    assert "\\newcommand{\\PairPooledWithin}{-0.1\\,pp}" in rendered
-    assert "\\newcommand{\\PairPooledExclusive}{+17.6\\,pp}" in rendered
-    assert "\\newcommand{\\PairActivityTotal}{+18.0\\,pp}" in rendered
-    assert "\\newcommand{\\VehicleUseNet}{+6.6\\,pp}" in rendered
-    assert "\\newcommand{\\PairAndVehicleTotal}{+24.6\\,pp}" in rendered
+    assert "\\newcommand{\\PairPooledWithin}{$-0.1$ pp}" in rendered
+    assert "\\newcommand{\\PairPooledExclusive}{$+17.6$ pp}" in rendered
+    assert "\\newcommand{\\PairActivityTotal}{$+18.0$ pp}" in rendered
+    assert "\\newcommand{\\VehicleUseNet}{$+6.6$ pp}" in rendered
+    assert "\\newcommand{\\PairAndVehicleTotal}{$+24.6$ pp}" in rendered
     assert "\\newcommand{\\PairAndVehicleShare}{94.6\\%}" in rendered
-    assert "\\newcommand{\\MatchedMarketCountChange}{+0.2\\,pp}" in rendered
-    assert "\\newcommand{\\MatchedMarketCountSE}{0.8\\,pp}" in rendered
-    assert "\\newcommand{\\MatchedMarketCountCILower}{-1.3\\,pp}" in rendered
-    assert "\\newcommand{\\MatchedMarketCountCIUpper}{+1.7\\,pp}" in rendered
+    assert "\\newcommand{\\MatchedMarketCountChange}{$+0.2$ pp}" in rendered
+    assert "\\newcommand{\\MatchedMarketCountSE}{$0.8$ pp}" in rendered
+    assert "\\newcommand{\\MatchedMarketCountCILower}{$-1.3$ pp}" in rendered
+    assert "\\newcommand{\\MatchedMarketCountCIUpper}{$+1.7$ pp}" in rendered
+    assert "\\newcommand{\\MatchedMarketValueChange}{$-1.3$ pp}" in rendered
+    assert "\\newcommand{\\MatchedMarketValueSE}{$2.2$ pp}" in rendered
+    assert "\\newcommand{\\MatchedMarketValueCILower}{$-5.6$ pp}" in rendered
+    assert "\\newcommand{\\MatchedMarketValueCIUpper}{$+3.0$ pp}" in rendered
+    assert "\\newcommand{\\USDTVenueMixCountShare}{6.3\\%}" in rendered
+    assert "\\newcommand{\\USDTVenueWithinCountShare}{93.7\\%}" in rendered
+    assert "\\newcommand{\\USDTVenueMixValueShare}{14.4\\%}" in rendered
+    assert "\\newcommand{\\USDTVenueWithinValueShare}{85.6\\%}" in rendered
     assert "generation" not in rendered.lower()
 
 
@@ -214,7 +294,7 @@ def test_renderer_fails_closed_on_incomplete_or_inconsistent_accounting(
 ) -> None:
     with pytest.raises(ValueError, match=message):
         render_pair_decomposition_deck_values(
-            mutation(_decomposition()), _fixed_effects()
+            mutation(_decomposition()), _fixed_effects(), _usdt_integration()
         )
 
 
@@ -223,11 +303,15 @@ def test_renderer_fails_closed_when_market_incidence_bridge_is_inconsistent() ->
     market = frame["formula_id"].eq("shapley_market_incidence_stable_bridge_v1")
     frame.loc[market, "market_activity_reweighting"] += 0.01
     with pytest.raises(ValueError, match="total change"):
-        render_pair_decomposition_deck_values(frame, _fixed_effects())
+        render_pair_decomposition_deck_values(
+            frame, _fixed_effects(), _usdt_integration()
+        )
 
 
 def test_renderer_fails_closed_on_wrong_matched_market_scope() -> None:
     fixed_effects = _fixed_effects()
     fixed_effects.loc[0, "estimand_scope"] = "wrong_scope"
     with pytest.raises(ValueError, match="comparison set"):
-        render_pair_decomposition_deck_values(_decomposition(), fixed_effects)
+        render_pair_decomposition_deck_values(
+            _decomposition(), fixed_effects, _usdt_integration()
+        )

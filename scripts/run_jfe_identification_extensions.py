@@ -1,13 +1,5 @@
 #!/usr/bin/env python3
-"""Identification-oriented extensions for the JFE pre-write pass.
-
-These checks tighten two architecture claims that the independent review flagged:
-
-1. V3 launch evidence needs event-time/pre-trend diagnostics, not only a
-   before/after pair fixed-effect estimate.
-2. V4 settlement virtualization needs parser/receipt validation, not only the
-   transfer-incidence difference.
-"""
+"""Event-time and pre-trend diagnostics for the V3 architecture analysis."""
 from __future__ import annotations
 
 from pathlib import Path
@@ -23,7 +15,7 @@ DATA = ROOT / "data"
 OUT = ROOT / "output"
 EMP = OUT / "empirical"
 
-from ddvc.paper_tables import _int, _num, _p, _pct, _write_table
+from ddvc.paper_tables import _int, _num, _p, _write_table
 
 
 def v3_event_time_pretrends() -> pd.DataFrame:
@@ -119,76 +111,9 @@ def v3_event_time_pretrends() -> pd.DataFrame:
     return out
 
 
-def v4_receipt_parser_validation() -> pd.DataFrame:
-    detail = pd.read_parquet(DATA / "empirical" / "v4_settlement_transfer_detail.parquet")
-    if detail.empty:
-        raise RuntimeError("Missing V4 settlement transfer detail; run run_v4_settlement_identification.py first.")
-    detail["has_matching_transfer"] = detail["has_matching_transfer"].astype(bool)
-    detail["receipt_found"] = detail["receipt_found"].astype(bool)
-
-    rows = []
-    for dex, g in detail.groupby("dex"):
-        no_transfer = g[~g["has_matching_transfer"]]
-        rows.append(
-            {
-                "Check": f"{dex} receipt coverage",
-                "Observations": _int(len(g)),
-                "Pass rate (%)": _pct(g["receipt_found"].mean()),
-                "Mean total logs": _num(g["total_logs"].mean(), 2),
-                "Mean matching transfers": _num(g["matching_transfer_logs"].mean(), 2),
-                "Interpretation": "Receipts found; parser input available",
-            }
-        )
-        rows.append(
-            {
-                "Check": f"{dex} positive transfer incidence",
-                "Observations": _int(len(g)),
-                "Pass rate (%)": _pct(g["has_matching_transfer"].mean()),
-                "Mean total logs": _num(g["total_logs"].mean(), 2),
-                "Mean matching transfers": _num(g["matching_transfer_logs"].mean(), 2),
-                "Interpretation": "Transfer topic/address parser detects intermediary movement",
-            }
-        )
-        if len(no_transfer):
-            rows.append(
-                {
-                    "Check": f"{dex} no-transfer receipts still populated",
-                    "Observations": _int(len(no_transfer)),
-                    "Pass rate (%)": _pct(no_transfer["total_logs"].gt(0).mean()),
-                    "Mean total logs": _num(no_transfer["total_logs"].mean(), 2),
-                    "Mean matching transfers": _num(no_transfer["matching_transfer_logs"].mean(), 2),
-                    "Interpretation": "No-transfer cases are not empty/missing receipts",
-                }
-            )
-
-    audit = (
-        detail[(detail["dex"].eq("uniswap_v4")) & (~detail["has_matching_transfer"]) & detail["receipt_found"]]
-        .sort_values("route_usd", ascending=False)
-        .head(25)
-        [["week", "src", "sink", "vehicle", "tx_hash", "route_usd", "total_logs", "matching_transfer_logs"]]
-    )
-    audit.to_pickle(EMP / "v4_no_transfer_manual_audit_sample.pkl")
-    out = pd.DataFrame(rows)
-    _write_table(
-        out,
-        "table_r20_v4_receipt_parser_validation",
-        "Receipt-parser validation for V4 settlement virtualization.",
-        "tab:v4-parser-validation",
-        note=(
-            "V3 acts as a positive control because matched V3 route units should contain "
-            "intermediary-token ERC-20 transfers. V4 no-transfer receipts are separately "
-            "checked to ensure the absence is not caused by missing or empty receipts. A "
-            "manual-audit sample of V4 no-transfer transactions is exported."
-        ),
-    )
-    out.to_pickle(EMP / "v4_receipt_parser_validation.pkl")
-    return out
-
-
 def main() -> int:
     EMP.mkdir(parents=True, exist_ok=True)
     v3_event_time_pretrends()
-    v4_receipt_parser_validation()
     return 0
 
 

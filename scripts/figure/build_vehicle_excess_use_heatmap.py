@@ -32,7 +32,12 @@ def main() -> int:
         input_path=args.input,
         input_identity=identity,
         code_sources=CODE_SOURCES,
-        notes="latest candidate cross-section; excess use is intermediary share divided by endpoint-demand share, shown separately by count and common-support value",
+        notes=(
+            "latest candidate cross-section; excess use is intermediary share divided by "
+            "endpoint-demand share, shown separately by route count and routed value; "
+            "routed value requires source, intermediary, and destination dollar amounts "
+            "to agree within 20 percent"
+        ),
         script=str(Path(__file__).resolve().relative_to(REPO_ROOT)),
     )
     print(f"wrote {args.output}")

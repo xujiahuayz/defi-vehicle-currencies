@@ -379,13 +379,13 @@ def load_current_parquet(path: Path, *, consumer: str) -> tuple[pd.DataFrame, di
 
 
 def render_vehicle_type_shares(frame: pd.DataFrame, output: Path) -> None:
-    """Render quarterly count and strict common-support value shares as vector PDF."""
+    """Render quarterly route-count and comparable routed-value shares as vector PDF."""
 
     data = quarterly_vehicle_type_shares(frame)
     with plt.rc_context({"font.family": "DejaVu Sans", "pdf.fonttype": 42, "axes.labelcolor": "#111827", "text.color": "#111827"}):
         figure, axes = plt.subplots(1, 2, figsize=(11.2, 4.4), sharey=True)
         try:
-            panels = (("count_share", "Route-count share"), ("value_share", "Common-support value share"))
+            panels = (("count_share", "Route-count share"), ("value_share", "Routed-value share"))
             for axis, (prefix, title) in zip(axes, panels, strict=True):
                 for asset_type in DISPLAYED_ASSET_TYPES:
                     axis.plot(
@@ -492,7 +492,7 @@ def render_integration_rotation_slopes(frame: pd.DataFrame, output: Path) -> Non
     data = integration_rotation_slopes(frame)
     panels = (
         ("episode", "all_routes", "Route count"),
-        ("value", "within_20pct", "Common-support value"),
+        ("value", "within_20pct", "Routed value"),
     )
     colours = {"single_venue": PALETTE["count"], "cross_venue": PALETTE["stable"]}
     labels = {"single_venue": "Single venue", "cross_venue": "Cross venue"}
@@ -564,6 +564,7 @@ def render_integration_rotation_slopes(frame: pd.DataFrame, output: Path) -> Non
             figure.text(
                 0.995,
                 0.015,
+                "Routed value includes routes whose three dollar amounts agree within 20%. "
                 "Paired calendar-day means; route strata are selected, so the interaction is descriptive.",
                 ha="right",
                 va="bottom",
@@ -606,7 +607,7 @@ def render_vehicle_excess_use_heatmap(frame: pd.DataFrame, output: Path) -> None
                     )
             axis.set_xlim(0, matrix.shape[1])
             axis.set_ylim(0, matrix.shape[0])
-            axis.set_xticks([0.5, 1.5], ["Route count", "Common-support value"])
+            axis.set_xticks([0.5, 1.5], ["Route count", "Routed value"])
             axis.set_yticks(
                 np.arange(len(data)) + 0.5,
                 data["token"].astype(str),
@@ -637,7 +638,8 @@ def render_vehicle_excess_use_heatmap(frame: pd.DataFrame, output: Path) -> None
             figure.text(
                 0.995,
                 0.015,
-                "Orange is below parity; purple is above parity. Bold labels meet the current vehicle-status rule.",
+                "Routed value includes routes whose three dollar amounts agree within 20%. "
+                "Orange is below parity; purple is above parity.",
                 ha="right",
                 va="bottom",
                 fontsize=8,

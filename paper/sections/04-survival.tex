@@ -1,22 +1,19 @@
 % Section 4. Persistence requires the transaction-state pair-candidate frontier.
 
-\section{Persistence and vehicle-role turnover}
+\section{Persistence in vehicle-currency use}
 \label{sec:survival}
 
-\subsection{The economic distinction}
+Vehicle shares can rotate because new endpoint markets form around a different intermediary even when the vehicle used in established markets never changes. To separate such composition changes from turnover, we follow the leading intermediary within each ordered endpoint pair. The outcome is the time until that asset loses the role after its relative execution cost deteriorates.
+
+Persistence and hysteresis are distinct. Slow turnover is persistence, but it can arise from symmetric adjustment costs that delay both adoption and abandonment. Hysteresis requires an asymmetry: an intermediary retains the role after losing a cost advantage more readily than it acquires the role after gaining an equivalent advantage. A market may therefore exhibit persistent vehicle use while remaining responsive to current execution costs. Conversely, weak cost discipline alone does not establish hysteresis because an omitted market condition can move the incumbent and its alternatives together.
+
+Historical studies infer a currency's international role from the number of markets in which it is quoted \citep{FlandreauJobst2009Empirics}. Realised routes allow us to identify the leading intermediary separately for each endpoint pair, while pre-transaction quotes show whether it remains cost competitive. The comparison uses both objects: duration measures persistence in use, and a reversal in relative execution cost identifies whether incumbency changes the response to price.
+
+\subsection{Incumbency and relative execution cost}
 \label{sec:survival:question}
-
-Section~\ref{sec:dominance} documents rotation in aggregate vehicle use. Aggregate shares can change without turnover in existing markets: new endpoint pairs may form around one vehicle even when the incumbent on older pairs never changes. We therefore follow leadership within each ordered endpoint pair and ask how quickly another candidate takes its place after the incumbent ceases to be the cheapest feasible intermediary.
-
-Slow turnover is not by itself hysteresis. Symmetric switching frictions can slow gains and losses alike, while the incumbent's relative cost still affects the probability of turnover. Hysteresis makes the stronger prediction that vehicle use responds asymmetrically when the same candidate first gains and later loses a cost advantage. We use duration to describe persistence and reserve hysteresis for this candidate-level response to a reversal in relative cost.
-
-This distinction separates three economic propositions. Persistence says that leadership changes slowly. Cost discipline says that an incumbent is more likely to lose when a feasible challenger offers better execution. Hysteresis says that the same cost difference has a different effect after a candidate has acquired the role. A market can be persistent and cost disciplined when all candidates adjust slowly but adverse cost states still accelerate turnover. It can also display weak cost discipline without hysteresis if an omitted common state moves both the incumbent and its challengers. Only the within-candidate reversal comparison distinguishes state dependence from slow common adjustment, which is why a one-way calendar trend cannot answer the question \citep{DowdGreenaway1993CurrencyCompetition}.
-
-Historical studies infer a currency's role from the number of markets quoting it \,\citep{FlandreauJobst2009Empirics}. Here, realised routes identify the incumbent on each endpoint pair, and exact-state counterfactual quotes reveal whether that incumbent remains cost competitive. Duration alone measures persistence in use; hysteresis requires the role to survive a reversal in relative cost.
-
 \label{sec:survival:notation}
 
-Fix an ordered endpoint pair $(i,o)$ and date $t$. Let $K_{iot}$ be the set of feasible intermediaries and let $s_{iokt}$ be candidate $k$'s share of exact two-leg routes. The incumbent is
+Fix an ordered endpoint pair $(i,o)$ and date $t$. Let $K_{iot}$ contain the intermediary assets for which both legs can be quoted before the transaction, and let $s_{iokt}$ be asset $k$'s share of exact two-leg routes. The incumbent is
 
 \begin{equation}
 \ell_{iot}=\arg\max_{k\in K_{iot}}s_{iokt},
@@ -24,7 +21,7 @@ Fix an ordered endpoint pair $(i,o)$ and date $t$. Let $K_{iot}$ be the set of f
 \label{eq:incumbent}
 \end{equation}
 
-Feasibility is determined before realised vehicle choice is observed. For notional $q$, let $O^{I}_{i,o,k,q,t}$ denote output from the indirect route through $k$, evaluated at strict pre-transaction state, and let $O^{*}_{i,o,q,t}=\max_{j\in K_{iot}}O^{I}_{i,o,j,q,t}$ be the best feasible indirect output. The incumbent's cost gap is
+Membership in $K_{iot}$ is determined before the realised route is observed. For notional $q$, let $O^{I}_{i,o,k,q,t}$ denote output from the indirect route through $k$, evaluated at the pre-transaction state, and let $O^{*}_{i,o,q,t}=\max_{j\in K_{iot}}O^{I}_{i,o,j,q,t}$ be the largest output among feasible indirect routes. The incumbent's relative output is
 
 \begin{equation}
 G_{iot}(q)=\frac{O^{I}_{i,o,\ell_{iot},q,t}-O^{*}_{i,o,q,t}}{O^{*}_{i,o,q,t}},
@@ -32,9 +29,9 @@ G_{iot}(q)=\frac{O^{I}_{i,o,\ell_{iot},q,t}-O^{*}_{i,o,q,t}}{O^{*}_{i,o,q,t}},
 \label{eq:incumbent-gap}
 \end{equation}
 
-Every candidate is quoted at the same finite trade size and transaction state. Gas enters only when candidate-specific route units are observed, and the feasible set is defined independently of the realised winner. Marginal prices and hourly closing states do not satisfy the pre-trade comparison in \eqref{eq:incumbent-gap}.
+Every asset in $K_{iot}$ is quoted at the same finite trade size and transaction state. Gas is included only when route-specific gas units for intermediary $k$ are observed. Marginal prices and closing hourly states do not provide the pre-trade comparison in \eqref{eq:incumbent-gap}.
 
-\subsection{The turnover hazard}
+\subsection{Turnover following a cost disadvantage}
 \label{sec:survival:hazard}
 
 Leadership changes between $t$ and $t+\tau$ when
@@ -45,7 +42,7 @@ Y_{io,t+\tau}=\mathbf{1}\{\ell_{io,t+\tau}\neq\ell_{iot}\},
 \label{eq:event}
 \end{equation}
 
-The primary contrast conditions the same turnover event on the incumbent's cost state before the outcome window:
+We compare the probability of turnover according to whether the incumbent offered the largest output before the outcome window:
 
 \begin{equation}
 \lambda_{\tau,d}=\Pr\!\left(Y_{io,t+\tau}=1\mid D_{iot}(q)=d\right),
@@ -53,30 +50,31 @@ The primary contrast conditions the same turnover event on the incumbent's cost 
 \label{eq:hazard}
 \end{equation}
 
-A value of $\theta_{\tau}$ above one means that losing the cost advantage predicts faster turnover. Slow hazards in both states with $\theta_{\tau}>1$ describe persistence with continued cost discipline. Similar hazards across states imply that current cost has little grip on incumbency; they indicate hysteresis only if the same candidate responds asymmetrically to favourable and adverse cost crossings.
+When $\theta_{\tau}>1$, an incumbent that has lost its cost advantage is more likely to be displaced. Low turnover in both states together with $\theta_{\tau}>1$ indicates slow adjustment with continued cost discipline. Similar turnover rates across states show that current cost has little relation to incumbency, but they do not by themselves distinguish hysteresis from an omitted common state.
 
-The regression form absorbs endpoint-pair and calendar effects and conditions on the size of the feasible candidate set:
+The regression specification absorbs endpoint-pair and calendar effects, allows the relation to vary with the size of the cost gap, and conditions on the number of feasible intermediary assets:
 
 \begin{equation}
 \Pr(Y_{io,t+\tau}=1\mid\cdot)=F\!\left(\alpha_{io}+\delta_t+\gamma_{\tau}D_{iot}(q)+f\!\left(G_{iot}(q)\right)+\psi_{\tau}|K_{iot}|\right).
 \label{eq:turnover-regression}
 \end{equation}
 
-More candidates create more ways for any incumbent to lose, so omitting $|K_{iot}|$ mechanically raises turnover in richer markets. Identification requires within-pair observations in both cost states, and inference is clustered at the level at which cost-state shocks are shared.
+The term $|K_{iot}|$ is necessary because adding feasible alternatives raises the chance that some asset displaces the incumbent even when the quality of each alternative is unchanged. Identification comes from endpoint pairs observed in both cost states, and inference is clustered where shocks to those states are shared.
 
-Candidate count, pair activity, and routed value play different roles in this design. Candidate count changes the probability that some challenger displaces the incumbent even when challenger quality is unchanged. Pair activity changes how precisely the incumbent share and its turnover date are measured. Routed value changes economic exposure: a rare switch in a large market can matter more for users than frequent switches among small routes. The output gap supplies a fourth quantity, the loss relative to the best supported alternative. Turnover frequency, exposure, and output forgone are therefore reported separately; no duration coefficient can stand in for all three.
+Turnover frequency, routed value, and execution loss answer different questions. Pair activity determines how precisely the leading share and turnover date are measured. Routed value measures the exposure attached to a switch, while the output gap measures the loss relative to the best supported alternative. We therefore report duration, exposure, and output forgone separately.
 
-\subsection{Retention, displacement, and reversal}
+\subsection{Reversals in relative execution cost}
 \label{sec:survival:reversal}
 
-A duration comparison that ends incumbent retention when any challenger wins but ends challenger displacement only when one named candidate wins is mechanically asymmetric. The minimum over many challengers is shorter even when every candidate has the same independent arrival rate. For that reason, raw retention and displacement spells are reported as descriptions and never interpreted through their ratio.
+A comparison of raw spell lengths can create a mechanical asymmetry if incumbent retention ends when any alternative wins but displacement ends only when one named asset becomes the incumbent. The minimum of several arrival times is shorter even when all intermediary assets have identical arrival rates. Retention and displacement spells are therefore descriptive unless they are constructed on the same asset and risk set.
 
-The hysteresis test instead follows the same pair-candidate unit through a cost-state crossing. Let $A_{iokt}(q)$ be candidate $k$'s output advantage over the best other feasible intermediary at the same state and notional. A favourable crossing asks whether $k$ gains the vehicle role when $A_{iokt}(q)$ moves from weakly negative to positive; an adverse crossing asks whether the same candidate retains the role when that advantage moves from weakly positive to negative. The comparison set, quote support, and notional must remain fixed across the window. Hysteresis is an asymmetric response of vehicle use to those opposed crossings, conditional on pre-crossing use and cost. A permanent protocol launch date or a realised architecture-share exit cannot substitute for this reversal.
+The hysteresis test follows intermediary $k$ within endpoint pair $(i,o)$ through a reversal in its relative cost. Let $A_{iokt}(q)$ be the output advantage of the route through $k$ over the best other feasible intermediary at the same transaction state and notional. An improvement asks whether $k$ acquires the vehicle role when $A_{iokt}(q)$ crosses from weakly negative to positive. A deterioration asks whether the same asset retains the role when the advantage crosses from weakly positive to negative. The feasible set, quote support, and notional remain fixed around both crossings.
 
-The reversal design also separates state dependence from calendar trend. If vehicle use rises when a candidate's cost position improves and falls when it deteriorates, current relative cost helps explain route choice. If use remains after the advantage disappears, the asymmetric retention response is consistent with hysteresis. A one-way late-sample rise is uninformative about both patterns.
+This design separates state dependence from a calendar trend. Vehicle use that rises with an improvement and falls with a deterioration responds to current relative cost. Retention after the advantage disappears is consistent with hysteresis only when it exceeds the response to the corresponding improvement, conditional on prior use and cost. Protocol launch dates and realised changes in architecture exposure cannot substitute for this reversal comparison.
 
+\subsection{Empirical requirements}
 \label{sec:survival:obstacle}
 
-Turnover is identified only when every feasible intermediary for an ordered endpoint pair is quoted at the same fixed notional immediately before execution. The panel must also carry exact calendar lags, record unsupported alternatives, and define the candidate set independently of the realised winner. The earlier block-level diagnostic instead used marginal prices, an assumed fee wedge, incomplete candidate support, and an unconditional rate ratio, so it cannot estimate the turnover hazard in \eqref{eq:hazard}. We report no persistence estimate from that diagnostic.
+The turnover comparison requires a pre-transaction quote for every feasible intermediary at the same fixed notional. The panel must link observations at exact calendar horizons, retain unsupported alternatives as missing rather than absent, and define the feasible set independently of the realised route. An earlier diagnostic used marginal prices, an assumed fee wedge, incomplete quote coverage, and an unconditional rate ratio. It cannot estimate the turnover probability in \eqref{eq:hazard}, and we report no persistence estimate from it.
 
-Turnover and economic magnitude are separate outcomes. Flow through a cost-disadvantaged incumbent measures exposure, while output forgone relative to the best feasible route measures loss. Spell length identifies no such magnitude; both outcomes require the exact-state comparison used to measure persistence. This separation also disciplines the interpretation of a null. A weak cost-state coefficient may coexist with economically important exposure if large routes remain with the incumbent, while rapid turnover may have little welfare relevance when the alternatives are nearly tied. The paper therefore asks first whether relative cost predicts a change in leadership, then how much routed activity and output are attached to that state.
+Economic importance does not follow from duration alone. Flow through a cost-disadvantaged incumbent measures exposure, and output forgone relative to the best feasible route measures loss. A weak cost-state coefficient can coexist with large exposure if economically important routes remain with the incumbent; rapid turnover can have little welfare relevance when the alternatives are nearly tied. The empirical analysis therefore relates cost to turnover first and then measures the routed activity and output associated with the state.

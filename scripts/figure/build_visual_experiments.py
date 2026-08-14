@@ -32,7 +32,7 @@ def main() -> int:
     rival, rival_identity = load_current_jsonl(RIVAL_INPUT, consumer="visual experiment lane")
     type_outputs = (
         ("annual_vehicle_share_heatmap.pdf", render_annual_share_heatmap, "annual type-by-weighting share matrix; calendar year is descriptive rather than a treatment"),
-        ("annual_vehicle_composition_bands.pdf", render_annual_composition_bands, "annual native-versus-stable leadership path separated by route count and strict-support value; other intermediary types remain visible as one exhaustive residual; calendar year is descriptive"),
+        ("annual_vehicle_composition_bands.pdf", render_annual_composition_bands, "annual native-versus-stable leadership path separated by route count and routed value; routed value requires source, intermediary, and destination dollar amounts to agree within 20 percent; other intermediary types remain visible as one exhaustive residual; calendar year is descriptive"),
         ("integration_vehicle_alluvial.pdf", render_annual_integration_alluvial, "latest-year joint composition by integration scope and intermediary type; selected realised routes, not an integration effect"),
         ("annual_vehicle_rank_bump.pdf", render_annual_rank_bump, "annual vehicle-type rank diagnostic; rank intentionally suppresses share magnitudes and is not a headline result"),
     )

@@ -1,10 +1,4 @@
 % Working-paper abstract: update whenever a substantive result changes. Current
-% route-composition quantities use the certified 2026-08-13 generation. The
-% like-for-like estimates are from Studio's current 2026-08-14 publication pass
-% (count +0.223506 pp; strict count +0.323285 pp; value -1.346117 pp) and must
-% refresh in place when that pass receives its durable commit. The LP
-% lead-lag result is provisional from output/tables/p2_liquidity_route_feedback.tex
-% (refresh on the replacement capital release). The V4 settlement result is
-% provisional from output/tables/v4_settlement.tex and must be rematched on trade
-% size and direction. Evidence status belongs here in comments, not in the prose.
-We study how vehicle-currency dominance changes when the intermediary is observed on each transaction. Decentralised exchanges record the full trading route, which allows us to distinguish an asset's intermediary use from demand to buy or sell it. From 2020 to 2026, vehicle use rotates sharply but unevenly from the native asset toward fiat-backed stablecoins, with USDT accounting for most of the increase. Yet the increase disappears when we compare the same ordered endpoint market on the same calendar day and within the same broad route scope: the stable share changes by 0.22 percentage points by count and $-1.35$ points by value. The aggregate rotation therefore reflects changes in which markets are active and where routed activity takes place; comparable markets exhibit no uniform drift. We also find two-way predictability between vehicle use and the concentration of liquidity in vehicle-linked pools. In matched route receipts, Uniswap V4 sometimes records no transfer of the intermediary token even though the economic route continues to pass through it. Vehicle dominance develops through the organisation of markets and liquidity, while settlement architecture can change how the same role is implemented on chain.
+% route-composition quantities use the certified 2026-08-13 generation. Evidence
+% status belongs here in comments, not in the prose.
+We use transaction-level routes on decentralised exchanges to measure vehicle-currency dominance. From 2024 to the first half of 2026, stablecoins' share of routes intermediated by native assets or stablecoins rises from 16.9\% to 42.3\% by count and from 32.7\% to 76.5\% by routed value. The rotation is not monotonic. Most of the increase reflects changes in which endpoint markets trade, how activity shifts across continuing markets, and whether trades use an intermediary; stable-for-native substitution within continuing markets contributes little. USDT drives the increase and becomes more prevalent as an intermediary relative to its use as the asset bought or sold.

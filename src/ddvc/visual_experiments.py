@@ -30,7 +30,7 @@ import matplotlib.pyplot as plt  # noqa: E402
 
 WEIGHTINGS = (
     ("count", "Route count"),
-    ("value", "Route value"),
+    ("value", "Routed value"),
 )
 
 
@@ -233,7 +233,7 @@ def render_excess_use_heatmap(frame: pd.DataFrame, output: Path) -> None:
     data = latest_token_excess_use(frame)
     columns = (
         ("vehicle_excess_use_count_ratio", "Route count"),
-        ("vehicle_excess_use_ratio_within_20pct", "Route value"),
+        ("vehicle_excess_use_ratio_within_20pct", "Routed value"),
     )
     matrix = np.log2(data[[column for column, _ in columns]].to_numpy(dtype=float))
     bound = max(1.0, float(np.nanmax(np.abs(matrix))))
@@ -351,7 +351,7 @@ def render_annual_share_heatmap(frame: pd.DataFrame, output: Path) -> None:
     data = annual_vehicle_composition(frame)
     data = data.loc[data["integration_scope"].eq("all")]
     years = sorted(data["year"].unique())
-    panels = (("episode_share", "Route count"), ("usd_share_within_20pct", "Route value"))
+    panels = (("episode_share", "Route count"), ("usd_share_within_20pct", "Routed value"))
     with plt.rc_context({"font.family": "DejaVu Sans", "pdf.fonttype": 42}):
         figure, axes = plt.subplots(1, 2, figsize=(10.5, 4.5), sharey=True)
         try:
@@ -391,7 +391,7 @@ def render_annual_composition_bands(frame: pd.DataFrame, output: Path) -> None:
     years = sorted(data["year"].unique())
     panels = (
         ("episode_share", "Route count"),
-        ("usd_share_within_20pct", "Route value"),
+        ("usd_share_within_20pct", "Routed value"),
     )
 
     def _leader_runs(pivot: pd.DataFrame) -> list[tuple[str, int, int]]:
@@ -627,7 +627,7 @@ def render_annual_rank_bump(frame: pd.DataFrame, output: Path) -> None:
     data = annual_vehicle_composition(frame)
     data = data.loc[data["integration_scope"].eq("all")]
     years = sorted(data["year"].unique())
-    panels = (("episode_share", "Route count"), ("usd_share_within_20pct", "Route value"))
+    panels = (("episode_share", "Route count"), ("usd_share_within_20pct", "Routed value"))
     with plt.rc_context({"font.family": "DejaVu Sans", "pdf.fonttype": 42}):
         figure, axes = plt.subplots(1, 2, figsize=(10.8, 4.4), sharey=True)
         try:
@@ -664,7 +664,7 @@ def render_integration_change_forest(frame: pd.DataFrame, output: Path) -> None:
         try:
             for axis, (weighting, support, title) in zip(
                 axes,
-                (("episode", "all_routes", "Route count"), ("value", "within_20pct", "Route value")),
+                (("episode", "all_routes", "Route count"), ("value", "within_20pct", "Routed value")),
                 strict=True,
             ):
                 sample = data.loc[data["weighting"].eq(weighting) & data["value_support"].eq(support)].set_index("integration_scope")

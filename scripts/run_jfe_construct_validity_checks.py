@@ -304,19 +304,6 @@ what the estimates identify from what they do not identify.
 - Identification claim: descriptive counterfactual quote evidence, not causal
   proof that WETH always lowers costs.
 
-## P2. Liquidity Concentration and Stickiness
-
-- Unit: token-day.
-- Main sample: candidate vehicle tokens WETH, USDC, USDT, DAI, WBTC.
-- Main outcomes: VehicleShare with lagged predictors at specified horizons and VehicleShare persistence.
-- Main regressor: vehicle-linked LP concentration.
-- Fixed effects: token and date fixed effects in robustness.
-- Inference: date-clustered or block-bootstrap inference.
-- Identification claim: predictive association and persistence. Do not claim
-  causal LP feedback unless a separate shock design is added.
-- Repositioning diagnostic: currently not positive-clean; use as a limitation
-  or referee-proofing diagnostic, not as mechanism evidence.
-
 ## P3. Stress Rotation
 
 - Unit: stress event by endpoint-pair opportunity set.
@@ -339,17 +326,6 @@ what the estimates identify from what they do not identify.
   required before causal launch language.
 - Identification claim: route-opportunity expansion evidence, not a clean causal
   estimate unless a control group/pre-trend design is added.
-
-## P4b. V4 Settlement Virtualization
-
-- Unit: matched V3/V4 route unit or matched route cell.
-- Main outcome: ERC-20 transfer incidence of the intermediary token.
-- Matching: week, endpoint pair, intermediate vehicle token, and route-size
-  cells where available.
-- Required validation: receipt-parser checks against known V4 flash-accounting
-  examples and matched-cell balance diagnostics.
-- Identification claim: settlement-mechanics evidence conditional on matched
-  route use; not a claim that V4 eliminates vehicle currencies.
 
 ## Cross-Chain Scope
 

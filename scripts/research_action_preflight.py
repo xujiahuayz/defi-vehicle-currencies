@@ -34,6 +34,7 @@ ROUTES = {
 
 
 COMMON_REGRESSION_CHECKS = (
+    "Treat every canonical correction as cumulative. A new instruction adds a constraint and cannot replace, weaken, or narrow an older standing rule unless Java explicitly withdraws that rule in the canonical workflow. If two rules conflict, surface the conflict before mutation; never let the newest instruction silently win.",
     "Search the canonical workflow, claim registry, recent ledger, and repository for an existing owner before adding anything. Reuse or amend that owner, reconcile and remove superseded duplicates, and create a new artifact only when no existing object can carry the work.",
     "Name the lane, graph node, purpose-bound estimand, and exact evidence generation.",
     "Compare the planned action with the current claim registry and the last 40 ledger lines; a red global gate is not authority to reopen an immaterial branch.",

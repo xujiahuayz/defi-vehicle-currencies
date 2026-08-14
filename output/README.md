@@ -5,8 +5,8 @@
 - `tables/`, `figures/`, and `exhibits/` contain tracked paper- or deck-facing artifacts with provenance stamps.
 - `empirical/`, `robustness/`, `model/`, and `provisional/` contain ignored generated analysis material and are not automatically deliverable authority.
 - `review/` contains generated inspection artifacts produced for a named review step; durable review records belong in `docs/reviews/`.
-- `core_empirical_rq_results.md` is still written by `scripts/run_core_rq_experiments.py`, but its pre-redesign generation is not a current finding or deliverable input. It remains only as a reproducible legacy inspection artifact until that producer is retired or migrated.
+The former `nbc_pipeline/` notes were not generated outputs. Deck-craft observations now live in `docs/reviews/deck-venue-exemplars.md`; historical discovery and decision records live in `literature/reviews/`; and the July RQ1–7 design history lives under `docs/retired-rq1-7-*.md`. These are agent-readable knowledge records, not output artifacts; their authority and cleanup rules are defined in the repository map.
 
-The former `nbc_pipeline/` notes were not generated outputs. Deck-craft observations now live in `docs/reviews/deck-venue-exemplars.md`; historical literature digests live in `literature/reviews/`; and the retired RQ1–7 design memos live under `docs/retired-rq1-7-*.md`.
+Retired empirical generations do not remain under `output/`: Git history preserves them. A design that replaces a retired estimand must use a new registered output name and may publish only after its current inputs and provenance pass the findings freeze.
 
 See the [`canonical repository and data map`](../docs/repository-data-map.md#output-layers) for owners, consumers, and cleanup rules. A rendered artifact is current only when its producer, inputs, provenance, and consuming deliverable agree.

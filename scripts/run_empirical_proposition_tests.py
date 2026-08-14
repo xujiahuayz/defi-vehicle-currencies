@@ -6,7 +6,6 @@ notebook state:
 
   * data/unified/YYYYMMDD.parquet for route-level bridge use
   * data/metrics/daily_token_metrics.parquet for betweenness / network measures
-  * data/exhibits/lp_capital_concentration.parquet for vehicle-linked LP concentration
 
 It writes compact, paper-facing diagnostics under:
 
@@ -14,10 +13,8 @@ It writes compact, paper-facing diagnostics under:
   * output/empirical/
 
 The first pass covers the tests that are identified by the current data layer:
-bridge-use measurement, route-cost counterfactuals, liquidity formation,
-persistence, stress rotation, and V3 architecture around concentrated liquidity.
-V4 physical-transfer virtualization still requires receipt / transfer logs and is
-reported as a pending input rather than faked from the route table.
+bridge-use measurement, route-cost counterfactuals, stress rotation, and V3
+architecture around concentrated liquidity.
 """
 from __future__ import annotations
 
@@ -33,11 +30,10 @@ from scipy import stats
 
 ROOT = Path(__file__).resolve().parents[1]
 
-from ddvc.analysis.dynamics import exact_daily_log_return, value_at_day_offset
-from ddvc.analysis.regression import absorb_fixed_effects
+from ddvc.analysis.dynamics import exact_daily_log_return
 from ddvc.calendar import sample_end_iso
 from ddvc.metrics import CLEAN_ROUTE_CLASSES, _routes
-from ddvc.paths import DATA_DIR, LP_CAPITAL_CONCENTRATION_PANEL, OUTPUT_DIR
+from ddvc.paths import DATA_DIR, OUTPUT_DIR
 
 
 VEHICLES = ("WETH", "USDC", "USDT", "DAI", "WBTC")
@@ -242,12 +238,6 @@ def load_network_metrics() -> pd.DataFrame:
     return df.rename(columns={"token_address": "token", share_column: "VolShare"})
 
 
-def load_lp() -> pd.DataFrame:
-    path = LP_CAPITAL_CONCENTRATION_PANEL
-    df = pd.read_parquet(path)
-    return df.rename(columns={"token_symbol": "token"})
-
-
 def summarize_bridge(bridge: pd.DataFrame, metrics: pd.DataFrame) -> pd.DataFrame:
     m = bridge.merge(metrics, on=["date", "token"], how="left")
     m["year"] = pd.to_datetime(m["date"]).dt.year
@@ -264,53 +254,6 @@ def summarize_bridge(bridge: pd.DataFrame, metrics: pd.DataFrame) -> pd.DataFram
     )
     _write(summary, OUT / "bridge_measure_summary_by_year.pkl")
     return summary
-
-
-def liquidity_formation_tests(bridge: pd.DataFrame, lp: pd.DataFrame) -> pd.DataFrame:
-    d = bridge[["date", "token", "BridgeShare"]].copy()
-    d["date"] = pd.to_datetime(d["date"])
-    d = d.sort_values(["token", "date"])
-    d["BridgeShare_fwd7"] = value_at_day_offset(d, "BridgeShare", 7)
-
-    l = lp[["date", "token", "lp_capital_share", "total_lp_capital_usd"]].copy()
-    l["date"] = pd.to_datetime(l["date"])
-    x = d.merge(l, on=["date", "token"], how="inner").dropna()
-
-    rows = []
-    rows.append(_ols_y_on_x(
-        x["BridgeShare_fwd7"].to_numpy(),
-        x["lp_capital_share"].to_numpy(),
-        "P2 raw: VehicleShare on lagged LP concentration (7 days)",
-    ).__dict__)
-
-    # Within-token version: asks whether a token's own liquidity concentration
-    # being above its normal level predicts its later bridge use.
-    y = absorb_fixed_effects(x["BridgeShare_fwd7"], x["token"])
-    z = absorb_fixed_effects(x["lp_capital_share"], x["token"])
-    rows.append(_ols_y_on_x(
-        y.to_numpy(),
-        z.to_numpy(),
-        "P2 within-token: VehicleShare on lagged LP concentration (7 days)",
-        k_absorbed=max(int(x["token"].nunique()) - 1, 0),
-    ).__dict__)
-
-    out = pd.DataFrame(rows)
-    _write(out, OUT / "liquidity_formation_tests.pkl")
-    return out
-
-
-def persistence_tests(bridge: pd.DataFrame) -> pd.DataFrame:
-    d = bridge[["date", "token", "BridgeShare"]].copy()
-    d["date"] = pd.to_datetime(d["date"])
-    d = d.sort_values(["token", "date"])
-    d["lag1"] = value_at_day_offset(d, "BridgeShare", -1)
-    d = d.dropna()
-    rows = []
-    for tok, g in d.groupby("token"):
-        rows.append(_ols_y_on_x(g["BridgeShare"].to_numpy(), g["lag1"].to_numpy(), f"P2 stickiness AR(1): {tok}").__dict__)
-    out = pd.DataFrame(rows)
-    _write(out, OUT / "bridge_stickiness_tests.pkl")
-    return out
 
 
 def stress_tests(bridge: pd.DataFrame) -> pd.DataFrame:
@@ -480,7 +423,7 @@ def v3_architecture_tests(bridge: pd.DataFrame) -> pd.DataFrame:
     return out
 
 
-def make_figures(bridge: pd.DataFrame, lp: pd.DataFrame) -> None:
+def make_figures(bridge: pd.DataFrame) -> None:
     import matplotlib
     matplotlib.use("Agg")
     import matplotlib.pyplot as plt
@@ -501,26 +444,8 @@ def make_figures(bridge: pd.DataFrame, lp: pd.DataFrame) -> None:
     fig.savefig(OUT / "bridge_share_timeseries.pdf")
     plt.close(fig)
 
-    l = lp[lp["token"].isin(VEHICLES)].copy()
-    l["date"] = pd.to_datetime(l["date"])
-    fig, ax = plt.subplots(figsize=(10, 5))
-    for tok in VEHICLES:
-        g = l[l["token"] == tok].sort_values("date")
-        ax.plot(g["date"], g["lp_capital_share"], label=tok, linewidth=1.2)
-    ax.set_title("LP concentration by vehicle-linked base asset")
-    ax.set_ylabel("Share of V3 LP liquidity")
-    ax.set_xlabel("Date")
-    ax.yaxis.set_major_formatter(plt.FuncFormatter(lambda y, _: f"{y:.0%}"))
-    ax.legend(ncol=3, fontsize=9)
-    fig.tight_layout()
-    fig.savefig(OUT / "lp_concentration_vehicle_timeseries.pdf")
-    plt.close(fig)
-
-
 def write_memo(
     summary: pd.DataFrame,
-    formation: pd.DataFrame,
-    persistence: pd.DataFrame,
     stress: pd.DataFrame,
     v3: pd.DataFrame,
 ) -> None:
@@ -543,7 +468,6 @@ def write_memo(
         ]
         return "\n".join([header, sep, *rows])
 
-    v4_text = fmt_v4_settlement()
     text = f"""# First-pass empirical proposition tests
 
 Generated from the rebuilt DVC data layer through {sample_end_iso()}.
@@ -566,17 +490,6 @@ Top bridge tokens in {latest_year}:
 
 {fmt_route_cost(route_cost)}
 
-### P2. Liquidity formation and stickiness
-
-These are first-pass association tests, not the final causal liquidity design.
-The LP measure is now restricted to pools with a known vehicle candidate on one
-side, with bad pool-level TVL outliers removed. The final table should add
-date fixed effects, near-price executable liquidity, and LP repositioning.
-
-{fmt_table(formation, ["name", "n", "beta", "se", "t", "p"])}
-
-{fmt_table(persistence, ["name", "n", "beta", "se", "t", "p"])}
-
 ### P3. Stress rotation
 
 Stress is measured as the positive part of the daily negative log return of WETH,
@@ -593,10 +506,6 @@ not yet the final design; the final table should use pair-level direct-route
 feasibility and cost measures.
 
 {fmt_table(v3, ["name", "n", "beta", "se", "t", "p"])}
-
-### P4b. V4 settlement implementation
-
-{v4_text}
 """
     path = OUT / "empirical_first_pass.md"
     path.parent.mkdir(parents=True, exist_ok=True)
@@ -623,34 +532,6 @@ def fmt_route_cost(df: pd.DataFrame) -> str:
         "panel for V2-style pools plus exact-crossing V3. Remaining extensions "
         "are Curve/Balancer/Fluid executable-depth quotes and transaction-time "
         "rather than daily noon/EOD state cutoffs.\n\n" + fmt_table_static(keep)
-    )
-
-
-def fmt_v4_settlement() -> str:
-    paired_path = OUT / "v4_settlement_paired.pkl"
-    dex_path = OUT / "v4_settlement_dex_summary.pkl"
-    if not paired_path.exists() or not dex_path.exists():
-        return (
-            "Not yet run in this empirical pass. Run "
-            "`./scripts/run scripts/run_v4_settlement_identification.py` to match V3/V4 "
-            "route units and test ERC-20 transfer incidence from receipts."
-        )
-    paired = pd.read_pickle(paired_path)
-    dex = pd.read_pickle(dex_path)
-    if paired.empty:
-        return "V4 settlement output exists but is empty."
-    p = paired.iloc[0]
-    return (
-        "DVC receipt-level matched design: coherent multi-hop Uniswap V3 and V4 "
-        "route units are matched by week, endpoint pair, and intermediate vehicle "
-        "token. The outcome is whether the receipt contains an ERC-20 Transfer log "
-        "for the intermediate token. V4 reduces physical intermediary-token "
-        f"transfer incidence from {p.v3_mean:.1%} to {p.v4_mean:.1%}, a "
-        f"{100 * p['diff']:.1f} pp difference (t={p.t:.2f}, "
-        f"{'p<0.001' if p.p < 0.001 else f'p={p.p:.3f}'}). This supports the "
-        "architecture proposition, but the right interpretation is virtualization "
-        "of settlement, not elimination of vehicle routing.\n\n"
-        + fmt_table_static(dex)
     )
 
 
@@ -681,16 +562,12 @@ def main() -> None:
 
     bridge = build_bridge_daily(args.start, args.end, force=args.force_bridge)
     metrics = load_network_metrics()
-    lp = load_lp()
-
     summary = summarize_bridge(bridge, metrics)
-    formation = liquidity_formation_tests(bridge, lp)
-    persistence = persistence_tests(bridge)
     stress = stress_tests(bridge)
     common_stress = common_support_stress_tests(bridge)
     v3 = v3_architecture_tests(bridge)
-    make_figures(bridge, lp)
-    write_memo(summary, formation, persistence, stress, v3)
+    make_figures(bridge)
+    write_memo(summary, stress, v3)
     if not common_stress.empty:
         with (OUT / "empirical_first_pass.md").open("a", encoding="utf-8") as fh:
             fh.write("\n## P3 Common-Support Stress Event Check\n\n")

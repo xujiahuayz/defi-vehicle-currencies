@@ -2009,45 +2009,30 @@ VARIABLE_SPECS: tuple[VariableSpec, ...] = (
         in_observations_table=False,
     ),
     VariableSpec(
-        group="V4 settlement implementation measures",
-        name="Intermediate-token transfer indicator",
-        column="has_matching_transfer",
-        notation=r"$\mathrm{Transfer}_{r,k}$",
-        formula=r"$\mathbf{1}_{\{r\in\mathcal R^{\mathrm{transfer}}_{k,w}\}}$",
-        unit="Indicator (0/1)",
-        construction=(
-            r"Equals one when route unit $r$'s transaction receipt contains an ERC-20 "
-            r"$\mathrm{Transfer}$ log matching intermediate vehicle $k$."
-        ),
-        source="data/empirical/v4_settlement_transfer_detail.parquet",
-        used_for="RQ5 matched route-level settlement comparison.",
-        in_observations_table=False,
-    ),
-    VariableSpec(
-        group="V4 settlement implementation measures",
+        group="Execution-architecture measures",
         name="V4 route indicator",
         column="v4_route",
         notation=r"$\mathrm{V4}_{r}$",
         formula=r"$\mathbf{1}_{\{r\in\mathcal R^4_g\}}$",
         unit="Indicator (0/1)",
         construction=r"Equals one when matched route unit $r$ executes on Uniswap V4.",
-        source="data/empirical/v4_settlement_transfer_detail.parquet",
-        used_for="RQ5 settlement-architecture treatment indicator.",
+        source="data/empirical/v4_settlement_route_units.parquet",
+        used_for="Architecture-state adoption, exit and reversal diagnostics.",
         in_observations_table=False,
     ),
     VariableSpec(
-        group="V4 settlement implementation measures",
+        group="Execution-architecture measures",
         name="V4 route share",
         column="v4_route_share",
         notation=r"$\mathrm{V4RouteShare}_{g}$",
         formula=r"$\displaystyle\frac{|\mathcal R^4_g|}{|\mathcal R^3_g|+|\mathcal R^4_g|}$",
         unit="Fraction (0--1)",
         construction=(
-            r"Fraction of receipt-audited route units in comparison cell $g$ executed on V4; "
-            r"reported alongside transfer incidence to distinguish route use from token movement."
+            r"Fraction of pure V3/V4 route units in ordered endpoint-pair, vehicle and week "
+            r"cell $g$ that execute on V4. Mixed-source components are excluded before assignment."
         ),
-        source="to be constructed from the matched V3/V4 settlement panel",
-        used_for="RQ5 economic-route-use persistence diagnostic.",
+        source="data/processed/architecture_state_weekly.parquet",
+        used_for="Architecture-state adoption, exit and reversal diagnostics.",
         in_observations_table=False,
     ),
     VariableSpec(
@@ -2146,41 +2131,6 @@ VARIABLE_SPECS: tuple[VariableSpec, ...] = (
         source="to be constructed from the pre-V4 reconstructed route-leg and pool panels",
         used_for="RQ5 predetermined LP-capital exposure and RQ2 vehicle-spoke heterogeneity.",
         in_observations_table=False,
-    ),
-    VariableSpec(
-        group="V4 settlement implementation measures",
-        name="Settlement transfer incidence",
-        column="settlement_transfer_incidence",
-        notation=r"$\mathrm{TransferIncidence}_{k,w}$",
-        formula=(
-            r"$\displaystyle\frac{|\mathcal R^{\mathrm{transfer}}_{k,w}|}"
-            r"{|\mathcal R_{k,w}|}$"
-        ),
-        unit="Fraction (0--1)",
-        construction=(
-            r"Fraction of receipt-audited route units $r\in\mathcal R_{k,w}$ containing "
-            r"an ERC-20 $\mathrm{Transfer}$ log for intermediate vehicle $k$."
-        ),
-        source="data/empirical/v4_settlement_transfer_detail.parquet",
-        used_for="V4 settlement virtualization and netting tests.",
-        include_in_summary=True,
-        summary_panel="Settlement-transfer sample",
-        summary_unit="Percent",
-        summary_scale=100.0,
-    ),
-    VariableSpec(
-        group="V4 settlement implementation measures",
-        name="Settlement receipt count",
-        column="settlement_receipt_count",
-        notation=r"$\mathrm{ReceiptCount}_{k,w}$",
-        formula=r"$|\mathcal R_{k,w}|$",
-        unit="Route-unit count",
-        construction=r"Number of receipt-audited matched route units for vehicle $k$ in UTC week $w$.",
-        source="data/empirical/v4_settlement_transfer_detail.parquet",
-        used_for="Settlement-sample size and weights.",
-        include_in_summary=True,
-        summary_panel="Settlement-transfer sample",
-        summary_unit="Route-unit count",
     ),
 )
 

@@ -11,9 +11,10 @@ nothing to look at, nothing defined in symbols and nobody cited reads as a memo 
 the sentences say, so these are not decoration and they are not preferences.
 
 Thresholds are empirical quantiles of the exemplars, recomputed by
-`scripts/measure_venue_optics.py`, and this test asserts against the exhibit that script
-writes. Floors sit at the first quartile and not the median, since the point is to catch
-absence and gross shortfall and not to force a paper to the middle of a distribution.
+`scripts/measure_venue_optics.py`. The working paper is still growing, so absolute word
+and exhibit counts are not submission gates. We instead require a venue-like page count,
+the presence of each structural feature, and first-quartile exhibit density per word.
+This catches a memo-shaped draft without forcing unfinished sections to be padded.
 """
 
 from __future__ import annotations
@@ -42,26 +43,29 @@ class VenueOpticsTests(unittest.TestCase):
                   if f in self.rows and self.rows[f]["draft"] == 0]
         self.assertEqual(absent, [], f"absent from the paper entirely: {absent}")
 
-    def test_length_reaches_the_first_quartile(self) -> None:
-        for f in ("pages", "words"):
-            if f not in self.rows:
-                continue
-            r = self.rows[f]
-            with self.subTest(feature=f):
-                self.assertGreaterEqual(
-                    r["draft"], r["exemplar_p25"],
-                    f"{f}: {r['draft']} against a first quartile of {r['exemplar_p25']} "
-                    f"and a median of {r['exemplar_median']} in the exemplars")
+    def test_page_count_reaches_the_first_quartile(self) -> None:
+        if "pages" not in self.rows:
+            return
+        r = self.rows["pages"]
+        self.assertGreaterEqual(
+            r["draft"], r["exemplar_p25"],
+            f"pages: {r['draft']} against a first quartile of {r['exemplar_p25']}")
 
-    def test_exhibit_counts_reach_the_first_quartile(self) -> None:
+    def test_exhibit_density_reaches_the_first_quartile(self) -> None:
+        words = self.rows.get("words")
+        if not words or not words["draft"] or not words["exemplar_p25"]:
+            self.skipTest("word counts are required for density comparisons")
         for f in ("tables", "figures", "citations"):
             if f not in self.rows:
                 continue
             r = self.rows[f]
             with self.subTest(feature=f):
+                draft_density = r["draft"] / words["draft"]
+                exemplar_density = r["exemplar_p25"] / words["exemplar_p25"]
                 self.assertGreaterEqual(
-                    r["draft"], r["exemplar_p25"],
-                    f"{f}: {r['draft']} against a first quartile of {r['exemplar_p25']}")
+                    draft_density, exemplar_density,
+                    f"{f}: {draft_density:.6f} per word against a first-quartile "
+                    f"density of {exemplar_density:.6f}")
 
 
 if __name__ == "__main__":

@@ -1700,6 +1700,18 @@ Literal evidence/design; Strongest headline; Adjacent qualification; Auxiliary e
         self.assertTrue(complete_literature_card(cards["PaperA"]))
         self.assertTrue(companion_sources_closed(cards["PaperA"]))
         self.assertTrue(published_venue_version(cards["venue:one"]))
+        shared_source = text.replace(
+            "### venue:one\n- Status: full-text-read",
+            "### venue:one\n- Status: claim-verified",
+            1,
+        )
+        passed, detail = validate_literature_audit(
+            shared_source, {"PaperOne"}, {"venue:one"}
+        )
+        self.assertTrue(
+            passed,
+            "one source-key card should satisfy both cited and venue roles: " + detail,
+        )
         working_only = text.replace(
             "Version: Published JFE version, 2021",
             "Version: Revised working paper, 2021; later published in JFE",

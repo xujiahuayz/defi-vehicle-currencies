@@ -34,7 +34,6 @@ from ddvc.analysis.regression import absorb_fixed_effects, ols_clustered_named
 from ddvc.asset_types import VEHICLE_CANDIDATE_SYMBOLS
 from ddvc.capital_contracts import VALID_CAPITAL_STATUSES
 from ddvc.capital_release import resolve_capital_release
-from ddvc.paths import LP_CAPITAL_CONCENTRATION_PANEL
 
 ROOT = Path(__file__).resolve().parents[1]
 SCRIPTS = ROOT / "scripts"
@@ -53,114 +52,6 @@ def _ensure_dirs() -> None:
     (DATA / "empirical").mkdir(parents=True, exist_ok=True)
     EMP.mkdir(parents=True, exist_ok=True)
     (OUT / "tables").mkdir(parents=True, exist_ok=True)
-
-
-def variable_construction_table() -> pd.DataFrame:
-    rows = [
-        {
-            "Variable / proxy": "VehicleShare",
-            "Level": "vehicle token x day",
-            "Construction": "USD volume of indirect routes where token v is an intermediate divided by total indirect-route USD volume that day.",
-            "Source": "data/empirical/bridge_daily.parquet",
-            "Used for": "RQ1, RQ2, RQ3, RQ4",
-        },
-        {
-            "Variable / proxy": "DirectCostAdvantage",
-            "Level": "endpoint pair x vehicle x day x trade size",
-            "Construction": "(direct-route exact-quote output USD - indirect-route exact-quote output USD) / direct-route output USD. The candidate-day measure is the median fraction across common-support endpoint pairs at $10k; positive values favor the direct route.",
-            "Source": "data/empirical/route_cost_panel_v2.parquet",
-            "Used for": "RQ1, RQ3, RQ5",
-        },
-        {
-            "Variable / proxy": "DirectAvailable",
-            "Level": "endpoint pair x day x trade size",
-            "Construction": "Indicator that the exact-quote engine finds a direct executable route for the endpoint pair at the standard notional.",
-            "Source": "data/empirical/route_cost_panel_v2.parquet",
-            "Used for": "RQ1, RQ5",
-        },
-        {
-            "Variable / proxy": "IndirectAvailable",
-            "Level": "endpoint pair x vehicle x day x trade size",
-            "Construction": "Indicator that both legs of the indirect route through candidate vehicle v are exact-quote executable at the standard notional.",
-            "Source": "data/empirical/route_cost_panel_v2.parquet",
-            "Used for": "RQ1, RQ5",
-        },
-        {
-            "Variable / proxy": "DirectQuoteQuality",
-            "Level": "endpoint pair x day x trade size",
-            "Construction": "Executable direct-route quote-quality proxy: direct output USD divided by trade size. Thin-direct cells are direct-available cells with output below 90% of notional; this is not a direct pool-liquidity measure.",
-            "Source": "data/empirical/route_cost_panel_v2.parquet",
-            "Used for": "RQ1, RQ5",
-        },
-        {
-            "Variable / proxy": "VehicleLinkedCapital",
-            "Level": "vehicle token x day",
-            "Construction": "Allocated deposited capital in every admitted protocol pool containing candidate v: full pool capital when v is the only candidate side and half when both sides are candidates. This is not pool depth.",
-            "Source": "current immutable pool-capital release; data/exhibits/lp_capital_concentration.parquet",
-            "Used for": "RQ2, RQ3, RQ6",
-        },
-        {
-            "Variable / proxy": "LPCapitalShare",
-            "Level": "vehicle token x day",
-            "Construction": "VehicleLinkedCapital divided by total candidate-linked deposited capital across the vehicle set that day.",
-            "Source": "data/exhibits/lp_capital_concentration.parquet",
-            "Used for": "RQ2, RQ3",
-        },
-        {
-            "Variable / proxy": "LPSupplyFlow",
-            "Level": "vehicle token x day",
-            "Construction": "Daily gross/net V3 mint-burn dollar flow allocated once across exact candidate-token pool sides; near-price variants use the latest strictly prior tick state and no capital-stock proxy.",
-            "Source": "data/processed/lp_liquidity_flow_daily_v3.parquet",
-            "Used for": "RQ2, RQ5",
-        },
-        {
-            "Variable / proxy": "Stress",
-            "Level": "day or event day",
-            "Construction": "Positive part of negative WETH log return from stablecoin-implied WETH prices; event tables use selected large downside days.",
-            "Source": "bridge_daily WETH price; output/empirical/stress_event_definition.pkl",
-            "Used for": "RQ4",
-        },
-        {
-            "Variable / proxy": "SettlementTransferIncidence",
-            "Level": "matched route unit",
-            "Construction": "Indicator that the transaction receipt contains at least one ERC-20 Transfer log matching the intermediate vehicle token.",
-            "Source": "data/empirical/v4_settlement_transfer_detail.parquet",
-            "Used for": "RQ6",
-        },
-        {
-            "Variable / proxy": "NettingExposure",
-            "Level": "vehicle token",
-            "Construction": "One minus V4 SettlementTransferIncidence for vehicle v in the receipt-audited V4 route-unit sample.",
-            "Source": "output/empirical/p4b_netting_exposure_by_vehicle.pkl",
-            "Used for": "RQ6",
-        },
-        {
-            "Variable / proxy": "VehicleCapitalFactor",
-            "Level": "vehicle token x day",
-            "Construction": "Leave-one-out average daily log deposited-capital change among other pools linked to the same vehicle; paired with a leave-one-out market capital factor.",
-            "Source": "current immutable pool-capital release",
-            "Used for": "RQ7",
-        },
-    ]
-    out = pd.DataFrame(rows)
-    out.to_pickle(EMP / "variable_construction.pkl")
-    _write_table(
-        out,
-        "variable_construction",
-        "Core empirical variables and construction.",
-        "tab:variable-construction",
-        align=(
-            r"@{}"
-            r">{\raggedright\arraybackslash}X"
-            r">{\raggedright\arraybackslash}X"
-            r">{\raggedright\arraybackslash}X"
-            r">{\raggedright\arraybackslash}X"
-            r">{\raggedright\arraybackslash}X"
-            r"@{}"
-        ),
-        note="This is the variable/proxy registry used before drafting the empirical prose.",
-    )
-    return out
 
 
 def route_cost_daily(trade_size: float = 10_000.0) -> pd.DataFrame:
@@ -215,26 +106,12 @@ def core_token_day_panel() -> pd.DataFrame:
     bridge = pd.read_parquet(DATA / "empirical" / "bridge_daily.parquet")
     bridge["date"] = pd.to_datetime(bridge["date"])
     bridge = bridge[bridge["token"].isin(VEHICLES)].copy()
-    lp = pd.read_parquet(LP_CAPITAL_CONCENTRATION_PANEL).rename(columns={"token_symbol": "token"})
-    lp["date"] = pd.to_datetime(lp["date"])
-    lp = lp[lp["token"].isin(VEHICLES)].copy()
     rc = route_cost_daily(10_000.0)
-    d = bridge.merge(
-        lp[["date", "token", "total_lp_capital_usd", "lp_capital_share"]],
-        on=["date", "token"],
-        how="left",
-    ).merge(rc, on=["date", "token"], how="left")
+    d = bridge.merge(rc, on=["date", "token"], how="left")
     d = d.sort_values(["token", "date"])
-    d["log_vehicle_linked_capital"] = np.log1p(d["total_lp_capital_usd"])
     for h in CANONICAL_RESPONSE_HORIZONS:
         d[f"lag_BridgeShare_t{h}"] = value_at_day_offset(d, "BridgeShare", -h)
         d[f"future_BridgeShare_t{h}"] = value_at_day_offset(d, "BridgeShare", h)
-        d[f"future_LPCapitalShare_t{h}"] = value_at_day_offset(
-            d, "lp_capital_share", h
-        )
-        d[f"future_log_capital_t{h}"] = value_at_day_offset(
-            d, "log_vehicle_linked_capital", h
-        )
         d[f"delta_BridgeShare_t{h}"] = d["BridgeShare"] - d[f"lag_BridgeShare_t{h}"]
     out_path = DATA / "empirical" / "core_token_day_panel.parquet"
     d.to_parquet(out_path, index=False)
@@ -244,10 +121,8 @@ def core_token_day_panel() -> pd.DataFrame:
 def core_panel_regressions(panel: pd.DataFrame) -> pd.DataFrame:
     rows = []
     specs = [
-        ("RQ1/RQ2/RQ3", "future_BridgeShare_t7", "VehicleShare", 7),
-        ("RQ1/RQ2/RQ3", "future_BridgeShare_t30", "VehicleShare", 30),
-        ("RQ2", "future_LPCapitalShare_t7", "LPCapitalShare", 7),
-        ("RQ2", "future_log_capital_t7", "log VehicleLinkedCapital", 7),
+        ("RQ1/RQ3", "future_BridgeShare_t7", "VehicleShare", 7),
+        ("RQ1/RQ3", "future_BridgeShare_t30", "VehicleShare", 30),
     ]
     x_names = [
         "BridgeShare",
@@ -255,7 +130,6 @@ def core_panel_regressions(panel: pd.DataFrame) -> pd.DataFrame:
         "no_direct_vehicle_available_share",
         "direct_available_share",
         "vehicle_available_share",
-        "lp_capital_share",
     ]
     for rq, y_name, label, horizon in specs:
         dd = panel.copy()
@@ -280,13 +154,6 @@ def core_panel_regressions(panel: pd.DataFrame) -> pd.DataFrame:
             )
     out = pd.DataFrame(rows)
     out.to_pickle(EMP / "core_panel_regressions.pkl")
-    _write_table(
-        out,
-        "table_m09_core_panel_regressions",
-        "Core token-day panel regressions for vehicle formation, liquidity, and persistence.",
-        "tab:core-panel-regressions",
-        note="All variables are residualized by token and date fixed effects. DirectCostAdvantage enters as a direct-minus-indirect fraction of direct-route output.",
-    )
     return out
 
 
@@ -709,98 +576,6 @@ def actual_route_choice_tests(actual: pd.DataFrame) -> pd.DataFrame:
     return out
 
 
-def lp_allocation_feedback_tests(panel: pd.DataFrame, core: pd.DataFrame) -> pd.DataFrame:
-    def _core_row(
-        outcome: str,
-        horizon: int,
-        regressor: str,
-        panel_name: str,
-        units: str,
-    ) -> dict[str, object]:
-        r = core[
-            core["Outcome"].eq(outcome)
-            & core["Horizon (days)"].eq(horizon)
-            & core["Regressor"].eq(regressor)
-        ].iloc[0]
-        return {
-            "Panel": panel_name,
-            "Outcome": outcome,
-            "Horizon (days)": horizon,
-            "Regressor": regressor,
-            "N": r["N"],
-            "Date clusters": r["Date clusters"],
-            "Beta": r["Beta"],
-            "SE": r["SE"],
-            "t": r["t"],
-            "p": r["p"],
-            "Units": units,
-            "FE / SE": r["FE / SE"],
-        }
-
-    rows: list[dict[str, object]] = [
-        _core_row("VehicleShare", 7, "lp_capital_share", "A. Stock feedback", "share"),
-        _core_row("LPCapitalShare", 7, "BridgeShare", "A. Stock feedback", "share"),
-        _core_row(
-            "log VehicleLinkedCapital",
-            7,
-            "BridgeShare",
-            "A. Stock feedback",
-            "log points",
-        ),
-    ]
-
-    d = panel.sort_values(["token", "date"]).copy()
-    d["delta_lp_capital_share_t30_pp"] = 100.0 * (
-        value_at_day_offset(d, "lp_capital_share", 30) - d["lp_capital_share"]
-    )
-    d["delta_log_capital_t30"] = (
-        value_at_day_offset(d, "log_vehicle_linked_capital", 30)
-        - d["log_vehicle_linked_capital"]
-    )
-    x_names = [
-        "BridgeShare",
-        "direct_cost_advantage_median",
-        "vehicle_available_share",
-        "no_direct_vehicle_available_share",
-    ]
-    specs = [
-        ("Change in LPCapitalShare", "delta_lp_capital_share_t30_pp", "pp"),
-        ("Change in log VehicleLinkedCapital", "delta_log_capital_t30", "log points"),
-    ]
-    for outcome, y_name, units in specs:
-        y = absorb_fixed_effects(d[y_name], d["token"], d["date"])
-        x = pd.DataFrame({name: absorb_fixed_effects(d[name], d["token"], d["date"]) for name in x_names})
-        n, clusters, res = ols_clustered_named(y, x, d["date"], absorbed_groups=(d["token"], d["date"]), min_observations=30)
-        for name in x_names:
-            rows.append(
-                {
-                    "Panel": "B. LP stock change",
-                    "Outcome": outcome,
-                    "Horizon (days)": 30,
-                    "Regressor": name,
-                    "N": _int(n),
-                    "Date clusters": _int(clusters),
-                    "Beta": _num(res[f"{name}_beta"], 4),
-                    "SE": _num(res[f"{name}_se"], 4),
-                    "t": _num(res[f"{name}_t"], 2),
-                    "p": _p(res[f"{name}_p"]),
-                    "Units": units,
-                    "FE / SE": "token FE + date FE; date-clustered SE",
-                }
-            )
-
-    out = pd.DataFrame(rows)
-    out.to_pickle(EMP / "lp_allocation_feedback.pkl")
-    _write_table(
-        out,
-        "table_m14_lp_allocation_feedback",
-        "Vehicle use and candidate-linked liquidity dynamics.",
-        "tab:lp-allocation-feedback",
-        note="Panel A reports the unified stock-dynamics estimates from core_panel_regressions. Panel B uses 30-day changes in candidate-linked liquidity stocks.",
-    )
-    return out
-
-
 def pair_challenger_displacement_tests(actual: pd.DataFrame) -> pd.DataFrame:
     shares = _actual_pair_vehicle_shares(actual)
     r = _route_cost_10k()
@@ -1000,75 +775,6 @@ def v3_dose_response_tests() -> pd.DataFrame:
     return out
 
 
-def v4_route_use_persistence_tests() -> pd.DataFrame:
-    d = pd.read_parquet(DATA / "empirical" / "v4_settlement_eligible_cells.parquet")
-    d["week"] = pd.to_datetime(d["week"])
-    d["week_label"] = d["week"].dt.strftime("%Y-%m-%d")
-    d["vehicle"] = d["vehicle"].astype(str)
-    d["log_v3_routes"] = np.log1p(d["routes_uniswap_v3"])
-    d["log_v4_routes"] = np.log1p(d["routes_uniswap_v4"])
-    d["log_v3_usd"] = np.log1p(d["route_usd_uniswap_v3"])
-    d["log_v4_usd"] = np.log1p(d["route_usd_uniswap_v4"])
-    d["v4_route_share_pct"] = 100.0 * d["routes_uniswap_v4"] / (d["routes_uniswap_v3"] + d["routes_uniswap_v4"])
-    d["v4_volume_share_pct"] = 100.0 * d["route_usd_uniswap_v4"] / (d["route_usd_uniswap_v3"] + d["route_usd_uniswap_v4"])
-
-    rows = []
-    specs = [
-        ("Log V4 route count", "log_v4_routes", "log_v3_routes", "log V3 route count"),
-        ("Log V4 route volume", "log_v4_usd", "log_v3_usd", "log V3 route volume"),
-    ]
-    for outcome, y_col, x_col, reg_label in specs:
-        y = absorb_fixed_effects(d[y_col], d["vehicle"], d["week_label"])
-        x = pd.DataFrame({reg_label: absorb_fixed_effects(d[x_col], d["vehicle"], d["week_label"])})
-        n, clusters, res = ols_clustered_named(y, x, d["week"], absorbed_groups=(d["vehicle"], d["week_label"]), min_observations=30)
-        rows.append(
-            {
-                "Panel": "A. Matched-cell route-use persistence",
-                "Outcome": outcome,
-                "Regressor / statistic": reg_label,
-                "N": _int(n),
-                "Week clusters": _int(clusters),
-                "Estimate": _num(res[f"{reg_label}_beta"], 4),
-                "SE": _num(res[f"{reg_label}_se"], 4),
-                "t": _num(res[f"{reg_label}_t"], 2),
-                "p": _p(res[f"{reg_label}_p"]),
-                "FE / SE": "vehicle FE + week FE; week-clustered SE",
-            }
-        )
-
-    for stat_name, value in [
-        ("Mean V4 route share within matched cells", d["v4_route_share_pct"].mean()),
-        ("Median V4 route share within matched cells", d["v4_route_share_pct"].median()),
-        ("Mean V4 volume share within matched cells", d["v4_volume_share_pct"].mean()),
-        ("Median V4 volume share within matched cells", d["v4_volume_share_pct"].median()),
-    ]:
-        rows.append(
-            {
-                "Panel": "B. Matched-cell V4 use share",
-                "Outcome": "V4 share",
-                "Regressor / statistic": stat_name,
-                "N": _int(len(d)),
-                "Week clusters": _int(d["week"].nunique()),
-                "Estimate": _num(value, 2),
-                "SE": "",
-                "t": "",
-                "p": "",
-                "FE / SE": "descriptive percentage",
-            }
-        )
-
-    out = pd.DataFrame(rows)
-    out.to_pickle(EMP / "v4_route_use_persistence.pkl")
-    _write_table(
-        out,
-        "table_m17_v4_route_use_persistence",
-        "V4 route-use persistence in matched indirect-route cells.",
-        "tab:v4-route-use-persistence",
-        note="Matched cells are week x endpoint pair x intermediate vehicle cells with both V3 and V4 route units in the settlement sample frame.",
-    )
-    return out
-
-
 def common_pool_capital_heterogeneity_tests() -> pd.DataFrame:
     d = pd.read_parquet(DATA / "empirical" / "common_pool_capital_panel.parquet")
     bridge = pd.read_parquet(DATA / "empirical" / "bridge_daily.parquet", columns=["token", "BridgeShare"])
@@ -1119,183 +825,19 @@ def common_pool_capital_heterogeneity_tests() -> pd.DataFrame:
     return out
 
 
-def build_rq_registry(
-    core: pd.DataFrame,
-    threshold: pd.DataFrame,
-    stress: pd.DataFrame,
-    common: pd.DataFrame,
-    actual_choice: pd.DataFrame,
-    lp_feedback: pd.DataFrame,
-    challenger: pd.DataFrame,
-    v3_dose: pd.DataFrame,
-    v4_persistence: pd.DataFrame,
-    common_hetero: pd.DataFrame,
-) -> None:
-    def _lookup(df: pd.DataFrame, **where: str) -> str:
-        g = df.copy()
-        for key, val in where.items():
-            g = g[g[key].astype(str).eq(val)]
-        if g.empty:
-            return ""
-        r = g.iloc[0]
-        return f"beta {r.get('Beta', r.get('Estimate', ''))}, t {r.get('t', '')}, p {r.get('p', '')}"
-
-    def _cell(df: pd.DataFrame, column: str, **where: str) -> str:
-        g = df.copy()
-        for key, val in where.items():
-            g = g[g[key].astype(str).eq(val)]
-        if g.empty or column not in g:
-            return ""
-        return str(g.iloc[0][column])
-
-    def _md_table(df: pd.DataFrame) -> list[str]:
-        d = df.fillna("").astype(str)
-        d = d.map(lambda x: x.replace("\n", " ").replace("|", "\\|"))
-        cols = list(d.columns)
-        lines = [
-            "| " + " | ".join(cols) + " |",
-            "| " + " | ".join(["---"] * len(cols)) + " |",
-        ]
-        for _, row in d.iterrows():
-            lines.append("| " + " | ".join(row[col] for col in cols) + " |")
-        return lines
-
-    m04 = pd.read_pickle(EMP / "p3_stress_rotation.pkl")
-    m05 = pd.read_pickle(EMP / "p4a_v3_opportunity.pkl")
-    m06 = pd.read_pickle(EMP / "p4b_v4_settlement.pkl")
-
-    rq_rows = [
-        {
-            "RQ": "RQ1. Formation",
-            "Empirical answer": "Vehicle use is higher when the candidate expands executable indirect-route opportunity, improves route quality within common-support cells, and has a larger share of candidate-linked liquidity.",
-            "Exact evidence": (
-                f"actual_route_choice: DirectCostAdvantage is negative for actual vehicle share, so stronger indirect-route cost performance is associated with greater vehicle use ({_lookup(actual_choice, Outcome='Actual vehicle share', Regressor='direct_cost_advantage')}); "
-                f"indirect-route availability is positive ({_lookup(actual_choice, Outcome='Actual vehicle share', Regressor='vehicle_available')}); indirect-route quote quality is positive ({_lookup(actual_choice, Outcome='Actual vehicle share', Regressor='vehicle_quote_quality')}). "
-                f"core_panel_regressions: lagged DirectCostAdvantage predicts VehicleShare at the 7-day horizon ({_lookup(core, Outcome='VehicleShare', Regressor='direct_cost_advantage_median', **{'Horizon (days)': '7'})}); lagged indirect-route availability predicts VehicleShare ({_lookup(core, Outcome='VehicleShare', Regressor='vehicle_available_share', **{'Horizon (days)': '7'})}); lagged LPCapitalShare predicts VehicleShare ({_lookup(core, Outcome='VehicleShare', Regressor='lp_capital_share', **{'Horizon (days)': '7'})})."
-            ),
-        },
-        {
-            "RQ": "RQ2. Liquidity provision",
-            "Empirical answer": "Relative LP capital allocation and vehicle use reinforce each other, but absolute candidate-linked deposited capital does not: higher current vehicle use predicts lower absolute capital at seven days, while stronger indirect-route economics predict 30-day capital growth.",
-            "Exact evidence": (
-                f"core_panel_regressions/lp_allocation_feedback: lagged LPCapitalShare predicts VehicleShare at the 7-day horizon ({_lookup(core, Outcome='VehicleShare', Regressor='lp_capital_share', **{'Horizon (days)': '7'})}); "
-                f"lagged VehicleShare predicts higher LPCapitalShare ({_lookup(core, Outcome='LPCapitalShare', Regressor='BridgeShare', **{'Horizon (days)': '7'})}) but lower log VehicleLinkedCapital ({_lookup(core, Outcome='log VehicleLinkedCapital', Regressor='BridgeShare', **{'Horizon (days)': '7'})}). "
-                f"lp_allocation_feedback: indirect-route availability predicts the change in log VehicleLinkedCapital at the 30-day horizon ({_lookup(lp_feedback, Panel='B. LP stock change', Outcome='Change in log VehicleLinkedCapital', Regressor='vehicle_available_share', **{'Horizon (days)': '30'})}); DirectCostAdvantage also predicts that change ({_lookup(lp_feedback, Panel='B. LP stock change', Outcome='Change in log VehicleLinkedCapital', Regressor='direct_cost_advantage_median', **{'Horizon (days)': '30'})})."
-            ),
-        },
-        {
-            "RQ": "RQ3. Persistence and displacement",
-            "Empirical answer": "Vehicle status is persistent, but challenger cost edges predict actual challenger share gains and incumbent losses.",
-            "Exact evidence": (
-                f"core_panel_regressions: lagged VehicleShare predicts VehicleShare at the 30-day horizon ({_lookup(core, Outcome='VehicleShare', Regressor='BridgeShare', **{'Horizon (days)': '30'})}). "
-                f"persistence_thresholds: challenger cost edge above 0.025 implies incumbent VehicleShare change {_cell(threshold, 'Mean incumbent VehicleShare change (pp)', **{'Challenger cost-edge bin': '>0.025', 'Horizon (days)': '30'})} pp, p {_cell(threshold, 'p', **{'Challenger cost-edge bin': '>0.025', 'Horizon (days)': '30'})}. "
-                f"pair_challenger_displacement: challenger edge raises challenger VehicleShare change ({_lookup(challenger, Panel='A. Pair-level regression', Outcome='Challenger VehicleShare change', **{'Horizon (days)': '30'})}) and lowers incumbent VehicleShare change ({_lookup(challenger, Panel='A. Pair-level regression', Outcome='Incumbent VehicleShare change', **{'Horizon (days)': '30'})})."
-            ),
-        },
-        {
-            "RQ": "RQ4. Stress rotation",
-            "Empirical answer": "Stress rotates vehicle use away from WETH and toward stable vehicles on common-support stress days; event-time persistence is interpreted with pre-movement caution.",
-            "Exact evidence": (
-                f"p3_stress_rotation: WETH-minus-stable change is {_cell(m04, 'Effect', Panel='A. Main decomposed same-day effect', Estimate='WETH-minus-stable change')}, p {_cell(m04, 'p', Panel='A. Main decomposed same-day effect', Estimate='WETH-minus-stable change')}. "
-                f"stress_event_time: event-day gap is {_cell(stress, 'Mean effect (pp)', Window='event day', Outcome='gap change pp')} pp, p {_cell(stress, 'p', Window='event day', Outcome='gap change pp')}; pre-window gap is {_cell(stress, 'Mean effect (pp)', Window='pre -14 to -1', Outcome='gap change pp')} pp, p {_cell(stress, 'p', Window='pre -14 to -1', Outcome='gap change pp')}."
-            ),
-        },
-        {
-            "RQ": "RQ5. Architecture",
-            "Empirical answer": "Uniswap V3 materially deepens direct-route availability and reduces no-direct WETH dependence, especially outside already-strong direct markets.",
-            "Exact evidence": (
-                f"p4a_v3_opportunity: no-direct WETH availability falls {_cell(m05, 'Post-V3 effect', Outcome='No-direct WETH availability')} pp, p {_cell(m05, 'p', Outcome='No-direct WETH availability')}. "
-                f"v3_dose_response: in Q2 pre-V3 direct markets, direct-route availability rises {_cell(v3_dose, 'Post-V3 effect', **{'Pre-V3 direct availability quartile': 'Q2', 'Outcome': 'Direct-route availability'})} pp, p {_cell(v3_dose, 'p', **{'Pre-V3 direct availability quartile': 'Q2', 'Outcome': 'Direct-route availability'})}; no-direct WETH availability falls {_cell(v3_dose, 'Post-V3 effect', **{'Pre-V3 direct availability quartile': 'Q2', 'Outcome': 'No-direct WETH availability'})} pp, p {_cell(v3_dose, 'p', **{'Pre-V3 direct availability quartile': 'Q2', 'Outcome': 'No-direct WETH availability'})}."
-            ),
-        },
-        {
-            "RQ": "RQ6. Settlement design",
-            "Empirical answer": "V4 reduces physical intermediate-token transfers while vehicle use persists across matched endpoint-vehicle-week cells.",
-            "Exact evidence": (
-                f"p4b_v4_settlement: V4 transfer incidence is {_cell(m06, 'V4', Panel='A. Transfer incidence by route-size bin', **{'Sample / diagnostic': 'All'})} versus V3 {_cell(m06, 'V3', Panel='A. Transfer incidence by route-size bin', **{'Sample / diagnostic': 'All'})}; matched-cell route-size balance is {_cell(m06, 'Difference / balance', Panel='B. Matched-sample balance', **{'Sample / diagnostic': 'V4 - V3 within cell'})}. "
-                f"v4_route_use_persistence: log V3 route count predicts log V4 route count ({_lookup(v4_persistence, Panel='A. Matched-cell route-use persistence', Outcome='Log V4 route count')}); log V3 route volume predicts log V4 route volume ({_lookup(v4_persistence, Panel='A. Matched-cell route-use persistence', Outcome='Log V4 route volume')})."
-            ),
-        },
-        {
-            "RQ": "RQ7. Common LP capital",
-            "Empirical answer": "Vehicle-linked pools share a vehicle-specific deposited-capital component beyond market-wide capital movements; the component is stronger in high-vehicle-dependence samples and survives top-pool exclusion.",
-            "Exact evidence": (
-                f"common_pool_capital: vehicle factor is positive in the full sample ({_lookup(common, **{'Sample / specification': 'Full sample', 'Regressor': 'vehicle_capital_factor_loo'})}); stress interaction is positive ({_lookup(common, **{'Sample / specification': 'Stress interaction', 'Regressor': 'vehicle_capital_factor_x_stress'})}). "
-                f"common_pool_capital_heterogeneity: high-dependence vehicle factor is positive ({_lookup(common_hetero, Sample='High average VehicleShare vehicles', Regressor='vehicle_capital_factor_loo')}); low-dependence vehicle factor is not significant ({_lookup(common_hetero, Sample='Low average VehicleShare vehicles', Regressor='vehicle_capital_factor_loo')}); excluding top 1% mean-capital pools remains positive ({_lookup(common_hetero, Sample='Excluding top 1% mean-capital pools', Regressor='vehicle_capital_factor_loo')})."
-            ),
-        },
-    ]
-
-    registry_lines = [
-        "# Core RQ Evidence Registry",
-        "",
-        "Generated by `scripts/run_core_rq_experiments.py`. This is a core-result registry, not manuscript prose.",
-        "",
-    ]
-    registry_lines.extend(_md_table(pd.DataFrame(rq_rows)))
-    (EMP / "core_rq_evidence_registry.md").write_text("\n".join(registry_lines) + "\n", encoding="utf-8")
-
-    table_paths = [
-        ("p3_stress_rotation", EMP / "p3_stress_rotation.pkl"),
-        ("p4a_v3_opportunity", EMP / "p4a_v3_opportunity.pkl"),
-        ("p4b_v4_settlement", EMP / "p4b_v4_settlement.pkl"),
-        ("variable_construction", EMP / "variable_construction.pkl"),
-        ("core_panel_regressions", EMP / "core_panel_regressions.pkl"),
-        ("persistence_thresholds", EMP / "persistence_thresholds.pkl"),
-        ("stress_event_time", EMP / "stress_event_time.pkl"),
-        ("common_pool_capital", EMP / "common_pool_capital.pkl"),
-        ("actual_route_choice", EMP / "actual_route_choice.pkl"),
-        ("lp_allocation_feedback", EMP / "lp_allocation_feedback.pkl"),
-        ("pair_challenger_displacement", EMP / "pair_challenger_displacement.pkl"),
-        ("v3_dose_response", EMP / "v3_dose_response.pkl"),
-        ("v4_route_use_persistence", EMP / "v4_route_use_persistence.pkl"),
-        ("common_pool_capital_heterogeneity", EMP / "common_pool_capital_heterogeneity.pkl"),
-    ]
-    detail_lines = [
-        "# Core Empirical RQ Results",
-        "",
-        "Generated by `scripts/run_core_rq_experiments.py`. Core notes only, not manuscript prose.",
-        "",
-        "## Research Questions And Answers",
-        "",
-    ]
-    detail_lines.extend(_md_table(pd.DataFrame(rq_rows)))
-    detail_lines.append("")
-    detail_lines.append("## Displayed Evidence Tables")
-    for title, path in table_paths:
-        detail_lines.extend(["", f"### {title}", ""])
-        detail_lines.extend(_md_table(pd.read_pickle(path)))
-    (OUT / "core_empirical_rq_results.md").write_text("\n".join(detail_lines) + "\n", encoding="utf-8")
-
-
 def main() -> int:
     _ensure_dirs()
-    variable_construction_table()
     panel = core_token_day_panel()
-    core = core_panel_regressions(panel)
-    threshold = persistence_displacement_thresholds(panel)
-    stress = stress_event_time()
+    core_panel_regressions(panel)
+    persistence_displacement_thresholds(panel)
+    stress_event_time()
     pool = load_pool_candidate_capital()
-    common = common_pool_capital_tests(pool)
+    common_pool_capital_tests(pool)
     actual = build_pair_vehicle_actual_daily()
-    actual_choice = actual_route_choice_tests(actual)
-    lp_feedback = lp_allocation_feedback_tests(panel, core)
-    challenger = pair_challenger_displacement_tests(actual)
-    v3_dose = v3_dose_response_tests()
-    v4_persistence = v4_route_use_persistence_tests()
-    common_hetero = common_pool_capital_heterogeneity_tests()
-    build_rq_registry(
-        core,
-        threshold,
-        stress,
-        common,
-        actual_choice,
-        lp_feedback,
-        challenger,
-        v3_dose,
-        v4_persistence,
-        common_hetero,
-    )
+    actual_route_choice_tests(actual)
+    pair_challenger_displacement_tests(actual)
+    v3_dose_response_tests()
+    common_pool_capital_heterogeneity_tests()
     return 0
 
 

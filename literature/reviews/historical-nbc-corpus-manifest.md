@@ -51,9 +51,9 @@ All confirmed published (DOI resolves to a firm publisher record, not a working 
 
 - Historical `slides/nanyang_vehicle_currencies.tex` — deleted after the live deck replaced it; recoverable from git history only and not binding on current deck work.
 - `docs/research-questions-and-empirical-design.md` — the RQ1-5 redesign doc (2026-07-17), execution hold never lifted. Its literature classification (above) is reused; its RQ-numbered structure is explicitly not binding per Java's instruction.
-- `output/core_empirical_rq_results.md` and the retired RQ1-7 memos now under `docs/retired-rq1-7-*.md` are pre-redesign artifacts. They are not current findings or execution authority; current claims come only through the findings freeze and registered evidence chain.
+- The July RQ1--7 design history under `docs/retired-rq1-7-*.md` may be consulted only to reconstruct a decision that the current specification lock and findings freeze do not already explain.
 - Reference repo `defi-dominant-currency` (ddc) — deeper historical data engine and 115G raw data layer; frozen, reference/data-engine only per the project's locked decisions.
 
 ## Historical next step
 
-The original Phase 1 source-fidelity cross-check is preserved in [`legacy-nbc-source-fidelity.md`](legacy-nbc-source-fidelity.md). Current work follows the live literature gate instead.
+The original Phase 1 source-fidelity cross-check is preserved in [`historical-nbc-source-fidelity.md`](historical-nbc-source-fidelity.md). Current work follows the live literature gate instead.

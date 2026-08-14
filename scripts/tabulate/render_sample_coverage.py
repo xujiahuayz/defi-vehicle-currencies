@@ -31,8 +31,6 @@ units = pd.read_parquet(
     DATA_DIR / "empirical" / "v4_settlement_route_units.parquet",
     columns=["date"],
 )
-cells = pd.read_parquet(DATA_DIR / "empirical" / "v4_settlement_eligible_cells.parquet")
-settlement = pd.read_parquet(DATA_DIR / "empirical" / "v4_settlement_sample.parquet")
 
 bridge_days = bridge.drop_duplicates("date").copy()
 active_bridge_days = bridge_days[bridge_days["indirect_route_count"].gt(0)]
@@ -68,12 +66,12 @@ rows = [
         f"{count(len(common_support))} common-support quotes",
     ),
     (
-        "V4 settlement route-unit panel",
+        "Pure V3/V4 route-unit panel",
         str(units["date"].min()),
         str(units["date"].max()),
         count(units["date"].nunique()),
         count(len(units)),
-        f"{count(len(cells))} matched cells; {count(len(settlement))} receipt observations",
+        "Complete coherent components assigned to one architecture",
     ),
 ]
 

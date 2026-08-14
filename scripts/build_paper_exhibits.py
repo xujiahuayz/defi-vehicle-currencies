@@ -181,36 +181,6 @@ def build_table_route_cost() -> None:
     )
 
 
-def build_table_liquidity_stickiness() -> None:
-    formation = pd.read_pickle(EMP / "liquidity_formation_tests.pkl")
-    stick = pd.read_pickle(EMP / "bridge_stickiness_tests.pkl")
-    rows = []
-    for r in formation.itertuples(index=False):
-        rows.append({
-            "Test": str(r.name).replace("P2 ", ""),
-            "N": _int(r.n),
-            "Coefficient": _num(r.beta, 3),
-            "SE": _num(r.se, 3),
-            "t": _num(r.t, 2),
-            "p": _p(r.p),
-        })
-    for r in stick.itertuples(index=False):
-        rows.append({
-            "Test": str(r.name).replace("P2 stickiness AR(1): ", "AR(1), "),
-            "N": _int(r.n),
-            "Coefficient": _num(r.beta, 3),
-            "SE": _num(r.se, 3),
-            "t": _num(r.t, 2),
-            "p": _p(r.p),
-        })
-    _write_table(
-        pd.DataFrame(rows),
-        "table_04_liquidity_stickiness",
-        "Liquidity concentration and persistence of vehicle use.",
-        "tab:liquidity-stickiness",
-    )
-
-
 def build_table_stress() -> None:
     common = pd.read_pickle(EMP / "stress_common_support_summary.pkl")
     events = pd.read_pickle(EMP / "stress_common_support_events.pkl")
@@ -246,72 +216,6 @@ def build_table_stress() -> None:
         "table_a02_stress_events",
         "Largest WETH downside events used in the common-support design.",
         "tab:stress-events",
-    )
-
-
-def build_table_v4() -> None:
-    dex = pd.read_pickle(EMP / "v4_settlement_dex_summary.pkl")
-    paired = pd.read_pickle(EMP / "v4_settlement_paired.pkl")
-    hetero = pd.read_pickle(EMP / "v4_settlement_heterogeneity.pkl")
-    v3 = dex[dex["dex"].eq("uniswap_v3")].iloc[0]
-    v4 = dex[dex["dex"].eq("uniswap_v4")].iloc[0]
-    diff = paired.iloc[0] if not paired.empty else None
-    out = pd.DataFrame([
-        {
-            "DEX": "Uniswap V3",
-            "Observations": _int(v3["observations"]),
-            "Cells": _int(v3["cells"]),
-            "Receipt found (%)": _pct(v3["receipt_found_share"]),
-            "Transfer incidence (%)": _pct(v3["transfer_share"]),
-            "Median route size": f"${_int(v3['median_route_usd'])}",
-        },
-        {
-            "DEX": "Uniswap V4",
-            "Observations": _int(v4["observations"]),
-            "Cells": _int(v4["cells"]),
-            "Receipt found (%)": _pct(v4["receipt_found_share"]),
-            "Transfer incidence (%)": _pct(v4["transfer_share"]),
-            "Median route size": f"${_int(v4['median_route_usd'])}",
-        },
-    ])
-    if diff is not None:
-        p_text = _p(diff["p"])
-        test_text = f"t={_num(diff['t'], 2)}, p{p_text}" if p_text.startswith("<") else f"t={_num(diff['t'], 2)}, p={p_text}"
-        out.loc[len(out)] = {
-            "DEX": "V4 - V3",
-            "Observations": "",
-            "Cells": _int(diff["cells"]),
-            "Receipt found (%)": "",
-            "Transfer incidence (%)": _num(100 * diff["diff"], 1),
-            "Median route size": test_text,
-        }
-    _write_table(
-        out,
-        "table_06_v4_settlement",
-        "V4 flash accounting and physical intermediary-token transfers.",
-        "tab:v4-settlement",
-        note=(
-            "Route units are matched by week, endpoint pair, and intermediate vehicle token. "
-            "The outcome is whether the receipt contains an ERC-20 Transfer log for the "
-            "intermediate token."
-        ),
-    )
-
-    h = hetero.copy()
-    app = pd.DataFrame({
-        "Vehicle": h["vehicle"],
-        "Cells": h["cells"].map(_int),
-        "V3 transfer (%)": h["v3_mean"].map(_pct),
-        "V4 transfer (%)": h["v4_mean"].map(_pct),
-        "V4 - V3 (pp)": h["diff"].map(lambda x: _num(100 * x, 1)),
-        "t": h["t"].map(lambda x: _num(x, 2)),
-        "p": h["p"].map(_p),
-    })
-    _write_table(
-        app,
-        "table_a03_v4_vehicle_heterogeneity",
-        "V4 settlement-transfer incidence by vehicle token.",
-        "tab:v4-vehicle-heterogeneity",
     )
 
 
@@ -410,24 +314,6 @@ def build_figures() -> None:
     fig.savefig(FIGURES / "stress_common_support.pdf")
     plt.close(fig)
 
-    dex = pd.read_pickle(EMP / "v4_settlement_dex_summary.pkl")
-    fig, ax = plt.subplots(figsize=(5.2, 4.0))
-    labels = ["V3", "V4"]
-    vals = [
-        100 * float(dex[dex["dex"].eq("uniswap_v3")]["transfer_share"].iloc[0]),
-        100 * float(dex[dex["dex"].eq("uniswap_v4")]["transfer_share"].iloc[0]),
-    ]
-    ax.bar(labels, vals, color=["#54a24b", "#e45756"])
-    ax.set_ylim(0, 105)
-    ax.set_ylabel("Intermediary-token transfer incidence (%)")
-    ax.set_title("V4 partially virtualizes settlement")
-    for i, v in enumerate(vals):
-        ax.text(i, v + 2, f"{v:.1f}%", ha="center")
-    fig.tight_layout()
-    fig.savefig(FIGURES / "v4_settlement_transfer_incidence.pdf")
-    plt.close(fig)
-
-
 def write_manifest() -> None:
     text = """# Paper Exhibit Manifest
 
@@ -445,11 +331,7 @@ bridge_measurement. Vehicle use and raw volume share by year.
 
 direct_cost_advantage. Direct routes and WETH indirect-route execution costs.
 
-liquidity_stickiness. Liquidity concentration and persistence of vehicle use.
-
 stress_rotation. Stress rotation in common-support indirect-route opportunities.
-
-v4_settlement. V4 flash accounting and physical intermediary-token transfers.
 
 ## Main Figures
 
@@ -463,15 +345,11 @@ Figure 4. Vehicle-linked liquidity concentration over time.
 
 Figure 5. Stress rotates vehicle use away from WETH.
 
-Figure 6. V4 partially virtualizes settlement.
-
 ## Appendix Tables
 
 Table A1. Route-cost counterfactuals for all vehicle candidates.
 
 Table A2. Largest WETH downside events used in the common-support design.
-
-Table A3. V4 settlement-transfer incidence by vehicle token.
 
 Table A4. Uniswap V3 launch-window screen for bridge-share changes.
 
@@ -479,13 +357,10 @@ Table A4. Uniswap V3 launch-window screen for bridge-share changes.
 
 measurement_robustness. Vehicle-use measurement robustness.
 
-liquidity_robustness. Liquidity-feedback robustness across horizons and fixed effects.
-
 stress_robustness. Stress-rotation robustness to event weighting and subsamples.
 
 route_cost_robustness. Route-cost robustness to direct-route quality filters.
 
-v4_robustness. V4 settlement-transfer robustness by route size.
 """
     MANIFEST.write_text(text, encoding="utf-8")
 
@@ -497,9 +372,7 @@ def main() -> int:
     build_table_bridge_measurement()
     build_table_summary_statistics()
     build_table_route_cost()
-    build_table_liquidity_stickiness()
     build_table_stress()
-    build_table_v4()
     build_table_v3_architecture()
     build_figures()
     write_manifest()

@@ -162,10 +162,6 @@ class CalendarDynamicsTests(unittest.TestCase):
         consumers = (
             "src/ddvc/analysis/observations.py",
             "scripts/run_core_rq_experiments.py",
-            "scripts/run_feedback_proposition_tests.py",
-            "scripts/run_lp_supply_flow_tests.py",
-            "scripts/run_p2_dynamic_persistence.py",
-            "scripts/run_robustness_tests.py",
         )
         for relative in consumers:
             source = (root / relative).read_text()

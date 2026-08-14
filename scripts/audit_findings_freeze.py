@@ -815,6 +815,25 @@ def literature_source_key(fields: dict[str, str]) -> str:
     return fields.get("source key", "").strip()
 
 
+def literature_card_for_requirement(
+    cards: dict[str, dict[str, str]], key: str
+) -> dict[str, str]:
+    """Reuse one complete card when a cited paper is also a venue exemplar.
+
+    Card headings describe the role under review, while the Source key owns paper
+    identity. Requiring a second copy of the same five-axis read when a venue exemplar
+    later becomes cited creates two independently drifting summaries of one source.
+    """
+    if key in cards:
+        return cards[key]
+    matches = [
+        fields
+        for fields in cards.values()
+        if literature_source_key(fields) == key
+    ]
+    return matches[0] if len(matches) == 1 else {}
+
+
 def literature_corpus_index(root: Path = ROOT) -> dict[str, dict]:
     """Load the tracked checksum contract for the ignored local PDF corpus."""
     path = root / "literature" / "text" / "_index.jsonl"
@@ -1351,18 +1370,18 @@ def validate_literature_audit(
     complete_cards = {
         key
         for key in required_cards
-        if key in cards
-        and complete_literature_card(cards[key])
+        if (fields := literature_card_for_requirement(cards, key))
+        and complete_literature_card(fields)
         and (
             not verify_source_sets
-            or literature_source_key(cards[key]) in source_sets
+            or literature_source_key(fields) in source_sets
         )
         and companion_sources_closed(
-            cards[key],
+            fields,
             materialized=materialized,
-            source_text=card_source_evidence_text(cards[key]) if verify_source_sets else None,
+            source_text=card_source_evidence_text(fields) if verify_source_sets else None,
             source_set=(
-                source_sets.get(literature_source_key(cards[key]))
+                source_sets.get(literature_source_key(fields))
                 if verify_source_sets
                 else None
             ),
@@ -1371,7 +1390,7 @@ def validate_literature_audit(
     verified_citations = {
         key
         for key in cited_keys
-        if cards.get(key, {}).get("status")
+        if literature_card_for_requirement(cards, key).get("status")
         in {"claim-verified", "independently-re-read"}
     }
     read_venues = {

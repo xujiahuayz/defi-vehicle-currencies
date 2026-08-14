@@ -13,6 +13,11 @@ distributional or classifier-based departures as advisories. It measures first a
 second, so the venue thresholds are always the current empirical quantiles of the exemplars
 and never a number frozen into a test.
 
+The surface is cumulative. A new correction is added to STAGES or to a test already invoked
+by STAGES; it does not displace an older check. Removing or weakening a stage requires an
+explicit withdrawal in the canonical workflow. When two standing rules conflict, the edit
+stays open until Java resolves the conflict instead of allowing the newest rule to win.
+
 Run it after ANY content change to the paper or the deck, and before calling either one
 done. `docs/research-workflow.md` names it as the gate that closes the writing loop.
 
@@ -38,6 +43,8 @@ OPTICS = ROOT / "output" / "exhibits" / "venue_optics.jsonl"
 # unusually often or has an unusual sentence distribution; they cannot judge whether an
 # economic argument is introduced, developed, qualified, and handed to the next paragraph
 # as published authors do. That judgment requires the raw-passage review registered below.
+# STAGES is cumulative: a later concern adds to this surface. A stage is not removed or
+# weakened without an explicit withdrawal recorded in docs/research-workflow.md.
 # Venue-shape quartiles and the unsupervised outlier classifier remain advisory because
 # domain vocabulary and rhetorical function require editorial judgment.
 STAGES = [

@@ -8,6 +8,20 @@
 
 \appendix
 
+\section{From contract events to economic routes}
+\label{app:route-construction}
+
+Each exchange records trades in its own contract and event format. We first identify pools from the protocol's factory or registry, map contract addresses to tokens, and convert raw integer amounts using the token precision that applied at the time of the trade. Contract addresses define token identity because unrelated tokens can share a symbol and the same economic asset can appear in native and wrapped form. We consolidate ETH and WETH only after the address-level reconstruction; every other token remains distinct unless a stated economic classification combines it.
+
+We then order all swap events within a transaction by block, transaction, and log position. The ordered token flows reveal the exchange that actually occurred. A single connected chain gives one route, parallel chains identify an order split, and disconnected event groups remain separate. This procedure is necessary because one transaction can contain unrelated calls as well as trades across several exchanges. It also prevents a transaction with two simultaneous routes from being mistaken for one longer route. The output is the sequence of assets and pools traversed, not an inference from the transaction sender or router label.
+
+The route-count sample requires a complete token sequence but not a dollar price. The value-weighted sample additionally requires every leg to have coherent amounts and a common dollar valuation. Failed valuation therefore removes an observation from the value calculation without erasing the observed route. Self-returning paths are excluded under the rule in Appendix~\ref{app:roundtrip}, since they do not exchange one endpoint asset for another.
+
+Historical token precision cannot be verified for 13 tokens traded in 22 constant-product pools. Reserve-reconstruction analyses omit those pools. A deliberately conservative check removes every route involving any of the 13 tokens: the resulting upper bound is 5,950 routes and \$10.91 million of route value. Only 1,036 of those routes use one of the affected tokens as an intermediary, representing \$1.284 million, or 0.00043\% of value on routes whose legs can all be valued. All 13 tokens lie outside the native and stablecoin groups used in the main comparison. The exclusion affects exact reserve reconstruction; the route-composition result is unchanged.
+% docs/findings-freeze.md, 13 unresolved V2 token-precision records and worst-case route deletion bound
+
+This separation follows the treatment of blockchain data in \citet{LeharParlour2024Uniswap} and \citet{GriffinShams2020Untethered}, and the broader practice of reporting identity rules and unmatched observations in \citet{BoltonKacperczyk2021CarbonRisk}. The main analysis states the economic sample and measurement; the appendix reports event ordering, exclusions, and their quantitative importance.
+
 \section{Quoter construction and validation}
 \label{app:quoters}
 
@@ -58,10 +72,10 @@ Range boundaries sit on a geometric tick grid and each initialised tick carries 
 with the sign set by the direction of travel. The quoter carries the contract's own integer Q96 arithmetic, including the round-up conventions on the input side and the round-down conventions on the output side, so a quote is exact given the state.
 % src/ddvc/pricing/v3quote.py, integer port of SwapMath.computeSwapStep and TickMath
 
-The active tick map is accumulated from every mint and burn strictly before the validation day, then same-day liquidity changes and swaps are replayed together by block and log index. Consecutive swaps in one pool supply the price state: the earlier event leaves \texttt{sqrtPriceX96} and \texttt{tick} immediately before the later swap, while the interleaved event stream supplies the active liquidity it actually faced. Errors are reported by trade direction crossed with whether the quote traversed an initialised tick, because a traversal fault is directional by construction and a pooled error statistic averages a broken direction against a working one. That is not a hypothetical: an upward search that returned the tick just crossed produced a zero-width step and under-quoted upward tick-crossing swaps by a median 62.6\%, while every non-crossing quote read exact and the downward direction validated at $-0.0006\%$.
+The active tick map is accumulated from every mint and burn strictly before the validation day, then same-day liquidity changes and swaps are replayed together by block and log index. Consecutive swaps in one pool supply the price state: the earlier event leaves \texttt{sqrtPriceX96} and \texttt{tick} immediately before the later swap, while the interleaved event stream supplies the active liquidity it actually faced. Errors are reported by trade direction crossed with whether the quote traversed an initialised tick, because a traversal fault is directional by construction and a pooled error statistic averages a broken direction against a working one. This failure occurred in validation: an upward search that returned the tick just crossed produced a zero-width step and under-quoted upward tick-crossing swaps by a median 62.6\%, while every non-crossing quote read exact and the downward direction validated at $-0.0006\%$.
 % src/ddvc/pricing/v3quote.py, _next_init_tick measured docstring against realised swaps
 
-Table~\ref{tab:app:cl} reports four validation groups on Uniswap v4, whose supported pools exercise the same code path on static fee tiers v3 never carried, including 0, 7, 8 and 20,000 hundredths of a basis point. Hook-bearing and dynamic-fee pools are excluded because their per-swap hook cash flows and realised fee are not present in the raw rows; Appendix~\ref{app:coverage} measures that support boundary.
+Table~\ref{tab:app:cl} reports four validation groups on Uniswap v4, whose supported pools exercise the same code path on static fee tiers v3 never carried, including 0, 7, 8 and 20,000 hundredths of a basis point. Hook-bearing and dynamic-fee pools are excluded because their transaction-level cash flows and realised fee are not present in the raw records; Appendix~\ref{app:coverage} reports their share of v4 trading.
 % output/exhibits/v4_quoter_validation.jsonl, observed static fee tiers; output/exhibits/v4_quote_support.jsonl, support statuses
 
 \begin{table}[t]
@@ -209,10 +223,10 @@ Day & Held-out trades & Backward & Flat & Opening & Pools priced / excluded \\
 Across the twelve days, backward reconstruction returns a median error of 0.0000\% and identifies 256 of 473 testable pool-days as weighted pools. The excluded pool-days carry a median 91.8\% of tested swap volume, which materially limits the venue coverage of the counterfactual comparison.
 % output/exhibits/weighted_quoter_validation.jsonl, 12 days, 256 priced and 217 excluded pool-days
 
-\section{Backward state reconstruction}
+\section{Reconstructing pool balances before each trade}
 \label{app:state}
 
-Every quote in the panel needs the state that stood immediately before a trade, and none of the venue schemas stores that state. What they store is a period-end value: the constant-product subgraph updates a pool-hour's reserves on every swap in the hour, and the weighted-pool schema overwrites a pool-day's balances on every event of the day. The stored record is therefore the state after the last event of its period, and the direction in which a reader unwinds it is the whole of the reconstruction.
+Every counterfactual quote needs the pool state immediately before the trade. The historical records instead store balances at the end of an hour or day. We recover the earlier state by ordering every balance-changing event within the period and unwinding the sequence from the recorded closing balance.
 
 Let $R^{\mathrm{end}}$ be the stored period-end reserve pair and $\Delta_t$ the net signed amounts of the $t$-th event in execution order. The state before event $s$ is the stored value with every later event removed,
 \[
@@ -225,20 +239,19 @@ which is a single reverse pass over the period. The alternative reading takes th
 which accumulates every unrecorded balance change between the two stored points into the state it hands the quoter. The two readings use identical inputs and differ only in direction, and they do not perform alike. Replaying forward returns a median absolute quote error of 11.8\% against realised outputs, and unwinding backward returns 0.0000\%.
 % src/ddvc/cpquote.py, unwind_hour measured docstring on 8,024 executed v2 swaps
 
-The reconstruction also audits itself, which is what removes the need to fetch mint and burn events for correctness. Unwinding a period all the way to its start and comparing with the previous period's stored end value tests whether swaps were the only thing that moved reserves,
+Liquidity additions and withdrawals also move constant-product pool balances, so the ordered replay includes them alongside swaps. We unwind the sequence to the start of the period and compare the reconstructed opening balance with an independently observed reserve state,
 \[
 \left|\frac{R^{\mathrm{pre}}_{1} - R^{\mathrm{end}}_{\mathrm{prev}}}{R^{\mathrm{end}}_{\mathrm{prev}}}\right| < \tau .
 \]
-Agreement means the unwind is exact. Disagreement means a mint, a burn or a direct transfer intervened, and every pre-state in that period is displaced by the same amount. On 2024-01-15, 96.8\% of comparable pool-hours reconcile and 3.2\% are flagged, and the flagged share coincides with the 3.3\% of quotes that miss 1\% accuracy, so the continuity test identifies the inaccurate cases and does not merely correlate with them. Dropping flagged hours is not random sampling, since liquidity events concentrate in actively managed and newly launched pools, and that selection is carried as a limitation of the constant-product legs.
-% src/ddvc/cpquote.py, hour_is_clean measured docstring on 2024-01-15
+Agreement establishes that the event history reproduces the observed reserves. A period is omitted from a state-dependent analysis when a required event family is incomplete or the balances do not reconcile. We report the resulting coverage by exchange and year because missing state can be concentrated in actively managed or newly launched pools and therefore need not be random.
 
-The same result appeared independently on the weighted-pool family, where the reconstruction question takes a different form and the answer repeats. Three readings of \texttt{poolSnapshots.amounts} were scored against realised Balancer trades on the twelve days of Table~\ref{tab:app:weighted}: holding the snapshot flat across the day gives a median 1.7\%, treating it as the day's opening state and rolling forward gives 2.8\%, and treating it as the day's closing state and rolling the event sequence backward gives 0.0000\%.
+The same logic applies to weighted pools. We treat \texttt{poolSnapshots.amounts} as the closing balance and unwind joins, exits, and swaps in their recorded order. Table~\ref{tab:app:weighted} compares this reconstruction with two alternatives that either hold the closing balance fixed or treat it as the opening state.
 % output/exhibits/weighted_quoter_validation.jsonl, medians across 12 sampled days
 
-Two features of that replication make it informative about the constant-product result as well as about Balancer. The venues share no code, no schema and no event stream, so a common bug is not available as an explanation. And the weighted-pool walk had to merge joins and exits into the same ordered sequence as swaps, because a swap-only walk charges every liquidity event to the invariant and reads exactly like a pool running different mathematics, which collapsed coverage from 87 of 105 testable pool-days to 177 of 367 and left 96.9\% of tested volume excluded. The correction there was a second event stream.
+The Balancer replay therefore includes joins and exits as well as swaps. Omitting those events attributes liquidity supplied or withdrawn during the day to the pricing rule and can make a correctly specified invariant appear to fail. The event set is part of the economic measurement because it determines which pool states and trades enter the price comparison.
 % src/ddvc/pricing/weighted.py, balance-reconstruction measured docstring on the same twelve days
 
-\section{Common support for hypothetical routes}
+\section{Restricting hypothetical trades to observed size--depth combinations}
 \label{app:support}
 
 The validation samples contain executed swaps and therefore pools deep enough to serve the observed trade. A hypothetical route may demand much more output relative to pool depth, where the observed errors no longer describe pricing accuracy. We retain a hypothetical leg only when its own price impact lies within the range represented among the realised validation trades. The cutoff is calibrated from that population.
@@ -316,9 +329,9 @@ The panel's threshold of 5\% sits between the 90th percentile of 3.29\% and the 
 \end{figure}
 % output/exhibits/quoter_support_bounds.jsonl, per-day and pooled 90th and 99th percentiles, 932,270 validated swaps on eight sampled days
 
-This restriction removes economically relevant observations, and the body reports that loss of support. It cannot measure quote error for retained hypothetical routes because those routes were never executed and have no realised output for comparison. Same-block capture motivates a possible indirect check, but the required transaction-level closing-cycle test has not yet been completed.
+This restriction removes economically relevant observations, and the body reports that loss of support. The restriction is calibrated on executed trades, leaving the pricing error of retained hypothetical routes unobserved. A same-block closing-cycle test could provide an indirect check and remains pending.
 
-\section{Signed venue coverage}
+\section{Markets omitted from the price comparison}
 \label{app:coverage}
 
 An omitted venue can improve the best direct route, the best intermediated route, or both. We therefore measure coverage using each venue's share of trading volume and report the composition of the excluded volume. To make volume comparable across the seven data sources, we compute it from individual swaps using the smaller dollar value of the two legs. This avoids double counting in two sources and removes implausible oracle values in thin pools: one Curve pool reports a \$456m day whose swaps sum to \$8, and a constant-product pair with \$255 of reserves reports \$1.36bn. Physical bounds on volume relative to reserves exclude between 0.10\% and 0.24\% of pool-days per year.
@@ -355,7 +368,7 @@ Pooled & 56.02 & 14.98 & 13.73 & 5.45 & 3.92 & 5.88 & 0.02 \\
 \footnotesize Percentage shares within the seven-venue panel. every seventh calendar day from 2018-11-02 to 2026-06-30, 400 sampled days.
 \end{table}
 
-Uniswap v4 carries its own within-venue support boundary. Exact-ID enrichment leaves zero swaps with incomplete or invalid immutable statics across 29,005,863 rows. Vanilla static-fee pools account for 84.02\% of swaps and 99.05\% of reported value pooled; the corresponding 2026 shares are 79.89\% and 95.57\%. The excluded remainder is hook-bearing or dynamic-fee-plus-hook activity, whose per-swap cash-flow rule is not identified from the raw event.
+Uniswap v4 carries its own within-venue limitation. Pool-identity reconstruction leaves zero swaps with incomplete or invalid immutable pool attributes across 29,005,863 rows. Static-fee pools without hooks account for 84.02\% of swaps and 99.05\% of reported value; the corresponding 2026 shares are 79.89\% and 95.57\%. The excluded remainder uses hooks, dynamic fees, or both, whose transaction-level cash-flow rule is not identified from the raw event.
 % output/exhibits/v4_quote_support.jsonl, ALL and 2026 rows by support status
 
 Curve carries between 11\% and 19\% of panel volume in every year it exists and ranks second in four years, making its coverage economically important. The StableSwap model fits 621 pool-days and excludes 588 whose 90th-percentile fitting error exceeds 1\%. Across 28 sampled dates from 2020-02-11 to 2026-04-28, these exclusions account for 34.2\% of the Curve volume assessed, or \$1.83bn of \$5.36bn. Another 2.75\% of Curve volume occurs in pool-days with too few trades to estimate and evaluate the amplification coefficient separately. Lowering the minimum from eight trades to four changes annual excluded shares by at most 1.3 percentage points.
@@ -396,7 +409,7 @@ Year & \multicolumn{2}{r}{Native leg} & \multicolumn{2}{r}{Stable leg} & Other v
 \bottomrule
 \end{tabular}
 \\[4pt]
-\footnotesize A pool serves the \emph{native} leg when it contains ETH or a staking derivative, the \emph{stable} leg when every token is stable including baskets and interest-bearing wrappers, and the \emph{other volatile} leg otherwise., 28 measured Curve pool-days from 2020-02-11 to 2026-04-28. Pool leg is assigned by a token registry pass followed by a symbol pass over stable derivatives, which is required because the registry alone labels metapools pairing a stablecoin against the three-token base-pool claim as volatile pairs.
+\footnotesize A pool serves the \emph{native} leg when it contains ETH or a staking derivative, the \emph{stable} leg when every token is stable including baskets and interest-bearing wrappers, and the \emph{other volatile} leg otherwise. The sample contains 28 measured Curve pool-days from 2020-02-11 to 2026-04-28. Pool leg is assigned by a token registry pass followed by a symbol pass over stable derivatives, which is required because the registry alone labels metapools pairing a stablecoin against the three-token base-pool claim as volatile pairs.
 \end{table}
 
 The exclusions are concentrated in routes involving the native asset. The excluded share of native-leg volume exceeds the stable-leg share by at least 33 percentage points in every sample year and by 54 points in 2023. Tricrypto pools pairing WBTC and WETH with a stablecoin account for \$818m, or 44.6\%, of the \$1.83bn excluded, including seven of the twelve largest excluded pool-days. These pools use CryptoSwap, so the missing coverage is concentrated where Curve supplies depth between ETH and stablecoins.
@@ -407,152 +420,6 @@ SushiSwap v3 cannot be priced from the available historical records. Its reserve
 
 Balancer accounts for 3.9\% of measured venue volume over the full sample and 8.8\% at its 2023 peak. Weighted pools are included with the validation errors in Table~\ref{tab:app:weighted}. Linear and boosted pools remain outside the comparison. Of 29 sampled composable-stable pools, 23 reduce to two external tokens after removing the pool's own share token, but pricing them also requires historical rate-provider states that are not available in the current source.
 % docs/venue-coverage-bounds.md, venue_volume_by_year.jsonl, 400 sampled days; docs/research-workflow.md, Balancer family audit
-
-\section{Block-level pricing and the triangle residual}
-\label{app:timing}
-
-The counterfactual panel prices at the close of an hour, whereas the route-selection state is latent and may precede the observed settlement block. Section~\ref{sec:executability:timing} first measures how much prices move between the pre-settlement and hour-end states. Because both alternatives are priced at the same state, their ranking changes only with relative price movement. A closed triangle isolates that relative component.
-
-The realised-route validation matches each leg of a two-leg V3 route to its pool and transaction log, reads both pools strictly before the transaction's first V3 swap, and compares that state with the hour-end state used by the panel. Across 12,931 routes on three dates, the median absolute movement in the two-leg marginal rate is 54.3 basis points; 62.8\% move by more than 30 basis points and 36.4\% by more than 100. The median is 140.3 basis points on 2022-06-15, 52.1 on 2024-06-15, and 31.7 on 2025-09-14. These dates reveal heterogeneity but do not establish a trend or an aggregator effect.
-% output/exhibits/realised_route_timing_validation.jsonl, 12,931 routes on three dates
-
-For endpoints $a$ and $b$ and intermediary $k$, with a direct pool $ab$ and legs $ak$ and $kb$, the residual
-\[
-m_{a,k,b} \;=\; \log P(a \to b) - \log P(a \to k) - \log P(k \to b)
-\]
-is positive exactly when the direct pool returns more of $b$ per unit of $a$ than the two-leg route does, in the zero-size limit where the marginal price is the pool price. The sign of $m$ gives the direct-versus-vehicle ranking at that limit.
-
-Two properties make the test exact. A raw pool price $\widetilde{P}$ and the human-units price $P$ differ by the token decimals of the pair,
-\[
-\log P_{ab} \;=\; \log \widetilde{P}_{ab} + (d_a - d_b)\log 10 ,
-\]
-and around a closed triangle those constants cancel,
-\[
-(d_a - d_b) - (d_a - d_k) - (d_k - d_b) \;=\; 0 ,
-\]
-so $m$ can be formed in raw units and inherits no decimals-resolution error. On the concentrated-liquidity venues the raw price is carried on the swap event itself,
-\[
-\widetilde{P} = \left(\frac{\texttt{sqrtPriceX96}}{2^{96}}\right)^{2},
-\]
-so the state immediately after any swap is observed and never reconstructed, and the block-side and hour-side numbers come from the same field.
-% scripts/test_block_vs_hour_verdict.py, module docstring and load_day
-
-Computing $m$ at each realised swap's own block and again at its hour-boundary state gives the flip rate. Table~\ref{tab:app:verdictday} reports it by day.
-
-\begin{table}[t]
-\centering
-\caption{Route-ranking changes between pre-event and hour-end states, by day}
-\label{tab:app:verdictday}
-\begin{tabular}{lrrrrr}
-\toprule
-Day & Triangles & Snapshots & Flip rate & Median gap & Median change \\
-\midrule
-2021-12-25 & 36 & 29{,}462 & 38.9\% & 69.7 & 62.5 \\
-% output/exhibits/block_vs_hour_verdict.jsonl, 36 triangles and 29,462 opportunity snapshots on 2021-12-25
-2022-08-17 & 70 & 20{,}524 & 30.1\% & 66.0 & 53.0 \\
-% output/exhibits/block_vs_hour_verdict.jsonl, 70 triangles and 20,524 opportunity snapshots on 2022-08-17
-2023-04-09 & 41 & 14{,}425 & 43.4\% & 98.6 & 69.9 \\
-% output/exhibits/block_vs_hour_verdict.jsonl, 41 triangles and 14,425 opportunity snapshots on 2023-04-09
-2023-11-30 & 32 & 11{,}100 & 35.8\% & 34.4 & 31.9 \\
-% output/exhibits/block_vs_hour_verdict.jsonl, 32 triangles and 11,100 opportunity snapshots on 2023-11-30
-2024-07-22 & 52 & 19{,}301 & 39.4\% & 28.2 & 24.3 \\
-% output/exhibits/block_vs_hour_verdict.jsonl, 52 triangles and 19,301 opportunity snapshots on 2024-07-22
-2025-03-14 & 70 & 35{,}239 & 40.4\% & 23.9 & 24.4 \\
-% output/exhibits/block_vs_hour_verdict.jsonl, 70 triangles and 35,239 opportunity snapshots on 2025-03-14
-2025-11-04 & 70 & 59{,}571 & 40.4\% & 36.7 & 37.0 \\
-% output/exhibits/block_vs_hour_verdict.jsonl, 70 triangles and 59,571 opportunity snapshots on 2025-11-04
-\midrule
-Pooled & 371 & 189{,}622 & 38.9\% & 38.3 & 35.5 \\
-% output/exhibits/block_vs_hour_verdict.jsonl, all 371 triangles and 189,622 opportunity snapshots
-\bottomrule
-\end{tabular}
-\\[4pt]
-\footnotesize Flip rate is snapshot-weighted across triangles within a day. Median gap is the median across triangles of the per-triangle median strict pre-event residual, in basis points, and median change is the median across triangles of the per-triangle median absolute repricing change. Seven sampled days from 2021-12-25 to 2025-11-04.
-\end{table}
-
-The flip rate varies between 30.1\% and 43.4\% across four years and two market regimes. Table~\ref{tab:app:conditional} conditions it three ways.
-% output/exhibits/block_vs_hour_verdict.jsonl, per-day snapshot-weighted flip rates on seven sampled days
-
-\begin{table}[t]
-\centering
-\caption{Route-ranking disagreement, conditional}
-\label{tab:app:conditional}
-\begin{tabular}{lrr}
-\toprule
-\multicolumn{3}{l}{\emph{Panel A: by the fee wedge a two-leg route pays over a direct route}} \\
-Wedge & Flip rate & Dominated share \\
-\midrule
-0 bps & 38.9\% & 49.6\% \\
-% output/exhibits/block_vs_hour_conditional.jsonl, fee_wedge_bps rows, 189,622 opportunity snapshots
-5 bps & 37.6\% & 43.1\% \\
-% output/exhibits/block_vs_hour_conditional.jsonl, fee_wedge_bps rows, 189,622 opportunity snapshots
-10 bps & 35.5\% & 38.3\% \\
-% output/exhibits/block_vs_hour_conditional.jsonl, fee_wedge_bps rows, 189,622 opportunity snapshots
-30 bps & 25.3\% & 24.1\% \\
-% output/exhibits/block_vs_hour_conditional.jsonl, fee_wedge_bps rows, 189,622 opportunity snapshots
-60 bps & 16.1\% & 13.6\% \\
-% output/exhibits/block_vs_hour_conditional.jsonl, fee_wedge_bps rows, 189,622 opportunity snapshots
-100 bps & 9.4\% & 7.9\% \\
-% output/exhibits/block_vs_hour_conditional.jsonl, fee_wedge_bps rows, 189,622 opportunity snapshots
-\midrule
-\multicolumn{3}{l}{\emph{Panel B: by time remaining to the hour boundary}} \\
-Bucket & Snapshots & Flip rate \\
-\midrule
-under 1 min & 10{,}613 & 22.5\% \\
-% output/exhibits/block_vs_hour_conditional.jsonl, time_to_hour_boundary rows
-1 to 5 min & 13{,}059 & 22.3\% \\
-% output/exhibits/block_vs_hour_conditional.jsonl, time_to_hour_boundary rows
-5 to 15 min & 31{,}525 & 32.8\% \\
-% output/exhibits/block_vs_hour_conditional.jsonl, time_to_hour_boundary rows
-15 to 30 min & 48{,}454 & 39.1\% \\
-% output/exhibits/block_vs_hour_conditional.jsonl, time_to_hour_boundary rows
-30 to 60 min & 85{,}971 & 45.5\% \\
-% output/exhibits/block_vs_hour_conditional.jsonl, time_to_hour_boundary rows
-\midrule
-\multicolumn{3}{l}{\emph{Panel C: by the size of the pre-event residual}} \\
-Bucket & Snapshots & Flip rate \\
-\midrule
-under 5 bps & 25{,}056 & 41.0\% \\
-% output/exhibits/block_vs_hour_conditional.jsonl, gap_at_own_event rows
-5 to 10 bps & 17{,}978 & 44.5\% \\
-% output/exhibits/block_vs_hour_conditional.jsonl, gap_at_own_event rows
-10 to 25 bps & 41{,}201 & 41.5\% \\
-% output/exhibits/block_vs_hour_conditional.jsonl, gap_at_own_event rows
-25 to 50 bps & 40{,}381 & 38.4\% \\
-% output/exhibits/block_vs_hour_conditional.jsonl, gap_at_own_event rows
-50 to 100 bps & 33{,}146 & 34.1\% \\
-% output/exhibits/block_vs_hour_conditional.jsonl, gap_at_own_event rows
-100 to 250 bps & 22{,}223 & 36.4\% \\
-% output/exhibits/block_vs_hour_conditional.jsonl, gap_at_own_event rows
-above 250 bps & 9{,}637 & 36.2\% \\
-% output/exhibits/block_vs_hour_conditional.jsonl, gap_at_own_event rows
-\bottomrule
-\end{tabular}
-\\[4pt]
-\footnotesize 189,622 opportunity snapshots across 371 triangles on seven sampled days. Panel A applies the wedge to all observations, so its denominator is constant across rows. \emph{Dominated share} is the share of observations the strict pre-event residual classifies as dominated at that wedge.
-\end{table}
-
-Panel C shows that restricting the sample to large residuals does not remove the timing problem: the disagreement rate remains between 34.1\% and 44.5\% across the pre-event residual buckets and is 36.2\% in the top bucket against 41.0\% in the bottom one.
-% output/exhibits/block_vs_hour_conditional.jsonl, gap_at_own_event rows over 189,622 opportunity snapshots
-A triangular-arbitrage residual can oscillate around zero within a block, so even a large observed value may be short lived. Panel B provides an independent timing check: rankings disagree less often when an opportunity occurs close to the hour end and more often when prices have longer to move. Figure~\ref{fig:app:boundary} shows this relationship.
-
-\begin{figure}[tbp]
-\centering
-\caption{Route-ranking disagreement by time remaining to the hour boundary}
-\label{fig:app:boundary}
-\begin{tikzpicture}
-\begin{axis}[ybar, width=0.85\textwidth, height=6.4cm, bar width=0.9cm, symbolic x coords={under 1,1 to 5,5 to 15,15 to 30,30 to 60}, xtick=data, xlabel={Minutes remaining to the close of the route's hour}, ylabel={Ranking disagreement, percent}, ymin=0, ymax=54, ytick={0,10,20,30,40,50}, tick align=outside, tick label style={font=\footnotesize}, label style={font=\footnotesize}, nodes near coords, nodes near coords style={font=\footnotesize}, point meta=explicit symbolic, grid=major, grid style={black!10}, axis line style={black!70}, enlarge x limits=0.12]
-\addplot[draw=black, fill=black!20] coordinates {(under 1,22.49) [22.5] (1 to 5,22.31) [22.3] (5 to 15,32.79) [32.8] (15 to 30,39.13) [39.1] (30 to 60,45.55) [45.5]};
-\end{axis}
-\end{tikzpicture}
-\par\vspace{6pt}
-\begin{minipage}{0.92\textwidth}
-\footnotesize\raggedright \emph{Notes.} An opportunity observed seconds before its hour closes is priced near the state the counterfactual panel used, while one observed early in an hour has a full hour of drift ahead. The buckets carry 10,613, 13,059, 31,525, 48,454 and 85,971 snapshots from left to right, for 189,622 opportunity snapshots across 371 triangles on seven sampled days from 2021-12-25 to 2025-11-04.
-\end{minipage}
-\end{figure}
-% output/exhibits/block_vs_hour_conditional.jsonl, cut=time_to_hour_boundary rows, 189,622 opportunity snapshots on seven sampled days
-
-Panel A shows why the timing error varies across routes. A two-leg route pays two pool fees where a direct route pays one. This relatively fixed wedge moves the comparison boundary away from the region in which market prices fluctuate, so route rankings are more stable when the wedge is larger.
 
 \section{Round-trip exclusion}
 \label{app:roundtrip}
@@ -626,7 +493,7 @@ The value-weighted share exceeds the count-weighted share at every quantile, by 
 \end{tikzpicture}
 \par\vspace{6pt}
 \begin{minipage}{0.92\textwidth}
-\footnotesize\raggedright \emph{Notes.} Each mark is one sampled day. \emph{Share by value} is round-trip routes as a share of the notional traded through multi-leg routes that day, and \emph{share by count} is the same share formed on route counts. The dashed and dotted lines are the medians across the 79 days, 21.72\% by value and 12.70\% by count. The labelled day 2025-12-06 is the maximum on both measures, at 25.93\% by count and 91.31\% by value. Days carrying fewer than 200 multi-leg routes are omitted., 79 sampled days from 2020-06-01 to 2026-04-27 covering 2,488,399 multi-leg routes.
+\footnotesize\raggedright \emph{Notes.} Each mark is one sampled day. \emph{Share by value} is round-trip routes as a share of the notional traded through multi-leg routes that day, and \emph{share by count} is the same share formed on route counts. The dashed and dotted lines are the medians across the 79 days, 21.72\% by value and 12.70\% by count. The labelled day 2025-12-06 is the maximum on both measures, at 25.93\% by count and 91.31\% by value. Days carrying fewer than 200 multi-leg routes are omitted. The sample contains 79 days from 2020-06-01 to 2026-04-27 and 2,488,399 multi-leg routes.
 \end{minipage}
 \end{figure}
 % output/exhibits/round_trip_share_by_day.jsonl, share_by_count and share_by_value on 79 sampled days from 2020-06-01 to 2026-04-27

@@ -21,17 +21,21 @@
 {\scriptsize\color{muted}Annual shares of observed vehicle routes; the figure does not attribute the changes to protocol design.}
 \end{frame}
 
-% EVIDENCE-STATUS: evolving route decomposition
+% EVIDENCE-STATUS: evolving route decomposition; venue-scope reweighting is a route-only descriptive identity
 % EVIDENCE-COMMIT: 6dd7897
-% EVIDENCE-SOURCES: output/figures/vehicle_excess_use_transition.pdf; output/exhibits/vehicle_excess_use.jsonl; output/exhibits/vehicle_excess_use_transition.jsonl; docs/findings-freeze.md
+% EVIDENCE-SOURCES: output/figures/vehicle_excess_use_transition.pdf; output/exhibits/vehicle_excess_use.jsonl; output/exhibits/vehicle_excess_use_transition.jsonl; output/exhibits/e0_usdt_integration_decomposition.jsonl; docs/findings-freeze.md
 % VISUAL-FUNCTION: candidate-level excess-use change | paired count/value dumbbells | identify the distinct USDT contribution
 \begin{frame}{USDT drives the post-2024 rise in stablecoin intermediation}
 \vspace{-0.08cm}
 \begin{center}
-\includegraphics[width=0.93\textwidth,height=0.67\textheight,keepaspectratio]{../output/figures/vehicle_excess_use_transition.pdf}
+\includegraphics[width=0.93\textwidth,height=0.56\textheight,keepaspectratio]{../output/figures/vehicle_excess_use_transition.pdf}
 \end{center}
-\vspace{-0.16cm}
-{\scriptsize USDT moves from less intermediation than endpoint use in 2024 to substantially more in 2026. The routed-value comparison includes only trades whose source, intermediary, and destination dollar amounts agree within 20\%; USDC starts and ends above parity.}
+\vspace{-0.11cm}
+{\fontsize{7.0}{7.7}\selectfont USDT crosses parity by routed value and extends its count advantage; USDC changes little. Routed value includes trades whose three dollar amounts agree within 20\%.}
+\vspace{0.07cm}
+\begin{beamercolorbox}[sep=0.10cm,wd=\textwidth]{block body}
+{\fontsize{7.2}{8.0}\selectfont\bfseries \USDTVenueWithinCountShare{} of the count-share change and \USDTVenueWithinValueShare{} of the routed-value change occur within the single- and cross-venue categories.}
+\end{beamercolorbox}
 \end{frame}
 
 % EVIDENCE-STATUS: certified descriptive route accounting and matched-market estimate; mechanism remains open
@@ -45,73 +49,95 @@
 \resizebox{0.93\textwidth}{!}{\input{assets/vehicle-transition-pair-decomposition.tex}}
 \end{center}
 \vspace{-0.38cm}
-{\fontsize{8.2}{9.1}\selectfont\textbf{Supported value tells the same broad story.} Stable share rises \PairValueTotal, with \PairValueReweight\ from activity weights among continuing pairs and only \PairValueWithin\ from stable-for-native substitution within them.}
+{\fontsize{8.2}{9.1}\selectfont\textbf{Dollar-weighted routes show the same broad allocation.} Stable share rises \PairValueTotal, with \PairValueReweight\ from activity weights among continuing pairs and only \PairValueWithin\ from stable-for-native substitution within them.}
 
 \vspace{0.02cm}
-{\fontsize{6.2}{6.8}\selectfont\color{muted}Route-count accounting for ordered endpoint pairs, pooling single- and cross-venue routes on month-days observed in both endpoint years through 30 June. Matched markets also hold the calendar position and broad realised route scope alike. Neither comparison holds venue sequence, feasible alternatives, notional, liquidity, cost, or router state fixed.}
+{\fontsize{6.2}{6.8}\selectfont\color{muted}Route-count accounting for ordered endpoint pairs, pooling single- and cross-venue routes on days of the calendar year observed in both endpoint years through 30 June. Matched markets additionally hold the ordered endpoint pair and single- versus cross-venue route category fixed. Neither comparison holds venue sequence, feasible alternatives, trade size, liquidity, cost, or router state fixed.}
 \end{frame}
 
 % EVIDENCE-STATUS: certified descriptive result; integration remains a selected route stratum
 % EVIDENCE-COMMIT: a0c54e9
-% EVIDENCE-SOURCES: output/figures/integration_rotation_slopes.pdf; output/exhibits/intermediation_integration_rival.jsonl; output/exhibits/intermediation_integration_interaction.jsonl; docs/findings-freeze.md
-% VISUAL-FUNCTION: integration-stratified vehicle rotation | paired interaction slopes | test whether venue mix absorbs the stable-share change
+% EVIDENCE-SOURCES: output/figures/experiments/integration_change_forest.pdf; output/exhibits/intermediation_integration_rival.jsonl; output/exhibits/intermediation_integration_interaction.jsonl; docs/findings-freeze.md
+% VISUAL-FUNCTION: integration-stratified vehicle rotation | change estimates with HAC intervals | test whether venue mix absorbs the stable-share change
 \begin{frame}{Stablecoin use rises within each venue scope}
 \vspace{-0.08cm}
 \begin{center}
-\includegraphics[width=0.91\textwidth,height=0.61\textheight,keepaspectratio]{../output/figures/integration_rotation_slopes.pdf}
+\includegraphics[width=0.89\textwidth,height=0.54\textheight,keepaspectratio]{../output/figures/experiments/integration_change_forest.pdf}
 \end{center}
-\vspace{-0.16cm}
-{\fontsize{7.1}{7.8}\selectfont The increase appears within both realised route scopes, so a change in the single- versus cross-venue mix cannot account for the aggregate rotation. Cross-venue status remains selected; the comparison does not identify an effect of integration, routing software, or protocol architecture.}
+\vspace{-0.10cm}
+{\fontsize{7.0}{7.7}\selectfont The increase appears within both realised route scopes, so a change in the single- versus cross-venue mix cannot account for the aggregate rotation. Cross-venue status remains selected; the comparison does not identify an effect of integration, routing software, or protocol architecture.}
 \end{frame}
 
-% EVIDENCE-STATUS: working-paper mechanism evidence; estimates remain subject to refresh with the next capital and route release
-% EVIDENCE-COMMIT: cd26a75
-% EVIDENCE-DATE: 2026-08-14
-% EVIDENCE-SOURCES: output/tables/p2_liquidity_route_feedback.tex; output/tables/v4_settlement.tex; output/tables/v4_robustness.tex; paper/sections/05-rivals.tex
-% EVIDENCE-REFRESH: rebuild after any replacement LP-capital panel, route release, or V4 receipt sample; re-check signs, horizons, matched counts, transfer incidence, and route-size balance
-% SCIENTIFIC-BOUNDARY: lead-lag regressions establish temporal dependence, not causal feedback. The matched V3/V4 receipt comparison is size-imbalanced and does not identify a causal V4 effect.
-% VISUAL-FUNCTION: two distinct supporting mechanisms | bidirectional liquidity/use timing diagram plus matched-receipt settlement comparison | separate market feedback from protocol settlement
-\begin{frame}{Liquidity and vehicle use are linked; V4 often nets transfers}
-\vspace{-0.12cm}
+% EVIDENCE-STATUS: registered mechanism design; no current LP estimate is displayed
+% EVIDENCE-COMMIT: ab2c762
+% EVIDENCE-SOURCES: docs/specification-lock.json; docs/findings-freeze.md; paper/sections/05-rivals.tex
+% SCIENTIFIC-BOUNDARY: temporal ordering is not causal feedback; V2 capital stocks and V3 provider flows remain separate objects
+% VISUAL-FUNCTION: liquidity timing test | two opposed timelines | distinguish capital-leading-use from use-leading-capital
+\begin{frame}{Does liquidity move before vehicle use or follow it?}
+\vspace{0.02cm}
 \begin{columns}[T,totalwidth=\textwidth]
 \begin{column}{0.48\textwidth}
-{\small\bfseries\color{ucldark}Liquidity allocation and route use}\par
-{\tiny\color{muted}Each predicts the other at 1, 7, 14, and 30 days}\par
-\vspace{0.06cm}
+\evidencekicker{Liquidity precedes use}
+\vspace{0.25cm}
+\centering
 \begin{tikzpicture}[x=1cm,y=1cm]
-\node[softbox,text width=3.35cm,minimum height=0.72cm,align=center] (lp) at (0,2.55) {Share of LP capital in\\vehicle-linked pools};
-\node[softbox,text width=3.35cm,minimum height=0.72cm,align=center] (use) at (0,0.45) {Vehicle share of\\indirect routes};
-\draw[-{Stealth[length=5pt]},line width=1.6pt,draw=stable] ([xshift=0.28cm]lp.south) -- ([xshift=0.28cm]use.north);
-\draw[-{Stealth[length=5pt]},line width=1.6pt,draw=ucldark] ([xshift=-0.28cm]use.north) -- ([xshift=-0.28cm]lp.south);
-\node[anchor=north,align=center,font=\scriptsize,text=muted,text width=4.95cm] at (0,-0.02) {Vehicle use also predicts more total LP capital after 14 and 30 days, but not at the shorter horizons.};
+\node[softbox,text width=4.35cm,minimum height=0.78cm,align=center] (capital) at (0,2.60) {More capital or provider inflow\\in vehicle-linked pools at $t$};
+\node[softbox,text width=4.35cm,minimum height=0.78cm,align=center] (route) at (0,0.68) {More routes through the same vehicle\\at $t+\tau$};
+\draw[-{Stealth[length=6pt]},line width=1.7pt,draw=stable] (capital)-- node[right,font=\scriptsize,text=muted] {predicts} (route);
 \end{tikzpicture}
+\par\vspace{0.10cm}\raggedright
+{\small Liquidity supply may help a vehicle attract later routes.\par}
 \end{column}
 \begin{column}{0.48\textwidth}
-{\small\bfseries\color{ucldark}Economic routing and physical settlement}\par
-\vspace{0.12cm}
-\begin{tikzpicture}[x=1cm,y=1cm,tinyasset/.style={circle,draw=ink,fill=white,minimum size=18pt,inner sep=0pt,font=\scriptsize},routearrow/.style={-{Stealth[length=4pt]},line width=1.2pt}]
-
-\node[anchor=east,font=\small\bfseries,text=native] at (-0.25,2.88) {V3};
-\node[tinyasset] (v3a) at (0.35,2.88) {A};
-\node[tinyasset,fill=ucldark,text=white,draw=ucldark] (v3k) at (2.05,2.88) {$k$};
-\node[tinyasset] (v3b) at (3.75,2.88) {B};
-\draw[routearrow,draw=ucldark] (v3a)--(v3k);
-\draw[routearrow,draw=ucldark] (v3k)--(v3b);
-\node[anchor=north,align=center,font=\scriptsize,text width=4.35cm] at (2.05,2.52) {$k$ is transferred in \textbf{\VThreeTransferIncidence} of receipts};
-
-\node[anchor=east,font=\small\bfseries,text=uclbright] at (-0.25,1.18) {V4};
-\node[rounded corners=3pt,draw=uclbright,densely dashed,minimum width=4.15cm,minimum height=0.95cm] at (2.05,1.18) {};
-\node[tinyasset] (v4a) at (0.35,1.18) {A};
-\node[tinyasset,fill=ucldark,text=white,draw=ucldark] (v4k) at (2.05,1.18) {$k$};
-\node[tinyasset] (v4b) at (3.75,1.18) {B};
-\draw[routearrow,draw=ucldark] (v4a)--(v4k);
-\draw[routearrow,draw=ucldark] (v4k)--(v4b);
-\node[anchor=north,align=center,font=\scriptsize,text width=4.55cm] at (2.05,0.70) {the economic route remains; $k$ is transferred in \textbf{\VFourTransferIncidence} of receipts};
+\evidencekicker{Use precedes liquidity}
+\vspace{0.25cm}
+\centering
+\begin{tikzpicture}[x=1cm,y=1cm]
+\node[softbox,text width=4.35cm,minimum height=0.78cm,align=center] (route2) at (0,2.60) {More routes through a vehicle\\at $t$};
+\node[softbox,text width=4.35cm,minimum height=0.78cm,align=center] (capital2) at (0,0.68) {More capital or provider inflow\\in its pools at $t+\tau$};
+\draw[-{Stealth[length=6pt]},line width=1.7pt,draw=ucldark] (route2)-- node[right,font=\scriptsize,text=muted] {predicts} (capital2);
 \end{tikzpicture}
+\par\vspace{0.10cm}\raggedright
+{\small Providers may instead follow routed demand.\par}
 \end{column}
 \end{columns}
-\vspace{0.02cm}
-{\fontsize{7.2}{8.0}\selectfont\color{muted}Liquidity regressions include asset and date effects and the lagged outcome. The receipt comparison matches \VThreeReceiptRoutes{} V3 routes and \VFourReceiptRoutes{} V4 routes by week, ordered endpoint pair, and intermediary; V4 routes are smaller on average, so the \VFourTransferDifference-point difference is descriptive and does not estimate a causal V4 effect.}
+\vspace{0.24cm}
+{\scriptsize V2 reserve-based capital and V3 mint/burn flows are measured separately at exact calendar lags. Either direction may also reflect common demand, volatility, or routing shocks.}
+\end{frame}
+
+% EVIDENCE-STATUS: registered V4 extension design; current estimate pending
+% EVIDENCE-COMMIT: ab2c762
+% EVIDENCE-SOURCES: docs/research-questions-and-empirical-design.md; docs/findings-freeze.md; paper/sections/05-rivals.tex
+% SCIENTIFIC-BOUNDARY: settlement mechanics and route choice are distinct outcomes; launch date is not treatment
+% VISUAL-FUNCTION: V4 settlement estimand | economic route versus physical transfer layers | show the matched comparison required to separate them
+\begin{frame}{V4 separates the economic route from physical settlement}
+\begin{columns}[T,totalwidth=\textwidth]
+\begin{column}{0.53\textwidth}
+\evidencekicker{Economic route}
+\vspace{0.25cm}
+\centering
+\begin{tikzpicture}[x=1cm,y=1cm,tinyasset/.style={circle,draw=ink,fill=white,minimum size=23pt,inner sep=0pt,font=\small},routearrow/.style={-{Stealth[length=5pt]},line width=1.4pt}]
+\node[tinyasset] (a) at (0,2.45) {A};
+\node[tinyasset,fill=ucldark,text=white,draw=ucldark] (k) at (2.05,2.45) {$k$};
+\node[tinyasset] (b) at (4.10,2.45) {B};
+\draw[routearrow,draw=ucldark] (a)--(k);
+\draw[routearrow,draw=ucldark] (k)--(b);
+\node[anchor=north,align=center,font=\small,text width=5.2cm] at (2.05,1.82) {Pool calls route through intermediary $k$.};
+\node[rounded corners=3pt,draw=uclbright,densely dashed,minimum width=5.0cm,minimum height=0.82cm,align=center,font=\scriptsize] at (2.05,0.45) {V4 may net the token movements\\used to settle those calls.};
+\end{tikzpicture}
+\end{column}
+\begin{column}{0.43\textwidth}
+\evidencekicker{Comparison}
+\vspace{0.25cm}
+\begin{itemize}
+\item Compare routes in the same week with the same endpoints, intermediary, direction, and trade-size group.
+\item Record route use and physical token transfers separately.
+\item Compare feasible alternatives before drawing conclusions about vehicle choice.
+\end{itemize}
+\end{column}
+\end{columns}
+\vspace{0.18cm}
+{\scriptsize The architecture can make a physical transfer unnecessary. The empirical test asks whether transfers fall among otherwise comparable routes.}
 \end{frame}
 
 % EVIDENCE-STATUS: diagnostic displacement gradient; not a persistence estimate
@@ -132,10 +158,10 @@ Challenger overtakes incumbent & \OvertakeCoef & \OvertakeSE & \OvertakeT \\
 \end{tabular}}
 \vspace{0.25cm}
 
-{\small $N=\DiagnosticN$ pair-candidate observations; \DiagnosticClusters\ date clusters. Exact alternating-projection absorption and CR1 rank correction.}
+{\small $N=\DiagnosticN$ endpoint-pair--intermediary observations; \DiagnosticClusters\ date clusters. Exact alternating-projection absorption and CR1 rank correction.}
 \vspace{0.36cm}
 \begin{beamercolorbox}[sep=0.22cm,wd=\textwidth]{block body}
-The estimates are large in the small set of pair-candidate observations we can follow. They remain descriptive because the panel does not compare each pair against a fixed set of feasible routes.
+The estimates are large in the small set of endpoint markets and intermediary assets we can follow. They remain descriptive because the panel does not compare each market against a fixed set of feasible routes.
 \end{beamercolorbox}
 \end{frame}
 

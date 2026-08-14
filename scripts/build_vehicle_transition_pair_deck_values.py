@@ -22,6 +22,7 @@ from ddvc.runtime import atomic_output
 
 DECOMPOSITION = OUTPUT_DIR / "exhibits" / "vehicle_transition_pair_decomposition.jsonl"
 FIXED_EFFECTS = OUTPUT_DIR / "exhibits" / "vehicle_transition_pair_fixed_effects.jsonl"
+USDT_INTEGRATION = OUTPUT_DIR / "exhibits" / "e0_usdt_integration_decomposition.jsonl"
 DECK_VALUES = OUTPUT_DIR / "exhibits" / "vehicle_transition_pair_decomposition_deck_values.tex"
 CODE_SOURCES = ["scripts/build_vehicle_transition_pair_deck_values.py"]
 SCOPES = ("pooled", "single_venue", "cross_venue")
@@ -43,8 +44,8 @@ MARKET_INCIDENCE_TERMS = (
 def _signed_pp(value: float) -> str:
     points = 100 * value
     if abs(points) < 0.05:
-        return "0.0\\,pp"
-    return f"{points:+.1f}\\,pp"
+        return "$0.0$ pp"
+    return f"${points:+.1f}$ pp"
 
 
 def _share(value: float) -> str:
@@ -52,7 +53,7 @@ def _share(value: float) -> str:
 
 
 def _unsigned_pp(value: float) -> str:
-    return f"{100 * value:.1f}\\,pp"
+    return f"${100 * value:.1f}$ pp"
 
 
 def _raw_pp(value: float) -> str:
@@ -229,7 +230,7 @@ def _market_incidence_row(decomposition: pd.DataFrame) -> pd.Series:
     return row
 
 
-def _matched_market_count_row(fixed_effects: pd.DataFrame) -> pd.Series:
+def _matched_market_row(fixed_effects: pd.DataFrame, metric: str) -> pd.Series:
     required = {
         "metric",
         "baseline_year",
@@ -251,10 +252,10 @@ def _matched_market_count_row(fixed_effects: pd.DataFrame) -> pd.Series:
     missing = sorted(required - set(fixed_effects.columns))
     if missing:
         raise ValueError(f"pair fixed effects missing columns: {', '.join(missing)}")
-    selected = fixed_effects[fixed_effects["metric"].eq("count_share")]
+    selected = fixed_effects[fixed_effects["metric"].eq(metric)]
     if len(selected) != 1:
         raise ValueError(
-            "pair fixed effects require exactly one count-share row; "
+            f"pair fixed effects require exactly one {metric} row; "
             f"found {len(selected)}"
         )
     row = selected.iloc[0]
@@ -297,14 +298,91 @@ def _matched_market_count_row(fixed_effects: pd.DataFrame) -> pd.Series:
     return row
 
 
+def _usdt_integration_rows(decomposition: pd.DataFrame) -> dict[str, pd.Series]:
+    required = {
+        "record_type",
+        "focal_symbol",
+        "comparison_components",
+        "baseline_year",
+        "comparison_year",
+        "weighting",
+        "value_support",
+        "total_usdt_share_change",
+        "within_scope_change",
+        "between_scope_composition_change",
+        "within_scope_share_of_change",
+        "between_scope_share_of_change",
+        "identity_residual",
+    }
+    missing = sorted(required - set(decomposition.columns))
+    if missing:
+        raise ValueError(f"USDT integration decomposition missing columns: {', '.join(missing)}")
+    selected = decomposition[decomposition["record_type"].eq("midpoint_decomposition")]
+    rows: dict[str, pd.Series] = {}
+    specifications = {
+        "count": ("episode", "all_routes"),
+        "value": ("value", "within_20pct"),
+    }
+    for label, (weighting, support) in specifications.items():
+        match = selected[
+            selected["weighting"].eq(weighting)
+            & selected["value_support"].eq(support)
+        ]
+        if len(match) != 1:
+            raise ValueError(
+                f"USDT integration decomposition requires exactly one {label} row; "
+                f"found {len(match)}"
+            )
+        row = match.iloc[0]
+        if (
+            row["focal_symbol"] != "USDT"
+            or row["comparison_components"] != "native+USDC+USDT"
+            or int(row["baseline_year"]) != 2024
+            or int(row["comparison_year"]) != 2026
+        ):
+            raise ValueError("USDT integration decomposition uses an unexpected scope")
+        numeric = (
+            "total_usdt_share_change",
+            "within_scope_change",
+            "between_scope_composition_change",
+            "within_scope_share_of_change",
+            "between_scope_share_of_change",
+            "identity_residual",
+        )
+        if not all(math.isfinite(float(row[column])) for column in numeric):
+            raise ValueError("USDT integration decomposition contains a non-finite value")
+        if not math.isclose(
+            float(row["within_scope_change"])
+            + float(row["between_scope_composition_change"]),
+            float(row["total_usdt_share_change"]),
+            abs_tol=1e-12,
+        ) or not math.isclose(
+            float(row["within_scope_share_of_change"])
+            + float(row["between_scope_share_of_change"]),
+            1.0,
+            abs_tol=1e-12,
+        ):
+            raise ValueError("USDT integration decomposition does not reconcile")
+        if abs(float(row["identity_residual"])) > 1e-12:
+            raise ValueError("USDT integration decomposition has an identity residual")
+        rows[label] = row
+    return rows
+
+
 def render_pair_decomposition_deck_values(
-    decomposition: pd.DataFrame, fixed_effects: pd.DataFrame
+    decomposition: pd.DataFrame,
+    fixed_effects: pd.DataFrame,
+    usdt_integration: pd.DataFrame,
 ) -> str:
     """Render empirical cells while keeping evidence identity out of the PDF."""
     count = _scope_rows(decomposition, "count_share")
     value = _scope_rows(decomposition, "strict_intermediation_value_share")
     market = _market_incidence_row(decomposition)
-    matched = _matched_market_count_row(fixed_effects)
+    matched_count = _matched_market_row(fixed_effects, "count_share")
+    matched_value = _matched_market_row(
+        fixed_effects, "strict_intermediation_value_share"
+    )
+    usdt = _usdt_integration_rows(usdt_integration)
     pair_activity_total = float(market["market_pair_support_bridge"]) + float(
         market["market_activity_reweighting"]
     )
@@ -381,13 +459,21 @@ def render_pair_decomposition_deck_values(
             f"\\newcommand{{\\PairActivityTotalRawPP}}{{{_raw_pp(pair_activity_total)}}}",
             f"\\newcommand{{\\VehicleUseNetRawPP}}{{{_raw_pp(vehicle_use_net)}}}",
             f"\\newcommand{{\\PairAndVehicleTotalRawPP}}{{{_raw_pp(pair_and_vehicle_total)}}}",
-            f"\\newcommand{{\\MatchedMarketCountChange}}{{{_signed_pp(float(matched['coefficient']))}}}",
-            f"\\newcommand{{\\MatchedMarketCountSE}}{{{_unsigned_pp(float(matched['standard_error']))}}}",
-            f"\\newcommand{{\\MatchedMarketCountCILower}}{{{_signed_pp(float(matched['confidence_interval_lower']))}}}",
-            f"\\newcommand{{\\MatchedMarketCountCIUpper}}{{{_signed_pp(float(matched['confidence_interval_upper']))}}}",
-            f"\\newcommand{{\\MatchedMarketCountChangeRawPP}}{{{_raw_pp(float(matched['coefficient']))}}}",
-            f"\\newcommand{{\\MatchedMarketCountCILowerRawPP}}{{{_raw_pp(float(matched['confidence_interval_lower']))}}}",
-            f"\\newcommand{{\\MatchedMarketCountCIUpperRawPP}}{{{_raw_pp(float(matched['confidence_interval_upper']))}}}",
+            f"\\newcommand{{\\MatchedMarketCountChange}}{{{_signed_pp(float(matched_count['coefficient']))}}}",
+            f"\\newcommand{{\\MatchedMarketCountSE}}{{{_unsigned_pp(float(matched_count['standard_error']))}}}",
+            f"\\newcommand{{\\MatchedMarketCountCILower}}{{{_signed_pp(float(matched_count['confidence_interval_lower']))}}}",
+            f"\\newcommand{{\\MatchedMarketCountCIUpper}}{{{_signed_pp(float(matched_count['confidence_interval_upper']))}}}",
+            f"\\newcommand{{\\MatchedMarketCountChangeRawPP}}{{{_raw_pp(float(matched_count['coefficient']))}}}",
+            f"\\newcommand{{\\MatchedMarketCountCILowerRawPP}}{{{_raw_pp(float(matched_count['confidence_interval_lower']))}}}",
+            f"\\newcommand{{\\MatchedMarketCountCIUpperRawPP}}{{{_raw_pp(float(matched_count['confidence_interval_upper']))}}}",
+            f"\\newcommand{{\\MatchedMarketValueChange}}{{{_signed_pp(float(matched_value['coefficient']))}}}",
+            f"\\newcommand{{\\MatchedMarketValueSE}}{{{_unsigned_pp(float(matched_value['standard_error']))}}}",
+            f"\\newcommand{{\\MatchedMarketValueCILower}}{{{_signed_pp(float(matched_value['confidence_interval_lower']))}}}",
+            f"\\newcommand{{\\MatchedMarketValueCIUpper}}{{{_signed_pp(float(matched_value['confidence_interval_upper']))}}}",
+            f"\\newcommand{{\\USDTVenueMixCountShare}}{{{_share(float(usdt['count']['between_scope_share_of_change']))}}}",
+            f"\\newcommand{{\\USDTVenueWithinCountShare}}{{{_share(float(usdt['count']['within_scope_share_of_change']))}}}",
+            f"\\newcommand{{\\USDTVenueMixValueShare}}{{{_share(float(usdt['value']['between_scope_share_of_change']))}}}",
+            f"\\newcommand{{\\USDTVenueWithinValueShare}}{{{_share(float(usdt['value']['within_scope_share_of_change']))}}}",
         ]
     )
     return "\n".join(lines) + "\n"
@@ -425,15 +511,22 @@ def run(
     *,
     decomposition_path: Path = DECOMPOSITION,
     fixed_effects_path: Path = FIXED_EFFECTS,
+    usdt_integration_path: Path = USDT_INTEGRATION,
     output_path: Path = DECK_VALUES,
 ) -> int:
     provenance_path = _require_certified_presentation_source(decomposition_path)
     fixed_effects_provenance = _require_certified_presentation_source(
         fixed_effects_path
     )
+    usdt_integration_provenance = _require_certified_presentation_source(
+        usdt_integration_path
+    )
     decomposition = pd.read_json(decomposition_path, lines=True)
     fixed_effects = pd.read_json(fixed_effects_path, lines=True)
-    rendered = render_pair_decomposition_deck_values(decomposition, fixed_effects)
+    usdt_integration = pd.read_json(usdt_integration_path, lines=True)
+    rendered = render_pair_decomposition_deck_values(
+        decomposition, fixed_effects, usdt_integration
+    )
     with atomic_output(output_path) as temporary:
         temporary.write_text(rendered, encoding="utf-8")
     stamp(
@@ -444,8 +537,10 @@ def run(
             provenance_path,
             fixed_effects_path,
             fixed_effects_provenance,
+            usdt_integration_path,
+            usdt_integration_provenance,
         ],
-        rows=len(decomposition) + len(fixed_effects),
+        rows=len(decomposition) + len(fixed_effects) + len(usdt_integration),
         notes=(
             "Presentation macros for the exact descriptive pair-composition "
             "accounting and matched-market estimate; evidence status and "
@@ -460,11 +555,13 @@ def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--decomposition", type=Path, default=DECOMPOSITION)
     parser.add_argument("--fixed-effects", type=Path, default=FIXED_EFFECTS)
+    parser.add_argument("--usdt-integration", type=Path, default=USDT_INTEGRATION)
     parser.add_argument("--output", type=Path, default=DECK_VALUES)
     args = parser.parse_args()
     return run(
         decomposition_path=args.decomposition,
         fixed_effects_path=args.fixed_effects,
+        usdt_integration_path=args.usdt_integration,
         output_path=args.output,
     )
 

@@ -3,7 +3,7 @@
 Current review routes:
 
 - [`deck-venue-exemplars.md`](deck-venue-exemplars.md) is the deck-craft calibration guide consumed by the deck workflow. Its original external deck files are not present in the checkout, so new source-specific observations require a retained source route.
-- `deck-visual-composition.md`, `deck-visual-experiments.md`, and `deck-visual-salvage.md` are named deck inspection ledgers, not generated output artifacts.
+- `deck-visual-composition.md` is the living visual owner; `deck-visual-experiments.md` records current experiments; `deck-visual-salvage.md` is the bounded migration audit that preserves the reasoning behind retained and rejected visual ideas. None is a disposable generated artifact.
 - The dated files below are individual specialist cards indexed for the literature audit. `docs/literature-audit.md`, not any single card, owns the reconciled current claim boundary.
 
 Independent specialist reviews, newest first.

@@ -6,8 +6,7 @@ review still treated as blockers:
 
 1. exact stress-event definition and event table;
 2. Curve/Fluid materiality and stablecoin-heavy coverage limitation;
-3. manual V4 no-transfer audit against receipt transfers for source/sink/vehicle;
-4. one-row-per-proposition main-test registry with economic magnitudes.
+3. one-row-per-proposition main-test registry with economic magnitudes.
 """
 from __future__ import annotations
 
@@ -17,7 +16,6 @@ import json
 import math
 import sys
 from pathlib import Path
-from typing import Any
 
 import numpy as np
 import pandas as pd
@@ -34,7 +32,6 @@ from ddvc.paper_tables import _int, _num, _p, _pct, _write_table
 
 
 STABLES = {"USDC", "USDT", "DAI", "USDE", "SUSDE", "FRAX", "LUSD", "PYUSD", "USDP", "GUSD"}
-TRANSFER_TOPIC = "0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef"
 
 
 def _load_module(name: str, file: str):
@@ -46,42 +43,6 @@ def _load_module(name: str, file: str):
     sys.modules[spec.name] = module
     spec.loader.exec_module(module)
     return module
-
-
-def _bool(v: Any) -> bool:
-    return str(v).lower() in {"true", "1", "yes"}
-
-
-def _p2_main_estimate() -> str:
-    path = EMP / "p2_liquidity_route_feedback.pkl"
-    if not path.exists():
-        raise FileNotFoundError(
-            f"{path} missing; run scripts/run_feedback_proposition_tests.py first."
-        )
-    results = pd.read_pickle(path)
-    row = results[
-        results["Horizon (days)"].eq(7)
-        & results["Outcome"].eq("VehicleShare")
-        & results["Main regressor"].eq("Lagged LP concentration")
-    ]
-    if len(row) != 1:
-        raise RuntimeError("Expected one 7-day LP-concentration-to-share estimate.")
-    result = row.iloc[0]
-    return f"token/date FE beta {result['Beta']}; p {result['p']}"
-
-
-def _p1_main_estimate() -> tuple[str, str]:
-    path = EMP / "route_cost_decomposition.pkl"
-    if not path.exists():
-        raise FileNotFoundError(
-            f"{path} missing; run scripts/run_claim_defense_analytics.py first."
-        )
-    results = pd.read_pickle(path)
-    indirect_only = str(results.iloc[0]["No-direct, WETH-available rows"])
-    thin_values = "/".join(
-        results["Median thin-direct direct cost advantage (fraction)"].astype(str)
-    )
-    return indirect_only, thin_values
 
 
 def _iter_jsonl_gz(path: Path):
@@ -386,338 +347,12 @@ def curve_fluid_scope_bound() -> pd.DataFrame:
     return out
 
 
-def _load_receipts() -> dict[str, dict[str, Any] | None]:
-    module = _load_module("v4_settlement_for_audit", "run_v4_settlement_identification.py")
-    return module._load_receipt_cache()
-
-
-def _transfer_count(receipt: dict[str, Any] | None, token: str) -> int:
-    if not isinstance(receipt, dict) or not token:
-        return 0
-    token = token.lower()
-    return sum(
-        1
-        for lg in receipt.get("logs", [])
-        if str(lg.get("address", "")).lower() == token
-        and lg.get("topics")
-        and str(lg["topics"][0]).lower() == TRANSFER_TOPIC
-    )
-
-
-def _route_tokens_for_sample(row: pd.Series) -> dict[str, tuple[str, str]]:
-    stamp = str(row["date"]).replace("-", "")
-    path = DATA / "unified" / f"{stamp}.parquet"
-    d = pd.read_parquet(
-        path,
-        columns=[
-            "tx_hash",
-            "component_id",
-            "source",
-            "token_in",
-            "token_out",
-            "token_in_sym",
-            "token_out_sym",
-            "tin_role",
-            "tout_role",
-        ],
-    )
-    g = d[
-        d["tx_hash"].astype(str).str.lower().eq(str(row["tx_hash"]).lower())
-        & d["component_id"].eq(int(row["component_id"]))
-        & d["source"].eq(str(row["dex"]))
-    ]
-    roles: dict[str, tuple[str, str]] = {}
-    for r in g.itertuples(index=False):
-        for addr, sym, role in [
-            (r.token_in, r.token_in_sym, r.tin_role),
-            (r.token_out, r.token_out_sym, r.tout_role),
-        ]:
-            role = str(role)
-            if role in {"source", "sink", "intermediate"} and role not in roles:
-                roles[role] = (str(addr).lower(), str(sym))
-    return roles
-
-
-def v4_manual_no_transfer_audit() -> pd.DataFrame:
-    detail = pd.read_parquet(DATA / "empirical" / "v4_settlement_transfer_detail.parquet")
-    sample = pd.read_parquet(DATA / "empirical" / "v4_settlement_sample.parquet")
-    d = detail.merge(
-        sample[["date", "dex", "tx_hash", "component_id"]],
-        on=["dex", "tx_hash", "component_id"],
-        how="left",
-    )
-    d["has_matching_transfer"] = d["has_matching_transfer"].map(_bool)
-    d["receipt_found"] = d["receipt_found"].map(_bool)
-    audit = d[d["dex"].eq("uniswap_v4") & d["receipt_found"] & (~d["has_matching_transfer"])].copy()
-    receipts = _load_receipts()
-    rows = []
-    for r in audit.itertuples(index=False):
-        row = pd.Series(r._asdict())
-        roles = _route_tokens_for_sample(row)
-        receipt = receipts.get(str(row["tx_hash"]).lower())
-        src_addr, src_sym = roles.get("source", ("", str(row["src"])))
-        sink_addr, sink_sym = roles.get("sink", ("", str(row["sink"])))
-        int_addr, int_sym = str(row["vehicle_id"]).lower(), str(row["vehicle"])
-        rows.append(
-            {
-                "tx_hash": row["tx_hash"],
-                "date": row["date"],
-                "route": f"{src_sym}->{int_sym}->{sink_sym}",
-                "route_usd": float(row["route_usd"]),
-                "source_transfer_logs": _transfer_count(receipt, src_addr),
-                "sink_transfer_logs": _transfer_count(receipt, sink_addr),
-                "intermediate_transfer_logs": _transfer_count(receipt, int_addr),
-                "total_logs": int(row["total_logs"]),
-            }
-        )
-    out = pd.DataFrame(rows)
-    out.to_pickle(EMP / "v4_no_transfer_manual_audit_enriched.pkl")
-    summary = pd.DataFrame(
-        [
-            {
-                "Audit check": "No-transfer sample size",
-                "N": _int(len(out)),
-                "Pass rate (%)": "",
-                "Interpretation": "All sampled V4 route units with no intermediary-token ERC-20 transfer",
-            },
-            {
-                "Audit check": "Populated receipts",
-                "N": _int(len(out)),
-                "Pass rate (%)": _pct(out["total_logs"].gt(0).mean()),
-                "Interpretation": "No-transfer examples are not empty receipt failures",
-            },
-            {
-                "Audit check": "Input/output transfer present",
-                "N": _int(len(out)),
-                "Pass rate (%)": _pct(((out["source_transfer_logs"] > 0) | (out["sink_transfer_logs"] > 0)).mean()),
-                "Interpretation": "Receipt contains external endpoint-token movement while intermediary token is absent",
-            },
-            {
-                "Audit check": "Intermediary transfer absent",
-                "N": _int(len(out)),
-                "Pass rate (%)": _pct(out["intermediate_transfer_logs"].eq(0).mean()),
-                "Interpretation": "Confirms the sampled route unit has no ERC-20 transfer for the route intermediary",
-            },
-        ]
-    )
-    _write_table(
-        summary,
-        "table_r24_v4_manual_audit",
-        "Manual audit of V4 no-transfer route units.",
-        "tab:v4-manual-audit",
-        note=(
-            "The audit takes all V4 matched route units with no intermediary-token "
-            "transfer and counts ERC-20 Transfer logs for the input, output, and intermediary "
-            "token addresses in the transaction receipt."
-        ),
-    )
-    summary.to_pickle(EMP / "v4_manual_audit_summary.pkl")
-    return out
-
-
-def v4_balance_diagnostics() -> pd.DataFrame:
-    detail = pd.read_parquet(DATA / "empirical" / "v4_settlement_transfer_detail.parquet")
-    detail["has_matching_transfer"] = detail["has_matching_transfer"].map(_bool)
-    detail["receipt_found"] = detail["receipt_found"].map(_bool)
-    detail["log_route_usd"] = np.log1p(detail["route_usd"])
-    rows = []
-    for dex, g in detail.groupby("dex"):
-        rows.append(
-            {
-                "DEX": dex,
-                "Observations": _int(len(g)),
-                "Cells": _int(g["cell_id"].nunique()),
-                "Median route ($)": f"${_int(g['route_usd'].median())}",
-                "p25/p75 route ($)": f"${_int(g['route_usd'].quantile(0.25))} / ${_int(g['route_usd'].quantile(0.75))}",
-                "ETH/WETH vehicle (%)": _pct(g["vehicle"].isin(["ETH/WETH", "ETH", "WETH"]).mean()),
-                "Stable vehicle (%)": _pct(g["vehicle"].isin(["USDC", "USDT", "DAI"]).mean()),
-                "Mean total logs": _num(g["total_logs"].mean(), 2),
-                "Transfer incidence (%)": _pct(g["has_matching_transfer"].mean()),
-            }
-        )
-    # Within-cell route-size balance is the key observable matching diagnostic.
-    cell = (
-        detail.pivot_table(index="cell_id", columns="dex", values="log_route_usd", aggfunc="mean")
-        .dropna()
-        .reset_index()
-    )
-    if {"uniswap_v3", "uniswap_v4"}.issubset(cell.columns):
-        diff = cell["uniswap_v4"] - cell["uniswap_v3"]
-        from scipy import stats
-
-        t, p = stats.ttest_1samp(diff, 0.0)
-        rows.append(
-            {
-                "DEX": "V4 - V3 within cell",
-                "Observations": "",
-                "Cells": _int(len(cell)),
-                "Median route ($)": "",
-                "p25/p75 route ($)": "",
-                "ETH/WETH vehicle (%)": "",
-                "Stable vehicle (%)": "",
-                "Mean total logs": f"log route diff={_num(diff.mean(), 3)}",
-                "Transfer incidence (%)": f"t={_num(t, 2)}, p={_p(p)}",
-            }
-        )
-    out = pd.DataFrame(rows)
-    out.to_pickle(EMP / "v4_balance_diagnostics.pkl")
-    _write_table(
-        out,
-        "table_r29_v4_balance_diagnostics",
-        "V3/V4 matched-sample balance diagnostics.",
-        "tab:v4-balance-diagnostics",
-        note=(
-            "Matched cells are week by endpoint pair by intermediate vehicle. The table "
-            "reports observable balance in route size, vehicle composition, and receipt logs. "
-            "Router, pool type, gas, and user composition remain unobserved in the current "
-            "route-unit panel."
-        ),
-    )
-    return out
-
-
-def main_test_registry_table() -> pd.DataFrame:
-    p2_estimate = _p2_main_estimate()
-    p1_indirect_only, p1_thin_values = _p1_main_estimate()
-    p1_estimate = (
-        f"{p1_indirect_only} no-direct/WETH-available rows; thin-direct "
-        f"DirectCostAdvantage {p1_thin_values}"
-    )
-    rows = [
-        {
-            "Proposition": "P1",
-            "Pre-specified main test": "WETH availability/thin-direct-market protection",
-            "Main estimate": p1_estimate,
-            "Economic unit": "route availability and cost fraction by trade size",
-            "Status": "main-ready, descriptive counterfactual",
-        },
-        {
-            "Proposition": "P2",
-            "Pre-specified main test": "lagged LP concentration predicts VehicleShare",
-            "Main estimate": p2_estimate,
-            "Economic unit": "vehicle-share association at a seven-day horizon",
-            "Status": "downgrade to predictive association",
-        },
-        {
-            "Proposition": "P3",
-            "Pre-specified main test": "same-day WETH downside event decomposition",
-            "Main estimate": "WETH -1.48 pp, stable +1.48 pp; p=0.018",
-            "Economic unit": "bridge-share pp within common-support pairs",
-            "Status": "main-ready as short-window event result",
-        },
-        {
-            "Proposition": "P4a",
-            "Pre-specified main test": "V3 no-direct/WETH-available decline",
-            "Main estimate": "-25.81 pp; p<0.001; pretrend p=0.922",
-            "Economic unit": "route-opportunity pp",
-            "Status": "usable architecture evidence, not broad launch causality",
-        },
-        {
-            "Proposition": "P4b",
-            "Pre-specified main test": "V4 intermediary transfer incidence",
-            "Main estimate": "V4 81.4% vs V3 100%; 25-case no-transfer audit exported",
-            "Economic unit": "ERC-20 transfer incidence",
-            "Status": "main-ready if audit examples are discussed carefully",
-        },
-    ]
-    out = pd.DataFrame(rows)
-    _write_table(
-        out,
-        "table_r25_main_test_registry",
-        "Pre-specified main empirical tests and claim status.",
-        "tab:main-test-registry",
-        note=(
-            "This table freezes one main test per proposition before drafting. Robustness "
-            "families are reported separately to avoid selecting only significant slices."
-        ),
-    )
-    out.to_pickle(EMP / "main_test_registry.pkl")
-    return out
-
-
-def compact_specification_registry_table() -> pd.DataFrame:
-    p2_estimate = _p2_main_estimate()
-    p1_indirect_only, p1_thin_values = _p1_main_estimate()
-    rows = [
-        {
-            "Test": "P1 availability/thin-direct",
-            "Outcome": "direct route exists; WETH indirect route exists; DirectCostAdvantage",
-            "Unit": "endpoint-pair x day x trade size",
-            "Sample": "V2/Sushi V2/V3 exact quoteable venues",
-            "Treatment/regressor": "WETH indirect-route availability/cost",
-            "FE / clustering": "endpoint-pair-day aggregation",
-            "Main coefficient": (
-                f"{p1_indirect_only} no-direct rows; DirectCostAdvantage {p1_thin_values}"
-            ),
-            "Interpretation": "descriptive counterfactual, covered venues",
-        },
-        {
-            "Test": "P2 predictability",
-            "Outcome": "VehicleShare",
-            "Unit": "token x day",
-            "Sample": "WETH, USDC, USDT, DAI, WBTC",
-            "Treatment/regressor": "lagged vehicle-linked LP concentration",
-            "FE / clustering": "token/date FE robustness; date clustering",
-            "Main coefficient": p2_estimate,
-            "Interpretation": "predictive association, not causal feedback",
-        },
-        {
-            "Test": "P3 stress rotation",
-            "Outcome": "WETH-minus-stable BridgeShare",
-            "Unit": "event x endpoint-pair set",
-            "Sample": "top WETH downside event days",
-            "Treatment/regressor": "same-day WETH downside event",
-            "FE / clustering": "event-level inference",
-            "Main coefficient": "-2.96 pp, p=0.018",
-            "Interpretation": "same-day association",
-        },
-        {
-            "Test": "P4a V3 architecture",
-            "Outcome": "no-direct/WETH-available indicator",
-            "Unit": "endpoint-pair x month",
-            "Sample": "balanced pairs around V3 launch",
-            "Treatment/regressor": "post-V3 indicator",
-            "FE / clustering": "pair FE; pair clustering",
-            "Main coefficient": "-25.81 pp, p<0.001; pretrend p=0.922",
-            "Interpretation": "route-opportunity evidence",
-        },
-        {
-            "Test": "P4b V4 settlement",
-            "Outcome": "intermediary ERC-20 transfer incidence",
-            "Unit": "matched route unit",
-            "Sample": "matched V3/V4 route cells",
-            "Treatment/regressor": "V4 route unit",
-            "FE / clustering": "matched-cell paired difference",
-            "Main coefficient": "-18.6 pp, p<0.001",
-            "Interpretation": "settlement-mechanics evidence",
-        },
-    ]
-    out = pd.DataFrame(rows)
-    out.to_pickle(EMP / "compact_specification_registry.pkl")
-    _write_table(
-        out,
-        "table_r27_compact_specification_registry",
-        "Compact empirical specification registry.",
-        "tab:compact-spec-registry",
-        note=(
-            "This table is the paper-facing version of the specification registry: it states "
-            "the unit, sample, identifying variation, inference convention, and bounded "
-            "interpretation for each main test."
-        ),
-    )
-    return out
-
-
 def main() -> int:
     EMP.mkdir(parents=True, exist_ok=True)
     stress_event_definition_table()
     stress_threshold_overlap_sensitivity()
     curve_fluid_materiality()
     curve_fluid_scope_bound()
-    v4_manual_no_transfer_audit()
-    v4_balance_diagnostics()
-    main_test_registry_table()
-    compact_specification_registry_table()
     return 0
 
 

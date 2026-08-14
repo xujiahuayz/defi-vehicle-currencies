@@ -34,6 +34,15 @@ def test_preflight_consolidates_before_adding_and_bounds_review() -> None:
     assert "new material contradiction" in checks
 
 
+def test_preflight_makes_corrections_cumulative_until_explicitly_withdrawn() -> None:
+    for action in ("data", "analysis", "deck", "prose"):
+        checks = " ".join(regression_checks(action)).lower()
+        assert "canonical correction as cumulative" in checks
+        assert "cannot replace, weaken, or narrow" in checks
+        assert "explicitly withdraws" in checks
+        assert "silently win" in checks
+
+
 def test_prose_preflight_requires_raw_passages_not_term_replacement() -> None:
     checks = " ".join(regression_checks("prose")).lower()
     assert "raw published jfe passages" in checks

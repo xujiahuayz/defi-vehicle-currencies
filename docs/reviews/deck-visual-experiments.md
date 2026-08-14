@@ -1,5 +1,7 @@
 # Visual experiment comparison
 
+**Status:** Decision snapshot from the visual experiment pass reviewed on 2026-08-14, using the input identities below and producer commit `2ffbce06302468b5ee6cb6537989c28078a88603`. “Current” and “adopted” in this ledger mean current at that dated pass; live use still requires the source and provenance checks owned by the consuming deck frame.
+
 This lane tests visual grammar on current, provenance-verified aggregate exhibits. It does not create a new estimand or promote a finding. Every PDF has its own provenance sidecar; evidence status, source identity, commit and path remain in source or manifests rather than the rendered figure.
 
 ## Exact inputs
