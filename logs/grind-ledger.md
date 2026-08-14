@@ -783,3 +783,67 @@ and queue closure).
   that pair type causes vehicle choice.
 - The paper and exact-state coefficient prose remain outside this unit; node P
   and E1 remain closed.
+
+## 2026-08-14 — V2 exact event source independently reopened
+
+**Targeted check:** the absent release-grade `main_v1` route-cost panel through
+its full-calendar market-state prerequisite, beginning with the failed V2 exact
+event-source reopening exposed by the canonical state builder.
+
+**REGRESSION-CHECK:** the purpose-bound estimand is the best direct route versus
+the best two-hop route for the same endpoints, UTC hour, and notional under
+`main_v1` at USD 1,000, 10,000, and 100,000, using quote-engine generation
+`e4ff06ed46ff`. The evidence generation closed here is V2 event-source release
+`09335f9551339e45b19734f9513511beca4a11bcc82b47adfa3947509a17b5e0`.
+The prior corrections most at risk were the common 5% own-price-impact gate
+and the prohibition on stale V4/Balancer shards; for V2 specifically, exact
+block-log order must govern rather than legacy provider order. This iteration
+used `--no-fetch` throughout and did not overwrite certified raw partitions.
+
+**Scientific consequence and concentration.** The independently reopened
+77-date construction audit admits 65,082 token decimals, bounds 13 token and
+22 factory-pair exclusions, releases 462 summary rows, and has zero exceptions.
+Exact supplements are concentrated at the endpoint on Uniswap V2: 38 events on
+2025-12-15, nine on 2026-01-15, and one on 2026-02-15; SushiSwap V2 needs none.
+Those 48 records are tiny relative to daily event totals but can change
+endpoint state reconstruction, so retaining them is claim-relevant rather than
+metadata hygiene. Sparse exact-absence exclusions elsewhere are explicitly
+classified and economically bounded; there is no launch-timed or venue-wide
+coverage break.
+
+**Work completed.** Fixed the canonical exact-log reader so shared chunks can
+resolve their persisted old upper-block anchors from the factory evidence root
+instead of the separate exact-log cache. Consolidated reconciliation reading
+so all correction actions are consumed while bounded excluded pools remain
+outside registry/decimals decoding. Applied the same header-root contract to
+the transaction-target consumer, added focused regressions for both failures,
+and published the first independently reopenable V2 event-source release and
+portable provenance manifests. Updated the findings guard to separate the
+closed 77-date certificate from the still-open full-calendar state input.
+
+**DECISION:** `promote` the V2 construction-audit certificate as independently
+reproducible evidence; `park` full-calendar state materialization at its next
+honest input boundary rather than extrapolating the 77 audit dates.
+
+**Validation.** The complete no-fetch V2 audit passed all 77 comparisons and
+the final independent replay (`rows=462; exceptions=0`). Focused V2/event-order
+tests passed 103 tests; the integrated release/state/freeze suite passed 188
+tests plus 72 subtests. The downstream market-state builder now fails closed at
+the first legacy non-audit generation, `sushiswap_v2/20241025`. The final freeze
+audit passes the V2 certificate check and remains RED with five blockers.
+
+**Commit:** `bb33d79` (V2 evidence reopening, release provenance, and findings
+status).
+
+**Blocking count:** 5.
+
+**For the next iteration:**
+- Resume the full-calendar market-state owner at
+  `sushiswap_v2/20241025`; do not infer that the 77-date construction calendar
+  certifies non-audit dates and do not fetch provider data already present.
+- After an exact full-calendar V2 generation exists, continue V3/V4 daily state
+  materialization before rebuilding `main_v1`; no route-cost shard was created
+  in this iteration.
+- The remaining executable freeze blockers are E1 lock, the empirical model
+  ledger, the full-text literature ledger, the absent route-cost panel, and two
+  unchanged findings passes.
