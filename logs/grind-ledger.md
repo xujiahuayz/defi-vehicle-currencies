@@ -1377,3 +1377,31 @@ audit rerun: RED, 4 blockers (E1 lock, model ledger, literature ledger now at
 - The 12:03 M3 coordinator handoff stays unchecked: its remaining live parts
   are the E1/D3 generation identities (gated as above) and the two unchanged
   findings passes.
+
+---
+
+## 2026-08-15 — Bounded recovery: sanctioned scratchpad no longer reads as dirt
+
+A recovery worker inherited untracked `scratchpad/` from the literature
+re-materialization iteration; no queue or standing-brief work ran, and no
+remote synchronization was performed.
+
+**What was recovered.** Nothing was in progress: the previous iteration had
+committed its full unit (`4ba208d`, `406c6b0`) and parked its probe scripts
+under `scratchpad/lit-materialize/` exactly as the grind brief directs — but
+`scratchpad/` had never been gitignored, so its first real use read as
+non-queue worktree dirt and triggered this recovery, the same failure mode as
+the e0 test scratch fixed in `eeda725`.
+
+**Decision.** Ignore `scratchpad/` in `.gitignore`. Its contents are
+host-local by design (absolute browser-profile paths, captures), so tracking
+them would break the push-safe rule; the committed ledger's Mukhin resumption
+route (`scratchpad/lit-materialize/fetch_hard_targets2.py mukhin`) references
+the on-disk path on this host and is unaffected. All scratchpad files were
+preserved byte-for-byte.
+
+**Validation.** `git check-ignore` matches all three scratchpad files against
+the new rule; `git ls-files scratchpad/` confirms no tracked file is shadowed;
+`git status --porcelain` is clean apart from this unit.
+
+**Commit:** see this commit.

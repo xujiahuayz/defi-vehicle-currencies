@@ -56,6 +56,11 @@ logs/*
 !logs/grind-queue.md
 *.log
 .DS_Store
+# scratchpad/ is the sanctioned parking spot the grind brief names for probe
+# scripts and one-off outputs a worker keeps for resumption. Its contents are
+# host-local (absolute profile paths, captures), so they stay out of git — and
+# they must never read as worktree dirt to the grind supervisor.
+scratchpad/
 
 # Literature payloads that may not be redistributable
 literature/*.pdf
