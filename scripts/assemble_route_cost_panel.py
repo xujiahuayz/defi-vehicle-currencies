@@ -34,7 +34,11 @@ from pathlib import Path
 from ddvc.panel_assembly import assemble_parquet_shards
 from ddvc.paths import DATA_DIR, OUTPUT_DIR, REPO_ROOT, ROUTE_COST_JOB_LOCK
 from ddvc.provenance import stamp
-from ddvc.route_cost import QUOTE_CELL_KEYS
+from ddvc.route_cost import (
+    MAIN_ROUTE_COST_SPEC,
+    QUOTE_CELL_KEYS,
+    day_cache_scope_name,
+)
 from ddvc.route_cost_summary import write_route_cost_summary
 from ddvc.runtime import exclusive_job
 
@@ -74,16 +78,53 @@ def resolve_spec(value: str, *, root: Path = REPO_ROOT) -> Path:
     return path if path.is_absolute() else root / path
 
 
+def main_spec_scope_note(spec: Path) -> str:
+    """Prove the adopted cache encodes the locked release scope, or refuse.
+
+    The locked-execution rule requires the producing run to spell out its
+    scientific scope. The builder encodes that scope in the cache directory
+    name, so an assembly-only recovery can stamp `scope=main_v1` exactly when
+    the adopted directory matches the locked spec's encoding. The quote-engine
+    identity in the cache's parent directory names the released state lineage
+    that priced the shards; it is recorded rather than re-derived because
+    adoption must never present old pricing as the current lineage.
+    """
+    expected = day_cache_scope_name(
+        MAIN_ROUTE_COST_SPEC.hours_utc,
+        MAIN_ROUTE_COST_SPEC.top_pairs,
+        MAIN_ROUTE_COST_SPEC.trade_sizes_usd,
+        include_tick_venues=MAIN_ROUTE_COST_SPEC.include_tick_venues,
+        unify_wrapped=MAIN_ROUTE_COST_SPEC.unify_wrapped,
+    )
+    if spec.name != expected:
+        raise ValueError(
+            f"cache scope {spec.name!r} does not encode the locked "
+            f"{MAIN_ROUTE_COST_SPEC.scope} release scope {expected!r}"
+        )
+    engine = spec.parent.name.removeprefix("engine_")
+    return (
+        f"scope={MAIN_ROUTE_COST_SPEC.scope}; quote engine {engine}; "
+        f"day cache {spec.name}; "
+    )
+
+
 def main() -> int:
     ap = argparse.ArgumentParser(description=__doc__,
                                  formatter_class=argparse.RawDescriptionHelpFormatter)
     ap.add_argument("--spec", default=None, help="cache directory, defaults to the fullest")
+    ap.add_argument(
+        "--main-spec",
+        action="store_true",
+        help="refuse unless the cache directory encodes the locked release "
+             "scope, then stamp the panel as scope=main_v1",
+    )
     args = ap.parse_args()
 
     spec = resolve_spec(args.spec) if args.spec else fullest_spec()
     if spec is None:
         print(f"no day cache under {CACHE.relative_to(REPO_ROOT)}")
         return 1
+    scope_note = main_spec_scope_note(spec) if args.main_spec else ""
     files = sorted(spec.glob("[0-9]*.parquet"))
     if not files:
         print(f"no cached days in {spec}")
@@ -103,8 +144,8 @@ def main() -> int:
     print(f"\nassembled {result.rows:,} rows from {result.shards:,} nonempty days into "
           f"{OUT.relative_to(REPO_ROOT)} ({OUT.stat().st_size / 1e6:.0f} MB)")
     manifest = stamp(OUT, code_sources=CODE_SOURCES, inputs=[spec], rows=result.rows,
-                     notes=(f"assembled all {len(files)} readable day shards from "
-                            f"{spec.relative_to(REPO_ROOT)}; {result.shards} nonempty"))
+                     notes=(f"{scope_note}assembled all {len(files)} readable day shards "
+                            f"from {spec.relative_to(REPO_ROOT)}; {result.shards} nonempty"))
     print(f"stamped {manifest.relative_to(REPO_ROOT)}")
     summary = write_route_cost_summary(OUT, SUMMARY)
     summary_manifest = stamp(

@@ -46,3 +46,30 @@ MAIN_ROUTE_COST_SPEC = RouteCostBuildSpec(
     unify_wrapped=True,
     include_tick_venues=True,
 )
+
+
+def day_cache_scope_name(
+    hours_utc: tuple[int, ...],
+    top_pairs: int,
+    trade_sizes_usd: tuple[float, ...] | list[float],
+    *,
+    include_tick_venues: bool,
+    unify_wrapped: bool,
+) -> str:
+    """One canonical encoding of scientific scope in a day-cache directory name.
+
+    The builder keys cached days by this name so a scope change can never reuse
+    rows priced under another scope; the recovery assembler compares it against
+    the locked release spec before stamping an adopted cache as release-grade.
+    """
+    hspec = (
+        "all"
+        if len(hours_utc) == 24
+        else "-".join(str(hour) for hour in hours_utc)
+    )
+    sizes = "-".join(str(int(value)) for value in trade_sizes_usd)
+    return (
+        f"h{hspec}_p{top_pairs}_s{sizes}"
+        + ("" if include_tick_venues else "_nov3")
+        + ("" if unify_wrapped else "_splitwrapped")
+    )

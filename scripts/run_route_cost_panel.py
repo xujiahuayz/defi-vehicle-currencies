@@ -59,6 +59,7 @@ from ddvc.route_cost import (
     MAX_INPUT_TO_RESERVE,
     MAX_PRICE_IMPACT,
     QUOTE_CELL_KEYS,
+    day_cache_scope_name,
 )
 from ddvc.pricing.v2quote import quote_exact_input_float
 from ddvc.pricing.tick_quote import quote_tick_state
@@ -276,9 +277,13 @@ def _configure_cache(hours: tuple[int, ...], top_pairs: int, sizes: list[float],
     ]
     QUOTE_DEPENDENCY_IDENTITY = quote_dependency_identity()
     QUOTE_ENGINE = QUOTE_DEPENDENCY_IDENTITY[:12]
-    hspec = "all" if len(hours) == 24 else "-".join(str(h) for h in hours)
-    spec = (f"h{hspec}_p{top_pairs}_s{'-'.join(str(int(x)) for x in sizes)}"
-            f"{'_nov3' if no_v3 else ''}{'_splitwrapped' if not UNIFY_WRAPPED else ''}")
+    spec = day_cache_scope_name(
+        hours,
+        top_pairs,
+        sizes,
+        include_tick_venues=not no_v3,
+        unify_wrapped=UNIFY_WRAPPED,
+    )
     DAY_CACHE_SCOPE = spec
     DAY_CACHE = OUT_DATA / "_route_cost_day_cache" / f"engine_{QUOTE_ENGINE}" / spec
     DAY_CACHE.mkdir(parents=True, exist_ok=True)

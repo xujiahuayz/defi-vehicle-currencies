@@ -8,7 +8,8 @@ from pathlib import Path
 import pandas as pd
 
 from ddvc.asset_types import NATIVE_ETH, WETH
-from scripts import run_route_cost_panel
+from ddvc.route_cost import MAIN_ROUTE_COST_SPEC, day_cache_scope_name
+from scripts import assemble_route_cost_panel, run_route_cost_panel
 
 
 def swap(
@@ -129,6 +130,39 @@ class RouteCostPairSelectionTests(unittest.TestCase):
         self.assertEqual(args.trade_sizes, "1000,10000,100000")
         self.assertFalse(args.split_wrapped)
         self.assertFalse(args.no_v3)
+
+    def test_day_cache_scope_name_encodes_the_locked_release_scope(self) -> None:
+        self.assertEqual(
+            day_cache_scope_name(
+                MAIN_ROUTE_COST_SPEC.hours_utc,
+                MAIN_ROUTE_COST_SPEC.top_pairs,
+                MAIN_ROUTE_COST_SPEC.trade_sizes_usd,
+                include_tick_venues=MAIN_ROUTE_COST_SPEC.include_tick_venues,
+                unify_wrapped=MAIN_ROUTE_COST_SPEC.unify_wrapped,
+            ),
+            "hall_p200_s1000-10000-100000",
+        )
+        self.assertEqual(
+            day_cache_scope_name(
+                (12,), 50, (1_000.0,), include_tick_venues=False, unify_wrapped=False
+            ),
+            "h12_p50_s1000_nov3_splitwrapped",
+        )
+
+    def test_assembly_adoption_scopes_only_the_locked_cache_name(self) -> None:
+        cache = Path("data/empirical/_route_cost_day_cache")
+        note = assemble_route_cost_panel.main_spec_scope_note(
+            cache / "engine_a785f5a19f7a" / "hall_p200_s1000-10000-100000"
+        )
+        self.assertEqual(
+            note,
+            "scope=main_v1; quote engine a785f5a19f7a; "
+            "day cache hall_p200_s1000-10000-100000; ",
+        )
+        with self.assertRaisesRegex(ValueError, "does not encode the locked"):
+            assemble_route_cost_panel.main_spec_scope_note(
+                cache / "engine_a785f5a19f7a" / "h12_p200_s1000-10000-100000"
+            )
 
     def test_main_build_scope_rejects_scientific_overrides(self) -> None:
         args = argparse.Namespace(

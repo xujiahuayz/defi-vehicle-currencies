@@ -1,0 +1,63 @@
+{
+ "argv": [
+  "--main-spec"
+ ],
+ "artefact": "output/empirical/route_cost_panel_v2_summary.pkl",
+ "artefact_bytes": 3515,
+ "artefact_mtime_ns": 1786764253916983680,
+ "artefact_sha256": "8261acf8b5d5e64e361e96a06fc5c089bb79975f2330f7a520c45baf78fa9174",
+ "code_fingerprint": "c27eab1902a41a5a973ac146585d0b393a0e7d361e78d7d7ee3ef3d4e61c2c44",
+ "code_sources": [
+  "scripts/assemble_route_cost_panel.py",
+  "scripts/run_route_cost_panel.py",
+  "src/ddvc/panel_assembly.py",
+  "src/ddvc/pricing/stableswap.py",
+  "src/ddvc/pricing/v2quote.py",
+  "src/ddvc/pricing/v3pools.py",
+  "src/ddvc/pricing/v3quote.py",
+  "src/ddvc/pricing/weighted.py",
+  "src/ddvc/route_cost.py",
+  "src/ddvc/route_cost_summary.py"
+ ],
+ "created_at": "2026-08-15T03:24:13+00:00",
+ "git": {
+  "branch": "main",
+  "commit": "8ec6451176bf3dd31b9f230259afa1042b420a63",
+  "dirty": true,
+  "dirty_generated_files": [
+   "data/manifests/data/empirical/route_cost_panel_v2.parquet.prov.json"
+  ],
+  "dirty_tracked_files": [
+   "scripts/assemble_route_cost_panel.py",
+   "scripts/run_route_cost_panel.py",
+   "src/ddvc/route_cost.py",
+   "tests/test_route_cost_panel.py"
+  ],
+  "dirty_untracked_files": []
+ },
+ "inputs": [
+  {
+   "bytes": 810761590,
+   "exists": true,
+   "hashed": false,
+   "mtime_ns": 1786764249866643056,
+   "path": "data/empirical/route_cost_panel_v2.parquet"
+  }
+ ],
+ "libraries": {
+  "numpy": "2.5.1",
+  "pandas": "3.0.3",
+  "pyarrow": "25.0.0",
+  "scipy": "1.18.0"
+ },
+ "notes": null,
+ "payload_identity": {
+  "bytes": 3515,
+  "format": "binary",
+  "schema_version": 1,
+  "sha256": "8261acf8b5d5e64e361e96a06fc5c089bb79975f2330f7a520c45baf78fa9174"
+ },
+ "python": "3.14.6",
+ "rows": 15,
+ "script": "scripts/assemble_route_cost_panel.py"
+}
