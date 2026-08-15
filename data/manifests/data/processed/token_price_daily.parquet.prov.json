@@ -1,0 +1,72 @@
+{
+ "argv": [
+  "--workers",
+  "8"
+ ],
+ "artefact": "data/processed/token_price_daily.parquet",
+ "artefact_bytes": 407498398,
+ "artefact_mtime_ns": 1786769515257340754,
+ "artefact_sha256": "a8fb4762b7d34f966ca439518653ab139a4c6b0321837a9229f487291d7f9a21",
+ "code_fingerprint": "20ad4b9ea0a13bed38778db472caf15457041eaed3e2f0d7287cd3ae733e38c5",
+ "code_sources": [
+  "scripts/build_token_price_panel.py",
+  "src/ddvc/panel_assembly.py",
+  "src/ddvc/paths.py",
+  "src/ddvc/prices.py"
+ ],
+ "created_at": "2026-08-15T04:51:55+00:00",
+ "git": {
+  "branch": "main",
+  "commit": "8a965cddaddfc110124566130e51dbe28f7d0818",
+  "dirty": false,
+  "dirty_generated_files": [],
+  "dirty_tracked_files": [],
+  "dirty_untracked_files": []
+ },
+ "inputs": [
+  {
+   "entries": 4665,
+   "exists": true,
+   "kind": "directory",
+   "path": "data/unified",
+   "tree_fingerprint": "a46a03757684100744f981afd785bbeceb1a8ce18bd231223b23093d40913fe3"
+  },
+  {
+   "bytes": 456408,
+   "exists": true,
+   "path": "data/processed/unified_route_quality.parquet",
+   "sha256": "7baa00fde6a445beaa9867a936754be921303aa39c7de757217838f294b55625"
+  }
+ ],
+ "libraries": {
+  "numpy": "2.5.1",
+  "pandas": "3.0.3",
+  "pyarrow": "25.0.0",
+  "scipy": "1.18.0"
+ },
+ "notes": "canonical address-day price generation e3dffdc0e6f1; resumable cache engine_e3dffdc0e6f1",
+ "payload_identity": {
+  "bytes": 407498398,
+  "columns": [
+   "day",
+   "token",
+   "symbol",
+   "price_usd",
+   "n_observations",
+   "n_consensus",
+   "consensus_share",
+   "gross_weight_usd",
+   "consensus_weight_usd",
+   "price_source",
+   "validation_status"
+  ],
+  "format": "parquet",
+  "rows": 4981725,
+  "schema_sha256": "a2e0ee75d9129466229809c9346b1e6cc5b9b63de405d45ab26bdb1be7a039f0",
+  "schema_version": 1,
+  "sha256": "a8fb4762b7d34f966ca439518653ab139a4c6b0321837a9229f487291d7f9a21"
+ },
+ "python": "3.14.6",
+ "rows": 4981725,
+ "script": "scripts/build_token_price_panel.py"
+}
