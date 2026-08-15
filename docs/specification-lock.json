@@ -8,7 +8,7 @@
   "d3_certificate": null,
   "exploration_generation": null,
   "exploration_certificate": null,
-  "lock_hash": "af94ef8ed5ac9a693f58b3b058ca20fb70b8b50dc9ded44d042004fec3fa60bf",
+  "lock_hash": "a76e76d28148ba9180ea614954a2148c8612d3b45f5ae89d98800cf92bd007f5",
   "paper_scope": "The making and displacement of vehicle-currency roles in Ethereum decentralised exchange",
   "global_rules": {
     "asset_identity": "canonical contract address; symbols are labels only",
@@ -386,7 +386,7 @@
     {
       "id": "liquidity_capital_v2_predictability",
       "status": "candidate_mechanism",
-      "execution_gate": "blocked_v2_capital_release",
+      "execution_gate": "open",
       "role": "independently executable V2-family liquidity-provision mechanism candidate",
       "estimand": "whether candidate-level vehicle dominance predicts subsequent V2-family deposited-capital allocation and whether candidate-level V2-family deposited capital predicts subsequent vehicle dominance",
       "sample": "WETH, WBTC, DAI, USDC, and USDT identified by canonical token address; topology-valid clean non-round-trip routes joined by exact calendar date to candidate-attributed Uniswap V2 and SushiSwap V2 deposited-capital stocks. The panel retains only these five candidate rows, while intermediary episode shares and vehicle excess-use count ratios preserve their upstream daily denominator over all routed tokens",
@@ -394,8 +394,17 @@
       "dependent_variable": "in the route-to-capital direction, exact-horizon change in candidate-attributed deposited capital or its five-candidate share; in the capital-to-route direction, exact-horizon change in intermediary episode share or the endpoint-supported vehicle excess-use count ratio",
       "transformation": "changes in log one plus candidate-attributed deposited-capital dollars, five-candidate capital share, all-routed-token intermediary episode-count share, and the corresponding vehicle excess-use count ratio formed from all-routed-token intermediary and endpoint shares",
       "outlier_treatment": "no quantile trimming; exact calendar links only; supported zero capital remains zero and missing dates remain missing",
-      "response_horizon_days": [1, 7, 30, 120],
-      "primary_horizons": [1, 7, 30],
+      "response_horizon_days": [
+        1,
+        7,
+        30,
+        120
+      ],
+      "primary_horizons": [
+        1,
+        7,
+        30
+      ],
       "long_horizon_sensitivity": 120,
       "estimators": {
         "route_to_v2_stock": "future stock change on origin vehicle share with candidate and origin-date fixed effects",
@@ -407,6 +416,32 @@
         "post-Uniswap-V3-launch V2-family subsample as heterogeneity only"
       ],
       "inference": "two-sided 95-percent intervals from candidate-date score HAC with Bartlett weights over 30 exact calendar days; scores are aggregated across candidates by date and unsupported dates inside the sample span are retained as zero-score dates. Calendar-month moving-block bootstrap and two-way candidate and origin-date clustering are sensitivities, with the five-candidate limitation stated. Holm adjustment is within perimeter and direction across the twelve primary-horizon route-measure by capital-measure coefficients",
+      "mandatory_alternatives": {
+        "vehicle_dominance": [
+          "intermediary episode-count share",
+          "vehicle excess-use count ratio on endpoint-supported observations"
+        ],
+        "v2_capital_stock": [
+          "log one plus candidate-attributed deposited capital dollars",
+          "five-candidate capital share"
+        ],
+        "v2_calendar_perimeter": [
+          "full V2-family measurement calendar as the sole primary adjudication sample",
+          "pre-Uniswap-V3-launch V2-family subsample using the canonical protocol launch clock as heterogeneity only",
+          "post-Uniswap-V3-launch V2-family comparison as heterogeneity only"
+        ],
+        "response_horizon_days": [
+          1,
+          7,
+          30,
+          120
+        ],
+        "covariance": [
+          "candidate-date score HAC with Bartlett weights over 30 exact calendar days and zero scores on unsupported dates inside the sample span",
+          "calendar-month moving-block bootstrap",
+          "two-way candidate and origin-date clustered"
+        ]
+      },
       "reciprocal_measure_pairs": [
         "intermediary episode share with log one plus deposited capital",
         "intermediary episode share with five-candidate capital share",
@@ -414,6 +449,7 @@
         "vehicle excess-use count ratio with five-candidate capital share"
       ],
       "decision_rule": "Only the full V2-family calendar adjudicates the claim; pre- and post-Uniswap-V3 estimates are heterogeneity and cannot rescue it. An exact reciprocal route/capital measure pair passes when both route-to-capital and capital-to-route coefficients are positive with Holm q below 0.05 at the same at least two of 1, 7, and 30 days and neither direction is significantly negative at 120 days. The claim passes when at least one exact pair passes and, for that route measure, both the log-dollar and five-candidate-share capital alternatives have positive median coefficients in each direction across the three primary horizons with no significantly negative primary coefficient",
+      "falsifier": "vehicle-use coefficients do not predict later V2-family deposited capital, deposited-capital coefficients do not predict later vehicle use, no exact reciprocal measure pair is positive with Holm q below 0.05 in both directions at the same at least two primary horizons, or a significantly negative 120-day reversal appears in either direction",
       "admissible_interpretation": "vehicle use and V2-family deposited capital exhibit temporally ordered bidirectional predictability",
       "forbidden_interpretation": "causal liquidity-provider feedback, V3 capital, liquidity-provider profitability, or rent incidence",
       "runner": "scripts/run_liquidity_capital_v2_predictability.py",

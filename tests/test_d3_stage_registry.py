@@ -42,8 +42,14 @@ def test_real_d3_registry_equals_the_executable_specification_perimeter() -> Non
         "data/processed/cross_venue_routing_daily.parquet",
         "data/processed/endpoint_candidate_composition_release/current.json",
         "data/processed/intermediation_by_type_daily.parquet",
+        "data/processed/liquidity_capital_v2_candidate_day.parquet",
+        "data/processed/liquidity_capital_v2_exact_horizons.parquet",
+        "data/processed/pool_capital_release/current.json",
         "data/processed/vehicle_excess_use_daily.parquet",
     }
+    capital = by_path["data/processed/pool_capital_release/current.json"]
+    assert capital.status == "built"
+    assert capital.owner == "build_pool_capital_panel.py"
     endpoint = by_path[
         "data/processed/endpoint_candidate_composition_release/current.json"
     ]

@@ -299,7 +299,10 @@ def test_real_specification_excludes_closed_and_non_stage_claims_from_d3() -> No
         sorted(claim["id"] for claim in stage_claims if claim["execution_gate"] == "open")
     )
     assert perimeter.executable_claim_ids == expected_executable
-    assert perimeter.executable_claim_ids == ("vehicle_transition",)
+    assert perimeter.executable_claim_ids == (
+        "liquidity_capital_v2_predictability",
+        "vehicle_transition",
+    )
     blocked = {
         record["claim_id"]: record["execution_gate"]
         for record in perimeter.excluded_claims
@@ -327,7 +330,7 @@ def test_real_specification_excludes_closed_and_non_stage_claims_from_d3() -> No
     executable_paths = set(perimeter.paths)
     assert "data/empirical/route_cost_panel_v2.parquet" not in executable_paths
     assert "data/processed/counterfactual_dominance.parquet" not in executable_paths
-    assert "data/processed/pool_capital_release/current.json" not in executable_paths
+    assert "data/processed/pool_capital_release/current.json" in executable_paths
 
 
 def test_d3_release_rejects_raw_missing_and_stale_claim_inputs() -> None:

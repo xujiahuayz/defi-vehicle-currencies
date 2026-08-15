@@ -1,0 +1,68 @@
+{
+ "argv": [],
+ "artefact": "output/tables/liquidity_capital_v2_predictability.tex",
+ "artefact_bytes": 2785,
+ "artefact_mtime_ns": 1786810598963720592,
+ "artefact_sha256": "1f9ddd44527bf52a62be8821256c4db80bc80d71d6a26b5c425a466d7f27dc61",
+ "code_fingerprint": "b1b6b09483efb3ebc9d4dcb1b7f5ba38ca5f9e533c07f102cedd4337f195a81e",
+ "code_sources": [
+  "scripts/run_liquidity_capital_v2_predictability.py",
+  "src/ddvc/analysis/regression.py",
+  "src/ddvc/liquidity_predictability.py",
+  "src/ddvc/model_artifacts.py"
+ ],
+ "created_at": "2026-08-15T16:16:38+00:00",
+ "git": {
+  "branch": "main",
+  "commit": "e146a5fca551f3e06b59bf504aa189ab63482e71",
+  "dirty": true,
+  "dirty_generated_files": [
+   "data/manifests/data/processed/d3_analysis_release/generations/414f0c278742f42c4c1f8b7d5384d229aeaa0c2831c4dfa019183b2b1084f136/",
+   "data/manifests/output/exhibits/liquidity_capital_v2_predictability.jsonl.prov.json",
+   "data/manifests/output/exhibits/liquidity_capital_v2_support.jsonl.prov.json",
+   "output/exhibits/liquidity_capital_v2_predictability.jsonl",
+   "output/exhibits/liquidity_capital_v2_support.jsonl"
+  ],
+  "dirty_tracked_files": [
+   "docs/specification-lock.json",
+   "tests/test_d3_stage_registry.py"
+  ],
+  "dirty_untracked_files": []
+ },
+ "inputs": [
+  {
+   "bytes": 29909,
+   "exists": true,
+   "path": "data/processed/d3_analysis_release/generations/414f0c278742f42c4c1f8b7d5384d229aeaa0c2831c4dfa019183b2b1084f136/certificate.json",
+   "sha256": "ab3a10cac57faaa2e74cd3217b2519af34fa7be34c12ff07f1b3a06eace723b9"
+  },
+  {
+   "bytes": 203919,
+   "exists": true,
+   "path": "output/exhibits/liquidity_capital_v2_predictability.jsonl",
+   "sha256": "51332e441433da07ed1e7d690f34819a3bd1fbd81b6b3e9e6cc9c54d54d344f9"
+  },
+  {
+   "bytes": 43688,
+   "exists": true,
+   "path": "output/exhibits/liquidity_capital_v2_support.jsonl",
+   "sha256": "f3369e889c6cefd4f14b0ab6b97ea406dcdf822258b1078c111d2dbf219b4ff7"
+  }
+ ],
+ "libraries": {
+  "numpy": "2.5.1",
+  "pandas": "3.0.3",
+  "pyarrow": "25.0.0",
+  "scipy": "1.18.0"
+ },
+ "notes": "V2-only bidirectional exact-calendar predictability; candidate and origin-date fixed effects; cross-section-aggregated score HAC with zero-score dates on the complete calendar and 30-day Bartlett bandwidth, month-block bootstrap and limited five-candidate two-way sensitivity; full-calendar adjudication only; pre/post estimates are heterogeneity; descriptive predictive interpretation only",
+ "payload_identity": {
+  "bytes": 2785,
+  "format": "binary",
+  "schema_version": 1,
+  "sha256": "1f9ddd44527bf52a62be8821256c4db80bc80d71d6a26b5c425a466d7f27dc61"
+ },
+ "python": "3.14.6",
+ "rows": 96,
+ "script": "scripts/run_liquidity_capital_v2_predictability.py"
+}
