@@ -188,7 +188,7 @@ def render_pair_composition(
     lines = [
         r"\begin{tabularx}{\linewidth}{@{}>{\raggedright\arraybackslash}Xrr@{}}",
         r"\toprule",
-        r"Margin or estimate & Estimate in pp (clustered s.e.) & Obs. \\",
+        r"Margin or estimate & Estimate in pp & Obs. \\",
         r"\midrule",
         r"\multicolumn{3}{l}{\emph{Panel A. Route-count share: decomposition}} \\",
         f"Pairs entering or leaving the sample & {macros['MarketSupportBridge']} & \\\\",

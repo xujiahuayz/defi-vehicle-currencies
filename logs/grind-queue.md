@@ -318,7 +318,7 @@ and pick a blocking check from the freeze gate.
   if it remains after that worker exits, it is ignored dirt and safe to delete.
   Proceed with the open queue items above.
 
-- [ ] **M3 SUPERVISOR (2026-08-14T21:58Z): parked table-header refinement — apply only AFTER the queued composition E0 refresh regenerates `output/exhibits/vehicle_transition_pair_fixed_effects.jsonl` on the current certified release.**
+- [x] **M3 SUPERVISOR (2026-08-14T21:58Z): parked table-header refinement — apply only AFTER the queued composition E0 refresh regenerates `output/exhibits/vehicle_transition_pair_fixed_effects.jsonl` on the current certified release.**
   Change the `pair_composition` column header from `Estimate in pp (clustered s.e.)`
   to `Estimate in pp` in `src/ddvc/dominance_tables.py::render_pair_composition`
   (the `\exhibitnote` in `paper/sections/03-dominance.tex` already states the
@@ -331,6 +331,7 @@ and pick a blocking check from the freeze gate.
   rerun `scripts/tabulate/render_pair_composition.py`,
   `render_dominance_rotation.py` and `render_usdt_transition.py` to restamp all
   three tables, and confirm `tests/test_dominance_tables.py` is green.
+  _Closed after the precondition landed in `c1447e7` (fixed-effects exhibit bound to certificate generation dbe24bb3…): the header is now `Estimate in pp`, all three tables restamped through their render scripts, the updated assertion and full `tests/test_dominance_tables.py` pass (8 tests), and `paper/main.pdf` compiles clean with the edited table._
 
 ## Closed
 

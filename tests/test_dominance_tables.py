@@ -73,7 +73,7 @@ def test_pair_panel_c_contains_all_three_fixed_effect_rows() -> None:
         "All two-leg routes, count share & $+0.22\\ (0.76)$ & 188,520"
         in pair
     )
-    assert "Estimate in pp (clustered s.e.)" in pair
+    assert "Margin or estimate & Estimate in pp & Obs." in pair
     assert (
         "20\\% agreement sample, count share & $+0.32\\ (0.75)$ & 182,834"
         in pair

@@ -1266,3 +1266,36 @@ unblocked (fixed-effects exhibit is bound to the current certified release);
 apply it next if this iteration does not. The 12:03 M3 J0 route-cost item
 remains the standing large unit: route-cost panel manifest/provenance/scope for
 the 113,822,022-row panel is the highest-value open blocker.
+
+---
+
+## 2026-08-15 — Parked table-header refinement applied (same iteration)
+
+REGRESSION-CHECK: purpose-bound estimand is presentation only — the
+pair-composition table header; evidence generation at risk is the three
+dominance tables' presentation provenance (restamped through their own render
+scripts against the unchanged fixed-effects exhibit bound to certificate
+generation `dbe24bb3…`); the prior correction at risk is the JFE-register rule
+that clustering is stated in the exhibitnote, not the header — the exhibitnote
+in `paper/sections/03-dominance.tex` still states two-way clustering, so no
+inferential disclosure was lost.
+
+**What closed.** The 2026-08-14T21:58 parked queue item, unblocked by
+`c1447e7`. `render_pair_composition` header changed from `Estimate in pp
+(clustered s.e.)` to `Estimate in pp`; test assertion updated to the full
+header row; all three tables (`pair_composition`, `dominance_rotation`,
+`usdt_transition`) restamped via their render scripts without refusal;
+`tests/test_dominance_tables.py` passes (8 tests); `paper/main.pdf` compiles
+clean via Tectonic with the edited table (latexmk/TinyTeX on this host lacks
+tikz — Tectonic is the working toolchain for the paper here too, matching the
+deck).
+
+**Blocking count:** 5 (unchanged; presentation-only unit — E1 lock, model
+ledger, full-text literature ledger, route-cost panel, two unchanged passes).
+
+**For the next iteration:** the only remaining unchecked queue item is the
+12:03 M3 coordinator handoff. Its fast-forward half is done; the live half is
+the smallest J0 route-cost release: manifest/provenance/scope for the
+113,822,022-row route-cost panel (`route-cost panel exists` blocker), then
+E1/D3 generation identities and the two unchanged findings passes. That is the
+highest-value open unit.
