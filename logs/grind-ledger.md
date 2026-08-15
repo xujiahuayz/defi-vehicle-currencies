@@ -1171,3 +1171,20 @@ full-text literature ledger, route-cost panel and two unchanged findings passes.
   the interjection untouched for supervisor reconciliation rather than syncing.
 - `logs/grind-queue.md` changed externally during the run and remains the named
   unresolved synchronization-conflict path; do not edit it in this worktree.
+
+---
+
+## 2026-08-15 — Bounded recovery: rotation composition rebind
+
+A recovery worker inherited a dirty tree from an interrupted iteration and committed the finished unit; no queue or standing-brief work ran, and no remote synchronization was performed.
+
+**What was recovered.** The e0 rotation composition rerun at `eeda725` had completed on disk: four vehicle-transition-pair exhibit manifests rebound to D3 analysis-release generation `dbe24bb3` with byte-identical payloads, plus the first ranked pair-contribution ledger (194 MB Parquet) from `f52b43b` with its provenance sidecar and the new generation's certificate manifest. No tmp files remained; `ddvc.provenance.verify` reports ok for all six touched artifacts.
+
+**Decision.** The contributions payload is gitignored under the push-safe rule (no large derived artifacts in git); its tracked manifest binds the exact payload identity and the producer regenerates it.
+
+**Validation.** `tests/test_vehicle_rotation_composition.py` and `tests/test_vehicle_transition_pair_deck_values.py` pass (22 tests).
+
+**Commit:** `057aa4c`.
+
+**For the next iteration:**
+- Pre-existing failure unrelated to this unit: `tests/test_vehicle_transition_e0.py::test_vehicle_transition_runner_rejects_missing_stale_and_out_of_release_d3_inputs` fails at HEAD in its own scratch workspace. After tampering the stamped panel, the context-level check now fires first with "model-run D3 certificate context requires current analysis inputs: …certificate.json=stale" while the test expects "not current|does not reproduce". Decide whether the check ordering or the test expectation is the contract, and fix as its own unit.
