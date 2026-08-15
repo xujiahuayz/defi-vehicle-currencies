@@ -311,10 +311,10 @@
       ],
       "non_text_dispositions": [
         {
-          "artifact": "literature/papers/2022-AmitiItskhokiKonings2022DominantReplicationPackage-supplement-dataverse-v1.1-reconstructed.tar.gz",
-          "bytes": 47115695,
+          "artifact": "literature/papers/2022-AmitiItskhokiKonings2022DominantReplicationPackage-supplement-dataverse-v1.1-reconstructed-20260815.tar.gz",
+          "bytes": 45254976,
           "note": "literature/source-notes/2022-AmitiItskhokiKonings2022DominantReplicationPackage.md",
-          "sha256": "e05fc0661ed3d1077b0c15de94b9ae35a5d57eea27dfe6bc63bc480a1d1aa09b",
+          "sha256": "14c3b03ed20e2363a61cecc10a7ff33801f39d1a0cefc2cf1bde36206d91c279",
           "sources": [
             "https://doi.org/10.7910/DVN/ZOOWEA"
           ],
