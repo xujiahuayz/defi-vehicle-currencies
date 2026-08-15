@@ -1,16 +1,16 @@
 {
  "argv": [
   "--authority-snapshot",
-  "data/manifests/route_release_pre_v3_recertification_authority.json",
+  "data/processed/raw_generation/route_authority_perimeter_expansion_snapshot_20260815.json",
+  "--publish",
   "--workers",
-  "8",
-  "--publish"
+  "8"
  ],
  "artefact": "data/processed/unified_route_quality.parquet",
- "artefact_bytes": 456408,
- "artefact_mtime_ns": 1786617620897281213,
- "artefact_sha256": "7baa00fde6a445beaa9867a936754be921303aa39c7de757217838f294b55625",
- "code_fingerprint": "c9c5355c449f329dc12d79da2a9abb78c6d7a2c68285ac7f93110efd1910aca9",
+ "artefact_bytes": 454708,
+ "artefact_mtime_ns": 1786780804618670133,
+ "artefact_sha256": "1dae79a25eab7a70867e4117216fc9aa0c00a26f13fb65e8ae8a00c341b89c59",
+ "code_fingerprint": "1968c3865ad0fc34449761786accebfd2fa6eea3df68bdb64773d7accf9c4d8d",
  "code_sources": [
   "scripts/migrate_route_release_markers.py",
   "src/ddvc/calendar.py",
@@ -18,17 +18,18 @@
   "src/ddvc/reconstruct/__init__.py",
   "src/ddvc/source_records.py"
  ],
- "created_at": "2026-08-13T10:40:21+00:00",
+ "created_at": "2026-08-15T08:00:05+00:00",
  "git": {
   "branch": "main",
-  "commit": "8cc4098cbe42243b25bf4a40dc5dffcc55ac9063",
+  "commit": "533e94e924ea3e9f0d79730dd8650af9f3d21fb4",
   "dirty": true,
-  "dirty_generated_files": [
-   "data/manifests/route_release_pre_v3_recertification_authority.json"
+  "dirty_generated_files": [],
+  "dirty_tracked_files": [
+   "scripts/migrate_route_release_markers.py",
+   "tests/test_route_marker_migration.py"
   ],
-  "dirty_tracked_files": [],
   "dirty_untracked_files": [
-   "data/.route-marker-stage-pgt441sb/"
+   "data/.route-marker-stage-idgthujd/"
   ]
  },
  "inputs": [
@@ -37,7 +38,7 @@
    "exists": true,
    "kind": "directory",
    "path": "data/unified/.quality",
-   "tree_fingerprint": "25ebc6bcda7c2ad598ed10603470bac40d6379d2d9ff8ce52c08dd73ab7b69e8"
+   "tree_fingerprint": "af89cf236abc6d099df48e04fe49d921d82b9c786869968d10231b7b4083abd2"
   },
   {
    "entries": 7590,
@@ -96,10 +97,10 @@
    "tree_fingerprint": "5bd4962995d8a221b15aaab3b9ca64ce01593f014857947f3e75ccdcbede02a2"
   },
   {
-   "bytes": 13036793,
+   "bytes": 13038652,
    "exists": true,
-   "path": "data/manifests/route_release_pre_v3_recertification_authority.json",
-   "sha256": "28a98f80f4a31f83eef1e5da4f9a9134ffe9d7bb1c5cdd6e0dd33778622c6123"
+   "path": "data/processed/raw_generation/route_authority_perimeter_expansion_snapshot_20260815.json",
+   "sha256": "e60788a10bc2da61d52db15e1d750e5637f009f07e43809c9354fc5b821ffe17"
   }
  ],
  "libraries": {
@@ -108,9 +109,9 @@
   "pyarrow": "25.0.0",
   "scipy": "1.18.0"
  },
- "notes": "route-release-storage-authority-relocation-v1; current_engine=d3f16e9c4da6; source_marker_set_sha256=e9016a773eb8f7740433db59a525133bad0c8f128bd022b67df768f46a9e914a; exact_authority_relocation_days=2332",
+ "notes": "route-release-storage-authority-relocation-v1; current_engine=d3f16e9c4da6; source_marker_set_sha256=2dd25b6a729708b2b94aeff5ccb3be68c172b0c4bf8f49daac03de997d264597; exact_authority_relocation_days=2332",
  "payload_identity": {
-  "bytes": 456408,
+  "bytes": 454708,
   "columns": [
    "schema_version",
    "engine",
@@ -138,7 +139,7 @@
   "rows": 2332,
   "schema_sha256": "12168b9860872e2b40ff66f6322bd8f924d5112fe9a1b35066d55db8d56372d9",
   "schema_version": 1,
-  "sha256": "7baa00fde6a445beaa9867a936754be921303aa39c7de757217838f294b55625"
+  "sha256": "1dae79a25eab7a70867e4117216fc9aa0c00a26f13fb65e8ae8a00c341b89c59"
  },
  "python": "3.14.6",
  "rows": 2332,

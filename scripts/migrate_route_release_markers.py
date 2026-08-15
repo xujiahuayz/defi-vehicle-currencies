@@ -8,7 +8,12 @@ and requires exact fresh reconstruction on every released day.
 The engine migration proves equivalence by exact fresh reconstruction. The
 storage-authority relocation mode instead requires a pre-relocation authority
 snapshot, exact scientific raw identities, and byte-identical released
-partitions. No live marker changes occur until the complete plan passes.
+partitions. When no pre-change snapshot exists because a per-source local
+certificate merely gained non-route streams for another consumer family, the
+perimeter-expansion derivation reconstructs the prior certificate from the
+current ledger's route-stream rows and admits it only when the derived per-day
+fingerprints reproduce every released marker exactly, then feeds the standard
+relocation gate. No live marker changes occur until the complete plan passes.
 """
 
 from __future__ import annotations
@@ -44,7 +49,11 @@ from ddvc.reconstruct import (
     unified_quality_path,
 )
 from ddvc.raw_certification import (
+    LOCAL_CERTIFICATE_POLICY,
+    RawPartition,
+    local_scan_certificate_path,
     raw_partition_relocation_identity,
+    write_local_scan_certificate,
 )
 from ddvc.runtime import (
     atomic_output,
@@ -62,6 +71,9 @@ MIGRATION_TARGET_ENGINE = "d3f16e9c4da6"
 MIGRATION_POLICY = "route-release-marker-migration-v2"
 RELOCATION_POLICY = "route-release-storage-authority-relocation-v1"
 AUTHORITY_SNAPSHOT_POLICY = "route-raw-authority-snapshot-v1"
+PERIMETER_EXPANSION_DERIVATION_POLICY = (
+    "route-raw-authority-perimeter-expansion-derivation-v1"
+)
 JOURNAL_ROOT_NAME = ".route-marker-migration-journals"
 _OUTPUT_IDENTITY_FIELDS = {
     "output_bytes",
@@ -242,6 +254,270 @@ def write_route_authority_snapshot(
                 dexes=dexes,
                 days=days,
             )
+            with atomic_output(path) as temporary:
+                temporary.write_text(
+                    json.dumps(payload, indent=1, sort_keys=True) + "\n",
+                    encoding="utf-8",
+                )
+    if json.loads(path.read_text(encoding="utf-8")) != payload:
+        raise RuntimeError("route authority snapshot did not reopen exactly")
+    return payload
+
+
+def _derived_prior_generation_identity(
+    certificate: dict[str, object],
+    *,
+    row: dict[str, object],
+    source_registry_generation: str,
+) -> str:
+    """Recompute the identity the prior route-stream certificate granted one row.
+
+    Mirrors the local-certificate branch of raw_partition_read_authority; any
+    drift between the two formulas fails closed because the derived per-day
+    fingerprints must reproduce every released marker exactly.
+    """
+
+    selected_identity = [
+        {
+            "source": row["source"],
+            "stream": row["stream"],
+            "day": row["day"],
+            "logical_content_sha256": row["logical_content_sha256"],
+            "contract_sha256": row["contract_sha256"],
+            "observed_query_contract_sha256": row.get(
+                "observed_query_contract_sha256"
+            ),
+            "observed_head_block_at_fetch": row.get("observed_head_block_at_fetch"),
+            "metadata_sha256": row.get("metadata_sha256"),
+        }
+    ]
+    authority = {
+        "policy": LOCAL_CERTIFICATE_POLICY,
+        "certificate_sha256": certificate["certificate_sha256"],
+        "partition_ledger_sha256": certificate["partition_ledger_sha256"],
+        "partition_count": certificate["partition_count"],
+        "selected_partition_count": 1,
+        "selected_partition_identity_sha256": canonical_json_sha256(
+            selected_identity
+        ),
+    }
+    return canonical_json_sha256(
+        {
+            "authority": authority,
+            "source": row["source"],
+            "stream": row["stream"],
+            "day": row["day"],
+            "logical_content_sha256": row["logical_content_sha256"],
+            "contract_sha256": row["contract_sha256"],
+            "observed_query_contract_sha256": row.get(
+                "observed_query_contract_sha256"
+            ),
+            "observed_head_block_at_fetch": row.get("observed_head_block_at_fetch"),
+            "metadata_sha256": row.get("metadata_sha256"),
+            "source_registry_generation_sha256": source_registry_generation,
+        }
+    )
+
+
+def _reconstruct_prior_route_stream_certificate(
+    source: str,
+    *,
+    data_root: Path,
+    scratch: Path,
+) -> tuple[dict[str, object], dict[str, dict[str, object]]]:
+    """Rebuild the pre-expansion certificate from the current ledger's route rows."""
+
+    stream = DEX_STREAM[source]
+    certificate_path = local_scan_certificate_path(source, data_root=data_root)
+    current_certificate = json.loads(certificate_path.read_text(encoding="utf-8"))
+    ledger_path = certificate_path.with_name(
+        str(current_certificate["partition_ledger"])
+    )
+    rows = [
+        json.loads(line)
+        for line in ledger_path.read_text(encoding="utf-8").splitlines()
+    ]
+    subset = [row for row in rows if row["stream"] == stream]
+    if not subset:
+        raise ValueError(
+            f"current certificate carries no route-stream rows: {source}/{stream}"
+        )
+    if len(subset) == len(rows):
+        raise ValueError(
+            f"certificate perimeter was not expanded beyond the route stream: {source}"
+        )
+    workspace = scratch / source
+    workspace.mkdir()
+    prior_certificate = write_local_scan_certificate(
+        workspace / certificate_path.name,
+        subset,
+        expected_partitions=[
+            RawPartition(str(row["source"]), str(row["stream"]), str(row["day"]))
+            for row in subset
+        ],
+        ledger_path=workspace / str(current_certificate["partition_ledger"]),
+    )
+    return prior_certificate, {str(row["day"]): row for row in subset}
+
+
+def derive_perimeter_expansion_authority_snapshot(
+    path: Path,
+    *,
+    expanded_sources: list[str],
+    data_root: Path,
+    unified_root: Path,
+    quality_panel: Path,
+    dexes: list[str],
+    days: list[str] | None = None,
+    raw_lock: Path = RAW_MARKET_DATA_LOCK,
+) -> dict[str, object]:
+    """Derive the pre-expansion raw authority and prove it bound every marker.
+
+    A certificate perimeter expansion adds non-route streams to a per-source
+    local certificate for a different consumer family, changing the certificate
+    container identity without touching any route payload. The prior authority
+    is reconstructed deterministically from the current certified ledger's
+    route-stream rows, and the snapshot is admitted only when the derived
+    per-day fingerprints reproduce every released route marker's stored
+    input fingerprint exactly. That reproduction is a hash-exact proof that
+    the route-stream rows, consumer contract, and source registry are
+    unchanged since the markers were written; a payload, contract, or registry
+    change makes the derivation fail closed.
+    """
+
+    expanded = sorted(set(expanded_sources))
+    if not expanded:
+        raise ValueError("perimeter-expansion derivation requires expanded sources")
+    if unknown := [source for source in expanded if source not in dexes]:
+        raise ValueError(
+            f"expanded sources outside the route perimeter: {', '.join(unknown)}"
+        )
+    with exclusive_job(
+        raw_lock,
+        job="raw market-data fetch, enrichment, or canonical materialisation",
+    ):
+        with serialized_output_installs((unified_root, quality_panel)):
+            if path.exists() or path.is_symlink():
+                raise FileExistsError(
+                    f"route authority snapshot already exists: {path}"
+                )
+            selected = _selected_days(dexes, days)
+            ledger, markers, marker_hashes = _load_release_perimeter(
+                selected=selected,
+                unified_root=unified_root,
+                quality_panel=quality_panel,
+                expected_engine=RECONSTRUCTION_ENGINE,
+            )
+            prior: dict[str, tuple[dict[str, object], dict[str, dict[str, object]]]] = {}
+            with tempfile.TemporaryDirectory(
+                prefix="ddvc-perimeter-expansion-derivation-"
+            ) as directory:
+                for source in expanded:
+                    prior[source] = _reconstruct_prior_route_stream_certificate(
+                        source, data_root=data_root, scratch=Path(directory)
+                    )
+            entries: list[dict[str, object]] = []
+            rebound_days = 0
+            for day in selected:
+                old_records: list[dict[str, str]] = []
+                current_records: list[dict[str, str]] = []
+                for source in active_route_sources(_calendar_day(day), dexes):
+                    stream = DEX_STREAM[source]
+                    relocation = raw_partition_relocation_identity(
+                        source, stream, day, data_root=data_root
+                    )
+                    scientific = relocation["scientific_identity"]
+                    assert isinstance(scientific, dict)
+                    current_generation = str(
+                        relocation["generation_identity_sha256"]
+                    )
+                    if source in prior:
+                        certificate, rows_by_day = prior[source]
+                        row = rows_by_day.get(day)
+                        if row is None:
+                            raise ValueError(
+                                "prior certificate does not cover route partition: "
+                                f"{source}/{stream}/{day}"
+                            )
+                        generation = _derived_prior_generation_identity(
+                            certificate,
+                            row=row,
+                            source_registry_generation=str(
+                                scientific["source_registry_generation"]
+                            ),
+                        )
+                    else:
+                        generation = current_generation
+                    old_records.append(
+                        {
+                            "source": source,
+                            "stream": stream,
+                            "day": day,
+                            "generation_identity_sha256": generation,
+                        }
+                    )
+                    current_records.append(
+                        {
+                            "source": source,
+                            "stream": stream,
+                            "day": day,
+                            "generation_identity_sha256": current_generation,
+                        }
+                    )
+                    entries.append(
+                        {
+                            "source": source,
+                            "stream": stream,
+                            "day": day,
+                            "generation_identity_sha256": generation,
+                            "scientific_identity": scientific,
+                            "scientific_identity_sha256": canonical_json_sha256(
+                                scientific
+                            ),
+                        }
+                    )
+                derived_fingerprint = canonical_json_sha256(old_records)
+                if derived_fingerprint != markers[day].get("input_fingerprint"):
+                    raise ValueError(
+                        "derived prior authority does not reproduce the released "
+                        f"route marker: {day}"
+                    )
+                rebound_days += int(
+                    canonical_json_sha256(current_records) != derived_fingerprint
+                )
+            if rebound_days == 0:
+                raise ValueError(
+                    "perimeter-expansion derivation found no marker to rebind"
+                )
+            payload: dict[str, object] = {
+                "policy": AUTHORITY_SNAPSHOT_POLICY,
+                "route_engine": RECONSTRUCTION_ENGINE,
+                "days": list(selected),
+                "dexes": list(dexes),
+                "entries": entries,
+                "route_release": {
+                    "quality_ledger_sha256": file_sha256(quality_panel),
+                    "quality_ledger_rows": len(ledger),
+                    "marker_sha256": marker_hashes,
+                    "partitions": {
+                        day: {
+                            "rows": int(markers[day]["output_rows"]),
+                            "bytes": int(markers[day]["output_bytes"]),
+                            "sha256": str(markers[day]["output_sha256"]),
+                        }
+                        for day in selected
+                    },
+                },
+                "derivation": {
+                    "policy": PERIMETER_EXPANSION_DERIVATION_POLICY,
+                    "expanded_sources": expanded,
+                    "prior_certificates": {
+                        source: prior[source][0] for source in expanded
+                    },
+                    "rebound_days": rebound_days,
+                },
+            }
+            payload["snapshot_sha256"] = _snapshot_digest(payload)
             with atomic_output(path) as temporary:
                 temporary.write_text(
                     json.dumps(payload, indent=1, sort_keys=True) + "\n",
@@ -1165,7 +1441,57 @@ def main() -> int:
         type=Path,
         help="capture authority evidence before relocation, then exit",
     )
+    parser.add_argument(
+        "--write-perimeter-expansion-snapshot",
+        type=Path,
+        help=(
+            "derive the pre-expansion authority from the current certified "
+            "ledgers' route-stream rows, prove it binds every released marker, "
+            "write it as a relocation snapshot, then exit"
+        ),
+    )
+    parser.add_argument(
+        "--expanded-source",
+        action="append",
+        default=None,
+        help="source whose local certificate gained non-route streams (repeatable)",
+    )
     args = parser.parse_args()
+    if args.write_perimeter_expansion_snapshot is not None:
+        if (
+            args.publish
+            or args.authority_snapshot is not None
+            or args.write_authority_snapshot is not None
+        ):
+            parser.error(
+                "--write-perimeter-expansion-snapshot cannot be combined with "
+                "migration options"
+            )
+        if not args.expanded_source:
+            parser.error(
+                "--write-perimeter-expansion-snapshot requires --expanded-source"
+            )
+        snapshot = derive_perimeter_expansion_authority_snapshot(
+            args.write_perimeter_expansion_snapshot,
+            expanded_sources=args.expanded_source,
+            data_root=DATA_DIR,
+            unified_root=DATA_DIR / "unified",
+            quality_panel=UNIFIED_QUALITY_PANEL,
+            dexes=list(DEX_FAMILY),
+        )
+        derivation = snapshot["derivation"]
+        assert isinstance(derivation, dict)
+        print(
+            "perimeter-expansion authority snapshot written: "
+            f"{len(snapshot['entries']):,} raw partitions; "
+            f"{int(derivation['rebound_days']):,} markers to rebind",
+            flush=True,
+        )
+        return 0
+    if args.expanded_source:
+        parser.error(
+            "--expanded-source requires --write-perimeter-expansion-snapshot"
+        )
     if args.write_authority_snapshot is not None:
         if args.publish or args.authority_snapshot is not None:
             parser.error(

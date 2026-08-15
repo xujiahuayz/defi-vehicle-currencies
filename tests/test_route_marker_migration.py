@@ -20,6 +20,7 @@ from ddvc.reconstruct import (
     RECONSTRUCTION_ENGINE,
     UNIFIED_QUALITY_COLUMNS,
     _process_one,
+    read_unified_quality,
     route_input_fingerprint,
     route_input_paths,
     unified_path,
@@ -28,11 +29,13 @@ from ddvc.reconstruct import (
 from scripts.migrate_route_release_markers import (
     LEGACY_ENGINE,
     RELOCATION_POLICY,
+    derive_perimeter_expansion_authority_snapshot,
     migrate_route_release_markers,
     write_route_authority_snapshot,
 )
 from ddvc.raw_certification import (
     RawPartition,
+    contract_identity,
     local_scan_certificate_path,
     raw_partition_relocation_identity,
     scan_installed_generation,
@@ -353,6 +356,172 @@ def test_storage_relocation_rejects_release_changed_after_snapshot(
     )
     with pytest.raises(ValueError, match="changed after authority snapshot"):
         relocate(paths, days, snapshot, publish=False)
+
+
+def prepare_perimeter_expansion_release(
+    tmp_path: Path, days: list[str]
+) -> tuple[dict[str, Path], dict[str, tuple[int, str]]]:
+    """Release certified over swaps only, then expand the certificate in place."""
+
+    paths = {
+        "data_root": tmp_path / "data",
+        "unified_root": tmp_path / "data" / "unified",
+        "quality_panel": tmp_path / "data" / "processed" / "unified_route_quality.parquet",
+        "quality_exhibit": tmp_path / "output" / "unified_route_quality.jsonl",
+        "raw_lock": tmp_path / "raw.lock",
+    }
+    for index, day in enumerate(days):
+        calendar_day = f"{day[:4]}-{day[4:6]}-{day[6:]}"
+        raw = write_v2_swap(
+            paths["data_root"], calendar_day, amount_in=str(100 + index)
+        )
+        raw.with_name(f"uniswap_v2_meta_{day}.json").unlink()
+    _certify_local_v2(paths["data_root"], days, work_name="route-only-scan")
+    quality_rows = []
+    for day in days:
+        quality, status = _process_one(
+            f"{day[:4]}-{day[4:6]}-{day[6:]}",
+            ["uniswap_v2"],
+            True,
+            paths["data_root"],
+            paths["unified_root"],
+        )
+        assert status == "written"
+        quality_rows.append(quality)
+    paths["quality_panel"].parent.mkdir(parents=True, exist_ok=True)
+    pd.DataFrame(quality_rows, columns=UNIFIED_QUALITY_COLUMNS).to_parquet(
+        paths["quality_panel"], index=False
+    )
+    outputs = {
+        day: (
+            unified_path(day, root=paths["unified_root"]).stat().st_ino,
+            file_sha256(unified_path(day, root=paths["unified_root"])),
+        )
+        for day in days
+    }
+    expand_certificate_beyond_route_stream(paths["data_root"], days)
+    return paths, outputs
+
+
+def expand_certificate_beyond_route_stream(
+    data_root: Path, days: list[str], *, work_name: str = "expanded-scan"
+) -> None:
+    """Re-certify uniswap_v2 with an added non-route stream, as a capital consumer would."""
+
+    swap_partitions = [RawPartition("uniswap_v2", "swaps", day) for day in days]
+    rows = scan_installed_generation(
+        data_root,
+        data_root / "interim" / work_name,
+        workers=1,
+        partitions=swap_partitions,
+    )
+    extra = {
+        "source": "uniswap_v2",
+        "stream": "hourly_reserves",
+        "day": days[0],
+        "path": (
+            f"raw/thegraph/uniswap_v2/uniswap_v2_hourly_reserves_{days[0]}.jsonl.gz"
+        ),
+        "local_pass": True,
+        "errors": [],
+        "logical_content_sha256": canonical_json_sha256({"fixture": "reserves"}),
+        "contract_sha256": contract_identity("uniswap_v2", "hourly_reserves"),
+        "container_bytes": 1,
+        "container_mtime_ns": 1,
+        "container_ctime_ns": 1,
+        "metadata_present": False,
+    }
+    write_local_scan_certificate(
+        local_scan_certificate_path("uniswap_v2", data_root=data_root),
+        [*rows, extra],
+        expected_partitions=[
+            *swap_partitions,
+            RawPartition("uniswap_v2", "hourly_reserves", days[0]),
+        ],
+    )
+
+
+def derive_expansion_snapshot(
+    paths: dict[str, Path], days: list[str], snapshot: Path
+) -> dict[str, object]:
+    return derive_perimeter_expansion_authority_snapshot(
+        snapshot,
+        expanded_sources=["uniswap_v2"],
+        data_root=paths["data_root"],
+        unified_root=paths["unified_root"],
+        quality_panel=paths["quality_panel"],
+        dexes=["uniswap_v2"],
+        days=days,
+        raw_lock=paths["raw_lock"],
+    )
+
+
+def test_perimeter_expansion_derivation_rebinds_stale_markers(
+    tmp_path: Path,
+) -> None:
+    days = ["20200505"]
+    paths, outputs = prepare_perimeter_expansion_release(tmp_path, days)
+    for day in days:
+        assert (
+            read_unified_quality(
+                f"{day[:4]}-{day[4:6]}-{day[6:]}",
+                ["uniswap_v2"],
+                data_root=paths["data_root"],
+                unified_root=paths["unified_root"],
+            )
+            is None
+        )
+    snapshot = tmp_path / "derived-perimeter-expansion.json"
+    payload = derive_expansion_snapshot(paths, days, snapshot)
+    assert payload["derivation"]["rebound_days"] == len(days)
+    plan = relocate(paths, days, snapshot, publish=True)
+    assert plan.migration_policy == RELOCATION_POLICY
+    for day in days:
+        output = unified_path(day, root=paths["unified_root"])
+        assert (output.stat().st_ino, file_sha256(output)) == outputs[day]
+        quality = read_unified_quality(
+            f"{day[:4]}-{day[4:6]}-{day[6:]}",
+            ["uniswap_v2"],
+            data_root=paths["data_root"],
+            unified_root=paths["unified_root"],
+        )
+        assert quality is not None
+        assert quality["input_fingerprint"] == route_input_fingerprint(
+            f"{day[:4]}-{day[4:6]}-{day[6:]}",
+            ["uniswap_v2"],
+            data_root=paths["data_root"],
+        )
+
+
+def test_perimeter_expansion_derivation_rejects_changed_route_payload(
+    tmp_path: Path,
+) -> None:
+    days = ["20200505"]
+    paths, _outputs = prepare_perimeter_expansion_release(tmp_path, days)
+    raw = route_input_paths(
+        "2020-05-05", ["uniswap_v2"], data_root=paths["data_root"]
+    )[0]
+    write_v2_swap(paths["data_root"], "2020-05-05", amount_in="999")
+    raw.with_name("uniswap_v2_meta_20200505.json").unlink()
+    expand_certificate_beyond_route_stream(
+        paths["data_root"], days, work_name="mutated-expanded-scan"
+    )
+    snapshot = tmp_path / "derived-perimeter-expansion.json"
+    with pytest.raises(ValueError, match="does not reproduce the released"):
+        derive_expansion_snapshot(paths, days, snapshot)
+    assert not snapshot.exists()
+
+
+def test_perimeter_expansion_derivation_requires_actual_expansion(
+    tmp_path: Path,
+) -> None:
+    days = ["20200505"]
+    paths, _outputs = prepare_perimeter_expansion_release(tmp_path, days)
+    _certify_local_v2(paths["data_root"], days, work_name="route-only-rescan")
+    snapshot = tmp_path / "derived-perimeter-expansion.json"
+    with pytest.raises(ValueError, match="was not expanded beyond the route stream"):
+        derive_expansion_snapshot(paths, days, snapshot)
+    assert not snapshot.exists()
 
 
 def test_storage_relocation_interruption_rolls_back_complete_bundle(
