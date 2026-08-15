@@ -1188,3 +1188,81 @@ A recovery worker inherited a dirty tree from an interrupted iteration and commi
 
 **For the next iteration:**
 - Pre-existing failure unrelated to this unit: `tests/test_vehicle_transition_e0.py::test_vehicle_transition_runner_rejects_missing_stale_and_out_of_release_d3_inputs` fails at HEAD in its own scratch workspace. After tampering the stamped panel, the context-level check now fires first with "model-run D3 certificate context requires current analysis inputs: …certificate.json=stale" while the test expects "not current|does not reproduce". Decide whether the check ordering or the test expectation is the contract, and fix as its own unit.
+
+---
+
+## 2026-08-15 — Composition E0 readout closes the 18:59 science handoff
+
+REGRESSION-CHECK: purpose-bound estimand is the descriptive 2024→2026
+realised-composition decomposition (raw conditional stable-share change, locked
+`midpoint_common_exclusive_support_v1`); evidence generation is D3
+analysis-release `dbe24bb3417a0f828127345b193a2abeb9596bdf47b337b2cc2d62b43115470c`;
+the prior correction most at risk is the matched-market/realised-composition
+language lock (no entry/exit, design, demand, or preference attribution). This
+iteration mutates only the ledger and queue records — no estimator, panel, or
+prose changed — so none of the three is disturbed.
+
+**Queue state.** The integration half of the 2026-08-14T18:59 interjection and
+the fast-forward half of the 12:03 M3 handoff were already on `main`
+(f52b43b, 2b74fd7, 2bd6657, and 7072291 are all ancestors of HEAD via merge
+`afd12fe`), and the composition rerun itself completed at `eeda725` and was
+committed by the recovery worker in `c1447e7`. What remained of 18:59 was the
+science readout; it is below, and the item is ticked in this commit. No V2
+liquidity run (pool_capital_release pointer not verified current) and no V4
+receipt selection (route-unit block_number contract not yet proved) were
+launched, per the same interjection.
+
+**Readout — all from exhibit sha `c14a536b…`, bound to certificate generation
+`dbe24bb3…`, identity error ≤ 1.1e-16, 181 common month-days, descriptive
+realised composition, noncausal.** Stable share of intermediated routes,
+2024 → 2026, total change = within_common + common_pair_reweighting +
+common_support_mass + exclusive_pair_contribution (pp):
+
+| metric | scope | 2024 → 2026 | total | within | reweight | support | exclusive |
+|---|---|---|---|---|---|---|---|
+| count | pooled | 16.87→42.54 | +25.68 | −0.13 | +8.57 | −0.54 | +17.77 |
+| count | cross-venue | 16.27→47.68 | +31.41 | −0.26 | +11.37 | −0.22 | +20.52 |
+| count | single-venue | 17.00→38.07 | +21.08 | −0.27 | +4.43 | −0.44 | +17.35 |
+| matched strict count | pooled | 17.43→42.07 | +24.64 | +0.01 | +7.94 | −0.66 | +17.35 |
+| matched strict count | cross-venue | 16.94→46.62 | +29.67 | −0.17 | +10.36 | −0.40 | +19.88 |
+| matched strict count | single-venue | 17.53→38.24 | +20.71 | −0.14 | +4.43 | −0.54 | +16.96 |
+| strict value | pooled | 34.80→77.65 | +42.84 | −0.03 | +26.22 | −2.52 | +19.17 |
+| strict value | cross-venue | 44.10→84.51 | +40.41 | −2.01 | +21.42 | −4.43 | +25.43 |
+| strict value | single-venue | 31.47→68.39 | +36.92 | +0.58 | +26.58 | −1.28 | +11.03 |
+
+The Shapley market-incidence bridge (pooled count, `shapley_market_incidence_
+stable_bridge_v1`, identity error 0) splits the same +25.68 pp into market-pair
+support bridge +9.83, observed market-activity reweighting +7.90, realised
+vehicle-incidence reweighting +7.03, vehicle-role support bridge −0.39, and
+within-pair stable share +1.31.
+
+**Largest pair contributions** (ranked ledger, 4,593,314 rows, payload
+gitignored, manifest-bound). Pooled count: USDT→WETH +2.17 and WETH→USDT +1.93
+(common, reweighting), USDC→WETH +1.76, WETH→USDC +1.36, then
+comparison-exclusive composition on WETH↔`0xaca92e…` (+0.68/+0.65) and
+WETH→`0x829f4b…` +0.61, USDe→WETH +0.60 (common). Pooled strict value:
+WETH→USDT +6.10 and USDT→WETH +5.94 (common, reweighting),
+USDC→`0xa3931d…` +3.77 (comparison-exclusive), USDe→USDC +3.10 (common),
+`0xa3931d…`→USDC +2.52 (comparison-exclusive), USDe→sUSDe +2.28 (common).
+Cross-venue value adds one large negative: USDe→USDT −3.16 (common,
+reweighting). Addresses left as hashes are not in `ddvc.asset_types`; labelling
+them is a registry task, not a readout task.
+
+**Interpretation (descriptive only).** Within-pair stable-share change is near
+zero everywhere; the aggregate rotation is composition: reweighting toward
+stable-friendly common pairs plus comparison-exclusive pair mass. Value-side
+rotation leans more on common-pair reweighting; count-side leans on exclusive
+pair composition. These are endogenous realised-composition margins, not
+entry/exit effects, not design or demand attribution.
+
+**Validation.** Freeze audit rerun this iteration: RED, same 5 blockers (E1
+lock, model ledger, full-text literature ledger, route-cost panel, two
+unchanged passes). No estimator or artifact mutated.
+
+**Blocking count:** 5.
+
+**For the next iteration:** the parked 21:58 table-header refinement is now
+unblocked (fixed-effects exhibit is bound to the current certified release);
+apply it next if this iteration does not. The 12:03 M3 J0 route-cost item
+remains the standing large unit: route-cost panel manifest/provenance/scope for
+the 113,822,022-row panel is the highest-value open blocker.
