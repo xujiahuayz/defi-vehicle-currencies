@@ -1515,3 +1515,20 @@ predictability result, refresh that passage from the same exhibit. The
 `liquidity_capital_flow_predictability` claim (LP flows) remains gated on
 `blocked_capital_and_lp_flow_releases` — do not proxy it with the stock
 result.
+
+---
+
+## 2026-08-15 — Bounded recovery: V1 registered route case
+
+A recovery worker inherited a dirty tree from an interrupted iteration and committed the finished unit; no queue or standing-brief work ran, and no remote synchronization was performed.
+
+**What was recovered.** The tree held one untracked, fully written producer, `scripts/build_v1_route_case.py`, with no outputs yet. Its stated purpose — replace the deck A6 frame's symbolic forced-route glyph with an authentic registered transaction — matched the frame's own "pending authentic transaction rows" marker, so the bounded unit was: run the producer, verify the selected case, wire the frame, and record the external token-identity verification the manifest note cites.
+
+**What ran.** The producer scanned all 550 mandate-era raw V1 swap days (1,376,633 transactions; 144,442 clean two-row candidates; 129,810 exact-leg matches) and registered `0x4dca160d…a0ca16` (block 9,674,728, 2020-03-15, 439.129687312060203802 ETH on both legs, string-identical). Blockscout token transfers (retrieved 2026-08-15) confirm the legs and identify the tokens: 250 MKR into V1 exchange `0x2c4bd0…0957`, 49,892.40 DAI out of `0x2a1530…8667`, via a DEX.AG proxy. Block and timestamp match the manifest exactly. The verification is recorded in `docs/finding-v1-forced-vehicle.md` section 1 (new registered-case subsection), which the manifest's token-identity note points at.
+
+**Validation.** Deck compiles clean via Tectonic (only pre-existing 04-results overfull vbox); page 24 visually inspected twice (first pass caught edge-label/node overlap, fixed); `audit_deck_evidence.py` PASS; `ddvc.provenance.verify` ok for both new artifacts. No ruff on this host; the script passed py_compile and its real run.
+
+**Commit:** `38aaa86`.
+
+**For the next iteration:**
+- The paper (`paper/`) does not yet cite the registered case; if the V1 section wants the single-transaction trace, consume `output/exhibits/v1_route_case.json` rather than retyping values.
