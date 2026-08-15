@@ -2,9 +2,9 @@
  "argv": [],
  "artefact": "output/exhibits/vehicle_transition_pair_panel.parquet",
  "artefact_bytes": 6018820,
- "artefact_mtime_ns": 1786666711488318162,
+ "artefact_mtime_ns": 1786747135722298515,
  "artefact_sha256": "070a7b2699cc7163c77fd2a0e89826f81601db0a74de5bec02eb09d580f12f18",
- "code_fingerprint": "94bb4de50857e61804f8cd2e12cb63d415a1f6381290546e26c97337f45d4e5c",
+ "code_fingerprint": "707bdb8d05c073e872588aef4818388bdec636f68e26496a533f21f8cac9b6c1",
  "code_sources": [
   "scripts/run_vehicle_rotation_composition_e0.py",
   "src/ddvc/analysis/regression.py",
@@ -15,23 +15,24 @@
   "src/ddvc/model_artifacts.py",
   "src/ddvc/tables.py"
  ],
- "created_at": "2026-08-14T00:18:51+00:00",
+ "created_at": "2026-08-14T22:39:16+00:00",
  "git": {
   "branch": "main",
-  "commit": "f1a92bd021e93a162919642212b3fea0cefaed8a",
+  "commit": "eeda725e044ac52fc3b6d889e4d8a787d93c8b9f",
   "dirty": false,
   "dirty_generated_files": [
-   "output/exhibits/.vehicle_transition_pair_panel.parquet.zcsg5wp2.tmp"
+   "data/manifests/data/processed/d3_analysis_release/generations/dbe24bb3417a0f828127345b193a2abeb9596bdf47b337b2cc2d62b43115470c/",
+   "output/exhibits/.vehicle_transition_pair_panel.parquet.rspf8afj.tmp"
   ],
   "dirty_tracked_files": [],
   "dirty_untracked_files": []
  },
  "inputs": [
   {
-   "bytes": 22368,
+   "bytes": 22583,
    "exists": true,
-   "path": "data/processed/d3_analysis_release/generations/25c755ae635d90846fb754e5cb58caa7f377787daba0743d95667b8c29ed9e6c/certificate.json",
-   "sha256": "359eb8685990f9712fe1b775d5bb275a3cf786078bc2193d4a7ba5deb480f4f8"
+   "path": "data/processed/d3_analysis_release/generations/dbe24bb3417a0f828127345b193a2abeb9596bdf47b337b2cc2d62b43115470c/certificate.json",
+   "sha256": "b47a31e3dc28b19b67364f723f13a359ad320fbb64682d9168be2ee41f0423af"
   },
   {
    "bytes": 1548,

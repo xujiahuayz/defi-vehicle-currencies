@@ -40,6 +40,11 @@ output/robustness/
 output/provisional/
 # flock files keep a stable inode after release; they are runtime state, not artefacts.
 /output/exhibits/.*.lock
+# The ranked pair-contribution ledger is a ~194 MB derived panel — above the
+# push-safe size for git. Its identity travels via the tracked provenance
+# sidecar under data/manifests/; regenerate the payload with
+# scripts/run_vehicle_rotation_composition_e0.py.
+/output/exhibits/vehicle_transition_pair_contributions.parquet
 
 # Logs and scratch
 # logs/* rather than logs/: git does not descend into an excluded directory, so
