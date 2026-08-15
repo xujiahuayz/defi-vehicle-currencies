@@ -1,0 +1,52 @@
+{
+ "argv": [
+  "--workers",
+  "8"
+ ],
+ "artefact": "output/exhibits/v1_route_case_deck_values.tex",
+ "artefact_bytes": 563,
+ "artefact_mtime_ns": 1786820158354756449,
+ "artefact_sha256": "859df7b286d55fb2eacffe0ab9ef3f0f40a9b22eae7fec8f30ddae25e19d60d8",
+ "code_fingerprint": "56d81c823247132b51045cec54739c7711956038588bc63e775901e7358bc9b9",
+ "code_sources": [
+  "scripts/build_v1_route_case.py"
+ ],
+ "created_at": "2026-08-15T18:55:58+00:00",
+ "git": {
+  "branch": "main",
+  "commit": "030bacb99494844c10f74fa672d00fb716255202",
+  "dirty": true,
+  "dirty_generated_files": [
+   "data/manifests/output/exhibits/v1_route_case.json.prov.json",
+   "output/exhibits/v1_route_case.json"
+  ],
+  "dirty_tracked_files": [],
+  "dirty_untracked_files": [
+   "scripts/build_v1_route_case.py"
+  ]
+ },
+ "inputs": [
+  {
+   "bytes": 1754,
+   "exists": true,
+   "path": "output/exhibits/v1_route_case.json",
+   "sha256": "7b518612e57133d04fb9b8318121227b75ba5600f34fa72e69968c307ed8583b"
+  }
+ ],
+ "libraries": {
+  "numpy": "2.5.1",
+  "pandas": "3.0.3",
+  "pyarrow": "25.0.0",
+  "scipy": "1.18.0"
+ },
+ "notes": "Presentation macros for the registered V1 forced-route case; evidence identity stays in deck source comments.",
+ "payload_identity": {
+  "bytes": 563,
+  "format": "binary",
+  "schema_version": 1,
+  "sha256": "859df7b286d55fb2eacffe0ab9ef3f0f40a9b22eae7fec8f30ddae25e19d60d8"
+ },
+ "python": "3.14.6",
+ "rows": null,
+ "script": "scripts/build_v1_route_case.py"
+}

@@ -286,25 +286,41 @@ V4 singleton
 \end{beamercolorbox}
 \end{frame}
 
-% VISUAL-FUNCTION: compulsory V1 intermediation | two-leg trace pending authentic transaction rows | establish imposed ETH routing from observables
+% EVIDENCE-STATUS: authentic registered forced-route transaction; selection rule and stage counts in the case manifest
+% EVIDENCE-SOURCES: output/exhibits/v1_route_case.json;
+% output/exhibits/v1_route_case_deck_values.tex; docs/finding-v1-forced-vehicle.md;
+% https://eth.blockscout.com/tx/0x4dca160d762184835f34925a8cc556d7283a7642c88d1bef3382a73596a0ca16?tab=token_transfers (retrieved 2026-08-15)
+% EVIDENCE-GENERATION: scripts/build_v1_route_case.py; largest routed ETH among the exact-leg mandate-era candidates
+% Token labels MKR and DAI: the V1 subgraph rows identify exchange contracts only
+% (\VOneCaseSellExchange{} sells the token, \VOneCaseBuyExchange{} buys); the token
+% identities are verified against the public transfer record cited above.
+% VISUAL-FUNCTION: compulsory V1 intermediation | authentic two-leg forced-route trace | establish imposed ETH routing from observables
+\IfFileExists{../output/exhibits/v1_route_case_deck_values.tex}{%
+\input{../output/exhibits/v1_route_case_deck_values.tex}%
+}{\PackageError{dvc-deck}{Missing generated V1 route case values}{Run scripts/build_v1_route_case.py.}}
 \begin{frame}{A6. V1 forced routes have an on-chain signature}
 \begin{columns}[T]
 \begin{column}{0.43\textwidth}
 \begin{itemize}
 \item Token-to-token execution emits two linked swaps through ETH.
 \item Matching ETH quantities distinguish protocol-imposed intermediation from unrelated bundled swaps.
+\item \VOneCaseExactCount{} mandate-era token-to-token transactions carry exactly matching ETH legs; the trace shows the largest.
 \end{itemize}
 \end{column}
 \begin{column}{0.53\textwidth}
 \centering
 \begin{tikzpicture}[scale=1.0,transform shape]
-\node[nodepoint] (a) at (0,0) {$i$};
-\node[nodepoint,fill=ucldark,text=white,draw=ucldark,minimum size=30pt] (e) at (2.5,0) {ETH};
-\node[nodepoint] (b) at (5.0,0) {$o$};
-\draw[route,draw=accent] (a)--node[above,font=\small] {$\Delta_{\mathrm{ETH}}$} (e);
-\draw[route,draw=accent] (e)--node[above,font=\small] {$\Delta_{\mathrm{ETH}}$} (b);
+\node[nodepoint,minimum size=24pt,font=\scriptsize\bfseries] (a) at (0,0) {MKR};
+\node[nodepoint,fill=ucldark,text=white,draw=ucldark,minimum size=24pt,font=\scriptsize\bfseries] (e) at (2.5,0) {ETH};
+\node[nodepoint,minimum size=24pt,font=\scriptsize\bfseries] (b) at (5.0,0) {DAI};
+\draw[route,draw=accent] (a)--node[above=3pt,font=\scriptsize] {\VOneCaseEth{} ETH} (e);
+\draw[route,draw=accent] (e)--node[above=3pt,font=\scriptsize] {\VOneCaseEth{} ETH} (b);
+\node[font=\scriptsize,text=muted,align=center] at (1.25,-0.62) {\VOneCaseTokenIn{} MKR in};
+\node[font=\scriptsize,text=muted,align=center] at (3.75,-0.62) {\VOneCaseTokenOut{} DAI out};
 \node[font=\small\bfseries,text=ucldark,align=center] at (2.5,-1.55) {same transaction, matching ETH flow};
 \end{tikzpicture}
+\par\vspace{0.12cm}
+\decknote{Both legs of transaction \ethtx{\VOneCaseTx}{\VOneCaseTxShort} (\VOneCaseDate, block \VOneCaseBlock) report the same ETH amount to the last recorded digit.}
 \end{column}
 \end{columns}
 \end{frame}
