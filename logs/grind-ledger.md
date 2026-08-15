@@ -1299,3 +1299,81 @@ the smallest J0 route-cost release: manifest/provenance/scope for the
 113,822,022-row route-cost panel (`route-cost panel exists` blocker), then
 E1/D3 generation identities and the two unchanged findings passes. That is the
 highest-value open unit.
+
+## 2026-08-15 — Five of six absent literature companions re-materialized
+
+**Targeted check:** `node B full-text literature ledger` (source-sets 27/33,
+five-axis-cards 28/34), the highest-value blocker closable from this worktree.
+
+REGRESSION-CHECK: purpose-bound estimand is none — this unit restores node B
+literature evidence artifacts, no estimator, panel, or exhibit is touched; the
+evidence generation at risk is the committed non-text disposition records in
+`literature/pdf-sources.json` and the shared ignored corpus
+`../defi-vehicle-currencies/literature/papers/`; the prior correction at risk
+is canonical-owner routing for literature claims — records were amended in
+place through their existing owners, and no pinned hash was rewritten except
+where the archive framing is capture-specific by design and member-level
+identity was proved first.
+
+**Why it was red.** The six replication-package dispositions committed on
+2026-08-09 (`d5e9590`, authored at UTC+8) pin exact bytes and sha256s, but the
+git-ignored artifacts were never synced to this host: no copy existed in any
+checkout or backup here. The route-cost panel release (`0121a26`, previous
+iteration, no ledger entry was written) had already dropped the blocking list
+to 4; this unit attacks the literature blocker.
+
+**What closed.**
+- `LeharParlour2024Uniswap`: Wiley supplement zip re-downloaded through the
+  shared browser profile; sha256 equals the pinned `10c39614…` byte-for-byte.
+- `Somogyi2026DollarDominanceFX`: 5,164,152,397-byte INFORMS zip re-obtained
+  through the publisher's acknowledgment form; sha256 equals the pinned
+  `5b02fac4…`.
+- `GopinathStein2021Making`: fresh Dataverse capture matched all three pinned
+  member hashes; the only differing bytes were one DOS timestamp pair
+  repeated in six offsets, and a bounded brute force recovered the original
+  capture stamp (2026-08-08 14:06:54), reproducing the pinned archive hash
+  exactly. Installed byte-identically; no record change.
+- `FlandreauJobst2009Empirics`: the ResearchGate URL is bot-walled, but the
+  Wayback capture of the EH.net copy (live URL now 404) hashes to the pinned
+  `37ce6f70…`, proving the two hosts served identical bytes. Installed; no
+  record change.
+- `AmitiItskhokiKonings2022Dominant`: Dataverse v1.1 re-download verified all
+  55 members against publisher-declared MD5s (185,176,820 bytes, matching the
+  note). The 2026-08-09 tar.gz framing used an unrecorded assembly procedure,
+  so the disposition and note now carry a deterministic re-archive
+  (45,254,976 bytes, sha256 `14c3b03e…`) whose exact tar/gzip parameters are
+  documented in the note for byte-identical rebuilds. Member identity, not
+  archive framing, is the stable scientific identity.
+
+**Still open in this check.** `Mukhin2022InternationalPriceSystem`: openICPSR
+is behind a Cloudflare challenge plus account login; automation cannot fetch
+it. Two routes: sync the original 119,236,817-byte artifact
+(`1e8e62e5…`) from the host that captured it on 2026-08-09 (M3/Studio), or log
+into openicpsr.org once in the shared browser profile and run
+`scratchpad/lit-materialize/fetch_hard_targets2.py mukhin`.
+
+**Validation.** `tests/test_audit_findings_freeze.py` +
+`test_literature_browser_helpers.py`: 78 passed, 15 subtests. Full freeze
+audit rerun: RED, 4 blockers (E1 lock, model ledger, literature ledger now at
+32/33 source-sets and 33/34 cards, two unchanged passes).
+
+**Commit:** `4ba208d`.
+
+**Blocking count:** 4.
+
+**For the next iteration:**
+- Closing Mukhin closes the literature blocker outright; see routes above.
+- The E1 lock and model ledger blockers are structurally downstream of data
+  that does not exist yet: the freeze requires stage=confirmatory, which
+  requires the closed E0 exploration, and `close_exploration` demands all five
+  template families executed — including `liquidity_allocation_e0`
+  (blocked_capital_and_lp_flow_releases), `direct_cost_dominance_e0`
+  (blocked_exact_state_release) and `routing_maturation_e0`
+  (blocked_transaction_state_frontier). The exploration also binds to exactly
+  one D3 generation, so starting it before those releases exist under one
+  release guarantees a forced reopen. Do not start the exploration
+  prematurely; the critical path runs through the Studio-lane exact-state and
+  capital releases named by the claims' execution gates.
+- The 12:03 M3 coordinator handoff stays unchecked: its remaining live parts
+  are the E1/D3 generation identities (gated as above) and the two unchanged
+  findings passes.
