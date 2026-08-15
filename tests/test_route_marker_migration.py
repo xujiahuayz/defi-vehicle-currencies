@@ -1081,3 +1081,475 @@ migration.migrate_route_release_markers(
         assert marker["engine"] == LEGACY_ENGINE
         assert file_sha256(marker_path) == before_marker
         assert file_sha256(paths["quality_panel"]) == before_ledger
+
+
+def _sha256_of(data: bytes) -> str:
+    import hashlib
+
+    return hashlib.sha256(data).hexdigest()
+
+
+def prepare_downstream_consumer(tmp_path: Path) -> dict[str, object]:
+    """One byte-unchanged consumer whose ledger/marker bindings went stale."""
+
+    from ddvc.provenance import code_fingerprint
+
+    root = tmp_path
+    ledger = root / "data" / "processed" / "unified_route_quality.parquet"
+    partition = root / "data" / "unified" / "20240101.parquet"
+    marker = root / "data" / "unified" / ".quality" / "20240101.json"
+    payload = root / "data" / "processed" / "panel.parquet"
+    sidecar = root / "manifests" / "panel.parquet.prov.json"
+    for path, content in (
+        (ledger, b"ledger-v2"),
+        (partition, b"partition"),
+        (marker, b"marker-v2"),
+        (payload, b"payload"),
+    ):
+        path.parent.mkdir(parents=True, exist_ok=True)
+        path.write_bytes(content)
+    sidecar.parent.mkdir(parents=True, exist_ok=True)
+    code_sources = ["scripts/migrate_route_release_markers.py"]
+    record = {
+        "artefact": "data/processed/panel.parquet",
+        "artefact_bytes": len(b"payload"),
+        "artefact_sha256": _sha256_of(b"payload"),
+        "code_fingerprint": code_fingerprint(code_sources),
+        "code_sources": code_sources,
+        "inputs": [
+            {
+                "bytes": len(b"ledger-v1"),
+                "exists": True,
+                "path": "data/processed/unified_route_quality.parquet",
+                "sha256": _sha256_of(b"ledger-v1"),
+            }
+        ],
+        "notes": "built from the certified route release",
+        "released_input_bindings": [
+            {
+                "path": "data/processed/unified_route_quality.parquet",
+                "sha256": _sha256_of(b"ledger-v1"),
+            },
+            {
+                "path": "data/unified/20240101.parquet",
+                "sha256": _sha256_of(b"partition"),
+            },
+            {
+                "path": "data/unified/.quality/20240101.json",
+                "sha256": _sha256_of(b"marker-v1"),
+            },
+        ],
+        "rows": 1,
+    }
+    sidecar.write_text(json.dumps(record, indent=1, sort_keys=True) + "\n")
+    current_bindings = {
+        "data/processed/unified_route_quality.parquet": _sha256_of(b"ledger-v2"),
+        "data/unified/20240101.parquet": _sha256_of(b"partition"),
+        "data/unified/.quality/20240101.json": _sha256_of(b"marker-v2"),
+    }
+    migratable = frozenset(
+        {
+            "data/processed/unified_route_quality.parquet",
+            "data/unified/.quality/20240101.json",
+        }
+    )
+    return {
+        "root": root,
+        "payload": payload,
+        "sidecar": sidecar,
+        "current_bindings": current_bindings,
+        "migratable": migratable,
+    }
+
+
+def test_downstream_rebind_updates_only_migrated_identities(tmp_path: Path) -> None:
+    from scripts.migrate_route_release_markers import rebind_released_input_bindings
+
+    fixture = prepare_downstream_consumer(tmp_path)
+    payload_before = fixture["payload"].read_bytes()
+    assert rebind_released_input_bindings(
+        fixture["payload"],
+        current_bindings=fixture["current_bindings"],
+        migratable_paths=fixture["migratable"],
+        rebind_note="rebind-test-note",
+        sidecar=fixture["sidecar"],
+        root=fixture["root"],
+    )
+    assert fixture["payload"].read_bytes() == payload_before
+    record = json.loads(fixture["sidecar"].read_text())
+    bound = {item["path"]: item["sha256"] for item in record["released_input_bindings"]}
+    assert bound == fixture["current_bindings"]
+    assert record["inputs"][0]["sha256"] == _sha256_of(b"ledger-v2")
+    assert record["inputs"][0]["bytes"] == len(b"ledger-v2")
+    assert "rebind-test-note" in record["notes"]
+    assert record["notes"].startswith("built from the certified route release")
+    assert record["artefact_sha256"] == _sha256_of(b"payload")
+    # a second run finds nothing left to rebind
+    assert not rebind_released_input_bindings(
+        fixture["payload"],
+        current_bindings=fixture["current_bindings"],
+        migratable_paths=fixture["migratable"],
+        rebind_note="rebind-test-note",
+        sidecar=fixture["sidecar"],
+        root=fixture["root"],
+    )
+
+
+def test_downstream_rebind_refuses_partition_identity_change(tmp_path: Path) -> None:
+    from scripts.migrate_route_release_markers import rebind_released_input_bindings
+
+    fixture = prepare_downstream_consumer(tmp_path)
+    sidecar_before = fixture["sidecar"].read_bytes()
+    changed = dict(fixture["current_bindings"])
+    changed["data/unified/20240101.parquet"] = _sha256_of(b"partition-changed")
+    with pytest.raises(RuntimeError, match="outside the migrated"):
+        rebind_released_input_bindings(
+            fixture["payload"],
+            current_bindings=changed,
+            migratable_paths=fixture["migratable"],
+            rebind_note="rebind-test-note",
+            sidecar=fixture["sidecar"],
+            root=fixture["root"],
+        )
+    assert fixture["sidecar"].read_bytes() == sidecar_before
+
+
+def test_downstream_rebind_refuses_changed_payload(tmp_path: Path) -> None:
+    from scripts.migrate_route_release_markers import rebind_released_input_bindings
+
+    fixture = prepare_downstream_consumer(tmp_path)
+    fixture["payload"].write_bytes(b"payload-changed")
+    with pytest.raises(RuntimeError, match="payload changed"):
+        rebind_released_input_bindings(
+            fixture["payload"],
+            current_bindings=fixture["current_bindings"],
+            migratable_paths=fixture["migratable"],
+            rebind_note="rebind-test-note",
+            sidecar=fixture["sidecar"],
+            root=fixture["root"],
+        )
+
+
+def test_downstream_rebind_refuses_stale_code(tmp_path: Path) -> None:
+    from scripts.migrate_route_release_markers import rebind_released_input_bindings
+
+    fixture = prepare_downstream_consumer(tmp_path)
+    record = json.loads(fixture["sidecar"].read_text())
+    record["code_fingerprint"] = "0" * 64
+    fixture["sidecar"].write_text(json.dumps(record, indent=1, sort_keys=True) + "\n")
+    with pytest.raises(RuntimeError, match="code is not current"):
+        rebind_released_input_bindings(
+            fixture["payload"],
+            current_bindings=fixture["current_bindings"],
+            migratable_paths=fixture["migratable"],
+            rebind_note="rebind-test-note",
+            sidecar=fixture["sidecar"],
+            root=fixture["root"],
+        )
+
+
+def test_downstream_rebind_refuses_unknown_stale_binding(tmp_path: Path) -> None:
+    """A stale binding that the current release does not cover is a refusal."""
+
+    from scripts.migrate_route_release_markers import rebind_released_input_bindings
+
+    fixture = prepare_downstream_consumer(tmp_path)
+    record = json.loads(fixture["sidecar"].read_text())
+    record["released_input_bindings"].append(
+        {"path": "data/unified/20240102.parquet", "sha256": "1" * 64}
+    )
+    fixture["sidecar"].write_text(json.dumps(record, indent=1, sort_keys=True) + "\n")
+    with pytest.raises(RuntimeError, match="outside the migrated"):
+        rebind_released_input_bindings(
+            fixture["payload"],
+            current_bindings=fixture["current_bindings"],
+            migratable_paths=fixture["migratable"],
+            rebind_note="rebind-test-note",
+            sidecar=fixture["sidecar"],
+            root=fixture["root"],
+        )
+
+
+def prepare_endpoint_release(tmp_path: Path) -> dict[str, object]:
+    """A two-member typed release whose member bindings went stale."""
+
+    from ddvc.artifact_release import generation_id
+
+    root = tmp_path
+    consumer = prepare_downstream_consumer(tmp_path)
+    pointer = root / "release" / "current.json"
+    build_identity = canonical_json_sha256({"policy": "rebind-test-build"})
+    code_sources = ["scripts/migrate_route_release_markers.py"]
+    members: dict[str, dict[str, object]] = {}
+    sidecars: dict[Path, Path] = {}
+    artifact_hashes: dict[str, str] = {}
+    for name, content in (("alpha", b"alpha-bytes"), ("beta", b"beta-bytes")):
+        filename = f"{name}.parquet"
+        digest = _sha256_of(content)
+        artifact_hashes[name] = digest
+        members[name] = {"filename": filename, "content": content, "sha256": digest}
+    generation = generation_id(artifact_hashes, build_identity)
+    generation_dir = pointer.parent / "generations" / generation
+    artifacts: dict[str, dict[str, str]] = {}
+    for name, member in members.items():
+        target = generation_dir / str(member["filename"])
+        target.parent.mkdir(parents=True, exist_ok=True)
+        target.write_bytes(member["content"])  # type: ignore[arg-type]
+        record = {
+            "artefact": str(member["filename"]),
+            "artefact_bytes": len(member["content"]),  # type: ignore[arg-type]
+            "artefact_sha256": member["sha256"],
+            # a frozen generation's stamped fingerprint predates later code
+            # changes by design; the release contract does not require it
+            "code_fingerprint": "0" * 64,
+            "code_sources": code_sources,
+            "inputs": [],
+            "notes": "endpoint member",
+            "released_input_bindings": [
+                {
+                    "path": "data/processed/unified_route_quality.parquet",
+                    "sha256": _sha256_of(b"ledger-v1"),
+                },
+                {
+                    "path": "data/unified/20240101.parquet",
+                    "sha256": _sha256_of(b"partition"),
+                },
+                {
+                    "path": "data/unified/.quality/20240101.json",
+                    "sha256": _sha256_of(b"marker-v1"),
+                },
+            ],
+            "rows": 1,
+        }
+        member_sidecar = root / "manifests" / f"{member['filename']}.prov.json"
+        member_sidecar.write_text(json.dumps(record, indent=1, sort_keys=True) + "\n")
+        sidecars[target] = member_sidecar
+        artifacts[name] = {
+            "filename": str(member["filename"]),
+            "sha256": str(member["sha256"]),
+            "provenance_sha256": file_sha256(member_sidecar),
+        }
+    pointer.parent.mkdir(parents=True, exist_ok=True)
+    receipt = {"generation_id": generation, "validator_fingerprint": "a" * 64}
+    pointer.write_text(
+        json.dumps(
+            {
+                "artifacts": artifacts,
+                "build_identity_sha256": build_identity,
+                "generation_id": generation,
+                "kind": "endpoint_candidate_composition",
+                "schema_version": 3,
+                "semantic_validation": receipt,
+            },
+            indent=2,
+            sort_keys=True,
+        )
+        + "\n"
+    )
+    return {
+        "root": root,
+        "pointer": pointer,
+        "generation": generation,
+        "receipt": receipt,
+        "sidecars": sidecars,
+        "current_bindings": consumer["current_bindings"],
+        "migratable": consumer["migratable"],
+    }
+
+
+def test_endpoint_pointer_rebind_preserves_generation_and_receipt(
+    tmp_path: Path,
+) -> None:
+    from scripts.migrate_route_release_markers import (
+        rebind_endpoint_composition_release,
+    )
+
+    fixture = prepare_endpoint_release(tmp_path)
+    sidecars: dict[Path, Path] = fixture["sidecars"]  # type: ignore[assignment]
+    assert rebind_endpoint_composition_release(
+        current_bindings=fixture["current_bindings"],
+        migratable_paths=fixture["migratable"],
+        rebind_note="rebind-test-note",
+        pointer_path=fixture["pointer"],
+        sidecar_for=lambda path: sidecars[path],
+        root=fixture["root"],
+    )
+    pointer = json.loads(fixture["pointer"].read_text())
+    assert pointer["generation_id"] == fixture["generation"]
+    assert pointer["semantic_validation"] == fixture["receipt"]
+    for target, member_sidecar in sidecars.items():
+        record = json.loads(member_sidecar.read_text())
+        bound = {
+            item["path"]: item["sha256"]
+            for item in record["released_input_bindings"]
+        }
+        assert bound == fixture["current_bindings"]
+        name = target.name.removesuffix(".parquet")
+        assert pointer["artifacts"][name]["provenance_sha256"] == file_sha256(
+            member_sidecar
+        )
+        assert pointer["artifacts"][name]["sha256"] == file_sha256(target)
+    # a second run is a no-op
+    assert not rebind_endpoint_composition_release(
+        current_bindings=fixture["current_bindings"],
+        migratable_paths=fixture["migratable"],
+        rebind_note="rebind-test-note",
+        pointer_path=fixture["pointer"],
+        sidecar_for=lambda path: sidecars[path],
+        root=fixture["root"],
+    )
+
+
+def test_endpoint_pointer_rebind_refuses_member_payload_change(
+    tmp_path: Path,
+) -> None:
+    from scripts.migrate_route_release_markers import (
+        rebind_endpoint_composition_release,
+    )
+
+    fixture = prepare_endpoint_release(tmp_path)
+    sidecars: dict[Path, Path] = fixture["sidecars"]  # type: ignore[assignment]
+    target = next(iter(sidecars))
+    target.write_bytes(b"tampered-member")
+    pointer_before = fixture["pointer"].read_bytes()
+    with pytest.raises(RuntimeError, match="member payload changed"):
+        rebind_endpoint_composition_release(
+            current_bindings=fixture["current_bindings"],
+            migratable_paths=fixture["migratable"],
+            rebind_note="rebind-test-note",
+            pointer_path=fixture["pointer"],
+            sidecar_for=lambda path: sidecars[path],
+            root=fixture["root"],
+        )
+    assert fixture["pointer"].read_bytes() == pointer_before
+
+
+def test_owned_artifact_restamp_moves_only_the_code_fingerprint(
+    tmp_path: Path,
+) -> None:
+    from scripts.migrate_route_release_markers import restamp_migration_owned_artifact
+
+    fixture = prepare_downstream_consumer(tmp_path)
+    sidecar = fixture["sidecar"]
+    record = json.loads(sidecar.read_text())
+    # make the ledger input current so only the fingerprint is stale
+    ledger = fixture["root"] / "data" / "processed" / "unified_route_quality.parquet"
+    record["inputs"][0]["sha256"] = file_sha256(ledger)
+    record["inputs"][0]["bytes"] = ledger.stat().st_size
+    record["code_fingerprint"] = "0" * 64
+    sidecar.write_text(json.dumps(record, indent=1, sort_keys=True) + "\n")
+    assert restamp_migration_owned_artifact(
+        fixture["payload"],
+        restamp_note="restamp-test-note",
+        sidecar=sidecar,
+        root=fixture["root"],
+    )
+    restamped = json.loads(sidecar.read_text())
+    from ddvc.provenance import code_fingerprint
+
+    assert restamped["code_fingerprint"] == code_fingerprint(
+        restamped["code_sources"]
+    )
+    assert "restamp-test-note" in restamped["notes"]
+    assert restamped["released_input_bindings"] == record["released_input_bindings"]
+    # a second run is a no-op, and a payload change is a refusal
+    assert not restamp_migration_owned_artifact(
+        fixture["payload"],
+        restamp_note="restamp-test-note",
+        sidecar=sidecar,
+        root=fixture["root"],
+    )
+    fixture["payload"].write_bytes(b"tampered")
+    with pytest.raises(RuntimeError, match="payload changed"):
+        restamp_migration_owned_artifact(
+            fixture["payload"],
+            restamp_note="restamp-test-note",
+            sidecar=sidecar,
+            root=fixture["root"],
+        )
+
+
+def test_owned_artifact_restamp_refuses_changed_inputs(tmp_path: Path) -> None:
+    from scripts.migrate_route_release_markers import restamp_migration_owned_artifact
+
+    fixture = prepare_downstream_consumer(tmp_path)
+    sidecar = fixture["sidecar"]
+    record = json.loads(sidecar.read_text())
+    record["code_fingerprint"] = "0" * 64
+    # the recorded ledger input identity (ledger-v1) differs from disk (ledger-v2)
+    sidecar.write_text(json.dumps(record, indent=1, sort_keys=True) + "\n")
+    with pytest.raises(RuntimeError, match="inputs changed"):
+        restamp_migration_owned_artifact(
+            fixture["payload"],
+            restamp_note="restamp-test-note",
+            sidecar=sidecar,
+            root=fixture["root"],
+        )
+
+
+def test_downstream_rebind_handles_inputs_only_consumers(tmp_path: Path) -> None:
+    """Exhibits bind the release through inputs records, not release bindings."""
+
+    from scripts.migrate_route_release_markers import rebind_released_input_bindings
+
+    fixture = prepare_downstream_consumer(tmp_path)
+    sidecar = fixture["sidecar"]
+    record = json.loads(sidecar.read_text())
+    record["released_input_bindings"] = []
+    foreign = fixture["root"] / "data" / "processed" / "certificate.json"
+    foreign.write_bytes(b"certificate")
+    record["inputs"] = [
+        {
+            "bytes": len(b"ledger-v1"),
+            "exists": True,
+            "path": "data/processed/unified_route_quality.parquet",
+            "sha256": _sha256_of(b"ledger-v1"),
+        },
+        {
+            "bytes": len(b"partition"),
+            "exists": True,
+            "path": "data/unified/20240101.parquet",
+            "sha256": _sha256_of(b"partition"),
+        },
+        {
+            "bytes": len(b"certificate"),
+            "exists": True,
+            "path": "data/processed/certificate.json",
+            "sha256": _sha256_of(b"certificate"),
+        },
+    ]
+    sidecar.write_text(json.dumps(record, indent=1, sort_keys=True) + "\n")
+    assert rebind_released_input_bindings(
+        fixture["payload"],
+        current_bindings=fixture["current_bindings"],
+        migratable_paths=fixture["migratable"],
+        rebind_note="rebind-test-note",
+        sidecar=sidecar,
+        root=fixture["root"],
+    )
+    rebound = json.loads(sidecar.read_text())
+    by_path = {item["path"]: item for item in rebound["inputs"]}
+    assert (
+        by_path["data/processed/unified_route_quality.parquet"]["sha256"]
+        == _sha256_of(b"ledger-v2")
+    )
+    assert by_path["data/unified/20240101.parquet"]["sha256"] == _sha256_of(
+        b"partition"
+    )
+    assert by_path["data/processed/certificate.json"]["sha256"] == _sha256_of(
+        b"certificate"
+    )
+    # a changed input outside the release perimeter is a refusal
+    foreign.write_bytes(b"certificate-changed")
+    record = json.loads(sidecar.read_text())
+    record["inputs"][0]["sha256"] = _sha256_of(b"ledger-v1")  # re-stale one input
+    sidecar.write_text(json.dumps(record, indent=1, sort_keys=True) + "\n")
+    with pytest.raises(RuntimeError, match="outside the migrated"):
+        rebind_released_input_bindings(
+            fixture["payload"],
+            current_bindings=fixture["current_bindings"],
+            migratable_paths=fixture["migratable"],
+            rebind_note="rebind-test-note",
+            sidecar=sidecar,
+            root=fixture["root"],
+        )

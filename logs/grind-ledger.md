@@ -1405,3 +1405,34 @@ the new rule; `git ls-files scratchpad/` confirms no tracked file is shadowed;
 `git status --porcelain` is clean apart from this unit.
 
 **Commit:** see this commit.
+
+---
+
+## 2026-08-15 — Bounded recovery: downstream consumers rebound to the migrated route release
+
+A recovery worker inherited an uncommitted in-progress unit: the
+`--rebind-downstream-consumers` mode of
+`scripts/migrate_route_release_markers.py`, its tests, and fourteen already-
+rebound provenance sidecars. No queue or standing-brief work ran, and no
+remote synchronization was performed.
+
+**What was recovered.** The marker rebind in `873b29c` restored the route
+release itself but left its byte-unchanged consumers pinned to the pre-
+expansion ledger/marker identities. The previous worker had written and run
+the bounded fix: a proof-carrying sidecar rebind that moves only the migrated
+quality-ledger and per-day-marker identities (partition identities are never
+migratable), refuses any payload, code, or foreign-input drift, restamps the
+two migration-owned artifacts whose code fingerprint moved with the amended
+owner script, and republishes the endpoint composition pointer only when the
+installed generation reproduces exactly. Rebound targets: the three processed
+route panels, the endpoint composition release (pointer + four member
+sidecars), and the five second-ring vehicle-transition exhibits; plus the
+restamped `unified_route_quality` panel and exhibit.
+
+**Validation.** `tests/test_route_marker_migration.py`: 37 passed, including
+the ten new rebind/restamp/refusal tests. A second
+`--rebind-downstream-consumers` run reports `already current` for all eleven
+targets (0/11 rebound) with each target passing `verify()` — the state is
+idempotent and current against the certified release.
+
+**Commit:** see this commit.

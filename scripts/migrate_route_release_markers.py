@@ -21,6 +21,7 @@ from __future__ import annotations
 import argparse
 import json
 import tempfile
+from collections.abc import Callable, Mapping
 from concurrent.futures import as_completed
 from dataclasses import dataclass
 from pathlib import Path
@@ -28,16 +29,37 @@ from pathlib import Path
 import pandas as pd
 import pyarrow.parquet as pq
 
-from ddvc.artifact_release import canonical_json_sha256, file_sha256, file_stat_identity, is_sha256
-from ddvc.paths import DATA_DIR, RAW_MARKET_DATA_LOCK
+from ddvc.artifact_release import (
+    canonical_json_sha256,
+    file_sha256,
+    file_stat_identity,
+    generation_id,
+    is_sha256,
+)
+from ddvc.data_release import released_route_partitions
+from ddvc.endpoint_candidate_composition_release import (
+    ENDPOINT_CANDIDATE_COMPOSITION_RELEASE,
+    current_endpoint_candidate_composition_release,
+)
+from ddvc.fetch.raw import write_json
+from ddvc.paths import DATA_DIR, OUTPUT_DIR, RAW_MARKET_DATA_LOCK, REPO_ROOT
 from ddvc.journaled_publication import publish_journaled_bundle, recover_journaled_publications
-from ddvc.provenance import current_artifacts, describe_input, prepare_stamp, sidecar_path
+from ddvc.provenance import (
+    code_fingerprint,
+    current_artifacts,
+    describe_input,
+    input_matches,
+    prepare_stamp,
+    sidecar_path,
+    verify,
+)
 from ddvc.reconstruct import (
     DEX_FAMILY,
     DEX_STREAM,
     DUNE_SOURCES,
     RECONSTRUCT_CODE_SOURCES,
     RECONSTRUCTION_ENGINE,
+    UNIFIED_COLUMNS,
     UNIFIED_QUALITY_COLUMNS,
     UNIFIED_QUALITY_EXHIBIT,
     UNIFIED_QUALITY_PANEL,
@@ -1349,6 +1371,413 @@ def publish_migration(
         )
 
 
+_INPUT_IDENTITY_KEYS = (
+    "exists",
+    "kind",
+    "bytes",
+    "sha256",
+    "mtime_ns",
+    "entries",
+    "tree_fingerprint",
+)
+DOWNSTREAM_REBIND_POLICY = "route-release-downstream-binding-rebind-v1"
+DOWNSTREAM_REBIND_PANELS = (
+    DATA_DIR / "processed" / "cross_venue_routing_daily.parquet",
+    DATA_DIR / "processed" / "intermediation_by_type_daily.parquet",
+    DATA_DIR / "processed" / "vehicle_excess_use_daily.parquet",
+)
+DOWNSTREAM_REBIND_EXHIBITS = (
+    OUTPUT_DIR / "exhibits" / "vehicle_transition_pair_decomposition.jsonl",
+    OUTPUT_DIR / "exhibits" / "vehicle_transition_pair_support.jsonl",
+    OUTPUT_DIR / "exhibits" / "vehicle_transition_pair_panel.parquet",
+    OUTPUT_DIR / "exhibits" / "vehicle_transition_pair_contributions.parquet",
+    OUTPUT_DIR / "exhibits" / "vehicle_transition_pair_fixed_effects.jsonl",
+)
+
+
+def current_route_release_bindings() -> tuple[dict[str, str], frozenset[str]]:
+    """Exact current released route identities and the marker-owned subset.
+
+    The bindings are the same ledger, partition, and marker identities a
+    builder pins at publication; the migratable subset is exactly what this
+    owner is allowed to have changed: the quality ledger and per-day markers.
+    Partition identities are never migratable.
+    """
+
+    release = released_route_partitions((UNIFIED_COLUMNS[0],))
+
+    def record_path(path: Path) -> str:
+        resolved = Path(path).resolve()
+        try:
+            return str(resolved.relative_to(REPO_ROOT))
+        except ValueError:
+            return str(resolved)
+
+    ledger = record_path(release.ledger_path)
+    bindings = {ledger: release.ledger_sha256}
+    migratable = {ledger}
+    for partition in release.partitions:
+        bindings[record_path(partition.path)] = partition.expected_sha256
+        marker = record_path(partition.marker_path)
+        bindings[marker] = partition.marker_sha256
+        migratable.add(marker)
+    return bindings, frozenset(migratable)
+
+
+def rebind_released_input_bindings(
+    payload: Path,
+    *,
+    current_bindings: Mapping[str, str],
+    migratable_paths: frozenset[str],
+    rebind_note: str,
+    sidecar: Path | None = None,
+    root: Path = REPO_ROOT,
+    require_current_code: bool = True,
+) -> bool:
+    """Rebind proven-equivalent release identities on one byte-unchanged consumer.
+
+    Refuses unless the payload bytes, its code fingerprint, and every binding
+    outside the migrated marker/ledger family are exactly current. Never
+    rebuilds or touches the payload; only the sidecar's stale identities move,
+    and only to identities the current certified release itself asserts.
+    Members of a frozen typed release pass ``require_current_code=False``:
+    their consumption contract is the installed generation plus its semantic
+    receipt, not a live code fingerprint.
+    """
+
+    payload = Path(payload)
+    side = Path(sidecar) if sidecar is not None else sidecar_path(payload)
+    with serialized_output_installs((payload, side)):
+        if not payload.is_file():
+            raise RuntimeError(f"downstream rebind target is missing: {payload}")
+        if not side.is_file():
+            raise RuntimeError(f"downstream rebind target is unstamped: {payload}")
+        record = json.loads(side.read_text(encoding="utf-8"))
+        recorded_digest = record.get("artefact_sha256")
+        if not is_sha256(recorded_digest):
+            raise RuntimeError(
+                f"downstream rebind target lacks an exact identity: {payload}"
+            )
+        observed_digest = file_sha256(payload)
+        identity = record.get("payload_identity")
+        identity_digest = identity.get("sha256") if isinstance(identity, dict) else None
+        if observed_digest != recorded_digest or (
+            identity_digest is not None and identity_digest != observed_digest
+        ):
+            raise RuntimeError(f"downstream payload changed; rebind refused: {payload}")
+        sources = record.get("code_sources") or []
+        if require_current_code and code_fingerprint(
+            [str(source) for source in sources]
+        ) != record.get("code_fingerprint"):
+            raise RuntimeError(
+                f"downstream code is not current; rebind refused: {payload}"
+            )
+        raw_bindings = record.get("released_input_bindings") or []
+        old: dict[str, str] = {}
+        for item in raw_bindings:
+            if not isinstance(item, dict) or not is_sha256(item.get("sha256")):
+                raise RuntimeError(f"downstream release binding is invalid: {payload}")
+            path_key = str(item.get("path"))
+            if path_key in old:
+                raise RuntimeError(
+                    f"downstream release bindings repeat a path: {payload}"
+                )
+            old[path_key] = str(item["sha256"])
+        changed: list[str] = []
+        foreign: list[str] = []
+        for path_key, digest in old.items():
+            expected = current_bindings.get(path_key)
+            if expected is not None:
+                if digest != expected:
+                    target = changed if path_key in migratable_paths else foreign
+                    target.append(path_key)
+                continue
+            source = Path(path_key)
+            source = source if source.is_absolute() else root / source
+            if not source.is_file() or file_sha256(source) != digest:
+                foreign.append(path_key)
+        if foreign:
+            raise RuntimeError(
+                "downstream rebind found identity changes outside the migrated "
+                f"marker/ledger family; rebind refused: {sorted(foreign)[:3]}"
+            )
+        rebound_inputs = False
+        for item in record.get("inputs") or []:
+            if not isinstance(item, dict):
+                raise RuntimeError(
+                    f"downstream provenance input is invalid: {payload}"
+                )
+            path_key = str(item.get("path"))
+            source = Path(path_key)
+            source = source if source.is_absolute() else root / source
+            expected = (
+                current_bindings.get(path_key) if "sha256" in item else None
+            )
+            if expected is None:
+                observed = describe_input(source)
+                if any(
+                    observed.get(key) != item.get(key)
+                    for key in _INPUT_IDENTITY_KEYS
+                    if key in item
+                ):
+                    raise RuntimeError(
+                        "downstream input changed outside the migrated "
+                        f"release; rebind refused: {path_key}"
+                    )
+                continue
+            if item.get("sha256") == expected:
+                continue
+            if path_key not in migratable_paths:
+                raise RuntimeError(
+                    "downstream input changed outside the migrated "
+                    f"marker/ledger family; rebind refused: {path_key}"
+                )
+            refreshed = describe_input(source)
+            if refreshed.get("sha256") != expected:
+                raise RuntimeError(
+                    "downstream input does not match the current release "
+                    f"identity: {path_key}"
+                )
+            for key in list(item):
+                if key == "path":
+                    continue
+                if key not in refreshed:
+                    raise RuntimeError(
+                        f"downstream input field cannot be refreshed: {key}: {path_key}"
+                    )
+                if item[key] != refreshed[key]:
+                    item[key] = refreshed[key]
+                    rebound_inputs = True
+        if not changed and not rebound_inputs:
+            return False
+        record["released_input_bindings"] = [
+            {
+                "path": item["path"],
+                "sha256": current_bindings.get(str(item["path"]), item["sha256"]),
+            }
+            for item in raw_bindings
+        ]
+        notes = str(record.get("notes") or "")
+        if rebind_note not in notes:
+            record["notes"] = f"{notes}; {rebind_note}" if notes else rebind_note
+        with atomic_output(side) as temporary:
+            temporary.write_text(
+                json.dumps(record, indent=1, sort_keys=True) + "\n", encoding="utf-8"
+            )
+        return True
+
+
+def rebind_endpoint_composition_release(
+    *,
+    current_bindings: Mapping[str, str],
+    migratable_paths: frozenset[str],
+    rebind_note: str,
+    pointer_path: Path = ENDPOINT_CANDIDATE_COMPOSITION_RELEASE,
+    sidecar_for: Callable[[Path], Path] = sidecar_path,
+    root: Path = REPO_ROOT,
+) -> bool:
+    """Rebind the endpoint release's member sidecars and republish its pointer.
+
+    The generation and its semantic receipt are identity functions of the
+    member payload bytes and the frozen build identity, so a pure sidecar
+    rebind must reproduce the installed generation exactly; anything else is a
+    refusal. Member payloads are never rewritten.
+    """
+
+    pointer_path = Path(pointer_path)
+    with serialized_output_installs((pointer_path,)):
+        if not pointer_path.is_file():
+            raise RuntimeError(f"endpoint release pointer is missing: {pointer_path}")
+        pointer = json.loads(pointer_path.read_text(encoding="utf-8"))
+        generation = str(pointer.get("generation_id") or "")
+        build_identity = str(pointer.get("build_identity_sha256") or "")
+        artifacts = pointer.get("artifacts")
+        if (
+            not is_sha256(generation)
+            or not is_sha256(build_identity)
+            or not isinstance(artifacts, dict)
+        ):
+            raise RuntimeError(f"endpoint release pointer is invalid: {pointer_path}")
+        generation_dir = pointer_path.parent / "generations" / generation
+        artifact_hashes: dict[str, str] = {}
+        for name, info in sorted(artifacts.items()):
+            target = generation_dir / str(info["filename"])
+            observed = file_sha256(target)
+            if observed != info.get("sha256"):
+                raise RuntimeError(
+                    f"endpoint member payload changed; rebind refused: {target}"
+                )
+            artifact_hashes[str(name)] = observed
+        if generation_id(artifact_hashes, build_identity) != generation:
+            raise RuntimeError(
+                "endpoint generation identity does not reproduce; rebind refused"
+            )
+        changed = False
+        for name, info in sorted(artifacts.items()):
+            target = generation_dir / str(info["filename"])
+            member_sidecar = sidecar_for(target)
+            if rebind_released_input_bindings(
+                target,
+                current_bindings=current_bindings,
+                migratable_paths=migratable_paths,
+                rebind_note=rebind_note,
+                sidecar=member_sidecar,
+                root=root,
+                require_current_code=False,
+            ):
+                changed = True
+            observed_provenance = file_sha256(member_sidecar)
+            if observed_provenance != info.get("provenance_sha256"):
+                artifacts[name] = {**info, "provenance_sha256": observed_provenance}
+                changed = True
+        if changed:
+            write_json(pointer_path, pointer)
+        return changed
+
+
+def restamp_migration_owned_artifact(
+    artefact: Path,
+    *,
+    restamp_note: str,
+    sidecar: Path | None = None,
+    root: Path = REPO_ROOT,
+) -> bool:
+    """Refresh the code fingerprint on one byte-unchanged output of this owner.
+
+    Amending this script changes the stamped code fingerprint of the quality
+    ledger and exhibit it publishes, without touching their payloads or
+    inputs. The restamp is refused unless the payload bytes and every input
+    identity are exactly current, so only the fingerprint moves.
+    """
+
+    payload = Path(artefact)
+    side = Path(sidecar) if sidecar is not None else sidecar_path(payload)
+    with serialized_output_installs((payload, side)):
+        if not payload.is_file() or not side.is_file():
+            raise RuntimeError(f"restamp target is missing or unstamped: {payload}")
+        record = json.loads(side.read_text(encoding="utf-8"))
+        recorded_digest = record.get("artefact_sha256")
+        if not is_sha256(recorded_digest) or file_sha256(payload) != recorded_digest:
+            raise RuntimeError(f"payload changed; restamp refused: {payload}")
+        for item in record.get("inputs") or []:
+            if not isinstance(item, dict):
+                raise RuntimeError(f"restamp target input is invalid: {payload}")
+            source = Path(str(item.get("path")))
+            source = source if source.is_absolute() else root / source
+            observed = describe_input(source)
+            if any(
+                observed.get(key) != item.get(key)
+                for key in _INPUT_IDENTITY_KEYS
+                if key in item
+            ):
+                raise RuntimeError(
+                    f"inputs changed; restamp refused: {payload}: {item.get('path')}"
+                )
+        sources = [str(source) for source in record.get("code_sources") or []]
+        current = code_fingerprint(sources)
+        if record.get("code_fingerprint") == current:
+            return False
+        record["code_fingerprint"] = current
+        notes = str(record.get("notes") or "")
+        if restamp_note not in notes:
+            record["notes"] = f"{notes}; {restamp_note}" if notes else restamp_note
+        with atomic_output(side) as temporary:
+            temporary.write_text(
+                json.dumps(record, indent=1, sort_keys=True) + "\n", encoding="utf-8"
+            )
+        return True
+
+
+def rebind_downstream_route_consumers(
+    *,
+    panels: tuple[Path, ...] = DOWNSTREAM_REBIND_PANELS,
+    endpoint_pointer: Path = ENDPOINT_CANDIDATE_COMPOSITION_RELEASE,
+) -> dict[str, bool]:
+    """Rebind every gate-blocking consumer of the migrated route identities."""
+
+    restamp_note = (
+        f"{DOWNSTREAM_REBIND_POLICY}: exact-payload code-fingerprint restamp "
+        "after amending the migration owner with the downstream rebind"
+    )
+    outcomes: dict[str, bool] = {}
+    for owned in (UNIFIED_QUALITY_PANEL, UNIFIED_QUALITY_EXHIBIT):
+        outcomes[str(Path(owned).relative_to(REPO_ROOT))] = (
+            restamp_migration_owned_artifact(owned, restamp_note=restamp_note)
+        )
+        verdict = verify(owned)
+        if verdict.get("status") != "ok":
+            raise RuntimeError(
+                f"owned-artifact restamp did not restore currency: {owned}: "
+                f"{verdict.get('status')}"
+            )
+    bindings, migratable = current_route_release_bindings()
+    note = (
+        f"{DOWNSTREAM_REBIND_POLICY}: released-input bindings rebound to the "
+        "current certified route release after the V2 certificate perimeter "
+        "expansion; payload bytes and every route partition identity unchanged"
+    )
+    for panel in panels:
+        outcomes[str(panel.relative_to(REPO_ROOT))] = rebind_released_input_bindings(
+            panel,
+            current_bindings=bindings,
+            migratable_paths=migratable,
+            rebind_note=note,
+        )
+        verdict = verify(panel)
+        if verdict.get("status") != "ok":
+            raise RuntimeError(
+                f"downstream rebind did not restore currency: {panel}: "
+                f"{verdict.get('status')}"
+            )
+    pointer_key = str(Path(endpoint_pointer).relative_to(REPO_ROOT))
+    outcomes[pointer_key] = rebind_endpoint_composition_release(
+        current_bindings=bindings,
+        migratable_paths=migratable,
+        rebind_note=note,
+        pointer_path=endpoint_pointer,
+    )
+    with current_endpoint_candidate_composition_release(endpoint_pointer):
+        pass
+
+    # Second ring: exhibits that bound the endpoint release representation
+    # itself. Their payloads and code are unchanged; only the pointer bytes
+    # and member sidecars this same unit proved and rebound may differ.
+    def record_path(path: Path) -> str:
+        resolved = Path(path).resolve()
+        try:
+            return str(resolved.relative_to(REPO_ROOT))
+        except ValueError:
+            return str(resolved)
+
+    pointer_path = Path(endpoint_pointer)
+    pointer = json.loads(pointer_path.read_text(encoding="utf-8"))
+    generation_dir = pointer_path.parent / "generations" / str(pointer["generation_id"])
+    release_bindings = dict(bindings)
+    release_migratable = set(migratable)
+    release_bindings[record_path(pointer_path)] = file_sha256(pointer_path)
+    release_migratable.add(record_path(pointer_path))
+    for info in pointer["artifacts"].values():
+        target = generation_dir / str(info["filename"])
+        member_sidecar = sidecar_path(target)
+        release_bindings[record_path(target)] = str(info["sha256"])
+        release_bindings[record_path(member_sidecar)] = str(info["provenance_sha256"])
+        release_migratable.add(record_path(member_sidecar))
+    for exhibit in DOWNSTREAM_REBIND_EXHIBITS:
+        outcomes[record_path(exhibit)] = rebind_released_input_bindings(
+            exhibit,
+            current_bindings=release_bindings,
+            migratable_paths=frozenset(release_migratable),
+            rebind_note=note,
+        )
+        verdict = verify(exhibit)
+        if verdict.get("status") != "ok":
+            raise RuntimeError(
+                f"downstream rebind did not restore currency: {exhibit}: "
+                f"{verdict.get('status')}"
+            )
+    return outcomes
+
+
 def migrate_route_release_markers(
     *,
     data_root: Path = DATA_DIR,
@@ -1456,7 +1885,37 @@ def main() -> int:
         default=None,
         help="source whose local certificate gained non-route streams (repeatable)",
     )
+    parser.add_argument(
+        "--rebind-downstream-consumers",
+        action="store_true",
+        help=(
+            "rebind byte-unchanged downstream consumers of the released route "
+            "identities (three processed route panels plus the endpoint "
+            "composition release) after a proven marker migration, then exit"
+        ),
+    )
     args = parser.parse_args()
+    if args.rebind_downstream_consumers:
+        if (
+            args.publish
+            or args.authority_snapshot is not None
+            or args.write_authority_snapshot is not None
+            or args.write_perimeter_expansion_snapshot is not None
+            or args.expanded_source
+        ):
+            parser.error(
+                "--rebind-downstream-consumers cannot be combined with "
+                "migration options"
+            )
+        outcomes = rebind_downstream_route_consumers()
+        for target, rebound in sorted(outcomes.items()):
+            print(f"{'rebound' if rebound else 'already current'}: {target}", flush=True)
+        print(
+            "downstream rebind complete: "
+            f"{sum(outcomes.values())}/{len(outcomes)} targets rebound",
+            flush=True,
+        )
+        return 0
     if args.write_perimeter_expansion_snapshot is not None:
         if (
             args.publish

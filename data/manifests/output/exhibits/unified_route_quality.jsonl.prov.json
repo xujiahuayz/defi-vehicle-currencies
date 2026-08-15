@@ -10,7 +10,7 @@
  "artefact_bytes": 343,
  "artefact_mtime_ns": 1786780805661436461,
  "artefact_sha256": "010984cb3d4c14ddb29ed3fcccd84dc94a94fc00082b4d48555585c56ef3fa22",
- "code_fingerprint": "1968c3865ad0fc34449761786accebfd2fa6eea3df68bdb64773d7accf9c4d8d",
+ "code_fingerprint": "2b4d8bad578ed8c0195f3f21ff3b6d08a1eb58e3c641922e597d23932dd550c3",
  "code_sources": [
   "scripts/migrate_route_release_markers.py",
   "src/ddvc/calendar.py",
@@ -46,7 +46,7 @@
   "pyarrow": "25.0.0",
   "scipy": "1.18.0"
  },
- "notes": "route-release-storage-authority-relocation-v1; current_engine=d3f16e9c4da6; source_marker_set_sha256=2dd25b6a729708b2b94aeff5ccb3be68c172b0c4bf8f49daac03de997d264597; exact_authority_relocation_days=2332",
+ "notes": "route-release-storage-authority-relocation-v1; current_engine=d3f16e9c4da6; source_marker_set_sha256=2dd25b6a729708b2b94aeff5ccb3be68c172b0c4bf8f49daac03de997d264597; exact_authority_relocation_days=2332; route-release-downstream-binding-rebind-v1: exact-payload code-fingerprint restamp after amending the migration owner with the downstream rebind",
  "payload_identity": {
   "bytes": 343,
   "format": "jsonl",
