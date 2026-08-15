@@ -63,8 +63,18 @@ from ddvc.paths import (  # noqa: E402
     LITERATURE_PAPERS_DIR,
     LITERATURE_PDF_SOURCES,
     LITERATURE_SOURCE_ADMISSION,
+    PRIMARY_REPO_ROOT,
     REPO_ROOT,
 )
+
+def corpus_relative(path: Path) -> Path:
+    """Report corpus paths from a linked worktree, whose shared PDF corpus
+    lives under the primary checkout rather than this worktree's root."""
+    for root in (REPO_ROOT, PRIMARY_REPO_ROOT):
+        if path.is_relative_to(root):
+            return path.relative_to(root)
+    return path
+
 
 def load_json(path: Path) -> dict[str, Any]:
     if not path.exists():
@@ -227,18 +237,18 @@ def fetch_all(
             existing = existing_files_for_key(out_dir, key)
             existing, rejected = partition_existing_by_identity(existing, entry)
             for rejected_path, reason in rejected:
-                print(f"reject {key}: {rejected_path.relative_to(REPO_ROOT)} ({reason})")
+                print(f"reject {key}: {corpus_relative(rejected_path)} ({reason})")
             if existing and not should_replace_existing(existing, source, overwrite):
                 existing_file = preferred_existing_file(existing)
                 remove_weaker_versions(existing, file_version(existing_file), existing_file)
                 mirror_validated_pdf(existing_file)
                 detail = "exists"
-                print(f"ok {key}: {existing_file.relative_to(REPO_ROOT)} ({file_version(existing_file)}, {detail})")
+                print(f"ok {key}: {corpus_relative(existing_file)} ({file_version(existing_file)}, {detail})")
                 records.append(
                     {
                         "key": key,
                         "status": "ok",
-                        "file": str(existing_file.relative_to(REPO_ROOT)),
+                        "file": str(corpus_relative(existing_file)),
                         "version": file_version(existing_file),
                         "access": source.access,
                         "url": source.url,
@@ -270,12 +280,12 @@ def fetch_all(
                         keep=target,
                     )
                     remove_weaker_versions(existing, source.version, target)
-                    print(f"ok {key}: {target.relative_to(REPO_ROOT)} ({source.version}, {detail})")
+                    print(f"ok {key}: {corpus_relative(target)} ({source.version}, {detail})")
                     records.append(
                         {
                             "key": key,
                             "status": "ok",
-                            "file": str(target.relative_to(REPO_ROOT)),
+                            "file": str(corpus_relative(target)),
                             "version": source.version,
                             "access": source.access,
                             "url": source.url,
