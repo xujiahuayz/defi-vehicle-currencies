@@ -1436,3 +1436,82 @@ targets (0/11 rebound) with each target passing `verify()` — the state is
 idempotent and current against the certified release.
 
 **Commit:** see this commit.
+
+---
+
+## 2026-08-15 — Retroactive record: liquidity-capital V2 predictability adjudication (66f8858)
+
+The previous science iteration committed its full unit but exited without a
+ledger entry; recorded here so the handoff chain stays complete. The
+pool-capital release opened the `liquidity_capital_v2_predictability`
+execution gate; the runner executed the locked reciprocal design on the full
+2020--2026 V2 calendar (five candidates, candidate and origin-date fixed
+effects, 30-day score-HAC, Holm within direction, month-block bootstrap) and
+every route/capital measure pair failed the pre-stated decision rule in at
+least one direction, so the claim records a non-pass under its own falsifier.
+Exhibits, support panel, LaTeX table, provenance, and the regenerated
+analysis-release certificate are in `66f8858`.
+
+---
+
+## 2026-08-15 — Deck liquidity-timing frame answered from the certified V2 release
+
+REGRESSION-CHECK: purpose-bound estimand at risk was
+`liquidity_capital_v2_predictability` (E0, adjudicated non-pass); the evidence
+generation at risk was its committed exhibit and sidecar, consumed read-only
+through `require_certified_presentation_source`; the prior corrections at risk
+were E0-to-deck-only routing (paper untouched), no hand-typed measured
+literals, and predictive-not-causal interpretation — all held.
+
+**Queue state.** The 12:03 M3 handoff item stays unchecked: its fast-forward
+half was already done (`7072291` is an ancestor); its live half (E1/D3
+identities, two unchanged passes) remains gated on Studio-lane releases. The
+literature blocker's only remaining unit (Mukhin openICPSR, 32/33) is still
+closed from this host: hostname `studio` does not resolve and openICPSR sits
+behind Cloudflare plus account login. NEEDS-JAVA: either log into
+openicpsr.org once in the shared browser profile (then run
+`scratchpad/lit-materialize/fetch_hard_targets2.py mukhin`) or sync the
+119,236,817-byte artifact `1e8e62e5…` from the Studio capture.
+
+**What closed.**
+- `deck/sections/04-results.tex`: the "Does liquidity lead vehicle use---or
+  follow it?" frame now displays the adjudicated answer — neither direction
+  predicts at 1/7/30 days (smallest Holm p 0.17); the only strong longer-
+  horizon pattern is negative (higher-capital pool-days lose 2.21 pp episode
+  share per log point over 120 days, both capital measures concordant).
+  Evidence identity lives in source comments (commit `66f8858`, analysis
+  release `414f0c27…`); no audience-facing badges.
+- `scripts/build_liquidity_capital_v2_deck_values.py`: proof-carrying values
+  builder; refuses to render if a reciprocal pair starts passing, a cell turns
+  Holm-significant, or the long-horizon negative pattern vanishes — the frame
+  text cannot silently outlive its evidence. Five new tests.
+- Deck rebuild exposed that the WETH provisional snapshot payloads were absent
+  on this host (deck could not compile). Regenerated through the owner
+  (`run_route_methodology_robustness.py --provisional-snapshot`): deck-values,
+  robustness, and resampling payloads reproduced byte-identically; the
+  heterogeneity jsonl restamped under the current code fingerprint with
+  downstream display values unchanged.
+- The page-13 binding guard was red before this unit: the two WETH frames
+  pinned evidence commit `ead5c72f…`, which is dangling in every history
+  reachable from this clone and unreachable even in the primary checkout.
+  Rebound both frames to `66f8858`, the commit carrying the current exhibits.
+
+**Validation.** Deck compiles clean via Tectonic; page 14 visually inspected;
+`audit_deck_evidence.py` PASS; 46 tests across deck-evidence, deck-values,
+predictability, and robustness files pass. Full freeze audit rerun: RED, same
+4 blockers (E1 lock, model ledger, literature 32/33, two passes) — no
+regression.
+
+**Commit:** `4d64476`.
+
+**Blocking count:** 4.
+
+**For the next iteration.** All four blockers are externally gated (Studio
+exact-state/frontier releases; Mukhin needs Java or Studio). Do not start the
+E0 exploration before the blocked template families' releases exist under one
+D3 generation. The paper's rivals section (`paper/sections/05-rivals.tex`)
+still frames liquidity timing as an open question; after J1 admits the
+predictability result, refresh that passage from the same exhibit. The
+`liquidity_capital_flow_predictability` claim (LP flows) remains gated on
+`blocked_capital_and_lp_flow_releases` — do not proxy it with the stock
+result.
