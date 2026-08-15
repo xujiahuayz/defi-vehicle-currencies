@@ -30,6 +30,7 @@ from __future__ import annotations
 
 import argparse
 import json
+import shutil
 import subprocess
 import sys
 from pathlib import Path
@@ -93,8 +94,15 @@ def build(target: Path) -> tuple[bool, str]:
     """Compile a LaTeX target and report whether it is clean."""
     if not (target / "main.tex").exists():
         return True, "absent"
-    r = subprocess.run(["latexmk", "-pdf", "-interaction=nonstopmode", "main.tex"],
-                       cwd=target, capture_output=True, text=True)
+    # Studio carries tectonic only; latexmk remains first where installed so the
+    # check behaves identically on hosts that have it (same order as paper_tables).
+    if shutil.which("latexmk"):
+        argv = ["latexmk", "-pdf", "-interaction=nonstopmode", "main.tex"]
+    elif shutil.which("tectonic"):
+        argv = ["tectonic", "-X", "compile", "--keep-logs", "main.tex"]
+    else:
+        return False, "no LaTeX toolchain (latexmk or tectonic)"
+    r = subprocess.run(argv, cwd=target, capture_output=True, text=True)
     log = (target / "main.log")
     txt = log.read_text(errors="replace") if log.exists() else ""
     undef = txt.count("undefined")

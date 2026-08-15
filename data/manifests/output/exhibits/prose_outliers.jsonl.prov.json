@@ -1,18 +1,18 @@
 {
  "argv": [],
  "artefact": "output/exhibits/prose_outliers.jsonl",
- "artefact_bytes": 77991,
- "artefact_mtime_ns": 1786737679497601703,
- "artefact_sha256": "3f33813b1afae6ab9e94916fce5ecf0b03bb2e314e9424b2bcb04d3da87c459b",
+ "artefact_bytes": 79086,
+ "artefact_mtime_ns": 1786822028574952145,
+ "artefact_sha256": "f67e0b80ff0b1c188792d2aeb0fa1db13057d96d3ffe0b6009579cde48539064",
  "code_fingerprint": "4d6c3aa5e5b632317b923d4c498ebaf8a988e6f1d35f09ef659fc910be391909",
  "code_sources": [
   "scripts/find_prose_outliers.py",
   "src/ddvc/tables.py"
  ],
- "created_at": "2026-08-14T20:01:19+00:00",
+ "created_at": "2026-08-15T19:27:08+00:00",
  "git": {
   "branch": "main",
-  "commit": "225d37eca0ad1b444e7480e6a9d3b50003f74839",
+  "commit": "12a2e8b508f1b17e32a25a70b58f52a27b278c74",
   "dirty": true,
   "dirty_generated_files": [
    "data/manifests/output/exhibits/prose_conventions.jsonl.prov.json",
@@ -21,31 +21,12 @@
    "output/exhibits/prose_conventions.jsonl",
    "output/exhibits/venue_optics.jsonl",
    "output/exhibits/venue_shape.jsonl",
-   "output/tables/pair_composition.tex",
-   "data/manifests/output/provisional/depeg_substitution_e0.jsonl.prov.json",
-   "data/manifests/output/provisional/depeg_substitution_e0_hourly.parquet.prov.json",
-   "data/manifests/output/provisional/depeg_substitution_e0_input_receipt.jsonl.prov.json",
-   "data/manifests/output/provisional/depeg_substitution_e0_manifest.jsonl.prov.json",
-   "data/manifests/output/provisional/stress_reallocation_e0.jsonl.prov.json",
-   "data/manifests/output/provisional/stress_reallocation_e0_event_exclusions.jsonl.prov.json",
-   "data/manifests/output/provisional/stress_reallocation_e0_events.parquet.prov.json",
-   "data/manifests/output/provisional/stress_reallocation_e0_hourly.parquet.prov.json",
-   "data/manifests/output/provisional/stress_reallocation_e0_manifest.json.prov.json",
-   "data/manifests/output/provisional/stress_reallocation_e0_source_audit.jsonl.prov.json",
-   "output/exhibits/.prose_outliers.jsonl.7j15zoo4.tmp"
+   "output/exhibits/.prose_outliers.jsonl.4cp2txx2.tmp"
   ],
   "dirty_tracked_files": [
    "docs/reviews/paper-rhetoric.json",
-   "paper/sections/01-introduction.tex",
-   "paper/sections/02-setting.tex",
-   "paper/sections/03-dominance.tex",
-   "paper/sections/05-rivals.tex",
-   "paper/sections/06-executability.tex",
-   "paper/sections/07-conclusion.tex",
-   "paper/sections/08-appendix.tex",
-   "paper/sections/abstract.tex",
-   "src/ddvc/dominance_tables.py",
-   "tests/test_dominance_tables.py"
+   "scripts/check_deliverable_conformance.py",
+   "scripts/measure_venue_optics.py"
   ],
   "dirty_untracked_files": []
  },
@@ -58,13 +39,13 @@
  },
  "notes": null,
  "payload_identity": {
-  "bytes": 77991,
+  "bytes": 79086,
   "format": "jsonl",
-  "rows": 355,
+  "rows": 360,
   "schema_version": 1,
-  "sha256": "3f33813b1afae6ab9e94916fce5ecf0b03bb2e314e9424b2bcb04d3da87c459b"
+  "sha256": "f67e0b80ff0b1c188792d2aeb0fa1db13057d96d3ffe0b6009579cde48539064"
  },
- "python": "3.14.5",
- "rows": 355,
+ "python": "3.14.6",
+ "rows": 360,
  "script": "scripts/find_prose_outliers.py"
 }

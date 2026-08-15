@@ -99,6 +99,16 @@
         "rhetorical_job": "The explorer's 460,000 PYUSD--USDe instruction is set beside the connected USDC--USDT--USDe pool sequence, making the boundary between a user's instruction and the exchange route observable.",
         "handoff": "The example identifies USDT as the vehicle in the connected pool route, explains why the off-pool PYUSD--USDC conversion is excluded, and returns to the sample-wide flow rule.",
         "judgment": "The transaction exposes a consequential measurement boundary between the user instruction and the connected pool route, then hands directly to the general route notation."
+      },
+      {
+        "source": "paper/sections/05-rivals.tex",
+        "line_start": 15,
+        "line_end": 15,
+        "sha256": "3f7705bd35ce08e8e43a2fc64c577cc41cf1e37616f3c2c7444d797697ee2f89",
+        "kind": "named observed transaction",
+        "rhetorical_job": "One registered mandate-era transaction (MKR to DAI through two exactly matching ETH legs on the March 2020 crash weekend) makes the v1 routing constraint concrete after its population incidence is stated.",
+        "handoff": "The case hands back to the population facts: post-mandate WETH-pool shares, the pair-level pairing persistence, and the same-alternatives comparison the persistence claim requires.",
+        "judgment": "Follows the Lehar-Parlour precedent: hash, block, date, deterministic selection rule, and external token-identity verification live in the footnote, and the case illustrates a quantified population claim rather than replacing it."
       }
     ]
   },
@@ -827,10 +837,12 @@
       "exit_handoff": "The section closes by stating the public-liquidity object and quantified coverage boundary."
     },
     "paper/sections/05-rivals.tex": {
-      "sha256": "ac6d5dd0955441b5c107ffb3f2c31c171d4b2fbcdbdd31b5cb6d299c1cbde33c",
+      "sha256": "592961b29f9962fb1f77dbab10df5854f4e40b370c06219127d390cc7eba81fb",
       "status": "rewritten",
       "exemplars": [
-        "literature/text/2024-LeharParlour2024Uniswap-decentralized-exchange-the-uniswap-automated-market-maker.txt:321-353"
+        "literature/text/2024-LeharParlour2024Uniswap-decentralized-exchange-the-uniswap-automated-market-maker.txt:321-353",
+        "literature/text/2024-LeharParlour2024Uniswap-decentralized-exchange-the-uniswap-automated-market-maker.txt:2320-2338",
+        "literature/text/2021-CarlettiDeMarcoIoannidouSette2021PatientLenders-banks-as-patient-lenders-evidence-from-a-tax-reform.txt:120-160"
       ],
       "openings": [
         {
@@ -853,8 +865,8 @@
           "heading": "Protocol architecture",
           "classification": "substantive_bridge",
           "incoming_object": "Opportunity sets that differ across assets and exchanges.",
-          "opening_function": "Uses v1--v2 pairing evidence and v4 settlement rules to show how architecture enters.",
-          "judgment": "The subsection contains supported institutional facts and the measured persistence of WETH pairing.",
+          "opening_function": "Uses the v1 routing mandate, its measured incidence, one registered transaction, and v4 settlement rules to show how architecture enters.",
+          "judgment": "The subsection now quantifies how much trade the v1 mandate bound (8.0% of swaps, 8.1% of ETH volume) and traces one registered case before the measured WETH-pairing persistence, so the institutional claim rests on measured incidence rather than assertion.",
           "raw_exemplar": "literature/text/2024-LeharParlour2024Uniswap-decentralized-exchange-the-uniswap-automated-market-maker.txt:321-353"
         }
       ],
@@ -863,12 +875,14 @@
           9,
           11,
           15,
-          18,
-          20
+          22,
+          24
         ],
-        "judgment": "The section begins from supported route results, distinguishes deposited capital from executable liquidity, reports the route-span accounting implication, and then turns to measured WETH-pairing persistence and factual v4 settlement architecture.",
+        "judgment": "The section begins from supported route results, distinguishes deposited capital from executable liquidity, reports the route-span accounting implication, quantifies the v1 routing mandate and shows it operating in one registered transaction, and then turns to measured WETH-pairing persistence and factual v4 settlement architecture.",
         "raw_exemplars": [
-          "literature/text/2024-LeharParlour2024Uniswap-decentralized-exchange-the-uniswap-automated-market-maker.txt:321-353"
+          "literature/text/2024-LeharParlour2024Uniswap-decentralized-exchange-the-uniswap-automated-market-maker.txt:321-353",
+          "literature/text/2024-LeharParlour2024Uniswap-decentralized-exchange-the-uniswap-automated-market-maker.txt:2320-2338",
+          "literature/text/2021-CarlettiDeMarcoIoannidouSette2021PatientLenders-banks-as-patient-lenders-evidence-from-a-tax-reform.txt:120-160"
         ],
         "jumps": [],
         "handoffs": [
@@ -895,15 +909,15 @@
           {
             "line": 15,
             "inherited_object": "the liquidity and route-span evidence",
-            "paragraph_function": "uses v1 and v2 to show architecture change and persistent WETH pairing",
+            "paragraph_function": "quantifies the v1 forced-intermediation mandate, traces one registered mandate-era transaction, and reports post-mandate WETH-pairing persistence",
             "relation_to_previous": "moves from route-span allocation to feasible route design",
-            "economic_subject": "forced ETH routing and post-v1 WETH pools",
-            "framing_judgment": "The institutional change leads into measured pairing persistence",
+            "economic_subject": "forced ETH routing, its measured incidence, and post-v1 WETH pools",
+            "framing_judgment": "The affirmative institutional fact leads; the measured incidence (8.0% of swaps, 8.1% of ETH volume, one in ten trades in 2019-2020) establishes the constraint bound real trade before the single case makes it concrete, matching Carletti et al.'s quantified named reform; selection rule and external verification stay in the footnote as Lehar-Parlour keep raw identifiers in their transaction decode",
             "qualification_leads": false,
-            "judgment": "Uses v1 and v2 to show architecture change and persistent WETH pairing and moves from asset attributes to feasible route design."
+            "judgment": "Quantifies the mandate, shows it operating in one registered transaction, and hands to measured persistence and the same-alternatives identification requirement without letting the case substitute for the population fact."
           },
           {
-            "line": 18,
+            "line": 22,
             "inherited_object": "v1--v2 architecture",
             "paragraph_function": "describes v4 singleton settlement and decoded route observability",
             "relation_to_previous": "adds an architecture in which route and external transfers differ",
@@ -913,7 +927,7 @@
             "judgment": "Describes v4 singleton settlement and decoded route observability and adds an architecture in which route and external transfers differ."
           },
           {
-            "line": 20,
+            "line": 24,
             "inherited_object": "the architecture evidence",
             "paragraph_function": "synthesises the route restrictions and measured persistence",
             "relation_to_previous": "closes on supported economic features",
@@ -924,9 +938,9 @@
           }
         ]
       },
-      "judgment": "Section 5 contains supported route restrictions, the within-route-span accounting implication, measured WETH-pairing persistence, and factual v4 measurement architecture. It distinguishes deposited capital from executable liquidity but makes no lead--lag, liquidity, reach, or asset-risk estimate.",
+      "judgment": "Section 5 contains supported route restrictions, the within-route-span accounting implication, the quantified v1 forced-intermediation mandate with one registered transaction case, measured WETH-pairing persistence, and factual v4 measurement architecture. It distinguishes deposited capital from executable liquidity but makes no lead--lag, liquidity, reach, or asset-risk estimate.",
       "entry_handoff": "The route decomposition and venue-span estimates determine what an explanation must fit.",
-      "internal_progression": "Supported restrictions lead to the liquidity distinction, route-span accounting, measured pairing persistence, and v4 route observability.",
+      "internal_progression": "Supported restrictions lead to the liquidity distinction, route-span accounting, the quantified v1 mandate and its registered case, measured pairing persistence, and v4 route observability.",
       "exit_handoff": "The close combines the observed allocation restrictions with the measured persistence of route opportunities.",
       "terminology_judgment": "Reader-facing prose names the measured object as the source and destination assets or their ordered asset pair. It reserves pool for a liquidity contract, venue for an exchange or protocol, and route for the ordered execution sequence; these objects are not used interchangeably."
     },

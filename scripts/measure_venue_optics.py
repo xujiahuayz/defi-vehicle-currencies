@@ -48,7 +48,9 @@ BREW_PY = "/opt/homebrew/bin/python3"
 
 EXTRACT = r"""
 import sys, re, json
-import fitz
+# PyMuPDF >= 1.28 prints a deprecation warning to stdout on `import fitz`,
+# which corrupts the JSON this script emits; the renamed module is silent.
+import pymupdf as fitz
 d = fitz.open(sys.argv[1])
 text = "".join(p.get_text() for p in d)
 low = text.lower()
