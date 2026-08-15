@@ -109,6 +109,27 @@ def v3_swap(identity: str, timestamp: int = 1_704_067_300) -> dict[str, object]:
     }
 
 
+def v2_burn(identity: str, timestamp: int = 1_704_067_300) -> dict[str, object]:
+    return {
+        "id": identity,
+        "transaction": {
+            "id": f"tx-{identity}",
+            "blockNumber": "18900000",
+            "timestamp": str(timestamp),
+        },
+        "timestamp": str(timestamp),
+        "pair": {
+            "id": "pair",
+            "token0": {"id": "token0", "decimals": "18"},
+            "token1": {"id": "token1", "decimals": "6"},
+        },
+        "amount0": "1",
+        "amount1": "2",
+        "logIndex": "5",
+        "needsComplete": False,
+    }
+
+
 def fluid_swap(timestamp: str = "2024-01-01 00:00:01.000 UTC") -> dict[str, object]:
     return {
         "tx_hash": "0xabc",
@@ -1192,6 +1213,59 @@ class RawCertificationTests(unittest.TestCase):
         self.assertNotIn("missing_field:pool.feeTier", observed["errors"])
         self.assertNotIn("missing_field:amountUSD", observed["errors"])
         self.assertIn("sidecar_row_count_mismatch", observed["errors"])
+
+    def test_v2_incomplete_liquidity_rows_pass_only_under_needs_complete_guard(self) -> None:
+        partition = RawPartition("uniswap_v2", "burns", DAY)
+        complete = v2_burn("a")
+        incomplete = v2_burn("b")
+        incomplete.update(
+            {"amount0": None, "amount1": None, "logIndex": None, "needsComplete": True}
+        )
+        write_gzip(self.path(partition), [complete, incomplete])
+        observed = self.scan(partition)
+        self.assertTrue(observed["local_pass"], observed["errors"])
+        self.assertEqual(observed["incomplete_guarded_rows"], 1)
+
+        unguarded = v2_burn("c")
+        unguarded.update(
+            {"amount0": None, "amount1": None, "logIndex": None, "needsComplete": False}
+        )
+        write_gzip(self.path(partition), [unguarded])
+        observed = self.scan(partition)
+        self.assertFalse(observed["local_pass"])
+        self.assertIn("missing_field:amount0", observed["errors"])
+        self.assertIn("missing_field:amount1", observed["errors"])
+        self.assertIn("missing_field:logIndex", observed["errors"])
+        self.assertEqual(observed["incomplete_guarded_rows"], 0)
+
+    def test_incomplete_guard_enters_only_the_guarded_contract_identity(self) -> None:
+        from ddvc.raw_certification import FIELD_CONTRACTS, contract_identity
+
+        # The exemption fields enter the hashed payload only when set, so a
+        # stream without the guard hashes exactly the historical payload shape.
+        for (source, stream), contract in FIELD_CONTRACTS.items():
+            payload: dict[str, object] = {
+                "policy": "installed-required-raw-local-scan-v4",
+                "source": source,
+                "stream": stream,
+                "required_paths": contract.required_paths,
+                "timestamp_path": contract.timestamp_path,
+                "identity_path": contract.identity_path,
+                "order_path": contract.order_path,
+                "required_any_paths": contract.required_any_paths,
+            }
+            if contract.incomplete_guard_path is None:
+                self.assertEqual(
+                    contract_identity(source, stream),
+                    canonical_json_sha256(payload),
+                    (source, stream),
+                )
+            else:
+                self.assertNotEqual(
+                    contract_identity(source, stream),
+                    canonical_json_sha256(payload),
+                    (source, stream),
+                )
 
     def test_sidecar_content_hash_mismatch_fails_local_scan(self) -> None:
         partition = self.perimeter

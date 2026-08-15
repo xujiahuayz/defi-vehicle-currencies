@@ -100,6 +100,14 @@ class FieldContract:
     identity_path: str
     order_path: str | None = None
     required_any_paths: tuple[tuple[str, ...], ...] = ()
+    # Provider-semantic incomplete rows: when the guard path is populated and
+    # exactly true, the exempt required paths may be null on that row. The
+    # canonical consumer (graph_event_order) admits these rows for exact-log
+    # adjudication instead of treating them as executed events, so the local
+    # scan must not reject the partition for containing them. The exemption
+    # never relaxes rows whose guard is false or absent.
+    incomplete_guard_path: str | None = None
+    incomplete_exempt_paths: tuple[str, ...] = ()
 
 
 @dataclass(frozen=True)
@@ -245,8 +253,19 @@ def _field_contracts() -> dict[tuple[str, str], FieldContract]:
             "id",
         )
         for stream in ("mints", "burns"):
+            # The V2-family subgraph creates Mint/Burn entities from LP-token
+            # transfers before the pool event fires; an entity whose event
+            # never completed keeps needsComplete=true with null amounts and
+            # logIndex. Those rows are not executed events: the canonical
+            # normaliser quarantines them and the exact-log comparison
+            # adjudicates them, so the scan admits them under the guard while
+            # still failing any null outside it.
             contracts[(source, stream)] = FieldContract(
-                v2_event, "timestamp", "id"
+                v2_event,
+                "timestamp",
+                "id",
+                incomplete_guard_path="needsComplete",
+                incomplete_exempt_paths=("amount0", "amount1", "logIndex"),
             )
         daily_fields = ["id", "date", "pairAddress", "reserveUSD", "dailyVolumeUSD"]
         if source == "sushiswap_v2":
@@ -472,18 +491,22 @@ def required_partitions(
 
 def contract_identity(source: str, stream: str) -> str:
     contract = FIELD_CONTRACTS[(source, stream)]
-    return canonical_json_sha256(
-        {
-            "policy": LOCAL_SCAN_POLICY,
-            "source": source,
-            "stream": stream,
-            "required_paths": contract.required_paths,
-            "timestamp_path": contract.timestamp_path,
-            "identity_path": contract.identity_path,
-            "order_path": contract.order_path,
-            "required_any_paths": contract.required_any_paths,
-        }
-    )
+    payload: dict[str, object] = {
+        "policy": LOCAL_SCAN_POLICY,
+        "source": source,
+        "stream": stream,
+        "required_paths": contract.required_paths,
+        "timestamp_path": contract.timestamp_path,
+        "identity_path": contract.identity_path,
+        "order_path": contract.order_path,
+        "required_any_paths": contract.required_any_paths,
+    }
+    # Included only when set so every stream without the exemption keeps its
+    # exact recorded contract identity.
+    if contract.incomplete_guard_path is not None:
+        payload["incomplete_guard_path"] = contract.incomplete_guard_path
+        payload["incomplete_exempt_paths"] = contract.incomplete_exempt_paths
+    return canonical_json_sha256(payload)
 
 
 def generation_identity(entry: Mapping[str, object]) -> str:
@@ -747,6 +770,7 @@ def _scan_partition(data_root_text: str, partition: RawPartition) -> dict[str, o
         errors.add(str(metadata["metadata_error"]))
     logical = hashlib.sha256()
     rows = 0
+    incomplete_guarded_rows = 0
     first_identity: str | None = None
     last_identity: str | None = None
     seen_identities: set[str] = set()
@@ -778,9 +802,22 @@ def _scan_partition(data_root_text: str, partition: RawPartition) -> dict[str, o
                 if not isinstance(row, dict):
                     errors.add("non_object_row")
                     continue
+                row_incomplete = False
+                if contract.incomplete_guard_path is not None:
+                    guard_values = _path_values(row, contract.incomplete_guard_path)
+                    row_incomplete = bool(guard_values) and guard_values[0] is True
+                row_used_exemption = False
                 for required_path in contract.required_paths:
                     if not _populated_path(row, required_path):
+                        if (
+                            row_incomplete
+                            and required_path in contract.incomplete_exempt_paths
+                        ):
+                            row_used_exemption = True
+                            continue
                         errors.add(f"missing_field:{required_path}")
+                if row_used_exemption:
+                    incomplete_guarded_rows += 1
                 for alternatives in contract.required_any_paths:
                     if not any(_populated_path(row, path) for path in alternatives):
                         errors.add(f"missing_any_field:{'|'.join(alternatives)}")
@@ -870,6 +907,7 @@ def _scan_partition(data_root_text: str, partition: RawPartition) -> dict[str, o
         "container_ctime_ns": path.stat().st_ctime_ns,
         "logical_content_sha256": logical_sha256,
         "rows": rows,
+        "incomplete_guarded_rows": incomplete_guarded_rows,
         "recorded_rows": recorded_rows,
         "first_pagination_identity": first_identity,
         "last_pagination_identity": last_identity,
