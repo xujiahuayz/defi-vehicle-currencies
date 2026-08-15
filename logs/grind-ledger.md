@@ -1532,3 +1532,60 @@ A recovery worker inherited a dirty tree from an interrupted iteration and commi
 
 **For the next iteration:**
 - The paper (`paper/`) does not yet cite the registered case; if the V1 section wants the single-transaction trace, consume `output/exhibits/v1_route_case.json` rather than retyping values.
+
+---
+
+## 2026-08-15 — Conformance loop closed on Studio after the rivals citation
+
+REGRESSION-CHECK: purpose-bound estimand at risk was the V1 forced-route
+composition shares (certified route-only facts, consumed read-only through the
+`v1_route_case_deck_values.tex` macros); the evidence generation at risk was
+`output/exhibits/v1_route_case.json` (commit `38aaa86`) plus the venue-optics
+exhibit, regenerated only through its own owner; the prior corrections at risk
+were "word substitution is not prose revision" (no prose changed — this pass
+records a reread), "never fake a gate" (the tectonic fallback really compiles
+both PDFs), and E0-to-deck-only routing (the predictability result stayed out
+of the paper). All held.
+
+**Queue state.** The 12:03 M3 handoff item remains unchecked: fast-forward
+half done (`7072291` ancestor), live half still gated on Studio releases.
+
+**What closed.** The previous paper edit (`12a2e8b`) left the writing node's
+closing gate red: `check_jfe_rhetoric_review.py` flagged a stale review and
+shifted paragraph coverage for `paper/sections/05-rivals.tex`. Recorded a
+genuine reread in `docs/reviews/paper-rhetoric.json`: the quantified v1
+mandate incidence judged against Carletti et al.'s quantified named reform
+(raw lines 120–160), the registered MKR→DAI trace against Lehar–Parlour's
+named transaction decode (raw lines 2320–2338), coverage updated to
+[9,11,15,22,24], and the paper's transaction case registered as a fingerprinted
+draft use with its rhetorical job and evidence handoff.
+
+**Host defects found and fixed (both silently disabled the loop on Studio):**
+- PyMuPDF 1.28 prints its deprecation warning to **stdout** on `import fitz`,
+  corrupting the JSON extraction, so `measure_venue_optics.py` read all 14
+  exemplars as "could not read" and the venue-structure stage hard-failed.
+  Fixed by importing the renamed `pymupdf` module.
+- `check_deliverable_conformance.py`'s build stage hardcoded `latexmk`, absent
+  on this host; it now falls back to `tectonic -X compile --keep-logs` in the
+  same order `paper_tables.py` already uses.
+
+**Validation.** `check_deliverable_conformance.py` exits 0: all blocking
+checks pass; paper 29 pages / 0 undefined; deck 33 pages / 0 undefined; two
+advisories (discovered constructions, prose shape) remain visible. Venue
+optics/conventions/outliers/shape exhibits regenerated with provenance.
+`test_venue_corpus.py` + `test_venue_optics.py`: 6 passed, 3 subtests. Freeze
+audit rerun: RED, same 4 blockers (E1 lock, model ledger, literature 32/33,
+two passes) — no regression.
+
+**Commit:** `0da03a1`.
+
+**Blocking count:** 4 (all externally gated: Studio exact-state/frontier
+releases; Mukhin needs Java or Studio — NEEDS-JAVA stands from 2026-08-15).
+
+**For the next iteration.** The venue-optics advisory shows the draft below
+the exemplar first quartile on words (10,958 vs 18,738), equations, citations,
+and greek — never pad, but the gap will close as gated results land. The
+conformance loop now runs end-to-end on Studio; run it after every paper/deck
+content change, not only the section suites. Paper prose beyond certified
+route-only facts stays tiered; the liquidity-timing passage in 05-rivals still
+waits for J1.
