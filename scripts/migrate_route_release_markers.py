@@ -11,9 +11,11 @@ snapshot, exact scientific raw identities, and byte-identical released
 partitions. When no pre-change snapshot exists because a per-source local
 certificate merely gained non-route streams for another consumer family, the
 perimeter-expansion derivation reconstructs the prior certificate from the
-current ledger's route-stream rows and admits it only when the derived per-day
-fingerprints reproduce every released marker exactly, then feeds the standard
-relocation gate. No live marker changes occur until the complete plan passes.
+current ledger's rows for the prior stream perimeter (the route stream alone,
+or the exact named stream set the pre-expansion certificate covered) and
+admits it only when the derived per-day fingerprints reproduce every released
+marker exactly, then feeds the standard relocation gate. No live marker
+changes occur until the complete plan passes.
 """
 
 from __future__ import annotations
@@ -341,15 +343,65 @@ def _derived_prior_generation_identity(
     )
 
 
+def parse_expanded_source_specs(
+    expanded_sources: list[str],
+) -> dict[str, frozenset[str]]:
+    """Parse `source` or `source=streamA,streamB` prior-perimeter specs.
+
+    A bare source names the route stream alone; the explicit form names the
+    exact stream set the pre-expansion certificate covered. The route stream
+    must always be inside the prior perimeter, because the released markers
+    bind their route partitions through that certificate.
+    """
+
+    specs: dict[str, frozenset[str]] = {}
+    for raw in expanded_sources:
+        source, separator, streams_text = raw.partition("=")
+        source = source.strip()
+        if not source:
+            raise ValueError(f"expanded source spec lacks a source: {raw!r}")
+        if separator:
+            streams = frozenset(
+                stream.strip() for stream in streams_text.split(",") if stream.strip()
+            )
+            if not streams:
+                raise ValueError(f"expanded source spec lacks streams: {raw!r}")
+        else:
+            streams = frozenset({DEX_STREAM[source]}) if source in DEX_STREAM else frozenset()
+        prior = specs.get(source)
+        if prior is not None and prior != streams:
+            raise ValueError(
+                f"expanded source {source} has conflicting prior perimeters"
+            )
+        specs[source] = streams
+    return specs
+
+
 def _reconstruct_prior_route_stream_certificate(
     source: str,
     *,
     data_root: Path,
     scratch: Path,
+    prior_streams: frozenset[str] | None = None,
 ) -> tuple[dict[str, object], dict[str, dict[str, object]]]:
-    """Rebuild the pre-expansion certificate from the current ledger's route rows."""
+    """Rebuild the pre-expansion certificate from the current ledger's rows.
+
+    The prior perimeter defaults to the route stream alone; when the
+    pre-expansion certificate also covered other unchanged streams (for
+    example hourly_reserves certified for the capital consumer), the caller
+    names that exact stream set and the reconstruction takes those rows
+    verbatim from the current ledger. Every reconstructed row must carry the
+    current contract identity, so a stream whose consumer contract changed in
+    the expansion can never be smuggled into the prior perimeter.
+    """
 
     stream = DEX_STREAM[source]
+    streams = prior_streams or frozenset({stream})
+    if stream not in streams:
+        raise ValueError(
+            f"prior certificate perimeter must include the route stream: "
+            f"{source}/{stream}"
+        )
     certificate_path = local_scan_certificate_path(source, data_root=data_root)
     current_certificate = json.loads(certificate_path.read_text(encoding="utf-8"))
     ledger_path = certificate_path.with_name(
@@ -359,10 +411,12 @@ def _reconstruct_prior_route_stream_certificate(
         json.loads(line)
         for line in ledger_path.read_text(encoding="utf-8").splitlines()
     ]
-    subset = [row for row in rows if row["stream"] == stream]
-    if not subset:
+    subset = [row for row in rows if row["stream"] in streams]
+    observed_streams = {str(row["stream"]) for row in subset}
+    if missing_streams := sorted(streams - observed_streams):
         raise ValueError(
-            f"current certificate carries no route-stream rows: {source}/{stream}"
+            f"current certificate carries no rows for prior streams: "
+            f"{source}/{','.join(missing_streams)}"
         )
     if len(subset) == len(rows):
         raise ValueError(
@@ -379,7 +433,10 @@ def _reconstruct_prior_route_stream_certificate(
         ],
         ledger_path=workspace / str(current_certificate["partition_ledger"]),
     )
-    return prior_certificate, {str(row["day"]): row for row in subset}
+    route_rows = {
+        str(row["day"]): row for row in subset if row["stream"] == stream
+    }
+    return prior_certificate, route_rows
 
 
 def derive_perimeter_expansion_authority_snapshot(
@@ -407,7 +464,8 @@ def derive_perimeter_expansion_authority_snapshot(
     change makes the derivation fail closed.
     """
 
-    expanded = sorted(set(expanded_sources))
+    specs = parse_expanded_source_specs(expanded_sources)
+    expanded = sorted(specs)
     if not expanded:
         raise ValueError("perimeter-expansion derivation requires expanded sources")
     if unknown := [source for source in expanded if source not in dexes]:
@@ -436,7 +494,10 @@ def derive_perimeter_expansion_authority_snapshot(
             ) as directory:
                 for source in expanded:
                     prior[source] = _reconstruct_prior_route_stream_certificate(
-                        source, data_root=data_root, scratch=Path(directory)
+                        source,
+                        data_root=data_root,
+                        scratch=Path(directory),
+                        prior_streams=specs[source],
                     )
             entries: list[dict[str, object]] = []
             rebound_days = 0
@@ -533,6 +594,9 @@ def derive_perimeter_expansion_authority_snapshot(
                 "derivation": {
                     "policy": PERIMETER_EXPANSION_DERIVATION_POLICY,
                     "expanded_sources": expanded,
+                    "prior_stream_perimeters": {
+                        source: sorted(specs[source]) for source in expanded
+                    },
                     "prior_certificates": {
                         source: prior[source][0] for source in expanded
                     },
@@ -1883,7 +1947,13 @@ def main() -> int:
         "--expanded-source",
         action="append",
         default=None,
-        help="source whose local certificate gained non-route streams (repeatable)",
+        help=(
+            "source whose local certificate gained non-route streams "
+            "(repeatable); a bare source names a route-stream-only prior "
+            "certificate, while source=streamA,streamB names the exact prior "
+            "stream perimeter when the pre-expansion certificate already "
+            "covered other unchanged streams"
+        ),
     )
     parser.add_argument(
         "--rebind-downstream-consumers",
