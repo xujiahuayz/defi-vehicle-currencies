@@ -1,0 +1,52 @@
+{
+ "argv": [],
+ "artefact": "output/exhibits/liquidity_capital_v2_deck_values.tex",
+ "artefact_bytes": 635,
+ "artefact_mtime_ns": 1786814153505089776,
+ "artefact_sha256": "ae4e7301aa4c7447f2327cd2393a93a3307416aa16bed6bb2fbc161b98745053",
+ "code_fingerprint": "39ff4f7d45247135e20e58766ee10d8aa40d958157b28a10482eaf40b3a0d9fe",
+ "code_sources": [
+  "scripts/build_liquidity_capital_v2_deck_values.py"
+ ],
+ "created_at": "2026-08-15T17:15:53+00:00",
+ "git": {
+  "branch": "main",
+  "commit": "66f8858d772a4e5f8aa98a61c23e27d629282207",
+  "dirty": true,
+  "dirty_generated_files": [],
+  "dirty_tracked_files": [],
+  "dirty_untracked_files": [
+   "scripts/build_liquidity_capital_v2_deck_values.py"
+  ]
+ },
+ "inputs": [
+  {
+   "bytes": 203919,
+   "exists": true,
+   "path": "output/exhibits/liquidity_capital_v2_predictability.jsonl",
+   "sha256": "51332e441433da07ed1e7d690f34819a3bd1fbd81b6b3e9e6cc9c54d54d344f9"
+  },
+  {
+   "bytes": 2559,
+   "exists": true,
+   "path": "data/manifests/output/exhibits/liquidity_capital_v2_predictability.jsonl.prov.json",
+   "sha256": "bed38856f39fb05b66f83aeb8766bcc9560e62479ce68462ab643ad41f01f80d"
+  }
+ ],
+ "libraries": {
+  "numpy": "2.5.1",
+  "pandas": "3.0.3",
+  "pyarrow": "25.0.0",
+  "scipy": "1.18.0"
+ },
+ "notes": "Presentation macros for the V2 deposited-capital predictability adjudication; evidence status and identities remain source-only.",
+ "payload_identity": {
+  "bytes": 635,
+  "format": "binary",
+  "schema_version": 1,
+  "sha256": "ae4e7301aa4c7447f2327cd2393a93a3307416aa16bed6bb2fbc161b98745053"
+ },
+ "python": "3.14.6",
+ "rows": 96,
+ "script": "scripts/build_liquidity_capital_v2_deck_values.py"
+}

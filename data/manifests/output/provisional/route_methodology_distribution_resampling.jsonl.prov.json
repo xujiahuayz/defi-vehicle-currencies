@@ -1,32 +1,36 @@
 {
  "argv": [
-  "--provisional-snapshot",
-  "--replications",
-  "999"
+  "--provisional-snapshot"
  ],
  "artefact": "output/provisional/route_methodology_distribution_resampling.jsonl",
  "artefact_bytes": 1001269,
- "artefact_mtime_ns": 1786708534036175699,
+ "artefact_mtime_ns": 1786814518529982368,
  "artefact_sha256": "995607ce31bedc744264aca0c5e5c63da98c2eb69c9c84e8d98d94008cd77a00",
- "code_fingerprint": "4145993e8b86ca7c9f1640c553130ab1ca8be9c06ef64698145dd22005a9db93",
+ "code_fingerprint": "ce113dc07c9ac67efd508c494a0ae3328300881a61bbce3fef0fd96a6c3f6baa",
  "code_sources": [
   "scripts/run_route_methodology_robustness.py",
   "src/ddvc/analysis/regression.py",
   "src/ddvc/model_artifacts.py",
   "src/ddvc/tables.py"
  ],
- "created_at": "2026-08-14T11:55:34+00:00",
+ "created_at": "2026-08-15T17:21:58+00:00",
  "git": {
   "branch": "main",
-  "commit": "2da4a97aa32618b40bc86d4bd69cd96337b1c906",
-  "dirty": false,
+  "commit": "66f8858d772a4e5f8aa98a61c23e27d629282207",
+  "dirty": true,
   "dirty_generated_files": [
-   "data/manifests/output/exhibits/provisional_results_deck_values.tex.prov.json",
    "data/manifests/output/provisional/route_methodology_robustness.jsonl.prov.json",
-   "data/manifests/output/provisional/stable_vehicle_concentration_e0.jsonl.prov.json"
+   "data/manifests/output/exhibits/liquidity_capital_v2_deck_values.tex.prov.json",
+   "output/exhibits/liquidity_capital_v2_deck_values.tex"
   ],
-  "dirty_tracked_files": [],
-  "dirty_untracked_files": []
+  "dirty_tracked_files": [
+   "deck/sections/04-results.tex",
+   "tests/test_deck_evidence.py"
+  ],
+  "dirty_untracked_files": [
+   "scripts/build_liquidity_capital_v2_deck_values.py",
+   "tests/test_liquidity_capital_v2_deck_values.py"
+  ]
  },
  "inputs": [
   {
@@ -56,7 +60,7 @@
   "schema_version": 1,
   "sha256": "995607ce31bedc744264aca0c5e5c63da98c2eb69c9c84e8d98d94008cd77a00"
  },
- "python": "3.14.5",
+ "python": "3.14.6",
  "rows": 3996,
  "script": "scripts/run_route_methodology_robustness.py"
 }

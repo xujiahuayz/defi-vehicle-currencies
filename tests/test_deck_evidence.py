@@ -199,10 +199,12 @@ def test_deck_mechanism_sequence_separates_route_settlement_and_capital() -> Non
         ROOT / "deck" / "assets" / "liquidity-quantity-cross-section.tex"
     ).read_text(encoding="utf-8")
 
-    assert "Does liquidity lead vehicle use---or follow it?" in results
-    assert "Capital or provider inflow" in results
-    assert "Liquidity supply may attract later routes" in results
-    assert "Providers may follow routed demand" in results
+    assert "Deposited capital neither leads vehicle use nor follows it" in results
+    assert "Deposited capital in" in results
+    assert "\\LiqPredCapRouteDayCoef" in results
+    assert "\\LiqPredRouteCapDayCoef" in results
+    assert "\\LiqPredLongCapRouteCoef" in results
+    assert "Predictive associations only, not causal feedback" in results
     assert "candidate-day" not in results
     assert "exact 1-, 7-, 30-, and 120-day horizons" not in results
 

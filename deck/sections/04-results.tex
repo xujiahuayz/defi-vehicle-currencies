@@ -10,6 +10,9 @@
 \IfFileExists{../output/provisional/route_methodology_heterogeneity_deck_values.tex}{%
 \input{../output/provisional/route_methodology_heterogeneity_deck_values.tex}%
 }{\PackageError{dvc-deck}{Missing provisional WETH allocation values}{Run scripts/run_route_methodology_robustness.py --provisional-snapshot.}}
+\IfFileExists{../output/exhibits/liquidity_capital_v2_deck_values.tex}{%
+\input{../output/exhibits/liquidity_capital_v2_deck_values.tex}%
+}{\PackageError{dvc-deck}{Missing generated V2 capital-predictability values}{Run scripts/build_liquidity_capital_v2_deck_values.py.}}
 
 % EVIDENCE-STATUS: evolving route result; current certified route release
 % EVIDENCE-COMMIT: 2ffbce0
@@ -39,7 +42,7 @@
 \end{frame}
 
 % EVIDENCE-STATUS: E0 pending clean J0; deterministic eligibility identity and provisional inference
-% EVIDENCE-COMMIT: ead5c72f0232b27c0bc94b7d0ad6e9ff2d02ba7d
+% EVIDENCE-COMMIT: 66f8858d772a4e5f8aa98a61c23e27d629282207
 % EVIDENCE-D3-CERTIFICATE: directory=25c755ae635d90846fb754e5cb58caa7f377787daba0743d95667b8c29ed9e6c; internal_generation=9aa4e1d3ecbc9fb899bf70ba70fc18cf1d621003162218e755fd8ecc4cbb3580
 % EVIDENCE-ENDPOINT-GENERATION: 5fb7cbf36508d10a5bdafe2ebfb5ccb6266696be38e192eb38be11c3942916e9
 % EVIDENCE-SOURCES: output/provisional/route_methodology_heterogeneity.jsonl; output/provisional/route_methodology_heterogeneity_deck_values.tex; output/exhibits/vehicle_transition_pair_panel.parquet
@@ -56,7 +59,7 @@
 \end{frame}
 
 % EVIDENCE-STATUS: E0 pending clean J0; exact provisional midpoint accounting
-% EVIDENCE-COMMIT: ead5c72f0232b27c0bc94b7d0ad6e9ff2d02ba7d
+% EVIDENCE-COMMIT: 66f8858d772a4e5f8aa98a61c23e27d629282207
 % EVIDENCE-D3-CERTIFICATE: directory=25c755ae635d90846fb754e5cb58caa7f377787daba0743d95667b8c29ed9e6c; internal_generation=9aa4e1d3ecbc9fb899bf70ba70fc18cf1d621003162218e755fd8ecc4cbb3580
 % EVIDENCE-ENDPOINT-GENERATION: 5fb7cbf36508d10a5bdafe2ebfb5ccb6266696be38e192eb38be11c3942916e9
 % EVIDENCE-SOURCES: output/provisional/route_methodology_heterogeneity.jsonl; output/provisional/route_methodology_heterogeneity_deck_values.tex; literature/text/2022-Mukhin2022InternationalPriceSystem-an-equilibrium-model-of-the-international-price-system.txt:777; literature/text/2021-GopinathStein2021Making-banking-trade-and-the-making-of-a-dominant-currency.txt:1280; literature/text/2021-CarlettiDeMarcoIoannidouSette2021PatientLenders-banks-as-patient-lenders-evidence-from-a-tax-reform.txt:120
@@ -86,37 +89,42 @@
 \decknote{Changes compare the same January--June dates in 2024 and 2026. Bars show 95\% calendar-HAC confidence intervals.}
 \end{frame}
 
-% EVIDENCE-STATUS: registered liquidity-allocation question; no estimate is displayed
-% EVIDENCE-COMMIT: 37852d81d08eca7fd1ef1caa5d3ef4c36448050b
-% EVIDENCE-SOURCES: paper/sections/05-rivals.tex; docs/research-questions-and-empirical-design.md
-% SCIENTIFIC-BOUNDARY: temporal ordering can distinguish two predictive patterns but does not by itself identify causal feedback
-% VISUAL-FUNCTION: liquidity-allocation question | opposed timing diagrams | distinguish liquidity-leading-use from use-leading-liquidity without displaying pending estimates
-\begin{frame}{Does liquidity lead vehicle use---or follow it?}
+% EVIDENCE-STATUS: E0 pending clean J1; full-calendar reciprocal adjudication on the certified V2 capital release records a non-pass
+% EVIDENCE-COMMIT: 66f8858d772a4e5f8aa98a61c23e27d629282207
+% EVIDENCE-D3-GENERATION: analysis_release=414f0c278742f42c4c1f8b7d5384d229aeaa0c2831c4dfa019183b2b1084f136
+% EVIDENCE-SOURCES: output/exhibits/liquidity_capital_v2_predictability.jsonl; output/exhibits/liquidity_capital_v2_deck_values.tex; output/tables/liquidity_capital_v2_predictability.tex; docs/specification-lock.json
+% SCIENTIFIC-BOUNDARY: temporal ordering distinguishes two predictive patterns but does not identify causal feedback; V2 deposited-capital stock in the five candidate pool families only; provider flows, concentrated-liquidity depth, and settlement state are separate blocked measures
+% ESTIMAND-BOUNDARY: daily five-candidate panel on the full 2020--2026 V2 calendar with candidate and origin-date fixed effects; adjudication is the pre-stated reciprocal rule at 1/7/30 days with a 120-day reversal check; displayed cells are the episode-share/log-capital pair and the concordant 120-day sensitivity
+% VISUAL-FUNCTION: liquidity-allocation adjudication | opposed timing diagrams with estimates | show that neither direction predicts at one to thirty days
+\begin{frame}{Deposited capital neither leads vehicle use nor follows it}
 \vspace{0.02cm}
 \begin{columns}[T,totalwidth=\textwidth]
 \begin{column}{0.48\textwidth}
 \evidencekicker{Liquidity first}
-\vspace{0.25cm}
+\vspace{0.12cm}
 \centering
 \begin{tikzpicture}[x=1cm,y=1cm]
-\node[softbox,text width=4.35cm,minimum height=0.82cm,align=center] (capital) at (0,2.60) {Capital or provider inflow in\\vehicle-linked pools at $t$};
+\node[softbox,text width=4.35cm,minimum height=0.82cm,align=center] (capital) at (0,2.60) {Deposited capital in\\vehicle-linked pools at $t$};
 \node[softbox,text width=4.35cm,minimum height=0.82cm,align=center] (route) at (0,0.68) {Vehicle share at $t+\tau$};
 \draw[-{Stealth[length=6pt]},line width=1.7pt,draw=stable] (capital)--(route);
 \end{tikzpicture}
-\par\vspace{0.10cm}\raggedright
-{\small Liquidity supply may attract later routes.\par}
+\par\vspace{0.08cm}\raggedright
+{\footnotesize A one log-point higher capital stock predicts a next-day episode-share change of \LiqPredCapRouteDayCoef{} (SE \LiqPredCapRouteDaySE{}); at thirty days \LiqPredCapRouteMonthCoef{} (SE \LiqPredCapRouteMonthSE{}).\par}
 \end{column}
 \begin{column}{0.48\textwidth}
 \evidencekicker{Vehicle use first}
-\vspace{0.25cm}
+\vspace{0.12cm}
 \centering
 \begin{tikzpicture}[x=1cm,y=1cm]
 \node[softbox,text width=4.35cm,minimum height=0.82cm,align=center] (route) at (0,2.60) {Vehicle share at $t$};
-\node[softbox,text width=4.35cm,minimum height=0.82cm,align=center] (capital) at (0,0.68) {Capital or provider inflow in\\vehicle-linked pools at $t+\tau$};
+\node[softbox,text width=4.35cm,minimum height=0.82cm,align=center] (capital) at (0,0.68) {Deposited capital in\\vehicle-linked pools at $t+\tau$};
 \draw[-{Stealth[length=6pt]},line width=1.7pt,draw=ucldark] (route)--(capital);
 \end{tikzpicture}
-\par\vspace{0.10cm}\raggedright
-{\small Providers may follow routed demand.\par}
+\par\vspace{0.08cm}\raggedright
+{\footnotesize A one-point higher episode share predicts a next-day capital change of \LiqPredRouteCapDayCoef{} (SE \LiqPredRouteCapDaySE{}); at thirty days \LiqPredRouteCapMonthCoef{} (SE \LiqPredRouteCapMonthSE{}).\par}
 \end{column}
 \end{columns}
+\vspace{0.10cm}
+{\fontsize{7.8}{8.6}\selectfont No use/capital measure pair is positive in both directions at any two of the one-, seven-, and thirty-day horizons; the smallest Holm-adjusted $p$ is \LiqPredMinHolm{}. The only strong longer-horizon pattern runs the other way: over the following 120 days, higher-capital pool-days lose episode share (\LiqPredLongCapRouteCoef{} per log point, SE \LiqPredLongCapRouteSE{}).\par}
+\decknote{Daily panel of the five vehicle candidates on the full \LiqPredSpanDays{}-day V2 calendar with candidate and date fixed effects; standard errors use 30-day calendar HAC on date-aggregated scores, and Holm adjustment is within direction; a month-block bootstrap and candidate-date clustering agree. Deposited capital is a reserve stock; provider flows and concentrated-liquidity depth are measured separately. Predictive associations only, not causal feedback.}
 \end{frame}
