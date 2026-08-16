@@ -4771,3 +4771,130 @@ script is the second. `vehicle_transition_e0` and `open_question_anomaly_e0` can
 point at existing runners; `liquidity_capital_v2_e0` has one declared in its
 claim (`scripts/run_liquidity_capital_v2_predictability.py`) — check it exists
 before planning around it.
+
+## 2026-08-16 — Deck density becomes a measured gate, commit `1bdd838`
+
+**Target.** The queue's unchecked deck interjection ("THE LIVE DECK IS TOO BUSY
+TO PERFORM"), part 1. Chosen over the older E1-lock item for two reasons worth
+recording. First, the previous iteration was engineering-only, so this one owed
+a claim, exhibit, deck frame or section under the brief's step 6; the E1 chain's
+next step (`scripts/lock_specification.py`) is a third engineering unit and,
+worse, cannot run yet — see the standing blocker below. Second, this item was
+never started, while E1 has two progress notes.
+
+**REGRESSION-CHECK made before mutating anything.** Estimand most at risk: the
+vehicle-transition rotation decomposition on core pages 14 and 19, whose
+compositional reading the 2026-08-16 SO-WHAT interjection requires at first
+mention. Evidence generation most at risk: the `\Margin*`, `\Dom*` and
+`\WithinDay*` macro bindings from `vehicle_transition_pair_decomposition.jsonl`,
+`dominance_regressions.jsonl` and `integration_date_fe_ladder.jsonl` — no number
+may be retyped, all stay macro-driven. Prior corrections most at risk: (a) pair
+composition is never called entry/exit (2026-08-14); (b) the within-day venue gap
+was PROMOTED to a deck sentence at `f363127` and must not be demoted to a
+presenter note to buy budget; (c) the previous iteration's lesson that resizing a
+frame silently pushes `\decknote` off the page, so every touched page is rendered
+and looked at. All three held: (a) untouched, (b) the within-day sentence stayed
+on the slide and the surrounding rivals moved instead, (c) three pages rendered
+to PNG and inspected, which is how the next defect was caught.
+
+**The item's own measurement is wrong, and the check does not inherit it.** The
+interjection reports 35 frames at a median of 124 visible words with the worst at
+421--553. That is a source-side word count, and TikZ option keys are words to it:
+`tinyasset/.style={circle,draw=ink,fill=white,minimum size=14pt}` contributes
+eight. It scores the four-panel architecture frame at 415 words when the page a
+listener sees carries 111. A source measure is also gameable — move prose into a
+node and it disappears. **DECISION: promote** a rendered-page measure instead.
+`ddvc.deck_evidence.rendered_page_density` extracts each page with pypdf, drops
+the running footline, and counts word tokens with a leading letter. Numerals are
+deliberately not words: a longer axis does not make a slide busier. Beamer
+`\note{}` is excluded for free because it is not typeset in the delivered deck,
+which is exactly where the interjection says displaced text should go.
+
+**Second adjudication: the exhibit note is measured apart from slide prose.**
+Every empirical frame carries a `\decknote` giving unit, construction, encoding,
+sample, weighting and inference, which the deck workflow requires. Counting it
+against one 55-word page budget makes the budget unreachable for precisely the
+frames that carry evidence. It is split out at the `Note:` marker, which is
+reliably the last block of extracted page text, and held to the same 55-word
+benchmark under its own cap — so prose cannot be hidden there either.
+**DECISION: promote**, on the interjection's own "excluding exhibit internals"
+and the deck-outline convention that the note is the exhibit's apparatus.
+
+**The ratchet, which is the part that survives this iteration.**
+`docs/deck-density-ledger.json` records every page already over the benchmark as
+an EXACT allowance: measured must equal recorded. So an unlisted page over budget
+fails, a listed page that grows fails, and a listed page that is paid down also
+fails until its row is deleted — after which it can never grow again. Raising an
+allowance is possible only as a visible edit to a file whose stated purpose
+forbids it. `--record-density` measures the ledger rather than accepting typed
+numbers. Five tests in `tests/test_deck_evidence.py` pin the acceptance bar:
+unlisted page over budget, note over its own cap, recorded page moving in either
+direction, paid-down page that must leave the file, renamed page, moved appendix
+boundary. `docs/deck-outline.md` gained the rule beside the venue benchmark it
+enforces; no new script, no new doc.
+
+**Paydown, first tranche.** Three heaviest core pages, explanation moved into
+`\note{}` and never deleted: three-margin frame 173 -> 111, dominance ladder
+146 -> 122, venue-scope forest 173 -> 96. **The inspection earned its keep**: with
+the five-rival paragraph gone, the forest figure — compressed to 0.26\textheight
+by an earlier iteration to make room for that paragraph — was left as an
+unreadable postage stamp with half a slide of white space under it. Restored to
+0.44\textheight; below roughly 0.40 the cell labels do not resolve. The source
+audit, the compile and the undefined-reference count were all green while it was
+illegible. **Render and LOOK at every page you touch.**
+
+**Measured state now.** 37 pages, 19 core against a venue limit of 13, median 70
+visible words (88 core), 26 pages over the 55-word budget, 18 over the 70-word
+ceiling, 966 words of recorded debt, down from 1,129.
+
+**Validation.** Deck compiles under Tectonic at 37 pages, 0 undefined; pages 14,
+15, 16 rendered to PNG and inspected (16 twice). `audit_deck_evidence.py` PASS.
+`check_deliverable_conformance.py` green on every blocking check, paper 46 pages,
+deck 37 pages, 2 advisories (equations below p25, and the two prose warnings) —
+identical to the start of the iteration. 114 deck/spine tests pass. Full suite
+2,229 passed / 12 failed, and the twelve are exactly the two known pre-existing
+causes carried by the last entry: `v2_event_source_release provenance is not
+current` on `v2_audit_token_decimals.parquet.prov.json` (`test_variable_registry`,
+`test_vehicle_transition_e0`, the seven `test_weighted_quote` wiring tests) and
+the absent-`pyfixest` `test_vehicle_role_models` trio. `test_route_cost_panel.py`
+and `test_route_state.py` still fail at COLLECTION on the same v2 cause and must
+be `--ignore`d to run the suite at all.
+
+**Gate state: RED, 3 blocking, unchanged** — node E1 specification lock;
+empirical model ledger; two unchanged findings passes. This iteration was not on
+the gate's own list and did not move it, which is correct: the queue outranks it.
+
+**Next iteration.** Two live routes, in this order.
+
+1. *Finish the deck item.* Resumption point is exact: pages 27, 19, 17, 18, 12,
+   13, 5 are the remaining heavy ones, in that order. Then the core frame count,
+   19 down to 13, which is content surgery and not a word-trim. Then part 2's
+   spine sentence, untouched. When you get there, note that page 19 already
+   closes on "Stablecoins won the market, not the trade", a contrast construction
+   that must be re-adjudicated against the item's own OWNER RULE: the negated
+   side needs an interval that excludes the economically relevant magnitude on
+   the same frame, and page 19 currently shows SE and cell counts, not intervals.
+
+2. *The E1 chain, whose blocker is now precisely located.* The queue item says to
+   build `scripts/lock_specification.py` next. It cannot be finished next: step 4
+   runs `execute_exploration_plan`, which needs a written `plan.json` naming a
+   runner, arguments, declared artifacts, per-dimension fitted spec ids and
+   attack evidence for each of the three executable families — and the runners
+   cannot yet supply it. `scripts/run_vehicle_transition_e0.py` says so in its own
+   docstring: `COMPONENT_STATUS = "smoke_only_incomplete_family"`. Of that
+   family's six required attacks it covers three (`dominance_measure_triangulation`
+   through the count/value estimand axis, `routing_strata_separation` through the
+   three scopes, `support_uncertainty_ledger` through its support artifact).
+   `docs/literature-audit.md:79-82` says what the other three still need:
+   `dated_backing_regimes` is an E0 transform from candidate/date using canonical
+   `backing` and can be built now; `fixed_opportunity_conditioning` waits on the
+   released routing frontier and transition-cell objects; and
+   `within_pair_composition_decomposition` requires materialising a compact
+   endpoint-pair-by-candidate-by-day panel from released unified routes AND
+   adding it to D3 before E0. That last one is a D2/D3 unit, not a script edit.
+   So the honest order is: extend the vehicle-transition runner to the full
+   family (starting with dated backing regimes, which needs no new release),
+   then the endpoint-pair panel into D3, then the plan, then the lock script.
+   Do not write a plan.json that declares attack evidence the runners do not
+   produce; the perimeter check will accept the file and the exploration will be
+   a fiction.
