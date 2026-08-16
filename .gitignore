@@ -89,6 +89,8 @@ paper/*.synctex.gz
 # leftover scratch must never read as worktree dirt to the grind supervisor.
 e0-release-test-*/
 data/manifests/e0-release-test-*/
+d3-release-test-*/
+data/manifests/d3-release-test-*/
 
 # LaTeX build artefacts. The PDF is regenerable from the sources with one latexmk call.
 paper/*.aux
