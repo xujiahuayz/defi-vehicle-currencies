@@ -262,6 +262,47 @@ and pick a blocking check from the freeze gate.
   market, not the trade" on page 19) are contrast constructions and must be
   re-adjudicated against this item's OWNER RULE when part 2 is done._
 
+- [ ] **JAVA REFINEMENT (2026-08-16, via glotl): DECK — VARIOUS ANALOGIES, AND
+  FINISH THE CLOSE'S CONTRAST HONESTLY NOW.** Extends the open "LIVE DECK IS TOO
+  BUSY" item above; does not replace it. No new data runs; descriptive; refresh in
+  place; do not create a new core frame or add a visible word to any frame while
+  the core count is above 13.
+  1. **Various analogies live in narration, not on the glass.** The deck has
+     exactly one analogy (the China-Brazil corridor, core p18). Java wants the
+     generalisation to land through *several* distinct analogies, but the deck is
+     ~6 core frames and ~966 words over budget, so analogies ride the paydown:
+     they go in Beamer `\note{}` and, at most, one shared motif line reused at
+     section transitions. Add two, each mapping onto the SAME so-what (aggregate
+     share moves because the trading network reorganises around the challenger,
+     not because comparable trades switch intermediary): (a) **lingua franca** — a
+     common language loses global share not when bilingual speakers switch
+     mid-conversation (within-pair change about zero) but when new speaker
+     communities form that never adopt it; (b) **airline hub-and-spoke** — a hub
+     loses share not when existing routes reroute but when new city-pairs fly
+     point-to-point or via a rival hub (reweighting plus exclusive-pair
+     composition). Keep the corridor as the one visible schematic. Hub-and-spoke
+     may reuse the corridor tikz language as a second visible schematic ONLY once
+     the core frame count is at 13.
+  2. **Finish the close's contrast under the OWNER RULE now, not after the spine.**
+     The close frame "The market changed, not the trade" already carries both
+     sides on one frame (the conditioning ladder plus the matched-market estimate
+     with its SE over N cells, beside the independent dominance estimand with its
+     stated minimum detectable effect), so it is close to compliant — but the
+     negated side is left as an SE plus visual juxtaposition. Make the bound
+     literal on the slide: print the matched-market change as an explicit interval
+     and name the aggregate move it excludes (so a listener sees the interval
+     exclude the economically relevant magnitude without doing the arithmetic).
+     Give the p19 banner "Stablecoins won the market, not the trade" the same
+     treatment or drop it to a plain descriptive line. Record the re-adjudication
+     in the ledger. This is decoupled from part 2 and should not wait on the spine.
+  3. **Prefer a positive spine sentence (part 2).** State the repeated takeaway
+     line positively so it needs no both-sides licence to travel off its evidenced
+     frame — e.g. "A vehicle wins where trade grows next" or "The network
+     reorganises around the challenger." Keep contrast phrasing only on frames that
+     show both sides.
+  Priority: this refines the deck item and inherits its position; it does not
+  outrank the E1 lock chain above it. Do it at the deck item's turn.
+
 - [x] **OWNER DECISION (Java, 2026-08-16): close the Mukhin literature blocker by
   recording the replication package as unavailable.**
   Scope: `Mukhin2022InternationalPriceSystem` only. The missing artefact is the
