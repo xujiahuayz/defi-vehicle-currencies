@@ -2451,3 +2451,110 @@ ledger; node B full-text literature ledger; two unchanged findings passes).
 - The M3 12:03 handoff stays unchecked; its live remainder is still the E1/D3
   generation identities and the two unchanged findings passes. Mukhin still
   needs Java or Studio (NEEDS-JAVA stands from 2026-08-15).
+
+## 2026-08-16 — endpoint eligibility inside the composition margins
+
+**Targeted check.** None of the four blockers is reachable from this worktree:
+node B is Mukhin (NEEDS-JAVA, restated 2026-08-15), node E1 and the empirical
+model ledger both wait on the Studio D3 generation and certificate identities,
+and the two unchanged passes need a quiet gate rather than a unit of work. The
+previous iteration was claim-advancing, so under step 6 this one had to advance a
+claim too. I took the cut the last ledger entry nominated: whether the top of the
+reweighting margin is a WETH-endpoint artefact.
+
+**REGRESSION-CHECK filed before mutation.** Estimand at risk: the pooled
+2024--2026 `midpoint_common_exclusive_support_v1` term `common_pair_reweighting`,
+descriptive and non-causal — split, never re-estimated, with the locked calendar
+and formula ID untouched. Generation at risk:
+`vehicle_transition_pair_contributions.parquet` on the current certified release,
+read-only through `require_certified_presentation_source`; no producer rerun, no
+release rewrite. Prior correction at risk: the M3 affirmative boundary that WETH
+eligibility explains most of the count rotation but not the strict-value
+rotation. The result sharpens that boundary at corridor level and does not
+reopen it.
+
+**What the split is.** A route with wrapped ether at an endpoint cannot use
+wrapped ether as its intermediary, so in the native-versus-stablecoin comparison
+its stablecoin share is one in both years. Those corridors move the aggregate
+only through composition. Membership is decided by one contract address, so
+unlike the named-example machinery it does not depend on the token taxonomy and
+classifies the unlabelled tail as reliably as the majors. The producer proves the
+identity on the certified allocation before reporting: every WETH-endpoint pair
+must carry stablecoin share one in both years and a within-pair contribution of
+exactly zero, or every macro is withheld. Both hold exactly on the real data
+(max |within-pair pp| = 0.0 across 1,499 count and 1,469 value pairs).
+
+**Result.** 1,499 of 26,547 continuing pairs, 5.6%, have a WETH endpoint; their
+routed-activity share rises 20.9% -> 33.0% by count and 25.8% -> 41.3% by value.
+By count they supply +6.3 pp of the +8.6 pp reweighting margin (73.3%) and
++13.9 pp of the +21.0 pp new-pair margin (65.9%). By value they supply only
++11.2 pp of +26.2 pp (42.6%) and 16.0% of the value new-pair margin. The value
+rotation's top corridors are non-WETH: USDe->USDC, USDe->sUSDe, DAI<->USDC,
+sUSDe->USDC, USDC->crvUSD. **DECISION: promote.** The count rotation leans on
+corridors that had no intermediary to choose; the dollar-weighted rotation does
+not. As a by-product the near-zero within-pair term is defended: WETH-endpoint
+pairs contribute exactly zero to it, so it is not an average diluted by frozen
+corridors — all of it comes from pairs whose intermediary was a live choice.
+This is the strongest available support for Java's 00:03 so-what reading, and it
+cost no new data.
+
+**Where it landed.** All of it inside the existing owner,
+`scripts/build_vehicle_transition_pair_deck_values.py` (new `_endpoint_eligibility`
+plus an `ELIGIBILITY_MARGINS` block), not a new script. It is a different object
+from `run_route_methodology_robustness.py`'s WETH-exclusion sensitivity, which
+drops these corridors and re-estimates the matched within-pair change rather than
+splitting the composition margins; both source comments say so, so a later worker
+does not merge them.
+
+**A fixture defect the new guard exposed.** The deck-values test fixture put
+within-pair movement on WETH-endpoint pairs, which the data cannot produce. It
+now respects the identity: five continuing pairs, three contestable and two
+endpoint-locked at stablecoin share one. The within-pair named example therefore
+moves from USDC->WETH to USDC->USDT. This was a real fixture error, not a
+concession to the new check.
+
+**Paper.** A new paragraph closes Section 3.2, written from the movement of
+Bolton--Kacperczyk 3.2 (raw lines 1245--1260: name a structural feature of the
+data that could account for the result, pose the reader's question, say what you
+add, report an answer whose direction cuts against the expectation the question
+set up). The rhetoric ledger carries the new sha, the handoff at line 86, and the
+renumbered transitions.
+
+**Deck.** No new frame. The margins frame's closing line gains one clause with
+the count/value contrast. Adding it produced a 16.25pt overfull vbox, closed by
+tightening the three panels from 4.3cm to 3.95cm; the deck's remaining two boxes
+(8.14pt at line 65, 5.06pt at line 221) are byte-equal to the pre-change
+baseline. Page 13 rendered and inspected — no clipping.
+
+**Validation.** `check_deliverable_conformance.py` exits 0, all blocking checks
+pass; paper 36 pages / 0 undefined, deck 35 pages / 0 undefined, the same 2
+advisories. `audit_deck_evidence.py` PASS. 64 prose/exhibit/deck/optics/table/
+spine/provenance tests pass, including 3 new eligibility tests.
+
+**Commit:** `abfc8e3`.
+
+**Blocking count: 4** (unchanged: node E1 specification lock; empirical model
+ledger; node B full-text literature ledger; two unchanged findings passes).
+
+**For the next iteration.**
+- **The citation-density test is now within ~109 words of failing.** Draft is
+  30 citations / 14,305 words = 0.002097 against a first-quartile density of
+  0.002081. Any prose pass that adds more than about 109 words without adding a
+  citation will break
+  `test_venue_optics.py::test_exhibit_density_reaches_the_first_quartile`. Plan
+  the citation before the paragraph, not after.
+- Venue-shape shortfalls after this pass: words 14,305 against p25 18,738;
+  equations 11 against 25; citations 30 against 39; greek 6 against 7.
+- The obvious follow-on in this lane is the same eligibility split applied to the
+  *venue* dimension rather than the endpoint asset: whether the count rotation's
+  eligible corridors are concentrated in single- or cross-exchange scope. The
+  contributions ledger already carries `reporting_scope`, so it needs no new data
+  and the same producer can carry it.
+- Section 6 still defines the cost benchmark and reports nothing; it remains
+  blocked on route cost and is still the largest structural hole in the paper.
+- `tests/test_route_cost_panel.py` and `tests/test_route_state.py` still error at
+  collection on the `v2_audit_token_decimals.parquet.prov.json` drift; unchanged
+  by this iteration.
+- The M3 12:03 handoff stays unchecked; its live remainder is still the E1/D3
+  generation identities and the two unchanged findings passes. Mukhin still
+  needs Java or Studio (NEEDS-JAVA stands from 2026-08-15).
