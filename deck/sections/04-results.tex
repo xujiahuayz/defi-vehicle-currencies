@@ -152,7 +152,7 @@
 % EVIDENCE-COMMIT: 111230a
 % The figure asset itself was added at a0c54e9; its inputs and the numeric cells
 % below share the intermediation-exhibit evidence commit named above.
-% EVIDENCE-SOURCES: output/figures/experiments/integration_change_forest.pdf; output/exhibits/intermediation_integration_rival.jsonl; output/exhibits/intermediation_integration_interaction.jsonl; output/exhibits/intermediation_complexity_rival.jsonl; output/exhibits/venue_technology_rival.jsonl; output/exhibits/provisional_results_deck_values.tex; docs/findings-freeze.md
+% EVIDENCE-SOURCES: output/figures/experiments/integration_change_forest.pdf; output/exhibits/intermediation_integration_rival.jsonl; output/exhibits/intermediation_integration_interaction.jsonl; output/exhibits/intermediation_complexity_rival.jsonl; output/exhibits/venue_technology_rival.jsonl; output/exhibits/routing_technology_windows.jsonl; output/exhibits/provisional_results_deck_values.tex; docs/findings-freeze.md
 % ESTIMAND-BOUNDARY: matched January--June dates in 2024 and 2026; native-plus-stable denominator; one
 % observation per intermediary episode; leg count records how the route was built and is not an
 % execution-quality measure; the four span-by-complexity cells come from the same certified exhibit and
@@ -162,14 +162,21 @@
 % agreement support, and a route component enters a family only when every leg belongs to it. Its Curve
 % clause is enforced by a producer guard that withholds every macro if an all-Curve scope-year ever
 % reports an intermediary episode. Venue family is realised, not assigned.
+% The router-release sentence is a third estimand on a third support: market-wide route
+% composition in symmetric 60-day windows either side of three dated public releases, with no
+% currency split at all, so it may never be read as a stablecoin quantity. A release reaches every
+% trader at once, so there is no untreated group and this is descriptive window composition, not a
+% treatment effect; spec-lock claim routing_maturation_rival forbids an aggregator-causality
+% reading. Its macros are withheld entirely if intermediation ever steps up by a full percentage
+% point at a release or if the balanced five-venue perimeter stops reproducing the full perimeter.
 % VISUAL-FUNCTION: integration-stratified vehicle rotation | change estimates with HAC intervals | test whether venue mix, path length, or pricing rule absorbs the stable-share change
 \begin{frame}{Stablecoin use rises within each venue scope}
 \vspace{-0.08cm}
 \begin{center}
-\includegraphics[width=0.89\textwidth,height=0.41\textheight,keepaspectratio]{../output/figures/experiments/integration_change_forest.pdf}
+\includegraphics[width=0.89\textwidth,height=0.34\textheight,keepaspectratio]{../output/figures/experiments/integration_change_forest.pdf}
 \end{center}
 \vspace{-0.42cm}
-{\fontsize{6.8}{7.5}\selectfont The increase appears within both realised route scopes, so a change in the single- versus cross-venue mix cannot account for the aggregate rotation. Path length does not absorb it either: two-leg routes gain \StableCountChange{} by count (SE \StableCountSE{}) and longer routes \MultiLegCountChange{} (SE \MultiLegCountSE{}), and every venue-scope by path-length cell rises, the weakest by \WeakestComplexityCountChange{} (SE \WeakestComplexityCountSE{}). Nor does the pricing rule: among routes priced entirely by the constant-product invariant, \VenueCPEpisodeShare{} of 2026 episodes, stablecoin excess use still rises from \VenueCPStableValueBase{} to \VenueCPStableValueEnd{}; all-Curve routes carry none. Route scope, path length, and venue family remain selected; the comparison does not identify an effect of integration, routing software, pricing technology, or protocol architecture.}
+{\fontsize{6.8}{7.5}\selectfont The increase appears within both realised route scopes, so the single- versus cross-venue mix cannot account for the aggregate rotation. Path length does not absorb it: two-leg routes gain \StableCountChange{} by count (SE \StableCountSE{}) and longer routes \MultiLegCountChange{} (SE \MultiLegCountSE{}), and every venue-scope by path-length cell rises, the weakest by \WeakestComplexityCountChange{} (SE \WeakestComplexityCountSE{}). Nor does the pricing rule: among routes priced entirely by the constant-product invariant, \VenueCPEpisodeShare{} of 2026 episodes, stablecoin excess use rises from \VenueCPStableValueBase{} to \VenueCPStableValueEnd{}, and all-Curve routes carry none. Nor does automated path search: intermediation incidence never rises by more than \RouterLargestIntermediationRise{} at \RouterReleaseCount{} public router releases, though cross-exchange reach widens. Every scope here is realised, not assigned; none identifies an effect of integration, routing software, pricing technology, or architecture.}
 \decknote{Changes compare the same January--June dates in 2024 and 2026. Bars show 95\% calendar-HAC confidence intervals. Excess-use ratios are annual and span the full sample calendar.}
 \end{frame}
 

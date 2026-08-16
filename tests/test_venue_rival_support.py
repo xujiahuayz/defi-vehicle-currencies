@@ -6,7 +6,11 @@ import pandas as pd
 
 from ddvc.venue_tables import (
     RIVAL_SCOPE_ORDER,
+    ROUTER_EVENT_ORDER,
+    render_routing_technology_windows,
     render_venue_technology_rival,
+    router_event_date_text,
+    routing_window_values,
     venue_technology_rival_values,
 )
 from scripts.test_venue_technology_rival import bounded_workers, support_status
@@ -112,3 +116,74 @@ class VenueTechnologyRivalTests(unittest.TestCase):
 
 if __name__ == "__main__":
     unittest.main()
+
+
+def _window_row(event: str, period: str, scope: str, **moments):
+    row = {
+        "event": event,
+        "event_date": "2021-09-16 00:00:00",
+        "period": period,
+        "scope": scope,
+        "window_days": 60,
+        "calendar_days": 60,
+        "economic_multileg_share": 0.20,
+        "intermediated_share": 0.18,
+        "cross_venue_share": 0.09,
+        "over_two_legs_share": 0.07,
+        "mean_legs": 2.08,
+        "mean_venues": 1.10,
+    }
+    row.update(moments)
+    return row
+
+
+def _window_rows() -> list[dict[str, object]]:
+    rows: list[dict[str, object]] = []
+    for event in ROUTER_EVENT_ORDER:
+        for period in ("pre", "post"):
+            for scope in ("full", "balanced"):
+                rows.append(_window_row(event, period, scope))
+    return rows
+
+
+class RouterWindowTests(unittest.TestCase):
+    def test_ordered_releases_carry_both_periods(self) -> None:
+        windows = routing_window_values(_window_rows())
+        self.assertEqual([window[0] for window in windows], list(ROUTER_EVENT_ORDER))
+        for _event, _date, days, pre, post in windows:
+            self.assertEqual(days, 60)
+            self.assertEqual(set(pre), set(post))
+
+    def test_a_diverging_balanced_perimeter_is_a_hard_failure(self) -> None:
+        rows = _window_rows()
+        for row in rows:
+            if row["scope"] == "balanced" and row["period"] == "post":
+                row["intermediated_share"] = 0.17
+        with self.assertRaisesRegex(ValueError, "balanced perimeter"):
+            routing_window_values(rows)
+
+    def test_unequal_window_lengths_are_a_hard_failure(self) -> None:
+        rows = _window_rows()
+        for row in rows:
+            if row["period"] == "post":
+                row["calendar_days"] = 47
+        with self.assertRaisesRegex(ValueError, "unequal observed calendars"):
+            routing_window_values(rows)
+
+    def test_a_missing_period_is_a_hard_failure(self) -> None:
+        rows = [row for row in _window_rows() if row["period"] != "post"]
+        with self.assertRaisesRegex(ValueError, "lacks"):
+            routing_window_values(rows)
+
+    def test_the_rendered_change_row_is_the_post_minus_pre_difference(self) -> None:
+        rows = _window_rows()
+        for row in rows:
+            if row["period"] == "post":
+                row["intermediated_share"] = 0.15
+                row["mean_legs"] = 2.10
+        rendered = render_routing_technology_windows(rows)
+        self.assertIn(r"Change & $+0.0$ & $-3.0$", rendered)
+        self.assertIn("$+0.02$", rendered)
+
+    def test_the_release_date_is_rendered_for_a_finance_reader(self) -> None:
+        self.assertEqual(router_event_date_text("2022-11-17"), "November 17, 2022")

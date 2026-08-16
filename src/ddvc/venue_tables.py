@@ -1,4 +1,10 @@
-"""Pure validation and TeX rendering for the venue-coverage and venue-rival tables."""
+"""Pure validation and TeX rendering for the venue-coverage and rival-scope tables.
+
+The module owns the appendix venue-coverage table and the Section 5 rival tables
+that compare a restricted scope with an unrestricted one: excess use by venue
+pricing family, and route structure in symmetric windows around dated public
+router releases.
+"""
 
 from __future__ import annotations
 
@@ -233,5 +239,179 @@ def render_venue_technology_rival(rows: Iterable[Mapping[str, object]]) -> str:
                     continue
                 rendered_cells.extend(f"{value:.2f}" for value in cell)
             lines.append(year + " & " + " & ".join(rendered_cells) + r" \\")
+    lines.extend([r"\bottomrule", r"\end{tabular*}"])
+    return "\n".join(lines) + "\n"
+
+
+ROUTER_EVENT_ORDER = (
+    "auto_router_v1",
+    "cross_version_auto_router",
+    "universal_router",
+)
+ROUTER_EVENT_HEADERS = {
+    "auto_router_v1": "Auto Router",
+    "cross_version_auto_router": "Cross-version Auto Router",
+    "universal_router": "Universal Router",
+}
+# Displayed route-structure moments. A share is rendered in percentage points; a
+# level is a mean per indirect route and keeps two decimals, because the movement
+# the subsection reports is of the order of one hundredth of a leg.
+ROUTER_MOMENTS = (
+    ("economic_multileg_share", "Indirect", "share"),
+    ("intermediated_share", "Intermediated", "share"),
+    ("cross_venue_share", "Cross-exchange", "share"),
+    ("mean_legs", "Legs", "level"),
+    ("mean_venues", "Exchanges", "level"),
+    ("over_two_legs_share", "Over two legs", "share"),
+)
+ROUTER_MOMENT_ORDER = tuple(field for field, _label, _kind in ROUTER_MOMENTS)
+ROUTER_PERIODS = ("pre", "post")
+MONTH_NAMES = (
+    "January",
+    "February",
+    "March",
+    "April",
+    "May",
+    "June",
+    "July",
+    "August",
+    "September",
+    "October",
+    "November",
+    "December",
+)
+
+
+def router_event_date_text(iso_date: str) -> str:
+    """Render an ISO release date in the manuscript's month-day-year form."""
+
+    year, month, day = (int(part) for part in iso_date.split("-"))
+    return f"{MONTH_NAMES[month - 1]} {day}, {year}"
+
+
+def _finite_moment(row: Mapping[str, object], field: str) -> float:
+    value = row.get(field)
+    if not isinstance(value, (int, float)) or isinstance(value, bool):
+        raise ValueError(f"router window row has nonnumeric {field}")
+    value = float(value)
+    if not math.isfinite(value):
+        raise ValueError(f"router window row has non-finite {field}")
+    return value
+
+
+def routing_window_values(
+    rows: Iterable[Mapping[str, object]],
+) -> list[tuple[str, str, int, dict[str, float], dict[str, float]]]:
+    """Validate the symmetric pre/post router-release windows and order them.
+
+    Returns one ``(event, event date, window days, pre, post)`` tuple per release
+    in ``ROUTER_EVENT_ORDER``, each period carrying every moment in
+    ``ROUTER_MOMENT_ORDER``.
+
+    Two structural facts are enforced rather than asserted downstream. The two
+    periods of a release must span the same number of observed calendar days, so
+    a change is not a difference in window length. The balanced five-venue
+    perimeter must reproduce the full perimeter exactly in every window, which is
+    what licenses describing the venue set as held fixed by construction; the
+    balanced and full perimeters coincide only until the later venues enter, so a
+    window moved forward in time would break this and must not be presented as an
+    unchanged perimeter.
+    """
+
+    selected: dict[tuple[str, str, str], Mapping[str, object]] = {}
+    for row in rows:
+        key = (str(row.get("event")), str(row.get("period")), str(row.get("scope")))
+        if key[0] not in ROUTER_EVENT_ORDER or key[1] not in ROUTER_PERIODS:
+            continue
+        if key[2] not in ("full", "balanced"):
+            continue
+        if key in selected:
+            raise ValueError(f"duplicate router window row: {'/'.join(key)}")
+        selected[key] = row
+
+    ordered: list[tuple[str, str, int, dict[str, float], dict[str, float]]] = []
+    for event in ROUTER_EVENT_ORDER:
+        periods: list[dict[str, float]] = []
+        calendar_days: set[int] = set()
+        event_dates: set[str] = set()
+        window_days: set[int] = set()
+        for period in ROUTER_PERIODS:
+            row = selected.get((event, period, "full"))
+            balanced = selected.get((event, period, "balanced"))
+            if row is None or balanced is None:
+                raise ValueError(f"router window exhibit lacks {event} {period}")
+            moments = {
+                field: _finite_moment(row, field) for field in ROUTER_MOMENT_ORDER
+            }
+            for field, value in moments.items():
+                if _finite_moment(balanced, field) != value:
+                    raise ValueError(
+                        f"the balanced perimeter no longer reproduces the full "
+                        f"perimeter at {event} {period} on {field}; these windows "
+                        "can no longer be described as holding the venue set fixed"
+                    )
+            days = int(row.get("calendar_days", 0))
+            if days <= 0:
+                raise ValueError(f"router window {event} {period} observes no day")
+            calendar_days.add(days)
+            event_dates.add(str(row.get("event_date"))[:10])
+            window_days.add(int(row.get("window_days", 0)))
+            periods.append(moments)
+        if len(calendar_days) != 1:
+            raise ValueError(
+                f"router windows around {event} span unequal observed calendars: "
+                f"{sorted(calendar_days)}"
+            )
+        if len(event_dates) != 1 or len(window_days) != 1:
+            raise ValueError(f"router windows around {event} disagree on their definition")
+        ordered.append(
+            (event, event_dates.pop(), calendar_days.pop(), periods[0], periods[1])
+        )
+    return ordered
+
+
+def render_routing_technology_windows(rows: Iterable[Mapping[str, object]]) -> str:
+    """Render route structure before and after each public router release."""
+
+    windows = routing_window_values(rows)
+    headers = [label for _field, label, _kind in ROUTER_MOMENTS]
+    lines = [
+        r"\begin{tabular*}{\linewidth}{@{\extracolsep{\fill}}l" + "r" * len(headers) + r"@{}}",
+        r"\toprule",
+        "& " + " & ".join(headers) + r" \\",
+    ]
+
+    def cell(value: float, kind: str, *, signed: bool) -> str:
+        if kind == "share":
+            rendered = f"{100 * value:+.1f}" if signed else f"{100 * value:.1f}"
+        else:
+            rendered = f"{value:+.2f}" if signed else f"{value:.2f}"
+        return f"${rendered}$" if signed else rendered
+
+    for index, (event, event_date, days, pre, post) in enumerate(windows):
+        lines.append(r"\midrule")
+        lines.append(
+            rf"\multicolumn{{{1 + len(headers)}}}{{@{{}}l}}{{\emph{{Panel "
+            rf"{chr(ord('A') + index)}: {ROUTER_EVENT_HEADERS[event]}, "
+            rf"{router_event_date_text(event_date)} ({days} days each side)}}}} \\"
+        )
+        for label, moments in (("Before", pre), ("After", post)):
+            lines.append(
+                label
+                + " & "
+                + " & ".join(
+                    cell(moments[field], kind, signed=False)
+                    for field, _label, kind in ROUTER_MOMENTS
+                )
+                + r" \\"
+            )
+        lines.append(
+            "Change & "
+            + " & ".join(
+                cell(post[field] - pre[field], kind, signed=True)
+                for field, _label, kind in ROUTER_MOMENTS
+            )
+            + r" \\"
+        )
     lines.extend([r"\bottomrule", r"\end{tabular*}"])
     return "\n".join(lines) + "\n"

@@ -2,36 +2,37 @@
  "argv": [],
  "artefact": "output/tables/venue_technology_rival.tex",
  "artefact_bytes": 1806,
- "artefact_mtime_ns": 1786852658951614147,
+ "artefact_mtime_ns": 1786854536973576178,
  "artefact_sha256": "aa6de59763b8eda7ada91ba02e9757ba5d6bfb0bbc789e6f78700e80b9ed30ea",
- "code_fingerprint": "c4c1e2b2065a4036ee6ed04a19fe2ecb022e584099dfe16c8f66b685487bcc47",
+ "code_fingerprint": "74f75a16d525a663709c3accfceec0cd477c488e130f689cf4ffbcc8e0fbb581",
  "code_sources": [
   "scripts/tabulate/render_venue_technology_rival.py",
   "src/ddvc/paper_tables.py",
   "src/ddvc/venue_tables.py"
  ],
- "created_at": "2026-08-16T03:57:40+00:00",
+ "created_at": "2026-08-16T04:28:58+00:00",
  "git": {
   "branch": "main",
-  "commit": "3b992ae5fc30601629e6650d9b50ac7411c73f47",
+  "commit": "af53e249d8e04ee35acb532262746f257e1700be",
   "dirty": true,
   "dirty_generated_files": [
-   "data/manifests/output/exhibits/venue_technology_rival.jsonl.prov.json",
-   "output/exhibits/venue_technology_rival.jsonl",
-   "data/manifests/output/tables/venue_technology_rival.pdf.prov.json",
-   "output/tables/venue_technology_rival.pdf"
+   "data/manifests/output/exhibits/provisional_results_deck_values.tex.prov.json",
+   "data/manifests/output/tables/venue_coverage.pdf.prov.json",
+   "data/manifests/output/tables/venue_coverage.tex.prov.json",
+   "output/exhibits/provisional_results_deck_values.tex",
+   "output/tables/venue_coverage.pdf",
+   "output/tables/venue_technology_rival.pdf",
+   "data/manifests/output/tables/routing_technology_windows.pdf.prov.json",
+   "data/manifests/output/tables/routing_technology_windows.tex.prov.json",
+   "output/tables/routing_technology_windows.pdf",
+   "output/tables/routing_technology_windows.tex"
   ],
   "dirty_tracked_files": [
-   "deck/sections/04-results.tex",
-   "docs/reviews/paper-rhetoric.json",
-   "paper/sections/01-introduction.tex",
-   "paper/sections/05-rivals.tex",
    "src/ddvc/provisional_results.py",
-   "src/ddvc/venue_tables.py",
-   "tests/test_venue_rival_support.py"
+   "src/ddvc/venue_tables.py"
   ],
   "dirty_untracked_files": [
-   "scripts/tabulate/render_venue_technology_rival.py"
+   "scripts/tabulate/render_routing_technology_windows.py"
   ]
  },
  "inputs": [

@@ -11,6 +11,7 @@ from ddvc.paths import OUTPUT_DIR
 from ddvc.presentation import require_certified_presentation_source
 from ddvc.provenance import stamp
 from ddvc.runtime import atomic_output
+from ddvc.venue_tables import routing_window_values
 
 
 EXHIBITS = OUTPUT_DIR / "exhibits"
@@ -19,6 +20,7 @@ INTEGRATION = EXHIBITS / "intermediation_integration_interaction.jsonl"
 TOKEN_INTEGRATION = EXHIBITS / "intermediation_token_integration_interaction.jsonl"
 EXCESS_USE = EXHIBITS / "vehicle_excess_use.jsonl"
 VENUE_RIVAL = EXHIBITS / "venue_technology_rival.jsonl"
+ROUTER_WINDOWS = EXHIBITS / "routing_technology_windows.jsonl"
 EXCESS_USE_TRANSITION = EXHIBITS / "vehicle_excess_use_transition.jsonl"
 ROUTING_SERIES = EXHIBITS / "cross_venue_routing_series.jsonl"
 ROUTING_INFERENCE = EXHIBITS / "cross_venue_routing_inference.jsonl"
@@ -32,9 +34,11 @@ INPUTS = (
     ROUTING_SERIES,
     ROUTING_INFERENCE,
     VENUE_RIVAL,
+    ROUTER_WINDOWS,
 )
 CODE_SOURCES = [
     "src/ddvc/provisional_results.py",
+    "src/ddvc/venue_tables.py",
     "scripts/tabulate/render_provisional_results_deck_values.py",
 ]
 
@@ -160,6 +164,60 @@ def _require_curve_carries_no_intermediation(venue_rival: pd.DataFrame) -> None:
         raise ValueError(f"all-Curve scope reports {episodes:.0f} intermediary episodes")
 
 
+# Ceilings that make the router-release sentences falsifiable. The subsection says
+# that intermediation never steps up at a release and that path length never moves
+# by as much as five hundredths of a leg; both are bounds on the observed windows,
+# so the macros are withheld entirely if either bound is breached.
+ROUTER_MAX_INTERMEDIATION_RISE = 0.01
+ROUTER_MAX_LEG_MOVEMENT = 0.05
+
+
+def _router_window_changes(router_windows: pd.DataFrame) -> list[dict[str, object]]:
+    """Return the ordered per-release window changes behind the router sentences.
+
+    Raises when the release windows stop supporting the three claims the
+    subsection makes about them: that no release is followed by a materially
+    higher incidence of intermediation, that mean path length is nearly
+    unchanged at every release, and that exchange span is the margin that does
+    move. Each is a statement about the observed windows, so each is checked.
+    """
+
+    windows = routing_window_values(router_windows.to_dict("records"))
+    changes = [
+        {
+            "event": event,
+            "event_date": event_date,
+            "window_days": days,
+            "pre": pre,
+            "post": post,
+            "intermediated": post["intermediated_share"] - pre["intermediated_share"],
+            "legs": post["mean_legs"] - pre["mean_legs"],
+            "cross_venue": post["cross_venue_share"] - pre["cross_venue_share"],
+        }
+        for event, event_date, days, pre, post in windows
+    ]
+    worst = max(changes, key=lambda change: float(change["intermediated"]))
+    if float(worst["intermediated"]) >= ROUTER_MAX_INTERMEDIATION_RISE:
+        raise ValueError(
+            "intermediation now steps up at a router release: "
+            f"{worst['event']} changes by {100 * float(worst['intermediated']):+.2f} pp"
+        )
+    if sum(1 for change in changes if float(change["intermediated"]) < 0) < 2:
+        raise ValueError("intermediation no longer falls at a majority of router releases")
+    longest = max(changes, key=lambda change: abs(float(change["legs"])))
+    if abs(float(longest["legs"])) >= ROUTER_MAX_LEG_MOVEMENT:
+        raise ValueError(
+            "mean path length now moves materially at a router release: "
+            f"{longest['event']} changes by {float(longest['legs']):+.4f} legs"
+        )
+    if sum(1 for change in changes if float(change["cross_venue"]) > 0) < 2:
+        raise ValueError(
+            "exchange span no longer widens at a majority of router releases; the "
+            "subsection's integration reading no longer holds"
+        )
+    return changes
+
+
 def _pvalue(value: float) -> str:
     coefficient, exponent = f"{value:.2e}".split("e")
     return f"${coefficient}\\times10^{{{int(exponent)}}}$"
@@ -174,6 +232,7 @@ def render_provisional_results_deck_values(
     routing_series: pd.DataFrame,
     routing_inference: pd.DataFrame,
     venue_rival: pd.DataFrame,
+    router_windows: pd.DataFrame,
 ) -> str:
     """Bind display macros to unique scientific identities in certified exhibits."""
 
@@ -389,6 +448,16 @@ def render_provisional_results_deck_values(
             f"constant-product scope: {balancer_peak:.0f} against {cp_peak:.0f}"
         )
 
+    # Router-release windows. Descriptive market-wide composition either side of a
+    # dated public release; there is no untreated group, so nothing here is a
+    # treatment effect and the macros carry only levels and observed changes.
+    router = _router_window_changes(router_windows)
+    router_window_days = {int(change["window_days"]) for change in router}
+    if len(router_window_days) != 1:
+        raise ValueError("router releases no longer share one window length")
+    router_largest_rise = max(float(change["intermediated"]) for change in router)
+    router_largest_leg = max(abs(float(change["legs"])) for change in router)
+
     routes = routing_series.copy()
     routes["year"] = pd.to_datetime(routes["date"], errors="raise").dt.year
     annual: dict[int, tuple[float, float]] = {}
@@ -469,6 +538,20 @@ def render_provisional_results_deck_values(
         f"\\newcommand{{\\VenueCPEpisodeShare}}{{{_share(cp_episode_share)}}}",
         f"\\newcommand{{\\VenueBalancerPeakEpisodes}}{{{balancer_peak:,.0f}}}",
         f"\\newcommand{{\\VenueCPPeakEpisodes}}{{{cp_peak:,.0f}}}",
+        f"\\newcommand{{\\RouterWindowDays}}{{{router_window_days.pop()}}}",
+        f"\\newcommand{{\\RouterReleaseCount}}{{{len(router)}}}",
+        f"\\newcommand{{\\RouterIntermediationBase}}{{{_share(float(router[0]['pre']['intermediated_share']))}}}",
+        f"\\newcommand{{\\RouterIntermediationEnd}}{{{_share(float(router[-1]['post']['intermediated_share']))}}}",
+        f"\\newcommand{{\\RouterIntermediationOne}}{{{_pp(float(router[0]['intermediated']), 1)}}}",
+        f"\\newcommand{{\\RouterIntermediationTwo}}{{{_pp(float(router[1]['intermediated']), 1)}}}",
+        f"\\newcommand{{\\RouterIntermediationThree}}{{{_pp(float(router[2]['intermediated']), 1)}}}",
+        f"\\newcommand{{\\RouterLargestIntermediationRise}}{{{_pp(router_largest_rise, 1)}}}",
+        f"\\newcommand{{\\RouterLargestLegMovement}}{{{router_largest_leg:.3f}}}",
+        f"\\newcommand{{\\RouterCrossBase}}{{{_share(float(router[0]['pre']['cross_venue_share']))}}}",
+        f"\\newcommand{{\\RouterCrossOne}}{{{_pp(float(router[0]['cross_venue']), 1)}}}",
+        f"\\newcommand{{\\RouterCrossTwo}}{{{_pp(float(router[1]['cross_venue']), 1)}}}",
+        f"\\newcommand{{\\RouterCrossThree}}{{{_pp(float(router[2]['cross_venue']), 1)}}}",
+        f"\\newcommand{{\\RouterCrossEnd}}{{{_share(float(router[-1]['post']['cross_venue_share']))}}}",
     ]
     return "\n".join(lines) + "\n"
 
