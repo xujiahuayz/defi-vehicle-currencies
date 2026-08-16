@@ -5028,3 +5028,114 @@ the plan.json those two families can honestly satisfy; (2) rerun
 `run_vehicle_rotation_composition_e0.py` and `run_liquidity_capital_v2_predictability.py`
 on generation `4225a3bd7729de96` and confirm the stale exhibits reproduce; (3) the
 deck paydown, resuming at pages 27, 19, 17, 18, 12, 13, 5.
+
+## 2026-08-16 — The rotation is re-measured on cohorts that hold still (recovery worker)
+
+**Recovery, not a fresh unit.** The preceding worker was killed mid-publish. It
+left the whole `fixed_opportunity_conditioning` unit on disk — module, tests,
+runner component, exhibits, builder, paper prose, audit row, queue note — plus two
+defects that made the tree incoherent. Nothing was discarded; this entry records
+what was finished and what was found broken.
+
+**Target.** Next-iteration item (1) from the last entry: adjudicate
+`fixed_opportunity_conditioning` for `vehicle_transition_e0`. PROGRESS NOTE 3
+anticipated two outcomes; the adjudication went a third way. The attack splits.
+Its fixed/persistent-cohort half is fully supportable from the released
+endpoint-candidate choice panel; its reach, notional and search-regret half needs
+the unreleased transaction-state frontier. **DECISION: promote the cohort half,
+park the state half and publish it as unsupported rather than silent.**
+
+**What the evidence says.** Over 543 matched days on the exact two-leg sample the
+pooled change is +25.42 pp by count and +43.87 pp by value. Restricting to the
+39,748 corridors active in both endpoint years leaves +14.85 pp (HAC SE 1.02) and
++39.36 pp (SE 2.18), on corridors carrying 55.5%/57.7% of the two years' routes
+and 82.2%/77.1% of their dollars. So most of the dollar rotation and more than
+half of the count rotation happens *inside* corridors present on both sides —
+reallocation among established corridors, not corridor turnover. Fixing the
+intermediating candidate too (40,368 cells) barely moves it: +12.94 pp and
++37.24 pp. Fixing the realised exchange sequence collapses the episode measure to
+−0.18 pp (95% CI −2.13 to +1.76) while the dollar measure keeps +21.74 pp.
+
+**The venue cohort is published flagged `is_bad_control`, and the prose says so.**
+The exchange sequence is chosen jointly with the vehicle, so conditioning on it
+absorbs the rotation's own content. It is reported for the bound it supplies and
+is never called an opportunity control; the standing rule that realised
+architecture is not a design shock applies directly.
+
+**Corroboration, checked on the live exhibits rather than assumed.** The pair
+decomposition's own continuing-block share change (`S_C_comparison −
+S_C_baseline`, pooled rows) is +16.23 pp by count and +36.26 pp by value against
+this cohort's +14.85 and +39.36. The two estimate the same object under different
+weightings — the identity pools the matched window, this component averages daily
+shares — so they corroborate and are never reported as equal. The two universes
+themselves reconcile at 0.001 pp by count and 0.000 pp by value, which is why the
+conditional terms may be read beside the headline at all.
+
+**The gap is published as evidence, not left to be inferred.** Three dimensions
+the attack also asks for — reach, notional, search regret — are written as
+`unsupported_dimension` rows naming `blocked_transaction_state_frontier` with
+`fitted=false`. `_normalize_attack_evidence` requires an artifact per required
+attack id; this attack now has one carrying both halves honestly. A support file
+must never masquerade as a passed attack, and the builder refuses to emit if any
+unsupported row is marked fitted.
+
+**Two defects found in the interrupted tree, both fixed.**
+
+*1. A stale certificate on the estimates exhibit.* The worker published estimates
+at 21:05, edited a producer source, re-ran at 21:16, and was killed after the
+support sidecar installed but before the estimates one did. Result:
+`e0_..._support.jsonl` carried code fingerprint `71d0b142` (current) while
+`e0_..._estimates.jsonl` still carried `fb7fe5b8`, and
+`require_certified_presentation_source` refused the estimates file. An interrupted
+publication journal was left in state `prepared` under
+`output/exhibits/.ddvc-publication-journals/`. Note the trap: running recovery
+alone would have *rolled back* to the older 21:04 sidecar, since `prepared` means
+uncommitted — the correct repair is to complete the interrupted run, which
+self-heals the journal and republishes both sidecars together. Re-run with
+`DDVC_D3_CERTIFICATE=data/processed/d3_analysis_release/generations/c199e51a.../certificate.json`
+and `DDVC_D3_GENERATION=4225a3bd7729de96...`; both exhibits reproduced
+**byte-identically**, the deck values rebuilt byte-identically, and the journal
+directory is now empty. The timing correction in PROGRESS NOTE 4 holds: seconds,
+not minutes, on a bound generation.
+
+*2. Rhetoric anchors nine lines short.* The review's paragraph anchors were
+computed before the trailing comment block was added, so the 16 handoff records
+after the insertion pointed nine lines high and
+`check_jfe_rhetoric_review.py` failed on all three coverage checks. Repaired
+mechanically: +9 on `transition_lines` and `handoffs[].line` for exactly those 16
+entries, no judgment text touched. Verified by spot-checking that the shifted
+anchors land on the paragraphs their recorded `economic_subject` names — 399 on
+USDT/USDC roles, 467 on cross-exchange count and value, 494 on the closing
+synthesis. The four new paragraphs at 349/351/353/355 were already reviewed by the
+previous worker against Amiti, Itskhoki and Konings raw passages (the Section V.A.1
+selection probe at printed pp. 1478-1480 and footnote 28 at p. 1466); neither is
+quoted.
+
+**Validation.** 13 new tests pass; 203 passed / 1 failed across the affected
+modules. The single failure is
+`test_variable_registry::test_source_does_not_generate_csv_artifacts`, already
+recorded in the previous entry as pre-existing, caused by
+`scripts/run_stress_reallocation_e0.py:750` from commit `d1efb22`, and untouched
+by this unit. Paper compiles at 47 pages with 0 undefined references, up one page
+from the new subsection. `lint_prose_shapes.py` reports 0 shapes;
+`measure_prose_conventions.py` reports no registered construction outside the
+published-corpus range; `check_jfe_rhetoric_review.py` green. Every `\Fixed*`
+macro spent in prose is defined in the generated file. Deck deliberately
+untouched, per the live interjection capping the core deck at 13 frames.
+
+**Not done, and deliberately.** The normal done gate was not run — this is a
+bounded recovery worker and recovery ends here. `vehicle_transition_e0` now has
+evidence for five of six attacks; the sixth,
+`within_pair_composition_decomposition`, needs only its transition-matrix and
+pair-leader exhibit from `run_vehicle_rotation_composition_e0.py`. The eight
+`liquidity_capital_v2_e0` attacks have had no adjudication at all and are the
+larger remaining half of the chain to `plan.json` and
+`scripts/lock_specification.py`.
+
+**Next iteration.** Unchanged from the last entry except that (1) is now half
+done: adjudicate the eight `liquidity_capital_v2_e0` attacks, then write the
+plan.json those families can honestly satisfy; rerun
+`run_vehicle_rotation_composition_e0.py` and
+`run_liquidity_capital_v2_predictability.py` on generation `4225a3bd7729de96` and
+confirm the stale exhibits reproduce; then the deck paydown, resuming at pages 27,
+19, 17, 18, 12, 13, 5.

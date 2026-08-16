@@ -526,7 +526,7 @@
       "exit_handoff": "The panel closes by retaining route-level attribution and sends the separate cost object to Section 4."
     },
     "paper/sections/03-dominance.tex": {
-      "sha256": "2708e9645100e1f60a10f8c112e7dd9eb07e5d9ec3aef4344ea4315f06007272",
+      "sha256": "bcda856a98dc01520ca9d5f3239250b2d837b84a6b4af55c9b7a62f89fc21e75",
       "status": "rewritten",
       "exemplars": [
         "literature/text/2020-MakarovSchoar2020Arbitrage-trading-and-arbitrage-in-cryptocurrency-markets.txt:886-991",
@@ -618,22 +618,26 @@
           287,
           305,
           332,
-          352,
-          354,
-          356,
-          359,
-          375,
-          377,
-          379,
-          381,
-          383,
-          385,
-          420,
+          349,
+          351,
+          353,
+          355,
+          399,
+          401,
+          403,
+          406,
           422,
           424,
-          434,
-          441,
-          447
+          426,
+          428,
+          430,
+          432,
+          467,
+          469,
+          471,
+          481,
+          488,
+          494
         ],
         "judgment": "Aggregate rotation and reversals lead to a three-margin accounting whose answer is stated first, the exact identity behind it and its four terms by count and by value, the second factorisation of the same count total, stated as its own displayed identity, and the exact scale relation that keeps its components from being the identity's, matched-market estimates, the reach of the matched cells by count and by value read beside the identity's own within-pair term, named pairs that make the margins concrete, the breadth of each margin across pairs, the split of the composition margins on endpoint eligibility, that split taken inside each single- or cross-exchange route scope for the reweighting margin and then for the entry margin, the netted exclusive term read as corridor replacement, that replacement gap split into the mix of corridor kinds each cohort brings and the rate at which each kind routes, the last term read as the activity that changed population priced at the gap between the two populations' routing rates, USDT role attribution, and separate venue-span and intermediation margins. The venue-span passage now closes with a within-day re-specification whose dollar and count margins are reported in the same units and whose annual path is traced, so a magnitude, the margin that does not separate, and the selection of the exchange-span populations all arrive before the section hands off. The dated backing-regime pair added after the annual path dates its own classification before cutting on it and reports contribution and relative growth as separate magnitudes, so neither the class nor its fastest-growing member is read as the other.",
         "raw_exemplars": [
@@ -923,7 +927,47 @@
             "judgment": "The paragraph closes the accounting by reading its fourth term as a mass shift times a routing gap and rejecting the volume-migration reading of the rotation. Carletti, De Marco, Ioannidou and Sette (raw lines 1008--1015) make the same two-factor move in the opposite direction -- 'the effects are sizable not because the treated investors (households) are very price sensitive, but because they hold large volumes of the securities whose returns are being shocked' -- attributing a magnitude to one factor of a product and denying it to the other."
           },
           {
-            "line": 352,
+            "line": 349,
+            "inherited_object": "the four identity terms and the two corridor populations they price",
+            "paragraph_function": "states what each reading of the rotation predicts for a fixed set of corridors, and defines the cohort before any of it is spent",
+            "relation_to_previous": "turns from pricing the populations that changed to measuring the rotation where they did not",
+            "economic_subject": "corridors and intermediating candidates observed in both endpoint years",
+            "framing_judgment": "Both predictions are committed to before any estimate appears, so neither result can be chosen after it is seen.",
+            "qualification_leads": false,
+            "judgment": "Amiti, Itskhoki and Konings make the same commitment at their selection probe (raw Section V.A.1, printed pp. 1478--1480): 'If the selection effect is dominant, we expect z_ik and z^D_ik to reduce the effect of iota_ik and iota^D_ik, when included jointly. If the direct causal effect is important, we instead expect that the inclusion of iota_ik and iota^D_ik should dominate.' They name what each account implies and only then report which holds. This paragraph orders itself the same way and hands both predictions to the next one."
+          },
+          {
+            "line": 351,
+            "inherited_object": "the two predictions and the corridor cohort's definition",
+            "paragraph_function": "reports the pooled and corridor-cohort changes with the mass each retains, and places what survives against the within-corridor term",
+            "relation_to_previous": "answers the prediction the previous paragraph committed to",
+            "economic_subject": "the stablecoin share of two-leg intermediation inside corridors alive in both years",
+            "framing_judgment": "Each conditional estimate carries the share of routes and of dollars its cohort keeps, so the restriction's reach is priced in the same sentence as its coefficient.",
+            "qualification_leads": false,
+            "judgment": "Footnote 28 of Amiti, Itskhoki and Konings is the model (raw, printed p. 1466): 'Our data are an unbalanced panel. Only 2.6% of the observations record a change in currency use across any two months, and therefore the results in the panel are essentially the same as in any single cross section.' They quantify how far the restriction reaches and say what the restricted sample shows, without letting the restriction stand in for the estimate. The retained-mass figures beside each cohort change here do the same work, and the within-corridor interval keeps the surviving rotation from being read as substitution."
+          },
+          {
+            "line": 353,
+            "inherited_object": "the corridor cohort and the rotation that survived it",
+            "paragraph_function": "tightens the cohort to the intermediary menu inside a corridor and reports what the tightening costs",
+            "relation_to_previous": "moves the restriction one level down, from which corridors trade to which candidates intermediate them",
+            "economic_subject": "candidates observed intermediating the same corridor in both endpoint years",
+            "framing_judgment": "The nesting is reported in units rather than asserted: cells, change and retained dollars all move in the direction a tighter cohort implies.",
+            "qualification_leads": false,
+            "judgment": "The step down follows Amiti, Itskhoki and Konings' own progression from a firm's currency to the firm-product-destination triplet that carries it, in which each identifying level is added one at a time and the coverage it costs is reported at that step. The paragraph closes on what moved instead of on what it dropped, which is the affirmative order their Section IV keeps."
+          },
+          {
+            "line": 355,
+            "inherited_object": "the two nested cohorts and their retained mass",
+            "paragraph_function": "reports the realised-exchange-sequence cohort as a bound and a diagnostic, and names the three conditions that stay outside the comparison",
+            "relation_to_previous": "carries the nesting to a condition that is co-determined with the outcome, and marks it as such",
+            "economic_subject": "the realised exchange architecture a route ran through, and the unobserved pre-transaction state",
+            "framing_judgment": "The bad control is labelled before its number is read, the near-zero episode result is given as an interval rather than as a failure to reject, and the three unfitted conditions are stated in the text instead of left to the ledger.",
+            "qualification_leads": false,
+            "judgment": "Amiti, Itskhoki and Konings' proxy design (raw Section V.A.1, printed pp. 1478--1480) is the closest published analogue: they enter a constructed proxy for the choice beside the realised choice and read which of the two dominates. The exchange sequence is that proxy here, and the paragraph reports that it dominates the episode measure and shares the dollar measure. Their probe is a causal-selection test and this one is descriptive, which is why the sequence is called a diagnostic and never an opportunity control."
+          },
+          {
+            "line": 399,
             "inherited_object": "stablecoin category change",
             "paragraph_function": "introduces USDT versus route endpoints",
             "relation_to_previous": "asks which currency carries the role change",
@@ -933,7 +977,7 @@
             "judgment": "The paragraph introduces USDT versus route endpoints and asks which currency carries the role change."
           },
           {
-            "line": 354,
+            "line": 401,
             "inherited_object": "USDT role comparison",
             "paragraph_function": "reports matched gap and separate full-period ratios",
             "relation_to_previous": "keeps two clocks distinct",
@@ -943,7 +987,7 @@
             "judgment": "The paragraph reports matched gap and separate full-period ratios and keeps two clocks distinct."
           },
           {
-            "line": 356,
+            "line": 403,
             "inherited_object": "USDT excess use",
             "paragraph_function": "decomposes change by cross-exchange mix and within groups",
             "relation_to_previous": "locates the venue-span margin",
@@ -953,7 +997,7 @@
             "judgment": "The paragraph decomposes change by cross-exchange mix and within groups and locates the venue-span margin."
           },
           {
-            "line": 359,
+            "line": 406,
             "inherited_object": "the venue-span decomposition",
             "paragraph_function": "states explanations needing tests",
             "relation_to_previous": "hands the token result to mechanisms",
@@ -963,7 +1007,7 @@
             "judgment": "The paragraph states explanations needing tests and hands the token result to mechanisms."
           },
           {
-            "line": 375,
+            "line": 422,
             "inherited_object": "the USDT transition read across years",
             "paragraph_function": "states the identification objection the section answers",
             "relation_to_previous": "turns the year comparison into a question about what identifies it",
@@ -973,7 +1017,7 @@
             "judgment": "The paragraph states the identification objection and observes that excess use is already defined within a day."
           },
           {
-            "line": 377,
+            "line": 424,
             "inherited_object": "the within-day definition of excess use",
             "paragraph_function": "writes the construct as a regression and names what the design adds",
             "relation_to_previous": "moves from the possibility to the specification",
@@ -983,7 +1027,7 @@
             "judgment": "The paragraph specifies the estimator and states what it adds to the ratio."
           },
           {
-            "line": 379,
+            "line": 426,
             "inherited_object": "the specification and its sample",
             "paragraph_function": "reports that absorbing the calendar leaves the class premiums where they were",
             "relation_to_previous": "delivers the direct answer to the stated objection",
@@ -993,7 +1037,7 @@
             "judgment": "The paragraph answers the objection and reports which premium survives conditioning on own demand."
           },
           {
-            "line": 381,
+            "line": 428,
             "inherited_object": "the conditional class premiums",
             "paragraph_function": "reads the pass-through of demand into the intermediary role",
             "relation_to_previous": "moves from levels to the elasticity behind them",
@@ -1003,7 +1047,7 @@
             "judgment": "The paragraph reads the pass-through and reports the class contrast the rotation predicts and the data cannot separate."
           },
           {
-            "line": 383,
+            "line": 430,
             "inherited_object": "the pass-through and its class contrasts",
             "paragraph_function": "reports the candidate and classified magnitudes and the heterogeneity inside the stablecoin class",
             "relation_to_previous": "narrows the cross-section to the currencies that carry the role",
@@ -1013,7 +1057,7 @@
             "judgment": "The paragraph sharpens the contrast on the candidate set and shows the stablecoin class is not homogeneous in the role."
           },
           {
-            "line": 385,
+            "line": 432,
             "inherited_object": "the candidate and regime estimates",
             "paragraph_function": "reports the mechanicalness screens, the calendar split, and the one result that does not survive reweighting",
             "relation_to_previous": "turns from the estimates to what could have produced them by construction",
@@ -1023,7 +1067,7 @@
             "judgment": "The paragraph bounds the design's construction threats and demotes the one coefficient that does not survive reweighting."
           },
           {
-            "line": 420,
+            "line": 467,
             "inherited_object": "the USDT result",
             "paragraph_function": "reports cross-exchange growth",
             "relation_to_previous": "moves to route architecture",
@@ -1033,7 +1077,7 @@
             "judgment": "The paragraph reports cross-exchange growth and moves to route architecture."
           },
           {
-            "line": 422,
+            "line": 469,
             "inherited_object": "cross-exchange growth",
             "paragraph_function": "reports falling intermediation and stablecoin gains within groups",
             "relation_to_previous": "separates three route margins",
@@ -1043,7 +1087,7 @@
             "judgment": "The paragraph reports falling intermediation and stablecoin gains within groups and separates three route margins."
           },
           {
-            "line": 424,
+            "line": 471,
             "inherited_object": "the endpoint-year span estimates",
             "paragraph_function": "names the identifying weakness of the endpoint-year design and states the within-day re-specification that replaces it",
             "relation_to_previous": "re-reads the same stratification with the calendar demoted to a control",
@@ -1053,7 +1097,7 @@
             "judgment": "The paragraph names the identifying weakness of the endpoint-year design and states the within-day re-specification that replaces it, re-reading the same stratification with the calendar demoted to a control."
           },
           {
-            "line": 434,
+            "line": 481,
             "inherited_object": "the within-day difference between the two halves of a day",
             "paragraph_function": "reports the exchange-span gap in dollars, at economic weight, and in route counts",
             "relation_to_previous": "puts a magnitude on the difference the previous paragraph defined",
@@ -1063,7 +1107,7 @@
             "judgment": "The paragraph reports the exchange-span gap in dollars, at economic weight, and in route counts, putting a magnitude on the difference the previous paragraph defined."
           },
           {
-            "line": 441,
+            "line": 488,
             "inherited_object": "the dollar gap between exchange spans",
             "paragraph_function": "traces the gap year by year and shows it closing in the middle of the sample",
             "relation_to_previous": "moves from one pooled magnitude to its path",
@@ -1073,7 +1117,7 @@
             "judgment": "The paragraph traces the gap year by year and shows it closing in the middle of the sample, moving from one pooled magnitude to its path."
           },
           {
-            "line": 447,
+            "line": 494,
             "inherited_object": "three route margins",
             "paragraph_function": "synthesises and states the fixed-opportunity comparison",
             "relation_to_previous": "moves from coexistence to design",
@@ -1086,7 +1130,7 @@
       },
       "judgment": "The section sells a large non-monotone rotation, reconciles weighting conventions, and assigns most change to activity across pairs, naming the individual ordered pairs behind each margin. Matched estimates state the conditioning set directly and interpret confidence bounds against the economic magnitude.",
       "entry_handoff": "The Section 2 denominator supplies the matched-day transition.",
-      "internal_progression": "Rotation and reversals lead to a three-margin decomposition answered up front, matched estimates, named-currency excess use, a within-day cross-section that absorbs the calendar and bounds its own construction threats, then venue span and route complexity read first between endpoint years and then within a single day, and finally the fixed-opportunity comparison the causal question requires. The rotation is then cut by dated backing regime, which places the aggregate inside reserve-backed dollar claims before the pair decomposition asks where in the network it happened.",
+      "internal_progression": "Rotation and reversals lead to a three-margin decomposition answered up front, matched estimates, named-currency excess use, a within-day cross-section that absorbs the calendar and bounds its own construction threats, then venue span and route complexity read first between endpoint years and then within a single day, and finally the fixed-opportunity comparison the causal question requires. The rotation is then cut by dated backing regime, which places the aggregate inside reserve-backed dollar claims before the pair decomposition asks where in the network it happened. The pair subsection then holds the trading population itself fixed, nesting corridor, intermediary-menu and realised-exchange-sequence cohorts, before the section turns to USDT's role.",
       "exit_handoff": "The final synthesis defines the fixed-pair, size, and path set needed to test router access.",
       "terminology_judgment": "Reader-facing prose names the measured object as the source and destination assets or their ordered asset pair. It reserves pool for a liquidity contract, venue for an exchange or protocol, and route for the ordered execution sequence; these objects are not used interchangeably."
     },

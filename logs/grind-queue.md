@@ -140,6 +140,31 @@ and pick a blocking check from the freeze gate.
   `run_liquidity_capital_v2_predictability.py` and
   `run_vehicle_rotation_composition_e0.py` on this generation and confirm their
   numbers reproduce before anything consumes them._
+  _PROGRESS NOTE 4 (2026-08-16, still not closed). The adjudication PROGRESS NOTE 3
+  demanded is done, and it went a third way rather than either of the two that note
+  anticipated. `fixed_opportunity_conditioning` splits cleanly: its
+  fixed/persistent-cohort half is fully supportable from the released
+  endpoint-candidate choice panel, and only its reach, notional and search-regret
+  half needs the transaction-state frontier. **DECISION: promote the cohort half,
+  park the state half.** `scripts/run_vehicle_transition_e0.py`
+  (`run_fixed_opportunity_conditioning`) now fits 120 specifications on three
+  nested cohorts and publishes
+  `e0_vehicle_transition_fixed_opportunity_{estimates,support}.jsonl`; the three
+  unfitted dimensions are published as `unsupported_dimension` rows naming
+  `blocked_transaction_state_frontier` with `fitted=false`, so a plan can cite the
+  attack's real disposition without a support file masquerading as a passed
+  attack. `_normalize_attack_evidence` requires an artifact for every required
+  attack id, and this attack now has one that carries both halves honestly.
+  With this, `vehicle_transition_e0` has evidence for five of its six attacks; the
+  sixth, `within_pair_composition_decomposition`, is produced by
+  `run_vehicle_rotation_composition_e0.py` and needs only its transition-matrix and
+  pair-leader exhibit. The resumption point keeps its shape: write the `plan.json`
+  naming a runner and declared artifacts per executable family, then build
+  `scripts/lock_specification.py`. Note that the eight `liquidity_capital_v2_e0`
+  attacks have had no such adjudication yet and are the larger remaining half of
+  this chain. Timing correction for the next worker: a model run that binds the
+  existing generation `4225a3bd7729de96` takes about six minutes of wall clock, not
+  the two hours PROGRESS NOTE 3 records — that cost was the one-off republish._
 
 - [x] **Replace the hand-declared `stable_passes` with a computed findings fingerprint.**
   Today `stable_passes` is a hand-typed YAML field on line 3 of
@@ -754,6 +779,18 @@ and pick a blocking check from the freeze gate.
   next worker must not misread: the stack is balanced by construction, so the
   pooled and day-absorbed POINT estimates are algebraically identical and that
   equality is never evidence; only the inference and the weighted rung move._
+
+- [ ] **JAVA INTERJECTION (WeCom via glotl, 2026-08-16T21:26Z):** NETTING → VEHICLE-LIQUIDITY REDISTRIBUTION — BUILD THE LINE, ALL THREE IDENTIFICATION TARGETS. Java's go, verbatim: "Try all of them!! That's the default position!" This is RQ4 (`pool_band_depth_capital_efficiency`, "capital-efficiency and network-concentration") and answers open question #40. **Priority: parallel results lane under Java's standing 2026-08-16T15:55Z instruction (more results, preliminary/E0 admissible, build in parallel where compute allows). It must NOT displace or delay the E1 spec-lock / empirical-model-ledger critical path, and must not contend with a running Studio reduction. Run when the box is free; keep total load under ~12.**
+
+  Hypothesis (Java's): V4 flash accounting settles multi-hop routes NET, not gross, so offsetting legs do not round-trip through the vehicle pool. If netting relieves the inventory a vehicle currency must hold to intermediate a given flow, vehicle-linked capital per unit of routing it supports falls, and LP capital redistributes off the now-over-provisioned vehicle pools toward direct pools. Do NOT frame V4 adoption or launch date as treatment: realised V4-share entry/exit is endogenous E0 exposure and `run_architecture_state_transitions.py` already returned zero usable windows at 5/10/25%. Identification comes from netting measured as a settlement quantity plus a within-token cross-venue contrast, never from adoption.
+
+  1. **Descriptive netting-intensity exhibit — runnable now on route data, no exact-state needed. Gate on sample feasibility FIRST.** Count multi-hop V4 routes through each candidate k in the 2024-26 window and report N; V4 is young and the panel may be too thin — if so, say so honestly and ship only what the sample supports. Then per route through k measure gross flow (what physical V2/V3 routing would have pushed through a k-pool) vs net settlement via the V4 settlement identification (`run_v4_settlement_identification.py`, settlement-identity hardening `2b74fd7`); netting intensity = 1 − net/gross. Report its distribution by candidate and, where V2 capital exists, its association with capital-per-routing. Descriptive only, labelled endogenous exposure / sensitivity-not-treatment.
+
+  2. **Regression target A (Java's default pick) — within-token, cross-venue, same-day.** The same k is a vehicle in V2/V3 (physical) and V4 (netting) simultaneously; absorb token×date; outcome = vehicle-linked inventory/capital per unit of routing supported; test whether it is lower on the netting venue. Bound residual router venue-selection with the existing route-cost panel. Mechanism claim ("the netting venue supports the same token's intermediation with less inventory"), not adoption-causal — Lehar-Parlour ability-to-explain register.
+
+  3. **Regression target B — shift-share robustness column.** Predetermined pre-V4 intermediate-hop exposure of k × V4 availability. Weaker; ship as a robustness column and flag that pre-period hop frequency is itself endogenous.
+
+  **Both regressions are BLOCKED on the exact-state LP/capital frontier** (V2/V3 exact-state + V4 receipt selection carrying exact `block_number`; `pool_capital_release/current.json` current). Do not fabricate the panel or downgrade the question: if inputs are absent, publish gated `unsupported_dimension` rows with `fitted=false`, keep the descriptive exhibit (1) as the shippable result, and queue the regressions durably for the Studio exact-state refresh. Causal bar unchanged: no "V4 caused the rotation" claim. Write results into paper and deck as each lands per the 15:55Z guardrails; single draft, macros only, record per-result whether calendar time is identifying / control / robustness.
 
 ## Closed
 

@@ -346,6 +346,53 @@ Replacement on that scale moves activity between the two populations as well as 
 % output/exhibits/vehicle_transition_pair_decomposition.jsonl; macros from
 % scripts/build_vehicle_transition_pair_deck_values.py
 
+Composition is measured on a population that turns over, and the same measurement can be taken where it holds still. Fix a set of corridors and the identity's four terms collapse to the two that operate inside it. The two readings of the rotation then predict opposite outcomes. Under turnover, holding the set fixed removes the rotation. Under reallocation among corridors present throughout, holding the set fixed leaves it, smaller by whatever the entrants supplied. A cohort is fixed here when its cells carry at least one observed route in both endpoint years. One cohort serves both weightings, and the episode and dollar estimates therefore restrict the same units.
+
+Over \FixedCohortDays{} matched days on the exact two-leg sample, the pooled change is \FixedPooledCountChange{} by route count and \FixedPooledValueChange{} by value. Restricting to the \FixedPairCells{} corridors active in both years leaves \FixedPairCountChange{}, with a standard error of \FixedPairCountSE{}, and \FixedPairValueChange{}, with a standard error of \FixedPairValueSE{}. Those corridors carry \FixedPairCountMassBase{} and \FixedPairCountMassEnd{} of the two years' routes and \FixedPairValueMassBase{} and \FixedPairValueMassEnd{} of their dollars. Most of the dollar rotation and more than half of the count rotation are therefore observed inside corridors present on both sides of the comparison. The identity's within-corridor term of \PairPooledWithin{} by count, whose matched-cell interval reaches only \MatchedMarketCountCIUpper{}, then places the surviving rotation: activity moves across established corridors toward the ones already routing through a stablecoin.
+
+The intermediary menu inside a corridor turns over as well, and a second cohort holds it fixed. Requiring the corridor and the intermediating candidate to appear in both endpoint years leaves \FixedCandidateCells{} corridor--candidate cells, a change of \FixedCandidateCountChange{} by count and \FixedCandidateValueChange{} by value, and \FixedCandidateValueMassBase{} and \FixedCandidateValueMassEnd{} of the two years' dollars. Candidates that intermediate a corridor in one year only thus account for a small part of the measured rotation. The weight moved onto candidates already available where they were already used.
+
+A third cohort fixes the sequence of exchanges a route ran through, and it is reported for the bound it supplies. That sequence is selected jointly with the intermediary. Conditioning on it absorbs part of the rotation's own content, and the estimate reads as a diagnostic. Inside it the count change is \FixedVenueCountChange{}, with a 95\% interval of \FixedVenueCountCILower{} to \FixedVenueCountCIUpper{}, against a pooled \FixedPooledCountChange{}; the value change is \FixedVenueValueChange{}. Episode-weighted rotation is thus bounded to a small fraction of its pooled size once the realised exchange architecture is held constant, while dollar-weighted rotation keeps about half of its own. The cohort retains \FixedVenueValueMassEnd{} of 2026 dollars against \FixedPairValueMassEnd{} for the corridor cohort, and coverage explains part of that gap. \citet{AmitiItskhokiKonings2022Dominant} separate the selection of firms into a currency from the effect of the currency they chose by entering proxies for the choice alongside the choice itself, and read which of the two dominates. The exchange sequence plays the proxy's role here, and it dominates the episode measure and shares the dollar measure. Three conditions this comparison would also impose stay outside it: the pools reachable when the route was assembled, the size of the trade, and the best alternative within reach. Each needs pre-transaction state that the route measurement here does not carry, and each is recorded as unfitted in the exhibit's support ledger.
+% Cohort estimates and their retained mass are
+% output/exhibits/e0_vehicle_transition_fixed_opportunity_estimates.jsonl and
+% _support.jsonl; macros from scripts/build_fixed_opportunity_deck_values.py.
+% Provisional/E0 scope: the cohorts run on the released endpoint-candidate
+% choice panel and are not submission-authoritative until the findings freeze
+% admits them. Refresh with scripts/run_vehicle_transition_e0.py
+% (run_fixed_opportunity_conditioning) then the builder above.
+% Cohort membership is decided using both endpoint years, so every conditional
+% macro is the change among continuously active cells and never the
+% full-universe change; it is only ever spent beside its retained-mass macro,
+% which is why each sentence above carries one.
+% Corroboration, checked on the live exhibits rather than assumed: the identity's
+% own continuing-block share change, S_C_comparison - S_C_baseline on the pooled
+% rows of vehicle_transition_pair_decomposition.jsonl, is +16.23 pp by count and
+% +36.26 pp by value, against this cohort's +14.85 pp and +39.36 pp. The two
+% estimate the same object by different weightings -- the identity pools the
+% matched window, this component averages daily shares -- which is the same
+% weighting gap the subsection's second paragraph already names. They are close
+% enough to corroborate and are never reported as equal. Recheck if either
+% exhibit changes.
+% The pooled row here is the choice panel's own, not Table~\ref{tab:rotation}'s
+% type-panel headline; the two universes are reconciled in the support ledger at
+% \FixedCountUniverseGap{} and \FixedValueUniverseGap{}. Do not substitute one
+% for the other.
+% The venue cohort is flagged is_bad_control in the exhibit itself. It must
+% never be described as an opportunity control: the venue sequence is realised,
+% endogenous routing architecture, and per the standing rule realised
+% architecture use is not a design shock.
+% Rhetoric: Amiti, Itskhoki and Konings read raw at the selection probe of
+% Section V.A.1 (printed pp. 1478-1480, "To check whether we are merely picking
+% up a selection effect, we construct proxies of currency choice denoted with
+% z_ik ... If the selection effect is dominant, we expect z_ik and z^D_ik to
+% reduce the effect of iota_ik"), whose move is to state what each account
+% predicts before reporting which one holds; and at footnote 28 (printed p.
+% 1466, "Our data are an unbalanced panel. Only 2.6% of the observations record
+% a change in currency use across any two months, and therefore the results in
+% the panel are essentially the same as in any single cross section"), whose
+% move is to quantify the restriction's coverage and say what the restricted
+% sample shows. Both moves are used above; neither passage is quoted.
+
 \subsection{USDT's intermediary role}
 \label{sec:dominance:excess}
 
