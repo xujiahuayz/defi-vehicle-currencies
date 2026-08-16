@@ -771,14 +771,15 @@
       ],
       "non_text_dispositions": [
         {
-          "artifact": "literature/papers/2022-Mukhin2022InternationalPriceSystemReplicationPackage-supplement-openicpsr-v1-reconstructed.tar.gz",
           "bytes": 119236817,
           "note": "literature/source-notes/2022-Mukhin2022InternationalPriceSystemReplicationPackage.md",
+          "reason": "The openICPSR deposit at doi:10.3886/E149661V1 is a data/code package, not text. The previously reconstructed archive is no longer present in the shared ignored corpus at literature/papers/ (109 files, checked 2026-08-16), and it is absent from every sibling checkout and from git, which never tracked that corpus. The sought identity is recorded above and in the source note. The article and the official 37-page online appendix are saved, read in full and carded, so the card's claim-verified status rests on the text and is unchanged. No claim may cite the package's contents or any reproduction run from it.",
           "sha256": "1e8e62e5951cf7fca535646f652b30450aac4b13f8363da8b5cd06444881ff21",
+          "sought_artifact": "literature/papers/2022-Mukhin2022InternationalPriceSystemReplicationPackage-supplement-openicpsr-v1-reconstructed.tar.gz",
           "sources": [
             "https://doi.org/10.3886/E149661V1"
           ],
-          "status": "materialized"
+          "status": "unavailable"
         }
       ],
       "status": "complete"
