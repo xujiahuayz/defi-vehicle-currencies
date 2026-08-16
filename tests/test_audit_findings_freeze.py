@@ -2469,7 +2469,6 @@ Literal evidence/design; Strongest headline; Adjacent qualification; Auxiliary e
         state = parse_state_frontmatter(
             """---
 freeze_status: red
-stable_passes: 0
 active_node: D
 parent_loop: C <-> K
 next_edge: D -> C -> E -> I

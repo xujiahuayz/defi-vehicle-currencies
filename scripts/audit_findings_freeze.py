@@ -58,9 +58,12 @@ from ddvc.model_registry import (
     canonical_hash,
     claim_execution_perimeter,
     exploratory_plan_identity,
+    findings_fingerprint,
     generation_id,
     model_run_id,
+    read_findings_fingerprints,
     validate_artifact_spec_ids,
+    validate_findings_fingerprints,
     validate_registered_plan,
 )
 from ddvc.reconstruct import DEX_FAMILY, UNIFIED_QUALITY_PANEL
@@ -4629,12 +4632,29 @@ def main() -> int:
         "only validated diagnostics may run",
     )
 
-    stable_passes = int(state.get("stable_passes") or 0)
-    record(
-        "two unchanged findings passes",
-        stable_passes >= 2,
-        f"stable_passes={stable_passes}",
-    )
+    # Earned by `scripts/record_findings_pass.py`, never declared. The ledger is
+    # append-only and each row is identified by the commit its registry was read
+    # at, so two rows can only be two passes if committed work separates them.
+    if "stable_passes" in state:
+        record(
+            "two unchanged findings passes",
+            False,
+            "stable_passes is retired; remove it from the findings-freeze frontmatter",
+        )
+    else:
+        fingerprints = read_findings_fingerprints()
+        try:
+            live = findings_fingerprint(
+                json.loads(SPECIFICATION_LOCK.read_text()),
+                json.loads(MODEL_LEDGER.read_text()),
+            )
+        except (OSError, json.JSONDecodeError) as exc:
+            live, passes_detail = None, type(exc).__name__
+        stable_passed, passes_detail = validate_findings_fingerprints(
+            fingerprints,
+            current_fingerprint=live,
+        )
+        record("two unchanged findings passes", stable_passed, passes_detail)
 
     print(f"GRAPH  {graph_status(state)}\n")
     width = max(len(name) for name, _passed, _detail in checks)

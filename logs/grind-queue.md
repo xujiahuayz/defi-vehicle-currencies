@@ -69,8 +69,30 @@ and pick a blocking check from the freeze gate.
   field machine-issued; the lock payload names the adjudicating citations; and a
   deliberately corrupted seed still makes the script refuse. Closes blockers 1
   and 2 as one chain.
+  _PROGRESS NOTE (2026-08-16, not closed). Scoped before starting and found a
+  hard structural blocker the item's text does not anticipate, so it was left
+  open rather than half-built. Step 4 cannot run today: `execute_exploration_plan`
+  requires the plan's family perimeter to equal `docs/e0-exploration-plan.template.json`
+  **exactly** (`_load_plan_template` plus the `actual != expected` comparison in
+  `src/ddvc/exploration.py:433`), and that template is out of sync with the lock in
+  both directions. It names five families, three of which serve claims outside the
+  current executable perimeter — `claim_execution_perimeter` returns only
+  `vehicle_transition` and `liquidity_capital_v2_predictability` — while
+  `liquidity_capital_v2_predictability`, which IS executable, has no family in the
+  template at all, and `open_question_anomaly_e0` names a claim id that is not in
+  `docs/specification-lock.json`. On top of that, `liquidity_allocation_e0` and
+  `direct_cost_dominance_e0` require V2/V3 exact-state inputs the freeze doc still
+  records as blocked. So the chain's real first step is not the lock script: it is
+  reconciling the family perimeter with the executable perimeter, which is exactly
+  the step-2/step-3 adjudication (what belongs in the confirmatory set, and what
+  the finishability rule demotes) applied to the whole template rather than only
+  to `liquidity_rent_incidence`. Resumption point for the next worker: adjudicate
+  the template's five families against the two executable claims, land the
+  reconciled `docs/e0-exploration-plan.template.json` with its citations, and only
+  then build `scripts/lock_specification.py`. Nothing was written toward this item
+  this iteration._
 
-- [ ] **Replace the hand-declared `stable_passes` with a computed findings fingerprint.**
+- [x] **Replace the hand-declared `stable_passes` with a computed findings fingerprint.**
   Today `stable_passes` is a hand-typed YAML field on line 3 of
   `docs/findings-freeze.md`, read at `scripts/audit_findings_freeze.py:4402` and
   required to be >= 2. Nothing in the repository writes it, no per-pass snapshot
@@ -89,6 +111,28 @@ and pick a blocking check from the freeze gate.
   a human read would skim past. It does not depend on the E1 lock, so land it in
   parallel rather than after. Acceptance: the check fails on a synthetic registry
   change and passes on two genuinely identical consecutive passes.
+  _Closed 2026-08-16. The fingerprint is defined once in
+  `ddvc.model_registry.findings_registry_state`: the sorted claim ids with their
+  statuses from `docs/specification-lock.json`, plus the sorted retired families
+  from `docs/model-ledger.json` with the claim each served. The retirement unit is
+  the family, not the claim, because one claim can be served by several batteries
+  and losing one is exactly the silent change this catches. `logs/findings-
+  fingerprints.jsonl` is the append-only ledger (un-ignored in `.gitignore` so the
+  gate's evidence is versioned); `scripts/record_findings_pass.py` is the only
+  writer and refuses to append twice at one commit, so two rows are two passes
+  only when committed work separates them. `audit_findings_freeze.py` now requires
+  the last two rows to exist, come from distinct passes and commits, agree, and
+  still match the live registries — the last condition is beyond the acceptance
+  bar and catches a status change made after the last pass was recorded. It also
+  fails closed if `stable_passes` ever reappears in the frontmatter. The YAML
+  field is deleted from `docs/findings-freeze.md` and from the test fixture.
+  `tests/test_findings_fingerprint.py` pins both halves of the acceptance test:
+  a promotion, a dropped claim and an un-retired family each move the
+  fingerprint, while a rewritten estimand, a new output path and a bumped
+  specification count do not. The ledger is deliberately still empty of rows — the
+  next iteration that genuinely reviews all eight claims against their evidence
+  records pass one — so the check reads `passes=0; need=2` and the blocker stays
+  open until it is earned rather than declared._
 
 - [ ] **JAVA INTERJECTION (2026-08-16): THE LIVE DECK IS TOO BUSY TO PERFORM.**
   The always-ready deck is working as a document and failing as a talk. Measured
@@ -143,7 +187,7 @@ and pick a blocking check from the freeze gate.
   Guardrails unchanged: descriptive interpretation, pair composition is never
   called entry/exit, one deck, refreshed in place, no fork, no new data runs.
 
-- [ ] **OWNER DECISION (Java, 2026-08-16): close the Mukhin literature blocker by
+- [x] **OWNER DECISION (Java, 2026-08-16): close the Mukhin literature blocker by
   recording the replication package as unavailable.**
   Scope: `Mukhin2022InternationalPriceSystem` only. The missing artefact is the
   openICPSR replication package (119,236,817 bytes, `1e8e62e5…`), not the text:
@@ -160,6 +204,24 @@ and pick a blocking check from the freeze gate.
   text, which is complete.
   Acceptance: the literature source-set check passes at 33/33, the freeze gate's
   blocking count drops by exactly one, and no other card or check changes state.
+  _Closed 2026-08-16. The premise was verified before writing anything: the
+  article PDF and the 4.5 MB official 37-page appendix are both in the shared
+  ignored corpus, which `ddvc.paths.literature_papers_dir` resolves to the primary
+  checkout (109 files); the 119,236,817-byte reconstructed archive is in none of
+  the three sibling checkouts, is absent from a size-filtered search of the
+  projects tree and the glotl share, and cannot be recovered from git because the
+  corpus was never tracked. The disposition in `literature/pdf-sources.json` is now
+  `unavailable` with the sought byte count and sha256 kept for the record, the
+  artifact key renamed `sought_artifact`, and a reason naming the failed checks
+  and the no-citation rule. The source note's headline and Disposition lines say
+  the same, keeping the recorded inspection as the durable finding. The card in
+  `docs/literature-audit.md` keeps `Status: claim-verified` and the `Companions:
+  Complete:` prefix, both of which rest on the text. Acceptance met exactly:
+  source-sets 32/33 -> 33/33, five-axis-cards 34/35 -> 35/35, `node B full-text
+  literature ledger` PASS, blocking count 4 -> 3, no other check moved. Gotcha for
+  the next worker: backticks in a card's `Companions` field are parsed as
+  companion bibliography keys by `companion_source_keys`, so a backticked hash or
+  file path silently breaks the card._
 
 - [x] **JAVA INTERJECTION (iMessage via glotl, 2026-08-16T00:03:30+00:00):** SO-WHAT / ANALOGY PASS ON PAPER AND DECK — prose and deck only, no new data runs; take it at the next clean boundary without interrupting the current unit. Java finds both deliverables still too literally data-focused. Three instructions. (1) Her reading of the headline result is: "the vehicle-currency rotation is mostly compositional — controlling for pair composition, within-pair change is about zero." The current evidence supports this (within matched markets: +0.2 pp count, SE 0.8; −1.3 pp value, SE 2.2; vs. totals +25.7 pp count / +42.8 pp value carried by common-pair reweighting +7.9/+26.2 pp and pair-composition margins +9.8/+19.2 pp). Audit the paper and deck so this reading is unmistakable at first mention of the rotation, not only in the conclusion; if any passage could be read as pair-level stable-for-native switching, rewrite it. Do not use the word "mechanical" in audience-facing prose — state the positive so-what instead: the aggregate share moves because the trading network reorganises around the challenger, not because comparable trades switch intermediary. (2) The conclusion's three margins by which a vehicle gains aggregate share (more common within a pair; activity shifting toward pairs that already use it; newly active pairs routing through it) need one illustrative deck slide with actual token examples — pull the largest correctly labelled pair contributions from output/exhibits/vehicle_transition_pair_decomposition.jsonl and name concrete tokens/pairs with their real numbers, one example per margin. (3) Bridge to a TradFi story for motivation and external validity: e.g. China–Brazil now settling bilateral trade without the US dollar — the aggregate dollar vehicle share can fall while established corridors keep using it, because new and growing corridors never adopt it; map this explicitly onto the reweighting and pair-composition margins in both the deck and the introduction/conclusion. Keep it an illustrative analogy with a cited source, no causal or geopolitical claims. Guardrails: keep interpretation descriptive and do not call pair composition entry/exit effects (per the 2026-08-14 interjection); refresh the single existing draft in place, no fork.
   _Closed in this iteration. (1) The compositional reading now lands at every first mention: abstract sentence three, the introduction's headline paragraph (which states the matched-market estimate and its standard error where the aggregate is first reported), the end of Section 3.1, and the first slide that shows the rotation. Section 3.2 now opens on the three margins and says which one did not move; the deck's closing banner states the positive so-what. The one audience-facing use of "mechanically" is gone, rewritten as where trading happens rather than which intermediary a trade selects. (2) The new deck frame "Three margins move an aggregate vehicle share" names one real ordered pair per margin with its own cells, and the same three pairs appear in Section 3.2. (3) The corridor analogy is in the introduction (with a footnote citing the PBoC/BCB memorandum), the conclusion's external-validity paragraph, and a new deck frame before the close. Guardrails held: nothing is called an entry or exit effect, no data run occurred, and the single draft was refreshed in place. Note for Java: the queue's count figures (+7.9 reweighting, +9.8 pair-composition) do not reproduce; the exhibit's pooled count terms are +8.6 pp reweighting and +17.8 pp net exclusive-pair, and the value figures (+26.2/+19.2) do reproduce exactly. Every number in the paper and deck comes from the exhibit, not the queue text._

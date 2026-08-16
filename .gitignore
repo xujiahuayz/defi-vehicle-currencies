@@ -54,6 +54,10 @@ output/provisional/
 logs/*
 !logs/grind-ledger.md
 !logs/grind-queue.md
+# The findings-pass fingerprint ledger is the freeze gate's own evidence that two
+# consecutive F->G passes left the claim registry unchanged. It is append-only and
+# machine-written, and it has to be versioned or the gate cannot be audited.
+!logs/findings-fingerprints.jsonl
 *.log
 .DS_Store
 # scratchpad/ is the sanctioned parking spot the grind brief names for probe
