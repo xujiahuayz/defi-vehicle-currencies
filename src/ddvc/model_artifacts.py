@@ -11,7 +11,7 @@ from pathlib import Path
 
 import pandas as pd
 
-from ddvc.artifact_release import file_sha256
+from ddvc.artifact_release import SemanticValidationReceipt, file_sha256
 from ddvc.analysis_release import resolve_analysis_release, resolve_repo_path
 from ddvc.model_registry import FITTED_MODEL_ARTIFACT_ROLES, MODEL_RUN_ARTIFACT_ROLES
 from ddvc.paths import REPO_ROOT
@@ -83,6 +83,42 @@ def model_artifact_context(
                 for record in release.certificate["claim_inputs"]
             },
         )
+
+
+def expected_release_receipt_in_d3(
+    context: ModelArtifactContext,
+    pointer_path: str | Path,
+    *,
+    root: Path = REPO_ROOT,
+) -> SemanticValidationReceipt:
+    """Return the semantic receipt the bound D3 certificate requires of one release.
+
+    Model runners that consume a pointer-published release need the same guarantee
+    as those that consume a released parquet: the generation they open is the one
+    the certificate bound, attested by the receipt the certificate recorded. One
+    owner for that check keeps a second consumer from silently reading a newer
+    generation than the run's own D3 identity names.
+
+    This lives here rather than beside any single release contract because a
+    release module's own source is fingerprinted into its semantic receipt, so
+    adding a consumer-side helper there would invalidate the very receipt it
+    verifies and force a full re-attestation of a certified release.
+    """
+
+    relative = Path(pointer_path).resolve().relative_to(root.resolve()).as_posix()
+    record = context.d3_input_records.get(relative)
+    if record is None:
+        raise ValueError(f"release pointer is outside the bound D3 release: {relative}")
+    receipt = record.get("semantic_validation")
+    if not isinstance(receipt, dict):
+        raise ValueError(f"bound release lacks a semantic receipt: {relative}")
+    expected = SemanticValidationReceipt(
+        str(receipt.get("generation_id") or ""),
+        str(receipt.get("validator_fingerprint") or ""),
+    )
+    if record.get("release_generation") != expected.generation_id:
+        raise ValueError(f"bound release generation and receipt disagree: {relative}")
+    return expected
 
 
 def assert_model_artifact_certificate_identity(

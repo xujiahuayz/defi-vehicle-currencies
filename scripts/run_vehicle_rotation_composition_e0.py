@@ -16,13 +16,13 @@ from ddvc.analysis.vehicle_rotation_composition import (
     vehicle_rotation_composition,
     vehicle_rotation_market_incidence_decomposition,
 )
-from ddvc.artifact_release import SemanticValidationReceipt
 from ddvc.endpoint_candidate_composition_release import (
     ENDPOINT_CANDIDATE_COMPOSITION_RELEASE,
     current_endpoint_candidate_composition_release,
 )
 from ddvc.model_artifacts import (
     attach_spec_ids,
+    expected_release_receipt_in_d3,
     model_artifact_context,
     write_model_exhibit,
     write_model_panel,
@@ -52,26 +52,6 @@ CODE_SOURCES = [
 ]
 
 
-def _expected_release_in_d3(context, pointer_path: Path, *, root: Path):
-    relative = pointer_path.resolve().relative_to(root.resolve()).as_posix()
-    record = context.d3_input_records.get(relative)
-    if record is None:
-        raise ValueError(
-            "vehicle-rotation composition release is outside the bound D3 release: "
-            f"{relative}"
-        )
-    receipt = record.get("semantic_validation")
-    if not isinstance(receipt, dict):
-        raise ValueError("bound endpoint release lacks a semantic receipt")
-    expected = SemanticValidationReceipt(
-        str(receipt.get("generation_id") or ""),
-        str(receipt.get("validator_fingerprint") or ""),
-    )
-    if record.get("release_generation") != expected.generation_id:
-        raise ValueError("bound endpoint release generation and receipt disagree")
-    return expected
-
-
 def run(
     *,
     root: Path = REPO_ROOT,
@@ -84,7 +64,7 @@ def run(
     fixed_effect_output: Path = FIXED_EFFECT_RESULTS,
 ) -> int:
     context = model_artifact_context(root=root, environment=environment)
-    expected_receipt = _expected_release_in_d3(context, pointer_path, root=root)
+    expected_receipt = expected_release_receipt_in_d3(context, pointer_path, root=root)
     with current_endpoint_candidate_composition_release(
         pointer_path,
         expected_semantic_receipt=expected_receipt,

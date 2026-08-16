@@ -8,6 +8,7 @@ import numpy as np
 import pandas as pd
 import pytest
 
+from ddvc.artifact_release import SemanticValidationReceipt
 from ddvc.analysis.vehicle_rotation_composition import (
     METRICS,
     estimate_pair_fixed_effect_rotation,
@@ -512,19 +513,19 @@ def test_runner_requires_exact_d3_bound_endpoint_generation_and_receipt(
             }
         }
     )
-    receipt = runner._expected_release_in_d3(context, pointer, root=tmp_path)
+    receipt = runner.expected_release_receipt_in_d3(context, pointer, root=tmp_path)
     assert receipt.generation_id == "a" * 64
     assert receipt.validator_fingerprint == "b" * 64
     context.d3_input_records[relative]["release_generation"] = "c" * 64
     with pytest.raises(ValueError, match="generation and receipt disagree"):
-        runner._expected_release_in_d3(context, pointer, root=tmp_path)
+        runner.expected_release_receipt_in_d3(context, pointer, root=tmp_path)
 
 
 def test_runner_writes_ranked_pair_contributions_as_one_support_panel(
     tmp_path: Path, monkeypatch: pytest.MonkeyPatch
 ) -> None:
     pointer = tmp_path / "endpoint/current.json"
-    receipt = runner.SemanticValidationReceipt("a" * 64, "b" * 64)
+    receipt = SemanticValidationReceipt("a" * 64, "b" * 64)
     bundle = SimpleNamespace(
         lineage_paths=(tmp_path / "endpoint/current.json",),
         assert_current=lambda: None,
@@ -560,7 +561,7 @@ def test_runner_writes_ranked_pair_contributions_as_one_support_panel(
     exhibit_writes: list[tuple[pd.DataFrame, Path, dict[str, object]]] = []
 
     monkeypatch.setattr(runner, "model_artifact_context", lambda **_kwargs: object())
-    monkeypatch.setattr(runner, "_expected_release_in_d3", lambda *_args, **_kwargs: receipt)
+    monkeypatch.setattr(runner, "expected_release_receipt_in_d3", lambda *_args, **_kwargs: receipt)
     monkeypatch.setattr(
         runner, "current_endpoint_candidate_composition_release", current_release
     )
