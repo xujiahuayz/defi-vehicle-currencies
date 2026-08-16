@@ -148,6 +148,23 @@ COHORT_SCOPES = (("", "pooled"), *ELIGIBILITY_SCOPES)
 # reading above gives the year-by-year levels. Both blocks' year shares are
 # read off the same row and reconciled against that row's own endpoints, so a
 # factor can never be printed against a total it does not belong to.
+# Panel D's estimand is `common_pair_month_day_realised_integration_scope`: a
+# cell enters the matched regression only when the same ordered pair traded on
+# the same day of the calendar year under the same realised route scope in both
+# comparison years. The identity of the pair decomposition asks far less of a
+# pair -- positive native-plus-stable mass somewhere in each year -- so the
+# matched sample is a strict subset of the identity's continuing block and does
+# not carry the block's own weight. The two populations live in different frozen
+# artifacts, and `_matched_coverage` is the join: the block's three classes come
+# from the `decomposition_pair_support` rows of the support ledger, the matched
+# denominators from the fixed-effects exhibit's own reported totals. The ratios
+# it returns are arithmetic on those cells, not a new estimate, and they are the
+# only honest answer to how much of the market the matched null speaks for.
+COVERAGE_CLASSES = ("baseline_exclusive", "common", "comparison_exclusive")
+COVERAGE_ABSENT_ENDPOINT = {
+    "baseline_exclusive": "comparison",
+    "comparison_exclusive": "baseline",
+}
 SUPPORT_BLOCKS = (
     ("Common", "W", "S_C"),
     ("Exclusive", "E", "S_E"),
@@ -1117,6 +1134,8 @@ def _matched_market_row(fixed_effects: pd.DataFrame, metric: str) -> pd.Series:
         "fixed_effect_cells",
         "ordered_pair_clusters",
         "calendar_date_clusters",
+        "baseline_denominator_mass",
+        "comparison_denominator_mass",
     }
     missing = sorted(required - set(fixed_effects.columns))
     if missing:
@@ -1165,6 +1184,146 @@ def _matched_market_row(fixed_effects: pd.DataFrame, metric: str) -> pd.Series:
     if not 0 <= float(row["p_value_holm"]) <= 1:
         raise ValueError("pair fixed effects contain an invalid adjusted p-value")
     return row
+
+
+def _matched_coverage(
+    support: pd.DataFrame,
+    matched: pd.Series,
+    identity: pd.Series,
+    metric: str,
+) -> dict[str, float]:
+    """Price the matched estimator's reach against the identity's own blocks.
+
+    See ``COVERAGE_CLASSES`` for why the two populations differ. Six premises,
+    in order of what they license. Every class must report a finite,
+    non-negative denominator on both endpoints, or a coverage ratio is a ratio
+    over nothing. No class may hold a cell-year whose denominator vanished, or
+    the class's own share is a ratio over a degenerate cell. Each exclusive
+    class must be empty on the endpoint it is absent from, or it is not
+    exclusive and the block boundary is elsewhere. The three classes' shares
+    must close on one in each year, or they are not a partition of that year.
+    The common class's two shares must reproduce the identity row's own
+    ``W_baseline`` and ``W_comparison``, or the support ledger is partitioning
+    something other than the block the identity prices. Finally the matched
+    denominator must be positive and no larger than the common class's, because
+    the matched sample is a subset of the block by construction and a coverage
+    ratio above one would mean it is not.
+    """
+
+    required = {
+        "record_type",
+        "metric",
+        "reporting_scope",
+        "support_status",
+        "units",
+        "baseline_denominator",
+        "comparison_denominator",
+        "baseline_denominator_share",
+        "comparison_denominator_share",
+        "zero_denominator_cell_years",
+    }
+    missing = sorted(required - set(support.columns))
+    if missing:
+        raise ValueError(f"pair support ledger missing columns: {', '.join(missing)}")
+    selected = support[
+        support["record_type"].eq("decomposition_pair_support")
+        & support["metric"].eq(metric)
+        & support["reporting_scope"].eq("pooled")
+    ]
+    if len(selected) != len(COVERAGE_CLASSES):
+        raise ValueError(
+            f"decomposition support requires exactly {len(COVERAGE_CLASSES)} pooled "
+            f"{metric} rows; found {len(selected)}"
+        )
+    classes: dict[str, pd.Series] = {}
+    for status in COVERAGE_CLASSES:
+        rows = selected[selected["support_status"].eq(status)]
+        if len(rows) != 1:
+            raise ValueError(
+                f"decomposition support has {len(rows)} {metric} rows for {status}"
+            )
+        classes[status] = rows.iloc[0]
+    endpoints = ("baseline", "comparison")
+    for status, row in classes.items():
+        if float(row["zero_denominator_cell_years"]) != 0:
+            raise ValueError(
+                f"decomposition support {metric} {status} carries a zero-denominator "
+                "cell-year"
+            )
+        if int(row["units"]) <= 0:
+            raise ValueError(f"decomposition support {metric} {status} holds no pairs")
+        for endpoint in endpoints:
+            mass = float(row[f"{endpoint}_denominator"])
+            share = float(row[f"{endpoint}_denominator_share"])
+            if not math.isfinite(mass) or mass < 0:
+                raise ValueError(
+                    f"decomposition support {metric} {status} {endpoint} mass is invalid"
+                )
+            if not math.isfinite(share) or share < 0:
+                raise ValueError(
+                    f"decomposition support {metric} {status} {endpoint} share is invalid"
+                )
+        absent = COVERAGE_ABSENT_ENDPOINT.get(status)
+        if absent is not None and float(row[f"{absent}_denominator"]) != 0:
+            raise ValueError(
+                f"decomposition support {metric} {status} is not exclusive: it carries "
+                f"{absent} mass"
+            )
+    totals: dict[str, float] = {}
+    for endpoint in endpoints:
+        total = sum(
+            float(row[f"{endpoint}_denominator"]) for row in classes.values()
+        )
+        if total <= 0:
+            raise ValueError(f"decomposition support {metric} {endpoint} year is empty")
+        totals[endpoint] = total
+        shares = sum(
+            float(row[f"{endpoint}_denominator_share"]) for row in classes.values()
+        )
+        if not math.isclose(shares, 1.0, abs_tol=1e-12):
+            raise ValueError(
+                f"decomposition support {metric} {endpoint} shares do not partition "
+                f"the year: {shares}"
+            )
+        common_share = float(classes["common"][f"{endpoint}_denominator_share"])
+        if not math.isclose(
+            common_share,
+            float(classes["common"][f"{endpoint}_denominator"]) / total,
+            abs_tol=1e-12,
+        ):
+            raise ValueError(
+                f"decomposition support {metric} common {endpoint} share is not its "
+                "own mass over the year"
+            )
+        identity_weight = float(identity[f"W_{endpoint}"])
+        if not math.isclose(common_share, identity_weight, abs_tol=1e-12):
+            raise ValueError(
+                f"decomposition support {metric} common {endpoint} share "
+                f"{common_share} is not the identity's block weight {identity_weight}"
+            )
+    coverage: dict[str, float] = {
+        "pairs": float(sum(int(row["units"]) for row in classes.values())),
+        "block_pairs": float(int(classes["common"]["units"])),
+        "matched_pairs": float(matched["ordered_pair_clusters"]),
+    }
+    if not 0 < coverage["matched_pairs"] <= coverage["block_pairs"]:
+        raise ValueError(
+            f"{metric} matched pairs {coverage['matched_pairs']} do not sit inside the "
+            f"identity's block of {coverage['block_pairs']}"
+        )
+    for endpoint in endpoints:
+        block = float(classes["common"][f"{endpoint}_denominator"])
+        reached = float(matched[f"{endpoint}_denominator_mass"])
+        if not math.isfinite(reached) or reached <= 0:
+            raise ValueError(f"{metric} matched {endpoint} denominator is empty")
+        if reached > block:
+            raise ValueError(
+                f"{metric} matched {endpoint} mass {reached} exceeds the identity's "
+                f"block mass {block}"
+            )
+        coverage[f"{endpoint}_of_sample"] = reached / totals[endpoint]
+        coverage[f"{endpoint}_of_block"] = reached / block
+    return coverage
 
 
 def _usdt_integration_rows(decomposition: pd.DataFrame) -> dict[str, pd.Series]:
@@ -1254,6 +1413,12 @@ def render_pair_decomposition_deck_values(
     matched_count = _matched_market_row(fixed_effects, "count_share")
     matched_value = _matched_market_row(
         fixed_effects, "strict_intermediation_value_share"
+    )
+    count_coverage = _matched_coverage(
+        support, matched_count, count["pooled"], "count_share"
+    )
+    value_coverage = _matched_coverage(
+        support, matched_value, value["pooled"], "strict_intermediation_value_share"
     )
     usdt = _usdt_integration_rows(usdt_integration)
     pair_activity_total = float(market["market_pair_support_bridge"]) + float(
@@ -1356,6 +1521,18 @@ def render_pair_decomposition_deck_values(
             f"\\newcommand{{\\MatchedMarketValueSE}}{{{_unsigned_pp(float(matched_value['standard_error']))}}}",
             f"\\newcommand{{\\MatchedMarketValueCILower}}{{{_signed_pp(float(matched_value['confidence_interval_lower']))}}}",
             f"\\newcommand{{\\MatchedMarketValueCIUpper}}{{{_signed_pp(float(matched_value['confidence_interval_upper']))}}}",
+            f"\\newcommand{{\\SamplePairs}}{{{_pairs(count_coverage['pairs'])}}}",
+            f"\\newcommand{{\\BlockPairs}}{{{_pairs(count_coverage['block_pairs'])}}}",
+            f"\\newcommand{{\\MatchedPairs}}{{{_pairs(count_coverage['matched_pairs'])}}}",
+            f"\\newcommand{{\\MatchedValuePairs}}{{{_pairs(value_coverage['matched_pairs'])}}}",
+            f"\\newcommand{{\\MatchedCoverageBase}}{{{_share(count_coverage['baseline_of_sample'])}}}",
+            f"\\newcommand{{\\MatchedCoverageEnd}}{{{_share(count_coverage['comparison_of_sample'])}}}",
+            f"\\newcommand{{\\MatchedBlockCoverageBase}}{{{_share(count_coverage['baseline_of_block'])}}}",
+            f"\\newcommand{{\\MatchedBlockCoverageEnd}}{{{_share(count_coverage['comparison_of_block'])}}}",
+            f"\\newcommand{{\\MatchedValueCoverageBase}}{{{_share(value_coverage['baseline_of_sample'])}}}",
+            f"\\newcommand{{\\MatchedValueCoverageEnd}}{{{_share(value_coverage['comparison_of_sample'])}}}",
+            f"\\newcommand{{\\MatchedValueBlockCoverageBase}}{{{_share(value_coverage['baseline_of_block'])}}}",
+            f"\\newcommand{{\\MatchedValueBlockCoverageEnd}}{{{_share(value_coverage['comparison_of_block'])}}}",
             f"\\newcommand{{\\USDTVenueMixCountShare}}{{{_share(float(usdt['count']['between_scope_share_of_change']))}}}",
             f"\\newcommand{{\\USDTVenueWithinCountShare}}{{{_share(float(usdt['count']['within_scope_share_of_change']))}}}",
             f"\\newcommand{{\\USDTVenueMixValueShare}}{{{_share(float(usdt['value']['between_scope_share_of_change']))}}}",

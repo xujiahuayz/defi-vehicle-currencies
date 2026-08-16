@@ -143,6 +143,29 @@ s^{(m)}_{c,y}=\alpha^{(m)}_{c}+\beta^{(m)}\mathbf{1}\{y=2026\}+\varepsilon^{(m)}
 An observation is one pair--calendar-date--route-type combination in one year. Weighted least squares uses the number or dollar value of native-plus-stable routes as weights; 2024 is the omitted year. Standard errors are clustered by ordered pair and calendar date. The comparison remains descriptive because the pairs traded and the use of one or several exchanges can respond to the same forces as intermediary choice.
 % output/exhibits/vehicle_transition_pair_fixed_effects.jsonl
 
+Conditioning this finely has a price, and the price is coverage. Of the \SamplePairs{} ordered pairs that carry a native-or-stable route in either year, \BlockPairs{} carry one in both and make up the continuing block of Equation~\eqref{eq:pair-decomposition}. Requiring the same calendar date and the same route scope as well leaves \MatchedPairs{} pairs by count and \MatchedValuePairs{} by value. Those pairs carry \MatchedCoverageBase{} of 2024 routed activity and \MatchedCoverageEnd{} of 2026, but \MatchedValueCoverageBase{} and \MatchedValueCoverageEnd{} of the dollars moved. Measured inside the continuing block alone, the same four figures are \MatchedBlockCoverageBase{} and \MatchedBlockCoverageEnd{} by count, \MatchedValueBlockCoverageBase{} and \MatchedValueBlockCoverageEnd{} by value. The matched estimate therefore covers a minority of route counts and a much larger part of the value, because dollars concentrate in the pairs and days observed on both sides of the comparison. \citet{AmitiItskhokiKonings2022Dominant} read the same gap between a currency's share of transactions and its share of traded value as evidence about which trades are the small ones; here it says which trades the matched comparison retains. The identity supplies the complement, since its within-pair term is taken over the whole continuing block under no date or scope condition: \PairPooledWithin{} by count and \PairValueWithin{} by value, beside the matched \MatchedMarketCountChange{} and \MatchedMarketValueChange{}. Each matched interval contains the identity term of its own weighting. The narrow conditioned comparison and the wide accounting term put within-pair substitution in the same place, so its absence is not a property of the matched sample.
+% Coverage cells are the pooled `decomposition_pair_support` rows of
+% vehicle_transition_pair_support.jsonl read against the fixed-effects exhibit's
+% own baseline_denominator_mass/comparison_denominator_mass; `_matched_coverage`
+% in scripts/build_vehicle_transition_pair_deck_values.py refuses to render them
+% unless each block reports its own mass over its own year, each year-specific
+% block is empty on the year it is absent from, no block carries a
+% zero-denominator cell-year, the common block's two shares equal the identity
+% row's own W_baseline and W_comparison to 1e-12, and the matched denominator
+% sits inside the common block's. The subset relation is structural, not
+% assumed: a matched cell requires the pair to trade on the same month-day in
+% both years, which requires positive mass in both, so every matched pair is a
+% common-block pair. Checked on the live exhibits at 5,432 of 26,547 by count
+% and 5,278 of 24,878 by value, with no matched pair outside the block.
+% Panel A's three market-incidence classes are a different partition of a
+% different denominator and must never be substituted here.
+% Interval containment is arithmetic on the published cells: the count interval
+% is [-1.3, +1.7] pp around the identity's -0.1 pp and the value interval
+% [-5.6, +3.0] pp around its 0.0 pp. Recheck if either exhibit changes.
+% output/exhibits/vehicle_transition_pair_support.jsonl and
+% vehicle_transition_pair_fixed_effects.jsonl; macros from
+% scripts/build_vehicle_transition_pair_deck_values.py
+
 \begin{table}[tbp]
 \centering
 \caption{Decomposition of the stablecoin rotation}

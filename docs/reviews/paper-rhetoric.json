@@ -526,7 +526,7 @@
    "exit_handoff": "The panel closes by retaining route-level attribution and sends the separate cost object to Section 4."
   },
   "paper/sections/03-dominance.tex": {
-   "sha256": "c9a9c8a322278334e96bcb6f06fb4fcf04cda02edec4f6c0b8c9a6cc6f6bf151",
+   "sha256": "cf04b6a28305e13f94a1d6543bb1e51c274d880e4c5c96641f62e147c7363243",
    "status": "rewritten",
    "exemplars": [
     "literature/text/2020-MakarovSchoar2020Arbitrage-trading-and-arbitrage-in-cryptocurrency-markets.txt:886-991",
@@ -595,22 +595,23 @@
      134,
      137,
      143,
-     157,
-     164,
-     172,
-     184,
-     198,
-     212,
-     230,
-     250,
-     252,
-     254,
-     257,
+     146,
+     180,
+     187,
+     195,
+     207,
+     221,
+     235,
+     253,
      273,
      275,
-     277
+     277,
+     280,
+     296,
+     298,
+     300
     ],
-    "judgment": "Aggregate rotation and reversals lead to a three-margin accounting whose answer is stated first, the exact identity behind it and its four terms by count and by value, the second factorisation of the same count total, stated as its own displayed identity, and the exact scale relation that keeps its components from being the identity's, matched-market estimates, named pairs that make the margins concrete, the breadth of each margin across pairs, the split of the composition margins on endpoint eligibility, that split taken inside each single- or cross-exchange route scope for the reweighting margin and then for the entry margin, the netted exclusive term read as corridor replacement, the last term read as the activity that changed population priced at the gap between the two populations' routing rates, USDT role attribution, and separate venue-span and intermediation margins.",
+    "judgment": "Aggregate rotation and reversals lead to a three-margin accounting whose answer is stated first, the exact identity behind it and its four terms by count and by value, the second factorisation of the same count total, stated as its own displayed identity, and the exact scale relation that keeps its components from being the identity's, matched-market estimates, the reach of the matched cells by count and by value read beside the identity's own within-pair term, named pairs that make the margins concrete, the breadth of each margin across pairs, the split of the composition margins on endpoint eligibility, that split taken inside each single- or cross-exchange route scope for the reweighting margin and then for the entry margin, the netted exclusive term read as corridor replacement, the last term read as the activity that changed population priced at the gap between the two populations' routing rates, USDT role attribution, and separate venue-span and intermediation margins.",
     "raw_exemplars": [
      "literature/text/2020-MakarovSchoar2020Arbitrage-trading-and-arbitrage-in-cryptocurrency-markets.txt:886-991",
      "literature/text/2022-ChangDuLouPolk2022Ripples-ripples-into-waves-trade-networks-economic-activity-and-asset-prices.txt:1369-1445",
@@ -621,7 +622,8 @@
      "literature/text/2022-AmitiItskhokiKonings2022Dominant-dominant-currencies-how-firms-choose-currency-invoicing-and-why-it-matters.txt:651-668",
      "literature/text/2020-MakarovSchoar2020Arbitrage-trading-and-arbitrage-in-cryptocurrency-markets.txt:1017-1045",
      "literature/text/2020-GriffinShams2020Untethered-is-bitcoin-really-untethered.txt:167-193",
-     "literature/text/2020-MakarovSchoar2020Arbitrage-trading-and-arbitrage-in-cryptocurrency-markets.txt:1440-1560"
+     "literature/text/2020-MakarovSchoar2020Arbitrage-trading-and-arbitrage-in-cryptocurrency-markets.txt:1440-1560",
+     "literature/text/2022-AmitiItskhokiKonings2022Dominant-dominant-currencies-how-firms-choose-currency-invoicing-and-why-it-matters.txt:1263-1300"
     ],
     "jumps": [],
     "handoffs": [
@@ -762,7 +764,18 @@
       "judgment": "The paragraph states unit, weights, baseline, clustering, and scope and makes the regression reproducible."
      },
      {
-      "line": 157,
+      "line": 146,
+      "inherited_object": "the fixed-effect specification",
+      "paragraph_function": "prices the conditioning by reporting how much of the market the matched cells reach under each weighting, then reconciles the narrow estimate with the identity's own within-pair term",
+      "relation_to_previous": "moves from what the regression absorbs to what it can therefore speak for",
+      "economic_subject": "ordered pairs and the routed activity and dollars they carry",
+      "framing_judgment": "The concession is stated first and answered second, and the answer is a second measurement on a wider population rather than an assurance; the two coverage families are kept apart because they answer different questions",
+      "qualification_leads": true,
+      "qualification_leads_justification": "The paragraph exists to disclose that the matched cells are a minority of route counts, so the qualification is the paragraph's subject rather than a hedge in front of one. The result being qualified has already been reported twice, in the subsection opening and at the estimate itself, and the reconciliation that follows is only credible if the concession precedes it.",
+      "judgment": "Amiti, Itskhoki and Konings report the same population under two weightings and read the gap between them: the euro carries two-thirds of observed transactions but 35 percent of export value, which they take as evidence that euro-invoiced transactions are the smaller ones, and they repeat the exercise for imports where the two weightings agree and conclude the opposite. The same movement here reports the matched sample's reach by route count and by value and reads the gap as dollars concentrating in the pairs and days present on both sides of the comparison. The paragraph then closes the concession with a second measurement on the whole continuing block rather than with reassurance, which is what keeps the disclosure from reading as a caveat filed and forgotten."
+     },
+     {
+      "line": 180,
       "inherited_object": "decomposition evidence",
       "paragraph_function": "makes the margins concrete with named ordered pairs and their own numbers, then interprets the reallocation",
       "relation_to_previous": "moves from accounting to possible economic sources",
@@ -772,7 +785,7 @@
       "judgment": "Interprets margins reallocating activity after grounding them in named pairs. Makarov and Schoar name individual exchanges and regions with their own arbitrage indices before generalising; the same move here keeps the decomposition from staying an abstraction, and the disclosure of the labelling limit prevents the examples from reading as the largest contributors."
      },
      {
-      "line": 164,
+      "line": 187,
       "inherited_object": "named pairs behind each margin",
       "paragraph_function": "asks whether a few large markets carry the reallocation and answers it separately for each margin",
       "relation_to_previous": "moves from the largest single contributor to how many contributors there are",
@@ -782,7 +795,7 @@
       "judgment": "Bolton and Kacperczyk open Section 3.5 by conceding that a handful of industries could drive their cross-sectional premium, report the test, and then interpret what the answer implies about how investors categorise firms. The same movement here concedes that one corridor could produce the same totals, reports the pair counts, and interprets the split: extension into many small markets on one margin, weight concentration in a few large corridors on the other."
      },
      {
-      "line": 172,
+      "line": 195,
       "inherited_object": "the breadth of each composition margin",
       "paragraph_function": "asks whether the composition margins are only the growth of corridors that could not have used a native intermediary, and answers separately by count and by value",
       "relation_to_previous": "moves from how many pairs carry a margin to whether those pairs had a vehicle choice at all",
@@ -792,7 +805,7 @@
       "judgment": "Bolton and Kacperczyk name a structural feature of their data that could account for the result -- emissions cluster within industries -- pose the question a reader would ask, say what they add to the specification, and report an answer whose direction cuts against the expectation the question set up. The same movement here names the feature that vehicle use is not contestable on a wrapped-ether-endpoint route, asks whether the composition margins are only those corridors growing, and reports that the count answer is yes and the dollar-weighted answer is no. The paragraph closes on what the identity implies for the within-pair term rather than on the split itself."
      },
      {
-      "line": 184,
+      "line": 207,
       "inherited_object": "the pooled endpoint-eligibility split of the composition margins",
       "paragraph_function": "asks where in the venue structure the corridors with no vehicle choice sit, and reports that the entire cross-exchange excess in the count reweighting margin is those corridors while the dollar-weighted margin shows no such contrast",
       "relation_to_previous": "moves from whether the margins are eligibility to where that eligibility is concentrated",
@@ -802,7 +815,7 @@
       "judgment": "Makarov and Schoar open Section 4.4 by conceding the limit of the split they have just reported -- the within- and across-region indices ignore the volume traded at each price -- state what the weighted version adds, report it region by region, and note where the weighted answer is small and why that is what the structure predicts. The same movement here concedes that the pooled eligibility split is silent on venue structure, takes the split inside each route scope, and reports that the choosable part of the margin is the same size in both scopes so the cross-exchange excess is entirely ineligible corridors. It closes by contrasting the direction with theirs: their across-region component survives volume weighting and this one does not."
      },
      {
-      "line": 198,
+      "line": 221,
       "inherited_object": "the scope split of the reweighting margin",
       "paragraph_function": "takes the same endpoint-eligibility split inside each route scope for the entry margin, and reports that the count answer is the same in both scopes while the dollar-weighted margin is twice as large across exchanges entirely because of corridors that did have a vehicle choice",
       "relation_to_previous": "applies the scope split to the other and larger composition margin, the one where a reader should most expect eligibility to be the whole story",
@@ -812,7 +825,7 @@
       "judgment": "Bolton and Kacperczyk (raw lines 1899--1935) name the subset a reader suspects of driving everything -- the handful of salient high-emission industries -- remove it, report that one result if anything strengthens, report that the second result is instead entirely the coarse categorisation, and close on an as-if reading that holds both. The same movement here names the expectation that markets trading for the first time are newly listed assets quoted against wrapped ether, reports that by route count the expectation is met and the route scope barely moves it, reports that under dollar weighting the eligible part is almost identical across scopes while the choosable part doubles, and closes on the reading that holds this margin and the reweighting margin of the previous paragraph together rather than on the split itself."
      },
      {
-      "line": 212,
+      "line": 235,
       "inherited_object": "the gross entry margin",
       "paragraph_function": "reads the netted composition term as one activity mass against two corridor populations routed differently",
       "relation_to_previous": "turns the netting the previous paragraph set aside into the comparison the term makes",
@@ -822,7 +835,7 @@
       "judgment": "The paragraph reads the netted term as mass times the routing gap between departing and arriving corridors and closes by positioning it against measured currency persistence."
      },
      {
-      "line": 230,
+      "line": 253,
       "inherited_object": "corridor replacement",
       "paragraph_function": "prices the activity that changed population and reports the last term of the identity",
       "relation_to_previous": "separates how much mass moved between the two populations from how each of them routes",
@@ -832,7 +845,7 @@
       "judgment": "The paragraph closes the accounting by reading its fourth term as a mass shift times a routing gap and rejecting the volume-migration reading of the rotation. Carletti, De Marco, Ioannidou and Sette (raw lines 1008--1015) make the same two-factor move in the opposite direction -- 'the effects are sizable not because the treated investors (households) are very price sensitive, but because they hold large volumes of the securities whose returns are being shocked' -- attributing a magnitude to one factor of a product and denying it to the other."
      },
      {
-      "line": 250,
+      "line": 273,
       "inherited_object": "stablecoin category change",
       "paragraph_function": "introduces USDT versus route endpoints",
       "relation_to_previous": "asks which currency carries the role change",
@@ -842,7 +855,7 @@
       "judgment": "The paragraph introduces USDT versus route endpoints and asks which currency carries the role change."
      },
      {
-      "line": 252,
+      "line": 275,
       "inherited_object": "USDT role comparison",
       "paragraph_function": "reports matched gap and separate full-period ratios",
       "relation_to_previous": "keeps two clocks distinct",
@@ -852,7 +865,7 @@
       "judgment": "The paragraph reports matched gap and separate full-period ratios and keeps two clocks distinct."
      },
      {
-      "line": 254,
+      "line": 277,
       "inherited_object": "USDT excess use",
       "paragraph_function": "decomposes change by cross-exchange mix and within groups",
       "relation_to_previous": "locates the venue-span margin",
@@ -862,7 +875,7 @@
       "judgment": "The paragraph decomposes change by cross-exchange mix and within groups and locates the venue-span margin."
      },
      {
-      "line": 257,
+      "line": 280,
       "inherited_object": "the venue-span decomposition",
       "paragraph_function": "states explanations needing tests",
       "relation_to_previous": "hands the token result to mechanisms",
@@ -872,7 +885,7 @@
       "judgment": "The paragraph states explanations needing tests and hands the token result to mechanisms."
      },
      {
-      "line": 273,
+      "line": 296,
       "inherited_object": "the USDT result",
       "paragraph_function": "reports cross-exchange growth",
       "relation_to_previous": "moves to route architecture",
@@ -882,7 +895,7 @@
       "judgment": "The paragraph reports cross-exchange growth and moves to route architecture."
      },
      {
-      "line": 275,
+      "line": 298,
       "inherited_object": "cross-exchange growth",
       "paragraph_function": "reports falling intermediation and stablecoin gains within groups",
       "relation_to_previous": "separates three route margins",
@@ -892,7 +905,7 @@
       "judgment": "The paragraph reports falling intermediation and stablecoin gains within groups and separates three route margins."
      },
      {
-      "line": 277,
+      "line": 300,
       "inherited_object": "three route margins",
       "paragraph_function": "synthesises and states the fixed-opportunity comparison",
       "relation_to_previous": "moves from coexistence to design",

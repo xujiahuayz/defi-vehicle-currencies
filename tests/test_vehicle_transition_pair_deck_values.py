@@ -217,25 +217,66 @@ def _support() -> pd.DataFrame:
                 "stable_share": stable_share,
             }
         )
-    # A row the reader must ignore: the same file carries the block-support
-    # ledger of the other factorisation, and reading it as a class would break
-    # the partition.
-    rows.append(
+    # Rows the class reader must ignore and the coverage reader must use: the
+    # same file carries the block-support ledger of the *other* factorisation.
+    # Reading one of these as a Panel A class would break that partition, and
+    # reading a Panel A class as a block would misprice the matched estimator's
+    # reach. Both metrics' common shares are 0.60 and 0.50, the ``_row`` block
+    # weights, because the coverage reader refuses any other partition.
+    rows.extend(
+        _decomposition_support_rows(
+            "count_share", baseline_total=1_000_000.0, comparison_total=800_000.0
+        )
+    )
+    rows.extend(
+        _decomposition_support_rows(
+            "strict_intermediation_value_share",
+            baseline_total=1.0e10,
+            comparison_total=4.0e9,
+        )
+    )
+    return pd.DataFrame(rows)
+
+
+# Pair counts and masses for the identity's three blocks. The block weights are
+# fixed by ``_row``; only the year totals and the pair counts vary here, so a
+# test that moves a share moves it away from the weight the identity published.
+DECOMPOSITION_SUPPORT_UNITS = {
+    "baseline_exclusive": 143_784,
+    "common": 26_547,
+    "comparison_exclusive": 69_686,
+}
+
+
+def _decomposition_support_rows(
+    metric: str, *, baseline_total: float, comparison_total: float
+) -> list[dict[str, object]]:
+    masses = {
+        "baseline_exclusive": (0.40 * baseline_total, 0.0),
+        "common": (0.60 * baseline_total, 0.50 * comparison_total),
+        "comparison_exclusive": (0.0, 0.50 * comparison_total),
+    }
+    return [
         {
             "record_type": "decomposition_pair_support",
-            "metric": "count_share",
+            "metric": metric,
             "reporting_scope": "pooled",
             "endpoint_year": None,
-            "support_status": "baseline_exclusive",
+            "support_status": status,
             "unit": "ordered_endpoint_pair",
-            "units": 143_784,
+            "units": DECOMPOSITION_SUPPORT_UNITS[status],
+            "baseline_denominator": baseline,
+            "comparison_denominator": comparison,
+            "baseline_denominator_share": baseline / baseline_total,
+            "comparison_denominator_share": comparison / comparison_total,
+            "zero_denominator_cell_years": 0.0,
             "primary_choice_mass": None,
             "primary_choice_mass_share": None,
             "stable_choice_mass": None,
             "stable_share": None,
         }
-    )
-    return pd.DataFrame(rows)
+        for status, (baseline, comparison) in masses.items()
+    ]
 
 
 def _fixed_effects() -> pd.DataFrame:
@@ -260,6 +301,10 @@ def _fixed_effects() -> pd.DataFrame:
                 "fixed_effect_cells": 94_260,
                 "ordered_pair_clusters": 5_432,
                 "calendar_date_clusters": 362,
+                # 15.0% of the fixture's 2024 route mass and 25.0% of the
+                # identity's common block; 25.0% and 50.0% in 2026.
+                "baseline_denominator_mass": 150_000.0,
+                "comparison_denominator_mass": 200_000.0,
             },
             {
                 "metric": "strict_intermediation_value_share",
@@ -280,6 +325,10 @@ def _fixed_effects() -> pd.DataFrame:
                 "fixed_effect_cells": 91_417,
                 "ordered_pair_clusters": 5_278,
                 "calendar_date_clusters": 362,
+                # 30.0% of the fixture's 2024 dollar mass and 50.0% of the
+                # block; 25.0% and 50.0% in 2026.
+                "baseline_denominator_mass": 3.0e9,
+                "comparison_denominator_mass": 1.0e9,
             },
         ]
     )
@@ -1289,4 +1338,91 @@ def test_two_factorisations_must_share_a_pooled_count_total() -> None:
     with pytest.raises(ValueError, match="do not share a pooled count total"):
         render_pair_decomposition_deck_values(
             decomposition, _fixed_effects(), _usdt_integration(), _contributions(), _support()
+        )
+
+
+def test_matched_coverage_prices_the_estimator_against_the_identity_block() -> None:
+    """How much of the market the matched null actually speaks for.
+
+    The estimator conditions on pair, calendar day and route scope jointly, so
+    its sample is far narrower than the identity's continuing block. The two
+    coverage families answer different questions: share of the year's whole
+    activity, and share of the block whose within-pair term the estimate is
+    compared against.
+    """
+    rendered = render_pair_decomposition_deck_values(
+        _decomposition(), _fixed_effects(), _usdt_integration(), _contributions(), _support()
+    )
+    for macro, value in (
+        ("SamplePairs", "240,017"),
+        ("BlockPairs", "26,547"),
+        ("MatchedPairs", "5,432"),
+        ("MatchedValuePairs", "5,278"),
+        ("MatchedCoverageBase", "15.0\\%"),
+        ("MatchedCoverageEnd", "25.0\\%"),
+        ("MatchedBlockCoverageBase", "25.0\\%"),
+        ("MatchedBlockCoverageEnd", "50.0\\%"),
+        ("MatchedValueCoverageBase", "30.0\\%"),
+        ("MatchedValueCoverageEnd", "25.0\\%"),
+        ("MatchedValueBlockCoverageBase", "50.0\\%"),
+        ("MatchedValueBlockCoverageEnd", "50.0\\%"),
+    ):
+        assert _macro(rendered, macro) == value
+
+
+def test_matched_coverage_requires_the_identity_own_block_weight() -> None:
+    """A partition that is not the identity's prices a different block."""
+    # Move mass and share together so the block still partitions its own year
+    # and still reports its own mass over that year. Only the identity's
+    # published weight can reject a self-consistent partition of 55/45.
+    support = _support()
+    blocks = support["record_type"].eq("decomposition_pair_support")
+    for status, weight in (("baseline_exclusive", 0.55), ("common", 0.45)):
+        rows = blocks & support["support_status"].eq(status)
+        support.loc[rows, "baseline_denominator"] = (
+            support.loc[rows, "baseline_denominator"]
+            / support.loc[rows, "baseline_denominator_share"]
+            * weight
+        )
+        support.loc[rows, "baseline_denominator_share"] = weight
+    with pytest.raises(ValueError, match="is not the identity's block weight"):
+        render_pair_decomposition_deck_values(
+            _decomposition(), _fixed_effects(), _usdt_integration(), _contributions(), support
+        )
+
+
+def test_matched_coverage_rejects_a_sample_wider_than_the_block() -> None:
+    """The matched cells sit inside the block by construction, or not at all."""
+    fixed_effects = _fixed_effects()
+    count = fixed_effects["metric"].eq("count_share")
+    fixed_effects.loc[count, "baseline_denominator_mass"] = 700_000.0
+    with pytest.raises(ValueError, match="exceeds the identity's block mass"):
+        render_pair_decomposition_deck_values(
+            _decomposition(), fixed_effects, _usdt_integration(), _contributions(), _support()
+        )
+
+
+def test_matched_coverage_rejects_a_degenerate_block_cell_year() -> None:
+    """A vanished denominator makes the class's own share a ratio over nothing."""
+    support = _support()
+    common = support["record_type"].eq("decomposition_pair_support") & support[
+        "support_status"
+    ].eq("common")
+    support.loc[common, "zero_denominator_cell_years"] = 1.0
+    with pytest.raises(ValueError, match="carries a zero-denominator cell-year"):
+        render_pair_decomposition_deck_values(
+            _decomposition(), _fixed_effects(), _usdt_integration(), _contributions(), support
+        )
+
+
+def test_matched_coverage_rejects_a_block_that_is_not_exclusive() -> None:
+    """A year-specific class carrying both years puts the boundary elsewhere."""
+    support = _support()
+    exclusive = support["record_type"].eq("decomposition_pair_support") & support[
+        "support_status"
+    ].eq("baseline_exclusive")
+    support.loc[exclusive, "comparison_denominator"] = 1.0
+    with pytest.raises(ValueError, match="is not exclusive"):
+        render_pair_decomposition_deck_values(
+            _decomposition(), _fixed_effects(), _usdt_integration(), _contributions(), support
         )
