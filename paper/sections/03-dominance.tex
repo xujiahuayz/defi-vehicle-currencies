@@ -36,6 +36,17 @@ Figures~\ref{fig:vehicle-composition} and~\ref{fig:integration-change} extend th
 }
 \end{figure}
 
+The denominator so far treats a stablecoin as a stablecoin. What backs one moves over the sample, because the collateral an issuer may hold is itself revisable, so each regime label carries a date. Of the \BackingCandidates{} stablecoins observed as intermediaries here, \BackingLabelMovesInPanel{} change regime within the sample and \BackingLabelMovesInWindow{} change between the two years compared. Cutting the same share on the same denominator, calendar, and routing strata by the intermediary's dated regime therefore holds each regime's membership fixed across the comparison, and the cut divides the class the way the stablecoin literature does, by what stands behind the peg.
+
+Fiat-reserve claims move \BackingFiatCountChange{} of the \BackingPooledCountChange{} count rotation, with a standard error of \BackingFiatCountSE{}, and \BackingFiatValueChange{} of the \BackingPooledValueChange{} dollar-weighted rotation, with a standard error of \BackingFiatValueSE{}. The regimes divide one denominator, so their changes add to the class's, and the residue the fiat-reserve term leaves is small and mixed in sign. Synthetic claims multiply their share of the class's routes from \BackingSyntheticCountMassBase{} to \BackingSyntheticCountMassEnd{} while contributing \BackingSyntheticCountChange{} of the count rotation and \BackingSyntheticValueChange{} of the dollar-weighted one. Claims that mix real-world assets into on-chain collateral fall \BackingRwaValueChange{} by value, from \BackingRwaValueMassBase{} to \BackingRwaValueMassEnd{} of the class's dollars. The rotation is therefore a movement into dollar tokens backed by reserves; the class's fastest-growing regime moves the aggregate by under two points on either measure. The cut is measured on the released endpoint-candidate panel; against the daily type panel the pooled rotation differs by \BackingCountUniverseGap{} by count and \BackingValueUniverseGap{} by value, so the regime terms sit beside the headline in the same units.
+% output/exhibits/e0_vehicle_transition_backing_regime_estimates.jsonl and
+% ..._support.jsonl; macros from scripts/build_backing_regime_deck_values.py.
+% Provisional/E0 scope, route-only: same estimand, denominator, matched calendar
+% and HAC(30) estimator as Table~\ref{tab:rotation}, numerator restricted to one
+% dated regime of ddvc.asset_types.backing. Refresh with
+% scripts/run_vehicle_transition_e0.py then the builder above whenever the
+% endpoint-candidate release generation changes.
+
 \subsection{Composition of source--destination pairs}
 \label{sec:dominance:pairs}
 

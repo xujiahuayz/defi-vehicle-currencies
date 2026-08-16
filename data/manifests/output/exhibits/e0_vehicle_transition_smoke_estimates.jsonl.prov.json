@@ -1,0 +1,61 @@
+{
+ "argv": [],
+ "artefact": "output/exhibits/e0_vehicle_transition_smoke_estimates.jsonl",
+ "artefact_bytes": 9854,
+ "artefact_mtime_ns": 1786911041077029156,
+ "artefact_sha256": "b6df5a0b692c0d3a22d438366c195b0d14b5d3595b28286e9484a485e334f6af",
+ "code_fingerprint": "bf0b49ed4a75d7007930de5ccdf3654ffd2de507b795b72846162db0f5fb05e1",
+ "code_sources": [
+  "scripts/build_intermediation_by_type.py",
+  "scripts/run_vehicle_transition_e0.py",
+  "src/ddvc/analysis/regression.py",
+  "src/ddvc/model_artifacts.py",
+  "src/ddvc/tables.py"
+ ],
+ "created_at": "2026-08-16T20:10:41+00:00",
+ "git": {
+  "branch": "main",
+  "commit": "7f64a2b20478b665339a649e293fdcbd45fd6a8b",
+  "dirty": true,
+  "dirty_generated_files": [
+   "data/manifests/output/exhibits/e0_vehicle_transition_smoke_support.jsonl.prov.json",
+   "output/exhibits/.e0_vehicle_transition_smoke_estimates.jsonl.agphwvhq.tmp",
+   "output/exhibits/e0_vehicle_transition_smoke_support.jsonl"
+  ],
+  "dirty_tracked_files": [
+   "scripts/build_backing_regime_deck_values.py"
+  ],
+  "dirty_untracked_files": []
+ },
+ "inputs": [
+  {
+   "bytes": 29909,
+   "exists": true,
+   "path": "data/processed/d3_analysis_release/generations/c199e51a2270f28562d7af90b1a28ce0e4c8377d31b120c168549e1a80e7afeb/certificate.json",
+   "sha256": "ff61ba3836f5028ddff2885ad4fa4f7b35daa11117d999d32dfdbe1afe2f8148"
+  },
+  {
+   "bytes": 4436127,
+   "exists": true,
+   "path": "data/processed/intermediation_by_type_daily.parquet",
+   "sha256": "8db2065d8f14b8a3d7b34b6cc2057823a6d74ecc5fc8f8b6beaef33c7afc780b"
+  }
+ ],
+ "libraries": {
+  "numpy": "2.5.1",
+  "pandas": "3.0.3",
+  "pyarrow": "25.0.0",
+  "scipy": "1.18.0"
+ },
+ "notes": "incomplete E0 smoke component: native-to-stable share changes on exact two-leg routing strata with daily HAC inference",
+ "payload_identity": {
+  "bytes": 9854,
+  "format": "jsonl",
+  "rows": 12,
+  "schema_version": 1,
+  "sha256": "b6df5a0b692c0d3a22d438366c195b0d14b5d3595b28286e9484a485e334f6af"
+ },
+ "python": "3.14.6",
+ "rows": 12,
+ "script": "scripts/run_vehicle_transition_e0.py"
+}

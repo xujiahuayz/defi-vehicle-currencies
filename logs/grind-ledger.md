@@ -4898,3 +4898,133 @@ the gate's own list and did not move it, which is correct: the queue outranks it
    Do not write a plan.json that declares attack evidence the runners do not
    produce; the perimeter check will accept the file and the exploration will be
    a fiction.
+
+## 2026-08-16 — The stablecoin class is cut by dated backing regime, commit `PENDING`
+
+**Target.** Queue item 2 (the E1 self-stamping lock), whose chain the last entry
+located precisely: `execute_exploration_plan` cannot run on a plan that declares
+attack evidence the runners do not produce, and `vehicle_transition_e0` covered
+three of its six required attacks. This iteration built the fourth,
+`dated_backing_regimes`, which the crosswalk had marked "ready as an E0 transform"
+for days without anyone writing it.
+
+**Why this unit and not another.** Classified before choosing, as the brief asks.
+The defect is concentrated by *vehicle candidate*, not by time, venue or stress:
+the paper reports a rotation into a class, `stable`, that pools instruments whose
+solvency mechanisms differ, and four papers in this project's corpus exist because
+those regimes behave differently. Its economic weight is not small — over the two
+endpoint years the non-fiat regimes hold 5.8% of the class's route count and 8.8%
+of its strict-support dollars, and the class's own composition moves inside the
+window. It can change the *interpretation* of the headline coefficient (whose
+rotation is it?) and the *sample composition* reading (is the class stable enough
+to name?), so it clears the materiality test that metadata hygiene would not.
+
+**What the evidence says.** The whole rotation is a fiat-reserve phenomenon.
+On the exact two-leg sample at share level, fiat-reserve claims move +24.50 pp
+(HAC SE 1.08) of the +25.42 pp count rotation and +44.09 pp (SE 2.07) of the
++43.87 pp dollar-weighted rotation — that is, slightly more than all of it by
+value. Synthetic claims (USDe, sUSDe, sUSD) grow fastest in relative terms,
+multiplying their share of the class's routes from 0.3% to 1.4%, and contribute
++0.55 pp by count and +1.66 pp by value. The RWA-mixed regime (DAI, USDS) is flat
+by count and *falls* 1.73 pp by value, its share of the class's dollars dropping
+from 6.8% to 1.4%. Holm control runs across the simultaneous regime tests inside
+each estimand and transformation; the pooled row is their sum and is excluded from
+the family it aggregates.
+
+**The label-drift rival is bounded to zero inside the window.** `backing()` is
+dated because DAI's admissible collateral changed in 2020 and 2021 and FRAX's in
+2023. The published ledger dates every label each of the 21 stablecoin
+intermediaries carries: 2 candidates change regime inside the sample, and **0**
+change between 2024 and 2026. So every regime term compares the same instruments
+with themselves, and no part of a regime's move is a relabelling.
+
+**Two internal checks are published, not assumed.** The regime shares divide one
+denominator and the estimator is linear in its outcome, so the fitted regime
+changes must sum to the fitted pooled change: they do, to 1e-15, on all six
+cells, and the runner refuses to publish estimates when they do not (after
+publishing the failed check as support). And because the cut is measured on the
+released endpoint-candidate choice panel rather than the type-level daily panel,
+the run reconciles the two universes on all twelve pooled specifications. The
+largest gap anywhere is 1.9e-4, on a log-odds row; at share level the largest is
+4.8e-5, or 0.005 pp, and on the headline two-leg rows it is 0.001 pp by count and
+0.000 pp by value. The regime terms therefore sit beside the headline in the same
+units.
+
+**A stale crosswalk row corrected.** `within_pair_composition_decomposition` still
+said "transform now: materialize a compact endpoint-pair-by-candidate-by-day panel
+from released unified routes and add it to D3 before E0". That panel is the
+released `endpoint_candidate_composition` choice table, which the D3 certificate
+already binds for `vehicle_transition`, and `run_vehicle_rotation_composition_e0.py`
+already fits the shift-share decomposition and pair fixed effects from it. The row
+now says so, and names what is genuinely outstanding inside that attack (the
+transition matrix and pair-leader exhibit). The family's only truly blocked attack
+is `fixed_opportunity_conditioning`, which waits on the routing frontier.
+
+**D3 was republished, which unblocks every model runner.** No current D3
+certificate existed: all seven generations were `stale` or `unstamped`, which is
+why the last entries recorded runners failing with `INPUT BLOCKED: model runner
+lacks its DDVC_D3_CERTIFICATE/DDVC_D3_GENERATION binding`. `scripts/publish_analysis_release.py`
+produced generation `4225a3bd7729de96` (pointer `c199e51a2270f285`), status pass,
+7 claim inputs. **DECISION: promote** — publishing is the scripted owner's own job,
+it re-validates the whole claim-input perimeter and fails closed, it adds a
+generation beside the immutable old ones rather than rewriting one, and without it
+no attack evidence can ever be published. It cost about two hours of wall clock,
+almost all of it the capital-release lease re-verifying its upstream perimeter;
+budget for that.
+
+**A self-inflicted trap worth remembering.** The first attempt put the shared
+`expected_release_receipt_in_d3` helper in `src/ddvc/endpoint_candidate_composition_release.py`.
+That module's own source is fingerprinted into the semantic receipt it issues, so
+adding a consumer-side function there changed the validator fingerprint from
+`dbb0c10a` to `c55a3d06` and made the publish fail with "endpoint_candidate_composition
+lacks the required semantic-validation receipt" — i.e. it would have forced a full
+re-attestation of a certified release to gain a helper. The helper lives in
+`ddvc.model_artifacts` instead, with a comment saying why.
+
+**Paper.** Section 3.1 gains two paragraphs after the annual-path figure: one that
+dates the classification before spending it, one that reports which regime carries
+the rotation and reconciles the two panels. Macros come from the new
+`scripts/build_backing_regime_deck_values.py`; no number is typed. The rhetoric
+ledger was updated for real, not mechanically: the two new paragraphs are recorded
+against raw passages read this iteration — Amiti, Itskhoki and Konings lines
+1405-1440, whose footnote 23 quantifies how rarely invoicing currency switches
+before they cut on it, and Bolton and Kacperczyk lines 1899-1935, "it is therefore
+natural to wonder whether our results are disproportionately driven by these
+sectors". The 40 unchanged handoff records were re-anchored by the +11 line shift.
+First draft of the passage tripped the construction alarm (`rather than` at 0.649
+per 1,000 words against a corpus maximum of 0.572, periphrastic negation at 4.779
+against 4.751); both thoughts were rewritten positively, not word-substituted, and
+the alarm is clear.
+
+**Deck: deliberately untouched. DECISION: park.** The live interjection caps the
+core deck at 13 frames against 19 today and is mid-paydown; adding a regime frame
+would move the measured gate backwards. The deck's own PDF is recommitted because
+the conformance check rebuilt it.
+
+**Validation.** `check_deliverable_conformance.py` green on every blocking check,
+paper 46 pages and deck 37 pages with 0 undefined references, 3 advisories
+(equations below the venue p25, the outlier lexicon, venue shape). Full suite
+2,246 passed / 12 failed, and every failure is pre-existing and unrelated: the
+seven `test_weighted_quote` wiring tests and the two collection errors in
+`test_route_cost_panel.py` and `test_route_state.py` are the old
+`v2_event_source_release provenance is not current` cause, the three
+`test_vehicle_role_models` tests need the absent `pyfixest`, and the venue-optics
+citation subfail is the standing advisory. The twelfth,
+`test_variable_registry::test_source_does_not_generate_csv_artifacts`, is NEW to
+this ledger but not to the tree: `scripts/run_stress_reallocation_e0.py:750` calls
+`pd.read_csv(price_source)`, which the registry bans outside `scripts/verify/`, and
+it was added in `d1efb22`. Verified pre-existing by stashing this iteration's work
+and rerunning the test alone. It needs adjudication — either the daily reference
+becomes a parquet input, or the reader earns a narrow recorded exemption like
+`cex_reference.py` — and it is not this unit's to decide.
+
+**Gate state: RED, 3 blocking, unchanged** — node E1 specification lock; empirical
+model ledger; two unchanged findings passes. 47 checks pass, identical to the start
+of the iteration: the D3 republish disturbed nothing.
+
+**Next iteration.** In order: (1) adjudicate `fixed_opportunity_conditioning` for
+`vehicle_transition_e0` and the eight `liquidity_capital_v2_e0` attacks, then write
+the plan.json those two families can honestly satisfy; (2) rerun
+`run_vehicle_rotation_composition_e0.py` and `run_liquidity_capital_v2_predictability.py`
+on generation `4225a3bd7729de96` and confirm the stale exhibits reproduce; (3) the
+deck paydown, resuming at pages 27, 19, 17, 18, 12, 13, 5.

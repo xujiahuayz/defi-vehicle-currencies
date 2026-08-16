@@ -1,0 +1,73 @@
+{
+ "argv": [],
+ "artefact": "output/exhibits/vehicle_transition_backing_regime_deck_values.tex",
+ "artefact_bytes": 4677,
+ "artefact_mtime_ns": 1786911334799188162,
+ "artefact_sha256": "da76c6e46739b199fd1708c4b70c0c9eaaf29805638e3692b581490a61993f64",
+ "code_fingerprint": "628bae9e491a6711ef8b92a9bb9bc5a056b4a1de689931eaef4b8179ce1af373",
+ "code_sources": [
+  "scripts/build_backing_regime_deck_values.py"
+ ],
+ "created_at": "2026-08-16T20:15:34+00:00",
+ "git": {
+  "branch": "main",
+  "commit": "7f64a2b20478b665339a649e293fdcbd45fd6a8b",
+  "dirty": true,
+  "dirty_generated_files": [
+   "data/manifests/output/exhibits/e0_vehicle_transition_backing_regime_estimates.jsonl.prov.json",
+   "data/manifests/output/exhibits/e0_vehicle_transition_backing_regime_support.jsonl.prov.json",
+   "data/manifests/output/exhibits/e0_vehicle_transition_smoke_estimates.jsonl.prov.json",
+   "data/manifests/output/exhibits/e0_vehicle_transition_smoke_support.jsonl.prov.json",
+   "output/exhibits/e0_vehicle_transition_backing_regime_estimates.jsonl",
+   "output/exhibits/e0_vehicle_transition_backing_regime_support.jsonl",
+   "output/exhibits/e0_vehicle_transition_smoke_estimates.jsonl",
+   "output/exhibits/e0_vehicle_transition_smoke_support.jsonl"
+  ],
+  "dirty_tracked_files": [
+   "scripts/build_backing_regime_deck_values.py"
+  ],
+  "dirty_untracked_files": []
+ },
+ "inputs": [
+  {
+   "bytes": 80353,
+   "exists": true,
+   "path": "output/exhibits/e0_vehicle_transition_backing_regime_estimates.jsonl",
+   "sha256": "0821f7e3333682c554f01112fdbd6605f991e6aa3fedea576f65029fabc828e2"
+  },
+  {
+   "bytes": 818770,
+   "exists": true,
+   "path": "data/manifests/output/exhibits/e0_vehicle_transition_backing_regime_estimates.jsonl.prov.json",
+   "sha256": "8677d32cd7e2c15076160514b0f150ecff6c148f632075ce2af1995f0a6ff3ba"
+  },
+  {
+   "bytes": 149377,
+   "exists": true,
+   "path": "output/exhibits/e0_vehicle_transition_backing_regime_support.jsonl",
+   "sha256": "24cd32c9b72456b5398271e8dff8175b60de9156d01744d5f9730e4908645ba0"
+  },
+  {
+   "bytes": 818522,
+   "exists": true,
+   "path": "data/manifests/output/exhibits/e0_vehicle_transition_backing_regime_support.jsonl.prov.json",
+   "sha256": "f380ddbbf8c91139fa07e626c26ff282293f4cffa3e624273a29e00397084d3b"
+  }
+ ],
+ "libraries": {
+  "numpy": "2.5.1",
+  "pandas": "3.0.3",
+  "pyarrow": "25.0.0",
+  "scipy": "1.18.0"
+ },
+ "notes": "Display macros for the dated-backing-regime cut of the vehicle-currency rotation, its regime mass weights, its label-change ledger, and the choice-universe versus type-panel gap.",
+ "payload_identity": {
+  "bytes": 4677,
+  "format": "binary",
+  "schema_version": 1,
+  "sha256": "da76c6e46739b199fd1708c4b70c0c9eaaf29805638e3692b581490a61993f64"
+ },
+ "python": "3.14.6",
+ "rows": 209,
+ "script": "scripts/build_backing_regime_deck_values.py"
+}

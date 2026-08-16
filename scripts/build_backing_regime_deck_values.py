@@ -126,8 +126,11 @@ def render(estimates: pd.DataFrame, support: pd.DataFrame) -> str:
             weighting=weighting,
             value_support=value_support,
         )
+        # Three decimals: the two universes agree far inside the second decimal, and
+        # rounding that agreement to `0.00 pp` would read as a rounded number rather
+        # than as the measured gap it is.
         lines.append(
-            f"\\newcommand{{\\Backing{stem}UniverseGap}}{{{_se(float(reconciliation['absolute_difference']))}}}"
+            f"\\newcommand{{\\Backing{stem}UniverseGap}}{{{_se(float(reconciliation['absolute_difference']), 3)}}}"
         )
     moved = ledger[ledger["label_moves_in_window"].astype(bool)]
     lines += [

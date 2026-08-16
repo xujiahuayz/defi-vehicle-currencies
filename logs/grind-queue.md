@@ -111,6 +111,35 @@ and pick a blocking check from the freeze gate.
   E0 run still needs a written `plan.json` naming a runner and declared artifacts
   per executable family — that plan does not exist yet and is the first thing the
   lock script must produce or require._
+  _PROGRESS NOTE 3 (2026-08-16, still not closed). The chain's real obstacle was
+  never the lock script: `execute_exploration_plan` demands attack evidence that
+  the runners must actually produce, and `vehicle_transition_e0` covered three of
+  its six attacks. Two more are now settled. `dated_backing_regimes` is built and
+  published: `scripts/run_vehicle_transition_e0.py:run_dated_backing_regimes`
+  writes `output/exhibits/e0_vehicle_transition_backing_regime_{estimates,support}
+  .jsonl` (84 fitted specifications, additivity checked, label ledger, universe
+  reconciliation). `within_pair_composition_decomposition` needed no new work at
+  all: the crosswalk row asking for an endpoint-pair-by-candidate-by-day panel to
+  be added to D3 was stale, because that panel IS the released
+  `endpoint_candidate_composition` choice table the D3 certificate already binds,
+  and `scripts/run_vehicle_rotation_composition_e0.py` fits the decomposition from
+  it; only the transition-matrix and pair-leader exhibit remain inside that attack.
+  So the family's one genuinely blocked attack is `fixed_opportunity_conditioning`,
+  which needs the routing frontier. The next worker must adjudicate that before
+  writing any plan: `_normalize_attack_evidence` requires an artifact for EVERY
+  required attack id, so either the frontier lands, or the attack's disposition is
+  argued in the template with a support artifact that records it unsupported and
+  says so in the open — do not cite a support file as if it were a passed attack.
+  Second and separate: a current D3 analysis release now exists again, generation
+  `4225a3bd7729de96` at
+  `data/processed/d3_analysis_release/generations/c199e51a2270f28562d7af90b1a28ce0e4c8377d31b120c168549e1a80e7afeb/certificate.json`.
+  Publishing it took roughly two hours of wall clock, almost all of it the capital
+  release lease re-verifying its own upstream perimeter, so budget for that before
+  starting a run that needs a fresh certificate. Every model runner can now bind
+  again, which unblocks the stale exhibits earlier entries recorded: rerun
+  `run_liquidity_capital_v2_predictability.py` and
+  `run_vehicle_rotation_composition_e0.py` on this generation and confirm their
+  numbers reproduce before anything consumes them._
 
 - [x] **Replace the hand-declared `stable_passes` with a computed findings fingerprint.**
   Today `stable_passes` is a hand-typed YAML field on line 3 of
