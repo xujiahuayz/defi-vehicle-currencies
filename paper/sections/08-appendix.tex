@@ -173,11 +173,45 @@ which gives the two-token exact-input form
 \frac{R_{i,p,e^-}}{R_{i,p,e^-}+\varphi_p\Delta_i}
 \right)^{w_{i,p}/w_{o,p}}\right].
 \]
-Only the ratio $w_{i,p}/w_{o,p}$ enters. An equal-weight Balancer pool and a constant-product pair with the same reserves therefore return the same quote. Balancer's weighted-pool contract accepts inputs up to 30\% of the input-token reserve; that contract limit governs whether a quote can execute, but it is not the empirical support rule.\footnote{See the input-ratio bound in Balancer's \href{https://github.com/balancer/balancer-v2-monorepo/blob/master/pkg/pool-weighted/contracts/WeightedMath.sol}{\texttt{WeightedMath.sol}}.} The counterfactual design applies the common 5\% own-price-impact cutoff in Equation~\eqref{eq:support} to Balancer and every other pool family. The subgraph reports the weight ratio and swap fee at its head block, not at each historical trade. Because liquidity-bootstrapping pools change weights on a schedule and pool owners can reset fees, we estimate the historical parameter when the reported value does not reproduce realised trades. Each fit introduces one scalar parameter and requires at least four observations for the token pair.
+Only the ratio $w_{i,p}/w_{o,p}$ enters. An equal-weight Balancer pool and a constant-product pair with the same reserves therefore return the same quote. Balancer's weighted-pool contract accepts inputs up to 30\% of the input-token reserve; that contract limit governs whether a quote can execute, but it is not the empirical support rule.\footnote{See the input-ratio bound in Balancer's \href{https://github.com/balancer/balancer-v2-monorepo/blob/master/pkg/pool-weighted/contracts/WeightedMath.sol}{\texttt{WeightedMath.sol}}.} The counterfactual design applies the common 5\% own-price-impact cutoff in Equation~\eqref{eq:support} to Balancer and every other pool family. The subgraph reports the weight ratio $\theta_p=w_{i,p}/w_{o,p}$ and the swap fee at its head block while balances come from a historical snapshot, so a pool that has repriced itself since is quoted with a current parameter against a past state. Liquidity-bootstrapping pools move weights on a schedule by design and managed pools move them on demand, and a weighted pool's owner can reset the fee at will. What such a pool produces is a small and nearly constant relative bias, which the validation displayed before anything diagnosed it: reported parameters reproduce trades in 2024 to a millionth of a basis point and trades in 2022 only to 0.19\%. A gap of that size is a fee. The fee enters the quote through $\varphi_p\Delta_i$, so a fee wrong by a basis point moves output by about a basis point, whereas a mistake in the invariant would leave an error that scales with trade size.
 % src/ddvc/pricing/weighted.py, MAX_IN_RATIO at 30% of the input balance
-% src/ddvc/pricing/weighted.py, parameter identification docstring and MIN_PAIR_OBSERVATIONS
+% src/ddvc/pricing/weighted.py, calibrate_fee docstring, read-parameter error measured at 1e-9 percent on 2024 trades and 0.19 percent on 2022 trades
 
-We retain a Balancer pool-day when the 90th percentile fitting error is below 0.1\%. The threshold separates weighted pools, whose held-out errors range from $10^{-9}$ to 0.004\%, from stable, composable-stable, and elliptic-curve pools, whose held-out errors range from 0.05\% to 1.08\% and have a 99th percentile of 12\%.
+We therefore treat both as unknowns to be recovered from the trades a pool actually executed, the move Curve's amplification coefficient needed in Section~\ref{app:quoters:stable}, and we keep a reported value only where it survives that test. Reconstructing a pool's state from its own event history follows \citet{LeharParlour2024Uniswap}; what the weighted family adds is that two arguments of the pricing function are themselves missing from the historical record, so a reconstructed state alone does not deliver a quote. Every quantity in the weighted invariant other than $\theta_p$ and $f_p$ is observed, and every Balancer swap reports both amounts, so with balances reconstructed either parameter is the only unknown. We order a pool-day's trades and assign them alternately to a fitting set $\mathcal{O}_p$ and an evaluation set, and every error reported in Table~\ref{tab:app:weighted} is measured on the evaluation set. For a candidate parameter pair $\vartheta$,
+\[
+\mathcal{E}_p(\vartheta)=Q_{0.90}\!\left\{
+\frac{|Q_p(i\to o,\Delta_i;\chi_{p,e^-}(\vartheta))-\Delta_o|}{\Delta_o}
+: e\in\mathcal{O}_p\right\}
+\]
+is the fitting error, defined only when at least nine tenths of $\mathcal{O}_p$ returns a quote at all and undefined otherwise. The upper tail does the gating for the reason it does at Curve, and the coverage condition stops a parameter that prices one corner of a pool's activity from standing for the pool.
+
+A pair's weight ratio is fitted on the trades crossing it in either direction, with a trade running from $b$ to $a$ scored at the reciprocal exponent, which is what the invariant implies and which doubles the trades available to pin one number,
+\[
+\widehat\theta_{ab,p}=\arg\min_{\theta}
+\mathcal{E}_p\bigl(\theta\ \text{on}\ \mathcal{O}^{a\to b}_p,\ \theta^{-1}\ \text{on}\ \mathcal{O}^{b\to a}_p\bigr),
+\]
+searched over a logarithmic grid spanning Balancer's own weight bounds and refined by ternary search in the log exponent, and attempted only for pairs carrying at least four fitting trades, since one or two are fitted exactly by construction and then read as a clean fit. The fee $\widehat f_p$ is recovered the same way over the fee range the vault permits. Reading is tried before fitting and the fee before the weights, so each tier adds at most one free scalar and a pool that reproduces its trades on reported parameters is never handed a fitted one,
+\begin{equation}
+\label{eq:weighted-fit}
+\widehat\vartheta_p=
+\begin{cases}
+(\theta_p,f_p) & \text{if } \mathcal{E}_p(\theta_p,f_p)\le\bar e,\\
+(\theta_p,\widehat f_p) & \text{else if } \mathcal{E}_p(\theta_p,\widehat f_p)\le\bar e,\\
+(\widehat\theta_{\cdot,p},f_p) & \text{else if } \mathcal{E}_p(\widehat\theta_{\cdot,p},f_p)\le\bar e,\\
+\text{excluded} & \text{otherwise,}
+\end{cases}
+\qquad\bar e=0.1\%.
+\end{equation}
+The label a pool carries in the source plays no part in this. A pool-day whose observed trades no tier reproduces is excluded whatever its \texttt{poolType} says, and the third tier further requires the fitted ratios to cover nine tenths of the fitting trades, so a pool-day is never accepted on the pairs that happened to fit and then quoted on the rest.
+% src/ddvc/pricing/weighted.py, FIT_QUANTILE 0.90, MIN_QUOTED_SHARE 0.9, MIN_PAIR_OBSERVATIONS 4,
+% WEIGHT_RATIO_MIN/MAX and FEE_MIN/MAX; scripts/validate_weighted_quoter.py, fit_pool_day tier order
+% and the alternate-trade fitting and evaluation split
+
+How often the machinery binds is itself a diagnostic. Of the 256 pool-days accepted across the twelve validation days, 209 clear the gate on reported parameters with nothing identified, 43 need the swap fee alone, and 4 need per-pair weight ratios. Four fifths of the priced sample therefore carries no fitted parameter, and identification repairs a stale field in a minority of pool-days instead of supplying the invariant.
+% output/exhibits/weighted_quoter_validation.jsonl, pools_by_fit_mode summed over the 12 validation
+% days: reported 209, fee_fitted 43, weight_fitted 4, against 256 pools_priced
+
+The gate $\bar e$ is set at 0.1\% and not at the 1\% Curve uses, because the achieved errors separate cleanly there. The threshold separates weighted pools, whose held-out errors range from $10^{-9}$ to 0.004\%, from stable, composable-stable, and elliptic-curve pools, whose held-out errors range from 0.05\% to 1.08\% and have a 99th percentile of 12\%. At a 1\% gate the second group clears on a fitted weight ratio and arrives quoted instead of excluded, which is the Curve lesson in a second form: there the over-permissive object was a parameter range and here it is an error threshold.
 % src/ddvc/pricing/weighted.py, MAX_CALIBRATION_ERROR at 0.001 with the measured separation
 
 \begin{table}[t]
@@ -395,7 +429,7 @@ The exclusions are concentrated in routes involving the native asset. The exclud
 SushiSwap v3 is omitted from the route-cost comparison because its historical records lack the pool's root price, in-range liquidity, and tick spacing. Its reserves are distributed across ticks, and the balance and weight fields exposed by the common schema do not describe that invariant. The exchange accounts for 0.016\% of volume among the seven exchanges used for route costs over the full sample and 0.176\% in 2026. Across fourteen sampled days, only 4.1\% of its volume occurs on token pairs unavailable on another included exchange, never more than \$37,609 on one day.
 % docs/venue-coverage-bounds.md, sushiswap_v3_schema_probe.jsonl and sushiswap_v3_pair_overlap.jsonl, 14 sampled days
 
-Balancer accounts for 3.9\% of measured venue volume over the full sample and 8.8\% at its 2023 peak. Table~\ref{tab:app:weighted} validates selected weighted pools. Linear and boosted pools remain outside the quoter. Of 29 sampled composable-stable pools, 23 reduce to two external tokens after removing the pool's own share token, but pricing them also requires historical rate-provider states absent from the source. The priced Balancer sample is therefore confined to weighted pools whose historical state can be reconstructed.
+Balancer accounts for 3.9\% of measured venue volume over the full sample and 8.8\% at its 2023 peak. Table~\ref{tab:app:weighted} validates selected weighted pools. Linear and boosted pools remain outside the quoter. Of 29 sampled composable-stable pools, 23 reduce to two external tokens after removing the pool's own share token, but pricing them also requires historical rate-provider states absent from the source. The priced Balancer sample is therefore confined to weighted pools whose historical state can be reconstructed and whose realised trades are reproduced at one of the tiers of Equation~\eqref{eq:weighted-fit}.
 % docs/venue-coverage-bounds.md, venue_volume_by_year.jsonl, 400 sampled days; docs/research-workflow.md, Balancer family audit
 
 \section{Round-trip exclusion}

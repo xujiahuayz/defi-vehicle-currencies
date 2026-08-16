@@ -1408,7 +1408,7 @@
    "terminology_judgment": "Reader-facing prose names the measured object as the source and destination assets or their ordered asset pair. It reserves pool for a liquidity contract, venue for an exchange or protocol, and route for the ordered execution sequence; these objects are not used interchangeably."
   },
   "paper/sections/08-appendix.tex": {
-   "sha256": "2e2fafa96222ba886a3b273a750f9a465967d9e851fae1de0264a059c67f01e1",
+   "sha256": "796da36c69131d381f15b67d43467dd462ca368c5d9f5f33ab312c017f9dbe54",
    "status": "rewritten",
    "exemplars": [
     "literature/text/2023-LiYeZheng2023Refusing-refusing-the-best-price.txt:395-510",
@@ -1517,32 +1517,38 @@
      165,
      176,
      180,
-     220,
-     226,
-     228,
-     234,
-     239,
-     242,
-     247,
-     249,
-     252,
-     258,
-     265,
-     300,
-     330,
-     336,
-     349,
-     352,
-     392,
-     395,
-     398,
-     408,
-     452
+     186,
+     193,
+     205,
+     210,
+     214,
+     254,
+     260,
+     262,
+     268,
+     273,
+     276,
+     281,
+     283,
+     286,
+     292,
+     299,
+     334,
+     364,
+     370,
+     383,
+     386,
+     426,
+     429,
+     432,
+     442,
+     486
     ],
-    "judgment": "The appendix moves from route construction to harmonised pricing equations, ordered state reconstruction, common support, coverage, and round trips. The concentrated-liquidity subsection now uses input/output notation, includes fees, and sources v4 separately.",
+    "judgment": "The appendix moves from route construction to harmonised pricing equations, ordered state reconstruction, common support, coverage, and round trips. The concentrated-liquidity subsection uses input/output notation, includes fees, and sources v4 separately. The weighted subsection now carries the same movement Huang, Ranaldo, Schrimpf and Somogyi use around their LSTAR estimator: state the functional form, bound the free parameters and say what the bounds are for, give the estimation procedure, and only then report what the procedure implies. Its acceptance rule is displayed and cited from the coverage appendix, and the subsection closes on how often each tier binds so the reader can price how much of the counterfactual rests on fitted parameters.",
     "raw_exemplars": [
      "literature/text/2023-LiYeZheng2023Refusing-refusing-the-best-price.txt:395-510",
-     "literature/text/2022-GrahamGrennanHarveyRajgopal-corporate-culture-evidence-field-jfe.txt:1967-2011"
+     "literature/text/2022-GrahamGrennanHarveyRajgopal-corporate-culture-evidence-field-jfe.txt:1967-2011",
+     "literature/text/2025-HuangRanaldoSchrimpfSomogyi-constrained-liquidity-provision-currency-markets-jfe.txt:1140-1215"
     ],
     "jumps": [],
     "handoffs": [
@@ -1719,26 +1725,76 @@
      },
      {
       "line": 176,
-      "inherited_object": "the weighted quote",
-      "paragraph_function": "separates contract limits, common support, and historical parameters",
-      "relation_to_previous": "moves from invariant to required inputs",
-      "economic_subject": "weights, fees, input limits, price impact",
-      "framing_judgment": "Three distinct restrictions remain separate",
+      "inherited_object": "the weighted exact-input quote",
+      "paragraph_function": "separates the contract's execution limit from the empirical support rule, then diagnoses why a reported parameter can be the wrong one",
+      "relation_to_previous": "turns the invariant into the inputs a historical quote actually needs",
+      "economic_subject": "weight ratio, swap fee, input limits, and the staleness a head-block parameter carries",
+      "framing_judgment": "The diagnosis is argued from the size of the observed error and not asserted: a fee-sized bias is distinguished from an invariant-sized one.",
       "qualification_leads": false,
-      "judgment": "The paragraph separates contract limits, common support, and historical parameters and moves from invariant to required inputs."
+      "judgment": "The paragraph keeps three restrictions apart and closes on the measurement that identifies the defect, which is what the next paragraph then repairs."
      },
      {
       "line": 180,
-      "inherited_object": "historical weighted parameters",
-      "paragraph_function": "defines held-out family admission",
-      "relation_to_previous": "turns recovery into a family-validation rule",
-      "economic_subject": "weighted versus other Balancer pool-days",
-      "framing_judgment": "The threshold classifies families, not the full panel",
+      "inherited_object": "the stale reported parameter",
+      "paragraph_function": "states the identification argument and defines the fitting error",
+      "relation_to_previous": "answers the defect the previous paragraph measured",
+      "economic_subject": "which quantities in the invariant are observed and which must be recovered",
+      "framing_judgment": "Identification is claimed from an observation count, not from an assumption, the construction is positioned against the closest published state reconstruction, and the fitting and evaluation sets are separated before any error is quoted.",
       "qualification_leads": false,
-      "judgment": "The paragraph defines held-out family admission and turns recovery into a family-validation rule."
+      "judgment": "The paragraph earns the display it ends on: every other quantity is observed, so the unknown is the only free object."
      },
      {
-      "line": 220,
+      "line": 186,
+      "inherited_object": "the fitting-error functional",
+      "paragraph_function": "reads the two conditions built into the functional",
+      "relation_to_previous": "completes the display rather than restating it",
+      "economic_subject": "the upper tail of the error and the share of a pool's trades a parameter must price",
+      "framing_judgment": "Both conditions are justified by what they prevent, which keeps them from reading as arbitrary tuning.",
+      "qualification_leads": false,
+      "judgment": "The paragraph is short and does one job, which is to say why the gate is read high and wide."
+     },
+     {
+      "line": 193,
+      "inherited_object": "the fitting error",
+      "paragraph_function": "defines the weight-ratio estimator, bounds its search, and orders the tiers",
+      "relation_to_previous": "moves from the objective to the two parameters it is minimised over",
+      "economic_subject": "the reciprocal exponent implied by the invariant and the precedence of reading over fitting",
+      "framing_judgment": "The reciprocal constraint is presented as an implication of the invariant, so pooling the two directions is a restriction and not a convenience.",
+      "qualification_leads": false,
+      "judgment": "The paragraph builds to the tier rule, which is the object the coverage appendix later cites."
+     },
+     {
+      "line": 205,
+      "inherited_object": "the tier rule",
+      "paragraph_function": "makes exclusion independent of the source's own pool label",
+      "relation_to_previous": "reads the last branch of the display",
+      "economic_subject": "pool-days whose observed trades no tier reproduces",
+      "framing_judgment": "The label is treated as a name and the fit error as a measurement, which is the distinction the exclusion rests on.",
+      "qualification_leads": false,
+      "judgment": "The paragraph closes the rule by naming what it refuses, including the partial-coverage case."
+     },
+     {
+      "line": 210,
+      "inherited_object": "the accepted pool-days",
+      "paragraph_function": "reports how often each tier binds",
+      "relation_to_previous": "turns the rule into a measured fact about the priced sample",
+      "economic_subject": "the share of priced pool-days carrying no fitted parameter",
+      "framing_judgment": "The incidence is used to bound how much the counterfactual rests on fitting, which is the referee's question about the whole apparatus.",
+      "qualification_leads": false,
+      "judgment": "The paragraph converts a procedural appendix into evidence about the credibility of the quotes it supports."
+     },
+     {
+      "line": 214,
+      "inherited_object": "the acceptance gate",
+      "paragraph_function": "justifies the threshold against the looser one used at Curve",
+      "relation_to_previous": "returns to the one free choice the rule still contains",
+      "economic_subject": "the measured separation between weighted pools and the other Balancer families",
+      "framing_judgment": "The threshold is defended by the gap it sits in, and the cost of the looser alternative is stated rather than implied.",
+      "qualification_leads": false,
+      "judgment": "The paragraph ends the subsection on the choice a reader would otherwise have to take on trust."
+     },
+     {
+      "line": 254,
       "inherited_object": "the Balancer table",
       "paragraph_function": "summarises replay accuracy and omitted-family volume",
       "relation_to_previous": "closes validation on its perimeter",
@@ -1748,7 +1804,7 @@
       "judgment": "The paragraph summarises replay accuracy and omitted-family volume and closes validation on its perimeter."
      },
      {
-      "line": 226,
+      "line": 260,
       "inherited_object": "venue-specific component validation",
       "paragraph_function": "introduces pre-trade balance reconstruction",
       "relation_to_previous": "moves from price rules to the exact historical state each rule requires",
@@ -1758,7 +1814,7 @@
       "judgment": "The paragraph introduces pre-trade balance reconstruction and moves from price rules to the exact historical state each rule requires."
      },
      {
-      "line": 228,
+      "line": 262,
       "inherited_object": "the pre-trade state requirement",
       "paragraph_function": "derives backward event unwinding",
       "relation_to_previous": "formalises reconstruction from period-end balances",
@@ -1768,7 +1824,7 @@
       "judgment": "The paragraph derives backward event unwinding and formalises reconstruction from period-end balances."
      },
      {
-      "line": 234,
+      "line": 268,
       "inherited_object": "backward unwinding",
       "paragraph_function": "defines the forward alternative",
       "relation_to_previous": "creates a validation comparison for state timing",
@@ -1778,7 +1834,7 @@
       "judgment": "The paragraph defines the forward alternative and creates a validation comparison for state timing."
      },
      {
-      "line": 239,
+      "line": 273,
       "inherited_object": "the two replay directions",
       "paragraph_function": "reports their quote-error comparison",
       "relation_to_previous": "uses realised outputs to choose the correct state reconstruction",
@@ -1788,7 +1844,7 @@
       "judgment": "The paragraph reports their quote-error comparison and uses realised outputs to choose the correct state reconstruction."
      },
      {
-      "line": 242,
+      "line": 276,
       "inherited_object": "the validated backward replay",
       "paragraph_function": "adds liquidity events and a reserve reconciliation",
       "relation_to_previous": "extends state recovery beyond swaps",
@@ -1798,7 +1854,7 @@
       "judgment": "The paragraph adds liquidity events and a reserve reconciliation and extends state recovery beyond swaps."
      },
      {
-      "line": 247,
+      "line": 281,
       "inherited_object": "the reserve-reconciliation equation",
       "paragraph_function": "states the future admission and coverage consequence",
       "relation_to_previous": "turns tested reconciliation into an empirical support boundary for the eventual panel",
@@ -1809,7 +1865,7 @@
       "qualification_leads_justification": "State-dependent analyses require reconciled histories, so this admission condition must precede any use of reconstructed state"
      },
      {
-      "line": 249,
+      "line": 283,
       "inherited_object": "the constant-product state logic",
       "paragraph_function": "extends balance unwinding to weighted pools",
       "relation_to_previous": "shows the same timing test under Balancer records",
@@ -1819,7 +1875,7 @@
       "judgment": "The paragraph extends balance unwinding to weighted pools and shows the same timing test under Balancer records."
      },
      {
-      "line": 252,
+      "line": 286,
       "inherited_object": "the Balancer replay comparison",
       "paragraph_function": "states why joins and exits are required",
       "relation_to_previous": "closes state reconstruction on the complete balance-changing event set",
@@ -1829,7 +1885,7 @@
       "judgment": "The paragraph states why joins and exits are required and closes state reconstruction on the complete balance-changing event set."
      },
      {
-      "line": 258,
+      "line": 292,
       "inherited_object": "component-level pre-trade tests",
       "paragraph_function": "introduces the common own-price-impact support rule",
       "relation_to_previous": "moves from executed-swap accuracy to extrapolation control",
@@ -1839,7 +1895,7 @@
       "judgment": "The paragraph introduces the common own-price-impact support rule and moves from executed-swap accuracy to extrapolation control."
      },
      {
-      "line": 265,
+      "line": 299,
       "inherited_object": "the need for a support restriction",
       "paragraph_function": "defines size relative to reserves as a constant-product diagnostic",
       "relation_to_previous": "avoids presenting that diagnostic as the cross-family rule",
@@ -1849,7 +1905,7 @@
       "judgment": "The paragraph defines size relative to reserves as a constant-product diagnostic and avoids presenting that diagnostic as the cross-family rule."
      },
      {
-      "line": 300,
+      "line": 334,
       "inherited_object": "the size distribution",
       "paragraph_function": "locates five percent of reserves among realised percentiles",
       "relation_to_previous": "uses reserves only as a diagnostic",
@@ -1859,7 +1915,7 @@
       "judgment": "The paragraph locates five percent of reserves among realised percentiles and uses reserves only as a diagnostic."
      },
      {
-      "line": 330,
+      "line": 364,
       "inherited_object": "the reserve-size diagnostic",
       "paragraph_function": "returns to the common own-price-impact rule and bounds what component validation establishes",
       "relation_to_previous": "closes the support section on an observable limitation",
@@ -1870,7 +1926,7 @@
       "qualification_leads_justification": "Complete pre-state is required before retained-sample claims"
      },
      {
-      "line": 336,
+      "line": 370,
       "inherited_object": "support-restricted pricing",
       "paragraph_function": "defines nine-source observed volume and partial Fluid/v1 coverage",
       "relation_to_previous": "moves to the source perimeter",
@@ -1880,7 +1936,7 @@
       "judgment": "The paragraph defines nine-source observed volume and partial Fluid/v1 coverage and moves to the source perimeter."
      },
      {
-      "line": 349,
+      "line": 383,
       "inherited_object": "the nine-source diagnostic",
       "paragraph_function": "quantifies static-fee hookless v4 reach",
       "relation_to_previous": "moves within v4 pricing eligibility",
@@ -1890,7 +1946,7 @@
       "judgment": "The paragraph quantifies static-fee hookless v4 reach and moves within v4 pricing eligibility."
      },
      {
-      "line": 352,
+      "line": 386,
       "inherited_object": "the v4 perimeter",
       "paragraph_function": "quantifies Curve importance and exclusions",
       "relation_to_previous": "moves to material omitted depth",
@@ -1900,7 +1956,7 @@
       "judgment": "The paragraph quantifies Curve importance and exclusions and moves to material omitted depth."
      },
      {
-      "line": 392,
+      "line": 426,
       "inherited_object": "Curve exclusions",
       "paragraph_function": "shows concentration in native routes and Tricrypto",
       "relation_to_previous": "interprets asymmetry for the comparison",
@@ -1910,7 +1966,7 @@
       "judgment": "The paragraph shows concentration in native routes and Tricrypto and interprets asymmetry for the comparison."
      },
      {
-      "line": 395,
+      "line": 429,
       "inherited_object": "Curve asymmetry",
       "paragraph_function": "bounds Sushi v3 omission by volume and pair overlap",
       "relation_to_previous": "moves to a small venue lacking state",
@@ -1921,7 +1977,7 @@
       "qualification_leads_justification": "Historical tick state is required for pricing"
      },
      {
-      "line": 398,
+      "line": 432,
       "inherited_object": "the Sushi bound",
       "paragraph_function": "describes Balancer support and absent rate-provider state",
       "relation_to_previous": "closes the venue audit",
@@ -1931,7 +1987,7 @@
       "judgment": "The paragraph describes Balancer support and absent rate-provider state and closes the venue audit."
      },
      {
-      "line": 408,
+      "line": 442,
       "inherited_object": "the round-trip endpoint definition",
       "paragraph_function": "states its classification consequence",
       "relation_to_previous": "translates path geometry into sample exclusion",
@@ -1941,7 +1997,7 @@
       "judgment": "The paragraph states its classification consequence and translates path geometry into sample exclusion."
      },
      {
-      "line": 452,
+      "line": 486,
       "inherited_object": "the round-trip distribution table",
       "paragraph_function": "interprets count and value incidence",
       "relation_to_previous": "closes the appendix on the economic size of the excluded population",

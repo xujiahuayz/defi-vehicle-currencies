@@ -214,5 +214,51 @@ class RoutePanelWiringTests(unittest.TestCase):
         self.assertEqual(_panel().bounded_route_workers(100), 6)
 
 
+class AppendixTierIncidenceTests(unittest.TestCase):
+    """The appendix reports how often each acceptance tier binds, so it must reconcile.
+
+    The three tiers of the acceptance rule are not decoration: they say that four fifths of
+    the priced Balancer sample is quoted on parameters read from the source and that the
+    fitting machinery repairs a minority. That reading is what makes the counterfactual
+    credible, and it moves whenever the validation is rerun on different days. Nothing else
+    checks it, because the paper's provenance test deliberately verifies that a number cites
+    an artefact and not that it matches one.
+    """
+
+    EXHIBIT = Path(__file__).resolve().parents[1] / "output" / "exhibits" / "weighted_quoter_validation.jsonl"
+    APPENDIX = Path(__file__).resolve().parents[1] / "paper" / "sections" / "08-appendix.tex"
+
+    def _rows(self) -> list[dict]:
+        if not self.EXHIBIT.is_file():
+            self.skipTest(f"{self.EXHIBIT.name} is not materialised in this checkout")
+        return [json.loads(line) for line in self.EXHIBIT.read_text().splitlines() if line.strip()]
+
+    def test_fit_modes_partition_the_priced_pool_days(self) -> None:
+        rows = self._rows()
+        modes: dict[str, int] = {}
+        for row in rows:
+            for mode, count in json.loads(row["pools_by_fit_mode"]).items():
+                modes[mode] = modes.get(mode, 0) + count
+        self.assertEqual(sum(modes.values()), sum(row["pools_priced"] for row in rows))
+        self.assertLessEqual(set(modes), {"reported", "fee_fitted", "weight_fitted"})
+
+    def test_appendix_states_the_measured_tier_incidence(self) -> None:
+        rows = self._rows()
+        modes: dict[str, int] = {}
+        for row in rows:
+            for mode, count in json.loads(row["pools_by_fit_mode"]).items():
+                modes[mode] = modes.get(mode, 0) + count
+        priced = sum(row["pools_priced"] for row in rows)
+        body = self.APPENDIX.read_text(encoding="utf-8")
+        sentence = (
+            f"Of the {priced} pool-days accepted across the twelve validation days, "
+            f"{modes.get('reported', 0)} clear the gate on reported parameters with nothing "
+            f"identified, {modes.get('fee_fitted', 0)} need the swap fee alone, and "
+            f"{modes.get('weight_fitted', 0)} need per-pair weight ratios."
+        )
+        self.assertIn(sentence, body)
+        self.assertEqual(len(rows), 12)
+
+
 if __name__ == "__main__":
     unittest.main()
