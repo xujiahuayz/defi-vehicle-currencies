@@ -2,43 +2,37 @@
  "argv": [],
  "artefact": "output/exhibits/venue_optics.jsonl",
  "artefact_bytes": 1631,
- "artefact_mtime_ns": 1786868935699372521,
- "artefact_sha256": "003b76cc8968d00af0086898020d6d48670089f38cd415622c267e1e05e003b9",
+ "artefact_mtime_ns": 1786870686473604246,
+ "artefact_sha256": "0a0019525630162d7ea57a4babe0ea60fdedb437f402da226d03588826ab9d57",
  "code_fingerprint": "1d856aef753d386298eb36b202be2c2e1ac110dca54ec84a589592eb467e230a",
  "code_sources": [
   "scripts/measure_venue_optics.py",
   "src/ddvc/tables.py"
  ],
- "created_at": "2026-08-16T08:28:55+00:00",
+ "created_at": "2026-08-16T08:58:06+00:00",
  "git": {
   "branch": "main",
-  "commit": "947328d3367484dead8aec904df669ac12dea51b",
+  "commit": "69450d884d5a7558a2aa39ef29689fead6f31950",
   "dirty": true,
   "dirty_generated_files": [
    "data/manifests/output/exhibits/prose_conventions.jsonl.prov.json",
    "data/manifests/output/exhibits/prose_outliers.jsonl.prov.json",
+   "data/manifests/output/exhibits/vehicle_transition_pair_decomposition_deck_values.tex.prov.json",
    "data/manifests/output/exhibits/venue_shape.jsonl.prov.json",
-   "data/manifests/output/tables/dominance_rotation.pdf.prov.json",
-   "data/manifests/output/tables/dominance_rotation.tex.prov.json",
    "data/manifests/output/tables/pair_composition.pdf.prov.json",
    "data/manifests/output/tables/pair_composition.tex.prov.json",
-   "data/manifests/output/tables/usdt_transition.pdf.prov.json",
-   "data/manifests/output/tables/usdt_transition.tex.prov.json",
    "output/exhibits/prose_conventions.jsonl",
    "output/exhibits/prose_outliers.jsonl",
+   "output/exhibits/vehicle_transition_pair_decomposition_deck_values.tex",
    "output/exhibits/venue_shape.jsonl",
-   "output/tables/dominance_rotation.pdf",
    "output/tables/pair_composition.pdf",
-   "output/tables/pair_composition.tex",
-   "output/tables/usdt_transition.pdf",
-   "output/exhibits/.venue_optics.jsonl.j1ds7r7k.tmp"
+   "output/exhibits/.venue_optics.jsonl.cu8xo1wq.tmp"
   ],
   "dirty_tracked_files": [
-   "deck/main.pdf",
    "docs/reviews/paper-rhetoric.json",
    "paper/sections/03-dominance.tex",
-   "src/ddvc/dominance_tables.py",
-   "tests/test_dominance_tables.py"
+   "scripts/build_vehicle_transition_pair_deck_values.py",
+   "tests/test_vehicle_transition_pair_deck_values.py"
   ],
   "dirty_untracked_files": []
  },
@@ -55,7 +49,7 @@
   "format": "jsonl",
   "rows": 10,
   "schema_version": 1,
-  "sha256": "003b76cc8968d00af0086898020d6d48670089f38cd415622c267e1e05e003b9"
+  "sha256": "0a0019525630162d7ea57a4babe0ea60fdedb437f402da226d03588826ab9d57"
  },
  "python": "3.14.6",
  "rows": 10,

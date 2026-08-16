@@ -20,6 +20,7 @@ DECOMPOSITION = OUTPUT_DIR / "exhibits" / "vehicle_transition_pair_decomposition
 FIXED_EFFECTS = OUTPUT_DIR / "exhibits" / "vehicle_transition_pair_fixed_effects.jsonl"
 USDT_INTEGRATION = OUTPUT_DIR / "exhibits" / "e0_usdt_integration_decomposition.jsonl"
 CONTRIBUTIONS = OUTPUT_DIR / "exhibits" / "vehicle_transition_pair_contributions.parquet"
+SUPPORT = OUTPUT_DIR / "exhibits" / "vehicle_transition_pair_support.jsonl"
 DECK_VALUES = OUTPUT_DIR / "exhibits" / "vehicle_transition_pair_decomposition_deck_values.tex"
 CODE_SOURCES = ["scripts/build_vehicle_transition_pair_deck_values.py"]
 SCOPES = ("pooled", "single_venue", "cross_venue")
@@ -36,6 +37,27 @@ MARKET_INCIDENCE_TERMS = (
     "vehicle_incidence_reweighting",
     "within_pair_stable_share",
 )
+# The three support classes Panel A's bridge is built on, in the order the paper
+# reads them. The bridge publishes five signed terms and three aggregate
+# stablecoin shares; it never publishes the population behind them. Two of its
+# terms -- `market_pair_support_bridge` and `vehicle_role_support_bridge` -- are
+# each a class's mass against that class's routing rate, so a term near zero can
+# mean either an inert class or a shrinking one that routes very differently
+# from the average. Only the classes separate those. `common_vehicle_role` holds
+# ordered pairs carrying a native or stablecoin intermediary in both years;
+# `market_pair_support_turnover` holds pairs whose market is observed in only one
+# year; `vehicle_role_support_turnover_established_market` holds pairs traded in
+# both years whose vehicle role is present in only one, which is the extensive
+# margin of intermediation inside an established market. The class weights are
+# choice-mass weights of the bridge's own partition, never a re-estimation, and
+# never the continuing/year-specific blocks of Equation (6): the identity splits
+# the same mass in two, the bridge in three.
+INCIDENCE_CLASSES = (
+    ("Common", "common_vehicle_role"),
+    ("MarketTurnover", "market_pair_support_turnover"),
+    ("RoleTurnover", "vehicle_role_support_turnover_established_market"),
+)
+INCIDENCE_YEARS = (("Base", 2024), ("End", 2026))
 # One named source--destination pair per aggregate margin, used only to make the
 # accounting concrete on a slide. The macro prefix names the margin as the
 # conclusion states it; the aggregate term each example belongs to follows.
@@ -273,6 +295,8 @@ def _market_incidence_row(decomposition: pd.DataFrame) -> pd.Series:
         "established_market_baseline_stable_share",
         "established_market_comparison_stable_share",
         "established_market_total_change",
+        "common_role_baseline_stable_share",
+        "common_role_comparison_stable_share",
         "common_role_total_change",
         "identity_error",
         *MARKET_INCIDENCE_TERMS,
@@ -307,6 +331,8 @@ def _market_incidence_row(decomposition: pd.DataFrame) -> pd.Series:
         "established_market_baseline_stable_share",
         "established_market_comparison_stable_share",
         "established_market_total_change",
+        "common_role_baseline_stable_share",
+        "common_role_comparison_stable_share",
         "common_role_total_change",
         "identity_error",
         *MARKET_INCIDENCE_TERMS,
@@ -343,11 +369,173 @@ def _market_incidence_row(decomposition: pd.DataFrame) -> pd.Series:
             float(row["established_market_comparison_stable_share"]),
             "established-market endpoints",
         ),
+        (
+            float(row["common_role_baseline_stable_share"]) + common_role,
+            float(row["common_role_comparison_stable_share"]),
+            "common-role endpoints",
+        ),
     )
     for left, right, label in checks:
         if not math.isclose(left, right, abs_tol=1e-12):
             raise ValueError(f"market-incidence decomposition does not reconcile {label}")
     return row
+
+
+def _market_incidence_classes(
+    support: pd.DataFrame, market: pd.Series
+) -> dict[str, dict[str, float]]:
+    """Open the support ledger Panel A's bridge is formed from.
+
+    See ``INCIDENCE_CLASSES`` for what the three classes are. Nothing here is
+    estimated: every quantity is a cell of the certified support ledger, and the
+    function's work is to prove that these cells are the published bridge's own
+    partition before a single class weight reaches a macro. Five premises, in
+    order of what they license. Each class's stablecoin share must be its own
+    stable-over-primary choice mass, or the share is not the class's. The three
+    class weights must close on one in each year, or they are not a partition.
+    Their mass-weighted mean must reproduce that year's aggregate stablecoin
+    share on the bridge row itself, or they are a partition of something else.
+    The common class must reproduce the bridge's common-role share, and the two
+    classes observed in both years must reproduce its established-market share
+    once renormalised -- the two aggregates the bridge already publishes, which
+    is what pins each class to the term that prices it. A class failing any of
+    these is withheld rather than printed beside a term it does not belong to.
+    """
+    required = {
+        "record_type",
+        "metric",
+        "reporting_scope",
+        "endpoint_year",
+        "support_status",
+        "units",
+        "primary_choice_mass",
+        "primary_choice_mass_share",
+        "stable_choice_mass",
+        "stable_share",
+    }
+    missing = sorted(required - set(support.columns))
+    if missing:
+        raise ValueError(f"pair support ledger missing columns: {', '.join(missing)}")
+    selected = support[
+        support["record_type"].eq("market_incidence_support")
+        & support["metric"].eq("count_share")
+        & support["reporting_scope"].eq("pooled")
+    ]
+    expected = len(INCIDENCE_CLASSES) * len(INCIDENCE_YEARS)
+    if len(selected) != expected:
+        raise ValueError(
+            "market-incidence support requires exactly "
+            f"{expected} pooled count rows; found {len(selected)}"
+        )
+    cells: dict[tuple[str, int], pd.Series] = {}
+    for _infix, status in INCIDENCE_CLASSES:
+        for _suffix, year in INCIDENCE_YEARS:
+            rows = selected[
+                selected["support_status"].eq(status)
+                & selected["endpoint_year"].eq(float(year))
+            ]
+            if len(rows) != 1:
+                raise ValueError(
+                    f"market-incidence support has {len(rows)} rows for "
+                    f"{status} in {year}; exactly one is required"
+                )
+            row = rows.iloc[0]
+            numeric = (
+                "units",
+                "primary_choice_mass",
+                "primary_choice_mass_share",
+                "stable_choice_mass",
+                "stable_share",
+            )
+            if not all(math.isfinite(float(row[column])) for column in numeric):
+                raise ValueError(f"market-incidence support {status} {year} is non-finite")
+            primary = float(row["primary_choice_mass"])
+            stable = float(row["stable_choice_mass"])
+            if int(row["units"]) <= 0 or primary <= 0:
+                raise ValueError(f"market-incidence support {status} {year} is empty")
+            if not 0 <= stable <= primary:
+                raise ValueError(
+                    f"market-incidence support {status} {year} routes more stablecoin "
+                    "mass than it carries"
+                )
+            if not math.isclose(float(row["stable_share"]), stable / primary, abs_tol=1e-12):
+                raise ValueError(
+                    f"market-incidence support {status} {year} stablecoin share is not "
+                    "its own stable-over-primary choice mass"
+                )
+            if not 0 < float(row["primary_choice_mass_share"]) < 1:
+                raise ValueError(
+                    f"market-incidence support {status} {year} weight leaves the unit range"
+                )
+            cells[(status, year)] = row
+    aggregate = {
+        2024: "baseline_stable_share",
+        2026: "comparison_stable_share",
+    }
+    common_role = {
+        2024: "common_role_baseline_stable_share",
+        2026: "common_role_comparison_stable_share",
+    }
+    established = {
+        2024: "established_market_baseline_stable_share",
+        2026: "established_market_comparison_stable_share",
+    }
+    for _suffix, year in INCIDENCE_YEARS:
+        year_rows = [cells[(status, year)] for _infix, status in INCIDENCE_CLASSES]
+        weights = [float(row["primary_choice_mass_share"]) for row in year_rows]
+        if not math.isclose(sum(weights), 1.0, abs_tol=1e-9):
+            raise ValueError(
+                f"market-incidence support classes do not partition {year} choice mass"
+            )
+        mean = sum(
+            weight * float(row["stable_share"])
+            for weight, row in zip(weights, year_rows, strict=True)
+        )
+        if not math.isclose(mean, float(market[aggregate[year]]), abs_tol=1e-12):
+            raise ValueError(
+                f"market-incidence support classes do not reproduce the {year} "
+                "aggregate stablecoin share of the bridge they are read against"
+            )
+        common = cells[("common_vehicle_role", year)]
+        if not math.isclose(
+            float(common["stable_share"]), float(market[common_role[year]]), abs_tol=1e-12
+        ):
+            raise ValueError(
+                f"market-incidence common class does not reproduce the {year} "
+                "common-role stablecoin share"
+            )
+        both_years = [
+            cells[("common_vehicle_role", year)],
+            cells[("vehicle_role_support_turnover_established_market", year)],
+        ]
+        both_weight = sum(float(row["primary_choice_mass_share"]) for row in both_years)
+        if not 0 < both_weight < 1:
+            raise ValueError(
+                f"market-incidence established-market classes carry no {year} mass"
+            )
+        both_mean = (
+            sum(
+                float(row["primary_choice_mass_share"]) * float(row["stable_share"])
+                for row in both_years
+            )
+            / both_weight
+        )
+        if not math.isclose(both_mean, float(market[established[year]]), abs_tol=1e-12):
+            raise ValueError(
+                f"market-incidence established-market classes do not reproduce the "
+                f"{year} established-market stablecoin share"
+            )
+    return {
+        infix: {
+            suffix: {
+                "weight": float(cells[(status, year)]["primary_choice_mass_share"]),
+                "stable_share": float(cells[(status, year)]["stable_share"]),
+                "pairs": int(cells[(status, year)]["units"]),
+            }
+            for suffix, year in INCIDENCE_YEARS
+        }
+        for infix, status in INCIDENCE_CLASSES
+    }
 
 
 def _scoped_contributions(
@@ -1015,11 +1203,13 @@ def render_pair_decomposition_deck_values(
     fixed_effects: pd.DataFrame,
     usdt_integration: pd.DataFrame,
     contributions: pd.DataFrame,
+    support: pd.DataFrame,
 ) -> str:
     """Render empirical cells while keeping evidence identity out of the PDF."""
     count = _scope_rows(decomposition, "count_share")
     value = _scope_rows(decomposition, "strict_intermediation_value_share")
     market = _market_incidence_row(decomposition)
+    incidence = _market_incidence_classes(support, market)
     matched_count = _matched_market_row(fixed_effects, "count_share")
     matched_value = _matched_market_row(
         fixed_effects, "strict_intermediation_value_share"
@@ -1088,6 +1278,19 @@ def render_pair_decomposition_deck_values(
             f"\\newcommand{{\\ObservedBothYearsEnd}}{{{_share(float(market['established_market_comparison_stable_share']))}}}",
             f"\\newcommand{{\\ObservedBothYearsTotal}}{{{_signed_pp(float(market['established_market_total_change']))}}}",
             f"\\newcommand{{\\CommonRoleTotal}}{{{_signed_pp(float(market['common_role_total_change']))}}}",
+            *(
+                line
+                for infix, _status in INCIDENCE_CLASSES
+                for suffix, _year in INCIDENCE_YEARS
+                for line in (
+                    f"\\newcommand{{\\Incidence{infix}Weight{suffix}}}"
+                    f"{{{_share(incidence[infix][suffix]['weight'])}}}",
+                    f"\\newcommand{{\\Incidence{infix}Stable{suffix}}}"
+                    f"{{{_share(incidence[infix][suffix]['stable_share'])}}}",
+                    f"\\newcommand{{\\Incidence{infix}Pairs{suffix}}}"
+                    f"{{{_pairs(incidence[infix][suffix]['pairs'])}}}",
+                )
+            ),
             f"\\newcommand{{\\PairActivityTotal}}{{{_signed_pp(pair_activity_total)}}}",
             f"\\newcommand{{\\VehicleUseNet}}{{{_signed_pp(vehicle_use_net)}}}",
             f"\\newcommand{{\\PairAndVehicleTotal}}{{{_signed_pp(pair_and_vehicle_total)}}}",
@@ -1284,9 +1487,11 @@ def run(
     fixed_effects_path: Path = FIXED_EFFECTS,
     usdt_integration_path: Path = USDT_INTEGRATION,
     contributions_path: Path = CONTRIBUTIONS,
+    support_path: Path = SUPPORT,
     output_path: Path = DECK_VALUES,
 ) -> int:
     provenance_path = require_certified_presentation_source(decomposition_path)
+    support_provenance = require_certified_presentation_source(support_path)
     fixed_effects_provenance = require_certified_presentation_source(
         fixed_effects_path
     )
@@ -1322,8 +1527,9 @@ def run(
             "mechanism_status",
         ],
     )
+    support = pd.read_json(support_path, lines=True)
     rendered = render_pair_decomposition_deck_values(
-        decomposition, fixed_effects, usdt_integration, contributions
+        decomposition, fixed_effects, usdt_integration, contributions, support
     )
     with atomic_output(output_path) as temporary:
         temporary.write_text(rendered, encoding="utf-8")
@@ -1339,21 +1545,25 @@ def run(
             usdt_integration_provenance,
             contributions_path,
             contributions_provenance,
+            support_path,
+            support_provenance,
         ],
         rows=(
             len(decomposition)
             + len(fixed_effects)
             + len(usdt_integration)
             + len(contributions)
+            + len(support)
         ),
         notes=(
             "Presentation macros for the exact descriptive pair-composition "
             "accounting, the matched-market estimate, one named "
             "source--destination pair per aggregate margin, and the split of "
-            "each composition margin on WETH-endpoint eligibility, and the "
+            "each composition margin on WETH-endpoint eligibility, the "
             "netted exclusive-pair term read as one activity mass against two "
-            "corridor cohorts' routing rates; evidence status and identities "
-            "remain source-only."
+            "corridor cohorts' routing rates, and the three market-incidence "
+            "support classes the Panel A bridge is formed from; evidence "
+            "status and identities remain source-only."
         ),
     )
     print(f"wrote {output_path}")
@@ -1366,6 +1576,7 @@ def main() -> int:
     parser.add_argument("--fixed-effects", type=Path, default=FIXED_EFFECTS)
     parser.add_argument("--usdt-integration", type=Path, default=USDT_INTEGRATION)
     parser.add_argument("--contributions", type=Path, default=CONTRIBUTIONS)
+    parser.add_argument("--support", type=Path, default=SUPPORT)
     parser.add_argument("--output", type=Path, default=DECK_VALUES)
     args = parser.parse_args()
     return run(
@@ -1373,6 +1584,7 @@ def main() -> int:
         fixed_effects_path=args.fixed_effects,
         usdt_integration_path=args.usdt_integration,
         contributions_path=args.contributions,
+        support_path=args.support,
         output_path=args.output,
     )
 

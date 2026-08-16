@@ -80,6 +80,21 @@ Panel A factors the same route-count total a second way. Equation~\eqref{eq:pair
 % output/exhibits/vehicle_transition_pair_decomposition.jsonl; macros from
 % scripts/build_vehicle_transition_pair_deck_values.py
 
+The bridge's smallest term is the one that says the most once its population is opened. Pairs that gain or lose a vehicle route contribute \VehicleRoleSupportBridge{}, which invites the reading that established markets barely changed whether they used an intermediary at all. Panel A partitions each year's choice mass into three classes, and the class behind that term is both narrow and closing: markets traded in both years whose vehicle role appears in only one carry \IncidenceRoleTurnoverWeightBase{} of 2024 choice mass across \IncidenceRoleTurnoverPairsBase{} ordered pairs, and \IncidenceRoleTurnoverWeightEnd{} of 2026 choice mass across \IncidenceRoleTurnoverPairsEnd{}. Its routed activity passes through a stablecoin more often than either other class does in either year, \IncidenceRoleTurnoverStableBase{} in 2024 and \IncidenceRoleTurnoverStableEnd{} in 2026, against \IncidenceCommonStableBase{} and \IncidenceCommonStableEnd{} for the \IncidenceCommonPairsBase{} pairs that carry a vehicle in both years and \IncidenceMarketTurnoverStableBase{} and \IncidenceMarketTurnoverStableEnd{} for pairs whose market is observed in only one. The margin on which an established market starts or stops using an intermediary at all is therefore narrow, shrinking, and routed through the challenger where it is used. That bounds a third account of the rotation, in which a stablecoin gains aggregate share because markets that had been trading directly begin routing indirectly and use a stablecoin when they do. The account is confined to a population never larger than \IncidenceRoleTurnoverWeightBase{} of routed choice mass and cannot carry a change of \MarketBridgeTotal{}. Membership in the class turns over by construction: a pair belongs to it only if its vehicle role is present in one year and absent in the other, so no pair in it carries an intermediary in both years and none can register a change of intermediary. The distance between the class's two stablecoin shares records which markets occupied it in each year. Appearance in the class and disappearance from it answer to the same forces as the routing decision itself.
+% Class weights and stablecoin shares are the pooled count_share
+% market_incidence_support rows of vehicle_transition_pair_support.jsonl, the
+% support ledger Panel A's bridge is formed from -- not a fourth factorisation
+% and not the two blocks of Equation~\eqref{eq:pair-decomposition}. The producer
+% withholds every macro unless the three classes partition each year's choice
+% mass, each class's stablecoin share is its own stable-over-primary mass, the
+% mass-weighted mean reproduces that year's aggregate share on the bridge row,
+% the common class reproduces common_role_*_stable_share, and the two
+% both-years classes renormalise to established_market_*_stable_share. Ranking
+% checked on those rows: 2024 role 0.4695 > common 0.2497 > market 0.0386;
+% 2026 role 0.7688 > market 0.4313 > common 0.4120.
+% output/exhibits/vehicle_transition_pair_support.jsonl; macros from
+% scripts/build_vehicle_transition_pair_deck_values.py
+
 Conditional on the same ordered source--destination pair, calendar date, and single- or cross-exchange route type, stablecoin share changes by \MatchedMarketCountChange{} by count, with a standard error of \MatchedMarketCountSE{}, and by \MatchedMarketValueChange{} by value, with a standard error of \MatchedMarketValueSE{}. The corresponding 95\% confidence intervals rule out within-pair changes larger than \MatchedMarketCountCIUpper{} by count and \MatchedMarketValueCIUpper{} by value. The matched-pair estimates are therefore small relative to the aggregate rotation.
 % output/exhibits/vehicle_transition_pair_fixed_effects.jsonl; evidence commit 87c182e; current D3 generation 25c755ae; endpoint-composition generation 5fb7cbf
 

@@ -1,21 +1,33 @@
 {
  "argv": [],
  "artefact": "output/exhibits/vehicle_transition_pair_decomposition_deck_values.tex",
- "artefact_bytes": 13739,
- "artefact_mtime_ns": 1786865546874695602,
- "artefact_sha256": "cca0279e4075533d24ec975dd22d7f5363b99966662c7c13d4ce50cb659ef470",
- "code_fingerprint": "fdabdfdbf8e840977887dbd8e183b5442a0561e80925872f1a91d7d6a3f89826",
+ "artefact_bytes": 14669,
+ "artefact_mtime_ns": 1786870678057253617,
+ "artefact_sha256": "81220f0c00fd072cc5854b5d9241e2c65746f1c5cec220f575ac5e7ea7d34ed9",
+ "code_fingerprint": "1acfdb71f1038e02ad2856f5496340cc7c661be91e9a780c5983cbe65f7eae2f",
  "code_sources": [
   "scripts/build_vehicle_transition_pair_deck_values.py"
  ],
- "created_at": "2026-08-16T07:32:26+00:00",
+ "created_at": "2026-08-16T08:57:58+00:00",
  "git": {
   "branch": "main",
-  "commit": "a970f594057a6fc87e6a3445e5b51cff2914a2e6",
+  "commit": "69450d884d5a7558a2aa39ef29689fead6f31950",
   "dirty": true,
-  "dirty_generated_files": [],
+  "dirty_generated_files": [
+   "data/manifests/output/exhibits/prose_conventions.jsonl.prov.json",
+   "data/manifests/output/exhibits/prose_outliers.jsonl.prov.json",
+   "data/manifests/output/exhibits/venue_optics.jsonl.prov.json",
+   "data/manifests/output/exhibits/venue_shape.jsonl.prov.json",
+   "output/exhibits/prose_conventions.jsonl",
+   "output/exhibits/prose_outliers.jsonl",
+   "output/exhibits/venue_optics.jsonl",
+   "output/exhibits/venue_shape.jsonl"
+  ],
   "dirty_tracked_files": [
-   "scripts/build_vehicle_transition_pair_deck_values.py"
+   "docs/reviews/paper-rhetoric.json",
+   "paper/sections/03-dominance.tex",
+   "scripts/build_vehicle_transition_pair_deck_values.py",
+   "tests/test_vehicle_transition_pair_deck_values.py"
   ],
   "dirty_untracked_files": []
  },
@@ -68,6 +80,18 @@
    "exists": true,
    "path": "data/manifests/output/exhibits/vehicle_transition_pair_contributions.parquet.prov.json",
    "sha256": "1ef300753b37fe1b48186f69d77c39a21e074b931062d45274b6a8ad2331d489"
+  },
+  {
+   "bytes": 22842,
+   "exists": true,
+   "path": "output/exhibits/vehicle_transition_pair_support.jsonl",
+   "sha256": "5184ffb8d9c35be143a3b0822e698cf2e5a4e7762bb7211cd8016b2bf73040ff"
+  },
+  {
+   "bytes": 818736,
+   "exists": true,
+   "path": "data/manifests/output/exhibits/vehicle_transition_pair_support.jsonl.prov.json",
+   "sha256": "152a63663813c60609949f5d63aa4a5a1fd76b2e6af082977b82b752ca27c748"
   }
  ],
  "libraries": {
@@ -76,14 +100,14 @@
   "pyarrow": "25.0.0",
   "scipy": "1.18.0"
  },
- "notes": "Presentation macros for the exact descriptive pair-composition accounting, the matched-market estimate, one named source--destination pair per aggregate margin, and the split of each composition margin on WETH-endpoint eligibility, and the netted exclusive-pair term read as one activity mass against two corridor cohorts' routing rates; evidence status and identities remain source-only.",
+ "notes": "Presentation macros for the exact descriptive pair-composition accounting, the matched-market estimate, one named source--destination pair per aggregate margin, and the split of each composition margin on WETH-endpoint eligibility, the netted exclusive-pair term read as one activity mass against two corridor cohorts' routing rates, and the three market-incidence support classes the Panel A bridge is formed from; evidence status and identities remain source-only.",
  "payload_identity": {
-  "bytes": 13739,
+  "bytes": 14669,
   "format": "binary",
   "schema_version": 1,
-  "sha256": "cca0279e4075533d24ec975dd22d7f5363b99966662c7c13d4ce50cb659ef470"
+  "sha256": "81220f0c00fd072cc5854b5d9241e2c65746f1c5cec220f575ac5e7ea7d34ed9"
  },
  "python": "3.14.6",
- "rows": 4593349,
+ "rows": 4593391,
  "script": "scripts/build_vehicle_transition_pair_deck_values.py"
 }

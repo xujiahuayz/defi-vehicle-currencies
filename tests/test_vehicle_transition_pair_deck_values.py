@@ -126,9 +126,68 @@ def _decomposition() -> pd.DataFrame:
             "established_market_baseline_stable_share": 0.25,
             "established_market_comparison_stable_share": 0.25 + established,
             "established_market_total_change": established,
+            "common_role_baseline_stable_share": COMMON_ROLE_BASE,
+            "common_role_comparison_stable_share": COMMON_ROLE_BASE + common_role,
             "common_role_total_change": common_role,
             "identity_error": 0.0,
             **market_terms,
+        }
+    )
+    return pd.DataFrame(rows)
+
+
+# Class weights and stablecoin shares that satisfy every premise the renderer
+# proves before publishing a support class. The weights partition each year; the
+# common class carries ``common_role_*_stable_share`` by construction; the
+# role-turnover share is solved so that the two both-years classes renormalise to
+# ``established_market_*_stable_share`` (0.25 and 0.41), and the market-turnover
+# share so that the three-class mean is that year's aggregate (0.20 and 0.46).
+COMMON_ROLE_BASE = 0.24
+INCIDENCE_FIXTURE = {
+    ("common_vehicle_role", 2024): (0.55, 0.24),
+    ("market_pair_support_turnover", 2024): (0.42, 0.055 / 0.42),
+    ("vehicle_role_support_turnover_established_market", 2024): (0.03, 0.013 / 0.03),
+    ("common_vehicle_role", 2026): (0.49, 0.404),
+    ("market_pair_support_turnover", 2026): (0.50, 0.51),
+    ("vehicle_role_support_turnover_established_market", 2026): (0.01, 0.00704 / 0.01),
+}
+
+
+def _support() -> pd.DataFrame:
+    rows = []
+    for (status, year), (weight, stable_share) in INCIDENCE_FIXTURE.items():
+        primary = 4_000_000.0 * weight
+        rows.append(
+            {
+                "record_type": "market_incidence_support",
+                "metric": "count_share",
+                "reporting_scope": "pooled",
+                "endpoint_year": float(year),
+                "support_status": status,
+                "unit": "ordered_endpoint_pair",
+                "units": max(1, round(200_000 * weight)),
+                "primary_choice_mass": primary,
+                "primary_choice_mass_share": weight,
+                "stable_choice_mass": primary * stable_share,
+                "stable_share": stable_share,
+            }
+        )
+    # A row the reader must ignore: the same file carries the block-support
+    # ledger of the other factorisation, and reading it as a class would break
+    # the partition.
+    rows.append(
+        {
+            "record_type": "decomposition_pair_support",
+            "metric": "count_share",
+            "reporting_scope": "pooled",
+            "endpoint_year": None,
+            "support_status": "baseline_exclusive",
+            "unit": "ordered_endpoint_pair",
+            "units": 143_784,
+            "primary_choice_mass": None,
+            "primary_choice_mass_share": None,
+            "stable_choice_mass": None,
+            "stable_share": None,
         }
     )
     return pd.DataFrame(rows)
@@ -471,7 +530,7 @@ def _cohort(
 
 def test_renderer_emits_complete_display_and_coordinate_macros() -> None:
     rendered = render_pair_decomposition_deck_values(
-        _decomposition(), _fixed_effects(), _usdt_integration(), _contributions()
+        _decomposition(), _fixed_effects(), _usdt_integration(), _contributions(), _support()
     )
     for macro in (
         "PairPooledBase",
@@ -561,7 +620,7 @@ def test_renderer_emits_complete_display_and_coordinate_macros() -> None:
 
 def test_margin_examples_name_labelled_pairs_and_report_the_margin_total() -> None:
     rendered = render_pair_decomposition_deck_values(
-        _decomposition(), _fixed_effects(), _usdt_integration(), _contributions()
+        _decomposition(), _fixed_effects(), _usdt_integration(), _contributions(), _support()
     )
     for macro, value in (
         ("MarginWithinPair", "USDC\\,$\\to$\\,USDT"),
@@ -592,7 +651,7 @@ def test_margin_examples_reject_contributions_that_miss_the_aggregate_term() -> 
     contributions.loc[reweighting, "contribution_pp"] *= 2
     with pytest.raises(ValueError, match="do not reconcile common_pair_reweighting"):
         render_pair_decomposition_deck_values(
-            _decomposition(), _fixed_effects(), _usdt_integration(), contributions
+            _decomposition(), _fixed_effects(), _usdt_integration(), contributions, _support()
         )
 
 
@@ -601,7 +660,7 @@ def test_margin_examples_reject_a_causal_mechanism_label() -> None:
     contributions["mechanism_status"] = "causal_pair_contribution"
     with pytest.raises(ValueError, match="causal mechanism label"):
         render_pair_decomposition_deck_values(
-            _decomposition(), _fixed_effects(), _usdt_integration(), contributions
+            _decomposition(), _fixed_effects(), _usdt_integration(), contributions, _support()
         )
 
 
@@ -613,7 +672,7 @@ def test_margin_examples_require_a_labelled_positive_contributor() -> None:
         ValueError, match="within_pair_choice has no labelled positive contributor"
     ):
         render_pair_decomposition_deck_values(
-            _decomposition(), _fixed_effects(), _usdt_integration(), contributions
+            _decomposition(), _fixed_effects(), _usdt_integration(), contributions, _support()
         )
 
 
@@ -646,7 +705,7 @@ def test_renderer_fails_closed_on_incomplete_or_inconsistent_accounting(
 ) -> None:
     with pytest.raises(ValueError, match=message):
         render_pair_decomposition_deck_values(
-            mutation(_decomposition()), _fixed_effects(), _usdt_integration(), _contributions()
+            mutation(_decomposition()), _fixed_effects(), _usdt_integration(), _contributions(), _support()
         )
 
 
@@ -656,13 +715,13 @@ def test_renderer_fails_closed_when_market_incidence_bridge_is_inconsistent() ->
     frame.loc[market, "market_activity_reweighting"] += 0.01
     with pytest.raises(ValueError, match="total change"):
         render_pair_decomposition_deck_values(
-            frame, _fixed_effects(), _usdt_integration(), _contributions()
+            frame, _fixed_effects(), _usdt_integration(), _contributions(), _support()
         )
 
 
 def test_margin_breadth_counts_pairs_and_splits_gains_from_losses() -> None:
     rendered = render_pair_decomposition_deck_values(
-        _decomposition(), _fixed_effects(), _usdt_integration(), _contributions()
+        _decomposition(), _fixed_effects(), _usdt_integration(), _contributions(), _support()
     )
     for macro, value in (
         # Two pairs gain and one loses within continuing pairs, so the -0.1 pp
@@ -702,7 +761,7 @@ def test_margin_breadth_reconciles_the_value_margins_it_reports() -> None:
         match="strict_intermediation_value_share pair_composition_reweighting",
     ):
         render_pair_decomposition_deck_values(
-            _decomposition(), _fixed_effects(), _usdt_integration(), contributions
+            _decomposition(), _fixed_effects(), _usdt_integration(), contributions, _support()
         )
 
 
@@ -713,13 +772,13 @@ def test_margin_breadth_requires_the_dollar_weighted_allocation() -> None:
     ]
     with pytest.raises(ValueError, match="no pooled 2024--2026"):
         render_pair_decomposition_deck_values(
-            _decomposition(), _fixed_effects(), _usdt_integration(), contributions
+            _decomposition(), _fixed_effects(), _usdt_integration(), contributions, _support()
         )
 
 
 def test_endpoint_eligibility_splits_the_two_composition_margins() -> None:
     rendered = render_pair_decomposition_deck_values(
-        _decomposition(), _fixed_effects(), _usdt_integration(), _contributions()
+        _decomposition(), _fixed_effects(), _usdt_integration(), _contributions(), _support()
     )
     for macro, value in (
         # Two of five continuing pairs have a WETH endpoint, and their weight in
@@ -747,7 +806,7 @@ def test_endpoint_eligibility_splits_the_two_composition_margins() -> None:
 
 def test_endpoint_eligibility_is_taken_inside_each_integration_scope() -> None:
     rendered = render_pair_decomposition_deck_values(
-        _decomposition(), _fixed_effects(), _usdt_integration(), _contributions()
+        _decomposition(), _fixed_effects(), _usdt_integration(), _contributions(), _support()
     )
     for macro, value in (
         # Each scope carries its own reweighting total and its own eligible
@@ -782,7 +841,7 @@ def test_scope_new_pair_total_is_the_gross_entry_margin() -> None:
     from the split's own components and only the reweighting total from the row.
     """
     rendered = render_pair_decomposition_deck_values(
-        _decomposition(), _fixed_effects(), _usdt_integration(), _contributions()
+        _decomposition(), _fixed_effects(), _usdt_integration(), _contributions(), _support()
     )
     for suffix in ("Single", "Cross"):
         for infix in ("", "Value"):
@@ -807,7 +866,7 @@ def test_support_cohorts_reads_the_netted_term_as_corridor_replacement() -> None
     positive-margin eligibility guard refuses to interpret.
     """
     rendered = render_pair_decomposition_deck_values(
-        _decomposition(), _fixed_effects(), _usdt_integration(), _contributions()
+        _decomposition(), _fixed_effects(), _usdt_integration(), _contributions(), _support()
     )
     for infix in ("", "Value"):
         for suffix, scope in (("", "pooled"), ("Single", "single_venue"), ("Cross", "cross_venue")):
@@ -849,7 +908,7 @@ def test_support_cohorts_rejects_a_margin_that_is_not_mass_times_routing() -> No
     contributions.loc[entering, "stable_share_comparison"] *= 0.5
     with pytest.raises(ValueError, match="activity mass times its routing rate"):
         render_pair_decomposition_deck_values(
-            _decomposition(), _fixed_effects(), _usdt_integration(), contributions
+            _decomposition(), _fixed_effects(), _usdt_integration(), contributions, _support()
         )
 
 
@@ -862,7 +921,7 @@ def test_support_cohorts_rejects_cohorts_that_carry_different_activity_mass() ->
     contributions.loc[entering, "aggregate_mass_share_midpoint"] = 0.25
     with pytest.raises(ValueError, match="different activity mass"):
         render_pair_decomposition_deck_values(
-            _decomposition(), _fixed_effects(), _usdt_integration(), contributions
+            _decomposition(), _fixed_effects(), _usdt_integration(), contributions, _support()
         )
 
 
@@ -877,7 +936,7 @@ def test_support_cohorts_rejects_an_eligibility_split_that_straddles_zero() -> N
     contributions.loc[retiring & ~locked, "contribution_pp"] = -5.4
     with pytest.raises(ValueError, match="straddles zero"):
         render_pair_decomposition_deck_values(
-            _decomposition(), _fixed_effects(), _usdt_integration(), contributions
+            _decomposition(), _fixed_effects(), _usdt_integration(), contributions, _support()
         )
 
 
@@ -889,14 +948,14 @@ def test_support_cohorts_rejects_a_switching_weth_endpoint_cohort_corridor() -> 
     contributions.loc[locked, "stable_share_baseline"] = 0.5
     with pytest.raises(ValueError, match="eligibility identity"):
         render_pair_decomposition_deck_values(
-            _decomposition(), _fixed_effects(), _usdt_integration(), contributions
+            _decomposition(), _fixed_effects(), _usdt_integration(), contributions, _support()
         )
 
 
 def test_support_mass_term_is_published_as_a_shift_times_a_block_gap() -> None:
     """The fourth term's two factors, and the blocks they are formed from."""
     rendered = render_pair_decomposition_deck_values(
-        _decomposition(), _fixed_effects(), _usdt_integration(), _contributions()
+        _decomposition(), _fixed_effects(), _usdt_integration(), _contributions(), _support()
     )
     for macro, value in (
         # A 10 pp migration of activity out of the common block, priced at the
@@ -937,7 +996,7 @@ def test_support_mass_requires_blocks_that_partition_the_year() -> None:
     frame.loc[scoped, "E_baseline"] += 0.05
     with pytest.raises(ValueError, match="do not partition activity"):
         render_pair_decomposition_deck_values(
-            frame, _fixed_effects(), _usdt_integration(), _contributions()
+            frame, _fixed_effects(), _usdt_integration(), _contributions(), _support()
         )
 
 
@@ -947,7 +1006,7 @@ def test_support_mass_requires_blocks_that_reconcile_their_own_year() -> None:
     frame.loc[scoped, "S_C_comparison"] += 0.05
     with pytest.raises(ValueError, match="do not reconcile that"):
         render_pair_decomposition_deck_values(
-            frame, _fixed_effects(), _usdt_integration(), _contributions()
+            frame, _fixed_effects(), _usdt_integration(), _contributions(), _support()
         )
 
 
@@ -959,7 +1018,7 @@ def test_support_mass_rejects_factors_that_miss_their_own_term() -> None:
     frame.loc[scoped, "S_E_baseline"] -= 0.03
     with pytest.raises(ValueError, match="do not multiply to the term"):
         render_pair_decomposition_deck_values(
-            frame, _fixed_effects(), _usdt_integration(), _contributions()
+            frame, _fixed_effects(), _usdt_integration(), _contributions(), _support()
         )
 
 
@@ -967,7 +1026,7 @@ def test_support_mass_requires_the_block_columns() -> None:
     frame = _decomposition().drop(columns=["S_E_comparison"])
     with pytest.raises(ValueError, match="missing columns: S_E_comparison"):
         render_pair_decomposition_deck_values(
-            frame, _fixed_effects(), _usdt_integration(), _contributions()
+            frame, _fixed_effects(), _usdt_integration(), _contributions(), _support()
         )
 
 
@@ -985,7 +1044,7 @@ def test_endpoint_eligibility_rejects_a_scope_split_against_another_scope() -> N
         ValueError, match="cross_venue eligibility split does not reconcile"
     ):
         render_pair_decomposition_deck_values(
-            _decomposition(), _fixed_effects(), _usdt_integration(), contributions
+            _decomposition(), _fixed_effects(), _usdt_integration(), contributions, _support()
         )
 
 
@@ -994,7 +1053,7 @@ def test_endpoint_eligibility_requires_the_scope_specific_allocation() -> None:
     contributions = contributions[contributions["reporting_scope"].ne("cross_venue")]
     with pytest.raises(ValueError, match="no cross_venue 2024--2026"):
         render_pair_decomposition_deck_values(
-            _decomposition(), _fixed_effects(), _usdt_integration(), contributions
+            _decomposition(), _fixed_effects(), _usdt_integration(), contributions, _support()
         )
 
 
@@ -1006,7 +1065,7 @@ def test_endpoint_eligibility_rejects_a_switching_weth_endpoint_pair() -> None:
     contributions.loc[locked, "stable_share_baseline"] = 0.5
     with pytest.raises(ValueError, match="eligibility identity"):
         render_pair_decomposition_deck_values(
-            _decomposition(), _fixed_effects(), _usdt_integration(), contributions
+            _decomposition(), _fixed_effects(), _usdt_integration(), contributions, _support()
         )
 
 
@@ -1021,7 +1080,7 @@ def test_endpoint_eligibility_rejects_within_pair_movement_on_an_eligible_pair()
     ), "contribution_pp"] -= 0.02
     with pytest.raises(ValueError, match="eligibility identity forbids"):
         render_pair_decomposition_deck_values(
-            _decomposition(), _fixed_effects(), _usdt_integration(), contributions
+            _decomposition(), _fixed_effects(), _usdt_integration(), contributions, _support()
         )
 
 
@@ -1030,5 +1089,111 @@ def test_renderer_fails_closed_on_wrong_matched_market_scope() -> None:
     fixed_effects.loc[0, "estimand_scope"] = "wrong_scope"
     with pytest.raises(ValueError, match="comparison set"):
         render_pair_decomposition_deck_values(
-            _decomposition(), fixed_effects, _usdt_integration(), _contributions()
+            _decomposition(), fixed_effects, _usdt_integration(), _contributions(), _support()
+        )
+
+
+def test_market_incidence_classes_publish_the_bridge_partition() -> None:
+    rendered = render_pair_decomposition_deck_values(
+        _decomposition(), _fixed_effects(), _usdt_integration(), _contributions(), _support()
+    )
+    for macro, value in (
+        ("IncidenceCommonWeightBase", "55.0\\%"),
+        ("IncidenceCommonStableBase", "24.0\\%"),
+        ("IncidenceCommonPairsBase", "110,000"),
+        ("IncidenceCommonWeightEnd", "49.0\\%"),
+        ("IncidenceCommonStableEnd", "40.4\\%"),
+        ("IncidenceMarketTurnoverWeightBase", "42.0\\%"),
+        ("IncidenceMarketTurnoverStableBase", "13.1\\%"),
+        ("IncidenceMarketTurnoverStableEnd", "51.0\\%"),
+        ("IncidenceRoleTurnoverWeightBase", "3.0\\%"),
+        ("IncidenceRoleTurnoverStableBase", "43.3\\%"),
+        ("IncidenceRoleTurnoverPairsBase", "6,000"),
+        ("IncidenceRoleTurnoverWeightEnd", "1.0\\%"),
+        ("IncidenceRoleTurnoverStableEnd", "70.4\\%"),
+        ("IncidenceRoleTurnoverPairsEnd", "2,000"),
+    ):
+        assert _macro(rendered, macro) == value
+
+
+def test_market_incidence_classes_require_one_row_per_class_and_year() -> None:
+    support = pd.concat([_support(), _support().iloc[[0]]], ignore_index=True)
+    with pytest.raises(ValueError, match="exactly 6 pooled count rows"):
+        render_pair_decomposition_deck_values(
+            _decomposition(), _fixed_effects(), _usdt_integration(), _contributions(), support
+        )
+
+
+def test_market_incidence_classes_require_a_partition_of_the_year() -> None:
+    support = _support()
+    incidence = support["record_type"].eq("market_incidence_support")
+    baseline = incidence & support["endpoint_year"].eq(2024.0)
+    support.loc[baseline, "primary_choice_mass_share"] *= 0.9
+    with pytest.raises(ValueError, match="do not partition 2024 choice mass"):
+        render_pair_decomposition_deck_values(
+            _decomposition(), _fixed_effects(), _usdt_integration(), _contributions(), support
+        )
+
+
+def test_market_incidence_classes_must_reproduce_the_bridge_aggregate_share() -> None:
+    # Weights still close on one, so only the aggregate reconciliation can catch
+    # a partition that belongs to some other year's activity.
+    support = _support()
+    incidence = support["record_type"].eq("market_incidence_support")
+    baseline = incidence & support["endpoint_year"].eq(2024.0)
+    market = baseline & support["support_status"].eq("market_pair_support_turnover")
+    common = baseline & support["support_status"].eq("common_vehicle_role")
+    support.loc[market, "primary_choice_mass_share"] += 0.05
+    support.loc[common, "primary_choice_mass_share"] -= 0.05
+    with pytest.raises(ValueError, match="do not reproduce the 2024 aggregate"):
+        render_pair_decomposition_deck_values(
+            _decomposition(), _fixed_effects(), _usdt_integration(), _contributions(), support
+        )
+
+
+def test_market_incidence_classes_require_their_own_stable_choice_mass() -> None:
+    support = _support()
+    role = support["support_status"].eq(
+        "vehicle_role_support_turnover_established_market"
+    ) & support["endpoint_year"].eq(2026.0)
+    support.loc[role, "stable_choice_mass"] *= 0.5
+    with pytest.raises(ValueError, match="stablecoin share is not"):
+        render_pair_decomposition_deck_values(
+            _decomposition(), _fixed_effects(), _usdt_integration(), _contributions(), support
+        )
+
+
+def test_market_incidence_common_class_must_carry_the_common_role_share() -> None:
+    # Compensate inside the same year so the three-class mean still reproduces
+    # the aggregate; only the common-role pin can then reject the swap.
+    support = _support()
+    baseline = support["endpoint_year"].eq(2024.0)
+    common = baseline & support["support_status"].eq("common_vehicle_role")
+    market = baseline & support["support_status"].eq("market_pair_support_turnover")
+    for mask, delta in ((common, 0.01), (market, -0.55 * 0.01 / 0.42)):
+        share = float(support.loc[mask, "stable_share"].iloc[0]) + delta
+        support.loc[mask, "stable_share"] = share
+        support.loc[mask, "stable_choice_mass"] = (
+            float(support.loc[mask, "primary_choice_mass"].iloc[0]) * share
+        )
+    with pytest.raises(ValueError, match="common class does not reproduce"):
+        render_pair_decomposition_deck_values(
+            _decomposition(), _fixed_effects(), _usdt_integration(), _contributions(), support
+        )
+
+
+def test_market_incidence_established_classes_must_carry_their_own_aggregate() -> None:
+    # Shift both established-market endpoints by the same amount: the bridge row
+    # still reconciles its own change, so only the renormalised class comparison
+    # can reject a class set pinned to a different established-market population.
+    decomposition = _decomposition()
+    bridge = decomposition["formula_id"].eq("shapley_market_incidence_stable_bridge_v1")
+    for column in (
+        "established_market_baseline_stable_share",
+        "established_market_comparison_stable_share",
+    ):
+        decomposition.loc[bridge, column] += 0.02
+    with pytest.raises(ValueError, match="established-market classes do not reproduce"):
+        render_pair_decomposition_deck_values(
+            decomposition, _fixed_effects(), _usdt_integration(), _contributions(), _support()
         )
