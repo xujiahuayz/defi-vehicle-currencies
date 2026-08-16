@@ -1,65 +1,44 @@
 {
  "argv": [],
  "artefact": "output/exhibits/prose_outliers.jsonl",
- "artefact_bytes": 100551,
- "artefact_mtime_ns": 1786856888347445681,
- "artefact_sha256": "3896b12cc93c7ced3dbe0e0424fb31e2ac319eee645470397436c94ba682e08c",
+ "artefact_bytes": 101815,
+ "artefact_mtime_ns": 1786858747395277635,
+ "artefact_sha256": "2d8478b84f9045bf448edc67a82acf9ae0934936303f7bf4544c28f1e23a0202",
  "code_fingerprint": "4d6c3aa5e5b632317b923d4c498ebaf8a988e6f1d35f09ef659fc910be391909",
  "code_sources": [
   "scripts/find_prose_outliers.py",
   "src/ddvc/tables.py"
  ],
- "created_at": "2026-08-16T05:08:08+00:00",
+ "created_at": "2026-08-16T05:39:07+00:00",
  "git": {
   "branch": "main",
-  "commit": "af53e249d8e04ee35acb532262746f257e1700be",
+  "commit": "2e3c7dcafe831de43f148fa0647fecc61b0761c7",
   "dirty": true,
   "dirty_generated_files": [
    "data/manifests/output/exhibits/prose_conventions.jsonl.prov.json",
-   "data/manifests/output/exhibits/provisional_results_deck_values.tex.prov.json",
+   "data/manifests/output/exhibits/vehicle_transition_pair_decomposition_deck_values.tex.prov.json",
    "data/manifests/output/exhibits/venue_optics.jsonl.prov.json",
    "data/manifests/output/exhibits/venue_shape.jsonl.prov.json",
-   "data/manifests/output/tables/dominance_rotation.pdf.prov.json",
-   "data/manifests/output/tables/dominance_rotation.tex.prov.json",
    "data/manifests/output/tables/pair_composition.pdf.prov.json",
    "data/manifests/output/tables/pair_composition.tex.prov.json",
-   "data/manifests/output/tables/usdt_transition.pdf.prov.json",
-   "data/manifests/output/tables/usdt_transition.tex.prov.json",
-   "data/manifests/output/tables/venue_coverage.pdf.prov.json",
-   "data/manifests/output/tables/venue_coverage.tex.prov.json",
-   "data/manifests/output/tables/venue_technology_rival.pdf.prov.json",
-   "data/manifests/output/tables/venue_technology_rival.tex.prov.json",
    "output/exhibits/prose_conventions.jsonl",
-   "output/exhibits/provisional_results_deck_values.tex",
+   "output/exhibits/vehicle_transition_pair_decomposition_deck_values.tex",
    "output/exhibits/venue_optics.jsonl",
    "output/exhibits/venue_shape.jsonl",
-   "output/tables/dominance_rotation.pdf",
    "output/tables/pair_composition.pdf",
-   "output/tables/usdt_transition.pdf",
-   "output/tables/venue_coverage.pdf",
-   "output/tables/venue_technology_rival.pdf",
-   "data/manifests/output/tables/routing_technology_windows.pdf.prov.json",
-   "data/manifests/output/tables/routing_technology_windows.tex.prov.json",
-   "output/exhibits/.prose_outliers.jsonl.mxkgm_mk.tmp",
-   "output/tables/routing_technology_windows.pdf",
-   "output/tables/routing_technology_windows.tex"
+   "data/manifests/d3-release-test-afoxinb6/",
+   "output/exhibits/.prose_outliers.jsonl.j61cdxbo.tmp"
   ],
   "dirty_tracked_files": [
    "deck/main.pdf",
    "deck/sections/04-results.tex",
    "docs/reviews/paper-rhetoric.json",
-   "docs/router-identification-feasibility.md",
-   "literature/source-admission.json",
-   "paper/sections/01-introduction.tex",
-   "paper/sections/05-rivals.tex",
-   "scripts/tabulate/README.md",
-   "src/ddvc/provisional_results.py",
-   "src/ddvc/venue_tables.py",
-   "tests/test_provisional_results_deck_values.py",
-   "tests/test_venue_rival_support.py"
+   "paper/sections/03-dominance.tex",
+   "scripts/build_vehicle_transition_pair_deck_values.py",
+   "tests/test_vehicle_transition_pair_deck_values.py"
   ],
   "dirty_untracked_files": [
-   "scripts/tabulate/render_routing_technology_windows.py"
+   "d3-release-test-afoxinb6/"
   ]
  },
  "inputs": [],
@@ -71,13 +50,13 @@
  },
  "notes": null,
  "payload_identity": {
-  "bytes": 100551,
+  "bytes": 101815,
   "format": "jsonl",
-  "rows": 463,
+  "rows": 469,
   "schema_version": 1,
-  "sha256": "3896b12cc93c7ced3dbe0e0424fb31e2ac319eee645470397436c94ba682e08c"
+  "sha256": "2d8478b84f9045bf448edc67a82acf9ae0934936303f7bf4544c28f1e23a0202"
  },
  "python": "3.14.6",
- "rows": 463,
+ "rows": 469,
  "script": "scripts/find_prose_outliers.py"
 }

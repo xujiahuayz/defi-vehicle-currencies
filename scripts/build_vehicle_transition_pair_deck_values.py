@@ -44,6 +44,13 @@ MARGIN_EXAMPLES = (
     ("MarginReweight", "pair_composition_reweighting", "common_pair_reweighting"),
     ("MarginNewPair", "comparison_exclusive_composition", "exclusive_pair_contribution"),
 )
+# How many ordered pairs carry each margin. A named example says which pair is
+# largest; these say whether the margin is one corridor or a whole network, and
+# whether a near-zero net term is inert or two offsetting flows.
+BREADTH_METRICS = (
+    ("", "count_share"),
+    ("Value", "strict_intermediation_value_share"),
+)
 
 
 def _signed_pp(value: float) -> str:
@@ -70,6 +77,15 @@ def _routes(value: float) -> str:
     if not float(value).is_integer():
         raise ValueError("route counts must be whole numbers")
     return f"{int(value):,}"
+
+
+def _pairs(value: int) -> str:
+    return f"{int(value):,}"
+
+
+def _contribution_pp(value: float) -> str:
+    """Contribution columns already carry percentage points, unlike the terms."""
+    return f"${value:+.1f}$ pp"
 
 
 def _raw_pp(value: float) -> str:
@@ -246,14 +262,19 @@ def _market_incidence_row(decomposition: pd.DataFrame) -> pd.Series:
     return row
 
 
-def _pooled_count_contributions(contributions: pd.DataFrame) -> pd.DataFrame:
-    """The one metric, scope, and comparison whose pairs may be named on a slide."""
+def _pooled_contributions(contributions: pd.DataFrame, metric: str) -> pd.DataFrame:
+    """Pooled 2024--2026 pair contributions under one measure of activity."""
     return contributions[
-        contributions["metric"].eq("count_share")
+        contributions["metric"].eq(metric)
         & contributions["reporting_scope"].eq("pooled")
         & contributions["baseline_year"].eq(2024)
         & contributions["comparison_year"].eq(2026)
     ]
+
+
+def _pooled_count_contributions(contributions: pd.DataFrame) -> pd.DataFrame:
+    """The one metric, scope, and comparison whose pairs may be named on a slide."""
+    return _pooled_contributions(contributions, "count_share")
 
 
 def _baseline_exclusive_pp(contributions: pd.DataFrame) -> float:
@@ -384,6 +405,85 @@ def _margin_example_rows(
             "component_pp": component_pp,
         }
     return examples
+
+
+def _rank_for_fraction(sorted_gains: list[float], fraction: float) -> int:
+    """Smallest number of pairs whose gains reach a fraction of the gross gain."""
+    target = fraction * sum(sorted_gains)
+    running = 0.0
+    for rank, gain in enumerate(sorted_gains, start=1):
+        running += gain
+        if running >= target:
+            return rank
+    return len(sorted_gains)
+
+
+def _margin_breadth(
+    contributions: pd.DataFrame, aggregate: pd.Series, metric: str
+) -> dict[str, dict[str, object]]:
+    """Count the pairs behind each margin and split it into gains and losses.
+
+    Two facts about a margin cannot be read off its total. A margin of a given
+    size can come from one corridor or from tens of thousands of small markets,
+    and a total near zero can mean either that no pair moved or that gains and
+    losses of similar size cancelled. Both are computed from the same certified
+    allocation the margin totals come from, so they reconcile to those totals by
+    construction and the renderer refuses to print them if they do not.
+    """
+    scoped = _pooled_contributions(contributions, metric)
+    if scoped.empty:
+        raise ValueError(f"pair contributions carry no pooled 2024--2026 {metric} rows")
+    exclusive_total = float(
+        scoped.loc[
+            scoped["contribution_component"].isin(
+                ("baseline_exclusive_composition", "comparison_exclusive_composition")
+            ),
+            "contribution_pp",
+        ].sum()
+    )
+    if not math.isclose(
+        exclusive_total,
+        100 * float(aggregate["exclusive_pair_contribution"]),
+        abs_tol=1e-6,
+    ):
+        raise ValueError(f"{metric} contributions do not reconcile the exclusive term")
+    breadth: dict[str, dict[str, object]] = {}
+    for prefix, component, aggregate_term in MARGIN_EXAMPLES:
+        rows = scoped[scoped["contribution_component"].eq(component)]
+        if rows.empty:
+            raise ValueError(f"pair contributions carry no {metric} {component} rows")
+        values = [float(value) for value in rows["contribution_pp"]]
+        if not all(math.isfinite(value) for value in values):
+            raise ValueError(f"{metric} {component} contains a non-finite contribution")
+        gains = sorted((value for value in values if value > 0), reverse=True)
+        losses = [value for value in values if value < 0]
+        gross_up = sum(gains)
+        gross_down = sum(losses)
+        component_pp = sum(values)
+        if aggregate_term != "exclusive_pair_contribution" and not math.isclose(
+            component_pp, 100 * float(aggregate[aggregate_term]), abs_tol=1e-6
+        ):
+            raise ValueError(
+                f"{metric} {component} contributions do not reconcile {aggregate_term}"
+            )
+        if not math.isclose(gross_up + gross_down, component_pp, abs_tol=1e-6):
+            raise ValueError(f"{metric} {component} gains and losses miss its total")
+        if not gains:
+            raise ValueError(f"{metric} {component} has no gaining pair")
+        half_pairs = _rank_for_fraction(gains, 0.5)
+        ninety_pairs = _rank_for_fraction(gains, 0.9)
+        if not 1 <= half_pairs <= ninety_pairs <= len(gains):
+            raise ValueError(f"{metric} {component} concentration ranks are disordered")
+        breadth[prefix] = {
+            "gain_pairs": len(gains),
+            "loss_pairs": len(losses),
+            "gross_up": gross_up,
+            "gross_down": gross_down,
+            "top_share": gains[0] / gross_up,
+            "half_pairs": half_pairs,
+            "ninety_pairs": ninety_pairs,
+        }
+    return breadth
 
 
 def _matched_market_row(fixed_effects: pd.DataFrame, metric: str) -> pd.Series:
@@ -655,6 +755,29 @@ def render_pair_decomposition_deck_values(
     lines.append(
         f"\\newcommand{{\\MarginRetiredPairTotal}}{{${_baseline_exclusive_pp(contributions):+.1f}$ pp}}"
     )
+    for infix, metric in BREADTH_METRICS:
+        aggregate = count["pooled"] if metric == "count_share" else value["pooled"]
+        breadth = _margin_breadth(contributions, aggregate, metric)
+        for prefix, _component, _term in MARGIN_EXAMPLES:
+            statistics = breadth[prefix]
+            lines.extend(
+                [
+                    f"\\newcommand{{\\{prefix}{infix}GainPairs}}"
+                    f"{{{_pairs(int(statistics['gain_pairs']))}}}",
+                    f"\\newcommand{{\\{prefix}{infix}LossPairs}}"
+                    f"{{{_pairs(int(statistics['loss_pairs']))}}}",
+                    f"\\newcommand{{\\{prefix}{infix}GrossUp}}"
+                    f"{{{_contribution_pp(float(statistics['gross_up']))}}}",
+                    f"\\newcommand{{\\{prefix}{infix}GrossDown}}"
+                    f"{{{_contribution_pp(float(statistics['gross_down']))}}}",
+                    f"\\newcommand{{\\{prefix}{infix}TopShare}}"
+                    f"{{{_share(float(statistics['top_share']))}}}",
+                    f"\\newcommand{{\\{prefix}{infix}HalfPairs}}"
+                    f"{{{_pairs(int(statistics['half_pairs']))}}}",
+                    f"\\newcommand{{\\{prefix}{infix}NinetyPairs}}"
+                    f"{{{_pairs(int(statistics['ninety_pairs']))}}}",
+                ]
+            )
     return "\n".join(lines) + "\n"
 
 

@@ -526,11 +526,12 @@
    "exit_handoff": "The panel closes by retaining route-level attribution and sends the separate cost object to Section 4."
   },
   "paper/sections/03-dominance.tex": {
-   "sha256": "72da5f056b3c5e6600ccfeae1b9af22f0a8fe69044af3c39e23e5d8c97e513da",
+   "sha256": "e9e7a8ecdb8ac43ca51a5c40af5bbdf2db534243bf5f32a342327e8df45cde35",
    "status": "rewritten",
    "exemplars": [
     "literature/text/2020-MakarovSchoar2020Arbitrage-trading-and-arbitrage-in-cryptocurrency-markets.txt:886-991",
-    "literature/text/2021-BoltonKacperczyk2021CarbonRisk-do-investors-care-about-carbon-risk.txt:1221-1260"
+    "literature/text/2021-BoltonKacperczyk2021CarbonRisk-do-investors-care-about-carbon-risk.txt:1221-1260",
+    "literature/text/2021-BoltonKacperczyk2021CarbonRisk-do-investors-care-about-carbon-risk.txt:1899-1935"
    ],
    "openings": [
     {
@@ -584,18 +585,20 @@
      51,
      57,
      71,
-     81,
-     83,
-     85,
-     88,
-     104,
-     106,
-     108
+     78,
+     89,
+     91,
+     93,
+     96,
+     112,
+     114,
+     116
     ],
-    "judgment": "Aggregate rotation and reversals lead to a three-margin accounting whose answer is stated first, matched-market estimates, named pairs that make the margins concrete, USDT role attribution, and separate venue-span and intermediation margins.",
+    "judgment": "Aggregate rotation and reversals lead to a three-margin accounting whose answer is stated first, matched-market estimates, named pairs that make the margins concrete, the breadth of each margin across pairs, USDT role attribution, and separate venue-span and intermediation margins.",
     "raw_exemplars": [
      "literature/text/2020-MakarovSchoar2020Arbitrage-trading-and-arbitrage-in-cryptocurrency-markets.txt:886-991",
-     "literature/text/2022-ChangDuLouPolk2022Ripples-ripples-into-waves-trade-networks-economic-activity-and-asset-prices.txt:1369-1445"
+     "literature/text/2022-ChangDuLouPolk2022Ripples-ripples-into-waves-trade-networks-economic-activity-and-asset-prices.txt:1369-1445",
+     "literature/text/2021-BoltonKacperczyk2021CarbonRisk-do-investors-care-about-carbon-risk.txt:1899-1935"
     ],
     "jumps": [],
     "handoffs": [
@@ -680,7 +683,17 @@
       "judgment": "Interprets margins reallocating activity after grounding them in named pairs. Makarov and Schoar name individual exchanges and regions with their own arbitrage indices before generalising; the same move here keeps the decomposition from staying an abstraction, and the disclosure of the labelling limit prevents the examples from reading as the largest contributors."
      },
      {
-      "line": 81,
+      "line": 78,
+      "inherited_object": "named pairs behind each margin",
+      "paragraph_function": "asks whether a few large markets carry the reallocation and answers it separately for each margin",
+      "relation_to_previous": "moves from the largest single contributor to how many contributors there are",
+      "economic_subject": "ordered pairs gaining and losing routed activity",
+      "framing_judgment": "Breadth and the gain/loss split come from the same certified allocation as the margin totals, and the near-zero within-pair term is read as an offset rather than as an absence of movement",
+      "qualification_leads": false,
+      "judgment": "Bolton and Kacperczyk open Section 3.5 by conceding that a handful of industries could drive their cross-sectional premium, report the test, and then interpret what the answer implies about how investors categorise firms. The same movement here concedes that one corridor could produce the same totals, reports the pair counts, and interprets the split: extension into many small markets on one margin, weight concentration in a few large corridors on the other."
+     },
+     {
+      "line": 89,
       "inherited_object": "stablecoin category change",
       "paragraph_function": "introduces USDT versus route endpoints",
       "relation_to_previous": "asks which currency carries the role change",
@@ -690,7 +703,7 @@
       "judgment": "The paragraph introduces USDT versus route endpoints and asks which currency carries the role change."
      },
      {
-      "line": 83,
+      "line": 91,
       "inherited_object": "USDT role comparison",
       "paragraph_function": "reports matched gap and separate full-period ratios",
       "relation_to_previous": "keeps two clocks distinct",
@@ -700,7 +713,7 @@
       "judgment": "The paragraph reports matched gap and separate full-period ratios and keeps two clocks distinct."
      },
      {
-      "line": 85,
+      "line": 93,
       "inherited_object": "USDT excess use",
       "paragraph_function": "decomposes change by cross-exchange mix and within groups",
       "relation_to_previous": "locates the venue-span margin",
@@ -710,7 +723,7 @@
       "judgment": "The paragraph decomposes change by cross-exchange mix and within groups and locates the venue-span margin."
      },
      {
-      "line": 88,
+      "line": 96,
       "inherited_object": "the venue-span decomposition",
       "paragraph_function": "states explanations needing tests",
       "relation_to_previous": "hands the token result to mechanisms",
@@ -720,7 +733,7 @@
       "judgment": "The paragraph states explanations needing tests and hands the token result to mechanisms."
      },
      {
-      "line": 104,
+      "line": 112,
       "inherited_object": "the USDT result",
       "paragraph_function": "reports cross-exchange growth",
       "relation_to_previous": "moves to route architecture",
@@ -730,7 +743,7 @@
       "judgment": "The paragraph reports cross-exchange growth and moves to route architecture."
      },
      {
-      "line": 106,
+      "line": 114,
       "inherited_object": "cross-exchange growth",
       "paragraph_function": "reports falling intermediation and stablecoin gains within groups",
       "relation_to_previous": "separates three route margins",
@@ -740,7 +753,7 @@
       "judgment": "The paragraph reports falling intermediation and stablecoin gains within groups and separates three route margins."
      },
      {
-      "line": 108,
+      "line": 116,
       "inherited_object": "three route margins",
       "paragraph_function": "synthesises and states the fixed-opportunity comparison",
       "relation_to_previous": "moves from coexistence to design",

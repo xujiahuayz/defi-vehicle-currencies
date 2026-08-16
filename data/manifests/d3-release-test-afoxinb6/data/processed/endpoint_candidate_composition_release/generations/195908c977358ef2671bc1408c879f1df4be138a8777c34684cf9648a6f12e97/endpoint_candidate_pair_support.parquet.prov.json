@@ -1,0 +1,123 @@
+{
+ "argv": [
+  "tests/",
+  "-q",
+  "-x",
+  "--ignore=tests/test_route_cost_panel.py",
+  "--ignore=tests/test_route_state.py"
+ ],
+ "artefact": "d3-release-test-afoxinb6/data/processed/endpoint_candidate_composition_release/generations/195908c977358ef2671bc1408c879f1df4be138a8777c34684cf9648a6f12e97/endpoint_candidate_pair_support.parquet",
+ "artefact_bytes": 27025,
+ "artefact_mtime_ns": 1786858328318861676,
+ "artefact_sha256": "47cb2bfbdedf4bdd92c695cf9bc64b5390c49b6a5a3dc308d449efa745b687f6",
+ "code_fingerprint": "72afa929c9308e5fc7b4333a6b7c34dabfcef1f3ea9b614df0d51b7a3c72cffe",
+ "code_sources": [
+  "tests/test_analysis_release.py"
+ ],
+ "created_at": "2026-08-16T05:32:08+00:00",
+ "git": {
+  "branch": "main",
+  "commit": "2e3c7dcafe831de43f148fa0647fecc61b0761c7",
+  "dirty": true,
+  "dirty_generated_files": [
+   "data/manifests/output/exhibits/prose_conventions.jsonl.prov.json",
+   "data/manifests/output/exhibits/prose_outliers.jsonl.prov.json",
+   "data/manifests/output/exhibits/vehicle_transition_pair_decomposition_deck_values.tex.prov.json",
+   "data/manifests/output/exhibits/venue_optics.jsonl.prov.json",
+   "data/manifests/output/exhibits/venue_shape.jsonl.prov.json",
+   "data/manifests/output/tables/pair_composition.pdf.prov.json",
+   "data/manifests/output/tables/pair_composition.tex.prov.json",
+   "output/exhibits/prose_conventions.jsonl",
+   "output/exhibits/prose_outliers.jsonl",
+   "output/exhibits/vehicle_transition_pair_decomposition_deck_values.tex",
+   "output/exhibits/venue_optics.jsonl",
+   "output/exhibits/venue_shape.jsonl",
+   "output/tables/pair_composition.pdf"
+  ],
+  "dirty_tracked_files": [
+   "deck/main.pdf",
+   "deck/sections/04-results.tex",
+   "docs/reviews/paper-rhetoric.json",
+   "paper/sections/03-dominance.tex",
+   "scripts/build_vehicle_transition_pair_deck_values.py",
+   "tests/test_vehicle_transition_pair_deck_values.py"
+  ],
+  "dirty_untracked_files": [
+   "d3-release-test-afoxinb6/"
+  ]
+ },
+ "inputs": [
+  {
+   "bytes": 17,
+   "exists": true,
+   "path": "d3-release-test-afoxinb6/route-a.bin",
+   "sha256": "8bd46c9a891e79b02fb6da594c741c8d79873fe639e9c72d1f0203cbccc48bf7"
+  }
+ ],
+ "libraries": {
+  "numpy": "2.5.1",
+  "pandas": "3.0.3",
+  "pyarrow": "25.0.0",
+  "scipy": "1.18.0"
+ },
+ "notes": "real typed endpoint release for D3 fast-resolution tests",
+ "payload_identity": {
+  "bytes": 27025,
+  "columns": [
+   "date",
+   "src",
+   "tgt",
+   "day_source_component_count",
+   "day_accounted_component_count",
+   "day_unpaired_exclusion_component_count",
+   "day_event_collision_component_count",
+   "day_event_collision_value_missing_component_count",
+   "day_event_collision_observed_abs_leg_value_usd_upper_bound",
+   "market_route_count",
+   "source_pair_component_count",
+   "event_collision_component_count",
+   "event_collision_value_missing_component_count",
+   "event_collision_observed_abs_leg_value_usd_upper_bound",
+   "primary_choice_route_count",
+   "native_choice_route_count",
+   "stable_choice_route_count",
+   "native_within_20pct_routes",
+   "stable_within_20pct_routes",
+   "native_within_20pct_value_usd",
+   "stable_within_20pct_value_usd",
+   "primary_choice_transaction_count",
+   "primary_choice_multi_component_transaction_count",
+   "primary_choice_component_excess_count",
+   "duplicate_choice_transaction_candidate_count",
+   "direct_route_count",
+   "direct_split_route_count",
+   "other_candidate_route_count",
+   "multiple_intermediary_route_count",
+   "split_or_join_route_count",
+   "nonsequential_two_leg_route_count",
+   "pair_first_supported_date",
+   "pair_last_supported_date",
+   "pair_entry_on_day",
+   "pair_last_observed_on_day",
+   "pair_support_reason"
+  ],
+  "format": "parquet",
+  "rows": 1,
+  "schema_sha256": "13ea6b99946ed00518938f6515f91a9b33ef816ef9e6ecbae3d0c92f0ede65e6",
+  "schema_version": 1,
+  "sha256": "47cb2bfbdedf4bdd92c695cf9bc64b5390c49b6a5a3dc308d449efa745b687f6"
+ },
+ "python": "3.14.6",
+ "released_input_bindings": [
+  {
+   "path": "/Users/java/projects/defi-vehicle-currencies-d3/d3-release-test-afoxinb6/route-a.bin",
+   "sha256": "8bd46c9a891e79b02fb6da594c741c8d79873fe639e9c72d1f0203cbccc48bf7"
+  },
+  {
+   "path": "/Users/java/projects/defi-vehicle-currencies-d3/d3-release-test-afoxinb6/route-b.bin",
+   "sha256": "1f2056380377291a12598f16eb48a4f14e93b09405b107fc90dbdbd102bf01af"
+  }
+ ],
+ "rows": 1,
+ "script": "/Users/java/projects/defi-vehicle-currencies/.venv/lib/python3.14/site-packages/pytest/__main__.py"
+}

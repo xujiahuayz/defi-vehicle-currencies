@@ -86,7 +86,7 @@
 % EVIDENCE-D3-CERTIFICATE: directory=25c755ae635d90846fb754e5cb58caa7f377787daba0743d95667b8c29ed9e6c; internal_generation=9aa4e1d3ecbc9fb899bf70ba70fc18cf1d621003162218e755fd8ecc4cbb3580
 % EVIDENCE-ENDPOINT-GENERATION: 5fb7cbf36508d10a5bdafe2ebfb5ccb6266696be38e192eb38be11c3942916e9
 % EVIDENCE-SOURCES: output/exhibits/vehicle_transition_pair_contributions.parquet; output/exhibits/vehicle_transition_pair_decomposition.jsonl; output/exhibits/vehicle_transition_pair_decomposition_deck_values.tex
-% ESTIMAND-BOUNDARY: pooled 2024--2026 route-count share on 181 common month-days; each panel names the largest ordered pair whose two endpoints carry a canonical symbol, which is not the largest contributor to its margin because most newly traded assets are unlabelled; margin totals are exact and cover every pair, labelled or not. The three margins are realised composition, never entry or exit effects, and the panels hold nothing else fixed.
+% ESTIMAND-BOUNDARY: pooled 2024--2026 route-count share on 181 common month-days; each panel names the largest ordered pair whose two endpoints carry a canonical symbol, which is not the largest contributor to its margin because most newly traded assets are unlabelled; margin totals are exact and cover every pair, labelled or not. The three margins are realised composition, never entry or exit effects, and the panels hold nothing else fixed. The pair counts and top-contributor share in the closing sentence count every pair in the same allocation, labelled or not, and are gross of the offsetting losses within each margin.
 % VISUAL-FUNCTION: the three margins of an aggregate vehicle share | three named-pair panels with baseline/comparison cells | make the compositional reading concrete in real tokens
 \begin{frame}{Three margins move an aggregate vehicle share}
 \vspace{-0.04cm}
@@ -94,7 +94,7 @@
 
 % Margin 1: the intermediary chosen for a pair that trades in both years.
 \begin{column}{0.325\textwidth}
-\fcolorbox{rule}{panel}{\begin{minipage}[t][4.55cm][t]{0.905\linewidth}\raggedright
+\fcolorbox{rule}{panel}{\begin{minipage}[t][4.3cm][t]{0.905\linewidth}\raggedright
 {\small\bfseries\color{ucldark}1\quad Used more often\\within a pair}\par
 \vspace{0.16cm}
 {\scriptsize\color{muted}\MarginWithinPair{} trades in both years\par}
@@ -111,7 +111,7 @@
 
 % Margin 2: activity moving toward pairs whose routes already used a stablecoin.
 \begin{column}{0.325\textwidth}
-\fcolorbox{rule}{panel}{\begin{minipage}[t][4.55cm][t]{0.905\linewidth}\raggedright
+\fcolorbox{rule}{panel}{\begin{minipage}[t][4.3cm][t]{0.905\linewidth}\raggedright
 {\small\bfseries\color{ucldark}2\quad Trading moves toward\\pairs that already use it}\par
 \vspace{0.16cm}
 {\scriptsize\color{muted}\MarginReweightPair{}, stablecoin-routed in both years\par}
@@ -128,7 +128,7 @@
 
 % Margin 3: pairs absent from the baseline year that route through a stablecoin.
 \begin{column}{0.325\textwidth}
-\fcolorbox{rule}{panel}{\begin{minipage}[t][4.55cm][t]{0.905\linewidth}\raggedright
+\fcolorbox{rule}{panel}{\begin{minipage}[t][4.3cm][t]{0.905\linewidth}\raggedright
 {\small\bfseries\color{ucldark}3\quad Newly traded pairs\\route through it}\par
 \vspace{0.16cm}
 {\scriptsize\color{muted}\MarginNewPairPair{}, absent from the base year\par}
@@ -143,8 +143,8 @@
 \end{minipage}}
 \end{column}
 \end{columns}
-\vspace{0.16cm}
-{\fontsize{8.2}{9.2}\selectfont The first margin is the one vehicle-currency theory describes, and it is the one that did not move. Pairs traded only in the base year give back \MarginRetiredPairTotal{}, leaving \PairPooledExclusive{} net from the third margin.\par}
+\vspace{0.06cm}
+{\fontsize{8.2}{9.2}\selectfont The first margin is the one vehicle-currency theory describes, and it did not move. Pairs traded only in the base year give back \MarginRetiredPairTotal{}, leaving \PairPooledExclusive{} net from the third. The third is broad: \MarginNewPairGainPairs{} pairs, the largest supplying \MarginNewPairTopShare{}. The second is concentrated: \MarginReweightHalfPairs{} pairs supply half of it.\par}
 \decknote{Pooled route-count share among native and stablecoin intermediaries, 2024 against 2026 on 181 common calendar days. A panel names the largest contributing ordered pair whose two endpoints both carry a canonical symbol; unlabelled assets carry most of the third margin, so a named example is smaller than its margin total. Contributions are an exact allocation of the aggregate change and are descriptive.}
 \end{frame}
 

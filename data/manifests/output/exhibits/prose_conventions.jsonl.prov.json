@@ -1,65 +1,44 @@
 {
  "argv": [],
  "artefact": "output/exhibits/prose_conventions.jsonl",
- "artefact_bytes": 3080,
- "artefact_mtime_ns": 1786856868217947956,
- "artefact_sha256": "9e845a8751182430a29d88680c20c427d5aa3dab91e4aa49a352e950a84c9496",
+ "artefact_bytes": 3079,
+ "artefact_mtime_ns": 1786858727124638610,
+ "artefact_sha256": "40624fbb4bf7438f1f58993d778425c09a57ccb7f6caf2a58ea1d8f5f5e75434",
  "code_fingerprint": "855e4cea8ba498e8bb720f072b29f9645df3c0bee4fbe4c26dbd5cb903686b44",
  "code_sources": [
   "scripts/measure_prose_conventions.py",
   "src/ddvc/tables.py"
  ],
- "created_at": "2026-08-16T05:07:48+00:00",
+ "created_at": "2026-08-16T05:38:47+00:00",
  "git": {
   "branch": "main",
-  "commit": "af53e249d8e04ee35acb532262746f257e1700be",
+  "commit": "2e3c7dcafe831de43f148fa0647fecc61b0761c7",
   "dirty": true,
   "dirty_generated_files": [
    "data/manifests/output/exhibits/prose_outliers.jsonl.prov.json",
-   "data/manifests/output/exhibits/provisional_results_deck_values.tex.prov.json",
+   "data/manifests/output/exhibits/vehicle_transition_pair_decomposition_deck_values.tex.prov.json",
    "data/manifests/output/exhibits/venue_optics.jsonl.prov.json",
    "data/manifests/output/exhibits/venue_shape.jsonl.prov.json",
-   "data/manifests/output/tables/dominance_rotation.pdf.prov.json",
-   "data/manifests/output/tables/dominance_rotation.tex.prov.json",
    "data/manifests/output/tables/pair_composition.pdf.prov.json",
    "data/manifests/output/tables/pair_composition.tex.prov.json",
-   "data/manifests/output/tables/usdt_transition.pdf.prov.json",
-   "data/manifests/output/tables/usdt_transition.tex.prov.json",
-   "data/manifests/output/tables/venue_coverage.pdf.prov.json",
-   "data/manifests/output/tables/venue_coverage.tex.prov.json",
-   "data/manifests/output/tables/venue_technology_rival.pdf.prov.json",
-   "data/manifests/output/tables/venue_technology_rival.tex.prov.json",
    "output/exhibits/prose_outliers.jsonl",
-   "output/exhibits/provisional_results_deck_values.tex",
+   "output/exhibits/vehicle_transition_pair_decomposition_deck_values.tex",
    "output/exhibits/venue_optics.jsonl",
    "output/exhibits/venue_shape.jsonl",
-   "output/tables/dominance_rotation.pdf",
    "output/tables/pair_composition.pdf",
-   "output/tables/usdt_transition.pdf",
-   "output/tables/venue_coverage.pdf",
-   "output/tables/venue_technology_rival.pdf",
-   "data/manifests/output/tables/routing_technology_windows.pdf.prov.json",
-   "data/manifests/output/tables/routing_technology_windows.tex.prov.json",
-   "output/exhibits/.prose_conventions.jsonl.4jwpbpg2.tmp",
-   "output/tables/routing_technology_windows.pdf",
-   "output/tables/routing_technology_windows.tex"
+   "data/manifests/d3-release-test-afoxinb6/",
+   "output/exhibits/.prose_conventions.jsonl.mcn9hjxq.tmp"
   ],
   "dirty_tracked_files": [
    "deck/main.pdf",
    "deck/sections/04-results.tex",
    "docs/reviews/paper-rhetoric.json",
-   "docs/router-identification-feasibility.md",
-   "literature/source-admission.json",
-   "paper/sections/01-introduction.tex",
-   "paper/sections/05-rivals.tex",
-   "scripts/tabulate/README.md",
-   "src/ddvc/provisional_results.py",
-   "src/ddvc/venue_tables.py",
-   "tests/test_provisional_results_deck_values.py",
-   "tests/test_venue_rival_support.py"
+   "paper/sections/03-dominance.tex",
+   "scripts/build_vehicle_transition_pair_deck_values.py",
+   "tests/test_vehicle_transition_pair_deck_values.py"
   ],
   "dirty_untracked_files": [
-   "scripts/tabulate/render_routing_technology_windows.py"
+   "d3-release-test-afoxinb6/"
   ]
  },
  "inputs": [],
@@ -71,11 +50,11 @@
  },
  "notes": null,
  "payload_identity": {
-  "bytes": 3080,
+  "bytes": 3079,
   "format": "jsonl",
   "rows": 19,
   "schema_version": 1,
-  "sha256": "9e845a8751182430a29d88680c20c427d5aa3dab91e4aa49a352e950a84c9496"
+  "sha256": "40624fbb4bf7438f1f58993d778425c09a57ccb7f6caf2a58ea1d8f5f5e75434"
  },
  "python": "3.14.6",
  "rows": 19,

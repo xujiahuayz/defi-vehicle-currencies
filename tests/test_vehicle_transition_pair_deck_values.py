@@ -187,6 +187,7 @@ def _contribution(
     tgt: str,
     contribution_pp: float,
     *,
+    metric: str = "count_share",
     stable_baseline: float = 0.0,
     stable_comparison: float = 1.0,
     weight_baseline: float = 0.004,
@@ -195,7 +196,7 @@ def _contribution(
     routes_comparison: float = 54_112.0,
 ) -> dict[str, object]:
     return {
-        "metric": "count_share",
+        "metric": metric,
         "reporting_scope": "pooled",
         "baseline_year": 2024,
         "comparison_year": 2026,
@@ -223,6 +224,7 @@ def _contributions() -> pd.DataFrame:
     of each margin so the renderer must report the margin total separately from
     the named example it prints.
     """
+    value = "strict_intermediation_value_share"
     return pd.DataFrame(
         [
             _contribution("within_pair_choice", USDC, WETH, 0.05),
@@ -234,6 +236,25 @@ def _contributions() -> pd.DataFrame:
             _contribution("comparison_exclusive_composition", USDT, USDC, 0.13),
             _contribution("comparison_exclusive_composition", UNLABELLED, WETH, 20.87),
             _contribution("baseline_exclusive_composition", UNLABELLED, USDC, -3.4),
+            # The dollar-weighted allocation reaches the same margin totals from a
+            # different spread of pairs, so breadth is never read off the count.
+            _contribution("within_pair_choice", USDC, WETH, 0.30, metric=value),
+            _contribution("within_pair_choice", UNLABELLED, WETH, 0.10, metric=value),
+            _contribution("within_pair_choice", WETH, UNLABELLED, -0.50, metric=value),
+            _contribution("pair_composition_reweighting", USDT, WETH, 6.0, metric=value),
+            _contribution("pair_composition_reweighting", USDC, WETH, 3.0, metric=value),
+            _contribution(
+                "pair_composition_reweighting", UNLABELLED, WETH, -1.0, metric=value
+            ),
+            _contribution(
+                "comparison_exclusive_composition", USDT, USDC, 1.0, metric=value
+            ),
+            _contribution(
+                "comparison_exclusive_composition", UNLABELLED, WETH, 20.0, metric=value
+            ),
+            _contribution(
+                "baseline_exclusive_composition", UNLABELLED, USDC, -3.4, metric=value
+            ),
         ]
     )
 
@@ -426,6 +447,63 @@ def test_renderer_fails_closed_when_market_incidence_bridge_is_inconsistent() ->
     with pytest.raises(ValueError, match="total change"):
         render_pair_decomposition_deck_values(
             frame, _fixed_effects(), _usdt_integration(), _contributions()
+        )
+
+
+def test_margin_breadth_counts_pairs_and_splits_gains_from_losses() -> None:
+    rendered = render_pair_decomposition_deck_values(
+        _decomposition(), _fixed_effects(), _usdt_integration(), _contributions()
+    )
+    for macro, value in (
+        # Two pairs gain and one loses within continuing pairs, so the -0.1 pp
+        # margin total is an offset rather than an absence of movement.
+        ("MarginWithinGainPairs", "2"),
+        ("MarginWithinLossPairs", "1"),
+        ("MarginWithinGrossUp", "$+0.5$ pp"),
+        ("MarginWithinGrossDown", "$-0.6$ pp"),
+        ("MarginReweightGainPairs", "3"),
+        ("MarginReweightLossPairs", "0"),
+        ("MarginReweightGrossUp", "$+8.0$ pp"),
+        ("MarginReweightHalfPairs", "1"),
+        ("MarginReweightNinetyPairs", "3"),
+        ("MarginNewPairGainPairs", "2"),
+        ("MarginNewPairTopShare", "99.4\\%"),
+        ("MarginNewPairHalfPairs", "1"),
+        # Dollar weighting reaches the same totals from a different spread.
+        ("MarginWithinValueGainPairs", "2"),
+        ("MarginWithinValueGrossUp", "$+0.4$ pp"),
+        ("MarginWithinValueGrossDown", "$-0.5$ pp"),
+        ("MarginReweightValueLossPairs", "1"),
+        ("MarginReweightValueGrossUp", "$+9.0$ pp"),
+        ("MarginReweightValueGrossDown", "$-1.0$ pp"),
+        ("MarginNewPairValueTopShare", "95.2\\%"),
+    ):
+        assert f"\\newcommand{{\\{macro}}}{{{value}}}" in rendered
+
+
+def test_margin_breadth_reconciles_the_value_margins_it_reports() -> None:
+    contributions = _contributions()
+    value_reweighting = contributions["metric"].eq(
+        "strict_intermediation_value_share"
+    ) & contributions["contribution_component"].eq("pair_composition_reweighting")
+    contributions.loc[value_reweighting, "contribution_pp"] += 1.0
+    with pytest.raises(
+        ValueError,
+        match="strict_intermediation_value_share pair_composition_reweighting",
+    ):
+        render_pair_decomposition_deck_values(
+            _decomposition(), _fixed_effects(), _usdt_integration(), contributions
+        )
+
+
+def test_margin_breadth_requires_the_dollar_weighted_allocation() -> None:
+    contributions = _contributions()
+    contributions = contributions[
+        contributions["metric"].ne("strict_intermediation_value_share")
+    ]
+    with pytest.raises(ValueError, match="no pooled 2024--2026"):
+        render_pair_decomposition_deck_values(
+            _decomposition(), _fixed_effects(), _usdt_integration(), contributions
         )
 
 

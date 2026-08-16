@@ -75,6 +75,14 @@ Individual pairs make the accounting concrete. Among pairs whose two assets carr
 % output/exhibits/vehicle_transition_pair_contributions.parquet; macros from
 % scripts/build_vehicle_transition_pair_deck_values.py
 
+A margin of a given size can come from one corridor or from thousands of small markets, and the totals do not distinguish the two. It is therefore natural to ask whether a few large markets carry the reallocation. The two composition margins answer differently. Pairs traded only in 2026 contribute through \MarginNewPairGainPairs{} ordered pairs, the largest of which supplies \MarginNewPairTopShare{} of that margin, and \MarginNewPairNinetyPairs{} of them are needed for nine-tenths of it. Reweighting among continuing pairs is top-heavy instead: \MarginReweightHalfPairs{} pairs supply half of its \MarginReweightGrossUp{} gross gain, and the margin nets to \PairPooledReweight{} only because \MarginReweightLossPairs{} continuing pairs lose activity weight, \MarginReweightGrossDown{} between them. Dollar weighting sharpens the same contrast, with \MarginReweightValueHalfPairs{} pairs behind half of a \MarginReweightValueGrossUp{} gross gain. Within continuing pairs, intermediary choice moves in both directions: \MarginWithinGainPairs{} of them raise their stablecoin share and \MarginWithinLossPairs{} lower it, \MarginWithinGrossUp{} against \MarginWithinGrossDown{} by count and \MarginWithinValueGrossUp{} against \MarginWithinValueGrossDown{} by value. The near-zero net term is an offset between markets moving in both directions, not an absence of movement, and it stays small beside the weight that moves across pairs. The rotation therefore travels along two different edges of the trading network: the network extends into many new and mostly small markets, while activity weight concentrates in a few corridors that were already large. This reorganisation of where trading happens carries the aggregate change; the growth of a single corridor does not. The two edges also separate what a currency network measures: a matrix recording which pairs trade at all, as in the historical exchange structure of \citet{FlandreauJobst2009Empirics}, registers the first margin and is silent on the second.
+% Breadth and gain/loss splits are the same certified pair allocation as the
+% named examples above, so they reconcile to the margin totals by construction;
+% the producer refuses to render them otherwise. Pair-level scope excludes the
+% common-support mass bridge, as in Table~\ref{tab:pair-composition}.
+% output/exhibits/vehicle_transition_pair_contributions.parquet; macros from
+% scripts/build_vehicle_transition_pair_deck_values.py
+
 \subsection{USDT's intermediary role}
 \label{sec:dominance:excess}
 
