@@ -15,7 +15,8 @@ The visual and language benchmark is the five saved full finance/economics prese
 | `vehicle_transition_e0` | Denominator, count/value agreement, excess use, calendar support, within-pair and composition decomposition | Continuous dominance and its decomposition may enter after E1 |
 | `routing_maturation_e0` | Topology versus reach, exact route reproduction, fixed opportunity cells and horizons | Keep routing complexity separate from execution quality and aggregator attribution |
 | `direct_cost_dominance_e0` | Same-state quotes, selection, value, gas, reach and support loss | Show incidence and magnitude on one support or omit the result |
-| `liquidity_allocation_e0` | Separate capital, inventory and executable depth; exact horizons and validated ownership | Keep protocol families and directions separate until the evidence supports synthesis |
+| `liquidity_capital_v2_e0` | Quantity contract proving the panel is V2 deposited-capital stock only; exact bidirectional horizons; absolute-versus-share sign stability; leave-one-candidate influence | Speak of V2 deposited capital, never of liquidity in general, and never call the predictability a feedback loop |
+| `liquidity_allocation_e0` | Separate capital, inventory and executable depth; exact horizons and validated ownership | Deferred until the V3 LP-flow release exists; keep protocol families and directions separate until the evidence supports synthesis |
 | `open_question_anomaly_e0` | Reproduction, magnitude, concentration, denominator stability and strongest rival | An anomaly earns a slide only after a separate confirmatory generation |
 
 ## Core dependency order

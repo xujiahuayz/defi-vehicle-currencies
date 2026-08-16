@@ -11,9 +11,21 @@ import pytest
 
 import ddvc.exploration as exploration
 from ddvc.analysis_release import publish_analysis_release
-from ddvc.exploration import EXPLORATION_PLAN_SCHEMA_VERSION, close_exploration, execute_exploration_plan as _execute_exploration_plan, resolve_exploration_release
+from ddvc.exploration import (
+    EXPLORATION_PLAN_SCHEMA_VERSION,
+    _load_plan_template,
+    close_exploration,
+    execute_exploration_plan as _execute_exploration_plan,
+    resolve_exploration_release,
+)
 from ddvc.model_artifacts import attach_spec_ids, model_artifact_context, write_model_exhibit
-from ddvc.model_registry import canonical_hash, exploratory_plan_identity, model_run_id, validate_artifact_spec_ids
+from ddvc.model_registry import (
+    canonical_hash,
+    claim_execution_perimeter,
+    exploratory_plan_identity,
+    model_run_id,
+    validate_artifact_spec_ids,
+)
 from ddvc.paths import REPO_ROOT
 from ddvc.provenance import sidecar_path, stamp
 from scripts.audit_findings_freeze import validate_model_ledger
@@ -54,7 +66,7 @@ def test_literature_attack_crosswalk_matches_template_exactly() -> None:
     audit = (REPO_ROOT / "docs/literature-audit.md").read_text(encoding="utf-8")
     section = audit.split("## Pre-D3 attack-feasibility crosswalk", 1)[1].split("## Incident findings already established", 1)[0]
     rows = re.findall(r"^\| `([^`]+_e0)` \| `([^`]+)` \|", section, flags=re.MULTILINE)
-    assert len(rows) == len(expected) == 37
+    assert len(rows) == len(expected) == 45
     assert len(set(rows)) == len(rows)
     assert set(rows) == expected
 
@@ -109,22 +121,23 @@ def _d3_release(directory: Path):
 
 def _write_plan(directory: Path, d3_generation: str, *, artifact: Path, families: int = 1) -> Path:
     runner = REPO_ROOT / "scripts" / "run_core_rq_experiments.py"
+    dimensions = ("anomaly", "open_question", "distribution", "heterogeneity", "mechanism", "rival_explanation")
     family_records = []
     for index in range(families):
         output = artifact if index == 0 else artifact.with_name(f"result-{index}.jsonl")
-        required_attack_ids = [
-            f"{dimension}_attack"
-            for dimension in ("distribution", "heterogeneity", "mechanism", "rival_explanation")
-        ]
+        required_attack_ids = [f"{dimension}_attack" for dimension in dimensions]
         family_records.append(
             {
                 "family_id": f"open-search-{index}",
-                "claim_id": f"unregistered-question-{index}",
+                "claim_id": "seed" if index == 0 else f"unregistered-question-{index}",
+                "claim_binding": "specification_claim" if index == 0 else "open_discovery",
+                "execution_gate": "open" if index == 0 else None,
+                "execution_status": "executable",
+                "perimeter_adjudication": "test fixture family",
                 "question": "Which data-supported mechanism or rival explanation is publication-worthy?",
-                "search_dimensions": ["distribution", "heterogeneity", "mechanism", "rival_explanation"],
+                "search_dimensions": list(dimensions),
                 "search_dimension_spec_ids": {
-                    dimension: [f"open-fit-{index}"]
-                    for dimension in ("distribution", "heterogeneity", "mechanism", "rival_explanation")
+                    dimension: [f"open-fit-{index}"] for dimension in dimensions
                 },
                 "required_attack_ids": required_attack_ids,
                 "runner": runner.relative_to(REPO_ROOT).as_posix(),
@@ -160,7 +173,17 @@ def _write_plan(directory: Path, d3_generation: str, *, artifact: Path, families
                 "families": [
                     {
                         key: family[key]
-                        for key in ("family_id", "claim_id", "question", "search_dimensions", "required_attack_ids")
+                        for key in (
+                            "family_id",
+                            "claim_id",
+                            "claim_binding",
+                            "execution_gate",
+                            "execution_status",
+                            "perimeter_adjudication",
+                            "question",
+                            "search_dimensions",
+                            "required_attack_ids",
+                        )
                     }
                     for family in family_records
                 ],
@@ -178,6 +201,10 @@ def _write_plan(directory: Path, d3_generation: str, *, artifact: Path, families
 def execute_exploration_plan(plan_path, **kwargs):
     plan = REPO_ROOT / plan_path
     template = plan.with_name("plan-template.json")
+    kwargs.setdefault(
+        "specification_path",
+        plan.with_name("specification.json").relative_to(REPO_ROOT),
+    )
     return _execute_exploration_plan(
         plan_path,
         template_path=template.relative_to(REPO_ROOT),
@@ -252,6 +279,8 @@ def test_e0_logs_before_fit_then_closes_exact_run_and_triage_algebra() -> None:
             assert run["arguments"] == ["--output", artifact.relative_to(REPO_ROOT).as_posix()]
             assert run["question"].startswith("Which data-supported mechanism")
             assert run["search_dimensions"] == [
+                "anomaly",
+                "open_question",
                 "distribution",
                 "heterogeneity",
                 "mechanism",
@@ -262,6 +291,8 @@ def test_e0_logs_before_fit_then_closes_exact_run_and_triage_algebra() -> None:
                 for dimension in run["search_dimensions"]
             }
             assert run["required_attack_ids"] == [
+                "anomaly_attack",
+                "open_question_attack",
                 "distribution_attack",
                 "heterogeneity_attack",
                 "mechanism_attack",
@@ -566,9 +597,10 @@ def test_canonical_e0_template_covers_seed_families_and_open_discovery() -> None
             encoding="utf-8"
         )
     )
-    assert template["schema_version"] == EXPLORATION_PLAN_SCHEMA_VERSION == 3
+    assert template["schema_version"] == EXPLORATION_PLAN_SCHEMA_VERSION == 4
     assert [family["family_id"] for family in template["families"]] == [
         "vehicle_transition_e0",
+        "liquidity_capital_v2_e0",
         "routing_maturation_e0",
         "direct_cost_dominance_e0",
         "liquidity_allocation_e0",
@@ -577,6 +609,174 @@ def test_canonical_e0_template_covers_seed_families_and_open_discovery() -> None
     assert template["families"][-1]["claim_id"] == "open_question"
     assert "open_question" in template["families"][-1]["search_dimensions"]
     assert all(family["required_attack_ids"] for family in template["families"])
+    assert all(family["perimeter_adjudication"].strip() for family in template["families"])
+
+
+def test_canonical_e0_template_matches_the_live_claim_execution_perimeter() -> None:
+    """The executable perimeter is the lock's, not a hand-maintained list."""
+    specification = json.loads(
+        (REPO_ROOT / "docs" / "specification-lock.json").read_text(encoding="utf-8")
+    )
+    executable = {
+        str(claim["id"]) for claim in claim_execution_perimeter(specification).executable_claims
+    }
+    families = _load_plan_template(
+        REPO_ROOT / "docs" / "e0-exploration-plan.template.json",
+        template_relative="docs/e0-exploration-plan.template.json",
+    )
+    returned = [family["family_id"] for family in families]
+    assert returned == ["vehicle_transition_e0", "liquidity_capital_v2_e0", "open_question_anomaly_e0"]
+    covered = {family["claim_id"] for family in families} - {"open_question"}
+    assert covered == executable
+    # Every deferred family keeps its exact blocker instead of being deleted.
+    template = json.loads(
+        (REPO_ROOT / "docs" / "e0-exploration-plan.template.json").read_text(encoding="utf-8")
+    )
+    deferred = {
+        family["family_id"]: family["execution_gate"]
+        for family in template["families"]
+        if family["execution_status"] == "deferred"
+    }
+    assert deferred == {
+        "routing_maturation_e0": "blocked_transaction_state_frontier",
+        "direct_cost_dominance_e0": "blocked_exact_state_release",
+        "liquidity_allocation_e0": "blocked_capital_and_lp_flow_releases",
+    }
+
+
+def _template_payload(**overrides: object) -> dict[str, object]:
+    family = {
+        "family_id": "seed_e0",
+        "claim_id": "seed",
+        "claim_binding": "specification_claim",
+        "execution_gate": "open",
+        "execution_status": "executable",
+        "perimeter_adjudication": "the only executable claim in the fixture lock",
+        "question": "What varies?",
+        "search_dimensions": ["distribution"],
+        "required_attack_ids": ["seed_attack"],
+    }
+    family.update(overrides)
+    return {
+        "schema_version": EXPLORATION_PLAN_SCHEMA_VERSION,
+        "kind": "e0_exploration_plan_template",
+        "families": [family],
+    }
+
+
+def _fixture_specification(directory: Path, *, gate: str = "open") -> Path:
+    path = directory / "lock.json"
+    path.write_text(
+        json.dumps(
+            {
+                "schema_version": 1,
+                "stage": "design_seed",
+                "claims": [
+                    {"id": "seed", "status": "candidate_primary", "execution_gate": gate},
+                ],
+            }
+        ),
+        encoding="utf-8",
+    )
+    return path
+
+
+@pytest.mark.parametrize(
+    ("overrides", "gate", "message"),
+    [
+        ({"claim_id": "not_a_claim"}, "open", "absent from the lock"),
+        ({"execution_gate": "blocked_something"}, "open", "contradicts the claim execution gate"),
+        (
+            {"execution_gate": "blocked_exact_state_release", "execution_status": "executable"},
+            "blocked_exact_state_release",
+            "misstates the claim execution status",
+        ),
+        (
+            {"claim_binding": "open_discovery", "execution_gate": None},
+            "open",
+            "must not name a locked claim",
+        ),
+    ],
+)
+def test_template_drift_from_the_claim_lock_is_a_hard_failure(
+    overrides: dict[str, object], gate: str, message: str
+) -> None:
+    with _workspace() as raw_directory:
+        directory = Path(raw_directory)
+        specification = _fixture_specification(directory, gate=gate)
+        template = directory / "template.json"
+        template.write_text(json.dumps(_template_payload(**overrides)), encoding="utf-8")
+        with pytest.raises(ValueError, match=message):
+            _load_plan_template(
+                template,
+                template_relative="template.json",
+                specification_path=specification,
+            )
+
+
+def test_an_executable_claim_with_no_family_is_a_hard_failure() -> None:
+    """Dropping a family cannot be how an execution-open claim leaves the perimeter."""
+    with _workspace() as raw_directory:
+        directory = Path(raw_directory)
+        specification = _fixture_specification(directory)
+        payload = _template_payload()
+        payload["families"] = [
+            {
+                "family_id": "open_e0",
+                "claim_id": "open_question",
+                "claim_binding": "open_discovery",
+                "execution_gate": None,
+                "execution_status": "executable",
+                "perimeter_adjudication": "unregistered discovery lane",
+                "question": "What did we not anticipate?",
+                "search_dimensions": ["anomaly", "open_question"],
+                "required_attack_ids": ["triage_attack"],
+            }
+        ]
+        template = directory / "template.json"
+        template.write_text(json.dumps(payload), encoding="utf-8")
+        with pytest.raises(ValueError, match="leaves an executable claim unexplored"):
+            _load_plan_template(
+                template,
+                template_relative="template.json",
+                specification_path=specification,
+            )
+
+
+def test_open_discovery_family_must_actually_search_for_anomalies() -> None:
+    with _workspace() as raw_directory:
+        directory = Path(raw_directory)
+        specification = _fixture_specification(directory)
+        payload = _template_payload()
+        payload["families"].append(
+            {
+                "family_id": "open_e0",
+                "claim_id": "open_question",
+                "claim_binding": "open_discovery",
+                "execution_gate": None,
+                "execution_status": "executable",
+                "perimeter_adjudication": "unregistered discovery lane",
+                "question": "What did we not anticipate?",
+                "search_dimensions": ["distribution"],
+                "required_attack_ids": ["triage_attack"],
+            }
+        )
+        template = directory / "template.json"
+        template.write_text(json.dumps(payload), encoding="utf-8")
+        with pytest.raises(ValueError, match="does not search for anomalies"):
+            _load_plan_template(
+                template,
+                template_relative="template.json",
+                specification_path=specification,
+            )
+        payload["families"][1]["search_dimensions"] = ["anomaly", "open_question", "distribution"]
+        template.write_text(json.dumps(payload), encoding="utf-8")
+        families = _load_plan_template(
+            template,
+            template_relative="template.json",
+            specification_path=specification,
+        )
+        assert [family["family_id"] for family in families] == ["seed_e0", "open_e0"]
 
 
 def test_e0_missing_or_invalid_triage_never_publishes_a_certificate() -> None:

@@ -102,7 +102,10 @@ class FindingsFreezeAuditTest(unittest.TestCase):
 
     def test_optional_artifact_gates_follow_only_executable_claim_inputs(self) -> None:
         payload = json.loads(SPECIFICATION_LOCK.read_text())
-        self.assertFalse(
+        # `liquidity_capital_v2_predictability` is execution-open and names the V2
+        # capital pointer, so its gate is live; the rent-incidence panel belongs to
+        # a claim whose gate is closed and must stay optional.
+        self.assertTrue(
             active_claim_requires_any(
                 payload,
                 ("data/processed/pool_capital_release/current.json",),

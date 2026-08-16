@@ -9,6 +9,7 @@ usable by nodes F and H.
 
 from __future__ import annotations
 
+import json
 import re
 import unittest
 from pathlib import Path
@@ -18,6 +19,17 @@ ROOT = Path(__file__).resolve().parents[1]
 SPINE_PATH = ROOT / "docs" / "paper-spine.md"
 LITERATURE_AUDIT_PATH = ROOT / "docs" / "literature-audit.md"
 DECK_OUTLINE_PATH = ROOT / "docs" / "deck-outline.md"
+EXPLORATION_TEMPLATE_PATH = ROOT / "docs" / "e0-exploration-plan.template.json"
+
+
+def _template_family_ids() -> set[str]:
+    """Both architecture gates cover exactly the declared E0 family perimeter.
+
+    Read from the template rather than restated here, so that adding, deferring or
+    splitting a family cannot leave a gate silently uncovered.
+    """
+    template = json.loads(EXPLORATION_TEMPLATE_PATH.read_text(encoding="utf-8"))
+    return {family["family_id"] for family in template["families"]}
 
 # Tells calibrated against the JFE corpus plus the house-voice blocklist.
 BANNED_SUBSTRINGS = (
@@ -140,31 +152,13 @@ class PaperSpineTests(unittest.TestCase):
         gate_families = set(re.findall(r"^\| `([^`]+_e0)` \|", section, flags=re.MULTILINE))
         self.assertEqual(len(venue_cards), 14)
         self.assertEqual(gate_sources, venue_cards)
-        self.assertEqual(
-            gate_families,
-            {
-                "vehicle_transition_e0",
-                "routing_maturation_e0",
-                "direct_cost_dominance_e0",
-                "liquidity_allocation_e0",
-                "open_question_anomaly_e0",
-            },
-        )
+        self.assertEqual(gate_families, _template_family_ids())
 
     def test_deck_architecture_gate_covers_every_claim_family(self) -> None:
         outline = DECK_OUTLINE_PATH.read_text(encoding="utf-8")
         section = outline.split("## Pre-findings slide architecture gate", 1)[1].split("## Legacy pre-E1 outline", 1)[0]
         gate_families = set(re.findall(r"^\| `([^`]+_e0)` \|", section, flags=re.MULTILINE))
-        self.assertEqual(
-            gate_families,
-            {
-                "vehicle_transition_e0",
-                "routing_maturation_e0",
-                "direct_cost_dominance_e0",
-                "liquidity_allocation_e0",
-                "open_question_anomaly_e0",
-            },
-        )
+        self.assertEqual(gate_families, _template_family_ids())
 
 
 if __name__ == "__main__":

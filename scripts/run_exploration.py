@@ -19,6 +19,11 @@ def main() -> int:
         default="docs/e0-exploration-plan.template.json",
         help="canonical family-perimeter template that the executable plan must match",
     )
+    run.add_argument(
+        "--specification",
+        default="docs/specification-lock.json",
+        help="claim lock whose execution-open perimeter the template must reconcile against",
+    )
     run.add_argument("--d3-certificate", required=True)
     run.add_argument("--ledger", default="docs/model-ledger.json")
     close = subparsers.add_parser("close", help="require exact triage and publish E0")
@@ -33,6 +38,7 @@ def main() -> int:
             d3_certificate_path=args.d3_certificate,
             ledger_path=args.ledger,
             template_path=args.template,
+            specification_path=args.specification,
         )
         print(json.dumps({"status": "in_progress", "executed_run_ids": run_ids}, sort_keys=True))
         return 0

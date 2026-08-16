@@ -20,6 +20,7 @@ from ddvc.model_registry import (
     FITTED_MODEL_ARTIFACT_ROLES,
     MODEL_RUN_ARTIFACT_ROLES,
     canonical_hash,
+    claim_execution_perimeter,
     exploratory_plan_identity,
     generation_id,
     model_run_id,
@@ -35,7 +36,7 @@ from ddvc.provenance import (
 from ddvc.runtime import atomic_output, exclusive_job
 
 
-EXPLORATION_PLAN_SCHEMA_VERSION = 3
+EXPLORATION_PLAN_SCHEMA_VERSION = 4
 EXPLORATION_TRIAGE_SCHEMA_VERSION = 1
 EXPLORATION_CERTIFICATE_SCHEMA_VERSION = 1
 EXPLORATION_CERTIFICATE_KIND = "e0_exploration"
@@ -45,6 +46,10 @@ EXPLORATION_FILENAMES = {"certificate": "certificate.json"}
 EXPLORATION_LEDGER = REPO_ROOT / "docs" / "model-ledger.json"
 EXPLORATION_CURRENT = REPO_ROOT / "data" / "processed" / "e0_exploration_release" / "current.json"
 EXPLORATION_PLAN_TEMPLATE = REPO_ROOT / "docs" / "e0-exploration-plan.template.json"
+EXPLORATION_SPECIFICATION_LOCK = REPO_ROOT / "docs" / "specification-lock.json"
+EXPLORATION_CLAIM_BINDINGS = {"specification_claim", "open_discovery"}
+EXPLORATION_EXECUTION_STATUSES = {"executable", "deferred"}
+OPEN_DISCOVERY_DIMENSIONS = {"anomaly", "open_question"}
 EXPLORATION_LOCK = SHARED_RUNTIME_DIR / "e0-exploration.lock"
 EXPLORATION_CODE_SOURCES = (
     "src/ddvc/artifact_release.py",
@@ -99,6 +104,8 @@ class ExplorationPlan:
     plan_sha256: str
     template_relative: str
     template_sha256: str
+    specification_relative: str
+    specification_sha256: str
     expected_family_ids: tuple[str, ...]
     family_perimeter_sha256: str
 
@@ -350,7 +357,18 @@ def _plan_family_contract(family: Mapping[str, Any], *, root: Path) -> dict[str,
     return contract
 
 
-def _load_plan_template(path: Path, *, template_relative: str) -> list[dict[str, Any]]:
+def _load_plan_template(
+    path: Path,
+    *,
+    template_relative: str,
+    specification_path: Path = EXPLORATION_SPECIFICATION_LOCK,
+) -> list[dict[str, Any]]:
+    """Return the executable family perimeter after reconciling it with the claim lock.
+
+    The template declares every designed family, including the ones whose claim
+    is execution-blocked, so that a blocker is recorded rather than silently
+    deleted. Only the executable families gate an exploration run.
+    """
     template = _read_json_object(path, label="E0 exploration plan template")
     if (
         template.get("schema_version") != EXPLORATION_PLAN_SCHEMA_VERSION
@@ -360,20 +378,38 @@ def _load_plan_template(path: Path, *, template_relative: str) -> list[dict[str,
     families = template.get("families")
     if not isinstance(families, list) or not families:
         raise ValueError("E0 exploration plan template has no family perimeter")
+    specification = _read_json_object(specification_path, label="specification lock")
+    perimeter = claim_execution_perimeter(specification)
+    lock_gates = {
+        str(claim.get("id") or ""): claim.get("execution_gate")
+        for claim in specification.get("claims") or []
+        if isinstance(claim, dict)
+    }
+    executable_claim_ids = {str(claim["id"]) for claim in perimeter.executable_claims}
+    declared: list[dict[str, Any]] = []
     normalized: list[dict[str, Any]] = []
+    covered_claim_ids: set[str] = set()
     for family in families:
         if not isinstance(family, dict):
             raise ValueError("E0 exploration plan template contains a non-object family")
         family_id = str(family.get("family_id") or "").strip()
         claim_id = str(family.get("claim_id") or "").strip()
         question = str(family.get("question") or "").strip()
+        binding = str(family.get("claim_binding") or "").strip()
+        execution_status = str(family.get("execution_status") or "").strip()
+        adjudication = str(family.get("perimeter_adjudication") or "").strip()
+        execution_gate = family.get("execution_gate")
         dimensions = family.get("search_dimensions")
         required_attack_ids = _normalize_attack_ids(
             family.get("required_attack_ids"),
             label=f"E0 exploration plan template family {family_id or 'missing'}",
         )
-        if not family_id or not claim_id or not question:
+        if not family_id or not claim_id or not question or not adjudication:
             raise ValueError("E0 exploration plan template has an incomplete family identity")
+        if binding not in EXPLORATION_CLAIM_BINDINGS:
+            raise ValueError(f"E0 exploration plan template has an invalid claim binding: {family_id}")
+        if execution_status not in EXPLORATION_EXECUTION_STATUSES:
+            raise ValueError(f"E0 exploration plan template has an invalid execution status: {family_id}")
         if (
             not isinstance(dimensions, list)
             or not dimensions
@@ -381,21 +417,56 @@ def _load_plan_template(path: Path, *, template_relative: str) -> list[dict[str,
             or len(dimensions) != len(set(dimensions))
         ):
             raise ValueError(f"E0 exploration plan template has invalid dimensions: {family_id}")
-        normalized.append(
-            {
-                "family_id": family_id,
-                "claim_id": claim_id,
-                "question": question,
-                "search_dimensions": list(dimensions),
-                "required_attack_ids": required_attack_ids,
-            }
-        )
-    family_ids = [family["family_id"] for family in normalized]
+        if binding == "specification_claim":
+            if claim_id not in lock_gates:
+                raise ValueError(
+                    f"E0 exploration plan template names a claim absent from the lock: {family_id}/{claim_id}"
+                )
+            if execution_gate != lock_gates[claim_id]:
+                raise ValueError(
+                    "E0 exploration plan template contradicts the claim execution gate: "
+                    f"{family_id}/{claim_id}"
+                )
+            expected_status = "executable" if claim_id in executable_claim_ids else "deferred"
+            if execution_status != expected_status:
+                raise ValueError(
+                    "E0 exploration plan template misstates the claim execution status: "
+                    f"{family_id}/{claim_id} declares {execution_status}, lock requires {expected_status}"
+                )
+            if execution_status == "executable":
+                covered_claim_ids.add(claim_id)
+        else:
+            if claim_id in lock_gates:
+                raise ValueError(
+                    f"E0 open-discovery family must not name a locked claim: {family_id}/{claim_id}"
+                )
+            if execution_gate is not None or execution_status != "executable":
+                raise ValueError(f"E0 open-discovery family has an invalid execution state: {family_id}")
+            if not OPEN_DISCOVERY_DIMENSIONS.issubset(set(dimensions)):
+                raise ValueError(f"E0 open-discovery family does not search for anomalies: {family_id}")
+        identity = {
+            "family_id": family_id,
+            "claim_id": claim_id,
+            "question": question,
+            "search_dimensions": list(dimensions),
+            "required_attack_ids": required_attack_ids,
+        }
+        declared.append(identity)
+        if execution_status == "executable":
+            normalized.append(identity)
+    family_ids = [family["family_id"] for family in declared]
     if len(family_ids) != len(set(family_ids)):
         raise ValueError("E0 exploration plan template contains duplicate family ids")
-    claim_family_pairs = [(family["claim_id"], family["family_id"]) for family in normalized]
-    if len(claim_family_pairs) != len(set(claim_family_pairs)):
+    claim_ids = [family["claim_id"] for family in declared]
+    if len(claim_ids) != len(set(claim_ids)):
         raise ValueError("E0 exploration plan template repeats a claim-family identity")
+    uncovered = sorted(executable_claim_ids - covered_claim_ids)
+    if uncovered:
+        raise ValueError(
+            f"E0 exploration plan template leaves an executable claim unexplored: {uncovered}"
+        )
+    if not normalized:
+        raise ValueError("E0 exploration plan template has no executable family perimeter")
     if not template_relative:
         raise ValueError("E0 exploration plan template path is empty")
     return normalized
@@ -409,6 +480,8 @@ def _load_plan(
     template_relative: str,
     root: Path,
     d3_generation: str,
+    specification_path: Path = EXPLORATION_SPECIFICATION_LOCK,
+    specification_relative: str = "docs/specification-lock.json",
 ) -> ExplorationPlan:
     plan = _read_json_object(path, label="E0 exploration plan")
     if plan.get("schema_version") != EXPLORATION_PLAN_SCHEMA_VERSION:
@@ -433,6 +506,7 @@ def _load_plan(
     template_families = _load_plan_template(
         template_path,
         template_relative=template_relative,
+        specification_path=specification_path,
     )
     expected = {family["family_id"]: family for family in template_families}
     actual = {
@@ -462,6 +536,8 @@ def _load_plan(
         plan_sha256=file_sha256(path),
         template_relative=template_relative,
         template_sha256=file_sha256(template_path),
+        specification_relative=specification_relative,
+        specification_sha256=file_sha256(specification_path),
         expected_family_ids=expected_family_ids,
         family_perimeter_sha256=canonical_hash(template_families),
     )
@@ -619,6 +695,8 @@ def _start_ledger_exploration(
             "plan_sha256": plan.plan_sha256,
             "template_path": plan.template_relative,
             "template_sha256": plan.template_sha256,
+            "specification_path": plan.specification_relative,
+            "specification_sha256": plan.specification_sha256,
             "expected_family_ids": list(plan.expected_family_ids),
             "family_perimeter_sha256": plan.family_perimeter_sha256,
             "generation": None,
@@ -637,6 +715,8 @@ def _start_ledger_exploration(
         or exploration.get("plan_sha256") != plan.plan_sha256
         or exploration.get("template_path") != plan.template_relative
         or exploration.get("template_sha256") != plan.template_sha256
+        or exploration.get("specification_path") != plan.specification_relative
+        or exploration.get("specification_sha256") != plan.specification_sha256
         or exploration.get("expected_family_ids") != list(plan.expected_family_ids)
         or exploration.get("family_perimeter_sha256") != plan.family_perimeter_sha256
         or exploration.get("generation") is not None
@@ -652,6 +732,7 @@ def execute_exploration_plan(
     root: Path = REPO_ROOT,
     ledger_path: str | Path = "docs/model-ledger.json",
     template_path: str | Path = "docs/e0-exploration-plan.template.json",
+    specification_path: str | Path = "docs/specification-lock.json",
     lock_path: Path = EXPLORATION_LOCK,
     verifier: Callable[[str | Path], dict[str, object]] = verify,
     command_runner: CommandRunner = _default_command_runner,
@@ -671,6 +752,13 @@ def execute_exploration_plan(
     )
     if not resolved_template.is_file():
         raise FileNotFoundError(f"E0 exploration plan template is absent: {template_relative}")
+    specification_relative, resolved_specification = resolve_repo_path(
+        specification_path,
+        root=root,
+        label="specification lock",
+    )
+    if not resolved_specification.is_file():
+        raise FileNotFoundError(f"specification lock is absent: {specification_relative}")
     plan = _load_plan(
         resolved_plan,
         plan_relative=plan_relative,
@@ -678,6 +766,8 @@ def execute_exploration_plan(
         template_relative=template_relative,
         root=root,
         d3_generation=d3.generation,
+        specification_path=resolved_specification,
+        specification_relative=specification_relative,
     )
     completed: list[str] = []
     with exclusive_job(lock_path, job="E0 exploration"):
@@ -985,6 +1075,11 @@ def _reopen_ledger_plan(
         root=root,
         label="ledger E0 exploration plan template",
     )
+    specification_relative, specification_path = resolve_repo_path(
+        str(exploration.get("specification_path") or ""),
+        root=root,
+        label="ledger E0 specification lock",
+    )
     plan = _load_plan(
         plan_path,
         plan_relative=plan_relative,
@@ -992,10 +1087,13 @@ def _reopen_ledger_plan(
         template_relative=template_relative,
         root=root,
         d3_generation=d3_generation,
+        specification_path=specification_path,
+        specification_relative=specification_relative,
     )
     expected = {
         "plan_sha256": plan.plan_sha256,
         "template_sha256": plan.template_sha256,
+        "specification_sha256": plan.specification_sha256,
         "expected_family_ids": list(plan.expected_family_ids),
         "family_perimeter_sha256": plan.family_perimeter_sha256,
     }

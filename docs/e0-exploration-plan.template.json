@@ -1,10 +1,14 @@
 {
-  "schema_version": 3,
+  "schema_version": 4,
   "kind": "e0_exploration_plan_template",
   "families": [
     {
       "family_id": "vehicle_transition_e0",
       "claim_id": "vehicle_transition",
+      "claim_binding": "specification_claim",
+      "execution_gate": "open",
+      "execution_status": "executable",
+      "perimeter_adjudication": "Lead candidate claim with an open execution gate and current claim inputs. Explored at E0 so that the E1 registration of the transition design is informed by the released route-only panels rather than chosen after seeing a preferred coefficient.",
       "question": "How does the continuous degree and composition of vehicle-currency use vary across time, support, backing regimes, and routing strata?",
       "search_dimensions": [
         "distribution",
@@ -23,8 +27,39 @@
       ]
     },
     {
+      "family_id": "liquidity_capital_v2_e0",
+      "claim_id": "liquidity_capital_v2_predictability",
+      "claim_binding": "specification_claim",
+      "execution_gate": "open",
+      "execution_status": "executable",
+      "perimeter_adjudication": "The V2-only split of the joint liquidity-allocation claim, separated because the Uniswap V3 LP-flow release is blocked while the V2 deposited-capital release is current. It carries the eight attacks of `liquidity_allocation_e0` that a V2-family deposited-capital stock panel can answer on its own; `provider_overlap_coverage` stays with the joint family because cross-protocol-family ownership cannot be validated from V2 alone. Registering this mechanism at E1 without exploring it first would defeat the stage; leaving it unexplored while its inputs are current would silently drop an executable claim.",
+      "question": "What temporal relationships connect vehicle use to V2-family deposited-capital stocks across horizons, calendar perimeters, measurement alternatives, and stress states?",
+      "search_dimensions": [
+        "distribution",
+        "support",
+        "functional_form",
+        "heterogeneity",
+        "mechanism",
+        "rival_explanation"
+      ],
+      "required_attack_ids": [
+        "absolute_share_sign_stability",
+        "bidirectional_exact_horizons",
+        "common_shock_price_risk_placebos",
+        "influence_concentration",
+        "multiplicity_support_ledger",
+        "stress_heterogeneity",
+        "v2_calendar_perimeter_subsamples",
+        "v2_stock_v3_flow_separation"
+      ]
+    },
+    {
       "family_id": "routing_maturation_e0",
       "claim_id": "routing_maturation_rival",
+      "claim_binding": "specification_claim",
+      "execution_gate": "blocked_transaction_state_frontier",
+      "execution_status": "deferred",
+      "perimeter_adjudication": "Deferred, not withdrawn. Its attacks require the certified transaction-state frontier, which is not released. The family stays declared with its exact blocker so the record shows what the design intends to test; it is restored to `executable` by the claim's execution gate opening, never by editing this file.",
       "question": "How do opportunity sets and measured routing shortfalls vary across time, support, route scope, and exact calendar horizons?",
       "search_dimensions": [
         "distribution",
@@ -48,6 +83,10 @@
     {
       "family_id": "direct_cost_dominance_e0",
       "claim_id": "direct_cost_dominance",
+      "claim_binding": "specification_claim",
+      "execution_gate": "blocked_exact_state_release",
+      "execution_status": "deferred",
+      "perimeter_adjudication": "Deferred, not withdrawn. Every attack needs strict pre-transaction exact state, which the V3/V4 exact-state daily materialization has not released. Declared with its exact blocker rather than deleted, so that no proxy cost lane can open in its place.",
       "question": "Where does a same-state direct alternative improve on realised two-leg vehicle routing, and how sensitive is that pattern to valuation, gas, state, and venue reach?",
       "search_dimensions": [
         "distribution",
@@ -69,6 +108,10 @@
     {
       "family_id": "liquidity_allocation_e0",
       "claim_id": "liquidity_capital_flow_predictability",
+      "claim_binding": "specification_claim",
+      "execution_gate": "blocked_capital_and_lp_flow_releases",
+      "execution_status": "deferred",
+      "perimeter_adjudication": "Deferred, not withdrawn. The joint V2-stock and V3-flow claim needs the Uniswap V3 daily LP-flow panel, which is not released. Its V2-supportable half runs now as `liquidity_capital_v2_e0`; the joint family keeps `provider_overlap_coverage` and the V3 flow attacks and returns when its gate opens. The two families are never pooled, per the claim's own quantity-family boundary.",
       "question": "What temporal relationships connect vehicle use to V2 deposited-capital stocks and V3 liquidity-supply flows when the two measurement families remain separate?",
       "search_dimensions": [
         "distribution",
@@ -93,6 +136,10 @@
     {
       "family_id": "open_question_anomaly_e0",
       "claim_id": "open_question",
+      "claim_binding": "open_discovery",
+      "execution_gate": null,
+      "execution_status": "executable",
+      "perimeter_adjudication": "The anomaly search has no pre-declared estimand by construction, so `open_question` is deliberately not a claim in `docs/specification-lock.json` and must not become one. It is declared as `open_discovery` so the absence is checked rather than accidental. Retiring it would remove the only route from an unanticipated result to the triage record, which is what the exploratory lane exists to provide.",
       "question": "Which unanticipated anomaly, mechanism, rival explanation, or adjacent question in the released panels merits promotion, auxiliary retention, or preservation for a later paper?",
       "search_dimensions": [
         "anomaly",

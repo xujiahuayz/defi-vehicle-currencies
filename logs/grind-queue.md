@@ -91,6 +91,26 @@ and pick a blocking check from the freeze gate.
   reconciled `docs/e0-exploration-plan.template.json` with its citations, and only
   then build `scripts/lock_specification.py`. Nothing was written toward this item
   this iteration._
+  _PROGRESS NOTE 2 (2026-08-16, still not closed). The resumption point above is
+  DONE. `docs/e0-exploration-plan.template.json` is now schema 4 and reconciled:
+  six declared families, three executable and three deferred with their exact
+  blocker string, plus a `perimeter_adjudication` sentence on every one. The
+  reconciliation is enforced, not asserted: `_load_plan_template` now reads
+  `docs/specification-lock.json`, fails if a family names a claim the lock does not
+  have, if its `execution_gate` disagrees with the claim's, if its
+  `execution_status` disagrees with `claim_execution_perimeter`, or if an
+  execution-open claim has no family at all, and returns only the executable
+  families for the plan comparison. The exploration identity now also binds
+  `specification_path`/`specification_sha256`, so editing the lock after a run
+  starts reopens the exploration instead of passing silently. The new
+  `liquidity_capital_v2_e0` family carries eight of the joint family's nine attacks
+  with V2-restricted crosswalk rows in `docs/literature-audit.md` (37 -> 45 rows).
+  Resumption point for the next worker: build `scripts/lock_specification.py`
+  itself. Steps 1-3 of this item are unchanged; step 4 can now actually run, since
+  `execute_exploration_plan` has a family perimeter it can satisfy. Note that the
+  E0 run still needs a written `plan.json` naming a runner and declared artifacts
+  per executable family — that plan does not exist yet and is the first thing the
+  lock script must produce or require._
 
 - [x] **Replace the hand-declared `stable_passes` with a computed findings fingerprint.**
   Today `stable_passes` is a hand-typed YAML field on line 3 of
