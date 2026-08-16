@@ -3199,3 +3199,127 @@ ledger; node B full-text literature ledger; two unchanged findings passes).
 - The M3 12:03 handoff stays unchecked; its live remainder is the E1/D3
   generation identities and the two unchanged findings passes. Mukhin still needs
   Java or Studio (NEEDS-JAVA stands from 2026-08-15).
+
+## 2026-08-16 — market-incidence support classes published and read
+
+**Targeted check.** Still none closable. `audit_findings_freeze.py` reports the
+same four blockers with identical detail strings: node E1 specification lock
+(`stage=design_seed`, `locked_at`/`d3_generation`/`d3_certificate` all
+`missing`), empirical model ledger (`current_runs=0`, `exploration=not_started`),
+node B full-text literature ledger (32/33 source-sets, 34/35 five-axis cards --
+Mukhin, NEEDS-JAVA since 2026-08-15), two unchanged findings passes
+(`stable_passes=0`). Queue: only the M3 12:03 handoff is unchecked, and its live
+remainder is exactly those blockers, so there was nothing there to close either.
+This iteration took the unit the last entry's own "next iteration" note named.
+
+**The defect.** Panel A of Table 3 publishes five signed terms and three
+aggregate stablecoin shares and nothing about the population underneath them.
+Two of those terms -- `market_pair_support_bridge` and
+`vehicle_role_support_bridge` -- are each one class's activity mass against that
+class's routing rate, so a term near zero cannot be told apart from an inert
+class or a shrinking class routing very differently from the average.
+`vehicle_transition_pair_support.jsonl` has carried the `market_incidence_support`
+class ledger since the E0 run and had **no consumer at all**: the only mention in
+the repository was a source comment added last iteration.
+
+**What landed.**
+1. **`_market_incidence_classes` in the existing producer.** It publishes the
+   three classes' choice-mass weight, stablecoin share and pair count for both
+   years (18 macros, prefix `\Incidence`) and withholds all of them unless the
+   classes are provably the bridge's own partition. Five premises, checked in
+   the order of what they license: each class's stablecoin share is its own
+   stable-over-primary choice mass; the three weights close on one in each year;
+   their mass-weighted mean reproduces that year's aggregate stablecoin share on
+   the bridge row itself; the common class reproduces
+   `common_role_*_stable_share`; the two both-years classes renormalise to
+   `established_market_*_stable_share`. All five hold on the live ledger to
+   1e-12.
+2. **`_market_incidence_row` now owns the common-role endpoints.**
+   `common_role_baseline_stable_share` and `common_role_comparison_stable_share`
+   were present in the exhibit but not required, read, or reconciled. They are
+   now in the required set, the finiteness list, and a new "common-role
+   endpoints" reconciliation.
+3. **A paragraph in Section 3.2 that reads the smallest term.**
+   `\VehicleRoleSupportBridge{}` is -0.4 pp. The class behind it carries **3.0%
+   of 2024 choice mass across 4,967 ordered pairs and 1.0% of 2026 across
+   1,556**, and routes through a stablecoin **more often than either other class
+   in either year**: 47.0% and 76.9%, against 25.0%/41.2% for the 26,547 pairs
+   carrying a vehicle in both years and 3.9%/43.1% for one-year markets. So the
+   extensive margin of intermediation inside established markets is narrow,
+   shrinking, and stablecoin-routed where it is used.
+4. **A third account of the rotation is now bounded.** "Markets that had been
+   trading directly begin routing indirectly and use a stablecoin when they do"
+   is confined to a population never larger than 3.0% of routed choice mass and
+   cannot carry +25.7 pp. **DECISION: promote** at exact scope (descriptive,
+   non-causal, realised incidence, 2024--2026). This strengthens Java's
+   compositional headline from a third direction: it is not within-pair
+   switching, and it is not established markets switching intermediation on.
+
+**The trap this unit had to avoid, and how.** The obvious move was a Bennet
+split of the three classes into a composition term and a within-class term. It
+is exact (-1.42 pp composition, +27.10 pp within-class, total +25.68 pp) and it
+would have been a **fourth factorisation of the same total**, whose within-class
+term reads like a within-pair term and is not one: two of the three classes hold
+different pairs in each year by construction, so their "within-class" movement
+is pure composition. That is precisely the confusion the 2026-08-16 correction
+was written about. It was not published. The paragraph instead states outright
+that membership turns over by construction, that no pair in the role-turnover
+class carries an intermediary in both years, and that the distance between its
+two stablecoin shares records which markets occupied it.
+
+**Traps for the next iteration.**
+- **Re-stamp the producer before re-rendering a table that consumes it.**
+  `require_certified_presentation_source` compares the *code fingerprint* in the
+  sidecar, so editing `build_vehicle_transition_pair_deck_values.py` after
+  running it makes `render_pair_composition.py` fail with "presentation producer
+  differs from its certificate". Run the producer, then the table renderer.
+- **`pair_composition.tex` came out byte-identical** but its `.pdf` and both
+  sidecars changed. Commit all four together; do not check out the pdf.
+- The ledger's earlier traps all still hold: `dominance_tables.py` is shared by
+  three renderers; `uv run pytest` aborts at collection (use `./scripts/run -m
+  pytest`); `pgrep -f "pytest ..."` self-matches, so wait on the PID;
+  `deck/main.pdf` rebuilds byte-differently at identical length, so check it
+  out; citation headroom is ~450 words and a *new* `\cite` key needs a card at
+  `claim-verified` or better.
+- **`rather_than` has no headroom.** The first draft of the new paragraph put
+  the draft at 0.608 per 1,000 words against a corpus maximum of 0.572. The
+  closing thought was rewritten (not word-substituted) into three sentences that
+  carry the contrast structurally. Any new paragraph using "rather than" will
+  re-break `measure_prose_conventions.py`.
+- The rhetoric review needed one inserted handoff at line 83 and a +15-line
+  remap of the seventeen after it. Raw exemplar read for it was
+  `2020-GriffinShams2020Untethered...txt:167-193`, added to both the section's
+  `exemplars` and the flow review's `raw_exemplars`.
+
+**Validation.** `check_deliverable_conformance.py` exits 0, all blocking checks
+pass; paper 39 pages / 0 undefined, deck 35 pages / 0 undefined, the same 2
+advisories. Venue shape: words 16,208 -> 16,240, equations 12, citations 34.
+Producer suite 39 passed (32 before, 7 new). Full suite via `./scripts/run -m
+pytest -q --ignore=tests/test_route_cost_panel.py --ignore=tests/test_route_state.py`:
+**13 failed, 2155 passed**, exactly the long-standing v2 provenance-drift set,
+no new failures.
+
+**Commit:** `01a2ad2`.
+
+**Blocking count: 4** (unchanged: node E1 specification lock; empirical model
+ledger; node B full-text literature ledger; two unchanged findings passes).
+
+**For the next iteration.**
+- The pooled `count_share` support ledger is now fully published and read. The
+  *other* record types in the same file are still unread:
+  `decomposition_pair_support` carries `baseline_denominator`,
+  `comparison_denominator` and `zero_denominator_cell_years` at pooled,
+  single-venue and cross-venue scope for all three metrics, and
+  `pair_month_day_scope_support` carries the scope-specific cells. Note that
+  `market_incidence_support` exists **only** for pooled `count_share` -- there
+  is no value-weighted or scope-specific class ledger, so a value-side version
+  of this paragraph would need a producer change in
+  `scripts/run_vehicle_rotation_composition_e0.py`, not a prose pass.
+- The deck was not touched and needs no change: no frame reads an `\Incidence`
+  macro, and the deck remains saturated. Do not add a frame without removing one.
+- Equations remain the widest venue gap (12 against p25 25). Section 6 still
+  defines the cost benchmark and reports nothing; still the largest structural
+  hole, still blocked on route cost.
+- The M3 12:03 handoff stays unchecked; its live remainder is the E1/D3
+  generation identities and the two unchanged findings passes. Mukhin still
+  needs Java or Studio (NEEDS-JAVA stands from 2026-08-15).
