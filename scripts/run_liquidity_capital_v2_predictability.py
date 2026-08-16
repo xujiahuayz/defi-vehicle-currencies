@@ -4,19 +4,53 @@
 This runner consumes only the independently released V2 candidate-day and
 exact-horizon panels. It never opens, fills, or conditions execution on a V3
 flow artifact. The estimates are predictive associations, not causal feedback.
+
+Two components live here and share one bound generation. The predictability
+component fits the claim's registered perimeter. The influence component answers
+the `liquidity_capital_v2_e0` family's `influence_concentration` attack: it
+measures where the support's capital mass sits, then refits the full-calendar
+perimeter dropping one candidate or one high-contribution pool at a time and
+restates the claim's own decision rule on each remainder. They stay in one
+runner because both must speak through the same covariance contract; splitting
+the fit owner is how a diagnostic quietly acquires a second inference.
 """
 
 from __future__ import annotations
 
 import argparse
+from collections.abc import Mapping
 from dataclasses import replace
 from pathlib import Path
 
 import numpy as np
 import pandas as pd
 
+from ddvc.analysis.liquidity_capital_v2_influence import (
+    ATTACK_ID as INFLUENCE_ATTACK_ID,
+)
+from ddvc.analysis.liquidity_capital_v2_influence import (
+    candidate_capital_block,
+    candidate_contribution_ledger,
+    capital_reconciliation,
+    leave_out_units,
+    open_candidate_capital,
+    pool_contribution_ledger,
+    rebuild_candidate_day,
+    top_pool_keys,
+    within_transform_weight,
+)
 from ddvc.analysis.regression import absorb_fixed_effects, holm_adjusted_pvalues, ols_clustered
-from ddvc.liquidity_predictability import HORIZONS, V3_LAUNCH_DATE, validate_v2_exact_horizon_panel
+from ddvc.capital_release import (
+    CAPITAL_RELEASE_POINTER_RELATIVE,
+    current_capital_release,
+    resolve_capital_release,
+)
+from ddvc.liquidity_predictability import (
+    HORIZONS,
+    V3_LAUNCH_DATE,
+    build_v2_exact_horizon_panel,
+    validate_v2_exact_horizon_panel,
+)
 from ddvc.model_artifacts import (
     attach_spec_ids,
     model_artifact_context,
@@ -33,6 +67,12 @@ EXACT_HORIZON_INPUT = REPO_ROOT / "data/processed/liquidity_capital_v2_exact_hor
 RESULT_OUTPUT = OUTPUT_DIR / "exhibits/liquidity_capital_v2_predictability.jsonl"
 SUPPORT_OUTPUT = OUTPUT_DIR / "exhibits/liquidity_capital_v2_support.jsonl"
 TABLE_OUTPUT = OUTPUT_DIR / "tables/liquidity_capital_v2_predictability.tex"
+INFLUENCE_ESTIMATE_OUTPUT = (
+    OUTPUT_DIR / "exhibits/e0_liquidity_capital_v2_influence_estimates.jsonl"
+)
+INFLUENCE_SUPPORT_OUTPUT = (
+    OUTPUT_DIR / "exhibits/e0_liquidity_capital_v2_influence_support.jsonl"
+)
 PRIMARY_HORIZONS = (1, 7, 30)
 DK_LAG = 30
 CODE_SOURCES = [
@@ -41,6 +81,34 @@ CODE_SOURCES = [
     "src/ddvc/analysis/regression.py",
     "src/ddvc/model_artifacts.py",
 ]
+INFLUENCE_CODE_SOURCES = [
+    *CODE_SOURCES,
+    "src/ddvc/analysis/liquidity_capital_v2_influence.py",
+    "src/ddvc/capital_release.py",
+]
+INFLUENCE_COMPONENT_FAMILY = "liquidity_capital_v2_influence_component"
+# The `liquidity_capital_v2_e0` attacks this runner produces evidence for, and
+# where each one lands. It is not the family's full perimeter: the two
+# price-covariate attacks are outside it until the token-price panel enters the
+# claim-input perimeter, and `v2_stock_v3_flow_separation` is enforced by the
+# panel validator but has no published quantity-contract artifact yet. An
+# exploration plan must cite these exhibits and no others from this runner.
+PREDICTABILITY_ATTACK_COVERAGE = (
+    "bidirectional_exact_horizons",
+    "absolute_share_sign_stability",
+    "v2_calendar_perimeter_subsamples",
+    "multiplicity_support_ledger",
+)
+INFLUENCE_ATTACK_COVERAGE = (INFLUENCE_ATTACK_ID,)
+INFLUENCE_SPEC_ID_COLUMNS = (
+    "perimeter",
+    "leave_out_kind",
+    "leave_out_unit",
+    "direction",
+    "route_measure",
+    "capital_measure",
+    "horizon_days",
+)
 ROUTE_MEASURES = {
     "intermediary_episode_share": "future_intermediary_episode_share_change",
     "vehicle_excess_use_count_ratio": "future_vehicle_excess_use_count_ratio_change",
@@ -99,10 +167,30 @@ def _calendar_score_hac_covariance(
     return scale * xtx_inverse @ meat @ xtx_inverse
 
 
-def _fit_fe(sample: pd.DataFrame, outcome: str, predictor: str) -> tuple[object, object]:
+def _fit_fe(
+    sample: pd.DataFrame,
+    outcome: str,
+    predictor: str,
+    *,
+    expected_candidates: int = 5,
+    with_two_way: bool = True,
+) -> tuple[object, object | None]:
+    """Fit one absorbed specification under the claim's own covariance contract.
+
+    `expected_candidates` exists for the leave-one-candidate influence refits and
+    for nothing else: the headline perimeter is the fixed five, and a fit that
+    silently lost a candidate must still fail. The two-way candidate sensitivity
+    is skipped when a candidate is dropped, because four clusters is below the
+    five the registered sensitivity already declares as its own limitation.
+    """
+
     required = [outcome, predictor, "candidate_address", "origin_date"]
     data = sample[required].replace([np.inf, -np.inf], np.nan).dropna().copy()
-    if len(data) < 100 or data["origin_date"].nunique() < 20 or data["candidate_address"].nunique() != 5:
+    if (
+        len(data) < 100
+        or data["origin_date"].nunique() < 20
+        or data["candidate_address"].nunique() != expected_candidates
+    ):
         raise ValueError("V2 predictability fit has insufficient candidate-date support")
     residual = absorb_fixed_effects(
         data[[outcome, predictor]], data["candidate_address"], data["origin_date"]
@@ -133,13 +221,17 @@ def _fit_fe(sample: pd.DataFrame, outcome: str, predictor: str) -> tuple[object,
             scale=scale,
         ),
     )
-    two_way = ols_clustered(
-        residual[outcome], residual[[predictor]], data["candidate_address"],
-        add_constant=False,
-        absorbed_groups=(data["candidate_address"], data["origin_date"]),
-        min_observations=100,
-        min_clusters=5,
-        additional_clusters=(data["origin_date"],),
+    two_way = (
+        ols_clustered(
+            residual[outcome], residual[[predictor]], data["candidate_address"],
+            add_constant=False,
+            absorbed_groups=(data["candidate_address"], data["origin_date"]),
+            min_observations=100,
+            min_clusters=5,
+            additional_clusters=(data["origin_date"],),
+        )
+        if with_two_way
+        else None
     )
     if not np.isfinite(primary.beta[0]) or not np.isfinite(primary.standard_errors[0]):
         raise ValueError("V2 predictability primary covariance is not estimable")
@@ -379,6 +471,247 @@ def estimate_v2_predictability(
     return estimates, pd.DataFrame(support).drop_duplicates().reset_index(drop=True)
 
 
+def _influence_cells(
+    panel: pd.DataFrame,
+    *,
+    expected_candidates: int,
+    unit: Mapping[str, str],
+    variance_shares: list[pd.DataFrame] | None,
+) -> pd.DataFrame:
+    """Fit the full-calendar perimeter once for one leave-out unit."""
+
+    rows: list[dict[str, object]] = []
+    for horizon in HORIZONS:
+        horizon_data = panel[panel["horizon_days"].eq(horizon)]
+        for route_measure, future_route in ROUTE_MEASURES.items():
+            for capital_label, capital_suffix in CAPITAL_MEASURES.items():
+                capital_level = f"v2_{capital_suffix}"
+                future_capital = f"future_v2_{capital_suffix}_change"
+                for direction, outcome, predictor in (
+                    ("route_to_capital", future_capital, route_measure),
+                    ("capital_to_route", future_route, capital_level),
+                ):
+                    primary, _two_way = _fit_fe(
+                        horizon_data,
+                        outcome,
+                        predictor,
+                        expected_candidates=expected_candidates,
+                        with_two_way=False,
+                    )
+                    fit_sample = horizon_data[
+                        [outcome, predictor, "candidate_address", "origin_date"]
+                    ].replace([np.inf, -np.inf], np.nan).dropna()
+                    if variance_shares is not None:
+                        residual = absorb_fixed_effects(
+                            fit_sample[[outcome, predictor]],
+                            fit_sample["candidate_address"],
+                            fit_sample["origin_date"],
+                        )
+                        weights = within_transform_weight(fit_sample, residual[predictor])
+                        weights.insert(0, "record", "within_variance_weight")
+                        weights.insert(1, "horizon_days", horizon)
+                        weights.insert(2, "direction", direction)
+                        weights.insert(3, "route_measure", route_measure)
+                        weights.insert(4, "capital_measure", capital_label)
+                        variance_shares.append(weights)
+                    standard_error = float(primary.standard_errors[0])
+                    rows.append({
+                        "claim_id": "liquidity_capital_v2_predictability",
+                        "measurement_family": "v2_family_deposited_capital_stock",
+                        "perimeter": "full_v2_calendar",
+                        **unit,
+                        "horizon_days": horizon,
+                        "primary_horizon": horizon in PRIMARY_HORIZONS,
+                        "direction": direction,
+                        "route_measure": route_measure,
+                        "capital_measure": capital_label,
+                        "measure_pair_id": f"{route_measure}__{capital_label}",
+                        "outcome": outcome,
+                        "predictor": predictor,
+                        "coefficient": float(primary.beta[0]),
+                        "standard_error": standard_error,
+                        "t_statistic": float(primary.t_statistics[0]),
+                        "p_value": float(primary.p_values[0]),
+                        "confidence_interval_lower": float(primary.beta[0] - 1.96 * standard_error),
+                        "confidence_interval_upper": float(primary.beta[0] + 1.96 * standard_error),
+                        "observations": primary.n_observations,
+                        "origin_date_clusters": primary.n_clusters,
+                        "candidate_clusters": int(fit_sample["candidate_address"].nunique()),
+                        "fixed_effects": "candidate_and_origin_date",
+                        "primary_covariance": (
+                            "candidate_date_score_hac_bartlett_30_calendar_days_zero_score_gaps_preserved"
+                        ),
+                        "share_denominator_candidates": 5,
+                        "interpretation": "temporally_ordered_predictability_not_causal_feedback",
+                    })
+    estimates = pd.DataFrame(rows)
+    estimates["p_value_holm"] = np.nan
+    primary_mask = estimates["primary_horizon"]
+    for _key, indices in estimates[primary_mask].groupby(["perimeter", "direction"], sort=False).groups.items():
+        estimates.loc[indices, "p_value_holm"] = holm_adjusted_pvalues(
+            estimates.loc[indices, "p_value"]
+        )
+    return _attach_full_calendar_decision(estimates)
+
+
+def _influence_displacement(estimates: pd.DataFrame) -> pd.DataFrame:
+    """Compare every leave-out cell with the same cell on the recomputed base."""
+
+    keys = ["horizon_days", "direction", "route_measure", "capital_measure"]
+    base = estimates[estimates["leave_out_kind"].eq("none")]
+    if len(base) != len(HORIZONS) * 2 * len(ROUTE_MEASURES) * len(CAPITAL_MEASURES):
+        raise ValueError("influence base perimeter is incomplete")
+    reference = base.set_index(keys)[["coefficient", "standard_error", "p_value_holm", "p_value"]]
+    merged = estimates.merge(
+        reference.rename(
+            columns={
+                "coefficient": "base_coefficient",
+                "standard_error": "base_standard_error",
+                "p_value_holm": "base_p_value_holm",
+                "p_value": "base_p_value",
+            }
+        ),
+        left_on=keys, right_index=True, how="left", validate="many_to_one",
+    )
+    merged["coefficient_displacement"] = merged["coefficient"] - merged["base_coefficient"]
+    merged["displacement_in_base_standard_errors"] = (
+        merged["coefficient_displacement"] / merged["base_standard_error"]
+    )
+    merged["sign_flip"] = (
+        np.sign(merged["coefficient"]).ne(np.sign(merged["base_coefficient"]))
+        & merged["coefficient"].ne(0)
+        & merged["base_coefficient"].ne(0)
+    )
+    merged["primary_significance_flip"] = merged["primary_horizon"] & (
+        merged["p_value_holm"].lt(0.05).ne(merged["base_p_value_holm"].lt(0.05))
+    )
+    return merged
+
+
+def run_influence_concentration(
+    *,
+    top_pool_count: int = 5,
+) -> tuple[Path, Path]:
+    """Publish the `influence_concentration` attack for the V2 capital family.
+
+    The attack asks whether the family's pooled result is a market statement or a
+    statement about a few units. Its two halves are published together: the
+    contribution ledgers that measure where the support's mass sits, and refits
+    that drop one candidate or one high-contribution pool at a time and restate
+    the claim's own decision rule on what is left. The leave-one-pool half runs
+    on a capital block recomputed from the released allocation rows, and refuses
+    to publish unless that recomputation reproduces the released panel first.
+    """
+
+    context = model_artifact_context()
+    inputs = [CANDIDATE_DAY_INPUT, EXACT_HORIZON_INPUT]
+    capital_release = resolve_capital_release()
+    bound = context.d3_input_records.get(CAPITAL_RELEASE_POINTER_RELATIVE)
+    if not isinstance(bound, Mapping) or bound.get("release_generation") != capital_release.generation_id:
+        raise ValueError("capital release differs from the D3-bound generation")
+    with require_released_model_inputs(
+        context, inputs, consumer="V2 liquidity influence-concentration component"
+    ) as panel_inputs, current_capital_release(capital_release) as release:
+        released_candidate_day = pd.read_parquet(CANDIDATE_DAY_INPUT)
+        connection = open_candidate_capital(release.artifacts["candidate"])
+        try:
+            pool_ledger = pool_contribution_ledger(connection, top_n=10)
+            pool_keys = top_pool_keys(pool_ledger, count=top_pool_count)
+            base_block = candidate_capital_block(connection, released_candidate_day)
+            base_candidate_day = rebuild_candidate_day(released_candidate_day, base_block)
+            reconciliation = capital_reconciliation(released_candidate_day, base_candidate_day)
+            base_panel = build_v2_exact_horizon_panel(base_candidate_day, HORIZONS)
+            variance_shares: list[pd.DataFrame] = []
+            frames: list[pd.DataFrame] = []
+            for unit in leave_out_units(base_candidate_day, pool_keys):
+                if unit["leave_out_kind"] == "none":
+                    panel, expected = base_panel, 5
+                elif unit["leave_out_kind"] == "candidate":
+                    panel = base_panel[
+                        base_panel["candidate_address"].ne(unit["leave_out_unit"])
+                    ]
+                    expected = 4
+                else:
+                    block = candidate_capital_block(
+                        connection,
+                        released_candidate_day,
+                        excluded_pool_keys=[unit["leave_out_unit"]],
+                    )
+                    panel = build_v2_exact_horizon_panel(
+                        rebuild_candidate_day(released_candidate_day, block), HORIZONS
+                    )
+                    expected = 5
+                frames.append(
+                    _influence_cells(
+                        panel,
+                        expected_candidates=expected,
+                        unit=unit,
+                        variance_shares=variance_shares if unit["leave_out_kind"] == "none" else None,
+                    )
+                )
+        finally:
+            connection.close()
+        estimates = _influence_displacement(pd.concat(frames, ignore_index=True))
+        estimates.insert(0, "family", INFLUENCE_COMPONENT_FAMILY)
+        estimates.insert(1, "attack_id", INFLUENCE_ATTACK_ID)
+        estimates = attach_spec_ids(
+            estimates, prefix="liquidity_capital_v2_e0_influence",
+            columns=INFLUENCE_SPEC_ID_COLUMNS,
+        )
+        if len(set(estimates["spec_id"])) != len(estimates):
+            raise ValueError("influence fitted spec_ids are not unique")
+        support = pd.concat(
+            [
+                reconciliation,
+                pool_ledger,
+                candidate_contribution_ledger(base_candidate_day),
+                pd.concat(variance_shares, ignore_index=True, sort=False),
+                estimates.loc[
+                    :, ["leave_out_kind", "leave_out_unit", "horizon_days", "direction",
+                        "route_measure", "capital_measure", "observations",
+                        "origin_date_clusters", "candidate_clusters"]
+                ].assign(record="leave_out_fit_support"),
+            ],
+            ignore_index=True, sort=False,
+        )
+        support.insert(0, "family", INFLUENCE_COMPONENT_FAMILY)
+        support.insert(1, "attack_id", INFLUENCE_ATTACK_ID)
+        release_inputs = list(release.bundle.lineage_paths)
+        notes = (
+            "E0 influence and concentration attack on the V2 deposited-capital family: "
+            "pool and candidate contribution ledgers, the within-transformed predictor "
+            "variance each candidate carries, and full-calendar refits dropping one "
+            "candidate or one high-contribution pool at a time with the claim's own "
+            "decision rule restated on each remainder. The five-candidate share "
+            "denominator is held fixed when a candidate is dropped, so the diagnostic "
+            "perturbs the sample and not the estimand. Leave-one-pool panels are "
+            "recomputed from the released allocation rows and reconciled against the "
+            "released capital column before any exclusion is taken"
+        )
+        write_model_exhibit(
+            support, INFLUENCE_SUPPORT_OUTPUT, role="support", context=context,
+            code_sources=INFLUENCE_CODE_SOURCES,
+            inputs=[*panel_inputs, *release_inputs], notes=notes,
+        )
+        write_model_exhibit(
+            estimates, INFLUENCE_ESTIMATE_OUTPUT, role="result", context=context,
+            code_sources=INFLUENCE_CODE_SOURCES,
+            inputs=[*panel_inputs, *release_inputs], notes=notes,
+        )
+        release.bundle.assert_current()
+    flips = int(estimates["sign_flip"].astype(bool).sum())
+    passes = int(
+        estimates.loc[estimates["primary_horizon"], "claim_decision_pass"]
+        .astype("boolean").fillna(False).sum()
+    )
+    print(
+        f"fitted {len(estimates)} influence specifications across "
+        f"{estimates['leave_out_unit'].nunique()} leave-out units; {flips} sign flips; "
+        f"{passes} primary cells passing the decision rule"
+    )
+    return INFLUENCE_ESTIMATE_OUTPUT, INFLUENCE_SUPPORT_OUTPUT
+
+
 def _render_table(estimates: pd.DataFrame) -> str:
     selected = estimates[
         estimates["perimeter"].eq("full_v2_calendar") & estimates["primary_horizon"]
@@ -435,11 +768,24 @@ def run(*, bootstrap_repetitions: int = 199) -> tuple[Path, Path, Path]:
 def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--bootstrap-repetitions", type=int, default=199)
+    parser.add_argument("--top-pool-count", type=int, default=5)
+    parser.add_argument(
+        "--component",
+        choices=("all", "predictability", "influence"),
+        default="all",
+        help="both components share one bound generation; split them only to diagnose",
+    )
     args = parser.parse_args()
     if args.bootstrap_repetitions < 20:
         raise ValueError("month-block bootstrap requires at least 20 repetitions")
+    if args.top_pool_count < 1:
+        raise ValueError("the leave-one-pool perimeter needs at least one pool")
+    paths: tuple[Path, ...] = ()
     try:
-        paths = run(bootstrap_repetitions=args.bootstrap_repetitions)
+        if args.component in ("all", "predictability"):
+            paths += run(bootstrap_repetitions=args.bootstrap_repetitions)
+        if args.component in ("all", "influence"):
+            paths += run_influence_concentration(top_pool_count=args.top_pool_count)
     except (RuntimeError, ValueError, FileNotFoundError) as error:
         print(f"INPUT BLOCKED: {error}")
         return 2

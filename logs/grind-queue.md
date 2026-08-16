@@ -42,6 +42,54 @@ and pick a blocking check from the freeze gate.
   This rule does NOT license faking a gate. It licenses the loop to *earn* a gate
   by a recorded, citable adjudication that a reader could check and disagree with.
 
+- [ ] **JAVA (2026-08-16): DO THESE TWO FIRST — ABOVE THE E1 LOCK AND DECK ITEMS.
+  (1) CLEAN UP dead scripts and stale intermediary data with no downstream consumer.**
+  Java explicitly authorized deleting data here, which satisfies the owner rule's
+  data-deletion carve-out. Do it conservatively: build the live dependency closure
+  from the real entrypoints — the `./scripts/run` build/release pipeline,
+  `scripts/grind_done_check.sh`, `scripts/audit_findings_freeze.py`, the `paper/`
+  and `deck/` builders, the `scripts/tabulate/` and exhibit runners, and the test
+  suite. Then list every tracked file under `scripts/` and `src/`, and every
+  intermediary artifact under `data/processed/`, `output/`, `logs/`, that is
+  unreachable from that closure AND has zero importers/consumers (grep the
+  module/file name across `src/`, `scripts/`, `tests/`, and configs). Delete only
+  git-tracked orphans (recoverable via git) plus clearly-stale duplicates; when in
+  doubt, KEEP it and just list it. Record the full kill-list and the closure method
+  in the ledger under `DECISION:`. Do NOT touch `data/unified` or any live D3
+  release input. Acceptance: full suite green, freeze-gate blocking count not
+  increased, paper + deck still build.
+
+- [ ] **(2) THEN REMOVE THE CERTIFICATION / FINGERPRINT LAYER — replace it with
+  file-timestamp staleness plus ONE cheap freshness check.** Java's decision; the
+  whole point is to stop serving the robot and serve the econ. The two-machine race
+  the attestation guarded against is gone: M3 is down and verified non-load-bearing,
+  Studio owns DVC 100%, so the cryptographic re-cert chain is now dead weight — and
+  it is exactly what is bogging E1 down (progress note 5: an edit "restages the
+  panel build *and* a new D3 generation, not just a runner re-run"). Remove
+  `src/ddvc/raw_certification.py`, `scripts/certify_raw_generation.py`,
+  `tests/test_raw_certification.py`, `tests/raw_cert_fixtures.py`,
+  `tests/test_findings_fingerprint.py`, `logs/findings-fingerprints.jsonl`, the
+  `data/manifests/**/certificate.json.prov.json` chain and
+  `route_release_pre_v3_recertification_authority.json`; and strip every
+  certificate/fingerprint import and validator branch out of
+  `scripts/audit_findings_freeze.py` (`findings_fingerprint`,
+  `read/validate_findings_fingerprints`, `read/validate_v2/v3_event_source_certificate`,
+  `d3_certificate`, `exploration_certificate`, `e0_certificate`,
+  `verify_certificates`, `require_certified_presentation_source`). Replace the whole
+  layer with Java's model: ONE canonical panel built once from raw by one owner
+  script; downstream rebuilt only on plain file-timestamp staleness (make/snakemake
+  style); plus ONE cheap "is this the current panel?" freshness check so an
+  unattended worker cannot silently regress on a stale file. Keep
+  `scripts/grind_done_check.sh` producing a valid green throughout (freeze audit
+  exits 0 + fresh PDFs). RECONCILE WITH THE E1 ITEM BELOW: this supersedes the
+  `lock_hash` / `exploration_certificate` cryptographic mechanism the E1 spec-lock
+  is built on. KEEP the pre-registration discipline (the spec is frozen before
+  confirmatory runs — that is legitimate JFE method, not the over-engineering), but
+  re-express it git-natively: a committed, human-readable locked spec file governed
+  by git history, not a hash/attestation chain. Adjudicate the exact shape per the
+  owner rule. Do it on a branch; cut `main` and the done-gate over only once the
+  full suite is green.
+
 - [ ] **Make the E1 specification lock self-stamping under the owner rule above.**
   E1 is currently blocked only because `locked_at` and the generation/certificate
   bindings were treated as needing a human. Under the owner rule they do not.
@@ -165,6 +213,45 @@ and pick a blocking check from the freeze gate.
   this chain. Timing correction for the next worker: a model run that binds the
   existing generation `4225a3bd7729de96` takes about six minutes of wall clock, not
   the two hours PROGRESS NOTE 3 records — that cost was the one-off republish._
+  _PROGRESS NOTE 5 (2026-08-16, still not closed). The eight `liquidity_capital_v2_e0`
+  attacks are now adjudicated, and one more is built. **Adjudication.** Four are
+  already fitted inside the claim's registered perimeter and need only spec-id
+  citations in the plan, not new estimation: `bidirectional_exact_horizons`
+  (exact 1/7/30/120 links in both directions), `absolute_share_sign_stability`
+  (both capital measures crossed with both route measures, with
+  `alternative_sign_concordant` computed per route measure),
+  `v2_calendar_perimeter_subsamples` (three perimeters with `analysis_role`
+  marking pre/post-V3 heterogeneity-only), and `multiplicity_support_ledger`
+  (`p_value_holm` within perimeter and direction over the twelve primary
+  coefficients, three covariance alternatives, per-cell support) — all in
+  `output/exhibits/liquidity_capital_v2_{predictability,support}.jsonl`.
+  `influence_concentration` is **built this iteration**: see the ledger entry and
+  `run_influence_concentration`. `v2_stock_v3_flow_separation` is enforced but
+  unpublished — `validate_v2_exact_horizon_panel` rejects any `v3_`-prefixed
+  column and pins `v2_quantity_kind`, and every support row carries
+  `measurement_family`, but the attack's "quantity-contract table shown before
+  any V2 estimate" has no artifact. That is the cheapest remaining unit in this
+  family and needs no new inputs. **The two genuinely blocked attacks are
+  `common_shock_price_risk_placebos` and `stress_heterogeneity`, and the blocker
+  is not the covariate code — it is the claim-input perimeter.** Both need
+  `data/processed/token_price_daily.parquet`, which is absent from the claim's
+  `inputs` in `docs/specification-lock.json` and therefore from the bound D3
+  release, so `require_released_model_inputs` refuses it. Two further facts the
+  route must carry: (1) `attach_lookahead_safe_daily_covariates` cannot be reused
+  as-is, because `_lagged_controls` builds `lag1_v3_*` columns and the V2 family
+  forbids a V3 quantity, so a V2-restricted variant must be added to
+  `src/ddvc/liquidity_predictability.py` — whose source is fingerprinted into the
+  released V2 panels, so that edit restages the panel build *and* a new D3
+  generation, not just a runner re-run; (2) a design point worth registering
+  before the fit: under candidate and origin-date fixed effects every date-global
+  control (WETH return, WETH volatility, WETH stress) is absorbed by construction,
+  so the common-shock rival is already differenced out of the headline
+  specification, and the attack's explicit-control specification has to drop the
+  date effects to say anything at all. Both halves belong in the same generation
+  as the panel rebuild. Resumption point unchanged in shape: publish the
+  quantity-contract artifact, then write the `plan.json` naming a runner and
+  declared artifacts per executable family, then build
+  `scripts/lock_specification.py`._
 
 - [x] **Replace the hand-declared `stable_passes` with a computed findings fingerprint.**
   Today `stable_passes` is a hand-typed YAML field on line 3 of
