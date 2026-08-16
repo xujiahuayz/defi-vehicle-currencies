@@ -58,6 +58,13 @@ and pick a blocking check from the freeze gate.
   in the ledger under `DECISION:`. Do NOT touch `data/unified` or any live D3
   release input. Acceptance: full suite green, freeze-gate blocking count not
   increased, paper + deck still build.
+  _PROGRESS NOTE (2026-08-16, partial only). The accidental two-worktree divergence
+  is removed before this item resumes: the `-d3` worktree was detached and removed,
+  the clean-name checkout is on `main`, launchd/watchdog/config now point there,
+  and current `-d3` data was folded into the single data tree with original-only
+  Dune/raw, legacy metrics and documented legacy empirical/processed panels
+  retained. Do the dependency-closure cleanup against this one checkout; do not
+  recreate a sibling worktree._
 
 - [ ] **(2) THEN REMOVE THE CERTIFICATION / FINGERPRINT LAYER — replace it with
   file-timestamp staleness plus ONE cheap freshness check.** Java's decision; the

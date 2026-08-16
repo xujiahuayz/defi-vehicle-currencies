@@ -17,14 +17,11 @@ counts as done.
   entrypoints from mutating `sys.path`, so the runner is the only sanctioned way
   in.
 - `.venv` in this worktree has no `pytest`; use `./scripts/run -m pytest`.
-- Raw evidence is already local: `data/raw/thegraph` (84G), `data/raw/ethereum`
-  (55G), `data/raw/dune/fluid` (hardlinked to the certified sibling store
-  `../defi-dominant-currency/data/`). **Never refetch.** `du` reports 0B for
-  `data/raw/dune` because those partitions are links, not because they are empty.
-- `data/processed/` in this worktree is nearly bare: the whole node-D processed
-  layer still has to be rebuilt here from raw. The primary worktree
-  `~/projects/defi-vehicle-currencies` holds older processed parquets from a
-  183-commits-behind code generation — treat them as unusable, not as a shortcut.
+- Raw evidence is already local in the single Studio checkout. **Never refetch**
+  unless the owner script proves a named source range is missing or invalid.
+- `data/processed/` is the folded current Studio data tree after the 2026-08-16
+  worktree collapse. Do not look for, create, or write to a sibling `-d3`
+  worktree; there is one local checkout and one ignored data tree.
 
 ---
 
@@ -5244,3 +5241,12 @@ the adjudication above and the two blocked attacks at their real disposition;
 (3) then `scripts/lock_specification.py`. The token-price perimeter expansion that
 unblocks the last two attacks is a panel-plus-release generation, not a runner
 change, and should be planned as its own unit rather than smuggled into (2).
+## 2026-08-16 — Collapse the accidental `-d3` worktree back to the canonical checkout
+
+**Owner instruction.** Java rejected further two-folder divergence and authorized a DRY cleanup: one Studio checkout, stale duplicates removed, and the loop kept on the actual paper science rather than the folder/certification machinery.
+
+**DECISION: collapse the worktree, not the science.** The clean-name checkout is again the only Git worktree, on `main` at `b09e0cb`. The scratch-named `-d3` worktree was detached, the clean-name checkout was switched to `main`, and the linked worktree was removed. Launchd, the watchdog and the grind config were repointed at the canonical checkout, so a future worker has no second Studio worktree to write to.
+
+**Data classification.** Current `-d3` raw, processed, unified and live empirical route-cost/V4 panels won every overlapping current path. Original-only Dune raw files, legacy metrics, and original-only empirical/processed panels with documented consumers were folded into the single data tree. Stale temporary Dune `*.restore.tmp` files were deleted during the fold. Original duplicate raw/unified/current processed/current empirical payloads were deleted after post-move validation; they are no longer a second live repo state.
+
+**Not closed.** This does not close Java's broader cleanup item: the dependency-closure pass over dead scripts and unreachable tracked/generated artifacts still needs a normal worker unit. It only removes the worktree divergence and makes future cleanup operate against one filesystem truth.
