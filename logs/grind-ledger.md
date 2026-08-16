@@ -2339,3 +2339,115 @@ collection on `v2_audit_token_decimals.parquet.prov.json` drift.
   gain.
 - The M3 12:03 handoff stays unchecked; its live remainder is still the E1/D3
   generation identities and the two unchanged findings passes.
+
+---
+
+## 2026-08-16 — How many markets carry each margin: the breadth of the rotation
+
+REGRESSION-CHECK: the purpose-bound estimand at risk was the pooled 2024→2026
+stablecoin route-share change decomposed into within-pair choice, common-pair
+reweighting, common-support mass, and exclusive-pair composition — a descriptive
+realised-composition identity, not a causal margin. The evidence generation at
+risk was `output/exhibits/vehicle_transition_pair_contributions.parquet` under
+D3 certificate `25c755ae…` and endpoint generation `5fb7cbf…`, read only through
+the existing certified-presentation owner; no estimator ran and no release was
+rewritten. The prior corrections at risk were "do not call pair composition
+entry/exit effects" (2026-08-14), the pair-level allocation scope that excludes
+the common-support mass bridge, and "word substitution is not prose revision".
+All held.
+
+**Why this unit.** The freeze gate is RED on the same four Studio/Java-gated
+blockers, so under step 5 the highest-value available work advances a claim. The
+previous entry recorded that no unused certified rival evidence remained and
+named a heterogeneity cut of an existing certified exhibit as one of three open
+lanes. This is that cut, and it answers the first question a referee asks of the
+three-margin result: the totals say how large each margin is, never how many
+markets produce it, and a total near zero never says whether nothing moved or
+whether movements cancelled.
+
+**What closed.** `scripts/build_vehicle_transition_pair_deck_values.py` — the
+canonical reader of the certified contributions ledger, already used to name one
+example pair per margin — now also derives, for pooled route-count *and* pooled
+dollar weighting, the number of gaining and losing pairs per margin, its gross
+gain and gross loss, the largest single pair's share, and the pair counts
+reaching half and nine-tenths of the gross gain. It fails closed: the gains and
+losses must reconcile the margin total they are reported against, the exclusive
+term must reconcile jointly, and the concentration ranks must be ordered. No new
+script, artifact, or owner was created.
+
+**The result** (pooled, count unless stated). The two composition margins are
+economically different objects. Pairs traded only in 2026 contribute through
+**18,446** ordered pairs, the largest supplying **3.2%** of that margin, with
+**1,386** needed for nine-tenths of it — a broad extension of the trading
+network. Reweighting among continuing pairs is the opposite: **7** pairs supply
+half of its **+17.2 pp** gross gain, and it nets to **+8.6 pp** only because
+**2,817** continuing pairs lose activity weight (**−8.6 pp** between them). By
+value the reweighting margin is more top-heavy still (5 pairs behind half of a
++38.0 pp gross gain). Within continuing pairs, **1,575** raise their stablecoin
+share and **1,489** lower it (+1.3 against −1.4 pp by count, +2.3 against −2.4
+pp by value), so the near-zero matched-market term is an *offset*, not an
+absence of movement — a sharper statement of Java's so-what than "about zero".
+
+DECISION: **promote**, at exact scope — descriptive, non-causal, pooled
+2024–2026 pair-level allocation excluding the common-support mass bridge.
+
+**Paper.** A new paragraph closes Section 3.2, written from the raw movement of
+Bolton–Kacperczyk §3.5 (raw lines 1899–1935: concede that a handful of units
+could drive the result, report the test, interpret what the answer implies), now
+registered as a third exemplar for the section and as a handoff at line 78 in
+`docs/reviews/paper-rhetoric.json`. It ends on a contribution-relevant point: a
+matrix recording which pairs trade at all — the historical exchange structure of
+Flandreau and Jobst (2009) — registers the extensive margin and is silent on the
+weight margin.
+
+**Deck.** No new frame. The existing "Three margins move an aggregate vehicle
+share" frame carries one added sentence; its three panels were tightened from
+4.55cm to 4.3cm and the leading space from 0.16cm to 0.06cm, because the first
+attempt pushed the last line of the note off the slide. The frame's 0.20pt
+overfull vbox is now **gone** and the deck's remaining two boxes are byte-equal
+to the pre-change baseline. Page 13 rendered and inspected three times across
+the fix.
+
+**Two regressions I introduced and closed inside this iteration.**
+1. `neither_nor` went OVERUSED (0.545 against a corpus maximum of 0.294) because
+   the draft paragraph used two of them. Both were rewritten as positive
+   statements, not synonym-swapped.
+2. `test_venue_optics.py::test_exhibit_density_reaches_the_first_quartile`
+   (citations) failed at 0.002075 against 0.002081 — the added ~220 words with
+   no citation. Closed by the Flandreau–Jobst sentence above, which is
+   substantive rather than filler; density is now 30/14,012. This also moved
+   "structural resemblance to the venue" from WARN to ok.
+
+**Validation.** `check_deliverable_conformance.py` exits 0, all blocking checks
+pass; paper 36 pages / 0 undefined (was 35), deck 35 pages / 0 undefined, 2
+advisories. `audit_deck_evidence.py` PASS. 48 prose/exhibit/deck/optics/table
+tests plus the producer's own 15 (3 new: breadth reconciliation, value-margin
+reconciliation, dollar-weighted allocation required). Full suite mid-iteration:
+**14 failures**, of which 13 are the byte-identical long-standing set recorded on
+2026-08-15 and the fourteenth was the venue-optics citation regression above,
+now fixed and re-verified. `tests/test_route_cost_panel.py` and
+`tests/test_route_state.py` still error at collection on the
+`v2_audit_token_decimals.parquet.prov.json` drift.
+
+**Commit:** `4687ebd`.
+
+**Blocking count: 4** (unchanged: node E1 specification lock; empirical model
+ledger; node B full-text literature ledger; two unchanged findings passes).
+
+**For the next iteration.**
+- A killed pytest run leaves `d3-release-test-*/` in the repo root and in
+  `data/manifests/`. Only the E0 analogue was ignored; both D3 patterns are now
+  in `.gitignore`. If you kill a test run, check `git status` before `git add -A`.
+- The same breadth machinery is now available for any other certified pair-level
+  allocation. The obvious next scientific cut in this lane is *which* corridors
+  carry the top of the reweighting margin — whether the top 7 pairs share an
+  endpoint asset, a venue, or a size class. That needs no new data, only the
+  labelled subset of the same ledger, and it would test whether the
+  concentration is a WETH-endpoint artefact.
+- Section 6 still defines the cost benchmark and reports nothing; it remains
+  blocked on route cost and is still the largest structural hole in the paper.
+- Venue-shape shortfalls after this pass: words 14,012 against p25 18,738;
+  equations 11 against 25; citations 30 against 39; greek 6 against 7.
+- The M3 12:03 handoff stays unchecked; its live remainder is still the E1/D3
+  generation identities and the two unchanged findings passes. Mukhin still
+  needs Java or Studio (NEEDS-JAVA stands from 2026-08-15).
