@@ -3455,6 +3455,8 @@ advisories (down from 3 mid-unit). Paper 40 pages / 0 undefined, deck 35 pages /
 34 -> 35. Producer suite 41 passed (39 before, 2 new). Page 10 inspected: both
 displays typeset inside the measure with legible underbrace labels.
 
+**Commit:** `ceca448`.
+
 **Blocking count: 4** (unchanged: node E1 specification lock; empirical model
 ledger; node B full-text literature ledger; two unchanged findings passes).
 
