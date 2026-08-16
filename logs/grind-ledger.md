@@ -2942,3 +2942,138 @@ ledger; node B full-text literature ledger; two unchanged findings passes).
 - The M3 12:03 handoff stays unchecked; its live remainder is the E1/D3
   generation identities and the two unchanged findings passes. Mukhin still needs
   Java or Studio (NEEDS-JAVA stands from 2026-08-15).
+
+## 2026-08-16 — the fourth term: support mass as a shift times a block gap
+
+**Targeted check.** No blocking check is honestly closable this iteration.
+`audit_findings_freeze.py` reports the same four: node E1 specification lock
+(`locked_at`, `d3_generation`, `d3_certificate` all `missing`, stage
+`design_seed`), empirical model ledger (`current_runs=0`, exploration
+`not_started`), node B full-text literature ledger (32/33 source-sets, 34/35
+five-axis cards -- the missing one is Mukhin, NEEDS-JAVA since 2026-08-15), and
+two unchanged findings passes (`stable_passes=0`). So this iteration took the
+highest-value claim unit the last entry left on the table: the
+`common_support_mass` term, the fourth of the identity and the only one no
+sentence read.
+
+**What it is.** `common_support_mass = (S_C_bar - S_E_bar)(W_2026 - W_2024)`, a
+product of two factors the exhibit publishes and the deck values never exposed.
+Reading it as a single netted number hides the economics; reading it as a
+factorisation separates *where activity went* from *how the block that received
+it routes*. Both factors were sitting unread in every row of
+`vehicle_transition_pair_decomposition.jsonl`.
+
+**Result.** The mass shift is enormous and the term is tiny. Corridors alive in
+both years fall from **55.5% to 48.6%** of route activity and from **82.0% to
+62.4%** of value; across exchanges the dollar shift is **-27.6 pp**. Priced at
+the midpoint gap the whole migration contributes **-0.5 pp** by count and
+**-2.5 pp** by value against a **+42.8 pp** total. It is small because the two
+populations are priced almost alike at their two-year midpoints -- **33.1%**
+against **25.3%** by count, **58.2%** against **45.3%** by value. The sign is
+negative in **all nine** metric/scope rows, and both factor signs are uniform
+too (`dW < 0`, `gap > 0` everywhere). **DECISION: promote**, at exact scope --
+descriptive, non-causal, 2024--2026, realised composition. The so-what: the
+rotation is *not* activity migrating into corridors that already used the
+challenger. That channel is negative. The aggregate rose because the population
+receiving the activity routes differently from the one it replaced.
+
+**Why midpoint pricing is not a levels claim.** The midpoint gap is what this
+symmetric decomposition pays for a unit of migrated mass; it is not a statement
+that the blocks route alike in either year. The exclusive block goes 10.8% to
+79.9% by value, which is the *exclusive-pair* term, already published. Both the
+paper source comment and the deck estimand boundary say this explicitly, because
+a reader who conflates the two will read the small term as "turnover did not
+matter".
+
+**Where it landed.** Existing owner only, no new script or artifact:
+`SUPPORT_BLOCKS`, `BLOCK_SCOPES`, `BLOCK_COLUMNS`, `_support_mass_factors`, 54
+new macros across two weightings and three scopes. The eight block columns join
+`_scope_rows`' required and numeric contracts, so the renderer fails closed if a
+future exhibit generation drops them. Ordering matters as it did for
+`_support_cohorts`: the two structural premises (blocks partition the year; each
+year's aggregate share is their activity-weighted mean) are proved *before* the
+product reconciliation, or a mutated weight trips the product check and names
+the wrong defect. Every pre-existing macro is byte-identical, verified by diff.
+
+**A trap worth recording.** The market-incidence row carries `null` in every
+block column. It is excluded from `_scope_rows` by `formula_id`, not by column
+presence, so adding the columns to the required set was safe -- but only because
+of that filter. Anything that widens `_scope_rows`' row selection will now
+collect a row of nulls and fail on finiteness rather than on the real defect.
+
+**Paper.** New closing paragraph at Section 3.2 line 144. Written from Carletti,
+De Marco, Ioannidou and Sette (JFE 2021, raw lines 1008--1015), whose two-factor
+attribution runs the other way -- "the effects are sizable not because the
+treated investors are very price sensitive, but because they hold large volumes
+of the securities" -- one factor granted the magnitude and the other denied it.
+Cites `AmitiItskhokiKonings2022Dominant`: invoicing currency is close to a fixed
+exporter attribute, switching for a small minority of observations over almost
+four years, with destination composition explaining little of the variation.
+Choice is similarly sticky inside a continuing corridor here; the difference is
+that the corridor population turns over fast enough for composition to carry the
+whole aggregate change. Registered in `docs/reviews/paper-rhetoric.json` as
+handoff 144, Carletti added to both exemplar lists, section hash refreshed, the
+seven following handoff lines shifted by 17 file lines. Citations 32 -> 33.
+
+**Two prose traps.** (1) `measure_prose_conventions.py` failed on `what_cleft`
+at 0.808 against a corpus max of 0.777 -- the draft was already at the ceiling
+and the new paragraph's two "What X is" clefts tipped it. Rewriting both
+complete thoughts (not the words) brought it to 0.727. Check this after any
+paragraph that opens a clause with "What". (2) `paper-rhetoric.json` is written
+with `indent=1`; a `json.dumps(indent=2)` round-trip produced a 3,633-line diff
+for a 31-line change. Round-trip and compare lengths before writing it.
+
+**Deck.** The margins frame (page 13) gains one clause -- "Where that mass sits
+barely matters: the -6.9 pp shift between the two populations contributes
+-0.5 pp" -- count-weighted, matching the frame's declared route-count
+denominator. It overflowed by exactly **8.83212pt**, the same quantised
+one-line overflow the last entry recorded, so a whole clause had to go: the
+elliptical "The third margin's, by value, is corridors that could choose ---
+X within a venue against Y across", which was the least legible sentence on the
+frame and is fully carried by Section 3.2. Final state: no new overfull box, the
+two remaining (8.14485pt line 65, 5.06264pt line 221) byte-equal to baseline.
+The frame's `ESTIMAND-BOUNDARY` gained the new factors' proof obligations and
+lost the boundary text for the retired clause -- but only the part describing
+the two `\OpenValue*` route-scope figures; the reweighting cross-venue-excess
+claim is still on the slide, so its boundary text was rewritten and kept. Page
+13 rendered and inspected; all three "Margin total" lines and the panels
+untouched.
+
+**Validation.** `check_deliverable_conformance.py` exits 0, all blocking checks
+pass; paper 38 pages / 0 undefined, deck 35 pages / 0 undefined, the same 2
+advisories. `audit_deck_evidence.py` PASS. `check_jfe_rhetoric_review.py` exits
+0. `scripts/tabulate/render_pair_composition.py` rerun in the same unit per the
+standing warning (its `.tex` is unchanged; only the prov manifest moved, which
+is exactly why the warning exists). Full suite: **13 failed, 2147 passed**, all
+13 the long-standing v2 provenance-drift set; no new failures. Still use
+`--ignore=tests/test_route_cost_panel.py --ignore=tests/test_route_state.py` or
+a bare `pytest -q` aborts at collection.
+
+**Commit:** `0b2926f`.
+
+**Blocking count: 4** (unchanged: node E1 specification lock; empirical model
+ledger; node B full-text literature ledger; two unchanged findings passes).
+
+**For the next iteration.**
+- **All four terms of the pair decomposition are now interpreted.** Nothing in
+  `vehicle_transition_pair_decomposition.jsonl` is unread. The descriptive
+  composition lane is exhausted at the aggregate level; further work in it has
+  to come from a different exhibit or a different cut, not another term.
+- Three macros were unused before this pass (`\MarginRetiredPairTotal`,
+  `\MarginReweightHalfPairs`, `\MarginNewPairTopShare`); `\OpenValueSingleNewPair`
+  and `\OpenValueCrossNewPair` now join them in the deck, though both remain in
+  the paper. Do not delete any of them to tidy up.
+- The margins frame has now evicted a clause on two consecutive iterations. It
+  is saturated. Do not add to it again without removing a panel or splitting it.
+- Citation density after this pass: 33 / 15,336 = 0.002152 against a
+  first-quartile 0.002081, so roughly **520 words** of headroom before
+  `test_venue_optics.py::test_exhibit_density_reaches_the_first_quartile` fails.
+- Venue-shape shortfalls: words 15,336 against p25 18,738; equations 11 against
+  25; citations 33 against 39; greek 6 against 7. Equations are the widest gap
+  and the decomposition identity itself is currently prose-only in Section 3.2 --
+  displaying it would move both the equation and the greek counters.
+- Section 6 still defines the cost benchmark and reports nothing; it remains
+  blocked on route cost and is still the largest structural hole in the paper.
+- The M3 12:03 handoff stays unchecked; its live remainder is the E1/D3
+  generation identities and the two unchanged findings passes. Mukhin still needs
+  Java or Studio (NEEDS-JAVA stands from 2026-08-15).
