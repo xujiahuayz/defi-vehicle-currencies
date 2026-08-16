@@ -1856,3 +1856,132 @@ two unchanged findings passes.
 - The M3 12:03 handoff stays unchecked. Its fast-forward part is satisfied
   (`7072291` is an ancestor of `HEAD`); its live remainder is the E1/D3
   generation identities and the two unchanged findings passes, both gated above.
+
+## 2026-08-16 — Section 5 becomes a rival test: route construction rejected
+
+**Targeted check.** None. The freeze gate is RED at the same four blockers
+(node E1 specification lock; empirical model ledger; node B full-text
+literature ledger; two unchanged findings passes), all still structurally
+gated exactly as recorded on 2026-08-15 and re-confirmed here: E1 and the model
+ledger need the closed E0 exploration, and the literature ledger needs Java or
+Studio for Mukhin. The previous iteration was data engineering, so under step 6
+this one had to advance a scientific object instead.
+
+**REGRESSION-CHECK filed before mutation.** Estimand at risk: spec-lock claim
+`vehicle_transition`, whose object is the exact **two-leg** stable share — new
+complexity prose must not restate the >2-leg stratum as that estimand. Evidence
+generation at risk: `intermediation_complexity_rival.jsonl` behind
+`require_certified_presentation_source`; every pre-existing macro had to keep
+its value. Prior corrections at risk: the `forbidden_interpretation` bar on
+aggregator causality and on reading leg count as efficiency (the producer's own
+note says leg count is a complexity proxy), the 2026-08-14 rule against calling
+pair composition entry/exit, and the tiered-prose bar on exact-state
+coefficients. All three held; the diff contains no aggregator or efficiency
+claim and no exact-state number.
+
+**What was wrong.** Section 5 asked "What can account for the rotation?", built
+up the Krugman liquidity mechanism over a full paragraph, and then reported no
+estimate at all. Its second paragraph restated Section 3.4's venue-span result
+with no numbers and no evidence comment. Meanwhile the certified stratification
+that answers the leading rival — did the rotation come from how routes were
+built? — sat unused in `intermediation_complexity_rival.jsonl`, reaching
+neither the paper nor the deck.
+
+**What was done.** Section 5.1 is now a rival test in the Bolton--Kacperczyk
+grammar (raw passages reread at lines 1221--1260 and 1635--1702: open on the
+named alternative, motivate why it could bind, answer with a magnitude, carry
+the survivor forward). The alternative is stated at full strength with its own
+2024 base rates — stablecoins already carried 44.5% of native-plus-stable
+intermediary episodes on routes of more than two legs against 16.9% on two-leg
+routes — and then rejected: two-leg routes gain +25.4 pp by count (SE 1.05) and
++43.9 pp by value (2.02); longer routes gain +16.3 pp (1.86) and +35.9 pp
+(1.68). Both classes move and the shortest-path class moves further, so
+between-class reweighting cannot supply the aggregate change. All four
+venue-span by path-length cells rise; the weakest is +17.0 pp by count (1.36)
+and +25.6 pp by value (1.52). A scope paragraph follows the result rather than
+displacing it.
+
+Section 5.2 now closes the liquidity argument instead of opening it. The
+classical depth channel is defined *within* a market, so it predicts
+substitution inside continuing pairs — which is precisely the margin the
+decomposition found still. The matched-pair interval already in Section 3.2
+(within-pair increases bounded above +1.7 pp) therefore confines depth to
+market **formation**, not to intermediary substitution in established markets.
+That is a new interpretive claim from evidence already certified, and it is the
+affirmative form of Java's compositional so-what.
+
+**Owner discipline.** No new object. `src/ddvc/provisional_results.py` — the
+canonical macro owner already reading this exhibit for the two-leg cells —
+gained the multi-leg and weakest-cell macros and a `_weakest_complexity_cell`
+helper that **refuses to render the four-cell joint statement unless every cell
+change is positive**, so the prose sentence cannot silently outlive the data.
+The generated macro file diff is 12 pure insertions: every pre-existing value
+is byte-identical.
+
+**Deck.** The existing venue-scope frame carries the path-length result in
+place; no new frame was added. Page 14 rendered and inspected (no overflow,
+cells legible), 35 pages, `audit_deck_evidence.py` PASS. Its `EVIDENCE-COMMIT`
+was corrected from the figure's commit `a0c54e9` to the exhibits' commit
+`111230a`, which is where the numeric cells actually come from; the audit
+parser rejects a parenthetical, so the figure's own commit is recorded on the
+following comment line.
+
+**Two undelivered forward references repaired.** The introduction's roadmap
+promised Section 5 would relate the evidence to "exchange reach", which the
+section no longer does under that name; it now names the rival test. Section 2
+promised Section 5 would examine "the major stablecoins and backing groups
+separately" — nothing in the manuscript ever delivered backing groups. It now
+points to Section 3.3, which does separate USDT and USDC.
+
+**DECISION: park** importing the V2 deposited-capital reciprocal result into
+the paper. Verified to ground this iteration:
+`scripts/run_liquidity_capital_v2_predictability.py` still exits `INPUT
+BLOCKED: model runner lacks its DDVC_D3_CERTIFICATE/DDVC_D3_GENERATION
+binding`. Supplying that env binding by hand would bind the estimator to a D3
+generation ahead of the E0 exploration and force a reopen, which the 2026-08-15
+entry explicitly warns against. The brief's rule that presently irreproducible
+estimates stay out therefore governs: the deck's existing frame is
+grandfathered on byte-current macros, but the paper takes no new dependency.
+Section 5.2 carries a source comment recording exactly this, and the resumption
+point from the previous entry is unchanged — when the E0/D3 binding exists,
+rerun that estimator first.
+
+**Validation.** `check_deliverable_conformance.py`: all blocking checks pass,
+paper 31 pages / 0 undefined (was 30), deck 35 pages / 0 undefined, the same 2
+advisories (over-used constructions, prose shape). `audit_deck_evidence.py`
+PASS. `check_jfe_rhetoric_review.py` current after the ledger was rewritten
+with four opening judgments, eight paragraph handoffs, and the relocated v1
+transaction-case fingerprint. 234 prose/exhibit/provenance/deck/rhetoric tests
+pass.
+
+**Pre-existing failure, not introduced here.** `tests/test_route_cost_panel.py`
+and `tests/test_route_state.py` fail at collection with `v2_event_source_release
+provenance is not current: input changed:
+data/manifests/data/processed/v2_audit_token_decimals.parquet.prov.json`.
+Confirmed present at HEAD before this change by stashing the working tree and
+rerunning. It does not block the freeze gate, which reports the V2 event-source
+certificate as "not required by the executable claim-input perimeter". **The
+next iteration should decide whether that manifest drift is real or bookkeeping
+before it spreads to a consumer that matters.**
+
+**Commit:** `93281aa`.
+
+**Blocking count: 4** (unchanged).
+
+**For the next iteration.**
+- The gate cannot be advanced without Studio or Java; do not re-derive that.
+  Keep advancing scientific objects.
+- Remaining unused certified rival evidence, in descending value:
+  `venue_technology_rival.jsonl` (asset-type excess use by year on the full
+  venue perimeter) and `routing_technology_windows.jsonl` (pre/post windows
+  around auto-router releases). The second sits under spec-lock claim 1, whose
+  `execution_gate` is `blocked_transaction_state_frontier` and whose
+  `forbidden_interpretation` bars an aggregator-causality reading — treat any
+  use of it as descriptive window composition only.
+- The four venue-shape shortfalls (words, equations, citations, greek all below
+  the exemplar p25) are the standing structural gap in the manuscript. Section 5
+  grew by roughly 400 words this iteration; the shortfall is concentrated in the
+  thin Section 6, which defines the cost benchmark and reports nothing because
+  route cost is blocked.
+- The M3 12:03 handoff stays unchecked; its live remainder is still the E1/D3
+  generation identities and the two unchanged findings passes.
