@@ -83,6 +83,18 @@ A margin of a given size can come from one corridor or from thousands of small m
 % output/exhibits/vehicle_transition_pair_contributions.parquet; macros from
 % scripts/build_vehicle_transition_pair_deck_values.py
 
+The vehicle role is not contestable everywhere in the pair space. A route whose source or destination is wrapped ether cannot also use wrapped ether as its intermediary, so within the native-versus-stablecoin comparison such a route is stablecoin-intermediated by definition, in 2024 and in 2026 alike. Since the pairs that grew fastest are concentrated among exactly those corridors, a question of interest is whether the two composition margins record anything more than the growth of markets whose vehicle was never in doubt. We split each margin according to whether wrapped ether is an endpoint of the ordered pair. The split is decided by one contract address rather than by a ticker, so the long tail of newly traded assets is classified as reliably as the majors. \LockedPairs{} of the \LockedCommonPairs{} continuing pairs, or \LockedPairShare{}, have such an endpoint, and their share of routed activity rises from \LockedWeightBase{} to \LockedWeightEnd{}. By route count they supply \LockedReweight{} of the \PairPooledReweight{} reweighting margin and \LockedNewPair{} of the \MarginNewPairTotal{} new-pair margin, so most of the count rotation does run through corridors that had no intermediary to choose. Dollar weighting reverses the reading. The same corridors supply \LockedValueReweight{} of the \PairValueReweight{} value reweighting margin, or \LockedValueReweightShare{} of it, and \LockedValueNewPair{} of the value new-pair margin, or \LockedValueNewPairShare{}. Once trades are weighted by the value they move, the rotation is carried by pairs that could have been routed either way and were routed through a stablecoin. The same identity disciplines the within-pair term: a pair with a wrapped-ether endpoint contributes exactly zero to it under both weightings, so the near-zero total is not an average diluted by markets that were frozen at a stablecoin share of one. Every unit of it comes from pairs whose intermediary was a live choice, and among those pairs the change is still near zero.
+% Endpoint eligibility is an identity, not an estimate. The producer proves it on
+% the certified allocation before reporting the split: every wrapped-ether-endpoint
+% pair must carry stablecoin share one in both years and a within-pair
+% contribution of exactly zero, and it withholds every macro otherwise. This is a
+% different object from the exclusion sensitivity in
+% scripts/run_route_methodology_robustness.py, which drops these corridors and
+% re-estimates the matched within-pair change rather than splitting the
+% composition margins.
+% output/exhibits/vehicle_transition_pair_contributions.parquet; macros from
+% scripts/build_vehicle_transition_pair_deck_values.py
+
 \subsection{USDT's intermediary role}
 \label{sec:dominance:excess}
 

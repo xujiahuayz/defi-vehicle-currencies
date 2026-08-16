@@ -9,7 +9,7 @@ from pathlib import Path
 
 import pandas as pd
 
-from ddvc.asset_types import classify
+from ddvc.asset_types import WETH, classify
 from ddvc.paths import OUTPUT_DIR
 from ddvc.presentation import require_certified_presentation_source
 from ddvc.provenance import stamp
@@ -50,6 +50,19 @@ MARGIN_EXAMPLES = (
 BREADTH_METRICS = (
     ("", "count_share"),
     ("Value", "strict_intermediation_value_share"),
+)
+# Ordered pairs with WETH at an endpoint cannot use native WETH as an
+# intermediary, so within the native-versus-stablecoin comparison their
+# stablecoin share is one in both years by construction. Those corridors can
+# therefore move the aggregate only through the two composition margins, never
+# through the within-pair margin. Splitting each margin on that endpoint asks how
+# much of the rotation is carried by corridors whose vehicle was never in
+# question -- a different object from the exclusion sensitivity in
+# scripts/run_route_methodology_robustness.py, which drops these corridors and
+# re-estimates the matched within-pair change.
+ELIGIBILITY_MARGINS = (
+    ("Reweight", "pair_composition_reweighting"),
+    ("NewPair", "comparison_exclusive_composition"),
 )
 
 
@@ -486,6 +499,77 @@ def _margin_breadth(
     return breadth
 
 
+def _endpoint_eligibility(
+    contributions: pd.DataFrame, metric: str
+) -> dict[str, object]:
+    """Split each composition margin on whether WETH is an endpoint of the pair.
+
+    The split is an identity, not an estimate, and it needs no token taxonomy:
+    membership is decided by one canonical address, so the long unlabelled tail
+    is classified as reliably as the majors. The function first proves the
+    eligibility identity on the data rather than assuming it -- every
+    WETH-endpoint route must carry stablecoin share one in both years, and its
+    within-pair contribution must be exactly zero -- and then reports what the
+    remaining two margins owe to those corridors.
+    """
+    scoped = _pooled_contributions(contributions, metric)
+    if scoped.empty:
+        raise ValueError(f"pair contributions carry no pooled 2024--2026 {metric} rows")
+    endpoint = scoped["src"].eq(WETH) | scoped["tgt"].eq(WETH)
+    common = scoped[scoped["contribution_component"].eq("within_pair_choice")]
+    locked = common[endpoint.loc[common.index]]
+    if locked.empty:
+        raise ValueError(f"{metric} has no WETH-endpoint common pair")
+    if not (
+        locked["stable_share_baseline"].eq(1.0).all()
+        and locked["stable_share_comparison"].eq(1.0).all()
+    ):
+        raise ValueError(
+            f"{metric} breaks the WETH-endpoint eligibility identity: a "
+            "WETH-endpoint pair reports a stablecoin share other than one"
+        )
+    if not locked["contribution_pp"].eq(0.0).all():
+        raise ValueError(
+            f"{metric} reports a non-zero within-pair contribution on a "
+            "WETH-endpoint pair, which the eligibility identity forbids"
+        )
+    weight_baseline = float(locked["pair_weight_baseline"].sum())
+    weight_comparison = float(locked["pair_weight_comparison"].sum())
+    if not 0 < weight_baseline < 1 or not 0 < weight_comparison < 1:
+        raise ValueError(f"{metric} WETH-endpoint activity weights leave the unit range")
+    eligibility: dict[str, object] = {
+        "locked_pairs": int(len(locked)),
+        "common_pairs": int(len(common)),
+        "pair_share": len(locked) / len(common),
+        "weight_baseline": weight_baseline,
+        "weight_comparison": weight_comparison,
+    }
+    for prefix, component in ELIGIBILITY_MARGINS:
+        rows = scoped[scoped["contribution_component"].eq(component)]
+        if rows.empty:
+            raise ValueError(f"pair contributions carry no {metric} {component} rows")
+        selector = endpoint.loc[rows.index]
+        component_pp = float(rows["contribution_pp"].sum())
+        locked_pp = float(rows.loc[selector, "contribution_pp"].sum())
+        open_pp = float(rows.loc[~selector, "contribution_pp"].sum())
+        if not all(math.isfinite(value) for value in (component_pp, locked_pp, open_pp)):
+            raise ValueError(f"{metric} {component} eligibility split is not finite")
+        if not math.isclose(locked_pp + open_pp, component_pp, abs_tol=1e-6):
+            raise ValueError(f"{metric} {component} eligibility split misses its total")
+        if component_pp <= 0:
+            raise ValueError(
+                f"{metric} {component} is not a positive margin, so an "
+                "eligibility share of it would not be interpretable"
+            )
+        eligibility[prefix] = {
+            "component_pp": component_pp,
+            "locked_pp": locked_pp,
+            "open_pp": open_pp,
+            "locked_share": locked_pp / component_pp,
+        }
+    return eligibility
+
+
 def _matched_market_row(fixed_effects: pd.DataFrame, metric: str) -> pd.Series:
     required = {
         "metric",
@@ -778,6 +862,37 @@ def render_pair_decomposition_deck_values(
                     f"{{{_pairs(int(statistics['ninety_pairs']))}}}",
                 ]
             )
+    # How much of each composition margin runs through corridors whose vehicle
+    # was never in question. The count and value answers differ, which is the
+    # point of publishing both.
+    for infix, metric in BREADTH_METRICS:
+        eligibility = _endpoint_eligibility(contributions, metric)
+        lines.extend(
+            [
+                f"\\newcommand{{\\Locked{infix}Pairs}}"
+                f"{{{_pairs(int(eligibility['locked_pairs']))}}}",
+                f"\\newcommand{{\\Locked{infix}CommonPairs}}"
+                f"{{{_pairs(int(eligibility['common_pairs']))}}}",
+                f"\\newcommand{{\\Locked{infix}PairShare}}"
+                f"{{{_share(float(eligibility['pair_share']))}}}",
+                f"\\newcommand{{\\Locked{infix}WeightBase}}"
+                f"{{{_share(float(eligibility['weight_baseline']))}}}",
+                f"\\newcommand{{\\Locked{infix}WeightEnd}}"
+                f"{{{_share(float(eligibility['weight_comparison']))}}}",
+            ]
+        )
+        for prefix, _component in ELIGIBILITY_MARGINS:
+            statistics = eligibility[prefix]
+            lines.extend(
+                [
+                    f"\\newcommand{{\\Locked{infix}{prefix}}}"
+                    f"{{{_contribution_pp(float(statistics['locked_pp']))}}}",
+                    f"\\newcommand{{\\Open{infix}{prefix}}}"
+                    f"{{{_contribution_pp(float(statistics['open_pp']))}}}",
+                    f"\\newcommand{{\\Locked{infix}{prefix}Share}}"
+                    f"{{{_share(float(statistics['locked_share']))}}}",
+                ]
+            )
     return "\n".join(lines) + "\n"
 
 
@@ -850,9 +965,10 @@ def run(
         ),
         notes=(
             "Presentation macros for the exact descriptive pair-composition "
-            "accounting, the matched-market estimate, and one named "
-            "source--destination pair per aggregate margin; evidence status and "
-            "identities remain source-only."
+            "accounting, the matched-market estimate, one named "
+            "source--destination pair per aggregate margin, and the split of "
+            "each composition margin on WETH-endpoint eligibility; evidence "
+            "status and identities remain source-only."
         ),
     )
     print(f"wrote {output_path}")

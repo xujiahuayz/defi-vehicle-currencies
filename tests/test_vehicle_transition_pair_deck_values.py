@@ -223,29 +223,59 @@ def _contributions() -> pd.DataFrame:
     exclusive_pair_contribution to +17.6 pp. The unlabelled rows carry the bulk
     of each margin so the renderer must report the margin total separately from
     the named example it prints.
+
+    Five ordered pairs trade in both years. Three have no WETH endpoint and can
+    move their own stablecoin share; two have a WETH endpoint, so native WETH is
+    ineligible as their intermediary, their stablecoin share is one in both
+    years, and their within-pair contribution is exactly zero. The fixture
+    respects that identity because the data do.
     """
     value = "strict_intermediation_value_share"
+
+    def locked(component: str, src: str, tgt: str, pp: float, **kwargs) -> dict:
+        return _contribution(
+            component,
+            src,
+            tgt,
+            pp,
+            stable_baseline=1.0,
+            stable_comparison=1.0,
+            **kwargs,
+        )
+
     return pd.DataFrame(
         [
-            _contribution("within_pair_choice", USDC, WETH, 0.05),
-            _contribution("within_pair_choice", UNLABELLED, WETH, 0.40),
-            _contribution("within_pair_choice", WETH, UNLABELLED, -0.55),
-            _contribution("pair_composition_reweighting", USDT, WETH, 2.0),
-            _contribution("pair_composition_reweighting", USDC, WETH, 1.5),
-            _contribution("pair_composition_reweighting", UNLABELLED, WETH, 4.5),
+            _contribution("within_pair_choice", USDC, USDT, 0.05),
+            _contribution("within_pair_choice", UNLABELLED, USDT, 0.40),
+            _contribution("within_pair_choice", USDT, UNLABELLED, -0.55),
+            locked("within_pair_choice", USDT, WETH, 0.0),
+            locked("within_pair_choice", USDC, WETH, 0.0),
+            _contribution("pair_composition_reweighting", USDC, USDT, 0.0),
+            _contribution("pair_composition_reweighting", UNLABELLED, USDT, 4.5),
+            _contribution("pair_composition_reweighting", USDT, UNLABELLED, 0.0),
+            locked("pair_composition_reweighting", USDT, WETH, 2.0),
+            locked("pair_composition_reweighting", USDC, WETH, 1.5),
             _contribution("comparison_exclusive_composition", USDT, USDC, 0.13),
             _contribution("comparison_exclusive_composition", UNLABELLED, WETH, 20.87),
             _contribution("baseline_exclusive_composition", UNLABELLED, USDC, -3.4),
             # The dollar-weighted allocation reaches the same margin totals from a
             # different spread of pairs, so breadth is never read off the count.
-            _contribution("within_pair_choice", USDC, WETH, 0.30, metric=value),
-            _contribution("within_pair_choice", UNLABELLED, WETH, 0.10, metric=value),
-            _contribution("within_pair_choice", WETH, UNLABELLED, -0.50, metric=value),
-            _contribution("pair_composition_reweighting", USDT, WETH, 6.0, metric=value),
-            _contribution("pair_composition_reweighting", USDC, WETH, 3.0, metric=value),
+            _contribution("within_pair_choice", USDC, USDT, 0.30, metric=value),
+            _contribution("within_pair_choice", UNLABELLED, USDT, 0.10, metric=value),
+            _contribution("within_pair_choice", USDT, UNLABELLED, -0.50, metric=value),
+            locked("within_pair_choice", USDT, WETH, 0.0, metric=value),
+            locked("within_pair_choice", USDC, WETH, 0.0, metric=value),
             _contribution(
-                "pair_composition_reweighting", UNLABELLED, WETH, -1.0, metric=value
+                "pair_composition_reweighting", USDC, USDT, 0.0, metric=value
             ),
+            _contribution(
+                "pair_composition_reweighting", UNLABELLED, USDT, -1.0, metric=value
+            ),
+            _contribution(
+                "pair_composition_reweighting", USDT, UNLABELLED, 0.0, metric=value
+            ),
+            locked("pair_composition_reweighting", USDT, WETH, 6.0, metric=value),
+            locked("pair_composition_reweighting", USDC, WETH, 3.0, metric=value),
             _contribution(
                 "comparison_exclusive_composition", USDT, USDC, 1.0, metric=value
             ),
@@ -354,7 +384,7 @@ def test_margin_examples_name_labelled_pairs_and_report_the_margin_total() -> No
         _decomposition(), _fixed_effects(), _usdt_integration(), _contributions()
     )
     for macro, value in (
-        ("MarginWithinPair", "USDC\\,$\\to$\\,WETH"),
+        ("MarginWithinPair", "USDC\\,$\\to$\\,USDT"),
         ("MarginWithinContribution", "$+0.05$ pp"),
         ("MarginWithinTotal", "$-0.1$ pp"),
         ("MarginReweightPair", "USDT\\,$\\to$\\,WETH"),
@@ -502,6 +532,61 @@ def test_margin_breadth_requires_the_dollar_weighted_allocation() -> None:
         contributions["metric"].ne("strict_intermediation_value_share")
     ]
     with pytest.raises(ValueError, match="no pooled 2024--2026"):
+        render_pair_decomposition_deck_values(
+            _decomposition(), _fixed_effects(), _usdt_integration(), contributions
+        )
+
+
+def test_endpoint_eligibility_splits_the_two_composition_margins() -> None:
+    rendered = render_pair_decomposition_deck_values(
+        _decomposition(), _fixed_effects(), _usdt_integration(), _contributions()
+    )
+    for macro, value in (
+        # Two of five continuing pairs have a WETH endpoint, and their weight in
+        # routed activity rises, so they move the aggregate through composition
+        # alone: +3.5 pp of the +8.0 pp reweighting margin.
+        ("LockedPairs", "2"),
+        ("LockedCommonPairs", "5"),
+        ("LockedPairShare", "40.0\\%"),
+        ("LockedWeightBase", "0.8\\%"),
+        ("LockedWeightEnd", "9.0\\%"),
+        ("LockedReweight", "$+3.5$ pp"),
+        ("OpenReweight", "$+4.5$ pp"),
+        ("LockedReweightShare", "43.8\\%"),
+        ("LockedNewPair", "$+20.9$ pp"),
+        ("OpenNewPair", "$+0.1$ pp"),
+        # Dollar weighting sends the split the other way: the eligible corridors
+        # supply more than the whole margin because the rest of it is negative.
+        ("LockedValueReweight", "$+9.0$ pp"),
+        ("OpenValueReweight", "$-1.0$ pp"),
+        ("LockedValueReweightShare", "112.5\\%"),
+        ("LockedValueNewPairShare", "95.2\\%"),
+    ):
+        assert f"\\newcommand{{\\{macro}}}{{{value}}}" in rendered
+
+
+def test_endpoint_eligibility_rejects_a_switching_weth_endpoint_pair() -> None:
+    contributions = _contributions()
+    locked = contributions["contribution_component"].eq("within_pair_choice") & (
+        contributions["tgt"].eq(WETH)
+    )
+    contributions.loc[locked, "stable_share_baseline"] = 0.5
+    with pytest.raises(ValueError, match="eligibility identity"):
+        render_pair_decomposition_deck_values(
+            _decomposition(), _fixed_effects(), _usdt_integration(), contributions
+        )
+
+
+def test_endpoint_eligibility_rejects_within_pair_movement_on_an_eligible_pair() -> None:
+    contributions = _contributions()
+    within = contributions["contribution_component"].eq("within_pair_choice")
+    # Move the movement onto an eligible pair rather than inventing it, so the
+    # margin still reconciles and only the eligibility guard can reject it.
+    contributions.loc[within & contributions["tgt"].eq(WETH), "contribution_pp"] = 0.01
+    contributions.loc[within & contributions["src"].eq(USDC) & contributions["tgt"].eq(
+        USDT
+    ), "contribution_pp"] -= 0.02
+    with pytest.raises(ValueError, match="eligibility identity forbids"):
         render_pair_decomposition_deck_values(
             _decomposition(), _fixed_effects(), _usdt_integration(), contributions
         )

@@ -1,17 +1,17 @@
 {
  "argv": [],
  "artefact": "output/exhibits/vehicle_transition_pair_decomposition_deck_values.tex",
- "artefact_bytes": 6271,
- "artefact_mtime_ns": 1786857573684172964,
- "artefact_sha256": "12ac5ddb465b12acce93cef3587a8ad249c2f32b81e7787230bb13dd06843146",
- "code_fingerprint": "34917e81e43a740b0469ffbda438c6cb680582e485d2c5d50860ea43d3c2c3c6",
+ "artefact_bytes": 7178,
+ "artefact_mtime_ns": 1786859290751307389,
+ "artefact_sha256": "7afd70d8230c95f45cb5807e630c374a2e976d3f28999c02a599fbed4ec0f354",
+ "code_fingerprint": "c839886ddac7bde278768208cbbd66788ed6cbcb86c70c8ec3c5ccff241cfd11",
  "code_sources": [
   "scripts/build_vehicle_transition_pair_deck_values.py"
  ],
- "created_at": "2026-08-16T05:19:33+00:00",
+ "created_at": "2026-08-16T05:48:10+00:00",
  "git": {
   "branch": "main",
-  "commit": "2e3c7dcafe831de43f148fa0647fecc61b0761c7",
+  "commit": "ca27f668cd81d3ed2d279ff96a782f7fbef83489",
   "dirty": true,
   "dirty_generated_files": [],
   "dirty_tracked_files": [
@@ -76,12 +76,12 @@
   "pyarrow": "25.0.0",
   "scipy": "1.18.0"
  },
- "notes": "Presentation macros for the exact descriptive pair-composition accounting, the matched-market estimate, and one named source--destination pair per aggregate margin; evidence status and identities remain source-only.",
+ "notes": "Presentation macros for the exact descriptive pair-composition accounting, the matched-market estimate, one named source--destination pair per aggregate margin, and the split of each composition margin on WETH-endpoint eligibility; evidence status and identities remain source-only.",
  "payload_identity": {
-  "bytes": 6271,
+  "bytes": 7178,
   "format": "binary",
   "schema_version": 1,
-  "sha256": "12ac5ddb465b12acce93cef3587a8ad249c2f32b81e7787230bb13dd06843146"
+  "sha256": "7afd70d8230c95f45cb5807e630c374a2e976d3f28999c02a599fbed4ec0f354"
  },
  "python": "3.14.6",
  "rows": 4593349,
