@@ -4288,3 +4288,37 @@ the two gaps).
   order splits and disconnected groups entirely in words.
 - The M3 12:03 handoff stays unchecked; its live remainder is still the E1/D3
   generation identities and the two unchanged findings passes.
+
+**Correction to the handoff above, written minutes later.** The queue slot was
+rewritten while this entry was being committed. The 2026-08-16T15:50Z item is
+**superseded** by a 2026-08-16T15:55Z interjection in the same slot, and the
+instruction changed materially. Java is not asking for calendar comparisons to be
+removed: "Time axis is ok but you can just control it in eg fixed effect. Give me
+more results ! Ok if on preliminary data - if computation not overwhelmed then keep
+trying and building in parallel and write into paper and deck!!" So the unit is to
+**absorb the calendar in date fixed effects** and identify from the within-day
+cross-section, with preliminary/E0 estimates admissible at stated scope and
+uncertainty, written into the paper and deck as each lands.
+
+Read the queue item itself, not this summary. Three things about it that a worker
+must not rediscover the hard way:
+
+- **A first batch already exists and works. Extend it, do not redo it.** Scripts and
+  outputs live outside the worktree at `~/.local/share/glotl/dvc-supervisor/`
+  (`dvc_datefe_ladder.py`, `dvc_datefe_contrasts.py`, and their `.jsonl`), on
+  `data/processed/vehicle_excess_use_daily.parquet` restricted to
+  `endpoint_supported` token-days with more than 20 route units.
+- **`pyfixest` is not installed and must not be added.** The owner is the repo's own
+  `ddvc.analysis.regression` (`absorb_fixed_effects`, `ols_clustered`, two-way CR1
+  on date and token). That also explains the three standing
+  `tests/test_vehicle_role_models.py` failures.
+- **There is a blocking caveat before anything ships.** Intermediary share and
+  endpoint share come from the same day's route universe and a token cannot
+  intermediate a route it is an endpoint of, so a mechanical crowd-out channel
+  exists. `scripts/run_dominance_mechanicalness_screen.py` must be run against the
+  specification and reported beside the estimates; if it cannot clear the design,
+  the result ships as a descriptive association and says so.
+
+Every figure in the queue text must be re-derived from the panel before it enters
+prose. The queue explicitly warns against binding a number from it, and the
+2026-08-16 pass already caught queue count figures that did not reproduce.
