@@ -4671,3 +4671,103 @@ the WHOLE template, land the reconciled template with citations, then write
 `scripts/lock_specification.py`. `empirical model ledger` is a descendant of the
 same chain. Run `scripts/check_deliverable_conformance.py` at the START of the
 iteration as well as the end.
+
+## 2026-08-16 — E0 family perimeter reconciled with the claim lock, commit `c29308d`
+
+**Target.** `node E1 specification lock` and its descendant `empirical model
+ledger`, via the queue's E1-lock item. Chosen over `two unchanged findings
+passes` for a reason worth writing down: the fingerprint the passes gate reads
+includes each claim's *status*, and the E1 lock rewrites every executable claim
+from `candidate_*` to `registered_*`. Recording two passes before the lock would
+guarantee both are invalidated the moment the lock lands. The correct order is
+lock first, then two passes. Do not start the passes until E1 is green.
+
+**What was actually blocking.** The queue item's step 4 assumed
+`execute_exploration_plan` could run. It could not, and not for the reason the
+item's own progress note gave either. `_load_plan_template` was a hand-written
+list with no connection to `claim_execution_perimeter`, and it had drifted both
+ways: three of its five families served claims whose execution gate is closed,
+`liquidity_capital_v2_predictability` was execution-open with all seven claim
+inputs current and had no family at all, and `open_question_anomaly_e0` named a
+claim id absent from the lock. The perimeter equality check in `_load_plan` then
+made any plan unsatisfiable.
+
+**DECISION: promote** — reconcile the template and enforce the reconciliation in
+code. Three sub-adjudications, each recorded in a `perimeter_adjudication` field
+on the family itself so the template carries its own justification:
+
+1. **Deferred, not deleted.** `routing_maturation_e0`,
+   `direct_cost_dominance_e0` and `liquidity_allocation_e0` stay declared with
+   their exact blocker string copied from the claim. Deleting a pre-declared
+   family to make a perimeter match is the shortcut the brief forbids, and the
+   preflight's own data rule is to record the exact blocker rather than open a
+   proxy lane.
+2. **`liquidity_capital_v2_e0` is new**, the V2-only split of the joint
+   liquidity-allocation claim. It carries eight of that family's nine attacks;
+   `provider_overlap_coverage` stays with the joint family because
+   cross-protocol-family ownership cannot be validated from V2 alone. Rationale:
+   registering a mechanism at E1 without exploring it defeats the stage, and
+   leaving an execution-open claim unexplored silently drops it.
+3. **`open_question_anomaly_e0` keeps a claim id that is not in the lock**, now
+   typed `claim_binding: open_discovery`. An anomaly search has no pre-declared
+   estimand by construction. Making it a lock claim would be worse than the
+   mismatch; typing it makes the absence checked instead of accidental. It is
+   the only route from an unanticipated result to the triage record.
+
+**Enforcement, so this cannot drift again.** `_load_plan_template` now reads
+`docs/specification-lock.json` and fails on: a family naming a claim the lock
+does not have; an `execution_gate` disagreeing with the claim's; an
+`execution_status` disagreeing with `claim_execution_perimeter`; an
+execution-open claim with no family; an `open_discovery` family that names a
+locked claim or does not carry both the `anomaly` and `open_question`
+dimensions. It returns only the executable families, so the plan comparison is
+over the three that can run. The exploration identity also binds
+`specification_path`/`specification_sha256` now, and `_reopen_ledger_plan`
+checks it, so editing the lock mid-exploration reopens the run rather than
+passing silently. Schema version 3 -> 4; no plan file existed yet, so nothing
+was invalidated (`docs/model-ledger.json` still reads `exploration.status =
+not_started`, `runs = []`).
+
+**Consumers amended in place, not duplicated.** `docs/literature-audit.md`
+crosswalk 37 -> 45 rows; the eight new rows restrict each joint-family
+motivation to V2 and say the inputs are released rather than blocked. The JFE
+architecture gate and the deck outline's slide architecture gate each gained a
+`liquidity_capital_v2_e0` row. Both gate tests in `tests/test_paper_spine.py`
+now read the family set from the template instead of restating it, so the next
+split cannot leave a gate uncovered.
+
+**Inherited failure, fixed.**
+`test_optional_artifact_gates_follow_only_executable_claim_inputs` was failing
+on a clean tree before this iteration touched anything: it asserted that no
+executable claim requires `pool_capital_release/current.json`, which stopped
+being true when `liquidity_capital_v2_predictability` became execution-open. The
+assertion is now `assertTrue` with the reason in a comment.
+
+**Test state.** Full suite 2,223 passed / 12 failed, run twice. Every failure is
+one of the two known pre-existing causes: `v2_event_source_release provenance is
+not current` on `v2_audit_token_decimals.parquet.prov.json`
+(`test_variable_registry`, `test_vehicle_transition_e0`, the seven
+`test_weighted_quote` wiring tests) and the absent-`pyfixest`
+`test_vehicle_role_models` trio. `test_route_cost_panel.py` and
+`test_route_state.py` still fail at COLLECTION on the same v2 cause and must be
+`--ignore`d. **Gotcha that cost time: do not `git stash` while a full suite is
+running in the background.** It silently changes the tree under the collector
+and the result is not attributable; the run had to be repeated.
+
+**Gate state: RED, 3 blocking, unchanged** — node E1 specification lock;
+empirical model ledger; two unchanged findings passes. Deliverable conformance
+green on every blocking check, paper 46 pages, deck 37 pages, 0 undefined, 2
+advisories (equations below p25, and the two prose warnings). All unchanged from
+the start of the iteration.
+
+**Next iteration.** The E1 chain's real first step is now done and the queue
+item's progress note records it. Next: build `scripts/lock_specification.py`
+itself, steps 1-4 as the item states them. One thing the item does not say and
+the next worker will hit immediately: `execute_exploration_plan` needs a written
+`plan.json` naming a runner, arguments, declared artifacts and attack evidence
+for each of the three executable families, and no such plan exists anywhere in
+the repository. Producing that plan is the first half of the work; the lock
+script is the second. `vehicle_transition_e0` and `open_question_anomaly_e0` can
+point at existing runners; `liquidity_capital_v2_e0` has one declared in its
+claim (`scripts/run_liquidity_capital_v2_predictability.py`) — check it exists
+before planning around it.
