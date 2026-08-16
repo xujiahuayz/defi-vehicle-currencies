@@ -4046,3 +4046,120 @@ ledger; node B full-text literature ledger; two unchanged findings passes).
   estimator definitions Section 8 states only in prose.
 - The M3 12:03 handoff stays unchecked; its live remainder is still the E1/D3
   generation identities and the two unchanged findings passes.
+
+## 2026-08-16 — Java's deck analytics interjection: control ladder in, chronological spine out
+
+**Targeted.** `logs/grind-queue.md` line 338, the WeCom 2026-08-16T12:50Z
+interjection, which outranks the gate's own blocking list. Parts (1), (3), (4)
+and (5); part (2) was withdrawn by the supervisor and stayed withdrawn.
+
+**REGRESSION-CHECK filed before mutation.** Estimand at risk: dominance quality
+holding the trade fixed, which must never share an axis or a number with the
+aggregate share rotation (`docs/research-workflow.md`: coefficients from
+different estimands never share one specification curve). Evidence generation at
+risk: `dominance_regressions.jsonl` itself. Prior correction at risk: the
+`68d4df7` retirement of `run_dominance_specification_curve.py`.
+
+**The thing the queue item did not know.** `output/exhibits/dominance_regressions.jsonl`
+**did not certify**. `require_certified_presentation_source` rejected it, and the
+reason was real rather than cosmetic: the exhibit was written at `c8a7ccf`, and
+`2076e5e` ("use canonical fixed-effect absorption") and `a63e53b` ("centralize
+empirical inference") afterwards replaced the producer's hand-rolled `demean`
+and `ols_cluster` with `absorb_fixed_effects` and `ols_clustered`. Its input
+panel `data/processed/counterfactual_dominance_clean.parquet` **is not in this
+checkout and is not in the sibling store either** (searched `../defi-dominant-currency/data/`
+and every sibling worktree; only a stale `--help` lock file remains), so the
+exhibit cannot be re-derived here. Presenting it blind would have put possibly
+superseded coefficients on an audience-facing slide.
+
+Resolved by proving the drift is bookkeeping rather than science, not by
+asserting it. `tests/test_dominance_estimator_equivalence.py` runs the
+superseded implementation against the canonical one over the same switching-cell
+design, both outcomes, three sample sizes: **max |beta, se| difference 3e-18,
+max absorption difference 1.8e-15**. The payload is also byte-unchanged since
+its only commit. On that basis the sidecar was recertified through `stamp()`
+with the evidence written into its `notes`. The test is the standing guard, not
+a one-off: if `ols_clustered`'s CR1 scaling ever changes, it fires and the slide
+must be regenerated before it is shown again. **Delete it when Studio
+regenerates the exhibit from the panel.**
+
+**Built.** `scripts/figure/build_dominance_ladder.py` — one owner for both the
+figure (`output/figures/dominance_control_ladder.pdf`) and the macros
+(`output/exhibits/dominance_ladder_deck_values.tex`), so the eleven validity
+guards exist once. Panel A is specification strictness, panel B the matched-cell
+width ladder; one estimand throughout.
+
+**Two deck frames, both cut on a design axis.**
+- Page 14, *Holding the trade fixed dissolves the intermediary gap*: pooled
+  $-4.9$ points (SE 1.82) over 102,845 routes → same pair, same day $+9.4$
+  points (SE 8.47) on 703 switching cells, with the detectable band (23.7
+  points) drawn on that column and the 120-day widening at $+10.9$ (SE 6.87,
+  n=7,465). Says the bridge out loud: two questions, one answer.
+- Page 18, *The market changed, not the trade*: $+25.7$ pp across the whole
+  market → $-0.1$ pp within pairs traded in both years → $+0.2$ pp (SE 0.8,
+  94,260 matched cells), with the dominance estimand beside it behind a rule in
+  its own units. Banner: "Stablecoins won the market, not the trade."
+
+**Chronological-axis inventory (queue part 5).** Primary visual axis is calendar
+time: **2 frames before, 1 after**. The rotation bands stay, once and early, as
+the motivating fact. Two frames keep a calendar element as *setup* and are
+correct on that axis — the 02-objects deployment timeline and the A2
+backing-regime heatmap measure exactly deployment dates and time-varying
+backing. The V1–V4 strip is cut on protocol design. Nothing else needed re-cutting.
+
+**DECISION: narrow** — guardrail (3)(b) as written cites the retired
+specification curve ($-25.26$ bps, p=0.037). On the live estimand the continuous
+outcome is $+186$ bps (SE 106, p=0.078) and **agrees** with the binary column.
+The frame displays it regardless, so the functional form is visible rather than
+chosen; the producer raises if the two ever split, which is when the frame's
+sentence has to change.
+
+**Traps for the next iteration.**
+- **`uv run pytest` alone cannot import `scripts.*`.** There is no `conftest.py`
+  and no `pythonpath` setting; 71 test modules fail to collect. Use
+  `PYTHONPATH="$PWD/src:$PWD" uv run pytest` or `./scripts/run`.
+- **`latexmk` is not installed on this host.** `tectonic` is, at
+  `/opt/homebrew/bin/tectonic`; `check_deliverable_conformance.py` already falls
+  back to it. Compile with `tectonic -X compile --keep-logs main.tex`.
+- **Do not put `\hyphenpenalty=10000` in a TikZ `font=` key.** It typesets
+  `0pt plus2em` into the slide — the `align=center` skip registers leak. Fix
+  hyphenation by widening the node or shortening the words. The picture is
+  inside a `\resizebox`, so widening the whole `tikzpicture` costs only a few
+  percent of type size.
+- **Author deck figures at the aspect ratio of the slot they land in.** The
+  first cut of the ladder was 10.6×3.9in and the height cap scaled it to 68% of
+  the text width, which put the tick labels at under 4pt. At 7.4×2.0in the width
+  binds instead and the figure fills the frame.
+- The one-day rung of the window ladder is numerically identical to
+  `(4) pair-by-day FE` and is the only row carrying `identifying_cells` and
+  `mde_80`; specs (1)–(5) still have both as NaN. The producer asserts the
+  identity before borrowing them. **Populating them properly needs the panel**,
+  so it waits for the Studio regeneration.
+
+**Validation.** Deck 36 pages / 0 undefined; the only overfull boxes are the two
+that predate this change (8.14pt, 5.06pt at 04-results). `audit_deck_evidence.py`
+PASS. `check_deliverable_conformance.py`: all blocking checks pass, 2 advisories,
+paper 42 pages / 0 undefined. Producer suite 116 passed (17 new). Repository
+suite: 212 passed with the single standing `test_audit_findings_freeze`
+failure, confirmed pre-existing by re-running it on a stashed clean tree.
+Pages 14 and 18 inspected against the previous build.
+
+**Commits:** `e8a785c` (evidence layer), `2a797b7` (frames).
+
+**Blocking count: 4** (unchanged: node E1 specification lock; empirical model
+ledger; node B full-text literature ledger; two unchanged findings passes).
+`refresh graph excludes retired estimands` still PASSes.
+
+**For the next iteration.**
+- The queue is now empty of unchecked items except the M3 12:03 handoff, whose
+  live remainder is the E1/D3 generation identities and the two unchanged
+  findings passes.
+- **NEEDS-JAVA (low urgency, not blocking):** `data/processed/counterfactual_dominance_clean.parquet`
+  exists on no reachable host. Regenerating it via `scripts/build_counterfactual_dominance.py`
+  would let `run_dominance_regressions.py` restate the ladder under the current
+  producer, populate `mde_80`/`identifying_cells` on specs (1)–(5), and retire
+  `tests/test_dominance_estimator_equivalence.py`. Until then the deck frame
+  rests on the equivalence proof, which is sound but is a standing obligation.
+- Equations remain 14 against p25 25 and are still the widest venue gap; the
+  unblocked unit there is still the Section 8 estimator definitions that are
+  stated only in prose.
