@@ -1,11 +1,21 @@
 from pathlib import Path
+import json
 import re
 import subprocess
 
-from ddvc.deck_evidence import audit_audience_text, audit_deck_sources
+import pytest
+
+from ddvc.deck_evidence import (
+    audit_audience_text,
+    audit_deck_density,
+    audit_deck_sources,
+    rendered_page_density,
+)
 
 
 ROOT = Path(__file__).resolve().parents[1]
+DENSITY_LEDGER = ROOT / "docs" / "deck-density-ledger.json"
+DECK_PDF = ROOT / "deck" / "main.pdf"
 
 
 def write_section(root: Path, source: str) -> None:
@@ -129,6 +139,120 @@ def test_visual_managed_frames_require_object_form_and_job(tmp_path: Path) -> No
     )
     defects = audit_deck_sources(tmp_path)
     assert [defect.kind for defect in defects] == ["missing_visual_function"]
+
+
+def write_density_ledger(tmp_path: Path, allowances: list[dict[str, object]], **overrides: object) -> Path:
+    ledger = {
+        "schema_version": 1,
+        "budget_words": 55,
+        "hard_ceiling_words": 70,
+        "core_frame_limit": 13,
+        "core_frame_allowance": 2,
+        "appendix_first_page": 3,
+        "appendix_title": "Appendix map",
+        "page_allowances": allowances,
+    }
+    ledger.update(overrides)
+    path = tmp_path / "deck-density-ledger.json"
+    path.write_text(json.dumps(ledger), encoding="utf-8")
+    return path
+
+
+def stub_pages(monkeypatch: pytest.MonkeyPatch, pages: list[tuple[str, int, int]]) -> None:
+    monkeypatch.setattr("ddvc.deck_evidence.rendered_page_density", lambda _path: pages)
+
+
+def test_density_gate_holds_an_unlisted_page_to_the_budget(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    stub_pages(
+        monkeypatch,
+        [("Title", 40, 20), ("Dense result", 96, 20), ("Appendix map", 40, 0)],
+    )
+    defects = audit_deck_density(DECK_PDF, write_density_ledger(tmp_path, []))
+    assert [defect.kind for defect in defects] == ["deck_density_over_budget"]
+    assert "96 visible words" in defects[0].detail
+
+
+def test_density_gate_counts_the_exhibit_note_under_its_own_cap(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    ledger = write_density_ledger(tmp_path, [])
+    stub_pages(monkeypatch, [("Title", 40, 54), ("Result", 40, 12), ("Appendix map", 9, 0)])
+    assert audit_deck_density(DECK_PDF, ledger) == []
+
+    stub_pages(monkeypatch, [("Title", 40, 82), ("Result", 40, 12), ("Appendix map", 9, 0)])
+    defects = audit_deck_density(DECK_PDF, ledger)
+    assert [defect.kind for defect in defects] == ["deck_density_over_budget"]
+    assert "82 words of exhibit note" in defects[0].detail
+
+
+def test_density_gate_fails_when_a_recorded_page_moves_in_either_direction(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    ledger = write_density_ledger(
+        tmp_path,
+        [{"page": 2, "title": "Dense result", "words": 96, "note_words": 20}],
+    )
+    stub_pages(monkeypatch, [("Title", 40, 0), ("Dense result", 96, 20), ("Appendix map", 9, 0)])
+    assert audit_deck_density(DECK_PDF, ledger) == []
+
+    stub_pages(monkeypatch, [("Title", 40, 0), ("Dense result", 97, 20), ("Appendix map", 9, 0)])
+    grew = audit_deck_density(DECK_PDF, ledger)
+    assert [defect.kind for defect in grew] == ["deck_density_ledger_stale"]
+    assert "grew to 97" in grew[0].detail
+
+    stub_pages(monkeypatch, [("Title", 40, 0), ("Dense result", 80, 20), ("Appendix map", 9, 0)])
+    fell = audit_deck_density(DECK_PDF, ledger)
+    assert [defect.kind for defect in fell] == ["deck_density_ledger_stale"]
+    assert "fell to 80" in fell[0].detail
+
+
+def test_density_gate_requires_a_paid_down_page_to_leave_the_ledger(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    ledger = write_density_ledger(
+        tmp_path,
+        [{"page": 2, "title": "Dense result", "words": 50, "note_words": 20}],
+    )
+    stub_pages(monkeypatch, [("Title", 40, 0), ("Dense result", 50, 20), ("Appendix map", 9, 0)])
+    defects = audit_deck_density(DECK_PDF, ledger)
+    assert [defect.kind for defect in defects] == ["deck_density_ledger"]
+    assert "delete the row" in defects[0].detail
+
+
+def test_density_gate_catches_a_renamed_page_and_a_moved_appendix(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    ledger = write_density_ledger(
+        tmp_path,
+        [{"page": 2, "title": "Dense result", "words": 96, "note_words": 20}],
+    )
+    stub_pages(monkeypatch, [("Title", 40, 0), ("Renamed result", 96, 20), ("Appendix map", 9, 0)])
+    renamed = audit_deck_density(DECK_PDF, ledger)
+    assert [defect.kind for defect in renamed] == ["deck_density_ledger"]
+    assert "'Renamed result'" in renamed[0].detail
+
+    stub_pages(
+        monkeypatch,
+        [("Title", 40, 0), ("Dense result", 96, 20), ("A new core frame", 9, 0), ("Appendix map", 9, 0)],
+    )
+    moved = audit_deck_density(DECK_PDF, ledger)
+    assert [defect.kind for defect in moved] == ["deck_density_ledger"]
+    assert "appendix boundary moved" in moved[0].detail
+
+
+def test_live_deck_density_matches_its_recorded_debt_exactly() -> None:
+    assert audit_deck_density(DECK_PDF, DENSITY_LEDGER) == []
+    ledger = json.loads(DENSITY_LEDGER.read_text(encoding="utf-8"))
+    pages = rendered_page_density(DECK_PDF)
+    recorded = {int(row["page"]) for row in ledger["page_allowances"]}
+    over = {
+        number
+        for number, (_title, slide, note) in enumerate(pages, start=1)
+        if slide > ledger["budget_words"] or note > ledger["budget_words"]
+    }
+    assert recorded == over
 
 
 def test_v1_architecture_deck_values_match_the_admitted_source_tables() -> None:

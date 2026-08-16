@@ -2,44 +2,31 @@
  "argv": [],
  "artefact": "output/exhibits/prose_conventions.jsonl",
  "artefact_bytes": 3079,
- "artefact_mtime_ns": 1786899583877508485,
+ "artefact_mtime_ns": 1786902906902611557,
  "artefact_sha256": "ca187a74dd1ddd663350da2a4b478f3e206394d8cb04255806b4ae2bfca6d1e9",
  "code_fingerprint": "855e4cea8ba498e8bb720f072b29f9645df3c0bee4fbe4c26dbd5cb903686b44",
  "code_sources": [
   "scripts/measure_prose_conventions.py",
   "src/ddvc/tables.py"
  ],
- "created_at": "2026-08-16T16:59:43+00:00",
+ "created_at": "2026-08-16T17:55:06+00:00",
  "git": {
   "branch": "main",
-  "commit": "cd40b1a445d7c91e37d9420441610a3e29a2f050",
+  "commit": "4638fb3e0d942c8739d659021d41421e71f91700",
   "dirty": true,
   "dirty_generated_files": [
-   "data/manifests/output/exhibits/prose_outliers.jsonl.prov.json",
-   "data/manifests/output/exhibits/provisional_results_deck_values.tex.prov.json",
    "data/manifests/output/exhibits/venue_optics.jsonl.prov.json",
-   "data/manifests/output/exhibits/venue_shape.jsonl.prov.json",
-   "data/manifests/output/tables/usdt_transition.pdf.prov.json",
-   "data/manifests/output/tables/usdt_transition.tex.prov.json",
-   "output/exhibits/prose_outliers.jsonl",
-   "output/exhibits/provisional_results_deck_values.tex",
-   "output/exhibits/venue_optics.jsonl",
-   "output/exhibits/venue_shape.jsonl",
-   "output/tables/usdt_transition.pdf",
-   "data/manifests/output/exhibits/integration_date_fe_ladder.jsonl.prov.json",
-   "output/exhibits/.prose_conventions.jsonl.lq3ou054.tmp",
-   "output/exhibits/integration_date_fe_ladder.jsonl"
+   "output/exhibits/.prose_conventions.jsonl.defaexmf.tmp"
   ],
   "dirty_tracked_files": [
    "deck/main.pdf",
    "deck/sections/04-results.tex",
-   "docs/reviews/paper-rhetoric.json",
-   "paper/sections/03-dominance.tex",
-   "src/ddvc/provisional_results.py"
+   "scripts/audit_deck_evidence.py",
+   "src/ddvc/deck_evidence.py",
+   "tests/test_deck_evidence.py"
   ],
   "dirty_untracked_files": [
-   "scripts/run_integration_date_fe_ladder.py",
-   "tests/test_integration_date_fe_ladder.py"
+   "docs/deck-density-ledger.json"
   ]
  },
  "inputs": [],

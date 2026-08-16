@@ -8,6 +8,12 @@ Deck-craft calibration comes from the current review guide at `docs/reviews/deck
 
 The visual and language benchmark is the five saved full finance/economics presentations in the literature corpus. The modern Terra author deck and the Bouvard and Liao discussions use a median of roughly 40–55 visible words per page; the old Brunnermeier–Pedersen deck is useful for intellectual sequencing but is a negative density benchmark. The live deck uses 11-point Beamer, no exhibit text below 10–11 points, one empirical object per slide, and at most three short explanatory bullets around a chart or diagram. Functional titles state a topic or result directly. Poetic titles, symmetric status dashboards, visible workflow labels, grey italic exhibit notes and full-slide reference lists are not part of the design.
 
+### The benchmark is enforced, not advisory
+
+`scripts/audit_deck_evidence.py` measures visible words on the **rendered** page, which is what a listener reads and what no LaTeX arrangement can disguise. Two numbers are measured per page: slide prose, and the `\decknote` exhibit note that the workflow requires on every empirical frame. Numerals are not words, because a longer axis does not make a slide busier. Each is held to the 55-word benchmark.
+
+Pages that already exceeded the benchmark when the check was introduced are carried in `docs/deck-density-ledger.json` as an exact allowance: the recorded number must equal the measured number. A page absent from that file must sit inside the benchmark, so a new frame or a newly wordy one fails immediately; a page inside it can neither grow nor shrink without a visible edit to the recorded debt. Text that comes off a slide moves into a Beamer `\note{}` presenter note and is never deleted. Regenerate the recorded debt with `scripts/audit_deck_evidence.py --record-density`, which measures rather than accepts a typed allowance, and never raise an allowance to buy room for new prose.
+
 ## Pre-findings slide architecture gate
 
 | Claim family | Proof before promotion | Live-deck consequence |

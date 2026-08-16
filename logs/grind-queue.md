@@ -206,6 +206,32 @@ and pick a blocking check from the freeze gate.
      presenter note and no causal or geopolitical claim on the slide itself.
   Guardrails unchanged: descriptive interpretation, pair composition is never
   called entry/exit, one deck, refreshed in place, no fork, no new data runs.
+  _PROGRESS NOTE (2026-08-16, not closed). Part 1's real deliverable — the
+  mechanical check — is DONE and live. `scripts/audit_deck_evidence.py` now runs
+  `ddvc.deck_evidence.audit_deck_density` on the RENDERED deck, not the source,
+  because the source measure this item quotes is inflated by TikZ option keys:
+  it scores the four-panel architecture frame at 415 words when the page a
+  listener sees carries 111. Two numbers per page are measured, slide prose and
+  the `\decknote` exhibit note, each against the 55-word benchmark; numerals are
+  not words. `docs/deck-density-ledger.json` carries every page that already
+  exceeded the benchmark as an EXACT allowance, so an unlisted page must sit
+  inside the budget and a listed page can neither grow nor shrink without a
+  visible edit; `--record-density` measures the ledger rather than accepting a
+  typed allowance. Five acceptance tests in `tests/test_deck_evidence.py` pin
+  both halves. Part 1's paydown is STARTED, not finished: the three heaviest core
+  pages went 173/146/173 -> 111/122/96 visible words by moving explanation into
+  Beamer `\note{}`, and the venue-scope forest was restored from 0.26 to
+  0.44\textheight now that the wall of text is gone. Measured state after this
+  iteration: 37 pages, 19 core against the limit of 13, median 70 visible words
+  (88 core), 26 pages over the 55-word budget, 18 over the 70-word ceiling, 966
+  words of recorded debt (from 1,129). Part 3 is already satisfied — the corridor
+  frame is core page 18, added when the SO-WHAT interjection below was closed —
+  and needs only confirmation, not a new frame. Resumption point: pages 27, 19,
+  17, 18, 12, 13, 5 in that order are the remaining heavy ones; then the core
+  frame count from 19 to 13; then part 2's spine sentence, which is untouched.
+  Note that the two closing banners already in the deck ("Stablecoins won the
+  market, not the trade" on page 19) are contrast constructions and must be
+  re-adjudicated against this item's OWNER RULE when part 2 is done._
 
 - [x] **OWNER DECISION (Java, 2026-08-16): close the Mukhin literature blocker by
   recording the replication package as unavailable.**

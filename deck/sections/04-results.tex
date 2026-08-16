@@ -180,8 +180,12 @@ Pooled                & \DateFEPooledNative{} & \DateFEPooledStable{} & --- \\
 \end{column}
 \end{columns}
 \vspace{0.06cm}
-{\fontsize{7.8}{8.6}\selectfont The first margin is the one vehicle-currency theory describes, and it did not move. The third nets to \PairPooledExclusive{} because \CohortMass{} of routes run on pairs alive in only one year: the arrivals route \CohortEnterShare{} through a stablecoin against \CohortExitShare{} for the ones they replaced. But \ReplaceCompositionShare{} of that gap is what the arrivals are, not how they route: \ReplaceLockedEnterWeight{} of arriving activity is wrapped-ether-paired against \ReplaceLockedExitWeight{} of departing. Corridors with no vehicle to choose carry \LockedReweightShare{} of the second by count but \LockedValueReweightShare{} by value; by value most of both runs through corridors with a dollar at an endpoint.\par}
-\decknote{Pooled route-count share among native and stablecoin intermediaries, 2024 against 2026 on 181 common calendar days. Each panel names the largest contributing ordered pair with two canonical symbols; unlabelled assets carry most of the third margin, so a named example is smaller than its total. Contributions are an exact allocation of the aggregate change and are descriptive.}
+{\fontsize{7.8}{8.6}\selectfont The first margin is the one vehicle-currency theory describes, and it did not move. The third nets to \PairPooledExclusive{} because \CohortMass{} of routes run on pairs alive in only one year.\par}
+\decknote{Pooled route-count share among native and stablecoin intermediaries, 2024 against 2026 on 181 common calendar days. Each panel names the largest contributing ordered pair with two canonical symbols; unlabelled assets carry most of the third margin. Contributions are an exact allocation of the aggregate change and are descriptive.}
+% Spoken, not shown: the cohort arithmetic behind the third margin and the
+% choice-live split of the second. Both were on the slide until the density
+% budget in docs/deck-density-ledger.json; neither was deleted.
+\note{The arrivals route \CohortEnterShare{} through a stablecoin against \CohortExitShare{} for the corridors they replaced, but \ReplaceCompositionShare{} of that gap is what the arrivals are rather than how they route: \ReplaceLockedEnterWeight{} of arriving activity is wrapped-ether-paired against \ReplaceLockedExitWeight{} of departing. Corridors with no vehicle to choose carry \LockedReweightShare{} of the second margin by count but \LockedValueReweightShare{} by value, and by value most of both runs through corridors with a dollar at an endpoint.}
 \end{frame}
 
 % EVIDENCE-STATUS: E0 pending clean J0; provisional inference on a recertified exhibit
@@ -201,8 +205,12 @@ Pooled                & \DateFEPooledNative{} & \DateFEPooledStable{} & --- \\
 \includegraphics[width=0.97\textwidth,height=0.44\textheight,keepaspectratio]{../output/figures/dominance_control_ladder.pdf}
 \end{center}
 \vspace{-0.14cm}
-{\fontsize{7.8}{8.5}\selectfont Was a trade carried by the native asset less often dominated by a direct pool it could have used? Pooled, yes: \DomPooledCoef{} (SE \DomPooledSE{}) over \DomPooledN{} routes. Between the same two tokens on the same day it is \DomFECoef{} (SE \DomFESE{}) on \DomFECells{} switching cells -- not distinguishable from zero, in a design that could only have detected \DomFEMDE{} or more, and the price-gap outcome agrees on those cells (\DomGapCoef{}, SE \DomGapSE{}). Two questions, one answer: the rotation is where trading happens, not which intermediary a comparable trade selects.\par}
-\decknote{Dominance quality is a separate measure from the aggregate vehicle share and the two are never combined. The outcome indicates that the executed route was dominated by an available direct pool; the price-gap outcome is the same comparison in basis points. Bars are 95\% intervals clustered on the ordered pair. Shading is what the strictest column could have detected at 80\% power, not a confidence region.}
+{\fontsize{7.8}{8.5}\selectfont Was a trade carried by the native asset less often dominated by a direct pool it could have used? Pooled, yes: \DomPooledCoef{} (SE \DomPooledSE{}). Between the same two tokens on the same day it is \DomFECoef{} (SE \DomFESE{}), in a design that could only have detected \DomFEMDE{} or more. The rotation is where trading happens, not which intermediary a comparable trade selects.\par}
+\decknote{The outcome indicates that the executed route was dominated by an available direct pool. Bars are 95\% intervals clustered on the ordered pair; shading is what the strictest column could have detected at 80\% power, not a confidence region.}
+% Spoken, not shown: the sample sizes, the corroborating price-gap outcome, and
+% the standing warning that this estimand never shares a scale with the
+% aggregate vehicle share. Moved under the density budget, not deleted.
+\note{Pooled over \DomPooledN{} routes; the same-day comparison rests on \DomFECells{} switching cells. The price-gap outcome agrees on those cells at \DomGapCoef{} (SE \DomGapSE{}), which is the same comparison in basis points. Dominance quality is a separate measure from the aggregate vehicle share and the two are never combined on one axis or in one number.}
 \end{frame}
 
 % EVIDENCE-STATUS: certified descriptive result; integration remains a selected route stratum
@@ -238,11 +246,19 @@ Pooled                & \DateFEPooledNative{} & \DateFEPooledStable{} & --- \\
 \begin{frame}{Stablecoin use rises within each venue scope}
 \vspace{-0.08cm}
 \begin{center}
-\includegraphics[width=0.82\textwidth,height=0.26\textheight,keepaspectratio]{../output/figures/experiments/integration_change_forest.pdf}
+% The forest was compressed to 0.26\textheight to make room for a five-rival
+% paragraph. That paragraph is now a presenter note, so the exhibit gets the
+% space back; the cell labels are unreadable below roughly 0.40\textheight.
+\includegraphics[width=0.97\textwidth,height=0.44\textheight,keepaspectratio]{../output/figures/experiments/integration_change_forest.pdf}
 \end{center}
-\vspace{-0.48cm}
-{\fontsize{6.8}{7.5}\selectfont Venue mix cannot account for the aggregate rotation: the increase appears within both realised route scopes. Path length does not absorb it: two-leg routes gain \StableCountChange{} by count (SE \StableCountSE{}) and longer routes \MultiLegCountChange{} (SE \MultiLegCountSE{}), and every venue-scope by path-length cell rises, the weakest by \WeakestComplexityCountChange{} (SE \WeakestComplexityCountSE{}). Nor does the pricing rule: among routes priced entirely by the constant-product invariant, \VenueCPEpisodeShare{} of 2026 episodes, stablecoin excess use rises from \VenueCPStableValueBase{} to \VenueCPStableValueEnd{}, and all-Curve routes carry none. Nor does automated path search: intermediation incidence never rises by more than \RouterLargestIntermediationRise{} at \RouterReleaseCount{} public router releases. Within a day the gap is a dollar phenomenon: over \WithinDayVenueGapDays{} paired days cross-exchange one-intermediary routes carry \WithinDayVenueGapValue{} more stablecoin value share (SE \WithinDayVenueGapValueSE{}), while the count contrast is \WithinDayVenueGapCount{} on \WithinDayVenueGapCountCI{}. Every scope here is realised, not assigned; none identifies an effect of integration, routing software, pricing technology, or architecture.}
+\vspace{-0.16cm}
+{\fontsize{7.4}{8.2}\selectfont Neither venue mix nor path length absorbs the rotation: two-leg routes gain \StableCountChange{} (SE \StableCountSE{}), longer routes \MultiLegCountChange{} (SE \MultiLegCountSE{}), and the weakest venue-by-length cell still rises by \WeakestComplexityCountChange{}. Nor does the pricing rule or automated path search. Within a day the venue gap is a value phenomenon: cross-exchange one-intermediary routes carry \WithinDayVenueGapValue{} more stablecoin value share (SE \WithinDayVenueGapValueSE{}), against \WithinDayVenueGapCount{} on \WithinDayVenueGapCountCI{} by count.\par}
 \decknote{Changes compare the same January--June dates in 2024 and 2026; bars show 95\% calendar-HAC intervals. Excess-use ratios and the within-day venue gap span the full sample calendar.}
+% Spoken, not shown: the pricing-rule and router-release rivals in full, and the
+% standing boundary that every scope here is realised rather than assigned.
+% Moved under the density budget, not deleted. The within-day gap stays visible:
+% it was promoted to a deck sentence on its own evidence at f363127.
+\note{Among routes priced entirely by the constant-product invariant, \VenueCPEpisodeShare{} of 2026 episodes, stablecoin excess use rises from \VenueCPStableValueBase{} to \VenueCPStableValueEnd{}, and all-Curve routes carry none. Intermediation incidence never rises by more than \RouterLargestIntermediationRise{} at \RouterReleaseCount{} public router releases. The within-day contrast runs over \WithinDayVenueGapDays{} paired days. Every scope here is realised, not assigned; none identifies an effect of integration, routing software, pricing technology, or architecture.}
 \end{frame}
 
 % EVIDENCE-STATUS: E0 pending clean J1; full-calendar reciprocal adjudication on the certified V2 capital release records a non-pass
