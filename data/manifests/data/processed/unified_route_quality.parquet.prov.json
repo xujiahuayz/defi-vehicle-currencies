@@ -1,16 +1,14 @@
 {
  "argv": [
   "--authority-snapshot",
-  "data/processed/raw_generation/route_authority_perimeter_expansion_snapshot_20260815.json",
-  "--publish",
-  "--workers",
-  "8"
+  "data/processed/raw_generation/route_authority_perimeter_expansion_snapshot_20260815_liquidity.json",
+  "--publish"
  ],
  "artefact": "data/processed/unified_route_quality.parquet",
- "artefact_bytes": 454708,
- "artefact_mtime_ns": 1786780804618670133,
- "artefact_sha256": "1dae79a25eab7a70867e4117216fc9aa0c00a26f13fb65e8ae8a00c341b89c59",
- "code_fingerprint": "2b4d8bad578ed8c0195f3f21ff3b6d08a1eb58e3c641922e597d23932dd550c3",
+ "artefact_bytes": 459750,
+ "artefact_mtime_ns": 1786838925574791912,
+ "artefact_sha256": "46a91f45f98f54a7846e5e1a0032647b3bc4bdf7864c0dd0f867c3748822f6e9",
+ "code_fingerprint": "fb0bd520e770cf6c1028f96ec95f758621044b664c5b351aac946356bc4e8867",
  "code_sources": [
   "scripts/migrate_route_release_markers.py",
   "src/ddvc/calendar.py",
@@ -18,18 +16,19 @@
   "src/ddvc/reconstruct/__init__.py",
   "src/ddvc/source_records.py"
  ],
- "created_at": "2026-08-15T08:00:05+00:00",
+ "created_at": "2026-08-16T00:08:46+00:00",
  "git": {
   "branch": "main",
-  "commit": "533e94e924ea3e9f0d79730dd8650af9f3d21fb4",
+  "commit": "85d1c5fc5c61e585eb4b7a4f878e765b9e59e521",
   "dirty": true,
-  "dirty_generated_files": [],
+  "dirty_generated_files": [
+   "data/manifests/output/exhibits/unified_route_quality.jsonl.prov.json"
+  ],
   "dirty_tracked_files": [
-   "scripts/migrate_route_release_markers.py",
-   "tests/test_route_marker_migration.py"
+   "logs/grind-queue.md"
   ],
   "dirty_untracked_files": [
-   "data/.route-marker-stage-idgthujd/"
+   "data/.route-marker-stage-vqgbafn3/"
   ]
  },
  "inputs": [
@@ -38,7 +37,7 @@
    "exists": true,
    "kind": "directory",
    "path": "data/unified/.quality",
-   "tree_fingerprint": "af89cf236abc6d099df48e04fe49d921d82b9c786869968d10231b7b4083abd2"
+   "tree_fingerprint": "fef94353d997ac81020389b6d77420f81eee588b14e80449ab124021a91bd80f"
   },
   {
    "entries": 7590,
@@ -97,10 +96,10 @@
    "tree_fingerprint": "5bd4962995d8a221b15aaab3b9ca64ce01593f014857947f3e75ccdcbede02a2"
   },
   {
-   "bytes": 13038652,
+   "bytes": 13040556,
    "exists": true,
-   "path": "data/processed/raw_generation/route_authority_perimeter_expansion_snapshot_20260815.json",
-   "sha256": "e60788a10bc2da61d52db15e1d750e5637f009f07e43809c9354fc5b821ffe17"
+   "path": "data/processed/raw_generation/route_authority_perimeter_expansion_snapshot_20260815_liquidity.json",
+   "sha256": "08313f9948b6dd852f82c1ec6ec2bfe8f41616172030d63f490b2bc096067ac5"
   }
  ],
  "libraries": {
@@ -109,9 +108,9 @@
   "pyarrow": "25.0.0",
   "scipy": "1.18.0"
  },
- "notes": "route-release-storage-authority-relocation-v1; current_engine=d3f16e9c4da6; source_marker_set_sha256=2dd25b6a729708b2b94aeff5ccb3be68c172b0c4bf8f49daac03de997d264597; exact_authority_relocation_days=2332; route-release-downstream-binding-rebind-v1: exact-payload code-fingerprint restamp after amending the migration owner with the downstream rebind",
+ "notes": "route-release-storage-authority-relocation-v1; current_engine=d3f16e9c4da6; source_marker_set_sha256=64f80059aca7fe7d3428e9bcea706777773f1ade23052a273f1896f8b022d042; exact_authority_relocation_days=2332; route-release-downstream-binding-rebind-v1: exact-payload code-fingerprint restamp after amending the migration owner with the downstream rebind",
  "payload_identity": {
-  "bytes": 454708,
+  "bytes": 459750,
   "columns": [
    "schema_version",
    "engine",
@@ -139,7 +138,7 @@
   "rows": 2332,
   "schema_sha256": "12168b9860872e2b40ff66f6322bd8f924d5112fe9a1b35066d55db8d56372d9",
   "schema_version": 1,
-  "sha256": "1dae79a25eab7a70867e4117216fc9aa0c00a26f13fb65e8ae8a00c341b89c59"
+  "sha256": "46a91f45f98f54a7846e5e1a0032647b3bc4bdf7864c0dd0f867c3748822f6e9"
  },
  "python": "3.14.6",
  "rows": 2332,

@@ -88,6 +88,10 @@ from ddvc.runtime import (
     serialized_output_installs,
 )
 from ddvc.tables import _stringify_big_ints
+from ddvc.token_decimals import (
+    TOKEN_DECIMALS_ANCHOR_MANIFEST,
+    UNRESOLVED_TOKEN_DECIMALS_LEDGER,
+)
 
 
 LEGACY_ENGINE = "514160b28189"
@@ -1752,6 +1756,120 @@ def restamp_migration_owned_artifact(
         return True
 
 
+def repin_anchor_manifest_migrated_lineage(
+    *,
+    manifest_path: Path = TOKEN_DECIMALS_ANCHOR_MANIFEST,
+    unresolved_ledger_path: Path = UNRESOLVED_TOKEN_DECIMALS_LEDGER,
+    quality_panel: Path = UNIFIED_QUALITY_PANEL,
+    root: Path = REPO_ROOT,
+) -> bool:
+    """Re-pin the migration-owned lineage records of the anchor manifest.
+
+    The token-decimals anchor manifest pins a byte hash for every selection
+    input, including the route quality ledger and its sidecar. A proven
+    marker migration republishes exactly those two files while every route
+    partition, anchor, and raw evidence byte stays fixed, so only those two
+    lineage records may move here — and only after the republished panel
+    verifies exactly current. Any other lineage drift fails closed, because
+    it would mean the selection evidence itself changed.
+    """
+
+    manifest_path = Path(manifest_path)
+    if not manifest_path.is_file():
+        return False
+    verdict = verify(quality_panel)
+    if verdict.get("status") != "ok":
+        raise RuntimeError(
+            "anchor-manifest repin refused: route quality panel is not "
+            f"current: {verdict.get('status')}"
+        )
+    panel_rel = str(Path(quality_panel).resolve().relative_to(root))
+    owned = {panel_rel, f"data/manifests/{panel_rel}.prov.json"}
+    with serialized_output_installs((manifest_path, unresolved_ledger_path)):
+        prior_manifest_sha256 = file_sha256(manifest_path)
+        manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
+        lineage = manifest.get("lineage_inputs")
+        if not isinstance(lineage, list) or manifest.get(
+            "lineage_inputs_sha256"
+        ) != canonical_json_sha256(lineage):
+            raise RuntimeError(
+                "anchor-manifest repin refused: lineage digest disagrees"
+            )
+        repinned: list[dict[str, str]] = []
+        for record in lineage:
+            if not isinstance(record, dict) or set(record) != {"path", "sha256"}:
+                raise RuntimeError(
+                    "anchor-manifest repin refused: malformed lineage record"
+                )
+            relative = str(record["path"])
+            current = file_sha256(root / relative)
+            if current == record["sha256"]:
+                continue
+            if relative not in owned:
+                raise RuntimeError(
+                    "anchor-manifest repin refused: foreign lineage drift: "
+                    f"{relative}"
+                )
+            repinned.append(
+                {"path": relative, "from": str(record["sha256"]), "to": current}
+            )
+            record["sha256"] = current
+        had_prior_repins = bool(manifest.get("lineage_repins"))
+        if repinned:
+            manifest["lineage_inputs_sha256"] = canonical_json_sha256(lineage)
+            history = manifest.get("lineage_repins")
+            if not isinstance(history, list):
+                history = []
+            history.append(
+                {"policy": DOWNSTREAM_REBIND_POLICY, "records": repinned}
+            )
+            manifest["lineage_repins"] = history
+            with atomic_output(manifest_path) as temporary:
+                temporary.write_text(
+                    json.dumps(manifest, indent=1, sort_keys=True) + "\n",
+                    encoding="utf-8",
+                )
+        # The durable unresolved-decimals ledger pins the manifest's exact
+        # bytes. Carry that one pin forward only across a recorded owner
+        # repin whose anchor perimeter is byte-identical; every scientific
+        # field of the ledger stays untouched. Any other pin state means the
+        # selection itself moved and is a refusal.
+        ledger_repinned = False
+        if Path(unresolved_ledger_path).is_file():
+            ledger = json.loads(
+                Path(unresolved_ledger_path).read_text(encoding="utf-8")
+            )
+            pin = ledger.get("selected_anchor_manifest")
+            if not isinstance(pin, dict):
+                raise RuntimeError(
+                    "anchor-manifest repin refused: unresolved ledger lacks "
+                    "its manifest pin"
+                )
+            current_manifest_sha256 = file_sha256(manifest_path)
+            if pin.get("sha256") != current_manifest_sha256:
+                lagged_owner_repin = (
+                    pin.get("sha256") == prior_manifest_sha256 or had_prior_repins
+                )
+                if not lagged_owner_repin:
+                    raise RuntimeError(
+                        "anchor-manifest repin refused: unresolved ledger pins "
+                        "a different manifest state"
+                    )
+                if ledger.get("anchors_sha256") != manifest.get("anchors_sha256"):
+                    raise RuntimeError(
+                        "anchor-manifest repin refused: unresolved ledger "
+                        "anchor perimeter disagrees with the manifest"
+                    )
+                pin["sha256"] = current_manifest_sha256
+                with atomic_output(Path(unresolved_ledger_path)) as temporary:
+                    temporary.write_text(
+                        json.dumps(ledger, indent=1, sort_keys=True) + "\n",
+                        encoding="utf-8",
+                    )
+                ledger_repinned = True
+    return bool(repinned) or ledger_repinned
+
+
 def rebind_downstream_route_consumers(
     *,
     panels: tuple[Path, ...] = DOWNSTREAM_REBIND_PANELS,
@@ -1839,6 +1957,9 @@ def rebind_downstream_route_consumers(
                 f"downstream rebind did not restore currency: {exhibit}: "
                 f"{verdict.get('status')}"
             )
+    outcomes[record_path(TOKEN_DECIMALS_ANCHOR_MANIFEST)] = (
+        repin_anchor_manifest_migrated_lineage()
+    )
     return outcomes
 
 

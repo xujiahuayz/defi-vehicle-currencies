@@ -1589,3 +1589,47 @@ conformance loop now runs end-to-end on Studio; run it after every paper/deck
 content change, not only the section suites. Paper prose beyond certified
 route-only facts stays tiered; the liquidity-timing passage in 05-rivals still
 waits for J1.
+
+---
+
+## 2026-08-16 — Recovery: anchor-manifest lineage repin after the marker migration
+
+Bounded recovery worker. A prior worker exited with the marker migration's
+downstream rebind in progress; nothing was discarded, reset, or stashed, and no
+remote was contacted.
+
+**What was in progress.** The proven route marker migration republished the
+route quality ledger (`data/processed/unified_route_quality.parquet`,
+456,408 → 459,750 bytes) and its sidecar, and rebound the downstream route
+panels and the endpoint composition release. The one consumer the rebind did
+not reach was the token-decimals anchor manifest, which pins a byte hash for
+every selection input — including exactly those two republished files.
+
+**What this worker finished.** `repin_anchor_manifest_migrated_lineage()` in
+`scripts/migrate_route_release_markers.py`, wired as the last step of
+`rebind_downstream_route_consumers()`. It fails closed: the republished panel
+must verify exactly current, the manifest's `lineage_inputs_sha256` must agree
+with its own records, and drift on any path other than the panel/sidecar pair
+is a refusal. The durable unresolved-decimals ledger's manifest pin is carried
+forward only across a recorded owner repin whose `anchors_sha256` perimeter is
+byte-identical; every scientific field is untouched. Repins are appended to a
+`lineage_repins` history under the existing rebind policy.
+
+**Validation.** `tests/test_route_marker_migration.py`: 45 passed (5 new,
+covering owned-only movement, idempotence, foreign lineage drift, non-current
+panel, digest disagreement, lagged ledger pin, foreign ledger pin).
+`test_token_decimals.py`, `test_v2_token_anchor_materiality.py`,
+`test_provenance_inputs.py`, `test_provenance_publication.py`,
+`test_endpoint_candidate_composition_release.py`, `test_v2_event_completeness.py`:
+169 passed. On the real tree the manifest carries three recorded repins, all
+26,882 lineage inputs hash exactly, and the ledger pin matches the manifest.
+Every one of the 17 touched artefacts verifies `ok` except the four endpoint
+composition release members, whose staleness is a pre-existing code-fingerprint
+drift stamped at `05b68e9` (2026-08-13) with `inputs_current` and
+`content_current` both true; the release's own currency check
+(`current_endpoint_candidate_composition_release`) passes.
+
+**Not done (recovery scope).** The done gate was not run and the queue was not
+started. The 2026-08-16T00:03Z Java interjection (so-what / analogy pass on
+paper and deck) is recorded unchecked at the head of `logs/grind-queue.md` and
+is the next clean-boundary item.

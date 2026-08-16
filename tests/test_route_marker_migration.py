@@ -1748,3 +1748,237 @@ def test_downstream_rebind_handles_inputs_only_consumers(tmp_path: Path) -> None
             sidecar=sidecar,
             root=fixture["root"],
         )
+
+
+def prepare_anchor_manifest(tmp_path: Path) -> dict[str, object]:
+    """A minimal anchor manifest whose lineage cites the migration-owned pair."""
+
+    root = tmp_path
+    panel = root / "data" / "processed" / "unified_route_quality.parquet"
+    panel.parent.mkdir(parents=True, exist_ok=True)
+    panel.write_bytes(b"quality-ledger-v1")
+    sidecar = (
+        root / "data" / "manifests" / "data" / "processed"
+        / "unified_route_quality.parquet.prov.json"
+    )
+    sidecar.parent.mkdir(parents=True, exist_ok=True)
+    sidecar.write_text('{"artefact_sha256": "old"}\n')
+    evidence = root / "data" / "raw" / "chunk.parquet"
+    evidence.parent.mkdir(parents=True, exist_ok=True)
+    evidence.write_bytes(b"raw-evidence")
+    lineage = [
+        {
+            "path": "data/manifests/data/processed/unified_route_quality.parquet.prov.json",
+            "sha256": file_sha256(sidecar),
+        },
+        {"path": "data/processed/unified_route_quality.parquet", "sha256": file_sha256(panel)},
+        {"path": "data/raw/chunk.parquet", "sha256": file_sha256(evidence)},
+    ]
+    manifest_path = root / "data" / "raw" / "v2_selected_anchors.json"
+    manifest_path.write_text(
+        json.dumps(
+            {
+                "kind": "v2_token_decimals_selected_anchors",
+                "lineage_inputs": lineage,
+                "lineage_inputs_sha256": canonical_json_sha256(lineage),
+            },
+            indent=1,
+            sort_keys=True,
+        )
+        + "\n"
+    )
+    ledger_path = root / "data" / "raw" / "v2_unresolved_tokens.json"
+    ledger_path.write_text(
+        json.dumps(
+            {
+                "kind": "unresolved_token_decimals",
+                "anchors_sha256": "anchors-digest",
+                "selected_anchor_manifest": {
+                    "path": "data/raw/v2_selected_anchors.json",
+                    "sha256": file_sha256(manifest_path),
+                },
+            },
+            indent=1,
+            sort_keys=True,
+        )
+        + "\n"
+    )
+    manifest = json.loads(manifest_path.read_text())
+    manifest["anchors_sha256"] = "anchors-digest"
+    manifest_path.write_text(json.dumps(manifest, indent=1, sort_keys=True) + "\n")
+    ledger = json.loads(ledger_path.read_text())
+    ledger["selected_anchor_manifest"]["sha256"] = file_sha256(manifest_path)
+    ledger_path.write_text(json.dumps(ledger, indent=1, sort_keys=True) + "\n")
+    return {
+        "root": root,
+        "panel": panel,
+        "sidecar": sidecar,
+        "evidence": evidence,
+        "manifest": manifest_path,
+        "ledger": ledger_path,
+    }
+
+
+def test_anchor_manifest_repin_moves_only_migration_owned_records(
+    tmp_path: Path,
+) -> None:
+    from scripts.migrate_route_release_markers import (
+        repin_anchor_manifest_migrated_lineage,
+    )
+
+    fixture = prepare_anchor_manifest(tmp_path)
+    # the proven migration republished exactly the owned pair
+    fixture["panel"].write_bytes(b"quality-ledger-v2")
+    fixture["sidecar"].write_text('{"artefact_sha256": "new"}\n')
+    with patch(
+        "scripts.migrate_route_release_markers.verify",
+        return_value={"status": "ok"},
+    ):
+        assert repin_anchor_manifest_migrated_lineage(
+            manifest_path=fixture["manifest"],
+            unresolved_ledger_path=fixture["ledger"],
+            quality_panel=fixture["panel"],
+            root=fixture["root"],
+        )
+        manifest = json.loads(fixture["manifest"].read_text())
+        by_path = {
+            record["path"]: record["sha256"]
+            for record in manifest["lineage_inputs"]
+        }
+        assert by_path["data/processed/unified_route_quality.parquet"] == file_sha256(
+            fixture["panel"]
+        )
+        assert by_path[
+            "data/manifests/data/processed/unified_route_quality.parquet.prov.json"
+        ] == file_sha256(fixture["sidecar"])
+        assert by_path["data/raw/chunk.parquet"] == file_sha256(fixture["evidence"])
+        assert manifest["lineage_inputs_sha256"] == canonical_json_sha256(
+            manifest["lineage_inputs"]
+        )
+        repins = manifest["lineage_repins"]
+        assert len(repins) == 1 and len(repins[0]["records"]) == 2
+        ledger = json.loads(fixture["ledger"].read_text())
+        assert ledger["selected_anchor_manifest"]["sha256"] == file_sha256(
+            fixture["manifest"]
+        )
+        # a second run is a no-op
+        assert not repin_anchor_manifest_migrated_lineage(
+            manifest_path=fixture["manifest"],
+            unresolved_ledger_path=fixture["ledger"],
+            quality_panel=fixture["panel"],
+            root=fixture["root"],
+        )
+
+
+def test_anchor_manifest_repin_refuses_foreign_lineage_drift(
+    tmp_path: Path,
+) -> None:
+    from scripts.migrate_route_release_markers import (
+        repin_anchor_manifest_migrated_lineage,
+    )
+
+    fixture = prepare_anchor_manifest(tmp_path)
+    fixture["panel"].write_bytes(b"quality-ledger-v2")
+    fixture["evidence"].write_bytes(b"raw-evidence-tampered")
+    with patch(
+        "scripts.migrate_route_release_markers.verify",
+        return_value={"status": "ok"},
+    ):
+        with pytest.raises(RuntimeError, match="foreign lineage drift"):
+            repin_anchor_manifest_migrated_lineage(
+                manifest_path=fixture["manifest"],
+                unresolved_ledger_path=fixture["ledger"],
+                quality_panel=fixture["panel"],
+                root=fixture["root"],
+            )
+
+
+def test_anchor_manifest_repin_requires_current_panel_and_exact_digest(
+    tmp_path: Path,
+) -> None:
+    from scripts.migrate_route_release_markers import (
+        repin_anchor_manifest_migrated_lineage,
+    )
+
+    fixture = prepare_anchor_manifest(tmp_path)
+    fixture["panel"].write_bytes(b"quality-ledger-v2")
+    with patch(
+        "scripts.migrate_route_release_markers.verify",
+        return_value={"status": "stale"},
+    ):
+        with pytest.raises(RuntimeError, match="not\\s+current"):
+            repin_anchor_manifest_migrated_lineage(
+                manifest_path=fixture["manifest"],
+                unresolved_ledger_path=fixture["ledger"],
+                quality_panel=fixture["panel"],
+                root=fixture["root"],
+            )
+    manifest = json.loads(fixture["manifest"].read_text())
+    manifest["lineage_inputs_sha256"] = "0" * 64
+    fixture["manifest"].write_text(json.dumps(manifest) + "\n")
+    with patch(
+        "scripts.migrate_route_release_markers.verify",
+        return_value={"status": "ok"},
+    ):
+        with pytest.raises(RuntimeError, match="lineage digest disagrees"):
+            repin_anchor_manifest_migrated_lineage(
+                manifest_path=fixture["manifest"],
+                unresolved_ledger_path=fixture["ledger"],
+                quality_panel=fixture["panel"],
+                root=fixture["root"],
+            )
+
+
+def test_anchor_manifest_repin_recovers_lagged_ledger_pin(tmp_path: Path) -> None:
+    """A ledger pinning the pre-repin manifest heals across a recorded repin."""
+
+    from scripts.migrate_route_release_markers import (
+        repin_anchor_manifest_migrated_lineage,
+    )
+
+    fixture = prepare_anchor_manifest(tmp_path)
+    manifest = json.loads(fixture["manifest"].read_text())
+    manifest["lineage_repins"] = [{"policy": "test", "records": []}]
+    fixture["manifest"].write_text(
+        json.dumps(manifest, indent=1, sort_keys=True) + "\n"
+    )
+    # the manifest bytes moved with the recorded repin; the ledger pin lags
+    with patch(
+        "scripts.migrate_route_release_markers.verify",
+        return_value={"status": "ok"},
+    ):
+        assert repin_anchor_manifest_migrated_lineage(
+            manifest_path=fixture["manifest"],
+            unresolved_ledger_path=fixture["ledger"],
+            quality_panel=fixture["panel"],
+            root=fixture["root"],
+        )
+    ledger = json.loads(fixture["ledger"].read_text())
+    assert ledger["selected_anchor_manifest"]["sha256"] == file_sha256(
+        fixture["manifest"]
+    )
+
+
+def test_anchor_manifest_repin_refuses_foreign_ledger_pin(tmp_path: Path) -> None:
+    """A ledger pinning an unknown manifest state is never silently repinned."""
+
+    from scripts.migrate_route_release_markers import (
+        repin_anchor_manifest_migrated_lineage,
+    )
+
+    fixture = prepare_anchor_manifest(tmp_path)
+    ledger = json.loads(fixture["ledger"].read_text())
+    ledger["selected_anchor_manifest"]["sha256"] = "0" * 64
+    fixture["ledger"].write_text(json.dumps(ledger, indent=1, sort_keys=True) + "\n")
+    fixture["panel"].write_bytes(b"quality-ledger-v2")
+    with patch(
+        "scripts.migrate_route_release_markers.verify",
+        return_value={"status": "ok"},
+    ):
+        with pytest.raises(RuntimeError, match="different manifest state"):
+            repin_anchor_manifest_migrated_lineage(
+                manifest_path=fixture["manifest"],
+                unresolved_ledger_path=fixture["ledger"],
+                quality_panel=fixture["panel"],
+                root=fixture["root"],
+            )
