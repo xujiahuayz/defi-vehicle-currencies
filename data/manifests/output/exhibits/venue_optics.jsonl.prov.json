@@ -2,43 +2,25 @@
  "argv": [],
  "artefact": "output/exhibits/venue_optics.jsonl",
  "artefact_bytes": 1632,
- "artefact_mtime_ns": 1786844086989182541,
+ "artefact_mtime_ns": 1786847460090051255,
  "artefact_sha256": "8fc8588a39caf4b7bd960944d419fd9447ada4adbf65ccd505d52d26acca3b5c",
  "code_fingerprint": "1d856aef753d386298eb36b202be2c2e1ac110dca54ec84a589592eb467e230a",
  "code_sources": [
   "scripts/measure_venue_optics.py",
   "src/ddvc/tables.py"
  ],
- "created_at": "2026-08-16T01:34:46+00:00",
+ "created_at": "2026-08-16T02:31:00+00:00",
  "git": {
   "branch": "main",
-  "commit": "6b4050d003efbfd0c0302994f8e93f273bb25cd5",
-  "dirty": true,
+  "commit": "c0543e373519795ea19bde57458e332082c6f1f6",
+  "dirty": false,
   "dirty_generated_files": [
-   "data/manifests/output/exhibits/prose_conventions.jsonl.prov.json",
-   "data/manifests/output/exhibits/prose_outliers.jsonl.prov.json",
-   "data/manifests/output/exhibits/vehicle_transition_pair_decomposition_deck_values.tex.prov.json",
-   "data/manifests/output/exhibits/venue_shape.jsonl.prov.json",
-   "output/exhibits/prose_conventions.jsonl",
-   "output/exhibits/prose_outliers.jsonl",
-   "output/exhibits/vehicle_transition_pair_decomposition_deck_values.tex",
-   "output/exhibits/venue_shape.jsonl",
-   "output/exhibits/.venue_optics.jsonl.82waz5j9.tmp"
+   "data/manifests/data/processed/liquidity_capital_v2_candidate_day.parquet.prov.json",
+   "data/manifests/data/processed/liquidity_capital_v2_exact_horizons.parquet.prov.json",
+   "data/manifests/data/processed/pool_capital_release/generations/084f1e16a7cb121fde40073b6b001d4a5732fdc511bb79324d49827393518e38/",
+   "output/exhibits/.venue_optics.jsonl.q1soi299.tmp"
   ],
-  "dirty_tracked_files": [
-   "deck/main.pdf",
-   "deck/sections/04-results.tex",
-   "deck/sections/05-close.tex",
-   "docs/reviews/paper-rhetoric.json",
-   "logs/grind-ledger.md",
-   "logs/grind-queue.md",
-   "paper/sections/01-introduction.tex",
-   "paper/sections/03-dominance.tex",
-   "paper/sections/07-conclusion.tex",
-   "paper/sections/abstract.tex",
-   "scripts/build_vehicle_transition_pair_deck_values.py",
-   "tests/test_vehicle_transition_pair_deck_values.py"
-  ],
+  "dirty_tracked_files": [],
   "dirty_untracked_files": []
  },
  "inputs": [],

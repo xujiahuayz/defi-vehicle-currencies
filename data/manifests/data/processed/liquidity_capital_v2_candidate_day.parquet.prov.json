@@ -5,8 +5,8 @@
  ],
  "artefact": "data/processed/liquidity_capital_v2_candidate_day.parquet",
  "artefact_bytes": 785585,
- "artefact_mtime_ns": 1786772864214119092,
- "artefact_sha256": "d6e03ff0842365300e52526930e69713bc8688046d5f98960b42d85dc8340921",
+ "artefact_mtime_ns": 1786847315464026691,
+ "artefact_sha256": "160aa7a18c5313e4c5a8ec1e4cedc7e74282c57391b0990198979f8f65eb4003",
  "code_fingerprint": "a41bb5a7dd41e27e44c3e05c5b984ff8c454d79f0caca513c34d0154e1f4ef56",
  "code_sources": [
   "scripts/build_liquidity_capital_flow_panels.py",
@@ -17,14 +17,14 @@
   "src/ddvc/provenance.py",
   "src/ddvc/tables.py"
  ],
- "created_at": "2026-08-15T05:47:45+00:00",
+ "created_at": "2026-08-16T02:28:36+00:00",
  "git": {
   "branch": "main",
-  "commit": "8a965cddaddfc110124566130e51dbe28f7d0818",
+  "commit": "c0543e373519795ea19bde57458e332082c6f1f6",
   "dirty": false,
   "dirty_generated_files": [
-   "data/manifests/data/processed/pool_capital_release/",
-   "data/manifests/data/processed/token_price_daily.parquet.prov.json"
+   "data/manifests/data/processed/liquidity_capital_v2_exact_horizons.parquet.prov.json",
+   "data/manifests/data/processed/pool_capital_release/generations/084f1e16a7cb121fde40073b6b001d4a5732fdc511bb79324d49827393518e38/"
   ],
   "dirty_tracked_files": [],
   "dirty_untracked_files": []
@@ -41,112 +41,112 @@
    "bytes": 1525,
    "exists": true,
    "path": "data/processed/pool_capital_release/current.json",
-   "sha256": "c8f02eb69915355b581db06618ebefc9db128a5cbf5f4a43944bc7efb6cd630b"
+   "sha256": "d46d494117a14eff0703f5c19c2b17e3a7e1f98c8026c27af62e2a488772f113"
   },
   {
    "bytes": 172574513,
    "exists": true,
    "hashed": false,
-   "mtime_ns": 1786772688456328737,
-   "path": "data/processed/pool_capital_release/generations/00cb588bdc5bb15a9c432b3843d71d058b0bf401661802a39653b0837ea682a2/pool_candidate_capital_daily.parquet"
+   "mtime_ns": 1786846768016244361,
+   "path": "data/processed/pool_capital_release/generations/084f1e16a7cb121fde40073b6b001d4a5732fdc511bb79324d49827393518e38/pool_candidate_capital_daily.parquet"
   },
   {
    "bytes": 3090312,
    "exists": true,
-   "path": "data/processed/pool_capital_release/generations/00cb588bdc5bb15a9c432b3843d71d058b0bf401661802a39653b0837ea682a2/pool_capital_generation.json",
-   "sha256": "47f49f91e952f7de296064e000be8ec0dc8782249b940f90e167000a1e89a780"
+   "path": "data/processed/pool_capital_release/generations/084f1e16a7cb121fde40073b6b001d4a5732fdc511bb79324d49827393518e38/pool_capital_generation.json",
+   "sha256": "1abefde7e654b6222be71b99f6407102183924972e81b5892ce6ac3ef88148ee"
   },
   {
    "bytes": 10014,
    "exists": true,
-   "path": "data/processed/pool_capital_release/generations/00cb588bdc5bb15a9c432b3843d71d058b0bf401661802a39653b0837ea682a2/pool_capital_coverage.jsonl",
+   "path": "data/processed/pool_capital_release/generations/084f1e16a7cb121fde40073b6b001d4a5732fdc511bb79324d49827393518e38/pool_capital_coverage.jsonl",
    "sha256": "c2d33ccd8e9d012dad45d9bc04d5fc32925c40829cf8ef74df82bc33503eed5a"
   },
   {
    "bytes": 485310551,
    "exists": true,
    "hashed": false,
-   "mtime_ns": 1786772688427097253,
-   "path": "data/processed/pool_capital_release/generations/00cb588bdc5bb15a9c432b3843d71d058b0bf401661802a39653b0837ea682a2/pool_capital_daily.parquet"
+   "mtime_ns": 1786846767997609880,
+   "path": "data/processed/pool_capital_release/generations/084f1e16a7cb121fde40073b6b001d4a5732fdc511bb79324d49827393518e38/pool_capital_daily.parquet"
   },
   {
    "bytes": 68103941,
    "exists": true,
    "hashed": false,
-   "mtime_ns": 1786772688463678692,
-   "path": "data/processed/pool_capital_release/generations/00cb588bdc5bb15a9c432b3843d71d058b0bf401661802a39653b0837ea682a2/pool_capital_rejections.parquet"
+   "mtime_ns": 1786846768032916085,
+   "path": "data/processed/pool_capital_release/generations/084f1e16a7cb121fde40073b6b001d4a5732fdc511bb79324d49827393518e38/pool_capital_rejections.parquet"
   },
   {
-   "bytes": 1789920,
+   "bytes": 1789848,
    "exists": true,
-   "path": "data/manifests/data/processed/pool_capital_release/generations/00cb588bdc5bb15a9c432b3843d71d058b0bf401661802a39653b0837ea682a2/pool_candidate_capital_daily.parquet.prov.json",
-   "sha256": "d140429b66f3308df1e2eeae7440755548f5b505a96ba1c49a02aab9dd0b6090"
+   "path": "data/manifests/data/processed/pool_capital_release/generations/084f1e16a7cb121fde40073b6b001d4a5732fdc511bb79324d49827393518e38/pool_candidate_capital_daily.parquet.prov.json",
+   "sha256": "4ce95ae7f37a83f4a1981cc414a624b2fa5cb3041c2316fd258f39933d292aee"
   },
   {
-   "bytes": 1789281,
+   "bytes": 1789209,
    "exists": true,
-   "path": "data/manifests/data/processed/pool_capital_release/generations/00cb588bdc5bb15a9c432b3843d71d058b0bf401661802a39653b0837ea682a2/pool_capital_generation.json.prov.json",
-   "sha256": "9feb2493d84dee0387a3b4b973193d4edcfb60ac45ae50b33e1d75fbc86e8edf"
+   "path": "data/manifests/data/processed/pool_capital_release/generations/084f1e16a7cb121fde40073b6b001d4a5732fdc511bb79324d49827393518e38/pool_capital_generation.json.prov.json",
+   "sha256": "956572bc225eb57679dbc2e45bfe5bb999376ea3b6f6b54beadc1ecf59b216b2"
   },
   {
-   "bytes": 1789290,
+   "bytes": 1789218,
    "exists": true,
-   "path": "data/manifests/data/processed/pool_capital_release/generations/00cb588bdc5bb15a9c432b3843d71d058b0bf401661802a39653b0837ea682a2/pool_capital_coverage.jsonl.prov.json",
-   "sha256": "5d38aa7437701ecf96fd151176601265a5aa5d27364cda62d1231b5ca5bef189"
+   "path": "data/manifests/data/processed/pool_capital_release/generations/084f1e16a7cb121fde40073b6b001d4a5732fdc511bb79324d49827393518e38/pool_capital_coverage.jsonl.prov.json",
+   "sha256": "7e4f3b6218dd048c54a988fc0607e05f414d9a0b3e9a6d39ed370c93e2198a80"
   },
   {
-   "bytes": 1790244,
+   "bytes": 1790172,
    "exists": true,
-   "path": "data/manifests/data/processed/pool_capital_release/generations/00cb588bdc5bb15a9c432b3843d71d058b0bf401661802a39653b0837ea682a2/pool_capital_daily.parquet.prov.json",
-   "sha256": "b912c30ed647e44ae756d2601a53071ecd5d9ec549b5bd209a8d18fcace8cdb3"
+   "path": "data/manifests/data/processed/pool_capital_release/generations/084f1e16a7cb121fde40073b6b001d4a5732fdc511bb79324d49827393518e38/pool_capital_daily.parquet.prov.json",
+   "sha256": "ba7c54727f0f8c23b99eefa6e58c16c09d81daaf64b6b91ed9e46475df994c64"
   },
   {
-   "bytes": 1790162,
+   "bytes": 1790090,
    "exists": true,
-   "path": "data/manifests/data/processed/pool_capital_release/generations/00cb588bdc5bb15a9c432b3843d71d058b0bf401661802a39653b0837ea682a2/pool_capital_rejections.parquet.prov.json",
-   "sha256": "7d6fc6a3b9c250b9df3861ebe273e10295e9766cb610b94c2282ef1572fe6d06"
+   "path": "data/manifests/data/processed/pool_capital_release/generations/084f1e16a7cb121fde40073b6b001d4a5732fdc511bb79324d49827393518e38/pool_capital_rejections.parquet.prov.json",
+   "sha256": "3f626d63096f8c6b66612c00ef340c1357e5add5ffd35953ee0e149b9d432426"
   },
   {
-   "bytes": 1919,
+   "bytes": 3587,
    "exists": true,
    "path": "data/manifests/data/processed/token_price_daily.parquet.prov.json",
-   "sha256": "4ff591e086e401202885a8d51c4e51e1431485ab78e9ab5cb5c2002dc2c3d9d7"
+   "sha256": "520025c03446406346ae0bc65809e0651c7ce729b3decb43c2961663a98c2dba"
   },
   {
-   "bytes": 26553869,
+   "bytes": 26555629,
    "exists": true,
    "path": "data/manifests/data/processed/v2_audit_token_decimals.parquet.prov.json",
-   "sha256": "24b562e270273d5786a55b72c43d82fe7676b19eefc45c1a3f50a48392344523"
+   "sha256": "f398ad16b2fd30d021fb7e2267d56a0cb382e0cd72da5beb190dfa704e44e4e4"
   },
   {
-   "bytes": 781,
+   "bytes": 782,
    "exists": true,
    "path": "data/processed/raw_generation/sushiswap_v2_local_certificate.json",
-   "sha256": "2ddfd3f6e28d56de694c4f4382c9386325c8c2b37cbef507bc13408873cc5694"
+   "sha256": "045ca805589ee5fb74d2b74ba65583df41db33f47dd70d8cc91328fdbf81f8be"
   },
   {
-   "bytes": 4678478,
+   "bytes": 11755753,
    "exists": true,
    "path": "data/processed/raw_generation/sushiswap_v2_local_scan.jsonl",
-   "sha256": "e727713f26cebcfa88119271c5dc43c1ddebbc74c11bdd254cca3e337da627db"
+   "sha256": "ad9cbd434059c316aca6bba02ffa3e635ac5e05a4a67c6ebf2b9af6227383b70"
   },
   {
-   "bytes": 779,
+   "bytes": 780,
    "exists": true,
    "path": "data/processed/raw_generation/uniswap_v2_local_certificate.json",
-   "sha256": "34adc7754330bdce41ac47bc8169672de5007316e4fb2528b1b3090055d65c4e"
+   "sha256": "2fd7dd5b0b8e64d98ee2c2eba05d1503d998aaae54bec66ea7cd545d8ee1020f"
   },
   {
-   "bytes": 4903322,
+   "bytes": 12321153,
    "exists": true,
    "path": "data/processed/raw_generation/uniswap_v2_local_scan.jsonl",
-   "sha256": "db8cd16ca9d46e132ca87c2c7ba5eed904e3dbf9abb2418e9f8c1a202e08c849"
+   "sha256": "76f302a0ca9b638bcb3a259755a5ef03eb197346f2513bda30fbcf857e5cc8b9"
   },
   {
    "bytes": 407498398,
    "exists": true,
    "hashed": false,
-   "mtime_ns": 1786769515257340754,
+   "mtime_ns": 1786840048081194566,
    "path": "data/processed/token_price_daily.parquet"
   },
   {
@@ -52687,7 +52687,7 @@
   "rows": 11660,
   "schema_sha256": "2280d71929ab51cba83d8a06ee2ff25bbfa0eacb3ea7295e83820d467e10f413",
   "schema_version": 1,
-  "sha256": "d6e03ff0842365300e52526930e69713bc8688046d5f98960b42d85dc8340921"
+  "sha256": "160aa7a18c5313e4c5a8ec1e4cedc7e74282c57391b0990198979f8f65eb4003"
  },
  "python": "3.14.6",
  "rows": 11660,

@@ -28,6 +28,15 @@ from ddvc.provenance import current_artifacts
 from ddvc.tables import write_panel
 
 
+# These panels are value-stable but not bit-reproducible. The capital columns are
+# DuckDB parallel float sums, so the reduction order varies between runs and the
+# installed bytes move even when every input is byte-identical. Measured on two
+# consecutive runs off one capital release (2026-08-16): max relative difference
+# 3.3e-15 on the candidate-day levels and shares (24 ULP), and 4.5e-10 on the
+# horizon change columns, where differencing two near-equal shares amplifies it.
+# Nothing at that scale can reach an estimand, a coefficient, or an inference, so
+# a byte difference here is not evidence that the panel changed. Read it as
+# "rebuilt", not "revised", and compare values before treating it as a finding.
 ROUTE_INPUT = REPO_ROOT / "data" / "processed" / "vehicle_excess_use_daily.parquet"
 FLOW_INPUT = REPO_ROOT / "data" / "processed" / "lp_liquidity_flow_daily_v3.parquet"
 PRICE_INPUT = TOKEN_PRICE_DAILY_PANEL
