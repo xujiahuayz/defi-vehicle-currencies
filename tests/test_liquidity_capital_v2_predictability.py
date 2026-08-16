@@ -12,6 +12,7 @@ import pytest
 from ddvc.asset_types import VEHICLE_CANDIDATES
 from ddvc.liquidity_predictability import (
     ROUTE_FAMILY,
+    V2_CANDIDATE_DAY_COLUMNS,
     V2_FAMILY,
     V2_QUANTITY_KIND,
     build_v2_exact_horizon_panel,
@@ -78,6 +79,17 @@ def _valid_exact_panel() -> pd.DataFrame:
                 }
             )
     return build_v2_exact_horizon_panel(pd.DataFrame(rows))
+
+
+def _candidate_day_from_exact(panel: pd.DataFrame) -> pd.DataFrame:
+    keys = ["origin_date", "candidate_address"]
+    return (
+        panel.sort_values([*keys, "horizon_days"])
+        .drop_duplicates(keys)
+        .loc[:, list(V2_CANDIDATE_DAY_COLUMNS)]
+        .sort_values(keys)
+        .reset_index(drop=True)
+    )
 
 
 def test_two_way_fixed_effect_fit_recovers_within_candidate_date_signal() -> None:
@@ -172,3 +184,59 @@ def test_registered_grid_reports_primary_holm_and_support(monkeypatch) -> None:
     readjudicated = MODULE._attach_full_calendar_decision(primary_failed)
     assert not readjudicated.loc[full, "claim_decision_pass"].any()
     assert readjudicated.loc[~full, "claim_decision_pass"].isna().all()
+
+
+def test_quantity_contract_publishes_v2_stock_boundary_before_estimates() -> None:
+    exact = _valid_exact_panel()
+    candidate_day = _candidate_day_from_exact(exact)
+
+    contract = MODULE.build_v2_quantity_contract(candidate_day, exact)
+
+    assert set(contract["record"]) == {
+        "panel_quantity_contract",
+        "origin_panel_reconciliation",
+    }
+    panel_rows = contract[contract["record"].eq("panel_quantity_contract")]
+    assert len(panel_rows) == 2
+    assert set(panel_rows["attack_id"]) == {"v2_stock_v3_flow_separation"}
+    assert set(panel_rows["measurement_family"]) == {V2_FAMILY}
+    assert set(panel_rows["route_measurement_family"]) == {ROUTE_FAMILY}
+    assert set(panel_rows["quantity_kind"]) == {V2_QUANTITY_KIND}
+    assert panel_rows["contract_validation_status"].eq("passed").all()
+    assert panel_rows["v3_prefixed_column_count"].eq(0).all()
+    assert not panel_rows["v3_signed_flow_columns_present"].any()
+    assert not panel_rows["v3_gross_flow_columns_present"].any()
+    assert set(panel_rows["forbidden_v3_columns"]) == {"none"}
+
+    rendered = MODULE._render_quantity_contract_table(contract)
+    assert "deposited capital" in rendered
+    assert "V3 flow cols" in rendered
+
+
+def test_quantity_contract_fails_if_v3_flow_column_enters_v2_panel() -> None:
+    exact = _valid_exact_panel()
+    candidate_day = _candidate_day_from_exact(exact)
+    exact = exact.assign(v3_signed_log1p_net_flow_per_1000=0.0)
+
+    with pytest.raises(ValueError, match="V3 measurement family"):
+        MODULE.build_v2_quantity_contract(candidate_day, exact)
+
+
+def test_quantity_contract_fails_if_released_origin_rows_drift() -> None:
+    exact = _valid_exact_panel()
+    candidate_day = _candidate_day_from_exact(exact)
+    candidate_day.loc[0, "v2_deposited_capital_usd"] += 1.0
+    candidate_day.loc[0, "v2_log1p_deposited_capital_usd"] = np.log1p(
+        candidate_day.loc[0, "v2_deposited_capital_usd"]
+    )
+    first_day = candidate_day.loc[0, "origin_date"]
+    first_day_total = candidate_day.loc[
+        candidate_day["origin_date"].eq(first_day), "v2_deposited_capital_usd"
+    ].sum()
+    first_day_mask = candidate_day["origin_date"].eq(first_day)
+    candidate_day.loc[first_day_mask, "v2_five_candidate_capital_share"] = (
+        candidate_day.loc[first_day_mask, "v2_deposited_capital_usd"] / first_day_total
+    )
+
+    with pytest.raises(ValueError, match="origins do not reproduce"):
+        MODULE.build_v2_quantity_contract(candidate_day, exact)

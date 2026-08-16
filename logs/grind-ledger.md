@@ -5250,3 +5250,61 @@ change, and should be planned as its own unit rather than smuggled into (2).
 **Data classification.** Current `-d3` raw, processed, unified and live empirical route-cost/V4 panels won every overlapping current path. Original-only Dune raw files, legacy metrics, and original-only empirical/processed panels with documented consumers were folded into the single data tree. Stale temporary Dune `*.restore.tmp` files were deleted during the fold. Original duplicate raw/unified/current processed/current empirical payloads were deleted after post-move validation; they are no longer a second live repo state.
 
 **Not closed.** This does not close Java's broader cleanup item: the dependency-closure pass over dead scripts and unreachable tracked/generated artifacts still needs a normal worker unit. It only removes the worktree divergence and makes future cleanup operate against one filesystem truth.
+
+## 2026-08-17 — Publish the V2 stock quantity contract
+
+**Target.** Manual EB unit for the `liquidity_capital_v2_e0`
+`v2_stock_v3_flow_separation` attack. The family already had the V2
+predictability/support exhibits and the influence-concentration diagnostics, but
+the literature audit required a quantity-contract table before any V2 estimate:
+measurement-family labels, V2 deposited-capital stock, `deposited_capital`
+quantity kind, validation status, and absence of V3 signed/gross flow columns.
+
+**What was built.** `scripts/run_liquidity_capital_v2_predictability.py` now has
+a third component, `run_quantity_contract`, and `--component all` runs it before
+predictability and influence. The component reads only the released V2
+candidate-day and exact-horizon panels bound to D3 generation
+`4225a3bd7729de96`, validates both through the existing V2-only validators,
+refuses any `v3_`-prefixed column or V2 flow column, pins
+`v2_quantity_kind == deposited_capital`, and reconciles the exact-horizon origin
+rows back to the released candidate-day panel.
+
+**Outputs.** Published
+`output/exhibits/e0_liquidity_capital_v2_quantity_contract.jsonl` and
+`output/tables/e0_liquidity_capital_v2_quantity_contract.tex`, with matching
+provenance manifests under `data/manifests/output/...`. The exhibit records
+11,660 released V2 candidate-day rows, 46,640 exact-horizon rows, five candidate
+addresses, 2,332 origin dates, four registered horizons (1/7/30/120), no
+V3-prefixed columns, no V3 signed flow columns, no V3 gross flow columns, and a
+passed candidate-day-to-exact-origin reconciliation. This closes the attack as a
+published support artifact, not merely an enforced schema invariant.
+
+Because the runner source changed, the existing V2 predictability and
+influence artifacts were then regenerated on the same D3 binding rather than
+left provenance-stale. Their payloads and readout stayed substantively unchanged:
+the influence component again fits 352 leave-out specifications, reports 23 sign
+flips, and has zero primary cells passing the decision rule. The liquidity V2
+deck-values file was rebuilt after the exhibit refresh.
+
+**Scope guard.** I deliberately did not add the new outputs to
+`docs/specification-lock.json` in this unit. Doing so before the E1 lock step
+would stale the existing D3 certificate, which the runner correctly failed on in
+a first attempted run. Formal output registration belongs in the upcoming
+`plan.json`/`scripts/lock_specification.py` step, with this artifact cited there.
+
+**Validation.** `tests/test_liquidity_capital_v2_predictability.py`,
+`tests/test_liquidity_capital_v2_influence.py`,
+`tests/test_liquidity_capital_v2_deck_values.py` and
+`tests/test_analysis_release.py` pass: 42 passed. The new quantity-contract
+exhibit/table, the refreshed V2 predictability exhibit/support/table, the
+refreshed influence exhibit/support, and the rebuilt deck-values file all verify
+`ok` through `ddvc.provenance.verify`. `git diff --check` is clean. Ruff is not
+installed in the project venv, so no Ruff check was available.
+
+**Next iteration.** Write the `plan.json` that names the executable family
+runners and their declared artifacts, citing this quantity-contract artifact,
+the existing V2 predictability/support exhibits, the influence artifacts, and
+the honest blocked disposition for the two token-price attacks. Then build
+`scripts/lock_specification.py`. The token-price-placebo/stress pair still needs
+a panel-plus-release generation because the token-price panel is outside the
+current claim-input perimeter.

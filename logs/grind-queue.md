@@ -233,14 +233,16 @@ and pick a blocking check from the freeze gate.
   coefficients, three covariance alternatives, per-cell support) — all in
   `output/exhibits/liquidity_capital_v2_{predictability,support}.jsonl`.
   `influence_concentration` is **built this iteration**: see the ledger entry and
-  `run_influence_concentration`. `v2_stock_v3_flow_separation` is enforced but
-  unpublished — `validate_v2_exact_horizon_panel` rejects any `v3_`-prefixed
-  column and pins `v2_quantity_kind`, and every support row carries
-  `measurement_family`, but the attack's "quantity-contract table shown before
-  any V2 estimate" has no artifact. That is the cheapest remaining unit in this
-  family and needs no new inputs. **The two genuinely blocked attacks are
-  `common_shock_price_risk_placebos` and `stress_heterogeneity`, and the blocker
-  is not the covariate code — it is the claim-input perimeter.** Both need
+  `run_influence_concentration`. `v2_stock_v3_flow_separation` is now published:
+  `run_quantity_contract` validates the released V2 candidate-day and
+  exact-horizon panels as deposited-capital stock panels with no V3-prefixed
+  signed or gross flow columns, reconciles exact-horizon origins back to the
+  released candidate-day panel, and writes
+  `output/exhibits/e0_liquidity_capital_v2_quantity_contract.jsonl` plus
+  `output/tables/e0_liquidity_capital_v2_quantity_contract.tex`. **The two
+  genuinely blocked attacks are `common_shock_price_risk_placebos` and
+  `stress_heterogeneity`, and the blocker is not the covariate code — it is the
+  claim-input perimeter.** Both need
   `data/processed/token_price_daily.parquet`, which is absent from the claim's
   `inputs` in `docs/specification-lock.json` and therefore from the bound D3
   release, so `require_released_model_inputs` refuses it. Two further facts the
@@ -255,9 +257,8 @@ and pick a blocking check from the freeze gate.
   so the common-shock rival is already differenced out of the headline
   specification, and the attack's explicit-control specification has to drop the
   date effects to say anything at all. Both halves belong in the same generation
-  as the panel rebuild. Resumption point unchanged in shape: publish the
-  quantity-contract artifact, then write the `plan.json` naming a runner and
-  declared artifacts per executable family, then build
+  as the panel rebuild. Resumption point: write the `plan.json` naming a runner
+  and declared artifacts per executable family, then build
   `scripts/lock_specification.py`._
 
 - [x] **Replace the hand-declared `stable_passes` with a computed findings fingerprint.**

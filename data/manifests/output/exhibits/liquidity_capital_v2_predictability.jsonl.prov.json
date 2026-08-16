@@ -5,9 +5,9 @@
  ],
  "artefact": "output/exhibits/liquidity_capital_v2_predictability.jsonl",
  "artefact_bytes": 203917,
- "artefact_mtime_ns": 1786917541051290942,
+ "artefact_mtime_ns": 1786923843425320703,
  "artefact_sha256": "4904269f4103eea55e40db8beed6213ed874efa1a28d26175005b8b61573f4e0",
- "code_fingerprint": "7fb2d3ce4f52f7101e27569da3b7cb513a29e65622bc1c05c833667cb53ba189",
+ "code_fingerprint": "93d99fcc6b337d3cf4e51068dc2be0068faf70b2bb75d88e835cad9678b22252",
  "code_sources": [
   "scripts/run_liquidity_capital_v2_predictability.py",
   "src/ddvc/analysis/regression.py",
@@ -15,27 +15,26 @@
   "src/ddvc/model_artifacts.py",
   "src/ddvc/tables.py"
  ],
- "created_at": "2026-08-16T21:59:01+00:00",
+ "created_at": "2026-08-16T23:44:03+00:00",
  "git": {
   "branch": "main",
-  "commit": "b95f64ddb8ffa6891f21b39a8e9d3544ca79aa67",
+  "commit": "995d94bf4b9ec5d82b2769ee4a118a608197a818",
   "dirty": true,
   "dirty_generated_files": [
-   "data/manifests/output/exhibits/e0_liquidity_capital_v2_influence_estimates.jsonl.prov.json",
-   "data/manifests/output/exhibits/e0_liquidity_capital_v2_influence_support.jsonl.prov.json",
-   "output/exhibits/.liquidity_capital_v2_predictability.jsonl.mdw8eyp_.tmp",
-   "output/exhibits/e0_liquidity_capital_v2_influence_estimates.jsonl",
-   "output/exhibits/e0_liquidity_capital_v2_influence_support.jsonl"
+   "data/manifests/output/exhibits/e0_liquidity_capital_v2_quantity_contract.jsonl.prov.json",
+   "data/manifests/output/tables/e0_liquidity_capital_v2_quantity_contract.tex.prov.json",
+   "output/exhibits/.liquidity_capital_v2_predictability.jsonl.bvxn8hz7.tmp",
+   "output/exhibits/e0_liquidity_capital_v2_quantity_contract.jsonl",
+   "output/tables/e0_liquidity_capital_v2_quantity_contract.tex"
   ],
   "dirty_tracked_files": [
    "docs/literature-audit.md",
+   "logs/grind-ledger.md",
    "logs/grind-queue.md",
-   "scripts/run_liquidity_capital_v2_predictability.py"
+   "scripts/run_liquidity_capital_v2_predictability.py",
+   "tests/test_liquidity_capital_v2_predictability.py"
   ],
-  "dirty_untracked_files": [
-   "src/ddvc/analysis/liquidity_capital_v2_influence.py",
-   "tests/test_liquidity_capital_v2_influence.py"
-  ]
+  "dirty_untracked_files": []
  },
  "inputs": [
   {

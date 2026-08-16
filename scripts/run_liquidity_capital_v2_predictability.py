@@ -5,14 +5,16 @@ This runner consumes only the independently released V2 candidate-day and
 exact-horizon panels. It never opens, fills, or conditions execution on a V3
 flow artifact. The estimates are predictive associations, not causal feedback.
 
-Two components live here and share one bound generation. The predictability
+Three components live here and share one bound generation. The
+quantity-contract component proves the V2-only family did not carry a V3 flow
+quantity across from the broader liquidity-allocation design. The predictability
 component fits the claim's registered perimeter. The influence component answers
 the `liquidity_capital_v2_e0` family's `influence_concentration` attack: it
 measures where the support's capital mass sits, then refits the full-calendar
 perimeter dropping one candidate or one high-contribution pool at a time and
 restates the claim's own decision rule on each remainder. They stay in one
-runner because both must speak through the same covariance contract; splitting
-the fit owner is how a diagnostic quietly acquires a second inference.
+runner because all three are about the same V2 quantity boundary; splitting the
+fit owner is how a diagnostic quietly acquires a second inference.
 """
 
 from __future__ import annotations
@@ -47,8 +49,13 @@ from ddvc.capital_release import (
 )
 from ddvc.liquidity_predictability import (
     HORIZONS,
+    ROUTE_FAMILY,
+    V2_CANDIDATE_DAY_COLUMNS,
+    V2_FAMILY,
+    V2_QUANTITY_KIND,
     V3_LAUNCH_DATE,
     build_v2_exact_horizon_panel,
+    validate_v2_candidate_day_panel,
     validate_v2_exact_horizon_panel,
 )
 from ddvc.model_artifacts import (
@@ -67,6 +74,12 @@ EXACT_HORIZON_INPUT = REPO_ROOT / "data/processed/liquidity_capital_v2_exact_hor
 RESULT_OUTPUT = OUTPUT_DIR / "exhibits/liquidity_capital_v2_predictability.jsonl"
 SUPPORT_OUTPUT = OUTPUT_DIR / "exhibits/liquidity_capital_v2_support.jsonl"
 TABLE_OUTPUT = OUTPUT_DIR / "tables/liquidity_capital_v2_predictability.tex"
+QUANTITY_CONTRACT_OUTPUT = (
+    OUTPUT_DIR / "exhibits/e0_liquidity_capital_v2_quantity_contract.jsonl"
+)
+QUANTITY_CONTRACT_TABLE_OUTPUT = (
+    OUTPUT_DIR / "tables/e0_liquidity_capital_v2_quantity_contract.tex"
+)
 INFLUENCE_ESTIMATE_OUTPUT = (
     OUTPUT_DIR / "exhibits/e0_liquidity_capital_v2_influence_estimates.jsonl"
 )
@@ -90,9 +103,9 @@ INFLUENCE_COMPONENT_FAMILY = "liquidity_capital_v2_influence_component"
 # The `liquidity_capital_v2_e0` attacks this runner produces evidence for, and
 # where each one lands. It is not the family's full perimeter: the two
 # price-covariate attacks are outside it until the token-price panel enters the
-# claim-input perimeter, and `v2_stock_v3_flow_separation` is enforced by the
-# panel validator but has no published quantity-contract artifact yet. An
-# exploration plan must cite these exhibits and no others from this runner.
+# claim-input perimeter. An exploration plan must cite these exhibits and no
+# others from this runner.
+QUANTITY_CONTRACT_ATTACK_COVERAGE = ("v2_stock_v3_flow_separation",)
 PREDICTABILITY_ATTACK_COVERAGE = (
     "bidirectional_exact_horizons",
     "absolute_share_sign_stability",
@@ -117,6 +130,258 @@ CAPITAL_MEASURES = {
     "log_deposited_capital": "log1p_deposited_capital_usd",
     "five_candidate_capital_share": "five_candidate_capital_share",
 }
+
+
+def _joined(values: object) -> str:
+    unique = sorted({str(value) for value in pd.Series(values).dropna()})
+    return "|".join(unique) if unique else "none"
+
+
+def _label(value: object) -> str:
+    return str(value).replace("_", " ")
+
+
+def _panel_quantity_contract_row(
+    panel_name: str, panel: pd.DataFrame
+) -> dict[str, object]:
+    columns = [str(column) for column in panel.columns]
+    v3_prefixed = sorted(column for column in columns if column.startswith("v3_"))
+    v3_signed_flow = sorted(
+        column for column in v3_prefixed if "signed" in column and "flow" in column
+    )
+    v3_gross_flow = sorted(
+        column for column in v3_prefixed if "gross" in column and "flow" in column
+    )
+    v2_flow = sorted(
+        column for column in columns if column.startswith("v2_") and "flow" in column
+    )
+    if v3_prefixed:
+        raise ValueError(
+            f"{panel_name} carries V3-prefixed columns inside the V2-only family: "
+            f"{v3_prefixed[:10]}"
+        )
+    if v2_flow:
+        raise ValueError(
+            f"{panel_name} carries V2-prefixed flow columns inside the stock family: "
+            f"{v2_flow[:10]}"
+        )
+    quantity_kinds = sorted(
+        str(value) for value in panel["v2_quantity_kind"].dropna().unique()
+    )
+    if quantity_kinds != [V2_QUANTITY_KIND]:
+        raise ValueError(
+            f"{panel_name} changed the V2 quantity contract: {quantity_kinds}"
+        )
+    v2_families = sorted(
+        str(value) for value in panel["v2_measurement_family"].dropna().unique()
+    )
+    if v2_families != [V2_FAMILY]:
+        raise ValueError(
+            f"{panel_name} changed the V2 measurement family: {v2_families}"
+        )
+    route_families = sorted(
+        str(value) for value in panel["route_measurement_family"].dropna().unique()
+    )
+    if route_families != [ROUTE_FAMILY]:
+        raise ValueError(
+            f"{panel_name} changed the route measurement family: {route_families}"
+        )
+    origin_dates = pd.to_datetime(panel["origin_date"], errors="coerce")
+    if origin_dates.isna().any():
+        raise ValueError(f"{panel_name} contains an invalid origin date")
+    candidate_days = panel[["origin_date", "candidate_address"]].drop_duplicates()
+    supported_dates = (
+        panel.loc[panel["v2_capital_day_supported"].astype(bool), "origin_date"]
+        .drop_duplicates()
+    )
+    row: dict[str, object] = {
+        "family": "liquidity_capital_v2_quantity_contract_component",
+        "attack_id": QUANTITY_CONTRACT_ATTACK_COVERAGE[0],
+        "record": "panel_quantity_contract",
+        "panel": panel_name,
+        "measurement_family": V2_FAMILY,
+        "route_measurement_family": ROUTE_FAMILY,
+        "quantity_kind": V2_QUANTITY_KIND,
+        "contract_validation_status": "passed",
+        "v2_capital_validation_statuses": _joined(
+            panel["v2_capital_validation_status"]
+        ),
+        "rows": int(len(panel)),
+        "origin_candidate_days": int(len(candidate_days)),
+        "origin_dates": int(origin_dates.nunique()),
+        "capital_supported_origin_dates": int(supported_dates.nunique()),
+        "first_origin_date": origin_dates.min(),
+        "last_origin_date": origin_dates.max(),
+        "candidate_count": int(panel["candidate_address"].nunique()),
+        "v3_prefixed_column_count": int(len(v3_prefixed)),
+        "v3_prefixed_columns_present": False,
+        "v3_signed_flow_columns_present": bool(v3_signed_flow),
+        "v3_gross_flow_columns_present": bool(v3_gross_flow),
+        "v3_signed_or_gross_flow_column_count": int(
+            len(set(v3_signed_flow) | set(v3_gross_flow))
+        ),
+        "forbidden_v3_columns": "none",
+        "forbidden_v2_flow_columns": "none",
+    }
+    if "horizon_days" in panel.columns:
+        horizon_values = sorted(int(value) for value in panel["horizon_days"].unique())
+        row["horizon_days"] = "|".join(str(value) for value in horizon_values)
+        row["horizon_count"] = int(len(horizon_values))
+        row["horizon_contract"] = _joined(panel["horizon_contract"])
+    else:
+        row["horizon_days"] = "not_applicable"
+        row["horizon_count"] = 0
+        row["horizon_contract"] = "not_applicable"
+    return row
+
+
+def _assert_released_origin_identity(
+    candidate_day: pd.DataFrame, exact_horizons: pd.DataFrame
+) -> None:
+    keys = ["origin_date", "candidate_address"]
+    expected = (
+        candidate_day.sort_values(keys)
+        .loc[:, list(V2_CANDIDATE_DAY_COLUMNS)]
+        .reset_index(drop=True)
+    )
+    actual = (
+        exact_horizons.sort_values([*keys, "horizon_days"])
+        .drop_duplicates(keys)
+        .loc[:, list(V2_CANDIDATE_DAY_COLUMNS)]
+        .sort_values(keys)
+        .reset_index(drop=True)
+    )
+    expected["origin_date"] = pd.to_datetime(expected["origin_date"])
+    actual["origin_date"] = pd.to_datetime(actual["origin_date"])
+    try:
+        pd.testing.assert_frame_equal(
+            actual,
+            expected,
+            check_dtype=False,
+            check_categorical=False,
+            check_exact=False,
+            rtol=1e-10,
+            atol=1e-10,
+        )
+    except AssertionError as error:
+        raise ValueError(
+            "released V2 exact-horizon origins do not reproduce the released "
+            "V2 candidate-day panel"
+        ) from error
+
+
+def build_v2_quantity_contract(
+    candidate_day: pd.DataFrame, exact_horizons: pd.DataFrame
+) -> pd.DataFrame:
+    """Publish the V2-only quantity boundary before any fitted estimate."""
+
+    validate_v2_candidate_day_panel(candidate_day)
+    validate_v2_exact_horizon_panel(exact_horizons)
+    _assert_released_origin_identity(candidate_day, exact_horizons)
+    rows = [
+        _panel_quantity_contract_row("released_v2_candidate_day_panel", candidate_day),
+        _panel_quantity_contract_row("released_v2_exact_horizon_panel", exact_horizons),
+        {
+            "family": "liquidity_capital_v2_quantity_contract_component",
+            "attack_id": QUANTITY_CONTRACT_ATTACK_COVERAGE[0],
+            "record": "origin_panel_reconciliation",
+            "panel": "released_candidate_day_to_exact_horizon_origin_rows",
+            "measurement_family": V2_FAMILY,
+            "route_measurement_family": ROUTE_FAMILY,
+            "quantity_kind": V2_QUANTITY_KIND,
+            "contract_validation_status": "passed",
+            "v2_capital_validation_statuses": "same_as_released_candidate_day",
+            "rows": int(len(candidate_day)),
+            "origin_candidate_days": int(
+                candidate_day[["origin_date", "candidate_address"]]
+                .drop_duplicates()
+                .shape[0]
+            ),
+            "origin_dates": int(pd.to_datetime(candidate_day["origin_date"]).nunique()),
+            "capital_supported_origin_dates": int(
+                candidate_day.loc[
+                    candidate_day["v2_capital_day_supported"].astype(bool),
+                    "origin_date",
+                ].nunique()
+            ),
+            "first_origin_date": pd.to_datetime(candidate_day["origin_date"]).min(),
+            "last_origin_date": pd.to_datetime(candidate_day["origin_date"]).max(),
+            "candidate_count": int(candidate_day["candidate_address"].nunique()),
+            "horizon_days": "not_applicable",
+            "horizon_count": 0,
+            "horizon_contract": "exact_horizon_origin_rows_match_candidate_day",
+            "v3_prefixed_column_count": 0,
+            "v3_prefixed_columns_present": False,
+            "v3_signed_flow_columns_present": False,
+            "v3_gross_flow_columns_present": False,
+            "v3_signed_or_gross_flow_column_count": 0,
+            "forbidden_v3_columns": "none",
+            "forbidden_v2_flow_columns": "none",
+        },
+    ]
+    return pd.DataFrame(rows)
+
+
+def _render_quantity_contract_table(contract: pd.DataFrame) -> str:
+    rows = contract[contract["record"].eq("panel_quantity_contract")]
+    lines = [
+        r"\begin{tabular}{lllllrr}",
+        r"\toprule",
+        r"Panel & Measurement family & Quantity & Validation & V3 flow cols & Origin days & Rows \\",
+        r"\midrule",
+    ]
+    for row in rows.itertuples(index=False):
+        panel = _label(row.panel).replace("released v2 ", "").replace(" panel", "")
+        lines.append(
+            f"{panel} & {_label(row.measurement_family)} & "
+            f"{_label(row.quantity_kind)} & {_label(row.contract_validation_status)} & "
+            f"{'none' if not row.v3_prefixed_columns_present else row.forbidden_v3_columns} & "
+            f"{int(row.origin_dates):,} & {int(row.rows):,} \\\\"
+        )
+    lines.extend([r"\bottomrule", r"\end{tabular}"])
+    return "\n".join(lines) + "\n"
+
+
+def run_quantity_contract() -> tuple[Path, Path]:
+    context = model_artifact_context()
+    inputs = [CANDIDATE_DAY_INPUT, EXACT_HORIZON_INPUT]
+    with require_released_model_inputs(
+        context, inputs, consumer="V2 liquidity quantity-contract component"
+    ) as panel_inputs:
+        candidate_day = pd.read_parquet(CANDIDATE_DAY_INPUT)
+        exact_horizons = pd.read_parquet(EXACT_HORIZON_INPUT)
+        contract = build_v2_quantity_contract(candidate_day, exact_horizons)
+        notes = (
+            "E0 V2 stock versus V3 flow separation attack: the released V2 "
+            "candidate-day and exact-horizon panels validate as deposited-capital "
+            "stock panels, carry the V2 measurement family and deposited_capital "
+            "quantity kind, expose no V3-prefixed signed or gross flow columns, "
+            "and the exact-horizon origins reproduce the released candidate-day "
+            "panel before any fitted estimate is consumed"
+        )
+        write_model_exhibit(
+            contract,
+            QUANTITY_CONTRACT_OUTPUT,
+            role="support",
+            context=context,
+            code_sources=CODE_SOURCES,
+            inputs=panel_inputs,
+            notes=notes,
+        )
+        with atomic_output(QUANTITY_CONTRACT_TABLE_OUTPUT) as temporary:
+            temporary.write_text(
+                _render_quantity_contract_table(contract), encoding="utf-8"
+            )
+        stamp(
+            QUANTITY_CONTRACT_TABLE_OUTPUT,
+            code_sources=CODE_SOURCES,
+            inputs=[context.d3_certificate_path, QUANTITY_CONTRACT_OUTPUT],
+            rows=int(
+                contract["record"].eq("panel_quantity_contract").astype(int).sum()
+            ),
+            notes=notes,
+        )
+    return QUANTITY_CONTRACT_OUTPUT, QUANTITY_CONTRACT_TABLE_OUTPUT
 
 
 def _perimeter(panel: pd.DataFrame, name: str) -> pd.DataFrame:
@@ -771,9 +1036,9 @@ def main() -> int:
     parser.add_argument("--top-pool-count", type=int, default=5)
     parser.add_argument(
         "--component",
-        choices=("all", "predictability", "influence"),
+        choices=("all", "quantity-contract", "predictability", "influence"),
         default="all",
-        help="both components share one bound generation; split them only to diagnose",
+        help="all components share one bound generation; split them only to diagnose",
     )
     args = parser.parse_args()
     if args.bootstrap_repetitions < 20:
@@ -782,6 +1047,8 @@ def main() -> int:
         raise ValueError("the leave-one-pool perimeter needs at least one pool")
     paths: tuple[Path, ...] = ()
     try:
+        if args.component in ("all", "quantity-contract"):
+            paths += run_quantity_contract()
         if args.component in ("all", "predictability"):
             paths += run(bootstrap_repetitions=args.bootstrap_repetitions)
         if args.component in ("all", "influence"):
