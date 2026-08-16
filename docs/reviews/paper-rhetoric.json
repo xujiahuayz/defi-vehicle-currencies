@@ -521,12 +521,12 @@
     ]
    },
    "judgment": "Section 2 follows the institutional progression of Lehar--Parlour: explain how trading works, show what the records reveal, then define the analytical object. It defines every route denominator and separates direct intermediary measurement from state-dependent cost comparison.",
-   "entry_handoff": "The introduction\u2019s claim of linked transaction paths enters through atomic pool execution.",
+   "entry_handoff": "The introduction’s claim of linked transaction paths enters through atomic pool execution.",
    "internal_progression": "Institution leads to the flow rule, transaction, notation, theory, dominance measures, and the route panel.",
    "exit_handoff": "The panel closes by retaining route-level attribution and sends the separate cost object to Section 4."
   },
   "paper/sections/03-dominance.tex": {
-   "sha256": "61a94d3685bfd8d1e1103b94f81677e709c10b498ec39839c186271e831b0c94",
+   "sha256": "617c6c5b31d2900a4c0655f4fb50d53658d3c4bfb32f9532a1ba72e3935050db",
    "status": "rewritten",
    "exemplars": [
     "literature/text/2020-MakarovSchoar2020Arbitrage-trading-and-arbitrage-in-cryptocurrency-markets.txt:886-991",
@@ -589,15 +589,16 @@
      78,
      86,
      98,
-     115,
-     117,
-     119,
-     122,
-     138,
-     140,
-     142
+     112,
+     129,
+     131,
+     133,
+     136,
+     152,
+     154,
+     156
     ],
-    "judgment": "Aggregate rotation and reversals lead to a three-margin accounting whose answer is stated first, matched-market estimates, named pairs that make the margins concrete, the breadth of each margin across pairs, the split of the composition margins on endpoint eligibility, that split taken inside each single- or cross-exchange route scope, USDT role attribution, and separate venue-span and intermediation margins.",
+    "judgment": "Aggregate rotation and reversals lead to a three-margin accounting whose answer is stated first, matched-market estimates, named pairs that make the margins concrete, the breadth of each margin across pairs, the split of the composition margins on endpoint eligibility, that split taken inside each single- or cross-exchange route scope for the reweighting margin and then for the entry margin, USDT role attribution, and separate venue-span and intermediation margins.",
     "raw_exemplars": [
      "literature/text/2020-MakarovSchoar2020Arbitrage-trading-and-arbitrage-in-cryptocurrency-markets.txt:886-991",
      "literature/text/2022-ChangDuLouPolk2022Ripples-ripples-into-waves-trade-networks-economic-activity-and-asset-prices.txt:1369-1445",
@@ -717,7 +718,17 @@
       "judgment": "Makarov and Schoar open Section 4.4 by conceding the limit of the split they have just reported -- the within- and across-region indices ignore the volume traded at each price -- state what the weighted version adds, report it region by region, and note where the weighted answer is small and why that is what the structure predicts. The same movement here concedes that the pooled eligibility split is silent on venue structure, takes the split inside each route scope, and reports that the choosable part of the margin is the same size in both scopes so the cross-exchange excess is entirely ineligible corridors. It closes by contrasting the direction with theirs: their across-region component survives volume weighting and this one does not."
      },
      {
-      "line": 115,
+      "line": 112,
+      "inherited_object": "the scope split of the reweighting margin",
+      "paragraph_function": "takes the same endpoint-eligibility split inside each route scope for the entry margin, and reports that the count answer is the same in both scopes while the dollar-weighted margin is twice as large across exchanges entirely because of corridors that did have a vehicle choice",
+      "relation_to_previous": "applies the scope split to the other and larger composition margin, the one where a reader should most expect eligibility to be the whole story",
+      "economic_subject": "ordered pairs that traded only in 2026, by realised single- or cross-exchange route scope",
+      "framing_judgment": "The entry margin is the gross comparison-exclusive term of the same certified allocation, so its scope totals come from the split itself rather than from the decomposition's retired-pair-net exclusive term; route scope remains a descriptive partition and the count and value answers are again reported as different weightings rather than reconciled",
+      "qualification_leads": false,
+      "judgment": "Bolton and Kacperczyk (raw lines 1899--1935) name the subset a reader suspects of driving everything -- the handful of salient high-emission industries -- remove it, report that one result if anything strengthens, report that the second result is instead entirely the coarse categorisation, and close on an as-if reading that holds both. The same movement here names the expectation that markets trading for the first time are newly listed assets quoted against wrapped ether, reports that by route count the expectation is met and the route scope barely moves it, reports that under dollar weighting the eligible part is almost identical across scopes while the choosable part doubles, and closes on the reading that holds this margin and the reweighting margin of the previous paragraph together rather than on the split itself."
+     },
+     {
+      "line": 129,
       "inherited_object": "stablecoin category change",
       "paragraph_function": "introduces USDT versus route endpoints",
       "relation_to_previous": "asks which currency carries the role change",
@@ -727,7 +738,7 @@
       "judgment": "The paragraph introduces USDT versus route endpoints and asks which currency carries the role change."
      },
      {
-      "line": 117,
+      "line": 131,
       "inherited_object": "USDT role comparison",
       "paragraph_function": "reports matched gap and separate full-period ratios",
       "relation_to_previous": "keeps two clocks distinct",
@@ -737,7 +748,7 @@
       "judgment": "The paragraph reports matched gap and separate full-period ratios and keeps two clocks distinct."
      },
      {
-      "line": 119,
+      "line": 133,
       "inherited_object": "USDT excess use",
       "paragraph_function": "decomposes change by cross-exchange mix and within groups",
       "relation_to_previous": "locates the venue-span margin",
@@ -747,7 +758,7 @@
       "judgment": "The paragraph decomposes change by cross-exchange mix and within groups and locates the venue-span margin."
      },
      {
-      "line": 122,
+      "line": 136,
       "inherited_object": "the venue-span decomposition",
       "paragraph_function": "states explanations needing tests",
       "relation_to_previous": "hands the token result to mechanisms",
@@ -757,7 +768,7 @@
       "judgment": "The paragraph states explanations needing tests and hands the token result to mechanisms."
      },
      {
-      "line": 138,
+      "line": 152,
       "inherited_object": "the USDT result",
       "paragraph_function": "reports cross-exchange growth",
       "relation_to_previous": "moves to route architecture",
@@ -767,7 +778,7 @@
       "judgment": "The paragraph reports cross-exchange growth and moves to route architecture."
      },
      {
-      "line": 140,
+      "line": 154,
       "inherited_object": "cross-exchange growth",
       "paragraph_function": "reports falling intermediation and stablecoin gains within groups",
       "relation_to_previous": "separates three route margins",
@@ -777,7 +788,7 @@
       "judgment": "The paragraph reports falling intermediation and stablecoin gains within groups and separates three route margins."
      },
      {
-      "line": 142,
+      "line": 156,
       "inherited_object": "three route margins",
       "paragraph_function": "synthesises and states the fixed-opportunity comparison",
       "relation_to_previous": "moves from coexistence to design",
@@ -1177,7 +1188,7 @@
     {
      "heading": "Conclusion",
      "classification": "direct",
-     "incoming_object": "The paper\u2019s route measurement, rotation, and pair decomposition.",
+     "incoming_object": "The paper’s route measurement, rotation, and pair decomposition.",
      "opening_function": "Synthesises the answer before drawing its interpretation for vehicle-currency evidence.",
      "judgment": "Like the raw JFE conclusions, the opening recalls the central result rather than the research process.",
      "raw_exemplar": "literature/text/2025-HuangRanaldoSchrimpfSomogyi-constrained-liquidity-provision-currency-markets-jfe.txt:1588-1660"
@@ -1212,7 +1223,7 @@
       "line": 7,
       "inherited_object": "the measured rotation and decomposition",
       "paragraph_function": "adds the distribution of trading across pairs to within-pair vehicle feedback and draws the interpretation for aggregate shares",
-      "relation_to_previous": "moves from findings to the paper\u2019s conceptual implication",
+      "relation_to_previous": "moves from findings to the paper’s conceptual implication",
       "economic_subject": "within-pair vehicle choice and network trading weights",
       "framing_judgment": "Three distinct accounting margins are stated before identifying which dominate",
       "qualification_leads": false,
@@ -1221,12 +1232,12 @@
      {
       "line": 9,
       "inherited_object": "the measurement consequence",
-      "paragraph_function": "closes on the economic source of a vehicle\u2019s importance",
+      "paragraph_function": "closes on the economic source of a vehicle’s importance",
       "relation_to_previous": "moves from interpretation to a durable final implication",
       "economic_subject": "intermediary choice and network distribution of routed activity",
       "framing_judgment": "The final sentence generalises the supported decomposition without listing future tests",
       "qualification_leads": false,
-      "judgment": "Closes on the economic source of a vehicle\u2019s importance and moves from interpretation to a durable final implication."
+      "judgment": "Closes on the economic source of a vehicle’s importance and moves from interpretation to a durable final implication."
      },
      {
       "line": 14,
@@ -1459,12 +1470,12 @@
      {
       "line": 52,
       "inherited_object": "the constant-product benchmark",
-      "paragraph_function": "introduces range-specific virtual reserves using the paper\u2019s input/output notation",
+      "paragraph_function": "introduces range-specific virtual reserves using the paper’s input/output notation",
       "relation_to_previous": "moves to liquidity whose executable depth varies by active range",
       "economic_subject": "input and output virtual reserves, active liquidity, and marginal price",
       "framing_judgment": "The notation is harmonised with the rest of the paper rather than inherited from token0/token1 conventions",
       "qualification_leads": false,
-      "judgment": "The paragraph introduces range-specific virtual reserves in the paper\u2019s input/output notation and explains why active ranges determine executable depth."
+      "judgment": "The paragraph introduces range-specific virtual reserves in the paper’s input/output notation and explains why active ranges determine executable depth."
      },
      {
       "line": 64,
@@ -1791,7 +1802,7 @@
      }
     ]
    },
-   "judgment": "The appendix maps events to routes and harmonises notation across pricing families. Concentrated-liquidity steps are fee-inclusive and direction-neutral; v4\u2019s singleton architecture is separately sourced. Component validation remains distinct from unexecuted-route accuracy.",
+   "judgment": "The appendix maps events to routes and harmonises notation across pricing families. Concentrated-liquidity steps are fee-inclusive and direction-neutral; v4’s singleton architecture is separately sourced. Component validation remains distinct from unexecuted-route accuracy.",
    "entry_handoff": "Address-resolved events supply route and state primitives.",
    "internal_progression": "Route reconstruction leads to harmonised pricing, replay, support, source and family coverage, and round trips.",
    "exit_handoff": "Round-trip evidence returns construction to the main count and value denominators."

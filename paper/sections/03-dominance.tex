@@ -109,6 +109,20 @@ So far the split has been taken over all routes at once, which does not say wher
 % output/exhibits/vehicle_transition_pair_contributions.parquet; macros from
 % scripts/build_vehicle_transition_pair_deck_values.py
 
+That split was taken of continuing markets, whose endpoints are fixed and whose intermediary can change. The larger composition margin comes from pairs that traded only in 2026, and it is there that a reader should most expect eligibility to be the whole story: a market appearing for the first time is disproportionately a newly listed asset quoted against wrapped ether, which is to say a corridor that arrives with its intermediary already settled. By route count that expectation is met, and the route scope barely moves it. Entry contributes \PairSingleNewPair{} within a single exchange and \PairCrossNewPair{} across exchanges, and wrapped-ether-endpoint corridors supply \LockedSingleNewPairShare{} of the first and \LockedCrossNewPairShare{} of the second. Dollar weighting separates the two scopes instead of reversing them. The entry margin is \PairValueSingleNewPair{} within an exchange against \PairValueCrossNewPair{} across exchanges, twice the size, while the part from corridors that had no vehicle to choose is \LockedValueSingleNewPair{} and \LockedValueCrossNewPair{}, almost the same in both. What differs is the part that had a choice, \OpenValueSingleNewPair{} within an exchange against \OpenValueCrossNewPair{} across it, so eligible corridors account for \LockedValueSingleNewPairShare{} of the margin within an exchange and \LockedValueCrossNewPairShare{} across it. The entry margin is therefore the mirror image of the reweighting margin. There the cross-exchange excess was carried entirely by corridors whose vehicle was never in question; here it is carried entirely by corridors that had one and were routed through a stablecoin anyway. Read together, the two say that a market already trading across exchanges gains stablecoin share mainly where no other intermediary was available, while the value arriving with markets that begin to trade across exchanges comes from corridors that could have been routed through the native token.
+% The entry margin is the comparison-exclusive composition term, gross of the
+% pairs that stopped trading, split on the same certified allocation and the
+% same endpoint identity as the two paragraphs above and read at
+% reporting_scope single_venue and cross_venue. Each scope's total is its own:
+% the reweighting totals come from that scope's decomposition row, against
+% which the producer reconciles the split, while the entry totals come from the
+% split's own components, because exclusive_pair_contribution is net of retired
+% pairs and this margin is not. The two scope margins are again comparable to
+% each other and do not add to the pooled margin, and the comparison of a
+% margin's size across scopes is descriptive, as in the paragraph above.
+% output/exhibits/vehicle_transition_pair_contributions.parquet; macros from
+% scripts/build_vehicle_transition_pair_deck_values.py
+
 \subsection{USDT's intermediary role}
 \label{sec:dominance:excess}
 

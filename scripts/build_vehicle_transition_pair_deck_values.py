@@ -71,6 +71,13 @@ ELIGIBILITY_MARGINS = (
 # else: the terms, calendar, and allocation formula are the scope-specific rows
 # of the same certified ledger, never a re-estimation.
 ELIGIBILITY_SCOPES = (("Single", "single_venue"), ("Cross", "cross_venue"))
+# Which decomposition term is the scope's own total for each split margin. The
+# reweighting margin is a term of the decomposition, so its total is read from
+# that scope's row and the split is reconciled against it. The new-pair margin
+# has no such term: `exclusive_pair_contribution` is net of the pairs that
+# stopped trading, while the split is taken of the gross entry margin, so its
+# total is the split's own components.
+SCOPE_MARGIN_TERMS = {"Reweight": "common_pair_reweighting"}
 
 
 def _signed_pp(value: float) -> str:
@@ -603,6 +610,21 @@ def _endpoint_eligibility(
     return eligibility
 
 
+def _scope_margin_total(
+    row: pd.Series, prefix: str, statistics: dict[str, float]
+) -> str:
+    """That scope's own total for the margin the eligibility split is taken of.
+
+    Every scope share must be printable beside the total it is a share of, and
+    for one of the two margins that total is not a decomposition term. See
+    ``SCOPE_MARGIN_TERMS`` for which is which.
+    """
+    term = SCOPE_MARGIN_TERMS.get(prefix)
+    if term is not None:
+        return _signed_pp(float(row[term]))
+    return _contribution_pp(float(statistics["component_pp"]))
+
+
 def _matched_market_row(fixed_effects: pd.DataFrame, metric: str) -> pd.Series:
     required = {
         "metric",
@@ -932,21 +954,19 @@ def render_pair_decomposition_deck_values(
                 ]
             )
         # The same split inside each integration scope, plus that scope's own
-        # reweighting total, so a slide or a sentence never pairs a scope share
-        # with the pooled margin it is not a share of.
+        # margin total, so a slide or a sentence never pairs a scope share with
+        # the pooled margin it is not a share of.
         for suffix, scope in ELIGIBILITY_SCOPES:
             row = scope_rows[scope]
             scoped_eligibility = _endpoint_eligibility(
                 contributions, metric, row, scope
             )
-            lines.append(
-                f"\\newcommand{{\\Pair{infix}{suffix}Reweight}}"
-                f"{{{_signed_pp(float(row['common_pair_reweighting']))}}}"
-            )
             for prefix, _component in ELIGIBILITY_MARGINS:
                 statistics = scoped_eligibility[prefix]
                 lines.extend(
                     [
+                        f"\\newcommand{{\\Pair{infix}{suffix}{prefix}}}"
+                        f"{{{_scope_margin_total(row, prefix, statistics)}}}",
                         f"\\newcommand{{\\Locked{infix}{suffix}{prefix}}}"
                         f"{{{_contribution_pp(float(statistics['locked_pp']))}}}",
                         f"\\newcommand{{\\Open{infix}{suffix}{prefix}}}"

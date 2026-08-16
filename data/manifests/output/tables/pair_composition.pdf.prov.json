@@ -2,8 +2,8 @@
  "argv": [],
  "artefact": "output/tables/pair_composition.pdf",
  "artefact_bytes": 15986,
- "artefact_mtime_ns": 1786862028095349818,
- "artefact_sha256": "921e248a48fbd52dbe71307a333b866932e3fc2a2b24c478e92022202f04d0fd",
+ "artefact_mtime_ns": 1786862891127258185,
+ "artefact_sha256": "785a5beabc5df5ad9eac60f107603675b59d1a2b6d506a482fd7f93655d497ae",
  "code_fingerprint": "b5f8503dac48c9f036870c9c08233520a4af942f0f5ada5bad80ed12b79111bb",
  "code_sources": [
   "scripts/tabulate/render_pair_composition.py",
@@ -11,10 +11,10 @@
   "src/ddvc/paper_tables.py",
   "src/ddvc/presentation.py"
  ],
- "created_at": "2026-08-16T06:33:48+00:00",
+ "created_at": "2026-08-16T06:48:11+00:00",
  "git": {
   "branch": "main",
-  "commit": "e4fd414341bab66a3c2889cf4ed155602f92f93d",
+  "commit": "f8250abfab898e5cd55fc1b93f72291c12e3350e",
   "dirty": true,
   "dirty_generated_files": [
    "data/manifests/output/exhibits/prose_conventions.jsonl.prov.json",
@@ -34,23 +34,22 @@
    "deck/sections/04-results.tex",
    "docs/reviews/paper-rhetoric.json",
    "paper/sections/03-dominance.tex",
-   "scripts/build_vehicle_transition_pair_deck_values.py",
-   "tests/test_vehicle_transition_pair_deck_values.py"
+   "scripts/build_vehicle_transition_pair_deck_values.py"
   ],
   "dirty_untracked_files": []
  },
  "inputs": [
   {
-   "bytes": 8513,
+   "bytes": 8697,
    "exists": true,
    "path": "output/exhibits/vehicle_transition_pair_decomposition_deck_values.tex",
-   "sha256": "858cb146d6f336effb61483be58838e7e78f138981f6f0cef76cc58ed3482d47"
+   "sha256": "492d779f30127aef9aeb918c19a463c117b304d4ec7ca5aa46731f706e83d6bb"
   },
   {
-   "bytes": 3159,
+   "bytes": 3103,
    "exists": true,
    "path": "data/manifests/output/exhibits/vehicle_transition_pair_decomposition_deck_values.tex.prov.json",
-   "sha256": "968f14a5012bac9a548bc5a5924f6bfa83ca324a984ae76a4055bb69207c45b5"
+   "sha256": "934c0a40c7b0f4e5630c4e8ab9eb2a85a1b6bd7e28630371708b7c815005e7c4"
   },
   {
    "bytes": 3987,
@@ -76,7 +75,7 @@
   "bytes": 15986,
   "format": "binary",
   "schema_version": 1,
-  "sha256": "921e248a48fbd52dbe71307a333b866932e3fc2a2b24c478e92022202f04d0fd"
+  "sha256": "785a5beabc5df5ad9eac60f107603675b59d1a2b6d506a482fd7f93655d497ae"
  },
  "python": "3.14.6",
  "rows": null,

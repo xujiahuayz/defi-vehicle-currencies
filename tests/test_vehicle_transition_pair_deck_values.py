@@ -17,6 +17,18 @@ SIGNED_TEXT_MACRO = re.compile(
 )
 
 
+def _macro(rendered: str, name: str) -> str:
+    """The rendered body of one macro, so a test can compare two of them."""
+    match = re.search(rf"\\newcommand\{{\\{name}\}}\{{(?P<value>[^}}]*)\}}", rendered)
+    assert match is not None, f"missing macro {name}"
+    return match.group("value")
+
+
+def _points(rendered_value: str) -> float:
+    """Percentage points out of a rendered ``$+1.2$ pp`` cell."""
+    return float(rendered_value.replace("$", "").replace(" pp", ""))
+
+
 def test_audience_facing_deck_macros_use_math_signs() -> None:
     defects: list[str] = []
     for path in sorted((ROOT / "output" / "exhibits").glob("*_deck_values.tex")):
@@ -665,6 +677,32 @@ def test_endpoint_eligibility_is_taken_inside_each_integration_scope() -> None:
         ("LockedCrossNewPairShare", "28.6\\%"),
     ):
         assert f"\\newcommand{{\\{macro}}}{{{value}}}" in rendered
+
+
+def test_scope_new_pair_total_is_the_gross_entry_margin() -> None:
+    """The entry margin has no decomposition term of its own.
+
+    ``exclusive_pair_contribution`` nets the pairs that stopped trading against
+    the ones that started, while the eligibility split is taken of the gross
+    entry margin alone. A scope total read from that term would understate the
+    margin its own eligible share is a share of, so the renderer takes the total
+    from the split's own components and only the reweighting total from the row.
+    """
+    rendered = render_pair_decomposition_deck_values(
+        _decomposition(), _fixed_effects(), _usdt_integration(), _contributions()
+    )
+    for suffix in ("Single", "Cross"):
+        for infix in ("", "Value"):
+            locked = _macro(rendered, f"Locked{infix}{suffix}NewPair")
+            opened = _macro(rendered, f"Open{infix}{suffix}NewPair")
+            total = _macro(rendered, f"Pair{infix}{suffix}NewPair")
+            assert _points(locked) + _points(opened) == pytest.approx(_points(total))
+            # The fixture's netted exclusive term is +17.6 pp against a gross
+            # entry margin of +21.0 pp, so the two cannot be confused silently.
+            assert total != "$+17.6$ pp"
+    # The reweighting total still comes from the scope's own decomposition row,
+    # against which the producer reconciles the split.
+    assert _macro(rendered, "PairSingleReweight") == "$+8.8$ pp"
 
 
 def test_endpoint_eligibility_rejects_a_scope_split_against_another_scope() -> None:
