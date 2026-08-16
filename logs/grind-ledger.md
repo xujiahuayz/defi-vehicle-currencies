@@ -4534,3 +4534,27 @@ subtests, 1 failure —
 pre-existing by re-running it with this iteration's changes stashed. The full
 freeze audit takes 15-20 minutes when anything else is competing for the box;
 do not run it alongside a broad pytest collection.
+
+**Late addition, same iteration (`d09b1d0`): two inherited conformance blockers
+closed.** `check_deliverable_conformance.py` was red on arrival and it was not
+this iteration's doing —
+`git diff f10a4c8 HEAD -- paper/ docs/reviews/ output/ deck/` was empty before
+the fix. (1) The within-day figure added in `d9ce616` pushed Section 3's last
+three paragraphs from 396/398/400 to 409/411/413 without shifting the anchors in
+`docs/reviews/paper-rhetoric.json`, so three handoff lines were invalid. (2)
+`against` as a preposition ran at 1.894 per 1,000 words against a corpus maximum
+of 1.715, driven by the repeated `A against B by count and C against D by value`
+template in the pair-decomposition paragraphs. Fixed by rewriting those thoughts,
+not by swapping the word: the rising and falling pairs became the subjects of
+their own clause, the entry margin states the cross-exchange figure as twice the
+single-exchange one, the cohort comparison names each population and gives it its
+own pair of numbers, and the decomposition now subtracts departing corridors
+rather than netting against them. All macros and numbers unchanged; section
+sha256 restamped. Conformance now green on every blocking check: paper 46 pages
+0 undefined, deck 37 pages 0 undefined, deck evidence audit PASS. Two advisories
+and the equations-below-p25 note stand.
+
+**Standing warning for the next iteration.** Run
+`scripts/check_deliverable_conformance.py` at the START of the iteration as well
+as the end. Both of these were introduced by an iteration whose own final run
+apparently predated its last edit, and they sat red across a handoff.
