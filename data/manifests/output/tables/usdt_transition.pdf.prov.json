@@ -1,42 +1,36 @@
 {
  "argv": [],
  "artefact": "output/tables/usdt_transition.pdf",
- "artefact_bytes": 9709,
- "artefact_mtime_ns": 1786854539759453288,
- "artefact_sha256": "aacca4b19fb8109ace555b07e7369ceb3abbc8c8a3b5ab203e17870e5627b3f4",
- "code_fingerprint": "6e60e6d15731686e6c7d2055ebd4a02fe49161c6545c0109404bba1351c70875",
+ "artefact_bytes": 9708,
+ "artefact_mtime_ns": 1786867614658909207,
+ "artefact_sha256": "12383ada56b9f11e3a8b8b2fbb4d9b416ba65515cb17fbf61f644916af09eb01",
+ "code_fingerprint": "486cd8b34c2bd677283f01281f52807f61aba01855f52c020afb2ba3ada46600",
  "code_sources": [
   "scripts/tabulate/render_usdt_transition.py",
   "src/ddvc/dominance_tables.py",
   "src/ddvc/paper_tables.py"
  ],
- "created_at": "2026-08-16T04:28:59+00:00",
+ "created_at": "2026-08-16T08:06:54+00:00",
  "git": {
   "branch": "main",
-  "commit": "af53e249d8e04ee35acb532262746f257e1700be",
+  "commit": "947328d3367484dead8aec904df669ac12dea51b",
   "dirty": true,
   "dirty_generated_files": [
-   "data/manifests/output/exhibits/provisional_results_deck_values.tex.prov.json",
+   "data/manifests/output/tables/dominance_rotation.pdf.prov.json",
+   "data/manifests/output/tables/dominance_rotation.tex.prov.json",
+   "data/manifests/output/tables/pair_composition.pdf.prov.json",
+   "data/manifests/output/tables/pair_composition.tex.prov.json",
    "data/manifests/output/tables/usdt_transition.tex.prov.json",
-   "data/manifests/output/tables/venue_coverage.pdf.prov.json",
-   "data/manifests/output/tables/venue_coverage.tex.prov.json",
-   "data/manifests/output/tables/venue_technology_rival.pdf.prov.json",
-   "data/manifests/output/tables/venue_technology_rival.tex.prov.json",
-   "output/exhibits/provisional_results_deck_values.tex",
-   "output/tables/venue_coverage.pdf",
-   "output/tables/venue_technology_rival.pdf",
-   "data/manifests/output/tables/routing_technology_windows.pdf.prov.json",
-   "data/manifests/output/tables/routing_technology_windows.tex.prov.json",
-   "output/tables/routing_technology_windows.pdf",
-   "output/tables/routing_technology_windows.tex"
+   "output/tables/dominance_rotation.pdf",
+   "output/tables/pair_composition.pdf",
+   "output/tables/pair_composition.tex"
   ],
   "dirty_tracked_files": [
-   "src/ddvc/provisional_results.py",
-   "src/ddvc/venue_tables.py"
+   "paper/sections/03-dominance.tex",
+   "src/ddvc/dominance_tables.py",
+   "tests/test_dominance_tables.py"
   ],
-  "dirty_untracked_files": [
-   "scripts/tabulate/render_routing_technology_windows.py"
-  ]
+  "dirty_untracked_files": []
  },
  "inputs": [
   {
@@ -60,10 +54,10 @@
  },
  "notes": "generated presentation binding for current certified USDT annual excess-use and endpoint-gap values; provisional status concerns scientific scope, not lineage",
  "payload_identity": {
-  "bytes": 9709,
+  "bytes": 9708,
   "format": "binary",
   "schema_version": 1,
-  "sha256": "aacca4b19fb8109ace555b07e7369ceb3abbc8c8a3b5ab203e17870e5627b3f4"
+  "sha256": "12383ada56b9f11e3a8b8b2fbb4d9b416ba65515cb17fbf61f644916af09eb01"
  },
  "python": "3.14.6",
  "rows": null,

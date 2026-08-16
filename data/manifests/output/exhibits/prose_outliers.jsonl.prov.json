@@ -1,40 +1,44 @@
 {
  "argv": [],
  "artefact": "output/exhibits/prose_outliers.jsonl",
- "artefact_bytes": 118576,
- "artefact_mtime_ns": 1786866622393319557,
- "artefact_sha256": "e3aa0a20406685fe0839385bdef0bc7f47d3ae4ed145121e7c41ef2b2d7f0e2f",
+ "artefact_bytes": 122806,
+ "artefact_mtime_ns": 1786868966774137237,
+ "artefact_sha256": "7f85b93f8f127dbbbcec3d6deb589c9e59bc289fcd2e909d1781c135348256e0",
  "code_fingerprint": "4d6c3aa5e5b632317b923d4c498ebaf8a988e6f1d35f09ef659fc910be391909",
  "code_sources": [
   "scripts/find_prose_outliers.py",
   "src/ddvc/tables.py"
  ],
- "created_at": "2026-08-16T07:50:22+00:00",
+ "created_at": "2026-08-16T08:29:26+00:00",
  "git": {
   "branch": "main",
-  "commit": "a970f594057a6fc87e6a3445e5b51cff2914a2e6",
+  "commit": "947328d3367484dead8aec904df669ac12dea51b",
   "dirty": true,
   "dirty_generated_files": [
    "data/manifests/output/exhibits/prose_conventions.jsonl.prov.json",
-   "data/manifests/output/exhibits/vehicle_transition_pair_decomposition_deck_values.tex.prov.json",
    "data/manifests/output/exhibits/venue_optics.jsonl.prov.json",
    "data/manifests/output/exhibits/venue_shape.jsonl.prov.json",
+   "data/manifests/output/tables/dominance_rotation.pdf.prov.json",
+   "data/manifests/output/tables/dominance_rotation.tex.prov.json",
    "data/manifests/output/tables/pair_composition.pdf.prov.json",
    "data/manifests/output/tables/pair_composition.tex.prov.json",
+   "data/manifests/output/tables/usdt_transition.pdf.prov.json",
+   "data/manifests/output/tables/usdt_transition.tex.prov.json",
    "output/exhibits/prose_conventions.jsonl",
-   "output/exhibits/vehicle_transition_pair_decomposition_deck_values.tex",
    "output/exhibits/venue_optics.jsonl",
    "output/exhibits/venue_shape.jsonl",
+   "output/tables/dominance_rotation.pdf",
    "output/tables/pair_composition.pdf",
-   "output/exhibits/.prose_outliers.jsonl.t2t71x3j.tmp"
+   "output/tables/pair_composition.tex",
+   "output/tables/usdt_transition.pdf",
+   "output/exhibits/.prose_outliers.jsonl.a3_227p7.tmp"
   ],
   "dirty_tracked_files": [
    "deck/main.pdf",
-   "deck/sections/04-results.tex",
    "docs/reviews/paper-rhetoric.json",
    "paper/sections/03-dominance.tex",
-   "scripts/build_vehicle_transition_pair_deck_values.py",
-   "tests/test_vehicle_transition_pair_deck_values.py"
+   "src/ddvc/dominance_tables.py",
+   "tests/test_dominance_tables.py"
   ],
   "dirty_untracked_files": []
  },
@@ -47,13 +51,13 @@
  },
  "notes": null,
  "payload_identity": {
-  "bytes": 118576,
+  "bytes": 122806,
   "format": "jsonl",
-  "rows": 547,
+  "rows": 568,
   "schema_version": 1,
-  "sha256": "e3aa0a20406685fe0839385bdef0bc7f47d3ae4ed145121e7c41ef2b2d7f0e2f"
+  "sha256": "7f85b93f8f127dbbbcec3d6deb589c9e59bc289fcd2e909d1781c135348256e0"
  },
  "python": "3.14.6",
- "rows": 547,
+ "rows": 568,
  "script": "scripts/find_prose_outliers.py"
 }

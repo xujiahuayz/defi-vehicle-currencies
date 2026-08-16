@@ -137,6 +137,17 @@ PAIR_ACCOUNTING_MACROS = (
     "VehicleIncidenceReweight",
     "WithinPairStableShare",
     "MarketBridgeTotal",
+    # The midpoint common/exclusive identity, reported for both measures. Its
+    # count terms were previously prose-only even though Section 3.2 interprets
+    # each of them, and its row labels must stay distinguishable from the
+    # Shapley bridge above: the two factorisations decompose the same route-count
+    # total over different mass (all market activity against native-plus-stable
+    # choice mass), so no component of one equals a component of the other.
+    "PairPooledWithin",
+    "PairPooledReweight",
+    "PairPooledSupportMass",
+    "PairPooledExclusive",
+    "PairPooledTotal",
     "PairValueWithin",
     "PairValueReweight",
     "PairValueSupportMass",
@@ -190,24 +201,35 @@ def render_pair_composition(
         r"\toprule",
         r"Margin or estimate & Estimate in pp & Obs. \\",
         r"\midrule",
-        r"\multicolumn{3}{l}{\emph{Panel A. Route-count share: decomposition}} \\",
+        r"\multicolumn{3}{l}{\emph{Panel A. Route-count share: market activity and"
+        r" vehicle incidence}} \\",
         f"Pairs entering or leaving the sample & {macros['MarketSupportBridge']} & \\\\",
         f"Pairs gaining or losing a vehicle route & {macros['VehicleRoleSupportBridge']} & \\\\",
-        f"Trading shifts across continuing pairs & {macros['MarketActivityReweight']} & \\\\",
+        f"Market activity shifting across continuing pairs & {macros['MarketActivityReweight']} & \\\\",
         f"Change in how often continuing pairs use a vehicle & {macros['VehicleIncidenceReweight']} & \\\\",
         f"Stablecoin share within continuing vehicle-using pairs & {macros['WithinPairStableShare']} & \\\\",
         r"\midrule",
         f"Total route-count change & {macros['MarketBridgeTotal']} & \\\\",
         r"\addlinespace",
-        r"\multicolumn{3}{l}{\emph{Panel B. Dollar-weighted share: decomposition}} \\",
+        r"\multicolumn{3}{l}{\emph{Panel B. Route-count share: continuing and"
+        r" year-specific pairs}} \\",
+        f"Stablecoin share within continuing pairs & {macros['PairPooledWithin']} & \\\\",
+        f"Vehicle activity shifting across continuing pairs & {macros['PairPooledReweight']} & \\\\",
+        f"Weight of continuing versus year-specific pairs & {macros['PairPooledSupportMass']} & \\\\",
+        f"Pairs traded in only one year & {macros['PairPooledExclusive']} & \\\\",
+        r"\midrule",
+        f"Total route-count change & {macros['PairPooledTotal']} & \\\\",
+        r"\addlinespace",
+        r"\multicolumn{3}{l}{\emph{Panel C. Dollar-weighted share: continuing and"
+        r" year-specific pairs}} \\",
         f"Stablecoin share within continuing pairs & {macros['PairValueWithin']} & \\\\",
-        f"Trading shifts across continuing pairs & {macros['PairValueReweight']} & \\\\",
+        f"Vehicle activity shifting across continuing pairs & {macros['PairValueReweight']} & \\\\",
         f"Weight of continuing versus year-specific pairs & {macros['PairValueSupportMass']} & \\\\",
-        f"Pairs entering or leaving the sample & {macros['PairValueExclusive']} & \\\\",
+        f"Pairs traded in only one year & {macros['PairValueExclusive']} & \\\\",
         r"\midrule",
         f"Total change in dollar-weighted share & {macros['PairValueTotal']} & \\\\",
         r"\addlinespace",
-        r"\multicolumn{3}{l}{\emph{Panel C. Matched ordered-pair estimates}} \\",
+        r"\multicolumn{3}{l}{\emph{Panel D. Matched ordered-pair estimates}} \\",
         r"\midrule",
     ]
     for label, row in regressions:

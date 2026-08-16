@@ -67,7 +67,7 @@ def test_rotation_and_usdt_values_are_exact() -> None:
     assert "$-7.13$ pp & $+8.14$ pp" in usdt
 
 
-def test_pair_panel_c_contains_all_three_fixed_effect_rows() -> None:
+def test_pair_panel_d_contains_all_three_fixed_effect_rows() -> None:
     pair = (TABLES / "pair_composition.tex").read_text(encoding="utf-8")
     assert (
         "All two-leg routes, count share & $+0.22\\ (0.76)$ & 188,520"
@@ -103,6 +103,55 @@ def test_pair_panel_c_contains_all_three_fixed_effect_rows() -> None:
             "mechanism_status",
         ):
             assert row[field] is not None
+
+
+def test_pair_table_keeps_the_two_count_factorisations_apart() -> None:
+    """Panels A and B decompose one total two ways; only the total may agree.
+
+    Both are registered against ``raw_pooled_count_share_change``, but Panel A
+    conditions on observed market activity and Panel B on native-plus-stable
+    choice mass, so no component of one is the same object as a component of
+    the other. They previously shared row labels, which invited exactly that
+    reading.
+    """
+
+    pair = (TABLES / "pair_composition.tex").read_text(encoding="utf-8")
+    macros = parse_newcommands(
+        (EXHIBITS / "vehicle_transition_pair_decomposition_deck_values.tex").read_text(
+            encoding="utf-8"
+        )
+    )
+
+    assert macros["MarketBridgeTotal"] == macros["PairPooledTotal"]
+    assert pair.count(f"Total route-count change & {macros['MarketBridgeTotal']}") == 2
+
+    # Panel A's labels belong to Panel A alone.
+    for label in (
+        "Market activity shifting across continuing pairs",
+        "Change in how often continuing pairs use a vehicle",
+        "Stablecoin share within continuing vehicle-using pairs",
+        "Pairs entering or leaving the sample",
+    ):
+        assert pair.count(label) == 1
+
+    # The identity's labels appear once in its count panel and once in its
+    # value panel, and nowhere else.
+    for label in (
+        "Stablecoin share within continuing pairs",
+        "Vehicle activity shifting across continuing pairs",
+        "Weight of continuing versus year-specific pairs",
+        "Pairs traded in only one year",
+    ):
+        assert pair.count(label) == 2
+
+    # The count identity itself must be tabulated, not left to the prose.
+    for macro in (
+        "PairPooledWithin",
+        "PairPooledReweight",
+        "PairPooledSupportMass",
+        "PairPooledExclusive",
+    ):
+        assert macros[macro] in pair
 
 
 def test_paper_has_one_consumer_and_no_duplicate_inline_body() -> None:

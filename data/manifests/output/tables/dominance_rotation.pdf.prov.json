@@ -2,47 +2,32 @@
  "argv": [],
  "artefact": "output/tables/dominance_rotation.pdf",
  "artefact_bytes": 9271,
- "artefact_mtime_ns": 1786854543004232192,
- "artefact_sha256": "2bb49625fae34ee71739ebfb3f25926d276003a93593b028a12c51a5559846bc",
- "code_fingerprint": "b51ed9cd3b95e7948d1198bbeabc95684497cf3d0f1aeafcfced5242bb0a52a8",
+ "artefact_mtime_ns": 1786867613032379693,
+ "artefact_sha256": "a1d45ed261183775fbe7517be7bd9589a51510380c749874edd1b09223844b1d",
+ "code_fingerprint": "5b5ca600267e59f77b6c140172a1ea03c28ae2e7d348944dd289db56f0693d0d",
  "code_sources": [
   "scripts/tabulate/render_dominance_rotation.py",
   "src/ddvc/dominance_tables.py",
   "src/ddvc/paper_tables.py"
  ],
- "created_at": "2026-08-16T04:29:03+00:00",
+ "created_at": "2026-08-16T08:06:53+00:00",
  "git": {
   "branch": "main",
-  "commit": "af53e249d8e04ee35acb532262746f257e1700be",
+  "commit": "947328d3367484dead8aec904df669ac12dea51b",
   "dirty": true,
   "dirty_generated_files": [
-   "data/manifests/output/exhibits/provisional_results_deck_values.tex.prov.json",
    "data/manifests/output/tables/dominance_rotation.tex.prov.json",
    "data/manifests/output/tables/pair_composition.pdf.prov.json",
    "data/manifests/output/tables/pair_composition.tex.prov.json",
-   "data/manifests/output/tables/usdt_transition.pdf.prov.json",
-   "data/manifests/output/tables/usdt_transition.tex.prov.json",
-   "data/manifests/output/tables/venue_coverage.pdf.prov.json",
-   "data/manifests/output/tables/venue_coverage.tex.prov.json",
-   "data/manifests/output/tables/venue_technology_rival.pdf.prov.json",
-   "data/manifests/output/tables/venue_technology_rival.tex.prov.json",
-   "output/exhibits/provisional_results_deck_values.tex",
    "output/tables/pair_composition.pdf",
-   "output/tables/usdt_transition.pdf",
-   "output/tables/venue_coverage.pdf",
-   "output/tables/venue_technology_rival.pdf",
-   "data/manifests/output/tables/routing_technology_windows.pdf.prov.json",
-   "data/manifests/output/tables/routing_technology_windows.tex.prov.json",
-   "output/tables/routing_technology_windows.pdf",
-   "output/tables/routing_technology_windows.tex"
+   "output/tables/pair_composition.tex"
   ],
   "dirty_tracked_files": [
-   "src/ddvc/provisional_results.py",
-   "src/ddvc/venue_tables.py"
+   "paper/sections/03-dominance.tex",
+   "src/ddvc/dominance_tables.py",
+   "tests/test_dominance_tables.py"
   ],
-  "dirty_untracked_files": [
-   "scripts/tabulate/render_routing_technology_windows.py"
-  ]
+  "dirty_untracked_files": []
  },
  "inputs": [
   {
@@ -69,7 +54,7 @@
   "bytes": 9271,
   "format": "binary",
   "schema_version": 1,
-  "sha256": "2bb49625fae34ee71739ebfb3f25926d276003a93593b028a12c51a5559846bc"
+  "sha256": "a1d45ed261183775fbe7517be7bd9589a51510380c749874edd1b09223844b1d"
  },
  "python": "3.14.6",
  "rows": null,

@@ -41,14 +41,49 @@ Figures~\ref{fig:vehicle-composition} and~\ref{fig:integration-change} extend th
 
 A vehicle's aggregate share can rise in three ways. It can be chosen more often within a source--destination pair traded in both years; routed activity can move toward continuing pairs that already use it; or pairs traded in only one of the two years can route through it. Table~\ref{tab:pair-composition} shows that the first way accounts for little of the stablecoin increase and that the other two carry it.
 
-Table~\ref{tab:rotation} averages daily shares, whereas Panels A and B of Table~\ref{tab:pair-composition} pool route count or value across the matched January--June windows. The different weighting explains why the headline changes of \StableCountChange{} and \StableValueChange{} differ slightly from the decomposition totals of \MarketBridgeTotal{} and \PairValueTotal{}.
+Table~\ref{tab:rotation} averages daily shares, whereas Panels A through C of Table~\ref{tab:pair-composition} pool route count or value across the matched January--June windows. The different weighting explains why the headline changes of \StableCountChange{} and \StableValueChange{} differ slightly from the decomposition totals of \MarketBridgeTotal{} and \PairValueTotal{}.
 
-By route count, pairs observed in only one comparison year contribute \MarketSupportBridge{} of the increase, and shifts in activity across continuing pairs contribute \MarketActivityReweight{}. Changes in how often those pairs use any intermediary add \VehicleIncidenceReweight{}, while the appearance or disappearance of the vehicle role adds \VehicleRoleSupportBridge{}. Direct stable-for-native substitution within pairs that use a vehicle in both years contributes only \WithinPairStableShare{}. The dollar-weighted decomposition is sharper still: of the \PairValueTotal{} increase, \PairValueReweight{} comes from activity shifting across continuing pairs and \PairValueExclusive{} from pairs that use a native or stablecoin intermediary in only one comparison year. Within-pair substitution contributes \PairValueWithin{}.
+Those three ways form an accounting identity once the third is split in two, because pairs traded in only one year both route their activity differently and carry a changing share of it. The rest of this section reads the resulting four terms one at a time. Fix one of the measures in Equation~\eqref{eq:dominance} and let $p$ index ordered source--destination pairs. A pair is continuing when it carries native-or-stable routes in both comparison years and year-specific when it carries them in only one. Let $W_y$ be the share of year-$y$ native-plus-stable mass carried by continuing pairs, $\omega_{p,y}$ the weight of continuing pair $p$ within that mass, and $s_{p,y}$ its stablecoin share, so continuing pairs route $S_{\mathrm{com},y}=\sum_{p}\omega_{p,y}s_{p,y}$ of their activity through a stablecoin and year-specific pairs route $S_{\mathrm{exc},y}$ of theirs. The aggregate share is $S_{y}=W_{y}S_{\mathrm{com},y}+(1-W_{y})S_{\mathrm{exc},y}$. Writing $\Delta x=x_{2026}-x_{2024}$ and $\bar{x}=(x_{2024}+x_{2026})/2$,
+% docs/specification-lock.json, e1_2_conditional_pair_decomposition,
+% formula_id midpoint_common_exclusive_support_v1. The displayed identity is the
+% frozen formula, not a restatement of it: the four labelled terms are the
+% within_common, common_pair_reweighting, common_support_mass and
+% exclusive_pair_contribution components in that order, and the audit holds the
+% residual to 1e-12. Refresh this display if formula_id changes.
+\begin{equation}
+\label{eq:pair-decomposition}
+\Delta S=
+\underbrace{\bar{W}\sum_{p}\bar{\omega}_{p}\,\Delta s_{p}}_{\text{within continuing pairs}}
++\underbrace{\bar{W}\sum_{p}\bar{s}_{p}\,\Delta\omega_{p}}_{\text{reweighting}}
++\underbrace{\bigl(\bar{S}_{\mathrm{com}}-\bar{S}_{\mathrm{exc}}\bigr)\Delta W}_{\text{support mass}}
++\underbrace{(1-\bar{W})\,\Delta S_{\mathrm{exc}}}_{\text{year-specific pairs}}.
+\end{equation}
+Midpoint weights make the identity exact by splitting each product's interaction evenly between its two factors instead of charging it to one year. Panels B and C report the four terms. Within continuing pairs, the stablecoin share moves \PairPooledWithin{} by route count and \PairValueWithin{} by value. Reweighting across those pairs contributes \PairPooledReweight{} and \PairValueReweight{}; the migration of mass between the continuing and year-specific populations, \PairPooledSupportMass{} and \PairValueSupportMass{}; and the pairs traded in only one year, \PairPooledExclusive{} and \PairValueExclusive{}. The first of the three ways is worth almost nothing on either measure, and the other two carry the rotation between them. \citet{Somogyi2026DollarDominanceFX} decomposes dollar dominance in the other direction, separating the volume of a given dollar pair into the part that exists to route two other currencies and the part that does not. That split runs inside a pair; the one that carries the rotation measured here runs across them.
+% output/exhibits/vehicle_transition_pair_decomposition.jsonl; macros from
+% scripts/build_vehicle_transition_pair_deck_values.py
+
+Panel A factors the same route-count total a second way. Equation~\eqref{eq:pair-decomposition} takes a pair's vehicle-routed activity as given and asks only which vehicle carried it; Panel A asks first how much the pair traded, and then how much of that trading passed through any intermediary at all. A Shapley allocation over market activity, vehicle incidence, and stablecoin share spreads the interactions among the five resulting components. Pairs entering or leaving the sample contribute \MarketSupportBridge{}; pairs that gain or lose a vehicle route, \VehicleRoleSupportBridge{}; market activity shifting across continuing pairs, \MarketActivityReweight{}; and changes in how often continuing pairs use a vehicle at all, \VehicleIncidenceReweight{}. Direct stable-for-native substitution within pairs that use a vehicle in both years contributes \WithinPairStableShare{}. The two factorisations agree on which pairs continue and on nothing else below that. Panel A weights a continuing pair by all of its observed trading and reaches the stablecoin share through how often that trading uses a vehicle, whereas Equation~\eqref{eq:pair-decomposition} works throughout in shares of native-plus-stable choice mass. Panel A also separates what the identity keeps together: its first two rows split the pairs traded in only one year into markets that stop or start trading altogether and established markets that keep trading and stop or start using a vehicle. A component of one panel is therefore never the same object as the similarly named component of the other. The distance this opens is small where it matters most: the within-pair term is \WithinPairStableShare{} under the finer factorisation and \PairPooledWithin{} under the identity, and both sit inside the confidence interval of the matched estimate reported in Panel D, whose upper limit is \MatchedMarketCountCIUpper{}. Whichever way the count total is cut, comparable trades did not switch intermediary.
+% Panel A is e1_3_market_incidence_bridge (formula_id
+% shapley_market_incidence_stable_bridge_v1) and the identity is
+% e1_2_conditional_pair_decomposition; both are registered in
+% docs/specification-lock.json against the same raw pooled count-share change,
+% which is why the totals agree and the components do not. Do not net or add a
+% component of one against a component of the other.
+% "Agree on which pairs continue" is checked, not assumed: the pooled count_share
+% market_incidence_support rows of vehicle_transition_pair_support.jsonl give
+% common_vehicle_role primary-choice mass shares of 0.5546 (2024) and 0.4858
+% (2026), equal to \BlockWeightBase{} and \BlockWeightEnd{}, the identity's own
+% common-block weights, so the two partition the same choice mass identically and
+% Panel A's two turnover classes exhaust the identity's year-specific class
+% (0.4152 + 0.0301 in 2024, 0.5038 + 0.0103 in 2026). Recheck if either
+% formula_id changes.
+% output/exhibits/vehicle_transition_pair_decomposition.jsonl; macros from
+% scripts/build_vehicle_transition_pair_deck_values.py
 
 Conditional on the same ordered source--destination pair, calendar date, and single- or cross-exchange route type, stablecoin share changes by \MatchedMarketCountChange{} by count, with a standard error of \MatchedMarketCountSE{}, and by \MatchedMarketValueChange{} by value, with a standard error of \MatchedMarketValueSE{}. The corresponding 95\% confidence intervals rule out within-pair changes larger than \MatchedMarketCountCIUpper{} by count and \MatchedMarketValueCIUpper{} by value. The matched-pair estimates are therefore small relative to the aggregate rotation.
 % output/exhibits/vehicle_transition_pair_fixed_effects.jsonl; evidence commit 87c182e; current D3 generation 25c755ae; endpoint-composition generation 5fb7cbf
 
-Panel C estimates the 2024--2026 difference after absorbing variation specific to an ordered source--destination pair, calendar date within the year, and observed single- or cross-exchange route type. Let $c$ index each such combination and let $s^{(m)}_{c,y}$ denote its stablecoin share under measure $m$. We estimate
+Panel D estimates the 2024--2026 difference after absorbing variation specific to an ordered source--destination pair, calendar date within the year, and observed single- or cross-exchange route type. Let $c$ index each such combination and let $s^{(m)}_{c,y}$ denote its stablecoin share under measure $m$. We estimate
 \begin{equation}
 \label{eq:pair-fe}
 s^{(m)}_{c,y}=\alpha^{(m)}_{c}+\beta^{(m)}\mathbf{1}\{y=2026\}+\varepsilon^{(m)}_{c,y},
@@ -63,7 +98,7 @@ An observation is one pair--calendar-date--route-type combination in one year. W
 \label{tab:pair-composition}
 \small
 \input{../output/tables/pair_composition.tex}
-\exhibitnote{Panel A decomposes the route-count share change between 2024 and 2026. Common-role pairs use a native or stablecoin intermediary in both years. The Shapley allocation distributes interactions across the five reported components. Panel B repeats the accounting for dollar-weighted routes whose source, intermediary, and destination values agree within 20\%. Panel C estimates Equation~\eqref{eq:pair-fe}; standard errors use two-way clustering by ordered pair and calendar date.
+\exhibitnote{Panel A decomposes the route-count share change between 2024 and 2026 over observed market activity, vehicle incidence, and stablecoin share; common-role pairs use a native or stablecoin intermediary in both years, and a Shapley allocation distributes interactions across the five reported components. Panels B and C report the four terms of Equation~\eqref{eq:pair-decomposition}, which conditions on native-plus-stable choice mass throughout; Panel C covers dollar-weighted routes whose source, intermediary, and destination values agree within 20\%. Panels A and B decompose the same route-count total by different factorisations, so their components are not comparable term by term. Panel D estimates Equation~\eqref{eq:pair-fe}; standard errors use two-way clustering by ordered pair and calendar date.
     % output/exhibits/vehicle_transition_pair_decomposition.jsonl and vehicle_transition_pair_fixed_effects.jsonl
 }
 \end{table}

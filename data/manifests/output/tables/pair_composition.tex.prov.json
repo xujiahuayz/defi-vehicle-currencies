@@ -1,40 +1,26 @@
 {
  "argv": [],
  "artefact": "output/tables/pair_composition.tex",
- "artefact_bytes": 1279,
- "artefact_mtime_ns": 1786866234176659556,
- "artefact_sha256": "62d1cb72cd9bdb79a942465cc452a07637ccd28f39f034333d5e4d9242a4e369",
- "code_fingerprint": "b5f8503dac48c9f036870c9c08233520a4af942f0f5ada5bad80ed12b79111bb",
+ "artefact_bytes": 1735,
+ "artefact_mtime_ns": 1786867459425455033,
+ "artefact_sha256": "b4e596026c4c0c07ac9321357f4c0e8b050fd78afe202f26d37c4f89e9451ecc",
+ "code_fingerprint": "39014d5bfa435a249cf3a55bf45c36c72f7c8af896689cd3f7a6859dbf46e359",
  "code_sources": [
   "scripts/tabulate/render_pair_composition.py",
   "src/ddvc/dominance_tables.py",
   "src/ddvc/paper_tables.py",
   "src/ddvc/presentation.py"
  ],
- "created_at": "2026-08-16T07:43:55+00:00",
+ "created_at": "2026-08-16T08:04:20+00:00",
  "git": {
   "branch": "main",
-  "commit": "a970f594057a6fc87e6a3445e5b51cff2914a2e6",
+  "commit": "947328d3367484dead8aec904df669ac12dea51b",
   "dirty": true,
   "dirty_generated_files": [
-   "data/manifests/output/exhibits/prose_conventions.jsonl.prov.json",
-   "data/manifests/output/exhibits/prose_outliers.jsonl.prov.json",
-   "data/manifests/output/exhibits/vehicle_transition_pair_decomposition_deck_values.tex.prov.json",
-   "data/manifests/output/exhibits/venue_optics.jsonl.prov.json",
-   "data/manifests/output/exhibits/venue_shape.jsonl.prov.json",
-   "output/exhibits/prose_conventions.jsonl",
-   "output/exhibits/prose_outliers.jsonl",
-   "output/exhibits/vehicle_transition_pair_decomposition_deck_values.tex",
-   "output/exhibits/venue_optics.jsonl",
-   "output/exhibits/venue_shape.jsonl",
    "output/tables/pair_composition.pdf"
   ],
   "dirty_tracked_files": [
-   "deck/main.pdf",
-   "docs/reviews/paper-rhetoric.json",
-   "paper/sections/03-dominance.tex",
-   "scripts/build_vehicle_transition_pair_deck_values.py",
-   "tests/test_vehicle_transition_pair_deck_values.py"
+   "src/ddvc/dominance_tables.py"
   ],
   "dirty_untracked_files": []
  },
@@ -72,10 +58,10 @@
  },
  "notes": "certified route-count and supported-value accounting plus three descriptive matched ordered-pair, calendar-date, and observed exchange-span regressions; two-way ordered-pair and calendar-date CR1 inference; the bound fixed-effect payload preserves exact confidence intervals, raw and Holm-adjusted p-values, cluster counts, and specification metadata",
  "payload_identity": {
-  "bytes": 1279,
+  "bytes": 1735,
   "format": "binary",
   "schema_version": 1,
-  "sha256": "62d1cb72cd9bdb79a942465cc452a07637ccd28f39f034333d5e4d9242a4e369"
+  "sha256": "b4e596026c4c0c07ac9321357f4c0e8b050fd78afe202f26d37c4f89e9451ecc"
  },
  "python": "3.14.6",
  "rows": null,
