@@ -5139,3 +5139,108 @@ plan.json those families can honestly satisfy; rerun
 `run_liquidity_capital_v2_predictability.py` on generation `4225a3bd7729de96` and
 confirm the stale exhibits reproduce; then the deck paydown, resuming at pages 27,
 19, 17, 18, 12, 13, 5.
+
+## 2026-08-16 — Whether one candidate or one pool is the V2 capital result, commit `2b86f97`
+
+**Target.** Queue item 45 (the E1 chain), at the resumption point PROGRESS NOTE 4
+left: the eight `liquidity_capital_v2_e0` attacks, which had had no adjudication
+at all and are the larger remaining half of the chain to `plan.json` and
+`scripts/lock_specification.py`. Freeze gate unchanged at RED, 3 blocking:
+node E1 specification lock; empirical model ledger; two unchanged findings passes.
+This unit does not close one of the three — it produces evidence the exploration
+plan needs before either of the first two can be honestly written.
+
+**REGRESSION-CHECK (written before mutation).** Estimand at risk:
+`liquidity_capital_v2_predictability`, whose full-V2 calendar is the *sole*
+primary adjudication sample and whose interpretation is temporally ordered
+predictability, not causal feedback — leave-one-unit refits are diagnostics and
+must not become a second adjudication sample. Generation at risk: D3
+`4225a3bd7729de96` / certificate `c199e51a…`, bound by both live V2 exhibits;
+touching the shared `_fit_fe` restages them. Prior corrections at risk: no V3
+flow quantity may enter this family; pre/post-V3 perimeters are heterogeneity
+only; capital shares may never come from TVL or virtual depth. All three held.
+
+**The adjudication of all eight attacks**, which is the part the next worker
+needs most. Four are *already fitted* inside the claim's registered perimeter and
+need only spec-id citations in the plan, not new estimation:
+`bidirectional_exact_horizons`, `absolute_share_sign_stability`,
+`v2_calendar_perimeter_subsamples` and `multiplicity_support_ledger`, all served
+by `output/exhibits/liquidity_capital_v2_{predictability,support}.jsonl`.
+`v2_stock_v3_flow_separation` is *enforced but unpublished*: the panel validator
+rejects any `v3_`-prefixed column and pins `v2_quantity_kind`, but the attack's
+quantity-contract table has no artifact. It is the cheapest remaining unit in the
+family and needs no new inputs. `influence_concentration` is built here. The two
+genuinely blocked attacks are `common_shock_price_risk_placebos` and
+`stress_heterogeneity`, and **the blocker is the claim-input perimeter, not the
+covariate code**: both need `data/processed/token_price_daily.parquet`, absent
+from the claim's `inputs` in `docs/specification-lock.json` and therefore from the
+bound D3 release, so `require_released_model_inputs` refuses it. Full route and
+two traps are in queue PROGRESS NOTE 5.
+
+**What was built.** `src/ddvc/analysis/liquidity_capital_v2_influence.py` owns the
+pure half — pool and candidate contribution ledgers, each candidate's share of the
+within-transformed predictor variance, and an exact recomputation of the
+candidate-day capital block from the released allocation rows. The fitted half is
+a second component of the claim's existing estimator
+(`run_influence_concentration`), so the diagnostics speak through the same
+covariance contract as the headline; `_fit_fe` gained an `expected_candidates`
+parameter for the four-candidate refits and nothing else. Eleven leave-out units
+(a recomputed base, five candidates, the five highest-contribution pools) × 32
+cells = 352 fitted specifications, published with the claim's own decision rule
+restated on each remainder.
+
+**What the evidence says.** The capital side of this family is a WETH statement
+at the level: WETH carries 76.3% of candidate-attributed deposited capital, 78.3%
+of the mean daily share and up to 91.2% on a single day, for a candidate
+Herfindahl of 0.597 (next largest USDC at 8.2%). Pools are diffuse: 68,600 of
+them, top pool 6.2%, top five 23.3%, Herfindahl 0.017, 24 pools to cover half.
+That concentration does not carry into the estimate. Across the 264
+primary-horizon cells not one passes the decision rule, the smallest Holm q
+anywhere is 0.100, and no exclusion moves a coefficient across a significance
+boundary (0 significance flips; 23 sign flips, all on cells indistinguishable
+from zero; largest displacement 3.69 base standard errors, on WBTC). The reason
+is in the variance ledger: WETH's share of the identifying within-variation runs
+from 10.3% to 60.7% by cell against an equal weight of 20%, so its dominance of
+the capital *level* is largely absorbed by the fixed effects.
+
+**DECISION: promote.** The attack passes as E0 evidence and the family's null is
+robust to dropping any single candidate or any single high-contribution pool. The
+concentration ledger bounds the estimand's *reach* — this is largely a WETH
+statement about V2 deposited capital — and is recorded as a scope caveat on
+external validity, not as a defect in the estimate. Calibrated against
+Griffin-Shams (concentration diagnostics) and Comerton-Forde (inventory-owner
+influence), which are the two crosswalked rivals; neither licenses more than a
+scope caveat when the leave-one-out refits are inference-stable.
+
+**Two guards worth keeping.** The leave-one-pool panels refuse to publish unless
+the same arithmetic reproduces the released capital column with nothing left out:
+it does, to 3.7e-15 relative over 11,195 supported candidate-days, with zero
+support-flag and zero allocation-row disagreements. And the five-candidate share
+denominator is held fixed when a candidate is dropped, so the refit perturbs the
+sample rather than quietly re-specifying the estimand.
+
+**Validation.** 11 new tests; 119 pass across the directly affected modules;
+2,221 pass / 12 fail on the repository suite. None of the 12 is this unit:
+`test_route_state.py` and `test_route_cost_panel.py` fail at *collection* with
+`v2_event_source_release provenance is not current: input changed:
+v2_audit_token_decimals.parquet`, which is the same environmental condition
+behind the seven `test_weighted_quote::RoutePanelWiringTests` failures, and the
+audit itself reports that release as outside the executable claim-input
+perimeter. The three `test_vehicle_role_models` failures and the
+`test_venue_optics` citations subfail are in unrelated subsystems; the
+`test_variable_registry` CSV-artifact failure was already recorded as pre-existing
+two entries ago. No failure output mentions any file this unit touched.
+Both components were republished on generation `4225a3bd7729de96` so they share
+one bound identity; the headline exhibit reproduces to 1.3e-15 on coefficients and
+2.5e-14 on t-statistics — rebuilt, not revised — and the deck values rebuilt
+byte-identically, so the deck was correctly left untouched (it also remains under
+the standing 13-frame cap and density interjection).
+
+**Next iteration.** Cheapest-then-hardest inside this family: (1) publish the
+`v2_stock_v3_flow_separation` quantity-contract artifact — no new inputs, small,
+and it takes the family to seven of eight; (2) then write the `plan.json` naming a
+runner and declared artifacts per executable family, citing the exhibits named in
+the adjudication above and the two blocked attacks at their real disposition;
+(3) then `scripts/lock_specification.py`. The token-price perimeter expansion that
+unblocks the last two attacks is a panel-plus-release generation, not a runner
+change, and should be planned as its own unit rather than smuggled into (2).
