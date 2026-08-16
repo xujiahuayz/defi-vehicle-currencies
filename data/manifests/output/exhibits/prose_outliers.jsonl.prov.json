@@ -1,18 +1,18 @@
 {
  "argv": [],
  "artefact": "output/exhibits/prose_outliers.jsonl",
- "artefact_bytes": 131674,
- "artefact_mtime_ns": 1786875351183978753,
- "artefact_sha256": "03776518593b6b5f245179be62c10045f884a50712c046b6902225795cebecab",
+ "artefact_bytes": 134294,
+ "artefact_mtime_ns": 1786877402992284945,
+ "artefact_sha256": "aff2325adb0223cc9e81c4ce42206e2301867bdee6c722be7cde408b16260f9a",
  "code_fingerprint": "4d6c3aa5e5b632317b923d4c498ebaf8a988e6f1d35f09ef659fc910be391909",
  "code_sources": [
   "scripts/find_prose_outliers.py",
   "src/ddvc/tables.py"
  ],
- "created_at": "2026-08-16T10:15:51+00:00",
+ "created_at": "2026-08-16T10:50:03+00:00",
  "git": {
   "branch": "main",
-  "commit": "5d1b53e16114b426bd0dfcbc5fb3595209332723",
+  "commit": "48ba038621cabc799a14218f80c36c27ce4ae4a2",
   "dirty": true,
   "dirty_generated_files": [
    "data/manifests/output/exhibits/prose_conventions.jsonl.prov.json",
@@ -23,7 +23,7 @@
    "output/exhibits/vehicle_transition_pair_decomposition_deck_values.tex",
    "output/exhibits/venue_optics.jsonl",
    "output/exhibits/venue_shape.jsonl",
-   "output/exhibits/.prose_outliers.jsonl.cw_pi9tj.tmp"
+   "output/exhibits/.prose_outliers.jsonl.fzf04iqw.tmp"
   ],
   "dirty_tracked_files": [
    "docs/reviews/paper-rhetoric.json",
@@ -42,13 +42,13 @@
  },
  "notes": null,
  "payload_identity": {
-  "bytes": 131674,
+  "bytes": 134294,
   "format": "jsonl",
-  "rows": 609,
+  "rows": 622,
   "schema_version": 1,
-  "sha256": "03776518593b6b5f245179be62c10045f884a50712c046b6902225795cebecab"
+  "sha256": "aff2325adb0223cc9e81c4ce42206e2301867bdee6c722be7cde408b16260f9a"
  },
  "python": "3.14.6",
- "rows": 609,
+ "rows": 622,
  "script": "scripts/find_prose_outliers.py"
 }

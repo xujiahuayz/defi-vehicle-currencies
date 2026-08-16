@@ -3599,3 +3599,150 @@ ledger; node B full-text literature ledger; two unchanged findings passes).
   and it can sharpen the same claim.
 - The deck was not touched and needs no change: no frame reads a coverage macro,
   and the deck remains saturated.
+
+## 2026-08-16 — What the matched condition selects: the cell census behind Panel D
+
+**REGRESSION-CHECK filed before mutation.** Purpose-bound estimand most at
+risk: `common_pair_month_day_realised_integration_scope`, Panel D's matched
+estimator. The new paragraph reports a *census* of its cells and a thickness
+ratio; neither may be read as a coefficient, and the source comment says so.
+Evidence generation most at risk: endpoint-composition `5fb7cbf`, D3
+`25c755ae`. Nothing was re-run from data — the support ledger and the
+fixed-effects exhibit were read, and only the presentation owners restamped.
+Prior correction most at risk: the 2026-08-16 non-nesting correction. Cell
+classes are *not* the identity's blocks and *not* Panel A's incidence classes;
+they partition a third population (pair x month-day x scope) at a finer grain
+than either. The reader is keyed on `record_type` and `reporting_scope`
+explicitly so a class can never be substituted across factorisations.
+
+**Target.** No gate blocker was actionable. `audit_findings_freeze.py` reports
+the same four with identical detail strings: node E1 specification lock
+(`stage=design_seed`, `locked_at`/`d3_generation`/`d3_certificate`/
+`exploration_generation`/`exploration_certificate` all `missing`), empirical
+model ledger (`current_runs=0`, `exploration=not_started`,
+`confirmatory_context=invalid`), node B full-text literature ledger (32/33
+source-sets, 34/35 five-axis cards), two unchanged findings passes. Mukhin was
+re-traced to ground on 2026-08-16 and is NEEDS-JAVA since 2026-08-15; E1 and the
+model ledger need the closed E0 exploration and Studio generation identities.
+Under step 6 this had to advance a claim, and the previous entry's own standing
+candidate supplied it.
+
+**What was done.** The `pair_month_day_scope_support` record type was the last
+unread one in `vehicle_transition_pair_support.jsonl`. It is not support
+metadata: it is the exact cell partition Panel D was estimated on. It
+reconciles with the fixed-effects exhibit cell for cell — its common class holds
+94,260 cells against the exhibit's `fixed_effect_cells` of 94,260 and its
+188,520 observations, and its endpoint masses are the exhibit's own
+`baseline_denominator_mass` and `comparison_denominator_mass` to the byte.
+
+The previous unit answered *how many markets* the matched null reaches. This one
+answers *which of their trading days it keeps*, and that turns out to be the
+question that explains the count/value gap the previous unit could only assert:
+
+- 94,260 cells clear the joint condition, out of 1,726,215 active in 2024 and
+  815,483 in 2026: **5.5%** and **11.6%** of the two years' cells.
+- Those cells carry **14.0%** and **24.3%** of the years' routes, so a matched
+  cell is **2.6x** as busy as the average active cell in 2024 and **2.1x** in
+  2026.
+- On the value perimeter, **5.7%** and **11.6%** of cells are matched and a
+  matched cell carries **7.4x** the average cell's dollars in 2024 and **3.4x**
+  in 2026.
+- The 20% value-agreement requirement empties **142,972** cell-years the count
+  measure keeps; the count metric's own figure is 0.
+
+The economic reading, and the point of the paragraph: the joint condition is a
+**recurrence** condition. A cell survives only if the same market traded on the
+same day of the calendar year in both years, and the chance of that rises with
+how often the market trades. So Panel D describes the routinely traded core, and
+the dollar multiple says the core is where value concentrates. That is why the
+value coverage is three times the count coverage — the same fact the previous
+paragraph reported without being able to explain it.
+
+**New owner code, all in the existing presentation owner.**
+`_matched_cell_support` and `_cell_support_classes` in
+`scripts/build_vehicle_transition_pair_deck_values.py` refuse to render unless:
+the three classes exist exactly once each; every class holds cells and finite
+non-negative mass; each one-sided class is empty on the year it is absent from;
+the three agree on the emptied-cell-year count (it is a property of the measure,
+not of a class); the common class holds exactly the exhibit's `fixed_effect_cells`;
+`observations` is exactly twice that; and the common class's two endpoint masses
+equal the exhibit's own to 1e-12. `_strict_cell_populations_agree` additionally
+pins that `matched_strict_count_share` and `strict_intermediation_value_share`
+hold one cell population, so the value multiple and the strict count multiple
+provably speak for the same cells. Twelve macros; seven focused tests, one per
+premise plus the published cells. `_pairs` was generalised to `_units` rather
+than duplicated for cells.
+
+**DECISION: promote** at exact scope. Thickness is a ratio of two published
+shares over one frozen partition, with the estimator's own artifact pinning the
+numerator. It is a selection diagnostic and the source comment forbids reporting
+it as a coefficient.
+
+**The trap this unit had to avoid.** The obvious sentence was "the matched
+comparison is measured where most of the dollars are." It is not: 41.7% and
+39.3% are pluralities. The draft said "most of them do" and it was wrong by the
+project's own numbers; the published sentence says two-fifths.
+
+**Traps for the next iteration.**
+- **`d3-release-test-afoxinb6/` was tracked in git, not ignored.** Ten files
+  plus four manifests, 89 KB, first committed by `0aa532d` on 2026-08-16 while a
+  test was running. `.gitignore` line 92 already forbade the pattern, so it never
+  showed as untracked dirt and eleven iterations walked past it. It is removed in
+  this commit. Its presence was almost certainly the cause of the intermittent
+  `test_analysis_release.py::test_d3_publication_leases_ordinary_inputs_through_pointer_install`
+  failure seen in this iteration's first full-suite run: that test passed in
+  isolation and passed in the full suite after the removal. **A gitignore rule
+  does not protect an already-tracked path — check `git ls-tree` for leaked
+  fixture directories, not just `git status`.**
+- **Regenerating the deck-values macro file stales `output/tables/pair_composition.tex`.**
+  Rerun `scripts/tabulate/render_pair_composition.py` in the same unit or
+  `tests/test_dominance_tables.py::test_generated_table_lineage_is_current`
+  fails. This is now the third entry to record it.
+- **Do not `git stash` mid-iteration to baseline the pre-existing failures.**
+  Tried here; the verification run hit the 2-minute foreground timeout and left
+  the tree at HEAD with the work stashed. Recovered by `git stash pop`, but the
+  cheap and safe check is to run the single suspect test in isolation.
+- The paragraph-flow remap was **+21 lines** for the fourteen handoffs after the
+  insertion point, plus one new handoff at line 169. `docs/reviews/paper-rhetoric.json`
+  is written with `indent=1`; a naive `json.dump(..., indent=2)` reformats all
+  1,928 lines. Refresh the section `sha256` *after* the last prose edit.
+- Citation headroom is now about **255 words** (36 citations / 17,048 words,
+  down from ~470 at 16,823). The next prose unit of normal size will need an
+  earned `\citep`.
+- `against_prep` sits at 1.579 against a corpus max of 1.715: roughly one more
+  occurrence of `against` as a preposition is available in the whole manuscript.
+
+**Validation.** `check_deliverable_conformance.py`: all blocking checks pass, 2
+advisories. Paper 41 pages / 0 undefined (was 40), deck 35 pages / 0 undefined.
+Venue shape: words 16,823 -> 17,048, equations 14 (unchanged), citations 36
+(unchanged). `audit_deck_evidence.py` PASS. `check_jfe_rhetoric_review.py` exits
+0. `measure_prose_conventions.py`: no registered construction out of range.
+Producer suite 53 passed (46 before, 7 new); `tests/test_dominance_tables.py` 9
+passed after the restamp. Repository suite
+(`--ignore=tests/test_route_cost_panel.py --ignore=tests/test_route_state.py`):
+**2,169 passed, 13 failed**, exactly the long-standing v2 provenance-drift set
+(`test_weighted_quote` 7, `test_vehicle_role_models` 3,
+`test_audit_findings_freeze` 1, `test_variable_registry` 1,
+`test_vehicle_transition_e0` 1); no new failures. Page 12 inspected: the
+paragraph sets inside the measure, the multiples read correctly, and the
+following named-pair paragraph is unchanged. `deck/main.pdf` restored after each
+conformance run; no deck source changed.
+
+**Blocking count: 4** (unchanged: node E1 specification lock; empirical model
+ledger; node B full-text literature ledger; two unchanged findings passes).
+
+**For the next iteration.**
+- Every record type of `vehicle_transition_pair_support.jsonl` is now read and
+  published. That candidate list is exhausted.
+- Equations remain 14 against p25 25 and are the widest venue gap. Section 6
+  still defines the cost benchmark and reports nothing, still blocked on route
+  cost.
+- Remaining unused certified rival evidence: `routing_technology_windows.jsonl`
+  (pre/post windows around auto-router releases), under spec-lock claim 1, whose
+  `execution_gate` is `blocked_transaction_state_frontier` and whose
+  `forbidden_interpretation` bars an aggregator-causality reading — descriptive
+  window composition only.
+- The M3 12:03 handoff stays unchecked; its live remainder is still the E1/D3
+  generation identities and the two unchanged findings passes.
+- The deck was not touched and needs no change: no frame reads a cell-coverage
+  macro, and the deck remains saturated.

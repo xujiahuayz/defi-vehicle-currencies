@@ -235,7 +235,77 @@ def _support() -> pd.DataFrame:
             comparison_total=4.0e9,
         )
     )
+    # The estimator's own unit. These rows must reproduce the fixed-effects
+    # exhibit's cells and endpoint masses exactly, so the fixture pins the
+    # exhibit's 94,260 and 91,417 cells and its 150,000/200,000 and 3.0e9/1.0e9
+    # masses. The one-sided classes then set the year denominators, and they are
+    # deliberately asymmetric so a reader that swapped the two years would print
+    # a different multiple rather than the same one twice.
+    rows.extend(
+        _cell_support_rows(
+            "count_share",
+            cells=94_260,
+            baseline_only_cells=282_780,
+            comparison_only_cells=94_260,
+            baseline=(150_000.0, 150_000.0),
+            comparison=(200_000.0, 600_000.0),
+            emptied=0.0,
+        )
+    )
+    for metric in ("matched_strict_count_share", "strict_intermediation_value_share"):
+        rows.extend(
+            _cell_support_rows(
+                metric,
+                cells=91_417,
+                baseline_only_cells=274_251,
+                comparison_only_cells=91_417,
+                baseline=(3.0e9, 1.0e9),
+                comparison=(1.0e9, 3.0e9),
+                emptied=142_972.0,
+            )
+        )
     return pd.DataFrame(rows)
+
+
+def _cell_support_rows(
+    metric: str,
+    *,
+    cells: int,
+    baseline_only_cells: int,
+    comparison_only_cells: int,
+    baseline: tuple[float, float],
+    comparison: tuple[float, float],
+    emptied: float,
+) -> list[dict[str, object]]:
+    """Three pair-day-scope classes: the matched cells and the two one-sided sets."""
+    common_baseline, baseline_only_mass = baseline
+    common_comparison, comparison_only_mass = comparison
+    classes = {
+        "baseline_only": (baseline_only_cells, baseline_only_mass, 0.0),
+        "common": (cells, common_baseline, common_comparison),
+        "comparison_only": (comparison_only_cells, 0.0, comparison_only_mass),
+    }
+    return [
+        {
+            "record_type": "pair_month_day_scope_support",
+            "metric": metric,
+            "reporting_scope": "scope_specific",
+            "endpoint_year": None,
+            "support_status": status,
+            "unit": "ordered_endpoint_pair_month_day_integration_scope",
+            "units": units,
+            "baseline_denominator": baseline_mass,
+            "comparison_denominator": comparison_mass,
+            "baseline_denominator_share": None,
+            "comparison_denominator_share": None,
+            "zero_denominator_cell_years": emptied,
+            "primary_choice_mass": None,
+            "primary_choice_mass_share": None,
+            "stable_choice_mass": None,
+            "stable_share": None,
+        }
+        for status, (units, baseline_mass, comparison_mass) in classes.items()
+    ]
 
 
 # Pair counts and masses for the identity's three blocks. The block weights are
@@ -1423,6 +1493,116 @@ def test_matched_coverage_rejects_a_block_that_is_not_exclusive() -> None:
     ].eq("baseline_exclusive")
     support.loc[exclusive, "comparison_denominator"] = 1.0
     with pytest.raises(ValueError, match="is not exclusive"):
+        render_pair_decomposition_deck_values(
+            _decomposition(), _fixed_effects(), _usdt_integration(), _contributions(), support
+        )
+
+
+def _cell_rows(support: pd.DataFrame, metric: str, status: str) -> pd.Series:
+    return (
+        support["record_type"].eq("pair_month_day_scope_support")
+        & support["metric"].eq(metric)
+        & support["support_status"].eq(status)
+    )
+
+
+def test_matched_cell_support_measures_what_the_matching_selects_on() -> None:
+    """What conditioning on pair, day and scope jointly selects on.
+
+    The pair census answers how many markets the estimate reaches; the cell
+    census answers which of their trading days it keeps. The distance between a
+    class's share of a year's cells and its share of that year's mass is the
+    thickness of a matched cell, and it is the only measurement in the released
+    ledger of the recurrence the joint condition demands.
+    """
+    rendered = render_pair_decomposition_deck_values(
+        _decomposition(), _fixed_effects(), _usdt_integration(), _contributions(), _support()
+    )
+    for macro, value in (
+        ("MatchedCells", "94,260"),
+        ("SampleCellsBase", "377,040"),
+        ("SampleCellsEnd", "188,520"),
+        ("MatchedCellShareBase", "25.0\\%"),
+        ("MatchedCellShareEnd", "50.0\\%"),
+        ("MatchedCellThicknessBase", "$2.0$"),
+        ("MatchedCellThicknessEnd", "$0.5$"),
+        ("MatchedValueCellShareBase", "25.0\\%"),
+        ("MatchedValueCellShareEnd", "50.0\\%"),
+        ("MatchedValueCellThicknessBase", "$3.0$"),
+        ("MatchedValueCellThicknessEnd", "$0.5$"),
+        ("StrictFilteredCellYears", "142,972"),
+    ):
+        assert _macro(rendered, macro) == value
+
+
+def test_matched_cell_support_requires_the_estimator_own_cells() -> None:
+    """A support ledger counting other cells partitions another estimator."""
+    support = _support()
+    support.loc[_cell_rows(support, "count_share", "common"), "units"] = 94_000
+    with pytest.raises(ValueError, match="common cells but the estimator reports"):
+        render_pair_decomposition_deck_values(
+            _decomposition(), _fixed_effects(), _usdt_integration(), _contributions(), support
+        )
+
+
+def test_matched_cell_support_requires_one_cell_year_per_endpoint() -> None:
+    """Two endpoints and one cell each, or the census is not the regression's."""
+    # Leave the cell count alone so the ledger and the exhibit still agree on
+    # which cells were estimated; only the cell-year count moves.
+    fixed_effects = _fixed_effects()
+    fixed_effects.loc[fixed_effects["metric"].eq("count_share"), "observations"] = 282_780
+    with pytest.raises(ValueError, match="one cell-year per endpoint"):
+        render_pair_decomposition_deck_values(
+            _decomposition(), fixed_effects, _usdt_integration(), _contributions(), support=_support()
+        )
+
+
+def test_matched_cell_support_requires_the_estimator_own_endpoint_mass() -> None:
+    """Same cells and different mass means one artifact reweighted them."""
+    support = _support()
+    support.loc[
+        _cell_rows(support, "count_share", "common"), "baseline_denominator"
+    ] = 149_000.0
+    with pytest.raises(ValueError, match="baseline mass .* where the estimator reports"):
+        render_pair_decomposition_deck_values(
+            _decomposition(), _fixed_effects(), _usdt_integration(), _contributions(), support
+        )
+
+
+def test_matched_cell_support_rejects_a_class_that_is_not_one_sided() -> None:
+    """A one-sided class carrying both years is a mislabelled common class."""
+    support = _support()
+    support.loc[
+        _cell_rows(support, "count_share", "baseline_only"), "comparison_denominator"
+    ] = 1.0
+    with pytest.raises(ValueError, match="is not one-sided"):
+        render_pair_decomposition_deck_values(
+            _decomposition(), _fixed_effects(), _usdt_integration(), _contributions(), support
+        )
+
+
+def test_matched_cell_support_rejects_class_specific_eligibility() -> None:
+    """The eligibility filter belongs to the measure, not to one class of it."""
+    support = _support()
+    support.loc[
+        _cell_rows(support, "strict_intermediation_value_share", "comparison_only"),
+        "zero_denominator_cell_years",
+    ] = 0.0
+    with pytest.raises(ValueError, match="disagree on emptied cell-years"):
+        render_pair_decomposition_deck_values(
+            _decomposition(), _fixed_effects(), _usdt_integration(), _contributions(), support
+        )
+
+
+def test_strict_metrics_must_weight_one_cell_perimeter() -> None:
+    """Both strict measures weight the same value-eligible cells or neither does."""
+    # The value metric alone still reconciles with its own exhibit row, so only a
+    # cross-metric check can reject a perimeter applied once per measure.
+    support = _support()
+    support.loc[
+        _cell_rows(support, "matched_strict_count_share", "baseline_only"), "units"
+    ] = 274_000
+    with pytest.raises(ValueError, match="do not match strict value cells"):
         render_pair_decomposition_deck_values(
             _decomposition(), _fixed_effects(), _usdt_integration(), _contributions(), support
         )

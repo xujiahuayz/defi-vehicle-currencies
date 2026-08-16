@@ -166,6 +166,27 @@ Conditioning this finely has a price, and the price is coverage. Of the \SampleP
 % vehicle_transition_pair_fixed_effects.jsonl; macros from
 % scripts/build_vehicle_transition_pair_deck_values.py
 
+The joint condition is easiest to read in the estimator's own unit. An observation is one pair--calendar-date--route-type cell, and \MatchedCells{} cells clear the condition, out of the \SampleCellsBase{} that carried a native-or-stable route in 2024 and the \SampleCellsEnd{} that carried one in 2026, or \MatchedCellShareBase{} and \MatchedCellShareEnd{} of the two years' cells. Those cells carry \MatchedCoverageBase{} and \MatchedCoverageEnd{} of the two years' routes, so a matched cell is \MatchedCellThicknessBase{} times as busy as the average active cell in 2024 and \MatchedCellThicknessEnd{} times as busy in 2026. On the dollar-weighted perimeter, where the value-agreement requirement empties \StrictFilteredCellYears{} cell-years that the count measure keeps, \MatchedValueCellShareBase{} and \MatchedValueCellShareEnd{} of cells are matched, and a matched cell carries \MatchedValueCellThicknessBase{} times the average cell's dollars in 2024 and \MatchedValueCellThicknessEnd{} times in 2026. A cell survives only when the same market traded on the same day of the calendar year in both years, and the chance of that rises with how often the market trades. The matched estimate is therefore a statement about the part of the market that trades routinely, and the dollar multiple says that this part is where value concentrates. It speaks less for markets that trade intermittently, whose cells drop out even when the pair itself trades in both years. That division suits the question: the rotation is a fact about where dollars route, and the matched comparison is measured on the cells that carry two-fifths of them in either year.
+% Cell counts are the scope-specific `pair_month_day_scope_support` rows of
+% vehicle_transition_pair_support.jsonl; `_matched_cell_support` in
+% scripts/build_vehicle_transition_pair_deck_values.py refuses to render them
+% unless the common class holds exactly the fixed-effects exhibit's own
+% fixed_effect_cells, its observations are twice that count, its two endpoint
+% masses equal the exhibit's own baseline/comparison_denominator_mass, each
+% one-sided class is empty on the year it is absent from, and the three classes
+% agree on the emptied cell-year count. `_strict_cell_populations_agree` pins
+% that matched_strict_count_share and strict_intermediation_value_share hold one
+% cell population, so the value multiple and the strict count multiple speak for
+% the same cells. Thickness is a class's share of a year's mass over its share of
+% that year's cells, which is routes or dollars per matched cell over routes or
+% dollars per active cell. It is a selection diagnostic, not an estimate, and it
+% must never be reported as a coefficient. Live cells: 94,260 matched of
+% 1,726,215 (2024) and 815,483 (2026) by count, 1,613,413 and 785,313 on the
+% value perimeter. Recheck if either exhibit changes.
+% output/exhibits/vehicle_transition_pair_support.jsonl and
+% vehicle_transition_pair_fixed_effects.jsonl; macros from
+% scripts/build_vehicle_transition_pair_deck_values.py
+
 \begin{table}[tbp]
 \centering
 \caption{Decomposition of the stablecoin rotation}

@@ -1,17 +1,17 @@
 {
  "argv": [],
  "artefact": "output/exhibits/vehicle_transition_pair_decomposition_deck_values.tex",
- "artefact_bytes": 15182,
- "artefact_mtime_ns": 1786874452244881067,
- "artefact_sha256": "bed5a26c4d2bbdc5ed52866835eadc8ebf246e3e3b116f080a579dd52a52d860",
- "code_fingerprint": "d9c9197baaa4ca74139c22a6cef33e43f9df02fee3b7743b989ac1b7d3fe0b23",
+ "artefact_bytes": 15713,
+ "artefact_mtime_ns": 1786876951403714030,
+ "artefact_sha256": "f414ccf6fcc6ab713b21346af047279621a406c01c2c1ae4effa71548b6d09fe",
+ "code_fingerprint": "f8d5ae97f8aee19e4d7e6b9a16338b314501d5408acc2c5a7eacbff2f9a58c05",
  "code_sources": [
   "scripts/build_vehicle_transition_pair_deck_values.py"
  ],
- "created_at": "2026-08-16T10:00:52+00:00",
+ "created_at": "2026-08-16T10:42:31+00:00",
  "git": {
   "branch": "main",
-  "commit": "5d1b53e16114b426bd0dfcbc5fb3595209332723",
+  "commit": "48ba038621cabc799a14218f80c36c27ce4ae4a2",
   "dirty": true,
   "dirty_generated_files": [],
   "dirty_tracked_files": [
@@ -90,10 +90,10 @@
  },
  "notes": "Presentation macros for the exact descriptive pair-composition accounting, the matched-market estimate, one named source--destination pair per aggregate margin, and the split of each composition margin on WETH-endpoint eligibility, the netted exclusive-pair term read as one activity mass against two corridor cohorts' routing rates, and the three market-incidence support classes the Panel A bridge is formed from; evidence status and identities remain source-only.",
  "payload_identity": {
-  "bytes": 15182,
+  "bytes": 15713,
   "format": "binary",
   "schema_version": 1,
-  "sha256": "bed5a26c4d2bbdc5ed52866835eadc8ebf246e3e3b116f080a579dd52a52d860"
+  "sha256": "f414ccf6fcc6ab713b21346af047279621a406c01c2c1ae4effa71548b6d09fe"
  },
  "python": "3.14.6",
  "rows": 4593391,

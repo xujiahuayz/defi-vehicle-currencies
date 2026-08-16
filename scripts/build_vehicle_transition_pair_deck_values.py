@@ -160,11 +160,31 @@ COHORT_SCOPES = (("", "pooled"), *ELIGIBILITY_SCOPES)
 # denominators from the fixed-effects exhibit's own reported totals. The ratios
 # it returns are arithmetic on those cells, not a new estimate, and they are the
 # only honest answer to how much of the market the matched null speaks for.
+# `_matched_coverage` prices the matched sample in *pairs*, the identity's unit.
+# `_matched_cell_support` prices it in the estimator's own unit, the pair-day-
+# scope cell, and the two answer different questions. A pair is matched when at
+# least one of its cells is; a cell is matched only when that exact calendar day
+# and route scope carried native-plus-stable mass in both years. The cell census
+# therefore says what the joint condition selects on, and the distance between a
+# class's share of cells and its share of mass is the only measurement of that
+# selection the released ledger can support. It is arithmetic on frozen cells,
+# not a second estimate, and the `pair_month_day_scope_support` rows it reads are
+# the same rows the fixed-effects exhibit counted, which is why the reader
+# refuses to render unless the two artifacts agree cell for cell.
 COVERAGE_CLASSES = ("baseline_exclusive", "common", "comparison_exclusive")
 COVERAGE_ABSENT_ENDPOINT = {
     "baseline_exclusive": "comparison",
     "comparison_exclusive": "baseline",
 }
+CELL_SUPPORT_CLASSES = ("baseline_only", "common", "comparison_only")
+CELL_ABSENT_ENDPOINT = {
+    "baseline_only": "comparison",
+    "comparison_only": "baseline",
+}
+# Both strict metrics are formed on one value-eligible perimeter and differ only
+# in the weight carried by a surviving cell, so their cell populations must be
+# the same object.
+STRICT_CELL_METRICS = ("matched_strict_count_share", "strict_intermediation_value_share")
 SUPPORT_BLOCKS = (
     ("Common", "W", "S_C"),
     ("Exclusive", "E", "S_E"),
@@ -204,8 +224,14 @@ def _routes(value: float) -> str:
     return f"{int(value):,}"
 
 
-def _pairs(value: int) -> str:
+def _units(value: int) -> str:
+    """A census of discrete units, whether ordered pairs or estimation cells."""
     return f"{int(value):,}"
+
+
+def _multiple(value: float) -> str:
+    """A thickness ratio is a pure number and carries no unit of its own."""
+    return f"${value:.1f}$"
 
 
 def _contribution_pp(value: float) -> str:
@@ -1326,6 +1352,139 @@ def _matched_coverage(
     return coverage
 
 
+def _cell_support_classes(support: pd.DataFrame, metric: str) -> dict[str, pd.Series]:
+    """Read one metric's three cell classes and reject anything but a partition.
+
+    A class must hold cells, report finite non-negative mass on both endpoints,
+    and be empty on the year it is absent from, or the label is wrong and the
+    boundary between the classes is somewhere else. The count of cell-years the
+    measure's own eligibility filter emptied is a property of the metric rather
+    than of a class, so the three rows must agree on it; disagreement means the
+    filter was applied class by class and the classes are no longer comparable.
+    """
+
+    selected = support[
+        support["record_type"].eq("pair_month_day_scope_support")
+        & support["metric"].eq(metric)
+        & support["reporting_scope"].eq("scope_specific")
+    ]
+    if len(selected) != len(CELL_SUPPORT_CLASSES):
+        raise ValueError(
+            f"cell support requires exactly {len(CELL_SUPPORT_CLASSES)} scope-specific "
+            f"{metric} rows; found {len(selected)}"
+        )
+    classes: dict[str, pd.Series] = {}
+    for status in CELL_SUPPORT_CLASSES:
+        rows = selected[selected["support_status"].eq(status)]
+        if len(rows) != 1:
+            raise ValueError(f"cell support has {len(rows)} {metric} rows for {status}")
+        classes[status] = rows.iloc[0]
+    for status, row in classes.items():
+        if int(row["units"]) <= 0:
+            raise ValueError(f"cell support {metric} {status} holds no cells")
+        for endpoint in ("baseline", "comparison"):
+            mass = float(row[f"{endpoint}_denominator"])
+            if not math.isfinite(mass) or mass < 0:
+                raise ValueError(
+                    f"cell support {metric} {status} {endpoint} mass is invalid"
+                )
+        absent = CELL_ABSENT_ENDPOINT.get(status)
+        if absent is not None and float(row[f"{absent}_denominator"]) != 0:
+            raise ValueError(
+                f"cell support {metric} {status} is not one-sided: it carries "
+                f"{absent} mass"
+            )
+    filtered = {float(row["zero_denominator_cell_years"]) for row in classes.values()}
+    if len(filtered) != 1 or min(filtered) < 0:
+        raise ValueError(
+            f"cell support {metric} classes disagree on emptied cell-years: "
+            f"{sorted(filtered)}"
+        )
+    return classes
+
+
+def _matched_cell_support(
+    support: pd.DataFrame,
+    matched: pd.Series,
+    metric: str,
+) -> dict[str, float]:
+    """Measure what conditioning on pair, day and scope jointly selects on.
+
+    The matched regression runs on the common class of this partition, so the
+    ledger and the estimator must agree cell for cell: the common class must
+    hold exactly the exhibit's own fixed-effect cells, contribute one cell-year
+    per endpoint and no more, and carry exactly the endpoint masses the exhibit
+    reported. Once that holds, the two ratios this returns are comparable. A
+    class's share of the year's cells says how much of the market's calendar the
+    matching keeps; its share of the year's mass says how much of the market. The
+    ratio between them is the thickness of a matched cell relative to the average
+    active cell, which is the sense in which the joint condition selects markets
+    that trade routinely rather than markets that trade at all.
+    """
+
+    classes = _cell_support_classes(support, metric)
+    common = classes["common"]
+    cells = int(common["units"])
+    exhibit_cells = int(matched["fixed_effect_cells"])
+    if cells != exhibit_cells:
+        raise ValueError(
+            f"{metric} cell support holds {cells:,} common cells but the estimator "
+            f"reports {exhibit_cells:,}"
+        )
+    observations = int(matched["observations"])
+    if observations != 2 * cells:
+        raise ValueError(
+            f"{metric} matched sample reports {observations:,} observations on "
+            f"{cells:,} cells; a matched cell contributes one cell-year per endpoint"
+        )
+    reach: dict[str, float] = {
+        "matched_cells": float(cells),
+        "filtered_cell_years": float(common["zero_denominator_cell_years"]),
+    }
+    for endpoint in ("baseline", "comparison"):
+        one_sided = classes[f"{endpoint}_only"]
+        year_cells = cells + int(one_sided["units"])
+        block = float(common[f"{endpoint}_denominator"])
+        reported = float(matched[f"{endpoint}_denominator_mass"])
+        if not math.isclose(block, reported, rel_tol=1e-12, abs_tol=1e-6):
+            raise ValueError(
+                f"{metric} cell support carries {endpoint} mass {block} where the "
+                f"estimator reports {reported}"
+            )
+        year_mass = block + float(one_sided[f"{endpoint}_denominator"])
+        if year_mass <= 0:
+            raise ValueError(f"cell support {metric} {endpoint} year is empty")
+        cell_share = cells / year_cells
+        mass_share = block / year_mass
+        if not 0 < cell_share <= 1:
+            raise ValueError(
+                f"{metric} matched cells are not a share of the {endpoint} year: "
+                f"{cell_share}"
+            )
+        reach[f"{endpoint}_cells"] = float(year_cells)
+        reach[f"{endpoint}_cell_share"] = cell_share
+        reach[f"{endpoint}_mass_share"] = mass_share
+        reach[f"{endpoint}_thickness"] = mass_share / cell_share
+    return reach
+
+
+def _strict_cell_populations_agree(support: pd.DataFrame) -> None:
+    """The two strict metrics weight one perimeter; a divergence is a filter bug."""
+
+    populations = {
+        metric: {
+            status: int(row["units"])
+            for status, row in _cell_support_classes(support, metric).items()
+        }
+        for metric in STRICT_CELL_METRICS
+    }
+    counted, valued = (populations[metric] for metric in STRICT_CELL_METRICS)
+    if counted != valued:
+        raise ValueError(
+            f"strict count cells {counted} do not match strict value cells {valued}"
+        )
+
+
 def _usdt_integration_rows(decomposition: pd.DataFrame) -> dict[str, pd.Series]:
     required = {
         "record_type",
@@ -1420,6 +1579,11 @@ def render_pair_decomposition_deck_values(
     value_coverage = _matched_coverage(
         support, matched_value, value["pooled"], "strict_intermediation_value_share"
     )
+    _strict_cell_populations_agree(support)
+    count_cells = _matched_cell_support(support, matched_count, "count_share")
+    value_cells = _matched_cell_support(
+        support, matched_value, "strict_intermediation_value_share"
+    )
     usdt = _usdt_integration_rows(usdt_integration)
     pair_activity_total = float(market["market_pair_support_bridge"]) + float(
         market["market_activity_reweighting"]
@@ -1494,7 +1658,7 @@ def render_pair_decomposition_deck_values(
                     f"\\newcommand{{\\Incidence{infix}Stable{suffix}}}"
                     f"{{{_share(incidence[infix][suffix]['stable_share'])}}}",
                     f"\\newcommand{{\\Incidence{infix}Pairs{suffix}}}"
-                    f"{{{_pairs(incidence[infix][suffix]['pairs'])}}}",
+                    f"{{{_units(incidence[infix][suffix]['pairs'])}}}",
                 )
             ),
             f"\\newcommand{{\\PairActivityTotal}}{{{_signed_pp(pair_activity_total)}}}",
@@ -1521,10 +1685,10 @@ def render_pair_decomposition_deck_values(
             f"\\newcommand{{\\MatchedMarketValueSE}}{{{_unsigned_pp(float(matched_value['standard_error']))}}}",
             f"\\newcommand{{\\MatchedMarketValueCILower}}{{{_signed_pp(float(matched_value['confidence_interval_lower']))}}}",
             f"\\newcommand{{\\MatchedMarketValueCIUpper}}{{{_signed_pp(float(matched_value['confidence_interval_upper']))}}}",
-            f"\\newcommand{{\\SamplePairs}}{{{_pairs(count_coverage['pairs'])}}}",
-            f"\\newcommand{{\\BlockPairs}}{{{_pairs(count_coverage['block_pairs'])}}}",
-            f"\\newcommand{{\\MatchedPairs}}{{{_pairs(count_coverage['matched_pairs'])}}}",
-            f"\\newcommand{{\\MatchedValuePairs}}{{{_pairs(value_coverage['matched_pairs'])}}}",
+            f"\\newcommand{{\\SamplePairs}}{{{_units(count_coverage['pairs'])}}}",
+            f"\\newcommand{{\\BlockPairs}}{{{_units(count_coverage['block_pairs'])}}}",
+            f"\\newcommand{{\\MatchedPairs}}{{{_units(count_coverage['matched_pairs'])}}}",
+            f"\\newcommand{{\\MatchedValuePairs}}{{{_units(value_coverage['matched_pairs'])}}}",
             f"\\newcommand{{\\MatchedCoverageBase}}{{{_share(count_coverage['baseline_of_sample'])}}}",
             f"\\newcommand{{\\MatchedCoverageEnd}}{{{_share(count_coverage['comparison_of_sample'])}}}",
             f"\\newcommand{{\\MatchedBlockCoverageBase}}{{{_share(count_coverage['baseline_of_block'])}}}",
@@ -1533,6 +1697,18 @@ def render_pair_decomposition_deck_values(
             f"\\newcommand{{\\MatchedValueCoverageEnd}}{{{_share(value_coverage['comparison_of_sample'])}}}",
             f"\\newcommand{{\\MatchedValueBlockCoverageBase}}{{{_share(value_coverage['baseline_of_block'])}}}",
             f"\\newcommand{{\\MatchedValueBlockCoverageEnd}}{{{_share(value_coverage['comparison_of_block'])}}}",
+            f"\\newcommand{{\\MatchedCells}}{{{_units(count_cells['matched_cells'])}}}",
+            f"\\newcommand{{\\SampleCellsBase}}{{{_units(count_cells['baseline_cells'])}}}",
+            f"\\newcommand{{\\SampleCellsEnd}}{{{_units(count_cells['comparison_cells'])}}}",
+            f"\\newcommand{{\\MatchedCellShareBase}}{{{_share(count_cells['baseline_cell_share'])}}}",
+            f"\\newcommand{{\\MatchedCellShareEnd}}{{{_share(count_cells['comparison_cell_share'])}}}",
+            f"\\newcommand{{\\MatchedCellThicknessBase}}{{{_multiple(count_cells['baseline_thickness'])}}}",
+            f"\\newcommand{{\\MatchedCellThicknessEnd}}{{{_multiple(count_cells['comparison_thickness'])}}}",
+            f"\\newcommand{{\\MatchedValueCellShareBase}}{{{_share(value_cells['baseline_cell_share'])}}}",
+            f"\\newcommand{{\\MatchedValueCellShareEnd}}{{{_share(value_cells['comparison_cell_share'])}}}",
+            f"\\newcommand{{\\MatchedValueCellThicknessBase}}{{{_multiple(value_cells['baseline_thickness'])}}}",
+            f"\\newcommand{{\\MatchedValueCellThicknessEnd}}{{{_multiple(value_cells['comparison_thickness'])}}}",
+            f"\\newcommand{{\\StrictFilteredCellYears}}{{{_units(value_cells['filtered_cell_years'])}}}",
             f"\\newcommand{{\\USDTVenueMixCountShare}}{{{_share(float(usdt['count']['between_scope_share_of_change']))}}}",
             f"\\newcommand{{\\USDTVenueWithinCountShare}}{{{_share(float(usdt['count']['within_scope_share_of_change']))}}}",
             f"\\newcommand{{\\USDTVenueMixValueShare}}{{{_share(float(usdt['value']['between_scope_share_of_change']))}}}",
@@ -1569,9 +1745,9 @@ def render_pair_decomposition_deck_values(
             lines.extend(
                 [
                     f"\\newcommand{{\\{prefix}{infix}GainPairs}}"
-                    f"{{{_pairs(int(statistics['gain_pairs']))}}}",
+                    f"{{{_units(int(statistics['gain_pairs']))}}}",
                     f"\\newcommand{{\\{prefix}{infix}LossPairs}}"
-                    f"{{{_pairs(int(statistics['loss_pairs']))}}}",
+                    f"{{{_units(int(statistics['loss_pairs']))}}}",
                     f"\\newcommand{{\\{prefix}{infix}GrossUp}}"
                     f"{{{_contribution_pp(float(statistics['gross_up']))}}}",
                     f"\\newcommand{{\\{prefix}{infix}GrossDown}}"
@@ -1579,9 +1755,9 @@ def render_pair_decomposition_deck_values(
                     f"\\newcommand{{\\{prefix}{infix}TopShare}}"
                     f"{{{_share(float(statistics['top_share']))}}}",
                     f"\\newcommand{{\\{prefix}{infix}HalfPairs}}"
-                    f"{{{_pairs(int(statistics['half_pairs']))}}}",
+                    f"{{{_units(int(statistics['half_pairs']))}}}",
                     f"\\newcommand{{\\{prefix}{infix}NinetyPairs}}"
-                    f"{{{_pairs(int(statistics['ninety_pairs']))}}}",
+                    f"{{{_units(int(statistics['ninety_pairs']))}}}",
                 ]
             )
     # How much of each composition margin runs through corridors whose vehicle
@@ -1597,9 +1773,9 @@ def render_pair_decomposition_deck_values(
         lines.extend(
             [
                 f"\\newcommand{{\\Locked{infix}Pairs}}"
-                f"{{{_pairs(int(eligibility['locked_pairs']))}}}",
+                f"{{{_units(int(eligibility['locked_pairs']))}}}",
                 f"\\newcommand{{\\Locked{infix}CommonPairs}}"
-                f"{{{_pairs(int(eligibility['common_pairs']))}}}",
+                f"{{{_units(int(eligibility['common_pairs']))}}}",
                 f"\\newcommand{{\\Locked{infix}PairShare}}"
                 f"{{{_share(float(eligibility['pair_share']))}}}",
                 f"\\newcommand{{\\Locked{infix}WeightBase}}"
