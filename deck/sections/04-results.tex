@@ -13,6 +13,9 @@
 \IfFileExists{../output/exhibits/liquidity_capital_v2_deck_values.tex}{%
 \input{../output/exhibits/liquidity_capital_v2_deck_values.tex}%
 }{\PackageError{dvc-deck}{Missing generated V2 capital-predictability values}{Run scripts/build_liquidity_capital_v2_deck_values.py.}}
+\IfFileExists{../output/exhibits/dominance_ladder_deck_values.tex}{%
+\input{../output/exhibits/dominance_ladder_deck_values.tex}%
+}{\PackageError{dvc-deck}{Missing generated dominance control-ladder values}{Run scripts/figure/build_dominance_ladder.py.}}
 
 % EVIDENCE-STATUS: evolving route result; current certified route release
 % EVIDENCE-COMMIT: 2ffbce0
@@ -146,6 +149,27 @@
 \vspace{0.06cm}
 {\fontsize{7.8}{8.6}\selectfont The first margin is the one vehicle-currency theory describes, and it did not move. The third nets to \PairPooledExclusive{} because \CohortMass{} of routes run on pairs alive in only one year: the arrivals route \CohortEnterShare{} through a stablecoin against \CohortExitShare{} for the ones they replaced. But \ReplaceCompositionShare{} of that gap is what the arrivals are, not how they route: \ReplaceLockedEnterWeight{} of arriving activity is wrapped-ether-paired against \ReplaceLockedExitWeight{} of departing. Corridors with no vehicle to choose carry \LockedReweightShare{} of the second by count but \LockedValueReweightShare{} by value; by value most of both runs through corridors with a dollar at an endpoint.\par}
 \decknote{Pooled route-count share among native and stablecoin intermediaries, 2024 against 2026 on 181 common calendar days. Each panel names the largest contributing ordered pair with two canonical symbols; unlabelled assets carry most of the third margin, so a named example is smaller than its total. Contributions are an exact allocation of the aggregate change and are descriptive.}
+\end{frame}
+
+% EVIDENCE-STATUS: E0 pending clean J0; provisional inference on a recertified exhibit
+% EVIDENCE-COMMIT: c8a7ccf
+% The exhibit is byte-unchanged since that commit. Its producer was afterwards
+% refactored onto the canonical absorption and clustered-inference helpers
+% (2076e5e, a63e53b); tests/test_dominance_estimator_equivalence.py pins those to
+% reproduce the superseded implementation to machine precision, which is what lets
+% these coefficients be shown while the panel input sits outside this checkout.
+% Regenerate on the data host and delete that test when the panel returns.
+% EVIDENCE-SOURCES: output/figures/dominance_control_ladder.pdf; output/exhibits/dominance_regressions.jsonl; output/exhibits/dominance_ladder_deck_values.tex
+% ESTIMAND-BOUNDARY: exact two-leg routes with an observed intermediary and a reconstructable direct alternative; the outcome is whether the executed route was dominated by an available direct pool, and the regressor is whether its intermediary was the native asset. This is dominance quality holding the trade fixed. It is NOT the aggregate stablecoin share of intermediation, it shares no axis or scale with that estimand, and the frame bridges the two only in words. Inference clusters by ordered pair throughout. Column four keeps only pair-by-day cells in which both a native and a non-native intermediary were actually used, so the estimate is identified by switching cells alone and the sample is not a subset chosen on the outcome. The displayed cell count and minimum detectable effect are read from the one-day matched-cell rung, which is the same partition and reproduces column four exactly; the producer refuses to render unless it does. The minimum detectable effect is the two-sided five percent, eighty percent power threshold at the estimated standard error, and it is reported because the column is a precision loss and not an estimated null. The matched-cell ladder in panel B varies one design parameter within one estimand and is never a specification curve across estimands.
+% VISUAL-FUNCTION: dominance quality holding the trade fixed | control ladder with detectable-effect band plus matched-cell width ladder | reach the composition reading from a second, independent estimand
+\begin{frame}{Holding the trade fixed dissolves the intermediary gap}
+\vspace{-0.06cm}
+\begin{center}
+\includegraphics[width=0.97\textwidth,height=0.44\textheight,keepaspectratio]{../output/figures/dominance_control_ladder.pdf}
+\end{center}
+\vspace{-0.14cm}
+{\fontsize{7.8}{8.5}\selectfont Was a trade carried by the native asset less often dominated by a direct pool it could have used? Pooled, yes: \DomPooledCoef{} (SE \DomPooledSE{}) over \DomPooledN{} routes. Between the same two tokens on the same day it is \DomFECoef{} (SE \DomFESE{}) on \DomFECells{} switching cells -- not distinguishable from zero, in a design that could only have detected \DomFEMDE{} or more, and the price-gap outcome agrees on those cells (\DomGapCoef{}, SE \DomGapSE{}). Two questions, one answer: the rotation is where trading happens, not which intermediary a comparable trade selects.\par}
+\decknote{Dominance quality is a separate measure from the aggregate vehicle share and the two are never combined. The outcome indicates that the executed route was dominated by an available direct pool; the price-gap outcome is the same comparison in basis points. Bars are 95\% intervals clustered on the ordered pair. Shading is what the strictest column could have detected at 80\% power, not a confidence region.}
 \end{frame}
 
 % EVIDENCE-STATUS: certified descriptive result; integration remains a selected route stratum

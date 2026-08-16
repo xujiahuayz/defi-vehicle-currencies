@@ -47,51 +47,74 @@
 
 % EVIDENCE-STATUS: evolving route result; current generated presentation bindings
 % EVIDENCE-COMMIT: e43323dd2eb986e4d627823da3586bdc2a00c813
-% EVIDENCE-SOURCES: output/figures/experiments/annual_vehicle_composition_bands.pdf; output/exhibits/intermediation_by_type.jsonl; output/exhibits/vehicle_excess_use.jsonl; output/exhibits/vehicle_excess_use_transition.jsonl; output/exhibits/provisional_results_deck_values.tex; output/provisional/route_methodology_heterogeneity.jsonl; output/provisional/route_methodology_heterogeneity_deck_values.tex
-% VISUAL-FUNCTION: substantive conclusion | one visual sequence from timing to leading asset to routed-market composition | end on the economic allocation result
-\begin{frame}{Stablecoins regained the routed-value lead as trading shifted}
-\vspace{-0.06cm}
+% EVIDENCE-SOURCES: output/exhibits/vehicle_transition_pair_decomposition.jsonl; output/exhibits/vehicle_transition_pair_fixed_effects.jsonl; output/exhibits/vehicle_transition_pair_decomposition_deck_values.tex; output/exhibits/dominance_regressions.jsonl; output/exhibits/dominance_ladder_deck_values.tex
+% The closing image is the invariance, not the chronology. The one calendar
+% element left on the frame is the aggregate fact in the first column, which is
+% setup: everything to its right is a design that holds the market fixed, and the
+% axis the audience reads left to right is how much is being held fixed.
+% ESTIMAND-BOUNDARY: the left block is one estimand throughout -- the stablecoin share of route
+% intermediation, pooled 2024 against 2026 on 181 common calendar days -- shown at three levels of
+% conditioning: unconditional, restricted to ordered pairs traded in both years, and matched on
+% ordered pair, calendar date and realised route scope. Those three are comparable to each other and
+% share a scale. The right block is a DIFFERENT estimand on a different sample: whether a route
+% carried by the native asset was dominated by an available direct pool, holding the traded pair and
+% the day fixed. It is deliberately separated, carries its own units, and is bridged to the left
+% block only in words; the two never share an axis, a scale, or a single number. The dominance column
+% is a precision loss as well as a null, so its detectable effect is stated next to it. No margin here
+% is an entry or exit effect, none identifies a treatment, and the aggregate change is realised
+% composition on the certified allocation.
+% VISUAL-FUNCTION: substantive conclusion | conditioning ladder in one estimand beside an independent second estimand | close on the invariance rather than on the timeline
+\begin{frame}{The market changed, not the trade}
+\vspace{0.06cm}
 \centering
-\resizebox{0.98\textwidth}{!}{%
+\resizebox{0.985\textwidth}{!}{%
 \begin{tikzpicture}[x=1cm,y=1cm]
 \tikzset{closelabel/.style={font=\scriptsize,text=muted,align=center}}
+\tikzset{rungbox/.style={draw=rule,fill=white,rounded corners=3pt,line width=0.9pt}}
+% The boxes are sized so every caption sets without hyphenation at this measure.
+% The whole picture is scaled to the text width, so widening it costs nothing but
+% a few percent of type size, and broken short words read badly on a screen.
 
-% Finding 1: the value lead changes non-monotonically.
-\node[font=\small\bfseries,text=ucldark,align=center,text width=4.0cm] at (1.98,4.62) {1\quad THE LEAD\\CHANGED};
-\draw[-{Stealth[length=5pt]},draw=rule,line width=1.25pt] (0.22,3.18)--(3.78,3.18);
-\fill[stable] (0.38,3.18) circle (4.2pt);
-\fill[native] (1.98,3.18) circle (4.2pt);
-\fill[stable] (3.58,3.18) circle (4.2pt);
-\node[closelabel,text=stable] at (0.38,3.78) {stablecoin\\lead};
-\node[closelabel,text=native] at (1.98,3.78) {native-asset\\lead};
-\node[closelabel,text=stable] at (3.58,3.78) {stablecoin\\lead};
-\node[closelabel] at (0.38,2.77) {2022};
-\node[closelabel] at (1.98,2.77) {2023--24};
-\node[closelabel] at (3.58,2.77) {2025--26};
+% Left block: one estimand, the stablecoin share of route intermediation, at
+% three levels of conditioning. These three are comparable and share a scale.
+\node[anchor=west,font=\small\bfseries,text=ucldark] at (0.10,5.42) {SHARE OF INTERMEDIATION CARRIED BY STABLECOINS};
+\node[anchor=west,font=\scriptsize,text=muted] at (0.10,4.90) {as the comparison holds more of the market fixed};
 
-\draw[-{Stealth[length=7pt]},draw=uclbright,line width=2.0pt] (4.10,3.34)--(4.92,3.34);
+\draw[rungbox] (0.10,1.70) rectangle (3.70,4.34);
+\node[closelabel,text=ucldark,font=\scriptsize\bfseries] at (1.90,4.02) {Across the\\whole market};
+\node[font=\fontsize{22}{23}\selectfont\bfseries,text=stable] at (1.90,3.12) {\PairPooledTotal};
+\node[closelabel,text width=3.30cm] at (1.90,2.28) {no conditioning at all};
 
-% Finding 2: USDT accounts for the candidate-level change.
-\node[font=\small\bfseries,text=ucldark,align=center,text width=4.05cm] at (7.18,4.62) {2\quad USDT'S RELATIVE\\USE ROSE};
-\node[anchor=east,font=\fontsize{23}{24}\selectfont\bfseries,text=muted] at (6.45,3.30) {\USDTValueExcessBase};
-\draw[-{Stealth[length=6pt]},draw=stable,line width=2.0pt] (6.65,3.30)--(7.65,3.30);
-\node[anchor=west,font=\fontsize{23}{24}\selectfont\bfseries,text=stable] at (7.86,3.30) {\USDTValueExcessEnd};
-\node[closelabel] at (6.10,2.73) {2024};
-\node[closelabel] at (8.23,2.73) {2026};
-\node[font=\scriptsize,text=ink,align=center] at (7.22,2.24) {intermediary share $\div$ endpoint share};
+\draw[-{Stealth[length=6pt]},draw=uclbright,line width=1.8pt] (3.88,3.02)--(4.58,3.02);
 
-\draw[-{Stealth[length=7pt]},draw=uclbright,line width=2.0pt] (9.18,3.34)--(10.00,3.34);
+\draw[rungbox] (4.76,1.70) rectangle (8.36,4.34);
+\node[closelabel,text=ucldark,font=\scriptsize\bfseries] at (6.56,4.02) {Within pairs traded\\in both years};
+\node[font=\fontsize{22}{23}\selectfont\bfseries,text=muted] at (6.56,3.12) {\MarginWithinTotal};
+\node[closelabel,text width=3.30cm] at (6.56,2.28) {theory's own margin};
 
-% Finding 3: most of the strict-value change is across groups.
-\node[font=\small\bfseries,text=ucldark,align=center,text width=3.55cm] at (11.92,4.62) {3\quad VALUE SHIFTED\\ACROSS GROUPS};
-\node[font=\fontsize{23}{24}\selectfont\bfseries,text=stable] at (11.98,3.48) {\WethValueNoEndpointChange{}};
-\node[font=\scriptsize,text=ink,align=center,text width=3.35cm] at (11.98,2.45)
-  {outside WETH endpoint pairs; mostly across trading-pair and route-scope groups};
+\draw[-{Stealth[length=6pt]},draw=uclbright,line width=1.8pt] (8.54,3.02)--(9.24,3.02);
 
-% Economic conclusion.
-\fill[ucldark,rounded corners=4pt] (0.15,0.24) rectangle (13.65,1.84);
-\node[font=\large\bfseries,text=white,align=center,text width=12.55cm] at (6.90,1.04)
-  {The trading network reorganised around stablecoins; like-for-like markets show no detectable change of intermediary.};
+\draw[rungbox,draw=stable,line width=1.3pt] (9.42,1.70) rectangle (13.02,4.34);
+\node[closelabel,text=ucldark,font=\scriptsize\bfseries] at (11.22,4.02) {Same pair, same day,\\same route scope};
+\node[font=\fontsize{22}{23}\selectfont\bfseries,text=muted] at (11.22,3.12) {\MatchedMarketCountChange};
+\node[closelabel,text width=3.30cm] at (11.22,2.28) {SE \MatchedMarketCountSE{}, over \MatchedCells{} matched cells};
+
+% Right block: a second, independent estimand. Separated by a rule, given its own
+% units, and never placed on the axis to its left.
+\draw[rule,line width=0.9pt] (13.65,1.62)--(13.65,5.92);
+\node[anchor=west,font=\small\bfseries,text=ucldark,align=left,text width=5.05cm] at (14.00,5.56) {A SEPARATE QUESTION,\\THE SAME ANSWER};
+\node[anchor=west,font=\scriptsize,text=muted,align=left,text width=5.05cm] at (14.00,4.80) {is a comparable trade routed better through the native asset?};
+\draw[rungbox] (14.00,1.70) rectangle (19.05,4.34);
+\node[closelabel,text=ucldark,font=\scriptsize\bfseries] at (16.52,4.02) {Same pair, same day};
+\node[font=\fontsize{22}{23}\selectfont\bfseries,text=imported] at (16.52,3.18) {\DomFECoef};
+\node[closelabel,text width=4.70cm] at (16.52,2.28) {SE \DomFESE{}, over \DomFECells{} switching cells; detectable only at \DomFEMDE{}};
+
+% The sentence a listener should be able to repeat.
+\fill[ucldark,rounded corners=4pt] (0.10,0.20) rectangle (19.05,1.34);
+\node[font=\large\bfseries,text=white,align=center,text width=17.9cm] at (9.58,0.77)
+  {Stablecoins won the market, not the trade: the rotation is where trading moved, not which intermediary a comparable trade chose.};
 \end{tikzpicture}
 }
+\vspace{0.04cm}
+{\fontsize{7.4}{8.2}\selectfont The three shares on the left are one measure at three levels of conditioning and are directly comparable. The estimate on the right is a different measure on a different sample and is not on that scale; it is shown because an independent design reaches the same reading. Neither is an entry or exit effect, and neither identifies a treatment.\par}
 \end{frame}

@@ -2,41 +2,35 @@
  "argv": [],
  "artefact": "output/exhibits/venue_optics.jsonl",
  "artefact_bytes": 1631,
- "artefact_mtime_ns": 1786881973614253526,
+ "artefact_mtime_ns": 1786884127242123323,
  "artefact_sha256": "37656750f1c74c253901683fb7c0103314a228c42e09273df0c99f9ba24ee9ce",
  "code_fingerprint": "1d856aef753d386298eb36b202be2c2e1ac110dca54ec84a589592eb467e230a",
  "code_sources": [
   "scripts/measure_venue_optics.py",
   "src/ddvc/tables.py"
  ],
- "created_at": "2026-08-16T12:06:13+00:00",
+ "created_at": "2026-08-16T12:42:07+00:00",
  "git": {
   "branch": "main",
-  "commit": "25555378c78241fc0e43a789eba7752df8e4dbd8",
+  "commit": "bd0e7e0d8216df5b11163c74e79a44a7b06bfc7d",
   "dirty": true,
   "dirty_generated_files": [
-   "data/manifests/output/exhibits/prose_conventions.jsonl.prov.json",
-   "data/manifests/output/exhibits/prose_outliers.jsonl.prov.json",
-   "data/manifests/output/exhibits/vehicle_transition_pair_decomposition_deck_values.tex.prov.json",
-   "data/manifests/output/exhibits/venue_shape.jsonl.prov.json",
-   "data/manifests/output/tables/pair_composition.pdf.prov.json",
-   "data/manifests/output/tables/pair_composition.tex.prov.json",
-   "output/exhibits/prose_conventions.jsonl",
-   "output/exhibits/prose_outliers.jsonl",
-   "output/exhibits/vehicle_transition_pair_decomposition_deck_values.tex",
-   "output/exhibits/venue_shape.jsonl",
-   "output/tables/pair_composition.pdf",
-   "output/exhibits/.venue_optics.jsonl.z29956pk.tmp"
+   "data/manifests/output/exhibits/dominance_regressions.jsonl.prov.json",
+   "data/manifests/output/exhibits/dominance_ladder_deck_values.tex.prov.json",
+   "data/manifests/output/figures/dominance_control_ladder.pdf.prov.json",
+   "output/exhibits/.venue_optics.jsonl.owqr89dk.tmp",
+   "output/exhibits/dominance_ladder_deck_values.tex",
+   "output/figures/dominance_control_ladder.pdf"
   ],
   "dirty_tracked_files": [
    "deck/main.pdf",
    "deck/sections/04-results.tex",
-   "docs/reviews/paper-rhetoric.json",
-   "paper/sections/03-dominance.tex",
-   "scripts/build_vehicle_transition_pair_deck_values.py",
-   "tests/test_vehicle_transition_pair_deck_values.py"
+   "deck/sections/05-close.tex"
   ],
-  "dirty_untracked_files": []
+  "dirty_untracked_files": [
+   "scripts/figure/build_dominance_ladder.py",
+   "tests/test_dominance_estimator_equivalence.py"
+  ]
  },
  "inputs": [],
  "libraries": {
