@@ -526,7 +526,7 @@
       "exit_handoff": "The panel closes by retaining route-level attribution and sends the separate cost object to Section 4."
     },
     "paper/sections/03-dominance.tex": {
-      "sha256": "2e391f84b8aeeefa64df27f2f70254c6d40f941bbbea133f8fbbad875036789b",
+      "sha256": "9b247e96282cbf2c343b69bd7cafeabc048923c0737c16abeb602c8df5d905cc",
       "status": "rewritten",
       "exemplars": [
         "literature/text/2020-MakarovSchoar2020Arbitrage-trading-and-arbitrage-in-cryptocurrency-markets.txt:886-991",
@@ -625,9 +625,9 @@
           370,
           372,
           374,
-          396,
-          398,
-          400
+          409,
+          411,
+          413
         ],
         "judgment": "Aggregate rotation and reversals lead to a three-margin accounting whose answer is stated first, the exact identity behind it and its four terms by count and by value, the second factorisation of the same count total, stated as its own displayed identity, and the exact scale relation that keeps its components from being the identity's, matched-market estimates, the reach of the matched cells by count and by value read beside the identity's own within-pair term, named pairs that make the margins concrete, the breadth of each margin across pairs, the split of the composition margins on endpoint eligibility, that split taken inside each single- or cross-exchange route scope for the reweighting margin and then for the entry margin, the netted exclusive term read as corridor replacement, that replacement gap split into the mix of corridor kinds each cohort brings and the rate at which each kind routes, the last term read as the activity that changed population priced at the gap between the two populations' routing rates, USDT role attribution, and separate venue-span and intermediation margins.",
         "raw_exemplars": [
@@ -996,7 +996,7 @@
             "judgment": "The paragraph bounds the design's construction threats and demotes the one coefficient that does not survive reweighting."
           },
           {
-            "line": 396,
+            "line": 409,
             "inherited_object": "the USDT result",
             "paragraph_function": "reports cross-exchange growth",
             "relation_to_previous": "moves to route architecture",
@@ -1006,7 +1006,7 @@
             "judgment": "The paragraph reports cross-exchange growth and moves to route architecture."
           },
           {
-            "line": 398,
+            "line": 411,
             "inherited_object": "cross-exchange growth",
             "paragraph_function": "reports falling intermediation and stablecoin gains within groups",
             "relation_to_previous": "separates three route margins",
@@ -1016,7 +1016,7 @@
             "judgment": "The paragraph reports falling intermediation and stablecoin gains within groups and separates three route margins."
           },
           {
-            "line": 400,
+            "line": 413,
             "inherited_object": "three route margins",
             "paragraph_function": "synthesises and states the fixed-opportunity comparison",
             "relation_to_previous": "moves from coexistence to design",

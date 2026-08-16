@@ -2,17 +2,17 @@
  "argv": [],
  "artefact": "output/exhibits/venue_optics.jsonl",
  "artefact_bytes": 1630,
- "artefact_mtime_ns": 1786894542797867499,
- "artefact_sha256": "6e4d4c0a5dbc71262dc21cf38e9bea2f16947c95d72901062fe0ff54d3348095",
+ "artefact_mtime_ns": 1786897437663249703,
+ "artefact_sha256": "1bfcc448792886fac6ef366ff1ebe7ba6a45843c13b1276c22d1d5a3766aa3b4",
  "code_fingerprint": "1d856aef753d386298eb36b202be2c2e1ac110dca54ec84a589592eb467e230a",
  "code_sources": [
   "scripts/measure_venue_optics.py",
   "src/ddvc/tables.py"
  ],
- "created_at": "2026-08-16T15:35:42+00:00",
+ "created_at": "2026-08-16T16:23:57+00:00",
  "git": {
   "branch": "main",
-  "commit": "110359b505e48ace3e8ecda15fae8a42769ad4b9",
+  "commit": "91d738f6c7227b7f190ce5290c28a4300f5f7806",
   "dirty": true,
   "dirty_generated_files": [
    "data/manifests/output/exhibits/prose_conventions.jsonl.prov.json",
@@ -21,35 +21,14 @@
    "output/exhibits/prose_conventions.jsonl",
    "output/exhibits/prose_outliers.jsonl",
    "output/exhibits/venue_shape.jsonl",
-   "data/manifests/output/exhibits/excess_use_date_fe_deck_values.tex.prov.json",
-   "data/manifests/output/exhibits/excess_use_date_fe_ladder.jsonl.prov.json",
-   "data/manifests/output/exhibits/excess_use_date_fe_screens.jsonl.prov.json",
-   "data/manifests/output/figures/within_day_role_contrasts.pdf.prov.json",
-   "data/manifests/output/tables/within_day_ladder.pdf.prov.json",
-   "data/manifests/output/tables/within_day_ladder.tex.prov.json",
-   "output/exhibits/.venue_optics.jsonl.vlkwvy8n.tmp",
-   "output/exhibits/excess_use_date_fe_deck_values.tex",
-   "output/exhibits/excess_use_date_fe_ladder.jsonl",
-   "output/exhibits/excess_use_date_fe_screens.jsonl",
-   "output/figures/within_day_role_contrasts.pdf",
-   "output/tables/within_day_ladder.pdf",
-   "output/tables/within_day_ladder.tex"
+   "output/exhibits/.venue_optics.jsonl.51a0302a.tmp"
   ],
   "dirty_tracked_files": [
    "deck/main.pdf",
-   "deck/sections/04-results.tex",
    "docs/reviews/paper-rhetoric.json",
-   "paper/main.tex",
-   "paper/sections/03-dominance.tex",
-   "scripts/tabulate/README.md",
-   "tests/test_paper_tables.py"
+   "paper/sections/03-dominance.tex"
   ],
-  "dirty_untracked_files": [
-   "scripts/build_excess_use_date_fe_deck_values.py",
-   "scripts/figure/build_within_day_contrasts.py",
-   "scripts/run_excess_use_date_fe_ladder.py",
-   "scripts/tabulate/render_within_day_ladder.py"
-  ]
+  "dirty_untracked_files": []
  },
  "inputs": [],
  "libraries": {
@@ -64,7 +43,7 @@
   "format": "jsonl",
   "rows": 10,
   "schema_version": 1,
-  "sha256": "6e4d4c0a5dbc71262dc21cf38e9bea2f16947c95d72901062fe0ff54d3348095"
+  "sha256": "1bfcc448792886fac6ef366ff1ebe7ba6a45843c13b1276c22d1d5a3766aa3b4"
  },
  "python": "3.14.6",
  "rows": 10,
