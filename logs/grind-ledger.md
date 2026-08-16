@@ -2796,3 +2796,149 @@ ledger; node B full-text literature ledger; two unchanged findings passes).
 - The M3 12:03 handoff stays unchecked; its live remainder is the E1/D3
   generation identities and the two unchanged findings passes. Mukhin still needs
   Java or Studio (NEEDS-JAVA stands from 2026-08-15).
+
+## 2026-08-16 — the netted exclusive term read as corridor replacement
+
+**Targeted check.** The four blockers are unchanged and none is reachable from
+this worktree: node B is Mukhin (NEEDS-JAVA, 2026-08-15), node E1 and the
+empirical model ledger wait on the Studio D3 generation and certificate
+identities, and the two unchanged passes need a quiet gate rather than a unit of
+work. The queue's only unchecked item is the M3 handoff, whose live remainder is
+those same identities. So this iteration took the cut the last entry nominated:
+the *retired*-pair margin, which no paragraph interpreted and which the entry
+margin's net-versus-gross distinction had just made visible.
+
+**REGRESSION-CHECK filed before mutation.** Estimand at risk: the
+`baseline_exclusive_composition` and `comparison_exclusive_composition` cohort
+routing rates at all three `reporting_scope` values, 2024--2026, descriptive and
+non-causal -- a read-only split of the certified ledger, calendar and formula ID
+untouched. Generation at risk: `vehicle_transition_pair_contributions.parquet`
+on the current certified release, read-only; no producer rerun, no release
+rewrite; one column newly read (`aggregate_mass_share_midpoint`, already
+present). Prior corrections at risk: yesterday's net-versus-gross trap (a cohort
+statement must never print the gross entry margin against the net term) and the
+`component_pp <= 0` guard forbidding an eligibility share of a non-positive
+margin. Both discharged below.
+
+**What the term actually is.** The exiting and entering cohorts are weighted by
+the *same* midpoint exclusive-support mass, so
+`exclusive_pair_contribution = E * (s_enter - s_exit)` exactly. The netted term
+is not a residual: it is one activity mass times the gap between how two
+populations of corridors are routed. Publishing E, `s_exit`, and `s_enter` turns
+the decomposition's largest count margin into a statement about replacement.
+
+**How the negative margin was handled without weakening the old guard.** The
+retiring margin is negative in every metric and scope, so `_endpoint_eligibility`
+would refuse it -- correctly, because a share of a margin whose parts disagree in
+sign is not a share of it. Rather than relax that guard, `_support_cohorts`
+proves the split does not straddle zero (`locked_pp * margin_pp >= 0` and the
+same for the open part) before forming any share, and separately proves each
+open contribution equals its own open mass times its own open routing rate.
+Ordering matters and cost two test iterations: the structural premises (one mass
+shared by both cohorts; WETH-endpoint corridors at routing rate exactly one) are
+checked *before* the arithmetic reconciliations, or a mutation to the mass trips
+the margin identity and the error message names the wrong defect.
+
+**Result.** By route count, **48.0%** of activity and by value **27.8%** sits on
+corridors alive in only one of the two years. The departing cohort sent
+**6.8%** of its routes and **10.8%** of its dollars through a stablecoin; the
+arriving cohort sends **43.8%** and **79.8%**. Strip the WETH-endpoint corridors
+and the comparison is **1.7%** against **21.0%** by count and **3.2%** against
+**76.9%** by value; across exchanges the arriving corridors that could have
+chosen route **88.3%** of their dollars through a stablecoin, against **5.3%**
+for the ones they replaced. **DECISION: promote**, at exact scope --
+descriptive, non-causal, 2024--2026, realised composition and not an entry or
+exit effect. The count/value gap (21.0% against 76.9% among choice-bearing
+arrivals) says the large new corridors are the stablecoin-routed ones.
+
+**Why it matters beyond the number.** This is the sharpest available form of
+Java's queue item (1): the aggregate share moves because the trading network
+reorganises around the challenger. Not "new markets adopt the stablecoin" --
+the corridor population turns over almost completely, and the population that
+arrives is routed six times more often through the stablecoin (twelve times, by
+value among corridors that had a choice) than the population it replaced.
+
+**Naming.** The macro family is `Cohort*`, not `Turnover*`. The prose route's
+tier rule excludes "turnover" sentences, meaning the blocked vehicle-turnover
+hazard; a `Turnover*` macro family would have invited a future reader to
+conflate the two. Renamed before the first commit.
+
+**Where it landed.** Inside the existing owner,
+`scripts/build_vehicle_transition_pair_deck_values.py`: `SUPPORT_COHORTS`,
+`COHORT_SCOPES`, `_support_cohorts`. Sixty new macros; every pre-existing macro
+in the deck-values file is byte-identical, verified by diff. Four new tests plus
+a rebuilt exclusive-row fixture that satisfies the identity the renderer proves
+(previously the fixture carried a single exit row with arbitrary weights). No
+new script, artifact, or owner.
+
+**Paper.** A new paragraph closes Section 3.2 at line 126, written from the
+movement of Hajda and Nikolov (raw lines 540--570): report the net figure, show
+the gross dynamics behind it, and close on where the action is. Registered in
+`docs/reviews/paper-rhetoric.json` as handoff line 126, that raw passage added
+to both exemplar lists, section hash refreshed, and the seven following handoff
+lines shifted (twice -- the second time because a source comment was extended;
+the shift is by *file* lines, not paragraph count). Cites
+`FlandreauJobst2009Empirics` for persistence without lock-in across a stable
+roster of trading relationships, against a setting where the roster itself
+turns over. Citations 31 -> 32.
+
+**Deck.** No new frame. The margins frame's closing paragraph now leads with the
+replacement reading, replacing the retired-pair giveback clause it supersedes.
+**A first attempt overflowed by 8.83pt and a second trim of 30 rendered
+characters did not move it at all** -- the vbox overflow is quantised at line
+granularity, so a partial trim buys nothing; the fix was to drop a whole clause
+(`\MarginReweightHalfPairs` concentration and `\MarginNewPairTopShare` breadth)
+and keep the count weighting throughout, because the frame's decknote declares a
+route-count denominator and a value figure beside `\PairPooledExclusive` would
+have mixed weightings. Final state: no new overfull box, the two remaining
+(8.14485pt at line 65, 5.06264pt at line 221) byte-equal to baseline. Page 13
+rendered and inspected at each attempt; all three "Margin total" lines intact
+and the panels were never touched.
+
+**Validation.** `check_deliverable_conformance.py` exits 0, all blocking checks
+pass; paper 38 pages / 0 undefined (was 37), deck 35 pages / 0 undefined, the
+same 2 advisories. `audit_deck_evidence.py` PASS. `check_jfe_rhetoric_review.py`
+exits 0. `scripts/tabulate/render_pair_composition.py` rerun in the same unit
+per the standing warning. Full suite: **13 failed, 2142 passed**, all 13 the
+long-standing v2 provenance-drift set (`test_weighted_quote` 7,
+`test_vehicle_role_models` 3, `test_audit_findings_freeze` 1,
+`test_variable_registry` 1, `test_vehicle_transition_e0` 1); no new failures.
+`tests/test_route_cost_panel.py` and `tests/test_route_state.py` still error at
+*collection* on the same `v2_audit_token_decimals.parquet.prov.json` drift, so a
+bare `pytest -q` aborts with no results; use
+`--ignore=tests/test_route_cost_panel.py --ignore=tests/test_route_state.py`.
+
+**Commit:** `0d805e3`.
+
+**Blocking count: 4** (unchanged: node E1 specification lock; empirical model
+ledger; node B full-text literature ledger; two unchanged findings passes).
+
+**For the next iteration.**
+- **`latexmk` is not on the shell PATH in this worktree**, only inside
+  `check_deliverable_conformance.py`, which finds it via `shutil.which` under its
+  own environment. A bare `cd deck && latexmk ...` fails silently and leaves a
+  stale PDF and a stale `main.log`; an "unchanged overfull box" read from that
+  log is a false negative. Recompile through `check_deliverable_conformance.py`
+  and only then read `deck/main.log`.
+- **Deck vbox overflow is quantised at one line (about 8.8pt at the 8.2/9.2
+  closing paragraph).** Trimming a few words buys nothing; either cut a clause or
+  do not bother.
+- Citation density after this pass: 32 / 15,058 = 0.002125 against a
+  first-quartile 0.002081, so roughly **320 words** of headroom before
+  `test_venue_optics.py::test_exhibit_density_reaches_the_first_quartile` fails.
+- Venue-shape shortfalls: words 15,058 against p25 18,738; equations 11 against
+  25; citations 32 against 39; greek 6 against 7.
+- The exclusive-support lane is now fully exploited: entry, exit, both
+  weightings, all three scopes, and the cohort identity behind the netted term.
+  The remaining unexploited descriptive cut in this table is the
+  `common_support_mass` term ($-0.5$ pp count, $-2.5$ pp value), which no
+  paragraph interprets and which is the only term of the four still unread.
+- Three deck macros are now unused (`\MarginRetiredPairTotal`,
+  `\MarginReweightHalfPairs`, `\MarginNewPairTopShare`). They remain generated
+  and correct; do not delete them to tidy up, they are the natural material for
+  a breadth sentence if a frame regains space.
+- Section 6 still defines the cost benchmark and reports nothing; it remains
+  blocked on route cost and is still the largest structural hole in the paper.
+- The M3 12:03 handoff stays unchecked; its live remainder is the E1/D3
+  generation identities and the two unchanged findings passes. Mukhin still needs
+  Java or Studio (NEEDS-JAVA stands from 2026-08-15).
