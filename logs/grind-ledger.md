@@ -3904,3 +3904,145 @@ ledger; node B full-text literature ledger; two unchanged findings passes).
 - Citations are now the second venue gap; see the trap above.
 - The M3 12:03 handoff stays unchecked; its live remainder is still the E1/D3
   generation identities and the two unchanged findings passes.
+
+## 2026-08-16 — Why the arriving corridors route differently: the replacement gap split
+
+**REGRESSION-CHECK filed before mutation.** Purpose-bound estimand most at risk:
+`exclusive_pair_contribution`, the netted corridor-replacement margin (2024--2026,
+pooled, both metrics). It compares **two disjoint populations of corridors**, so
+the split had to stay an exact partition of that frozen term and no sentence may
+read its rate side as a corridor changing intermediary. Evidence generation most
+at risk: `vehicle_transition_pair_contributions.parquet`, read through
+`require_certified_presentation_source`; nothing was re-run from data. Prior
+corrections most at risk: (a) "a share of a decomposition remainder is not always
+a quantity" — shares are formed only against the netted term, proved positive,
+because the other-endpoint kind's composition term is negative in both
+weightings; (b) "regenerating the deck-values macro file stales
+`output/tables/pair_composition.tex`" — `render_pair_composition.py` was rerun in
+the same unit, fifth entry to record it.
+
+**Target.** No gate blocker was actionable; `audit_findings_freeze.py` reports
+the same four (node E1 specification lock; empirical model ledger; node B
+full-text literature ledger; two unchanged findings passes). Took the unit the
+previous iteration named: the entry cohort's own composition read against the
+exit cohort's.
+
+**What the unit is.** `_support_cohorts` publishes the replacement gap and stops.
+The gap is two numbers and hides two different economic claims: the arriving
+corridors may be a *different mix of markets*, or markets of the *same kind* may
+route differently. `_cohort_endpoint_margins` separates them exactly on the three
+endpoint kinds already used in the module,
+
+    s_enter - s_exit = sum_c (w_enter,c - w_exit,c) sbar_c
+                     + sum_c wbar_c (s_enter,c - s_exit,c),
+
+the standard symmetric midpoint identity, which is **exact, not an
+approximation**. The producer proves both sums close on the cohort gap (1e-12)
+and the gap on that scope's own `exclusive_pair_contribution` (1e-6) before
+rendering. Pooled only: the scoped cohort rates answer a question about
+integration, and pairing a scope weight with the pooled gap is exactly the
+confusion the scope suffix exists to prevent.
+
+**The result, and it is a real one.** The two weightings disagree, and the
+disagreement is the finding.
+- **By count**: composition `+11.7` pp of the `+17.8` pp term (65.9%), rate
+  `+6.1` pp (34.1%). Of the composition part, `+11.4` pp is a single class —
+  wrapped-ether-paired corridors are **28.9%** of arriving activity against
+  **5.2%** of departing. Those corridors cannot use wrapped ether to intermediate
+  their own endpoint, so a stablecoin carries them by construction and their
+  routing rate is one in *both* cohorts. Roughly **two-thirds of the largest
+  count margin is the arrival of markets where the vehicle was never in
+  question.** That is a material qualifier on a claim already on the deck.
+- **By value the ordering reverses**: composition `+3.0` pp (15.4%), rate
+  `+16.2` pp (84.6%). Arriving stablecoin-paired corridors send **81.7%** of
+  their dollars through a stablecoin where the departing corridors of the same
+  kind sent **6.3%**; other-endpoint arrivals **48.3%** against **0.9%**.
+
+**DECISION: promote** at exact scope. It is an exact partition of one frozen
+term, reconciled to it before publication, with the wrapped-ether class's zero
+rate term proved rather than assumed. The source comments in the producer, the
+paper and the deck all forbid reading the rate side as pair-level substitution.
+
+**New owner code, all in the existing presentation owner.**
+`_cohort_endpoint_margins` and `COHORT_ENDPOINT_CLASSES` in
+`scripts/build_vehicle_transition_pair_deck_values.py`, called from the pooled
+branch of the existing cohort block. 22 macros per weighting, prefix `Replace`.
+Five focused tests, one per premise.
+
+**Traps for the next iteration.**
+- **The `neither_nor` construction alarm has almost no headroom.** Three
+  `neither`s in one new paragraph took the draft to 0.480 against a corpus
+  maximum of 0.294. It now sits at **0.274**, one occurrence from the ceiling.
+  The regex is `\bneither\b|\bnor\b`, so `nor` counts too.
+- **Do not line-wrap an artefact path inside a `%` provenance comment.**
+  `tests/test_paper_provenance.py` reads the fragment on each line and demanded
+  a file called `literature/text/1993-DowdGreenaway1993Cu`.
+- **`docs/reviews/paper-rhetoric.json` is written with `indent=1`.** Dumping it
+  at `indent=2` reformats all 1,950 lines. Round-trip it with
+  `json.dumps(d, indent=1, ensure_ascii=False)` plus the trailing newline.
+- **Inserting a paragraph shifts every later handoff line.** Here it was **+27**
+  for the seven handoffs after the insertion point, plus one new handoff at 294.
+  Refresh the section `sha256` *after* the last prose edit; it was refreshed
+  twice here because the prose-convention fix landed after the first refresh.
+- **The three-margins deck frame really was at its ceiling.** Adding the
+  composition clause pushed the body from four lines to five and pressed the
+  `\decknote` onto the footer. Fixed by *displacing* content, as the previous
+  entry predicted would be necessary: the fourth-term sentence
+  (`\BlockShift`/`\BlockTerm`) left the frame, the closing clause dropped its two
+  dollar-endpoint percentages, and the note was tightened by a line. Body stays
+  at 7.8/8.6 to match the sibling frames. **When you displace slide text, delete
+  the matching sentence from the `ESTIMAND-BOUNDARY` comment** — it described the
+  fourth term for a frame that no longer carries it.
+- Citations moved 37 -> 38 against p25 39 on an *earned* second engagement with
+  Dowd and Greenaway (excess inertia binds the agents already holding the
+  incumbent; their closing extension hands displacement to the changing
+  composition of the trading population). One more earned engagement closes that
+  venue line.
+
+**Validation.** `check_deliverable_conformance.py`: all blocking checks pass, 2
+advisories. Paper 42 pages / 0 undefined, deck 35 pages / 0 undefined. Venue
+shape: words 17,370 -> 17,691, equations 14 (unchanged), citations 37 -> 38.
+`audit_deck_evidence.py` PASS. `check_jfe_rhetoric_review.py` exits 0.
+`measure_prose_conventions.py`: no registered construction out of range.
+Producer suite 63 passed (58 before, 5 new). Repository suite
+(`--ignore=tests/test_route_cost_panel.py --ignore=tests/test_route_state.py`):
+**2,179 passed, 13 failed**, exactly the standing v2 provenance-drift set
+(`test_weighted_quote` 7, `test_vehicle_role_models` 3,
+`test_audit_findings_freeze` 1, `test_variable_registry` 1,
+`test_vehicle_transition_e0` 1); no new failures. Paper page 16 and deck page 13
+inspected against the previous build: the paragraph sets, the macros render, and
+the frame's note clears the footer with the same margin it had before.
+
+**Commit:** `1e678cf`.
+
+**Blocking count: 4** (unchanged: node E1 specification lock; empirical model
+ledger; node B full-text literature ledger; two unchanged findings passes).
+
+**For the next iteration — READ THIS FIRST.**
+- **A new Java interjection landed mid-unit and is the next iteration's whole
+  job.** `logs/grind-queue.md` line 338, WeCom 2026-08-16T12:50Z, pushed in
+  `fde69fa` and amended in `2555537` *after* this iteration had already read the
+  queue: **deck analytics pass — kill the chronological spine, lead with control
+  sets, rebuild the conclusion frame.** It says take it at the next clean
+  boundary and not to interrupt a running unit, which is why it was not started
+  here. It is five parts and at least one full iteration.
+- **One internal inconsistency in that item to resolve before building.** Part
+  (2) withdraws the specification-curve frame outright — `run_dominance_
+  specification_curve.py` is on the retired-estimand list in
+  `audit_findings_freeze.py` and building from it would re-red the refresh-graph
+  check — but part (4)'s list of designs that hold the market fixed still names
+  "the specification curve". Build (4) from the live designs only: matched
+  within-pair, pair-by-day FE, and the `(4w)` control-window ladder inside
+  `dominance_regressions.jsonl`.
+- The composition/rate split landed here is a **third** independent statement of
+  the same thesis and belongs in the rebuilt conclusion frame: aggregate share
+  rotated hard, matched within-pair shows nothing, and even the corridor
+  replacement that carries the count margin is two-thirds the arrival of markets
+  where the vehicle was never a choice.
+- Equations remain 14 against p25 25 and are still the widest venue gap. Section
+  8's appendix carries eleven `\[...\]` displays that `measure_venue_optics.py`
+  does not count — it counts only `\begin{equation|align|gather}`. Numbering
+  them purely to move the metric would be filler; the real unblocked unit is the
+  estimator definitions Section 8 states only in prose.
+- The M3 12:03 handoff stays unchecked; its live remainder is still the E1/D3
+  generation identities and the two unchanged findings passes.
