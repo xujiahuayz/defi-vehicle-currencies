@@ -4558,3 +4558,116 @@ and the equations-below-p25 note stand.
 `scripts/check_deliverable_conformance.py` at the START of the iteration as well
 as the end. Both of these were introduced by an iteration whose own final run
 apparently predated its last edit, and they sat red across a handoff.
+
+## 2026-08-16 — queue item 566 parts 2 and 4 (venue-integration half), commit `f363127`
+
+**Targeted.** The unchecked queue item outranks the gate's blocking list, so this
+iteration did not touch the three freeze blockers. The previous entry had already
+scoped part 2 down to the one live headline estimator with a well-defined and
+genuinely missing date-FE rung, and named the unit for this iteration. That
+scoping still held on inspection, so I continued it.
+
+**REGRESSION-CHECK filed before mutation.** Purpose-bound estimand most at risk:
+the E0 year-endpoint CHANGE in the stable share inside each integration regime
+(`integration_rival_tests` / `vehicle_transition_tests`). Evidence generation most
+at risk: the certified panel `data/processed/intermediation_by_type_daily.parquet`.
+Prior correction most at risk: the 2026-08-16 finding that CR1 over a two- to
+five-group dimension is not inference. All three held. The new owner is read-only
+on the panel, adds a LEVEL estimand rather than redefining the change estimand,
+and never clusters on the two-group integration dimension.
+
+**Did.** Built `scripts/run_integration_date_fe_ladder.py`, writing
+`output/exhibits/integration_date_fe_ladder.jsonl` (240 rows). It stacks the daily
+panel long by integration regime so a day contributes one observation per regime,
+absorbs the date, and reads the gap from the same day's cross-section. Five rungs
+(pooled, + date FE, + date FE weighted by cell units, + date FE x calendar half,
++ date FE x year) on two routing bases (all leg counts, exact two leg), four
+weighting-and-support bands and both the share level and the log odds. Inference
+is CR1 on date with the family's standing 30-day Bartlett lag.
+
+Macros went into the EXISTING owner `src/ddvc/provisional_results.py`, not a new
+builder. Paper section 3.5 gained three paragraphs; the venue-scope deck frame
+gained one sentence. `output/tables/usdt_transition.tex` regenerated because its
+macro input changed.
+
+**Result.** On exact two-leg routes, over 2,234 paired days, cross-exchange
+routing carries **+14.18 pp** more stablecoin value share within the same day
+(SE 3.69, CI [+7.0, +21.4]) and **+12.12 pp** weighted by cell dollars (SE 1.78),
+while the same contrast by route count is **+3.73 pp on [-2.2, +9.7]** and does
+NOT separate. The venue-span difference in vehicle choice is a value phenomenon on
+exactly the one-intermediary routes the dominance object uses. Year by year the
+dollar gap runs +69.7 (2020), +16.1, -0.1, -3.2 (2023, [-9.2, +2.8]), +7.3, +16.1,
++14.5 (2026). By count it is negative and separable in 2021--2023 and positive in
+2025--2026, which is a sign reversal the two-endpoint design cannot see.
+
+**Calendar role per rung, as the queue item requires:** control in R2 and R3,
+robustness split in R4 and R5, identifying variation nowhere.
+
+**The trap the next iteration must not fall into.** Every retained day contributes
+exactly one observation per regime, so the stack is BALANCED, the date FE is
+exactly a within-day pairing, and the R1 and R2 point estimates are algebraically
+identical. Writing that up as "the gap survives absorbing the calendar" is a
+tautology sold as a result. It is recorded in the script docstring, in a paper
+source comment, in a deck source comment and in a pinned test. What the rungs
+actually deliver is the LEVEL of the gap, which the rival exhibits never state,
+its inference under the pairing, its economic weighting, and its annual path.
+
+**DECISION: promote** the within-day level gap to publication-standard prose in
+section 3.5 at E0 scope, and to one deck sentence. It is a certified route-only
+fact on a green panel, it carries its scope and both intervals, and Java's
+15:55Z instruction admits preliminary estimates that do so.
+
+**Deck density is now a real constraint, not a stylistic note.** Adding two lines
+to the venue-scope frame pushed its `\decknote` clean off the page. Verified by
+rendering page 16 to PNG and looking at it, which is the only way this shows up:
+the source audit, the compile and the undefined-reference count were all green
+while the note was invisible. Fixed by shrinking the figure to 0.26\textheight,
+compressing the opening sentence, dropping one clause with no number in it, and
+tightening the note. Java's "the deck is too busy" interjection is correct and the
+frame has no headroom left. **Render and LOOK at every deck page you touch.**
+
+**Citation density is a live gate, not an advisory.** Adding ~250 words of results
+prose to section 3 dropped citations below the venue first quartile (0.002057 vs
+0.002081) and turned `structural resemblance to the venue` from ok to WARN. The
+fix was a substantive citation, not filler: Chen and Duffie (2021) model trade
+split across exchanges as thinning depth at each one, thin depth binds first on
+the largest orders, and a gap that opens in dollars while counts stay level fits
+that reading. The raw passage was reread at
+`literature/text/2021-ChenDuffie2021Fragmentation-market-fragmentation.txt:5-40`
+before the sentence was written. Arithmetic for the next worker: 41 citations over
+19,935 words; one citation buys up to 244 words of headroom.
+
+**Three prose constructions tripped on the first pass** and each was fixed by
+rewriting the thought, never by swapping the word: `so_that_tail` (", so the
+calendar supplies"), `what_cleft` ("What remains is"), `neither_nor` ("Nor is the
+dollar gap"). All three margins are thin. Assume any new paragraph will trip at
+least one.
+
+**Test state.** `tests/test_integration_date_fe_ladder.py` 6 passed, pinning the
+balanced-stack identity, the paired-difference definition, both-halves-or-neither
+day support, log-odds boundary exclusion, and the R5 year partition. Full suite
+2,214 passed / 14 failed; 13 confirmed pre-existing by a stashed re-run
+(`v2_event_source_release provenance is not current` on
+`v2_audit_token_decimals.parquet.prov.json`, plus the absent-pyfixest
+`test_vehicle_role_models` trio). The fourteenth was mine and is fixed: the
+`usdt_transition` table went stale when its macro input changed. **Any iteration
+that touches `provisional_results.py` must rerun
+`scripts/tabulate/render_usdt_transition.py`.** Two files still fail at COLLECTION
+(`test_route_cost_panel.py`, `test_route_state.py`) on the same v2 provenance
+cause; they must be `--ignore`d to run the suite at all.
+
+**Gate state unchanged: RED, 3 blocking.** node E1 specification lock; empirical
+model ledger; two unchanged findings passes. Deliverable conformance green on
+every blocking check, paper 46 pages and deck 37 pages, 0 undefined, 2 advisories
+(equations below p25, and the two prose warnings), all unchanged from the start of
+this iteration.
+
+**Next iteration.** The queue is now empty of unchecked items except the standing
+owner-rule, E1-lock and coordinator entries, so work returns to the gate's own
+blocking list. The E1 chain is unchanged from the previous entry and is still the
+only route to two of the three blockers: adjudicate
+`docs/e0-exploration-plan.template.json` against `claim_execution_perimeter` for
+the WHOLE template, land the reconciled template with citations, then write
+`scripts/lock_specification.py`. `empirical model ledger` is a descendant of the
+same chain. Run `scripts/check_deliverable_conformance.py` at the START of the
+iteration as well as the end.
