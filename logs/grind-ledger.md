@@ -1709,6 +1709,8 @@ figures (+26.2 / +19.2 pp) reproduce exactly, as do the matched-market estimates
 (+0.2 pp SE 0.8; −1.3 pp SE 2.2) and both totals (+25.7 / +42.8 pp). Everything
 written into the paper and deck comes from the exhibit, not the queue text.
 
+**Commit:** `e26bd69`.
+
 **Freeze gate.** RED, 6 blocking checks: node D capital release current; node E1
 specification lock; node D claim-input provenance gate; empirical model ledger;
 node B full-text literature ledger (source-sets 32/33, five-axis cards 33/34);
