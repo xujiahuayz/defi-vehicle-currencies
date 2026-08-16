@@ -2668,3 +2668,131 @@ ledger; node B full-text literature ledger; two unchanged findings passes).
 - The M3 12:03 handoff stays unchecked; its live remainder is the E1/D3
   generation identities and the two unchanged findings passes. Mukhin still needs
   Java or Studio (NEEDS-JAVA stands from 2026-08-15).
+
+## 2026-08-16 — the entry margin split by venue scope
+
+**Targeted check.** The four blockers are unchanged and none is reachable from
+this worktree, for the reasons the last three entries record: node B is Mukhin
+(NEEDS-JAVA, 2026-08-15), node E1 and the empirical model ledger both wait on the
+Studio D3 generation and certificate identities, and the two unchanged passes
+need a quiet gate rather than a unit of work. The queue's only unchecked item is
+the M3 handoff, whose live remainder is those same identities. So this iteration
+took the cut the last entry nominated as the widest unexploited scope gap in the
+table: the *value* new-pair margin, 24.1% eligible single-venue against 14.2%
+cross-venue.
+
+**REGRESSION-CHECK filed before mutation.** Estimand at risk: the
+`comparison_exclusive_composition` allocation at `reporting_scope` single_venue
+and cross_venue, 2024--2026, descriptive and non-causal -- split only, calendar
+and formula ID untouched. Generation at risk:
+`vehicle_transition_pair_contributions.parquet` on the current certified
+release, read-only; no producer rerun, no release rewrite. Prior corrections at
+risk: the M3 affirmative boundary, yesterday's rule that a scope share is never
+printed against another scope's aggregate, and the note that the two within-scope
+decompositions do not add to the pooled margin. The first two are discharged by
+construction below; the third is in source comments on both deliverables.
+
+**A trap the preflight did not name and the producer did not either.** The
+obvious way to give the entry margin a scope total is to read
+`exclusive_pair_contribution` from that scope's decomposition row, exactly as the
+reweighting margin does. That is wrong: the decomposition term is **net of the
+pairs that stopped trading** (+17.8 pp pooled) while the eligibility split is
+taken of the **gross** entry margin (+21.0 pp pooled). A scope share printed
+against the netted term would have overstated the eligible fraction by about a
+sixth. The producer now records the distinction in `SCOPE_MARGIN_TERMS` -- which
+split margin has a decomposition term of its own -- and `_scope_margin_total`
+reads the reweighting total from the row (against which the split is still
+reconciled) and the entry total from the split's own components.
+`test_scope_new_pair_total_is_the_gross_entry_margin` fails if the two are ever
+confused: the fixture's netted term is +17.6 pp against a gross +21.0 pp.
+
+**Result.** By route count the entry margin is +21.4 pp within a single exchange
+against +23.8 pp across, with WETH-endpoint corridors supplying **65.8%** and
+**67.5%** -- the count answer is two-thirds definitional and the route scope
+barely moves it. Dollar weighting separates the scopes instead of reversing them.
+The margin is **+14.1 pp** within an exchange against **+28.5 pp** across, twice
+the size, while the eligible part is **+3.4** and **+4.0 pp**, almost the same in
+both. The entire difference is corridors that had a choice: **+10.7** against
+**+24.5 pp**, so eligible corridors account for **24.1%** of the margin within an
+exchange and **14.2%** across it. **DECISION: promote**, at exact scope --
+descriptive, non-causal, 2024--2026, two within-scope decompositions comparable
+to each other and not additive to the pooled margin.
+
+**Why it matters beyond the number.** This is the mirror image of yesterday's
+reweighting result. There the cross-venue excess was carried *entirely* by
+corridors whose vehicle was never in question and the choice-bearing part was
+flat across scopes. Here the eligible part is flat across scopes and the entire
+cross-venue excess is choice-bearing. Read together: a market already trading
+across exchanges gains stablecoin share mainly where no other intermediary was
+available, while the dollars arriving with markets that *begin* to trade across
+exchanges come from corridors that could have been routed through the native
+token and were not. The largest term of the decomposition, in the weighting that
+carries economic magnitude and in the scope where the count evidence looked most
+definitional, is not an eligibility artefact.
+
+**Where it landed.** Inside the existing owner,
+`scripts/build_vehicle_transition_pair_deck_values.py`: new `SCOPE_MARGIN_TERMS`
+and `_scope_margin_total`, and the scope loop now emits
+`\Pair{infix}{suffix}{prefix}` for both margins rather than only the reweighting
+one. Four new macros; every pre-existing macro in the deck-values file is
+byte-identical, verified by diff. No new script, artifact, or owner.
+
+**Paper.** A new paragraph closes Section 3.2 at line 112, written from the
+movement of Bolton and Kacperczyk (raw lines 1899--1935): name the subset the
+reader suspects of driving everything, remove it, report that one outcome if
+anything strengthens, report that the second is instead entirely that subset,
+and close on a reading that holds both. Registered in
+`docs/reviews/paper-rhetoric.json` as handoff line 112 with the section hash
+refreshed and the seven following handoff lines shifted. No new citation.
+
+**Deck.** No new frame. The margins frame's closing sentence now carries both
+scopes' readings and **produced no new overfull box** -- the two remaining boxes
+(8.14485pt at line 65, 5.06264pt at line 221) are byte-equal to the baseline. The
+space came from wording, not from the panels: "which had no intermediary to
+choose" became "which could not choose", and the two count-scope figures gave way
+to the two value-scope ones. Page 13 rendered and inspected; all three "Margin
+total" lines are intact, so the 3.66cm panels were not touched.
+
+**Validation.** `check_deliverable_conformance.py` exits 0, all blocking checks
+pass; paper 37 pages / 0 undefined, deck 35 pages / 0 undefined, the same 2
+advisories. `audit_deck_evidence.py` PASS. `check_jfe_rhetoric_review.py` exits
+0. `scripts/tabulate/render_pair_composition.py` rerun in the same unit per the
+last entry's warning, so `test_dominance_tables` stays green. Full suite:
+**13 failed, 2137 passed**, and all 13 are the long-standing v2
+provenance-drift set (`test_weighted_quote` 7, `test_vehicle_role_models` 3,
+`test_audit_findings_freeze` 1, `test_variable_registry` 1,
+`test_vehicle_transition_e0` 1). `tests/test_route_cost_panel.py` and
+`tests/test_route_state.py` still error at *collection* on the same
+`v2_audit_token_decimals.parquet.prov.json` drift, which aborts a bare
+`pytest -q` run at 48s with no test results at all; use
+`--ignore=tests/test_route_cost_panel.py --ignore=tests/test_route_state.py`.
+
+**Commit:** `b07680a`.
+
+**Blocking count: 4** (unchanged: node E1 specification lock; empirical model
+ledger; node B full-text literature ledger; two unchanged findings passes).
+
+**For the next iteration.**
+- **Citation density is now the binding venue constraint, not a distant one.**
+  31 / 14,834 = 0.002090 against a first-quartile 0.002081 leaves roughly **60
+  words** of headroom before
+  `test_venue_optics.py::test_exhibit_density_reaches_the_first_quartile` fails.
+  The next paragraph of any length must carry a citation. Uncited admitted keys
+  that could plausibly serve this lane: `MakarovSchoar2022DeFi`,
+  `LiuMakarovSchoar2023Terra`, `Krugman1979VehicleCurrenciesWorkingPaper`.
+- Regenerating `vehicle_transition_pair_decomposition_deck_values.tex` still
+  stales `output/tables/pair_composition.{tex,pdf}`; rerun
+  `scripts/tabulate/render_pair_composition.py` in the same unit.
+- The deck margins frame has headroom again only because two macros were traded
+  for two others. It is still a zero-slack frame at 3.66cm panels; below about
+  3.5cm they clip silently.
+- The eligibility lane is now fully exploited: both composition margins, both
+  weightings, all three scopes. The remaining descriptive cuts in this table are
+  the *retired*-pair margin (which no paragraph interprets and which the entry
+  margin's net-versus-gross distinction just made visible) and the
+  baseline-exclusive composition term.
+- Section 6 still defines the cost benchmark and reports nothing; it remains
+  blocked on route cost and is still the largest structural hole in the paper.
+- The M3 12:03 handoff stays unchecked; its live remainder is the E1/D3
+  generation identities and the two unchanged findings passes. Mukhin still needs
+  Java or Studio (NEEDS-JAVA stands from 2026-08-15).
