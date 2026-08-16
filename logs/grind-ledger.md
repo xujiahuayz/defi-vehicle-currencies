@@ -2145,3 +2145,197 @@ touched and which this iteration did not modify.
   benchmark and reports nothing because route cost is blocked.
 - The M3 12:03 handoff stays unchecked; its live remainder is still the E1/D3
   generation identities and the two unchanged findings passes.
+
+## 2026-08-16 — The routing-software rival, rejected on three dated router releases
+
+**Targeted check.** None. The freeze gate is RED at the same four blockers (node
+E1 specification lock; empirical model ledger; node B full-text literature
+ledger; two unchanged findings passes), verified before and after. All four
+remain structurally gated on Studio or Java exactly as recorded since
+2026-08-15. Queue: only the standing M3 12:03 handoff is unchecked, and its live
+remainder is still the E1/D3 generation identities and the two unchanged passes.
+
+**REGRESSION-CHECK filed before mutation.** Estimand at risk: the router-window
+object is **market-wide route composition** — indirect-route incidence, true
+intermediation incidence, cross-exchange share of intermediated routes, mean legs
+and mean exchanges per indirect route — in symmetric 60-day windows either side
+of three dated public releases, on the full daily route calendar. It carries
+**no currency split at all**, so no sentence from it may be read as a stablecoin
+or native quantity, and it is not the matched January--June estimand of Sections
+3 and 5.1. Evidence generation at risk: `routing_technology_windows.jsonl`.
+Prior corrections at risk: "calendar time is not treatment" and the spec-lock
+`routing_maturation_rival` `forbidden_interpretation` barring an
+aggregator-causality reading; its `execution_gate` is
+`blocked_transaction_state_frontier`, so only the descriptive topology windows,
+which are not part of that blocked frontier, were used. A fourth correction was
+found during the check and is recorded below.
+
+**The evidence was already current, unlike last iteration's.** Code fingerprint
+matched the recorded `code_sources`; the sole input
+`cross_venue_routing_daily.parquet` is byte-identical at 1,257,321 bytes and
+sha `5b4b48fd…`; the artefact sha matches; `require_certified_presentation_source`
+passes. No rerun. This is the "prove identity, then estimate" path the brief
+asks for, and it cost minutes rather than the 45 the venue rerun took.
+
+**A would-be fake robustness, caught before it reached prose.** The exhibit
+carries `full` and `balanced` venue scopes, and every one of the twelve rows is
+identical to sixteen digits. That is not two scopes agreeing; the balanced
+five-venue perimeter *is* the full perimeter until 2023-04-05, when the later
+entrants first contribute, and all three windows sit in 2021--2022. Reporting it
+as a robustness check would have been an invented one. It is instead reported as
+what it is — the venue set is held fixed by construction over these windows —
+and `routing_window_values` refuses the table and every macro if the two
+perimeters ever diverge, which is what a window moved past 2023-04-05 would do.
+
+**The result.** The rival is that automated path search manufactured the
+intermediary. Three facts answer it.
+
+1. **Intermediation does not step up at any release**: the share of economic
+   routes carrying a third asset between the endpoints moves **-5.67, +0.83 and
+   -0.71** percentage points, from 20.8% before the first release to 12.5% after
+   the last. The largest single increase is +0.8 pp.
+2. **Path length is as still**: mean legs per indirect route move by at most
+   **0.049** across the six windows. Indirect routing as a whole falls 3.7 pp at
+   the first release and moves less than half a point at the other two.
+3. **The margin that does move is exchange span**, which is the margin a router
+   should move: the cross-exchange share of intermediated routes rises **+2.5 pp**
+   and **+3.1 pp** at the first two releases and changes -2.0 pp at the third.
+   Routers integrated the venue set without sending trades through more assets.
+   That is the spec-lock's own `admissible_interpretation` — integration expands
+   while true intermediation contracts — reached from the exhibit rather than
+   assumed.
+
+**Three limits, all in the prose, none discovered by a referee.** The first
+release's later window and the second's earlier window share thirty days, so the
+comparisons are not independent. The third release's earlier window
+(2022-09-18 to 2022-11-16) **contains the November 2022 failure of a large
+centralised exchange**, so the composition change there belongs at least as much
+to that event as to the router. And a release date is when a contract became
+callable, not when traders began routing through it.
+
+**Owner discipline.** No new estimator, no new exhibit, no rerun.
+`src/ddvc/venue_tables.py` — which already owned the Section 5 venue rival table
+— gained `routing_window_values`, `render_routing_technology_windows` and
+`router_event_date_text`, and its docstring was broadened from "venue-rival" to
+"rival-scope" tables. `scripts/tabulate/render_routing_technology_windows.py`
+follows the one-script-per-table convention.
+`src/ddvc/provisional_results.py` gained the router macros behind
+`_router_window_changes`, which withholds the **entire** macro set if
+intermediation ever rises by a full percentage point at a release, if mean path
+length moves by 0.05 legs, if intermediation stops falling at a majority of
+releases, or if the balanced perimeter stops reproducing the full one. Six new
+tests cover the renderer and three cover the producer guards.
+
+**Two stale durable records repaired in place.**
+`docs/router-identification-feasibility.md` owned the pre-rebuild figures for
+these exact windows under a heading that says so; it now carries the rebuilt
+figures beside them. **Every sign is unchanged**, which is an independent check
+that the rebuild did not move the qualitative reading.
+`scripts/tabulate/README.md` was missing `render_venue_technology_rival.py` and
+`tab:venue-technology` from the previous iteration; both are now listed along
+with this iteration's renderer and table, and the generated/inline counts are
+corrected to six of thirteen.
+
+**Consumers the shared owners invalidated.** Amending `venue_tables.py` made
+`venue_coverage` and `venue_technology_rival` stale; regenerating the macro file
+made `pair_composition`, `usdt_transition` and `dominance_rotation` stale. All
+were re-rendered through their own scripts. Every `.tex` byte is unchanged; only
+PDF build metadata moved.
+
+**Prose.** New Section 5.2, "The software that assembles the path", inserted
+between path complexity and the pricing rule because 5.1's closing sentence
+already hands off to it; the pricing subsection's opening now reads "third
+alternative". Written after rereading the raw NYSE-autoquote passage at
+`literature/text/2011-HendershottJonesMenkveld2011Algorithmic-…:439-560`, whose
+grammar is: describe the institutional change concretely, name what it did *not*
+change, name the channel and for whom it operates, and state plainly what the
+design can and cannot support ("we cannot test this conjecture using the
+available data"). The subsection uses that order to reach the opposite
+conclusion about design, since a router release is market-wide and admits no
+staggered comparison. The introduction roadmap and the section's closing
+paragraph, now five features rather than four, both name the software.
+`docs/reviews/paper-rhetoric.json` records the new opening, five new paragraph
+handoffs, the relocated v1 transaction-case fingerprint, and rewritten section
+progression and exit judgments.
+
+**A citation attempted, measured, and withdrawn.** Citing
+`HendershottJonesMenkveld2011Algorithmic` passed the source-admission gate at
+21/21 but moved the already-blocking literature ledger from
+`source-sets=32/33; five-axis-cards=33/34` to `32/34; 33/35`: its card is
+complete and claim-verified and its source set is declared, but the
+autoquote-dates workbook declared in `literature/pdf-sources.json`
+(57,856 bytes, sha `8cff31e8…`) is **absent from the shared PDF corpus at
+`/Users/java/projects/defi-vehicle-currencies/literature/papers/`**, so
+`non_text_dispositions_closed` fails. Rather than make a blocking check worse or
+fetch outward, the design paragraph now states the requirement generically —
+a technology granted to some securities before others lets the waiting ones
+absorb everything else moving in the market — which is general field knowledge
+and needs no citation. The admission record is **kept** as an uncited comparator
+with the reason written into its rationale, and the raw passage remains the
+registered rhetorical exemplar. Ledger figures are back at baseline: 32/33,
+33/34, cited 20/20.
+
+**NEEDS-JAVA.** Materialising
+`https://faculty.haas.berkeley.edu/hender/Autoquote%20Dates.xls` into the shared
+corpus would close the HJM source set and let Section 5.2 cite the design
+directly. It is an outward network fetch and a write outside this worktree, so I
+did not do it. The expected bytes and sha256 are already recorded, so the fetch
+is verifiable on arrival.
+
+**Deck.** No new frame. The existing venue-scope frame (page 14) carries the
+sentence in place: "Nor does automated path search: intermediation incidence
+never rises by more than +0.8 pp at 3 public router releases, though
+cross-exchange reach widens." Adding it overflowed the frame by 25.9pt, so the
+surrounding text was tightened (not padded) and the figure resized 0.41 to
+0.34 `\textheight`; the frame's overfull-box set is now **identical to the
+pre-change baseline** — the third box is the same 5.06264pt, shifted seven lines
+by the added source comment. Page 14 rendered and inspected: no overflow, figure
+legible, 35 pages, `audit_deck_evidence.py` PASS. The frame's ESTIMAND-BOUNDARY
+comment records the router sentence as a third estimand on a third support with
+no currency split.
+
+**Validation.** `check_deliverable_conformance.py`: all blocking checks pass;
+paper 35 pages / 0 undefined (was 34), deck 35 pages / 0 undefined, the same 2
+advisories. `check_jfe_rhetoric_review.py` current. `audit_deck_evidence.py`
+PASS. 404 prose/exhibit/provenance/deck/rhetoric/table/venue/routing/literature
+tests pass. Pages 15--18 of the paper rendered and inspected.
+
+**Pre-existing failures, none introduced here, and the count is larger than
+earlier entries suggested.** The **full** suite (excluding the two files that
+error at collection) reports **13 failures**, and I verified by stashing the
+working tree that the set at HEAD is **byte-identical**:
+`test_audit_findings_freeze.py::test_optional_artifact_gates_follow_only_executable_claim_inputs`,
+`test_variable_registry.py::test_source_does_not_generate_csv_artifacts`,
+three in `test_vehicle_role_models.py`, one in `test_vehicle_transition_e0.py`,
+and seven in `test_weighted_quote.py::RoutePanelWiringTests`. Earlier entries
+reported only two because they ran the filtered prose/exhibit subset. Separately,
+`tests/test_route_cost_panel.py` and `tests/test_route_state.py` still error at
+collection on `v2_audit_token_decimals.parquet.prov.json` drift.
+
+**Commit:** `431287a`.
+
+**Blocking count: 4** (unchanged).
+
+**For the next iteration.**
+- Do not re-derive that the gate needs Studio or Java. Keep advancing scientific
+  objects.
+- **There is no unused certified rival evidence left.** Both exhibits the
+  2026-08-15 entry listed are now consumed. The next scientific unit has to come
+  from a different lane: the thin Section 6 (defines the cost benchmark and
+  reports nothing because route cost is blocked), a heterogeneity cut of an
+  existing certified exhibit, or a new estimator on released data.
+- The `v2_audit_token_decimals` manifest drift is still the standing engineering
+  question. Budget for a slow `verify()` on a 26 MB sidecar, or read the sidecar
+  directly and compare recorded against observed identity fields.
+- The eleven long-standing test failures above are unowned. None is in the
+  paper/deck/exhibit path, but they should be classified once so a real
+  regression is visible against them.
+- The four venue-shape shortfalls remain: words 13,756 against p25 18,738;
+  equations 11 against 25; citations 29 against 39; greek 6 against 7. Section 5
+  gained roughly 600 words here.
+- Consider renaming `src/ddvc/venue_tables.py` to `rival_tables.py` at a future
+  consolidation: two of its three tables are now Section 5 rivals rather than
+  venue tables. Not done here because it churns five consumers for no scientific
+  gain.
+- The M3 12:03 handoff stays unchecked; its live remainder is still the E1/D3
+  generation identities and the two unchanged findings passes.
