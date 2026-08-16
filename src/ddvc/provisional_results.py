@@ -18,6 +18,7 @@ ROTATION = EXHIBITS / "intermediation_complexity_rival.jsonl"
 INTEGRATION = EXHIBITS / "intermediation_integration_interaction.jsonl"
 TOKEN_INTEGRATION = EXHIBITS / "intermediation_token_integration_interaction.jsonl"
 EXCESS_USE = EXHIBITS / "vehicle_excess_use.jsonl"
+VENUE_RIVAL = EXHIBITS / "venue_technology_rival.jsonl"
 EXCESS_USE_TRANSITION = EXHIBITS / "vehicle_excess_use_transition.jsonl"
 ROUTING_SERIES = EXHIBITS / "cross_venue_routing_series.jsonl"
 ROUTING_INFERENCE = EXHIBITS / "cross_venue_routing_inference.jsonl"
@@ -30,6 +31,7 @@ INPUTS = (
     EXCESS_USE_TRANSITION,
     ROUTING_SERIES,
     ROUTING_INFERENCE,
+    VENUE_RIVAL,
 )
 CODE_SOURCES = [
     "src/ddvc/provisional_results.py",
@@ -109,6 +111,55 @@ def _weakest_complexity_cell(
     return min(cells, key=lambda cell: float(cell["change"]))
 
 
+def _venue_scope_rise(
+    venue_rival: pd.DataFrame, *, scope: str, asset_type: str
+) -> tuple[pd.Series, pd.Series]:
+    """Return the 2024 and 2026 excess-use rows for one venue pricing scope.
+
+    Raises when the scope-year is not identified, because an unidentified scope
+    supports no ratio and the prose reports the endpoints as a movement.
+    """
+
+    endpoints = []
+    for year in (2024, 2026):
+        row = _one(venue_rival, scope=scope, asset_type=asset_type, year=year)
+        if str(row["support_status"]) != "identified":
+            raise ValueError(
+                f"venue rival scope {scope} is {row['support_status']} in {year}"
+            )
+        _finite(
+            row,
+            "vehicle_excess_use_count_ratio",
+            "vehicle_excess_use_ratio",
+            "intermediate_routes_support",
+        )
+        endpoints.append(row)
+    return endpoints[0], endpoints[1]
+
+
+def _require_curve_carries_no_intermediation(venue_rival: pd.DataFrame) -> None:
+    """Refuse the prose claim unless every all-Curve scope-year lacks intermediation.
+
+    The subsection states that route components confined to the stable-specialised
+    invariant contain no intermediary episode in any year of the sample. That is a
+    support statement about the exhibit, so it is checked rather than asserted.
+    """
+
+    curve = venue_rival.loc[venue_rival["scope"].eq("curve_only")]
+    if curve.empty:
+        raise ValueError("venue rival exhibit lacks the curve_only scope")
+    supported = curve.loc[~curve["support_status"].eq("no_intermediation")]
+    if not supported.empty:
+        year = int(supported.iloc[0]["year"])
+        raise ValueError(
+            "all-Curve route components now carry intermediation in "
+            f"{year}; the venue-technology sentence no longer holds"
+        )
+    episodes = float(curve["intermediate_routes_support"].fillna(0).sum())
+    if episodes != 0:
+        raise ValueError(f"all-Curve scope reports {episodes:.0f} intermediary episodes")
+
+
 def _pvalue(value: float) -> str:
     coefficient, exponent = f"{value:.2e}".split("e")
     return f"${coefficient}\\times10^{{{int(exponent)}}}$"
@@ -122,6 +173,7 @@ def render_provisional_results_deck_values(
     excess_use_transition: pd.DataFrame,
     routing_series: pd.DataFrame,
     routing_inference: pd.DataFrame,
+    venue_rival: pd.DataFrame,
 ) -> str:
     """Bind display macros to unique scientific identities in certified exhibits."""
 
@@ -282,6 +334,61 @@ def render_provisional_results_deck_values(
             "hac_standard_error",
         )
 
+    # Venue pricing-family rival. The discriminating scope is the constant-product
+    # family, whose invariant is common to every venue in it and unchanged over the
+    # sample; Curve is the stable-specialised comparison and identifies no ratio.
+    _require_curve_carries_no_intermediation(venue_rival)
+    venue_all_base, venue_all_end = _venue_scope_rise(
+        venue_rival, scope="all_venues", asset_type="stable"
+    )
+    venue_cp_base, venue_cp_end = _venue_scope_rise(
+        venue_rival, scope="constant_product_only", asset_type="stable"
+    )
+    _, venue_cp_native_end = _venue_scope_rise(
+        venue_rival, scope="constant_product_only", asset_type="native"
+    )
+    cp_count_change = float(venue_cp_end["vehicle_excess_use_count_ratio"]) - float(
+        venue_cp_base["vehicle_excess_use_count_ratio"]
+    )
+    cp_value_change = float(venue_cp_end["vehicle_excess_use_ratio"]) - float(
+        venue_cp_base["vehicle_excess_use_ratio"]
+    )
+    if cp_count_change <= 0 or cp_value_change <= 0:
+        raise ValueError(
+            "stable excess use no longer rises in the constant-product scope: "
+            f"count {cp_count_change:+.4f}, value {cp_value_change:+.4f}"
+        )
+    all_value_change = float(venue_all_end["vehicle_excess_use_ratio"]) - float(
+        venue_all_base["vehicle_excess_use_ratio"]
+    )
+    if all_value_change <= 0:
+        raise ValueError("stable excess use no longer rises across all venues")
+    # The prose states that restricting to the unchanged pricing rule strengthens
+    # rather than weakens the value rotation. Refuse the whole macro set if that
+    # comparison ever reverses, so the sentence cannot outlive the data.
+    if cp_value_change <= all_value_change:
+        raise ValueError(
+            "the constant-product restriction no longer strengthens the value "
+            f"rotation: {cp_value_change:+.4f} against {all_value_change:+.4f}"
+        )
+    cp_episode_share = float(venue_cp_end["intermediate_routes_support"]) / float(
+        venue_all_end["intermediate_routes_support"]
+    )
+    # Support scale for the Balancer composition diagnostic. The support column is
+    # constant within a scope-year, so one row per scope-year carries the count.
+    scope_support = (
+        venue_rival.loc[venue_rival["asset_type"].eq("stable")]
+        .set_index("scope")["intermediate_routes_support"]
+        .fillna(0)
+    )
+    balancer_peak = float(scope_support.loc["balancer_only"].max())
+    cp_peak = float(scope_support.loc["constant_product_only"].max())
+    if not 0 < balancer_peak < cp_peak:
+        raise ValueError(
+            "the Balancer diagnostic is no longer small relative to the "
+            f"constant-product scope: {balancer_peak:.0f} against {cp_peak:.0f}"
+        )
+
     routes = routing_series.copy()
     routes["year"] = pd.to_datetime(routes["date"], errors="raise").dt.year
     annual: dict[int, tuple[float, float]] = {}
@@ -348,6 +455,20 @@ def render_provisional_results_deck_values(
         f"\\newcommand{{\\CrossVenueValueEnd}}{{{_share(annual[2026][1])}}}",
         f"\\newcommand{{\\CrossVenueRotationPremium}}{{{_pp(float(broad_interaction['differential_change']))}}}",
         f"\\newcommand{{\\CrossVenueRotationSE}}{{{_se_pp(float(broad_interaction['hac_standard_error']))}}}",
+        f"\\newcommand{{\\VenueAllStableCountBase}}{{{float(venue_all_base['vehicle_excess_use_count_ratio']):.2f}}}",
+        f"\\newcommand{{\\VenueAllStableCountEnd}}{{{float(venue_all_end['vehicle_excess_use_count_ratio']):.2f}}}",
+        f"\\newcommand{{\\VenueAllStableValueBase}}{{{float(venue_all_base['vehicle_excess_use_ratio']):.2f}}}",
+        f"\\newcommand{{\\VenueAllStableValueEnd}}{{{float(venue_all_end['vehicle_excess_use_ratio']):.2f}}}",
+        f"\\newcommand{{\\VenueCPStableCountBase}}{{{float(venue_cp_base['vehicle_excess_use_count_ratio']):.2f}}}",
+        f"\\newcommand{{\\VenueCPStableCountEnd}}{{{float(venue_cp_end['vehicle_excess_use_count_ratio']):.2f}}}",
+        f"\\newcommand{{\\VenueCPStableValueBase}}{{{float(venue_cp_base['vehicle_excess_use_ratio']):.2f}}}",
+        f"\\newcommand{{\\VenueCPStableValueEnd}}{{{float(venue_cp_end['vehicle_excess_use_ratio']):.2f}}}",
+        f"\\newcommand{{\\VenueCPNativeValueEnd}}{{{float(venue_cp_native_end['vehicle_excess_use_ratio']):.2f}}}",
+        f"\\newcommand{{\\VenueAllStableValueChange}}{{${all_value_change:+.2f}$}}",
+        f"\\newcommand{{\\VenueCPStableValueChange}}{{${cp_value_change:+.2f}$}}",
+        f"\\newcommand{{\\VenueCPEpisodeShare}}{{{_share(cp_episode_share)}}}",
+        f"\\newcommand{{\\VenueBalancerPeakEpisodes}}{{{balancer_peak:,.0f}}}",
+        f"\\newcommand{{\\VenueCPPeakEpisodes}}{{{cp_peak:,.0f}}}",
     ]
     return "\n".join(lines) + "\n"
 

@@ -152,20 +152,25 @@
 % EVIDENCE-COMMIT: 111230a
 % The figure asset itself was added at a0c54e9; its inputs and the numeric cells
 % below share the intermediation-exhibit evidence commit named above.
-% EVIDENCE-SOURCES: output/figures/experiments/integration_change_forest.pdf; output/exhibits/intermediation_integration_rival.jsonl; output/exhibits/intermediation_integration_interaction.jsonl; output/exhibits/intermediation_complexity_rival.jsonl; output/exhibits/provisional_results_deck_values.tex; docs/findings-freeze.md
+% EVIDENCE-SOURCES: output/figures/experiments/integration_change_forest.pdf; output/exhibits/intermediation_integration_rival.jsonl; output/exhibits/intermediation_integration_interaction.jsonl; output/exhibits/intermediation_complexity_rival.jsonl; output/exhibits/venue_technology_rival.jsonl; output/exhibits/provisional_results_deck_values.tex; docs/findings-freeze.md
 % ESTIMAND-BOUNDARY: matched January--June dates in 2024 and 2026; native-plus-stable denominator; one
 % observation per intermediary episode; leg count records how the route was built and is not an
 % execution-quality measure; the four span-by-complexity cells come from the same certified exhibit and
 % are rendered by a producer that refuses the joint statement unless all four changes are positive.
-% VISUAL-FUNCTION: integration-stratified vehicle rotation | change estimates with HAC intervals | test whether venue mix or path length absorbs the stable-share change
+% The pricing-family sentence is a separate estimand on a separate support: annual excess use over the
+% full 2,332-day calendar, candidate-currency denominator, all-routes value support rather than the 20%
+% agreement support, and a route component enters a family only when every leg belongs to it. Its Curve
+% clause is enforced by a producer guard that withholds every macro if an all-Curve scope-year ever
+% reports an intermediary episode. Venue family is realised, not assigned.
+% VISUAL-FUNCTION: integration-stratified vehicle rotation | change estimates with HAC intervals | test whether venue mix, path length, or pricing rule absorbs the stable-share change
 \begin{frame}{Stablecoin use rises within each venue scope}
 \vspace{-0.08cm}
 \begin{center}
-\includegraphics[width=0.89\textwidth,height=0.46\textheight,keepaspectratio]{../output/figures/experiments/integration_change_forest.pdf}
+\includegraphics[width=0.89\textwidth,height=0.41\textheight,keepaspectratio]{../output/figures/experiments/integration_change_forest.pdf}
 \end{center}
-\vspace{-0.15cm}
-{\fontsize{6.8}{7.5}\selectfont The increase appears within both realised route scopes, so a change in the single- versus cross-venue mix cannot account for the aggregate rotation. Path length does not absorb it either: two-leg routes gain \StableCountChange{} by count (SE \StableCountSE{}) and longer routes \MultiLegCountChange{} (SE \MultiLegCountSE{}), and every venue-scope by path-length cell rises, the weakest by \WeakestComplexityCountChange{} (SE \WeakestComplexityCountSE{}). Route scope and path length remain selected; the comparison does not identify an effect of integration, routing software, or protocol architecture.}
-\decknote{Changes compare the same January--June dates in 2024 and 2026. Bars show 95\% calendar-HAC confidence intervals.}
+\vspace{-0.42cm}
+{\fontsize{6.8}{7.5}\selectfont The increase appears within both realised route scopes, so a change in the single- versus cross-venue mix cannot account for the aggregate rotation. Path length does not absorb it either: two-leg routes gain \StableCountChange{} by count (SE \StableCountSE{}) and longer routes \MultiLegCountChange{} (SE \MultiLegCountSE{}), and every venue-scope by path-length cell rises, the weakest by \WeakestComplexityCountChange{} (SE \WeakestComplexityCountSE{}). Nor does the pricing rule: among routes priced entirely by the constant-product invariant, \VenueCPEpisodeShare{} of 2026 episodes, stablecoin excess use still rises from \VenueCPStableValueBase{} to \VenueCPStableValueEnd{}; all-Curve routes carry none. Route scope, path length, and venue family remain selected; the comparison does not identify an effect of integration, routing software, pricing technology, or protocol architecture.}
+\decknote{Changes compare the same January--June dates in 2024 and 2026. Bars show 95\% calendar-HAC confidence intervals. Excess-use ratios are annual and span the full sample calendar.}
 \end{frame}
 
 % EVIDENCE-STATUS: E0 pending clean J1; full-calendar reciprocal adjudication on the certified V2 capital release records a non-pass

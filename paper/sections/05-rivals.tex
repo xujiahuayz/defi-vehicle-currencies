@@ -19,6 +19,39 @@ Two boundaries limit what this comparison licenses. The number of legs records t
 % The four scope-by-complexity cells are rendered through a producer that
 % refuses to emit the joint statement unless all four changes are positive.
 
+\subsection{The pricing rule at each leg}
+\label{sec:rivals:technology}
+
+The second alternative is not about currencies at all. It is about the exchanges that price them, because \acp{amm} do not price every pair by the same rule. The constant-product rule sets a price from pool reserves alone and moves it with trade size relative to depth, so it charges a trade for the price impact it causes whether or not the two assets are close substitutes. Curve's invariant instead interpolates toward a flat curve in the neighbourhood of parity, which is exactly where two dollar-pegged assets trade, and Appendix~\ref{app:quoters:stable} states the interpolation the venue applies. On this account the rotation is an adoption of technology: a leg through a stablecoin became cheap once venues priced pegged assets on a curve built for them, and the vehicle role passed to stablecoins because of where their legs could be priced, so no monetary property of the asset need enter the account at all. The timing is favourable to it, since stable-specialised pools grew over the same years as the rotation.
+
+The account can be tested by restricting attention to routes on which the pricing rule never changed. A route component enters the constant-product scope only when every one of its legs executes at Uniswap v1 through v4 or at SushiSwap v2 or v3, each of which prices locally on the product of reserves, concentrated liquidity inside an active tick included. No leg inside that scope can have been priced by a curve specialised for pegged assets, so a technology account predicts that stablecoins gain nothing there. The quantity compared is the excess-use ratio of Section~\ref{sec:dominance:excess}, an asset's share of intermediary activity divided by its share of route-endpoint demand, formed separately inside each scope, so that the denominator for a venue family is the endpoint demand observed in that same family.
+
+The restriction does not weaken the rotation; it sharpens it. Where every leg is priced by the reserve product, stablecoin excess use rises from \VenueCPStableValueBase{} in 2024 to \VenueCPStableValueEnd{} in 2026 by value, a movement of \VenueCPStableValueChange{} against \VenueAllStableValueChange{} over all venues, and the ratio crosses one inside the restricted scope in the same comparison. Native assets fall to \VenueCPNativeValueEnd{} there over the same years. By count, where stablecoins were already over-represented as intermediaries at the start of the sample, the restricted and unrestricted paths are almost the same: \VenueCPStableCountBase{} to \VenueCPStableCountEnd{} inside the scope against \VenueAllStableCountBase{} to \VenueAllStableCountEnd{} over all venues. The scope is not a small corner of the sample either, since routes priced end to end by the constant-product rule carry \VenueCPEpisodeShare{} of candidate-currency intermediary episodes in 2026. Table~\ref{tab:venue-technology} reports every year and every venue family.
+
+The venue that embodies the alternative supplies no intermediation at all. In each year of the sample, route components all of whose legs execute on Curve contain no intermediary episode whatever. The stable-specialised curve is used to exchange two pegged assets with one another, not as a place through which a route passes on its way somewhere else, so the pricing rule that makes stablecoin legs cheap operates on the direct trades that the vehicle measure excludes by construction. Curve legs do appear inside routes that also touch another exchange, and those routes are counted in the all-venue scope; what the sample contains no instance of is a route intermediated entirely within the specialised invariant. Balancer, whose pools mix weighted and stable families and which the panel therefore leaves technologically unlabelled, carries \VenueBalancerPeakEpisodes{} intermediary episodes in its busiest year against \VenueCPPeakEpisodes{} in the busiest year of the constant-product scope, and its ratios swing accordingly; it is reported as a composition diagnostic and no weight rests on it.
+
+What the comparison licenses is again bounded. Holding the pricing rule fixed by restriction is not an estimate of its effect: venues are chosen alongside routes, and a trader who would have used a stable-specialised pool may appear in the constant-product scope only because that pool was unavailable for the pair at hand. The ratio's denominator removes the most obvious composition problem, since each scope is judged against the endpoint demand observed inside it, but it cannot remove selection into scopes. The conclusion is the narrower one that the rotation is not an artifact of stable-specialised pricing, because it is present, large, and in the same direction where that pricing was never applied.
+% output/exhibits/venue_technology_rival.jsonl via
+% output/exhibits/provisional_results_deck_values.tex (macros; producer
+% src/ddvc/provisional_results.py) and output/tables/venue_technology_rival.tex
+% (producer src/ddvc/venue_tables.py). Route-only certified evidence on the full
+% 2,332-day calendar; complete route components; candidate-currency denominator;
+% all-routes value support, which is wider than the 20% agreement support used for
+% the Section 3 value results and must not be quoted as the same number. The
+% Curve sentence is enforced by a producer guard that refuses every macro in this
+% subsection if any all-Curve scope-year ever reports an intermediary episode.
+
+\begin{table}[tbp]
+\centering
+\caption{Vehicle excess use by venue pricing family}
+\label{tab:venue-technology}
+\small
+\input{../output/tables/venue_technology_rival.tex}
+\exhibitnote{Excess use is an asset type's share of intermediary activity divided by its share of route-endpoint demand, formed over the candidate currencies within each scope. A route component enters a scope only when every one of its legs executes at a venue in that family. The constant-product family is Uniswap v1 through v4 and SushiSwap v2 and v3. Balancer is listed separately and left technologically unlabelled because its pools mix weighted and stable families. Value ratios use all routes; the 20\% value-agreement support of Table~\ref{tab:rotation} is narrower. Balancer has no route components before 2021, and 2026 covers January through June.
+% output/exhibits/venue_technology_rival.jsonl; producer scripts/test_venue_technology_rival.py
+}
+\end{table}
+
 \subsection{Liquidity in the vehicle's own pools}
 \label{sec:rivals:capital}
 
@@ -41,4 +74,4 @@ Protocol design changes the set of routes that can be formed. Uniswap v1 created
 
 Uniswap v4 separates route choice from physical settlement more sharply. All pools reside in one singleton, and flash accounting records balance changes internally before settling the final net amounts at the end of a call.\footnote{See Adams et al., \href{https://app.uniswap.org/whitepaper-v4.pdf}{\emph{Uniswap v4 Core}}, Sections 1 and 3.} An economic route can therefore cross an intermediary pool without generating an external token transfer at every step. Decoded pool actions preserve the trading path despite this netting, while the architecture changes how liquidity, fees, and settlement are organised around that path.
 
-The route evidence leaves an explanation three features to account for. The stablecoin gain occurs mainly across pairs rather than through repeated substitution within matched pairs; it appears on short and long paths alike and on routes that stay within one exchange as well as routes that do not; and the measured WETH-pairing persistence shows that route opportunities can outlast the protocol rule that first created them. Together these narrow the candidates. An explanation cannot rest on the composition of the routes that were built, and it cannot rest on repeated intermediary substitution in established markets. It has to say why the markets forming and growing over this period attach themselves to a stablecoin.
+The route evidence leaves an explanation four features to account for. The stablecoin gain occurs mainly across pairs rather than through repeated substitution within matched pairs; it appears on short and long paths alike and on routes that stay within one exchange as well as routes that do not; it is present where every leg was priced by the same unchanged constant-product rule, and absent from the venue whose invariant is built for pegged assets, which carries no intermediation at all; and the measured WETH-pairing persistence shows that route opportunities can outlast the protocol rule that first created them. Together these narrow the candidates. An explanation cannot rest on the composition of the routes that were built, on the technology that priced them, or on repeated intermediary substitution in established markets. It has to say why the markets forming and growing over this period attach themselves to a stablecoin.

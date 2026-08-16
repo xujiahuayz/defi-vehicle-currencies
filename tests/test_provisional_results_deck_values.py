@@ -56,6 +56,13 @@ def test_route_binding_matches_current_display_values_and_excludes_other_lanes()
         r"\newcommand{\USDTEndpointGapChange}{$+15.27$ pp}",
         r"\newcommand{\CrossVenueCountEnd}{57.2\%}",
         r"\newcommand{\CrossVenueValueEnd}{79.1\%}",
+        # The venue pricing-family rival: the constant-product restriction must
+        # keep the value rotation and must not silently become the smaller move.
+        r"\newcommand{\VenueCPStableValueBase}{0.78}",
+        r"\newcommand{\VenueCPStableValueEnd}{1.33}",
+        r"\newcommand{\VenueAllStableValueChange}{$+0.40$}",
+        r"\newcommand{\VenueCPStableValueChange}{$+0.55$}",
+        r"\newcommand{\VenueCPEpisodeShare}{84.8\%}",
     ):
         assert expected in text
     assert r"\DiagnosticN" not in text

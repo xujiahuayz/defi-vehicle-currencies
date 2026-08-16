@@ -2,40 +2,59 @@
  "argv": [],
  "artefact": "output/exhibits/venue_optics.jsonl",
  "artefact_bytes": 1632,
- "artefact_mtime_ns": 1786849158609767556,
- "artefact_sha256": "4847098b3e3e58045d91cac319d32d7226fba7ac8d5e65896954973fa555947a",
+ "artefact_mtime_ns": 1786853290398505517,
+ "artefact_sha256": "bc669c3b3a6d4632a6314ed15339de5a3dfafc5e3ca738ff0d6899057f096720",
  "code_fingerprint": "1d856aef753d386298eb36b202be2c2e1ac110dca54ec84a589592eb467e230a",
  "code_sources": [
   "scripts/measure_venue_optics.py",
   "src/ddvc/tables.py"
  ],
- "created_at": "2026-08-16T02:59:18+00:00",
+ "created_at": "2026-08-16T04:08:10+00:00",
  "git": {
   "branch": "main",
-  "commit": "5d98ad27b6f291f5a86516b04ed1906ca87a5f8e",
+  "commit": "3b992ae5fc30601629e6650d9b50ac7411c73f47",
   "dirty": true,
   "dirty_generated_files": [
    "data/manifests/output/exhibits/prose_conventions.jsonl.prov.json",
    "data/manifests/output/exhibits/prose_outliers.jsonl.prov.json",
    "data/manifests/output/exhibits/provisional_results_deck_values.tex.prov.json",
    "data/manifests/output/exhibits/venue_shape.jsonl.prov.json",
+   "data/manifests/output/exhibits/venue_technology_rival.jsonl.prov.json",
+   "data/manifests/output/tables/pair_composition.pdf.prov.json",
+   "data/manifests/output/tables/pair_composition.tex.prov.json",
+   "data/manifests/output/tables/usdt_transition.pdf.prov.json",
+   "data/manifests/output/tables/usdt_transition.tex.prov.json",
+   "data/manifests/output/tables/venue_coverage.pdf.prov.json",
+   "data/manifests/output/tables/venue_coverage.tex.prov.json",
    "output/exhibits/prose_conventions.jsonl",
    "output/exhibits/prose_outliers.jsonl",
    "output/exhibits/provisional_results_deck_values.tex",
    "output/exhibits/venue_shape.jsonl",
-   "output/exhibits/.venue_optics.jsonl.yzipwqas.tmp"
+   "output/exhibits/venue_technology_rival.jsonl",
+   "output/tables/pair_composition.pdf",
+   "output/tables/usdt_transition.pdf",
+   "output/tables/venue_coverage.pdf",
+   "data/manifests/output/tables/venue_technology_rival.pdf.prov.json",
+   "data/manifests/output/tables/venue_technology_rival.tex.prov.json",
+   "output/exhibits/.venue_optics.jsonl.z1zvlq98.tmp",
+   "output/tables/venue_technology_rival.pdf",
+   "output/tables/venue_technology_rival.tex"
   ],
   "dirty_tracked_files": [
    "deck/main.pdf",
    "deck/sections/04-results.tex",
+   "docs/findings-freeze.md",
    "docs/reviews/paper-rhetoric.json",
    "paper/sections/01-introduction.tex",
-   "paper/sections/02-setting.tex",
-   "paper/sections/03-dominance.tex",
    "paper/sections/05-rivals.tex",
-   "src/ddvc/provisional_results.py"
+   "src/ddvc/provisional_results.py",
+   "src/ddvc/venue_tables.py",
+   "tests/test_provisional_results_deck_values.py",
+   "tests/test_venue_rival_support.py"
   ],
-  "dirty_untracked_files": []
+  "dirty_untracked_files": [
+   "scripts/tabulate/render_venue_technology_rival.py"
+  ]
  },
  "inputs": [],
  "libraries": {
@@ -50,7 +69,7 @@
   "format": "jsonl",
   "rows": 10,
   "schema_version": 1,
-  "sha256": "4847098b3e3e58045d91cac319d32d7226fba7ac8d5e65896954973fa555947a"
+  "sha256": "bc669c3b3a6d4632a6314ed15339de5a3dfafc5e3ca738ff0d6899057f096720"
  },
  "python": "3.14.6",
  "rows": 10,

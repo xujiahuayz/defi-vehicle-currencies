@@ -102,8 +102,8 @@
    },
    {
     "source": "paper/sections/05-rivals.tex",
-    "line_start": 35,
-    "line_end": 35,
+    "line_start": 68,
+    "line_end": 68,
     "sha256": "3f7705bd35ce08e8e43a2fc64c577cc41cf1e37616f3c2c7444d797697ee2f89",
     "kind": "named observed transaction",
     "rhetorical_job": "One registered mandate-era transaction (MKR to DAI through two exactly matching ETH legs on the March 2020 crash weekend) makes the v1 routing constraint concrete after its population incidence is stated.",
@@ -156,7 +156,7 @@
    "terminology_judgment": "Reader-facing prose names the measured object as the source and destination assets or their ordered asset pair. It reserves pool for a liquidity contract, venue for an exchange or protocol, and route for the ordered execution sequence; these objects are not used interchangeably."
   },
   "paper/sections/01-introduction.tex": {
-   "sha256": "b7e28d93faeaa13214602275eabdf90eba1562a3111f6d062204bf94b5cebbfe",
+   "sha256": "c51f38ffb20cad2f53f22c857bfd6367c8e0d9305076357217bb2b30f1ae113e",
    "status": "rewritten",
    "exemplars": [
     "literature/text/2020-MakarovSchoar2020Arbitrage-trading-and-arbitrage-in-cryptocurrency-markets.txt:95-205",
@@ -847,7 +847,7 @@
    "exit_handoff": "The section closes by stating the public-liquidity object and quantified coverage boundary."
   },
   "paper/sections/05-rivals.tex": {
-   "sha256": "201d46c2f38882e3edf394ce7131d1f0aa15712f5fa8154b9598e8c28eeb94a2",
+   "sha256": "53f7fdec8aedd26b639fbacadcf3a28b25441ac56522e590970ad854fa005dad",
    "status": "rewritten",
    "exemplars": [
     "literature/text/2021-BoltonKacperczyk2021CarbonRisk-do-investors-care-about-carbon-risk.txt:1221-1260",
@@ -874,6 +874,14 @@
      "raw_exemplar": "literature/text/2021-BoltonKacperczyk2021CarbonRisk-do-investors-care-about-carbon-risk.txt:1635-1702"
     },
     {
+     "heading": "The pricing rule at each leg",
+     "classification": "direct",
+     "incoming_object": "A rotation that survives route construction and exchange span.",
+     "opening_function": "Names exchange technology as the next alternative, contrasts the two invariants that could make a stablecoin leg cheap, and states the account in its strongest form before any restriction is imposed.",
+     "judgment": "Read against Bolton and Kacperczyk 1635-1702, which opens a rival subsection on the exact alternative, gives the economic reason each control could bind, and only then reports how much of the effect survives. Here the technology account is granted its favourable timing and its own mechanism before the constant-product restriction answers it, and the answer keeps the published habit of stating the shrinkage rather than only the survival.",
+     "raw_exemplar": "literature/text/2021-BoltonKacperczyk2021CarbonRisk-do-investors-care-about-carbon-risk.txt:1635-1702"
+    },
+    {
      "heading": "Liquidity in the vehicle's own pools",
      "classification": "direct",
      "incoming_object": "A rotation that survives route construction and exchange span.",
@@ -897,11 +905,16 @@
      13,
      25,
      27,
-     35,
-     42,
-     44
+     29,
+     31,
+     33,
+     58,
+     60,
+     68,
+     75,
+     77
     ],
-    "judgment": "The section now argues by elimination. It states the construction alternative in its strongest form, rejects it with the complexity- and span-stratified changes, bounds what that rejection licenses, then shows that the classical depth channel is defined on the one margin the decomposition found still, and closes on architecture and on what any surviving explanation must say. Read against Bolton and Kacperczyk 1221-1260 and 1635-1702, where each subsection opens on the alternative, answers it with a magnitude, states how much of the effect survives, and carries the survivor forward.",
+    "judgment": "The section argues by elimination. It states the construction alternative in its strongest form and rejects it with the complexity- and span-stratified changes; it then states the exchange-technology alternative, rejects it inside the scope where the pricing rule never changed, and reports that the venue embodying that technology carries no intermediation at all; it then shows that the classical depth channel is defined on the one margin the decomposition found still; and it closes on architecture and on what any surviving explanation must say. Read against Bolton and Kacperczyk 1221-1260 and 1635-1702, where each subsection opens on the alternative, answers it with a magnitude, states how much of the effect survives, and carries the survivor forward.",
     "raw_exemplars": [
      "literature/text/2021-BoltonKacperczyk2021CarbonRisk-do-investors-care-about-carbon-risk.txt:1221-1260",
      "literature/text/2021-BoltonKacperczyk2021CarbonRisk-do-investors-care-about-carbon-risk.txt:1635-1702",
@@ -943,6 +956,56 @@
      },
      {
       "line": 25,
+      "inherited_object": "a rotation that route construction and exchange span failed to explain",
+      "paragraph_function": "states the exchange-technology alternative and the mechanism that would make it work",
+      "relation_to_previous": "carries the surviving result into the next named rival",
+      "economic_subject": "the constant-product and stable-specialised pricing rules and what each charges a trade",
+      "framing_judgment": "The alternative is given its mechanism and its favourable timing before any test, which is Bolton and Kacperczyk's practice of motivating a control economically before adjusting for it",
+      "qualification_leads": false,
+      "judgment": "Defines the two invariants in economic terms rather than naming venues, so the reader can see why the account would predict the rotation."
+     },
+     {
+      "line": 27,
+      "inherited_object": "the technology account and its prediction",
+      "paragraph_function": "defines the restricted scope and the quantity compared",
+      "relation_to_previous": "turns the account into a scope in which it cannot operate",
+      "economic_subject": "route components priced end to end by the reserve product, and excess use within a scope",
+      "framing_judgment": "Design precedes result and the denominator choice is justified by what it removes, not asserted",
+      "qualification_leads": false,
+      "judgment": "States what the account predicts inside the restriction before reporting anything, so the test is falsifiable on its face."
+     },
+     {
+      "line": 29,
+      "inherited_object": "the restricted scope and its prediction",
+      "paragraph_function": "reports the restricted movement, its shrinkage, and its coverage",
+      "relation_to_previous": "answers the prediction with a magnitude",
+      "economic_subject": "stablecoin and native excess use in the constant-product scope, 2024 to 2026",
+      "framing_judgment": "The affirmative result leads and the honest shrinkage follows in the same paragraph, as in Bolton and Kacperczyk's 'about 10%-20% smaller' sentence",
+      "qualification_leads": false,
+      "judgment": "Reports how much of the unrestricted movement the restriction retains and how much of the sample it covers, so survival is not confused with equality."
+     },
+     {
+      "line": 31,
+      "inherited_object": "a rotation present where the pricing rule never changed",
+      "paragraph_function": "reports the zero at the venue that embodies the alternative and bounds the Balancer diagnostic",
+      "relation_to_previous": "adds the complementary fact from the opposite scope",
+      "economic_subject": "all-Curve route components, direct exchange between pegged assets, and Balancer's support",
+      "framing_judgment": "The zero is stated as a support fact about route components rather than as a causal null, and the thin scope is sized before it is read",
+      "qualification_leads": false,
+      "judgment": "Explains why the specialised invariant cannot supply intermediation share at all, which is stronger than the restriction result and independent of it."
+     },
+     {
+      "line": 33,
+      "inherited_object": "two results that together reject the technology account",
+      "paragraph_function": "bounds what a scope restriction can license",
+      "relation_to_previous": "limits the inference just drawn",
+      "economic_subject": "selection into venue families and what the excess-use denominator does and does not remove",
+      "framing_judgment": "The boundary follows the result rather than displacing it, matching the section's other rival subsections",
+      "qualification_leads": false,
+      "judgment": "Names the selection channel concretely and then states the narrower surviving conclusion instead of retreating from it."
+     },
+     {
+      "line": 58,
       "inherited_object": "a rotation that survives construction and span",
       "paragraph_function": "separates deposited capital from size-specific executable liquidity",
       "relation_to_previous": "moves to the classical volume-cost mechanism",
@@ -952,7 +1015,7 @@
       "judgment": "Develops the volume-cost mechanism in AMM markets while separating deposited capital from size-specific executable liquidity."
      },
      {
-      "line": 27,
+      "line": 60,
       "inherited_object": "the distinction between deposited and executable liquidity",
       "paragraph_function": "locates the mechanism on the within-pair margin and confronts it with the matched-pair bound",
       "relation_to_previous": "asks where in the market deeper pools would act",
@@ -962,7 +1025,7 @@
       "judgment": "Derives the mechanism's own prediction, rules it out through continuing markets with an interval already estimated, and names the earlier role it could still play."
      },
      {
-      "line": 35,
+      "line": 68,
       "inherited_object": "a depth channel confined to market formation",
       "paragraph_function": "quantifies the v1 forced-intermediation mandate, traces one registered mandate-era transaction, and reports post-mandate WETH-pairing persistence",
       "relation_to_previous": "moves from where liquidity can act to which routes could be formed at all",
@@ -972,7 +1035,7 @@
       "judgment": "Quantifies the mandate, shows it operating in one registered transaction, and hands to measured persistence and the same-alternatives identification requirement without letting the case substitute for the population fact."
      },
      {
-      "line": 42,
+      "line": 75,
       "inherited_object": "v1--v2 architecture",
       "paragraph_function": "describes v4 singleton settlement and decoded route observability",
       "relation_to_previous": "adds an architecture in which route and external transfers differ",
@@ -982,7 +1045,7 @@
       "judgment": "Describes v4 singleton settlement and decoded route observability and adds an architecture in which route and external transfers differ."
      },
      {
-      "line": 44,
+      "line": 77,
       "inherited_object": "the architecture evidence",
       "paragraph_function": "synthesises the three surviving features and states what any explanation must now say",
       "relation_to_previous": "closes by naming the eliminated candidates and the question they leave",

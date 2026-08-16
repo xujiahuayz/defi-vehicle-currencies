@@ -1,24 +1,39 @@
 {
  "argv": [],
  "artefact": "output/exhibits/provisional_results_deck_values.tex",
- "artefact_bytes": 2231,
- "artefact_mtime_ns": 1786848455684929988,
- "artefact_sha256": "7e8ff15fc93b176c6b87851b7be2c2b0293fbb44d302357e96fc7c75b948462a",
- "code_fingerprint": "a0845b567441da0a4cf4a0ce454ad7f26778a77c5e129cb12ce43157a201d663",
+ "artefact_bytes": 2849,
+ "artefact_mtime_ns": 1786852663972124636,
+ "artefact_sha256": "f4d04f6c2f914dad7425fe2cdfb5b74cb7c497bcef18df70525436590da5f839",
+ "code_fingerprint": "9aa4225e8cc25e3757303b4afa9322ad557142ee3ab055de2e82f13ddc81ce31",
  "code_sources": [
   "scripts/tabulate/render_provisional_results_deck_values.py",
   "src/ddvc/provisional_results.py"
  ],
- "created_at": "2026-08-16T02:47:35+00:00",
+ "created_at": "2026-08-16T03:57:43+00:00",
  "git": {
   "branch": "main",
-  "commit": "5d98ad27b6f291f5a86516b04ed1906ca87a5f8e",
+  "commit": "3b992ae5fc30601629e6650d9b50ac7411c73f47",
   "dirty": true,
-  "dirty_generated_files": [],
-  "dirty_tracked_files": [
-   "src/ddvc/provisional_results.py"
+  "dirty_generated_files": [
+   "data/manifests/output/exhibits/venue_technology_rival.jsonl.prov.json",
+   "output/exhibits/venue_technology_rival.jsonl",
+   "data/manifests/output/tables/venue_technology_rival.pdf.prov.json",
+   "data/manifests/output/tables/venue_technology_rival.tex.prov.json",
+   "output/tables/venue_technology_rival.pdf",
+   "output/tables/venue_technology_rival.tex"
   ],
-  "dirty_untracked_files": []
+  "dirty_tracked_files": [
+   "deck/sections/04-results.tex",
+   "docs/reviews/paper-rhetoric.json",
+   "paper/sections/01-introduction.tex",
+   "paper/sections/05-rivals.tex",
+   "src/ddvc/provisional_results.py",
+   "src/ddvc/venue_tables.py",
+   "tests/test_venue_rival_support.py"
+  ],
+  "dirty_untracked_files": [
+   "scripts/tabulate/render_venue_technology_rival.py"
+  ]
  },
  "inputs": [
   {
@@ -104,6 +119,18 @@
    "exists": true,
    "path": "data/manifests/output/exhibits/cross_venue_routing_inference.jsonl.prov.json",
    "sha256": "9806c117e2346adc27a605d02e4e628419c695883109bfe68c94e039837925f7"
+  },
+  {
+   "bytes": 76650,
+   "exists": true,
+   "path": "output/exhibits/venue_technology_rival.jsonl",
+   "sha256": "c67cfab478f404ec2eb0baf293866fb2262da1834d1a3f60d5b6f71a3cd240a0"
+  },
+  {
+   "bytes": 1912,
+   "exists": true,
+   "path": "data/manifests/output/exhibits/venue_technology_rival.jsonl.prov.json",
+   "sha256": "57729407cb05ca050efdc0d8a67ebafff20796bef9ae036be22a117fd9f50fe9"
   }
  ],
  "libraries": {
@@ -114,12 +141,12 @@
  },
  "notes": "Generated working-paper and deck display macros bound to current certified route-composition, excess-use, integration, and routing exhibits.",
  "payload_identity": {
-  "bytes": 2231,
+  "bytes": 2849,
   "format": "binary",
   "schema_version": 1,
-  "sha256": "7e8ff15fc93b176c6b87851b7be2c2b0293fbb44d302357e96fc7c75b948462a"
+  "sha256": "f4d04f6c2f914dad7425fe2cdfb5b74cb7c497bcef18df70525436590da5f839"
  },
  "python": "3.14.6",
- "rows": 2650,
+ "rows": 2757,
  "script": "scripts/tabulate/render_provisional_results_deck_values.py"
 }
