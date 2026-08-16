@@ -1985,3 +1985,163 @@ before it spreads to a consumer that matters.**
   route cost is blocked.
 - The M3 12:03 handoff stays unchecked; its live remainder is still the E1/D3
   generation identities and the two unchanged findings passes.
+
+## 2026-08-16 — The venue pricing-technology rival, rejected on rebuilt evidence
+
+**Targeted check.** None. The freeze gate is RED at the same four blockers
+(node E1 specification lock; empirical model ledger; node B full-text
+literature ledger; two unchanged findings passes), verified again before and
+after this iteration. All four remain structurally gated exactly as recorded on
+2026-08-15: E1 and the model ledger need the closed E0 exploration, and the
+literature ledger needs Java or Studio for Mukhin. The previous iteration
+advanced a scientific object, so this one could have been engineering; it
+turned out to be both, because the evidence it needed was stale.
+
+**REGRESSION-CHECK filed before mutation.** Estimand at risk: the venue rival's
+object is the **excess-use ratio** (intermediary share divided by endpoint-demand
+share) on complete route components within a venue scope, annual, on the full
+route calendar. It is not the spec-lock `vehicle_transition` two-leg stable
+share and not the matched January--June window governing Sections 3 and 5.1;
+the prose says so and the table note repeats it. Evidence generation at risk:
+`venue_technology_rival.jsonl`, which had to be proved current before any macro
+could quote it. Prior correction at risk: "calendar time is not treatment" plus
+the `forbidden_interpretation` bar on technology and aggregator causality — a
+venue-scope restriction is a composition test, and Curve's zero is a support
+statement about route components, never a causal null. Both are written into
+the subsection's boundary paragraph.
+
+**The evidence was stale, and not only on bookkeeping.** The exhibit failed
+`require_certified_presentation_source` because its sidecar predates the
+`payload_identity` schema. That alone would have been the "certificate mismatch
+is not scientific evidence" case the brief tells us to close through the owner
+and move on. It was not that case: `code_fingerprint(record["code_sources"])`
+no longer matched the record, and the recorded input directory held **2,277**
+entries against **2,332** today. The exhibit was stale on producer code and on
+calendar. Rerunning `scripts/test_venue_technology_rival.py` over all 2,332
+days and four venue scopes (about 45 minutes, 8 workers) was the only honest
+route, and the numbers did move: the 2024 constant-product stable value ratio
+went from 0.95 in the stale file to 0.78 in the rerun.
+
+**Cross-producer reproduction, worth recording.** The rerun's 2026 all-venue
+count ratios are stable **1.41** and native **0.77**, matching the certified
+`docs/findings-freeze.md` figures (1.41 and 0.77) that come from
+`vehicle_excess_use.jsonl`, a different producer on a different path. That is an
+independent check on both.
+
+**The result.** The rival is that the rotation is an adoption of exchange
+technology: Curve's invariant interpolates toward a flat curve near parity, so a
+stablecoin leg became cheap once venues priced pegged assets on a curve built
+for them, and the stable-specialised pools grew over the same years. Two facts
+reject it.
+
+1. Restricting to route components every leg of which prices on the
+   constant-product invariant — a rule common to Uniswap v1--v4 and SushiSwap
+   v2--v3 and unchanged across the sample, covering **84.8%** of 2026
+   candidate-currency intermediary episodes — does not weaken the value
+   rotation but **sharpens** it. Stable excess use rises 0.78 to 1.33 there
+   against 0.84 to 1.24 across all venues: **+0.55 against +0.40**. Native falls
+   to 0.62. By count the two paths are nearly identical (1.28 to 1.42 against
+   1.27 to 1.41), which is the honest reading, since stablecoins were already
+   over-represented as intermediaries by count from 2020.
+2. **All-Curve route components carry zero intermediary episodes in every year
+   of the sample.** The venue that embodies the alternative supplies no
+   intermediation at all: the specialised invariant is used to exchange two
+   pegged assets directly, so the pricing rule that makes stablecoin legs cheap
+   operates on trades the vehicle measure excludes by construction. Curve legs
+   still appear inside cross-venue routes, which the all-venue scope counts;
+   what the sample contains no instance of is a route intermediated entirely
+   within the specialised invariant.
+
+Balancer is reported as a composition diagnostic and carries no weight: 39,536
+intermediary episodes in its busiest year against 8,767,213 in the
+constant-product scope's, with ratios swinging accordingly. The producer leaves
+it technologically unlabelled because the source mixes weighted and stable pool
+families.
+
+**Owner discipline.** No new estimator and no new exhibit.
+`src/ddvc/venue_tables.py`, the existing venue-table owner, gained
+`venue_technology_rival_values` and its renderer;
+`scripts/tabulate/render_venue_technology_rival.py` follows the one-script-per-table
+convention of `render_venue_coverage.py`. `src/ddvc/provisional_results.py`, the
+existing macro owner, gained the scope macros behind three guards that withhold
+the **entire** macro set if the constant-product movement turns negative, stops
+exceeding the all-venue movement, or if any all-Curve scope-year ever reports an
+intermediary episode. The table renderer distinguishes a scope-year with no
+route components ("no routes", Balancer 2020) from one whose components carry no
+intermediation ("no intermediation", Curve throughout) instead of printing the
+same blank for both.
+
+**Consumers the shared owner invalidated.** Amending `venue_tables.py` made
+`venue_coverage.tex/pdf` stale, and regenerating the macro file made
+`pair_composition` and `usdt_transition` stale. All three were re-rendered
+through their own scripts; their `.tex` bytes are unchanged and only the PDF
+build metadata moved.
+
+**Prose.** Section 5.2 is new, written from the Bolton--Kacperczyk rival grammar
+after rereading the raw passages at lines 1221--1260 and 1635--1702: open on the
+alternative at full strength with its mechanism and its favourable timing,
+answer with a magnitude, state plainly how the restricted magnitude compares
+with the unrestricted one, then bound what a scope restriction licenses. The
+"about 10%--20% smaller" honesty move in that passage is the model for the
+sentence comparing +0.55 with +0.40, and the industry-fixed-effects result at
+BK 1246--1260 is the precedent for reporting that a restriction can strengthen
+rather than absorb an effect. Table 5 reports all four families for all seven
+years. The introduction roadmap now names the pricing rule, and the section's
+closing paragraph carries four features rather than three.
+`docs/reviews/paper-rhetoric.json` records the new opening, five new paragraph
+handoffs, the relocated v1 transaction-case fingerprint, and a rewritten
+section judgment.
+
+**Deck.** No new frame. The existing venue-scope frame carries the
+pricing-family sentence in place. Its figure was resized from
+0.46 to 0.41 `\textheight` with a compensating `\vspace` so that the frame's
+overfull-box set is **identical to the pre-change baseline** (I compiled the
+baseline to confirm). Page 14 was rendered and inspected: no overflow, figure
+legible, 35 pages, `audit_deck_evidence.py` PASS. The frame's ESTIMAND-BOUNDARY
+comment now records that the pricing-family sentence is a separate estimand on a
+separate support.
+
+**Validation.** `check_deliverable_conformance.py`: all blocking checks pass;
+paper 34 pages / 0 undefined (was 31), deck 35 pages / 0 undefined, the same 2
+advisories (over-used constructions, prose shape). The `rather_than`
+construction alarm did fire at 0.802 per 1,000 words against a corpus maximum of
+0.572; three complete thoughts were rewritten, not word-substituted, and it is
+back in range at 0.501. `audit_deck_evidence.py` PASS.
+`check_jfe_rhetoric_review.py` current. 333 prose/exhibit/provenance/deck/
+rhetoric/table/venue tests pass.
+
+**Two pre-existing failures, neither introduced here.**
+`tests/test_route_cost_panel.py` and `tests/test_route_state.py` still fail at
+collection on `v2_audit_token_decimals.parquet.prov.json` drift (carried from
+2026-08-16, first entry). **I did not close it**: a `verify()` probe on that
+manifest did not return within ~40 minutes — its sidecar is 26 MB — and I
+stopped it rather than let it starve the producer rerun. It remains the right
+next diagnosis and it is bounded: the freeze gate reports the V2 event-source
+certificate as "not required by the executable claim-input perimeter".
+Separately, `tests/test_audit_findings_freeze.py::test_optional_artifact_gates_follow_only_executable_claim_inputs`
+fails on `docs/specification-lock.json`, which no commit since `66f8858` has
+touched and which this iteration did not modify.
+
+**Commit:** `8b30ba6`.
+
+**Blocking count: 4** (unchanged).
+
+**For the next iteration.**
+- Do not re-derive that the gate needs Studio or Java. Keep advancing scientific
+  objects.
+- Remaining unused certified rival evidence: `routing_technology_windows.jsonl`
+  (pre/post windows around auto-router releases). It sits under spec-lock claim
+  1, whose `execution_gate` is `blocked_transaction_state_frontier` and whose
+  `forbidden_interpretation` bars an aggregator-causality reading — any use is
+  descriptive window composition only. With this iteration's pass, the
+  venue-technology exhibit is now consumed and no longer on that list.
+- The `v2_audit_token_decimals` manifest drift is the standing engineering
+  question. Budget for a slow `verify()` on a 26 MB sidecar, or read the sidecar
+  directly and compare recorded against observed identity fields rather than
+  calling the full verifier.
+- The four venue-shape shortfalls (words, equations, citations, greek, all below
+  the exemplar p25) remain. Section 5 gained roughly 550 words here; the
+  shortfall is still concentrated in the thin Section 6, which defines the cost
+  benchmark and reports nothing because route cost is blocked.
+- The M3 12:03 handoff stays unchecked; its live remainder is still the E1/D3
+  generation identities and the two unchanged findings passes.
