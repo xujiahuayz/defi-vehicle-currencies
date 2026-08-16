@@ -2,7 +2,7 @@
  "argv": [],
  "artefact": "output/tables/pair_composition.tex",
  "artefact_bytes": 1279,
- "artefact_mtime_ns": 1786864093717678880,
+ "artefact_mtime_ns": 1786866234176659556,
  "artefact_sha256": "62d1cb72cd9bdb79a942465cc452a07637ccd28f39f034333d5e4d9242a4e369",
  "code_fingerprint": "b5f8503dac48c9f036870c9c08233520a4af942f0f5ada5bad80ed12b79111bb",
  "code_sources": [
@@ -11,18 +11,28 @@
   "src/ddvc/paper_tables.py",
   "src/ddvc/presentation.py"
  ],
- "created_at": "2026-08-16T07:08:14+00:00",
+ "created_at": "2026-08-16T07:43:55+00:00",
  "git": {
   "branch": "main",
-  "commit": "62f7e6ba281478865ea9fe69e6455d7551e04800",
+  "commit": "a970f594057a6fc87e6a3445e5b51cff2914a2e6",
   "dirty": true,
   "dirty_generated_files": [
+   "data/manifests/output/exhibits/prose_conventions.jsonl.prov.json",
+   "data/manifests/output/exhibits/prose_outliers.jsonl.prov.json",
    "data/manifests/output/exhibits/vehicle_transition_pair_decomposition_deck_values.tex.prov.json",
-   "data/manifests/output/tables/pair_composition.pdf.prov.json",
+   "data/manifests/output/exhibits/venue_optics.jsonl.prov.json",
+   "data/manifests/output/exhibits/venue_shape.jsonl.prov.json",
+   "output/exhibits/prose_conventions.jsonl",
+   "output/exhibits/prose_outliers.jsonl",
    "output/exhibits/vehicle_transition_pair_decomposition_deck_values.tex",
+   "output/exhibits/venue_optics.jsonl",
+   "output/exhibits/venue_shape.jsonl",
    "output/tables/pair_composition.pdf"
   ],
   "dirty_tracked_files": [
+   "deck/main.pdf",
+   "docs/reviews/paper-rhetoric.json",
+   "paper/sections/03-dominance.tex",
    "scripts/build_vehicle_transition_pair_deck_values.py",
    "tests/test_vehicle_transition_pair_deck_values.py"
   ],
@@ -30,16 +40,16 @@
  },
  "inputs": [
   {
-   "bytes": 11409,
+   "bytes": 13739,
    "exists": true,
    "path": "output/exhibits/vehicle_transition_pair_decomposition_deck_values.tex",
-   "sha256": "ec6e74ea2b84aa168af35762463b1c1347dd73aee4e26ff6b0538224ac256f63"
+   "sha256": "cca0279e4075533d24ec975dd22d7f5363b99966662c7c13d4ce50cb659ef470"
   },
   {
-   "bytes": 3442,
+   "bytes": 3211,
    "exists": true,
    "path": "data/manifests/output/exhibits/vehicle_transition_pair_decomposition_deck_values.tex.prov.json",
-   "sha256": "73706a370e86063a506bac7899a3b22bb4b3a8b69acd35fbf54308e7a58c248f"
+   "sha256": "3136bd169a1855ff244596ce8732e2e39437491fd50628dcd60b1f870310716c"
   },
   {
    "bytes": 3987,

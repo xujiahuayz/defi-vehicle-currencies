@@ -2,17 +2,17 @@
  "argv": [],
  "artefact": "output/exhibits/prose_conventions.jsonl",
  "artefact_bytes": 3080,
- "artefact_mtime_ns": 1786864834908157701,
- "artefact_sha256": "03166c66d7702e30de5e41c9ca73fca2e30d40c38781a9abc0d5a467a9ff6254",
+ "artefact_mtime_ns": 1786866597279438165,
+ "artefact_sha256": "4eed325f5c5694a26f3a25087a10ce583ce576720abbfa0401ad4297c12c575a",
  "code_fingerprint": "855e4cea8ba498e8bb720f072b29f9645df3c0bee4fbe4c26dbd5cb903686b44",
  "code_sources": [
   "scripts/measure_prose_conventions.py",
   "src/ddvc/tables.py"
  ],
- "created_at": "2026-08-16T07:20:34+00:00",
+ "created_at": "2026-08-16T07:49:57+00:00",
  "git": {
   "branch": "main",
-  "commit": "62f7e6ba281478865ea9fe69e6455d7551e04800",
+  "commit": "a970f594057a6fc87e6a3445e5b51cff2914a2e6",
   "dirty": true,
   "dirty_generated_files": [
    "data/manifests/output/exhibits/prose_outliers.jsonl.prov.json",
@@ -26,7 +26,7 @@
    "output/exhibits/venue_optics.jsonl",
    "output/exhibits/venue_shape.jsonl",
    "output/tables/pair_composition.pdf",
-   "output/exhibits/.prose_conventions.jsonl.b6c31yc5.tmp"
+   "output/exhibits/.prose_conventions.jsonl.9fb0v09k.tmp"
   ],
   "dirty_tracked_files": [
    "deck/main.pdf",
@@ -51,7 +51,7 @@
   "format": "jsonl",
   "rows": 19,
   "schema_version": 1,
-  "sha256": "03166c66d7702e30de5e41c9ca73fca2e30d40c38781a9abc0d5a467a9ff6254"
+  "sha256": "4eed325f5c5694a26f3a25087a10ce583ce576720abbfa0401ad4297c12c575a"
  },
  "python": "3.14.6",
  "rows": 19,

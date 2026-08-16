@@ -141,6 +141,23 @@ That entry margin is gross. The decomposition nets it against the corridors that
 % output/exhibits/vehicle_transition_pair_contributions.parquet; macros from
 % scripts/build_vehicle_transition_pair_deck_values.py
 
+Replacement on that scale moves activity between the two populations as well as changing how each is routed, and the decomposition prices the two separately. Corridors observed in both years fell from \BlockWeightBase{} of route activity to \BlockWeightEnd{}, a shift of \BlockShift{}, and from \BlockValueWeightBase{} of the value moved to \BlockValueWeightEnd{}, a shift of \BlockValueShift{}; across exchanges the dollar shift is \BlockValueCrossShift{}. Roughly a fifth of the value in the comparison therefore changed which population of corridors carried it. Against those magnitudes the term itself is \BlockTerm{} by route count and \BlockValueTerm{} by value, the smallest of the four and the only one no other margin overlaps. It is small not because little activity moved but because the two populations are priced almost alike: averaged over the two years, corridors alive in both route \BlockCommonMid{} of their routes and \BlockValueCommonMid{} of their dollars through a stablecoin, against \BlockExclusiveMid{} and \BlockValueExclusiveMid{} for corridors alive in only one, gaps of \BlockGap{} and \BlockValueGap{}. The term is negative in every weighting and every route scope: holding both populations at those midpoint routing rates, the activity that changed population lowered the stablecoin share rather than raising it. The rotation is thus not activity migrating into corridors that already used the challenger. It is that the population receiving the activity routes differently from the one it replaced. \citet{AmitiItskhokiKonings2022Dominant} find invoicing currency to be close to a fixed attribute of an exporter, switching for a small minority of observations over almost four years, with the composition of destinations explaining little of the cross-sectional variation. Choice is similarly sticky inside a continuing corridor here; the difference is that the population of corridors turns over fast enough for composition to carry the whole aggregate change.
+% The fourth and last term of the identity, common_support_mass, published as
+% the two factors the decomposition forms it from: the change in the common
+% block's share of activity and the midpoint gap between the two blocks'
+% stablecoin routing rates. The producer proves, on the same row the other
+% paragraphs read, that the two blocks partition activity in each year, that
+% each year's aggregate stablecoin share is their activity-weighted mean, and
+% that the two published factors multiply to that row's own term. Midpoint
+% rates are the price this symmetric decomposition puts on migrated mass and
+% are not a claim that the blocks route alike within a year -- the paragraph
+% above gives the year-by-year levels of the exclusive block. Descriptive and
+% non-causal like the paragraphs above: the mass shift is realised composition,
+% not corridor entry or exit induced by anything, and the counterfactual in the
+% penultimate sentence is the term's own ceteris paribus, not a treatment.
+% output/exhibits/vehicle_transition_pair_decomposition.jsonl; macros from
+% scripts/build_vehicle_transition_pair_deck_values.py
+
 \subsection{USDT's intermediary role}
 \label{sec:dominance:excess}
 

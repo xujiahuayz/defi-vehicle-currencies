@@ -110,6 +110,33 @@ SUPPORT_COHORTS = (
     ),
 )
 COHORT_SCOPES = (("", "pooled"), *ELIGIBILITY_SCOPES)
+# The fourth and last term of the identity, and the only one no sentence reads.
+# `common_support_mass` prices the migration of activity between the two blocks
+# of corridors the decomposition already separates: corridors observed in both
+# years and corridors observed in only one. It is a product of two factors the
+# exhibit publishes but the deck values never expose,
+#     common_support_mass = (S_C_bar - S_E_bar) (W_2026 - W_2024),
+# a mass shift times the routing gap between the blocks at their two-year
+# midpoint. Publishing the factors separates *where* activity went from *how the
+# receiving block routes*, which the netted product conflates: the shift is
+# large and the price of it is small, so the term is second order while the
+# exclusive-pair term next to it is not. The midpoint gap is the price this
+# symmetric decomposition puts on a unit of migrated mass; it is not a
+# statement that the two blocks route alike in either year, and the cohort
+# reading above gives the year-by-year levels. Both blocks' year shares are
+# read off the same row and reconciled against that row's own endpoints, so a
+# factor can never be printed against a total it does not belong to.
+SUPPORT_BLOCKS = (
+    ("Common", "W", "S_C"),
+    ("Exclusive", "E", "S_E"),
+)
+BLOCK_SCOPES = COHORT_SCOPES
+BLOCK_COLUMNS = tuple(
+    f"{stem}_{endpoint}"
+    for _prefix, weight, share in SUPPORT_BLOCKS
+    for stem in (weight, share)
+    for endpoint in ("baseline", "comparison")
+)
 
 
 def _signed_pp(value: float) -> str:
@@ -171,6 +198,7 @@ def _scope_rows(decomposition: pd.DataFrame, metric: str) -> dict[str, pd.Series
         "support_and_exclusive_joint",
         "identity_error",
         *TERMS,
+        *BLOCK_COLUMNS,
     }
     missing = sorted(required - set(decomposition.columns))
     if missing:
@@ -205,6 +233,7 @@ def _scope_rows(decomposition: pd.DataFrame, metric: str) -> dict[str, pd.Series
             "support_and_exclusive_joint",
             "identity_error",
             *TERMS,
+            *BLOCK_COLUMNS,
         ]
         if not all(math.isfinite(float(row[column])) for column in numeric):
             raise ValueError("pair decomposition contains a non-finite accounting cell")
@@ -756,6 +785,77 @@ def _support_cohorts(
     return cohorts_out
 
 
+def _support_mass_factors(row: pd.Series, metric: str, scope: str) -> dict[str, float]:
+    """Split the support-mass term into the mass that moved and the price of it.
+
+    See ``SUPPORT_BLOCKS`` for the identity. Nothing here is a re-estimation:
+    every quantity is a cell of the row the caller already validated, and the
+    function's work is to prove that the two published factors are the factors
+    of that row's own term. Three premises come first -- the two block weights
+    partition activity in each year, and each year's aggregate stablecoin share
+    is the activity-weighted mean of the two block shares -- because a mass
+    shift and a block gap are only the factors of this term if the blocks
+    exhaust the year they are read from. The midpoint gap is then formed and
+    multiplied out against ``common_support_mass`` itself.
+    """
+    weights: dict[str, dict[str, float]] = {}
+    shares: dict[str, dict[str, float]] = {}
+    for prefix, weight_stem, share_stem in SUPPORT_BLOCKS:
+        weights[prefix] = {
+            endpoint: float(row[f"{weight_stem}_{endpoint}"])
+            for endpoint in ("baseline", "comparison")
+        }
+        shares[prefix] = {
+            endpoint: float(row[f"{share_stem}_{endpoint}"])
+            for endpoint in ("baseline", "comparison")
+        }
+        if not all(0 <= value <= 1 for value in weights[prefix].values()):
+            raise ValueError(f"{metric} {scope} {prefix} block weight leaves the unit range")
+        if not all(0 <= value <= 1 for value in shares[prefix].values()):
+            raise ValueError(f"{metric} {scope} {prefix} block share leaves the unit range")
+    for endpoint, aggregate in (
+        ("baseline", "baseline_stable_share"),
+        ("comparison", "comparison_stable_share"),
+    ):
+        partition = sum(weights[prefix][endpoint] for prefix, _w, _s in SUPPORT_BLOCKS)
+        if not math.isclose(partition, 1.0, abs_tol=1e-12):
+            raise ValueError(
+                f"{metric} {scope} {endpoint} block weights do not partition activity, "
+                "so a mass shift between them is not a shift of the whole"
+            )
+        mean = sum(
+            weights[prefix][endpoint] * shares[prefix][endpoint]
+            for prefix, _w, _s in SUPPORT_BLOCKS
+        )
+        if not math.isclose(mean, float(row[aggregate]), abs_tol=1e-12):
+            raise ValueError(
+                f"{metric} {scope} {endpoint} block shares do not reconcile that "
+                "year's aggregate stablecoin share"
+            )
+    common_mid = (shares["Common"]["baseline"] + shares["Common"]["comparison"]) / 2
+    exclusive_mid = (
+        shares["Exclusive"]["baseline"] + shares["Exclusive"]["comparison"]
+    ) / 2
+    gap = common_mid - exclusive_mid
+    shift = weights["Common"]["comparison"] - weights["Common"]["baseline"]
+    term = float(row["common_support_mass"])
+    if not math.isclose(gap * shift, term, abs_tol=1e-12):
+        raise ValueError(
+            f"{metric} {scope} support-mass factors do not multiply to the term"
+        )
+    return {
+        "common_baseline": shares["Common"]["baseline"],
+        "common_comparison": shares["Common"]["comparison"],
+        "common_mid": common_mid,
+        "exclusive_mid": exclusive_mid,
+        "weight_baseline": weights["Common"]["baseline"],
+        "weight_comparison": weights["Common"]["comparison"],
+        "gap": gap,
+        "shift": shift,
+        "term": term,
+    }
+
+
 def _scope_margin_total(
     row: pd.Series, prefix: str, statistics: dict[str, float]
 ) -> str:
@@ -1148,6 +1248,33 @@ def render_pair_decomposition_deck_values(
                         f"{{{_share(float(statistics['open_weight']))}}}",
                     ]
                 )
+        # The support-mass term as its two factors: how much activity migrated
+        # between the two blocks, and what this decomposition prices that
+        # migration at.
+        for suffix, scope in BLOCK_SCOPES:
+            factors = _support_mass_factors(scope_rows[scope], metric, scope)
+            lines.extend(
+                [
+                    f"\\newcommand{{\\Block{infix}{suffix}Term}}"
+                    f"{{{_signed_pp(factors['term'])}}}",
+                    f"\\newcommand{{\\Block{infix}{suffix}Shift}}"
+                    f"{{{_signed_pp(factors['shift'])}}}",
+                    f"\\newcommand{{\\Block{infix}{suffix}Gap}}"
+                    f"{{{_signed_pp(factors['gap'])}}}",
+                    f"\\newcommand{{\\Block{infix}{suffix}CommonBase}}"
+                    f"{{{_share(factors['common_baseline'])}}}",
+                    f"\\newcommand{{\\Block{infix}{suffix}CommonEnd}}"
+                    f"{{{_share(factors['common_comparison'])}}}",
+                    f"\\newcommand{{\\Block{infix}{suffix}CommonMid}}"
+                    f"{{{_share(factors['common_mid'])}}}",
+                    f"\\newcommand{{\\Block{infix}{suffix}ExclusiveMid}}"
+                    f"{{{_share(factors['exclusive_mid'])}}}",
+                    f"\\newcommand{{\\Block{infix}{suffix}WeightBase}}"
+                    f"{{{_share(factors['weight_baseline'])}}}",
+                    f"\\newcommand{{\\Block{infix}{suffix}WeightEnd}}"
+                    f"{{{_share(factors['weight_comparison'])}}}",
+                ]
+            )
     return "\n".join(lines) + "\n"
 
 

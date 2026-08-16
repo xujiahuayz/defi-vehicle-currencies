@@ -47,6 +47,25 @@ def _row(metric: str, scope: str, scale: float = 1.0) -> dict[str, object]:
         "exclusive_pair_contribution": 0.176,
     }
     total = sum(terms.values())
+    comparison = base + total
+    # Block weights and block stablecoin shares that satisfy the same three
+    # premises the renderer proves: the two blocks partition activity in each
+    # year, each year's aggregate share is their activity-weighted mean, and
+    # their midpoint gap times the common block's mass shift is exactly
+    # ``common_support_mass``. Here the shift is -10 pp and the term is -0.5 pp,
+    # so the gap must be 5 pp; the baseline pair (22.4\%, 16.4\%) averages to the
+    # 20\% baseline under the 60/40 split, and the comparison pair straddles that
+    # year's aggregate by 2 pp so the gap holds at every scale.
+    blocks = {
+        "W_baseline": 0.60,
+        "W_comparison": 0.50,
+        "S_C_baseline": 0.224,
+        "S_E_baseline": 0.164,
+        "S_C_comparison": comparison + 0.02,
+        "S_E_comparison": comparison - 0.02,
+    }
+    blocks["E_baseline"] = 1 - blocks["W_baseline"]
+    blocks["E_comparison"] = 1 - blocks["W_comparison"]
     return {
         "metric": metric,
         "reporting_scope": scope,
@@ -57,13 +76,14 @@ def _row(metric: str, scope: str, scale: float = 1.0) -> dict[str, object]:
         "formula_id": "midpoint_common_exclusive_support_v1",
         "mechanism_status": "descriptive_realised_composition_noncausal",
         "baseline_stable_share": base,
-        "comparison_stable_share": base + total,
+        "comparison_stable_share": comparison,
         "total_change": total,
         "support_and_exclusive_joint": (
             terms["common_support_mass"] + terms["exclusive_pair_contribution"]
         ),
         "identity_error": 0.0,
         **terms,
+        **blocks,
     }
 
 
@@ -870,6 +890,84 @@ def test_support_cohorts_rejects_a_switching_weth_endpoint_cohort_corridor() -> 
     with pytest.raises(ValueError, match="eligibility identity"):
         render_pair_decomposition_deck_values(
             _decomposition(), _fixed_effects(), _usdt_integration(), contributions
+        )
+
+
+def test_support_mass_term_is_published_as_a_shift_times_a_block_gap() -> None:
+    """The fourth term's two factors, and the blocks they are formed from."""
+    rendered = render_pair_decomposition_deck_values(
+        _decomposition(), _fixed_effects(), _usdt_integration(), _contributions()
+    )
+    for macro, value in (
+        # A 10 pp migration of activity out of the common block, priced at the
+        # 5 pp midpoint gap between the two blocks' routing rates.
+        ("BlockTerm", "$-0.5$ pp"),
+        ("BlockShift", "$-10.0$ pp"),
+        ("BlockGap", "$+5.0$ pp"),
+        ("BlockWeightBase", "60.0\\%"),
+        ("BlockWeightEnd", "50.0\\%"),
+        ("BlockCommonBase", "22.4\\%"),
+        ("BlockCommonEnd", "47.0\\%"),
+        ("BlockCommonMid", "34.7\\%"),
+        ("BlockExclusiveMid", "29.7\\%"),
+        # Every scope and both weightings carry the same factorisation.
+        ("BlockSingleGap", "$+5.0$ pp"),
+        ("BlockCrossGap", "$+5.0$ pp"),
+        ("BlockValueTerm", "$-0.5$ pp"),
+        ("BlockValueShift", "$-10.0$ pp"),
+        ("BlockValueCrossShift", "$-10.0$ pp"),
+    ):
+        assert f"\\newcommand{{\\{macro}}}{{{value}}}" in rendered
+    # The published factors multiply back to the published term.
+    assert (
+        pytest.approx(
+            _points(_macro(rendered, "BlockShift"))
+            * _points(_macro(rendered, "BlockGap"))
+            / 100,
+            abs=1e-9,
+        )
+        == _points(_macro(rendered, "BlockTerm"))
+    )
+
+
+def test_support_mass_requires_blocks_that_partition_the_year() -> None:
+    """A gap between blocks prices a mass shift only if the blocks exhaust it."""
+    frame = _decomposition()
+    scoped = frame["formula_id"].eq("midpoint_common_exclusive_support_v1")
+    frame.loc[scoped, "E_baseline"] += 0.05
+    with pytest.raises(ValueError, match="do not partition activity"):
+        render_pair_decomposition_deck_values(
+            frame, _fixed_effects(), _usdt_integration(), _contributions()
+        )
+
+
+def test_support_mass_requires_blocks_that_reconcile_their_own_year() -> None:
+    frame = _decomposition()
+    scoped = frame["formula_id"].eq("midpoint_common_exclusive_support_v1")
+    frame.loc[scoped, "S_C_comparison"] += 0.05
+    with pytest.raises(ValueError, match="do not reconcile that"):
+        render_pair_decomposition_deck_values(
+            frame, _fixed_effects(), _usdt_integration(), _contributions()
+        )
+
+
+def test_support_mass_rejects_factors_that_miss_their_own_term() -> None:
+    """Compensating block shares keep both years' means and move only the gap."""
+    frame = _decomposition()
+    scoped = frame["formula_id"].eq("midpoint_common_exclusive_support_v1")
+    frame.loc[scoped, "S_C_baseline"] += 0.02
+    frame.loc[scoped, "S_E_baseline"] -= 0.03
+    with pytest.raises(ValueError, match="do not multiply to the term"):
+        render_pair_decomposition_deck_values(
+            frame, _fixed_effects(), _usdt_integration(), _contributions()
+        )
+
+
+def test_support_mass_requires_the_block_columns() -> None:
+    frame = _decomposition().drop(columns=["S_E_comparison"])
+    with pytest.raises(ValueError, match="missing columns: S_E_comparison"):
+        render_pair_decomposition_deck_values(
+            frame, _fixed_effects(), _usdt_integration(), _contributions()
         )
 
 
