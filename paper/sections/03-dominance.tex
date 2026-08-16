@@ -358,6 +358,51 @@ The rise in USDT's intermediary use relative to its observed route-endpoint use 
 \end{table}
 \FloatBarrier
 
+\subsection{The cross-section within a day}
+\label{sec:dominance:withinday}
+
+Every comparison so far reads across years, which invites the reading that the calendar is doing the work. If the vehicle role is simply whatever the sample period happens to do, then the rotation is a description of 2020 through 2026 and not of how an intermediary is chosen. The construct itself does not require the calendar. Excess use compares two roles of the same asset on the same day, so it can be asked entirely within a day, of the assets that were available that day, with the year absorbed into a fixed effect.
+
+We therefore write Equation~\eqref{eq:excess-use} as a coefficient. The outcome is a currency's share of the day's intermediary episodes in percentage points; the regressor of interest is its own share of that day's route-endpoint episodes in the same units; and each specification above the pooled baseline absorbs a date fixed effect, so the estimate comes from the cross-section of currencies observed on one day. This adds two quantities the ratio cannot express. The slope on endpoint share says whether intermediary use rises more or less than one for one with an asset's own trade demand, and the class intercepts say how much of the role an asset class takes beyond what its demand implies. \citet{AmitiItskhokiKonings2022Dominant} identify currency choice the same way, absorbing the macroeconomic environment in fixed effects so that what remains is the differential response of firms facing the same conditions. The ratio remains the primary extent measure; the regression is the same comparison with the calendar demoted from the identifying variation to a control. The sample is the \DateFETokenDays{} currency-days on which \DateFETokens{} currencies were quoted at a route endpoint with at least twenty route units, spanning \DateFEDays{} days. Inference clusters on date and currency, and on the few-currency cuts on date alone with a thirty-day Bartlett lag, since there the repeated sampling unit is the day.
+
+Absorbing the calendar changes almost nothing. The native premium moves from \DateFEPooledNative{} pooled to \DateFEDayNative{} within day, and the stablecoin premium from \DateFEPooledStable{} to \DateFEDayStable{}; both are estimated imprecisely across currencies, with intervals of \DateFEPooledNativeCI{} and \DateFEPooledStableCI{}. The differences between asset classes are cross-sectional, not a period effect. What does move them is conditioning on the currency's own trade demand. The native intercept falls to \DateFEDemandNative{} with a standard error of \DateFEDemandNativeSE{}, while the stablecoin intercept holds at \DateFEDemandStable{} (\DateFEDemandStableSE{}). The apparent intermediary dominance of the native asset is accounted for by its own demand; the stablecoin's is not. That is the comparison the search-theoretic account of a medium of exchange asks for, since in \citet{KiyotakiWright1989MoneyMedium} an asset is used to intermediate because of what the other assets available at that moment can do, not because of its own turnover. The difference between the two, \DateFEStableMinusNative{} with an interval of \DateFEStableMinusNativeCI{}, is not one this cross-section can separate from zero.
+
+The pass-through of demand into the intermediary role is \DateFESlope{} across currencies within a day (\DateFESlopeSE{}), and \DateFESlopeWithinToken{} (\DateFESlopeWithinTokenSE{}, \DateFESlopeWithinTokenP{}) within a currency and within a day once \DateFEWithinTokenAbsorbed{} currency and day effects are absorbed. A currency that gains a point of trade demand gains about a point of intermediary use; the excess above one in the cross-section is composition between currencies. The slope also differs by class, but not everywhere. Native pass-through exceeds imported by \DateFESlopeNativeMinusImported{}, with an interval of \DateFESlopeNativeMinusImportedCI{}; the stablecoin slope exceeds the native slope by \DateFESlopeStableMinusNative{}, with an interval of \DateFESlopeStableMinusNativeCI{} that the data cannot separate from zero. We report the second because it is the comparison the rotation would predict, and it does not hold.
+
+Restricting the cross-section to the five currencies that carry the vehicle role sharpens it. With the stablecoin class as the base, the native asset intermediates \DateFECandidateNative{} relative to a stablecoin on the same day and at the same trade demand, with an interval of \DateFECandidateNativeCI{} over \DateFECandidateTokenDays{} currency-days. Over all \DateFEClassifiedTokens{} classified currencies the same contrast is \DateFEClassifiedNative{}, with an interval of \DateFEClassifiedNativeCI{}. The two magnitudes answer one question at two scales, and quoting either alone would misstate its size: the candidate set concentrates the day's share mass in five currencies, so its coefficients are large, and the classified set spreads the same question across a long tail whose currencies hold almost none of it, so its coefficients are small and the contrast is not separable there. Inside the stablecoin class the role is not uniform either. Against a fiat-reserve claim on the same day and at the same demand, an on-chain-collateralised stablecoin intermediates \DateFEBackingOnChain{} (\DateFEBackingOnChainCI{}) and a synthetic one \DateFEBackingSynthetic{} (\DateFEBackingSyntheticCI{}), while USDT intermediates \DateFETether{} relative to USDC (\DateFETetherCI{}). The class that gains the role over the sample is not homogeneous in it.
+
+Three features of the design have to be measured before the estimates can be read economically. First, both variables are shares of the same day's route universe, and a currency cannot intermediate a route it terminates, so a mechanical crowd-out channel exists; it is negligible here, since the mean currency-day uses \DateFECeilingMean{} of the routes it does not itself terminate and only \DateFECeilingHalfShare{} of currency-days exceed half of that ceiling, and in any case crowd-out can only push the slope down. Second, each currency's own episodes enter the denominator of both of its shares. Recomputing both against the day's episodes excluding the currency's own raises the slope to \DateFELeaveOutSlope{} (\DateFELeaveOutSlopeSE{}), so the association is not the shared denominator. Third, the twenty-unit floor is a choice, and the slope is \DateFEFloorFiveSlope{} at five units and \DateFEFloorHundredSlope{} at one hundred. Calendar time returns here only as a sample split: refitting on each half of the sample gives slopes of \DateFESlopeEarly{} and \DateFESlopeLate{}, and native intercepts of \DateFENativeEarly{} \DateFENativeEarlyCI{} and \DateFENativeLate{} \DateFENativeLateCI{}, both intervals covering zero. One result does not survive reweighting. Weighting currency-days by route units turns the native intercept to \DateFEWeightedNative{}, so its sign depends on whether each currency-day or each route counts, and we read it as descriptive.
+
+\FloatBarrier
+\begin{table}[tbp]
+\centering
+\caption{Intermediary role within a day}
+\label{tab:within-day-ladder}
+\small
+\input{../output/tables/within_day_ladder.tex}
+\exhibitnote{Currency-day observations on which the currency is quoted at a route endpoint and the day supplies at least twenty route units: \DateFETokenDays{} currency-days over \DateFETokens{} currencies and \DateFEDays{} days. The outcome is the currency's share of the day's intermediary episodes in percentage points; the demand regressor is its share of the day's route-endpoint episodes in the same units. Class premiums are measured against the residual unclassified bucket, with standard errors in parentheses clustered on date and currency. The final row absorbs currency and day effects jointly, so class premiums are not identified there.
+% output/exhibits/excess_use_date_fe_ladder.jsonl; macros from
+% scripts/build_excess_use_date_fe_deck_values.py. Provisional E0 scope: green
+% route-only D3 panel, count-share construct only, not submission-authoritative
+% until the findings freeze admits it. Refresh by rerunning
+% scripts/run_excess_use_date_fe_ladder.py and the macro builder together.
+}
+\end{table}
+\FloatBarrier
+
+\begin{figure}[tbp]
+\centering
+\caption{Within-day intermediary role, conditional on own trade demand}
+\label{fig:within-day-contrasts}
+\includegraphics[width=0.98\textwidth]{../output/figures/within_day_role_contrasts.pdf}
+\exhibitnote{Each row is one coefficient from a regression of a currency's share of the day's intermediary episodes on its own share of that day's route-endpoint episodes, both in percentage points, with date fixed effects absorbing the calendar. Bars are 95\% intervals. A filled marker means the interval clears zero and an open marker means it does not; rows are drawn at the same weight either way. Panel~A measures each class against the residual unclassified bucket over every endpoint-supported currency-day. Panel~B measures the native asset against a stablecoin on the five named candidates and on all classified currencies; the two samples put different amounts of the day's share mass behind the same indicator, so the magnitudes are not comparable. Panel~C measures backing regimes against a fiat-reserve claim and USDT against USDC inside the stablecoin class. The three panels use separate horizontal scales.
+% output/figures/within_day_role_contrasts.pdf; output/exhibits/excess_use_date_fe_ladder.jsonl;
+% producer scripts/figure/build_within_day_contrasts.py. Provisional E0 scope:
+% green route-only D3 panel, count-share construct only, not submission-authoritative
+% until the findings freeze admits it.
+}
+\end{figure}
+
 \subsection{Venue span and route complexity}
 \label{sec:dominance:integration}
 

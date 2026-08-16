@@ -1,0 +1,215 @@
+#!/usr/bin/env python3
+"""Bind the within-day excess-use ladder to paper and deck display macros.
+
+Every displayed number comes from one uniquely identified row of the committed
+ladder or screen exhibit. A selector that matches zero or more than one row is an
+error rather than a silent first-match, because two rows of this exhibit can share
+a term and differ only in sample or specification, and picking the wrong one would
+substitute a five-token magnitude for a thirty-seven-token one.
+
+Reads   output/exhibits/excess_use_date_fe_ladder.jsonl
+        output/exhibits/excess_use_date_fe_screens.jsonl
+Writes  output/exhibits/excess_use_date_fe_deck_values.tex
+"""
+
+from __future__ import annotations
+
+import math
+
+import pandas as pd
+
+from ddvc.paths import OUTPUT_DIR
+from ddvc.presentation import require_certified_presentation_source
+from ddvc.provenance import stamp
+from ddvc.runtime import atomic_output
+
+LADDER = OUTPUT_DIR / "exhibits" / "excess_use_date_fe_ladder.jsonl"
+SCREENS = OUTPUT_DIR / "exhibits" / "excess_use_date_fe_screens.jsonl"
+DECK_VALUES = OUTPUT_DIR / "exhibits" / "excess_use_date_fe_deck_values.tex"
+CODE_SOURCES = ["scripts/build_excess_use_date_fe_deck_values.py"]
+
+ALL = "all_endpoint_supported"
+L1 = "L1 pooled type dummies"
+L2 = "L2 + date FE"
+L3 = "L3 + date FE + own demand share"
+L4 = "L4 two-way token + date FE"
+L5 = "L5 demand x type, date FE"
+L6 = "L6 L3 weighted by route units"
+CUT = "date FE + own demand share, stable base"
+
+# (macro stem, spec, sample, term). Each stem emits a point estimate, a standard
+# error and a ninety-five percent interval, so a caller cannot show a coefficient
+# in the paper without its uncertainty being available in the same file.
+ESTIMATES = (
+    ("PooledNative", L1, ALL, "native"),
+    ("PooledStable", L1, ALL, "stable"),
+    ("DayNative", L2, ALL, "native"),
+    ("DayStable", L2, ALL, "stable"),
+    ("DemandNative", L3, ALL, "native"),
+    ("DemandStable", L3, ALL, "stable"),
+    ("DemandImported", L3, ALL, "imported"),
+    ("DemandStaked", L3, ALL, "staked_native"),
+    ("Slope", L3, ALL, "demand"),
+    ("SlopeWithinToken", L4, ALL, "demand"),
+    ("StableMinusNative", L3, ALL, "stable - native"),
+    ("SlopeStableMinusNative", L5, ALL, "demand_x_stable - demand_x_native"),
+    ("SlopeNativeMinusImported", L5, ALL, "demand_x_native - demand_x_imported"),
+    ("WeightedNative", L6, ALL, "native"),
+    ("WeightedSlope", L6, ALL, "demand"),
+    ("CandidateNative", CUT, "five_named_candidates", "native"),
+    ("CandidateImported", CUT, "five_named_candidates", "imported"),
+    ("ClassifiedNative", CUT, "classified_types_only", "native"),
+    ("ClassifiedImported", CUT, "classified_types_only", "imported"),
+    (
+        "BackingOnChain",
+        "backing regime, date FE + own demand share",
+        "stable_class_only",
+        "backing_on_chain_collateralized",
+    ),
+    (
+        "BackingSynthetic",
+        "backing regime, date FE + own demand share",
+        "stable_class_only",
+        "backing_synthetic",
+    ),
+    (
+        "BackingRWA",
+        "backing regime, date FE + own demand share",
+        "stable_class_only",
+        "backing_mixed_including_rwa",
+    ),
+    (
+        "Tether",
+        "USDT versus USDC, date FE + own demand share",
+        "usdc_usdt_only",
+        "usdt",
+    ),
+    ("SlopeEarly", "L3 refit on calendar half", "first_calendar_half", "demand"),
+    ("SlopeLate", "L3 refit on calendar half", "second_calendar_half", "demand"),
+    ("NativeEarly", "L3 refit on calendar half", "first_calendar_half", "native"),
+    ("NativeLate", "L3 refit on calendar half", "second_calendar_half", "native"),
+)
+
+
+def _row(frame: pd.DataFrame, **identity: object) -> pd.Series:
+    selected = frame
+    for column, value in identity.items():
+        if column not in selected:
+            raise ValueError(f"ladder exhibit lacks identity column {column}")
+        selected = selected.loc[selected[column].eq(value)]
+    if len(selected) != 1:
+        terms = ", ".join(f"{key}={value!r}" for key, value in identity.items())
+        raise ValueError(f"ladder exhibit requires one {terms} row; found {len(selected)}")
+    return selected.iloc[0]
+
+
+def _pp(value: float, decimals: int = 2) -> str:
+    return f"${value:+.{decimals}f}$ pp"
+
+
+def _se(value: float, decimals: int = 2) -> str:
+    return f"{value:.{decimals}f} pp"
+
+
+def _interval(lower: float, upper: float, decimals: int = 2) -> str:
+    return f"$[{lower:+.{decimals}f}, {upper:+.{decimals}f}]$"
+
+
+def _slope(value: float, decimals: int = 3) -> str:
+    return f"{value:.{decimals}f}"
+
+
+def _pvalue(value: float) -> str:
+    if not math.isfinite(value):
+        raise ValueError("a displayed p-value must be finite")
+    if value < 0.001:
+        return "$p < 0.001$"
+    return f"$p = {value:.3f}$"
+
+
+def render(ladder: pd.DataFrame, screens: pd.DataFrame) -> str:
+    lines = [
+        "% Generated by scripts/build_excess_use_date_fe_deck_values.py.",
+        "% Within-day cross-section of the excess-use construct: token-day intermediary",
+        "% count share on own endpoint count share, both in percentage points, date",
+        "% fixed effects absorbing the calendar. Provisional/E0 scope: the estimates run",
+        "% on the green route-only D3 panel and are not submission-authoritative until",
+        "% the findings freeze admits them. Refresh by rerunning",
+        "% scripts/run_excess_use_date_fe_ladder.py then this builder.",
+    ]
+    for stem, spec, sample, term in ESTIMATES:
+        row = _row(ladder, spec=spec, sample=sample, term=term)
+        for column in ("beta", "se", "ci_lower", "ci_upper", "p"):
+            if not math.isfinite(float(row[column])):
+                raise ValueError(f"{stem} has a non-finite {column}")
+        # Slopes are unitless pass-through, so they are not printed with a pp suffix.
+        is_slope = term.startswith("demand")
+        formatted = _slope(float(row["beta"])) if is_slope else _pp(float(row["beta"]))
+        formatted_se = (
+            _slope(float(row["se"])) if is_slope else _se(float(row["se"]))
+        )
+        lines += [
+            f"\\newcommand{{\\DateFE{stem}}}{{{formatted}}}",
+            f"\\newcommand{{\\DateFE{stem}SE}}{{{formatted_se}}}",
+            f"\\newcommand{{\\DateFE{stem}CI}}{{{_interval(float(row['ci_lower']), float(row['ci_upper']))}}}",
+            f"\\newcommand{{\\DateFE{stem}P}}{{{_pvalue(float(row['p']))}}}",
+        ]
+
+    headline = _row(ladder, spec=L3, sample=ALL, term="demand")
+    candidate = _row(ladder, spec=CUT, sample="five_named_candidates", term="native")
+    classified = _row(ladder, spec=CUT, sample="classified_types_only", term="native")
+    lines += [
+        f"\\newcommand{{\\DateFETokenDays}}{{{int(headline['n']):,}}}",
+        f"\\newcommand{{\\DateFETokens}}{{{int(headline['tokens']):,}}}",
+        f"\\newcommand{{\\DateFEDays}}{{{int(headline['dates']):,}}}",
+        f"\\newcommand{{\\DateFEAbsorbedDays}}{{{int(headline['absorbed_df']):,}}}",
+        f"\\newcommand{{\\DateFEWithinTokenAbsorbed}}{{{int(_row(ladder, spec=L4, sample=ALL, term='demand')['absorbed_df']):,}}}",
+        f"\\newcommand{{\\DateFECandidateTokenDays}}{{{int(candidate['n']):,}}}",
+        f"\\newcommand{{\\DateFECandidateDays}}{{{int(candidate['dates']):,}}}",
+        f"\\newcommand{{\\DateFEClassifiedTokenDays}}{{{int(classified['n']):,}}}",
+        f"\\newcommand{{\\DateFEClassifiedTokens}}{{{int(classified['tokens']):,}}}",
+    ]
+
+    ceiling = _row(screens, screen="crowd_out_ceiling")
+    leave_out = _row(screens, screen="leave_own_out_denominator")
+    floor_low = _row(screens, screen="thin_cell_floor_5")
+    floor_high = _row(screens, screen="thin_cell_floor_100")
+    lines += [
+        f"\\newcommand{{\\DateFECeilingMean}}{{{float(ceiling['mean_ceiling_utilisation']):.4f}}}",
+        # LaTeX control sequences take letters only, so a percentile is spelled out;
+        # `\DateFECeilingP99` would parse as a macro followed by a literal 99 and
+        # typeset it in the preamble.
+        f"\\newcommand{{\\DateFECeilingNinetyNinth}}{{{float(ceiling['p99_ceiling_utilisation']):.4f}}}",
+        f"\\newcommand{{\\DateFECeilingHalfShare}}{{{100 * float(ceiling['share_above_half_ceiling']):.2f}\\%}}",
+        f"\\newcommand{{\\DateFELeaveOutSlope}}{{{_slope(float(leave_out['demand_beta']))}}}",
+        f"\\newcommand{{\\DateFELeaveOutSlopeSE}}{{{_slope(float(leave_out['demand_se']))}}}",
+        f"\\newcommand{{\\DateFEFloorFiveSlope}}{{{_slope(float(floor_low['demand_beta']))}}}",
+        f"\\newcommand{{\\DateFEFloorHundredSlope}}{{{_slope(float(floor_high['demand_beta']))}}}",
+    ]
+    return "\n".join(lines) + "\n"
+
+
+def main() -> None:
+    provenance_inputs = []
+    for path in (LADDER, SCREENS):
+        provenance_inputs.extend((path, require_certified_presentation_source(path)))
+    ladder = pd.read_json(LADDER, lines=True)
+    screens = pd.read_json(SCREENS, lines=True)
+    rendered = render(ladder, screens)
+    with atomic_output(DECK_VALUES) as temporary:
+        temporary.write_text(rendered, encoding="utf-8")
+    stamp(
+        DECK_VALUES,
+        code_sources=CODE_SOURCES,
+        inputs=provenance_inputs,
+        rows=len(ladder) + len(screens),
+        notes=(
+            "Display macros for the within-day excess-use ladder, its sample and "
+            "regime cuts, and its mechanicalness screens."
+        ),
+    )
+    print(f"wrote {DECK_VALUES.relative_to(OUTPUT_DIR.parent)}")
+
+
+if __name__ == "__main__":
+    main()
