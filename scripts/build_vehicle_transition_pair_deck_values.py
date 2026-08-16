@@ -64,6 +64,13 @@ ELIGIBILITY_MARGINS = (
     ("Reweight", "pair_composition_reweighting"),
     ("NewPair", "comparison_exclusive_composition"),
 )
+# The same eligibility split taken inside each integration scope. A route that
+# stays on one exchange and a route that crosses exchanges are different
+# economic objects, and the pooled split cannot say whether the corridors with
+# no intermediary choice sit in one of them. This asks that question and nothing
+# else: the terms, calendar, and allocation formula are the scope-specific rows
+# of the same certified ledger, never a re-estimation.
+ELIGIBILITY_SCOPES = (("Single", "single_venue"), ("Cross", "cross_venue"))
 
 
 def _signed_pp(value: float) -> str:
@@ -275,14 +282,23 @@ def _market_incidence_row(decomposition: pd.DataFrame) -> pd.Series:
     return row
 
 
-def _pooled_contributions(contributions: pd.DataFrame, metric: str) -> pd.DataFrame:
-    """Pooled 2024--2026 pair contributions under one measure of activity."""
+def _scoped_contributions(
+    contributions: pd.DataFrame, metric: str, scope: str
+) -> pd.DataFrame:
+    """2024--2026 pair contributions under one measure of activity and one scope."""
+    if scope not in SCOPES:
+        raise ValueError(f"unknown reporting scope {scope!r}")
     return contributions[
         contributions["metric"].eq(metric)
-        & contributions["reporting_scope"].eq("pooled")
+        & contributions["reporting_scope"].eq(scope)
         & contributions["baseline_year"].eq(2024)
         & contributions["comparison_year"].eq(2026)
     ]
+
+
+def _pooled_contributions(contributions: pd.DataFrame, metric: str) -> pd.DataFrame:
+    """Pooled 2024--2026 pair contributions under one measure of activity."""
+    return _scoped_contributions(contributions, metric, "pooled")
 
 
 def _pooled_count_contributions(contributions: pd.DataFrame) -> pd.DataFrame:
@@ -500,7 +516,10 @@ def _margin_breadth(
 
 
 def _endpoint_eligibility(
-    contributions: pd.DataFrame, metric: str
+    contributions: pd.DataFrame,
+    metric: str,
+    aggregate: pd.Series,
+    scope: str = "pooled",
 ) -> dict[str, object]:
     """Split each composition margin on whether WETH is an endpoint of the pair.
 
@@ -511,10 +530,17 @@ def _endpoint_eligibility(
     WETH-endpoint route must carry stablecoin share one in both years, and its
     within-pair contribution must be exactly zero -- and then reports what the
     remaining two margins owe to those corridors.
+
+    ``scope`` selects the integration scope the split is taken within, and
+    ``aggregate`` is that scope's own decomposition row. The reweighting margin
+    is reconciled against it before anything is reported, so a scope-specific
+    split can never be printed against another scope's aggregate.
     """
-    scoped = _pooled_contributions(contributions, metric)
+    scoped = _scoped_contributions(contributions, metric, scope)
     if scoped.empty:
-        raise ValueError(f"pair contributions carry no pooled 2024--2026 {metric} rows")
+        raise ValueError(
+            f"pair contributions carry no {scope} 2024--2026 {metric} rows"
+        )
     endpoint = scoped["src"].eq(WETH) | scoped["tgt"].eq(WETH)
     common = scoped[scoped["contribution_component"].eq("within_pair_choice")]
     locked = common[endpoint.loc[common.index]]
@@ -560,6 +586,13 @@ def _endpoint_eligibility(
             raise ValueError(
                 f"{metric} {component} is not a positive margin, so an "
                 "eligibility share of it would not be interpretable"
+            )
+        if prefix == "Reweight" and not math.isclose(
+            component_pp, 100 * float(aggregate["common_pair_reweighting"]), abs_tol=1e-6
+        ):
+            raise ValueError(
+                f"{metric} {scope} eligibility split does not reconcile that "
+                "scope's common-pair reweighting term"
             )
         eligibility[prefix] = {
             "component_pp": component_pp,
@@ -865,8 +898,13 @@ def render_pair_decomposition_deck_values(
     # How much of each composition margin runs through corridors whose vehicle
     # was never in question. The count and value answers differ, which is the
     # point of publishing both.
+    scope_rows_by_metric = {
+        "count_share": count,
+        "strict_intermediation_value_share": value,
+    }
     for infix, metric in BREADTH_METRICS:
-        eligibility = _endpoint_eligibility(contributions, metric)
+        scope_rows = scope_rows_by_metric[metric]
+        eligibility = _endpoint_eligibility(contributions, metric, scope_rows["pooled"])
         lines.extend(
             [
                 f"\\newcommand{{\\Locked{infix}Pairs}}"
@@ -893,6 +931,30 @@ def render_pair_decomposition_deck_values(
                     f"{{{_share(float(statistics['locked_share']))}}}",
                 ]
             )
+        # The same split inside each integration scope, plus that scope's own
+        # reweighting total, so a slide or a sentence never pairs a scope share
+        # with the pooled margin it is not a share of.
+        for suffix, scope in ELIGIBILITY_SCOPES:
+            row = scope_rows[scope]
+            scoped_eligibility = _endpoint_eligibility(
+                contributions, metric, row, scope
+            )
+            lines.append(
+                f"\\newcommand{{\\Pair{infix}{suffix}Reweight}}"
+                f"{{{_signed_pp(float(row['common_pair_reweighting']))}}}"
+            )
+            for prefix, _component in ELIGIBILITY_MARGINS:
+                statistics = scoped_eligibility[prefix]
+                lines.extend(
+                    [
+                        f"\\newcommand{{\\Locked{infix}{suffix}{prefix}}}"
+                        f"{{{_contribution_pp(float(statistics['locked_pp']))}}}",
+                        f"\\newcommand{{\\Open{infix}{suffix}{prefix}}}"
+                        f"{{{_contribution_pp(float(statistics['open_pp']))}}}",
+                        f"\\newcommand{{\\Locked{infix}{suffix}{prefix}Share}}"
+                        f"{{{_share(float(statistics['locked_share']))}}}",
+                    ]
+                )
     return "\n".join(lines) + "\n"
 
 

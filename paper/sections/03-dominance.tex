@@ -95,6 +95,20 @@ The vehicle role is not contestable everywhere in the pair space. A route whose 
 % output/exhibits/vehicle_transition_pair_contributions.parquet; macros from
 % scripts/build_vehicle_transition_pair_deck_values.py
 
+So far the split has been taken over all routes at once, which does not say where in the venue structure the corridors without a vehicle choice sit. Taking it separately for routes that stay on one exchange and routes that cross exchanges answers that, and the two weightings answer it differently. Within a single exchange, reweighting among continuing pairs contributes \PairSingleReweight{}, of which wrapped-ether-endpoint corridors supply \LockedSingleReweightShare{}. Across exchanges the same margin is \PairCrossReweight{}, and those corridors supply \LockedCrossReweightShare{} of it. What survives the split is the part contributed by pairs that had a choice, and it is the same size in both: \OpenSingleReweight{} within an exchange and \OpenCrossReweight{} across exchanges. The entire cross-exchange excess in the count margin is therefore corridors that were stablecoin-intermediated by definition, and the corridors that could have gone either way reallocate activity at the same rate wherever the route runs. Weighting by the value moved removes the contrast. The margin is \PairValueSingleReweight{} within an exchange against \PairValueCrossReweight{} across exchanges, and eligible corridors supply \LockedValueSingleReweightShare{} and \LockedValueCrossReweightShare{} of them. In route counts, then, the rotation looks like something that happened to cross-exchange trading, and what it records there is which pairs became active across exchanges; in value terms it is no more a cross-exchange event than a single-exchange one. \citet{MakarovSchoar2020Arbitrage} decompose bitcoin price dispersion the same way and find the across-region component both the larger one and, once traded volume is taken into account, the one that carries the economic magnitude. The across-venue excess here does the opposite: it is visible in unweighted route counts and gone from the dollar-weighted margin.
+% The scope split is the same certified allocation and the same endpoint
+% identity as the pooled paragraph above, read at reporting_scope single_venue
+% and cross_venue rather than pooled. The producer reconciles each scope's
+% allocation against that scope's own common-pair reweighting term before
+% rendering, so a scope share can never be printed against the pooled margin.
+% Integration scope here is the realised route scope, not an assignment: it is
+% the same descriptive, non-causal object as the rest of the decomposition.
+% The two scope margins are separate within-scope decompositions, each in
+% percentage points of its own scope's stablecoin share, so they are comparable
+% to each other but do not add to the pooled margin.
+% output/exhibits/vehicle_transition_pair_contributions.parquet; macros from
+% scripts/build_vehicle_transition_pair_deck_values.py
+
 \subsection{USDT's intermediary role}
 \label{sec:dominance:excess}
 

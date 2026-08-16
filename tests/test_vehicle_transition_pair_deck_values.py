@@ -188,6 +188,7 @@ def _contribution(
     contribution_pp: float,
     *,
     metric: str = "count_share",
+    scope: str = "pooled",
     stable_baseline: float = 0.0,
     stable_comparison: float = 1.0,
     weight_baseline: float = 0.004,
@@ -197,7 +198,7 @@ def _contribution(
 ) -> dict[str, object]:
     return {
         "metric": metric,
-        "reporting_scope": "pooled",
+        "reporting_scope": scope,
         "baseline_year": 2024,
         "comparison_year": 2026,
         "src": src,
@@ -216,21 +217,45 @@ def _contribution(
     }
 
 
+# Per scope and metric: the open (choosable) share of the reweighting margin,
+# the two WETH-endpoint contributions, and the two new-pair contributions. The
+# reweighting entries sum to that scope's `_row` term (+8.0, +8.8, +9.6 pp under
+# the 1.0/1.1/1.2 scaling), and the eligible share differs by scope in opposite
+# directions across the two metrics, so a renderer that reported the pooled
+# split under a scope macro would fail every scope assertion below.
+_SCOPE_CONTRIBUTIONS = {
+    ("pooled", "count_share"): (4.5, 2.0, 1.5, 0.13, 20.87),
+    ("pooled", "strict_intermediation_value_share"): (-1.0, 6.0, 3.0, 1.0, 20.0),
+    ("single_venue", "count_share"): (6.8, 1.2, 0.8, 5.0, 16.0),
+    ("single_venue", "strict_intermediation_value_share"): (0.8, 5.0, 3.0, 5.0, 16.0),
+    ("cross_venue", "count_share"): (1.6, 5.0, 3.0, 15.0, 6.0),
+    ("cross_venue", "strict_intermediation_value_share"): (3.6, 4.0, 2.0, 15.0, 6.0),
+}
+
+
 def _contributions() -> pd.DataFrame:
     """Reproduce the aggregate terms of `_row` from named and unlabelled pairs.
 
-    `_row` sets within_common to -0.1 pp, common_pair_reweighting to +8.0 pp and
-    exclusive_pair_contribution to +17.6 pp. The unlabelled rows carry the bulk
-    of each margin so the renderer must report the margin total separately from
-    the named example it prints.
+    `_row` sets within_common to -0.1 pp, exclusive_pair_contribution to
+    +17.6 pp, and common_pair_reweighting to +8.0 pp pooled, rising with the
+    per-scope scaling. The unlabelled rows carry the bulk of each margin so the
+    renderer must report the margin total separately from the named example it
+    prints.
 
     Five ordered pairs trade in both years. Three have no WETH endpoint and can
     move their own stablecoin share; two have a WETH endpoint, so native WETH is
     ineligible as their intermediary, their stablecoin share is one in both
     years, and their within-pair contribution is exactly zero. The fixture
-    respects that identity because the data do.
+    respects that identity because the data do, in every scope.
+
+    The dollar-weighted allocation reaches each margin total from a different
+    spread of pairs, so breadth and eligibility are never read off the count.
     """
     value = "strict_intermediation_value_share"
+    within = {
+        "count_share": (0.05, 0.40, -0.55),
+        value: (0.30, 0.10, -0.50),
+    }
 
     def locked(component: str, src: str, tgt: str, pp: float, **kwargs) -> dict:
         return _contribution(
@@ -243,50 +268,100 @@ def _contributions() -> pd.DataFrame:
             **kwargs,
         )
 
-    return pd.DataFrame(
-        [
-            _contribution("within_pair_choice", USDC, USDT, 0.05),
-            _contribution("within_pair_choice", UNLABELLED, USDT, 0.40),
-            _contribution("within_pair_choice", USDT, UNLABELLED, -0.55),
-            locked("within_pair_choice", USDT, WETH, 0.0),
-            locked("within_pair_choice", USDC, WETH, 0.0),
-            _contribution("pair_composition_reweighting", USDC, USDT, 0.0),
-            _contribution("pair_composition_reweighting", UNLABELLED, USDT, 4.5),
-            _contribution("pair_composition_reweighting", USDT, UNLABELLED, 0.0),
-            locked("pair_composition_reweighting", USDT, WETH, 2.0),
-            locked("pair_composition_reweighting", USDC, WETH, 1.5),
-            _contribution("comparison_exclusive_composition", USDT, USDC, 0.13),
-            _contribution("comparison_exclusive_composition", UNLABELLED, WETH, 20.87),
-            _contribution("baseline_exclusive_composition", UNLABELLED, USDC, -3.4),
-            # The dollar-weighted allocation reaches the same margin totals from a
-            # different spread of pairs, so breadth is never read off the count.
-            _contribution("within_pair_choice", USDC, USDT, 0.30, metric=value),
-            _contribution("within_pair_choice", UNLABELLED, USDT, 0.10, metric=value),
-            _contribution("within_pair_choice", USDT, UNLABELLED, -0.50, metric=value),
-            locked("within_pair_choice", USDT, WETH, 0.0, metric=value),
-            locked("within_pair_choice", USDC, WETH, 0.0, metric=value),
-            _contribution(
-                "pair_composition_reweighting", USDC, USDT, 0.0, metric=value
-            ),
-            _contribution(
-                "pair_composition_reweighting", UNLABELLED, USDT, -1.0, metric=value
-            ),
-            _contribution(
-                "pair_composition_reweighting", USDT, UNLABELLED, 0.0, metric=value
-            ),
-            locked("pair_composition_reweighting", USDT, WETH, 6.0, metric=value),
-            locked("pair_composition_reweighting", USDC, WETH, 3.0, metric=value),
-            _contribution(
-                "comparison_exclusive_composition", USDT, USDC, 1.0, metric=value
-            ),
-            _contribution(
-                "comparison_exclusive_composition", UNLABELLED, WETH, 20.0, metric=value
-            ),
-            _contribution(
-                "baseline_exclusive_composition", UNLABELLED, USDC, -3.4, metric=value
-            ),
-        ]
-    )
+    rows: list[dict[str, object]] = []
+    for (scope, metric), split in _SCOPE_CONTRIBUTIONS.items():
+        open_reweight, locked_usdt, locked_usdc, new_named, new_unlabelled = split
+        first, second, third = within[metric]
+        rows.extend(
+            [
+                _contribution(
+                    "within_pair_choice", USDC, USDT, first, metric=metric, scope=scope
+                ),
+                _contribution(
+                    "within_pair_choice",
+                    UNLABELLED,
+                    USDT,
+                    second,
+                    metric=metric,
+                    scope=scope,
+                ),
+                _contribution(
+                    "within_pair_choice",
+                    USDT,
+                    UNLABELLED,
+                    third,
+                    metric=metric,
+                    scope=scope,
+                ),
+                locked("within_pair_choice", USDT, WETH, 0.0, metric=metric, scope=scope),
+                locked("within_pair_choice", USDC, WETH, 0.0, metric=metric, scope=scope),
+                _contribution(
+                    "pair_composition_reweighting",
+                    USDC,
+                    USDT,
+                    0.0,
+                    metric=metric,
+                    scope=scope,
+                ),
+                _contribution(
+                    "pair_composition_reweighting",
+                    UNLABELLED,
+                    USDT,
+                    open_reweight,
+                    metric=metric,
+                    scope=scope,
+                ),
+                _contribution(
+                    "pair_composition_reweighting",
+                    USDT,
+                    UNLABELLED,
+                    0.0,
+                    metric=metric,
+                    scope=scope,
+                ),
+                locked(
+                    "pair_composition_reweighting",
+                    USDT,
+                    WETH,
+                    locked_usdt,
+                    metric=metric,
+                    scope=scope,
+                ),
+                locked(
+                    "pair_composition_reweighting",
+                    USDC,
+                    WETH,
+                    locked_usdc,
+                    metric=metric,
+                    scope=scope,
+                ),
+                _contribution(
+                    "comparison_exclusive_composition",
+                    USDT,
+                    USDC,
+                    new_named,
+                    metric=metric,
+                    scope=scope,
+                ),
+                _contribution(
+                    "comparison_exclusive_composition",
+                    UNLABELLED,
+                    WETH,
+                    new_unlabelled,
+                    metric=metric,
+                    scope=scope,
+                ),
+                _contribution(
+                    "baseline_exclusive_composition",
+                    UNLABELLED,
+                    USDC,
+                    -3.4,
+                    metric=metric,
+                    scope=scope,
+                ),
+            ]
+        )
+    return pd.DataFrame(rows)
 
 
 def test_renderer_emits_complete_display_and_coordinate_macros() -> None:
@@ -563,6 +638,60 @@ def test_endpoint_eligibility_splits_the_two_composition_margins() -> None:
         ("LockedValueNewPairShare", "95.2\\%"),
     ):
         assert f"\\newcommand{{\\{macro}}}{{{value}}}" in rendered
+
+
+def test_endpoint_eligibility_is_taken_inside_each_integration_scope() -> None:
+    rendered = render_pair_decomposition_deck_values(
+        _decomposition(), _fixed_effects(), _usdt_integration(), _contributions()
+    )
+    for macro, value in (
+        # Each scope carries its own reweighting total and its own eligible
+        # share of it. By count the eligible corridors dominate across venues
+        # and not within one; by value the ordering reverses. Neither number is
+        # the pooled 43.8% / 112.5% split, so a scope macro cannot be silently
+        # fed the pooled allocation.
+        ("PairSingleReweight", "$+8.8$ pp"),
+        ("LockedSingleReweight", "$+2.0$ pp"),
+        ("LockedSingleReweightShare", "22.7\\%"),
+        ("PairCrossReweight", "$+9.6$ pp"),
+        ("LockedCrossReweight", "$+8.0$ pp"),
+        ("LockedCrossReweightShare", "83.3\\%"),
+        ("PairValueSingleReweight", "$+8.8$ pp"),
+        ("LockedValueSingleReweightShare", "90.9\\%"),
+        ("PairValueCrossReweight", "$+9.6$ pp"),
+        ("LockedValueCrossReweightShare", "62.5\\%"),
+        # The new-pair margin splits by scope too.
+        ("LockedSingleNewPairShare", "76.2\\%"),
+        ("LockedCrossNewPairShare", "28.6\\%"),
+    ):
+        assert f"\\newcommand{{\\{macro}}}{{{value}}}" in rendered
+
+
+def test_endpoint_eligibility_rejects_a_scope_split_against_another_scope() -> None:
+    """A scope's allocation must reconcile that scope's own aggregate term."""
+    contributions = _contributions()
+    cross_reweighting = (
+        contributions["reporting_scope"].eq("cross_venue")
+        & contributions["metric"].eq("count_share")
+        & contributions["contribution_component"].eq("pair_composition_reweighting")
+        & contributions["src"].eq(UNLABELLED)
+    )
+    contributions.loc[cross_reweighting, "contribution_pp"] -= 1.6
+    with pytest.raises(
+        ValueError, match="cross_venue eligibility split does not reconcile"
+    ):
+        render_pair_decomposition_deck_values(
+            _decomposition(), _fixed_effects(), _usdt_integration(), contributions
+        )
+
+
+def test_endpoint_eligibility_requires_the_scope_specific_allocation() -> None:
+    contributions = _contributions()
+    contributions = contributions[contributions["reporting_scope"].ne("cross_venue")]
+    with pytest.raises(ValueError, match="no cross_venue 2024--2026"):
+        render_pair_decomposition_deck_values(
+            _decomposition(), _fixed_effects(), _usdt_integration(), contributions
+        )
 
 
 def test_endpoint_eligibility_rejects_a_switching_weth_endpoint_pair() -> None:
