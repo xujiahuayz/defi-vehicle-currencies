@@ -4440,3 +4440,97 @@ same way as before: `test_route_cost_panel`, `test_route_state`,
 - The deck-density interjection's real deliverable — a word-budget check inside
   `audit_deck_evidence.py` — is still unbuilt. The new frame was hand-counted at 40
   visible words against the 55 budget.
+
+## 2026-08-16 — node B literature ledger, and the two-unchanged-passes gate
+
+**Targeted:** two queue items, both older than the 15:55Z interjection and both
+closable in one iteration: the Mukhin owner decision (queue line 146) and the
+`stable_passes` replacement (queue line 73). Commits `67908dd` and `8f4bbee`.
+Blocking count **4 -> 3**: `node E1 specification lock`, `empirical model
+ledger`, `two unchanged findings passes`.
+
+**REGRESSION-CHECK recorded before mutation.** Neither unit touches an
+estimator, panel or coefficient, so no purpose-bound estimand changes. Evidence
+generations at risk were `literature/pdf-sources.json` (must not drop the saved
+article/appendix records) and `docs/specification-lock.json` (the fingerprint
+must read the claim registry, never write it). Prior corrections at risk: "a
+certificate or provenance mismatch is not itself scientific evidence", and
+"never fake a gate".
+
+**Mukhin (closed).** The block was one non-text companion, not a text gap. The
+premise was verified rather than assumed: article PDF and the official 37-page
+appendix are both in the shared corpus (which `literature_papers_dir` resolves
+to the primary checkout, 109 files); the 119,236,817-byte reconstructed archive
+is in none of the three sibling checkouts, absent from a size-filtered search of
+the projects tree and the glotl share, and unrecoverable from git because the
+corpus was never tracked. Disposition is now `unavailable` with the sought bytes
+and sha256 kept, plus the no-citation rule. Source-sets 32/33 -> 33/33,
+five-axis cards 34/35 -> 35/35, check PASS, no other check moved.
+
+**Gotcha that cost a cycle.** Backticks inside a card's `Companions:` field are
+parsed as companion bibliography keys by `companion_source_keys`. A backticked
+sha256 and a backticked file path silently broke the card even though the source
+set had already closed. Keep backticks in that field for bibliography keys only.
+
+**Findings fingerprint (closed).** `ddvc.model_registry.findings_registry_state`
+is the single definition: sorted claim ids with statuses, plus sorted retired
+families with the claim each served. The retirement unit is the family, not the
+claim, because one claim can be served by several batteries.
+`scripts/record_findings_pass.py` is the only writer, appends to
+`logs/findings-fingerprints.jsonl`, and refuses a second row at the same commit.
+`.gitignore` now un-ignores that ledger. The audit requires the last two rows to
+be distinct passes at distinct commits, agree, and still match the live
+registries, and fails closed if `stable_passes` reappears in the frontmatter.
+
+**The ledger is deliberately empty of rows, and the next iteration should think
+before filling it.** A row means "every claim in `docs/specification-lock.json`
+was reviewed against its current evidence in this pass". This iteration did not
+do that review, so recording one would have been a faked gate in slow motion.
+Two genuine passes, at two different commits, are what turns this check green.
+
+**E1 lock (queue line 45) scoped and left open, with a progress note in the
+queue.** It cannot be built in the order the item states.
+`execute_exploration_plan` requires the plan's family perimeter to equal
+`docs/e0-exploration-plan.template.json` exactly (`src/ddvc/exploration.py:433`),
+and that template is out of sync with the lock in both directions. It names five
+families, three serving claims outside the executable perimeter —
+`claim_execution_perimeter` returns only `vehicle_transition` and
+`liquidity_capital_v2_predictability` — while
+`liquidity_capital_v2_predictability` has no family at all and
+`open_question_anomaly_e0` names a claim id absent from the lock. Two of the
+five also need V2/V3 exact-state inputs the freeze still records as blocked. The
+chain's real first step is therefore the step-2/step-3 adjudication applied to
+the whole template, not to `liquidity_rent_incidence` alone: decide what the
+confirmatory set contains, land the reconciled template with its citations, then
+write `scripts/lock_specification.py`. `empirical model ledger` is a descendant
+of the same chain (`exploration=not_started; current_runs=0`), so both remaining
+non-pass blockers close together or not at all.
+
+**DECISION: park** the 15:55Z interjection's parts 2 and 4 for one iteration.
+Part 2 ("date-FE rung on every existing headline estimator") was scoped and is
+narrower than it reads. `run_dominance_regressions.py` belongs to
+`retired_native_cost_advantage_battery` and may not be resurrected;
+`build_intermediation_by_type.py` estimates year-endpoint changes on a daily
+panel where the unit *is* the day, so a date FE is saturated and undefined; and
+`run_vehicle_rotation_composition_e0.py` already carries pair x month-day x
+scope FE, which is most of part 4's pair-level half. The one live headline
+estimator with a well-defined and genuinely missing date-FE rung is the venue
+-integration contrast in section 3.6: `intermediation_integration_rival.jsonl`
+and `..._interaction.jsonl` identify the cross- versus single-venue stable-share
+gap from two-year endpoint windows with HAC, so calendar is the identifying
+variation there. Stacking (date, scope) on
+`data/processed/intermediation_by_type_daily.parquet` and absorbing the date
+turns it into a within-day paired difference over the full 2,332-day calendar,
+with the scope x calendar-half interaction as the robustness split. That is one
+new estimator owner reading a green panel, it closes part 2 and part 4's
+venue-integration half together, and it is the right unit for the next
+iteration.
+
+**Test state.** `tests/test_findings_fingerprint.py` 11 passed.
+`test_audit_findings_freeze.py`, `test_exploration.py`,
+`test_literature_text_cache.py`, `test_project_runner.py`: 101 passed, 11
+subtests, 1 failure —
+`test_optional_artifact_gates_follow_only_executable_claim_inputs`, confirmed
+pre-existing by re-running it with this iteration's changes stashed. The full
+freeze audit takes 15-20 minutes when anything else is competing for the box;
+do not run it alongside a broad pytest collection.
