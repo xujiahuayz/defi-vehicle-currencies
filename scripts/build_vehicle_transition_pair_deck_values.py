@@ -146,6 +146,25 @@ SUPPORT_COHORTS = (
     ),
 )
 COHORT_SCOPES = (("", "pooled"), *ELIGIBILITY_SCOPES)
+# The cohort reading above compares two routing rates and stops there. It cannot
+# say whether the corridors that arrived route differently because they are
+# different *markets* or because markets of the same kind now route differently,
+# and those are separate economic statements. The three endpoint classes already
+# used elsewhere in this module partition each cohort, so the gap between the two
+# cohort rates admits the same composition/rate reading the paper applies to the
+# aggregate,
+#     s_enter - s_exit = sum_c (w_enter,c - w_exit,c) sbar_c
+#                      + sum_c wbar_c (s_enter,c - s_exit,c),
+# with sbar_c and wbar_c the two cohorts' midpoints. The identity is exact, not
+# an approximation, and `_cohort_endpoint_margins` proves it closes on the gap
+# before publishing either side. Two cautions govern the language it supports.
+# The wrapped-ether class carries a routing rate of one in *both* cohorts by the
+# same eligibility identity used above, so it can only ever enter the first sum:
+# a WETH-paired corridor that arrives raises the margin because of what it is,
+# not because of anything it chose. And the second sum is a comparison between
+# two disjoint populations of corridors holding endpoint type fixed, never a
+# switch inside a corridor; no sentence may read it as pair-level substitution.
+COHORT_ENDPOINT_CLASSES = ("Locked", "StableEnd", "OtherEnd")
 # The fourth and last term of the identity, and the only one no sentence reads.
 # `common_support_mass` prices the migration of activity between the two blocks
 # of corridors the decomposition already separates: corridors observed in both
@@ -1231,6 +1250,165 @@ def _support_cohorts(
     return cohorts_out
 
 
+def _cohort_endpoint_margins(
+    contributions: pd.DataFrame,
+    metric: str,
+    cohorts: dict[str, object],
+    scope: str = "pooled",
+) -> dict[str, object]:
+    """Split the corridor-replacement gap into composition and routing rate.
+
+    See ``COHORT_ENDPOINT_CLASSES`` for the identity. ``_support_cohorts``
+    establishes that the netted exclusive term is one activity mass times the
+    gap between the routing rates of the departing and arriving corridors. That
+    gap is still two numbers, and the economics behind it are two different
+    claims: the arriving corridors may be a different mix of markets, or markets
+    of the same kind may route differently. This separates them exactly.
+
+    Nothing here re-estimates. Each class weight and rate is a weighted sum of
+    the same certified rows the cohort reading already used, and the function
+    refuses to publish until the two sums close on that cohort's own gap and the
+    gap closes on the term the caller validated. The stablecoin-endpoint class
+    is held to the same non-degeneracy standard as in
+    ``_open_corridor_endpoints``: if a stablecoin at an endpoint forced the
+    intermediary, its rate term would be an accounting rule rather than a
+    routing choice.
+    """
+    scoped = _scoped_contributions(contributions, metric, scope)
+    if scoped.empty:
+        raise ValueError(f"pair contributions carry no {scope} 2024--2026 {metric} rows")
+    endpoint = scoped["src"].eq(WETH) | scoped["tgt"].eq(WETH)
+    stable_endpoint = ~endpoint & (
+        scoped["src"].map(asset_type).eq("stable")
+        | scoped["tgt"].map(asset_type).eq("stable")
+    )
+    selectors = {
+        "Locked": endpoint,
+        "StableEnd": stable_endpoint,
+        "OtherEnd": ~endpoint & ~stable_endpoint,
+    }
+    cells: dict[tuple[str, str], dict[str, float]] = {}
+    for prefix, component, weight_column, share_column, _sign in SUPPORT_COHORTS:
+        rows = scoped[scoped["contribution_component"].eq(component)]
+        if rows.empty:
+            raise ValueError(f"pair contributions carry no {metric} {component} rows")
+        covered = 0.0
+        for name in COHORT_ENDPOINT_CLASSES:
+            block = rows[selectors[name].loc[rows.index]]
+            weight = float(block[weight_column].sum())
+            if not 0 < weight < 1:
+                raise ValueError(
+                    f"{metric} {scope} {prefix} cohort carries no {name} activity, so "
+                    "that class has no routing rate to compare"
+                )
+            rate = float((block[weight_column] * block[share_column]).sum()) / weight
+            if not 0 <= rate <= 1:
+                raise ValueError(
+                    f"{metric} {scope} {prefix} {name} routing rate leaves the unit "
+                    "interval"
+                )
+            covered += weight
+            cells[(prefix, name)] = {
+                "weight": weight,
+                "rate": rate,
+                "pairs": float(len(block)),
+            }
+        if not math.isclose(covered, 1.0, abs_tol=1e-9):
+            raise ValueError(
+                f"{metric} {scope} {prefix} endpoint classes cover {covered} of that "
+                "cohort, so they do not partition it"
+            )
+        # The eligibility identity, re-proved on this cohort rather than
+        # inherited: a wrapped-ether-paired corridor cannot use the native asset
+        # as its intermediary, so its rate is one and its class can move the gap
+        # only through weight.
+        if not math.isclose(cells[(prefix, "Locked")]["rate"], 1.0, abs_tol=1e-12):
+            raise ValueError(
+                f"{metric} {scope} {prefix} wrapped-ether-endpoint corridors do not "
+                "route at a stablecoin share of one, which the eligibility identity "
+                "forbids"
+            )
+        live = rows[stable_endpoint.loc[rows.index]]
+        if not live[share_column].lt(1.0).any():
+            raise ValueError(
+                f"{metric} {scope} {prefix} stablecoin-endpoint corridors always route "
+                "at a stablecoin share of one, so the class is an identity rather than "
+                "a choice"
+            )
+        if not live[share_column].gt(0.0).any():
+            raise ValueError(
+                f"{metric} {scope} {prefix} stablecoin-endpoint corridors never route "
+                "through a stablecoin, so the class cannot carry the margin attributed "
+                "to it"
+            )
+        pinned = float(live[share_column].eq(1.0).mean())
+        if pinned >= 0.25:
+            raise ValueError(
+                f"{metric} {scope} {prefix} stablecoin-endpoint corridors are "
+                f"{pinned:.1%} pinned at a stablecoin share of one, which is too close "
+                "to the wrapped-ether identity for the split to be read as a choice"
+            )
+        cells[(prefix, "pinned")] = {"weight": pinned, "rate": pinned, "pairs": pinned}
+    mass_share = float(cohorts["mass_share"])
+    net_pp = float(cohorts["net_pp"])
+    classes: dict[str, object] = {}
+    composition = 0.0
+    rate_term = 0.0
+    for name in COHORT_ENDPOINT_CLASSES:
+        exit_cell = cells[("Exit", name)]
+        enter_cell = cells[("Enter", name)]
+        composition_c = (enter_cell["weight"] - exit_cell["weight"]) * (
+            enter_cell["rate"] + exit_cell["rate"]
+        ) / 2
+        rate_c = (enter_cell["weight"] + exit_cell["weight"]) / 2 * (
+            enter_cell["rate"] - exit_cell["rate"]
+        )
+        composition += composition_c
+        rate_term += rate_c
+        classes[name] = {
+            "exit_pairs": int(exit_cell["pairs"]),
+            "enter_pairs": int(enter_cell["pairs"]),
+            "exit_weight": exit_cell["weight"],
+            "enter_weight": enter_cell["weight"],
+            "exit_rate": exit_cell["rate"],
+            "enter_rate": enter_cell["rate"],
+            "composition_pp": 100 * mass_share * composition_c,
+            "rate_pp": 100 * mass_share * rate_c,
+        }
+    gap = sum(
+        cells[("Enter", name)]["weight"] * cells[("Enter", name)]["rate"]
+        - cells[("Exit", name)]["weight"] * cells[("Exit", name)]["rate"]
+        for name in COHORT_ENDPOINT_CLASSES
+    )
+    if not math.isclose(composition + rate_term, gap, abs_tol=1e-12):
+        raise ValueError(
+            f"{metric} {scope} composition and rate terms miss the cohort routing gap"
+        )
+    if not math.isclose(100 * mass_share * gap, net_pp, abs_tol=1e-6):
+        raise ValueError(
+            f"{metric} {scope} cohort endpoint classes do not reconcile the "
+            "exclusive-pair term"
+        )
+    # A share is formed only against a base proved positive. The netted term is
+    # positive in every scope this is called for, but the two sides of the split
+    # are individually free to take either sign -- the other-endpoint class
+    # contributes negative composition in both metrics -- so the guard is on the
+    # base and never on the parts.
+    if net_pp <= 0:
+        raise ValueError(
+            f"{metric} {scope} exclusive-pair term is not positive, so a share of it "
+            "is not a quantity"
+        )
+    return {
+        **classes,
+        "composition_pp": 100 * mass_share * composition,
+        "rate_pp": 100 * mass_share * rate_term,
+        "composition_share": 100 * mass_share * composition / net_pp,
+        "rate_share": 100 * mass_share * rate_term / net_pp,
+        "net_pp": net_pp,
+    }
+
+
 def _support_mass_factors(row: pd.Series, metric: str, scope: str) -> dict[str, float]:
     """Split the support-mass term into the mass that moved and the price of it.
 
@@ -2060,6 +2238,48 @@ def render_pair_decomposition_deck_values(
                         f"{{{_share(float(statistics['open_stable_share']))}}}",
                         f"\\newcommand{{\\Cohort{infix}{suffix}{prefix}OpenWeight}}"
                         f"{{{_share(float(statistics['open_weight']))}}}",
+                    ]
+                )
+            if suffix:
+                continue
+            # Why the two cohorts route differently: because they are different
+            # markets, or because the same kind of market routes differently.
+            # Pooled only -- the scoped cohort rates above answer a question
+            # about integration, and pairing a scope weight with the pooled gap
+            # is exactly the confusion the scope suffix exists to prevent.
+            replacement = _cohort_endpoint_margins(contributions, metric, cohort)
+            lines.extend(
+                [
+                    f"\\newcommand{{\\Replace{infix}Composition}}"
+                    f"{{{_contribution_pp(float(replacement['composition_pp']))}}}",
+                    f"\\newcommand{{\\Replace{infix}Rate}}"
+                    f"{{{_contribution_pp(float(replacement['rate_pp']))}}}",
+                    f"\\newcommand{{\\Replace{infix}CompositionShare}}"
+                    f"{{{_share(float(replacement['composition_share']))}}}",
+                    f"\\newcommand{{\\Replace{infix}RateShare}}"
+                    f"{{{_share(float(replacement['rate_share']))}}}",
+                ]
+            )
+            for name in COHORT_ENDPOINT_CLASSES:
+                statistics = replacement[name]
+                lines.extend(
+                    [
+                        f"\\newcommand{{\\Replace{infix}{name}ExitPairs}}"
+                        f"{{{_units(int(statistics['exit_pairs']))}}}",
+                        f"\\newcommand{{\\Replace{infix}{name}EnterPairs}}"
+                        f"{{{_units(int(statistics['enter_pairs']))}}}",
+                        f"\\newcommand{{\\Replace{infix}{name}ExitWeight}}"
+                        f"{{{_share(float(statistics['exit_weight']))}}}",
+                        f"\\newcommand{{\\Replace{infix}{name}EnterWeight}}"
+                        f"{{{_share(float(statistics['enter_weight']))}}}",
+                        f"\\newcommand{{\\Replace{infix}{name}ExitRate}}"
+                        f"{{{_share(float(statistics['exit_rate']))}}}",
+                        f"\\newcommand{{\\Replace{infix}{name}EnterRate}}"
+                        f"{{{_share(float(statistics['enter_rate']))}}}",
+                        f"\\newcommand{{\\Replace{infix}{name}Composition}}"
+                        f"{{{_contribution_pp(float(statistics['composition_pp']))}}}",
+                        f"\\newcommand{{\\Replace{infix}{name}Rate}}"
+                        f"{{{_contribution_pp(float(statistics['rate_pp']))}}}",
                     ]
                 )
         # The support-mass term as its two factors: how much activity migrated

@@ -291,6 +291,33 @@ That entry margin is gross. The decomposition nets it against the corridors that
 % output/exhibits/vehicle_transition_pair_contributions.parquet; macros from
 % scripts/build_vehicle_transition_pair_deck_values.py
 
+Two different economies produce that gap, and the two weightings do not agree on which one is at work. Corridors are of three kinds: those with wrapped ether at an endpoint, which cannot use it to intermediate and route through a stablecoin by construction; those with a stablecoin at an endpoint, which may still be carried either way; and those with some other asset at each end. Evaluated at the two cohorts' midpoints, the gap separates exactly into the mix of kinds each cohort brings and the rate at which each kind routes. By route count the mix carries \ReplaceCompositionShare{} of the \CohortNet{} netted term, and nearly all of that is the first kind: wrapped-ether-paired corridors are \ReplaceLockedEnterWeight{} of arriving activity against \ReplaceLockedExitWeight{} of departing activity, worth \ReplaceLockedComposition{} by themselves. They enter the margin through their weight alone, because their routing rate is one in both cohorts. The remaining \ReplaceRate{} is a rate difference among corridors that could have been carried either way. By value the ordering reverses: the mix contributes \ReplaceValueComposition{} and the rates \ReplaceValueRate{}, or \ReplaceValueRateShare{} of \CohortValueNet{}. Arriving corridors with a stablecoin at an endpoint send \ReplaceValueStableEndEnterRate{} of their dollars through a stablecoin where the departing corridors of the same kind sent \ReplaceValueStableEndExitRate{}, and arriving corridors with some other asset at each end send \ReplaceValueOtherEndEnterRate{} against \ReplaceValueOtherEndExitRate{}. No corridor appears on both sides of those comparisons, so none of these figures describes an intermediary being changed; the dollars now moving through corridors that opened after the challenger was established were never routed the old way. \citet{DowdGreenaway1993CurrencyCompetition} make an agent's willingness to switch depend on the expectation that others will switch too, and the excess inertia that follows is a claim about the agents already holding the incumbent. Their model is silent on the agents who arrive later, and it is those the data separate: inside a continuing corridor the intermediary barely moves, while the corridors that open once the challenger is available carry it from their first trade.
+% The corridor-replacement gap split into what the arriving corridors are and
+% how they route, on the three endpoint kinds already used above. The identity
+% is exact and symmetric: with w and s the weight and routing rate of a kind in
+% each cohort, s_enter - s_exit = sum (w_enter - w_exit) sbar + sum wbar
+% (s_enter - s_exit), and `_cohort_endpoint_margins` proves both sums close on
+% the cohort gap and the gap on that scope's exclusive_pair_contribution before
+% rendering. Two guards carry the prose. The wrapped-ether kind is re-proved to
+% route at one in *both* cohorts, which is what licenses reading it as pure
+% composition and printing its rate term as zero. The stablecoin-endpoint kind
+% is held to the same non-degeneracy standard as the margin split above --
+% corridors below one, corridors above zero, fewer than a quarter pinned at one
+% -- so its rate term is a routing choice and not the taxonomy restated. Shares
+% are formed only against the netted term, which the producer proves positive;
+% the other-endpoint kind's composition term is negative in both weightings.
+% The two cohorts are disjoint by construction, so no sentence here may be read
+% as pair-level substitution; the within-pair estimate above is the only
+% quantity that speaks to that. Descriptive and non-causal, as above.
+% output/exhibits/vehicle_transition_pair_contributions.parquet; macros from
+% scripts/build_vehicle_transition_pair_deck_values.py
+% Dowd and Greenaway (1993) reread in literature/text/ at the excess-inertia
+% passage ("an undue reluctance to switch", conditional on what an agent
+% expects others to do) and at the closing extension in which the composition
+% of the trading population, not the incumbents, drives displacement. Second
+% use in the paper; the first is in Section 2 for the fixed costs of quoting in
+% a new currency.
+
 Replacement on that scale moves activity between the two populations as well as changing how each is routed, and the decomposition prices the two separately. Corridors observed in both years fell from \BlockWeightBase{} of route activity to \BlockWeightEnd{}, a shift of \BlockShift{}, and from \BlockValueWeightBase{} of the value moved to \BlockValueWeightEnd{}, a shift of \BlockValueShift{}; across exchanges the dollar shift is \BlockValueCrossShift{}. Roughly a fifth of the value in the comparison therefore changed which population of corridors carried it. Against those magnitudes the term itself is \BlockTerm{} by route count and \BlockValueTerm{} by value, the smallest of the four and the only one no other margin overlaps. It is small not because little activity moved but because the two populations are priced almost alike: averaged over the two years, corridors alive in both route \BlockCommonMid{} of their routes and \BlockValueCommonMid{} of their dollars through a stablecoin, against \BlockExclusiveMid{} and \BlockValueExclusiveMid{} for corridors alive in only one, gaps of \BlockGap{} and \BlockValueGap{}. The term is negative in every weighting and every route scope: holding both populations at those midpoint routing rates, the activity that changed population lowered the stablecoin share rather than raising it. The rotation is thus not activity migrating into corridors that already used the challenger. It is that the population receiving the activity routes differently from the one it replaced. \citet{AmitiItskhokiKonings2022Dominant} find invoicing currency to be close to a fixed attribute of an exporter, switching for a small minority of observations over almost four years, with the composition of destinations explaining little of the cross-sectional variation. Choice is similarly sticky inside a continuing corridor here; the difference is that the population of corridors turns over fast enough for composition to carry the whole aggregate change.
 % The fourth and last term of the identity, common_support_mass, published as
 % the two factors the decomposition forms it from: the change in the common

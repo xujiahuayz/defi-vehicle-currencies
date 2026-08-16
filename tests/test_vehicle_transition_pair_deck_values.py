@@ -7,6 +7,7 @@ import pandas as pd
 import pytest
 
 from scripts.build_vehicle_transition_pair_deck_values import (
+    _cohort_endpoint_margins,
     render_pair_decomposition_deck_values,
 )
 
@@ -1427,6 +1428,130 @@ def test_open_corridor_endpoints_reject_a_frozen_within_pair_term() -> None:
     with pytest.raises(ValueError, match="within-pair term is exactly zero"):
         render_pair_decomposition_deck_values(
             _decomposition(), _fixed_effects(), _usdt_integration(), contributions, _support()
+        )
+
+
+def test_cohort_endpoint_margins_split_replacement_into_composition_and_rate() -> None:
+    """Why the two cohorts route differently: different markets, or different routing.
+
+    The corridor-replacement gap is decomposed exactly on the three endpoint
+    classes, so the two published terms must sum to the netted exclusive term
+    and their shares of it to one. The wrapped-ether class is the premise that
+    gives the split its economics: its routing rate is one in *both* cohorts, so
+    it can move the margin only through weight and its rate term must be zero.
+    """
+    rendered = render_pair_decomposition_deck_values(
+        _decomposition(), _fixed_effects(), _usdt_integration(), _contributions(), _support()
+    )
+    for infix in ("", "Value"):
+        net_pp = _points(_macro(rendered, f"Cohort{infix}Net"))
+        composition = _points(_macro(rendered, f"Replace{infix}Composition"))
+        rate = _points(_macro(rendered, f"Replace{infix}Rate"))
+        assert composition + rate == pytest.approx(net_pp, abs=0.05)
+        shares = [
+            float(_macro(rendered, f"Replace{infix}{stem}Share").replace("\\%", ""))
+            for stem in ("Composition", "Rate")
+        ]
+        assert sum(shares) == pytest.approx(100.0, abs=0.1)
+        # Each class's two terms, and the class totals that must rebuild them.
+        class_composition = 0.0
+        class_rate = 0.0
+        for name in ("Locked", "StableEnd", "OtherEnd"):
+            class_composition += _points(_macro(rendered, f"Replace{infix}{name}Composition"))
+            class_rate += _points(_macro(rendered, f"Replace{infix}{name}Rate"))
+            for suffix in ("Exit", "Enter"):
+                weight = _macro(rendered, f"Replace{infix}{name}{suffix}Weight")
+                assert 0 < float(weight.replace("\\%", "")) < 100
+        # Three rounded cells rebuild one rounded total, so the tolerance is the
+        # rounding and nothing looser.
+        assert class_composition == pytest.approx(composition, abs=0.2)
+        assert class_rate == pytest.approx(rate, abs=0.2)
+        # The eligibility identity, and therefore a class that is pure composition.
+        for suffix in ("Exit", "Enter"):
+            assert _macro(rendered, f"Replace{infix}Locked{suffix}Rate") == "100.0\\%"
+        assert _points(_macro(rendered, f"Replace{infix}LockedRate")) == pytest.approx(0.0)
+    # The arriving cohort is 41.7% wrapped-ether-paired against 2.0% for the one
+    # it replaced, which alone carries $+19.9$ pp of the $+17.6$ pp netted term.
+    assert _macro(rendered, "ReplaceLockedExitWeight") == "2.0\\%"
+    assert _macro(rendered, "ReplaceLockedEnterWeight") == "41.7\\%"
+    assert _macro(rendered, "ReplaceLockedComposition") == "$+19.9$ pp"
+    assert _macro(rendered, "ReplaceStableEndEnterRate") == "0.4\\%"
+    assert _macro(rendered, "ReplaceStableEndExitRate") == "4.9\\%"
+
+
+def test_cohort_endpoint_margins_require_every_class_in_both_cohorts() -> None:
+    """A class absent from one cohort has no rate there, so no gap to attribute."""
+    contributions = _contributions()
+    arriving = contributions["contribution_component"].eq(
+        "comparison_exclusive_composition"
+    ) & contributions["src"].eq(UNLABELLED_TWO)
+    # Move the arriving cohort's other-endpoint corridor onto its stablecoin-
+    # endpoint pair. The cohort's own weights, rate and margin are untouched, so
+    # only the class partition can reject the result.
+    contributions.loc[arriving, "src"] = USDT
+    contributions.loc[arriving, "tgt"] = USDC
+    with pytest.raises(ValueError, match="carries no OtherEnd activity"):
+        render_pair_decomposition_deck_values(
+            _decomposition(), _fixed_effects(), _usdt_integration(), contributions, _support()
+        )
+
+
+def test_cohort_endpoint_margins_reject_a_stablecoin_eligibility_class() -> None:
+    """If a stablecoin endpoint forced the vehicle, the rate term would be a rule.
+
+    The fixture's two open corridors share one routing rate, so moving the
+    stablecoin-endpoint one also moves the cohort mean and ``_support_cohorts``
+    would reject the frame before this guard could speak. In the ledger the two
+    classes route independently, so the guard is exercised on its own function.
+    """
+    contributions = _contributions()
+    arriving = contributions["contribution_component"].eq(
+        "comparison_exclusive_composition"
+    ) & contributions["src"].eq(USDT)
+    contributions.loc[arriving, "stable_share_comparison"] = 1.0
+    with pytest.raises(ValueError, match="identity rather than a choice"):
+        _cohort_endpoint_margins(
+            contributions,
+            "count_share",
+            {"mass_share": _COHORT_MASS["pooled"], "net_pp": 17.6},
+        )
+
+
+def test_cohort_endpoint_margins_reject_a_class_that_never_uses_the_vehicle() -> None:
+    """A class routing at zero cannot carry the margin the split gives it."""
+    contributions = _contributions()
+    retiring = (
+        contributions["contribution_component"].eq("baseline_exclusive_composition")
+        & contributions["src"].eq(UNLABELLED)
+        & contributions["tgt"].eq(USDC)
+    )
+    contributions.loc[retiring, "stable_share_baseline"] = 0.0
+    with pytest.raises(ValueError, match="never route through a stablecoin"):
+        _cohort_endpoint_margins(
+            contributions,
+            "count_share",
+            {"mass_share": _COHORT_MASS["pooled"], "net_pp": 17.6},
+        )
+
+
+def test_cohort_endpoint_margins_reprove_the_eligibility_identity_per_cohort() -> None:
+    """The split's own contract, not one inherited from the cohort reading.
+
+    ``_support_cohorts`` runs first in the renderer and would catch a switching
+    wrapped-ether corridor before this function ever saw it. The premise still
+    has to hold here, because the zero rate term is what licenses reading the
+    wrapped-ether class as pure composition, so the guard is exercised directly.
+    """
+    contributions = _contributions()
+    locked = contributions["contribution_component"].eq(
+        "comparison_exclusive_composition"
+    ) & contributions["tgt"].eq(WETH)
+    contributions.loc[locked, "stable_share_comparison"] = 0.5
+    with pytest.raises(ValueError, match="eligibility identity forbids"):
+        _cohort_endpoint_margins(
+            contributions,
+            "count_share",
+            {"mass_share": _COHORT_MASS["pooled"], "net_pp": 17.6},
         )
 
 

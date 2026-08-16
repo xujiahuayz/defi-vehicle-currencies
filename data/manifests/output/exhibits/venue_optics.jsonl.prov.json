@@ -2,17 +2,17 @@
  "argv": [],
  "artefact": "output/exhibits/venue_optics.jsonl",
  "artefact_bytes": 1631,
- "artefact_mtime_ns": 1786880521739963388,
- "artefact_sha256": "e97bf5519d5c68d15b0e2aa14194af6db34db297cfb9f777efeb8d41b6bd1f65",
+ "artefact_mtime_ns": 1786881973614253526,
+ "artefact_sha256": "37656750f1c74c253901683fb7c0103314a228c42e09273df0c99f9ba24ee9ce",
  "code_fingerprint": "1d856aef753d386298eb36b202be2c2e1ac110dca54ec84a589592eb467e230a",
  "code_sources": [
   "scripts/measure_venue_optics.py",
   "src/ddvc/tables.py"
  ],
- "created_at": "2026-08-16T11:42:01+00:00",
+ "created_at": "2026-08-16T12:06:13+00:00",
  "git": {
   "branch": "main",
-  "commit": "d9813ebf717fbba147295059736f087915504e18",
+  "commit": "25555378c78241fc0e43a789eba7752df8e4dbd8",
   "dirty": true,
   "dirty_generated_files": [
    "data/manifests/output/exhibits/prose_conventions.jsonl.prov.json",
@@ -26,7 +26,7 @@
    "output/exhibits/vehicle_transition_pair_decomposition_deck_values.tex",
    "output/exhibits/venue_shape.jsonl",
    "output/tables/pair_composition.pdf",
-   "output/exhibits/.venue_optics.jsonl.nq1alyiz.tmp"
+   "output/exhibits/.venue_optics.jsonl.z29956pk.tmp"
   ],
   "dirty_tracked_files": [
    "deck/main.pdf",
@@ -51,7 +51,7 @@
   "format": "jsonl",
   "rows": 10,
   "schema_version": 1,
-  "sha256": "e97bf5519d5c68d15b0e2aa14194af6db34db297cfb9f777efeb8d41b6bd1f65"
+  "sha256": "37656750f1c74c253901683fb7c0103314a228c42e09273df0c99f9ba24ee9ce"
  },
  "python": "3.14.6",
  "rows": 10,

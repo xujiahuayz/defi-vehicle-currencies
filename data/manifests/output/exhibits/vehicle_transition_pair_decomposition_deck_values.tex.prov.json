@@ -1,22 +1,21 @@
 {
  "argv": [],
  "artefact": "output/exhibits/vehicle_transition_pair_decomposition_deck_values.tex",
- "artefact_bytes": 17633,
- "artefact_mtime_ns": 1786879637449461939,
- "artefact_sha256": "71364cb5631c321ebb03147e4d3ee2a00af98ba4bcdb32875f154e335009af3b",
- "code_fingerprint": "3d1786caa4c8a1f3e28d19f9159111ff6d24f9cee15b0428928fbfb026c9e37d",
+ "artefact_bytes": 20382,
+ "artefact_mtime_ns": 1786881117954259573,
+ "artefact_sha256": "5aa7db8e51f36af5559270beb27ff739efa9139ad4d35b4610ccbf88963755d2",
+ "code_fingerprint": "d62f87ca8686c802f267da0127c231cacd2e94b99a414f1bb5eecfef2d6af168",
  "code_sources": [
   "scripts/build_vehicle_transition_pair_deck_values.py"
  ],
- "created_at": "2026-08-16T11:27:17+00:00",
+ "created_at": "2026-08-16T11:51:57+00:00",
  "git": {
   "branch": "main",
-  "commit": "d9813ebf717fbba147295059736f087915504e18",
+  "commit": "fde69fa3aa518f01825fff0a1f52ed279ca4639b",
   "dirty": true,
   "dirty_generated_files": [],
   "dirty_tracked_files": [
-   "scripts/build_vehicle_transition_pair_deck_values.py",
-   "tests/test_vehicle_transition_pair_deck_values.py"
+   "scripts/build_vehicle_transition_pair_deck_values.py"
   ],
   "dirty_untracked_files": []
  },
@@ -91,10 +90,10 @@
  },
  "notes": "Presentation macros for the exact descriptive pair-composition accounting, the matched-market estimate, one named source--destination pair per aggregate margin, and the split of each composition margin on WETH-endpoint eligibility, the endpoint composition of the choice-live remainder of each margin, the netted exclusive-pair term read as one activity mass against two corridor cohorts' routing rates, and the three market-incidence support classes the Panel A bridge is formed from; evidence status and identities remain source-only.",
  "payload_identity": {
-  "bytes": 17633,
+  "bytes": 20382,
   "format": "binary",
   "schema_version": 1,
-  "sha256": "71364cb5631c321ebb03147e4d3ee2a00af98ba4bcdb32875f154e335009af3b"
+  "sha256": "5aa7db8e51f36af5559270beb27ff739efa9139ad4d35b4610ccbf88963755d2"
  },
  "python": "3.14.6",
  "rows": 4593391,

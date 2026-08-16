@@ -1,18 +1,18 @@
 {
  "argv": [],
  "artefact": "output/exhibits/prose_outliers.jsonl",
- "artefact_bytes": 137412,
- "artefact_mtime_ns": 1786880564475760980,
- "artefact_sha256": "595d97b818a50c1dee5220834b839fb530798a50aa3ee3b34c1d79c565cdbf14",
+ "artefact_bytes": 141072,
+ "artefact_mtime_ns": 1786882008331096992,
+ "artefact_sha256": "67238b493b110cb2b152344c7769c6f21a90453ae65f000e04af4ab3fa892e29",
  "code_fingerprint": "4d6c3aa5e5b632317b923d4c498ebaf8a988e6f1d35f09ef659fc910be391909",
  "code_sources": [
   "scripts/find_prose_outliers.py",
   "src/ddvc/tables.py"
  ],
- "created_at": "2026-08-16T11:42:44+00:00",
+ "created_at": "2026-08-16T12:06:48+00:00",
  "git": {
   "branch": "main",
-  "commit": "d9813ebf717fbba147295059736f087915504e18",
+  "commit": "25555378c78241fc0e43a789eba7752df8e4dbd8",
   "dirty": true,
   "dirty_generated_files": [
    "data/manifests/output/exhibits/prose_conventions.jsonl.prov.json",
@@ -26,7 +26,7 @@
    "output/exhibits/venue_optics.jsonl",
    "output/exhibits/venue_shape.jsonl",
    "output/tables/pair_composition.pdf",
-   "output/exhibits/.prose_outliers.jsonl.e6enka8z.tmp"
+   "output/exhibits/.prose_outliers.jsonl.szwkhu9y.tmp"
   ],
   "dirty_tracked_files": [
    "deck/main.pdf",
@@ -47,13 +47,13 @@
  },
  "notes": null,
  "payload_identity": {
-  "bytes": 137412,
+  "bytes": 141072,
   "format": "jsonl",
-  "rows": 637,
+  "rows": 654,
   "schema_version": 1,
-  "sha256": "595d97b818a50c1dee5220834b839fb530798a50aa3ee3b34c1d79c565cdbf14"
+  "sha256": "67238b493b110cb2b152344c7769c6f21a90453ae65f000e04af4ab3fa892e29"
  },
  "python": "3.14.6",
- "rows": 637,
+ "rows": 654,
  "script": "scripts/find_prose_outliers.py"
 }
