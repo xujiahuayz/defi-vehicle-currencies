@@ -4899,7 +4899,7 @@ the gate's own list and did not move it, which is correct: the queue outranks it
    produce; the perimeter check will accept the file and the exploration will be
    a fiction.
 
-## 2026-08-16 — The stablecoin class is cut by dated backing regime, commit `PENDING`
+## 2026-08-16 — The stablecoin class is cut by dated backing regime, commits `7f64a2b` and `a6d2f7f`
 
 **Target.** Queue item 2 (the E1 self-stamping lock), whose chain the last entry
 located precisely: `execute_exploration_plan` cannot run on a plan that declares
