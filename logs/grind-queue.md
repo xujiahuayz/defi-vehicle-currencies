@@ -262,27 +262,38 @@ and pick a blocking check from the freeze gate.
   market, not the trade" on page 19) are contrast constructions and must be
   re-adjudicated against this item's OWNER RULE when part 2 is done._
 
-- [ ] **JAVA REFINEMENT (2026-08-16, via glotl): DECK — VARIOUS ANALOGIES, AND
-  FINISH THE CLOSE'S CONTRAST HONESTLY NOW.** Extends the open "LIVE DECK IS TOO
-  BUSY" item above; does not replace it. No new data runs; descriptive; refresh in
-  place; do not create a new core frame or add a visible word to any frame while
-  the core count is above 13.
-  1. **Various analogies live in narration, not on the glass.** The deck has
-     exactly one analogy (the China-Brazil corridor, core p18). Java wants the
-     generalisation to land through *several* distinct analogies, but the deck is
-     ~6 core frames and ~966 words over budget, so analogies ride the paydown:
-     they go in Beamer `\note{}` and, at most, one shared motif line reused at
-     section transitions. Add two, each mapping onto the SAME so-what (aggregate
-     share moves because the trading network reorganises around the challenger,
-     not because comparable trades switch intermediary): (a) **lingua franca** — a
-     common language loses global share not when bilingual speakers switch
-     mid-conversation (within-pair change about zero) but when new speaker
-     communities form that never adopt it; (b) **airline hub-and-spoke** — a hub
-     loses share not when existing routes reroute but when new city-pairs fly
-     point-to-point or via a rival hub (reweighting plus exclusive-pair
-     composition). Keep the corridor as the one visible schematic. Hub-and-spoke
-     may reuse the corridor tikz language as a second visible schematic ONLY once
-     the core frame count is at 13.
+- [ ] **JAVA REFINEMENT (2026-08-16, via glotl): DECK — LESS TEXT PER SLIDE (MORE
+  SLIDES IS FINE), TRADFI + ANECDOTAL ANALOGIES, AND FINISH THE CLOSE'S CONTRAST
+  NOW.** Extends the open "LIVE DECK IS TOO BUSY" item above; does not replace it.
+  No new data runs; descriptive; refresh in place.
+  0. **Correction to the density rule (Java, live).** The binding target is LOW
+     VISIBLE TEXT PER SLIDE, not a small slide count. Java is happy with MORE
+     slides: split a dense frame into two clean low-text frames rather than cram
+     one. Where this conflicts with the earlier item's "core deck at most 13
+     frames" cap, the per-slide word budget wins and the frame-count cap is
+     relaxed; do not sacrifice readability to hit 13. Keep the per-frame word
+     budget (at most 55 visible words, hard fail above 70) and the mechanical
+     density gate, and add frames freely to satisfy it.
+  1. **Analogies must be TradFi and anecdotal, drawn from this paper's own
+     vehicle-currency literature; NOT generic-econ analogies.** RETRACTED: the
+     earlier lingua-franca and airline-hub suggestions are wrong for this audience;
+     do not use them. Use the corpus the paper already cites plus concrete monetary
+     anecdotes, each mapped onto the same so-what (aggregate share moves as the
+     trading network reorganises around the challenger; comparable trades do not
+     switch): (a) Krugman's vehicle currency, where trades route A->USD->B through
+     the thick-market currency rather than direct, the literal TradFi analog of
+     route intermediation; (b) dominant-currency persistence and discontinuous
+     displacement (Gopinath DCP, Gopinath-Stein, Mukhin), dominance sticky in
+     established relationships and shifting through new ones; (c) concrete
+     anecdotes: the euro's 1999 launch re-forming intra-European settlement
+     wholesale rather than converting legacy trades one by one; renminbi corridors
+     (the China-Brazil frame already present) growing while the dollar keeps its
+     established corridors; optionally a corridor that did NOT stick (e.g. rupee
+     oil settlement piling up unused) to show a new corridor moves the aggregate
+     only if it actually routes. Each analogy carries a cited source and no causal
+     or geopolitical claim. Analogies MAY take their own low-text slides (per part
+     0), not only presenter notes; keep the China-Brazil corridor as the anchor
+     schematic and reuse its tikz language for any second visible one.
   2. **Finish the close's contrast under the OWNER RULE now, not after the spine.**
      The close frame "The market changed, not the trade" already carries both
      sides on one frame (the conditioning ladder plus the matched-market estimate
