@@ -3748,3 +3748,159 @@ ledger; node B full-text literature ledger; two unchanged findings passes).
   generation identities and the two unchanged findings passes.
 - The deck was not touched and needs no change: no frame reads a cell-coverage
   macro, and the deck remains saturated.
+
+## 2026-08-16 — What the corridors with a choice are: the dollar-endpoint split
+
+**REGRESSION-CHECK filed before mutation.** Purpose-bound estimand most at
+risk: `vehicle_transition`'s pair-level four-term decomposition, Panels B and C.
+The new split is a partition of the *same* certified allocation inside each
+component, so it had to reconcile to `\MarginNewPairTotal`, `\PairPooledReweight`,
+`\PairValueReweight` and the already-published `\Locked*` WETH cells to 1e-6; it
+does, on all four margins. Evidence generation most at risk:
+`vehicle_transition_pair_contributions.parquet`, endpoint-composition `5fb7cbf`,
+D3 `25c755ae`. Nothing was re-run from data. Prior corrections most at risk:
+(a) the 2026-08-16 non-nesting correction — these three endpoint classes
+partition the pair-level allocation scope, which excludes the common-support
+mass bridge, and are not Panel A's incidence classes, not the identity's blocks,
+and not Panel D's cells; (b) the WETH-endpoint eligibility identity, which the
+producer still proves before anything is reported and which the *new* class had
+to be proved **not** to be.
+
+**Target.** No gate blocker was actionable; `audit_findings_freeze.py` reports
+the same four with identical detail strings (node E1 specification lock,
+`stage=design_seed` with the four generation/certificate fields `missing`;
+empirical model ledger, `current_runs=0`; node B full-text literature ledger,
+32/33 source-sets and 34/35 five-axis cards, Mukhin NEEDS-JAVA since 2026-08-15;
+two unchanged findings passes). Under step 6 this had to advance a claim.
+
+**Where the candidate came from, and a correction to the previous entry.** The
+previous entry named `routing_technology_windows.jsonl` as "remaining unused
+certified rival evidence." That is wrong and the ledger has now said it twice
+(lines 2132 and 3742). It is fully consumed: `paper/sections/05-rivals.tex`
+inputs `output/tables/routing_technology_windows.tex` as `tab:router-windows`
+and the subsection reads eleven macros off it. **Do not re-open it as unused.**
+The real gap was elsewhere. Section 3 publishes the WETH-endpoint eligibility
+split of both composition margins and publishes an `\Open*` remainder for each,
+but nothing anywhere said what those choice-live corridors *are* — and the
+conclusion closes by demanding exactly that: "It has to say why the markets
+forming and growing over this period attach themselves to a stablecoin."
+
+**What was done.** The choice-live remainder of each margin is partitioned on
+whether a stablecoin stands at an endpoint of the ordered pair. Three classes,
+mutually exclusive and exhaustive: WETH endpoint (the published identity),
+stablecoin endpoint, and neither candidate at an endpoint.
+
+- The two weightings rank the classes in **opposite orders**. By route count the
+  dollar-endpoint corridors supply **26.0%** of the reweighting margin and
+  **28.7%** of the entry margin, less than the eligible corridors' 73.3% and
+  65.9%. By value they supply **57.3%** and **76.4%**, more than the eligible
+  corridors' 42.6% and 16.0%.
+- Corridors with neither candidate at an endpoint are the many and the small:
+  **142,831** enter in 2026 and **13,390** trade in both years, and they supply
+  **+1.7 pp** and **+0.0 pp** of the two value margins.
+- Inside the dollar-endpoint class the movement is again reallocation. Its
+  activity-weighted stablecoin share by value rises **21.0% → 61.6%** while its
+  within-pair term is **−0.0 pp**: the rise is weight moving between corridors
+  in the class, not a market changing intermediary. Its own activity weight
+  *falls*, 67.7% → 56.7%, so this is not the class taking over the market.
+
+The economic reading, and the answer to the conclusion's closing question:
+weighted by the dollars they move, the markets carrying the rotation are markets
+that already had a dollar on one side. The challenger's vehicle role expanded
+into the corridors where its endpoint demand already sat. That is Krugman's
+secure volume, and the paragraph closes on it as an earned citation (raw lines
+376--383 of the 1980 JMCB text: a currency short of secure volume cannot take
+the vehicle role from an incumbent however transaction costs fall).
+
+**The trap this unit had to avoid.** The dollar-endpoint class would be
+worthless if it were a second eligibility class. It is not — a trade into USDC
+can still be carried by WETH or by USDT — but that has to be *proved on the
+data*, not asserted. `_open_corridor_endpoints` refuses to render unless some
+corridor in the class routes below a stablecoin share of one, some routes above
+zero, fewer than a quarter sit at one in both years (live: 4.7% by count, 4.8%
+by value), and the class's within-pair term is free to move. Two of the five new
+tests exercise exactly this.
+
+**New owner code, all in the existing presentation owner.**
+`_open_corridor_endpoints` and `OPEN_ENDPOINT_CLASSES` in
+`scripts/build_vehicle_transition_pair_deck_values.py`, called from the existing
+eligibility block of the renderer. Twenty-two macros per weighting. Five focused
+tests, one per premise plus the published cells.
+
+**DECISION: promote** at exact scope. It is a partition of one frozen
+allocation, reconciled cell for cell to the margins already published, with the
+non-degeneracy of the new class proved before any share of it is reported. The
+source comment forbids reading any class share as a coefficient.
+
+**Traps for the next iteration.**
+- **The producer fixture encoded continuing-pair activity weights that were not
+  a distribution** (five pairs at 0.004/0.045, summing to 0.02 and 0.20). Every
+  `\Locked*Weight*` macro is a *share of routed activity*, so the fixture was
+  asserting an impossible world. Fixed here via `_COMMON_WEIGHTS`, which closes
+  on one in each year; `LockedWeightBase/End` moved 0.8%/9.0% → 20.0%/45.0% and
+  `MarginReweightWeightBase/End` 0.40%/4.50% → 12.00%/25.00%. **If you add a
+  continuing pair to that fixture you must rebalance the dict.**
+- **A share of a decomposition remainder is not always a quantity.** The
+  dollar-weighted reweighting remainder is negative in one integration scope, so
+  every class figure is published as a share of the *margin*, which
+  `_endpoint_eligibility` already guarantees positive. The first draft divided by
+  the remainder and would have printed a share of a negative base.
+- **Regenerating the deck-values macro file stales `output/tables/pair_composition.tex`.**
+  Rerun `scripts/tabulate/render_pair_composition.py` in the same unit. Fourth
+  entry to record it.
+- **The deck's three-margins frame is at its ceiling.** Adding the new clause
+  overflowed page 13 and clipped the `\decknote`. Fixed by dropping the body
+  from 8.2/9.2 to 7.8/8.6, matching the sibling frames, and tightening the
+  clause. There is no room left on that frame; the next addition must displace
+  something.
+- **Do not embed a backtick-quoted identifier in a `./scripts/run -c "..."`
+  heredoc.** The shell ran `_open_corridor_endpoints` as a command and silently
+  wrote an empty string into the deck comment. Use the Edit tool or single
+  quotes.
+- The paragraph-flow remap was **+20 lines** for the nine handoffs after the
+  insertion point, plus one new handoff at line 256. Refresh the section
+  `sha256` *after* the last prose edit — it was refreshed twice here because the
+  citation landed after the first refresh.
+- **Citations are now a live venue gap, not headroom.** 37 against p25 39 at
+  17,370 words. The advisory count went 2 → 3 when the paragraph landed and back
+  to 2 once Krugman was earned, but the citation line itself stays flagged.
+  Closing it needs two or three more *earned* engagements with the literature,
+  not padding.
+- `against_prep` sits at 1.548 (corpus max 1.715) and `what_cleft` at 0.704
+  (max 0.777). Both are one or two occurrences from the ceiling.
+
+**Validation.** `check_deliverable_conformance.py`: all blocking checks pass, 2
+advisories. Paper 41 pages / 0 undefined, deck 35 pages / 0 undefined. Venue
+shape: words 17,048 → 17,370, equations 14 (unchanged), citations 36 → 37.
+`audit_deck_evidence.py` PASS. `check_jfe_rhetoric_review.py` exits 0.
+`measure_prose_conventions.py`: no registered construction out of range.
+Producer suite 58 passed (53 before, 5 new); `tests/test_dominance_tables.py` 9
+passed after the restamp. Repository suite
+(`--ignore=tests/test_route_cost_panel.py --ignore=tests/test_route_state.py`):
+**2,174 passed, 13 failed**, exactly the long-standing v2 provenance-drift set
+(`test_weighted_quote` 7, `test_vehicle_role_models` 3,
+`test_audit_findings_freeze` 1, `test_variable_registry` 1,
+`test_vehicle_transition_e0` 1); no new failures. Paper pages 15 and 16 and deck
+page 13 inspected: the paragraph sets across the page break, the macros render,
+and the deck frame now clears its footer.
+
+**Commit:** `669f3a2`.
+
+**Blocking count: 4** (unchanged: node E1 specification lock; empirical model
+ledger; node B full-text literature ledger; two unchanged findings passes).
+
+**For the next iteration.**
+- The pair-contributions allocation now has three published partitions: breadth,
+  WETH eligibility with its two scope splits, and endpoint composition. The
+  obvious remaining cut is the **entry cohort's own endpoint composition read
+  against the exit cohort's** — the corridor-replacement paragraph reads the two
+  cohorts' routing rates but not what the arriving corridors *are*, and this
+  unit's classes apply to it unchanged.
+- Equations remain 14 against p25 25 and are the widest venue gap. Section 6
+  still defines the cost benchmark and reports nothing, still blocked on route
+  cost. Section 8's appendix carries **zero** displayed equations, which is
+  where a JFE paper of this shape would put the estimator definitions it
+  currently states only in prose. That is a real and unblocked unit.
+- Citations are now the second venue gap; see the trap above.
+- The M3 12:03 handoff stays unchecked; its live remainder is still the E1/D3
+  generation identities and the two unchanged findings passes.
