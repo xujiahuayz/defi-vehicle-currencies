@@ -4322,3 +4322,121 @@ must not rediscover the hard way:
 Every figure in the queue text must be re-derived from the panel before it enters
 prose. The queue explicitly warns against binding a number from it, and the
 2026-08-16 pass already caught queue count figures that did not reproduce.
+
+## 2026-08-16 — within-day identification of the vehicle role (queue 15:55Z, parts 1/3/5)
+
+**Targeted:** the unchecked 2026-08-16T15:55Z Java interjection, which outranks the
+gate. Not a freeze blocker: the gate's four blockers were unchanged before and after.
+
+**REGRESSION-CHECK (written before mutation).** Estimand at risk: the vehicle
+excess-use construct at the token-day unit on the `endpoint_supported` perimeter —
+recorded in the paper as a *re-specification*, not a redefinition, and the ratio
+exhibits remain the primary extent measure. Evidence generation at risk:
+`data/processed/vehicle_excess_use_daily.parquet`, read-only, not rebuilt. Prior
+corrections at risk: "calendar time is not treatment" (calendar is a control in the
+ladder and a sample split in two rows, never the identifying variation, and the role
+is recorded per row in `calendar_role`); the "not X, but Y" owner rule (every
+non-separable contrast is reported with its interval and neither side is asserted
+from a bare p-value); "do not resurrect a retired estimator" (new owner built under
+the live `ddvc.analysis.regression`, not the withdrawn specification-curve frame).
+
+**Did.** Built `scripts/run_excess_use_date_fe_ladder.py` as the owner of the
+within-day design: four-rung ladder, slope-by-class interaction with contrasts,
+candidate and classified sample cuts, backing-regime and USDC/USDT cuts, calendar
+halves, and three mechanicalness screens. Bound it through
+`scripts/build_excess_use_date_fe_deck_values.py`, rendered
+`output/tables/within_day_ladder.tex` and
+`output/figures/within_day_role_contrasts.pdf`, wrote paper section 3.5 (Table 5,
+Figure 5) and one deck frame in `04-results`.
+
+**Commit:** `d9ce616` (queue note and this entry follow).
+
+**Blocking count: 4** (unchanged): node E1 specification lock; empirical model
+ledger; node B full-text literature ledger; two unchanged findings passes.
+
+**DECISION: promote** — the within-day conditional cross-section ships as an
+estimate rather than a descriptive association. Licence: all three screens clear.
+The crowd-out ceiling binds almost nowhere (mean utilisation 0.0008, p99 0.0004,
+0.08% of currency-days above half the ceiling) and can only push the slope down;
+leave-own-out denominators *raise* the slope to 3.209 (SE 0.090); the route-unit
+floor moves it from 1.579 at five to 1.595 at one hundred. The route-cost dominance
+screen (`scripts/run_dominance_mechanicalness_screen.py`) could not carry this
+design — it reads `route_cost_panel_v2` through `pyfixest`, which is not installed —
+so the screen concept is instantiated for the share-on-share specification inside
+the new owner and documented there.
+
+**DECISION: narrow** — samples with fewer than thirty currencies cluster on date
+with a thirty-day Bartlett lag instead of two-way CR1 on date and currency. Two-way
+CR1 takes its reference distribution from the smaller dimension, so a five-currency
+cut would report four degrees of freedom and a two-currency cut one. The repeated
+sampling unit in those cuts is the day, and the live dependence is serial.
+
+**Two figures in the queue text did not reproduce and are superseded.** The queue
+warned about exactly this and it paid off.
+- The supervisor's saved restricted-sample specifications return **NaN**, not the
+  quoted coefficients: with `other` empty, a full set of class dummies is collinear
+  with the absorbed date effect. Every sample here declares and drops a base class.
+- The five-candidate contrast is **-17.45 pp (SE 7.63, p 0.022, [-32.41, -2.49])**,
+  not SE 3.15 / p 3.4e-08 / [-23.6, -11.3]. The 37-currency contrast is
+  **-1.51 pp (SE 1.27, [-4.09, +1.06]) and does NOT separate from zero**, against
+  the queue's SE 0.076. Both differences are the clustering correction above.
+  So the "native intermediates less than a stablecoin conditional on demand" claim
+  rests on the candidate set only, and the paper says so in those words.
+
+**What reproduced exactly:** ladder rungs L1--L5 and the calendar halves, to the
+digit. Absorbing 2,259 day effects moves the native premium +34.564 -> +34.551 pp.
+
+**New results not in the queue text.** Inside the stablecoin class, within day and
+at the same demand, against a fiat-reserve claim: on-chain-collateralised
+-0.77 pp [-1.35, -0.20], synthetic -0.61 pp [-1.11, -0.11], non-USD
+-0.62 pp [-1.19, -0.04], RWA-mixed -0.50 pp [-1.14, +0.14] (not separable),
+time-varying -0.29 pp (not separable). USDT is -5.32 pp [-7.14, -3.51] against
+USDC. The class that gains the role over the sample is not homogeneous in it.
+
+**One coefficient demoted.** The route-weighted native intercept is -15.91 pp
+against +0.05 pp unweighted, so its sign depends on whether a currency-day or a
+route is the unit. Paper and figure carry it as descriptive.
+
+**Calendar role per result** (as the interjection requires): control in L2--L6 and
+in every sample and regime cut; sample split in the two calendar-half rows;
+identifying variation in none of them.
+
+**Collateral gates this touched, so the next iteration does not rediscover them.**
+- Section 3 forbids an inline `tabular`; a table must be a rendered artifact under
+  `output/tables/` with a lineage row in `scripts/tabulate/README.md`, and
+  `tests/test_paper_tables.py` hard-codes the manuscript label count (now 12).
+- `scripts/tabulate/` scripts must be direct runners: no `if __name__` guard.
+- A LaTeX macro name may not contain a digit. `\DateFECeilingP99` parsed as a macro
+  plus a literal `99` and typeset it in the preamble.
+- Adding ~750 words without an exhibit pushed `tests/test_venue_optics.py` below the
+  first-quartile figure and citation densities. Fixed substantively, with the
+  contrasts figure and two citations the section wanted anyway, then
+  `scripts/measure_venue_optics.py` rerun. Equations remain 15 against p25 25.
+- `check_deliverable_conformance.py` requires the raw-passage review in
+  `docs/reviews/paper-rhetoric.json` to be refreshed for any changed section: a new
+  `openings` entry, one handoff record per new paragraph, shifted line anchors for
+  the paragraphs that moved, and the section sha256 restamped.
+
+**Test state.** Full suite: 13 failures, all pre-existing and unrelated
+(`test_weighted_quote` wiring, `v2_event_source_release` provenance,
+`test_vehicle_role_models` needing pyfixest, `.read_csv` in
+`run_stress_reallocation_e0.py`). Three collection-error modules are excluded the
+same way as before: `test_route_cost_panel`, `test_route_state`,
+`test_analysis_release`. No new failures. Paper 45 pages 0 undefined, deck 37 pages
+0 undefined, deck evidence audit PASS, conformance blocking checks all pass.
+
+**For the next iteration.**
+- The 15:55Z queue item stays unchecked with a progress note. Its remaining parts
+  are **2** — add a date-FE rung to every existing headline estimator, keeping the
+  existing estimate and reporting which coefficients survive absorption — and **4**,
+  pair-level and venue-integration interactions on the same design. Part 2 is the
+  higher-value of the two and is mechanical: the owners are
+  `scripts/build_intermediation_by_type.py`, `build_vehicle_excess_use.py` and
+  `run_dominance_regressions.py`.
+- `output/figures/within_day_role_contrasts.pdf` is a stronger deck object than the
+  ladder table, because it shows the non-separable rows at the same weight. It is
+  not yet on a deck frame; the deck-density interjection above caps the core deck,
+  so it should replace rather than join a frame.
+- The deck-density interjection's real deliverable — a word-budget check inside
+  `audit_deck_evidence.py` — is still unbuilt. The new frame was hand-counted at 40
+  visible words against the 55 budget.

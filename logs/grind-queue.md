@@ -524,6 +524,23 @@ and pick a blocking check from the freeze gate.
   4. Add pair-level and venue-integration interactions to the same design where the green panels support them.
   5. Report every contrast that is **not** separable as prominently as the ones that are, with its interval. The 2026-08-16 "not X, but Y" rule binds all of this: both sides evidenced in the same frame and units, negated side carried by an interval excluding the economically relevant magnitude, otherwise dropped for a plain descriptive line.
 
+  **PROGRESS (2026-08-16, commit `d9ce616`): parts 1, 3 and 5 are closed; the
+  blocking mechanicalness caveat is cleared.** Owner is
+  `scripts/run_excess_use_date_fe_ladder.py` writing
+  `output/exhibits/excess_use_date_fe_ladder.jsonl` and
+  `excess_use_date_fe_screens.jsonl`; macros through
+  `scripts/build_excess_use_date_fe_deck_values.py`; paper section 3.5 with
+  `output/tables/within_day_ladder.tex` and
+  `output/figures/within_day_role_contrasts.pdf`; one deck frame in `04-results`.
+  Two figures in the interjection text did NOT reproduce and are superseded: the
+  restricted-sample rows returned NaN from base-class collinearity, and the
+  few-currency cuts had been clustered on a two- to five-group dimension. The
+  candidate contrast is -17.45 pp (SE 7.63) not (SE 3.15), and the 37-currency
+  contrast is -1.51 pp [-4.09, +1.06] and does NOT separate from zero. Still open:
+  part 2 (add a date-FE rung to every existing headline estimator and demote the
+  coefficients that do not survive absorption) and part 4 (pair-level and
+  venue-integration interactions on the same design).
+
   Guardrails: single draft refreshed in place, no fork; every number binds through generated macros from a committed exhibit; preliminary/E0 results are admissible at their stated scope per Java's instruction, but must carry scope and uncertainty and must not be labelled submission-authoritative. Write results into the paper and deck as each lands rather than batching to the end. Do not resurrect a retired estimator to do any of the above; build new owners under the live estimators. Record in the ledger, per result, whether calendar time is the identifying variation, a control, or a robustness split.
 
 ## Closed
