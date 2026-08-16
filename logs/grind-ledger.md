@@ -2558,3 +2558,113 @@ ledger; node B full-text literature ledger; two unchanged findings passes).
 - The M3 12:03 handoff stays unchecked; its live remainder is still the E1/D3
   generation identities and the two unchanged findings passes. Mukhin still
   needs Java or Studio (NEEDS-JAVA stands from 2026-08-15).
+
+## 2026-08-16 — the eligibility split taken inside each venue scope
+
+**Targeted check.** None of the four blockers is reachable from this worktree,
+for the same reasons the last two entries record: node B is Mukhin
+(NEEDS-JAVA, 2026-08-15), node E1 and the empirical model ledger both wait on
+the Studio D3 generation and certificate identities, and the two unchanged
+passes need a quiet gate rather than a unit of work. `origin/main` is already at
+`e4fd414`, so the M3 fast-forward has landed and its live remainder is unchanged.
+The previous iteration was claim-advancing, so under step 6 this one had to
+advance a claim too. I took the cut the last ledger entry nominated: the same
+eligibility split applied to the venue dimension.
+
+**REGRESSION-CHECK filed before mutation.** Estimand at risk: the scope-specific
+`midpoint_common_exclusive_support_v1` terms `common_pair_reweighting` and
+`exclusive_pair_contribution` at `reporting_scope` single_venue and cross_venue,
+pooled 2024--2026, descriptive and non-causal -- split only, calendar and formula
+ID untouched. Generation at risk: `vehicle_transition_pair_contributions.parquet`
+on the current certified release, read-only; no producer rerun, no release
+rewrite. Prior correction at risk: the M3 affirmative boundary (WETH eligibility
+carries most of the count rotation but not the strict-value rotation) and
+yesterday's pooled split. Discharged concretely: after the refactor every pooled
+macro in the deck-values file is byte-identical, verified by diff.
+
+**Result.** By route count the reweighting margin is **+4.4 pp** within a venue
+against **+11.4 pp** across venues, and WETH-endpoint corridors carry **55.3%**
+and **82.9%** of them. The part contributed by corridors that *did* have a choice
+is the same in both scopes: **+2.0 pp** within a venue, **+1.9 pp** across. The
+entire cross-venue excess in the count margin is therefore corridors that were
+stablecoin-intermediated by definition, and the corridors with a live choice
+reallocate activity at the same rate wherever the route runs. Dollar weighting
+removes the contrast: **+26.6** against **+21.4 pp**, **48.6%** against **50.5%**
+eligible. **DECISION: promote**, at exact scope -- descriptive, non-causal,
+pooled 2024--2026, two separate within-scope decompositions that are comparable
+to each other but do not add to the pooled margin (stated in source comments on
+both deliverables). This resolves a question the paper already raises at what is
+now line 140, where the count-share increase is reported as larger across
+exchanges than within one.
+
+**Where it landed.** Inside the existing owner,
+`scripts/build_vehicle_transition_pair_deck_values.py`. `_pooled_contributions`
+now delegates to a new `_scoped_contributions`; `_endpoint_eligibility` takes a
+scope plus that scope's own decomposition row and reconciles the scoped
+allocation against that scope's `common_pair_reweighting` before reporting, so a
+scope share can never be printed against another scope's aggregate. New constant
+`ELIGIBILITY_SCOPES`. No new script, artifact, or owner.
+
+**Paper.** A new paragraph closes Section 3.2, written from the movement of
+Makarov--Schoar 4.4 (raw lines 1017--1123: concede the limit of the split just
+reported, state what the weighted version adds, report it, note where the
+weighted answer differs and why the structure predicts that). Registered as a
+fourth exemplar for the section and as a handoff at line 98. It cites
+`MakarovSchoar2020Arbitrage` -- admitted, `live_citation: true`, previously
+uncited -- for their within- and across-region decomposition of bitcoin price
+dispersion, and reports that the across-venue excess here goes the other way.
+Citations 30 -> 31, which moves the density test off the 109-word cliff the last
+entry warned about.
+
+**Deck.** No new frame. The margins frame's closing line gains the scope
+contrast. It produced a 17.08pt overfull vbox. **A first fix was wrong and is
+recorded so it is not retried:** shrinking the three panels to 3.40cm cleared the
+box but clipped their "Margin total" lines into the paragraph below, which the
+box counter does not catch. The space came instead from 0.26cm of panel padding
+(the internal 0.16/0.14/0.20cm leads are now 0.10/0.08/0.10), a height of
+3.66cm, and tighter wording. Page 13 rendered and inspected at both attempts.
+
+**Validation.** `check_deliverable_conformance.py` exits 0, all blocking checks
+pass; paper 37 pages / 0 undefined (was 36), deck 35 pages / 0 undefined, the
+same 2 advisories. The deck's remaining two boxes (8.14485pt at line 65,
+5.06264pt at line 221) are byte-equal to the pre-change baseline.
+`audit_deck_evidence.py` PASS. Full suite: **14 failed, 2135 passed**, of which
+`test_dominance_tables::test_generated_table_lineage_is_current[pair_composition]`
+was mine -- regenerating the deck-values file staled that table's lineage -- and
+is closed here by rerunning `scripts/tabulate/render_pair_composition.py`. Its
+`.tex` is byte-identical; only the hash moved. That leaves the 13 byte-identical
+long-standing failures. `tests/test_route_cost_panel.py` and
+`tests/test_route_state.py` still error at collection on the
+`v2_audit_token_decimals.parquet.prov.json` drift.
+
+**Commit:** `df5bb3b`.
+
+**Blocking count: 4** (unchanged: node E1 specification lock; empirical model
+ledger; node B full-text literature ledger; two unchanged findings passes).
+
+**For the next iteration.**
+- **Regenerating `vehicle_transition_pair_decomposition_deck_values.tex` stales
+  `output/tables/pair_composition.{tex,pdf}`.** Run
+  `scripts/tabulate/render_pair_composition.py` in the same unit, or
+  `tests/test_dominance_tables.py` fails and the failure looks long-standing when
+  it is not. The freeze audit does not catch it.
+- The deck's margin panels are now at 3.66cm with 0.28cm of internal padding.
+  There is no headroom left in that frame: the next sentence added to its closing
+  paragraph needs a word removed, not a smaller panel. Below about 3.5cm the
+  panels clip silently.
+- Citation density after this pass: 31 / 14,565 = 0.002128 against a
+  first-quartile 0.002081, so roughly 340 words of headroom before
+  `test_venue_optics.py::test_exhibit_density_reaches_the_first_quartile` fails
+  again. Plan the citation before the paragraph.
+- Venue-shape shortfalls: words 14,565 against p25 18,738; equations 11 against
+  25; citations 31 against 39; greek 6 against 7.
+- The scoped machinery now generalises the eligibility split to any
+  `reporting_scope`. The remaining unexploited cut in this lane is the *value*
+  new-pair margin, whose eligible share is 24.1% single-venue against 14.2%
+  cross-venue -- the widest scope gap in the whole table and the one this
+  iteration did not interpret. It needs no new data.
+- Section 6 still defines the cost benchmark and reports nothing; it remains
+  blocked on route cost and is still the largest structural hole in the paper.
+- The M3 12:03 handoff stays unchecked; its live remainder is the E1/D3
+  generation identities and the two unchanged findings passes. Mukhin still needs
+  Java or Studio (NEEDS-JAVA stands from 2026-08-15).
