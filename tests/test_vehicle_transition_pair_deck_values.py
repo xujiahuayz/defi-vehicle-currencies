@@ -207,6 +207,7 @@ def _contribution(
     weight_comparison: float = 0.045,
     routes_baseline: float = 7_447.0,
     routes_comparison: float = 54_112.0,
+    mass_share: float = 0.5,
 ) -> dict[str, object]:
     return {
         "metric": metric,
@@ -223,6 +224,7 @@ def _contribution(
         "denominator_comparison": routes_comparison,
         "contribution_component": component,
         "contribution_pp": contribution_pp,
+        "aggregate_mass_share_midpoint": mass_share,
         "aggregate_total_change": 0.25,
         "allocation_scope": "pair_level_excludes_common_support_mass",
         "mechanism_status": "descriptive_pair_contribution_noncausal",
@@ -235,6 +237,16 @@ def _contribution(
 # the 1.0/1.1/1.2 scaling), and the eligible share differs by scope in opposite
 # directions across the two metrics, so a renderer that reported the pooled
 # split under a scope macro would fail every scope assertion below.
+#
+# Each cohort of corridors traded in only one year is built from the same
+# identity the renderer proves: a margin is that cohort's exclusive activity mass
+# times its weighted stablecoin routing rate, with the WETH-endpoint corridors
+# carrying a rate of exactly one. The mass differs by scope so a renderer that
+# read the pooled cohort under a scope macro would fail, and the retiring cohort
+# keeps its `$-3.4$ pp` total in every cell, split -1.0 locked and -2.4 open.
+_COHORT_MASS = {"pooled": 0.5, "single_venue": 0.4, "cross_venue": 0.6}
+_EXIT_LOCKED_PP = -1.0
+_EXIT_OPEN_PP = -2.4
 _SCOPE_CONTRIBUTIONS = {
     ("pooled", "count_share"): (4.5, 2.0, 1.5, 0.13, 20.87),
     ("pooled", "strict_intermediation_value_share"): (-1.0, 6.0, 3.0, 1.0, 20.0),
@@ -347,33 +359,94 @@ def _contributions() -> pd.DataFrame:
                     metric=metric,
                     scope=scope,
                 ),
-                _contribution(
+                *_cohort(
                     "comparison_exclusive_composition",
-                    USDT,
-                    USDC,
-                    new_named,
                     metric=metric,
                     scope=scope,
+                    named=(USDT, USDC, new_named),
+                    locked_pp=new_unlabelled,
                 ),
-                _contribution(
-                    "comparison_exclusive_composition",
-                    UNLABELLED,
-                    WETH,
-                    new_unlabelled,
-                    metric=metric,
-                    scope=scope,
-                ),
-                _contribution(
+                *_cohort(
                     "baseline_exclusive_composition",
-                    UNLABELLED,
-                    USDC,
-                    -3.4,
                     metric=metric,
                     scope=scope,
+                    named=(UNLABELLED, USDC, _EXIT_OPEN_PP),
+                    locked_pp=_EXIT_LOCKED_PP,
                 ),
             ]
         )
     return pd.DataFrame(rows)
+
+
+def _cohort(
+    component: str,
+    *,
+    metric: str,
+    scope: str,
+    named: tuple[str, str, float],
+    locked_pp: float,
+) -> list[dict[str, object]]:
+    """One exclusive-support cohort that satisfies the cohort identity.
+
+    The cohort's two weights close on one and each corridor's contribution is its
+    weight times its stablecoin routing rate times the cohort's exclusive
+    activity mass, exactly as the ledger builds them. The WETH-endpoint corridor
+    routes at one by construction; the open corridor's rate is whatever the
+    remaining contribution implies.
+    """
+    entering = component == "comparison_exclusive_composition"
+    mass = _COHORT_MASS[scope]
+    source, target, open_pp = named
+    locked_weight = abs(locked_pp) / (100 * mass)
+    open_weight = 1.0 - locked_weight
+    open_share = abs(open_pp) / (100 * mass * open_weight)
+    weights = (
+        {"weight_comparison": locked_weight, "weight_baseline": 0.0}
+        if entering
+        else {"weight_baseline": locked_weight, "weight_comparison": 0.0}
+    )
+    shares = (
+        {"stable_comparison": 1.0, "stable_baseline": 0.0}
+        if entering
+        else {"stable_baseline": 1.0, "stable_comparison": 0.0}
+    )
+    return [
+        _contribution(
+            component,
+            source,
+            target,
+            open_pp,
+            metric=metric,
+            scope=scope,
+            mass_share=mass,
+            **(
+                {
+                    "weight_comparison": open_weight,
+                    "weight_baseline": 0.0,
+                    "stable_comparison": open_share,
+                    "stable_baseline": 0.0,
+                }
+                if entering
+                else {
+                    "weight_baseline": open_weight,
+                    "weight_comparison": 0.0,
+                    "stable_baseline": open_share,
+                    "stable_comparison": 0.0,
+                }
+            ),
+        ),
+        _contribution(
+            component,
+            UNLABELLED,
+            WETH,
+            locked_pp,
+            metric=metric,
+            scope=scope,
+            mass_share=mass,
+            **weights,
+            **shares,
+        ),
+    ]
 
 
 def test_renderer_emits_complete_display_and_coordinate_macros() -> None:
@@ -703,6 +776,101 @@ def test_scope_new_pair_total_is_the_gross_entry_margin() -> None:
     # The reweighting total still comes from the scope's own decomposition row,
     # against which the producer reconciles the split.
     assert _macro(rendered, "PairSingleReweight") == "$+8.8$ pp"
+
+
+def test_support_cohorts_reads_the_netted_term_as_corridor_replacement() -> None:
+    """One exclusive activity mass, two cohorts, and the routing rate of each.
+
+    The netted exclusive-pair term is the mass times the gap between the two
+    cohorts' rates, so the renderer must publish all three and they must close.
+    The exiting cohort's margin is negative, which is exactly the case the
+    positive-margin eligibility guard refuses to interpret.
+    """
+    rendered = render_pair_decomposition_deck_values(
+        _decomposition(), _fixed_effects(), _usdt_integration(), _contributions()
+    )
+    for infix in ("", "Value"):
+        for suffix, scope in (("", "pooled"), ("Single", "single_venue"), ("Cross", "cross_venue")):
+            mass = _COHORT_MASS[scope]
+            exit_pp = _points(_macro(rendered, f"Cohort{infix}{suffix}Exit"))
+            enter_pp = _points(_macro(rendered, f"Cohort{infix}{suffix}Enter"))
+            net_pp = _points(_macro(rendered, f"Cohort{infix}{suffix}Net"))
+            assert exit_pp == pytest.approx(-3.4)
+            assert enter_pp == pytest.approx(21.0)
+            assert exit_pp + enter_pp == pytest.approx(net_pp)
+            # The netted term, never the gross entry margin.
+            assert net_pp == pytest.approx(17.6)
+            assert _macro(rendered, f"Cohort{infix}{suffix}Mass") == f"{100 * mass:.1f}\\%"
+            # Each cohort's margin is its own mass times its own routing rate.
+            for prefix, pp in (("Exit", exit_pp), ("Enter", enter_pp)):
+                rate = _macro(rendered, f"Cohort{infix}{suffix}{prefix}Share")
+                assert abs(pp) == pytest.approx(
+                    mass * float(rate.replace("\\%", "")), abs=0.05
+                )
+    # The retiring cohort routes at 6.8% pooled against the arriving cohort's
+    # 42.0%; strip the WETH-endpoint corridors and both rates fall, which is the
+    # whole point of publishing the open rate beside the cohort rate.
+    assert _macro(rendered, "CohortExitShare") == "6.8\\%"
+    assert _macro(rendered, "CohortEnterShare") == "42.0\\%"
+    assert _macro(rendered, "CohortExitOpenShare") == "4.9\\%"
+    assert _macro(rendered, "CohortEnterOpenShare") == "0.4\\%"
+    assert _macro(rendered, "CohortEnterOpenWeight") == "58.3\\%"
+    # A scope's cohorts are read inside that scope, never off the pooled rows.
+    assert _macro(rendered, "CohortCrossEnterOpenShare") == "27.8\\%"
+
+
+def test_support_cohorts_rejects_a_margin_that_is_not_mass_times_routing() -> None:
+    contributions = _contributions()
+    # Only the open corridor moves, so the WETH-endpoint identity still holds and
+    # the failure is the cohort arithmetic rather than its structure.
+    entering = contributions["contribution_component"].eq(
+        "comparison_exclusive_composition"
+    ) & contributions["tgt"].eq(USDC)
+    contributions.loc[entering, "stable_share_comparison"] *= 0.5
+    with pytest.raises(ValueError, match="activity mass times its routing rate"):
+        render_pair_decomposition_deck_values(
+            _decomposition(), _fixed_effects(), _usdt_integration(), contributions
+        )
+
+
+def test_support_cohorts_rejects_cohorts_that_carry_different_activity_mass() -> None:
+    """Without a common mass the two rates are not comparable, only their sum is."""
+    contributions = _contributions()
+    entering = contributions["contribution_component"].eq(
+        "comparison_exclusive_composition"
+    )
+    contributions.loc[entering, "aggregate_mass_share_midpoint"] = 0.25
+    with pytest.raises(ValueError, match="different activity mass"):
+        render_pair_decomposition_deck_values(
+            _decomposition(), _fixed_effects(), _usdt_integration(), contributions
+        )
+
+
+def test_support_cohorts_rejects_an_eligibility_split_that_straddles_zero() -> None:
+    """A share of a margin whose parts disagree in sign is not a share of it."""
+    contributions = _contributions()
+    retiring = contributions["contribution_component"].eq(
+        "baseline_exclusive_composition"
+    )
+    locked = retiring & contributions["tgt"].eq(WETH)
+    contributions.loc[locked, "contribution_pp"] = 2.0
+    contributions.loc[retiring & ~locked, "contribution_pp"] = -5.4
+    with pytest.raises(ValueError, match="straddles zero"):
+        render_pair_decomposition_deck_values(
+            _decomposition(), _fixed_effects(), _usdt_integration(), contributions
+        )
+
+
+def test_support_cohorts_rejects_a_switching_weth_endpoint_cohort_corridor() -> None:
+    contributions = _contributions()
+    locked = contributions["contribution_component"].eq(
+        "baseline_exclusive_composition"
+    ) & contributions["tgt"].eq(WETH)
+    contributions.loc[locked, "stable_share_baseline"] = 0.5
+    with pytest.raises(ValueError, match="eligibility identity"):
+        render_pair_decomposition_deck_values(
+            _decomposition(), _fixed_effects(), _usdt_integration(), contributions
+        )
 
 
 def test_endpoint_eligibility_rejects_a_scope_split_against_another_scope() -> None:

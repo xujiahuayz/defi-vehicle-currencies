@@ -123,6 +123,24 @@ That split was taken of continuing markets, whose endpoints are fixed and whose 
 % output/exhibits/vehicle_transition_pair_contributions.parquet; macros from
 % scripts/build_vehicle_transition_pair_deck_values.py
 
+That entry margin is gross. The decomposition nets it against the corridors that stopped trading, and the netting is not an accounting nuisance: it is the comparison the term makes. Averaged across the two years, corridors observed in only one of them carry \CohortMass{} of route activity and \CohortValueMass{} of the value moved, and the netted term is that mass multiplied by the gap between how two populations were routed---the corridors that left and the corridors that arrived. The two are not alike. The departing corridors sent \CohortExitShare{} of their routes and \CohortValueExitShare{} of their dollars through a stablecoin; the corridors that replaced them send \CohortEnterShare{} and \CohortValueEnterShare{}. Removing the wrapped-ether-endpoint corridors, whose vehicle was settled before they opened, leaves \CohortExitOpenShare{} against \CohortEnterOpenShare{} by route count and \CohortValueExitOpenShare{} against \CohortValueEnterOpenShare{} by value, and across exchanges the arriving corridors that could have chosen anything route \CohortValueCrossEnterOpenShare{} of their dollars through a stablecoin. The largest margin in the count decomposition is therefore not adoption inside a settled set of markets. It is the replacement of one population of markets by another that routes differently from the day it opens. \citet{FlandreauJobst2009Empirics} estimate the incumbency advantage of an international currency across a stable roster of trading relationships and find persistence without lock-in; here the roster is what turns over, and the challenger's gain is concentrated in the corridors that did not exist when the incumbent's network was formed.
+% The netted exclusive-pair term read as corridor replacement. The two cohorts
+% are the baseline_exclusive and comparison_exclusive rows of the same certified
+% allocation, and the producer proves the identity before rendering: each
+% cohort's weights close on one, each margin equals that cohort's own
+% aggregate_mass_share_midpoint -- the midpoint of the two years' exclusive-
+% support activity shares, which is why the prose says averaged across the two
+% years -- times its own weighted stablecoin share, the two
+% cohorts carry the same mass, and the two margins sum to that scope's
+% exclusive_pair_contribution. The exiting margin is negative, so the producer
+% checks that its endpoint split does not straddle zero before forming a share
+% of it -- the positive-margin guard used by the eligibility split above cannot
+% interpret this margin. Descriptive and non-causal, as in the paragraphs above;
+% corridor entry and exit are realised, not assigned, and this is not the
+% blocked vehicle-turnover hazard.
+% output/exhibits/vehicle_transition_pair_contributions.parquet; macros from
+% scripts/build_vehicle_transition_pair_deck_values.py
+
 \subsection{USDT's intermediary role}
 \label{sec:dominance:excess}
 

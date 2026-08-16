@@ -78,6 +78,38 @@ ELIGIBILITY_SCOPES = (("Single", "single_venue"), ("Cross", "cross_venue"))
 # stopped trading, while the split is taken of the gross entry margin, so its
 # total is the split's own components.
 SCOPE_MARGIN_TERMS = {"Reweight": "common_pair_reweighting"}
+# Corridors traded in only one of the two years reach the decomposition through a
+# single netted term, `exclusive_pair_contribution`, and that netting hides what
+# the term measures. The two cohorts -- corridors that stopped trading and
+# corridors that began -- are weighted by the *same* midpoint mass share of
+# exclusive-support activity, so the term is exactly that mass times the gap
+# between how the two cohorts route:
+#     exclusive_pair_contribution = E * (s_enter - s_exit).
+# Publishing E, s_exit, and s_enter turns a residual into a statement about
+# corridor replacement, which is a different object from the gross entry margin
+# the eligibility split is taken of. The WETH-endpoint split of each cohort then
+# asks how much of a cohort's routing rate is definitional: those corridors carry
+# stablecoin share one by construction, so only the open rate can be read
+# economically. Unlike the two composition margins, the exiting cohort's margin is
+# negative, so `_support_cohorts` proves the split does not straddle zero rather
+# than requiring a positive total as `_endpoint_eligibility` does.
+SUPPORT_COHORTS = (
+    (
+        "Exit",
+        "baseline_exclusive_composition",
+        "pair_weight_baseline",
+        "stable_share_baseline",
+        -1.0,
+    ),
+    (
+        "Enter",
+        "comparison_exclusive_composition",
+        "pair_weight_comparison",
+        "stable_share_comparison",
+        1.0,
+    ),
+)
+COHORT_SCOPES = (("", "pooled"), *ELIGIBILITY_SCOPES)
 
 
 def _signed_pp(value: float) -> str:
@@ -610,6 +642,120 @@ def _endpoint_eligibility(
     return eligibility
 
 
+def _support_cohorts(
+    contributions: pd.DataFrame,
+    metric: str,
+    aggregate: pd.Series,
+    scope: str = "pooled",
+) -> dict[str, object]:
+    """Read the netted exclusive-pair term as a corridor-replacement comparison.
+
+    See ``SUPPORT_COHORTS`` for the identity. Everything reported here is proved
+    on the ledger rather than assumed: each cohort's weights close on one, each
+    cohort's margin equals its own mass times its own routing rate, the two
+    cohorts carry the same mass (without which their difference is not a routing
+    comparison), and the two margins sum to that scope's ``aggregate`` netted
+    term. The eligibility split of each cohort is checked for a sign straddle
+    before any share of it is formed, because the exiting margin is negative.
+    """
+    scoped = _scoped_contributions(contributions, metric, scope)
+    if scoped.empty:
+        raise ValueError(f"pair contributions carry no {scope} 2024--2026 {metric} rows")
+    endpoint = scoped["src"].eq(WETH) | scoped["tgt"].eq(WETH)
+    cohorts: dict[str, pd.DataFrame] = {}
+    mass_shares: list[float] = []
+    for prefix, component, _weight, _share, _sign in SUPPORT_COHORTS:
+        rows = scoped[scoped["contribution_component"].eq(component)]
+        if rows.empty:
+            raise ValueError(f"pair contributions carry no {metric} {component} rows")
+        mass_share = float(rows["aggregate_mass_share_midpoint"].iloc[0])
+        if not rows["aggregate_mass_share_midpoint"].eq(mass_share).all():
+            raise ValueError(f"{metric} {scope} {component} carries several mass shares")
+        if not 0 < mass_share < 1:
+            raise ValueError(f"{metric} {scope} exclusive mass share leaves the unit range")
+        cohorts[prefix] = rows
+        mass_shares.append(mass_share)
+    # The shared premise before any per-cohort arithmetic: the two cohorts are
+    # weighted by one activity mass, without which the gap between their routing
+    # rates is not what the netted term measures.
+    if not math.isclose(mass_shares[0], mass_shares[1], abs_tol=1e-12):
+        raise ValueError(
+            f"{metric} {scope} exclusive cohorts carry different activity mass, so "
+            "their difference is not a routing comparison"
+        )
+    mass_share = mass_shares[0]
+    cohorts_out: dict[str, object] = {}
+    margins: list[float] = []
+    for prefix, component, weight_column, share_column, sign in SUPPORT_COHORTS:
+        rows = cohorts[prefix]
+        locked = rows[endpoint.loc[rows.index]]
+        if locked.empty:
+            raise ValueError(f"{metric} {scope} {component} has no WETH-endpoint corridor")
+        if not locked[share_column].eq(1.0).all():
+            raise ValueError(
+                f"{metric} {scope} breaks the WETH-endpoint eligibility identity on "
+                f"the {component} cohort"
+            )
+        weight = float(rows[weight_column].sum())
+        if not math.isclose(weight, 1.0, abs_tol=1e-9):
+            raise ValueError(
+                f"{metric} {scope} {component} weights do not close on their cohort, "
+                "so a cohort routing rate would not be a weighted mean"
+            )
+        stable_share = float((rows[weight_column] * rows[share_column]).sum())
+        margin_pp = float(rows["contribution_pp"].sum())
+        if not math.isclose(
+            margin_pp, sign * 100 * mass_share * stable_share, abs_tol=1e-6
+        ):
+            raise ValueError(
+                f"{metric} {scope} {component} is not its cohort's activity mass "
+                "times its routing rate"
+            )
+        opened = rows[~endpoint.loc[rows.index]]
+        open_weight = float(opened[weight_column].sum())
+        if not 0 < open_weight < 1:
+            raise ValueError(
+                f"{metric} {scope} {component} has no corridor with an open vehicle "
+                "choice, so an open routing rate would not be defined"
+            )
+        open_share = float((opened[weight_column] * opened[share_column]).sum())
+        locked_pp = float(locked["contribution_pp"].sum())
+        open_pp = float(opened["contribution_pp"].sum())
+        if not math.isclose(locked_pp + open_pp, margin_pp, abs_tol=1e-6):
+            raise ValueError(f"{metric} {scope} {component} eligibility split misses its total")
+        if locked_pp * margin_pp < 0 or open_pp * margin_pp < 0:
+            raise ValueError(
+                f"{metric} {scope} {component} eligibility split straddles zero, so a "
+                "share of that margin would not be interpretable"
+            )
+        if not math.isclose(
+            open_pp, sign * 100 * mass_share * open_share, abs_tol=1e-6
+        ):
+            raise ValueError(
+                f"{metric} {scope} {component} open contribution is not its open mass "
+                "times its open routing rate"
+            )
+        margins.append(margin_pp)
+        cohorts_out[prefix] = {
+            "margin_pp": margin_pp,
+            "stable_share": stable_share,
+            "open_weight": open_weight,
+            "open_stable_share": open_share / open_weight,
+            "locked_pp": locked_pp,
+            "open_pp": open_pp,
+        }
+    net_pp = margins[0] + margins[1]
+    if not math.isclose(
+        net_pp, 100 * float(aggregate["exclusive_pair_contribution"]), abs_tol=1e-6
+    ):
+        raise ValueError(
+            f"{metric} {scope} exclusive-support cohorts do not reconcile the exclusive-pair term"
+        )
+    cohorts_out["mass_share"] = mass_share
+    cohorts_out["net_pp"] = net_pp
+    return cohorts_out
+
+
 def _scope_margin_total(
     row: pd.Series, prefix: str, statistics: dict[str, float]
 ) -> str:
@@ -975,6 +1121,33 @@ def render_pair_decomposition_deck_values(
                         f"{{{_share(float(statistics['locked_share']))}}}",
                     ]
                 )
+        # The netted exclusive term read as corridor replacement: one activity
+        # mass, two cohorts, and the routing rate of each. The open rates are the
+        # ones an economic reading may use.
+        for suffix, scope in COHORT_SCOPES:
+            cohort = _support_cohorts(contributions, metric, scope_rows[scope], scope)
+            lines.extend(
+                [
+                    f"\\newcommand{{\\Cohort{infix}{suffix}Mass}}"
+                    f"{{{_share(float(cohort["mass_share"]))}}}",
+                    f"\\newcommand{{\\Cohort{infix}{suffix}Net}}"
+                    f"{{{_contribution_pp(float(cohort["net_pp"]))}}}",
+                ]
+            )
+            for prefix, _component, _weight, _share_column, _sign in SUPPORT_COHORTS:
+                statistics = cohort[prefix]
+                lines.extend(
+                    [
+                        f"\\newcommand{{\\Cohort{infix}{suffix}{prefix}}}"
+                        f"{{{_contribution_pp(float(statistics['margin_pp']))}}}",
+                        f"\\newcommand{{\\Cohort{infix}{suffix}{prefix}Share}}"
+                        f"{{{_share(float(statistics['stable_share']))}}}",
+                        f"\\newcommand{{\\Cohort{infix}{suffix}{prefix}OpenShare}}"
+                        f"{{{_share(float(statistics['open_stable_share']))}}}",
+                        f"\\newcommand{{\\Cohort{infix}{suffix}{prefix}OpenWeight}}"
+                        f"{{{_share(float(statistics['open_weight']))}}}",
+                    ]
+                )
     return "\n".join(lines) + "\n"
 
 
@@ -1016,6 +1189,7 @@ def run(
             "denominator_comparison",
             "contribution_component",
             "contribution_pp",
+            "aggregate_mass_share_midpoint",
             "aggregate_total_change",
             "allocation_scope",
             "mechanism_status",
@@ -1049,8 +1223,10 @@ def run(
             "Presentation macros for the exact descriptive pair-composition "
             "accounting, the matched-market estimate, one named "
             "source--destination pair per aggregate margin, and the split of "
-            "each composition margin on WETH-endpoint eligibility; evidence "
-            "status and identities remain source-only."
+            "each composition margin on WETH-endpoint eligibility, and the "
+            "netted exclusive-pair term read as one activity mass against two "
+            "corridor cohorts' routing rates; evidence status and identities "
+            "remain source-only."
         ),
     )
     print(f"wrote {output_path}")
