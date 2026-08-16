@@ -108,11 +108,33 @@ and pick a blocking check from the freeze gate.
      next day. Adjudicate three candidate spine sentences against the saved deck
      exemplars and pick one, then use the same sentence verbatim in exactly three
      places: the opening frame, the frame that shows the headline result, and the
-     close. Seed candidate, to be beaten rather than accepted:
-     *"A vehicle currency does not win trades, it wins corridors."* It is accurate
-     to the compositional result (within matched markets the change is about zero;
-     the aggregate moves through reweighting and newly active pairs) and it carries
-     the analogy without asserting causality.
+     close.
+     **OWNER RULE (Java, 2026-08-16), binding on paper and deck alike: a
+     contrast-confirmation construction ("not X, but Y", "it is not A, it is B")
+     is FORBIDDEN unless both sides are evidenced on the same frame or in the same
+     sentence's own exhibit.** The negated side must be carried by an interval
+     that excludes the economically relevant magnitude, stated as a bound, never
+     by a bare non-significant p-value or the words "about zero"; absence of
+     evidence is not the evidence of absence that this rhetorical form asserts.
+     The affirmed side must carry its own estimate with uncertainty in the same
+     units. If either side cannot be shown that way, drop the contrast and use a
+     plain descriptive line. This rule fails closed: when in doubt, no contrast.
+     The seed candidate below is offered ONLY as a test of that rule, to be beaten
+     rather than accepted: *"A vehicle currency does not win trades, it wins
+     corridors."* Its licence, if it is to survive, is
+     `output/exhibits/vehicle_transition_pair_fixed_effects.jsonl`, which bounds
+     the negated side rather than merely failing to reject it: within matched
+     markets the 2024-to-2026 change is +0.22 pp with a 95% interval of
+     [-1.28, +1.73] pp on count, +0.32 pp [-1.15, +1.80] pp on matched strict
+     count, and -1.35 pp [-5.65, +2.96] pp on strict value, on 94,260 and 91,417
+     fixed-effect cells and 362 calendar-date clusters. Against aggregate moves of
+     roughly +25.7 pp count and +42.8 pp value, those intervals cap the within-
+     market channel at well under a tenth of the total, which is a bound and not a
+     null result. The affirmed side must appear beside it with its own numbers,
+     read from `vehicle_transition_pair_decomposition.jsonl` and never from this
+     queue text: use the exhibit's pooled reweighting and net exclusive-pair terms
+     with their standard errors. If the frame cannot show both sides in the same
+     units, the sentence does not ship.
   3. **TradFi analogy is missing from the slides.** The China-Brazil corridor
      analogy currently lives in the paper's introduction and conclusion only. It
      needs its own core frame before the close, mapping the corridor story onto
