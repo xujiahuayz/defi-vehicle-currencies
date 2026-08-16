@@ -4163,3 +4163,128 @@ ledger; node B full-text literature ledger; two unchanged findings passes).
 - Equations remain 14 against p25 25 and are still the widest venue gap; the
   unblocked unit there is still the Section 8 estimator definitions that are
   stated only in prose.
+
+## 2026-08-16 — The estimator Section 8 stated only in prose: Balancer parameter identification
+
+**Targeted.** Not a gate blocker. The freeze audit ran twice this iteration and
+returned the same four: node E1 specification lock (`locked_at`, `d3_generation`,
+`d3_certificate`, `exploration_*` all missing), empirical model ledger
+(`current_runs=0`, `exploration=not_started`, `confirmatory_context=invalid`),
+node B full-text literature ledger, and two unchanged findings passes. Node B was
+traced to ground again and is unchanged: `source_set_record_closed` fails only at
+`non_text_dispositions_closed`, because the 119,236,817-byte reconstructed
+openICPSR package for `Mukhin2022InternationalPriceSystem` exists in no checkout
+on this host and `literature/papers/` is gitignored, so it is not recoverable from
+history. Everything else about that card and source set is closed. It stays
+**NEEDS-JAVA** (open since 2026-08-15). Under step 6 this had to advance a claim
+or a section, and the ledger's own standing candidate supplied it.
+
+**REGRESSION-CHECK filed before mutation.** Estimand at risk: the *constructed*
+side of the route-cost comparison, specifically which Balancer pool-days enter the
+counterfactual opportunity set. Nothing written may widen or narrow that
+perimeter, and the route-cost estimand itself stays blocked and unreported.
+Evidence generation at risk: `output/exhibits/weighted_quoter_validation.jsonl`,
+read and never regenerated; any new aggregate had to reconcile to the already
+published 256 priced pool-days. Prior corrections at risk: (a) a component
+validation is never reported as venue coverage, so the standing "not for Balancer
+as a whole" sentence had to survive; (b) the ledger's own correction that
+numbering displays purely to move `measure_venue_optics.py` is filler, so a
+display was added only where it defines an estimator that was prose-only, and
+numbered only where cross-referenced.
+
+**What was wrong.** Appendix B.4 stated its estimator in one sentence while B.3
+one page earlier displayed the exactly analogous `\widehat A_p`. Four objects that
+decide which pool-days can be quoted were invisible to a referee: the fitting-error
+functional and the quantile it is read at; the requirement that a candidate
+parameter price nine tenths of a pool's fitting trades before it can stand for the
+pool (`MIN_QUOTED_SHARE`, mentioned nowhere in the paper); the reciprocal-exponent
+pooling of the two trade directions, which is a restriction the invariant implies
+and which doubles the trades pinning one number; and the nested three-tier
+acceptance rule in `fit_pool_day`, under which reading is tried before fitting and
+the fee before the weights so each tier adds at most one free scalar. The paper
+also never said how the fitting and evaluation sets are formed, though both tables
+quote errors "on trades no fit ever saw" (they alternate: `obs[::2]`, `obs[1::2]`).
+
+**What was done.** All four are now displayed as a transcription of
+`src/ddvc/pricing/weighted.py` and `scripts/validate_weighted_quoter.py`. The tier
+rule is `\eqref{eq:weighted-fit}` and is cited from the coverage appendix, which
+previously confined the priced Balancer sample by state reconstruction alone. The
+error functional is `\mathcal{E}_p` and not `E_p`, because `test_paper_provenance`
+treats a display line whose first character is not a backslash as prose, and
+`Q_{0.90}` on such a line is read as an unsourced numeric claim; the Curve display
+above passes only because it opens on `\widehat`.
+
+**New evidence, not notation.** Summing `pools_by_fit_mode` over the twelve
+validation days: **209 reported, 43 fee_fitted, 4 weight_fitted**, partitioning the
+published 256 `pools_priced`. Four fifths of the priced sample therefore carries no
+fitted parameter at all, which bounds how much of the constructed side of the cost
+comparison rests on fitting rather than on reading. `tests/test_weighted_quote.py`,
+the artefact's own owner, now reconciles that sentence against the exhibit and
+checks the three modes partition `pools_priced`. Nothing verified it before:
+`test_paper_provenance` deliberately checks that a number cites an artefact and
+not that it matches one.
+
+**DECISION: promote** at exact scope. The estimator, its coverage condition, its
+tier rule and the tier incidence enter the appendix; the route-cost estimand they
+serve stays unreported. Calibrated against Huang, Ranaldo, Schrimpf and Somogyi
+(2025 JFE) at `literature/text/...jfe.txt:1140-1215`, whose LSTAR passage states
+the functional form, bounds the free parameters and says what the bounds are for,
+gives the estimation procedure, and only then reports what it implies. That passage
+is now registered in `paper-rhetoric.json` as a raw exemplar for the appendix, with
+six new handoffs and the entries for lines 176 and 180 rewritten.
+
+**Validation.** Paper 43 pages / 0 undefined / 0 overfull. Deck untouched at 36
+pages; its PDF was rebuilt twice by the conformance runs and restored both times,
+so the committed binary is unchanged. `check_deliverable_conformance.py`: all
+blocking checks pass, 2 advisories. Freeze audit: RED, same 4 blocking, run before
+and after. Repository suite (excluding the two modules whose *collection* aborts on
+the standing `v2_audit_token_decimals.parquet.prov.json` drift): **2,198 passed,
+13 failed**, and all 13 reproduce at `HEAD~1` in a throwaway worktree, so none are
+mine. Pages 33 and 34 of the paper inspected as rendered images.
+
+**Traps found this iteration.**
+- **Never run the freeze audit and the full pytest suite at the same time.** The
+  audit went to 0% CPU in state `S` and sat there for over an hour while pytest
+  held whatever it was waiting on. Run them one after the other. Solo the audit
+  takes about 17 minutes.
+- **A bare `pytest tests/` spends 75 minutes in collection and then aborts** on
+  the `v2_event_source_release` provenance drift. Always pass
+  `--ignore=tests/test_route_cost_panel.py --ignore=tests/test_route_state.py`;
+  with those two out it is 5 minutes.
+- **Prose length has a citation cost.** Adding roughly 700 appendix words with no
+  citation pushed citation *density* below the venue quartile and turned
+  `test_venue_optics` from green to a third advisory. The fix was the Lehar and
+  Parlour reference the passage genuinely needed to position itself against the
+  closest published state reconstruction, not filler.
+- **`measure_prose_conventions.py` caught `rather than` at 0.593 against a corpus
+  maximum of 0.572** from two new uses. Both thoughts were rewritten rather than
+  word-substituted; the draft is now at 0.460.
+- **`json.dumps` on `paper-rhetoric.json` must use `indent=1`.** At `indent=2` a
+  fifty-line edit renders as a 3,950-line diff.
+
+**Commit:** `1172af1`.
+
+**Blocking count: 4** (unchanged). Venue shape: words 17,691 -> 18,416,
+equations 14 -> 15, citations 38 -> 39 (now *in range*; equations and words remain
+the two gaps).
+
+**For the next iteration.**
+- **A new supervisor interjection landed in `logs/grind-queue.md` at
+  2026-08-16T15:50Z and is unchecked. It outranks the gate and is the first unit.**
+  Java's third statement of the same objection, now about estimators and not deck
+  framing: build the non-chronological regression suite. Five parts, all of which
+  the interjection states run on green route-only D3 today: (1) promote vehicle
+  excess use to a lead result because it is cross-sectional by construction;
+  (2) build the backing-regime and token cross-sections as their own arm;
+  (3) convert 2024-versus-2026 contrasts into date-by-date repeated cross-sections
+  over the 2,332-day release and report the dispersion; (4) re-specify the retired
+  non-calendar designs, which were retired for definitional and not design defects;
+  (5) state the blocked set plainly instead of letting a calendar comparison stand
+  in for a design waiting on data. It also asks for a before/after count of
+  headline results whose identifying variation is calendar time. It was carried
+  into the tree unchecked by `1172af1`; do not tick it there until it is closed.
+- Equations remain 15 against p25 25. The appendix's other prose-only procedure is
+  the route-identification rule in Appendix A, which defines connected chains,
+  order splits and disconnected groups entirely in words.
+- The M3 12:03 handoff stays unchecked; its live remainder is still the E1/D3
+  generation identities and the two unchanged findings passes.
