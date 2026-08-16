@@ -1,32 +1,43 @@
 {
  "argv": [],
  "artefact": "output/exhibits/prose_conventions.jsonl",
- "artefact_bytes": 3048,
- "artefact_mtime_ns": 1786822015091203453,
- "artefact_sha256": "463ab09658d4212ed1d1559c6c24614814ffd5e1f3c4f3ff044010880a75f73e",
+ "artefact_bytes": 3069,
+ "artefact_mtime_ns": 1786844091344517550,
+ "artefact_sha256": "4c1e88f662db365fbc1e6ea326146e30e7bc88ef07b3aa58af1a22f5ea170cc9",
  "code_fingerprint": "855e4cea8ba498e8bb720f072b29f9645df3c0bee4fbe4c26dbd5cb903686b44",
  "code_sources": [
   "scripts/measure_prose_conventions.py",
   "src/ddvc/tables.py"
  ],
- "created_at": "2026-08-15T19:26:55+00:00",
+ "created_at": "2026-08-16T01:34:51+00:00",
  "git": {
   "branch": "main",
-  "commit": "12a2e8b508f1b17e32a25a70b58f52a27b278c74",
+  "commit": "6b4050d003efbfd0c0302994f8e93f273bb25cd5",
   "dirty": true,
   "dirty_generated_files": [
    "data/manifests/output/exhibits/prose_outliers.jsonl.prov.json",
+   "data/manifests/output/exhibits/vehicle_transition_pair_decomposition_deck_values.tex.prov.json",
    "data/manifests/output/exhibits/venue_optics.jsonl.prov.json",
    "data/manifests/output/exhibits/venue_shape.jsonl.prov.json",
    "output/exhibits/prose_outliers.jsonl",
+   "output/exhibits/vehicle_transition_pair_decomposition_deck_values.tex",
    "output/exhibits/venue_optics.jsonl",
    "output/exhibits/venue_shape.jsonl",
-   "output/exhibits/.prose_conventions.jsonl.st7fpvgo.tmp"
+   "output/exhibits/.prose_conventions.jsonl.c2n_rfxh.tmp"
   ],
   "dirty_tracked_files": [
+   "deck/main.pdf",
+   "deck/sections/04-results.tex",
+   "deck/sections/05-close.tex",
    "docs/reviews/paper-rhetoric.json",
-   "scripts/check_deliverable_conformance.py",
-   "scripts/measure_venue_optics.py"
+   "logs/grind-ledger.md",
+   "logs/grind-queue.md",
+   "paper/sections/01-introduction.tex",
+   "paper/sections/03-dominance.tex",
+   "paper/sections/07-conclusion.tex",
+   "paper/sections/abstract.tex",
+   "scripts/build_vehicle_transition_pair_deck_values.py",
+   "tests/test_vehicle_transition_pair_deck_values.py"
   ],
   "dirty_untracked_files": []
  },
@@ -39,11 +50,11 @@
  },
  "notes": null,
  "payload_identity": {
-  "bytes": 3048,
+  "bytes": 3069,
   "format": "jsonl",
   "rows": 19,
   "schema_version": 1,
-  "sha256": "463ab09658d4212ed1d1559c6c24614814ffd5e1f3c4f3ff044010880a75f73e"
+  "sha256": "4c1e88f662db365fbc1e6ea326146e30e7bc88ef07b3aa58af1a22f5ea170cc9"
  },
  "python": "3.14.6",
  "rows": 19,

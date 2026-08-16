@@ -1,32 +1,43 @@
 {
  "argv": [],
  "artefact": "output/exhibits/prose_outliers.jsonl",
- "artefact_bytes": 79086,
- "artefact_mtime_ns": 1786822028574952145,
- "artefact_sha256": "f67e0b80ff0b1c188792d2aeb0fa1db13057d96d3ffe0b6009579cde48539064",
+ "artefact_bytes": 80125,
+ "artefact_mtime_ns": 1786844104860151304,
+ "artefact_sha256": "50a1f0574d2c9f161c6bc783c1762589f789889af1eccdaa384e9b9b784d7cfe",
  "code_fingerprint": "4d6c3aa5e5b632317b923d4c498ebaf8a988e6f1d35f09ef659fc910be391909",
  "code_sources": [
   "scripts/find_prose_outliers.py",
   "src/ddvc/tables.py"
  ],
- "created_at": "2026-08-15T19:27:08+00:00",
+ "created_at": "2026-08-16T01:35:04+00:00",
  "git": {
   "branch": "main",
-  "commit": "12a2e8b508f1b17e32a25a70b58f52a27b278c74",
+  "commit": "6b4050d003efbfd0c0302994f8e93f273bb25cd5",
   "dirty": true,
   "dirty_generated_files": [
    "data/manifests/output/exhibits/prose_conventions.jsonl.prov.json",
+   "data/manifests/output/exhibits/vehicle_transition_pair_decomposition_deck_values.tex.prov.json",
    "data/manifests/output/exhibits/venue_optics.jsonl.prov.json",
    "data/manifests/output/exhibits/venue_shape.jsonl.prov.json",
    "output/exhibits/prose_conventions.jsonl",
+   "output/exhibits/vehicle_transition_pair_decomposition_deck_values.tex",
    "output/exhibits/venue_optics.jsonl",
    "output/exhibits/venue_shape.jsonl",
-   "output/exhibits/.prose_outliers.jsonl.4cp2txx2.tmp"
+   "output/exhibits/.prose_outliers.jsonl.asmfi3c1.tmp"
   ],
   "dirty_tracked_files": [
+   "deck/main.pdf",
+   "deck/sections/04-results.tex",
+   "deck/sections/05-close.tex",
    "docs/reviews/paper-rhetoric.json",
-   "scripts/check_deliverable_conformance.py",
-   "scripts/measure_venue_optics.py"
+   "logs/grind-ledger.md",
+   "logs/grind-queue.md",
+   "paper/sections/01-introduction.tex",
+   "paper/sections/03-dominance.tex",
+   "paper/sections/07-conclusion.tex",
+   "paper/sections/abstract.tex",
+   "scripts/build_vehicle_transition_pair_deck_values.py",
+   "tests/test_vehicle_transition_pair_deck_values.py"
   ],
   "dirty_untracked_files": []
  },
@@ -39,13 +50,13 @@
  },
  "notes": null,
  "payload_identity": {
-  "bytes": 79086,
+  "bytes": 80125,
   "format": "jsonl",
-  "rows": 360,
+  "rows": 365,
   "schema_version": 1,
-  "sha256": "f67e0b80ff0b1c188792d2aeb0fa1db13057d96d3ffe0b6009579cde48539064"
+  "sha256": "50a1f0574d2c9f161c6bc783c1762589f789889af1eccdaa384e9b9b784d7cfe"
  },
  "python": "3.14.6",
- "rows": 360,
+ "rows": 365,
  "script": "scripts/find_prose_outliers.py"
 }

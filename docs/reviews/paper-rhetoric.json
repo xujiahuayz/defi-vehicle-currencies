@@ -109,12 +109,22 @@
         "rhetorical_job": "One registered mandate-era transaction (MKR to DAI through two exactly matching ETH legs on the March 2020 crash weekend) makes the v1 routing constraint concrete after its population incidence is stated.",
         "handoff": "The case hands back to the population facts: post-mandate WETH-pool shares, the pair-level pairing persistence, and the same-alternatives comparison the persistence claim requires.",
         "judgment": "Follows the Lehar-Parlour precedent: hash, block, date, deterministic selection rule, and external token-identity verification live in the footnote, and the case illustrates a quantified population claim rather than replacing it."
+      },
+      {
+        "source": "paper/sections/01-introduction.tex",
+        "line_start": 25,
+        "line_end": 25,
+        "sha256": "ca41777ad7e97eb9c4150a3141a0d802cbccca6826307decd151814ba6c4733a",
+        "kind": "named institutional arrangement used as an accounting illustration",
+        "rhetorical_job": "The renminbi clearing arrangements between China and Brazil make the second margin concrete: an aggregate dollar share falls as corridors that never adopted it grow, even when every corridor that settles in dollars continues to do so.",
+        "handoff": "The next sentences return to this market's own objects -- execution costs, routing software, liquidity supply, asset risk, and protocol design -- and state what a satisfactory explanation for the stablecoin gain must account for.",
+        "judgment": "Follows Mayer rather than Carletti et al.: no identification rests on the corridor, so the case earns one sentence, a cited central-bank memorandum in the footnote, and an explicit disclaimer that no settlement share is measured. The analogy is not repeated after the empirical objects take over, and the conclusion refers back to it without re-citing."
       }
     ]
   },
   "sections": {
     "paper/sections/abstract.tex": {
-      "sha256": "34d1906985cb766822839d2ccfe8a9c61f34261dbebc99a72a44ef2dd19cb6be",
+      "sha256": "8ec85602d052641b76e0cb1d93753d5f6afa57821b51a7126855b25d80d83d3b",
       "status": "rewritten",
       "exemplars": [
         "literature/text/2023-LiYeZheng2023Refusing-refusing-the-best-price.txt:26-34",
@@ -125,28 +135,28 @@
           "heading": "Abstract",
           "classification": "direct",
           "incoming_object": "The title's question about rotation in vehicle currencies.",
-          "opening_function": "Names the transaction-path data and the intermediary role they reveal before reporting the rotation.",
-          "judgment": "Measurement leads; neither a document announcement nor a qualification displaces the result.",
+          "opening_function": "Names the transaction-path data and the intermediary role they reveal, reports the rotation, and then states which margin carries it.",
+          "judgment": "Measurement leads and the compositional reading arrives in the third sentence, as in Makarov and Schoar, whose second sentence contrasts across-country with within-country deviations before any further result.",
           "raw_exemplar": "literature/text/2023-LiYeZheng2023Refusing-refusing-the-best-price.txt:26-34"
         }
       ],
       "paragraph_flow_review": {
         "transition_lines": [],
-        "judgment": "The single paragraph moves from measurement to magnitude, a dated reversal, USDT's role comparison, and the across-pair allocation result.",
+        "judgment": "The single paragraph moves from measurement to magnitude, to the compositional reading and its two margins, and then to the reversal and USDT's role comparison.",
         "raw_exemplars": [
           "literature/text/2023-LiYeZheng2023Refusing-refusing-the-best-price.txt:26-34"
         ],
         "jumps": [],
         "handoffs": []
       },
-      "judgment": "The abstract identifies transaction routes, reports the matched first-half count and value rotation, names the 2023--2025 reversal directly, and closes on the precisely named stable-for-native substitution estimate. It claims no completed cost or liquidity mechanism.",
+      "judgment": "The abstract identifies transaction routes, reports the matched first-half count and value rotation, and immediately states what the rotation is: a change in the set of markets traded rather than in the intermediary chosen within a market. It then names the two composition margins that carry it and closes on the dated reversal and USDT's role change. Rereading Makarov and Schoar (raw lines 29--38) settles the ordering question: their abstract places the across-versus-within contrast second, not last, because that contrast is the finding. Li, Ye, and Zheng (raw lines 26--34) close instead on what drives the phenomenon; our final sentence keeps the secondary facts rather than the drivers, since no driver is estimated. It claims no completed cost or liquidity mechanism.",
       "entry_handoff": "The title's rotation question leads directly to route data that reveal intermediary use.",
-      "internal_progression": "Measurement leads to magnitude, the dated reversal, USDT's role comparison, and the allocation margin.",
-      "exit_handoff": "The final sentence makes the small matched-pair substitution estimate sharpen the preceding across-pair result.",
+      "internal_progression": "Measurement leads to magnitude, to the network-versus-intermediary reading with its two composition margins, and then to the dated reversal and USDT's role comparison.",
+      "exit_handoff": "The final sentence adds the non-monotone path and the USDT role change, leaving the compositional reading as the abstract's central claim rather than a closing caveat.",
       "terminology_judgment": "Reader-facing prose names the measured object as the source and destination assets or their ordered asset pair. It reserves pool for a liquidity contract, venue for an exchange or protocol, and route for the ordered execution sequence; these objects are not used interchangeably."
     },
     "paper/sections/01-introduction.tex": {
-      "sha256": "1f91d0a4b7e1609f68c323cda451901bed349498bf30415ef49e830f9656fa61",
+      "sha256": "6a7936c21ffa862e8c5db6fabddfe12badd09f1d9a00483d3bcc9d3e5f57a70e",
       "status": "rewritten",
       "exemplars": [
         "literature/text/2020-MakarovSchoar2020Arbitrage-trading-and-arbitrage-in-cryptocurrency-markets.txt:95-205",
@@ -167,11 +177,11 @@
           11,
           13,
           15,
-          20,
-          22,
-          24
+          25,
+          27,
+          29
         ],
-        "judgment": "The argument moves from persistence to missing path data, route measurement, a developed rotation-and-allocation result, theoretical implication, two contributions, and a compact roadmap. A short observability pivot and a longer results paragraph vary the rhythm for substantive reasons.",
+        "judgment": "The argument moves from persistence to missing path data, route measurement, a result paragraph that states both the rotation and its compositional reading, a theoretical implication carrying one outside illustration, two contributions, and a compact roadmap. A short observability pivot and a longer results paragraph vary the rhythm for substantive reasons.",
         "raw_exemplars": [
           "literature/text/2020-MakarovSchoar2020Arbitrage-trading-and-arbitrage-in-cryptocurrency-markets.txt:95-205",
           "literature/text/2023-LiYeZheng2023Refusing-refusing-the-best-price.txt:96-214"
@@ -201,25 +211,25 @@
           {
             "line": 15,
             "inherited_object": "the route-based measure",
-            "paragraph_function": "reports the stablecoin rotation, reversals, USDT role change, and the across-pair allocation result",
+            "paragraph_function": "reports the stablecoin rotation and, in the same breath, what the rotation is: a change in the markets traded rather than in the intermediary chosen within a market",
             "relation_to_previous": "moves from measurement to the first empirical result",
             "economic_subject": "native and stable intermediaries, especially USDT",
-            "framing_judgment": "Magnitude leads and the reversal is dated rather than labelled vaguely",
+            "framing_judgment": "Magnitude leads, the matched-market estimate and its standard error follow immediately, and the two composition margins are named before the secondary facts",
             "qualification_leads": false,
-            "judgment": "Reports the headline rotation and its allocation source in one developed result paragraph rather than dividing one finding mechanically."
+            "judgment": "Reports the headline rotation and its compositional reading in one developed result paragraph. Li, Ye, and Zheng (raw lines 96--214) give the precedent: they state the answer at first mention, number the mechanisms, and keep restating what the evidence does not show alongside what it does. The paragraph now states the near-zero matched-market estimate where the aggregate is first reported, so no reader can carry a pair-level substitution reading past this point."
           },
           {
-            "line": 20,
+            "line": 25,
             "inherited_object": "the allocation result",
-            "paragraph_function": "relates the new margin to vehicle feedback and mechanism classes",
+            "paragraph_function": "relates the new margin to vehicle feedback, illustrates it with an institution outside this market, and names the mechanism classes that could produce it",
             "relation_to_previous": "extracts the economic question from the decomposition",
             "economic_subject": "within-pair choice and activity across pairs",
-            "framing_judgment": "The paragraph earns the mechanism discussion from the observed allocation",
+            "framing_judgment": "The corridor illustration is explicitly illustrative and carries no identification; the footnote cites the central-bank memorandum and disclaims any measured settlement share",
             "qualification_leads": false,
-            "judgment": "Relates the new margin to vehicle feedback and mechanism classes and extracts the economic question from the decomposition."
+            "judgment": "Extracts the economic question from the decomposition and grounds the second margin in a familiar setting. Carletti et al. (raw lines 120--199) name an institution with its dates and quantities because their identification rests on it; ours does not, so the weaker anecdote job of Mayer (raw lines 62--80) governs: the institution makes the accounting possibility concrete and then yields the floor to the paper's own objects."
           },
           {
-            "line": 22,
+            "line": 27,
             "inherited_object": "the measurement and allocation results",
             "paragraph_function": "states two contributions in one developed paragraph",
             "relation_to_previous": "positions the findings against vehicle, fragmentation, and AMM research",
@@ -229,7 +239,7 @@
             "judgment": "States two contributions in one developed paragraph and positions the findings against vehicle, fragmentation, and AMM research."
           },
           {
-            "line": 24,
+            "line": 29,
             "inherited_object": "the two contributions",
             "paragraph_function": "maps the remaining sections to their economic jobs",
             "relation_to_previous": "closes the introduction with a conventional compact roadmap",
@@ -240,9 +250,9 @@
           }
         ]
       },
-      "judgment": "The introduction motivates changing vehicle dominance before results, then reports one empirical ladder and consolidates the allocation implication with the paper's contributions. It follows the result-led but mechanism-connected movement in Li--Ye--Zheng and Makarov--Schoar without copying their numbered-fact template.",
+      "judgment": "The introduction motivates changing vehicle dominance before results, then reports one empirical ladder whose headline sentence already carries its compositional reading, and consolidates the allocation implication with the paper's contributions. It follows the answer-first movement of Li, Ye, and Zheng without copying their numbered-fact template.",
       "entry_handoff": "The dollar's persistent vehicle role turns the title into a question about how dominance changes.",
-      "internal_progression": "Persistence leads to observability, route data, the rotation and its decomposition, implication, contributions, and roadmap.",
+      "internal_progression": "Persistence leads to observability, route data, the rotation with its compositional reading, the second margin and its outside illustration, contributions, and roadmap.",
       "exit_handoff": "The roadmap sends the observed route object to the descriptive evidence, cost benchmark, and mechanism discussion.",
       "terminology_judgment": "Reader-facing prose names the measured object as the source and destination assets or their ordered asset pair. It reserves pool for a liquidity contract, venue for an exchange or protocol, and route for the ordered execution sequence; these objects are not used interchangeably."
     },
@@ -516,7 +526,7 @@
       "exit_handoff": "The panel closes by retaining route-level attribution and sends the separate cost object to Section 4."
     },
     "paper/sections/03-dominance.tex": {
-      "sha256": "1d346e09abbb0ab10d9243feda576b6d7608e57ac7ff2b552d6beb22bf3e36aa",
+      "sha256": "53a12475a1d5b7b7c9a3a8b44e02a74fa828860606e16ca5352de98ee55c13a1",
       "status": "rewritten",
       "exemplars": [
         "literature/text/2020-MakarovSchoar2020Arbitrage-trading-and-arbitrage-in-cryptocurrency-markets.txt:886-991",
@@ -543,9 +553,9 @@
           "heading": "Composition of source--destination pairs",
           "classification": "substantive_bridge",
           "incoming_object": "The aggregate increase.",
-          "opening_function": "Splits it into within-pair substitution and across-pair reallocation.",
-          "judgment": "The next question follows from two ways an aggregate share can move.",
-          "raw_exemplar": "literature/text/2022-ChangDuLouPolk2022Ripples-ripples-into-waves-trade-networks-economic-activity-and-asset-prices.txt:1369-1380"
+          "opening_function": "Names the three ways an aggregate vehicle share can rise and states which one accounts for almost none of the increase.",
+          "judgment": "The answer precedes the table, and the three margins use the same wording as the conclusion and the presentation.",
+          "raw_exemplar": "literature/text/2020-MakarovSchoar2020Arbitrage-trading-and-arbitrage-in-cryptocurrency-markets.txt:886-991"
         },
         {
           "heading": "USDT's intermediary role",
@@ -574,15 +584,15 @@
           51,
           57,
           71,
-          76,
-          78,
-          80,
+          81,
           83,
-          99,
-          101,
-          103
+          85,
+          88,
+          104,
+          106,
+          108
         ],
-        "judgment": "Aggregate rotation and reversals lead to accounting and matched decomposition, USDT role attribution, and separate venue-span and intermediation margins.",
+        "judgment": "Aggregate rotation and reversals lead to a three-margin accounting whose answer is stated first, matched-market estimates, named pairs that make the margins concrete, USDT role attribution, and separate venue-span and intermediation margins.",
         "raw_exemplars": [
           "literature/text/2020-MakarovSchoar2020Arbitrage-trading-and-arbitrage-in-cryptocurrency-markets.txt:886-991",
           "literature/text/2022-ChangDuLouPolk2022Ripples-ripples-into-waves-trade-networks-economic-activity-and-asset-prices.txt:1369-1445"
@@ -602,12 +612,12 @@
           {
             "line": 42,
             "inherited_object": "aggregate rotation",
-            "paragraph_function": "poses within-pair versus across-pair decomposition",
-            "relation_to_previous": "asks where the share change occurs",
+            "paragraph_function": "names the three ways an aggregate vehicle share can rise and says which one did not move",
+            "relation_to_previous": "asks where the share change occurs and answers before the table arrives",
             "economic_subject": "ordered pairs and intermediary composition",
-            "framing_judgment": "The two accounting sources are intuitive",
+            "framing_judgment": "The three margins match the conclusion's wording, and the answer precedes the accounting",
             "qualification_leads": false,
-            "judgment": "The paragraph poses within-pair versus across-pair decomposition and asks where the share change occurs."
+            "judgment": "Poses the decomposition as three named margins and states the result immediately. Makarov and Schoar (raw lines 886--991) open their decomposition the same way -- 'to understand where the price deviations occur, we decompose the arbitrage index into price differences within regions versus across regions' -- and then report which component is large."
           },
           {
             "line": 44,
@@ -662,15 +672,15 @@
           {
             "line": 71,
             "inherited_object": "decomposition evidence",
-            "paragraph_function": "interprets margins reallocating activity",
+            "paragraph_function": "makes the margins concrete with named ordered pairs and their own numbers, then interprets the reallocation",
             "relation_to_previous": "moves from accounting to possible economic sources",
             "economic_subject": "activity across source--destination pairs",
-            "framing_judgment": "The allocation result leads and attribution stays open",
+            "framing_judgment": "Each named pair is accompanied by its margin total, and the paragraph states outright that a named example understates its margin because most newly traded assets are unlabelled",
             "qualification_leads": false,
-            "judgment": "The paragraph interprets margins reallocating activity and moves from accounting to possible economic sources."
+            "judgment": "Interprets margins reallocating activity after grounding them in named pairs. Makarov and Schoar name individual exchanges and regions with their own arbitrage indices before generalising; the same move here keeps the decomposition from staying an abstraction, and the disclosure of the labelling limit prevents the examples from reading as the largest contributors."
           },
           {
-            "line": 76,
+            "line": 81,
             "inherited_object": "stablecoin category change",
             "paragraph_function": "introduces USDT versus route endpoints",
             "relation_to_previous": "asks which currency carries the role change",
@@ -680,7 +690,7 @@
             "judgment": "The paragraph introduces USDT versus route endpoints and asks which currency carries the role change."
           },
           {
-            "line": 78,
+            "line": 83,
             "inherited_object": "USDT role comparison",
             "paragraph_function": "reports matched gap and separate full-period ratios",
             "relation_to_previous": "keeps two clocks distinct",
@@ -690,7 +700,7 @@
             "judgment": "The paragraph reports matched gap and separate full-period ratios and keeps two clocks distinct."
           },
           {
-            "line": 80,
+            "line": 85,
             "inherited_object": "USDT excess use",
             "paragraph_function": "decomposes change by cross-exchange mix and within groups",
             "relation_to_previous": "locates the venue-span margin",
@@ -700,7 +710,7 @@
             "judgment": "The paragraph decomposes change by cross-exchange mix and within groups and locates the venue-span margin."
           },
           {
-            "line": 83,
+            "line": 88,
             "inherited_object": "the venue-span decomposition",
             "paragraph_function": "states explanations needing tests",
             "relation_to_previous": "hands the token result to mechanisms",
@@ -710,7 +720,7 @@
             "judgment": "The paragraph states explanations needing tests and hands the token result to mechanisms."
           },
           {
-            "line": 99,
+            "line": 104,
             "inherited_object": "the USDT result",
             "paragraph_function": "reports cross-exchange growth",
             "relation_to_previous": "moves to route architecture",
@@ -720,7 +730,7 @@
             "judgment": "The paragraph reports cross-exchange growth and moves to route architecture."
           },
           {
-            "line": 101,
+            "line": 106,
             "inherited_object": "cross-exchange growth",
             "paragraph_function": "reports falling intermediation and stablecoin gains within groups",
             "relation_to_previous": "separates three route margins",
@@ -730,7 +740,7 @@
             "judgment": "The paragraph reports falling intermediation and stablecoin gains within groups and separates three route margins."
           },
           {
-            "line": 103,
+            "line": 108,
             "inherited_object": "three route margins",
             "paragraph_function": "synthesises and states the fixed-opportunity comparison",
             "relation_to_previous": "moves from coexistence to design",
@@ -741,9 +751,9 @@
           }
         ]
       },
-      "judgment": "The section sells a large non-monotone rotation, reconciles weighting conventions, and assigns most change to activity across pairs. Matched estimates state the conditioning set directly and interpret confidence bounds against the economic magnitude.",
+      "judgment": "The section sells a large non-monotone rotation, reconciles weighting conventions, and assigns most change to activity across pairs, naming the individual ordered pairs behind each margin. Matched estimates state the conditioning set directly and interpret confidence bounds against the economic magnitude.",
       "entry_handoff": "The Section 2 denominator supplies the matched-day transition.",
-      "internal_progression": "Rotation and reversals lead to decomposition, matched estimates, USDT attribution, and route-architecture margins.",
+      "internal_progression": "Rotation and reversals lead to a three-margin decomposition answered up front, matched estimates, named pair contributions, USDT attribution, and route-architecture margins.",
       "exit_handoff": "The final synthesis defines the fixed-pair, size, and path set needed to test router access.",
       "terminology_judgment": "Reader-facing prose names the measured object as the source and destination assets or their ordered asset pair. It reserves pool for a liquidity contract, venue for an exchange or protocol, and route for the ordered execution sequence; these objects are not used interchangeably."
     },
@@ -945,7 +955,7 @@
       "terminology_judgment": "Reader-facing prose names the measured object as the source and destination assets or their ordered asset pair. It reserves pool for a liquidity contract, venue for an exchange or protocol, and route for the ordered execution sequence; these objects are not used interchangeably."
     },
     "paper/sections/07-conclusion.tex": {
-      "sha256": "c0d7331d5d6ff88d7dc1e7767f45ad0f71844d0a1f5a81a83068c79deb0674a0",
+      "sha256": "63dbc8c8d028a91d404098a74a2cdd91de562b4cc534f8093845d0b176bee42d",
       "status": "rewritten",
       "exemplars": [
         "literature/text/2025-HuangRanaldoSchrimpfSomogyi-constrained-liquidity-provision-currency-markets-jfe.txt:1588-1660",
@@ -963,9 +973,9 @@
         }
       ],
       "conclusion_review": {
-        "synthesis": "The conclusion combines the native-to-stable rotation, its reversals, USDT role change, and the dominant across-pair allocation margin.",
-        "economic_consequence": "Aggregate vehicle shares combine intermediary choice within a pair with the distribution of routed activity across pairs; interpreting the share as within-pair replacement alone is incomplete.",
-        "scope_condition": "The conclusion attributes no causal mechanism and does not claim an estimated cost, liquidity, risk, reach, or architecture effect.",
+        "synthesis": "The conclusion states the rotation as a reorganisation of the trading network rather than a change of intermediary within comparable trades, then combines the reversals, USDT's role change, and the three-margin accounting.",
+        "economic_consequence": "Aggregate vehicle shares combine intermediary choice within a pair with the distribution of routed activity across pairs, and the same arithmetic governs any currency share measured over a changing set of corridors; reading such a share as within-pair replacement alone is incomplete.",
+        "scope_condition": "The conclusion attributes no causal mechanism, claims no estimated cost, liquidity, risk, reach, or architecture effect, and measures no currency's share of trade settlement in the illustrative corridor comparison.",
         "final_sentence_function": "The final sentence states the durable implication that vehicle dominance is jointly determined by pair-level intermediary choice and network trading weights.",
         "raw_exemplars": [
           "literature/text/2025-HuangRanaldoSchrimpfSomogyi-constrained-liquidity-provision-currency-markets-jfe.txt:1588-1660",
@@ -976,9 +986,10 @@
       "paragraph_flow_review": {
         "transition_lines": [
           7,
-          9
+          9,
+          14
         ],
-        "judgment": "The conclusion moves from the answer to one developed paragraph that joins the within-pair/across-pair framework to its interpretation, then closes with a short economic implication.",
+        "judgment": "The conclusion moves from the answer and its compositional reading to the conceptual margin, then to external validity outside this market, and closes with a short economic implication.",
         "raw_exemplars": [
           "literature/text/2025-HuangRanaldoSchrimpfSomogyi-constrained-liquidity-provision-currency-markets-jfe.txt:1588-1660",
           "literature/text/2023-LiYeZheng2023Refusing-refusing-the-best-price.txt:1848-1901",
@@ -1005,6 +1016,16 @@
             "framing_judgment": "The final sentence generalises the supported decomposition without listing future tests",
             "qualification_leads": false,
             "judgment": "Closes on the economic source of a vehicle’s importance and moves from interpretation to a durable final implication."
+          },
+          {
+            "line": 14,
+            "inherited_object": "the two composition margins and their interpretation for aggregate shares",
+            "paragraph_function": "carries the accounting outside decentralised exchanges and states what data are required to separate the margins",
+            "relation_to_previous": "moves from the interpretation of this market to the general measurement problem",
+            "economic_subject": "aggregate currency shares measured over a changing set of trade corridors",
+            "framing_judgment": "The corridor case is illustrative, no settlement share is measured, and the paragraph closes on the design advantage rather than a policy claim",
+            "qualification_leads": false,
+            "judgment": "Broadens the result without overreaching. Huang et al. (raw lines 1588--1660) close by restating the object and magnitude and then naming the audience the result speaks to; the same move here generalises the accounting to any aggregate currency share and ends on why path-preserving records can separate the margins that leg-level records cannot."
           }
         ]
       },

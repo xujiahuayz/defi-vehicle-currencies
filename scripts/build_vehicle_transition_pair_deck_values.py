@@ -9,6 +9,7 @@ from pathlib import Path
 
 import pandas as pd
 
+from ddvc.asset_types import classify
 from ddvc.paths import OUTPUT_DIR
 from ddvc.presentation import require_certified_presentation_source
 from ddvc.provenance import stamp
@@ -18,6 +19,7 @@ from ddvc.runtime import atomic_output
 DECOMPOSITION = OUTPUT_DIR / "exhibits" / "vehicle_transition_pair_decomposition.jsonl"
 FIXED_EFFECTS = OUTPUT_DIR / "exhibits" / "vehicle_transition_pair_fixed_effects.jsonl"
 USDT_INTEGRATION = OUTPUT_DIR / "exhibits" / "e0_usdt_integration_decomposition.jsonl"
+CONTRIBUTIONS = OUTPUT_DIR / "exhibits" / "vehicle_transition_pair_contributions.parquet"
 DECK_VALUES = OUTPUT_DIR / "exhibits" / "vehicle_transition_pair_decomposition_deck_values.tex"
 CODE_SOURCES = ["scripts/build_vehicle_transition_pair_deck_values.py"]
 SCOPES = ("pooled", "single_venue", "cross_venue")
@@ -34,6 +36,14 @@ MARKET_INCIDENCE_TERMS = (
     "vehicle_incidence_reweighting",
     "within_pair_stable_share",
 )
+# One named source--destination pair per aggregate margin, used only to make the
+# accounting concrete on a slide. The macro prefix names the margin as the
+# conclusion states it; the aggregate term each example belongs to follows.
+MARGIN_EXAMPLES = (
+    ("MarginWithin", "within_pair_choice", "within_common"),
+    ("MarginReweight", "pair_composition_reweighting", "common_pair_reweighting"),
+    ("MarginNewPair", "comparison_exclusive_composition", "exclusive_pair_contribution"),
+)
 
 
 def _signed_pp(value: float) -> str:
@@ -49,6 +59,17 @@ def _share(value: float) -> str:
 
 def _unsigned_pp(value: float) -> str:
     return f"${100 * value:.1f}$ pp"
+
+
+def _activity_share(value: float) -> str:
+    """Pair weights are small; two decimals keep a 0.36\\% weight readable."""
+    return f"{100 * value:.2f}\\%"
+
+
+def _routes(value: float) -> str:
+    if not float(value).is_integer():
+        raise ValueError("route counts must be whole numbers")
+    return f"{int(value):,}"
 
 
 def _raw_pp(value: float) -> str:
@@ -225,6 +246,146 @@ def _market_incidence_row(decomposition: pd.DataFrame) -> pd.Series:
     return row
 
 
+def _pooled_count_contributions(contributions: pd.DataFrame) -> pd.DataFrame:
+    """The one metric, scope, and comparison whose pairs may be named on a slide."""
+    return contributions[
+        contributions["metric"].eq("count_share")
+        & contributions["reporting_scope"].eq("pooled")
+        & contributions["baseline_year"].eq(2024)
+        & contributions["comparison_year"].eq(2026)
+    ]
+
+
+def _baseline_exclusive_pp(contributions: pd.DataFrame) -> float:
+    """Pooled count contribution of pairs observed only in the baseline year."""
+    scoped = _pooled_count_contributions(contributions)
+    selected = scoped[
+        scoped["contribution_component"].eq("baseline_exclusive_composition")
+    ]
+    if selected.empty:
+        raise ValueError("pair contributions carry no baseline-exclusive rows")
+    return float(selected["contribution_pp"].sum())
+
+
+def _margin_example_rows(
+    contributions: pd.DataFrame, pooled: pd.Series
+) -> dict[str, dict[str, object]]:
+    """Name the largest labelled pair behind each aggregate margin.
+
+    The selection is illustrative and deliberately conservative. Only pairs whose
+    two endpoints both resolve in the canonical token taxonomy are eligible, so a
+    slide never prints a bare contract address or a guessed ticker. Because the
+    long tail of newly traded assets is mostly unlabelled, the named example is
+    the largest *named* contributor to its margin, not the largest contributor;
+    the caller also reports the margin's own total so the two are never confused.
+    """
+    required = {
+        "metric",
+        "reporting_scope",
+        "baseline_year",
+        "comparison_year",
+        "src",
+        "tgt",
+        "stable_share_baseline",
+        "stable_share_comparison",
+        "pair_weight_baseline",
+        "pair_weight_comparison",
+        "denominator_baseline",
+        "denominator_comparison",
+        "contribution_component",
+        "contribution_pp",
+        "aggregate_total_change",
+        "allocation_scope",
+        "mechanism_status",
+    }
+    missing = sorted(required - set(contributions.columns))
+    if missing:
+        raise ValueError(f"pair contributions missing columns: {', '.join(missing)}")
+    scoped = _pooled_count_contributions(contributions)
+    if scoped.empty:
+        raise ValueError("pair contributions carry no pooled 2024--2026 count rows")
+    if set(scoped["mechanism_status"].unique()) != {
+        "descriptive_pair_contribution_noncausal"
+    }:
+        raise ValueError("pair contributions carry a causal mechanism label")
+    if set(scoped["allocation_scope"].unique()) != {
+        "pair_level_excludes_common_support_mass"
+    }:
+        raise ValueError("pair contributions use an unexpected allocation scope")
+    if not math.isclose(
+        float(scoped["aggregate_total_change"].iloc[0]),
+        float(pooled["total_change"]),
+        abs_tol=1e-12,
+    ):
+        raise ValueError("pair contributions disagree with the aggregate total change")
+    exclusive_total = float(
+        scoped.loc[
+            scoped["contribution_component"].isin(
+                ("baseline_exclusive_composition", "comparison_exclusive_composition")
+            ),
+            "contribution_pp",
+        ].sum()
+    )
+    if not math.isclose(
+        exclusive_total, 100 * float(pooled["exclusive_pair_contribution"]), abs_tol=1e-6
+    ):
+        raise ValueError("pair contributions do not reconcile the exclusive-pair term")
+    examples: dict[str, dict[str, object]] = {}
+    for prefix, component, aggregate_term in MARGIN_EXAMPLES:
+        rows = scoped[scoped["contribution_component"].eq(component)]
+        if rows.empty:
+            raise ValueError(f"pair contributions carry no {component} rows")
+        component_pp = float(rows["contribution_pp"].sum())
+        if aggregate_term != "exclusive_pair_contribution" and not math.isclose(
+            component_pp, 100 * float(pooled[aggregate_term]), abs_tol=1e-6
+        ):
+            raise ValueError(
+                f"{component} contributions do not reconcile {aggregate_term}"
+            )
+        symbols = [
+            (classify(source)[0], classify(target)[0])
+            for source, target in zip(rows["src"], rows["tgt"], strict=True)
+        ]
+        labelled = rows.assign(
+            source_symbol=[pair[0] for pair in symbols],
+            target_symbol=[pair[1] for pair in symbols],
+        )
+        labelled = labelled[
+            labelled["source_symbol"].notna() & labelled["target_symbol"].notna()
+        ]
+        labelled = labelled[labelled["contribution_pp"] > 0]
+        if labelled.empty:
+            raise ValueError(f"{component} has no labelled positive contributor")
+        row = labelled.sort_values(
+            ["contribution_pp", "source_symbol", "target_symbol"],
+            ascending=[False, True, True],
+        ).iloc[0]
+        numeric = (
+            "stable_share_baseline",
+            "stable_share_comparison",
+            "pair_weight_baseline",
+            "pair_weight_comparison",
+            "denominator_baseline",
+            "denominator_comparison",
+            "contribution_pp",
+        )
+        if not all(math.isfinite(float(row[column])) for column in numeric):
+            raise ValueError(f"{component} example contains a non-finite cell")
+        examples[prefix] = {
+            "source_symbol": str(row["source_symbol"]),
+            "target_symbol": str(row["target_symbol"]),
+            "stable_share_baseline": float(row["stable_share_baseline"]),
+            "stable_share_comparison": float(row["stable_share_comparison"]),
+            "pair_weight_baseline": float(row["pair_weight_baseline"]),
+            "pair_weight_comparison": float(row["pair_weight_comparison"]),
+            "routes_baseline": float(row["denominator_baseline"]),
+            "routes_comparison": float(row["denominator_comparison"]),
+            "contribution_pp": float(row["contribution_pp"]),
+            "component_pp": component_pp,
+        }
+    return examples
+
+
 def _matched_market_row(fixed_effects: pd.DataFrame, metric: str) -> pd.Series:
     required = {
         "metric",
@@ -368,6 +529,7 @@ def render_pair_decomposition_deck_values(
     decomposition: pd.DataFrame,
     fixed_effects: pd.DataFrame,
     usdt_integration: pd.DataFrame,
+    contributions: pd.DataFrame,
 ) -> str:
     """Render empirical cells while keeping evidence identity out of the PDF."""
     count = _scope_rows(decomposition, "count_share")
@@ -471,6 +633,28 @@ def render_pair_decomposition_deck_values(
             f"\\newcommand{{\\USDTVenueWithinValueShare}}{{{_share(float(usdt['value']['within_scope_share_of_change']))}}}",
         ]
     )
+    examples = _margin_example_rows(contributions, pooled)
+    for prefix, _component, _term in MARGIN_EXAMPLES:
+        example = examples[prefix]
+        lines.extend(
+            [
+                f"\\newcommand{{\\{prefix}Pair}}{{{example['source_symbol']}\\,$\\to$\\,{example['target_symbol']}}}",
+                f"\\newcommand{{\\{prefix}StableBase}}{{{_share(float(example['stable_share_baseline']))}}}",
+                f"\\newcommand{{\\{prefix}StableEnd}}{{{_share(float(example['stable_share_comparison']))}}}",
+                f"\\newcommand{{\\{prefix}WeightBase}}{{{_activity_share(float(example['pair_weight_baseline']))}}}",
+                f"\\newcommand{{\\{prefix}WeightEnd}}{{{_activity_share(float(example['pair_weight_comparison']))}}}",
+                f"\\newcommand{{\\{prefix}RoutesBase}}{{{_routes(float(example['routes_baseline']))}}}",
+                f"\\newcommand{{\\{prefix}RoutesEnd}}{{{_routes(float(example['routes_comparison']))}}}",
+                f"\\newcommand{{\\{prefix}Contribution}}{{${float(example['contribution_pp']):+.2f}$ pp}}",
+                f"\\newcommand{{\\{prefix}Total}}{{${float(example['component_pp']):+.1f}$ pp}}",
+            ]
+        )
+    # The new-pair margin is gross; pairs that trade only in the baseline year
+    # offset part of it. Publish the offset so a slide can close the arithmetic
+    # against the net exclusive-pair term rather than implying +21 pp stands alone.
+    lines.append(
+        f"\\newcommand{{\\MarginRetiredPairTotal}}{{${_baseline_exclusive_pp(contributions):+.1f}$ pp}}"
+    )
     return "\n".join(lines) + "\n"
 
 
@@ -479,6 +663,7 @@ def run(
     decomposition_path: Path = DECOMPOSITION,
     fixed_effects_path: Path = FIXED_EFFECTS,
     usdt_integration_path: Path = USDT_INTEGRATION,
+    contributions_path: Path = CONTRIBUTIONS,
     output_path: Path = DECK_VALUES,
 ) -> int:
     provenance_path = require_certified_presentation_source(decomposition_path)
@@ -488,11 +673,36 @@ def run(
     usdt_integration_provenance = require_certified_presentation_source(
         usdt_integration_path
     )
+    contributions_provenance = require_certified_presentation_source(contributions_path)
     decomposition = pd.read_json(decomposition_path, lines=True)
     fixed_effects = pd.read_json(fixed_effects_path, lines=True)
     usdt_integration = pd.read_json(usdt_integration_path, lines=True)
+    # Only the pooled 2024--2026 count rows reach a slide; reading the whole
+    # 4.6M-row ledger just to name three pairs is avoidable memory pressure.
+    contributions = pd.read_parquet(
+        contributions_path,
+        columns=[
+            "metric",
+            "reporting_scope",
+            "baseline_year",
+            "comparison_year",
+            "src",
+            "tgt",
+            "stable_share_baseline",
+            "stable_share_comparison",
+            "pair_weight_baseline",
+            "pair_weight_comparison",
+            "denominator_baseline",
+            "denominator_comparison",
+            "contribution_component",
+            "contribution_pp",
+            "aggregate_total_change",
+            "allocation_scope",
+            "mechanism_status",
+        ],
+    )
     rendered = render_pair_decomposition_deck_values(
-        decomposition, fixed_effects, usdt_integration
+        decomposition, fixed_effects, usdt_integration, contributions
     )
     with atomic_output(output_path) as temporary:
         temporary.write_text(rendered, encoding="utf-8")
@@ -506,11 +716,19 @@ def run(
             fixed_effects_provenance,
             usdt_integration_path,
             usdt_integration_provenance,
+            contributions_path,
+            contributions_provenance,
         ],
-        rows=len(decomposition) + len(fixed_effects) + len(usdt_integration),
+        rows=(
+            len(decomposition)
+            + len(fixed_effects)
+            + len(usdt_integration)
+            + len(contributions)
+        ),
         notes=(
             "Presentation macros for the exact descriptive pair-composition "
-            "accounting and matched-market estimate; evidence status and "
+            "accounting, the matched-market estimate, and one named "
+            "source--destination pair per aggregate margin; evidence status and "
             "identities remain source-only."
         ),
     )
@@ -523,12 +741,14 @@ def main() -> int:
     parser.add_argument("--decomposition", type=Path, default=DECOMPOSITION)
     parser.add_argument("--fixed-effects", type=Path, default=FIXED_EFFECTS)
     parser.add_argument("--usdt-integration", type=Path, default=USDT_INTEGRATION)
+    parser.add_argument("--contributions", type=Path, default=CONTRIBUTIONS)
     parser.add_argument("--output", type=Path, default=DECK_VALUES)
     args = parser.parse_args()
     return run(
         decomposition_path=args.decomposition,
         fixed_effects_path=args.fixed_effects,
         usdt_integration_path=args.usdt_integration,
+        contributions_path=args.contributions,
         output_path=args.output,
     )
 

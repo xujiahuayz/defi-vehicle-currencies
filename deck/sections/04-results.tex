@@ -16,15 +16,21 @@
 
 % EVIDENCE-STATUS: evolving route result; current certified route release
 % EVIDENCE-COMMIT: 2ffbce0
-% EVIDENCE-SOURCES: output/figures/experiments/annual_vehicle_composition_bands.pdf; output/exhibits/intermediation_by_type.jsonl; docs/findings-freeze.md
-% VISUAL-FUNCTION: non-monotone realised vehicle rotation | annual native/stable lead comparison separated by count/value | expose the value lead-loss-retake path without implying treatment
+% EVIDENCE-SOURCES: output/figures/experiments/annual_vehicle_composition_bands.pdf; output/exhibits/intermediation_by_type.jsonl; output/exhibits/vehicle_transition_pair_fixed_effects.jsonl; docs/findings-freeze.md
+% The rotation's first appearance must already carry its economic reading. The
+% matched-market estimate is stated here, not held back to the decomposition
+% frames, so no listener leaves this slide believing comparable trades switched
+% intermediary. Source-only: matched-market cells come from the current D3
+% generation 25c755ae via vehicle_transition_pair_fixed_effects.jsonl.
+% VISUAL-FUNCTION: non-monotone realised vehicle rotation | annual native/stable lead comparison separated by count/value | state the compositional reading at the rotation's first appearance
 \begin{frame}{Stablecoins regain the lead in routed value}
 \vspace{-0.05cm}
 \begin{center}
-\includegraphics[width=0.94\textwidth,height=0.69\textheight,keepaspectratio]{../output/figures/experiments/annual_vehicle_composition_bands.pdf}
+\includegraphics[width=0.88\textwidth,height=0.50\textheight,keepaspectratio]{../output/figures/experiments/annual_vehicle_composition_bands.pdf}
 \end{center}
-\vspace{-0.14cm}
-\decknote{The route universe is exact two-leg routes with an observed intermediary. The left panel counts one intermediary episode per route and divides each asset type's episodes by all intermediary episodes. The right panel divides each type's routed value by total routed value among routes whose source, intermediary, and destination dollar amounts agree within 20\%. The 2026 observation covers January--June; Other combines imported, liquid-staking, and residual assets.}
+\vspace{-0.10cm}
+{\fontsize{8.4}{9.4}\selectfont The aggregate share moves because the network of traded pairs reorganises around stablecoins. Holding the source--destination pair, the calendar date, and the route scope fixed, stablecoin share changes by \MatchedMarketCountChange{} (SE \MatchedMarketCountSE{}) by count and \MatchedMarketValueChange{} (SE \MatchedMarketValueSE{}) by value.\par}
+\decknote{The route universe is exact two-leg routes with an observed intermediary. The left panel counts one intermediary episode per route and divides each asset type's episodes by all intermediary episodes. The right panel divides each type's routed value by total routed value among routes whose source, intermediary, and destination dollar amounts agree within 20\%. The 2026 observation covers January--June; Other combines imported, liquid-staking, and residual assets. Matched-market estimates weight by route count or value and cluster by ordered pair and calendar date.}
 \end{frame}
 
 % EVIDENCE-STATUS: evolving route decomposition; venue-scope reweighting is a route-only descriptive identity
@@ -54,7 +60,7 @@
 \resizebox{0.94\textwidth}{!}{\input{assets/vehicle-transition-pair-decomposition.tex}}
 \end{center}
 \vspace{-0.15cm}
-{\fontsize{7.8}{8.6}\selectfont The count increase falls from \WethCountFullChange{} to \WethCountNoEndpointChange{} without WETH endpoints. This is an allocation result: WETH-linked groups mechanically admit only stablecoin intermediaries in this comparison.}
+{\fontsize{7.8}{8.6}\selectfont The count increase falls from \WethCountFullChange{} to \WethCountNoEndpointChange{} without WETH endpoints. A WETH-linked pair admits only a stablecoin intermediary in this comparison, so the count rotation largely records where trading happens rather than which intermediary a given trade selects.}
 \decknote{Exact two-leg native-WETH-versus-stablecoin routes on 181 common month-days. Intervals use 30-day Newey--West covariance on 362 endpoint-year daily observations; 2025 is excluded and actual dates preserve the gap. Within-group WLS fixes the trading pair, month-day, and route scope and clusters by pair and date. Feasible routes are not fixed; all comparisons are descriptive.}
 \end{frame}
 
@@ -73,6 +79,73 @@
 \vspace{-0.16cm}
 {\fontsize{7.8}{8.6}\selectfont After removing WETH endpoints, value moves toward trading-pair and route-scope groups in which stablecoins already carry more intermediation. The change within those groups is small and imprecise.}
 \decknote{Routed value requires source, intermediary, and destination dollar amounts to agree within 20\%. The daily midpoint identity is exact. Intervals use the same endpoint-year calendar-HAC covariance as the preceding frame; paired-month-day and bandwidth sensitivities remain in the source. Mukhin (2022), Gopinath and Stein (2021), and Carletti et al. (2021) guide the composition framing, not identification.}
+\end{frame}
+
+% EVIDENCE-STATUS: E0 pending clean J0; exact descriptive pair-level contribution ledger
+% EVIDENCE-COMMIT: 66f8858d772a4e5f8aa98a61c23e27d629282207
+% EVIDENCE-D3-CERTIFICATE: directory=25c755ae635d90846fb754e5cb58caa7f377787daba0743d95667b8c29ed9e6c; internal_generation=9aa4e1d3ecbc9fb899bf70ba70fc18cf1d621003162218e755fd8ecc4cbb3580
+% EVIDENCE-ENDPOINT-GENERATION: 5fb7cbf36508d10a5bdafe2ebfb5ccb6266696be38e192eb38be11c3942916e9
+% EVIDENCE-SOURCES: output/exhibits/vehicle_transition_pair_contributions.parquet; output/exhibits/vehicle_transition_pair_decomposition.jsonl; output/exhibits/vehicle_transition_pair_decomposition_deck_values.tex
+% ESTIMAND-BOUNDARY: pooled 2024--2026 route-count share on 181 common month-days; each panel names the largest ordered pair whose two endpoints carry a canonical symbol, which is not the largest contributor to its margin because most newly traded assets are unlabelled; margin totals are exact and cover every pair, labelled or not. The three margins are realised composition, never entry or exit effects, and the panels hold nothing else fixed.
+% VISUAL-FUNCTION: the three margins of an aggregate vehicle share | three named-pair panels with baseline/comparison cells | make the compositional reading concrete in real tokens
+\begin{frame}{Three margins move an aggregate vehicle share}
+\vspace{-0.04cm}
+\begin{columns}[T,totalwidth=\textwidth]
+
+% Margin 1: the intermediary chosen for a pair that trades in both years.
+\begin{column}{0.325\textwidth}
+\fcolorbox{rule}{panel}{\begin{minipage}[t][4.55cm][t]{0.905\linewidth}\raggedright
+{\small\bfseries\color{ucldark}1\quad Used more often\\within a pair}\par
+\vspace{0.16cm}
+{\scriptsize\color{muted}\MarginWithinPair{} trades in both years\par}
+\vspace{0.14cm}
+{\scriptsize Stablecoin share of its intermediary use\par}
+\vspace{0.06cm}
+{\fontsize{13}{14}\selectfont\bfseries\color{muted}\MarginWithinStableBase}\;{\color{muted}$\to$}\;{\fontsize{13}{14}\selectfont\bfseries\color{stable}\MarginWithinStableEnd}\par
+\vspace{0.20cm}
+{\scriptsize Adds \MarginWithinContribution{} to the aggregate\par}
+\vfill
+{\scriptsize\bfseries\color{accent}Margin total: \MarginWithinTotal{}\par}
+\end{minipage}}
+\end{column}
+
+% Margin 2: activity moving toward pairs whose routes already used a stablecoin.
+\begin{column}{0.325\textwidth}
+\fcolorbox{rule}{panel}{\begin{minipage}[t][4.55cm][t]{0.905\linewidth}\raggedright
+{\small\bfseries\color{ucldark}2\quad Trading moves toward\\pairs that already use it}\par
+\vspace{0.16cm}
+{\scriptsize\color{muted}\MarginReweightPair{}, stablecoin-routed in both years\par}
+\vspace{0.14cm}
+{\scriptsize Share of all routed activity\par}
+\vspace{0.06cm}
+{\fontsize{13}{14}\selectfont\bfseries\color{muted}\MarginReweightWeightBase}\;{\color{muted}$\to$}\;{\fontsize{13}{14}\selectfont\bfseries\color{stable}\MarginReweightWeightEnd}\par
+\vspace{0.20cm}
+{\scriptsize \MarginReweightRoutesBase{} routes become \MarginReweightRoutesEnd{}; adds \MarginReweightContribution{}\par}
+\vfill
+{\scriptsize\bfseries\color{stable}Margin total: \MarginReweightTotal{}\par}
+\end{minipage}}
+\end{column}
+
+% Margin 3: pairs absent from the baseline year that route through a stablecoin.
+\begin{column}{0.325\textwidth}
+\fcolorbox{rule}{panel}{\begin{minipage}[t][4.55cm][t]{0.905\linewidth}\raggedright
+{\small\bfseries\color{ucldark}3\quad Newly traded pairs\\route through it}\par
+\vspace{0.16cm}
+{\scriptsize\color{muted}\MarginNewPairPair{}, absent from the base year\par}
+\vspace{0.14cm}
+{\scriptsize Routes observed\par}
+\vspace{0.06cm}
+{\fontsize{13}{14}\selectfont\bfseries\color{muted}\MarginNewPairRoutesBase}\;{\color{muted}$\to$}\;{\fontsize{13}{14}\selectfont\bfseries\color{stable}\MarginNewPairRoutesEnd}\par
+\vspace{0.20cm}
+{\scriptsize All stablecoin-intermediated; adds \MarginNewPairContribution{}\par}
+\vfill
+{\scriptsize\bfseries\color{stable}Margin total: \MarginNewPairTotal{}\par}
+\end{minipage}}
+\end{column}
+\end{columns}
+\vspace{0.16cm}
+{\fontsize{8.2}{9.2}\selectfont The first margin is the one vehicle-currency theory describes, and it is the one that did not move. Pairs traded only in the base year give back \MarginRetiredPairTotal{}, leaving \PairPooledExclusive{} net from the third margin.\par}
+\decknote{Pooled route-count share among native and stablecoin intermediaries, 2024 against 2026 on 181 common calendar days. A panel names the largest contributing ordered pair whose two endpoints both carry a canonical symbol; unlabelled assets carry most of the third margin, so a named example is smaller than its margin total. Contributions are an exact allocation of the aggregate change and are descriptive.}
 \end{frame}
 
 % EVIDENCE-STATUS: certified descriptive result; integration remains a selected route stratum

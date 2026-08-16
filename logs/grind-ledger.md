@@ -1633,3 +1633,101 @@ drift stamped at `05b68e9` (2026-08-13) with `inputs_current` and
 started. The 2026-08-16T00:03Z Java interjection (so-what / analogy pass on
 paper and deck) is recorded unchecked at the head of `logs/grind-queue.md` and
 is the next clean-boundary item.
+
+---
+
+## 2026-08-16 — Queue: Java's so-what / analogy pass on paper and deck
+
+REGRESSION-CHECK: the purpose-bound estimand at risk was the pooled 2024→2026
+stablecoin route-share change decomposed into within-pair choice, common-pair
+reweighting, common-support mass, and exclusive-pair composition — a descriptive
+realised-composition identity, not a causal margin. The evidence generation at
+risk was `output/exhibits/vehicle_transition_pair_{decomposition.jsonl,
+contributions.parquet}` under D3 certificate `25c755ae…` and endpoint generation
+`5fb7cbf…`, read only through the existing certified-presentation owner; no
+estimator ran. The prior corrections at risk were "do not call pair composition
+entry/exit effects" (2026-08-14), "word substitution is not prose revision", and
+the tiered-prose rule. All held.
+
+**What closed.** The head queue item, Java's 00:03 interjection, in all three
+parts.
+
+*(1) The compositional reading at first mention.* It now lands wherever the
+rotation first appears, not only in the conclusion: the abstract's third
+sentence, the introduction's headline paragraph (which now states the
+matched-market estimate and its standard error at the point where the aggregate
+is first reported), the end of Section 3.1, and the first deck frame that shows
+the rotation. Section 3.2 opens on the three margins and says which one did not
+move, following Makarov–Schoar's decomposition opening (raw lines 886–991), and
+the deck's closing banner states the positive so-what. The single audience-facing
+use of "mechanically" is gone, rewritten as *where trading happens rather than
+which intermediary a given trade selects*.
+
+*(2) The illustrative margin slide.* New deck frame "Three margins move an
+aggregate vehicle share" names one real ordered pair per margin with its own
+cells: USDC→WBTC (stable share 10.5%→35.9%, +0.05 pp; margin total −0.1 pp),
+USDT→WETH (0.36%→4.52% of routed activity, 7,447→54,112 routes, +2.17 pp; margin
+total +8.6 pp), and USDS→WETH (0→3,390 routes, all stablecoin-intermediated,
++0.13 pp; margin total +21.0 pp, less −3.3 pp from pairs traded only in 2024).
+The same three pairs now appear in Section 3.2.
+
+*(3) The corridor bridge.* The introduction motivates the second margin with the
+China–Brazil renminbi clearing arrangements, footnoting the PBoC/BCB memorandum;
+the conclusion adds an external-validity paragraph mapping the two margins onto
+corridor composition; a new deck frame sits before the close. All three state
+that no settlement share is measured and make no causal or policy claim.
+
+**Where the evidence came from.** Not a new script: the canonical presentation
+owner `scripts/build_vehicle_transition_pair_deck_values.py` was extended to read
+the certified `vehicle_transition_pair_contributions.parquet` and emit the margin
+macros. It fails closed — the contributions must carry the descriptive mechanism
+label and the pair-level allocation scope, their aggregate total must equal the
+decomposition's, and each component must reconcile its aggregate term before any
+pair is named. Only pairs whose two endpoints resolve in the canonical token
+taxonomy are eligible, so a slide can never print a bare contract address; since
+the long tail of newly traded assets is unlabelled, every named pair is
+accompanied by its margin total and the prose says outright that the example
+understates its margin.
+
+**Validation.** `test_vehicle_transition_pair_deck_values.py`,
+`test_deck_evidence.py`, `test_paper_prose.py`: 34 passed, 438 subtests (4 new
+tests: labelled selection, aggregate-term reconciliation, causal-label refusal,
+no-labelled-contributor refusal). `check_deliverable_conformance.py` exits 0 —
+all blocking checks pass; paper 30 pages / 0 undefined, deck 35 pages / 0
+undefined. `audit_deck_evidence.py` PASS. `check_jfe_rhetoric_review.py` current
+after recording genuine rereads (Makarov–Schoar 29–38 and 886–991, Li–Ye–Zheng
+26–34 and 96–214, Carletti et al. 120–199, Mayer 62–80, Huang et al. 1588–1660)
+and registering the corridor analogy as a third draft use. Changed pages of both
+PDFs inspected; the margin frame and the close banner were re-laid-out after the
+first inspection showed clipping.
+
+**Discrepancy worth Java's eye.** The queue's *count* figures do not reproduce:
+it cites common-pair reweighting +7.9 pp and pair-composition +9.8 pp, whereas
+the exhibit's pooled count terms are +8.6 pp reweighting and +17.8 pp net
+exclusive-pair (+21.0 gross, −3.3 from pairs traded only in 2024). The *value*
+figures (+26.2 / +19.2 pp) reproduce exactly, as do the matched-market estimates
+(+0.2 pp SE 0.8; −1.3 pp SE 2.2) and both totals (+25.7 / +42.8 pp). Everything
+written into the paper and deck comes from the exhibit, not the queue text.
+
+**Freeze gate.** RED, 6 blocking checks: node D capital release current; node E1
+specification lock; node D claim-input provenance gate; empirical model ledger;
+node B full-text literature ledger (source-sets 32/33, five-axis cards 33/34);
+two unchanged findings passes (stable_passes=0). That is two more than the 4
+recorded on 2026-08-15. The two additions are both node-D data checks and were
+first observable after the marker-migration and anchor-manifest-repin commits
+`7e22186`…`6b4050d`, whose recovery worker states it did not run the done gate.
+Nothing in this iteration touched a data node: the only artifacts written were
+the presentation macro file and its provenance sidecar, plus the regenerated
+venue-optics/prose diagnostics that the conformance loop owns.
+
+**For the next iteration.** Take the two node-D blockers first — they are the
+only ones that changed state, and they are ordinary provenance/currency
+bookkeeping on a release whose scientific identity is not in question, so the
+standing rule applies: prove the rows and bytes unchanged, close the bookkeeping
+through the existing owner, and return to estimation. Do not treat them as a
+reason to rewrite the release. The M3 12:03 handoff item remains the only other
+unchecked queue entry and is still gated on Studio. If the pair-composition
+evidence is ever regenerated, rerun
+`scripts/build_vehicle_transition_pair_deck_values.py` before compiling anything:
+Section 3.2 and the new deck frame both name individual token pairs through its
+macros, and the producer fails closed rather than printing a stale pair.

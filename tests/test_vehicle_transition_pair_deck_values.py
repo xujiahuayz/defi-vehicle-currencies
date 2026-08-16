@@ -175,9 +175,72 @@ def _usdt_integration() -> pd.DataFrame:
     return pd.DataFrame(rows)
 
 
+WETH = "0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2"
+USDT = "0xdac17f958d2ee523a2206206994597c13d831ec7"
+USDC = "0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48"
+UNLABELLED = "0x" + "ab" * 20
+
+
+def _contribution(
+    component: str,
+    src: str,
+    tgt: str,
+    contribution_pp: float,
+    *,
+    stable_baseline: float = 0.0,
+    stable_comparison: float = 1.0,
+    weight_baseline: float = 0.004,
+    weight_comparison: float = 0.045,
+    routes_baseline: float = 7_447.0,
+    routes_comparison: float = 54_112.0,
+) -> dict[str, object]:
+    return {
+        "metric": "count_share",
+        "reporting_scope": "pooled",
+        "baseline_year": 2024,
+        "comparison_year": 2026,
+        "src": src,
+        "tgt": tgt,
+        "stable_share_baseline": stable_baseline,
+        "stable_share_comparison": stable_comparison,
+        "pair_weight_baseline": weight_baseline,
+        "pair_weight_comparison": weight_comparison,
+        "denominator_baseline": routes_baseline,
+        "denominator_comparison": routes_comparison,
+        "contribution_component": component,
+        "contribution_pp": contribution_pp,
+        "aggregate_total_change": 0.25,
+        "allocation_scope": "pair_level_excludes_common_support_mass",
+        "mechanism_status": "descriptive_pair_contribution_noncausal",
+    }
+
+
+def _contributions() -> pd.DataFrame:
+    """Reproduce the aggregate terms of `_row` from named and unlabelled pairs.
+
+    `_row` sets within_common to -0.1 pp, common_pair_reweighting to +8.0 pp and
+    exclusive_pair_contribution to +17.6 pp. The unlabelled rows carry the bulk
+    of each margin so the renderer must report the margin total separately from
+    the named example it prints.
+    """
+    return pd.DataFrame(
+        [
+            _contribution("within_pair_choice", USDC, WETH, 0.05),
+            _contribution("within_pair_choice", UNLABELLED, WETH, 0.40),
+            _contribution("within_pair_choice", WETH, UNLABELLED, -0.55),
+            _contribution("pair_composition_reweighting", USDT, WETH, 2.0),
+            _contribution("pair_composition_reweighting", USDC, WETH, 1.5),
+            _contribution("pair_composition_reweighting", UNLABELLED, WETH, 4.5),
+            _contribution("comparison_exclusive_composition", USDT, USDC, 0.13),
+            _contribution("comparison_exclusive_composition", UNLABELLED, WETH, 20.87),
+            _contribution("baseline_exclusive_composition", UNLABELLED, USDC, -3.4),
+        ]
+    )
+
+
 def test_renderer_emits_complete_display_and_coordinate_macros() -> None:
     rendered = render_pair_decomposition_deck_values(
-        _decomposition(), _fixed_effects(), _usdt_integration()
+        _decomposition(), _fixed_effects(), _usdt_integration(), _contributions()
     )
     for macro in (
         "PairPooledBase",
@@ -265,6 +328,64 @@ def test_renderer_emits_complete_display_and_coordinate_macros() -> None:
     assert "generation" not in rendered.lower()
 
 
+def test_margin_examples_name_labelled_pairs_and_report_the_margin_total() -> None:
+    rendered = render_pair_decomposition_deck_values(
+        _decomposition(), _fixed_effects(), _usdt_integration(), _contributions()
+    )
+    for macro, value in (
+        ("MarginWithinPair", "USDC\\,$\\to$\\,WETH"),
+        ("MarginWithinContribution", "$+0.05$ pp"),
+        ("MarginWithinTotal", "$-0.1$ pp"),
+        ("MarginReweightPair", "USDT\\,$\\to$\\,WETH"),
+        ("MarginReweightContribution", "$+2.00$ pp"),
+        ("MarginReweightTotal", "$+8.0$ pp"),
+        ("MarginNewPairPair", "USDT\\,$\\to$\\,USDC"),
+        ("MarginNewPairContribution", "$+0.13$ pp"),
+        ("MarginNewPairTotal", "$+21.0$ pp"),
+        ("MarginRetiredPairTotal", "$-3.4$ pp"),
+        ("MarginReweightRoutesBase", "7,447"),
+        ("MarginReweightRoutesEnd", "54,112"),
+        ("MarginReweightWeightBase", "0.40\\%"),
+        ("MarginReweightWeightEnd", "4.50\\%"),
+    ):
+        assert f"\\newcommand{{\\{macro}}}{{{value}}}" in rendered
+    # An unlabelled endpoint is never printed, even when it dominates its margin.
+    assert "0xab" not in rendered
+
+
+def test_margin_examples_reject_contributions_that_miss_the_aggregate_term() -> None:
+    contributions = _contributions()
+    reweighting = contributions["contribution_component"].eq(
+        "pair_composition_reweighting"
+    )
+    contributions.loc[reweighting, "contribution_pp"] *= 2
+    with pytest.raises(ValueError, match="do not reconcile common_pair_reweighting"):
+        render_pair_decomposition_deck_values(
+            _decomposition(), _fixed_effects(), _usdt_integration(), contributions
+        )
+
+
+def test_margin_examples_reject_a_causal_mechanism_label() -> None:
+    contributions = _contributions()
+    contributions["mechanism_status"] = "causal_pair_contribution"
+    with pytest.raises(ValueError, match="causal mechanism label"):
+        render_pair_decomposition_deck_values(
+            _decomposition(), _fixed_effects(), _usdt_integration(), contributions
+        )
+
+
+def test_margin_examples_require_a_labelled_positive_contributor() -> None:
+    contributions = _contributions()
+    within = contributions["contribution_component"].eq("within_pair_choice")
+    contributions.loc[within, "src"] = UNLABELLED
+    with pytest.raises(
+        ValueError, match="within_pair_choice has no labelled positive contributor"
+    ):
+        render_pair_decomposition_deck_values(
+            _decomposition(), _fixed_effects(), _usdt_integration(), contributions
+        )
+
+
 @pytest.mark.parametrize(
     ("mutation", "message"),
     [
@@ -294,7 +415,7 @@ def test_renderer_fails_closed_on_incomplete_or_inconsistent_accounting(
 ) -> None:
     with pytest.raises(ValueError, match=message):
         render_pair_decomposition_deck_values(
-            mutation(_decomposition()), _fixed_effects(), _usdt_integration()
+            mutation(_decomposition()), _fixed_effects(), _usdt_integration(), _contributions()
         )
 
 
@@ -304,7 +425,7 @@ def test_renderer_fails_closed_when_market_incidence_bridge_is_inconsistent() ->
     frame.loc[market, "market_activity_reweighting"] += 0.01
     with pytest.raises(ValueError, match="total change"):
         render_pair_decomposition_deck_values(
-            frame, _fixed_effects(), _usdt_integration()
+            frame, _fixed_effects(), _usdt_integration(), _contributions()
         )
 
 
@@ -313,5 +434,5 @@ def test_renderer_fails_closed_on_wrong_matched_market_scope() -> None:
     fixed_effects.loc[0, "estimand_scope"] = "wrong_scope"
     with pytest.raises(ValueError, match="comparison set"):
         render_pair_decomposition_deck_values(
-            _decomposition(), fixed_effects, _usdt_integration()
+            _decomposition(), fixed_effects, _usdt_integration(), _contributions()
         )

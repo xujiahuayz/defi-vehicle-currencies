@@ -2,6 +2,49 @@
 % EVIDENCE-MANAGED-FILE
 % Working-paper close. Refresh the findings when their admitted generation changes.
 
+% EVIDENCE-STATUS: institutional illustration; no empirical estimate from this project is displayed
+% EVIDENCE-COMMIT: 6b4050d
+% EVIDENCE-SOURCES: People's Bank of China and Banco Central do Brasil, memorandum of understanding on establishing renminbi clearing arrangements in Brazil, https://www.pbc.gov.cn/en/3688241/3688636/3688657/2025080817522611695/index.html (retrieved 2026-08-16)
+% SCIENTIFIC-BOUNDARY: the corridor comparison is an accounting analogy for the two composition margins. It carries no causal, policy, or geopolitical claim, no measurement of currency shares in trade settlement, and no assertion that the two settings share a mechanism.
+% VISUAL-FUNCTION: external validity of the composition margins | two-corridor schematic against the same two margins | show the arithmetic is general to any aggregate currency share
+\begin{frame}{The same arithmetic governs any aggregate currency share}
+\vspace{0.02cm}
+\begin{columns}[T,totalwidth=\textwidth]
+\begin{column}{0.47\textwidth}
+\evidencekicker{A familiar setting}
+\vspace{0.10cm}
+\centering
+\begin{tikzpicture}[x=1cm,y=1cm,corridor/.style={-{Stealth[length=5pt]},line width=1.6pt}]
+\node[nodepoint,minimum size=26pt,font=\scriptsize] (a) at (0,1.55) {A};
+\node[nodepoint,fill=ucldark,text=white,draw=ucldark,minimum size=26pt,font=\scriptsize] (usd) at (2.15,1.55) {USD};
+\node[nodepoint,minimum size=26pt,font=\scriptsize] (b) at (4.30,1.55) {B};
+\draw[corridor,draw=ucldark] (a)--(usd);
+\draw[corridor,draw=ucldark] (usd)--(b);
+\node[font=\scriptsize,text=muted] at (2.15,2.20) {established corridor};
+\node[nodepoint,minimum size=26pt,font=\scriptsize] (cn) at (0,0.05) {CN};
+\node[nodepoint,minimum size=26pt,font=\scriptsize] (br) at (4.30,0.05) {BR};
+\draw[corridor,draw=stable] (cn)--(br);
+\node[font=\scriptsize,text=stable] at (2.15,0.42) {settles bilaterally};
+\end{tikzpicture}
+\par\vspace{0.22cm}
+{\footnotesize\raggedright China and Brazil have built clearing arrangements for settling their bilateral trade in renminbi. The established corridor above is unaffected.\par}
+\end{column}
+\begin{column}{0.50\textwidth}
+\evidencekicker{The share can fall with no corridor switching}
+\vspace{0.14cm}
+{\footnotesize\raggedright A currency's share of all settled trade falls when trade grows fastest along corridors that never adopted it, even if every corridor that uses it today keeps using it tomorrow.\par}
+\vspace{0.22cm}
+{\footnotesize\raggedright\textbf{Margin 2} is trade reallocating toward corridors that already avoid the incumbent.\par}
+\vspace{0.10cm}
+{\footnotesize\raggedright\textbf{Margin 3} is a corridor that had no meaningful volume opening on other terms.\par}
+\vspace{0.22cm}
+{\footnotesize\raggedright Our routes measure the same two margins directly, because the transaction log records the whole path rather than its legs.\par}
+\end{column}
+\end{columns}
+\vspace{0.12cm}
+\decknote{Illustrative comparison only. Renminbi clearing arrangements in Brazil follow the \href{https://www.pbc.gov.cn/en/3688241/3688636/3688657/2025080817522611695/index.html}{memorandum of understanding} between the People's Bank of China and the Banco Central do Brasil. No currency share of trade settlement is measured here, and no causal or policy claim is made about either setting.}
+\end{frame}
+
 % EVIDENCE-STATUS: evolving route result; current generated presentation bindings
 % EVIDENCE-COMMIT: e43323dd2eb986e4d627823da3586bdc2a00c813
 % EVIDENCE-SOURCES: output/figures/experiments/annual_vehicle_composition_bands.pdf; output/exhibits/intermediation_by_type.jsonl; output/exhibits/vehicle_excess_use.jsonl; output/exhibits/vehicle_excess_use_transition.jsonl; output/exhibits/provisional_results_deck_values.tex; output/provisional/route_methodology_heterogeneity.jsonl; output/provisional/route_methodology_heterogeneity_deck_values.tex
@@ -46,9 +89,9 @@
   {outside WETH endpoint pairs; mostly across trading-pair and route-scope groups};
 
 % Economic conclusion.
-\fill[ucldark,rounded corners=4pt] (0.15,0.42) rectangle (13.65,1.72);
-\node[font=\large\bfseries,text=white,align=center,text width=12.55cm] at (6.90,1.07)
-  {Most of the stablecoin gain comes from shifts in activity toward trading-pair groups in which stablecoins carried the route.};
+\fill[ucldark,rounded corners=4pt] (0.15,0.24) rectangle (13.65,1.84);
+\node[font=\large\bfseries,text=white,align=center,text width=12.55cm] at (6.90,1.04)
+  {The trading network reorganised around stablecoins; like-for-like markets show no detectable change of intermediary.};
 \end{tikzpicture}
 }
 \end{frame}

@@ -1,47 +1,43 @@
 {
  "argv": [],
  "artefact": "output/exhibits/vehicle_transition_pair_decomposition_deck_values.tex",
- "artefact_bytes": 3004,
- "artefact_mtime_ns": 1786692248579578468,
- "artefact_sha256": "4a962001e4657be17c8e90abd650bba2e0cee96fcd3fb7f2cb23f2e68fc3906e",
- "code_fingerprint": "d0da561e6eddaa01e7438e1ee53fb2ddfa146b871a41b837c27a2c9826c09baf",
+ "artefact_bytes": 4306,
+ "artefact_mtime_ns": 1786844073234086205,
+ "artefact_sha256": "14bdd370696fd4be352e9b671ce381d5ae114ab7eab4072b29d4261c75cf10b9",
+ "code_fingerprint": "a79db73ce459f4c268dd400aa09cb05a7d4a939d3be6bafa6ef98c62482d6f9a",
  "code_sources": [
   "scripts/build_vehicle_transition_pair_deck_values.py"
  ],
- "created_at": "2026-08-14T07:24:08+00:00",
+ "created_at": "2026-08-16T01:34:33+00:00",
  "git": {
   "branch": "main",
-  "commit": "ead5c72f0232b27c0bc94b7d0ad6e9ff2d02ba7d",
+  "commit": "6b4050d003efbfd0c0302994f8e93f273bb25cd5",
   "dirty": true,
   "dirty_generated_files": [
-   "output/tables/README.md",
-   "data/manifests/output/tables/",
-   "output/tables/dominance_rotation.pdf",
-   "output/tables/dominance_rotation.tex",
-   "output/tables/pair_composition.pdf",
-   "output/tables/pair_composition.tex",
-   "output/tables/usdt_transition.pdf",
-   "output/tables/usdt_transition.tex"
+   "data/manifests/output/exhibits/prose_conventions.jsonl.prov.json",
+   "data/manifests/output/exhibits/prose_outliers.jsonl.prov.json",
+   "data/manifests/output/exhibits/venue_optics.jsonl.prov.json",
+   "data/manifests/output/exhibits/venue_shape.jsonl.prov.json",
+   "output/exhibits/prose_conventions.jsonl",
+   "output/exhibits/prose_outliers.jsonl",
+   "output/exhibits/venue_optics.jsonl",
+   "output/exhibits/venue_shape.jsonl"
   ],
   "dirty_tracked_files": [
-   "docs/repository-data-map.md",
-   "paper/main.tex",
+   "deck/main.pdf",
+   "deck/sections/04-results.tex",
+   "deck/sections/05-close.tex",
+   "docs/reviews/paper-rhetoric.json",
+   "logs/grind-ledger.md",
+   "logs/grind-queue.md",
    "paper/sections/01-introduction.tex",
-   "paper/sections/02-setting.tex",
    "paper/sections/03-dominance.tex",
+   "paper/sections/07-conclusion.tex",
+   "paper/sections/abstract.tex",
    "scripts/build_vehicle_transition_pair_deck_values.py",
-   "scripts/tabulate/README.md",
-   "tests/test_exhibit_notes.py",
-   "tests/test_variable_registry.py"
+   "tests/test_vehicle_transition_pair_deck_values.py"
   ],
-  "dirty_untracked_files": [
-   "scripts/tabulate/render_dominance_rotation.py",
-   "scripts/tabulate/render_pair_composition.py",
-   "scripts/tabulate/render_usdt_transition.py",
-   "src/ddvc/dominance_tables.py",
-   "src/ddvc/presentation.py",
-   "tests/test_dominance_tables.py"
-  ]
+  "dirty_untracked_files": []
  },
  "inputs": [
   {
@@ -51,10 +47,10 @@
    "sha256": "c14a536b2ff5c5dcd55812b97797ceacfe903c666678b271ea4ebaab30fb6f59"
   },
   {
-   "bytes": 818219,
+   "bytes": 818701,
    "exists": true,
    "path": "data/manifests/output/exhibits/vehicle_transition_pair_decomposition.jsonl.prov.json",
-   "sha256": "9c128470cd664902cca2e3df7a52c748bb07b790acf5c6dc90ab352f4f61e1ce"
+   "sha256": "3b31d438aed1ba63e15531fcb3524485d47382a31a1407dcc5b329e12e38b337"
   },
   {
    "bytes": 3987,
@@ -63,10 +59,10 @@
    "sha256": "f378f0fa0adcd55c573efa907d9716af856a04ce5696363eb38728280a5c4a40"
   },
   {
-   "bytes": 818282,
+   "bytes": 818830,
    "exists": true,
    "path": "data/manifests/output/exhibits/vehicle_transition_pair_fixed_effects.jsonl.prov.json",
-   "sha256": "d1737c2d090c515ee639c7019d3cfdd578382a613af6c6fb25eb8e8d24df65e0"
+   "sha256": "b97580e685198e7643a3fdf3db4ff9afcabd01a6505f2a37ebae828b0b5a6d69"
   },
   {
    "bytes": 20732,
@@ -79,6 +75,19 @@
    "exists": true,
    "path": "data/manifests/output/exhibits/e0_usdt_integration_decomposition.jsonl.prov.json",
    "sha256": "225ef12c261b00df2f3a408917f14ca6ba30115ce4cee82623f575ddf7c3b37a"
+  },
+  {
+   "bytes": 194355921,
+   "exists": true,
+   "hashed": false,
+   "mtime_ns": 1786747180135531392,
+   "path": "output/exhibits/vehicle_transition_pair_contributions.parquet"
+  },
+  {
+   "bytes": 819383,
+   "exists": true,
+   "path": "data/manifests/output/exhibits/vehicle_transition_pair_contributions.parquet.prov.json",
+   "sha256": "1ef300753b37fe1b48186f69d77c39a21e074b931062d45274b6a8ad2331d489"
   }
  ],
  "libraries": {
@@ -87,14 +96,14 @@
   "pyarrow": "25.0.0",
   "scipy": "1.18.0"
  },
- "notes": "Presentation macros for the exact descriptive pair-composition accounting and matched-market estimate; evidence status and identities remain source-only.",
+ "notes": "Presentation macros for the exact descriptive pair-composition accounting, the matched-market estimate, and one named source--destination pair per aggregate margin; evidence status and identities remain source-only.",
  "payload_identity": {
-  "bytes": 3004,
+  "bytes": 4306,
   "format": "binary",
   "schema_version": 1,
-  "sha256": "4a962001e4657be17c8e90abd650bba2e0cee96fcd3fb7f2cb23f2e68fc3906e"
+  "sha256": "14bdd370696fd4be352e9b671ce381d5ae114ab7eab4072b29d4261c75cf10b9"
  },
- "python": "3.14.5",
- "rows": 35,
+ "python": "3.14.6",
+ "rows": 4593349,
  "script": "scripts/build_vehicle_transition_pair_deck_values.py"
 }
