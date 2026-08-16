@@ -526,7 +526,7 @@
       "exit_handoff": "The panel closes by retaining route-level attribution and sends the separate cost object to Section 4."
     },
     "paper/sections/03-dominance.tex": {
-      "sha256": "9b247e96282cbf2c343b69bd7cafeabc048923c0737c16abeb602c8df5d905cc",
+      "sha256": "9052f98eadf17d760e307c52acf70661946a5131b35b80a5a2742576fa7c4dec",
       "status": "rewritten",
       "exemplars": [
         "literature/text/2020-MakarovSchoar2020Arbitrage-trading-and-arbitrage-in-cryptocurrency-markets.txt:886-991",
@@ -627,9 +627,12 @@
           374,
           409,
           411,
-          413
+          413,
+          423,
+          430,
+          436
         ],
-        "judgment": "Aggregate rotation and reversals lead to a three-margin accounting whose answer is stated first, the exact identity behind it and its four terms by count and by value, the second factorisation of the same count total, stated as its own displayed identity, and the exact scale relation that keeps its components from being the identity's, matched-market estimates, the reach of the matched cells by count and by value read beside the identity's own within-pair term, named pairs that make the margins concrete, the breadth of each margin across pairs, the split of the composition margins on endpoint eligibility, that split taken inside each single- or cross-exchange route scope for the reweighting margin and then for the entry margin, the netted exclusive term read as corridor replacement, that replacement gap split into the mix of corridor kinds each cohort brings and the rate at which each kind routes, the last term read as the activity that changed population priced at the gap between the two populations' routing rates, USDT role attribution, and separate venue-span and intermediation margins.",
+        "judgment": "Aggregate rotation and reversals lead to a three-margin accounting whose answer is stated first, the exact identity behind it and its four terms by count and by value, the second factorisation of the same count total, stated as its own displayed identity, and the exact scale relation that keeps its components from being the identity's, matched-market estimates, the reach of the matched cells by count and by value read beside the identity's own within-pair term, named pairs that make the margins concrete, the breadth of each margin across pairs, the split of the composition margins on endpoint eligibility, that split taken inside each single- or cross-exchange route scope for the reweighting margin and then for the entry margin, the netted exclusive term read as corridor replacement, that replacement gap split into the mix of corridor kinds each cohort brings and the rate at which each kind routes, the last term read as the activity that changed population priced at the gap between the two populations' routing rates, USDT role attribution, and separate venue-span and intermediation margins. The venue-span passage now closes with a within-day re-specification whose dollar and count margins are reported in the same units and whose annual path is traced, so a magnitude, the margin that does not separate, and the selection of the exchange-span populations all arrive before the section hands off.",
         "raw_exemplars": [
           "literature/text/2020-MakarovSchoar2020Arbitrage-trading-and-arbitrage-in-cryptocurrency-markets.txt:886-991",
           "literature/text/2022-ChangDuLouPolk2022Ripples-ripples-into-waves-trade-networks-economic-activity-and-asset-prices.txt:1369-1445",
@@ -1017,6 +1020,36 @@
           },
           {
             "line": 413,
+            "inherited_object": "the endpoint-year span estimates",
+            "paragraph_function": "names the identifying weakness of the endpoint-year design and states the within-day re-specification that replaces it",
+            "relation_to_previous": "re-reads the same stratification with the calendar demoted to a control",
+            "economic_subject": "one day's route universe split into its single- and cross-exchange halves",
+            "framing_judgment": "The design is described before any number, and the source comment records that the pooled and day-absorbed point estimates coincide by arithmetic so no survival claim is made from that equality",
+            "qualification_leads": false,
+            "judgment": "The paragraph names the identifying weakness of the endpoint-year design and states the within-day re-specification that replaces it, re-reading the same stratification with the calendar demoted to a control."
+          },
+          {
+            "line": 423,
+            "inherited_object": "the within-day difference between the two halves of a day",
+            "paragraph_function": "reports the exchange-span gap in dollars, at economic weight, and in route counts",
+            "relation_to_previous": "puts a magnitude on the difference the previous paragraph defined",
+            "economic_subject": "stablecoin share of one-intermediary routes by exchange span",
+            "framing_judgment": "Both margins carry standard errors and intervals in the same units, the count margin is quoted because its interval spans zero rather than despite it, and the fragmentation depth mechanism is named as the reading the dollar-not-count pattern fits rather than as a tested channel",
+            "qualification_leads": false,
+            "judgment": "The paragraph reports the exchange-span gap in dollars, at economic weight, and in route counts, putting a magnitude on the difference the previous paragraph defined."
+          },
+          {
+            "line": 430,
+            "inherited_object": "the dollar gap between exchange spans",
+            "paragraph_function": "traces the gap year by year and shows it closing in the middle of the sample",
+            "relation_to_previous": "moves from one pooled magnitude to its path",
+            "economic_subject": "the annual course of the exchange-span composition gap",
+            "framing_judgment": "The closure year carries its own interval, the reading a two-endpoint design would have missed is stated plainly, and selection into exchange span closes the paragraph as a scope condition",
+            "qualification_leads": false,
+            "judgment": "The paragraph traces the gap year by year and shows it closing in the middle of the sample, moving from one pooled magnitude to its path."
+          },
+          {
+            "line": 436,
             "inherited_object": "three route margins",
             "paragraph_function": "synthesises and states the fixed-opportunity comparison",
             "relation_to_previous": "moves from coexistence to design",
@@ -1029,7 +1062,7 @@
       },
       "judgment": "The section sells a large non-monotone rotation, reconciles weighting conventions, and assigns most change to activity across pairs, naming the individual ordered pairs behind each margin. Matched estimates state the conditioning set directly and interpret confidence bounds against the economic magnitude.",
       "entry_handoff": "The Section 2 denominator supplies the matched-day transition.",
-      "internal_progression": "Rotation and reversals lead to a three-margin decomposition answered up front, matched estimates, named-currency excess use, a within-day cross-section that absorbs the calendar and bounds its own construction threats, and finally venue span and route complexity.",
+      "internal_progression": "Rotation and reversals lead to a three-margin decomposition answered up front, matched estimates, named-currency excess use, a within-day cross-section that absorbs the calendar and bounds its own construction threats, then venue span and route complexity read first between endpoint years and then within a single day, and finally the fixed-opportunity comparison the causal question requires.",
       "exit_handoff": "The final synthesis defines the fixed-pair, size, and path set needed to test router access.",
       "terminology_judgment": "Reader-facing prose names the measured object as the source and destination assets or their ordered asset pair. It reserves pool for a liquidity contract, venue for an exchange or protocol, and route for the ordered execution sequence; these objects are not used interchangeably."
     },

@@ -1,34 +1,46 @@
 {
  "argv": [],
  "artefact": "output/exhibits/prose_conventions.jsonl",
- "artefact_bytes": 3081,
- "artefact_mtime_ns": 1786897442012897033,
- "artefact_sha256": "6e19292eaddc55fc12f3cc7d7d4e6b8d70f660c981f882193725177ad4d689d3",
+ "artefact_bytes": 3079,
+ "artefact_mtime_ns": 1786899583877508485,
+ "artefact_sha256": "ca187a74dd1ddd663350da2a4b478f3e206394d8cb04255806b4ae2bfca6d1e9",
  "code_fingerprint": "855e4cea8ba498e8bb720f072b29f9645df3c0bee4fbe4c26dbd5cb903686b44",
  "code_sources": [
   "scripts/measure_prose_conventions.py",
   "src/ddvc/tables.py"
  ],
- "created_at": "2026-08-16T16:24:02+00:00",
+ "created_at": "2026-08-16T16:59:43+00:00",
  "git": {
   "branch": "main",
-  "commit": "91d738f6c7227b7f190ce5290c28a4300f5f7806",
+  "commit": "cd40b1a445d7c91e37d9420441610a3e29a2f050",
   "dirty": true,
   "dirty_generated_files": [
    "data/manifests/output/exhibits/prose_outliers.jsonl.prov.json",
+   "data/manifests/output/exhibits/provisional_results_deck_values.tex.prov.json",
    "data/manifests/output/exhibits/venue_optics.jsonl.prov.json",
    "data/manifests/output/exhibits/venue_shape.jsonl.prov.json",
+   "data/manifests/output/tables/usdt_transition.pdf.prov.json",
+   "data/manifests/output/tables/usdt_transition.tex.prov.json",
    "output/exhibits/prose_outliers.jsonl",
+   "output/exhibits/provisional_results_deck_values.tex",
    "output/exhibits/venue_optics.jsonl",
    "output/exhibits/venue_shape.jsonl",
-   "output/exhibits/.prose_conventions.jsonl.3684i45h.tmp"
+   "output/tables/usdt_transition.pdf",
+   "data/manifests/output/exhibits/integration_date_fe_ladder.jsonl.prov.json",
+   "output/exhibits/.prose_conventions.jsonl.lq3ou054.tmp",
+   "output/exhibits/integration_date_fe_ladder.jsonl"
   ],
   "dirty_tracked_files": [
    "deck/main.pdf",
+   "deck/sections/04-results.tex",
    "docs/reviews/paper-rhetoric.json",
-   "paper/sections/03-dominance.tex"
+   "paper/sections/03-dominance.tex",
+   "src/ddvc/provisional_results.py"
   ],
-  "dirty_untracked_files": []
+  "dirty_untracked_files": [
+   "scripts/run_integration_date_fe_ladder.py",
+   "tests/test_integration_date_fe_ladder.py"
+  ]
  },
  "inputs": [],
  "libraries": {
@@ -39,11 +51,11 @@
  },
  "notes": null,
  "payload_identity": {
-  "bytes": 3081,
+  "bytes": 3079,
   "format": "jsonl",
   "rows": 19,
   "schema_version": 1,
-  "sha256": "6e19292eaddc55fc12f3cc7d7d4e6b8d70f660c981f882193725177ad4d689d3"
+  "sha256": "ca187a74dd1ddd663350da2a4b478f3e206394d8cb04255806b4ae2bfca6d1e9"
  },
  "python": "3.14.6",
  "rows": 19,

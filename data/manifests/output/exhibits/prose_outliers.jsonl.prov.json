@@ -1,34 +1,46 @@
 {
  "argv": [],
  "artefact": "output/exhibits/prose_outliers.jsonl",
- "artefact_bytes": 158855,
- "artefact_mtime_ns": 1786897478841126418,
- "artefact_sha256": "e2729f68521052631643e9935462825260ba91ebf0ed0fa450f46c08e657b530",
+ "artefact_bytes": 163861,
+ "artefact_mtime_ns": 1786899619497154634,
+ "artefact_sha256": "9ebd4fa8b74910a40e34c85d0e677c2f41705171fbd3e3a4fc5aba040b725c8a",
  "code_fingerprint": "4d6c3aa5e5b632317b923d4c498ebaf8a988e6f1d35f09ef659fc910be391909",
  "code_sources": [
   "scripts/find_prose_outliers.py",
   "src/ddvc/tables.py"
  ],
- "created_at": "2026-08-16T16:24:38+00:00",
+ "created_at": "2026-08-16T17:00:19+00:00",
  "git": {
   "branch": "main",
-  "commit": "91d738f6c7227b7f190ce5290c28a4300f5f7806",
+  "commit": "cd40b1a445d7c91e37d9420441610a3e29a2f050",
   "dirty": true,
   "dirty_generated_files": [
    "data/manifests/output/exhibits/prose_conventions.jsonl.prov.json",
+   "data/manifests/output/exhibits/provisional_results_deck_values.tex.prov.json",
    "data/manifests/output/exhibits/venue_optics.jsonl.prov.json",
    "data/manifests/output/exhibits/venue_shape.jsonl.prov.json",
+   "data/manifests/output/tables/usdt_transition.pdf.prov.json",
+   "data/manifests/output/tables/usdt_transition.tex.prov.json",
    "output/exhibits/prose_conventions.jsonl",
+   "output/exhibits/provisional_results_deck_values.tex",
    "output/exhibits/venue_optics.jsonl",
    "output/exhibits/venue_shape.jsonl",
-   "output/exhibits/.prose_outliers.jsonl.pnx8tjvx.tmp"
+   "output/tables/usdt_transition.pdf",
+   "data/manifests/output/exhibits/integration_date_fe_ladder.jsonl.prov.json",
+   "output/exhibits/.prose_outliers.jsonl.w0xot4q4.tmp",
+   "output/exhibits/integration_date_fe_ladder.jsonl"
   ],
   "dirty_tracked_files": [
    "deck/main.pdf",
+   "deck/sections/04-results.tex",
    "docs/reviews/paper-rhetoric.json",
-   "paper/sections/03-dominance.tex"
+   "paper/sections/03-dominance.tex",
+   "src/ddvc/provisional_results.py"
   ],
-  "dirty_untracked_files": []
+  "dirty_untracked_files": [
+   "scripts/run_integration_date_fe_ladder.py",
+   "tests/test_integration_date_fe_ladder.py"
+  ]
  },
  "inputs": [],
  "libraries": {
@@ -39,13 +51,13 @@
  },
  "notes": null,
  "payload_identity": {
-  "bytes": 158855,
+  "bytes": 163861,
   "format": "jsonl",
-  "rows": 737,
+  "rows": 761,
   "schema_version": 1,
-  "sha256": "e2729f68521052631643e9935462825260ba91ebf0ed0fa450f46c08e657b530"
+  "sha256": "9ebd4fa8b74910a40e34c85d0e677c2f41705171fbd3e3a4fc5aba040b725c8a"
  },
  "python": "3.14.6",
- "rows": 737,
+ "rows": 761,
  "script": "scripts/find_prose_outliers.py"
 }

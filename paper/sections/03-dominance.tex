@@ -410,6 +410,29 @@ Cross-exchange routing expands sharply during the sample. Access to pools on sev
 
 Intermediation becomes less common over 2022--2026 even as cross-exchange routing grows. Its count share falls from \FullIntermediationBase{} to \FullIntermediationEnd{} across the full exchange set and to \BalancedIntermediationEnd{} among five exchanges observed throughout the comparison. The changes are \FullIntermediationChange{} and \BalancedIntermediationChange{}, with standard errors of \FullIntermediationSE{} and \BalancedIntermediationSE{}. Stablecoin share nevertheless rises within every observed group defined by exchange span and route complexity. Its count-share increase is \CrossVenueRotationPremium{} larger across exchanges than within one exchange, with a standard error of \CrossVenueRotationSE{}; the dollar-weighted estimates rise in both groups.
 
+Those estimates compare two endpoint years. The calendar supplies the variation that identifies them. A second reading of the same stratification removes that reliance. Each trading day contributes one observation for its single-exchange routes and one for its cross-exchange routes, and a day effect absorbs everything the two halves share, from gas prices to market direction. The remaining difference measures how far apart the two halves of one day's route universe stand.
+% Purpose-bound estimand: the LEVEL of the exchange-span gap, which the endpoint-year
+% rival exhibits never state. Owner scripts/run_integration_date_fe_ladder.py, exhibit
+% output/exhibits/integration_date_fe_ladder.jsonl, macros through
+% src/ddvc/provisional_results.py. Do NOT write that the gap "survives absorbing the
+% calendar": the stack is balanced by construction, so the pooled and within-day point
+% estimates are algebraically identical and only the inference differs. Provisional E0
+% scope on the green route-only D3 panel; refresh the ladder and the macro renderer
+% together when the panel regenerates.
+
+That difference is large in dollars and indistinct in counts. Over \WithinDayVenueGapDays{} days on which both halves are measured, one-intermediary routes that cross exchanges carry a stablecoin share \WithinDayVenueGapValue{} above routes executed on one exchange, with a standard error of \WithinDayVenueGapValueSE{} and a 95\% interval of \WithinDayVenueGapValueCI{}. Weighting each day--group cell by the dollars behind it returns \WithinDayVenueGapWeighted{} with a standard error of \WithinDayVenueGapWeightedSE{}. Counting routes rather than dollars gives \WithinDayVenueGapCount{}, whose interval \WithinDayVenueGapCountCI{} spans zero and admits a gap in either direction. Exchange span therefore tracks which currency carries the value that moves through an intermediary, and the same day's evidence does not establish that it tracks how often an indirect route reaches for a stablecoin at all. \citet{ChenDuffie2021Fragmentation} model trade split across exchanges as thinning depth at each one while improving allocation overall. Thin depth at a single venue binds first on the largest orders, and a difference that opens in routed dollars while route counts stay level fits that reading.
+% output/exhibits/integration_date_fe_ladder.jsonl, rows routing_basis=exact_two_leg with
+% spec R2 and R3; macros through src/ddvc/provisional_results.py. The count figure is
+% quoted BECAUSE its interval spans zero: the negated half of the value-not-count reading
+% carries its own interval in the same units. Refresh by rerunning
+% scripts/run_integration_date_fe_ladder.py and the macro renderer together.
+
+The dollar gap is also unsteady across the sample. Estimated year by year, it opens at \WithinDayVenueGapFirst{} in 2020, closes to \WithinDayVenueGapTrough{} in 2023 on an interval of \WithinDayVenueGapTroughCI{}, and reopens to \WithinDayVenueGapLast{} in 2026. A design that reads only the endpoint years of the sample would record a gap at both ends and miss the closure between them. Routes are not assigned to an exchange span, and these differences therefore describe the composition of two selected populations rather than the effect of widening a route's venue set.
+% output/exhibits/integration_date_fe_ladder.jsonl, rows spec=R5 + date FE x year with
+% routing_basis=exact_two_leg, weighting=value, value_support=within_20pct. Each year's
+% coefficient is that year's within-day gap, not a difference from a base year: the year
+% indicators partition the cross-exchange observations and no year is omitted.
+
 Taken together, the estimates separate cross-exchange trading, the incidence of intermediation, and the composition of intermediaries. Wider venue span coincides with less intermediation overall, while stablecoins gain among the indirect routes that remain in both single- and cross-exchange groups. Section~\ref{sec:rivals:complexity} turns that stratification into a test of whether the aggregate rotation is a by-product of how routes were built. Isolating the effect of router access requires comparisons among the same ordered source--destination asset pairs, trade sizes, and feasible paths.
 
 \begin{figure}[tbp]

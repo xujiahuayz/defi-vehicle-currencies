@@ -2,7 +2,7 @@
  "argv": [],
  "artefact": "output/tables/usdt_transition.tex",
  "artefact_bytes": 386,
- "artefact_mtime_ns": 1786867613552611027,
+ "artefact_mtime_ns": 1786899570236498233,
  "artefact_sha256": "136748fe41e13b90da60862ee634da54c74156782764102940543b0810070712",
  "code_fingerprint": "486cd8b34c2bd677283f01281f52807f61aba01855f52c020afb2ba3ada46600",
  "code_sources": [
@@ -10,40 +10,50 @@
   "src/ddvc/dominance_tables.py",
   "src/ddvc/paper_tables.py"
  ],
- "created_at": "2026-08-16T08:06:54+00:00",
+ "created_at": "2026-08-16T16:59:31+00:00",
  "git": {
   "branch": "main",
-  "commit": "947328d3367484dead8aec904df669ac12dea51b",
+  "commit": "cd40b1a445d7c91e37d9420441610a3e29a2f050",
   "dirty": true,
   "dirty_generated_files": [
-   "data/manifests/output/tables/dominance_rotation.pdf.prov.json",
-   "data/manifests/output/tables/dominance_rotation.tex.prov.json",
-   "data/manifests/output/tables/pair_composition.pdf.prov.json",
-   "data/manifests/output/tables/pair_composition.tex.prov.json",
-   "output/tables/dominance_rotation.pdf",
-   "output/tables/pair_composition.pdf",
-   "output/tables/pair_composition.tex",
-   "output/tables/usdt_transition.pdf"
+   "data/manifests/output/exhibits/prose_conventions.jsonl.prov.json",
+   "data/manifests/output/exhibits/prose_outliers.jsonl.prov.json",
+   "data/manifests/output/exhibits/provisional_results_deck_values.tex.prov.json",
+   "data/manifests/output/exhibits/venue_optics.jsonl.prov.json",
+   "data/manifests/output/exhibits/venue_shape.jsonl.prov.json",
+   "output/exhibits/prose_conventions.jsonl",
+   "output/exhibits/prose_outliers.jsonl",
+   "output/exhibits/provisional_results_deck_values.tex",
+   "output/exhibits/venue_optics.jsonl",
+   "output/exhibits/venue_shape.jsonl",
+   "output/tables/usdt_transition.pdf",
+   "data/manifests/output/exhibits/integration_date_fe_ladder.jsonl.prov.json",
+   "output/exhibits/integration_date_fe_ladder.jsonl"
   ],
   "dirty_tracked_files": [
+   "deck/main.pdf",
+   "deck/sections/04-results.tex",
+   "docs/reviews/paper-rhetoric.json",
    "paper/sections/03-dominance.tex",
-   "src/ddvc/dominance_tables.py",
-   "tests/test_dominance_tables.py"
+   "src/ddvc/provisional_results.py"
   ],
-  "dirty_untracked_files": []
+  "dirty_untracked_files": [
+   "scripts/run_integration_date_fe_ladder.py",
+   "tests/test_integration_date_fe_ladder.py"
+  ]
  },
  "inputs": [
   {
-   "bytes": 3461,
+   "bytes": 4116,
    "exists": true,
    "path": "output/exhibits/provisional_results_deck_values.tex",
-   "sha256": "d37a1029a0a389f183b453c89ef1ab2e6f3bcb901745c07b4818e4e249904585"
+   "sha256": "4e87946d89da89bf528f7d5edc64309840781d4e1c575fda24e33123e5eaf978"
   },
   {
-   "bytes": 5357,
+   "bytes": 5890,
    "exists": true,
    "path": "data/manifests/output/exhibits/provisional_results_deck_values.tex.prov.json",
-   "sha256": "d6af1e3c4d6fa879bd7f89454074930227542decaafafd66db5098473c3d52f5"
+   "sha256": "d9507b8e6c744e118fc80d17f4890be78c9b0c72a02f4165a559b6785d9000b7"
   }
  ],
  "libraries": {

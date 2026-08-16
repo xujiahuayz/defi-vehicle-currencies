@@ -209,7 +209,7 @@ Pooled                & \DateFEPooledNative{} & \DateFEPooledStable{} & --- \\
 % EVIDENCE-COMMIT: 111230a
 % The figure asset itself was added at a0c54e9; its inputs and the numeric cells
 % below share the intermediation-exhibit evidence commit named above.
-% EVIDENCE-SOURCES: output/figures/experiments/integration_change_forest.pdf; output/exhibits/intermediation_integration_rival.jsonl; output/exhibits/intermediation_integration_interaction.jsonl; output/exhibits/intermediation_complexity_rival.jsonl; output/exhibits/venue_technology_rival.jsonl; output/exhibits/routing_technology_windows.jsonl; output/exhibits/provisional_results_deck_values.tex; docs/findings-freeze.md
+% EVIDENCE-SOURCES: output/figures/experiments/integration_change_forest.pdf; output/exhibits/intermediation_integration_rival.jsonl; output/exhibits/intermediation_integration_interaction.jsonl; output/exhibits/intermediation_complexity_rival.jsonl; output/exhibits/integration_date_fe_ladder.jsonl; output/exhibits/venue_technology_rival.jsonl; output/exhibits/routing_technology_windows.jsonl; output/exhibits/provisional_results_deck_values.tex; docs/findings-freeze.md
 % ESTIMAND-BOUNDARY: matched January--June dates in 2024 and 2026; native-plus-stable denominator; one
 % observation per intermediary episode; leg count records how the route was built and is not an
 % execution-quality measure; the four span-by-complexity cells come from the same certified exhibit and
@@ -226,15 +226,23 @@ Pooled                & \DateFEPooledNative{} & \DateFEPooledStable{} & --- \\
 % treatment effect; spec-lock claim routing_maturation_rival forbids an aggregator-causality
 % reading. Its macros are withheld entirely if intermediation ever steps up by a full percentage
 % point at a release or if the balanced five-venue perimeter stops reproducing the full perimeter.
-% VISUAL-FUNCTION: integration-stratified vehicle rotation | change estimates with HAC intervals | test whether venue mix, path length, or pricing rule absorbs the stable-share change
+% The closing within-day sentence is a fourth estimand on a fourth support: the LEVEL of the
+% exchange-span gap on exact two-leg routes, stacked by scope and read within a day effect over
+% 2,234 paired days rather than between two endpoint years. Owner
+% scripts/run_integration_date_fe_ladder.py; exhibit output/exhibits/integration_date_fe_ladder.jsonl;
+% macros through src/ddvc/provisional_results.py. The count figure is displayed BECAUSE its interval
+% spans zero: the negated half of the value-not-count statement carries its own interval in the same
+% units, as the standing rule requires. Do not present the pooled and day-absorbed point estimates as
+% a survival test; the stack is balanced, so they coincide by arithmetic.
+% VISUAL-FUNCTION: integration-stratified vehicle rotation | change estimates with HAC intervals | test whether venue mix, path length, or pricing rule absorbs the stable-share change, then state how far the two scopes stand apart within a day
 \begin{frame}{Stablecoin use rises within each venue scope}
 \vspace{-0.08cm}
 \begin{center}
-\includegraphics[width=0.89\textwidth,height=0.34\textheight,keepaspectratio]{../output/figures/experiments/integration_change_forest.pdf}
+\includegraphics[width=0.82\textwidth,height=0.26\textheight,keepaspectratio]{../output/figures/experiments/integration_change_forest.pdf}
 \end{center}
-\vspace{-0.42cm}
-{\fontsize{6.8}{7.5}\selectfont The increase appears within both realised route scopes, so the single- versus cross-venue mix cannot account for the aggregate rotation. Path length does not absorb it: two-leg routes gain \StableCountChange{} by count (SE \StableCountSE{}) and longer routes \MultiLegCountChange{} (SE \MultiLegCountSE{}), and every venue-scope by path-length cell rises, the weakest by \WeakestComplexityCountChange{} (SE \WeakestComplexityCountSE{}). Nor does the pricing rule: among routes priced entirely by the constant-product invariant, \VenueCPEpisodeShare{} of 2026 episodes, stablecoin excess use rises from \VenueCPStableValueBase{} to \VenueCPStableValueEnd{}, and all-Curve routes carry none. Nor does automated path search: intermediation incidence never rises by more than \RouterLargestIntermediationRise{} at \RouterReleaseCount{} public router releases, though cross-exchange reach widens. Every scope here is realised, not assigned; none identifies an effect of integration, routing software, pricing technology, or architecture.}
-\decknote{Changes compare the same January--June dates in 2024 and 2026. Bars show 95\% calendar-HAC confidence intervals. Excess-use ratios are annual and span the full sample calendar.}
+\vspace{-0.48cm}
+{\fontsize{6.8}{7.5}\selectfont Venue mix cannot account for the aggregate rotation: the increase appears within both realised route scopes. Path length does not absorb it: two-leg routes gain \StableCountChange{} by count (SE \StableCountSE{}) and longer routes \MultiLegCountChange{} (SE \MultiLegCountSE{}), and every venue-scope by path-length cell rises, the weakest by \WeakestComplexityCountChange{} (SE \WeakestComplexityCountSE{}). Nor does the pricing rule: among routes priced entirely by the constant-product invariant, \VenueCPEpisodeShare{} of 2026 episodes, stablecoin excess use rises from \VenueCPStableValueBase{} to \VenueCPStableValueEnd{}, and all-Curve routes carry none. Nor does automated path search: intermediation incidence never rises by more than \RouterLargestIntermediationRise{} at \RouterReleaseCount{} public router releases. Within a day the gap is a dollar phenomenon: over \WithinDayVenueGapDays{} paired days cross-exchange one-intermediary routes carry \WithinDayVenueGapValue{} more stablecoin value share (SE \WithinDayVenueGapValueSE{}), while the count contrast is \WithinDayVenueGapCount{} on \WithinDayVenueGapCountCI{}. Every scope here is realised, not assigned; none identifies an effect of integration, routing software, pricing technology, or architecture.}
+\decknote{Changes compare the same January--June dates in 2024 and 2026; bars show 95\% calendar-HAC intervals. Excess-use ratios and the within-day venue gap span the full sample calendar.}
 \end{frame}
 
 % EVIDENCE-STATUS: E0 pending clean J1; full-calendar reciprocal adjudication on the certified V2 capital release records a non-pass

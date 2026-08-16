@@ -563,7 +563,7 @@ and pick a blocking check from the freeze gate.
   _Closed in `e8a785c` (evidence layer) and `2a797b7` (frames). **(1)** built as deck page 14, "Holding the trade fixed dissolves the intermediary gap", from a new owned producer `scripts/figure/build_dominance_ladder.py`; it states the two-questions-one-answer bridge on the frame. **(2)** not implemented, as instructed; `refresh graph excludes retired estimands` still passes and the retired exhibit is neither read nor cited. **(3)** all four guardrails met: the strictest column carries its detectable effect (23.7 points) and switching-cell count (703) on the column itself and is never called a null; the continuous outcome is displayed on the same cells; the two estimands are kept on separate scales with no shared axis on either frame; and every number binds through generated macros. **(4)** rebuilt as page 18, "The market changed, not the trade", a conditioning ladder (+25.7 pp → −0.1 pp → +0.2 pp) with the dominance estimand beside it behind a rule. **(5)** frames with calendar time as the primary visual axis: 2 before, 1 after; the rotation series stays once and early. Two frames keep a calendar element as setup and are correct on that axis (the 02-objects deployment timeline, the A2 backing-regime heatmap); the V1–V4 strip is cut on protocol design, not the calendar._
   _One correction to (3)(b): the −25.26 bps (p=0.037) figure is from the retired specification curve. On the live estimand the continuous outcome is +186 bps (SE 106, p=0.078) and **agrees** with the binary column rather than disagreeing with it. The frame shows it either way, so a referee sees the functional form rather than a choice._
 
-- [ ] **JAVA INTERJECTION (WeCom via glotl, 2026-08-16T15:55Z):** CONTROL THE CALENDAR IN FIXED EFFECTS AND SHIP VOLUME. Java's verbatim instruction, which **supersedes** the supervisor's earlier framing in this same slot: "Time axis is ok but you can just control it in eg fixed effect. Give me more results ! Ok if on preliminary data - if computation not overwhelmed then keep trying and building in parallel and write into paper and deck!!"
+- [x] **JAVA INTERJECTION (WeCom via glotl, 2026-08-16T15:55Z):** CONTROL THE CALENDAR IN FIXED EFFECTS AND SHIP VOLUME. Java's verbatim instruction, which **supersedes** the supervisor's earlier framing in this same slot: "Time axis is ok but you can just control it in eg fixed effect. Give me more results ! Ok if on preliminary data - if computation not overwhelmed then keep trying and building in parallel and write into paper and deck!!"
 
   Read that precisely. She is **not** asking to remove calendar comparisons; she is asking to stop treating the time axis as the identifying variation and start **absorbing it in date fixed effects** so identification comes from the cross-section within a day. She has also explicitly lowered the bar for what may enter the deliverables: **preliminary/E0 estimates are admissible**, provided they carry their scope and uncertainty, and she wants **throughput** and **parallelism** where compute allows, with results written into the paper and deck as they land rather than held back.
 
@@ -604,6 +604,29 @@ and pick a blocking check from the freeze gate.
   venue-integration interactions on the same design).
 
   Guardrails: single draft refreshed in place, no fork; every number binds through generated macros from a committed exhibit; preliminary/E0 results are admissible at their stated scope per Java's instruction, but must carry scope and uncertainty and must not be labelled submission-authoritative. Write results into the paper and deck as each lands rather than batching to the end. Do not resurrect a retired estimator to do any of the above; build new owners under the live estimators. Record in the ledger, per result, whether calendar time is the identifying variation, a control, or a robustness split.
+
+  _**CLOSED (2026-08-16).** Parts 2 and 4 landed through a second owner,
+  `scripts/run_integration_date_fe_ladder.py`, writing
+  `output/exhibits/integration_date_fe_ladder.jsonl`; macros were added to the
+  existing owner `src/ddvc/provisional_results.py` rather than to a new builder.
+  Part 2 was scoped in the previous iteration's ledger entry to the ONE live
+  headline estimator with a well-defined and genuinely missing date-FE rung: the
+  venue-integration contrast in section 3.5. `run_dominance_regressions.py` is
+  retired and may not be resurrected, `build_intermediation_by_type.py` estimates
+  year-endpoint changes on a panel whose unit IS the day so a date FE is
+  saturated, and `run_vehicle_rotation_composition_e0.py` already carries pair x
+  month-day x scope FE, which is part 4's pair-level half. Part 4's
+  venue-integration half is the new ladder. Result: on exact two-leg routes, over
+  2,234 paired days, cross-exchange routing carries +14.18 pp more stablecoin
+  value share within the same day (SE 3.69), +12.12 pp weighted by cell dollars
+  (SE 1.78), while the count contrast is +3.73 pp on [-2.2, +9.7] and does NOT
+  separate. Year by year the dollar gap runs +69.7 (2020), +16.1, -0.1, -3.2
+  (2023, interval [-9.2, +2.8]), +7.3, +16.1, +14.5 (2026), so a two-endpoint
+  design would miss the closure in the middle. Calendar role per rung: control in
+  R2/R3, robustness split in R4/R5, identifying variation nowhere. One caveat the
+  next worker must not misread: the stack is balanced by construction, so the
+  pooled and day-absorbed POINT estimates are algebraically identical and that
+  equality is never evidence; only the inference and the weighted rung move._
 
 ## Closed
 

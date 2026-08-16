@@ -18,6 +18,7 @@ EXHIBITS = OUTPUT_DIR / "exhibits"
 ROTATION = EXHIBITS / "intermediation_complexity_rival.jsonl"
 INTEGRATION = EXHIBITS / "intermediation_integration_interaction.jsonl"
 TOKEN_INTEGRATION = EXHIBITS / "intermediation_token_integration_interaction.jsonl"
+INTEGRATION_WITHIN_DAY = EXHIBITS / "integration_date_fe_ladder.jsonl"
 EXCESS_USE = EXHIBITS / "vehicle_excess_use.jsonl"
 VENUE_RIVAL = EXHIBITS / "venue_technology_rival.jsonl"
 ROUTER_WINDOWS = EXHIBITS / "routing_technology_windows.jsonl"
@@ -29,6 +30,7 @@ INPUTS = (
     ROTATION,
     INTEGRATION,
     TOKEN_INTEGRATION,
+    INTEGRATION_WITHIN_DAY,
     EXCESS_USE,
     EXCESS_USE_TRANSITION,
     ROUTING_SERIES,
@@ -41,6 +43,12 @@ CODE_SOURCES = [
     "src/ddvc/venue_tables.py",
     "scripts/tabulate/render_provisional_results_deck_values.py",
 ]
+# The within-day integration ladder is displayed on one routing basis and one
+# support band. Exact two-leg routes carry the paper's one-intermediary dominance
+# object, and the 20 percent coherence band is the value measure the rest of the
+# venue-span passage already uses, so the displayed cells match their neighbours.
+WITHIN_DAY_BASIS = "exact_two_leg"
+WITHIN_DAY_SUPPORT = "within_20pct"
 
 
 def _one(frame: pd.DataFrame, **identity: object) -> pd.Series:
@@ -73,6 +81,20 @@ def _pp(value: float, decimals: int = 2) -> str:
 
 def _se_pp(value: float, decimals: int = 2) -> str:
     return f"{100 * value:.{decimals}f} pp"
+
+
+# The within-day ladder already carries its outcome in percentage points, so its
+# display must not rescale a second time.
+def _pp_points(value: float, decimals: int = 2) -> str:
+    return f"${value:+.{decimals}f}$ pp"
+
+
+def _se_points(value: float, decimals: int = 2) -> str:
+    return f"{value:.{decimals}f} pp"
+
+
+def _interval_points(lower: float, upper: float, decimals: int = 1) -> str:
+    return f"$[{lower:+.{decimals}f}, {upper:+.{decimals}f}]$"
 
 
 COMPLEXITY_CELLS = (
@@ -227,6 +249,7 @@ def render_provisional_results_deck_values(
     rotation: pd.DataFrame,
     integration: pd.DataFrame,
     token_integration: pd.DataFrame,
+    integration_within_day: pd.DataFrame,
     excess_use: pd.DataFrame,
     excess_use_transition: pd.DataFrame,
     routing_series: pd.DataFrame,
@@ -281,6 +304,41 @@ def render_provisional_results_deck_values(
             "hac_standard_error",
             "p_value_holm",
         )
+
+    # Within-day integration gap. Each cell is selected by its full scientific
+    # identity rather than by row order, so a count magnitude can never be printed
+    # in a value sentence. The count rung is displayed precisely because it does
+    # not separate from zero: the standing rule requires the negated side of a
+    # "not X, but Y" statement to carry its own interval in the same units.
+    def _within_day(weighting: str, spec: str, term: str) -> pd.Series:
+        return _one(
+            integration_within_day,
+            routing_basis=WITHIN_DAY_BASIS,
+            value_support=WITHIN_DAY_SUPPORT if weighting == "value" else "all_routes",
+            weighting=weighting,
+            transformation="share_level",
+            spec=spec,
+            term=term,
+        )
+
+    within_day_value = _within_day("value", "R2 + date FE", "cross_venue")
+    within_day_count = _within_day("episode", "R2 + date FE", "cross_venue")
+    within_day_weighted = _within_day(
+        "value", "R3 + date FE, weighted by cell units", "cross_venue"
+    )
+    within_day_first = _within_day("value", "R5 + date FE x year", "cross_venue_2020")
+    within_day_trough = _within_day("value", "R5 + date FE x year", "cross_venue_2023")
+    within_day_last = _within_day("value", "R5 + date FE x year", "cross_venue_2026")
+    for row in (
+        within_day_value,
+        within_day_count,
+        within_day_weighted,
+        within_day_first,
+        within_day_trough,
+        within_day_last,
+    ):
+        _finite(row, "beta", "se", "ci_lower", "ci_upper")
+    within_day_days = int(within_day_value["supported_days"])
 
     # The rival test is the joint statement that every exchange-span by
     # route-complexity cell moves the same way, so the displayed cell is the
@@ -524,6 +582,19 @@ def render_provisional_results_deck_values(
         f"\\newcommand{{\\CrossVenueValueEnd}}{{{_share(annual[2026][1])}}}",
         f"\\newcommand{{\\CrossVenueRotationPremium}}{{{_pp(float(broad_interaction['differential_change']))}}}",
         f"\\newcommand{{\\CrossVenueRotationSE}}{{{_se_pp(float(broad_interaction['hac_standard_error']))}}}",
+        f"\\newcommand{{\\WithinDayVenueGapValue}}{{{_pp_points(float(within_day_value['beta']))}}}",
+        f"\\newcommand{{\\WithinDayVenueGapValueSE}}{{{_se_points(float(within_day_value['se']))}}}",
+        f"\\newcommand{{\\WithinDayVenueGapValueCI}}{{{_interval_points(float(within_day_value['ci_lower']), float(within_day_value['ci_upper']))}}}",
+        f"\\newcommand{{\\WithinDayVenueGapCount}}{{{_pp_points(float(within_day_count['beta']))}}}",
+        f"\\newcommand{{\\WithinDayVenueGapCountSE}}{{{_se_points(float(within_day_count['se']))}}}",
+        f"\\newcommand{{\\WithinDayVenueGapCountCI}}{{{_interval_points(float(within_day_count['ci_lower']), float(within_day_count['ci_upper']))}}}",
+        f"\\newcommand{{\\WithinDayVenueGapWeighted}}{{{_pp_points(float(within_day_weighted['beta']))}}}",
+        f"\\newcommand{{\\WithinDayVenueGapWeightedSE}}{{{_se_points(float(within_day_weighted['se']))}}}",
+        f"\\newcommand{{\\WithinDayVenueGapFirst}}{{{_pp_points(float(within_day_first['beta']), 1)}}}",
+        f"\\newcommand{{\\WithinDayVenueGapTrough}}{{{_pp_points(float(within_day_trough['beta']), 1)}}}",
+        f"\\newcommand{{\\WithinDayVenueGapTroughCI}}{{{_interval_points(float(within_day_trough['ci_lower']), float(within_day_trough['ci_upper']))}}}",
+        f"\\newcommand{{\\WithinDayVenueGapLast}}{{{_pp_points(float(within_day_last['beta']), 1)}}}",
+        f"\\newcommand{{\\WithinDayVenueGapDays}}{{{within_day_days:,}}}",
         f"\\newcommand{{\\VenueAllStableCountBase}}{{{float(venue_all_base['vehicle_excess_use_count_ratio']):.2f}}}",
         f"\\newcommand{{\\VenueAllStableCountEnd}}{{{float(venue_all_end['vehicle_excess_use_count_ratio']):.2f}}}",
         f"\\newcommand{{\\VenueAllStableValueBase}}{{{float(venue_all_base['vehicle_excess_use_ratio']):.2f}}}",
