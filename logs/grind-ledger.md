@@ -3077,3 +3077,125 @@ ledger; node B full-text literature ledger; two unchanged findings passes).
 - The M3 12:03 handoff stays unchecked; its live remainder is the E1/D3
   generation identities and the two unchanged findings passes. Mukhin still needs
   Java or Studio (NEEDS-JAVA stands from 2026-08-15).
+
+## 2026-08-16 — the identity itself: displayed, tabulated, and separated from the Shapley bridge
+
+**Targeted check.** Still none closable. `audit_findings_freeze.py` reports the
+same four blockers with identical detail strings: node E1 specification lock
+(`stage=design_seed`, `locked_at`/`d3_generation`/`d3_certificate` all
+`missing`), empirical model ledger (`current_runs=0`, `exploration=not_started`),
+node B full-text literature ledger (32/33 source-sets, 34/35 five-axis cards --
+Mukhin, NEEDS-JAVA since 2026-08-15), two unchanged findings passes
+(`stable_passes=0`). This iteration took the defect the last entry's own
+"next iteration" note pointed at, and it turned out to be larger than a
+venue-shape gap.
+
+**The defect.** Section 3.2 spent six paragraphs interpreting the four terms of
+`e1_2_conditional_pair_decomposition` without ever stating the identity, and
+Table 3 reported **two different factorisations of the same route-count total
+under identical row labels**. Panel A was `e1_3_market_incidence_bridge` (a
+five-way Shapley allocation over market activity M, vehicle incidence I and
+stable share s); Panel B was the four-term midpoint identity, but only its
+*value* measure. Both panels carried the rows "Pairs entering or leaving the
+sample" and "Trading shifts across continuing pairs" for different objects
+(+9.8 against +19.2; +7.9 against +26.2). A reader who met
+`\MarketActivityReweight{}` = +7.9 pp in one paragraph and
+`\PairPooledReweight{}` = +8.6 pp in another had nothing to reconcile them with.
+The exhibit note made it worse by asserting that Panel B "repeats the accounting"
+of Panel A. It does not.
+
+**What landed.**
+1. **Equation (6)**, the frozen `midpoint_common_exclusive_support_v1` formula,
+   displayed with underbrace labels and its notation defined in the sentences
+   before it: `W_y`, `\omega_{p,y}`, `s_{p,y}`, `S_com,y`, `S_exc,y`, midpoint
+   bars. Verified algebraically against the spec-lock string before writing.
+2. **The count identity is now tabulated.** Panel B is the four count terms
+   (-0.1, +8.6, -0.5, +17.8, total +25.7); the old Panel B becomes Panel C; the
+   regressions become Panel D. Row labels now separate "market activity" from
+   "vehicle activity" and "pairs entering or leaving the sample" from "pairs
+   traded in only one year".
+3. **A paragraph that bounds the overlap.** The two factorisations *agree on
+   which pairs continue* -- and this is checked, not asserted. The pooled
+   `count_share` `market_incidence_support` rows of
+   `vehicle_transition_pair_support.jsonl` give `common_vehicle_role`
+   primary-choice mass shares of **0.5546 (2024)** and **0.4858 (2026)**, equal
+   to `\BlockWeightBase{}`/`\BlockWeightEnd{}`, the identity's own common-block
+   weights. Panel A's two turnover classes exhaust the identity's single
+   year-specific class (0.4152 + 0.0301 in 2024; 0.5038 + 0.0103 in 2026). They
+   part on weighting (M-and-I against choice mass throughout) and on whether the
+   year-specific class is split by market turnover against vehicle-role turnover.
+4. **The two within-pair numbers reconciled.** +1.3 pp under the Shapley bridge
+   and -0.1 pp under the identity both sit inside the matched estimate's
+   confidence interval, whose upper limit is +1.7 pp. This protects Java's
+   headline reading: whichever way the count total is cut, comparable trades did
+   not switch intermediary. **DECISION: promote** at exact scope (descriptive,
+   non-causal, 2024--2026, realised composition).
+
+**One overclaim caught mid-unit.** The first draft of that paragraph said the
+two factorisations "assign a pair to the continuing population by different
+tests". That is false -- the support exhibit shows the partitions coincide. The
+sentence was rewritten to state what is verifiable and the check is recorded in
+a source comment beside it. Do not restore the stronger wording.
+
+**Traps for the next iteration.**
+- **Citation density headroom is now ~450 words, not 15.** Before this pass it
+  was 15 words: 33 citations / 15,840 words against a p25 density of 0.002081.
+  Adding `\citet{Somogyi2026DollarDominanceFX}` (already-cited key, so the
+  literature gate is untouched) took it to 34 / 15,943. Adding a *new* key is
+  not free: `cited_keys` in the findings audit is every distinct `\cite*` key in
+  `paper/sections/*.tex`, and each one needs a card at `claim-verified` or
+  `independently-re-read`. `ChangDuLouPolk2022Ripples` is only
+  `full-text-read`, so citing it would push the node B blocker from 32/33 to
+  32/34.
+- **`src/ddvc/dominance_tables.py` is shared by three renderers.** Editing it
+  makes `dominance_rotation` and `usdt_transition` provenance go `stale` even
+  though their `.tex` is byte-identical. Re-render all three in the same unit or
+  `test_generated_table_lineage_is_current` fails.
+- **`uv run pytest` aborts at collection here** (68 collection errors): the
+  `.venv` needs `PYTHONPATH=<root>/src`. Use `./scripts/run -m pytest`. The
+  earlier entries' `uv run pytest` instruction is wrong for this worktree.
+- **`pgrep -f "pytest ..."` self-matches** a waiter shell whose own command line
+  contains the pattern, so an `until pgrep` loop never terminates. Wait on the
+  PID.
+- The rhetoric review's handoff lines shift twice per prose unit if you add
+  source comments after the first `check_jfe_rhetoric_review.py` run. Run it,
+  take the `expected=` list it prints, and remap in one pass.
+- `deck/main.pdf` is tracked and rebuilds byte-differently at identical length
+  even when no deck source changed. Check out the file rather than committing
+  the noise.
+
+**Validation.** `check_deliverable_conformance.py` exits 0, all blocking checks
+pass; paper **39 pages** / 0 undefined (was 38), deck 35 pages / 0 undefined, the
+same 2 advisories. Venue shape moved: equations 11 -> 12, greek 6 -> 7 (now *in
+range*, p25 = 7), citations 33 -> 34, words 15,336 -> 15,943. Full suite via
+`./scripts/run -m pytest -q --ignore=tests/test_route_cost_panel.py
+--ignore=tests/test_route_state.py`: **13 failed, 2148 passed**, all 13 the
+long-standing v2 provenance-drift set, no new failures. Paper-facing subset
+re-run after the mid-unit correction: 90 passed, 446 subtests.
+
+**Commit:** `c8b49a1`.
+
+**Blocking count: 4** (unchanged: node E1 specification lock; empirical model
+ledger; node B full-text literature ledger; two unchanged findings passes).
+
+**For the next iteration.**
+- Section 3.2's accounting is now complete and self-consistent: identity
+  displayed, both measures tabulated, both factorisations distinguished. The
+  descriptive composition lane at the aggregate level is finished. Further work
+  in it needs a different exhibit or a different cut.
+- `vehicle_transition_pair_support.jsonl` carries per-year `primary_choice_mass`
+  and `stable_share` for all three market-incidence support classes at pooled
+  and scoped reporting. None of it is published as a macro. The
+  vehicle-role-turnover class shrinking from 3.0% to 1.0% of choice mass while
+  its stable share runs 0.4695 -> 0.7688 is an unread economic fact; publishing
+  it needs a producer change in
+  `scripts/build_vehicle_transition_pair_deck_values.py`, not a prose pass.
+- Equations remain the widest venue gap (12 against p25 25). Section 6 still
+  defines the cost benchmark and reports nothing; it is still the largest
+  structural hole and is still blocked on route cost.
+- The deck was not touched this iteration and needs no change: its margins frame
+  reads only identity macros, so it never carried the Panel A / Panel B
+  confusion. It remains saturated -- do not add to it without removing a panel.
+- The M3 12:03 handoff stays unchecked; its live remainder is the E1/D3
+  generation identities and the two unchanged findings passes. Mukhin still needs
+  Java or Studio (NEEDS-JAVA stands from 2026-08-15).
