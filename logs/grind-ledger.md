@@ -3728,6 +3728,8 @@ paragraph sets inside the measure, the multiples read correctly, and the
 following named-pair paragraph is unchanged. `deck/main.pdf` restored after each
 conformance run; no deck source changed.
 
+**Commit:** `fc36e8b`.
+
 **Blocking count: 4** (unchanged: node E1 specification lock; empirical model
 ledger; node B full-text literature ledger; two unchanged findings passes).
 
