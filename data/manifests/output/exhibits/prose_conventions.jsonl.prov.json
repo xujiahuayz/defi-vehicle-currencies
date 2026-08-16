@@ -1,31 +1,36 @@
 {
  "argv": [],
  "artefact": "output/exhibits/prose_conventions.jsonl",
- "artefact_bytes": 3078,
- "artefact_mtime_ns": 1786877373009024312,
- "artefact_sha256": "9d520849a96a68af6b323fe02fcc094f15f88fa10862f2bb8846f210b37a69a3",
+ "artefact_bytes": 3077,
+ "artefact_mtime_ns": 1786880532059160534,
+ "artefact_sha256": "0e856d5f0ddfd915c075371c4ff80b4767ea1389eee92b92de3a110c4cbf2a27",
  "code_fingerprint": "855e4cea8ba498e8bb720f072b29f9645df3c0bee4fbe4c26dbd5cb903686b44",
  "code_sources": [
   "scripts/measure_prose_conventions.py",
   "src/ddvc/tables.py"
  ],
- "created_at": "2026-08-16T10:49:33+00:00",
+ "created_at": "2026-08-16T11:42:12+00:00",
  "git": {
   "branch": "main",
-  "commit": "48ba038621cabc799a14218f80c36c27ce4ae4a2",
+  "commit": "d9813ebf717fbba147295059736f087915504e18",
   "dirty": true,
   "dirty_generated_files": [
    "data/manifests/output/exhibits/prose_outliers.jsonl.prov.json",
    "data/manifests/output/exhibits/vehicle_transition_pair_decomposition_deck_values.tex.prov.json",
    "data/manifests/output/exhibits/venue_optics.jsonl.prov.json",
    "data/manifests/output/exhibits/venue_shape.jsonl.prov.json",
+   "data/manifests/output/tables/pair_composition.pdf.prov.json",
+   "data/manifests/output/tables/pair_composition.tex.prov.json",
    "output/exhibits/prose_outliers.jsonl",
    "output/exhibits/vehicle_transition_pair_decomposition_deck_values.tex",
    "output/exhibits/venue_optics.jsonl",
    "output/exhibits/venue_shape.jsonl",
-   "output/exhibits/.prose_conventions.jsonl.kp38zehn.tmp"
+   "output/tables/pair_composition.pdf",
+   "output/exhibits/.prose_conventions.jsonl.wp3gblpq.tmp"
   ],
   "dirty_tracked_files": [
+   "deck/main.pdf",
+   "deck/sections/04-results.tex",
    "docs/reviews/paper-rhetoric.json",
    "paper/sections/03-dominance.tex",
    "scripts/build_vehicle_transition_pair_deck_values.py",
@@ -42,11 +47,11 @@
  },
  "notes": null,
  "payload_identity": {
-  "bytes": 3078,
+  "bytes": 3077,
   "format": "jsonl",
   "rows": 19,
   "schema_version": 1,
-  "sha256": "9d520849a96a68af6b323fe02fcc094f15f88fa10862f2bb8846f210b37a69a3"
+  "sha256": "0e856d5f0ddfd915c075371c4ff80b4767ea1389eee92b92de3a110c4cbf2a27"
  },
  "python": "3.14.6",
  "rows": 19,

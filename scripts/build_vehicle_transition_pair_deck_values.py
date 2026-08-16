@@ -9,7 +9,7 @@ from pathlib import Path
 
 import pandas as pd
 
-from ddvc.asset_types import WETH, classify
+from ddvc.asset_types import WETH, asset_type, classify
 from ddvc.paths import OUTPUT_DIR
 from ddvc.presentation import require_certified_presentation_source
 from ddvc.provenance import stamp
@@ -93,6 +93,20 @@ ELIGIBILITY_MARGINS = (
 # else: the terms, calendar, and allocation formula are the scope-specific rows
 # of the same certified ledger, never a re-estimation.
 ELIGIBILITY_SCOPES = (("Single", "single_venue"), ("Cross", "cross_venue"))
+# The eligibility split leaves a remainder -- the corridors whose intermediary
+# was a live choice -- and says nothing about what those corridors are. This
+# partitions that remainder on whether a stablecoin stands at an endpoint of the
+# pair. The class is emphatically NOT a second eligibility class: a route into
+# USDC may still be carried by WETH or by a different stablecoin, so its
+# stablecoin share is free to take any value and its within-pair term is free to
+# move. `_open_corridor_endpoints` proves that non-degeneracy on the data before
+# reporting anything, which is what separates this split from the WETH one.
+OPEN_ENDPOINT_CLASSES = (("StableEnd", "stable"), ("OtherEnd", "other"))
+# Membership is decided by the endpoint asset type rather than by one address,
+# so unlike the eligibility split it does depend on the taxonomy. The long
+# unlabelled tail resolves to `other` and lands in the second class, which is
+# the conservative direction: an unrecognised stablecoin would understate the
+# first class, never inflate it.
 # Which decomposition term is the scope's own total for each split margin. The
 # reweighting margin is a term of the decomposition, so its total is read from
 # that scope's row and the split is reconciled against it. The new-pair margin
@@ -940,6 +954,167 @@ def _endpoint_eligibility(
             "locked_share": locked_pp / component_pp,
         }
     return eligibility
+
+
+def _open_corridor_endpoints(
+    contributions: pd.DataFrame,
+    metric: str,
+    eligibility: dict[str, object],
+    scope: str = "pooled",
+) -> dict[str, object]:
+    """Partition the choice-live remainder of each margin on its endpoints.
+
+    ``_endpoint_eligibility`` removes the corridors whose vehicle is fixed by
+    the WETH-endpoint identity and reports what is left as one number per
+    margin. That remainder is the economically interesting part -- every unit of
+    it comes from a corridor that could have been routed either way -- and this
+    says what those corridors are, by splitting them on whether a stablecoin
+    stands at an endpoint of the ordered pair.
+
+    The split would be worthless if it were a second eligibility class in
+    disguise, so the function refuses to report it until it has proved on the
+    data that it is not one: the stablecoin-endpoint class must hold pairs whose
+    stablecoin share is strictly interior, must not be dominated by pairs pinned
+    at one in both years, and must carry a within-pair term that is free to
+    move. The two classes are then checked to partition the remainder exactly,
+    and the remainder itself against ``eligibility``'s own open total, so no
+    class share can be printed against a margin it is not a share of.
+    """
+    scoped = _scoped_contributions(contributions, metric, scope)
+    if scoped.empty:
+        raise ValueError(
+            f"pair contributions carry no {scope} 2024--2026 {metric} rows"
+        )
+    endpoint = scoped["src"].eq(WETH) | scoped["tgt"].eq(WETH)
+    stable_endpoint = ~endpoint & (
+        scoped["src"].map(asset_type).eq("stable")
+        | scoped["tgt"].map(asset_type).eq("stable")
+    )
+    other_endpoint = ~endpoint & ~stable_endpoint
+    common = scoped["contribution_component"].eq("within_pair_choice")
+    classes: dict[str, object] = {}
+    for prefix, selector in (
+        ("StableEnd", stable_endpoint),
+        ("OtherEnd", other_endpoint),
+    ):
+        pairs = scoped[common & selector]
+        if pairs.empty:
+            raise ValueError(f"{metric} {scope} has no {prefix} common pair")
+        weight_baseline = float(pairs["pair_weight_baseline"].sum())
+        weight_comparison = float(pairs["pair_weight_comparison"].sum())
+        if not 0 < weight_baseline < 1 or not 0 < weight_comparison < 1:
+            raise ValueError(
+                f"{metric} {scope} {prefix} activity weights leave the unit range"
+            )
+        shares = {}
+        for suffix, weight_column, share_column in (
+            ("baseline", "pair_weight_baseline", "stable_share_baseline"),
+            ("comparison", "pair_weight_comparison", "stable_share_comparison"),
+        ):
+            mass = float(pairs[weight_column].sum())
+            weighted = float((pairs[share_column] * pairs[weight_column]).sum()) / mass
+            if not 0 <= weighted <= 1:
+                raise ValueError(
+                    f"{metric} {scope} {prefix} {suffix} stablecoin share leaves "
+                    "the unit interval"
+                )
+            shares[suffix] = weighted
+        within_pp = float(pairs["contribution_pp"].sum())
+        if not math.isfinite(within_pp):
+            raise ValueError(f"{metric} {scope} {prefix} within-pair term is not finite")
+        classes[prefix] = {
+            "pairs": int(len(pairs)),
+            "weight_baseline": weight_baseline,
+            "weight_comparison": weight_comparison,
+            "share_baseline": shares["baseline"],
+            "share_comparison": shares["comparison"],
+            "within_pp": within_pp,
+        }
+    # The stablecoin-endpoint class must be a choice, not an identity. A route
+    # into a stablecoin can still be carried by the native asset or by a
+    # different stablecoin, so if this class ever behaved like the WETH one the
+    # split would be reporting an accounting rule as an economic fact.
+    live = scoped[common & stable_endpoint]
+    below = live["stable_share_baseline"].lt(1.0) | live["stable_share_comparison"].lt(1.0)
+    above = live["stable_share_baseline"].gt(0.0) | live["stable_share_comparison"].gt(0.0)
+    if not below.any():
+        raise ValueError(
+            f"{metric} {scope} stablecoin-endpoint corridors always route at a "
+            "stablecoin share of one, so a stablecoin at an endpoint is forcing "
+            "the intermediary and the split is an identity rather than a choice"
+        )
+    if not above.any():
+        raise ValueError(
+            f"{metric} {scope} stablecoin-endpoint corridors never route through a "
+            "stablecoin at all, so the class cannot carry the margin attributed to it"
+        )
+    pinned = float(
+        (live["stable_share_baseline"].eq(1.0) & live["stable_share_comparison"].eq(1.0))
+        .mean()
+    )
+    if pinned >= 0.25:
+        raise ValueError(
+            f"{metric} {scope} stablecoin-endpoint corridors are {pinned:.1%} pinned "
+            "at a stablecoin share of one in both years, which is too close to the "
+            "WETH-endpoint identity for the split to be read as a choice"
+        )
+    if classes["StableEnd"]["within_pp"] == 0.0:
+        raise ValueError(
+            f"{metric} {scope} stablecoin-endpoint within-pair term is exactly zero, "
+            "which the eligibility identity forbids for a choice-live class"
+        )
+    classes["pinned_share"] = pinned
+    locked_pairs = int(eligibility["locked_pairs"])
+    common_pairs = int(eligibility["common_pairs"])
+    class_pairs = int(classes["StableEnd"]["pairs"]) + int(classes["OtherEnd"]["pairs"])
+    if class_pairs + locked_pairs != common_pairs:
+        raise ValueError(
+            f"{metric} {scope} endpoint classes do not partition the common pairs"
+        )
+    weights = {
+        suffix: float(eligibility[f"weight_{suffix}"])
+        + float(classes["StableEnd"][f"weight_{suffix}"])
+        + float(classes["OtherEnd"][f"weight_{suffix}"])
+        for suffix in ("baseline", "comparison")
+    }
+    for suffix, total in weights.items():
+        if not math.isclose(total, 1.0, abs_tol=1e-9):
+            raise ValueError(
+                f"{metric} {scope} endpoint-class {suffix} weights sum to {total}, "
+                "so the three classes do not exhaust that year's activity"
+            )
+    # Each class is reported as a share of the whole margin, not of the
+    # choice-live remainder. The remainder is a difference of two terms and can
+    # come out negative -- the dollar-weighted reweighting margin does exactly
+    # that inside one integration scope -- and a share of a negative base is not
+    # a quantity anyone can read. The margin itself is positive by the guard in
+    # `_endpoint_eligibility`, and the three classes' shares of it sum to one,
+    # so a reader can set them beside the published eligible share directly.
+    for prefix, component in ELIGIBILITY_MARGINS:
+        rows = scoped["contribution_component"].eq(component)
+        component_pp = float(eligibility[prefix]["component_pp"])
+        locked_pp = float(eligibility[prefix]["locked_pp"])
+        split = {
+            "StableEnd": float(scoped.loc[rows & stable_endpoint, "contribution_pp"].sum()),
+            "OtherEnd": float(scoped.loc[rows & other_endpoint, "contribution_pp"].sum()),
+        }
+        if not all(math.isfinite(value) for value in split.values()):
+            raise ValueError(f"{metric} {scope} {component} endpoint split is not finite")
+        if not math.isclose(
+            sum(split.values()) + locked_pp, component_pp, abs_tol=1e-6
+        ):
+            raise ValueError(
+                f"{metric} {scope} {component} endpoint classes and the eligible "
+                "corridors miss that margin's total"
+            )
+        for class_prefix, _ in OPEN_ENDPOINT_CLASSES:
+            entry = dict(classes[class_prefix])
+            entry[prefix] = split[class_prefix]
+            entry[f"{prefix}Share"] = split[class_prefix] / component_pp
+            classes[class_prefix] = entry
+        classes[f"{prefix}OtherPairs"] = int((rows & other_endpoint).sum())
+        classes[f"{prefix}StablePairs"] = int((rows & stable_endpoint).sum())
+    return classes
 
 
 def _support_cohorts(
@@ -1796,6 +1971,48 @@ def render_pair_decomposition_deck_values(
                     f"{{{_share(float(statistics['locked_share']))}}}",
                 ]
             )
+        # What the choice-live remainder of each margin actually is. The
+        # eligibility split says how much of the rotation runs through corridors
+        # with no intermediary to choose; this says that almost all of the rest
+        # runs through corridors with a stablecoin already at an endpoint.
+        endpoints = _open_corridor_endpoints(contributions, metric, eligibility)
+        for class_prefix, _ in OPEN_ENDPOINT_CLASSES:
+            statistics = endpoints[class_prefix]
+            lines.extend(
+                [
+                    f"\\newcommand{{\\{class_prefix}{infix}Pairs}}"
+                    f"{{{_units(int(statistics['pairs']))}}}",
+                    f"\\newcommand{{\\{class_prefix}{infix}WeightBase}}"
+                    f"{{{_share(float(statistics['weight_baseline']))}}}",
+                    f"\\newcommand{{\\{class_prefix}{infix}WeightEnd}}"
+                    f"{{{_share(float(statistics['weight_comparison']))}}}",
+                    f"\\newcommand{{\\{class_prefix}{infix}ShareBase}}"
+                    f"{{{_share(float(statistics['share_baseline']))}}}",
+                    f"\\newcommand{{\\{class_prefix}{infix}ShareEnd}}"
+                    f"{{{_share(float(statistics['share_comparison']))}}}",
+                    f"\\newcommand{{\\{class_prefix}{infix}Within}}"
+                    f"{{{_contribution_pp(float(statistics['within_pp']))}}}",
+                ]
+            )
+            for prefix, _component in ELIGIBILITY_MARGINS:
+                lines.extend(
+                    [
+                        f"\\newcommand{{\\{class_prefix}{infix}{prefix}}}"
+                        f"{{{_contribution_pp(float(statistics[prefix]))}}}",
+                        f"\\newcommand{{\\{class_prefix}{infix}{prefix}Share}}"
+                        f"{{{_share(float(statistics[f'{prefix}Share']))}}}",
+                    ]
+                )
+        # Only the entry margin needs its own corridor count: the reweighting
+        # rows are the continuing pairs already reported as `Pairs`.
+        lines.append(
+            f"\\newcommand{{\\OtherEnd{infix}NewPairPairs}}"
+            f"{{{_units(int(endpoints['NewPairOtherPairs']))}}}"
+        )
+        lines.append(
+            f"\\newcommand{{\\StableEnd{infix}NewPairPairs}}"
+            f"{{{_units(int(endpoints['NewPairStablePairs']))}}}"
+        )
         # The same split inside each integration scope, plus that scope's own
         # margin total, so a slide or a sentence never pairs a scope share with
         # the pooled margin it is not a share of.
@@ -1954,7 +2171,8 @@ def run(
             "accounting, the matched-market estimate, one named "
             "source--destination pair per aggregate margin, and the split of "
             "each composition margin on WETH-endpoint eligibility, the "
-            "netted exclusive-pair term read as one activity mass against two "
+            "endpoint composition of the choice-live remainder of each margin, "
+            "the netted exclusive-pair term read as one activity mass against two "
             "corridor cohorts' routing rates, and the three market-incidence "
             "support classes the Panel A bridge is formed from; evidence "
             "status and identities remain source-only."

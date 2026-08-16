@@ -434,6 +434,24 @@ WETH = "0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2"
 USDT = "0xdac17f958d2ee523a2206206994597c13d831ec7"
 USDC = "0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48"
 UNLABELLED = "0x" + "ab" * 20
+UNLABELLED_TWO = "0x" + "cd" * 20
+# Activity weights of the five continuing pairs, keyed by ordered pair. They are
+# a distribution over that year's continuing activity and therefore close on one
+# in each year, which is what makes an endpoint class's weight readable as a
+# share of routed activity. Two pairs have a stablecoin endpoint, one has
+# neither a stablecoin nor WETH at an endpoint, and two have a WETH endpoint.
+_COMMON_WEIGHTS = {
+    (USDC, USDT): (0.30, 0.20),
+    (UNLABELLED, USDT): (0.40, 0.30),
+    (UNLABELLED_TWO, UNLABELLED): (0.10, 0.05),
+    (USDT, WETH): (0.12, 0.25),
+    (USDC, WETH): (0.08, 0.20),
+}
+
+
+def _common_weights(src: str, tgt: str) -> dict[str, float]:
+    baseline, comparison = _COMMON_WEIGHTS[(src, tgt)]
+    return {"weight_baseline": baseline, "weight_comparison": comparison}
 
 
 def _contribution(
@@ -542,7 +560,13 @@ def _contributions() -> pd.DataFrame:
         rows.extend(
             [
                 _contribution(
-                    "within_pair_choice", USDC, USDT, first, metric=metric, scope=scope
+                    "within_pair_choice",
+                    USDC,
+                    USDT,
+                    first,
+                    metric=metric,
+                    scope=scope,
+                    **_common_weights(USDC, USDT),
                 ),
                 _contribution(
                     "within_pair_choice",
@@ -551,17 +575,35 @@ def _contributions() -> pd.DataFrame:
                     second,
                     metric=metric,
                     scope=scope,
+                    **_common_weights(UNLABELLED, USDT),
                 ),
                 _contribution(
                     "within_pair_choice",
-                    USDT,
+                    UNLABELLED_TWO,
                     UNLABELLED,
                     third,
                     metric=metric,
                     scope=scope,
+                    **_common_weights(UNLABELLED_TWO, UNLABELLED),
                 ),
-                locked("within_pair_choice", USDT, WETH, 0.0, metric=metric, scope=scope),
-                locked("within_pair_choice", USDC, WETH, 0.0, metric=metric, scope=scope),
+                locked(
+                    "within_pair_choice",
+                    USDT,
+                    WETH,
+                    0.0,
+                    metric=metric,
+                    scope=scope,
+                    **_common_weights(USDT, WETH),
+                ),
+                locked(
+                    "within_pair_choice",
+                    USDC,
+                    WETH,
+                    0.0,
+                    metric=metric,
+                    scope=scope,
+                    **_common_weights(USDC, WETH),
+                ),
                 _contribution(
                     "pair_composition_reweighting",
                     USDC,
@@ -569,6 +611,7 @@ def _contributions() -> pd.DataFrame:
                     0.0,
                     metric=metric,
                     scope=scope,
+                    **_common_weights(USDC, USDT),
                 ),
                 _contribution(
                     "pair_composition_reweighting",
@@ -577,14 +620,16 @@ def _contributions() -> pd.DataFrame:
                     open_reweight,
                     metric=metric,
                     scope=scope,
+                    **_common_weights(UNLABELLED, USDT),
                 ),
                 _contribution(
                     "pair_composition_reweighting",
-                    USDT,
+                    UNLABELLED_TWO,
                     UNLABELLED,
                     0.0,
                     metric=metric,
                     scope=scope,
+                    **_common_weights(UNLABELLED_TWO, UNLABELLED),
                 ),
                 locked(
                     "pair_composition_reweighting",
@@ -593,6 +638,7 @@ def _contributions() -> pd.DataFrame:
                     locked_usdt,
                     metric=metric,
                     scope=scope,
+                    **_common_weights(USDT, WETH),
                 ),
                 locked(
                     "pair_composition_reweighting",
@@ -601,6 +647,7 @@ def _contributions() -> pd.DataFrame:
                     locked_usdc,
                     metric=metric,
                     scope=scope,
+                    **_common_weights(USDC, WETH),
                 ),
                 *_cohort(
                     "comparison_exclusive_composition",
@@ -631,11 +678,17 @@ def _cohort(
 ) -> list[dict[str, object]]:
     """One exclusive-support cohort that satisfies the cohort identity.
 
-    The cohort's two weights close on one and each corridor's contribution is its
+    The cohort's weights close on one and each corridor's contribution is its
     weight times its stablecoin routing rate times the cohort's exclusive
     activity mass, exactly as the ledger builds them. The WETH-endpoint corridor
-    routes at one by construction; the open corridor's rate is whatever the
+    routes at one by construction; the open corridors' rate is whatever the
     remaining contribution implies.
+
+    The open side is carried by two corridors at the same routing rate, one with
+    a stablecoin endpoint and one with neither a stablecoin nor WETH at an
+    endpoint, so the entry margin exercises both endpoint classes. Splitting a
+    single corridor's weight and contribution in the same proportion leaves the
+    cohort's weighted rate, and therefore every cohort identity, untouched.
     """
     entering = component == "comparison_exclusive_composition"
     mass = _COHORT_MASS[scope]
@@ -643,6 +696,7 @@ def _cohort(
     locked_weight = abs(locked_pp) / (100 * mass)
     open_weight = 1.0 - locked_weight
     open_share = abs(open_pp) / (100 * mass * open_weight)
+    stable_fraction = 0.6
     weights = (
         {"weight_comparison": locked_weight, "weight_baseline": 0.0}
         if entering
@@ -653,31 +707,37 @@ def _cohort(
         if entering
         else {"stable_baseline": 1.0, "stable_comparison": 0.0}
     )
-    return [
-        _contribution(
+    def open_corridor(
+        src: str, tgt: str, fraction: float
+    ) -> dict[str, object]:
+        return _contribution(
             component,
-            source,
-            target,
-            open_pp,
+            src,
+            tgt,
+            fraction * open_pp,
             metric=metric,
             scope=scope,
             mass_share=mass,
             **(
                 {
-                    "weight_comparison": open_weight,
+                    "weight_comparison": fraction * open_weight,
                     "weight_baseline": 0.0,
                     "stable_comparison": open_share,
                     "stable_baseline": 0.0,
                 }
                 if entering
                 else {
-                    "weight_baseline": open_weight,
+                    "weight_baseline": fraction * open_weight,
                     "weight_comparison": 0.0,
                     "stable_baseline": open_share,
                     "stable_comparison": 0.0,
                 }
             ),
-        ),
+        )
+
+    return [
+        open_corridor(source, target, stable_fraction),
+        open_corridor(UNLABELLED_TWO, UNLABELLED, 1.0 - stable_fraction),
         _contribution(
             component,
             UNLABELLED,
@@ -794,13 +854,13 @@ def test_margin_examples_name_labelled_pairs_and_report_the_margin_total() -> No
         ("MarginReweightContribution", "$+2.00$ pp"),
         ("MarginReweightTotal", "$+8.0$ pp"),
         ("MarginNewPairPair", "USDT\\,$\\to$\\,USDC"),
-        ("MarginNewPairContribution", "$+0.13$ pp"),
+        ("MarginNewPairContribution", "$+0.08$ pp"),
         ("MarginNewPairTotal", "$+21.0$ pp"),
         ("MarginRetiredPairTotal", "$-3.4$ pp"),
         ("MarginReweightRoutesBase", "7,447"),
         ("MarginReweightRoutesEnd", "54,112"),
-        ("MarginReweightWeightBase", "0.40\\%"),
-        ("MarginReweightWeightEnd", "4.50\\%"),
+        ("MarginReweightWeightBase", "12.00\\%"),
+        ("MarginReweightWeightEnd", "25.00\\%"),
     ):
         assert f"\\newcommand{{\\{macro}}}{{{value}}}" in rendered
     # An unlabelled endpoint is never printed, even when it dominates its margin.
@@ -899,7 +959,7 @@ def test_margin_breadth_counts_pairs_and_splits_gains_from_losses() -> None:
         ("MarginReweightGrossUp", "$+8.0$ pp"),
         ("MarginReweightHalfPairs", "1"),
         ("MarginReweightNinetyPairs", "3"),
-        ("MarginNewPairGainPairs", "2"),
+        ("MarginNewPairGainPairs", "3"),
         ("MarginNewPairTopShare", "99.4\\%"),
         ("MarginNewPairHalfPairs", "1"),
         # Dollar weighting reaches the same totals from a different spread.
@@ -947,12 +1007,14 @@ def test_endpoint_eligibility_splits_the_two_composition_margins() -> None:
     for macro, value in (
         # Two of five continuing pairs have a WETH endpoint, and their weight in
         # routed activity rises, so they move the aggregate through composition
-        # alone: +3.5 pp of the +8.0 pp reweighting margin.
+        # alone: +3.5 pp of the +8.0 pp reweighting margin. The five continuing
+        # pairs' weights are a distribution over each year's activity, so these
+        # two shares are readable as shares of routed activity.
         ("LockedPairs", "2"),
         ("LockedCommonPairs", "5"),
         ("LockedPairShare", "40.0\\%"),
-        ("LockedWeightBase", "0.8\\%"),
-        ("LockedWeightEnd", "9.0\\%"),
+        ("LockedWeightBase", "20.0\\%"),
+        ("LockedWeightEnd", "45.0\\%"),
         ("LockedReweight", "$+3.5$ pp"),
         ("OpenReweight", "$+4.5$ pp"),
         ("LockedReweightShare", "43.8\\%"),
@@ -1097,7 +1159,7 @@ def test_support_cohorts_rejects_an_eligibility_split_that_straddles_zero() -> N
     )
     locked = retiring & contributions["tgt"].eq(WETH)
     contributions.loc[locked, "contribution_pp"] = 2.0
-    contributions.loc[retiring & ~locked, "contribution_pp"] = -5.4
+    contributions.loc[retiring & ~locked, "contribution_pp"] = -2.7
     with pytest.raises(ValueError, match="straddles zero"):
         render_pair_decomposition_deck_values(
             _decomposition(), _fixed_effects(), _usdt_integration(), contributions, _support()
@@ -1243,6 +1305,126 @@ def test_endpoint_eligibility_rejects_within_pair_movement_on_an_eligible_pair()
         USDT
     ), "contribution_pp"] -= 0.02
     with pytest.raises(ValueError, match="eligibility identity forbids"):
+        render_pair_decomposition_deck_values(
+            _decomposition(), _fixed_effects(), _usdt_integration(), contributions, _support()
+        )
+
+
+def _stable_endpoint_common(contributions: pd.DataFrame) -> pd.Series:
+    """The continuing pairs with a stablecoin, and no WETH, at an endpoint."""
+    within = contributions["contribution_component"].eq("within_pair_choice")
+    weth = contributions["src"].eq(WETH) | contributions["tgt"].eq(WETH)
+    stable = contributions["src"].isin((USDC, USDT)) | contributions["tgt"].isin(
+        (USDC, USDT)
+    )
+    return within & ~weth & stable
+
+
+def test_open_corridor_endpoints_split_the_choice_live_remainder() -> None:
+    rendered = render_pair_decomposition_deck_values(
+        _decomposition(), _fixed_effects(), _usdt_integration(), _contributions(), _support()
+    )
+    for macro, value in (
+        # Three continuing pairs have no WETH endpoint. Two hold a stablecoin at
+        # an endpoint and carry seven-tenths of 2024 activity; one holds neither
+        # candidate and carries a tenth. Their contributions are shares of the
+        # whole margin, so each class sits beside the eligible share of the same
+        # margin: 56.2 + 0.0 + 43.8 closes on the reweighting margin.
+        ("StableEndPairs", "2"),
+        ("OtherEndPairs", "1"),
+        ("StableEndWeightBase", "70.0\\%"),
+        ("StableEndWeightEnd", "50.0\\%"),
+        ("OtherEndWeightBase", "10.0\\%"),
+        ("StableEndReweight", "$+4.5$ pp"),
+        ("StableEndReweightShare", "56.2\\%"),
+        ("OtherEndReweightShare", "0.0\\%"),
+        ("StableEndWithin", "$+0.5$ pp"),
+        ("OtherEndWithin", "$-0.6$ pp"),
+        # Both endpoint classes carry part of the entry margin, so a renderer
+        # that dropped either class's rows would miss one of these.
+        ("StableEndNewPairPairs", "1"),
+        ("OtherEndNewPairPairs", "1"),
+        ("StableEndNewPairShare", "0.4\\%"),
+        ("OtherEndNewPairShare", "0.2\\%"),
+        # A margin whose choice-live remainder is negative still reports each
+        # class as a signed share of the positive margin rather than of the
+        # remainder, which would not be a readable base.
+        ("StableEndValueReweight", "$-1.0$ pp"),
+        ("StableEndValueReweightShare", "-12.5\\%"),
+    ):
+        assert f"\\newcommand{{\\{macro}}}{{{value}}}" in rendered
+
+
+def test_open_corridor_endpoints_require_classes_that_exhaust_the_year() -> None:
+    """A class weight is only a share of routed activity if the classes close."""
+    contributions = _contributions()
+    within = contributions["contribution_component"].eq("within_pair_choice")
+    contributions.loc[
+        within & contributions["src"].eq(USDC) & contributions["tgt"].eq(USDT),
+        "pair_weight_baseline",
+    ] = 0.20
+    with pytest.raises(ValueError, match="do not exhaust that year's activity"):
+        render_pair_decomposition_deck_values(
+            _decomposition(), _fixed_effects(), _usdt_integration(), contributions, _support()
+        )
+
+
+def test_open_corridor_endpoints_reject_a_stablecoin_eligibility_class() -> None:
+    """A stablecoin endpoint must leave the intermediary a live choice.
+
+    The whole point of the split is that these corridors could have been routed
+    either way. If every one of them routed through a stablecoin in both years,
+    the endpoint would be forcing the intermediary exactly as a WETH endpoint
+    does, and the class share would be an accounting rule rather than a fact
+    about how traders routed.
+    """
+    contributions = _contributions()
+    live = _stable_endpoint_common(contributions)
+    contributions.loc[live, "stable_share_baseline"] = 1.0
+    contributions.loc[live, "stable_share_comparison"] = 1.0
+    with pytest.raises(ValueError, match="forcing the intermediary"):
+        render_pair_decomposition_deck_values(
+            _decomposition(), _fixed_effects(), _usdt_integration(), contributions, _support()
+        )
+
+
+def test_open_corridor_endpoints_reject_a_pinned_stablecoin_majority() -> None:
+    """Most of the class pinned at one is close enough to the identity to refuse."""
+    contributions = _contributions()
+    live = _stable_endpoint_common(contributions)
+    pinned = live & contributions["src"].eq(USDC) & contributions["tgt"].eq(USDT)
+    contributions.loc[pinned, "stable_share_baseline"] = 1.0
+    contributions.loc[pinned, "stable_share_comparison"] = 1.0
+    with pytest.raises(ValueError, match="pinned at a stablecoin share of one"):
+        render_pair_decomposition_deck_values(
+            _decomposition(), _fixed_effects(), _usdt_integration(), contributions, _support()
+        )
+
+
+def test_open_corridor_endpoints_reject_a_frozen_within_pair_term() -> None:
+    """A class with no within-pair movement at all behaves like the locked one."""
+    contributions = _contributions()
+    live = _stable_endpoint_common(contributions)
+    other = (
+        contributions["contribution_component"].eq("within_pair_choice")
+        & contributions["src"].eq(UNLABELLED_TWO)
+    )
+    gain = live & contributions["src"].eq(USDC) & contributions["tgt"].eq(USDT)
+    loss = live & contributions["src"].eq(UNLABELLED) & contributions["tgt"].eq(USDT)
+    # Offset the class to exactly zero and move what it carried onto the other
+    # open class. Its two pairs still move in opposite directions, so a labelled
+    # positive contributor survives and the within-pair total still reconciles:
+    # only the non-degeneracy guard can reject the result.
+    for scope in ("pooled", "single_venue", "cross_venue"):
+        for metric in ("count_share", "strict_intermediation_value_share"):
+            cell = contributions["reporting_scope"].eq(scope) & contributions[
+                "metric"
+            ].eq(metric)
+            moved = float(contributions.loc[live & cell, "contribution_pp"].sum())
+            contributions.loc[gain & cell, "contribution_pp"] = 0.5
+            contributions.loc[loss & cell, "contribution_pp"] = -0.5
+            contributions.loc[other & cell, "contribution_pp"] += moved
+    with pytest.raises(ValueError, match="within-pair term is exactly zero"):
         render_pair_decomposition_deck_values(
             _decomposition(), _fixed_effects(), _usdt_integration(), contributions, _support()
         )

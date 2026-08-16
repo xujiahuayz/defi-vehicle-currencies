@@ -526,7 +526,7 @@
    "exit_handoff": "The panel closes by retaining route-level attribution and sends the separate cost object to Section 4."
   },
   "paper/sections/03-dominance.tex": {
-   "sha256": "771dbbbd6df1657adb6f6f67bf8125b61a67f616cbd77b3ae57740a61d3751c8",
+   "sha256": "6126a831fb8479f9350bafc94d61a870e22667a21a11c6d7cb3f45d569401418",
    "status": "rewritten",
    "exemplars": [
     "literature/text/2020-MakarovSchoar2020Arbitrage-trading-and-arbitrage-in-cryptocurrency-markets.txt:886-991",
@@ -603,14 +603,15 @@
      228,
      242,
      256,
-     274,
+     276,
      294,
-     296,
-     298,
-     301,
-     317,
-     319,
-     321
+     314,
+     316,
+     318,
+     321,
+     337,
+     339,
+     341
     ],
     "judgment": "Aggregate rotation and reversals lead to a three-margin accounting whose answer is stated first, the exact identity behind it and its four terms by count and by value, the second factorisation of the same count total, stated as its own displayed identity, and the exact scale relation that keeps its components from being the identity's, matched-market estimates, the reach of the matched cells by count and by value read beside the identity's own within-pair term, named pairs that make the margins concrete, the breadth of each margin across pairs, the split of the composition margins on endpoint eligibility, that split taken inside each single- or cross-exchange route scope for the reweighting margin and then for the entry margin, the netted exclusive term read as corridor replacement, the last term read as the activity that changed population priced at the gap between the two populations' routing rates, USDT role attribution, and separate venue-span and intermediation margins.",
     "raw_exemplars": [
@@ -837,6 +838,16 @@
      },
      {
       "line": 256,
+      "inherited_object": "the endpoint-eligibility split of both composition margins",
+      "paragraph_function": "partitions the choice-live remainder of each margin on whether a stablecoin stands at an endpoint, reports that the count and dollar weightings rank the two classes in opposite orders, and reports that inside the stablecoin-endpoint corridors the movement is again weight across markets and not intermediary substitution within one",
+      "relation_to_previous": "the two preceding paragraphs remove the corridors whose vehicle was fixed and locate them by route scope; this one says what the corridors that had a choice consist of",
+      "economic_subject": "ordered pairs with no wrapped-ether endpoint, split on whether a stablecoin stands at an endpoint",
+      "framing_judgment": "The class is proved on the certified allocation not to be a second eligibility class before any share of it is reported, so the split is a statement about how traders routed and not about an accounting rule; class shares are shares of each margin's own positive total because the remainder can turn negative, and the endpoint taxonomy's failure mode is disclosed as one that understates the reported class",
+      "qualification_leads": false,
+      "judgment": "Amiti, Itskhoki and Konings (raw lines 1263--1300) partition Belgian trade by invoicing currency, report each currency's share of the number of transactions beside its share of value, read the gap between the two as evidence about which transactions are the large ones, and then dispose of the residual category in one sentence by noting that it is small in both weightings. The same movement here reports each endpoint class's share of a margin by route count and by dollars, reads the reversal in their ranking as the statement that the dollar-endpoint corridors are where the value sits, and disposes of the corridors with no candidate at an endpoint by noting that they are the most numerous and supply almost none of the value. The paragraph then does what the exemplar has no occasion to do, separating the class's rise into the part carried by weight moving between its corridors and the part carried inside them, because the section's headline claim is exactly that separation."
+     },
+     {
+      "line": 276,
       "inherited_object": "the gross entry margin",
       "paragraph_function": "reads the netted composition term as one activity mass against two corridor populations routed differently",
       "relation_to_previous": "turns the netting the previous paragraph set aside into the comparison the term makes",
@@ -846,7 +857,7 @@
       "judgment": "The paragraph reads the netted term as mass times the routing gap between departing and arriving corridors and closes by positioning it against measured currency persistence."
      },
      {
-      "line": 274,
+      "line": 294,
       "inherited_object": "corridor replacement",
       "paragraph_function": "prices the activity that changed population and reports the last term of the identity",
       "relation_to_previous": "separates how much mass moved between the two populations from how each of them routes",
@@ -856,7 +867,7 @@
       "judgment": "The paragraph closes the accounting by reading its fourth term as a mass shift times a routing gap and rejecting the volume-migration reading of the rotation. Carletti, De Marco, Ioannidou and Sette (raw lines 1008--1015) make the same two-factor move in the opposite direction -- 'the effects are sizable not because the treated investors (households) are very price sensitive, but because they hold large volumes of the securities whose returns are being shocked' -- attributing a magnitude to one factor of a product and denying it to the other."
      },
      {
-      "line": 294,
+      "line": 314,
       "inherited_object": "stablecoin category change",
       "paragraph_function": "introduces USDT versus route endpoints",
       "relation_to_previous": "asks which currency carries the role change",
@@ -866,7 +877,7 @@
       "judgment": "The paragraph introduces USDT versus route endpoints and asks which currency carries the role change."
      },
      {
-      "line": 296,
+      "line": 316,
       "inherited_object": "USDT role comparison",
       "paragraph_function": "reports matched gap and separate full-period ratios",
       "relation_to_previous": "keeps two clocks distinct",
@@ -876,7 +887,7 @@
       "judgment": "The paragraph reports matched gap and separate full-period ratios and keeps two clocks distinct."
      },
      {
-      "line": 298,
+      "line": 318,
       "inherited_object": "USDT excess use",
       "paragraph_function": "decomposes change by cross-exchange mix and within groups",
       "relation_to_previous": "locates the venue-span margin",
@@ -886,7 +897,7 @@
       "judgment": "The paragraph decomposes change by cross-exchange mix and within groups and locates the venue-span margin."
      },
      {
-      "line": 301,
+      "line": 321,
       "inherited_object": "the venue-span decomposition",
       "paragraph_function": "states explanations needing tests",
       "relation_to_previous": "hands the token result to mechanisms",
@@ -896,7 +907,7 @@
       "judgment": "The paragraph states explanations needing tests and hands the token result to mechanisms."
      },
      {
-      "line": 317,
+      "line": 337,
       "inherited_object": "the USDT result",
       "paragraph_function": "reports cross-exchange growth",
       "relation_to_previous": "moves to route architecture",
@@ -906,7 +917,7 @@
       "judgment": "The paragraph reports cross-exchange growth and moves to route architecture."
      },
      {
-      "line": 319,
+      "line": 339,
       "inherited_object": "cross-exchange growth",
       "paragraph_function": "reports falling intermediation and stablecoin gains within groups",
       "relation_to_previous": "separates three route margins",
@@ -916,7 +927,7 @@
       "judgment": "The paragraph reports falling intermediation and stablecoin gains within groups and separates three route margins."
      },
      {
-      "line": 321,
+      "line": 341,
       "inherited_object": "three route margins",
       "paragraph_function": "synthesises and states the fixed-opportunity comparison",
       "relation_to_previous": "moves from coexistence to design",
