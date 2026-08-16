@@ -1,18 +1,18 @@
 {
  "argv": [],
  "artefact": "output/exhibits/prose_outliers.jsonl",
- "artefact_bytes": 127177,
- "artefact_mtime_ns": 1786870715267065235,
- "artefact_sha256": "56691e9e464f87216ac80bf694a0f3a35510846347b082236c81d759b1fc147d",
+ "artefact_bytes": 132393,
+ "artefact_mtime_ns": 1786873247874037317,
+ "artefact_sha256": "1a30ae6c456231ca69477e0f82ae9f29804e3623e26ce0330720a958bcf6394d",
  "code_fingerprint": "4d6c3aa5e5b632317b923d4c498ebaf8a988e6f1d35f09ef659fc910be391909",
  "code_sources": [
   "scripts/find_prose_outliers.py",
   "src/ddvc/tables.py"
  ],
- "created_at": "2026-08-16T08:58:35+00:00",
+ "created_at": "2026-08-16T09:40:47+00:00",
  "git": {
   "branch": "main",
-  "commit": "69450d884d5a7558a2aa39ef29689fead6f31950",
+  "commit": "16d4dc3cb616be2542814f6adab9091fc907a27b",
   "dirty": true,
   "dirty_generated_files": [
    "data/manifests/output/exhibits/prose_conventions.jsonl.prov.json",
@@ -22,11 +22,10 @@
    "data/manifests/output/tables/pair_composition.pdf.prov.json",
    "data/manifests/output/tables/pair_composition.tex.prov.json",
    "output/exhibits/prose_conventions.jsonl",
-   "output/exhibits/vehicle_transition_pair_decomposition_deck_values.tex",
    "output/exhibits/venue_optics.jsonl",
    "output/exhibits/venue_shape.jsonl",
    "output/tables/pair_composition.pdf",
-   "output/exhibits/.prose_outliers.jsonl.qdr38mnw.tmp"
+   "output/exhibits/.prose_outliers.jsonl.8xv0di29.tmp"
   ],
   "dirty_tracked_files": [
    "docs/reviews/paper-rhetoric.json",
@@ -45,13 +44,13 @@
  },
  "notes": null,
  "payload_identity": {
-  "bytes": 127177,
+  "bytes": 132393,
   "format": "jsonl",
-  "rows": 588,
+  "rows": 612,
   "schema_version": 1,
-  "sha256": "56691e9e464f87216ac80bf694a0f3a35510846347b082236c81d759b1fc147d"
+  "sha256": "1a30ae6c456231ca69477e0f82ae9f29804e3623e26ce0330720a958bcf6394d"
  },
  "python": "3.14.6",
- "rows": 588,
+ "rows": 612,
  "script": "scripts/find_prose_outliers.py"
 }

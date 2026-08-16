@@ -381,6 +381,46 @@ def _market_incidence_row(decomposition: pd.DataFrame) -> pd.Series:
     return row
 
 
+def _cross_panel_common_bridge(pooled_count: pd.Series, market: pd.Series) -> None:
+    """Prove the exact relation Section 3.1 states between the two panels.
+
+    Both factorisations partition the same pooled count-share choice mass and
+    agree on which pairs continue, but they price that common block at different
+    scales. Panel A's three allocated terms sum to the block's *own* stablecoin-
+    share change, while the identity's within-pair and reweighting terms sum to
+    the same change multiplied by the block's midpoint weight in aggregate choice
+    mass. The paper asserts that this holds exactly; nothing else in the pipeline
+    would notice if it stopped, and a reader who found the two within-pair terms
+    unrelated would have no way to tell a scale difference from a disagreement.
+    So the subsection's macros are withheld unless the relation still closes.
+
+    The relation covers the common block only. The identity charges the
+    year-specific remainder at ``1 - W_bar`` while Panel A carries it in two
+    support bridges, so the panels never nest term by term and their components
+    must not be netted or added -- which is why only the totals are cross-checked
+    below.
+    """
+
+    common_weight = (
+        float(pooled_count["W_baseline"]) + float(pooled_count["W_comparison"])
+    ) / 2.0
+    identity_common = float(pooled_count["within_common"]) + float(
+        pooled_count["common_pair_reweighting"]
+    )
+    scaled_common_role = common_weight * float(market["common_role_total_change"])
+    if not math.isclose(identity_common, scaled_common_role, abs_tol=1e-12):
+        raise ValueError(
+            "the two factorisations do not bridge on the common block: "
+            f"{identity_common} against {scaled_common_role}"
+        )
+    if not math.isclose(
+        float(pooled_count["total_change"]),
+        float(market["total_change"]),
+        abs_tol=1e-12,
+    ):
+        raise ValueError("the two factorisations do not share a pooled count total")
+
+
 def _market_incidence_classes(
     support: pd.DataFrame, market: pd.Series
 ) -> dict[str, dict[str, float]]:
@@ -1209,6 +1249,7 @@ def render_pair_decomposition_deck_values(
     count = _scope_rows(decomposition, "count_share")
     value = _scope_rows(decomposition, "strict_intermediation_value_share")
     market = _market_incidence_row(decomposition)
+    _cross_panel_common_bridge(count["pooled"], market)
     incidence = _market_incidence_classes(support, market)
     matched_count = _matched_market_row(fixed_effects, "count_share")
     matched_value = _matched_market_row(

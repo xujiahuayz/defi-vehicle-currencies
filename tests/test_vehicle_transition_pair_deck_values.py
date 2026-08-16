@@ -87,19 +87,43 @@ def _row(metric: str, scope: str, scale: float = 1.0) -> dict[str, object]:
     }
 
 
+# Panel A factors the *same* pooled count total a second way, so the fixture has
+# to satisfy the two relations the renderer proves across the panels: the two
+# totals agree, and the identity's within-pair and reweighting terms equal the
+# common block's own stablecoin-share change scaled by that block's midpoint
+# weight. Solving Panel A's two free terms out of the identity row keeps the
+# fixture honest without hand-retuning it whenever `_row` moves.
+_POOLED_IDENTITY = _row("count_share", "pooled")
+_AGGREGATE_BASE = float(_POOLED_IDENTITY["baseline_stable_share"])
+_ESTABLISHED_BASE = 0.25
+_COMMON_WEIGHT_MIDPOINT = (
+    float(_POOLED_IDENTITY["W_baseline"]) + float(_POOLED_IDENTITY["W_comparison"])
+) / 2.0
+_COMMON_ROLE_CHANGE = (
+    float(_POOLED_IDENTITY["within_common"])
+    + float(_POOLED_IDENTITY["common_pair_reweighting"])
+) / _COMMON_WEIGHT_MIDPOINT
+_ROLE_SUPPORT_BRIDGE = -0.004
+_MARKET_TERMS = {
+    "market_pair_support_bridge": (
+        float(_POOLED_IDENTITY["total_change"])
+        - _COMMON_ROLE_CHANGE
+        - _ROLE_SUPPORT_BRIDGE
+    ),
+    "vehicle_role_support_bridge": _ROLE_SUPPORT_BRIDGE,
+    "market_activity_reweighting": 0.08,
+    "vehicle_incidence_reweighting": _COMMON_ROLE_CHANGE - 0.094,
+    "within_pair_stable_share": 0.014,
+}
+
+
 def _decomposition() -> pd.DataFrame:
     rows = [
             _row(metric, scope, scale=1 + index / 10)
             for metric in ("count_share", "strict_intermediation_value_share")
             for index, scope in enumerate(("pooled", "single_venue", "cross_venue"))
     ]
-    market_terms = {
-        "market_pair_support_bridge": 0.10,
-        "vehicle_role_support_bridge": -0.004,
-        "market_activity_reweighting": 0.08,
-        "vehicle_incidence_reweighting": 0.07,
-        "within_pair_stable_share": 0.014,
-    }
+    market_terms = dict(_MARKET_TERMS)
     common_role = sum(
         market_terms[column]
         for column in (
@@ -120,11 +144,11 @@ def _decomposition() -> pd.DataFrame:
             "mechanism_status": (
                 "descriptive_observed_activity_and_realised_incidence_noncausal"
             ),
-            "baseline_stable_share": 0.20,
-            "comparison_stable_share": 0.20 + total,
+            "baseline_stable_share": _AGGREGATE_BASE,
+            "comparison_stable_share": _AGGREGATE_BASE + total,
             "total_change": total,
-            "established_market_baseline_stable_share": 0.25,
-            "established_market_comparison_stable_share": 0.25 + established,
+            "established_market_baseline_stable_share": _ESTABLISHED_BASE,
+            "established_market_comparison_stable_share": _ESTABLISHED_BASE + established,
             "established_market_total_change": established,
             "common_role_baseline_stable_share": COMMON_ROLE_BASE,
             "common_role_comparison_stable_share": COMMON_ROLE_BASE + common_role,
@@ -140,16 +164,37 @@ def _decomposition() -> pd.DataFrame:
 # proves before publishing a support class. The weights partition each year; the
 # common class carries ``common_role_*_stable_share`` by construction; the
 # role-turnover share is solved so that the two both-years classes renormalise to
-# ``established_market_*_stable_share`` (0.25 and 0.41), and the market-turnover
-# share so that the three-class mean is that year's aggregate (0.20 and 0.46).
+# ``established_market_*_stable_share``, and the market-turnover share so that
+# the three-class mean is that year's aggregate. The 2024 side is stated because
+# nothing upstream pins it; the 2026 side is solved from the bridge row, which
+# now derives its own terms from the identity row, so the two stay consistent.
 COMMON_ROLE_BASE = 0.24
+_COMMON_2026 = COMMON_ROLE_BASE + _COMMON_ROLE_CHANGE
+_ESTABLISHED_2026 = _ESTABLISHED_BASE + _ROLE_SUPPORT_BRIDGE + _COMMON_ROLE_CHANGE
+_AGGREGATE_2026 = _AGGREGATE_BASE + sum(_MARKET_TERMS.values())
+_WEIGHTS_2026 = {"common": 0.49, "market": 0.50, "role": 0.01}
+_ROLE_STABLE_2026 = (
+    (_WEIGHTS_2026["common"] + _WEIGHTS_2026["role"]) * _ESTABLISHED_2026
+    - _WEIGHTS_2026["common"] * _COMMON_2026
+) / _WEIGHTS_2026["role"]
+_MARKET_STABLE_2026 = (
+    _AGGREGATE_2026
+    - _WEIGHTS_2026["common"] * _COMMON_2026
+    - _WEIGHTS_2026["role"] * _ROLE_STABLE_2026
+) / _WEIGHTS_2026["market"]
 INCIDENCE_FIXTURE = {
-    ("common_vehicle_role", 2024): (0.55, 0.24),
+    ("common_vehicle_role", 2024): (0.55, COMMON_ROLE_BASE),
     ("market_pair_support_turnover", 2024): (0.42, 0.055 / 0.42),
     ("vehicle_role_support_turnover_established_market", 2024): (0.03, 0.013 / 0.03),
-    ("common_vehicle_role", 2026): (0.49, 0.404),
-    ("market_pair_support_turnover", 2026): (0.50, 0.51),
-    ("vehicle_role_support_turnover_established_market", 2026): (0.01, 0.00704 / 0.01),
+    ("common_vehicle_role", 2026): (_WEIGHTS_2026["common"], _COMMON_2026),
+    ("market_pair_support_turnover", 2026): (
+        _WEIGHTS_2026["market"],
+        _MARKET_STABLE_2026,
+    ),
+    ("vehicle_role_support_turnover_established_market", 2026): (
+        _WEIGHTS_2026["role"],
+        _ROLE_STABLE_2026,
+    ),
 }
 
 
@@ -599,10 +644,10 @@ def test_renderer_emits_complete_display_and_coordinate_macros() -> None:
         assert f"\\newcommand{{\\{macro}}}" in rendered
     assert "\\newcommand{\\PairPooledWithin}{$-0.1$ pp}" in rendered
     assert "\\newcommand{\\PairPooledExclusive}{$+17.6$ pp}" in rendered
-    assert "\\newcommand{\\PairActivityTotal}{$+18.0$ pp}" in rendered
-    assert "\\newcommand{\\VehicleUseNet}{$+6.6$ pp}" in rendered
-    assert "\\newcommand{\\PairAndVehicleTotal}{$+24.6$ pp}" in rendered
-    assert "\\newcommand{\\PairAndVehicleShare}{94.6\\%}" in rendered
+    assert "\\newcommand{\\PairActivityTotal}{$+19.0$ pp}" in rendered
+    assert "\\newcommand{\\VehicleUseNet}{$+4.6$ pp}" in rendered
+    assert "\\newcommand{\\PairAndVehicleTotal}{$+23.6$ pp}" in rendered
+    assert "\\newcommand{\\PairAndVehicleShare}{94.4\\%}" in rendered
     assert "\\newcommand{\\MatchedMarketCountChange}{$+0.2$ pp}" in rendered
     assert "\\newcommand{\\MatchedMarketCountSE}{$0.8$ pp}" in rendered
     assert "\\newcommand{\\MatchedMarketCountCILower}{$-1.3$ pp}" in rendered
@@ -1102,7 +1147,7 @@ def test_market_incidence_classes_publish_the_bridge_partition() -> None:
         ("IncidenceCommonStableBase", "24.0\\%"),
         ("IncidenceCommonPairsBase", "110,000"),
         ("IncidenceCommonWeightEnd", "49.0\\%"),
-        ("IncidenceCommonStableEnd", "40.4\\%"),
+        ("IncidenceCommonStableEnd", "38.4\\%"),
         ("IncidenceMarketTurnoverWeightBase", "42.0\\%"),
         ("IncidenceMarketTurnoverStableBase", "13.1\\%"),
         ("IncidenceMarketTurnoverStableEnd", "51.0\\%"),
@@ -1110,7 +1155,7 @@ def test_market_incidence_classes_publish_the_bridge_partition() -> None:
         ("IncidenceRoleTurnoverStableBase", "43.3\\%"),
         ("IncidenceRoleTurnoverPairsBase", "6,000"),
         ("IncidenceRoleTurnoverWeightEnd", "1.0\\%"),
-        ("IncidenceRoleTurnoverStableEnd", "70.4\\%"),
+        ("IncidenceRoleTurnoverStableEnd", "68.4\\%"),
         ("IncidenceRoleTurnoverPairsEnd", "2,000"),
     ):
         assert _macro(rendered, macro) == value
@@ -1194,6 +1239,54 @@ def test_market_incidence_established_classes_must_carry_their_own_aggregate() -
     ):
         decomposition.loc[bridge, column] += 0.02
     with pytest.raises(ValueError, match="established-market classes do not reproduce"):
+        render_pair_decomposition_deck_values(
+            decomposition, _fixed_effects(), _usdt_integration(), _contributions(), _support()
+        )
+
+
+def test_two_factorisations_must_bridge_on_the_common_block() -> None:
+    # Section 3.1 states as an exact relation that the identity's within-pair and
+    # reweighting terms equal the common block's own stablecoin-share change
+    # scaled by that block's midpoint weight. Move choice mass between the
+    # identity's within-pair and year-specific terms: the identity still sums to
+    # its own total and the bridge row is untouched, so nothing but the
+    # cross-panel check can catch that the relation has stopped holding.
+    decomposition = _decomposition()
+    identity = decomposition["formula_id"].eq("midpoint_common_exclusive_support_v1")
+    pooled_count = (
+        identity
+        & decomposition["metric"].eq("count_share")
+        & decomposition["reporting_scope"].eq("pooled")
+    )
+    decomposition.loc[pooled_count, "within_common"] += 0.01
+    decomposition.loc[pooled_count, "exclusive_pair_contribution"] -= 0.01
+    decomposition.loc[pooled_count, "support_and_exclusive_joint"] -= 0.01
+    with pytest.raises(ValueError, match="do not bridge on the common block"):
+        render_pair_decomposition_deck_values(
+            decomposition, _fixed_effects(), _usdt_integration(), _contributions(), _support()
+        )
+
+
+def test_two_factorisations_must_share_a_pooled_count_total() -> None:
+    # Both panels factor the same raw pooled count-share change. Grow the
+    # identity's year-specific term and its endpoints together: the identity is
+    # still self-consistent and the common block still bridges, so only the
+    # cross-panel total can reject two panels of different aggregate objects.
+    decomposition = _decomposition()
+    identity = decomposition["formula_id"].eq("midpoint_common_exclusive_support_v1")
+    pooled_count = (
+        identity
+        & decomposition["metric"].eq("count_share")
+        & decomposition["reporting_scope"].eq("pooled")
+    )
+    for column in (
+        "exclusive_pair_contribution",
+        "support_and_exclusive_joint",
+        "total_change",
+        "comparison_stable_share",
+    ):
+        decomposition.loc[pooled_count, column] += 0.01
+    with pytest.raises(ValueError, match="do not share a pooled count total"):
         render_pair_decomposition_deck_values(
             decomposition, _fixed_effects(), _usdt_integration(), _contributions(), _support()
         )

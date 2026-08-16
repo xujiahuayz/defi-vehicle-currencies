@@ -62,13 +62,38 @@ Midpoint weights make the identity exact by splitting each product's interaction
 % output/exhibits/vehicle_transition_pair_decomposition.jsonl; macros from
 % scripts/build_vehicle_transition_pair_deck_values.py
 
-Panel A factors the same route-count total a second way. Equation~\eqref{eq:pair-decomposition} takes a pair's vehicle-routed activity as given and asks only which vehicle carried it; Panel A asks first how much the pair traded, and then how much of that trading passed through any intermediary at all. A Shapley allocation over market activity, vehicle incidence, and stablecoin share spreads the interactions among the five resulting components. Pairs entering or leaving the sample contribute \MarketSupportBridge{}; pairs that gain or lose a vehicle route, \VehicleRoleSupportBridge{}; market activity shifting across continuing pairs, \MarketActivityReweight{}; and changes in how often continuing pairs use a vehicle at all, \VehicleIncidenceReweight{}. Direct stable-for-native substitution within pairs that use a vehicle in both years contributes \WithinPairStableShare{}. The two factorisations agree on which pairs continue and on nothing else below that. Panel A weights a continuing pair by all of its observed trading and reaches the stablecoin share through how often that trading uses a vehicle, whereas Equation~\eqref{eq:pair-decomposition} works throughout in shares of native-plus-stable choice mass. Panel A also separates what the identity keeps together: its first two rows split the pairs traded in only one year into markets that stop or start trading altogether and established markets that keep trading and stop or start using a vehicle. A component of one panel is therefore never the same object as the similarly named component of the other. The distance this opens is small where it matters most: the within-pair term is \WithinPairStableShare{} under the finer factorisation and \PairPooledWithin{} under the identity, and both sit inside the confidence interval of the matched estimate reported in Panel D, whose upper limit is \MatchedMarketCountCIUpper{}. Whichever way the count total is cut, comparable trades did not switch intermediary.
+Panel A factors the same route-count total a second way. Equation~\eqref{eq:pair-decomposition} takes a pair's vehicle-routed activity as given and asks only which vehicle carried it; Panel A asks first how much the pair traded, then how much of that trading passed through any intermediary at all, and only then which intermediary it was. Let $M_{p,y}$ be the routes observed in pair $p$ in year $y$, let $I_{p,y}$ be the fraction of them that passed through a native or stablecoin intermediary, and let $s_{p,y}$ be the stablecoin share of that intermediated activity, the same object the identity above assigns to a continuing pair. For any set of pairs $\mathcal{Q}$,
+\begin{equation}
+\label{eq:incidence-functional}
+F_{y}(\mathcal{Q})=\frac{\sum_{p\in\mathcal{Q}}M_{p,y}I_{p,y}s_{p,y}}
+{\sum_{p\in\mathcal{Q}}M_{p,y}I_{p,y}}
+\end{equation}
+is then the stablecoin share those pairs deliver in year $y$. Write $\mathcal{N}$ for every ordered pair, $\mathcal{N}_{M}\subseteq\mathcal{N}$ for the pairs that traded in both years, and $\mathcal{N}_{V}\subseteq\mathcal{N}_{M}$ for the pairs that carried an intermediary in both years, so that $S_{y}=F_{y}(\mathcal{N})$ and $\mathcal{N}_{V}$ is the continuing population of Equation~\eqref{eq:pair-decomposition}. Bridging the aggregate to the narrower population twice and allocating what is left inside $\mathcal{N}_{V}$ gives
+\begin{equation}
+\label{eq:market-incidence}
+\Delta S=
+\underbrace{\Delta\bigl[F(\mathcal{N})-F(\mathcal{N}_{M})\bigr]}_{\text{markets start or stop trading}}
++\underbrace{\Delta\bigl[F(\mathcal{N}_{M})-F(\mathcal{N}_{V})\bigr]}_{\text{vehicle role starts or stops}}
++\underbrace{\phi_{M}+\phi_{I}+\phi_{s}}_{\text{movement inside }\mathcal{N}_{V}},
+\end{equation}
+where $\phi_{M}$, $\phi_{I}$, and $\phi_{s}$ give each factor's average marginal contribution to $F(\mathcal{N}_{V})$ over the six orders in which market activity, vehicle incidence, and stablecoin share can be carried from their 2024 to their 2026 values. Averaging over orders is what lets the three exhaust $\Delta F(\mathcal{N}_{V})$ without charging an interaction to whichever factor happens to move first. Read in this order, the classical vehicle-currency question of which intermediary minimises the cost of exchanging a given pair of assets \citep{Krugman1980VehicleCurrencies} is the last of the five terms. The four before it record where trading happens; only the fifth records which intermediary a trade selects.
+
+Pairs entering or leaving the sample contribute \MarketSupportBridge{}; established markets that gain or lose a vehicle route, \VehicleRoleSupportBridge{}; market activity shifting across the pairs that carry a vehicle in both years, \MarketActivityReweight{}; and changes in how often those pairs use a vehicle at all, \VehicleIncidenceReweight{}. Direct stable-for-native substitution among them contributes \WithinPairStableShare{}. The two factorisations agree on which pairs continue and on nothing else below that. The three allocated terms sum to the change in $\mathcal{N}_{V}$'s own stablecoin share, while the identity's within-pair and reweighting terms sum to that same change multiplied by the share of choice mass $\mathcal{N}_{V}$ carries, averaged over the two years. That relation holds exactly, and it is why a component of one panel is never the same object as the similarly named component of the other. Equation~\eqref{eq:market-incidence} also cuts finer. It splits the pairs traded in only one year into markets that stop or start trading altogether and established markets that keep trading and stop or start using a vehicle, and it splits the reweighting of continuing pairs into how much those pairs traded and how often they used an intermediary at all. The distance this opens is small where it matters most: the within-pair term is \WithinPairStableShare{} under the finer factorisation and \PairPooledWithin{} under the identity, and both sit inside the confidence interval of the matched estimate reported in Panel D, whose upper limit is \MatchedMarketCountCIUpper{}. Whichever way the count total is cut, comparable trades did not switch intermediary.
 % Panel A is e1_3_market_incidence_bridge (formula_id
 % shapley_market_incidence_stable_bridge_v1) and the identity is
 % e1_2_conditional_pair_decomposition; both are registered in
 % docs/specification-lock.json against the same raw pooled count-share change,
 % which is why the totals agree and the components do not. Do not net or add a
 % component of one against a component of the other.
+% Equations~\eqref{eq:incidence-functional} and \eqref{eq:market-incidence} are
+% the frozen e1_3 formula, not a restatement: F is the analysis owner's
+% _factor_share / _weighted_stable_share (numerator sum of stable_choice_route_count,
+% denominator sum of primary_choice_route_count, which is M*I), N_M is
+% market_route_count positive in both years, N_V is primary-choice mass positive in
+% both years, and the five labelled terms are market_pair_support_bridge,
+% vehicle_role_support_bridge, market_activity_reweighting,
+% vehicle_incidence_reweighting and within_pair_stable_share in that order.
+% Refresh the display if formula_id changes.
 % "Agree on which pairs continue" is checked, not assumed: the pooled count_share
 % market_incidence_support rows of vehicle_transition_pair_support.jsonl give
 % common_vehicle_role primary-choice mass shares of 0.5546 (2024) and 0.4858
@@ -77,6 +102,17 @@ Panel A factors the same route-count total a second way. Equation~\eqref{eq:pair
 % Panel A's two turnover classes exhaust the identity's year-specific class
 % (0.4152 + 0.0301 in 2024, 0.5038 + 0.0103 in 2026). Recheck if either
 % formula_id changes.
+% The exact scale relation the paragraph states is
+%   within_common + common_pair_reweighting = W_bar * common_role_total_change,
+% with W_bar the midpoint of the identity's own W_baseline/W_comparison. It is
+% arithmetic, not an approximation: on the live pooled count row it closes at
+% 0.0844459944134132 on both sides, residual 0.0. _cross_panel_common_bridge in
+% scripts/build_vehicle_transition_pair_deck_values.py refuses to render every
+% macro in this subsection unless it still holds to 1e-12, which is the guard
+% against a reader netting a term of one panel against the other's. Note that the
+% relation prices the common block only; the year-specific remainder is
+% 1 - W_bar weighted in the identity and carried by the two support bridges in
+% Panel A, so the panels do not nest term by term and must never be added.
 % output/exhibits/vehicle_transition_pair_decomposition.jsonl; macros from
 % scripts/build_vehicle_transition_pair_deck_values.py
 

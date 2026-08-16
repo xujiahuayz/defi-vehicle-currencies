@@ -2,29 +2,19 @@
  "argv": [],
  "artefact": "output/exhibits/vehicle_transition_pair_decomposition_deck_values.tex",
  "artefact_bytes": 14669,
- "artefact_mtime_ns": 1786870678057253617,
+ "artefact_mtime_ns": 1786872318793267535,
  "artefact_sha256": "81220f0c00fd072cc5854b5d9241e2c65746f1c5cec220f575ac5e7ea7d34ed9",
- "code_fingerprint": "1acfdb71f1038e02ad2856f5496340cc7c661be91e9a780c5983cbe65f7eae2f",
+ "code_fingerprint": "f93b4e282c8e11cff4f55ba099ee52da9830ad8e62875cd518b9a8fe42e32ba2",
  "code_sources": [
   "scripts/build_vehicle_transition_pair_deck_values.py"
  ],
- "created_at": "2026-08-16T08:57:58+00:00",
+ "created_at": "2026-08-16T09:25:18+00:00",
  "git": {
   "branch": "main",
-  "commit": "69450d884d5a7558a2aa39ef29689fead6f31950",
+  "commit": "16d4dc3cb616be2542814f6adab9091fc907a27b",
   "dirty": true,
-  "dirty_generated_files": [
-   "data/manifests/output/exhibits/prose_conventions.jsonl.prov.json",
-   "data/manifests/output/exhibits/prose_outliers.jsonl.prov.json",
-   "data/manifests/output/exhibits/venue_optics.jsonl.prov.json",
-   "data/manifests/output/exhibits/venue_shape.jsonl.prov.json",
-   "output/exhibits/prose_conventions.jsonl",
-   "output/exhibits/prose_outliers.jsonl",
-   "output/exhibits/venue_optics.jsonl",
-   "output/exhibits/venue_shape.jsonl"
-  ],
+  "dirty_generated_files": [],
   "dirty_tracked_files": [
-   "docs/reviews/paper-rhetoric.json",
    "paper/sections/03-dominance.tex",
    "scripts/build_vehicle_transition_pair_deck_values.py",
    "tests/test_vehicle_transition_pair_deck_values.py"

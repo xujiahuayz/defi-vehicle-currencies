@@ -3323,3 +3323,154 @@ ledger; node B full-text literature ledger; two unchanged findings passes).
 - The M3 12:03 handoff stays unchecked; its live remainder is the E1/D3
   generation identities and the two unchanged findings passes. Mukhin still
   needs Java or Studio (NEEDS-JAVA stands from 2026-08-15).
+
+## 2026-08-16 — Panel A displayed, and the exact bridge between the two factorisations
+
+**Targeted check.** Still none closable. `audit_findings_freeze.py` reports the
+same four blockers with identical detail strings: node E1 specification lock
+(`stage=design_seed`, `locked_at`/`d3_generation`/`d3_certificate` all
+`missing`), empirical model ledger (`current_runs=0`, `exploration=not_started`,
+`confirmatory_context=invalid`), node B full-text literature ledger (32/33
+source-sets, 34/35 five-axis cards -- Mukhin, NEEDS-JAVA since 2026-08-15), two
+unchanged findings passes (`stable_passes=0`). Queue: only the M3 12:03 handoff
+is unchecked and its live remainder is exactly those blockers. Preflight `data`
+returned ALLOWED; no data ran.
+
+**REGRESSION-CHECK for this unit.** Estimand at risk `e1_3_market_incidence_bridge`
+(raw pooled count-share change, `shapley_market_incidence_stable_bridge_v1`);
+evidence generation the current D3-bound `vehicle_transition_pair_decomposition.jsonl`
+and `..._support.jsonl`, unchanged; prior correction at risk the 2026-08-16 rule
+that a component of Panel A is never the similarly named component of the
+identity and that no fourth factorisation of the same total may be published.
+The action publishes no new decomposition, no new macro and no new number.
+
+**The defect.** Panel A of Table 3 reported five signed components of a Shapley
+allocation the manuscript never wrote down. One sentence carried the whole
+method: "A Shapley allocation over market activity, vehicle incidence, and
+stablecoin share spreads the interactions among the five resulting components."
+A referee could not reproduce the panel, could not see which population each
+bridge term narrows, and had to take the non-comparability claim on trust. Worse,
+that claim was defended by a sentence that was **wrong**: "Panel A weights a
+continuing pair by all of its observed trading ... whereas
+Equation~\eqref{eq:pair-decomposition} works throughout in shares of
+native-plus-stable choice mass." Both weight a continuing pair by its
+primary-choice mass. In the analysis owner, `_factor_share` divides
+`sum(M*I*s)` by `sum(M*I)`, and `M*I` **is** choice mass, so the stated
+difference does not exist. The real difference is one of scale, and it is exact.
+
+**What landed.**
+1. **Two displayed equations in Section 3.1.** `\eqref{eq:incidence-functional}`
+   defines the aggregating functional `F_y(Q) = sum M I s / sum M I` over an
+   arbitrary set of pairs, with `M` observed market routes, `I` realised
+   native-or-stable vehicle incidence, and `s` the stablecoin share of that
+   intermediated activity -- the same `s` the identity assigns to a continuing
+   pair, which the prose says outright. `\eqref{eq:market-incidence}` is the
+   published identity: two bridges that narrow the population from all pairs to
+   pairs traded in both years and then to pairs carrying an intermediary in both
+   years, plus three order-averaged terms inside the narrowest set. The five
+   labelled terms are `market_pair_support_bridge`, `vehicle_role_support_bridge`,
+   `market_activity_reweighting`, `vehicle_incidence_reweighting` and
+   `within_pair_stable_share`, in that order. Sets are `\mathcal{N}`,
+   `\mathcal{N}_M`, `\mathcal{N}_V` -- deliberately not `\mathcal{A}`/`\mathcal{P}`,
+   which Section 2 already binds to tradable assets and live pools.
+2. **The exact bridge between the two panels, stated and guarded.** On the live
+   pooled count row,
+   `within_common + common_pair_reweighting = W_bar * common_role_total_change`
+   closes at 0.0844459944134132 on both sides with residual **0.0** (W_bar is the
+   midpoint of the identity's own 0.5546/0.4858 common-block weights). So Panel
+   A's three allocated terms sum to the common block's *own* stablecoin-share
+   change (+16.23 pp) while the identity's within-pair and reweighting terms sum
+   to the same change scaled by that block's weight (+8.44 pp). That is why the
+   two within-pair numbers are +1.3 pp and -0.1 pp and why they must never be
+   netted. The paragraph now says this; `_cross_panel_common_bridge` in the
+   producer withholds every macro in the subsection unless it still holds to
+   1e-12, and also unless the two panels report the same pooled count total.
+3. **Contribution positioning where the reader can check it.** The gloss after
+   the identity now places Krugman's question -- which intermediary minimises
+   the cost of exchanging a given pair -- as the *fifth* of the five terms, with
+   the four before it recording where trading happens. Section 3 had never cited
+   `Krugman1980VehicleCurrencies` even though it is where the introduction's
+   claimed contribution lands.
+4. **The producer's test fixture now derives Panel A from the identity row.**
+   It previously stated Panel A's five terms as free constants that satisfied
+   neither cross-panel relation (totals 0.26 against 0.25; common bridge 0.079
+   against 0.0902), so the new guard would have failed on the fixture. The two
+   free terms and the 2026 incidence-class shares are now solved out of the
+   identity row and the bridge row, which leaves the hand-tuned contributions
+   fixture untouched. Two focused tests: one moves choice mass between the
+   identity's within-pair and year-specific terms (identity still sums to its own
+   total, bridge row untouched) and one grows the identity's total on both sides.
+
+**DECISION: promote** at exact scope. The equations are a transcription of the
+frozen `e1_3` formula, not a new estimand; the scale relation is arithmetic on
+published cells. **DECISION: park** the universe boundary: the loader takes every
+ordered pair in the released pair ledger over the common calendar, while the
+spec's `pair_universe` names pairs with positive primary-choice mass in either
+year. The two agree for `F`, because a pair with no vehicle route carries zero
+weight in both its numerator and its denominator. The prose says "every ordered
+pair" and the following clause, which defines `\mathcal{N}_M` as the pairs traded
+in both years, fixes the reading.
+
+**The trap this unit had to avoid, and how.** The obvious repair to the wrong
+sentence was to delete it and leave the non-comparability asserted. That would
+have preserved the 2026-08-16 correction in words while removing its only
+support. The published relation does the opposite: it makes the difference
+between the panels arithmetic, so a reader who notices that the two within-pair
+terms disagree now has the reason in front of them instead of a discrepancy.
+Note what the relation does **not** license: it prices the common block only. The
+identity charges the year-specific remainder at `1 - W_bar` (+17.23 pp) while
+Panel A carries it in two support bridges (+9.44 pp), so the panels still do not
+nest term by term. That is written into both the source comment and the guard's
+docstring.
+
+**Traps for the next iteration.**
+- **Citation density is a hard test, not an advisory.** `test_venue_optics.py::
+  test_exhibit_density_reaches_the_first_quartile` compares `citations/words`
+  against `39/18,738 = 0.00208133`. Before this unit the draft sat at
+  `34/16,240 = 0.00209360`, i.e. **95 words** of headroom, not the ~450 the last
+  entry recorded. Adding 310 words broke it, and the fix was one earned
+  `\citep`. After this unit: `35/16,596`, about **220 words** of headroom. Any
+  prose addition larger than that needs a citation in the same commit.
+- **The `structural resemblance to the venue` advisory is the same test.** It
+  was WARN mid-unit and is `ok` again now; a run showing three advisories rather
+  than two means citation density has gone under.
+- The producer re-stamp order still holds: run
+  `build_vehicle_transition_pair_deck_values.py`, *then*
+  `tabulate/render_pair_composition.py`. `pair_composition.tex` came out
+  byte-identical again; its `.pdf` and both sidecars changed.
+- Editing a section shifts every `paragraph_flow_review` line after the edit and
+  the checker counts post-equation continuation lines as their own paragraphs:
+  this edit needed three new handoffs (71, 79, 81) and a +36 remap of the
+  eighteen after them. `check_jfe_rhetoric_review.py` prints the expected list,
+  so run it first and read the `expected=` array.
+- `paper/main.pdf` is untracked; only `deck/main.pdf` is committed, and it
+  rebuilds byte-differently at identical length, so check it out when the deck
+  is untouched.
+- `docs/reviews/paper-rhetoric.json` is written at `indent=1`. Writing it at
+  `indent=2` reformats all 3,700 lines.
+
+**Validation.** `check_deliverable_conformance.py`: all blocking checks pass, 2
+advisories (down from 3 mid-unit). Paper 40 pages / 0 undefined, deck 35 pages /
+0 undefined. Venue shape: words 16,240 -> 16,596, equations 12 -> 14, citations
+34 -> 35. Producer suite 41 passed (39 before, 2 new). Page 10 inspected: both
+displays typeset inside the measure with legible underbrace labels.
+
+**Blocking count: 4** (unchanged: node E1 specification lock; empirical model
+ledger; node B full-text literature ledger; two unchanged findings passes).
+
+**For the next iteration.**
+- Equations are now 14 against p25 25 and remain the widest venue gap. The
+  honest remaining candidates are Section 6, which still defines the cost
+  benchmark and reports nothing and is blocked on route cost, and the matched
+  estimator's weighting, which Section 3.1 describes in prose.
+- The `decomposition_pair_support` record type of
+  `vehicle_transition_pair_support.jsonl` is still unread: `baseline_denominator`,
+  `comparison_denominator` and `zero_denominator_cell_years` at pooled,
+  single-venue and cross-venue scope for all three metrics, plus
+  `pair_month_day_scope_support`. This is support metadata, not a claim, so it
+  ranks below anything that can change an estimate.
+- `market_incidence_support` still exists only for pooled `count_share`. A
+  value-weighted Panel A needs a producer change in
+  `scripts/run_vehicle_rotation_composition_e0.py`, not a prose pass.
+- The deck was not touched and needs no change: no frame reads an `\Incidence`
+  macro or either new equation, and the deck remains saturated.
