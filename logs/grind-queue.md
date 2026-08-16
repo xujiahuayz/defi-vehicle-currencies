@@ -16,6 +16,111 @@ and pick a blocking check from the freeze gate.
 
 ## Queue
 
+- [ ] **OWNER RULE (Java, 2026-08-16): NO HUMAN DECLARATIONS. THE LOOP ADJUDICATES.**
+  Standing, supersedes any earlier instruction that routes a scientific judgement
+  call to Java. Java does not sign, declare, stamp or hand-type any gate field.
+  The design intent is auto-pilot from the start.
+  When a choice would otherwise be a human judgement call, resolve it in this
+  order and record the resolution in the ledger under `DECISION:`:
+  1. **Golden standard: existing JFE literature.** Adjudicate against the saved
+     corpus (`docs/literature-audit.md`, `literature/use-contracts.json`, the
+     venue exemplars in `docs/reviews/`). Cite the exact source key and the page,
+     section or table that settles it. "Common practice" with no citation is not
+     an adjudication.
+  2. **Finishability.** Between two defensible options, take the one that lets
+     the paper actually finish. A claim whose required data may never arrive is
+     demoted, not waited on.
+  3. **Conservative fallback.** If JFE practice is genuinely split, take the
+     option that preserves the estimand and fails closed, and say so.
+  `NEEDS-JAVA:` is retired as a blocking state. It survives ONLY for actions that
+  are genuinely unsafe to take alone: deleting data, spending money, or anything
+  outward-facing. Everything currently parked under it is now a `DECISION:` for
+  the loop, including the standing
+  `data/processed/counterfactual_dominance_clean.parquet` regeneration, which
+  should simply be run via `scripts/build_counterfactual_dominance.py` so the
+  dominance ladder restates under the current producer.
+  This rule does NOT license faking a gate. It licenses the loop to *earn* a gate
+  by a recorded, citable adjudication that a reader could check and disagree with.
+
+- [ ] **Make the E1 specification lock self-stamping under the owner rule above.**
+  E1 is currently blocked only because `locked_at` and the generation/certificate
+  bindings were treated as needing a human. Under the owner rule they do not.
+  Build `scripts/lock_specification.py` so the lock is earned by a script that can
+  fail, never by a person typing a date. It must, in order:
+  1. Re-validate the design seed exactly as `audit_findings_freeze.py` does
+     (hash, claim ids, execution policy, semantic rules, horizons, transition
+     design). Abort loudly on any failure; never write a field on a red seed.
+  2. **Adjudicate the two open design choices against JFE literature and record
+     the citations in the lock payload itself**, so the lock carries its own
+     justification: (a) episode count as primary weighting with value secondary,
+     versus value-weighting primary, for a share-of-use estimand; (b) whether
+     `liquidity_rent_incidence` belongs in this paper's confirmatory set at all.
+  3. Apply the finishability rule to claim 5: if the external intraday
+     reference-price panel is not acquired and validated by the time the
+     exploration run closes, demote `liquidity_rent_incidence` to `withheld` with
+     the reason recorded, and let the paper finish without it. Never leave the
+     lock waiting on data that may never arrive.
+  4. Run the exploration harness, bind `exploration_generation` and
+     `exploration_certificate` plus the D3 pair, rewrite each executable claim to
+     its `registered_*` status with a validated registered plan, set
+     `stage=confirmatory` and `analytical_choices_status=registered_after_exploration`,
+     stamp `locked_at`, and recompute `lock_hash`.
+  Acceptance: `audit_findings_freeze.py` reports the E1 check PASS with every
+  field machine-issued; the lock payload names the adjudicating citations; and a
+  deliberately corrupted seed still makes the script refuse. Closes blockers 1
+  and 2 as one chain.
+
+- [ ] **Replace the hand-declared `stable_passes` with a computed findings fingerprint.**
+  Today `stable_passes` is a hand-typed YAML field on line 3 of
+  `docs/findings-freeze.md`, read at `scripts/audit_findings_freeze.py:4402` and
+  required to be >= 2. Nothing in the repository writes it, no per-pass snapshot
+  of the claim registry exists to diff against, and the field sits inside the very
+  document the gate audits. It is unreachable by design and Java will not declare
+  it. Replace it:
+  1. At the end of each F->G pass, compute a fingerprint of the claim registry:
+     the sorted set of claim ids with their status, plus the retired set. Nothing
+     else, so that evidence updates and prose edits do not disturb it.
+  2. Append it with the pass identity and commit sha to a machine-written ledger
+     (e.g. `logs/findings-fingerprints.jsonl`); never edit an existing row.
+  3. The audit replaces the `stable_passes` read with: the last two fingerprints
+     exist, come from distinct passes, and are identical. Delete the YAML field so
+     it cannot be edited by hand at all.
+  This is strictly stricter than today's check: it catches a silent status change
+  a human read would skim past. It does not depend on the E1 lock, so land it in
+  parallel rather than after. Acceptance: the check fails on a synthetic registry
+  change and passes on two genuinely identical consecutive passes.
+
+- [ ] **JAVA INTERJECTION (2026-08-16): THE LIVE DECK IS TOO BUSY TO PERFORM.**
+  The always-ready deck is working as a document and failing as a talk. Measured
+  now: 35 frames at a median of 124 visible words. The deck's own venue benchmark
+  in `docs/deck-outline.md` is 40-55 words per page, so it is running at roughly
+  2.3x its own standard, with the worst frames at 421-553 words
+  (`04-results` f5, `01-identification` f4, `90-appendix` f8, `05-close` f2).
+  Three defects, all of them fixable as standing rules rather than a one-off pass:
+  1. **Density.** Enforce the existing benchmark mechanically. Core deck at most
+     13 frames; at most 55 visible words per frame excluding exhibit internals and
+     presenter notes, hard fail above 70; one empirical object per frame; at most
+     three short bullets. Text that comes off a slide moves into Beamer `\note{}`
+     presenter notes; it is not deleted. Add the word-budget check to
+     `audit_deck_evidence.py` (or a sibling) so the always-ready loop cannot drift
+     back into density on the next update. That check is the real deliverable.
+  2. **Takeaway.** There is no single memorable line a listener can repeat the
+     next day. Adjudicate three candidate spine sentences against the saved deck
+     exemplars and pick one, then use the same sentence verbatim in exactly three
+     places: the opening frame, the frame that shows the headline result, and the
+     close. Seed candidate, to be beaten rather than accepted:
+     *"A vehicle currency does not win trades, it wins corridors."* It is accurate
+     to the compositional result (within matched markets the change is about zero;
+     the aggregate moves through reweighting and newly active pairs) and it carries
+     the analogy without asserting causality.
+  3. **TradFi analogy is missing from the slides.** The China-Brazil corridor
+     analogy currently lives in the paper's introduction and conclusion only. It
+     needs its own core frame before the close, mapping the corridor story onto
+     the reweighting and exclusive-pair margins, with the cited source in the
+     presenter note and no causal or geopolitical claim on the slide itself.
+  Guardrails unchanged: descriptive interpretation, pair composition is never
+  called entry/exit, one deck, refreshed in place, no fork, no new data runs.
+
 - [ ] **OWNER DECISION (Java, 2026-08-16): close the Mukhin literature blocker by
   recording the replication package as unavailable.**
   Scope: `Mukhin2022InternationalPriceSystem` only. The missing artefact is the
