@@ -69,6 +69,46 @@ def _se_pp(value: float, decimals: int = 2) -> str:
     return f"{100 * value:.{decimals}f} pp"
 
 
+COMPLEXITY_CELLS = (
+    "single_venue_two_leg",
+    "cross_venue_two_leg",
+    "single_venue_more_than_two_legs",
+    "cross_venue_more_than_two_legs",
+)
+
+
+def _weakest_complexity_cell(
+    rotation: pd.DataFrame, *, weighting: str, value_support: str
+) -> pd.Series:
+    """Return the smallest 2024-to-2026 change among the four scope-complexity cells.
+
+    Raises when any cell fails to rise, because the prose reports the set of
+    cells jointly and the smallest member stands for all four.
+    """
+
+    cells = [
+        _one(
+            rotation,
+            baseline_year=2024,
+            comparison_year=2026,
+            routing_scope=scope,
+            weighting=weighting,
+            value_support=value_support,
+            transformation="share_level",
+        )
+        for scope in COMPLEXITY_CELLS
+    ]
+    for cell in cells:
+        _finite(cell, "change", "hac_standard_error")
+        if float(cell["change"]) <= 0:
+            raise ValueError(
+                "complexity rival no longer rises in every exchange-span by "
+                f"route-complexity cell: {cell['routing_scope']} changed by "
+                f"{float(cell['change']):+.4f}"
+            )
+    return min(cells, key=lambda cell: float(cell["change"]))
+
+
 def _pvalue(value: float) -> str:
     coefficient, exponent = f"{value:.2e}".split("e")
     return f"${coefficient}\\times10^{{{int(exponent)}}}$"
@@ -103,7 +143,25 @@ def render_provisional_results_deck_values(
         value_support="within_20pct",
         transformation="share_level",
     )
-    for row in (count, value):
+    multileg_count = _one(
+        rotation,
+        baseline_year=2024,
+        comparison_year=2026,
+        routing_scope="more_than_two_legs",
+        weighting="episode",
+        value_support="all_routes",
+        transformation="share_level",
+    )
+    multileg_value = _one(
+        rotation,
+        baseline_year=2024,
+        comparison_year=2026,
+        routing_scope="more_than_two_legs",
+        weighting="value",
+        value_support="within_20pct",
+        transformation="share_level",
+    )
+    for row in (count, value, multileg_count, multileg_value):
         _finite(
             row,
             "baseline_daily_mean",
@@ -112,6 +170,16 @@ def render_provisional_results_deck_values(
             "hac_standard_error",
             "p_value_holm",
         )
+
+    # The rival test is the joint statement that every exchange-span by
+    # route-complexity cell moves the same way, so the displayed cell is the
+    # weakest one and the producer refuses to render a false "all four" claim.
+    weakest_count = _weakest_complexity_cell(
+        rotation, weighting="episode", value_support="all_routes"
+    )
+    weakest_value = _weakest_complexity_cell(
+        rotation, weighting="value", value_support="within_20pct"
+    )
 
     candidate = excess_use.loc[
         excess_use["scope"].eq("candidate_currencies")
@@ -243,6 +311,18 @@ def render_provisional_results_deck_values(
         f"\\newcommand{{\\StableValueChange}}{{{_pp(float(value['change']), 1)}}}",
         f"\\newcommand{{\\StableValueSE}}{{{_se_pp(float(value['hac_standard_error']))}}}",
         f"\\newcommand{{\\StableValueP}}{{{_pvalue(float(value['p_value_holm']))}}}",
+        f"\\newcommand{{\\MultiLegCountBase}}{{{_share(float(multileg_count['baseline_daily_mean']))}}}",
+        f"\\newcommand{{\\MultiLegCountEnd}}{{{_share(float(multileg_count['comparison_daily_mean']))}}}",
+        f"\\newcommand{{\\MultiLegCountChange}}{{{_pp(float(multileg_count['change']), 1)}}}",
+        f"\\newcommand{{\\MultiLegCountSE}}{{{_se_pp(float(multileg_count['hac_standard_error']))}}}",
+        f"\\newcommand{{\\MultiLegValueBase}}{{{_share(float(multileg_value['baseline_daily_mean']))}}}",
+        f"\\newcommand{{\\MultiLegValueEnd}}{{{_share(float(multileg_value['comparison_daily_mean']))}}}",
+        f"\\newcommand{{\\MultiLegValueChange}}{{{_pp(float(multileg_value['change']), 1)}}}",
+        f"\\newcommand{{\\MultiLegValueSE}}{{{_se_pp(float(multileg_value['hac_standard_error']))}}}",
+        f"\\newcommand{{\\WeakestComplexityCountChange}}{{{_pp(float(weakest_count['change']), 1)}}}",
+        f"\\newcommand{{\\WeakestComplexityCountSE}}{{{_se_pp(float(weakest_count['hac_standard_error']))}}}",
+        f"\\newcommand{{\\WeakestComplexityValueChange}}{{{_pp(float(weakest_value['change']), 1)}}}",
+        f"\\newcommand{{\\WeakestComplexityValueSE}}{{{_se_pp(float(weakest_value['hac_standard_error']))}}}",
         f"\\newcommand{{\\JointStableContribution}}{{{_share(joint_contribution)}}}",
         f"\\newcommand{{\\USDTCountExcessBase}}{{{float(usdt_2024['vehicle_excess_use_count_ratio']):.2f}}}",
         f"\\newcommand{{\\USDTCountExcessEnd}}{{{float(usdt_2026['vehicle_excess_use_count_ratio']):.2f}}}",

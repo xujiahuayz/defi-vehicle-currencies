@@ -1,21 +1,23 @@
 {
  "argv": [],
  "artefact": "output/exhibits/provisional_results_deck_values.tex",
- "artefact_bytes": 1697,
- "artefact_mtime_ns": 1786714153695679819,
- "artefact_sha256": "55dc4b50899bf69f7e469ea5d34b7f06d9bfc72f2fd2382bbaec502044e7a03b",
- "code_fingerprint": "e69314070a80151284550bf5d1492d4784d17c30f5762e5af8fe4e5c0156e99c",
+ "artefact_bytes": 2231,
+ "artefact_mtime_ns": 1786848455684929988,
+ "artefact_sha256": "7e8ff15fc93b176c6b87851b7be2c2b0293fbb44d302357e96fc7c75b948462a",
+ "code_fingerprint": "a0845b567441da0a4cf4a0ce454ad7f26778a77c5e129cb12ce43157a201d663",
  "code_sources": [
   "scripts/tabulate/render_provisional_results_deck_values.py",
   "src/ddvc/provisional_results.py"
  ],
- "created_at": "2026-08-14T13:29:13+00:00",
+ "created_at": "2026-08-16T02:47:35+00:00",
  "git": {
   "branch": "main",
-  "commit": "0136623e79d916b59f75914f297321aa50482765",
-  "dirty": false,
+  "commit": "5d98ad27b6f291f5a86516b04ed1906ca87a5f8e",
+  "dirty": true,
   "dirty_generated_files": [],
-  "dirty_tracked_files": [],
+  "dirty_tracked_files": [
+   "src/ddvc/provisional_results.py"
+  ],
   "dirty_untracked_files": []
  },
  "inputs": [
@@ -112,12 +114,12 @@
  },
  "notes": "Generated working-paper and deck display macros bound to current certified route-composition, excess-use, integration, and routing exhibits.",
  "payload_identity": {
-  "bytes": 1697,
+  "bytes": 2231,
   "format": "binary",
   "schema_version": 1,
-  "sha256": "55dc4b50899bf69f7e469ea5d34b7f06d9bfc72f2fd2382bbaec502044e7a03b"
+  "sha256": "7e8ff15fc93b176c6b87851b7be2c2b0293fbb44d302357e96fc7c75b948462a"
  },
- "python": "3.14.5",
+ "python": "3.14.6",
  "rows": 2650,
  "script": "scripts/tabulate/render_provisional_results_deck_values.py"
 }

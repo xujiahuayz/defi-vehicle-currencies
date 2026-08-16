@@ -3,12 +3,32 @@
 
 The allocation results sharpen the mechanism question. Stablecoin dominance rose chiefly as routed activity moved across source--destination pairs and the incidence of intermediation changed, while repeated replacement of a native intermediary within continuing pairs contributed little. Any explanation for the rotation must therefore account for the assets being exchanged as well as the intermediary carrying the route.
 
-\subsection{Liquidity and exchange reach}
+\subsection{Path complexity and exchange span}
+\label{sec:rivals:complexity}
+
+Does the rotation follow from how routes are assembled rather than from which asset intermediates them? Paths grew longer and reached across more exchanges over the sample, and long paths already favoured stablecoins: in 2024 stablecoins carried \MultiLegCountBase{} of native-plus-stable intermediary episodes on routes of more than two legs, against \StableCountBase{} on two-leg routes. An account in which construction does the work therefore predicts a specific pattern. The stablecoin share should be roughly flat inside a complexity class, and the aggregate increase should come from the movement of activity toward the longer routes that were already stablecoin-intensive.
+
+Neither part holds. Among intermediary episodes on two-leg routes, the stablecoin share rises \StableCountChange{} by count, with a standard error of \StableCountSE{}, and \StableValueChange{} by value (\StableValueSE{}). Among episodes on routes of more than two legs it rises \MultiLegCountChange{} (\MultiLegCountSE{}) and \MultiLegValueChange{} (\MultiLegValueSE{}), from a base of \MultiLegCountBase{} to \MultiLegCountEnd{} by count. Both classes move, and the class with the shortest paths moves further, so reweighting toward complex routes cannot supply the aggregate change. Dividing each complexity class again by whether the route touched one exchange or several leaves four groups, and every one of them rises; the weakest is \WeakestComplexityCountChange{} by count (\WeakestComplexityCountSE{}) and \WeakestComplexityValueChange{} by value (\WeakestComplexityValueSE{}). The stablecoin gain is thus common to short and long paths and to routes that stay on one exchange and routes that do not.
+
+Two boundaries limit what this comparison licenses. The number of legs records the path a trade actually took, so it measures how the route was built and not how well it was chosen; a route with more legs is not thereby a worse or a better execution. Complexity and exchange span are also outcomes rather than assignments, since the same conditions that make a longer or wider path attractive can bear on the choice of intermediary. The comparison rules out a composition account of the rotation; it does not identify an effect of routing software or of the exchange set on which asset intermediates a trade.
+% output/exhibits/intermediation_complexity_rival.jsonl (evidence commit 111230a) via
+% output/exhibits/provisional_results_deck_values.tex (macros; producer
+% src/ddvc/provisional_results.py). Route-only certified evidence: matched
+% January--June dates in 2024 and 2026, native-plus-stable denominator, one
+% observation per intermediary episode, 30-day Newey--West standard errors.
+% The four scope-by-complexity cells are rendered through a producer that
+% refuses to emit the joint statement unless all four changes are positive.
+
+\subsection{Liquidity in the vehicle's own pools}
 \label{sec:rivals:capital}
 
 The classical vehicle-currency mechanism links trading volume to lower transaction costs \citep{Krugman1980VehicleCurrencies}. On a decentralised exchange, the relevant markets are the pools connecting an intermediary to other assets. Trading can attract provider capital, deeper pools can lower price impact, and lower price impact can draw further trading. Pool size remains an equilibrium outcome because providers balance fee income against adverse-selection risk and the cost of adjusting their positions \citep{LeharParlour2024Uniswap}. Deposited capital measures funds committed to a pool; a size-specific quote measures how much liquidity is executable within a stated price impact. The distinction matters. Concentrated-liquidity providers can alter executable depth by changing where capital is placed along the price curve, so deposited capital and executable liquidity coincide only under particular pool designs \citep{AdamsZinsmeisterRobinson2021UniswapV3}.
 
-Exchange reach supplies a related comparison. Cross-exchange trading becomes much more common during the sample, while stablecoin share rises among both single-exchange and cross-exchange routes. Most of the change in USDT's intermediary share occurs within these route-span groups, so reweighting between them accounts for only a minority of the change.
+That mechanism operates inside a market. Deeper pools joining stablecoins to other assets reduce the price impact of carrying a given source--destination trade through a stablecoin, so the classical account asks the trader to switch intermediary in a pair that was already being traded. Section~\ref{sec:dominance:pairs} measures exactly that margin, and it is the one that stays still: within pairs traded in both years, the stablecoin share changes by \MatchedMarketCountChange{} by count, and the interval around it excludes within-pair increases beyond \MatchedMarketCountCIUpper{}. Depth in stablecoin pools cannot therefore carry the rotation through continuing markets. What it can still do is act earlier, by making a stablecoin the asset to which a newly traded or fast-growing pair is connected when its markets are first formed. Separating the two roles calls for the capital committed to each candidate's pools on the same daily calendar as the routes, read in each direction on its own, because a contemporaneous association between trading and depth is equally consistent with either.
+% The reciprocal V2 deposited-capital and vehicle-use estimates exist but are
+% not reproducible at this evidence generation: the runner fails closed without
+% its D3 binding (see logs/grind-ledger.md, 2026-08-16). No coefficient from
+% that estimator enters the manuscript until it reruns and reproduces.
 
 \subsection{Protocol architecture}
 
@@ -21,4 +41,4 @@ Protocol design changes the set of routes that can be formed. Uniswap v1 created
 
 Uniswap v4 separates route choice from physical settlement more sharply. All pools reside in one singleton, and flash accounting records balance changes internally before settling the final net amounts at the end of a call.\footnote{See Adams et al., \href{https://app.uniswap.org/whitepaper-v4.pdf}{\emph{Uniswap v4 Core}}, Sections 1 and 3.} An economic route can therefore cross an intermediary pool without generating an external token transfer at every step. Decoded pool actions preserve the trading path despite this netting, while the architecture changes how liquidity, fees, and settlement are organised around that path.
 
-The route evidence establishes two features that an explanation must account for. The stablecoin gain occurs mainly across pairs rather than through repeated substitution within matched pairs, and it appears among both single-exchange and cross-exchange routes. The measured WETH-pairing persistence further shows that route opportunities can outlast the protocol rule that first created them.
+The route evidence leaves an explanation three features to account for. The stablecoin gain occurs mainly across pairs rather than through repeated substitution within matched pairs; it appears on short and long paths alike and on routes that stay within one exchange as well as routes that do not; and the measured WETH-pairing persistence shows that route opportunities can outlast the protocol rule that first created them. Together these narrow the candidates. An explanation cannot rest on the composition of the routes that were built, and it cannot rest on repeated intermediary substitution in established markets. It has to say why the markets forming and growing over this period attach themselves to a stablecoin.

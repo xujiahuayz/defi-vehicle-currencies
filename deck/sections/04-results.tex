@@ -149,16 +149,22 @@
 \end{frame}
 
 % EVIDENCE-STATUS: certified descriptive result; integration remains a selected route stratum
-% EVIDENCE-COMMIT: a0c54e9
-% EVIDENCE-SOURCES: output/figures/experiments/integration_change_forest.pdf; output/exhibits/intermediation_integration_rival.jsonl; output/exhibits/intermediation_integration_interaction.jsonl; docs/findings-freeze.md
-% VISUAL-FUNCTION: integration-stratified vehicle rotation | change estimates with HAC intervals | test whether venue mix absorbs the stable-share change
+% EVIDENCE-COMMIT: 111230a
+% The figure asset itself was added at a0c54e9; its inputs and the numeric cells
+% below share the intermediation-exhibit evidence commit named above.
+% EVIDENCE-SOURCES: output/figures/experiments/integration_change_forest.pdf; output/exhibits/intermediation_integration_rival.jsonl; output/exhibits/intermediation_integration_interaction.jsonl; output/exhibits/intermediation_complexity_rival.jsonl; output/exhibits/provisional_results_deck_values.tex; docs/findings-freeze.md
+% ESTIMAND-BOUNDARY: matched January--June dates in 2024 and 2026; native-plus-stable denominator; one
+% observation per intermediary episode; leg count records how the route was built and is not an
+% execution-quality measure; the four span-by-complexity cells come from the same certified exhibit and
+% are rendered by a producer that refuses the joint statement unless all four changes are positive.
+% VISUAL-FUNCTION: integration-stratified vehicle rotation | change estimates with HAC intervals | test whether venue mix or path length absorbs the stable-share change
 \begin{frame}{Stablecoin use rises within each venue scope}
 \vspace{-0.08cm}
 \begin{center}
 \includegraphics[width=0.89\textwidth,height=0.46\textheight,keepaspectratio]{../output/figures/experiments/integration_change_forest.pdf}
 \end{center}
 \vspace{-0.15cm}
-{\fontsize{6.8}{7.5}\selectfont The increase appears within both realised route scopes, so a change in the single- versus cross-venue mix cannot account for the aggregate rotation. Cross-venue status remains selected; the comparison does not identify an effect of integration, routing software, or protocol architecture.}
+{\fontsize{6.8}{7.5}\selectfont The increase appears within both realised route scopes, so a change in the single- versus cross-venue mix cannot account for the aggregate rotation. Path length does not absorb it either: two-leg routes gain \StableCountChange{} by count (SE \StableCountSE{}) and longer routes \MultiLegCountChange{} (SE \MultiLegCountSE{}), and every venue-scope by path-length cell rises, the weakest by \WeakestComplexityCountChange{} (SE \WeakestComplexityCountSE{}). Route scope and path length remain selected; the comparison does not identify an effect of integration, routing software, or protocol architecture.}
 \decknote{Changes compare the same January--June dates in 2024 and 2026. Bars show 95\% calendar-HAC confidence intervals.}
 \end{frame}
 

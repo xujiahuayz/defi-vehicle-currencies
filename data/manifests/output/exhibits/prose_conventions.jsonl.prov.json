@@ -1,27 +1,40 @@
 {
  "argv": [],
  "artefact": "output/exhibits/prose_conventions.jsonl",
- "artefact_bytes": 3069,
- "artefact_mtime_ns": 1786847464474855796,
- "artefact_sha256": "4c1e88f662db365fbc1e6ea326146e30e7bc88ef07b3aa58af1a22f5ea170cc9",
+ "artefact_bytes": 3082,
+ "artefact_mtime_ns": 1786849163691431074,
+ "artefact_sha256": "b0f2a8b3fd52e681ddda0823edb0721c8a344722c07e788db0c42541723ef9f0",
  "code_fingerprint": "855e4cea8ba498e8bb720f072b29f9645df3c0bee4fbe4c26dbd5cb903686b44",
  "code_sources": [
   "scripts/measure_prose_conventions.py",
   "src/ddvc/tables.py"
  ],
- "created_at": "2026-08-16T02:31:04+00:00",
+ "created_at": "2026-08-16T02:59:23+00:00",
  "git": {
   "branch": "main",
-  "commit": "c0543e373519795ea19bde57458e332082c6f1f6",
-  "dirty": false,
+  "commit": "5d98ad27b6f291f5a86516b04ed1906ca87a5f8e",
+  "dirty": true,
   "dirty_generated_files": [
-   "data/manifests/data/processed/liquidity_capital_v2_candidate_day.parquet.prov.json",
-   "data/manifests/data/processed/liquidity_capital_v2_exact_horizons.parquet.prov.json",
+   "data/manifests/output/exhibits/prose_outliers.jsonl.prov.json",
+   "data/manifests/output/exhibits/provisional_results_deck_values.tex.prov.json",
    "data/manifests/output/exhibits/venue_optics.jsonl.prov.json",
-   "data/manifests/data/processed/pool_capital_release/generations/084f1e16a7cb121fde40073b6b001d4a5732fdc511bb79324d49827393518e38/",
-   "output/exhibits/.prose_conventions.jsonl.3211lqz6.tmp"
+   "data/manifests/output/exhibits/venue_shape.jsonl.prov.json",
+   "output/exhibits/prose_outliers.jsonl",
+   "output/exhibits/provisional_results_deck_values.tex",
+   "output/exhibits/venue_optics.jsonl",
+   "output/exhibits/venue_shape.jsonl",
+   "output/exhibits/.prose_conventions.jsonl.ryf45diq.tmp"
   ],
-  "dirty_tracked_files": [],
+  "dirty_tracked_files": [
+   "deck/main.pdf",
+   "deck/sections/04-results.tex",
+   "docs/reviews/paper-rhetoric.json",
+   "paper/sections/01-introduction.tex",
+   "paper/sections/02-setting.tex",
+   "paper/sections/03-dominance.tex",
+   "paper/sections/05-rivals.tex",
+   "src/ddvc/provisional_results.py"
+  ],
   "dirty_untracked_files": []
  },
  "inputs": [],
@@ -33,11 +46,11 @@
  },
  "notes": null,
  "payload_identity": {
-  "bytes": 3069,
+  "bytes": 3082,
   "format": "jsonl",
   "rows": 19,
   "schema_version": 1,
-  "sha256": "4c1e88f662db365fbc1e6ea326146e30e7bc88ef07b3aa58af1a22f5ea170cc9"
+  "sha256": "b0f2a8b3fd52e681ddda0823edb0721c8a344722c07e788db0c42541723ef9f0"
  },
  "python": "3.14.6",
  "rows": 19,
