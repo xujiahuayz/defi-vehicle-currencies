@@ -1733,3 +1733,126 @@ evidence is ever regenerated, rerun
 `scripts/build_vehicle_transition_pair_deck_values.py` before compiling anything:
 Section 3.2 and the new deck frame both name individual token pairs through its
 macros, and the producer fails closed rather than printing a stale pair.
+
+---
+
+## 2026-08-16 — Node D: the V2 capital release the corrected scan left stale
+
+**Check targeted.** The two node-D blockers the previous iteration flagged as
+the only ones that had changed state: `node D capital release current`
+(`ValueError: pool_capital provenance is not current: pool`) and `node D
+claim-input provenance gate` (3 of 7 inputs stale).
+
+**REGRESSION-CHECK.** Estimand at risk: purpose-bound V2 deposited capital and
+its two downstream liquidity panels. Evidence generation: `00cb588b…` published
+at `8a965cd`. Prior correction most at risk: `7e22186`, the `needsComplete` V2
+mints/burns admission — a rebuild must not silently re-derive the capital panel
+on a different raw perimeter than the one the release certified.
+
+**Diagnosis before touching anything.** Exactly one of the release's ten code
+sources moved since its stamp: `src/ddvc/raw_certification.py`, from `7e22186`.
+That commit exempts null `amount0`/`amount1`/`logIndex` on rows whose
+`needsComplete` guard is exactly true, for the `mints` and `burns` streams only.
+The capital panel reads `hourly_reserves`. So the exemption cannot reach it —
+and that was verified rather than argued: all 2,248 uniswap_v2 and 2,126
+sushiswap_v2 bound reserve days reproduce identical `input_fingerprint`,
+`expected_rows` and `expected_bytes` under the corrected certificate. The other
+two stale inputs (`token_price_daily.parquet`,
+`v2_audit_token_decimals.parquet`) are byte-identical payloads whose sidecars
+`6b4050d` restamped. Scientific identity unchanged; the defect is bookkeeping,
+which is what the standing rule says to close through the owner and move on.
+
+**What was done.** `scripts/build_pool_capital_panel.py` rebuilt the release:
+generation `084f1e16…` republishes all four artifacts **byte-identical** to
+`00cb588b…` (8,456,802 pool / 6,891,901 candidate / 1,577,834 quarantined rows;
+identical payload digests; identical reserve perimeters). That equality is the
+evidence the release is unchanged, not an assumption. Then
+`scripts/build_liquidity_capital_flow_panels.py --family v2` rebuilt
+`liquidity_capital_v2_candidate_day.parquet` (11,660 rows) and
+`liquidity_capital_v2_exact_horizons.parquet` (46,640 rows) off it. Both now
+verify `ok`; the capital release resolves.
+
+**Defect found and bounded.** Unlike the capital build, the two V2 panels are
+**not bit-reproducible**. Two consecutive runs off one capital release produce
+different bytes. Cell-level comparison: max relative difference 3.3e-15 on
+`v2_deposited_capital_usd`, `v2_log1p_deposited_capital_usd` and
+`v2_five_candidate_capital_share` (24 ULP), and 4.5e-10 on
+`future_v2_five_candidate_capital_share_change`, where differencing two
+near-equal shares amplifies the same base error. Cause: the capital columns are
+DuckDB parallel float sums, so the reduction order varies per run. Nothing at
+1e-15 can reach an estimand, sample composition, coefficient or inference — the
+V2 predictability standard errors are ~1e-2, ten orders of magnitude away.
+Disclosed in a source comment at the owner so a moved byte hash reads as
+"rebuilt", not "revised".
+
+**DECISION: park** the determinism fix. Remedy if it is ever taken up:
+serialise the DuckDB aggregation (`--threads 1`) or fix a rounding precision on
+the capital columns. Cost is another full republish and a further downstream
+cascade, and the second option is a scientific choice about precision, not a
+build setting. Chasing bit-reproducibility now would be the "100 percent
+metadata cleanliness as implicit research objective" the brief forbids. Revisit
+only if byte instability starts blocking the two unchanged findings passes; it
+cannot today, because `stable_passes` is a declared state field, not a hash
+comparison.
+
+**Regression this iteration introduced, stated plainly.**
+`output/exhibits/liquidity_capital_v2_predictability.jsonl` was current at
+`c0543e3` and is now stale, because its two recorded panel inputs moved bytes.
+Its values did not change (bounded above). It cannot be restored now:
+`scripts/run_liquidity_capital_v2_predictability.py` fails closed with `INPUT
+BLOCKED: model runner lacks its DDVC_D3_CERTIFICATE/DDVC_D3_GENERATION
+binding`, and that binding is only issued by the E0 exploration harness, which
+is itself blocked. Nothing currently depends on the exhibit's currency: the
+freeze gate does not list it, `audit_deck_evidence.py` passes, and the deck
+quotes it through `liquidity_capital_v2_deck_values.tex`, which is byte-current
+against the unchanged `.jsonl`. **Resumption point: when the E0/D3 binding
+exists, rerun that estimator first and confirm the V2 predictability nulls
+reproduce before anything else consumes them.**
+
+**Mukhin, re-confirmed not actionable.** The single missing literature
+source-set and card is still `Mukhin2022InternationalPriceSystem`. Traced to
+ground this time: the source set's `non_text_dispositions` entry is `status:
+materialized` for
+`literature/papers/2022-…ReplicationPackage-supplement-openicpsr-v1-reconstructed.tar.gz`
+(119,236,817 bytes, `1e8e62e5…`), and that file is absent from the canonical
+papers store (`../defi-vehicle-currencies/literature/papers/`, 108 entries,
+other reconstructed tarballs present) and from every sibling and backup
+checkout. Everything else about the set closes: main artifact, appendix
+companion, all three discovery checks. **NEEDS-JAVA stands from 2026-08-15**;
+the two routes in that entry are unchanged. Downgrading the disposition to
+`unavailable` would turn the gate green and is refused — the package was read
+and inspected, and the note records that inspection.
+
+**Validation.** `test_pool_capital_panel.py`, `test_capital_validation.py`,
+`test_liquidity_predictability.py`,
+`test_liquidity_capital_v2_predictability.py`,
+`test_liquidity_capital_v2_deck_values.py`, `test_artifact_release.py`,
+`test_provenance_inputs.py`, `test_provenance_publication.py`: 242 passed.
+`check_deliverable_conformance.py` exits 0 — all blocking checks pass; paper 30
+pages / 0 undefined, deck 35 pages / 0 undefined; 2 advisories (over-used
+constructions, prose shape) unchanged. `audit_deck_evidence.py` PASS. The deck
+PDF differs only in build metadata — extracted text is byte-identical and the
+page count is unchanged at 35 — so no page changed and none needed inspection.
+
+**Commit:** `0cde857`.
+
+**Blocking count: 4** (was 6). Both node-D checks closed. Remaining: node E1
+specification lock; empirical model ledger; node B full-text literature ledger;
+two unchanged findings passes.
+
+**For the next iteration.**
+- The four survivors are all still structurally gated, exactly as recorded on
+  2026-08-15: E1 and the model ledger need the closed E0 exploration, which
+  needs releases the Studio lane has not published; the literature ledger needs
+  Java or Studio for Mukhin. None of them is picked up by re-reading the gate.
+  Do not start the exploration early — it binds to one D3 generation and would
+  force a reopen.
+- So the next iteration should advance a claim, exhibit, rival test,
+  interpretation, deck frame or paper section rather than the gate. This one
+  was data engineering and closed real blockers; two in a row would violate the
+  brief's step 6.
+- Disk: generation `00cb588b…` (695 MB) is superseded but retained. Removing it
+  is a data deletion and was not taken unilaterally.
+- The M3 12:03 handoff stays unchecked. Its fast-forward part is satisfied
+  (`7072291` is an ancestor of `HEAD`); its live remainder is the E1/D3
+  generation identities and the two unchanged findings passes, both gated above.
