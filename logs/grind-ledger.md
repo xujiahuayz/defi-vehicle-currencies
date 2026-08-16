@@ -3476,3 +3476,126 @@ ledger; node B full-text literature ledger; two unchanged findings passes).
   `scripts/run_vehicle_rotation_composition_e0.py`, not a prose pass.
 - The deck was not touched and needs no change: no frame reads an `\Incidence`
   macro or either new equation, and the deck remains saturated.
+
+## 2026-08-16 — Panel D's coverage of the market it speaks for
+
+**REGRESSION-CHECK.** Purpose-bound estimand most at risk:
+`common_pair_month_day_realised_integration_scope`, the Panel D matched
+estimator — the new prose must not restate its reach as the whole sample, and a
+coverage ratio must not be read as an estimate. Evidence generation most at
+risk: endpoint-composition `5fb7cbf`, D3 `25c755ae`; nothing was re-run, only
+read, plus the macro owner's own re-stamp. Prior correction most at risk: the
+2026-08-16 non-nesting correction. The new paragraph compares the matched
+denominator only against the *identity's* three blocks and never against Panel
+A's three market-incidence classes, which partition a different denominator;
+that prohibition is written into the source comment.
+
+**Target.** Not a gate blocker: all four remain non-actionable in this worktree
+for the reasons the last several entries record (node B is Mukhin, NEEDS-JAVA
+since 2026-08-15; node E1 and the empirical model ledger need Studio
+generation identities; two unchanged findings passes follows them). Traced
+Mukhin to ground once more this iteration: source-set closure fails only at
+`non_text_dispositions_closed`, because the 119,236,817-byte reconstructed
+openICPSR package is absent from `literature/papers/` in every checkout on this
+host. Everything else about the card and the source set is closed. Under step 6
+this had to be a claim iteration, and the ledger's own standing candidate list
+supplied it.
+
+**What was done.** The `decomposition_pair_support` record type of
+`vehicle_transition_pair_support.jsonl` had sat unread for many iterations,
+filed as "support metadata, ranks below anything that can change an estimate".
+That filing was wrong. Joined to the fixed-effects exhibit's own
+`baseline_denominator_mass`/`comparison_denominator_mass`, those rows answer the
+first question a referee asks of a within-unit null: on how much of the market?
+
+- Of 762,737 ordered pairs carrying a native-or-stable route in either year,
+  26,547 carry one in both and form the identity's continuing block.
+- Requiring the same month-day *and* the same realised route scope leaves 5,432
+  pairs by count and 5,278 by value.
+- Those pairs carry **14.0%** of 2024 routed activity and **24.3%** of 2026, but
+  **41.7%** and **39.3%** of the dollars; inside the block alone, 25.2%/50.1% by
+  count and 50.8%/62.9% by value.
+
+`_matched_coverage` in `scripts/build_vehicle_transition_pair_deck_values.py`
+does the join and emits twelve macros. It refuses to render unless the support
+ledger is provably the identity's own partition: each block reports its own mass
+over its own year, each year-specific block is empty on the year it is absent
+from, no block carries a zero-denominator cell-year, the common block's two
+shares equal the identity row's `W_baseline`/`W_comparison` to 1e-12, and the
+matched denominator sits inside the common block's. Five focused tests, one per
+premise plus the published cells.
+
+**DECISION: promote** at exact scope. The subset relation is structural, not
+assumed: a matched cell requires positive mass on the same month-day in both
+years, which requires positive mass in both years, so every matched pair is a
+common-block pair — verified on the live exhibits at 0 matched pairs outside the
+block for both metrics. **DECISION: narrow** the reading of the disclosure. It
+does not weaken the headline: the identity's within-pair term is taken over the
+whole block with no date or scope condition, is -0.1 pp by count and 0.0 pp by
+value, and each matched interval contains the identity term of its own
+weighting ([-1.3, +1.7] around -0.1; [-5.6, +3.0] around 0.0). The narrow
+conditioned comparison and the wide accounting term put within-pair
+substitution in the same place.
+
+**The trap this unit had to avoid.** The obvious move on discovering that Panel
+D reaches 14% of 2024 route counts is either to bury it or to treat it as a
+defect and go hunting for a wider estimator. Both are wrong. The count coverage
+is low *because the matching is demanding*, which is the estimator's purpose,
+and the value coverage is three times larger because dollars concentrate in the
+pairs and days present on both sides. The honest unit is to publish both
+coverage families, say which question each answers, and hand the reader the
+second measurement on the wider population.
+
+**Traps for the next iteration.**
+- **Value-weighted Panel A is data-blocked, not merely unbuilt.** Retire it from
+  the candidate list. `endpoint_candidate_pair_support.parquet` carries
+  `market_route_count` but no market-route *value* and no `integration_scope`,
+  so neither a value-weighted nor a venue-split market-incidence bridge can be
+  formed: `M` does not exist in dollars or by scope in the released ledger. A
+  value Panel A needs a change to the endpoint-composition release, not to
+  `run_vehicle_rotation_composition_e0.py`.
+- **Citation density had 220 words of headroom and the paragraph needed 227.**
+  The fix was one earned `\citep` to Amiti, Itskhoki and Konings, whose raw
+  passage at `2022-AmitiItskhokiKonings2022Dominant…txt:1263-1300` does exactly
+  the count-versus-value reading this paragraph does. After this unit:
+  36 citations / 16,823 words, about **470 words** of headroom.
+- **`against` as a preposition is a live construction alarm.** The first draft
+  of the paragraph used it twice and pushed the draft to 1.755 per 1,000 words
+  over a corpus maximum of 1.715. Removing both cleared it. The margin is one or
+  two occurrences; check `measure_prose_conventions.py` after any prose add.
+- The paragraph-flow remap this time was **+23 lines** for the fourteen handoffs
+  after the insertion point, plus one new handoff at line 146. Run
+  `check_jfe_rhetoric_review.py` first and read its `expected=` array; the
+  section `sha256` must be refreshed *after* the last prose edit, not before.
+- `check_deliverable_conformance.py` recompiles the deck, so `deck/main.pdf`
+  comes back byte-different at identical length and identical extracted text
+  even when no deck source changed. It was committed once in `9d5e34d` by
+  accident and restored in the ledger commit; check it out at the end of any
+  paper-only unit.
+
+**Validation.** `check_deliverable_conformance.py`: all blocking checks pass, 2
+advisories. Paper 40 pages / 0 undefined, deck 35 pages / 0 undefined. Venue
+shape: words 16,596 -> 16,823, equations 14 (unchanged), citations 35 -> 36.
+Producer suite 46 passed (41 before, 5 new). Repository suite
+(`--ignore=tests/test_route_cost_panel.py --ignore=tests/test_route_state.py`):
+**2,161 passed, 14 failed**, all in the long-standing v2 provenance-drift set
+(`test_weighted_quote` 7, and the rest as recorded in earlier entries). Pages 11
+and 12 inspected: the paragraph sets inside the measure, the `\citet` renders,
+and Table 3 is unchanged.
+
+**Commit:** `9d5e34d`.
+
+**Blocking count: 4** (unchanged: node E1 specification lock; empirical model
+ledger; node B full-text literature ledger; two unchanged findings passes).
+
+**For the next iteration.**
+- Equations are still 14 against p25 25 and remain the widest venue gap. Section
+  6 still defines the cost benchmark and reports nothing, and is still blocked
+  on route cost. There is now ~470 words of citation headroom, so a prose unit
+  of normal size no longer needs a citation in the same commit.
+- The `pair_month_day_scope_support` record type of the support ledger is the
+  last unread one. It is the calendar and scope side of the same coverage
+  question this unit opened on the pair side, so it is the natural continuation
+  and it can sharpen the same claim.
+- The deck was not touched and needs no change: no frame reads a coverage macro,
+  and the deck remains saturated.
