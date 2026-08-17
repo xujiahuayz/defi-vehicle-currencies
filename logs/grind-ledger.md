@@ -5454,3 +5454,61 @@ blocking checks; `paper/main.pdf` builds cleanly at 47 pages and `deck/main.pdf`
 at 37 pages, both with zero undefined references. The next iteration should take
 the now-oldest queue item: build the git-native E1 self-lock owner and adjudicate
 its two open design choices before opening exploration.
+
+## 2026-08-17 — Earn the E1 confirmatory lock from completed E0
+
+**Target and regression check.** Closed the oldest actionable queue item and
+the node-E1 specification-lock check. The purpose-bound estimands were the
+route-only vehicle-transition design and V2 deposited-capital predictability
+design on D3 generation `4225a3bd7729de96`. The evidence generation is E0
+`ef6da4e109cf92fb`. The prior correction most at risk was treating endogenous
+V4 route-share use or within-cell substitution exits as protocol availability,
+design removal, or an independently timed reversal.
+
+**Scientific classification.** This was a claim-design unit, not metadata
+hygiene. Its consequence is concentrated by protocol/design family, ordered
+pair and vehicle candidate for the transition claim, and by V2 candidate-day
+for the capital claim. The exact E0 perimeter fitted 229 vehicle-transition
+specifications, 448 liquidity-capital specifications and seven bounded
+open-discovery diagnostics. It can change the registered estimand, sample,
+coefficient family and inference. Trade-size and stress-state extensions do not
+enter the registered evidence: their required state/price inputs remain outside
+the current claim perimeter and are recorded as unsupported rather than proxied.
+No E0 coefficient was promoted into the paper.
+
+**DECISION: promote episode count as primary and value as secondary.** The lock
+cites `LeharParlour2024Uniswap`, Section III and Table I (journal pp. 335--338)
+and Appendix C (pp. 365--367): transaction frequency measures intermediary
+choice on complete topology, while value requires its own explicit cross-market
+price construction. **DECISION: withhold liquidity rent incidence.** The lock
+cites `MilionisMoallemiRoughgardenZhang2022LVR`, Sections 2--3, and
+`LeharParlour2024Uniswap`, Section IV.B and Figure 12 (pp. 348--350). The exact
+external intraday reference-price panel is absent, so own-pool variance is not
+substituted for LVR and finishability demotes the claim. **DECISION: retain all
+three E0 families as auxiliary design evidence only.** Both execution-open
+claims now carry distinct registered F plans; the seven open diagnostics create
+no new claim.
+
+**Work and provenance.** Commit `b183030` adds
+`scripts/lock_specification.py`, the exact three-family plan and triage owners,
+the missing attack-disposition and bounded-discovery artifacts, and the
+confirmatory lock. The first vehicle wrapper attempt failed at import before
+fitting or admitting any artifact. It remains in the model ledger as a rejected,
+zero-weight retired attempt; the unchanged registered engine succeeded on retry.
+D3 and E0 both reopen at their original generations after the seed-to-
+confirmatory mutation. The audit now treats a retired pre-fit attempt as carrying
+its declared plan but no admitted artifacts, and still rejects any retired run
+that does admit one.
+
+**Acceptance and gate.** The deliberately corrupted-seed test refuses the lock;
+the focused E1/release/audit suites pass. The complete suite passes with 2,183
+tests and 698 subtests. Deliverable conformance passes every blocking check;
+paper and deck compile cleanly at 47 and 37 pages with zero undefined references.
+The freeze audit remains RED with three blockers: stale
+`unified_route_quality` at the full-calendar directed-route gate, missing
+confirmatory evidence for `vehicle_transition` and
+`liquidity_capital_v2_predictability`, and the two-unchanged-pass counter reset
+by this real registry change. Node E1 is PASS and the empirical-ledger detail has
+`invalid_runs=none`. The E1 queue item is checked off in the same commit. The
+next iteration should take the now-oldest actionable deck-density queue item;
+that item forbids new data runs and should preserve this registered evidence.
