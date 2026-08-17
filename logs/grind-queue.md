@@ -65,6 +65,24 @@ and pick a blocking check from the freeze gate.
   Dune/raw, legacy metrics and documented legacy empirical/processed panels
   retained. Do the dependency-closure cleanup against this one checkout; do not
   recreate a sibling worktree._
+  _PROGRESS NOTE (2026-08-17, cleanup landed but acceptance remains open). The
+  live closure was traced from the named release/build gates, all tests, current
+  specification/model/graph registries, paper/deck inputs, table/visual indices,
+  and provenance inputs. It found no unimported `src/ddvc` module and no
+  disposable tracked `data/processed` or log file. The landed kill-list is four
+  no-caller superseded analysis commands, 64 table renderings that the canonical
+  table index classified as zero-consumer legacy output, eight zero-consumer
+  figures, six stale duplicate exhibits and their seven sidecars; ten small
+  ignored products owned only by the removed commands were also deleted. The
+  paper and deck compile (47/37 pages, zero undefined references), conformance is
+  green on every blocking check, and all tests outside inherited environment and
+  certificate failures pass. Do not tick this item yet: the required unqualified
+  full-suite green is still blocked by the pre-existing stale V2 event-source
+  chain (`v2_audit_token_decimals.parquet.prov.json`), the three missing-`pyfixest`
+  tests, the existing CSV-policy failure in `run_stress_reallocation_e0.py`, and
+  the venue-optics citations subtest. The next certification-removal unit is
+  designed to eliminate the first blocker; rerun the full suite there, close the
+  remaining inherited failures honestly, then tick both cleanup and that unit._
 
 - [ ] **(2) THEN REMOVE THE CERTIFICATION / FINGERPRINT LAYER — replace it with
   file-timestamp staleness plus ONE cheap freshness check.** Java's decision; the

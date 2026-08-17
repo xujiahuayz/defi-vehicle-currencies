@@ -2,9 +2,9 @@
  "argv": [],
  "artefact": "output/exhibits/vehicle_transition_pair_decomposition.jsonl",
  "artefact_bytes": 18433,
- "artefact_mtime_ns": 1786747263604170782,
+ "artefact_mtime_ns": 1786928362586389499,
  "artefact_sha256": "c14a536b2ff5c5dcd55812b97797ceacfe903c666678b271ea4ebaab30fb6f59",
- "code_fingerprint": "707bdb8d05c073e872588aef4818388bdec636f68e26496a533f21f8cac9b6c1",
+ "code_fingerprint": "c2870eabee7e645aad44846fe2f566e35a56f5d14b119b18a62d6f6db48e6309",
  "code_sources": [
   "scripts/run_vehicle_rotation_composition_e0.py",
   "src/ddvc/analysis/regression.py",
@@ -15,28 +15,67 @@
   "src/ddvc/model_artifacts.py",
   "src/ddvc/tables.py"
  ],
- "created_at": "2026-08-14T22:41:22+00:00",
+ "created_at": "2026-08-17T00:59:42+00:00",
  "git": {
   "branch": "main",
-  "commit": "eeda725e044ac52fc3b6d889e4d8a787d93c8b9f",
-  "dirty": false,
+  "commit": "d3b73933d8f13406bdd98e1dc2576e0008b4d078",
+  "dirty": true,
   "dirty_generated_files": [
+   "data/manifests/output/exhibits/curve_excluded_by_year_leg_minswaps4.jsonl.prov.json",
+   "data/manifests/output/exhibits/curve_excluded_composition_minswaps4.jsonl.prov.json",
+   "data/manifests/output/exhibits/curve_excluded_volume_minswaps4.jsonl.prov.json",
+   "data/manifests/output/exhibits/sushiswap_v3_schema_probe_minswaps4.jsonl.prov.json",
+   "data/manifests/output/exhibits/vehicle_transition_pair_contributions.parquet.prov.json",
    "data/manifests/output/exhibits/vehicle_transition_pair_fixed_effects.jsonl.prov.json",
    "data/manifests/output/exhibits/vehicle_transition_pair_panel.parquet.prov.json",
-   "data/manifests/data/processed/d3_analysis_release/generations/dbe24bb3417a0f828127345b193a2abeb9596bdf47b337b2cc2d62b43115470c/",
-   "data/manifests/output/exhibits/vehicle_transition_pair_contributions.parquet.prov.json",
-   "output/exhibits/.vehicle_transition_pair_decomposition.jsonl.uw9t5efv.tmp",
-   "output/exhibits/vehicle_transition_pair_contributions.parquet"
+   "data/manifests/output/figures/integration_rotation_slopes.pdf.prov.json",
+   "data/manifests/output/figures/route_replay.pdf.prov.json",
+   "data/manifests/output/figures/vehicle_type_shares_quarterly.pdf.prov.json",
+   "output/exhibits/curve_excluded_by_year_leg_minswaps4.jsonl",
+   "output/exhibits/curve_excluded_composition_minswaps4.jsonl",
+   "output/exhibits/curve_excluded_volume_minswaps4.jsonl",
+   "output/exhibits/lp_concentration_top5.pdf",
+   "output/exhibits/sushiswap_v3_schema_probe_minswaps4.jsonl",
+   "output/exhibits/vshare_timeseries.pdf",
+   "output/figures/bridge_share_timeseries.pdf",
+   "output/figures/bridge_vs_volume_share.pdf",
+   "output/figures/direct_cost_advantage.pdf",
+   "output/figures/integration_rotation_slopes.pdf",
+   "output/figures/lp_concentration_timeseries.pdf",
+   "output/figures/route_replay.pdf",
+   "output/figures/stress_common_support.pdf",
+   "output/figures/vehicle_type_shares_quarterly.pdf",
+   "output/tables/actual_route_choice.pdf",
+   "output/tables/actual_route_choice.tex",
+   "output/tables/bridge_denominator_robustness.pdf",
+   "output/tables/bridge_denominator_robustness.tex",
+   "output/tables/bridge_measurement.pdf",
+   "output/tables/bridge_measurement.tex",
+   "output/tables/common_liquidity.pdf",
+   "output/tables/common_liquidity.tex",
+   "output/tables/common_liquidity_heterogeneity.pdf",
+   "output/tables/common_liquidity_heterogeneity.tex",
+   "output/tables/curve_fluid_materiality.pdf",
+   "output/tables/curve_fluid_materiality.tex",
+   "output/tables/curve_fluid_scope_bound.pdf",
+   "output/tables/curve_fluid_scope_bound.tex",
+   "output/tables/direct_cost_advantage.pdf",
+   "output/tables/direct_cost_advantage.tex"
   ],
-  "dirty_tracked_files": [],
+  "dirty_tracked_files": [
+   "scripts/run_jfe_construct_validity_checks.py",
+   "scripts/run_jfe_identification_extensions.py",
+   "scripts/run_stress_hourly_common_support.py",
+   "scripts/run_v3_architecture_pair_design.py"
+  ],
   "dirty_untracked_files": []
  },
  "inputs": [
   {
-   "bytes": 22583,
+   "bytes": 29909,
    "exists": true,
-   "path": "data/processed/d3_analysis_release/generations/dbe24bb3417a0f828127345b193a2abeb9596bdf47b337b2cc2d62b43115470c/certificate.json",
-   "sha256": "b47a31e3dc28b19b67364f723f13a359ad320fbb64682d9168be2ee41f0423af"
+   "path": "data/processed/d3_analysis_release/generations/c199e51a2270f28562d7af90b1a28ce0e4c8377d31b120c168549e1a80e7afeb/certificate.json",
+   "sha256": "ff61ba3836f5028ddff2885ad4fa4f7b35daa11117d999d32dfdbe1afe2f8148"
   },
   {
    "bytes": 1548,
@@ -28093,7 +28132,7 @@
   "pyarrow": "25.0.0",
   "scipy": "1.18.0"
  },
- "notes": "exact locked midpoint decomposition of the realised 2024-to-2026 stable-share change into within-common-pair, common-pair reweighting, common-support-mass, and exclusive-pair terms; route-release-downstream-binding-rebind-v1: released-input bindings rebound to the current certified route release after the V2 certificate perimeter expansion; payload bytes and every route partition identity unchanged",
+ "notes": "exact locked midpoint decomposition of the realised 2024-to-2026 stable-share change into within-common-pair, common-pair reweighting, common-support-mass, and exclusive-pair terms",
  "payload_identity": {
   "bytes": 18433,
   "format": "jsonl",
@@ -28102,7 +28141,6 @@
   "sha256": "c14a536b2ff5c5dcd55812b97797ceacfe903c666678b271ea4ebaab30fb6f59"
  },
  "python": "3.14.6",
- "released_input_bindings": [],
  "rows": 10,
  "script": "scripts/run_vehicle_rotation_composition_e0.py"
 }
