@@ -1,6 +1,6 @@
 # Literature Workspace
 
-Keep the curated citation record compact, while separating source payloads from review authority. `papers/` holds local, gitignored source PDFs and inspected non-text companions; `text/` holds tracked searchable extracts plus the checksum index; `source-notes/` records source-family dispositions; `reviews/` holds explicitly historical synthesis digests. Current individual specialist cards and their index live in `docs/reviews/`, and the reconciled current ledger lives in `docs/literature-audit.md`.
+Keep the curated citation record compact, while separating source payloads from review authority. `papers/` holds local, gitignored source PDFs and inspected non-text companions; `text/` holds tracked searchable extracts plus the path index; `source-notes/` records source-family dispositions; `reviews/` holds explicitly historical synthesis digests. Current individual specialist cards and their index live in `docs/reviews/`, and the reconciled current ledger lives in `docs/literature-audit.md`.
 
 Use `source-admission.json` as the source of truth for what may enter the curated corpus. Every source needs an explicit decision before acquisition, including peer-reviewed articles; a BibTeX entry type is metadata, not evidence of publication quality. Use `vehicle-currencies.bib` as the source of truth for citation metadata after admission, and `pdf-sources.json` only as the fetch manifest for admitted BibTeX keys: publisher PDF endpoints, public manuscript PDFs, authentication labels, and fallback routes for `scripts/fetch_literature.py`.
 
@@ -19,14 +19,20 @@ PDF fetching:
 python3 scripts/fetch_literature.py
 ```
 
-The tracked text index is also the portable checksum contract for the gitignored readable corpus. After adding or replacing PDFs, rebuild the index and verify it before another host enters a literature or review node:
+After adding or replacing PDFs, rebuild the text index and verify the source set before another host enters a literature or review node:
 
 ```bash
 ./scripts/run scripts/build_literature_text_cache.py
 ./scripts/run scripts/build_literature_text_cache.py --check-corpus
 ```
 
-The check requires an exact one-to-one match among PDFs, text extracts and index records and validates every PDF by SHA-256. The node-B findings gate applies the same rule to every required source set: a tracked extract cannot stand in for a missing main or companion PDF. An appendix may share the main PDF only when its source note declares `source_type: embedded-in-main`; a publisher-native HTML correction may close through `source_type: publisher-native-html`. An access-gap or unavailable note records discovery but cannot close a card marked `Companions: Complete`. Replication data and code archives remain outside this readable-corpus contract and retain their separate inspected-disposition checks.
+The check requires a one-to-one match among PDFs, text extracts and index records,
+then validates file type, title/byline, page count and readable extraction. A tracked
+extract cannot stand in for a missing main or companion PDF. An appendix may share
+the main PDF only when its source note declares `source_type: embedded-in-main`;
+a publisher-native HTML correction may close through
+`source_type: publisher-native-html`. An access-gap note records discovery but
+cannot close a card marked `Companions: Complete`.
 
 The script validates every requested key against `source-admission.json` before it opens the network or writes a PDF. It then downloads PDFs to gitignored `literature/papers/` and writes a gitignored `literature/papers/download-manifest.json`. It tries committed sources in `pdf-sources.json` first, then generated DOI resolver fallbacks. For public servers that fail with Python's default HTTP stack, it falls back to `curl --http1.1`.
 

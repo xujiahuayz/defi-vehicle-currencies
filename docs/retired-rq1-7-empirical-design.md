@@ -277,3 +277,15 @@ If theory is added, it should be atomic:
 - propositions only where they map directly to a table.
 
 The default paper should read as an empirical market-design and market-quality paper.
+
+## Archived exploratory screens from the retired DDC project
+
+These screens were recovered during the August 2026 repository consolidation. They are retained only as historical search notes: they used the retired DDC panels, were not registered specifications, and often had non-trivial pre-trends. They are not paper or deck evidence.
+
+- First SushiSwap V3 access was associated with lower vehicle share at a 12-week window (ATT -0.0091, t -3.05), but the maximum pre-period absolute t-statistic was 2.47.
+- First Uniswap V3 access was associated with higher vehicle share at a four-week window (ATT 0.0065, t 2.07; pre-period maximum 1.85). Other venue-entry screens were weaker or had worse pre-trends.
+- First collateral eligibility was associated with lower average eigenvector centrality at a 12-week window (ATT -0.0160, t -3.28; pre-period maximum 1.73). First lending access was associated with higher vehicle betweenness at 12 weeks (ATT 0.00027, t 2.19; pre-period maximum 1.88).
+- The strongest parameter-change screen was collateral eligibility turning on and lower average eigenvector centrality at eight weeks (ATT -0.0290, t -4.65; pre-period maximum 1.90). The corresponding four-week vehicle-share screen was -0.0210 (t -2.41; pre-period maximum 1.29).
+- The retired sample contained 15 borrowing-disable, 1 borrowing-enable, 10 collateral-disable, 2 collateral-enable, 3 unfreeze, 17 freeze, 16 LTV-decrease, and 8 LTV-increase events.
+
+The original generated Markdown reports were removed with the zero-consumer DDC derived-data tree after these unique observations were reconciled here. Any future use must be rebuilt from the retained raw evidence in the current repository and enter through a current specification.

@@ -1,14 +1,13 @@
 from __future__ import annotations
 
-from contextlib import contextmanager
+import json
 from pathlib import Path
-from types import SimpleNamespace
 
 import numpy as np
 import pandas as pd
+import pyarrow.parquet as pq
 import pytest
 
-from ddvc.artifact_release import SemanticValidationReceipt
 from ddvc.analysis.vehicle_rotation_composition import (
     METRICS,
     estimate_pair_fixed_effect_rotation,
@@ -496,53 +495,26 @@ def test_rejects_duplicate_release_keys_and_nonprimary_candidates() -> None:
         vehicle_rotation_composition(pd.DataFrame([row, invalid]))
 
 
-def test_runner_requires_exact_d3_bound_endpoint_generation_and_receipt(
-    tmp_path: Path,
-) -> None:
-    pointer = tmp_path / "data/processed/endpoint/current.json"
-    relative = pointer.relative_to(tmp_path).as_posix()
-    context = SimpleNamespace(
-        d3_input_records={
-            relative: {
-                "path": relative,
-                "release_generation": "a" * 64,
-                "semantic_validation": {
-                    "generation_id": "a" * 64,
-                    "validator_fingerprint": "b" * 64,
-                },
-            }
-        }
-    )
-    receipt = runner.expected_release_receipt_in_d3(context, pointer, root=tmp_path)
-    assert receipt.generation_id == "a" * 64
-    assert receipt.validator_fingerprint == "b" * 64
-    context.d3_input_records[relative]["release_generation"] = "c" * 64
-    with pytest.raises(ValueError, match="generation and receipt disagree"):
-        runner.expected_release_receipt_in_d3(context, pointer, root=tmp_path)
-
-
 def test_runner_writes_ranked_pair_contributions_as_one_support_panel(
     tmp_path: Path, monkeypatch: pytest.MonkeyPatch
 ) -> None:
     pointer = tmp_path / "endpoint/current.json"
-    receipt = SemanticValidationReceipt("a" * 64, "b" * 64)
-    bundle = SimpleNamespace(
-        lineage_paths=(tmp_path / "endpoint/current.json",),
-        assert_current=lambda: None,
+    generation = pointer.parent / "generations/current"
+    generation.mkdir(parents=True)
+    (generation / "choices.parquet").touch()
+    (generation / "pair-support.parquet").touch()
+    pointer.write_text(
+        json.dumps(
+            {
+                "generation_id": "current",
+                "artifacts": {
+                    "choices": {"filename": "choices.parquet"},
+                    "pair_support": {"filename": "pair-support.parquet"},
+                },
+            }
+        ),
+        encoding="utf-8",
     )
-    release = SimpleNamespace(
-        generation_id=receipt.generation_id,
-        artifacts={
-            "choices": tmp_path / "choices.parquet",
-            "pair_support": tmp_path / "pair-support.parquet",
-        },
-        bundle=bundle,
-    )
-
-    @contextmanager
-    def current_release(_pointer, *, expected_semantic_receipt):
-        assert expected_semantic_receipt == receipt
-        yield release
 
     detail = pd.DataFrame({"kind": ["detail"]})
     decomposition = pd.DataFrame({"kind": ["decomposition"]})
@@ -557,14 +529,6 @@ def test_runner_writes_ranked_pair_contributions_as_one_support_panel(
     fixed_effects = pd.DataFrame({"kind": ["fixed"]})
     market_decomposition = pd.DataFrame({"kind": ["market"]})
     market_support = pd.DataFrame({"kind": ["market_support"]})
-    panel_writes: list[tuple[pd.DataFrame, Path, dict[str, object]]] = []
-    exhibit_writes: list[tuple[pd.DataFrame, Path, dict[str, object]]] = []
-
-    monkeypatch.setattr(runner, "model_artifact_context", lambda **_kwargs: object())
-    monkeypatch.setattr(runner, "expected_release_receipt_in_d3", lambda *_args, **_kwargs: receipt)
-    monkeypatch.setattr(
-        runner, "current_endpoint_candidate_composition_release", current_release
-    )
     monkeypatch.setattr(runner.pd, "read_parquet", lambda _path: pd.DataFrame())
     monkeypatch.setattr(
         runner,
@@ -583,16 +547,6 @@ def test_runner_writes_ranked_pair_contributions_as_one_support_panel(
         lambda _annual: (market_decomposition, market_support),
     )
     monkeypatch.setattr(runner, "attach_spec_ids", lambda frame, **_kwargs: frame)
-    monkeypatch.setattr(
-        runner,
-        "write_model_panel",
-        lambda frame, path, **kwargs: panel_writes.append((frame, path, kwargs)),
-    )
-    monkeypatch.setattr(
-        runner,
-        "write_model_exhibit",
-        lambda frame, path, **kwargs: exhibit_writes.append((frame, path, kwargs)),
-    )
 
     pair_contribution_output = tmp_path / "pair-contributions.parquet"
     assert (
@@ -607,13 +561,11 @@ def test_runner_writes_ranked_pair_contributions_as_one_support_panel(
         )
         == 0
     )
-    assert len(panel_writes) == 2
-    written_frame, written_path, written_options = panel_writes[1]
-    assert written_frame is contributions
-    assert written_path == pair_contribution_output
-    assert written_options["role"] == "support"
-    assert "intentionally unallocated" in str(written_options["notes"])
-    assert len(exhibit_writes) == 3
+    written = pq.read_table(pair_contribution_output).to_pandas()
+    assert written.to_dict("records") == contributions.to_dict("records")
+    assert (tmp_path / "decomposition.jsonl").is_file()
+    assert (tmp_path / "support.jsonl").is_file()
+    assert (tmp_path / "fixed.jsonl").is_file()
 
 
 def test_market_incidence_bridge_is_exact_and_support_is_classified() -> None:

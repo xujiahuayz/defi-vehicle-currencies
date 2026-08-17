@@ -1,3 +1,4 @@
-# Manual or Licensed Inputs
+# Manual or licensed inputs
 
-Use this exceptional boundary only for licensed or manually supplied inputs that cannot be captured by a named acquisition under `data/raw/`. Every populated input needs an explicit consumer and provenance route. See the [canonical repository and data map](../../docs/repository-data-map.md#data-layers).
+Use this folder only for inputs that cannot be fetched into `data/raw/`. Every file
+needs a named consumer and a short source note. See [`README.md`](../../README.md).

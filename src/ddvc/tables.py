@@ -51,7 +51,7 @@ import pyarrow.parquet as pq
 
 from ddvc.paths import REPO_ROOT
 from ddvc.provenance import install_stamped_artifact, prepare_stamp
-from ddvc.runtime import staged_output
+from ddvc.runtime import atomic_output, staged_output
 
 # Above this many rows an artefact is a panel, whatever directory it sits in, and
 # the columnar format wins on measured read cost.
@@ -154,6 +154,25 @@ def write_exhibit(df: pd.DataFrame, path: str | Path, code_sources: list[str] | 
                     json.dumps(clean, allow_nan=False, default=str, sort_keys=True) + "\n"
                 )
         publish_staged_artifact(temporary, p, code_sources=code_sources, inputs=inputs, rows=len(df), notes=notes, preinstall_validator=preinstall_validator)
+    return p
+
+
+def write_report(df: pd.DataFrame, path: str | Path) -> Path:
+    """Write a small diagnostic report directly, without release metadata."""
+
+    p = Path(path)
+    if len(df) > EXHIBIT_MAX_ROWS:
+        raise ValueError(f"{p.name}: diagnostic report is unexpectedly large")
+    frame = _stringify_big_ints(df)
+    with atomic_output(p) as temporary, temporary.open("w", encoding="utf-8") as handle:
+        for rec in frame.to_dict("records"):
+            clean = {
+                key: None if value is None or _is_missing(value) else value
+                for key, value in rec.items()
+            }
+            handle.write(
+                json.dumps(clean, allow_nan=False, default=str, sort_keys=True) + "\n"
+            )
     return p
 
 

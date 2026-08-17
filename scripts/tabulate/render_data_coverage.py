@@ -156,7 +156,4 @@ write_table_artifacts(
     "data_coverage",
     "\n".join(lines) + "\n",
     preview_width="8.5in",
-    inputs=[INVENTORY],
-    code_sources=["src/ddvc/analysis/raw_data_inventory.py"],
-    notes="Raw-data coverage inspection table; not an active manuscript input.",
 )

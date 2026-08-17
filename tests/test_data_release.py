@@ -675,7 +675,6 @@ class DataReleaseTests(unittest.TestCase):
             "scripts/build_lp_liquidity_flow_panel.py",
             "scripts/build_v2_token_panel.py",
             "scripts/test_block_vs_hour_verdict.py",
-            "scripts/audit_findings_freeze.py",
         ]
         for filename in filenames:
             with self.subTest(filename=filename):

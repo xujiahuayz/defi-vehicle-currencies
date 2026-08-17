@@ -1,11 +1,12 @@
 #!/usr/bin/env python3
-"""Run the pre-frontier raw aggregate descriptive companion.
+"""Rebuild the registered vehicle-transition result from its processed release.
 
 This four-term accounting is not a decomposition of a fixed-effects coefficient.
 """
 
 from __future__ import annotations
 
+import json
 from pathlib import Path
 
 import pandas as pd
@@ -16,19 +17,9 @@ from ddvc.analysis.vehicle_rotation_composition import (
     vehicle_rotation_composition,
     vehicle_rotation_market_incidence_decomposition,
 )
-from ddvc.endpoint_candidate_composition_release import (
-    ENDPOINT_CANDIDATE_COMPOSITION_RELEASE,
-    current_endpoint_candidate_composition_release,
-)
-from ddvc.model_artifacts import (
-    attach_spec_ids,
-    expected_release_receipt_in_d3,
-    model_artifact_context,
-    write_model_exhibit,
-    write_model_panel,
-)
+from ddvc.endpoint_candidate_composition_release import ENDPOINT_CANDIDATE_COMPOSITION_RELEASE
 from ddvc.paths import DATA_DIR, OUTPUT_DIR, REPO_ROOT
-from ddvc.runtime import exclusive_job
+from ddvc.runtime import atomic_output, exclusive_job
 
 
 PAIR_PANEL = OUTPUT_DIR / "exhibits" / "vehicle_transition_pair_panel.parquet"
@@ -40,17 +31,18 @@ SUPPORT = OUTPUT_DIR / "exhibits" / "vehicle_transition_pair_support.jsonl"
 FIXED_EFFECT_RESULTS = (
     OUTPUT_DIR / "exhibits" / "vehicle_transition_pair_fixed_effects.jsonl"
 )
-LOCK = DATA_DIR / "processed" / ".vehicle-rotation-composition-e0.lock"
-CODE_SOURCES = [
-    "scripts/run_vehicle_transition_exploration.py",
-    "scripts/run_vehicle_rotation_composition_e0.py",
-    "src/ddvc/analysis/vehicle_rotation_composition.py",
-    "src/ddvc/analysis/regression.py",
-    "src/ddvc/calendar.py",
-    "src/ddvc/endpoint_candidate_composition.py",
-    "src/ddvc/endpoint_candidate_composition_release.py",
-    "src/ddvc/model_artifacts.py",
-]
+LOCK = DATA_DIR / "processed" / ".vehicle-transition.lock"
+
+
+def attach_spec_ids(
+    frame: pd.DataFrame, *, prefix: str, columns: tuple[str, ...]
+) -> pd.DataFrame:
+    """Attach readable row labels used by downstream selectors."""
+
+    output = frame.copy()
+    labels = output.loc[:, list(columns)].astype(str).agg("-".join, axis=1)
+    output["spec_id"] = prefix + ":" + labels.str.replace(r"\s+", "_", regex=True)
+    return output
 
 
 def run(
@@ -64,112 +56,75 @@ def run(
     support_output: Path = SUPPORT,
     fixed_effect_output: Path = FIXED_EFFECT_RESULTS,
 ) -> int:
-    context = model_artifact_context(root=root, environment=environment)
-    expected_receipt = expected_release_receipt_in_d3(context, pointer_path, root=root)
-    with current_endpoint_candidate_composition_release(
-        pointer_path,
-        expected_semantic_receipt=expected_receipt,
-    ) as release:
-        if release.generation_id != expected_receipt.generation_id:
-            raise ValueError("endpoint release differs from the D3-bound generation")
-        choices = pd.read_parquet(release.artifacts["choices"])
-        detail, decomposition, support, pair_contributions = (
-            vehicle_rotation_composition(choices)
-        )
-        fixed_effect_results = estimate_pair_fixed_effect_rotation(detail)
-        annual_market_pairs = load_market_incidence_annual_pairs(
-            release.artifacts["pair_support"], release.artifacts["choices"]
-        )
-        market_decomposition, market_support = (
-            vehicle_rotation_market_incidence_decomposition(annual_market_pairs)
-        )
-        decomposition = pd.concat(
-            [decomposition, market_decomposition], ignore_index=True, sort=False
-        )
-        support = pd.concat([support, market_support], ignore_index=True, sort=False)
-        decomposition = attach_spec_ids(
-            decomposition,
-            prefix="vehicle_transition_pair_decomposition",
-            columns=(
-                "metric",
-                "reporting_scope",
-                "baseline_year",
-                "comparison_year",
-                "estimand_scope",
-            ),
-        )
-        inputs = list(release.bundle.lineage_paths)
-        write_model_panel(
-            detail,
-            pair_panel_output,
-            role="support",
-            context=context,
-            code_sources=CODE_SOURCES,
-            inputs=inputs,
-            notes=(
-                "locked pair-date-integration-scope panel on measure-specific common "
-                "month-day support; notional, observed opportunity, and exact "
-                "search-efficiency state remain unobserved"
-            ),
-        )
-        write_model_panel(
-            pair_contributions,
-            pair_contribution_output,
-            role="support",
-            context=context,
-            code_sources=CODE_SOURCES,
-            inputs=inputs,
-            notes=(
-                "ranked descriptive ordered-pair contributions to within-pair choice, "
-                "pair reweighting, and baseline- or comparison-exclusive composition; "
-                "each row carries the intentionally unallocated aggregate common-support "
-                "bridge and the aggregate total change"
-            ),
-        )
-        fixed_effect_results = attach_spec_ids(
-            fixed_effect_results,
-            prefix="vehicle_transition_pair_fixed_effects",
-            columns=("metric", "baseline_year", "comparison_year", "estimator_id"),
-        )
-        write_model_exhibit(
-            fixed_effect_results,
-            fixed_effect_output,
-            role="result",
-            context=context,
-            code_sources=CODE_SOURCES,
-            inputs=[pair_panel_output, *inputs],
-            notes=(
-                "locked denominator-mass WLS estimate of the 2026-minus-2024 stable-share "
-                "change inside ordered-pair by month-day by realised-integration-scope "
-                "cells, with two-way ordered-pair and calendar-date CR1 inference"
-            ),
-        )
-        write_model_exhibit(
-            decomposition,
-            decomposition_output,
-            role="result",
-            context=context,
-            code_sources=CODE_SOURCES,
-            inputs=inputs,
-            notes=(
-                "exact locked midpoint decomposition of the realised 2024-to-2026 "
-                "stable-share change into within-common-pair, common-pair reweighting, "
-                "common-support-mass, and exclusive-pair terms"
-            ),
-        )
-        write_model_exhibit(
-            support,
-            support_output,
-            role="support",
-            context=context,
-            code_sources=CODE_SOURCES,
-            inputs=inputs,
-            notes=(
-                "measure-specific common month-day, pair-membership, and integration-"
-                "scope support for the descriptive realised-composition decomposition"
-            ),
-        )
-        release.bundle.assert_current()
+    del environment
+    pointer = pointer_path if pointer_path.is_absolute() else root / pointer_path
+    payload = json.loads(pointer.read_text(encoding="utf-8"))
+    generation = str(payload.get("generation_id") or "")
+    artifacts = payload.get("artifacts") or {}
+    generation_dir = pointer.parent / "generations" / generation
+
+    def artifact(name: str) -> Path:
+        record = artifacts.get(name) or {}
+        filename = str(record.get("filename") or "")
+        path = generation_dir / filename
+        if not filename or not path.is_file():
+            raise FileNotFoundError(f"endpoint composition input missing: {path}")
+        return path
+
+    choices_path = artifact("choices")
+    pair_support_path = artifact("pair_support")
+    choices = pd.read_parquet(choices_path)
+    detail, decomposition, support, pair_contributions = vehicle_rotation_composition(
+        choices
+    )
+    fixed_effect_results = estimate_pair_fixed_effect_rotation(detail)
+    annual_market_pairs = load_market_incidence_annual_pairs(
+        pair_support_path, choices_path
+    )
+    market_decomposition, market_support = (
+        vehicle_rotation_market_incidence_decomposition(annual_market_pairs)
+    )
+    decomposition = pd.concat(
+        [decomposition, market_decomposition], ignore_index=True, sort=False
+    )
+    support = pd.concat([support, market_support], ignore_index=True, sort=False)
+    decomposition = attach_spec_ids(
+        decomposition,
+        prefix="vehicle_transition_pair_decomposition",
+        columns=(
+            "metric",
+            "reporting_scope",
+            "baseline_year",
+            "comparison_year",
+            "estimand_scope",
+        ),
+    )
+    fixed_effect_results = attach_spec_ids(
+        fixed_effect_results,
+        prefix="vehicle_transition_pair_fixed_effects",
+        columns=("metric", "baseline_year", "comparison_year", "estimator_id"),
+    )
+
+    def write_parquet(frame: pd.DataFrame, path: Path) -> None:
+        path.parent.mkdir(parents=True, exist_ok=True)
+        with atomic_output(path) as temporary:
+            frame.to_parquet(temporary, index=False)
+
+    def write_jsonl(frame: pd.DataFrame, path: Path) -> None:
+        path.parent.mkdir(parents=True, exist_ok=True)
+        with atomic_output(path) as temporary:
+            frame.to_json(
+                temporary,
+                orient="records",
+                lines=True,
+                date_format="iso",
+            )
+
+    write_parquet(detail, pair_panel_output)
+    write_parquet(pair_contributions, pair_contribution_output)
+    write_jsonl(fixed_effect_results, fixed_effect_output)
+    write_jsonl(decomposition, decomposition_output)
+    write_jsonl(support, support_output)
     print(
         f"wrote {len(detail):,} cell rows, {len(pair_contributions):,} ranked pair "
         f"contributions, {len(fixed_effect_results):,} fixed-effect results, "
@@ -183,5 +138,5 @@ def main() -> int:
 
 
 if __name__ == "__main__":
-    with exclusive_job(LOCK, job="vehicle-rotation composition E0"):
+    with exclusive_job(LOCK, job="vehicle-transition rebuild"):
         raise SystemExit(main())

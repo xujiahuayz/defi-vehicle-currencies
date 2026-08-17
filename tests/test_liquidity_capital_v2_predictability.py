@@ -122,11 +122,11 @@ def test_calendar_score_hac_keeps_missing_dates_as_zero_scores() -> None:
     assert covariance[0, 0] == pytest.approx(1.25)
 
 
-def test_runner_fails_closed_before_writing_without_d3_binding(
-    monkeypatch, capsys
+def test_runner_fails_closed_when_declared_inputs_are_missing(
+    tmp_path: Path, monkeypatch, capsys
 ) -> None:
-    monkeypatch.delenv("DDVC_D3_CERTIFICATE", raising=False)
-    monkeypatch.delenv("DDVC_D3_GENERATION", raising=False)
+    monkeypatch.setattr(MODULE, "CANDIDATE_DAY_INPUT", tmp_path / "candidate.parquet")
+    monkeypatch.setattr(MODULE, "EXACT_HORIZON_INPUT", tmp_path / "horizons.parquet")
     monkeypatch.setattr(sys, "argv", [str(SCRIPT), "--bootstrap-repetitions", "20"])
     assert MODULE.main() == 2
     assert "INPUT BLOCKED" in capsys.readouterr().out

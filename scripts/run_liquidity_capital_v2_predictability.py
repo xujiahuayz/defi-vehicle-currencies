@@ -5,16 +5,9 @@ This runner consumes only the independently released V2 candidate-day and
 exact-horizon panels. It never opens, fills, or conditions execution on a V3
 flow artifact. The estimates are predictive associations, not causal feedback.
 
-Three components live here and share one bound generation. The
-quantity-contract component proves the V2-only family did not carry a V3 flow
-quantity across from the broader liquidity-allocation design. The predictability
-component fits the claim's registered perimeter. The influence component answers
-the `liquidity_capital_v2_e0` family's `influence_concentration` attack: it
-measures where the support's capital mass sits, then refits the full-calendar
-perimeter dropping one candidate or one high-contribution pool at a time and
-restates the claim's own decision rule on each remainder. They stay in one
-runner because all three are about the same V2 quantity boundary; splitting the
-fit owner is how a diagnostic quietly acquires a second inference.
+The registered runner reads exactly two processed panels and writes one result,
+one support file, and one table. The estimates are predictive associations, not
+causal feedback.
 """
 
 from __future__ import annotations
@@ -58,14 +51,8 @@ from ddvc.liquidity_predictability import (
     validate_v2_candidate_day_panel,
     validate_v2_exact_horizon_panel,
 )
-from ddvc.model_artifacts import (
-    attach_spec_ids,
-    model_artifact_context,
-    require_released_model_inputs,
-    write_model_exhibit,
-)
+from ddvc.model_artifacts import model_artifact_context, require_released_model_inputs, write_model_exhibit
 from ddvc.paths import OUTPUT_DIR, REPO_ROOT
-from ddvc.provenance import stamp
 from ddvc.runtime import atomic_output
 
 
@@ -133,6 +120,17 @@ CAPITAL_MEASURES = {
     "log_deposited_capital": "log1p_deposited_capital_usd",
     "five_candidate_capital_share": "five_candidate_capital_share",
 }
+
+
+def attach_spec_ids(
+    frame: pd.DataFrame, *, prefix: str, columns: tuple[str, ...]
+) -> pd.DataFrame:
+    """Attach readable row labels used by downstream selectors."""
+
+    output = frame.copy()
+    labels = output.loc[:, list(columns)].astype(str).agg("-".join, axis=1)
+    output["spec_id"] = prefix + ":" + labels.str.replace(r"\s+", "_", regex=True)
+    return output
 
 
 def _joined(values: object) -> str:
@@ -1048,64 +1046,38 @@ def _render_table(estimates: pd.DataFrame) -> str:
 
 
 def run(*, bootstrap_repetitions: int = 199) -> tuple[Path, Path, Path]:
-    context = model_artifact_context()
-    inputs = [CANDIDATE_DAY_INPUT, EXACT_HORIZON_INPUT]
-    with require_released_model_inputs(
-        context, inputs, consumer="V2 liquidity predictability estimator"
-    ):
-        panel = pd.read_parquet(EXACT_HORIZON_INPUT)
-        estimates, support = estimate_v2_predictability(
-            panel, bootstrap_repetitions=bootstrap_repetitions
-        )
-        notes = (
-            "V2-only bidirectional exact-calendar predictability; candidate and origin-date fixed effects; "
-            "cross-section-aggregated score HAC with zero-score dates on the complete calendar and 30-day Bartlett bandwidth, "
-            "month-block bootstrap and limited five-candidate two-way sensitivity; full-calendar adjudication only; "
-            "pre/post estimates are heterogeneity; descriptive predictive interpretation only"
-        )
-        write_model_exhibit(
-            estimates, RESULT_OUTPUT, role="result", context=context,
-            code_sources=CODE_SOURCES, inputs=inputs, notes=notes,
-        )
-        write_model_exhibit(
-            support, SUPPORT_OUTPUT, role="support", context=context,
-            code_sources=CODE_SOURCES, inputs=inputs, notes=notes,
-        )
-        with atomic_output(TABLE_OUTPUT) as temporary:
-            temporary.write_text(_render_table(estimates), encoding="utf-8")
-        stamp(
-            TABLE_OUTPUT, code_sources=CODE_SOURCES,
-            inputs=[context.d3_certificate_path, RESULT_OUTPUT, SUPPORT_OUTPUT],
-            rows=int(len(estimates)), notes=notes,
-        )
+    candidate_day = pd.read_parquet(CANDIDATE_DAY_INPUT)
+    panel = pd.read_parquet(EXACT_HORIZON_INPUT)
+    validate_v2_candidate_day_panel(candidate_day)
+    validate_v2_exact_horizon_panel(panel)
+    _assert_released_origin_identity(candidate_day, panel)
+    estimates, support = estimate_v2_predictability(
+        panel, bootstrap_repetitions=bootstrap_repetitions
+    )
+
+    for frame, path in ((estimates, RESULT_OUTPUT), (support, SUPPORT_OUTPUT)):
+        path.parent.mkdir(parents=True, exist_ok=True)
+        with atomic_output(path) as temporary:
+            frame.to_json(
+                temporary,
+                orient="records",
+                lines=True,
+                date_format="iso",
+            )
+    TABLE_OUTPUT.parent.mkdir(parents=True, exist_ok=True)
+    with atomic_output(TABLE_OUTPUT) as temporary:
+        temporary.write_text(_render_table(estimates), encoding="utf-8")
     return RESULT_OUTPUT, SUPPORT_OUTPUT, TABLE_OUTPUT
 
 
 def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--bootstrap-repetitions", type=int, default=199)
-    parser.add_argument("--top-pool-count", type=int, default=5)
-    parser.add_argument(
-        "--component",
-        choices=("all", "quantity-contract", "predictability", "influence"),
-        default="all",
-        help="all components share one bound generation; split them only to diagnose",
-    )
     args = parser.parse_args()
     if args.bootstrap_repetitions < 20:
         raise ValueError("month-block bootstrap requires at least 20 repetitions")
-    if args.top_pool_count < 1:
-        raise ValueError("the leave-one-pool perimeter needs at least one pool")
-    paths: tuple[Path, ...] = ()
     try:
-        if args.component in ("all", "quantity-contract"):
-            paths += run_quantity_contract()
-        if args.component in ("all", "predictability"):
-            paths += run(bootstrap_repetitions=args.bootstrap_repetitions)
-        if args.component in ("all", "influence"):
-            paths += run_influence_concentration(top_pool_count=args.top_pool_count)
-        if args.component == "all":
-            paths += (run_attack_disposition(),)
+        paths = run(bootstrap_repetitions=args.bootstrap_repetitions)
     except (RuntimeError, ValueError, FileNotFoundError) as error:
         print(f"INPUT BLOCKED: {error}")
         return 2

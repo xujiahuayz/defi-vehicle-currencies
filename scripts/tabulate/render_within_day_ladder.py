@@ -13,7 +13,6 @@ import math
 
 from ddvc.paper_tables import write_table_artifacts
 from ddvc.paths import OUTPUT_DIR
-from ddvc.provenance import current_artifacts, sidecar_path
 
 
 INPUT = OUTPUT_DIR / "exhibits" / "excess_use_date_fe_ladder.jsonl"
@@ -96,22 +95,11 @@ def render_within_day_ladder(rows: list[dict]) -> str:
     ) + "\n"
 
 
-with current_artifacts([INPUT], consumer="within-day intermediary-role ladder"):
-    records = [
-        json.loads(line) for line in INPUT.read_text(encoding="utf-8").splitlines()
-    ]
-    write_table_artifacts(
-        "within_day_ladder",
-        render_within_day_ladder(records),
-        preview_width="7.0in",
-        inputs=[INPUT, sidecar_path(INPUT)],
-        code_sources=["scripts/tabulate/render_within_day_ladder.py"],
-        notes=(
-            "within-day cross-section of the excess-use construct: token-day "
-            "intermediary count share on the token's own endpoint count share, "
-            "both in percentage points, with date fixed effects absorbing the "
-            "calendar; standard errors in parentheses cluster on date and token; "
-            "class premiums are measured against the residual unclassified "
-            "bucket and are not identified once currency effects are absorbed"
-        ),
-    )
+records = [
+    json.loads(line) for line in INPUT.read_text(encoding="utf-8").splitlines()
+]
+write_table_artifacts(
+    "within_day_ladder",
+    render_within_day_ladder(records),
+    preview_width="7.0in",
+)

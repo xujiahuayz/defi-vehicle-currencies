@@ -102,9 +102,4 @@ write_table_artifacts(
     "sample_coverage",
     "\n".join(lines) + "\n",
     preview_width="9in",
-    inputs=[BRIDGE_PANEL, ROUTE_COST_PANEL, LP_CAPITAL_CONCENTRATION_PANEL, V4_ROUTE_UNITS],
-    notes=(
-        "Legacy sample-coverage inspection table; route_cost_panel_v2 is withdrawn "
-        "pending its registered rebuild and this renderer must not be used meanwhile."
-    ),
 )

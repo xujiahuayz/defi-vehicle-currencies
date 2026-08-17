@@ -1,5 +1,9 @@
 # Tests
 
-Tests mirror the repository's scientific contracts: provider schemas, raw certification, route and state reconstruction, pricing, release identity, provenance, metrics, estimators, workflow gates, and deliverable conformance. A regression should reproduce the exact failure mode and assert the economic or lifecycle invariant, not only the exception text.
+Tests cover provider parsing, reconstruction, pricing, transformations, estimators,
+workflow paths and deliverable builds. Prefer bounded fixtures and direct economic
+or schema invariants. Do not add tests whose only purpose is a content fingerprint,
+certificate chain or parallel release registry.
 
-Run the complete suite with `./scripts/run -m unittest discover -s tests`. Structural changes also require the shared structural-change gate over the exact changed architecture and focused tests. Expensive integration tests should use bounded fixtures or explicit opt-in data roots; ordinary tests must not mutate canonical local data.
+Run the suite with `./scripts/run -m unittest discover -s tests`. See the root
+[`README.md`](../README.md) for the project-wide contract.

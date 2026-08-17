@@ -111,6 +111,4 @@ write_table_artifacts(
     "variable_notation",
     render_table(),
     preview_width="10in",
-    code_sources=["src/ddvc/variable_registry.py"],
-    notes="Canonical notation inspection table; not an active manuscript input.",
 )

@@ -1,69 +1,109 @@
 # The Making of Dominant Vehicle Currencies
 
-This repository contains the acquisition, reconstruction, analysis, literature, paper, and presentation workflow for the DeFi vehicle-currencies project.
+This repository is the durable, provider-agnostic home of the DeFi
+vehicle-currencies project: data acquisition, reconstruction, analysis, the JFE
+paper, and the presentation deck.
 
-## Start Here
+## Continuity contract
 
-- [`docs/research-workflow.md`](docs/research-workflow.md) defines the iterative research graph and its gates.
-- [`docs/repository-data-map.md`](docs/repository-data-map.md) is the canonical map of repository ownership, data lineage, scientific roles, downstream consumers, and cleanup rules.
-- [`data/README.md`](data/README.md) gives concise operator guidance for the local data workspace.
-- [`output/README.md`](output/README.md) defines the code-to-deliverable handoff.
+No model, provider, terminal session, or chat transcript owns project state. An
+executor may change halfway through a task. Continuity comes from the repository:
 
-## Repository Topology
+1. `README.md` owns operating rules.
+2. `docs/findings-freeze.md` states the live workflow position and blockers.
+3. `docs/specification-lock.json` names the executable claims and their inputs and
+   outputs.
+4. `logs/grind-ledger.md` records completed work; `logs/grind-queue.md` contains
+   remaining work.
+5. Git commits and `origin/main` hand off code and documentation. Gitignored data
+   move separately by relative path and byte size.
 
-- [`src/ddvc/`](src/README.md) contains reusable research logic and registries.
-- [`scripts/`](scripts/README.md) contains thin, directly runnable acquisition, processing, analysis, and rendering entry points.
-- `data/` contains local evidence, canonical derived panels, runtime intermediates, and tracked provenance manifests; payloads are not committed.
-- `output/` contains code-generated tables, figures, exhibits, and inspection artifacts consumed by the paper and deck.
-- `literature/` contains local source payloads, searchable extracts, bibliography and admission records, source-family notes, and clearly marked historical digests; current specialist cards and the reconciled audit live under `docs/reviews/` and `docs/literature-audit.md`.
-- [`paper/`](paper/README.md) and [`deck/`](deck/README.md) contain the two authored deliverables and their review builds.
-- `docs/` contains research design, audit, findings, certification, and workflow records.
-- [`tests/`](tests/README.md) verifies acquisition contracts, reconstruction, pricing, releases, metrics, and analysis behavior.
+Compatibility files such as `AGENTS.md` contain pointers only. Do not put unique
+instructions in a provider-specific file.
 
-## Environment
+## Reproducible research pipeline
 
-Install runtime dependencies with:
-
-```bash
-uv sync
+```text
+fetch script -> retained data/raw/
+             -> process script -> data/processed/
+             -> analysis script -> output/exhibits/
+             -> tabulate/plot script -> output/tables/ or output/figures/
+             -> paper/ and deck/
 ```
 
-Install development dependencies with:
+Every paper/deck table and plot has one script owner. Every processed panel is
+rebuildable from retained raw data. Raw data are regular files inside this
+repository, never symlinks into a retired checkout. Scratch data with no downstream
+consumer are disposable.
+
+This project does not require cryptographic content hashes, fingerprint registries,
+certificate chains, or multiple release namespaces. Direct paths, schemas, row
+checks, byte sizes, timestamps, tests, and successful rebuilds are enough.
+
+The detailed path map and cleanup rules are in
+[`docs/repository-data-map.md`](docs/repository-data-map.md).
+
+## Start or resume work
+
+Read only what the task needs:
+
+```bash
+tail -80 logs/grind-ledger.md
+rg -n '^\s*- \[ \]' logs/grind-queue.md
+sed -n '1,180p' docs/findings-freeze.md
+./scripts/run scripts/research_action_preflight.py <data|analysis|deck|prose>
+```
+
+Then run the bounded readiness gate:
+
+```bash
+./scripts/run scripts/audit_findings_freeze.py
+```
+
+The current paper and deck are the only deliverables:
+
+```bash
+(cd paper && latexmk -pdf -interaction=nonstopmode main.tex)
+(cd deck && latexmk -pdf -interaction=nonstopmode main.tex)
+```
+
+Inspect changed PDF pages and check build logs before committing.
+
+## Repository layout
+
+- `src/ddvc/`: reusable acquisition, route/state, pricing, transformation and
+  estimator logic.
+- `scripts/`: fetching, processing, analysis, table, plot, model and verification
+  entry points.
+- `data/raw/`: retained source evidence.
+- `data/processed/`: analysis-ready panels.
+- `output/`: generated exhibits, tables and figures.
+- `literature/`: bibliography, admitted sources, extracts and evidence notes.
+- `docs/`: current scientific decisions, specification, workflow state and reviews.
+- `paper/`, `deck/`: the single canonical manuscript and presentation.
+- `tests/`: bounded code and scientific-contract checks.
+
+Local folder READMEs contain only folder-specific details and point back here.
+
+## Environment and tests
 
 ```bash
 uv sync --extra dev
-```
-
-Run project commands through `./scripts/run`; it selects the current worktree's package source once and reuses the primary checkout's environment when a linked worktree has none.
-
-## Core Commands
-
-Plan or run the registered raw-market acquisition through the current sample boundary:
-
-```bash
-./scripts/run scripts/fetch_raw_market_data.py plan --dex all
-GRAPH_API_KEYS=... DUNE_API_KEYS=... ./scripts/run scripts/fetch_raw_market_data.py fetch --dex all --start genesis --end 2026-07-01
-```
-
-Build the raw inventory and descriptive paper tables:
-
-```bash
-./scripts/run scripts/process/build_raw_data_inventory.py
-./scripts/run scripts/tabulate/render_data_coverage.py
-./scripts/run scripts/tabulate/render_sample_coverage.py
-./scripts/run scripts/tabulate/render_summary_statistics.py
-```
-
-Run tests with:
-
-```bash
 ./scripts/run -m unittest discover -s tests
 ```
 
-## Sample Boundary
+Run commands through `./scripts/run` so they use this checkout’s package source.
+The working sample ends on 2026-06-30 UTC, expressed as the half-open boundary
+`date < 2026-07-01`.
 
-The current target is through 2026-06-30 UTC, represented as the half-open interval `start <= date < 2026-07-01`.
+## Acquisition
 
-## Source Credentials
+```bash
+./scripts/run scripts/fetch_raw_market_data.py plan --dex all
+GRAPH_API_KEYS=... DUNE_API_KEYS=... \
+  ./scripts/run scripts/fetch_raw_market_data.py fetch \
+  --dex all --start genesis --end 2026-07-01
+```
 
-The Graph acquisition reads a comma-separated `GRAPH_API_KEYS` pool and Dune acquisition reads `DUNE_API_KEYS`. Secrets and the local key ledger remain outside git. The registered provider and protocol mapping is documented in [`docs/repository-data-map.md`](docs/repository-data-map.md#providers-protocols-and-scientific-layers); `src/ddvc/fetch/sources.py` is executable authority.
+The Graph reads `GRAPH_API_KEYS`; Dune reads `DUNE_API_KEYS`. Secrets stay outside
+Git. `src/ddvc/fetch/sources.py` is the executable provider/protocol map.

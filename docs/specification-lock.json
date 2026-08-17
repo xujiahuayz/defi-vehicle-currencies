@@ -189,7 +189,6 @@
           "stable_share_formula": "stable measure mass divided by native-plus-stable measure mass within each cell"
         }
       },
-      "e1_design_hash": "d4f9215fdda57f70d6cf5924a844bc77d420bcf99675888d578f23c4ff6c0cda",
       "estimand": "2026-minus-2024 change in stable share within native-plus-stable exact two-leg intermediary choices inside ordered-endpoint-pair, common-month-day, and integration-scope cells, followed by an exact descriptive decomposition of the raw pooled aggregate change into within-common-pair, common-pair-reweighting, common-support-mass, and exclusive-pair-contribution terms",
       "execution_gate": "open",
       "falsifier": "the increase disappears within fixed opportunity, integration, complexity, or routing-search-efficiency cells",
@@ -197,10 +196,7 @@
       "id": "vehicle_transition",
       "inference": "weighted least squares on pair-date-integration-scope shares with saturated ordered-pair by month-day by integration-scope cell fixed effects; denominator mass is the observation weight; two-way CR1 clustering by ordered endpoint pair and calendar date; Holm adjustment across exactly the three primary 2026 coefficients",
       "inputs": [
-        "data/processed/endpoint_candidate_composition_release/current.json",
-        "data/processed/intermediation_by_type_daily.parquet",
-        "data/processed/cross_venue_routing_daily.parquet",
-        "data/processed/vehicle_excess_use_daily.parquet"
+        "data/processed/endpoint_candidate_composition_release/current.json"
       ],
       "mandatory_alternatives": {
         "backing": [
@@ -238,12 +234,8 @@
         "output/exhibits/vehicle_transition_pair_decomposition.jsonl",
         "output/exhibits/vehicle_transition_pair_support.jsonl",
         "output/exhibits/vehicle_transition_pair_contributions.parquet",
-        "output/exhibits/intermediation_by_type.jsonl",
-        "output/exhibits/intermediation_integration_rival.jsonl",
-        "output/exhibits/intermediation_complexity_rival.jsonl",
-        "output/exhibits/vehicle_excess_use.jsonl"
+        "output/exhibits/vehicle_transition_pair_fixed_effects.jsonl"
       ],
-      "plan_hash": "8af4462b665c37d053b9c9e42a65ea655ae092ce4282e137d709301f91202f64",
       "primary_comparison": "2024 versus 2026",
       "registered_specifications": [
         {
@@ -619,8 +611,6 @@
       "id": "liquidity_capital_v2_predictability",
       "inference": "two-sided 95-percent intervals from candidate-date score HAC with Bartlett weights over 30 exact calendar days; scores are aggregated across candidates by date and unsupported dates inside the sample span are retained as zero-score dates. Calendar-month moving-block bootstrap and two-way candidate and origin-date clustering are sensitivities, with the five-candidate limitation stated. Holm adjustment is within perimeter and direction across the twelve primary-horizon route-measure by capital-measure coefficients",
       "inputs": [
-        "data/processed/vehicle_excess_use_daily.parquet",
-        "data/processed/pool_capital_release/current.json",
         "data/processed/liquidity_capital_v2_candidate_day.parquet",
         "data/processed/liquidity_capital_v2_exact_horizons.parquet"
       ],
@@ -657,7 +647,6 @@
         "output/exhibits/liquidity_capital_v2_support.jsonl",
         "output/tables/liquidity_capital_v2_predictability.tex"
       ],
-      "plan_hash": "9734d49a1f112f71fcd28e3e82dfdbb03c4151041389739c8306346f2450b476",
       "primary_horizons": [
         1,
         7,
@@ -1023,14 +1012,6 @@
       "unit": "transaction"
     }
   ],
-  "d3_certificate": "data/processed/d3_analysis_release/generations/c199e51a2270f28562d7af90b1a28ce0e4c8377d31b120c168549e1a80e7afeb/certificate.json",
-  "d3_generation": "4225a3bd7729de96dc64d54c08579f889715da43040ab2affcfb3f29fc70184b",
-  "design_seed_identity": {
-    "file_sha256": "e9fef2aefb985e801501a5bd2879d0e78beb822d5b7b82dd164e5ed8cde7e2a0",
-    "lock_hash": "a76e76d28148ba9180ea614954a2148c8612d3b45f5ae89d98800cf92bd007f5"
-  },
-  "exploration_certificate": "data/processed/e0_exploration_release/generations/29e56d3add0d0c35e340e0887f8209d216207f8ee0f058fec617ab9f26792c60/certificate.json",
-  "exploration_generation": "ef6da4e109cf92fbca6196299ca7c7b75e6891592e5670f3126130c6679d261b",
   "global_rules": {
     "abstract_question": "what makes a vehicle currency dominant, not what makes an asset a vehicle currency",
     "asset_identity": "canonical contract address; symbols are labels only",
@@ -1045,14 +1026,13 @@
     "primary_value_support": "within-20-percent input-output valuation coherence",
     "primary_vehicle_choice_unit": "one exact two-leg intermediary route, which has one vehicle and one vote",
     "primary_weighting": "episode count",
-    "prose_gate": "no current-generation model claim enters prose until E1 registers it, a distinct confirmatory F run is admissible, and two stable F-G-H passes add no claim and retire none",
+    "prose_gate": "a registered claim enters final prose only after its declared outputs are rebuilt from its declared inputs after this lock",
     "round_trips": "canonical endpoint round trips are excluded from economic-route numerators and denominators",
     "route_unit": "one directed economic input-to-output path keyed by transaction hash and component id",
     "value_weighting": "secondary, with raw, within-2x, and within-20-percent support reported separately",
     "vehicle_dominance": "continuous: the degree of vehicle use, measured by intermediary share and normalized by endpoint-demand share as the excess-use ratio",
     "vehicle_status": "binary: an asset has vehicle status on a route if it is used as a non-endpoint intermediary"
   },
-  "lock_hash": "798c6e6ccdaec47d67acb697d57528ccdc584d570d4a9f4996e1ad3fe906b3ea",
   "locked_at": "2026-08-17T04:13:18+00:00",
   "paper_scope": "The making and displacement of vehicle-currency roles in Ethereum decentralised exchange",
   "schema_version": 1,

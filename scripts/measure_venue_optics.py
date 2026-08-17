@@ -35,7 +35,7 @@ ROOT = Path(__file__).resolve().parents[1]
 
 SECTIONS_DIR = (ROOT / "paper" / "sections") if (ROOT / "paper" / "sections").is_dir() else (ROOT / "memo" / "sections")
 
-from ddvc.tables import write_exhibit  # noqa: E402
+from ddvc.tables import write_report  # noqa: E402
 from ddvc.latex_text import included_section_files  # noqa: E402
 from ddvc.venue_corpus import resolve_venue_corpus  # noqa: E402
 
@@ -173,7 +173,7 @@ def main() -> int:
         print(f"Below the first quartile: {', '.join(below)}.")
     if not absent and not below:
         print("The draft sits inside the venue's range on every measured feature.")
-    write_exhibit(__import__("pandas").DataFrame(rows), OUT)
+    write_report(__import__("pandas").DataFrame(rows), OUT)
     print(f"\nwrote {OUT.relative_to(ROOT)}")
     return 0
 

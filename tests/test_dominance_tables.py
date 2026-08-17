@@ -11,9 +11,6 @@ from ddvc.dominance_tables import (
     render_pair_composition,
     render_usdt_transition,
 )
-from ddvc.provenance import sidecar_path, verify
-
-
 ROOT = Path(__file__).resolve().parents[1]
 EXHIBITS = ROOT / "output" / "exhibits"
 TABLES = ROOT / "output" / "tables"
@@ -177,23 +174,19 @@ def test_paper_has_one_consumer_and_no_duplicate_inline_body() -> None:
             "dominance_rotation",
             {
                 "output/exhibits/intermediation_complexity_rival.jsonl",
-                "data/manifests/output/exhibits/intermediation_complexity_rival.jsonl.prov.json",
             },
         ),
         (
             "pair_composition",
             {
                 "output/exhibits/vehicle_transition_pair_decomposition_deck_values.tex",
-                "data/manifests/output/exhibits/vehicle_transition_pair_decomposition_deck_values.tex.prov.json",
                 "output/exhibits/vehicle_transition_pair_fixed_effects.jsonl",
-                "data/manifests/output/exhibits/vehicle_transition_pair_fixed_effects.jsonl.prov.json",
             },
         ),
         (
             "usdt_transition",
             {
                 "output/exhibits/provisional_results_deck_values.tex",
-                "data/manifests/output/exhibits/provisional_results_deck_values.tex.prov.json",
             },
         ),
     ],
@@ -201,15 +194,11 @@ def test_paper_has_one_consumer_and_no_duplicate_inline_body() -> None:
 def test_generated_table_lineage_is_current(
     stem: str, expected_inputs: set[str]
 ) -> None:
+    newest_input = max((ROOT / path).stat().st_mtime for path in expected_inputs)
     for suffix in ("tex", "pdf"):
         artifact = TABLES / f"{stem}.{suffix}"
-        assert verify(artifact)["status"] == "ok"
-        record = json.loads(sidecar_path(artifact).read_text(encoding="utf-8"))
-        assert {str(item["path"]) for item in record["inputs"]} == expected_inputs
-        assert record["payload_identity"]["sha256"]
-        if stem == "usdt_transition":
-            assert "provisional" in record["notes"]
-            assert "lineage" in record["notes"]
+        assert artifact.is_file()
+        assert artifact.stat().st_mtime >= newest_input
 
 
 def test_renderers_reject_missing_or_ambiguous_cells() -> None:

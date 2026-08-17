@@ -1,17 +1,22 @@
-# Command-Line Entry Points
+# Scripts
 
-Scripts are thin executable owners for acquisition, certification, materialisation, analysis, validation, and rendering. Reusable scientific logic belongs in `../src/ddvc/`; a script should parse arguments, call that logic, publish through the canonical release boundary, and report a compact result. Do not add `sys.path` mutations to individual scripts: run them through `./scripts/run`, which supplies the project interpreter and import root once.
+Run commands through `./scripts/run` so they use the project environment.
 
-The main subfolders separate figure builders, model programs, raw processing, table rendering, and verification. Before adding an entry point, search for an existing owner and extend it when the lifecycle and output contract are the same. Registered D3 build order lives in `src/ddvc/d3_stage_registry.py`, not in a second shell workflow.
+The intended layout is the ordinary research pipeline:
 
-| Location | Responsibility |
+| Folder | Job |
 |---|---|
-| `process/` | Raw-to-processed normalization and reusable panel builders |
-| `figure/` | Figure and diagram renderers whose scientific inputs already exist |
-| `tabulate/` | TeX table fragments and inspection PDFs; see its README for current consumers and blocked owners |
-| `model/` | Authored model programs and numerical implementations |
-| `verify/` | Independent checks and reference-implementation comparisons, not production data owners |
+| `fetch/` or existing `fetch_*.py` | Provider/chain to `data/raw/` |
+| `process/` | Raw or unified data to `data/processed/` |
+| `tabulate/` | Processed/results to TeX tables |
+| `figure/` | Processed/results to plots |
+| `model/` | Numerical model programs |
+| `verify/` | Small independent checks, never production owners |
 
-Root-level commands own named end-to-end acquisitions, audits, releases, or experiments. A root script is not evidence that its output is current: current status comes from its registered release, provenance, and consumer. Likewise, a checked-in file under `output/tables/` is not automatically a manuscript table.
+Existing root-level jobs may stay until touched. New jobs go in the matching
+folder, and a touched root job should move when doing so does not break a live
+run. Shared logic belongs in `../src/ddvc/`.
 
-Generated outputs follow [`../docs/repository-data-map.md`](../docs/repository-data-map.md); authored deliverables never become a script's output root.
+One script owns one output family. Scripts may write raw, processed, exhibit,
+table or figure files, but not extra workflow certificates or fingerprint trees.
+See [`../docs/repository-data-map.md`](../docs/repository-data-map.md).

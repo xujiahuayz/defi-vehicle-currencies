@@ -35,7 +35,7 @@ from statistics import mean, median, pstdev
 
 ROOT = Path(__file__).resolve().parents[1]
 
-from ddvc.tables import write_exhibit  # noqa: E402
+from ddvc.tables import write_report  # noqa: E402
 from ddvc.latex_text import included_section_files, strip_latex_markup  # noqa: E402
 from ddvc.venue_corpus import resolve_venue_corpus  # noqa: E402
 
@@ -560,7 +560,7 @@ def main() -> int:
                      "paragraph_words_sd": profile["paragraph_words_sd"],
                      "paragraph_words_cv": profile["paragraph_words_cv"],
                      "verdict": "editorial profile"})
-    write_exhibit(__import__("pandas").DataFrame(rows), OUT)
+    write_report(__import__("pandas").DataFrame(rows), OUT)
     print(f"\nwrote {OUT.relative_to(ROOT)}")
     return 0
 

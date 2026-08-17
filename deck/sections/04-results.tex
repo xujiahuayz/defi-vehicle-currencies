@@ -93,7 +93,7 @@ Pooled                & \DateFEPooledNative{} & \DateFEPooledStable{} & --- \\
 \begin{frame}{WETH-linked trading pairs account for most of the count rotation}
 \vspace{-0.10cm}
 \begin{center}
-\resizebox{0.94\textwidth}{!}{\input{assets/vehicle-transition-pair-decomposition.tex}}
+\resizebox{0.87\textwidth}{!}{\input{assets/vehicle-transition-pair-decomposition.tex}}
 \end{center}
 \vspace{-0.15cm}
 {\fontsize{7.8}{8.6}\selectfont The count increase falls from \WethCountFullChange{} to \WethCountNoEndpointChange{} without WETH endpoints. A WETH-linked pair admits only a stablecoin intermediary in this comparison, so the count rotation largely records where trading happens rather than which intermediary a given trade selects.}
@@ -269,14 +269,14 @@ Pooled                & \DateFEPooledNative{} & \DateFEPooledStable{} & --- \\
 % ESTIMAND-BOUNDARY: daily five-candidate panel on the full 2020--2026 V2 calendar with candidate and origin-date fixed effects; adjudication is the pre-stated reciprocal rule at 1/7/30 days with a 120-day reversal check; displayed cells are the episode-share/log-capital pair and the concordant 120-day sensitivity
 % VISUAL-FUNCTION: liquidity-allocation adjudication | opposed timing diagrams with estimates | show that neither direction predicts at one to thirty days
 \begin{frame}{Deposited capital neither leads vehicle use nor follows it}
-\vspace{0.02cm}
+\vspace{-0.04cm}
 \begin{columns}[T,totalwidth=\textwidth]
 \begin{column}{0.48\textwidth}
 \evidencekicker{Liquidity first}
 \vspace{0.12cm}
 \centering
 \begin{tikzpicture}[x=1cm,y=1cm]
-\node[softbox,text width=4.35cm,minimum height=0.82cm,align=center] (capital) at (0,2.60) {Deposited capital in\\vehicle-linked pools at $t$};
+\node[softbox,text width=4.35cm,minimum height=0.82cm,align=center] (capital) at (0,2.42) {Deposited capital in\\vehicle-linked pools at $t$};
 \node[softbox,text width=4.35cm,minimum height=0.82cm,align=center] (route) at (0,0.68) {Vehicle share at $t+\tau$};
 \draw[-{Stealth[length=6pt]},line width=1.7pt,draw=stable] (capital)--(route);
 \end{tikzpicture}
@@ -288,7 +288,7 @@ Pooled                & \DateFEPooledNative{} & \DateFEPooledStable{} & --- \\
 \vspace{0.12cm}
 \centering
 \begin{tikzpicture}[x=1cm,y=1cm]
-\node[softbox,text width=4.35cm,minimum height=0.82cm,align=center] (route) at (0,2.60) {Vehicle share at $t$};
+\node[softbox,text width=4.35cm,minimum height=0.82cm,align=center] (route) at (0,2.42) {Vehicle share at $t$};
 \node[softbox,text width=4.35cm,minimum height=0.82cm,align=center] (capital) at (0,0.68) {Deposited capital in\\vehicle-linked pools at $t+\tau$};
 \draw[-{Stealth[length=6pt]},line width=1.7pt,draw=ucldark] (route)--(capital);
 \end{tikzpicture}
@@ -296,7 +296,7 @@ Pooled                & \DateFEPooledNative{} & \DateFEPooledStable{} & --- \\
 {\footnotesize A one-point higher episode share predicts a next-day capital change of \LiqPredRouteCapDayCoef{} (SE \LiqPredRouteCapDaySE{}); at thirty days \LiqPredRouteCapMonthCoef{} (SE \LiqPredRouteCapMonthSE{}).\par}
 \end{column}
 \end{columns}
-\vspace{0.10cm}
+\vspace{0.02cm}
 {\fontsize{7.8}{8.6}\selectfont No use/capital measure pair is positive in both directions at any two of the one-, seven-, and thirty-day horizons; the smallest Holm-adjusted $p$ is \LiqPredMinHolm{}. The only strong longer-horizon pattern runs the other way: over the following 120 days, higher-capital pool-days lose episode share (\LiqPredLongCapRouteCoef{} per log point, SE \LiqPredLongCapRouteSE{}).\par}
 \decknote{Daily panel of the five vehicle candidates on the full \LiqPredSpanDays{}-day V2 calendar with candidate and date fixed effects; standard errors use 30-day calendar HAC on date-aggregated scores, and Holm adjustment is within direction; a month-block bootstrap and candidate-date clustering agree. Deposited capital is a reserve stock; provider flows and concentrated-liquidity depth are measured separately. Predictive associations only, not causal feedback.}
 \end{frame}

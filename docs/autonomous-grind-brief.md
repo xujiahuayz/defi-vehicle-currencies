@@ -92,10 +92,10 @@ only thing you owe is a clean, small, honest history:
   to turn a check green. A green gate over an empty parquet is worse than a red
   one, because it silently enters the paper. If a check cannot be honestly
   closed, record why in the ledger and pick a different one.
-- **Never acquire provider data you already have.** Check the certified sibling
-  store `../defi-dominant-currency/data/` and existing release pointers before
-  any fetch. A refetch that overwrites a certified partition is how the 2026-08-13
-  Fluid incident was manufactured.
+- **Never acquire provider data you already have.** Check `data/raw/`, including
+  its retained archive, before any fetch. New acquisition writes only to this
+  repository's canonical provider folders; the retired sibling repository is
+  not a data store.
 - **Never rewrite a certified release to get cleaner architecture.** Bound the
   defect's materiality first; defer architecture to the next planned generation.
 - **Social-science materiality comes before data perfection.** Random or

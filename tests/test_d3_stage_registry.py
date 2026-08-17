@@ -39,17 +39,10 @@ def test_real_d3_registry_equals_the_executable_specification_perimeter() -> Non
     )
     by_path = {record.path: record for record in ownership}
     assert set(by_path) == {
-        "data/processed/cross_venue_routing_daily.parquet",
         "data/processed/endpoint_candidate_composition_release/current.json",
-        "data/processed/intermediation_by_type_daily.parquet",
         "data/processed/liquidity_capital_v2_candidate_day.parquet",
         "data/processed/liquidity_capital_v2_exact_horizons.parquet",
-        "data/processed/pool_capital_release/current.json",
-        "data/processed/vehicle_excess_use_daily.parquet",
     }
-    capital = by_path["data/processed/pool_capital_release/current.json"]
-    assert capital.status == "built"
-    assert capital.owner == "build_pool_capital_panel.py"
     endpoint = by_path[
         "data/processed/endpoint_candidate_composition_release/current.json"
     ]
@@ -95,7 +88,11 @@ def test_registry_rejects_an_unowned_executable_input() -> None:
 
 def test_registry_rejects_duplicate_ownership() -> None:
     specification = _specification()
-    path = executable_claim_inputs(specification)[0]
+    path = next(
+        path
+        for path in executable_claim_inputs(specification)
+        if not path.endswith("/current.json")
+    )
     duplicate = D3BuildStage("duplicate.py", (), "invalid duplicate", (path,))
     with pytest.raises(ValueError, match="duplicate=.*"):
         d3_input_ownership(specification, stages=(*D3_BUILD_STAGES, duplicate))
