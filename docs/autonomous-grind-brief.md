@@ -10,7 +10,7 @@ turn.
 
 The project is finished when all three of these hold:
 
-1. `uv run python scripts/audit_findings_freeze.py` exits 0 (freeze gate GREEN,
+1. `./scripts/run scripts/audit_findings_freeze.py` exits 0 (freeze gate GREEN,
    including the `two unchanged findings passes` check).
 2. `paper/main.pdf` builds clean from frozen evidence.
 3. `deck/main.pdf` builds clean from the same frozen evidence.
@@ -28,7 +28,7 @@ through" — not your judgement of it.
    Any unchecked item there **outranks the gate's own blocking list** and is
    done first, oldest first. Tick it off (`- [x]`) in the same commit that
    closes it. If the queue is empty, go to step 3.
-4. Run `uv run python scripts/audit_findings_freeze.py`. Read the blocking list.
+4. Run `./scripts/run scripts/audit_findings_freeze.py`. Read the blocking list.
 5. Classify each live blocker by scientific consequence before choosing work.
    Report whether the defect is concentrated by time, protocol/design, venue,
    pool, vehicle candidate, trade size, or stress state; bound its economic

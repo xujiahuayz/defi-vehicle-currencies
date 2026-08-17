@@ -12,7 +12,7 @@
 set -uo pipefail
 cd "$(dirname "$0")/.." || exit 1
 
-uv run python scripts/audit_findings_freeze.py >/dev/null 2>&1 || exit 1
+./scripts/run scripts/audit_findings_freeze.py >/dev/null 2>&1 || exit 1
 
 STAMP=logs/freeze-green.stamp
 mkdir -p logs
