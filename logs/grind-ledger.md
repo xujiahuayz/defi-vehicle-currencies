@@ -5411,3 +5411,46 @@ legible without clipping and the full deck contact sheet complete. The freeze
 audit is RED with three blockers, down from four: the stale full-calendar
 directed-route release, E1 specification lock, and empirical model ledger. The
 Git-native two-unchanged-pass check and canonical-panel freshness check pass.
+
+## 2026-08-17 — Replace the remaining certification chain with source freshness
+
+**Target and regression check.** Closed the oldest supervisor item, the lower
+certification/fingerprint layer. The purpose-bound estimand was the current
+D1/D3 route-only and executable E0 claim-input perimeter; the evidence
+generation was canonical D3 release `4225a3bd7729de96` plus its seven live
+claim inputs. The prior correction most at risk was that deleting certificates
+must not let a stale canonical panel pass, so the one pointer-to-input timestamp
+freshness check remains fail closed.
+
+**Scientific classification.** The removed layer was bookkeeping, with zero
+economic weight and no concentration by time, protocol/design, venue, pool,
+vehicle candidate, trade size, or stress state. Its records cannot change an
+estimand, sample composition, coefficient, or inference. The only scientific
+risk was false admission after an input mutation; file-stat source identities,
+typed release receipts, content hashes, causal-order evidence where required,
+and canonical-panel freshness retain that boundary without code restamping.
+
+**DECISION: promote the source-freshness cutover.** Commit `4f91b58` replaces
+ordinary raw certificate reads with source-day file-stat identities, regenerates
+the Graph sufficiency audit from the installed source files, and makes semantic
+`certificate.json` artifacts provenance-free release manifests. D3 and E0
+reopen their internal generation, exact claim-input perimeter, ledger, artifacts,
+and typed receipts without requiring a second sidecar or a current code hash.
+The raw-certification module and CLI, fixtures and tests, obsolete route-marker
+migrator and tests, and the six remaining tracked certificate sidecars are
+removed. Eight ignored zero-consumer scan/certificate files (about 18 MiB) were
+also deleted; they were regenerable and the raw data remain intact. The roughly
+156 MiB legacy capital evidence was retained because the current capital
+release still consumes it, and that release was reopened rather than rewritten
+or restamped.
+
+**Acceptance and gate.** Focused migration tests passed, followed by the full
+suite: 2,181 tests and 698 subtests. The freeze audit is RED with exactly the
+same three blockers: stale `unified_route_quality` at the full-calendar
+directed-route gate, E1 specification lock, and empirical model ledger. Capital
+release identity, reserve-source identity, canonical-panel freshness, and two
+unchanged findings passes are green. Deliverable conformance passes all
+blocking checks; `paper/main.pdf` builds cleanly at 47 pages and `deck/main.pdf`
+at 37 pages, both with zero undefined references. The next iteration should take
+the now-oldest queue item: build the git-native E1 self-lock owner and adjudicate
+its two open design choices before opening exploration.
