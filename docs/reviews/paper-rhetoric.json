@@ -94,11 +94,11 @@
         "source": "paper/sections/02-setting.tex",
         "line_start": 19,
         "line_end": 19,
-        "sha256": "e5a7e7dcfd8540832779611b54115499a4f3160128672632632e0dc9572733ca",
+        "sha256": "36d291b32c7280bfae7332be2d836e78549a3d87409acaf0981f77b8894f59b2",
         "kind": "named observed transaction",
-        "rhetorical_job": "The explorer's 460,000 PYUSD--USDe instruction is set beside the connected USDC--USDT--USDe pool sequence, making the boundary between a user's instruction and the exchange route observable.",
-        "handoff": "The example identifies USDT as the vehicle in the connected pool route, explains why the off-pool PYUSD--USDC conversion is excluded, and returns to the sample-wide flow rule.",
-        "judgment": "The transaction exposes a consequential measurement boundary between the user instruction and the connected pool route, then hands directly to the general route notation."
+        "rhetorical_job": "The explorer's 460,000 PYUSD--USDe instruction is set beside the connected USDC--USDT--USDe pool sequence, making both the instruction boundary and the ultimate-versus-atomic trade distinction observable.",
+        "handoff": "The example identifies USDC--USDe as the ultimate pair, its two pool conversions as atomic trades, and USDT as their vehicle; it then explains why the off-pool PYUSD--USDC conversion is excluded and returns to general route notation.",
+        "judgment": "Rereading Lehar--Parlour's Appendix B transaction passage confirms that the example should expose the mapping from public records to the paper's economic object. Here the new terms name that mapping and preserve the consequential boundary between the user instruction and connected pool route."
       },
       {
         "source": "paper/sections/05-rivals.tex",
@@ -124,7 +124,7 @@
   },
   "sections": {
     "paper/sections/abstract.tex": {
-      "sha256": "8ec85602d052641b76e0cb1d93753d5f6afa57821b51a7126855b25d80d83d3b",
+      "sha256": "2b5b8b72e6e391b945c9b2789e6d7f732b612086e1c9961fda1ccafa0561e6ce",
       "status": "rewritten",
       "exemplars": [
         "literature/text/2023-LiYeZheng2023Refusing-refusing-the-best-price.txt:26-34",
@@ -153,7 +153,7 @@
       "entry_handoff": "The title's rotation question leads directly to route data that reveal intermediary use.",
       "internal_progression": "Measurement leads to magnitude, to the network-versus-intermediary reading with its two composition margins, and then to the dated reversal and USDT's role comparison.",
       "exit_handoff": "The final sentence adds the non-monotone path and the USDT role change, leaving the compositional reading as the abstract's central claim rather than a closing caveat.",
-      "terminology_judgment": "Reader-facing prose names the measured object as the source and destination assets or their ordered asset pair. It reserves pool for a liquidity contract, venue for an exchange or protocol, and route for the ordered execution sequence; these objects are not used interchangeably."
+      "terminology_judgment": "The abstract introduces an ultimate pair once with the parenthetical source--destination gloss, so the network result names the economic endpoint object without asking the abstract to define the full route taxonomy. Pool, venue, route, and pair remain distinct."
     },
     "paper/sections/01-introduction.tex": {
       "sha256": "c15c31194d22ec1cf2b0737e03cabcc67b4bddb77bac829912f65e04fb6656ca",
@@ -257,7 +257,7 @@
       "terminology_judgment": "Reader-facing prose names the measured object as the source and destination assets or their ordered asset pair. It reserves pool for a liquidity contract, venue for an exchange or protocol, and route for the ordered execution sequence; these objects are not used interchangeably."
     },
     "paper/sections/02-setting.tex": {
-      "sha256": "250452f40b5e21264717ce670ab24210f68d58c9ef49db86dfdd070c853a6ff3",
+      "sha256": "9fde63d89fa4894fd09dc5d8edb5c7c7ad8bc04430b8fd7f13d404ee88b8b0c7",
       "status": "rewritten",
       "exemplars": [
         "literature/text/2024-LeharParlour2024Uniswap-decentralized-exchange-the-uniswap-automated-market-maker.txt:18-93",
@@ -277,8 +277,8 @@
           "heading": "Routes and notation",
           "classification": "direct",
           "incoming_object": "Pool calls combined atomically in one transaction.",
-          "opening_function": "Defines atomic routing before reconstruction, the transaction example, and notation.",
-          "judgment": "Institution precedes flow rule; the flow rule precedes the example; notation follows the observed object.",
+          "opening_function": "Defines transaction-level atomic settlement, then distinguishes ultimate trades and pairs from their atomic trades and pairs before the example and notation.",
+          "judgment": "Institution precedes the flow rule; the flow rule defines the economic units; the example makes their observability boundary concrete; notation follows the observed object.",
           "raw_exemplar": "literature/text/2024-LeharParlour2024Uniswap-decentralized-exchange-the-uniswap-automated-market-maker.txt:18-93"
         },
         {
@@ -520,13 +520,13 @@
           }
         ]
       },
-      "judgment": "Section 2 follows the institutional progression of Lehar--Parlour: explain how trading works, show what the records reveal, then define the analytical object. It defines every route denominator and separates direct intermediary measurement from state-dependent cost comparison.",
+      "judgment": "Section 2 follows the institutional progression of Lehar--Parlour: explain how trading works, show what the records reveal, then define the analytical object. Rereading their institutional opening and transaction appendix supports placing the ultimate-versus-atomic distinction immediately after the flow rule and testing it on the observed transaction. The terms distinguish connected-route endpoints from pool-swap units without changing any denominator, and the section still separates intermediary measurement from state-dependent cost comparison.",
       "entry_handoff": "The introduction’s claim of linked transaction paths enters through atomic pool execution.",
       "internal_progression": "Institution leads to the flow rule, transaction, notation, theory, dominance measures, and the route panel.",
       "exit_handoff": "The panel closes by retaining route-level attribution and sends the separate cost object to Section 4."
     },
     "paper/sections/03-dominance.tex": {
-      "sha256": "bcda856a98dc01520ca9d5f3239250b2d837b84a6b4af55c9b7a62f89fc21e75",
+      "sha256": "777ef5755e815020355ffc5e2a00c4f3527d30d3305d5dbdc12050bab61053f6",
       "status": "rewritten",
       "exemplars": [
         "literature/text/2020-MakarovSchoar2020Arbitrage-trading-and-arbitrage-in-cryptocurrency-markets.txt:886-991",
@@ -558,7 +558,7 @@
           "raw_exemplar": "literature/text/2020-MakarovSchoar2020Arbitrage-trading-and-arbitrage-in-cryptocurrency-markets.txt:886-991"
         },
         {
-          "heading": "Composition of source--destination pairs",
+          "heading": "Composition of ultimate pairs",
           "classification": "substantive_bridge",
           "incoming_object": "The aggregate increase.",
           "opening_function": "Names the three ways an aggregate vehicle share can rise and states which one accounts for almost none of the increase.",
@@ -1132,7 +1132,7 @@
       "entry_handoff": "The Section 2 denominator supplies the matched-day transition.",
       "internal_progression": "Rotation and reversals lead to a three-margin decomposition answered up front, matched estimates, named-currency excess use, a within-day cross-section that absorbs the calendar and bounds its own construction threats, then venue span and route complexity read first between endpoint years and then within a single day, and finally the fixed-opportunity comparison the causal question requires. The rotation is then cut by dated backing regime, which places the aggregate inside reserve-backed dollar claims before the pair decomposition asks where in the network it happened. The pair subsection then holds the trading population itself fixed, nesting corridor, intermediary-menu and realised-exchange-sequence cohorts, before the section turns to USDT's role.",
       "exit_handoff": "The final synthesis defines the fixed-pair, size, and path set needed to test router access.",
-      "terminology_judgment": "Reader-facing prose names the measured object as the source and destination assets or their ordered asset pair. It reserves pool for a liquidity contract, venue for an exchange or protocol, and route for the ordered execution sequence; these objects are not used interchangeably."
+      "terminology_judgment": "The decomposition is explicitly over ultimate (source--destination) pairs, separating reallocation across economic endpoint markets from intermediary choice within them. Rereading Makarov--Schoar's within-versus-across-region decomposition confirms that naming the comparison unit at the subsection opening clarifies the accounting before the index and table. Atomic pairs are not used for this estimand."
     },
     "paper/sections/06-executability.tex": {
       "sha256": "040450ef8bb314a35214297e536279eebd7bb6c87b0c845e5ca9850bf99181b7",
@@ -1587,7 +1587,7 @@
       "terminology_judgment": "Reader-facing prose names the measured object as the source and destination assets or their ordered asset pair. It reserves pool for a liquidity contract, venue for an exchange or protocol, and route for the ordered execution sequence; these objects are not used interchangeably."
     },
     "paper/sections/08-appendix.tex": {
-      "sha256": "796da36c69131d381f15b67d43467dd462ca368c5d9f5f33ab312c017f9dbe54",
+      "sha256": "fcaaec0048e309dcf4b8216095dc74a4f02896f8ad3d8329aaecd908768289ff",
       "status": "rewritten",
       "exemplars": [
         "literature/text/2023-LiYeZheng2023Refusing-refusing-the-best-price.txt:395-510",
@@ -1598,8 +1598,8 @@
           "heading": "From contract events to economic routes",
           "classification": "direct",
           "incoming_object": "The route used in main results.",
-          "opening_function": "Maps protocol events to ordered routes and valuation samples.",
-          "judgment": "Construction dependency leads.",
+          "opening_function": "Maps protocol events to atomic trades and pairs, connects them into ultimate trades and pairs, and then defines valuation samples.",
+          "judgment": "Construction dependency leads, and each label is attached to the output of a stated event-linking operation.",
           "raw_exemplar": "literature/text/2023-LiYeZheng2023Refusing-refusing-the-best-price.txt:395-510"
         },
         {
@@ -2187,7 +2187,7 @@
           }
         ]
       },
-      "judgment": "The appendix maps events to routes and harmonises notation across pricing families. Concentrated-liquidity steps are fee-inclusive and direction-neutral; v4’s singleton architecture is separately sourced. Component validation remains distinct from unexecuted-route accuracy.",
+      "judgment": "The appendix maps events to atomic trades and pairs, then to ultimate routes, and harmonises notation across pricing families. Rereading Li--Ye--Zheng's data construction and Graham et al.'s validation opening supports beginning with the observable-to-economic mapping before discussing filters or accuracy. Concentrated-liquidity steps remain fee-inclusive and direction-neutral; v4’s singleton architecture is separately sourced. Component validation remains distinct from unexecuted-route accuracy.",
       "entry_handoff": "Address-resolved events supply route and state primitives.",
       "internal_progression": "Route reconstruction leads to harmonised pricing, replay, support, source and family coverage, and round trips.",
       "exit_handoff": "Round-trip evidence returns construction to the main count and value denominators."

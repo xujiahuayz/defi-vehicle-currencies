@@ -131,9 +131,9 @@ Section 3 establishes the economic fact before assigning a mechanism. Section 4 
 
 ## 3. Definitions for Section 2.2
 
-**Definition 1, route unit.** A route is one directed economic swap component within a transaction, from source token to sink token, after direct splits and sequential legs have been joined by causal order.
+**Definition 1, route unit and pair terminology.** A route is one directed economic swap component within a transaction, from source token to sink token, after direct splits and sequential legs have been joined by causal order. For a reconstructed sequence A→B→C, A→C is the **ultimate trade** and (A,C) its ordered **ultimate pair**; A→B and B→C are the **atomic trades**, their ordered token pairs are the **atomic pairs**, and “leg” is shorthand for an atomic trade. Ultimate endpoints belong to the connected pool component and need not match the endpoints of a broader user instruction.
 
-**Definition 2, intermediary.** Token $k$ is an intermediary on route $r:i\rightarrow k\rightarrow o$ when $k$ is neither endpoint and the directed legs form a sequential conversion from $i$ to $o$.
+**Definition 2, intermediary.** Token $k$ is an intermediary on route $r:i\rightarrow k\rightarrow o$ when $k$ is neither ultimate endpoint and the directed atomic trades form a sequential conversion from $i$ to $o$.
 
 **Definition 3, vehicle status.** Candidate $k$ has vehicle status on a route when it is the observed intermediary. Status is binary at route level.
 
@@ -147,7 +147,7 @@ Section 3 establishes the economic fact before assigning a mechanism. Section 4 
 
 **Definition 8, excess use.** The share gap is intermediary share minus endpoint share. The excess-use ratio is intermediary share divided by endpoint share when endpoint share is positive. The gap is primary for inference; the ratio reports relative intensity.
 
-**Definition 9, integration scope.** A sequential route is single venue when both legs use the same venue and cross venue when the two legs use different venues.
+**Definition 9, integration scope.** A sequential route is single venue when both atomic trades use the same venue and cross venue when the two atomic trades use different venues.
 
 **Definition 10, opportunity cell.** An opportunity cell fixes ordered endpoints, candidate identity, observed venue reach, route design, notional bin, value-support status, and the registered search-efficiency state.
 
