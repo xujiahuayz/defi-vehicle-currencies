@@ -5308,3 +5308,61 @@ the honest blocked disposition for the two token-price attacks. Then build
 `scripts/lock_specification.py`. The token-price-placebo/stress pair still needs
 a panel-plus-release generation because the token-price panel is outside the
 current claim-input perimeter.
+
+## 2026-08-17 — Prune the zero-consumer research surface
+
+**Target.** The oldest actionable supervisor item: build a conservative
+dependency closure from executable callers, paper/deck includes, canonical
+workflow and index routes, tests, registries, and provenance references; remove
+only objects outside that closure. The purpose-bound estimand was the current
+D1/D3 route and executable E0 claim input, bound to D3 generation
+`4225a3bd7729de96`. The prior correction most at risk was the distinction
+between a real consumer and a search hit or generic directory mention.
+
+**Scientific classification.** The defect was concentrated in unconsumed
+legacy presentation products and four superseded, zero-caller runners. It was
+not concentrated by sample time, protocol, venue, pool, vehicle candidate,
+trade size, or stress state. The deleted objects carry zero weight in every
+current estimand and cannot change sample composition, a coefficient, or
+inference. No `src/ddvc` module, tracked processed-data object, log, release
+input, current D3 input, paper/deck include, test dependency, registry member,
+or provenance-referenced object qualified for deletion; ambiguous objects were
+retained.
+
+**DECISION: narrow and land the mechanically proved subset.** Commit
+`6ed8a1c` removes 89 tracked objects: four superseded scripts, 64 legacy table
+renderings, eight figures, six exhibits, and seven matching sidecars. Ten small
+ignored products owned solely by those deleted runners were also removed; they
+were regenerable intermediates rather than releases. The exact tracked kill
+list is the commit diff. The table index now states the retained-output rule.
+The cleanup queue item remains open because its acceptance test requires the
+entire suite to pass, not because any remaining deletion candidate is known.
+
+Two ignored but current consumer inputs were absent during the closure check.
+The canonical owners rebuilt
+`vehicle_transition_pair_contributions.parquet` byte-identically to its
+registered 194,355,921-byte payload and rebuilt the route-methodology deck-value
+snapshot. Commit `46f73eb` then re-stamped the nine retained E0 manifests on the
+clean cleanup commit; all nine provenance checks report `ok`.
+
+**Validation.** The full wrapper-driven test perimeter was completed in five
+filename partitions after one uninterrupted run reached the executor's
+45-minute ceiling: 2,273 tests and 707 subtests passed. The remaining failures
+are inherited acceptance blockers rather than cleanup regressions: two stale-V2
+collection errors in the route-cost/state tests, seven weighted-quote failures
+on the same stale V2 provenance, three missing-`pyfixest` model tests, the
+standing generated-source CSV-policy failure, and one venue-optics citation
+subtest. The paper builds clean with Tectonic at 47 pages and zero undefined
+references; the deck builds clean at 37 pages and zero undefined references.
+Deliverable conformance passes every blocking check, with the three standing
+advisories only. `git diff --check` is clean.
+
+**Gate and resumption point.** The post-cleanup freeze audit remains RED with
+four blockers: the node-D full-calendar directed-route gate (the unified route
+quality input sees the earlier raw Fluid fold), E1 specification lock, the
+empirical model ledger, and two unchanged findings passes. The cleanup touched
+neither the Fluid source nor the unified-quality owner, so it did not create or
+expand that scientific blocker. Resume with the queued certification/provenance
+cleanup that owns the stale V2 layer; then clear the independent dependency,
+CSV-policy, and venue-optics failures and tick the dependency-closure item only
+when the mandated full suite passes.
