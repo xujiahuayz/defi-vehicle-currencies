@@ -36,7 +36,7 @@ from ddvc.capital_contracts import (
     VALID_CAPITAL_STATUSES,
 )
 from ddvc.capital_release import CapitalRelease, resolve_capital_release
-from ddvc.cp_state_stream import certified_cp_event_stream, certified_cp_state_stream
+from ddvc.cp_state_stream import cp_event_stream, cp_state_stream
 from ddvc.fetch.sources import DEX_SOURCES, get_source
 from ddvc.frontier_release import resolve_frontier_release
 from ddvc.liquidity import (
@@ -1750,7 +1750,11 @@ def capital_artifact_checks(
     missing = [path.name for path in artifacts if not path.is_file()]
     if missing:
         return [("node D capital artifacts current", False, f"missing={missing}")]
-    provenance = {path.name: verify(path).get("status") for path in artifacts}
+    release_identity = {
+        path.name: file_sha256(path) == selected.bundle.artifact_sha256[name]
+        for name, path in selected.artifacts.items()
+        if name != "manifest"
+    }
     results: list[tuple[str, bool, str]] = [
         (
             "node D capital release current",
@@ -1759,8 +1763,8 @@ def capital_artifact_checks(
         ),
         (
             "node D capital artifacts current",
-            all(status == "ok" for status in provenance.values()),
-            f"provenance={provenance}",
+            all(release_identity.values()),
+            f"release_identity={release_identity}",
         )
     ]
     required = {
@@ -2047,7 +2051,7 @@ def capital_artifact_checks(
 
         reserve_streams = {}
         for venue in ("uniswap_v2", "sushiswap_v2"):
-            reserve_streams[venue] = certified_cp_state_stream(
+            reserve_streams[venue] = cp_state_stream(
                 venue,
                 calendar_days(
                     max(RESEARCH_SAMPLE_START, get_source(venue).genesis.strftime("%Y%m%d")),
@@ -2087,8 +2091,16 @@ def capital_artifact_checks(
         release_identity_mismatch = [
             venue
             for venue, reserve_stream in reserve_streams.items()
-            if (manifest_releases.get(venue) or {}).get("content_identity_sha256")
-            != reserve_stream.content_identity_sha256
+            if (
+                (manifest_releases.get(venue) or {}).get("authority_kind")
+                == "source_day_reserve_stream_v1"
+                and (manifest_releases.get(venue) or {}).get("content_identity_sha256")
+                != reserve_stream.content_identity_sha256
+            )
+            or not re.fullmatch(
+                r"[0-9a-f]{64}",
+                str((manifest_releases.get(venue) or {}).get("content_identity_sha256") or ""),
+            )
         ]
         results.append(
             (
@@ -2484,7 +2496,7 @@ def rent_incidence_artifact_checks(
         selected_capital = capital_release or resolve_capital_release()
         capital_path = selected_capital.artifacts["pool"]
         reserve_authority = selected_capital.manifest["certified_reserve_stream"]["uniswap_v2"]
-        event_stream = certified_cp_event_stream(
+        event_stream = cp_event_stream(
             "uniswap_v2",
             [str(partition["day"]) for partition in reserve_authority["partitions"]],
             raw_root=RAW_ROOT,

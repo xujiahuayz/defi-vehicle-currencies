@@ -471,7 +471,7 @@ def graph_daily_provider_bound(
     days: Iterable[str],
     graph_pools: set[str],
 ) -> dict[str, object]:
-    """Summarize only daily partitions admitted by the raw-generation certificate."""
+    """Summarize only daily partitions admitted by the source-day perimeter."""
 
     normalized_days = [str(day).replace("-", "") for day in days]
     missing_days = [day for day in normalized_days if day not in certified_paths]

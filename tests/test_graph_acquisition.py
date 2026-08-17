@@ -734,7 +734,7 @@ def test_prelaunch_recomputes_hashes_and_accepts_explicit_provider_quarantine(tm
     thin_audit.write_text(
         json.dumps(
             {
-                "schema_version": 2,
+                "schema_version": 3,
                 "kind": "graph_thin_consumer_materiality_audit",
                 "research_sample_end": RESEARCH_SAMPLE_END,
                 "consumer_registry_sha256": material_consumer_registry_sha256(),

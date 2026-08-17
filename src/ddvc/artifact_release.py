@@ -35,6 +35,9 @@ from ddvc.runtime import (
 )
 
 
+PROVENANCE_FREE_ARTIFACTS = frozenset({"certificate"})
+
+
 def file_stat_identity(path: Path) -> tuple[int, int, int, int, int]:
     """Return the exact filesystem identity used by mutation-safe readers."""
 
@@ -100,7 +103,10 @@ class ArtifactRelease:
 
     @property
     def provenance_paths(self) -> tuple[Path, ...]:
-        return tuple(sidecar_path(path) for path in self.artifact_paths)
+        return tuple(
+            sidecar_path(self.artifacts[name])
+            for name in sorted(self.provenance_sha256)
+        )
 
     @property
     def lineage_paths(self) -> tuple[Path, ...]:
@@ -444,7 +450,7 @@ def _reopen_existing_generation(
     for name, path in targets.items():
         if file_sha256(path) != artifact_hashes[name]:
             raise ValueError(f"existing artifact generation has different content: {name}")
-        if not sidecar_path(path).is_file():
+        if name not in PROVENANCE_FREE_ARTIFACTS and not sidecar_path(path).is_file():
             raise ValueError(f"existing artifact generation lacks provenance: {name}")
 
 
@@ -511,6 +517,15 @@ def _resume_unselected_generation(
     states: dict[str, str] = {}
     sidecar_records: dict[str, dict[str, object]] = {}
     for name, target in targets.items():
+        if name in PROVENANCE_FREE_ARTIFACTS:
+            if target.is_file():
+                if file_sha256(target) != artifact_hashes[name]:
+                    raise ValueError(f"existing artifact generation has different content: {name}")
+            else:
+                target.parent.mkdir(parents=True, exist_ok=True)
+                staged[name].replace(target)
+            states[name] = "complete"
+            continue
         provenance_path = sidecar_path(target)
         artifact_exists = target.is_file()
         provenance_exists = provenance_path.is_file()
@@ -572,7 +587,9 @@ def _resume_unselected_generation(
 def _recover_generation_publications(targets: Mapping[str, Path]) -> None:
     """Recover every payload-sidecar journal before inspecting a generation."""
 
-    for target in targets.values():
+    for name, target in targets.items():
+        if name in PROVENANCE_FREE_ARTIFACTS:
+            continue
         recover_journaled_publications(
             {"payload": target, "sidecar": sidecar_path(target)},
             journal_root=target.parent / ".ddvc-publication-journals",
@@ -638,7 +655,11 @@ def _publish_generation_under_lock(
             name: {
                 "filename": filenames[name],
                 "sha256": artifact_hashes[name],
-                "provenance_sha256": file_sha256(sidecar_path(targets[name])),
+                **(
+                    {}
+                    if name in PROVENANCE_FREE_ARTIFACTS
+                    else {"provenance_sha256": file_sha256(sidecar_path(targets[name]))}
+                ),
             }
             for name in filenames
         },
@@ -716,11 +737,15 @@ def _open_artifact_release_unlocked(
             not isinstance(record, dict)
             or record.get("filename") != filename
             or not is_sha256(record.get("sha256"))
-            or not is_sha256(record.get("provenance_sha256"))
+            or (
+                name not in PROVENANCE_FREE_ARTIFACTS
+                and not is_sha256(record.get("provenance_sha256"))
+            )
         ):
             raise ValueError(f"invalid {kind} pointer record: {name}")
         artifact_hashes[name] = str(record["sha256"])
-        provenance_hashes[name] = str(record["provenance_sha256"])
+        if name not in PROVENANCE_FREE_ARTIFACTS:
+            provenance_hashes[name] = str(record["provenance_sha256"])
     if generation_id(artifact_hashes, str(build_identity)) != generation:
         raise ValueError(f"{kind} generation identity disagrees with its pointer")
     receipt_record = pointer.get("semantic_validation")
@@ -763,7 +788,11 @@ def _open_artifact_release_unlocked(
     missing = [name for name, path in paths.items() if not path.is_file()]
     if missing:
         raise FileNotFoundError(f"partial {kind} generation: missing={missing}")
-    provenance_paths = {name: sidecar_path(path) for name, path in paths.items()}
+    provenance_paths = {
+        name: sidecar_path(path)
+        for name, path in paths.items()
+        if name not in PROVENANCE_FREE_ARTIFACTS
+    }
     missing_provenance = [
         name for name, path in provenance_paths.items() if not path.is_file()
     ]
@@ -776,7 +805,7 @@ def _open_artifact_release_unlocked(
         for name, path in paths.items():
             if file_sha256(path) != artifact_hashes[name]:
                 raise ValueError(f"{kind} artifact digest disagrees: {name}")
-            if file_sha256(provenance_paths[name]) != provenance_hashes[name]:
+            if name in provenance_paths and file_sha256(provenance_paths[name]) != provenance_hashes[name]:
                 raise ValueError(f"{kind} provenance digest disagrees: {name}")
         provenance_records: dict[str, dict[str, object]] = {}
         for name, provenance_path in provenance_paths.items():
@@ -1157,6 +1186,8 @@ def publish_artifact_release(
                 preinstall_validator, "validate_prepared_stamp", None
             )
             for name in filenames:
+                if name in PROVENANCE_FREE_ARTIFACTS:
+                    continue
                 prepared = prepare_stamp(
                     targets[name],
                     content_path=staged[name],
@@ -1172,8 +1203,12 @@ def publish_artifact_release(
                 preinstall_validator(directory)
             publication_paths = tuple(
                 path
-                for target in targets.values()
-                for path in (target, sidecar_path(target))
+                for name, target in targets.items()
+                for path in (
+                    (target,)
+                    if name in PROVENANCE_FREE_ARTIFACTS
+                    else (target, sidecar_path(target))
+                )
             )
             with serialized_output_installs(publication_paths):
                 return _publish_generation_under_lock(

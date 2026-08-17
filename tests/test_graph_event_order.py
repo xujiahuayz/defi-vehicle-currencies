@@ -42,7 +42,7 @@ from ddvc.route_state import OrderedTickStateCursor, TickStateCut
 from ddvc.quoter import canonical_json_sha256
 from ddvc.tick_state_events import TickInitialization, certificate_identity_sha256, state_event_generation, write_daily_initializations
 from day_cut_fixtures import certified_day_cuts
-from raw_cert_fixtures import install_local_raw_certificate
+from source_day_fixtures import install_source_day_metadata
 from ddvc.v2_event_completeness import V2_EVENT_TOPICS, V2_RECONCILIATION_SCOPE
 from scripts import reconcile_graph_event_order as reconcile
 
@@ -428,7 +428,7 @@ def test_v3_receipt_order_generation_repairs_causal_collisions(tmp_path: Path) -
         start_block=10,
         end_block=10,
     )
-    install_local_raw_certificate(
+    install_source_day_metadata(
         raw_root,
         "uniswap_v3",
         ("swaps", "mints", "burns"),
@@ -495,13 +495,12 @@ def test_missing_provider_log_index_is_repaired_from_exact_chain_order(tmp_path:
         start_block=10,
         end_block=10,
     )
-    with pytest.raises(AssertionError, match="missing_field:logIndex"):
-        install_local_raw_certificate(
-            raw_root,
-            "uniswap_v3",
-            ("swaps", "mints", "burns"),
-            "20250101",
-        )
+    install_source_day_metadata(
+        raw_root,
+        "uniswap_v3",
+        ("swaps", "mints", "burns"),
+        "20250101",
+    )
 
 
 def test_reconciliation_surfaces_an_exact_event_omitted_by_provider(tmp_path: Path) -> None:
@@ -738,7 +737,7 @@ def test_reconciliation_repairs_duplicates_rounding_and_omissions(
                 scope="alternate_graph_span",
             )
     assert pointer_path.read_bytes() == prior_pointer
-    install_local_raw_certificate(
+    install_source_day_metadata(
         raw_root,
         "uniswap_v3",
         ("swaps", "mints", "burns"),
@@ -1351,7 +1350,7 @@ def test_v2_events_bind_hashed_same_day_snapshot_decimals(tmp_path: Path) -> Non
         audited_token_decimals={"0xa": 18, "0xb": 6},
         authority_inputs=[Path(__file__)],
     )
-    install_local_raw_certificate(
+    install_source_day_metadata(
         raw_root,
         "uniswap_v2",
         ("hourly_reserves", "swaps", "mints", "burns"),

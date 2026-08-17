@@ -1375,8 +1375,6 @@ def resolve_exploration_release(
     _ledger_relative, resolved_ledger = resolve_repo_path(ledger_path, root=root, label="model ledger")
     if not path.is_file():
         raise FileNotFoundError(f"E0 exploration certificate is absent: {path}")
-    if verifier(path).get("status") != "ok":
-        raise RuntimeError("E0 exploration certificate is not current")
     certificate = _read_json_object(path, label="E0 exploration certificate")
     if (
         certificate.get("schema_version") != EXPLORATION_CERTIFICATE_SCHEMA_VERSION

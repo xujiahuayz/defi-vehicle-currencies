@@ -630,9 +630,9 @@ class DataReleaseTests(unittest.TestCase):
             "scripts/build_transaction_state_frontier.py": "require_node_d_release(routes=True)",
             "scripts/build_routing_maturation_panel.py": "require_node_d_release(routes=True, market_state=True)",
             "scripts/build_counterfactual_dominance.py": "require_node_d_release(routes=True, market_state=True)",
-            "scripts/build_rent_incidence_panel.py": "certified_cp_event_stream(",
+            "scripts/build_rent_incidence_panel.py": "cp_event_stream(",
             "scripts/build_v2_token_panel.py": "released_state_partitions(",
-            "scripts/build_pool_capital_panel.py": "certified_cp_state_stream(",
+            "scripts/build_pool_capital_panel.py": "cp_state_stream(",
         }
         for filename, call in expected.items():
             with self.subTest(filename=filename):
@@ -690,7 +690,7 @@ class DataReleaseTests(unittest.TestCase):
                 self.assertNotRegex(source, r"MARKET_STATE.*\.glob\(")
         rent_source = Path("scripts/build_rent_incidence_panel.py").read_text(encoding="utf-8")
         self.assertIn('selected_capital.manifest["certified_reserve_stream"]', rent_source)
-        self.assertIn("certified_cp_event_stream(", rent_source)
+        self.assertIn("cp_event_stream(", rent_source)
         self.assertIn("release.read_day(day)", rent_source)
         self.assertNotIn("released_state_partitions", rent_source)
 

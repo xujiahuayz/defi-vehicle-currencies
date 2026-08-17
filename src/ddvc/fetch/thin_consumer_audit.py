@@ -4,23 +4,26 @@ from __future__ import annotations
 
 import datetime as dt
 import json
+from dataclasses import dataclass
 from pathlib import Path
-from typing import TYPE_CHECKING, Mapping
+from typing import Mapping
 
 from ddvc.calendar import RESEARCH_SAMPLE_END
+from ddvc.fetch.graphql_selection import selected_paths
 from ddvc.fetch.material_consumers import GRAPH_MATERIAL_CONSUMER_INTENTS, GraphMaterialConsumerIntent, graph_acquisition_authorization, material_consumer_registry_identity, material_consumer_registry_sha256, validate_material_consumer_registry
 from ddvc.fetch.sources import get_source, iter_days
 from ddvc.paths import RAW_MARKET_DATA_LOCK
 from ddvc.provenance import portable_content_sha256
 from ddvc.runtime import atomic_output, exclusive_job
 
-if TYPE_CHECKING:
-    from ddvc.raw_certification import RawPartition
+@dataclass(frozen=True, order=True)
+class RawPartition:
+    source: str
+    stream: str
+    day: str
 
 
 def required_partitions(source: str, streams: set[str]) -> tuple[RawPartition, ...]:
-    from ddvc.raw_certification import RawPartition
-
     end = dt.datetime.strptime(RESEARCH_SAMPLE_END, "%Y%m%d").date() + dt.timedelta(days=1)
     return tuple(
         RawPartition(source, stream, day.strftime("%Y%m%d"))
@@ -30,21 +33,23 @@ def required_partitions(source: str, streams: set[str]) -> tuple[RawPartition, .
 
 
 def contract_fields(source: str, stream: str) -> set[str]:
-    from ddvc.raw_certification import FIELD_CONTRACTS
+    from ddvc.fetch.schemas import get_schema
 
-    contract = FIELD_CONTRACTS.get((source, stream))
-    if contract is None:
-        raise ValueError(f"Graph thin-consumer stream lacks a raw field contract: {source}/{stream}")
-    return set(contract.required_paths).union(*(set(group) for group in contract.required_any_paths))
+    entity = next(
+        (item for item in get_schema(get_source(source).schema).entities if item.stream == stream),
+        None,
+    )
+    if entity is None:
+        raise ValueError(f"Graph thin-consumer stream lacks a fetch schema: {source}/{stream}")
+    return selected_paths(entity.fields)
 
 
 def _build_thin_consumer_audit_unlocked(
     *,
     data_root: Path,
-    certificate_root: Path,
     intents: Mapping[str, GraphMaterialConsumerIntent] | None = None,
 ) -> dict[str, object]:
-    """Reopen certificates and installed raw identities, then build exact proof."""
+    """Reopen installed source-day files, then build the exact sufficiency proof."""
 
     intents = GRAPH_MATERIAL_CONSUMER_INTENTS if intents is None else intents
     validate_material_consumer_registry(intents)
@@ -67,16 +72,19 @@ def _build_thin_consumer_audit_unlocked(
         )
 
     source_markers = []
-    from ddvc.raw_certification import load_certified_partition_ledger
+    from ddvc.fetch.raw import source_day_stream_snapshot
 
     for source, streams in sorted(required_by_source.items()):
-        certificate = certificate_root / f"{source}_local_certificate.json"
         partitions = required_partitions(source, streams)
-        rows, authority = load_certified_partition_ledger(certificate, data_root=data_root, partitions=partitions)
-        observed = {(str(row["source"]), str(row["stream"]), str(row["day"])) for row in rows}
-        expected = {(item.source, item.stream, item.day) for item in partitions}
-        if observed != expected:
-            raise ValueError(f"Graph thin-consumer source marker has a different perimeter: {source}")
+        rows = [
+            source_day_stream_snapshot(
+                item.source,
+                item.stream,
+                dt.datetime.strptime(item.day, "%Y%m%d").date(),
+                data_root=data_root,
+            )
+            for item in partitions
+        ]
         source_markers.append(
             {
                 "source": source,
@@ -86,28 +94,31 @@ def _build_thin_consumer_audit_unlocked(
                 "selected_partitions": len(partitions),
                 "nonempty_partitions": sum(int(row.get("rows", 0)) > 0 for row in rows),
                 "selected_rows": sum(int(row.get("rows", 0)) for row in rows),
-                "certificate_file_sha256": portable_content_sha256(certificate),
-                **authority,
+                "selected_bytes": sum(int(row["payload_stat"][2]) for row in rows),
+                "latest_mtime_ns": max(
+                    max(int(row["payload_stat"][3]), int(row["marker_stat"][3]))
+                    for row in rows
+                ),
+                "identity_policy": "source-day-file-timestamp-v1",
             }
         )
 
     authorization = graph_acquisition_authorization(intents)
     return {
-        "schema_version": 2,
+        "schema_version": 3,
         "kind": "graph_thin_consumer_materiality_audit",
         "research_sample_end": RESEARCH_SAMPLE_END,
         "consumer_registry_sha256": material_consumer_registry_sha256(intents),
         "source_release_markers": source_markers,
         "consumers": consumers,
         "authorized_graph_acquisition": authorization,
-        "selection_rule": "Only a closed named consumer intent may authorize exact missing streams; installed-stream sufficiency is bound to certified partition identities and explicit consumer fields.",
+        "selection_rule": "Only a closed named consumer intent may authorize exact missing streams; installed-stream sufficiency is reopened from source-day files and explicit fetch-schema fields.",
     }
 
 
 def build_thin_consumer_audit(
     *,
     data_root: Path,
-    certificate_root: Path,
     intents: Mapping[str, GraphMaterialConsumerIntent] | None = None,
     mutation_lock: Path = RAW_MARKET_DATA_LOCK,
 ) -> dict[str, object]:
@@ -116,7 +127,6 @@ def build_thin_consumer_audit(
     with exclusive_job(mutation_lock, job="Graph thin-consumer source certification"):
         return _build_thin_consumer_audit_unlocked(
             data_root=data_root,
-            certificate_root=certificate_root,
             intents=intents,
         )
 
@@ -139,7 +149,6 @@ def publish_thin_consumer_audit(
     audit_path: Path,
     *,
     data_root: Path,
-    certificate_root: Path,
     intents: Mapping[str, GraphMaterialConsumerIntent] | None = None,
     mutation_lock: Path = RAW_MARKET_DATA_LOCK,
 ) -> dict[str, object]:
@@ -148,7 +157,6 @@ def publish_thin_consumer_audit(
     with exclusive_job(mutation_lock, job="Graph thin-consumer audit publication"):
         payload = _build_thin_consumer_audit_unlocked(
             data_root=data_root,
-            certificate_root=certificate_root,
             intents=intents,
         )
         _write_thin_consumer_audit_unlocked(audit_path, payload)
@@ -159,7 +167,6 @@ def resolve_thin_consumer_audit(
     audit_path: Path,
     *,
     data_root: Path,
-    certificate_root: Path,
     intents: Mapping[str, GraphMaterialConsumerIntent] | None = None,
     mutation_lock: Path = RAW_MARKET_DATA_LOCK,
 ) -> dict[str, object]:
@@ -169,7 +176,7 @@ def resolve_thin_consumer_audit(
         recorded_identity = validate_thin_consumer_audit_envelope(audit_path, intents=intents)
         recorded = recorded_identity["audit"]
         intents = GRAPH_MATERIAL_CONSUMER_INTENTS if intents is None else intents
-        recomputed = _build_thin_consumer_audit_unlocked(data_root=data_root, certificate_root=certificate_root, intents=intents)
+        recomputed = _build_thin_consumer_audit_unlocked(data_root=data_root, intents=intents)
         if recorded != recomputed:
             raise ValueError("Graph thin-consumer audit disagrees with live certified raw identities")
         return recorded_identity
@@ -188,7 +195,7 @@ def validate_thin_consumer_audit_envelope(
         raise ValueError("Graph thin-consumer audit is missing or invalid") from error
     if (
         not isinstance(recorded, dict)
-        or recorded.get("schema_version") != 2
+        or recorded.get("schema_version") != 3
         or recorded.get("kind") != "graph_thin_consumer_materiality_audit"
         or recorded.get("research_sample_end") != RESEARCH_SAMPLE_END
     ):

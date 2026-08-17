@@ -92,7 +92,7 @@ and pick a blocking check from the freeze gate.
   count fell from four to three. The conservative kill-list remains the one
   recorded in commits `6ed8a1c` and `46f73eb`; no further orphan was inferred._
 
-- [ ] **(2) THEN REMOVE THE CERTIFICATION / FINGERPRINT LAYER — replace it with
+- [x] **(2) THEN REMOVE THE CERTIFICATION / FINGERPRINT LAYER — replace it with
   file-timestamp staleness plus ONE cheap freshness check.** Java's decision; the
   whole point is to stop serving the robot and serve the econ. The two-machine race
   the attestation guarded against is gone: M3 is down and verified non-load-bearing,
@@ -122,14 +122,23 @@ and pick a blocking check from the freeze gate.
   by git history, not a hash/attestation chain. Adjudicate the exact shape per the
   owner rule. Do it on a branch; cut `main` and the done-gate over only once the
   full suite is green.
+  _CLOSED (2026-08-17). The lower active-reader boundary now uses ordinary
+  source-day metadata and file-stat staleness; the canonical D3 pointer retains
+  the single cheap claim-input freshness check. The raw certification module,
+  CLI, fixtures/tests, obsolete route-marker migrator/tests, and all remaining
+  `certificate.json.prov.json` files are gone. Semantic certificate JSON remains
+  a hash-verified release manifest but no longer gets a provenance sidecar.
+  Existing capital evidence was reopened, not restamped. The Graph sufficiency
+  audit is regenerated from source-day files. Focused reader/release tests pass;
+  full-suite and deliverable acceptance are recorded in the grind ledger._
 
 - [ ] **Make the E1 specification lock self-stamping under the owner rule above.**
-  E1 is currently blocked only because `locked_at` and the generation/certificate
+  E1 is currently blocked only because `locked_at` and the generation
   bindings were treated as needing a human. Under the owner rule they do not.
   Build `scripts/lock_specification.py` so the lock is earned by a script that can
   fail, never by a person typing a date. It must, in order:
   1. Re-validate the design seed exactly as `audit_findings_freeze.py` does
-     (hash, claim ids, execution policy, semantic rules, horizons, transition
+     (claim ids, execution policy, semantic rules, horizons, transition
      design). Abort loudly on any failure; never write a field on a red seed.
   2. **Adjudicate the two open design choices against JFE literature and record
      the citations in the lock payload itself**, so the lock carries its own
@@ -141,11 +150,11 @@ and pick a blocking check from the freeze gate.
      exploration run closes, demote `liquidity_rent_incidence` to `withheld` with
      the reason recorded, and let the paper finish without it. Never leave the
      lock waiting on data that may never arrive.
-  4. Run the exploration harness, bind `exploration_generation` and
-     `exploration_certificate` plus the D3 pair, rewrite each executable claim to
+  4. Run the exploration harness, bind `exploration_generation` plus the current
+     D3 generation, rewrite each executable claim to
      its `registered_*` status with a validated registered plan, set
      `stage=confirmatory` and `analytical_choices_status=registered_after_exploration`,
-     stamp `locked_at`, and recompute `lock_hash`.
+     stamp `locked_at`, and commit the human-readable lock before confirmatory runs.
   Acceptance: `audit_findings_freeze.py` reports the E1 check PASS with every
   field machine-issued; the lock payload names the adjudicating citations; and a
   deliberately corrupted seed still makes the script refuse. Closes blockers 1

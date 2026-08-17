@@ -529,7 +529,9 @@ def test_identical_retry_never_rewrites_the_selected_generation(tmp_path: Path) 
     pointer = tmp_path / "release" / "current.json"
     first = _publish(pointer, 1)
     provenance = {
-        name: sidecar_path(path).read_bytes() for name, path in first.artifacts.items()
+        name: sidecar_path(path).read_bytes()
+        for name, path in first.artifacts.items()
+        if name != "certificate"
     }
 
     def interrupted(_path: Path, _payload: dict[str, object]) -> None:
@@ -548,6 +550,7 @@ def test_identical_retry_never_rewrites_the_selected_generation(tmp_path: Path) 
     assert {
         name: sidecar_path(path).read_bytes()
         for name, path in reopened.artifacts.items()
+        if name != "certificate"
     } == provenance
 
 
@@ -558,7 +561,9 @@ def test_identical_retry_reuses_an_unselected_complete_generation_byte_for_byte(
     first = _publish(pointer, 1)
     artifact_bytes = {name: path.read_bytes() for name, path in first.artifacts.items()}
     provenance_bytes = {
-        name: sidecar_path(path).read_bytes() for name, path in first.artifacts.items()
+        name: sidecar_path(path).read_bytes()
+        for name, path in first.artifacts.items()
+        if name != "certificate"
     }
     artifact_mtimes = {
         name: path.stat().st_mtime_ns for name, path in first.artifacts.items()
@@ -574,6 +579,7 @@ def test_identical_retry_reuses_an_unselected_complete_generation_byte_for_byte(
     assert {
         name: sidecar_path(path).read_bytes()
         for name, path in reopened.artifacts.items()
+        if name != "certificate"
     } == provenance_bytes
     assert {
         name: path.stat().st_mtime_ns for name, path in reopened.artifacts.items()
@@ -589,7 +595,8 @@ def test_declared_row_counts_are_bound_into_the_generation_identity(tmp_path: Pa
     assert second.generation_id != first.generation_id
     assert {
         json.loads(sidecar_path(path).read_text(encoding="utf-8"))["rows"]
-        for path in second.artifacts.values()
+        for name, path in second.artifacts.items()
+        if name != "certificate"
     } == {2}
 
 
@@ -603,7 +610,9 @@ def test_input_order_does_not_prevent_reopening_the_same_unselected_generation(
     write_json(second_input, {"value": 2})
     first = _publish(pointer, 1, inputs=[first_input, second_input])
     provenance = {
-        name: sidecar_path(path).read_bytes() for name, path in first.artifacts.items()
+        name: sidecar_path(path).read_bytes()
+        for name, path in first.artifacts.items()
+        if name != "certificate"
     }
     _publish(pointer, 2, inputs=[first_input, second_input])
 
@@ -613,6 +622,7 @@ def test_input_order_does_not_prevent_reopening_the_same_unselected_generation(
     assert {
         name: sidecar_path(path).read_bytes()
         for name, path in reopened.artifacts.items()
+        if name != "certificate"
     } == provenance
 
 
@@ -911,8 +921,11 @@ publish_artifact_release(
     selected_bytes = {
         name: (path.read_bytes(), sidecar_path(path).read_bytes())
         for name, path in resumed.artifacts.items()
+        if name != "certificate"
     }
-    for path in resumed.artifacts.values():
+    for name, path in resumed.artifacts.items():
+        if name == "certificate":
+            continue
         recovery = recover_journaled_publications(
             {"payload": path, "sidecar": sidecar_path(path)},
             journal_root=path.parent / ".ddvc-publication-journals",
@@ -921,6 +934,7 @@ publish_artifact_release(
     assert {
         name: (path.read_bytes(), sidecar_path(path).read_bytes())
         for name, path in resumed.artifacts.items()
+        if name != "certificate"
     } == selected_bytes
     assert resolve_artifact_release(
         pointer,

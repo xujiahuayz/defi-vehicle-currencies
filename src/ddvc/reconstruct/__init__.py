@@ -619,7 +619,7 @@ def _route_input_generation_records(
     *,
     data_root: Path | None = None,
 ) -> tuple[list[dict[str, str]], list[str]]:
-    from ddvc.raw_certification import raw_partition_generation_identity
+    from ddvc.fetch.raw import raw_partition_generation_identity
 
     stamp = day.replace("-", "")
     root = data_root or DATA_DIR

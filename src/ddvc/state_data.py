@@ -621,9 +621,9 @@ def _provider_partition_coordinates(
 
 
 def partition_input_fingerprint(paths: list[Path]) -> str:
-    """Bind provider inputs to certified generations and other inputs to content."""
+    """Bind provider inputs to source-day files and other inputs to content."""
 
-    from ddvc.raw_certification import raw_partition_generation_identity
+    from ddvc.fetch.raw import raw_partition_generation_identity
 
     identities: list[dict[str, str]] = []
     for path in sorted(paths):
@@ -641,7 +641,7 @@ def partition_input_fingerprint(paths: list[Path]) -> str:
         identities.append(
             {
                 "path": f"{source}/{path.name}",
-                "authority": "certified-raw-generation",
+                "authority": "source-day-file-stat",
                 "identity_sha256": raw_partition_generation_identity(
                     source, stream, day, data_root=data_root
                 ),

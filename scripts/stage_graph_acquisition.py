@@ -14,20 +14,16 @@ from ddvc.paths import PRIMARY_REPO_ROOT
 
 
 DEFAULT_DATA_ROOT = PRIMARY_REPO_ROOT / "data"
-DEFAULT_CERTIFICATE_ROOT = DEFAULT_DATA_ROOT / "processed" / "graph_thin_consumer_audit" / "source_markers"
-
-
 def certify_installed_no_fetch(
     *,
     thin_audit: Path,
     data_root: Path,
-    certificate_root: Path,
     prelaunch: dict[str, object],
     intents=None,
 ) -> dict[str, object]:
     """Reopen exact installed identities and match the prelaunch hash chain."""
 
-    certification = resolve_thin_consumer_audit(thin_audit, data_root=data_root, certificate_root=certificate_root, intents=intents)
+    certification = resolve_thin_consumer_audit(thin_audit, data_root=data_root, intents=intents)
     if certification["audit_sha256"] != prelaunch["thin_consumer_audit_sha256"] or certification["consumer_registry_sha256"] != prelaunch["consumer_registry_sha256"]:
         raise ValueError("Graph thin-consumer certification changed after prelaunch validation")
     return certification
@@ -47,7 +43,6 @@ def main() -> int:
     parser.add_argument("--forecast", type=Path, default=GRAPH_ACQUISITION_FORECAST)
     parser.add_argument("--thin-audit", type=Path, default=GRAPH_THIN_CONSUMER_AUDIT)
     parser.add_argument("--data-root", type=Path, default=DEFAULT_DATA_ROOT)
-    parser.add_argument("--certificate-root", type=Path, default=DEFAULT_CERTIFICATE_ROOT)
     args = parser.parse_args()
     prelaunch = validate_prelaunch_inputs(
         freeze_path=args.freeze,
@@ -72,7 +67,7 @@ def main() -> int:
     if len(tasks) != int(prelaunch["stream_count"]):
         raise ValueError("prelaunch canary and frozen manifest stream perimeters disagree")
     try:
-        certification = certify_installed_no_fetch(thin_audit=args.thin_audit, data_root=args.data_root, certificate_root=args.certificate_root, prelaunch=prelaunch)
+        certification = certify_installed_no_fetch(thin_audit=args.thin_audit, data_root=args.data_root, prelaunch=prelaunch)
     except (FileNotFoundError, OSError, RuntimeError, ValueError) as error:
         print(json.dumps({"status": "inventory_validated_only_certification_unavailable", "inventoried_streams": len(tasks), "freeze_sha256": prelaunch["freeze_sha256"], "certification_error": str(error)}, sort_keys=True))
         return 0

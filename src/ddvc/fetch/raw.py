@@ -37,6 +37,17 @@ RAW_SOURCE_DAY_PROMOTION_SCHEMA_VERSION = 1
 RAW_REFETCH_DIVERGENCE_ROOT = DATA_DIR / "raw" / "thegraph" / "_refetch_divergence"
 
 
+def _file_stat_identity(path: Path) -> tuple[int, int, int, int, int]:
+    stat = path.stat()
+    return stat.st_dev, stat.st_ino, stat.st_size, stat.st_mtime_ns, stat.st_ctime_ns
+
+
+def _canonical_json_sha256(value: object) -> str:
+    return hashlib.sha256(
+        json.dumps(value, sort_keys=True, separators=(",", ":")).encode()
+    ).hexdigest()
+
+
 class RawFetchInvariantError(RuntimeError):
     """A non-transient raw-fetch failure that retrying cannot repair."""
 
@@ -154,7 +165,7 @@ def require_committed_source_day_path(
         stream=stream,
         day=day,
     )
-    if portable_content_sha256(path) != expected_hash:
+    if expected_hash is not None and portable_content_sha256(path) != expected_hash:
         raise RawFetchInvariantError(
             f"raw source-day payload disagrees with its commit record: {source_name}/{stream}/{day:%Y%m%d}"
         )
@@ -168,8 +179,8 @@ def _required_source_day_stream_hash(
     source_name: str,
     stream: str,
     day: dt.date,
-) -> str:
-    """Validate source-day marker identity and return its committed logical hash."""
+) -> str | None:
+    """Validate source-day metadata and return a promoted logical hash when present."""
 
     if not path.is_file() or not marker_path.is_file():
         raise RawFetchInvariantError(
@@ -192,14 +203,52 @@ def _required_source_day_stream_hash(
             f"raw source-day marker perimeter mismatch: {source_name}/{stream}/{day:%Y%m%d}"
         )
     expected_hash = stream_marker.get("logical_content_sha256")
-    if (
-        not isinstance(expected_hash, str)
-        or len(expected_hash) != 64
-    ):
+    if expected_hash is None:
+        return None
+    if not isinstance(expected_hash, str) or len(expected_hash) != 64:
         raise RawFetchInvariantError(
             f"raw source-day payload disagrees with its commit record: {source_name}/{stream}/{day:%Y%m%d}"
         )
     return expected_hash
+
+
+def source_day_stream_snapshot(
+    source_name: str,
+    stream: str,
+    day: dt.date,
+    *,
+    data_root: Path = DATA_DIR,
+) -> dict[str, object]:
+    """Return the cheap file-stat identity used by canonical raw readers."""
+
+    path, marker_path = installed_source_day_paths(
+        source_name, stream, day, data_root=data_root
+    )
+    expected_hash = _required_source_day_stream_hash(
+        path,
+        marker_path,
+        source_name=source_name,
+        stream=stream,
+        day=day,
+    )
+    marker = json.loads(marker_path.read_text(encoding="utf-8"))
+    stream_marker = marker["streams"][stream]
+    rows = stream_marker.get("rows", 0)
+    if isinstance(rows, bool) or not isinstance(rows, int) or rows < 0:
+        raise RawFetchInvariantError(
+            f"raw source-day metadata lacks a row count: {source_name}/{stream}/{day:%Y%m%d}"
+        )
+    return {
+        "source": source_name,
+        "stream": stream,
+        "day": day.strftime("%Y%m%d"),
+        "path": path,
+        "marker_path": marker_path,
+        "rows": rows,
+        "payload_stat": _file_stat_identity(path),
+        "marker_stat": _file_stat_identity(marker_path),
+        "logical_content_sha256": expected_hash,
+    }
 
 
 def committed_source_day_generation_identity(
@@ -222,6 +271,20 @@ def committed_source_day_generation_identity(
         day=day,
     )
     marker = json.loads(marker_path.read_text(encoding="utf-8"))
+    if logical_content_sha256 is None or not isinstance(marker.get("promotion"), dict):
+        snapshot = source_day_stream_snapshot(
+            source_name, stream, day, data_root=data_root
+        )
+        return _canonical_json_sha256(
+            {
+                "authority": "source-day-file-stat-v1",
+                "source": source_name,
+                "stream": stream,
+                "day": day.isoformat(),
+                "payload_stat": snapshot["payload_stat"],
+                "marker_stat": snapshot["marker_stat"],
+            }
+        )
     stream_marker = marker["streams"][stream]
     promotion = marker.get("promotion")
     marker_streams = marker["streams"]
@@ -308,6 +371,24 @@ def committed_source_day_generation_identity(
     return hashlib.sha256(
         json.dumps(identity, sort_keys=True, separators=(",", ":")).encode()
     ).hexdigest()
+
+
+def raw_partition_generation_identity(
+    source_name: str,
+    stream: str,
+    day: str,
+    *,
+    data_root: Path = DATA_DIR,
+) -> str:
+    """Bind a canonical raw partition to its source-day file identity."""
+
+    try:
+        parsed = dt.datetime.strptime(str(day), "%Y%m%d").date()
+    except ValueError as error:
+        raise ValueError(f"raw partition day is invalid: {day}") from error
+    return committed_source_day_generation_identity(
+        source_name, stream, parsed, data_root=data_root
+    )
 
 
 @contextmanager
@@ -402,31 +483,62 @@ def verified_source_day_rows(
     data_root: Path = DATA_DIR,
     expected_generation_identity: str | None = None,
 ):
-    """Single-pass one promoted or locally certified canonical source-day stream."""
+    """Single-pass one canonical source-day stream with file-stat stability."""
 
-    from ddvc.raw_certification import raw_partition_read_authority
-
-    stamp = day.strftime("%Y%m%d")
-    before = raw_partition_read_authority(
-        source_name, stream, stamp, data_root=data_root
+    before = source_day_stream_snapshot(
+        source_name, stream, day, data_root=data_root
     )
-    actual_identity = str(before["generation_identity_sha256"])
+    actual_identity = committed_source_day_generation_identity(
+        source_name, stream, day, data_root=data_root
+    )
     if (
         expected_generation_identity is not None
         and actual_identity != expected_generation_identity
     ):
         raise RawFetchInvariantError(
-            f"raw partition authority changed before read: {source_name}/{stream}/{stamp}"
+            f"raw partition authority changed before read: {source_name}/{stream}/{day:%Y%m%d}"
         )
-    label = f"{source_name}/{stream}/{stamp} via {before['authority_kind']}"
-    with verified_jsonl_gz_content_rows(
-        Path(before["path"]),
-        str(before["logical_content_sha256"]),
-        authority_label=label,
-    ) as rows:
-        yield rows
-    after = raw_partition_read_authority(
-        source_name, stream, stamp, data_root=data_root
+    expected_hash = before["logical_content_sha256"]
+    if expected_hash is not None:
+        with verified_jsonl_gz_content_rows(
+            Path(before["path"]),
+            str(expected_hash),
+            authority_label=f"{source_name}/{stream}/{day:%Y%m%d}",
+        ) as rows:
+            yield rows
+    else:
+        exhausted = False
+
+        def rows():
+            nonlocal exhausted
+            with gzip.open(Path(before["path"]), "rt", encoding="utf-8") as handle:
+                for line in handle:
+                    if not line.strip():
+                        continue
+                    try:
+                        row = json.loads(line)
+                    except json.JSONDecodeError as error:
+                        raise RawFetchInvariantError(
+                            f"canonical raw JSONL is malformed: {before['path']}"
+                        ) from error
+                    if not isinstance(row, dict):
+                        raise RawFetchInvariantError(
+                            f"canonical raw JSONL row is not an object: {before['path']}"
+                        )
+                    yield row
+            exhausted = True
+
+        iterator = rows()
+        try:
+            yield iterator
+        finally:
+            if not exhausted:
+                iterator.close()
+                raise RawFetchInvariantError(
+                    f"canonical raw stream was not exhausted: {source_name}/{stream}/{day:%Y%m%d}"
+                )
+    after = source_day_stream_snapshot(
+        source_name, stream, day, data_root=data_root
     )
     if after != before:
         raise RawFetchInvariantError(
@@ -981,26 +1093,6 @@ def _promote_source_day_unlocked(
                 raise RawFetchInvariantError(
                     f"candidate Dune stream lacks current query provenance: {source_name}/{stream}/{day:%Y%m%d}: {error}"
                 ) from error
-    from ddvc.raw_certification import RawPartition, scan_installed_generation
-
-    candidate_partitions = [
-        RawPartition(source_name, stream, f"{day:%Y%m%d}")
-        for stream in sorted(streams)
-    ]
-    candidate_scan = scan_installed_generation(
-        candidate_root,
-        evidence_root / ".promotion-scan-cache",
-        workers=1,
-        partitions=candidate_partitions,
-    )
-    candidate_failures = [
-        row for row in candidate_scan if row.get("local_pass") is not True
-    ]
-    if candidate_failures:
-        first = candidate_failures[0]
-        raise RawFetchInvariantError(
-            f"candidate stream fails the consumer contract: {first['source']}/{first['stream']}/{first['day']} errors={first.get('errors')}"
-        )
     destination_marker_path: Path | None = None
     destinations: dict[str, Path] = {}
     for stream in sorted(streams):

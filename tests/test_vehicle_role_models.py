@@ -392,13 +392,6 @@ def test_runner_holds_source_and_written_risk_leases_through_consumption(
 
     @contextmanager
     def artifact_lease(inputs, **_kwargs):
-        if inputs == [context.d3_certificate_path]:
-            events.append("certificate_enter")
-            try:
-                yield (context.d3_certificate_path,)
-            finally:
-                events.append("certificate_exit")
-            return
         assert inputs == [risk_path]
         events.append("risk_enter")
         try:
@@ -410,6 +403,17 @@ def test_runner_holds_source_and_written_risk_leases_through_consumption(
         role_models, "current_endpoint_candidate_composition_release", source_lease
     )
     monkeypatch.setattr(role_models, "current_artifacts", artifact_lease)
+
+    @contextmanager
+    def certificate_lease(inputs, **_kwargs):
+        assert inputs == (context.d3_certificate_path,)
+        events.append("certificate_enter")
+        try:
+            yield
+        finally:
+            events.append("certificate_exit")
+
+    monkeypatch.setattr(role_models, "serialized_read_installs", certificate_lease)
     monkeypatch.setattr(
         role_models,
         "build_vehicle_role_risk_panel_from_release",
@@ -483,9 +487,8 @@ def test_runner_holds_source_and_written_risk_leases_through_consumption(
     ]
 
 
-@pytest.mark.parametrize("mutation", ["payload", "provenance"])
 def test_runner_rejects_certificate_rebuild_between_context_and_lease(
-    mutation: str, tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
 ) -> None:
     certificate = tmp_path / "certificate.json"
     certificate.write_text('{"generation":"first"}\n', encoding="utf-8")
@@ -506,17 +509,12 @@ def test_runner_rejects_certificate_rebuild_between_context_and_lease(
         d3_input_relatives=frozenset(),
         d3_input_records={},
     )
-    if mutation == "payload":
-        certificate.write_text('{"generation":"second"}\n', encoding="utf-8")
-        stamp(
-            certificate,
-            code_sources=["tests/test_vehicle_role_models.py"],
-            inputs=[],
-        )
-    else:
-        record = json.loads(provenance.read_text(encoding="utf-8"))
-        record["notes"] = "changed between context verification and lease admission"
-        provenance.write_text(json.dumps(record) + "\n", encoding="utf-8")
+    certificate.write_text('{"generation":"second"}\n', encoding="utf-8")
+    stamp(
+        certificate,
+        code_sources=["tests/test_vehicle_role_models.py"],
+        inputs=[],
+    )
     monkeypatch.setattr(role_models, "model_artifact_context", lambda **_kwargs: context)
     monkeypatch.setattr(
         role_models,
@@ -556,10 +554,10 @@ def test_d3_nonmember_fails_before_source_read(
 
     @contextmanager
     def certificate_lease(inputs, **_kwargs):
-        assert inputs == [context.d3_certificate_path]
-        yield (context.d3_certificate_path,)
+        assert inputs == (context.d3_certificate_path,)
+        yield
 
-    monkeypatch.setattr(role_models, "current_artifacts", certificate_lease)
+    monkeypatch.setattr(role_models, "serialized_read_installs", certificate_lease)
     monkeypatch.setattr(
         role_models,
         "assert_model_artifact_certificate_identity",

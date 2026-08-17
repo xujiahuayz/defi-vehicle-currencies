@@ -152,7 +152,7 @@ class V3GraphOmissionMaterialityTests(unittest.TestCase):
                 register_installed_inventory_events(con, paths[:1], binding)
             con.close()
 
-    def test_audit_uses_only_certified_current_generation_apis(self) -> None:
+    def test_audit_uses_current_generation_and_source_day_apis(self) -> None:
         script = Path("scripts/audit_v3_graph_omission_materiality.py").read_text(encoding="utf-8")
         library = Path("src/ddvc/v3_graph_materiality.py").read_text(encoding="utf-8")
         self.assertIn("load_certified_inventory_generation(", script)
@@ -161,7 +161,8 @@ class V3GraphOmissionMaterialityTests(unittest.TestCase):
         self.assertIn("TOKEN_PRICE_DAILY_PANEL.name", script)
         self.assertIn("select_transaction_frontier_audit_days(list(route_release.days))", script)
         self.assertIn("load_day_calendar()", script)
-        self.assertIn("recertified_rows", script)
+        self.assertIn("reopened_rows", script)
+        self.assertIn("source_day_stream_snapshot", script)
         self.assertNotIn('event_coverage = {"status": "not_requested"}', script)
         self.assertLess(
             script.index('if not claim_materiality["clears_paper_estimands"]'),

@@ -399,4 +399,4 @@ def test_v2_rent_build_uses_raw_lock_without_wide_market_state_lock() -> None:
     )[0]
     assert "RAW_MARKET_DATA_LOCK" in execution
     assert "MARKET_STATE_LOCK" not in source
-    assert "certified_cp_event_stream" in source
+    assert "cp_event_stream" in source

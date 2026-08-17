@@ -30,11 +30,6 @@ from ddvc.fetch.raw import (
 from ddvc.fetch.schemas import get_schema
 from ddvc.fetch.sources import get_source
 from ddvc.provenance import portable_content_sha256
-from ddvc.raw_certification import (
-    RawPartition,
-    scan_installed_generation,
-    write_local_scan_certificate,
-)
 
 
 USDC = "0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48"
@@ -147,7 +142,7 @@ class ReconstructGateTests(unittest.TestCase):
 
     def test_direct_route_loader_has_no_missing_raw_fallback(self) -> None:
         with tempfile.TemporaryDirectory() as directory:
-            with self.assertRaisesRegex(ValueError, "certificate is unreadable"):
+            with self.assertRaisesRegex(RuntimeError, "source-day is uncommitted"):
                 load_legs(
                     "uniswap_v2",
                     "2020-05-05",
@@ -226,7 +221,7 @@ class ReconstructGateTests(unittest.TestCase):
             )
             raw.unlink()
 
-    def test_route_day_reads_legacy_payload_through_current_local_certificate(self) -> None:
+    def test_route_day_reads_legacy_payload_through_source_day_metadata(self) -> None:
         with tempfile.TemporaryDirectory() as directory:
             base = Path(directory)
             data_root, unified_root = base / "data", base / "unified"
@@ -236,24 +231,6 @@ class ReconstructGateTests(unittest.TestCase):
             marker_payload.pop("promotion")
             marker_payload["streams"]["swaps"]["rows"] = 1
             marker.write_text(json.dumps(marker_payload), encoding="utf-8")
-            partition = RawPartition("uniswap_v2", "swaps", "20200505")
-            observed = scan_installed_generation(
-                data_root,
-                base / "scan",
-                workers=1,
-                partitions=[partition],
-            )
-            certificate = (
-                data_root
-                / "processed"
-                / "raw_generation"
-                / "uniswap_v2_local_certificate.json"
-            )
-            write_local_scan_certificate(
-                certificate,
-                observed,
-                expected_partitions=[partition],
-            )
             quality, status = _process_one(
                 "2020-05-05",
                 ["uniswap_v2"],

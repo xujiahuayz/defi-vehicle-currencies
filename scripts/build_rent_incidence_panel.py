@@ -45,7 +45,7 @@ from ddvc.capital_release import (
     current_capital_release,
     resolve_capital_release,
 )
-from ddvc.cp_state_stream import CPStateStreamSet, certified_cp_event_stream
+from ddvc.cp_state_stream import CPStateStreamSet, cp_event_stream
 from ddvc.liquidity import CAPITAL_COLUMN
 from ddvc.panel_assembly import assemble_parquet_shards
 from ddvc.paths import (
@@ -614,7 +614,7 @@ def _build_v2_current(
     selected_capital = capital_release
     reserve_authority = selected_capital.manifest["certified_reserve_stream"]["uniswap_v2"]
     days = [str(partition["day"]) for partition in reserve_authority["partitions"]]
-    state_release = certified_cp_event_stream(
+    state_release = cp_event_stream(
         "uniswap_v2",
         days,
         raw_root=RAW_ROOT,

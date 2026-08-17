@@ -6,6 +6,7 @@ from __future__ import annotations
 import argparse
 from bisect import bisect_left
 from dataclasses import asdict
+import datetime as dt
 import json
 from pathlib import Path
 
@@ -18,7 +19,6 @@ from ddvc import ethereum_logs as ethereum_logs_module
 from ddvc.fetch import pool_daily as pool_daily_module
 from ddvc import prices as prices_module
 from ddvc import realised as realised_module
-from ddvc import raw_certification as raw_certification_module
 from ddvc import release_calendar as release_calendar_module
 from ddvc import token_decimals as token_decimals_module
 from ddvc import transaction_targets as transaction_targets_module
@@ -30,10 +30,10 @@ from ddvc import v3_inventory_calendar as v3_inventory_calendar_module
 from ddvc import v3_pool_registry as v3_pool_registry_module
 from ddvc.asset_types import STABLE, VEHICLE_CANDIDATES
 from ddvc.artifact_release import file_stat_identity
+from ddvc.calendar import RESEARCH_SAMPLE_END
 from ddvc.ethereum_logs import file_sha256
 from ddvc.fetch import raw as fetch_raw_module
-from ddvc.fetch.raw import write_json
-from ddvc.raw_certification import load_certified_partition_ledger
+from ddvc.fetch.raw import source_day_stream_snapshot, write_json
 from ddvc.data_release import released_route_partitions, require_v2_event_source_release
 from ddvc.fetch.pool_daily import POOL_IDENTITY_STATIC_SNAPSHOTS
 from ddvc.fetch.sources import get_source
@@ -71,7 +71,6 @@ CODE_SOURCES = {
     "src/ddvc/fetch/pool_daily.py": Path(pool_daily_module.__file__),
     "src/ddvc/prices.py": Path(prices_module.__file__),
     "src/ddvc/realised.py": Path(realised_module.__file__),
-    "src/ddvc/raw_certification.py": Path(raw_certification_module.__file__),
     "src/ddvc/release_calendar.py": Path(release_calendar_module.__file__),
     "src/ddvc/token_decimals.py": Path(token_decimals_module.__file__),
     "src/ddvc/transaction_targets.py": Path(transaction_targets_module.__file__),
@@ -91,8 +90,47 @@ def _parse_args() -> argparse.Namespace:
     cli.add_argument("--data-root", type=Path, default=Path("data"))
     cli.add_argument("--output", type=Path)
     cli.add_argument("--threads", type=int, default=8)
-    cli.add_argument("--raw-certificate", type=Path)
     return cli.parse_args()
+
+
+def _graph_source_day_perimeter(
+    root: Path,
+    *,
+    source: str,
+    streams: set[str],
+) -> tuple[list[dict[str, object]], dict[str, object]]:
+    first = get_source(source).genesis
+    end = dt.datetime.strptime(RESEARCH_SAMPLE_END, "%Y%m%d").date()
+    rows: list[dict[str, object]] = []
+    day = first
+    while day <= end:
+        for stream in sorted(streams):
+            snapshot = source_day_stream_snapshot(
+                source, stream, day, data_root=root
+            )
+            rows.append(
+                {
+                    "source": source,
+                    "stream": stream,
+                    "day": day.strftime("%Y%m%d"),
+                    "path": str(Path(snapshot["path"]).relative_to(root)),
+                    "rows": int(snapshot["rows"]),
+                    "payload_stat": snapshot["payload_stat"],
+                    "marker_stat": snapshot["marker_stat"],
+                }
+            )
+        day += dt.timedelta(days=1)
+    return rows, {
+        "policy": "source-day-file-timestamp-v1",
+        "source": source,
+        "streams": sorted(streams),
+        "partition_count": len(rows),
+        "row_count": sum(int(row["rows"]) for row in rows),
+        "latest_mtime_ns": max(
+            max(int(row["payload_stat"][3]), int(row["marker_stat"][3]))
+            for row in rows
+        ),
+    }
 
 
 def _audit_and_publish(args: argparse.Namespace) -> int:
@@ -118,13 +156,6 @@ def _audit_and_publish_current(args: argparse.Namespace) -> int:
     calendar_path = root / "processed" / "v3_inventory_day_calendar.parquet"
     decimals_path = root / "processed" / V2_AUDITED_TOKEN_DECIMALS_REGISTRY.name
     prices_path = root / "processed" / TOKEN_PRICE_DAILY_PANEL.name
-    raw_certificate = args.raw_certificate or (
-        root
-        / "processed"
-        / "raw_generation"
-        / "uniswap_v3_local_certificate.json"
-    )
-
     frozen_upper, factory_certificate = load_certified_frozen_upper(root=factory_root)
     exact_paths, exact_manifest, exact_generation_binding = load_certified_inventory_generation(
         inventory_root,
@@ -206,28 +237,22 @@ def _audit_and_publish_current(args: argparse.Namespace) -> int:
         or verified_generation_binding != exact_generation_binding
     ):
         raise RuntimeError("installed V3 inventory generation changed during materialization")
-    try:
-        raw_certificate_identity = str(
-            raw_certificate.resolve().relative_to(root.resolve())
-        )
-    except ValueError as exc:
-        raise ValueError("raw certificate must live below the selected data root") from exc
-    certified_rows, raw_generation_binding = load_certified_partition_ledger(
-        raw_certificate,
-        data_root=root,
+    required_streams = {"swaps", "mints", "burns", "daily"}
+    source_day_rows, raw_generation_binding = _graph_source_day_perimeter(
+        root,
+        source="uniswap_v3",
+        streams=required_streams,
     )
-    raw_generation_binding["certificate_path"] = raw_certificate_identity
     provider_paths: dict[str, dict[str, Path]] = {}
-    for item in certified_rows:
+    for item in source_day_rows:
         if item["source"] != "uniswap_v3":
-            raise ValueError("V3 materiality certificate contains another source")
+            raise ValueError("V3 materiality perimeter contains another source")
         stream = str(item["stream"])
         day = str(item["day"])
         provider_paths.setdefault(stream, {})[day] = root / str(item["path"])
-    required_streams = {"swaps", "mints", "burns", "daily"}
     if set(provider_paths) != required_streams:
         raise ValueError(
-            "V3 materiality certificate must contain exactly swaps, mints, burns, and daily"
+            "V3 materiality perimeter must contain exactly swaps, mints, burns, and daily"
         )
     print("AUDIT: exact missing-pool event counts", flush=True)
     summary = con.execute("SELECT t.kind, r.graph_present, r.vehicle_pair, r.stable_pair, r.exact_metadata, count(*) AS events, count(DISTINCT e.pool) AS pools FROM exact_events e JOIN registry r USING(pool) JOIN topics t USING(topic) GROUP BY ALL ORDER BY t.kind, r.graph_present, r.vehicle_pair, r.stable_pair, r.exact_metadata").df()
@@ -386,12 +411,12 @@ def _audit_and_publish_current(args: argparse.Namespace) -> int:
             and float(daily_result["missing_static_tvl_pool_day_share"]) <= MAX_MATERIAL_SHARE_CHANGE
         ),
     }
-    recertified_rows, recertified_binding = load_certified_partition_ledger(
-        raw_certificate,
-        data_root=root,
+    reopened_rows, reopened_binding = _graph_source_day_perimeter(
+        root,
+        source="uniswap_v3",
+        streams=required_streams,
     )
-    recertified_binding["certificate_path"] = raw_certificate_identity
-    if recertified_rows != certified_rows or recertified_binding != raw_generation_binding:
+    if reopened_rows != source_day_rows or reopened_binding != raw_generation_binding:
         raise RuntimeError("Graph provider generation changed during long-run materiality reads")
     route_release.assert_current()
 

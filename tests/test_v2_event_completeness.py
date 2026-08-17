@@ -2795,7 +2795,8 @@ def test_v2_event_source_release_pointer_is_marker_last_and_crash_safe(tmp_path,
     for filename in completeness.V2_EVENT_SOURCE_RELEASE_FILENAMES.values():
         artifact = orphan / filename
         assert artifact.is_file()
-        assert completeness.sidecar_path(artifact).is_file()
+        if filename != completeness.V2_EVENT_SOURCE_RELEASE_FILENAMES["certificate"]:
+            assert completeness.sidecar_path(artifact).is_file()
 
 
 def test_v2_event_source_release_adapter_preserves_public_path_contract(tmp_path) -> None:
@@ -2814,7 +2815,7 @@ def test_v2_event_source_release_adapter_preserves_public_path_contract(tmp_path
         release.certificate_path,
     )
     assert release.provenance_paths == tuple(
-        sidecar_path(path) for path in release.artifact_paths
+        sidecar_path(path) for path in (release.summary_path, release.exceptions_path)
     )
     assert release.lineage_paths == (
         pointer_path,

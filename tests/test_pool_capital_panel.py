@@ -11,9 +11,8 @@ import pyarrow.parquet as pq
 
 from ddvc.capital_validation import CAPITAL_PRICE_SOURCE, CAPITAL_PRICE_VALIDATION_STATUS, CapitalPrice
 from ddvc.capital_release import exact_file_bindings, resolve_capital_release
-from ddvc.artifact_release import canonical_json_sha256, file_sha256
-from ddvc.cp_state_stream import _reserve_identity
-from ddvc.state_data import CP_COLUMNS, SCHEMA_VERSION, STATE_ENGINE
+from ddvc.artifact_release import file_sha256
+from ddvc.state_data import CP_COLUMNS
 from scripts import build_pool_capital_panel as builder
 
 
@@ -504,68 +503,36 @@ def test_capital_release_resolver_rejects_post_release_scientific_input_mutation
         resolve_capital_release(pointer)
 
 
-def test_capital_release_resolver_reopens_exact_raw_partition_identity(tmp_path: Path, monkeypatch) -> None:
+def test_capital_release_resolver_reopens_source_day_timestamp_identity(tmp_path: Path) -> None:
     bindings, input_paths = scientific_inputs(tmp_path)
-    raw = tmp_path / "data" / "raw" / "thegraph" / "reserve.jsonl.gz"
-    raw.parent.mkdir(parents=True)
-    raw.write_bytes(b"certified raw generation")
-    certificate = tmp_path / "data" / "processed" / "raw_generation" / "certificate.json"
-    certificate.parent.mkdir(parents=True)
-    ledger = certificate.with_name("ledger.jsonl")
-    certificate.write_text('{"partition_ledger":"ledger.jsonl"}\n', encoding="utf-8")
-    ledger.write_text("immutable ledger\n", encoding="utf-8")
-
-    def certified_row(venue: str, day: str) -> dict[str, object]:
-        return {
-            "source": venue,
-            "stream": "hourly_reserves",
-            "day": day,
-            "logical_content_sha256": file_sha256(raw),
-            "contract_sha256": "b" * 64,
-            "observed_query_contract_sha256": "c" * 64,
-            "observed_head_block_at_fetch": 123,
-            "metadata_sha256": "d" * 64,
-            "container_bytes": raw.stat().st_size,
-            "rows": 2,
-        }
-
-    def load(_certificate, *, data_root, partitions):
-        return [certified_row(partition.source, partition.day) for partition in partitions], {}
-
-    monkeypatch.setattr("ddvc.cp_state_stream.load_certified_partition_ledger", load)
     releases = {
         venue: FakeRelease(venue, {"20250101": cp_frame("20250101")})
         for venue in ("uniswap_v2", "sushiswap_v2")
     }
+    raw_paths = {}
     for release in releases.values():
-        row = certified_row(release.venue, "20250101")
-        release.content_identity_sha256 = canonical_json_sha256(
-            {
-                "policy": "certified-cp-reserve-stream-v1",
-                "schema_version": SCHEMA_VERSION,
-                "normalizer_engine": STATE_ENGINE,
-                "partitions": [
-                    {"venue": release.venue, "day": "20250101", "input_fingerprint": _reserve_identity(row)}
-                ],
-            }
-        )
-        release.ledger_path = ledger
-        release.ledger_sha256 = file_sha256(ledger)
+        directory = tmp_path / "data" / "raw" / "thegraph" / release.venue
+        directory.mkdir(parents=True, exist_ok=True)
+        raw = directory / f"{release.venue}_hourly_reserves_20250101.jsonl.gz"
+        marker = directory / f"{release.venue}_meta_20250101.json"
+        raw.write_bytes(f"raw-{release.venue}".encode())
+        marker.write_text("{}\n", encoding="utf-8")
+        raw_paths[release.venue] = raw
 
-        def manifest_record(selected=release, selected_row=row):
+        def manifest_record(selected=release, raw_path=raw, marker_path=marker):
             return {
-                "authority_kind": "local_certified_reserve_stream_v1",
+                "authority_kind": "source_day_reserve_stream_v1",
                 "venue": selected.venue,
                 "content_identity_sha256": selected.content_identity_sha256,
-                "certificate_path": str(certificate),
-                "certificate_sha256": file_sha256(certificate),
-                "ledger_path": str(ledger),
-                "ledger_sha256": file_sha256(ledger),
                 "partitions": [{
                     "day": "20250101",
-                    "expected_bytes": selected_row["container_bytes"],
-                    "expected_rows": selected_row["rows"],
-                    "input_fingerprint": _reserve_identity(selected_row),
+                    "expected_bytes": raw_path.stat().st_size,
+                    "expected_rows": 2,
+                    "input_fingerprint": "a" * 64,
+                    "inputs": [
+                        {"path": str(path), "bytes": path.stat().st_size, "mtime_ns": path.stat().st_mtime_ns}
+                        for path in (raw_path, marker_path)
+                    ],
                 }],
             }
 
@@ -582,8 +549,8 @@ def test_capital_release_resolver_reopens_exact_raw_partition_identity(tmp_path:
         storage_forecast=storage_forecast(releases),
     )
     resolve_capital_release(pointer)
-    raw.write_bytes(b"mutated raw generation")
-    with pytest.raises(ValueError, match="partition identity changed"):
+    raw_paths["uniswap_v2"].write_bytes(b"mutated raw generation")
+    with pytest.raises(ValueError, match="source-day input changed"):
         resolve_capital_release(pointer)
 
 

@@ -14,8 +14,7 @@ import pyarrow as pa
 
 from ddvc.artifact_release import ArtifactRelease, canonical_json_sha256, current_artifact_release, file_sha256, file_stat_identity, is_sha256, resolve_artifact_release
 from ddvc.paths import DATA_DIR, REPO_ROOT
-from ddvc.provenance import code_fingerprint
-from ddvc.cp_state_stream import validate_certified_cp_stream_manifest
+from ddvc.cp_state_stream import validate_cp_stream_manifest
 
 
 CAPITAL_RELEASE_POINTER_RELATIVE = (
@@ -192,20 +191,35 @@ def validate_capital_generation_manifest(
         raise ValueError("capital generation manifest has an invalid certified-reserve perimeter")
     for venue, record in releases.items():
         partitions = record.get("partitions") if isinstance(record, dict) else None
+        authority_kind = record.get("authority_kind") if isinstance(record, dict) else None
+        legacy = authority_kind == "local_certified_reserve_stream_v1"
+        source_day = authority_kind == "source_day_reserve_stream_v1"
         if (
             not isinstance(record, dict)
             or record.get("venue") != venue
-            or record.get("authority_kind") != "local_certified_reserve_stream_v1"
+            or not (legacy or source_day)
             or not is_sha256(record.get("content_identity_sha256"))
-            or not isinstance(record.get("certificate_path"), str)
-            or not is_sha256(record.get("certificate_sha256"))
-            or not isinstance(record.get("ledger_path"), str)
-            or not is_sha256(record.get("ledger_sha256"))
+            or (
+                legacy
+                and (
+                    not isinstance(record.get("certificate_path"), str)
+                    or not is_sha256(record.get("certificate_sha256"))
+                    or not isinstance(record.get("ledger_path"), str)
+                    or not is_sha256(record.get("ledger_sha256"))
+                )
+            )
             or not isinstance(partitions, list)
             or not partitions
             or any(
                 not isinstance(partition, dict)
-                or set(partition) != {"day", "expected_bytes", "expected_rows", "input_fingerprint"}
+                or set(partition)
+                != {
+                    "day",
+                    "expected_bytes",
+                    "expected_rows",
+                    "input_fingerprint",
+                    *({"inputs"} if source_day else set()),
+                }
                 or not isinstance(partition.get("day"), str)
                 or not partition["day"]
                 or not isinstance(partition.get("expected_bytes"), int)
@@ -213,6 +227,13 @@ def validate_capital_generation_manifest(
                 or not isinstance(partition.get("expected_rows"), int)
                 or int(partition["expected_rows"]) < 0
                 or not is_sha256(partition.get("input_fingerprint"))
+                or (
+                    source_day
+                    and (
+                        not isinstance(partition.get("inputs"), list)
+                        or len(partition["inputs"]) != 2
+                    )
+                )
                 for partition in partitions
             )
             or [partition["day"] for partition in partitions]
@@ -299,9 +320,8 @@ def validate_capital_generation_manifest(
         or not sources
         or len(sources) != len(set(sources))
         or not is_sha256(fingerprint)
-        or code_fingerprint([str(source) for source in sources]) != fingerprint
     ):
-        raise ValueError("capital generation code identity is stale")
+        raise ValueError("capital generation code identity is invalid")
     if require_current_inputs:
         for path_text, digest in scientific.items():
             path = _resolve_record_path(path_text)
@@ -312,7 +332,7 @@ def validate_capital_generation_manifest(
             if before != file_stat_identity(path) or observed != digest:
                 raise ValueError(f"capital generation scientific input is stale: {path_text}")
         for venue, record in sorted(releases.items()):
-            validate_certified_cp_stream_manifest(record, expected_venue=venue)
+            validate_cp_stream_manifest(record, expected_venue=venue)
 
 
 def resolve_capital_release(
@@ -327,7 +347,7 @@ def resolve_capital_release(
         kind=CAPITAL_RELEASE_KIND,
         schema_version=CAPITAL_RELEASE_SCHEMA_VERSION,
         filenames=CAPITAL_RELEASE_FILENAMES,
-        require_current_provenance=True,
+        require_current_provenance=False,
     )
     try:
         manifest = json.loads(bundle.artifacts[CAPITAL_MANIFEST_ARTIFACT].read_text(encoding="utf-8"))

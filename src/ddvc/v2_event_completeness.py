@@ -245,8 +245,8 @@ class V2EventSourceRelease:
         return self.summary_path, self.exceptions_path, self.certificate_path
 
     @property
-    def provenance_paths(self) -> tuple[Path, Path, Path]:
-        return tuple(sidecar_path(path) for path in self.artifact_paths)
+    def provenance_paths(self) -> tuple[Path, Path]:
+        return sidecar_path(self.summary_path), sidecar_path(self.exceptions_path)
 
     @property
     def lineage_paths(self) -> tuple[Path, ...]:

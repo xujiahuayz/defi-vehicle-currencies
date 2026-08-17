@@ -22,7 +22,7 @@ from ddvc.route_state import (
 )
 from ddvc.state_data import write_cp_partition
 from scripts import run_route_cost_panel
-from raw_cert_fixtures import install_local_raw_certificate
+from source_day_fixtures import install_source_day_metadata
 
 
 def _write_gzip_rows(path: Path, rows: list[dict]) -> None:
@@ -62,7 +62,7 @@ def test_route_quotes_exact_requested_hour_from_canonical_partition(tmp_path: Pa
             raw_root / venue / f"{venue}_{stream}_20250101.jsonl.gz",
             [],
         )
-    install_local_raw_certificate(
+    install_source_day_metadata(
         raw_root,
         venue,
         ("hourly_reserves", "swaps", "mints", "burns"),

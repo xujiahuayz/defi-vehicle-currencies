@@ -50,7 +50,7 @@ from ddvc.capital_validation import (
     validate_constant_product_capital,
     validated_capital_prices,
 )
-from ddvc.cp_state_stream import CPStateStreamSet, certified_cp_state_stream
+from ddvc.cp_state_stream import CPStateStreamSet, cp_state_stream
 from ddvc.fetch.sources import get_source
 from ddvc.fetch.pool_daily import pool_day_values, verified_pool_provider_rows
 from ddvc.fetch.raw import write_json
@@ -82,7 +82,7 @@ CAPITAL_CODE_SOURCES = [
     "src/ddvc/capital_release.py",
     "src/ddvc/capital_validation.py",
     "src/ddvc/cp_state_stream.py",
-    "src/ddvc/raw_certification.py",
+    "src/ddvc/fetch/raw.py",
     "src/ddvc/state_data.py",
     "src/ddvc/token_decimals.py",
 ]
@@ -1092,7 +1092,7 @@ def _main(argv: list[str] | None = None) -> int:
     parser.add_argument("--workers", type=int, default=8)
     args = parser.parse_args(argv)
     releases = {
-        venue: certified_cp_state_stream(
+        venue: cp_state_stream(
             venue,
             calendar_days(
                 max(RESEARCH_SAMPLE_START, get_source(venue).genesis.strftime("%Y%m%d")),

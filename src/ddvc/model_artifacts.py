@@ -16,6 +16,7 @@ from ddvc.analysis_release import resolve_analysis_release, resolve_repo_path
 from ddvc.model_registry import FITTED_MODEL_ARTIFACT_ROLES, MODEL_RUN_ARTIFACT_ROLES
 from ddvc.paths import REPO_ROOT
 from ddvc.provenance import current_artifacts, portable_content_sha256, sidecar_path
+from ddvc.runtime import serialized_read_installs
 from ddvc.tables import write_exhibit, write_panel
 
 
@@ -31,8 +32,8 @@ class ModelArtifactContext:
     d3_certificate_path: Path
     d3_certificate_bytes: int
     d3_certificate_sha256: str
-    d3_certificate_provenance_path: Path
-    d3_certificate_provenance_sha256: str
+    d3_certificate_provenance_path: Path | None
+    d3_certificate_provenance_sha256: str | None
     d3_input_relatives: frozenset[str]
     d3_input_records: Mapping[str, Mapping[str, object]]
 
@@ -54,9 +55,7 @@ def model_artifact_context(
         root=root,
         label="model-run D3 certificate",
     )
-    with current_artifacts(
-        [certificate_path], consumer="model-run D3 certificate context"
-    ):
+    with serialized_read_installs((certificate_path,)):
         release = resolve_analysis_release(
             certificate_path=certificate_relative,
             root=root,
@@ -66,15 +65,14 @@ def model_artifact_context(
                 "model-run D3 generation disagrees with its certificate: "
                 f"{generation} != {release.generation}"
             )
-        provenance = sidecar_path(release.certificate_path)
         return ModelArtifactContext(
             d3_generation=release.generation,
             d3_certificate_relative=certificate_relative,
             d3_certificate_path=release.certificate_path,
             d3_certificate_bytes=release.certificate_path.stat().st_size,
             d3_certificate_sha256=file_sha256(release.certificate_path),
-            d3_certificate_provenance_path=provenance,
-            d3_certificate_provenance_sha256=file_sha256(provenance),
+            d3_certificate_provenance_path=None,
+            d3_certificate_provenance_sha256=None,
             d3_input_relatives=frozenset(
                 path.relative_to(root).as_posix() for path in release.input_paths
             ),
@@ -125,23 +123,18 @@ def assert_model_artifact_certificate_identity(
     context: ModelArtifactContext,
     certificate_path: str | Path,
 ) -> None:
-    """Require a leased certificate pair to equal the context's verified identity."""
+    """Require a leased certificate to equal the context's verified identity."""
 
     certificate = Path(certificate_path)
-    provenance = sidecar_path(certificate)
     observed = {
         "path": certificate.resolve(),
         "bytes": certificate.stat().st_size,
         "sha256": file_sha256(certificate),
-        "provenance_path": provenance.resolve(),
-        "provenance_sha256": file_sha256(provenance),
     }
     expected = {
         "path": context.d3_certificate_path.resolve(),
         "bytes": context.d3_certificate_bytes,
         "sha256": context.d3_certificate_sha256,
-        "provenance_path": context.d3_certificate_provenance_path.resolve(),
-        "provenance_sha256": context.d3_certificate_provenance_sha256,
     }
     mismatched = sorted(
         field for field, value in observed.items() if value != expected[field]

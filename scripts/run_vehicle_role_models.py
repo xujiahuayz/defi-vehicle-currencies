@@ -38,6 +38,7 @@ from ddvc.model_artifacts import (
 )
 from ddvc.paths import OUTPUT_DIR, REPO_ROOT
 from ddvc.provenance import current_artifacts, sidecar_path
+from ddvc.runtime import serialized_read_installs
 
 
 RISK_PANEL = OUTPUT_DIR / "empirical" / "vehicle_role_transition_risk.parquet"
@@ -580,11 +581,8 @@ def run(
     environment=None,
 ) -> tuple[pd.DataFrame, pd.DataFrame]:
     context = model_artifact_context(root=root, environment=environment)
-    with current_artifacts(
-        [context.d3_certificate_path],
-        consumer="vehicle-role D3 certificate",
-    ) as leased_certificate:
-        assert_model_artifact_certificate_identity(context, leased_certificate[0])
+    with serialized_read_installs((context.d3_certificate_path,)):
+        assert_model_artifact_certificate_identity(context, context.d3_certificate_path)
         record, receipt = _d3_endpoint_release_record(
             context, pointer_path, root=root
         )

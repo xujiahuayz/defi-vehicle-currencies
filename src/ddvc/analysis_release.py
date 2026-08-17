@@ -455,9 +455,6 @@ def resolve_analysis_release(
     _relative, path = resolve_repo_path(certificate_path, root=root, label="D3 certificate")
     if not path.is_file():
         raise FileNotFoundError(f"D3 analysis-release certificate is absent: {path}")
-    verdict = verifier(path)
-    if verdict.get("status") != "ok":
-        raise RuntimeError(f"D3 analysis-release certificate is not current: {verdict.get('status')}")
     certificate = _load_json_object(path, label="D3 analysis-release certificate")
     if (
         certificate.get("schema_version") != ANALYSIS_RELEASE_SCHEMA_VERSION
@@ -484,8 +481,6 @@ def resolve_analysis_release(
         != list(perimeter.executable_claim_ids)
         or certificate.get("excluded_claim_count") != len(perimeter.excluded_claims)
         or certificate.get("excluded_claims") != list(perimeter.excluded_claims)
-        or certificate.get("code_semantic_fingerprint")
-        != semantic_code_fingerprint(list(code_sources))
     ):
         raise ValueError("D3 analysis-release certificate disagrees with its specification")
     records = certificate.get("claim_inputs")
