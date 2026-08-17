@@ -28,7 +28,7 @@ import math
 import pandas as pd
 
 from ddvc.paths import OUTPUT_DIR
-from ddvc.presentation import require_certified_presentation_source
+from ddvc.presentation import require_current_presentation_source
 from ddvc.provenance import stamp
 from ddvc.runtime import atomic_output
 
@@ -190,7 +190,7 @@ def _pooled_days(fitted: pd.DataFrame) -> int:
 def main() -> None:
     provenance_inputs = []
     for path in (ESTIMATES, SUPPORT):
-        provenance_inputs.extend((path, require_certified_presentation_source(path)))
+        provenance_inputs.extend((path, require_current_presentation_source(path)))
     estimates = pd.read_json(ESTIMATES, lines=True)
     support = pd.read_json(SUPPORT, lines=True)
     rendered = render(estimates, support)

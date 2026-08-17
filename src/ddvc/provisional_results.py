@@ -8,7 +8,7 @@ from pathlib import Path
 import pandas as pd
 
 from ddvc.paths import OUTPUT_DIR
-from ddvc.presentation import require_certified_presentation_source
+from ddvc.presentation import require_current_presentation_source
 from ddvc.provenance import stamp
 from ddvc.runtime import atomic_output
 from ddvc.venue_tables import routing_window_values
@@ -631,7 +631,7 @@ def main() -> None:
     provenance_inputs: list[Path] = []
     frames: list[pd.DataFrame] = []
     for path in INPUTS:
-        provenance_inputs.extend((path, require_certified_presentation_source(path)))
+        provenance_inputs.extend((path, require_current_presentation_source(path)))
         frames.append(pd.read_json(path, lines=True))
     rendered = render_provisional_results_deck_values(*frames)
     with atomic_output(OUTPUT) as temporary:

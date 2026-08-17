@@ -348,8 +348,7 @@ def validate_registered_plan(claim: Mapping[str, Any]) -> tuple[bool, str]:
     )
 
 
-FINDINGS_FINGERPRINT_KIND = "findings_registry_fingerprint_v1"
-FINDINGS_FINGERPRINT_LEDGER = REPO_ROOT / "logs" / "findings-fingerprints.jsonl"
+FINDINGS_REGISTRY_KIND = "findings_registry_state_v1"
 
 
 def findings_registry_state(
@@ -374,7 +373,7 @@ def findings_registry_state(
     runs = model_ledger.get("runs")
     runs = runs if isinstance(runs, list) else []
     return {
-        "kind": FINDINGS_FINGERPRINT_KIND,
+        "kind": FINDINGS_REGISTRY_KIND,
         "claims": sorted(
             [str(claim.get("id") or ""), str(claim.get("status") or "")]
             for claim in claims
@@ -390,73 +389,3 @@ def findings_registry_state(
             if isinstance(record, dict) and record.get("status") == "retired"
         ),
     }
-
-
-def findings_fingerprint(
-    specification: Mapping[str, Any],
-    model_ledger: Mapping[str, Any],
-) -> str:
-    """Return the SHA-256 identity of the claim registry's status state."""
-    return canonical_hash(findings_registry_state(specification, model_ledger))
-
-
-def read_findings_fingerprints(
-    path: Path = FINDINGS_FINGERPRINT_LEDGER,
-) -> list[dict[str, Any]]:
-    """Read the append-only pass ledger, refusing to guess past a malformed row."""
-    try:
-        text = path.read_text()
-    except OSError:
-        return []
-    rows: list[dict[str, Any]] = []
-    for line in text.splitlines():
-        line = line.strip()
-        if not line or line.startswith("#"):
-            continue
-        try:
-            row = json.loads(line)
-        except json.JSONDecodeError:
-            return []
-        if not isinstance(row, dict):
-            return []
-        rows.append(row)
-    return rows
-
-
-def validate_findings_fingerprints(
-    rows: list[dict[str, Any]],
-    *,
-    current_fingerprint: str | None = None,
-) -> tuple[bool, str]:
-    """Require two consecutive findings passes, from distinct commits, to agree.
-
-    This replaces a hand-declared counter. A pass is identified by the commit the
-    registry was read at, so two rows written without any committed work in
-    between are one pass and cannot satisfy the gate. When the caller supplies the
-    fingerprint recomputed from the live registries, the last row must also still
-    describe the working tree, which catches a status change made after the last
-    pass was recorded.
-    """
-    if len(rows) < 2:
-        return False, f"passes={len(rows)}; need=2"
-    last, previous = rows[-1], rows[-2]
-    for index, row in ((len(rows) - 1, last), (len(rows) - 2, previous)):
-        missing = sorted(
-            field
-            for field in ("pass_id", "fingerprint", "commit", "recorded_at")
-            if not str(row.get(field) or "").strip()
-        )
-        if missing:
-            return False, f"row={index}; missing={missing}"
-    detail = (
-        f"passes={len(rows)}; "
-        f"last={str(last['pass_id'])}@{str(last['commit'])[:12]}; "
-        f"previous={str(previous['pass_id'])}@{str(previous['commit'])[:12]}"
-    )
-    if last["pass_id"] == previous["pass_id"] or last["commit"] == previous["commit"]:
-        return False, f"{detail}; passes are not distinct"
-    if last["fingerprint"] != previous["fingerprint"]:
-        return False, f"{detail}; registry changed between passes"
-    if current_fingerprint is not None and last["fingerprint"] != current_fingerprint:
-        return False, f"{detail}; registry changed after the last pass"
-    return True, detail

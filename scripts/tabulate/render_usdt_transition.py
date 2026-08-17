@@ -6,12 +6,12 @@ from __future__ import annotations
 from ddvc.dominance_tables import parse_newcommands, render_usdt_transition
 from ddvc.paper_tables import write_table_artifacts
 from ddvc.paths import OUTPUT_DIR
-from ddvc.presentation import require_certified_presentation_source
+from ddvc.presentation import require_current_presentation_source
 
 
 INPUT = OUTPUT_DIR / "exhibits" / "provisional_results_deck_values.tex"
 
-PROVENANCE = require_certified_presentation_source(INPUT)
+PROVENANCE = require_current_presentation_source(INPUT)
 write_table_artifacts(
     "usdt_transition",
     render_usdt_transition(parse_newcommands(INPUT.read_text(encoding="utf-8"))),

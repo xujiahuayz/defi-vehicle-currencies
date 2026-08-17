@@ -11,7 +11,7 @@ import pandas as pd
 
 from ddvc.asset_types import WETH, asset_type, classify
 from ddvc.paths import OUTPUT_DIR
-from ddvc.presentation import require_certified_presentation_source
+from ddvc.presentation import require_current_presentation_source
 from ddvc.provenance import stamp
 from ddvc.runtime import atomic_output
 
@@ -2321,15 +2321,15 @@ def run(
     support_path: Path = SUPPORT,
     output_path: Path = DECK_VALUES,
 ) -> int:
-    provenance_path = require_certified_presentation_source(decomposition_path)
-    support_provenance = require_certified_presentation_source(support_path)
-    fixed_effects_provenance = require_certified_presentation_source(
+    provenance_path = require_current_presentation_source(decomposition_path)
+    support_provenance = require_current_presentation_source(support_path)
+    fixed_effects_provenance = require_current_presentation_source(
         fixed_effects_path
     )
-    usdt_integration_provenance = require_certified_presentation_source(
+    usdt_integration_provenance = require_current_presentation_source(
         usdt_integration_path
     )
-    contributions_provenance = require_certified_presentation_source(contributions_path)
+    contributions_provenance = require_current_presentation_source(contributions_path)
     decomposition = pd.read_json(decomposition_path, lines=True)
     fixed_effects = pd.read_json(fixed_effects_path, lines=True)
     usdt_integration = pd.read_json(usdt_integration_path, lines=True)

@@ -26,6 +26,7 @@ from ddvc.d3_stage_registry import d3_release_postcondition
 from ddvc.fetch.raw import write_json
 from ddvc.model_registry import canonical_hash, claim_execution_perimeter, generation_id
 from ddvc.paths import REPO_ROOT
+from ddvc.panel_freshness import check_canonical_panel_freshness
 from ddvc.provenance import (
     code_fingerprint,
     describe_input,
@@ -565,21 +566,39 @@ def resolve_current_analysis_release(
     verifier: Callable[[str | Path], dict[str, object]] = verify,
     code_sources: tuple[str, ...] = ANALYSIS_RELEASE_CODE_SOURCES,
 ) -> AnalysisRelease:
-    """Resolve the marker-last D3 pointer and independently reopen its certificate."""
+    """Resolve the marker-last D3 pointer through the one timestamp freshness check."""
 
-    _relative, resolved_pointer = resolve_repo_path(pointer_path, root=root, label="D3 release pointer")
-    bundle: ArtifactRelease = resolve_artifact_release(
-        resolved_pointer,
-        kind=ANALYSIS_RELEASE_POINTER_KIND,
-        schema_version=ANALYSIS_RELEASE_POINTER_SCHEMA_VERSION,
-        filenames=ANALYSIS_RELEASE_FILENAMES,
+    relative, resolved_pointer = resolve_repo_path(
+        pointer_path, root=root, label="D3 release pointer"
     )
-    certificate_relative = bundle.artifacts["certificate"].relative_to(root).as_posix()
-    with current_artifact_release(bundle):
-        release = resolve_analysis_release(
-            certificate_path=certificate_relative,
-            root=root,
-            verifier=verifier,
-            code_sources=code_sources,
-        )
-    return AnalysisRelease(release.generation, bundle.pointer_path, release.certificate_path, release.certificate, root)
+    pointer = _load_json_object(resolved_pointer, label="D3 release pointer")
+    bundle_generation = str(pointer.get("generation_id") or "")
+    record = (pointer.get("artifacts") or {}).get("certificate")
+    if not bundle_generation or not isinstance(record, dict):
+        raise ValueError("D3 release pointer is malformed")
+    certificate_path = (
+        resolved_pointer.parent
+        / "generations"
+        / bundle_generation
+        / str(record.get("filename") or "certificate.json")
+    )
+    certificate = _load_json_object(certificate_path, label="D3 analysis panel")
+    passed, detail = check_canonical_panel_freshness(
+        root=root,
+        pointer=Path(relative),
+        specification=Path(
+            str(certificate.get("specification_path") or SPECIFICATION_LOCK)
+        ),
+    )
+    if not passed:
+        raise RuntimeError(f"D3 analysis panel is not current: {detail}")
+    generation = str(certificate.get("generation") or "")
+    if not generation or certificate.get("claim_inputs") is None:
+        raise ValueError("D3 analysis panel manifest is malformed")
+    return AnalysisRelease(
+        generation,
+        resolved_pointer,
+        certificate_path,
+        certificate,
+        root,
+    )

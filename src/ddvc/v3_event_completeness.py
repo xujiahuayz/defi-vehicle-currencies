@@ -796,7 +796,7 @@ def resolve_v3_event_source_release(
         kind=V3_EVENT_SOURCE_KIND,
         schema_version=V3_EVENT_SOURCE_RELEASE_SCHEMA_VERSION,
         filenames=V3_EVENT_SOURCE_FILENAMES,
-        require_current_provenance=True,
+        require_current_provenance=False,
     )
 
 

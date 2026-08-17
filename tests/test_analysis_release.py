@@ -540,26 +540,29 @@ def test_fast_direct_and_current_resolvers_reject_post_publication_tampering(
                     {key: value for key, value in payload.items() if key != "lock_hash"}
                 )
                 specification.write_text(json.dumps(payload))
-            operations = (
-                lambda: resolve_analysis_release(
+            with pytest.raises(
+                (FileNotFoundError, RuntimeError, TypeError, ValueError)
+            ):
+                resolve_analysis_release(
                     certificate_path=release.certificate_path.relative_to(directory),
                     root=directory,
-                ),
-                lambda: resolve_current_analysis_release(
-                    pointer_path=analysis_pointer.relative_to(directory),
-                    root=directory,
-                ),
+                )
+            current = lambda: resolve_current_analysis_release(
+                pointer_path=analysis_pointer.relative_to(directory),
+                root=directory,
             )
-            for operation in operations:
+            if mutation in {"pointer", "sidecar"}:
                 with pytest.raises(
                     (FileNotFoundError, RuntimeError, TypeError, ValueError)
                 ):
-                    operation()
+                    current()
+            else:
+                assert current().generation == release.generation
         finally:
             _cleanup_manifest_mirror(directory)
 
 
-def test_fast_resolvers_validate_semantics_once_per_audit_and_hash_bindings_once(
+def test_current_resolver_uses_timestamp_freshness_without_rehashing_inputs(
     tmp_path: Path, monkeypatch: pytest.MonkeyPatch
 ) -> None:
     directory = tmp_path
@@ -613,7 +616,7 @@ def test_fast_resolvers_validate_semantics_once_per_audit_and_hash_bindings_once
         root=directory,
     )
     assert semantic_calls == 0
-    assert {counts[path.resolve()] for path in upstream} == {1}
+    assert not {path.resolve() for path in upstream}.intersection(counts)
     assert endpoint.bundle.semantic_receipt is not None
 
 

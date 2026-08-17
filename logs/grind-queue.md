@@ -42,7 +42,7 @@ and pick a blocking check from the freeze gate.
   This rule does NOT license faking a gate. It licenses the loop to *earn* a gate
   by a recorded, citable adjudication that a reader could check and disagree with.
 
-- [ ] **JAVA (2026-08-16): DO THESE TWO FIRST — ABOVE THE E1 LOCK AND DECK ITEMS.
+- [x] **JAVA (2026-08-16): DO THESE TWO FIRST — ABOVE THE E1 LOCK AND DECK ITEMS.
   (1) CLEAN UP dead scripts and stale intermediary data with no downstream consumer.**
   Java explicitly authorized deleting data here, which satisfies the owner rule's
   data-deletion carve-out. Do it conservatively: build the live dependency closure
@@ -83,6 +83,14 @@ and pick a blocking check from the freeze gate.
   the venue-optics citations subtest. The next certification-removal unit is
   designed to eliminate the first blocker; rerun the full suite there, close the
   remaining inherited failures honestly, then tick both cleanup and that unit._
+  _CLOSED (2026-08-17). The certification cutover's first boundary removed the
+  stale V2 provenance collection failure; `pyfixest` is now a declared dev
+  dependency; the retained Etherscan CSV reader has an explicit read-only policy
+  exception; and the venue-density test respects one-item discreteness rather
+  than demanding a filler citation. The complete suite is green (2,288 tests and
+  708 subtests), paper/deck compile cleanly at 47/37 pages, and the freeze blocker
+  count fell from four to three. The conservative kill-list remains the one
+  recorded in commits `6ed8a1c` and `46f73eb`; no further orphan was inferred._
 
 - [ ] **(2) THEN REMOVE THE CERTIFICATION / FINGERPRINT LAYER — replace it with
   file-timestamp staleness plus ONE cheap freshness check.** Java's decision; the

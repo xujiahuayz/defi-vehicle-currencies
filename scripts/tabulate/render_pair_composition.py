@@ -8,7 +8,7 @@ import json
 from ddvc.dominance_tables import parse_newcommands, render_pair_composition
 from ddvc.paper_tables import write_table_artifacts
 from ddvc.paths import OUTPUT_DIR
-from ddvc.presentation import require_certified_presentation_source
+from ddvc.presentation import require_current_presentation_source
 
 
 MACROS = (
@@ -20,8 +20,8 @@ FIXED_EFFECTS = (
     OUTPUT_DIR / "exhibits" / "vehicle_transition_pair_fixed_effects.jsonl"
 )
 
-macro_provenance = require_certified_presentation_source(MACROS)
-fixed_effect_provenance = require_certified_presentation_source(FIXED_EFFECTS)
+macro_provenance = require_current_presentation_source(MACROS)
+fixed_effect_provenance = require_current_presentation_source(FIXED_EFFECTS)
 macro_values = parse_newcommands(MACROS.read_text(encoding="utf-8"))
 fixed_effect_rows = [
     json.loads(line) for line in FIXED_EFFECTS.read_text(encoding="utf-8").splitlines()

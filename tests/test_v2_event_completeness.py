@@ -2933,7 +2933,7 @@ def test_v2_event_source_release_binds_provenance_to_the_resolved_target(tmp_pat
         resolve_v2_event_source_release(pointer_path)
 
 
-def test_v2_event_source_release_rejects_stale_provenance_with_current_pointer_digest(
+def test_v2_event_source_release_does_not_restamp_for_code_fingerprint_changes(
     tmp_path,
 ) -> None:
     pointer_path = tmp_path / "release" / "current.json"
@@ -2954,8 +2954,7 @@ def test_v2_event_source_release_rejects_stale_provenance_with_current_pointer_d
     )
     write_json(pointer_path, pointer)
 
-    with pytest.raises(ValueError, match="provenance is not current: summary"):
-        resolve_v2_event_source_release(pointer_path)
+    assert resolve_v2_event_source_release(pointer_path).summary_path == release.summary_path
 
 
 def test_v2_event_source_release_reader_never_falls_back_to_explicit_legacy_paths(tmp_path) -> None:

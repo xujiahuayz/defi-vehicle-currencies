@@ -793,8 +793,9 @@ class VariableRegistryTests(unittest.TestCase):
         The exemption is narrow and is justified by what those files are: independent
         verifiers that shell out to a reference implementation, export a transient
         sample, parse the estimate back and delete the transient. The CEX-reference
-        adapter has a second narrow exemption for reading the immutable CSV members of
-        a published replication archive; it writes only Parquet. Nothing under
+        adapters have narrow exemptions for reading immutable external source files:
+        the published CEX replication archive and the retained Etherscan daily-price
+        input to the stress design. Both write only Parquet or JSONL. Nothing under
         `output/` depends on one of them having run, so a tab-separated handoff to
         `Rscript` produces no artifact this rule exists to prevent. Everything else
         under `scripts/` and `src/` stays under the absolute ban.
@@ -804,6 +805,7 @@ class VariableRegistryTests(unittest.TestCase):
         exempt = root / "scripts" / "verify"
         read_only_csv_adapters = {
             root / "src" / "ddvc" / "analysis" / "cex_reference.py",
+            root / "scripts" / "run_stress_reallocation_e0.py",
         }
         for base in [root / "scripts", root / "src"]:
             for path in base.rglob("*.py"):

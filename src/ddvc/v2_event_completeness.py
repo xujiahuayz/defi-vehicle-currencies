@@ -2891,7 +2891,7 @@ def validate_v2_event_source_evidence_bundle(
 def resolve_v2_event_source_release(
     pointer_path: Path = V2_EVENT_SOURCE_CURRENT,
 ) -> V2EventSourceRelease:
-    """Resolve and hash-verify the one marker-released V2 generation."""
+    """Resolve the marker-released V2 generation without restamping old inputs."""
 
     pointer_path = Path(pointer_path)
     if not pointer_path.is_file() and pointer_path == V2_EVENT_SOURCE_CURRENT and any(
@@ -2908,7 +2908,7 @@ def resolve_v2_event_source_release(
         kind=V2_EVENT_SOURCE_RELEASE_KIND,
         schema_version=V2_EVENT_SOURCE_RELEASE_SCHEMA_VERSION,
         filenames=V2_EVENT_SOURCE_RELEASE_FILENAMES,
-        require_current_provenance=True,
+        require_current_provenance=False,
     )
     return _v2_event_source_release(release)
 

@@ -2,33 +2,55 @@
  "argv": [],
  "artefact": "output/exhibits/provisional_results_deck_values.tex",
  "artefact_bytes": 4116,
- "artefact_mtime_ns": 1786898350729031885,
+ "artefact_mtime_ns": 1786932329030578510,
  "artefact_sha256": "4e87946d89da89bf528f7d5edc64309840781d4e1c575fda24e33123e5eaf978",
- "code_fingerprint": "9fefd914ce49b3929b92adbf7471269cba0d9f6d1bf66347f445575ec7ded9cb",
+ "code_fingerprint": "b4eeeb03f1e5d147274715c738a6a36e59e66774c6c58d357fd0676cecb431e9",
  "code_sources": [
   "scripts/tabulate/render_provisional_results_deck_values.py",
   "src/ddvc/provisional_results.py",
   "src/ddvc/venue_tables.py"
  ],
- "created_at": "2026-08-16T16:39:10+00:00",
+ "created_at": "2026-08-17T02:05:29+00:00",
  "git": {
-  "branch": "main",
-  "commit": "cd40b1a445d7c91e37d9420441610a3e29a2f050",
+  "branch": "grind/remove-certification-layer",
+  "commit": "12e43b4df2a61d43119aac20e905bde0b3fc1291",
   "dirty": true,
   "dirty_generated_files": [
-   "data/manifests/output/exhibits/prose_conventions.jsonl.prov.json",
-   "data/manifests/output/exhibits/prose_outliers.jsonl.prov.json",
-   "data/manifests/output/exhibits/venue_optics.jsonl.prov.json",
-   "data/manifests/output/exhibits/venue_shape.jsonl.prov.json",
-   "data/manifests/output/exhibits/integration_date_fe_ladder.jsonl.prov.json",
-   "output/exhibits/integration_date_fe_ladder.jsonl"
+   "data/manifests/route_release_pre_v3_recertification_authority.json"
   ],
   "dirty_tracked_files": [
-   "deck/main.pdf",
-   "src/ddvc/provisional_results.py"
+   "docs/findings-freeze.md",
+   "logs/findings-fingerprints.jsonl",
+   "pyproject.toml",
+   "scripts/audit_findings_freeze.py",
+   "scripts/build_backing_regime_deck_values.py",
+   "scripts/build_excess_use_date_fe_deck_values.py",
+   "scripts/build_fixed_opportunity_deck_values.py",
+   "scripts/build_liquidity_capital_v2_deck_values.py",
+   "scripts/build_vehicle_transition_pair_deck_values.py",
+   "scripts/figure/build_dominance_ladder.py",
+   "scripts/record_findings_pass.py",
+   "scripts/tabulate/render_pair_composition.py",
+   "scripts/tabulate/render_usdt_transition.py",
+   "src/ddvc/analysis_release.py",
+   "src/ddvc/model_registry.py",
+   "src/ddvc/presentation.py",
+   "src/ddvc/provisional_results.py",
+   "src/ddvc/v2_event_completeness.py",
+   "src/ddvc/v3_event_completeness.py",
+   "tests/test_analysis_release.py",
+   "tests/test_audit_findings_freeze.py",
+   "tests/test_findings_fingerprint.py",
+   "tests/test_v2_event_completeness.py",
+   "tests/test_v3_event_completeness.py",
+   "tests/test_variable_registry.py",
+   "tests/test_venue_optics.py",
+   "uv.lock"
   ],
   "dirty_untracked_files": [
-   "scripts/run_integration_date_fe_ladder.py"
+   "scripts/check_panel_freshness.py",
+   "src/ddvc/panel_freshness.py",
+   "tests/test_panel_freshness.py"
   ]
  },
  "inputs": [

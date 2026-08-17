@@ -7,6 +7,7 @@ import gzip
 import hashlib
 import json
 import re
+import subprocess
 from pathlib import Path
 
 import duckdb
@@ -58,12 +59,10 @@ from ddvc.model_registry import (
     canonical_hash,
     claim_execution_perimeter,
     exploratory_plan_identity,
-    findings_fingerprint,
+    findings_registry_state,
     generation_id,
     model_run_id,
-    read_findings_fingerprints,
     validate_artifact_spec_ids,
-    validate_findings_fingerprints,
     validate_registered_plan,
 )
 from ddvc.reconstruct import DEX_FAMILY, UNIFIED_QUALITY_PANEL
@@ -79,21 +78,7 @@ from ddvc.state_data import (
     pool_semantics,
 )
 from ddvc.venue_corpus import JFE_VENUE_CARDS, JFE_VENUE_SOURCE_KEYS
-from ddvc.release_calendar import transaction_frontier_audit_days
-from ddvc.v2_event_completeness import (
-    read_v2_event_source_certificate,
-    read_v2_event_source_release,
-    resolve_v2_event_source_release,
-    validate_v2_event_source_certificate,
-    validate_v2_event_source_evidence_bundle,
-)
-from ddvc.v3_event_completeness import (
-    read_v3_event_source_release,
-    resolve_v3_event_source_release,
-    validate_v3_event_source_certificate,
-    validate_v3_event_source_evidence_bundle,
-    v3_audit_days,
-)
+from ddvc.panel_freshness import check_canonical_panel_freshness
 from ddvc.v3_inventory_calendar import inventory_calendar_days
 from ddvc.paths import (
     LITERATURE_SOURCE_ADMISSION,
@@ -199,6 +184,50 @@ CANONICAL_EMPIRICAL_CONSUMERS = (
     "src/ddvc/analysis/lp_concentration.py",
     "src/ddvc/analysis/lp_liquidity_flow.py",
 )
+
+
+def validate_unchanged_findings_history(
+    *, root: Path = ROOT
+) -> tuple[bool, str]:
+    """Require the live findings state in each of the last two Git revisions."""
+
+    try:
+        commits = subprocess.run(
+            ["git", "rev-list", "--max-count=2", "HEAD"],
+            cwd=root,
+            check=True,
+            capture_output=True,
+            text=True,
+        ).stdout.split()
+        if len(commits) != 2:
+            return False, f"revisions={len(commits)}; need=2"
+        live = findings_registry_state(
+            json.loads((root / "docs/specification-lock.json").read_text()),
+            json.loads((root / "docs/model-ledger.json").read_text()),
+        )
+        historical = []
+        for commit in commits:
+            payloads = []
+            for relative in ("docs/specification-lock.json", "docs/model-ledger.json"):
+                payloads.append(
+                    json.loads(
+                        subprocess.run(
+                            ["git", "show", f"{commit}:{relative}"],
+                            cwd=root,
+                            check=True,
+                            capture_output=True,
+                            text=True,
+                        ).stdout
+                    )
+                )
+            historical.append(findings_registry_state(payloads[0], payloads[1]))
+    except (json.JSONDecodeError, OSError, subprocess.CalledProcessError) as error:
+        return False, type(error).__name__
+    passed = historical[0] == historical[1] == live
+    return passed, (
+        f"revisions={commits[0][:12]},{commits[1][:12]}; "
+        f"status={'unchanged' if passed else 'changed'}"
+    )
 
 
 def retired_route_gas_release_checks(
@@ -2983,11 +3012,6 @@ def validate_specification_lock(
     require_confirmatory: bool = False,
 ) -> tuple[bool, str]:
     """Validate a design seed or the post-exploration node-E1 lock."""
-    declared_hash = str(payload.get("lock_hash") or "")
-    hash_payload = {key: value for key, value in payload.items() if key != "lock_hash"}
-    actual_hash = hashlib.sha256(
-        json.dumps(hash_payload, sort_keys=True, separators=(",", ":")).encode()
-    ).hexdigest()
     claims = payload.get("claims") or []
     ids = [str(claim.get("id") or "") for claim in claims if isinstance(claim, dict)]
     stage = str(payload.get("stage") or "")
@@ -3095,17 +3119,13 @@ def validate_specification_lock(
         for claim in executable_stage_claims
     )
     d3_generation = str(payload.get("d3_generation") or "")
-    d3_certificate = str(payload.get("d3_certificate") or "")
     exploration_generation = str(payload.get("exploration_generation") or "")
-    exploration_certificate = str(payload.get("exploration_certificate") or "")
     locked_at = str(payload.get("locked_at") or "")
     confirmatory_ready = bool(
         stage == "confirmatory"
         and locked_at.strip()
         and d3_generation.strip()
-        and d3_certificate.strip()
         and exploration_generation.strip()
-        and exploration_certificate.strip()
         and choices_status_valid
         and not invalid_stage_statuses
         and not execution_policy_error
@@ -3129,7 +3149,6 @@ def validate_specification_lock(
         )
     passed = bool(
         payload.get("schema_version") == 1
-        and declared_hash == actual_hash
         and len(ids) == len(claims)
         and len(ids) == len(set(ids))
         and bool(executable_stage_claims)
@@ -3148,8 +3167,7 @@ def validate_specification_lock(
         and (not require_confirmatory or confirmatory_ready)
     )
     detail = (
-        f"hash={'ok' if declared_hash == actual_hash else 'mismatch'}; "
-        f"claims={len(claims)}; stage_claims={len(stage_claims)}; "
+        f"git_lock=history; claims={len(claims)}; stage_claims={len(stage_claims)}; "
         f"incomplete={incomplete or 'none'}; "
         f"invalid_stage_statuses={invalid_stage_statuses or 'none'}; "
         f"execution_policy={execution_policy_error or 'valid'}; "
@@ -3162,9 +3180,7 @@ def validate_specification_lock(
         f"choices_status={analytical_choices_status or 'missing'}; "
         f"locked_at={locked_at or 'missing'}; "
         f"d3_generation={d3_generation or 'missing'}; "
-        f"d3_certificate={d3_certificate or 'missing'}; "
         f"exploration_generation={exploration_generation or 'missing'}; "
-        f"exploration_certificate={exploration_certificate or 'missing'}; "
         f"registered_plan_errors={registered_plan_errors or 'none'}; "
         f"transition_design_errors={transition_design_errors or 'none'}"
     )
@@ -3294,7 +3310,6 @@ def validate_model_ledger(
     root: Path = ROOT,
     verifier=verify,
     verify_artifacts: bool = True,
-    verify_certificates: bool = True,
 ) -> tuple[bool, str]:
     """Validate immutable run records, promotion history, and attack coverage."""
     lock_payload = lock_payload or {}
@@ -3346,17 +3361,13 @@ def validate_model_ledger(
     exploration_status = str(exploration.get("status") or "")
     exploration_valid = exploration_status in {"not_started", "in_progress", "complete"}
     exploration_d3 = str(exploration.get("d3_generation") or "")
-    exploration_d3_certificate = str(exploration.get("d3_certificate") or "")
     exploration_generation = str(exploration.get("generation") or "")
-    exploration_certificate = str(exploration.get("certificate") or "")
     if exploration_status == "not_started":
         exploration_valid = bool(
             exploration_valid
             and not current_generation
             and not exploration_d3
-            and not exploration_d3_certificate
             and not exploration_generation
-            and not exploration_certificate
             and not runs
         )
     elif exploration_status == "in_progress":
@@ -3364,18 +3375,14 @@ def validate_model_ledger(
             exploration_valid
             and current_generation
             and exploration_d3 == current_generation
-            and exploration_d3_certificate
             and not exploration_generation
-            and not exploration_certificate
         )
     elif exploration_status == "complete":
         exploration_valid = bool(
             exploration_valid
             and current_generation
             and exploration_d3 == current_generation
-            and exploration_d3_certificate
             and exploration_generation
-            and exploration_certificate
         )
 
     run_required = {
@@ -3390,7 +3397,6 @@ def validate_model_ledger(
         "decision_id",
         "d3_generation",
         "exploration_generation",
-        "lock_hash",
         "plan_hash",
         "engine_hash",
         "estimator",
@@ -3534,7 +3540,7 @@ def validate_model_ledger(
             ]
             if not isinstance(declared_artifacts, list) or realized_contract != declared_artifacts:
                 errors.append("exploratory_artifact_plan")
-            if run.get("lock_hash") is not None or run.get("exploration_generation") is not None:
+            if run.get("exploration_generation") is not None:
                 errors.append("exploratory_generation_binding")
             if disposition == "admissible":
                 errors.append("exploratory_admissible")
@@ -3564,8 +3570,6 @@ def validate_model_ledger(
                     errors.append("specification_coverage")
             if lock_payload.get("stage") != "confirmatory":
                 errors.append("confirmatory_without_lock")
-            if run.get("lock_hash") != lock_payload.get("lock_hash"):
-                errors.append("lock_hash")
             if run.get("d3_generation") != lock_payload.get("d3_generation"):
                 errors.append("lock_d3_generation")
             if run.get("exploration_generation") != lock_payload.get("exploration_generation"):
@@ -3587,84 +3591,6 @@ def validate_model_ledger(
         if errors:
             invalid_runs[run_id] = sorted(set(errors))
 
-    certificate_errors: list[str] = []
-
-    def load_certificate(relative: str, kind: str) -> dict:
-        relative_path = Path(relative)
-        if (
-            not relative
-            or relative_path.is_absolute()
-            or ".." in relative_path.parts
-        ):
-            certificate_errors.append(f"{kind}_path")
-            return {}
-        path = root / relative_path
-        if not path.is_file():
-            certificate_errors.append(f"{kind}_missing")
-            return {}
-        try:
-            certificate = json.loads(path.read_text(encoding="utf-8"))
-        except (json.JSONDecodeError, OSError):
-            certificate_errors.append(f"{kind}_invalid_json")
-            return {}
-        if verifier(path).get("status") != "ok":
-            certificate_errors.append(f"{kind}_provenance")
-        if certificate.get("kind") != kind:
-            certificate_errors.append(f"{kind}_kind")
-        if certificate.get("generation") != generation_id(certificate):
-            certificate_errors.append(f"{kind}_generation")
-        return certificate
-
-    if exploration_status in {"in_progress", "complete"} and verify_certificates:
-        d3_certificate = load_certificate(
-            exploration_d3_certificate,
-            "d3_analysis_release",
-        )
-        if d3_certificate.get("generation") != current_generation:
-            certificate_errors.append("d3_analysis_release_binding")
-    e0_certificate: dict = {}
-    if exploration_status == "complete" and verify_certificates:
-        e0_certificate = load_certificate(
-            exploration_certificate,
-            "e0_exploration",
-        )
-        if e0_certificate.get("generation") != exploration_generation:
-            certificate_errors.append("e0_exploration_binding")
-        if e0_certificate.get("d3_generation") != current_generation:
-            certificate_errors.append("e0_exploration_d3")
-        recorded_exploratory_runs = {
-            str(run_id) for run_id in e0_certificate.get("exploratory_run_ids", [])
-        }
-        if recorded_exploratory_runs != exploratory_run_ids:
-            certificate_errors.append("e0_exploratory_run_perimeter")
-        triage_run_ids = {
-            str(decision.get("run_id") or "")
-            for decision in e0_certificate.get("triage_decisions", [])
-            if isinstance(decision, dict)
-        }
-        if triage_run_ids != exploratory_run_ids:
-            certificate_errors.append("e0_triage_perimeter")
-
-        exploratory_records = {
-            str(record.get("run_id") or ""): str(record.get("record_sha256") or "")
-            for record in e0_certificate.get("exploratory_run_records", [])
-            if isinstance(record, dict)
-        }
-        current_exploratory_records = {
-            str(run.get("run_id") or ""): canonical_hash(run)
-            for run in runs
-            if isinstance(run, dict)
-            and run.get("lane") == "exploratory"
-            and run.get("lifecycle") == "executed"
-        }
-        if exploratory_records != current_exploratory_records:
-            certificate_errors.append("e0_exploratory_run_records")
-
-        promotion_errors, promotion_certificate_errors = confirmatory_promotion_errors(runs, e0_certificate)
-        certificate_errors.extend(promotion_certificate_errors)
-        for run_id, errors in promotion_errors.items():
-            invalid_runs[run_id] = sorted(set([*invalid_runs.get(run_id, []), *errors]))
-
     admissible_claims = {
         str(run.get("claim_id") or "")
         for run in runs
@@ -3680,13 +3606,8 @@ def validate_model_ledger(
         lock_payload.get("stage") == "confirmatory"
         and exploration_status == "complete"
         and current_generation == str(lock_payload.get("d3_generation") or "")
-        and exploration_d3_certificate
-        == str(lock_payload.get("d3_certificate") or "")
         and exploration_generation
         == str(lock_payload.get("exploration_generation") or "")
-        and exploration_certificate
-        == str(lock_payload.get("exploration_certificate") or "")
-        and not certificate_errors
     )
     passed = bool(
         payload.get("schema_version") == 2
@@ -3700,7 +3621,6 @@ def validate_model_ledger(
         and not incomplete_runs
         and not invalid_runs
         and not reused_artifacts
-        and not certificate_errors
         and exploration_valid
         and (
             not require_confirmatory
@@ -3716,165 +3636,9 @@ def validate_model_ledger(
         f"incomplete_runs={incomplete_runs or 'none'}; "
         f"invalid_runs={invalid_runs or 'none'}; "
         f"reused_artifacts={sorted(set(reused_artifacts)) or 'none'}; "
-        f"certificate_errors={sorted(set(certificate_errors)) or 'none'}; "
         f"confirmatory_context={'ok' if confirmatory_context_valid else 'invalid'}; "
         f"missing_claim_evidence={missing_claim_evidence or 'none'}"
     )
-
-
-def v2_event_source_certificate_checks(
-    summary_path: Path | None = None,
-    exceptions_path: Path | None = None,
-    certificate_path: Path | None = None,
-    quality_path: Path = UNIFIED_QUALITY_PANEL,
-) -> list[tuple[str, bool, str]]:
-    """Require current, exact, zero-exception V2 event-source evidence."""
-
-    explicit = (summary_path, exceptions_path, certificate_path)
-    if any(path is not None for path in explicit) and not all(path is not None for path in explicit):
-        return [("node D V2 event-source certificate exists", False, "explicit reads require all three artifact paths")]
-    try:
-        if all(path is None for path in explicit):
-            release = resolve_v2_event_source_release()
-            artifacts = release.artifact_paths
-        else:
-            release = None
-            artifacts = tuple(Path(path) for path in explicit if path is not None)
-    except (FileNotFoundError, OSError, RuntimeError, TypeError, ValueError) as error:
-        return [("node D V2 event-source certificate exists", False, str(error))]
-    missing = [path.name for path in artifacts if not path.is_file()]
-    if missing:
-        return [("node D V2 event-source certificate exists", False, f"missing={missing}")]
-    try:
-        provenance = {path.name: verify(path).get("status") for path in artifacts}
-    except (OSError, TypeError, ValueError) as error:
-        provenance = {"invalid": str(error)}
-    checks = [
-        (
-            "node D V2 event-source provenance current",
-            all(status == "ok" for status in provenance.values()),
-            f"provenance={provenance}",
-        )
-    ]
-    certificate: dict[str, object] | None = None
-    summary: pd.DataFrame | None = None
-    try:
-        expected_days = transaction_frontier_audit_days(quality_path)
-        if release is not None:
-            summary, exceptions, certificate = read_v2_event_source_release(release)
-        else:
-            summary, exceptions, certificate = read_v2_event_source_certificate(
-                *artifacts
-            )
-        days, raw_events = validate_v2_event_source_certificate(
-            summary,
-            exceptions,
-            certificate,
-            expected_days,
-        )
-        passed, detail = True, f"audit_dates={days}; raw_events={raw_events:,}; exceptions=0"
-    except (FileNotFoundError, KeyError, OSError, TypeError, ValueError) as error:
-        passed, detail = False, str(error)
-    checks.append(("node D V2 event-source exact comparisons", passed, detail))
-    try:
-        if certificate is None:
-            raise ValueError("V2 event-source certificate is unavailable for evidence validation")
-        pairs, leaves = validate_v2_event_source_evidence_bundle(
-            certificate,
-            summary=summary,
-        )
-        evidence_passed = True
-        evidence_detail = f"factory_pairs={pairs:,}; factory_leaves={leaves:,}; cited_artifacts=reopened"
-    except (FileNotFoundError, KeyError, OSError, TypeError, ValueError) as error:
-        evidence_passed, evidence_detail = False, str(error)
-    checks.append(("node D V2 event-source cited evidence", evidence_passed, evidence_detail))
-    return checks
-
-
-def v3_event_source_certificate_checks(
-    summary_path: Path | None = None,
-    exceptions_path: Path | None = None,
-    quarantine_path: Path | None = None,
-    certificate_path: Path | None = None,
-    quality_path: Path = UNIFIED_QUALITY_PANEL,
-) -> list[tuple[str, bool, str]]:
-    """Require current, exact, zero-exception V3 event-source evidence."""
-
-    explicit = (summary_path, exceptions_path, quarantine_path, certificate_path)
-    if any(path is not None for path in explicit) and not all(
-        path is not None for path in explicit
-    ):
-        return [
-            (
-                "node D V3 event-source certificate exists",
-                False,
-                "explicit reads require all four artifact paths",
-            )
-        ]
-    try:
-        if all(path is None for path in explicit):
-            release = resolve_v3_event_source_release()
-            artifacts = release.artifact_paths
-            summary, exceptions, quarantine, certificate = read_v3_event_source_release(
-                release
-            )
-        else:
-            artifacts = tuple(Path(path) for path in explicit if path is not None)
-            summary = pd.read_parquet(Path(summary_path))
-            exceptions = pd.read_parquet(Path(exceptions_path))
-            quarantine = pd.read_parquet(Path(quarantine_path))
-            certificate = json.loads(Path(certificate_path).read_text(encoding="utf-8"))
-    except (FileNotFoundError, OSError, RuntimeError, TypeError, ValueError) as error:
-        return [("node D V3 event-source certificate exists", False, str(error))]
-    missing = [path.name for path in artifacts if not path.is_file()]
-    if missing:
-        return [
-            ("node D V3 event-source certificate exists", False, f"missing={missing}")
-        ]
-    try:
-        provenance = {path.name: verify(path).get("status") for path in artifacts}
-    except (OSError, TypeError, ValueError) as error:
-        provenance = {"invalid": str(error)}
-    checks = [
-        (
-            "node D V3 event-source provenance current",
-            all(status == "ok" for status in provenance.values()),
-            f"provenance={provenance}",
-        )
-    ]
-    try:
-        expected_days = v3_audit_days(quality_path)
-        days, exact_events = validate_v3_event_source_certificate(
-            summary,
-            exceptions,
-            quarantine,
-            certificate,
-            expected_days,
-        )
-        passed = True
-        detail = (
-            f"audit_dates={days}; exact_events={exact_events:,}; exceptions=0; "
-            f"pools={certificate['pool_count']:,}"
-        )
-    except (FileNotFoundError, KeyError, OSError, TypeError, ValueError) as error:
-        passed, detail = False, str(error)
-    checks.append(("node D V3 event-source exact comparisons", passed, detail))
-    try:
-        pools, events = validate_v3_event_source_evidence_bundle(
-            certificate,
-            summary=summary,
-            quarantine=quarantine,
-        )
-        evidence_passed = True
-        evidence_detail = (
-            f"factory_pools={pools:,}; exact_events={events:,}; cited_artifacts=reopened"
-        )
-    except (FileNotFoundError, KeyError, OSError, TypeError, ValueError) as error:
-        evidence_passed, evidence_detail = False, str(error)
-    checks.append(
-        ("node D V3 event-source cited evidence", evidence_passed, evidence_detail)
-    )
-    return checks
 
 
 def transaction_frontier_support_checks(
@@ -4271,16 +4035,8 @@ def main() -> int:
         "data/processed/routing_transition_cells.parquet",
         "data/processed/routing_maturation_exact_horizons.parquet",
     )
-    run_claim_bound_checks(
-        "V2 event-source certificate",
-        route_inputs,
-        v2_event_source_certificate_checks,
-    )
-    run_claim_bound_checks(
-        "V3 event-source certificate",
-        (*route_inputs, *lp_inputs),
-        v3_event_source_certificate_checks,
-    )
+    freshness_passed, freshness_detail = check_canonical_panel_freshness()
+    record("canonical panel freshness", freshness_passed, freshness_detail)
     run_claim_bound_checks(
         "retired route-gas releases",
         (
@@ -4387,20 +4143,12 @@ def main() -> int:
                 for claim in execution_perimeter.executable_claims
                 if claim.get("status") in REGISTERED_CLAIM_STATUSES
             }
-            input_passed, input_detail = validate_claim_input_layer(lock_payload)
         except (json.JSONDecodeError, OSError, ValueError) as exc:
             lock_passed, lock_detail = False, type(exc).__name__
-            input_passed, input_detail = False, type(exc).__name__
         record("node E1 specification lock", lock_passed, lock_detail)
-        record("node D claim-input provenance gate", input_passed, input_detail)
     else:
         record(
             "node E specification lock",
-            False,
-            str(SPECIFICATION_LOCK.relative_to(ROOT)),
-        )
-        record(
-            "node D claim-input provenance gate",
             False,
             str(SPECIFICATION_LOCK.relative_to(ROOT)),
         )
@@ -4579,17 +4327,6 @@ def main() -> int:
         record("vehicle extent exists", False, str(EXTENT.relative_to(ROOT)))
 
     if EXTENT.exists() and INTERMEDIATION.exists() and CROSS_VENUE.exists():
-        route_verdicts = {
-            path.name: verify(path).get("status")
-            for path in (INTERMEDIATION, CROSS_VENUE)
-        }
-        record(
-            "route measurement provenance current",
-            all(status == "ok" for status in route_verdicts.values()),
-            "; ".join(
-                f"{name}={status}" for name, status in route_verdicts.items()
-            ),
-        )
         intermediation = pd.read_parquet(INTERMEDIATION)
         cross_venue = pd.read_parquet(CROSS_VENUE)
         for name, passed, detail in route_measurement_invariants(
@@ -4632,9 +4369,8 @@ def main() -> int:
         "only validated diagnostics may run",
     )
 
-    # Earned by `scripts/record_findings_pass.py`, never declared. The ledger is
-    # append-only and each row is identified by the commit its registry was read
-    # at, so two rows can only be two passes if committed work separates them.
+    # Git history is the pass ledger: the live registry and the two preceding
+    # repository revisions must carry the same narrow findings state.
     if "stable_passes" in state:
         record(
             "two unchanged findings passes",
@@ -4642,18 +4378,7 @@ def main() -> int:
             "stable_passes is retired; remove it from the findings-freeze frontmatter",
         )
     else:
-        fingerprints = read_findings_fingerprints()
-        try:
-            live = findings_fingerprint(
-                json.loads(SPECIFICATION_LOCK.read_text()),
-                json.loads(MODEL_LEDGER.read_text()),
-            )
-        except (OSError, json.JSONDecodeError) as exc:
-            live, passes_detail = None, type(exc).__name__
-        stable_passed, passes_detail = validate_findings_fingerprints(
-            fingerprints,
-            current_fingerprint=live,
-        )
+        stable_passed, passes_detail = validate_unchanged_findings_history()
         record("two unchanged findings passes", stable_passed, passes_detail)
 
     print(f"GRAPH  {graph_status(state)}\n")

@@ -37,7 +37,7 @@ import pandas as pd
 
 from ddvc.figure_outputs import PALETTE, load_current_jsonl, publish_pdf
 from ddvc.paths import OUTPUT_DIR, REPO_ROOT
-from ddvc.presentation import require_certified_presentation_source
+from ddvc.presentation import require_current_presentation_source
 from ddvc.provenance import stamp
 from ddvc.runtime import atomic_output
 
@@ -394,7 +394,7 @@ def run(
     figure_path: Path = FIGURE,
     values_path: Path = DECK_VALUES,
 ) -> int:
-    provenance_path = require_certified_presentation_source(estimates_path)
+    provenance_path = require_current_presentation_source(estimates_path)
     estimates, identity = load_current_jsonl(
         estimates_path, consumer="dominance control ladder"
     )

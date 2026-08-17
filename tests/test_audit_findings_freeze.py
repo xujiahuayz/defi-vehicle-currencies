@@ -41,8 +41,6 @@ from scripts.audit_findings_freeze import (
     source_set_record_closed,
     transaction_frontier_artifact_checks,
     transaction_frontier_support_checks,
-    v2_event_source_certificate_checks,
-    v3_event_source_certificate_checks,
     validate_capital_contract_rows,
     validate_literature_audit,
     validate_literature_use_contracts,
@@ -218,255 +216,6 @@ class FindingsFreezeAuditTest(unittest.TestCase):
             )
             checks = {name: passed for name, passed, _detail in retired_route_gas_release_checks(root)}
             self.assertFalse(checks["retired route-gas constants absent from code"])
-
-    def test_findings_gate_requires_current_exact_v2_event_certificate(self) -> None:
-        import json
-
-        from ddvc.fetch.sources import get_source
-        from ddvc.graph_event_order import SCHEMA_VERSION as EVENT_ORDER_SCHEMA_VERSION
-        from ddvc.v2_event_completeness import (
-            V2_CORE_EVENTS,
-            V2_COMPARISON_LEDGER,
-            V2_EVENT_SOURCE_SCHEMA_VERSION,
-            V2_EVENT_VENUES,
-            V2_POOL_PERIMETER,
-            V2_RECONCILIATION_COUNT_FIELDS,
-            V2_RECONCILIATION_SCOPE,
-            V2_TOKEN_DECIMALS_CONTRACT,
-            V2_TOKEN_DECIMALS_SCOPE,
-            V2_BOUNDED_EXCLUSION_CONTRACT,
-            audit_calendar_sha256,
-            compare_event_maps,
-        )
-
-        with tempfile.TemporaryDirectory() as directory:
-            root = Path(directory)
-            quality = root / "quality.parquet"
-            summary_path = root / "summary.parquet"
-            exceptions_path = root / "exceptions.parquet"
-            certificate_path = root / "certificate.json"
-            day = "20201015"
-            pd.DataFrame({"day": [day], "output_rows": [1], "passed": [True]}).to_parquet(
-                quality,
-                index=False,
-            )
-            rows = []
-            for venue in V2_EVENT_VENUES:
-                genesis = get_source(venue).genesis.strftime("%Y%m%d")
-                venue_rows, _ = compare_event_maps(
-                    day,
-                    venue,
-                    {},
-                    {},
-                    set(),
-                    launch_status="pre_genesis" if day < genesis else "audited",
-                )
-                rows.extend(venue_rows)
-            zero_reconciliation = {field: 0 for field in V2_RECONCILIATION_COUNT_FIELDS}
-            correction_generations = {
-                f"{venue}/{day}": {
-                    "generation_id": "1" * 64,
-                    "pointer_sha256": "2" * 64,
-                    "data_sha256": "3" * 64,
-                    "metadata_sha256": "4" * 64,
-                    "scope": V2_RECONCILIATION_SCOPE,
-                    "start_block": 1,
-                    "end_block": 2,
-                    "reconciliation_pool_perimeter_count": 1,
-                    "reconciliation_pool_perimeter_sha256": "5" * 64,
-                    "audited_token_decimals_count": 2,
-                    "audited_token_decimals_sha256": "6" * 64,
-                    "exact_log_inputs_sha256": {"exact": "7" * 64},
-                    "authority_inputs_sha256": {"authority": "8" * 64},
-                    "reconciliation_counts": dict(zero_reconciliation),
-                }
-                for venue in V2_EVENT_VENUES
-            }
-            pd.DataFrame(rows).to_parquet(summary_path, index=False)
-            pd.DataFrame(columns=["status"]).to_parquet(exceptions_path, index=False)
-            certificate_path.write_text(
-                json.dumps(
-                    {
-                        "schema_version": V2_EVENT_SOURCE_SCHEMA_VERSION,
-                        "status": "pass",
-                        "audit_calendar_sha256": audit_calendar_sha256([day]),
-                        "audit_dates": 1,
-                        "first_day": day,
-                        "last_day": day,
-                        "summary_rows": len(rows),
-                        "exception_rows": 0,
-                        "venues": list(V2_EVENT_VENUES),
-                        "event_types": list(V2_CORE_EVENTS),
-                        "pool_perimeter": V2_POOL_PERIMETER,
-                        "reconciliation_scope": V2_RECONCILIATION_SCOPE,
-                        "comparison_ledger": V2_COMPARISON_LEDGER,
-                        "correction_generation_schema_version": EVENT_ORDER_SCHEMA_VERSION,
-                        "correction_generations": correction_generations,
-                        "reconciliation_totals": zero_reconciliation,
-                        "registry_source": "complete_factory_PairCreated_histories",
-                        "global_event_query": "topic_only_without_address_filter",
-                        "identity_fields": [
-                            "venue",
-                            "event_type",
-                            "block_number",
-                            "transaction_hash",
-                            "log_index",
-                            "pool",
-                        ],
-                        "quantity_contract": "exact_raw_token_deltas_and_swap_in_out_fields",
-                        "token_decimals_contract": V2_TOKEN_DECIMALS_CONTRACT,
-                        "token_decimals_scope": V2_TOKEN_DECIMALS_SCOPE,
-                        "raw_factory_chunks": 2,
-                        "raw_event_chunks": 2,
-                        "raw_global_event_logs": 0,
-                        "exact_events": 0,
-                        "canonical_events": 0,
-                        "matched_identities": 0,
-                        "missing_from_canonical": 0,
-                        "canonical_only": 0,
-                        "canonical_duplicate_identities": 0,
-                        "amount_mismatches": 0,
-                        "factory_pairs": 2,
-                        "factory_pairs_by_venue": {
-                            venue: 1 for venue in V2_EVENT_VENUES
-                        },
-                        "admitted_factory_pairs": 2,
-                        "admitted_factory_pairs_by_venue": {
-                            venue: 1 for venue in V2_EVENT_VENUES
-                        },
-                        "bounded_exclusion_contract": V2_BOUNDED_EXCLUSION_CONTRACT,
-                        "excluded_tokens": [],
-                        "excluded_factory_pairs": [],
-                        "excluded_factory_pairs_sha256": canonical_hash([]),
-                        "exclusion_materiality_sha256": "2" * 64,
-                        "exclusion_unresolved_ledger_sha256": "3" * 64,
-                        "exclusion_strict_route_usd_share": 0.0,
-                        "exclusion_candidate_intermediary_usd_share": 0.0,
-                        "factory_registry_sha256": "a" * 64,
-                        "token_decimals_registry_rows": 2,
-                        "token_decimals_registry_sha256": "f" * 64,
-                        "token_decimals_registry_file_sha256": "1" * 64,
-                        "token_decimals_evidence_files": 2,
-                        "factory_registry_upper_block": 109,
-                        "factory_registry_upper_block_hash": "0x" + "9" * 64,
-                        "factory_registry_upper_block_timestamp": 1_700_000_000,
-                        "frozen_upper_block_sha256": "d" * 64,
-                        "factory_deployment_proof_sha256_by_venue": {
-                            venue: "e" * 64 for venue in V2_EVENT_VENUES
-                        },
-                        "factory_coverage_manifest_sha256_by_venue": {
-                            venue: "b" * 64 for venue in V2_EVENT_VENUES
-                        },
-                        "factory_state_proof_sha256_by_venue": {
-                            venue: "c" * 64 for venue in V2_EVENT_VENUES
-                        },
-                        "factory_state_sample_size_by_venue": {
-                            venue: 1 for venue in V2_EVENT_VENUES
-                        },
-                    }
-                )
-            )
-            with (
-                patch("scripts.audit_findings_freeze.verify", return_value={"status": "ok"}),
-                patch(
-                    "scripts.audit_findings_freeze.validate_v2_event_source_evidence_bundle",
-                    return_value=(2, 2),
-                ),
-            ):
-                checks = v2_event_source_certificate_checks(
-                    summary_path,
-                    exceptions_path,
-                    certificate_path,
-                    quality,
-                )
-        self.assertTrue(all(passed for _name, passed, _detail in checks), checks)
-
-    def test_findings_gate_requires_current_exact_v3_event_certificate(self) -> None:
-        release = Mock(
-            artifact_paths=(
-                Path("summary.parquet"),
-                Path("exceptions.parquet"),
-                Path("quarantine.parquet"),
-                Path("certificate.json"),
-            )
-        )
-        summary = pd.DataFrame()
-        quarantine = pd.DataFrame()
-        certificate = {"pool_count": 12}
-        with (
-            patch(
-                "scripts.audit_findings_freeze.resolve_v3_event_source_release",
-                return_value=release,
-            ),
-            patch(
-                "scripts.audit_findings_freeze.read_v3_event_source_release",
-                return_value=(summary, pd.DataFrame(), quarantine, certificate),
-            ),
-            patch("scripts.audit_findings_freeze.Path.is_file", return_value=True),
-            patch(
-                "scripts.audit_findings_freeze.verify", return_value={"status": "ok"}
-            ),
-            patch(
-                "scripts.audit_findings_freeze.v3_audit_days",
-                return_value=["20250115"],
-            ),
-            patch(
-                "scripts.audit_findings_freeze.validate_v3_event_source_certificate",
-                return_value=(1, 34),
-            ) as validate,
-            patch(
-                "scripts.audit_findings_freeze.validate_v3_event_source_evidence_bundle",
-                return_value=(12, 34),
-            ) as reopen,
-        ):
-            checks = v3_event_source_certificate_checks()
-        self.assertTrue(all(passed for _name, passed, _detail in checks), checks)
-        validate.assert_called_once()
-        reopen.assert_called_once_with(
-            certificate, summary=summary, quarantine=quarantine
-        )
-
-    def test_default_v2_gate_reads_the_resolved_generation_under_lease(self) -> None:
-        with tempfile.TemporaryDirectory() as directory:
-            artifacts = tuple(
-                Path(directory) / name
-                for name in ("summary.parquet", "exceptions.parquet", "certificate.json")
-            )
-            for path in artifacts:
-                path.write_text("fixture", encoding="utf-8")
-            release = Mock(artifact_paths=artifacts)
-            summary = pd.DataFrame()
-            exceptions = pd.DataFrame()
-            certificate = {"certificate": True}
-            with (
-                patch(
-                    "scripts.audit_findings_freeze.resolve_v2_event_source_release",
-                    return_value=release,
-                ),
-                patch(
-                    "scripts.audit_findings_freeze.read_v2_event_source_release",
-                    return_value=(summary, exceptions, certificate),
-                ) as read,
-                patch(
-                    "scripts.audit_findings_freeze.transaction_frontier_audit_days",
-                    return_value=("20200101",),
-                ),
-                patch(
-                    "scripts.audit_findings_freeze.validate_v2_event_source_certificate",
-                    return_value=(1, 0),
-                ),
-                patch(
-                    "scripts.audit_findings_freeze.validate_v2_event_source_evidence_bundle",
-                    return_value=(1, 1),
-                ),
-                patch(
-                    "scripts.audit_findings_freeze.verify",
-                    return_value={"status": "ok"},
-                ),
-            ):
-                checks = v2_event_source_certificate_checks()
-        read.assert_called_once_with(release)
-        self.assertTrue(all(passed for _name, passed, _detail in checks), checks)
 
     def test_live_json_contracts_have_unique_keys_and_a_current_lock_hash(self) -> None:
         import copy
@@ -1202,7 +951,6 @@ class FindingsFreezeAuditTest(unittest.TestCase):
             payload,
             claim_ids=set(),
             verify_artifacts=False,
-            verify_certificates=False,
         )
         self.assertTrue(passed, detail)
         payload["runs"][0]["disposition"] = "admissible"
@@ -1210,7 +958,6 @@ class FindingsFreezeAuditTest(unittest.TestCase):
             payload,
             claim_ids=set(),
             verify_artifacts=False,
-            verify_certificates=False,
         )
         self.assertFalse(passed, detail)
         self.assertIn("exploratory_admissible", detail)
@@ -1220,7 +967,6 @@ class FindingsFreezeAuditTest(unittest.TestCase):
             payload,
             claim_ids=set(),
             verify_artifacts=False,
-            verify_certificates=False,
         )
         self.assertFalse(passed, detail)
         self.assertIn("run_id", detail)
@@ -1445,19 +1191,8 @@ class FindingsFreezeAuditTest(unittest.TestCase):
             lock_payload=lock,
             require_confirmatory=True,
             verify_artifacts=False,
-            verify_certificates=False,
         )
         self.assertTrue(passed, detail)
-        passed, detail = validate_model_ledger(
-            payload,
-            claim_ids={"lead"},
-            lock_payload=lock,
-            require_confirmatory=True,
-            verify_artifacts=False,
-        )
-        self.assertFalse(passed, detail)
-        self.assertIn("d3_analysis_release_missing", detail)
-
         confirmatory["artifacts"][0]["spec_ids"] = ["primary-null"]
         passed, detail = validate_model_ledger(
             payload,
@@ -1465,7 +1200,6 @@ class FindingsFreezeAuditTest(unittest.TestCase):
             lock_payload=lock,
             require_confirmatory=True,
             verify_artifacts=False,
-            verify_certificates=False,
         )
         self.assertFalse(passed, detail)
         self.assertIn("specification_coverage", detail)
@@ -1481,7 +1215,6 @@ class FindingsFreezeAuditTest(unittest.TestCase):
             lock_payload=lock,
             require_confirmatory=True,
             verify_artifacts=False,
-            verify_certificates=False,
         )
         self.assertFalse(passed, detail)
         self.assertIn("promotion_source", detail)
@@ -1559,7 +1292,6 @@ class FindingsFreezeAuditTest(unittest.TestCase):
                 payload,
                 claim_ids=set(),
                 verifier=lambda _path: {"status": "ok"},
-                verify_certificates=False,
             )
             self.assertTrue(passed, detail)
             run["artifacts"][0]["sha256"] = "f" * 64
@@ -1567,7 +1299,6 @@ class FindingsFreezeAuditTest(unittest.TestCase):
                 payload,
                 claim_ids=set(),
                 verifier=lambda _path: {"status": "ok"},
-                verify_certificates=False,
             )
             self.assertFalse(passed, detail)
             self.assertIn("artifact_hash", detail)

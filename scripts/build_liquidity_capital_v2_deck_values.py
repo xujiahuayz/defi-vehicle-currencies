@@ -10,7 +10,7 @@ from pathlib import Path
 import pandas as pd
 
 from ddvc.paths import OUTPUT_DIR
-from ddvc.presentation import require_certified_presentation_source
+from ddvc.presentation import require_current_presentation_source
 from ddvc.provenance import stamp
 from ddvc.runtime import atomic_output
 
@@ -206,7 +206,7 @@ def render_liquidity_capital_v2_deck_values(estimates: pd.DataFrame) -> str:
 
 
 def run(*, estimates_path: Path = ESTIMATES, output_path: Path = DECK_VALUES) -> int:
-    provenance_path = require_certified_presentation_source(estimates_path)
+    provenance_path = require_current_presentation_source(estimates_path)
     estimates = pd.read_json(estimates_path, lines=True)
     rendered = render_liquidity_capital_v2_deck_values(estimates)
     with atomic_output(output_path) as temporary:

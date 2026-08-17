@@ -19,7 +19,7 @@ import math
 import pandas as pd
 
 from ddvc.paths import OUTPUT_DIR
-from ddvc.presentation import require_certified_presentation_source
+from ddvc.presentation import require_current_presentation_source
 from ddvc.provenance import stamp
 from ddvc.runtime import atomic_output
 
@@ -192,7 +192,7 @@ def render(ladder: pd.DataFrame, screens: pd.DataFrame) -> str:
 def main() -> None:
     provenance_inputs = []
     for path in (LADDER, SCREENS):
-        provenance_inputs.extend((path, require_certified_presentation_source(path)))
+        provenance_inputs.extend((path, require_current_presentation_source(path)))
     ladder = pd.read_json(LADDER, lines=True)
     screens = pd.read_json(SCREENS, lines=True)
     rendered = render(ladder, screens)

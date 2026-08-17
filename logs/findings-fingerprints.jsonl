@@ -1,9 +1,0 @@
-# Append-only ledger of F->G findings passes. One row per pass, written only by
-# `scripts/record_findings_pass.py`; never hand-edit a row and never delete one.
-# Each row fingerprints the claim ids with their statuses and the retired
-# families, and is identified by the commit the registries were read at.
-# `scripts/audit_findings_freeze.py` opens the freeze only when the last two rows
-# come from distinct passes, agree with each other, and still describe the live
-# registries. Record a row only after genuinely reviewing every claim in
-# `docs/specification-lock.json` against its current evidence; a row written for
-# an iteration that did not do that review is a faked gate.

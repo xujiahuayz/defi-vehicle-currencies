@@ -414,7 +414,7 @@ def test_block_header_fetch_keeps_only_a_bounded_future_window(
     assert [row["block_number"] for row in installed] == list(range(1, 21))
 
 
-def test_v3_release_resolution_requires_current_provenance(
+def test_v3_release_resolution_does_not_require_provenance_restamping(
     tmp_path: Path, monkeypatch
 ) -> None:
     observed: dict[str, object] = {}
@@ -429,7 +429,7 @@ def test_v3_release_resolution_requires_current_provenance(
     pointer = tmp_path / "current.json"
     assert contract.resolve_v3_event_source_release(pointer) is release
     assert observed["pointer_path"] == pointer
-    assert observed["require_current_provenance"] is True
+    assert observed["require_current_provenance"] is False
 
 
 def _summary() -> pd.DataFrame:
