@@ -93,6 +93,7 @@ FIXED_OPPORTUNITY_SUPPORT_OUTPUT = (
     OUTPUT_DIR / "exhibits" / "e0_vehicle_transition_fixed_opportunity_support.jsonl"
 )
 CODE_SOURCES = [
+    "scripts/run_vehicle_transition_exploration.py",
     "scripts/run_vehicle_transition_e0.py",
     "scripts/build_intermediation_by_type.py",
     "src/ddvc/analysis/regression.py",

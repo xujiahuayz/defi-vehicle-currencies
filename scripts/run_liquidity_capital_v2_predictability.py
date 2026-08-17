@@ -86,6 +86,9 @@ INFLUENCE_ESTIMATE_OUTPUT = (
 INFLUENCE_SUPPORT_OUTPUT = (
     OUTPUT_DIR / "exhibits/e0_liquidity_capital_v2_influence_support.jsonl"
 )
+ATTACK_DISPOSITION_OUTPUT = (
+    OUTPUT_DIR / "exhibits/e0_liquidity_capital_v2_attack_disposition.jsonl"
+)
 PRIMARY_HORIZONS = (1, 7, 30)
 DK_LAG = 30
 CODE_SOURCES = [
@@ -382,6 +385,54 @@ def run_quantity_contract() -> tuple[Path, Path]:
             notes=notes,
         )
     return QUANTITY_CONTRACT_OUTPUT, QUANTITY_CONTRACT_TABLE_OUTPUT
+
+
+def run_attack_disposition() -> Path:
+    """Publish the two attacks that the released V2 perimeter cannot fit."""
+
+    context = model_artifact_context()
+    frame = pd.DataFrame(
+        [
+            {
+                "family": "liquidity_capital_v2_e0",
+                "attack_id": "common_shock_price_risk_placebos",
+                "fitted": False,
+                "disposition": "blocked_claim_input_perimeter",
+                "required_input": "data/processed/token_price_daily.parquet",
+                "scientific_reason": (
+                    "The current D3 claim-input perimeter excludes the price panel; "
+                    "date-global controls are absorbed by the primary origin-date fixed "
+                    "effects, so an explicit-control diagnostic must be registered "
+                    "without those date effects in a later generation."
+                ),
+            },
+            {
+                "family": "liquidity_capital_v2_e0",
+                "attack_id": "stress_heterogeneity",
+                "fitted": False,
+                "disposition": "blocked_claim_input_perimeter",
+                "required_input": "data/processed/token_price_daily.parquet",
+                "scientific_reason": (
+                    "The current D3 claim-input perimeter excludes the price panel needed "
+                    "to define a look-ahead-safe stress state; no proxy stress label is "
+                    "substituted into the released V2 deposited-capital estimand."
+                ),
+            },
+        ]
+    )
+    write_model_exhibit(
+        frame,
+        ATTACK_DISPOSITION_OUTPUT,
+        role="support",
+        context=context,
+        code_sources=CODE_SOURCES,
+        inputs=[context.d3_certificate_path],
+        notes=(
+            "Exact E0 disposition of the common-shock and stress attacks that cannot "
+            "be fitted inside the current V2 claim-input perimeter"
+        ),
+    )
+    return ATTACK_DISPOSITION_OUTPUT
 
 
 def _perimeter(panel: pd.DataFrame, name: str) -> pd.DataFrame:
@@ -1053,6 +1104,8 @@ def main() -> int:
             paths += run(bootstrap_repetitions=args.bootstrap_repetitions)
         if args.component in ("all", "influence"):
             paths += run_influence_concentration(top_pool_count=args.top_pool_count)
+        if args.component == "all":
+            paths += (run_attack_disposition(),)
     except (RuntimeError, ValueError, FileNotFoundError) as error:
         print(f"INPUT BLOCKED: {error}")
         return 2

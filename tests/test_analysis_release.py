@@ -31,7 +31,7 @@ from ddvc.endpoint_candidate_composition_release import (
     current_endpoint_candidate_composition_release,
     publish_endpoint_candidate_composition_release,
 )
-from ddvc.model_registry import canonical_hash, generation_id
+from ddvc.model_registry import canonical_hash, claim_statuses_for_stage, generation_id
 from ddvc.model_artifacts import model_artifact_context
 from ddvc.paths import REPO_ROOT
 from ddvc.provenance import sidecar_path, stamp
@@ -286,12 +286,7 @@ def test_d3_rejects_a_stage_claim_with_no_explicit_execution_gate() -> None:
 def test_real_specification_excludes_closed_and_non_stage_claims_from_d3() -> None:
     specification = json.loads((REPO_ROOT / "docs/specification-lock.json").read_text(encoding="utf-8"))
     assert analysis_release._validate_specification_identity(specification) == specification["lock_hash"]
-    stage_statuses = {
-        "candidate_primary",
-        "candidate_foundation",
-        "candidate_mechanism",
-        "candidate_companion",
-    }
+    stage_statuses = claim_statuses_for_stage(specification["stage"])
     stage_claims = [claim for claim in specification["claims"] if claim["status"] in stage_statuses]
     assert all(claim.get("execution_gate") for claim in stage_claims)
     perimeter = analysis_release._active_claim_input_perimeter(specification)
@@ -317,11 +312,11 @@ def test_real_specification_excludes_closed_and_non_stage_claims_from_d3() -> No
             "claim_id": claim["id"],
             "status": claim["status"],
             "execution_gate": claim.get("execution_gate"),
-            "exclusion_reason": (
-                "execution_gate_not_open"
-                if claim["status"] in stage_statuses
-                else "status_not_executable_at_design_seed"
-            ),
+                "exclusion_reason": (
+                    "execution_gate_not_open"
+                    if claim["status"] in stage_statuses
+                    else f"status_not_executable_at_{specification['stage']}"
+                ),
         }
         for claim in specification["claims"]
         if claim["id"] not in expected_executable

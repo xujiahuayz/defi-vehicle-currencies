@@ -2,11 +2,12 @@
  "argv": [],
  "artefact": "output/exhibits/vehicle_transition_pair_decomposition.jsonl",
  "artefact_bytes": 18433,
- "artefact_mtime_ns": 1786929767619482950,
+ "artefact_mtime_ns": 1786937975988140249,
  "artefact_sha256": "c14a536b2ff5c5dcd55812b97797ceacfe903c666678b271ea4ebaab30fb6f59",
- "code_fingerprint": "c2870eabee7e645aad44846fe2f566e35a56f5d14b119b18a62d6f6db48e6309",
+ "code_fingerprint": "628e267b519524fe7366ccc48213861dff85cca2b02b8c01ace9d245eb66270c",
  "code_sources": [
   "scripts/run_vehicle_rotation_composition_e0.py",
+  "scripts/run_vehicle_transition_exploration.py",
   "src/ddvc/analysis/regression.py",
   "src/ddvc/analysis/vehicle_rotation_composition.py",
   "src/ddvc/calendar.py",
@@ -15,24 +16,38 @@
   "src/ddvc/model_artifacts.py",
   "src/ddvc/tables.py"
  ],
- "created_at": "2026-08-17T01:23:07+00:00",
+ "created_at": "2026-08-17T03:39:55+00:00",
  "git": {
   "branch": "main",
-  "commit": "6ed8a1c2fd55dec1f0eefc0a9c57efeadfa5e3ca",
-  "dirty": false,
+  "commit": "e81ec569845f8fc0edbc83064143bbdca3a0b4be",
+  "dirty": true,
   "dirty_generated_files": [
-   "data/manifests/output/exhibits/prose_conventions.jsonl.prov.json",
-   "data/manifests/output/exhibits/prose_outliers.jsonl.prov.json",
+   "data/manifests/output/exhibits/e0_vehicle_transition_backing_regime_estimates.jsonl.prov.json",
+   "data/manifests/output/exhibits/e0_vehicle_transition_backing_regime_support.jsonl.prov.json",
+   "data/manifests/output/exhibits/e0_vehicle_transition_fixed_opportunity_estimates.jsonl.prov.json",
+   "data/manifests/output/exhibits/e0_vehicle_transition_fixed_opportunity_support.jsonl.prov.json",
+   "data/manifests/output/exhibits/e0_vehicle_transition_smoke_estimates.jsonl.prov.json",
+   "data/manifests/output/exhibits/e0_vehicle_transition_smoke_support.jsonl.prov.json",
    "data/manifests/output/exhibits/vehicle_transition_pair_contributions.parquet.prov.json",
    "data/manifests/output/exhibits/vehicle_transition_pair_fixed_effects.jsonl.prov.json",
    "data/manifests/output/exhibits/vehicle_transition_pair_panel.parquet.prov.json",
-   "data/manifests/output/exhibits/venue_optics.jsonl.prov.json",
-   "data/manifests/output/exhibits/venue_shape.jsonl.prov.json",
-   "output/exhibits/venue_optics.jsonl",
-   "output/exhibits/.vehicle_transition_pair_decomposition.jsonl.yxt0vrvd.tmp"
+   "output/exhibits/.vehicle_transition_pair_decomposition.jsonl.03j1gk96.tmp"
   ],
-  "dirty_tracked_files": [],
-  "dirty_untracked_files": []
+  "dirty_tracked_files": [
+   "docs/model-ledger.json",
+   "scripts/run_liquidity_capital_v2_predictability.py",
+   "scripts/run_vehicle_rotation_composition_e0.py",
+   "scripts/run_vehicle_transition_e0.py",
+   "src/ddvc/analysis_release.py",
+   "src/ddvc/exploration.py"
+  ],
+  "dirty_untracked_files": [
+   "docs/e0-exploration-plan.json",
+   "scripts/lock_specification.py",
+   "scripts/run_open_question_anomaly_e0.py",
+   "scripts/run_vehicle_transition_exploration.py",
+   "tests/test_lock_specification.py"
+  ]
  },
  "inputs": [
   {
@@ -28106,5 +28121,5 @@
  },
  "python": "3.14.6",
  "rows": 10,
- "script": "scripts/run_vehicle_rotation_composition_e0.py"
+ "script": "scripts/run_vehicle_transition_exploration.py"
 }

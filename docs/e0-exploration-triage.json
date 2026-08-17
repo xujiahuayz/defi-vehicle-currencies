@@ -1,0 +1,65 @@
+{
+  "decisions": [
+    {
+      "assessment": {
+        "centrality_to_vehicle_dominance": "The family is directly attached to one execution-open claim.",
+        "economic_magnitude": "Magnitude is preserved in the fitted artifacts and is not selected in triage.",
+        "identification_credibility": "The evidence is descriptive or predictive and carries its stated fixed-effect boundary.",
+        "jfe_fit": "The retained packet separates a primary specification, alternatives, rivals, and support limits.",
+        "novelty": "The family addresses a predeclared vehicle-dominance or liquidity mechanism claim.",
+        "robustness": "Every canonical attack has fitted evidence or an explicit unsupported disposition."
+      },
+      "companion_role": "design-seed evidence used to register a distinct confirmatory plan",
+      "decision_id": "retain-0fd1d1ed83fc7914",
+      "outcome": "retain_auxiliary",
+      "rationale": "The E0 family maps support, alternatives, and unresolved attacks but does not become admissible evidence; E1 retains it as design evidence and requires a distinct F run.",
+      "run_id": "0fd1d1ed83fc791494963886c5a2e045a8f647cfec53e0f1f32aae3ba5e2554a"
+    },
+    {
+      "assessment": {
+        "centrality_to_vehicle_dominance": "The family is directly attached to one execution-open claim.",
+        "economic_magnitude": "Magnitude is preserved in the fitted artifacts and is not selected in triage.",
+        "identification_credibility": "The evidence is descriptive or predictive and carries its stated fixed-effect boundary.",
+        "jfe_fit": "The retained packet separates a primary specification, alternatives, rivals, and support limits.",
+        "novelty": "The family addresses a predeclared vehicle-dominance or liquidity mechanism claim.",
+        "robustness": "Every canonical attack has fitted evidence or an explicit unsupported disposition."
+      },
+      "companion_role": "design-seed evidence used to register a distinct confirmatory plan",
+      "decision_id": "retain-7ee6658284cdfbff",
+      "outcome": "retain_auxiliary",
+      "rationale": "The E0 family maps support, alternatives, and unresolved attacks but does not become admissible evidence; E1 retains it as design evidence and requires a distinct F run.",
+      "run_id": "7ee6658284cdfbff01205558f427f2ca96f03fc44be7a1f1d11c714b1e9f65a2"
+    },
+    {
+      "assessment": {
+        "centrality_to_vehicle_dominance": "The family is directly attached to one execution-open claim.",
+        "economic_magnitude": "Magnitude is preserved in the fitted artifacts and is not selected in triage.",
+        "identification_credibility": "The evidence is descriptive or predictive and carries its stated fixed-effect boundary.",
+        "jfe_fit": "The retained packet separates a primary specification, alternatives, rivals, and support limits.",
+        "novelty": "The family addresses a predeclared vehicle-dominance or liquidity mechanism claim.",
+        "robustness": "Every canonical attack has fitted evidence or an explicit unsupported disposition."
+      },
+      "companion_role": "design-seed evidence used to register a distinct confirmatory plan",
+      "decision_id": "retain-a5d70d4e62cbd93e",
+      "outcome": "retain_auxiliary",
+      "rationale": "The E0 family maps support, alternatives, and unresolved attacks but does not become admissible evidence; E1 retains it as design evidence and requires a distinct F run.",
+      "run_id": "a5d70d4e62cbd93e8349638b078a9f3f990f0fef4d98666ea49b06dbdbd1a8c3"
+    },
+    {
+      "assessment": {
+        "centrality_to_vehicle_dominance": "The runner targets a central claim, but this failed attempt contributes no evidence.",
+        "economic_magnitude": "No fitted artifact was admitted, so the attempt carries zero evidentiary weight.",
+        "identification_credibility": "The import failure occurred before estimation and cannot identify a claim.",
+        "jfe_fit": "A pre-estimation engineering failure is rejected rather than reported as a research result.",
+        "novelty": "No scientific result was produced by this retired engineering attempt.",
+        "robustness": "The successful retry executes the unchanged registered engine and full attack perimeter."
+      },
+      "decision_id": "reject-1306c8b8ed16f53d",
+      "outcome": "reject",
+      "rationale": "The first execution failed while importing the composed runner, before fitting or admitting an artifact. The ledger preserves that failed attempt and the successful retry separately.",
+      "rejection_reason": "engineering_execution_failed_before_any_fitted_artifact_was_admitted",
+      "run_id": "1306c8b8ed16f53d427589d5f3e261c2373a684a980d155c97660dc4efbb5830"
+    }
+  ],
+  "schema_version": 1
+}

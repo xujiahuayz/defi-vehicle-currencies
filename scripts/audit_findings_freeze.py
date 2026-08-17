@@ -3550,7 +3550,12 @@ def validate_model_ledger(
                 for artifact in artifacts
                 if isinstance(artifact, dict)
             ]
-            if not isinstance(declared_artifacts, list) or realized_contract != declared_artifacts:
+            if not isinstance(declared_artifacts, list):
+                errors.append("exploratory_artifact_plan")
+            elif lifecycle == "retired":
+                if artifacts:
+                    errors.append("retired_exploratory_artifacts_admitted")
+            elif realized_contract != declared_artifacts:
                 errors.append("exploratory_artifact_plan")
             if run.get("exploration_generation") is not None:
                 errors.append("exploratory_generation_binding")

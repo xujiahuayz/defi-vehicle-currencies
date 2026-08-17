@@ -2,12 +2,13 @@
  "argv": [],
  "artefact": "output/exhibits/e0_vehicle_transition_backing_regime_estimates.jsonl",
  "artefact_bytes": 80353,
- "artefact_mtime_ns": 1786911262278230332,
+ "artefact_mtime_ns": 1786937394698523307,
  "artefact_sha256": "0821f7e3333682c554f01112fdbd6605f991e6aa3fedea576f65029fabc828e2",
- "code_fingerprint": "1b960567d70ecd4bf6dec81009e07486b887559c2780eb39c891ceb9ffc2dd77",
+ "code_fingerprint": "4c0cbdbf5025dcb239618d53f01958359e1d2a4e6234fbd39ed1357ceae44d3f",
  "code_sources": [
   "scripts/build_intermediation_by_type.py",
   "scripts/run_vehicle_transition_e0.py",
+  "scripts/run_vehicle_transition_exploration.py",
   "src/ddvc/analysis/regression.py",
   "src/ddvc/analysis/vehicle_backing_regimes.py",
   "src/ddvc/asset_types.py",
@@ -15,24 +16,32 @@
   "src/ddvc/model_artifacts.py",
   "src/ddvc/tables.py"
  ],
- "created_at": "2026-08-16T20:14:41+00:00",
+ "created_at": "2026-08-17T03:30:14+00:00",
  "git": {
   "branch": "main",
-  "commit": "7f64a2b20478b665339a649e293fdcbd45fd6a8b",
+  "commit": "e81ec569845f8fc0edbc83064143bbdca3a0b4be",
   "dirty": true,
   "dirty_generated_files": [
    "data/manifests/output/exhibits/e0_vehicle_transition_backing_regime_support.jsonl.prov.json",
    "data/manifests/output/exhibits/e0_vehicle_transition_smoke_estimates.jsonl.prov.json",
    "data/manifests/output/exhibits/e0_vehicle_transition_smoke_support.jsonl.prov.json",
-   "output/exhibits/.e0_vehicle_transition_backing_regime_estimates.jsonl.qf11foxh.tmp",
-   "output/exhibits/e0_vehicle_transition_backing_regime_support.jsonl",
-   "output/exhibits/e0_vehicle_transition_smoke_estimates.jsonl",
-   "output/exhibits/e0_vehicle_transition_smoke_support.jsonl"
+   "output/exhibits/.e0_vehicle_transition_backing_regime_estimates.jsonl.pktlebst.tmp"
   ],
   "dirty_tracked_files": [
-   "scripts/build_backing_regime_deck_values.py"
+   "docs/model-ledger.json",
+   "scripts/run_liquidity_capital_v2_predictability.py",
+   "scripts/run_vehicle_rotation_composition_e0.py",
+   "scripts/run_vehicle_transition_e0.py",
+   "src/ddvc/analysis_release.py",
+   "src/ddvc/exploration.py"
   ],
-  "dirty_untracked_files": []
+  "dirty_untracked_files": [
+   "docs/e0-exploration-plan.json",
+   "scripts/lock_specification.py",
+   "scripts/run_open_question_anomaly_e0.py",
+   "scripts/run_vehicle_transition_exploration.py",
+   "tests/test_lock_specification.py"
+  ]
  },
  "inputs": [
   {
@@ -28112,5 +28121,5 @@
  },
  "python": "3.14.6",
  "rows": 84,
- "script": "scripts/run_vehicle_transition_e0.py"
+ "script": "scripts/run_vehicle_transition_exploration.py"
 }

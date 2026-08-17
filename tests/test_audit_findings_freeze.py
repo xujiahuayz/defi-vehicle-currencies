@@ -241,18 +241,20 @@ class FindingsFreezeAuditTest(unittest.TestCase):
             payloads["specification-lock.json"],
             require_confirmatory=True,
         )
-        self.assertFalse(passed, detail)
-        self.assertIn("stage=design_seed", detail)
-        premature = copy.deepcopy(payloads["specification-lock.json"])
-        premature["claims"][0]["status"] = "registered_primary"
-        premature["lock_hash"] = hashlib.sha256(
+        is_confirmatory = payloads["specification-lock.json"]["stage"] == "confirmatory"
+        self.assertEqual(passed, is_confirmatory, detail)
+        wrong_stage = copy.deepcopy(payloads["specification-lock.json"])
+        wrong_stage["claims"][0]["status"] = (
+            "candidate_primary" if is_confirmatory else "registered_primary"
+        )
+        wrong_stage["lock_hash"] = hashlib.sha256(
             json.dumps(
-                {key: value for key, value in premature.items() if key != "lock_hash"},
+                {key: value for key, value in wrong_stage.items() if key != "lock_hash"},
                 sort_keys=True,
                 separators=(",", ":"),
             ).encode()
         ).hexdigest()
-        passed, detail = validate_specification_lock(premature)
+        passed, detail = validate_specification_lock(wrong_stage)
         self.assertFalse(passed, detail)
         self.assertIn("invalid_stage_statuses=['vehicle_transition']", detail)
         passed, detail = validate_model_ledger(
@@ -267,8 +269,7 @@ class FindingsFreezeAuditTest(unittest.TestCase):
             lock_payload=payloads["specification-lock.json"],
             require_confirmatory=True,
         )
-        self.assertFalse(passed, detail)
-        self.assertIn("confirmatory_context=invalid", detail)
+        self.assertEqual(passed, is_confirmatory, detail)
 
     def test_vehicle_transition_lock_requires_exact_e1_pair_design(self) -> None:
         import copy

@@ -846,9 +846,16 @@ def test_e0_failed_or_unchanged_fit_is_logged_but_cannot_close() -> None:
                     lock_path=directory / "run.lock",
                     command_runner=unchanged,
                 )
-            failed = json.loads(ledger.read_text(encoding="utf-8"))["runs"][0]
+            failed_payload = json.loads(ledger.read_text(encoding="utf-8"))
+            failed = failed_payload["runs"][0]
             assert failed["lifecycle"] == "retired"
             assert failed["disposition"] == "rejected"
+            passed, detail = validate_model_ledger(
+                failed_payload,
+                claim_ids=set(),
+                verify_artifacts=False,
+            )
+            assert passed, detail
             triage = directory / "triage.json"
             triage.write_text(json.dumps({"schema_version": 1, "decisions": []}), encoding="utf-8")
             with pytest.raises(RuntimeError, match="without an executed fitted family"):

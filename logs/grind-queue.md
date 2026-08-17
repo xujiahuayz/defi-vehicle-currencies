@@ -132,7 +132,7 @@ and pick a blocking check from the freeze gate.
   audit is regenerated from source-day files. Focused reader/release tests pass;
   full-suite and deliverable acceptance are recorded in the grind ledger._
 
-- [ ] **Make the E1 specification lock self-stamping under the owner rule above.**
+- [x] **Make the E1 specification lock self-stamping under the owner rule above.**
   E1 is currently blocked only because `locked_at` and the generation
   bindings were treated as needing a human. Under the owner rule they do not.
   Build `scripts/lock_specification.py` so the lock is earned by a script that can
@@ -295,6 +295,18 @@ and pick a blocking check from the freeze gate.
   as the panel rebuild. Resumption point: write the `plan.json` naming a runner
   and declared artifacts per executable family, then build
   `scripts/lock_specification.py`._
+  _CLOSED (2026-08-17). `scripts/lock_specification.py` now validates the live
+  seed with the freeze validator before any write, executes the exact three-family
+  E0 perimeter, rejects and preserves a pre-fit engineering attempt, closes E0 at
+  generation `ef6da4e109cf92fb`, and machine-issues the confirmatory lock against
+  D3 generation `4225a3bd7729de96`. The lock records Lehar--Parlour and
+  Milionis--Moallemi--Roughgarden--Zhang citations for episode-count-primary/value-
+  secondary weighting and the external-price requirement; finishability withholds
+  `liquidity_rent_incidence` because the required intraday reference-price panel is
+  absent. The two execution-open claims have complete registered plans, a corrupted
+  seed is refused in a focused test, both releases reopen after the stage mutation,
+  and the freeze audit reports node E1 PASS. E0 remains design evidence only; the
+  empirical-ledger blocker now cleanly names the two distinct F runs still required._
 
 - [x] **Replace the hand-declared `stable_passes` with a computed findings fingerprint.**
   Today `stable_passes` is a hand-typed YAML field on line 3 of

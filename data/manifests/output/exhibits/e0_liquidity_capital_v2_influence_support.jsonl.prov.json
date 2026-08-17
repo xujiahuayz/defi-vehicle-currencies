@@ -1,13 +1,15 @@
 {
  "argv": [
-  "--component",
-  "all"
+  "--bootstrap-repetitions",
+  "199",
+  "--top-pool-count",
+  "5"
  ],
  "artefact": "output/exhibits/e0_liquidity_capital_v2_influence_support.jsonl",
  "artefact_bytes": 784928,
- "artefact_mtime_ns": 1786924020035568968,
+ "artefact_mtime_ns": 1786938810303653457,
  "artefact_sha256": "8a66e86ba0e57f1ad6c477a795ec36b95ac5910016cd89fb9ddb92be09cc62fe",
- "code_fingerprint": "1b4a4369e1166b14e00c611d79cca19d68f4c70c00c477f8396ffad1fbac1726",
+ "code_fingerprint": "798ef86b721dc91ec89bd980fd1c49f715d7635002a145f1a624ba86041f8cea",
  "code_sources": [
   "scripts/run_liquidity_capital_v2_predictability.py",
   "src/ddvc/analysis/liquidity_capital_v2_influence.py",
@@ -17,29 +19,45 @@
   "src/ddvc/model_artifacts.py",
   "src/ddvc/tables.py"
  ],
- "created_at": "2026-08-16T23:47:00+00:00",
+ "created_at": "2026-08-17T03:53:31+00:00",
  "git": {
   "branch": "main",
-  "commit": "995d94bf4b9ec5d82b2769ee4a118a608197a818",
+  "commit": "e81ec569845f8fc0edbc83064143bbdca3a0b4be",
   "dirty": true,
   "dirty_generated_files": [
+   "data/manifests/output/exhibits/e0_liquidity_capital_v2_quantity_contract.jsonl.prov.json",
+   "data/manifests/output/exhibits/e0_vehicle_transition_backing_regime_estimates.jsonl.prov.json",
+   "data/manifests/output/exhibits/e0_vehicle_transition_backing_regime_support.jsonl.prov.json",
+   "data/manifests/output/exhibits/e0_vehicle_transition_fixed_opportunity_estimates.jsonl.prov.json",
+   "data/manifests/output/exhibits/e0_vehicle_transition_fixed_opportunity_support.jsonl.prov.json",
+   "data/manifests/output/exhibits/e0_vehicle_transition_smoke_estimates.jsonl.prov.json",
+   "data/manifests/output/exhibits/e0_vehicle_transition_smoke_support.jsonl.prov.json",
    "data/manifests/output/exhibits/liquidity_capital_v2_predictability.jsonl.prov.json",
    "data/manifests/output/exhibits/liquidity_capital_v2_support.jsonl.prov.json",
-   "data/manifests/output/tables/liquidity_capital_v2_predictability.tex.prov.json",
-   "data/manifests/output/exhibits/e0_liquidity_capital_v2_quantity_contract.jsonl.prov.json",
+   "data/manifests/output/exhibits/vehicle_transition_pair_contributions.parquet.prov.json",
+   "data/manifests/output/exhibits/vehicle_transition_pair_decomposition.jsonl.prov.json",
+   "data/manifests/output/exhibits/vehicle_transition_pair_fixed_effects.jsonl.prov.json",
+   "data/manifests/output/exhibits/vehicle_transition_pair_panel.parquet.prov.json",
+   "data/manifests/output/exhibits/vehicle_transition_pair_support.jsonl.prov.json",
    "data/manifests/output/tables/e0_liquidity_capital_v2_quantity_contract.tex.prov.json",
-   "output/exhibits/.e0_liquidity_capital_v2_influence_support.jsonl.c41ezin6.tmp",
-   "output/exhibits/e0_liquidity_capital_v2_quantity_contract.jsonl",
-   "output/tables/e0_liquidity_capital_v2_quantity_contract.tex"
+   "data/manifests/output/tables/liquidity_capital_v2_predictability.tex.prov.json",
+   "output/exhibits/.e0_liquidity_capital_v2_influence_support.jsonl.08t3goz3.tmp"
   ],
   "dirty_tracked_files": [
-   "docs/literature-audit.md",
-   "logs/grind-ledger.md",
-   "logs/grind-queue.md",
+   "docs/model-ledger.json",
    "scripts/run_liquidity_capital_v2_predictability.py",
-   "tests/test_liquidity_capital_v2_predictability.py"
+   "scripts/run_vehicle_rotation_composition_e0.py",
+   "scripts/run_vehicle_transition_e0.py",
+   "src/ddvc/analysis_release.py",
+   "src/ddvc/exploration.py"
   ],
-  "dirty_untracked_files": []
+  "dirty_untracked_files": [
+   "docs/e0-exploration-plan.json",
+   "scripts/lock_specification.py",
+   "scripts/run_open_question_anomaly_e0.py",
+   "scripts/run_vehicle_transition_exploration.py",
+   "tests/test_lock_specification.py"
+  ]
  },
  "inputs": [
   {

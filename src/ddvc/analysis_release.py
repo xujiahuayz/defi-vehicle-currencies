@@ -243,10 +243,20 @@ def _reopen_artifact(path: Path) -> dict[str, Any]:
     return {"format": path.suffix.lstrip(".") or "binary", "rows": None, "columns": []}
 
 
-def _provenance_identity(path: Path, *, verifier: Callable[[str | Path], dict[str, object]]) -> tuple[Path, dict[str, Any]]:
+def _provenance_identity(
+    path: Path,
+    *,
+    verifier: Callable[[str | Path], dict[str, object]],
+    require_current_code: bool = True,
+) -> tuple[Path, dict[str, Any]]:
     verdict = verifier(path)
-    if verdict.get("status") != "ok":
+    if require_current_code and verdict.get("status") != "ok":
         raise RuntimeError(f"D3 claim input is not current: {path}: {verdict.get('status')}")
+    if not require_current_code and not bool(verdict.get("content_current")):
+        raise RuntimeError(
+            f"D3 claim input is not current because content changed: "
+            f"{path}: {verdict.get('status')}"
+        )
     provenance_path = sidecar_path(path)
     if not provenance_path.is_file():
         raise FileNotFoundError(f"D3 claim input lacks provenance: {path}")
@@ -473,14 +483,38 @@ def resolve_analysis_release(
     )
     specification_hash = _validate_specification_identity(specification)
     perimeter = _active_claim_input_perimeter(specification)
+    seed_identity = specification.get("design_seed_identity")
+    confirmatory_descendant = bool(
+        specification.get("stage") == "confirmatory"
+        and isinstance(seed_identity, dict)
+        and seed_identity.get("lock_hash") == certificate.get("specification_lock_hash")
+        and certificate.get("specification_stage") == "design_seed"
+    )
+    certificate_exclusions = certificate.get("excluded_claims") or []
+    current_exclusions = list(perimeter.excluded_claims)
+    exclusion_boundary_unchanged = {
+        (record.get("claim_id"), record.get("execution_gate"))
+        for record in certificate_exclusions
+        if isinstance(record, dict)
+    } == {
+        (record.get("claim_id"), record.get("execution_gate"))
+        for record in current_exclusions
+        if isinstance(record, dict)
+    }
+    specification_identity_current = bool(
+        (
+            certificate.get("specification_lock_hash") == specification_hash
+            and certificate.get("specification_stage") == specification["stage"]
+            and certificate.get("excluded_claims") == current_exclusions
+        )
+        or (confirmatory_descendant and exclusion_boundary_unchanged)
+    )
     if (
         certificate.get("specification_path") != specification_relative
-        or certificate.get("specification_lock_hash") != specification_hash
-        or certificate.get("specification_stage") != specification["stage"]
+        or not specification_identity_current
         or certificate.get("executable_claim_ids")
         != list(perimeter.executable_claim_ids)
         or certificate.get("excluded_claim_count") != len(perimeter.excluded_claims)
-        or certificate.get("excluded_claims") != list(perimeter.excluded_claims)
     ):
         raise ValueError("D3 analysis-release certificate disagrees with its specification")
     records = certificate.get("claim_inputs")
@@ -503,7 +537,9 @@ def resolve_analysis_release(
         postcondition = d3_release_postcondition(relative)
         if postcondition is None:
             provenance_path, _provenance = _provenance_identity(
-                input_path, verifier=verifier
+                input_path,
+                verifier=verifier,
+                require_current_code=False,
             )
             current = {
                 "path": relative,

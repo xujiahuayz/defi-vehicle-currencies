@@ -2,7 +2,7 @@
  "argv": [],
  "artefact": "output/tables/pair_composition.tex",
  "artefact_bytes": 1735,
- "artefact_mtime_ns": 1786932329432829688,
+ "artefact_mtime_ns": 1786941608662463783,
  "artefact_sha256": "b4e596026c4c0c07ac9321357f4c0e8b050fd78afe202f26d37c4f89e9451ecc",
  "code_fingerprint": "5658f1997a104da5cec75b66c32f9a469e6a28c8cbf22f5e40157a60fc60a1f9",
  "code_sources": [
@@ -11,49 +11,64 @@
   "src/ddvc/paper_tables.py",
   "src/ddvc/presentation.py"
  ],
- "created_at": "2026-08-17T02:05:30+00:00",
+ "created_at": "2026-08-17T04:40:09+00:00",
  "git": {
-  "branch": "grind/remove-certification-layer",
-  "commit": "12e43b4df2a61d43119aac20e905bde0b3fc1291",
+  "branch": "main",
+  "commit": "e81ec569845f8fc0edbc83064143bbdca3a0b4be",
   "dirty": true,
   "dirty_generated_files": [
-   "data/manifests/output/exhibits/provisional_results_deck_values.tex.prov.json",
-   "data/manifests/route_release_pre_v3_recertification_authority.json",
-   "output/tables/pair_composition.pdf"
+   "data/manifests/output/exhibits/e0_liquidity_capital_v2_influence_estimates.jsonl.prov.json",
+   "data/manifests/output/exhibits/e0_liquidity_capital_v2_influence_support.jsonl.prov.json",
+   "data/manifests/output/exhibits/e0_liquidity_capital_v2_quantity_contract.jsonl.prov.json",
+   "data/manifests/output/exhibits/e0_vehicle_transition_backing_regime_estimates.jsonl.prov.json",
+   "data/manifests/output/exhibits/e0_vehicle_transition_backing_regime_support.jsonl.prov.json",
+   "data/manifests/output/exhibits/e0_vehicle_transition_fixed_opportunity_estimates.jsonl.prov.json",
+   "data/manifests/output/exhibits/e0_vehicle_transition_fixed_opportunity_support.jsonl.prov.json",
+   "data/manifests/output/exhibits/e0_vehicle_transition_smoke_estimates.jsonl.prov.json",
+   "data/manifests/output/exhibits/e0_vehicle_transition_smoke_support.jsonl.prov.json",
+   "data/manifests/output/exhibits/liquidity_capital_v2_predictability.jsonl.prov.json",
+   "data/manifests/output/exhibits/liquidity_capital_v2_support.jsonl.prov.json",
+   "data/manifests/output/exhibits/prose_conventions.jsonl.prov.json",
+   "data/manifests/output/exhibits/prose_outliers.jsonl.prov.json",
+   "data/manifests/output/exhibits/vehicle_transition_pair_contributions.parquet.prov.json",
+   "data/manifests/output/exhibits/vehicle_transition_pair_decomposition.jsonl.prov.json",
+   "data/manifests/output/exhibits/vehicle_transition_pair_fixed_effects.jsonl.prov.json",
+   "data/manifests/output/exhibits/vehicle_transition_pair_panel.parquet.prov.json",
+   "data/manifests/output/exhibits/vehicle_transition_pair_support.jsonl.prov.json",
+   "data/manifests/output/exhibits/venue_optics.jsonl.prov.json",
+   "data/manifests/output/exhibits/venue_shape.jsonl.prov.json",
+   "data/manifests/output/tables/e0_liquidity_capital_v2_quantity_contract.tex.prov.json",
+   "data/manifests/output/tables/liquidity_capital_v2_predictability.tex.prov.json",
+   "output/tables/pair_composition.pdf",
+   "data/manifests/output/exhibits/e0_liquidity_capital_v2_attack_disposition.jsonl.prov.json",
+   "data/manifests/output/exhibits/e0_open_question_anomaly_diagnostics.jsonl.prov.json",
+   "data/manifests/output/exhibits/e0_open_question_anomaly_support.jsonl.prov.json",
+   "output/exhibits/e0_liquidity_capital_v2_attack_disposition.jsonl",
+   "output/exhibits/e0_open_question_anomaly_diagnostics.jsonl",
+   "output/exhibits/e0_open_question_anomaly_support.jsonl"
   ],
   "dirty_tracked_files": [
-   "docs/findings-freeze.md",
-   "logs/findings-fingerprints.jsonl",
-   "pyproject.toml",
+   "deck/main.pdf",
+   "docs/model-ledger.json",
+   "docs/specification-lock.json",
+   "logs/grind-queue.md",
    "scripts/audit_findings_freeze.py",
-   "scripts/build_backing_regime_deck_values.py",
-   "scripts/build_excess_use_date_fe_deck_values.py",
-   "scripts/build_fixed_opportunity_deck_values.py",
-   "scripts/build_liquidity_capital_v2_deck_values.py",
-   "scripts/build_vehicle_transition_pair_deck_values.py",
-   "scripts/figure/build_dominance_ladder.py",
-   "scripts/record_findings_pass.py",
-   "scripts/tabulate/render_pair_composition.py",
-   "scripts/tabulate/render_usdt_transition.py",
+   "scripts/run_liquidity_capital_v2_predictability.py",
+   "scripts/run_vehicle_rotation_composition_e0.py",
+   "scripts/run_vehicle_transition_e0.py",
    "src/ddvc/analysis_release.py",
-   "src/ddvc/model_registry.py",
-   "src/ddvc/presentation.py",
-   "src/ddvc/provisional_results.py",
-   "src/ddvc/v2_event_completeness.py",
-   "src/ddvc/v3_event_completeness.py",
+   "src/ddvc/exploration.py",
    "tests/test_analysis_release.py",
    "tests/test_audit_findings_freeze.py",
-   "tests/test_findings_fingerprint.py",
-   "tests/test_v2_event_completeness.py",
-   "tests/test_v3_event_completeness.py",
-   "tests/test_variable_registry.py",
-   "tests/test_venue_optics.py",
-   "uv.lock"
+   "tests/test_exploration.py"
   ],
   "dirty_untracked_files": [
-   "scripts/check_panel_freshness.py",
-   "src/ddvc/panel_freshness.py",
-   "tests/test_panel_freshness.py"
+   "docs/e0-exploration-plan.json",
+   "docs/e0-exploration-triage.json",
+   "scripts/lock_specification.py",
+   "scripts/run_open_question_anomaly_e0.py",
+   "scripts/run_vehicle_transition_exploration.py",
+   "tests/test_lock_specification.py"
   ]
  },
  "inputs": [
@@ -76,10 +91,10 @@
    "sha256": "f378f0fa0adcd55c573efa907d9716af856a04ce5696363eb38728280a5c4a40"
   },
   {
-   "bytes": 818686,
+   "bytes": 819466,
    "exists": true,
    "path": "data/manifests/output/exhibits/vehicle_transition_pair_fixed_effects.jsonl.prov.json",
-   "sha256": "7f580db99f7cc63e114e2276bca48403badad4279c5006f37435ea7221cf01b6"
+   "sha256": "46207acc7cf9c3b3cb85b944b1d4c69f4b7abcaf60eb182f63291bae1bb8c5cf"
   }
  ],
  "libraries": {

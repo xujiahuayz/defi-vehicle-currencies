@@ -42,6 +42,7 @@ FIXED_EFFECT_RESULTS = (
 )
 LOCK = DATA_DIR / "processed" / ".vehicle-rotation-composition-e0.lock"
 CODE_SOURCES = [
+    "scripts/run_vehicle_transition_exploration.py",
     "scripts/run_vehicle_rotation_composition_e0.py",
     "src/ddvc/analysis/vehicle_rotation_composition.py",
     "src/ddvc/analysis/regression.py",

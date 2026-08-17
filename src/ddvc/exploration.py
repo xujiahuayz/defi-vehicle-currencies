@@ -482,6 +482,8 @@ def _load_plan(
     d3_generation: str,
     specification_path: Path = EXPLORATION_SPECIFICATION_LOCK,
     specification_relative: str = "docs/specification-lock.json",
+    bound_template_families: list[dict[str, Any]] | None = None,
+    bound_specification_sha256: str | None = None,
 ) -> ExplorationPlan:
     plan = _read_json_object(path, label="E0 exploration plan")
     if plan.get("schema_version") != EXPLORATION_PLAN_SCHEMA_VERSION:
@@ -503,11 +505,13 @@ def _load_plan(
     for contract in contracts:
         contract["d3_generation"] = d3_generation
         contract["plan_path"] = plan_relative
-    template_families = _load_plan_template(
-        template_path,
-        template_relative=template_relative,
-        specification_path=specification_path,
-    )
+    template_families = bound_template_families
+    if template_families is None:
+        template_families = _load_plan_template(
+            template_path,
+            template_relative=template_relative,
+            specification_path=specification_path,
+        )
     expected = {family["family_id"]: family for family in template_families}
     actual = {
         contract["family_id"]: {
@@ -537,7 +541,11 @@ def _load_plan(
         template_relative=template_relative,
         template_sha256=file_sha256(template_path),
         specification_relative=specification_relative,
-        specification_sha256=file_sha256(specification_path),
+        specification_sha256=(
+            bound_specification_sha256
+            if bound_specification_sha256 is not None
+            else file_sha256(specification_path)
+        ),
         expected_family_ids=expected_family_ids,
         family_perimeter_sha256=canonical_hash(template_families),
     )
@@ -883,7 +891,14 @@ def execute_exploration_plan(
                 for artifact in contract["artifacts"]
             }
             environment = dict(os.environ)
-            python_path = os.pathsep.join([str(root / "src"), str(root), environment.get("PYTHONPATH", "")]).rstrip(os.pathsep)
+            python_path = os.pathsep.join(
+                [
+                    str(root / "src"),
+                    str(root),
+                    str(root / "scripts"),
+                    environment.get("PYTHONPATH", ""),
+                ]
+            ).rstrip(os.pathsep)
             environment["PYTHONPATH"] = python_path
             environment["PYTHONSAFEPATH"] = "1"
             environment["DDVC_D3_CERTIFICATE"] = d3_relative
@@ -1080,6 +1095,37 @@ def _reopen_ledger_plan(
         root=root,
         label="ledger E0 specification lock",
     )
+    bound_specification_sha256 = str(exploration.get("specification_sha256") or "")
+    current_specification_sha256 = file_sha256(specification_path)
+    bound_template_families = None
+    if current_specification_sha256 != bound_specification_sha256:
+        specification = _read_json_object(specification_path, label="E0 specification lock")
+        seed_identity = specification.get("design_seed_identity")
+        if not (
+            exploration.get("status") == "complete"
+            and specification.get("stage") == "confirmatory"
+            and isinstance(seed_identity, dict)
+            and seed_identity.get("file_sha256") == bound_specification_sha256
+        ):
+            raise ValueError("E0 specification identity changed after execution")
+        template = _read_json_object(template_path, label="E0 exploration plan template")
+        families = template.get("families")
+        if not isinstance(families, list):
+            raise ValueError("E0 exploration plan template has no family perimeter")
+        bound_template_families = [
+            {
+                "family_id": str(family.get("family_id") or "").strip(),
+                "claim_id": str(family.get("claim_id") or "").strip(),
+                "question": str(family.get("question") or "").strip(),
+                "search_dimensions": list(family.get("search_dimensions") or []),
+                "required_attack_ids": _normalize_attack_ids(
+                    family.get("required_attack_ids"),
+                    label=f"bound E0 family {family.get('family_id') or 'missing'}",
+                ),
+            }
+            for family in families
+            if isinstance(family, dict) and family.get("execution_status") == "executable"
+        ]
     plan = _load_plan(
         plan_path,
         plan_relative=plan_relative,
@@ -1089,6 +1135,12 @@ def _reopen_ledger_plan(
         d3_generation=d3_generation,
         specification_path=specification_path,
         specification_relative=specification_relative,
+        bound_template_families=bound_template_families,
+        bound_specification_sha256=(
+            bound_specification_sha256
+            if bound_template_families is not None
+            else None
+        ),
     )
     expected = {
         "plan_sha256": plan.plan_sha256,
