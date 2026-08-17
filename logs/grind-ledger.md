@@ -5366,3 +5366,48 @@ expand that scientific blocker. Resume with the queued certification/provenance
 cleanup that owns the stale V2 layer; then clear the independent dependency,
 CSV-policy, and venue-optics failures and tick the dependency-closure item only
 when the mandated full suite passes.
+
+## 2026-08-17 — Cut freeze fingerprints over to canonical-panel freshness
+
+**Target and regression check.** Continued the oldest queued certification
+removal at its freeze-facing boundary and closed the earlier dependency-cleanup
+acceptance item. The purpose-bound estimand was the current D1/D3 route-only and
+executable E0 claim-input perimeter on D3 generation
+`4225a3bd7729de96`. The prior correction most at risk was allowing unchanged
+scientific rows to remain consumable without also allowing a stale canonical
+panel to pass.
+
+**Scientific classification.** The removed pass ledger, pre-V3 authority file,
+presentation recertification calls and V2/V3 code-restamping checks carried zero
+weight in every sample and were not concentrated by date, protocol, venue,
+pool, candidate, trade size or stress state. They could not change an estimand,
+sample, coefficient or inference. A faulty replacement could have admitted a
+stale sample, so the retained hard boundary is one fail-closed timestamp check:
+the canonical D3 pointer must be at least as new as all seven execution-open
+claim inputs.
+
+**DECISION: narrow the migration at the active raw-reader boundary.** Commit
+`e5a9655` removes `logs/findings-fingerprints.jsonl`, its writer and tests, the
+285,193-line pre-V3 recertification authority, the freeze-level V2/V3
+certificate branches, and presentation-source recertification. Findings
+stability now compares the live narrow claim/retirement state with the same
+state in each of the two latest Git revisions. Current D3, V2 and V3 readers no
+longer demand provenance restamping after code-only changes. The lower
+`src/ddvc/raw_certification.py` migration was deliberately not folded into this
+commit: it remains an active owner for constant-product capital and Graph
+acquisition readers, so deleting it before those callers move would break
+scientific data access. Resume there, then remove
+`scripts/certify_raw_generation.py`, its fixtures/tests, the remaining
+`certificate.json.prov.json` files, and the obsolete route-marker migration in
+one separately green boundary. The certification-removal queue item stays open.
+
+**Acceptance and gate.** `pyfixest` is now a declared dev dependency; the
+retained Etherscan daily-price CSV is an explicit read-only source exception;
+and venue density allows one discrete exhibit of granularity rather than
+forcing a filler citation. The complete suite passes: 2,288 tests and 708
+subtests. Deliverable conformance passes every blocking check; paper and deck
+compile cleanly at 47 and 37 pages. Visual inspection found Tables 3 and 4
+legible without clipping and the full deck contact sheet complete. The freeze
+audit is RED with three blockers, down from four: the stale full-calendar
+directed-route release, E1 specification lock, and empirical model ledger. The
+Git-native two-unchanged-pass check and canonical-panel freshness check pass.
