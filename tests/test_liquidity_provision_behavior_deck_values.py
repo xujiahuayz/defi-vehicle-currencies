@@ -48,8 +48,23 @@ def test_liquidity_behavior_values_render_from_guarded_rows() -> None:
             "coefficient": 0.5,
             "standard_error": 0.04,
         },
+        {
+            "analysis_status": "exploratory_descriptive",
+            "record_type": "daily_route_capital_gap_change",
+            "gap_name": "stable_route_capital_gap",
+            "change": 0.33,
+            "standard_error": 0.01,
+        },
+        {
+            "analysis_status": "exploratory_descriptive",
+            "record_type": "daily_route_capital_gap_change",
+            "gap_name": "weth_route_capital_gap",
+            "change": -0.36,
+            "standard_error": 0.02,
+        },
     ]
     rendered = render_liquidity_provision_behavior_deck_values(pd.DataFrame(rows))
     assert "\\LiqBehWethCapitalLeaderDays" in rendered
     assert "\\LiqBehStableRouteCapitalRatioEnd" in rendered
+    assert "\\LiqBehStableGapChange" in rendered
     assert "5.0\\times" in rendered

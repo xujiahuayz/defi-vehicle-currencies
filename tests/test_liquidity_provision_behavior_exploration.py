@@ -5,7 +5,9 @@ import pytest
 
 from scripts.analyze.run_liquidity_provision_behavior_exploration import (
     annual_stable_allocation,
+    capital_use_gap_summaries,
     daily_leader_alignment,
+    daily_capital_use_gaps,
     supported_candidate_days,
 )
 
@@ -67,3 +69,14 @@ def test_daily_leader_alignment_distinguishes_capital_and_excess_leaders(sample)
     assert leaders["weth_capital_leader_share"] == pytest.approx(1.0)
     assert leaders["stable_excess_leader_share"] == pytest.approx(1.0)
     assert leaders["capital_leader_is_excess_leader_share"] == pytest.approx(0.0)
+
+
+def test_daily_capital_use_gap_separates_route_and_capital_shares(sample) -> None:
+    daily = daily_capital_use_gaps(sample)
+    row = daily[daily["origin_date"].eq(pd.Timestamp("2024-01-01"))].iloc[0]
+    assert row["stable_route_capital_gap"] == pytest.approx((55 / 100) - (40 / 150))
+    summaries = capital_use_gap_summaries(daily)
+    assert {
+        "daily_route_capital_gap_year",
+        "daily_route_capital_gap_change",
+    }.issubset(set(summaries["record_type"]))
