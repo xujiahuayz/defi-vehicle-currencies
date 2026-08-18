@@ -8,9 +8,10 @@ prior-calendar deposited capital on the two atomic legs that would make
 bridge liquidity predicts the candidate's route share inside the same endpoint
 opportunity.
 
-This is an exploratory mechanism screen.  It is not a causal design and does
-not measure executable route cost, active concentrated-liquidity depth, or LP
-returns.
+The same panel also runs a horse race between local bridge depth, candidate
+reach elsewhere in the routing network, and the stable label.  This is an
+exploratory mechanism screen.  It is not a causal design and does not measure
+executable route cost, active concentrated-liquidity depth, or LP returns.
 """
 
 from __future__ import annotations
@@ -161,6 +162,142 @@ WHERE five_route_total > 0
 """
 
 
+def _candidate_global_reach_features(
+    panel: pd.DataFrame,
+    *,
+    choices_path: Path,
+    baseline_year: int,
+    comparison_year: int,
+    endpoint_cutoff: str,
+) -> pd.DataFrame:
+    """Add candidate-level route-reach controls measured outside the local bridge.
+
+    Same-day controls leave out the current opportunity.  Lag controls use the
+    previous 30 calendar days and therefore precede the route opportunity.  All
+    quantities come from the endpoint-candidate choice ledger, not from pool
+    capital, so the horse-race rows separate a candidate's general network use
+    from source-candidate-target bridge depth.
+    """
+
+    keys = (
+        panel.loc[:, ["origin_date", "candidate_address", "integration_scope"]]
+        .drop_duplicates()
+        .copy()
+    )
+    candidates = panel.loc[:, ["candidate_address"]].drop_duplicates().copy()
+    connection = duckdb.connect()
+    try:
+        connection.register("panel_keys", keys)
+        connection.register("panel_candidates", candidates)
+        reach = connection.execute(
+            """
+            WITH five_choice AS (
+                SELECT
+                    CAST(date AS DATE) AS origin_date,
+                    lower(src) AS src,
+                    lower(tgt) AS tgt,
+                    lower(candidate_address) AS candidate_address,
+                    integration_scope,
+                    sum(route_count)::DOUBLE AS route_count
+                FROM read_parquet(?)
+                WHERE year(date) IN (?, ?)
+                  AND strftime(date, '%m-%d') <= ?
+                  AND lower(candidate_address) IN (
+                      SELECT candidate_address FROM panel_candidates
+                  )
+                GROUP BY 1, 2, 3, 4, 5
+            ),
+            daily AS (
+                SELECT
+                    origin_date,
+                    candidate_address,
+                    integration_scope,
+                    sum(route_count)::DOUBLE AS global_route_count_day,
+                    count(*)::DOUBLE AS global_pair_count_day
+                FROM five_choice
+                GROUP BY 1, 2, 3
+            ),
+            lag AS (
+                SELECT
+                    CAST(k.origin_date AS DATE) AS origin_date,
+                    k.candidate_address,
+                    k.integration_scope,
+                    coalesce(sum(c.route_count), 0.0)::DOUBLE
+                        AS global_route_count_lag30,
+                    count(c.route_count)::DOUBLE AS global_pair_day_count_lag30,
+                    count(DISTINCT CASE
+                        WHEN c.route_count IS NOT NULL THEN c.src || '|' || c.tgt
+                        ELSE NULL
+                    END)::DOUBLE AS global_pair_count_lag30
+                FROM panel_keys k
+                LEFT JOIN five_choice c
+                  ON c.candidate_address = k.candidate_address
+                 AND c.integration_scope = k.integration_scope
+                 AND c.origin_date >= CAST(k.origin_date AS DATE) - INTERVAL 30 DAY
+                 AND c.origin_date < CAST(k.origin_date AS DATE)
+                GROUP BY 1, 2, 3
+            )
+            SELECT
+                CAST(k.origin_date AS DATE) AS origin_date,
+                k.candidate_address,
+                k.integration_scope,
+                coalesce(d.global_route_count_day, 0.0)::DOUBLE
+                    AS global_route_count_day,
+                coalesce(d.global_pair_count_day, 0.0)::DOUBLE
+                    AS global_pair_count_day,
+                lag.global_route_count_lag30,
+                lag.global_pair_day_count_lag30,
+                lag.global_pair_count_lag30
+            FROM panel_keys k
+            LEFT JOIN daily d
+              ON d.origin_date = CAST(k.origin_date AS DATE)
+             AND d.candidate_address = k.candidate_address
+             AND d.integration_scope = k.integration_scope
+            LEFT JOIN lag
+              ON lag.origin_date = CAST(k.origin_date AS DATE)
+             AND lag.candidate_address = k.candidate_address
+             AND lag.integration_scope = k.integration_scope
+            """,
+            [str(choices_path), baseline_year, comparison_year, endpoint_cutoff],
+        ).fetchdf()
+    finally:
+        connection.close()
+
+    reach["origin_date"] = pd.to_datetime(reach["origin_date"]).dt.normalize()
+    reach["candidate_address"] = reach["candidate_address"].astype(str).str.lower()
+    augmented = panel.merge(
+        reach,
+        on=["origin_date", "candidate_address", "integration_scope"],
+        how="left",
+        validate="many_to_one",
+    )
+    raw_columns = [
+        "global_route_count_day",
+        "global_pair_count_day",
+        "global_route_count_lag30",
+        "global_pair_day_count_lag30",
+        "global_pair_count_lag30",
+    ]
+    for column in raw_columns:
+        augmented[column] = augmented[column].fillna(0.0).astype(float)
+    augmented["global_route_count_day_leaveout"] = (
+        augmented["global_route_count_day"] - augmented["route_count"].astype(float)
+    ).clip(lower=0.0)
+    augmented["global_pair_count_day_leaveout"] = (
+        augmented["global_pair_count_day"] - augmented["selected_five"].astype(float)
+    ).clip(lower=0.0)
+    log_columns = [
+        "global_route_count_day_leaveout",
+        "global_pair_count_day_leaveout",
+        "global_route_count_lag30",
+        "global_pair_day_count_lag30",
+        "global_pair_count_lag30",
+    ]
+    for column in log_columns:
+        augmented[f"log_{column}"] = np.log1p(augmented[column].astype(float))
+    return augmented
+
+
 def load_bridge_liquidity_panel(
     *,
     choices_path: Path = CHOICES_INPUT,
@@ -225,6 +362,13 @@ def load_bridge_liquidity_panel(
     frame["log_bridge_min_capital_x_stable"] = (
         frame["log_bridge_min_capital"] * frame["is_stable"].astype(float)
     )
+    frame = _candidate_global_reach_features(
+        frame,
+        choices_path=choices_path,
+        baseline_year=baseline_year,
+        comparison_year=comparison_year,
+        endpoint_cutoff=endpoint_cutoff,
+    )
     numeric = [
         "route_share_five",
         "selected_five",
@@ -232,6 +376,9 @@ def load_bridge_liquidity_panel(
         "bridge_min_capital_usd",
         "log_bridge_min_capital",
         "log_bridge_min_capital_x_stable",
+        "log_global_route_count_day_leaveout",
+        "log_global_route_count_lag30",
+        "log_global_pair_count_lag30",
     ]
     frame = frame.replace([np.inf, -np.inf], np.nan).dropna(subset=numeric)
     if frame.empty:
@@ -296,6 +443,132 @@ def bridge_liquidity_top_rank_summaries(panel: pd.DataFrame) -> pd.DataFrame:
                 ),
             }
         )
+    return pd.DataFrame(rows)
+
+
+def bridge_liquidity_horse_race_regressions(
+    panel: pd.DataFrame,
+    *,
+    min_observations: int = 1000,
+    min_clusters: int = 30,
+) -> pd.DataFrame:
+    """Estimate local bridge depth against candidate reach and stable identity."""
+
+    specs = (
+        (
+            "route_share_depth_global_reach_candidate_fe",
+            "route_share_five",
+            (
+                "log_bridge_min_capital",
+                "log_global_route_count_day_leaveout",
+                "log_global_route_count_lag30",
+                "log_global_pair_count_lag30",
+            ),
+            ("choice_group_id", "candidate_address"),
+            "ordered_ultimate_pair_date_scope+candidate",
+        ),
+        (
+            "selection_depth_global_reach_candidate_fe",
+            "selected_five",
+            (
+                "log_bridge_min_capital",
+                "log_global_route_count_day_leaveout",
+                "log_global_route_count_lag30",
+                "log_global_pair_count_lag30",
+            ),
+            ("choice_group_id", "candidate_address"),
+            "ordered_ultimate_pair_date_scope+candidate",
+        ),
+        (
+            "route_share_stable_depth_reach",
+            "route_share_five",
+            (
+                "is_stable",
+                "log_bridge_min_capital",
+                "log_global_route_count_lag30",
+                "log_global_pair_count_lag30",
+            ),
+            ("choice_group_id",),
+            "ordered_ultimate_pair_date_scope",
+        ),
+        (
+            "selection_stable_depth_reach",
+            "selected_five",
+            (
+                "is_stable",
+                "log_bridge_min_capital",
+                "log_global_route_count_lag30",
+                "log_global_pair_count_lag30",
+            ),
+            ("choice_group_id",),
+            "ordered_ultimate_pair_date_scope",
+        ),
+    )
+    rows: list[dict[str, object]] = []
+    for model_id, outcome, regressors, fixed_effects, fixed_effect_label in specs:
+        columns = [
+            outcome,
+            *regressors,
+            *fixed_effects,
+            "origin_date",
+            "ordered_pair",
+            "five_route_total",
+        ]
+        data = (
+            panel.loc[:, columns]
+            .replace([np.inf, -np.inf], np.nan)
+            .dropna()
+            .copy()
+        )
+        residual = absorb_fixed_effects(
+            data[[outcome, *regressors]],
+            *(data[column] for column in fixed_effects),
+            weights=data["five_route_total"],
+        )
+        fit = ols_clustered(
+            residual[outcome],
+            residual[list(regressors)],
+            data["ordered_pair"],
+            add_constant=False,
+            absorbed_groups=tuple(data[column] for column in fixed_effects),
+            additional_clusters=(data["origin_date"],),
+            weights=data["five_route_total"],
+            min_observations=min_observations,
+            min_clusters=min_clusters,
+        )
+        for index, regressor in enumerate(regressors):
+            coefficient = float(fit.beta[index])
+            standard_error = float(fit.standard_errors[index])
+            rows.append(
+                {
+                    "claim_status": "provisional_exploratory",
+                    "record_type": "bridge_liquidity_horse_race_regression",
+                    "model_id": model_id,
+                    "outcome": outcome,
+                    "regressor": regressor,
+                    "coefficient": coefficient,
+                    "standard_error": standard_error,
+                    "t_statistic": float(fit.t_statistics[index]),
+                    "p_value": float(fit.p_values[index]),
+                    "coefficient_pp_per_log_point": 100.0 * coefficient,
+                    "standard_error_pp_per_log_point": 100.0 * standard_error,
+                    "n_observations": int(fit.n_observations),
+                    "ordered_pair_clusters": int(fit.cluster_counts[0]),
+                    "date_clusters": int(fit.cluster_counts[1]),
+                    "fixed_effects": fixed_effect_label,
+                    "covariance": "two_way_ordered_pair_date_cr1",
+                    "weight": "five_candidate_route_count",
+                    "capital_status": CAPITAL_STATUS,
+                    "candidate_reach_quantity": (
+                        "same-day leave-one-out and prior-30-day five-candidate "
+                        "route reach in endpoint_candidate_choices"
+                    ),
+                    "interpretation": (
+                        "local prior bridge-depth association conditional on "
+                        "candidate network reach; descriptive, not causal"
+                    ),
+                }
+            )
     return pd.DataFrame(rows)
 
 
@@ -468,6 +741,7 @@ def run(
         [
             bridge_liquidity_top_rank_summaries(panel),
             bridge_liquidity_depth_regressions(panel),
+            bridge_liquidity_horse_race_regressions(panel),
         ],
         ignore_index=True,
     )

@@ -8,6 +8,7 @@ import pandas as pd
 
 from scripts.analyze.run_bridge_liquidity_dominance import (
     bridge_liquidity_depth_regressions,
+    bridge_liquidity_horse_race_regressions,
     bridge_liquidity_top_rank_summaries,
     load_bridge_liquidity_panel,
 )
@@ -107,6 +108,8 @@ def test_bridge_liquidity_panel_uses_prior_two_leg_capital() -> None:
     assert weth["route_share_five"] == 0.8
     assert usdc["bridge_min_capital_usd"] == 9.0
     assert panel["supported_candidates"].min() == 2
+    assert "log_global_route_count_day_leaveout" in panel.columns
+    assert "log_global_route_count_lag30" in panel.columns
 
 
 def test_bridge_liquidity_rank_summary_names_top_candidate_share() -> None:
@@ -196,6 +199,71 @@ def test_bridge_liquidity_depth_regression_reports_positive_slope() -> None:
     assert stable_total["coefficient"] > row["coefficient"]
 
 
+def test_bridge_liquidity_horse_race_keeps_local_depth_slope() -> None:
+    rows = []
+    candidates = [(WETH, 0.0), (USDC, 1.0), (DAI, 1.0)]
+    for group_index in range(180):
+        day = pd.Timestamp("2024-01-01") + pd.Timedelta(days=group_index)
+        group_effect = 0.0007 * group_index
+        for candidate_index, (candidate, is_stable) in enumerate(candidates):
+            log_depth = (
+                4.5
+                + 0.6 * candidate_index
+                + math.sin(group_index / 11 + 0.8 * candidate_index)
+                + 0.02 * ((group_index * (candidate_index + 2)) % 7)
+            )
+            global_reach = (
+                2.0
+                + 0.01 * group_index
+                + 0.5 * candidate_index
+                + math.cos(group_index / 13 + candidate_index)
+            )
+            lag_route_reach = (
+                1.5
+                + 0.03 * ((group_index * (candidate_index + 3)) % 17)
+                + 0.4 * math.sin(group_index / 17 + 0.3 * candidate_index)
+            )
+            lag_pair_reach = (
+                1.0
+                + 0.02 * ((group_index + 2 * candidate_index) % 13)
+                + 0.3 * math.cos(group_index / 19 + 0.5 * candidate_index)
+            )
+            rows.append(
+                {
+                    "choice_group_id": f"g{group_index}",
+                    "candidate_address": candidate,
+                    "origin_date": day,
+                    "ordered_pair": f"pair{group_index % 45}",
+                    "five_route_total": 20.0 + group_index % 4,
+                    "route_share_five": (
+                        0.055 * log_depth
+                        + 0.018 * global_reach
+                        + 0.010 * lag_route_reach
+                        + group_effect
+                        + 0.01 * candidate_index
+                    ),
+                    "selected_five": float(
+                        log_depth + 0.15 * global_reach + 0.1 * is_stable > 5.8
+                    ),
+                    "is_stable": is_stable,
+                    "log_bridge_min_capital": log_depth,
+                    "log_global_route_count_day_leaveout": global_reach + 0.2,
+                    "log_global_route_count_lag30": lag_route_reach,
+                    "log_global_pair_count_lag30": lag_pair_reach,
+                }
+            )
+    result = bridge_liquidity_horse_race_regressions(
+        pd.DataFrame(rows),
+        min_observations=100,
+        min_clusters=10,
+    )
+    row = result[
+        result["model_id"].eq("route_share_depth_global_reach_candidate_fe")
+        & result["regressor"].eq("log_bridge_min_capital")
+    ].iloc[0]
+    assert row["coefficient"] > 0
+
+
 def test_bridge_liquidity_deck_values_render_guarded_macros() -> None:
     estimates = pd.DataFrame(
         [
@@ -253,8 +321,29 @@ def test_bridge_liquidity_deck_values_render_guarded_macros() -> None:
                 "standard_error": 0.012,
                 "p_value": 0.04,
             },
+            {
+                "claim_status": "provisional_exploratory",
+                "record_type": "bridge_liquidity_horse_race_regression",
+                "model_id": "route_share_depth_global_reach_candidate_fe",
+                "outcome": "route_share_five",
+                "regressor": "log_bridge_min_capital",
+                "coefficient": 0.067,
+                "standard_error": 0.012,
+                "p_value": 0.001,
+            },
+            {
+                "claim_status": "provisional_exploratory",
+                "record_type": "bridge_liquidity_horse_race_regression",
+                "model_id": "route_share_depth_global_reach_candidate_fe",
+                "outcome": "route_share_five",
+                "regressor": "log_global_route_count_day_leaveout",
+                "coefficient": 0.09,
+                "standard_error": 0.028,
+                "p_value": 0.004,
+            },
         ]
     )
     rendered = render_bridge_liquidity_deck_values(estimates)
     assert "\\BridgeLiquidityTopShare" in rendered
     assert "\\BridgeLiquidityStableLogTotalCoef" in rendered
+    assert "\\BridgeLiquidityHorseRaceDepthCoef" in rendered

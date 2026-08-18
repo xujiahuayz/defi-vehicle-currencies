@@ -84,6 +84,20 @@ def render_bridge_liquidity_deck_values(estimates: pd.DataFrame) -> str:
         outcome="selected_five",
         regressor="log_bridge_min_capital",
     )
+    horse_depth = _single(
+        estimates,
+        record_type="bridge_liquidity_horse_race_regression",
+        model_id="route_share_depth_global_reach_candidate_fe",
+        outcome="route_share_five",
+        regressor="log_bridge_min_capital",
+    )
+    horse_global_day = _single(
+        estimates,
+        record_type="bridge_liquidity_horse_race_regression",
+        model_id="route_share_depth_global_reach_candidate_fe",
+        outcome="route_share_five",
+        regressor="log_global_route_count_day_leaveout",
+    )
     if not (
         float(pooled["top_bridge_route_share"]) > 0.75
         and float(end["top_bridge_route_share"]) > float(base["top_bridge_route_share"])
@@ -92,6 +106,10 @@ def render_bridge_liquidity_deck_values(estimates: pd.DataFrame) -> str:
         and float(route_depth_stable_total["coefficient"]) > float(route_depth["coefficient"])
         and float(route_depth_stable_total["p_value"]) < 0.01
         and float(selection_depth["coefficient"]) > 0
+        and float(horse_depth["coefficient"]) > 0
+        and float(horse_depth["p_value"]) < 0.01
+        and float(horse_global_day["coefficient"]) > 0
+        and float(horse_global_day["p_value"]) < 0.01
     ):
         raise ValueError("bridge-liquidity dominance pattern no longer holds")
     lines = [
@@ -111,6 +129,10 @@ def render_bridge_liquidity_deck_values(estimates: pd.DataFrame) -> str:
         f"\\newcommand{{\\BridgeLiquidityStableLogTotalSE}}{{{_unsigned_pp(float(route_depth_stable_total['standard_error']))}}}",
         f"\\newcommand{{\\BridgeLiquiditySelectionLogCoef}}{{{_signed_pp(float(selection_depth['coefficient']))}}}",
         f"\\newcommand{{\\BridgeLiquiditySelectionLogSE}}{{{_unsigned_pp(float(selection_depth['standard_error']))}}}",
+        f"\\newcommand{{\\BridgeLiquidityHorseRaceDepthCoef}}{{{_signed_pp(float(horse_depth['coefficient']))}}}",
+        f"\\newcommand{{\\BridgeLiquidityHorseRaceDepthSE}}{{{_unsigned_pp(float(horse_depth['standard_error']))}}}",
+        f"\\newcommand{{\\BridgeLiquidityHorseRaceGlobalDayCoef}}{{{_signed_pp(float(horse_global_day['coefficient']))}}}",
+        f"\\newcommand{{\\BridgeLiquidityHorseRaceGlobalDaySE}}{{{_unsigned_pp(float(horse_global_day['standard_error']))}}}",
     ]
     return "\n".join(lines) + "\n"
 

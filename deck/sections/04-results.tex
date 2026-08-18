@@ -388,12 +388,12 @@ Pooled                & \DateFEPooledNative{} & \DateFEPooledStable{} & --- \\
 \note{Among routes priced entirely by the constant-product invariant, \VenueCPEpisodeShare{} of 2026 episodes, stablecoin excess use rises from \VenueCPStableValueBase{} to \VenueCPStableValueEnd{}, and all-Curve routes carry none. Intermediation incidence never rises by more than \RouterLargestIntermediationRise{} at \RouterReleaseCount{} public router releases. The within-day contrast runs over \WithinDayVenueGapDays{} paired days. Every scope here is realised, not assigned; none identifies an effect of integration, routing software, pricing technology, or architecture.}
 \end{frame}
 
-% EVIDENCE-STATUS: provisional exploratory local-depth mechanism screen
+% EVIDENCE-STATUS: provisional exploratory local-depth and candidate-reach mechanism screen
 % EVIDENCE-SOURCES: output/exhibits/bridge_liquidity_dominance.jsonl; output/exhibits/bridge_liquidity_dominance_support.jsonl; output/exhibits/bridge_liquidity_deck_values.tex
 % SCIENTIFIC-BOUNDARY: prior-calendar deposited capital on the two atomic legs of A-candidate-C routes; not active concentrated-liquidity depth, executable quote size, provider returns, or causal liquidity supply
-% ESTIMAND-BOUNDARY: five-candidate endpoint-date-scope risk sets with at least two locally supported candidates; top-bridge rows rank candidates by the weaker of the two prior-capital legs; depth rows absorb endpoint-date-scope and candidate effects and cluster by ordered pair and date
-% VISUAL-FUNCTION: local bridge depth | three-stat mechanism screen | show that route choices concentrate on the deepest two-leg bridge
-\begin{frame}{Routes follow the deepest local bridge}
+% ESTIMAND-BOUNDARY: five-candidate endpoint-date-scope risk sets with at least two locally supported candidates; top-bridge rows rank candidates by the weaker of the two prior-capital legs; horse-race rows absorb endpoint-date-scope and candidate effects, control for same-day and prior-30-day route reach, and cluster by ordered pair and date
+% VISUAL-FUNCTION: local bridge depth | three-stat mechanism screen | show that route choices concentrate on corridor-specific depth after candidate-reach controls
+\begin{frame}{Routes follow local bridges, not only popular vehicles}
 \vspace{0.08cm}
 \begin{columns}[T,totalwidth=\textwidth]
 \begin{column}{0.31\textwidth}
@@ -407,16 +407,16 @@ Pooled                & \DateFEPooledNative{} & \DateFEPooledStable{} & --- \\
 {\small 2024 to 2026 top-bridge share\par}
 \end{column}
 \begin{column}{0.31\textwidth}
-{\fontsize{28}{30}\selectfont\bfseries\color{ucldark}\BridgeLiquidityLogCoef}\par
+{\fontsize{28}{30}\selectfont\bfseries\color{ucldark}\BridgeLiquidityHorseRaceDepthCoef}\par
 \vspace{0.12cm}
-{\small route-share slope per log point of weaker-leg capital\par}
+{\small route-share slope after candidate-reach controls\par}
 \end{column}
 \end{columns}
 \vspace{0.36cm}
 \fcolorbox{rule}{panel}{\begin{minipage}{0.94\textwidth}
-{\fontsize{8.2}{9.2}\selectfont In \BridgeLiquidityGroups{} opportunity cells, the candidate with the deepest prior two-leg bridge carries most five-candidate route mass. The within-opportunity slope is stronger for stable candidates: \BridgeLiquidityStableLogTotalCoef{} per log point.\par}
+{\fontsize{8.2}{9.2}\selectfont In \BridgeLiquidityGroups{} opportunity cells, the candidate with the deepest prior two-leg bridge carries most five-candidate route mass. Local depth remains \BridgeLiquidityHorseRaceDepthCoef{} with candidate effects and same-day plus prior-30-day route-reach controls; same-day global route reach contributes \BridgeLiquidityHorseRaceGlobalDayCoef{}.\par}
 \end{minipage}}
-\decknote{Five headline candidates, \BridgeLiquidityRows{} candidate rows, \BridgeLiquidityPairs{} ordered pairs, and \BridgeLiquidityDays{} days. Bridge depth is the smaller prior-calendar deposited-capital stock on the source-candidate and candidate-target atomic pairs, exact-state V2 only. Fixed effects: endpoint-date-scope and candidate; standard errors cluster by pair and date. Local-depth association only, not causal supply or executable quote comparison.}
+\decknote{Five headline candidates, \BridgeLiquidityRows{} candidate rows, \BridgeLiquidityPairs{} ordered pairs, and \BridgeLiquidityDays{} days. Bridge depth is the smaller prior-calendar deposited-capital stock on the source-candidate and candidate-target atomic pairs, exact-state V2 only. Candidate reach is measured from same-day leave-one-out and prior-30-day observed routes in the endpoint-candidate ledger. Fixed effects: endpoint-date-scope and candidate; standard errors cluster by pair and date. Local-depth association only, not causal supply or executable quote comparison.}
 \end{frame}
 
 % EVIDENCE-STATUS: exploratory descriptive allocation result
