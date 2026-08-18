@@ -1,11 +1,12 @@
 #!/usr/bin/env python3
-"""Explore whether stable vehicle use is confined to low-activity pair-days.
+"""Explore whether stable vehicle use is confined to low-activity markets.
 
 The market-formation results show that vehicle regimes are made at entry and at
 the transition edge. This companion screen checks a narrower threat to that
 interpretation: the result should not read as if stablecoins only matter in
 one-off or dust markets. Rows are descriptive, not causal opportunity-set
-effects, because realised market-route counts are themselves an outcome.
+effects, because realised market-route counts and first-day entrant size are
+themselves outcomes.
 """
 
 from __future__ import annotations
@@ -44,6 +45,7 @@ def load_pair_support(path: Path = PAIR_SUPPORT_INPUT) -> pd.DataFrame:
         "stable_choice_route_count",
         "native_within_20pct_value_usd",
         "stable_within_20pct_value_usd",
+        "pair_entry_on_day",
     ]
     frame = pd.read_parquet(path, columns=columns)
     return prepare_pair_support(frame)
@@ -60,15 +62,17 @@ def prepare_pair_support(frame: pd.DataFrame) -> pd.DataFrame:
         "stable_choice_route_count",
         "native_within_20pct_value_usd",
         "stable_within_20pct_value_usd",
+        "pair_entry_on_day",
     }
     missing = sorted(required - set(frame.columns))
     if missing:
         raise ValueError(f"pair-support panel lacks columns: {missing}")
     out = frame.copy()
     out["date"] = pd.to_datetime(out["date"])
-    numeric = sorted(required - {"date"})
+    numeric = sorted(required - {"date", "pair_entry_on_day"})
     for column in numeric:
         out[column] = pd.to_numeric(out[column], errors="coerce")
+    out["pair_entry_on_day"] = out["pair_entry_on_day"].astype(bool)
     out = out[
         out["primary_choice_route_count"].gt(0)
         & (out["native_choice_route_count"] + out["stable_choice_route_count"]).gt(0)
@@ -129,6 +133,56 @@ def market_size_bin_summaries(pair_support: pd.DataFrame) -> pd.DataFrame:
     grouped.insert(1, "record_type", "market_size_bin_summary")
     grouped["interpretation"] = (
         "route-weighted stable share by realised pair-day route count bin"
+    )
+    return grouped
+
+
+def entry_market_size_summaries(pair_support: pd.DataFrame) -> pd.DataFrame:
+    """Summarise entrant stable shares by first-day realised market size.
+
+    The unit is an ordered source-destination pair on its first observed day in
+    the matched January-June endpoint window. First-day size is a realised
+    outcome, so these rows rule out a dust-only interpretation but do not assign
+    entrants to exogenous size bins.
+    """
+
+    sample = pair_support[
+        pair_support["pair_entry_on_day"]
+        & pair_support["year"].isin([BASELINE_YEAR, COMPARISON_YEAR])
+        & pair_support["date"].dt.strftime("%m-%d").le("06-30")
+    ].copy()
+    if sample.empty:
+        raise ValueError("entry market-size screen has no entering pair rows")
+    grouped = sample.groupby(["year", "size_bin"], as_index=False, sort=True).agg(
+        pairs=("date", "size"),
+        primary_choice_routes=("primary_choice_route_count", "sum"),
+        native_choice_routes=("native_choice_route_count", "sum"),
+        stable_choice_routes=("stable_choice_route_count", "sum"),
+    )
+    grouped["entry_route_mass_share"] = grouped["primary_choice_routes"] / grouped.groupby(
+        "year"
+    )["primary_choice_routes"].transform("sum")
+    grouped["stable_count_share"] = grouped["stable_choice_routes"] / (
+        grouped["native_choice_routes"] + grouped["stable_choice_routes"]
+    )
+    dominant = (
+        sample.assign(
+            stable_dominant_pair=sample["stable_choice_route_count"]
+            > sample["native_choice_route_count"]
+        )
+        .groupby(["year", "size_bin"], as_index=False, sort=True)[
+            "stable_dominant_pair"
+        ]
+        .mean()
+        .rename(columns={"stable_dominant_pair": "stable_dominant_pair_share"})
+    )
+    grouped = grouped.merge(dominant, on=["year", "size_bin"], how="left", validate="one_to_one")
+    grouped.insert(0, "analysis_status", "exploratory_descriptive")
+    grouped.insert(1, "record_type", "entry_market_size_summary")
+    grouped["entry_year"] = grouped["year"].astype(int)
+    grouped["interpretation"] = (
+        "stable share at first observed ordered-pair day by first-day realised "
+        "market size; descriptive entrant screen, not causal size assignment"
     )
     return grouped
 
@@ -221,6 +275,7 @@ def build_vehicle_market_size_exploration(pair_support: pd.DataFrame) -> pd.Data
     prepared = prepare_pair_support(pair_support)
     rows = [
         market_size_bin_summaries(prepared),
+        entry_market_size_summaries(prepared),
         daily_size_gap_changes(daily_thin_thick_shares(prepared)),
     ]
     return pd.concat(rows, ignore_index=True, sort=False)
@@ -240,7 +295,7 @@ def run(
         inputs=INPUTS,
         notes=(
             "Exploratory descriptive screen of stable vehicle use by realised "
-            "ordered-pair-day route-count bins."
+            "ordered-pair-day route-count bins and first-day entrant size."
         ),
     )
     print(f"wrote {output_path} ({len(result):,} rows)")

@@ -25,6 +25,7 @@ def fixture() -> pd.DataFrame:
                         "stable_choice_route_count": 2 if year == 2024 else 5,
                         "native_within_20pct_value_usd": 80.0,
                         "stable_within_20pct_value_usd": 20.0 if year == 2024 else 50.0,
+                        "pair_entry_on_day": day == 1,
                     },
                     {
                         "date": date,
@@ -34,6 +35,7 @@ def fixture() -> pd.DataFrame:
                         "stable_choice_route_count": 60 if year == 2024 else 80,
                         "native_within_20pct_value_usd": 40.0,
                         "stable_within_20pct_value_usd": 60.0 if year == 2024 else 80.0,
+                        "pair_entry_on_day": day == 1,
                     },
                 ]
             )
@@ -61,3 +63,14 @@ def test_market_size_exploration_includes_endpoint_changes() -> None:
     thin = changes[changes["estimand"].eq("thin_1_5")].iloc[0]
     assert thin["change"] > 0
     assert thin["comparison_mean"] == 0.5
+
+
+def test_market_size_exploration_includes_entrant_size_screen() -> None:
+    result = build_vehicle_market_size_exploration(fixture())
+    entries = result[result["record_type"].eq("entry_market_size_summary")]
+    assert set(entries["entry_year"]) == {2024, 2026}
+    thick_2026 = entries[
+        entries["entry_year"].eq(2026) & entries["size_bin"].eq("thick_gt100")
+    ].iloc[0]
+    assert thick_2026["stable_count_share"] == pytest.approx(0.8)
+    assert thick_2026["entry_route_mass_share"] == pytest.approx(100 / 110)

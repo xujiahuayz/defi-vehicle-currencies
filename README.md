@@ -25,7 +25,7 @@ question and literature                    done
   → cleaned and analysis-ready data        ready for the two active claim families
   → registered baseline analysis           done; findings check green
   → repository cleanup and host sync        done; one checkout per host
-  → presentable paper/deck trunk            50/41 pages; rebuild after admitted changes
+  → presentable paper/deck trunk            50/42 pages; rebuild after admitted changes
         status labels                      provisional / registered / confirmed
         review snapshots                   versioned and shareable while work continues
 
@@ -52,14 +52,15 @@ parallel: keep the paper and slides presentable, integrate provisional results
 with explicit status labels, and continue the scoped mechanism and review loops.
 Current provisional layers cover vehicle birth, active-day birth-state
 hysteresis, non-WETH entry drivers, route-architecture entry interactions,
-thin-market turn-on with a direct-route by thinness interaction, observed
+large-entrant routing, thin-market turn-on with a direct-route by thinness
+interaction, rolling native-only-to-stable turn-on hazards, observed
 mixed-risk-set rival checks, sticky incumbent vehicle regimes, USDC/USDT
 concentration at stable-entry, stable-candidate identity persistence,
 extra-hop gas economics, LP capital-use gaps, delayed/asymmetric LP
-rebalancing, LP extensive-margin behavior, and V2 capital predictability. A result becomes headline evidence
-only if it is
-economically material, distinguishes at least one serious rival story, fits the
-literature contribution, and has a complete producer-to-deliverable path.
+rebalancing, LP extensive-margin behavior, and V2 capital predictability. A
+result becomes headline evidence only if it is economically material,
+distinguishes at least one serious rival story, fits the literature contribution,
+and has a complete producer-to-deliverable path.
 Routing maturation, direct-cost dominance, rent incidence, provider-flow
 behavior, and V3/V4 depth are supporting, withheld, or expansion work until they
 pass that bar.

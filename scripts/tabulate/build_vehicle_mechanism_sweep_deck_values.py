@@ -95,6 +95,52 @@ def _risk_set_effect(
     )
 
 
+def _hazard_effect(
+    estimates: pd.DataFrame,
+    *,
+    outcome: str,
+    regressor: str,
+) -> pd.Series:
+    return _single(
+        estimates,
+        claim_status="provisional_exploratory",
+        experiment_family="vehicle_dominance_mechanism_sweep",
+        metric="native_only_pair_day_stable_turn_on",
+        model_id="stable_turn_on_hazard_fe",
+        outcome=outcome,
+        regressor=regressor,
+    )
+
+
+def _hazard_decile(estimates: pd.DataFrame, *, regressor: str) -> pd.Series:
+    return _single(
+        estimates,
+        claim_status="provisional_exploratory",
+        experiment_family="vehicle_dominance_mechanism_sweep",
+        metric="native_only_pair_day_stable_turn_on",
+        model_id="stable_turn_on_hazard_decile",
+        outcome="future_stable_turn_on",
+        regressor=regressor,
+    )
+
+
+def _hazard_summary(
+    estimates: pd.DataFrame,
+    *,
+    year: int,
+    stable_endpoint: bool,
+) -> pd.Series:
+    return _single(
+        estimates,
+        claim_status="provisional_exploratory",
+        experiment_family="vehicle_dominance_mechanism_sweep",
+        metric="native_only_pair_day_stable_turn_on",
+        model_id="stable_turn_on_hazard_summary",
+        year=year,
+        stable_endpoint=stable_endpoint,
+    )
+
+
 def render_vehicle_mechanism_sweep_deck_values(
     estimates: pd.DataFrame, support: pd.DataFrame
 ) -> str:
@@ -105,6 +151,13 @@ def render_vehicle_mechanism_sweep_deck_values(
         claim_status="provisional_exploratory",
         experiment_family="vehicle_dominance_mechanism_sweep",
         metric="count_share",
+    )
+    hazard_support = _single(
+        support,
+        claim_status="provisional_exploratory",
+        experiment_family="vehicle_dominance_mechanism_sweep",
+        metric="native_only_pair_day_stable_turn_on",
+        model_id="stable_turn_on_hazard",
     )
     turn_on_thin = _effect(
         estimates,
@@ -173,6 +226,28 @@ def render_vehicle_mechanism_sweep_deck_values(
     risk_set_stable_2026 = _risk_set_effect(
         estimates, regressor="is_stable_x_2026"
     )
+    hazard_thick = _hazard_decile(estimates, regressor="log_market_routes")
+    hazard_age = _hazard_decile(estimates, regressor="pair_age_log")
+    hazard_log_market = _hazard_effect(
+        estimates,
+        outcome="future_stable_turn_on",
+        regressor="log_market_routes",
+    )
+    hazard_pair_age = _hazard_effect(
+        estimates,
+        outcome="future_stable_turn_on",
+        regressor="pair_age_log",
+    )
+    hazard_plain_2026 = _hazard_summary(
+        estimates,
+        year=2026,
+        stable_endpoint=False,
+    )
+    hazard_stable_2026 = _hazard_summary(
+        estimates,
+        year=2026,
+        stable_endpoint=True,
+    )
     if not (
         float(turn_on_thin["coefficient_pp"]) < 0
         and float(leader_thin["coefficient_pp"]) < 0
@@ -192,6 +267,15 @@ def render_vehicle_mechanism_sweep_deck_values(
         and float(risk_set_end["stable_route_share"]) < 0.5
         and float(risk_set_stable_penalty["coefficient"]) < 0
         and float(risk_set_stable_penalty["p_value"]) < 0.01
+        and float(hazard_thick["top_minus_bottom_pp"]) > 10
+        and float(hazard_age["top_minus_bottom_pp"]) > 10
+        and float(hazard_log_market["coefficient_pp"]) > 0
+        and float(hazard_pair_age["coefficient_pp"]) > 0
+        and float(hazard_log_market["p_value"]) < 0.01
+        and float(hazard_pair_age["p_value"]) < 0.01
+        and float(hazard_stable_2026["weighted_turn_on_rate"]) > float(
+            hazard_plain_2026["weighted_turn_on_rate"]
+        )
     ):
         raise ValueError("vehicle mechanism-sweep headline no longer holds")
     lines = [
@@ -199,6 +283,8 @@ def render_vehicle_mechanism_sweep_deck_values(
         f"\\newcommand{{\\MechanismScreenRows}}{{{_integer(int(support_row['rows']))}}}",
         f"\\newcommand{{\\MechanismScreenPairs}}{{{_integer(int(support_row['ordered_pairs']))}}}",
         f"\\newcommand{{\\MechanismScreenDays}}{{{_integer(int(support_row['month_days']))}}}",
+        f"\\newcommand{{\\MechanismHazardRows}}{{{_integer(int(hazard_support['rows']))}}}",
+        f"\\newcommand{{\\MechanismHazardPairs}}{{{_integer(int(hazard_support['ordered_pairs']))}}}",
         f"\\newcommand{{\\MechanismTurnOnThinCoef}}{{{_signed_pp(float(turn_on_thin['coefficient_pp']))}}}",
         f"\\newcommand{{\\MechanismTurnOnThinSE}}{{{_unsigned_pp(float(turn_on_thin['standard_error_pp']))}}}",
         f"\\newcommand{{\\MechanismTurnOnThinOneSd}}{{{_signed_pp(float(turn_on_thin['one_sd_effect_pp']))}}}",
@@ -223,6 +309,18 @@ def render_vehicle_mechanism_sweep_deck_values(
         f"\\newcommand{{\\MechanismRiskSetStablePenaltySE}}{{{_unsigned_pp(float(risk_set_stable_penalty['standard_error_pp']))}}}",
         f"\\newcommand{{\\MechanismRiskSetStableChange}}{{{_signed_pp(float(risk_set_stable_2026['coefficient_pp']))}}}",
         f"\\newcommand{{\\MechanismRiskSetStableChangeSE}}{{{_unsigned_pp(float(risk_set_stable_2026['standard_error_pp']))}}}",
+        f"\\newcommand{{\\MechanismHazardThickBottom}}{{{_pct(float(hazard_thick['bottom_decile_turn_on_rate']))}}}",
+        f"\\newcommand{{\\MechanismHazardThickTop}}{{{_pct(float(hazard_thick['top_decile_turn_on_rate']))}}}",
+        f"\\newcommand{{\\MechanismHazardThickGap}}{{{_signed_pp(float(hazard_thick['top_minus_bottom_pp']))}}}",
+        f"\\newcommand{{\\MechanismHazardAgeBottom}}{{{_pct(float(hazard_age['bottom_decile_turn_on_rate']))}}}",
+        f"\\newcommand{{\\MechanismHazardAgeTop}}{{{_pct(float(hazard_age['top_decile_turn_on_rate']))}}}",
+        f"\\newcommand{{\\MechanismHazardAgeGap}}{{{_signed_pp(float(hazard_age['top_minus_bottom_pp']))}}}",
+        f"\\newcommand{{\\MechanismHazardLogMarketCoef}}{{{_signed_pp(float(hazard_log_market['coefficient_pp']))}}}",
+        f"\\newcommand{{\\MechanismHazardLogMarketSE}}{{{_unsigned_pp(float(hazard_log_market['standard_error_pp']))}}}",
+        f"\\newcommand{{\\MechanismHazardPairAgeCoef}}{{{_signed_pp(float(hazard_pair_age['coefficient_pp']))}}}",
+        f"\\newcommand{{\\MechanismHazardPairAgeSE}}{{{_unsigned_pp(float(hazard_pair_age['standard_error_pp']))}}}",
+        f"\\newcommand{{\\MechanismHazardPlainEnd}}{{{_pct(float(hazard_plain_2026['weighted_turn_on_rate']))}}}",
+        f"\\newcommand{{\\MechanismHazardStableEndpointEnd}}{{{_pct(float(hazard_stable_2026['weighted_turn_on_rate']))}}}",
     ]
     return "\n".join(lines) + "\n"
 

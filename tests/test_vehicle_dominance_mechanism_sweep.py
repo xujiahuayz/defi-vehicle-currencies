@@ -10,9 +10,11 @@ from scripts.analyze.run_vehicle_dominance_mechanism_sweep import (
     BASELINE_YEAR,
     COMPARISON_YEAR,
     build_candidate_risk_set_design,
+    build_stable_turn_on_hazard_design,
     build_transition_design,
     estimate_candidate_risk_set_choice,
     estimate_mechanism_sweep,
+    estimate_stable_turn_on_hazard,
 )
 
 
@@ -151,6 +153,61 @@ class VehicleDominanceMechanismSweepTests(unittest.TestCase):
             ].iloc[0]
             self.assertLess(penalty["coefficient"], 0)
             self.assertIn("candidate_route_share", set(support["metric"]))
+
+    def test_stable_turn_on_hazard_reports_thick_market_contrast(self) -> None:
+        with tempfile.TemporaryDirectory() as tmpdir:
+            root = Path(tmpdir)
+            rows = []
+            stable = "0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48"
+            for year in (BASELINE_YEAR, COMPARISON_YEAR):
+                for pair_index in range(1, 13):
+                    high_demand = pair_index >= 7
+                    src = stable if pair_index % 4 == 0 else f"0xsrc{pair_index:02x}"
+                    tgt = f"0xtgt{pair_index:02x}"
+                    first_date = pd.Timestamp(year=year, month=1, day=1)
+                    for day in range(1, 36):
+                        current_date = first_date + pd.Timedelta(days=day - 1)
+                        stable_routes = 4 if high_demand and day % 5 == 0 else 0
+                        native_routes = 10
+                        market_routes = (100 if high_demand else 4) + day
+                        rows.append(
+                            {
+                                "date": current_date,
+                                "src": src,
+                                "tgt": tgt,
+                                "market_route_count": market_routes,
+                                "primary_choice_route_count": native_routes + stable_routes,
+                                "stable_choice_route_count": stable_routes,
+                                "direct_route_count": 1 + int(high_demand),
+                                "multiple_intermediary_route_count": pair_index % 3,
+                                "split_or_join_route_count": 0,
+                                "nonsequential_two_leg_route_count": 0,
+                                "pair_first_supported_date": first_date,
+                            }
+                        )
+            path = root / "pair_support.parquet"
+            pd.DataFrame(rows).to_parquet(path, index=False)
+
+            design = build_stable_turn_on_hazard_design(path, horizon_days=10)
+            self.assertIn("future_stable_turn_on", design)
+            self.assertGreater(design["future_stable_turn_on"].mean(), 0)
+
+            results, support = estimate_stable_turn_on_hazard(
+                design,
+                horizon_days=10,
+                min_observations=20,
+                min_clusters=2,
+            )
+            decile = results[
+                results["model_id"].eq("stable_turn_on_hazard_decile")
+                & results["regressor"].eq("log_market_routes")
+            ].iloc[0]
+            self.assertGreater(decile["top_minus_bottom_pp"], 0)
+            self.assertIn("stable_turn_on_hazard_fe", set(results["model_id"]))
+            self.assertEqual(
+                set(support["metric"]),
+                {"native_only_pair_day_stable_turn_on"},
+            )
 
 
 if __name__ == "__main__":

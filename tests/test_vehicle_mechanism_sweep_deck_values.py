@@ -88,6 +88,68 @@ def test_vehicle_mechanism_sweep_values_render_guarded_headline() -> None:
                 "standard_error_pp": 13.0,
                 "p_value": 0.75,
             },
+            {
+                "claim_status": "provisional_exploratory",
+                "experiment_family": "vehicle_dominance_mechanism_sweep",
+                "metric": "native_only_pair_day_stable_turn_on",
+                "model_id": "stable_turn_on_hazard_decile",
+                "outcome": "future_stable_turn_on",
+                "regressor": "log_market_routes",
+                "bottom_decile_turn_on_rate": 0.02,
+                "top_decile_turn_on_rate": 0.25,
+                "top_minus_bottom_pp": 23.0,
+            },
+            {
+                "claim_status": "provisional_exploratory",
+                "experiment_family": "vehicle_dominance_mechanism_sweep",
+                "metric": "native_only_pair_day_stable_turn_on",
+                "model_id": "stable_turn_on_hazard_decile",
+                "outcome": "future_stable_turn_on",
+                "regressor": "pair_age_log",
+                "bottom_decile_turn_on_rate": 0.01,
+                "top_decile_turn_on_rate": 0.41,
+                "top_minus_bottom_pp": 40.0,
+            },
+            {
+                "claim_status": "provisional_exploratory",
+                "experiment_family": "vehicle_dominance_mechanism_sweep",
+                "metric": "native_only_pair_day_stable_turn_on",
+                "model_id": "stable_turn_on_hazard_fe",
+                "outcome": "future_stable_turn_on",
+                "regressor": "log_market_routes",
+                "coefficient_pp": 3.5,
+                "standard_error_pp": 0.7,
+                "p_value": 0.001,
+            },
+            {
+                "claim_status": "provisional_exploratory",
+                "experiment_family": "vehicle_dominance_mechanism_sweep",
+                "metric": "native_only_pair_day_stable_turn_on",
+                "model_id": "stable_turn_on_hazard_fe",
+                "outcome": "future_stable_turn_on",
+                "regressor": "pair_age_log",
+                "coefficient_pp": 1.6,
+                "standard_error_pp": 0.2,
+                "p_value": 0.001,
+            },
+            {
+                "claim_status": "provisional_exploratory",
+                "experiment_family": "vehicle_dominance_mechanism_sweep",
+                "metric": "native_only_pair_day_stable_turn_on",
+                "model_id": "stable_turn_on_hazard_summary",
+                "year": 2026,
+                "stable_endpoint": False,
+                "weighted_turn_on_rate": 0.08,
+            },
+            {
+                "claim_status": "provisional_exploratory",
+                "experiment_family": "vehicle_dominance_mechanism_sweep",
+                "metric": "native_only_pair_day_stable_turn_on",
+                "model_id": "stable_turn_on_hazard_summary",
+                "year": 2026,
+                "stable_endpoint": True,
+                "weighted_turn_on_rate": 0.28,
+            },
         ]
     )
     support = pd.DataFrame(
@@ -99,6 +161,14 @@ def test_vehicle_mechanism_sweep_values_render_guarded_headline() -> None:
                 "rows": 1000,
                 "ordered_pairs": 50,
                 "month_days": 10,
+            },
+            {
+                "claim_status": "provisional_exploratory",
+                "experiment_family": "vehicle_dominance_mechanism_sweep",
+                "metric": "native_only_pair_day_stable_turn_on",
+                "model_id": "stable_turn_on_hazard",
+                "rows": 2000,
+                "ordered_pairs": 100,
             }
         ]
     )
@@ -109,3 +179,5 @@ def test_vehicle_mechanism_sweep_values_render_guarded_headline() -> None:
     assert "$-2.6$ pp" in rendered
     assert "\\MechanismScreenRows" in rendered
     assert "\\MechanismRiskSetStablePenalty" in rendered
+    assert "\\MechanismHazardThickGap" in rendered
+    assert "\\MechanismHazardRows" in rendered

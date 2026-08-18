@@ -18,6 +18,7 @@ import numpy as np
 import pandas as pd
 
 from ddvc.analysis.regression import absorb_fixed_effects, ols_clustered
+from ddvc.asset_types import classify
 from ddvc.paths import OUTPUT_DIR, REPO_ROOT
 from ddvc.runtime import atomic_output
 
@@ -59,6 +60,21 @@ DIRECT_THIN_RHS = (
 )
 REGIME_THRESHOLD = 0.5
 RISK_SET_MIN_TOTAL_ROUTES = (1, 5, 20)
+STABLE_TURN_ON_HORIZON_DAYS = 30
+STABLE_TURN_ON_PREDICTORS = (
+    "is_2026",
+    "stable_endpoint",
+    "is_2026_x_stable_endpoint",
+    "log_market_routes",
+    "direct_share",
+    "complex_share",
+    "primary_choice_share",
+    "pair_age_log",
+)
+STABLE_TURN_ON_DECILE_VARIABLES = (
+    "log_market_routes",
+    "pair_age_log",
+)
 MODEL_SPECS = (
     (
         "share_change_baseline_state",
@@ -406,7 +422,8 @@ def _decile_contrasts(sample: pd.DataFrame, metric: str) -> list[dict[str, objec
         if data[variable].nunique() < 10:
             continue
         data["decile"] = pd.qcut(data[variable], 10, labels=False, duplicates="drop")
-        if data["decile"].nunique() < 4:
+        quantile_bins = int(data["decile"].nunique())
+        if quantile_bins < 2:
             continue
         low = data[data["decile"].eq(data["decile"].min())]
         high = data[data["decile"].eq(data["decile"].max())]
@@ -763,6 +780,312 @@ def estimate_candidate_risk_set_choice(
     return pd.DataFrame(result_rows), pd.DataFrame(support_rows)
 
 
+def build_stable_turn_on_hazard_design(
+    path: Path = PAIR_SUPPORT_INPUT,
+    *,
+    horizon_days: int = STABLE_TURN_ON_HORIZON_DAYS,
+) -> pd.DataFrame:
+    """Return native-only pair-days and future stable-vehicle turn-on outcomes.
+
+    The risk-set unit is an active ordered ultimate pair-day in January-May 2024
+    or 2026 with positive primary native-or-stable vehicle use and zero stable
+    vehicle use on the origin date. The future outcome asks whether any stable
+    vehicle appears over the next complete horizon. This is a descriptive hazard
+    screen, not a causal timing design.
+    """
+
+    if horizon_days <= 0:
+        raise ValueError("stable turn-on horizon must be positive")
+    connection = duckdb.connect()
+    try:
+        connection.execute("PRAGMA threads=8")
+        frame = connection.execute(
+            f"""
+            WITH base AS (
+                SELECT
+                    CAST(date AS DATE) AS date,
+                    src,
+                    tgt,
+                    year(date)::INTEGER AS year,
+                    strftime(date, '%m-%d') AS month_day,
+                    market_route_count::DOUBLE AS market_route_count,
+                    primary_choice_route_count::DOUBLE AS primary_choice_route_count,
+                    stable_choice_route_count::DOUBLE AS stable_choice_route_count,
+                    direct_route_count::DOUBLE AS direct_route_count,
+                    (
+                        multiple_intermediary_route_count
+                        + split_or_join_route_count
+                        + nonsequential_two_leg_route_count
+                    )::DOUBLE AS complex_route_count,
+                    CAST(pair_first_supported_date AS DATE) AS pair_first_supported_date,
+                    sum(stable_choice_route_count) OVER (
+                        PARTITION BY src, tgt
+                        ORDER BY CAST(date AS DATE)
+                        RANGE BETWEEN INTERVAL 1 DAY FOLLOWING
+                                  AND INTERVAL {int(horizon_days)} DAY FOLLOWING
+                    )::DOUBLE AS future_stable_routes,
+                    sum(primary_choice_route_count) OVER (
+                        PARTITION BY src, tgt
+                        ORDER BY CAST(date AS DATE)
+                        RANGE BETWEEN INTERVAL 1 DAY FOLLOWING
+                                  AND INTERVAL {int(horizon_days)} DAY FOLLOWING
+                    )::DOUBLE AS future_primary_routes
+                FROM read_parquet(?)
+                WHERE year(date) IN (?, ?)
+                  AND strftime(date, '%m-%d') <= '05-31'
+            )
+            SELECT *
+            FROM base
+            WHERE primary_choice_route_count > 0
+              AND stable_choice_route_count = 0
+              AND market_route_count > 0
+            """,
+            [str(path), BASELINE_YEAR, COMPARISON_YEAR],
+        ).fetchdf()
+    finally:
+        connection.close()
+    if frame.empty:
+        raise ValueError("stable turn-on hazard design is empty")
+    frame["date"] = pd.to_datetime(frame["date"], errors="raise").dt.normalize()
+    frame["pair_first_supported_date"] = pd.to_datetime(
+        frame["pair_first_supported_date"], errors="raise"
+    ).dt.normalize()
+    addresses = pd.unique(frame[["src", "tgt"]].values.ravel())
+    address_types = {address: classify(address)[1] for address in addresses}
+    frame["src_type"] = frame["src"].map(address_types)
+    frame["tgt_type"] = frame["tgt"].map(address_types)
+    frame["stable_endpoint"] = (
+        frame["src_type"].eq("stable") | frame["tgt_type"].eq("stable")
+    ).astype(float)
+    frame["future_stable_routes"] = frame["future_stable_routes"].fillna(0.0)
+    frame["future_primary_routes"] = frame["future_primary_routes"].fillna(0.0)
+    frame["future_stable_turn_on"] = frame["future_stable_routes"].gt(0.0).astype(float)
+    frame["future_stable_share"] = (
+        frame["future_stable_routes"] / frame["future_primary_routes"].replace(0.0, np.nan)
+    )
+    frame["log_market_routes"] = np.log1p(frame["market_route_count"].astype(float))
+    frame["direct_share"] = (
+        frame["direct_route_count"].astype(float)
+        / frame["market_route_count"].astype(float)
+    ).clip(0.0, 1.0)
+    frame["complex_share"] = (
+        frame["complex_route_count"].astype(float)
+        / frame["market_route_count"].astype(float)
+    ).clip(0.0, 1.0)
+    frame["primary_choice_share"] = (
+        frame["primary_choice_route_count"].astype(float)
+        / frame["market_route_count"].astype(float)
+    ).clip(0.0, 1.0)
+    frame["pair_age_log"] = np.log1p(
+        (frame["date"] - frame["pair_first_supported_date"]).dt.days.clip(lower=0)
+    )
+    frame["is_2026"] = frame["year"].eq(COMPARISON_YEAR).astype(float)
+    frame["is_2026_x_stable_endpoint"] = (
+        frame["is_2026"] * frame["stable_endpoint"]
+    )
+    frame["ordered_pair_cluster"] = frame["src"].astype(str) + ">" + frame["tgt"].astype(str)
+    return frame
+
+
+def estimate_stable_turn_on_hazard(
+    design: pd.DataFrame,
+    *,
+    horizon_days: int = STABLE_TURN_ON_HORIZON_DAYS,
+    min_observations: int = 200,
+    min_clusters: int = 30,
+) -> tuple[pd.DataFrame, pd.DataFrame]:
+    """Estimate the descriptive native-only-to-stable turn-on hazard screen."""
+
+    missing = sorted(
+        {
+            "date",
+            "year",
+            "month_day",
+            "src",
+            "tgt",
+            "market_route_count",
+            "future_stable_turn_on",
+            "future_stable_share",
+            "stable_endpoint",
+            "ordered_pair_cluster",
+            *STABLE_TURN_ON_PREDICTORS,
+        }
+        - set(design.columns)
+    )
+    if missing:
+        raise ValueError(f"stable turn-on hazard design lacks columns: {missing}")
+    result_rows: list[dict[str, object]] = []
+    support_rows: list[dict[str, object]] = []
+    support_rows.append(
+        {
+            "experiment_family": "vehicle_dominance_mechanism_sweep",
+            "metric": "native_only_pair_day_stable_turn_on",
+            "model_id": "stable_turn_on_hazard",
+            "horizon_days": int(horizon_days),
+            "rows": int(len(design)),
+            "ordered_pairs": int(design[["src", "tgt"]].drop_duplicates().shape[0]),
+            "dates": int(design["date"].nunique()),
+            "claim_status": "provisional_exploratory",
+        }
+    )
+    for (year, stable_endpoint), group in design.groupby(
+        ["year", "stable_endpoint"], sort=True
+    ):
+        weights = group["market_route_count"].astype(float)
+        result_rows.append(
+            {
+                "claim_status": "provisional_exploratory",
+                "experiment_family": "vehicle_dominance_mechanism_sweep",
+                "metric": "native_only_pair_day_stable_turn_on",
+                "model_id": "stable_turn_on_hazard_summary",
+                "horizon_days": int(horizon_days),
+                "year": int(year),
+                "stable_endpoint": bool(stable_endpoint),
+                "rows": int(len(group)),
+                "ordered_pairs": int(group[["src", "tgt"]].drop_duplicates().shape[0]),
+                "weighted_turn_on_rate": float(
+                    np.average(group["future_stable_turn_on"], weights=weights)
+                ),
+                "weighted_turn_on_rate_pp": 100.0
+                * float(np.average(group["future_stable_turn_on"], weights=weights)),
+                "unweighted_turn_on_rate": float(group["future_stable_turn_on"].mean()),
+                "weight": "origin_market_route_count",
+                "interpretation": (
+                    "native-only active pair-day future stable-vehicle turn-on, "
+                    "not causal timing"
+                ),
+            }
+        )
+    for outcome in ("future_stable_turn_on", "future_stable_share"):
+        data = (
+            design[
+                [
+                    outcome,
+                    "month_day",
+                    "date",
+                    "ordered_pair_cluster",
+                    "market_route_count",
+                    *STABLE_TURN_ON_PREDICTORS,
+                ]
+            ]
+            .replace([np.inf, -np.inf], np.nan)
+            .dropna()
+            .copy()
+        )
+        data = data[data["market_route_count"].gt(0.0)].copy()
+        residual = absorb_fixed_effects(
+            data[[outcome, *STABLE_TURN_ON_PREDICTORS]],
+            data["month_day"],
+            weights=data["market_route_count"],
+        )
+        fit = ols_clustered(
+            residual[outcome],
+            residual[list(STABLE_TURN_ON_PREDICTORS)],
+            data["ordered_pair_cluster"],
+            add_constant=False,
+            absorbed_groups=(data["month_day"],),
+            additional_clusters=(data["date"],),
+            weights=data["market_route_count"],
+            min_observations=min_observations,
+            min_clusters=min_clusters,
+        )
+        for index, predictor in enumerate(STABLE_TURN_ON_PREDICTORS):
+            coefficient = float(fit.beta[index])
+            standard_error = float(fit.standard_errors[index])
+            scale = float(data[predictor].std(ddof=0))
+            result_rows.append(
+                {
+                    "claim_status": "provisional_exploratory",
+                    "experiment_family": "vehicle_dominance_mechanism_sweep",
+                    "metric": "native_only_pair_day_stable_turn_on",
+                    "model_id": "stable_turn_on_hazard_fe",
+                    "question": (
+                        "Among active pair-days with no stable vehicle today, "
+                        "which states predict stable vehicle use over the next month?"
+                    ),
+                    "horizon_days": int(horizon_days),
+                    "outcome": outcome,
+                    "regressor": predictor,
+                    "coefficient": coefficient,
+                    "coefficient_pp": 100.0 * coefficient,
+                    "standard_error": standard_error,
+                    "standard_error_pp": 100.0 * standard_error,
+                    "t_statistic": float(fit.t_statistics[index]),
+                    "p_value": float(fit.p_values[index]),
+                    "one_sd_effect_pp": 100.0 * coefficient * scale,
+                    "regressor_sd": scale,
+                    "observations": int(fit.n_observations),
+                    "ordered_pair_clusters": int(fit.cluster_counts[0]),
+                    "date_clusters": int(fit.cluster_counts[1]),
+                    "fixed_effects": "month_day",
+                    "covariance": "two_way_ordered_pair_date_cr1",
+                    "weight": "origin_market_route_count",
+                    "interpretation": (
+                        "native-only-to-stable vehicle turn-on association, not causal timing"
+                    ),
+                    "rival_story": (
+                        "market thickness and pair age may proxy router coverage, "
+                        "token news, or repeated endpoint demand rather than a pure "
+                        "liquidity externality"
+                    ),
+                }
+            )
+    for variable in STABLE_TURN_ON_DECILE_VARIABLES:
+        data = (
+            design[
+                [
+                    variable,
+                    "future_stable_turn_on",
+                    "market_route_count",
+                ]
+            ]
+            .replace([np.inf, -np.inf], np.nan)
+            .dropna()
+            .copy()
+        )
+        if data[variable].nunique() < 10:
+            continue
+        data["decile"] = pd.qcut(data[variable], 10, labels=False, duplicates="drop")
+        quantile_bins = int(data["decile"].nunique())
+        if quantile_bins < 2:
+            continue
+        low = data[data["decile"].eq(data["decile"].min())]
+        high = data[data["decile"].eq(data["decile"].max())]
+
+        def weighted_turn_on(frame: pd.DataFrame) -> float:
+            return float(
+                np.average(
+                    frame["future_stable_turn_on"].astype(float),
+                    weights=frame["market_route_count"].astype(float),
+                )
+            )
+
+        low_rate = weighted_turn_on(low)
+        high_rate = weighted_turn_on(high)
+        result_rows.append(
+            {
+                "claim_status": "provisional_exploratory",
+                "experiment_family": "vehicle_dominance_mechanism_sweep",
+                "metric": "native_only_pair_day_stable_turn_on",
+                "model_id": "stable_turn_on_hazard_decile",
+                "horizon_days": int(horizon_days),
+                "outcome": "future_stable_turn_on",
+                "regressor": variable,
+                "bottom_decile_turn_on_rate": low_rate,
+                "top_decile_turn_on_rate": high_rate,
+                "top_minus_bottom_pp": 100.0 * (high_rate - low_rate),
+                "bottom_decile_rows": int(len(low)),
+                "top_decile_rows": int(len(high)),
+                "quantile_bins": quantile_bins,
+                "weight": "origin_market_route_count",
+                "interpretation": (
+                    "weighted native-only-to-stable hazard contrast, not causal timing"
+                ),
+            }
+        )
+    return pd.DataFrame(result_rows), pd.DataFrame(support_rows)
+
+
 def estimate_mechanism_sweep(
     design: pd.DataFrame,
     *,
@@ -854,8 +1177,18 @@ def run(inputs: SweepInputs = SweepInputs()) -> int:
     results, support = estimate_mechanism_sweep(design)
     risk_design = build_candidate_risk_set_design(inputs.candidate_choices)
     risk_results, risk_support = estimate_candidate_risk_set_choice(risk_design)
-    results = pd.concat([results, risk_results], ignore_index=True, sort=False)
-    support = pd.concat([support, risk_support], ignore_index=True, sort=False)
+    hazard_design = build_stable_turn_on_hazard_design(inputs.pair_support)
+    hazard_results, hazard_support = estimate_stable_turn_on_hazard(hazard_design)
+    results = pd.concat(
+        [results, risk_results, hazard_results],
+        ignore_index=True,
+        sort=False,
+    )
+    support = pd.concat(
+        [support, risk_support, hazard_support],
+        ignore_index=True,
+        sort=False,
+    )
     _write_jsonl(results, inputs.results)
     _write_jsonl(support, inputs.support)
     print(

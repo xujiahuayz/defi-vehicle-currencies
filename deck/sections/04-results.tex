@@ -243,9 +243,39 @@ Pooled                & \DateFEPooledNative{} & \DateFEPooledStable{} & --- \\
 \end{columns}
 \vspace{0.40cm}
 \fcolorbox{rule}{panel}{\begin{minipage}{0.94\textwidth}
-{\fontsize{8.4}{9.4}\selectfont Turn-on is thinner, direct, and complex; not same-set conquest. Not dust: active pair-days reach \MarketSizeThickShareEnd{} stable share.\par}
+{\fontsize{8.4}{9.4}\selectfont Turn-on is thinner, direct, and complex; not same-set conquest. Not dust: large 2026 entrants route \MarketSizeEntryThickShareEnd{} through stablecoins.\par}
 \end{minipage}}
-\decknote{Transition screen uses pair-day-scope rows, month-day fixed effects, harmonic weights, and two-way CR1. Risk-set rows are observed native-stable candidate sets, not feasible alternatives. Market-size screen uses realised route-count bins on the matched January-June calendar: at most five routes rise from \MarketSizeThinShareBase{} to \MarketSizeThinShareEnd{}, while more than 100 routes rise from \MarketSizeThickShareBase{} to \MarketSizeThickShareEnd{}. Driver screen only.}
+\decknote{Transition screen uses pair-day-scope rows, month-day fixed effects, harmonic weights, and two-way CR1. Risk-set rows are observed native-stable candidate sets, not feasible alternatives. Market-size rows are descriptive realised route-count bins and first-day entrant size; driver screen only.}
+\end{frame}
+
+% EVIDENCE-STATUS: exploratory descriptive rolling adoption result, not causal timing
+% EVIDENCE-SOURCES: output/exhibits/vehicle_dominance_mechanism_sweep.jsonl; output/exhibits/vehicle_dominance_mechanism_support.jsonl; output/exhibits/vehicle_mechanism_sweep_deck_values.tex
+% ESTIMAND-BOUNDARY: active native-only ordered pair-days with complete 30-day look-ahead support; weighted by origin market routes; two-way CR1 by ordered pair and date
+% VISUAL-FUNCTION: rolling stable turn-on hazard | three-stat strip | show stable vehicles appear inside active native-only markets as demand accumulates
+\begin{frame}{Native-only markets later add stable routes}
+\vspace{0.10cm}
+\begin{columns}[T,totalwidth=\textwidth]
+\begin{column}{0.31\textwidth}
+{\fontsize{26}{28}\selectfont\bfseries\color{ucldark}\MechanismHazardThickBottom}\par
+\vspace{0.16cm}
+{\small 30-day stable turn-on,\par bottom size bin\par}
+\end{column}
+\begin{column}{0.31\textwidth}
+{\fontsize{26}{28}\selectfont\bfseries\color{ucldark}\MechanismHazardThickTop}\par
+\vspace{0.16cm}
+{\small 30-day stable turn-on,\par top size bin\par}
+\end{column}
+\begin{column}{0.31\textwidth}
+{\fontsize{26}{28}\selectfont\bfseries\color{ucldark}\MechanismHazardAgeTop}\par
+\vspace{0.16cm}
+{\small 30-day stable turn-on,\par oldest bin\par}
+\end{column}
+\end{columns}
+\vspace{0.40cm}
+\fcolorbox{rule}{panel}{\begin{minipage}{0.94\textwidth}
+{\fontsize{8.4}{9.4}\selectfont Among active native-only pair-days, stable-vehicle use over the next month is much more common in thick and older markets. Month-day FE slopes stay positive for market thickness (\MechanismHazardLogMarketCoef{}) and pair age (\MechanismHazardPairAgeCoef{}).\par}
+\end{minipage}}
+\decknote{Rows are \MechanismHazardRows{} active ordered pair-days across \MechanismHazardPairs{} pairs with positive native-or-stable vehicle use and zero stable vehicle use on the origin day. Outcome is any stable-vehicle use over the next complete 30 days. Quantile bins and FE estimates are weighted by origin market-route count; FE absorbs month-day and clusters by ordered pair and date. Descriptive hazard, not causal timing.}
 \end{frame}
 
 % EVIDENCE-STATUS: exploratory descriptive execution-friction result
