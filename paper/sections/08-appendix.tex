@@ -1,7 +1,7 @@
 % Appendix. The construction and validation apparatus behind the constructed side of every
 % cost comparison in the body.
 %
-% Same provenance discipline as the body sections: every numeric prose line and every
+% Same evidence discipline as the body sections: every numeric prose line and every
 % tabular row carries a trailing comment naming the artefact it was read from and the
 % sample it was measured on. A row is where a reader checks a number, so the comment sits
 % on the row and not only on the table.
@@ -16,7 +16,7 @@ Route construction begins with the contract and event format of each exchange. W
 A complete token sequence is sufficient for the route-count sample. Value weighting additionally requires coherent amounts on every leg and a common dollar valuation. A failed valuation removes the observation from the value calculation while preserving the observed route. Appendix~\ref{app:roundtrip} gives the separate exclusion for self-returning paths.
 
 Historical token precision cannot be verified for 13 tokens traded in 22 constant-product pools. Reserve-reconstruction analyses omit those pools. An upper-bound check removes every route involving any of the 13 tokens: the resulting bound is 5,950 routes and \$10.91 million of route value. Only 1,036 of those routes use one of the affected tokens as an intermediary, representing \$1.284 million, or 0.00043\% of value on routes whose legs can all be valued. All 13 tokens lie outside the native and stablecoin groups used in the main comparison. The exclusion affects exact reserve reconstruction; the route-composition result is unchanged.
-% docs/findings-freeze.md, 13 unresolved V2 token-precision records and worst-case route deletion bound
+% docs/findings/README.md, 13 unresolved V2 token-precision records and worst-case route deletion bound
 
 \section{Pricing models and validation}
 \label{app:quoters}
@@ -204,7 +204,7 @@ searched over a logarithmic grid spanning Balancer's own weight bounds and refin
 \end{equation}
 The label a pool carries in the source plays no part in this. A pool-day whose observed trades no tier reproduces is excluded whatever its \texttt{poolType} says, and the third tier further requires the fitted ratios to cover nine tenths of the fitting trades, so a pool-day is never accepted on the pairs that happened to fit and then quoted on the rest.
 % src/ddvc/pricing/weighted.py, FIT_QUANTILE 0.90, MIN_QUOTED_SHARE 0.9, MIN_PAIR_OBSERVATIONS 4,
-% WEIGHT_RATIO_MIN/MAX and FEE_MIN/MAX; scripts/validate_weighted_quoter.py, fit_pool_day tier order
+% WEIGHT_RATIO_MIN/MAX and FEE_MIN/MAX; scripts/verify/validate_weighted_quoter.py, fit_pool_day tier order
 % and the alternate-trade fitting and evaluation split
 
 How often the machinery binds is itself a diagnostic. Of the 256 pool-days accepted across the twelve validation days, 209 clear the gate on reported parameters with nothing identified, 43 need the swap fee alone, and 4 need per-pair weight ratios. Four fifths of the priced sample therefore carries no fitted parameter, and identification repairs a stale field in a minority of pool-days instead of supplying the invariant.
@@ -368,7 +368,7 @@ Equation~\eqref{eq:support} applies the same 5\% own-price-impact ceiling to eve
 \label{app:coverage}
 
 Omitting an exchange can change the best direct route, the best intermediated route, or both. Table~\ref{tab:app:venues} first describes the volume recorded in nine local source series, including Uniswap v1 as a separate architecture sample and the available Fluid extracts. Volume in the Graph-indexed series is reconstructed from individual swaps using the smaller dollar value of the two legs. This avoids double counting in two series and removes implausible oracle values in thin pools: one Curve pool reports a \$456m day whose swaps sum to \$8, and a constant-product pair with \$255 of reserves reports \$1.36bn. Physical bounds on volume relative to reserves exclude between 0.10\% and 0.24\% of Graph-indexed pool-days per year. Uniswap v1 is excluded from the route-cost comparison because its forced-routing architecture is studied separately. Fluid supplies volume on only 40 of the 400 sampled dates and no historical TVL field. The table is consequently a source-coverage diagnostic, not an estimate of complete market shares.
-% output/exhibits/venue_volume_by_year.jsonl; docs/venue-coverage-bounds.md, volume reconstruction, 400 sampled days
+% output/exhibits/venue_volume_by_year.jsonl; docs/findings/venue-coverage.md, volume reconstruction, 400 sampled days
 
 \begin{table}[t]
 \centering
@@ -384,7 +384,7 @@ The Uniswap v4 pricing model covers static-fee pools without hooks. Pool-identit
 % output/exhibits/v4_quote_support.jsonl, ALL and 2026 rows by support status
 
 Curve carries between 9.68\% and 18.70\% of observed source volume in every year it exists and ranks second in four years, making its coverage economically important. The StableSwap model fits 621 pool-days and excludes 588 whose 90th-percentile fitting error exceeds 1\%. Across 28 sampled dates from 2020-02-11 to 2026-04-28, these exclusions account for 34.2\% of the Curve volume assessed, or \$1.83bn of \$5.36bn. Another 2.75\% of Curve volume occurs in pool-days with too few trades to estimate and evaluate the amplification coefficient separately. Lowering the minimum from eight trades to four changes annual excluded shares by at most 1.3 percentage points. Table~\ref{tab:app:curveleg} shows where these exclusions occur.
-% docs/venue-coverage-bounds.md, 28 measured pool-days from 2020-02-11 to 2026-04-28
+% docs/findings/venue-coverage.md, 28 measured pool-days from 2020-02-11 to 2026-04-28
 
 \begin{table}[t]
 \centering
@@ -397,40 +397,40 @@ Curve carries between 9.68\% and 18.70\% of observed source volume in every year
 Leg served & Pool-days & Volume & Of excluded & Of priced & Of that leg \\
 \midrule
 Native & 374 & \$1.038bn & 56.6\% & 15.7\% & 65.2\% \\
-% docs/venue-coverage-bounds.md, 374 excluded Curve pool-days across 28 measured days
+% docs/findings/venue-coverage.md, 374 excluded Curve pool-days across 28 measured days
 Stable & 119 & \$0.752bn & 41.0\% & 79.9\% & 21.1\% \\
-% docs/venue-coverage-bounds.md, 119 excluded Curve pool-days across 28 measured days
+% docs/findings/venue-coverage.md, 119 excluded Curve pool-days across 28 measured days
 Other volatile & 95 & \$0.045bn & 2.4\% & 4.4\% & 22.2\% \\
-% docs/venue-coverage-bounds.md, 95 excluded Curve pool-days across 28 measured days
+% docs/findings/venue-coverage.md, 95 excluded Curve pool-days across 28 measured days
 \midrule
 \multicolumn{6}{l}{\emph{Panel B: excluded share of each leg's volume, by year}} \\
 Year & \multicolumn{2}{r}{Native leg} & \multicolumn{2}{r}{Stable leg} & Other volatile \\
 \midrule
 2021 & \multicolumn{2}{r}{85.49\%} & \multicolumn{2}{r}{46.91\%} & 15.23\% \\
-% docs/venue-coverage-bounds.md, Curve pool-days sampled in 2021
+% docs/findings/venue-coverage.md, Curve pool-days sampled in 2021
 2022 & \multicolumn{2}{r}{68.82\%} & \multicolumn{2}{r}{30.21\%} & 50.77\% \\
-% docs/venue-coverage-bounds.md, Curve pool-days sampled in 2022
+% docs/findings/venue-coverage.md, Curve pool-days sampled in 2022
 2023 & \multicolumn{2}{r}{59.11\%} & \multicolumn{2}{r}{5.51\%} & 56.60\% \\
-% docs/venue-coverage-bounds.md, Curve pool-days sampled in 2023
+% docs/findings/venue-coverage.md, Curve pool-days sampled in 2023
 2024 & \multicolumn{2}{r}{48.24\%} & \multicolumn{2}{r}{0.94\%} & 14.38\% \\
-% docs/venue-coverage-bounds.md, Curve pool-days sampled in 2024
+% docs/findings/venue-coverage.md, Curve pool-days sampled in 2024
 2025 & \multicolumn{2}{r}{47.47\%} & \multicolumn{2}{r}{13.96\%} & 10.52\% \\
-% docs/venue-coverage-bounds.md, Curve pool-days sampled in 2025
+% docs/findings/venue-coverage.md, Curve pool-days sampled in 2025
 2026 & \multicolumn{2}{r}{60.92\%} & \multicolumn{2}{r}{9.04\%} & 20.08\% \\
-% docs/venue-coverage-bounds.md, Curve pool-days sampled in 2026
+% docs/findings/venue-coverage.md, Curve pool-days sampled in 2026
 \bottomrule
 \end{tabular}
 \exhibitnote{A pool serves the \emph{native} leg when it contains ETH or a staking derivative, the \emph{stable} leg when every token is stable, including baskets and interest-bearing wrappers, and the \emph{other volatile} leg otherwise. Stablecoin base-pool claims are classified with the underlying stable assets. The sample contains 28 measured Curve pool-days from 11 February 2020 through 28 April 2026.}
 \end{table}
 
 The exclusions are concentrated in routes involving the native asset. The excluded share of native-leg volume exceeds the stable-leg share by at least 33 percentage points in every sample year and by 54 points in 2023. Tricrypto pools pairing WBTC and WETH with a stablecoin account for \$818m, or 44.6\%, of the \$1.83bn excluded, including seven of the twelve largest excluded pool-days. These pools use CryptoSwap, so the missing coverage is concentrated where Curve supplies depth between ETH and stablecoins.
-% docs/venue-coverage-bounds.md, curve_excluded_composition.jsonl, 28 measured pool-days
+% docs/findings/venue-coverage.md, curve_excluded_composition.jsonl, 28 measured pool-days
 
 SushiSwap v3 is omitted from the route-cost comparison because its historical records lack the pool's root price, in-range liquidity, and tick spacing. Its reserves are distributed across ticks, and the balance and weight fields exposed by the common schema do not describe that invariant. The exchange accounts for 0.016\% of volume among the seven exchanges used for route costs over the full sample and 0.176\% in 2026. Across fourteen sampled days, only 4.1\% of its volume occurs on token pairs unavailable on another included exchange, never more than \$37,609 on one day.
-% docs/venue-coverage-bounds.md, sushiswap_v3_schema_probe.jsonl and sushiswap_v3_pair_overlap.jsonl, 14 sampled days
+% docs/findings/venue-coverage.md, sushiswap_v3_schema_probe.jsonl and sushiswap_v3_pair_overlap.jsonl, 14 sampled days
 
 Balancer accounts for 3.9\% of measured venue volume over the full sample and 8.8\% at its 2023 peak. Table~\ref{tab:app:weighted} validates selected weighted pools. Linear and boosted pools remain outside the quoter. Of 29 sampled composable-stable pools, 23 reduce to two external tokens after removing the pool's own share token, but pricing them also requires historical rate-provider states absent from the source. The priced Balancer sample is therefore confined to weighted pools whose historical state can be reconstructed and whose realised trades are reproduced at one of the tiers of Equation~\eqref{eq:weighted-fit}.
-% docs/venue-coverage-bounds.md, venue_volume_by_year.jsonl, 400 sampled days; docs/research-workflow.md, Balancer family audit
+% docs/findings/venue-coverage.md, venue_volume_by_year.jsonl, 400 sampled days; README.md, Balancer family audit
 
 \section{Round-trip exclusion}
 \label{app:roundtrip}

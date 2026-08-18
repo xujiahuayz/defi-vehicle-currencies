@@ -1,6 +1,0 @@
-{"arm": "turnover_holder_cheapest", "censored_share": NaN, "days_measured": 60, "mean_days": 0.11009174311926606, "median_days": NaN, "spells": 109, "wedge_bps": 30.0}
-{"arm": "turnover_holder_dominated", "censored_share": NaN, "days_measured": 60, "mean_days": 0.12880886426592797, "median_days": NaN, "spells": 1444, "wedge_bps": 30.0}
-{"arm": "turnover_hazard_ratio", "censored_share": NaN, "days_measured": 60, "mean_days": 1.1700138504155124, "median_days": NaN, "spells": 1553, "wedge_bps": 30.0}
-{"arm": "displacement", "censored_share": 0.9272727272727272, "days_measured": 60, "mean_days": 23.9, "median_days": 18.5, "spells": 110, "wedge_bps": 30.0}
-{"arm": "retention", "censored_share": 0.3217993079584775, "days_measured": 60, "mean_days": 5.740484429065744, "median_days": 2.0, "spells": 289, "wedge_bps": 30.0}
-{"arm": "DIFFERENCE", "censored_share": NaN, "days_measured": 60, "mean_days": -18.159515570934254, "median_days": NaN, "spells": 0, "wedge_bps": 30.0}

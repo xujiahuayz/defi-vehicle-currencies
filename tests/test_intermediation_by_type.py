@@ -7,7 +7,7 @@ from tempfile import TemporaryDirectory
 import pandas as pd
 
 from ddvc.asset_types import STABLE, WETH
-from scripts.build_intermediation_by_type import (
+from scripts.process.build_intermediation_by_type import (
     annual_composition,
     bounded_workers,
     complexity_rival_tests,

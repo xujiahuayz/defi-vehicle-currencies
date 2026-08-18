@@ -1,127 +1,157 @@
 # The Making of Dominant Vehicle Currencies
 
-This repository is the durable, provider-agnostic home of the DeFi
-vehicle-currencies project: data acquisition, reconstruction, analysis, the JFE
-paper, and the presentation deck.
+This repository contains one empirical finance project: the data, analysis,
+Journal of Financial Economics paper, and presentation deck on how vehicle
+currencies form and change in decentralized exchange.
 
-## Continuity contract
+The economic question is whether an intermediary asset remains dominant only
+because market design requires it, or because liquidity and trading activity
+make its role self-reinforcing after the requirement disappears. For a routed
+trade `A → B → C`, this project calls `A → C` the **ultimate trade** or
+**ultimate pair** and calls `A → B` and `B → C` the **atomic trades** or
+**atomic pairs**. Code, tables, figures, paper, and slides should use those terms
+whenever the distinction matters.
 
-No model, provider, terminal session, or chat transcript owns project state. An
-executor may change halfway through a task. Continuity comes from the repository:
-
-1. `README.md` owns operating rules.
-2. `docs/findings-freeze.md` states the live workflow position and blockers.
-3. `docs/specification-lock.json` names the executable claims and their inputs and
-   outputs.
-4. `logs/grind-ledger.md` records completed work; `logs/grind-queue.md` contains
-   remaining work.
-5. Git commits and `origin/main` hand off code and documentation. Gitignored data
-   move separately by relative path and byte size.
-
-Compatibility files such as `AGENTS.md` contain pointers only. Do not put unique
-instructions in a provider-specific file.
-
-## Repository ownership and the `ddvc` name
-
-There is one project checkout on each machine: `defi-vehicle-currencies`. The
-retired `defi-dominant-currency` checkout has been removed from the projects
-directory; its Git history remains on its remote and its recovered raw files live
-under `data/raw/archive/`. The `src/ddvc/` directory is the project's Python
-package namespace (short for the project's internal name), not an additional DVC
-repository or data store. A directory named
-`defi-vehicle-currencies-backups` under the raw archive is retained source data,
-not a second checkout. Studio is the canonical raw-data owner; M3 is the
-build/review checkout and need not hold a byte-for-byte copy of Studio's full
-raw boundary.
-
-## Reproducible research pipeline
+## Current position
 
 ```text
-fetch script -> retained data/raw/
-             -> process script -> data/processed/
-             -> analysis script -> output/exhibits/
-             -> tabulate/plot script -> output/tables/ or output/figures/
-             -> paper/ and deck/
+question and literature                 done
+  → definitions and estimands           done
+  → retained raw data                   Studio is canonical owner; raw sync active
+  → cleaned and analysis-ready data     ready for the two active claim families
+  → registered analysis                 done; findings check green
+  → JFE paper                           builds as a clean 47-page PDF
+  → presentation deck                   builds as a clean 36-page PDF
+  → final repository cleanup and sync   in progress
 ```
 
-Every paper/deck table and plot has one script owner. Every processed panel is
-rebuildable from retained raw data. Raw data are regular files inside this
-repository, never symlinks into a retired checkout. Ethereum RPC headers and
-receipts fetched by processing scripts live under `data/raw/ethereum/rpc_cache/`,
-not in a hidden Git runtime directory. Scratch data with no downstream consumer
-are disposable.
+The detailed claim state is in [`docs/findings/`](docs/findings/README.md). The
+two active confirmatory families are the vehicle-role transition and V2
+deposited-capital predictability. Routing maturation, direct-cost dominance,
+rent incidence, and persistence are supporting, withheld, or future work; they
+do not block the current paper and deck.
 
-The normal research path does not require cryptographic content hashes, fingerprint
-registries, certificate chains, or multiple release namespaces. Direct paths,
-schemas, row checks, byte sizes, timestamps, tests, and successful rebuilds are
-enough. Older release helpers still understand hash-bearing sidecars for
-compatibility, but they are not a build gate and no new provenance layer should be
-introduced.
+## Scientific workflow
 
-The detailed path map and cleanup rules are in
-[`docs/repository-data-map.md`](docs/repository-data-map.md).
+```text
+scripts/fetch/   → data/raw/
+scripts/process/ → data/processed/ and data/unified/
+scripts/analyze/ → output/exhibits/
+                  ↘ scripts/plot/     → output/figures/
+                  ↘ scripts/tabulate/ → output/tables/ and generated TeX values
+                                          ↓
+                                      paper/ and deck/
 
-## Start or resume work
-
-Read only what the task needs:
-
-```bash
-tail -80 logs/grind-ledger.md
-rg -n '^\s*- \[ \]' logs/grind-queue.md
-sed -n '1,180p' docs/findings-freeze.md
-./scripts/run scripts/research_action_preflight.py <data|analysis|deck|prose>
+scripts/verify/ checks every stage but does not create a parallel data layer.
 ```
 
-Then run the bounded readiness gate:
+The folder boundary is substantive:
 
-```bash
-./scripts/run scripts/audit_findings_freeze.py
-```
+- `fetch` obtains source records and writes only retained raw evidence.
+- `process` cleans, harmonizes, reconstructs, or aggregates raw records into
+  analysis-ready data. It owns every raw-data read outside acquisition.
+- `analyze` consumes processed or unified data and produces estimates, summary
+  statistics, decompositions, and machine-readable exhibit values.
+- `plot` and `tabulate` render analysis outputs. They do not estimate models or
+  read raw data.
+- `verify` audits schemas, coverage, numerical validity, prose, and deliverable
+  conformance. Verification is orthogonal to the production chain.
+- `utils` contains only shared operational commands; reusable scientific logic
+  belongs in `src/ddvc/`.
 
-The current paper and deck are the only deliverables:
+Every quantitative object in the paper or deck therefore has one path back to
+retained raw data. Raw data are never deleted as cleanup, and are never symlinked
+to a retired checkout. Scratch files and derived outputs with no consumer may be
+removed because their producer can rebuild them.
 
-```bash
-(cd paper && latexmk -pdf -interaction=nonstopmode main.tex)
-(cd deck && latexmk -pdf -interaction=nonstopmode main.tex)
-```
+Reproducibility here means direct script-owned paths, declared schemas, row and
+coverage checks, tests, and successful rebuilds. Git records source history and
+the current READMEs record scientific decisions.
 
-Inspect changed PDF pages and check build logs before committing.
+## Scientific contracts
 
-## Repository layout
+- Directed token flow defines ultimate endpoints, atomic legs, intermediaries,
+  and route topology. Dollar values may weight or audit a route but do not define
+  it.
+- Vehicle status is binary; vehicle dominance is a continuous share. Cost
+  domination is a different object and is never called vehicle dominance.
+- Counts and values answer different questions and are reported separately.
+- Route-flow coherence and quote-notional proximity are separate support axes.
+- Deposited capital, liquidity-supply flows, inventory, local depth, executable
+  depth, and provider returns are distinct quantities.
+- Architecture availability, adoption, market formation, substitution, exit,
+  reversal, and hysteresis are distinct events. Calendar time is not a substitute
+  for architecture.
+- Descriptive comparisons remain descriptive. Predictive capital associations
+  are not causal feedback, and a global protocol launch alone is not a treatment
+  design.
+- A paper-facing estimate states its unit, denominator, comparison set,
+  conditioning or fixed effects, uncertainty convention, support, strongest
+  rival, and economic magnitude.
+- A blocked or withheld family never enters the abstract, headline tables, or
+  deck as an established result.
 
-- `src/ddvc/`: reusable acquisition, route/state, pricing, transformation and
-  estimator logic.
-- `scripts/`: fetching, processing, analysis, table, plot, model and verification
-  entry points.
-- `data/raw/`: retained source evidence.
-- `data/processed/`: analysis-ready panels.
-- `output/`: generated exhibits, tables and figures.
-- `literature/`: bibliography, admitted sources, extracts and evidence notes.
-- `docs/`: current scientific decisions, specification, workflow state and reviews.
-- `paper/`, `deck/`: the single canonical manuscript and presentation.
-- `tests/`: bounded code and scientific-contract checks.
+## Repository map
 
-Local folder READMEs contain only folder-specific details and point back here.
+| Path | Contents |
+|---|---|
+| `scripts/` | Executable entry points; `fetch/`, `process/`, `analyze/`, `plot/`, `tabulate/`, `verify/`, and `utils/` are mapped in [`scripts/README.md`](scripts/README.md). |
+| `src/` | Reusable Python package; `src/ddvc/fetch/` owns acquisition logic, `src/ddvc/reconstruct/` route reconstruction, and `src/ddvc/analysis/` estimators. See [`src/README.md`](src/README.md). |
+| `data/` | `raw/` retained source evidence, `unified/` reconstructed routes, `processed/` analysis-ready panels, and `interim/` disposable checkpoints. See [`data/README.md`](data/README.md). |
+| `output/` | `exhibits/` machine-readable results, `tables/` and `figures/` publication renderings, and `live/` interactive renderings. See [`output/README.md`](output/README.md). |
+| `paper/` | `main.tex`, generated `main.pdf`, and authored `sections/`. See [`paper/README.md`](paper/README.md). |
+| `deck/` | `main.tex`, generated `main.pdf`, authored `sections/`, presentation-only `assets/`, and `density-ledger.json`. See [`deck/README.md`](deck/README.md). |
+| `docs/` | Current `findings/`, `research/`, `specifications/`, and `acquisition/` detail. See [`docs/README.md`](docs/README.md). |
+| `literature/` | Bibliography, admission ledger, `source-notes/`, searchable `text/`, local `papers/`, and `reviews/`. See [`literature/README.md`](literature/README.md). |
+| `tests/` | Unit, integration, scientific-contract, paper, and deck tests. See [`tests/README.md`](tests/README.md). |
+No model, provider, terminal session, or chat transcript owns project state.
+Compatibility files such as `AGENTS.md` or `CLAUDE.md`, if present, are pointers
+only and may not contain unique project instructions.
 
-## Environment and tests
+## Build and test
+
+Install the environment once:
 
 ```bash
 uv sync --extra dev
-./scripts/run -m unittest discover -s tests
 ```
 
-Run commands through `./scripts/run` so they use this checkout’s package source.
-The working sample ends on 2026-06-30 UTC, expressed as the half-open boundary
+Run commands through the stable wrapper so they use this checkout's package:
+
+```bash
+./scripts/run scripts/verify/audit_findings_freeze.py
+./scripts/run -m unittest discover -s tests
+(cd paper && latexmk -pdf -interaction=nonstopmode main.tex)
+(cd deck && latexmk -pdf -interaction=nonstopmode main.tex)
+./scripts/run scripts/verify/check_deliverable_conformance.py
+```
+
+Inspect changed PDF pages and the corresponding LaTeX logs before committing.
+The working sample ends on 2026-06-30 UTC, represented by the half-open boundary
 `date < 2026-07-01`.
+
+## Data ownership and synchronization
+
+There is one checkout per machine, always named `defi-vehicle-currencies`.
+Studio owns the complete retained raw boundary. M3 is the interactive analysis,
+TeX, and review host and may hold a smaller raw subset. Synchronization uses
+relative paths and file sizes and never treats the smaller M3 corpus as evidence
+that Studio data should be removed.
+
+The retired `defi-dominant-currency` checkout is no longer a live project.
+Recovered raw files are retained under `data/raw/archive/`; its Git history stays
+on its remote. The package name `src/ddvc/` is an internal Python namespace, not
+a second repository or DVC store.
 
 ## Acquisition
 
 ```bash
-./scripts/run scripts/fetch_raw_market_data.py plan --dex all
+./scripts/run scripts/fetch/fetch_raw_market_data.py plan --dex all
 GRAPH_API_KEYS=... DUNE_API_KEYS=... \
-  ./scripts/run scripts/fetch_raw_market_data.py fetch \
+  ./scripts/run scripts/fetch/fetch_raw_market_data.py fetch \
   --dex all --start genesis --end 2026-07-01
 ```
 
-The Graph reads `GRAPH_API_KEYS`; Dune reads `DUNE_API_KEYS`. Secrets stay outside
-Git. `src/ddvc/fetch/sources.py` is the executable provider/protocol map.
+Secrets stay outside Git. The executable source/provider map is
+`src/ddvc/fetch/sources.py`; acquisition-specific records are indexed in
+[`docs/acquisition/README.md`](docs/acquisition/README.md).

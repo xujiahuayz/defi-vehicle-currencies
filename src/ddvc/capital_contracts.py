@@ -8,8 +8,8 @@ from dataclasses import dataclass
 MAX_POOL_CAPITAL_USD = 10_000_000_000.0
 CAPITAL_CURRENT_COLUMN = "capital_usd"
 CAPITAL_COLUMN = "capital_usd_lagged"
-CAPITAL_SOURCE = "certified_hourly_reserve_snapshot"
-CP_CAPITAL_STATE_GENERATION = "certified_hourly_reserve_snapshot_v1"
+CAPITAL_SOURCE = "validated_hourly_reserve_snapshot"
+CP_CAPITAL_STATE_GENERATION = "validated_hourly_reserve_snapshot_v1"
 CURRENT_CAPITAL_VALIDATION_STATUS = "exact_state_current"
 RETURN_CAPITAL_VALIDATION_STATUS = "exact_state_prior_calendar"
 VALID_CAPITAL_STATUSES = frozenset(
@@ -40,9 +40,9 @@ READY_CAPITAL_CONTRACTS = {
             "last admissible hourly reserves valued from a separately validated address-day price anchor"
         ),
         capital_sources=(CAPITAL_SOURCE,),
-        materializer="scripts.build_pool_capital_panel:main",
+        materializer="scripts.process.build_pool_capital_panel:main",
         validation=(
-            "certified_last_hourly_reserves_with_audited_identity_decimals_"
+            "validated_last_hourly_reserves_with_audited_identity_decimals_"
             "independent_prices_and_exact_prior_calendar_lag"
         ),
         admissible_uses=("descriptive", "return"),

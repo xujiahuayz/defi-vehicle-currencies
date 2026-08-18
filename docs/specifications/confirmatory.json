@@ -1,0 +1,747 @@
+{
+  "adjudications": [
+    {
+      "citations": [
+        {
+          "location": "Section III and Table I, journal pp. 335-338",
+          "source_key": "LeharParlour2024Uniswap"
+        },
+        {
+          "location": "Appendix C, journal pp. 365-367",
+          "source_key": "LeharParlour2024Uniswap"
+        }
+      ],
+      "decision": "episode_count_primary_value_secondary",
+      "id": "vehicle_use_weighting",
+      "reason": "The estimand is the frequency of intermediary choice and topology is complete, while dollar support is type-dependent. Lehar and Parlour separately report transaction counts and volume, and show that dollar volume requires an explicit cross-market price construction."
+    },
+    {
+      "citations": [
+        {
+          "location": "LVR definition and external-market price process, Sections 2-3",
+          "source_key": "MilionisMoallemiRoughgardenZhang2022LVR"
+        },
+        {
+          "location": "Section IV.B, Figure 12, journal pp. 348-350",
+          "source_key": "LeharParlour2024Uniswap"
+        }
+      ],
+      "decision": "withhold_until_external_intraday_reference_prices",
+      "id": "liquidity_rent_confirmatory_perimeter",
+      "reason": "The saved LVR contract requires an independent external price path; own-pool variance cannot identify LVR. The required exact address-resolved intraday panel is absent, so finishability demotes this claim instead of waiting or substituting a proxy."
+    }
+  ],
+  "analytical_choices_status": "registered_after_exploration",
+  "claims": [
+    {
+      "admissible_interpretation": "vehicle composition rotates toward stable assets; count leadership is not sustained before 2026-Q2 and the backing mechanism is not homogeneous",
+      "analysis_ready_panel": "Four direct processed tables cover the exact released route calendar. The choices table has one ordered-endpoint, date, stable-or-native candidate, integration-scope, and ordered-venue-sequence cell with route counts plus raw, within-2x, and within-20-percent value support. The component-keyed choice-audit table independently reconciles every aggregate choice and its transaction multiplicity. The pair-support table reconciles source components to clean pair classifications and quarantined provider-coordinate collisions, carries unique-transaction and component-multiplicity diagnostics, and reports native and stable route counts plus matched within-20-percent counts and values within the conditional native-plus-stable choice set. These conditional native-plus-stable values are not a strict-value measure of the full market. The exclusions table records every route outside the primary choice object in mutually exclusive reason cells and retains component-keyed collision evidence with count, observed absolute leg-value, time, and venue bounds.",
+      "dependent_variable": "stable share of native-plus-stable conditional choice mass measured by route count, matched within-20-percent route count, and within-20-percent intermediation value",
+      "e1_design": {
+        "market_incidence_decomposition": {
+          "calendar_support": "month-days observed in both endpoint years",
+          "common_role_definition": "an ordered endpoint pair with positive primary-choice mass in both endpoint years",
+          "comparison_years": [
+            2024,
+            2026
+          ],
+          "components": [
+            "market_pair_support_bridge",
+            "vehicle_role_support_bridge",
+            "market_activity_reweighting",
+            "vehicle_incidence_reweighting",
+            "within_pair_stable_share"
+          ],
+          "forbidden_interpretations": "architecture availability, opportunity-set change, demand, adoption, preference, routing-search efficiency or causal treatment",
+          "formula": "First bridge the all-pair stable-share change to pairs with positive M in both years and then to pairs with positive primary-choice mass in both years; these two differences are market_pair_support_bridge and vehicle_role_support_bridge. On common-role pairs define F(M,I,s)=sum_p M_p I_p s_p / sum_p M_p I_p. market_activity_reweighting, vehicle_incidence_reweighting and within_pair_stable_share are each factor's average marginal contribution across all six permutations taking F from the 2024 factor vector to the 2026 factor vector.",
+          "formula_id": "shapley_market_incidence_stable_bridge_v1",
+          "id": "e1_3_market_incidence_bridge",
+          "identity": "delta_total = market_pair_support_bridge + vehicle_role_support_bridge + market_activity_reweighting + vehicle_incidence_reweighting + within_pair_stable_share",
+          "identity_absolute_tolerance": 1.0e-12,
+          "market_activity": "M_p,y equals released market_route_count aggregated over the common calendar and measures observed market-route activity, not availability or a feasible opportunity set",
+          "measure_ids": [
+            "count_share"
+          ],
+          "pair_universe": "union of ordered endpoint pairs with positive native-plus-stable primary-choice mass in either endpoint year",
+          "reporting": [
+            "year-specific support mass and stable share by support class",
+            "established-market stable-share change",
+            "common-role Shapley components and exact bridge identity"
+          ],
+          "role_id": "descriptive_observed_activity_and_realised_incidence_companion",
+          "stable_share": "s_p,y equals stable_choice_route_count divided by primary_choice_route_count conditional on a positive realised vehicle role",
+          "support_classification": [
+            "market_pair_support_turnover when the other endpoint year has zero M",
+            "vehicle_role_support_turnover_established_market when the other endpoint year has positive M and zero primary-choice mass",
+            "common_vehicle_role when primary-choice mass is positive in both endpoint years"
+          ],
+          "target_id": "raw_pooled_count_share_change",
+          "vehicle_incidence": "I_p,y equals primary_choice_route_count divided by M_p,y and measures realised native-or-stable vehicle-route incidence, not adoption, preference or search"
+        },
+        "pair_decomposition": {
+          "calendar_aggregation_id": "common_month_days",
+          "calendar_support": "month-days observed in both endpoint years",
+          "candidate_types": [
+            "native",
+            "stable"
+          ],
+          "common_pair_definition": "an ordered endpoint pair with positive selected-measure native-plus-stable mass in both endpoint years after restricting to common month-days and pooling integration scopes",
+          "comparison_years": [
+            2024,
+            2026
+          ],
+          "components": [
+            "within_common",
+            "common_pair_reweighting",
+            "common_support_mass",
+            "exclusive_pair_contribution"
+          ],
+          "denominator_scope": "native-plus-stable conditional choice mass for the selected measure",
+          "exclusive_pair_definition": "an ordered endpoint pair with positive selected-measure native-plus-stable mass in exactly one endpoint year after restricting to common month-days and pooling integration scopes",
+          "forbidden_denominator": "full-market strict-value mass",
+          "formula": "For each measure, let W_y be common-pair mass as a share of total native-plus-stable conditional mass, E_y = 1 - W_y, q_p,y the weight of common pair p within common-pair mass, s_p,y its stable share, S_C,y = sum_p q_p,y s_p,y, and S_E,y the stable share within year-exclusive-pair mass. Using bars for endpoint-year midpoints: within_common = W_bar sum_p q_p_bar (s_p,2026 - s_p,2024); common_pair_reweighting = W_bar sum_p s_p_bar (q_p,2026 - q_p,2024); common_support_mass = (S_C_bar - S_E_bar) (W_2026 - W_2024); exclusive_pair_contribution = E_bar (S_E,2026 - S_E,2024)",
+          "formula_id": "midpoint_common_exclusive_support_v1",
+          "id": "e1_2_conditional_pair_decomposition",
+          "identity": "delta_total = within_common + common_pair_reweighting + common_support_mass + exclusive_pair_contribution",
+          "identity_absolute_tolerance": 1.0e-12,
+          "integration_scope_aggregation_id": "pooled_primary_split_secondary",
+          "measure_ids": [
+            "count_share",
+            "matched_strict_count_share",
+            "strict_intermediation_value_share"
+          ],
+          "pair_membership_id": "measure_specific; pooled reporting assigns membership after summing integration scopes and scope-specific reporting assigns membership within each scope",
+          "pair_universe": "union of ordered endpoint pairs with positive native-plus-stable conditional mass in either endpoint year on the common calendar",
+          "reporting": [
+            "pooled integration scopes",
+            "single-venue and cross-venue decomposition"
+          ],
+          "role_id": "descriptive_companion_not_wls_coefficient_decomposition",
+          "target_id": "raw_pooled_conditional_stable_share_change",
+          "zero_exclusive_mass_rule": "set S_E,y to zero when E_y is zero, retain the exact identity, and report common-support-mass and exclusive-contribution terms jointly because their separate values then depend on this normalization"
+        },
+        "pair_panel": {
+          "candidate_types": [
+            "native",
+            "stable"
+          ],
+          "cell_keys": [
+            "src",
+            "tgt",
+            "date",
+            "integration_scope"
+          ],
+          "clusters": [
+            "ordered_endpoint_pair",
+            "calendar_date"
+          ],
+          "coefficient": "indicator for 2026 with 2024 omitted",
+          "common_support_keys": [
+            "src",
+            "tgt",
+            "month_day",
+            "integration_scope"
+          ],
+          "comparison_years": [
+            2024,
+            2026
+          ],
+          "effective_cell_weight": "with two endpoint-year observations per saturated cell, denominator-mass WLS weights the within-cell 2026-minus-2024 difference in proportion to w_2024 times w_2026 divided by (w_2024 plus w_2026)",
+          "estimator_id": "weighted_stable_share_saturated_pair_month_day_scope_fe_v1",
+          "fixed_effect_cell_keys": [
+            "src",
+            "tgt",
+            "month_day",
+            "integration_scope"
+          ],
+          "fixed_effects": [
+            "ordered_endpoint_pair_x_month_day_x_integration_scope"
+          ],
+          "id": "e1_1_pair_panel",
+          "multiplicity": {
+            "family": [
+              "count_share",
+              "matched_strict_count_share",
+              "strict_intermediation_value_share"
+            ],
+            "method": "Holm"
+          },
+          "primary_measures": [
+            {
+              "id": "count_share",
+              "source_column": "route_count",
+              "support": "all included native-plus-stable choices",
+              "weight": "native-plus-stable route_count"
+            },
+            {
+              "id": "matched_strict_count_share",
+              "source_column": "within_20pct_routes",
+              "support": "included native-plus-stable choices with within-20-percent input-output valuation coherence",
+              "weight": "native-plus-stable within_20pct_routes"
+            },
+            {
+              "id": "strict_intermediation_value_share",
+              "source_column": "within_20pct_value_usd",
+              "support": "included native-plus-stable choices with within-20-percent input-output valuation coherence",
+              "weight": "native-plus-stable within_20pct_value_usd"
+            }
+          ],
+          "stable_share_formula": "stable measure mass divided by native-plus-stable measure mass within each cell"
+        }
+      },
+      "estimand": "2026-minus-2024 change in stable share within native-plus-stable exact two-leg intermediary choices inside ordered-endpoint-pair, common-month-day, and integration-scope cells, followed by an exact descriptive decomposition of the raw pooled aggregate change into within-common-pair, common-pair-reweighting, common-support-mass, and exclusive-pair-contribution terms",
+      "execution_gate": "open",
+      "falsifier": "the increase disappears within fixed opportunity, integration, complexity, or routing-search-efficiency cells",
+      "forbidden_interpretation": "monotone stable transition, persistent replacement before it is observed, or aggregator causality",
+      "id": "vehicle_transition",
+      "inference": "weighted least squares on pair-date-integration-scope shares with saturated ordered-pair by month-day by integration-scope cell fixed effects; denominator mass is the observation weight; two-way CR1 clustering by ordered endpoint pair and calendar date; Holm adjustment across exactly the three primary 2026 coefficients",
+      "inputs": [
+        "data/processed/endpoint_candidate_choices.parquet",
+        "data/processed/endpoint_candidate_choice_audit.parquet",
+        "data/processed/endpoint_candidate_pair_support.parquet",
+        "data/processed/endpoint_candidate_exclusions.parquet"
+      ],
+      "mandatory_alternatives": {
+        "backing": [
+          "fiat reserve",
+          "on-chain collateralized",
+          "mixed including real-world assets",
+          "synthetic",
+          "transition"
+        ],
+        "dependent_variable": [
+          "episode count share",
+          "within-20-percent matched episode count share",
+          "within-20-percent intermediation-value share"
+        ],
+        "dominance_extension": [
+          "vehicle excess-use ratio"
+        ],
+        "support": [
+          "full venue perimeter",
+          "balanced five-venue perimeter",
+          "all intermediary episodes",
+          "single venue",
+          "cross venue",
+          "two legs",
+          "more than two legs"
+        ],
+        "transformation": [
+          "share level",
+          "log-odds on days strictly inside zero and one"
+        ]
+      },
+      "outlier_treatment": "none for counts; canonical endpoint round trips excluded by route definition",
+      "outputs": [
+        "output/exhibits/vehicle_transition_pair_panel.parquet",
+        "output/exhibits/vehicle_transition_pair_decomposition.jsonl",
+        "output/exhibits/vehicle_transition_pair_support.jsonl",
+        "output/exhibits/vehicle_transition_pair_contributions.parquet",
+        "output/exhibits/vehicle_transition_pair_fixed_effects.jsonl"
+      ],
+      "primary_comparison": "2024 versus 2026",
+      "registered_specifications": [
+        {
+          "covers": [
+            "mandatory_alternatives/dependent_variable/0"
+          ],
+          "kind": "primary",
+          "parameters": {
+            "check_id": "mandatory_alternatives/dependent_variable/0",
+            "registered_choice": "episode count share"
+          },
+          "spec_id": "vehicle_transition-registered-01"
+        },
+        {
+          "covers": [
+            "mandatory_alternatives/dependent_variable/1"
+          ],
+          "kind": "alternative",
+          "parameters": {
+            "check_id": "mandatory_alternatives/dependent_variable/1",
+            "registered_choice": "within-20-percent matched episode count share"
+          },
+          "spec_id": "vehicle_transition-registered-02"
+        },
+        {
+          "covers": [
+            "mandatory_alternatives/dependent_variable/2"
+          ],
+          "kind": "alternative",
+          "parameters": {
+            "check_id": "mandatory_alternatives/dependent_variable/2",
+            "registered_choice": "within-20-percent intermediation-value share"
+          },
+          "spec_id": "vehicle_transition-registered-03"
+        },
+        {
+          "covers": [
+            "mandatory_alternatives/dominance_extension/0"
+          ],
+          "kind": "alternative",
+          "parameters": {
+            "check_id": "mandatory_alternatives/dominance_extension/0",
+            "registered_choice": "vehicle excess-use ratio"
+          },
+          "spec_id": "vehicle_transition-registered-04"
+        },
+        {
+          "covers": [
+            "mandatory_alternatives/transformation/0"
+          ],
+          "kind": "alternative",
+          "parameters": {
+            "check_id": "mandatory_alternatives/transformation/0",
+            "registered_choice": "share level"
+          },
+          "spec_id": "vehicle_transition-registered-05"
+        },
+        {
+          "covers": [
+            "mandatory_alternatives/transformation/1"
+          ],
+          "kind": "alternative",
+          "parameters": {
+            "check_id": "mandatory_alternatives/transformation/1",
+            "registered_choice": "log-odds on days strictly inside zero and one"
+          },
+          "spec_id": "vehicle_transition-registered-06"
+        },
+        {
+          "covers": [
+            "mandatory_alternatives/support/0"
+          ],
+          "kind": "alternative",
+          "parameters": {
+            "check_id": "mandatory_alternatives/support/0",
+            "registered_choice": "full venue perimeter"
+          },
+          "spec_id": "vehicle_transition-registered-07"
+        },
+        {
+          "covers": [
+            "mandatory_alternatives/support/1"
+          ],
+          "kind": "alternative",
+          "parameters": {
+            "check_id": "mandatory_alternatives/support/1",
+            "registered_choice": "balanced five-venue perimeter"
+          },
+          "spec_id": "vehicle_transition-registered-08"
+        },
+        {
+          "covers": [
+            "mandatory_alternatives/support/2"
+          ],
+          "kind": "alternative",
+          "parameters": {
+            "check_id": "mandatory_alternatives/support/2",
+            "registered_choice": "all intermediary episodes"
+          },
+          "spec_id": "vehicle_transition-registered-09"
+        },
+        {
+          "covers": [
+            "mandatory_alternatives/support/3"
+          ],
+          "kind": "alternative",
+          "parameters": {
+            "check_id": "mandatory_alternatives/support/3",
+            "registered_choice": "single venue"
+          },
+          "spec_id": "vehicle_transition-registered-10"
+        },
+        {
+          "covers": [
+            "mandatory_alternatives/support/4"
+          ],
+          "kind": "alternative",
+          "parameters": {
+            "check_id": "mandatory_alternatives/support/4",
+            "registered_choice": "cross venue"
+          },
+          "spec_id": "vehicle_transition-registered-11"
+        },
+        {
+          "covers": [
+            "mandatory_alternatives/support/5"
+          ],
+          "kind": "alternative",
+          "parameters": {
+            "check_id": "mandatory_alternatives/support/5",
+            "registered_choice": "two legs"
+          },
+          "spec_id": "vehicle_transition-registered-12"
+        },
+        {
+          "covers": [
+            "mandatory_alternatives/support/6"
+          ],
+          "kind": "alternative",
+          "parameters": {
+            "check_id": "mandatory_alternatives/support/6",
+            "registered_choice": "more than two legs"
+          },
+          "spec_id": "vehicle_transition-registered-13"
+        },
+        {
+          "covers": [
+            "mandatory_alternatives/backing/0"
+          ],
+          "kind": "alternative",
+          "parameters": {
+            "check_id": "mandatory_alternatives/backing/0",
+            "registered_choice": "fiat reserve"
+          },
+          "spec_id": "vehicle_transition-registered-14"
+        },
+        {
+          "covers": [
+            "mandatory_alternatives/backing/1"
+          ],
+          "kind": "alternative",
+          "parameters": {
+            "check_id": "mandatory_alternatives/backing/1",
+            "registered_choice": "on-chain collateralized"
+          },
+          "spec_id": "vehicle_transition-registered-15"
+        },
+        {
+          "covers": [
+            "mandatory_alternatives/backing/2"
+          ],
+          "kind": "alternative",
+          "parameters": {
+            "check_id": "mandatory_alternatives/backing/2",
+            "registered_choice": "mixed including real-world assets"
+          },
+          "spec_id": "vehicle_transition-registered-16"
+        },
+        {
+          "covers": [
+            "mandatory_alternatives/backing/3"
+          ],
+          "kind": "alternative",
+          "parameters": {
+            "check_id": "mandatory_alternatives/backing/3",
+            "registered_choice": "synthetic"
+          },
+          "spec_id": "vehicle_transition-registered-17"
+        },
+        {
+          "covers": [
+            "mandatory_alternatives/backing/4"
+          ],
+          "kind": "alternative",
+          "parameters": {
+            "check_id": "mandatory_alternatives/backing/4",
+            "registered_choice": "transition"
+          },
+          "spec_id": "vehicle_transition-registered-18"
+        },
+        {
+          "covers": [
+            "falsifier"
+          ],
+          "kind": "falsifier",
+          "parameters": {
+            "falsifier": "the increase disappears within fixed opportunity, integration, complexity, or routing-search-efficiency cells"
+          },
+          "spec_id": "vehicle_transition-registered-falsifier"
+        }
+      ],
+      "role": "lead finding",
+      "sample": "topology-valid clean-leg routes with exactly two sequential pool legs and one stable or native intermediary on the full venue perimeter. Each primary measure keeps ordered-endpoint-pair, month-day, and integration-scope cells with positive native-plus-stable conditional mass in both 2024 and 2026; unsupported strict-count or strict-value cells remain missing for that measure and never inherit count support",
+      "status": "registered_primary",
+      "transformation": "level share and percentage-point change",
+      "unit": "ordered endpoint pair by calendar date by integration scope"
+    },
+    {
+      "admissible_interpretation": "vehicle use and V2-family deposited capital exhibit temporally ordered bidirectional predictability",
+      "analysis_ready_outputs": [
+        "data/processed/liquidity_capital_v2_candidate_day.parquet",
+        "data/processed/liquidity_capital_v2_exact_horizons.parquet"
+      ],
+      "calendar_perimeters": [
+        "full V2-family measurement calendar as the sole primary adjudication sample",
+        "pre-Uniswap-V3-launch V2-family subsample as heterogeneity only",
+        "post-Uniswap-V3-launch V2-family subsample as heterogeneity only"
+      ],
+      "decision_rule": "Only the full V2-family calendar adjudicates the claim; pre- and post-Uniswap-V3 estimates are heterogeneity and cannot rescue it. An exact reciprocal route/capital measure pair passes when both route-to-capital and capital-to-route coefficients are positive with Holm q below 0.05 at the same at least two of 1, 7, and 30 days and neither direction is significantly negative at 120 days. The claim passes when at least one exact pair passes and, for that route measure, both the log-dollar and five-candidate-share capital alternatives have positive median coefficients in each direction across the three primary horizons with no significantly negative primary coefficient",
+      "dependent_variable": "in the route-to-capital direction, exact-horizon change in candidate-attributed deposited capital or its five-candidate share; in the capital-to-route direction, exact-horizon change in intermediary episode share or the endpoint-supported vehicle excess-use count ratio",
+      "estimand": "whether candidate-level vehicle dominance predicts subsequent V2-family deposited-capital allocation and whether candidate-level V2-family deposited capital predicts subsequent vehicle dominance",
+      "estimators": {
+        "route_to_v2_stock": "future stock change on origin vehicle share with candidate and origin-date fixed effects",
+        "v2_stock_to_route": "future vehicle-share change on origin log capital or capital share with candidate and origin-date fixed effects"
+      },
+      "execution_gate": "open",
+      "falsifier": "vehicle-use coefficients do not predict later V2-family deposited capital, deposited-capital coefficients do not predict later vehicle use, no exact reciprocal measure pair is positive with Holm q below 0.05 in both directions at the same at least two primary horizons, or a significantly negative 120-day reversal appears in either direction",
+      "forbidden_interpretation": "causal liquidity-provider feedback, V3 capital, liquidity-provider profitability, or rent incidence",
+      "id": "liquidity_capital_v2_predictability",
+      "inference": "two-sided 95-percent intervals from candidate-date score HAC with Bartlett weights over 30 exact calendar days; scores are aggregated across candidates by date and unsupported dates inside the sample span are retained as zero-score dates. Calendar-month moving-block bootstrap and two-way candidate and origin-date clustering are sensitivities, with the five-candidate limitation stated. Holm adjustment is within perimeter and direction across the twelve primary-horizon route-measure by capital-measure coefficients",
+      "inputs": [
+        "data/processed/liquidity_capital_v2_candidate_day.parquet",
+        "data/processed/liquidity_capital_v2_exact_horizons.parquet"
+      ],
+      "long_horizon_sensitivity": 120,
+      "mandatory_alternatives": {
+        "covariance": [
+          "candidate-date score HAC with Bartlett weights over 30 exact calendar days and zero scores on unsupported dates inside the sample span",
+          "calendar-month moving-block bootstrap",
+          "two-way candidate and origin-date clustered"
+        ],
+        "response_horizon_days": [
+          1,
+          7,
+          30,
+          120
+        ],
+        "v2_calendar_perimeter": [
+          "full V2-family measurement calendar as the sole primary adjudication sample",
+          "pre-Uniswap-V3-launch V2-family subsample using the canonical protocol launch clock as heterogeneity only",
+          "post-Uniswap-V3-launch V2-family comparison as heterogeneity only"
+        ],
+        "v2_capital_stock": [
+          "log one plus candidate-attributed deposited capital dollars",
+          "five-candidate capital share"
+        ],
+        "vehicle_dominance": [
+          "intermediary episode-count share",
+          "vehicle excess-use count ratio on endpoint-supported observations"
+        ]
+      },
+      "outlier_treatment": "no quantile trimming; exact calendar links only; supported zero capital remains zero and missing dates remain missing",
+      "outputs": [
+        "output/exhibits/liquidity_capital_v2_predictability.jsonl",
+        "output/exhibits/liquidity_capital_v2_support.jsonl"
+      ],
+      "primary_horizons": [
+        1,
+        7,
+        30
+      ],
+      "reciprocal_measure_pairs": [
+        "intermediary episode share with log one plus deposited capital",
+        "intermediary episode share with five-candidate capital share",
+        "vehicle excess-use count ratio with log one plus deposited capital",
+        "vehicle excess-use count ratio with five-candidate capital share"
+      ],
+      "registered_specifications": [
+        {
+          "covers": [
+            "mandatory_alternatives/vehicle_dominance/0"
+          ],
+          "kind": "primary",
+          "parameters": {
+            "check_id": "mandatory_alternatives/vehicle_dominance/0",
+            "registered_choice": "intermediary episode-count share"
+          },
+          "spec_id": "liquidity_capital_v2_predictability-registered-01"
+        },
+        {
+          "covers": [
+            "mandatory_alternatives/vehicle_dominance/1"
+          ],
+          "kind": "alternative",
+          "parameters": {
+            "check_id": "mandatory_alternatives/vehicle_dominance/1",
+            "registered_choice": "vehicle excess-use count ratio on endpoint-supported observations"
+          },
+          "spec_id": "liquidity_capital_v2_predictability-registered-02"
+        },
+        {
+          "covers": [
+            "mandatory_alternatives/v2_capital_stock/0"
+          ],
+          "kind": "alternative",
+          "parameters": {
+            "check_id": "mandatory_alternatives/v2_capital_stock/0",
+            "registered_choice": "log one plus candidate-attributed deposited capital dollars"
+          },
+          "spec_id": "liquidity_capital_v2_predictability-registered-03"
+        },
+        {
+          "covers": [
+            "mandatory_alternatives/v2_capital_stock/1"
+          ],
+          "kind": "alternative",
+          "parameters": {
+            "check_id": "mandatory_alternatives/v2_capital_stock/1",
+            "registered_choice": "five-candidate capital share"
+          },
+          "spec_id": "liquidity_capital_v2_predictability-registered-04"
+        },
+        {
+          "covers": [
+            "mandatory_alternatives/v2_calendar_perimeter/0"
+          ],
+          "kind": "alternative",
+          "parameters": {
+            "check_id": "mandatory_alternatives/v2_calendar_perimeter/0",
+            "registered_choice": "full V2-family measurement calendar as the sole primary adjudication sample"
+          },
+          "spec_id": "liquidity_capital_v2_predictability-registered-05"
+        },
+        {
+          "covers": [
+            "mandatory_alternatives/v2_calendar_perimeter/1"
+          ],
+          "kind": "alternative",
+          "parameters": {
+            "check_id": "mandatory_alternatives/v2_calendar_perimeter/1",
+            "registered_choice": "pre-Uniswap-V3-launch V2-family subsample using the canonical protocol launch clock as heterogeneity only"
+          },
+          "spec_id": "liquidity_capital_v2_predictability-registered-06"
+        },
+        {
+          "covers": [
+            "mandatory_alternatives/v2_calendar_perimeter/2"
+          ],
+          "kind": "alternative",
+          "parameters": {
+            "check_id": "mandatory_alternatives/v2_calendar_perimeter/2",
+            "registered_choice": "post-Uniswap-V3-launch V2-family comparison as heterogeneity only"
+          },
+          "spec_id": "liquidity_capital_v2_predictability-registered-07"
+        },
+        {
+          "covers": [
+            "mandatory_alternatives/response_horizon_days/0"
+          ],
+          "kind": "alternative",
+          "parameters": {
+            "check_id": "mandatory_alternatives/response_horizon_days/0",
+            "registered_choice": 1
+          },
+          "spec_id": "liquidity_capital_v2_predictability-registered-08"
+        },
+        {
+          "covers": [
+            "mandatory_alternatives/response_horizon_days/1"
+          ],
+          "kind": "alternative",
+          "parameters": {
+            "check_id": "mandatory_alternatives/response_horizon_days/1",
+            "registered_choice": 7
+          },
+          "spec_id": "liquidity_capital_v2_predictability-registered-09"
+        },
+        {
+          "covers": [
+            "mandatory_alternatives/response_horizon_days/2"
+          ],
+          "kind": "alternative",
+          "parameters": {
+            "check_id": "mandatory_alternatives/response_horizon_days/2",
+            "registered_choice": 30
+          },
+          "spec_id": "liquidity_capital_v2_predictability-registered-10"
+        },
+        {
+          "covers": [
+            "mandatory_alternatives/response_horizon_days/3"
+          ],
+          "kind": "alternative",
+          "parameters": {
+            "check_id": "mandatory_alternatives/response_horizon_days/3",
+            "registered_choice": 120
+          },
+          "spec_id": "liquidity_capital_v2_predictability-registered-11"
+        },
+        {
+          "covers": [
+            "mandatory_alternatives/covariance/0"
+          ],
+          "kind": "alternative",
+          "parameters": {
+            "check_id": "mandatory_alternatives/covariance/0",
+            "registered_choice": "candidate-date score HAC with Bartlett weights over 30 exact calendar days and zero scores on unsupported dates inside the sample span"
+          },
+          "spec_id": "liquidity_capital_v2_predictability-registered-12"
+        },
+        {
+          "covers": [
+            "mandatory_alternatives/covariance/1"
+          ],
+          "kind": "alternative",
+          "parameters": {
+            "check_id": "mandatory_alternatives/covariance/1",
+            "registered_choice": "calendar-month moving-block bootstrap"
+          },
+          "spec_id": "liquidity_capital_v2_predictability-registered-13"
+        },
+        {
+          "covers": [
+            "mandatory_alternatives/covariance/2"
+          ],
+          "kind": "alternative",
+          "parameters": {
+            "check_id": "mandatory_alternatives/covariance/2",
+            "registered_choice": "two-way candidate and origin-date clustered"
+          },
+          "spec_id": "liquidity_capital_v2_predictability-registered-14"
+        },
+        {
+          "covers": [
+            "falsifier"
+          ],
+          "kind": "falsifier",
+          "parameters": {
+            "falsifier": "vehicle-use coefficients do not predict later V2-family deposited capital, deposited-capital coefficients do not predict later vehicle use, no exact reciprocal measure pair is positive with Holm q below 0.05 in both directions at the same at least two primary horizons, or a significantly negative 120-day reversal appears in either direction"
+          },
+          "spec_id": "liquidity_capital_v2_predictability-registered-falsifier"
+        }
+      ],
+      "response_horizon_days": [
+        1,
+        7,
+        30,
+        120
+      ],
+      "role": "independently executable V2-family liquidity-provision mechanism candidate",
+      "runner": "scripts/analyze/run_liquidity_capital_v2_predictability.py",
+      "sample": "WETH, WBTC, DAI, USDC, and USDT identified by canonical token address; topology-valid clean non-round-trip routes joined by exact calendar date to candidate-attributed Uniswap V2 and SushiSwap V2 deposited-capital stocks. The panel retains only these five candidate rows, while intermediary episode shares and vehicle excess-use count ratios preserve their upstream daily denominator over all routed tokens",
+      "status": "registered_mechanism",
+      "transformation": "changes in log one plus candidate-attributed deposited-capital dollars, five-candidate capital share, all-routed-token intermediary episode-count share, and the corresponding vehicle excess-use count ratio formed from all-routed-token intermediary and endpoint shares",
+      "unit": "candidate token address by origin calendar day"
+    },
+    {
+      "admissible_interpretation": "protocol architecture can mechanically assign a vehicle role",
+      "dependent_variable": "forced-route incidence and cross-leg ETH amount agreement",
+      "estimand": "token-to-token routes mechanically forced through ETH under the V1 exchange architecture",
+      "forbidden_interpretation": "V1 identifies the later stable transition",
+      "id": "v1_forced_vehicle",
+      "outlier_treatment": "strict one-percent ETH flow agreement reported separately",
+      "role": "institutional and architectural evidence",
+      "sample": "paired V1 exchange rows sharing a transaction hash with opposite single event arrays",
+      "status": "supporting",
+      "unit": "transaction"
+    }
+  ],
+  "global_rules": {
+    "abstract_question": "what makes a vehicle currency dominant, not what makes an asset a vehicle currency",
+    "asset_identity": "canonical contract address; symbols are labels only",
+    "audit_sampling": "one transaction-state day near the middle of each calendar month is an estimator-validation snapshot only; it does not define a monthly estimand, a persistence sample, or a structural-break sample",
+    "causal_language": "permitted only after timing, pretrend, balance, exclusion, and placebo gates pass",
+    "cost_domination": "a route-level comparison in which an available alternative returns more at the same reconstructed pre-trade state and exact input size after fees and gas; never call this dominance without the cost qualifier",
+    "dynamic_horizons": "final dynamic estimation uses daily exact-state observations linked by exact calendar dates at 1, 7, 30, and 120 days; calendar months and row shifts are not substitutes",
+    "inference": "two-sided 95 percent intervals; HAC lag 30 days for daily series; clustering at the economic assignment level for panels",
+    "intermediary_unit": "one non-endpoint asset occurrence on a topology-valid clean-leg route",
+    "missing_data": "retain topology-valid counts; unsupported values contribute zero and remain visible in coverage",
+    "multiplicity": "Holm adjustment within each claim's primary coefficient family",
+    "primary_value_support": "within-20-percent input-output valuation coherence",
+    "primary_vehicle_choice_unit": "one exact two-leg intermediary route, which has one vehicle and one vote",
+    "primary_weighting": "episode count",
+    "prose_gate": "a registered claim enters final prose only after its declared outputs are rebuilt from its declared inputs after this lock",
+    "round_trips": "canonical endpoint round trips are excluded from economic-route numerators and denominators",
+    "route_unit": "one directed economic input-to-output path keyed by transaction hash and component id",
+    "value_weighting": "secondary, with raw, within-2x, and within-20-percent support reported separately",
+    "vehicle_dominance": "continuous: the degree of vehicle use, measured by intermediary share and normalized by endpoint-demand share as the excess-use ratio",
+    "vehicle_status": "binary: an asset has vehicle status on a route if it is used as a non-endpoint intermediary"
+  },
+  "locked_at": "2026-08-17T04:13:18+00:00",
+  "paper_scope": "The making and displacement of vehicle-currency roles in Ethereum decentralised exchange",
+  "schema_version": 1,
+  "seeded_at": "2026-08-10",
+  "stage": "confirmatory"
+}

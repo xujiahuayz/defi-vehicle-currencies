@@ -1,6 +1,5 @@
 % Section 1. Introduction.
-% Status: working-paper prose. Route results use the current 2026-08-13
-% generation. LP enters as a mechanism distinction and V4 as institutional evidence.
+% Status: working-paper prose. LP enters as a mechanism distinction and V4 as institutional evidence.
 
 \section{Introduction}
 \label{sec:intro}
@@ -13,7 +12,7 @@ Testing how dominance changes requires observing the full trading path. Standard
 Decentralised exchanges split liquidity across smart-contract pools that a router can combine within one transaction. The path is observable. We reconstruct those combinations from 472 million swaps on eight Ethereum \ac{amm} deployments between February 2020 and June 2026. The reconstruction identifies the first and last assets in the observed pool sequence, every intermediary, and any movement across exchanges. It thus separates intermediary use from use at either end of the observed route. These pool-route endpoints need not coincide with the user's original instruction, a distinction we document with a transaction in Section~\ref{sec:setting}. This route-based measure complements measures of quoting, invoicing, and funding, which describe related but different currency choices \citep{FlandreauJobst2009Empirics,GopinathEtAl2020DCP,GopinathStein2021Making}.
 
 Stablecoins become substantially more prominent vehicles during the sample. Comparing the same January-through-June dates in 2024 and 2026, their share among native and stable intermediaries rises from \StableCountBase{} to \StableCountEnd{} by route count and from \StableValueBase{} to \StableValueEnd{} by dollar-weighted volume. What moves is the set of markets being traded rather than the intermediary chosen within a market. Holding the ordered source--destination pair, the calendar date, and the observed route scope fixed, stable-for-native substitution is \MatchedMarketCountChange{} by count, with a standard error of \MatchedMarketCountSE{}, and \MatchedMarketValueChange{} by value, with a standard error of \MatchedMarketValueSE{}; both intervals exclude changes of anything approaching the aggregate size. The aggregate accumulates instead from two composition margins: routed activity reallocates toward continuing pairs that already use a stablecoin intermediary, and pairs observed in only one of the two years supply the remainder. The transition is also not monotone. Native assets regain share in 2023 and 2024, stablecoins recover the value lead in 2025, and their lead by route count is temporary. The change is especially pronounced for USDT, whose intermediary use rises markedly relative to its appearance at observed route endpoints. Stablecoin share rises separately among single-exchange and cross-exchange routes, even as cross-exchange routing expands rapidly.
-% docs/findings-freeze.md, vehicle-dominance and token-decomposition claims
+% docs/findings/README.md, vehicle-dominance and token-decomposition claims
 % output/exhibits/vehicle_transition_pair_decomposition.jsonl; producer e16796c; evidence commit 23ee3a2
 % output/exhibits/cross_venue_routing_inference.jsonl
 

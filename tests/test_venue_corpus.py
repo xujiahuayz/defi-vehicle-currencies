@@ -12,11 +12,11 @@ class VenueCorpusTest(unittest.TestCase):
     def test_conformance_consumers_do_not_depend_on_retired_scratch_corpus(self) -> None:
         root = Path(__file__).resolve().parents[1]
         consumers = (
-            "scripts/measure_prose_conventions.py",
-            "scripts/find_prose_outliers.py",
-            "scripts/measure_venue_optics.py",
-            "scripts/measure_venue_shape.py",
-            "scripts/check_replacement_headroom.py",
+            "scripts/verify/measure_prose_conventions.py",
+            "scripts/verify/find_prose_outliers.py",
+            "scripts/verify/measure_venue_optics.py",
+            "scripts/verify/measure_venue_shape.py",
+            "scripts/verify/check_replacement_headroom.py",
         )
         for relative in consumers:
             text = (root / relative).read_text()

@@ -2,18 +2,15 @@ from __future__ import annotations
 
 import unittest
 import tempfile
-from contextlib import nullcontext
 from pathlib import Path
-from unittest.mock import patch
 
 import pandas as pd
 
 from ddvc.prices import day_price_frame, day_prices, load_canonical_token_prices
-from ddvc.provenance import sidecar_path
 
 
 class DayPriceTests(unittest.TestCase):
-    def test_canonical_price_loader_requires_provenance_and_full_value_contract(self) -> None:
+    def test_canonical_price_loader_requires_the_full_value_contract(self) -> None:
         with tempfile.TemporaryDirectory() as directory:
             path = Path(directory) / "token-price.parquet"
             frame = pd.DataFrame(
@@ -34,27 +31,18 @@ class DayPriceTests(unittest.TestCase):
                 ]
             )
             frame.to_parquet(path, index=False)
-            sidecar_path(path).parent.mkdir(parents=True, exist_ok=True)
-            sidecar_path(path).write_text("{}", encoding="utf-8")
-            with patch("ddvc.prices.current_artifacts", return_value=nullcontext((path,))) as current:
-                loaded = load_canonical_token_prices(path, columns=("day", "token", "price_usd"))
-            self.assertEqual(current.call_count, 1)
-            current.assert_called_with([path], consumer="canonical address-day token prices")
+            loaded = load_canonical_token_prices(
+                path, columns=("day", "token", "price_usd")
+            )
             self.assertEqual(loaded.to_dict("records"), [{"day": "20250101", "token": "0xabc", "price_usd": 2.0}])
             frame.loc[0, "n_consensus"] = 2
             frame.to_parquet(path, index=False)
-            with (
-                patch("ddvc.prices.current_artifacts", return_value=nullcontext((path,))),
-                self.assertRaisesRegex(ValueError, "support"),
-            ):
+            with self.assertRaisesRegex(ValueError, "support"):
                 load_canonical_token_prices(path)
 
             frame.loc[0, "n_consensus"] = 3
             frame.to_parquet(path, index=False)
-            with (
-                patch("ddvc.prices.current_artifacts", return_value=nullcontext((path,))),
-                self.assertRaisesRegex(ValueError, "nonempty"),
-            ):
+            with self.assertRaisesRegex(ValueError, "nonempty"):
                 load_canonical_token_prices(path, columns=[])
 
     def test_consensus_screened_volume_weighted_median(self) -> None:

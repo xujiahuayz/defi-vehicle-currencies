@@ -26,7 +26,6 @@ OUTPUT_REFERENCE = re.compile(
 )
 EVIDENCE_MANAGED_FILE = "EVIDENCE-MANAGED-FILE"
 EVIDENCE_STATUS = re.compile(r"(?m)^% EVIDENCE-STATUS:\s*\S.+$")
-EVIDENCE_COMMIT = re.compile(r"(?m)^% EVIDENCE-COMMIT:\s*[0-9a-f]{7,40}\s*$")
 EVIDENCE_SOURCES = re.compile(r"(?m)^% EVIDENCE-SOURCES:\s*\S.+$")
 VISUAL_MANAGED_FILE = "VISUAL-MANAGED-FILE"
 VISUAL_FUNCTION = re.compile(r"(?m)^% VISUAL-FUNCTION:\s*\S.+\|\s*\S.+\|\s*\S.+$")
@@ -43,8 +42,6 @@ AUDIENCE_JARGON = {
     "evidence_gate": re.compile(r"\bevidence[- ]gate\b", flags=re.IGNORECASE),
     "data_pipeline": re.compile(r"\bdata[- ]pipeline\b", flags=re.IGNORECASE),
     "workflow_status": re.compile(r"\bworkflow[- ]status\b", flags=re.IGNORECASE),
-    "provenance_status": re.compile(r"\bprovenance[- ]status\b", flags=re.IGNORECASE),
-    "scientific_certificate": re.compile(r"\bscientific[- ]certificate\b", flags=re.IGNORECASE),
     "common_support_value": re.compile(
         r"\bcommon(?:[-\s]+)support(?:[-\s]+)value\b",
         flags=re.IGNORECASE,
@@ -203,7 +200,6 @@ def audit_deck_sources(deck_root: Path) -> list[DeckEvidenceDefect]:
                 metadata = authored[prior:frame.start()]
                 for pattern, kind, detail in (
                     (EVIDENCE_STATUS, "missing_evidence_status", "frame needs an EVIDENCE-STATUS source comment"),
-                    (EVIDENCE_COMMIT, "missing_evidence_commit", "frame needs an EVIDENCE-COMMIT source comment"),
                     (EVIDENCE_SOURCES, "missing_evidence_sources", "frame needs an EVIDENCE-SOURCES source comment"),
                 ):
                     if not pattern.search(metadata):
@@ -257,9 +253,9 @@ def _density_ledger_defect(path: Path, detail: str, *, line: int = 1) -> DeckEvi
 def audit_deck_density(pdf_path: Path, ledger_path: Path) -> list[DeckEvidenceDefect]:
     """Hold the delivered deck to its recorded word budget and its recorded debt.
 
-    The venue benchmark in `docs/deck-outline.md` is 40-55 visible words a page.
+    The venue benchmark in `deck/README.md` is 40-55 visible words a page.
     Pages already above that budget when the check was introduced are carried in
-    `docs/deck-density-ledger.json` as an exact, tight allowance: the recorded
+    `deck/density-ledger.json` as an exact, tight allowance: the recorded
     number must equal the measured number, so paying a page down and letting one
     grow are both edits a reader can see in the diff.  Any page not carried in
     the ledger must sit inside the budget, which is what stops the always-ready
@@ -412,9 +408,9 @@ def write_deck_density_ledger(pdf_path: Path, ledger_path: Path) -> int:
             "Recorded slide-density debt for the always-ready deck. A page absent from "
             "page_allowances must sit inside budget_words; a page present here must measure "
             "exactly its recorded words. Both halves are checked by "
-            "scripts/audit_deck_evidence.py against the rendered PDF, so density can only "
+            "scripts/verify/audit_deck_evidence.py against the rendered PDF, so density can only "
             "change through a visible edit to this file. Written by "
-            "`scripts/audit_deck_evidence.py --record-density`; never hand-typed."
+            "`scripts/verify/audit_deck_evidence.py --record-density`; never hand-typed."
         ),
         "budget_words": budget,
         "hard_ceiling_words": int(existing.get("hard_ceiling_words", 70)),

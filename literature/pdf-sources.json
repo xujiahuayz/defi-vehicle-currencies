@@ -20,7 +20,6 @@
           "artifact": "literature/papers/2021-AdamsEtAl2021UniswapV3CoreCode-source-v1.0.0.tar.gz",
           "bytes": 1878559,
           "note": "literature/source-notes/2021-AdamsEtAl2021UniswapV3CoreCode.md",
-          "sha256": "aeb44d56c0c1a586efb363683b72b0a8f2ddceabbfebdf5672d3e3c9d686e451",
           "sources": [
             "https://github.com/Uniswap/v3-core/archive/refs/tags/v1.0.0.tar.gz"
           ],
@@ -314,7 +313,6 @@
           "artifact": "literature/papers/2022-AmitiItskhokiKonings2022DominantReplicationPackage-supplement-dataverse-v1.1-reconstructed-20260815.tar.gz",
           "bytes": 45254976,
           "note": "literature/source-notes/2022-AmitiItskhokiKonings2022DominantReplicationPackage.md",
-          "sha256": "14c3b03ed20e2363a61cecc10a7ff33801f39d1a0cefc2cf1bde36206d91c279",
           "sources": [
             "https://doi.org/10.7910/DVN/ZOOWEA"
           ],
@@ -439,7 +437,6 @@
           "bytes": 26256,
           "note": "literature/source-notes/2020-GopinathEtAl2020DCPReplicationPackage.md",
           "reason": "the official full package requires ICPSR account completion and email verification; confidential firm-level inputs are not deposited; the durable public inspection bundle preserves the official inventory, README and code previews but is not the complete binary package",
-          "sha256": "de770eadd1445d1e02be527d3f8e3be2f9d93cd09147f08c525b09d18f0a473c",
           "sources": [
             "https://doi.org/10.3886/E111161V1"
           ],
@@ -466,7 +463,6 @@
           "artifact": "literature/papers/2021-GopinathStein2021MakingReplicationData-supplement-dataverse-v1.1.zip",
           "bytes": 11030,
           "note": "literature/source-notes/2021-GopinathStein2021MakingReplicationData.md",
-          "sha256": "3509dd0cd7d0ac0d8664a29428cb1150fd884a3a9a8f50390130553c05d58dad",
           "sources": [
             "https://doi.org/10.7910/DVN/CI13SP"
           ],
@@ -493,7 +489,6 @@
           "artifact": "literature/papers/2009-FlandreauJobst2009EmpiricsReplicationData-replication-data.txt",
           "bytes": 246867,
           "note": "literature/source-notes/2009-FlandreauJobst2009EmpiricsReplicationData.md",
-          "sha256": "37ce6f701744e7167eafa222eadc291fb7303307a5f256b321c0beed14d8cc54",
           "sources": [
             "https://www.researchgate.net/profile/Clemens-Jobst/publication/263775569_flandreau_jobst_internationalcurrencies_data/data/0a85e53be43abc269d000000/flandreau-jobst-internationalcurrencies-data.txt"
           ],
@@ -534,7 +529,6 @@
           "artifact": "literature/papers/2020-GriffinShams2020UntetheredReplicationCode-supplement-replication-code.zip",
           "bytes": 1335828,
           "note": "literature/source-notes/2020-GriffinShams2020UntetheredReplicationCode.md",
-          "sha256": "884ad1dc7b43179aca1c30aa9a12f1a46f23cd180344f2fc8adfddacd36d82d5",
           "sources": [
             "https://onlinelibrary.wiley.com/action/downloadSupplement?doi=10.1111%2Fjofi.12903&file=jofi12903-sup-0002-ReplicationCode.zip",
             "https://web.archive.org/web/20210717202445id_/https://onlinelibrary.wiley.com/action/downloadSupplement?doi=10.1111%2Fjofi.12903%26file=jofi12903-sup-0002-ReplicationCode.zip"
@@ -562,7 +556,6 @@
           "artifact": "literature/papers/2011-HendershottJonesMenkveld2011AlgorithmicInstrumentData-supplement-autoquote-dates.xls",
           "bytes": 57856,
           "note": "literature/source-notes/2011-HendershottJonesMenkveld2011AlgorithmicInstrumentData.md",
-          "sha256": "8cff31e866b0adc811234e77eb28219cf37b2ab52e3d62c90b708d5b81c817ca",
           "sources": [
             "https://faculty.haas.berkeley.edu/hender/Autoquote%20Dates.xls"
           ],
@@ -645,7 +638,6 @@
           "artifact": "literature/papers/2024-LeharParlour2024UniswapReplicationCode-supplement-replication-code.zip",
           "bytes": 2033280,
           "note": "literature/source-notes/2024-LeharParlour2024UniswapReplicationCode.md",
-          "sha256": "10c396148575b4f11a666aaf2ac7898c20ea5e2f9558e7d10bf1ca424d52456e",
           "sources": [
             "https://onlinelibrary.wiley.com/action/downloadSupplement?doi=10.1111%2Fjofi.13405&file=jofi13405-sup-0001-ReplicationCode.zip"
           ],
@@ -686,7 +678,6 @@
           "artifact": "literature/papers/2026-LiuMakarovSchoar2023TerraReplication-supplement-mendeley-v4.zip",
           "bytes": 97835184,
           "note": "literature/source-notes/2026-LiuMakarovSchoar2023TerraReplication.md",
-          "sha256": "4bae715784bcbff7d5a38ca9c9d00fc86cc55dcf279bdf1e0cf3d039754a6d18",
           "sources": [
             "https://data.mendeley.com/datasets/j5d8n7hzdy/4"
           ],
@@ -723,7 +714,6 @@
           "artifact": "literature/papers/2022-MakarovSchoar2022DeFiReplicationData-supplement-bpea-tables-figures-data.xlsx",
           "bytes": 471329,
           "note": "literature/source-notes/2022-MakarovSchoar2022DeFiReplicationData.md",
-          "sha256": "c5d2995f3f8332f561597cf1d981a830bd8274786439a2e71bead3ec428a741c",
           "sources": [
             "https://www.brookings.edu/wp-content/uploads/2022/03/BPEA_SP22_MakarovSchoar_TablesFigures_Data2.xlsx"
           ],
@@ -774,7 +764,6 @@
           "bytes": 119236817,
           "note": "literature/source-notes/2022-Mukhin2022InternationalPriceSystemReplicationPackage.md",
           "reason": "The openICPSR deposit at doi:10.3886/E149661V1 is a data/code package, not text. The previously reconstructed archive is no longer present in the shared ignored corpus at literature/papers/ (109 files, checked 2026-08-16), and it is absent from every sibling checkout and from git, which never tracked that corpus. The sought identity is recorded above and in the source note. The article and the official 37-page online appendix are saved, read in full and carded, so the card's claim-verified status rests on the text and is unchanged. No claim may cite the package's contents or any reproduction run from it.",
-          "sha256": "1e8e62e5951cf7fca535646f652b30450aac4b13f8363da8b5cd06444881ff21",
           "sought_artifact": "literature/papers/2022-Mukhin2022InternationalPriceSystemReplicationPackage-supplement-openicpsr-v1-reconstructed.tar.gz",
           "sources": [
             "https://doi.org/10.3886/E149661V1"
@@ -802,7 +791,6 @@
           "artifact": "literature/papers/2012-Nagel2012EvaporatingLiquidityData-supplement-daily-reversal-returns.csv",
           "bytes": 65901,
           "note": "literature/source-notes/2012-Nagel2012EvaporatingLiquidityData.md",
-          "sha256": "2d75079d2df825ed363160ef5f9bafa9afe52ed0520d515d171fc1fc35acc8c7",
           "sources": [
             "https://voices.uchicago.edu/stefannagel/files/2021/06/allretout.csv"
           ],
@@ -829,7 +817,6 @@
           "artifact": "literature/papers/2026-Somogyi2026DollarDominanceFXReplicationPackage-supplement-informs.zip",
           "bytes": 5164152397,
           "note": "literature/source-notes/2026-Somogyi2026DollarDominanceFXReplicationPackage.md",
-          "sha256": "5b02fac4ee719871b65ee885277ce4742b0152beca41b6d0180c981c1a47d4f5",
           "sources": [
             "https://services.informs.org/dataset/mnsc/download.php?doi=mnsc.2024.07656"
           ],

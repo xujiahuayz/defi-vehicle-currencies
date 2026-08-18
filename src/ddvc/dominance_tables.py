@@ -252,7 +252,7 @@ USDT_TABLE_MACROS = (
 
 
 def render_usdt_transition(macros: Mapping[str, str]) -> str:
-    """Render the provisional USDT route-endpoint presentation binding."""
+    """Render the current USDT route-endpoint presentation table."""
 
     _require_macros(macros, USDT_TABLE_MACROS)
     lines = [

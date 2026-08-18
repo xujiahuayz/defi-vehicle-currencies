@@ -24,7 +24,7 @@ import numpy as np
 import pandas as pd
 import pytest
 
-from scripts.run_integration_date_fe_ladder import (
+from scripts.analyze.run_integration_date_fe_ladder import (
     MIN_YEAR_DAYS,
     annual_path,
     fit,

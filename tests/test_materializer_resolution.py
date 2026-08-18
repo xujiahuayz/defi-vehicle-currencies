@@ -2,7 +2,7 @@
 
 The liquidity registry declares one ``module:callable`` reference per ready
 capability.  Most name a ``ddvc.*`` library callable, but the constant-product
-deposited-capital contract names the ``scripts.build_pool_capital_panel``
+deposited-capital contract names the ``scripts.process.build_pool_capital_panel``
 entrypoint.  That module is importable by name only when the repository root is
 on the import path, which ``./scripts/run`` arranges and a bare
 ``python scripts/x.py`` does not.  The findings-freeze audit validates these
@@ -43,7 +43,7 @@ class MaterializerResolutionTests(unittest.TestCase):
         code = (
             "import json, sys\n"
             "from ddvc.liquidity import resolve_materializer\n"
-            "resolved = resolve_materializer('scripts.build_pool_capital_panel:main')\n"
+            "resolved = resolve_materializer('scripts.process.build_pool_capital_panel:main')\n"
             "print(json.dumps({'name': resolved.__name__, 'module': resolved.__module__,"
             " 'root_importable': str(sys.argv[1]) in sys.path}))\n"
         )
@@ -63,7 +63,7 @@ class MaterializerResolutionTests(unittest.TestCase):
         resolved = json.loads(completed.stdout)
         self.assertFalse(resolved["root_importable"], "the launch under test must not see the root")
         self.assertEqual(resolved["name"], "main")
-        self.assertEqual(resolved["module"], "scripts.build_pool_capital_panel")
+        self.assertEqual(resolved["module"], "scripts.process.build_pool_capital_panel")
 
     def test_missing_module_and_missing_attribute_still_fail(self) -> None:
         with self.assertRaises(ImportError):

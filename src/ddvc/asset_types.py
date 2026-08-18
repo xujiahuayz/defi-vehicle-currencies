@@ -86,7 +86,7 @@ NON_USD_STABLE = {"agEUR", "EURS"}
 
 # ---------------------------------------------------------------------------
 # Backing regime, crossing the `stable` type. Added by node C round 2
-# (docs/node-c-definitions-round2.md section 3) because the corpus cuts
+# (docs/research/design.md section 3) because the corpus cuts
 # stablecoins here and we were pooling across the cut.
 #
 # Catalini, de Gortari and Shah (2022) split stablecoins into fiat-backed,

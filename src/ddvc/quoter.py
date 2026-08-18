@@ -1,17 +1,8 @@
-"""Counterfactual route quoting at historical pool state.
+"""Shared JSON-RPC transport and historical-state quote helpers.
 
-Prices the road not taken. For an executed route this asks what a rival route
-would have returned at the *same* pre-trade block, which is the only way to
-compare execution costs on-chain: comparing realised trades across a day cannot
-work, because intraday price movement swamps execution cost by roughly a factor
-of 34 (see `docs/finding-cost-dominance-not-yet-established.md`).
-
-Ported from `defi-dominant-currency/scripts/run_v3_counterfactual_quote_opportunity.py`,
-which validated at 1,550 of 1,655 executed swaps reproduced within 1% with median
-absolute error 0.00 bp. Two changes here: the logic is a reusable module instead
-of a single script, and paths generalise to arbitrary intermediaries rather than
-a fixed native-versus-other comparison, since the intermediary asset is this
-paper's object of study.
+Historical route comparisons must evaluate rival paths against the same
+pre-trade block state. This module supplies the reusable request, retry, cache,
+and quote primitives used by the current acquisition and processing stages.
 
 Method. Uniswap's V3 Quoter is a deployed contract whose `quoteExactInput(bytes,
 uint256)` simulates a swap without executing it. Called through `eth_call` with a
@@ -19,21 +10,17 @@ historical block tag, it returns what the swap would have produced against that
 block's pool state. The original V3 Quoter is used because QuoterV2 is not
 deployed from the V3 launch period, and the sample begins there.
 
-Raw-first, as in the original: every JSON-RPC request and response is persisted
+Every JSON-RPC request and response is persisted
 verbatim before any quote is decoded. Reruns then cost nothing and a decode bug
 never requires refetching.
 
-Throughput is the binding constraint. Free archive endpoints rate-limited roughly
-37% of jobs in the earlier run, so callers should pace requests and treat a
-throttled response as retryable rather than as a missing quote. The original run
-failed precisely because throttled error lines were cached as if they were
-answers, so `is_cached` here counts only successful quotes.
+Callers pace requests and treat a throttled response as retryable rather than as
+a missing quote; `is_cached` counts only successful responses.
 """
 
 from __future__ import annotations
 
 import gzip
-import hashlib
 import json
 import os
 import threading
@@ -86,7 +73,6 @@ RPC_EVIDENCE_FIELDS = (
     "rpc_response",
     "rpc_endpoint",
     "rpc_attempts",
-    "response_sha256",
 )
 
 
@@ -141,7 +127,7 @@ def coerce_rpc_envelope(response: object) -> RpcEnvelope:
     endpoint = (
         response.endpoint
         if isinstance(response, RpcEnvelope)
-        else {"host": "injected", "endpoint_sha256": "0" * 64}
+        else {"host": "injected"}
     )
     attempt = {
         "endpoint": endpoint,
@@ -153,14 +139,6 @@ def coerce_rpc_envelope(response: object) -> RpcEnvelope:
     }
     payload = response.response if isinstance(response, RpcEnvelope) else response
     return RpcEnvelope(payload, endpoint, (attempt,))
-
-
-def canonical_json_sha256(value: object) -> str:
-    """Digest one JSON-compatible RPC object under the shared canonical encoding."""
-
-    return hashlib.sha256(
-        json.dumps(value, sort_keys=True, separators=(",", ":")).encode()
-    ).hexdigest()
 
 
 class RpcCapacityError(RuntimeError):
@@ -180,17 +158,11 @@ class RpcSemanticError(RuntimeError):
 
 
 def sanitized_endpoint_identity(url: str) -> dict[str, str]:
-    """Identify a provider without retaining or hashing credentials."""
+    """Identify a provider by host without retaining credentials or URLs."""
 
     parsed = urlsplit(url)
-    scheme = parsed.scheme.lower() or "unknown"
     host = (parsed.hostname or "unknown").lower()
-    port = parsed.port
-    authority = f"{scheme}://{host}" + (f":{port}" if port is not None else "")
-    return {
-        "host": host,
-        "endpoint_sha256": hashlib.sha256(authority.encode()).hexdigest(),
-    }
+    return {"host": host}
 
 
 def validate_rpc_attempts(
@@ -200,10 +172,12 @@ def validate_rpc_attempts(
     """Validate one successful transport history against its winning endpoint."""
 
     def valid_endpoint(value: object) -> bool:
-        if not isinstance(value, dict) or not isinstance(value.get("host"), str):
-            return False
-        digest = str(value.get("endpoint_sha256") or "")
-        return bool(value["host"] and len(digest) == 64 and all(c in "0123456789abcdef" for c in digest))
+        return bool(
+            isinstance(value, dict)
+            and set(value) == {"host"}
+            and isinstance(value.get("host"), str)
+            and value["host"]
+        )
 
     if not valid_endpoint(endpoint):
         raise ValueError("RPC evidence lacks a sanitized endpoint identity")

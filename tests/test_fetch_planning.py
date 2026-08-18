@@ -8,8 +8,12 @@ from argparse import Namespace
 from pathlib import Path
 from unittest.mock import patch
 
-from scripts import audit_v2_refetch_receipts, audit_v3_graph_omission_materiality, build_graph_acquisition_forecast, build_market_state, fetch_raw_market_data, supervise_raw_fetch
-from scripts.fetch_raw_market_data import (
+from scripts.fetch import (
+    fetch_raw_market_data,
+    supervise_raw_fetch,
+)
+from scripts.process import build_market_state
+from scripts.fetch.fetch_raw_market_data import (
     build_parser,
     cmd_coverage,
     cmd_fetch,
@@ -71,37 +75,6 @@ class FetchPlanningTests(unittest.TestCase):
                     expected_paths={"mints": installed},
                 ),
                 set(),
-            )
-
-    def test_metadata_coverage_rejects_a_stale_query_contract(self) -> None:
-        with tempfile.TemporaryDirectory() as directory:
-            root = Path(directory)
-            metadata = root / "meta.json"
-            installed = root / "mints.jsonl.gz"
-            metadata.write_text(
-                '{"streams":{"mints":{"rows":2,"path":"'
-                + str(installed)
-                + '","query_contract_sha256":"old"}}}'
-            )
-            self.assertEqual(
-                indexed_metadata_streams(
-                    metadata,
-                    expected_paths={"mints": installed},
-                    expected_query_contracts={"mints": "current"},
-                ),
-                set(),
-            )
-            metadata.write_text(
-                '{"streams":{"mints":{"rows":2,"path":"'
-                + str(installed)
-                + '"}}}'
-            )
-            self.assertEqual(
-                indexed_metadata_streams(
-                    metadata,
-                    expected_paths={"mints": installed},
-                ),
-                {"mints"},
             )
 
     def test_metadata_coverage_ignores_host_prefix_but_not_source_or_filename(self) -> None:
@@ -227,12 +200,12 @@ class FetchPlanningTests(unittest.TestCase):
         end = dt.date(2026, 7, 1)
         total = sum(len(iter_days(get_source(venue).genesis, end)) * len(streams) for venue, streams in required.items())
         graph_total = sum(len(iter_days(get_source(venue).genesis, end)) * len(streams) for venue, streams in required.items() if get_source(venue).backend == "thegraph")
-        self.assertEqual(total, 43_120)
-        self.assertEqual(graph_total, 42_510)
+        self.assertEqual(total, 38_829)
+        self.assertEqual(graph_total, 38_219)
         self.assertNotIn("uniswap_v1", required)
         self.assertEqual(required["fluid"], frozenset({"swaps"}))
 
-    def test_strict_coverage_hashes_required_graph_streams_only(self) -> None:
+    def test_coverage_indexes_required_and_optional_direct_paths(self) -> None:
         source = get_source("uniswap_v3")
         end = source.genesis + dt.timedelta(days=1)
         with tempfile.TemporaryDirectory() as directory:
@@ -247,12 +220,13 @@ class FetchPlanningTests(unittest.TestCase):
                 patch.object(fetch_raw_market_data, "required_streams_by_source", return_value={"uniswap_v3": frozenset({"swaps"})}),
                 patch.object(fetch_raw_market_data, "metadata_target", return_value=metadata),
                 patch.object(fetch_raw_market_data, "stream_target", side_effect=lambda _name, stream, _day: targets[stream]),
-                patch.object(fetch_raw_market_data, "graph_query_contracts_for_source", return_value={"swaps": "s", "optional": "o"}),
-                patch.object(fetch_raw_market_data, "indexed_metadata_streams", side_effect=[{"swaps", "optional"}, {"swaps"}]) as indexed,
+                patch.object(fetch_raw_market_data, "indexed_metadata_streams", return_value={"swaps"}) as indexed,
             ):
-                report = coverage_report(["uniswap_v3"], {"uniswap_v3": end}, verify_content_hashes=True)
-            self.assertEqual(indexed.call_count, 2)
-            self.assertEqual(set(indexed.call_args_list[1].kwargs["expected_paths"]), {"swaps"})
+                report = coverage_report(["uniswap_v3"], {"uniswap_v3": end})
+            self.assertEqual(indexed.call_count, 1)
+            self.assertEqual(set(indexed.call_args.kwargs["expected_paths"]), {"swaps", "optional"})
+            self.assertEqual(report["uniswap_v3"]["unindexed_required_meta"]["swaps"], 0)
+            self.assertEqual(report["uniswap_v3"]["unindexed_optional_meta"]["optional"], 1)
             self.assertEqual(report["uniswap_v3"]["optional_streams"], ["optional"])
 
     def test_fetch_and_materialisation_share_one_raw_data_lock(self) -> None:
@@ -263,18 +237,6 @@ class FetchPlanningTests(unittest.TestCase):
         self.assertEqual(
             fetch_raw_market_data.RAW_MUTATION_LOCK,
             RECONSTRUCT_RAW_MARKET_DATA_LOCK,
-        )
-        self.assertEqual(
-            fetch_raw_market_data.RAW_MUTATION_LOCK,
-            audit_v2_refetch_receipts.RAW_MARKET_DATA_LOCK,
-        )
-        self.assertEqual(
-            fetch_raw_market_data.RAW_MUTATION_LOCK,
-            build_graph_acquisition_forecast.RAW_MARKET_DATA_LOCK,
-        )
-        self.assertEqual(
-            fetch_raw_market_data.RAW_MUTATION_LOCK,
-            audit_v3_graph_omission_materiality.RAW_MARKET_DATA_LOCK,
         )
 
     def test_fetch_command_holds_the_shared_raw_mutation_lock(self) -> None:

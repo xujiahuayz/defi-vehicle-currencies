@@ -225,7 +225,7 @@ def _deck_values_module():
     import importlib.util
 
     spec = importlib.util.spec_from_file_location(
-        "build_backing_regime_deck_values", "scripts/build_backing_regime_deck_values.py"
+        "build_backing_regime_deck_values", "scripts/tabulate/build_backing_regime_deck_values.py"
     )
     module = importlib.util.module_from_spec(spec)
     spec.loader.exec_module(module)

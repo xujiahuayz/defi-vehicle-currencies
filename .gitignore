@@ -9,71 +9,41 @@ build/
 dist/
 *.egg-info/
 
-# Local configuration and secrets
+# Local configuration and secrets. Current project credentials live outside the
+# repository under the host's user config directory.
 .env
 .env.*
 !.env.example
-# secrets/ holds minted_graph_keys.json: the burner wallets behind the Graph API
-# key pool, private keys included. Never committed; back it up out of band.
 secrets/
 
-# Data and intermediate generated artifacts
+# Retained raw data and rebuildable analysis data
 data/raw/*
 !data/raw/README.md
 data/interim/*
 !data/interim/README.md
 data/processed/*
 !data/processed/README.md
-data/external/*
-!data/external/README.md
 data/unified/*
 !data/unified/README.md
-data/metrics/*
-!data/metrics/README.md
-data/exhibits/*
-!data/exhibits/README.md
-data/empirical/*
-!data/empirical/README.md
-output/model/
-output/empirical/
-output/robustness/
-output/provisional/
-# flock files keep a stable inode after release; they are runtime state, not artefacts.
-/output/exhibits/.*.lock
-# The ranked pair-contribution ledger is a ~194 MB derived panel — above the
-# push-safe size for git. Its identity travels via the tracked provenance
-# sidecar under data/manifests/; regenerate the payload with
-# scripts/run_vehicle_rotation_composition_e0.py.
+
+# The ranked pair-contribution panel is large and derived; regenerate it with
+# scripts/analyze/run_vehicle_rotation_composition_e0.py.
 /output/exhibits/vehicle_transition_pair_contributions.parquet
 
 # Logs and scratch
-# logs/* rather than logs/: git does not descend into an excluded directory, so
-# a negation inside logs/ would never be reconsidered. The grind ledger is the
-# handoff between autonomous iterations and the queue is the supervisor's channel
-# into the loop; both have to be versioned. Run logs stay ignored via *.log.
-logs/*
-!logs/grind-ledger.md
-!logs/grind-queue.md
-# The findings-pass fingerprint ledger is the freeze gate's own evidence that two
-# consecutive F->G passes left the claim registry unchanged. It is append-only and
-# machine-written, and it has to be versioned or the gate cannot be audited.
-!logs/findings-fingerprints.jsonl
 *.log
 .DS_Store
-# scratchpad/ is the sanctioned parking spot the grind brief names for probe
-# scripts and one-off outputs a worker keeps for resumption. Its contents are
-# host-local (absolute profile paths, captures), so they stay out of git — and
-# they must never read as worktree dirt to the grind supervisor.
-scratchpad/
 
 # Literature payloads that may not be redistributable
 literature/*.pdf
 literature/*.epub
 literature/papers/
 literature/sources.local.json
+# Historical safety guard; current browser authentication lives outside the repo.
 literature/auth/
 
-# LaTeX auxiliary files
+# LaTeX auxiliary files. Canonical PDFs remain tracked even though a fresh
+# clone can rebuild them.
 paper/*.aux
 paper/*.bbl
 paper/*.blg
@@ -82,30 +52,10 @@ paper/*.fls
 paper/*.log
 paper/*.out
 paper/*.synctex.gz
-
-# Provenance stamps ARE tracked: they are the record of how each derived
-# artefact was produced, and provenance that does not travel with the repository
-# is not provenance. They are small JSON sidecars.
-!data/manifests/
-
-# e0 exploration test workspaces must live inside the repo root because
-# provenance keys are repo-relative. A killed test run leaves them behind, and
-# leftover scratch must never read as worktree dirt to the grind supervisor.
-e0-release-test-*/
-data/manifests/e0-release-test-*/
-d3-release-test-*/
-data/manifests/d3-release-test-*/
-
-# LaTeX build artefacts. The PDF is regenerable from the sources with one latexmk call.
-paper/*.aux
-paper/*.bbl
-paper/*.blg
-paper/*.fdb_latexmk
-paper/*.fls
-paper/*.log
-paper/*.out
 paper/main.pdf
 deck/*.aux
+deck/*.bbl
+deck/*.blg
 deck/*.fdb_latexmk
 deck/*.fls
 deck/*.log
@@ -113,3 +63,4 @@ deck/*.nav
 deck/*.out
 deck/*.snm
 deck/*.toc
+deck/*.synctex.gz

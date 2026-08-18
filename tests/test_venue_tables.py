@@ -6,9 +6,8 @@ from pathlib import Path
 
 import pytest
 
-from ddvc.provenance import sidecar_path
 from ddvc.venue_tables import VENUE_HEADERS, VENUE_ORDER, render_venue_coverage, venue_coverage_values
-import scripts.run_venue_coverage_bounds as venue_bounds
+import scripts.analyze.run_venue_coverage_bounds as venue_bounds
 
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -74,9 +73,9 @@ def test_venue_coverage_has_one_paper_consumer_and_is_current() -> None:
     assert appendix.count(r"\input{../output/tables/venue_coverage.tex}") == 1
     assert "Percentage shares within the seven-venue panel" not in appendix
     assert "Uni v3 & Uni v2" not in appendix
-    input_record = json.loads(sidecar_path(INPUT).read_text(encoding="utf-8"))
-    assert "partial calendar support" in str(input_record["notes"])
-    assert "no TVL field" in str(input_record["notes"])
+    producer = Path(venue_bounds.__file__).read_text(encoding="utf-8")
+    assert "partial calendar support" in producer
+    assert "no TVL" in producer
     for suffix in ("tex", "pdf"):
         artifact = ROOT / "output" / "tables" / f"venue_coverage.{suffix}"
         assert artifact.is_file()

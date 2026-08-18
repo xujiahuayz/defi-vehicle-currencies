@@ -1,11 +1,8 @@
-import importlib.util
 import gzip
 import json
-import sys
 import tempfile
 import unittest
 from decimal import Decimal
-from functools import lru_cache
 from pathlib import Path
 
 from ddvc.pricing.weighted import (
@@ -16,19 +13,7 @@ from ddvc.pricing.weighted import (
     rebuild_pre_trade_balances,
 )
 from ddvc.state_data import read_multi_asset_partition, write_multi_asset_partition
-from scripts import validate_weighted_quoter
-
-
-@lru_cache(maxsize=1)
-def _panel():
-    """The route-cost panel module, imported by path because it is a script."""
-    path = Path(__file__).resolve().parents[1] / "scripts" / "run_route_cost_panel.py"
-    spec = importlib.util.spec_from_file_location("run_route_cost_panel", path)
-    module = importlib.util.module_from_spec(spec)
-    sys.modules["run_route_cost_panel"] = module
-    spec.loader.exec_module(module)
-    return module
-
+from scripts.verify import validate_weighted_quoter
 
 def _pool(**kwargs) -> WeightedPool:
     base = dict(
@@ -174,46 +159,6 @@ class BalancerCanonicalStateTests(unittest.TestCase):
         self.assertEqual(volume["pool"], 10.0)
 
 
-class RoutePanelWiringTests(unittest.TestCase):
-    """The route panel may consume only independently admitted family quantities."""
-
-    def test_unvalidated_multi_asset_families_are_outside_the_quote_perimeter(self) -> None:
-        self.assertNotIn(("curve", "stableswap"), _panel().QUOTE_FAMILY_PERIMETER)
-        self.assertNotIn(("balancer", "weighted"), _panel().QUOTE_FAMILY_PERIMETER)
-        self.assertNotIn("src/ddvc/pricing/stableswap.py", _panel().QUOTE_SOURCES)
-        self.assertNotIn("src/ddvc/pricing/weighted.py", _panel().QUOTE_SOURCES)
-
-    def test_quote_perimeter_is_bound_to_the_capability_registry(self) -> None:
-        _panel().require_quote_family_perimeter()
-
-    def test_shared_tick_quoter_is_in_the_cache_fingerprint(self) -> None:
-        """Changing full-input or prepared-index logic must invalidate every tick quote."""
-        self.assertIn("src/ddvc/pricing/tick_quote.py", _panel().QUOTE_SOURCES)
-
-    def test_released_state_and_unified_inputs_are_in_the_cache_fingerprint(self) -> None:
-        """Provider state is behind node D; released state and lineage own the cache."""
-        paths = {path.relative_to(_panel().ROOT).as_posix() for path in _panel().QUOTE_INPUTS}
-        self.assertIn("data/unified", paths)
-        self.assertTrue(any(path.startswith("data/processed/market_state/engine_") for path in paths))
-        self.assertIn("data/raw/ethereum/graph_event_order", paths)
-        self.assertIn("data/processed/market_state_quality.parquet", paths)
-        self.assertNotIn("data/raw/thegraph/uniswap_v4", paths)
-
-    def test_route_builder_uses_the_shared_ordered_tick_replay(self) -> None:
-        self.assertIn("src/ddvc/pricing/tick_replay.py", _panel().QUOTE_SOURCES)
-        self.assertFalse(hasattr(_panel(), "_absorb_swap_state"))
-
-    def test_route_builder_has_no_provider_state_reader(self) -> None:
-        self.assertFalse(hasattr(_panel(), "_raw_path"))
-        self.assertFalse(hasattr(_panel(), "_validate_v4_swap_schema"))
-
-    def test_route_worker_count_is_bounded(self) -> None:
-        self.assertEqual(_panel().DEFAULT_ROUTE_WORKERS, 4)
-        self.assertEqual(_panel().bounded_route_workers(0), 1)
-        self.assertEqual(_panel().bounded_route_workers(6), 6)
-        self.assertEqual(_panel().bounded_route_workers(100), 6)
-
-
 class AppendixTierIncidenceTests(unittest.TestCase):
     """The appendix reports how often each acceptance tier binds, so it must reconcile.
 
@@ -221,7 +166,7 @@ class AppendixTierIncidenceTests(unittest.TestCase):
     the priced Balancer sample is quoted on parameters read from the source and that the
     fitting machinery repairs a minority. That reading is what makes the counterfactual
     credible, and it moves whenever the validation is rerun on different days. Nothing else
-    checks it, because the paper's provenance test deliberately verifies that a number cites
+    checks it, because the paper's evidence test deliberately verifies that a number cites
     an artefact and not that it matches one.
     """
 

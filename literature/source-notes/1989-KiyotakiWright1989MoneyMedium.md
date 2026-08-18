@@ -2,9 +2,9 @@
 
 The cited source is Nobuhiro Kiyotaki and Randall Wright, “On Money as a Medium of Exchange,” *Journal of Political Economy* 97(4), 1989, journal pages 927–954, DOI 10.1086/261634.
 
-The file previously installed under this bibliography key was not the article. It was a 108-page University of Chicago 2026 catalogue, SHA-256 `a8f60e11f5f4c8190073ba64fe525daf0312cbe05ef21d04dd77ce6d1e5e0b68`; its tracked extract opened with “2026 CATALOG.” That binary and extract were replaced on 2026-08-09.
+The file previously installed under this bibliography key was not the article. It was a 108-page University of Chicago 2026 catalogue, its tracked extract opened with “2026 CATALOG.” That binary and extract were replaced on 2026-08-09.
 
-The replacement is a 28-page image facsimile of the version of record, reconstructed from the JSTOR page scans mirrored by Scribd. It begins with the exact title, both authors and journal page 927, ends with the references on journal page 954, and includes the article's embedded Appendix on recovered PDF page 26. The replacement is version-faithful content but is not the publisher's original PDF byte stream. Its SHA-256 is `b73ed941047dd243aea6eecf7ab4b000d34de941856036d346506109a8a3a9ba` and its size is 4,707,284 bytes. The live University of Chicago PDF route returned Cloudflare 403, the CiteSeer route led to a missing archived capture, and open-access metadata exposed no repository full text.
+The replacement is a 28-page image facsimile of the version of record, reconstructed from the JSTOR page scans mirrored by Scribd. It begins with the exact title, both authors and journal page 927, ends with the references on journal page 954, and includes the article's embedded Appendix on recovered PDF page 26. The replacement is version-faithful content but is not the publisher's original PDF byte stream. Its and its size is 4,707,284 bytes. The live University of Chicago PDF route returned Cloudflare 403, the CiteSeer route led to a missing archived capture, and open-access metadata exposed no repository full text.
 
 ## Rebuild route
 
@@ -27,4 +27,4 @@ gs -dBATCH -dNOPAUSE -dSAFER -q -sDEVICE=pdfwrite -sOutputFile="$kw_tmp/Kiyotaki
 
 Ghostscript embeds time-dependent metadata, so a rebuilt PDF may have a different whole-file hash. Validate the 28 ordered source images, journal-page sequence, title, authors and terminal page instead of assuming a rebuilt binary must match byte for byte.
 
-Because the facsimile has no text layer, `scripts/ocr_literature_pdf.swift` produced the durable 67,547-character, 28-page extract with native macOS Vision OCR. The first page recovers the title, authors and abstract; the full extract preserves page delimiters for audit. Any future replacement must match the same title, authors and journal-page extent and must not restore the rejected catalogue.
+Because the facsimile has no text layer, `scripts/fetch/ocr_literature_pdf.swift` produced the durable 67,547-character, 28-page extract with native macOS Vision OCR. The first page recovers the title, authors and abstract; the full extract preserves page delimiters for audit. Any future replacement must match the same title, authors and journal-page extent and must not restore the rejected catalogue.

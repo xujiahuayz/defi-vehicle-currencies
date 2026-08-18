@@ -7,7 +7,7 @@ from tempfile import TemporaryDirectory
 import pandas as pd
 
 from ddvc.asset_types import NATIVE_ETH, WETH
-from scripts.build_cross_venue_routing_series import (
+from scripts.process.build_cross_venue_routing_series import (
     BALANCED_VENUES,
     bounded_workers,
     one_day,

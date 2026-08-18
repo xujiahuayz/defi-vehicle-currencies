@@ -4,10 +4,9 @@ import json
 from datetime import datetime, timezone
 from pathlib import Path
 
-from scripts.audit_findings_freeze import (
+from scripts.verify.audit_findings_freeze import (
     collect_checks,
     validate_claim_build,
-    validate_model_ledger,
     validate_specification_lock,
 )
 
@@ -80,37 +79,11 @@ def test_claim_build_reports_missing_paths(tmp_path: Path) -> None:
     assert "output/exhibits/result.jsonl" in detail
 
 
-def test_model_ledger_is_optional_path_based_log(tmp_path: Path) -> None:
-    artifact = tmp_path / "result.jsonl"
-    artifact.write_text("{}\n", encoding="utf-8")
-    payload = {
-        "schema_version": 2,
-        "exploration": {"status": "complete"},
-        "runs": [
-            {
-                "run_id": "run-1",
-                "claim_id": "claim",
-                "lane": "confirmatory",
-                "lifecycle": "executed",
-                "disposition": "admitted",
-                "artifacts": [{"path": "result.jsonl"}],
-            }
-        ],
-    }
-    passed, detail = validate_model_ledger(
-        payload,
-        claim_ids={"claim"},
-        require_confirmatory=True,
-        root=tmp_path,
-    )
-    assert passed, detail
-
-
 def test_collect_checks_reads_only_declared_claim_files(tmp_path: Path) -> None:
-    (tmp_path / "docs").mkdir()
+    (tmp_path / "docs/specifications").mkdir(parents=True)
     lock = _lock()
     lock["locked_at"] = "2000-01-01T00:00:00+00:00"
-    (tmp_path / "docs/specification-lock.json").write_text(
+    (tmp_path / "docs/specifications/confirmatory.json").write_text(
         json.dumps(lock), encoding="utf-8"
     )
     source = tmp_path / "data/processed/input.parquet"

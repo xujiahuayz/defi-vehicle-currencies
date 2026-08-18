@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """Per-exchange, per-day Uniswap V1 activity split by trade class, plus the forced-route adjacency.
 
-Why this exists rather than reusing `data/processed/v1_exchange_day.parquet`. That panel splits an exchange's daily legs into exactly two buckets, `n_t2t` and `n_pair`, and everything that is not a forced token-to-token route lands in `n_pair`. Liquidity provision and withdrawal (the `no_event` class, 2.19% of V1 transactions), single-pool round trips (0.44%) and three-or-more-exchange transactions (0.50%) are therefore counted as ETH-paired swaps. That is harmless for the aggregate shares in `docs/finding-v1-forced-vehicle.md` section 2, but the token-level test in section 8 needs a clean denominator, because its outcome variable is the decay of an exchange's OWN ETH-paired swap flow and its treatment is the share of its flow that was forced routing. Mixing liquidity events into the outcome would put fund flows into a trade-count series, and mixing them into the denominator of the treatment would shrink the treatment toward zero by an amount that varies across exchanges with how often their LPs rebalanced.
+Why this exists rather than reusing `data/processed/v1_exchange_day.parquet`. That panel splits an exchange's daily legs into exactly two buckets, `n_t2t` and `n_pair`, and everything that is not a forced token-to-token route lands in `n_pair`. Liquidity provision and withdrawal (the `no_event` class, 2.19% of V1 transactions), single-pool round trips (0.44%) and three-or-more-exchange transactions (0.50%) are therefore counted as ETH-paired swaps. That is harmless for the aggregate shares in `docs/findings/v1-forced-vehicle.md` section 2, but the token-level test in section 8 needs a clean denominator, because its outcome variable is the decay of an exchange's OWN ETH-paired swap flow and its treatment is the share of its flow that was forced routing. Mixing liquidity events into the outcome would put fund flows into a trade-count series, and mixing them into the denominator of the treatment would shrink the treatment toward zero by an amount that varies across exchanges with how often their LPs rebalanced.
 
 The forced-route signature is the one established in section 1 and is not the one the original brief for that work stated. The V1 subgraph keys `transaction` on `txhash-exchangeAddress`, so a token-to-token trade calls `tokenToEthSwap` on exchange A and `ethToTokenSwap` on exchange B and materialises as TWO rows sharing one transaction hash, one carrying only `ethPurchaseEvents` and one carrying only `tokenPurchaseEvents`. A single row carrying BOTH arrays is a round trip through one pool and is not a forced route.
 
@@ -26,7 +26,6 @@ from pathlib import Path
 
 import pandas as pd
 
-from ddvc import provenance
 from ddvc.tables import write_panel
 
 ROOT = Path(__file__).resolve().parents[2]
@@ -34,7 +33,7 @@ V1 = ROOT / "data" / "raw" / "thegraph" / "uniswap_v1"
 OUT_EXCH = ROOT / "data" / "processed" / "v1_exchange_class_day.parquet"
 OUT_PAIRS = ROOT / "data" / "processed" / "v1_t2t_route_pairs_daily.parquet"
 
-# Same tolerance as scripts/build_v1_forced_vehicle.py: the ETH sold on one exchange is
+# Same tolerance as scripts/process/build_v1_forced_vehicle.py: the ETH sold on one exchange is
 # the ETH spent on the other, so legs agreeing beyond rounding is the physical evidence
 # that a route happened rather than a bot bundling two unrelated swaps.
 STRICT_TOL = 0.01
@@ -171,12 +170,6 @@ def main() -> int:
 
     write_panel(exch, OUT_EXCH)
     write_panel(prs, OUT_PAIRS)
-    src = ["scripts/process/build_v1_exchange_class_panel.py", "src/ddvc/tables.py"]
-    provenance.stamp(OUT_EXCH, code_sources=src, rows=len(exch),
-                     notes="per-exchange-day V1 legs by trade class")
-    provenance.stamp(OUT_PAIRS, code_sources=src, rows=len(prs),
-                     notes="daily forced-route adjacency, sell exchange to buy exchange")
-
     tot_tx = sum(r["n_tx"] for r in ok)
     print(f"\ntransactions {tot_tx:,}   forced routes {sum(r['n_t2t'] for r in ok):,}   "
           f"entity rows {sum(r['n_rows'] for r in ok):,}")

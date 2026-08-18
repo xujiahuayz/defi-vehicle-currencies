@@ -8,10 +8,8 @@ import numpy as np
 import pandas as pd
 import pyarrow.parquet as pq
 
-from ddvc.fetch.coinbase_prices import SOURCE_ID as EXTERNAL_WETH_USD_SOURCE_ID
 from ddvc.paths import TOKEN_PRICE_DAILY_PANEL
-from ddvc.provenance import current_artifacts
-from ddvc.runtime import file_sha256
+from ddvc.workflow import current_inputs
 
 PRICE_COLUMNS = [
     "token_in",
@@ -38,23 +36,12 @@ PRICE_PANEL_COLUMNS = [
     "validation_status",
 ]
 CANONICAL_TOKEN_PRICE_COLUMNS = ["day", *PRICE_PANEL_COLUMNS]
-MAX_INTRADAY_MARK_LAG_SECONDS = 60
-INTRADAY_WETH_USD_MARK_COLUMNS = [
-    "bucket_start_utc",
-    "bucket_end_utc",
-    "available_at_utc",
-    "weth_usd",
-    "price_source",
-    "validation_status",
-]
-
-
 def load_canonical_token_prices(
     path: str | Path = TOKEN_PRICE_DAILY_PANEL,
     *,
     columns: list[str] | tuple[str, ...] | None = None,
 ) -> pd.DataFrame:
-    """Reopen the provenance-current address-day price owner and its value contract."""
+    """Read the direct address-day price panel and enforce its value contract."""
 
     source = Path(path)
     selected = tuple(CANONICAL_TOKEN_PRICE_COLUMNS if columns is None else columns)
@@ -63,10 +50,9 @@ def load_canonical_token_prices(
     unknown = sorted(set(selected) - set(CANONICAL_TOKEN_PRICE_COLUMNS))
     if unknown:
         raise ValueError(f"canonical token-price columns are unknown: {unknown}")
-    with current_artifacts(
+    with current_inputs(
         [source], consumer="canonical address-day token prices"
     ):
-        content_sha256 = file_sha256(source)
         if tuple(pq.ParquetFile(source).schema_arrow.names) != tuple(CANONICAL_TOKEN_PRICE_COLUMNS):
             raise ValueError("canonical token-price panel schema is stale")
         validation_columns = list(CANONICAL_TOKEN_PRICE_COLUMNS)
@@ -106,114 +92,7 @@ def load_canonical_token_prices(
     )
     if invalid.any():
         raise ValueError("canonical token-price panel violates its identity, support, or value contract")
-    selected_frame = frame.loc[:, list(selected)].copy()
-    selected_frame.attrs["content_sha256"] = content_sha256
-    return selected_frame
-
-
-def load_intraday_weth_usd_marks(
-    source,
-    targets: pd.DataFrame,
-    *,
-    max_lag_seconds: int = MAX_INTRADAY_MARK_LAG_SECONDS,
-    timestamp_column: str = "timestamp_utc",
-) -> pd.DataFrame:
-    """Read only the Parquet interval capable of supporting the target clock."""
-
-    if isinstance(source, pd.DataFrame):
-        return source.copy()
-    if timestamp_column not in targets:
-        raise ValueError(f"price-mark targets lack column: {timestamp_column}")
-    timestamp = pd.to_numeric(targets[timestamp_column], errors="raise").astype("int64")
-    if timestamp.empty:
-        return pd.DataFrame(columns=INTRADAY_WETH_USD_MARK_COLUMNS)
-    return pd.read_parquet(
-        source,
-        columns=INTRADAY_WETH_USD_MARK_COLUMNS,
-        filters=[
-            ("available_at_utc", ">=", int(timestamp.min()) - max_lag_seconds),
-            ("available_at_utc", "<", int(timestamp.max())),
-        ],
-    )
-
-
-def attach_strictly_prior_weth_usd(
-    targets: pd.DataFrame,
-    marks: pd.DataFrame,
-    *,
-    max_lag_seconds: int = MAX_INTRADAY_MARK_LAG_SECONDS,
-    timestamp_column: str = "timestamp_utc",
-) -> pd.DataFrame:
-    """Attach one independently observed WETH/USD mark strictly before each target."""
-    target_required = {timestamp_column}
-    mark_required = INTRADAY_WETH_USD_MARK_COLUMNS
-    target_missing = sorted(target_required - set(targets.columns))
-    mark_missing = sorted(set(mark_required) - set(marks.columns))
-    if target_missing:
-        raise ValueError(f"price-mark targets lack columns: {target_missing}")
-    if mark_missing:
-        raise ValueError(f"intraday WETH/USD marks lack columns: {mark_missing}")
-    if max_lag_seconds < 1:
-        raise ValueError("maximum intraday price-mark lag must be positive")
-
-    right = marks[mark_required].copy()
-    for column in ("bucket_start_utc", "bucket_end_utc", "available_at_utc"):
-        right[column] = pd.to_numeric(right[column], errors="raise").astype("int64")
-    right["weth_usd"] = pd.to_numeric(right["weth_usd"], errors="coerce")
-    if right["available_at_utc"].duplicated().any():
-        raise ValueError("intraday WETH/USD marks contain duplicate availability times")
-    if not (
-        right["bucket_end_utc"].eq(right["available_at_utc"])
-        & right["bucket_end_utc"].sub(right["bucket_start_utc"]).eq(60)
-    ).all():
-        raise ValueError("intraday WETH/USD marks have an invalid availability clock")
-    if not right["validation_status"].eq("valid").all():
-        raise ValueError("intraday WETH/USD marks contain unreleased observations")
-    if not right["price_source"].eq(EXTERNAL_WETH_USD_SOURCE_ID).all():
-        raise ValueError("intraday WETH/USD marks do not use the canonical external source")
-    if (~np.isfinite(right["weth_usd"]) | right["weth_usd"].le(0)).any():
-        raise ValueError("intraday WETH/USD marks contain invalid prices")
-    right = right.rename(
-        columns={
-            "available_at_utc": "eth_usd_mark_available_at_utc",
-            "weth_usd": "eth_usd",
-            "price_source": "eth_usd_price_source",
-            "validation_status": "eth_usd_validation_status",
-        }
-    ).sort_values("eth_usd_mark_available_at_utc")
-
-    left = targets.copy()
-    left[timestamp_column] = pd.to_numeric(
-        left[timestamp_column], errors="raise"
-    ).astype("int64")
-    left["_price_mark_row_order"] = np.arange(len(left))
-    joined = pd.merge_asof(
-        left.sort_values(timestamp_column),
-        right,
-        left_on=timestamp_column,
-        right_on="eth_usd_mark_available_at_utc",
-        direction="backward",
-        allow_exact_matches=False,
-    )
-    joined["eth_usd_mark_lag_seconds"] = (
-        joined[timestamp_column] - joined["eth_usd_mark_available_at_utc"]
-    )
-    supported = (
-        joined["eth_usd"].notna()
-        & joined["eth_usd_mark_lag_seconds"].gt(0)
-        & joined["eth_usd_mark_lag_seconds"].le(max_lag_seconds)
-    )
-    if not supported.all():
-        raise RuntimeError(
-            "intraday WETH/USD support changed the target perimeter: "
-            f"{int((~supported).sum()):,} of {len(joined):,} targets lack a valid "
-            f"strictly prior mark within {max_lag_seconds} seconds"
-        )
-    return (
-        joined.sort_values("_price_mark_row_order")
-        .drop(columns="_price_mark_row_order")
-        .reset_index(drop=True)
-    )
+    return frame.loc[:, list(selected)].copy()
 
 
 def day_price_frame(legs: pd.DataFrame) -> pd.DataFrame:

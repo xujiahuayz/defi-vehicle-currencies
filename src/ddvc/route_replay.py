@@ -7,17 +7,11 @@ import json
 from datetime import datetime, timezone
 from pathlib import Path
 
-import matplotlib
 import pandas as pd
 
 from ddvc.asset_types import canonical_token
 from ddvc.realised import LINEAR_ROUTE_COLUMNS, extract_linear_realised_routes
-from ddvc.runtime import atomic_output, file_sha256
-
-matplotlib.use("Agg")
-import matplotlib.pyplot as plt  # noqa: E402
-from matplotlib.patches import Circle, FancyArrowPatch, FancyBboxPatch  # noqa: E402
-
+from ddvc.runtime import atomic_output
 
 SCHEMA_VERSION = "dvc-route-replay-v1"
 
@@ -43,7 +37,6 @@ def build_route_replay_manifest(
     day: str,
     tx_hash: str,
     component_id: int,
-    partition_sha256: str,
 ) -> dict[str, object]:
     """Describe an exact two-leg route without rendering workflow metadata."""
 
@@ -86,7 +79,6 @@ def build_route_replay_manifest(
         "timestamp_iso": datetime.fromtimestamp(timestamp, tz=timezone.utc).isoformat(),
         "tx_hash": transaction,
         "component_id": int(component_id),
-        "partition_sha256": str(partition_sha256),
         "route": {
             "source": _label(first["token_in_sym"], first["token_in"]),
             "vehicle": _label(first["token_out_sym"], first["token_out"]),
@@ -147,142 +139,6 @@ def _validated_route(
     return route, legs
 
 
-def _draw_route_replay(
-    axis: object,
-    manifest: dict[str, object],
-    *,
-    first_alpha: float = 1.0,
-    second_alpha: float = 1.0,
-    summary_alpha: float = 1.0,
-) -> None:
-    """Draw the shared static/live route composition on one Matplotlib axis."""
-
-    route, legs = _validated_route(manifest)
-    first, second = legs
-    axis.set_xlim(-0.55, 10.55)
-    axis.set_ylim(-2.25, 2.05)
-    axis.axis("off")
-
-    token_x = (0.65, 5.0, 9.35)
-    labels = (route["source"], route["vehicle"], route["target"])
-    for index, (x, label) in enumerate(zip(token_x, labels, strict=True)):
-        vehicle = index == 1
-        axis.add_patch(
-            Circle(
-                (x, 0.45),
-                0.72,
-                facecolor="#F4EDFF" if vehicle else "#FFFFFF",
-                edgecolor="#9132FF" if vehicle else "#C7CDD6",
-                linewidth=2.8 if vehicle else 1.8,
-                zorder=3,
-            )
-        )
-        axis.text(
-            x,
-            0.48,
-            str(label),
-            ha="center",
-            va="center",
-            fontsize=16,
-            fontweight="bold",
-            color="#1C1F24",
-            zorder=4,
-        )
-        if vehicle:
-            axis.text(
-                x,
-                -0.02,
-                "vehicle",
-                ha="center",
-                va="center",
-                fontsize=8.5,
-                color="#626871",
-                zorder=4,
-            )
-
-    for left, right, leg, alpha in (
-        (1.42, 4.20, first, first_alpha),
-        (5.78, 8.58, second, second_alpha),
-    ):
-        axis.add_patch(
-            FancyArrowPatch(
-                (left, 0.45),
-                (right, 0.45),
-                arrowstyle="-|>",
-                mutation_scale=18,
-                linewidth=2.6,
-                color="#371C5C",
-                alpha=alpha,
-                zorder=2,
-            )
-        )
-        midpoint = (left + right) / 2
-        axis.text(
-            midpoint,
-            1.18,
-            _venue_label(leg["venue"]),
-            ha="center",
-            va="center",
-            fontsize=10.5,
-            fontweight="bold",
-            color="#371C5C",
-            alpha=alpha,
-        )
-        axis.text(
-            midpoint,
-            -0.52,
-            f"{_amount(leg['amount_in'])} {leg['token_in']}\n→ {_amount(leg['amount_out'])} {leg['token_out']}",
-            ha="center",
-            va="center",
-            fontsize=9,
-            color="#40454D",
-            alpha=alpha,
-            linespacing=1.35,
-        )
-
-    axis.add_patch(
-        FancyBboxPatch(
-            (1.05, -2.0),
-            7.9,
-            0.62,
-            boxstyle="round,pad=0.12,rounding_size=0.08",
-            facecolor="#EEF8F5",
-            edgecolor="none",
-            alpha=summary_alpha,
-        )
-    )
-    axis.text(
-        5.0,
-        -1.69,
-        f"${_amount(route['value_usd'])} observed route value · two venues · one transaction",
-        ha="center",
-        va="center",
-        fontsize=10.5,
-        fontweight="bold",
-        color="#007D6C",
-        alpha=summary_alpha,
-    )
-
-
-def render_route_replay_pdf(manifest: dict[str, object], output: Path) -> None:
-    """Render the complete transaction trace as a presentation-ready vector PDF."""
-
-    _validated_route(manifest)
-    with plt.rc_context({"font.family": "DejaVu Sans", "pdf.fonttype": 42}):
-        figure, axis = plt.subplots(figsize=(11.0, 4.35))
-        try:
-            _draw_route_replay(axis, manifest)
-            figure.tight_layout(pad=0.15)
-            figure.savefig(
-                output,
-                format="pdf",
-                bbox_inches="tight",
-                metadata={"Creator": "ddvc", "CreationDate": None, "ModDate": None},
-            )
-        finally:
-            plt.close(figure)
-
-
 def render_route_replay_html(manifest: dict[str, object]) -> str:
     """Return a self-contained progressive replay with a complete print frame."""
 
@@ -328,22 +184,45 @@ document.getElementById('next').onclick=()=>show(step+1);document.getElementById
 </script></body></html>"""
 
 
+def render_route_replay_deck_values(manifest: dict[str, object]) -> str:
+    """Bind slide labels to the same admitted route used by the live replay."""
+
+    route, legs = _validated_route(manifest)
+    first, second = legs
+
+    def amount(value: object) -> str:
+        return f"{float(value):,.0f}"
+
+    return "\n".join(
+        [
+            "% Generated by scripts/plot/build_route_replay.py; do not edit.",
+            f"\\newcommand{{\\RouteReplayInputAmount}}{{{amount(first['amount_in'])}}}",
+            f"\\newcommand{{\\RouteReplayVehicleAmount}}{{{amount(first['amount_out'])}}}",
+            f"\\newcommand{{\\RouteReplayOutputAmount}}{{{amount(second['amount_out'])}}}",
+            f"\\newcommand{{\\RouteReplayValue}}{{{amount(route['value_usd'])}}}",
+            "",
+        ]
+    )
+
+
 def write_route_replay_bundle(
-    manifest: dict[str, object], *, manifest_path: Path, html_path: Path
-) -> tuple[Path, Path]:
-    """Atomically install the shared source manifest and local replay."""
+    manifest: dict[str, object], *, manifest_path: Path, html_path: Path, tex_path: Path
+) -> tuple[Path, Path, Path]:
+    """Atomically install the manifest and both of its direct consumers."""
 
     with atomic_output(manifest_path) as temporary:
         temporary.write_text(json.dumps(manifest, indent=2, sort_keys=True) + "\n", encoding="utf-8")
     with atomic_output(html_path) as temporary:
         temporary.write_text(render_route_replay_html(manifest), encoding="utf-8")
-    return manifest_path, html_path
+    with atomic_output(tex_path) as temporary:
+        temporary.write_text(render_route_replay_deck_values(manifest), encoding="utf-8")
+    return manifest_path, html_path, tex_path
 
 
 def manifest_from_partition(
     path: Path, *, day: str, tx_hash: str, component_id: int
 ) -> dict[str, object]:
-    """Read one released partition and bind its exact bytes into the replay."""
+    """Read one route partition into the replay."""
 
     legs = pd.read_parquet(path, columns=LINEAR_ROUTE_COLUMNS)
     return build_route_replay_manifest(
@@ -351,5 +230,4 @@ def manifest_from_partition(
         day=day,
         tx_hash=tx_hash,
         component_id=component_id,
-        partition_sha256=file_sha256(path),
     )

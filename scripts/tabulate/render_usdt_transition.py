@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Render the paper's provisional USDT excess-use table."""
+"""Render the paper's current USDT excess-use table."""
 
 from __future__ import annotations
 
@@ -8,7 +8,7 @@ from ddvc.paper_tables import write_table_artifacts
 from ddvc.paths import OUTPUT_DIR
 
 
-INPUT = OUTPUT_DIR / "exhibits" / "provisional_results_deck_values.tex"
+INPUT = OUTPUT_DIR / "exhibits" / "presentation_values.tex"
 
 write_table_artifacts(
     "usdt_transition",

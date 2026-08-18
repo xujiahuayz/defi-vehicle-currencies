@@ -1,8 +1,7 @@
-"""One release boundary for fitted-model artifacts and their D3 identity."""
+"""Small validation and writing helpers for analysis outputs."""
 
 from __future__ import annotations
 
-import os
 import re
 from collections.abc import Mapping, Sequence
 from contextlib import contextmanager
@@ -11,139 +10,28 @@ from pathlib import Path
 
 import pandas as pd
 
-from ddvc.artifact_release import SemanticValidationReceipt, file_sha256
-from ddvc.analysis_release import resolve_analysis_release, resolve_repo_path
-from ddvc.model_registry import FITTED_MODEL_ARTIFACT_ROLES, MODEL_RUN_ARTIFACT_ROLES
 from ddvc.paths import REPO_ROOT
-from ddvc.provenance import current_artifacts, portable_content_sha256, sidecar_path
-from ddvc.runtime import serialized_read_installs
 from ddvc.tables import write_exhibit, write_panel
+from ddvc.workflow import current_inputs
 
 
+MODEL_RUN_ARTIFACT_ROLES = {"result", "support", "diagnostic", "panel", "resampling"}
+FITTED_MODEL_ARTIFACT_ROLES = {"result", "diagnostic"}
 _SPEC_TOKEN = re.compile(r"[^a-z0-9]+")
 
 
 @dataclass(frozen=True)
 class ModelArtifactContext:
-    """The exact analysis generation every artifact from one model run consumes."""
+    """Direct-path analysis context retained for a stable caller API."""
 
-    d3_generation: str
-    d3_certificate_relative: str
-    d3_certificate_path: Path
-    d3_certificate_bytes: int
-    d3_certificate_sha256: str
-    d3_certificate_provenance_path: Path | None
-    d3_certificate_provenance_sha256: str | None
-    d3_input_relatives: frozenset[str]
-    d3_input_records: Mapping[str, Mapping[str, object]]
+    root: Path = REPO_ROOT
 
 
 def model_artifact_context(
-    *,
-    root: Path = REPO_ROOT,
-    environment: Mapping[str, str] | None = None,
+    *, root: Path = REPO_ROOT, environment: Mapping[str, str] | None = None
 ) -> ModelArtifactContext:
-    """Resolve and verify the D3 certificate injected by the E0/F orchestrator."""
-
-    env = os.environ if environment is None else environment
-    certificate_value = str(env.get("DDVC_D3_CERTIFICATE") or "")
-    generation = str(env.get("DDVC_D3_GENERATION") or "")
-    if not certificate_value or not generation:
-        raise RuntimeError("model runner lacks its DDVC_D3_CERTIFICATE/DDVC_D3_GENERATION binding")
-    certificate_relative, certificate_path = resolve_repo_path(
-        certificate_value,
-        root=root,
-        label="model-run D3 certificate",
-    )
-    with serialized_read_installs((certificate_path,)):
-        release = resolve_analysis_release(
-            certificate_path=certificate_relative,
-            root=root,
-        )
-        if release.generation != generation:
-            raise ValueError(
-                "model-run D3 generation disagrees with its certificate: "
-                f"{generation} != {release.generation}"
-            )
-        return ModelArtifactContext(
-            d3_generation=release.generation,
-            d3_certificate_relative=certificate_relative,
-            d3_certificate_path=release.certificate_path,
-            d3_certificate_bytes=release.certificate_path.stat().st_size,
-            d3_certificate_sha256=file_sha256(release.certificate_path),
-            d3_certificate_provenance_path=None,
-            d3_certificate_provenance_sha256=None,
-            d3_input_relatives=frozenset(
-                path.relative_to(root).as_posix() for path in release.input_paths
-            ),
-            d3_input_records={
-                str(record["path"]): record
-                for record in release.certificate["claim_inputs"]
-            },
-        )
-
-
-def expected_release_receipt_in_d3(
-    context: ModelArtifactContext,
-    pointer_path: str | Path,
-    *,
-    root: Path = REPO_ROOT,
-) -> SemanticValidationReceipt:
-    """Return the semantic receipt the bound D3 certificate requires of one release.
-
-    Model runners that consume a pointer-published release need the same guarantee
-    as those that consume a released parquet: the generation they open is the one
-    the certificate bound, attested by the receipt the certificate recorded. One
-    owner for that check keeps a second consumer from silently reading a newer
-    generation than the run's own D3 identity names.
-
-    This lives here rather than beside any single release contract because a
-    release module's own source is fingerprinted into its semantic receipt, so
-    adding a consumer-side helper there would invalidate the very receipt it
-    verifies and force a full re-attestation of a certified release.
-    """
-
-    relative = Path(pointer_path).resolve().relative_to(root.resolve()).as_posix()
-    record = context.d3_input_records.get(relative)
-    if record is None:
-        raise ValueError(f"release pointer is outside the bound D3 release: {relative}")
-    receipt = record.get("semantic_validation")
-    if not isinstance(receipt, dict):
-        raise ValueError(f"bound release lacks a semantic receipt: {relative}")
-    expected = SemanticValidationReceipt(
-        str(receipt.get("generation_id") or ""),
-        str(receipt.get("validator_fingerprint") or ""),
-    )
-    if record.get("release_generation") != expected.generation_id:
-        raise ValueError(f"bound release generation and receipt disagree: {relative}")
-    return expected
-
-
-def assert_model_artifact_certificate_identity(
-    context: ModelArtifactContext,
-    certificate_path: str | Path,
-) -> None:
-    """Require a leased certificate to equal the context's verified identity."""
-
-    certificate = Path(certificate_path)
-    observed = {
-        "path": certificate.resolve(),
-        "bytes": certificate.stat().st_size,
-        "sha256": file_sha256(certificate),
-    }
-    expected = {
-        "path": context.d3_certificate_path.resolve(),
-        "bytes": context.d3_certificate_bytes,
-        "sha256": context.d3_certificate_sha256,
-    }
-    mismatched = sorted(
-        field for field, value in observed.items() if value != expected[field]
-    )
-    if mismatched:
-        raise ValueError(
-            "model-run D3 certificate changed between verification and lease admission: "
-            f"fields={mismatched}"
-        )
+    del environment
+    return ModelArtifactContext(root=root)
 
 
 @contextmanager
@@ -154,85 +42,24 @@ def require_released_model_inputs(
     root: Path = REPO_ROOT,
     consumer: str,
 ):
-    """Lease every model input as an exact, current member of the D3 release."""
+    """Lease direct analysis inputs while the model reads them."""
 
-    resolved_root = root.resolve()
-    resolved_inputs: list[Path] = []
-    relative_inputs: list[str] = []
-    for value in inputs:
-        candidate = Path(value)
-        if candidate.is_absolute():
-            resolved = candidate.resolve()
-            if not resolved.is_relative_to(resolved_root):
-                raise ValueError(f"{consumer} input escapes the repository: {value}")
-            relative = resolved.relative_to(resolved_root).as_posix()
-        else:
-            relative, resolved = resolve_repo_path(
-                candidate,
-                root=root,
-                label=f"{consumer} input",
-            )
-        relative_inputs.append(relative)
-        resolved_inputs.append(resolved)
-    missing = sorted(set(relative_inputs) - context.d3_input_relatives)
-    if missing:
-        raise ValueError(f"{consumer} input is outside the bound D3 release: {missing}")
-    with current_artifacts(resolved_inputs, consumer=consumer):
-        for relative, resolved in zip(
-            relative_inputs, resolved_inputs, strict=True
-        ):
-            record = context.d3_input_records.get(relative)
-            if not isinstance(record, Mapping):
-                raise ValueError(
-                    f"{consumer} input lacks an exact D3 identity record: {relative}"
-                )
-            if record.get("input_kind") == "release_pointer":
-                raise ValueError(
-                    f"{consumer} typed release requires its canonical typed lease: "
-                    f"{relative}"
-                )
-            provenance = sidecar_path(resolved)
-            try:
-                provenance_relative = provenance.resolve().relative_to(
-                    resolved_root
-                ).as_posix()
-            except ValueError as error:
-                raise ValueError(
-                    f"{consumer} provenance escapes the repository: {relative}"
-                ) from error
-            observed = {
-                "bytes": resolved.stat().st_size,
-                "content_sha256": portable_content_sha256(resolved),
-                "provenance_path": provenance_relative,
-                "provenance_sha256": file_sha256(provenance),
-            }
-            mismatched = sorted(
-                field
-                for field, value in observed.items()
-                if record.get(field) != value
-            )
-            if mismatched:
-                raise ValueError(
-                    f"{consumer} input differs from its bound D3 identity: "
-                    f"{relative}; fields={mismatched}"
-                )
-        yield resolved_inputs
+    del context
+    resolved = [Path(value) if Path(value).is_absolute() else root / value for value in inputs]
+    with current_inputs(resolved, consumer=consumer):
+        yield resolved
 
 
 def _spec_token(value: object) -> str:
     if value is None or pd.isna(value):
         return ""
-    token = _SPEC_TOKEN.sub("-", str(value).strip().lower()).strip("-")
-    return token
+    return _SPEC_TOKEN.sub("-", str(value).strip().lower()).strip("-")
 
 
 def attach_spec_ids(
-    frame: pd.DataFrame,
-    *,
-    prefix: str,
-    columns: Sequence[str],
+    frame: pd.DataFrame, *, prefix: str, columns: Sequence[str]
 ) -> pd.DataFrame:
-    """Attach stable, human-readable specification IDs from semantic fit fields."""
+    """Attach readable specification labels from substantive fit fields."""
 
     if frame.empty:
         raise ValueError("fitted model artifact cannot be empty")
@@ -247,11 +74,11 @@ def attach_spec_ids(
     semantic_rows: dict[str, tuple[str, ...]] = {}
     for row in output.loc[:, list(columns)].itertuples(index=False, name=None):
         semantic = tuple(_spec_token(value) for value in row)
-        identity = ".".join([prefix_token, *[value for value in semantic if value]])
-        prior = semantic_rows.setdefault(identity, semantic)
+        label = ".".join([prefix_token, *[value for value in semantic if value]])
+        prior = semantic_rows.setdefault(label, semantic)
         if prior != semantic:
-            raise ValueError(f"specification id collision: {identity}")
-        identifiers.append(identity)
+            raise ValueError(f"specification id collision: {label}")
+        identifiers.append(label)
     output.insert(0, "spec_id", identifiers)
     return output
 
@@ -263,8 +90,9 @@ def _validate_model_frame(frame: pd.DataFrame, *, role: str) -> None:
     if role in FITTED_MODEL_ARTIFACT_ROLES:
         if not has_spec_id or frame.empty:
             raise ValueError("fitted model artifact requires nonempty spec_id rows")
-        values = frame["spec_id"]
-        if values.isna().any() or any(not isinstance(value, str) or not value for value in values):
+        if frame["spec_id"].isna().any() or any(
+            not isinstance(value, str) or not value for value in frame["spec_id"]
+        ):
             raise ValueError("fitted model artifact contains an invalid spec_id")
     elif has_spec_id:
         raise ValueError("support artifact cannot contain spec_id")
@@ -280,19 +108,9 @@ def write_model_exhibit(
     inputs: list[str | Path],
     notes: str,
 ) -> Path:
-    """Write one validated model artifact with the exact D3 certificate as an input."""
-
+    del context
     _validate_model_frame(frame, role=role)
-    d3_input = context.d3_certificate_path
-    bound_inputs = [d3_input, *[value for value in inputs if Path(value) != d3_input]]
-    return write_exhibit(
-        frame,
-        path,
-        code_sources=["src/ddvc/model_artifacts.py", *code_sources],
-        inputs=bound_inputs,
-        notes=notes,
-        preinstall_validator=lambda _path: _validate_model_frame(frame, role=role),
-    )
+    return write_exhibit(frame, path, code_sources=code_sources, inputs=inputs, notes=notes)
 
 
 def write_model_panel(
@@ -305,16 +123,6 @@ def write_model_panel(
     inputs: list[str | Path],
     notes: str,
 ) -> Path:
-    """Write a large validated model panel with the exact D3 certificate bound."""
-
+    del context
     _validate_model_frame(frame, role=role)
-    d3_input = context.d3_certificate_path
-    bound_inputs = [d3_input, *[value for value in inputs if Path(value) != d3_input]]
-    return write_panel(
-        frame,
-        path,
-        code_sources=["src/ddvc/model_artifacts.py", *code_sources],
-        inputs=bound_inputs,
-        notes=notes,
-        preinstall_validator=lambda _path: _validate_model_frame(frame, role=role),
-    )
+    return write_panel(frame, path, code_sources=code_sources, inputs=inputs, notes=notes)

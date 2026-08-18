@@ -2,9 +2,8 @@
 % Framing and institutional setting. Sources: Krugman (1980); Flandreau and Jobst (2009); project route-release audit.
 
 % EVIDENCE-STATUS: authentic transaction and route-component trace; exact same-state alternative remains outside this exhibit
-% EVIDENCE-COMMIT: ab2c76231653b447c7b151b8d9b4a3fdd7b413e8
 % EVIDENCE-SOURCES: output/exhibits/route_replay.json; data/unified/20260110.parquet; https://eth.blockscout.com/tx/0xbda1d07f17c503b5a9c8117c5d1383472006af8a9e22aa4e5e30804b9bf67ad9?tab=token_transfers (retrieved 2026-08-14)
-% EVIDENCE-GENERATION: transaction 0xbda1d07f17c503b5a9c8117c5d1383472006af8a9e22aa4e5e30804b9bf67ad9 component 0; partition sha256 a6870bc64badeecf030a1096e69b2ddfc9202e5c4ef99a8c5237d4d458033c6d
+% EVIDENCE-CASE: transaction 0xbda1d07f17c503b5a9c8117c5d1383472006af8a9e22aa4e5e30804b9bf67ad9, component 0.
 % LIVE-COMPANION: output/live/route_replay.html (native HTML/CSS/JS reveal; no embedded video)
 % LITERATURE-PRECEDENT: Lehar and Parlour (2025), Appendix B, pairs one named explorer transaction with decoded logs before handing off to the population reconstruction.
 % VISUAL-FUNCTION: source-versus-pool-route handoff | authentic explorer screenshot plus settlement trace | separate the user's PYUSD instruction from the USDC-funded pool component
@@ -26,9 +25,8 @@
 \end{frame}
 
 % EVIDENCE-STATUS: authentic connected pool-swap component from the same transaction; exact same-state alternative remains outside this exhibit
-% EVIDENCE-COMMIT: ab2c76231653b447c7b151b8d9b4a3fdd7b413e8
 % EVIDENCE-SOURCES: output/exhibits/route_replay.json; data/unified/20260110.parquet
-% EVIDENCE-GENERATION: transaction 0xbda1d07f17c503b5a9c8117c5d1383472006af8a9e22aa4e5e30804b9bf67ad9 component 0; partition sha256 a6870bc64badeecf030a1096e69b2ddfc9202e5c4ef99a8c5237d4d458033c6d
+% EVIDENCE-CASE: transaction 0xbda1d07f17c503b5a9c8117c5d1383472006af8a9e22aa4e5e30804b9bf67ad9, component 0.
 % VISUAL-FUNCTION: observed vehicle use | source-versus-pool-route breadcrumb plus native connected-route diagram | define the component endpoints and intermediary used in the vehicle-dominance measure
 \begin{frame}{Inside the pools, USDT links USDC to USDe}
 \centering
@@ -91,12 +89,11 @@
 \end{frame}
 
 % EVIDENCE-STATUS: verified institutional mechanism; no empirical estimate is displayed.
-% SOURCE-GENERATION: repository HEAD eac25258ea36.
-% SOURCE: docs/finding-v1-forced-vehicle.md sha256=650004eafae8864fe13b3d90ab59daefd77b342e33510f3d5db03b3e28ed2c68 (V1/V2 pairing contract).
-% SOURCE: literature/text/2021-AdamsZinsmeisterRobinson2021UniswapV3-whitepaper-uniswap-v3-core.txt sha256=599a20254f8d5f1d6e771d2899bf16e4a921c5bc3a9cb82e58c97d7791411567 (V3 ranges, ticks, and fee tiers).
+% SOURCE: docs/findings/v1-forced-vehicle.md (V1/V2 pairing contract).
+% SOURCE: literature/text/2021-AdamsZinsmeisterRobinson2021UniswapV3-whitepaper-uniswap-v3-core.txt (V3 ranges, ticks, and fee tiers).
 % SOURCE: https://app.uniswap.org/whitepaper-v4.pdf, Adams et al. (2024), Uniswap v4 Core, Sections 1 and 3 (singleton, hooks, and flash accounting).
-% SOURCE: docs/research-questions-and-empirical-design.md sha256=b56cb5e98d93d0968306fc2dd36edb323d83519daab17b5c7b39587d49506c8b (V4 settlement boundary).
-% SOURCE: src/ddvc/execution_contracts.py sha256=67b28ca58519cf9cef80314211f168989b60502c5a3fb8792ad8814613ddae00 (supported V4 vanilla concentrated-liquidity contract).
+% SOURCE: docs/research/design.md (V4 settlement boundary).
+% SOURCE: src/ddvc/execution_contracts.py (supported V4 vanilla concentrated-liquidity contract).
 % SCIENTIFIC-BOUNDARY: architecture changes feasible pair formation, liquidity placement, or settlement. Pool adoption and realised route use are endogenous exposure, and calendar date alone is not treatment.
 % VISUAL-FUNCTION: V1-to-V4 architecture morph | four-panel mechanism strip | separate design, realised exposure, and calendar time
 \begin{frame}{Architecture changes routing opportunities}

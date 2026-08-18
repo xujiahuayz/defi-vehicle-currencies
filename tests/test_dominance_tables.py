@@ -34,7 +34,7 @@ def test_checked_in_fragments_equal_their_named_renderers() -> None:
     )
     usdt = render_usdt_transition(
         parse_newcommands(
-            (EXHIBITS / "provisional_results_deck_values.tex").read_text(
+            (EXHIBITS / "presentation_values.tex").read_text(
                 encoding="utf-8"
             )
         )
@@ -186,7 +186,7 @@ def test_paper_has_one_consumer_and_no_duplicate_inline_body() -> None:
         (
             "usdt_transition",
             {
-                "output/exhibits/provisional_results_deck_values.tex",
+                "output/exhibits/presentation_values.tex",
             },
         ),
     ],

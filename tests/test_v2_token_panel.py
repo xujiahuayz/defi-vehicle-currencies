@@ -6,9 +6,8 @@ from types import SimpleNamespace
 import pandas as pd
 import pytest
 
-from ddvc.provenance import sidecar_path
-from scripts import build_v2_token_panel as builder
-from scripts.build_v2_token_panel import one_swaps_day, token_decimals
+from scripts.process import build_v2_token_panel as builder
+from scripts.process.build_v2_token_panel import one_swaps_day, token_decimals
 
 
 def canonical_state() -> pd.DataFrame:
@@ -94,7 +93,7 @@ def test_decimals_conflict_is_a_hard_failure() -> None:
         token_decimals(token_days)
 
 
-def test_release_mutation_during_v2_publication_preserves_prior_pair(
+def test_input_mutation_during_v2_publication_preserves_prior_outputs(
     monkeypatch: pytest.MonkeyPatch, tmp_path: Path
 ) -> None:
     source = tmp_path / "released-state.parquet"
@@ -102,26 +101,22 @@ def test_release_mutation_during_v2_publication_preserves_prior_pair(
     outputs = [tmp_path / name for name in ("price.parquet", "decimals.parquet", "pairs.parquet")]
     for output in outputs:
         pd.DataFrame({"prior": [1]}).to_parquet(output, index=False)
-        sidecar_path(output).write_bytes(b"prior-sidecar\n")
-    prior = [(output.read_bytes(), sidecar_path(output).read_bytes()) for output in outputs]
+    prior = [output.read_bytes() for output in outputs]
 
     class MutatedDuringStamp:
         def __call__(self, _staged_path: Path) -> None:
-            pass
-
-        def validate_prepared_stamp(self, _prepared: bytes) -> bytes:
-            raise RuntimeError("released state changed during provenance")
+            raise RuntimeError("state input changed during publication")
 
     monkeypatch.setattr(builder, "OUT_PRICE", outputs[0])
     monkeypatch.setattr(builder, "OUT_DEC", outputs[1])
     monkeypatch.setattr(builder, "OUT_PAIR", outputs[2])
-    monkeypatch.setattr(builder, "release_preinstall_validator", lambda *_releases: MutatedDuringStamp())
+    monkeypatch.setattr(builder, "validate_before_install", lambda *_releases: MutatedDuringStamp())
     release = SimpleNamespace(
-        provenance_inputs=(source,),
-        content_identity_sha256="a" * 64,
+        input_paths=(source,),
+        label="a" * 64,
     )
 
-    with pytest.raises(RuntimeError, match="changed during provenance"):
+    with pytest.raises(RuntimeError, match="changed during publication"):
         builder._publish_panels(
             pd.DataFrame({"value": [2]}),
             pd.DataFrame({"value": [2]}),
@@ -129,7 +124,7 @@ def test_release_mutation_during_v2_publication_preserves_prior_pair(
             release,
         )
 
-    assert [(output.read_bytes(), sidecar_path(output).read_bytes()) for output in outputs] == prior
+    assert [output.read_bytes() for output in outputs] == prior
 
 
 def test_v2_publication_reuses_canonical_panel_lifecycle() -> None:

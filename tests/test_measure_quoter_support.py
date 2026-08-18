@@ -8,7 +8,7 @@ from pathlib import Path
 
 import pandas as pd
 
-from scripts import measure_quoter_support
+from scripts.process import measure_quoter_support
 
 
 class MeasureQuoterSupportTests(unittest.TestCase):

@@ -1,9 +1,0 @@
-{"attribute": "median trade USD", "matched": 11594.062666032582, "ratio": 13.395535106657983, "unmatched": 865.5169482755477}
-{"attribute": "mean trade USD", "matched": 87941.37109543667, "ratio": 19.288271390108157, "unmatched": 4559.318422932224}
-{"attribute": "p90 trade USD", "matched": 208204.03290811327, "ratio": 32.26009553450122, "unmatched": 6453.918671302297}
-{"attribute": "share imported", "matched": 0.0939786156443444, "ratio": 17.231608932000533, "unmatched": 0.0054538503058654195}
-{"attribute": "share native", "matched": 0.265053460889139, "ratio": 0.3915784657930916, "unmatched": 0.6768846707448722}
-{"attribute": "share other", "matched": 0.0, "ratio": 0.0, "unmatched": 0.21264393666786613}
-{"attribute": "share stable", "matched": 0.6409679234665167, "ratio": 6.203068396782065, "unmatched": 0.10333078445483987}
-{"attribute": "share staked_native", "matched": 0.0, "ratio": 0.0, "unmatched": 0.0016867578265563152}
-{"attribute": "routes per pair", "matched": 25.028169014084508, "ratio": 5.024040179363333, "unmatched": 4.9816816985042855}

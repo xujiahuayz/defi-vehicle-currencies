@@ -3,7 +3,7 @@
 % manuscript actually establishes. A mechanism title requires completed cost, liquidity,
 % risk, and architecture tests and must not be restored on the strength of designs alone.
 %
-% Architecture draws on docs/paper-spine.md, which derives the eventual full manuscript
+% Architecture draws on paper/README.md, which derives the eventual full manuscript
 % from nine JFE papers read first-hand. This working version contains the six sections
 % supported by current evidence; it retains no standalone literature review or body proof.
 %
@@ -44,30 +44,25 @@
   \end{minipage}%
 }
 
-% Certified route-only quantities shared with the live deck. The source file is
-% regenerated from the findings registry; exact-state results remain excluded.
-\input{../output/exhibits/provisional_results_deck_values.tex}
+% Current route-only quantities shared with the live deck.
+\input{../output/exhibits/presentation_values.tex}
 \input{../output/exhibits/vehicle_transition_pair_decomposition_deck_values.tex}
 \input{../output/exhibits/v1_route_case_deck_values.tex}
-% Dated backing regimes inside the stablecoin class. Provisional/E0 scope: the
-% cut runs on the released endpoint-candidate choice panel and is not
-% submission-authoritative until the findings freeze admits it. Refresh with
-% scripts/run_vehicle_transition_e0.py then
-% scripts/build_backing_regime_deck_values.py.
+% Dated backing regimes inside the stablecoin class. The supporting cut runs on
+% the endpoint-candidate choice panel. Refresh with
+% scripts/analyze/run_vehicle_transition_e0.py then
+% scripts/tabulate/build_backing_regime_deck_values.py.
 \input{../output/exhibits/vehicle_transition_backing_regime_deck_values.tex}
-% Fixed-cohort conditioning of the rotation. Provisional/E0 scope: the cohorts
-% run on the released endpoint-candidate choice panel and are not
-% submission-authoritative until the findings freeze admits them. A conditional
+% Fixed-cohort conditioning of the rotation. The supporting cohorts run on the
+% endpoint-candidate choice panel. A conditional
 % macro is the change among cells active in both endpoint years, so it is only
 % ever spent beside its own retained-mass macro. Refresh with
-% scripts/run_vehicle_transition_e0.py then
-% scripts/build_fixed_opportunity_deck_values.py.
+% scripts/analyze/run_vehicle_transition_e0.py then
+% scripts/tabulate/build_fixed_opportunity_deck_values.py.
 \input{../output/exhibits/vehicle_transition_fixed_opportunity_deck_values.tex}
-% Within-day cross-section of the excess-use construct. Provisional/E0 scope: the
-% ladder runs on the green route-only D3 panel and is not submission-authoritative
-% until the findings freeze admits it. Refresh with
-% scripts/run_excess_use_date_fe_ladder.py then
-% scripts/build_excess_use_date_fe_deck_values.py.
+% Within-day cross-section of the excess-use construct. Refresh with
+% scripts/analyze/run_excess_use_date_fe_ladder.py then
+% scripts/tabulate/build_excess_use_date_fe_deck_values.py.
 \input{../output/exhibits/excess_use_date_fe_deck_values.tex}
 
 \title{Vehicle Currency Rotation in Decentralised Exchanges}

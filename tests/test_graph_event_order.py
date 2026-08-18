@@ -3,7 +3,6 @@ from __future__ import annotations
 import gzip
 import json
 from pathlib import Path
-import sys
 
 import pytest
 from eth_abi import encode as abi_encode
@@ -18,7 +17,6 @@ from ddvc.graph_event_order import (
     SCHEMA_VERSION,
     V3_STATE_EVENT_TOPICS,
     apply_event_override,
-    correction_pointer_path,
     correction_root_for_graph,
     load_graph_events,
     match_event_orders,
@@ -26,43 +24,19 @@ from ddvc.graph_event_order import (
     resolve_portable_evidence_path,
     supplement_action,
     supplement_source_row,
-    write_correction_generation,
+    write_event_order_corrections,
 )
 from ddvc.state_data import (
     normalise_cp_partition,
-    normalise_tick_partition,
     read_cp_partition,
-    read_tick_partition,
     write_cp_partition,
-    write_tick_partition,
 )
-from ddvc.pricing.tick_replay import TickReplayState, load_tick_day_events
-from ddvc.pricing.tick_state import TickPoolState
-from ddvc.route_state import OrderedTickStateCursor, TickStateCut
-from ddvc.quoter import canonical_json_sha256
-from ddvc.tick_state_events import TickInitialization, certificate_identity_sha256, state_event_generation, write_daily_initializations
-from day_cut_fixtures import certified_day_cuts
 from source_day_fixtures import install_source_day_metadata
-from ddvc.v2_event_completeness import V2_EVENT_TOPICS, V2_RECONCILIATION_SCOPE
-from scripts import reconcile_graph_event_order as reconcile
+from ddvc.v2_event_contract import V2_EVENT_TOPICS, V2_RECONCILIATION_SCOPE
+from scripts.process import reconcile_graph_event_order as reconcile
 
 
 TEST_DAY_TIMESTAMP = "1735689700"
-
-
-def test_reconciliation_cli_routes_v2_to_full_audit_owner(
-    monkeypatch,
-    capsys,
-) -> None:
-    monkeypatch.setattr(
-        sys,
-        "argv",
-        ["reconcile_graph_event_order.py", "--venue", "uniswap_v2", "--day", "2020-05-15"],
-    )
-    with pytest.raises(SystemExit) as error:
-        reconcile.main()
-    assert error.value.code == 2
-    assert "owned by audit_v2_event_completeness.py" in capsys.readouterr().err
 
 
 def receipt_evidence(
@@ -102,7 +76,7 @@ def receipt_evidence(
         include_logs=True,
     )
     assert normalized is not None
-    endpoint = {"host": "injected", "endpoint_sha256": "0" * 64}
+    endpoint = {"host": "injected"}
     return {
         **normalized,
         "rpc_request": receipt_payload(tx_hash),
@@ -118,22 +92,18 @@ def receipt_evidence(
                 "message": "success",
             }
         ],
-        "response_sha256": canonical_json_sha256(response),
     }
 
 
-def test_v2_reconcilers_share_one_global_exact_log_path(tmp_path: Path, monkeypatch) -> None:
-    import ddvc.v2_event_completeness as v2
-
-    shared = tmp_path / "raw" / "ethereum" / "v2_exact"
-    monkeypatch.setattr(v2, "V2_EXACT_LOG_CACHE_ROOT", shared)
+def test_exact_log_chunks_are_scoped_by_venue_and_day() -> None:
     uniswap = reconcile.exact_chunk_paths("uniswap_v2", "20250101", 100, 149)
     sushi = reconcile.exact_chunk_paths("sushiswap_v2", "20260101", 100, 149)
-    assert uniswap == sushi
-    assert uniswap[0].parent == shared
+    assert uniswap != sushi
+    assert "uniswap_v2/20250101" in uniswap[0].as_posix()
+    assert "sushiswap_v2/20260101" in sushi[0].as_posix()
 
 
-def test_external_exact_log_provenance_stays_portable(tmp_path: Path) -> None:
+def test_external_exact_log_source_path_stays_portable(tmp_path: Path) -> None:
     root = tmp_path / "raw" / "ethereum" / "graph_event_order"
     exact = tmp_path / "raw" / "ethereum" / "v2_exact" / "blocks.parquet"
     relative = portable_evidence_path(exact, root)
@@ -353,18 +323,6 @@ def write_graph_day(
         with gzip.open(path, "wt") as handle:
             for row in stream_rows[stream]:
                 handle.write(json.dumps(row) + "\n")
-    source = next(iter([*rows, *(mints or []), *(burns or [])]))
-    pool = source["pool"]
-    token0, token1 = pool["token0"], pool["token1"]
-    initialization = TickInitialization("uniswap_v3", pool["id"], token0["id"], token1["id"], int(pool["feeTier"]), int(pool.get("tickSpacing") or 10), "0x" + "0" * 40, 1 << 96, 0, 9, "0x" + "1" * 64, "0x" + "2" * 64, 0, 1, True, None)
-    certificate = {"status": "pass", "generation": state_event_generation("uniswap_v3"), "venue": "uniswap_v3", "precedence_status": "pass"}
-    certificate["certificate_identity_sha256"] = certificate_identity_sha256(certificate)
-    metadata = {
-        token["id"]: (token.get("symbol") or "", int(token["decimals"]))
-        for token in (token0, token1)
-        if token.get("decimals") is not None
-    }
-    write_daily_initializations("uniswap_v3", [initialization], day_cuts=certified_day_cuts({"20250101": (0, 20)}), token_metadata=metadata, raw_root=raw_root, generation_certificate=certificate)
 
 
 def write_v3_statics(raw_root: Path) -> None:
@@ -382,7 +340,7 @@ def write_v3_statics(raw_root: Path) -> None:
         )
 
 
-def test_v3_receipt_order_generation_repairs_causal_collisions(tmp_path: Path) -> None:
+def test_v3_receipt_order_corrections_repair_causal_collisions(tmp_path: Path) -> None:
     raw_root = tmp_path / "raw" / "thegraph"
     graph_rows = [
         graph_swap("event-one", "0xtx1", "1", "-2"),
@@ -415,7 +373,7 @@ def test_v3_receipt_order_generation_repairs_causal_collisions(tmp_path: Path) -
             "event_topics": [V3_STATE_EVENT_TOPICS["swap"]],
         },
     )
-    write_correction_generation(
+    write_event_order_corrections(
         root=correction_root,
         raw_root=raw_root,
         venue="uniswap_v3",
@@ -428,26 +386,6 @@ def test_v3_receipt_order_generation_repairs_causal_collisions(tmp_path: Path) -
         start_block=10,
         end_block=10,
     )
-    install_source_day_metadata(
-        raw_root,
-        "uniswap_v3",
-        ("swaps", "mints", "burns"),
-        "20250101",
-    )
-    frame, quality = normalise_tick_partition(raw_root, "uniswap_v3", "20250101")
-    assert quality.passed
-    assert quality.conflicting_events == 0
-    assert set(frame.loc[frame["record_type"] == "swap", "log_index"].astype(int)) == {99, 122}
-    assert len(quality.input_fingerprint) == 64
-    state_root = tmp_path / "state"
-    write_tick_partition(raw_root, "uniswap_v3", "20250101", root=state_root)
-    released = read_tick_partition(
-        "uniswap_v3",
-        "20250101",
-        root=state_root,
-        raw_root=raw_root,
-    )
-    assert set(released.loc[released["record_type"] == "swap", "log_index"].astype(int)) == {99, 122}
 
 
 def test_missing_provider_log_index_is_repaired_from_exact_chain_order(tmp_path: Path) -> None:
@@ -482,7 +420,7 @@ def test_missing_provider_log_index_is_repaired_from_exact_chain_order(tmp_path:
             "event_topics": [V3_STATE_EVENT_TOPICS["swap"]],
         },
     )
-    write_correction_generation(
+    write_event_order_corrections(
         root=correction_root,
         raw_root=raw_root,
         venue="uniswap_v3",
@@ -494,12 +432,6 @@ def test_missing_provider_log_index_is_repaired_from_exact_chain_order(tmp_path:
         audit=audit,
         start_block=10,
         end_block=10,
-    )
-    install_source_day_metadata(
-        raw_root,
-        "uniswap_v3",
-        ("swaps", "mints", "burns"),
-        "20250101",
     )
 
 
@@ -562,7 +494,7 @@ def test_explicit_pool_perimeter_rejects_graph_pool_outside_scope() -> None:
             pool="0xoutside",
             block_number=10,
             provider_log_index=7,
-            fingerprint=("swap", 1, -2, 1 << 96, 0),
+            event_values=("swap", 1, -2, 1 << 96, 0),
             decimals0=18,
             decimals1=6,
             needs_complete=False,
@@ -675,7 +607,7 @@ def test_reconciliation_repairs_duplicates_rounding_and_omissions(
             "event_topics": list(V3_STATE_EVENT_TOPICS.values()),
         },
     )
-    _, correction_meta = write_correction_generation(
+    write_event_order_corrections(
         root=correction_root,
         raw_root=raw_root,
         venue="uniswap_v3",
@@ -696,132 +628,6 @@ def test_reconciliation_repairs_duplicates_rounding_and_omissions(
         start_block=10,
         end_block=10,
     )
-    pointer_path = correction_pointer_path(
-        correction_root,
-        "uniswap_v3",
-        "20250101",
-    )
-    prior_pointer = pointer_path.read_bytes()
-    import ddvc.graph_event_order as event_order
-
-    original_write_json = event_order.write_json
-
-    def fail_pointer(path, payload):
-        if path == pointer_path:
-            raise OSError("simulated pointer publication failure")
-        return original_write_json(path, payload)
-
-    with monkeypatch.context() as patch:
-        patch.setattr(event_order, "write_json", fail_pointer)
-        with pytest.raises(OSError, match="simulated pointer"):
-            write_correction_generation(
-                root=correction_root,
-                raw_root=raw_root,
-                venue="uniswap_v3",
-                day="20250101",
-                corrections=corrections,
-                supplements=supplements,
-                block_timestamp_evidence=[
-                    {
-                        "request": {
-                            "method": "eth_getBlockByNumber",
-                            "params": ["0xa", False],
-                        },
-                        "response": {"number": "0xa", "timestamp": "0x677485e4"},
-                    }
-                ],
-                exact_log_paths=[exact_path, exact_marker],
-                audit=audit,
-                start_block=10,
-                end_block=10,
-                scope="alternate_graph_span",
-            )
-    assert pointer_path.read_bytes() == prior_pointer
-    install_source_day_metadata(
-        raw_root,
-        "uniswap_v3",
-        ("swaps", "mints", "burns"),
-        "20250101",
-    )
-    frame, quality = normalise_tick_partition(raw_root, "uniswap_v3", "20250101")
-    assert quality.passed
-    assert quality.duplicate_events == 0
-    assert quality.conflicting_events == 0
-    assert set(frame.loc[frame["record_type"] != "initialize", "log_index"].astype(int)) == {7, 8, 9}
-    corrected = frame.loc[frame["tx_hash"] == "0xtx1"].iloc[0]
-    assert corrected["amount0"] == "1"
-    assert corrected["sqrt_price_x96"] == str(1 << 96)
-    assert corrected["tick"] == 0
-    corrected_burn = frame.loc[frame["tx_hash"] == "0xtx3"].iloc[0]
-    assert corrected_burn["amount0"] == "1"
-    assert corrected_burn["amount1"] == "2"
-    assert corrected_burn["liquidity_delta"] == "-10"
-    assert corrected_burn["tick_lower"] == -10
-    assert corrected_burn["tick_upper"] == 10
-    state_root = tmp_path / "state"
-    write_tick_partition(raw_root, "uniswap_v3", "20250101", root=state_root)
-    quote_events = load_tick_day_events(
-        state_root,
-        "20250101",
-        venues=("uniswap_v3",),
-        raw_root=raw_root,
-    )
-    released_transactions = {
-        str((event.row.get("transaction") or {}).get("id"))
-        for event in quote_events
-    }
-    assert "0xtx2" in released_transactions
-    burn_event = next(
-        event
-        for event in quote_events
-        if str((event.row.get("transaction") or {}).get("id")) == "0xtx3"
-    )
-    replay = TickReplayState()
-    replay.apply(next(event for event in quote_events if event.kind == "initialize"))
-    replay.apply(burn_event)
-    assert replay.ticks_by_venue["uniswap_v3"]["0xpool"] == {-10: -10, 10: 10}
-    swap_event = next(
-        event
-        for event in quote_events
-        if str((event.row.get("transaction") or {}).get("id")) == "0xtx1"
-    )
-    replay.states_by_venue["uniswap_v3"] = {
-        "0xpool": TickPoolState(
-            pool="0xpool",
-            token0="0xa",
-            token1="0xb",
-            sym0="A",
-            sym1="B",
-            dec0=18,
-            dec1=6,
-            sqrt_price_x96=(1 << 96) + 123,
-            tick=7,
-            fee_pips=500,
-            tick_spacing=10,
-            block=9,
-            log_index=1,
-        )
-    }
-    replay.apply(swap_event)
-    exact_state = replay.states_by_venue["uniswap_v3"]["0xpool"]
-    assert exact_state.sqrt_price_x96 == 1 << 96
-    assert exact_state.tick == 0
-    applied: list[str] = []
-
-    class QuoteReplay:
-        @staticmethod
-        def apply(event) -> None:
-            applied.append(str((event.row.get("transaction") or {}).get("id")))
-
-    cursor = OrderedTickStateCursor(tuple(quote_events))
-    cursor.apply_until(QuoteReplay(), TickStateCut.strict_before_event((11, 0)))
-    assert "0xtx2" in applied
-    metadata = json.loads(correction_meta.read_text(encoding="utf-8"))
-    assert metadata["schema_version"] == SCHEMA_VERSION
-    metadata["schema_version"] = SCHEMA_VERSION - 1
-    correction_meta.write_text(json.dumps(metadata) + "\n", encoding="utf-8")
-    with pytest.raises(ValueError, match="stale event-order generation pointer"):
-        normalise_tick_partition(raw_root, "uniswap_v3", "20250101")
 
 
 def test_reconciliation_rejects_ambiguous_structural_payload_matches(tmp_path: Path) -> None:
@@ -854,7 +660,7 @@ def test_v2_repeated_pool_swaps_use_unique_directional_amount_anchor() -> None:
             pool="0xpool",
             block_number=10,
             provider_log_index=provider_log,
-            fingerprint=("swap", amount_in, 0, 0, provider_amount_out),
+            event_values=("swap", amount_in, 0, 0, provider_amount_out),
             decimals0=18,
             decimals1=18,
             needs_complete=False,
@@ -905,7 +711,7 @@ def test_identical_provider_rows_emit_explicit_duplicate_exclusions() -> None:
             pool="0xpool",
             block_number=10,
             provider_log_index=7,
-            fingerprint=("swap", 10, 0, 0, 20),
+            event_values=("swap", 10, 0, 0, 20),
             decimals0=18,
             decimals1=6,
             needs_complete=False,
@@ -988,7 +794,7 @@ def test_absent_duplicate_groups_separate_one_absence_from_duplicate_exclusions(
             pool="0xpool",
             block_number=10,
             provider_log_index=7,
-            fingerprint=("swap", 10, 0, 0, 20),
+            event_values=("swap", 10, 0, 0, 20),
             decimals0=18,
             decimals1=6,
             needs_complete=needs_complete,
@@ -1052,7 +858,7 @@ def test_v2_repeated_pool_swaps_use_unique_constant_log_offset() -> None:
             pool="0xpool",
             block_number=10,
             provider_log_index=provider_log,
-            fingerprint=("swap", 10, 0, 0, provider_amount_out),
+            event_values=("swap", 10, 0, 0, provider_amount_out),
             decimals0=18,
             decimals1=18,
             needs_complete=False,
@@ -1097,7 +903,7 @@ def test_v2_repeated_pool_swaps_reject_nonconstant_log_offsets() -> None:
             pool="0xpool",
             block_number=10,
             provider_log_index=provider_log,
-            fingerprint=("swap", 10, 0, 0, provider_amount_out),
+            event_values=("swap", 10, 0, 0, provider_amount_out),
             decimals0=18,
             decimals1=18,
             needs_complete=False,
@@ -1318,7 +1124,7 @@ def test_v2_events_bind_hashed_same_day_snapshot_decimals(tmp_path: Path) -> Non
             "event_topics": list(V2_EVENT_TOPICS.values()),
         },
     )
-    write_correction_generation(
+    write_event_order_corrections(
         root=correction_root,
         raw_root=raw_root,
         venue="uniswap_v2",
@@ -1431,7 +1237,7 @@ def test_v2_missing_provider_decimals_are_filled_from_audited_registry(
     )
     assert len(graph) == 1
     assert (graph[0].decimals0, graph[0].decimals1) == (18, 6)
-    assert graph[0].fingerprint == ("swap", 10**18, 0, 0, 2 * 10**6)
+    assert graph[0].event_values == ("swap", 10**18, 0, 0, 2 * 10**6)
 
 
 def test_v2_audited_decimals_reject_provider_disagreement(

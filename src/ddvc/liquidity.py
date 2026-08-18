@@ -129,7 +129,7 @@ def _import_from_repository(module_name: str):
     """Import one in-repository module by file location, without touching sys.path.
 
     A materializer may name an entrypoint module such as
-    ``scripts.build_pool_capital_panel``.  Those modules are importable by name
+    ``scripts.process.build_pool_capital_panel``.  Those modules are importable by name
     only when the repository root is on the import path, which the project runner
     arranges but a bare ``python scripts/x.py`` invocation does not.  A contract
     validator whose verdict depends on how the interpreter was launched is not a

@@ -4,7 +4,7 @@ import unittest
 
 import pandas as pd
 
-from scripts.run_usdt_integration_decomposition_e0 import (
+from scripts.analyze.run_usdt_integration_decomposition_e0 import (
     build_exhibit,
     midpoint_decomposition,
     ratio_of_totals_cells,

@@ -7,8 +7,10 @@ from pathlib import Path
 
 REPO_ROOT = Path(__file__).resolve().parents[2]
 LITERATURE_DIR = REPO_ROOT / "literature"
+LOCAL_CONFIG_DIR = Path.home() / ".config" / "ddvc"
+LITERATURE_AUTH_DIR = LOCAL_CONFIG_DIR / "literature-auth"
 # TWO ARTEFACTS, ONE PAPER.
-#   memo/   the discovery draft. Every result, number and provenance comment, in the
+#   memo/   the discovery draft. Every result, number and source comment, in the
 #           register it was found in. Frozen for style; it is a record, not a deliverable.
 #   paper/  the paper, written FROM the memo against the venue's measured shape bands.
 # There is exactly one of each. A parallel "v2" copy of the paper was tried and removed,
@@ -33,22 +35,8 @@ def sections_dir() -> Path:
 DATA_DIR = REPO_ROOT / "data"
 OUTPUT_DIR = REPO_ROOT / "output"
 ETHEREUM_RPC_RAW_ROOT = DATA_DIR / "raw" / "ethereum" / "rpc_cache"
-V3_INVENTORY_RAW_ROOT = DATA_DIR / "raw" / "ethereum" / "uniswap_v3_inventory_events"
-TICK_STATE_EVENT_RAW_ROOT = DATA_DIR / "raw" / "ethereum" / "tick_state_events"
-V2_AUDITED_TOKEN_DECIMALS_REGISTRY = DATA_DIR / "processed" / "v2_audit_token_decimals.parquet"
+V2_TOKEN_DECIMALS_PANEL = DATA_DIR / "processed" / "v2_token_decimals.parquet"
 TOKEN_PRICE_DAILY_PANEL = DATA_DIR / "processed" / "token_price_daily.parquet"
-EXTERNAL_WETH_USD_INTRADAY_PANEL = (
-    DATA_DIR / "processed" / "external_weth_usd_intraday.parquet"
-)
-EXTERNAL_WETH_USD_RAW_ROOT = DATA_DIR / "raw" / "external" / "coinbase_exchange" / "eth_usd_spot_1m"
-LP_CAPITAL_CONCENTRATION_PANEL = DATA_DIR / "exhibits" / "lp_capital_concentration.parquet"
-LP_LIQUIDITY_FLOW_EVENTS = DATA_DIR / "processed" / "lp_liquidity_flow_events_v3.parquet"
-LP_LIQUIDITY_FLOW_CANDIDATES = DATA_DIR / "processed" / "lp_liquidity_flow_candidates_v3.parquet"
-LP_LIQUIDITY_FLOW_REJECTIONS = DATA_DIR / "processed" / "lp_liquidity_flow_rejections_v3.parquet"
-LP_LIQUIDITY_FLOW_DAILY = DATA_DIR / "processed" / "lp_liquidity_flow_daily_v3.parquet"
-MARKET_STATE_LOCK = DATA_DIR / "processed" / ".market_state.lock"
-TOKEN_PRICE_LOCK = DATA_DIR / "processed" / ".token_price.lock"
-ROUTE_COST_JOB_LOCK = DATA_DIR / "empirical" / ".route_cost_panel.lock"
 
 
 def git_common_dir(repo_root: Path) -> Path | None:
@@ -94,8 +82,7 @@ SHARED_RUNTIME_DIR = _shared_git_runtime_dir(REPO_ROOT)
 PRIMARY_REPO_ROOT = primary_checkout_root(REPO_ROOT)
 RAW_MARKET_DATA_LOCK = SHARED_RUNTIME_DIR / "raw-market-data.lock"
 POOL_CAPITAL_RELEASE_LOCK = SHARED_RUNTIME_DIR / "pool-capital-release.lock"
-V3_INVENTORY_RANGE_LOCK_ROOT = SHARED_RUNTIME_DIR / "v3-inventory-range-locks"
-EXTERNAL_WETH_USD_SOURCE_LOCK = SHARED_RUNTIME_DIR / "external-weth-usd.lock"
+TOKEN_PRICE_LOCK = SHARED_RUNTIME_DIR / "token-price.lock"
 
 
 def repo_path(value: str | Path) -> Path:
@@ -107,6 +94,6 @@ LITERATURE_BIB = LITERATURE_DIR / "vehicle-currencies.bib"
 LITERATURE_PDF_SOURCES = LITERATURE_DIR / "pdf-sources.json"
 LITERATURE_SOURCE_ADMISSION = LITERATURE_DIR / "source-admission.json"
 LITERATURE_LOCAL_SOURCES = LITERATURE_DIR / "sources.local.json"
-LITERATURE_AUTH_HEADERS = LITERATURE_DIR / "auth" / "headers.local.json"
+LITERATURE_AUTH_HEADERS = LITERATURE_AUTH_DIR / "headers.local.json"
 LITERATURE_PAPERS_DIR = literature_papers_dir(REPO_ROOT)
 LITERATURE_DOWNLOAD_MANIFEST = LITERATURE_PAPERS_DIR / "download-manifest.json"

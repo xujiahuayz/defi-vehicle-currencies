@@ -4,7 +4,6 @@ from __future__ import annotations
 
 import calendar
 import datetime as dt
-import hashlib
 import json
 import os
 import time
@@ -18,7 +17,6 @@ from ddvc.config import dotenv_value
 from ddvc.fetch.raw import write_jsonl_gz
 from ddvc.fetch.sources import DexSource
 from ddvc.paths import DATA_DIR
-from ddvc.provenance import portable_content_sha256
 
 API = "https://api.dune.com/api/v1"
 DUNE_QUERY_START_FIELD = "query_start_date"
@@ -141,27 +139,12 @@ ORDER BY block_time, evt_index
 """
 
 
-def dune_query_contract_sha256(
-    source: DexSource, start: dt.date, end: dt.date
-) -> str:
-    payload = {
-        "backend": "dune",
-        "source": source.name,
-        "project": source.dune_project,
-        "version": source.dune_version,
-        "sql": " ".join(_source_sql(source, start, end).split()),
-    }
-    return hashlib.sha256(
-        json.dumps(payload, sort_keys=True, separators=(",", ":")).encode()
-    ).hexdigest()
-
-
 def validated_dune_query_window(
     source: DexSource,
     day: dt.date,
     stream_marker: dict[str, Any],
 ) -> tuple[dt.date, dt.date]:
-    """Reopen one recorded Dune query window and bind it to its SQL contract."""
+    """Validate that recorded query dates contain the source day."""
 
     raw_start = stream_marker.get(DUNE_QUERY_START_FIELD)
     raw_end = stream_marker.get(DUNE_QUERY_END_EXCLUSIVE_FIELD)
@@ -178,9 +161,6 @@ def validated_dune_query_window(
         raise ValueError("Dune query window is empty or reversed")
     if not start <= day < end:
         raise ValueError("Dune query window does not contain the source day")
-    expected = dune_query_contract_sha256(source, start, end)
-    if stream_marker.get("query_contract_sha256") != expected:
-        raise ValueError("Dune query contract does not match its recorded window")
     return start, end
 
 
@@ -378,10 +358,6 @@ def fetch_dune_month(
                 "path": str(out),
                 "status": "fetched",
                 "rows": len(day_rows),
-                "logical_content_sha256": portable_content_sha256(out),
-                "query_contract_sha256": dune_query_contract_sha256(
-                    source, month_start, month_end
-                ),
                 DUNE_QUERY_START_FIELD: month_start.isoformat(),
                 DUNE_QUERY_END_EXCLUSIVE_FIELD: month_end.isoformat(),
                 "execution_id": execution_id,
@@ -394,10 +370,6 @@ def fetch_dune_month(
                 "path": str(out),
                 "status": "fetched",
                 "rows": len(summary),
-                "logical_content_sha256": portable_content_sha256(out),
-                "query_contract_sha256": dune_query_contract_sha256(
-                    source, month_start, month_end
-                ),
                 DUNE_QUERY_START_FIELD: month_start.isoformat(),
                 DUNE_QUERY_END_EXCLUSIVE_FIELD: month_end.isoformat(),
                 "execution_id": execution_id,

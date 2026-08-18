@@ -15,7 +15,6 @@ from ddvc.analysis.dynamics import (
     exact_daily_log_return,
     value_at_day_offset,
 )
-from ddvc.analysis.observations import _add_stress
 
 
 class CalendarDynamicsTests(unittest.TestCase):
@@ -134,55 +133,3 @@ class CalendarDynamicsTests(unittest.TestCase):
                 ),
                 "price",
             )
-
-    def test_observation_stress_uses_shared_daily_price_risk_policy(self) -> None:
-        dates = pd.date_range("2026-01-01", periods=3, freq="D")
-        panel = pd.DataFrame(
-            {
-                "token": ["WETH", "WETH", "WETH", "USDC", "USDC", "USDC"],
-                "date": list(dates) * 2,
-                "weth_price": [100.0, 90.0, 91.0] * 2,
-            }
-        )
-        observed = _add_stress(panel)
-        expected = daily_price_risk_features(
-            panel.loc[panel["token"].eq("WETH"), ["date", "weth_price"]],
-            "weth_price",
-        )
-        weth = observed.loc[observed["token"].eq("WETH")].reset_index(drop=True)
-        np.testing.assert_allclose(
-            weth["weth_log_return"], expected["log_return"], equal_nan=True
-        )
-        np.testing.assert_allclose(
-            weth["stress_downside"], expected["downside_stress"], equal_nan=True
-        )
-
-    def test_registered_dynamic_builders_use_the_canonical_horizon_owner(self) -> None:
-        root = Path(__file__).resolve().parents[1]
-        consumers = (
-            "src/ddvc/analysis/observations.py",
-            "scripts/run_core_rq_experiments.py",
-        )
-        for relative in consumers:
-            source = (root / relative).read_text()
-            self.assertIn("CANONICAL_RESPONSE_HORIZONS", source, relative)
-            self.assertNotIn("1, 7, 14, 30", source, relative)
-
-    def test_registered_stress_builders_require_exact_prior_day_prices(self) -> None:
-        root = Path(__file__).resolve().parents[1]
-        consumers = (
-            "scripts/run_claim_defense_analytics.py",
-            "scripts/run_core_rq_experiments.py",
-            "scripts/run_empirical_proposition_tests.py",
-            "scripts/run_jfe_remaining_blocker_fixes.py",
-            "scripts/run_robustness_tests.py",
-        )
-        for relative in consumers:
-            source = (root / relative).read_text()
-            self.assertIn("exact_daily_log_return", source, relative)
-            self.assertNotIn('weth_price"]).diff()', source, relative)
-            self.assertNotIn('weth_price"].shift(', source, relative)
-        observations = (root / "src/ddvc/analysis/observations.py").read_text()
-        self.assertIn("daily_price_risk_features", observations)
-        self.assertNotIn("exact_daily_log_return", observations)
-        self.assertNotIn("stress_downside\"] =", observations)

@@ -9,7 +9,6 @@ from pathlib import Path
 from ddvc.fetch.raw import write_jsonl
 from ddvc.paths import ETHEREUM_RPC_RAW_ROOT
 from ddvc.quoter import (
-    canonical_json_sha256,
     coerce_rpc_envelope,
     rpc_post,
     validate_rpc_attempts,
@@ -214,7 +213,6 @@ def receipt_evidence_is_current(
         if (
             not isinstance(response, dict)
             or response.get("id") != 1
-            or row.get("response_sha256") != canonical_json_sha256(response)
         ):
             return False
         parsed = parse_receipt(
@@ -320,7 +318,6 @@ def fetch_receipt(
                 "rpc_response": raw_response,
                 "rpc_endpoint": envelope.endpoint,
                 "rpc_attempts": list(envelope.attempts),
-                "response_sha256": canonical_json_sha256(raw_response),
             }
         )
     if row is None or not receipt_is_current(
@@ -360,7 +357,7 @@ def write_receipt_snapshot(
     presorted: bool = False,
     order_by_block: bool = False,
 ) -> Path:
-    """Install deterministic receipt evidence, streaming a certified presorted iterable."""
+    """Install deterministic receipt evidence, streaming a validated presorted iterable."""
 
     order_key = (lambda row: (int(row["block_number"]), str(row["tx_hash"]))) if order_by_block else (lambda row: str(row["tx_hash"]))
     ordered = receipts if presorted else sorted(receipts, key=order_key)

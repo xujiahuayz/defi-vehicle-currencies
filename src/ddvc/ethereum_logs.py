@@ -3,7 +3,6 @@
 from __future__ import annotations
 
 from datetime import datetime, timezone
-import hashlib
 import json
 from pathlib import Path
 
@@ -15,7 +14,6 @@ from ddvc.quoter import (
     RpcCapacityError as ExactLogCapacityError,
     RpcEnvelope,
     RpcSemanticError as ExactLogRpcError,
-    canonical_json_sha256,
     coerce_rpc_envelope,
     rpc_post,
     validate_rpc_attempts,
@@ -40,17 +38,7 @@ RAW_LOG_SCHEMA = pa.schema(
 )
 
 
-def file_sha256(path: Path) -> str:
-    """Hash one file without loading a potentially large evidence artifact into memory."""
-
-    digest = hashlib.sha256()
-    with path.open("rb") as handle:
-        for chunk in iter(lambda: handle.read(1024 * 1024), b""):
-            digest.update(chunk)
-    return digest.hexdigest()
-
-
-def is_sha256(value: object) -> bool:
+def is_chain_hash(value: object) -> bool:
     text = str(value or "")
     return len(text) == 64 and all(character in "0123456789abcdef" for character in text.lower())
 
@@ -93,8 +81,6 @@ def validate_frozen_block(
         or response.get("error") is not None
     ):
         raise ValueError("frozen upper-block evidence lacks its exact RPC response")
-    if record.get("response_sha256") != canonical_json_sha256(response):
-        raise ValueError("frozen upper-block response digest disagrees")
     header = response.get("result")
     if not isinstance(header, dict):
         raise ValueError("frozen upper-block RPC response lacks a header")
@@ -113,12 +99,10 @@ def validate_frozen_block(
     if observed != copied:
         raise ValueError("frozen upper-block copied fields disagree with the RPC response")
     if not all(
-        str(copied[field]).startswith("0x") and is_sha256(str(copied[field])[2:])
+        str(copied[field]).startswith("0x") and is_chain_hash(str(copied[field])[2:])
         for field in ("block_hash", "parent_hash")
     ) or copied["timestamp"] < 1:
         raise ValueError("frozen upper-block evidence lacks an exact header identity")
-    if record.get("header_identity_sha256") != canonical_json_sha256(copied):
-        raise ValueError("frozen upper-block identity digest disagrees")
 
 
 def load_or_resolve_frozen_block(
@@ -157,16 +141,7 @@ def load_or_resolve_frozen_block(
         "rpc_response": envelope.response,
         "rpc_endpoint": envelope.endpoint,
         "rpc_attempts": list(envelope.attempts),
-        "response_sha256": canonical_json_sha256(envelope.response),
     }
-    record["header_identity_sha256"] = canonical_json_sha256(
-        {
-            "block_number": record["block_number"],
-            "block_hash": record["block_hash"],
-            "parent_hash": record["parent_hash"],
-            "timestamp": record["timestamp"],
-        }
-    )
     validate_frozen_block(record, block, schema_version=schema_version)
     path.parent.mkdir(parents=True, exist_ok=True)
     write_json(path, record)
@@ -257,10 +232,6 @@ def validate_anchored_log_evidence(
     }
     if observed_header != expected_header:
         raise ValueError("exact-log endpoint disagrees with the frozen upper header")
-    if marker.get("frozen_upper_response_sha256") != canonical_json_sha256(frozen_response):
-        raise ValueError("exact-log frozen-upper response digest disagrees")
-    if marker.get("response_sha256") != canonical_json_sha256(rpc_response):
-        raise ValueError("exact-log response digest disagrees")
 
 
 def rpc_post_with_evidence(
@@ -565,10 +536,8 @@ def fetch_exact_logs_with_evidence(
         "response": envelope.response,
         "endpoint": envelope.endpoint,
         "attempts": list(envelope.attempts),
-        "response_sha256": canonical_json_sha256(envelope.response),
         "frozen_upper_request": header_payload,
         "frozen_upper_response": by_id[2],
-        "frozen_upper_response_sha256": canonical_json_sha256(by_id[2]),
     }
 
 
@@ -644,7 +613,6 @@ def write_exact_log_chunk(
         "storage_format": RAW_LOG_STORAGE_FORMAT,
         "raw_logs": len(records),
         "fetched_at_utc": datetime.now(timezone.utc).isoformat(),
-        "raw_sha256": file_sha256(raw_path),
     }
     write_json(marker_path, payload)
     return payload

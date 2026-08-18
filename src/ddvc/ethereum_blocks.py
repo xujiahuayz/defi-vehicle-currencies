@@ -9,7 +9,6 @@ from pathlib import Path
 from ddvc.fetch.raw import write_jsonl
 from ddvc.paths import ETHEREUM_RPC_RAW_ROOT
 from ddvc.quoter import (
-    canonical_json_sha256,
     coerce_rpc_envelope,
     rpc_post,
     validate_rpc_attempts,
@@ -134,7 +133,6 @@ def block_header_evidence_is_current(row: object, block_number: int) -> bool:
         if (
             not isinstance(response, dict)
             or response.get("id") != 1
-            or row.get("response_sha256") != canonical_json_sha256(response)
         ):
             return False
         parsed = parse_block_header(block_number, response)
@@ -182,7 +180,6 @@ def fetch_block_header(
                 "rpc_response": envelope.response,
                 "rpc_endpoint": envelope.endpoint,
                 "rpc_attempts": list(envelope.attempts),
-                "response_sha256": canonical_json_sha256(envelope.response),
             }
         )
         if not block_header_is_current(row, block, require_evidence=True):
@@ -216,7 +213,7 @@ def write_block_header_snapshot(
     require_evidence: bool = False,
     presorted: bool = False,
 ) -> Path:
-    """Install deterministic block evidence, streaming a certified presorted iterable."""
+    """Install deterministic block evidence, streaming a validated presorted iterable."""
 
     ordered = headers if presorted else sorted(headers, key=lambda row: int(row["block_number"]))
 

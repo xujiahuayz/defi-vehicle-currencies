@@ -1,6 +1,6 @@
 # Historical Nanyang pipeline corpus manifest
 
-**Status:** Historical supporting digest from the 2026-08-04 Nanyang pipeline. It is retained beside the literature corpus for provenance and possible source discovery, but it is not current citation, claim, venue, or workflow authority. Use [`literature/source-admission.json`](../source-admission.json), [`literature/vehicle-currencies.bib`](../vehicle-currencies.bib), and [`docs/literature-audit.md`](../../docs/literature-audit.md) for current decisions.
+**Status:** Historical supporting digest from the 2026-08-04 Nanyang pipeline. It is retained beside the literature corpus for provenance and possible source discovery, but it is not current citation, claim, venue, or workflow authority. Use [`literature/source-admission.json`](../source-admission.json), [`literature/vehicle-currencies.bib`](../vehicle-currencies.bib), and [`literature/audit.md`](../../literature/audit.md) for current decisions.
 
 Pointers only. No interpretive synthesis here — Phase 1 does the independent-read source-fidelity work on whichever of these a candidate framing actually leans on.
 
@@ -26,7 +26,7 @@ Already confirmed earlier in this project from the local literature cache:
 
 ## Anchor literature (already in `literature/vehicle-currencies.bib` and `literature/papers/`)
 
-Full list and classification already exists in `docs/research-questions-and-empirical-design.md` (lines 17-34) — Krugman (1980), Dowd & Greenaway (1993), Grossman & Miller (1988), Ho & Stoll (1981), Brunnermeier & Pedersen (2009), Gopinath & Stein (2021), Chen & Duffie (2021), Somogyi (2026), Lehar & Parlour (2024), Chordia/Roll/Subrahmanyam (2000), Coughenour & Saad (2004), Comerton-Forde et al. (2010), Hendershott/Jones/Menkveld (2011), Anand & Venkataraman (2016), Clark-Joseph/Ye/Zi (2017), Bessembinder/Hao/Zheng (2020), Li/Wang/Ye (2021), Heimbach/Pahari/Schertenleib (2024). Not re-derived here; Phase 1 does the independent-read cross-check on whichever of these a candidate framing leans on. That doc's own RQ1-5 *structure* is not binding — only its literature classification is being reused as a pointer.
+Full list and classification already exists in `docs/research/design.md` (lines 17-34) — Krugman (1980), Dowd & Greenaway (1993), Grossman & Miller (1988), Ho & Stoll (1981), Brunnermeier & Pedersen (2009), Gopinath & Stein (2021), Chen & Duffie (2021), Somogyi (2026), Lehar & Parlour (2024), Chordia/Roll/Subrahmanyam (2000), Coughenour & Saad (2004), Comerton-Forde et al. (2010), Hendershott/Jones/Menkveld (2011), Anand & Venkataraman (2016), Clark-Joseph/Ye/Zi (2017), Bessembinder/Hao/Zheng (2020), Li/Wang/Ye (2021), Heimbach/Pahari/Schertenleib (2024). Not re-derived here; Phase 1 does the independent-read cross-check on whichever of these a candidate framing leans on. That doc's own RQ1-5 *structure* is not binding — only its literature classification is being reused as a pointer.
 
 ## Golden-benchmark structural comparators (published, non-topical — chosen for scope/depth/structure precedent, not subject-matter overlap)
 
@@ -50,7 +50,7 @@ All confirmed published (DOI resolves to a firm publisher record, not a working 
 ## Repo inventory (what already exists)
 
 - Historical `slides/nanyang_vehicle_currencies.tex` — deleted after the live deck replaced it; recoverable from git history only and not binding on current deck work.
-- `docs/research-questions-and-empirical-design.md` — the RQ1-5 redesign doc (2026-07-17), execution hold never lifted. Its literature classification (above) is reused; its RQ-numbered structure is explicitly not binding per Java's instruction.
+- `docs/research/design.md` — the RQ1-5 redesign doc (2026-07-17), execution hold never lifted. Its literature classification (above) is reused; its RQ-numbered structure is explicitly not binding per Java's instruction.
 - The July RQ1--7 design history under `docs/retired-rq1-7-*.md` may be consulted only to reconstruct a decision that the current specification lock and findings freeze do not already explain.
 - Reference repo `defi-dominant-currency` (ddc) — deeper historical data engine and 115G raw data layer; frozen, reference/data-engine only per the project's locked decisions.
 

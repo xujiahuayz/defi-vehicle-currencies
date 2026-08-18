@@ -47,7 +47,7 @@ linear in its outcome, so their fitted changes must sum to the fitted pooled
 change; `assert_cohort_additivity` checks that identity rather than trusting it.
 
 Third, the attack this module serves also asks for reach, notional and
-search-regret conditioning. Those need the certified transaction-state frontier,
+search-regret conditioning. Those need the validated transaction-state frontier,
 which is not released. `unsupported_dimension_ledger` records each of them as
 unsupported with its exact blocker, in the open, so that the fitted cohort half
 is never read as the whole attack.

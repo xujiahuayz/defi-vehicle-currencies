@@ -26,7 +26,7 @@ from ddvc.capital_contracts import (
     CURRENT_CAPITAL_VALIDATION_STATUS,
     MAX_POOL_CAPITAL_USD,
 )
-from ddvc.paths import TOKEN_PRICE_DAILY_PANEL
+from ddvc.paths import TOKEN_PRICE_DAILY_PANEL, V2_TOKEN_DECIMALS_PANEL
 
 
 ANCHORED_CAPITAL_ROLES = frozenset({"native", "staked_native", "stable", "imported"})
@@ -47,6 +47,22 @@ CONSTANT_PRODUCT_BALANCE_TOLERANCE = 1.25
 CAPITAL_PRICE_SOURCE = "canonical_repriced_route_legs_with_address_time_sanity"
 CAPITAL_PRICE_VALIDATION_STATUS = "consensus_and_address_time_sanity_passed"
 MAX_TOKEN_RESERVE = 1.0e50
+MAX_TOKEN_DECIMALS = 36
+
+
+def load_token_decimals(path: Path = V2_TOKEN_DECIMALS_PANEL) -> dict[str, int]:
+    """Load the conflict-checked token-decimals panel used for reserve scaling."""
+
+    frame = pd.read_parquet(path, columns=["token", "decimals"])
+    if frame.empty or frame["token"].duplicated().any():
+        raise ValueError("token-decimals panel is empty or contains duplicate tokens")
+    tokens = frame["token"].astype(str)
+    valid_tokens = tokens.str.fullmatch(r"0x[0-9a-f]{40}")
+    decimals = pd.to_numeric(frame["decimals"], errors="coerce")
+    valid_decimals = decimals.notna() & decimals.mod(1).eq(0) & decimals.between(0, MAX_TOKEN_DECIMALS)
+    if not valid_tokens.all() or not valid_decimals.all():
+        raise ValueError("token-decimals panel contains an invalid address or decimal value")
+    return dict(zip(tokens, decimals.astype(int), strict=True))
 
 
 @dataclass(frozen=True)

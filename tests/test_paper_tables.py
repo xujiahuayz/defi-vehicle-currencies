@@ -28,7 +28,6 @@ def test_write_table_artifacts_writes_tex_and_pdf(
     assert tex.read_text(encoding="utf-8") == "table body\n"
     assert pdf.read_bytes() == b"pdf"
 
-
 def test_table_lineage_readme_covers_every_active_manuscript_table() -> None:
     root = Path(__file__).resolve().parents[1]
     readme = (root / "scripts" / "tabulate" / "README.md").read_text(
@@ -65,15 +64,3 @@ def test_table_artifact_rerender_replaces_both_outputs(tmp_path: Path) -> None:
 
     assert tex.read_text(encoding="utf-8") == "table body\n"
     assert pdf.read_bytes() == b"pdf"
-
-
-def test_tabulate_readme_does_not_advertise_withdrawn_sample_as_current() -> None:
-    root = Path(__file__).resolve().parents[1]
-    readme = (root / "scripts" / "tabulate" / "README.md").read_text(
-        encoding="utf-8"
-    )
-    sample_row = next(
-        line for line in readme.splitlines() if "`render_sample_coverage.py`" in line
-    )
-    assert "Blocked" in sample_row
-    assert "withdrawn" in sample_row

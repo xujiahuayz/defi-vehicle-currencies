@@ -1,33 +1,29 @@
 % EVIDENCE-MANAGED-FILE
 % VISUAL-MANAGED-FILE
 % Numerical cells are generated; evidence status and identities stay in comments.
-\IfFileExists{../output/exhibits/provisional_results_deck_values.tex}{%
-\input{../output/exhibits/provisional_results_deck_values.tex}%
-}{\PackageError{dvc-deck}{Missing generated route-results values}{Run scripts/tabulate/render_provisional_results_deck_values.py.}}
+\IfFileExists{../output/exhibits/presentation_values.tex}{%
+\input{../output/exhibits/presentation_values.tex}%
+}{\PackageError{dvc-deck}{Missing generated route-results values}{Run scripts/tabulate/render_presentation_values.py.}}
 \IfFileExists{../output/exhibits/vehicle_transition_pair_decomposition_deck_values.tex}{%
 \input{../output/exhibits/vehicle_transition_pair_decomposition_deck_values.tex}%
-}{\PackageError{dvc-deck}{Missing generated vehicle-pair decomposition values}{Run scripts/build_vehicle_transition_pair_deck_values.py.}}
-\IfFileExists{../output/provisional/route_methodology_heterogeneity_deck_values.tex}{%
-\input{../output/provisional/route_methodology_heterogeneity_deck_values.tex}%
-}{\PackageError{dvc-deck}{Missing provisional WETH allocation values}{Run scripts/run_route_methodology_robustness.py --provisional-snapshot.}}
+}{\PackageError{dvc-deck}{Missing generated vehicle-pair decomposition values}{Run scripts/tabulate/build_vehicle_transition_pair_deck_values.py.}}
+\IfFileExists{../output/exhibits/route_methodology_heterogeneity_deck_values.tex}{%
+\input{../output/exhibits/route_methodology_heterogeneity_deck_values.tex}%
+}{\PackageError{dvc-deck}{Missing WETH allocation values}{Run scripts/analyze/run_route_heterogeneity.py.}}
 \IfFileExists{../output/exhibits/liquidity_capital_v2_deck_values.tex}{%
 \input{../output/exhibits/liquidity_capital_v2_deck_values.tex}%
-}{\PackageError{dvc-deck}{Missing generated V2 capital-predictability values}{Run scripts/build_liquidity_capital_v2_deck_values.py.}}
-\IfFileExists{../output/exhibits/dominance_ladder_deck_values.tex}{%
-\input{../output/exhibits/dominance_ladder_deck_values.tex}%
-}{\PackageError{dvc-deck}{Missing generated dominance control-ladder values}{Run scripts/figure/build_dominance_ladder.py.}}
+}{\PackageError{dvc-deck}{Missing generated V2 capital-predictability values}{Run scripts/tabulate/build_liquidity_capital_v2_deck_values.py.}}
 \IfFileExists{../output/exhibits/excess_use_date_fe_deck_values.tex}{%
 \input{../output/exhibits/excess_use_date_fe_deck_values.tex}%
-}{\PackageError{dvc-deck}{Missing generated within-day excess-use values}{Run scripts/run_excess_use_date_fe_ladder.py then scripts/build_excess_use_date_fe_deck_values.py.}}
+}{\PackageError{dvc-deck}{Missing generated within-day excess-use values}{Run scripts/analyze/run_excess_use_date_fe_ladder.py then scripts/tabulate/build_excess_use_date_fe_deck_values.py.}}
 
-% EVIDENCE-STATUS: evolving route result; current certified route release
-% EVIDENCE-COMMIT: 2ffbce0
-% EVIDENCE-SOURCES: output/figures/experiments/annual_vehicle_composition_bands.pdf; output/exhibits/intermediation_by_type.jsonl; output/exhibits/vehicle_transition_pair_fixed_effects.jsonl; docs/findings-freeze.md
+% EVIDENCE-STATUS: current descriptive route result
+% EVIDENCE-SOURCES: output/figures/experiments/annual_vehicle_composition_bands.pdf; output/exhibits/intermediation_by_type.jsonl; output/exhibits/vehicle_transition_pair_fixed_effects.jsonl; docs/findings/README.md
 % The rotation's first appearance must already carry its economic reading. The
 % matched-market estimate is stated here, not held back to the decomposition
 % frames, so no listener leaves this slide believing comparable trades switched
-% intermediary. Source-only: matched-market cells come from the current D3
-% generation 25c755ae via vehicle_transition_pair_fixed_effects.jsonl.
+% intermediary. Matched-market cells come directly from
+% vehicle_transition_pair_fixed_effects.jsonl.
 % VISUAL-FUNCTION: non-monotone realised vehicle rotation | annual native/stable lead comparison separated by count/value | state the compositional reading at the rotation's first appearance
 \begin{frame}{Stablecoins regain the lead in routed value}
 \vspace{-0.05cm}
@@ -40,8 +36,7 @@
 \end{frame}
 
 % EVIDENCE-STATUS: evolving route decomposition; venue-scope reweighting is a route-only descriptive identity
-% EVIDENCE-COMMIT: 6dd7897
-% EVIDENCE-SOURCES: output/figures/vehicle_excess_use_transition.pdf; output/exhibits/vehicle_excess_use.jsonl; output/exhibits/vehicle_excess_use_transition.jsonl; output/exhibits/e0_usdt_integration_decomposition.jsonl; docs/findings-freeze.md
+% EVIDENCE-SOURCES: output/figures/vehicle_excess_use_transition.pdf; output/exhibits/vehicle_excess_use.jsonl; output/exhibits/vehicle_excess_use_transition.jsonl; output/exhibits/e0_usdt_integration_decomposition.jsonl; docs/findings/README.md
 % VISUAL-FUNCTION: candidate-level excess-use change | paired count/value dumbbells | identify the distinct USDT contribution
 \begin{frame}{USDT drives the rise in stablecoin intermediation}
 \vspace{-0.08cm}
@@ -53,15 +48,14 @@
 \decknote{Excess use is intermediary share divided by endpoint share on the same route perimeter. The comparison uses native assets, USDC, and USDT and the same January--June dates in 2024 and 2026. Descriptive accounting: see Appendix A9; the identity carries no sampling interval.}
 \end{frame}
 
-% EVIDENCE-STATUS: E0 provisional; green route-only D3 panel; not submission-authoritative until the findings freeze admits it
-% EVIDENCE-COMMIT: 110359b
-% EVIDENCE-SOURCES: output/exhibits/excess_use_date_fe_ladder.jsonl; output/exhibits/excess_use_date_fe_screens.jsonl; output/exhibits/excess_use_date_fe_deck_values.tex; data/processed/vehicle_excess_use_daily.parquet; docs/findings-freeze.md
+% EVIDENCE-STATUS: supporting within-day descriptive result
+% EVIDENCE-SOURCES: output/exhibits/excess_use_date_fe_ladder.jsonl; output/exhibits/excess_use_date_fe_screens.jsonl; output/exhibits/excess_use_date_fe_deck_values.tex; data/processed/vehicle_excess_use_daily.parquet; docs/findings/README.md
 % ESTIMAND-BOUNDARY: token-day intermediary count share on own endpoint count share, percentage points, endpoint-supported token-days with more than twenty route units; date fixed effects absorb the calendar; two-way CR1 on date and token; class intercepts are measured against the residual unclassified bucket and are not identified in the two-way row
 % The frame answers the standing objection that the rotation is a time-series
 % contrast. Both sides of the calendar comparison are on the slide in the same
 % units -- pooled and day-absorbed rows -- so the claim is bounded rather than a
-% failure to reject. Refresh with scripts/run_excess_use_date_fe_ladder.py then
-% scripts/build_excess_use_date_fe_deck_values.py.
+% failure to reject. Refresh with scripts/analyze/run_excess_use_date_fe_ladder.py then
+% scripts/tabulate/build_excess_use_date_fe_deck_values.py.
 % VISUAL-FUNCTION: within-day identification of the vehicle role | four-rung control ladder in one table | show the calendar absorbed and the cross-section unchanged
 \begin{frame}{The cross-section holds when the calendar is absorbed}
 \vspace{0.10cm}
@@ -83,31 +77,25 @@ Pooled                & \DateFEPooledNative{} & \DateFEPooledStable{} & --- \\
 \decknote{\DateFETokenDays{} currency-days, \DateFETokens{} currencies, \DateFEDays{} days. Premiums are percentage points of the day's intermediary episodes against the residual unclassified bucket; demand is the pass-through of the currency's own route-endpoint share. Standard errors cluster on date and currency.}
 \end{frame}
 
-% EVIDENCE-STATUS: E0 pending clean J0; deterministic eligibility identity and provisional inference
-% EVIDENCE-COMMIT: 66f8858d772a4e5f8aa98a61c23e27d629282207
-% EVIDENCE-D3-CERTIFICATE: directory=25c755ae635d90846fb754e5cb58caa7f377787daba0743d95667b8c29ed9e6c; internal_generation=9aa4e1d3ecbc9fb899bf70ba70fc18cf1d621003162218e755fd8ecc4cbb3580
-% EVIDENCE-ENDPOINT-GENERATION: 5fb7cbf36508d10a5bdafe2ebfb5ccb6266696be38e192eb38be11c3942916e9
-% EVIDENCE-SOURCES: output/provisional/route_methodology_heterogeneity.jsonl; output/provisional/route_methodology_heterogeneity_deck_values.tex; output/exhibits/vehicle_transition_pair_panel.parquet
+% EVIDENCE-STATUS: supporting descriptive analysis; deterministic WETH eligibility identity
+% EVIDENCE-SOURCES: output/exhibits/route_methodology_heterogeneity.jsonl; output/exhibits/route_methodology_heterogeneity_deck_values.tex; output/exhibits/vehicle_transition_pair_panel.parquet
 % ESTIMAND-BOUNDARY: exact two-leg native-WETH-versus-stablecoin intermediary routes; full and no-WETH-endpoint samples share 181 month-days; aggregate inference is endpoint-year calendar HAC on 362 observations; within-group WLS fixes ordered pair, month-day and realised route scope but not feasible routes or venue identity
 % VISUAL-FUNCTION: mechanical WETH endpoint eligibility | full versus no-WETH-endpoint count change | separate aggregate allocation from within-group estimate
-\begin{frame}{WETH-linked trading pairs account for most of the count rotation}
+\begin{frame}{WETH-linked ultimate pairs account for most of the count rotation}
 \vspace{-0.10cm}
 \begin{center}
 \resizebox{0.87\textwidth}{!}{\input{assets/vehicle-transition-pair-decomposition.tex}}
 \end{center}
 \vspace{-0.15cm}
 {\fontsize{7.8}{8.6}\selectfont The count increase falls from \WethCountFullChange{} to \WethCountNoEndpointChange{} without WETH endpoints. A WETH-linked pair admits only a stablecoin intermediary in this comparison, so the count rotation largely records where trading happens rather than which intermediary a given trade selects.}
-\decknote{Exact two-leg native-WETH-versus-stablecoin routes on 181 common month-days. Intervals use 30-day Newey--West covariance on 362 endpoint-year daily observations; 2025 is excluded and actual dates preserve the gap. Within-group WLS fixes the trading pair, month-day, and route scope and clusters by pair and date. Feasible routes are not fixed; all comparisons are descriptive.}
+\decknote{Exact two-leg native-WETH-versus-stablecoin routes on 181 common month-days. Intervals use 30-day Newey--West covariance on 362 endpoint-year daily observations; 2025 is excluded and actual dates preserve the gap. Within-group WLS fixes the ultimate pair, month-day, and route scope and clusters by pair and date. Feasible routes are not fixed; all comparisons are descriptive.}
 \end{frame}
 
-% EVIDENCE-STATUS: E0 pending clean J0; exact provisional midpoint accounting
-% EVIDENCE-COMMIT: 66f8858d772a4e5f8aa98a61c23e27d629282207
-% EVIDENCE-D3-CERTIFICATE: directory=25c755ae635d90846fb754e5cb58caa7f377787daba0743d95667b8c29ed9e6c; internal_generation=9aa4e1d3ecbc9fb899bf70ba70fc18cf1d621003162218e755fd8ecc4cbb3580
-% EVIDENCE-ENDPOINT-GENERATION: 5fb7cbf36508d10a5bdafe2ebfb5ccb6266696be38e192eb38be11c3942916e9
-% EVIDENCE-SOURCES: output/provisional/route_methodology_heterogeneity.jsonl; output/provisional/route_methodology_heterogeneity_deck_values.tex; literature/text/2022-Mukhin2022InternationalPriceSystem-an-equilibrium-model-of-the-international-price-system.txt:777; literature/text/2021-GopinathStein2021Making-banking-trade-and-the-making-of-a-dominant-currency.txt:1280; literature/text/2021-CarlettiDeMarcoIoannidouSette2021PatientLenders-banks-as-patient-lenders-evidence-from-a-tax-reform.txt:120
+% EVIDENCE-STATUS: supporting descriptive analysis; exact midpoint accounting
+% EVIDENCE-SOURCES: output/exhibits/route_methodology_heterogeneity.jsonl; output/exhibits/route_methodology_heterogeneity_deck_values.tex; literature/text/2022-Mukhin2022InternationalPriceSystem-an-equilibrium-model-of-the-international-price-system.txt:777; literature/text/2021-GopinathStein2021Making-banking-trade-and-the-making-of-a-dominant-currency.txt:1280; literature/text/2021-CarlettiDeMarcoIoannidouSette2021PatientLenders-banks-as-patient-lenders-evidence-from-a-tax-reform.txt:120
 % ESTIMAND-BOUNDARY: exact daily midpoint decomposition after excluding WETH endpoints; total equals routed-value activity reallocation plus within-group stable-share change; realised groups and weights are descriptive, not treatments
 % VISUAL-FUNCTION: strict-value rotation beyond WETH endpoints | exact activity-versus-within decomposition | show that count eligibility does not subsume the value result
-\begin{frame}{The routed-value rotation extends beyond WETH-linked trading pairs}
+\begin{frame}{The routed-value rotation extends beyond WETH-linked ultimate pairs}
 \vspace{-0.10cm}
 \begin{center}
 \resizebox{0.93\textwidth}{!}{\input{assets/non-weth-value-composition.tex}}
@@ -117,12 +105,9 @@ Pooled                & \DateFEPooledNative{} & \DateFEPooledStable{} & --- \\
 \decknote{Routed value requires source, intermediary, and destination dollar amounts to agree within 20\%. The daily midpoint identity is exact. Intervals use the same endpoint-year calendar-HAC covariance as the preceding frame; paired-month-day and bandwidth sensitivities remain in the source. Mukhin (2022), Gopinath and Stein (2021), and Carletti et al. (2021) guide the composition framing, not identification.}
 \end{frame}
 
-% EVIDENCE-STATUS: E0 pending clean J0; exact descriptive pair-level contribution ledger
-% EVIDENCE-COMMIT: 66f8858d772a4e5f8aa98a61c23e27d629282207
-% EVIDENCE-D3-CERTIFICATE: directory=25c755ae635d90846fb754e5cb58caa7f377787daba0743d95667b8c29ed9e6c; internal_generation=9aa4e1d3ecbc9fb899bf70ba70fc18cf1d621003162218e755fd8ecc4cbb3580
-% EVIDENCE-ENDPOINT-GENERATION: 5fb7cbf36508d10a5bdafe2ebfb5ccb6266696be38e192eb38be11c3942916e9
+% EVIDENCE-STATUS: supporting descriptive; exact descriptive pair-level contribution ledger
 % EVIDENCE-SOURCES: output/exhibits/vehicle_transition_pair_contributions.parquet; output/exhibits/vehicle_transition_pair_decomposition.jsonl; output/exhibits/vehicle_transition_pair_decomposition_deck_values.tex
-% ESTIMAND-BOUNDARY: pooled 2024--2026 route-count share on 181 common month-days; each panel names the largest ordered pair whose two endpoints carry a canonical symbol, which is not the largest contributor to its margin because most newly traded assets are unlabelled; margin totals are exact and cover every pair, labelled or not. The three margins are realised composition, never entry or exit effects, and the panels hold nothing else fixed. The corridor-replacement sentence reads the netted exclusive-pair term as one activity mass against two cohorts: pairs alive in only one of the two years carry that share of pooled route activity at the midpoint of the two years' exclusive-support shares, and the term equals that mass times the gap between the two cohorts' weighted stablecoin shares. The producer proves the identity before rendering -- each cohort's weights close on one, each margin equals that cohort's own midpoint exclusive mass times its own routing rate, the two cohorts carry the same mass, and the two margins sum to the scope's exclusive_pair_contribution -- and, because the retiring margin is negative, it checks that the endpoint split does not straddle zero rather than requiring the positive total the eligibility split needs. The clause that follows splits that same cohort gap on the three endpoint kinds into the mix of kinds each cohort brings and the rate at which each kind routes, an exact symmetric identity in the two cohorts' midpoint weights and rates; _cohort_endpoint_margins in scripts/build_vehicle_transition_pair_deck_values.py proves both sums close on the gap and the gap on that scope's exclusive_pair_contribution, re-proves that wrapped-ether-paired corridors route at one in both cohorts so that their class is pure composition, and holds the stablecoin-endpoint kind to the same non-degeneracy standard as the margin split below. The two cohorts are disjoint by construction, so the rate side is a comparison between two populations of corridors and never a corridor changing intermediary; only the first margin's within-pair term speaks to that. Corridor entry and exit here are realised composition on the certified allocation, not the blocked vehicle-turnover hazard and not an entry or exit effect. The fourth term of the identity, common_support_mass, was carried here as a mass shift times a block gap and has been displaced by the composition clause above: this frame reports three margins, the fourth is second order in both weightings, and Section 3 of the paper still publishes its two factors in full. The closing WETH-endpoint clause reports two different weightings of the same reweighting margin: the count share is of the pooled route-count margin and the value share is of the strict-support dollar-weighted margin, so the two percentages are not comparable to a common denominator. Endpoint membership is an address identity on the same certified allocation, not an estimated group, and the producer withholds every macro unless each WETH-endpoint pair carries stablecoin share one in both years with a within-pair contribution of exactly zero. The closing dollar-endpoint clause partitions the choice-live remainder of each margin on whether a stablecoin stands at an endpoint of the ordered pair, and reports each class as a share of that margin's own dollar-weighted total rather than of the remainder, which can turn negative. That class is not a second eligibility class: a trade into one dollar token may still be carried by wrapped ether or by a different dollar token, and _open_corridor_endpoints in scripts/build_vehicle_transition_pair_deck_values.py withholds every macro unless the class holds corridors routing below a stablecoin share of one and above zero, fewer than a quarter pinned at one in both years, a within-pair term free to move, class weights that exhaust each year, and classes that reproduce the margin total with the eligible corridors. Unlike the address-identity WETH split it reads the asset taxonomy, so an unrecognised stablecoin would understate the reported class and never inflate it.
+% ESTIMAND-BOUNDARY: exact decomposition of pooled 2024--2026 route-count share on 181 common month-days; margins describe realised pair composition and routing, not entry or exit effects; the producer checks every accounting identity before rendering.
 % VISUAL-FUNCTION: the three margins of an aggregate vehicle share | three named-pair panels with baseline/comparison cells | make the compositional reading concrete in real tokens
 \begin{frame}{Three margins move an aggregate vehicle share}
 \vspace{-0.04cm}
@@ -184,43 +169,15 @@ Pooled                & \DateFEPooledNative{} & \DateFEPooledStable{} & --- \\
 \decknote{Pooled route-count share among native and stablecoin intermediaries, 2024 against 2026 on 181 common calendar days. Each panel names the largest contributing ordered pair with two canonical symbols; unlabelled assets carry most of the third margin. Contributions are an exact allocation of the aggregate change and are descriptive.}
 % Spoken, not shown: the cohort arithmetic behind the third margin and the
 % choice-live split of the second. Both were on the slide until the density
-% budget in docs/deck-density-ledger.json; neither was deleted.
+% budget in deck/density-ledger.json; neither was deleted.
 \note{The arrivals route \CohortEnterShare{} through a stablecoin against \CohortExitShare{} for the corridors they replaced, but \ReplaceCompositionShare{} of that gap is what the arrivals are rather than how they route: \ReplaceLockedEnterWeight{} of arriving activity is wrapped-ether-paired against \ReplaceLockedExitWeight{} of departing. Corridors with no vehicle to choose carry \LockedReweightShare{} of the second margin by count but \LockedValueReweightShare{} by value, and by value most of both runs through corridors with a dollar at an endpoint.}
 \end{frame}
 
-% EVIDENCE-STATUS: E0 pending clean J0; provisional inference on a recertified exhibit
-% EVIDENCE-COMMIT: c8a7ccf
-% The exhibit is byte-unchanged since that commit. Its producer was afterwards
-% refactored onto the canonical absorption and clustered-inference helpers
-% (2076e5e, a63e53b); tests/test_dominance_estimator_equivalence.py pins those to
-% reproduce the superseded implementation to machine precision, which is what lets
-% these coefficients be shown while the panel input sits outside this checkout.
-% Regenerate on the data host and delete that test when the panel returns.
-% EVIDENCE-SOURCES: output/figures/dominance_control_ladder.pdf; output/exhibits/dominance_regressions.jsonl; output/exhibits/dominance_ladder_deck_values.tex
-% ESTIMAND-BOUNDARY: exact two-leg routes with an observed intermediary and a reconstructable direct alternative; the outcome is whether the executed route was dominated by an available direct pool, and the regressor is whether its intermediary was the native asset. This is dominance quality holding the trade fixed. It is NOT the aggregate stablecoin share of intermediation, it shares no axis or scale with that estimand, and the frame bridges the two only in words. Inference clusters by ordered pair throughout. Column four keeps only pair-by-day cells in which both a native and a non-native intermediary were actually used, so the estimate is identified by switching cells alone and the sample is not a subset chosen on the outcome. The displayed cell count and minimum detectable effect are read from the one-day matched-cell rung, which is the same partition and reproduces column four exactly; the producer refuses to render unless it does. The minimum detectable effect is the two-sided five percent, eighty percent power threshold at the estimated standard error, and it is reported because the column is a precision loss and not an estimated null. The matched-cell ladder in panel B varies one design parameter within one estimand and is never a specification curve across estimands.
-% VISUAL-FUNCTION: dominance quality holding the trade fixed | control ladder with detectable-effect band plus matched-cell width ladder | reach the composition reading from a second, independent estimand
-\begin{frame}{Holding the trade fixed dissolves the intermediary gap}
-\vspace{-0.06cm}
-\begin{center}
-\includegraphics[width=0.97\textwidth,height=0.44\textheight,keepaspectratio]{../output/figures/dominance_control_ladder.pdf}
-\end{center}
-\vspace{-0.14cm}
-{\fontsize{7.8}{8.5}\selectfont Was a trade carried by the native asset less often dominated by a direct pool it could have used? Pooled, yes: \DomPooledCoef{} (SE \DomPooledSE{}). Between the same two tokens on the same day it is \DomFECoef{} (SE \DomFESE{}), in a design that could only have detected \DomFEMDE{} or more. The rotation is where trading happens, not which intermediary a comparable trade selects.\par}
-\decknote{The outcome indicates that the executed route was dominated by an available direct pool. Bars are 95\% intervals clustered on the ordered pair; shading is what the strictest column could have detected at 80\% power, not a confidence region.}
-% Spoken, not shown: the sample sizes, the corroborating price-gap outcome, and
-% the standing warning that this estimand never shares a scale with the
-% aggregate vehicle share. Moved under the density budget, not deleted.
-\note{Pooled over \DomPooledN{} routes; the same-day comparison rests on \DomFECells{} switching cells. The price-gap outcome agrees on those cells at \DomGapCoef{} (SE \DomGapSE{}), which is the same comparison in basis points. Dominance quality is a separate measure from the aggregate vehicle share and the two are never combined on one axis or in one number.}
-\end{frame}
-
-% EVIDENCE-STATUS: certified descriptive result; integration remains a selected route stratum
-% EVIDENCE-COMMIT: 111230a
-% The figure asset itself was added at a0c54e9; its inputs and the numeric cells
-% below share the intermediation-exhibit evidence commit named above.
-% EVIDENCE-SOURCES: output/figures/experiments/integration_change_forest.pdf; output/exhibits/intermediation_integration_rival.jsonl; output/exhibits/intermediation_integration_interaction.jsonl; output/exhibits/intermediation_complexity_rival.jsonl; output/exhibits/integration_date_fe_ladder.jsonl; output/exhibits/venue_technology_rival.jsonl; output/exhibits/routing_technology_windows.jsonl; output/exhibits/provisional_results_deck_values.tex; docs/findings-freeze.md
+% EVIDENCE-STATUS: current descriptive result; integration remains a selected route stratum
+% EVIDENCE-SOURCES: output/figures/experiments/integration_change_forest.pdf; output/exhibits/intermediation_integration_rival.jsonl; output/exhibits/intermediation_integration_interaction.jsonl; output/exhibits/intermediation_complexity_rival.jsonl; output/exhibits/integration_date_fe_ladder.jsonl; output/exhibits/venue_technology_rival.jsonl; output/exhibits/routing_technology_windows.jsonl; output/exhibits/presentation_values.tex; docs/findings/README.md
 % ESTIMAND-BOUNDARY: matched January--June dates in 2024 and 2026; native-plus-stable denominator; one
 % observation per intermediary episode; leg count records how the route was built and is not an
-% execution-quality measure; the four span-by-complexity cells come from the same certified exhibit and
+% execution-quality measure; the four span-by-complexity cells come from the same validated exhibit and
 % are rendered by a producer that refuses the joint statement unless all four changes are positive.
 % The pricing-family sentence is a separate estimand on a separate support: annual excess use over the
 % full 2,332-day calendar, candidate-currency denominator, all-routes value support rather than the 20%
@@ -231,14 +188,13 @@ Pooled                & \DateFEPooledNative{} & \DateFEPooledStable{} & --- \\
 % composition in symmetric 60-day windows either side of three dated public releases, with no
 % currency split at all, so it may never be read as a stablecoin quantity. A release reaches every
 % trader at once, so there is no untreated group and this is descriptive window composition, not a
-% treatment effect; spec-lock claim routing_maturation_rival forbids an aggregator-causality
-% reading. Its macros are withheld entirely if intermediation ever steps up by a full percentage
+% treatment effect. Its macros are withheld entirely if intermediation ever steps up by a full percentage
 % point at a release or if the balanced five-venue perimeter stops reproducing the full perimeter.
 % The closing within-day sentence is a fourth estimand on a fourth support: the LEVEL of the
 % exchange-span gap on exact two-leg routes, stacked by scope and read within a day effect over
 % 2,234 paired days rather than between two endpoint years. Owner
-% scripts/run_integration_date_fe_ladder.py; exhibit output/exhibits/integration_date_fe_ladder.jsonl;
-% macros through src/ddvc/provisional_results.py. The count figure is displayed BECAUSE its interval
+% scripts/analyze/run_integration_date_fe_ladder.py; exhibit output/exhibits/integration_date_fe_ladder.jsonl;
+% macros through src/ddvc/presentation_values.py. The count figure is displayed BECAUSE its interval
 % spans zero: the negated half of the value-not-count statement carries its own interval in the same
 % units, as the standing rule requires. Do not present the pooled and day-absorbed point estimates as
 % a survival test; the stack is balanced, so they coincide by arithmetic.
@@ -261,10 +217,8 @@ Pooled                & \DateFEPooledNative{} & \DateFEPooledStable{} & --- \\
 \note{Among routes priced entirely by the constant-product invariant, \VenueCPEpisodeShare{} of 2026 episodes, stablecoin excess use rises from \VenueCPStableValueBase{} to \VenueCPStableValueEnd{}, and all-Curve routes carry none. Intermediation incidence never rises by more than \RouterLargestIntermediationRise{} at \RouterReleaseCount{} public router releases. The within-day contrast runs over \WithinDayVenueGapDays{} paired days. Every scope here is realised, not assigned; none identifies an effect of integration, routing software, pricing technology, or architecture.}
 \end{frame}
 
-% EVIDENCE-STATUS: E0 pending clean J1; full-calendar reciprocal adjudication on the certified V2 capital release records a non-pass
-% EVIDENCE-COMMIT: 66f8858d772a4e5f8aa98a61c23e27d629282207
-% EVIDENCE-D3-GENERATION: analysis_release=414f0c278742f42c4c1f8b7d5384d229aeaa0c2831c4dfa019183b2b1084f136
-% EVIDENCE-SOURCES: output/exhibits/liquidity_capital_v2_predictability.jsonl; output/exhibits/liquidity_capital_v2_deck_values.tex; output/tables/liquidity_capital_v2_predictability.tex; docs/specification-lock.json
+% EVIDENCE-STATUS: current predictive mechanism result; the reciprocal rule records a non-pass
+% EVIDENCE-SOURCES: output/exhibits/liquidity_capital_v2_predictability.jsonl; output/exhibits/liquidity_capital_v2_deck_values.tex; docs/specifications/confirmatory.json
 % SCIENTIFIC-BOUNDARY: temporal ordering distinguishes two predictive patterns but does not identify causal feedback; V2 deposited-capital stock in the five candidate pool families only; provider flows, concentrated-liquidity depth, and settlement state are separate blocked measures
 % ESTIMAND-BOUNDARY: daily five-candidate panel on the full 2020--2026 V2 calendar with candidate and origin-date fixed effects; adjudication is the pre-stated reciprocal rule at 1/7/30 days with a 120-day reversal check; displayed cells are the episode-share/log-capital pair and the concordant 120-day sensitivity
 % VISUAL-FUNCTION: liquidity-allocation adjudication | opposed timing diagrams with estimates | show that neither direction predicts at one to thirty days

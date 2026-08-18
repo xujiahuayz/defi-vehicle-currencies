@@ -14,17 +14,14 @@ import pandas as pd
 from matplotlib.path import Path as MplPath
 from matplotlib.patches import PathPatch, Rectangle
 from matplotlib.ticker import PercentFormatter
-from scipy.stats import gaussian_kde
 
 from ddvc.figure_outputs import (
     ASSET_LABELS,
     ASSET_TYPES,
     PALETTE,
-    validate_daily_calendar,
 )
 
 matplotlib.use("Agg")
-import matplotlib.dates as mdates  # noqa: E402
 import matplotlib.pyplot as plt  # noqa: E402
 
 
@@ -153,70 +150,6 @@ def integration_change_cells(
     return data
 
 
-def daily_vehicle_shares(frame: pd.DataFrame) -> pd.DataFrame:
-    """Return exhaustive daily count and strict-value shares by asset type."""
-
-    data = validate_daily_calendar(frame, name="intermediation-by-type panel")
-    columns = [
-        column
-        for asset_type in ASSET_TYPES
-        for column in (f"cnt_{asset_type}", f"usd_within_20pct_{asset_type}")
-    ]
-    missing = sorted(set(columns) - set(data.columns))
-    if missing:
-        raise ValueError(f"intermediation-by-type panel is missing {', '.join(missing)}")
-    data[columns] = data[columns].apply(pd.to_numeric, errors="raise")
-    if data[columns].lt(0).any().any():
-        raise ValueError("intermediation-by-type panel contains negative mass")
-    result = data[["date"]].copy()
-    result["year"] = data["date"].dt.year
-    for prefix, source in (("count", "cnt"), ("value", "usd_within_20pct")):
-        total = data[[f"{source}_{asset_type}" for asset_type in ASSET_TYPES]].sum(axis=1)
-        for asset_type in ASSET_TYPES:
-            result[f"{prefix}_share_{asset_type}"] = np.where(
-                total.gt(0), data[f"{source}_{asset_type}"] / total, np.nan
-            )
-    return result
-
-
-def latest_token_excess_use(frame: pd.DataFrame, *, limit: int = 14) -> pd.DataFrame:
-    """Select the largest supported candidate currencies in the latest year."""
-
-    required = {
-        "level",
-        "year",
-        "symbol",
-        "intermediate_routes",
-        "vehicle_excess_use_count_ratio",
-        "vehicle_excess_use_ratio_within_20pct",
-    }
-    missing = sorted(required - set(frame.columns))
-    if missing:
-        raise ValueError(f"vehicle-excess-use exhibit is missing {', '.join(missing)}")
-    data = frame.loc[frame["level"].eq("token"), list(required)].copy()
-    data["year"] = pd.to_numeric(data["year"], errors="raise").astype(int)
-    data = data.loc[data["year"].eq(data["year"].max())]
-    for column in (
-        "intermediate_routes",
-        "vehicle_excess_use_count_ratio",
-        "vehicle_excess_use_ratio_within_20pct",
-    ):
-        data[column] = pd.to_numeric(data[column], errors="coerce")
-    data = data.dropna(subset=["symbol", "intermediate_routes"])
-    data = data.loc[data["intermediate_routes"].gt(0)]
-    if data.empty or data["symbol"].duplicated().any():
-        raise ValueError("vehicle-excess-use exhibit lacks a unique supported token cross-section")
-    data = data.nlargest(limit, "intermediate_routes", keep="all").head(limit).copy()
-    if data[
-        ["vehicle_excess_use_count_ratio", "vehicle_excess_use_ratio_within_20pct"]
-    ].isna().any().any():
-        raise ValueError("selected vehicle-excess-use cells lack count or strict-value support")
-    return data.sort_values(
-        ["vehicle_excess_use_ratio_within_20pct", "symbol"],
-        ascending=[False, True],
-        kind="stable",
-    ).reset_index(drop=True)
-
 
 def _save(figure: plt.Figure, output: Path) -> None:
     figure.savefig(
@@ -226,94 +159,6 @@ def _save(figure: plt.Figure, output: Path) -> None:
         metadata={"Creator": "ddvc", "CreationDate": None, "ModDate": None},
     )
 
-
-def render_excess_use_heatmap(frame: pd.DataFrame, output: Path) -> None:
-    """Render log-ratio heatmap for the largest latest-year candidates."""
-
-    data = latest_token_excess_use(frame)
-    columns = (
-        ("vehicle_excess_use_count_ratio", "Route count"),
-        ("vehicle_excess_use_ratio_within_20pct", "Routed value"),
-    )
-    matrix = np.log2(data[[column for column, _ in columns]].to_numpy(dtype=float))
-    bound = max(1.0, float(np.nanmax(np.abs(matrix))))
-    with plt.rc_context({"font.family": "DejaVu Sans", "pdf.fonttype": 42}):
-        figure, axis = plt.subplots(figsize=(7.1, 5.6))
-        try:
-            image = axis.imshow(matrix, cmap="PuOr", vmin=-bound, vmax=bound, aspect="auto")
-            axis.set_xticks(range(2), [label for _, label in columns])
-            axis.set_yticks(range(len(data)), data["symbol"])
-            for row in range(len(data)):
-                for column in range(2):
-                    ratio = 2 ** matrix[row, column]
-                    axis.text(column, row, f"{ratio:.2f}", ha="center", va="center", fontsize=8)
-            colour_bar = figure.colorbar(image, ax=axis, fraction=0.04, pad=0.03)
-            colour_bar.set_label("log$_2$(intermediary share / endpoint share)", fontsize=8)
-            axis.set_title(
-                f"Excess use differs across the largest {int(data['year'].iloc[0])} candidates",
-                loc="left",
-                fontsize=13,
-                fontweight="bold",
-            )
-            figure.text(
-                0.995,
-                0.012,
-                "Largest candidates by intermediary route count; parity equals 1.00.",
-                ha="right",
-                fontsize=8,
-                color="#4B5563",
-            )
-            figure.tight_layout(rect=(0, 0.04, 1, 1))
-            _save(figure, output)
-        finally:
-            plt.close(figure)
-
-
-def render_stable_share_ridgeline(frame: pd.DataFrame, output: Path) -> None:
-    """Render within-calendar-year distributions of the daily stable share."""
-
-    data = daily_vehicle_shares(frame)
-    years = sorted(year for year in data["year"].unique() if year >= 2021)
-    with plt.rc_context({"font.family": "DejaVu Sans", "pdf.fonttype": 42}):
-        figure, axes = plt.subplots(1, 2, figsize=(10.5, 5.2), sharey=True)
-        try:
-            for axis, (prefix, title) in zip(axes, WEIGHTINGS, strict=True):
-                values = data[f"{prefix}_share_stable"].dropna()
-                lower, upper = max(0.0, values.quantile(0.005) - 0.04), min(1.0, values.quantile(0.995) + 0.04)
-                grid = np.linspace(lower, upper, 240)
-                for offset, year in enumerate(years):
-                    sample = data.loc[data["year"].eq(year), f"{prefix}_share_stable"].dropna().to_numpy()
-                    density = gaussian_kde(sample)(grid) if np.unique(sample).size > 1 else np.ones_like(grid)
-                    density = density / density.max() * 0.72
-                    axis.fill_between(grid, offset, offset + density, color=PALETTE["stable"], alpha=0.48)
-                    axis.plot(grid, offset + density, color=PALETTE["stable"], linewidth=1.2)
-                    axis.plot([float(np.median(sample))] * 2, [offset, offset + 0.55], color="#111827", linewidth=1.0)
-                axis.set_title(title, loc="left", fontsize=12, fontweight="bold")
-                axis.xaxis.set_major_formatter(PercentFormatter(1.0, decimals=0))
-                axis.set_xlabel("Daily stable share")
-                axis.spines[["top", "right", "left"]].set_visible(False)
-                axis.grid(axis="x", color="#D1D5DB", linewidth=0.5, alpha=0.65)
-            axes[0].set_yticks(range(len(years)), years)
-            axes[0].set_ylabel("Calendar year")
-            figure.suptitle(
-                "The transition changes the distribution, not only the endpoint mean",
-                x=0.06,
-                ha="left",
-                fontsize=14,
-                fontweight="bold",
-            )
-            figure.text(
-                0.995,
-                0.012,
-                "Each ridge is the distribution of daily shares; vertical ticks are medians. Calendar year is descriptive.",
-                ha="right",
-                fontsize=8,
-                color="#4B5563",
-            )
-            figure.tight_layout(rect=(0, 0.05, 1, 0.94))
-            _save(figure, output)
-        finally:
-            plt.close(figure)
 
 
 def _ribbon(axis: plt.Axes, left: tuple[float, float], right: tuple[float, float], *, color: str) -> None:
@@ -344,43 +189,6 @@ def _ribbon(axis: plt.Axes, left: tuple[float, float], right: tuple[float, float
     ]
     axis.add_patch(PathPatch(MplPath(vertices, codes), facecolor=color, edgecolor="none", alpha=0.72))
 
-
-def render_annual_share_heatmap(frame: pd.DataFrame, output: Path) -> None:
-    """Render annual vehicle shares as a type-by-year matrix."""
-
-    data = annual_vehicle_composition(frame)
-    data = data.loc[data["integration_scope"].eq("all")]
-    years = sorted(data["year"].unique())
-    panels = (("episode_share", "Intermediary episodes"), ("usd_share_within_20pct", "Routed value"))
-    with plt.rc_context({"font.family": "DejaVu Sans", "pdf.fonttype": 42}):
-        figure, axes = plt.subplots(1, 2, figsize=(10.5, 4.5), sharey=True)
-        try:
-            for axis, (column, title) in zip(axes, panels, strict=True):
-                matrix = (
-                    data.pivot(index="asset_type", columns="year", values=column)
-                    .reindex(index=ASSET_TYPES, columns=years)
-                    .to_numpy(dtype=float)
-                )
-                image = axis.imshow(matrix, cmap="YlGnBu", vmin=0, vmax=max(0.8, float(np.nanmax(matrix))), aspect="auto")
-                axis.set_xticks(range(len(years)), years, rotation=45, ha="right")
-                axis.set_yticks(range(len(ASSET_TYPES)), [ASSET_LABELS[item] for item in ASSET_TYPES])
-                axis.set_title(title, loc="left", fontsize=12, fontweight="bold")
-                for row in range(matrix.shape[0]):
-                    for col in range(matrix.shape[1]):
-                        value = matrix[row, col]
-                        axis.text(col, row, f"{value:.0%}", ha="center", va="center", fontsize=7, color="white" if value > 0.42 else "#111827")
-                axis.tick_params(length=0)
-                for spine in axis.spines.values():
-                    spine.set_visible(False)
-            colour_axis = figure.add_axes([0.90, 0.19, 0.018, 0.61])
-            colour_bar = figure.colorbar(image, cax=colour_axis)
-            colour_bar.ax.yaxis.set_major_formatter(PercentFormatter(1.0, decimals=0))
-            figure.suptitle("Vehicle leadership and the long tail change by calendar year", x=0.06, ha="left", fontsize=14, fontweight="bold")
-            figure.text(0.995, 0.012, "Annual ratios of totals; the calendar labels describe timing rather than treatment.", ha="right", fontsize=8, color="#4B5563")
-            figure.subplots_adjust(left=0.14, right=0.87, bottom=0.17, top=0.84, wspace=0.12)
-            _save(figure, output)
-        finally:
-            plt.close(figure)
 
 
 def render_annual_composition_bands(frame: pd.DataFrame, output: Path) -> None:
@@ -569,7 +377,6 @@ def render_annual_composition_bands(frame: pd.DataFrame, output: Path) -> None:
         finally:
             plt.close(figure)
 
-
 def render_annual_integration_alluvial(frame: pd.DataFrame, output: Path) -> None:
     """Render latest-year integration scope by intermediary type."""
 
@@ -620,37 +427,6 @@ def render_annual_integration_alluvial(frame: pd.DataFrame, output: Path) -> Non
         finally:
             plt.close(figure)
 
-
-def render_annual_rank_bump(frame: pd.DataFrame, output: Path) -> None:
-    """Render annual type ranks while flagging that rank suppresses magnitude."""
-
-    data = annual_vehicle_composition(frame)
-    data = data.loc[data["integration_scope"].eq("all")]
-    years = sorted(data["year"].unique())
-    panels = (("episode_share", "Intermediary episodes"), ("usd_share_within_20pct", "Routed value"))
-    with plt.rc_context({"font.family": "DejaVu Sans", "pdf.fonttype": 42}):
-        figure, axes = plt.subplots(1, 2, figsize=(10.8, 4.4), sharey=True)
-        try:
-            for axis, (column, title) in zip(axes, panels, strict=True):
-                pivot = data.pivot(index="year", columns="asset_type", values=column).reindex(index=years, columns=ASSET_TYPES)
-                ranks = pivot.rank(axis=1, ascending=False, method="first")
-                for asset_type in ASSET_TYPES:
-                    axis.plot(years, ranks[asset_type], color=PALETTE[asset_type], linewidth=2.2, marker="o", label=ASSET_LABELS[asset_type])
-                axis.set_title(title, loc="left", fontsize=12, fontweight="bold")
-                axis.set_xticks(years)
-                axis.set_ylim(len(ASSET_TYPES) + 0.25, 0.75)
-                axis.set_yticks(range(1, len(ASSET_TYPES) + 1))
-                axis.grid(axis="y", color="#D1D5DB", linewidth=0.5)
-                axis.spines[["top", "right"]].set_visible(False)
-            axes[0].set_ylabel("Annual rank")
-            handles, labels = axes[0].get_legend_handles_labels()
-            figure.legend(handles, labels, frameon=False, ncol=5, loc="lower center", bbox_to_anchor=(0.5, 0.015))
-            figure.suptitle("Leadership changes, but rank hides economic distance", x=0.06, ha="left", fontsize=14, fontweight="bold")
-            figure.text(0.995, 0.012, "Annual ranks only; this diagnostic should not replace share magnitudes.", ha="right", fontsize=8, color="#4B5563")
-            figure.tight_layout(rect=(0, 0.14, 1, 0.94))
-            _save(figure, output)
-        finally:
-            plt.close(figure)
 
 
 def render_integration_change_forest(frame: pd.DataFrame, output: Path) -> None:

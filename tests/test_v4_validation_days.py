@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import unittest
 
-from scripts.validate_v4_quoter import resolve_validation_days
+from scripts.verify.validate_v4_quoter import resolve_validation_days
 
 
 class V4ValidationDayTests(unittest.TestCase):

@@ -36,7 +36,6 @@ either format, so no reader can quietly lose precision.
 from __future__ import annotations
 
 import gzip
-import inspect
 import io
 import json
 import math
@@ -49,9 +48,7 @@ import pandas as pd
 import pyarrow as pa
 import pyarrow.parquet as pq
 
-from ddvc.paths import REPO_ROOT
-from ddvc.provenance import install_stamped_artifact, prepare_stamp
-from ddvc.runtime import atomic_output, staged_output
+from ddvc.runtime import atomic_output, serialized_output_install, staged_output
 
 # Above this many rows an artefact is a panel, whatever directory it sits in, and
 # the columnar format wins on measured read cost.
@@ -81,41 +78,17 @@ def _stringify_big_ints(df: pd.DataFrame) -> pd.DataFrame:
     return out
 
 
-def _caller_sources(extra: list[str] | None) -> list[str]:
-    """Repo-relative sources to fingerprint: the calling script plus this module.
-
-    Provenance that depends on each author remembering to pass `code_sources` gets
-    forgotten, which is how 8,633 artefacts came to have none. Defaulting to the
-    caller means every write through these helpers is stamped, and a script with a
-    wider dependency surface can still pass its own list.
-    """
-    out = ["src/ddvc/tables.py"]
-    try:
-        for frame in inspect.stack()[1:]:
-            f = Path(frame.filename).resolve()
-            if f.is_relative_to(REPO_ROOT) and "ddvc/tables.py" not in str(f):
-                out.append(str(f.relative_to(REPO_ROOT)))
-                break
-    except (ValueError, OSError):
-        pass
-    return sorted(set(out + (extra or [])))
-
-
 def publish_staged_artifact(temporary: Path, output: Path, *, code_sources: list[str] | None, inputs: list[str | Path] | None, rows: int, notes: str | Callable[[], str] | None, preinstall_validator: Callable[[Path], object] | None) -> None:
-    """Validate and install staged bytes with their matching provenance sidecar."""
+    """Validate and atomically install one direct pipeline output.
+
+    The descriptive arguments remain in the public writer API so existing scripts
+    need no ceremony-only rewrite; they do not create parallel metadata files.
+    """
 
     if preinstall_validator is not None:
         preinstall_validator(temporary)
-    resolved_notes = notes() if callable(notes) else notes
-    prepared = prepare_stamp(output, content_path=temporary, code_sources=_caller_sources(code_sources), inputs=inputs, rows=rows, notes=resolved_notes)
-    prepared_validator = getattr(
-        preinstall_validator, "validate_prepared_stamp", None
-    )
-    if prepared_validator is not None:
-        prepared = prepared_validator(prepared)
-    if preinstall_validator is not None:
-        preinstall_validator(temporary)
-    install_stamped_artifact(temporary, output, prepared)
+    with serialized_output_install(output):
+        temporary.replace(output)
 
 
 def write_exhibit(df: pd.DataFrame, path: str | Path, code_sources: list[str] | None = None, inputs: list[str | Path] | None = None, notes: str | Callable[[], str] | None = None, *, preinstall_validator: Callable[[Path], object] | None = None) -> Path:

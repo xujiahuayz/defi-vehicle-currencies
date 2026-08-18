@@ -1,511 +1,99 @@
 from __future__ import annotations
 
-import gzip
-import hashlib
 import json
-import tempfile
-import unittest
-from contextlib import contextmanager
 from pathlib import Path
-from threading import Event, Thread, current_thread
-from unittest.mock import patch
 
 import pandas as pd
+import pytest
 
-import ddvc.provenance as provenance
-from ddvc.provenance import (
-    CONTENT_HASH_MAX_BYTES,
-    install_stamped_artifact,
-    prepare_stamp,
-    sidecar_path,
-    stamp,
-    verify,
+from ddvc.tables import (
+    EXHIBIT_MAX_ROWS,
+    read_exhibit,
+    write_exhibit,
+    write_panel,
+    write_panel_batches,
+    write_report,
 )
-from ddvc.runtime import staged_output
-
-from ddvc.tables import write_exhibit, write_panel, write_panel_batches
 
 
-class ExhibitWriterTests(unittest.TestCase):
-    def test_nonfinite_values_are_strict_json_nulls(self) -> None:
-        with tempfile.TemporaryDirectory() as tmp:
-            out = Path(tmp) / "exhibit.jsonl"
-            write_exhibit(
-                pd.DataFrame({"nan": [float("nan")], "inf": [float("inf")]}),
-                out,
-                code_sources=["tests/test_tables.py"],
-            )
-            text = out.read_text()
-            self.assertNotIn("NaN", text)
-            self.assertNotIn("Infinity", text)
-            self.assertEqual(json.loads(text), {"inf": None, "nan": None})
+def test_exhibit_is_direct_readable_json_lines(tmp_path: Path) -> None:
+    frame = pd.DataFrame({"name": ["a", "b"], "value": [1.5, float("nan")]})
+    path = write_exhibit(frame, tmp_path / "result")
+    assert path == tmp_path / "result.jsonl"
+    records = [json.loads(line) for line in path.read_text().splitlines()]
+    assert records == [
+        {"name": "a", "value": 1.5},
+        {"name": "b", "value": None},
+    ]
+    assert len(read_exhibit(path)) == 2
+    assert not (tmp_path / "result.jsonl.prov.json").exists()
 
-    def test_gzip_output_is_byte_deterministic_across_target_names(self) -> None:
-        with tempfile.TemporaryDirectory() as tmp:
-            root = Path(tmp)
-            first = root / "first.jsonl.gz"
-            second = root / "second.jsonl.gz"
-            frame = pd.DataFrame({"value": [1, 2]})
-            for output in (first, second):
-                write_exhibit(
-                    frame,
-                    output,
-                    code_sources=["tests/test_tables.py"],
-                )
-            self.assertEqual(first.read_bytes(), second.read_bytes())
-            with gzip.open(first, "rt") as handle:
-                self.assertEqual(len(handle.readlines()), 2)
-            self.assertEqual(list(root.glob(".*.tmp")), [])
 
-    def test_panel_writer_leaves_no_fixed_or_unique_temporary(self) -> None:
-        with tempfile.TemporaryDirectory() as tmp:
-            root = Path(tmp)
-            output = root / "panel.parquet"
-            write_panel(
-                pd.DataFrame({"value": [1, 2]}),
-                output,
-                code_sources=["tests/test_tables.py"],
-            )
-            self.assertEqual(pd.read_parquet(output)["value"].tolist(), [1, 2])
-            self.assertEqual(list(root.glob(".*.tmp")), [])
+def test_exhibit_refuses_panel_sized_frames(tmp_path: Path) -> None:
+    frame = pd.DataFrame({"value": range(EXHIBIT_MAX_ROWS + 1)})
+    with pytest.raises(ValueError, match="write_panel"):
+        write_exhibit(frame, tmp_path / "too-large.jsonl")
 
-    def test_batch_panel_does_not_replace_prior_release_when_stamping_fails(self) -> None:
-        with tempfile.TemporaryDirectory() as tmp:
-            root = Path(tmp)
-            output = root / "panel.parquet"
-            pd.DataFrame({"value": [1]}).to_parquet(output, index=False)
-            prior = output.read_bytes()
-            sidecar = sidecar_path(output)
-            sidecar.parent.mkdir(parents=True, exist_ok=True)
-            sidecar.write_bytes(b"prior-sidecar\n")
-            prior_sidecar = sidecar.read_bytes()
-            with patch("ddvc.tables.prepare_stamp", side_effect=RuntimeError("stamp failed")), self.assertRaisesRegex(RuntimeError, "stamp failed"):
-                write_panel_batches([pd.DataFrame({"value": [2]})], output, code_sources=["tests/test_tables.py"])
-            self.assertEqual(output.read_bytes(), prior)
-            self.assertEqual(sidecar.read_bytes(), prior_sidecar)
-            self.assertEqual(list(root.glob(".*.tmp")), [])
 
-    def test_batch_panel_validator_failure_preserves_prior_pair(self) -> None:
-        with tempfile.TemporaryDirectory() as tmp:
-            root = Path(tmp)
-            output = root / "panel.parquet"
-            pd.DataFrame({"value": [1]}).to_parquet(output, index=False)
-            prior = output.read_bytes()
-            sidecar = sidecar_path(output)
-            sidecar.write_bytes(b"prior-sidecar\n")
-            with self.assertRaisesRegex(ValueError, "validator rejected"):
-                write_panel_batches([pd.DataFrame({"value": [2]})], output, code_sources=["tests/test_tables.py"], preinstall_validator=lambda _path: (_ for _ in ()).throw(ValueError("validator rejected")))
-            self.assertEqual(output.read_bytes(), prior)
-            self.assertEqual(sidecar.read_bytes(), b"prior-sidecar\n")
-            self.assertEqual(list(root.glob(".*.tmp")), [])
+def test_big_integers_are_written_as_decimal_strings(tmp_path: Path) -> None:
+    value = 2**120 + 7
+    path = write_exhibit(pd.DataFrame({"value": [value]}), tmp_path / "big.jsonl")
+    assert json.loads(path.read_text())["value"] == str(value)
 
-    def test_single_panel_validator_failure_preserves_prior_pair(self) -> None:
-        with tempfile.TemporaryDirectory() as tmp:
-            root = Path(tmp)
-            output = root / "panel.parquet"
-            pd.DataFrame({"value": [1]}).to_parquet(output, index=False)
-            prior = output.read_bytes()
-            sidecar = sidecar_path(output)
-            sidecar.write_bytes(b"prior-sidecar\n")
-            with self.assertRaisesRegex(ValueError, "validator rejected"):
-                write_panel(pd.DataFrame({"value": [2]}), output, code_sources=["tests/test_tables.py"], preinstall_validator=lambda _path: (_ for _ in ()).throw(ValueError("validator rejected")))
-            self.assertEqual(output.read_bytes(), prior)
-            self.assertEqual(sidecar.read_bytes(), b"prior-sidecar\n")
-            self.assertEqual(list(root.glob(".*.tmp")), [])
 
-    def test_exhibit_validator_failure_preserves_prior_pair(self) -> None:
-        with tempfile.TemporaryDirectory() as tmp:
-            root = Path(tmp)
-            output = root / "exhibit.jsonl"
-            output.write_bytes(b'{"value":1}\n')
-            sidecar = sidecar_path(output)
-            sidecar.write_bytes(b"prior-sidecar\n")
-            with self.assertRaisesRegex(ValueError, "validator rejected"):
-                write_exhibit(pd.DataFrame({"value": [2]}), output, code_sources=["tests/test_tables.py"], preinstall_validator=lambda _path: (_ for _ in ()).throw(ValueError("validator rejected")))
-            self.assertEqual(output.read_bytes(), b'{"value":1}\n')
-            self.assertEqual(sidecar.read_bytes(), b"prior-sidecar\n")
-            self.assertEqual(list(root.glob(".*.tmp")), [])
+def test_panel_is_direct_parquet_and_round_trips(tmp_path: Path) -> None:
+    frame = pd.DataFrame({"key": [1, 2], "value": ["a", "b"]})
+    path = write_panel(frame, tmp_path / "panel.parquet")
+    pd.testing.assert_frame_equal(pd.read_parquet(path), frame)
+    assert not (tmp_path / "panel.parquet.prov.json").exists()
 
-    def test_batch_generator_and_schema_failures_preserve_prior_pair(self) -> None:
-        def broken_generator():
-            yield pd.DataFrame({"value": [2]})
-            raise RuntimeError("generator failed")
 
-        cases = (
-            (broken_generator(), RuntimeError, "generator failed"),
-            ([pd.DataFrame({"value": [2]}), pd.DataFrame({"value": ["different schema"]})], ValueError, "do not share one schema"),
+def test_validator_runs_before_replacing_existing_output(tmp_path: Path) -> None:
+    path = tmp_path / "panel.parquet"
+    prior = pd.DataFrame({"value": [1]})
+    prior.to_parquet(path, index=False)
+
+    def reject(_temporary: Path) -> None:
+        raise ValueError("invalid staged panel")
+
+    with pytest.raises(ValueError, match="invalid staged panel"):
+        write_panel(
+            pd.DataFrame({"value": [2]}),
+            path,
+            preinstall_validator=reject,
         )
-        for frames, error_type, message in cases:
-            with self.subTest(message=message), tempfile.TemporaryDirectory() as tmp:
-                root = Path(tmp)
-                output = root / "panel.parquet"
-                pd.DataFrame({"value": [1]}).to_parquet(output, index=False)
-                prior = output.read_bytes()
-                sidecar = sidecar_path(output)
-                sidecar.write_bytes(b"prior-sidecar\n")
-                with self.assertRaisesRegex(error_type, message):
-                    write_panel_batches(frames, output, code_sources=["tests/test_tables.py"])
-                self.assertEqual(output.read_bytes(), prior)
-                self.assertEqual(sidecar.read_bytes(), b"prior-sidecar\n")
-                self.assertEqual(list(root.glob(".*.tmp")), [])
-
-    def test_batch_panel_installs_matching_content_stamp(self) -> None:
-        with tempfile.TemporaryDirectory() as tmp:
-            output = Path(tmp) / "panel.parquet"
-            returned, rows = write_panel_batches([pd.DataFrame({"value": [2, 3]})], output, code_sources=["tests/test_tables.py"])
-            sidecar = sidecar_path(output)
-            record = json.loads(sidecar.read_text(encoding="utf-8"))
-            self.assertEqual(returned, output)
-            self.assertEqual(rows, 2)
-            self.assertEqual(pd.read_parquet(output)["value"].tolist(), [2, 3])
-            self.assertEqual(record["artefact_bytes"], output.stat().st_size)
-            self.assertEqual(record["artefact_mtime_ns"], output.stat().st_mtime_ns)
-            self.assertEqual(record["artefact_sha256"], hashlib.sha256(output.read_bytes()).hexdigest())
-
-    def test_batch_panel_restores_prior_pair_at_every_install_failure_boundary(self) -> None:
-        failure_modes = ((boundary, after_move) for boundary in range(1, 5) for after_move in (False, True))
-        for failing_replace, fail_after_move in failure_modes:
-            with self.subTest(failing_replace=failing_replace, fail_after_move=fail_after_move), tempfile.TemporaryDirectory() as tmp:
-                root = Path(tmp)
-                output = root / "panel.parquet"
-                pd.DataFrame({"value": [1]}).to_parquet(output, index=False)
-                prior = output.read_bytes()
-                sidecar = sidecar_path(output)
-                sidecar.write_bytes(b"prior-sidecar\n")
-                prior_sidecar = sidecar.read_bytes()
-                original_replace = Path.replace
-                forward_replaces = 0
-                failed = False
-
-                def inject_failure(source: Path, target: Path, *args, **kwargs):
-                    nonlocal failed, forward_replaces
-                    if not failed:
-                        forward_replaces += 1
-                        if forward_replaces == failing_replace:
-                            failed = True
-                            if fail_after_move:
-                                original_replace(source, target, *args, **kwargs)
-                            raise OSError("injected install failure")
-                    return original_replace(source, target, *args, **kwargs)
-
-                with patch.object(Path, "replace", new=inject_failure), self.assertRaisesRegex(OSError, "injected install failure"):
-                    write_panel_batches([pd.DataFrame({"value": [2]})], output, code_sources=["tests/test_tables.py"])
-                self.assertTrue(failed)
-                self.assertEqual(output.read_bytes(), prior)
-                self.assertEqual(sidecar.read_bytes(), prior_sidecar)
-                self.assertEqual(list(root.glob(".*.tmp")), [])
-
-    def test_nested_same_target_staging_uses_unique_paths_and_cleans_both(self) -> None:
-        with tempfile.TemporaryDirectory() as tmp:
-            root = Path(tmp)
-            target = root / "panel.parquet"
-            with staged_output(target) as first:
-                with staged_output(target) as second:
-                    self.assertNotEqual(first, second)
-                    self.assertTrue(first.exists())
-                    self.assertTrue(second.exists())
-            self.assertEqual(list(root.glob(".*.tmp")), [])
-
-    def test_large_stamp_and_verify_bind_complete_artifact_bytes(self) -> None:
-        with tempfile.TemporaryDirectory() as tmp:
-            output = Path(tmp) / "large.bin"
-            with output.open("wb") as handle:
-                handle.truncate(CONTENT_HASH_MAX_BYTES + 1)
-            stamp(output, code_sources=["tests/test_tables.py"])
-            verdict = verify(output)
-            record = json.loads(sidecar_path(output).read_text(encoding="utf-8"))
-            self.assertEqual(
-                record["artefact_sha256"], hashlib.sha256(output.read_bytes()).hexdigest()
-            )
-            self.assertEqual(record["payload_identity"]["sha256"], record["artefact_sha256"])
-            self.assertEqual(record["artefact_bytes"], CONTENT_HASH_MAX_BYTES + 1)
-            self.assertTrue(verdict["content_current"])
-
-    def test_legacy_manifest_cannot_claim_2332_rows_for_a_2277_row_panel(self) -> None:
-        with tempfile.TemporaryDirectory() as tmp:
-            output = Path(tmp) / "panel.parquet"
-            pd.DataFrame({"day": range(2_277)}).to_parquet(output, index=False)
-            with self.assertRaisesRegex(
-                ValueError, "declared row count 2,332.*physical payload row count 2,277"
-            ):
-                stamp(output, code_sources=["tests/test_tables.py"], rows=2_332)
-            stamp(output, code_sources=["tests/test_tables.py"], rows=2_277)
-            manifest = sidecar_path(output)
-            record = json.loads(manifest.read_text(encoding="utf-8"))
-            record["rows"] = 2_332
-            manifest.write_text(json.dumps(record), encoding="utf-8")
-
-            verdict = verify(output)
-
-            self.assertEqual(verdict["status"], "stale")
-            self.assertFalse(verdict["content_current"])
-
-    def test_legacy_manifest_without_a_digest_requires_migration(self) -> None:
-        with tempfile.TemporaryDirectory() as tmp:
-            output = Path(tmp) / "panel.parquet"
-            pd.DataFrame({"day": range(3)}).to_parquet(output, index=False)
-            stamp(output, code_sources=["tests/test_tables.py"], rows=3)
-            manifest = sidecar_path(output)
-            record = json.loads(manifest.read_text(encoding="utf-8"))
-            record.pop("payload_identity")
-            record["artefact_sha256"] = None
-            manifest.write_text(json.dumps(record), encoding="utf-8")
-
-            verdict = verify(output)
-
-            self.assertEqual(verdict["status"], "stale")
-            self.assertFalse(verdict["content_current"])
-
-    def test_installer_rejects_a_prepared_stamp_with_a_false_row_count(self) -> None:
-        with tempfile.TemporaryDirectory() as tmp:
-            root = Path(tmp)
-            staged = root / "staged.parquet"
-            output = root / "panel.parquet"
-            pd.DataFrame({"day": range(2_277)}).to_parquet(staged, index=False)
-            prepared = prepare_stamp(
-                output,
-                content_path=staged,
-                code_sources=["tests/test_tables.py"],
-                rows=2_277,
-            )
-            record = json.loads(prepared)
-            record["rows"] = 2_332
-
-            with self.assertRaisesRegex(
-                ValueError, "prepared provenance does not identify the staged artefact"
-            ):
-                install_stamped_artifact(
-                    staged,
-                    output,
-                    (json.dumps(record) + "\n").encode(),
-                )
-            self.assertFalse(output.exists())
-            self.assertFalse(sidecar_path(output).exists())
-
-    def test_same_target_publications_serialize_and_leave_matching_last_writer_pair(self) -> None:
-        with tempfile.TemporaryDirectory() as tmp:
-            root = Path(tmp)
-            output = root / "panel.parquet"
-            sidecar = sidecar_path(output)
-            first_holds_lock = Event()
-            release_first = Event()
-            second_attempted_lock = Event()
-            second_acquired_lock = Event()
-            errors: list[BaseException] = []
-            real_staged_output = provenance.staged_output
-            real_install_lock = provenance.serialized_output_installs
-            first_sidecar_stage = True
-
-            @contextmanager
-            def observed_install_lock(targets):
-                if current_thread().name == "publisher-b":
-                    second_attempted_lock.set()
-                with real_install_lock(targets):
-                    if current_thread().name == "publisher-b":
-                        second_acquired_lock.set()
-                    yield
-
-            @contextmanager
-            def held_staged_output(target: Path):
-                nonlocal first_sidecar_stage
-                with real_staged_output(target) as temporary:
-                    if current_thread().name == "publisher-a" and Path(target) == sidecar and first_sidecar_stage:
-                        first_sidecar_stage = False
-                        first_holds_lock.set()
-                        if not release_first.wait(timeout=5):
-                            raise TimeoutError("test did not release first publisher")
-                    yield temporary
-
-            def publish(value: int) -> None:
-                try:
-                    write_panel(pd.DataFrame({"value": [value]}), output, code_sources=["tests/test_tables.py"])
-                except BaseException as error:
-                    errors.append(error)
-
-            with patch("ddvc.provenance.serialized_output_installs", new=observed_install_lock), patch("ddvc.provenance.staged_output", new=held_staged_output):
-                first = Thread(target=publish, args=(1,), name="publisher-a")
-                second = Thread(target=publish, args=(2,), name="publisher-b")
-                first.start()
-                self.assertTrue(first_holds_lock.wait(timeout=5))
-                second.start()
-                self.assertTrue(second_attempted_lock.wait(timeout=5))
-                self.assertFalse(second_acquired_lock.is_set())
-                release_first.set()
-                first.join(timeout=5)
-                second.join(timeout=5)
-            self.assertFalse(first.is_alive())
-            self.assertFalse(second.is_alive())
-            self.assertEqual(errors, [])
-            self.assertTrue(second_acquired_lock.is_set())
-            self.assertEqual(pd.read_parquet(output)["value"].tolist(), [2])
-            record = json.loads(sidecar.read_text(encoding="utf-8"))
-            self.assertEqual(record["artefact_bytes"], output.stat().st_size)
-            self.assertEqual(record["artefact_mtime_ns"], output.stat().st_mtime_ns)
-            self.assertEqual(record["artefact_sha256"], hashlib.sha256(output.read_bytes()).hexdigest())
-            self.assertEqual(list(root.glob(".*.tmp")), [])
-
-    def test_verifier_never_observes_the_between_rename_pair(self) -> None:
-        with tempfile.TemporaryDirectory() as tmp:
-            root = Path(tmp)
-            output = root / "panel.parquet"
-            write_panel(
-                pd.DataFrame({"value": [1]}),
-                output,
-                code_sources=["tests/test_tables.py"],
-            )
-            sidecar = sidecar_path(output)
-            sidecar_installed = Event()
-            release_publisher = Event()
-            verifier_started = Event()
-            verifier_done = Event()
-            verdicts: list[dict[str, object]] = []
-            errors: list[BaseException] = []
-            real_replace = Path.replace
-            held = False
-
-            def held_between_pair_renames(source: Path, target: Path, *args, **kwargs):
-                nonlocal held
-                result = real_replace(source, target, *args, **kwargs)
-                if (
-                    current_thread().name == "publisher"
-                    and Path(target) == sidecar
-                    and not held
-                    and sidecar.is_file()
-                ):
-                    try:
-                        installed = json.loads(sidecar.read_text(encoding="utf-8"))
-                    except (OSError, json.JSONDecodeError):
-                        installed = {}
-                    if isinstance(installed.get("payload_identity"), dict):
-                        held = True
-                        sidecar_installed.set()
-                        if not release_publisher.wait(timeout=5):
-                            raise TimeoutError("test did not release publisher")
-                return result
-
-            def publish() -> None:
-                try:
-                    write_panel(
-                        pd.DataFrame({"value": [2]}),
-                        output,
-                        code_sources=["tests/test_tables.py"],
-                    )
-                except BaseException as error:
-                    errors.append(error)
-
-            def inspect() -> None:
-                verifier_started.set()
-                try:
-                    verdicts.append(verify(output))
-                except BaseException as error:
-                    errors.append(error)
-                finally:
-                    verifier_done.set()
-
-            with patch.object(Path, "replace", new=held_between_pair_renames):
-                publisher = Thread(target=publish, name="publisher")
-                publisher.start()
-                self.assertTrue(sidecar_installed.wait(timeout=5))
-                verifier = Thread(target=inspect, name="verifier")
-                verifier.start()
-                self.assertTrue(verifier_started.wait(timeout=5))
-                self.assertFalse(verifier_done.wait(timeout=0.1))
-                release_publisher.set()
-                publisher.join(timeout=5)
-                verifier.join(timeout=5)
-            self.assertFalse(publisher.is_alive())
-            self.assertFalse(verifier.is_alive())
-            self.assertEqual(errors, [])
-            self.assertEqual([verdict["status"] for verdict in verdicts], ["ok"])
-            self.assertEqual(pd.read_parquet(output)["value"].tolist(), [2])
-
-    def test_standalone_stamp_cannot_race_a_same_target_panel_publication(self) -> None:
-        with tempfile.TemporaryDirectory() as tmp:
-            root = Path(tmp)
-            output = root / "panel.parquet"
-            write_panel(pd.DataFrame({"value": [1]}), output, code_sources=["tests/test_tables.py"])
-            sidecar = sidecar_path(output)
-            stamp_holds_lock = Event()
-            release_stamp = Event()
-            writer_attempted_lock = Event()
-            writer_acquired_lock = Event()
-            errors: list[BaseException] = []
-            real_atomic_output = provenance.atomic_output
-            real_install_lock = provenance.serialized_output_installs
-
-            @contextmanager
-            def observed_install_lock(targets):
-                if current_thread().name == "panel-writer":
-                    writer_attempted_lock.set()
-                with real_install_lock(targets):
-                    if current_thread().name == "panel-writer":
-                        writer_acquired_lock.set()
-                    yield
-
-            @contextmanager
-            def held_stamp_sidecar(target: Path):
-                with real_atomic_output(target) as temporary:
-                    if current_thread().name == "standalone-stamp":
-                        stamp_holds_lock.set()
-                        if not release_stamp.wait(timeout=5):
-                            raise TimeoutError("test did not release standalone stamp")
-                    yield temporary
-
-            def restamp() -> None:
-                try:
-                    stamp(output, code_sources=["tests/test_tables.py"])
-                except BaseException as error:
-                    errors.append(error)
-
-            def publish() -> None:
-                try:
-                    write_panel(pd.DataFrame({"value": [2]}), output, code_sources=["tests/test_tables.py"])
-                except BaseException as error:
-                    errors.append(error)
-
-            with patch("ddvc.provenance.serialized_output_installs", new=observed_install_lock), patch("ddvc.provenance.atomic_output", new=held_stamp_sidecar):
-                stamper = Thread(target=restamp, name="standalone-stamp")
-                writer = Thread(target=publish, name="panel-writer")
-                stamper.start()
-                self.assertTrue(stamp_holds_lock.wait(timeout=5))
-                writer.start()
-                self.assertTrue(writer_attempted_lock.wait(timeout=5))
-                self.assertFalse(writer_acquired_lock.is_set())
-                release_stamp.set()
-                stamper.join(timeout=5)
-                writer.join(timeout=5)
-            self.assertFalse(stamper.is_alive())
-            self.assertFalse(writer.is_alive())
-            self.assertEqual(errors, [])
-            self.assertTrue(writer_acquired_lock.is_set())
-            self.assertEqual(pd.read_parquet(output)["value"].tolist(), [2])
-            record = json.loads(sidecar.read_text(encoding="utf-8"))
-            self.assertEqual(record["artefact_bytes"], output.stat().st_size)
-            self.assertEqual(record["artefact_mtime_ns"], output.stat().st_mtime_ns)
-            self.assertEqual(record["artefact_sha256"], hashlib.sha256(output.read_bytes()).hexdigest())
-            self.assertEqual(list(root.glob(".*.tmp")), [])
-
-    def test_symlink_target_is_rejected_without_replacing_referent_or_link(self) -> None:
-        with tempfile.TemporaryDirectory() as tmp:
-            root = Path(tmp)
-            referent = root / "referent.parquet"
-            output = root / "panel.parquet"
-            pd.DataFrame({"value": [0]}).to_parquet(referent, index=False)
-            output.symlink_to(referent.name)
-            stamp(output, code_sources=["tests/test_tables.py"])
-            sidecar = sidecar_path(output)
-            before_sidecar = sidecar.read_bytes()
-            with self.assertRaisesRegex(ValueError, "leaf symlink"):
-                write_panel(
-                    pd.DataFrame({"value": [1]}),
-                    output,
-                    code_sources=["tests/test_tables.py"],
-                )
-            self.assertTrue(output.is_symlink())
-            self.assertEqual(pd.read_parquet(referent)["value"].tolist(), [0])
-            self.assertEqual(sidecar.read_bytes(), before_sidecar)
-            self.assertEqual(list(root.glob(".*.tmp")), [])
+    pd.testing.assert_frame_equal(pd.read_parquet(path), prior)
 
 
-if __name__ == "__main__":
-    unittest.main()
+def test_panel_batches_stream_one_schema(tmp_path: Path) -> None:
+    path, rows = write_panel_batches(
+        [pd.DataFrame({"value": [1, 2]}), pd.DataFrame({"value": [3]})],
+        tmp_path / "batches.parquet",
+    )
+    assert rows == 3
+    assert pd.read_parquet(path)["value"].tolist() == [1, 2, 3]
+
+
+def test_panel_batches_reject_schema_drift(tmp_path: Path) -> None:
+    with pytest.raises(ValueError, match="one schema"):
+        write_panel_batches(
+            [pd.DataFrame({"value": [1]}), pd.DataFrame({"other": [2]})],
+            tmp_path / "batches.parquet",
+        )
+
+
+def test_panel_batches_reject_empty_stream(tmp_path: Path) -> None:
+    with pytest.raises(ValueError, match="empty"):
+        write_panel_batches([], tmp_path / "empty.parquet")
+
+
+def test_report_writes_null_for_nonfinite_values(tmp_path: Path) -> None:
+    path = write_report(
+        pd.DataFrame({"value": [float("inf"), float("nan"), 2.0]}),
+        tmp_path / "report.jsonl",
+    )
+    assert [json.loads(line)["value"] for line in path.read_text().splitlines()] == [
+        None,
+        None,
+        2.0,
+    ]

@@ -105,9 +105,8 @@
 
 % VISUAL-FUNCTION: time-varying backing | token-by-period regime heatmap | show why stablecoin backing cannot be treated as fixed
 % EVIDENCE-STATUS: dated classification contract; cells encode rules, not empirical shares or token availability.
-% EVIDENCE-COMMIT: e1513051da9f3c33fc69a05d063541e2ef96954a
 % EVIDENCE-SOURCES: deck/assets/backing-regime-heatmap.tex; src/ddvc/asset_types.py;
-% tests/test_asset_types.py; docs/node-c-definitions-round2.md section 3;
+% tests/test_asset_types.py; docs/research/design.md section 3;
 % https://vote.makerdao.com/executive/add-usdc-as-a-collateral-type-2020-03-17;
 % https://vote.makerdao.com/executive/template-executive-vote-activate-rwa001-a-add-psm-usdc-a-momc-changes-april-16-2021;
 % https://gov.frax.finance/t/fip-188-increase-cr-to-100/2147.
@@ -119,10 +118,9 @@
 
 % VISUAL-FUNCTION: primary measurement funnel | staged route-object and two-support split | separate topology support from dollar-value support
 % EVIDENCE-STATUS: qualitative measurement contract; no attrition quantities shown.
-% EVIDENCE-COMMIT: 2ffbce06302468b5ee6cb6537989c28078a88603
 % EVIDENCE-SOURCES: deck/assets/sample-measurement-funnel.tex;
-% docs/specification-lock.json; docs/findings-freeze.md;
-% data/manifests/data/processed/intermediation_by_type_daily.parquet.prov.json.
+% docs/specifications/confirmatory.json; docs/findings/README.md;
+% data/processed/intermediation_by_type_daily.parquet.
 \begin{frame}{A3. One route universe supports two measurements}
 \centering
 \resizebox{0.92\textwidth}{!}{\input{assets/sample-measurement-funnel.tex}}\par
@@ -150,7 +148,7 @@
 \end{frame}
 
 % VISUAL-FUNCTION: protocol-specific state requirements | protocol-by-state matrix | prevent false comparability across AMM families
-% Source contract: docs/research-workflow.md lines 161--163 and 382--384;
+% Source contract: README.md lines 161--163 and 382--384;
 % src/ddvc/execution_contracts.py and src/ddvc/liquidity.py at f16d5f074fac73011dce1c609d80146ec3fd3bec.
 % Filled squares mean that the field enters the family-specific pre-trade state;
 % the outlined V4 hook square records an explicit perimeter restriction, not measured hook state.
@@ -194,11 +192,10 @@ V4 singleton
 \end{frame}
 
 % EVIDENCE-STATUS: verified institutional mechanisms; no empirical estimate is displayed.
-% EVIDENCE-COMMIT: d9006eb8a41155ea871cf927fa28dbff908cf8e0
-% EVIDENCE-SOURCES: docs/finding-v1-forced-vehicle.md sha256=650004eafae8864fe13b3d90ab59daefd77b342e33510f3d5db03b3e28ed2c68;
-% literature/text/2021-AdamsZinsmeisterRobinson2021UniswapV3-whitepaper-uniswap-v3-core.txt sha256=599a20254f8d5f1d6e771d2899bf16e4a921c5bc3a9cb82e58c97d7791411567;
+% EVIDENCE-SOURCES: docs/findings/v1-forced-vehicle.md;
+% literature/text/2021-AdamsZinsmeisterRobinson2021UniswapV3-whitepaper-uniswap-v3-core.txt;
 % https://app.uniswap.org/whitepaper-v4.pdf, Adams et al. (2024), Sections 1 and 3;
-% docs/research-questions-and-empirical-design.md sha256=b56cb5e98d93d0968306fc2dd36edb323d83519daab17b5c7b39587d49506c8b.
+% docs/research/design.md.
 % SCIENTIFIC-BOUNDARY: protocol rules change pair availability, pair-specific active liquidity, or the accounting boundary. The slide reports no adoption, liquidity, routing, or causal estimate.
 % VISUAL-FUNCTION: architecture-to-economic-object map | three protocol-mechanism panels | show how V1--V4 alter the opportunity set without treating calendar version as an estimated effect
 \begin{frame}{Protocol design changes markets, depth, and settlement}
@@ -288,16 +285,16 @@ V4 singleton
 
 % EVIDENCE-STATUS: authentic registered forced-route transaction; selection rule and stage counts in the case manifest
 % EVIDENCE-SOURCES: output/exhibits/v1_route_case.json;
-% output/exhibits/v1_route_case_deck_values.tex; docs/finding-v1-forced-vehicle.md;
+% output/exhibits/v1_route_case_deck_values.tex; docs/findings/v1-forced-vehicle.md;
 % https://eth.blockscout.com/tx/0x4dca160d762184835f34925a8cc556d7283a7642c88d1bef3382a73596a0ca16?tab=token_transfers (retrieved 2026-08-15)
-% EVIDENCE-GENERATION: scripts/build_v1_route_case.py; largest routed ETH among the exact-leg mandate-era candidates
+% EVIDENCE-GENERATION: scripts/process/build_v1_route_case.py; largest routed ETH among the exact-leg mandate-era candidates
 % Token labels MKR and DAI: the V1 subgraph rows identify exchange contracts only
 % (\VOneCaseSellExchange{} sells the token, \VOneCaseBuyExchange{} buys); the token
 % identities are verified against the public transfer record cited above.
 % VISUAL-FUNCTION: compulsory V1 intermediation | authentic two-leg forced-route trace | establish imposed ETH routing from observables
 \IfFileExists{../output/exhibits/v1_route_case_deck_values.tex}{%
 \input{../output/exhibits/v1_route_case_deck_values.tex}%
-}{\PackageError{dvc-deck}{Missing generated V1 route case values}{Run scripts/build_v1_route_case.py.}}
+}{\PackageError{dvc-deck}{Missing generated V1 route case values}{Run scripts/process/build_v1_route_case.py.}}
 \begin{frame}{A6. V1 forced routes have an on-chain signature}
 \begin{columns}[T]
 \begin{column}{0.43\textwidth}
@@ -327,9 +324,8 @@ V4 singleton
 
 % VISUAL-FUNCTION: observation and response clocks | daily-weekly-exact horizon diagram | separate aggregation from elapsed-time links
 % EVIDENCE-STATUS: conceptual design contract; no empirical estimate or fitted horizon result.
-% EVIDENCE-COMMIT: 11a03f5dac033751742a24ca5fdf61e444c5853d
 % EVIDENCE-SOURCES: deck/assets/exact-horizon-diagram.tex;
-% docs/specification-lock.json; docs/research-workflow.md.
+% docs/specifications/confirmatory.json; README.md.
 \begin{frame}{A7. Daily and weekly frequencies answer different questions}
 \centering
 \resizebox{0.965\textwidth}{!}{\input{assets/exact-horizon-diagram.tex}}\par
@@ -339,10 +335,9 @@ V4 singleton
 
 % VISUAL-FUNCTION: route weights | paired route-width small multiples | distinguish frequency from supported economic scale
 % EVIDENCE-STATUS: conceptual measurement contract; route widths encode no empirical value.
-% EVIDENCE-COMMIT: 11a03f5dac033751742a24ca5fdf61e444c5853d
 % EVIDENCE-SOURCES: deck/assets/count-value-route-widths.tex;
-% docs/specification-lock.json; docs/paper-spine.md;
-% docs/finding-intermediation-transition.md.
+% docs/specifications/confirmatory.json; paper/README.md;
+% docs/findings/vehicle-transition.md.
 \begin{frame}{A8. Count versus value weighting}
 \centering
 \resizebox{0.94\textwidth}{!}{\input{assets/count-value-route-widths.tex}}\par
@@ -352,9 +347,8 @@ V4 singleton
 
 % VISUAL-FUNCTION: measurement taxonomy | two-by-two visual grid | separate route status, continuous dominance, graph position, and counterfactual cost
 % EVIDENCE-STATUS: conceptual measurement map; no empirical estimate.
-% EVIDENCE-COMMIT: e1513051da9f3c33fc69a05d063541e2ef96954a
 % EVIDENCE-SOURCES: deck/assets/measurement-taxonomy-grid.tex;
-% docs/specification-lock.json; docs/paper-spine.md; docs/research-workflow.md.
+% docs/specifications/confirmatory.json; paper/README.md; README.md.
 \begin{frame}{Vehicle dominance aggregates realised intermediary choices}
 \centering
 \resizebox{0.94\textwidth}{!}{\input{assets/measurement-taxonomy-grid.tex}}\par
@@ -363,7 +357,7 @@ V4 singleton
 \end{frame}
 
 % EVIDENCE-STATUS: evolving route decomposition; venue-scope reweighting is a route-only descriptive identity
-% EVIDENCE-SOURCES: output/exhibits/vehicle_excess_use.jsonl; output/exhibits/vehicle_excess_use_transition.jsonl; output/exhibits/e0_usdt_integration_decomposition.jsonl; output/exhibits/provisional_results_deck_values.tex
+% EVIDENCE-SOURCES: output/exhibits/vehicle_excess_use.jsonl; output/exhibits/vehicle_excess_use_transition.jsonl; output/exhibits/e0_usdt_integration_decomposition.jsonl; output/exhibits/presentation_values.tex
 % VISUAL-FUNCTION: intermediary excess use | paired margin formulas and venue-scope accounting note | separate intermediary use from observed pool-route endpoints
 \begin{frame}{A9. Intermediary and route-endpoint use are separate}
 \begin{columns}[T]
@@ -391,7 +385,6 @@ How often asset $k$ appears at either end of the observed pool route.
 
 % VISUAL-FUNCTION: liquidity quantities | labelled pool-state and price-response cross-section | prevent capital, inventory, depth, and quote quality from collapsing
 % EVIDENCE-STATUS: conceptual institutional background; no empirical estimate.
-% EVIDENCE-COMMIT: 525c67a7f672593fe07e54cf5ccb6d08910e9b04
 % EVIDENCE-SOURCES: deck/assets/liquidity-quantity-cross-section.tex;
 % src/ddvc/liquidity.py; src/ddvc/capital_contracts.py.
 \begin{frame}{A10. Capital, inventory, and depth are different objects}
@@ -403,9 +396,8 @@ How often asset $k$ appears at either end of the observed pool route.
 
 % VISUAL-FUNCTION: opportunity set versus realised composition | multiplex network and route-class small multiples | separate feasible paths from selected routes
 % EVIDENCE-STATUS: conceptual institutional background; no empirical estimate.
-% EVIDENCE-COMMIT: 525c67a7f672593fe07e54cf5ccb6d08910e9b04
 % EVIDENCE-SOURCES: deck/assets/integration-multiplex-network.tex;
-% docs/research-workflow.md; docs/specification-lock.json.
+% README.md; docs/specifications/confirmatory.json.
 \begin{frame}{A11. Additional venues expand the feasible route set}
 \centering
 \vspace{0.06cm}
@@ -414,10 +406,8 @@ How often asset $k$ appears at either end of the observed pool route.
 
 % VISUAL-FUNCTION: realised venue scope by intermediary type | count/value alluvial | show that integration and vehicle composition are distinct observed margins
 % EVIDENCE-STATUS: evolving route composition; descriptive selected-route cross-section.
-% EVIDENCE-COMMIT: 2ffbce06302468b5ee6cb6537989c28078a88603
 % EVIDENCE-SOURCES: output/figures/experiments/integration_vehicle_alluvial.pdf;
-% output/exhibits/intermediation_by_type.jsonl; docs/reviews/deck-visual-experiments.md.
-% INPUT-SHA256: 539a9feb5712a899cc901023eea8e62f56bf6015a23af8c6e735e981b874e12a
+% output/exhibits/intermediation_by_type.jsonl; literature/reviews/current/deck-visual-experiments.md.
 \begin{frame}{A11b. Venue scope and vehicle type differ in 2026}
 \vfill
 \begin{center}
@@ -428,7 +418,7 @@ How often asset $k$ appears at either end of the observed pool route.
 \vfill
 \end{frame}
 
-% VISUAL-FUNCTION: intellectual provenance | grouped reference list | support vehicle-currency and market-structure framing
+% VISUAL-FUNCTION: literature grounding | grouped reference list | support vehicle-currency and market-structure framing
 \begin{frame}{A12. References: vehicle currencies and market structure}
 \begin{itemize}
 \item Amiti, Itskhoki and Konings (2022), \emph{Quarterly Journal of Economics}
@@ -440,7 +430,7 @@ How often asset $k$ appears at either end of the observed pool route.
 \end{itemize}
 \end{frame}
 
-% VISUAL-FUNCTION: institutional provenance | grouped reference list | support AMM architecture and liquidity design
+% VISUAL-FUNCTION: institutional grounding | grouped reference list | support AMM architecture and liquidity design
 \begin{frame}{A13. References: decentralised exchange design}
 \begin{itemize}
 \item Adams et al. (2021), \emph{Uniswap v3 Core}

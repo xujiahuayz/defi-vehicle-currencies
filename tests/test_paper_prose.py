@@ -1,6 +1,6 @@
 """House-voice gates on the DELIVERABLES, not only on the plan that describes them.
 
-`tests/test_paper_spine.py` gates `docs/paper-spine.md`, which is the blueprint. The paper
+`tests/test_paper_spine.py` gates `paper/README.md`, which is the blueprint. The paper
 and the deck are what a reader sees, and until now nothing checked them. That gap is not
 hypothetical for this project: version 1 shipped a deck whose stylistic tells survived
 three review rounds, and the spine passing its own gate says nothing about the LaTeX that
@@ -35,7 +35,7 @@ DECK_DIR = ROOT / "deck"
 # Keep only unmistakable house-style tells here. Ordinary contrast and intent
 # phrases cannot be rejected lexically: both "rather than" and "deliberate"
 # occur in the raw JFE exemplars, and their quality depends on the surrounding
-# sentence. Paragraph-level rhetoric is reviewed in paper-rhetoric.json.
+# sentence. Paragraph-level rhetoric remains an editorial judgment.
 BANNED_SUBSTRINGS = ("—", "–", "genuinely")
 
 CONTRAST_CONFIRMATION = re.compile(

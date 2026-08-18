@@ -3,7 +3,6 @@
 from __future__ import annotations
 
 import fcntl
-import hashlib
 import io
 import json
 import re
@@ -159,8 +158,8 @@ def source_keys_lock(keys: Iterable[str]) -> Iterator[None]:
     locks = []
     try:
         for key in sorted(set(keys)):
-            digest = hashlib.sha256(key.encode("utf-8")).hexdigest()[:20]
-            lock_path = SHARED_RUNTIME_DIR / f"literature-source-{digest}.lock"
+            lock_name = urllib.parse.quote(key, safe="")
+            lock_path = SHARED_RUNTIME_DIR / f"literature-source-{lock_name}.lock"
             lock = lock_path.open("a+", encoding="utf-8")
             fcntl.flock(lock.fileno(), fcntl.LOCK_EX)
             locks.append(lock)

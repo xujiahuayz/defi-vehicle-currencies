@@ -7,11 +7,8 @@ Follow the data contract in the root [`README.md`](../README.md) and the path ma
 - `unified/`: reconstructed cross-venue routes.
 - `processed/`: analysis-ready panels.
 - `interim/`: disposable command-local scratch.
-- `empirical/`, `metrics/`, `exhibits/`: older derived families; keep only while a
-  current script or deliverable consumes them.
-- `external/`: licensed/manual inputs that cannot be fetched into `raw/`.
-- `manifests/`: legacy compatibility metadata; do not add new fingerprint or
-  certificate files, and remove entries as their callers are simplified.
 
+External or manually obtained source files belong in `raw/external/` with a
+short source note.
 Raw data are retained as regular files. Derived data must have a named producer and
 consumer. A filename alone never makes a panel current.

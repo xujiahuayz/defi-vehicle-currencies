@@ -38,8 +38,6 @@ which validated to 0.24%) are trusted as-is and only sanity-capped.
 """
 from __future__ import annotations
 
-import hashlib
-import inspect
 import json
 from collections import defaultdict
 from concurrent.futures import as_completed
@@ -47,8 +45,8 @@ from datetime import datetime, timezone
 from pathlib import Path
 
 import pandas as pd
+import pyarrow.parquet as pq
 
-from ddvc.artifact_release import canonical_json_sha256, file_sha256, is_sha256
 from ddvc.calendar import RESEARCH_SAMPLE_END, RESEARCH_SAMPLE_START, calendar_days
 from ddvc.fetch.raw import (
     RawFetchInvariantError,
@@ -62,7 +60,6 @@ from ddvc.fetch.sources import (
     get_source,
 )
 from ddvc.paths import DATA_DIR, OUTPUT_DIR, RAW_MARKET_DATA_LOCK
-from ddvc.provenance import code_fingerprint
 from ddvc.runtime import atomic_output, bounded_workers, exclusive_job, interruptible_process_pool
 from ddvc.source_records import block_value, timestamp_value, transaction_id
 from ddvc.tables import write_exhibit, write_panel
@@ -80,12 +77,13 @@ RECONSTRUCT_CODE_SOURCES = [
     "src/ddvc/reconstruct/__init__.py",
     *ROUTE_SEMANTIC_SOURCES,
 ]
-RECONSTRUCTION_ENGINE = "pending-import"
+RECONSTRUCTION_ENGINE = "direct-v2"
 UNIFIED_QUALITY_COLUMNS = [
     "schema_version",
     "engine",
     "day",
-    "input_fingerprint",
+    "input_bytes",
+    "input_mtime_ns",
     "expected_sources",
     "missing_sources",
     "raw_rows",
@@ -101,7 +99,6 @@ UNIFIED_QUALITY_COLUMNS = [
     "output_rows",
     "output_bytes",
     "output_mtime_ns",
-    "output_sha256",
     "passed",
 ]
 UNIFIED_QUALITY_PANEL = DATA_DIR / "processed" / "unified_route_quality.parquet"
@@ -336,9 +333,8 @@ def load_legs(
     *,
     data_root: Path | None = None,
     counters: dict[str, int] | None = None,
-    expected_generation_identity: str | None = None,
 ) -> list[dict]:
-    """Normalised legs for one DEX on one certified source-day."""
+    """Normalised legs for one DEX source-day."""
     fn = NORMALISERS[DEX_FAMILY[dex]]
     legs: list[dict] = []
     with verified_source_day_rows(
@@ -346,7 +342,6 @@ def load_legs(
         DEX_STREAM[dex],
         datetime.strptime(day, "%Y-%m-%d").date(),
         data_root=data_root or DATA_DIR,
-        expected_generation_identity=expected_generation_identity,
     ) as rows:
         for rec in rows:
             if counters is not None:
@@ -530,7 +525,8 @@ def _empty_quality(day: str, active_sources: list[str]) -> dict[str, object]:
         "schema_version": 1,
         "engine": RECONSTRUCTION_ENGINE,
         "day": day.replace("-", ""),
-        "input_fingerprint": "",
+        "input_bytes": 0,
+        "input_mtime_ns": 0,
         "expected_sources": len(active_sources),
         "missing_sources": 0,
         "raw_rows": 0,
@@ -546,7 +542,6 @@ def _empty_quality(day: str, active_sources: list[str]) -> dict[str, object]:
         "output_rows": 0,
         "output_bytes": 0,
         "output_mtime_ns": 0,
-        "output_sha256": "",
         "passed": False,
     }
 
@@ -613,53 +608,32 @@ def preflight_route_input_perimeter(
     return expected
 
 
-def _route_input_generation_records(
+def route_input_state(
     day: str,
     dexes: list[str],
     *,
     data_root: Path | None = None,
-) -> tuple[list[dict[str, str]], list[str]]:
-    from ddvc.fetch.raw import raw_partition_generation_identity
+) -> tuple[int, int, list[str]]:
+    """Return direct file facts for required raw payloads and metadata."""
 
-    stamp = day.replace("-", "")
     root = data_root or DATA_DIR
-    records: list[dict[str, str]] = []
+    calendar_day = datetime.strptime(day, "%Y-%m-%d").date()
+    files: list[Path] = []
     unavailable: list[str] = []
     for dex in active_route_sources(day, dexes):
-        try:
-            identity = raw_partition_generation_identity(
-                dex, DEX_STREAM[dex], stamp, data_root=root
-            )
-        except (FileNotFoundError, OSError, RawFetchInvariantError, ValueError):
+        payload, marker = installed_source_day_paths(
+            dex, DEX_STREAM[dex], calendar_day, data_root=root
+        )
+        if not payload.is_file() or not marker.is_file():
             unavailable.append(dex)
             continue
-        records.append(
-            {
-                "source": dex,
-                "stream": DEX_STREAM[dex],
-                "day": stamp,
-                "generation_identity_sha256": identity,
-            }
-        )
-    return records, unavailable
-
-
-def route_input_fingerprint(
-    day: str,
-    dexes: list[str],
-    *,
-    data_root: Path | None = None,
-) -> str:
-    """Bind an exact route day to committed content and query generations."""
-
-    records, unavailable = _route_input_generation_records(
-        day, dexes, data_root=data_root
+        files.extend((payload, marker))
+    stats = [path.stat() for path in files]
+    return (
+        sum(stat.st_size for stat in stats),
+        max((stat.st_mtime_ns for stat in stats), default=0),
+        unavailable,
     )
-    if unavailable:
-        raise RawFetchInvariantError(
-            f"route inputs lack committed generation identity: {', '.join(unavailable)}"
-        )
-    return canonical_json_sha256(records)
 
 
 def _deduplicate_legs(
@@ -694,20 +668,16 @@ def reconstruct_day_with_quality(
     """Build one canonical route day and expose every exclusion before publication."""
     active = active_route_sources(day, dexes)
     quality = _empty_quality(day, active)
-    inputs = route_input_paths(day, dexes, data_root=data_root)
-    records, unavailable = _route_input_generation_records(
+    input_bytes, input_mtime_ns, unavailable = route_input_state(
         day, dexes, data_root=data_root
     )
-    quality["input_fingerprint"] = canonical_json_sha256(records)
+    quality["input_bytes"] = input_bytes
+    quality["input_mtime_ns"] = input_mtime_ns
     quality["missing_sources"] = len(unavailable)
     if unavailable:
         return pd.DataFrame(), quality
 
     all_legs: list[dict] = []
-    generation_identities = {
-        str(record["source"]): str(record["generation_identity_sha256"])
-        for record in records
-    }
     for dex in active:
         all_legs.extend(
             load_legs(
@@ -715,7 +685,6 @@ def reconstruct_day_with_quality(
                 day,
                 data_root=data_root,
                 counters=quality,
-                expected_generation_identity=generation_identities[dex],
             )
         )
     all_legs = _deduplicate_legs(all_legs, quality)
@@ -817,62 +786,6 @@ def reconstruct_day(day: str, dexes: list[str]) -> pd.DataFrame:
     return frame
 
 
-ROUTE_SEMANTIC_FUNCTIONS = (
-    _f,
-    _i,
-    _norm_uni_signed,
-    _norm_uni_v2,
-    _norm_messari,
-    _norm_balancer,
-    _fluid_ts,
-    _norm_fluid,
-    _raw_file_path,
-    load_legs,
-    _median,
-    _day_price_table,
-    _reprice_legs,
-    _root,
-    _union,
-    _component_profiles,
-    _is_bridged,
-    _empty_quality,
-    active_route_sources,
-    route_input_paths,
-    route_input_fingerprint,
-    _deduplicate_legs,
-    reconstruct_day_with_quality,
-    reconstruct_day,
-)
-
-
-def route_semantic_fingerprint() -> str:
-    """Hash row semantics without tying day caches to build orchestration."""
-    digest = hashlib.sha256()
-    digest.update(code_fingerprint(ROUTE_SEMANTIC_SOURCES).encode())
-    constants = {
-        "dex_family": DEX_FAMILY,
-        "dex_stream": DEX_STREAM,
-        "dune_sources": sorted(DUNE_SOURCES),
-        "bridge_tolerance": BRIDGE_TOL,
-        "intermediate_tolerance": INTERMEDIATE_TOL,
-        "stable_addresses": sorted(STABLE_ADDRS),
-        "weth": WETH_ADDR,
-        "wbtc": WBTC_ADDR,
-        "sanity_max_usd": SANITY_MAX_USD,
-        "reprice_rounds": REPRICE_ROUNDS,
-        "unified_columns": UNIFIED_COLUMNS,
-        "quality_columns": UNIFIED_QUALITY_COLUMNS,
-    }
-    digest.update(json.dumps(constants, sort_keys=True, separators=(",", ":")).encode())
-    for function in ROUTE_SEMANTIC_FUNCTIONS:
-        digest.update(function.__name__.encode())
-        digest.update(inspect.getsource(function).encode())
-    return digest.hexdigest()
-
-
-RECONSTRUCTION_ENGINE = route_semantic_fingerprint()[:12]
-
-
 # ---------------------------------------------------------------------------
 # Available days discovery
 # ---------------------------------------------------------------------------
@@ -926,19 +839,27 @@ def read_unified_quality(
     except (json.JSONDecodeError, OSError):
         return None
     try:
-        current = route_input_fingerprint(day, dexes, data_root=data_root)
-    except (FileNotFoundError, OSError, RawFetchInvariantError, ValueError):
+        input_bytes, input_mtime_ns, unavailable = route_input_state(
+            day, dexes, data_root=data_root
+        )
+    except (FileNotFoundError, OSError, ValueError):
         return None
     output_stat = output.stat()
+    try:
+        parquet_rows = pq.ParquetFile(output).metadata.num_rows
+    except Exception:
+        return None
     if (
         quality.get("engine") != RECONSTRUCTION_ENGINE
-        or quality.get("input_fingerprint") != current
+        or unavailable
+        or int(quality.get("input_bytes", -1)) != input_bytes
+        or int(quality.get("input_mtime_ns", -1)) != input_mtime_ns
+        or output_stat.st_mtime_ns < input_mtime_ns
         or not quality.get("passed")
         or int(quality.get("output_rows", -1)) < 0
+        or int(quality.get("output_rows", -1)) != parquet_rows
         or int(quality.get("output_bytes", -1)) != output_stat.st_size
         or int(quality.get("output_mtime_ns", -1)) != output_stat.st_mtime_ns
-        or not is_sha256(quality.get("output_sha256"))
-        or quality.get("output_sha256") != file_sha256(output)
     ):
         return None
     return quality
@@ -970,7 +891,6 @@ def _process_one(
     output_stat = out.stat()
     quality["output_bytes"] = output_stat.st_size
     quality["output_mtime_ns"] = output_stat.st_mtime_ns
-    quality["output_sha256"] = file_sha256(out)
     _write_quality_marker(quality, unified_root=unified_root)
     return quality, "written"
 
@@ -1052,7 +972,7 @@ def run(
         write_panel(
             quality,
             UNIFIED_QUALITY_PANEL,
-            code_sources=[*RECONSTRUCT_CODE_SOURCES, "scripts/run_reconstruct.py"],
+            code_sources=[*RECONSTRUCT_CODE_SOURCES, "scripts/process/run_reconstruct.py"],
             inputs=[DATA_DIR / "unified" / ".quality", *raw_source_roots],
             notes="full-calendar canonical directed-route quality gate",
         )
@@ -1077,7 +997,7 @@ def run(
         write_exhibit(
             summary,
             UNIFIED_QUALITY_EXHIBIT,
-            code_sources=[*RECONSTRUCT_CODE_SOURCES, "scripts/run_reconstruct.py"],
+            code_sources=[*RECONSTRUCT_CODE_SOURCES, "scripts/process/run_reconstruct.py"],
             inputs=[UNIFIED_QUALITY_PANEL],
             notes="canonical directed-route coverage and integrity summary",
         )

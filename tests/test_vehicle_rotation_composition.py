@@ -14,7 +14,7 @@ from ddvc.analysis.vehicle_rotation_composition import (
     vehicle_rotation_composition,
     vehicle_rotation_market_incidence_decomposition,
 )
-from scripts import run_vehicle_rotation_composition_e0 as runner
+from scripts.analyze import run_vehicle_rotation_composition_e0 as runner
 
 
 NATIVE = "0x0000000000000000000000000000000000000001"
@@ -498,23 +498,10 @@ def test_rejects_duplicate_release_keys_and_nonprimary_candidates() -> None:
 def test_runner_writes_ranked_pair_contributions_as_one_support_panel(
     tmp_path: Path, monkeypatch: pytest.MonkeyPatch
 ) -> None:
-    pointer = tmp_path / "endpoint/current.json"
-    generation = pointer.parent / "generations/current"
-    generation.mkdir(parents=True)
-    (generation / "choices.parquet").touch()
-    (generation / "pair-support.parquet").touch()
-    pointer.write_text(
-        json.dumps(
-            {
-                "generation_id": "current",
-                "artifacts": {
-                    "choices": {"filename": "choices.parquet"},
-                    "pair_support": {"filename": "pair-support.parquet"},
-                },
-            }
-        ),
-        encoding="utf-8",
-    )
+    choices_path = tmp_path / "choices.parquet"
+    pair_support_path = tmp_path / "pair-support.parquet"
+    choices_path.touch()
+    pair_support_path.touch()
 
     detail = pd.DataFrame({"kind": ["detail"]})
     decomposition = pd.DataFrame({"kind": ["decomposition"]})
@@ -552,7 +539,8 @@ def test_runner_writes_ranked_pair_contributions_as_one_support_panel(
     assert (
         runner.run(
             root=tmp_path,
-            pointer_path=pointer,
+            choices_path=choices_path,
+            pair_support_path=pair_support_path,
             pair_panel_output=tmp_path / "panel.parquet",
             pair_contribution_output=pair_contribution_output,
             decomposition_output=tmp_path / "decomposition.jsonl",

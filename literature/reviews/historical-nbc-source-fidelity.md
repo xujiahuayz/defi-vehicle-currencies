@@ -1,6 +1,6 @@
 # Historical Nanyang source-fidelity cross-check
 
-**Status:** Historical supporting digest from the 2026-08-04 pipeline. Later source-set repair and five-axis cards supersede it as authority. Use [`literature/source-admission.json`](../source-admission.json), [`docs/literature-audit.md`](../../docs/literature-audit.md), and the audit's indexed specialist cards for any live citation, mechanism, or venue claim.
+**Status:** Historical supporting digest from the 2026-08-04 pipeline. Later source-set repair and five-axis cards supersede it as authority. Use [`literature/source-admission.json`](../source-admission.json), [`literature/audit.md`](../../literature/audit.md), and the audit's indexed specialist cards for any live citation, mechanism, or venue claim.
 
 Two independent reads per paper, reconciled by a third agent that surfaces disagreement rather than averaging it. All 13 papers below were recorded by that historical pass as having full-text access on both independent reads. That is a historical access record, not a current source-admission status. Every historical candidate citation boundary records the narrowest claim that pass considered defensible; anything flagged as unresolved is a disagreement between the two readers and requires current independent verification before reuse.
 
@@ -268,7 +268,7 @@ Klein, Kozhan, Viswanath-Natraj & Wang (2026), "Informed Liquidity Provision on 
 
 # Corrected source-fidelity verdict
 
-The exact 72-page SNB-CIF working paper and embedded Internet Appendix A to C have now been read sequentially and reconciled against the version, source, data and code records. The durable five-axis card in `docs/literature-audit.md` is the source of truth.
+The exact 72-page SNB-CIF working paper and embedded Internet Appendix A to C have now been read sequentially and reconciled against the version, source, data and code records. The durable five-axis card in `literature/audit.md` is the source of truth.
 
 The narrow result is short-horizon return predictability from signed near-price mint and burn flows in the 5 basis-point ETH/USDC Uniswap v3 pool. A recursive block-level VAR with wild-bootstrap cumulative impulse responses is predictive, not causal. Block inclusion does not establish temporal precedence over every Binance event within the same interval, every alternative ordering still places the CEX return last, and sixty blocks are about twelve minutes rather than permanent impact.
 

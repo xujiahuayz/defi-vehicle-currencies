@@ -4,7 +4,7 @@ Why this exists. Establishing whether an incumbent intermediary was ever strictl
 cost-dominated requires pricing the road not taken *at the same market state* as
 the road taken. Comparing realised trades cannot do it: intraday price movement
 swamps execution cost by roughly a factor of 34 (see
-`docs/finding-cost-dominance-not-yet-established.md`). The on-chain Quoter would
+`docs/findings/README.md`). The on-chain Quoter would
 do it, but free RPC endpoints no longer serve historical state, returning either
 "state at block N is pruned" or an authentication demand, and no archive
 credential exists in this project.

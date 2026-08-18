@@ -6,7 +6,7 @@ from pathlib import Path
 import pandas as pd
 import pytest
 
-from scripts.build_vehicle_transition_pair_deck_values import (
+from scripts.tabulate.build_vehicle_transition_pair_deck_values import (
     _cohort_endpoint_margins,
     render_pair_decomposition_deck_values,
 )

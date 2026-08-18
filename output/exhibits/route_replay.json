@@ -1,7 +1,6 @@
 {
   "component_id": 0,
   "day": "20260110",
-  "partition_sha256": "a6870bc64badeecf030a1096e69b2ddfc9202e5c4ef99a8c5237d4d458033c6d",
   "route": {
     "endpoint_value_ratio": 1.0008724038027168,
     "input_amount": 459929.80974,

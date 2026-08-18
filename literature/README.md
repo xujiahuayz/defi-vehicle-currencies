@@ -1,8 +1,8 @@
 # Literature Workspace
 
-Keep the curated citation record compact, while separating source payloads from review authority. `papers/` holds local, gitignored source PDFs and inspected non-text companions; `text/` holds tracked searchable extracts plus the path index; `source-notes/` records source-family dispositions; `reviews/` holds explicitly historical synthesis digests. Current individual specialist cards and their index live in `docs/reviews/`, and the reconciled current ledger lives in `docs/literature-audit.md`.
+Keep the curated citation record compact, while separating source payloads from review authority. `papers/` holds local, gitignored source PDFs and inspected non-text companions; `text/` holds tracked searchable extracts plus the path index; `source-notes/` records source-family dispositions; `reviews/` holds explicitly historical synthesis digests. Current individual specialist cards and their index live in `literature/reviews/current/`, and the reconciled current ledger lives in `literature/audit.md`.
 
-Use `source-admission.json` as the source of truth for what may enter the curated corpus. Every source needs an explicit decision before acquisition, including peer-reviewed articles; a BibTeX entry type is metadata, not evidence of publication quality. Use `vehicle-currencies.bib` as the source of truth for citation metadata after admission, and `pdf-sources.json` only as the fetch manifest for admitted BibTeX keys: publisher PDF endpoints, public manuscript PDFs, authentication labels, and fallback routes for `scripts/fetch_literature.py`.
+Use `source-admission.json` as the source of truth for what may enter the curated corpus. Every source needs an explicit decision before acquisition, including peer-reviewed articles; a BibTeX entry type is metadata, not evidence of publication quality. Use `vehicle-currencies.bib` as the source of truth for citation metadata after admission, and `pdf-sources.json` only as the fetch manifest for admitted BibTeX keys: publisher PDF endpoints, public manuscript PDFs, authentication labels, and fallback routes for `scripts/fetch/fetch_literature.py`.
 
 Use `use-contracts.json` as the executable bridge from completed evidence cards to live manuscript language. A claim-use contract records one adjudicated source boundary and the prohibited manuscript pattern that would violate it. A vocabulary contract applies only to a named term and a configured finance/economics publication class. Methodological silence never becomes a prohibition: a method is barred only by an explicit source prohibition recorded in a claim-use contract. Vocabulary silence may bar a configured term once the declared corpus-coverage floor is met.
 
@@ -16,14 +16,14 @@ Suggested filename pattern:
 PDF fetching:
 
 ```bash
-python3 scripts/fetch_literature.py
+python3 scripts/fetch/fetch_literature.py
 ```
 
 After adding or replacing PDFs, rebuild the text index and verify the source set before another host enters a literature or review node:
 
 ```bash
-./scripts/run scripts/build_literature_text_cache.py
-./scripts/run scripts/build_literature_text_cache.py --check-corpus
+./scripts/run scripts/fetch/build_literature_text_cache.py
+./scripts/run scripts/fetch/build_literature_text_cache.py --check-corpus
 ```
 
 The check requires a one-to-one match among PDFs, text extracts and index records,
@@ -39,22 +39,27 @@ The script validates every requested key against `source-admission.json` before 
 Discover publisher-registered PDF endpoints from DOI metadata:
 
 ```bash
-python3 scripts/discover_pdf_sources.py --write
+python3 scripts/fetch/discover_pdf_sources.py --write
 ```
 
 Authenticated browser fetching:
 
 ```bash
-UCL_USER=... UCL_PW=... /path/to/python scripts/fetch_literature_browser.py
+UCL_USER=... UCL_PW=... /path/to/python scripts/fetch/fetch_literature_browser.py
 ```
 
-The browser fetcher uses a gitignored persistent profile under `literature/auth/browser-profile`, supports OpenAthens/UCL login, extracts raw PDF responses/downloads, and mines article pages for PDF links advertised in metadata or buttons. It is reproducible once credentials/session state are available, but some publishers still block headless/browser automation with access checks or subscription walls.
+The browser fetcher uses a persistent profile under
+`~/.config/ddvc/literature-auth/browser-profile`, supports OpenAthens/UCL login,
+extracts raw PDF responses/downloads, and mines article pages for PDF links
+advertised in metadata or buttons.
 
 For authenticated or paywalled URLs that Java can access legitimately:
 
 - Put additional local-only source URLs in `literature/sources.local.json` using `sources.example.json` as the template.
-- Put local-only cookie/header material in `literature/auth/headers.local.json` using `auth.example.json` as the template.
-- Re-run `python3 scripts/fetch_literature.py --strict` when auth is in place.
+- Put local-only cookie/header material in
+  `~/.config/ddvc/literature-auth/headers.local.json` using `auth.example.json`
+  as the template.
+- Re-run `python3 scripts/fetch/fetch_literature.py --strict` when auth is in place.
 
 ScienceDirect / Elsevier fallback:
 

@@ -1,6 +1,6 @@
 """Taxonomy invariants, including the backing dimension added by node C round 2.
 
-The backing cross is not decoration. `docs/node-c-definitions-round2.md` section 3
+The backing cross is not decoration. `docs/research/design.md` section 3
 records that the corpus cuts stablecoins by backing regime and that four of its papers
 exist because the regimes behave differently, so a `stable` bucket that pools USDC with
 USDe is pooling across the cut the literature treats as the interesting one.

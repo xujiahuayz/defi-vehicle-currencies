@@ -6,17 +6,17 @@ This is the project’s canonical workflow. It is deliberately direct:
 provider / chain
       |
       v
-scripts/fetch_*  ->  data/raw/
+scripts/fetch/   ->  data/raw/
                          |
                          v
-scripts/process/ or build_*  ->  data/processed/
+scripts/process/ ->  data/processed/
                                       |
                                       v
-registered analysis scripts  ->  output/exhibits/
+scripts/analyze/ ->  output/exhibits/
                                       |
                     +-----------------+-----------------+
                     v                                   v
-             scripts/tabulate/                    scripts/figure/
+             scripts/tabulate/                    scripts/plot/
                     |                                   |
                     +-----------------+-----------------+
                                       v
@@ -26,8 +26,7 @@ registered analysis scripts  ->  output/exhibits/
 Every table and figure in the paper or deck must have one script owner. Every
 processed input must be rebuildable by a script from retained raw data. Every raw
 source must have a fetch command or a short note explaining a manual/licensed
-source. That is the reproducibility contract. Content hashes, fingerprint files,
-certificate chains, and parallel release registries are not required.
+source. That is the reproducibility contract.
 
 ## Data layers
 
@@ -43,14 +42,12 @@ certificate chains, and parallel release registries are not required.
 | `data/processed/` | Analysis-ready panels | Rebuild from raw or unified data through a named script |
 | `output/exhibits/` | Machine-readable analysis results | Rebuild from processed inputs |
 | `output/tables/` | Generated TeX tables | Rebuild through `scripts/tabulate/` |
-| `output/figures/` | Generated plots | Rebuild through `scripts/figure/` |
+| `output/figures/` | Generated plots | Rebuild through `scripts/plot/` |
 | `paper/`, `deck/` | Authored deliverables | Build only from authored source and generated output |
 
 Raw data never live through symlinks to another repository. Cross-machine copies
 are compared by relative path and byte size. A path mismatch is resolved before a
-claim is run; a content-identity system is not added to the research project.
-Legacy release helpers may read existing hash-bearing sidecars, but the direct
-research workflow does not create or require them.
+claim is run.
 
 The executable indexed-source registry currently maps providers as follows:
 
@@ -68,17 +65,16 @@ The executable indexed-source registry currently maps providers as follows:
 | `src/ddvc/` | Shared schemas, paths, pricing, route reconstruction and utilities |
 | `scripts/process/` | Raw/unified to processed panels |
 | `scripts/tabulate/` | Processed/results to TeX tables |
-| `scripts/figure/` | Processed/results to plots |
-| `scripts/model/` | Numerical model programs |
+| `scripts/plot/` | Processed/results to plots |
 | `scripts/verify/` | Small independent numerical checks |
-| root `scripts/*.py` | Existing end-to-end jobs; move into the folders above when touched rather than creating another root-level runner |
+| `scripts/analyze/` | Estimation, decompositions, and summary statistics |
 
 Reusable logic belongs in `src/ddvc/`; scripts should mainly parse arguments,
 call that logic, and write one declared result family.
 
 ## Live research graph
 
-`docs/specification-lock.json` names the two executable claim families:
+`docs/specifications/confirmatory.json` names the two executable claim families:
 
 | Claim | Current state | Required action |
 |---|---|---|
@@ -89,9 +85,9 @@ Routing maturation, direct-cost dominance, joint V2/V3 capital flow and rent
 incidence stay blocked or withheld. They are not allowed to hold the working JFE
 paper and deck hostage and must not be described as established findings.
 
-`scripts/audit_findings_freeze.py` checks this graph using declared paths and file
-times only. `scripts/grind_done_check.sh` additionally requires freshly built paper
-and deck PDFs.
+`scripts/verify/audit_findings_freeze.py` checks this graph using declared paths
+and file times only. `scripts/verify/check_deliverable_conformance.py` checks the
+paper and deck boundary.
 
 ## Cleanup rules
 
@@ -102,5 +98,4 @@ and deck PDFs.
 4. A Markdown file must be one of: current instruction, current scientific
    decision, literature evidence, review record, or clearly labelled history.
    Reconcile useful content into the current owner before deleting a duplicate.
-5. Do not create another manifest, certificate, fingerprint, generated memo or
-   workflow ledger when a direct path, script and short note answer the question.
+5. Prefer a direct path, script, and short note to a parallel workflow ledger.

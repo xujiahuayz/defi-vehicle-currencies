@@ -7,14 +7,12 @@ import pytest
 
 from ddvc.route_replay import (
     build_route_replay_manifest,
+    render_route_replay_deck_values,
     render_route_replay_html,
-    render_route_replay_pdf,
 )
-from scripts.figure.render_route_replay_assets import _deck_values_tex
 
 
 ROOT = Path(__file__).resolve().parents[1]
-ROUTE_CASE_PACKAGE_COMMIT = "ab2c76231653b447c7b151b8d9b4a3fdd7b413e8"
 
 
 def _legs() -> pd.DataFrame:
@@ -58,11 +56,10 @@ def _legs() -> pd.DataFrame:
 
 def test_manifest_preserves_authentic_transaction_and_route_order() -> None:
     manifest = build_route_replay_manifest(
-        _legs(), day="20260110", tx_hash="0xABC", component_id=0, partition_sha256="f" * 64
+        _legs(), day="20260110", tx_hash="0xABC", component_id=0
     )
 
     assert manifest["tx_hash"] == "0xabc"
-    assert manifest["partition_sha256"] == "f" * 64
     assert manifest["route"]["source"] == "USDC"
     assert manifest["route"]["vehicle"] == "USDT"
     assert manifest["route"]["target"] == "USDe"
@@ -71,14 +68,13 @@ def test_manifest_preserves_authentic_transaction_and_route_order() -> None:
 
 def test_replay_is_selectable_progressive_and_print_complete() -> None:
     manifest = build_route_replay_manifest(
-        _legs(), day="20260110", tx_hash="0xabc", component_id=0, partition_sha256="f" * 64
+        _legs(), day="20260110", tx_hash="0xabc", component_id=0
     )
     page = render_route_replay_html(manifest)
 
     assert 'data-step="1"' in page and 'data-step="2"' in page
     assert "Reveal next leg" in page
     assert "@media print" in page
-    assert "partition_sha256" not in page
     assert "Fluid" in page and "Uniswap V4" in page
 
 
@@ -89,39 +85,23 @@ def test_manifest_rejects_a_missing_second_leg() -> None:
             day="20260110",
             tx_hash="0xabc",
             component_id=0,
-            partition_sha256="f" * 64,
         )
-
-
-def test_static_replay_is_a_vector_pdf(tmp_path) -> None:
-    manifest = build_route_replay_manifest(
-        _legs(), day="20260110", tx_hash="0xabc", component_id=0, partition_sha256="f" * 64
-    )
-    output = tmp_path / "route.pdf"
-    render_route_replay_pdf(manifest, output)
-    assert output.read_bytes().startswith(b"%PDF")
-    assert output.stat().st_size > 1_000
 
 
 def test_deck_labels_are_generated_from_the_route_manifest() -> None:
     manifest = build_route_replay_manifest(
-        _legs(), day="20260110", tx_hash="0xabc", component_id=0, partition_sha256="f" * 64
+        _legs(), day="20260110", tx_hash="0xabc", component_id=0
     )
 
-    values = _deck_values_tex(manifest)
+    values = render_route_replay_deck_values(manifest)
 
     assert r"\RouteReplayInputAmount}{100,000}" in values
     assert r"\RouteReplayVehicleAmount}{99,990}" in values
     assert r"\RouteReplayOutputAmount}{100,040}" in values
     assert r"\RouteReplayValue}{100,000}" in values
 
-
-def test_deck_route_case_binds_the_authentic_visual_package() -> None:
     source = (ROOT / "deck" / "sections" / "01-identification.tex").read_text(
         encoding="utf-8"
     )
-
-    assert source.count(f"% EVIDENCE-COMMIT: {ROUTE_CASE_PACKAGE_COMMIT}") == 2
-    assert "0c9ccc9" not in source
     assert source.count("assets/observed_route_blockscout.png") == 3
     assert "maker supplies the USDC used by the Fluid leg" in source

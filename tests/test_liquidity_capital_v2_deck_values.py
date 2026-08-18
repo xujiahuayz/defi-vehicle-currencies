@@ -3,7 +3,7 @@ from __future__ import annotations
 import pandas as pd
 import pytest
 
-from scripts.build_liquidity_capital_v2_deck_values import (
+from scripts.tabulate.build_liquidity_capital_v2_deck_values import (
     DIRECTIONS,
     LONG_HORIZON,
     MEASURE_PAIRS,

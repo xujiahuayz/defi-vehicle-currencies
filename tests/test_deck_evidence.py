@@ -1,7 +1,6 @@
 from pathlib import Path
 import json
 import re
-import subprocess
 
 import pytest
 
@@ -14,7 +13,7 @@ from ddvc.deck_evidence import (
 
 
 ROOT = Path(__file__).resolve().parents[1]
-DENSITY_LEDGER = ROOT / "docs" / "deck-density-ledger.json"
+DENSITY_LEDGER = ROOT / "deck" / "density-ledger.json"
 DECK_PDF = ROOT / "deck" / "main.pdf"
 
 
@@ -72,13 +71,12 @@ def test_plot_table_under_output_is_allowed(tmp_path: Path) -> None:
     assert audit_deck_sources(tmp_path) == []
 
 
-def test_evidence_managed_frames_require_source_only_status_commit_and_sources(tmp_path: Path) -> None:
+def test_evidence_managed_frames_require_status_and_sources(tmp_path: Path) -> None:
     write_section(
         tmp_path,
         r"""% EVIDENCE-MANAGED-FILE
 % EVIDENCE-STATUS: evolving route result
-% EVIDENCE-COMMIT: 3873fca
-% EVIDENCE-SOURCES: output/exhibits/result.tex; docs/findings-freeze.md
+% EVIDENCE-SOURCES: output/exhibits/result.tex; docs/findings/README.md
 \begin{frame}{Result}
 \end{frame}
 
@@ -89,7 +87,6 @@ def test_evidence_managed_frames_require_source_only_status_commit_and_sources(t
     defects = audit_deck_sources(tmp_path)
     assert {defect.kind for defect in defects} == {
         "missing_evidence_status",
-        "missing_evidence_commit",
         "missing_evidence_sources",
     }
 
@@ -105,15 +102,6 @@ def test_field_language_gate_rejects_visible_workflow_jargon_but_allows_comments
     defects = audit_deck_sources(tmp_path)
     assert [defect.kind for defect in defects] == ["audience_workflow_jargon"]
     assert "verdict" in defects[0].detail
-
-
-def test_rendered_text_language_gate_catches_generated_backstage_labels(tmp_path: Path) -> None:
-    defects = audit_audience_text(
-        "Economic result\nProvenance status: current",
-        path=tmp_path / "main.pdf",
-    )
-    assert [defect.kind for defect in defects] == ["audience_workflow_jargon"]
-    assert defects[0].line == 2
 
 
 def test_common_support_value_is_not_an_audience_measure_name(tmp_path: Path) -> None:
@@ -256,24 +244,15 @@ def test_live_deck_density_matches_its_recorded_debt_exactly() -> None:
 
 
 def test_v1_architecture_deck_values_match_the_admitted_source_tables() -> None:
-    source = (ROOT / "docs" / "finding-v1-forced-vehicle.md").read_text(encoding="utf-8")
+    from scripts.tabulate.build_v1_architecture_deck_values import (
+        load_inputs,
+        render_v1_architecture_deck_values,
+    )
+
     binding = (
         ROOT / "output" / "exhibits" / "v1_architecture_deck_values.tex"
     ).read_text(encoding="utf-8")
-
-    forced = re.search(
-        r"\| \*\*token to token, forced via ETH\*\* \| \*\*([\d,]+)\*\*",
-        source,
-    )
-    trade_share = re.search(
-        r"\| 2026 \| 13,862,895 \| ([\d.]+)% \| 84\.6% \|",
-        source,
-    )
-    pair_share = re.search(r"\| 2026 \| 34,700 \| ([\d.]+)% \|", source)
-    assert forced and trade_share and pair_share
-    assert rf"\newcommand{{\VOneForcedRoutes}}{{{forced.group(1)}}}" in binding
-    assert rf"\newcommand{{\VTwoWethTradeShare}}{{{trade_share.group(1)}\%}}" in binding
-    assert rf"\newcommand{{\VTwoWethNewPairShare}}{{{pair_share.group(1)}\%}}" in binding
+    assert binding == render_v1_architecture_deck_values(*load_inputs())
 
 
 def test_deck_states_units_scopes_and_primary_protocol_sources() -> None:
@@ -357,13 +336,12 @@ def test_deck_separates_weth_eligibility_from_value_composition() -> None:
         ROOT / "deck" / "assets" / "non-weth-value-composition.tex"
     ).read_text(encoding="utf-8")
 
-    title = "WETH-linked trading pairs account for most of the count rotation"
+    title = "WETH-linked ultimate pairs account for most of the count rotation"
     assert title in results
-    assert "output/provisional/route_methodology_heterogeneity.jsonl" in results
-    assert "internal_generation=9aa4e1d3" in results
+    assert "output/exhibits/route_methodology_heterogeneity.jsonl" in results
     assert "grouped-binomial" not in results
     assert "Challenger cost advantage predicts subsequent vehicle share" not in results
-    assert "The routed-value rotation extends beyond WETH-linked trading pairs" in results
+    assert "The routed-value rotation extends beyond WETH-linked ultimate pairs" in results
 
     frame_start = results.index(rf"\begin{{frame}}{{{title}}}")
     frame_end = results.index(r"\end{frame}", frame_start)
@@ -382,27 +360,18 @@ def test_deck_separates_weth_eligibility_from_value_composition() -> None:
     assert r"\WethValueWithinChange" in value_asset
 
 
-def test_page_13_evidence_status_and_binding_commit_do_not_drift() -> None:
+def test_weth_frame_evidence_boundary_does_not_drift() -> None:
     results = (ROOT / "deck" / "sections" / "04-results.tex").read_text(
         encoding="utf-8"
     )
-    title = "WETH-linked trading pairs account for most of the count rotation"
+    title = "WETH-linked ultimate pairs account for most of the count rotation"
     frame_start = results.index(rf"\begin{{frame}}{{{title}}}")
     metadata = results[results.rfind("% EVIDENCE-STATUS:", 0, frame_start):frame_start]
 
     status = re.search(r"^% EVIDENCE-STATUS: (.+)$", metadata, flags=re.MULTILINE)
-    evidence_commit = re.search(
-        r"^% EVIDENCE-COMMIT: ([0-9a-f]{40})$",
-        metadata,
-        flags=re.MULTILINE,
-    )
-    assert status and status.group(1).startswith("E0 pending clean J0")
-    assert "certified" not in status.group(1).lower()
-    assert "b21ed0a" not in metadata
-    assert evidence_commit
-    subprocess.run(
-        ["git", "cat-file", "-e", f"{evidence_commit.group(1)}^{{commit}}"],
-        cwd=ROOT,
-        check=True,
-        capture_output=True,
-    )
+    sources = re.search(r"^% EVIDENCE-SOURCES: (.+)$", metadata, flags=re.MULTILINE)
+    assert status
+    assert status.group(1).startswith("supporting descriptive analysis")
+    assert "validated" not in status.group(1).lower()
+    assert sources
+    assert "output/exhibits/route_methodology_heterogeneity.jsonl" in sources.group(1)

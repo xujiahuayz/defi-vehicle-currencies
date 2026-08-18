@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import unittest
 
-from scripts.validate_curve_quoter import summarise_errors
+from scripts.verify.validate_curve_quoter import summarise_errors
 
 
 class CurveValidationTest(unittest.TestCase):

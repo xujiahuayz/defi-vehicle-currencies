@@ -13,7 +13,7 @@ from ddvc.venue_tables import (
     routing_window_values,
     venue_technology_rival_values,
 )
-from scripts.test_venue_technology_rival import bounded_workers, support_status
+from scripts.analyze.run_venue_technology_rival import bounded_workers, support_status
 
 
 def _row(year: int, scope: str, asset: str, count: float | None, value: float | None):

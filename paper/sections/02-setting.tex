@@ -1,6 +1,6 @@
 % Section 2. Institutional setting, definitions, and data.
 %
-% Every number here is read from an exhibit under output/exhibits/ or from a docs/finding-*
+% Every number here is read from an exhibit under output/exhibits/ or from a docs/findings/*
 % file, and the comment above each one names the source. Nothing in this section is typed
 % from memory. Six of nine JFE empirical papers read for this project make no causal claim
 % and substitute a data moat plus a validation apparatus, so this section carries weight
@@ -77,10 +77,10 @@ X^{N}_{k,t}=\frac{I^{N}_{k,t}}{E^{N}_{k,t}}\quad\text{when }E^{N}_{k,t}>0.
 \label{eq:excess-use}
 \end{equation}
 A positive $\Delta^N_{k,t}$ means that the asset's share of intermediary use exceeds its share of source and destination appearances; $X^N_{k,t}$ expresses the same comparison as a ratio. The dollar-weighted measures replace counts with route values while retaining the same set of currencies and the 20\% agreement rule. Because excess use compares each currency's intermediary and source-or-destination roles, its denominator differs from the native-or-stable denominator in Equation~\eqref{eq:dominance}. The latter remains the measure of the headline rotation.
-% src/ddvc/route_roles.py, component_value_support; output/exhibits/provisional_results_deck_values.tex
+% src/ddvc/route_roles.py, component_value_support; output/exhibits/presentation_values.tex
 
 Source and destination assets must differ in the analysis sample. We classify routes that return to their starting asset as round trips and remove them. Such paths may contain cyclic arbitrage or other self-returning activity: geometry identifies the cycle, although trader intent remains unobserved. \citet{DaianEtAl2020FlashBoys} show that several arbitrage trades can be bundled atomically. On the median of 79 sampled days, round trips account for 12.7\% of multi-leg routes by count and 21.7\% by value. Appendix~\ref{app:route-construction} reports their distribution across the sampled dates.
-% output/exhibits/round_trip_share_by_day.jsonl, via scripts/measure_round_trip_share.py
+% output/exhibits/round_trip_share_by_day.jsonl, via scripts/analyze/measure_round_trip_share.py
 
 Within this route sample, we classify assets by the claims they represent: native, staked native, stable, imported, and other. The native category contains the platform's settlement asset. We treat ETH and its one-for-one wrapped representation, WETH, as one economic asset after reconstructing the route. This consolidation is an economic classification, not an address-level identity \citep{MilionisMoallemiRoughgardenZhang2022LVR}. Liquid-staking claims remain separate because they also convey staking returns. Stable assets target a fiat value, imported assets are wrapped claims on off-chain or cross-chain value, and the remaining assets enter the residual category; the economic claim represented by an asset determines its category. Stable assets themselves encompass economically different designs. Reserve-backed stablecoins rely on backing and redemption, making confidence in those arrangements relevant to acceptance and run risk \citep{GortonZhang2023Wildcat}; fiat-backed, crypto-collateralized, and algorithmic stablecoins also differ in their solvency and peg-restoration mechanisms \citep{CataliniDeGortariShah2022Stablecoins,LyonsViswanathNatraj2023Stablecoins}. Section~\ref{sec:dominance:excess} therefore examines the two largest reserve-backed stablecoins separately.
 
@@ -94,10 +94,10 @@ We begin with 472,254,909 pool-level swap records. The Graph supplies indexed ev
 % output/exhibits/unified_route_quality.jsonl
 
 Every reconstructed token sequence enters the count measure. Dollar-weighted results use routes for which the source, intermediary, and destination values agree within 20\%. Keeping the count sample broader preserves observed intermediary choice when token valuation is noisy.
-% output/exhibits/unified_route_quality.jsonl; docs/research-workflow.md section 2
+% output/exhibits/unified_route_quality.jsonl; README.md section 2
 
 Transactions and contract-state changes are publicly observable \citep{Schar2021DeFi}. Reconstructing a route still requires matching pool events, venues, and token units. This procedure identifies the executed route and its calling contract, but an executor address does not establish which frontend or software formed the quote. Existing router labels likewise cover only part of decentralised-exchange activity \citep{XiMoallemi2026Routing}. On a 2024 snapshot of 74,323 swaps, 241 distinct senders appear, and a registry of the ten largest accounts for 67.7\% of those swaps. By a 2025 snapshot, 397 senders appear across 130,282 swaps and the same registry covers 11.8\%. We therefore report route-level results without attributing them to quote authors.
-% docs/router-identification-feasibility.md
+% docs/research/router-identification.md
 
 \begin{table}[htbp]
 \centering

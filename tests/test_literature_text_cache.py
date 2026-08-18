@@ -9,7 +9,12 @@ from pathlib import Path
 
 
 def load_builder():
-    path = Path(__file__).resolve().parents[1] / "scripts" / "build_literature_text_cache.py"
+    path = (
+        Path(__file__).resolve().parents[1]
+        / "scripts"
+        / "fetch"
+        / "build_literature_text_cache.py"
+    )
     spec = importlib.util.spec_from_file_location("build_literature_text_cache", path)
     assert spec and spec.loader
     module = importlib.util.module_from_spec(spec)
@@ -58,7 +63,7 @@ class LiteratureTextCacheTests(unittest.TestCase):
             )
             self.assertEqual(set(builder.load_index(path)), {"paper-a"})
 
-    def test_corpus_check_requires_exact_pdf_text_and_checksum_sets(self) -> None:
+    def test_corpus_check_requires_exact_pdf_text_and_size_sets(self) -> None:
         builder = load_builder()
         with tempfile.TemporaryDirectory() as directory:
             root = Path(directory)
@@ -72,7 +77,7 @@ class LiteratureTextCacheTests(unittest.TestCase):
             records = {
                 "paper-a": {
                     "stem": "paper-a",
-                    "pdf_sha256": builder.file_sha256(paper),
+                    "pdf_bytes": paper.stat().st_size,
                 }
             }
             self.assertEqual(builder.validate_corpus(records, papers, text), [])
@@ -80,9 +85,9 @@ class LiteratureTextCacheTests(unittest.TestCase):
             paper.write_bytes(b"changed article")
             errors = builder.validate_corpus(records, papers, text)
             self.assertIn("extra PDF: retired", errors)
-            self.assertIn("changed PDF: paper-a", errors)
+            self.assertIn("PDF byte count changed: paper-a", errors)
 
-    def test_corpus_check_rejects_missing_hash_and_extract(self) -> None:
+    def test_corpus_check_rejects_missing_size_and_extract(self) -> None:
         builder = load_builder()
         with tempfile.TemporaryDirectory() as directory:
             root = Path(directory)
@@ -95,7 +100,7 @@ class LiteratureTextCacheTests(unittest.TestCase):
                 {"paper-a": {"stem": "paper-a"}}, papers, text
             )
             self.assertIn("missing text: paper-a", errors)
-            self.assertIn("missing PDF checksum: paper-a", errors)
+            self.assertIn("missing PDF byte count: paper-a", errors)
             self.assertEqual(
                 builder.validate_corpus({}, papers, text),
                 ["empty tracked corpus index", "extra PDF: paper-a"],

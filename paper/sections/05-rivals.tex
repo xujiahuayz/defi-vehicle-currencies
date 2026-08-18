@@ -12,8 +12,8 @@ Neither part holds. Among intermediary episodes on two-leg routes, the stablecoi
 
 Two boundaries limit what this comparison licenses. The number of legs records the path a trade actually took, so it measures how the route was built and not how well it was chosen; a route with more legs is not thereby a worse or a better execution. Complexity and exchange span are also outcomes rather than assignments, since the same conditions that make a longer or wider path attractive can bear on the choice of intermediary. The comparison rules out a composition account of the rotation; it does not identify an effect of routing software or of the exchange set on which asset intermediates a trade.
 % output/exhibits/intermediation_complexity_rival.jsonl (evidence commit 111230a) via
-% output/exhibits/provisional_results_deck_values.tex (macros; producer
-% src/ddvc/provisional_results.py). Route-only certified evidence: matched
+% output/exhibits/presentation_values.tex (macros; producer
+% src/ddvc/presentation_values.py). Route-only evidence: matched
 % January--June dates in 2024 and 2026, native-plus-stable denominator, one
 % observation per intermediary episode, 30-day Newey--West standard errors.
 % The four scope-by-complexity cells are rendered through a producer that
@@ -32,13 +32,13 @@ One margin does move, and it is the margin a router should move. Among intermedi
 
 Three limits bound what the windows license. The dates are not independent of one another: the later window of the first release and the earlier window of the second share thirty days, so the first two comparisons are drawn partly from the same trading. Nor are they clean of the market. The earlier window of the third release contains the November 2022 failure of a large centralised exchange, and the composition change recorded there belongs at least as much to that event as to the router. A release date, finally, marks when a contract became callable and not when traders began routing through it, so a window straddling gradual adoption understates a movement that arrived slowly. What survives these limits is a narrow negative statement, and it is the one the alternative requires: at the three dates when path search was rewritten, the incidence of intermediation did not step up, while the exchange set the search reached did widen.
 % output/exhibits/routing_technology_windows.jsonl via
-% output/exhibits/provisional_results_deck_values.tex (macros; producer
-% src/ddvc/provisional_results.py) and output/tables/routing_technology_windows.tex
-% (producer src/ddvc/venue_tables.py). Route-only certified evidence on the full
+% output/exhibits/presentation_values.tex (macros; producer
+% src/ddvc/presentation_values.py) and output/tables/routing_technology_windows.tex
+% (producer src/ddvc/venue_tables.py). Route-only validated evidence on the full
 % daily route calendar, market-wide, with no currency split: no sentence here may
 % be read as a stablecoin or native quantity. Descriptive window composition only.
-% Spec-lock claim routing_maturation_rival forbids an aggregator-causality reading
-% and its estimated content is gated on the blocked transaction-state frontier.
+% This is a descriptive route-composition comparison and does not require or
+% claim a transaction-state counterfactual.
 % The producer withholds every macro in this subsection if intermediation ever
 % steps up by a full percentage point at a release, if mean path length ever moves
 % by five hundredths of a leg, if intermediation stops falling at a majority of
@@ -52,7 +52,7 @@ Three limits bound what the windows license. The dates are not independent of on
 \small
 \input{../output/tables/routing_technology_windows.tex}
 \exhibitnote{Symmetric windows of 60 calendar days either side of each release, excluding the release date. Indirect is the share of economic routes with more than one leg; Intermediated is the share carrying a third asset between the endpoints; Cross-exchange is the share of intermediated routes touching more than one exchange; Over two legs is the share of indirect routes with more than two legs; Legs and Exchanges are means per indirect route. Shares and their changes are in percentage points. Economic routes exclude canonical endpoint round trips. The windows are market-wide and carry no split by intermediary currency. A release is available to every trader at once, so these are descriptive compositions and not treatment effects.
-% output/exhibits/routing_technology_windows.jsonl; producer scripts/build_cross_venue_routing_series.py
+% output/exhibits/routing_technology_windows.jsonl; producer scripts/process/build_cross_venue_routing_series.py
 }
 \end{table}
 
@@ -69,9 +69,9 @@ The venue that embodies the alternative supplies no intermediation at all. In ea
 
 What the comparison licenses is again bounded. Holding the pricing rule fixed by restriction is not an estimate of its effect: venues are chosen alongside routes, and a trader who would have used a stable-specialised pool may appear in the constant-product scope only because that pool was unavailable for the pair at hand. The ratio's denominator removes the most obvious composition problem, since each scope is judged against the endpoint demand observed inside it, but it cannot remove selection into scopes. The conclusion is the narrower one that the rotation is not an artifact of stable-specialised pricing, because it is present, large, and in the same direction where that pricing was never applied.
 % output/exhibits/venue_technology_rival.jsonl via
-% output/exhibits/provisional_results_deck_values.tex (macros; producer
-% src/ddvc/provisional_results.py) and output/tables/venue_technology_rival.tex
-% (producer src/ddvc/venue_tables.py). Route-only certified evidence on the full
+% output/exhibits/presentation_values.tex (macros; producer
+% src/ddvc/presentation_values.py) and output/tables/venue_technology_rival.tex
+% (producer src/ddvc/venue_tables.py). Route-only validated evidence on the full
 % 2,332-day calendar; complete route components; candidate-currency denominator;
 % all-routes value support, which is wider than the 20% agreement support used for
 % the Section 3 value results and must not be quoted as the same number. The
@@ -85,7 +85,7 @@ What the comparison licenses is again bounded. Holding the pricing rule fixed by
 \small
 \input{../output/tables/venue_technology_rival.tex}
 \exhibitnote{Excess use is an asset type's share of intermediary activity divided by its share of route-endpoint demand, formed over the candidate currencies within each scope. A route component enters a scope only when every one of its legs executes at a venue in that family. The constant-product family is Uniswap v1 through v4 and SushiSwap v2 and v3. Balancer is listed separately and left technologically unlabelled because its pools mix weighted and stable families. Value ratios use all routes; the 20\% value-agreement support of Table~\ref{tab:rotation} is narrower. Balancer has no route components before 2021, and 2026 covers January through June.
-% output/exhibits/venue_technology_rival.jsonl; producer scripts/test_venue_technology_rival.py
+% output/exhibits/venue_technology_rival.jsonl; producer scripts/analyze/run_venue_technology_rival.py
 }
 \end{table}
 
@@ -95,19 +95,17 @@ What the comparison licenses is again bounded. Holding the pricing rule fixed by
 The classical vehicle-currency mechanism links trading volume to lower transaction costs \citep{Krugman1980VehicleCurrencies}. On a decentralised exchange, the relevant markets are the pools connecting an intermediary to other assets. Trading can attract provider capital, deeper pools can lower price impact, and lower price impact can draw further trading. Pool size remains an equilibrium outcome because providers balance fee income against adverse-selection risk and the cost of adjusting their positions \citep{LeharParlour2024Uniswap}. Deposited capital measures funds committed to a pool; a size-specific quote measures how much liquidity is executable within a stated price impact. The distinction matters. Concentrated-liquidity providers can alter executable depth by changing where capital is placed along the price curve, so deposited capital and executable liquidity coincide only under particular pool designs \citep{AdamsZinsmeisterRobinson2021UniswapV3}.
 
 That mechanism operates inside a market. Deeper pools joining stablecoins to other assets reduce the price impact of carrying a given source--destination trade through a stablecoin, so the classical account asks the trader to switch intermediary in a pair that was already being traded. Section~\ref{sec:dominance:pairs} measures exactly that margin, and it is the one that stays still: within pairs traded in both years, the stablecoin share changes by \MatchedMarketCountChange{} by count, and the interval around it excludes within-pair increases beyond \MatchedMarketCountCIUpper{}. Depth in stablecoin pools cannot therefore carry the rotation through continuing markets. What it can still do is act earlier, by making a stablecoin the asset to which a newly traded or fast-growing pair is connected when its markets are first formed. Separating the two roles calls for the capital committed to each candidate's pools on the same daily calendar as the routes, read in each direction on its own, because a contemporaneous association between trading and depth is equally consistent with either.
-% The reciprocal V2 deposited-capital and vehicle-use estimates exist but are
-% not reproducible at this evidence generation: the runner fails closed without
-% its D3 binding (see logs/grind-ledger.md, 2026-08-16). No coefficient from
-% that estimator enters the manuscript until it reruns and reproduces.
+% EVIDENCE-SOURCES: output/exhibits/liquidity_capital_v2_predictability.jsonl;
+% output/exhibits/liquidity_capital_v2_support.jsonl.
 
 \subsection{Protocol architecture}
 
 Protocol design changes the set of routes that can be formed. Uniswap v1 created pools between an ERC-20 token and ETH, so token-to-token trades crossed ETH; Uniswap v2 allowed arbitrary ERC-20--ERC-20 pools and made direct token-to-token trading possible.\footnote{See Adams, Zinsmeister, and Robinson, \href{https://docs.uniswap.org/whitepaper.pdf}{\emph{Uniswap v2 Core}}, pp.~1--2.} Forced intermediation was material while the constraint lasted: token-to-token trades routed through ETH account for 8.0\% of Uniswap v1 swap transactions and 8.1\% of its ETH volume over the venue's life, and roughly one trade in ten in 2019 and 2020, when the venue was most active. A transaction from the crash weekend of March 2020 shows the mandate operating: with no direct pool between MKR and DAI, a trader selling \VOneCaseTokenIn{} MKR received \VOneCaseEth{} ETH at one exchange contract and spent the identical ETH amount at a second for \VOneCaseTokenOut{} DAI.\footnote{Transaction \ethtx{\VOneCaseTx}{\VOneCaseTxShort}, block \VOneCaseBlock, March 15, 2020. The trace is selected by a deterministic rule, the largest ETH amount routed among the \VOneCaseExactCount{} mandate-era token-to-token transactions whose two ETH legs match exactly, and the token identities are verified against the public transfer record.} Native-asset pairing remained pervasive after this mandate ended. The share of single-leg Uniswap v2 trades executed in WETH pools was 95.1\% in 2020 and 95.5\% in 2026, remaining between 93.4\% and 97.9\% in every intervening year. Among the 477,633 pairs that ever traded on Uniswap v2, 97.1\% include WETH, and WETH's share of newly traded pairs rose from 84.1\% in 2020 to 97.9\% in 2026. This persistence is consistent with deep WETH pools, launch conventions, and inherited search paths. Separating those forces from the original protocol constraint requires comparison among pairs that had the same alternatives available.
-% docs/finding-v1-forced-vehicle.md; output/exhibits/v1_forced_vehicle_report.md
+% docs/findings/v1-forced-vehicle.md; output/exhibits/v1_forced_vehicle_report.md
 % Registered case: output/exhibits/v1_route_case.json via output/exhibits/v1_route_case_deck_values.tex
-% (macros; producer scripts/build_v1_route_case.py, evidence commit 38aaa86). Composition shares
+% (macros; producer scripts/process/build_v1_route_case.py, evidence commit 38aaa86). Composition shares
 % 7.97% of swaps / 8.11% of ETH volume (whole sample) and the 2019--2020 ~10% monthly shares are the
-% docs/finding-v1-forced-vehicle.md section 1 composition table and monthly t2t_share series.
+% docs/findings/v1-forced-vehicle.md section 1 composition table and monthly t2t_share series.
 
 Uniswap v4 separates route choice from physical settlement more sharply. All pools reside in one singleton, and flash accounting records balance changes internally before settling the final net amounts at the end of a call.\footnote{See Adams et al., \href{https://app.uniswap.org/whitepaper-v4.pdf}{\emph{Uniswap v4 Core}}, Sections 1 and 3.} An economic route can therefore cross an intermediary pool without generating an external token transfer at every step. Decoded pool actions preserve the trading path despite this netting, while the architecture changes how liquidity, fees, and settlement are organised around that path.
 

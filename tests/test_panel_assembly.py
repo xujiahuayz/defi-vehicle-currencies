@@ -8,7 +8,6 @@ import pyarrow as pa
 import pyarrow.parquet as pq
 
 from ddvc.panel_assembly import assemble_parquet_shards
-from scripts import assemble_route_cost_panel as route_assembly
 
 
 class PanelAssemblyTests(unittest.TestCase):
@@ -95,35 +94,6 @@ class PanelAssemblyTests(unittest.TestCase):
 
             self.assertEqual(output.read_bytes(), before)
             self.assertEqual(list(root.glob(".panel.parquet.*.tmp")), [])
-
-    def test_automatic_cache_selection_refuses_a_fullest_tie(self) -> None:
-        with tempfile.TemporaryDirectory() as tmp:
-            root = Path(tmp)
-            for engine in ("engine_a", "engine_b"):
-                spec = root / engine / "hall"
-                spec.mkdir(parents=True)
-                (spec / "20200101.parquet").touch()
-            original = route_assembly.CACHE
-            route_assembly.CACHE = root
-            try:
-                with self.assertRaisesRegex(RuntimeError, "ambiguous fullest caches"):
-                    route_assembly.fullest_spec()
-            finally:
-                route_assembly.CACHE = original
-
-    def test_explicit_relative_cache_is_resolved_from_repository_root(self) -> None:
-        with tempfile.TemporaryDirectory() as tmp:
-            root = Path(tmp)
-            self.assertEqual(
-                route_assembly.resolve_spec("data/cache", root=root),
-                root / "data" / "cache",
-            )
-            absolute = root / "absolute-cache"
-            self.assertEqual(
-                route_assembly.resolve_spec(str(absolute), root=root),
-                absolute,
-            )
-
 
 if __name__ == "__main__":
     unittest.main()

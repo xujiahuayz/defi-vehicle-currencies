@@ -8,6 +8,7 @@ from ddvc.capital_validation import (
     CAPITAL_PRICE_VALIDATION_STATUS,
     CapitalPrice,
     capital_price_lookup,
+    load_token_decimals,
     validate_constant_product_capital,
     validated_capital_prices,
 )
@@ -16,6 +17,26 @@ from ddvc.capital_validation import (
 WETH = "0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2"
 USDC = "0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48"
 OTHER = "0x" + "1" * 40
+
+
+def test_token_decimals_loader_accepts_unique_direct_panel(tmp_path) -> None:
+    path = tmp_path / "decimals.parquet"
+    pd.DataFrame(
+        {"token": [OTHER, WETH], "decimals": [6, 18]}
+    ).to_parquet(path, index=False)
+    assert load_token_decimals(path) == {OTHER: 6, WETH: 18}
+
+
+def test_token_decimals_loader_rejects_conflicts_and_invalid_values(tmp_path) -> None:
+    path = tmp_path / "decimals.parquet"
+    pd.DataFrame({"token": [OTHER, OTHER], "decimals": [6, 18]}).to_parquet(
+        path, index=False
+    )
+    with pytest.raises(ValueError, match="duplicate"):
+        load_token_decimals(path)
+    pd.DataFrame({"token": [OTHER], "decimals": [37]}).to_parquet(path, index=False)
+    with pytest.raises(ValueError, match="invalid"):
+        load_token_decimals(path)
 
 
 def price(value: float) -> CapitalPrice:

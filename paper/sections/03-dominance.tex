@@ -1,5 +1,5 @@
-% Section 3. Route-only evidence admitted by docs/findings-freeze.md.
-% Displayed quantities bind to output/exhibits/provisional_results_deck_values.tex
+% Section 3. Route-only evidence admitted by docs/findings/README.md.
+% Displayed quantities bind to output/exhibits/presentation_values.tex
 % and vehicle_transition_pair_decomposition_deck_values.tex.
 % Cost dominance, persistence, and exact-state mechanisms remain outside this section.
 
@@ -10,7 +10,7 @@
 \label{sec:dominance:transition}
 
 Stablecoins carry a much larger share of vehicle activity in 2026 than in 2024. Comparing the same days of the calendar year, their share among native and stable intermediaries rises from \StableCountBase{} to \StableCountEnd{} by route count. The paired-day change is \StableCountChange{}, with a standard error of \StableCountSE{}. Their dollar-weighted share rises from \StableValueBase{} to \StableValueEnd{}, an increase of \StableValueChange{} with a standard error of \StableValueSE{}. The count series gives equal weight to each exact two-leg route. The dollar-weighted series uses routes for which the values at the source, intermediary, and destination agree within 20\%. Table~\ref{tab:rotation} reports both. Each figure is an average over the markets traded in its year, and those markets differ between the two years. Section~\ref{sec:dominance:pairs} shows that the difference is what moves the aggregate: within a source--destination pair traded in both years, the intermediary carrying the route barely changes.
-% docs/findings-freeze.md, vehicle-dominance claim and strict-support value contract
+% docs/findings/README.md, vehicle-dominance claim and strict-support value contract
 
 \begin{table}[tbp]
 \centering
@@ -19,12 +19,12 @@ Stablecoins carry a much larger share of vehicle activity in 2026 than in 2024. 
 \small
 \input{../output/tables/dominance_rotation.tex}
 \exhibitnote{The denominator contains exact two-leg routes whose sole intermediary is native or stable; the reported share aggregates all stablecoins in that denominator. Daily shares receive equal weight over the days of the calendar year observed in both years. Dollar-weighted estimates require source, intermediary, and destination values to agree within 20\%. Standard errors use a Newey--West covariance with a 30-day Bartlett bandwidth.
-% docs/findings-freeze.md, vehicle-dominance claim
+% docs/findings/README.md, vehicle-dominance claim
 }
 \end{table}
 
 Figures~\ref{fig:vehicle-composition} and~\ref{fig:integration-change} extend the comparison to routes of any length and all intermediary types. Each intermediary used on a longer route contributes one observation. In 2026, the 20\% value-agreement sample covers 71.6\% of native intermediary value and 55.1\% of stablecoin intermediary value. The annual path is not monotone. Native assets regain share in 2023 and 2024, stablecoins recover the dollar-weighted lead in 2025, and their lead by route count is shorter lived.
-% docs/finding-intermediation-transition.md, support-bounded value result; output/exhibits/intermediation_by_type.jsonl
+% docs/findings/vehicle-transition.md, support-bounded value result; output/exhibits/intermediation_by_type.jsonl
 
 \begin{figure}[tbp]
 \centering
@@ -40,12 +40,12 @@ The denominator so far treats a stablecoin as a stablecoin. What backs one moves
 
 Fiat-reserve claims move \BackingFiatCountChange{} of the \BackingPooledCountChange{} count rotation, with a standard error of \BackingFiatCountSE{}, and \BackingFiatValueChange{} of the \BackingPooledValueChange{} dollar-weighted rotation, with a standard error of \BackingFiatValueSE{}. The regimes divide one denominator, so their changes add to the class's, and the residue the fiat-reserve term leaves is small and mixed in sign. Synthetic claims multiply their share of the class's routes from \BackingSyntheticCountMassBase{} to \BackingSyntheticCountMassEnd{} while contributing \BackingSyntheticCountChange{} of the count rotation and \BackingSyntheticValueChange{} of the dollar-weighted one. Claims that mix real-world assets into on-chain collateral fall \BackingRwaValueChange{} by value, from \BackingRwaValueMassBase{} to \BackingRwaValueMassEnd{} of the class's dollars. The rotation is therefore a movement into dollar tokens backed by reserves; the class's fastest-growing regime moves the aggregate by under two points on either measure. The cut is measured on the released endpoint-candidate panel; against the daily type panel the pooled rotation differs by \BackingCountUniverseGap{} by count and \BackingValueUniverseGap{} by value, so the regime terms sit beside the headline in the same units.
 % output/exhibits/e0_vehicle_transition_backing_regime_estimates.jsonl and
-% ..._support.jsonl; macros from scripts/build_backing_regime_deck_values.py.
-% Provisional/E0 scope, route-only: same estimand, denominator, matched calendar
+% ..._support.jsonl; macros from scripts/tabulate/build_backing_regime_deck_values.py.
+% Supporting scope, route-only: same estimand, denominator, matched calendar
 % and HAC(30) estimator as Table~\ref{tab:rotation}, numerator restricted to one
 % dated regime of ddvc.asset_types.backing. Refresh with
-% scripts/run_vehicle_transition_e0.py then the builder above whenever the
-% endpoint-candidate release generation changes.
+% scripts/analyze/run_vehicle_transition_e0.py then the builder above whenever the
+% endpoint-candidate processed tables change.
 
 \subsection{Composition of ultimate pairs}
 \label{sec:dominance:pairs}
@@ -55,7 +55,7 @@ A vehicle's aggregate share can rise in three ways. It can be chosen more often 
 Table~\ref{tab:rotation} averages daily shares, whereas Panels A through C of Table~\ref{tab:pair-composition} pool route count or value across the matched January--June windows. The different weighting explains why the headline changes of \StableCountChange{} and \StableValueChange{} differ slightly from the decomposition totals of \MarketBridgeTotal{} and \PairValueTotal{}.
 
 Those three ways form an accounting identity once the third is split in two, because pairs traded in only one year both route their activity differently and carry a changing share of it. The rest of this section reads the resulting four terms one at a time. Fix one of the measures in Equation~\eqref{eq:dominance} and let $p$ index ordered source--destination pairs. A pair is continuing when it carries native-or-stable routes in both comparison years and year-specific when it carries them in only one. Let $W_y$ be the share of year-$y$ native-plus-stable mass carried by continuing pairs, $\omega_{p,y}$ the weight of continuing pair $p$ within that mass, and $s_{p,y}$ its stablecoin share, so continuing pairs route $S_{\mathrm{com},y}=\sum_{p}\omega_{p,y}s_{p,y}$ of their activity through a stablecoin and year-specific pairs route $S_{\mathrm{exc},y}$ of theirs. The aggregate share is $S_{y}=W_{y}S_{\mathrm{com},y}+(1-W_{y})S_{\mathrm{exc},y}$. Writing $\Delta x=x_{2026}-x_{2024}$ and $\bar{x}=(x_{2024}+x_{2026})/2$,
-% docs/specification-lock.json, e1_2_conditional_pair_decomposition,
+% docs/specifications/confirmatory.json, e1_2_conditional_pair_decomposition,
 % formula_id midpoint_common_exclusive_support_v1. The displayed identity is the
 % frozen formula, not a restatement of it: the four labelled terms are the
 % within_common, common_pair_reweighting, common_support_mass and
@@ -71,7 +71,7 @@ Those three ways form an accounting identity once the third is split in two, bec
 \end{equation}
 Midpoint weights make the identity exact by splitting each product's interaction evenly between its two factors instead of charging it to one year. Panels B and C report the four terms. Within continuing pairs, the stablecoin share moves \PairPooledWithin{} by route count and \PairValueWithin{} by value. Reweighting across those pairs contributes \PairPooledReweight{} and \PairValueReweight{}; the migration of mass between the continuing and year-specific populations, \PairPooledSupportMass{} and \PairValueSupportMass{}; and the pairs traded in only one year, \PairPooledExclusive{} and \PairValueExclusive{}. The first of the three ways is worth almost nothing on either measure, and the other two carry the rotation between them. \citet{Somogyi2026DollarDominanceFX} decomposes dollar dominance in the other direction, separating the volume of a given dollar pair into the part that exists to route two other currencies and the part that does not. That split runs inside a pair; the one that carries the rotation measured here runs across them.
 % output/exhibits/vehicle_transition_pair_decomposition.jsonl; macros from
-% scripts/build_vehicle_transition_pair_deck_values.py
+% scripts/tabulate/build_vehicle_transition_pair_deck_values.py
 
 Panel A factors the same route-count total a second way. Equation~\eqref{eq:pair-decomposition} takes a pair's vehicle-routed activity as given and asks only which vehicle carried it; Panel A asks first how much the pair traded, then how much of that trading passed through any intermediary at all, and only then which intermediary it was. Let $M_{p,y}$ be the routes observed in pair $p$ in year $y$, let $I_{p,y}$ be the fraction of them that passed through a native or stablecoin intermediary, and let $s_{p,y}$ be the stablecoin share of that intermediated activity, the same object the identity above assigns to a continuing pair. For any set of pairs $\mathcal{Q}$,
 \begin{equation}
@@ -93,7 +93,7 @@ Pairs entering or leaving the sample contribute \MarketSupportBridge{}; establis
 % Panel A is e1_3_market_incidence_bridge (formula_id
 % shapley_market_incidence_stable_bridge_v1) and the identity is
 % e1_2_conditional_pair_decomposition; both are registered in
-% docs/specification-lock.json against the same raw pooled count-share change,
+% docs/specifications/confirmatory.json against the same raw pooled count-share change,
 % which is why the totals agree and the components do not. Do not net or add a
 % component of one against a component of the other.
 % Equations~\eqref{eq:incidence-functional} and \eqref{eq:market-incidence} are
@@ -118,14 +118,14 @@ Pairs entering or leaving the sample contribute \MarketSupportBridge{}; establis
 % with W_bar the midpoint of the identity's own W_baseline/W_comparison. It is
 % arithmetic, not an approximation: on the live pooled count row it closes at
 % 0.0844459944134132 on both sides, residual 0.0. _cross_panel_common_bridge in
-% scripts/build_vehicle_transition_pair_deck_values.py refuses to render every
+% scripts/tabulate/build_vehicle_transition_pair_deck_values.py refuses to render every
 % macro in this subsection unless it still holds to 1e-12, which is the guard
 % against a reader netting a term of one panel against the other's. Note that the
 % relation prices the common block only; the year-specific remainder is
 % 1 - W_bar weighted in the identity and carried by the two support bridges in
 % Panel A, so the panels do not nest term by term and must never be added.
 % output/exhibits/vehicle_transition_pair_decomposition.jsonl; macros from
-% scripts/build_vehicle_transition_pair_deck_values.py
+% scripts/tabulate/build_vehicle_transition_pair_deck_values.py
 
 The bridge's smallest term is the one that says the most once its population is opened. Pairs that gain or lose a vehicle route contribute \VehicleRoleSupportBridge{}, which invites the reading that established markets barely changed whether they used an intermediary at all. Panel A partitions each year's choice mass into three classes, and the class behind that term is both narrow and closing: markets traded in both years whose vehicle role appears in only one carry \IncidenceRoleTurnoverWeightBase{} of 2024 choice mass across \IncidenceRoleTurnoverPairsBase{} ordered pairs, and \IncidenceRoleTurnoverWeightEnd{} of 2026 choice mass across \IncidenceRoleTurnoverPairsEnd{}. Its routed activity passes through a stablecoin more often than either other class does in either year, \IncidenceRoleTurnoverStableBase{} in 2024 and \IncidenceRoleTurnoverStableEnd{} in 2026, against \IncidenceCommonStableBase{} and \IncidenceCommonStableEnd{} for the \IncidenceCommonPairsBase{} pairs that carry a vehicle in both years and \IncidenceMarketTurnoverStableBase{} and \IncidenceMarketTurnoverStableEnd{} for pairs whose market is observed in only one. The margin on which an established market starts or stops using an intermediary at all is therefore narrow, shrinking, and routed through the challenger where it is used. That bounds a third account of the rotation, in which a stablecoin gains aggregate share because markets that had been trading directly begin routing indirectly and use a stablecoin when they do. The account is confined to a population never larger than \IncidenceRoleTurnoverWeightBase{} of routed choice mass and cannot carry a change of \MarketBridgeTotal{}. Membership in the class turns over by construction: a pair belongs to it only if its vehicle role is present in one year and absent in the other, so no pair in it carries an intermediary in both years and none can register a change of intermediary. The distance between the class's two stablecoin shares records which markets occupied it in each year. Appearance in the class and disappearance from it answer to the same forces as the routing decision itself.
 % Class weights and stablecoin shares are the pooled count_share
@@ -140,10 +140,10 @@ The bridge's smallest term is the one that says the most once its population is 
 % checked on those rows: 2024 role 0.4695 > common 0.2497 > market 0.0386;
 % 2026 role 0.7688 > market 0.4313 > common 0.4120.
 % output/exhibits/vehicle_transition_pair_support.jsonl; macros from
-% scripts/build_vehicle_transition_pair_deck_values.py
+% scripts/tabulate/build_vehicle_transition_pair_deck_values.py
 
 Conditional on the same ordered source--destination pair, calendar date, and single- or cross-exchange route type, stablecoin share changes by \MatchedMarketCountChange{} by count, with a standard error of \MatchedMarketCountSE{}, and by \MatchedMarketValueChange{} by value, with a standard error of \MatchedMarketValueSE{}. The corresponding 95\% confidence intervals rule out within-pair changes larger than \MatchedMarketCountCIUpper{} by count and \MatchedMarketValueCIUpper{} by value. The matched-pair estimates are therefore small relative to the aggregate rotation.
-% output/exhibits/vehicle_transition_pair_fixed_effects.jsonl; evidence commit 87c182e; current D3 generation 25c755ae; endpoint-composition generation 5fb7cbf
+% output/exhibits/vehicle_transition_pair_fixed_effects.jsonl
 
 Panel D estimates the 2024--2026 difference after absorbing variation specific to an ordered source--destination pair, calendar date within the year, and observed single- or cross-exchange route type. Let $c$ index each such combination and let $s^{(m)}_{c,y}$ denote its stablecoin share under measure $m$. We estimate
 \begin{equation}
@@ -158,7 +158,7 @@ Conditioning this finely has a price, and the price is coverage. Of the \SampleP
 % Coverage cells are the pooled `decomposition_pair_support` rows of
 % vehicle_transition_pair_support.jsonl read against the fixed-effects exhibit's
 % own baseline_denominator_mass/comparison_denominator_mass; `_matched_coverage`
-% in scripts/build_vehicle_transition_pair_deck_values.py refuses to render them
+% in scripts/tabulate/build_vehicle_transition_pair_deck_values.py refuses to render them
 % unless each block reports its own mass over its own year, each year-specific
 % block is empty on the year it is absent from, no block carries a
 % zero-denominator cell-year, the common block's two shares equal the identity
@@ -175,12 +175,12 @@ Conditioning this finely has a price, and the price is coverage. Of the \SampleP
 % [-5.6, +3.0] pp around its 0.0 pp. Recheck if either exhibit changes.
 % output/exhibits/vehicle_transition_pair_support.jsonl and
 % vehicle_transition_pair_fixed_effects.jsonl; macros from
-% scripts/build_vehicle_transition_pair_deck_values.py
+% scripts/tabulate/build_vehicle_transition_pair_deck_values.py
 
 The joint condition is easiest to read in the estimator's own unit. An observation is one pair--calendar-date--route-type cell, and \MatchedCells{} cells clear the condition, out of the \SampleCellsBase{} that carried a native-or-stable route in 2024 and the \SampleCellsEnd{} that carried one in 2026, or \MatchedCellShareBase{} and \MatchedCellShareEnd{} of the two years' cells. Those cells carry \MatchedCoverageBase{} and \MatchedCoverageEnd{} of the two years' routes, so a matched cell is \MatchedCellThicknessBase{} times as busy as the average active cell in 2024 and \MatchedCellThicknessEnd{} times as busy in 2026. On the dollar-weighted perimeter, where the value-agreement requirement empties \StrictFilteredCellYears{} cell-years that the count measure keeps, \MatchedValueCellShareBase{} and \MatchedValueCellShareEnd{} of cells are matched, and a matched cell carries \MatchedValueCellThicknessBase{} times the average cell's dollars in 2024 and \MatchedValueCellThicknessEnd{} times in 2026. A cell survives only when the same market traded on the same day of the calendar year in both years, and the chance of that rises with how often the market trades. The matched estimate is therefore a statement about the part of the market that trades routinely, and the dollar multiple says that this part is where value concentrates. It speaks less for markets that trade intermittently, whose cells drop out even when the pair itself trades in both years. That division suits the question: the rotation is a fact about where dollars route, and the matched comparison is measured on the cells that carry two-fifths of them in either year.
 % Cell counts are the scope-specific `pair_month_day_scope_support` rows of
 % vehicle_transition_pair_support.jsonl; `_matched_cell_support` in
-% scripts/build_vehicle_transition_pair_deck_values.py refuses to render them
+% scripts/tabulate/build_vehicle_transition_pair_deck_values.py refuses to render them
 % unless the common class holds exactly the fixed-effects exhibit's own
 % fixed_effect_cells, its observations are twice that count, its two endpoint
 % masses equal the exhibit's own baseline/comparison_denominator_mass, each
@@ -196,7 +196,7 @@ The joint condition is easiest to read in the estimator's own unit. An observati
 % value perimeter. Recheck if either exhibit changes.
 % output/exhibits/vehicle_transition_pair_support.jsonl and
 % vehicle_transition_pair_fixed_effects.jsonl; macros from
-% scripts/build_vehicle_transition_pair_deck_values.py
+% scripts/tabulate/build_vehicle_transition_pair_deck_values.py
 
 \begin{table}[tbp]
 \centering
@@ -214,30 +214,30 @@ Individual pairs make the accounting concrete. Among pairs whose two assets carr
 % newly traded assets carries no canonical symbol, so the named example is
 % always smaller than its margin total, which is stated alongside it.
 % output/exhibits/vehicle_transition_pair_contributions.parquet; macros from
-% scripts/build_vehicle_transition_pair_deck_values.py
+% scripts/tabulate/build_vehicle_transition_pair_deck_values.py
 
 A margin of a given size can come from one corridor or from thousands of small markets, and the totals do not distinguish the two. It is therefore natural to ask whether a few large markets carry the reallocation. The two composition margins answer differently. Pairs traded only in 2026 contribute through \MarginNewPairGainPairs{} ordered pairs, the largest of which supplies \MarginNewPairTopShare{} of that margin, and \MarginNewPairNinetyPairs{} of them are needed for nine-tenths of it. Reweighting among continuing pairs is top-heavy instead: \MarginReweightHalfPairs{} pairs supply half of its \MarginReweightGrossUp{} gross gain, and the margin nets to \PairPooledReweight{} only because \MarginReweightLossPairs{} continuing pairs lose activity weight, \MarginReweightGrossDown{} between them. Dollar weighting sharpens the same contrast, with \MarginReweightValueHalfPairs{} pairs behind half of a \MarginReweightValueGrossUp{} gross gain. Within continuing pairs, intermediary choice moves in both directions: \MarginWithinGainPairs{} of them raise their stablecoin share and \MarginWithinLossPairs{} lower it. The pairs that rise contribute \MarginWithinGrossUp{} by count and \MarginWithinValueGrossUp{} by value; the pairs that fall give back \MarginWithinGrossDown{} and \MarginWithinValueGrossDown{}. The near-zero net term is an offset between markets moving in both directions, not an absence of movement, and it stays small beside the weight that moves across pairs. The rotation therefore travels along two different edges of the trading network: the network extends into many new and mostly small markets, while activity weight concentrates in a few corridors that were already large. This reorganisation of where trading happens carries the aggregate change; the growth of a single corridor does not. The two edges also separate what a currency network measures: a matrix recording which pairs trade at all, as in the historical exchange structure of \citet{FlandreauJobst2009Empirics}, registers the first margin and is silent on the second.
-% Breadth and gain/loss splits are the same certified pair allocation as the
+% Breadth and gain/loss splits are the same validated pair allocation as the
 % named examples above, so they reconcile to the margin totals by construction;
 % the producer refuses to render them otherwise. Pair-level scope excludes the
 % common-support mass bridge, as in Table~\ref{tab:pair-composition}.
 % output/exhibits/vehicle_transition_pair_contributions.parquet; macros from
-% scripts/build_vehicle_transition_pair_deck_values.py
+% scripts/tabulate/build_vehicle_transition_pair_deck_values.py
 
 The vehicle role is not contestable everywhere in the pair space. A route whose source or destination is wrapped ether cannot also use wrapped ether as its intermediary, so within the native-versus-stablecoin comparison such a route is stablecoin-intermediated by definition, in 2024 and in 2026 alike. Since the pairs that grew fastest are concentrated among exactly those corridors, a question of interest is whether the two composition margins record anything more than the growth of markets whose vehicle was never in doubt. We split each margin according to whether wrapped ether is an endpoint of the ordered pair. The split is decided by one contract address rather than by a ticker, so the long tail of newly traded assets is classified as reliably as the majors. \LockedPairs{} of the \LockedCommonPairs{} continuing pairs, or \LockedPairShare{}, have such an endpoint, and their share of routed activity rises from \LockedWeightBase{} to \LockedWeightEnd{}. By route count they supply \LockedReweight{} of the \PairPooledReweight{} reweighting margin and \LockedNewPair{} of the \MarginNewPairTotal{} new-pair margin, so most of the count rotation does run through corridors that had no intermediary to choose. Dollar weighting reverses the reading. The same corridors supply \LockedValueReweight{} of the \PairValueReweight{} value reweighting margin, or \LockedValueReweightShare{} of it, and \LockedValueNewPair{} of the value new-pair margin, or \LockedValueNewPairShare{}. Once trades are weighted by the value they move, the rotation is carried by pairs that could have been routed either way and were routed through a stablecoin. The same identity disciplines the within-pair term: a pair with a wrapped-ether endpoint contributes exactly zero to it under both weightings, so the near-zero total is not an average diluted by markets that were frozen at a stablecoin share of one. Every unit of it comes from pairs whose intermediary was a live choice, and among those pairs the change is still near zero.
 % Endpoint eligibility is an identity, not an estimate. The producer proves it on
-% the certified allocation before reporting the split: every wrapped-ether-endpoint
+% the validated allocation before reporting the split: every wrapped-ether-endpoint
 % pair must carry stablecoin share one in both years and a within-pair
 % contribution of exactly zero, and it withholds every macro otherwise. This is a
 % different object from the exclusion sensitivity in
-% scripts/run_route_methodology_robustness.py, which drops these corridors and
+% scripts/analyze/run_route_heterogeneity.py, which drops these corridors and
 % re-estimates the matched within-pair change rather than splitting the
 % composition margins.
 % output/exhibits/vehicle_transition_pair_contributions.parquet; macros from
-% scripts/build_vehicle_transition_pair_deck_values.py
+% scripts/tabulate/build_vehicle_transition_pair_deck_values.py
 
 So far the split has been taken over all routes at once, which does not say where in the venue structure the corridors without a vehicle choice sit. Taking it separately for routes that stay on one exchange and routes that cross exchanges answers that, and the two weightings answer it differently. Within a single exchange, reweighting among continuing pairs contributes \PairSingleReweight{}, of which wrapped-ether-endpoint corridors supply \LockedSingleReweightShare{}. Across exchanges the same margin is \PairCrossReweight{}, and those corridors supply \LockedCrossReweightShare{} of it. What survives the split is the part contributed by pairs that had a choice, and it is the same size in both: \OpenSingleReweight{} within an exchange and \OpenCrossReweight{} across exchanges. The entire cross-exchange excess in the count margin is therefore corridors that were stablecoin-intermediated by definition, and the corridors that could have gone either way reallocate activity at the same rate wherever the route runs. Weighting by the value moved removes the contrast. The margin is \PairValueSingleReweight{} within an exchange against \PairValueCrossReweight{} across exchanges, and eligible corridors supply \LockedValueSingleReweightShare{} and \LockedValueCrossReweightShare{} of them. In route counts, then, the rotation looks like something that happened to cross-exchange trading, and what it records there is which pairs became active across exchanges; in value terms it is no more a cross-exchange event than a single-exchange one. \citet{MakarovSchoar2020Arbitrage} decompose bitcoin price dispersion the same way and find the across-region component both the larger one and, once traded volume is taken into account, the one that carries the economic magnitude. The across-venue excess here does the opposite: it is visible in unweighted route counts and gone from the dollar-weighted margin.
-% The scope split is the same certified allocation and the same endpoint
+% The scope split is the same validated allocation and the same endpoint
 % identity as the pooled paragraph above, read at reporting_scope single_venue
 % and cross_venue rather than pooled. The producer reconciles each scope's
 % allocation against that scope's own common-pair reweighting term before
@@ -248,11 +248,11 @@ So far the split has been taken over all routes at once, which does not say wher
 % percentage points of its own scope's stablecoin share, so they are comparable
 % to each other but do not add to the pooled margin.
 % output/exhibits/vehicle_transition_pair_contributions.parquet; macros from
-% scripts/build_vehicle_transition_pair_deck_values.py
+% scripts/tabulate/build_vehicle_transition_pair_deck_values.py
 
 That split was taken of continuing markets, whose endpoints are fixed and whose intermediary can change. The larger composition margin comes from pairs that traded only in 2026, and it is there that a reader should most expect eligibility to be the whole story: a market appearing for the first time is disproportionately a newly listed asset whose only quote is a wrapped-ether pair, which is to say a corridor that arrives with its intermediary already settled. By route count that expectation is met, and the route scope barely moves it. Entry contributes \PairSingleNewPair{} within a single exchange and \PairCrossNewPair{} across exchanges, and wrapped-ether-endpoint corridors supply \LockedSingleNewPairShare{} of the first and \LockedCrossNewPairShare{} of the second. Dollar weighting separates the two scopes instead of reversing them. The entry margin is \PairValueSingleNewPair{} within an exchange and twice that, \PairValueCrossNewPair{}, across exchanges, while the part from corridors that had no vehicle to choose is \LockedValueSingleNewPair{} and \LockedValueCrossNewPair{}, almost the same in both. What differs is the part that had a choice: \OpenValueSingleNewPair{} within an exchange and \OpenValueCrossNewPair{} across it, so eligible corridors account for \LockedValueSingleNewPairShare{} of the margin within an exchange and \LockedValueCrossNewPairShare{} across it. The entry margin is therefore the mirror image of the reweighting margin. There the cross-exchange excess was carried entirely by corridors whose vehicle was never in question; here it is carried entirely by corridors that had one and were routed through a stablecoin anyway. Read together, the two say that a market already trading across exchanges gains stablecoin share mainly where no other intermediary was available, while the value arriving with markets that begin to trade across exchanges comes from corridors that could have been routed through the native token.
 % The entry margin is the comparison-exclusive composition term, gross of the
-% pairs that stopped trading, split on the same certified allocation and the
+% pairs that stopped trading, split on the same validated allocation and the
 % same endpoint identity as the two paragraphs above and read at
 % reporting_scope single_venue and cross_venue. Each scope's total is its own:
 % the reweighting totals come from that scope's decomposition row, against
@@ -262,15 +262,15 @@ That split was taken of continuing markets, whose endpoints are fixed and whose 
 % each other and do not add to the pooled margin, and the comparison of a
 % margin's size across scopes is descriptive, as in the paragraph above.
 % output/exhibits/vehicle_transition_pair_contributions.parquet; macros from
-% scripts/build_vehicle_transition_pair_deck_values.py
+% scripts/tabulate/build_vehicle_transition_pair_deck_values.py
 
 Those splits sort corridors by whether the vehicle was fixed and by where the route ran. Neither describes the corridors that had a choice. We divide them once more, on whether a stablecoin stands at an endpoint of the ordered pair. A second eligibility rule in disguise would carry no information, and this is not one: a trade into one dollar token can be carried by wrapped ether or by a different dollar token. The \StableEndPairs{} continuing corridors of this class route through a stablecoin in \StableEndShareBase{} of their 2024 activity and \StableEndShareEnd{} of their 2026 activity, well below the unit share eligibility imposes, and they hold \StableEndWeightBase{} and \StableEndWeightEnd{} of routed activity in the two years. By route count they supply \StableEndReweightShare{} of the reweighting margin and \StableEndNewPairShare{} of the entry margin, less in both cases than wrapped-ether corridors supply. Dollar weighting puts them ahead. The same corridors carry \StableEndValueReweight{} of the \PairValueReweight{} value reweighting margin, or \StableEndValueReweightShare{} of it, and \StableEndValueNewPair{} of the value entry margin, or \StableEndValueNewPairShare{}, both larger than the eligible corridors' \LockedValueReweightShare{} and \LockedValueNewPairShare{}. Corridors holding neither candidate at an endpoint are the many and the small: \OtherEndValueNewPairPairs{} of them begin trading in 2026 and \OtherEndValuePairs{} trade in both years, and they supply \OtherEndValueNewPair{} and \OtherEndValueReweight{} of the two value margins. Inside the dollar-endpoint corridors the movement is once again reallocation. Their activity-weighted stablecoin share by value rises from \StableEndValueShareBase{} to \StableEndValueShareEnd{} while their within-pair term is \StableEndValueWithin{}, so the rise is weight moving toward corridors that already routed through a dollar. Weighted by the value they move, the markets that carry the rotation are markets with a dollar already at one end, and the intermediary inside each of them barely moved on net. \citet{Krugman1980VehicleCurrencies} calls the trading a currency draws from payments that never pass through it its secure volume, and holds that a currency short of it cannot take the vehicle role from an incumbent however transaction costs fall. The corridors carrying this rotation are the ones where the challenger's secure volume sits.
 % The endpoint composition of the choice-live remainder of each margin. Same
-% certified allocation, same pooled 2024--2026 rows, and the same WETH-endpoint
+% validated allocation, same pooled 2024--2026 rows, and the same WETH-endpoint
 % identity as the three paragraphs above; the three classes partition the common
 % pairs and their weights close on one in each year, which is what makes a class
 % weight readable as a share of routed activity. `_open_corridor_endpoints` in
-% scripts/build_vehicle_transition_pair_deck_values.py withholds every macro
+% scripts/tabulate/build_vehicle_transition_pair_deck_values.py withholds every macro
 % here unless both classes exist, the class weights exhaust each year, the two
 % classes and the eligible corridors reproduce each margin's own total, and the
 % stablecoin-endpoint class is proved not to be an eligibility class: some
@@ -282,11 +282,11 @@ Those splits sort corridors by whether the vehicle was fixed and by where the ro
 % Class shares are shares of the whole margin, not of the remainder, because the
 % remainder is a difference of two terms and turns negative in one scope.
 % output/exhibits/vehicle_transition_pair_contributions.parquet; macros from
-% scripts/build_vehicle_transition_pair_deck_values.py
+% scripts/tabulate/build_vehicle_transition_pair_deck_values.py
 
 That entry margin is gross. The decomposition subtracts the corridors that stopped trading, and the netting is not an accounting nuisance: it is the comparison the term makes. Averaged across the two years, corridors observed in only one of them carry \CohortMass{} of route activity and \CohortValueMass{} of the value moved, and the netted term is that mass multiplied by the gap between how two populations were routed---the corridors that left and the corridors that arrived. The two are not alike. The departing corridors sent \CohortExitShare{} of their routes and \CohortValueExitShare{} of their dollars through a stablecoin; the corridors that replaced them send \CohortEnterShare{} and \CohortValueEnterShare{}. Removing the wrapped-ether-endpoint corridors, whose vehicle was settled before they opened, leaves the departing corridors at \CohortExitOpenShare{} by route count and \CohortValueExitOpenShare{} by value, and the arriving ones at \CohortEnterOpenShare{} and \CohortValueEnterOpenShare{}. Across exchanges the arriving corridors that could have chosen anything route \CohortValueCrossEnterOpenShare{} of their dollars through a stablecoin. The largest margin in the count decomposition is therefore not adoption inside a settled set of markets. It is the replacement of one population of markets by another that routes differently from the day it opens. \citet{FlandreauJobst2009Empirics} estimate the incumbency advantage of an international currency across a stable roster of trading relationships and find persistence without lock-in; here the roster is what turns over, and the challenger's gain is concentrated in the corridors that did not exist when the incumbent's network was formed.
 % The netted exclusive-pair term read as corridor replacement. The two cohorts
-% are the baseline_exclusive and comparison_exclusive rows of the same certified
+% are the baseline_exclusive and comparison_exclusive rows of the same validated
 % allocation, and the producer proves the identity before rendering: each
 % cohort's weights close on one, each margin equals that cohort's own
 % aggregate_mass_share_midpoint -- the midpoint of the two years' exclusive-
@@ -300,7 +300,7 @@ That entry margin is gross. The decomposition subtracts the corridors that stopp
 % corridor entry and exit are realised, not assigned, and this is not the
 % blocked vehicle-turnover hazard.
 % output/exhibits/vehicle_transition_pair_contributions.parquet; macros from
-% scripts/build_vehicle_transition_pair_deck_values.py
+% scripts/tabulate/build_vehicle_transition_pair_deck_values.py
 
 Two different economies produce that gap, and the two weightings do not agree on which one is at work. Corridors are of three kinds: those with wrapped ether at an endpoint, which cannot use it to intermediate and route through a stablecoin by construction; those with a stablecoin at an endpoint, which may still be carried either way; and those with some other asset at each end. Evaluated at the two cohorts' midpoints, the gap separates exactly into the mix of kinds each cohort brings and the rate at which each kind routes. By route count the mix carries \ReplaceCompositionShare{} of the \CohortNet{} netted term, and nearly all of that is the first kind: wrapped-ether-paired corridors are \ReplaceLockedEnterWeight{} of arriving activity against \ReplaceLockedExitWeight{} of departing activity, worth \ReplaceLockedComposition{} by themselves. They enter the margin through their weight alone, because their routing rate is one in both cohorts. The remaining \ReplaceRate{} is a rate difference among corridors that could have been carried either way. By value the ordering reverses: the mix contributes \ReplaceValueComposition{} and the rates \ReplaceValueRate{}, or \ReplaceValueRateShare{} of \CohortValueNet{}. Arriving corridors with a stablecoin at an endpoint send \ReplaceValueStableEndEnterRate{} of their dollars through a stablecoin where the departing corridors of the same kind sent \ReplaceValueStableEndExitRate{}, and arriving corridors with some other asset at each end send \ReplaceValueOtherEndEnterRate{} against \ReplaceValueOtherEndExitRate{}. No corridor appears on both sides of those comparisons, so none of these figures describes an intermediary being changed; the dollars now moving through corridors that opened after the challenger was established were never routed the old way. \citet{DowdGreenaway1993CurrencyCompetition} make an agent's willingness to switch depend on the expectation that others will switch too, and the excess inertia that follows is a claim about the agents already holding the incumbent. Their model is silent on the agents who arrive later, and it is those the data separate: inside a continuing corridor the intermediary barely moves, while the corridors that open once the challenger is available carry it from their first trade.
 % The corridor-replacement gap split into what the arriving corridors are and
@@ -321,7 +321,7 @@ Two different economies produce that gap, and the two weightings do not agree on
 % as pair-level substitution; the within-pair estimate above is the only
 % quantity that speaks to that. Descriptive and non-causal, as above.
 % output/exhibits/vehicle_transition_pair_contributions.parquet; macros from
-% scripts/build_vehicle_transition_pair_deck_values.py
+% scripts/tabulate/build_vehicle_transition_pair_deck_values.py
 % Dowd and Greenaway (1993) reread in literature/text/ at the excess-inertia
 % passage ("an undue reluctance to switch", conditional on what an agent
 % expects others to do) and at the closing extension in which the composition
@@ -344,7 +344,7 @@ Replacement on that scale moves activity between the two populations as well as 
 % not corridor entry or exit induced by anything, and the counterfactual in the
 % penultimate sentence is the term's own ceteris paribus, not a treatment.
 % output/exhibits/vehicle_transition_pair_decomposition.jsonl; macros from
-% scripts/build_vehicle_transition_pair_deck_values.py
+% scripts/tabulate/build_vehicle_transition_pair_deck_values.py
 
 Composition is measured on a population that turns over, and the same measurement can be taken where it holds still. Fix a set of corridors and the identity's four terms collapse to the two that operate inside it. The two readings of the rotation then predict opposite outcomes. Under turnover, holding the set fixed removes the rotation. Under reallocation among corridors present throughout, holding the set fixed leaves it, smaller by whatever the entrants supplied. A cohort is fixed here when its cells carry at least one observed route in both endpoint years. One cohort serves both weightings, and the episode and dollar estimates therefore restrict the same units.
 
@@ -355,10 +355,10 @@ The intermediary menu inside a corridor turns over as well, and a second cohort 
 A third cohort fixes the sequence of exchanges a route ran through, and it is reported for the bound it supplies. That sequence is selected jointly with the intermediary. Conditioning on it absorbs part of the rotation's own content, and the estimate reads as a diagnostic. Inside it the count change is \FixedVenueCountChange{}, with a 95\% interval of \FixedVenueCountCILower{} to \FixedVenueCountCIUpper{}, against a pooled \FixedPooledCountChange{}; the value change is \FixedVenueValueChange{}. Episode-weighted rotation is thus bounded to a small fraction of its pooled size once the realised exchange architecture is held constant, while dollar-weighted rotation keeps about half of its own. The cohort retains \FixedVenueValueMassEnd{} of 2026 dollars against \FixedPairValueMassEnd{} for the corridor cohort, and coverage explains part of that gap. \citet{AmitiItskhokiKonings2022Dominant} separate the selection of firms into a currency from the effect of the currency they chose by entering proxies for the choice alongside the choice itself, and read which of the two dominates. The exchange sequence plays the proxy's role here, and it dominates the episode measure and shares the dollar measure. Three conditions this comparison would also impose stay outside it: the pools reachable when the route was assembled, the size of the trade, and the best alternative within reach. Each needs pre-transaction state that the route measurement here does not carry, and each is recorded as unfitted in the exhibit's support ledger.
 % Cohort estimates and their retained mass are
 % output/exhibits/e0_vehicle_transition_fixed_opportunity_estimates.jsonl and
-% _support.jsonl; macros from scripts/build_fixed_opportunity_deck_values.py.
-% Provisional/E0 scope: the cohorts run on the released endpoint-candidate
+% _support.jsonl; macros from scripts/tabulate/build_fixed_opportunity_deck_values.py.
+% Supporting scope: the cohorts run on the released endpoint-candidate
 % choice panel and are not submission-authoritative until the findings freeze
-% admits them. Refresh with scripts/run_vehicle_transition_e0.py
+% admits them. Refresh with scripts/analyze/run_vehicle_transition_e0.py
 % (run_fixed_opportunity_conditioning) then the builder above.
 % Cohort membership is decided using both endpoint years, so every conditional
 % macro is the change among continuously active cells and never the
@@ -440,10 +440,10 @@ Three features of the design have to be measured before the estimates can be rea
 \input{../output/tables/within_day_ladder.tex}
 \exhibitnote{Currency-day observations on which the currency is quoted at a route endpoint and the day supplies at least twenty route units: \DateFETokenDays{} currency-days over \DateFETokens{} currencies and \DateFEDays{} days. The outcome is the currency's share of the day's intermediary episodes in percentage points; the demand regressor is its share of the day's route-endpoint episodes in the same units. Class premiums are measured against the residual unclassified bucket, with standard errors in parentheses clustered on date and currency. The final row absorbs currency and day effects jointly, so class premiums are not identified there.
 % output/exhibits/excess_use_date_fe_ladder.jsonl; macros from
-% scripts/build_excess_use_date_fe_deck_values.py. Provisional E0 scope: green
+% scripts/tabulate/build_excess_use_date_fe_deck_values.py. Supporting scope: green
 % route-only D3 panel, count-share construct only, not submission-authoritative
 % until the findings freeze admits it. Refresh by rerunning
-% scripts/run_excess_use_date_fe_ladder.py and the macro builder together.
+% scripts/analyze/run_excess_use_date_fe_ladder.py and the macro builder together.
 }
 \end{table}
 \FloatBarrier
@@ -455,7 +455,7 @@ Three features of the design have to be measured before the estimates can be rea
 \includegraphics[width=0.98\textwidth]{../output/figures/within_day_role_contrasts.pdf}
 \exhibitnote{Each row is one coefficient from a regression of a currency's share of the day's intermediary episodes on its own share of that day's route-endpoint episodes, both in percentage points, with date fixed effects absorbing the calendar. Bars are 95\% intervals. A filled marker means the interval clears zero and an open marker means it does not; rows are drawn at the same weight either way. Panel~A measures each class against the residual unclassified bucket over every endpoint-supported currency-day. Panel~B measures the native asset against a stablecoin on the five named candidates and on all classified currencies; the two samples put different amounts of the day's share mass behind the same indicator, so the magnitudes are not comparable. Panel~C measures backing regimes against a fiat-reserve claim and USDT against USDC inside the stablecoin class. The three panels use separate horizontal scales.
 % output/figures/within_day_role_contrasts.pdf; output/exhibits/excess_use_date_fe_ladder.jsonl;
-% producer scripts/figure/build_within_day_contrasts.py. Provisional E0 scope:
+% producer scripts/plot/build_within_day_contrasts.py. Supporting scope:
 % green route-only D3 panel, count-share construct only, not submission-authoritative
 % until the findings freeze admits it.
 }
@@ -470,20 +470,20 @@ Intermediation becomes less common over 2022--2026 even as cross-exchange routin
 
 Those estimates compare two endpoint years. The calendar supplies the variation that identifies them. A second reading of the same stratification removes that reliance. Each trading day contributes one observation for its single-exchange routes and one for its cross-exchange routes, and a day effect absorbs everything the two halves share, from gas prices to market direction. The remaining difference measures how far apart the two halves of one day's route universe stand.
 % Purpose-bound estimand: the LEVEL of the exchange-span gap, which the endpoint-year
-% rival exhibits never state. Owner scripts/run_integration_date_fe_ladder.py, exhibit
+% rival exhibits never state. Owner scripts/analyze/run_integration_date_fe_ladder.py, exhibit
 % output/exhibits/integration_date_fe_ladder.jsonl, macros through
-% src/ddvc/provisional_results.py. Do NOT write that the gap "survives absorbing the
+% src/ddvc/presentation_values.py. Do NOT write that the gap "survives absorbing the
 % calendar": the stack is balanced by construction, so the pooled and within-day point
-% estimates are algebraically identical and only the inference differs. Provisional E0
+% estimates are algebraically identical and only the inference differs. Supporting
 % scope on the green route-only D3 panel; refresh the ladder and the macro renderer
 % together when the panel regenerates.
 
 That difference is large in dollars and indistinct in counts. Over \WithinDayVenueGapDays{} days on which both halves are measured, one-intermediary routes that cross exchanges carry a stablecoin share \WithinDayVenueGapValue{} above routes executed on one exchange, with a standard error of \WithinDayVenueGapValueSE{} and a 95\% interval of \WithinDayVenueGapValueCI{}. Weighting each day--group cell by the dollars behind it returns \WithinDayVenueGapWeighted{} with a standard error of \WithinDayVenueGapWeightedSE{}. Counting routes rather than dollars gives \WithinDayVenueGapCount{}, whose interval \WithinDayVenueGapCountCI{} spans zero and admits a gap in either direction. Exchange span therefore tracks which currency carries the value that moves through an intermediary, and the same day's evidence does not establish that it tracks how often an indirect route reaches for a stablecoin at all. \citet{ChenDuffie2021Fragmentation} model trade split across exchanges as thinning depth at each one while improving allocation overall. Thin depth at a single venue binds first on the largest orders, and a difference that opens in routed dollars while route counts stay level fits that reading.
 % output/exhibits/integration_date_fe_ladder.jsonl, rows routing_basis=exact_two_leg with
-% spec R2 and R3; macros through src/ddvc/provisional_results.py. The count figure is
+% spec R2 and R3; macros through src/ddvc/presentation_values.py. The count figure is
 % quoted BECAUSE its interval spans zero: the negated half of the value-not-count reading
 % carries its own interval in the same units. Refresh by rerunning
-% scripts/run_integration_date_fe_ladder.py and the macro renderer together.
+% scripts/analyze/run_integration_date_fe_ladder.py and the macro renderer together.
 
 The dollar gap is also unsteady across the sample. Estimated year by year, it opens at \WithinDayVenueGapFirst{} in 2020, closes to \WithinDayVenueGapTrough{} in 2023 on an interval of \WithinDayVenueGapTroughCI{}, and reopens to \WithinDayVenueGapLast{} in 2026. A design that reads only the endpoint years of the sample would record a gap at both ends and miss the closure between them. Routes are not assigned to an exchange span, and these differences therefore describe the composition of two selected populations rather than the effect of widening a route's venue set.
 % output/exhibits/integration_date_fe_ladder.jsonl, rows spec=R5 + date FE x year with

@@ -26,7 +26,7 @@ from ddvc.literature_sources import (
 
 
 def load_script(name: str):
-    path = Path(__file__).resolve().parents[1] / "scripts" / f"{name}.py"
+    path = Path(__file__).resolve().parents[1] / "scripts" / "fetch" / f"{name}.py"
     spec = importlib.util.spec_from_file_location(name, path)
     assert spec and spec.loader
     module = importlib.util.module_from_spec(spec)

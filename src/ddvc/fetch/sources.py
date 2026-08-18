@@ -3,7 +3,7 @@
 The registry is intentionally explicit: every source has a backend, a schema
 family, and a genesis block where known. Fetch jobs clamp to each source's
 genesis date so a "from genesis" run does not waste quota on empty pre-launch
-days, while retaining the block as the primary provenance anchor.
+days, while retaining the block as the primary source-order anchor.
 """
 
 from __future__ import annotations

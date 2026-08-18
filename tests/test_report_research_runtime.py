@@ -10,7 +10,9 @@ from unittest.mock import patch
 
 
 ROOT = Path(__file__).resolve().parents[1]
-SPEC = importlib.util.spec_from_file_location("report_research_runtime", ROOT / "scripts" / "report_research_runtime.py")
+SPEC = importlib.util.spec_from_file_location(
+    "report_research_runtime", ROOT / "scripts" / "utils" / "report_research_runtime.py"
+)
 assert SPEC and SPEC.loader
 RUNTIME = importlib.util.module_from_spec(SPEC)
 SPEC.loader.exec_module(RUNTIME)

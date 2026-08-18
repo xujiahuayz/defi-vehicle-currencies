@@ -11,7 +11,7 @@ nothing to look at, nothing defined in symbols and nobody cited reads as a memo 
 the sentences say, so these are not decoration and they are not preferences.
 
 Thresholds are empirical quantiles of the exemplars, recomputed by
-`scripts/measure_venue_optics.py`. The working paper is still growing, so absolute word
+`scripts/verify/measure_venue_optics.py`. The working paper is still growing, so absolute word
 and exhibit counts are not submission gates. We instead require a venue-like page count,
 the presence of each structural feature, and first-quartile exhibit density per word.
 This catches a memo-shaped draft without forcing unfinished sections to be padded.
@@ -34,7 +34,7 @@ MUST_EXIST = ("tables", "figures", "equations", "citations", "appendix")
 class VenueOpticsTests(unittest.TestCase):
     def setUp(self) -> None:
         if not OPTICS.exists():
-            self.skipTest(f"{OPTICS.name} absent; run scripts/measure_venue_optics.py")
+            self.skipTest(f"{OPTICS.name} absent; run scripts/verify/measure_venue_optics.py")
         self.rows = {r["feature"]: r for r in
                      (json.loads(l) for l in OPTICS.read_text().splitlines() if l.strip())}
 

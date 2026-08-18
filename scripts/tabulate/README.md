@@ -1,36 +1,37 @@
-# Table renderers
+# Tabulate
 
-Each renderer reads a named processed panel or exhibit and writes one TeX fragment
-under `output/tables/`. Captions, labels, notes, placement and numbering stay in
-the manuscript. Edit the renderer or its input, never the generated fragment.
+Tabulators read processed panels or analysis exhibits and write generated TeX.
+Captions, labels, placement, and interpretation stay in the paper/deck source.
 
-## Current manuscript owners
+## Paper tables
 
-| Renderer | Paper consumer |
+| Owner | Output | Manuscript label |
+|---|---|---|
+| `render_dominance_rotation.py` | `dominance_rotation.tex/.pdf` | `tab:rotation` |
+| `render_pair_composition.py` | `pair_composition.tex/.pdf` | `tab:pair-composition` |
+| `render_usdt_transition.py` | `usdt_transition.tex/.pdf` | `tab:usdt-transition` |
+| `render_within_day_ladder.py` | `within_day_ladder.tex/.pdf` | `tab:within-day-ladder` |
+| `render_routing_technology_windows.py` | `routing_technology_windows.tex/.pdf` | deck/supporting output |
+| `render_venue_technology_rival.py` | `venue_technology_rival.tex/.pdf` | deck/supporting output |
+| `render_venue_coverage.py` | `venue_coverage.tex/.pdf` | `tab:app:venues` |
+
+The remaining active manuscript tables are intentionally inline because each is
+a short validation or sample-description display: `tab:panel`, `tab:app:cl`,
+`tab:app:curve`, `tab:app:weighted`, `tab:app:support`, `tab:app:curveleg`, and
+`tab:app:roundtrip`. Their evidence-source comments name the machine-readable
+analysis exhibit that supplies each value.
+
+## Shared paper/deck values
+
+| Owner | Output family |
 |---|---|
-| `render_dominance_rotation.py` | `tab:rotation` |
-| `render_pair_composition.py` | `tab:pair-composition` |
-| `render_usdt_transition.py` | `tab:usdt-transition` |
-| `render_within_day_ladder.py` | `tab:within-day-ladder` |
-| `render_routing_technology_windows.py` | `tab:router-windows` |
-| `render_venue_technology_rival.py` | `tab:venue-technology` |
-| `render_venue_coverage.py` | `tab:app:venues` |
+| `render_presentation_values.py` | shared current route-result macros |
+| `build_vehicle_transition_pair_deck_values.py` | pair decomposition and support macros |
+| `build_excess_use_date_fe_deck_values.py` | date-FE result macros |
+| `build_backing_regime_deck_values.py` | backing-regime macros |
+| `build_fixed_opportunity_deck_values.py` | fixed-opportunity macros |
+| `build_liquidity_capital_v2_deck_values.py` | V2 mechanism macros |
+| `build_v1_architecture_deck_values.py` | V1 mandate and V2 routing facts |
 
-Inline manuscript-owned tables: `tab:panel`, `tab:app:cl`, `tab:app:curve`,
-`tab:app:weighted`, `tab:app:support`, `tab:app:curveleg`, and
-`tab:app:roundtrip`.
-
-`render_provisional_results_deck_values.py` produces shared macros used by the
-paper/deck transition material. It is generated support, not a separate research
-claim.
-
-## Inspection-only or blocked
-
-- `render_data_coverage.py`, `render_variable_notation.py`, and
-  `render_summary_statistics.py` are inspection utilities without a live
-  deliverable consumer.
-- `render_sample_coverage.py` is Blocked because its route-cost input is withdrawn.
-
-Some appendix tables remain inline in the manuscript. When touched, give each
-empirical table one renderer and replace the inline body in the same change. See
-the root [`README.md`](../../README.md) for the project-wide contract.
+Each generated file has one owner. Inline empirical tables should be moved to a
+renderer when next edited.
