@@ -6,9 +6,11 @@ import pytest
 from scripts.analyze.run_liquidity_provision_behavior_exploration import (
     annual_stable_allocation,
     capital_use_gap_summaries,
+    candidate_share_gap_panel,
     daily_leader_alignment,
     daily_capital_use_gaps,
     supported_candidate_days,
+    within_day_gap_associations,
 )
 
 
@@ -20,6 +22,8 @@ def _row(
     intermediate_routes: int,
     endpoint_routes: int,
     excess: float,
+    pool_count: int = 1,
+    venue_count: int = 1,
 ) -> dict[str, object]:
     total_capital = {"WETH": 100.0, "WBTC": 10.0, "USDC": 20.0, "USDT": 10.0, "DAI": 10.0}
     return {
@@ -35,8 +39,8 @@ def _row(
         "v2_deposited_capital_usd": capital,
         "v2_log1p_deposited_capital_usd": 1.0,
         "v2_five_candidate_capital_share": capital / total_capital.get(symbol, 1.0),
-        "v2_candidate_pool_count": 1,
-        "v2_candidate_venue_count": 1,
+        "v2_candidate_pool_count": pool_count,
+        "v2_candidate_venue_count": venue_count,
     }
 
 
@@ -80,3 +84,80 @@ def test_daily_capital_use_gap_separates_route_and_capital_shares(sample) -> Non
         "daily_route_capital_gap_year",
         "daily_route_capital_gap_change",
     }.issubset(set(summaries["record_type"]))
+
+
+def test_candidate_share_gap_panel_defines_within_day_route_capital_gap(sample) -> None:
+    panel = candidate_share_gap_panel(sample)
+    row = panel[
+        panel["origin_date"].eq(pd.Timestamp("2024-01-01"))
+        & panel["candidate_symbol"].eq("USDC")
+    ].iloc[0]
+    assert row["route_share_5"] == pytest.approx(30 / 100)
+    assert row["capital_share_5"] == pytest.approx(20 / 150)
+    assert row["endpoint_share_5"] == pytest.approx(20 / 100)
+    assert row["route_capital_gap_5"] == pytest.approx((30 / 100) - (20 / 150))
+
+
+def test_within_day_gap_association_reports_stable_indicator() -> None:
+    rows = []
+    for day in pd.date_range("2024-01-01", periods=220, freq="D"):
+        date = day.strftime("%Y-%m-%d")
+        rows.extend(
+            [
+                _row(
+                    date,
+                    "WETH",
+                    capital=100,
+                    intermediate_routes=25,
+                    endpoint_routes=45,
+                    excess=0.8,
+                    pool_count=6,
+                    venue_count=4,
+                ),
+                _row(
+                    date,
+                    "WBTC",
+                    capital=20,
+                    intermediate_routes=5,
+                    endpoint_routes=15,
+                    excess=0.5,
+                    pool_count=3,
+                    venue_count=1,
+                ),
+                _row(
+                    date,
+                    "USDC",
+                    capital=10,
+                    intermediate_routes=40,
+                    endpoint_routes=15,
+                    excess=3.0,
+                    pool_count=2,
+                    venue_count=2,
+                ),
+                _row(
+                    date,
+                    "USDT",
+                    capital=10,
+                    intermediate_routes=35,
+                    endpoint_routes=15,
+                    excess=4.0,
+                    pool_count=2,
+                    venue_count=3,
+                ),
+                _row(
+                    date,
+                    "DAI",
+                    capital=10,
+                    intermediate_routes=25,
+                    endpoint_routes=10,
+                    excess=1.0,
+                    pool_count=1,
+                    venue_count=2,
+                ),
+            ]
+        )
+    panel = candidate_share_gap_panel(supported_candidate_days(pd.DataFrame(rows)))
+    result = within_day_gap_associations(panel)
+    stable = result[result["predictor"].eq("is_stable")].iloc[0]
+    assert stable["record_type"] == "within_day_route_capital_gap_association"
+    assert stable["coefficient"] > 0

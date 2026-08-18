@@ -25,7 +25,7 @@ question and literature                    done
   → cleaned and analysis-ready data        ready for the two active claim families
   → registered baseline analysis           done; findings check green
   → repository cleanup and host sync        done; one checkout per host
-  → presentable paper/deck trunk            47/36 pages; rebuild after admitted changes
+  → presentable paper/deck trunk            48/39 pages; rebuild after admitted changes
         status labels                      provisional / registered / confirmed
         review snapshots                   versioned and shareable while work continues
 
@@ -50,11 +50,14 @@ deposited-capital predictability. They make the current paper measurable and
 reproducible, but not yet submission-ready. The current research mode is
 parallel: keep the paper and slides presentable, integrate provisional results
 with explicit status labels, and continue the scoped mechanism and review loops.
-A result becomes headline evidence only if it is economically material,
-distinguishes at least one serious rival story, fits the literature contribution,
-and has a complete producer-to-deliverable path. Routing maturation, direct-cost
-dominance, rent incidence, provider behavior, and persistence are supporting,
-withheld, or expansion work until they pass that bar.
+Current provisional layers cover vehicle birth, non-WETH entry drivers,
+long-horizon persistence, thin-market turn-on, LP capital-use gaps, and V2
+capital predictability. A result becomes headline evidence only if it is
+economically material, distinguishes at least one serious rival story, fits the
+literature contribution, and has a complete producer-to-deliverable path.
+Routing maturation, direct-cost dominance, rent incidence, provider-flow
+behavior, and V3/V4 depth are supporting, withheld, or expansion work until they
+pass that bar.
 
 Parallel work uses named branches or small focused commits without creating
 sibling checkouts, backup folders, or another project truth.

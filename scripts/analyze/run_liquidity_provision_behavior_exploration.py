@@ -40,6 +40,12 @@ WETH_SYMBOL = "WETH"
 BASELINE_YEAR = 2024
 COMPARISON_YEAR = 2026
 HAC_LAG_DAYS = 30
+WITHIN_DAY_GAP_PREDICTORS = (
+    "is_stable",
+    "endpoint_share_5",
+    "v2_candidate_venue_count",
+    "log_pool_count",
+)
 
 
 def load_candidate_day(path: Path = CANDIDATE_DAY_INPUT) -> pd.DataFrame:
@@ -167,6 +173,96 @@ def daily_capital_use_gaps(sample: pd.DataFrame) -> pd.DataFrame:
     if daily.empty:
         raise ValueError("daily capital-use gap panel is empty")
     return daily
+
+
+def candidate_share_gap_panel(sample: pd.DataFrame) -> pd.DataFrame:
+    """Return candidate-day route and capital shares inside the five-candidate set."""
+
+    panel = sample.copy()
+    panel["is_stable"] = panel["candidate_symbol"].isin(STABLE_SYMBOLS).astype(float)
+    by_day = panel.groupby("origin_date", sort=True)
+    panel["route_total_5"] = by_day["intermediate_route_count"].transform("sum").astype(float)
+    panel["endpoint_total_5"] = by_day["endpoint_route_count"].transform("sum").astype(float)
+    panel["capital_total_5"] = by_day["v2_deposited_capital_usd"].transform("sum").astype(float)
+    panel = panel[
+        panel["route_total_5"].gt(0)
+        & panel["endpoint_total_5"].gt(0)
+        & panel["capital_total_5"].gt(0)
+    ].copy()
+    panel["route_share_5"] = (
+        panel["intermediate_route_count"].astype(float) / panel["route_total_5"]
+    )
+    panel["endpoint_share_5"] = (
+        panel["endpoint_route_count"].astype(float) / panel["endpoint_total_5"]
+    )
+    panel["capital_share_5"] = (
+        panel["v2_deposited_capital_usd"].astype(float) / panel["capital_total_5"]
+    )
+    panel["route_capital_gap_5"] = panel["route_share_5"] - panel["capital_share_5"]
+    panel["log_pool_count"] = np.log1p(panel["v2_candidate_pool_count"].astype(float))
+    required = [
+        "route_capital_gap_5",
+        "is_stable",
+        "endpoint_share_5",
+        "v2_candidate_venue_count",
+        "log_pool_count",
+    ]
+    panel = panel.replace([np.inf, -np.inf], np.nan).dropna(subset=required)
+    if panel.empty:
+        raise ValueError("candidate route-capital gap panel is empty")
+    return panel
+
+
+def within_day_gap_associations(panel: pd.DataFrame) -> pd.DataFrame:
+    """Estimate whether stable candidates carry extra use relative to capital."""
+
+    data = panel[["origin_date", "route_capital_gap_5", *WITHIN_DAY_GAP_PREDICTORS]].copy()
+    residual = absorb_fixed_effects(
+        data[["route_capital_gap_5", *WITHIN_DAY_GAP_PREDICTORS]],
+        data["origin_date"],
+    )
+    fit = ols_clustered(
+        residual["route_capital_gap_5"],
+        residual[list(WITHIN_DAY_GAP_PREDICTORS)],
+        data["origin_date"],
+        add_constant=False,
+        absorbed_groups=(data["origin_date"],),
+        min_observations=1000,
+        min_clusters=30,
+    )
+    rows: list[dict[str, object]] = []
+    for predictor, coefficient, standard_error, t_statistic, p_value in zip(
+        WITHIN_DAY_GAP_PREDICTORS,
+        fit.beta,
+        fit.standard_errors,
+        fit.t_statistics,
+        fit.p_values,
+        strict=True,
+    ):
+        rows.append(
+            {
+                "analysis_status": "exploratory_descriptive",
+                "record_type": "within_day_route_capital_gap_association",
+                "outcome": "route_capital_gap_5",
+                "predictor": predictor,
+                "coefficient": float(coefficient),
+                "coefficient_pp": 100.0 * float(coefficient),
+                "standard_error": float(standard_error),
+                "standard_error_pp": 100.0 * float(standard_error),
+                "t_statistic": float(t_statistic),
+                "p_value": float(p_value),
+                "n_observations": int(fit.n_observations),
+                "date_clusters": int(fit.n_clusters),
+                "fixed_effects": "origin_date",
+                "controls": "+".join(
+                    predictor
+                    for predictor in WITHIN_DAY_GAP_PREDICTORS
+                    if predictor != "is_stable"
+                ),
+                "interpretation": "within-day five-candidate route-minus-capital association, not provider-flow timing",
+            }
+        )
+    return pd.DataFrame(rows)
 
 
 def capital_use_gap_summaries(daily: pd.DataFrame) -> pd.DataFrame:
@@ -392,6 +488,7 @@ def run(
 ) -> int:
     sample = supported_candidate_days(load_candidate_day(input_path))
     daily_gaps = daily_capital_use_gaps(sample)
+    share_gap_panel = candidate_share_gap_panel(sample)
     result = pd.concat(
         [
             annual_stable_allocation(sample),
@@ -399,6 +496,7 @@ def run(
             daily_leader_alignment(sample),
             candidate_profiles(sample),
             level_associations(sample),
+            within_day_gap_associations(share_gap_panel),
         ],
         ignore_index=True,
     )

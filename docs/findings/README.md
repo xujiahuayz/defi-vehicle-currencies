@@ -85,6 +85,12 @@ economic magnitude, strongest rival explanation, literature contribution, and
 complete producer-to-deliverable path. Provisional results may enter the paper
 and deck only when explicitly labelled and reproducible enough for review.
 
+The active provisional result stack now includes vehicle formation at market
+birth, non-WETH entry-driver controls, 30-day and 120-day birth-state
+persistence, stable turn-on in thin baseline markets, and the V2 liquidity
+route-minus-capital gap. These layers strengthen the mechanism story but do not
+change the registered confirmatory claim set.
+
 Routing maturation, direct-cost dominance, the joint V2/V3 capital-flow family,
 rent incidence, and persistence/hysteresis are blocked, withheld, supporting, or
 outside the executable perimeter until they receive a complete
@@ -140,16 +146,15 @@ and the lock.
 
 ## Deliverable state
 
-M3 compiles a 47-page paper and a 36-page deck after both registered reruns. The
-paper log is clean; the deck's result pages were visually inspected and its two
-layout overflows corrected. M3 passes 633 pytest tests plus 445 subtests, 331
-unittest tests, the findings gate, and every blocking conformance check. Studio
-contains the same source and PDFs and passes the repository test suite after its
-named processed inputs are synchronized. There is one manuscript under `paper/`
-and one presentation under `deck/`; Git history is the archive.
+The current branch compiles a 48-page paper and a 39-page deck after the
+provisional mechanism reruns. The paper and deck compile with zero undefined
+references. The repository passes 645 pytest tests plus 445 subtests, 332
+unittest tests, the findings gate, and every blocking conformance check. There
+is one manuscript under `paper/` and one presentation under `deck/`; Git history
+is the archive.
 
-These are baseline deliverables, not final submission deliverables. The paper
-and deck remain presentable throughout the research process. Before submission
-freeze, they need expanded mechanism results and a motivation rewrite built
-around concrete vehicle-currency examples from traditional finance. A weak
-candidate loops back to more search rather than entering the headline evidence.
+These are rolling deliverables, not final submission deliverables. The paper and
+deck remain presentable throughout the research process. Before submission
+freeze, they still need JFE-level triage of economic magnitude, literature
+positioning, and equation/structure depth. A weak candidate loops back to more
+search rather than entering the headline evidence.
