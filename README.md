@@ -12,24 +12,36 @@ trade `A → B → C`, this project calls `A → C` the **ultimate trade** or
 **atomic pairs**. Code, tables, figures, paper, and slides should use those terms
 whenever the distinction matters.
 
-## Current position
+## Workflow graph and current position
+
+The compact workflow graph lives here. The durable claim-state graph is in
+[`docs/findings/README.md`](docs/findings/README.md). The retired autonomous
+grind/watchdog machinery no longer owns workflow state; these repo files do.
 
 ```text
 question and literature                 done
   → definitions and estimands           done
   → retained raw data                   Studio is canonical owner; raw sync active
   → cleaned and analysis-ready data     ready for the two active claim families
-  → registered analysis                 done; findings check green
-  → JFE paper                           builds as a clean 47-page PDF
-  → presentation deck                   builds as a clean 36-page PDF
-  → final repository cleanup and sync   in progress
+  → registered baseline analysis        done; findings check green
+  → baseline paper and deck             build cleanly from registered claims
+  → JFE-strength expansion              active open node
+       ├─ making of dominance           features, drivers, adoption, reversal, persistence
+       ├─ liquidity provision behavior  capital stocks, flows, entry/exit, reallocation
+       └─ framing and motivation        concrete TradFi vehicle-currency analogies
+  → revised paper and deck              pending expanded results and rewrite
+  → submission freeze                   pending final conformance after expansion
 ```
 
 The detailed claim state is in [`docs/findings/`](docs/findings/README.md). The
 two active confirmatory families are the vehicle-role transition and V2
-deposited-capital predictability. Routing maturation, direct-cost dominance,
-rent incidence, and persistence are supporting, withheld, or future work; they
-do not block the current paper and deck.
+deposited-capital predictability. They make the current paper measurable and
+reproducible, but not yet submission-ready. The current research node is to add
+substantive mechanism evidence around the making of vehicle dominance and
+liquidity-provision behavior, then rewrite the paper and slides around the
+strongest results. Routing maturation, direct-cost dominance, rent incidence,
+provider behavior, and persistence are supporting, withheld, or expansion work
+until each receives a complete producer-to-deliverable path.
 
 ## Scientific workflow
 

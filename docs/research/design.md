@@ -6,6 +6,33 @@ the current numerical results are in [`../findings/`](../findings/README.md).
 Ideas that are not in those two places are future work, not unfinished parts of
 the present paper.
 
+## Current expansion agenda
+
+The executable gate is green for the two registered baseline families, but the
+research target is now stronger than measurement. The open node is to find
+economically substantive mechanism evidence before treating the paper as
+JFE-ready.
+
+Priority experiments:
+
+1. Making of vehicle dominance: estimate which asset, market, and route features
+   predict vehicle adoption, dominance intensity, leader switches, entry, exit,
+   reversals, and persistence. Preferred designs condition on the same ultimate
+   pair and date when feasible, so the comparison is among candidate vehicles in
+   the same trading opportunity.
+2. Liquidity-provision behavior: separate capital stocks from liquidity-supply
+   flows, provider entry/exit, withdrawals, reallocation across vehicles, and
+   V3/V4 route or netting behavior where the required inputs exist.
+3. Mechanism distinction: compare route cost, executable depth, venue coverage,
+   route redundancy, candidate centrality, pool age, and capital concentration
+   as competing explanations. Correlations are admissible when causal evidence
+   is not defensible, but each result must state the unit, conditioning set,
+   strongest rival, and economic magnitude.
+4. Framing: motivate the paper with concrete traditional-finance analogies, such
+   as a dealer or treasurer routing a thin currency pair through a liquid vehicle
+   currency because direct execution is expensive or unavailable. The analogy is
+   motivation only; it should not substitute for the DEX evidence.
+
 ## Question and contribution
 
 The paper asks what makes a vehicle currency dominant and how that dominance

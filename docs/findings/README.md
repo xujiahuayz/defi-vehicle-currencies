@@ -5,7 +5,7 @@ target: Journal of Financial Economics
 submission_ready: false
 freeze_status: green
 prose_node: tiered
-meeting_edge: G/H deliverables -> cross-host sync and handoff
+meeting_edge: G/H baseline deliverables -> I JFE-strength expansion
 ---
 
 # Live workflow state
@@ -42,11 +42,16 @@ E1 confirmatory specification lock      DONE
   |
 F registered confirmatory rebuilds      DONE; FINDINGS GATE GREEN
   |
-G JFE paper                             DONE LOCALLY; CLEAN 47-PAGE PDF
+G baseline JFE paper                    DONE LOCALLY; CLEAN 47-PAGE PDF
   |
-H presentation deck                    DONE LOCALLY; CLEAN 36-PAGE PDF
+H baseline presentation deck            DONE LOCALLY; CLEAN 36-PAGE PDF
   |
-P submission freeze                    PENDING FINAL TEST, SYNC, COMMIT, AND PUSH
+I JFE-strength mechanism expansion      ACTIVE OPEN NODE
+  |                                     dominance drivers, LP behavior, framing
+  |
+J revised paper and deck                PENDING EXPANDED RESULTS AND REWRITE
+  |
+P submission freeze                     NOT READY
 ```
 
 ## Executable claim set
@@ -57,10 +62,18 @@ P submission freeze                    PENDING FINAL TEST, SYNC, COMMIT, AND PUS
 2. `liquidity_capital_v2_predictability`, the registered mechanism result.
 
 Both families have been rebuilt from their declared inputs after the lock, and
-the executable findings gate is green. Routing maturation, direct-cost dominance,
-the joint V2/V3 capital-flow family, rent incidence, and persistence/hysteresis are blocked,
-withheld, supporting, or outside the executable perimeter. They do not hold the
-working paper and deck hostage and must not be presented as established findings.
+the executable findings gate is green. That is a reproducibility statement, not
+a JFE submission decision. The live workflow is now at node I: mechanism and
+results expansion. The expansion targets are the making of vehicle dominance
+(features, drivers, adoption, reversal, persistence, and conditional choice) and
+liquidity-provision behavior (capital stocks, liquidity-supply flows, provider
+entry/exit, reallocation, and V3/V4 routing or netting behavior where inputs
+support it).
+
+Routing maturation, direct-cost dominance, the joint V2/V3 capital-flow family,
+rent incidence, and persistence/hysteresis are blocked, withheld, supporting, or
+outside the executable perimeter until they receive a complete
+producer-to-deliverable path. They must not be presented as established findings.
 
 ## Current blockers
 
@@ -118,3 +131,8 @@ two layout overflows corrected. Studio contains the same source and PDFs and
 passes the findings freeze plus the full repository test suite. There is one
 manuscript under `paper/` and one presentation under `deck/`; Git history is the
 archive.
+
+These are baseline deliverables, not final submission deliverables. Before the
+submission freeze, the paper and deck need expanded mechanism results and a
+motivation rewrite built around concrete, down-to-earth vehicle-currency examples
+from traditional finance.
