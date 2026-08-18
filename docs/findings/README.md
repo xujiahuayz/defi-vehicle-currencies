@@ -42,7 +42,7 @@ E1 confirmatory specification lock      DONE
   |
 F registered confirmatory rebuilds      DONE; FINDINGS GATE GREEN
   |
-G baseline JFE paper                    DONE; CLEAN 50-PAGE PDF
+G baseline JFE paper                    DONE; CLEAN 51-PAGE PDF
   |
 H baseline presentation deck           DONE; CLEAN 43-PAGE PDF
   |
