@@ -6,6 +6,7 @@ import pytest
 from scripts.analyze.run_vehicle_formation_exploration import (
     entry_driver_panel,
     entry_follow_panel,
+    entry_regime_hysteresis,
     entry_stable_candidate_persistence,
     entry_stable_candidate_summary,
     endpoint_class,
@@ -193,6 +194,22 @@ def test_persistence_contrast_uses_pair_level_followup(pair_support_path) -> Non
     row = contrast.iloc[0]
     assert row["coefficient"] == pytest.approx(22 / 30)
     assert row["comparison"] == "stable_dominant_entry_minus_native_only_entry"
+
+
+def test_entry_regime_hysteresis_counts_only_active_days(pair_support_path) -> None:
+    summary = entry_regime_hysteresis(
+        30,
+        pair_support_path=pair_support_path,
+        sample_end=pd.Timestamp("2026-06-30"),
+    )
+    stable = summary[
+        summary["entry_year"].eq(2026)
+        & summary["entry_type"].eq("stable_dominant_entry")
+    ].iloc[0]
+    assert stable["pairs"] == 1
+    assert stable["pairs_trading_again"] == 1
+    assert stable["never_left_share_retrade"] == pytest.approx(1.0)
+    assert stable["mean_stable_majority_day_share"] == pytest.approx(1.0)
 
 
 def test_endpoint_class_separates_weth_from_other_stable_endpoints() -> None:

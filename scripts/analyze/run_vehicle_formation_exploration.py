@@ -553,6 +553,96 @@ def persistence_summary(follow: pd.DataFrame) -> pd.DataFrame:
     return pd.DataFrame(rows)
 
 
+def entry_regime_hysteresis(
+    horizon_days: int,
+    *,
+    pair_support_path: Path = PAIR_SUPPORT,
+    sample_end: pd.Timestamp = SAMPLE_END,
+) -> pd.DataFrame:
+    """Measure whether stable-born entrants ever leave stable-majority status."""
+
+    if horizon_days <= 0:
+        raise ValueError("horizon_days must be positive")
+    path = _sql_path(pair_support_path)
+    years = ", ".join(str(year) for year in MAIN_ENTRY_YEARS)
+    sample_end_text = pd.Timestamp(sample_end).strftime("%Y-%m-%d")
+    return _read_sql(
+        f"""
+        WITH entries AS (
+            SELECT
+                src,
+                tgt,
+                date AS entry_date,
+                year(date)::INTEGER AS entry_year,
+                CASE
+                    WHEN stable_choice_route_count > native_choice_route_count
+                        THEN 'stable_dominant_entry'
+                    WHEN stable_choice_route_count > 0
+                        THEN 'stable_present_entry'
+                    ELSE 'native_only_entry'
+                END AS entry_type
+            FROM read_parquet('{path}')
+            WHERE pair_entry_on_day
+              AND primary_choice_route_count > 0
+              AND year(date) IN ({years})
+              AND strftime(date, '%m-%d') <= '06-30'
+              AND date + INTERVAL {int(horizon_days)} DAY <= DATE '{sample_end_text}'
+        ),
+        follow AS (
+            SELECT
+                e.entry_year,
+                e.entry_type,
+                e.src,
+                e.tgt,
+                count(*)::INTEGER AS active_days,
+                sum(
+                    (p.stable_choice_route_count > p.native_choice_route_count)::INTEGER
+                )::INTEGER AS stable_majority_days,
+                sum(
+                    (
+                        p.native_choice_route_count >= p.stable_choice_route_count
+                        AND p.primary_choice_route_count > 0
+                    )::INTEGER
+                )::INTEGER AS nonstable_majority_days,
+                sum(p.primary_choice_route_count)::DOUBLE AS primary_routes,
+                sum(p.stable_choice_route_count)::DOUBLE AS stable_routes
+            FROM entries e
+            JOIN read_parquet('{path}') p
+              ON p.src = e.src
+             AND p.tgt = e.tgt
+             AND p.date BETWEEN e.entry_date
+                            AND e.entry_date + INTERVAL {int(horizon_days)} DAY
+            WHERE p.primary_choice_route_count > 0
+            GROUP BY 1,2,3,4
+        )
+        SELECT
+            'entry_regime_hysteresis' AS record_type,
+            {int(horizon_days)}::INTEGER AS horizon_days,
+            entry_year,
+            entry_type,
+            count(*)::INTEGER AS pairs,
+            sum((active_days >= 2)::INTEGER)::INTEGER AS pairs_trading_again,
+            avg((nonstable_majority_days = 0)::DOUBLE) AS never_left_share_all,
+            avg(
+                CASE
+                    WHEN active_days >= 2
+                        THEN (nonstable_majority_days = 0)::DOUBLE
+                    ELSE NULL
+                END
+            ) AS never_left_share_retrade,
+            avg(stable_majority_days::DOUBLE / active_days)
+                AS mean_stable_majority_day_share,
+            sum(stable_routes)::DOUBLE / nullif(sum(primary_routes), 0)
+                AS route_stable_share,
+            'exploratory_active-day_regime_hysteresis_not_causal'
+                AS interpretation
+        FROM follow
+        GROUP BY 1,2,3,4
+        ORDER BY entry_year, horizon_days, entry_type
+        """
+    )
+
+
 def persistence_contrasts(follow: pd.DataFrame) -> pd.DataFrame:
     """Estimate the follow-up stable-share gap between stable and native births."""
 
@@ -677,6 +767,10 @@ def build_results(
     ]
     summaries = [persistence_summary(panel) for panel in follow_panels]
     contrasts = [persistence_contrasts(panel) for panel in follow_panels]
+    hysteresis = [
+        entry_regime_hysteresis(horizon, pair_support_path=pair_support_path)
+        for horizon in HORIZONS
+    ]
     result = pd.concat(
         [
             cohorts,
@@ -686,6 +780,7 @@ def build_results(
             driver_regressions,
             *summaries,
             *contrasts,
+            *hysteresis,
         ],
         ignore_index=True,
         sort=False,
