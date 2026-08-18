@@ -7,7 +7,13 @@ import unittest
 from pathlib import Path
 from unittest.mock import MagicMock, patch
 
-from ddvc.paths import REPO_ROOT, _shared_git_runtime_dir, literature_papers_dir, repo_path
+from ddvc.paths import (
+    ETHEREUM_RPC_RAW_ROOT,
+    REPO_ROOT,
+    _shared_git_runtime_dir,
+    literature_papers_dir,
+    repo_path,
+)
 from ddvc.runtime import (
     atomic_output,
     bounded_workers,
@@ -19,6 +25,9 @@ from ddvc.runtime import (
 
 
 class RuntimeGuardTests(unittest.TestCase):
+    def test_ethereum_rpc_cache_is_in_canonical_raw_tree(self) -> None:
+        self.assertEqual(ETHEREUM_RPC_RAW_ROOT, REPO_ROOT / "data" / "raw" / "ethereum" / "rpc_cache")
+
     def test_cli_paths_resolve_once_against_the_repository(self) -> None:
         self.assertEqual(repo_path("data/panel.parquet"), REPO_ROOT / "data/panel.parquet")
         absolute = Path("/tmp/panel.parquet")

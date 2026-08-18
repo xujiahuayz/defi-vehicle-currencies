@@ -33,8 +33,10 @@ fetch script -> retained data/raw/
 
 Every paper/deck table and plot has one script owner. Every processed panel is
 rebuildable from retained raw data. Raw data are regular files inside this
-repository, never symlinks into a retired checkout. Scratch data with no downstream
-consumer are disposable.
+repository, never symlinks into a retired checkout. Ethereum RPC headers and
+receipts fetched by processing scripts live under `data/raw/ethereum/rpc_cache/`,
+not in a hidden Git runtime directory. Scratch data with no downstream consumer
+are disposable.
 
 This project does not require cryptographic content hashes, fingerprint registries,
 certificate chains, or multiple release namespaces. Direct paths, schemas, row

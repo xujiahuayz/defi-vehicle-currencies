@@ -7,7 +7,7 @@ from collections.abc import Iterable, Iterator
 from pathlib import Path
 
 from ddvc.fetch.raw import write_jsonl
-from ddvc.paths import SHARED_RUNTIME_DIR
+from ddvc.paths import ETHEREUM_RPC_RAW_ROOT
 from ddvc.quoter import (
     canonical_json_sha256,
     coerce_rpc_envelope,
@@ -17,7 +17,7 @@ from ddvc.quoter import (
 from ddvc.runtime import atomic_output
 
 
-RECEIPT_CACHE = SHARED_RUNTIME_DIR / "cache" / "ethereum_receipts"
+RECEIPT_CACHE = ETHEREUM_RPC_RAW_ROOT / "receipts"
 
 
 def receipt_payload(tx_hash: str) -> dict[str, object]:

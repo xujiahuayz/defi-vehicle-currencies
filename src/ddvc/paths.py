@@ -32,6 +32,7 @@ def sections_dir() -> Path:
     return prose_root() / "sections"
 DATA_DIR = REPO_ROOT / "data"
 OUTPUT_DIR = REPO_ROOT / "output"
+ETHEREUM_RPC_RAW_ROOT = DATA_DIR / "raw" / "ethereum" / "rpc_cache"
 V3_INVENTORY_RAW_ROOT = DATA_DIR / "raw" / "ethereum" / "uniswap_v3_inventory_events"
 TICK_STATE_EVENT_RAW_ROOT = DATA_DIR / "raw" / "ethereum" / "tick_state_events"
 V2_AUDITED_TOKEN_DECIMALS_REGISTRY = DATA_DIR / "processed" / "v2_audit_token_decimals.parquet"

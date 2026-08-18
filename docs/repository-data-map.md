@@ -35,7 +35,7 @@ certificate chains, and parallel release registries are not required.
 |---|---|---|
 | `data/raw/thegraph/` | Verbatim indexed DEX responses | Keep all raw evidence |
 | `data/raw/dune/` | Verbatim Fluid/Dune responses | Keep all raw evidence |
-| `data/raw/ethereum/` | RPC logs, receipts, block bounds and state observations | Keep all raw evidence |
+| `data/raw/ethereum/` | RPC logs, receipts, block bounds and state observations (including the `rpc_cache/` headers and receipts used by gas processing) | Keep all raw evidence |
 | `data/raw/external/` | Named off-chain sources such as Coinbase | Keep all raw evidence |
 | `data/raw/archive/defi-dominant-currency/` | Raw evidence recovered from the retired sibling repository | Keep; no script may write back to the sibling repository |
 | `data/interim/` | Scratch files used by one running command | Delete when the command finishes; never consume downstream |
